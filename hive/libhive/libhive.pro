@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += widgets declarative qml quick network dbus
+QT       += network declarative
 
 TARGET = libhive
 TEMPLATE = lib

@@ -2,7 +2,9 @@
 #define SERVER_H
 
 #include <QObject>
+#include <QNetworkInterface>
 #include <QTcpServer>
+#include <QTcpSocket>
 
 class Server : public QObject
 {

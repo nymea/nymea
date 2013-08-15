@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core
+QT       += core network
 
 QT       -= gui
 
@@ -17,12 +17,14 @@ TEMPLATE = app
 SOURCES += main.cpp \
     hivecore.cpp
 
+
+
+HEADERS += \
+    hivecore.h
+
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../libhive/release/ -llibhive
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../libhive/debug/ -llibhive
 else:unix: LIBS += -L$$OUT_PWD/../../libhive/ -llibhive
 
 INCLUDEPATH += $$PWD/../../libhive
 DEPENDPATH += $$PWD/../../libhive
-
-HEADERS += \
-    hivecore.h

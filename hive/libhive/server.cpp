@@ -1,8 +1,4 @@
 #include "server.h"
-
-#include <QNetworkInterface>
-#include <QTcpServer>
-#include <QTcpSocket>
 #include <QDebug>
 
 Server::Server(QObject *parent) :

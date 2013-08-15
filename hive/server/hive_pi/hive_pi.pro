@@ -5,15 +5,14 @@
 #-------------------------------------------------
 
 QT       += core network
-
 QT       -= gui
 
-TARGET = hive_pi
+TARGET = hive
 
 CONFIG   += console
 CONFIG   -= app_bundle
 
-target.path = /usr/bin
+target.path = /root/bin
 INSTALLS += target
 
 
@@ -23,10 +22,10 @@ TEMPLATE = app
 SOURCES += main.cpp \
     hivecore.cpp
 
-unix:!macx: LIBS += -L$$OUT_PWD/../../libhive/ -llibhive
+HEADERS += \
+    hivecore.h
+
+LIBS += -L$$OUT_PWD/../../libhive/ -llibhive
 
 INCLUDEPATH += $$PWD/../../libhive
 DEPENDPATH += $$PWD/../../libhive
-
-HEADERS += \
-    hivecore.h

@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += network declarative
+QT       += core network
 
 TARGET = libhive
 TEMPLATE = lib

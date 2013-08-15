@@ -1,0 +1,9 @@
+.directory
+*.user
+*~
+Makefile
+build
+moc
+.make.cache
+rcc
+

@@ -8,21 +8,24 @@ QT       += core network
 
 TARGET = libhive
 TEMPLATE = lib
+CONFIG += static
 
 DEFINES += LIBHIVE_LIBRARY
 
 SOURCES += libhive.cpp \
-    server.cpp
+    server.cpp \
+    devicemanager.cpp
 
 HEADERS += libhive.h\
         libhive_global.h \
-    server.h
+    server.h \
+    devicemanager.h
 
-unix:!symbian {
-    maemo5 {
-        target.path = /opt/usr/lib
-    } else {
-        target.path = /usr/lib
-    }
-    INSTALLS += target
-}
+#unix:!symbian {
+#    maemo5 {
+#        target.path = /opt/usr/lib
+#    } else {
+#        target.path = /usr/lib
+#    }
+#    INSTALLS += target
+#}

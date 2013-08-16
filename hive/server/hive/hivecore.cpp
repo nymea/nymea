@@ -4,5 +4,5 @@
 HiveCore::HiveCore(QObject *parent) :
     QObject(parent)
 {
-    m_server = new Server(this);
+//    m_server = new Server(this);
 }

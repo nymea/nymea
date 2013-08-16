@@ -4,8 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core network
-
+QT       += core
 QT       -= gui
 
 TARGET = hive

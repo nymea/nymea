@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include "server.h"
+#include "devicemanager.h"
 
 class HiveCore : public QObject
 {

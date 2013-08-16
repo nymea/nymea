@@ -1,3 +1,3 @@
 TEMPLATE = subdirs
 
-SUBDIRS += hive hive_pi
+SUBDIRS += hive_client

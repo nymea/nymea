@@ -20,6 +20,8 @@ private:
 signals:
     
 public slots:
+    bool startServer();
+    bool stopServer();
     
 private slots:
     void incomingConnection();

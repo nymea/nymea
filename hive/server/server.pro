@@ -1,3 +1,5 @@
 TEMPLATE = subdirs
 
-SUBDIRS += hive hive_pi
+CONFIG = ordered
+
+SUBDIRS += hive_pi

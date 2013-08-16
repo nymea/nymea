@@ -2,7 +2,7 @@
 #define HIVECORE_H
 
 #include <QObject>
-#include "server.h"
+//#include "server.h"
 
 class HiveCore : public QObject
 {
@@ -11,7 +11,7 @@ public:
     explicit HiveCore(QObject *parent = 0);
     
 private:
-    Server *m_server;
+//    Server *m_server;
 
 signals:
     

@@ -14,6 +14,10 @@ Server::Server(QObject *parent) :
     }
     qDebug() << "----------------------------";
 
+}
+
+bool Server::startServer()
+{
     // Listen on all Networkinterfaces
     foreach(const QHostAddress &address, QNetworkInterface::allAddresses()){
         QTcpServer *server = new QTcpServer(this);
@@ -26,6 +30,24 @@ Server::Server(QObject *parent) :
             delete server;
         }
     }
+    if(m_serverList.empty()){
+        return false;
+    }
+    return true;
+}
+
+bool Server::stopServer()
+{
+    // Listen on all Networkinterfaces
+    foreach(QTcpServer *server, m_serverList){
+        qDebug() << "close server " << server->serverAddress().toString();
+        server->close();
+        delete server;
+    }
+    if(!m_serverList.empty()){
+        return false;
+    }
+    return true;
 }
 
 void Server::incomingConnection()

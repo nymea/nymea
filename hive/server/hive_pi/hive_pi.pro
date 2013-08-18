@@ -19,7 +19,8 @@ TEMPLATE = app
 
 
 LIBS += -L$$OUT_PWD/../../libhive/ -llibhive
-LIBS += -L/home/timon/opt/rasp-pi-rootfs/usr/local/lib -lwiringPi
+LIBS += -L$$RPI_SYSROOT/usr/local/lib -lwiringPi
+
 INCLUDEPATH += /home/timon/opt/rasp-pi-rootfs/usr/local/include
 INCLUDEPATH += $$PWD/../../libhive
 
@@ -27,9 +28,11 @@ DEPENDPATH += $$PWD/../../libhive
 
 SOURCES += main.cpp \
     hivecore.cpp \
-    radio/radioreciver.cpp
+    radio/radioreciver.cpp \
+    radio/radiosender.cpp
 
 HEADERS += \
     hivecore.h \
-    radio/radioreciver.h
+    radio/radioreciver.h \
+    radio/radiosender.h
 

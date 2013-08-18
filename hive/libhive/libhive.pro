@@ -14,12 +14,14 @@ DEFINES += LIBHIVE_LIBRARY
 
 SOURCES += libhive.cpp \
     server.cpp \
-    devicemanager.cpp
+    devicemanager.cpp \
+    logwriter.cpp
 
 HEADERS += libhive.h\
         libhive_global.h \
     server.h \
-    devicemanager.h
+    devicemanager.h \
+    logwriter.h
 
 #unix:!symbian {
 #    maemo5 {

@@ -4,6 +4,8 @@
 #include <QObject>
 #include "server.h"
 #include "devicemanager.h"
+#include "radio/radioreciver.h"
+#include "radio/radiosender.h"
 
 class HiveCore : public QObject
 {
@@ -13,7 +15,8 @@ public:
     
 private:
     Server *m_server;
-
+    RadioReciver *m_reciver;
+    RadioSender *m_sender;
 signals:
     
 public slots:

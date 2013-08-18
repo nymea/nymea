@@ -1,16 +1,23 @@
 import QtQuick 2.0
+import QtQuick.Controls 1.0
+import QtQuick.Layouts 1.0
 
 Rectangle {
-    width: 360
+    id: mainWindow
+    //title: "Hive Client"
+    width: 500
     height: 360
-    Text {
-        text: qsTr("Hello World")
+    color: "#776262"
+
+    RowLayout{
         anchors.centerIn: parent
-    }
-    MouseArea {
-        anchors.fill: parent
-        onClicked: {
-            Qt.quit();
+        Button{
+            text: "Button 1"
+        }
+        Button{
+            text: "Button 1"
         }
     }
+
+
 }

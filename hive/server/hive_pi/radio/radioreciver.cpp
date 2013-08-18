@@ -3,23 +3,16 @@
 #include <stdio.h>
 #include <QDebug>
 #include <QFile>
+#include <QStringList>
 
 static bool m_enable = false;
 static unsigned int timings[RC_MAX_CHANGES];
-static unsigned long m_receivedValue;
-static unsigned int m_receivedBitlength;
-static unsigned int m_receivedDelay;
-static unsigned int m_receiveToleranceThermometer;
-static unsigned int m_receiveToleranceRemote;
+
 
 RadioReciver::RadioReciver(QObject *parent) :
     QObject(parent)
 {
-    m_receivedBitlength = 0;
-    m_receivedDelay = 0;
-    m_receivedValue = 0;
-    m_receiveToleranceThermometer = 10;
-    m_receiveToleranceRemote = 60;
+
 }
 
 void RadioReciver::handleInterrupt()
@@ -40,10 +33,8 @@ void RadioReciver::handleInterrupt()
     if (duration > 5000 && duration > timings[0] - 200 && duration < timings[0] + 200) {
         repeatCount++;
         changeCount--;
-        //qDebug() << "change count" << changeCount;
 
         if(repeatCount == 2) {
-            //qDebug() << "got a pulse with pulselength:" << duration;
             detectProtocol(changeCount);
 
             for(int i = 0; i < RC_MAX_CHANGES; i++ ){
@@ -67,39 +58,58 @@ void RadioReciver::handleInterrupt()
 
 void RadioReciver::detectProtocol(int signalCount)
 {
-    qDebug() << "-----------------------------------------------------------";
-    //qDebug() << "detect protocoll";
+    qDebug() << "===========================================================================";
+    if(signalCount < 49){
+        qDebug() << "ERROR: got a signal with just" << signalCount << "signals";
+        return;
+    }
+    QList <int> rawData;
+
+    // go trough all 49 timings
+    for(int i = 0; i <= 48; i+=1 ){
+        rawData.append(timings[i]);
+    }
+    qDebug() << "raw data:" << rawData;
+
     unsigned long delay = timings[0] / 31;
-    //qDebug() << "delay:" << delay;
 
     // #########################################################################
-    //    if(delay > 250 && delay < 260){
+        if(delay > 250 && delay < 260){
+            qDebug() << "-----------------------------------------------------------";
+            qDebug() << "            seems to be a TERMOMETER signal";
+            qDebug() << "-----------------------------------------------------------";
+            qDebug() << "delay      :" << delay;
+            qDebug() << "bits       :" << signalCount-1;
 
-    //        QFile file("/root/data.ods");
-    //        file.open(QIODevice::WriteOnly | QIODevice::Text);
+            QByteArray binCode;
 
-    //        for(int i = 0; i <= 48; i++){
-    //            //file.write << timings[i] << ";\n";
-    //        }
+            for(int i = 1; i <= 48; i+=2 ){
+                if(timings[i] < 1000 && timings[i+1] < 3000 && timings[i+1] > 1000){
+                    binCode.append('0');
+                }else if(timings[i] < 1000 && timings[i+1] > 3000){
+                    binCode.append('1');
+                }else{
+                    qDebug() << "ERROR: could not read code...error in transmission";
+                    return;
+                }
+            }
 
-    //        file.close();
-    //        qDebug() << "-------> got TERMOMETER signal";
+            qDebug() << "bin CODE   :" << binCode;
+            parseTemperature(binCode);
 
-    //        QString code = 0;
-
-    //        unsigned long delayTolerance = delay * m_receiveToleranceThermometer * 0.01;
-    //        qDebug() << "delay:" << delay << "=" << timings[0] << "/31" << "    delayTolerance = " << delayTolerance << "   , signals = " << changeCount;
-
-    //        return;
-    //    }
+            return;
+        }
 
     // #########################################################################
     if(delay > 310 && delay < 320){
 
-        qDebug() << "-------> got REMOTE Signal";
-        qDebug() << "delay:" << delay  << "         bits = " << signalCount-1;
+        qDebug() << "-----------------------------------------------------------";
+        qDebug() << "            seems to be a REMOTE signal";
+        qDebug() << "-----------------------------------------------------------";
+        qDebug() << "delay      :" << delay;
+        qDebug() << "bits       :" << signalCount-1;
 
-        QString binCode;
+        QByteArray binCode;
         QList <int> rawData;
 
         // go trough all 48 timings
@@ -132,24 +142,29 @@ void RadioReciver::detectProtocol(int signalCount)
             }else if(div == 3 && divNext == 1){
                 binCode.append("1");
             }else{
-                //qDebug() << "could not read code...error in transmission";
+                qDebug() << "ERROR: could not read code...error in transmission";
+                return;
             }
         }
 
+        //qDebug() << "raw data:" << rawData;
+        qDebug() << "bin CODE   :" << binCode;
+        QStringList byteList;
+        for(int i = 4; i <= 24; i+=4){
+            byteList.append(binCode.left(4));
+            binCode = binCode.right(binCode.length() -4);
+        }
+        qDebug() << byteList;
 
-        qDebug() << "raw data:" << rawData;
-        qDebug() << "bin CODE:" << binCode;
-        qDebug() << "dec CODE:" << binCode;
-        qDebug() << "hex CODE:" << binCode;
 
     }else{
         // #########################################################################
-        qDebug() << "-------> got GENERIC Signal";
+        qDebug() << "-----------------------------------------------------------";
+        qDebug() << "            seems to be a GENERIC signal";
+        qDebug() << "-----------------------------------------------------------";
+        qDebug() << "delay      :" << delay;
+        qDebug() << "bits       : " << signalCount-1;
 
-        unsigned long delayTolerance = delay * m_receiveToleranceRemote * 0.01;
-        qDebug() << "delay:" << delay  << "         bits = " << signalCount-1;
-
-        QString binCode;
         QList <int> rawData;
 
         QFile file("/root/rc433_log_data.ods");
@@ -158,19 +173,45 @@ void RadioReciver::detectProtocol(int signalCount)
 
         for(int i = 0; i < signalCount; i+=1 ){
             out << timings[i] << ",";
+            rawData.append(timings[i]);
         }
         out << ";\n";
         file.close();
-
-        // go trough all 48 timings
-        for(int i = 0; i <= 48; i+=1 ){
-            rawData.append(timings[i]);
-            rawData.append(timings[i+1]);
-        }
-
         qDebug() << "raw data:" << rawData;
 
+
     }
+}
+
+float RadioReciver::parseTemperature(QByteArray codeBin)
+{
+    // {     ID    },{-+}{ temp,   },{Batt},{,temp}
+    // "XXXX","XXXX","X  XXX","XXXX","XXXX","XXXX",
+
+    QList<QByteArray> byteList;
+    for(int i = 4; i <= 24; i+=4){
+        byteList.append(codeBin.left(4));
+        codeBin = codeBin.right(codeBin.length() -4);
+    }
+    qDebug() << byteList;
+
+    QByteArray temperatureBin(byteList.at(2) + byteList.at(3));
+    QByteArray temperatureTenthBin(byteList.at(5));
+
+    // get sign of temperature -> if first bit of temperature byte is 1 -> temp is negativ
+    int sign = 0;
+    if(temperatureBin.left(1).toInt() == 1){
+        sign = -1;
+    }else{
+        sign = 1;
+    }
+
+    qDebug() << temperatureBin << "=" << temperatureBin.left(1) << temperatureBin.right(7) << temperatureBin.right(7).toInt(0,2) << "," << temperatureTenthBin.toInt(0,2) ;
+
+    float temperature = sign*(temperatureBin.right(7).toInt(0,2) + (float)temperatureTenthBin.toInt(0,2)/10);
+
+    qDebug() << "Temperature:" << temperature;
+    return temperature;
 }
 
 void RadioReciver::enableReceiver()

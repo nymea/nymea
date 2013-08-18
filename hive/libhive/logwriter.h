@@ -11,7 +11,8 @@ public:
     explicit LogWriter(QObject *parent = 0);
     enum MessageType{
         INFO = 0x1,
-        ERROR = 0x2
+        ERROR = 0x2,
+        TEMP = 0X4
     };
 
 

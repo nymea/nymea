@@ -19,6 +19,7 @@ public:
 private:
     static void handleInterrupt();
     static void detectProtocol(int signalCount);
+    static float parseTemperature(QByteArray codeBin);
 
 signals:
     

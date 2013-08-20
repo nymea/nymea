@@ -4,9 +4,11 @@
 #include <QDebug>
 #include <QFile>
 #include <QStringList>
+#include <QDateTime>
 
 static bool m_enable = false;
 static unsigned int timings[RC_MAX_CHANGES];
+static float lastTemperature = 0;
 
 
 RadioReciver::RadioReciver(QObject *parent) :
@@ -58,11 +60,11 @@ void RadioReciver::handleInterrupt()
 
 void RadioReciver::detectProtocol(int signalCount)
 {
-    qDebug() << "===========================================================================";
     if(signalCount < 49){
-        qDebug() << "ERROR: got a signal with just" << signalCount << "signals";
+        //qDebug() << "ERROR: got a signal with just" << signalCount << "signals";
         return;
     }
+    qDebug() << "===========================================================================";
     QList <int> rawData;
 
     // go trough all 49 timings
@@ -83,6 +85,11 @@ void RadioReciver::detectProtocol(int signalCount)
 
             QByteArray binCode;
 
+            //              __
+            // pulse form: |  |________         = 0     1100000000
+            //              __
+            //             |  |________________ = 1     110000000000000000
+
             for(int i = 1; i <= 48; i+=2 ){
                 if(timings[i] < 1000 && timings[i+1] < 3000 && timings[i+1] > 1000){
                     binCode.append('0');
@@ -101,7 +108,7 @@ void RadioReciver::detectProtocol(int signalCount)
         }
 
     // #########################################################################
-    if(delay > 310 && delay < 320){
+    if(delay > 310 && delay < 340){
 
         qDebug() << "-----------------------------------------------------------";
         qDebug() << "            seems to be a REMOTE signal";
@@ -133,9 +140,9 @@ void RadioReciver::detectProtocol(int signalCount)
             }
 
             //              _
-            // if we have  | |___ = 0 -> in 4 delays
+            // if we have  | |___ = 0 -> in 4 delays => 1000
             //                 _
-            // if we have  ___| | = 1 -> in 4 delays
+            // if we have  ___| | = 1 -> in 4 delays => 0001
 
             if(div == 1 && divNext == 3){
                 binCode.append("0");
@@ -196,9 +203,11 @@ float RadioReciver::parseTemperature(QByteArray codeBin)
     qDebug() << byteList;
 
     QByteArray temperatureBin(byteList.at(2) + byteList.at(3));
+    QByteArray batteryBin(byteList.at(4));
     QByteArray temperatureTenthBin(byteList.at(5));
 
-    // get sign of temperature -> if first bit of temperature byte is 1 -> temp is negativ
+
+    // check sign of temperature -> if first bit of temperature byte is 1 -> temp is negativ
     int sign = 0;
     if(temperatureBin.left(1).toInt() == 1){
         sign = -1;
@@ -206,11 +215,36 @@ float RadioReciver::parseTemperature(QByteArray codeBin)
         sign = 1;
     }
 
-    qDebug() << temperatureBin << "=" << temperatureBin.left(1) << temperatureBin.right(7) << temperatureBin.right(7).toInt(0,2) << "," << temperatureTenthBin.toInt(0,2) ;
+    //qDebug() << temperatureBin << "=" << temperatureBin.left(1) << temperatureBin.right(7) << temperatureBin.right(7).toInt(0,2) << "," << temperatureTenthBin.toInt(0,2) ;
 
+    // calc temperature
     float temperature = sign*(temperatureBin.right(7).toInt(0,2) + (float)temperatureTenthBin.toInt(0,2)/10);
 
-    qDebug() << "Temperature:" << temperature;
+    // check if the battery is low
+    QString batteryStatus;
+    if(batteryBin.toInt(0,2) == 0){
+        batteryStatus = "ok";
+    }else{
+        batteryStatus = "low";
+    }
+
+    qDebug() << "Temperature:" << temperature << "Battery: " << batteryStatus;
+
+    if(temperature == lastTemperature){
+        return temperature;
+    }else{
+        lastTemperature = temperature;
+        QString timeStamp = QDateTime::currentDateTime().toString("dd.MM.yyyy, hh:mm");;
+        qDebug() << timeStamp;
+
+        QFile file("/root/temperature_log.ods");
+        file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
+        QTextStream out(&file);
+
+        out << timeStamp << "," << temperature << "," << batteryStatus << "\n";
+        file.close();
+    }
+
     return temperature;
 }
 
@@ -224,17 +258,17 @@ void RadioReciver::disableReceiver()
     m_enable = false;
 }
 
-void RadioReciver::setFrequence(RadioReciver::Frequenze frequenze)
+void RadioReciver::setFrequency(RadioReciver::Frequency frequency)
 {
-    if(frequenze == RadioReciver::RC433MHz){
+    if(frequency == RadioReciver::RF433MHz){
         if(wiringPiSetup() == -1){
-            qDebug() << "ERROR: GPIO setup failed.";
+            qDebug() << "ERROR: GPIO setup for 433.92 MHz receiver failed.";
         }
-        qDebug() << "GPIO setup ok.";
         pinMode(2,INPUT);
         wiringPiISR(2, INT_EDGE_BOTH, &handleInterrupt);
+        qDebug() << "GPIO setup for 433.92 MHz receiver ok.";
     }
-    if(frequenze == RadioReciver::RC868MHz){
+    if(frequency == RadioReciver::RF868MHz){
         qDebug() << "ERROR: 868 MHz Module not connected yet";
     }
 

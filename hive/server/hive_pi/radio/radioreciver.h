@@ -11,9 +11,9 @@ class RadioReciver : public QObject
 public:
     explicit RadioReciver(QObject *parent = 0);
     
-    enum Frequenze{
-        RC433MHz = 0x0,
-        RC868MHz = 0x1
+    enum Frequency{
+        RF433MHz = 0x0,
+        RF868MHz = 0x1
     };
 
 private:
@@ -26,7 +26,7 @@ signals:
 public slots:
     void enableReceiver();
     void disableReceiver();
-    void setFrequence(Frequenze frequenze);
+    void setFrequency(Frequency frequency);
 
     
 };

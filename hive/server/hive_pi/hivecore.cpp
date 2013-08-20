@@ -8,19 +8,20 @@ HiveCore::HiveCore(QObject *parent) :
     m_server = new Server(this);
     m_server->startServer();
 
+    // create Sender
     m_sender = new RadioSender(this);
+    m_sender->setFrequency(RadioSender::RF433MHz);
+    m_sender->setLineCode(RadioSender::THERMOMETER);
+    m_sender->setPulseLength(250);
+    m_sender->sendBin("010100101000101111110110");
+    m_sender->sendBin("010100101000101111110110");
 
-    QByteArray data("11101101");
-    QDataStream stream(&data, QIODevice::ReadOnly);
-    qint8 dataInt;
-    stream >> dataInt;
-
-    qDebug() << data << dataInt << data.toInt(0,2);
-
+    // create 433.92 MHz receiver
     m_reciver = new RadioReciver(this);
-    m_reciver->setFrequence(RadioReciver::RC433MHz);
+    m_reciver->setFrequency(RadioReciver::RF433MHz);
     m_reciver->enableReceiver();
+    m_sender->sendBin("010100101000101111110110");
 
-    DeviceManager deviceManager;
+
 
 }

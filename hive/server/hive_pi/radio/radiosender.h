@@ -9,17 +9,38 @@ class RadioSender : public QObject
 public:
     explicit RadioSender(QObject *parent = 0);
     
+    enum Frequency{
+        RF433MHz = 0x0,
+        RF868MHz = 0x1
+    };
+
+    enum LineCode{
+        UNIPOLAR = 0x0,
+        MANCHESTER = 0x1,
+        DMANCHESTER = 0x2,
+        REMOTE = 0x4,
+        THERMOMETER = 0x8
+    };
+
+
 private:
-    // [us]
+    // [us = micro seconds]
     int m_pulseLength;
 
+    Frequency m_frequenze;
+    LineCode m_lineCode;
+    int m_pin;
+
     void sendSync();
-    void transmit(int high, int low);
+    void send0();
+    void send1();
 
 signals:
     
 public slots:
-    void sendBin(QString codeBin);
+    void sendBin(QByteArray codeBin);
+    void setFrequency(Frequency frequency);
+    void setLineCode(LineCode lineCode);
     void setPulseLength(int pulseLength);
     
 };

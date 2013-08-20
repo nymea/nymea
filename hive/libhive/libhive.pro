@@ -15,13 +15,17 @@ DEFINES += LIBHIVE_LIBRARY
 SOURCES += libhive.cpp \
     server.cpp \
     devicemanager.cpp \
-    logwriter.cpp
+    logwriter.cpp \
+    jsonparser.cpp \
+    jsonserializer.cpp
 
 HEADERS += libhive.h\
         libhive_global.h \
     server.h \
     devicemanager.h \
-    logwriter.h
+    logwriter.h \
+    jsonparser.h \
+    jsonserializer.h
 
 #unix:!symbian {
 #    maemo5 {

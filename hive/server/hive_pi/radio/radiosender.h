@@ -19,7 +19,8 @@ public:
         MANCHESTER = 0x1,
         DMANCHESTER = 0x2,
         REMOTE = 0x4,
-        THERMOMETER = 0x8
+        THERMOMETER = 0x8,
+        WEATHERSTATION = 0x16
     };
 
 
@@ -42,7 +43,6 @@ public slots:
     void setFrequency(Frequency frequency);
     void setLineCode(LineCode lineCode);
     void setPulseLength(int pulseLength);
-    
 };
 
 #endif // RADIOSENDER_H

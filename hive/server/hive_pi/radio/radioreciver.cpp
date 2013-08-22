@@ -85,10 +85,10 @@ void RadioReciver::detectProtocol(int signalCount)
 
             QByteArray binCode;
 
-            //              __
-            // pulse form: |  |________         = 0     1100000000
-            //              __
-            //             |  |________________ = 1     110000000000000000
+            //  __
+            // |  |________         = 0     1100000000
+            //  __
+            // |  |________________ = 1     110000000000000000
 
             for(int i = 1; i <= 48; i+=2 ){
                 if(timings[i] < 1000 && timings[i+1] < 3000 && timings[i+1] > 1000){

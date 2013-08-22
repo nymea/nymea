@@ -16,6 +16,33 @@ Server::Server(QObject *parent) :
 
 }
 
+void Server::newClientConnected()
+{
+    // got a new client connected
+    QTcpServer *server = qobject_cast<QTcpServer*>(sender());
+    QTcpSocket *newConnection = server->nextPendingConnection();
+    qDebug() << "new client connected:" << newConnection->peerAddress().toString();
+
+    // append the new client to the client list
+    m_clientList.append(newConnection);
+
+    connect(newConnection, SIGNAL(readyRead()), SLOT(readPackage()));
+    connect(newConnection,SIGNAL(disconnected()),this,SLOT(clientDisconnected()));
+
+}
+
+
+void Server::readPackage()
+{
+
+}
+
+void Server::clientDisconnected()
+{
+    QTcpSocket *client = qobject_cast<QTcpSocket*>(sender());
+    qDebug() << "client disconnected:" << client->peerAddress().toString();
+}
+
 bool Server::startServer()
 {
     // Listen on all Networkinterfaces
@@ -23,7 +50,7 @@ bool Server::startServer()
         QTcpServer *server = new QTcpServer(this);
         if(server->listen(address, 1234)) {
             qDebug() << "server listening on" << address.toString();
-            connect(server, SIGNAL(newConnection()), SLOT(incomingConnection()));
+            connect(server, SIGNAL(newConnection()), SLOT(newClientConnected()));
             m_serverList.append(server);
         } else {
             qDebug() << "ERROR: can not listening to" << address.toString();
@@ -50,20 +77,10 @@ bool Server::stopServer()
     return true;
 }
 
-void Server::incomingConnection()
+void Server::sendToAll(QString data)
 {
-    // got a new client connected
-    QTcpServer *server = qobject_cast<QTcpServer*>(sender());
-    QTcpSocket *newConnection = server->nextPendingConnection();
-    qDebug() << "new client connected:" << newConnection->peerAddress().toString();
-
-    // append the new client to the client list
-    m_clientList.append(newConnection);
-
-    connect(newConnection, SIGNAL(readyRead()), SLOT(readPackage()));
+    foreach(QTcpSocket *client,m_clientList){
+    }
 }
 
-void Server::readPackage()
-{
 
-}

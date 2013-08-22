@@ -2,6 +2,7 @@
 #define JSONPARSER_H
 
 #include <QObject>
+//#include <qjson/serializer.h>
 
 class JsonParser : public QObject
 {

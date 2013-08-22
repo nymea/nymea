@@ -16,8 +16,7 @@ SOURCES += libhive.cpp \
     server.cpp \
     devicemanager.cpp \
     logwriter.cpp \
-    jsonparser.cpp \
-    jsonserializer.cpp
+    client.cpp
 
 HEADERS += libhive.h\
         libhive_global.h \
@@ -25,7 +24,7 @@ HEADERS += libhive.h\
     devicemanager.h \
     logwriter.h \
     jsonparser.h \
-    jsonserializer.h
+    client.h
 
 #unix:!symbian {
 #    maemo5 {

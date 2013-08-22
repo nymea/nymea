@@ -19,13 +19,17 @@ private:
 
 signals:
     
+private slots:
+    void newClientConnected();
+    void readPackage();
+    void clientDisconnected();
+
 public slots:
     bool startServer();
     bool stopServer();
+    void sendToAll(QString data);
     
-private slots:
-    void incomingConnection();
-    void readPackage();
+
 };
 
 #endif // SERVER_H

@@ -34,6 +34,12 @@ void Server::newClientConnected()
 
 void Server::readPackage()
 {
+    QTcpSocket *client = qobject_cast<QTcpSocket*>(sender());
+    while(client->canReadLine()){
+        QByteArray data = client->readLine();
+        qDebug() << "data to parse:" << data.remove(data.length() - 1, 1);
+        emit dataLineAvailable(data);
+    }
 
 }
 
@@ -77,9 +83,10 @@ bool Server::stopServer()
     return true;
 }
 
-void Server::sendToAll(QString data)
+void Server::sendToAll(QByteArray data)
 {
     foreach(QTcpSocket *client,m_clientList){
+        client->write(data);
     }
 }
 

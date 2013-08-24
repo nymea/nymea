@@ -17,7 +17,9 @@ public:
     };
 
 private:
-    static void handleInterrupt();
+    static void handleRC433Interrupt();
+    static void handleRC868Interrupt();
+
     static void detectProtocol(int signalCount);
     static float parseTemperature(QByteArray codeBin);
 

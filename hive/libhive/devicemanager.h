@@ -10,7 +10,18 @@ class DeviceManager : public QObject
     Q_OBJECT
 public:
     explicit DeviceManager(QObject *parent = 0);
-    
+    enum DeviceType {
+        Sensor,
+        Actor
+    };
+    enum DeviceName {
+        Light,
+        Switch
+
+    };
+
+
+
 signals:
     
 public slots:

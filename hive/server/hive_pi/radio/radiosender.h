@@ -15,12 +15,12 @@ public:
     };
 
     enum LineCode{
-        UNIPOLAR = 0x0,
-        MANCHESTER = 0x1,
-        DMANCHESTER = 0x2,
-        REMOTE = 0x4,
-        THERMOMETER = 0x8,
-        WEATHERSTATION = 0x16
+        UNIPOLAR = 0x2,
+        MANCHESTER = 0x3,
+        DMANCHESTER = 0x4,
+        REMOTE = 0x5,
+        THERMOMETER = 0x6,
+        WEATHERSTATION = 0x7
     };
 
 

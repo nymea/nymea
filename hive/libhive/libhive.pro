@@ -12,19 +12,22 @@ CONFIG += static
 
 DEFINES += LIBHIVE_LIBRARY
 
+LIBS += -lqjson
+
 SOURCES += libhive.cpp \
     server.cpp \
     devicemanager.cpp \
     logwriter.cpp \
-    client.cpp
+    client.cpp \
+    jsonhandler.cpp
 
 HEADERS += libhive.h\
         libhive_global.h \
     server.h \
     devicemanager.h \
     logwriter.h \
-    jsonparser.h \
-    client.h
+    client.h \
+    jsonhandler.h
 
 #unix:!symbian {
 #    maemo5 {

@@ -17,6 +17,7 @@ private:
     Server *m_server;
     RadioReciver *m_reciver;
     RadioSender *m_sender;
+    DeviceManager *m_deviceManager;
 signals:
     
 public slots:

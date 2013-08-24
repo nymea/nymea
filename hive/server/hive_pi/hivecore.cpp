@@ -8,6 +8,9 @@ HiveCore::HiveCore(QObject *parent) :
     m_server = new Server(this);
     m_server->startServer();
 
+    m_deviceManager = new DeviceManager(this);
+
+
     // create 433.92 MHz sender
     m_sender = new RadioSender(this);
     m_sender->setFrequency(RadioSender::RF433MHz);

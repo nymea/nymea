@@ -11,6 +11,5 @@ HiveClientCore::HiveClientCore(QObject *parent) :
     m_client->connectToHost("10.10.10.40","1234");
 
     m_viewer = new QtQuick2ApplicationViewer;
-    m_viewer->setMainQmlFile(QStringLiteral("qml/hive_client/main.qml"));
     m_viewer->showExpanded();
 }

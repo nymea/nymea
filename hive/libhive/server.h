@@ -18,6 +18,7 @@ private:
 
 
 signals:
+    void dataLineAvailable(const QByteArray &dataLine);
     
 private slots:
     void newClientConnected();
@@ -27,7 +28,7 @@ private slots:
 public slots:
     bool startServer();
     bool stopServer();
-    void sendToAll(QString data);
+    void sendToAll(QByteArray data);
     
 
 };

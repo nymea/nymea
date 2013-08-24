@@ -19,6 +19,11 @@ RadioReciver::RadioReciver(QObject *parent) :
 
 void RadioReciver::handleInterrupt()
 {
+
+}
+
+void RadioReciver::handleRC433Interrupt()
+{
     if(!m_enable){
         return;
     }
@@ -56,11 +61,6 @@ void RadioReciver::handleInterrupt()
     }
     timings[changeCount++] = duration;
     lastTime = time;
-}
-
-void RadioReciver::handleRC433Interrupt()
-{
-
 }
 
 void RadioReciver::handleRC868Interrupt()
@@ -276,7 +276,7 @@ void RadioReciver::setFrequency(RadioReciver::Frequency frequency)
         }
         m_pin433 = 2;
         pinMode(m_pin433,INPUT);
-        wiringPiISR(m_pin433, INT_EDGE_BOTH, handleInterrupt);
+        wiringPiISR(m_pin433, INT_EDGE_BOTH, &handleRC433Interrupt);
         qDebug() << "GPIO setup for 433.92 MHz receiver ok.";
     }
     if(frequency == RadioReciver::RF868MHz){

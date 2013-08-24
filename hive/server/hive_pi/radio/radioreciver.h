@@ -17,11 +17,15 @@ public:
     };
 
 private:
+    void handleInterrupt();
     static void handleRC433Interrupt();
     static void handleRC868Interrupt();
 
     static void detectProtocol(int signalCount);
     static float parseTemperature(QByteArray codeBin);
+
+    int m_pin433;
+    int m_pin868;
 
 signals:
     

@@ -1,40 +1,41 @@
 import QtQuick 2.0
 import QtQuick.Controls 1.0
 import QtQuick.Layouts 1.0
-import QtQuick.Window 2.0
 
 
-Rectangle{
+ApplicationWindow{
     id: mainItem
+
+    title: "Hive Client"
 
     width: 600
     height: 360
 
-    ColumnLayout {
-        id: mainLayout
-        anchors.fill: parent
+//    ColumnLayout {
+//        id: mainLayout
+//        anchors.fill: parent
 
-        GroupBox{
-            id: connectionBox
-            title: "Connection"
-            anchors.horizontalCenter: parent.horizontalCenter
+//        GroupBox{
+//            id: connectionBox
+//            title: "Connection"
+//            anchors.horizontalCenter: parent.horizontalCenter
 
-            RowLayout{
-                Button{
-                    id: connectionButton
-                    text: "Connect"
-                }
-                TextInput{
-                    id: ipText
-                    text: "10.10.10.40"
-                }
-                TextInput{
-                    id: portText
-                    text: "1234"
-                }
-            }
-        }
-    }
+//            RowLayout{
+//                Button{
+//                    id: connectionButton
+//                    text: "Connect"
+//                }
+//                TextInput{
+//                    id: ipText
+//                    text: "10.10.10.40"
+//                }
+//                TextInput{
+//                    id: portText
+//                    text: "1234"
+//                }
+//            }
+//        }
+//    }
 
 
 
@@ -46,8 +47,6 @@ Rectangle{
         anchors.horizontalCenter: parent.horizontalCenter
 
     }
-
-
 }
 
 

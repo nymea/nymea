@@ -146,8 +146,9 @@ void RadioSender::setFrequency(RadioSender::Frequency frequency)
         if(wiringPiSetup() == -1){
             qDebug() << "ERROR: GPIO setup for 433.92 MHz sender failed.";
         }
+        qDebug() << "GPIO setup for sender ok.";
         pinMode(m_pin,OUTPUT);
-        qDebug() << "GPIO setup for 433.92 MHz sender ok.";
+        qDebug() << "sender for GPIO pin" << m_pin << "enabled.";
     }
     if(m_frequenze == RadioSender::RF868MHz){
         qDebug() << "ERROR: 868 MHz Module not connected yet";

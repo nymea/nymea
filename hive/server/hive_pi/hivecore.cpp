@@ -21,6 +21,7 @@ HiveCore::HiveCore(QObject *parent) :
     // create 433.92 MHz receiver
     m_reciver = new RadioReciver(this);
     m_reciver->setFrequency(RadioReciver::RF433MHz);
+    m_reciver->setPin(2);
     m_reciver->enableReceiver();
 
 

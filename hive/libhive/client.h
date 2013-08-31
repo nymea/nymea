@@ -8,7 +8,7 @@
 class Client : public QObject
 {
     Q_OBJECT
-    //Q_PROPERTY(QString ipAddress READ ipAddress WRITE setIpAddress NOTIFY ipAddressChanged)
+
 
 public:
     explicit Client(QObject *parent = 0);
@@ -19,6 +19,9 @@ private:
 
 
 signals:
+    void connected();
+    void jsonDataAvailable(const QByteArray &data);
+
 
 private slots:
     void connectionError(QAbstractSocket::SocketError error);
@@ -28,7 +31,7 @@ private slots:
 public slots:
     void connectToHost(QString ipAddress, QString port);
     void disconnectFromHost();
-    void sendData(QString target, QString command);
+    void sendData(QByteArray data);
 };
 
 #endif // CLIENT_H

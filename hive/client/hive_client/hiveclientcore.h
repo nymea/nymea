@@ -2,8 +2,11 @@
 #define HIVECLIENTCORE_H
 
 #include <QObject>
-#include "qtquick2applicationviewer.h"
+#include <QQmlApplicationEngine>
+#include <QQuickWindow>
+
 #include "client.h"
+#include "settings.h"
 
 class HiveClientCore : public QObject
 {
@@ -13,9 +16,16 @@ public:
     
 private:
     Client *m_client;
+    Settings *m_settings;
 
+    QQmlApplicationEngine *m_engine;
+    QObject *topLevel;
 
-    QtQuick2ApplicationViewer *m_viewer;
+    int m_id;
+
+private slots:
+    void onConnected();
+    void sendSomething(QString deviceName, QString method);
 
 signals:
     

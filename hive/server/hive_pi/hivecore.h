@@ -4,6 +4,7 @@
 #include <QObject>
 #include "server.h"
 #include "devicemanager.h"
+#include <jsonhandler.h>
 #include "radio/radioreciver.h"
 #include "radio/radiosender.h"
 
@@ -15,9 +16,11 @@ public:
     
 private:
     Server *m_server;
-    RadioReciver *m_reciver;
-    RadioSender *m_sender;
-    DeviceManager *m_deviceManager;
+    //RadioReciver *m_reciver;
+    //RadioSender *m_sender;
+    //DeviceManager *m_deviceManager;
+    JsonHandler *m_jsonHandler;
+
 signals:
     
 public slots:

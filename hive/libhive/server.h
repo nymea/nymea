@@ -18,7 +18,7 @@ private:
 
 
 signals:
-    void dataLineAvailable(const QByteArray &dataLine);
+    void jsonDataAvailable(const QByteArray &data);
     
 private slots:
     void newClientConnected();

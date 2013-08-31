@@ -182,8 +182,20 @@ void RadioReciver::detectProtocol(QList<int> rawData)
     qDebug() <<"VALID SIGNAL (48 bit)" << " -->  pulse width =" << rawData.first()/31;
     qDebug() << rawData;
 
+//    int pulseWidth = rawData.first()/31;
+
+//    QList<int> rawDataKGV;
+//    foreach (int timing, rawData){
+//        int kgv = ((float)timing/pulseWidth)+0.5;
+//        rawDataKGV.append(kgv);
+//    }
+//    qDebug() << "-------= " << rawDataKGV;
+
 }
 
+
+//void RadioReciver::detectProtocol(int signalCount)
+//{
 //    if(signalCount < 49){
 //        //qDebug() << "ERROR: got a signal with just" << signalCount << "signals";
 //        return;

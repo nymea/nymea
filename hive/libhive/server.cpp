@@ -1,5 +1,6 @@
 #include "server.h"
 #include <QDebug>
+#include <QJsonDocument>
 
 Server::Server(QObject *parent) :
     QObject(parent)
@@ -26,7 +27,7 @@ void Server::newClientConnected()
     // append the new client to the client list
     m_clientList.append(newConnection);
 
-    connect(newConnection, SIGNAL(readyRead()), SLOT(readPackage()));
+    connect(newConnection, SIGNAL(readyRead()),this,SLOT(readPackage()));
     connect(newConnection,SIGNAL(disconnected()),this,SLOT(clientDisconnected()));
 
 }
@@ -35,10 +36,17 @@ void Server::newClientConnected()
 void Server::readPackage()
 {
     QTcpSocket *client = qobject_cast<QTcpSocket*>(sender());
+    //qDebug() << "-----------> data comming from" << client->peerAddress().toString();
+    QByteArray message;
     while(client->canReadLine()){
-        QByteArray data = client->readLine();
-        qDebug() << "data to parse:" << data.remove(data.length() - 1, 1);
-        emit dataLineAvailable(data);
+        QByteArray dataLine = client->readLine();
+        //qDebug() << "line in:" << dataLine;
+        message.append(dataLine);
+        if(dataLine == "}\n"){
+            //qDebug() << message;
+            emit jsonDataAvailable(message);
+            message.clear();
+        }
     }
 
 }

@@ -1,29 +1,28 @@
 #include "hiveclientcore.h"
 #include <QtQml>
 #include <QQmlEngine>
-#include <QQmlApplicationEngine>
+#include <QQuickWindow>
 
 HiveClientCore::HiveClientCore(QObject *parent) :
     QObject(parent)
 {
 
     m_id = 0;
-
-    m_settings = new Settings(this);
     m_client = new Client(this);
 
+    // QML Typs
+    qmlRegisterType<Settings>("hive",1,0,"Settings");
 
     // QML application window
     m_engine = new QQmlApplicationEngine(this);
     m_engine->load(QUrl("qml/hive_client/main.qml"));
+
     m_engine->rootContext()->setContextProperty("client", m_client);
-    m_engine->rootContext()->setContextProperty("settings", m_settings);
 
     topLevel = m_engine->rootObjects().value(0);
     QQuickWindow *window = qobject_cast<QQuickWindow *>(topLevel);
     window->show();
 
-    connect(m_client,SIGNAL(connected()),this,SLOT(onConnected()));
 
 }
 

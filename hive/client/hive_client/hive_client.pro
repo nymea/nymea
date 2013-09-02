@@ -3,7 +3,7 @@ folder_01.source = qml/hive_client
 folder_01.target = qml
 DEPLOYMENTFOLDERS = folder_01
 
-QT += core qml quick
+QT += core qml quick declarative
 
 
 # Additional import path used to resolve QML modules in Creator's code model

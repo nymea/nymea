@@ -2,6 +2,8 @@ import QtQuick 2.0
 import QtQuick.Controls 1.0
 import QtQuick.Layouts 1.0
 
+import hive 1.0
+
 ApplicationWindow{
     id: mainWindow
     menuBar: MenuBar{
@@ -12,6 +14,11 @@ ApplicationWindow{
                 text: "Close"
                 shortcut: "Ctrl+Q"
                 onTriggered: mainWindow.close()
+            }
+            MenuItem {
+                text: "Disconnect"
+                shortcut: "Ctrl+D"
+                onTriggered: client.disconnectFromHost()
             }
         }
     }
@@ -25,79 +32,41 @@ ApplicationWindow{
     width: 600
     height: 500
 
+    StackView {
+        id: stackView
+        anchors.fill: parent
+        initialItem: connectionPage
+    }
 
-    GroupBox {
-        id: connectionGroupBox
-        anchors.right: parent.right
-        anchors.left: parent.left
-        anchors.margins: 20
-        title: "Connection"
-
-        RowLayout{
-            anchors.fill: parent
-            Button{
-                id: connectButton
-                text: "Connect"
-                onClicked: {
-                    settings.setIPaddress(ipTextInput.text)
-                    settings.setPort(portTextInput.text)
-                    client.connectToHost(ipTextInput.text,portTextInput.text)
-                }
-            }
-            Text {
-                id: ipLable
-                text: "IP:"
-                horizontalAlignment: Text.AlignHCenter
-            }
-            TextField {
-                id: ipTextInput
-                text: "10.10.10.40"
-                horizontalAlignment: TextInput.AlignHCenter
-                font.pointSize: 9
-            }
-            Text {
-                id: portLable
-                text: "Port:"
-                wrapMode: Text.NoWrap
-                verticalAlignment: Text.AlignTop
-                horizontalAlignment: Text.AlignHCenter
-            }
-            TextField {
-                id: portTextInput
-                text: "1234"
-                horizontalAlignment: TextInput.AlignHCenter
-                font.pointSize: 9
+    Connections{
+        target: client
+        onConnectionChanged:{
+            print("connection changed",client.isConnected)
+            if(client.isConnected){
+                stackView.push(mainPage)
+            }else{
+                stackView.clear()
+                stackView.push(connectionPage)
             }
         }
     }
 
-    TabView{
-        id: tabView
-        anchors.right: parent.right
-        anchors.rightMargin: 20
-        anchors.left: parent.left
-        anchors.leftMargin: 20
-        anchors.top: connectionGroupBox.bottom
-        anchors.bottom: statusBar.top
-
-        Tab{
-            id: actorTab
-            title: "Actor"
-
-        }
-        Tab{
-            id: sensorTab
-            title: "Sensor"
-        }
-        Tab{
-            id: ruleTab
-            title: "Rules"
-        }
-        Tab{
-            id: settingsTab
-            title: "Settings"
-        }
+    Settings{
+        id: settings
     }
+
+    ConnectionPage{
+        id: connectionPage
+    }
+
+    MainPage{
+        id: mainPage
+    }
+
+    AddDevicePage{
+        id: addDevicePage
+    }
+
 }
 
 

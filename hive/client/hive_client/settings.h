@@ -7,25 +7,26 @@
 class Settings : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(QString ipaddress READ ipaddress WRITE setIPaddress NOTIFY ipaddressChanged)
+    Q_PROPERTY(int port READ port WRITE setPort NOTIFY portChanged)
 
 public:
     explicit Settings(QObject *parent = 0);
 
+    QString ipaddress() const;
+    void setIPaddress(QString ipaddress);
 
+    int port() const;
+    void setPort(int port);
 
 private:
-    QSettings* m_settings;
 
 signals:
     void ipaddressChanged();
     void portChanged();
 
 public slots:
-    QString ipaddress();
-    QString port();
 
-    void setIPaddress(QString ipaddress);
-    void setPort(QString port);
 
 };
 

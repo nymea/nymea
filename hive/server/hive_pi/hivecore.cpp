@@ -8,8 +8,7 @@ HiveCore::HiveCore(QObject *parent) :
     m_server = new Server(this);
     m_server->startServer();
 
-    m_deviceManager = new DeviceManager(this);
-    m_deviceManager->getDevices();
+    //m_deviceManager = new DeviceManager(this);
 
     m_jsonHandler = new JsonHandler(this);
 

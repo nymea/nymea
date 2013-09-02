@@ -18,7 +18,7 @@ private:
     Server *m_server;
     //RadioReciver *m_reciver;
     //RadioSender *m_sender;
-    //DeviceManager *m_deviceManager;
+    DeviceManager *m_deviceManager;
     JsonHandler *m_jsonHandler;
 
 signals:

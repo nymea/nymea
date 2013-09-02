@@ -3,7 +3,6 @@
 
 #include <QObject>
 #include <QQmlApplicationEngine>
-#include <QQuickWindow>
 
 #include "client.h"
 #include "settings.h"
@@ -16,7 +15,7 @@ public:
     
 private:
     Client *m_client;
-    Settings *m_settings;
+    //Settings *m_settings;
 
     QQmlApplicationEngine *m_engine;
     QObject *topLevel;

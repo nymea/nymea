@@ -4,28 +4,31 @@
 Settings::Settings(QObject *parent) :
     QObject(parent)
 {
-    m_settings = new QSettings(QString(),"hiveClient",this);
 }
 
-QString Settings::ipaddress()
+QString Settings::ipaddress() const
 {
-    return m_settings->value("server","10.10.10.40").toString();
+    QSettings settings("hive");
+    return settings.value("server","10.10.10.40").toString();
 }
 
 void Settings::setIPaddress(QString ipaddress)
 {
-    m_settings->setValue("server",ipaddress);
+    QSettings settings("hive");
+    settings.setValue("server",ipaddress);
     emit ipaddressChanged();
 }
 
-QString Settings::port()
+int Settings::port() const
 {
-    return m_settings->value("port","1234").toString();
+    QSettings settings("hive");
+    return settings.value("port","1234").toInt();
 }
 
-void Settings::setPort(QString port)
+void Settings::setPort(int port)
 {
-    m_settings->setValue("port",port);
+    QSettings settings("hive");
+    settings.setValue("port",port);
     emit ipaddressChanged();
 }
 

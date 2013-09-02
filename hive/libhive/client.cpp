@@ -6,10 +6,15 @@ Client::Client(QObject *parent) :
     QObject(parent)
 {
     m_tcpSocket = new QTcpSocket(this);
-
+    m_connectionStatus = false;
     connect(m_tcpSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(connectionError(QAbstractSocket::SocketError)));
-    connect(m_tcpSocket, SIGNAL(connected()),this, SLOT(connectedToHost()));
+    connect(m_tcpSocket, SIGNAL(connected()),this, SLOT(connected()));
+    connect(m_tcpSocket, SIGNAL(disconnected()),this, SLOT(disconneted()));
+}
 
+bool Client::isConnected()
+{
+    return m_connectionStatus;
 }
 
 void Client::connectionError(QAbstractSocket::SocketError error)
@@ -30,10 +35,18 @@ void Client::readData()
     }
 }
 
-void Client::connectedToHost()
+void Client::connected()
 {
     qDebug() << "connected to hive server";
-    emit connected();
+    m_connectionStatus = true;
+    emit connectionChanged();
+}
+
+void Client::disconneted()
+{
+    qDebug() << "disconnect from hive server";
+    m_connectionStatus = false;
+    emit connectionChanged();
 }
 
 void Client::connectToHost(QString ipAddress, QString port)

@@ -20,8 +20,6 @@ public:
 
     };
 
-
-
 signals:
     
 public slots:

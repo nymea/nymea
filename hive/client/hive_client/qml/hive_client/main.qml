@@ -29,8 +29,9 @@ ApplicationWindow{
         anchors.bottom: parent.bottom
     }
     title: "Hive Client"
-    width: 600
-    height: 500
+    minimumWidth: 800
+    minimumHeight: 600
+
 
     StackView {
         id: stackView
@@ -66,6 +67,10 @@ ApplicationWindow{
     AddDevicePage{
         id: addDevicePage
     }
+    TemperaturePage{
+        id: temperaturPage
+    }
+
 
 }
 

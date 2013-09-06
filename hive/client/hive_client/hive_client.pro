@@ -16,11 +16,13 @@ QML_IMPORT_PATH =
 # The .cpp file which was generated for your project. Feel free to hack it.
 SOURCES += main.cpp \
     hiveclientcore.cpp \
-    settings.cpp
+    settings.cpp \
+    sensormodel.cpp
 
 HEADERS += \
     hiveclientcore.h \
-    settings.h
+    settings.h \
+    sensormodel.h
 
 
 # Installation path

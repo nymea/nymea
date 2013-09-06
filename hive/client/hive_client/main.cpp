@@ -1,5 +1,6 @@
 #include <QtGui/QGuiApplication>
 #include "hiveclientcore.h"
+#include "usb.h"
 
 int main(int argc, char *argv[])
 {

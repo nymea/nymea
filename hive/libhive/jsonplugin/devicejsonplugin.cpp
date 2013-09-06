@@ -51,7 +51,7 @@ void DeviceJsonPlugin::add(QVariantMap parameters)
 
 void DeviceJsonPlugin::remove()
 {
-
+    
 }
 
 void DeviceJsonPlugin::editValue(QString value, QVariant key)

@@ -12,7 +12,9 @@ class JsonHandler : public QObject
     Q_OBJECT
 public:
     explicit JsonHandler(QObject *parent = 0);
-    
+    QByteArray addRemote(QString deviceType, QString method, QString name, QString protocol, QString Linecode, QString m);
+
+
 signals:
     void notifyAll(const QByteArray &data);
 
@@ -22,7 +24,6 @@ public slots:
 
 private:
     DeviceJsonPlugin *m_device;
-
 
     QByteArray formatResponse(const QVariantMap &command, const QVariantMap &responseParams);
     QByteArray formatErrorResponse(const QVariantMap &command, const QString &error);

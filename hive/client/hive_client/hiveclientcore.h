@@ -20,11 +20,7 @@ private:
     QQmlApplicationEngine *m_engine;
     QObject *topLevel;
 
-    int m_id;
-
 private slots:
-    void onConnected();
-    void sendSomething(QString deviceName, QString method);
 
 signals:
     

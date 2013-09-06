@@ -29,8 +29,7 @@ void Client::readData()
         QByteArray dataLine = m_tcpSocket->readLine();
         message.append(dataLine);
         if(dataLine == "}\n"){
-            emit jsonDataAvailable(message);
-            message.clear();
+            emit dataAvailable(message);
         }
     }
 }
@@ -47,6 +46,61 @@ void Client::disconneted()
     qDebug() << "disconnect from hive server";
     m_connectionStatus = false;
     emit connectionChanged();
+}
+
+void Client::processData(const QByteArray &data)
+{
+    QJsonParseError error;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
+
+    if(error.error != QJsonParseError::NoError) {
+        qDebug() << "failed to parse data" << data << ":" << error.errorString();
+    }
+    qDebug() << "-------------------------\n" << jsonDoc.toJson();
+
+    QVariantMap command = jsonDoc.toVariant().toMap();
+    QVariantMap params = jsonDoc.toVariant().toMap().value("params").toMap();
+
+    if(command.contains("signal")){
+        handleSignal(params);
+    }else{
+        handleResponse(params);
+    }
+
+}
+
+void Client::handleResponse(const QVariantMap &rsp)
+{
+    qDebug() << "handling response" << rsp;
+    if(!rsp.contains("id")) {
+        qDebug() << "packet does not contain an id. discarding...";
+        return;
+    }
+    int id = rsp.value("id").toInt();
+    if(m_requestMap.contains(id)) {
+        switch(m_requestMap.value(id)){
+        case RequestAddDevice:
+            qDebug() << "add device response received";
+            break;
+        case RequestEditDevice:
+            qDebug() << "edit device response received";
+            break;
+        case RequestRemoveDevice:
+            qDebug() << "add device response received";
+            break;
+
+        }
+        m_requestMap.remove(id);
+    }
+
+
+
+
+}
+
+void Client::handleSignal(const QVariantMap &signal)
+{
+
 }
 
 void Client::connectToHost(QString ipAddress, QString port)

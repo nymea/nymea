@@ -5,26 +5,33 @@ import QtQuick.Layouts 1.0
 Component {
 
     Rectangle{
-        anchors.fill: parent
-
+        color: "black"
         ColumnLayout{
             id: addDeviceColumn
-
-            anchors.horizontalCenter: parent.horizontalCenter
-
+            anchors.left: parent.left
+            anchors.leftMargin: 30
+            anchors.right: parent.right
+            anchors.rightMargin: 30
             GroupBox{
                 id: nameGroupBox
+                anchors.left: parent.left
+                anchors.right: parent.right
                 title: "Name"
 
                 Row{
+                    id: row1
                     spacing: 5
-                    Text{
+
+                    Label{
+                        id: nameLabel
                         anchors.verticalCenter: parent.verticalCenter
                         text: "Name:"
+                        color: "white"
                     }
 
                     TextField{
-                        id: nameText
+                        id: nameTextField
+                        implicitWidth: 300
                         anchors.verticalCenter: parent.verticalCenter
                         placeholderText: "Device Name"
                     }
@@ -33,15 +40,23 @@ Component {
             }
             GroupBox{
                 id: deviceTypeGroupBox
+                anchors.left: parent.left
+                anchors.leftMargin: 0
+                anchors.right: parent.right
+                anchors.rightMargin: 0
                 title: "Device Type"
 
                 ComboBox {
                     id: deviceComboBox
-                    model: ["actor","sensor"]
+                    model: ["device","actor","sensor"]
                 }
             }
             GroupBox{
                 id: communicationTypeGroupBox
+                anchors.left: parent.left
+                anchors.leftMargin: 0
+                anchors.right: parent.right
+                anchors.rightMargin: 0
                 title: "Communication Type"
 
                 ComboBox {
@@ -51,6 +66,10 @@ Component {
             }
             GroupBox{
                 id: linecodeGroupBox
+                anchors.left: parent.left
+                anchors.leftMargin: 0
+                anchors.right: parent.right
+                anchors.rightMargin: 0
                 title: "Linecode"
                 visible: communicationTypeComboBox.currentText == "RC868" || communicationTypeComboBox.currentText == "RC433" ? true : false
 
@@ -61,29 +80,35 @@ Component {
             }
             GroupBox{
                 id: switchGroupBox
+                anchors.left: parent.left
+                anchors.leftMargin: 0
+                anchors.right: parent.right
+                anchors.rightMargin: 0
                 title: "Switchsettings"
                 visible: (linecodeComboBox.currentText == "Switch") && (communicationTypeComboBox.currentText == "RC868" || communicationTypeComboBox.currentText == "RC433") ? true : false
 
                 RowLayout{
                     GridLayout{
-                        columns: 6
+                        columns: 5
                         Label{
                             text: "1"
+                            color: "white"
                         }
                         Label{
                             text: "2"
+                            color: "white"
                         }
                         Label{
                             text: "3"
+                            color: "white"
                         }
                         Label{
                             text: "4"
+                            color: "white"
                         }
                         Label{
                             text: "5"
-                        }
-                        Label{
-                            text: "6"
+                            color: "white"
                         }
                         CheckBox{
                             id: channel1
@@ -100,15 +125,38 @@ Component {
                         CheckBox{
                             id: channel5
                         }
-                        CheckBox{
-                            id: channel6
-                        }
                     }
                     ComboBox {
                         id: switchComboBox
                         model: ["A","B","C","D","E"]
                     }
                 }
+            }
+        }
+        Button{
+            id: cancelButton
+            anchors.left: parent.left
+            anchors.leftMargin: 30
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 10
+
+            text: "Cancel"
+            onClicked: stackView.pop(this)
+
+        }
+        Button{
+            id: saveButton
+            anchors.right: parent.right
+            anchors.rightMargin: 30
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 10
+
+            text: "Save"
+            onClicked: {
+                var deviceType = deviceComboBox.currentText
+                var method = "add"
+                // TODO: variant map...to send hive the correct add command with all parameters
+                stackView.pop(this)
             }
         }
     }

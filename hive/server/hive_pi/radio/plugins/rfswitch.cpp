@@ -1,0 +1,118 @@
+#include <QDebug>
+#include <QStringList>
+
+#include "rfswitch.h"
+
+RFSwitch::RFSwitch(QObject *parent)
+    :RadioPlugin(parent)
+{
+    m_delay = 0;
+    m_binCode = 0;
+}
+
+QByteArray RFSwitch::getBinCode()
+{
+    if(m_binCode.isEmpty()){
+        return NULL;
+    }else{
+        return m_binCode;
+    }
+}
+
+bool RFSwitch::isValid(QList<int> rawData)
+{
+
+    m_delay = rawData.first()/31;
+    QByteArray binCode;
+    if(m_delay > 310 && m_delay < 340){
+        // go trough all 48 timings
+        for(int i = 1; i <= 48; i+=2 ){
+            int div;
+            int divNext;
+
+            // if short
+            if(rawData.at(i) < 500){
+                div = 1;
+            }else{
+                div = 3;
+            }
+            // if long
+            if(rawData.at(i+1) < 500){
+                divNext = 1;
+            }else{
+                divNext = 3;
+            }
+
+            //              _
+            // if we have  | |___ = 0 -> in 4 delays => 1000
+            //                 _
+            // if we have  ___| | = 1 -> in 4 delays => 0001
+
+            if(div == 1 && divNext == 3){
+                binCode.append("0");
+            }else if(div == 3 && divNext == 1){
+                binCode.append("1");
+            }else{
+                return false;
+            }
+        }
+
+        m_binCode = binCode;
+
+        // get the channel of the remote signal (5 channels, 1=on, 0 = off)
+        QByteArray channelSettings;
+        for(int i = 1; i < 10; i+=2){
+            if(m_binCode.at(i-1) == '0' && m_binCode.at(i) == '1'){
+                channelSettings.append("0");
+            }else{
+                channelSettings.append("1");
+            }
+        }
+        // get the button letter
+        char button;
+        if(m_binCode.at(10) == '0' && m_binCode.at(11) == '0'){
+            button = 'A';
+        }
+        if(m_binCode.at(12) == '0' && m_binCode.at(13) == '0'){
+            button = 'B';
+        }
+        if(m_binCode.at(14) == '0' && m_binCode.at(15) == '0'){
+            button = 'C';
+        }
+        if(m_binCode.at(16) == '0' && m_binCode.at(17) == '0'){
+            button = 'D';
+        }
+        if(m_binCode.at(18) == '0' && m_binCode.at(19) == '0'){
+            button = 'E';
+        }
+
+        QStringList byteList;
+        for(int i = 4; i <= 24; i+=4){
+            byteList.append(binCode.left(4));
+            binCode = binCode.right(binCode.length() -4);
+        }
+
+        bool buttonStatus;
+        if(byteList.last().toInt(0,2) == 1){
+            buttonStatus = true;
+        }else
+        if(byteList.last().toInt(0,2) == 4){
+            buttonStatus = false;
+        }else{
+            return false;
+        }
+
+        qDebug() << "-----------------------------------------------------------";
+        qDebug() << "|                     REMOTE signal                       |";
+        qDebug() << "-----------------------------------------------------------";
+        qDebug() << "delay      :" << m_delay;
+        qDebug() << "bin CODE   :" << m_binCode;
+        qDebug() << byteList;
+        qDebug() << "Channels:" << channelSettings << "Button:" << button << "=" << buttonStatus;
+        //emit switchSignalReceived(channelSettings,button,buttonStatus);
+        return true;
+    }else{
+        return false;
+    }
+}
+

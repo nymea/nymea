@@ -5,39 +5,27 @@ import QtQuick.Layouts 1.0
 Component {
 
     Rectangle{
-        anchors.fill: parent
-
+        color: "black"
         Column{
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: parent.top
             anchors.topMargin: 30
+            spacing: 20
 
-            Rectangle{
-                id: addDeviceButton
-                width: 150
-                height: 70
-                color: "#c8c8c8"
-                border.color: "black"
-                radius: 10
-                Text{
-                    anchors.centerIn: parent
-                    text: "Add Device"
-                }
-                MouseArea{
-                    id: addDeviceButtonMousArea
-                    anchors.fill: parent
-                    onPressed: addDeviceButton.color = "steelblue"
-                    onReleased: addDeviceButton.color = "#c8c8c8"
-                    onClicked: stackView.push(addDevicePage)
-                }
 
+            MainMenuButton{
+                text: "Add device"
+                onClicked: stackView.push(addDevicePage)
             }
+            MainMenuButton{
+                text: "Temperatur"
+                onClicked: stackView.push(temperaturPage)
+            }
+
 
         }
 
 
     }
 
-
 }
-

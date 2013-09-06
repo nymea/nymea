@@ -4,7 +4,8 @@ import QtQuick.Layouts 1.0
 
 Component {
     Rectangle{
-        anchors.fill: parent
+        focus: connectButton.forceActiveFocus()
+        color: "black"
 
         GroupBox {
             id: connectionGroupBox
@@ -26,6 +27,7 @@ Component {
                 Text {
                     id: ipLable
                     text: "IP:"
+                    color: "white"
                     horizontalAlignment: Text.AlignHCenter
                 }
                 TextField {
@@ -37,6 +39,7 @@ Component {
                 Text {
                     id: portLable
                     text: "Port:"
+                    color: "white"
                     wrapMode: Text.NoWrap
                     verticalAlignment: Text.AlignTop
                     horizontalAlignment: Text.AlignHCenter
@@ -49,5 +52,6 @@ Component {
                 }
             }
         }
+
     }
 }

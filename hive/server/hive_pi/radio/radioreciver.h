@@ -4,6 +4,8 @@
 #define RC_MAX_CHANGES 49
 
 #include <QObject>
+#include "radio/plugins/rfthermometer.h"
+#include "radio/plugins/rfswitch.h"
 
 class ISRHandler;
 
@@ -28,7 +30,6 @@ public:
 private:
     void handleInterrupt();
     void detectProtocol(QList<int> rawData);
-    float parseTemperature(QByteArray codeBin);
 
     bool m_enable;
     int m_pin;
@@ -39,8 +40,13 @@ private:
     unsigned long m_lastTime;
     unsigned int m_repeatCount;
 
+    RFThermometer *m_thermometer;
+    RFSwitch *m_switch;
+
 signals:
-    
+    void temperatureSignalReceived(const QByteArray &id, const float &temperature, const bool &batteryStatus);
+    void switchSignalReceived(const QByteArray &channel, const char &button, const bool &buttonStatus);
+
 public slots:
     void enableReceiver();
     void disableReceiver();

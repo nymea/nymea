@@ -18,7 +18,7 @@ public:
         UNIPOLAR = 0x2,
         MANCHESTER = 0x3,
         DMANCHESTER = 0x4,
-        REMOTE = 0x5,
+        SWITCH = 0x5,
         THERMOMETER = 0x6,
         WEATHERSTATION = 0x7
     };

@@ -1,15 +1,16 @@
-#ifndef RFTHERMOMETER_H
-#define RFTHERMOMETER_H
+#ifndef RADIOTHERMOMETER_H
+#define RADIOTHERMOMETER_H
 
 #include <QObject>
-#include <radio/plugins/radioplugin.h>
+#include <radioplugin/radioplugin.h>
 
-#define RFThermometerDelay 250
+#define RadioThermometerDelay 250
 
-class RFThermometer : public RadioPlugin
+class RadioThermometer : public RadioPlugin
 {
+    Q_OBJECT
 public:
-    explicit RFThermometer(QObject *parent = 0);
+    explicit RadioThermometer(QObject *parent = 0);
 
     QByteArray getBinCode();
     bool isValid(QList<int> rawData);
@@ -25,7 +26,6 @@ signals:
 
 public slots:
 
-
 };
 
-#endif // RFTHERMOMETER_H
+#endif // RADIOTHERMOMETER_H

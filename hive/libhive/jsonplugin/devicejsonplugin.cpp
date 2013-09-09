@@ -18,50 +18,44 @@ QString DeviceJsonPlugin::deviceName()
 
 QByteArray DeviceJsonPlugin::process(const QVariantMap &command, const QVariantMap &parameters)
 {
+
+    m_command = command;
+    m_parameters = parameters;
+
     // check if we have a id
-    if(!command.contains("id")){
+    if(!m_command.contains("id")){
         qDebug() << "request contains no id..";
     }
 
     // check the methods
-    if(command.value("method").toString() == "add"){
+    if(m_command.value("method").toString() == "add"){
         qDebug() << "got a ADD DEVICE command";
-        add(parameters);
+        add();
     }
 
     return 0;
 }
 
-void DeviceJsonPlugin::add(QVariantMap parameters)
+bool DeviceJsonPlugin::add()
 {
-    QUuid uuid = QUuid::createUuid();
-    //qDebug() << uuid;
-    if(parameters.value("deviceType").toString() == "actor"){
-        QSettings settings("hive");
-        settings.beginGroup(uuid.toString());
-        QMapIterator<QString, QVariant> i(parameters);
-        while(i.hasNext()){
-            i.next();
-            qDebug() << i.key() << "=" << i.value().toString();
-            settings.setValue(i.key(),i.value());
-        }
-        settings.endGroup();
-    }
+//    QUuid uuid = QUuid::createUuid();
+//    //qDebug() << uuid;
+//    if(parameters.value("deviceType").toString() == "actor"){
+//        QSettings settings("hive");
+//        settings.beginGroup(uuid.toString());
+//        QMapIterator<QString, QVariant> i(parameters);
+//        while(i.hasNext()){
+//            i.next();
+//            qDebug() << i.key() << "=" << i.value().toString();
+//            settings.setValue(i.key(),i.value());
+//        }
+//        settings.endGroup();
+//    }
 }
 
-void DeviceJsonPlugin::remove()
+bool DeviceJsonPlugin::remove()
 {
     
-}
-
-void DeviceJsonPlugin::editValue(QString value, QVariant key)
-{
-
-}
-
-void DeviceJsonPlugin::getAll()
-{
-
 }
 
 QByteArray DeviceJsonPlugin::formatResponse()

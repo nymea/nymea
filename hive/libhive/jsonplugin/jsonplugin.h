@@ -12,8 +12,12 @@ public:
     virtual QString deviceName() = 0;
     virtual QByteArray process(const QVariantMap & command, const QVariantMap & parameters) = 0;
 
+private:
+    QByteArray formatResponse();
+    QByteArray formatErrorResponse();
 
 signals:
+
     
 public slots:
     

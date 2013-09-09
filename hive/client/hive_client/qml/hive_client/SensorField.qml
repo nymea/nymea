@@ -25,5 +25,4 @@ Rectangle {
             anchors.fill: parent
         }
     }
-
 }

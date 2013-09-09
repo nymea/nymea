@@ -29,16 +29,10 @@ DEPENDPATH += $$PWD/../../libhive
 SOURCES += main.cpp \
     hivecore.cpp \
     radio/radioreciver.cpp \
-    radio/radiosender.cpp \
-    radio/plugins/radioplugin.cpp \
-    radio/plugins/rfthermometer.cpp \
-    radio/plugins/rfswitch.cpp
+    radio/radiosender.cpp
 
 HEADERS += \
     hivecore.h \
     radio/radioreciver.h \
-    radio/radiosender.h \
-    radio/plugins/radioplugin.h \
-    radio/plugins/rfthermometer.h \
-    radio/plugins/rfswitch.h
+    radio/radiosender.h
 

@@ -107,13 +107,15 @@ RadioReciver::RadioReciver(QObject *parent) :
     m_lastTime = 0;
     m_repeatCount = 0;
 
-    m_thermometer = new RFThermometer(this);
-    m_switch = new RFSwitch(this);
+    m_thermometer = new RadioThermometer(this);
+    m_switch = new RadioSwitch(this);
 
     for(int i = 0; i < RC_MAX_CHANGES; i++ ){
         m_timings[i] = 0;
     }
 
+    connect(m_thermometer,SIGNAL(temperatureSignalReceived(QByteArray,float,bool)),this,SIGNAL(temperatureSignalReceived(QByteArray,float,bool)));
+    connect(m_switch,SIGNAL(switchSignalReceived(QByteArray,char,bool)),this,SIGNAL(switchSignalReceived(QByteArray,char,bool)));
 }
 
 void RadioReciver::setFrequency(RadioReciver::Frequency frequency)
@@ -186,9 +188,15 @@ void RadioReciver::detectProtocol(QList<int> rawData)
     // check plugins
     if(m_thermometer->isValid(rawData)){
         m_thermometer->getTemperature();
-    }
+    }else
     if(m_switch->isValid(rawData)){
         m_switch->getBinCode();
+    }else{
+        qDebug() << "-----------------------------------------------------------";
+        qDebug() << "|                    GENERIC signal                       |";
+        qDebug() << "-----------------------------------------------------------";
+        qDebug() << "delay      :" << rawData.first() /31;
+        qDebug() << rawData;
     }
 
 }

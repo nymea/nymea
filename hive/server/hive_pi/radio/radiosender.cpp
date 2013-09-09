@@ -28,8 +28,8 @@ void RadioSender::sendSync()
     if(m_lineCode == RadioSender::DMANCHESTER){
 
     }
-    // sync for REMOTE: 1 high 31 low
-    if(m_lineCode == RadioSender::REMOTE){
+    // sync for SWITCH: 1 high 31 low
+    if(m_lineCode == RadioSender::SWITCH){
         digitalWrite(m_pin,HIGH);
         delayMicroseconds(m_pulseLength);
         digitalWrite(m_pin,LOW);
@@ -64,8 +64,8 @@ void RadioSender::send0()
     if(m_lineCode == RadioSender::DMANCHESTER){
 
     }
-    // 0 in REMOTE encoding
-    if(m_lineCode == RadioSender::REMOTE){
+    // 0 in SWITCH encoding
+    if(m_lineCode == RadioSender::SWITCH){
         digitalWrite(m_pin,HIGH);
         delayMicroseconds(m_pulseLength);
         digitalWrite(m_pin,LOW);
@@ -99,8 +99,8 @@ void RadioSender::send1()
     if(m_lineCode == RadioSender::DMANCHESTER){
 
     }
-    // 1 in REMOTE encoding
-    if(m_lineCode == RadioSender::REMOTE){
+    // 1 in SWITCH encoding
+    if(m_lineCode == RadioSender::SWITCH){
         digitalWrite(m_pin,HIGH);
         delayMicroseconds(m_pulseLength*3);
         digitalWrite(m_pin,LOW);

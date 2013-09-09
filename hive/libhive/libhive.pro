@@ -21,7 +21,11 @@ SOURCES += libhive.cpp \
     client.cpp \
     jsonhandler.cpp \
     jsonplugin/jsonplugin.cpp \
-    jsonplugin/devicejsonplugin.cpp
+    jsonplugin/devicejsonplugin.cpp \
+    jsonplugin/radiojsonplugin.cpp \
+    radioplugin/radioplugin.cpp \
+    radioplugin/radioswitch.cpp \
+    radioplugin/radiothermometer.cpp
 
 HEADERS += libhive.h\
         libhive_global.h \
@@ -31,7 +35,11 @@ HEADERS += libhive.h\
     client.h \
     jsonhandler.h \
     jsonplugin/jsonplugin.h \
-    jsonplugin/devicejsonplugin.h
+    jsonplugin/devicejsonplugin.h \
+    jsonplugin/radiojsonplugin.h \
+    radioplugin/radioplugin.h \
+    radioplugin/radioswitch.h \
+    radioplugin/radiothermometer.h
 
 #unix:!symbian {
 #    maemo5 {

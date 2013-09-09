@@ -6,6 +6,7 @@
 class RadioPlugin : public QObject
 {
     Q_OBJECT
+
 public:
     explicit RadioPlugin(QObject *parent = 0);
     virtual ~RadioPlugin(){}
@@ -14,5 +15,4 @@ public:
     virtual QByteArray getBinCode() = 0;
 
 };
-
 #endif // RADIOPLUGIN_H

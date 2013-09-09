@@ -8,6 +8,7 @@
 
 class DeviceJsonPlugin : public JsonPlugin
 {
+    Q_OBJECT
 public:
     explicit DeviceJsonPlugin(QObject *parent = 0);
     QString deviceName();
@@ -16,10 +17,14 @@ public:
 private:
     DeviceManager *m_deviceManager;
 
-    void add(QVariantMap parameters);
-    void remove();
-    void editValue(QString value, QVariant key);
-    void getAll();
+    bool add();
+    bool remove();
+    bool edit();
+    bool execute();
+
+    QVariantMap m_command;
+    QVariantMap m_parameters;
+
 
     QByteArray formatResponse();
     QByteArray formatErrorResponse();

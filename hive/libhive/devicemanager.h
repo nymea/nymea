@@ -4,30 +4,26 @@
 #include <QObject>
 #include <QSettings>
 #include <QStringList>
+#include <QUuid>
 
 class DeviceManager : public QObject
 {
     Q_OBJECT
 public:
     explicit DeviceManager(QObject *parent = 0);
-    enum DeviceType {
-        Sensor,
-        Actor
-    };
-    enum DeviceName {
-        Light,
-        Switch
 
-    };
+    /* deviceType
+     * radio
+     * ...
+     */
+
+    bool saveDevice(QString deviceType, QUuid uuid, QVariantMap paramters);
+    bool deleteDevice(QString deviceType, QUuid uuid);
+
 
 signals:
     
 public slots:
-    void saveDeviceValue(QString deviceType, QString deviceName, QString key, QVariant value);
-    void deleteDeviceValue(QString deviceType, QString deviceName, QString key);
-    void deleteDevice(QString deviceType, QString deviceName);
-    QStringList getDevices(QString deviceType);
-    QStringList getDeviceKeys(QString deviceType, QString deviceName);
 
 };
 

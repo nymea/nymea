@@ -1,20 +1,17 @@
+#include "radiothermometer.h"
 #include <QDebug>
 #include <QFile>
-#include <QStringList>
 #include <QDateTime>
 
-#include "rfthermometer.h"
-
-RFThermometer::RFThermometer(QObject *parent) :
+RadioThermometer::RadioThermometer(QObject *parent) :
     RadioPlugin(parent)
 {
     m_lastTemperature = -1111;
     m_delay = 0;
     m_binCode = 0;
-
 }
 
-QByteArray RFThermometer::getBinCode()
+QByteArray RadioThermometer::getBinCode()
 {
     if(m_binCode.isEmpty()){
         return NULL;
@@ -23,8 +20,7 @@ QByteArray RFThermometer::getBinCode()
     }
 }
 
-
-bool RFThermometer::isValid(QList<int> rawData)
+bool RadioThermometer::isValid(QList<int> rawData)
 {
     m_delay = rawData.first()/31;
     QByteArray binCode;
@@ -48,12 +44,12 @@ bool RFThermometer::isValid(QList<int> rawData)
         m_binCode = binCode;
         return true;
     }else{
-        m_binCode = 0;
+        m_binCode.clear();
         return false;
     }
 }
 
-float RFThermometer::getTemperature()
+float RadioThermometer::getTemperature()
 {
     // {     ID    },{-+}{ temp,   },{Batt},{,temp}
     // "XXXX","XXXX","X  XXX","XXXX","XXXX","XXXX",
@@ -70,6 +66,13 @@ float RFThermometer::getTemperature()
     QByteArray batteryBin(byteList.at(4));
     QByteArray temperatureTenthBin(byteList.at(5));
 
+    QByteArray id = byteList.at(0)+byteList.at(1);
+
+    // check if we have a sync signal (id = 11111111)
+    if(id.contains("11111111")){
+        qDebug() << "temperatursensor sync signal";
+        return 0;
+    }
 
     // check sign of temperature -> if first bit of temperature byte is 1 -> temp is negativ
     int sign = 0;
@@ -104,10 +107,9 @@ float RFThermometer::getTemperature()
         file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
         QTextStream out(&file);
 
-        QByteArray id = byteList.at(0)+byteList.at(1);
-
-        out << timeStamp << "," << temperature << "," << batteryStatus << "\n";
+        out << id << "," << timeStamp << ","  << batteryStatus << "," << temperature << "," << "\n";
         file.close();
+
         qDebug() << "-----------------------------------------------------------";
         qDebug() << "|                  THERMOMETER signal                     |";
         qDebug() << "-----------------------------------------------------------";
@@ -116,7 +118,7 @@ float RFThermometer::getTemperature()
         qDebug() << byteList;
         qDebug() << timeStamp << " ID:" << id << " Temperature:" << temperature << " Battery OK: " << batteryStatus;
 
-        //emit temperatureSignalReceived(id,temperature,batteryStatus);
+        emit temperatureSignalReceived(id,temperature,batteryStatus);
         return temperature;
     }
 }

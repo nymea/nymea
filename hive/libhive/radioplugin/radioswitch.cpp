@@ -1,16 +1,16 @@
+#include "radioswitch.h"
 #include <QDebug>
 #include <QStringList>
 
-#include "rfswitch.h"
 
-RFSwitch::RFSwitch(QObject *parent)
-    :RadioPlugin(parent)
+RadioSwitch::RadioSwitch(QObject *parent) :
+    RadioPlugin(parent)
 {
     m_delay = 0;
     m_binCode = 0;
 }
 
-QByteArray RFSwitch::getBinCode()
+QByteArray RadioSwitch::getBinCode()
 {
     if(m_binCode.isEmpty()){
         return NULL;
@@ -19,13 +19,12 @@ QByteArray RFSwitch::getBinCode()
     }
 }
 
-bool RFSwitch::isValid(QList<int> rawData)
+bool RadioSwitch::isValid(QList<int> rawData)
 {
-
     m_delay = rawData.first()/31;
     QByteArray binCode;
     if(m_delay > 310 && m_delay < 340){
-        // go trough all 48 timings
+        // go trough all 48 timings (without sync signal)
         for(int i = 1; i <= 48; i+=2 ){
             int div;
             int divNext;
@@ -109,10 +108,53 @@ bool RFSwitch::isValid(QList<int> rawData)
         qDebug() << "bin CODE   :" << m_binCode;
         qDebug() << byteList;
         qDebug() << "Channels:" << channelSettings << "Button:" << button << "=" << buttonStatus;
-        //emit switchSignalReceived(channelSettings,button,buttonStatus);
+        emit switchSignalReceived(channelSettings,button,buttonStatus);
         return true;
     }else{
         return false;
     }
 }
 
+QByteArray RadioSwitch::calcBinCode(const QByteArray &channel, const RadioSwitch::RadioRemoteButton &button, const bool &buttonStatus)
+{
+    QByteArray binCode;
+
+    // channels
+    for(int i = 0; i < channel.length(); i++){
+        if(channel.at(i) == '0'){
+            binCode.append("01");
+        }else{
+            binCode.append("00");
+        }
+    }
+
+    // Buttons
+    switch (button) {
+    case RadioSwitch::A :
+        binCode.append("0001010101");
+        break;
+    case RadioSwitch::B:
+        binCode.append("0100010101");
+        break;
+    case RadioSwitch::C:
+        binCode.append("0101000101");
+        break;
+    case RadioSwitch::D:
+        binCode.append("0101010001");
+        break;
+    case RadioSwitch::E:
+        binCode.append("0101010100");
+        break;
+    default:
+        break;
+    }
+
+    // ON/OFF
+    if(buttonStatus){
+        binCode.append("0001");
+    }else{
+        binCode.append("0100");
+    }
+
+    return binCode;
+}

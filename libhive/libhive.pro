@@ -9,11 +9,15 @@ SOURCES += device.cpp \
            devicemanager.cpp \
            deviceplugin.cpp \
            radio433.cpp \
-           gpio.cpp
+           gpio.cpp \
+    trigger.cpp \
+    triggertype.cpp
 
 HEADERS += device.h \
            deviceclass.h \
            devicemanager.h \
            radio433.h \
-           gpio.h
+           gpio.h \
+    trigger.h \
+    triggertype.h
 

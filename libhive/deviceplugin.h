@@ -2,6 +2,7 @@
 #define DEVICEPLUGIN_H
 
 #include "deviceclass.h"
+#include "trigger.h"
 
 #include <QObject>
 
@@ -20,6 +21,9 @@ public:
     virtual QString pluginName() const = 0;
 
     virtual QList<DeviceClass> supportedDevices() const = 0;
+
+signals:
+    void emitTrigger(const Trigger &trigger);
 
 protected:
     DeviceManager *deviceManager() const;

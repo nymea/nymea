@@ -25,3 +25,13 @@ void DeviceClass::setName(const QString &name)
 {
     m_name = name;
 }
+
+QList<TriggerType> DeviceClass::triggers() const
+{
+    return m_triggers;
+}
+
+void DeviceClass::setTriggers(const QList<TriggerType> &triggers)
+{
+    m_triggers = triggers;
+}

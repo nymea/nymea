@@ -2,11 +2,7 @@
 #define HIVECORE_H
 
 #include <QObject>
-//#include "server.h"
-//#include "devicemanager.h"
-//#include <jsonhandler.h>
-//#include "radio/radioreciver.h"
-//#include "radio/radiosender.h"
+#include <radio433.h>
 
 class JsonRPCServer;
 class Device;
@@ -25,6 +21,7 @@ private:
     static HiveCore *s_instance;
 
     JsonRPCServer *m_jsonServer;
+    Radio433 *m_radio433;
 
 //    Server *m_server;
 //    RadioReciver *m_reciver;

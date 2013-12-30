@@ -31,20 +31,112 @@ HiveCore::HiveCore(QObject *parent) :
     // start the server
     m_jsonServer = new JsonRPCServer(this);
 
+    m_radio433 = new Radio433(this);
+
+    //==============================================
+    int pulseLenght = 350;
+    QList<int> signal;
+    //sync
+    signal.append(pulseLenght);
+    signal.append(pulseLenght*31);
+
+    //==============================================
+    // 0
+    signal.append(pulseLenght);
+    signal.append(pulseLenght*3);
+    // 1
+    signal.append(pulseLenght*3);
+    signal.append(pulseLenght);
+
+    // 0
+    signal.append(pulseLenght);
+    signal.append(pulseLenght*3);
+    // 1
+    signal.append(pulseLenght*3);
+    signal.append(pulseLenght);
+
+    // 0
+    signal.append(pulseLenght);
+    signal.append(pulseLenght*3);
+    // 1
+    signal.append(pulseLenght*3);
+    signal.append(pulseLenght);
+
+    // 0
+    signal.append(pulseLenght);
+    signal.append(pulseLenght*3);
+    // 1
+    signal.append(pulseLenght*3);
+    signal.append(pulseLenght);
+
+    // 0
+    signal.append(pulseLenght);
+    signal.append(pulseLenght*3);
+    // 1
+    signal.append(pulseLenght*3);
+    signal.append(pulseLenght);
+    //==============================================
+    // 0
+    signal.append(pulseLenght);
+    signal.append(pulseLenght*3);
+    // 1
+    signal.append(pulseLenght*3);
+    signal.append(pulseLenght);
+
+    // 0
+    signal.append(pulseLenght);
+    signal.append(pulseLenght*3);
+    // 1
+    signal.append(pulseLenght*3);
+    signal.append(pulseLenght);
+
+    // 0
+    signal.append(pulseLenght);
+    signal.append(pulseLenght*3);
+    // 1
+    signal.append(pulseLenght*3);
+    signal.append(pulseLenght);
+
+
+    // 0
+    signal.append(pulseLenght);
+    signal.append(pulseLenght*3);
+    // 0
+    signal.append(pulseLenght);
+    signal.append(pulseLenght*3);
+
+
+    // 0
+    signal.append(pulseLenght);
+    signal.append(pulseLenght*3);
+    // 1
+    signal.append(pulseLenght*3);
+    signal.append(pulseLenght);
+    //==============================================
+
+    // 0
+    signal.append(pulseLenght);
+    signal.append(pulseLenght*3);
+    // 1
+    signal.append(pulseLenght*3);
+    signal.append(pulseLenght);
+
+    // 0
+    signal.append(pulseLenght);
+    signal.append(pulseLenght*3);
+    // 0
+    signal.append(pulseLenght);
+    signal.append(pulseLenght*3);
+    //==============================================
+
+    qDebug() << "sendsignal";
+
+    m_radio433->sendData(signal);
+    m_radio433->sendData(signal);
+    m_radio433->sendData(signal);
+    m_radio433->sendData(signal);
 
 
 
-//    // create 433.92 MHz sender
-//    m_sender = new RadioSender(this);
-//    m_sender->setFrequency(RadioSender::RF433MHz);
-//    m_sender->setLineCode(RadioSender::SWITCH);
-//    m_sender->setPulseLength(320);
-////    //m_sender->sendBin("000000000000010101010001");
-
-//    // create 433.92 MHz receiver
-//    m_reciver = new RadioReciver(this);
-//    m_reciver->setFrequency(RadioReciver::RF433MHz);
-//    m_reciver->setPin(2);
-//    m_reciver->enableReceiver();
 
 }

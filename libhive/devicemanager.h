@@ -19,11 +19,12 @@ public:
 
     QList<Device*> devices() const;
 
-    Radio433 *radio() const;
+    Radio433 *radio433() const;
 
 signals:
 
-public slots:
+private slots:
+    void loadPlugins();
 
 private:
     QList<DeviceClass> m_supportedDevices;

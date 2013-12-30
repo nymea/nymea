@@ -13,7 +13,9 @@ public:
     DevicePlugin();
     virtual ~DevicePlugin();
 
-    void init(DeviceManager *deviceManager);
+    void initPlugin(DeviceManager *deviceManager);
+
+    virtual void init() {}
 
     virtual QString pluginName() const = 0;
 

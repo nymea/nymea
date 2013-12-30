@@ -1,9 +1,17 @@
 #include "rfswitch.h"
 
 #include "devicemanager.h"
+#include "radio433.h"
+
+#include <QDebug>
 
 RfSwitch::RfSwitch()
 {
+}
+
+void RfSwitch::init()
+{
+    connect(deviceManager()->radio433(), &Radio433::dataReceived, this, &RfSwitch::dataReceived);
 }
 
 QList<DeviceClass> RfSwitch::supportedDevices() const
@@ -26,4 +34,9 @@ QList<DeviceClass> RfSwitch::supportedDevices() const
 QString RfSwitch::pluginName() const
 {
     return "RF Switch";
+}
+
+void RfSwitch::dataReceived(QList<int> rawData)
+{
+    qDebug() << "data received from Radio433" << rawData;
 }

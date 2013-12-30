@@ -7,9 +7,10 @@ DevicePlugin::~DevicePlugin()
 
 }
 
-void DevicePlugin::init(DeviceManager *deviceManager)
+void DevicePlugin::initPlugin(DeviceManager *deviceManager)
 {
     m_deviceManager = deviceManager;
+    init();
 }
 
 DeviceManager *DevicePlugin::deviceManager() const

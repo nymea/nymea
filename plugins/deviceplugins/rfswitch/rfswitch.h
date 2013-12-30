@@ -13,14 +13,13 @@ class RfSwitch : public QObject, public DevicePlugin
 public:
     explicit RfSwitch();
 
+    void init() override;
     QList<DeviceClass> supportedDevices() const override;
 
     QString pluginName() const;
 
-signals:
-
-public slots:
-
+private slots:
+    void dataReceived(QList<int> rawData);
 };
 
 #endif // RFSWITCH_H

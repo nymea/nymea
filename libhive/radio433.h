@@ -21,7 +21,6 @@ public:
 private:
     Gpio *m_receiver;
     Gpio *m_transmitter;
-    QThread *m_receiverThread;
 
     unsigned int m_timings[RC_MAX_CHANGES];
     unsigned int m_duration;

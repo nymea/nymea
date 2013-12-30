@@ -7,34 +7,31 @@ Radio433::Radio433(QObject *parent) :
     QObject(parent)
 {
     // Set up receiver
-    m_receiverThread = new QThread(this);
-    m_receiver = new Gpio(0,27);
+    m_receiver = new Gpio(this,27);
     m_receiver->setDirection(INPUT);
     m_receiver->setEdgeInterrupt(EDGE_BOTH);
-    m_receiver->moveToThread(m_receiverThread);
 
     // Set up transmitter
     m_transmitter = new Gpio(this,22);
     m_transmitter->setDirection(OUTPUT);
     m_transmitter->setValue(LOW);
 
-    connect(m_receiverThread,SIGNAL(finished()),this,SLOT(deleteLater()));
     connect(m_receiver,SIGNAL(pinInterrupt()),this,SLOT(handleInterrupt()));
 
-    enableReceiver();
+    m_receiver->start();
 }
 
 Radio433::~Radio433()
 {
-    m_receiverThread->quit();
-    m_receiverThread->wait();
+    m_receiver->quit();
+    m_receiver->wait();
 }
 
 void Radio433::sendData(QList<int> rawData)
 {
 
     //first we have to disable our receiver, to prevent reading the hive signal it self
-    disableReceiver();
+    m_receiver->stop();
 
     m_transmitter->setValue(LOW);
     delayMicroseconds(500);
@@ -47,7 +44,7 @@ void Radio433::sendData(QList<int> rawData)
     }
 
     // reenable it
-    enableReceiver();
+    m_receiver->start();
 
 }
 
@@ -133,16 +130,11 @@ void Radio433::handleInterrupt()
 void Radio433::enableReceiver()
 {
     qDebug() << "starting receiver";
-    m_receiverThread->start();
-    qDebug() << "fooo";
-    QMetaObject::invokeMethod(m_receiver, SLOT(enableInterrupt()), Qt::QueuedConnection);
-//    m_receiver->enableInterrupt();
-    qDebug() << "receiver enabeld.";
+    m_receiver->start();
 }
 
 void Radio433::disableReceiver()
 {
-    m_receiverThread->quit();
-    m_receiverThread->wait();
+    m_receiver->stop();
     qDebug() << "receiver disabeld.";
 }

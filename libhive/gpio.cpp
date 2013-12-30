@@ -1,8 +1,9 @@
 #include "gpio.h"
 #include <QDebug>
 
+
 Gpio::Gpio(QObject *parent, int gpio) :
-    QObject(parent),m_gpio(gpio)
+    QThread(parent),m_gpio(gpio)
 {
     exportGpio();
 }
@@ -10,6 +11,46 @@ Gpio::Gpio(QObject *parent, int gpio) :
 Gpio::~Gpio()
 {
     unexportGpio();
+}
+
+void Gpio::run()
+{
+    struct pollfd fdset[2];
+    int gpio_fd = openGpio();
+    int nfds = 2;
+    int rc;
+    int timeout = 3000;
+    char buf[64];
+
+
+    bool enabled = true;
+
+    while(enabled){
+        memset((void*)fdset, 0, sizeof(fdset));
+        fdset[0].fd = STDIN_FILENO;
+        fdset[0].events = POLLIN;
+
+        fdset[1].fd = gpio_fd;
+        fdset[1].events = POLLPRI;
+
+        rc = poll(fdset, nfds, timeout);
+
+        if (rc < 0) {
+            qDebug() << "ERROR: poll failed";
+            return;
+        }
+        if(rc == 0){
+            //timeout
+        }
+        if (fdset[1].revents & POLLPRI) {
+            read(fdset[1].fd, buf, 64);
+            emit pinInterrupt();
+        }
+
+        m_mutex.lock();
+        enabled = m_enabled;
+        m_mutex.unlock();
+    }
 }
 
 bool Gpio::exportGpio()
@@ -174,35 +215,9 @@ bool Gpio::setEdgeInterrupt(int edge)
     return false;
 }
 
-void Gpio::enableInterrupt()
+void Gpio::stop()
 {
-    struct pollfd fdset[2];
-    int gpio_fd = openGpio();
-    int nfds = 2;
-    int rc;
-    int timeout = 3000;
-    char buf[64];
-
-    while(1){
-        memset((void*)fdset, 0, sizeof(fdset));
-        fdset[0].fd = STDIN_FILENO;
-        fdset[0].events = POLLIN;
-
-        fdset[1].fd = gpio_fd;
-        fdset[1].events = POLLPRI;
-
-        rc = poll(fdset, nfds, timeout);
-
-        if (rc < 0) {
-            qDebug() << "ERROR: poll failed";
-            return;
-        }
-        if(rc == 0){
-            //timeout
-        }
-        if (fdset[1].revents & POLLPRI) {
-            read(fdset[1].fd, buf, 64);
-            emit pinInterrupt();
-        }
-    }
+    m_mutex.lock();
+    m_enabled = false;
+    m_mutex.unlock();
 }

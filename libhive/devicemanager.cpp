@@ -17,7 +17,25 @@ DeviceManager::DeviceManager(QObject *parent) :
 {
     m_radio433 = new Radio433(this);
 
+<<<<<<< HEAD
     QMetaObject::invokeMethod(this, "loadPlugins", Qt::QueuedConnection);
+=======
+    qDebug() << "loading plugins";
+    foreach (QObject *pluginObject, QPluginLoader::staticInstances()) {
+        DevicePlugin *pluginIface = qobject_cast<DevicePlugin*>(pluginObject);
+        qDebug() << "got plugin instance";
+        if (pluginIface) {
+            qDebug() << "got device plugin" << pluginIface->pluginName();
+        }
+    }
+
+    // TODO: load dynamically
+//    RfSwitch *rfSwitch = new RfSwitch(this);
+//    m_supportedDevices.append(rfSwitch->supportedDevices());
+//    m_devicePlugins.append(rfSwitch);
+
+
+>>>>>>> radio thread fixed
 }
 
 QList<DeviceClass> DeviceManager::supportedDevices()

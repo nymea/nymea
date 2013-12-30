@@ -2,6 +2,10 @@
 #define GPIO_H
 
 #include <QObject>
+#include <QThread>
+#include <QMutex>
+#include <QMutexLocker>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -46,12 +50,14 @@
  **********************************
  */
 
-class Gpio : public QObject
+class Gpio : public QThread
 {
     Q_OBJECT
 public:
     explicit Gpio(QObject *parent = 0, int gpio = 0);
     ~Gpio();
+
+    void run() override;
 
     bool exportGpio();
     bool unexportGpio();
@@ -65,18 +71,20 @@ public:
 
     bool setEdgeInterrupt(int edge);
 
+    void stop();
 
 
 
 private:
     int m_gpio;
     int m_dir;
+    QMutex m_mutex;
+    bool m_enabled;
 
 signals:
     void pinInterrupt();
 
 public slots:
-    void enableInterrupt();
 
 };
 

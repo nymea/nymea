@@ -1,6 +1,9 @@
 TARGET = hive
 TEMPLATE = lib
 
+target.path = /usr/lib
+INSTALLS += target
+
 SOURCES += device.cpp \
            deviceclass.cpp \
            devicemanager.cpp \

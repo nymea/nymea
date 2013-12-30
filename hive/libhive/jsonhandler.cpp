@@ -8,6 +8,7 @@ JsonHandler::JsonHandler(QObject *parent) :
     QObject(parent)
 {
     m_device = new DeviceJsonPlugin(this);
+    m_radio = new RadioJsonPlugin(this);
 }
 
 
@@ -30,6 +31,9 @@ QByteArray JsonHandler::process(const QByteArray &data)
 
     if(command.value("device").toString() == m_device->deviceName()){
         return m_device->process(command,params);
+    }
+    if(command.value("device").toString() == m_radio->deviceName()){
+        return m_radio->process(command,params);
     }else{
         return NULL;
     }

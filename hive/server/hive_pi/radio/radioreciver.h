@@ -29,7 +29,7 @@ public:
 
 private:
     void handleInterrupt();
-    void detectProtocol(QList<int> rawData);
+    bool detectProtocol(QList<int> rawData);
 
     bool m_enable;
     int m_pin;

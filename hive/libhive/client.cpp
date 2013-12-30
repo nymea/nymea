@@ -93,9 +93,6 @@ void Client::handleResponse(const QVariantMap &rsp)
         m_requestMap.remove(id);
     }
 
-
-
-
 }
 
 void Client::handleSignal(const QVariantMap &signal)

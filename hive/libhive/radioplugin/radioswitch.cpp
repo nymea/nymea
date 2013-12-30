@@ -23,20 +23,22 @@ bool RadioSwitch::isValid(QList<int> rawData)
 {
     m_delay = rawData.first()/31;
     QByteArray binCode;
-    if(m_delay > 310 && m_delay < 340){
+
+    // new Remote -> average 314
+    if(m_delay > 300 && m_delay < 400){
         // go trough all 48 timings (without sync signal)
         for(int i = 1; i <= 48; i+=2 ){
             int div;
             int divNext;
 
             // if short
-            if(rawData.at(i) < 500){
+            if(rawData.at(i) < 700){
                 div = 1;
             }else{
                 div = 3;
             }
             // if long
-            if(rawData.at(i+1) < 500){
+            if(rawData.at(i+1) < 700){
                 divNext = 1;
             }else{
                 divNext = 3;
@@ -48,71 +50,70 @@ bool RadioSwitch::isValid(QList<int> rawData)
             // if we have  ___| | = 1 -> in 4 delays => 0001
 
             if(div == 1 && divNext == 3){
-                binCode.append("0");
+                binCode.append('0');
             }else if(div == 3 && divNext == 1){
-                binCode.append("1");
+                binCode.append('1');
             }else{
                 return false;
             }
         }
+    }
 
-        m_binCode = binCode;
 
-        // get the channel of the remote signal (5 channels, 1=on, 0 = off)
-        QByteArray channelSettings;
-        for(int i = 1; i < 10; i+=2){
-            if(m_binCode.at(i-1) == '0' && m_binCode.at(i) == '1'){
-                channelSettings.append("0");
-            }else{
-                channelSettings.append("1");
-            }
-        }
-        // get the button letter
-        char button;
-        if(m_binCode.at(10) == '0' && m_binCode.at(11) == '0'){
-            button = 'A';
-        }
-        if(m_binCode.at(12) == '0' && m_binCode.at(13) == '0'){
-            button = 'B';
-        }
-        if(m_binCode.at(14) == '0' && m_binCode.at(15) == '0'){
-            button = 'C';
-        }
-        if(m_binCode.at(16) == '0' && m_binCode.at(17) == '0'){
-            button = 'D';
-        }
-        if(m_binCode.at(18) == '0' && m_binCode.at(19) == '0'){
-            button = 'E';
-        }
+    m_binCode = binCode;
 
-        QStringList byteList;
-        for(int i = 4; i <= 24; i+=4){
-            byteList.append(binCode.left(4));
-            binCode = binCode.right(binCode.length() -4);
+    // get the channel of the remote signal (5 channels, 1=on, 0 = off)
+    QByteArray channelSettings;
+    for(int i = 1; i < 10; i+=2){
+        if(m_binCode.at(i-1) == '0' && m_binCode.at(i) == '1'){
+            channelSettings.append("0");
+        }else{
+            channelSettings.append("1");
         }
+    }
+    // get the button letter
+    char button;
+    if(m_binCode.at(10) == '0' && m_binCode.at(11) == '0'){
+        button = 'A';
+    }
+    if(m_binCode.at(12) == '0' && m_binCode.at(13) == '0'){
+        button = 'B';
+    }
+    if(m_binCode.at(14) == '0' && m_binCode.at(15) == '0'){
+        button = 'C';
+    }
+    if(m_binCode.at(16) == '0' && m_binCode.at(17) == '0'){
+        button = 'D';
+    }
+    if(m_binCode.at(18) == '0' && m_binCode.at(19) == '0'){
+        button = 'E';
+    }
 
-        bool buttonStatus;
-        if(byteList.last().toInt(0,2) == 1){
-            buttonStatus = true;
-        }else
+    QStringList byteList;
+    for(int i = 4; i <= 24; i+=4){
+        byteList.append(binCode.left(4));
+        binCode = binCode.right(binCode.length() -4);
+    }
+
+    bool buttonStatus;
+    if(byteList.last().toInt(0,2) == 1){
+        buttonStatus = true;
+    }else
         if(byteList.last().toInt(0,2) == 4){
             buttonStatus = false;
         }else{
             return false;
         }
 
-        qDebug() << "-----------------------------------------------------------";
-        qDebug() << "|                     REMOTE signal                       |";
-        qDebug() << "-----------------------------------------------------------";
-        qDebug() << "delay      :" << m_delay;
-        qDebug() << "bin CODE   :" << m_binCode;
-        qDebug() << byteList;
-        qDebug() << "Channels:" << channelSettings << "Button:" << button << "=" << buttonStatus;
-        emit switchSignalReceived(channelSettings,button,buttonStatus);
-        return true;
-    }else{
-        return false;
-    }
+    qDebug() << "-----------------------------------------------------------";
+    qDebug() << "|                     REMOTE signal                       |";
+    qDebug() << "-----------------------------------------------------------";
+    qDebug() << "delay      :" << m_delay;
+    qDebug() << "bin CODE   :" << m_binCode;
+    qDebug() << byteList;
+    qDebug() << "Channels:" << channelSettings << "Button:" << button << "=" << buttonStatus;
+    emit switchSignalReceived(channelSettings,button,buttonStatus);
+    return true;
 }
 
 QByteArray RadioSwitch::calcBinCode(const QByteArray &channel, const RadioSwitch::RadioRemoteButton &button, const bool &buttonStatus)

@@ -96,11 +96,12 @@ float RadioThermometer::getTemperature()
     }
 
     if(temperature == m_lastTemperature){
+        qDebug() << "received same temperature from " << QString(id) << " - " << QDateTime::currentDateTime().toString("dd.MM.yyyy, hh:mm:ss");
         return temperature;
     }else{
 
         m_lastTemperature = temperature;
-        QString timeStamp = QDateTime::currentDateTime().toString("dd.MM.yyyy, hh:mm:ss");;
+        QString timeStamp = QDateTime::currentDateTime().toString("dd.MM.yyyy, hh:mm:ss");
         //qDebug() << timeStamp;
 
         QFile file("/root/temperature_log.ods");

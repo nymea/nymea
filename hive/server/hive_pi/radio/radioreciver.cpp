@@ -141,6 +141,7 @@ int RadioReciver::getPin() const
 
 void RadioReciver::handleInterrupt()
 {
+
     if(!m_enable){
         return;
     }
@@ -149,7 +150,9 @@ void RadioReciver::handleInterrupt()
     m_duration = currentTime - m_lastTime;
 
     // filter nois
-    if (m_duration > 5000 && m_duration > m_timings[0] - 200 && m_duration < m_timings[0] + 200) {
+    if (m_duration > 5000 && m_timings[0] - 200 && m_duration < m_timings[0] + 200){
+        //qDebug() << "dt " << m_duration;
+
         m_repeatCount++;
         m_changeCount--;
 
@@ -163,6 +166,8 @@ void RadioReciver::handleInterrupt()
                     m_timings[i] = 0;
                 }
                 detectProtocol(rawData);
+            }else{
+                //qDebug() << "changes: " << m_changeCount;
             }
             m_repeatCount = 0;
         }
@@ -170,8 +175,9 @@ void RadioReciver::handleInterrupt()
 
     }else if(m_duration > 5000){
         m_changeCount = 0;
+
     }
-    if (m_changeCount > RC_MAX_CHANGES) {
+    if (m_changeCount >= RC_MAX_CHANGES) {
         m_changeCount = 0;
         m_repeatCount = 0;
     }
@@ -179,26 +185,29 @@ void RadioReciver::handleInterrupt()
     m_lastTime = currentTime;
 }
 
-void RadioReciver::detectProtocol(QList<int> rawData)
+bool RadioReciver::detectProtocol(QList<int> rawData)
 {
     // check if we have a valid signal, 1 sync + 48 data
     if(rawData.length() != 49){
-        return;
+        qDebug() << rawData;
+        return false;
     }
     // check plugins
     if(m_thermometer->isValid(rawData)){
         m_thermometer->getTemperature();
+        return true;
     }else
-    if(m_switch->isValid(rawData)){
-        m_switch->getBinCode();
-    }else{
-        qDebug() << "-----------------------------------------------------------";
-        qDebug() << "|                    GENERIC signal                       |";
-        qDebug() << "-----------------------------------------------------------";
-        qDebug() << "delay      :" << rawData.first() /31;
-        qDebug() << rawData;
-    }
-
+        if(m_switch->isValid(rawData)){
+            m_switch->getBinCode();
+            return true;
+        }else{
+            qDebug() << "-----------------------------------------------------------";
+            qDebug() << "|                    GENERIC signal                       |";
+            qDebug() << "-----------------------------------------------------------";
+            qDebug() << "delay      :" << rawData.first() /31;
+            qDebug() << rawData;
+        }
+    return false;
 }
 
 void RadioReciver::enableReceiver()

@@ -5,6 +5,7 @@
 #include <QVariant>
 #include <jsonplugin/jsonplugin.h>
 #include <jsonplugin/devicejsonplugin.h>
+#include <jsonplugin/radiojsonplugin.h>
 
 
 class JsonHandler : public QObject
@@ -24,6 +25,7 @@ public slots:
 
 private:
     DeviceJsonPlugin *m_device;
+    RadioJsonPlugin *m_radio;
 
     QByteArray formatResponse(const QVariantMap &command, const QVariantMap &responseParams);
     QByteArray formatErrorResponse(const QVariantMap &command, const QString &error);

@@ -12,7 +12,7 @@ TARGET = hive
 CONFIG   += console
 CONFIG   -= app_bundle
 
-target.path = /root/bin
+target.path = /usr/bin
 INSTALLS += target
 
 TEMPLATE = app

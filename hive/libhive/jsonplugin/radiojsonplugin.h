@@ -15,6 +15,8 @@ public:
 
     QString deviceName();
     QStringList devicePropertys();
+    QStringList deviceMethods();
+
     QByteArray process(const QVariantMap & command, const QVariantMap & parameters);
 
 private:
@@ -26,8 +28,10 @@ private:
 
     QVariantMap m_command;
     QVariantMap m_parameters;
-
     DeviceManager *m_deviceManager;
+
+    QByteArray formatResponse();
+    QByteArray formatErrorResponse();
 
 signals:
 

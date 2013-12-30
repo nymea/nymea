@@ -107,3 +107,13 @@ bool RadioJsonPlugin::execute()
         return false;
     }
 }
+
+QByteArray RadioJsonPlugin::formatResponse()
+{
+
+}
+
+QByteArray RadioJsonPlugin::formatErrorResponse()
+{
+
+}

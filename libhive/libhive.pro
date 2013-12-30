@@ -1,12 +1,17 @@
 TARGET = hive
 TEMPLATE = lib
 
-CONFIG += static
-
 SOURCES += device.cpp \
            deviceclass.cpp \
-           deviceplugin.cpp
+           devicemanager.cpp \
+           deviceplugin.cpp \
+           radio433.cpp \
+           gpio.cpp
 
 HEADERS += device.h \
            deviceclass.h \
-           deviceplugin.h
+           devicemanager.h \
+#           deviceplugin.h \
+           radio433.h \
+           gpio.h
+

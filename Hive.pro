@@ -1,6 +1,6 @@
 TEMPLATE=subdirs
 
-SUBDIRS += libhive server
+SUBDIRS += libhive server plugins
 
-server.depends = libhive
+server.depends = libhive plugins
 

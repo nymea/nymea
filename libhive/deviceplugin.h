@@ -5,15 +5,26 @@
 
 #include <QObject>
 
-class DevicePlugin: public QObject
+class DeviceManager;
+
+class DevicePlugin
 {
-    Q_OBJECT
 public:
-    DevicePlugin(QObject *parent = 0);
+    DevicePlugin();
     virtual ~DevicePlugin();
+
+    void init(DeviceManager *deviceManager);
+
+    virtual QString pluginName() const = 0;
 
     virtual QList<DeviceClass> supportedDevices() const = 0;
 
+protected:
+    DeviceManager *deviceManager() const;
+
+private:
+    DeviceManager *m_deviceManager;
 };
+Q_DECLARE_INTERFACE(DevicePlugin, "org.hoveyourhome.DevicePlugin")
 
 #endif

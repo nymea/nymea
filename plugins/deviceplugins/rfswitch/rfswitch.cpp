@@ -1,7 +1,8 @@
 #include "rfswitch.h"
 
-RfSwitch::RfSwitch(QObject *parent) :
-    DevicePlugin(parent)
+#include "devicemanager.h"
+
+RfSwitch::RfSwitch()
 {
 }
 
@@ -20,4 +21,9 @@ QList<DeviceClass> RfSwitch::supportedDevices() const
     ret.append(deviceClassRfSwitch);
 
     return ret;
+}
+
+QString RfSwitch::pluginName() const
+{
+    return "RF Switch";
 }

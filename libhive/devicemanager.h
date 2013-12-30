@@ -19,6 +19,8 @@ public:
 
     QList<Device*> devices() const;
 
+    Radio433 *radio() const;
+
 signals:
 
 public slots:

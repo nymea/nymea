@@ -132,8 +132,11 @@ void Radio433::handleInterrupt()
 
 void Radio433::enableReceiver()
 {
+    qDebug() << "starting receiver";
     m_receiverThread->start();
-    m_receiver->enableInterrupt();
+    qDebug() << "fooo";
+    QMetaObject::invokeMethod(m_receiver, SLOT(enableInterrupt()), Qt::QueuedConnection);
+//    m_receiver->enableInterrupt();
     qDebug() << "receiver enabeld.";
 }
 

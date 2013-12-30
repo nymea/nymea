@@ -12,13 +12,14 @@ class TcpServer : public QObject
 public:
     explicit TcpServer(QObject *parent = 0);
     
-private:
-    QList<QTcpServer*> m_serverList;
-    QList<QTcpSocket*> m_clientList;
+    void sendResponse(int clientId, const QByteArray &data);
 
+private:
+    QHash<int, QTcpServer*> m_serverList;
+    QHash<int, QTcpSocket*> m_clientList;
 
 signals:
-    void jsonDataAvailable(const QByteArray &data);
+    void jsonDataAvailable(int clientId, const QByteArray &data);
     
 private slots:
     void newClientConnected();
@@ -29,8 +30,6 @@ public slots:
     bool startServer();
     bool stopServer();
     void sendToAll(QByteArray data);
-    
-
 };
 
 #endif // TCPSERVER_H

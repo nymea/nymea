@@ -13,6 +13,7 @@ public:
     virtual ~DevicePlugin();
 
     virtual QList<DeviceClass> supportedDevices() const = 0;
+
 };
 
 #endif

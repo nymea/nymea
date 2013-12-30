@@ -15,10 +15,14 @@ SOURCES += main.cpp \
            jsonrpcserver.cpp \
            radio433.cpp \
            tcpserver.cpp \
-    gpio.cpp
+           gpio.cpp \
+           deviceplugins/rfswitch/rfswitch.cpp \
+           devicemanager.cpp \
 
 HEADERS += hivecore.h \
            jsonrpcserver.h \
            radio433.h \
            tcpserver.h \
-    gpio.h
+           gpio.h \
+           deviceplugins/rfswitch/rfswitch.h \
+           devicemanager.h \

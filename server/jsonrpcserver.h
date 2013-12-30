@@ -1,7 +1,11 @@
 #ifndef JSONRPCSERVER_H
 #define JSONRPCSERVER_H
 
+#include "deviceclass.h"
+
 #include <QObject>
+#include <QVariantMap>
+#include <QString>
 
 class TcpServer;
 
@@ -12,9 +16,15 @@ public:
     JsonRPCServer(QObject *parent = 0);
 
 signals:
+    void commandReceived(const QString &targetNamespace, const QString &command, const QVariantMap &params);
 
 private slots:
-    void processData(const QByteArray &jsonData);
+    void processData(int clientId, const QByteArray &jsonData);
+
+private:
+    QVariantMap packDeviceClass(const DeviceClass &deviceClass);
+
+    void sendResponse(int clientId, int commandId, const QVariantMap &params);
 
 private:
     TcpServer *m_tcpServer;

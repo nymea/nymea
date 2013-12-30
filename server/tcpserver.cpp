@@ -17,6 +17,14 @@ TcpServer::TcpServer(QObject *parent) :
 
 }
 
+void TcpServer::sendResponse(int clientId, const QByteArray &data)
+{
+    QTcpSocket *client = m_clientList.value(clientId);
+    if (client) {
+        client->write(data);
+    }
+}
+
 void TcpServer::newClientConnected()
 {
     // got a new client connected
@@ -25,7 +33,7 @@ void TcpServer::newClientConnected()
     qDebug() << "new client connected:" << newConnection->peerAddress().toString();
 
     // append the new client to the client list
-    m_clientList.append(newConnection);
+    m_clientList.insert(m_clientList.count(), newConnection);
 
     connect(newConnection, SIGNAL(readyRead()),this,SLOT(readPackage()));
     connect(newConnection,SIGNAL(disconnected()),this,SLOT(clientDisconnected()));
@@ -42,9 +50,8 @@ void TcpServer::readPackage()
         QByteArray dataLine = client->readLine();
         qDebug() << "line in:" << dataLine;
         message.append(dataLine);
-        if(dataLine.endsWith("}\r")){
-            qDebug() << message;
-            emit jsonDataAvailable(message);
+        if(dataLine.endsWith('\n')){
+            emit jsonDataAvailable(m_clientList.key(client), message);
             message.clear();
         }
     }
@@ -64,7 +71,7 @@ bool TcpServer::startServer()
         if(server->listen(address, 1234)) {
             qDebug() << "server listening on" << address.toString();
             connect(server, SIGNAL(newConnection()), SLOT(newClientConnected()));
-            m_serverList.append(server);
+            m_serverList.insert(m_serverList.count(), server);
         } else {
             qDebug() << "ERROR: can not listening to" << address.toString();
             delete server;

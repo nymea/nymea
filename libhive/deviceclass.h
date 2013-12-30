@@ -1,22 +1,22 @@
 #ifndef DEVICECLASS_H
 #define DEVICECLASS_H
 
-#include <QObject>
 #include <QUuid>
 
-class DeviceClass: public QObject
+class DeviceClass
 {
-    Q_OBJECT
-    Q_PROPERTY(QUuid id READ id CONSTANT)
-
 public:
-    DeviceClass(const QUuid &id, QObject *parent = 0);
+    DeviceClass(const QUuid &id);
     virtual ~DeviceClass();
 
-    virtual QUuid id() const;
+    QUuid id() const;
+
+    QString name() const;
+    void setName(const QString &name);
 
 private:
     QUuid m_id;
+    QString m_name;
 };
 
 #endif

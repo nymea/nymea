@@ -17,7 +17,11 @@ public:
 
     QList<DeviceClass> supportedDevices();
 
-    QList<Device*> devices() const;
+    void createDevice(const DeviceClass &deviceClass);
+
+    QList<Device*> configuredDevices() const;
+
+    QList<Device*> findConfiguredDevices(const DeviceClass &deviceClass);
 
     Radio433 *radio433() const;
 
@@ -28,7 +32,7 @@ private slots:
 
 private:
     QList<DeviceClass> m_supportedDevices;
-    QList<Device*> m_devices;
+    QList<Device*> m_configuredDevices;
     QList<DevicePlugin*> m_devicePlugins;
 
     Radio433* m_radio433;

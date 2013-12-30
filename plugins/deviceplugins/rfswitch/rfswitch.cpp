@@ -74,4 +74,6 @@ QString RfSwitch::pluginName() const
 void RfSwitch::dataReceived(QList<int> rawData)
 {
     qDebug() << "data received from Radio433" << rawData;
+
+
 }

@@ -25,9 +25,26 @@ QList<DeviceClass> DeviceManager::supportedDevices()
     return m_supportedDevices;
 }
 
-QList<Device *> DeviceManager::devices() const
+void DeviceManager::createDevice(const DeviceClass &deviceClass)
 {
-    return m_devices;
+    Device *device = new Device(deviceClass.id(), this);
+    device->setName(deviceClass.name());
+}
+
+QList<Device *> DeviceManager::configuredDevices() const
+{
+    return m_configuredDevices;
+}
+
+QList<Device *> DeviceManager::findConfiguredDevices(const DeviceClass &deviceClass)
+{
+    QList<Device*> ret;
+    foreach (Device *device, m_configuredDevices) {
+        if (device->deviceClassId() == deviceClass.id()) {
+            ret << device;
+        }
+    }
+    return ret;
 }
 
 Radio433 *DeviceManager::radio433() const

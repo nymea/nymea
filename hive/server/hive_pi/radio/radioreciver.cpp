@@ -150,8 +150,8 @@ void RadioReciver::handleInterrupt()
     m_duration = currentTime - m_lastTime;
 
     // filter nois
-    if (m_duration > 5000 && m_timings[0] - 200 && m_duration < m_timings[0] + 200){
-        //qDebug() << "dt " << m_duration;
+    if (m_duration > 5000 && m_duration > m_timings[0] - 200 && m_duration < m_timings[0] + 200){
+        qDebug() << "dt " << m_duration;
 
         m_repeatCount++;
         m_changeCount--;
@@ -160,14 +160,13 @@ void RadioReciver::handleInterrupt()
             // if we have a regular signal (1 bit sync + 48 bit data)
             if(m_changeCount == RC_MAX_CHANGES){
                 // write rawdata to a List and reset values to 0
+                qDebug() << "detect protokol";
                 QList<int> rawData;
                 for(int i = 0; i < RC_MAX_CHANGES; i++ ){
                     rawData.append(m_timings[i]);
                     m_timings[i] = 0;
                 }
                 detectProtocol(rawData);
-            }else{
-                //qDebug() << "changes: " << m_changeCount;
             }
             m_repeatCount = 0;
         }
@@ -177,7 +176,7 @@ void RadioReciver::handleInterrupt()
         m_changeCount = 0;
 
     }
-    if (m_changeCount >= RC_MAX_CHANGES) {
+    if (m_changeCount >= RC_MAX_CHANGES+1) {
         m_changeCount = 0;
         m_repeatCount = 0;
     }

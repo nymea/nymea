@@ -66,9 +66,9 @@ bool RadioSwitch::isValid(QList<int> rawData)
     QByteArray channelSettings;
     for(int i = 1; i < 10; i+=2){
         if(m_binCode.at(i-1) == '0' && m_binCode.at(i) == '1'){
-            channelSettings.append("0");
+            channelSettings.append('0');
         }else{
-            channelSettings.append("1");
+            channelSettings.append('1');
         }
     }
     // get the button letter
@@ -98,12 +98,10 @@ bool RadioSwitch::isValid(QList<int> rawData)
     bool buttonStatus;
     if(byteList.last().toInt(0,2) == 1){
         buttonStatus = true;
-    }else
-        if(byteList.last().toInt(0,2) == 4){
-            buttonStatus = false;
-        }else{
-            return false;
-        }
+    }
+    if(byteList.last().toInt(0,2) == 4){
+        buttonStatus = false;
+    }
 
     qDebug() << "-----------------------------------------------------------";
     qDebug() << "|                     REMOTE signal                       |";

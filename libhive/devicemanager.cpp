@@ -25,10 +25,12 @@ QList<DeviceClass> DeviceManager::supportedDevices()
     return m_supportedDevices;
 }
 
-void DeviceManager::createDevice(const DeviceClass &deviceClass)
+void DeviceManager::createDevice(const DeviceClass &deviceClass, const QVariantMap &params)
 {
     Device *device = new Device(deviceClass.id(), this);
     device->setName(deviceClass.name());
+    device->setParams(params);
+    m_configuredDevices.append(device);
 }
 
 QList<Device *> DeviceManager::configuredDevices() const

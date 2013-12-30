@@ -8,8 +8,9 @@
 
 class DeviceManager;
 
-class DevicePlugin
+class DevicePlugin: public QObject
 {
+    Q_OBJECT
 public:
     DevicePlugin();
     virtual ~DevicePlugin();
@@ -23,7 +24,7 @@ public:
     virtual QList<DeviceClass> supportedDevices() const = 0;
 
 signals:
-    void emitTrigger(const Trigger &trigger);
+    void emitTrigger(const QUuid &triggerId, const QVariantMap &params);
 
 protected:
     DeviceManager *deviceManager() const;
@@ -31,6 +32,6 @@ protected:
 private:
     DeviceManager *m_deviceManager;
 };
-Q_DECLARE_INTERFACE(DevicePlugin, "org.hoveyourhome.DevicePlugin")
+Q_DECLARE_INTERFACE(DevicePlugin, "org.hiveyourhome.DevicePlugin")
 
 #endif

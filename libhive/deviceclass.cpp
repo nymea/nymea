@@ -35,3 +35,13 @@ void DeviceClass::setTriggers(const QList<TriggerType> &triggers)
 {
     m_triggers = triggers;
 }
+
+QVariantList DeviceClass::params() const
+{
+    return m_params;
+}
+
+void DeviceClass::setParams(const QVariantList &params)
+{
+    m_params = params;
+}

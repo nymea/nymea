@@ -63,19 +63,6 @@ void JsonRPCServer::processData(int clientId, const QByteArray &jsonData)
     } else {
         qDebug() << "got unknown namespace" << targetNamspace;
     }
-
-    //DeviceJsonPlugin plugin;
-    // {<device>: "name", <method>: "doBla", <id>: "int", <command> { <name>: "name", ...  }}
-
-//    if(command.value("device").toString() == m_device->deviceName()){
-//        return m_device->process(command,params);
-//    }
-//    if(command.value("device").toString() == m_radio->deviceName()){
-//        return m_radio->process(command,params);
-//    }else{
-//        return NULL;
-//    }
-
 }
 
 QVariantMap JsonRPCServer::packDeviceClass(const DeviceClass &deviceClass)
@@ -92,6 +79,7 @@ QVariantMap JsonRPCServer::packDeviceClass(const DeviceClass &deviceClass)
 
         triggerTypes.append(triggerMap);
     }
+    variant.insert("params", deviceClass.params());
     variant.insert("triggers", triggerTypes);
     return variant;
 }

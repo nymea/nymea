@@ -27,3 +27,23 @@ void Device::setName(const QString &name)
 {
     m_name = name;
 }
+
+QList<Trigger> Device::triggers() const
+{
+    return m_triggers;
+}
+
+void Device::setTriggers(const QList<Trigger> triggers)
+{
+    m_triggers = triggers;
+}
+
+QVariantMap Device::params() const
+{
+    return m_params;
+}
+
+void Device::setParams(const QVariantMap &params)
+{
+    m_params = params;
+}

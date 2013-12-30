@@ -2,6 +2,7 @@
 #define DEVICEMANAGER_H
 
 #include "deviceclass.h"
+#include "trigger.h"
 
 #include <QObject>
 
@@ -17,7 +18,7 @@ public:
 
     QList<DeviceClass> supportedDevices();
 
-    void createDevice(const DeviceClass &deviceClass);
+    void createDevice(const DeviceClass &deviceClass, const QVariantMap &params);
 
     QList<Device*> configuredDevices() const;
 
@@ -26,6 +27,7 @@ public:
     Radio433 *radio433() const;
 
 signals:
+    void emitTrigger(const Trigger &trigger);
 
 private slots:
     void loadPlugins();

@@ -3,7 +3,7 @@
 
 #include "deviceplugin.h"
 
-class RfSwitch : public QObject, public DevicePlugin
+class RfSwitch : public DevicePlugin
 {
     Q_OBJECT
 

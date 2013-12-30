@@ -20,10 +20,14 @@ public:
     QList<TriggerType> triggers() const;
     void setTriggers(const QList<TriggerType> &triggers);
 
+    QVariantList params() const;
+    void setParams(const QVariantList &params);
+
 private:
     QUuid m_id;
     QString m_name;
     QList<TriggerType> m_triggers;
+    QVariantList m_params;
 };
 
 #endif

@@ -11,7 +11,6 @@ SOURCES += device.cpp \
 HEADERS += device.h \
            deviceclass.h \
            devicemanager.h \
-#           deviceplugin.h \
            radio433.h \
            gpio.h
 

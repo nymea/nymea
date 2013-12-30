@@ -8,7 +8,7 @@ INSTALLS += target
 
 QT += network
 
-LIBS += -L../libhive/ -lhive -L../plugins/deviceplugins/rfswitch/ -lhive_rfswitch
+LIBS += -L../libhive/ -lhive
 
 SOURCES += main.cpp \
            hivecore.cpp \
@@ -20,3 +20,4 @@ HEADERS += hivecore.h \
            tcpserver.h \
 
 # FIXME: Drop this and link them dynamically
+LIBS += -L../plugins/deviceplugins/rfswitch/ -lhive_rfswitch

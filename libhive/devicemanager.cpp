@@ -10,7 +10,7 @@
 #include <QtPlugin>
 #include <QDebug>
 
-Q_IMPORT_PLUGIN(RfSwitch)
+Q_IMPORT_PLUGIN(RfRemoteMumbi)
 
 DeviceManager::DeviceManager(QObject *parent) :
     QObject(parent)
@@ -88,7 +88,9 @@ void DeviceManager::loadPlugins()
             pluginIface->initPlugin(this);
             m_supportedDevices.append(pluginIface->supportedDevices());
             m_devicePlugins.append(pluginIface);
+            connect(pluginIface,SIGNAL(emitTrigger(QUuid,QVariantMap)),this,SIGNAL(emitTrigger(QUuid,QVariantMap)));
         }
+
     }
 }
 

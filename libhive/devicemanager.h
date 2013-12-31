@@ -34,7 +34,7 @@ public:
     Radio433 *radio433() const;
 
 signals:
-    void emitTrigger(const Trigger &trigger);
+    void emitTrigger(const QUuid &triggerId, const QVariantMap &params);
 
 private slots:
     void loadPlugins();

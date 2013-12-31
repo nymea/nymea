@@ -1,2 +1,2 @@
 TEMPLATE = subdirs
-SUBDIRS += rfswitch
+SUBDIRS += rfremotemumbi

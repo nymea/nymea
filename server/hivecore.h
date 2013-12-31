@@ -20,6 +20,10 @@ private:
 
     JsonRPCServer *m_jsonServer;
     DeviceManager *m_deviceManager;
+
+private slots:
+    void gotSignal(const QUuid &triggerId, const QVariantMap &params);
+
 };
 
 #endif // HIVECORE_H

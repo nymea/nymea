@@ -27,7 +27,15 @@ HiveCore::HiveCore(QObject *parent) :
     qDebug() << "creating devmanager";
     m_deviceManager = new DeviceManager(this);
 
+
     // start the server
     m_jsonServer = new JsonRPCServer(this);
+
+}
+
+void HiveCore::gotSignal(const QUuid &triggerId, const QVariantMap &params)
+{
+    qDebug() << "id: " << triggerId;
+    qDebug() << params;
 
 }

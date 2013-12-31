@@ -20,4 +20,4 @@ HEADERS += hivecore.h \
            tcpserver.h \
 
 # FIXME: Drop this and link them dynamically
-LIBS += -L../plugins/deviceplugins/rfswitch/ -lhive_rfswitch
+LIBS += -L../plugins/deviceplugins/rfremotemumbi/ -lhive_rfremotemumbi

@@ -120,6 +120,7 @@ QVariantMap JsonRPCServer::packDevice(Device *device)
         triggers.append(trigger.id());
     }
     variant.insert("triggers", triggers);
+    variant.insert("params", device->params());
     return variant;
 }
 

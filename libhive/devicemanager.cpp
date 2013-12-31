@@ -117,6 +117,7 @@ void DeviceManager::loadConfiguredDevices()
         Device *device = new Device(QUuid(idString), settings.value("deviceClassId").toUuid(), this);
         device->setName(settings.value("devicename").toString());
         device->setParams(settings.value("params").toMap());
+        QList<Trigger> triggerList;
         foreach (const QString &triggerId, settings.childGroups()) {
             settings.beginGroup(triggerId);
             QUuid id(triggerId);
@@ -124,7 +125,9 @@ void DeviceManager::loadConfiguredDevices()
             trigger.setName(settings.value("triggername").toString());
             trigger.setParams(settings.value("params").toList());
             settings.endGroup();
+            triggerList.append(trigger);
         }
+        device->setTriggers(triggerList);
         settings.endGroup();
         m_configuredDevices.append(device);
     }

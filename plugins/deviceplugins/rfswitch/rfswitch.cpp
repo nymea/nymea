@@ -170,15 +170,13 @@ void RfSwitch::dataReceived(QList<int> rawData)
     }else{
         return;
     }
-    
-    DeviceClass deviceClassRfRemote = supportedDevices().first();
-    
+        
     //    // TODO: Lets assume we received group "1000"
     //    QList<bool> group;
     //    group << true << false << false << false << false;
     
     Device *device = 0;
-    QList<Device*> deviceList = deviceManager()->findConfiguredDevices(deviceClassRfRemote.id());
+    QList<Device*> deviceList = deviceManager()->findConfiguredDevices(mumbiRemote);
     foreach (Device *dev, deviceList) {
         if (dev->params().contains("channel1") && dev->params().value("channel1").toBool() == group.at(0) &&
                 dev->params().contains("channel2") && dev->params().value("channel2").toBool() == group.at(1) &&

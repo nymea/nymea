@@ -28,14 +28,18 @@ QList<DeviceClass> RfRemoteMumbi::supportedDevices() const
     
     QVariantList deviceParams;
     QVariantMap channelParam;
-    channelParam.insert("name", "channel");
-    channelParam.insert("type", "string");
+    channelParam.insert("name", "channel1");
+    channelParam.insert("type", "bool");
+    deviceParams.append(channelParam);
     channelParam.insert("name", "channel2");
     channelParam.insert("type", "bool");
+    deviceParams.append(channelParam);
     channelParam.insert("name", "channel3");
     channelParam.insert("type", "bool");
+    deviceParams.append(channelParam);
     channelParam.insert("name", "channel4");
     channelParam.insert("type", "bool");
+    deviceParams.append(channelParam);
     channelParam.insert("name", "channel5");
     channelParam.insert("type", "bool");
     deviceParams.append(channelParam);

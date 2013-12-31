@@ -40,6 +40,7 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const QUuid &devic
             qWarning() << "Missing parameter when creating device:" << param.toMap().value("name").toString();
             return DeviceErrorMissingParameter;
         }
+        // TODO: Check if parameter type matches
     }
 
     Device *device = new Device(deviceClassId, this);

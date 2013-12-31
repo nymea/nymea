@@ -42,8 +42,6 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const QUuid &devic
         }
     }
 
-    // TODO: check if params match with template from DeviceClass
-
     Device *device = new Device(deviceClassId, this);
     device->setName(deviceClass.name());
     device->setParams(params);

@@ -53,29 +53,33 @@ QList<DeviceClass> RfRemoteMumbi::supportedDevices() const
     param.insert("name", "power");
     param.insert("type", "bool");
     params.append(param);
+
+    param.insert("name", "button");
+    param.insert("type", "string");
+    params.append(param);
     
     TriggerType buttonATrigger(QUuid::createUuid());
-    buttonATrigger.setName("Button A");
+    buttonATrigger.setName("A");
     buttonATrigger.setParameters(params);
     buttonTriggers.append(buttonATrigger);
     
     TriggerType buttonBTrigger(QUuid::createUuid());
-    buttonBTrigger.setName("Button B");
+    buttonBTrigger.setName("B");
     buttonBTrigger.setParameters(params);
     buttonTriggers.append(buttonBTrigger);
     
     TriggerType buttonCTrigger(QUuid::createUuid());
-    buttonCTrigger.setName("Button C");
+    buttonCTrigger.setName("C");
     buttonCTrigger.setParameters(params);
     buttonTriggers.append(buttonCTrigger);
     
     TriggerType buttonDTrigger(QUuid::createUuid());
-    buttonDTrigger.setName("Button D");
+    buttonDTrigger.setName("D");
     buttonDTrigger.setParameters(params);
     buttonTriggers.append(buttonDTrigger);
     
     TriggerType buttonETrigger(QUuid::createUuid());
-    buttonETrigger.setName("Button E");
+    buttonETrigger.setName("E");
     buttonETrigger.setParameters(params);
     buttonTriggers.append(buttonETrigger);
     

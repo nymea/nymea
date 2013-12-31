@@ -46,6 +46,14 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const QUuid &devic
     Device *device = new Device(deviceClassId, this);
     device->setName(deviceClass.name());
     device->setParams(params);
+    QList<Trigger> triggers;
+    foreach (const TriggerType &triggerType, deviceClass.triggers()) {
+        Trigger trigger(QUuid::createUuid());
+        trigger.setName(triggerType.name());
+        trigger.setParams(triggerType.parameters());
+        triggers.append(trigger);
+    }
+    device->setTriggers(triggers);
     m_configuredDevices.append(device);
 
     storeConfiguredDevices();
@@ -109,6 +117,14 @@ void DeviceManager::loadConfiguredDevices()
         Device *device = new Device(QUuid(idString), settings.value("deviceClassId").toUuid(), this);
         device->setName(settings.value("devicename").toString());
         device->setParams(settings.value("params").toMap());
+        foreach (const QString &triggerId, settings.childGroups()) {
+            settings.beginGroup(triggerId);
+            QUuid id(triggerId);
+            Trigger trigger(id);
+            trigger.setName(settings.value("triggername").toString());
+            trigger.setParams(settings.value("params").toList());
+            settings.endGroup();
+        }
         settings.endGroup();
         m_configuredDevices.append(device);
     }
@@ -122,6 +138,12 @@ void DeviceManager::storeConfiguredDevices()
         settings.setValue("devicename", device->name());
         settings.setValue("deviceClassId", device->deviceClassId().toString());
         settings.setValue("params", device->params());
+        foreach (const Trigger &trigger, device->triggers()) {
+            settings.beginGroup(trigger.id().toString());
+            settings.setValue("triggername", trigger.name());
+            settings.setValue("params", trigger.params());
+            settings.endGroup();
+        }
         settings.endGroup();
     }
 }

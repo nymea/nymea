@@ -1,5 +1,13 @@
 #include "device.h"
 
+Device::Device(const QUuid &id, const QUuid &deviceClassId, QObject *parent):
+    QObject(parent),
+    m_id(id),
+    m_deviceClassId(deviceClassId)
+{
+
+}
+
 Device::Device(const QUuid &deviceClassId, QObject *parent):
     QObject(parent),
     m_id(QUuid::createUuid()),

@@ -38,6 +38,8 @@ signals:
 
 private slots:
     void loadPlugins();
+    void loadConfiguredDevices();
+    void storeConfiguredDevices();
 
 private:
     QList<DeviceClass> m_supportedDevices;

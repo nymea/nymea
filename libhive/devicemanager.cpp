@@ -9,6 +9,8 @@
 #include <QPluginLoader>
 #include <QtPlugin>
 #include <QDebug>
+#include <QSettings>
+#include <QStringList>
 
 Q_IMPORT_PLUGIN(RfRemoteMumbi)
 
@@ -18,6 +20,7 @@ DeviceManager::DeviceManager(QObject *parent) :
     m_radio433 = new Radio433(this);
 
     QMetaObject::invokeMethod(this, "loadPlugins", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, "loadConfiguredDevices", Qt::QueuedConnection);
 }
 
 QList<DeviceClass> DeviceManager::supportedDevices()
@@ -45,6 +48,9 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const QUuid &devic
     device->setName(deviceClass.name());
     device->setParams(params);
     m_configuredDevices.append(device);
+
+    storeConfiguredDevices();
+
     return DeviceErrorNoError;
 }
 
@@ -91,6 +97,33 @@ void DeviceManager::loadPlugins()
             connect(pluginIface,SIGNAL(emitTrigger(QUuid,QVariantMap)),this,SIGNAL(emitTrigger(QUuid,QVariantMap)));
         }
 
+    }
+}
+
+void DeviceManager::loadConfiguredDevices()
+{
+    QSettings settings;
+    qDebug() << "loading devices";
+    foreach (const QString &idString, settings.childGroups()) {
+        qDebug() << "found stored device" << idString;
+        settings.beginGroup(idString);
+        Device *device = new Device(QUuid(idString), settings.value("deviceClassId").toUuid(), this);
+        device->setName(settings.value("devicename").toString());
+        device->setParams(device->params());
+        settings.endGroup();
+        m_configuredDevices.append(device);
+    }
+}
+
+void DeviceManager::storeConfiguredDevices()
+{
+    QSettings settings;
+    foreach (Device *device, m_configuredDevices) {
+        settings.beginGroup(device->id().toString());
+        settings.setValue("devicename", device->name());
+        settings.setValue("deviceClassId", device->deviceClassId().toString());
+        settings.setValue("params", device->params());
+        settings.endGroup();
     }
 }
 

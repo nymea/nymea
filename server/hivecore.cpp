@@ -23,7 +23,6 @@ HiveCore::HiveCore(QObject *parent) :
     QObject(parent)
 {
 
-
     qDebug() << "creating devmanager";
     m_deviceManager = new DeviceManager(this);
 

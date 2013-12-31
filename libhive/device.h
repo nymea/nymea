@@ -13,6 +13,7 @@ class Device: public QObject
     Q_PROPERTY(QUuid id READ id CONSTANT)
 
 public:
+    Device(const QUuid &id, const QUuid &deviceClassId, QObject *parent = 0);
     Device(const QUuid &deviceClassId, QObject *parent = 0);
 
     QUuid id() const;

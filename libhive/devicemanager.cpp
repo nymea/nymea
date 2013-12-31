@@ -25,12 +25,27 @@ QList<DeviceClass> DeviceManager::supportedDevices()
     return m_supportedDevices;
 }
 
-void DeviceManager::createDevice(const DeviceClass &deviceClass, const QVariantMap &params)
+DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const QUuid &deviceClassId, const QVariantMap &params)
 {
-    Device *device = new Device(deviceClass.id(), this);
+    DeviceClass deviceClass = findDeviceClass(deviceClassId);
+    if (deviceClass.id().isNull()) {
+        qWarning() << "cannot find a device class with id" << deviceClassId;
+        return DeviceErrorDeviceClassNotFound;
+    }
+    foreach (const QVariant &param, deviceClass.params()) {
+        if (!params.contains(param.toMap().value("name").toString())) {
+            qWarning() << "Missing parameter when creating device:" << param.toMap().value("name").toString();
+            return DeviceErrorMissingParameter;
+        }
+    }
+
+    // TODO: check if params match with template from DeviceClass
+
+    Device *device = new Device(deviceClassId, this);
     device->setName(deviceClass.name());
     device->setParams(params);
     m_configuredDevices.append(device);
+    return DeviceErrorNoError;
 }
 
 QList<Device *> DeviceManager::configuredDevices() const
@@ -47,6 +62,16 @@ QList<Device *> DeviceManager::findConfiguredDevices(const DeviceClass &deviceCl
         }
     }
     return ret;
+}
+
+DeviceClass DeviceManager::findDeviceClass(const QUuid &deviceClassId)
+{
+    foreach (const DeviceClass &deviceClass, m_supportedDevices) {
+        if (deviceClass.id() == deviceClassId) {
+            return deviceClass;
+        }
+    }
+    return DeviceClass(QUuid());
 }
 
 Radio433 *DeviceManager::radio433() const

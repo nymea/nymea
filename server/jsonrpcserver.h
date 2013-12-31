@@ -24,7 +24,8 @@ private slots:
 private:
     QVariantMap packDeviceClass(const DeviceClass &deviceClass);
 
-    void sendResponse(int clientId, int commandId, const QVariantMap &params);
+    void sendResponse(int clientId, int commandId, const QVariantMap &params = QVariantMap());
+    void sendErrorResponse(int clientId, int commandId, const QString &error);
 
 private:
     TcpServer *m_tcpServer;

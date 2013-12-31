@@ -59,6 +59,23 @@ void JsonRPCServer::processData(int clientId, const QByteArray &jsonData)
             }
             params.insert("deviceClasses", supportedDeviceList);
             sendResponse(clientId, commandId, params);
+        } else if (method == "AddConfiguredDevice") {
+            QUuid deviceClass = params.value("deviceClass").toUuid();
+            QVariantMap deviceParams = params.value("deviceParams").toMap();
+            DeviceManager::DeviceError status = HiveCore::instance()->deviceManager()->addConfiguredDevice(deviceClass, deviceParams);
+            switch(status) {
+            case DeviceManager::DeviceErrorNoError:
+                sendResponse(clientId, commandId);
+                break;
+            case DeviceManager::DeviceErrorDeviceClassNotFound:
+                sendErrorResponse(clientId, commandId, "Error creating device. Device class not found.");
+                break;
+            case DeviceManager::DeviceErrorMissingParameter:
+                sendErrorResponse(clientId, commandId, "Error creating device. Missing parameter.");
+                break;
+            }
+        } else {
+            sendErrorResponse(clientId, commandId, "No such method");
         }
     } else {
         qDebug() << "got unknown namespace" << targetNamspace;
@@ -88,7 +105,19 @@ void JsonRPCServer::sendResponse(int clientId, int commandId, const QVariantMap 
 {
     QVariantMap rsp;
     rsp.insert("id", commandId);
+    rsp.insert("status", "success");
     rsp.insert("params", params);
+
+    QJsonDocument jsonDoc = QJsonDocument::fromVariant(rsp);
+    m_tcpServer->sendResponse(clientId, jsonDoc.toJson());
+}
+
+void JsonRPCServer::sendErrorResponse(int clientId, int commandId, const QString &error)
+{
+    QVariantMap rsp;
+    rsp.insert("id", commandId);
+    rsp.insert("status", "error");
+    rsp.insert("error", error);
 
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(rsp);
     m_tcpServer->sendResponse(clientId, jsonDoc.toJson());

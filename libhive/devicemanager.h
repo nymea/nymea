@@ -14,15 +14,22 @@ class DeviceManager : public QObject
 {
     Q_OBJECT
 public:
+    enum DeviceError {
+        DeviceErrorNoError,
+        DeviceErrorDeviceNotFound,
+        DeviceErrorDeviceClassNotFound,
+        DeviceErrorMissingParameter
+    };
+
     explicit DeviceManager(QObject *parent = 0);
 
     QList<DeviceClass> supportedDevices();
 
-    void createDevice(const DeviceClass &deviceClass, const QVariantMap &params);
-
     QList<Device*> configuredDevices() const;
+    DeviceError addConfiguredDevice(const QUuid &deviceClassId, const QVariantMap &params);
 
     QList<Device*> findConfiguredDevices(const DeviceClass &deviceClass);
+    DeviceClass findDeviceClass(const QUuid &deviceClassId);
 
     Radio433 *radio433() const;
 

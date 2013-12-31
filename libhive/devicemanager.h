@@ -28,7 +28,7 @@ public:
     QList<Device*> configuredDevices() const;
     DeviceError addConfiguredDevice(const QUuid &deviceClassId, const QVariantMap &params);
 
-    QList<Device*> findConfiguredDevices(const DeviceClass &deviceClass);
+    QList<Device*> findConfiguredDevices(const QUuid &deviceClassId);
     DeviceClass findDeviceClass(const QUuid &deviceClassId);
 
     Radio433 *radio433() const;

@@ -53,11 +53,11 @@ QList<Device *> DeviceManager::configuredDevices() const
     return m_configuredDevices;
 }
 
-QList<Device *> DeviceManager::findConfiguredDevices(const DeviceClass &deviceClass)
+QList<Device *> DeviceManager::findConfiguredDevices(const QUuid &deviceClassId)
 {
     QList<Device*> ret;
     foreach (Device *device, m_configuredDevices) {
-        if (device->deviceClassId() == deviceClass.id()) {
+        if (device->deviceClassId() == deviceClassId) {
             ret << device;
         }
     }

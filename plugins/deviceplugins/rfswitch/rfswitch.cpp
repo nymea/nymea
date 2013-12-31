@@ -6,6 +6,9 @@
 
 #include <QDebug>
 
+QUuid mumbiRemote = QUuid("d85c1ef4-197c-4053-8e40-707aa671d302");
+QUuid mumbiRfSwitch = QUuid("308ae6e6-38b3-4b3a-a513-3199da2764f8");
+
 RfSwitch::RfSwitch()
 {
 }
@@ -20,7 +23,7 @@ QList<DeviceClass> RfSwitch::supportedDevices() const
     // TODO: load list from config with static uuid
     QList<DeviceClass> ret;
 
-    DeviceClass deviceClassRfRemote(QUuid::createUuid());
+    DeviceClass deviceClassRfRemote(mumbiRemote);
     deviceClassRfRemote.setName("RF Remote");
 
     QVariantList deviceParams;
@@ -77,7 +80,7 @@ QList<DeviceClass> RfSwitch::supportedDevices() const
     ret.append(deviceClassRfRemote);
 
 
-    DeviceClass deviceClassRfSwitch(QUuid::createUuid());
+    DeviceClass deviceClassRfSwitch(mumbiRfSwitch);
     deviceClassRfSwitch.setName("RF Switch");
     ret.append(deviceClassRfSwitch);
 
@@ -101,7 +104,7 @@ void RfSwitch::dataReceived(QList<int> rawData)
     group << true << false << false << false << false;
 
     Device *device = 0;
-    QList<Device*> deviceList = deviceManager()->findConfiguredDevices(deviceClassRfRemote);
+    QList<Device*> deviceList = deviceManager()->findConfiguredDevices(deviceClassRfRemote.id());
     foreach (Device *dev, deviceList) {
         if (dev->params().contains("channel1") && dev->params().value("channel1").toBool() == group.at(0) &&
                 dev->params().contains("channel2") && dev->params().value("channel2").toBool() == group.at(1) &&

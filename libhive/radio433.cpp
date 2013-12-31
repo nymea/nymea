@@ -30,7 +30,7 @@ Radio433::~Radio433()
 void Radio433::sendData(QList<int> rawData)
 {
 
-    //first we have to disable our receiver, to prevent reading the hive signal it self
+    //first we have to disable our receiver, to prevent reading this signal
     m_receiver->stop();
 
     m_transmitter->setValue(LOW);
@@ -43,7 +43,7 @@ void Radio433::sendData(QList<int> rawData)
         delayMicroseconds(delay);
     }
 
-    // reenable it
+    // re-enable it
     m_receiver->start();
 
 }
@@ -92,6 +92,7 @@ void Radio433::handleInterrupt()
 
     // filter nois
     if (m_duration > 5000 && m_duration > m_timings[0] - 200 && m_duration < m_timings[0] + 200) {
+
         m_repeatCount++;
         m_changeCount--;
 
@@ -119,22 +120,10 @@ void Radio433::handleInterrupt()
     }else if(m_duration > 5000){
         m_changeCount = 0;
     }
-    if (m_changeCount > RC_MAX_CHANGES) {
+    if (m_changeCount >= RC_MAX_CHANGES+1) {
         m_changeCount = 0;
         m_repeatCount = 0;
     }
     m_timings[m_changeCount++] = m_duration;
     m_lastTime = currentTime;
-}
-
-void Radio433::enableReceiver()
-{
-    qDebug() << "starting receiver";
-    m_receiver->start();
-}
-
-void Radio433::disableReceiver()
-{
-    m_receiver->stop();
-    qDebug() << "receiver disabeld.";
 }

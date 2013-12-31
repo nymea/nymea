@@ -22,8 +22,12 @@ void Gpio::run()
     int timeout = 3000;
     char buf[64];
 
-
     bool enabled = true;
+
+    m_mutex.lock();
+    m_enabled = true;
+    m_mutex.unlock();
+
 
     while(enabled){
         memset((void*)fdset, 0, sizeof(fdset));
@@ -46,7 +50,6 @@ void Gpio::run()
             read(fdset[1].fd, buf, 64);
             emit pinInterrupt();
         }
-
         m_mutex.lock();
         enabled = m_enabled;
         m_mutex.unlock();

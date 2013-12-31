@@ -5,6 +5,7 @@
 #include "hivecore.h"
 #include "devicemanager.h"
 #include "deviceclass.h"
+#include "device.h"
 
 #include <QJsonDocument>
 #include <QStringList>
@@ -51,7 +52,6 @@ void JsonRPCServer::processData(int clientId, const QByteArray &jsonData)
 
     if (targetNamspace == "Devices") {
         if (method == "GetSupportedDevices") {
-            qDebug() << "getSupportedDevices";
             QVariantMap params;
             QVariantList supportedDeviceList;
             foreach (const DeviceClass &deviceClass, HiveCore::instance()->deviceManager()->supportedDevices()) {
@@ -74,6 +74,14 @@ void JsonRPCServer::processData(int clientId, const QByteArray &jsonData)
                 sendErrorResponse(clientId, commandId, "Error creating device. Missing parameter.");
                 break;
             }
+        } else if (method == "GetConfiguredDevices") {
+            QVariantMap params;
+            QVariantList configuredDeviceList;
+            foreach (Device *device, HiveCore::instance()->deviceManager()->configuredDevices()) {
+                configuredDeviceList.append(packDevice(device));
+            }
+            params.insert("devices", configuredDeviceList);
+            sendResponse(clientId, commandId, params);
         } else {
             sendErrorResponse(clientId, commandId, "No such method");
         }
@@ -98,6 +106,20 @@ QVariantMap JsonRPCServer::packDeviceClass(const DeviceClass &deviceClass)
     }
     variant.insert("params", deviceClass.params());
     variant.insert("triggers", triggerTypes);
+    return variant;
+}
+
+QVariantMap JsonRPCServer::packDevice(Device *device)
+{
+    QVariantMap variant;
+    variant.insert("id", device->id());
+    variant.insert("deviceClassId", device->deviceClassId());
+    variant.insert("name", device->name());
+    QVariantList triggers;
+    foreach (const Trigger &trigger, device->triggers()) {
+        triggers.append(trigger.id());
+    }
+    variant.insert("triggers", triggers);
     return variant;
 }
 

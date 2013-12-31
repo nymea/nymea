@@ -8,6 +8,7 @@
 #include <QString>
 
 class TcpServer;
+class Device;
 
 class JsonRPCServer: public QObject
 {
@@ -23,6 +24,7 @@ private slots:
 
 private:
     QVariantMap packDeviceClass(const DeviceClass &deviceClass);
+    QVariantMap packDevice(Device *device);
 
     void sendResponse(int clientId, int commandId, const QVariantMap &params = QVariantMap());
     void sendErrorResponse(int clientId, int commandId, const QString &error);

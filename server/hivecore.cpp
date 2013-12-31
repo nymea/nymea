@@ -30,6 +30,8 @@ HiveCore::HiveCore(QObject *parent) :
     // start the server
     m_jsonServer = new JsonRPCServer(this);
 
+    connect(m_deviceManager,SIGNAL(emitTrigger(QUuid,QVariantMap)),this,SLOT(gotSignal(QUuid,QVariantMap)));
+
 }
 
 void HiveCore::gotSignal(const QUuid &triggerId, const QVariantMap &params)

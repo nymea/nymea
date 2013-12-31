@@ -54,10 +54,6 @@ QList<DeviceClass> RfRemoteMumbi::supportedDevices() const
     param.insert("name", "power");
     param.insert("type", "bool");
     params.append(param);
-
-    param.insert("name", "button");
-    param.insert("type", "string");
-    params.append(param);
     
     TriggerType buttonATrigger(QUuid::createUuid());
     buttonATrigger.setName("A");

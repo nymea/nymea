@@ -32,10 +32,6 @@ private:
     int micros();
     void delayMicroseconds(int pulseLength);
 
-    void enableReceiver();
-    void disableReceiver();
-
-
 private slots:
     void handleInterrupt();
 

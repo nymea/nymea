@@ -108,7 +108,7 @@ void DeviceManager::loadConfiguredDevices()
         settings.beginGroup(idString);
         Device *device = new Device(QUuid(idString), settings.value("deviceClassId").toUuid(), this);
         device->setName(settings.value("devicename").toString());
-        device->setParams(device->params());
+        device->setParams(settings.value("params").toMap());
         settings.endGroup();
         m_configuredDevices.append(device);
     }

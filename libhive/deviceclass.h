@@ -2,6 +2,7 @@
 #define DEVICECLASS_H
 
 #include "triggertype.h"
+#include "actiontype.h"
 
 #include <QList>
 #include <QUuid>
@@ -21,6 +22,9 @@ public:
     QList<TriggerType> triggers() const;
     void setTriggers(const QList<TriggerType> &triggers);
 
+    QList<ActionType> actions() const;
+    void setActions(const QList<ActionType> &actions);
+
     QVariantList params() const;
     void setParams(const QVariantList &params);
 
@@ -31,6 +35,7 @@ private:
     QUuid m_pluginId;
     QString m_name;
     QList<TriggerType> m_triggers;
+    QList<ActionType> m_actions;
     QVariantList m_params;
 };
 

@@ -42,6 +42,16 @@ void DeviceClass::setTriggers(const QList<TriggerType> &triggers)
     m_triggers = triggers;
 }
 
+QList<ActionType> DeviceClass::actions() const
+{
+    return m_actions;
+}
+
+void DeviceClass::setActions(const QList<ActionType> &actions)
+{
+    m_actions = actions;
+}
+
 QVariantList DeviceClass::params() const
 {
     return m_params;

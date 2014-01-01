@@ -24,8 +24,8 @@ QList<DeviceClass> RfRemoteMumbi::supportedDevices() const
     // TODO: load list from config with static uuid
     QList<DeviceClass> ret;
 
-    DeviceClass deviceClassRfRemote(pluginId(), mumbiRemote);
-    deviceClassRfRemote.setName("Mumbi Remote");
+    DeviceClass deviceClassRfRemoteMumbi(pluginId(), mumbiRemote);
+    deviceClassRfRemoteMumbi.setName("Mumbi Remote");
     
     QVariantList deviceParams;
     QVariantMap channelParam;
@@ -45,7 +45,7 @@ QList<DeviceClass> RfRemoteMumbi::supportedDevices() const
     channelParam.insert("type", "bool");
     deviceParams.append(channelParam);
     
-    deviceClassRfRemote.setParams(deviceParams);
+    deviceClassRfRemoteMumbi.setParams(deviceParams);
     
     QList<TriggerType> buttonTriggers;
     
@@ -80,13 +80,13 @@ QList<DeviceClass> RfRemoteMumbi::supportedDevices() const
     buttonETrigger.setParameters(params);
     buttonTriggers.append(buttonETrigger);
     
-    deviceClassRfRemote.setTriggers(buttonTriggers);
+    deviceClassRfRemoteMumbi.setTriggers(buttonTriggers);
     
-    ret.append(deviceClassRfRemote);
-
-    DeviceClass deviceClassRfRemoteMumbi(pluginId(), mumbiRfRemoteMumbi);
-    deviceClassRfRemoteMumbi.setName("Mumbi Power Switch");
     ret.append(deviceClassRfRemoteMumbi);
+
+    DeviceClass deviceClassRfSwitchMumbi(pluginId(), mumbiRfRemoteMumbi);
+    deviceClassRfSwitchMumbi.setName("Mumbi Power Switch");
+    ret.append(deviceClassRfSwitchMumbi);
     
     return ret;
 }

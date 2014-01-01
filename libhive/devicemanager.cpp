@@ -13,6 +13,8 @@
 #include <QStringList>
 
 Q_IMPORT_PLUGIN(RfRemoteMumbi)
+Q_IMPORT_PLUGIN(RfRemoteIntertechno)
+
 
 DeviceManager::DeviceManager(QObject *parent) :
     QObject(parent)

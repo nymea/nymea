@@ -36,6 +36,7 @@ HiveCore::HiveCore(QObject *parent) :
 
 void HiveCore::gotSignal(const QUuid &triggerId, const QVariantMap &params)
 {
+    qDebug() << "##################################################";
     qDebug() << "id: " << triggerId;
     qDebug() << params;
 

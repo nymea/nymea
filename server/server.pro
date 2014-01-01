@@ -21,3 +21,4 @@ HEADERS += hivecore.h \
 
 # FIXME: Drop this and link them dynamically
 LIBS += -L../plugins/deviceplugins/rfremotemumbi/ -lhive_rfremotemumbi
+LIBS += -L../plugins/deviceplugins/rfremoteintertechno/ -lhive_rfremoteintertechno

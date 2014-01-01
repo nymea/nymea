@@ -5,6 +5,7 @@
 #include "radio433.h"
 
 #include <QDebug>
+#include <QStringList>
 
 QUuid mumbiRemote = QUuid("d85c1ef4-197c-4053-8e40-707aa671d302");
 QUuid mumbiRfRemoteMumbi = QUuid("308ae6e6-38b3-4b3a-a513-3199da2764f8");
@@ -87,7 +88,6 @@ QList<DeviceClass> RfRemoteMumbi::supportedDevices() const
     
     ret.append(deviceClassRfRemote);
 
-
     DeviceClass deviceClassRfRemoteMumbi(mumbiRfRemoteMumbi);
     deviceClassRfRemoteMumbi.setName("Mumbi Power Switch");
     ret.append(deviceClassRfRemoteMumbi);
@@ -110,7 +110,7 @@ void RfRemoteMumbi::dataReceived(QList<int> rawData)
     int delay = rawData.first()/31;
     QByteArray binCode;
     
-    // new Remote -> average 314
+    // average 314
     if(delay > 300 && delay < 400){
         // go trough all 48 timings (without sync signal)
         for(int i = 1; i <= 48; i+=2 ){
@@ -118,7 +118,7 @@ void RfRemoteMumbi::dataReceived(QList<int> rawData)
             int divNext;
             
             // if short
-            if(rawData.at(i) < 700){
+            if(rawData.at(i) <= 700){
                 div = 1;
             }else{
                 div = 3;
@@ -130,6 +130,7 @@ void RfRemoteMumbi::dataReceived(QList<int> rawData)
                 divNext = 3;
             }
             
+
             //              _
             // if we have  | |___ = 0 -> in 4 delays => 1000
             //                 _
@@ -143,8 +144,9 @@ void RfRemoteMumbi::dataReceived(QList<int> rawData)
                 return;
             }
         }
+    }else{
+        return;
     }
-    //qDebug() << "bincode" << binCode;
 
     // get the channel of the remote signal (5 channels, true=1, false=0)
     QList<bool> group;
@@ -209,6 +211,7 @@ void RfRemoteMumbi::dataReceived(QList<int> rawData)
     params.insert("button", button);
     params.insert("power", power);
     foreach (const Trigger &trigger, device->triggers()) {
+        //qDebug() << "got trigger" << trigger.name();
         if (trigger.name() == button) {
             emit emitTrigger(trigger.id(), params);
             return;

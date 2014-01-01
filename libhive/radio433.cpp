@@ -97,6 +97,7 @@ void Radio433::handleInterrupt()
         m_changeCount--;
 
         if(m_repeatCount == 2) {
+
             // if we have a regular signal (1 bit sync + 48 bit data)
             if(m_changeCount == RC_MAX_CHANGES){
                 // write rawdata to a List and reset values to 0
@@ -105,11 +106,11 @@ void Radio433::handleInterrupt()
                     rawData.append(m_timings[i]);
                     m_timings[i] = 0;
                 }
-                qDebug() << "-----------------------------------------------------------";
-                qDebug() << "|                    GENERIC signal                       |";
-                qDebug() << "-----------------------------------------------------------";
-                qDebug() << "delay      :" << rawData.first() /31;
-                qDebug() << rawData;
+//                qDebug() << "-----------------------------------------------------------";
+//                qDebug() << "|                    GENERIC signal                       |";
+//                qDebug() << "-----------------------------------------------------------";
+//                qDebug() << "delay      :" << rawData.first() /31;
+//                qDebug() << rawData;
 
                 emit dataReceived(rawData);
             }
@@ -120,7 +121,7 @@ void Radio433::handleInterrupt()
     }else if(m_duration > 5000){
         m_changeCount = 0;
     }
-    if (m_changeCount >= RC_MAX_CHANGES+1) {
+    if (m_changeCount > RC_MAX_CHANGES) {
         m_changeCount = 0;
         m_repeatCount = 0;
     }

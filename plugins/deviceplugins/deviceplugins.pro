@@ -1,2 +1,3 @@
 TEMPLATE = subdirs
-SUBDIRS += rfremotemumbi
+SUBDIRS += rfremotemumbi rfremoteintertechno
+

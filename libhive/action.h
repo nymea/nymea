@@ -7,7 +7,8 @@
 class Action
 {
 public:
-    Action(const QUuid &id);
+    Action(const QUuid &id = QUuid());
+    bool isValid() const;
 
     QUuid id() const;
 

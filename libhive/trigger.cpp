@@ -5,6 +5,11 @@ Trigger::Trigger(const QUuid &id):
 {
 }
 
+bool Trigger::isValid() const
+{
+    return !m_id.isNull();
+}
+
 QUuid Trigger::id() const
 {
     return m_id;

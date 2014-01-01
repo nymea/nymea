@@ -8,7 +8,8 @@
 class Trigger
 {
 public:
-    Trigger(const QUuid &id);
+    Trigger(const QUuid &id = QUuid());
+    bool isValid() const;
 
     QUuid id() const;
 

@@ -6,6 +6,8 @@
 #include "devicemanager.h"
 #include "deviceclass.h"
 #include "device.h"
+#include "rule.h"
+#include "ruleengine.h"
 
 #include <QJsonDocument>
 #include <QStringList>
@@ -75,18 +77,51 @@ void JsonRPCServer::processData(int clientId, const QByteArray &jsonData)
                 break;
             }
         } else if (method == "GetConfiguredDevices") {
-            QVariantMap params;
+            QVariantMap rspParams;
             QVariantList configuredDeviceList;
             foreach (Device *device, HiveCore::instance()->deviceManager()->configuredDevices()) {
                 configuredDeviceList.append(packDevice(device));
             }
-            params.insert("devices", configuredDeviceList);
-            sendResponse(clientId, commandId, params);
+            rspParams.insert("devices", configuredDeviceList);
+            sendResponse(clientId, commandId, rspParams);
         } else {
             sendErrorResponse(clientId, commandId, "No such method");
         }
+    } else if (targetNamspace == "Rules") {
+        handleRulesMessage(clientId, commandId, method, params);
     } else {
         qDebug() << "got unknown namespace" << targetNamspace;
+    }
+}
+
+void JsonRPCServer::handleRulesMessage(int clientId, int commandId, const QString &method, const QVariantMap &params)
+{
+    if (method == "GetRules") {
+        QVariantList rulesList;
+        foreach (const Rule &rule, HiveCore::instance()->ruleEngine()->rules()) {
+            QVariantMap ruleMap;
+            ruleMap.insert("id", rule.id());
+            ruleMap.insert("triggerId", rule.triggerId());
+            ruleMap.insert("actionId", rule.actionId());
+            rulesList.append(ruleMap);
+        }
+        QVariantMap rspParams;
+        rspParams.insert("rules", rulesList);
+        sendResponse(clientId, commandId, rspParams);
+    } else if (method == "AddRule") {
+        QUuid triggerId = params.value("triggerId").toUuid();
+        QUuid actionId = params.value("actionId").toUuid();
+        switch(HiveCore::instance()->ruleEngine()->addRule(triggerId, actionId)) {
+        case RuleEngine::RuleErrorNoError:
+            sendResponse(clientId, commandId);
+            break;
+        case RuleEngine::RuleErrorNoSuchTrigger:
+            sendErrorResponse(clientId, commandId, "No such trigger");
+            break;
+        case RuleEngine::RuleErrorNoSuchAction:
+            sendErrorResponse(clientId, commandId, "No such action");
+            break;
+        }
     }
 }
 

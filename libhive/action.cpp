@@ -5,6 +5,11 @@ Action::Action(const QUuid &id) :
 {
 }
 
+bool Action::isValid() const
+{
+    return !m_id.isNull();
+}
+
 QUuid Action::id() const
 {
     return m_id;

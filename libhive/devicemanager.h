@@ -3,6 +3,7 @@
 
 #include "deviceclass.h"
 #include "trigger.h"
+#include "action.h"
 
 #include <QObject>
 
@@ -31,6 +32,9 @@ public:
 
     QList<Device*> findConfiguredDevices(const QUuid &deviceClassId);
     DeviceClass findDeviceClass(const QUuid &deviceClassId);
+
+    Trigger findTrigger(const QUuid &triggerId);
+    Action findAction(const QUuid &actionId);
 
     Radio433 *radio433() const;
 

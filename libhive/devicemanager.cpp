@@ -95,6 +95,30 @@ DeviceClass DeviceManager::findDeviceClass(const QUuid &deviceClassId)
     return DeviceClass(QUuid(), QUuid());
 }
 
+Trigger DeviceManager::findTrigger(const QUuid &triggerId)
+{
+    foreach (Device *device, m_configuredDevices) {
+        foreach (const Trigger &trigger, device->triggers()) {
+            if (trigger.id() == triggerId) {
+                return trigger;
+            }
+        }
+    }
+    return Trigger();
+}
+
+Action DeviceManager::findAction(const QUuid &actionId)
+{
+    foreach (Device *device, m_configuredDevices) {
+        foreach (const Action &action, device->actions()) {
+            if (action.id() == actionId) {
+                return action;
+            }
+        }
+    }
+    return Action();
+}
+
 Radio433 *DeviceManager::radio433() const
 {
     return m_radio433;

@@ -23,6 +23,8 @@ private slots:
     void processData(int clientId, const QByteArray &jsonData);
 
 private:
+    void handleRulesMessage(int clientId, int commandId, const QString &method, const QVariantMap &params);
+
     QVariantMap packDeviceClass(const DeviceClass &deviceClass);
     QVariantMap packDevice(Device *device);
 

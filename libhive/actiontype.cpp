@@ -19,3 +19,8 @@ void ActionType::setName(const QString &name)
 {
     m_name = name;
 }
+
+void ActionType::setParameters(const QVariantList &parameters)
+{
+    m_parameters = parameters;
+}

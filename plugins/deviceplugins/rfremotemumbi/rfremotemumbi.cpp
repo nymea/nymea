@@ -24,70 +24,117 @@ QList<DeviceClass> RfRemoteMumbi::supportedDevices() const
     // TODO: load list from config with static uuid
     QList<DeviceClass> ret;
 
+    // Remote
     DeviceClass deviceClassRfRemoteMumbi(pluginId(), mumbiRemote);
     deviceClassRfRemoteMumbi.setName("Mumbi Remote");
     
-    QVariantList deviceParams;
+    QVariantList deviceParamsRemote;
     QVariantMap channelParam;
     channelParam.insert("name", "channel1");
     channelParam.insert("type", "bool");
-    deviceParams.append(channelParam);
+    deviceParamsRemote.append(channelParam);
     channelParam.insert("name", "channel2");
     channelParam.insert("type", "bool");
-    deviceParams.append(channelParam);
+    deviceParamsRemote.append(channelParam);
     channelParam.insert("name", "channel3");
     channelParam.insert("type", "bool");
-    deviceParams.append(channelParam);
+    deviceParamsRemote.append(channelParam);
     channelParam.insert("name", "channel4");
     channelParam.insert("type", "bool");
-    deviceParams.append(channelParam);
+    deviceParamsRemote.append(channelParam);
     channelParam.insert("name", "channel5");
     channelParam.insert("type", "bool");
-    deviceParams.append(channelParam);
+    deviceParamsRemote.append(channelParam);
     
-    deviceClassRfRemoteMumbi.setParams(deviceParams);
+    deviceClassRfRemoteMumbi.setParams(deviceParamsRemote);
     
     QList<TriggerType> buttonTriggers;
     
-    QVariantList params;
+    QVariantList paramsRemote;
     QVariantMap param;
     param.insert("name", "power");
     param.insert("type", "bool");
-    params.append(param);
+    paramsRemote.append(param);
     
-    TriggerType buttonATrigger(QUuid::createUuid());
+    TriggerType buttonATrigger(QUuid("9dd3f862-35f3-4b69-954e-fa3c8bd68e39"));
     buttonATrigger.setName("A");
-    buttonATrigger.setParameters(params);
+    buttonATrigger.setParameters(paramsRemote);
     buttonTriggers.append(buttonATrigger);
     
-    TriggerType buttonBTrigger(QUuid::createUuid());
+    TriggerType buttonBTrigger(QUuid("733226eb-91ba-4e37-9d78-12c87eb5e763"));
     buttonBTrigger.setName("B");
-    buttonBTrigger.setParameters(params);
+    buttonBTrigger.setParameters(paramsRemote);
     buttonTriggers.append(buttonBTrigger);
     
-    TriggerType buttonCTrigger(QUuid::createUuid());
+    TriggerType buttonCTrigger(QUuid("47aaeaec-485a-4775-a543-33f339fd28c8"));
     buttonCTrigger.setName("C");
-    buttonCTrigger.setParameters(params);
+    buttonCTrigger.setParameters(paramsRemote);
     buttonTriggers.append(buttonCTrigger);
     
-    TriggerType buttonDTrigger(QUuid::createUuid());
+    TriggerType buttonDTrigger(QUuid("db3d484c-add9-44ab-80a4-a0664e0c87c8"));
     buttonDTrigger.setName("D");
-    buttonDTrigger.setParameters(params);
+    buttonDTrigger.setParameters(paramsRemote);
     buttonTriggers.append(buttonDTrigger);
     
-    TriggerType buttonETrigger(QUuid::createUuid());
+    TriggerType buttonETrigger(QUuid("eb914aac-fb73-4ee2-9f1b-c34b2f6cc24a"));
     buttonETrigger.setName("E");
-    buttonETrigger.setParameters(params);
+    buttonETrigger.setParameters(paramsRemote);
     buttonTriggers.append(buttonETrigger);
     
     deviceClassRfRemoteMumbi.setTriggers(buttonTriggers);
-    
     ret.append(deviceClassRfRemoteMumbi);
 
+    // Switch
     DeviceClass deviceClassRfSwitchMumbi(pluginId(), mumbiRfRemoteMumbi);
     deviceClassRfSwitchMumbi.setName("Mumbi Power Switch");
-    ret.append(deviceClassRfSwitchMumbi);
     
+    QVariantList deviceParamsSwitch;
+    QVariantMap paramSwitch;
+    paramSwitch.insert("name", "channel1");
+    paramSwitch.insert("type", "bool");
+    deviceParamsSwitch.append(paramSwitch);
+    paramSwitch.insert("name", "channel2");
+    paramSwitch.insert("type", "bool");
+    deviceParamsSwitch.append(paramSwitch);
+    paramSwitch.insert("name", "channel3");
+    paramSwitch.insert("type", "bool");
+    deviceParamsSwitch.append(paramSwitch);
+    paramSwitch.insert("name", "channel4");
+    paramSwitch.insert("type", "bool");
+    deviceParamsSwitch.append(paramSwitch);
+    paramSwitch.insert("name", "channel5");
+    paramSwitch.insert("type", "bool");
+    deviceParamsSwitch.append(paramSwitch);
+    paramSwitch.insert("name", "A");
+    paramSwitch.insert("type", "bool");
+    deviceParamsSwitch.append(paramSwitch);
+    paramSwitch.insert("name", "B");
+    paramSwitch.insert("type", "bool");
+    deviceParamsSwitch.append(paramSwitch);
+    paramSwitch.insert("name", "C");
+    paramSwitch.insert("type", "bool");
+    deviceParamsSwitch.append(paramSwitch);
+    paramSwitch.insert("name", "D");
+    paramSwitch.insert("type", "bool");
+    deviceParamsSwitch.append(paramSwitch);
+    paramSwitch.insert("name", "E");
+    paramSwitch.insert("type", "bool");
+    deviceParamsSwitch.append(paramSwitch);
+
+    QVariantList paramsSwitch;
+    QVariantMap actionParamSwitch;
+    actionParamSwitch.insert("name", "power");
+    actionParamSwitch.insert("type", "bool");
+    paramsSwitch.append(actionParamSwitch);
+
+
+    QList<ActionType> switchActions;
+
+    ActionType powerAction(QUuid("31c9758e-6567-4f89-85bb-29e1a7c55d44"));
+    powerAction.setName("power");
+    powerAction.setParameters(paramsSwitch);
+    switchActions.append(powerAction);
+    ret.append(deviceClassRfSwitchMumbi);
     return ret;
 }
 
@@ -104,6 +151,93 @@ QUuid RfRemoteMumbi::pluginId() const
 void RfRemoteMumbi::executeAction(Device *device, const Action &action)
 {
 
+    QList<int> rawData;
+    QByteArray binCode;
+
+    // =======================================
+    // create the bincode
+    // channels
+    if(device->params().value("channel1").toBool()){
+        binCode.append("00");
+    }else{
+        binCode.append("01");
+    }
+    if(device->params().value("channel2").toBool()){
+        binCode.append("00");
+    }else{
+        binCode.append("01");
+    }
+    if(device->params().value("channel3").toBool()){
+        binCode.append("00");
+    }else{
+        binCode.append("01");
+    }
+    if(device->params().value("channel4").toBool()){
+        binCode.append("00");
+    }else{
+        binCode.append("01");
+    }
+    if(device->params().value("channel5").toBool()){
+        binCode.append("00");
+    }else{
+        binCode.append("01");
+    }
+
+    // Buttons
+    if(device->params().value("A").toBool()){
+        binCode.append("00");
+    }else{
+        binCode.append("01");
+    }
+    if(device->params().value("B").toBool()){
+        binCode.append("00");
+    }else{
+        binCode.append("01");
+    }
+    if(device->params().value("C").toBool()){
+        binCode.append("00");
+    }else{
+        binCode.append("01");
+    }
+    if(device->params().value("D").toBool()){
+        binCode.append("00");
+    }else{
+        binCode.append("01");
+    }
+    if(device->params().value("E").toBool()){
+        binCode.append("00");
+    }else{
+        binCode.append("01");
+    }
+//    // Power
+//    if(action.params().value().toBool()){
+//        binCode.append("0001");
+//    }else{
+//        binCode.append("0100");
+//    }
+
+    // =======================================
+    //create rawData timings list
+    int delay = 350;
+
+    // sync signal
+    rawData.append(delay);
+    rawData.append(delay*31);
+
+    // add the code
+    foreach (QChar c, binCode) {
+        if(c == '0'){
+            rawData.append(delay);
+            rawData.append(delay*3);
+        }else{
+            rawData.append(delay*3);
+            rawData.append(delay);
+        }
+    }
+
+    // =======================================
+    // send data to driver
+    deviceManager()->radio433()->sendData(rawData);
 }
 
 void RfRemoteMumbi::dataReceived(QList<int> rawData)
@@ -135,7 +269,6 @@ void RfRemoteMumbi::dataReceived(QList<int> rawData)
             }else{
                 divNext = 3;
             }
-            
 
             //              _
             // if we have  | |___ = 0 -> in 4 delays => 1000

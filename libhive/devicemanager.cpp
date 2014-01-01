@@ -45,7 +45,13 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const QUuid &devic
         // TODO: Check if parameter type matches
     }
 
-    Device *device = new Device(deviceClassId, this);
+    DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
+    if (!plugin) {
+        qWarning() << "Cannot find a plugin for this device class!";
+        return DeviceErrorPluginNotFound;
+    }
+
+    Device *device = new Device(plugin->pluginId(), deviceClassId, this);
     device->setName(deviceClass.name());
     device->setParams(params);
     QList<Trigger> triggers;
@@ -86,12 +92,24 @@ DeviceClass DeviceManager::findDeviceClass(const QUuid &deviceClassId)
             return deviceClass;
         }
     }
-    return DeviceClass(QUuid());
+    return DeviceClass(QUuid(), QUuid());
 }
 
 Radio433 *DeviceManager::radio433() const
 {
     return m_radio433;
+}
+
+void DeviceManager::executeAction(const QUuid &actionId, const QVariantMap &params)
+{
+    foreach (Device *device, m_configuredDevices) {
+        foreach (const Action &action, device->actions()) {
+            if (action.id() == actionId) {
+                m_devicePlugins.value(device->pluginId())->executeAction(device, action);
+                return;
+            }
+        }
+    }
 }
 
 void DeviceManager::loadPlugins()
@@ -101,8 +119,11 @@ void DeviceManager::loadPlugins()
         if (pluginIface) {
             qDebug() << "*** Loaded plugin" << pluginIface->pluginName();
             pluginIface->initPlugin(this);
-            m_supportedDevices.append(pluginIface->supportedDevices());
-            m_devicePlugins.append(pluginIface);
+            foreach (const DeviceClass &deviceClass, pluginIface->supportedDevices()) {
+                qDebug() << "* Loaded device class:" << deviceClass.name();
+                m_supportedDevices.append(deviceClass);
+            }
+            m_devicePlugins.insert(pluginIface->pluginId(), pluginIface);
             connect(pluginIface,SIGNAL(emitTrigger(QUuid,QVariantMap)),this,SIGNAL(emitTrigger(QUuid,QVariantMap)));
         }
 
@@ -152,4 +173,3 @@ void DeviceManager::storeConfiguredDevices()
         settings.endGroup();
     }
 }
-

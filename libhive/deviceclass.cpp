@@ -1,7 +1,8 @@
 #include "deviceclass.h"
 
-DeviceClass::DeviceClass(const QUuid &id):
-    m_id(id)
+DeviceClass::DeviceClass(const QUuid &pluginId, const QUuid &id):
+    m_id(id),
+    m_pluginId(pluginId)
 {
 
 }
@@ -14,6 +15,11 @@ DeviceClass::~DeviceClass()
 QUuid DeviceClass::id() const
 {
     return m_id;
+}
+
+QUuid DeviceClass::pluginId() const
+{
+    return m_pluginId;
 }
 
 QString DeviceClass::name() const
@@ -44,4 +50,9 @@ QVariantList DeviceClass::params() const
 void DeviceClass::setParams(const QVariantList &params)
 {
     m_params = params;
+}
+
+bool DeviceClass::operator==(const DeviceClass &deviceClass) const
+{
+    return m_id == deviceClass.id();
 }

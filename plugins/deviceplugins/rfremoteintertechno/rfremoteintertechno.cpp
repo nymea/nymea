@@ -22,7 +22,7 @@ QList<DeviceClass> RfRemoteIntertechno::supportedDevices() const
 {
     QList<DeviceClass> ret;
 
-    DeviceClass deviceClassRfRemote(intertechnoRemote);
+    DeviceClass deviceClassRfRemote(pluginId(), intertechnoRemote);
     deviceClassRfRemote.setName("Intertechno Remote");
     
     QVariantList deviceParams;
@@ -79,6 +79,16 @@ QList<DeviceClass> RfRemoteIntertechno::supportedDevices() const
 QString RfRemoteIntertechno::pluginName() const
 {
     return "RF Remote Intertechno";
+}
+
+QUuid RfRemoteIntertechno::pluginId() const
+{
+    return QUuid("e998d934-0397-42c1-ad63-9141bcac8563");
+}
+
+void RfRemoteIntertechno::executeAction(Device *device, const Action &action)
+{
+
 }
 
 void RfRemoteIntertechno::dataReceived(QList<int> rawData)

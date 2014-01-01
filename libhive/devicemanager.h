@@ -18,7 +18,8 @@ public:
         DeviceErrorNoError,
         DeviceErrorDeviceNotFound,
         DeviceErrorDeviceClassNotFound,
-        DeviceErrorMissingParameter
+        DeviceErrorMissingParameter,
+        DeviceErrorPluginNotFound
     };
 
     explicit DeviceManager(QObject *parent = 0);
@@ -36,6 +37,9 @@ public:
 signals:
     void emitTrigger(const QUuid &triggerId, const QVariantMap &params);
 
+public slots:
+    void executeAction(const QUuid &actionId, const QVariantMap &params);
+
 private slots:
     void loadPlugins();
     void loadConfiguredDevices();
@@ -44,7 +48,8 @@ private slots:
 private:
     QList<DeviceClass> m_supportedDevices;
     QList<Device*> m_configuredDevices;
-    QList<DevicePlugin*> m_devicePlugins;
+
+    QHash<QUuid, DevicePlugin*> m_devicePlugins;
 
     Radio433* m_radio433;
 };

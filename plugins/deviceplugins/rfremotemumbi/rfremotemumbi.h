@@ -17,6 +17,10 @@ public:
     QList<DeviceClass> supportedDevices() const override;
 
     QString pluginName() const;
+    QUuid pluginId() const;
+
+public slots:
+    void executeAction(Device *device, const Action &action) override;
 
 private slots:
     void dataReceived(QList<int> rawData);

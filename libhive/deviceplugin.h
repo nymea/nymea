@@ -3,10 +3,12 @@
 
 #include "deviceclass.h"
 #include "trigger.h"
+#include "action.h"
 
 #include <QObject>
 
 class DeviceManager;
+class Device;
 
 class DevicePlugin: public QObject
 {
@@ -20,8 +22,12 @@ public:
     virtual void init() {}
 
     virtual QString pluginName() const = 0;
+    virtual QUuid pluginId() const = 0;
 
     virtual QList<DeviceClass> supportedDevices() const = 0;
+
+public slots:
+    virtual void executeAction(Device *device, const Action &action) = 0;
 
 signals:
     void emitTrigger(const QUuid &triggerId, const QVariantMap &params);

@@ -9,10 +9,11 @@
 class DeviceClass
 {
 public:
-    DeviceClass(const QUuid &id);
+    DeviceClass(const QUuid &pluginId, const QUuid &id);
     virtual ~DeviceClass();
 
     QUuid id() const;
+    QUuid pluginId() const;
 
     QString name() const;
     void setName(const QString &name);
@@ -23,8 +24,11 @@ public:
     QVariantList params() const;
     void setParams(const QVariantList &params);
 
+    bool operator==(const DeviceClass &device) const;
+
 private:
     QUuid m_id;
+    QUuid m_pluginId;
     QString m_name;
     QList<TriggerType> m_triggers;
     QVariantList m_params;

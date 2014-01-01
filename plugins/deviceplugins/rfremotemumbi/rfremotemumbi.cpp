@@ -24,7 +24,7 @@ QList<DeviceClass> RfRemoteMumbi::supportedDevices() const
     // TODO: load list from config with static uuid
     QList<DeviceClass> ret;
 
-    DeviceClass deviceClassRfRemote(mumbiRemote);
+    DeviceClass deviceClassRfRemote(pluginId(), mumbiRemote);
     deviceClassRfRemote.setName("Mumbi Remote");
     
     QVariantList deviceParams;
@@ -84,7 +84,7 @@ QList<DeviceClass> RfRemoteMumbi::supportedDevices() const
     
     ret.append(deviceClassRfRemote);
 
-    DeviceClass deviceClassRfRemoteMumbi(mumbiRfRemoteMumbi);
+    DeviceClass deviceClassRfRemoteMumbi(pluginId(), mumbiRfRemoteMumbi);
     deviceClassRfRemoteMumbi.setName("Mumbi Power Switch");
     ret.append(deviceClassRfRemoteMumbi);
     
@@ -93,7 +93,17 @@ QList<DeviceClass> RfRemoteMumbi::supportedDevices() const
 
 QString RfRemoteMumbi::pluginName() const
 {
-    return "RF Remote Mumbi";
+    return QStringLiteral("RF Remote Mumbi");
+}
+
+QUuid RfRemoteMumbi::pluginId() const
+{
+    return QUuid("2b267f81-d9ae-4f4f-89a0-7386b547cfd3");
+}
+
+void RfRemoteMumbi::executeAction(Device *device, const Action &action)
+{
+
 }
 
 void RfRemoteMumbi::dataReceived(QList<int> rawData)

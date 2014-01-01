@@ -11,7 +11,9 @@ SOURCES += device.cpp \
            radio433.cpp \
            gpio.cpp \
            trigger.cpp \
-           triggertype.cpp
+           triggertype.cpp \
+    action.cpp \
+    actiontype.cpp
 
 HEADERS += device.h \
            deviceclass.h \
@@ -20,5 +22,7 @@ HEADERS += device.h \
            radio433.h \
            gpio.h \
            trigger.h \
-           triggertype.h
+           triggertype.h \
+    action.h \
+    actiontype.h
 

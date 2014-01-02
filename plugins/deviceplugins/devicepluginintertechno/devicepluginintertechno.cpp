@@ -8,6 +8,7 @@
 #include <QStringList>
 
 QUuid intertechnoRemote = QUuid("ab73ad2f-6594-45a3-9063-8f72d365c5e5");
+QUuid intertechnoSwitch = QUuid("324219e8-7c53-41b5-b314-c2900cd15252");
 
 DevicePluginIntertechno::DevicePluginIntertechno()
 {
@@ -22,27 +23,29 @@ QList<DeviceClass> DevicePluginIntertechno::supportedDevices() const
 {
     QList<DeviceClass> ret;
 
-    DeviceClass deviceClassRfRemote(pluginId(), intertechnoRemote);
-    deviceClassRfRemote.setName("Intertechno Remote");
+    // Remote
+    DeviceClass deviceClassIntertechnoRemote(pluginId(), intertechnoRemote);
+    deviceClassIntertechnoRemote.setName("Intertechno Remote");
     
-    QVariantList deviceParams;
-    QVariantMap channelParam;
+    QVariantList remoteParams;
+    QVariantMap familyParam;
     // family code = A-P
-    channelParam.insert("name", "familycode");
-    channelParam.insert("type", "string");
-    
-    deviceClassRfRemote.setParams(deviceParams);
+    familyParam.insert("name", "familycode");
+    familyParam.insert("type", "string");
+    remoteParams.append(familyParam);
+
+    deviceClassIntertechnoRemote.setParams(remoteParams);
     
     QList<TriggerType> buttonTriggers;
     
-    QVariantList params;
-    QVariantMap param;
+    QVariantList paramsRemote;
+    QVariantMap paramRemote;
 
     // on  = true
     // off = false
-    param.insert("name", "power");
-    param.insert("type", "bool");
-    params.append(param);
+    paramRemote.insert("name", "power");
+    paramRemote.insert("type", "bool");
+    paramsRemote.append(paramRemote);
 
 
     /*              1-16
@@ -55,30 +58,135 @@ QList<DeviceClass> DevicePluginIntertechno::supportedDevices() const
      *    4  | 4 | 8 | 12| 16 |
      *       |___|___|___|____|
      */
-    param.insert("name", "button");
-    param.insert("type", "int");
-    params.append(param);
+    paramRemote.insert("name", "button");
+    paramRemote.insert("type", "int");
+    paramsRemote.append(paramRemote);
 
     TriggerType button1Trigger("785c1b30-a3f2-4696-af7c-d532acf3d6f7");
     button1Trigger.setName("1");
-    button1Trigger.setParameters(params);
+    button1Trigger.setParameters(paramsRemote);
     buttonTriggers.append(button1Trigger);
 
     TriggerType button2Trigger("1d42c850-7b43-452f-b205-e1aac14eb3ee");
     button2Trigger.setName("2");
-    button2Trigger.setParameters(params);
+    button2Trigger.setParameters(paramsRemote);
     buttonTriggers.append(button2Trigger);
 
 
-    deviceClassRfRemote.setTriggers(buttonTriggers);
+    TriggerType button3Trigger("77a4780e-2355-4a77-870d-2f675bf986ce");
+    button3Trigger.setName("3");
+    button3Trigger.setParameters(paramsRemote);
+    buttonTriggers.append(button3Trigger);
+
+    TriggerType button4Trigger("bd6a8b4b-f946-4f3b-992f-e7cff10187b8");
+    button4Trigger.setName("4");
+    button4Trigger.setParameters(paramsRemote);
+    buttonTriggers.append(button4Trigger);
+
+    TriggerType button5Trigger("0f20782e-0acc-45f1-8c42-5dc5f5b29f1b");
+    button5Trigger.setName("5");
+    button5Trigger.setParameters(paramsRemote);
+    buttonTriggers.append(button5Trigger);
+
+    TriggerType button6Trigger("f7cb439a-0528-4905-9583-06b6bfeb3ba1");
+    button6Trigger.setName("6");
+    button6Trigger.setParameters(paramsRemote);
+    buttonTriggers.append(button6Trigger);
+
+    TriggerType button7Trigger("a0b0d8d8-2b43-4897-98e0-05b6b408a950");
+    button7Trigger.setName("7");
+    button7Trigger.setParameters(paramsRemote);
+    buttonTriggers.append(button7Trigger);
+
+    TriggerType button8Trigger("ae5833a2-bc43-4462-ae47-e45dac1fb0ce");
+    button8Trigger.setName("8");
+    button8Trigger.setParameters(paramsRemote);
+    buttonTriggers.append(button8Trigger);
+
+    TriggerType button9Trigger("52c13828-d047-4256-b488-0bf84abbc87c");
+    button9Trigger.setName("9");
+    button9Trigger.setParameters(paramsRemote);
+    buttonTriggers.append(button9Trigger);
+
+    TriggerType button10Trigger("22c5afbc-835e-47cc-8211-4429eb9d9fee");
+    button10Trigger.setName("10");
+    button10Trigger.setParameters(paramsRemote);
+    buttonTriggers.append(button10Trigger);
+
+    TriggerType button11Trigger("6bec5cbc-8bfb-4c6c-8ac8-f8e7723fd5aa");
+    button11Trigger.setName("11");
+    button11Trigger.setParameters(paramsRemote);
+    buttonTriggers.append(button11Trigger);
     
-    ret.append(deviceClassRfRemote);
+    TriggerType button12Trigger("8b71edd2-8135-4c8b-bf44-380efadf1942");
+    button12Trigger.setName("12");
+    button12Trigger.setParameters(paramsRemote);
+    buttonTriggers.append(button12Trigger);
+
+    TriggerType button13Trigger("192f36a4-1e58-41aa-9618-83d46e329a4b");
+    button13Trigger.setName("13");
+    button13Trigger.setParameters(paramsRemote);
+    buttonTriggers.append(button13Trigger);
+
+    TriggerType button14Trigger("6c76de60-5e19-4a29-b027-e71e66caa2d6");
+    button14Trigger.setName("14");
+    button14Trigger.setParameters(paramsRemote);
+    buttonTriggers.append(button14Trigger);
+
+    TriggerType button15Trigger("c2f56c10-1f81-4477-88fa-fc0f4a6383df");
+    button15Trigger.setName("15");
+    button15Trigger.setParameters(paramsRemote);
+    buttonTriggers.append(button15Trigger);
+
+    TriggerType button16Trigger("5d2eb3f8-4cd4-4c71-9c0c-e0b685e168e4");
+    button16Trigger.setName("16");
+    button16Trigger.setParameters(paramsRemote);
+    buttonTriggers.append(button16Trigger);
+
+    deviceClassIntertechnoRemote.setTriggers(buttonTriggers);
+    ret.append(deviceClassIntertechnoRemote);
+
+
+    // Switch
+    DeviceClass deviceClassIntertechnoSwitch(pluginId(), intertechnoSwitch);
+    deviceClassIntertechnoSwitch.setName("Intertechno Switch");
+
+    QVariantList switchDeviceParams;
+    QVariantMap buttonParam;
+    // button code = 1-16
+    buttonParam.insert("name", "buttoncode");
+    buttonParam.insert("type", "int");
+
+    switchDeviceParams.append(familyParam);
+    switchDeviceParams.append(buttonParam);
+
+    deviceClassIntertechnoSwitch.setParams(switchDeviceParams);
+
+    QList<ActionType> switchActions;
+
+    QVariantList paramsSwitch;
+    QVariantMap paramSwitch;
+
+    // on  = true
+    // off = false
+    paramSwitch.insert("name", "power");
+    paramSwitch.insert("type", "bool");
+    paramsSwitch.append(paramSwitch);
+
+    ActionType switchActionPower(QUuid("df19fb51-c3cd-4b95-8d88-ebbb535f4789"));
+    switchActionPower.setName("power");
+    switchActionPower.setParameters(paramsSwitch);
+    switchActions.append(switchActionPower);
+
+    deviceClassIntertechnoSwitch.setActions(switchActions);
+    ret.append(deviceClassIntertechnoSwitch);
+
     return ret;
 }
 
 QString DevicePluginIntertechno::pluginName() const
 {
-    return "RF Remote Intertechno";
+    return "Intertechno";
 }
 
 QUuid DevicePluginIntertechno::pluginId() const

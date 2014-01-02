@@ -54,7 +54,7 @@ void HiveCore::gotSignal(const QUuid &triggerId, const QVariantMap &params)
     qDebug() << "id: " << triggerId;
     qDebug() << params;
 
-    foreach (const QUuid &actionId, m_ruleEngine->evaluateTrigger(triggerId)) {
-        m_deviceManager->executeAction(actionId, params);
+    foreach (const Action &action, m_ruleEngine->evaluateTrigger(triggerId)) {
+        m_deviceManager->executeAction(action);
     }
 }

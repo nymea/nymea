@@ -36,13 +36,15 @@ public:
     Trigger findTrigger(const QUuid &triggerId);
     Action findAction(const QUuid &actionId);
 
+    QList<Action> allActions() const;
+
     Radio433 *radio433() const;
 
 signals:
     void emitTrigger(const QUuid &triggerId, const QVariantMap &params);
 
 public slots:
-    void executeAction(const QUuid &actionId, const QVariantMap &params);
+    DeviceError executeAction(const Action &action);
 
 private slots:
     void loadPlugins();

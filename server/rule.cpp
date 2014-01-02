@@ -1,9 +1,9 @@
 #include "rule.h"
 
-Rule::Rule(const QUuid &id, const QUuid &triggerId, const QUuid &actionId):
+Rule::Rule(const QUuid &id, const QUuid &triggerId, const Action &action):
     m_id(id),
     m_triggerId(triggerId),
-    m_actionId(actionId)
+    m_action(action)
 {
 }
 
@@ -17,7 +17,7 @@ QUuid Rule::triggerId() const
     return m_triggerId;
 }
 
-QUuid Rule::actionId() const
+Action Rule::action() const
 {
-    return m_actionId;
+    return m_action;
 }

@@ -2,6 +2,7 @@
 #define JSONRPCSERVER_H
 
 #include "deviceclass.h"
+#include "action.h"
 
 #include <QObject>
 #include <QVariantMap>
@@ -24,9 +25,11 @@ private slots:
 
 private:
     void handleRulesMessage(int clientId, int commandId, const QString &method, const QVariantMap &params);
+    void handleActionMessage(int clientId, int commandId, const QString &method, const QVariantMap &params);
 
     QVariantMap packDeviceClass(const DeviceClass &deviceClass);
     QVariantMap packDevice(Device *device);
+    QVariantMap packAction(const Action &action);
 
     void sendResponse(int clientId, int commandId, const QVariantMap &params = QVariantMap());
     void sendErrorResponse(int clientId, int commandId, const QString &error);

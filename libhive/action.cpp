@@ -1,7 +1,8 @@
 #include "action.h"
 
-Action::Action(const QUuid &id) :
-    m_id(id)
+Action::Action(const QUuid &id, const QUuid &deviceId) :
+    m_id(id),
+    m_deviceId(deviceId)
 {
 }
 
@@ -13,6 +14,11 @@ bool Action::isValid() const
 QUuid Action::id() const
 {
     return m_id;
+}
+
+QUuid Action::deviceId() const
+{
+    return m_deviceId;
 }
 
 QString Action::name() const
@@ -34,4 +40,3 @@ void Action::setParams(const QVariantList &params)
 {
     m_params = params;
 }
-

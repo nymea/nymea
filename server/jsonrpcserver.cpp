@@ -45,14 +45,14 @@ void JsonRPCServer::processData(int clientId, const QByteArray &jsonData)
         return;
     }
 
-    QString targetNamspace = commandList.first();
+    QString targetNamespace = commandList.first();
     QString method = commandList.last();
     QVariantMap params = message.value("params").toMap();
 
-    qDebug() << "got:" << targetNamspace << method << params;
-    emit commandReceived(targetNamspace, method, params);
+    qDebug() << "got:" << targetNamespace << method << params;
+    emit commandReceived(targetNamespace, method, params);
 
-    if (targetNamspace == "Devices") {
+    if (targetNamespace == "Devices") {
         if (method == "GetSupportedDevices") {
             QVariantMap params;
             QVariantList supportedDeviceList;
@@ -87,10 +87,12 @@ void JsonRPCServer::processData(int clientId, const QByteArray &jsonData)
         } else {
             sendErrorResponse(clientId, commandId, "No such method");
         }
-    } else if (targetNamspace == "Rules") {
+    } else if (targetNamespace == "Rules") {
         handleRulesMessage(clientId, commandId, method, params);
+    } else if (targetNamespace == "Actions") {
+        handleActionMessage(clientId, commandId, method, params);
     } else {
-        qDebug() << "got unknown namespace" << targetNamspace;
+        qDebug() << "got unknown namespace" << targetNamespace;
     }
 }
 
@@ -102,7 +104,7 @@ void JsonRPCServer::handleRulesMessage(int clientId, int commandId, const QStrin
             QVariantMap ruleMap;
             ruleMap.insert("id", rule.id());
             ruleMap.insert("triggerId", rule.triggerId());
-            ruleMap.insert("actionId", rule.actionId());
+            ruleMap.insert("action", packAction(rule.action()));
             rulesList.append(ruleMap);
         }
         QVariantMap rspParams;
@@ -122,6 +124,20 @@ void JsonRPCServer::handleRulesMessage(int clientId, int commandId, const QStrin
             sendErrorResponse(clientId, commandId, "No such action");
             break;
         }
+    }
+}
+
+void JsonRPCServer::handleActionMessage(int clientId, int commandId, const QString &method, const QVariantMap &params)
+{
+    if (method == "ExecuteAction") {
+        QUuid deviceId = QUuid(params.value("deviceId").toUuid());
+        QVariantList actionParams = params.value("params").toList();
+
+        Action action(QUuid::createUuid(), deviceId);
+        action.setParams(actionParams);
+
+        HiveCore::instance()->deviceManager()->executeAction(action);
+
     }
 }
 
@@ -172,6 +188,16 @@ QVariantMap JsonRPCServer::packDevice(Device *device)
     }
     variant.insert("actions", actions);
     variant.insert("params", device->params());
+    return variant;
+}
+
+QVariantMap JsonRPCServer::packAction(const Action &action)
+{
+    QVariantMap variant;
+    variant.insert("id", action.id());
+    variant.insert("deviceId", action.deviceId());
+    variant.insert("name", action.name());
+    variant.insert("params", action.params());
     return variant;
 }
 

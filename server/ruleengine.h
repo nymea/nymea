@@ -19,7 +19,7 @@ public:
 
     explicit RuleEngine(QObject *parent = 0);
 
-    QList<QUuid> evaluateTrigger(const QUuid &triggerId);
+    QList<Action> evaluateTrigger(const QUuid &triggerId);
 
     RuleError addRule(const QUuid &triggerId, const QUuid &actionId);
     QList<Rule> rules() const;

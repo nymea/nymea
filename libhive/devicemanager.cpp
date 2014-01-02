@@ -62,14 +62,6 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const QUuid &devic
         triggers.append(trigger);
     }
     device->setTriggers(triggers);
-    QList<Action> actions;
-    foreach (const ActionType &actionType, deviceClass.actions()) {
-        Action action(QUuid::createUuid());
-        action.setName(actionType.name());
-        action.setParams(actionType.parameters());
-        actions.append(action);
-    }
-    device->setActions(actions);
     m_configuredDevices.append(device);
 
     storeConfiguredDevices();
@@ -127,21 +119,31 @@ Action DeviceManager::findAction(const QUuid &actionId)
     return Action();
 }
 
+QList<Action> DeviceManager::allActions() const
+{
+    QList<Action> ret;
+    foreach (Device *device, m_configuredDevices) {
+        foreach (const Action &action, device->actions()) {
+            ret << action;
+        }
+    }
+    return ret;
+}
+
 Radio433 *DeviceManager::radio433() const
 {
     return m_radio433;
 }
 
-void DeviceManager::executeAction(const QUuid &actionId, const QVariantMap &params)
+DeviceManager::DeviceError DeviceManager::executeAction(const Action &action)
 {
     foreach (Device *device, m_configuredDevices) {
-        foreach (const Action &action, device->actions()) {
-            if (action.id() == actionId) {
-                m_devicePlugins.value(device->pluginId())->executeAction(device, action);
-                return;
-            }
+        if (action.deviceId() == device->id()) {
+            m_devicePlugins.value(device->pluginId())->executeAction(device, action);
+            return DeviceErrorNoError;
         }
     }
+    return DeviceErrorDeviceNotFound;
 }
 
 void DeviceManager::loadPlugins()
@@ -185,19 +187,6 @@ void DeviceManager::loadConfiguredDevices()
         }
         device->setTriggers(triggerList);
         settings.endGroup();
-        settings.beginGroup("actions");
-        QList<Action> actionList;
-        foreach (const QString &actionId, settings.childGroups()) {
-            settings.beginGroup(actionId);
-            QUuid id(actionId);
-            Action action(id);
-            action.setName(settings.value("actionname").toString());
-            action.setParams(settings.value("params").toList());
-            settings.endGroup();
-            actionList.append(action);
-        }
-        device->setActions(actionList);
-        settings.endGroup();
         settings.endGroup();
         m_configuredDevices.append(device);
     }
@@ -217,14 +206,6 @@ void DeviceManager::storeConfiguredDevices()
             settings.beginGroup(trigger.id().toString());
             settings.setValue("triggername", trigger.name());
             settings.setValue("params", trigger.params());
-            settings.endGroup();
-        }
-        settings.endGroup();
-        settings.beginGroup("actions");
-        foreach (const Action &action, device->actions()) {
-            settings.beginGroup(action.id().toString());
-            settings.setValue("actionname", action.name());
-            settings.setValue("params", action.params());
             settings.endGroup();
         }
         settings.endGroup();

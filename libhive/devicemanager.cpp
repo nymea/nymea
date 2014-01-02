@@ -110,7 +110,9 @@ Trigger DeviceManager::findTrigger(const QUuid &triggerId)
 Action DeviceManager::findAction(const QUuid &actionId)
 {
     foreach (Device *device, m_configuredDevices) {
+        qDebug() << "got action" << actionId;
         foreach (const Action &action, device->actions()) {
+            qDebug() << "got action" << action.id() << actionId;
             if (action.id() == actionId) {
                 return action;
             }

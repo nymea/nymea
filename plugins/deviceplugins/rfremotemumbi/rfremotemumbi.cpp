@@ -134,6 +134,8 @@ QList<DeviceClass> RfRemoteMumbi::supportedDevices() const
     powerAction.setName("power");
     powerAction.setParameters(paramsSwitch);
     switchActions.append(powerAction);
+
+    deviceClassRfSwitchMumbi.setActions(switchActions);
     ret.append(deviceClassRfSwitchMumbi);
     return ret;
 }
@@ -209,12 +211,12 @@ void RfRemoteMumbi::executeAction(Device *device, const Action &action)
     }else{
         binCode.append("01");
     }
-//    // Power
-//    if(action.params().value().toBool()){
-//        binCode.append("0001");
-//    }else{
-//        binCode.append("0100");
-//    }
+    // Power
+    if(action.params().first().toBool()){
+        binCode.append("0001");
+    }else{
+        binCode.append("0100");
+    }
 
     // =======================================
     //create rawData timings list

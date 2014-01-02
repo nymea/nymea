@@ -68,7 +68,6 @@ QList<DeviceClass> DevicePluginIntertechno::supportedDevices() const
     button2Trigger.setParameters(paramsRemote);
     buttonTriggers.append(button2Trigger);
 
-
     TriggerType button3Trigger("77a4780e-2355-4a77-870d-2f675bf986ce");
     button3Trigger.setName("3");
     button3Trigger.setParameters(paramsRemote);

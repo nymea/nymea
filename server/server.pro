@@ -26,3 +26,4 @@ HEADERS += hivecore.h \
 # FIXME: Drop this and link them dynamically
 LIBS += -L../plugins/deviceplugins/devicepluginelro/ -lhive_devicepluginelro
 LIBS += -L../plugins/deviceplugins/devicepluginintertechno/ -lhive_devicepluginintertechno
+LIBS += -L../plugins/deviceplugins/devicepluginmeisteranker/ -lhive_devicepluginmeisteranker

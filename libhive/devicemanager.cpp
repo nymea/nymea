@@ -14,6 +14,7 @@
 
 Q_IMPORT_PLUGIN(DevicePluginElro)
 Q_IMPORT_PLUGIN(DevicePluginIntertechno)
+Q_IMPORT_PLUGIN(DevicePluginMeisterAnker)
 
 
 DeviceManager::DeviceManager(QObject *parent) :

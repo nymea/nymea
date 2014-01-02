@@ -103,7 +103,7 @@ void JsonRPCServer::handleRulesMessage(int clientId, int commandId, const QStrin
         foreach (const Rule &rule, HiveCore::instance()->ruleEngine()->rules()) {
             QVariantMap ruleMap;
             ruleMap.insert("id", rule.id());
-//            ruleMap.insert("triggerId", rule.triggerId());
+            ruleMap.insert("triggerId", rule.triggerTypeId());
             ruleMap.insert("action", packAction(rule.action()));
             rulesList.append(ruleMap);
         }

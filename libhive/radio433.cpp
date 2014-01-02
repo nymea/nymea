@@ -30,8 +30,9 @@ Radio433::~Radio433()
 void Radio433::sendData(QList<int> rawData)
 {
 
+    qDebug() << "send 433";
     //first we have to disable our receiver, to prevent reading this signal
-    m_receiver->stop();
+    //m_receiver->stop();
 
     m_transmitter->setValue(LOW);
     delayMicroseconds(500);
@@ -44,7 +45,7 @@ void Radio433::sendData(QList<int> rawData)
     }
 
     // re-enable it
-    m_receiver->start();
+    //m_receiver->start();
 
 }
 

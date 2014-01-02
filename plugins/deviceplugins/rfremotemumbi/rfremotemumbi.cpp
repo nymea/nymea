@@ -156,6 +156,7 @@ void RfRemoteMumbi::executeAction(Device *device, const Action &action)
     QList<int> rawData;
     QByteArray binCode;
 
+    qDebug() << "rawData" << rawData;
     // =======================================
     // create the bincode
     // channels
@@ -239,6 +240,7 @@ void RfRemoteMumbi::executeAction(Device *device, const Action &action)
 
     // =======================================
     // send data to driver
+    qDebug() << "rawData" << rawData;
     deviceManager()->radio433()->sendData(rawData);
 }
 

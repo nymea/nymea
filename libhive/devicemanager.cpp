@@ -62,6 +62,14 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const QUuid &devic
         triggers.append(trigger);
     }
     device->setTriggers(triggers);
+    QList<Action> actions;
+    foreach (const ActionType &actionType, deviceClass.actions()) {
+        Action action(QUuid::createUuid());
+        action.setName(actionType.name());
+        action.setParams(actionType.parameters());
+        actions.append(action);
+    }
+    device->setActions(actions);
     m_configuredDevices.append(device);
 
     storeConfiguredDevices();

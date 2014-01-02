@@ -139,13 +139,16 @@ void JsonRPCServer::handleRulesMessage(int clientId, int commandId, const QStrin
 void JsonRPCServer::handleActionMessage(int clientId, int commandId, const QString &method, const QVariantMap &params)
 {
     if (method == "ExecuteAction") {
-        QUuid deviceId = QUuid(params.value("deviceId").toUuid());
-        QVariantList actionParams = params.value("params").toList();
+        QVariantMap actionMap = params.value("action").toMap();
+        QUuid deviceId = actionMap.value("deviceId").toUuid();
+        QVariantList actionParams = actionMap.value("params").toList();
 
         Action action(deviceId);
         action.setParams(actionParams);
 
         HiveCore::instance()->deviceManager()->executeAction(action);
+
+        sendResponse(clientId, commandId);
 
     }
 }

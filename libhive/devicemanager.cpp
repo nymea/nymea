@@ -172,6 +172,7 @@ void DeviceManager::loadConfiguredDevices()
         Device *device = new Device(QUuid(idString), settings.value("deviceClassId").toUuid(), this);
         device->setName(settings.value("devicename").toString());
         device->setParams(settings.value("params").toMap());
+        settings.beginGroup("triggers");
         QList<Trigger> triggerList;
         foreach (const QString &triggerId, settings.childGroups()) {
             settings.beginGroup(triggerId);
@@ -183,6 +184,20 @@ void DeviceManager::loadConfiguredDevices()
             triggerList.append(trigger);
         }
         device->setTriggers(triggerList);
+        settings.endGroup();
+        settings.beginGroup("actions");
+        QList<Action> actionList;
+        foreach (const QString &actionId, settings.childGroups()) {
+            settings.beginGroup(actionId);
+            QUuid id(actionId);
+            Action action(id);
+            action.setName(settings.value("actionname").toString());
+            action.setParams(settings.value("params").toList());
+            settings.endGroup();
+            actionList.append(action);
+        }
+        device->setActions(actionList);
+        settings.endGroup();
         settings.endGroup();
         m_configuredDevices.append(device);
     }
@@ -196,12 +211,22 @@ void DeviceManager::storeConfiguredDevices()
         settings.setValue("devicename", device->name());
         settings.setValue("deviceClassId", device->deviceClassId().toString());
         settings.setValue("params", device->params());
+        settings.beginGroup("triggers");
         foreach (const Trigger &trigger, device->triggers()) {
             settings.beginGroup(trigger.id().toString());
             settings.setValue("triggername", trigger.name());
             settings.setValue("params", trigger.params());
             settings.endGroup();
         }
+        settings.endGroup();
+        settings.beginGroup("actions");
+        foreach (const Trigger &trigger, device->triggers()) {
+            settings.beginGroup(trigger.id().toString());
+            settings.setValue("triggername", trigger.name());
+            settings.setValue("params", trigger.params());
+            settings.endGroup();
+        }
+        settings.endGroup();
         settings.endGroup();
     }
 }

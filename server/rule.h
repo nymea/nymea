@@ -2,21 +2,22 @@
 #define RULE_H
 
 #include "action.h"
+#include "trigger.h"
 
 #include <QUuid>
 
 class Rule
 {
 public:
-    Rule(const QUuid &id, const QUuid &triggerTypeId, const Action &action);
+    Rule(const QUuid &id, const Trigger &trigger, const Action &action);
 
     QUuid id() const;
-    QUuid triggerTypeId() const;
+    Trigger trigger() const;
     Action action() const;
 
 private:
     QUuid m_id;
-    QUuid m_triggerTypeId;
+    Trigger m_trigger;
     Action m_action;
 };
 

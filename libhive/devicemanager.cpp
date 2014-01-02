@@ -63,6 +63,16 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const QUuid &devic
     return DeviceErrorNoError;
 }
 
+Device *DeviceManager::findConfiguredDevice(const QUuid &id) const
+{
+    foreach (Device *device, m_configuredDevices) {
+        if (device->id() == id) {
+            return device;
+        }
+    }
+    return 0;
+}
+
 QList<Device *> DeviceManager::configuredDevices() const
 {
     return m_configuredDevices;

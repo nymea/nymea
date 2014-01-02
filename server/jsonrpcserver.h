@@ -3,6 +3,7 @@
 
 #include "deviceclass.h"
 #include "action.h"
+#include "trigger.h"
 
 #include <QObject>
 #include <QVariantMap>
@@ -29,6 +30,7 @@ private:
 
     QVariantMap packDeviceClass(const DeviceClass &deviceClass);
     QVariantMap packDevice(Device *device);
+    QVariantMap packTrigger(const Trigger &action);
     QVariantMap packAction(const Action &action);
 
     void sendResponse(int clientId, int commandId, const QVariantMap &params = QVariantMap());

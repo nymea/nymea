@@ -14,15 +14,15 @@ class RuleEngine : public QObject
 public:
     enum RuleError {
         RuleErrorNoError,
-        RuleErrorNoSuchTrigger,
-        RuleErrorNoSuchAction
+        RuleErrorDeviceNotFound,
+        RuleErrorTriggerTypeNotFound
     };
 
     explicit RuleEngine(QObject *parent = 0);
 
     QList<Action> evaluateTrigger(const Trigger &trigger);
 
-    RuleError addRule(const QUuid &triggerTypeId, const Action &action);
+    RuleError addRule(const Trigger &trigger, const Action &action);
     QList<Rule> rules() const;
 
 private:

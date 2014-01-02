@@ -35,6 +35,7 @@ public:
     QList<Device*> configuredDevices() const;
     DeviceError addConfiguredDevice(const QUuid &deviceClassId, const QVariantMap &params);
 
+    Device* findConfiguredDevice(const QUuid &id) const;
     QList<Device*> findConfiguredDevices(const QUuid &deviceClassId);
     DeviceClass findDeviceClass(const QUuid &deviceClassId);
 

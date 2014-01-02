@@ -63,7 +63,7 @@ void JsonRPCServer::processData(int clientId, const QByteArray &jsonData)
             sendResponse(clientId, commandId, params);
         } else if (method == "AddConfiguredDevice") {
             QUuid deviceClass = params.value("deviceClass").toUuid();
-            QVariantMap deviceParams = params.value("deviceParams").toMap();
+            QVariantMap deviceParams = params.value("params").toMap();
             DeviceManager::DeviceError status = HiveCore::instance()->deviceManager()->addConfiguredDevice(deviceClass, deviceParams);
             switch(status) {
             case DeviceManager::DeviceErrorNoError:
@@ -103,7 +103,7 @@ void JsonRPCServer::handleRulesMessage(int clientId, int commandId, const QStrin
         foreach (const Rule &rule, HiveCore::instance()->ruleEngine()->rules()) {
             QVariantMap ruleMap;
             ruleMap.insert("id", rule.id());
-            ruleMap.insert("triggerId", rule.triggerTypeId());
+            ruleMap.insert("trigger", packTrigger(rule.trigger()));
             ruleMap.insert("action", packAction(rule.action()));
             rulesList.append(ruleMap);
         }
@@ -111,20 +111,26 @@ void JsonRPCServer::handleRulesMessage(int clientId, int commandId, const QStrin
         rspParams.insert("rules", rulesList);
         sendResponse(clientId, commandId, rspParams);
     } else if (method == "AddRule") {
-        QUuid triggerTypeId = params.value("triggerTypeId").toUuid();
+        QVariantMap triggerMap = params.value("trigger").toMap();
+
+        QUuid triggerTypeId = triggerMap.value("triggerTypeId").toUuid();
+        QUuid triggerDeviceId = triggerMap.value("deviceId").toUuid();
+        QVariantMap triggerParams = triggerMap.value("params").toMap();
+        Trigger trigger(triggerTypeId, triggerDeviceId, triggerParams);
+
         Action action(params.value("deviceId").toString());
         action.setName(params.value("name").toString());
-        action.setParams(params.value("actionParams").toList());
+        action.setParams(params.value("params").toList());
 
-        switch(HiveCore::instance()->ruleEngine()->addRule(triggerTypeId, action)) {
+        switch(HiveCore::instance()->ruleEngine()->addRule(trigger, action)) {
         case RuleEngine::RuleErrorNoError:
             sendResponse(clientId, commandId);
             break;
-        case RuleEngine::RuleErrorNoSuchTrigger:
-            sendErrorResponse(clientId, commandId, "No such trigger");
+        case RuleEngine::RuleErrorDeviceNotFound:
+            sendErrorResponse(clientId, commandId, "No such device.");
             break;
-        case RuleEngine::RuleErrorNoSuchAction:
-            sendErrorResponse(clientId, commandId, "No such action");
+        case RuleEngine::RuleErrorTriggerTypeNotFound:
+            sendErrorResponse(clientId, commandId, "Device does not have such a trigger type.");
             break;
         }
     }
@@ -181,6 +187,15 @@ QVariantMap JsonRPCServer::packDevice(Device *device)
     variant.insert("deviceClassId", device->deviceClassId());
     variant.insert("name", device->name());
     variant.insert("params", device->params());
+    return variant;
+}
+
+QVariantMap JsonRPCServer::packTrigger(const Trigger &trigger)
+{
+    QVariantMap variant;
+    variant.insert("id", trigger.triggerTypeId());
+    variant.insert("deviceId", trigger.deviceId());
+    variant.insert("params", trigger.params());
     return variant;
 }
 

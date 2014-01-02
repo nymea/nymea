@@ -7,7 +7,8 @@
 class Action
 {
 public:
-    Action(const QUuid &id = QUuid(), const QUuid &deviceId = QUuid());
+    explicit Action(const QUuid &deviceId, const QUuid &id = QUuid::createUuid());
+
     bool isValid() const;
 
     QUuid id() const;

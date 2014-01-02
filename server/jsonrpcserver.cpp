@@ -103,7 +103,7 @@ void JsonRPCServer::handleRulesMessage(int clientId, int commandId, const QStrin
         foreach (const Rule &rule, HiveCore::instance()->ruleEngine()->rules()) {
             QVariantMap ruleMap;
             ruleMap.insert("id", rule.id());
-            ruleMap.insert("triggerId", rule.triggerId());
+//            ruleMap.insert("triggerId", rule.triggerId());
             ruleMap.insert("action", packAction(rule.action()));
             rulesList.append(ruleMap);
         }
@@ -111,9 +111,12 @@ void JsonRPCServer::handleRulesMessage(int clientId, int commandId, const QStrin
         rspParams.insert("rules", rulesList);
         sendResponse(clientId, commandId, rspParams);
     } else if (method == "AddRule") {
-        QUuid triggerId = params.value("triggerId").toUuid();
-        QUuid actionId = params.value("actionId").toUuid();
-        switch(HiveCore::instance()->ruleEngine()->addRule(triggerId, actionId)) {
+        QUuid triggerTypeId = params.value("triggerTypeId").toUuid();
+        Action action(params.value("deviceId").toString());
+        action.setName(params.value("name").toString());
+        action.setParams(params.value("actionParams").toList());
+
+        switch(HiveCore::instance()->ruleEngine()->addRule(triggerTypeId, action)) {
         case RuleEngine::RuleErrorNoError:
             sendResponse(clientId, commandId);
             break;
@@ -133,7 +136,7 @@ void JsonRPCServer::handleActionMessage(int clientId, int commandId, const QStri
         QUuid deviceId = QUuid(params.value("deviceId").toUuid());
         QVariantList actionParams = params.value("params").toList();
 
-        Action action(QUuid::createUuid(), deviceId);
+        Action action(deviceId);
         action.setParams(actionParams);
 
         HiveCore::instance()->deviceManager()->executeAction(action);

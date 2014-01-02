@@ -1,14 +1,14 @@
 #include "trigger.h"
 
-Trigger::Trigger(const QUuid &deviceClassid, const QVariantMap &params):
-    m_deviceClassId(deviceClassid),
+Trigger::Trigger(const QUuid &triggerTypeId, const QVariantMap &params):
+    m_triggerTypeId(triggerTypeId),
     m_params(params)
 {
 }
 
-QUuid Trigger::deviceClassId() const
+QUuid Trigger::triggerTypeId() const
 {
-    return m_deviceClassId;
+    return m_triggerTypeId;
 }
 
 QVariantMap Trigger::params() const

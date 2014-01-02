@@ -17,9 +17,16 @@ RuleEngine::RuleEngine(QObject *parent) :
     qDebug() << "loading rules from" << rulesFileName;
     foreach (const QString &idString, settings.childGroups()) {
         qDebug() << "found rule" << idString;
+
         settings.beginGroup(idString);
-        Rule rule = Rule(QUuid(idString), settings.value("triggerId").toUuid(), settings.value("actionId").toUuid());
+        settings.beginGroup("action");
+        Action action = Action(settings.value("deviceId").toUuid(), settings.value("id").toUuid());
+        action.setName(settings.value("name").toString());
+        action.setParams(settings.value("params").toList());
         settings.endGroup();
+        settings.endGroup();
+
+        Rule rule = Rule(QUuid(idString), settings.value("triggerTypeId").toUuid(), action);
         m_rules.append(rule);
     }
 
@@ -29,9 +36,9 @@ QList<Action> RuleEngine::evaluateTrigger(const Trigger &trigger)
 {
     QList<Action> actions;
     for (int i = 0; i < m_rules.count(); ++i) {
-        if (m_rules.at(i).triggerTypeId() == trigger.) {
-            actions << m_rules.at(i).action();
-        }
+//        if (m_rules.at(i).triggerTypeId() == trigger.) {
+//            actions << m_rules.at(i).action();
+//        }
     }
     return actions;
 }
@@ -44,7 +51,7 @@ RuleEngine::RuleError RuleEngine::addRule(const QUuid &triggerTypeId, const Acti
 
     QSettings settings(rulesFileName);
     settings.beginGroup(rule.id().toString());
-    settings.setValue("triggerId", rule.triggerId());
+    settings.setValue("triggerTypeId", rule.triggerTypeId());
 
     settings.beginGroup("action");
     settings.setValue("id", rule.action().id());

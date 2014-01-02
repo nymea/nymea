@@ -126,13 +126,13 @@ void DeviceManager::loadConfiguredDevices()
     QSettings settings;
     qDebug() << "loading devices";
     foreach (const QString &idString, settings.childGroups()) {
-        qDebug() << "found stored device" << idString;
         settings.beginGroup(idString);
         Device *device = new Device(settings.value("pluginid").toUuid(), QUuid(idString), settings.value("deviceClassId").toUuid(), this);
         device->setName(settings.value("devicename").toString());
         device->setParams(settings.value("params").toMap());
         settings.endGroup();
         m_configuredDevices.append(device);
+        qDebug() << "found stored device" << device->name() << idString;
     }
 }
 

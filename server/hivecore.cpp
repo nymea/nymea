@@ -44,17 +44,13 @@ HiveCore::HiveCore(QObject *parent) :
     qDebug() << "*****************************************";
     m_jsonServer = new JsonRPCServer(this);
 
-    connect(m_deviceManager,SIGNAL(emitTrigger(QUuid,QVariantMap)),this,SLOT(gotSignal(QUuid,QVariantMap)));
+    connect(m_deviceManager, &DeviceManager::emitTrigger, this, &HiveCore::gotSignal);
 
 }
 
-void HiveCore::gotSignal(const QUuid &triggerId, const QVariantMap &params)
+void HiveCore::gotSignal(const Trigger &trigger)
 {
-    qDebug() << "##################################################";
-    qDebug() << "id: " << triggerId;
-    qDebug() << params;
-
-    foreach (const Action &action, m_ruleEngine->evaluateTrigger(triggerId)) {
+    foreach (const Action &action, m_ruleEngine->evaluateTrigger(trigger)) {
         m_deviceManager->executeAction(action);
     }
 }

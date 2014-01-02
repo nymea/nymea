@@ -8,15 +8,15 @@
 class Rule
 {
 public:
-    Rule(const QUuid &id, const QUuid &triggerId, const Action &action);
+    Rule(const QUuid &id, const QUuid &triggerTypeId, const Action &action);
 
     QUuid id() const;
-    QUuid triggerId() const;
+    QUuid triggerTypeId() const;
     Action action() const;
 
 private:
     QUuid m_id;
-    QUuid m_triggerId;
+    QUuid m_triggerTypeId;
     Action m_action;
 };
 

@@ -47,7 +47,6 @@ QList<DeviceClass> DevicePluginIntertechno::supportedDevices() const
     paramRemote.insert("type", "bool");
     paramsRemote.append(paramRemote);
 
-
     /*              1-16
      *        ________________
      *       | I | II|III| IV |
@@ -58,9 +57,6 @@ QList<DeviceClass> DevicePluginIntertechno::supportedDevices() const
      *    4  | 4 | 8 | 12| 16 |
      *       |___|___|___|____|
      */
-    paramRemote.insert("name", "button");
-    paramRemote.insert("type", "int");
-    paramsRemote.append(paramRemote);
 
     TriggerType button1Trigger("785c1b30-a3f2-4696-af7c-d532acf3d6f7");
     button1Trigger.setName("1");
@@ -206,6 +202,11 @@ void DevicePluginIntertechno::dataReceived(QList<int> rawData)
         return;
     }
     
+    QList<Device*> deviceList = deviceManager()->findConfiguredDevices(intertechnoRemote);
+    if(deviceList.isEmpty()){
+        return;
+    }
+
     int delay = rawData.first()/31;
     QByteArray binCode;
     
@@ -386,78 +387,33 @@ void DevicePluginIntertechno::dataReceived(QList<int> rawData)
         return;
     }
 
-    qDebug() << "family code = " << familyCode << "button code =" << buttonCode << power;
-    return;
+    //qDebug() << "family code = " << familyCode << "button code =" << buttonCode << power;
 
+    // ===================================================
+    Device *device = 0;
+    foreach (Device *dev, deviceList) {
+        if (dev->params().contains("familycode") && dev->params().value("familycode").toString() == familyCode) {
+            // Yippie! We found the device.
+            device = dev;
+            break;
+        }
+    }
+    if (!device) {
+        qWarning() << "couldn't find any configured device for intertech familycode:" << familyCode;
+        return;
+    }
 
+    QVariantMap params;
+    params.insert("power", power);
 
-    //    // get the channel of the remote signal (5 channels, true=1, false=0)
-    //    QList<bool> group;
-    //    for(int i = 1; i < 10; i+=2){
-    //        if(binCode.at(i-1) == '0' && binCode.at(i) == '1'){
-    //            group << false;
-    //        }else if(binCode.at(i-1) == '0' && binCode.at(i) == '0'){
-    //            group << true;
-    //        }else {
-    //            return;
-    //        }
-    //    }
-    
-    //    // get the button letter
-    //    QString button;
-    //    QByteArray buttonCode = binCode.mid(10,10);
-
-    //    if(buttonCode == "0001010101"){
-    //        button = "A";
-    //    }else if(buttonCode == "0100010101"){
-    //        button = "B";
-    //    }else if(buttonCode == "0101000101"){
-    //        button = "C";
-    //    }else if(buttonCode == "0101010001"){
-    //        button = "D";
-    //    }else if(buttonCode == "0101010100"){
-    //        button = "E";
-    //    }else{
-    //        return;
-    //    }
-
-    //    // get power status -> On = 0100, Off = 0001
-    //    bool power;
-    //    if(binCode.right(4).toInt(0,2) == 1){
-    //        power = true;
-    //    }else if(binCode.right(4).toInt(0,2) == 4){
-    //        power = false;
-    //    }else{
-    //        return;
-    //    }
-
-    //    Device *device = 0;
-    //    QList<Device*> deviceList = deviceManager()->findConfiguredDevices(intertechnoRemote);
-    //    foreach (Device *dev, deviceList) {
-    //        if (dev->params().contains("channel1") && dev->params().value("channel1").toBool() == group.at(0) &&
-    //                dev->params().contains("channel2") && dev->params().value("channel2").toBool() == group.at(1) &&
-    //                dev->params().contains("channel3") && dev->params().value("channel3").toBool() == group.at(2) &&
-    //                dev->params().contains("channel4") && dev->params().value("channel4").toBool() == group.at(3) &&
-    //                dev->params().contains("channel5") && dev->params().value("channel5").toBool() == group.at(4)
-    //                ) {
-    //            // Yippie! We found the device.
-    //            device = dev;
-    //            break;
-    //        }
-    //    }
-    //    if (!device) {
-    //        qWarning() << "couldn't find any configured device for mumbi:" << binCode.left(10) ;
-    //        return;
-    //    }
-    
-    //    QVariantMap params;
-    //    params.insert("button", button);
-    //    params.insert("power", power);
-    //    foreach (const Trigger &trigger, device->triggers()) {
-    //        //qDebug() << "got trigger" << trigger.name();
-    //        if (trigger.name() == button) {
-    //            emit emitTrigger(trigger.id(), params);
-    //            return;
-    //        }
-    //    }
+    // FIXME: find a better way to get to the remote DeviceClass
+    DeviceClass deviceClass = supportedDevices().first();
+    foreach (const TriggerType &triggerType, deviceClass.triggers()) {
+        if (triggerType.name() == buttonCode) {
+            //qDebug() << "emit trigger " << triggerType.name();
+            Trigger trigger = Trigger(triggerType.id(), params);
+            emit emitTrigger(trigger);
+            return;
+        }
+    }
 }

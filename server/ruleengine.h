@@ -2,6 +2,7 @@
 #define RULEENGINE_H
 
 #include "rule.h"
+#include "trigger.h"
 
 #include <QObject>
 #include <QList>
@@ -19,7 +20,7 @@ public:
 
     explicit RuleEngine(QObject *parent = 0);
 
-    QList<Action> evaluateTrigger(const QUuid &triggerId);
+    QList<Action> evaluateTrigger(const Trigger &trigger);
 
     RuleError addRule(const QUuid &triggerTypeId, const Action &action);
     QList<Rule> rules() const;

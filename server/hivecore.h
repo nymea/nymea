@@ -2,6 +2,7 @@
 #define HIVECORE_H
 
 #include "rule.h"
+#include "trigger.h"
 
 #include <QObject>
 
@@ -27,7 +28,7 @@ private:
     RuleEngine *m_ruleEngine;
 
 private slots:
-    void gotSignal(const QUuid &triggerId, const QVariantMap &params);
+    void gotSignal(const Trigger &trigger);
 
 };
 

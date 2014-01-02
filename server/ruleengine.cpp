@@ -25,11 +25,11 @@ RuleEngine::RuleEngine(QObject *parent) :
 
 }
 
-QList<Action> RuleEngine::evaluateTrigger(const QUuid &triggerId)
+QList<Action> RuleEngine::evaluateTrigger(const Trigger &trigger)
 {
     QList<Action> actions;
     for (int i = 0; i < m_rules.count(); ++i) {
-        if (m_rules.at(i).triggerId() == triggerId) {
+        if (m_rules.at(i).triggerTypeId() == trigger.) {
             actions << m_rules.at(i).action();
         }
     }

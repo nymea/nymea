@@ -169,7 +169,7 @@ void DeviceManager::loadConfiguredDevices()
     foreach (const QString &idString, settings.childGroups()) {
         qDebug() << "found stored device" << idString;
         settings.beginGroup(idString);
-        Device *device = new Device(QUuid(idString), settings.value("deviceClassId").toUuid(), this);
+        Device *device = new Device(settings.value("pluginid").toUuid(), QUuid(idString), settings.value("deviceClassId").toUuid(), this);
         device->setName(settings.value("devicename").toString());
         device->setParams(settings.value("params").toMap());
         settings.beginGroup("triggers");
@@ -210,6 +210,7 @@ void DeviceManager::storeConfiguredDevices()
         settings.beginGroup(device->id().toString());
         settings.setValue("devicename", device->name());
         settings.setValue("deviceClassId", device->deviceClassId().toString());
+        settings.setValue("pluginid", device->pluginId());
         settings.setValue("params", device->params());
         settings.beginGroup("triggers");
         foreach (const Trigger &trigger, device->triggers()) {

@@ -7,8 +7,8 @@
 #include <QDebug>
 #include <QStringList>
 
-QUuid elroRemote = QUuid("d85c1ef4-197c-4053-8e40-707aa671d302");
-QUuid elroDevicePlugin = QUuid("308ae6e6-38b3-4b3a-a513-3199da2764f8");
+QUuid elroRemoteId = QUuid("d85c1ef4-197c-4053-8e40-707aa671d302");
+QUuid elroSwitchId = QUuid("308ae6e6-38b3-4b3a-a513-3199da2764f8");
 
 DevicePluginElro::DevicePluginElro()
 {
@@ -20,8 +20,8 @@ QList<DeviceClass> DevicePluginElro::supportedDevices() const
     QList<DeviceClass> ret;
 
     // Remote
-    DeviceClass deviceClassDevicePluginElro(pluginId(), elroRemote);
-    deviceClassDevicePluginElro.setName("Elro Remote");
+    DeviceClass deviceClassElroRemote(pluginId(), elroRemoteId);
+    deviceClassElroRemote.setName("Elro Remote");
     
     QVariantList deviceParamsRemote;
     QVariantMap channelParam;
@@ -41,7 +41,7 @@ QList<DeviceClass> DevicePluginElro::supportedDevices() const
     channelParam.insert("type", "bool");
     deviceParamsRemote.append(channelParam);
     
-    deviceClassDevicePluginElro.setParams(deviceParamsRemote);
+    deviceClassElroRemote.setParams(deviceParamsRemote);
     
     QList<TriggerType> buttonTriggers;
     
@@ -76,12 +76,12 @@ QList<DeviceClass> DevicePluginElro::supportedDevices() const
     buttonETrigger.setParameters(paramsRemote);
     buttonTriggers.append(buttonETrigger);
     
-    deviceClassDevicePluginElro.setTriggers(buttonTriggers);
-    ret.append(deviceClassDevicePluginElro);
+    deviceClassElroRemote.setTriggers(buttonTriggers);
+    ret.append(deviceClassElroRemote);
 
     // Switch
-    DeviceClass deviceClassRfSwitchMumbi(pluginId(), elroDevicePlugin);
-    deviceClassRfSwitchMumbi.setName("Elro Power Switch");
+    DeviceClass deviceClassElroSwitch(pluginId(), elroSwitchId);
+    deviceClassElroSwitch.setName("Elro Power Switch");
     
     QVariantList deviceParamsSwitch;
     QVariantMap paramSwitch;
@@ -116,22 +116,24 @@ QList<DeviceClass> DevicePluginElro::supportedDevices() const
     paramSwitch.insert("type", "bool");
     deviceParamsSwitch.append(paramSwitch);
 
-    QVariantList paramsSwitch;
+    deviceClassElroSwitch.setParams(deviceParamsSwitch);
+
+
+    QVariantList actionParamsSwitch;
     QVariantMap actionParamSwitch;
     actionParamSwitch.insert("name", "power");
     actionParamSwitch.insert("type", "bool");
-    paramsSwitch.append(actionParamSwitch);
-
+    actionParamsSwitch.append(actionParamSwitch);
 
     QList<ActionType> switchActions;
 
     ActionType powerAction(QUuid("31c9758e-6567-4f89-85bb-29e1a7c55d44"));
     powerAction.setName("power");
-    powerAction.setParameters(paramsSwitch);
+    powerAction.setParameters(actionParamsSwitch);
     switchActions.append(powerAction);
 
-    deviceClassRfSwitchMumbi.setActions(switchActions);
-    ret.append(deviceClassRfSwitchMumbi);
+    deviceClassElroSwitch.setActions(switchActions);
+    ret.append(deviceClassElroSwitch);
     return ret;
 }
 
@@ -250,7 +252,7 @@ void DevicePluginElro::receiveData(QList<int> rawData)
     if(rawData.length() != 49){
         return;
     }
-    
+
     int delay = rawData.first()/31;
     QByteArray binCode;
     
@@ -332,7 +334,7 @@ void DevicePluginElro::receiveData(QList<int> rawData)
     }
 
     Device *device = 0;
-    QList<Device*> deviceList = deviceManager()->findConfiguredDevices(elroRemote);
+    QList<Device*> deviceList = deviceManager()->findConfiguredDevices(elroRemoteId);
     foreach (Device *dev, deviceList) {
         if (dev->params().contains("channel1") && dev->params().value("channel1").toBool() == group.at(0) &&
                 dev->params().contains("channel2") && dev->params().value("channel2").toBool() == group.at(1) &&

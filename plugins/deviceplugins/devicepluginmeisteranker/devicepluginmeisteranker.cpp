@@ -136,4 +136,6 @@ void DevicePluginMeisterAnker::receiveData(QList<int> rawData)
     }
 
 
+
+
 }

@@ -21,6 +21,7 @@ DeviceManager::DeviceManager(QObject *parent) :
     QObject(parent)
 {
     m_radio433 = new Radio433(this);
+    connect(m_radio433, &Radio433::dataReceived, this, &DeviceManager::radio433SignalReceived);
 
     QMetaObject::invokeMethod(this, "loadPlugins", Qt::QueuedConnection);
     QMetaObject::invokeMethod(this, "loadConfiguredDevices", Qt::QueuedConnection);

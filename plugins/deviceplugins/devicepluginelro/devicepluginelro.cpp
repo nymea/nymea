@@ -14,11 +14,6 @@ DevicePluginElro::DevicePluginElro()
 {
 }
 
-void DevicePluginElro::init()
-{
-    connect(deviceManager()->radio433(), &Radio433::dataReceived, this, &DevicePluginElro::dataReceived);
-}
-
 QList<DeviceClass> DevicePluginElro::supportedDevices() const
 {
     // TODO: load list from config with static uuid
@@ -140,6 +135,11 @@ QList<DeviceClass> DevicePluginElro::supportedDevices() const
     return ret;
 }
 
+DeviceManager::HardwareResource DevicePluginElro::requiredHardware() const
+{
+    return DeviceManager::HardwareResourceRadio433;
+}
+
 QString DevicePluginElro::pluginName() const
 {
     return QStringLiteral("Elro");
@@ -241,10 +241,10 @@ void DevicePluginElro::executeAction(Device *device, const Action &action)
     // =======================================
     // send data to driver
     qDebug() << "rawData" << rawData;
-    deviceManager()->radio433()->sendData(rawData);
+    transmitData(rawData);
 }
 
-void DevicePluginElro::dataReceived(QList<int> rawData)
+void DevicePluginElro::receiveData(QList<int> rawData)
 {    
     // filter right here a wrong signal length
     if(rawData.length() != 49){

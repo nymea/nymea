@@ -1,6 +1,14 @@
 #include "deviceplugin.h"
 
 #include "devicemanager.h"
+#include "radio433.h"
+
+#include <QDebug>
+
+DevicePlugin::DevicePlugin()
+{
+
+}
 
 DevicePlugin::~DevicePlugin()
 {
@@ -18,7 +26,17 @@ DeviceManager *DevicePlugin::deviceManager() const
     return m_deviceManager;
 }
 
-DevicePlugin::DevicePlugin()
+void DevicePlugin::transmitData(QList<int> rawData)
 {
-
+    switch (requiredHardware()) {
+    case DeviceManager::HardwareResourceRadio433:
+        deviceManager()->m_radio433->sendData(rawData);
+        break;
+    case DeviceManager::HardwareResourceRadio868:
+        qDebug() << "Radio868 not connected yet";
+        break;
+    default:
+        qWarning() << "Unknown harware type. Cannot send.";
+    }
 }
+

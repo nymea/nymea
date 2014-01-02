@@ -13,7 +13,7 @@ SOURCES += device.cpp \
            trigger.cpp \
            triggertype.cpp \
            action.cpp \
-           actiontype.cpp
+           actiontype.cpp \
 
 HEADERS += device.h \
            deviceclass.h \
@@ -24,5 +24,5 @@ HEADERS += device.h \
            trigger.h \
            triggertype.h \
            action.h \
-           actiontype.h
+           actiontype.h \
 

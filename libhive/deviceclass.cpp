@@ -22,6 +22,11 @@ QUuid DeviceClass::pluginId() const
     return m_pluginId;
 }
 
+bool DeviceClass::isValid() const
+{
+    return !m_id.isNull() && !m_pluginId.isNull();
+}
+
 QString DeviceClass::name() const
 {
     return m_name;

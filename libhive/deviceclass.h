@@ -10,11 +10,12 @@
 class DeviceClass
 {
 public:
-    DeviceClass(const QUuid &pluginId, const QUuid &id);
+    DeviceClass(const QUuid &pluginId = QUuid(), const QUuid &id = QUuid());
     virtual ~DeviceClass();
 
     QUuid id() const;
     QUuid pluginId() const;
+    bool isValid() const;
 
     QString name() const;
     void setName(const QString &name);

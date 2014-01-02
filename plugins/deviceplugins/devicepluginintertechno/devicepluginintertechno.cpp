@@ -14,11 +14,6 @@ DevicePluginIntertechno::DevicePluginIntertechno()
 {
 }
 
-void DevicePluginIntertechno::init()
-{
-    connect(deviceManager()->radio433(), &Radio433::dataReceived, this, &DevicePluginIntertechno::dataReceived);
-}
-
 QList<DeviceClass> DevicePluginIntertechno::supportedDevices() const
 {
     QList<DeviceClass> ret;
@@ -179,6 +174,11 @@ QList<DeviceClass> DevicePluginIntertechno::supportedDevices() const
     return ret;
 }
 
+DeviceManager::HardwareResource DevicePluginIntertechno::requiredHardware() const
+{
+    return DeviceManager::HardwareResourceRadio433;
+}
+
 QString DevicePluginIntertechno::pluginName() const
 {
     return "Intertechno";
@@ -194,7 +194,7 @@ void DevicePluginIntertechno::executeAction(Device *device, const Action &action
 
 }
 
-void DevicePluginIntertechno::dataReceived(QList<int> rawData)
+void DevicePluginIntertechno::receiveData(QList<int> rawData)
 {    
     // filter right here a wrong signal length
     if(rawData.length() != 49){

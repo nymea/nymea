@@ -13,17 +13,17 @@ class DevicePluginIntertechno : public DevicePlugin
 public:
     explicit DevicePluginIntertechno();
 
-    void init() override;
     QList<DeviceClass> supportedDevices() const override;
+    DeviceManager::HardwareResource requiredHardware() const override;
 
     QString pluginName() const;
     QUuid pluginId() const;
 
+    void receiveData(QList<int> rawData);
+
 public slots:
     void executeAction(Device *device, const Action &action) override;
 
-private slots:
-    void dataReceived(QList<int> rawData);
 };
 
 #endif // DEVICEPLUGININTERTECHNO_H

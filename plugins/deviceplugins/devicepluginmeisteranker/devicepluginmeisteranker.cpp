@@ -13,11 +13,6 @@ DevicePluginMeisterAnker::DevicePluginMeisterAnker()
 {
 }
 
-void DevicePluginMeisterAnker::init()
-{
-    connect(deviceManager()->radio433(), &Radio433::dataReceived, this, &DevicePluginMeisterAnker::dataReceived);
-}
-
 QList<DeviceClass> DevicePluginMeisterAnker::supportedDevices() const
 {
     QList<DeviceClass> ret;
@@ -67,6 +62,11 @@ QList<DeviceClass> DevicePluginMeisterAnker::supportedDevices() const
     return ret;
 }
 
+DeviceManager::HardwareResource DevicePluginMeisterAnker::requiredHardware() const
+{
+    return DeviceManager::HardwareResourceRadio433;
+}
+
 QString DevicePluginMeisterAnker::pluginName() const
 {
     return "Meister Anker";
@@ -82,7 +82,7 @@ void DevicePluginMeisterAnker::executeAction(Device *device, const Action &actio
 
 }
 
-void DevicePluginMeisterAnker::dataReceived(QList<int> rawData)
+void DevicePluginMeisterAnker::receiveData(QList<int> rawData)
 {    
     // filter right here a wrong signal length
     if(rawData.length() != 49){

@@ -36,15 +36,9 @@ QList<Action> RuleEngine::evaluateTrigger(const Trigger &trigger)
 {
     QList<Action> actions;
     for (int i = 0; i < m_rules.count(); ++i) {
-<<<<<<< HEAD
-//        if (m_rules.at(i).triggerTypeId() == trigger.) {
-//            actions << m_rules.at(i).action();
-//        }
-=======
-        if (m_rules.at(i).triggerTypeId() == trigger.deviceClassId()) {
+        if (m_rules.at(i).triggerTypeId() == trigger.triggerTypeId()) {
             actions << m_rules.at(i).action();
         }
->>>>>>> meister anker plugin added
     }
     return actions;
 }
@@ -57,12 +51,7 @@ RuleEngine::RuleError RuleEngine::addRule(const QUuid &triggerTypeId, const Acti
 
     QSettings settings(rulesFileName);
     settings.beginGroup(rule.id().toString());
-<<<<<<< HEAD
     settings.setValue("triggerTypeId", rule.triggerTypeId());
-=======
-    settings.setValue("triggerId", rule.triggerTypeId());
->>>>>>> meister anker plugin added
-
     settings.beginGroup("action");
     settings.setValue("id", rule.action().id());
     settings.setValue("deviceId", rule.action().deviceId());

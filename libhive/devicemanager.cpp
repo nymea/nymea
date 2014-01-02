@@ -28,7 +28,7 @@ DeviceManager::DeviceManager(QObject *parent) :
 
 QList<DeviceClass> DeviceManager::supportedDevices()
 {
-    return m_supportedDevices;
+    return m_supportedDevices.values();
 }
 
 DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const QUuid &deviceClassId, const QVariantMap &params)
@@ -88,11 +88,6 @@ DeviceClass DeviceManager::findDeviceClass(const QUuid &deviceClassId)
     return DeviceClass(QUuid(), QUuid());
 }
 
-Radio433 *DeviceManager::radio433() const
-{
-    return m_radio433;
-}
-
 DeviceManager::DeviceError DeviceManager::executeAction(const Action &action)
 {
     foreach (Device *device, m_configuredDevices) {
@@ -113,7 +108,7 @@ void DeviceManager::loadPlugins()
             pluginIface->initPlugin(this);
             foreach (const DeviceClass &deviceClass, pluginIface->supportedDevices()) {
                 qDebug() << "* Loaded device class:" << deviceClass.name();
-                m_supportedDevices.append(deviceClass);
+                m_supportedDevices.insert(deviceClass.id(), deviceClass);
             }
             m_devicePlugins.insert(pluginIface->pluginId(), pluginIface);
             connect(pluginIface, &DevicePlugin::emitTrigger, this, &DeviceManager::emitTrigger);
@@ -147,5 +142,16 @@ void DeviceManager::storeConfiguredDevices()
         settings.setValue("pluginid", device->pluginId());
         settings.setValue("params", device->params());
         settings.endGroup();
+    }
+}
+
+void DeviceManager::radio433SignalReceived(QList<int> rawData)
+{
+    foreach (Device *device, m_configuredDevices) {
+        DeviceClass deviceClass = m_supportedDevices.value(device->deviceClassId());
+        DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
+        if (plugin->requiredHardware() == HardwareResourceRadio433) {
+            plugin->receiveData(rawData);
+        }
     }
 }

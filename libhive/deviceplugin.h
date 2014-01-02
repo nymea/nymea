@@ -1,6 +1,7 @@
 #ifndef DEVICEPLUGIN_H
 #define DEVICEPLUGIN_H
 
+#include "devicemanager.h"
 #include "deviceclass.h"
 #include "trigger.h"
 #include "action.h"
@@ -25,6 +26,10 @@ public:
     virtual QUuid pluginId() const = 0;
 
     virtual QList<DeviceClass> supportedDevices() const = 0;
+    virtual DeviceManager::HardwareResource requiredHardware() const = 0;
+
+    // Hardware input
+    virtual void receiveData(QList<int> rawData) = 0;
 
 public slots:
     virtual void executeAction(Device *device, const Action &action) = 0;
@@ -34,6 +39,8 @@ signals:
 
 protected:
     DeviceManager *deviceManager() const;
+
+    void transmitData(QList<int> rawData);
 
 private:
     DeviceManager *m_deviceManager;

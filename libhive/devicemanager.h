@@ -15,6 +15,11 @@ class DeviceManager : public QObject
 {
     Q_OBJECT
 public:
+    enum HardwareResource {
+        HardwareResourceRadio433 = 0x01,
+        HardwareResourceRadio868 = 0x02
+    };
+
     enum DeviceError {
         DeviceErrorNoError,
         DeviceErrorDeviceNotFound,
@@ -33,8 +38,6 @@ public:
     QList<Device*> findConfiguredDevices(const QUuid &deviceClassId);
     DeviceClass findDeviceClass(const QUuid &deviceClassId);
 
-    Radio433 *radio433() const;
-
 signals:
     void emitTrigger(const Trigger &trigger);
 
@@ -46,13 +49,17 @@ private slots:
     void loadConfiguredDevices();
     void storeConfiguredDevices();
 
+    void radio433SignalReceived(QList<int> rawData);
+
 private:
-    QList<DeviceClass> m_supportedDevices;
+    QHash<QUuid, DeviceClass> m_supportedDevices;
     QList<Device*> m_configuredDevices;
 
     QHash<QUuid, DevicePlugin*> m_devicePlugins;
 
     Radio433* m_radio433;
+
+    friend class DevicePlugin;
 };
 
 #endif // DEVICEMANAGER_H

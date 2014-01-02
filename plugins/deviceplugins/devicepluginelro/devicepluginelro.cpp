@@ -1,4 +1,4 @@
-#include "rfremotemumbi.h"
+#include "devicepluginelro.h"
 
 #include "device.h"
 #include "devicemanager.h"
@@ -7,26 +7,26 @@
 #include <QDebug>
 #include <QStringList>
 
-QUuid mumbiRemote = QUuid("d85c1ef4-197c-4053-8e40-707aa671d302");
-QUuid mumbiRfRemoteMumbi = QUuid("308ae6e6-38b3-4b3a-a513-3199da2764f8");
+QUuid elroRemote = QUuid("d85c1ef4-197c-4053-8e40-707aa671d302");
+QUuid elroDevicePlugin = QUuid("308ae6e6-38b3-4b3a-a513-3199da2764f8");
 
-RfRemoteMumbi::RfRemoteMumbi()
+DevicePluginElro::DevicePluginElro()
 {
 }
 
-void RfRemoteMumbi::init()
+void DevicePluginElro::init()
 {
-    connect(deviceManager()->radio433(), &Radio433::dataReceived, this, &RfRemoteMumbi::dataReceived);
+    connect(deviceManager()->radio433(), &Radio433::dataReceived, this, &DevicePluginElro::dataReceived);
 }
 
-QList<DeviceClass> RfRemoteMumbi::supportedDevices() const
+QList<DeviceClass> DevicePluginElro::supportedDevices() const
 {
     // TODO: load list from config with static uuid
     QList<DeviceClass> ret;
 
     // Remote
-    DeviceClass deviceClassRfRemoteMumbi(pluginId(), mumbiRemote);
-    deviceClassRfRemoteMumbi.setName("Mumbi Remote");
+    DeviceClass deviceClassDevicePluginElro(pluginId(), elroRemote);
+    deviceClassDevicePluginElro.setName("Elro Remote");
     
     QVariantList deviceParamsRemote;
     QVariantMap channelParam;
@@ -46,7 +46,7 @@ QList<DeviceClass> RfRemoteMumbi::supportedDevices() const
     channelParam.insert("type", "bool");
     deviceParamsRemote.append(channelParam);
     
-    deviceClassRfRemoteMumbi.setParams(deviceParamsRemote);
+    deviceClassDevicePluginElro.setParams(deviceParamsRemote);
     
     QList<TriggerType> buttonTriggers;
     
@@ -81,12 +81,12 @@ QList<DeviceClass> RfRemoteMumbi::supportedDevices() const
     buttonETrigger.setParameters(paramsRemote);
     buttonTriggers.append(buttonETrigger);
     
-    deviceClassRfRemoteMumbi.setTriggers(buttonTriggers);
-    ret.append(deviceClassRfRemoteMumbi);
+    deviceClassDevicePluginElro.setTriggers(buttonTriggers);
+    ret.append(deviceClassDevicePluginElro);
 
     // Switch
-    DeviceClass deviceClassRfSwitchMumbi(pluginId(), mumbiRfRemoteMumbi);
-    deviceClassRfSwitchMumbi.setName("Mumbi Power Switch");
+    DeviceClass deviceClassRfSwitchMumbi(pluginId(), elroDevicePlugin);
+    deviceClassRfSwitchMumbi.setName("Elro Power Switch");
     
     QVariantList deviceParamsSwitch;
     QVariantMap paramSwitch;
@@ -140,17 +140,17 @@ QList<DeviceClass> RfRemoteMumbi::supportedDevices() const
     return ret;
 }
 
-QString RfRemoteMumbi::pluginName() const
+QString DevicePluginElro::pluginName() const
 {
-    return QStringLiteral("RF Remote Mumbi");
+    return QStringLiteral("Elro");
 }
 
-QUuid RfRemoteMumbi::pluginId() const
+QUuid DevicePluginElro::pluginId() const
 {
     return QUuid("2b267f81-d9ae-4f4f-89a0-7386b547cfd3");
 }
 
-void RfRemoteMumbi::executeAction(Device *device, const Action &action)
+void DevicePluginElro::executeAction(Device *device, const Action &action)
 {
 
     QList<int> rawData;
@@ -244,7 +244,7 @@ void RfRemoteMumbi::executeAction(Device *device, const Action &action)
     deviceManager()->radio433()->sendData(rawData);
 }
 
-void RfRemoteMumbi::dataReceived(QList<int> rawData)
+void DevicePluginElro::dataReceived(QList<int> rawData)
 {    
     // filter right here a wrong signal length
     if(rawData.length() != 49){
@@ -332,7 +332,7 @@ void RfRemoteMumbi::dataReceived(QList<int> rawData)
     }
 
     Device *device = 0;
-    QList<Device*> deviceList = deviceManager()->findConfiguredDevices(mumbiRemote);
+    QList<Device*> deviceList = deviceManager()->findConfiguredDevices(elroRemote);
     foreach (Device *dev, deviceList) {
         if (dev->params().contains("channel1") && dev->params().value("channel1").toBool() == group.at(0) &&
                 dev->params().contains("channel2") && dev->params().value("channel2").toBool() == group.at(1) &&
@@ -346,7 +346,7 @@ void RfRemoteMumbi::dataReceived(QList<int> rawData)
         }
     }
     if (!device) {
-        qWarning() << "couldn't find any configured device for mumbi:" << binCode.left(10) ;
+        qWarning() << "couldn't find any configured device for elro:" << binCode.left(10) ;
         return;
     }
     

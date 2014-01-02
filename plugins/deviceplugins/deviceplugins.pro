@@ -1,3 +1,3 @@
 TEMPLATE = subdirs
-SUBDIRS += rfremotemumbi rfremoteintertechno
+SUBDIRS += devicepluginelro devicepluginintertechno
 

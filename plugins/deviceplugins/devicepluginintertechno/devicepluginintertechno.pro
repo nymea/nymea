@@ -1,15 +1,15 @@
 TEMPLATE = lib
 CONFIG += plugin static
 
-TARGET = $$qtLibraryTarget(hive_rfremoteintertechno)
+TARGET = $$qtLibraryTarget(hive_devicepluginintertechno)
 
 INCLUDEPATH += ../../../libhive
 LIBS += -L../../../libhive -lhive
 
 SOURCES += \
-    rfremoteintertechno.cpp
+    devicepluginintertechno.cpp
 
 HEADERS += \
-    rfremoteintertechno.h
+    devicepluginintertechno.h
 
 

@@ -1,4 +1,4 @@
-#include "rfremoteintertechno.h"
+#include "devicepluginintertechno.h"
 
 #include "device.h"
 #include "devicemanager.h"
@@ -9,16 +9,16 @@
 
 QUuid intertechnoRemote = QUuid("ab73ad2f-6594-45a3-9063-8f72d365c5e5");
 
-RfRemoteIntertechno::RfRemoteIntertechno()
+DevicePluginIntertechno::DevicePluginIntertechno()
 {
 }
 
-void RfRemoteIntertechno::init()
+void DevicePluginIntertechno::init()
 {
-    connect(deviceManager()->radio433(), &Radio433::dataReceived, this, &RfRemoteIntertechno::dataReceived);
+    connect(deviceManager()->radio433(), &Radio433::dataReceived, this, &DevicePluginIntertechno::dataReceived);
 }
 
-QList<DeviceClass> RfRemoteIntertechno::supportedDevices() const
+QList<DeviceClass> DevicePluginIntertechno::supportedDevices() const
 {
     QList<DeviceClass> ret;
 
@@ -76,22 +76,22 @@ QList<DeviceClass> RfRemoteIntertechno::supportedDevices() const
     return ret;
 }
 
-QString RfRemoteIntertechno::pluginName() const
+QString DevicePluginIntertechno::pluginName() const
 {
     return "RF Remote Intertechno";
 }
 
-QUuid RfRemoteIntertechno::pluginId() const
+QUuid DevicePluginIntertechno::pluginId() const
 {
     return QUuid("e998d934-0397-42c1-ad63-9141bcac8563");
 }
 
-void RfRemoteIntertechno::executeAction(Device *device, const Action &action)
+void DevicePluginIntertechno::executeAction(Device *device, const Action &action)
 {
 
 }
 
-void RfRemoteIntertechno::dataReceived(QList<int> rawData)
+void DevicePluginIntertechno::dataReceived(QList<int> rawData)
 {    
     // filter right here a wrong signal length
     if(rawData.length() != 49){

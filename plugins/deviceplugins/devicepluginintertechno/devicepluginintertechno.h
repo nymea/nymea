@@ -1,17 +1,17 @@
-#ifndef RFREMOTEMUMBI_H
-#define RFREMOTEMUMBI_H
+#ifndef DEVICEPLUGININTERTECHNO_H
+#define DEVICEPLUGININTERTECHNO_H
 
 #include "deviceplugin.h"
 
-class RfRemoteMumbi : public DevicePlugin
+class DevicePluginIntertechno : public DevicePlugin
 {
     Q_OBJECT
 
-    Q_PLUGIN_METADATA(IID "org.hiveyourhome.DevicePlugin" FILE "rfremotemumbi.json")
+    Q_PLUGIN_METADATA(IID "org.hiveyourhome.DevicePlugin" FILE "devicepluginintertechno.json")
     Q_INTERFACES(DevicePlugin)
 
 public:
-    explicit RfRemoteMumbi();
+    explicit DevicePluginIntertechno();
 
     void init() override;
     QList<DeviceClass> supportedDevices() const override;
@@ -26,4 +26,4 @@ private slots:
     void dataReceived(QList<int> rawData);
 };
 
-#endif // RFREMOTEMUMBI_H
+#endif // DEVICEPLUGININTERTECHNO_H

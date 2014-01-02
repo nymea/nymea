@@ -1,6 +1,6 @@
 #include "action.h"
 
-Action::Action(const QUuid &id, const QUuid &deviceId) :
+Action::Action(const QUuid &deviceId, const QUuid &id) :
     m_id(id),
     m_deviceId(deviceId)
 {

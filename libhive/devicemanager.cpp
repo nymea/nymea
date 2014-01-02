@@ -220,10 +220,10 @@ void DeviceManager::storeConfiguredDevices()
         }
         settings.endGroup();
         settings.beginGroup("actions");
-        foreach (const Trigger &trigger, device->triggers()) {
-            settings.beginGroup(trigger.id().toString());
-            settings.setValue("triggername", trigger.name());
-            settings.setValue("params", trigger.params());
+        foreach (const Action &action, device->actions()) {
+            settings.beginGroup(action.id().toString());
+            settings.setValue("actionname", action.name());
+            settings.setValue("params", action.params());
             settings.endGroup();
         }
         settings.endGroup();

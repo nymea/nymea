@@ -12,8 +12,8 @@
 #include <QSettings>
 #include <QStringList>
 
-Q_IMPORT_PLUGIN(RfRemoteMumbi)
-Q_IMPORT_PLUGIN(RfRemoteIntertechno)
+Q_IMPORT_PLUGIN(DevicePluginElro)
+Q_IMPORT_PLUGIN(DevicePluginIntertechno)
 
 
 DeviceManager::DeviceManager(QObject *parent) :

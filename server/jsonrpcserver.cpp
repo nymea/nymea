@@ -146,10 +146,15 @@ void JsonRPCServer::handleActionMessage(int clientId, int commandId, const QStri
         Action action(deviceId);
         action.setParams(actionParams);
 
-        HiveCore::instance()->deviceManager()->executeAction(action);
-
-        sendResponse(clientId, commandId);
-
+        DeviceManager::DeviceError error = HiveCore::instance()->deviceManager()->executeAction(action);
+        switch (error) {
+        case DeviceManager::DeviceErrorNoError:
+            sendResponse(clientId, commandId);
+            break;
+        case DeviceManager::DeviceErrorDeviceNotFound:
+            sendErrorResponse(clientId, commandId, "No such device");
+            break;
+        }
     }
 }
 

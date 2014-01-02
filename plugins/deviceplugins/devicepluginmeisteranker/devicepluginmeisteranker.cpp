@@ -33,21 +33,26 @@ QList<DeviceClass> DevicePluginMeisterAnker::supportedDevices() const
     QList<TriggerType> thermometerTriggers;
     
     QVariantList paramsThermometer;
-
     QVariantMap paramThermometer;
     paramThermometer.insert("name", "temperature");
     paramThermometer.insert("type", "double");
     paramsThermometer.append(paramThermometer);
 
-    QVariantMap paramThermometerBat;
-    paramThermometerBat.insert("name", "batterystatus");
-    paramThermometerBat.insert("type", "bool");
-    paramsThermometer.append(paramThermometerBat);
-
     TriggerType temperatureTrigger(QUuid("174ab4d5-2ef0-491b-a55b-c895cedff80e"));
     temperatureTrigger.setName("temperature");
     temperatureTrigger.setParameters(paramsThermometer);
     thermometerTriggers.append(temperatureTrigger);
+
+    QVariantList paramsThermometerBat;
+    QVariantMap paramThermometerBat;
+    paramThermometerBat.insert("name", "batteryStatus");
+    paramThermometerBat.insert("type", "bool");
+    paramsThermometerBat.append(paramThermometerBat);
+
+    TriggerType batteryStatusTrigger(QUuid("c376b532-993f-41c7-acc7-02b409136d32"));
+    batteryStatusTrigger.setName("batteryStatus");
+    batteryStatusTrigger.setParameters(paramsThermometerBat);
+    thermometerTriggers.append(batteryStatusTrigger);
 
     // TODO: lock if we need a sync trigger
     //    TriggerType syncTrigger(QUuid("174ab4d5-2ef0-491b-a55b-c895cedff80e"));

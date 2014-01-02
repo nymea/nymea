@@ -1,36 +1,22 @@
 #include "trigger.h"
 
-Trigger::Trigger(const QUuid &id):
-    m_id(id)
+Trigger::Trigger(const QUuid &deviceClassid, const QVariantMap &params):
+    m_deviceClassId(deviceClassid),
+    m_params(params)
 {
 }
 
-bool Trigger::isValid() const
+QUuid Trigger::deviceClassId() const
 {
-    return !m_id.isNull();
+    return m_deviceClassId;
 }
 
-QUuid Trigger::id() const
-{
-    return m_id;
-}
-
-QString Trigger::name() const
-{
-    return m_name;
-}
-
-void Trigger::setName(const QString &name)
-{
-    m_name = name;
-}
-
-QVariantList Trigger::params() const
+QVariantMap Trigger::params() const
 {
     return m_params;
 }
 
-void Trigger::setParams(const QVariantList &params)
+void Trigger::setParams(const QVariantMap &params)
 {
     m_params = params;
 }

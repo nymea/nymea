@@ -349,14 +349,16 @@ void DevicePluginElro::dataReceived(QList<int> rawData)
         qWarning() << "couldn't find any configured device for elro:" << binCode.left(10) ;
         return;
     }
-    
+
     QVariantMap params;
-    params.insert("button", button);
     params.insert("power", power);
-    foreach (const Trigger &trigger, device->triggers()) {
-        //qDebug() << "got trigger" << trigger.name();
-        if (trigger.name() == button) {
-            emit emitTrigger(trigger.id(), params);
+
+    // FIXME: find a better way to get to the remote DeviceClass
+    DeviceClass deviceClass = supportedDevices().first();
+    foreach (const TriggerType &triggerType, deviceClass.triggers()) {
+        if (triggerType.name() == button) {
+            Trigger trigger = Trigger(triggerType.id(), params);
+            emit emitTrigger(trigger);
             return;
         }
     }

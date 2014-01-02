@@ -36,18 +36,10 @@ QList<Action> RuleEngine::evaluateTrigger(const QUuid &triggerId)
     return actions;
 }
 
-RuleEngine::RuleError RuleEngine::addRule(const QUuid &triggerId, const QUuid &actionId)
+RuleEngine::RuleError RuleEngine::addRule(const QUuid &triggerTypeId, const Action &action)
 {
-    if (!HiveCore::instance()->deviceManager()->findTrigger(triggerId).isValid()) {
-        qWarning() << "Cannot create rule. No such trigger.";
-        return RuleErrorNoSuchTrigger;
-    }
-    if (!HiveCore::instance()->deviceManager()->findAction(actionId).isValid()) {
-        qWarning() << "Cannot create rule. No such action.";
-        return RuleErrorNoSuchAction;
-    }
 
-    Rule rule = Rule(QUuid::createUuid(), triggerId, actionId);
+    Rule rule = Rule(QUuid::createUuid(), triggerTypeId, action);
     m_rules.append(rule);
 
     QSettings settings(rulesFileName);

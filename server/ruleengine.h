@@ -21,7 +21,7 @@ public:
 
     QList<Action> evaluateTrigger(const QUuid &triggerId);
 
-    RuleError addRule(const QUuid &triggerId, const QUuid &actionId);
+    RuleError addRule(const QUuid &triggerTypeId, const Action &action);
     QList<Rule> rules() const;
 
 private:

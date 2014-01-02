@@ -33,15 +33,10 @@ public:
     QList<Device*> findConfiguredDevices(const QUuid &deviceClassId);
     DeviceClass findDeviceClass(const QUuid &deviceClassId);
 
-    Trigger findTrigger(const QUuid &triggerId);
-    Action findAction(const QUuid &actionId);
-
-    QList<Action> allActions() const;
-
     Radio433 *radio433() const;
 
 signals:
-    void emitTrigger(const QUuid &triggerId, const QVariantMap &params);
+    void emitTrigger(const Trigger &trigger);
 
 public slots:
     DeviceError executeAction(const Action &action);

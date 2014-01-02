@@ -30,7 +30,7 @@ public slots:
     virtual void executeAction(Device *device, const Action &action) = 0;
 
 signals:
-    void emitTrigger(const QUuid &triggerId, const QVariantMap &params);
+    void emitTrigger(const Trigger &trigger);
 
 protected:
     DeviceManager *deviceManager() const;

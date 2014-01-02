@@ -8,21 +8,16 @@
 class Trigger
 {
 public:
-    Trigger(const QUuid &id = QUuid());
-    bool isValid() const;
+    Trigger(const QUuid &deviceClassid, const QVariantMap &params);
 
-    QUuid id() const;
+    QUuid deviceClassId() const;
 
-    QString name() const;
-    void setName(const QString &name);
-
-    QVariantList params() const;
-    void setParams(const QVariantList &params);
+    QVariantMap params() const;
+    void setParams(const QVariantMap &params);
 
 private:
-    QUuid m_id;
-    QString m_name;
-    QVariantList m_params;
+    QUuid m_deviceClassId;
+    QVariantMap m_params;
 };
 
 #endif // TRIGGER_H

@@ -158,7 +158,6 @@ void DevicePluginElro::executeAction(Device *device, const Action &action)
     QList<int> rawData;
     QByteArray binCode;
 
-    qDebug() << "rawData" << rawData;
     // =======================================
     // create the bincode
     // channels
@@ -215,12 +214,12 @@ void DevicePluginElro::executeAction(Device *device, const Action &action)
         binCode.append("01");
     }
     // Power
-    if(action.params().first().toBool()){
+    if(action.params().value("power").toBool()){
         binCode.append("0001");
     }else{
         binCode.append("0100");
     }
-
+    qDebug() << "bin code:" << binCode;
     // =======================================
     //create rawData timings list
     int delay = 350;
@@ -359,6 +358,7 @@ void DevicePluginElro::receiveData(QList<int> rawData)
     DeviceClass deviceClass = supportedDevices().first();
     foreach (const TriggerType &triggerType, deviceClass.triggers()) {
         if (triggerType.name() == button) {
+            qDebug() << "emit trigger " << group << triggerType.name() << power;
             Trigger trigger = Trigger(triggerType.id(), device->id(), params);
             emit emitTrigger(trigger);
             return;

@@ -409,7 +409,7 @@ void DevicePluginIntertechno::receiveData(QList<int> rawData)
     DeviceClass deviceClass = supportedDevices().first();
     foreach (const TriggerType &triggerType, deviceClass.triggers()) {
         if (triggerType.name() == buttonCode) {
-            //qDebug() << "emit trigger " << triggerType.name();
+            qDebug() << "emit trigger " << familyCode << triggerType.name() << power;
             Trigger trigger = Trigger(triggerType.id(), device->id(), params);
             emit emitTrigger(trigger);
             return;

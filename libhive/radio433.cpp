@@ -14,7 +14,7 @@ Radio433::Radio433(QObject *parent) :
     // Set up transmitter
     m_transmitter = new Gpio(this,22);
     m_transmitter->setDirection(OUTPUT);
-    m_transmitter->setValue(LOW);
+    m_transmitter->setValue(HIGH);
 
     connect(m_receiver,SIGNAL(pinInterrupt()),this,SLOT(handleInterrupt()));
 
@@ -30,22 +30,25 @@ Radio433::~Radio433()
 void Radio433::sendData(QList<int> rawData)
 {
 
-    qDebug() << "send 433";
     //first we have to disable our receiver, to prevent reading this signal
-    //m_receiver->stop();
+    m_receiver->stop();
 
     m_transmitter->setValue(LOW);
-    delayMicroseconds(500);
-
     int flag=1;
-    foreach (int delay, rawData) {
-        // 1 = High, 0 = Low
-        m_transmitter->setValue(flag++ %2);
-        delayMicroseconds(delay);
+
+    for(int i = 0; i <= 8; i++){
+        foreach (int delay, rawData) {
+            // 1 = High, 0 = Low
+            m_transmitter->setValue(flag %2);
+            flag++;
+            //qDebug() << "flag" << flag %2;
+            delayMicros(delay);
+        }
     }
+    //qDebug() << "signal sent." << rawData;
 
     // re-enable it
-    //m_receiver->start();
+    m_receiver->start();
 
 }
 
@@ -60,29 +63,50 @@ int Radio433::micros()
     return (int)(now - m_epochMicro) ;
 }
 
-void Radio433::delayMicroseconds(int pulseLength)
+void Radio433::delayMilli(int milliSeconds)
 {
-    struct timespec sleeper ;
+    struct timespec sleeper, dummy ;
 
-    if(pulseLength <= 0){
-        return;
-    }else {
-        if(pulseLength < 100){
-            struct timeval tNow, tLong, tEnd ;
+    sleeper.tv_sec  = (time_t)(milliSeconds / 1000) ;
+    sleeper.tv_nsec = (long)(milliSeconds % 1000) * 1000000;
 
-            gettimeofday (&tNow, NULL) ;
-            tLong.tv_sec  = pulseLength / 1000000 ;
-            tLong.tv_usec = pulseLength % 1000000 ;
-            timeradd (&tNow, &tLong, &tEnd) ;
+    nanosleep (&sleeper, &dummy) ;
+}
 
-            while (timercmp (&tNow, &tEnd, <)){
-                gettimeofday (&tNow, NULL) ;
-            }
-        }
-        sleeper.tv_sec  = 0 ;
-        sleeper.tv_nsec = (long)(pulseLength * 1000) ;
-        nanosleep (&sleeper, NULL) ;
-    }
+//void Radio433::delayMicroseconds(int pulseLength)
+//{
+//    struct timespec sleeper ;
+
+//    if(pulseLength <= 0){
+//        return;
+//    }else {
+//        if(pulseLength < 100){
+//            struct timeval tNow, tLong, tEnd ;
+
+//            gettimeofday (&tNow, NULL) ;
+//            tLong.tv_sec  = pulseLength / 1000000 ;
+//            tLong.tv_usec = pulseLength % 1000000 ;
+//            timeradd (&tNow, &tLong, &tEnd) ;
+
+//            while (timercmp (&tNow, &tEnd, <)){
+//                gettimeofday (&tNow, NULL) ;
+//            }
+//        }
+//        sleeper.tv_sec  = 0 ;
+//        sleeper.tv_nsec = (long)(pulseLength * 1000) ;
+//        nanosleep (&sleeper, NULL);
+//        //qDebug() << "time " << sleeper.tv_nsec;
+//    }
+//}
+
+void Radio433::delayMicros(int microSeconds)
+{
+    struct timespec sleeper;
+
+    sleeper.tv_sec  = 0;
+    sleeper.tv_nsec = (long)(microSeconds * 1000);
+
+    nanosleep (&sleeper, NULL) ;
 }
 
 
@@ -107,11 +131,11 @@ void Radio433::handleInterrupt()
                     rawData.append(m_timings[i]);
                     m_timings[i] = 0;
                 }
-//                qDebug() << "-----------------------------------------------------------";
-//                qDebug() << "|                    GENERIC signal                       |";
-//                qDebug() << "-----------------------------------------------------------";
-//                qDebug() << "delay      :" << rawData.first() /31;
-//                qDebug() << rawData;
+                //                qDebug() << "-----------------------------------------------------------";
+                //                qDebug() << "|                    GENERIC signal                       |";
+                //                qDebug() << "-----------------------------------------------------------";
+                //                qDebug() << "delay      :" << rawData.first() /31;
+                //                qDebug() << rawData;
 
                 emit dataReceived(rawData);
             }

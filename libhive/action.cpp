@@ -31,12 +31,12 @@ void Action::setName(const QString &name)
     m_name = name;
 }
 
-QVariantList Action::params() const
+QVariantMap Action::params() const
 {
     return m_params;
 }
 
-void Action::setParams(const QVariantList &params)
+void Action::setParams(const QVariantMap &params)
 {
     m_params = params;
 }

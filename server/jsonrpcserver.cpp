@@ -120,7 +120,7 @@ void JsonRPCServer::handleRulesMessage(int clientId, int commandId, const QStrin
 
         Action action(params.value("deviceId").toString());
         action.setName(params.value("name").toString());
-        action.setParams(params.value("params").toList());
+        action.setParams(params.value("params").toMap());
 
         switch(HiveCore::instance()->ruleEngine()->addRule(trigger, action)) {
         case RuleEngine::RuleErrorNoError:
@@ -141,10 +141,13 @@ void JsonRPCServer::handleActionMessage(int clientId, int commandId, const QStri
     if (method == "ExecuteAction") {
         QVariantMap actionMap = params.value("action").toMap();
         QUuid deviceId = actionMap.value("deviceId").toUuid();
-        QVariantList actionParams = actionMap.value("params").toList();
+        QVariantMap actionParams = actionMap.value("params").toMap();
 
         Action action(deviceId);
         action.setParams(actionParams);
+
+        qDebug() << "actions params in json" << action.params();
+
 
         DeviceManager::DeviceError error = HiveCore::instance()->deviceManager()->executeAction(action);
         switch (error) {

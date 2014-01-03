@@ -28,7 +28,7 @@ RuleEngine::RuleEngine(QObject *parent) :
         settings.beginGroup("action");
         Action action = Action(settings.value("deviceId").toUuid(), settings.value("id").toUuid());
         action.setName(settings.value("name").toString());
-        action.setParams(settings.value("params").toList());
+        action.setParams(settings.value("params").toMap());
         settings.endGroup();
         settings.endGroup();
 

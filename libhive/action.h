@@ -17,14 +17,14 @@ public:
     QString name() const;
     void setName(const QString &name);
 
-    QVariantList params() const;
-    void setParams(const QVariantList &params);
+    QVariantMap params() const;
+    void setParams(const QVariantMap &params);
 
 private:
     QUuid m_id;
     QUuid m_deviceId;
     QString m_name;
-    QVariantList m_params;
+    QVariantMap m_params;
 };
 
 #endif // ACTION_H

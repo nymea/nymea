@@ -31,6 +31,8 @@ private:
 
     int micros();
     void delayMicroseconds(int pulseLength);
+    void delayMicros(int microSeconds);
+    void delayMilli(int milliSeconds);
 
 private slots:
     void handleInterrupt();

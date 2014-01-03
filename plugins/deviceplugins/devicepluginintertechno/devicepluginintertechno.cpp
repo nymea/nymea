@@ -25,7 +25,7 @@ QList<DeviceClass> DevicePluginIntertechno::supportedDevices() const
     QVariantList remoteParams;
     QVariantMap familyParam;
     // family code = A-P
-    familyParam.insert("name", "familycode");
+    familyParam.insert("name", "familyCode");
     familyParam.insert("type", "string");
     remoteParams.append(familyParam);
 
@@ -144,7 +144,7 @@ QList<DeviceClass> DevicePluginIntertechno::supportedDevices() const
     QVariantList switchDeviceParams;
     QVariantMap buttonParam;
     // button code = 1-16
-    buttonParam.insert("name", "buttoncode");
+    buttonParam.insert("name", "buttonCode");
     buttonParam.insert("type", "int");
 
     switchDeviceParams.append(familyParam);
@@ -191,6 +191,22 @@ QUuid DevicePluginIntertechno::pluginId() const
 
 void DevicePluginIntertechno::executeAction(Device *device, const Action &action)
 {
+
+    QList<int> rawData;
+    QByteArray binCode;
+
+    QString familyCode = device->params().value("familyCode").toString();
+
+    if(familyCode == "A"){
+        binCode.append("00000000");
+    }else if(familyCode == "B"){
+        binCode.append("01000000");
+    }
+
+
+
+
+
 
 }
 
@@ -391,14 +407,14 @@ void DevicePluginIntertechno::receiveData(QList<int> rawData)
     // ===================================================
     Device *device = 0;
     foreach (Device *dev, deviceList) {
-        if (dev->params().contains("familycode") && dev->params().value("familycode").toString() == familyCode) {
+        if (dev->params().contains("familyCode") && dev->params().value("familyCode").toString() == familyCode) {
             // Yippie! We found the device.
             device = dev;
             break;
         }
     }
     if (!device) {
-        qWarning() << "couldn't find any configured device for intertech familycode:" << familyCode;
+        qWarning() << "couldn't find any configured device for intertech familyCode:" << familyCode;
         return;
     }
 
@@ -409,7 +425,7 @@ void DevicePluginIntertechno::receiveData(QList<int> rawData)
     DeviceClass deviceClass = supportedDevices().first();
     foreach (const TriggerType &triggerType, deviceClass.triggers()) {
         if (triggerType.name() == buttonCode) {
-            qDebug() << "emit trigger " << familyCode << triggerType.name() << power;
+            qDebug() << "emit trigger " << pluginName() << familyCode << triggerType.name() << power;
             Trigger trigger = Trigger(triggerType.id(), device->id(), params);
             emit emitTrigger(trigger);
             return;

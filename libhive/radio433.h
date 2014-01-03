@@ -30,9 +30,7 @@ private:
     unsigned int m_epochMicro;
 
     int micros();
-    void delayMicroseconds(int pulseLength);
     void delayMicros(int microSeconds);
-    void delayMilli(int milliSeconds);
 
 private slots:
     void handleInterrupt();

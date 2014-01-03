@@ -358,7 +358,7 @@ void DevicePluginElro::receiveData(QList<int> rawData)
     DeviceClass deviceClass = supportedDevices().first();
     foreach (const TriggerType &triggerType, deviceClass.triggers()) {
         if (triggerType.name() == button) {
-            qDebug() << "emit trigger " << group << triggerType.name() << power;
+            qDebug() << "emit trigger " << pluginName() << group << triggerType.name() << power;
             Trigger trigger = Trigger(triggerType.id(), device->id(), params);
             emit emitTrigger(trigger);
             return;

@@ -14,7 +14,7 @@ Radio433::Radio433(QObject *parent) :
     // Set up transmitter
     m_transmitter = new Gpio(this,22);
     m_transmitter->setDirection(OUTPUT);
-    m_transmitter->setValue(HIGH);
+    m_transmitter->setValue(LOW);
 
     connect(m_receiver,SIGNAL(pinInterrupt()),this,SLOT(handleInterrupt()));
 
@@ -41,12 +41,10 @@ void Radio433::sendData(QList<int> rawData)
             // 1 = High, 0 = Low
             m_transmitter->setValue(flag %2);
             flag++;
-            //qDebug() << "flag" << flag %2;
             delayMicros(delay);
         }
     }
-    //qDebug() << "signal sent." << rawData;
-
+    m_transmitter->setValue(LOW);
     // re-enable it
     m_receiver->start();
 
@@ -62,42 +60,6 @@ int Radio433::micros()
 
     return (int)(now - m_epochMicro) ;
 }
-
-void Radio433::delayMilli(int milliSeconds)
-{
-    struct timespec sleeper, dummy ;
-
-    sleeper.tv_sec  = (time_t)(milliSeconds / 1000) ;
-    sleeper.tv_nsec = (long)(milliSeconds % 1000) * 1000000;
-
-    nanosleep (&sleeper, &dummy) ;
-}
-
-//void Radio433::delayMicroseconds(int pulseLength)
-//{
-//    struct timespec sleeper ;
-
-//    if(pulseLength <= 0){
-//        return;
-//    }else {
-//        if(pulseLength < 100){
-//            struct timeval tNow, tLong, tEnd ;
-
-//            gettimeofday (&tNow, NULL) ;
-//            tLong.tv_sec  = pulseLength / 1000000 ;
-//            tLong.tv_usec = pulseLength % 1000000 ;
-//            timeradd (&tNow, &tLong, &tEnd) ;
-
-//            while (timercmp (&tNow, &tEnd, <)){
-//                gettimeofday (&tNow, NULL) ;
-//            }
-//        }
-//        sleeper.tv_sec  = 0 ;
-//        sleeper.tv_nsec = (long)(pulseLength * 1000) ;
-//        nanosleep (&sleeper, NULL);
-//        //qDebug() << "time " << sleeper.tv_nsec;
-//    }
-//}
 
 void Radio433::delayMicros(int microSeconds)
 {

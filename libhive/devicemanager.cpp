@@ -89,6 +89,18 @@ QList<Device *> DeviceManager::findConfiguredDevices(const QUuid &deviceClassId)
     return ret;
 }
 
+DeviceClass DeviceManager::findDeviceClassforTrigger(const QUuid &triggerTypeId)
+{
+    foreach (const DeviceClass &deviceClass, m_supportedDevices) {
+        foreach (const TriggerType &triggerType, deviceClass.triggers()) {
+            if (triggerType.id() == triggerTypeId) {
+                return deviceClass;
+            }
+        }
+    }
+    return DeviceClass(QUuid(), QUuid());
+}
+
 DeviceClass DeviceManager::findDeviceClass(const QUuid &deviceClassId)
 {
     foreach (const DeviceClass &deviceClass, m_supportedDevices) {

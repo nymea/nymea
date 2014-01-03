@@ -14,9 +14,9 @@ Radio433::Radio433(QObject *parent) :
     // Set up transmitter
     m_transmitter = new Gpio(this,22);
     m_transmitter->setDirection(OUTPUT);
-    m_transmitter->setValue(HIGH);
+    m_transmitter->setValue(LOW);
 
-    connect(m_receiver,SIGNAL(pinInterrupt()),this,SLOT(handleInterrupt()));
+    connect(m_receiver, &Gpio::pinInterrupt, this, &Radio433::handleInterrupt);
 
     m_receiver->start();
 }
@@ -48,6 +48,7 @@ void Radio433::sendData(QList<int> rawData)
     //qDebug() << "signal sent." << rawData;
 
     // re-enable it
+    m_transmitter->setValue(LOW);
     m_receiver->start();
 
 }

@@ -120,9 +120,10 @@ void JsonRPCServer::handleRulesMessage(int clientId, int commandId, const QStrin
         QVariantMap triggerParams = triggerMap.value("params").toMap();
         Trigger trigger(triggerTypeId, triggerDeviceId, triggerParams);
 
-        Action action(params.value("deviceId").toString());
-        action.setName(params.value("name").toString());
-        action.setParams(params.value("params").toMap());
+        QVariantMap actionMap = params.value("action").toMap();
+        Action action(actionMap.value("deviceId").toString());
+        action.setName(actionMap.value("name").toString());
+        action.setParams(actionMap.value("params").toMap());
 
         switch(HiveCore::instance()->ruleEngine()->addRule(trigger, action)) {
         case RuleEngine::RuleErrorNoError:

@@ -75,6 +75,8 @@ void JsonRPCServer::processData(int clientId, const QByteArray &jsonData)
             case DeviceManager::DeviceErrorMissingParameter:
                 sendErrorResponse(clientId, commandId, "Error creating device. Missing parameter.");
                 break;
+            default:
+                sendErrorResponse(clientId, commandId, "Unknown error.");
             }
         } else if (method == "GetConfiguredDevices") {
             QVariantMap rspParams;
@@ -157,6 +159,8 @@ void JsonRPCServer::handleActionMessage(int clientId, int commandId, const QStri
         case DeviceManager::DeviceErrorDeviceNotFound:
             sendErrorResponse(clientId, commandId, "No such device");
             break;
+        default:
+            sendErrorResponse(clientId, commandId, "Unknown error.");
         }
     }
 }

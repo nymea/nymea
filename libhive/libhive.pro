@@ -1,6 +1,8 @@
 TARGET = hive
 TEMPLATE = lib
 
+CONFIG += c++11
+
 target.path = /usr/lib
 INSTALLS += target
 

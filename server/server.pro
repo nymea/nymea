@@ -7,6 +7,7 @@ target.path = /usr/bin
 INSTALLS += target
 
 QT += network
+CONFIG += c++11
 
 LIBS += -L../libhive/ -lhive
 

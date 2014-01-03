@@ -1,10 +1,6 @@
-TEMPLATE = lib
-CONFIG += plugin static
+include(../../plugins.pri)
 
 TARGET = $$qtLibraryTarget(hive_devicepluginelro)
-
-INCLUDEPATH += ../../../libhive
-LIBS += -L../../../libhive -lhive
 
 SOURCES += \
     devicepluginelro.cpp

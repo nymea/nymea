@@ -30,15 +30,17 @@ public:
 
     explicit DeviceManager(QObject *parent = 0);
 
-    QList<DeviceClass> supportedDevices();
+    QList<DevicePlugin*> plugins() const;
+    DevicePlugin* plugin(const QUuid &id) const;
+    QList<DeviceClass> supportedDevices() const;
 
     QList<Device*> configuredDevices() const;
     DeviceError addConfiguredDevice(const QUuid &deviceClassId, const QVariantMap &params);
 
     Device* findConfiguredDevice(const QUuid &id) const;
-    QList<Device*> findConfiguredDevices(const QUuid &deviceClassId);
-    DeviceClass findDeviceClassforTrigger(const QUuid &triggerTypeId);
-    DeviceClass findDeviceClass(const QUuid &deviceClassId);
+    QList<Device*> findConfiguredDevices(const QUuid &deviceClassId) const;
+    DeviceClass findDeviceClassforTrigger(const QUuid &triggerTypeId) const;
+    DeviceClass findDeviceClass(const QUuid &deviceClassId) const;
 
 signals:
     void emitTrigger(const Trigger &trigger);

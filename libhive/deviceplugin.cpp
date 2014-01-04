@@ -21,6 +21,17 @@ void DevicePlugin::initPlugin(DeviceManager *deviceManager)
     init();
 }
 
+QVariantMap DevicePlugin::configuration() const
+{
+    return QVariantMap();
+}
+
+void DevicePlugin::setConfiguration(const QVariantMap &configuration)
+{
+    Q_UNUSED(configuration)
+    qWarning() << "Plugin" << pluginName() << pluginId() << "does not support any configuration";
+}
+
 DeviceManager *DevicePlugin::deviceManager() const
 {
     return m_deviceManager;

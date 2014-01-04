@@ -4,6 +4,7 @@
 
 #include "hivecore.h"
 #include "devicemanager.h"
+#include "deviceplugin.h"
 #include "deviceclass.h"
 #include "device.h"
 #include "rule.h"
@@ -53,48 +54,70 @@ void JsonRPCServer::processData(int clientId, const QByteArray &jsonData)
     emit commandReceived(targetNamespace, method, params);
 
     if (targetNamespace == "Devices") {
-        if (method == "GetSupportedDevices") {
-            QVariantMap params;
-            QVariantList supportedDeviceList;
-            foreach (const DeviceClass &deviceClass, HiveCore::instance()->deviceManager()->supportedDevices()) {
-                supportedDeviceList.append(packDeviceClass(deviceClass));
-            }
-            params.insert("deviceClasses", supportedDeviceList);
-            sendResponse(clientId, commandId, params);
-        } else if (method == "AddConfiguredDevice") {
-            QUuid deviceClass = params.value("deviceClass").toUuid();
-            QVariantMap deviceParams = params.value("params").toMap();
-            DeviceManager::DeviceError status = HiveCore::instance()->deviceManager()->addConfiguredDevice(deviceClass, deviceParams);
-            switch(status) {
-            case DeviceManager::DeviceErrorNoError:
-                sendResponse(clientId, commandId);
-                break;
-            case DeviceManager::DeviceErrorDeviceClassNotFound:
-                sendErrorResponse(clientId, commandId, "Error creating device. Device class not found.");
-                break;
-            case DeviceManager::DeviceErrorMissingParameter:
-                sendErrorResponse(clientId, commandId, "Error creating device. Missing parameter.");
-                break;
-            default:
-                sendErrorResponse(clientId, commandId, "Unknown error.");
-            }
-        } else if (method == "GetConfiguredDevices") {
-            QVariantMap rspParams;
-            QVariantList configuredDeviceList;
-            foreach (Device *device, HiveCore::instance()->deviceManager()->configuredDevices()) {
-                configuredDeviceList.append(packDevice(device));
-            }
-            rspParams.insert("devices", configuredDeviceList);
-            sendResponse(clientId, commandId, rspParams);
-        } else {
-            sendErrorResponse(clientId, commandId, "No such method");
-        }
+        handleDevicesMessage(clientId, commandId, method, params);
     } else if (targetNamespace == "Rules") {
         handleRulesMessage(clientId, commandId, method, params);
     } else if (targetNamespace == "Actions") {
         handleActionMessage(clientId, commandId, method, params);
     } else {
         qDebug() << "got unknown namespace" << targetNamespace;
+    }
+}
+
+void JsonRPCServer::handleDevicesMessage(int clientId, int commandId, const QString &method, const QVariantMap &params)
+{
+    if (method == "GetSupportedDevices") {
+        QVariantMap params;
+        QVariantList supportedDeviceList;
+        foreach (const DeviceClass &deviceClass, HiveCore::instance()->deviceManager()->supportedDevices()) {
+            supportedDeviceList.append(packDeviceClass(deviceClass));
+        }
+        params.insert("deviceClasses", supportedDeviceList);
+        sendResponse(clientId, commandId, params);
+    } else if (method == "GetPlugins") {
+        QVariantMap params;
+        QVariantList plugins;
+        foreach (DevicePlugin *plugin, HiveCore::instance()->deviceManager()->plugins()) {
+            QVariantMap pluginMap;
+            pluginMap.insert("id", plugin->pluginId());
+            pluginMap.insert("name", plugin->pluginName());
+            pluginMap.insert("config", plugin->configuration());
+            plugins.append(pluginMap);
+        }
+        params.insert("plugins", plugins);
+        sendResponse(clientId, commandId, params);
+    } else if (method == "SetPluginConfig") {
+        QUuid pluginId = params.value("pluginId").toUuid();
+        QVariantMap pluginParams = params.value("params").toMap();
+        HiveCore::instance()->deviceManager()->plugin(pluginId)->setConfiguration(pluginParams);
+        sendResponse(clientId, commandId);
+    } else if (method == "AddConfiguredDevice") {
+        QUuid deviceClass = params.value("deviceClass").toUuid();
+        QVariantMap deviceParams = params.value("params").toMap();
+        DeviceManager::DeviceError status = HiveCore::instance()->deviceManager()->addConfiguredDevice(deviceClass, deviceParams);
+        switch(status) {
+        case DeviceManager::DeviceErrorNoError:
+            sendResponse(clientId, commandId);
+            break;
+        case DeviceManager::DeviceErrorDeviceClassNotFound:
+            sendErrorResponse(clientId, commandId, "Error creating device. Device class not found.");
+            break;
+        case DeviceManager::DeviceErrorMissingParameter:
+            sendErrorResponse(clientId, commandId, "Error creating device. Missing parameter.");
+            break;
+        default:
+            sendErrorResponse(clientId, commandId, "Unknown error.");
+        }
+    } else if (method == "GetConfiguredDevices") {
+        QVariantMap rspParams;
+        QVariantList configuredDeviceList;
+        foreach (Device *device, HiveCore::instance()->deviceManager()->configuredDevices()) {
+            configuredDeviceList.append(packDevice(device));
+        }
+        rspParams.insert("devices", configuredDeviceList);
+        sendResponse(clientId, commandId, rspParams);
+    } else {
+        sendErrorResponse(clientId, commandId, "No such method");
     }
 }
 

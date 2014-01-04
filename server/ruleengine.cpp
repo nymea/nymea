@@ -52,6 +52,8 @@ QList<Action> RuleEngine::evaluateTrigger(const Trigger &trigger)
 RuleEngine::RuleError RuleEngine::addRule(const Trigger &trigger, const Action &action)
 {
     qDebug() << "adding rule: Trigger:" << trigger.triggerTypeId() << "deviceid:" << action.deviceId();
+    DeviceClass triggerDeviceClass = HiveCore::instance()->deviceManager()->findDeviceClassforTrigger(trigger.triggerTypeId());
+
     Device *device = HiveCore::instance()->deviceManager()->findConfiguredDevice(trigger.deviceId());
     if (!device) {
         qWarning() << "Cannot create rule. No configured device for triggerTypeId" << trigger.triggerTypeId();

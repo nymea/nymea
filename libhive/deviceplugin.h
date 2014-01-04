@@ -31,6 +31,9 @@ public:
     // Hardware input
     virtual void receiveData(QList<int> rawData) = 0;
 
+    virtual QVariantMap configuration() const;
+    virtual void setConfiguration(const QVariantMap &configuration);
+
 public slots:
     virtual void executeAction(Device *device, const Action &action) = 0;
 

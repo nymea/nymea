@@ -27,7 +27,17 @@ DeviceManager::DeviceManager(QObject *parent) :
     QMetaObject::invokeMethod(this, "loadConfiguredDevices", Qt::QueuedConnection);
 }
 
-QList<DeviceClass> DeviceManager::supportedDevices()
+QList<DevicePlugin *> DeviceManager::plugins() const
+{
+    return m_devicePlugins.values();
+}
+
+DevicePlugin *DeviceManager::plugin(const QUuid &id) const
+{
+    return m_devicePlugins.value(id);
+}
+
+QList<DeviceClass> DeviceManager::supportedDevices() const
 {
     return m_supportedDevices.values();
 }
@@ -78,7 +88,7 @@ QList<Device *> DeviceManager::configuredDevices() const
     return m_configuredDevices;
 }
 
-QList<Device *> DeviceManager::findConfiguredDevices(const QUuid &deviceClassId)
+QList<Device *> DeviceManager::findConfiguredDevices(const QUuid &deviceClassId) const
 {
     QList<Device*> ret;
     foreach (Device *device, m_configuredDevices) {
@@ -89,7 +99,7 @@ QList<Device *> DeviceManager::findConfiguredDevices(const QUuid &deviceClassId)
     return ret;
 }
 
-DeviceClass DeviceManager::findDeviceClassforTrigger(const QUuid &triggerTypeId)
+DeviceClass DeviceManager::findDeviceClassforTrigger(const QUuid &triggerTypeId) const
 {
     foreach (const DeviceClass &deviceClass, m_supportedDevices) {
         foreach (const TriggerType &triggerType, deviceClass.triggers()) {
@@ -101,7 +111,7 @@ DeviceClass DeviceManager::findDeviceClassforTrigger(const QUuid &triggerTypeId)
     return DeviceClass(QUuid(), QUuid());
 }
 
-DeviceClass DeviceManager::findDeviceClass(const QUuid &deviceClassId)
+DeviceClass DeviceManager::findDeviceClass(const QUuid &deviceClassId) const
 {
     foreach (const DeviceClass &deviceClass, m_supportedDevices) {
         if (deviceClass.id() == deviceClassId) {

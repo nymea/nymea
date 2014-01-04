@@ -37,6 +37,7 @@ public:
 
     Device* findConfiguredDevice(const QUuid &id) const;
     QList<Device*> findConfiguredDevices(const QUuid &deviceClassId);
+    DeviceClass findDeviceClassforTrigger(const QUuid &triggerTypeId);
     DeviceClass findDeviceClass(const QUuid &deviceClassId);
 
 signals:

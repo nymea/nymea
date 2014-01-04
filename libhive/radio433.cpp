@@ -16,7 +16,7 @@ Radio433::Radio433(QObject *parent) :
     m_transmitter->setDirection(OUTPUT);
     m_transmitter->setValue(LOW);
 
-    connect(m_receiver,SIGNAL(pinInterrupt()),this,SLOT(handleInterrupt()));
+    connect(m_receiver, &Gpio::pinInterrupt, this, &Radio433::handleInterrupt);
 
     m_receiver->start();
 }
@@ -46,6 +46,7 @@ void Radio433::sendData(QList<int> rawData)
     }
     m_transmitter->setValue(LOW);
     // re-enable it
+    m_transmitter->setValue(LOW);
     m_receiver->start();
 
 }

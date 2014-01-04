@@ -211,7 +211,9 @@ void DevicePluginIntertechno::executeAction(Device *device, const Action &action
 }
 
 void DevicePluginIntertechno::receiveData(QList<int> rawData)
-{    
+{
+
+
     // filter right here a wrong signal length
     if(rawData.length() != 49){
         return;

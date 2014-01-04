@@ -51,13 +51,14 @@ QList<Action> RuleEngine::evaluateTrigger(const Trigger &trigger)
 
 RuleEngine::RuleError RuleEngine::addRule(const Trigger &trigger, const Action &action)
 {
-
+    qDebug() << "adding rule: Trigger:" << trigger.triggerTypeId() << "deviceid:" << action.deviceId();
     Device *device = HiveCore::instance()->deviceManager()->findConfiguredDevice(trigger.deviceId());
     if (!device) {
         qWarning() << "Cannot create rule. No configured device for triggerTypeId" << trigger.triggerTypeId();
         return RuleErrorDeviceNotFound;
     }
     DeviceClass deviceClass = HiveCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
+    qDebug() << "found deviceClass" << deviceClass.name();
 
     bool triggerTypeFound = false;
     foreach (const TriggerType &triggerType, deviceClass.triggers()) {

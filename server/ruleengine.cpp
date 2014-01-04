@@ -15,7 +15,6 @@ RuleEngine::RuleEngine(QObject *parent) :
     QObject(parent)
 {
     QSettings settings(rulesFileName);
-    qDebug() << "loading rules from" << rulesFileName;
     foreach (const QString &idString, settings.childGroups()) {
         qDebug() << "found rule" << idString;
 
@@ -44,6 +43,7 @@ RuleEngine::RuleEngine(QObject *parent) :
             action.setName(settings.value("name").toString());
             action.setParams(settings.value("params").toMap());
             settings.endGroup();
+            actions.append(action);
         }
         settings.endGroup();
 
@@ -61,6 +61,7 @@ QList<Action> RuleEngine::evaluateTrigger(const Trigger &trigger)
     for (int i = 0; i < m_rules.count(); ++i) {
         if (m_rules.at(i).trigger() == trigger) {
             bool statesMatching = true;
+            qDebug() << "checking states";
             foreach (const State &state, m_rules.at(i).states()) {
                 Device *device = HiveCore::instance()->deviceManager()->findConfiguredDevice(state.deviceId());
                 if (!device) {
@@ -73,11 +74,13 @@ QList<Action> RuleEngine::evaluateTrigger(const Trigger &trigger)
                 }
             }
 
+            qDebug() << "states matching" << statesMatching;
             if (statesMatching) {
                 actions.append(m_rules.at(i).actions());
             }
         }
     }
+    qDebug() << "found" << actions.count() << "actions";
     return actions;
 }
 

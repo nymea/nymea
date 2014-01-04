@@ -1,5 +1,7 @@
 #include "rule.h"
 
+#include <QDebug>
+
 Rule::Rule(const QUuid &id, const Trigger &trigger, const QList<State> states, const QList<Action> &actions):
     m_id(id),
     m_trigger(trigger),

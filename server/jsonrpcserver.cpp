@@ -157,6 +157,10 @@ void JsonRPCServer::handleRulesMessage(int clientId, int commandId, const QStrin
             action.setParams(actionMap.value("params").toMap());
             actions.append(action);
         }
+        if (actions.count() == 0) {
+            sendErrorResponse(clientId, commandId, "Missing parameter: \"actions\".");
+            return;
+        }
 
         switch(HiveCore::instance()->ruleEngine()->addRule(trigger, actions)) {
         case RuleEngine::RuleErrorNoError:

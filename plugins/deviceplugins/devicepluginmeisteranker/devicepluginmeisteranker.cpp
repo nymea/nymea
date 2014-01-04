@@ -23,6 +23,8 @@ QList<DeviceClass> DevicePluginMeisterAnker::supportedDevices() const
     
     QVariantList thermometerParams;
     QVariantMap idParam;
+
+    // =======================================
     // id -> first 8 bits of codeword
     idParam.insert("name", "id");
     idParam.insert("type", "string");
@@ -107,21 +109,18 @@ void DevicePluginMeisterAnker::receiveData(QList<int> rawData)
     if(rawData.length() != 49){
         return;
     }
-    
-    QList<Device*> deviceList = deviceManager()->findConfiguredDevices(thermometer);
-    if(deviceList.isEmpty()){
-        return;
-    }
 
-    int delay = rawData.first()/31;
     QByteArray binCode;
-    
-    if(delay > 250 && delay < 260){
+    int delay = rawData.first()/31;
 
-        //  __
-        // |  |________         = 0     1100000000
-        //  __
-        // |  |________________ = 1     110000000000000000
+    // parse rawdate to binary code
+    if(delay > 240 && delay < 260){
+
+        /*    __
+         *   |  |________         = 0     1100000000
+         *    __
+         *   |  |________________ = 1     110000000000000000
+         */
 
         for(int i = 1; i <= 48; i+=2 ){
             if(rawData.at(i) < 1000 && rawData.at(i+1) < 3000 && rawData.at(i+1) > 1000){
@@ -136,23 +135,48 @@ void DevicePluginMeisterAnker::receiveData(QList<int> rawData)
         return;
     }
 
-    // decode the signal
-    QList<QByteArray> byteList;
-    for(int i = 4; i <= 24; i+=4){
-        byteList.append(binCode.left(4));
-        binCode = binCode.right(binCode.length() -4);
-    }
+    //qDebug() << "bin code" << binCode;
 
-    QByteArray temperatureBin(byteList.at(2) + byteList.at(3));
-    QByteArray batteryBin(byteList.at(4));
-    QByteArray temperatureTenthBin(byteList.at(5));
+    // =======================================
+    // {     ID    },{   temp    },{Batt},{,temp}
+    // "XXXX","XXXX","XXXX","XXXX","XXXX","XXXX",
 
-    QByteArray idCode = binCode.left(8);
+    QString idCode = QString(binCode.left(8));
+    QByteArray temperatureBin = binCode.mid(8,8);
+    QByteArray batteryBin = binCode.mid(16,4);
+    QByteArray temperatureTenthBin = binCode.right(4);
+
+    qDebug() << "id:" << idCode;
+    qDebug() << "battery" << batteryBin;
 
     // check if we have a sync signal (id = 11111111)
-    if(idCode.contains("11111111")){
+    if(idCode == "11111111"){
         qDebug() << "temperatursensor sync signal";
+        return;
     }
+
+    // check sign of temperature -> if first bit of temperature byte is 1 -> temp is negativ
+    int sign = 0;
+    if(temperatureBin.left(1).toInt() == 1){
+        sign = -1;
+    }else{
+        sign = 1;
+    }
+
+    // calc temperature
+    float temperature = sign*(temperatureBin.right(7).toInt(0,2) + (float)temperatureTenthBin.toInt(0,2)/10);
+
+    // check if the battery is low
+    bool batteryStatus;
+    if(batteryBin.toInt(0,2) == 0){
+        batteryStatus = true;
+    }else{
+        batteryStatus = false;
+    }
+
+    // TODO: check if it is the same temperature than the last time
+    // QString timeStamp = QDateTime::currentDateTime().toString("dd.MM.yyyy, hh:mm:ss");
+
 
 
 

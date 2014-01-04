@@ -197,6 +197,7 @@ void DevicePluginIntertechno::executeAction(Device *device, const Action &action
 
     QString familyCode = device->params().value("familyCode").toString();
 
+    // =======================================
     // generate bin from family code
     if(familyCode == "A"){
         binCode.append("00000000");
@@ -236,6 +237,7 @@ void DevicePluginIntertechno::executeAction(Device *device, const Action &action
 
     QString buttonCode = device->params().value("buttonCode").toString();
 
+    // =======================================
     // generate bin from button code
     if(familyCode == "1"){
         binCode.append("00000000");
@@ -273,9 +275,11 @@ void DevicePluginIntertechno::executeAction(Device *device, const Action &action
         return;
     }
 
-    // add fix bin nibble (0F)
+    // =======================================
+    // add fix nibble (0F)
     binCode.append("0001");
 
+    // =======================================
     // add power nibble
     if(action.params().value("power").toBool()){
         binCode.append("0101");

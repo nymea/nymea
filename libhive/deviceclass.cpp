@@ -37,6 +37,16 @@ void DeviceClass::setName(const QString &name)
     m_name = name;
 }
 
+QList<StateType> DeviceClass::states() const
+{
+    return m_states;
+}
+
+void DeviceClass::setStates(const QList<StateType> &states)
+{
+    m_states = states;
+}
+
 QList<TriggerType> DeviceClass::triggers() const
 {
     return m_triggers;

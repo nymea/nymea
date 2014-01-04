@@ -194,6 +194,15 @@ QVariantMap JsonRPCServer::packDeviceClass(const DeviceClass &deviceClass)
     QVariantMap variant;
     variant.insert("name", deviceClass.name());
     variant.insert("id", deviceClass.id());
+    QVariantList stateTypes;
+    foreach (const StateType &stateType, deviceClass.states()) {
+        QVariantMap stateMap;
+        stateMap.insert("id", stateType.id().toString());
+        stateMap.insert("name", stateType.name());
+        stateMap.insert("type", QVariant::typeToName(stateType.type()));
+
+        stateTypes.append(stateMap);
+    }
     QVariantList triggerTypes;
     foreach (const TriggerType &triggerType, deviceClass.triggers()) {
         QVariantMap triggerMap;
@@ -204,7 +213,6 @@ QVariantMap JsonRPCServer::packDeviceClass(const DeviceClass &deviceClass)
         triggerTypes.append(triggerMap);
     }
     QVariantList actionTypes;
-    qDebug() << "*******************" << deviceClass.actions().count();
     foreach (const ActionType &actionType, deviceClass.actions()) {
         QVariantMap actionMap;
         actionMap.insert("id", actionType.id().toString());
@@ -214,6 +222,7 @@ QVariantMap JsonRPCServer::packDeviceClass(const DeviceClass &deviceClass)
         actionTypes.append(actionMap);
     }
     variant.insert("params", deviceClass.params());
+    variant.insert("states", stateTypes);
     variant.insert("triggers", triggerTypes);
     variant.insert("actions", actionTypes);
     return variant;

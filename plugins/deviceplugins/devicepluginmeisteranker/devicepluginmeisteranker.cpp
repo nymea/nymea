@@ -29,7 +29,21 @@ QList<DeviceClass> DevicePluginMeisterAnker::supportedDevices() const
     thermometerParams.append(idParam);
 
     deviceClassMeisterAnkerThermometer.setParams(thermometerParams);
-    
+
+    QList<StateType> thermometerStates;
+
+    StateType tempState("a9849491-25f4-43a3-a6fe-3bfce43d6332");
+    tempState.setName("Temperature");
+    tempState.setType(QVariant::Double);
+    thermometerStates.append(tempState);
+
+    StateType batteryState("ebf951ba-75ca-47ac-ba3c-ea9ec1e7bbd1");
+    batteryState.setName("Battery");
+    batteryState.setType(QVariant::Bool);
+    thermometerStates.append(batteryState);
+
+    deviceClassMeisterAnkerThermometer.setStates(thermometerStates);
+
     QList<TriggerType> thermometerTriggers;
     
     QVariantList paramsThermometer;

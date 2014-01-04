@@ -52,3 +52,13 @@ void Device::setParams(const QVariantMap &params)
 {
     m_params = params;
 }
+
+QList<State> Device::states() const
+{
+    return m_states;
+}
+
+void Device::setStates(const QList<State> &states)
+{
+    m_states = states;
+}

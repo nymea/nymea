@@ -5,7 +5,8 @@
 
 #include <QDebug>
 
-DevicePlugin::DevicePlugin()
+DevicePlugin::DevicePlugin():
+    m_deviceManager(0)
 {
 
 }

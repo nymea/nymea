@@ -3,6 +3,7 @@
 
 #include "triggertype.h"
 #include "actiontype.h"
+#include "statetype.h"
 
 #include <QList>
 #include <QUuid>
@@ -20,6 +21,9 @@ public:
     QString name() const;
     void setName(const QString &name);
 
+    QList<StateType> states() const;
+    void setStates(const QList<StateType> &states);
+
     QList<TriggerType> triggers() const;
     void setTriggers(const QList<TriggerType> &triggers);
 
@@ -35,6 +39,7 @@ private:
     QUuid m_id;
     QUuid m_pluginId;
     QString m_name;
+    QList<StateType> m_states;
     QList<TriggerType> m_triggers;
     QList<ActionType> m_actions;
     QVariantList m_params;

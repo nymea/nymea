@@ -19,6 +19,7 @@ QList<DeviceClass> DevicePluginElro::supportedDevices() const
     // TODO: load list from config with static uuid
     QList<DeviceClass> ret;
 
+    // =======================================
     // Remote
     DeviceClass deviceClassElroRemote(pluginId(), elroRemoteId);
     deviceClassElroRemote.setName("Elro Remote");
@@ -79,6 +80,7 @@ QList<DeviceClass> DevicePluginElro::supportedDevices() const
     deviceClassElroRemote.setTriggers(buttonTriggers);
     ret.append(deviceClassElroRemote);
 
+    // =======================================
     // Switch
     DeviceClass deviceClassElroSwitch(pluginId(), elroSwitchId);
     deviceClassElroSwitch.setName("Elro Power Switch");
@@ -187,6 +189,7 @@ void DevicePluginElro::executeAction(Device *device, const Action &action)
         binCode.append("01");
     }
 
+    // =======================================
     // Buttons
     if(device->params().value("A").toBool()){
         binCode.append("00");
@@ -219,7 +222,7 @@ void DevicePluginElro::executeAction(Device *device, const Action &action)
     }else{
         binCode.append("0100");
     }
-    qDebug() << "bin code:" << binCode;
+
     // =======================================
     //create rawData timings list
     int delay = 350;
@@ -241,7 +244,8 @@ void DevicePluginElro::executeAction(Device *device, const Action &action)
 
     // =======================================
     // send data to driver
-    qDebug() << "rawData" << rawData;
+    //qDebug() << "rawData" << rawData;
+    qDebug() << "transmit" << pluginName() << action.params().value("power").toBool();
     transmitData(rawData);
 }
 
@@ -275,11 +279,13 @@ void DevicePluginElro::receiveData(QList<int> rawData)
                 divNext = 3;
             }
 
-            //              _
-            // if we have  | |___ = 0 -> in 4 delays => 1000
-            //                 _
-            // if we have  ___| | = 1 -> in 4 delays => 0001
-            
+            /*
+             *       _
+             *      | |___   = 0 -> in 4 delays => 1000
+             *          _
+             *      ___| |   = 1 -> in 4 delays => 0001
+             */
+
             if(div == 1 && divNext == 3){
                 binCode.append('0');
             }else if(div == 3 && divNext == 1){

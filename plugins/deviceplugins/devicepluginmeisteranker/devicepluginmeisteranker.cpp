@@ -155,6 +155,14 @@ void DevicePluginMeisterAnker::receiveData(QList<int> rawData)
         return;
     }
 
+    // check if the battery is low
+    bool batteryStatus;
+    if(batteryBin.toInt(0,2) == 0){
+        batteryStatus = true;
+    }else{
+        batteryStatus = false;
+    }
+
     // check sign of temperature -> if first bit of temperature byte is 1 -> temp is negativ
     int sign = 0;
     if(temperatureBin.left(1).toInt() == 1){
@@ -166,19 +174,7 @@ void DevicePluginMeisterAnker::receiveData(QList<int> rawData)
     // calc temperature
     float temperature = sign*(temperatureBin.right(7).toInt(0,2) + (float)temperatureTenthBin.toInt(0,2)/10);
 
-    // check if the battery is low
-    bool batteryStatus;
-    if(batteryBin.toInt(0,2) == 0){
-        batteryStatus = true;
-    }else{
-        batteryStatus = false;
-    }
-
     // TODO: check if it is the same temperature than the last time
     // QString timeStamp = QDateTime::currentDateTime().toString("dd.MM.yyyy, hh:mm:ss");
-
-
-
-
 
 }

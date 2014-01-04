@@ -18,6 +18,7 @@ QList<DeviceClass> DevicePluginIntertechno::supportedDevices() const
 {
     QList<DeviceClass> ret;
 
+    // =======================================
     // Remote
     DeviceClass deviceClassIntertechnoRemote(pluginId(), intertechnoRemote);
     deviceClassIntertechnoRemote.setName("Intertechno Remote");
@@ -137,6 +138,7 @@ QList<DeviceClass> DevicePluginIntertechno::supportedDevices() const
     ret.append(deviceClassIntertechnoRemote);
 
 
+    // =======================================
     // Switch
     DeviceClass deviceClassIntertechnoSwitch(pluginId(), intertechnoSwitch);
     deviceClassIntertechnoSwitch.setName("Intertechno Switch");
@@ -286,7 +288,7 @@ void DevicePluginIntertechno::executeAction(Device *device, const Action &action
     }else{
         binCode.append("0100");
     }
-    qDebug() << "bin code:" << binCode;
+    //qDebug() << "bin code:" << binCode;
     // =======================================
     //create rawData timings list
     int delay = 350;
@@ -308,7 +310,7 @@ void DevicePluginIntertechno::executeAction(Device *device, const Action &action
 
     // =======================================
     // send data to driver
-    qDebug() << "rawData" << rawData;
+    qDebug() << "transmit" << pluginName() << familyCode << buttonCode << action.params().value("power").toBool();
     transmitData(rawData);
 
 }
@@ -330,6 +332,7 @@ void DevicePluginIntertechno::receiveData(QList<int> rawData)
     int delay = rawData.first()/31;
     QByteArray binCode;
     
+    // =======================================
     // average 314
     if(delay > 300 && delay < 400){
         // go trough all 48 timings (without sync signal)
@@ -367,11 +370,13 @@ void DevicePluginIntertechno::receiveData(QList<int> rawData)
         return;
     }
 
+    // =======================================
     // Check nibble 16-19, must be 0001
     if(binCode.mid(16,4) != "0001"){
         return;
     }
 
+    // =======================================
     // Get family code
     QString familyCode;
     bool ok;
@@ -435,6 +440,7 @@ void DevicePluginIntertechno::receiveData(QList<int> rawData)
         return;
     }
 
+    // =======================================
     // Get button code
     QString buttonCode;
     QByteArray buttonCodeBin = binCode.mid(8,8);
@@ -497,6 +503,7 @@ void DevicePluginIntertechno::receiveData(QList<int> rawData)
         return;
     }
 
+    // =======================================
     // get power status -> On = 0100, Off = 0001
     bool power;
     if(binCode.right(4).toInt(0,2) == 5){
@@ -507,7 +514,7 @@ void DevicePluginIntertechno::receiveData(QList<int> rawData)
         return;
     }
 
-    //qDebug() << "family code = " << familyCode << "button code =" << buttonCode << power;
+    qDebug() << "family code = " << familyCode << "button code =" << buttonCode << power;
 
     // ===================================================
     Device *device = 0;

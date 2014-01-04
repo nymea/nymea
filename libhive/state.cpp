@@ -1,6 +1,8 @@
 #include "state.h"
 
-State::State(const QUuid &stateTypeId, const QUuid &deviceId)
+State::State(const QUuid &stateTypeId, const QUuid &deviceId):
+    m_stateTypeId(stateTypeId),
+    m_deviceId(deviceId)
 {
 }
 

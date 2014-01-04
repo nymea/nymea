@@ -1,8 +1,7 @@
 #ifndef DEVICE_H
 #define DEVICE_H
 
-#include "trigger.h"
-#include "action.h"
+#include "state.h"
 
 #include <QObject>
 #include <QUuid>
@@ -25,6 +24,9 @@ public:
     QVariantMap params() const;
     void setParams(const QVariantMap &params);
 
+    QList<State> states() const;
+    void setStates(const QList<State> &states);
+
 private:
     Device(const QUuid &pluginId, const QUuid &id, const QUuid &deviceClassId, QObject *parent = 0);
     Device(const QUuid &pluginId, const QUuid &deviceClassId, QObject *parent = 0);
@@ -35,6 +37,7 @@ private:
     QUuid m_pluginId;
     QString m_name;
     QVariantMap m_params;
+    QList<State> m_states;
 };
 
 #endif

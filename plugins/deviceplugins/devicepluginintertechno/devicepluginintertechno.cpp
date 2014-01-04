@@ -197,16 +197,115 @@ void DevicePluginIntertechno::executeAction(Device *device, const Action &action
 
     QString familyCode = device->params().value("familyCode").toString();
 
+    // generate bin from family code
     if(familyCode == "A"){
         binCode.append("00000000");
     }else if(familyCode == "B"){
         binCode.append("01000000");
+    }else if(familyCode == "C"){
+        binCode.append("00010000");
+    }else if(familyCode == "D"){
+        binCode.append("01010000");
+    }else if(familyCode == "E"){
+        binCode.append("00000100");
+    }else if(familyCode == "F"){
+        binCode.append("01000100");
+    }else if(familyCode == "G"){
+        binCode.append("01000000");
+    }else if(familyCode == "H"){
+        binCode.append("01010100");
+    }else if(familyCode == "I"){
+        binCode.append("00000001");
+    }else if(familyCode == "J"){
+        binCode.append("01000001");
+    }else if(familyCode == "K"){
+        binCode.append("00010001");
+    }else if(familyCode == "L"){
+        binCode.append("01010001");
+    }else if(familyCode == "M"){
+        binCode.append("00000101");
+    }else if(familyCode == "N"){
+        binCode.append("01000101");
+    }else if(familyCode == "O"){
+        binCode.append("00010101");
+    }else if(familyCode == "P"){
+        binCode.append("01010101");
+    }else{
+        return;
     }
 
+    QString buttonCode = device->params().value("buttonCode").toString();
 
+    // generate bin from button code
+    if(familyCode == "1"){
+        binCode.append("00000000");
+    }else if(familyCode == "2"){
+        binCode.append("01000000");
+    }else if(familyCode == "3"){
+        binCode.append("00010000");
+    }else if(familyCode == "4"){
+        binCode.append("01010000");
+    }else if(familyCode == "5"){
+        binCode.append("00000100");
+    }else if(familyCode == "6"){
+        binCode.append("01000100");
+    }else if(familyCode == "7"){
+        binCode.append("01000000");
+    }else if(familyCode == "8"){
+        binCode.append("01010100");
+    }else if(familyCode == "9"){
+        binCode.append("00000001");
+    }else if(familyCode == "10"){
+        binCode.append("01000001");
+    }else if(familyCode == "11"){
+        binCode.append("00010001");
+    }else if(familyCode == "12"){
+        binCode.append("01010001");
+    }else if(familyCode == "13"){
+        binCode.append("00000101");
+    }else if(familyCode == "14"){
+        binCode.append("01000101");
+    }else if(familyCode == "15"){
+        binCode.append("00010101");
+    }else if(familyCode == "16"){
+        binCode.append("01010101");
+    }else{
+        return;
+    }
 
+    // add fix bin nibble (0F)
+    binCode.append("0001");
 
+    // add power nibble
+    if(action.params().value("power").toBool()){
+        binCode.append("0101");
+    }else{
+        binCode.append("0100");
+    }
+    qDebug() << "bin code:" << binCode;
+    // =======================================
+    //create rawData timings list
+    int delay = 350;
 
+    // sync signal
+    rawData.append(delay);
+    rawData.append(delay*31);
+
+    // add the code
+    foreach (QChar c, binCode) {
+        if(c == '0'){
+            rawData.append(delay);
+            rawData.append(delay*3);
+        }else{
+            rawData.append(delay*3);
+            rawData.append(delay);
+        }
+    }
+
+    // =======================================
+    // send data to driver
+    qDebug() << "rawData" << rawData;
+    transmitData(rawData);
 
 }
 

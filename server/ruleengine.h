@@ -22,7 +22,8 @@ public:
 
     QList<Action> evaluateTrigger(const Trigger &trigger);
 
-    RuleError addRule(const Trigger &trigger, const Action &action);
+    RuleError addRule(const Trigger &trigger, const QList<Action> &actions);
+    RuleError addRule(const Trigger &trigger, const QList<State> states, const QList<Action> &actions);
     QList<Rule> rules() const;
 
 private:

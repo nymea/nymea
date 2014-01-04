@@ -1,9 +1,10 @@
 #include "rule.h"
 
-Rule::Rule(const QUuid &id, const Trigger &trigger, const Action &action):
+Rule::Rule(const QUuid &id, const Trigger &trigger, const QList<State> states, const QList<Action> &actions):
     m_id(id),
     m_trigger(trigger),
-    m_action(action)
+    m_states(states),
+    m_actions(actions)
 {
 }
 
@@ -17,7 +18,12 @@ Trigger Rule::trigger() const
     return m_trigger;
 }
 
-Action Rule::action() const
+QList<State> Rule::states() const
 {
-    return m_action;
+    return m_states;
+}
+
+QList<Action> Rule::actions() const
+{
+    return m_actions;
 }

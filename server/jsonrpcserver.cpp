@@ -129,7 +129,12 @@ void JsonRPCServer::handleRulesMessage(int clientId, int commandId, const QStrin
             QVariantMap ruleMap;
             ruleMap.insert("id", rule.id());
             ruleMap.insert("trigger", packTrigger(rule.trigger()));
-            ruleMap.insert("action", packAction(rule.action()));
+            QVariantList actionList;
+            foreach (const Action &action, rule.actions()) {
+                actionList.append(packAction(action));
+            }
+
+            ruleMap.insert("actions", actionList);
             rulesList.append(ruleMap);
         }
         QVariantMap rspParams;
@@ -143,12 +148,17 @@ void JsonRPCServer::handleRulesMessage(int clientId, int commandId, const QStrin
         QVariantMap triggerParams = triggerMap.value("params").toMap();
         Trigger trigger(triggerTypeId, triggerDeviceId, triggerParams);
 
-        QVariantMap actionMap = params.value("action").toMap();
-        Action action(actionMap.value("deviceId").toString());
-        action.setName(actionMap.value("name").toString());
-        action.setParams(actionMap.value("params").toMap());
+        QList<Action> actions;
+        QVariantList actionList = params.value("actions").toList();
+        foreach (const QVariant &actionVariant, actionList) {
+            QVariantMap actionMap = actionVariant.toMap();
+            Action action(actionMap.value("deviceId").toString());
+            action.setName(actionMap.value("name").toString());
+            action.setParams(actionMap.value("params").toMap());
+            actions.append(action);
+        }
 
-        switch(HiveCore::instance()->ruleEngine()->addRule(trigger, action)) {
+        switch(HiveCore::instance()->ruleEngine()->addRule(trigger, actions)) {
         case RuleEngine::RuleErrorNoError:
             sendResponse(clientId, commandId);
             break;

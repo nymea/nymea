@@ -62,3 +62,25 @@ void Device::setStates(const QList<State> &states)
 {
     m_states = states;
 }
+
+QVariant Device::stateValue(const QUuid &stateTypeId) const
+{
+    foreach (const State &state, m_states) {
+        if (state.stateTypeId() == stateTypeId) {
+            return state.value();
+        }
+    }
+    return QVariant();
+}
+
+void Device::setStateValue(const QUuid &stateTypeId, const QVariant &value)
+{
+    for (int i = 0; i < m_states.count(); ++i) {
+        if (m_states.at(i).stateTypeId() == stateTypeId) {
+            State newState(stateTypeId, m_id);
+            newState.setValue(value);
+            m_states[i] = newState;
+            return;
+        }
+    }
+}

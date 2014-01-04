@@ -27,6 +27,9 @@ public:
     QList<State> states() const;
     void setStates(const QList<State> &states);
 
+    QVariant stateValue(const QUuid &stateTypeId) const;
+    void setStateValue(const QUuid &stateTypeId, const QVariant &value);
+
 private:
     Device(const QUuid &pluginId, const QUuid &id, const QUuid &deviceClassId, QObject *parent = 0);
     Device(const QUuid &pluginId, const QUuid &deviceClassId, QObject *parent = 0);

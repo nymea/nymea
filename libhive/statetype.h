@@ -17,10 +17,14 @@ public:
     QVariant::Type type() const;
     void setType(const QVariant::Type &type);
 
+    QVariant defaultValue() const;
+    void setDefaultValue(const QVariant &defaultValue);
+
 private:
     QUuid m_id;
     QString m_name;
     QVariant::Type m_type;
+    QVariant m_defaultValue;
 };
 
 #endif // STATETYPE_H

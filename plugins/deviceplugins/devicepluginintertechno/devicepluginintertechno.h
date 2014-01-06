@@ -14,12 +14,12 @@ public:
     explicit DevicePluginIntertechno();
 
     QList<DeviceClass> supportedDevices() const override;
-    DeviceManager::HardwareResource requiredHardware() const override;
+    DeviceManager::HardwareResources requiredHardware() const override;
 
-    QString pluginName() const;
-    QUuid pluginId() const;
+    QString pluginName() const override;
+    QUuid pluginId() const override;
 
-    void receiveData(QList<int> rawData);
+    void radioData(QList<int> rawData) override;
 
 public slots:
     void executeAction(Device *device, const Action &action) override;

@@ -105,6 +105,9 @@ void JsonRPCServer::handleDevicesMessage(int clientId, int commandId, const QStr
         case DeviceManager::DeviceErrorMissingParameter:
             sendErrorResponse(clientId, commandId, "Error creating device. Missing parameter.");
             break;
+        case DeviceManager::DeviceErrorSetupFailed:
+            sendErrorResponse(clientId, commandId, "Error creating device. Device setup failed.");
+            break;
         default:
             sendErrorResponse(clientId, commandId, "Unknown error.");
         }

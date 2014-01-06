@@ -176,7 +176,7 @@ QList<DeviceClass> DevicePluginIntertechno::supportedDevices() const
     return ret;
 }
 
-DeviceManager::HardwareResource DevicePluginIntertechno::requiredHardware() const
+DeviceManager::HardwareResources DevicePluginIntertechno::requiredHardware() const
 {
     return DeviceManager::HardwareResourceRadio433;
 }
@@ -315,7 +315,7 @@ void DevicePluginIntertechno::executeAction(Device *device, const Action &action
 
 }
 
-void DevicePluginIntertechno::receiveData(QList<int> rawData)
+void DevicePluginIntertechno::radioData(QList<int> rawData)
 {
 
 

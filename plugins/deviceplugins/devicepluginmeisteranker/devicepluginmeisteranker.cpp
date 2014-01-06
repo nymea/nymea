@@ -83,7 +83,7 @@ QList<DeviceClass> DevicePluginMeisterAnker::supportedDevices() const
     return ret;
 }
 
-DeviceManager::HardwareResource DevicePluginMeisterAnker::requiredHardware() const
+DeviceManager::HardwareResources DevicePluginMeisterAnker::requiredHardware() const
 {
     return DeviceManager::HardwareResourceRadio433;
 }
@@ -103,7 +103,7 @@ void DevicePluginMeisterAnker::executeAction(Device *device, const Action &actio
 
 }
 
-void DevicePluginMeisterAnker::receiveData(QList<int> rawData)
+void DevicePluginMeisterAnker::radioData(QList<int> rawData)
 {    
     // filter right here a wrong signal length
     if(rawData.length() != 49){

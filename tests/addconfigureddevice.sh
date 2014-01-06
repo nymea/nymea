@@ -4,7 +4,7 @@
 if [ -z $1 ]; then
   echo "usage $0 host device"
 elif [ $1 == "list" ]; then
-  echo "elroremote elroswitch intertechnoremote meisteranker"
+  echo "elroremote elroswitch intertechnoremote meisteranker wifidetector"
 elif [ -z $2 ]; then
   echo "usage $0 host device"
 else
@@ -20,5 +20,8 @@ else
   elif [ $2 == "meisteranker" ]; then
     # Adds an intertechno remote control
     (echo '{"id":1, "method":"Devices.AddConfiguredDevice", "params":{"deviceClass": "{e37e9f34-95b9-4a22-ae4f-e8b874eec871}","params":{"id":"1"}}}'; sleep 1) | nc $1 1234
+  elif [ $2 == "wifidetector" ]; then
+    # Adds a WiFi detector
+    (echo '{"id":1, "method":"Devices.AddConfiguredDevice", "params":{"deviceClass": "{bd216356-f1ec-4324-9785-6982d2174e17}","params":{"mac":"90:cf:15:1b:ce:bb"}}}'; sleep 1) | nc $1 1234
   fi
 fi

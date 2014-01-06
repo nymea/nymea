@@ -26,16 +26,18 @@ public:
     virtual QUuid pluginId() const = 0;
 
     virtual QList<DeviceClass> supportedDevices() const = 0;
-    virtual DeviceManager::HardwareResource requiredHardware() const = 0;
+    virtual DeviceManager::HardwareResources requiredHardware() const = 0;
 
     // Hardware input
-    virtual void receiveData(QList<int> rawData) = 0;
+    virtual void radioData(QList<int> rawData) {Q_UNUSED(rawData)}
+    virtual void hiveTimer() {}
 
     virtual QVariantMap configuration() const;
     virtual void setConfiguration(const QVariantMap &configuration);
 
 public slots:
-    virtual void executeAction(Device *device, const Action &action) = 0;
+    virtual void executeAction(Device *device, const Action &action) {Q_UNUSED(device) Q_UNUSED(action)}
+
 
 signals:
     void emitTrigger(const Trigger &trigger);

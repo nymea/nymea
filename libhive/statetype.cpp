@@ -29,3 +29,13 @@ void StateType::setType(const QVariant::Type &type)
 {
     m_type = type;
 }
+
+QVariant StateType::defaultValue() const
+{
+    return m_defaultValue;
+}
+
+void StateType::setDefaultValue(const QVariant &defaultValue)
+{
+    m_defaultValue = defaultValue;
+}

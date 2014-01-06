@@ -139,7 +139,7 @@ QList<DeviceClass> DevicePluginElro::supportedDevices() const
     return ret;
 }
 
-DeviceManager::HardwareResource DevicePluginElro::requiredHardware() const
+DeviceManager::HardwareResources DevicePluginElro::requiredHardware() const
 {
     return DeviceManager::HardwareResourceRadio433;
 }
@@ -249,7 +249,7 @@ void DevicePluginElro::executeAction(Device *device, const Action &action)
     transmitData(rawData);
 }
 
-void DevicePluginElro::receiveData(QList<int> rawData)
+void DevicePluginElro::radioData(QList<int> rawData)
 {    
     // filter right here a wrong signal length
     if(rawData.length() != 49){

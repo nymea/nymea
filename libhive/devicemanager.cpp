@@ -15,13 +15,15 @@
 Q_IMPORT_PLUGIN(DevicePluginElro)
 Q_IMPORT_PLUGIN(DevicePluginIntertechno)
 Q_IMPORT_PLUGIN(DevicePluginMeisterAnker)
+Q_IMPORT_PLUGIN(DevicePluginWifiDetector)
 
 
 DeviceManager::DeviceManager(QObject *parent) :
-    QObject(parent)
+    QObject(parent),
+    m_radio433(0)
 {
-    m_radio433 = new Radio433(this);
-    connect(m_radio433, &Radio433::dataReceived, this, &DeviceManager::radio433SignalReceived);
+    m_pluginTimer.setInterval(15000);
+    connect(&m_pluginTimer, &QTimer::timeout, this, &DeviceManager::timerEvent);
 
     QMetaObject::invokeMethod(this, "loadPlugins", Qt::QueuedConnection);
     QMetaObject::invokeMethod(this, "loadConfiguredDevices", Qt::QueuedConnection);
@@ -66,7 +68,12 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const QUuid &devic
     Device *device = new Device(plugin->pluginId(), deviceClassId, this);
     device->setName(deviceClass.name());
     device->setParams(params);
-    m_configuredDevices.append(device);
+    if (setupDevice(device)) {
+        m_configuredDevices.append(device);
+    } else {
+        qWarning() << "Failed to set up device.";
+        return DeviceErrorSetupFailed;
+    }
 
     storeConfiguredDevices();
 
@@ -160,6 +167,9 @@ void DeviceManager::loadConfiguredDevices()
         device->setName(settings.value("devicename").toString());
         device->setParams(settings.value("params").toMap());
         settings.endGroup();
+
+        setupDevice(device);
+
         m_configuredDevices.append(device);
         qDebug() << "found stored device" << device->name() << idString;
     }
@@ -183,8 +193,50 @@ void DeviceManager::radio433SignalReceived(QList<int> rawData)
     foreach (Device *device, m_configuredDevices) {
         DeviceClass deviceClass = m_supportedDevices.value(device->deviceClassId());
         DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
-        if (plugin->requiredHardware() == HardwareResourceRadio433) {
-            plugin->receiveData(rawData);
+        if (plugin->requiredHardware().testFlag(HardwareResourceRadio433)) {
+            plugin->radioData(rawData);
         }
     }
+}
+
+void DeviceManager::timerEvent()
+{
+    foreach (Device *device, m_configuredDevices) {
+        DeviceClass deviceClass = m_supportedDevices.value(device->deviceClassId());
+        DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
+        if (plugin->requiredHardware().testFlag(HardwareResourceTimer)) {
+            plugin->hiveTimer();
+        }
+    }
+}
+
+bool DeviceManager::setupDevice(Device *device)
+{
+    DeviceClass deviceClass = findDeviceClass(device->deviceClassId());
+    DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
+
+    QList<State> states;
+    foreach (const StateType &stateType, deviceClass.states()) {
+        State state(stateType.id(), device->id());
+        state.setValue(stateType.defaultValue());
+        states.append(state);
+    }
+    device->setStates(states);
+
+    if (plugin->requiredHardware().testFlag(HardwareResourceRadio433)) {
+        if (!m_radio433) {
+            m_radio433 = new Radio433();
+            connect(m_radio433, &Radio433::dataReceived, this, &DeviceManager::radio433SignalReceived);
+        }
+    }
+
+    if (plugin->requiredHardware().testFlag(HardwareResourceTimer)) {
+        if (!m_pluginTimer.isActive()) {
+            m_pluginTimer.start();
+            // Additionally fire off one event to initialize stuff
+            QTimer::singleShot(0, this, SLOT(timerEvent()));
+        }
+    }
+
+    return true;
 }

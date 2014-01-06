@@ -1,3 +1,3 @@
 TEMPLATE = subdirs
-SUBDIRS += devicepluginelro devicepluginintertechno devicepluginmeisteranker
+SUBDIRS += devicepluginelro devicepluginintertechno devicepluginmeisteranker devicepluginwifidetector
 

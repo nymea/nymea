@@ -6,6 +6,7 @@
 #include "action.h"
 
 #include <QObject>
+#include <QTimer>
 
 class Device;
 class DevicePlugin;
@@ -16,16 +17,20 @@ class DeviceManager : public QObject
     Q_OBJECT
 public:
     enum HardwareResource {
+        HardwareResourceNone = 0x00,
         HardwareResourceRadio433 = 0x01,
-        HardwareResourceRadio868 = 0x02
+        HardwareResourceRadio868 = 0x02,
+        HardwareResourceTimer = 0x04
     };
+    Q_DECLARE_FLAGS(HardwareResources, HardwareResource)
 
     enum DeviceError {
         DeviceErrorNoError,
         DeviceErrorDeviceNotFound,
         DeviceErrorDeviceClassNotFound,
         DeviceErrorMissingParameter,
-        DeviceErrorPluginNotFound
+        DeviceErrorPluginNotFound,
+        DeviceErrorSetupFailed
     };
 
     explicit DeviceManager(QObject *parent = 0);
@@ -54,16 +59,22 @@ private slots:
     void storeConfiguredDevices();
 
     void radio433SignalReceived(QList<int> rawData);
+    void timerEvent();
 
 private:
+    bool setupDevice(Device *device);
+
     QHash<QUuid, DeviceClass> m_supportedDevices;
     QList<Device*> m_configuredDevices;
 
     QHash<QUuid, DevicePlugin*> m_devicePlugins;
 
+    // Hardware Resources
     Radio433* m_radio433;
+    QTimer m_pluginTimer;
 
     friend class DevicePlugin;
 };
+Q_DECLARE_OPERATORS_FOR_FLAGS(DeviceManager::HardwareResources)
 
 #endif // DEVICEMANAGER_H

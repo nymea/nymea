@@ -1,5 +1,7 @@
 #include "device.h"
 
+#include <QDebug>
+
 Device::Device(const QUuid &pluginId, const QUuid &id, const QUuid &deviceClassId, QObject *parent):
     QObject(parent),
     m_id(id),
@@ -75,12 +77,16 @@ QVariant Device::stateValue(const QUuid &stateTypeId) const
 
 void Device::setStateValue(const QUuid &stateTypeId, const QVariant &value)
 {
+    qDebug() << "setting state for id" << stateTypeId;
     for (int i = 0; i < m_states.count(); ++i) {
+        qDebug() << "got state id" << m_states.at(i).stateTypeId();
         if (m_states.at(i).stateTypeId() == stateTypeId) {
             State newState(stateTypeId, m_id);
             newState.setValue(value);
             m_states[i] = newState;
+            qDebug() << "set state for device" << value;
             return;
         }
     }
+    qDebug() << "failed setting state" << value;
 }

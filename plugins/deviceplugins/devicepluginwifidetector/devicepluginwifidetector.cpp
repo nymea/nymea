@@ -78,13 +78,19 @@ void DevicePluginWifiDetector::hiveTimer()
 {
     QProcess *p = new QProcess(this);
     connect(p, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(processFinished(int,QProcess::ExitStatus)));
-    p->start(QStringLiteral("arp-scan"), QStringList() << "--localnet" << "-I" << "eth2" );
+    p->start(QStringLiteral("sudo"), QStringList() << "nmap" << "-sP" << "10.10.10.0/24");
 }
 
 void DevicePluginWifiDetector::processFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
     QProcess *p = static_cast<QProcess*>(sender());
     p->deleteLater();
+
+    if (exitCode != 0 || exitStatus != QProcess::NormalExit) {
+        qWarning() << "error performing network scan:";
+        qWarning() << p->readAllStandardError();
+        return;
+    }
 
     QList<Device*> watchedDevices = deviceManager()->findConfiguredDevices(supportedDevices().first().id());
     if (watchedDevices.isEmpty()) {
@@ -94,16 +100,18 @@ void DevicePluginWifiDetector::processFinished(int exitCode, QProcess::ExitStatu
     QStringList foundDevices;
     while(p->canReadLine()) {
         QString result = QString::fromLatin1(p->readLine());
-        QStringList lineParts = result.split('\t');
-        if (lineParts.count() > 1) {
-            QString addr = lineParts.at(1);
-            foundDevices << addr;
+        if (result.startsWith("MAC Address:")) {
+            QStringList lineParts = result.split(' ');
+            if (lineParts.count() > 3) {
+                QString addr = lineParts.at(2);
+                foundDevices << addr.toLower();
+            }
         }
     }
 
     foreach (Device *device, watchedDevices) {
         bool wasInRange = device->stateValue(inRangeStateTypeId).toBool();
-        bool wasFound = foundDevices.contains(device->params().value("mac").toString());
+        bool wasFound = foundDevices.contains(device->params().value("mac").toString().toLower());
         if (wasInRange != wasFound) {
             device->setStateValue(inRangeStateTypeId, wasFound);
 

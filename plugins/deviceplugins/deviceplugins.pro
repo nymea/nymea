@@ -3,4 +3,4 @@ SUBDIRS += elro \
     intertechno \
     meisteranker \
     wifidetector \
-
+#    boblight \

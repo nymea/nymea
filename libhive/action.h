@@ -7,23 +7,19 @@
 class Action
 {
 public:
-    explicit Action(const QUuid &deviceId, const QUuid &id = QUuid::createUuid());
+    explicit Action(const QUuid &deviceId, const QUuid &actionTypeId);
 
     bool isValid() const;
 
-    QUuid id() const;
+    QUuid actionTypeId() const;
     QUuid deviceId() const;
-
-    QString name() const;
-    void setName(const QString &name);
 
     QVariantMap params() const;
     void setParams(const QVariantMap &params);
 
 private:
-    QUuid m_id;
+    QUuid m_actionTypeId;
     QUuid m_deviceId;
-    QString m_name;
     QVariantMap m_params;
 };
 

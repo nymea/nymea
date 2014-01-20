@@ -40,7 +40,6 @@ RuleEngine::RuleEngine(QObject *parent) :
         foreach (const QString &actionIdString, settings.childGroups()) {
             settings.beginGroup(actionIdString);
             Action action = Action(settings.value("deviceId").toUuid(), settings.value("id").toUuid());
-            action.setName(settings.value("name").toString());
             action.setParams(settings.value("params").toMap());
             settings.endGroup();
             actions.append(action);
@@ -136,9 +135,8 @@ RuleEngine::RuleError RuleEngine::addRule(const Trigger &trigger, const QList<St
 
     settings.beginGroup("actions");
     foreach (const Action &action, rule.actions()) {
-        settings.beginGroup(action.id().toString());
+        settings.beginGroup(action.actionTypeId().toString());
         settings.setValue("deviceId", action.deviceId());
-        settings.setValue("name", action.name());
         settings.setValue("params", action.params());
         settings.endGroup();
     }

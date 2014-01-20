@@ -132,6 +132,20 @@ DeviceManager::DeviceError DeviceManager::executeAction(const Action &action)
 {
     foreach (Device *device, m_configuredDevices) {
         if (action.deviceId() == device->id()) {
+            // found device
+
+            // Make sure this device has an action type with this id
+            DeviceClass deviceClass = findDeviceClass(device->deviceClassId());
+            bool found = false;
+            foreach (const ActionType &actionType, deviceClass.actions()) {
+                if (actionType.id() == action.actionTypeId()) {
+                    found = true;
+                }
+            }
+            if (!found) {
+                return DeviceErrorActionTypeNotFound;
+            }
+
             m_devicePlugins.value(device->pluginId())->executeAction(device, action);
             return DeviceErrorNoError;
         }

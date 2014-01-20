@@ -28,6 +28,7 @@ public:
         DeviceErrorNoError,
         DeviceErrorDeviceNotFound,
         DeviceErrorDeviceClassNotFound,
+        DeviceErrorActionTypeNotFound,
         DeviceErrorMissingParameter,
         DeviceErrorPluginNotFound,
         DeviceErrorSetupFailed

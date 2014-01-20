@@ -1,34 +1,24 @@
 #include "action.h"
 
-Action::Action(const QUuid &deviceId, const QUuid &id) :
-    m_id(id),
+Action::Action(const QUuid &deviceId, const QUuid &actionTypeId) :
+    m_actionTypeId(actionTypeId),
     m_deviceId(deviceId)
 {
 }
 
 bool Action::isValid() const
 {
-    return !m_id.isNull();
+    return !m_actionTypeId.isNull() && !m_deviceId.isNull();
 }
 
-QUuid Action::id() const
+QUuid Action::actionTypeId() const
 {
-    return m_id;
+    return m_actionTypeId;
 }
 
 QUuid Action::deviceId() const
 {
     return m_deviceId;
-}
-
-QString Action::name() const
-{
-    return m_name;
-}
-
-void Action::setName(const QString &name)
-{
-    m_name = name;
 }
 
 QVariantMap Action::params() const

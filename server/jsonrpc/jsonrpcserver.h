@@ -11,6 +11,7 @@
 
 class TcpServer;
 class Device;
+class JsonHandler;
 
 class JsonRPCServer: public QObject
 {
@@ -25,20 +26,14 @@ private slots:
     void processData(int clientId, const QByteArray &jsonData);
 
 private:
-    void handleDevicesMessage(int clientId, int commandId, const QString &method, const QVariantMap &params);
-    void handleRulesMessage(int clientId, int commandId, const QString &method, const QVariantMap &params);
-    void handleActionMessage(int clientId, int commandId, const QString &method, const QVariantMap &params);
-
-    QVariantMap packDeviceClass(const DeviceClass &deviceClass);
-    QVariantMap packDevice(Device *device);
-    QVariantMap packTrigger(const Trigger &action);
-    QVariantMap packAction(const Action &action);
+    void registerHandler(JsonHandler *handler);
 
     void sendResponse(int clientId, int commandId, const QVariantMap &params = QVariantMap());
     void sendErrorResponse(int clientId, int commandId, const QString &error);
 
 private:
     TcpServer *m_tcpServer;
+    QHash<QString, JsonHandler*> m_handlers;
 };
 
 #endif

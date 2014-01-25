@@ -14,6 +14,7 @@ public:
     Q_INVOKABLE QVariantMap GetRules(const QVariantMap &params);
 
     Q_INVOKABLE QVariantMap AddRule(const QVariantMap &params);
+    Q_INVOKABLE QVariantMap RemoveRule(const QVariantMap &params);
 
 };
 

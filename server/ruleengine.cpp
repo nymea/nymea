@@ -114,6 +114,7 @@ RuleEngine::RuleError RuleEngine::addRule(const Trigger &trigger, const QList<St
 
     Rule rule = Rule(QUuid::createUuid(), trigger, states, actions);
     m_rules.append(rule);
+    emit ruleAdded(rule.id());
 
     QSettings settings(rulesFileName);
     settings.beginGroup(rule.id().toString());
@@ -150,4 +151,24 @@ RuleEngine::RuleError RuleEngine::addRule(const Trigger &trigger, const QList<St
 QList<Rule> RuleEngine::rules() const
 {
     return m_rules;
+}
+
+RuleEngine::RuleError RuleEngine::removeRule(const QUuid &ruleId)
+{
+    for (int i = 0; i < m_rules.count(); ++i) {
+        Rule rule = m_rules.at(i);
+        if (rule.id() == ruleId) {
+
+            m_rules.takeAt(i);
+
+            QSettings settings(rulesFileName);
+            settings.beginGroup(rule.id().toString());
+            settings.remove("");
+            settings.endGroup();
+
+            emit ruleRemoved(rule.id());
+            return RuleErrorNoError;
+        }
+    }
+    return RuleErrorRuleNotFound;
 }

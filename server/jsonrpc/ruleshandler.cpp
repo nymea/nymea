@@ -28,6 +28,11 @@ RulesHandler::RulesHandler(QObject *parent) :
     setParams("AddRule", params);
     setReturns("AddRule", returns);
 
+    params.clear(); returns.clear();
+    setDescription("RemoveRule", "Remove a rule");
+    params.insert("ruleId", "uuid");
+    setParams("RemoveRule", params);
+    setReturns("RemoveRule", returns);
 }
 
 QString RulesHandler::name() const
@@ -100,6 +105,28 @@ QVariantMap RulesHandler::AddRule(const QVariantMap &params)
         returns.insert("success", false);
         returns.insert("errorMessage", "Device does not have such a trigger type.");
         break;
+    default:
+        returns.insert("success", false);
+        returns.insert("errorMessage", "Unknown error");
+    }
+    return returns;
+}
+
+QVariantMap RulesHandler::RemoveRule(const QVariantMap &params)
+{
+    QVariantMap returns;
+    QUuid ruleId = params.value("ruleId").toUuid();
+    switch (HiveCore::instance()->ruleEngine()->removeRule(ruleId)) {
+    case RuleEngine::RuleErrorNoError:
+        returns.insert("success", true);
+        break;
+    case RuleEngine::RuleErrorRuleNotFound:
+        returns.insert("success", false);
+        returns.insert("errorMessage", "No such rule.");
+        break;
+    default:
+        returns.insert("success", false);
+        returns.insert("errorMessage", "Unknown error");
     }
     return returns;
 }

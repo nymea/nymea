@@ -6,7 +6,8 @@ Rule::Rule(const QUuid &id, const Trigger &trigger, const QList<State> states, c
     m_id(id),
     m_trigger(trigger),
     m_states(states),
-    m_actions(actions)
+    m_actions(actions),
+    m_ruleType(RuleTypeAll)
 {
 }
 
@@ -28,4 +29,14 @@ QList<State> Rule::states() const
 QList<Action> Rule::actions() const
 {
     return m_actions;
+}
+
+Rule::RuleType Rule::ruleType() const
+{
+    return m_ruleType;
+}
+
+void Rule::setRuleType(Rule::RuleType ruleType)
+{
+    m_ruleType = ruleType;
 }

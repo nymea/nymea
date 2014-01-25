@@ -14,6 +14,7 @@ class RuleEngine : public QObject
 public:
     enum RuleError {
         RuleErrorNoError,
+        RuleErrorRuleNotFound,
         RuleErrorDeviceNotFound,
         RuleErrorTriggerTypeNotFound
     };
@@ -25,6 +26,12 @@ public:
     RuleError addRule(const Trigger &trigger, const QList<Action> &actions);
     RuleError addRule(const Trigger &trigger, const QList<State> states, const QList<Action> &actions);
     QList<Rule> rules() const;
+
+    RuleError removeRule(const QUuid &ruleId);
+
+signals:
+    void ruleAdded(const QUuid &ruleId);
+    void ruleRemoved(const QUuid &ruleId);
 
 private:
     QList<Rule> m_rules;

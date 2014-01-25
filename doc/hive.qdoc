@@ -1,0 +1,22 @@
+/*!
+    \page index.html
+    \title Hive
+
+    \section1 Summary
+    The hive backend service consists of three main modules:
+
+    \list
+        \li libhive
+            \list
+                \li \l{Types} used in the hive system
+                \li Defines plugin API and plugin loading mechanism
+            \endlist
+        \li Hive server
+            \list
+                \li Hive core
+                \li \l{JSONRPC Interface}
+                \li Rules engine
+            \endlist
+        \li Device plugins. A collection of officially supported device plugins.
+    \endlist
+*/

@@ -1,3 +1,13 @@
+/*!
+  \class State
+  \brief The container class for States.
+  \inmodule Types
+
+  \ingroup types
+
+  Lorem ipsum
+*/
+
 #include "state.h"
 
 State::State(const QUuid &stateTypeId, const QUuid &deviceId):

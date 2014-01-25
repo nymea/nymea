@@ -1,0 +1,14 @@
+include(html-template.qdocconf)
+
+project = Hive
+description = Hive your Home!
+
+outputdir = html
+outputformats = HTML
+
+headerdirs = ..
+headers.fileextensions = "*.h"
+
+sourcedirs = ..
+sources.fileextensions = "*.cpp *.qdoc"
+

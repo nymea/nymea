@@ -24,7 +24,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     setDescription("GetPlugins", "Returns a list of loaded plugins.");
     setParams("GetPlugins", params);
     QVariantList plugins;
-    plugins.append(JsonTypes::pluginTypeRef());
+    plugins.append(JsonTypes::pluginRef());
     returns.insert("plugins", plugins);
     setReturns("GetPlugins", returns);
 

@@ -5,70 +5,78 @@
 #include "trigger.h"
 #include "action.h"
 #include "actiontype.h"
+#include "rule.h"
 
 #include <QObject>
 
 #include <QVariantMap>
+#include <QString>
 
 class DevicePlugin;
 class Device;
 
-namespace JsonTypes
+#define DECLARE_OBJECT(typeName, jsonName) \
+    public: \
+    static QString typeName##Ref() { return QStringLiteral("$ref:") + QStringLiteral(jsonName); } \
+    static QVariantMap typeName##Description() { \
+        if (!s_initialized) { init(); } \
+        return s_##typeName; \
+    } \
+    private: \
+    static QVariantMap s_##typeName; \
+    public:
+
+#define DECLARE_TYPE(typeName, jsonName) \
+    public: \
+    static QString typeName##Ref() { return QStringLiteral("$ref:") + QStringLiteral(jsonName); } \
+    static QVariantList typeName() { \
+        if (!s_initialized) { init(); } \
+        return s_##typeName; \
+    } \
+    private: \
+    static QVariantList s_##typeName; \
+    public:
+
+class JsonTypes
 {
-    QVariantMap allTypes();
+public:
+    static QVariantMap allTypes();
 
-    QString basicTypesRef();
-    QVariantList basicTypes();
+    DECLARE_TYPE(basicTypes, "BasicType")
+    DECLARE_TYPE(ruleTypes, "RuleType")
 
-    QString paramTypeRef();
-    QVariantMap paramTypeDescription();
+    DECLARE_OBJECT(paramType, "ParamType")
+    DECLARE_OBJECT(param, "Param")
+    DECLARE_OBJECT(stateType, "StateType")
+    DECLARE_OBJECT(state, "State")
+    DECLARE_OBJECT(triggerType, "TriggerType")
+    DECLARE_OBJECT(trigger, "Trigger")
+    DECLARE_OBJECT(actionType, "ActionType")
+    DECLARE_OBJECT(action, "Action")
+    DECLARE_OBJECT(plugin, "Plugin")
+    DECLARE_OBJECT(deviceClass, "DeviceClass")
+    DECLARE_OBJECT(device, "Device")
+    DECLARE_OBJECT(rule, "Rule")
 
-    QString paramRef();
-    QVariantMap paramDescription();
+    static QVariantMap packTriggerType(const TriggerType &triggerType);
+    static QVariantMap packTrigger(const Trigger &trigger);
+    static QVariantMap packActionType(const ActionType &actionType);
+    static QVariantMap packAction(const Action &action);
+    static QVariantMap packDeviceClass(const DeviceClass &deviceClass);
+    static QVariantMap packPlugin(DevicePlugin *plugin);
+    static QVariantMap packDevice(Device *device);
+    static QVariantMap packRule(const Rule &rule);
 
-    QString stateTypeRef();
-    QVariantMap stateTypeDescription();
+    static bool validateMap(const QVariantMap &templateMap, const QVariantMap &map);
+    static bool validateProperty(const QVariant &templateValue, const QVariant &value);
+    static bool validateList(const QVariantList &templateList, const QVariantList &list);
+    static bool validateVariant(const QVariant &templateVariant, const QVariant &variant);
+    static bool validateBasicType(const QVariant &variant);
+    static bool validateRuleType(const QVariant &variant);
 
-    QString stateRef();
-    QVariantMap stateDescription();
-
-    QString triggerTypeRef();
-    QVariantMap triggerTypeDescription();
-    QVariantMap packTriggerType(const TriggerType &triggerType);
-
-    QString triggerRef();
-    QVariantMap triggerDescription();
-    QVariantMap packTrigger(const Trigger &trigger);
-
-    QString actionTypeRef();
-    QVariantMap actionTypeDescription();
-    QVariantMap packActionType(const ActionType &actionType);
-
-    QString actionRef();
-    QVariantMap actionDescription();
-    QVariantMap packAction(const Action &action);
-
-    QString deviceClassRef();
-    QVariantMap deviceClassDescription();
-    QVariantMap packDeviceClass(const DeviceClass &deviceClass);
-
-    QString pluginTypeRef();
-    QVariantMap pluginTypeDescription();
-    QVariantMap packPlugin(DevicePlugin *plugin);
-
-    QString deviceRef();
-    QVariantMap deviceDescription();
-    QVariantMap packDevice(Device *device);
-
-    QString ruleRef();
-    QVariantMap ruleDescription();
-//    QVariantMap packRule(const Rule &rule);
-
-    bool validateMap(const QVariantMap &templateMap, const QVariantMap &map);
-    bool validateProperty(const QVariant &templateValue, const QVariant &value);
-    bool validateList(const QVariantList &templateList, const QVariantList &list);
-    bool validateVariant(const QVariant &templateVariant, const QVariant &variant);
-    bool validateBasicType(const QVariant &variant);
-}
+private:
+    static bool s_initialized;
+    static void init();
+};
 
 #endif // JSONTYPES_H

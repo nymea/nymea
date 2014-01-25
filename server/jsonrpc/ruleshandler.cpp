@@ -47,18 +47,7 @@ QVariantMap RulesHandler::GetRules(const QVariantMap &params)
     QVariantList rulesList;
     foreach (const Rule &rule, HiveCore::instance()->ruleEngine()->rules()) {
         qDebug() << "got rule" << rule.id();
-        QVariantMap ruleMap;
-        ruleMap.insert("id", rule.id());
-        ruleMap.insert("trigger", JsonTypes::packTrigger(rule.trigger()));
-        QVariantList actionList;
-        foreach (const Action &action, rule.actions()) {
-            actionList.append(JsonTypes::packAction(action));
-        }
-        ruleMap.insert("actions", actionList);
-
-        QVariantList states;
-        ruleMap.insert("states", states);
-
+        QVariantMap ruleMap = JsonTypes::packRule(rule);
         rulesList.append(ruleMap);
     }
     QVariantMap returns;

@@ -2,11 +2,104 @@
 
 #include "device.h"
 
+#include <QStringList>
 #include <QDebug>
 
-namespace JsonTypes {
+bool JsonTypes::s_initialized = false;
 
-QVariantMap allTypes()
+QVariantList JsonTypes::s_basicTypes;
+QVariantList JsonTypes::s_ruleTypes;
+
+QVariantMap JsonTypes::s_paramType;
+QVariantMap JsonTypes::s_param;
+QVariantMap JsonTypes::s_stateType;
+QVariantMap JsonTypes::s_state;
+QVariantMap JsonTypes::s_triggerType;
+QVariantMap JsonTypes::s_trigger;
+QVariantMap JsonTypes::s_actionType;
+QVariantMap JsonTypes::s_action;
+QVariantMap JsonTypes::s_plugin;
+QVariantMap JsonTypes::s_deviceClass;
+QVariantMap JsonTypes::s_device;
+QVariantMap JsonTypes::s_rule;
+
+void JsonTypes::init()
+{
+    // BasicTypes
+    s_basicTypes << "uuid" << "string" << "integer" << "double" << "bool";
+    s_ruleTypes << "RuleTypeMatchAll" << "RuleTypeMatchAny";
+
+    // ParamType
+    s_paramType.insert("name", "string");
+    s_paramType.insert("type", basicTypesRef());
+//    s_paramType.insert("default", "value");
+//    s_paramType.insert("value", "value");
+
+    // Param
+    s_param.insert("name", "string");
+    s_param.insert("value", basicTypesRef());
+
+    // StateType
+    s_stateType.insert("id", "uuid");
+    s_stateType.insert("name", "string");
+    s_stateType.insert("type", basicTypesRef());
+//    s_stateType.insert("default", "value");
+
+    // State
+    s_state.insert("stateTypeId", "uuid");
+    s_state.insert("deviceId", "uuid");
+    s_state.insert("value", "variant");
+
+    // TriggerType
+    s_triggerType.insert("id", "uuid");
+    s_triggerType.insert("name", "string");
+    s_triggerType.insert("params", QVariantList() << paramTypeRef());
+
+    // Trigger
+    s_trigger.insert("triggerTypeId", "uuid");
+    s_trigger.insert("deviceId", "uuid");
+    s_trigger.insert("params", QVariantList() << paramRef());
+
+    // ActionType
+    s_actionType.insert("id", "uuid");
+    s_actionType.insert("name", "string");
+    s_actionType.insert("params", QVariantList() << paramTypeRef());
+
+    // Action
+    s_action.insert("actionTypeId", "uuid");
+    s_action.insert("deviceId", "uuid");
+    s_action.insert("params", QVariantList() << paramRef());
+
+    // Pugin
+    s_plugin.insert("id", "uuid");
+    s_plugin.insert("name", "string");
+    s_plugin.insert("params", QVariantList() << paramTypeRef());
+
+    // DeviceClass
+    s_deviceClass.insert("id", "uuid");
+    s_deviceClass.insert("name", "string");
+    s_deviceClass.insert("states", QVariantList() << stateTypeRef());
+    s_deviceClass.insert("triggers", QVariantList() << triggerTypeRef());
+    s_deviceClass.insert("actions", QVariantList() << actionTypeRef());
+    s_deviceClass.insert("params", QVariantList() << paramTypeRef());
+
+    // Device
+    s_device.insert("id", "uuid");
+    s_device.insert("deviceClassId", "uuid");
+    s_device.insert("name", "string");
+    s_device.insert("params", QVariantList() << paramRef());
+
+    s_rule.insert("id", "uuid");
+    s_rule.insert("ruleType", ruleTypesRef());
+    s_rule.insert("trigger", triggerRef());
+    s_rule.insert("actions", QVariantList() << actionRef());
+    s_rule.insert("states", QVariantList() << stateRef());
+
+
+    s_initialized = true;
+}
+
+QVariantMap JsonTypes::allTypes()
 {
     QVariantMap allTypes;
     allTypes.insert("BasicType", basicTypes());
@@ -15,107 +108,18 @@ QVariantMap allTypes()
     allTypes.insert("TriggerType", triggerTypeDescription());
     allTypes.insert("ActionType", actionTypeDescription());
     allTypes.insert("DeviceClass", deviceClassDescription());
-    allTypes.insert("PluginType", pluginTypeDescription());
+    allTypes.insert("Plugin", pluginDescription());
     allTypes.insert("Param", paramDescription());
     allTypes.insert("State", stateDescription());
     allTypes.insert("Trigger", triggerDescription());
     allTypes.insert("Device", deviceDescription());
     allTypes.insert("Action", actionDescription());
+    allTypes.insert("RuleType", ruleTypes());
     allTypes.insert("Rule", ruleDescription());
     return allTypes;
 }
 
-QString basicTypesRef()
-{
-    return "$ref:BasicType";
-}
-
-QVariantList basicTypes()
-{
-    QVariantList basicTypes;
-    basicTypes.append("uuid");
-    basicTypes.append("string");
-    basicTypes.append("integer");
-    basicTypes.append("double");
-    basicTypes.append("bool");
-    return basicTypes;
-}
-
-QString paramTypeRef()
-{
-    return "$ref:ParamType";
-}
-
-QVariantMap paramTypeDescription()
-{
-    QVariantMap paramType;
-    paramType.insert("name", "string");
-    paramType.insert("type", basicTypesRef());
-//    paramType.insert("default", "value");
-//    paramType.insert("value", "value");
-    return paramType;
-}
-
-QString paramRef()
-{
-    return "$ref:Param";
-}
-
-QVariantMap paramDescription()
-{
-    QVariantMap param;
-    param.insert("name", "string");
-    param.insert("value", basicTypesRef());
-    return param;
-}
-
-QString stateTypeRef()
-{
-    return "$ref:StateType";
-}
-
-QVariantMap stateTypeDescription()
-{
-    QVariantMap stateTypeDescription;
-    stateTypeDescription.insert("id", "uuid");
-    stateTypeDescription.insert("name", "string");
-    stateTypeDescription.insert("type", basicTypesRef());
-//    stateTypeDescription.insert("default", "value");
-    return stateTypeDescription;
-}
-
-QString stateRef()
-{
-    return "$ref:Sate";
-}
-
-QVariantMap stateDescription()
-{
-    QVariantMap stateDescription;
-    stateDescription.insert("stateTypeId", "uuid");
-    stateDescription.insert("deviceId", "uuid");
-    stateDescription.insert("value", "variant");
-    return stateDescription;
-}
-
-
-QString triggerTypeRef()
-{
-    return "$ref:TriggerType";
-}
-
-QVariantMap triggerTypeDescription()
-{
-    QVariantMap triggerTypeDescription;
-    triggerTypeDescription.insert("id", "uuid");
-    triggerTypeDescription.insert("name", "string");
-    QVariantList params;
-    params.append(paramTypeRef());
-    triggerTypeDescription.insert("params", params);
-    return triggerTypeDescription;
-}
-
-QVariantMap packTriggerType(const TriggerType &triggerType)
+QVariantMap JsonTypes::packTriggerType(const TriggerType &triggerType)
 {
     QVariantMap variant;
     variant.insert("id", triggerType.id());
@@ -124,23 +128,7 @@ QVariantMap packTriggerType(const TriggerType &triggerType)
     return variant;
 }
 
-QString triggerRef()
-{
-    return "$ref:Trigger";
-}
-
-QVariantMap triggerDescription()
-{
-    QVariantMap triggerDescription;
-    triggerDescription.insert("triggerTypeId", "uuid");
-    triggerDescription.insert("deviceId", "uuid");
-    QVariantList params;
-    params.append(paramRef());
-    triggerDescription.insert("params", params);
-    return triggerDescription;
-}
-
-QVariantMap packTrigger(const Trigger &trigger)
+QVariantMap JsonTypes::packTrigger(const Trigger &trigger)
 {
     QVariantMap variant;
     variant.insert("triggerTypeId", trigger.triggerTypeId());
@@ -149,23 +137,7 @@ QVariantMap packTrigger(const Trigger &trigger)
     return variant;
 }
 
-QString actionTypeRef()
-{
-    return "$ref:ActionType";
-}
-
-QVariantMap actionTypeDescription()
-{
-    QVariantMap actionTypeDescription;
-    actionTypeDescription.insert("id", "uuid");
-    actionTypeDescription.insert("name", "string");
-    QVariantList params;
-    params.append(paramTypeRef());
-    actionTypeDescription.insert("params", params);
-    return actionTypeDescription;
-}
-
-QVariantMap packActionType(const ActionType &actionType)
+QVariantMap JsonTypes::packActionType(const ActionType &actionType)
 {
     QVariantMap variantMap;
     variantMap.insert("id", actionType.id());
@@ -174,23 +146,7 @@ QVariantMap packActionType(const ActionType &actionType)
     return variantMap;
 }
 
-QString actionRef()
-{
-    return "$ref:Action";
-}
-
-QVariantMap actionDescription()
-{
-    QVariantMap actionDescription;
-    actionDescription.insert("actionTypeId", "uuid");
-    actionDescription.insert("deviceId", "uuid");
-    QVariantList params;
-    params.append(paramRef());
-    actionDescription.insert("params", params);
-    return actionDescription;
-}
-
-QVariantMap packAction(const Action &action)
+QVariantMap JsonTypes::packAction(const Action &action)
 {
     QVariantMap variant;
     variant.insert("actionTypeId", action.actionTypeId());
@@ -199,32 +155,7 @@ QVariantMap packAction(const Action &action)
     return variant;
 }
 
-QString deviceClassRef()
-{
-    return "$ref:DeviceClass";
-}
-
-QVariantMap deviceClassDescription()
-{
-    QVariantMap deviceClass;
-    deviceClass.insert("id", "uuid");
-    deviceClass.insert("name", "string");
-    QVariantList states;
-    states.append(stateTypeRef());
-    deviceClass.insert("states", states);
-    QVariantList triggers;
-    triggers.append(triggerTypeRef());
-    deviceClass.insert("triggers", triggers);
-    QVariantList actions;
-    actions.append(actionTypeRef());
-    deviceClass.insert("actions", actions);
-    QVariantList params;
-    params.append(paramTypeRef());
-    deviceClass.insert("params", params);
-    return deviceClass;
-}
-
-QVariantMap packDeviceClass(const DeviceClass &deviceClass)
+QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass)
 {
     QVariantMap variant;
     variant.insert("name", deviceClass.name());
@@ -263,45 +194,12 @@ QVariantMap packDeviceClass(const DeviceClass &deviceClass)
     return variant;
 }
 
-QString pluginTypeRef()
-{
-    return "$ref:PluginType";
-}
-
-QVariantMap pluginTypeDescription()
-{
-    QVariantMap pluginDescription;
-    pluginDescription.insert("id", "uuid");
-    pluginDescription.insert("name", "string");
-    QVariantList params;
-    params.append(paramTypeRef());
-    pluginDescription.insert("params", params);
-    return pluginDescription;
-}
-
-QVariantMap packPlugin(DevicePlugin *plugin)
+QVariantMap JsonTypes::packPlugin(DevicePlugin *plugin)
 {
 
 }
 
-QString deviceRef()
-{
-    return "$ref:Device";
-}
-
-QVariantMap deviceDescription()
-{
-    QVariantMap deviceDescription;
-    deviceDescription.insert("id", "uuid");
-    deviceDescription.insert("deviceClassId", "uuid");
-    deviceDescription.insert("name", "string");
-    QVariantList params;
-    params.append(paramRef());
-    deviceDescription.insert("params", params);
-    return deviceDescription;
-}
-
-QVariantMap packDevice(Device *device)
+QVariantMap JsonTypes::packDevice(Device *device)
 {
     QVariantMap variant;
     variant.insert("id", device->id());
@@ -311,28 +209,24 @@ QVariantMap packDevice(Device *device)
     return variant;
 }
 
-QString ruleRef()
+QVariantMap JsonTypes::packRule(const Rule &rule)
 {
-    return "$ref:Rule";
-}
+    QVariantMap ruleMap;
+    ruleMap.insert("id", rule.id());
+    ruleMap.insert("trigger", JsonTypes::packTrigger(rule.trigger()));
+    ruleMap.insert("ruleType", s_ruleTypes.at(rule.ruleType()));
+    QVariantList actionList;
+    foreach (const Action &action, rule.actions()) {
+        actionList.append(JsonTypes::packAction(action));
+    }
+    ruleMap.insert("actions", actionList);
 
-QVariantMap ruleDescription()
-{
-    QVariantMap ruleDescription;
-    ruleDescription.insert("id", "uuid");
-    ruleDescription.insert("trigger", triggerRef());
-    QVariantList actions;
-    actions.append(actionRef());
-    ruleDescription.insert("actions", actions);
     QVariantList states;
-    states.append(stateRef());
-    ruleDescription.insert("states", states);
-    return ruleDescription;
+    ruleMap.insert("states", states);
+    return ruleMap;
 }
 
-//QVariantMap packRule(const Rule &rule);
-
-bool validateMap(const QVariantMap &templateMap, const QVariantMap &map)
+bool JsonTypes::validateMap(const QVariantMap &templateMap, const QVariantMap &map)
 {
     foreach (const QString &key, templateMap.keys()) {
         if (!map.contains(key)) {
@@ -347,7 +241,7 @@ bool validateMap(const QVariantMap &templateMap, const QVariantMap &map)
     return true;
 }
 
-bool validateProperty(const QVariant &templateValue, const QVariant &value)
+bool JsonTypes::validateProperty(const QVariant &templateValue, const QVariant &value)
 {
     if (templateValue == "uuid") {
         return value.canConvert(QVariant::Uuid);
@@ -362,7 +256,7 @@ bool validateProperty(const QVariant &templateValue, const QVariant &value)
     return false;
 }
 
-bool validateList(const QVariantList &templateList, const QVariantList &list)
+bool JsonTypes::validateList(const QVariantList &templateList, const QVariantList &list)
 {
     Q_ASSERT(templateList.count() == 1);
     QVariant entryTemplate = templateList.first();
@@ -379,7 +273,7 @@ bool validateList(const QVariantList &templateList, const QVariantList &list)
     return true;
 }
 
-bool validateVariant(const QVariant &templateVariant, const QVariant &variant)
+bool JsonTypes::validateVariant(const QVariant &templateVariant, const QVariant &variant)
 {
     switch(templateVariant.type()) {
     case QVariant::String:
@@ -426,9 +320,9 @@ bool validateVariant(const QVariant &templateVariant, const QVariant &variant)
                     qDebug() << "state type not matching";
                     return false;
                 }
-            } else if (refName == pluginTypeRef()) {
-                if (!validateMap(pluginTypeDescription(), variant.toMap())) {
-                    qDebug() << "plugin type not matching";
+            } else if (refName == pluginRef()) {
+                if (!validateMap(pluginDescription(), variant.toMap())) {
+                    qDebug() << "plugin not matching";
                     return false;
                 }
             } else if (refName == ruleRef()) {
@@ -439,6 +333,11 @@ bool validateVariant(const QVariant &templateVariant, const QVariant &variant)
             } else if (refName == basicTypesRef()) {
                 if (!validateBasicType(variant)) {
                     qDebug() << "value not allowed in" << basicTypesRef();
+                    return false;
+                }
+            } else if (refName == ruleTypesRef()) {
+                if (!validateRuleType(variant)) {
+                    qDebug() << "value not allowed in" << ruleTypesRef();
                     return false;
                 }
             } else {
@@ -470,7 +369,7 @@ bool validateVariant(const QVariant &templateVariant, const QVariant &variant)
     return true;
 }
 
-bool validateBasicType(const QVariant &variant)
+bool JsonTypes::validateBasicType(const QVariant &variant)
 {
     if (variant.canConvert(QVariant::Uuid)) {
         return true;
@@ -489,4 +388,8 @@ bool validateBasicType(const QVariant &variant)
     }
     return false;
 }
+
+bool JsonTypes::validateRuleType(const QVariant &variant)
+{
+    return s_ruleTypes.contains(variant.toString());
 }

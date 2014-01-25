@@ -14,6 +14,9 @@ RulesHandler::RulesHandler(QObject *parent) :
     params.clear(); returns.clear();
     setDescription("GetRules", "Get all configured rules");
     setParams("GetRules", params);
+    QVariantList rules;
+    rules.append(JsonTypes::ruleRef());
+    returns.insert("rules", rules);
     setReturns("GetRules", returns);
 
     params.clear(); returns.clear();
@@ -46,8 +49,11 @@ QVariantMap RulesHandler::GetRules(const QVariantMap &params)
         foreach (const Action &action, rule.actions()) {
             actionList.append(JsonTypes::packAction(action));
         }
-
         ruleMap.insert("actions", actionList);
+
+        QVariantList states;
+        ruleMap.insert("states", states);
+
         rulesList.append(ruleMap);
     }
     QVariantMap returns;

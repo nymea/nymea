@@ -17,9 +17,11 @@ QVariantMap allTypes()
     allTypes.insert("DeviceClass", deviceClassDescription());
     allTypes.insert("PluginType", pluginTypeDescription());
     allTypes.insert("Param", paramDescription());
+    allTypes.insert("State", stateDescription());
     allTypes.insert("Trigger", triggerDescription());
     allTypes.insert("Device", deviceDescription());
     allTypes.insert("Action", actionDescription());
+    allTypes.insert("Rule", ruleDescription());
     return allTypes;
 }
 
@@ -82,6 +84,21 @@ QVariantMap stateTypeDescription()
     return stateTypeDescription;
 }
 
+QString stateRef()
+{
+    return "$ref:Sate";
+}
+
+QVariantMap stateDescription()
+{
+    QVariantMap stateDescription;
+    stateDescription.insert("stateTypeId", "uuid");
+    stateDescription.insert("deviceId", "uuid");
+    stateDescription.insert("value", "variant");
+    return stateDescription;
+}
+
+
 QString triggerTypeRef()
 {
     return "$ref:TriggerType";
@@ -126,7 +143,7 @@ QVariantMap triggerDescription()
 QVariantMap packTrigger(const Trigger &trigger)
 {
     QVariantMap variant;
-    variant.insert("id", trigger.triggerTypeId());
+    variant.insert("triggerTypeId", trigger.triggerTypeId());
     variant.insert("deviceId", trigger.deviceId());
     variant.insert("params", trigger.params());
     return variant;
@@ -294,6 +311,27 @@ QVariantMap packDevice(Device *device)
     return variant;
 }
 
+QString ruleRef()
+{
+    return "$ref:Rule";
+}
+
+QVariantMap ruleDescription()
+{
+    QVariantMap ruleDescription;
+    ruleDescription.insert("id", "uuid");
+    ruleDescription.insert("trigger", triggerRef());
+    QVariantList actions;
+    actions.append(actionRef());
+    ruleDescription.insert("actions", actions);
+    QVariantList states;
+    states.append(stateRef());
+    ruleDescription.insert("states", states);
+    return ruleDescription;
+}
+
+//QVariantMap packRule(const Rule &rule);
+
 bool validateMap(const QVariantMap &templateMap, const QVariantMap &map)
 {
     foreach (const QString &key, templateMap.keys()) {
@@ -390,7 +428,12 @@ bool validateVariant(const QVariant &templateVariant, const QVariant &variant)
                 }
             } else if (refName == pluginTypeRef()) {
                 if (!validateMap(pluginTypeDescription(), variant.toMap())) {
-                    qDebug() << "plugin type not matchint";
+                    qDebug() << "plugin type not matching";
+                    return false;
+                }
+            } else if (refName == ruleRef()) {
+                if (!validateMap(ruleDescription(), variant.toMap())) {
+                    qDebug() << "rule type not matching";
                     return false;
                 }
             } else if (refName == basicTypesRef()) {

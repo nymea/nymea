@@ -1,3 +1,13 @@
+/*!
+    \class StateType
+    \brief Describes a \l{State} for a \l{Device}.
+
+    \ingroup types
+    \inmodule libhive
+
+    \sa State
+*/
+
 #include "statetype.h"
 
 StateType::StateType(const QUuid &id):

@@ -1,3 +1,17 @@
+/*!
+    \class Action
+    \brief Holds information required to execute an action described by a \l{ActionType}.
+
+    \ingroup types
+    \inmodule libhive
+
+    It is bound to a \l{Device} and an \l{ActionType} and holds the parameters
+    for the execution of the action.
+
+    The params must match the template as described in \l{ActionType}.
+
+    \sa Device, ActionType
+*/
 #include "action.h"
 
 Action::Action(const QUuid &deviceId, const QUuid &actionTypeId) :
@@ -6,6 +20,7 @@ Action::Action(const QUuid &deviceId, const QUuid &actionTypeId) :
 {
 }
 
+/*! An Action is valid if \l{actionTypeId} and \l{deviceId} are valid uuids. */
 bool Action::isValid() const
 {
     return !m_actionTypeId.isNull() && !m_deviceId.isNull();

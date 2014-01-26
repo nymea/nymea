@@ -1,3 +1,17 @@
+/*!
+    \class DeviceManager
+    \brief The main entry point when interacting with \l{Device}{Devices}
+
+    \ingroup devices
+    \inmodule libhive
+
+    The DeviceManager holds all information about supported and configured Devices in the system.
+
+    It is also responsible for loading Plugins and managing common hardware resources between
+    \l{DevicePlugin}{device plugins}.
+
+*/
+
 #include "devicemanager.h"
 
 #include "radio433.h"

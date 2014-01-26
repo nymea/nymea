@@ -1,3 +1,17 @@
+/*!
+    \class RuleEngine
+    \brief The Engine that evaluates \l{Rule}{Rules} and finds
+    \l{Action}{Actions} to be executed.
+
+    \ingroup rules
+    \inmodule server
+
+    You can add, remove and update rules and query the engine for actions to be executed
+    for a given \l{Trigger}.
+
+    \sa Trigger, Rule, Action
+*/
+
 #include "ruleengine.h"
 
 #include "hivecore.h"
@@ -88,7 +102,7 @@ RuleEngine::RuleError RuleEngine::addRule(const Trigger &trigger, const QList<Ac
     return addRule(trigger, QList<State>(), actions);
 }
 
-RuleEngine::RuleError RuleEngine::addRule(const Trigger &trigger, const QList<State> states, const QList<Action> &actions)
+RuleEngine::RuleError RuleEngine::addRule(const Trigger &trigger, const QList<State> &states, const QList<Action> &actions)
 {
     qDebug() << "adding rule: Trigger:" << trigger.triggerTypeId() << "with" << actions.count() << "actions";
     DeviceClass triggerDeviceClass = HiveCore::instance()->deviceManager()->findDeviceClassforTrigger(trigger.triggerTypeId());

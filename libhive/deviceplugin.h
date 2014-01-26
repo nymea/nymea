@@ -18,8 +18,6 @@ public:
     DevicePlugin();
     virtual ~DevicePlugin();
 
-    void initPlugin(DeviceManager *deviceManager);
-
     virtual void init() {}
 
     virtual QString pluginName() const = 0;
@@ -48,7 +46,11 @@ protected:
     void transmitData(QList<int> rawData);
 
 private:
+    void initPlugin(DeviceManager *deviceManager);
+
     DeviceManager *m_deviceManager;
+
+    friend class DeviceManager;
 };
 Q_DECLARE_INTERFACE(DevicePlugin, "org.hiveyourhome.DevicePlugin")
 

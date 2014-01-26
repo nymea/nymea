@@ -1,3 +1,19 @@
+/*!
+    \class DeviceClass
+    \brief Describes \l{Device}{Devices}.
+
+    \ingroup devices
+    \inmodule libhive
+
+    It holds information general information about devices and their vendors and
+    describes what actions, triggers and states a device supports. As this is
+    just a description of device and does not represent actual \l{Device}{Devices},
+    the actions, triggers and states are described in form of \l{TriggerType},
+    \l{StateType} and \l{ActionType}
+
+    \sa Device
+*/
+
 #include "deviceclass.h"
 
 DeviceClass::DeviceClass(const QUuid &pluginId, const QUuid &id):

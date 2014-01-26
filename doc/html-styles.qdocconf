@@ -7,18 +7,6 @@ HTML.templatedir = .
 HTML.stylesheets = style.css
 
 HTML.scripts     =
-
-# Files not referenced in any qdoc file (last four needed by qtdemo)
-# See also qhp.Qt.extraFiles
-extraimages.HTML        = qt-logo.png \
-                          arrow_down.png \
-                          breadcrumb.png \
-                          bullet_gt.png \
-                          bullet_dn.png \
-                          bullet_sq.png \
-                          bullet_up.png \
-                          horBar.png \
-                          sprites-combined.png
     
 # Include the style sheets and scripts used.
 

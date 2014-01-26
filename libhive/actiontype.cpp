@@ -1,3 +1,12 @@
+/*!
+    \class ActionType
+    \brief Describes an \l{Action} for a \l{Device}.
+
+    \ingroup types
+
+    \sa Action
+*/
+
 #include "actiontype.h"
 
 ActionType::ActionType(const QUuid &id):

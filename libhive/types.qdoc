@@ -1,12 +1,6 @@
 /*!
     \page types.html
     \title Types
-    \nextpage 
-    libhive types:
 
-    \list
-        \li \c State
-        \li \c Trigger
-        \li \c Action
-    \endlist
+    \annotatedlist types
 */

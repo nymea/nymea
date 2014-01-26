@@ -12,20 +12,20 @@
 
     The JSON message protocol communicates by exchanging JSON Objects with the following properties:
     \list
-        \li \c "id": \c integer
+        \li \code "id": integer \endcode
             The id should be a unique identifier for the message. Any server response will contain the
             same id allowing to match responses to requests/commands. This parameter is mandatory.
-        \li "method": string
+        \li \code "method": string \endcode
             The method field holds the method to be executed. Methods are grouped into namespaces. The
             method string consists of two parts, the namespace and the method name, separated by a dot.
             This parameter is mandatory.
-            (Example: "JSONRPC.Introspect")
-        \li "params": Object
+            (Example: \c"JSONRPC.Introspect")
+        \li \code "params": object \endcode
             The params contains any JSON object. This parameter is optional and differs according to
             the requested method.
     \endlist
 
-    The JSONRPC API is self documenting and can be introspected by calling JSONRPC.Introspect.
+    The JSONRPC API is self documenting and can be introspected by calling \c"JSONRPC.Introspect".
 
     \section1 Communicating with the server
     The server listens on TCP port 1234 for incoming TCP connections. It will respond to incoming

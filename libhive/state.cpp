@@ -1,11 +1,14 @@
 /*!
   \class State
-  \brief The container class for States.
-  \inmodule Types
+  \brief Holds the parameters of a State of a \l{Device}.
 
   \ingroup types
+  \inmodule libhive
 
-  Lorem ipsum
+  States hold the state values for devices. A State is associated to a \l{Device} by
+  the \l{Device::deviceId} {deviceId} and represents the value of a state described in a \l{StateType}
+
+  \sa StateType
 */
 
 #include "state.h"
@@ -16,11 +19,13 @@ State::State(const QUuid &stateTypeId, const QUuid &deviceId):
 {
 }
 
+/*! Returns the id of the StateType describing this State. */
 QUuid State::stateTypeId() const
 {
     return m_stateTypeId;
 }
 
+/*! Returns the id of the StateType describing this State. */
 QUuid State::deviceId() const
 {
     return m_deviceId;

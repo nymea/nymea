@@ -15,7 +15,7 @@ public:
         RuleTypeAny
     };
 
-    Rule(const QUuid &id, const Trigger &trigger, const QList<State> states, const QList<Action> &actions);
+    Rule(const QUuid &id, const Trigger &trigger, const QList<State> &states, const QList<Action> &actions);
 
     QUuid id() const;
     Trigger trigger() const;

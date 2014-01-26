@@ -1,3 +1,18 @@
+/*!
+    \class Trigger
+    \brief Holds information required to emit a trigger described by a \l{TriggerType}.
+
+    \ingroup types
+    \inmodule libhive
+
+    It is bound to a \l{Device} and a \l{TriggerType} and holds the parameters
+    for the event that happened.
+
+    The params must match the template as described in \l{TriggerType}.
+
+    \sa Device TriggerType
+*/
+
 #include "trigger.h"
 
 Trigger::Trigger(const QUuid &triggerTypeId, const QUuid &deviceId, const QVariantMap &params):

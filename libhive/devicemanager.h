@@ -2,7 +2,7 @@
 #define DEVICEMANAGER_H
 
 #include "deviceclass.h"
-#include "trigger.h"
+#include "event.h"
 #include "action.h"
 
 #include <QObject>
@@ -45,12 +45,12 @@ public:
 
     Device* findConfiguredDevice(const QUuid &id) const;
     QList<Device*> findConfiguredDevices(const QUuid &deviceClassId) const;
-    DeviceClass findDeviceClassforTrigger(const QUuid &triggerTypeId) const;
+    DeviceClass findDeviceClassforEvent(const QUuid &eventTypeId) const;
     DeviceClass findDeviceClass(const QUuid &deviceClassId) const;
 
 signals:
     void loaded();
-    void emitTrigger(const Trigger &trigger);
+    void emitEvent(const Event &event);
 
 public slots:
     DeviceError executeAction(const Action &action);

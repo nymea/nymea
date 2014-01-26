@@ -21,7 +21,7 @@ public:
 
     Q_INVOKABLE QVariantMap GetConfiguredDevices(const QVariantMap &params) const;
 
-    Q_INVOKABLE QVariantMap GetTriggerTypes(const QVariantMap &params) const;
+    Q_INVOKABLE QVariantMap GetEventTypes(const QVariantMap &params) const;
 
     Q_INVOKABLE QVariantMap GetActionTypes(const QVariantMap &params) const;
 

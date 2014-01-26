@@ -2,7 +2,7 @@
 #define JSONTYPES_H
 
 #include "deviceclass.h"
-#include "trigger.h"
+#include "event.h"
 #include "action.h"
 #include "actiontype.h"
 #include "rule.h"
@@ -49,8 +49,8 @@ public:
     DECLARE_OBJECT(param, "Param")
     DECLARE_OBJECT(stateType, "StateType")
     DECLARE_OBJECT(state, "State")
-    DECLARE_OBJECT(triggerType, "TriggerType")
-    DECLARE_OBJECT(trigger, "Trigger")
+    DECLARE_OBJECT(eventType, "EventType")
+    DECLARE_OBJECT(event, "Event")
     DECLARE_OBJECT(actionType, "ActionType")
     DECLARE_OBJECT(action, "Action")
     DECLARE_OBJECT(plugin, "Plugin")
@@ -58,8 +58,8 @@ public:
     DECLARE_OBJECT(device, "Device")
     DECLARE_OBJECT(rule, "Rule")
 
-    static QVariantMap packTriggerType(const TriggerType &triggerType);
-    static QVariantMap packTrigger(const Trigger &trigger);
+    static QVariantMap packEventType(const EventType &eventType);
+    static QVariantMap packEvent(const Event &event);
     static QVariantMap packActionType(const ActionType &actionType);
     static QVariantMap packAction(const Action &action);
     static QVariantMap packDeviceClass(const DeviceClass &deviceClass);

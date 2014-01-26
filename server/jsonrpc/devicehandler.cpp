@@ -57,13 +57,13 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     setReturns("GetConfiguredDevices", returns);
 
     params.clear(); returns.clear();
-    setDescription("GetTriggerTypes", "Get trigger types for a specified deviceClassId.");
+    setDescription("GetEventTypes", "Get event types for a specified deviceClassId.");
     params.insert("deviceClassId", "uuid");
-    setParams("GetTriggerTypes", params);
-    QVariantList triggers;
-    triggers.append(JsonTypes::triggerTypeRef());
-    returns.insert("triggerTypes", triggers);
-    setReturns("GetTriggerTypes", returns);
+    setParams("GetEventTypes", params);
+    QVariantList events;
+    events.append(JsonTypes::eventTypeRef());
+    returns.insert("eventTypes", events);
+    setReturns("GetEventTypes", returns);
 
     params.clear(); returns.clear();
     setDescription("GetActionTypes", "Get action types for a specified deviceClassId.");
@@ -157,16 +157,16 @@ QVariantMap DeviceHandler::GetConfiguredDevices(const QVariantMap &params) const
     return returns;
 }
 
-QVariantMap DeviceHandler::GetTriggerTypes(const QVariantMap &params) const
+QVariantMap DeviceHandler::GetEventTypes(const QVariantMap &params) const
 {
     QVariantMap returns;
 
-    QVariantList triggerList;
+    QVariantList eventList;
     DeviceClass deviceClass = HiveCore::instance()->deviceManager()->findDeviceClass(params.value("deviceClassId").toUuid());
-    foreach (const TriggerType &triggerType, deviceClass.triggers()) {
-        triggerList.append(JsonTypes::packTriggerType(triggerType));
+    foreach (const EventType &eventType, deviceClass.events()) {
+        eventList.append(JsonTypes::packEventType(eventType));
     }
-    returns.insert("triggerTypes", triggerList);
+    returns.insert("eventTypes", eventList);
     return returns;
 }
 

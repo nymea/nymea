@@ -3,7 +3,7 @@
 
 #include "devicemanager.h"
 #include "deviceclass.h"
-#include "trigger.h"
+#include "event.h"
 #include "action.h"
 
 #include <QObject>
@@ -38,7 +38,7 @@ public slots:
 
 
 signals:
-    void emitTrigger(const Trigger &trigger);
+    void emitEvent(const Event &event);
 
 protected:
     DeviceManager *deviceManager() const;

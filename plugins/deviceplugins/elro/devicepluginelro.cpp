@@ -44,7 +44,7 @@ QList<DeviceClass> DevicePluginElro::supportedDevices() const
     
     deviceClassElroRemote.setParams(deviceParamsRemote);
     
-    QList<TriggerType> buttonTriggers;
+    QList<EventType> buttonEvents;
     
     QVariantList paramsRemote;
     QVariantMap param;
@@ -52,32 +52,32 @@ QList<DeviceClass> DevicePluginElro::supportedDevices() const
     param.insert("type", "bool");
     paramsRemote.append(param);
     
-    TriggerType buttonATrigger(QUuid("9dd3f862-35f3-4b69-954e-fa3c8bd68e39"));
-    buttonATrigger.setName("A");
-    buttonATrigger.setParameters(paramsRemote);
-    buttonTriggers.append(buttonATrigger);
+    EventType buttonAEvent(QUuid("9dd3f862-35f3-4b69-954e-fa3c8bd68e39"));
+    buttonAEvent.setName("A");
+    buttonAEvent.setParameters(paramsRemote);
+    buttonEvents.append(buttonAEvent);
     
-    TriggerType buttonBTrigger(QUuid("733226eb-91ba-4e37-9d78-12c87eb5e763"));
-    buttonBTrigger.setName("B");
-    buttonBTrigger.setParameters(paramsRemote);
-    buttonTriggers.append(buttonBTrigger);
+    EventType buttonBEvent(QUuid("733226eb-91ba-4e37-9d78-12c87eb5e763"));
+    buttonBEvent.setName("B");
+    buttonBEvent.setParameters(paramsRemote);
+    buttonEvents.append(buttonBEvent);
     
-    TriggerType buttonCTrigger(QUuid("47aaeaec-485a-4775-a543-33f339fd28c8"));
-    buttonCTrigger.setName("C");
-    buttonCTrigger.setParameters(paramsRemote);
-    buttonTriggers.append(buttonCTrigger);
+    EventType buttonCEvent(QUuid("47aaeaec-485a-4775-a543-33f339fd28c8"));
+    buttonCEvent.setName("C");
+    buttonCEvent.setParameters(paramsRemote);
+    buttonEvents.append(buttonCEvent);
     
-    TriggerType buttonDTrigger(QUuid("db3d484c-add9-44ab-80a4-a0664e0c87c8"));
-    buttonDTrigger.setName("D");
-    buttonDTrigger.setParameters(paramsRemote);
-    buttonTriggers.append(buttonDTrigger);
+    EventType buttonDEvent(QUuid("db3d484c-add9-44ab-80a4-a0664e0c87c8"));
+    buttonDEvent.setName("D");
+    buttonDEvent.setParameters(paramsRemote);
+    buttonEvents.append(buttonDEvent);
     
-    TriggerType buttonETrigger(QUuid("eb914aac-fb73-4ee2-9f1b-c34b2f6cc24a"));
-    buttonETrigger.setName("E");
-    buttonETrigger.setParameters(paramsRemote);
-    buttonTriggers.append(buttonETrigger);
+    EventType buttonEEvent(QUuid("eb914aac-fb73-4ee2-9f1b-c34b2f6cc24a"));
+    buttonEEvent.setName("E");
+    buttonEEvent.setParameters(paramsRemote);
+    buttonEvents.append(buttonEEvent);
     
-    deviceClassElroRemote.setTriggers(buttonTriggers);
+    deviceClassElroRemote.setEvents(buttonEvents);
     ret.append(deviceClassElroRemote);
 
     // =======================================
@@ -362,11 +362,11 @@ void DevicePluginElro::radioData(QList<int> rawData)
 
     // FIXME: find a better way to get to the remote DeviceClass
     DeviceClass deviceClass = supportedDevices().first();
-    foreach (const TriggerType &triggerType, deviceClass.triggers()) {
-        if (triggerType.name() == button) {
-            qDebug() << "emit trigger " << pluginName() << group << triggerType.name() << power;
-            Trigger trigger = Trigger(triggerType.id(), device->id(), params);
-            emit emitTrigger(trigger);
+    foreach (const EventType &eventType, deviceClass.events()) {
+        if (eventType.name() == button) {
+            qDebug() << "emit event " << pluginName() << group << eventType.name() << power;
+            Event event = Event(eventType.id(), device->id(), params);
+            emit emitEvent(event);
             return;
         }
     }

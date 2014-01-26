@@ -46,7 +46,7 @@ QList<DeviceClass> DevicePluginMeisterAnker::supportedDevices() const
 
     deviceClassMeisterAnkerThermometer.setStates(thermometerStates);
 
-    QList<TriggerType> thermometerTriggers;
+    QList<EventType> thermometerEvents;
     
     QVariantList paramsThermometer;
     QVariantMap paramThermometer;
@@ -54,10 +54,10 @@ QList<DeviceClass> DevicePluginMeisterAnker::supportedDevices() const
     paramThermometer.insert("type", "double");
     paramsThermometer.append(paramThermometer);
 
-    TriggerType temperatureTrigger(QUuid("174ab4d5-2ef0-491b-a55b-c895cedff80e"));
-    temperatureTrigger.setName("temperature");
-    temperatureTrigger.setParameters(paramsThermometer);
-    thermometerTriggers.append(temperatureTrigger);
+    EventType temperatureEvent(QUuid("174ab4d5-2ef0-491b-a55b-c895cedff80e"));
+    temperatureEvent.setName("temperature");
+    temperatureEvent.setParameters(paramsThermometer);
+    thermometerEvents.append(temperatureEvent);
 
     QVariantList paramsThermometerBat;
     QVariantMap paramThermometerBat;
@@ -65,19 +65,19 @@ QList<DeviceClass> DevicePluginMeisterAnker::supportedDevices() const
     paramThermometerBat.insert("type", "bool");
     paramsThermometerBat.append(paramThermometerBat);
 
-    TriggerType batteryStatusTrigger(QUuid("c376b532-993f-41c7-acc7-02b409136d32"));
-    batteryStatusTrigger.setName("batteryStatus");
-    batteryStatusTrigger.setParameters(paramsThermometerBat);
-    thermometerTriggers.append(batteryStatusTrigger);
+    EventType batteryStatusEvent(QUuid("c376b532-993f-41c7-acc7-02b409136d32"));
+    batteryStatusEvent.setName("batteryStatus");
+    batteryStatusEvent.setParameters(paramsThermometerBat);
+    thermometerEvents.append(batteryStatusEvent);
 
-    // TODO: lock if we need a sync trigger
-    //    TriggerType syncTrigger(QUuid("174ab4d5-2ef0-491b-a55b-c895cedff80e"));
-    //    temperatureTrigger.setName("sync");
-    //    temperatureTrigger.setParameters(paramsThermometer);
-    //    thermometerTriggers.append(temperatureTrigger);
+    // TODO: lock if we need a sync event
+    //    EventType syncEvent(QUuid("174ab4d5-2ef0-491b-a55b-c895cedff80e"));
+    //    temperatureEvent.setName("sync");
+    //    temperatureEvent.setParameters(paramsThermometer);
+    //    thermometerEvents.append(temperatureEvent);
 
 
-    deviceClassMeisterAnkerThermometer.setTriggers(thermometerTriggers);
+    deviceClassMeisterAnkerThermometer.setEvents(thermometerEvents);
     ret.append(deviceClassMeisterAnkerThermometer);
 
     return ret;

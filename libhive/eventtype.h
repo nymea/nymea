@@ -4,10 +4,10 @@
 #include <QUuid>
 #include <QVariantMap>
 
-class TriggerType
+class EventType
 {
 public:
-    TriggerType(const QUuid &id);
+    EventType(const QUuid &id);
 
     QUuid id() const;
 

@@ -2,7 +2,7 @@
 #define RULEENGINE_H
 
 #include "rule.h"
-#include "trigger.h"
+#include "event.h"
 
 #include <QObject>
 #include <QList>
@@ -16,15 +16,15 @@ public:
         RuleErrorNoError,
         RuleErrorRuleNotFound,
         RuleErrorDeviceNotFound,
-        RuleErrorTriggerTypeNotFound
+        RuleErrorEventTypeNotFound
     };
 
     explicit RuleEngine(QObject *parent = 0);
 
-    QList<Action> evaluateTrigger(const Trigger &trigger);
+    QList<Action> evaluateEvent(const Event &event);
 
-    RuleError addRule(const Trigger &trigger, const QList<Action> &actions);
-    RuleError addRule(const Trigger &trigger, const QList<State> &states, const QList<Action> &actions);
+    RuleError addRule(const Event &event, const QList<Action> &actions);
+    RuleError addRule(const Event &event, const QList<State> &states, const QList<Action> &actions);
     QList<Rule> rules() const;
 
     RuleError removeRule(const QUuid &ruleId);

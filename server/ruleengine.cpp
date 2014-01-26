@@ -7,9 +7,9 @@
     \inmodule server
 
     You can add, remove and update rules and query the engine for actions to be executed
-    for a given \l{Trigger}.
+    for a given \l{Event}.
 
-    \sa Trigger, Rule, Action
+    \sa Event, Rule, Action
 */
 
 /*! \fn void RuleEngine::ruleAdded(const QUuid &ruleId)
@@ -28,8 +28,8 @@
         Couldn't find a \l{Rule} with the given id.
     \value RuleErrorDeviceNotFound
         Couldn't find a \l{Device} with the given id.
-    \value RuleErrorTriggerTypeNotFound
-        Couldn't find a \l{TriggerType} with the given id.
+    \value RuleErrorEventTypeNotFound
+        Couldn't find a \l{EventType} with the given id.
     */
 
 #include "ruleengine.h"
@@ -58,8 +58,8 @@ RuleEngine::RuleEngine(QObject *parent) :
 
         settings.beginGroup(idString);
 
-        settings.beginGroup("trigger");
-        Trigger trigger(settings.value("triggerTypeId").toUuid(), settings.value("deviceId").toUuid(), settings.value("params").toMap());
+        settings.beginGroup("event");
+        Event event(settings.value("eventTypeId").toUuid(), settings.value("deviceId").toUuid(), settings.value("params").toMap());
         settings.endGroup();
 
         settings.beginGroup("states");
@@ -86,21 +86,21 @@ RuleEngine::RuleEngine(QObject *parent) :
 
         settings.endGroup();
 
-        Rule rule = Rule(QUuid(idString), trigger, states, actions);
+        Rule rule = Rule(QUuid(idString), event, states, actions);
         m_rules.append(rule);
     }
 
 }
 
-/*! Ask the Engine to evaluate all the rules for the given \a trigger.
-    This will search all the \l{Rule}{Rules} triggered by this \l{Trigger}
+/*! Ask the Engine to evaluate all the rules for the given \a event.
+    This will search all the \l{Rule}{Rules} evented by this \l{Event}
     and evaluate it's states according to its type. It will return a
     list of all \l{Action}{Actions} that should be executed. */
-QList<Action> RuleEngine::evaluateTrigger(const Trigger &trigger)
+QList<Action> RuleEngine::evaluateEvent(const Event &event)
 {
     QList<Action> actions;
     for (int i = 0; i < m_rules.count(); ++i) {
-        if (m_rules.at(i).trigger() == trigger) {
+        if (m_rules.at(i).event() == event) {
             bool statesMatching = true;
             qDebug() << "checking states";
             foreach (const State &state, m_rules.at(i).states()) {
@@ -125,48 +125,48 @@ QList<Action> RuleEngine::evaluateTrigger(const Trigger &trigger)
     return actions;
 }
 
-/*! Add a new \l{Rule} with the given \a trigger and \a actions to the engine.
+/*! Add a new \l{Rule} with the given \a event and \a actions to the engine.
     For convenience, this creates a Rule without any \l{State} comparison. */
-RuleEngine::RuleError RuleEngine::addRule(const Trigger &trigger, const QList<Action> &actions)
+RuleEngine::RuleError RuleEngine::addRule(const Event &event, const QList<Action> &actions)
 {
-    return addRule(trigger, QList<State>(), actions);
+    return addRule(event, QList<State>(), actions);
 }
 
-/*! Add a new \l{Rule} with the given \a trigger, \a states and \a actions to the engine. */
-RuleEngine::RuleError RuleEngine::addRule(const Trigger &trigger, const QList<State> &states, const QList<Action> &actions)
+/*! Add a new \l{Rule} with the given \a event, \a states and \a actions to the engine. */
+RuleEngine::RuleError RuleEngine::addRule(const Event &event, const QList<State> &states, const QList<Action> &actions)
 {
-    qDebug() << "adding rule: Trigger:" << trigger.triggerTypeId() << "with" << actions.count() << "actions";
-    DeviceClass triggerDeviceClass = HiveCore::instance()->deviceManager()->findDeviceClassforTrigger(trigger.triggerTypeId());
+    qDebug() << "adding rule: Event:" << event.eventTypeId() << "with" << actions.count() << "actions";
+    DeviceClass eventDeviceClass = HiveCore::instance()->deviceManager()->findDeviceClassforEvent(event.eventTypeId());
 
-    Device *device = HiveCore::instance()->deviceManager()->findConfiguredDevice(trigger.deviceId());
+    Device *device = HiveCore::instance()->deviceManager()->findConfiguredDevice(event.deviceId());
     if (!device) {
-        qWarning() << "Cannot create rule. No configured device for triggerTypeId" << trigger.triggerTypeId();
+        qWarning() << "Cannot create rule. No configured device for eventTypeId" << event.eventTypeId();
         return RuleErrorDeviceNotFound;
     }
     DeviceClass deviceClass = HiveCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
     qDebug() << "found deviceClass" << deviceClass.name();
 
-    bool triggerTypeFound = false;
-    foreach (const TriggerType &triggerType, deviceClass.triggers()) {
-        if (triggerType.id() == trigger.triggerTypeId()) {
-            triggerTypeFound = true;
+    bool eventTypeFound = false;
+    foreach (const EventType &eventType, deviceClass.events()) {
+        if (eventType.id() == event.eventTypeId()) {
+            eventTypeFound = true;
         }
     }
-    if (!triggerTypeFound) {
-        qWarning() << "Cannot create rule. Device " + device->name() + " has no trigger type:" << trigger.triggerTypeId();
-        return RuleErrorTriggerTypeNotFound;
+    if (!eventTypeFound) {
+        qWarning() << "Cannot create rule. Device " + device->name() + " has no event type:" << event.eventTypeId();
+        return RuleErrorEventTypeNotFound;
     }
 
-    Rule rule = Rule(QUuid::createUuid(), trigger, states, actions);
+    Rule rule = Rule(QUuid::createUuid(), event, states, actions);
     m_rules.append(rule);
     emit ruleAdded(rule.id());
 
     QSettings settings(m_settingsFile);
     settings.beginGroup(rule.id().toString());
-    settings.beginGroup("trigger");
-    settings.setValue("triggerTypeId", trigger.triggerTypeId());
-    settings.setValue("deviceId", trigger.deviceId());
-    settings.setValue("params", trigger.params());
+    settings.beginGroup("event");
+    settings.setValue("eventTypeId", event.eventTypeId());
+    settings.setValue("deviceId", event.deviceId());
+    settings.setValue("params", event.params());
     settings.endGroup();
 
     settings.beginGroup("states");

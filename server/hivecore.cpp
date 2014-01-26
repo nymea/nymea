@@ -60,15 +60,15 @@ HiveCore::HiveCore(QObject *parent) :
     qDebug() << "*****************************************";
     m_jsonServer = new JsonRPCServer(this);
 
-    connect(m_deviceManager, &DeviceManager::emitTrigger, this, &HiveCore::gotSignal);
+    connect(m_deviceManager, &DeviceManager::emitEvent, this, &HiveCore::gotSignal);
 
 }
 
-/*! Connected to the DeviceManager's emitTrigger signal. Triggers received in
+/*! Connected to the DeviceManager's emitEvent signal. Events received in
     here will be evaluated by the \l{RuleEngine} and the according \l{Action}{Actions} are executed.*/
-void HiveCore::gotSignal(const Trigger &trigger)
+void HiveCore::gotSignal(const Event &event)
 {
-    foreach (const Action &action, m_ruleEngine->evaluateTrigger(trigger)) {
+    foreach (const Action &action, m_ruleEngine->evaluateEvent(event)) {
         m_deviceManager->executeAction(action);
     }
 }

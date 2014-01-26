@@ -1,6 +1,6 @@
 TARGET = hivetests
 QT += testlib network
-CONFIG += testcase
+CONFIG += testcase c++11
 DEFINES += TESTING_ENABLED
 
 INCLUDEPATH += $$top_srcdir/server/ $$top_srcdir/server/jsonrpc $$top_srcdir/libhive $$top_srcdir/tests/auto/

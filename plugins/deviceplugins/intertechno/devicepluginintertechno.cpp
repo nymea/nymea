@@ -32,7 +32,7 @@ QList<DeviceClass> DevicePluginIntertechno::supportedDevices() const
 
     deviceClassIntertechnoRemote.setParams(remoteParams);
     
-    QList<TriggerType> buttonTriggers;
+    QList<EventType> buttonEvents;
     
     QVariantList paramsRemote;
     QVariantMap paramRemote;
@@ -54,87 +54,87 @@ QList<DeviceClass> DevicePluginIntertechno::supportedDevices() const
      *       |___|___|___|____|
      */
 
-    TriggerType button1Trigger("785c1b30-a3f2-4696-af7c-d532acf3d6f7");
-    button1Trigger.setName("1");
-    button1Trigger.setParameters(paramsRemote);
-    buttonTriggers.append(button1Trigger);
+    EventType button1Event("785c1b30-a3f2-4696-af7c-d532acf3d6f7");
+    button1Event.setName("1");
+    button1Event.setParameters(paramsRemote);
+    buttonEvents.append(button1Event);
 
-    TriggerType button2Trigger("1d42c850-7b43-452f-b205-e1aac14eb3ee");
-    button2Trigger.setName("2");
-    button2Trigger.setParameters(paramsRemote);
-    buttonTriggers.append(button2Trigger);
+    EventType button2Event("1d42c850-7b43-452f-b205-e1aac14eb3ee");
+    button2Event.setName("2");
+    button2Event.setParameters(paramsRemote);
+    buttonEvents.append(button2Event);
 
-    TriggerType button3Trigger("77a4780e-2355-4a77-870d-2f675bf986ce");
-    button3Trigger.setName("3");
-    button3Trigger.setParameters(paramsRemote);
-    buttonTriggers.append(button3Trigger);
+    EventType button3Event("77a4780e-2355-4a77-870d-2f675bf986ce");
+    button3Event.setName("3");
+    button3Event.setParameters(paramsRemote);
+    buttonEvents.append(button3Event);
 
-    TriggerType button4Trigger("bd6a8b4b-f946-4f3b-992f-e7cff10187b8");
-    button4Trigger.setName("4");
-    button4Trigger.setParameters(paramsRemote);
-    buttonTriggers.append(button4Trigger);
+    EventType button4Event("bd6a8b4b-f946-4f3b-992f-e7cff10187b8");
+    button4Event.setName("4");
+    button4Event.setParameters(paramsRemote);
+    buttonEvents.append(button4Event);
 
-    TriggerType button5Trigger("0f20782e-0acc-45f1-8c42-5dc5f5b29f1b");
-    button5Trigger.setName("5");
-    button5Trigger.setParameters(paramsRemote);
-    buttonTriggers.append(button5Trigger);
+    EventType button5Event("0f20782e-0acc-45f1-8c42-5dc5f5b29f1b");
+    button5Event.setName("5");
+    button5Event.setParameters(paramsRemote);
+    buttonEvents.append(button5Event);
 
-    TriggerType button6Trigger("f7cb439a-0528-4905-9583-06b6bfeb3ba1");
-    button6Trigger.setName("6");
-    button6Trigger.setParameters(paramsRemote);
-    buttonTriggers.append(button6Trigger);
+    EventType button6Event("f7cb439a-0528-4905-9583-06b6bfeb3ba1");
+    button6Event.setName("6");
+    button6Event.setParameters(paramsRemote);
+    buttonEvents.append(button6Event);
 
-    TriggerType button7Trigger("a0b0d8d8-2b43-4897-98e0-05b6b408a950");
-    button7Trigger.setName("7");
-    button7Trigger.setParameters(paramsRemote);
-    buttonTriggers.append(button7Trigger);
+    EventType button7Event("a0b0d8d8-2b43-4897-98e0-05b6b408a950");
+    button7Event.setName("7");
+    button7Event.setParameters(paramsRemote);
+    buttonEvents.append(button7Event);
 
-    TriggerType button8Trigger("ae5833a2-bc43-4462-ae47-e45dac1fb0ce");
-    button8Trigger.setName("8");
-    button8Trigger.setParameters(paramsRemote);
-    buttonTriggers.append(button8Trigger);
+    EventType button8Event("ae5833a2-bc43-4462-ae47-e45dac1fb0ce");
+    button8Event.setName("8");
+    button8Event.setParameters(paramsRemote);
+    buttonEvents.append(button8Event);
 
-    TriggerType button9Trigger("52c13828-d047-4256-b488-0bf84abbc87c");
-    button9Trigger.setName("9");
-    button9Trigger.setParameters(paramsRemote);
-    buttonTriggers.append(button9Trigger);
+    EventType button9Event("52c13828-d047-4256-b488-0bf84abbc87c");
+    button9Event.setName("9");
+    button9Event.setParameters(paramsRemote);
+    buttonEvents.append(button9Event);
 
-    TriggerType button10Trigger("22c5afbc-835e-47cc-8211-4429eb9d9fee");
-    button10Trigger.setName("10");
-    button10Trigger.setParameters(paramsRemote);
-    buttonTriggers.append(button10Trigger);
+    EventType button10Event("22c5afbc-835e-47cc-8211-4429eb9d9fee");
+    button10Event.setName("10");
+    button10Event.setParameters(paramsRemote);
+    buttonEvents.append(button10Event);
 
-    TriggerType button11Trigger("6bec5cbc-8bfb-4c6c-8ac8-f8e7723fd5aa");
-    button11Trigger.setName("11");
-    button11Trigger.setParameters(paramsRemote);
-    buttonTriggers.append(button11Trigger);
+    EventType button11Event("6bec5cbc-8bfb-4c6c-8ac8-f8e7723fd5aa");
+    button11Event.setName("11");
+    button11Event.setParameters(paramsRemote);
+    buttonEvents.append(button11Event);
     
-    TriggerType button12Trigger("8b71edd2-8135-4c8b-bf44-380efadf1942");
-    button12Trigger.setName("12");
-    button12Trigger.setParameters(paramsRemote);
-    buttonTriggers.append(button12Trigger);
+    EventType button12Event("8b71edd2-8135-4c8b-bf44-380efadf1942");
+    button12Event.setName("12");
+    button12Event.setParameters(paramsRemote);
+    buttonEvents.append(button12Event);
 
-    TriggerType button13Trigger("192f36a4-1e58-41aa-9618-83d46e329a4b");
-    button13Trigger.setName("13");
-    button13Trigger.setParameters(paramsRemote);
-    buttonTriggers.append(button13Trigger);
+    EventType button13Event("192f36a4-1e58-41aa-9618-83d46e329a4b");
+    button13Event.setName("13");
+    button13Event.setParameters(paramsRemote);
+    buttonEvents.append(button13Event);
 
-    TriggerType button14Trigger("6c76de60-5e19-4a29-b027-e71e66caa2d6");
-    button14Trigger.setName("14");
-    button14Trigger.setParameters(paramsRemote);
-    buttonTriggers.append(button14Trigger);
+    EventType button14Event("6c76de60-5e19-4a29-b027-e71e66caa2d6");
+    button14Event.setName("14");
+    button14Event.setParameters(paramsRemote);
+    buttonEvents.append(button14Event);
 
-    TriggerType button15Trigger("c2f56c10-1f81-4477-88fa-fc0f4a6383df");
-    button15Trigger.setName("15");
-    button15Trigger.setParameters(paramsRemote);
-    buttonTriggers.append(button15Trigger);
+    EventType button15Event("c2f56c10-1f81-4477-88fa-fc0f4a6383df");
+    button15Event.setName("15");
+    button15Event.setParameters(paramsRemote);
+    buttonEvents.append(button15Event);
 
-    TriggerType button16Trigger("5d2eb3f8-4cd4-4c71-9c0c-e0b685e168e4");
-    button16Trigger.setName("16");
-    button16Trigger.setParameters(paramsRemote);
-    buttonTriggers.append(button16Trigger);
+    EventType button16Event("5d2eb3f8-4cd4-4c71-9c0c-e0b685e168e4");
+    button16Event.setName("16");
+    button16Event.setParameters(paramsRemote);
+    buttonEvents.append(button16Event);
 
-    deviceClassIntertechnoRemote.setTriggers(buttonTriggers);
+    deviceClassIntertechnoRemote.setEvents(buttonEvents);
     ret.append(deviceClassIntertechnoRemote);
 
 
@@ -535,11 +535,11 @@ void DevicePluginIntertechno::radioData(QList<int> rawData)
 
     // FIXME: find a better way to get to the remote DeviceClass
     DeviceClass deviceClass = supportedDevices().first();
-    foreach (const TriggerType &triggerType, deviceClass.triggers()) {
-        if (triggerType.name() == buttonCode) {
-            qDebug() << "emit trigger " << pluginName() << familyCode << triggerType.name() << power;
-            Trigger trigger = Trigger(triggerType.id(), device->id(), params);
-            emit emitTrigger(trigger);
+    foreach (const EventType &eventType, deviceClass.events()) {
+        if (eventType.name() == buttonCode) {
+            qDebug() << "emit event " << pluginName() << familyCode << eventType.name() << power;
+            Event event = Event(eventType.id(), device->id(), params);
+            emit emitEvent(event);
             return;
         }
     }

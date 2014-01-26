@@ -6,9 +6,9 @@
     \inmodule libhive
 
     It holds information general information about devices and their vendors and
-    describes what actions, triggers and states a device supports. As this is
+    describes what actions, events and states a device supports. As this is
     just a description of device and does not represent actual \l{Device}{Devices},
-    the actions, triggers and states are described in form of \l{TriggerType},
+    the actions, events and states are described in form of \l{EventType},
     \l{StateType} and \l{ActionType}
 
     \sa Device
@@ -72,18 +72,18 @@ void DeviceClass::setStates(const QList<StateType> &stateTypes)
     m_states = stateTypes;
 }
 
-/*! Returns the triggerTypes of this DeviceClass. \{Device}{Devices} created
-    from this DeviceClass must have their triggers matching to this template. */
-QList<TriggerType> DeviceClass::triggers() const
+/*! Returns the eventTypes of this DeviceClass. \{Device}{Devices} created
+    from this DeviceClass must have their events matching to this template. */
+QList<EventType> DeviceClass::events() const
 {
-    return m_triggers;
+    return m_events;
 }
 
-/*! Set the \a triggerTypes of this DeviceClass. \{Device}{Devices} created
-    from this DeviceClass must have their triggers matching to this template. */
-void DeviceClass::setTriggers(const QList<TriggerType> &triggerTypes)
+/*! Set the \a eventTypes of this DeviceClass. \{Device}{Devices} created
+    from this DeviceClass must have their events matching to this template. */
+void DeviceClass::setEvents(const QList<EventType> &eventTypes)
 {
-    m_triggers = triggerTypes;
+    m_events = eventTypes;
 }
 
 /*! Returns the actionTypes of this DeviceClass. \{Device}{Devices} created

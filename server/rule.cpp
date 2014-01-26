@@ -5,13 +5,13 @@
     \ingroup rules
     \inmodule server
 
-    A Rule is always triggered by a \l{Trigger}, has \l{State}{States}
+    A Rule is always evented by a \l{Event}, has \l{State}{States}
     to be compared and \l{Action}{Actions} to be executed. Additionally a
     Rule is either of type \l{Rule::RuleTypeAll} or \l{Rule::RuleTypeAny}
     which determines if all or any of the \l{State}{States} must be matching
     in order for the \l{Action}{Actions} to be executed.
 
-    \sa Trigger, State, Action
+    \sa Event, State, Action
 */
 
 /*! \enum Rule::RuleType
@@ -30,11 +30,11 @@
 
 #include <QDebug>
 
-/*! Constructs a Rule with the given \a id, \a trigger, \a states and \a actions. The ruleType will default to
+/*! Constructs a Rule with the given \a id, \a event, \a states and \a actions. The ruleType will default to
  \l{Rule::RuleTypeAll}.*/
-Rule::Rule(const QUuid &id, const Trigger &trigger, const QList<State> &states, const QList<Action> &actions):
+Rule::Rule(const QUuid &id, const Event &event, const QList<State> &states, const QList<Action> &actions):
     m_id(id),
-    m_trigger(trigger),
+    m_event(event),
     m_states(states),
     m_actions(actions),
     m_ruleType(RuleTypeAll)
@@ -47,10 +47,10 @@ QUuid Rule::id() const
     return m_id;
 }
 
-/*! Returns the \l{Trigger} that triggers this Rule.*/
-Trigger Rule::trigger() const
+/*! Returns the \l{Event} that events this Rule.*/
+Event Rule::event() const
 {
-    return m_trigger;
+    return m_event;
 }
 
 /*! Returns the \l{State}{States} that need to be matching in order for this to Rule apply. */
@@ -59,7 +59,7 @@ QList<State> Rule::states() const
     return m_states;
 }
 
-/*! Returns the \l{Action}{Actions} to be executed when this Rule is triggerd and states match. */
+/*! Returns the \l{Action}{Actions} to be executed when this Rule is eventd and states match. */
 QList<Action> Rule::actions() const
 {
     return m_actions;

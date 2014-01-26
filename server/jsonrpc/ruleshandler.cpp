@@ -21,7 +21,7 @@ RulesHandler::RulesHandler(QObject *parent) :
 
     params.clear(); returns.clear();
     setDescription("AddRule", "Add a rule");
-    params.insert("trigger", JsonTypes::triggerRef());
+    params.insert("event", JsonTypes::eventRef());
     QVariantList actions;
     actions.append(JsonTypes::actionRef());
     params.insert("actions", actions);
@@ -58,12 +58,12 @@ QVariantMap RulesHandler::GetRules(const QVariantMap &params)
 
 QVariantMap RulesHandler::AddRule(const QVariantMap &params)
 {
-    QVariantMap triggerMap = params.value("trigger").toMap();
+    QVariantMap eventMap = params.value("event").toMap();
 
-    QUuid triggerTypeId = triggerMap.value("triggerTypeId").toUuid();
-    QUuid triggerDeviceId = triggerMap.value("deviceId").toUuid();
-    QVariantMap triggerParams = triggerMap.value("params").toMap();
-    Trigger trigger(triggerTypeId, triggerDeviceId, triggerParams);
+    QUuid eventTypeId = eventMap.value("eventTypeId").toUuid();
+    QUuid eventDeviceId = eventMap.value("deviceId").toUuid();
+    QVariantMap eventParams = eventMap.value("params").toMap();
+    Event event(eventTypeId, eventDeviceId, eventParams);
 
     QList<Action> actions;
     QVariantList actionList = params.value("actions").toList();
@@ -82,7 +82,7 @@ QVariantMap RulesHandler::AddRule(const QVariantMap &params)
         return returns;
     }
 
-    switch(HiveCore::instance()->ruleEngine()->addRule(trigger, actions)) {
+    switch(HiveCore::instance()->ruleEngine()->addRule(event, actions)) {
     case RuleEngine::RuleErrorNoError:
         returns.insert("success", true);
         break;
@@ -90,9 +90,9 @@ QVariantMap RulesHandler::AddRule(const QVariantMap &params)
         returns.insert("success", false);
         returns.insert("errorMessage", "No such device.");
         break;
-    case RuleEngine::RuleErrorTriggerTypeNotFound:
+    case RuleEngine::RuleErrorEventTypeNotFound:
         returns.insert("success", false);
-        returns.insert("errorMessage", "Device does not have such a trigger type.");
+        returns.insert("errorMessage", "Device does not have such a event type.");
         break;
     default:
         returns.insert("success", false);

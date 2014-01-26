@@ -1,7 +1,7 @@
 #ifndef DEVICECLASS_H
 #define DEVICECLASS_H
 
-#include "triggertype.h"
+#include "eventtype.h"
 #include "actiontype.h"
 #include "statetype.h"
 
@@ -23,8 +23,8 @@ public:
     QList<StateType> states() const;
     void setStates(const QList<StateType> &stateTypes);
 
-    QList<TriggerType> triggers() const;
-    void setTriggers(const QList<TriggerType> &triggerTypes);
+    QList<EventType> events() const;
+    void setEvents(const QList<EventType> &eventTypes);
 
     QList<ActionType> actions() const;
     void setActions(const QList<ActionType> &actionTypes);
@@ -39,7 +39,7 @@ private:
     QUuid m_pluginId;
     QString m_name;
     QList<StateType> m_states;
-    QList<TriggerType> m_triggers;
+    QList<EventType> m_events;
     QList<ActionType> m_actions;
     QVariantList m_params;
 };

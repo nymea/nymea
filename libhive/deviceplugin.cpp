@@ -51,12 +51,12 @@ pure virtual methods: \l{DevicePlugin::pluginName()}, \l{DevicePlugin::pluginId(
  */
 
 /*!
- \fn void DevicePlugin::emitTrigger(const Trigger &trigger)
- To produce a new event in the system, create a new \l{Trigger} and emit it with \a trigger.
- Usually triggers are emitted in response to incoming data or other other events happening,
+ \fn void DevicePlugin::emitEvent(const Event &event)
+ To produce a new event in the system, create a new \l{Event} and emit it with \a event.
+ Usually events are emitted in response to incoming data or other other events happening,
  such as \l{DevicePlugin::radioData()} or \l{DevicePlugin::hiveTimer()}. Find a configured
- \l{Device} from the \l{DeviceManager} and get its \l{TriggerType}{TriggerTypes}, then
- create a \l{Trigger} complying to that \l{TriggerType} and emit it here.
+ \l{Device} from the \l{DeviceManager} and get its \l{EventType}{EventTypes}, then
+ create a \l{Event} complying to that \l{EventType} and emit it here.
  */
 
 /*!

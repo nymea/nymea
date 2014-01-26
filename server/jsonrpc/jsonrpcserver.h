@@ -3,7 +3,7 @@
 
 #include "deviceclass.h"
 #include "action.h"
-#include "trigger.h"
+#include "event.h"
 
 #include <QObject>
 #include <QVariantMap>

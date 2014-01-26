@@ -48,8 +48,8 @@
         Error setting up the \{Device}. It will not be functional.
 */
 
-/*! \fn void DeviceManager::emitTrigger(const Trigger &trigger)
-    The DeviceManager will emit a \l{Trigger} described in \a trigger whenever a Device
+/*! \fn void DeviceManager::emitEvent(const Event &event)
+    The DeviceManager will emit a \l{Event} described in \a event whenever a Device
     creates one. Normally only \l{HiveCore} should connect to this and execute actions
     after checking back with the \{RulesEngine}. Exceptions might be monitoring interfaces
     or similar, but you should never directly react to this in a \l{DevicePlugin}.
@@ -171,12 +171,12 @@ QList<Device *> DeviceManager::findConfiguredDevices(const QUuid &deviceClassId)
     return ret;
 }
 
-/*! For conveninece, this returns the \{DeviceClass} that describes the \l{TriggerType} referred by \a triggerTypeId. */
-DeviceClass DeviceManager::findDeviceClassforTrigger(const QUuid &triggerTypeId) const
+/*! For conveninece, this returns the \{DeviceClass} that describes the \l{EventType} referred by \a eventTypeId. */
+DeviceClass DeviceManager::findDeviceClassforEvent(const QUuid &eventTypeId) const
 {
     foreach (const DeviceClass &deviceClass, m_supportedDevices) {
-        foreach (const TriggerType &triggerType, deviceClass.triggers()) {
-            if (triggerType.id() == triggerTypeId) {
+        foreach (const EventType &eventType, deviceClass.events()) {
+            if (eventType.id() == eventTypeId) {
                 return deviceClass;
             }
         }
@@ -235,7 +235,7 @@ void DeviceManager::loadPlugins()
                 m_supportedDevices.insert(deviceClass.id(), deviceClass);
             }
             m_devicePlugins.insert(pluginIface->pluginId(), pluginIface);
-            connect(pluginIface, &DevicePlugin::emitTrigger, this, &DeviceManager::emitTrigger);
+            connect(pluginIface, &DevicePlugin::emitEvent, this, &DeviceManager::emitEvent);
         }
     }
 }

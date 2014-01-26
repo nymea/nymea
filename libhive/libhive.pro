@@ -12,12 +12,12 @@ SOURCES += device.cpp \
            deviceplugin.cpp \
            radio433.cpp \
            gpio.cpp \
-           trigger.cpp \
-           triggertype.cpp \
            action.cpp \
            actiontype.cpp \
     state.cpp \
-    statetype.cpp
+    statetype.cpp \
+    eventtype.cpp \
+    event.cpp
 
 HEADERS += device.h \
            deviceclass.h \
@@ -25,10 +25,10 @@ HEADERS += device.h \
            deviceplugin.h \
            radio433.h \
            gpio.h \
-           trigger.h \
-           triggertype.h \
            action.h \
            actiontype.h \
     state.h \
-    statetype.h
+    statetype.h \
+    eventtype.h \
+    event.h
 

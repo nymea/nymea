@@ -1,0 +1,10 @@
+/*!
+    \page allmodules.html
+    \title All Modules
+
+    \table 80%
+    \row \li \l{libhive} \li Common data types and plugin interfaces
+    \row \li \l{Hive server} \li The Hive server daemon implementation
+    \endtable
+*/
+

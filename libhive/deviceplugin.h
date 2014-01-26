@@ -15,7 +15,7 @@ class DevicePlugin: public QObject
 {
     Q_OBJECT
 public:
-    DevicePlugin();
+    DevicePlugin(QObject *parent = 0);
     virtual ~DevicePlugin();
 
     virtual void init() {}

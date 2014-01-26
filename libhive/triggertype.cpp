@@ -10,7 +10,7 @@
 
 #include "triggertype.h"
 
-/*! Constructs a TriggerType object with the given id. */
+/*! Constructs a TriggerType object with the given \a id. */
 TriggerType::TriggerType(const QUuid &id):
     m_id(id)
 {
@@ -28,7 +28,7 @@ QString TriggerType::name() const
     return m_name;
 }
 
-/*! Set a name for this TriggerType, e.g. "Temperature changed" */
+/*! Set the name for this TriggerType to \a name, e.g. "Temperature changed" */
 void TriggerType::setName(const QString &name)
 {
     m_name = name;
@@ -44,7 +44,7 @@ QVariantList TriggerType::parameters() const
 }
 
 /*!
-  Set the parameter description for this TriggerType,
+  Set the parameter description for this TriggerType to \a parameters,
   e.g. QVariantList(QVariantMap(("name", "temperature"), ("type": QVariant::Real)))
   */
 void TriggerType::setParameters(const QVariantList &parameters)

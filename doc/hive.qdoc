@@ -6,12 +6,12 @@
     The Hive backend service consists of three main modules:
 
     \list
-        \li libhive
+        \li \l{libhive}
             \list
                 \li \l{Types}{Types used in the hive system}
                 \li \l{Device Plugins}{The Device Plugin API}
             \endlist
-        \li Hive server
+        \li \l{Hive server}
             \list
                 \li \l{Hive Core}
                 \li \l{JSONRPC Interface}

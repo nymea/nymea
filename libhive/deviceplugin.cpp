@@ -1,21 +1,14 @@
 /*!
-    \class DevicePlugin
-    \brief This is the base class interface for device plugins.
+\class DevicePlugin
+\brief This is the base class interface for device plugins.
 
-    \ingroup devices
-    \inmodule libhive
+\ingroup devices
+\inmodule libhive
 
-    When implementing a new plugin, start by subclassing this and implementing the following
-    pure virtual methods: \l{DevicePlugin::pluginName()}, \l{DevicePlugin::pluginId()},
-    \l{DevicePlugin::supportedDevices()} and \l{DevicePlugin::requiredHardware()}
+When implementing a new plugin, start by subclassing this and implementing the following
+pure virtual methods: \l{DevicePlugin::pluginName()}, \l{DevicePlugin::pluginId()},
+\l{DevicePlugin::supportedDevices()} and \l{DevicePlugin::requiredHardware()}
 */
-
-#include "deviceplugin.h"
-
-#include "devicemanager.h"
-#include "radio433.h"
-
-#include <QDebug>
 
 /*!
  \fn QString DevicePlugin::pluginName() const
@@ -59,23 +52,42 @@
 
 /*!
  \fn void DevicePlugin::emitTrigger(const Trigger &trigger)
- Emit this to produce a \l{Trigger} in the system. Usually in response to incoming data,
- such as \l{DevicePlugin::radioData()} or \l{DevicePlugin::hiveTimer()}. Find a
- configured \l{Device} from the \l{DeviceManager} and get its \l{TriggerTypes}, then
+ To produce a new event in the system, create a new \l{Trigger} and emit it with \a trigger.
+ Usually triggers are emitted in response to incoming data or other other events happening,
+ such as \l{DevicePlugin::radioData()} or \l{DevicePlugin::hiveTimer()}. Find a configured
+ \l{Device} from the \l{DeviceManager} and get its \l{TriggerType}{TriggerTypes}, then
  create a \l{Trigger} complying to that \l{TriggerType} and emit it here.
  */
 
-DevicePlugin::DevicePlugin():
+/*!
+  \fn void DevicePlugin::init()
+  This will be called after constructing the DevicePlugin. Override this to do any
+  initialisation work you need to do.
+  */
+
+#include "deviceplugin.h"
+
+#include "devicemanager.h"
+#include "radio433.h"
+
+#include <QDebug>
+
+/*! DevicePlugin constructor. DevicePlugins will be instantiated by the DeviceManager, its \a parent. */
+DevicePlugin::DevicePlugin(QObject *parent):
+    QObject(parent),
     m_deviceManager(0)
 {
 
 }
 
+/*! Virtual destructor... */
 DevicePlugin::~DevicePlugin()
 {
 
 }
 
+/*! This will be called when the DeviceManager initializes the plugin and set up the things behind the scenes.
+    When implementing a new plugin, use \l{DevicePlugin::init()} instead in order to do initialisation work. */
 void DevicePlugin::initPlugin(DeviceManager *deviceManager)
 {
     m_deviceManager = deviceManager;
@@ -93,7 +105,7 @@ QVariantMap DevicePlugin::configuration() const
 }
 
 /*!
- Will be called by the DeviceManager to set a plugin's config.
+ Will be called by the DeviceManager to set a plugin's \a configuration.
 
  When implementing a new plugin, override this and react to configuration changes.
 
@@ -117,7 +129,8 @@ DeviceManager *DevicePlugin::deviceManager() const
 }
 
 /*!
- Transmits data on the Radio433 or Radio868 devices, depending on the hardware requested by this plugin.
+ Transmits data contained in \a rawData on the Radio433 or Radio868
+ devices, depending on the hardware requested by this plugin.
  \sa DevicePlugin::requiredHardware()
  */
 void DevicePlugin::transmitData(QList<int> rawData)

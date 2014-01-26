@@ -12,6 +12,49 @@
 
 */
 
+/*!
+    \enum DeviceManager::HardwareResource
+
+    This enum type specifies hardware resources which can be requested by \l{DevicePlugin}{DevicePlugins}.
+
+    \value HardwareResourceNone
+        No Resource required.
+    \value HardwareResourceRadio433
+        Refers to the 433 MHz radio.
+    \value HardwareResourceRadio868
+        Refers to the 868 MHz radio.
+    \value HardwareResourceTimer
+        Refers to the global timer managed by the \l{DeviceManager}. Plugins should not create their own timers, but rather request the global timer using the hardware resources.
+*/
+
+/*!
+    \enum DeviceManager::DeviceError
+
+    This enum type specifies the errors that can happen when working with \l{Device}{Devices}.
+
+    \value DeviceErrorNoError
+        No Error. Everything went fine.
+    \value DeviceErrorDeviceNotFound
+        Couldn't find a \l{Device} for the given id.
+    \value DeviceErrorDeviceClassNotFound
+        Couldn't find a \l{DeviceClass} for the given id.
+    \value DeviceErrorActionTypeNotFound
+        Couldn't find the \l{ActionType} for the given id.
+    \value DeviceErrorMissingParameter
+        Parameters do not comply to the template.
+    \value DeviceErrorPluginNotFound
+        Couldn't find the Plugin for the given id.
+    \value DeviceErrorSetupFailed
+        Error setting up the \{Device}. It will not be functional.
+*/
+
+/*! \fn void DeviceManager::emitTrigger(const Trigger &trigger)
+    The DeviceManager will emit a \l{Trigger} described in \a trigger whenever a Device
+    creates one. Normally only \l{HiveCore} should connect to this and execute actions
+    after checking back with the \{RulesEngine}. Exceptions might be monitoring interfaces
+    or similar, but you should never directly react to this in a \l{DevicePlugin}.
+*/
+
 #include "devicemanager.h"
 
 #include "radio433.h"
@@ -31,7 +74,9 @@ Q_IMPORT_PLUGIN(DevicePluginIntertechno)
 Q_IMPORT_PLUGIN(DevicePluginMeisterAnker)
 Q_IMPORT_PLUGIN(DevicePluginWifiDetector)
 
-
+/*! Constructs the DeviceManager with the given \a parent. There should only be one DeviceManager in the system created by \l{HiveCore}.
+    Use \c HiveCore::instance()->deviceManager() instead to access the DeviceManager.
+*/
 DeviceManager::DeviceManager(QObject *parent) :
     QObject(parent),
     m_radio433(0)
@@ -43,21 +88,26 @@ DeviceManager::DeviceManager(QObject *parent) :
     QMetaObject::invokeMethod(this, "loadConfiguredDevices", Qt::QueuedConnection);
 }
 
+/*! Returns all the \l{DevicePlugin}{DevicePlugins} loaded in the system. */
 QList<DevicePlugin *> DeviceManager::plugins() const
 {
     return m_devicePlugins.values();
 }
 
+/*! Returns the \{DevicePlugin} with the given \a id. Null if the id couldn't be found. */
 DevicePlugin *DeviceManager::plugin(const QUuid &id) const
 {
     return m_devicePlugins.value(id);
 }
 
+/*! Returns all the supported \l{DeviceClass}{DeviceClasses} by all \l{DevicePlugin}{DevicePlugins} loaded in the system. */
 QList<DeviceClass> DeviceManager::supportedDevices() const
 {
     return m_supportedDevices.values();
 }
 
+/*! Add a new configured device for the given \l{DeviceClass} and the given parameters.
+ \a deviceClassId must refer to an existing \{DeviceClass} and \a params must match the parameter description in the \l{DeviceClass}. */
 DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const QUuid &deviceClassId, const QVariantMap &params)
 {
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
@@ -94,6 +144,7 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const QUuid &devic
     return DeviceErrorNoError;
 }
 
+/*! Returns the \l{Device} with the given \a id. Null if the id couldn't be found. */
 Device *DeviceManager::findConfiguredDevice(const QUuid &id) const
 {
     foreach (Device *device, m_configuredDevices) {
@@ -104,11 +155,13 @@ Device *DeviceManager::findConfiguredDevice(const QUuid &id) const
     return 0;
 }
 
+/*! Returns all configured \{Device}{Devices} in the system. */
 QList<Device *> DeviceManager::configuredDevices() const
 {
     return m_configuredDevices;
 }
 
+/*! Returns all \l{Device}{Devices} matching the \l{DeviceClass} referred by \a deviceClassId. */
 QList<Device *> DeviceManager::findConfiguredDevices(const QUuid &deviceClassId) const
 {
     QList<Device*> ret;
@@ -120,6 +173,7 @@ QList<Device *> DeviceManager::findConfiguredDevices(const QUuid &deviceClassId)
     return ret;
 }
 
+/*! For conveninece, this returns the \{DeviceClass} that describes the \l{TriggerType} referred by \a triggerTypeId. */
 DeviceClass DeviceManager::findDeviceClassforTrigger(const QUuid &triggerTypeId) const
 {
     foreach (const DeviceClass &deviceClass, m_supportedDevices) {
@@ -132,6 +186,7 @@ DeviceClass DeviceManager::findDeviceClassforTrigger(const QUuid &triggerTypeId)
     return DeviceClass(QUuid(), QUuid());
 }
 
+/*! For conveninece, this returns the \{DeviceClass} with the id given by \a deviceClassId. */
 DeviceClass DeviceManager::findDeviceClass(const QUuid &deviceClassId) const
 {
     foreach (const DeviceClass &deviceClass, m_supportedDevices) {
@@ -142,6 +197,9 @@ DeviceClass DeviceManager::findDeviceClass(const QUuid &deviceClassId) const
     return DeviceClass(QUuid(), QUuid());
 }
 
+/*! Execute the given \{Action}.
+    This will find the \l{Device} \a action refers to in \l{Action::deviceId()} and
+    its \l{DevicePlugin}. Then will dispatch the execution to the \l{DevicePlugin}.*/
 DeviceManager::DeviceError DeviceManager::executeAction(const Action &action)
 {
     foreach (Device *device, m_configuredDevices) {

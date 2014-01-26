@@ -100,7 +100,8 @@ QUuid DevicePluginMeisterAnker::pluginId() const
 
 void DevicePluginMeisterAnker::executeAction(Device *device, const Action &action)
 {
-
+    Q_UNUSED(device)
+    Q_UNUSED(action)
 }
 
 void DevicePluginMeisterAnker::radioData(QList<int> rawData)

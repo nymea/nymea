@@ -18,6 +18,7 @@
 
 HiveCore* HiveCore::s_instance = 0;
 
+/*! Returns a pointer to the single \l{HiveCore} instance.*/
 HiveCore *HiveCore::instance()
 {
     if (!s_instance) {
@@ -26,16 +27,20 @@ HiveCore *HiveCore::instance()
     return s_instance;
 }
 
+/*! Returns a pointer to the \l{DeviceManager} instance owned by HiveCore.*/
 DeviceManager *HiveCore::deviceManager() const
 {
     return m_deviceManager;
 }
 
+/*! Returns a pointer to the \l{RuleEngine} instance owned by HiveCore.*/
 RuleEngine *HiveCore::ruleEngine() const
 {
     return m_ruleEngine;
 }
 
+/*! Constructs HiveCore with the given \a parent. This is private.
+    Use \l{HiveCore::instance()} to access the single instance.*/
 HiveCore::HiveCore(QObject *parent) :
     QObject(parent)
 {
@@ -59,6 +64,8 @@ HiveCore::HiveCore(QObject *parent) :
 
 }
 
+/*! Connected to the DeviceManager's emitTrigger signal. Triggers received in
+    here will be evaluated by the \l{RuleEngine} and the according \l{Action}{Actions} are executed.*/
 void HiveCore::gotSignal(const Trigger &trigger)
 {
     foreach (const Action &action, m_ruleEngine->evaluateTrigger(trigger)) {

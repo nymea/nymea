@@ -1,9 +1,0 @@
-/*!
-    \page server.html
-    \title Hive Server
-    \nextpage
-    The Hive server is the instance that communicates with the hardware and provides a JSONRPC interface
-    for communicating with the UI.
-
-
-*/

@@ -12,6 +12,26 @@
     \sa Trigger, Rule, Action
 */
 
+/*! \fn void RuleEngine::ruleAdded(const QUuid &ruleId)
+    Will be emitted whenever a new \l{Rule} is added to this Engine.
+    \a ruleId holds the id of the new rule.*/
+
+/*! \fn void RuleEngine::ruleRemoved(const QUuid &ruleId)
+    Will be emitted whenever a \l{Rule} is removed from this Engine.
+    \a ruleId holds the id of the removed rule. You should remove any references
+    or copies you hold for this rule.*/
+
+/*! \enum RuleEngine::RuleError
+    \value RuleErrorNoError
+        No error happened. Everything is fine.
+    \value RuleErrorRuleNotFound
+        Couldn't find a \l{Rule} with the given id.
+    \value RuleErrorDeviceNotFound
+        Couldn't find a \l{Device} with the given id.
+    \value RuleErrorTriggerTypeNotFound
+        Couldn't find a \l{TriggerType} with the given id.
+    */
+
 #include "ruleengine.h"
 
 #include "hivecore.h"
@@ -25,6 +45,9 @@
 
 QString rulesFileName = "hiveyourhome/rules";
 
+/*! Constructs the RuleEngine with the given \a parent. Although it wouldn't harm to have multiple RuleEngines, there is one
+    instance available from \l{HiveCore}. This one should be used instead of creating multiple ones.
+    */
 RuleEngine::RuleEngine(QObject *parent) :
     QObject(parent)
 {
@@ -68,6 +91,10 @@ RuleEngine::RuleEngine(QObject *parent) :
 
 }
 
+/*! Ask the Engine to evaluate all the rules for the given \a trigger.
+    This will search all the \l{Rule}{Rules} triggered by this \l{Trigger}
+    and evaluate it's states according to its type. It will return a
+    list of all \l{Action}{Actions} that should be executed. */
 QList<Action> RuleEngine::evaluateTrigger(const Trigger &trigger)
 {
     QList<Action> actions;
@@ -97,11 +124,14 @@ QList<Action> RuleEngine::evaluateTrigger(const Trigger &trigger)
     return actions;
 }
 
+/*! Add a new \l{Rule} with the given \a trigger and \a actions to the engine.
+    For convenience, this creates a Rule without any \l{State} comparison. */
 RuleEngine::RuleError RuleEngine::addRule(const Trigger &trigger, const QList<Action> &actions)
 {
     return addRule(trigger, QList<State>(), actions);
 }
 
+/*! Add a new \l{Rule} with the given \a trigger, \a states and \a actions to the engine. */
 RuleEngine::RuleError RuleEngine::addRule(const Trigger &trigger, const QList<State> &states, const QList<Action> &actions)
 {
     qDebug() << "adding rule: Trigger:" << trigger.triggerTypeId() << "with" << actions.count() << "actions";
@@ -162,11 +192,15 @@ RuleEngine::RuleError RuleEngine::addRule(const Trigger &trigger, const QList<St
     return RuleErrorNoError;
 }
 
+/*! Returns a list of all \l{Rule}{Rules} loaded in this Engine.*/
 QList<Rule> RuleEngine::rules() const
 {
     return m_rules;
 }
 
+/*! Removes the \l{Rule} with the given \a ruleId from the Engine.
+    Returns \l{RuleEngine::RuleError} which describes whether the operation
+    was successful or not. */
 RuleEngine::RuleError RuleEngine::removeRule(const QUuid &ruleId)
 {
     for (int i = 0; i < m_rules.count(); ++i) {

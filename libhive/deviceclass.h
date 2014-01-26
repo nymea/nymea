@@ -12,7 +12,6 @@ class DeviceClass
 {
 public:
     DeviceClass(const QUuid &pluginId = QUuid(), const QUuid &id = QUuid());
-    virtual ~DeviceClass();
 
     QUuid id() const;
     QUuid pluginId() const;
@@ -22,13 +21,13 @@ public:
     void setName(const QString &name);
 
     QList<StateType> states() const;
-    void setStates(const QList<StateType> &states);
+    void setStates(const QList<StateType> &stateTypes);
 
     QList<TriggerType> triggers() const;
-    void setTriggers(const QList<TriggerType> &triggers);
+    void setTriggers(const QList<TriggerType> &triggerTypes);
 
     QList<ActionType> actions() const;
-    void setActions(const QList<ActionType> &actions);
+    void setActions(const QList<ActionType> &actionTypes);
 
     QVariantList params() const;
     void setParams(const QVariantList &params);

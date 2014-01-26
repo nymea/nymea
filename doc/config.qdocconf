@@ -9,6 +9,8 @@ outputformats = HTML
 headerdirs = ..
 headers.fileextensions = "*.h"
 
+imagedirs = images
+
 sourcedirs = ..
 sources.fileextensions = "*.cpp *.qdoc"
 

@@ -63,17 +63,13 @@ public:
     bool unexportGpio();
 
     int openGpio();
-
     bool setDirection(int dir);
 
     bool setValue(unsigned int value);
     int getValue();
 
     bool setEdgeInterrupt(int edge);
-
     void stop();
-
-
 
 private:
     int m_gpio;
@@ -82,6 +78,7 @@ private:
     bool m_enabled;
 
 signals:
+    /*! This signal is emited if the INPUT value changed, depending on the edge set in \l{setEdgeInterrupt}*/
     void pinInterrupt();
 
 public slots:

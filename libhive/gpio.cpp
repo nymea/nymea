@@ -1,19 +1,26 @@
 /*!
   \class Gpio
-  \brief Handels the gpio pins from the Raspberry Pi for external hardware.
+  \brief The Gpio class helps to interact with the gpio pins of the Raspberry Pi.
 
   \inmodule libhive
 
-  This class provides some member funtions to interact with the gpio pins of the Raspberry Pi. With this
-  class it's possible to set a a direction (INPUT, OUTPUT) read or write a digital value ....
+  The Raspberry Pi offers lower-level interfaces (GPIO's) intended to connect more directly
+  with chips and subsystem modules. General Purpose Input/Output (a.k.a. GPIO) is a generic
+  pin on a chip whose behavior (including whether it is an input or output pin) can be controlled
+  through this class. An object of of the Gpio class represents a pin on the board.
 
+  In following table is a list of all GPIO's of the Raspberry Pi Rev. 2.0:
+
+  \image gpio.png "Gpio settings"
+
+  Valid GPIO's for this class are those with a GPIO number (for example GPIO 22, which is on pin Nr. 15)
 
 */
 
 #include "gpio.h"
 #include <QDebug>
 
-/*! Constructs a \l{Gpio} with the given \a parent and a specific \a gpio pin number.
+/*! Constructs a \l{Gpio} object to represent a GPIO with the given \a gpio number and the \a parent.
  */
 Gpio::Gpio(QObject *parent, int gpio) :
     QThread(parent),m_gpio(gpio)
@@ -21,15 +28,16 @@ Gpio::Gpio(QObject *parent, int gpio) :
     exportGpio();
 }
 
-/*! Destructor unexports the pin of the instance in the system
+/*! Destroys the Gpio object and unexports the GPIO.
  */
 Gpio::~Gpio()
 {
     unexportGpio();
 }
 
-/*! The method run is a virtual member function from the QThread class. In this method runs the while loop
- *  which enables an interrupt, if something on the pin changed.
+/*! The starting point for the thread. After calling start(), this thread calls this function and starts
+ *  to poll the GPIO file. If an interrupt happens to this GPIO pin, the signal pinInterrupt() gets
+ *  emited.
  */
 void Gpio::run()
 {
@@ -73,7 +81,7 @@ void Gpio::run()
         m_mutex.unlock();
     }
 }
-
+/*! Returns true if the GPIO could be exported in the system file "/sys/class/gpio/export".*/
 bool Gpio::exportGpio()
 {
     char buf[64];
@@ -91,6 +99,7 @@ bool Gpio::exportGpio()
     return true;
 }
 
+/*! Returns true if the GPIO could be unexported in the system file "/sys/class/gpio/unexport".*/
 bool Gpio::unexportGpio()
 {
     char buf[64];
@@ -107,6 +116,7 @@ bool Gpio::unexportGpio()
     return true;
 }
 
+/*! Returns true if the GPIO file could be opend.*/
 int Gpio::openGpio()
 {
     char buf[64];
@@ -121,6 +131,21 @@ int Gpio::openGpio()
     return fd;
 }
 
+/*! Returns true, if the direction \a dir of the GPIO could be set correctly.
+ *
+ * Possible directions are:
+ *
+ * \table
+ * \header
+ *      \li {2,1} Pin directions
+ * \row
+ *      \li 0
+ *      \li INPUT
+ * \row
+ *      \li 1
+ *      \li OUTPUT
+ * \endtable
+ */
 bool Gpio::setDirection(int dir)
 {
     char buf[64];
@@ -146,7 +171,21 @@ bool Gpio::setDirection(int dir)
     close(fd);
     return false;
 }
-
+/*! Returns true, if the digital \a value of the GPIO could be set correctly.
+ *
+ * Possible \a value 's are:
+ *
+ * \table
+ * \header
+ *      \li {2,1} Pin value
+ * \row
+ *      \li 0
+ *      \li LOW
+ * \row
+ *      \li 1
+ *      \li HIGH
+ * \endtable
+ */
 bool Gpio::setValue(unsigned int value)
 {
     // check if gpio is a output
@@ -177,7 +216,21 @@ bool Gpio::setValue(unsigned int value)
         return false;
     }
 }
-
+/*! Returns the current digital value of the GPIO.
+ *
+ * Possible values are:
+ *
+ * \table
+ * \header
+ *      \li {2,1} Pin directions
+ * \row
+ *      \li 0
+ *      \li LOW
+ * \row
+ *      \li 1
+ *      \li HIGH
+ * \endtable
+ */
 int Gpio::getValue()
 {
     char buf[64];
@@ -189,10 +242,8 @@ int Gpio::getValue()
         qDebug() << "ERROR: could not open /sys/class/gpio" << m_gpio << "/value";
         return -1;
     }
-
     char ch;
     int value = -1;
-
     read(fd, &ch, 1);
 
     if (ch != '0') {
@@ -206,6 +257,25 @@ int Gpio::getValue()
     return value;
 }
 
+/*! Returns true, if the \a edge of the GPIO could be set correctly. The \a edge parameter specifies,
+ *  when an interrupt occurs.
+ *
+ * Possible values are:
+ *
+ * \table
+ * \header
+ *      \li {2,1} Edge possibilitys
+ * \row
+ *      \li 0
+ *      \li EDGE_FALLING
+ * \row
+ *      \li 1
+ *      \li EDGE_RISING
+ * \row
+ *      \li 2
+ *      \li EDGE_BOTH
+ * \endtable
+ */
 bool Gpio::setEdgeInterrupt(int edge)
 {
     char buf[64];
@@ -236,6 +306,7 @@ bool Gpio::setEdgeInterrupt(int edge)
     return false;
 }
 
+/*! Stop the polling of the \l{run()} method.*/
 void Gpio::stop()
 {
     m_mutex.lock();

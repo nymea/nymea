@@ -1,3 +1,14 @@
+/*!
+    \class HiveCore
+    \brief The main entry point for the Hive Server and the place where all the messages are dispatched.
+
+    \ingroup core
+    \inmodule server
+
+    HiveCore is a singleton instance and the main entry point of the Hive daemon. It is responsible to
+    instantiate, set up and connect all the other components.
+*/
+
 #include "hivecore.h"
 #include "jsonrpcserver.h"
 #include "devicemanager.h"

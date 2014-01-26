@@ -34,6 +34,7 @@ signals:
     void ruleRemoved(const QUuid &ruleId);
 
 private:
+    QString m_settingsFile;
     QList<Rule> m_rules;
 
 };

@@ -1,7 +1,11 @@
 #include "jsonrpcserver.h"
 #include "jsontypes.h"
 
+#ifdef TESTING_ENABLED
+#include "mocktcpserver.h"
+#else
 #include "tcpserver.h"
+#endif
 #include "jsonhandler.h"
 
 #include "hivecore.h"
@@ -21,9 +25,13 @@
 
 JsonRPCServer::JsonRPCServer(QObject *parent):
     QObject(parent),
+#ifdef TESTING_ENABLED
+    m_tcpServer(new MockTcpServer(this))
+#else
     m_tcpServer(new TcpServer(this))
+#endif
 {
-    connect(m_tcpServer, &TcpServer::jsonDataAvailable, this, &JsonRPCServer::processData);
+    connect(m_tcpServer, SIGNAL(jsonDataAvailable(int,QByteArray)), this, SLOT(processData(int,QByteArray)));
     m_tcpServer->startServer();
 
 
@@ -70,7 +78,7 @@ void JsonRPCServer::processData(int clientId, const QByteArray &jsonData)
             data.insert("types", JsonTypes::allTypes());
             QVariantMap methods;
             foreach (JsonHandler *handler, m_handlers) {
-                qDebug() << "got handler" << handler->name() << handler->introspect();
+//                qDebug() << "got handler" << handler->name() << handler->introspect();
                 methods.unite(handler->introspect());
             }
             data.insert("methods", methods);

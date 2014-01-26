@@ -49,6 +49,7 @@ public:
     DeviceClass findDeviceClass(const QUuid &deviceClassId) const;
 
 signals:
+    void loaded();
     void emitTrigger(const Trigger &trigger);
 
 public slots:

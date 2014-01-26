@@ -69,11 +69,6 @@
 #include <QSettings>
 #include <QStringList>
 
-Q_IMPORT_PLUGIN(DevicePluginElro)
-Q_IMPORT_PLUGIN(DevicePluginIntertechno)
-Q_IMPORT_PLUGIN(DevicePluginMeisterAnker)
-Q_IMPORT_PLUGIN(DevicePluginWifiDetector)
-
 /*! Constructs the DeviceManager with the given \a parent. There should only be one DeviceManager in the system created by \l{HiveCore}.
     Use \c HiveCore::instance()->deviceManager() instead to access the DeviceManager.
 */
@@ -84,8 +79,11 @@ DeviceManager::DeviceManager(QObject *parent) :
     m_pluginTimer.setInterval(15000);
     connect(&m_pluginTimer, &QTimer::timeout, this, &DeviceManager::timerEvent);
 
+    // Give hardware a chance to start up before loading plugins etc.
     QMetaObject::invokeMethod(this, "loadPlugins", Qt::QueuedConnection);
     QMetaObject::invokeMethod(this, "loadConfiguredDevices", Qt::QueuedConnection);
+    // Make sure this is always emitted after plugins and devices are loaded
+    QMetaObject::invokeMethod(this, "loaded", Qt::QueuedConnection);
 }
 
 /*! Returns all the \l{DevicePlugin}{DevicePlugins} loaded in the system. */
@@ -239,14 +237,13 @@ void DeviceManager::loadPlugins()
             m_devicePlugins.insert(pluginIface->pluginId(), pluginIface);
             connect(pluginIface, &DevicePlugin::emitTrigger, this, &DeviceManager::emitTrigger);
         }
-
     }
 }
 
 void DeviceManager::loadConfiguredDevices()
 {
     QSettings settings;
-    qDebug() << "loading devices";
+    qDebug() << "loading devices from" << settings.fileName();
     foreach (const QString &idString, settings.childGroups()) {
         settings.beginGroup(idString);
         Device *device = new Device(settings.value("pluginid").toUuid(), QUuid(idString), settings.value("deviceClassId").toUuid(), this);

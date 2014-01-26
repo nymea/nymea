@@ -42,8 +42,7 @@
 #include <QDebug>
 #include <QStringList>
 #include <QStandardPaths>
-
-QString rulesFileName = "hiveyourhome/rules";
+#include <QCoreApplication>
 
 /*! Constructs the RuleEngine with the given \a parent. Although it wouldn't harm to have multiple RuleEngines, there is one
     instance available from \l{HiveCore}. This one should be used instead of creating multiple ones.
@@ -51,7 +50,9 @@ QString rulesFileName = "hiveyourhome/rules";
 RuleEngine::RuleEngine(QObject *parent) :
     QObject(parent)
 {
-    QSettings settings(rulesFileName);
+    m_settingsFile = QCoreApplication::instance()->organizationName() + "/rules";
+    qDebug() << "laoding rules from" << m_settingsFile;
+    QSettings settings(m_settingsFile);
     foreach (const QString &idString, settings.childGroups()) {
         qDebug() << "found rule" << idString;
 
@@ -160,7 +161,7 @@ RuleEngine::RuleError RuleEngine::addRule(const Trigger &trigger, const QList<St
     m_rules.append(rule);
     emit ruleAdded(rule.id());
 
-    QSettings settings(rulesFileName);
+    QSettings settings(m_settingsFile);
     settings.beginGroup(rule.id().toString());
     settings.beginGroup("trigger");
     settings.setValue("triggerTypeId", trigger.triggerTypeId());
@@ -209,7 +210,7 @@ RuleEngine::RuleError RuleEngine::removeRule(const QUuid &ruleId)
 
             m_rules.takeAt(i);
 
-            QSettings settings(rulesFileName);
+            QSettings settings(m_settingsFile);
             settings.beginGroup(rule.id().toString());
             settings.remove("");
             settings.endGroup();

@@ -9,7 +9,11 @@
 #include <QVariantMap>
 #include <QString>
 
+#ifdef TESTING_ENABLED
+class MockTcpServer;
+#else
 class TcpServer;
+#endif
 class Device;
 class JsonHandler;
 
@@ -32,7 +36,11 @@ private:
     void sendErrorResponse(int clientId, int commandId, const QString &error);
 
 private:
+#ifdef TESTING_ENABLED
+    MockTcpServer *m_tcpServer;
+#else
     TcpServer *m_tcpServer;
+#endif
     QHash<QString, JsonHandler*> m_handlers;
 };
 

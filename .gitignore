@@ -1,0 +1,3 @@
+*.pro.user
+builddir
+doc/html

@@ -11,7 +11,7 @@ HTML.scripts     =
 # Include the style sheets and scripts used.
 
 HTML.headerstyles = \
-    "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/offline.css\" />\n"
+    "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/style.css\" />\n"
 
 HTML.headerscripts = 
 

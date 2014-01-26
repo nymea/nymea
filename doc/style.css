@@ -5,7 +5,7 @@
     html
     {
         color: #000000;
-        background: #ffed5d;
+        background: #ffffff;
     }
     table
     {
@@ -224,20 +224,22 @@
         display: block;
         clear: both;
         overflow: hidden;
+        background: #ffed5d;
+        height: 7.5em;
     }
 /* end global settings*/
 
 /* header elements */
-    .header .qtref
+    .header .indexref
     {
-        color: #00732F;
-        font-weight: bold;
         font-size: 130%;
     }
 
     .header .content
     {
-        margin-bottom: 0.5em
+        margin-bottom: 0.5em;
+        margin-top: 3em;
+        margin-left: 0.8em;
     }
 
     .naviNextPrevious

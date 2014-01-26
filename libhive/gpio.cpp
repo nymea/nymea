@@ -1,18 +1,36 @@
+/*!
+  \class Gpio
+  \brief Handels the gpio pins from the Raspberry Pi for external hardware.
+
+  \inmodule libhive
+
+  This class provides some member funtions to interact with the gpio pins of the Raspberry Pi. With this
+  class it's possible to set a a direction (INPUT, OUTPUT) read or write a digital value ....
+
+
+*/
+
 #include "gpio.h"
 #include <QDebug>
 
-
+/*! Constructs a \l{Gpio} with the given \a parent and a specific \a gpio pin number.
+ */
 Gpio::Gpio(QObject *parent, int gpio) :
     QThread(parent),m_gpio(gpio)
 {
     exportGpio();
 }
 
+/*! Destructor unexports the pin of the instance in the system
+ */
 Gpio::~Gpio()
 {
     unexportGpio();
 }
 
+/*! The method run is a virtual member function from the QThread class. In this method runs the while loop
+ *  which enables an interrupt, if something on the pin changed.
+ */
 void Gpio::run()
 {
     struct pollfd fdset[2];

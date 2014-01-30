@@ -37,6 +37,9 @@ private slots:
 
 
 signals:
+    /*! This signal is emitted whenever a valid signal of 48 bits was recognized over the
+     * 433 MHz receiver
+     */
     void dataReceived(QList<int> rawData);
 };
 

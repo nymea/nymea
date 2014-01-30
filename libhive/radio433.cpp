@@ -1,8 +1,19 @@
+/*!
+  \class Radio433
+  \brief The Radio433 class helps to interact with the 433 MHz Receiver and Transmitter.
+
+  \inmodule libhive
+
+*/
+
 #include "radio433.h"
 #include <QDebug>
 #include <sys/time.h>
 
 
+/*! Constructs a \l{Radio433} object with the given \a parent and initializes the \l{Gpio} pins
+ * for the transmitter and the receiver.
+ */
 Radio433::Radio433(QObject *parent) :
     QObject(parent)
 {
@@ -20,13 +31,17 @@ Radio433::Radio433(QObject *parent) :
 
     m_receiver->start();
 }
-
+/*! Destroyes the \l{Radio433} object and stops the running threads.
+ */
 Radio433::~Radio433()
 {
     m_receiver->quit();
     m_receiver->wait();
 }
 
+/*! Sends the given \a rawData over the transmitter. The sync signal has to be already in the
+ * \a rawData.
+ */
 void Radio433::sendData(QList<int> rawData)
 {
 
@@ -51,6 +66,8 @@ void Radio433::sendData(QList<int> rawData)
 
 }
 
+/*! Returns the current system time in microseconds.
+ */
 int Radio433::micros()
 {
     struct timeval tv ;
@@ -62,6 +79,8 @@ int Radio433::micros()
     return (int)(now - m_epochMicro) ;
 }
 
+/*! Creates a delay of a certain time (\a microSeconds).
+ */
 void Radio433::delayMicros(int microSeconds)
 {
     struct timespec sleeper;
@@ -72,7 +91,9 @@ void Radio433::delayMicros(int microSeconds)
     nanosleep (&sleeper, NULL) ;
 }
 
-
+/*! This method handels an interrupt on the receiver pin and recognizes, if a valid message of
+ *  48 bit was received.
+ */
 void Radio433::handleInterrupt()
 {
     long currentTime = micros();

@@ -1,6 +1,7 @@
 #ifndef DEVICEPLUGININTERTECHNO_H
 #define DEVICEPLUGININTERTECHNO_H
 
+
 #include "deviceplugin.h"
 
 class DevicePluginIntertechno : public DevicePlugin

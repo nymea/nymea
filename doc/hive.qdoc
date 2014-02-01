@@ -17,7 +17,7 @@
                 \li \l{JSONRPC Interface}
                 \li \l{Rules}
             \endlist
-        \li Device plugins. A collection of officially supported device plugins.
+        \li \l{Plugins}. A collection of officially supported device plugins.
     \endlist
 
     \section2 Quicklinks

@@ -20,16 +20,14 @@
 #include "gpio.h"
 #include <QDebug>
 
-/*! Constructs a \l{Gpio} object to represent a GPIO with the given \a gpio number and the \a parent.
- */
+/*! Constructs a \l{Gpio} object to represent a GPIO with the given \a gpio number and the \a parent. */
 Gpio::Gpio(QObject *parent, int gpio) :
     QThread(parent),m_gpio(gpio)
 {
     exportGpio();
 }
 
-/*! Destroys the Gpio object and unexports the GPIO.
- */
+/*! Destroys the Gpio object and unexports the GPIO. */
 Gpio::~Gpio()
 {
     unexportGpio();

@@ -31,8 +31,8 @@ Radio433::Radio433(QObject *parent) :
 
     m_receiver->start();
 }
-/*! Destroyes the \l{Radio433} object and stops the running threads.
- */
+
+/*! Destroyes the \l{Radio433} object and stops the running threads. */
 Radio433::~Radio433()
 {
     m_receiver->quit();
@@ -66,8 +66,7 @@ void Radio433::sendData(QList<int> rawData)
 
 }
 
-/*! Returns the current system time in microseconds.
- */
+/*! Returns the current system time in microseconds. */
 int Radio433::micros()
 {
     struct timeval tv ;
@@ -79,8 +78,7 @@ int Radio433::micros()
     return (int)(now - m_epochMicro) ;
 }
 
-/*! Creates a delay of a certain time (\a microSeconds).
- */
+/*! Creates a delay of a certain time (\a microSeconds). */
 void Radio433::delayMicros(int microSeconds)
 {
     struct timespec sleeper;

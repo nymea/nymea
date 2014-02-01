@@ -1,3 +1,25 @@
+/*!
+    \page intertechno.html
+    \title Intertechno
+
+    \ingroup plugins
+
+    This plugin supports al Intertechno RF 433 MHz devices from following list:
+
+    \table
+    \header
+        \li Model
+        \li Device Type
+    \row
+        \li 0
+        \li LOW
+    \row
+        \li 1
+        \li HIGH
+    \endtable
+
+  */
+
 #include "devicepluginintertechno.h"
 
 #include "device.h"

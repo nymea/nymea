@@ -1,3 +1,37 @@
+/*!
+    \page elro.html
+    \title Elro
+
+    \ingroup plugins
+    \ingroup rf433
+
+    This plugin allows to controll RF 433 MHz actors an receive remote signals from Elro
+    devices.
+
+    Following devices are supported:
+
+    \chapter Supported devices
+        \section1 Actors
+            \table
+            \header
+                \li Model
+                \li Device Type
+            \row
+                \li
+                \li
+            \endtable
+
+        \section1 Remotes
+            \table
+            \header
+                \li Model
+                \li Device Type
+            \row
+                \li
+                \li
+            \endtable
+  */
+
 #include "devicepluginelro.h"
 
 #include "device.h"

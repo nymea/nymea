@@ -1,3 +1,27 @@
+/*!
+    \page meisteranker.html
+    \title Meister Anker
+
+    \ingroup plugins
+    \ingroup rf433
+
+    This plugin allows to receive thermometer signals from Meister Anker
+    devices.
+
+    Following devices are supported:
+
+    \chapter Supported devices
+        \section1 Thermometer
+            \table
+            \header
+                \li Model
+                \li Device Type
+            \row
+                \li
+                \li
+            \endtable
+  */
+
 #include "devicepluginmeisteranker.h"
 
 #include "device.h"

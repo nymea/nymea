@@ -19,3 +19,4 @@ LIBS += -L../plugins/deviceplugins/elro/ -lhive_devicepluginelro
 LIBS += -L../plugins/deviceplugins/intertechno/ -lhive_devicepluginintertechno
 LIBS += -L../plugins/deviceplugins/meisteranker/ -lhive_devicepluginmeisteranker
 LIBS += -L../plugins/deviceplugins/wifidetector/ -lhive_devicepluginwifidetector
+LIBS += -L../plugins/deviceplugins/conrad -lhive_devicepluginconrad

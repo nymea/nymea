@@ -14,10 +14,10 @@ SOURCES += device.cpp \
            gpio.cpp \
            action.cpp \
            actiontype.cpp \
-    state.cpp \
-    statetype.cpp \
-    eventtype.cpp \
-    event.cpp
+           state.cpp \
+           statetype.cpp \
+           eventtype.cpp \
+           event.cpp
 
 HEADERS += device.h \
            deviceclass.h \
@@ -27,8 +27,8 @@ HEADERS += device.h \
            gpio.h \
            action.h \
            actiontype.h \
-    state.h \
-    statetype.h \
-    eventtype.h \
-    event.h
+           state.h \
+           statetype.h \
+           eventtype.h \
+           event.h
 

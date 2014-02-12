@@ -5,7 +5,7 @@
 #include <QThread>
 #include <gpio.h>
 
-#define RC_MAX_CHANGES 49
+#define RC_MAX_CHANGES 67
 
 class Radio433: public QObject
 {
@@ -38,7 +38,7 @@ private slots:
 
 signals:
     /*! This signal is emitted whenever a valid signal of 48 bits was recognized over the
-     * 433 MHz receiver
+     * 433 MHz receiver. The sync signal and the message are in the integer list \a rawData.
      */
     void dataReceived(QList<int> rawData);
 };

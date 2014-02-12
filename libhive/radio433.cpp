@@ -2,6 +2,8 @@
   \class Radio433
   \brief The Radio433 class helps to interact with the 433 MHz Receiver and Transmitter.
 
+  \l{http://tech.jolowe.se/home-automation-rf-protocols/}
+
   \inmodule libhive
 
 */
@@ -90,7 +92,7 @@ void Radio433::delayMicros(int microSeconds)
 }
 
 /*! This method handels an interrupt on the receiver pin and recognizes, if a valid message of
- *  48 bit was received.
+ *  48 bit or 64 bit was received.
  */
 void Radio433::handleInterrupt()
 {
@@ -104,22 +106,44 @@ void Radio433::handleInterrupt()
         m_changeCount--;
 
         if(m_repeatCount == 2) {
-
-            // if we have a regular signal (1 bit sync + 48 bit data)
-            if(m_changeCount == RC_MAX_CHANGES){
-                // write rawdata to a List and reset values to 0
+            // if we have a regular signal (1 bit sync + 48 bit data or 1bit sync + 64 bit data)
+            if(m_changeCount == 49 || m_changeCount == 65){
                 QList<int> rawData;
-                for(int i = 0; i < RC_MAX_CHANGES; i++ ){
-                    rawData.append(m_timings[i]);
-                    m_timings[i] = 0;
-                }
-                //                qDebug() << "-----------------------------------------------------------";
-                //                qDebug() << "|                    GENERIC signal                       |";
-                //                qDebug() << "-----------------------------------------------------------";
-                //                qDebug() << "delay      :" << rawData.first() /31;
-                //                qDebug() << rawData;
 
-                emit dataReceived(rawData);
+                switch (m_changeCount) {
+                case 49:
+                    // write rawdata to a List and reset values to 0
+                    for(int i = 0; i < 49; i++ ){
+                        rawData.append(m_timings[i]);
+                        m_timings[i] = 0;
+                    }
+//                    qDebug() << "-----------------------------------------------------------";
+//                    qDebug() << "|                    GENERIC signal                       |";
+//                    qDebug() << "-----------------------------------------------------------";
+//                    qDebug() << "signal length  :" << 49;
+//                    qDebug() << "delay      :" << rawData.first() /31;
+//                    qDebug() << rawData;
+
+                    emit dataReceived(rawData);
+                    break;
+
+                case 65:
+                    // write rawdata to a List and reset values to 0
+                    for(int i = 0; i < 65; i++ ){
+                        rawData.append(m_timings[i]);
+                        m_timings[i] = 0;
+                    }
+                    qDebug() << "-----------------------------------------------------------";
+                    qDebug() << "|                    GENERIC signal                       |";
+                    qDebug() << "-----------------------------------------------------------";
+                    qDebug() << "signal length  :" << 65;
+                    qDebug() << "delay          :" << rawData.first() /10;
+                    qDebug() << rawData;
+
+                    emit dataReceived(rawData);
+                default:
+                    break;
+                }
             }
             m_repeatCount = 0;
         }
@@ -128,7 +152,7 @@ void Radio433::handleInterrupt()
     }else if(m_duration > 5000){
         m_changeCount = 0;
     }
-    if (m_changeCount > RC_MAX_CHANGES) {
+    if (m_changeCount >= RC_MAX_CHANGES) {
         m_changeCount = 0;
         m_repeatCount = 0;
     }

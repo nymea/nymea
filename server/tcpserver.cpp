@@ -39,7 +39,7 @@ void TcpServer::newClientConnected()
     connect(newConnection,SIGNAL(disconnected()),this,SLOT(clientDisconnected()));
 
     // TODO: properly handle this with jsonrpcserver
-    newConnection->write("{\n    \"id\":0,\n    \"status\": \"connected\",\n    \"server\":\"Hive JSONRPC Interface\"\n    \"version\":\"0.0.0\"\n}\n");
+    newConnection->write("{\n    \"id\":0,\n    \"status\": \"connected\",\n    \"server\":\"Hive JSONRPC Interface\",\n    \"version\":\"0.0.0\"\n}\n");
 }
 
 

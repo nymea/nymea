@@ -44,7 +44,6 @@ public:
 
     DECLARE_TYPE(basicTypes, "BasicType")
     DECLARE_TYPE(ruleTypes, "RuleType")
-
     DECLARE_OBJECT(paramType, "ParamType")
     DECLARE_OBJECT(param, "Param")
     DECLARE_OBJECT(stateType, "StateType")

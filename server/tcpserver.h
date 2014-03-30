@@ -5,6 +5,7 @@
 #include <QNetworkInterface>
 #include <QTcpServer>
 #include <QTcpSocket>
+#include <QUuid>
 
 class TcpServer : public QObject
 {
@@ -12,24 +13,26 @@ class TcpServer : public QObject
 public:
     explicit TcpServer(QObject *parent = 0);
     
-    void sendResponse(int clientId, const QByteArray &data);
+    void sendData(const QUuid &clientId, const QByteArray &data);
+    void sendData(const QList<QUuid> &clients, const QByteArray &data);
 
 private:
-    QHash<int, QTcpServer*> m_serverList;
-    QHash<int, QTcpSocket*> m_clientList;
+    QHash<QUuid, QTcpServer*> m_serverList;
+    QHash<QUuid, QTcpSocket*> m_clientList;
 
 signals:
-    void jsonDataAvailable(int clientId, const QByteArray &data);
+    void clientConnected(const QUuid &clientId);
+    void clientDisconnected(const QUuid &clientId);
+    void dataAvailable(const QUuid &clientId, const QByteArray &data);
     
 private slots:
     void newClientConnected();
     void readPackage();
-    void clientDisconnected();
+    void slotClientDisconnected();
 
 public slots:
     bool startServer();
     bool stopServer();
-    void sendToAll(QByteArray data);
 };
 
 #endif // TCPSERVER_H

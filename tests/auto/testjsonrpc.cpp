@@ -13,12 +13,22 @@ class TestJSONRPC: public QObject
     Q_OBJECT
 private slots:
     void initTestcase();
+
     void introspect();
+
     void getSupportedDevices();
+
+    void enableDisableNotifications_data();
+    void enableDisableNotifications();
+
+    void version();
+
+private:
+    QVariant injectAndWait(const QByteArray data);
 
 private:
     MockTcpServer *m_mockTcpServer;
-    int m_clientId;
+    QUuid m_clientId;
 };
 
 void TestJSONRPC::initTestcase()
@@ -36,12 +46,29 @@ void TestJSONRPC::initTestcase()
     // If Hive should create more than one TcpServer at some point, this needs to be updated.
     QCOMPARE(MockTcpServer::servers().count(), 1);
     m_mockTcpServer = MockTcpServer::servers().first();
-    m_clientId = 0;
+    m_clientId = QUuid::createUuid();
+}
+
+QVariant TestJSONRPC::injectAndWait(const QByteArray data)
+{
+    QSignalSpy spy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+
+    m_mockTcpServer->injectData(m_clientId, data);
+
+    if (spy.count() == 0) {
+        spy.wait();
+    }
+
+     // Make sure the response it a valid JSON string
+     QJsonParseError error;
+     QJsonDocument jsonDoc = QJsonDocument::fromJson(spy.takeFirst().last().toByteArray(), &error);
+
+     return jsonDoc.toVariant();
 }
 
 void TestJSONRPC::introspect()
 {
-    QSignalSpy spy(m_mockTcpServer, SIGNAL(outgoingData(int,QByteArray)));
+    QSignalSpy spy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
     QVERIFY(spy.isValid());
 
     m_mockTcpServer->injectData(m_clientId, "{\"id\":42, \"method\":\"JSONRPC.Introspect\"}");
@@ -54,7 +81,7 @@ void TestJSONRPC::introspect()
     QVERIFY(spy.count() == 1);
 
     // Make sure the introspect response goes to the correct clientId
-    QCOMPARE(spy.first().first().toInt(), m_clientId);
+    QCOMPARE(spy.first().first().toString(), m_clientId.toString());
 
     // Make sure the response it a valid JSON string
     QJsonParseError error;
@@ -67,27 +94,38 @@ void TestJSONRPC::introspect()
 
 void TestJSONRPC::getSupportedDevices()
 {
-    QSignalSpy spy(m_mockTcpServer, SIGNAL(outgoingData(int,QByteArray)));
-
-    m_mockTcpServer->injectData(m_clientId, "{\"id\":1, \"method\":\"Devices.GetSupportedDevices\"}");
-
-    if (spy.count() == 0) {
-        spy.wait();
-    }
-
-    // Make sure the response it a valid JSON string
-    QJsonParseError error;
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(spy.first().last().toByteArray(), &error);
-    QCOMPARE(error.error, QJsonParseError::NoError);
-
-    QVariant supportedDevices = jsonDoc.toVariant();
-
-    qDebug() << spy.first().last();
+    QVariant supportedDevices = injectAndWait("{\"id\":1, \"method\":\"Devices.GetSupportedDevices\"}");
 
     // Make sure there is exactly 1 supported device class with the name Mock Wifi Device
     QCOMPARE(supportedDevices.toMap().value("params").toMap().value("deviceClasses").toList().count(), 1);
     QString deviceName = supportedDevices.toMap().value("params").toMap().value("deviceClasses").toList().first().toMap().value("name").toString();
     QCOMPARE(deviceName, QString("Mock WiFi Device"));
+}
+
+void TestJSONRPC::enableDisableNotifications_data()
+{
+    QTest::addColumn<QString>("enabled");
+
+    QTest::newRow("enabled") << "true";
+    QTest::newRow("disabled") << "false";
+}
+
+void TestJSONRPC::enableDisableNotifications()
+{
+    QFETCH(QString, enabled);
+
+    QVariant response = injectAndWait(QString("{\"id\":1, \"method\":\"JSONRPC.SetNotificationStatus\", \"params\":{\"enabled\": " + enabled + " }}").toLatin1());
+
+    QCOMPARE(response.toMap().value("params").toMap().value("status").toString(), QString("success"));
+    QCOMPARE(response.toMap().value("params").toMap().value("enabled").toString(), enabled);
+
+}
+
+void TestJSONRPC::version()
+{
+    QVariant response = injectAndWait("{\"id\":1, \"method\":\"JSONRPC.Version\"}");
+
+    QCOMPARE(response.toMap().value("params").toMap().value("version").toString(), QString("0.0.0"));
 }
 
 QTEST_MAIN(TestJSONRPC)

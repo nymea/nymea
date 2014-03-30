@@ -95,7 +95,6 @@ void JsonTypes::init()
     s_rule.insert("actions", QVariantList() << actionRef());
     s_rule.insert("states", QVariantList() << stateRef());
 
-
     s_initialized = true;
 }
 

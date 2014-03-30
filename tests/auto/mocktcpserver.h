@@ -12,17 +12,17 @@ public:
     explicit MockTcpServer(QObject *parent = 0);
     ~MockTcpServer();
 
-    void sendResponse(int clientId, const QByteArray &data);
+    void sendData(const QUuid &clientId, const QByteArray &data);
 
 /************** Used for testing **************************/
     static QList<MockTcpServer*> servers();
-    void injectData(int clientId, const QByteArray &data);
+    void injectData(const QUuid &clientId, const QByteArray &data);
 signals:
-    void outgoingData(int clientId, const QByteArray &data);
+    void outgoingData(const QUuid &clientId, const QByteArray &data);
 /************** Used for testing **************************/
 
 signals:
-    void jsonDataAvailable(int clientId, const QByteArray &data);
+    void dataAvailable(const QUuid &clientId, const QByteArray &data);
 
 public slots:
     bool startServer();

@@ -17,7 +17,14 @@ TcpServer::TcpServer(QObject *parent) :
 
 }
 
-void TcpServer::sendResponse(int clientId, const QByteArray &data)
+void TcpServer::sendData(const QList<QUuid> &clients, const QByteArray &data)
+{
+    foreach (const QUuid &client, clients) {
+        sendData(client, data);
+    }
+}
+
+void TcpServer::sendData(const QUuid &clientId, const QByteArray &data)
 {
     QTcpSocket *client = m_clientList.value(clientId);
     if (client) {
@@ -32,14 +39,15 @@ void TcpServer::newClientConnected()
     QTcpSocket *newConnection = server->nextPendingConnection();
     qDebug() << "new client connected:" << newConnection->peerAddress().toString();
 
+    QUuid clientId = QUuid::createUuid();
+
     // append the new client to the client list
-    m_clientList.insert(m_clientList.count(), newConnection);
+    m_clientList.insert(clientId, newConnection);
 
     connect(newConnection, SIGNAL(readyRead()),this,SLOT(readPackage()));
-    connect(newConnection,SIGNAL(disconnected()),this,SLOT(clientDisconnected()));
+    connect(newConnection,SIGNAL(disconnected()),this,SLOT(slotClientDisconnected()));
 
-    // TODO: properly handle this with jsonrpcserver
-    newConnection->write("{\n    \"id\":0,\n    \"status\": \"connected\",\n    \"server\":\"Hive JSONRPC Interface\",\n    \"version\":\"0.0.0\"\n}\n");
+    emit clientConnected(clientId);
 }
 
 
@@ -53,16 +61,18 @@ void TcpServer::readPackage()
         qDebug() << "line in:" << dataLine;
         message.append(dataLine);
         if(dataLine.endsWith('\n')){
-            emit jsonDataAvailable(m_clientList.key(client), message);
+            emit dataAvailable(m_clientList.key(client), message);
             message.clear();
         }
     }
 }
 
-void TcpServer::clientDisconnected()
+void TcpServer::slotClientDisconnected()
 {
     QTcpSocket *client = qobject_cast<QTcpSocket*>(sender());
     qDebug() << "client disconnected:" << client->peerAddress().toString();
+    QUuid clientId = m_clientList.key(client);
+    m_clientList.take(clientId)->deleteLater();
 }
 
 bool TcpServer::startServer()
@@ -73,7 +83,7 @@ bool TcpServer::startServer()
         if(server->listen(address, 1234)) {
             qDebug() << "server listening on" << address.toString();
             connect(server, SIGNAL(newConnection()), SLOT(newClientConnected()));
-            m_serverList.insert(m_serverList.count(), server);
+            m_serverList.insert(QUuid::createUuid(), server);
         } else {
             qDebug() << "ERROR: can not listening to" << address.toString();
             delete server;
@@ -97,13 +107,6 @@ bool TcpServer::stopServer()
         return false;
     }
     return true;
-}
-
-void TcpServer::sendToAll(QByteArray data)
-{
-    foreach(QTcpSocket *client,m_clientList){
-        client->write(data);
-    }
 }
 
 

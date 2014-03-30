@@ -13,7 +13,7 @@ MockTcpServer::~MockTcpServer()
     s_allServers.removeAll(this);
 }
 
-void MockTcpServer::sendResponse(int clientId, const QByteArray &data)
+void MockTcpServer::sendData(const QUuid &clientId, const QByteArray &data)
 {
     emit outgoingData(clientId, data);
 }
@@ -23,9 +23,9 @@ QList<MockTcpServer *> MockTcpServer::servers()
     return s_allServers;
 }
 
-void MockTcpServer::injectData(int clientId, const QByteArray &data)
+void MockTcpServer::injectData(const QUuid &clientId, const QByteArray &data)
 {
-    emit jsonDataAvailable(clientId, data);
+    emit dataAvailable(clientId, data);
 }
 
 bool MockTcpServer::startServer()

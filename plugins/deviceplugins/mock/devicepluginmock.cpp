@@ -26,6 +26,9 @@
 #include <QStringList>
 
 QUuid mockEvent1Id = QUuid("45bf3752-0fc6-46b9-89fd-ffd878b5b22b");
+QUuid mockEvent2Id = QUuid("863d5920-b1cf-4eb9-88bd-8f7b8583b1cf");
+QUuid mockIntStateId = QUuid("80baec19-54de-4948-ac46-31eabfaceb83");
+QUuid mockBoolStateId = QUuid("9dd6a97c-dfd1-43dc-acbd-367932742310");
 
 DevicePluginMock::DevicePluginMock()
 {
@@ -46,15 +49,21 @@ QList<DeviceClass> DevicePluginMock::supportedDevices() const
 
     deviceClassMock.setParams(mockParams);
 
-//    QList<StateType> detectorStates;
+    QList<StateType> mockStates;
 
-//    StateType inRangeState(inRangeStateTypeId);
-//    inRangeState.setName("inRange");
-//    inRangeState.setType(QVariant::Bool);
-//    inRangeState.setDefaultValue(false);
-//    detectorStates.append(inRangeState);
+    StateType intState(mockIntStateId);
+    intState.setName("intState");
+    intState.setType(QVariant::Int);
+    intState.setDefaultValue(10);
+    mockStates.append(intState);
 
-//    deviceClassWifiDetector.setStates(detectorStates);
+    StateType boolState(mockBoolStateId);
+    boolState.setName("boolState");
+    boolState.setType(QVariant::Int);
+    boolState.setDefaultValue(false);
+    mockStates.append(boolState);
+
+    deviceClassMock.setStates(mockStates);
 
     QList<EventType> mockEvents;
     
@@ -68,6 +77,11 @@ QList<DeviceClass> DevicePluginMock::supportedDevices() const
     event1.setName("event1");
 //    event1.setParameters(detectorEventParams);
     mockEvents.append(event1);
+
+    EventType event2(mockEvent2Id);
+    event2.setName("event2");
+//    event2.setParameters(detectorEventParams);
+    mockEvents.append(event2);
 
     deviceClassMock.setEvents(mockEvents);
 
@@ -103,12 +117,18 @@ bool DevicePluginMock::deviceCreated(Device *device)
         return false;
     }
 
-    connect(daemon, SIGNAL(triggerEvent(int)), SLOT(triggerEvent(int)));
+    connect(daemon, SIGNAL(triggerEvent(QUuid)), SLOT(triggerEvent(QUuid)));
+    connect(daemon, SIGNAL(setState(QUuid, QVariant)), SLOT(setState(QUuid,QVariant)));
 
     return true;
 }
 
-void DevicePluginMock::triggerEvent(int id)
+void DevicePluginMock::setState(const QUuid &stateTypeId, const QVariant &value)
+{
+    qDebug() << "should set state" << stateTypeId << value;
+}
+
+void DevicePluginMock::triggerEvent(const QUuid &id)
 {
     HttpDaemon *daemon = qobject_cast<HttpDaemon*>(sender());
     if (!daemon) {
@@ -117,7 +137,7 @@ void DevicePluginMock::triggerEvent(int id)
 
     Device *device = m_daemons.key(daemon);
 
-    Event event(mockEvent1Id, device->id(), QVariantMap());
+    Event event(id, device->id(), QVariantMap());
 
     qDebug() << "Emitting event " << event.eventTypeId();
     emit emitEvent(event);

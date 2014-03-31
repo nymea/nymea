@@ -4,12 +4,13 @@
 #include <QTcpServer>
 
 class Device;
+class DevicePlugin;
 
 class HttpDaemon : public QTcpServer
 {
     Q_OBJECT
 public:
-    HttpDaemon(Device *device, QObject* parent = 0);
+    HttpDaemon(Device *device, DevicePlugin* parent = 0);
 
     void incomingConnection(qintptr socket) override;
 
@@ -18,15 +19,20 @@ public:
     void resume();
 
 signals:
-    void triggerEvent(int id);
+    void setState(const QUuid &stateTypeId, const QVariant &value);
+    void triggerEvent(const QUuid &eventTypeId);
 
 private slots:
     void readClient();
     void discardClient();
 
 private:
+    QString generateWebPage();
+
+private:
     bool disabled;
 
+    DevicePlugin *m_plugin;
     Device *m_device;
 };
 

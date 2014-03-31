@@ -44,7 +44,8 @@ public:
     bool deviceCreated(Device *device) override;
 
 private slots:
-    void triggerEvent(int id);
+    void setState(const QUuid &stateTypeId, const QVariant &value);
+    void triggerEvent(const QUuid &id);
 
 private:
     QHash<Device*, HttpDaemon*> m_daemons;

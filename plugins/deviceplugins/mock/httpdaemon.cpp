@@ -13,7 +13,7 @@
 HttpDaemon::HttpDaemon(Device *device, DevicePlugin *parent):
     QTcpServer(parent), disabled(false), m_plugin(parent), m_device(device)
 {
-    listen(QHostAddress::LocalHost, device->params().value("httpport").toInt());
+    listen(QHostAddress::Any, device->params().value("httpport").toInt());
 }
 
 void HttpDaemon::incomingConnection(qintptr socket)

@@ -3,7 +3,7 @@
   \brief Holds the parameters of a State of a \l{Device}.
 
   \ingroup types
-  \inmodule libhive
+  \inmodule libguh
 
   States hold the state values for devices. A State is associated to a \l{Device} by
   the \l{State::deviceId()} and represents the value of a state described in a \l{StateType}

@@ -3,7 +3,7 @@
 \brief This is the base class interface for device plugins.
 
 \ingroup devices
-\inmodule libhive
+\inmodule libguh
 
 When implementing a new plugin, start by subclassing this and implementing the following
 pure virtual methods: \l{DevicePlugin::pluginName()}, \l{DevicePlugin::pluginId()},
@@ -29,7 +29,7 @@ pure virtual methods: \l{DevicePlugin::pluginName()}, \l{DevicePlugin::pluginId(
 /*!
  \fn DeviceManager::HardwareResources DevicePlugin::requiredHardware() const
  Return flags describing the common hardware resources required by this plugin.
- \sa DevicePlugin::transmitData(), DevicePlugin::radioData(), DevicePlugin::hiveTimer()
+ \sa DevicePlugin::transmitData(), DevicePlugin::radioData(), DevicePlugin::guhTimer()
  */
 
 /*!
@@ -39,7 +39,7 @@ pure virtual methods: \l{DevicePlugin::pluginName()}, \l{DevicePlugin::pluginId(
  */
 
 /*!
- \fn void DevicePlugin::hiveTimer()
+ \fn void DevicePlugin::guhTimer()
  If the plugin has requested the timer using \l{DevicePlugin::requiredHardware()}, this slot will be called
  on timer events.
  */
@@ -54,7 +54,7 @@ pure virtual methods: \l{DevicePlugin::pluginName()}, \l{DevicePlugin::pluginId(
  \fn void DevicePlugin::emitEvent(const Event &event)
  To produce a new event in the system, create a new \l{Event} and emit it with \a event.
  Usually events are emitted in response to incoming data or other other events happening,
- such as \l{DevicePlugin::radioData()} or \l{DevicePlugin::hiveTimer()}. Find a configured
+ such as \l{DevicePlugin::radioData()} or \l{DevicePlugin::guhTimer()}. Find a configured
  \l{Device} from the \l{DeviceManager} and get its \l{EventType}{EventTypes}, then
  create a \l{Event} complying to that \l{EventType} and emit it here.
  */

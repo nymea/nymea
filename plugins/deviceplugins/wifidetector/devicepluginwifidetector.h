@@ -9,7 +9,7 @@ class DevicePluginWifiDetector : public DevicePlugin
 {
     Q_OBJECT
 
-    Q_PLUGIN_METADATA(IID "org.hiveyourhome.DevicePlugin" FILE "devicepluginwifidetector.json")
+    Q_PLUGIN_METADATA(IID "org.guhyourhome.DevicePlugin" FILE "devicepluginwifidetector.json")
     Q_INTERFACES(DevicePlugin)
 
 public:
@@ -21,7 +21,7 @@ public:
     QString pluginName() const override;
     QUuid pluginId() const override;
 
-    void hiveTimer() override;
+    void guhTimer() override;
 
 private slots:
     void processFinished(int exitCode, QProcess::ExitStatus exitStatus);

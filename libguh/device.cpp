@@ -3,7 +3,7 @@
   \brief A Device represents a installed and configured hardware device.
 
   \ingroup devices
-  \inmodule libhive
+  \inmodule libguh
 
   This class holds the values for configured devices. It is associated with a \{DeviceClass} which
   can be used to get more details about the device.

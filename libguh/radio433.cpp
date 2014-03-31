@@ -4,7 +4,7 @@
 
   \l{http://tech.jolowe.se/home-automation-rf-protocols/}
 
-  \inmodule libhive
+  \inmodule libguh
 
 */
 

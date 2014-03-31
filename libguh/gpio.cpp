@@ -2,7 +2,7 @@
   \class Gpio
   \brief The Gpio class helps to interact with the gpio pins of the Raspberry Pi.
 
-  \inmodule libhive
+  \inmodule libguh
 
   The Raspberry Pi offers lower-level interfaces (GPIO's) intended to connect more directly
   with chips and subsystem modules. General Purpose Input/Output (a.k.a. GPIO) is a generic

@@ -1,10 +1,10 @@
 #!/bin/sh
-CODE_DIR=Hive
+CODE_DIR=guh
 BUILD_DIR=builddir
 USER=root
 USER_ID=0
-PASSWORD=hive
-BINARY=hive
+PASSWORD=guh
+BINARY=guh
 TARGET_IP=${TARGET_IP-10.10.10.125}
 TARGET_SSH_PORT=22
 TARGET_DEBUG_PORT=3768
@@ -57,7 +57,7 @@ build() {
 }
 
 run() {
-    exec_with_ssh "LD_LIBRARY_PATH=$CODE_DIR/$BUILD_DIR/libhive $CODE_DIR/$BUILD_DIR/server/$BINARY"
+    exec_with_ssh "LD_LIBRARY_PATH=$CODE_DIR/$BUILD_DIR/libguh $CODE_DIR/$BUILD_DIR/server/$BINARY"
 }
 
 set -- `getopt -n$0 -u -a --longoptions="setup,gdbhelp" "sgh" "$@"`

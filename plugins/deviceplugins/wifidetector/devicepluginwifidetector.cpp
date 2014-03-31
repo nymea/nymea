@@ -74,7 +74,7 @@ QUuid DevicePluginWifiDetector::pluginId() const
     return pluginUuid;
 }
 
-void DevicePluginWifiDetector::hiveTimer()
+void DevicePluginWifiDetector::guhTimer()
 {
     QProcess *p = new QProcess(this);
     connect(p, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(processFinished(int,QProcess::ExitStatus)));

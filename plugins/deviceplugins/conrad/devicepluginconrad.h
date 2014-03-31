@@ -7,7 +7,7 @@ class DevicePluginConrad : public DevicePlugin
 {
     Q_OBJECT
 
-    Q_PLUGIN_METADATA(IID "org.hiveyourhome.DevicePlugin" FILE "devicepluginconrad.json")
+    Q_PLUGIN_METADATA(IID "org.guhyourhome.DevicePlugin" FILE "devicepluginconrad.json")
     Q_INTERFACES(DevicePlugin)
 
 public:

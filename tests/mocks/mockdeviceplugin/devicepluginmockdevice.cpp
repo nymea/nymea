@@ -74,7 +74,7 @@ QUuid DevicePluginMockDevice::pluginId() const
     return pluginUuid;
 }
 
-void DevicePluginMockDevice::hiveTimer()
+void DevicePluginMockDevice::guhTimer()
 {
 }
 

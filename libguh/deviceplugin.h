@@ -28,7 +28,7 @@ public:
 
     // Hardware input
     virtual void radioData(QList<int> rawData) {Q_UNUSED(rawData)}
-    virtual void hiveTimer() {}
+    virtual void guhTimer() {}
 
     virtual QVariantMap configuration() const;
     virtual void setConfiguration(const QVariantMap &configuration);
@@ -52,6 +52,6 @@ private:
 
     friend class DeviceManager;
 };
-Q_DECLARE_INTERFACE(DevicePlugin, "org.hiveyourhome.DevicePlugin")
+Q_DECLARE_INTERFACE(DevicePlugin, "org.guhyourhome.DevicePlugin")
 
 #endif

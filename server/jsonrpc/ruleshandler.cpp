@@ -1,6 +1,6 @@
 #include "ruleshandler.h"
 
-#include "hivecore.h"
+#include "guhcore.h"
 #include "ruleengine.h"
 
 #include <QDebug>
@@ -45,7 +45,7 @@ QVariantMap RulesHandler::GetRules(const QVariantMap &params)
     Q_UNUSED(params)
 
     QVariantList rulesList;
-    foreach (const Rule &rule, HiveCore::instance()->ruleEngine()->rules()) {
+    foreach (const Rule &rule, GuhCore::instance()->ruleEngine()->rules()) {
         qDebug() << "got rule" << rule.id();
         QVariantMap ruleMap = JsonTypes::packRule(rule);
         rulesList.append(ruleMap);
@@ -82,7 +82,7 @@ QVariantMap RulesHandler::AddRule(const QVariantMap &params)
         return returns;
     }
 
-    switch(HiveCore::instance()->ruleEngine()->addRule(event, actions)) {
+    switch(GuhCore::instance()->ruleEngine()->addRule(event, actions)) {
     case RuleEngine::RuleErrorNoError:
         returns.insert("success", true);
         break;
@@ -105,7 +105,7 @@ QVariantMap RulesHandler::RemoveRule(const QVariantMap &params)
 {
     QVariantMap returns;
     QUuid ruleId = params.value("ruleId").toUuid();
-    switch (HiveCore::instance()->ruleEngine()->removeRule(ruleId)) {
+    switch (GuhCore::instance()->ruleEngine()->removeRule(ruleId)) {
     case RuleEngine::RuleErrorNoError:
         returns.insert("success", true);
         break;

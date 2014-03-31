@@ -1,4 +1,4 @@
-#include "hivecore.h"
+#include "guhcore.h"
 #include "devicemanager.h"
 #include "mocktcpserver.h"
 
@@ -33,17 +33,17 @@ private:
 
 void TestJSONRPC::initTestcase()
 {
-    QCoreApplication::instance()->setOrganizationName("hiveyourhome-test");
+    QCoreApplication::instance()->setOrganizationName("guhyourhome-test");
     qDebug() << "creating core";
-    HiveCore::instance();
+    GuhCore::instance();
     qDebug() << "creating spy";
 
     // Wait for the DeviceManager to signal that it has loaded plugins and everything
-    QSignalSpy spy(HiveCore::instance()->deviceManager(), SIGNAL(loaded()));
+    QSignalSpy spy(GuhCore::instance()->deviceManager(), SIGNAL(loaded()));
     QVERIFY(spy.isValid());
     QVERIFY(spy.wait());
 
-    // If Hive should create more than one TcpServer at some point, this needs to be updated.
+    // If Guh should create more than one TcpServer at some point, this needs to be updated.
     QCOMPARE(MockTcpServer::servers().count(), 1);
     m_mockTcpServer = MockTcpServer::servers().first();
     m_clientId = QUuid::createUuid();

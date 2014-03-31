@@ -3,7 +3,7 @@
     \brief Describes a \l{State} for a \l{Device}.
 
     \ingroup types
-    \inmodule libhive
+    \inmodule libguh
 
     \sa State
 */

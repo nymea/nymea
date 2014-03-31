@@ -1,6 +1,6 @@
 include(../../plugins.pri)
 
-TARGET = $$qtLibraryTarget(hive_devicepluginelro)
+TARGET = $$qtLibraryTarget(guh_devicepluginelro)
 
 SOURCES += \
     devicepluginelro.cpp

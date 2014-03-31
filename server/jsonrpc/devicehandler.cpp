@@ -1,7 +1,7 @@
 #include "devicehandler.h"
 
 #include "deviceclass.h"
-#include "hivecore.h"
+#include "guhcore.h"
 #include "devicemanager.h"
 #include "deviceplugin.h"
 
@@ -85,7 +85,7 @@ QVariantMap DeviceHandler::GetSupportedDevices(const QVariantMap &params) const
     Q_UNUSED(params)
     QVariantMap returns;
     QVariantList supportedDeviceList;
-    foreach (const DeviceClass &deviceClass, HiveCore::instance()->deviceManager()->supportedDevices()) {
+    foreach (const DeviceClass &deviceClass, GuhCore::instance()->deviceManager()->supportedDevices()) {
         supportedDeviceList.append(JsonTypes::packDeviceClass(deviceClass));
     }
     returns.insert("deviceClasses", supportedDeviceList);
@@ -97,7 +97,7 @@ QVariantMap DeviceHandler::GetPlugins(const QVariantMap &params) const
     Q_UNUSED(params)
     QVariantMap returns;
     QVariantList plugins;
-    foreach (DevicePlugin *plugin, HiveCore::instance()->deviceManager()->plugins()) {
+    foreach (DevicePlugin *plugin, GuhCore::instance()->deviceManager()->plugins()) {
         QVariantMap pluginMap;
         pluginMap.insert("id", plugin->pluginId());
         pluginMap.insert("name", plugin->pluginName());
@@ -112,7 +112,7 @@ QVariantMap DeviceHandler::SetPluginParams(const QVariantMap &params)
 {
     QUuid pluginId = params.value("pluginId").toUuid();
     QVariantMap pluginParams = params.value("pluginParams").toMap();
-    HiveCore::instance()->deviceManager()->plugin(pluginId)->setConfiguration(pluginParams);
+    GuhCore::instance()->deviceManager()->plugin(pluginId)->setConfiguration(pluginParams);
     return QVariantMap();
 }
 
@@ -120,7 +120,7 @@ QVariantMap DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
 {
     QUuid deviceClass = params.value("deviceClassId").toUuid();
     QVariantMap deviceParams = params.value("deviceParams").toMap();
-    DeviceManager::DeviceError status = HiveCore::instance()->deviceManager()->addConfiguredDevice(deviceClass, deviceParams);
+    DeviceManager::DeviceError status = GuhCore::instance()->deviceManager()->addConfiguredDevice(deviceClass, deviceParams);
     QVariantMap returns;
     switch(status) {
     case DeviceManager::DeviceErrorNoError:
@@ -150,7 +150,7 @@ QVariantMap DeviceHandler::GetConfiguredDevices(const QVariantMap &params) const
     Q_UNUSED(params)
     QVariantMap returns;
     QVariantList configuredDeviceList;
-    foreach (Device *device, HiveCore::instance()->deviceManager()->configuredDevices()) {
+    foreach (Device *device, GuhCore::instance()->deviceManager()->configuredDevices()) {
         configuredDeviceList.append(JsonTypes::packDevice(device));
     }
     returns.insert("devices", configuredDeviceList);
@@ -162,7 +162,7 @@ QVariantMap DeviceHandler::GetEventTypes(const QVariantMap &params) const
     QVariantMap returns;
 
     QVariantList eventList;
-    DeviceClass deviceClass = HiveCore::instance()->deviceManager()->findDeviceClass(params.value("deviceClassId").toUuid());
+    DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(params.value("deviceClassId").toUuid());
     foreach (const EventType &eventType, deviceClass.events()) {
         eventList.append(JsonTypes::packEventType(eventType));
     }
@@ -175,7 +175,7 @@ QVariantMap DeviceHandler::GetActionTypes(const QVariantMap &params) const
     QVariantMap returns;
 
     QVariantList actionList;
-    DeviceClass deviceClass = HiveCore::instance()->deviceManager()->findDeviceClass(params.value("deviceClassId").toUuid());
+    DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(params.value("deviceClassId").toUuid());
     foreach (const ActionType &actionType, deviceClass.actions()) {
         actionList.append(JsonTypes::packActionType(actionType));
     }

@@ -3,7 +3,7 @@
     \brief Holds information required to emit a event described by a \l{EventType}.
 
     \ingroup types
-    \inmodule libhive
+    \inmodule libguh
 
     It is bound to a \l{Device} and a \l{EventType} and holds the parameters
     for the event that happened.

@@ -7,7 +7,7 @@ class DevicePluginMockDevice: public DevicePlugin
 {
     Q_OBJECT
 
-    Q_PLUGIN_METADATA(IID "org.hiveyourhome.DevicePlugin" FILE "devicepluginmockdevice.json")
+    Q_PLUGIN_METADATA(IID "org.guhyourhome.DevicePlugin" FILE "devicepluginmockdevice.json")
     Q_INTERFACES(DevicePlugin)
 
 public:
@@ -19,7 +19,7 @@ public:
     QString pluginName() const override;
     QUuid pluginId() const override;
 
-    void hiveTimer() override;
+    void guhTimer() override;
 
 };
 

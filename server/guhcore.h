@@ -10,18 +10,18 @@ class JsonRPCServer;
 class DeviceManager;
 class RuleEngine;
 
-class HiveCore : public QObject
+class GuhCore : public QObject
 {
     Q_OBJECT
 public:
-    static HiveCore* instance();
+    static GuhCore* instance();
 
     DeviceManager* deviceManager() const;
     RuleEngine *ruleEngine() const;
 
 private:
-    explicit HiveCore(QObject *parent = 0);
-    static HiveCore *s_instance;
+    explicit GuhCore(QObject *parent = 0);
+    static GuhCore *s_instance;
 
     JsonRPCServer *m_jsonServer;
     DeviceManager *m_deviceManager;

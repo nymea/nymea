@@ -1,7 +1,7 @@
 #include "actionhandler.h"
 
 #include "devicemanager.h"
-#include "hivecore.h"
+#include "guhcore.h"
 #include "action.h"
 
 #include <QDebug>
@@ -42,7 +42,7 @@ QVariantMap ActionHandler::ExecuteAction(const QVariantMap &params)
 
 
     QVariantMap returns;
-    DeviceManager::DeviceError error = HiveCore::instance()->deviceManager()->executeAction(action);
+    DeviceManager::DeviceError error = GuhCore::instance()->deviceManager()->executeAction(action);
 
     switch (error) {
     case DeviceManager::DeviceErrorNoError:

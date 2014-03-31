@@ -3,7 +3,7 @@
     \brief The main entry point when interacting with \l{Device}{Devices}
 
     \ingroup devices
-    \inmodule libhive
+    \inmodule libguh
 
     The DeviceManager holds all information about supported and configured Devices in the system.
 
@@ -50,7 +50,7 @@
 
 /*! \fn void DeviceManager::emitEvent(const Event &event)
     The DeviceManager will emit a \l{Event} described in \a event whenever a Device
-    creates one. Normally only \l{HiveCore} should connect to this and execute actions
+    creates one. Normally only \l{GuhCore} should connect to this and execute actions
     after checking back with the \{RulesEngine}. Exceptions might be monitoring interfaces
     or similar, but you should never directly react to this in a \l{DevicePlugin}.
 */
@@ -69,8 +69,8 @@
 #include <QSettings>
 #include <QStringList>
 
-/*! Constructs the DeviceManager with the given \a parent. There should only be one DeviceManager in the system created by \l{HiveCore}.
-    Use \c HiveCore::instance()->deviceManager() instead to access the DeviceManager.
+/*! Constructs the DeviceManager with the given \a parent. There should only be one DeviceManager in the system created by \l{GuhCore}.
+    Use \c GuhCore::instance()->deviceManager() instead to access the DeviceManager.
 */
 DeviceManager::DeviceManager(QObject *parent) :
     QObject(parent),
@@ -288,7 +288,7 @@ void DeviceManager::timerEvent()
         DeviceClass deviceClass = m_supportedDevices.value(device->deviceClassId());
         DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
         if (plugin->requiredHardware().testFlag(HardwareResourceTimer)) {
-            plugin->hiveTimer();
+            plugin->guhTimer();
         }
     }
 }

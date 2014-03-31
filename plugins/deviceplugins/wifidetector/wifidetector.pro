@@ -1,6 +1,6 @@
 include(../../plugins.pri)
 
-TARGET = $$qtLibraryTarget(hive_devicepluginwifidetector)
+TARGET = $$qtLibraryTarget(guh_devicepluginwifidetector)
 
 SOURCES += \
     devicepluginwifidetector.cpp

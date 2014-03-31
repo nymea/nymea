@@ -1,10 +1,10 @@
 /*!
     \module server
-    \title Hive server
-    The Hive server is the instance that communicates with the hardware and provides a JSONRPC interface
+    \title guh server
+    The guh server is the instance that communicates with the hardware and provides a JSONRPC interface
     for communicating with the UI. It consists of those parts:
 
-    \section3 Hive core
+    \section3 guh core
     \annotatedlist core
 
     \section3 JSRONRPC Interface

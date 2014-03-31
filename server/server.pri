@@ -1,4 +1,4 @@
-SOURCES += $$top_srcdir/server/hivecore.cpp \
+SOURCES += $$top_srcdir/server/guhcore.cpp \
     $$top_srcdir/server/tcpserver.cpp \
     $$top_srcdir/server/ruleengine.cpp \
     $$top_srcdir/server/rule.cpp \
@@ -9,7 +9,7 @@ SOURCES += $$top_srcdir/server/hivecore.cpp \
     $$top_srcdir/server/jsonrpc/ruleshandler.cpp \
     $$top_srcdir/server/jsonrpc/actionhandler.cpp
 
-HEADERS += $$top_srcdir/server/hivecore.h \
+HEADERS += $$top_srcdir/server/guhcore.h \
     $$top_srcdir/server/tcpserver.h \
     $$top_srcdir/server/ruleengine.h \
     $$top_srcdir/server/rule.h \

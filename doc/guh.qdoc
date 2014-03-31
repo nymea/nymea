@@ -1,30 +1,30 @@
 /*!
     \page index.html
-    \title Hive Developer Documentation
+    \title guh Developer Documentation
 
     \section1 Summary
-    The Hive backend service consists of three main modules:
+    The guh backend service consists of three main modules:
 
     \list
-        \li \l{libhive}
+        \li \l{libguh}
             \list
-                \li \l{Types}{Types used in the hive system}
+                \li \l{Types}{Types used in the guh system}
                 \li \l{Device Plugins}{The Device Plugin API}
             \endlist
-        \li \l{Hive server}
+        \li \l{guh server}
             \list
-                \li \l{Hive Core}
+                \li \l{guh Core}
                 \li \l{JSONRPC Interface}
                 \li \l{Rules}
             \endlist
         \li \l{Plugins}.
             \list
-                \li \l{RF 433 MHz} (TODO: is actually in libhive)
+                \li \l{RF 433 MHz} (TODO: is actually in libguh)
             \endlist
     \endlist
 
     \section2 Quicklinks
     \list
-        \li \l{All Hive Classes}
+        \li \l{All guh Classes}
     \endlist
 */

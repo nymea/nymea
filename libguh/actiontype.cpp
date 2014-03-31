@@ -3,7 +3,7 @@
     \brief Describes an \l{Action} for a \l{Device}.
 
     \ingroup types
-    \inmodule libhive
+    \inmodule libguh
 
     ActionTypes are contained in \l{DeviceClass} templates returned
     by \l{DevicePlugin}{DevicePlugins} in order to describe the hardware supported

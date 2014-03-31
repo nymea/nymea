@@ -3,8 +3,8 @@
     \title All Modules
 
     \table 80%
-    \row \li \l{libhive} \li Common data types and plugin interfaces
-    \row \li \l{Hive server} \li The Hive server daemon implementation
+    \row \li \l{libguh} \li Common data types and plugin interfaces
+    \row \li \l{guh server} \li The guh server daemon implementation
     \endtable
 */
 

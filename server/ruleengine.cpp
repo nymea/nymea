@@ -34,7 +34,7 @@
 
 #include "ruleengine.h"
 
-#include "hivecore.h"
+#include "guhcore.h"
 #include "devicemanager.h"
 #include "device.h"
 
@@ -45,7 +45,7 @@
 #include <QCoreApplication>
 
 /*! Constructs the RuleEngine with the given \a parent. Although it wouldn't harm to have multiple RuleEngines, there is one
-    instance available from \l{HiveCore}. This one should be used instead of creating multiple ones.
+    instance available from \l{GuhCore}. This one should be used instead of creating multiple ones.
     */
 RuleEngine::RuleEngine(QObject *parent) :
     QObject(parent)
@@ -104,7 +104,7 @@ QList<Action> RuleEngine::evaluateEvent(const Event &event)
             bool statesMatching = true;
             qDebug() << "checking states";
             foreach (const State &state, m_rules.at(i).states()) {
-                Device *device = HiveCore::instance()->deviceManager()->findConfiguredDevice(state.deviceId());
+                Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(state.deviceId());
                 if (!device) {
                     qWarning() << "Device referenced in rule cannot be found";
                     break;
@@ -136,14 +136,14 @@ RuleEngine::RuleError RuleEngine::addRule(const Event &event, const QList<Action
 RuleEngine::RuleError RuleEngine::addRule(const Event &event, const QList<State> &states, const QList<Action> &actions)
 {
     qDebug() << "adding rule: Event:" << event.eventTypeId() << "with" << actions.count() << "actions";
-    DeviceClass eventDeviceClass = HiveCore::instance()->deviceManager()->findDeviceClassforEvent(event.eventTypeId());
+    DeviceClass eventDeviceClass = GuhCore::instance()->deviceManager()->findDeviceClassforEvent(event.eventTypeId());
 
-    Device *device = HiveCore::instance()->deviceManager()->findConfiguredDevice(event.deviceId());
+    Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(event.deviceId());
     if (!device) {
         qWarning() << "Cannot create rule. No configured device for eventTypeId" << event.eventTypeId();
         return RuleErrorDeviceNotFound;
     }
-    DeviceClass deviceClass = HiveCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
+    DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
     qDebug() << "found deviceClass" << deviceClass.name();
 
     bool eventTypeFound = false;

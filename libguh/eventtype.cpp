@@ -3,7 +3,7 @@
     \brief Describes a \l{Event} for a \l{Device}.
 
     \ingroup types
-    \inmodule libhive
+    \inmodule libguh
 
     \sa Event
 */

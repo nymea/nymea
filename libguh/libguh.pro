@@ -1,4 +1,4 @@
-TARGET = hive
+TARGET = guh
 TEMPLATE = lib
 
 CONFIG += c++11

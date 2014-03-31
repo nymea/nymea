@@ -1,6 +1,6 @@
 include (../../plugins.pri)
 
-TARGET = $$qtLibraryTarget(hive_devicepluginintertechno)
+TARGET = $$qtLibraryTarget(guh_devicepluginintertechno)
 
 SOURCES += \
     devicepluginintertechno.cpp

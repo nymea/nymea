@@ -3,7 +3,7 @@
     \brief Describes \l{Device}{Devices}.
 
     \ingroup devices
-    \inmodule libhive
+    \inmodule libguh
 
     It holds information general information about devices and their vendors and
     describes what actions, events and states a device supports. As this is

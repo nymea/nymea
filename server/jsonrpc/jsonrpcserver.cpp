@@ -8,7 +8,7 @@
 #endif
 #include "jsonhandler.h"
 
-#include "hivecore.h"
+#include "guhcore.h"
 #include "devicemanager.h"
 #include "deviceplugin.h"
 #include "deviceclass.h"

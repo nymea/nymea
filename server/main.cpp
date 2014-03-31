@@ -1,5 +1,5 @@
 #include <QCoreApplication>
-#include <hivecore.h>
+#include <guhcore.h>
 
 #include <QtPlugin>
 
@@ -13,9 +13,9 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    a.setOrganizationName("hiveyourhome");
+    a.setOrganizationName("guhyourhome");
 
-    HiveCore::instance();
+    GuhCore::instance();
 
     return a.exec();
 }

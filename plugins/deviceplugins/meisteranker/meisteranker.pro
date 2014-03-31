@@ -1,6 +1,6 @@
 include(../../plugins.pri)
 
-TARGET = $$qtLibraryTarget(hive_devicepluginmeisteranker)
+TARGET = $$qtLibraryTarget(guh_devicepluginmeisteranker)
 
 SOURCES += \
     devicepluginmeisteranker.cpp

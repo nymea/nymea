@@ -8,7 +8,7 @@ class DevicePluginMeisterAnker : public DevicePlugin
 {
     Q_OBJECT
 
-    Q_PLUGIN_METADATA(IID "org.hiveyourhome.DevicePlugin" FILE "devicepluginmeisteranker.json")
+    Q_PLUGIN_METADATA(IID "org.guhyourhome.DevicePlugin" FILE "devicepluginmeisteranker.json")
     Q_INTERFACES(DevicePlugin)
 
 public:

@@ -3,7 +3,7 @@
     \brief Holds information required to execute an action described by a \l{ActionType}.
 
     \ingroup types
-    \inmodule libhive
+    \inmodule libguh
 
     It is bound to a \l{Device} and an \l{ActionType} and holds the parameters
     for the execution of the action.

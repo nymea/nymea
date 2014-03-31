@@ -10,7 +10,7 @@
     The JSON RPC interface represents a TCP socket connection using plaintext string communication.
     Messages are exchanged using the JSON format. Please note that this is not a REST API as the
     transport channel is not based on HTTP. It is an internal RPC mechanism to allow communication
-    between the Hive Server and the main controller interface. This communication socket is not meant
+    between the guh Server and the main controller interface. This communication socket is not meant
     to be exported to the outside of the of the systen as it allows arbitrary commands to manipulate
     the system. A more limited REST API implementation might be added in the main controller interface.
 
@@ -36,7 +36,7 @@
     connections with a some information about the server. Telnet can be used to issue commands for
     testing.
 
-    An example how to communicate with the API using telnet on the same host where the Hive server
+    An example how to communicate with the API using telnet on the same host where the guh server
     is running:
     \code
         $  telnet localhost 1234
@@ -46,7 +46,7 @@
         {
             "id":0,
             "status": "connected",
-            "server":"Hive JSONRPC Interface"
+            "server":"Guh JSONRPC Interface",
             "version":"0.0.0"
         }
     \endcode
@@ -96,8 +96,8 @@
                     "states": [
                         "$ref:StateType"
                     ],
-                    "triggers": [
-                        "$ref:TriggerType"
+                    "events": [
+                        "$ref:EventType"
                     ]
                 },
                 ...
@@ -140,7 +140,7 @@
                             "type": "bool"
                         }
                     ],
-                    "triggers": [
+                    "events": [
                         {
                             "id": "{7cae711a-a0af-41b4-b3bf-38d3e23b41ba}",
                             "name": "inRange",

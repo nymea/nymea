@@ -1,5 +1,5 @@
-#ifndef HIVECORE_H
-#define HIVECORE_H
+#ifndef GUHCORE_H
+#define GUHCORE_H
 
 #include "rule.h"
 #include "event.h"
@@ -32,4 +32,4 @@ private slots:
 
 };
 
-#endif // HIVECORE_H
+#endif // GUHCORE_H

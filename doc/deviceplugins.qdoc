@@ -2,7 +2,7 @@
     \page deviceplugins.html
     \title Device Plugins
 
-    \brief This is the API for implementing Hive device plugins.
+    \brief This is the API for implementing guh device plugins.
 
     When creating a device plugin, start by subclassing \l{DevicePlugin} and filling
     in information for the pure virtual methods.

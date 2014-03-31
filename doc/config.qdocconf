@@ -1,7 +1,7 @@
 include(html-template.qdocconf)
 
-project = Hive
-description = Hive your Home!
+project = guh
+description = Gear up your Home!
 
 outputdir = html
 outputformats = HTML

@@ -16,25 +16,38 @@
  *                                                                          *
  ***************************************************************************/
 
-#include <QCoreApplication>
-#include <guhcore.h>
+#ifndef DEVICEPLUGINMOCK_H
+#define DEVICEPLUGINMOCK_H
 
-#include <QtPlugin>
+#include "deviceplugin.h"
 
-Q_IMPORT_PLUGIN(DevicePluginElro)
-Q_IMPORT_PLUGIN(DevicePluginIntertechno)
-Q_IMPORT_PLUGIN(DevicePluginMeisterAnker)
-Q_IMPORT_PLUGIN(DevicePluginWifiDetector)
-Q_IMPORT_PLUGIN(DevicePluginConrad)
-Q_IMPORT_PLUGIN(DevicePluginMock)
+#include <QProcess>
 
-int main(int argc, char *argv[])
+class HttpDaemon;
+
+class DevicePluginMock : public DevicePlugin
 {
-    QCoreApplication a(argc, argv);
+    Q_OBJECT
 
-    a.setOrganizationName("guh");
+    Q_PLUGIN_METADATA(IID "org.guhyourhome.DevicePlugin" FILE "devicepluginmock.json")
+    Q_INTERFACES(DevicePlugin)
 
-    GuhCore::instance();
+public:
+    explicit DevicePluginMock();
 
-    return a.exec();
-}
+    QList<DeviceClass> supportedDevices() const override;
+    DeviceManager::HardwareResources requiredHardware() const override;
+
+    QString pluginName() const override;
+    QUuid pluginId() const override;
+
+    bool deviceCreated(Device *device) override;
+
+private slots:
+    void triggerEvent(int id);
+
+private:
+    QHash<Device*, HttpDaemon*> m_daemons;
+};
+
+#endif // DEVICEPLUGINMOCK_H

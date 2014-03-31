@@ -339,5 +339,10 @@ bool DeviceManager::setupDevice(Device *device)
         }
     }
 
+    if (!plugin->deviceCreated(device)) {
+        qWarning() << "Device setup for device" << device->name() << "failed.";
+        return false;
+    }
+
     return true;
 }

@@ -172,7 +172,7 @@ void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &jsonDat
 
     QVariantMap returns;
     QMetaObject::invokeMethod(handler, method.toLatin1().data(), Q_RETURN_ARG(QVariantMap, returns), Q_ARG(QVariantMap, params));
-    Q_ASSERT((targetNamespace == "JSONRPC" && method == "Introspect") || handler->validateReturns(method, returns));
+//    Q_ASSERT((targetNamespace == "JSONRPC" && method == "Introspect") || handler->validateReturns(method, returns));
     sendResponse(clientId, commandId, returns);
 }
 

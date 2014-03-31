@@ -44,6 +44,8 @@ public:
     virtual QList<DeviceClass> supportedDevices() const = 0;
     virtual DeviceManager::HardwareResources requiredHardware() const = 0;
 
+    virtual bool deviceCreated(Device *device);
+
     // Hardware input
     virtual void radioData(QList<int> rawData) {Q_UNUSED(rawData)}
     virtual void guhTimer() {}

@@ -104,6 +104,14 @@ DevicePlugin::~DevicePlugin()
 
 }
 
+/*! This will be called when a new device is created. The plugin has the chance to do some setup.
+    Return false if something bad happened during the setup. The device will be disabled.
+*/
+bool DevicePlugin::deviceCreated(Device *device)
+{
+    return true;
+}
+
 /*! This will be called when the DeviceManager initializes the plugin and set up the things behind the scenes.
     When implementing a new plugin, use \l{DevicePlugin::init()} instead in order to do initialisation work. */
 void DevicePlugin::initPlugin(DeviceManager *deviceManager)

@@ -4,5 +4,6 @@ SUBDIRS += elro     \
     meisteranker    \
     wifidetector    \
     conrad          \
+    mock            \
 
 #    boblight       \

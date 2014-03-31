@@ -23,5 +23,8 @@ else
   elif [ $2 == "wifidetector" ]; then
     # Adds a WiFi detector
     (echo '{"id":1, "method":"Devices.AddConfiguredDevice", "params":{"deviceClassId": "{bd216356-f1ec-4324-9785-6982d2174e17}","deviceParams":{"mac":"90:cf:15:1b:ce:bb"}}}'; sleep 1) | nc $1 1234
+  elif [ $2 == "mock" ]; then
+    # Adds a Mock device
+    (echo '{"id":1, "method":"Devices.AddConfiguredDevice", "params":{"deviceClassId": "{753f0d32-0468-4d08-82ed-1964aab03298}","deviceParams":{"httpport":"8081"}}}'; sleep 1) | nc $1 1234
   fi
 fi

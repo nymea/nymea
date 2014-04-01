@@ -43,6 +43,9 @@ public:
 
     bool deviceCreated(Device *device) override;
 
+public slots:
+    void executeAction(Device *device, const Action &action) override;
+
 private slots:
     void setState(const QUuid &stateTypeId, const QVariant &value);
     void triggerEvent(const QUuid &id);

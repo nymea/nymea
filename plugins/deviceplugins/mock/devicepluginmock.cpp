@@ -29,6 +29,8 @@ QUuid mockEvent1Id = QUuid("45bf3752-0fc6-46b9-89fd-ffd878b5b22b");
 QUuid mockEvent2Id = QUuid("863d5920-b1cf-4eb9-88bd-8f7b8583b1cf");
 QUuid mockIntStateId = QUuid("80baec19-54de-4948-ac46-31eabfaceb83");
 QUuid mockBoolStateId = QUuid("9dd6a97c-dfd1-43dc-acbd-367932742310");
+QUuid mockAction1Id = QUuid("dea0f4e1-65e3-4981-8eaa-2701c53a9185");
+QUuid mockAction2Id = QUuid("defd3ed6-1a0d-400b-8879-a0202cf39935");
 
 DevicePluginMock::DevicePluginMock()
 {
@@ -52,13 +54,13 @@ QList<DeviceClass> DevicePluginMock::supportedDevices() const
     QList<StateType> mockStates;
 
     StateType intState(mockIntStateId);
-    intState.setName("intState");
+    intState.setName("Dummy int state");
     intState.setType(QVariant::Int);
     intState.setDefaultValue(10);
     mockStates.append(intState);
 
     StateType boolState(mockBoolStateId);
-    boolState.setName("boolState");
+    boolState.setName("Dummy bool state");
     boolState.setType(QVariant::Int);
     boolState.setDefaultValue(false);
     mockStates.append(boolState);
@@ -67,23 +69,27 @@ QList<DeviceClass> DevicePluginMock::supportedDevices() const
 
     QList<EventType> mockEvents;
     
-//    QVariantList detectorEventParams;
-//    QVariantMap paramInRange;
-//    paramInRange.insert("name", "inRange");
-//    paramInRange.insert("type", "bool");
-//    detectorEventParams.append(paramInRange);
-
     EventType event1(mockEvent1Id);
-    event1.setName("event1");
-//    event1.setParameters(detectorEventParams);
+    event1.setName("Mock Event 1");
     mockEvents.append(event1);
 
     EventType event2(mockEvent2Id);
-    event2.setName("event2");
-//    event2.setParameters(detectorEventParams);
+    event2.setName("Mock Event 2");
     mockEvents.append(event2);
 
     deviceClassMock.setEvents(mockEvents);
+
+    QList<ActionType> mockActions;
+
+    ActionType action1(mockAction1Id);
+    action1.setName("Mock Action 1");
+    mockActions.append(action1);
+
+    ActionType action2(mockAction2Id);
+    action2.setName("Mock Action 2");
+    mockActions.append(action2);
+
+    deviceClassMock.setActions(mockActions);
 
     ret.append(deviceClassMock);
 
@@ -121,6 +127,12 @@ bool DevicePluginMock::deviceCreated(Device *device)
     connect(daemon, SIGNAL(setState(QUuid, QVariant)), SLOT(setState(QUuid,QVariant)));
 
     return true;
+}
+
+void DevicePluginMock::executeAction(Device *device, const Action &action)
+{
+    qDebug() << "Should execute action" << action.actionTypeId();
+    m_daemons.value(device)->actionExecuted(action.actionTypeId());
 }
 
 void DevicePluginMock::setState(const QUuid &stateTypeId, const QVariant &value)

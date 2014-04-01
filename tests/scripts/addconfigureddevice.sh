@@ -26,5 +26,7 @@ else
   elif [ $2 == "mock" ]; then
     # Adds a Mock device
     (echo '{"id":1, "method":"Devices.AddConfiguredDevice", "params":{"deviceClassId": "{753f0d32-0468-4d08-82ed-1964aab03298}","deviceParams":{"httpport":"8081"}}}'; sleep 1) | nc $1 1234
+  else
+    echo "unknown type $2. Possible values are: elroremote, elroswitch, intertechnoremote, meisteranker, wifidetector, mock"
   fi
 fi

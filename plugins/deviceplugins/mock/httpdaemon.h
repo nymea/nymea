@@ -2,6 +2,8 @@
 #define HTTPDAEMON_H
 
 #include <QTcpServer>
+#include <QUuid>
+#include <QDateTime>
 
 class Device;
 class DevicePlugin;
@@ -17,6 +19,8 @@ public:
     void pause();
 
     void resume();
+
+    void actionExecuted(const QUuid&actionTypeId);
 
 signals:
     void setState(const QUuid &stateTypeId, const QVariant &value);
@@ -34,6 +38,8 @@ private:
 
     DevicePlugin *m_plugin;
     Device *m_device;
+
+    QList<QPair<QUuid, QDateTime> > m_actionList;
 };
 
 #endif // HTTPDAEMON_H

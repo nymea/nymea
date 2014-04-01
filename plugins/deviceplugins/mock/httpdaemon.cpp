@@ -43,6 +43,11 @@ void HttpDaemon::resume()
     disabled = false;
 }
 
+void HttpDaemon::actionExecuted(const QUuid &actionTypeId)
+{
+    m_actionList.append(qMakePair<QUuid, QDateTime>(actionTypeId, QDateTime::currentDateTime()));
+}
+
 void HttpDaemon::readClient()
 {
     if (disabled)
@@ -105,9 +110,15 @@ QString HttpDaemon::generateWebPage()
     "<html>"
         "<body>"
         "<h1>Mock device Controller</h1>\n"
+        "<hr>"
+                "<h2>Device Information</h2>"
         "Name: %1<br>"
         "ID: %2<br>"
         "DeviceClass ID: %3<br>").arg(m_device->name()).arg(m_device->id().toString()).arg(deviceClass.id().toString());
+
+    body.append("<hr>");
+    body.append("<h2>States</h2>");
+
     body.append("<table>");
     for (int i = 0; i < deviceClass.states().count(); ++i) {
         body.append("<tr>");
@@ -121,19 +132,48 @@ QString HttpDaemon::generateWebPage()
     }
     body.append("</table>");
 
+    body.append("<hr>");
+    body.append("<h2>Events</h2>");
+
     body.append("<table>");
     for (int i = 0; i < deviceClass.events().count(); ++i) {
         const EventType &eventType = deviceClass.events().at(i);
         body.append(QString(
         "<tr>"
         "<form action=\"/generateevent\" method=\"get\">"
-        "<td>Event %1<input type='hidden' name='eventid' value='%2'/></td>"
+        "<td>%1<input type='hidden' name='eventid' value='%2'/></td>"
         "<td><input type='submit' value='Generate'/></td>"
         "</form>"
         "</tr>"
         ).arg(eventType.name()).arg(eventType.id().toString()));
     }
     body.append("</table>");
+
+    body.append("<hr>");
+    body.append("<h2>Actions</h2>");
+
+    body.append("<table border=2px>");
+    body.append("<tr><td>Name</td><td>Type ID</td><td>Timestamp</td></tr>");
+    for (int i = 0; i < m_actionList.count(); ++i) {
+        QUuid actionTypeId = m_actionList.at(i).first;
+        QDateTime timestamp = m_actionList.at(i).second;
+        QString actionName;
+        foreach (const ActionType &at, deviceClass.actions()) {
+            if (at.id() == actionTypeId) {
+                actionName = at.name();
+                break;
+            }
+        }
+        body.append(QString(
+        "<tr>"
+        "<td>%1</td>"
+        "<td>%2</td>"
+        "<td>%3</td>"
+        "</tr>"
+        ).arg(actionName).arg(actionTypeId.toString()).arg(timestamp.toString()));
+    }
+    body.append("</table>");
+
 
     body.append("</body></html>\n");
 

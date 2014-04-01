@@ -254,7 +254,7 @@ QPair<bool, QString> JsonTypes::validateMap(const QVariantMap &templateMap, cons
 {
     s_lastError.clear();
     foreach (const QString &key, templateMap.keys()) {
-        if (!map.contains(key)) {
+        if (key != "params" && !map.contains(key)) {
             qDebug() << "missing key" << key << templateMap << map;
             QJsonDocument jsonDoc = QJsonDocument::fromVariant(map);
             return report(false, QString("Missing key \"%1\" in %2").arg(key).arg(QString(jsonDoc.toJson())));

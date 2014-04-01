@@ -50,13 +50,13 @@ bool JsonHandler::hasMethod(const QString &methodName)
     return m_descriptions.contains(methodName) && m_params.contains(methodName) && m_returns.contains(methodName);
 }
 
-bool JsonHandler::validateParams(const QString &methodName, const QVariantMap &params)
+QPair<bool, QString> JsonHandler::validateParams(const QString &methodName, const QVariantMap &params)
 {
     QVariantMap paramTemplate = m_params.value(methodName);
     return JsonTypes::validateMap(paramTemplate, params);
 }
 
-bool JsonHandler::validateReturns(const QString &methodName, const QVariantMap &returns)
+QPair<bool, QString> JsonHandler::validateReturns(const QString &methodName, const QVariantMap &returns)
 {
     QVariantMap returnsTemplate = m_returns.value(methodName);
     return JsonTypes::validateMap(returnsTemplate, returns);

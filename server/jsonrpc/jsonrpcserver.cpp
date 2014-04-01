@@ -162,8 +162,9 @@ void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &jsonDat
         sendErrorResponse(clientId, commandId, "No such method");
         return;
     }
-    if (!handler->validateParams(method, params)) {
-        sendErrorResponse(clientId, commandId, "Invalid params");
+    QPair<bool, QString> validationResult = handler->validateParams(method, params);
+    if (!validationResult.first) {
+        sendErrorResponse(clientId, commandId, "Invalid params: " + validationResult.second);
         return;
     }
 

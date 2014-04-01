@@ -35,8 +35,8 @@ public:
     QVariantMap introspect();
 
     bool hasMethod(const QString &methodName);
-    bool validateParams(const QString &methodName, const QVariantMap &params);
-    bool validateReturns(const QString &methodName, const QVariantMap &returns);
+    QPair<bool, QString> validateParams(const QString &methodName, const QVariantMap &params);
+    QPair<bool, QString> validateReturns(const QString &methodName, const QVariantMap &returns);
 
 protected:
     void setDescription(const QString &methodName, const QString &description);

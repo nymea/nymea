@@ -84,16 +84,20 @@ public:
     static QVariantMap packDevice(Device *device);
     static QVariantMap packRule(const Rule &rule);
 
-    static bool validateMap(const QVariantMap &templateMap, const QVariantMap &map);
-    static bool validateProperty(const QVariant &templateValue, const QVariant &value);
-    static bool validateList(const QVariantList &templateList, const QVariantList &list);
-    static bool validateVariant(const QVariant &templateVariant, const QVariant &variant);
-    static bool validateBasicType(const QVariant &variant);
-    static bool validateRuleType(const QVariant &variant);
+    static QPair<bool, QString> validateMap(const QVariantMap &templateMap, const QVariantMap &map);
+    static QPair<bool, QString> validateProperty(const QVariant &templateValue, const QVariant &value);
+    static QPair<bool, QString> validateList(const QVariantList &templateList, const QVariantList &list);
+    static QPair<bool, QString> validateVariant(const QVariant &templateVariant, const QVariant &variant);
+    static QPair<bool, QString> validateBasicType(const QVariant &variant);
+    static QPair<bool, QString> validateRuleType(const QVariant &variant);
 
 private:
     static bool s_initialized;
     static void init();
+
+    static QPair<bool, QString> report(bool status, const QString &message);
+
+    static QString s_lastError;
 };
 
 #endif // JSONTYPES_H

@@ -21,9 +21,11 @@
 #include "device.h"
 
 #include <QStringList>
+#include <QJsonDocument>
 #include <QDebug>
 
 bool JsonTypes::s_initialized = false;
+QString JsonTypes::s_lastError;
 
 QVariantList JsonTypes::s_basicTypes;
 QVariantList JsonTypes::s_ruleTypes;
@@ -114,6 +116,11 @@ void JsonTypes::init()
     s_rule.insert("states", QVariantList() << stateRef());
 
     s_initialized = true;
+}
+
+QPair<bool, QString> JsonTypes::report(bool status, const QString &message)
+{
+    return qMakePair<bool, QString>(status, message);
 }
 
 QVariantMap JsonTypes::allTypes()
@@ -243,37 +250,44 @@ QVariantMap JsonTypes::packRule(const Rule &rule)
     return ruleMap;
 }
 
-bool JsonTypes::validateMap(const QVariantMap &templateMap, const QVariantMap &map)
+QPair<bool, QString> JsonTypes::validateMap(const QVariantMap &templateMap, const QVariantMap &map)
 {
+    s_lastError.clear();
     foreach (const QString &key, templateMap.keys()) {
         if (!map.contains(key)) {
             qDebug() << "missing key" << key << templateMap << map;
-            return false;
+            QJsonDocument jsonDoc = QJsonDocument::fromVariant(map);
+            return report(false, QString("Missing key \"%1\" in %2").arg(key).arg(QString(jsonDoc.toJson())));
         }
-        if (!validateVariant(templateMap.value(key), map.value(key))) {
+        QPair<bool, QString> result = validateVariant(templateMap.value(key), map.value(key));
+        if (!result.first) {
             qDebug() << "Object not matching template";
-            return false;
+            return result;
         }
     }
-    return true;
+    return report(true, "");
 }
 
-bool JsonTypes::validateProperty(const QVariant &templateValue, const QVariant &value)
+QPair<bool, QString> JsonTypes::validateProperty(const QVariant &templateValue, const QVariant &value)
 {
     if (templateValue == "uuid") {
-        return value.canConvert(QVariant::Uuid);
+        QString errorString = QString("Param %1 is not a uuid.").arg(value.toString());
+        return report(value.canConvert(QVariant::Uuid), errorString);
     }
     if (templateValue == "string") {
-        return value.canConvert(QVariant::String);
+        QString errorString = QString("Param %1 is not a string.").arg(value.toString());
+        return report(value.canConvert(QVariant::String), errorString);
     }
     if (templateValue == "bool") {
-        return value.canConvert(QVariant::Bool);
+        QString errorString = QString("Param %1 is not a bool.").arg(value.toString());
+        return report(value.canConvert(QVariant::Bool), errorString);
     }
-    qWarning() << "Unhandled property type!" << templateValue;
-    return false;
+    qWarning() << QString("Unhandled property type: %1 (expected: %2)").arg(value.toString()).arg(templateValue.toString());
+    QString errorString = QString("Unhandled property type: %1 (expected: %2)").arg(value.toString()).arg(templateValue.toString());
+    return report(false, errorString);
 }
 
-bool JsonTypes::validateList(const QVariantList &templateList, const QVariantList &list)
+QPair<bool, QString> JsonTypes::validateList(const QVariantList &templateList, const QVariantList &list)
 {
     Q_ASSERT(templateList.count() == 1);
     QVariant entryTemplate = templateList.first();
@@ -282,15 +296,16 @@ bool JsonTypes::validateList(const QVariantList &templateList, const QVariantLis
 
     for (int i = 0; i < list.count(); ++i) {
         QVariant listEntry = list.at(i);
-        if (!validateVariant(entryTemplate, listEntry)) {
+        QPair<bool, QString> result = validateVariant(entryTemplate, listEntry);
+        if (!result.first) {
             qDebug() << "List entry not matching template";
-            return false;
+            return result;
         }
     }
-    return true;
+    return report(true, "");
 }
 
-bool JsonTypes::validateVariant(const QVariant &templateVariant, const QVariant &variant)
+QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant, const QVariant &variant)
 {
     switch(templateVariant.type()) {
     case QVariant::String:
@@ -298,115 +313,132 @@ bool JsonTypes::validateVariant(const QVariant &templateVariant, const QVariant 
             QString refName = templateVariant.toString();
             if (refName == JsonTypes::actionRef()) {
                 qDebug() << "validating action";
-                if (!validateMap(actionDescription(), variant.toMap())) {
+                QPair<bool, QString> result = validateMap(actionDescription(), variant.toMap());
+                if (!result.first) {
                     qDebug() << "Error validating action";
-                    return false;
+                    return result;
                 }
             } else if (refName == JsonTypes::eventRef()) {
-                if (!validateMap(eventDescription(), variant.toMap())) {
+                QPair<bool, QString> result = validateMap(eventDescription(), variant.toMap());
+                if (!result.first) {
                     qDebug() << "event not valid";
-                    return false;
+                    return result;
                 }
             } else if (refName == deviceRef()) {
-                if (!validateMap(deviceDescription(), variant.toMap())) {
+                QPair<bool, QString> result = validateMap(deviceDescription(), variant.toMap());
+                if (!result.first) {
                     qDebug() << "device not valid";
-                    return false;
+                    return result;
                 }
             } else if (refName == deviceClassRef()) {
-                if (!validateMap(deviceClassDescription(), variant.toMap())) {
+                QPair<bool, QString> result = validateMap(deviceClassDescription(), variant.toMap());
+                if (!result.first) {
                     qDebug() << "device class not valid";
-                    return false;
+                    return result;
                 }
             } else if (refName == paramTypeRef()) {
-                if (!validateMap(paramTypeDescription(), variant.toMap())) {
+                QPair<bool, QString> result = validateMap(paramTypeDescription(), variant.toMap());
+                if (!result.first) {
                     qDebug() << "param types not matching";
-                    return false;
+                    return result;
                 }
             } else if (refName == actionTypeRef()) {
-                if (!validateMap(actionTypeDescription(), variant.toMap())) {
+                QPair<bool, QString> result = validateMap(actionTypeDescription(), variant.toMap());
+                if (!result.first) {
                     qDebug() << "action type not matching";
-                    return false;
+                    return result;
                 }
             } else if (refName == eventTypeRef()) {
-                if (!validateMap(eventTypeDescription(), variant.toMap())) {
+                QPair<bool, QString> result = validateMap(eventTypeDescription(), variant.toMap());
+                if (!result.first) {
                     qDebug() << "event type not matching";
-                    return false;
+                    return result;
                 }
             } else if (refName == stateTypeRef()) {
-                if (!validateMap(stateTypeDescription(), variant.toMap())) {
+                QPair<bool, QString> result = validateMap(stateTypeDescription(), variant.toMap());
+                if (!result.first) {
                     qDebug() << "state type not matching";
-                    return false;
+                    return result;
                 }
             } else if (refName == pluginRef()) {
-                if (!validateMap(pluginDescription(), variant.toMap())) {
+                QPair<bool, QString> result = validateMap(pluginDescription(), variant.toMap());
+                if (!result.first) {
                     qDebug() << "plugin not matching";
-                    return false;
+                    return result;
                 }
             } else if (refName == ruleRef()) {
-                if (!validateMap(ruleDescription(), variant.toMap())) {
+                QPair<bool, QString> result = validateMap(ruleDescription(), variant.toMap());
+                if (!result.first) {
                     qDebug() << "rule type not matching";
-                    return false;
+                    return result;
                 }
             } else if (refName == basicTypesRef()) {
-                if (!validateBasicType(variant)) {
+                QPair<bool, QString> result = validateBasicType(variant);
+                if (!result.first) {
                     qDebug() << "value not allowed in" << basicTypesRef();
-                    return false;
+                    return result;
                 }
             } else if (refName == ruleTypesRef()) {
-                if (!validateRuleType(variant)) {
+                QPair<bool, QString> result = validateRuleType(variant);
+                if (!result.first) {
                     qDebug() << "value not allowed in" << ruleTypesRef();
-                    return false;
+                    return result;
                 }
             } else {
                 qDebug() << "unhandled ref:" << refName;
-                return false;
+                return report(false, QString("Unhandled ref %1. Server implementation incomplete.").arg(refName));
             }
 
         } else {
-            if (!JsonTypes::validateProperty(templateVariant, variant)) {
+            QPair<bool, QString> result = JsonTypes::validateProperty(templateVariant, variant);
+            if (!result.first) {
                 qDebug() << "property not matching:" << templateVariant << "!=" << variant;
-                return false;
+                return result;
             }
         }
         break;
-    case QVariant::Map:
-        if (!validateMap(templateVariant.toMap(), variant.toMap())) {
-            return false;
+    case QVariant::Map: {
+        QPair<bool, QString> result = validateMap(templateVariant.toMap(), variant.toMap());
+        if (!result.first) {
+            return result;
         }
         break;
-    case QVariant::List:
-        if (!validateList(templateVariant.toList(), variant.toList())) {
-            return false;
+    }
+    case QVariant::List: {
+        QPair<bool, QString> result = validateList(templateVariant.toList(), variant.toList());
+        if (!result.first) {
+            return result;
         }
         break;
+    }
     default:
         qDebug() << "unhandled value" << templateVariant;
-        return false;
+        return report(false, QString("Unhandled value %1.").arg(templateVariant.toString()));
     }
-    return true;
+    return report(true, "");
 }
 
-bool JsonTypes::validateBasicType(const QVariant &variant)
+QPair<bool, QString> JsonTypes::validateBasicType(const QVariant &variant)
 {
     if (variant.canConvert(QVariant::Uuid)) {
-        return true;
+        return report(true, "");
     }
     if (variant.canConvert(QVariant::String)) {
-        return true;
+        return report(true, "");
     }
     if (variant.canConvert(QVariant::Int)) {
-        return true;
+        return report(true, "");
     }
     if (variant.canConvert(QVariant::Double)) {
-        return true;
+        return report(true, "");
     }
     if (variant.canConvert(QVariant::Bool)) {
-        return true;
+        return report(true, "");
     }
-    return false;
+    return report(false, QString("Error validating basic type %1.").arg(variant.toString()));
 }
 
-bool JsonTypes::validateRuleType(const QVariant &variant)
+QPair<bool, QString> JsonTypes::validateRuleType(const QVariant &variant)
 {
-    return s_ruleTypes.contains(variant.toString());
+    return report(s_ruleTypes.contains(variant.toString()), QString("Unknown rules type %1").arg(variant.toString()));
 }

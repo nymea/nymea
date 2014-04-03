@@ -41,8 +41,6 @@ class JsonRPCServer: public JsonHandler
 public:
     JsonRPCServer(QObject *parent = 0);
 
-    void emitStateChangeNotification(Device *device, const QUuid &stateTypeId, const QVariant &value);
-
     // JsonHandler API implementation
     QString name() const;
     Q_INVOKABLE QVariantMap Introspect(const QVariantMap &params) const;
@@ -53,10 +51,14 @@ signals:
     void commandReceived(const QString &targetNamespace, const QString &command, const QVariantMap &params);
 
 private slots:
+    void setup();
+
     void clientConnected(const QUuid &clientId);
     void clientDisconnected(const QUuid &clientId);
 
     void processData(const QUuid &clientId, const QByteArray &jsonData);
+
+    void sendNotification(const QVariantMap &params);
 
 private:
     void registerHandler(JsonHandler *handler);
@@ -74,6 +76,8 @@ private:
 
     // clientId, notificationsEnabled
     QHash<QUuid, bool> m_clients;
+
+    int m_notificationId;
 };
 
 #endif

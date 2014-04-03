@@ -26,20 +26,42 @@ JsonHandler::JsonHandler(QObject *parent) :
 {
 }
 
-QVariantMap JsonHandler::introspect()
+QVariantMap JsonHandler::introspect(QMetaMethod::MethodType type)
 {
     QVariantMap data;
     for (int i = 0; i < metaObject()->methodCount(); ++i) {
         QMetaMethod method = metaObject()->method(i);
-        if (method.methodType() == QMetaMethod::Method) {
-            QVariantMap methodData;
+        qDebug() << "checking method" << method.methodType() << method.methodSignature() << method.name();
+
+        if (method.methodType() != type) {
+            continue;
+        }
+
+        switch (method.methodType()) {
+        case QMetaMethod::Method: {
             if (!m_descriptions.contains(method.name()) || !m_params.contains(method.name()) || !m_returns.contains(method.name())) {
                 continue;
             }
+            QVariantMap methodData;
             methodData.insert("description", m_descriptions.value(method.name()));
             methodData.insert("params", m_params.value(method.name()));
             methodData.insert("returns", m_returns.value(method.name()));
             data.insert(name() + "." + method.name(), methodData);
+            break;
+        }
+        case QMetaMethod::Signal: {
+            if (!m_descriptions.contains(method.name()) || !m_params.contains(method.name())) {
+                continue;
+            }
+            if (QString(method.name()).contains(QRegExp("^[A-Z]"))) {
+                qDebug() << "got signal" << method.name();
+                QVariantMap methodData;
+                methodData.insert("description", m_descriptions.value(method.name()));
+                methodData.insert("params", m_params.value(method.name()));
+                data.insert(name() + "." + method.name(), methodData);
+            }
+            break;
+        }
         }
     }
     return data;

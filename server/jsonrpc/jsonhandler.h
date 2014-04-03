@@ -23,6 +23,7 @@
 
 #include <QObject>
 #include <QVariantMap>
+#include <QMetaMethod>
 
 class JsonHandler : public QObject
 {
@@ -32,7 +33,7 @@ public:
 
     virtual QString name() const = 0;
 
-    QVariantMap introspect();
+    QVariantMap introspect(QMetaMethod::MethodType);
 
     bool hasMethod(const QString &methodName);
     QPair<bool, QString> validateParams(const QString &methodName, const QVariantMap &params);

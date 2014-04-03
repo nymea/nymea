@@ -80,8 +80,6 @@ GuhCore::GuhCore(QObject *parent) :
     m_jsonServer = new JsonRPCServer(this);
 
     connect(m_deviceManager, &DeviceManager::emitEvent, this, &GuhCore::gotEvent);
-    connect(m_deviceManager, &DeviceManager::deviceStateChanged, this, &GuhCore::deviceStateChanged);
-
 }
 
 /*! Connected to the DeviceManager's emitEvent signal. Events received in
@@ -91,9 +89,4 @@ void GuhCore::gotEvent(const Event &event)
     foreach (const Action &action, m_ruleEngine->evaluateEvent(event)) {
         m_deviceManager->executeAction(action);
     }
-}
-
-void GuhCore::deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value)
-{
-    m_jsonServer->emitStateChangeNotification(device, stateTypeId, value);
 }

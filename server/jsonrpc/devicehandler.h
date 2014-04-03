@@ -43,6 +43,11 @@ public:
 
     Q_INVOKABLE QVariantMap GetActionTypes(const QVariantMap &params) const;
 
+signals:
+    void StateChanged(const QVariantMap &params);
+
+private slots:
+    void deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
 };
 
 #endif // DEVICEHANDLER_H

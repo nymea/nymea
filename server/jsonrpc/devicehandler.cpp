@@ -17,11 +17,13 @@
  ***************************************************************************/
 
 #include "devicehandler.h"
-
+#include "device.h"
 #include "deviceclass.h"
 #include "guhcore.h"
 #include "devicemanager.h"
 #include "deviceplugin.h"
+
+#include <QDebug>
 
 DeviceHandler::DeviceHandler(QObject *parent) :
     JsonHandler(parent)
@@ -91,6 +93,15 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     actions.append(JsonTypes::actionTypeRef());
     returns.insert("actionTypes", actions);
     setReturns("GetActionTypes", returns);
+
+    params.clear(); returns.clear();
+    setDescription("StateChanged", "Emitted whenever a State of a device changes.");
+    params.insert("deviceId", "uuid");
+    params.insert("stateTypeId", "uuid");
+    params.insert("variant", "value");
+    setParams("StateChanged", params);
+
+    connect(GuhCore::instance()->deviceManager(), &DeviceManager::deviceStateChanged, this, &DeviceHandler::deviceStateChanged);
 }
 
 QString DeviceHandler::name() const
@@ -199,4 +210,20 @@ QVariantMap DeviceHandler::GetActionTypes(const QVariantMap &params) const
     }
     returns.insert("actionTypes", actionList);
     return returns;
+}
+
+void DeviceHandler::deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value)
+{
+    qDebug() << "************************************";
+    QVariantMap notification;
+    notification.insert("notification", "Device.StateChanged");
+
+    QVariantMap params;
+    params.insert("deviceId", device->id());
+    params.insert("stateTypeId", stateTypeId);
+    params.insert("value", value);
+
+    notification.insert("params", params);
+
+    emit StateChanged(notification);
 }

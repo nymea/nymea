@@ -48,7 +48,6 @@ private:
 
 private slots:
     void gotEvent(const Event &event);
-    void deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
 
 };
 

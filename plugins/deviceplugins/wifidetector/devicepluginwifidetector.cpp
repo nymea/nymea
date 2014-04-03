@@ -27,7 +27,6 @@
 QUuid pluginUuid = QUuid("8e0f791e-b273-4267-8605-b7c2f55a68ab");
 QUuid detectorId = QUuid("bd216356-f1ec-4324-9785-6982d2174e17");
 QUuid inRangeStateTypeId = QUuid("cb43e1b5-4f61-4538-bfa2-c33055c542cf");
-QUuid inRangeEventTypeId = QUuid("7cae711a-a0af-41b4-b3bf-38d3e23b41ba");
 
 DevicePluginWifiDetector::DevicePluginWifiDetector()
 {
@@ -58,20 +57,6 @@ QList<DeviceClass> DevicePluginWifiDetector::supportedDevices() const
 
     deviceClassWifiDetector.setStates(detectorStates);
 
-    QList<EventType> detectorEvents;
-    
-    QVariantList detectorEventParams;
-    QVariantMap paramInRange;
-    paramInRange.insert("name", "inRange");
-    paramInRange.insert("type", "bool");
-    detectorEventParams.append(paramInRange);
-
-    EventType inRangeEvent(inRangeEventTypeId);
-    inRangeEvent.setName("inRange");
-    inRangeEvent.setParameters(detectorEventParams);
-    detectorEvents.append(inRangeEvent);
-
-    deviceClassWifiDetector.setEvents(detectorEvents);
     ret.append(deviceClassWifiDetector);
 
     return ret;
@@ -132,13 +117,6 @@ void DevicePluginWifiDetector::processFinished(int exitCode, QProcess::ExitStatu
         bool wasFound = foundDevices.contains(device->params().value("mac").toString().toLower());
         if (wasInRange != wasFound) {
             device->setStateValue(inRangeStateTypeId, wasFound);
-
-            QVariantMap params;
-            params.insert("inRange", wasFound);
-            Event event(inRangeEventTypeId, device->id(), params);
-
-            qDebug() << "Device" << device->name() << QStringLiteral("is now ") + (wasFound ? "in" : "out of") + " range";
-            emit emitEvent(event);
         }
     }
 }

@@ -44,10 +44,11 @@
 JsonRPCServer::JsonRPCServer(QObject *parent):
     JsonHandler(parent),
 #ifdef TESTING_ENABLED
-    m_tcpServer(new MockTcpServer(this))
+    m_tcpServer(new MockTcpServer(this)),
 #else
-    m_tcpServer(new TcpServer(this))
+    m_tcpServer(new TcpServer(this)),
 #endif
+    m_notificationId(0)
 {
     // First, define our own JSONRPC methods
     QVariantMap returns;
@@ -79,27 +80,7 @@ JsonRPCServer::JsonRPCServer(QObject *parent):
     connect(m_tcpServer, SIGNAL(dataAvailable(const QUuid &, QByteArray)), this, SLOT(processData(const QUuid &, QByteArray)));
     m_tcpServer->startServer();
 
-    registerHandler(this);
-    registerHandler(new DeviceHandler(this));
-    registerHandler(new ActionHandler(this));
-    registerHandler(new RulesHandler(this));
-}
-
-void JsonRPCServer::emitStateChangeNotification(Device *device, const QUuid &stateTypeId, const QVariant &value)
-{
-    QVariantMap notification;
-    notification.insert("notification", "Device.StateChanged");
-
-    QVariantMap params;
-    params.insert("deviceId", device->id());
-    params.insert("stateTypeId", stateTypeId);
-    params.insert("value", value);
-
-    notification.insert("params", params);
-
-    QJsonDocument jsonDoc = QJsonDocument::fromVariant(notification);
-
-    m_tcpServer->sendData(m_clients.keys(true), jsonDoc.toJson());
+    QMetaObject::invokeMethod(this, "setup", Qt::QueuedConnection);
 }
 
 QString JsonRPCServer::name() const
@@ -115,10 +96,16 @@ QVariantMap JsonRPCServer::Introspect(const QVariantMap &params) const
     data.insert("types", JsonTypes::allTypes());
     QVariantMap methods;
     foreach (JsonHandler *handler, m_handlers) {
-//                qDebug() << "got handler" << handler->name() << handler->introspect();
-        methods.unite(handler->introspect());
+        methods.unite(handler->introspect(QMetaMethod::Method));
     }
     data.insert("methods", methods);
+
+    QVariantMap signalsMap;
+    foreach (JsonHandler *handler, m_handlers) {
+        signalsMap.unite(handler->introspect(QMetaMethod::Signal));
+    }
+    data.insert("signals", signalsMap);
+
     return data;
 }
 
@@ -140,6 +127,14 @@ QVariantMap JsonRPCServer::SetNotificationStatus(const QVariantMap &params)
     returns.insert("status", "success");
     returns.insert("enabled", m_clients[clientId]);
     return returns;
+}
+
+void JsonRPCServer::setup()
+{
+    registerHandler(this);
+    registerHandler(new DeviceHandler(this));
+    registerHandler(new ActionHandler(this));
+    registerHandler(new RulesHandler(this));
 }
 
 void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &jsonData)
@@ -200,9 +195,29 @@ void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &jsonDat
     sendResponse(clientId, commandId, returns);
 }
 
+void JsonRPCServer::sendNotification(const QVariantMap &params)
+{
+    JsonHandler *handler = qobject_cast<JsonHandler*>(sender());
+    QMetaMethod method = handler->metaObject()->method(senderSignalIndex());
+
+    QVariantMap notification;
+    notification.insert("id", m_notificationId++);
+    notification.insert("notification", handler->name() + "." + method.name());
+    notification.insert("params", params);
+
+    QJsonDocument jsonDoc = QJsonDocument::fromVariant(notification);
+    m_tcpServer->sendData(m_clients.keys(true), jsonDoc.toJson());
+}
+
 void JsonRPCServer::registerHandler(JsonHandler *handler)
 {
     m_handlers.insert(handler->name(), handler);
+    for (int i = 0; i < handler->metaObject()->methodCount(); ++i) {
+        QMetaMethod method = handler->metaObject()->method(i);
+        if (method.methodType() == QMetaMethod::Signal && QString(method.name()).contains(QRegExp("^[A-Z]"))) {
+            QObject::connect(handler, method, this, metaObject()->method(metaObject()->indexOfSlot("sendNotification(QVariantMap)")));
+        }
+    }
 }
 
 void JsonRPCServer::clientConnected(const QUuid &clientId)

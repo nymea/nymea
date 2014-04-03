@@ -9,6 +9,7 @@
 #include <QDebug>
 #include <QDateTime>
 #include <QUrlQuery>
+#include <QRegExp>
 
 HttpDaemon::HttpDaemon(Device *device, DevicePlugin *parent):
     QTcpServer(parent), disabled(false), m_plugin(parent), m_device(device)

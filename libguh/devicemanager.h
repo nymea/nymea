@@ -69,6 +69,7 @@ public:
 signals:
     void loaded();
     void emitEvent(const Event &event);
+    void deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
 
 public slots:
     DeviceError executeAction(const Action &action);
@@ -77,6 +78,9 @@ private slots:
     void loadPlugins();
     void loadConfiguredDevices();
     void storeConfiguredDevices();
+
+    // Only connect this to Devices. It will query the sender()
+    void slotDeviceStateValueChanged(const QUuid &stateTypeId, const QVariant &value);
 
     void radio433SignalReceived(QList<int> rawData);
     void timerEvent();

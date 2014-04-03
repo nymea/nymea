@@ -27,6 +27,7 @@
 class JsonRPCServer;
 class DeviceManager;
 class RuleEngine;
+class Device;
 
 class GuhCore : public QObject
 {
@@ -46,7 +47,8 @@ private:
     RuleEngine *m_ruleEngine;
 
 private slots:
-    void gotSignal(const Event &event);
+    void gotEvent(const Event &event);
+    void deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
 
 };
 

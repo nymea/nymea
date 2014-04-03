@@ -289,6 +289,15 @@ void DeviceManager::storeConfiguredDevices()
     }
 }
 
+void DeviceManager::slotDeviceStateValueChanged(const QUuid &stateTypeId, const QVariant &value)
+{
+    Device *device = qobject_cast<Device*>(sender());
+    if (!device) {
+        return;
+    }
+    emit deviceStateChanged(device, stateTypeId, value);
+}
+
 void DeviceManager::radio433SignalReceived(QList<int> rawData)
 {
     foreach (Device *device, m_configuredDevices) {
@@ -344,5 +353,6 @@ bool DeviceManager::setupDevice(Device *device)
         return false;
     }
 
+    connect(device, SIGNAL(stateValueChanged(QUuid,QVariant)), this, SLOT(slotDeviceStateValueChanged(QUuid,QVariant)));
     return true;
 }

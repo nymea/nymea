@@ -18,6 +18,8 @@
 
 #include "mocktcpserver.h"
 
+#include <QUuid>
+
 QList<MockTcpServer*> MockTcpServer::s_allServers;
 
 MockTcpServer::MockTcpServer(QObject *parent):
@@ -34,6 +36,13 @@ MockTcpServer::~MockTcpServer()
 void MockTcpServer::sendData(const QUuid &clientId, const QByteArray &data)
 {
     emit outgoingData(clientId, data);
+}
+
+void MockTcpServer::sendData(const QList<QUuid> &clients, const QByteArray &data)
+{
+    foreach (const QUuid &clientId, clients) {
+        sendData(clientId, data);
+    }
 }
 
 QList<MockTcpServer *> MockTcpServer::servers()

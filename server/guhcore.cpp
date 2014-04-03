@@ -31,6 +31,7 @@
 #include "jsonrpcserver.h"
 #include "devicemanager.h"
 #include "ruleengine.h"
+#include "device.h"
 
 #include <QDebug>
 
@@ -78,15 +79,21 @@ GuhCore::GuhCore(QObject *parent) :
     qDebug() << "*****************************************";
     m_jsonServer = new JsonRPCServer(this);
 
-    connect(m_deviceManager, &DeviceManager::emitEvent, this, &GuhCore::gotSignal);
+    connect(m_deviceManager, &DeviceManager::emitEvent, this, &GuhCore::gotEvent);
+    connect(m_deviceManager, &DeviceManager::deviceStateChanged, this, &GuhCore::deviceStateChanged);
 
 }
 
 /*! Connected to the DeviceManager's emitEvent signal. Events received in
     here will be evaluated by the \l{RuleEngine} and the according \l{Action}{Actions} are executed.*/
-void GuhCore::gotSignal(const Event &event)
+void GuhCore::gotEvent(const Event &event)
 {
     foreach (const Action &action, m_ruleEngine->evaluateEvent(event)) {
         m_deviceManager->executeAction(action);
     }
+}
+
+void GuhCore::deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value)
+{
+    m_jsonServer->emitStateChangeNotification(device, stateTypeId, value);
 }

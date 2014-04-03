@@ -41,6 +41,8 @@ class JsonRPCServer: public JsonHandler
 public:
     JsonRPCServer(QObject *parent = 0);
 
+    void emitStateChangeNotification(Device *device, const QUuid &stateTypeId, const QVariant &value);
+
     // JsonHandler API implementation
     QString name() const;
     Q_INVOKABLE QVariantMap Introspect(const QVariantMap &params) const;

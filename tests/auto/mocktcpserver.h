@@ -31,6 +31,7 @@ public:
     ~MockTcpServer();
 
     void sendData(const QUuid &clientId, const QByteArray &data);
+    void sendData(const QList<QUuid> &clients, const QByteArray &data);
 
 /************** Used for testing **************************/
     static QList<MockTcpServer*> servers();

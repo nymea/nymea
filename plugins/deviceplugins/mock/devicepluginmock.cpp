@@ -137,7 +137,13 @@ void DevicePluginMock::executeAction(Device *device, const Action &action)
 
 void DevicePluginMock::setState(const QUuid &stateTypeId, const QVariant &value)
 {
-    qDebug() << "should set state" << stateTypeId << value;
+    HttpDaemon *daemon = qobject_cast<HttpDaemon*>(sender());
+    if (!daemon) {
+        return;
+    }
+
+    Device *device = m_daemons.key(daemon);
+    device->setStateValue(stateTypeId, value);
 }
 
 void DevicePluginMock::triggerEvent(const QUuid &id)

@@ -124,6 +124,7 @@ void Device::setStateValue(const QUuid &stateTypeId, const QVariant &value)
             State newState(stateTypeId, m_id);
             newState.setValue(value);
             m_states[i] = newState;
+            emit stateValueChanged(stateTypeId, value);
             return;
         }
     }

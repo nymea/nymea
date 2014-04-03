@@ -85,6 +85,23 @@ JsonRPCServer::JsonRPCServer(QObject *parent):
     registerHandler(new RulesHandler(this));
 }
 
+void JsonRPCServer::emitStateChangeNotification(Device *device, const QUuid &stateTypeId, const QVariant &value)
+{
+    QVariantMap notification;
+    notification.insert("notification", "Device.StateChanged");
+
+    QVariantMap params;
+    params.insert("deviceId", device->id());
+    params.insert("stateTypeId", stateTypeId);
+    params.insert("value", value);
+
+    notification.insert("params", params);
+
+    QJsonDocument jsonDoc = QJsonDocument::fromVariant(notification);
+
+    m_tcpServer->sendData(m_clients.keys(true), jsonDoc.toJson());
+}
+
 QString JsonRPCServer::name() const
 {
     return QStringLiteral("JSONRPC");
@@ -92,6 +109,8 @@ QString JsonRPCServer::name() const
 
 QVariantMap JsonRPCServer::Introspect(const QVariantMap &params) const
 {
+    Q_UNUSED(params)
+
     QVariantMap data;
     data.insert("types", JsonTypes::allTypes());
     QVariantMap methods;
@@ -105,6 +124,8 @@ QVariantMap JsonRPCServer::Introspect(const QVariantMap &params) const
 
 QVariantMap JsonRPCServer::Version(const QVariantMap &params) const
 {
+    Q_UNUSED(params)
+
     QVariantMap data;
     data.insert("version", "0.0.0");
     return data;
@@ -137,12 +158,14 @@ void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &jsonDat
     int commandId = message.value("id").toInt(&success);
     if (!success) {
         qWarning() << "Error parsing command. Missing \"id\":" << jsonData;
+        sendErrorResponse(clientId, commandId, "Error parsing command. Missing 'id'");
         return;
     }
 
     QStringList commandList = message.value("method").toString().split('.');
     if (commandList.count() != 2) {
         qWarning() << "Error parsing method.\nGot:" << message.value("method").toString() << "\nExpected: \"Namespace.method\"";
+        sendErrorResponse(clientId, commandId, QString("Error parsing method. Got: '%1'', Expected: 'Namespace.method'").arg(message.value("method").toString()));
         return;
     }
 

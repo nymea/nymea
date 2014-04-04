@@ -20,6 +20,7 @@
 
 #include <QMetaMethod>
 #include <QDebug>
+#include <QRegExp>
 
 JsonHandler::JsonHandler(QObject *parent) :
     QObject(parent)

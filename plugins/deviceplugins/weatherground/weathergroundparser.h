@@ -21,6 +21,7 @@ private:
     QString m_cityName;
     QString m_country;
     QString m_language;
+    QTime m_currentTime;
 
     //current weather
     QString m_weather;

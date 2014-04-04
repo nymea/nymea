@@ -14,4 +14,4 @@ SOURCES += testjsonrpc.cpp \
 
 HEADERS += mocktcpserver.h
 
-LIBS += -L../mocks/mockdeviceplugin/ -lguh_devicepluginmockdevice
+LIBS += -L$$top_builddir/plugins/deviceplugins/mock/ -lguh_devicepluginmock

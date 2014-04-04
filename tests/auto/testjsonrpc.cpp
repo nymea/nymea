@@ -24,7 +24,7 @@
 #include <QCoreApplication>
 //#include <QSignalSpy>
 
-Q_IMPORT_PLUGIN(DevicePluginMockDevice)
+Q_IMPORT_PLUGIN(DevicePluginMock)
 
 class TestJSONRPC: public QObject
 {
@@ -117,7 +117,7 @@ void TestJSONRPC::getSupportedDevices()
     // Make sure there is exactly 1 supported device class with the name Mock Wifi Device
     QCOMPARE(supportedDevices.toMap().value("params").toMap().value("deviceClasses").toList().count(), 1);
     QString deviceName = supportedDevices.toMap().value("params").toMap().value("deviceClasses").toList().first().toMap().value("name").toString();
-    QCOMPARE(deviceName, QString("Mock WiFi Device"));
+    QCOMPARE(deviceName, QString("Mock Device"));
 }
 
 void TestJSONRPC::enableDisableNotifications_data()

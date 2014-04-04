@@ -21,3 +21,4 @@ LIBS += -L../plugins/deviceplugins/meisteranker/ -lguh_devicepluginmeisteranker
 LIBS += -L../plugins/deviceplugins/wifidetector/ -lguh_devicepluginwifidetector
 LIBS += -L../plugins/deviceplugins/conrad -lguh_devicepluginconrad
 LIBS += -L../plugins/deviceplugins/mock -lguh_devicepluginmock
+LIBS += -L../plugins/deviceplugins/weatherground -lguh_devicepluginweatherground

@@ -72,6 +72,6 @@ private:
 
     friend class DeviceManager;
 };
-Q_DECLARE_INTERFACE(DevicePlugin, "org.guhyourhome.DevicePlugin")
+Q_DECLARE_INTERFACE(DevicePlugin, "org.guh.DevicePlugin")
 
 #endif

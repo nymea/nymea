@@ -25,7 +25,7 @@ class DevicePluginElro : public DevicePlugin
 {
     Q_OBJECT
 
-    Q_PLUGIN_METADATA(IID "org.guhyourhome.DevicePlugin" FILE "devicepluginelro.json")
+    Q_PLUGIN_METADATA(IID "org.guh.DevicePlugin" FILE "devicepluginelro.json")
     Q_INTERFACES(DevicePlugin)
 
 public:

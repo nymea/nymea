@@ -23,7 +23,7 @@
     \ingroup rules
     \inmodule server
 
-    A Rule is always evented by a \l{Event}, has \l{State}{States}
+    A Rule is always evented by an \l{Event}, has \l{State}{States}
     to be compared and \l{Action}{Actions} to be executed. Additionally a
     Rule is either of type \l{Rule::RuleTypeAll} or \l{Rule::RuleTypeAny}
     which determines if all or any of the \l{State}{States} must be matching

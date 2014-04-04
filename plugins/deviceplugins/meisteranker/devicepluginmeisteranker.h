@@ -26,7 +26,7 @@ class DevicePluginMeisterAnker : public DevicePlugin
 {
     Q_OBJECT
 
-    Q_PLUGIN_METADATA(IID "org.guhyourhome.DevicePlugin" FILE "devicepluginmeisteranker.json")
+    Q_PLUGIN_METADATA(IID "org.guh.DevicePlugin" FILE "devicepluginmeisteranker.json")
     Q_INTERFACES(DevicePlugin)
 
 public:

@@ -5,5 +5,6 @@ SUBDIRS += elro     \
     wifidetector    \
     conrad          \
     mock            \
+    weatherground   \
 
 #    boblight       \

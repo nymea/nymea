@@ -25,7 +25,7 @@ class DevicePluginIntertechno : public DevicePlugin
 {
     Q_OBJECT
 
-    Q_PLUGIN_METADATA(IID "org.guhyourhome.DevicePlugin" FILE "devicepluginintertechno.json")
+    Q_PLUGIN_METADATA(IID "org.guh.DevicePlugin" FILE "devicepluginintertechno.json")
     Q_INTERFACES(DevicePlugin)
 
 public:

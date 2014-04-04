@@ -51,7 +51,7 @@ private:
 
 void TestJSONRPC::initTestcase()
 {
-    QCoreApplication::instance()->setOrganizationName("guhyourhome-test");
+    QCoreApplication::instance()->setOrganizationName("guh-test");
     qDebug() << "creating core";
     GuhCore::instance();
     qDebug() << "creating spy";

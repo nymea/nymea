@@ -29,7 +29,7 @@ class DevicePluginMock : public DevicePlugin
 {
     Q_OBJECT
 
-    Q_PLUGIN_METADATA(IID "org.guhyourhome.DevicePlugin" FILE "devicepluginmock.json")
+    Q_PLUGIN_METADATA(IID "org.guh.DevicePlugin" FILE "devicepluginmock.json")
     Q_INTERFACES(DevicePlugin)
 
 public:

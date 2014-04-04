@@ -123,8 +123,11 @@ QList<DeviceClass> DeviceManager::supportedDevices() const
 }
 
 /*! Add a new configured device for the given \l{DeviceClass} and the given parameters.
- \a deviceClassId must refer to an existing \{DeviceClass} and \a params must match the parameter description in the \l{DeviceClass}. */
-DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const QUuid &deviceClassId, const QVariantMap &params)
+ \a deviceClassId must refer to an existing \{DeviceClass} and \a params must match the parameter description in the \l{DeviceClass}.
+    Optionally you can supply an id yourself if you must keep track of the added device. If you don't supply it, a new one will
+    be generated.
+*/
+DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const QUuid &deviceClassId, const QVariantMap &params, const QUuid id)
 {
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
     if (deviceClass.id().isNull()) {
@@ -138,6 +141,11 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const QUuid &devic
         }
         // TODO: Check if parameter type matches
     }
+    foreach(Device *device, m_configuredDevices) {
+        if (device->id() == id) {
+            return DeviceErrorDuplicateUuid;
+        }
+    }
 
     DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
     if (!plugin) {
@@ -145,7 +153,7 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const QUuid &devic
         return DeviceErrorPluginNotFound;
     }
 
-    Device *device = new Device(plugin->pluginId(), deviceClassId, this);
+    Device *device = new Device(plugin->pluginId(), id, deviceClassId, this);
     device->setName(deviceClass.name());
     device->setParams(params);
     if (setupDevice(device)) {

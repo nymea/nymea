@@ -46,7 +46,6 @@ signals:
 public slots:
     bool startServer();
     bool stopServer();
-    void sendToAll(QByteArray data);
 
 private:
     static QList<MockTcpServer*> s_allServers;

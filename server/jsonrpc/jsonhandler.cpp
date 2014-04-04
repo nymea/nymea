@@ -32,7 +32,6 @@ QVariantMap JsonHandler::introspect(QMetaMethod::MethodType type)
     QVariantMap data;
     for (int i = 0; i < metaObject()->methodCount(); ++i) {
         QMetaMethod method = metaObject()->method(i);
-        qDebug() << "checking method" << method.methodType() << method.methodSignature() << method.name();
 
         if (method.methodType() != type) {
             continue;

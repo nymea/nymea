@@ -43,6 +43,10 @@ public:
 
     Q_INVOKABLE QVariantMap GetActionTypes(const QVariantMap &params) const;
 
+    Q_INVOKABLE QVariantMap GetStateTypes(const QVariantMap &params) const;
+
+    Q_INVOKABLE QVariantMap GetStateValue(const QVariantMap &params) const;
+
 signals:
     void StateChanged(const QVariantMap &params);
 

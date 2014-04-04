@@ -105,10 +105,22 @@ void Device::setStates(const QList<State> &states)
     m_states = states;
 }
 
+bool Device::hasState(const QUuid &stateTypeId) const
+{
+    foreach (const State &state, m_states) {
+        if (state.stateTypeId() == stateTypeId) {
+            return true;
+        }
+    }
+    return false;
+}
+
 /*! For convenience, this finds the \l{State} matching the given \a stateTypeId and returns the current valie in this Device. */
 QVariant Device::stateValue(const QUuid &stateTypeId) const
 {
+    qDebug() << "device has states:" << m_states.count();
     foreach (const State &state, m_states) {
+        qDebug() << "checking" << stateTypeId << state.stateTypeId();
         if (state.stateTypeId() == stateTypeId) {
             return state.value();
         }

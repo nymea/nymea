@@ -22,39 +22,50 @@
 
 #include <QtTest/QtTest>
 #include <QCoreApplication>
-//#include <QSignalSpy>
+#include <QTcpSocket>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
 
 Q_IMPORT_PLUGIN(DevicePluginMock)
+
+int mockDevice1Port = 1337;
+int mockDevice2Port = 7331;
 
 class TestJSONRPC: public QObject
 {
     Q_OBJECT
 private slots:
     void initTestcase();
+    void cleanupTestCase();
 
     void introspect();
+    void version();
 
     void getSupportedDevices();
 
     void enableDisableNotifications_data();
     void enableDisableNotifications();
 
-    void version();
+    void stateChangeEmitsNotifications();
+
 
 private:
-    QVariant injectAndWait(const QByteArray data);
+    QVariant injectAndWait(const QString &method, const QVariantMap &params);
 
 private:
     MockTcpServer *m_mockTcpServer;
     QUuid m_clientId;
+    int m_commandId;
+    QUuid m_mockDeviceId;
 };
 
 void TestJSONRPC::initTestcase()
 {
     QCoreApplication::instance()->setOrganizationName("guh-test");
-    qDebug() << "creating core";
+    m_commandId = 0;
+
     GuhCore::instance();
-    qDebug() << "creating spy";
 
     // Wait for the DeviceManager to signal that it has loaded plugins and everything
     QSignalSpy spy(GuhCore::instance()->deviceManager(), SIGNAL(loaded()));
@@ -65,13 +76,38 @@ void TestJSONRPC::initTestcase()
     QCOMPARE(MockTcpServer::servers().count(), 1);
     m_mockTcpServer = MockTcpServer::servers().first();
     m_clientId = QUuid::createUuid();
+
+    // Lets add one instance of the mockdevice
+    QVariantMap params;
+    params.insert("deviceClassId", "{753f0d32-0468-4d08-82ed-1964aab03298}");
+    QVariantMap deviceParams;
+    deviceParams.insert("httpport", mockDevice1Port);
+    params.insert("deviceParams", deviceParams);
+    QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
+
+    QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
+
+    m_mockDeviceId = response.toMap().value("params").toMap().value("deviceId").toUuid();
+    QVERIFY2(!m_mockDeviceId.isNull(), "Newly created mock device must not be null.");
 }
 
-QVariant TestJSONRPC::injectAndWait(const QByteArray data)
+void TestJSONRPC::cleanupTestCase()
 {
+    QSettings settings;
+    settings.clear();
+}
+
+QVariant TestJSONRPC::injectAndWait(const QString &method, const QVariantMap &params = QVariantMap())
+{
+    QVariantMap call;
+    call.insert("id", m_commandId++);
+    call.insert("method", method);
+    call.insert("params", params);
+
+    QJsonDocument jsonDoc = QJsonDocument::fromVariant(call);
     QSignalSpy spy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
-    m_mockTcpServer->injectData(m_clientId, data);
+    m_mockTcpServer->injectData(m_clientId, jsonDoc.toJson());
 
     if (spy.count() == 0) {
         spy.wait();
@@ -79,7 +115,7 @@ QVariant TestJSONRPC::injectAndWait(const QByteArray data)
 
      // Make sure the response it a valid JSON string
      QJsonParseError error;
-     QJsonDocument jsonDoc = QJsonDocument::fromJson(spy.takeFirst().last().toByteArray(), &error);
+     jsonDoc = QJsonDocument::fromJson(spy.takeFirst().last().toByteArray(), &error);
 
      return jsonDoc.toVariant();
 }
@@ -106,13 +142,13 @@ void TestJSONRPC::introspect()
     QJsonDocument jsonDoc = QJsonDocument::fromJson(spy.first().last().toByteArray(), &error);
     QCOMPARE(error.error, QJsonParseError::NoError);
 
-    // Make sure the response's id is the same as our command
+    // Make sure the response\"s id is the same as our command
     QCOMPARE(jsonDoc.toVariant().toMap().value("id").toInt(), 42);
 }
 
 void TestJSONRPC::getSupportedDevices()
 {
-    QVariant supportedDevices = injectAndWait("{\"id\":1, \"method\":\"Devices.GetSupportedDevices\"}");
+    QVariant supportedDevices = injectAndWait("Devices.GetSupportedDevices");
 
     // Make sure there is exactly 1 supported device class with the name Mock Wifi Device
     QCOMPARE(supportedDevices.toMap().value("params").toMap().value("deviceClasses").toList().count(), 1);
@@ -132,18 +168,80 @@ void TestJSONRPC::enableDisableNotifications()
 {
     QFETCH(QString, enabled);
 
-    QVariant response = injectAndWait(QString("{\"id\":1, \"method\":\"JSONRPC.SetNotificationStatus\", \"params\":{\"enabled\": " + enabled + " }}").toLatin1());
+    QVariantMap params;
+    params.insert("enabled", enabled);
+    QVariant response = injectAndWait("JSONRPC.SetNotificationStatus", params);
 
-    QCOMPARE(response.toMap().value("params").toMap().value("status").toString(), QString("success"));
+    QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
     QCOMPARE(response.toMap().value("params").toMap().value("enabled").toString(), enabled);
 
 }
 
 void TestJSONRPC::version()
 {
-    QVariant response = injectAndWait("{\"id\":1, \"method\":\"JSONRPC.Version\"}");
+    QVariant response = injectAndWait("JSONRPC.Version");
 
     QCOMPARE(response.toMap().value("params").toMap().value("version").toString(), QString("0.0.0"));
+}
+
+void TestJSONRPC::stateChangeEmitsNotifications()
+{
+    QVariantMap params;
+    params.insert("enabled", true);
+    QVariant response = injectAndWait("JSONRPC.SetNotificationStatus", params);
+    QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
+
+    // Setup connection to mock client
+    QNetworkAccessManager nam;
+
+    QSignalSpy mockSpy(&nam, SIGNAL(finished()));
+    QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+
+
+    // trigger state change in mock device
+    int newVal = 1111;
+    QUuid stateTypeId("80baec19-54de-4948-ac46-31eabfaceb83");
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(mockDevice1Port).arg(stateTypeId.toString()).arg(newVal)));
+    QNetworkReply *reply = nam.get(request);
+    reply->deleteLater();
+
+    // Lets wait for the notification
+    clientSpy.wait();
+    QCOMPARE(clientSpy.count(), 1);
+
+    // Make sure the notification contains all the stuff we expect
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(clientSpy.at(0).at(1).toByteArray());
+    QCOMPARE(jsonDoc.toVariant().toMap().value("notification").toString(), QString("Devices.StateChanged"));
+    QCOMPARE(jsonDoc.toVariant().toMap().value("params").toMap().value("stateTypeId").toUuid(), stateTypeId);
+    QCOMPARE(jsonDoc.toVariant().toMap().value("params").toMap().value("value").toInt(), newVal);
+
+    // Now turn off notifications
+    params.clear();
+    params.insert("enabled", false);
+    response = injectAndWait("JSONRPC.SetNotificationStatus", params);
+    QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
+
+    // Fire the a statechange once again
+    clientSpy.clear();
+    newVal = 42;
+    request.setUrl(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(mockDevice1Port).arg(stateTypeId.toString()).arg(newVal)));
+    reply = nam.get(request);
+    reply->deleteLater();
+
+    // Lets wait a max of 100ms for the notification
+    clientSpy.wait(100);
+    // but make sure it doesn't come
+    QCOMPARE(clientSpy.count(), 0);
+
+    // Now check that the state has indeed changed even though we didn't get a notification
+    params.clear();
+    params.insert("deviceId", m_mockDeviceId);
+    params.insert("stateTypeId", stateTypeId);
+    response = injectAndWait("Devices.GetStateValue", params);
+
+    qDebug() << "response" << response;
+    QCOMPARE(response.toMap().value("params").toMap().value("value").toInt(), newVal);
+
 }
 
 QTEST_MAIN(TestJSONRPC)

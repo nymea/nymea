@@ -45,6 +45,7 @@ public:
     QList<State> states() const;
     void setStates(const QList<State> &states);
 
+    bool hasState(const QUuid &stateTypeId) const;
     QVariant stateValue(const QUuid &stateTypeId) const;
     void setStateValue(const QUuid &stateTypeId, const QVariant &value);
 

@@ -70,8 +70,8 @@ JsonRPCServer::JsonRPCServer(QObject *parent):
     params.clear(); returns.clear();
     setDescription("SetNotificationStatus", "Enable/Disable notifications for this connections.");
     setParams("SetNotificationStatus", params);
-    returns.insert("status", "string");
-//    returns.insert("enabled", "bool");
+    returns.insert("success", "bool");
+    returns.insert("enabled", "bool");
     setReturns("SetNotificationStatus", returns);
 
     // Now set up the logic
@@ -124,7 +124,8 @@ QVariantMap JsonRPCServer::SetNotificationStatus(const QVariantMap &params)
 //    qDebug() << "got client socket" << clientId;
     m_clients[clientId] = params.value("enabled").toBool();
     QVariantMap returns;
-    returns.insert("status", "success");
+    returns.insert("success", "true");
+    returns.insert("errorMessage", "No error");
     returns.insert("enabled", m_clients[clientId]);
     return returns;
 }

@@ -44,6 +44,8 @@ RulesHandler::RulesHandler(QObject *parent) :
     actions.append(JsonTypes::actionRef());
     params.insert("actions", actions);
     setParams("AddRule", params);
+    returns.insert("success", "bool");
+    returns.insert("errorMessage", "string");
     setReturns("AddRule", returns);
 
     params.clear(); returns.clear();

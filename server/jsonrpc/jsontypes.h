@@ -79,6 +79,7 @@ public:
     static QVariantMap packEvent(const Event &event);
     static QVariantMap packActionType(const ActionType &actionType);
     static QVariantMap packAction(const Action &action);
+    static QVariantMap packStateType(const StateType &stateType);
     static QVariantMap packDeviceClass(const DeviceClass &deviceClass);
     static QVariantMap packPlugin(DevicePlugin *plugin);
     static QVariantMap packDevice(Device *device);

@@ -66,6 +66,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     setParams("AddConfiguredDevice", params);
     returns.insert("success", "bool");
     returns.insert("errorMessage", "string");
+    returns.insert("deviceId", "uuid");
     setReturns("AddConfiguredDevice", returns);
 
     params.clear(); returns.clear();
@@ -94,6 +95,26 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     returns.insert("actionTypes", actions);
     setReturns("GetActionTypes", returns);
 
+    params.clear(); returns.clear();
+    setDescription("GetStateTypes", "Get state types for a specified deviceClassId.");
+    params.insert("deviceClassId", "uuid");
+    setParams("GetStateTypes", params);
+    QVariantList states;
+    states.append(JsonTypes::stateTypeRef());
+    returns.insert("stateTypes", actions);
+    setReturns("GetStateTypes", returns);
+
+    params.clear(); returns.clear();
+    setDescription("GetStateValue", "Get the value of the given device and the given stateType");
+    params.insert("deviceId", "uuid");
+    params.insert("stateTypeId", "uuid");
+    setParams("GetStateValue", params);
+    returns.insert("success", "bool");
+    returns.insert("errorMessage", "string");
+    returns.insert("value", "variant");
+    setReturns("GetStateValue", returns);
+
+    // Notifications
     params.clear(); returns.clear();
     setDescription("StateChanged", "Emitted whenever a State of a device changes.");
     params.insert("deviceId", "uuid");
@@ -149,11 +170,13 @@ QVariantMap DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
 {
     QUuid deviceClass = params.value("deviceClassId").toUuid();
     QVariantMap deviceParams = params.value("deviceParams").toMap();
-    DeviceManager::DeviceError status = GuhCore::instance()->deviceManager()->addConfiguredDevice(deviceClass, deviceParams);
+    QUuid newDeviceId = QUuid::createUuid();
+    DeviceManager::DeviceError status = GuhCore::instance()->deviceManager()->addConfiguredDevice(deviceClass, deviceParams, newDeviceId);
     QVariantMap returns;
     switch(status) {
     case DeviceManager::DeviceErrorNoError:
         returns.insert("success", true);
+        returns.insert("deviceId", newDeviceId);
         break;
     case DeviceManager::DeviceErrorDeviceClassNotFound:
         returns.insert("errorMessage", "Error creating device. Device class not found.");
@@ -212,18 +235,47 @@ QVariantMap DeviceHandler::GetActionTypes(const QVariantMap &params) const
     return returns;
 }
 
+QVariantMap DeviceHandler::GetStateTypes(const QVariantMap &params) const
+{
+    QVariantMap returns;
+
+    QVariantList stateList;
+    DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(params.value("deviceClassId").toUuid());
+    foreach (const StateType &stateType, deviceClass.states()) {
+        stateList.append(JsonTypes::packStateType(stateType));
+    }
+    returns.insert("stateTypes", stateList);
+    return returns;
+}
+
+QVariantMap DeviceHandler::GetStateValue(const QVariantMap &params) const
+{
+    QVariantMap returns;
+
+    Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(params.value("deviceId").toUuid());
+    if (!device) {
+        returns.insert("success", false);
+        returns.insert("errorMessage", "No such device");
+        return returns;
+    }
+    if (!device->hasState(params.value("stateTypeId").toUuid())) {
+        returns.insert("success", false);
+        returns.insert("errorMessage", QString("Device %1 %2 doesn't have such a state.").arg(device->name()).arg(device->id().toString()));
+        return returns;
+    }
+    QVariant stateValue = device->stateValue(params.value("stateTypeId").toUuid());
+
+    returns.insert("success", true);
+    returns.insert("value", stateValue);
+    return returns;
+}
+
 void DeviceHandler::deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value)
 {
-    qDebug() << "************************************";
-    QVariantMap notification;
-    notification.insert("notification", "Device.StateChanged");
-
     QVariantMap params;
     params.insert("deviceId", device->id());
     params.insert("stateTypeId", stateTypeId);
     params.insert("value", value);
 
-    notification.insert("params", params);
-
-    emit StateChanged(notification);
+    emit StateChanged(params);
 }

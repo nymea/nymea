@@ -119,7 +119,7 @@ bool DevicePluginMock::deviceCreated(Device *device)
     m_daemons.insert(device, daemon);
 
     if (!daemon->isListening()) {
-        qDebug() << "couldn't setup mockdevice";
+        qDebug() << "HTTP port opening failed.";
         return false;
     }
 

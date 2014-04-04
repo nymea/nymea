@@ -66,8 +66,3 @@ bool MockTcpServer::stopServer()
     qDebug() << "should stop server";
     return true;
 }
-
-void MockTcpServer::sendToAll(QByteArray data)
-{
-     qDebug() << "should send to all clients:" << data;
-}

@@ -179,6 +179,16 @@ QVariantMap JsonTypes::packAction(const Action &action)
     return variant;
 }
 
+QVariantMap JsonTypes::packStateType(const StateType &stateType)
+{
+    QVariantMap variantMap;
+    variantMap.insert("id", stateType.id());
+    variantMap.insert("name", stateType.name());
+    variantMap.insert("type", QVariant::typeToName(stateType.type()));
+    variantMap.insert("defaultValue", stateType.defaultValue());
+    return variantMap;
+}
+
 QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass)
 {
     QVariantMap variant;
@@ -186,30 +196,15 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass)
     variant.insert("id", deviceClass.id());
     QVariantList stateTypes;
     foreach (const StateType &stateType, deviceClass.states()) {
-        QVariantMap stateMap;
-        stateMap.insert("id", stateType.id().toString());
-        stateMap.insert("name", stateType.name());
-        stateMap.insert("type", QVariant::typeToName(stateType.type()));
-
-        stateTypes.append(stateMap);
+        stateTypes.append(packStateType(stateType));
     }
     QVariantList eventTypes;
     foreach (const EventType &eventType, deviceClass.events()) {
-        QVariantMap eventMap;
-        eventMap.insert("id", eventType.id().toString());
-        eventMap.insert("name", eventType.name());
-        eventMap.insert("params", eventType.parameters());
-
-        eventTypes.append(eventMap);
+        eventTypes.append(packEventType(eventType));
     }
     QVariantList actionTypes;
     foreach (const ActionType &actionType, deviceClass.actions()) {
-        QVariantMap actionMap;
-        actionMap.insert("id", actionType.id().toString());
-        actionMap.insert("name", actionType.name());
-        actionMap.insert("params", actionType.parameters());
-
-        actionTypes.append(actionMap);
+        actionTypes.append(packActionType(actionType));
     }
     variant.insert("params", deviceClass.params());
     variant.insert("states", stateTypes);

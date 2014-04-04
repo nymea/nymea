@@ -49,7 +49,8 @@ public:
         DeviceErrorActionTypeNotFound,
         DeviceErrorMissingParameter,
         DeviceErrorPluginNotFound,
-        DeviceErrorSetupFailed
+        DeviceErrorSetupFailed,
+        DeviceErrorDuplicateUuid
     };
 
     explicit DeviceManager(QObject *parent = 0);
@@ -59,7 +60,7 @@ public:
     QList<DeviceClass> supportedDevices() const;
 
     QList<Device*> configuredDevices() const;
-    DeviceError addConfiguredDevice(const QUuid &deviceClassId, const QVariantMap &params);
+    DeviceError addConfiguredDevice(const QUuid &deviceClassId, const QVariantMap &params, const QUuid id = QUuid::createUuid());
 
     Device* findConfiguredDevice(const QUuid &id) const;
     QList<Device*> findConfiguredDevices(const QUuid &deviceClassId) const;

@@ -168,6 +168,30 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const QUuid &devic
     return DeviceErrorNoError;
 }
 
+DeviceManager::DeviceError DeviceManager::removeConfiguredDevice(const QUuid &deviceId)
+{
+    Device *device = findConfiguredDevice(deviceId);
+    if (!device) {
+        return DeviceErrorDeviceNotFound;
+    }
+
+    m_configuredDevices.removeAll(device);
+    m_devicePlugins.value(device->pluginId())->deviceRemoved(device);
+
+    m_pluginTimerUsers.removeAll(device);
+    if (m_pluginTimerUsers.isEmpty()) {
+        m_pluginTimer.stop();
+    }
+
+    device->deleteLater();
+
+    QSettings settings;
+    settings.beginGroup(deviceId.toString());
+    settings.remove("");
+
+    return DeviceErrorNoError;
+}
+
 /*! Returns the \l{Device} with the given \a id. Null if the id couldn't be found. */
 Device *DeviceManager::findConfiguredDevice(const QUuid &id) const
 {
@@ -354,6 +378,7 @@ bool DeviceManager::setupDevice(Device *device)
             // Additionally fire off one event to initialize stuff
             QTimer::singleShot(0, this, SLOT(timerEvent()));
         }
+        m_pluginTimerUsers.append(device);
     }
 
     if (!plugin->deviceCreated(device)) {

@@ -35,16 +35,6 @@ void HttpDaemon::incomingConnection(qintptr socket)
 
 }
 
-void HttpDaemon::pause()
-{
-    disabled = true;
-}
-
-void HttpDaemon::resume()
-{
-    disabled = false;
-}
-
 void HttpDaemon::actionExecuted(const QUuid &actionTypeId)
 {
     m_actionList.append(qMakePair<QUuid, QDateTime>(actionTypeId, QDateTime::currentDateTime()));

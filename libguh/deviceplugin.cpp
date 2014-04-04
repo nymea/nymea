@@ -109,7 +109,17 @@ DevicePlugin::~DevicePlugin()
 */
 bool DevicePlugin::deviceCreated(Device *device)
 {
+    Q_UNUSED(device)
     return true;
+}
+
+/*! This will be called when a device removed. The plugin has the chance to do some teardown.
+    The device is still valid during this call, but already removed from the system.
+    The device will be deleted as soon as this method returns.
+*/
+void DevicePlugin::deviceRemoved(Device *device)
+{
+    Q_UNUSED(device)
 }
 
 /*! This will be called when the DeviceManager initializes the plugin and set up the things behind the scenes.

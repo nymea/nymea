@@ -49,6 +49,7 @@ private slots:
 
     void stateChangeEmitsNotifications();
 
+    void removeDevice();
 
 private:
     QVariant injectAndWait(const QString &method, const QVariantMap &params);
@@ -239,9 +240,24 @@ void TestJSONRPC::stateChangeEmitsNotifications()
     params.insert("stateTypeId", stateTypeId);
     response = injectAndWait("Devices.GetStateValue", params);
 
-    qDebug() << "response" << response;
     QCOMPARE(response.toMap().value("params").toMap().value("value").toInt(), newVal);
 
+}
+
+void TestJSONRPC::removeDevice()
+{
+    QVERIFY(!m_mockDeviceId.isNull());
+
+    QVariantMap params;
+    params.insert("deviceId", m_mockDeviceId);
+
+    QVariant response = injectAndWait("Devices.RemoveConfiguredDevice", params);
+
+    QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
+
+    // Make sure the device is gone from settings too
+    QSettings settings;
+    QCOMPARE(settings.allKeys().count(), 0);
 }
 
 QTEST_MAIN(TestJSONRPC)

@@ -78,6 +78,14 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     setReturns("GetConfiguredDevices", returns);
 
     params.clear(); returns.clear();
+    setDescription("RemoveConfiguredDevice", "Remove a device from the system.");
+    params.insert("deviceId", "uuid");
+    setParams("RemoveConfiguredDevice", params);
+    returns.insert("success", "bool");
+    returns.insert("errorMessage", "string");
+    setReturns("RemoveConfiguredDevice", returns);
+
+    params.clear(); returns.clear();
     setDescription("GetEventTypes", "Get event types for a specified deviceClassId.");
     params.insert("deviceClassId", "uuid");
     setParams("GetEventTypes", params);
@@ -206,6 +214,24 @@ QVariantMap DeviceHandler::GetConfiguredDevices(const QVariantMap &params) const
         configuredDeviceList.append(JsonTypes::packDevice(device));
     }
     returns.insert("devices", configuredDeviceList);
+    return returns;
+}
+
+QVariantMap DeviceHandler::RemoveConfiguredDevice(const QVariantMap &params)
+{
+    QVariantMap returns;
+    switch(GuhCore::instance()->deviceManager()->removeConfiguredDevice(params.value("deviceId").toUuid())) {
+    case DeviceManager::DeviceErrorNoError:
+        returns.insert("success", true);
+        returns.insert("errorMessage", "");
+        return returns;
+    case DeviceManager::DeviceErrorDeviceNotFound:
+        returns.insert("success", false);
+        returns.insert("errorMessage", "No such device.");
+        return returns;
+    }
+    returns.insert("success", false);
+    returns.insert("errorMessage", "Unknown error.");
     return returns;
 }
 

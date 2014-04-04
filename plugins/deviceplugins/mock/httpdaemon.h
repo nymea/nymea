@@ -16,10 +16,6 @@ public:
 
     void incomingConnection(qintptr socket) override;
 
-    void pause();
-
-    void resume();
-
     void actionExecuted(const QUuid&actionTypeId);
 
 signals:

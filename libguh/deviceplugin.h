@@ -45,6 +45,7 @@ public:
     virtual DeviceManager::HardwareResources requiredHardware() const = 0;
 
     virtual bool deviceCreated(Device *device);
+    virtual void deviceRemoved(Device *device);
 
     // Hardware input
     virtual void radioData(QList<int> rawData) {Q_UNUSED(rawData)}

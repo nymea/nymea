@@ -129,6 +129,11 @@ bool DevicePluginMock::deviceCreated(Device *device)
     return true;
 }
 
+void DevicePluginMock::deviceRemoved(Device *device)
+{
+    m_daemons.take(device)->deleteLater();
+}
+
 void DevicePluginMock::executeAction(Device *device, const Action &action)
 {
     qDebug() << "Should execute action" << action.actionTypeId();

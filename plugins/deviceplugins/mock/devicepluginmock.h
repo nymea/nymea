@@ -42,6 +42,7 @@ public:
     QUuid pluginId() const override;
 
     bool deviceCreated(Device *device) override;
+    void deviceRemoved(Device *device) override;
 
 public slots:
     void executeAction(Device *device, const Action &action) override;

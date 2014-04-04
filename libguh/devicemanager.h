@@ -61,6 +61,7 @@ public:
 
     QList<Device*> configuredDevices() const;
     DeviceError addConfiguredDevice(const QUuid &deviceClassId, const QVariantMap &params, const QUuid id = QUuid::createUuid());
+    DeviceError removeConfiguredDevice(const QUuid &deviceId);
 
     Device* findConfiguredDevice(const QUuid &id) const;
     QList<Device*> findConfiguredDevices(const QUuid &deviceClassId) const;
@@ -97,6 +98,7 @@ private:
     // Hardware Resources
     Radio433* m_radio433;
     QTimer m_pluginTimer;
+    QList<Device*> m_pluginTimerUsers;
 
     friend class DevicePlugin;
 };

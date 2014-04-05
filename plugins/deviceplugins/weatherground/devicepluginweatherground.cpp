@@ -19,7 +19,7 @@
 #include "devicepluginweatherground.h"
 
 #include "plugin/device.h"
-#include "plugin/devicemanager.h"
+#include "devicemanager.h"
 
 #include <QDebug>
 #include <QStringList>
@@ -28,7 +28,7 @@
 
 // Key: 779a480dea5163c6
 
-QUuid weathergroundVendorId = QUuid("68f84197-b158-4d24-9d7b-709cfff843c1");
+VendorId weathergroundVendorId = VendorId("68f84197-b158-4d24-9d7b-709cfff843c1");
 
 DevicePluginWeatherground::DevicePluginWeatherground()
 {
@@ -47,7 +47,7 @@ QList<DeviceClass> DevicePluginWeatherground::supportedDevices() const
 {
     QList<DeviceClass> ret;
 
-    DeviceClass deviceClassWeatherground(pluginId(), QUuid("af2e15f0-650e-4452-b379-fa76a2dc46c6"));
+    DeviceClass deviceClassWeatherground(pluginId(), weathergroundVendorId, DeviceClassId("af2e15f0-650e-4452-b379-fa76a2dc46c6"));
     deviceClassWeatherground.setName("Weather");
 
     QVariantList weatherParams;
@@ -63,67 +63,67 @@ QList<DeviceClass> DevicePluginWeatherground::supportedDevices() const
 
 
     QList<ActionType> weatherActions;
-    ActionType updateWeather(QUuid("a1dc271a-a993-4d9b-adfc-4fbb58cbecb9"));
+    ActionType updateWeather(ActionTypeId("a1dc271a-a993-4d9b-adfc-4fbb58cbecb9"));
     updateWeather.setName("refresh");
     weatherActions.append(updateWeather);
 
 
     QList<StateType> weatherStates;
-    StateType updateTimeState(QUuid("09b091f5-d830-4739-b8f0-df96101cabc6"));
+    StateType updateTimeState(StateTypeId("09b091f5-d830-4739-b8f0-df96101cabc6"));
     updateTimeState.setName("last update");
     updateTimeState.setType(QVariant::DateTime);
     updateTimeState.setDefaultValue(QDateTime(QDate(1999,1,1),QTime(0,0,0)));
     weatherStates.append(updateTimeState);
 
-    StateType temperatureState(QUuid("97ffaa0b-4302-43a5-9aa5-00a5efe321c0"));
+    StateType temperatureState(StateTypeId("97ffaa0b-4302-43a5-9aa5-00a5efe321c0"));
     temperatureState.setName("temperature [°C]");
     temperatureState.setType(QVariant::Double);
     temperatureState.setDefaultValue(-999.9);
     weatherStates.append(temperatureState);
 
-    StateType humidityState(QUuid("2e925181-69b7-4201-9160-11ca4afecc41"));
+    StateType humidityState(StateTypeId("2e925181-69b7-4201-9160-11ca4afecc41"));
     humidityState.setName("humidity [%]");
     humidityState.setType(QVariant::Int);
     humidityState.setDefaultValue(0);
     weatherStates.append(humidityState);
 
-    StateType sunsetState(QUuid("a8e6601e-c9de-43c8-9a0e-9688cb66ae6d"));
+    StateType sunsetState(StateTypeId("a8e6601e-c9de-43c8-9a0e-9688cb66ae6d"));
     sunsetState.setName("sunset");
     sunsetState.setType(QVariant::Time);
     sunsetState.setDefaultValue(QTime(0,0,0));
     weatherStates.append(sunsetState);
 
-    StateType sunriseState(QUuid("8e81d15a-3231-415b-8fba-5f6a02259cc1"));
+    StateType sunriseState(StateTypeId("8e81d15a-3231-415b-8fba-5f6a02259cc1"));
     sunriseState.setName("sunrise");
     sunriseState.setType(QVariant::Time);
     sunriseState.setDefaultValue(QTime(0,0,0));
     weatherStates.append(sunriseState);
 
-    StateType windSpeedState(QUuid("546880b9-c4c8-4dc1-b589-ac9c76240009"));
+    StateType windSpeedState(StateTypeId("546880b9-c4c8-4dc1-b589-ac9c76240009"));
     windSpeedState.setName("wind speed [km/h]");
     windSpeedState.setType(QVariant::Double);
     windSpeedState.setDefaultValue(0);
     weatherStates.append(windSpeedState);
 
-    StateType windDirectionState(QUuid("e05e6015-4ed8-4fb1-a18e-1a09be272556"));
+    StateType windDirectionState(StateTypeId("e05e6015-4ed8-4fb1-a18e-1a09be272556"));
     windDirectionState.setName("wind direction");
     windDirectionState.setType(QVariant::String);
     windDirectionState.setDefaultValue("-");
     weatherStates.append(windDirectionState);
 
-    StateType currentlyState(QUuid("6032cb3b-fe52-4006-aa8b-d5c1e6d500e3"));
+    StateType currentlyState(StateTypeId("6032cb3b-fe52-4006-aa8b-d5c1e6d500e3"));
     currentlyState.setName("current weather");
     currentlyState.setType(QVariant::String);
     currentlyState.setDefaultValue("-");
     weatherStates.append(currentlyState);
 
-    StateType ageOfMoonState(QUuid("e49fe057-98ac-4a38-9aa3-8e8ff260c162"));
+    StateType ageOfMoonState(StateTypeId("e49fe057-98ac-4a38-9aa3-8e8ff260c162"));
     ageOfMoonState.setName("age of moon [days]");
     ageOfMoonState.setType(QVariant::Int);
     ageOfMoonState.setDefaultValue(-1);
     weatherStates.append(ageOfMoonState);
 
-    StateType moonIlluminatedState(QUuid("d8688eb5-5d4f-4c85-9338-d86c7c2069a8"));
+    StateType moonIlluminatedState(StateTypeId("d8688eb5-5d4f-4c85-9338-d86c7c2069a8"));
     moonIlluminatedState.setName("moon illuminated [%]");
     moonIlluminatedState.setType(QVariant::Int);
     moonIlluminatedState.setDefaultValue(-1);

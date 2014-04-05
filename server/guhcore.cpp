@@ -31,7 +31,7 @@
 #include "jsonrpcserver.h"
 #include "ruleengine.h"
 
-#include "plugin/devicemanager.h"
+#include "devicemanager.h"
 #include "plugin/device.h"
 
 #include <QDebug>

@@ -19,17 +19,18 @@
 #ifndef EVENT_H
 #define EVENT_H
 
+#include "typeutils.h"
+
 #include <QString>
-#include <QUuid>
 #include <QVariantList>
 
 class Event
 {
 public:
-    Event(const QUuid &eventTypeId, const QUuid &deviceId, const QVariantMap &params);
+    Event(const EventTypeId &eventTypeId, const DeviceId &deviceId, const QVariantMap &params);
 
-    QUuid eventTypeId() const;
-    QUuid deviceId() const;
+    EventTypeId eventTypeId() const;
+    DeviceId deviceId() const;
 
     QVariantMap params() const;
     void setParams(const QVariantMap &params);
@@ -37,8 +38,8 @@ public:
     bool operator ==(const Event &other) const;
 
 private:
-    QUuid m_eventTypeId;
-    QUuid m_deviceId;
+    EventTypeId m_eventTypeId;
+    DeviceId m_deviceId;
     QVariantMap m_params;
 };
 

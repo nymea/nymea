@@ -52,18 +52,18 @@
 
 #include "devicepluginelro.h"
 
+#include "devicemanager.h"
 #include "plugin/device.h"
-#include "plugin/devicemanager.h"
 #include "hardware/radio433.h"
 
 #include <QDebug>
 #include <QStringList>
 
-QUuid elroVendorId = QUuid("435a13a0-65ca-4f0c-94c1-e5873b258db5");
-QUuid mumbiVendorId = QUuid("5f91c01c-0168-4bdf-a5ed-37cb6971b775");
+VendorId elroVendorId = VendorId("435a13a0-65ca-4f0c-94c1-e5873b258db5");
+VendorId mumbiVendorId = VendorId("5f91c01c-0168-4bdf-a5ed-37cb6971b775");
 
-QUuid elroRemoteId = QUuid("d85c1ef4-197c-4053-8e40-707aa671d302");
-QUuid elroSwitchId = QUuid("308ae6e6-38b3-4b3a-a513-3199da2764f8");
+DeviceClassId elroRemoteId = DeviceClassId("d85c1ef4-197c-4053-8e40-707aa671d302");
+DeviceClassId elroSwitchId = DeviceClassId("308ae6e6-38b3-4b3a-a513-3199da2764f8");
 
 DevicePluginElro::DevicePluginElro()
 {
@@ -88,7 +88,7 @@ QList<DeviceClass> DevicePluginElro::supportedDevices() const
 
     // =======================================
     // Remote
-    DeviceClass deviceClassElroRemote(pluginId(), elroRemoteId);
+    DeviceClass deviceClassElroRemote(pluginId(), elroVendorId, elroRemoteId);
     deviceClassElroRemote.setName("Elro Remote");
     
     QVariantList deviceParamsRemote;
@@ -119,27 +119,27 @@ QList<DeviceClass> DevicePluginElro::supportedDevices() const
     param.insert("type", "bool");
     paramsRemote.append(param);
     
-    EventType buttonAEvent(QUuid("9dd3f862-35f3-4b69-954e-fa3c8bd68e39"));
+    EventType buttonAEvent(EventTypeId("9dd3f862-35f3-4b69-954e-fa3c8bd68e39"));
     buttonAEvent.setName("A");
     buttonAEvent.setParameters(paramsRemote);
     buttonEvents.append(buttonAEvent);
     
-    EventType buttonBEvent(QUuid("733226eb-91ba-4e37-9d78-12c87eb5e763"));
+    EventType buttonBEvent(EventTypeId("733226eb-91ba-4e37-9d78-12c87eb5e763"));
     buttonBEvent.setName("B");
     buttonBEvent.setParameters(paramsRemote);
     buttonEvents.append(buttonBEvent);
     
-    EventType buttonCEvent(QUuid("47aaeaec-485a-4775-a543-33f339fd28c8"));
+    EventType buttonCEvent(EventTypeId("47aaeaec-485a-4775-a543-33f339fd28c8"));
     buttonCEvent.setName("C");
     buttonCEvent.setParameters(paramsRemote);
     buttonEvents.append(buttonCEvent);
     
-    EventType buttonDEvent(QUuid("db3d484c-add9-44ab-80a4-a0664e0c87c8"));
+    EventType buttonDEvent(EventTypeId("db3d484c-add9-44ab-80a4-a0664e0c87c8"));
     buttonDEvent.setName("D");
     buttonDEvent.setParameters(paramsRemote);
     buttonEvents.append(buttonDEvent);
     
-    EventType buttonEEvent(QUuid("eb914aac-fb73-4ee2-9f1b-c34b2f6cc24a"));
+    EventType buttonEEvent(EventTypeId("eb914aac-fb73-4ee2-9f1b-c34b2f6cc24a"));
     buttonEEvent.setName("E");
     buttonEEvent.setParameters(paramsRemote);
     buttonEvents.append(buttonEEvent);
@@ -149,7 +149,7 @@ QList<DeviceClass> DevicePluginElro::supportedDevices() const
 
     // =======================================
     // Switch
-    DeviceClass deviceClassElroSwitch(pluginId(), elroSwitchId);
+    DeviceClass deviceClassElroSwitch(pluginId(), elroVendorId, elroSwitchId);
     deviceClassElroSwitch.setName("Elro Power Switch");
     
     QVariantList deviceParamsSwitch;
@@ -196,7 +196,7 @@ QList<DeviceClass> DevicePluginElro::supportedDevices() const
 
     QList<ActionType> switchActions;
 
-    ActionType powerAction(QUuid("31c9758e-6567-4f89-85bb-29e1a7c55d44"));
+    ActionType powerAction(ActionTypeId("31c9758e-6567-4f89-85bb-29e1a7c55d44"));
     powerAction.setName("power");
     powerAction.setParameters(actionParamsSwitch);
     switchActions.append(powerAction);

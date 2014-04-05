@@ -19,6 +19,8 @@
 #ifndef DEVICECLASS_H
 #define DEVICECLASS_H
 
+#include "typeutils.h"
+#include "types/vendor.h"
 #include "types/eventtype.h"
 #include "types/actiontype.h"
 #include "types/statetype.h"
@@ -29,9 +31,10 @@
 class DeviceClass
 {
 public:
-    DeviceClass(const QUuid &pluginId = QUuid(), const QUuid &id = QUuid());
+    DeviceClass(const QUuid &pluginId = QUuid(), const VendorId &vendor = VendorId(), const DeviceClassId &id = DeviceClassId());
 
-    QUuid id() const;
+    DeviceClassId id() const;
+    VendorId vendorId() const;
     QUuid pluginId() const;
     bool isValid() const;
 
@@ -53,7 +56,8 @@ public:
     bool operator==(const DeviceClass &device) const;
 
 private:
-    QUuid m_id;
+    DeviceClassId m_id;
+    VendorId m_vendorId;
     QUuid m_pluginId;
     QString m_name;
     QList<StateType> m_states;

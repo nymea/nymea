@@ -49,8 +49,8 @@ public slots:
     void executeAction(Device *device, const Action &action) override;
 
 private slots:
-    void setState(const QUuid &stateTypeId, const QVariant &value);
-    void triggerEvent(const QUuid &id);
+    void setState(const StateTypeId &stateTypeId, const QVariant &value);
+    void triggerEvent(const EventTypeId &id);
 
 private:
     QHash<Device*, HttpDaemon*> m_daemons;

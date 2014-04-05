@@ -29,13 +29,13 @@
 #include "eventtype.h"
 
 /*! Constructs a EventType object with the given \a id. */
-EventType::EventType(const QUuid &id):
+EventType::EventType(const EventTypeId &id):
     m_id(id)
 {
 }
 
 /*! Returns the id. */
-QUuid EventType::id() const
+EventTypeId EventType::id() const
 {
     return m_id;
 }

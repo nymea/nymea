@@ -77,9 +77,9 @@
 
 #include "hardware/radio433.h"
 
-#include "device.h"
-#include "deviceclass.h"
-#include "deviceplugin.h"
+#include "plugin/device.h"
+#include "plugin/deviceclass.h"
+#include "plugin/deviceplugin.h"
 
 #include <QPluginLoader>
 #include <QtPlugin>
@@ -132,7 +132,7 @@ QList<DeviceClass> DeviceManager::supportedDevices() const
     Optionally you can supply an id yourself if you must keep track of the added device. If you don't supply it, a new one will
     be generated.
 */
-DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const QUuid &deviceClassId, const QVariantMap &params, const QUuid id)
+DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassId &deviceClassId, const QVariantMap &params, const DeviceId id)
 {
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
     if (deviceClass.id().isNull()) {
@@ -236,10 +236,11 @@ DeviceClass DeviceManager::findDeviceClassforEvent(const QUuid &eventTypeId) con
             }
         }
     }
-    return DeviceClass(QUuid(), QUuid());
+    return DeviceClass();
 }
 
-/*! For conveninece, this returns the \{DeviceClass} with the id given by \a deviceClassId. */
+/*! For conveninece, this returns the \{DeviceClass} with the id given by \a deviceClassId.
+    Note: The returned DeviceClass may be invalid.*/
 DeviceClass DeviceManager::findDeviceClass(const QUuid &deviceClassId) const
 {
     foreach (const DeviceClass &deviceClass, m_supportedDevices) {
@@ -247,7 +248,7 @@ DeviceClass DeviceManager::findDeviceClass(const QUuid &deviceClassId) const
             return deviceClass;
         }
     }
-    return DeviceClass(QUuid(), QUuid());
+    return DeviceClass();
 }
 
 /*! Execute the given \{Action}.
@@ -285,6 +286,15 @@ void DeviceManager::loadPlugins()
         if (pluginIface) {
             qDebug() << "*** Loaded plugin" << pluginIface->pluginName();
             pluginIface->initPlugin(this);
+            foreach (const Vendor &vendor, pluginIface->supportedVendors()) {
+                qDebug() << "* Loaded vendor:" << vendor.name();
+                if (m_supportedVendors.contains(vendor.id())) {
+                    qWarning() << "X Duplicate vendor" << vendor.name() << " Ignoring...";
+                    continue;
+                }
+                m_supportedVendors.insert(vendor.id(), vendor);
+            }
+
             foreach (const DeviceClass &deviceClass, pluginIface->supportedDevices()) {
                 qDebug() << "* Loaded device class:" << deviceClass.name();
                 m_supportedDevices.insert(deviceClass.id(), deviceClass);
@@ -301,7 +311,7 @@ void DeviceManager::loadConfiguredDevices()
     qDebug() << "loading devices from" << settings.fileName();
     foreach (const QString &idString, settings.childGroups()) {
         settings.beginGroup(idString);
-        Device *device = new Device(settings.value("pluginid").toUuid(), QUuid(idString), settings.value("deviceClassId").toUuid(), this);
+        Device *device = new Device(settings.value("pluginid").toUuid(), DeviceId(idString), DeviceClassId(settings.value("deviceClassId").toString()), this);
         device->setName(settings.value("devicename").toString());
         device->setParams(settings.value("params").toMap());
         settings.endGroup();

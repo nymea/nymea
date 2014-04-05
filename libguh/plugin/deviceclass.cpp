@@ -39,7 +39,7 @@
     Generate a new uuid (e.g. uuidgen) and hardode it into the plugin. The id
     should never change or it will appear as a new DeviceClass in the system.
  */
-DeviceClass::DeviceClass(const QUuid &pluginId, const QUuid &id):
+DeviceClass::DeviceClass(const QUuid &pluginId, const VendorId &vendor, const DeviceClassId &id):
     m_id(id),
     m_pluginId(pluginId)
 {
@@ -47,9 +47,15 @@ DeviceClass::DeviceClass(const QUuid &pluginId, const QUuid &id):
 }
 
 /*! Returns the id of this DeviceClass. */
-QUuid DeviceClass::id() const
+DeviceClassId DeviceClass::id() const
 {
     return m_id;
+}
+
+/*! Returns the VendorId for this DeviceClass */
+VendorId DeviceClass::vendorId() const
+{
+    return m_vendorId;
 }
 
 /*! Returns the pluginId this DeviceClass is managed by. */
@@ -58,10 +64,10 @@ QUuid DeviceClass::pluginId() const
     return m_pluginId;
 }
 
-/*! Returns true if this DeviceClass's id and pluginId are valid uuids. */
+/*! Returns true if this DeviceClass's id, vendorId and pluginId are valid uuids. */
 bool DeviceClass::isValid() const
 {
-    return !m_id.isNull() && !m_pluginId.isNull();
+    return !m_id.isNull() && !m_vendorId.isNull() && !m_pluginId.isNull();
 }
 
 /*! Returns the name of this DeviceClass's. This is visible to the user. */

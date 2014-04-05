@@ -1,17 +1,17 @@
 #include "vendor.h"
 
-Vendor::Vendor(const QUuid &id, const QString &name):
+Vendor::Vendor(const VendorId &id, const QString &name):
     m_id(id),
     m_name(name)
 {
 }
 
-QUuid Vendor::id() const
+VendorId Vendor::id() const
 {
     return m_id;
 }
 
-void Vendor::setId(const QUuid &id)
+void Vendor::setId(const VendorId &id)
 {
     m_id = id;
 }

@@ -158,15 +158,15 @@
 #include "devicepluginintertechno.h"
 
 #include "plugin/device.h"
-#include "plugin/devicemanager.h"
+#include "devicemanager.h"
 #include "hardware/radio433.h"
 
 #include <QDebug>
 #include <QStringList>
 
-QUuid intertechnoVendorId = QUuid("6a852bc2-34dd-4f4c-9ac9-dd4c32ddbcba");
-QUuid intertechnoRemote = QUuid("ab73ad2f-6594-45a3-9063-8f72d365c5e5");
-QUuid intertechnoSwitch = QUuid("324219e8-7c53-41b5-b314-c2900cd15252");
+VendorId intertechnoVendorId = VendorId("6a852bc2-34dd-4f4c-9ac9-dd4c32ddbcba");
+DeviceClassId intertechnoRemote = DeviceClassId("ab73ad2f-6594-45a3-9063-8f72d365c5e5");
+DeviceClassId intertechnoSwitch = DeviceClassId("324219e8-7c53-41b5-b314-c2900cd15252");
 
 DevicePluginIntertechno::DevicePluginIntertechno()
 {
@@ -185,7 +185,7 @@ QList<DeviceClass> DevicePluginIntertechno::supportedDevices() const
 
     // =======================================
     // Remote
-    DeviceClass deviceClassIntertechnoRemote(pluginId(), intertechnoRemote);
+    DeviceClass deviceClassIntertechnoRemote(pluginId(), intertechnoVendorId, intertechnoRemote);
     deviceClassIntertechnoRemote.setName("Intertechno Remote");
     
     QVariantList remoteParams;
@@ -219,82 +219,82 @@ QList<DeviceClass> DevicePluginIntertechno::supportedDevices() const
      *       |___|___|___|____|
      */
 
-    EventType button1Event("785c1b30-a3f2-4696-af7c-d532acf3d6f7");
+    EventType button1Event(EventTypeId("785c1b30-a3f2-4696-af7c-d532acf3d6f7"));
     button1Event.setName("1");
     button1Event.setParameters(paramsRemote);
     buttonEvents.append(button1Event);
 
-    EventType button2Event("1d42c850-7b43-452f-b205-e1aac14eb3ee");
+    EventType button2Event(EventTypeId("1d42c850-7b43-452f-b205-e1aac14eb3ee"));
     button2Event.setName("2");
     button2Event.setParameters(paramsRemote);
     buttonEvents.append(button2Event);
 
-    EventType button3Event("77a4780e-2355-4a77-870d-2f675bf986ce");
+    EventType button3Event(EventTypeId("77a4780e-2355-4a77-870d-2f675bf986ce"));
     button3Event.setName("3");
     button3Event.setParameters(paramsRemote);
     buttonEvents.append(button3Event);
 
-    EventType button4Event("bd6a8b4b-f946-4f3b-992f-e7cff10187b8");
+    EventType button4Event(EventTypeId("bd6a8b4b-f946-4f3b-992f-e7cff10187b8"));
     button4Event.setName("4");
     button4Event.setParameters(paramsRemote);
     buttonEvents.append(button4Event);
 
-    EventType button5Event("0f20782e-0acc-45f1-8c42-5dc5f5b29f1b");
+    EventType button5Event(EventTypeId("0f20782e-0acc-45f1-8c42-5dc5f5b29f1b"));
     button5Event.setName("5");
     button5Event.setParameters(paramsRemote);
     buttonEvents.append(button5Event);
 
-    EventType button6Event("f7cb439a-0528-4905-9583-06b6bfeb3ba1");
+    EventType button6Event(EventTypeId("f7cb439a-0528-4905-9583-06b6bfeb3ba1"));
     button6Event.setName("6");
     button6Event.setParameters(paramsRemote);
     buttonEvents.append(button6Event);
 
-    EventType button7Event("a0b0d8d8-2b43-4897-98e0-05b6b408a950");
+    EventType button7Event(EventTypeId("a0b0d8d8-2b43-4897-98e0-05b6b408a950"));
     button7Event.setName("7");
     button7Event.setParameters(paramsRemote);
     buttonEvents.append(button7Event);
 
-    EventType button8Event("ae5833a2-bc43-4462-ae47-e45dac1fb0ce");
+    EventType button8Event(EventTypeId("ae5833a2-bc43-4462-ae47-e45dac1fb0ce"));
     button8Event.setName("8");
     button8Event.setParameters(paramsRemote);
     buttonEvents.append(button8Event);
 
-    EventType button9Event("52c13828-d047-4256-b488-0bf84abbc87c");
+    EventType button9Event(EventTypeId("52c13828-d047-4256-b488-0bf84abbc87c"));
     button9Event.setName("9");
     button9Event.setParameters(paramsRemote);
     buttonEvents.append(button9Event);
 
-    EventType button10Event("22c5afbc-835e-47cc-8211-4429eb9d9fee");
+    EventType button10Event(EventTypeId("22c5afbc-835e-47cc-8211-4429eb9d9fee"));
     button10Event.setName("10");
     button10Event.setParameters(paramsRemote);
     buttonEvents.append(button10Event);
 
-    EventType button11Event("6bec5cbc-8bfb-4c6c-8ac8-f8e7723fd5aa");
+    EventType button11Event(EventTypeId("6bec5cbc-8bfb-4c6c-8ac8-f8e7723fd5aa"));
     button11Event.setName("11");
     button11Event.setParameters(paramsRemote);
     buttonEvents.append(button11Event);
     
-    EventType button12Event("8b71edd2-8135-4c8b-bf44-380efadf1942");
+    EventType button12Event(EventTypeId("8b71edd2-8135-4c8b-bf44-380efadf1942"));
     button12Event.setName("12");
     button12Event.setParameters(paramsRemote);
     buttonEvents.append(button12Event);
 
-    EventType button13Event("192f36a4-1e58-41aa-9618-83d46e329a4b");
+    EventType button13Event(EventTypeId("192f36a4-1e58-41aa-9618-83d46e329a4b"));
     button13Event.setName("13");
     button13Event.setParameters(paramsRemote);
     buttonEvents.append(button13Event);
 
-    EventType button14Event("6c76de60-5e19-4a29-b027-e71e66caa2d6");
+    EventType button14Event(EventTypeId("6c76de60-5e19-4a29-b027-e71e66caa2d6"));
     button14Event.setName("14");
     button14Event.setParameters(paramsRemote);
     buttonEvents.append(button14Event);
 
-    EventType button15Event("c2f56c10-1f81-4477-88fa-fc0f4a6383df");
+    EventType button15Event(EventTypeId("c2f56c10-1f81-4477-88fa-fc0f4a6383df"));
     button15Event.setName("15");
     button15Event.setParameters(paramsRemote);
     buttonEvents.append(button15Event);
 
-    EventType button16Event("5d2eb3f8-4cd4-4c71-9c0c-e0b685e168e4");
+    EventType button16Event(EventTypeId("5d2eb3f8-4cd4-4c71-9c0c-e0b685e168e4"));
     button16Event.setName("16");
     button16Event.setParameters(paramsRemote);
     buttonEvents.append(button16Event);
@@ -305,7 +305,7 @@ QList<DeviceClass> DevicePluginIntertechno::supportedDevices() const
 
     // =======================================
     // Switch
-    DeviceClass deviceClassIntertechnoSwitch(pluginId(), intertechnoSwitch);
+    DeviceClass deviceClassIntertechnoSwitch(pluginId(), intertechnoVendorId, intertechnoSwitch);
     deviceClassIntertechnoSwitch.setName("Intertechno Switch");
 
     QVariantList switchDeviceParams;
@@ -330,7 +330,7 @@ QList<DeviceClass> DevicePluginIntertechno::supportedDevices() const
     paramSwitch.insert("type", "bool");
     paramsSwitch.append(paramSwitch);
 
-    ActionType switchActionPower(QUuid("df19fb51-c3cd-4b95-8d88-ebbb535f4789"));
+    ActionType switchActionPower(ActionTypeId("df19fb51-c3cd-4b95-8d88-ebbb535f4789"));
     switchActionPower.setName("power");
     switchActionPower.setParameters(paramsSwitch);
     switchActions.append(switchActionPower);

@@ -19,15 +19,16 @@
 #ifndef TRIGGERTYPE_H
 #define TRIGGERTYPE_H
 
-#include <QUuid>
+#include "typeutils.h"
+
 #include <QVariantMap>
 
 class EventType
 {
 public:
-    EventType(const QUuid &id);
+    EventType(const EventTypeId &id);
 
-    QUuid id() const;
+    EventTypeId id() const;
 
     QString name() const;
     void setName(const QString &name);
@@ -36,7 +37,7 @@ public:
     void setParameters(const QVariantList &parameters);
 
 private:
-    QUuid m_id;
+    EventTypeId m_id;
     QString m_name;
 
     QVariantList m_parameters;

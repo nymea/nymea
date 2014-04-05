@@ -19,25 +19,26 @@
 #ifndef ACTION_H
 #define ACTION_H
 
-#include <QUuid>
+#include "typeutils.h"
+
 #include <QVariantList>
 
 class Action
 {
 public:
-    explicit Action(const QUuid &deviceId, const QUuid &actionTypeId);
+    explicit Action(const DeviceId &deviceId, const ActionTypeId &actionTypeId);
 
     bool isValid() const;
 
-    QUuid actionTypeId() const;
-    QUuid deviceId() const;
+    ActionTypeId actionTypeId() const;
+    DeviceId deviceId() const;
 
     QVariantMap params() const;
     void setParams(const QVariantMap &params);
 
 private:
-    QUuid m_actionTypeId;
-    QUuid m_deviceId;
+    ActionTypeId m_actionTypeId;
+    DeviceId m_deviceId;
     QVariantMap m_params;
 };
 

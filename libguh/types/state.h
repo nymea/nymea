@@ -19,23 +19,24 @@
 #ifndef STATE_H
 #define STATE_H
 
-#include <QUuid>
+#include "typeutils.h"
+
 #include <QVariant>
 
 class State
 {
 public:
-    State(const QUuid &stateTypeId, const QUuid &deviceId);
+    State(const StateTypeId &stateTypeId, const DeviceId &deviceId);
 
-    QUuid stateTypeId() const;
-    QUuid deviceId() const;
+    StateTypeId stateTypeId() const;
+    DeviceId deviceId() const;
 
     QVariant value() const;
     void setValue(const QVariant &value);
 
 private:
-    QUuid m_stateTypeId;
-    QUuid m_deviceId;
+    StateTypeId m_stateTypeId;
+    DeviceId m_deviceId;
     QVariant m_value;
 };
 

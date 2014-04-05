@@ -33,20 +33,20 @@
 
 /*! Constructs a State reflecting the \l{StateType} given by \a stateTypeId
     and associated with the \l{Device} given by \a deviceId */
-State::State(const QUuid &stateTypeId, const QUuid &deviceId):
+State::State(const StateTypeId &stateTypeId, const DeviceId &deviceId):
     m_stateTypeId(stateTypeId),
     m_deviceId(deviceId)
 {
 }
 
 /*! Returns the id of the StateType describing this State. */
-QUuid State::stateTypeId() const
+StateTypeId State::stateTypeId() const
 {
     return m_stateTypeId;
 }
 
 /*! Returns the id of the StateType describing this State. */
-QUuid State::deviceId() const
+DeviceId State::deviceId() const
 {
     return m_deviceId;
 }

@@ -43,14 +43,14 @@
 #include "devicepluginmeisteranker.h"
 
 #include "plugin/device.h"
-#include "plugin/devicemanager.h"
+#include "devicemanager.h"
 #include "hardware/radio433.h"
 
 #include <QDebug>
 #include <QStringList>
 
-QUuid meisterAnkerVendorId = QUuid("c181e749-5f72-4e25-a0af-094633abd7d5");
-QUuid thermometer = QUuid("e37e9f34-95b9-4a22-ae4f-e8b874eec871");
+VendorId meisterAnkerVendorId = VendorId("c181e749-5f72-4e25-a0af-094633abd7d5");
+DeviceClassId thermometer = DeviceClassId("e37e9f34-95b9-4a22-ae4f-e8b874eec871");
 
 DevicePluginMeisterAnker::DevicePluginMeisterAnker()
 {
@@ -61,6 +61,7 @@ QList<Vendor> DevicePluginMeisterAnker::supportedVendors() const
     QList<Vendor> ret;
     Vendor meisterAnker(meisterAnkerVendorId, "Meister Anker");
     ret.append(meisterAnker);
+    return ret;
 }
 
 QList<DeviceClass> DevicePluginMeisterAnker::supportedDevices() const
@@ -68,7 +69,7 @@ QList<DeviceClass> DevicePluginMeisterAnker::supportedDevices() const
     QList<DeviceClass> ret;
 
     // Thermometer
-    DeviceClass deviceClassMeisterAnkerThermometer(pluginId(), thermometer);
+    DeviceClass deviceClassMeisterAnkerThermometer(pluginId(), meisterAnkerVendorId, thermometer);
     deviceClassMeisterAnkerThermometer.setName("Meister Anker Thermometer");
     
     QVariantList thermometerParams;
@@ -84,12 +85,12 @@ QList<DeviceClass> DevicePluginMeisterAnker::supportedDevices() const
 
     QList<StateType> thermometerStates;
 
-    StateType tempState("a9849491-25f4-43a3-a6fe-3bfce43d6332");
+    StateType tempState(StateTypeId("a9849491-25f4-43a3-a6fe-3bfce43d6332"));
     tempState.setName("Temperature");
     tempState.setType(QVariant::Double);
     thermometerStates.append(tempState);
 
-    StateType batteryState("ebf951ba-75ca-47ac-ba3c-ea9ec1e7bbd1");
+    StateType batteryState(StateTypeId("ebf951ba-75ca-47ac-ba3c-ea9ec1e7bbd1"));
     batteryState.setName("Battery");
     batteryState.setType(QVariant::Bool);
     thermometerStates.append(batteryState);
@@ -104,7 +105,7 @@ QList<DeviceClass> DevicePluginMeisterAnker::supportedDevices() const
     paramThermometer.insert("type", "double");
     paramsThermometer.append(paramThermometer);
 
-    EventType temperatureEvent(QUuid("174ab4d5-2ef0-491b-a55b-c895cedff80e"));
+    EventType temperatureEvent(EventTypeId("174ab4d5-2ef0-491b-a55b-c895cedff80e"));
     temperatureEvent.setName("temperature");
     temperatureEvent.setParameters(paramsThermometer);
     thermometerEvents.append(temperatureEvent);
@@ -115,7 +116,7 @@ QList<DeviceClass> DevicePluginMeisterAnker::supportedDevices() const
     paramThermometerBat.insert("type", "bool");
     paramsThermometerBat.append(paramThermometerBat);
 
-    EventType batteryStatusEvent(QUuid("c376b532-993f-41c7-acc7-02b409136d32"));
+    EventType batteryStatusEvent(EventTypeId("c376b532-993f-41c7-acc7-02b409136d32"));
     batteryStatusEvent.setName("batteryStatus");
     batteryStatusEvent.setParameters(paramsThermometerBat);
     thermometerEvents.append(batteryStatusEvent);

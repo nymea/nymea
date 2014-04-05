@@ -19,15 +19,16 @@
 #ifndef STATETYPE_H
 #define STATETYPE_H
 
-#include <QUuid>
+#include "typeutils.h"
+
 #include <QVariant>
 
 class StateType
 {
 public:
-    StateType(const QUuid &id);
+    StateType(const StateTypeId &id);
 
-    QUuid id() const;
+    StateTypeId id() const;
 
     QString name() const;
     void setName(const QString &name);
@@ -39,7 +40,7 @@ public:
     void setDefaultValue(const QVariant &defaultValue);
 
 private:
-    QUuid m_id;
+    StateTypeId m_id;
     QString m_name;
     QVariant::Type m_type;
     QVariant m_defaultValue;

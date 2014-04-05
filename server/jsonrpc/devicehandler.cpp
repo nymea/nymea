@@ -18,9 +18,9 @@
 
 #include "devicehandler.h"
 #include "guhcore.h"
+#include "devicemanager.h"
 #include "plugin/device.h"
 #include "plugin/deviceclass.h"
-#include "plugin/devicemanager.h"
 #include "plugin/deviceplugin.h"
 
 #include <QDebug>
@@ -176,9 +176,9 @@ QVariantMap DeviceHandler::SetPluginParams(const QVariantMap &params)
 
 QVariantMap DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
 {
-    QUuid deviceClass = params.value("deviceClassId").toUuid();
+    DeviceClassId deviceClass(params.value("deviceClassId").toString());
     QVariantMap deviceParams = params.value("deviceParams").toMap();
-    QUuid newDeviceId = QUuid::createUuid();
+    DeviceId newDeviceId = DeviceId::createDeviceId();
     DeviceManager::DeviceError status = GuhCore::instance()->deviceManager()->addConfiguredDevice(deviceClass, deviceParams, newDeviceId);
     QVariantMap returns;
     switch(status) {

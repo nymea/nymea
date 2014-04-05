@@ -34,13 +34,13 @@
 #include "actiontype.h"
 
 /*! Constructs an ActionType with the given \a id.*/
-ActionType::ActionType(const QUuid &id):
+ActionType::ActionType(const ActionTypeId &id):
     m_id(id)
 {
 }
 
 /*! Returns the id of this ActionType.*/
-QUuid ActionType::id() const
+ActionTypeId ActionType::id() const
 {
     return m_id;
 }

@@ -19,7 +19,8 @@
 #ifndef DEVICEMANAGER_H
 #define DEVICEMANAGER_H
 
-#include "deviceclass.h"
+#include "plugin/deviceclass.h"
+#include "plugin/device.h"
 
 #include "types/event.h"
 #include "types/action.h"
@@ -63,7 +64,7 @@ public:
     QList<DeviceClass> supportedDevices() const;
 
     QList<Device*> configuredDevices() const;
-    DeviceError addConfiguredDevice(const QUuid &deviceClassId, const QVariantMap &params, const QUuid id = QUuid::createUuid());
+    DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const QVariantMap &params, const DeviceId id = DeviceId::createDeviceId());
     DeviceError removeConfiguredDevice(const QUuid &deviceId);
 
     Device* findConfiguredDevice(const QUuid &id) const;

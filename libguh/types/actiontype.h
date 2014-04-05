@@ -19,15 +19,16 @@
 #ifndef ACTIONTYPE_H
 #define ACTIONTYPE_H
 
-#include <QUuid>
+#include "typeutils.h"
+
 #include <QVariantList>
 
 class ActionType
 {
 public:
-    ActionType(const QUuid &id);
+    ActionType(const ActionTypeId &id);
 
-    QUuid id() const;
+    ActionTypeId id() const;
 
     QString name() const;
     void setName(const QString &name);
@@ -36,7 +37,7 @@ public:
     void setParameters(const QVariantList &parameters);
 
 private:
-    QUuid m_id;
+    ActionTypeId m_id;
     QString m_name;
 
     QVariantList m_parameters;

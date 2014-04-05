@@ -80,8 +80,8 @@ QVariantMap RulesHandler::AddRule(const QVariantMap &params)
 {
     QVariantMap eventMap = params.value("event").toMap();
 
-    QUuid eventTypeId = eventMap.value("eventTypeId").toUuid();
-    QUuid eventDeviceId = eventMap.value("deviceId").toUuid();
+    EventTypeId eventTypeId(eventMap.value("eventTypeId").toString());
+    DeviceId eventDeviceId(eventMap.value("deviceId").toString());
     QVariantMap eventParams = eventMap.value("params").toMap();
     Event event(eventTypeId, eventDeviceId, eventParams);
 
@@ -90,7 +90,7 @@ QVariantMap RulesHandler::AddRule(const QVariantMap &params)
     qDebug() << "got action list" << actionList.count();
     foreach (const QVariant &actionVariant, actionList) {
         QVariantMap actionMap = actionVariant.toMap();
-        Action action(actionMap.value("deviceId").toUuid(), actionMap.value("actionTypeId").toUuid());
+        Action action(DeviceId(actionMap.value("deviceId").toString()), ActionTypeId(actionMap.value("actionTypeId").toString()));
         action.setParams(actionMap.value("params").toMap());
         actions.append(action);
     }

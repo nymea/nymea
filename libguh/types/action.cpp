@@ -33,7 +33,7 @@
 #include "action.h"
 
 /*! Construct an Action with the given \a deviceId and \a actionTypeId */
-Action::Action(const QUuid &deviceId, const QUuid &actionTypeId) :
+Action::Action(const DeviceId &deviceId, const ActionTypeId &actionTypeId) :
     m_actionTypeId(actionTypeId),
     m_deviceId(deviceId)
 {
@@ -46,13 +46,13 @@ bool Action::isValid() const
 }
 
 /*! Returns the actionTypeId for this Action */
-QUuid Action::actionTypeId() const
+ActionTypeId Action::actionTypeId() const
 {
     return m_actionTypeId;
 }
 
 /*! Returns the deviceId this Action is associated with.*/
-QUuid Action::deviceId() const
+DeviceId Action::deviceId() const
 {
     return m_deviceId;
 }

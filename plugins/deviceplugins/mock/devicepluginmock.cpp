@@ -20,18 +20,19 @@
 #include "httpdaemon.h"
 
 #include "plugin/device.h"
-#include "plugin/devicemanager.h"
+#include "devicemanager.h"
 
 #include <QDebug>
 #include <QStringList>
 
-QUuid guhVendorId = QUuid("2062d64d-3232-433c-88bc-0d33c0ba2ba6");
-QUuid mockEvent1Id = QUuid("45bf3752-0fc6-46b9-89fd-ffd878b5b22b");
-QUuid mockEvent2Id = QUuid("863d5920-b1cf-4eb9-88bd-8f7b8583b1cf");
-QUuid mockIntStateId = QUuid("80baec19-54de-4948-ac46-31eabfaceb83");
-QUuid mockBoolStateId = QUuid("9dd6a97c-dfd1-43dc-acbd-367932742310");
-QUuid mockAction1Id = QUuid("dea0f4e1-65e3-4981-8eaa-2701c53a9185");
-QUuid mockAction2Id = QUuid("defd3ed6-1a0d-400b-8879-a0202cf39935");
+VendorId guhVendorId = VendorId("2062d64d-3232-433c-88bc-0d33c0ba2ba6");
+DeviceClassId mockDeviceId = DeviceClassId("753f0d32-0468-4d08-82ed-1964aab03298");
+EventTypeId mockEvent1Id = EventTypeId("45bf3752-0fc6-46b9-89fd-ffd878b5b22b");
+EventTypeId mockEvent2Id = EventTypeId("863d5920-b1cf-4eb9-88bd-8f7b8583b1cf");
+StateTypeId mockIntStateId = StateTypeId("80baec19-54de-4948-ac46-31eabfaceb83");
+StateTypeId mockBoolStateId = StateTypeId("9dd6a97c-dfd1-43dc-acbd-367932742310");
+ActionTypeId mockAction1Id = ActionTypeId("dea0f4e1-65e3-4981-8eaa-2701c53a9185");
+ActionTypeId mockAction2Id = ActionTypeId("defd3ed6-1a0d-400b-8879-a0202cf39935");
 
 DevicePluginMock::DevicePluginMock()
 {
@@ -49,7 +50,7 @@ QList<DeviceClass> DevicePluginMock::supportedDevices() const
 {
     QList<DeviceClass> ret;
 
-    DeviceClass deviceClassMock(pluginId(), QUuid("753f0d32-0468-4d08-82ed-1964aab03298"));
+    DeviceClass deviceClassMock(pluginId(), guhVendorId, mockDeviceId);
     deviceClassMock.setName("Mock Device");
 
     QVariantList mockParams;
@@ -149,7 +150,7 @@ void DevicePluginMock::executeAction(Device *device, const Action &action)
     m_daemons.value(device)->actionExecuted(action.actionTypeId());
 }
 
-void DevicePluginMock::setState(const QUuid &stateTypeId, const QVariant &value)
+void DevicePluginMock::setState(const StateTypeId &stateTypeId, const QVariant &value)
 {
     HttpDaemon *daemon = qobject_cast<HttpDaemon*>(sender());
     if (!daemon) {
@@ -160,7 +161,7 @@ void DevicePluginMock::setState(const QUuid &stateTypeId, const QVariant &value)
     device->setStateValue(stateTypeId, value);
 }
 
-void DevicePluginMock::triggerEvent(const QUuid &id)
+void DevicePluginMock::triggerEvent(const EventTypeId &id)
 {
     HttpDaemon *daemon = qobject_cast<HttpDaemon*>(sender());
     if (!daemon) {

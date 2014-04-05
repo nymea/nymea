@@ -27,7 +27,7 @@
 #include "jsonhandler.h"
 
 #include "guhcore.h"
-#include "plugin/devicemanager.h"
+#include "devicemanager.h"
 #include "plugin/deviceplugin.h"
 #include "plugin/deviceclass.h"
 #include "plugin/device.h"

@@ -54,7 +54,7 @@
 
 #include "guhcore.h"
 
-#include "plugin/devicemanager.h"
+#include "devicemanager.h"
 #include "plugin/device.h"
 
 #include <QSettings>
@@ -78,14 +78,16 @@ RuleEngine::RuleEngine(QObject *parent) :
         settings.beginGroup(idString);
 
         settings.beginGroup("event");
-        Event event(settings.value("eventTypeId").toUuid(), settings.value("deviceId").toUuid(), settings.value("params").toMap());
+        EventTypeId eventTypeId(settings.value("eventTypeId").toString());
+        DeviceId deviceId(settings.value("deviceId").toString());
+        Event event(eventTypeId, deviceId, settings.value("params").toMap());
         settings.endGroup();
 
         settings.beginGroup("states");
         QList<State> states;
         foreach (const QString &stateTypeIdString, settings.childGroups()) {
             settings.beginGroup(stateTypeIdString);
-            State state(stateTypeIdString, settings.value("deviceId").toUuid());
+            State state(StateTypeId(stateTypeIdString), DeviceId(settings.value("deviceId").toString()));
             state.setValue(settings.value("value"));
             settings.endGroup();
             states.append(state);
@@ -96,7 +98,7 @@ RuleEngine::RuleEngine(QObject *parent) :
         QList<Action> actions;
         foreach (const QString &actionIdString, settings.childGroups()) {
             settings.beginGroup(actionIdString);
-            Action action = Action(settings.value("deviceId").toUuid(), settings.value("actionTypeId").toUuid());
+            Action action = Action(DeviceId(settings.value("deviceId").toString()), ActionTypeId(settings.value("actionTypeId").toString()));
             action.setParams(settings.value("params").toMap());
             settings.endGroup();
             actions.append(action);

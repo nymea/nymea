@@ -33,7 +33,7 @@
 
 #include <QDebug>
 
-Device::Device(const QUuid &pluginId, const QUuid &id, const QUuid &deviceClassId, QObject *parent):
+Device::Device(const QUuid &pluginId, const DeviceId &id, const DeviceClassId &deviceClassId, QObject *parent):
     QObject(parent),
     m_id(id),
     m_deviceClassId(deviceClassId),
@@ -42,9 +42,9 @@ Device::Device(const QUuid &pluginId, const QUuid &id, const QUuid &deviceClassI
 
 }
 
-Device::Device(const QUuid &pluginId, const QUuid &deviceClassId, QObject *parent):
+Device::Device(const QUuid &pluginId, const DeviceClassId &deviceClassId, QObject *parent):
     QObject(parent),
-    m_id(QUuid::createUuid()),
+    m_id(DeviceId::createDeviceId()),
     m_deviceClassId(deviceClassId),
     m_pluginId(pluginId)
 {
@@ -52,13 +52,13 @@ Device::Device(const QUuid &pluginId, const QUuid &deviceClassId, QObject *paren
 }
 
 /*! Returns the id of this Device. */
-QUuid Device::id() const
+DeviceId Device::id() const
 {
     return m_id;
 }
 
 /*! Returns the deviceClassId of the associated \l{DeviceClass}. */
-QUuid Device::deviceClassId() const
+DeviceClassId Device::deviceClassId() const
 {
     return m_deviceClassId;
 }
@@ -129,7 +129,7 @@ QVariant Device::stateValue(const QUuid &stateTypeId) const
 }
 
 /*! For convenience, this finds the \l{State} matching the given \a stateTypeId in this Device and sets the current value to \a value. */
-void Device::setStateValue(const QUuid &stateTypeId, const QVariant &value)
+void Device::setStateValue(const StateTypeId &stateTypeId, const QVariant &value)
 {
     for (int i = 0; i < m_states.count(); ++i) {
         if (m_states.at(i).stateTypeId() == stateTypeId) {

@@ -17,7 +17,7 @@
  ***************************************************************************/
 
 #include "guhcore.h"
-#include "plugin/devicemanager.h"
+#include "devicemanager.h"
 #include "mocktcpserver.h"
 
 #include <QtTest/QtTest>

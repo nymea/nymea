@@ -36,7 +36,7 @@
 /*! Constructs a Event reflecting the \l{Event} given by \a EventTypeId, associated with
     the \l{Device} given by \a deviceId and the parameters given by \a params. The parameters must
     match the description in the reflecting \l{Event}.*/
-Event::Event(const QUuid &eventTypeId, const QUuid &deviceId, const QVariantMap &params):
+Event::Event(const EventTypeId &eventTypeId, const DeviceId &deviceId, const QVariantMap &params):
     m_eventTypeId(eventTypeId),
     m_deviceId(deviceId),
     m_params(params)
@@ -44,13 +44,13 @@ Event::Event(const QUuid &eventTypeId, const QUuid &deviceId, const QVariantMap 
 }
 
 /*! Returns the id of the \l{EventType} which describes this Event.*/
-QUuid Event::eventTypeId() const
+EventTypeId Event::eventTypeId() const
 {
     return m_eventTypeId;
 }
 
 /*! Returns the id of the \l{Device} associated with this Event.*/
-QUuid Event::deviceId() const
+DeviceId Event::deviceId() const
 {
     return m_deviceId;
 }

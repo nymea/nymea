@@ -31,13 +31,13 @@
 /*! Constructs a State with the given \a id.
     When creating a \l{DevicePlugin} generate a new uuid for each StateType you define and
     hardcode it into the plugin. */
-StateType::StateType(const QUuid &id):
+StateType::StateType(const StateTypeId &id):
     m_id(id)
 {
 }
 
 /*! Returns the id of the StateType.*/
-QUuid StateType::id() const
+StateTypeId StateType::id() const
 {
     return m_id;
 }

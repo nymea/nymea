@@ -19,7 +19,7 @@
 #include "actionhandler.h"
 
 #include "guhcore.h"
-#include "plugin/devicemanager.h"
+#include "devicemanager.h"
 #include "types/action.h"
 
 #include <QDebug>
@@ -49,8 +49,8 @@ QString ActionHandler::name() const
 QVariantMap ActionHandler::ExecuteAction(const QVariantMap &params)
 {
 
-    QUuid deviceId = params.value("deviceId").toUuid();
-    QUuid actionTypeId = params.value("actionTypeId").toUuid();
+    DeviceId deviceId(params.value("deviceId").toString());
+    ActionTypeId actionTypeId(params.value("actionTypeId").toString());
     QVariantMap actionParams = params.value("params").toMap();
 
     Action action(deviceId, actionTypeId);

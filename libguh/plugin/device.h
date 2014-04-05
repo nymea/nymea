@@ -19,11 +19,15 @@
 #ifndef DEVICE_H
 #define DEVICE_H
 
+#include "typeutils.h"
+
+#include "plugin/deviceclass.h"
 #include "types/state.h"
 
 #include <QObject>
 #include <QUuid>
 #include <QVariant>
+
 
 class Device: public QObject
 {
@@ -32,8 +36,8 @@ class Device: public QObject
     friend class DeviceManager;
 
 public:
-    QUuid id() const;
-    QUuid deviceClassId() const;
+    DeviceId id() const;
+    DeviceClassId deviceClassId() const;
     QUuid pluginId() const;
 
     QString name() const;
@@ -47,18 +51,18 @@ public:
 
     bool hasState(const QUuid &stateTypeId) const;
     QVariant stateValue(const QUuid &stateTypeId) const;
-    void setStateValue(const QUuid &stateTypeId, const QVariant &value);
+    void setStateValue(const StateTypeId &stateTypeId, const QVariant &value);
 
 signals:
     void stateValueChanged(const QUuid &stateTypeId, const QVariant &value);
 
 private:
-    Device(const QUuid &pluginId, const QUuid &id, const QUuid &deviceClassId, QObject *parent = 0);
-    Device(const QUuid &pluginId, const QUuid &deviceClassId, QObject *parent = 0);
+    Device(const QUuid &pluginId, const DeviceId &id, const DeviceClassId &deviceClassId, QObject *parent = 0);
+    Device(const QUuid &pluginId, const DeviceClassId &deviceClassId, QObject *parent = 0);
 
 private:
-    QUuid m_id;
-    QUuid m_deviceClassId;
+    DeviceId m_id;
+    DeviceClassId m_deviceClassId;
     QUuid m_pluginId;
     QString m_name;
     QVariantMap m_params;

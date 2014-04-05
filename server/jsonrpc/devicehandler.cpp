@@ -40,7 +40,8 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     setReturns("GetSupportedVendors", returns);
 
     params.clear(); returns.clear();
-    setDescription("GetSupportedDevices", "Returns a list of supported Device classes.");
+    setDescription("GetSupportedDevices", "Returns a list of supported Device classes, optionally filtered by vendorId.");
+    params.insert("vendorId", "o:uuid");
     setParams("GetSupportedDevices", params);
     QVariantList deviceClasses;
     deviceClasses.append(JsonTypes::deviceClassRef());
@@ -73,7 +74,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     setParams("AddConfiguredDevice", params);
     returns.insert("success", "bool");
     returns.insert("errorMessage", "string");
-    returns.insert("deviceId", "uuid");
+    returns.insert("deviceId", "o:uuid");
     setReturns("AddConfiguredDevice", returns);
 
     params.clear(); returns.clear();
@@ -126,7 +127,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     setParams("GetStateValue", params);
     returns.insert("success", "bool");
     returns.insert("errorMessage", "string");
-    returns.insert("value", "variant");
+    returns.insert("value", "o:variant");
     setReturns("GetStateValue", returns);
 
     // Notifications
@@ -158,10 +159,15 @@ QVariantMap DeviceHandler::GetSupportedVendors(const QVariantMap &params) const
 
 QVariantMap DeviceHandler::GetSupportedDevices(const QVariantMap &params) const
 {
-    Q_UNUSED(params)
     QVariantMap returns;
     QVariantList supportedDeviceList;
-    foreach (const DeviceClass &deviceClass, GuhCore::instance()->deviceManager()->supportedDevices()) {
+    QList<DeviceClass> supportedDevices;
+    if (params.contains("vendorId")) {
+        supportedDevices = GuhCore::instance()->deviceManager()->supportedDevices(VendorId(params.value("vendorId").toString()));
+    } else {
+        supportedDevices = GuhCore::instance()->deviceManager()->supportedDevices();
+    }
+    foreach (const DeviceClass &deviceClass, supportedDevices) {
         supportedDeviceList.append(JsonTypes::packDeviceClass(deviceClass));
     }
     returns.insert("deviceClasses", supportedDeviceList);
@@ -202,6 +208,7 @@ QVariantMap DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
     switch(status) {
     case DeviceManager::DeviceErrorNoError:
         returns.insert("success", true);
+        returns.insert("errorMessage", "");
         returns.insert("deviceId", newDeviceId);
         break;
     case DeviceManager::DeviceErrorDeviceClassNotFound:
@@ -310,6 +317,7 @@ QVariantMap DeviceHandler::GetStateValue(const QVariantMap &params) const
     QVariant stateValue = device->stateValue(params.value("stateTypeId").toUuid());
 
     returns.insert("success", true);
+    returns.insert("errorMessage", "");
     returns.insert("value", stateValue);
     return returns;
 }

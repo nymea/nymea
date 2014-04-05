@@ -121,10 +121,20 @@ QList<Vendor> DeviceManager::supportedVendors() const
     return m_supportedVendors.values();
 }
 
-/*! Returns all the supported \l{DeviceClass}{DeviceClasses} by all \l{DevicePlugin}{DevicePlugins} loaded in the system. */
+/*! Returns all the supported \l{DeviceClass}{DeviceClasses} by all \l{DevicePlugin}{DevicePlugins} loaded in the system.
+    Optionally filtered by vendorId. */
 QList<DeviceClass> DeviceManager::supportedDevices(const VendorId &vendorId) const
 {
-    return m_supportedDevices.values();
+    qDebug() << "returning devices" << vendorId;
+    QList<DeviceClass> ret;
+    if (vendorId.isNull()) {
+        ret = m_supportedDevices.values();
+    } else {
+        foreach (const DeviceClassId &deviceClassId, m_vendorDeviceMap.value(vendorId)) {
+            ret.append(m_supportedDevices.value(deviceClassId));
+        }
+    }
+    return ret;
 }
 
 /*! Add a new configured device for the given \l{DeviceClass} and the given parameters.

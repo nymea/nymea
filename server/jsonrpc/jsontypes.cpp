@@ -263,7 +263,10 @@ QPair<bool, QString> JsonTypes::validateMap(const QVariantMap &templateMap, cons
 {
     s_lastError.clear();
     foreach (const QString &key, templateMap.keys()) {
-        if (key != "params" && !map.contains(key)) {
+        if (templateMap.value(key).toString().startsWith("o:")) {
+            continue;
+        }
+        if (!map.contains(key)) {
             qDebug() << "missing key" << key << templateMap << map;
             QJsonDocument jsonDoc = QJsonDocument::fromVariant(map);
             return report(false, QString("Missing key \"%1\" in %2").arg(key).arg(QString(jsonDoc.toJson())));
@@ -279,20 +282,23 @@ QPair<bool, QString> JsonTypes::validateMap(const QVariantMap &templateMap, cons
 
 QPair<bool, QString> JsonTypes::validateProperty(const QVariant &templateValue, const QVariant &value)
 {
-    if (templateValue == "uuid") {
+    QString strippedTemplateValue = templateValue.toString();
+    strippedTemplateValue.remove(QRegExp("^o:"));
+
+    if (strippedTemplateValue == "uuid") {
         QString errorString = QString("Param %1 is not a uuid.").arg(value.toString());
         return report(value.canConvert(QVariant::Uuid), errorString);
     }
-    if (templateValue == "string") {
+    if (strippedTemplateValue == "string") {
         QString errorString = QString("Param %1 is not a string.").arg(value.toString());
         return report(value.canConvert(QVariant::String), errorString);
     }
-    if (templateValue == "bool") {
+    if (strippedTemplateValue == "bool") {
         QString errorString = QString("Param %1 is not a bool.").arg(value.toString());
         return report(value.canConvert(QVariant::Bool), errorString);
     }
-    qWarning() << QString("Unhandled property type: %1 (expected: %2)").arg(value.toString()).arg(templateValue.toString());
-    QString errorString = QString("Unhandled property type: %1 (expected: %2)").arg(value.toString()).arg(templateValue.toString());
+    qWarning() << QString("Unhandled property type: %1 (expected: %2)").arg(value.toString()).arg(strippedTemplateValue);
+    QString errorString = QString("Unhandled property type: %1 (expected: %2)").arg(value.toString()).arg(strippedTemplateValue);
     return report(false, errorString);
 }
 
@@ -338,6 +344,11 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                 if (!result.first) {
                     qDebug() << "device not valid";
                     return result;
+                }
+            } else if (refName == vendorRef()) {
+                QPair<bool, QString> result = validateMap(vendorDescription(), variant.toMap());
+                if (!result.first) {
+                    qDebug() << "value not allowed in" << vendorRef();
                 }
             } else if (refName == deviceClassRef()) {
                 QPair<bool, QString> result = validateMap(deviceClassDescription(), variant.toMap());

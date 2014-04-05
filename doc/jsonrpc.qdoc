@@ -31,6 +31,8 @@
 
     The JSONRPC API is self documenting and can be introspected by calling \c"JSONRPC.Introspect".
 
+    Parameters are optional if the type is the type is prefixed with "o:" for optional.
+
     \section1 Communicating with the server
     The server listens on TCP port 1234 for incoming TCP connections. It will respond to incoming
     connections with a some information about the server. Telnet can be used to issue commands for

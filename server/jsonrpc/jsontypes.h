@@ -72,6 +72,7 @@ public:
     DECLARE_OBJECT(actionType, "ActionType")
     DECLARE_OBJECT(action, "Action")
     DECLARE_OBJECT(plugin, "Plugin")
+    DECLARE_OBJECT(vendor, "Vendor")
     DECLARE_OBJECT(deviceClass, "DeviceClass")
     DECLARE_OBJECT(device, "Device")
     DECLARE_OBJECT(rule, "Rule")
@@ -81,6 +82,7 @@ public:
     static QVariantMap packActionType(const ActionType &actionType);
     static QVariantMap packAction(const Action &action);
     static QVariantMap packStateType(const StateType &stateType);
+    static QVariantMap packVendor(const Vendor &vendor);
     static QVariantMap packDeviceClass(const DeviceClass &deviceClass);
     static QVariantMap packPlugin(DevicePlugin *plugin);
     static QVariantMap packDevice(Device *device);

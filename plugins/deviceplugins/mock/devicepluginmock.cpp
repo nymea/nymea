@@ -133,8 +133,8 @@ bool DevicePluginMock::deviceCreated(Device *device)
         return false;
     }
 
-    connect(daemon, SIGNAL(triggerEvent(QUuid)), SLOT(triggerEvent(QUuid)));
-    connect(daemon, SIGNAL(setState(QUuid, QVariant)), SLOT(setState(QUuid,QVariant)));
+    connect(daemon, &HttpDaemon::triggerEvent, this, &DevicePluginMock::triggerEvent);
+    connect(daemon, &HttpDaemon::setState, this, &DevicePluginMock::setState);
 
     return true;
 }

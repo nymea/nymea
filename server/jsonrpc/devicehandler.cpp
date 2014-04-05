@@ -32,13 +32,20 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     QVariantMap params;
 
     params.clear(); returns.clear();
+    setDescription("GetSupportedVendors", "Returns a list of supported Vendors.");
+    setParams("GetSupportedVendors", params);
+    QVariantList vendors;
+    vendors.append(JsonTypes::vendorRef());
+    returns.insert("vendors", vendors);
+    setReturns("GetSupportedVendors", returns);
+
+    params.clear(); returns.clear();
     setDescription("GetSupportedDevices", "Returns a list of supported Device classes.");
     setParams("GetSupportedDevices", params);
     QVariantList deviceClasses;
     deviceClasses.append(JsonTypes::deviceClassRef());
     returns.insert("deviceClasses", deviceClasses);
     setReturns("GetSupportedDevices", returns);
-
 
     params.clear(); returns.clear();
     setDescription("GetPlugins", "Returns a list of loaded plugins.");
@@ -136,6 +143,17 @@ DeviceHandler::DeviceHandler(QObject *parent) :
 QString DeviceHandler::name() const
 {
     return "Devices";
+}
+
+QVariantMap DeviceHandler::GetSupportedVendors(const QVariantMap &params) const
+{
+    QVariantMap returns;
+    QVariantList supportedVendors;
+    foreach (const Vendor &vendor, GuhCore::instance()->deviceManager()->supportedVendors()) {
+        supportedVendors.append(JsonTypes::packVendor(vendor));
+    }
+    returns.insert("vendors", supportedVendors);
+    return returns;
 }
 
 QVariantMap DeviceHandler::GetSupportedDevices(const QVariantMap &params) const

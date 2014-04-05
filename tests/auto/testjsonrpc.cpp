@@ -32,6 +32,8 @@ Q_IMPORT_PLUGIN(DevicePluginMock)
 int mockDevice1Port = 1337;
 int mockDevice2Port = 7331;
 
+extern VendorId guhVendorId;
+
 class TestJSONRPC: public QObject
 {
     Q_OBJECT
@@ -42,6 +44,7 @@ private slots:
     void introspect();
     void version();
 
+    void getSupportedVendors();
     void getSupportedDevices();
 
     void enableDisableNotifications_data();
@@ -147,6 +150,18 @@ void TestJSONRPC::introspect()
     QCOMPARE(jsonDoc.toVariant().toMap().value("id").toInt(), 42);
 }
 
+void TestJSONRPC::getSupportedVendors()
+{
+    QVariant supportedVendors = injectAndWait("Devices.GetSupportedVendors");
+    qDebug() << "response" << supportedVendors;
+
+    // Make sure there is exactly 1 supported Vendor named "guh"
+    QVariantList vendorList = supportedVendors.toMap().value("params").toMap().value("vendors").toList();
+    QCOMPARE(vendorList.count(), 1);
+    VendorId vendorId = VendorId(vendorList.first().toMap().value("id").toString());
+    QCOMPARE(vendorId, guhVendorId);
+}
+
 void TestJSONRPC::getSupportedDevices()
 {
     QVariant supportedDevices = injectAndWait("Devices.GetSupportedDevices");
@@ -195,7 +210,6 @@ void TestJSONRPC::stateChangeEmitsNotifications()
     // Setup connection to mock client
     QNetworkAccessManager nam;
 
-    QSignalSpy mockSpy(&nam, SIGNAL(finished()));
     QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
 

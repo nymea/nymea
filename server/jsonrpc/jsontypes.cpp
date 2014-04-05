@@ -189,6 +189,14 @@ QVariantMap JsonTypes::packStateType(const StateType &stateType)
     return variantMap;
 }
 
+QVariantMap JsonTypes::packVendor(const Vendor &vendor)
+{
+    QVariantMap variantMap;
+    variantMap.insert("id", vendor.id());
+    variantMap.insert("name", vendor.name());
+    return variantMap;
+}
+
 QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass)
 {
     QVariantMap variant;

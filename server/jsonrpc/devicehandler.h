@@ -29,6 +29,8 @@ public:
 
     QString name() const override;
 
+    Q_INVOKABLE QVariantMap GetSupportedVendors(const QVariantMap &params) const;
+
     Q_INVOKABLE QVariantMap GetSupportedDevices(const QVariantMap &params) const;
 
     Q_INVOKABLE QVariantMap GetPlugins(const QVariantMap &params) const;

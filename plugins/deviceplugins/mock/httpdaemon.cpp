@@ -58,10 +58,10 @@ void HttpDaemon::readClient()
             QUrlQuery query(url);
             qDebug() << "query is" << url.path();
             if (url.path() == "/setstate") {
-                emit setState(QUuid(query.queryItems().first().first), QVariant(query.queryItems().first().second));
+                emit setState(StateTypeId(query.queryItems().first().first), QVariant(query.queryItems().first().second));
             } else if (url.path() == "/generateevent") {
                 qDebug() << "got generateevent" << query.queryItemValue("eventid");
-                emit triggerEvent(QUuid(query.queryItemValue("eventid")));
+                emit triggerEvent(EventTypeId(query.queryItemValue("eventid")));
             }
         }
         if (tokens[0] == "GET") {

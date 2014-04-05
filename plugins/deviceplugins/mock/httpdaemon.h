@@ -1,6 +1,8 @@
 #ifndef HTTPDAEMON_H
 #define HTTPDAEMON_H
 
+#include "typeutils.h"
+
 #include <QTcpServer>
 #include <QUuid>
 #include <QDateTime>
@@ -19,8 +21,8 @@ public:
     void actionExecuted(const QUuid&actionTypeId);
 
 signals:
-    void setState(const QUuid &stateTypeId, const QVariant &value);
-    void triggerEvent(const QUuid &eventTypeId);
+    void setState(const StateTypeId &stateTypeId, const QVariant &value);
+    void triggerEvent(const EventTypeId &eventTypeId);
 
 private slots:
     void readClient();

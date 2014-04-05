@@ -75,7 +75,7 @@
 
 #include "devicemanager.h"
 
-#include "radio433.h"
+#include "hardware/radio433.h"
 
 #include "device.h"
 #include "deviceclass.h"
@@ -114,6 +114,11 @@ QList<DevicePlugin *> DeviceManager::plugins() const
 DevicePlugin *DeviceManager::plugin(const QUuid &id) const
 {
     return m_devicePlugins.value(id);
+}
+
+QList<Vendor> DeviceManager::supportedVendors() const
+{
+    return m_supportedVendors.values();
 }
 
 /*! Returns all the supported \l{DeviceClass}{DeviceClasses} by all \l{DevicePlugin}{DevicePlugins} loaded in the system. */

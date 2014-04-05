@@ -42,17 +42,25 @@
 
 #include "devicepluginmeisteranker.h"
 
-#include "device.h"
-#include "devicemanager.h"
-#include "radio433.h"
+#include "plugin/device.h"
+#include "plugin/devicemanager.h"
+#include "hardware/radio433.h"
 
 #include <QDebug>
 #include <QStringList>
 
+QUuid meisterAnkerVendorId = QUuid("c181e749-5f72-4e25-a0af-094633abd7d5");
 QUuid thermometer = QUuid("e37e9f34-95b9-4a22-ae4f-e8b874eec871");
 
 DevicePluginMeisterAnker::DevicePluginMeisterAnker()
 {
+}
+
+QList<Vendor> DevicePluginMeisterAnker::supportedVendors() const
+{
+    QList<Vendor> ret;
+    Vendor meisterAnker(meisterAnkerVendorId, "Meister Anker");
+    ret.append(meisterAnker);
 }
 
 QList<DeviceClass> DevicePluginMeisterAnker::supportedDevices() const

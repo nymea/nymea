@@ -1,9 +1,9 @@
 #include "httpdaemon.h"
 
-#include "device.h"
-#include "deviceclass.h"
-#include "deviceplugin.h"
-#include "statetype.h"
+#include "plugin/device.h"
+#include "plugin/deviceclass.h"
+#include "plugin/deviceplugin.h"
+#include "types/statetype.h"
 
 #include <QTcpSocket>
 #include <QDebug>

@@ -86,7 +86,7 @@ pure virtual methods: \l{DevicePlugin::pluginName()}, \l{DevicePlugin::pluginId(
 #include "deviceplugin.h"
 
 #include "devicemanager.h"
-#include "radio433.h"
+#include "hardware/radio433.h"
 
 #include <QDebug>
 

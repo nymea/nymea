@@ -19,7 +19,7 @@
 #ifndef DEVICE_H
 #define DEVICE_H
 
-#include "state.h"
+#include "types/state.h"
 
 #include <QObject>
 #include <QUuid>

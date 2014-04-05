@@ -52,18 +52,33 @@
 
 #include "devicepluginelro.h"
 
-#include "device.h"
-#include "devicemanager.h"
-#include "radio433.h"
+#include "plugin/device.h"
+#include "plugin/devicemanager.h"
+#include "hardware/radio433.h"
 
 #include <QDebug>
 #include <QStringList>
+
+QUuid elroVendorId = QUuid("435a13a0-65ca-4f0c-94c1-e5873b258db5");
+QUuid mumbiVendorId = QUuid("5f91c01c-0168-4bdf-a5ed-37cb6971b775");
 
 QUuid elroRemoteId = QUuid("d85c1ef4-197c-4053-8e40-707aa671d302");
 QUuid elroSwitchId = QUuid("308ae6e6-38b3-4b3a-a513-3199da2764f8");
 
 DevicePluginElro::DevicePluginElro()
 {
+}
+
+QList<Vendor> DevicePluginElro::supportedVendors() const
+{
+    QList<Vendor> ret;
+    Vendor elro(elroVendorId, "Electronic Roos");
+    ret.append(elro);
+
+    Vendor mumbi(mumbiVendorId, "Mumbi");
+    ret.append(mumbi);
+
+    return ret;
 }
 
 QList<DeviceClass> DevicePluginElro::supportedDevices() const

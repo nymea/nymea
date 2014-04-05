@@ -20,8 +20,10 @@
 #define DEVICEMANAGER_H
 
 #include "deviceclass.h"
-#include "event.h"
-#include "action.h"
+
+#include "types/event.h"
+#include "types/action.h"
+#include "types/vendor.h"
 
 #include <QObject>
 #include <QTimer>
@@ -57,6 +59,7 @@ public:
 
     QList<DevicePlugin*> plugins() const;
     DevicePlugin* plugin(const QUuid &id) const;
+    QList<Vendor> supportedVendors() const;
     QList<DeviceClass> supportedDevices() const;
 
     QList<Device*> configuredDevices() const;
@@ -90,6 +93,7 @@ private slots:
 private:
     bool setupDevice(Device *device);
 
+    QHash<QUuid, Vendor> m_supportedVendors;
     QHash<QUuid, DeviceClass> m_supportedDevices;
     QList<Device*> m_configuredDevices;
 

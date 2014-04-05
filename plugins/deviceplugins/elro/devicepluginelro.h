@@ -19,7 +19,7 @@
 #ifndef DEVICEPLUGINELRO_H
 #define DEVICEPLUGINELRO_H
 
-#include "deviceplugin.h"
+#include "plugin/deviceplugin.h"
 
 class DevicePluginElro : public DevicePlugin
 {
@@ -31,6 +31,7 @@ class DevicePluginElro : public DevicePlugin
 public:
     explicit DevicePluginElro();
 
+    QList<Vendor> supportedVendors() const override;
     QList<DeviceClass> supportedDevices() const override;
     DeviceManager::HardwareResources requiredHardware() const override;
 

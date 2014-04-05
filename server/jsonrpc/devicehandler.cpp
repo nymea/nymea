@@ -17,11 +17,11 @@
  ***************************************************************************/
 
 #include "devicehandler.h"
-#include "device.h"
-#include "deviceclass.h"
 #include "guhcore.h"
-#include "devicemanager.h"
-#include "deviceplugin.h"
+#include "plugin/device.h"
+#include "plugin/deviceclass.h"
+#include "plugin/devicemanager.h"
+#include "plugin/deviceplugin.h"
 
 #include <QDebug>
 

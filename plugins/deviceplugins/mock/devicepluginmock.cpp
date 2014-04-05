@@ -19,12 +19,13 @@
 #include "devicepluginmock.h"
 #include "httpdaemon.h"
 
-#include "device.h"
-#include "devicemanager.h"
+#include "plugin/device.h"
+#include "plugin/devicemanager.h"
 
 #include <QDebug>
 #include <QStringList>
 
+QUuid guhVendorId = QUuid("2062d64d-3232-433c-88bc-0d33c0ba2ba6");
 QUuid mockEvent1Id = QUuid("45bf3752-0fc6-46b9-89fd-ffd878b5b22b");
 QUuid mockEvent2Id = QUuid("863d5920-b1cf-4eb9-88bd-8f7b8583b1cf");
 QUuid mockIntStateId = QUuid("80baec19-54de-4948-ac46-31eabfaceb83");
@@ -34,6 +35,14 @@ QUuid mockAction2Id = QUuid("defd3ed6-1a0d-400b-8879-a0202cf39935");
 
 DevicePluginMock::DevicePluginMock()
 {
+}
+
+QList<Vendor> DevicePluginMock::supportedVendors() const
+{
+    QList<Vendor> ret;
+    Vendor guh(guhVendorId, "guh");
+    ret.append(guh);
+    return ret;
 }
 
 QList<DeviceClass> DevicePluginMock::supportedDevices() const

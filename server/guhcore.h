@@ -20,7 +20,7 @@
 #define GUHCORE_H
 
 #include "rule.h"
-#include "event.h"
+#include "types/event.h"
 
 #include <QObject>
 

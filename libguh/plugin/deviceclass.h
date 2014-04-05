@@ -16,63 +16,50 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef DEVICEPLUGIN_H
-#define DEVICEPLUGIN_H
+#ifndef DEVICECLASS_H
+#define DEVICECLASS_H
 
-#include "devicemanager.h"
-#include "deviceclass.h"
-#include "event.h"
-#include "action.h"
+#include "types/eventtype.h"
+#include "types/actiontype.h"
+#include "types/statetype.h"
 
-#include <QObject>
+#include <QList>
+#include <QUuid>
 
-class DeviceManager;
-class Device;
-
-class DevicePlugin: public QObject
+class DeviceClass
 {
-    Q_OBJECT
 public:
-    DevicePlugin(QObject *parent = 0);
-    virtual ~DevicePlugin();
+    DeviceClass(const QUuid &pluginId = QUuid(), const QUuid &id = QUuid());
 
-    virtual void init() {}
+    QUuid id() const;
+    QUuid pluginId() const;
+    bool isValid() const;
 
-    virtual QString pluginName() const = 0;
-    virtual QUuid pluginId() const = 0;
+    QString name() const;
+    void setName(const QString &name);
 
-    virtual QList<DeviceClass> supportedDevices() const = 0;
-    virtual DeviceManager::HardwareResources requiredHardware() const = 0;
+    QList<StateType> states() const;
+    void setStates(const QList<StateType> &stateTypes);
 
-    virtual bool deviceCreated(Device *device);
-    virtual void deviceRemoved(Device *device);
+    QList<EventType> events() const;
+    void setEvents(const QList<EventType> &eventTypes);
 
-    // Hardware input
-    virtual void radioData(QList<int> rawData) {Q_UNUSED(rawData)}
-    virtual void guhTimer() {}
+    QList<ActionType> actions() const;
+    void setActions(const QList<ActionType> &actionTypes);
 
-    virtual QVariantMap configuration() const;
-    virtual void setConfiguration(const QVariantMap &configuration);
+    QVariantList params() const;
+    void setParams(const QVariantList &params);
 
-public slots:
-    virtual void executeAction(Device *device, const Action &action) {Q_UNUSED(device) Q_UNUSED(action)}
-
-
-signals:
-    void emitEvent(const Event &event);
-
-protected:
-    DeviceManager *deviceManager() const;
-
-    void transmitData(QList<int> rawData);
+    bool operator==(const DeviceClass &device) const;
 
 private:
-    void initPlugin(DeviceManager *deviceManager);
-
-    DeviceManager *m_deviceManager;
-
-    friend class DeviceManager;
+    QUuid m_id;
+    QUuid m_pluginId;
+    QString m_name;
+    QList<StateType> m_states;
+    QList<EventType> m_events;
+    QList<ActionType> m_actions;
+    QVariantList m_params;
 };
-Q_DECLARE_INTERFACE(DevicePlugin, "org.guh.DevicePlugin")
 
 #endif

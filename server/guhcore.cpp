@@ -29,9 +29,10 @@
 
 #include "guhcore.h"
 #include "jsonrpcserver.h"
-#include "devicemanager.h"
 #include "ruleengine.h"
-#include "device.h"
+
+#include "plugin/devicemanager.h"
+#include "plugin/device.h"
 
 #include <QDebug>
 

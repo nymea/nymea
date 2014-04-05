@@ -19,11 +19,12 @@
 #ifndef JSONTYPES_H
 #define JSONTYPES_H
 
-#include "deviceclass.h"
-#include "event.h"
-#include "action.h"
-#include "actiontype.h"
+#include "plugin/deviceclass.h"
 #include "rule.h"
+
+#include "types/event.h"
+#include "types/action.h"
+#include "types/actiontype.h"
 
 #include <QObject>
 

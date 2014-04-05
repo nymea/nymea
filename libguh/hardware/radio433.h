@@ -16,50 +16,49 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef DEVICECLASS_H
-#define DEVICECLASS_H
+#ifndef RADIO433_H
+#define RADIO433_h
 
-#include "eventtype.h"
-#include "actiontype.h"
-#include "statetype.h"
+#include <QObject>
+#include <QThread>
+#include <hardware/gpio.h>
 
-#include <QList>
-#include <QUuid>
+#define RC_MAX_CHANGES 67
 
-class DeviceClass
+class Radio433: public QObject
 {
+    Q_OBJECT
+
 public:
-    DeviceClass(const QUuid &pluginId = QUuid(), const QUuid &id = QUuid());
+    Radio433(QObject *parent = 0);
+    ~Radio433();
 
-    QUuid id() const;
-    QUuid pluginId() const;
-    bool isValid() const;
-
-    QString name() const;
-    void setName(const QString &name);
-
-    QList<StateType> states() const;
-    void setStates(const QList<StateType> &stateTypes);
-
-    QList<EventType> events() const;
-    void setEvents(const QList<EventType> &eventTypes);
-
-    QList<ActionType> actions() const;
-    void setActions(const QList<ActionType> &actionTypes);
-
-    QVariantList params() const;
-    void setParams(const QVariantList &params);
-
-    bool operator==(const DeviceClass &device) const;
+public:
+    void sendData(QList<int> rawData);
 
 private:
-    QUuid m_id;
-    QUuid m_pluginId;
-    QString m_name;
-    QList<StateType> m_states;
-    QList<EventType> m_events;
-    QList<ActionType> m_actions;
-    QVariantList m_params;
+    Gpio *m_receiver;
+    Gpio *m_transmitter;
+
+    unsigned int m_timings[RC_MAX_CHANGES];
+    unsigned int m_duration;
+    unsigned int m_changeCount;
+    unsigned long m_lastTime;
+    unsigned int m_repeatCount;
+    unsigned int m_epochMicro;
+
+    int micros();
+    void delayMicros(int microSeconds);
+
+private slots:
+    void handleInterrupt();
+
+
+signals:
+    /*! This signal is emitted whenever a valid signal of 48 bits was recognized over the
+     * 433 MHz receiver. The sync signal and the message are in the integer list \a rawData.
+     */
+    void dataReceived(QList<int> rawData);
 };
 
 #endif

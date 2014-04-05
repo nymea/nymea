@@ -19,10 +19,11 @@
 #ifndef JSONRPCSERVER_H
 #define JSONRPCSERVER_H
 
-#include "deviceclass.h"
-#include "action.h"
-#include "event.h"
+#include "plugin/deviceclass.h"
 #include "jsonhandler.h"
+
+#include "types/action.h"
+#include "types/event.h"
 
 #include <QObject>
 #include <QVariantMap>

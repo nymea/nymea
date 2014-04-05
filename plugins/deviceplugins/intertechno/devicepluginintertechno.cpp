@@ -157,18 +157,26 @@
 
 #include "devicepluginintertechno.h"
 
-#include "device.h"
-#include "devicemanager.h"
-#include "radio433.h"
+#include "plugin/device.h"
+#include "plugin/devicemanager.h"
+#include "hardware/radio433.h"
 
 #include <QDebug>
 #include <QStringList>
 
+QUuid intertechnoVendorId = QUuid("6a852bc2-34dd-4f4c-9ac9-dd4c32ddbcba");
 QUuid intertechnoRemote = QUuid("ab73ad2f-6594-45a3-9063-8f72d365c5e5");
 QUuid intertechnoSwitch = QUuid("324219e8-7c53-41b5-b314-c2900cd15252");
 
 DevicePluginIntertechno::DevicePluginIntertechno()
 {
+}
+
+QList<Vendor> DevicePluginIntertechno::supportedVendors() const
+{
+    QList<Vendor> ret;
+    Vendor intertechno(intertechnoVendorId, "Intertechno");
+    return ret;
 }
 
 QList<DeviceClass> DevicePluginIntertechno::supportedDevices() const

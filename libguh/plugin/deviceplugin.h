@@ -16,49 +16,66 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef RADIO433_H
-#define RADIO433_h
+#ifndef DEVICEPLUGIN_H
+#define DEVICEPLUGIN_H
+
+#include "devicemanager.h"
+#include "deviceclass.h"
+
+#include "types/event.h"
+#include "types/action.h"
+#include "types/vendor.h"
 
 #include <QObject>
-#include <QThread>
-#include <gpio.h>
 
-#define RC_MAX_CHANGES 67
+class DeviceManager;
+class Device;
 
-class Radio433: public QObject
+class DevicePlugin: public QObject
 {
     Q_OBJECT
-
 public:
-    Radio433(QObject *parent = 0);
-    ~Radio433();
+    DevicePlugin(QObject *parent = 0);
+    virtual ~DevicePlugin();
 
-public:
-    void sendData(QList<int> rawData);
+    virtual void init() {}
 
-private:
-    Gpio *m_receiver;
-    Gpio *m_transmitter;
+    virtual QString pluginName() const = 0;
+    virtual QUuid pluginId() const = 0;
 
-    unsigned int m_timings[RC_MAX_CHANGES];
-    unsigned int m_duration;
-    unsigned int m_changeCount;
-    unsigned long m_lastTime;
-    unsigned int m_repeatCount;
-    unsigned int m_epochMicro;
+    virtual QList<Vendor> supportedVendors() const = 0;
+    virtual QList<DeviceClass> supportedDevices() const = 0;
+    virtual DeviceManager::HardwareResources requiredHardware() const = 0;
 
-    int micros();
-    void delayMicros(int microSeconds);
+    virtual bool deviceCreated(Device *device);
+    virtual void deviceRemoved(Device *device);
 
-private slots:
-    void handleInterrupt();
+    // Hardware input
+    virtual void radioData(QList<int> rawData) {Q_UNUSED(rawData)}
+    virtual void guhTimer() {}
+
+    virtual QVariantMap configuration() const;
+    virtual void setConfiguration(const QVariantMap &configuration);
+
+public slots:
+    virtual void executeAction(Device *device, const Action &action) {Q_UNUSED(device) Q_UNUSED(action)}
 
 
 signals:
-    /*! This signal is emitted whenever a valid signal of 48 bits was recognized over the
-     * 433 MHz receiver. The sync signal and the message are in the integer list \a rawData.
-     */
-    void dataReceived(QList<int> rawData);
+    void emitEvent(const Event &event);
+
+protected:
+    DeviceManager *deviceManager() const;
+
+    void transmitData(QList<int> rawData);
+
+private:
+    void initPlugin(DeviceManager *deviceManager);
+
+    DeviceManager *m_deviceManager;
+
+    friend class DeviceManager;
 };
+Q_DECLARE_INTERFACE(DevicePlugin, "org.guh.DevicePlugin")
 
 #endif

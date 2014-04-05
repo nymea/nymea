@@ -18,7 +18,7 @@
 
 #include "jsontypes.h"
 
-#include "device.h"
+#include "plugin/device.h"
 
 #include <QStringList>
 #include <QJsonDocument>
@@ -232,7 +232,7 @@ QVariantMap JsonTypes::packRule(const Rule &rule)
 {
     QVariantMap ruleMap;
     ruleMap.insert("id", rule.id());
-    ruleMap.insert("event", JsonTypes::packEvent(rule.event()));
+//    ruleMap.insert("event", JsonTypes::packEvent(rule.event()));
     ruleMap.insert("ruleType", s_ruleTypes.at(rule.ruleType()));
     QVariantList actionList;
     foreach (const Action &action, rule.actions()) {

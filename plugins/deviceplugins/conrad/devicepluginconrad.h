@@ -19,7 +19,7 @@
 #ifndef DEVICEPLUGINCONRAD_H
 #define DEVICEPLUGINCONRAD_H
 
-#include "deviceplugin.h"
+#include "plugin/deviceplugin.h"
 
 class DevicePluginConrad : public DevicePlugin
 {
@@ -31,6 +31,7 @@ class DevicePluginConrad : public DevicePlugin
 public:
     explicit DevicePluginConrad();
 
+    QList<Vendor> supportedVendors() const override;
     QList<DeviceClass> supportedDevices() const override;
     DeviceManager::HardwareResources requiredHardware() const override;
 

@@ -18,8 +18,8 @@
 
 #include "devicepluginweatherground.h"
 
-#include "device.h"
-#include "devicemanager.h"
+#include "plugin/device.h"
+#include "plugin/devicemanager.h"
 
 #include <QDebug>
 #include <QStringList>
@@ -28,9 +28,19 @@
 
 // Key: 779a480dea5163c6
 
+QUuid weathergroundVendorId = QUuid("68f84197-b158-4d24-9d7b-709cfff843c1");
+
 DevicePluginWeatherground::DevicePluginWeatherground()
 {
     m_parser = new WeathergroundParser(this);
+}
+
+QList<Vendor> DevicePluginWeatherground::supportedVendors() const
+{
+    QList<Vendor> ret;
+    Vendor weatherground(weathergroundVendorId, "weatherground");
+    ret.append(weatherground);
+    return ret;
 }
 
 QList<DeviceClass> DevicePluginWeatherground::supportedDevices() const

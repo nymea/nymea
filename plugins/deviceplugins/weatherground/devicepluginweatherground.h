@@ -19,7 +19,7 @@
 #ifndef DEVICEPLUGINWEATHERGROUND_H
 #define DEVICEPLUGINWEATHERGROUND_H
 
-#include "deviceplugin.h"
+#include "plugin/deviceplugin.h"
 #include "weathergroundparser.h"
 
 
@@ -35,6 +35,7 @@ public:
 
     WeathergroundParser *m_parser;
 
+    QList<Vendor> supportedVendors() const override;
     QList<DeviceClass> supportedDevices() const override;
     DeviceManager::HardwareResources requiredHardware() const override;
 

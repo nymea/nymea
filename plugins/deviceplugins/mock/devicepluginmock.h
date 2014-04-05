@@ -19,7 +19,7 @@
 #ifndef DEVICEPLUGINMOCK_H
 #define DEVICEPLUGINMOCK_H
 
-#include "deviceplugin.h"
+#include "plugin/deviceplugin.h"
 
 #include <QProcess>
 
@@ -35,6 +35,7 @@ class DevicePluginMock : public DevicePlugin
 public:
     explicit DevicePluginMock();
 
+    QList<Vendor> supportedVendors() const override;
     QList<DeviceClass> supportedDevices() const override;
     DeviceManager::HardwareResources requiredHardware() const override;
 

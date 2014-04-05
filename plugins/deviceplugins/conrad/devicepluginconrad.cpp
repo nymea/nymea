@@ -52,19 +52,27 @@
 
 #include "devicepluginconrad.h"
 
-#include "device.h"
-#include "devicemanager.h"
-#include "radio433.h"
+#include "plugin/device.h"
+#include "plugin/devicemanager.h"
+#include "hardware/radio433.h"
 
 #include <QDebug>
 #include <QStringList>
 
 
+QUuid conradVendorId = QUuid("986cf06f-3ef1-4271-b2a3-2cc277ebecb6");
 QUuid conradRemoteId = QUuid("17cd2492-28ab-4827-ba6e-5ef35be23f1b");
-
 
 DevicePluginConrad::DevicePluginConrad()
 {
+}
+
+QList<Vendor> DevicePluginConrad::supportedVendors() const
+{
+    QList<Vendor> ret;
+    Vendor conrad(conradVendorId, "Conrad Electronic SE");
+    ret.append(conrad);
+    return ret;
 }
 
 QList<DeviceClass> DevicePluginConrad::supportedDevices() const

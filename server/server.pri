@@ -7,7 +7,8 @@ SOURCES += $$top_srcdir/server/guhcore.cpp \
     $$top_srcdir/server/jsonrpc/devicehandler.cpp \
     $$top_srcdir/server/jsonrpc/jsontypes.cpp \
     $$top_srcdir/server/jsonrpc/ruleshandler.cpp \
-    $$top_srcdir/server/jsonrpc/actionhandler.cpp
+    $$top_srcdir/server/jsonrpc/actionhandler.cpp \
+    $$top_srcdir/server/stateevaluator.cpp
 
 HEADERS += $$top_srcdir/server/guhcore.h \
     $$top_srcdir/server/tcpserver.h \
@@ -18,4 +19,5 @@ HEADERS += $$top_srcdir/server/guhcore.h \
     $$top_srcdir/server/jsonrpc/devicehandler.h \
     $$top_srcdir/server/jsonrpc/jsontypes.h \
     $$top_srcdir/server/jsonrpc/ruleshandler.h \
-    $$top_srcdir/server/jsonrpc/actionhandler.h
+    $$top_srcdir/server/jsonrpc/actionhandler.h \
+    $$top_srcdir/server/stateevaluator.h

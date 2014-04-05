@@ -19,7 +19,7 @@
 #ifndef DEVICEPLUGINWIFIDETECTOR_H
 #define DEVICEPLUGINWIFIDETECTOR_H
 
-#include "deviceplugin.h"
+#include "plugin/deviceplugin.h"
 
 #include <QProcess>
 
@@ -33,6 +33,7 @@ class DevicePluginWifiDetector : public DevicePlugin
 public:
     explicit DevicePluginWifiDetector();
 
+    QList<Vendor> supportedVendors() const override;
     QList<DeviceClass> supportedDevices() const override;
     DeviceManager::HardwareResources requiredHardware() const override;
 

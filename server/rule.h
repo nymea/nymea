@@ -19,9 +19,10 @@
 #ifndef RULE_H
 #define RULE_H
 
-#include "state.h"
-#include "action.h"
-#include "event.h"
+#include "types/state.h"
+#include "types/action.h"
+#include "types/event.h"
+#include "stateevaluator.h"
 
 #include <QUuid>
 
@@ -47,6 +48,7 @@ private:
     QUuid m_id;
     Event m_event;
     QList<State> m_states;
+    StateEvaluator stateEvaluator;
     QList<Action> m_actions;
     RuleType m_ruleType;
 };

@@ -18,18 +18,27 @@
 
 #include "devicepluginwifidetector.h"
 
-#include "device.h"
-#include "devicemanager.h"
+#include "plugin/device.h"
+#include "plugin/devicemanager.h"
 
 #include <QDebug>
 #include <QStringList>
 
+extern QUuid guhVendorId;
 QUuid pluginUuid = QUuid("8e0f791e-b273-4267-8605-b7c2f55a68ab");
 QUuid detectorId = QUuid("bd216356-f1ec-4324-9785-6982d2174e17");
 QUuid inRangeStateTypeId = QUuid("cb43e1b5-4f61-4538-bfa2-c33055c542cf");
 
 DevicePluginWifiDetector::DevicePluginWifiDetector()
 {
+}
+
+QList<Vendor> DevicePluginWifiDetector::supportedVendors() const
+{
+    QList<Vendor> ret;
+    Vendor guh(guhVendorId, "guh");
+    ret.append(guh);
+    return ret;
 }
 
 QList<DeviceClass> DevicePluginWifiDetector::supportedDevices() const

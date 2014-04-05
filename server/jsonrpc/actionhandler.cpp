@@ -18,9 +18,9 @@
 
 #include "actionhandler.h"
 
-#include "devicemanager.h"
 #include "guhcore.h"
-#include "action.h"
+#include "plugin/devicemanager.h"
+#include "types/action.h"
 
 #include <QDebug>
 

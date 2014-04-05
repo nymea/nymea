@@ -19,7 +19,7 @@
 #ifndef DEVICEPLUGINMEISTERANKER_H
 #define DEVICEPLUGINMEISTERANKER_H
 
-#include "deviceplugin.h"
+#include "plugin/deviceplugin.h"
 
 
 class DevicePluginMeisterAnker : public DevicePlugin
@@ -32,6 +32,7 @@ class DevicePluginMeisterAnker : public DevicePlugin
 public:
     explicit DevicePluginMeisterAnker();
 
+    QList<Vendor> supportedVendors() const override;
     QList<DeviceClass> supportedDevices() const override;
     DeviceManager::HardwareResources requiredHardware() const override;
 

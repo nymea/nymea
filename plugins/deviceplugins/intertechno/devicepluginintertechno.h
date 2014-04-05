@@ -19,7 +19,7 @@
 #ifndef DEVICEPLUGININTERTECHNO_H
 #define DEVICEPLUGININTERTECHNO_H
 
-#include "deviceplugin.h"
+#include "plugin/deviceplugin.h"
 
 class DevicePluginIntertechno : public DevicePlugin
 {
@@ -31,6 +31,7 @@ class DevicePluginIntertechno : public DevicePlugin
 public:
     explicit DevicePluginIntertechno();
 
+    QList<Vendor> supportedVendors() const override;
     QList<DeviceClass> supportedDevices() const override;
     DeviceManager::HardwareResources requiredHardware() const override;
 

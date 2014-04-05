@@ -27,10 +27,10 @@
 #include "jsonhandler.h"
 
 #include "guhcore.h"
-#include "devicemanager.h"
-#include "deviceplugin.h"
-#include "deviceclass.h"
-#include "device.h"
+#include "plugin/devicemanager.h"
+#include "plugin/deviceplugin.h"
+#include "plugin/deviceclass.h"
+#include "plugin/device.h"
 #include "rule.h"
 #include "ruleengine.h"
 
@@ -104,7 +104,7 @@ QVariantMap JsonRPCServer::Introspect(const QVariantMap &params) const
     foreach (JsonHandler *handler, m_handlers) {
         signalsMap.unite(handler->introspect(QMetaMethod::Signal));
     }
-    data.insert("signals", signalsMap);
+    data.insert("notifications", signalsMap);
 
     return data;
 }

@@ -122,7 +122,7 @@ QList<Vendor> DeviceManager::supportedVendors() const
 }
 
 /*! Returns all the supported \l{DeviceClass}{DeviceClasses} by all \l{DevicePlugin}{DevicePlugins} loaded in the system. */
-QList<DeviceClass> DeviceManager::supportedDevices() const
+QList<DeviceClass> DeviceManager::supportedDevices(const VendorId &vendorId) const
 {
     return m_supportedDevices.values();
 }
@@ -289,15 +289,20 @@ void DeviceManager::loadPlugins()
             foreach (const Vendor &vendor, pluginIface->supportedVendors()) {
                 qDebug() << "* Loaded vendor:" << vendor.name();
                 if (m_supportedVendors.contains(vendor.id())) {
-                    qWarning() << "X Duplicate vendor" << vendor.name() << " Ignoring...";
+                    qWarning() << "! Duplicate vendor. Ignoring vendor" << vendor.name();
                     continue;
                 }
                 m_supportedVendors.insert(vendor.id(), vendor);
             }
 
             foreach (const DeviceClass &deviceClass, pluginIface->supportedDevices()) {
-                qDebug() << "* Loaded device class:" << deviceClass.name();
+                if (!m_supportedVendors.contains(deviceClass.vendorId())) {
+                    qWarning() << "! Vendor not found. Ignoring device. VendorId:" << deviceClass.vendorId() << "DeviceClass:" << deviceClass.name() << deviceClass.id();
+                    continue;
+                }
+                m_vendorDeviceMap[deviceClass.vendorId()].append(deviceClass.id());
                 m_supportedDevices.insert(deviceClass.id(), deviceClass);
+                qDebug() << "* Loaded device class:" << deviceClass.name();
             }
             m_devicePlugins.insert(pluginIface->pluginId(), pluginIface);
             connect(pluginIface, &DevicePlugin::emitEvent, this, &DeviceManager::emitEvent);

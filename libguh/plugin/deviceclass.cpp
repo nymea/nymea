@@ -39,8 +39,9 @@
     Generate a new uuid (e.g. uuidgen) and hardode it into the plugin. The id
     should never change or it will appear as a new DeviceClass in the system.
  */
-DeviceClass::DeviceClass(const QUuid &pluginId, const VendorId &vendor, const DeviceClassId &id):
+DeviceClass::DeviceClass(const QUuid &pluginId, const VendorId &vendorId, const DeviceClassId &id):
     m_id(id),
+    m_vendorId(vendorId),
     m_pluginId(pluginId)
 {
 

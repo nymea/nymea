@@ -176,6 +176,7 @@ QList<Vendor> DevicePluginIntertechno::supportedVendors() const
 {
     QList<Vendor> ret;
     Vendor intertechno(intertechnoVendorId, "Intertechno");
+    ret.append(intertechno);
     return ret;
 }
 

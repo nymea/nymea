@@ -31,7 +31,7 @@
 class DeviceClass
 {
 public:
-    DeviceClass(const QUuid &pluginId = QUuid(), const VendorId &vendor = VendorId(), const DeviceClassId &id = DeviceClassId());
+    DeviceClass(const QUuid &pluginId = QUuid(), const VendorId &vendorId = VendorId(), const DeviceClassId &id = DeviceClassId());
 
     DeviceClassId id() const;
     VendorId vendorId() const;

@@ -61,7 +61,7 @@ public:
     QList<DevicePlugin*> plugins() const;
     DevicePlugin* plugin(const QUuid &id) const;
     QList<Vendor> supportedVendors() const;
-    QList<DeviceClass> supportedDevices() const;
+    QList<DeviceClass> supportedDevices(const VendorId &vendorId = VendorId()) const;
 
     QList<Device*> configuredDevices() const;
     DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const QVariantMap &params, const DeviceId id = DeviceId::createDeviceId());
@@ -94,8 +94,9 @@ private slots:
 private:
     bool setupDevice(Device *device);
 
-    QHash<QUuid, Vendor> m_supportedVendors;
-    QHash<QUuid, DeviceClass> m_supportedDevices;
+    QHash<VendorId, Vendor> m_supportedVendors;
+    QHash<VendorId, QList<DeviceClassId> > m_vendorDeviceMap;
+    QHash<DeviceClassId, DeviceClass> m_supportedDevices;
     QList<Device*> m_configuredDevices;
 
     QHash<QUuid, DevicePlugin*> m_devicePlugins;

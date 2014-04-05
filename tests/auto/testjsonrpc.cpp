@@ -41,8 +41,9 @@ private slots:
     void initTestcase();
     void cleanupTestCase();
 
-    void introspect();
+    void testBasicCall();
     void version();
+    void introspect();
 
     void getSupportedVendors();
     void getSupportedDevices();
@@ -56,6 +57,7 @@ private slots:
 
 private:
     QVariant injectAndWait(const QString &method, const QVariantMap &params);
+    QStringList extractRefs(const QVariant &variant);
 
 private:
     MockTcpServer *m_mockTcpServer;
@@ -124,7 +126,31 @@ QVariant TestJSONRPC::injectAndWait(const QString &method, const QVariantMap &pa
      return jsonDoc.toVariant();
 }
 
-void TestJSONRPC::introspect()
+QStringList TestJSONRPC::extractRefs(const QVariant &variant)
+{
+    if (variant.canConvert(QVariant::String)) {
+        if (variant.toString().startsWith("$ref")) {
+            return QStringList() << variant.toString();
+        }
+    }
+    if (variant.canConvert(QVariant::List)) {
+        QStringList refs;
+        foreach (const QVariant tmp, variant.toList()) {
+            refs << extractRefs(tmp);
+        }
+        return refs;
+    }
+    if (variant.canConvert(QVariant::Map)) {
+        QStringList refs;
+        foreach (const QVariant tmp, variant.toMap()) {
+            refs << extractRefs(tmp);
+        }
+        return refs;
+    }
+    return QStringList();
+}
+
+void TestJSONRPC::testBasicCall()
 {
     QSignalSpy spy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
     QVERIFY(spy.isValid());
@@ -147,7 +173,36 @@ void TestJSONRPC::introspect()
     QCOMPARE(error.error, QJsonParseError::NoError);
 
     // Make sure the response\"s id is the same as our command
-    QCOMPARE(jsonDoc.toVariant().toMap().value("id").toInt(), 42);
+    QCOMPARE(jsonDoc.toVariant().toMap().value("id").toInt(), 42);    
+}
+
+void TestJSONRPC::version()
+{
+    QVariant response = injectAndWait("JSONRPC.Version");
+
+    QCOMPARE(response.toMap().value("params").toMap().value("version").toString(), QString("0.0.0"));
+}
+
+void TestJSONRPC::introspect()
+{
+    QVariant response = injectAndWait("JSONRPC.Introspect");
+    QVariantMap methods = response.toMap().value("params").toMap().value("methods").toMap();
+    QVariantMap notifications = response.toMap().value("params").toMap().value("notifications").toMap();
+    QVariantMap types = response.toMap().value("params").toMap().value("types").toMap();
+
+    QVERIFY2(methods.count() > 0, "No methods in Introspect response!");
+    QVERIFY2(notifications.count() > 0, "No notifications in Introspect response!");
+    QVERIFY2(types.count() > 0, "No types in Introspect response!");
+
+    // Make sure all $ref: pointers have their according type defined
+    QVariantMap allItems = methods.unite(notifications).unite(types);
+    foreach (const QVariant &item, allItems) {
+        foreach (const QString &ref, extractRefs(item)) {
+            QString typeId = ref;
+            typeId.remove("$ref:");
+            QVERIFY2(types.contains(typeId), QString("Undefined ref: %1").arg(ref).toLatin1().data());
+        }
+    }
 }
 
 void TestJSONRPC::getSupportedVendors()
@@ -191,13 +246,6 @@ void TestJSONRPC::enableDisableNotifications()
     QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
     QCOMPARE(response.toMap().value("params").toMap().value("enabled").toString(), enabled);
 
-}
-
-void TestJSONRPC::version()
-{
-    QVariant response = injectAndWait("JSONRPC.Version");
-
-    QCOMPARE(response.toMap().value("params").toMap().value("version").toString(), QString("0.0.0"));
 }
 
 void TestJSONRPC::stateChangeEmitsNotifications()

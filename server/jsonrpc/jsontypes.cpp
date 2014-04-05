@@ -39,6 +39,7 @@ QVariantMap JsonTypes::s_event;
 QVariantMap JsonTypes::s_actionType;
 QVariantMap JsonTypes::s_action;
 QVariantMap JsonTypes::s_plugin;
+QVariantMap JsonTypes::s_vendor;
 QVariantMap JsonTypes::s_deviceClass;
 QVariantMap JsonTypes::s_device;
 QVariantMap JsonTypes::s_rule;
@@ -95,6 +96,10 @@ void JsonTypes::init()
     s_plugin.insert("name", "string");
     s_plugin.insert("params", QVariantList() << paramTypeRef());
 
+    // Vendor
+    s_vendor.insert("id", "uuid");
+    s_vendor.insert("name", "string");
+
     // DeviceClass
     s_deviceClass.insert("id", "uuid");
     s_deviceClass.insert("name", "string");
@@ -131,6 +136,7 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("StateType", stateTypeDescription());
     allTypes.insert("EventType", eventTypeDescription());
     allTypes.insert("ActionType", actionTypeDescription());
+    allTypes.insert("Vendor", vendorDescription());
     allTypes.insert("DeviceClass", deviceClassDescription());
     allTypes.insert("Plugin", pluginDescription());
     allTypes.insert("Param", paramDescription());

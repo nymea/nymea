@@ -125,7 +125,6 @@ QList<Vendor> DeviceManager::supportedVendors() const
     Optionally filtered by vendorId. */
 QList<DeviceClass> DeviceManager::supportedDevices(const VendorId &vendorId) const
 {
-    qDebug() << "returning devices" << vendorId;
     QList<DeviceClass> ret;
     if (vendorId.isNull()) {
         ret = m_supportedDevices.values();

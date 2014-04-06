@@ -34,7 +34,7 @@ ActionHandler::ActionHandler(QObject *parent) :
     setDescription("ExecuteAction", "Execute a single action.");
     params.insert("actionTypeId", "uuid");
     params.insert("deviceId", "uuid");
-    params.insert("params", JsonTypes::paramTypeRef());
+    params.insert("o:params", JsonTypes::paramTypeRef());
     setParams("ExecuteAction", JsonTypes::actionDescription());
     returns.insert("success", "bool");
     returns.insert("errorMessage", "string");

@@ -53,16 +53,25 @@ void HttpDaemon::readClient()
         QByteArray data = socket->readLine();
         QStringList tokens = QString(data).split(QRegExp("[ \r\n][ \r\n]*"));
         qDebug() << "incoming data" << tokens[1];
-        if (tokens[1].contains('?')) {
-            QUrl url("http://foo.bar" + tokens[1]);
-            QUrlQuery query(url);
-            qDebug() << "query is" << url.path();
-            if (url.path() == "/setstate") {
-                emit setState(StateTypeId(query.queryItems().first().first), QVariant(query.queryItems().first().second));
-            } else if (url.path() == "/generateevent") {
-                qDebug() << "got generateevent" << query.queryItemValue("eventid");
-                emit triggerEvent(EventTypeId(query.queryItemValue("eventid")));
+        QUrl url("http://foo.bar" + tokens[1]);
+        QUrlQuery query(url);
+        qDebug() << "query is" << url.path();
+        if (url.path() == "/setstate") {
+            emit setState(StateTypeId(query.queryItems().first().first), QVariant(query.queryItems().first().second));
+        } else if (url.path() == "/generateevent") {
+            qDebug() << "got generateevent" << query.queryItemValue("eventid");
+            emit triggerEvent(EventTypeId(query.queryItemValue("eventid")));
+        } else if (url.path() == "/actionhistory") {
+            QTextStream os(socket);
+            os.setAutoDetectUnicode(true);
+            os << generateHeader();
+            for (int i = 0; i < m_actionList.count(); ++i) {
+                os << m_actionList.at(i).first.toString() << '\n';
             }
+            socket->close();
+            return;
+        } else if (url.path() == "/clearactionhistory") {
+            m_actionList.clear();
         }
         if (tokens[0] == "GET") {
             QTextStream os(socket);
@@ -88,15 +97,19 @@ void HttpDaemon::discardClient()
     qDebug() << "Connection closed";
 }
 
-QString HttpDaemon::generateWebPage()
+QString HttpDaemon::generateHeader()
 {
-    DeviceClass deviceClass = m_plugin->supportedDevices().first();
-
     QString contentHeader(
         "HTTP/1.0 200 Ok\r\n"
        "Content-Type: text/html; charset=\"utf-8\"\r\n"
        "\r\n"
     );
+    return contentHeader;
+}
+
+QString HttpDaemon::generateWebPage()
+{
+    DeviceClass deviceClass = m_plugin->supportedDevices().first();
 
     QString body = QString(
     "<html>"
@@ -169,5 +182,5 @@ QString HttpDaemon::generateWebPage()
 
     body.append("</body></html>\n");
 
-    return contentHeader + body;
+    return generateHeader() + body;
 }

@@ -41,7 +41,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
 
     params.clear(); returns.clear();
     setDescription("GetSupportedDevices", "Returns a list of supported Device classes, optionally filtered by vendorId.");
-    params.insert("vendorId", "o:uuid");
+    params.insert("o:vendorId", "uuid");
     setParams("GetSupportedDevices", params);
     QVariantList deviceClasses;
     deviceClasses.append(JsonTypes::deviceClassRef());
@@ -74,7 +74,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     setParams("AddConfiguredDevice", params);
     returns.insert("success", "bool");
     returns.insert("errorMessage", "string");
-    returns.insert("deviceId", "o:uuid");
+    returns.insert("o:deviceId", "uuid");
     setReturns("AddConfiguredDevice", returns);
 
     params.clear(); returns.clear();
@@ -117,7 +117,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     setParams("GetStateTypes", params);
     QVariantList states;
     states.append(JsonTypes::stateTypeRef());
-    returns.insert("stateTypes", actions);
+    returns.insert("stateTypes", states);
     setReturns("GetStateTypes", returns);
 
     params.clear(); returns.clear();
@@ -127,7 +127,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     setParams("GetStateValue", params);
     returns.insert("success", "bool");
     returns.insert("errorMessage", "string");
-    returns.insert("value", "o:variant");
+    returns.insert("o:value", "variant");
     setReturns("GetStateValue", returns);
 
     // Notifications

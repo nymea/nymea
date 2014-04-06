@@ -29,6 +29,7 @@ private slots:
     void discardClient();
 
 private:
+    QString generateHeader();
     QString generateWebPage();
 
 private:

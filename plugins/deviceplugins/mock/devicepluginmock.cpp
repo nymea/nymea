@@ -26,7 +26,7 @@
 #include <QStringList>
 
 VendorId guhVendorId = VendorId("2062d64d-3232-433c-88bc-0d33c0ba2ba6");
-DeviceClassId mockDeviceId = DeviceClassId("753f0d32-0468-4d08-82ed-1964aab03298");
+DeviceClassId mockDeviceClassId = DeviceClassId("753f0d32-0468-4d08-82ed-1964aab03298");
 EventTypeId mockEvent1Id = EventTypeId("45bf3752-0fc6-46b9-89fd-ffd878b5b22b");
 EventTypeId mockEvent2Id = EventTypeId("863d5920-b1cf-4eb9-88bd-8f7b8583b1cf");
 StateTypeId mockIntStateId = StateTypeId("80baec19-54de-4948-ac46-31eabfaceb83");
@@ -50,7 +50,7 @@ QList<DeviceClass> DevicePluginMock::supportedDevices() const
 {
     QList<DeviceClass> ret;
 
-    DeviceClass deviceClassMock(pluginId(), guhVendorId, mockDeviceId);
+    DeviceClass deviceClassMock(pluginId(), guhVendorId, mockDeviceClassId);
     deviceClassMock.setName("Mock Device");
 
     QVariantList mockParams;

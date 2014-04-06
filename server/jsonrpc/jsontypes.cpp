@@ -89,7 +89,7 @@ void JsonTypes::init()
     // Action
     s_action.insert("actionTypeId", "uuid");
     s_action.insert("deviceId", "uuid");
-    s_action.insert("params", QVariantList() << paramRef());
+    s_action.insert("o:params", QVariantList() << paramRef());
 
     // Pugin
     s_plugin.insert("id", "uuid");
@@ -263,18 +263,20 @@ QPair<bool, QString> JsonTypes::validateMap(const QVariantMap &templateMap, cons
 {
     s_lastError.clear();
     foreach (const QString &key, templateMap.keys()) {
-        if (templateMap.value(key).toString().startsWith("o:")) {
-            continue;
-        }
-        if (!map.contains(key)) {
+        QString strippedKey = key;
+        strippedKey.remove(QRegExp("^o:"));
+
+        if (!key.startsWith("o:") && !map.contains(strippedKey)) {
             qDebug() << "missing key" << key << templateMap << map;
             QJsonDocument jsonDoc = QJsonDocument::fromVariant(map);
             return report(false, QString("Missing key \"%1\" in %2").arg(key).arg(QString(jsonDoc.toJson())));
         }
-        QPair<bool, QString> result = validateVariant(templateMap.value(key), map.value(key));
-        if (!result.first) {
-            qDebug() << "Object not matching template";
-            return result;
+        if (map.contains(strippedKey)) {
+            QPair<bool, QString> result = validateVariant(templateMap.value(key), map.value(strippedKey));
+            if (!result.first) {
+                qDebug() << "Object not matching template or object not matching" << templateMap.value(key) << map.value(strippedKey);
+                return result;
+            }
         }
     }
     return report(true, "");
@@ -283,8 +285,10 @@ QPair<bool, QString> JsonTypes::validateMap(const QVariantMap &templateMap, cons
 QPair<bool, QString> JsonTypes::validateProperty(const QVariant &templateValue, const QVariant &value)
 {
     QString strippedTemplateValue = templateValue.toString();
-    strippedTemplateValue.remove(QRegExp("^o:"));
 
+    if (strippedTemplateValue == "variant") {
+        return report(true, "");
+    }
     if (strippedTemplateValue == "uuid") {
         QString errorString = QString("Param %1 is not a uuid.").arg(value.toString());
         return report(value.canConvert(QVariant::Uuid), errorString);
@@ -306,8 +310,6 @@ QPair<bool, QString> JsonTypes::validateList(const QVariantList &templateList, c
 {
     Q_ASSERT(templateList.count() == 1);
     QVariant entryTemplate = templateList.first();
-
-    qDebug() << "validating list" << templateList;
 
     for (int i = 0; i < list.count(); ++i) {
         QVariant listEntry = list.at(i);

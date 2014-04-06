@@ -2,8 +2,12 @@
     \page plugins.html
     \title Plugins
 
-    \section1 RF 433 MHz
+    \section1 RF 433 MHz Plugins
     \annotatedlist rf433
+    
+    \section1 Services
+    \annotatedlist services
+
 
 */
 

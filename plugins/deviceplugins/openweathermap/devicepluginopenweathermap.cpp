@@ -16,6 +16,129 @@
  *                                                                          *
  ***************************************************************************/
 
+/*!
+    \page openweathermap.html
+    \title Open Weather Map
+
+    \ingroup plugins
+    \ingroup services
+
+    This plugin gives the possibility to get weather data...
+
+    \chapter Plugin propertys:
+        \section1 Actions
+        Following list contains all plugin \l{Action}s:
+            \table
+            \header
+                \li Name
+                \li Description
+                \li UUID
+            \row
+                \li refresh
+                \li This action refreshes all states. Only, if a state value realy changed
+                    a notification get emited.
+                \li cfbc6504-d86f-4856-8dfa-97b6fbb385e4
+            \endtable
+        \section1 Events:
+        Following list contains all plugin \l{Event}s:
+            \table
+            \header
+                \li Name
+                \li UUID
+                \li Description
+            \row
+                \li
+                \li
+                \li
+            \endtable
+        \section1 States
+        Following list contains all plugin \l{State}s:
+            \table
+            \header
+                \li Name
+                \li Description
+                \li UUID
+                \li Data Type
+            \row
+                \li city name
+                \li The name of the city
+                \li fd9e7b7f-cf1f-4093-8f6d-fff5b223471f
+                \li string
+            \row
+                \li city id
+                \li The city ID for openweathermap.org
+                \li c6ef1c07-e817-4251-b83d-115bbf6f0ae9
+                \li string
+            \row
+                \li country name
+                \li The country name
+                \li 0e607a5f-1938-4e77-a146-15e9ad15bfad
+                \li string
+            \row
+                \li last update
+                \li The timestamp of the weather data from the weatherstation in unixtime
+                    format
+                \li 98e48095-87da-47a4-b812-28c6c17a3e76
+                \li unsignend int
+            \row
+                \li temperature
+                \li Current temperature [Celsius]
+                \li 2f949fa3-ff21-4721-87ec-0a5c9d0a5b8a
+                \li double
+            \row
+                \li temperature minimum
+                \li Today temperature minimum [Clesius]
+                \li 701338b3-80de-4c95-8abf-26f44529d620
+                \li double
+            \row
+                \li temperature maximum
+                \li Today temperature maximum [Clesius]
+                \li f69bedd2-c997-4a7d-9242-76bf2aab3d3d
+                \li double
+            \row
+                \li humidity
+                \li Current relative humidity  [%]
+                \li 3f01c9f0-206b-4477-afa2-80d6e5e54fbb
+                \li int
+            \row
+                \li pressure
+                \li Current pressure [hPa]
+                \li 6a57b6e9-7010-4a89-982c-ce0bc2a71f11
+                \li double
+            \row
+                \li wind speed
+                \li Current wind speed [m/s]
+                \li 12dc85a9-825d-4375-bef4-abd66e9e301b
+                \li double
+            \row
+                \li wind direction
+                \li The wind direction rellative to the north pole [degree]
+                \li a8b0383c-d615-41fe-82b8-9b797f045cc9
+                \li int
+            \row
+                \li cloudiness
+                \li This value represents how much of the sky is clowdy [%]
+                \li 0c1dc881-560e-40ac-a4a1-9ab69138cfe3
+                \li int
+            \row
+                \li weather description
+                \li This string describes the current weather condition in clear words
+                \li e71d98e3-ebd8-4abf-ad25-9ecc2d05276a
+                \li string
+            \row
+                \li sunset
+                \li The time of todays sunset in unixtime format
+                \li 5dd6f5a3-25d6-4e60-82ca-e934ad76a4b6
+                \li unsigned int
+            \row
+                \li sunrise
+                \li The time of todays sunrise in unixtime format
+                \li 413b3fc6-bd1c-46fb-8c86-03096254f94f
+                \li unsigned int
+            \endtable
+*/
+
+
 #include "devicepluginopenweathermap.h"
 
 #include "plugin/device.h"

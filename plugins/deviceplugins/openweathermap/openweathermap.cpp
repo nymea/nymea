@@ -1,3 +1,22 @@
+/****************************************************************************
+ *                                                                          *
+ *  This file is part of guh.                                               *
+ *                                                                          *
+ *  Guh is free software: you can redistribute it and/or modify             *
+ *  it under the terms of the GNU General Public License as published by    *
+ *  the Free Software Foundation, version 2 of the License.                 *
+ *                                                                          *
+ *  Guh is distributed in the hope that it will be useful,                  *
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of          *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
+ *  GNU General Public License for more details.                            *
+ *                                                                          *
+ *  You should have received a copy of the GNU General Public License       *
+ *  along with guh.  If not, see <http://www.gnu.org/licenses/>.            *
+ *                                                                          *
+ ***************************************************************************/
+
+
 #include "openweathermap.h"
 
 OpenWeatherMap::OpenWeatherMap(QObject *parent) :
@@ -48,6 +67,7 @@ void OpenWeatherMap::processLocationResponse(QByteArray data)
     QVariantMap dataMap = jsonDoc.toVariant().toMap();
     if(dataMap.contains("city")){
         QString cityName = dataMap.value("city").toString();
+        // skip search for cityID...
         if(m_cityName != cityName){
             m_cityName = cityName;
             updateSearchData();
@@ -185,7 +205,6 @@ void OpenWeatherMap::processWeatherResponse(QByteArray data)
     //    qDebug() << "cloudiness" << m_cloudiness;
     //    qDebug() << "humidity" << m_humidity;
     //    qDebug() << "pressure" << m_pressure;
-    //    qDebug() << "sunrise" << QDateTime::fromTime_t(m_sunrise);
     //    qDebug() << "wind dir" << m_windDirection;
     //    qDebug() << "wind speed" << m_windSpeed;
     //    qDebug() << "sunrise" << QDateTime::fromTime_t(m_sunrise);

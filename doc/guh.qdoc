@@ -19,7 +19,8 @@
             \endlist
         \li \l{Plugins}.
             \list
-                \li \l{RF 433 MHz} (TODO: is actually in libguh)
+                \li \l{RF 433 MHz List}
+                \li \l{Service List}
             \endlist
     \endlist
 

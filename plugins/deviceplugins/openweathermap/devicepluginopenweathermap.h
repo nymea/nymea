@@ -16,24 +16,24 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef DEVICEPLUGINWEATHERGROUND_H
-#define DEVICEPLUGINWEATHERGROUND_H
+#ifndef DEVICEPLUGINOPENWEATHERMAP_H
+#define DEVICEPLUGINOPENWEATHERMAP_H
 
 #include "plugin/deviceplugin.h"
-#include "weathergroundparser.h"
+#include "openweathermap.h"
 
 
-class DevicePluginWeatherground : public DevicePlugin
+class DevicePluginOpenweathermap : public DevicePlugin
 {
     Q_OBJECT
 
-    Q_PLUGIN_METADATA(IID "org.guh.DevicePlugin" FILE "devicepluginweatherground.json")
+    Q_PLUGIN_METADATA(IID "org.guh.DevicePlugin" FILE "devicepluginopenweathermap.json")
     Q_INTERFACES(DevicePlugin)
 
 public:
-    explicit DevicePluginWeatherground();
+    explicit DevicePluginOpenweathermap();
 
-    WeathergroundParser *m_parser;
+    OpenWeatherMap *m_openweaher;
 
     QList<Vendor> supportedVendors() const override;
     QList<DeviceClass> supportedDevices() const override;
@@ -51,4 +51,4 @@ public slots:
 
 };
 
-#endif // DEVICEPLUGINWEATHERGROUND_H
+#endif // DEVICEPLUGINOPENWEATHERMAP_H

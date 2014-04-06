@@ -1,10 +1,11 @@
 TEMPLATE = subdirs
 SUBDIRS += elro     \
     intertechno     \
-    meisteranker    \
+#    meisteranker    \
     wifidetector    \
     conrad          \
     mock            \
-    weatherground   \
+#    weatherground   \
+    openweathermap  \
 
 #    boblight       \

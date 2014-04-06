@@ -18,7 +18,7 @@ SOURCES += plugin/device.cpp \
            types/statetype.cpp \
            types/eventtype.cpp \
            types/event.cpp \
-            types/vendor.cpp
+           types/vendor.cpp
 
 HEADERS += plugin/device.h \
            plugin/deviceclass.h \
@@ -33,5 +33,5 @@ HEADERS += plugin/device.h \
            types/eventtype.h \
            types/event.h \
            types/vendor.h \
-    types/typeutils.h
+           types/typeutils.h
 

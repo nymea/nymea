@@ -21,6 +21,8 @@ private:
     QString m_cityName;
     QString m_country;
     QString m_language;
+    QString m_apikey;
+
     QTime m_currentTime;
 
     //current weather
@@ -38,20 +40,26 @@ private:
 
 signals:
     void dataReady(const QByteArray &data);
-    void locationDetected();
-    void querryListReady(const QStringList *citys);
+    void locationDetected(const QString &cityCode, const QString &language);
+    void querryListReady(const QVariantList &querryList);
+
     void temperatureReady(const double &temperature);
     void humidityReady(const double &humidity);
+    void windSpeedReady(const double &windSpeed);
+    void windDirectionReady(const QString &windDirection);
+    void currentWeatherReady(const QString &currentWeather);
+    void moonAgeReady(const int &age);
+    void moonIlluminationReady(const int &age);
     void sunDataReady(const QTime &sunSet, const QTime &sunRise);
 
 private slots:
     void replyFinished(QNetworkReply *reply);
     void processResponse(const QByteArray &data);
-    void getDataFromLocation();
 
 public slots:
     void updateData();
-    void updateData(QString cityCode, QString language);
+    void updateData(const QString &cityCode, const QString &language);
+    void searchCity(const QString &searchString);
 
 
 };

@@ -26,7 +26,6 @@
 #include <QJsonDocument>
 #include <QDateTime>
 
-// Key: 779a480dea5163c6
 
 VendorId weathergroundVendorId = VendorId("68f84197-b158-4d24-9d7b-709cfff843c1");
 
@@ -48,7 +47,7 @@ QList<DeviceClass> DevicePluginWeatherground::supportedDevices() const
     QList<DeviceClass> ret;
 
     DeviceClass deviceClassWeatherground(pluginId(), weathergroundVendorId, DeviceClassId("af2e15f0-650e-4452-b379-fa76a2dc46c6"));
-    deviceClassWeatherground.setName("Weather");
+    deviceClassWeatherground.setName("Weather from Weatherground");
 
     QVariantList weatherParams;
     QVariantMap cityParam;
@@ -153,16 +152,6 @@ QUuid DevicePluginWeatherground::pluginId() const
 
 void DevicePluginWeatherground::guhTimer()
 {
-    qDebug() << "update Weatherground states...";
-}
-
-void DevicePluginWeatherground::setState(const QUuid &stateTypeId, const QVariant &value)
-{
-
-}
-
-void DevicePluginWeatherground::executeAction(Device *device, const Action &action)
-{
-
+    m_parser->updateData();
 }
 

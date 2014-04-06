@@ -23,11 +23,12 @@
 
 Q_IMPORT_PLUGIN(DevicePluginElro)
 Q_IMPORT_PLUGIN(DevicePluginIntertechno)
-Q_IMPORT_PLUGIN(DevicePluginMeisterAnker)
+//Q_IMPORT_PLUGIN(DevicePluginMeisterAnker)
 Q_IMPORT_PLUGIN(DevicePluginWifiDetector)
 Q_IMPORT_PLUGIN(DevicePluginConrad)
 Q_IMPORT_PLUGIN(DevicePluginMock)
-Q_IMPORT_PLUGIN(DevicePluginWeatherground)
+//Q_IMPORT_PLUGIN(DevicePluginWeatherground)
+Q_IMPORT_PLUGIN(DevicePluginOpenweathermap)
 
 int main(int argc, char *argv[])
 {

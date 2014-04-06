@@ -6,11 +6,12 @@ WeathergroundParser::WeathergroundParser(QObject *parent) :
     m_manager = new QNetworkAccessManager(this);
 
     m_cityCode = "/q/zmw:00000.2.11034";
-    m_language = "DL";
+    m_language = "EN";
+    m_apikey = "779a480dea5163c6";
 
     connect(m_manager,SIGNAL(finished(QNetworkReply*)),this,SLOT(replyFinished(QNetworkReply*)));
     connect(this,SIGNAL(dataReady(QByteArray)),this,SLOT(processResponse(QByteArray)));
-    connect(this,SIGNAL(locationDetected()),this,SLOT(getDataFromLocation()));
+    connect(this,SIGNAL(locationDetected(QString,QString)),this,SLOT(updateData(QString,QString)));
 }
 
 void WeathergroundParser::replyFinished(QNetworkReply *reply)
@@ -23,13 +24,13 @@ void WeathergroundParser::processResponse(const QByteArray &data)
     QJsonParseError error;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
 
+    qDebug() << jsonDoc.toJson();
+
     if(error.error != QJsonParseError::NoError) {
-        qDebug() << "failed to parse data" << data << ":" << error.errorString();
+        qWarning() << "failed to parse data" << data << ":" << error.errorString();
     }
-    //qDebug() << "-------------------------\n" << jsonDoc.toJson();
 
     QVariantMap dataMap = jsonDoc.toVariant().toMap();
-
 
     //=====================================================================================
     // Pars answere
@@ -41,32 +42,25 @@ void WeathergroundParser::processResponse(const QByteArray &data)
         m_cityCode = locationMap.value("l").toString();
         m_country = locationMap.value("country_iso3166").toString();
 
-        qDebug() << m_cityName << m_country << m_cityCode;
-        qDebug() << "-------------------";
-        emit locationDetected();
+        emit locationDetected(m_cityCode,m_language);
     }
 
 
     //----------------------------------------------------
     if(dataMap.contains("RESULTS")){
         QVariantList list = dataMap.value("RESULTS").toList();
-
-        QStringList *cityList;
-
-        foreach (QVariant key, list) {
-            qDebug() << "----------------------------------------";
-            QVariantMap elemant = key.toMap();
-            if(elemant.contains("name")){
-                qDebug() << elemant.value("name").toString();
-                qDebug() << elemant.value("l").toString();
-                cityList->append(elemant.value("name").toString());
-            }
-        }
-        emit querryListReady(cityList);
+//        foreach (QVariant key, list) {
+//            qDebug() << "----------------------------------------";
+//            QVariantMap elemant = key.toMap();
+//            if(elemant.contains("name")){
+//                qDebug() << elemant.value("name").toString();
+//                qDebug() << elemant.value("l").toString();
+//            }
+//        }
+        emit querryListReady(list);
     }
     //----------------------------------------------------
     if(dataMap.contains("sun_phase")){
-        qDebug() << jsonDoc.toJson();
         int sunRiseH = dataMap.value("sun_phase").toMap().value("sunrise").toMap().value("hour").toInt();
         int sunRiseM = dataMap.value("sun_phase").toMap().value("sunrise").toMap().value("minute").toInt();
 
@@ -76,52 +70,39 @@ void WeathergroundParser::processResponse(const QByteArray &data)
         m_sunrise = QTime(sunRiseH,sunRiseM);
         m_sunset = QTime(sunSetH,sunSetM);
 
-        qDebug() << "sunrise =" << m_sunrise.toString();
-        qDebug() << "sunset =" << m_sunset.toString();
-
         emit sunDataReady(m_sunset, m_sunrise);
     }
     //----------------------------------------------------
     if(dataMap.contains("current_observation")){
-        //qDebug() << jsonDoc.toJson();
         m_weather = dataMap.value("current_observation").toMap().value("weather").toString();
-        qDebug() << "Currently = " << m_weather;
         m_temperature = dataMap.value("current_observation").toMap().value("temp_c").toDouble();
-        qDebug() << "Temperature =" << m_temperature;
         m_temperatureFeeling = dataMap.value("current_observation").toMap().value("feelslike_c").toDouble();
-        qDebug() << "Temperature feels like =" << m_temperatureFeeling;
         m_humidity = dataMap.value("current_observation").toMap().value("relative_humidity").toString();
-        qDebug() << "Humidity =" << m_humidity ;
         m_windSpeed = dataMap.value("current_observation").toMap().value("wind_kph").toDouble();
-        qDebug() << "Wind speed =" << m_windSpeed ;
         m_windDirection = dataMap.value("current_observation").toMap().value("wind_dir").toString();
-        qDebug() << "Wind direction =" << m_windDirection;
     }
-}
-
-void WeathergroundParser::getDataFromLocation()
-{
-    QUrl url = "http://api.wunderground.com/api/bc9fbd0a246f151c/conditions/lang:" + m_language + m_cityCode + ".json";
-    m_manager->get(QNetworkRequest(url));
-
-    url = "http://api.wunderground.com/api/bc9fbd0a246f151c/astronomy/lang:" + m_language + m_cityCode + ".json";
-    m_manager->get(QNetworkRequest(url));
 }
 
 void WeathergroundParser::updateData()
 {
-    qDebug() << "=============================================";
-    qDebug() << QTime::currentTime().toString();
+//    qDebug() << "=============================================";
+//    qDebug() << QTime::currentTime().toString();
 
-    QUrl url = QUrl("http://api.wunderground.com/api/bc9fbd0a246f151c/geolookup/lang:" + m_language + "/q/autoip.json");
+    QUrl url = QUrl("http://api.wunderground.com/api/" + m_apikey +"/geolookup/lang:" + m_language + "/q/autoip.json");
     m_manager->get(QNetworkRequest(url));
 }
 
-void WeathergroundParser::updateData(QString cityCode, QString language)
+void WeathergroundParser::updateData(const QString &cityCode, const QString &language)
 {
-    QUrl url = "http://api.wunderground.com/api/bc9fbd0a246f151c/conditions/lang:" + m_language + m_cityCode + ".json";
+    QUrl url = "http://api.wunderground.com/api/" + m_apikey +"/conditions/lang:" + language + cityCode + ".json";
     m_manager->get(QNetworkRequest(url));
 
-    url = "http://api.wunderground.com/api/bc9fbd0a246f151c/astronomy/lang:" + m_language + m_cityCode + ".json";
+    url = "http://api.wunderground.com/api/" + m_apikey +"/astronomy/lang:" + language + cityCode + ".json";
+    m_manager->get(QNetworkRequest(url));
+}
+
+void WeathergroundParser::searchCity(const QString &searchString)
+{
+    QUrl url = QUrl("http://autocomplete.wunderground.com/aq?query=" + searchString);
     m_manager->get(QNetworkRequest(url));
 }

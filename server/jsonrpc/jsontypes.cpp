@@ -396,6 +396,12 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                     qDebug() << "device not valid";
                     return result;
                 }
+            } else if (refName == deviceDescriptorRef()) {
+                QPair<bool, QString> result = validateMap(deviceDescriptorDescription(), variant.toMap());
+                if (!result.first) {
+                    qDebug() << "devicedescription not valid";
+                    return result;
+                }
             } else if (refName == vendorRef()) {
                 QPair<bool, QString> result = validateMap(vendorDescription(), variant.toMap());
                 if (!result.first) {

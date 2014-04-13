@@ -154,6 +154,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     setParams("StateChanged", params);
 
     connect(GuhCore::instance()->deviceManager(), &DeviceManager::deviceStateChanged, this, &DeviceHandler::deviceStateChanged);
+    connect(GuhCore::instance()->deviceManager(), &DeviceManager::devicesDiscovered, this, &DeviceHandler::devicesDiscovered);
 }
 
 QString DeviceHandler::name() const

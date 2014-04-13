@@ -29,6 +29,8 @@ QString JsonTypes::s_lastError;
 
 QVariantList JsonTypes::s_basicTypes;
 QVariantList JsonTypes::s_ruleTypes;
+QVariantList JsonTypes::s_createMethodTypes;
+QVariantList JsonTypes::s_setupMethodTypes;
 
 QVariantMap JsonTypes::s_paramType;
 QVariantMap JsonTypes::s_param;
@@ -49,6 +51,8 @@ void JsonTypes::init()
     // BasicTypes
     s_basicTypes << "uuid" << "string" << "integer" << "double" << "bool";
     s_ruleTypes << "RuleTypeMatchAll" << "RuleTypeMatchAny";
+    s_createMethodTypes << "CreateMethodUser" << "CreateMethodAuto" << "CreateMethodDiscovery";
+    s_setupMethodTypes << "SetupMethodJustAdd" << "SetupMethodDisplayPin" << "SetupMethodEnterPin" << "SetupMethodPushButton";
 
     // ParamType
     s_paramType.insert("name", "string");
@@ -107,6 +111,8 @@ void JsonTypes::init()
     s_deviceClass.insert("events", QVariantList() << eventTypeRef());
     s_deviceClass.insert("actions", QVariantList() << actionTypeRef());
     s_deviceClass.insert("params", QVariantList() << paramTypeRef());
+    s_deviceClass.insert("setupMethod", setupMethodTypesRef());
+    s_deviceClass.insert("createMethod", createMethodTypesRef());
 
     // Device
     s_device.insert("id", "uuid");
@@ -133,6 +139,8 @@ QVariantMap JsonTypes::allTypes()
     QVariantMap allTypes;
     allTypes.insert("BasicType", basicTypes());
     allTypes.insert("ParamType", paramTypeDescription());
+    allTypes.insert("CreateMethodType", createMethodTypes());
+    allTypes.insert("SetupMethodType", setupMethodTypes());
     allTypes.insert("StateType", stateTypeDescription());
     allTypes.insert("EventType", eventTypeDescription());
     allTypes.insert("ActionType", actionTypeDescription());
@@ -224,6 +232,8 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass)
     variant.insert("states", stateTypes);
     variant.insert("events", eventTypes);
     variant.insert("actions", actionTypes);
+    variant.insert("createMethod", s_createMethodTypes.at(deviceClass.createMethod()));
+    variant.insert("setupMethod", s_setupMethodTypes.at(deviceClass.setupMethod()));
     return variant;
 }
 
@@ -406,6 +416,18 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                     qDebug() << "value not allowed in" << ruleTypesRef();
                     return result;
                 }
+            } else if (refName == createMethodTypesRef()) {
+                QPair<bool, QString> result = validateCreateMethodType(variant);
+                if (!result.first) {
+                    qDebug() << "value not allowed in" << createMethodTypesRef();
+                    return result;
+                }
+            } else if (refName == setupMethodTypesRef()) {
+                QPair<bool, QString> result = validateSetupMethodType(variant);
+                if (!result.first) {
+                    qDebug() << "value not allowed in" << createMethodTypesRef();
+                    return result;
+                }
             } else {
                 qDebug() << "unhandled ref:" << refName;
                 return report(false, QString("Unhandled ref %1. Server implementation incomplete.").arg(refName));
@@ -463,4 +485,14 @@ QPair<bool, QString> JsonTypes::validateBasicType(const QVariant &variant)
 QPair<bool, QString> JsonTypes::validateRuleType(const QVariant &variant)
 {
     return report(s_ruleTypes.contains(variant.toString()), QString("Unknown rules type %1").arg(variant.toString()));
+}
+
+QPair<bool, QString> JsonTypes::validateCreateMethodType(const QVariant &variant)
+{
+    return report(s_createMethodTypes.contains(variant.toString()), QString("Unknwon createMethod type %1").arg(variant.toString()));
+}
+
+QPair<bool, QString> JsonTypes::validateSetupMethodType(const QVariant &variant)
+{
+    return report(s_setupMethodTypes.contains(variant.toString()), QString("Unknwon setupMethod type %1").arg(variant.toString()));
 }

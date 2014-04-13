@@ -124,13 +124,13 @@ QUuid DevicePluginConrad::pluginId() const
     return QUuid("1fd1a076-f229-4ec6-b501-48ddd15935e4");
 }
 
-void DevicePluginConrad::executeAction(Device *device, const Action &action)
+DeviceManager::DeviceError DevicePluginConrad::executeAction(Device *device, const Action &action)
 {
 
     QList<int> rawData;
     QByteArray binCode;
 
-
+    return DeviceManager::DeviceErrorNoError;
 }
 
 void DevicePluginConrad::radioData(QList<int> rawData)

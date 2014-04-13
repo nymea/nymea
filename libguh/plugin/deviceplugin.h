@@ -22,6 +22,7 @@
 #include "devicemanager.h"
 #include "deviceclass.h"
 
+#include "typeutils.h"
 #include "types/event.h"
 #include "types/action.h"
 #include "types/vendor.h"
@@ -47,6 +48,8 @@ public:
     virtual QList<DeviceClass> supportedDevices() const = 0;
     virtual DeviceManager::HardwareResources requiredHardware() const = 0;
 
+    virtual bool configureAutoDevice(QList<Device *> loadedDevices, Device *device) const;
+
     virtual bool deviceCreated(Device *device);
     virtual void deviceRemoved(Device *device);
 
@@ -58,7 +61,7 @@ public:
     virtual void setConfiguration(const QVariantMap &configuration);
 
 public slots:
-    virtual void executeAction(Device *device, const Action &action) {Q_UNUSED(device) Q_UNUSED(action)}
+    virtual DeviceManager::DeviceError executeAction(Device *device, const Action &action) {Q_UNUSED(device) Q_UNUSED(action)}
 
 
 signals:

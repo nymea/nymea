@@ -23,3 +23,7 @@ LIBS += -L../plugins/deviceplugins/conrad -lguh_devicepluginconrad
 LIBS += -L../plugins/deviceplugins/mock -lguh_devicepluginmock
 #LIBS += -L../plugins/deviceplugins/weatherground -lguh_devicepluginweatherground
 LIBS += -L../plugins/deviceplugins/openweathermap -lguh_devicepluginopenweathermap
+
+boblight {
+    LIBS += -L../plugins/deviceplugins/boblight -lguh_devicepluginboblight -L/usr/local/lib/ -lboblight
+}

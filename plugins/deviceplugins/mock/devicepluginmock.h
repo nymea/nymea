@@ -45,8 +45,10 @@ public:
     bool deviceCreated(Device *device) override;
     void deviceRemoved(Device *device) override;
 
+    bool configureAutoDevice(QList<Device *> loadedDevices, Device *device) const override;
+
 public slots:
-    void executeAction(Device *device, const Action &action) override;
+    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
 
 private slots:
     void setState(const StateTypeId &stateTypeId, const QVariant &value);

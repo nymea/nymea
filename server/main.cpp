@@ -29,6 +29,7 @@ Q_IMPORT_PLUGIN(DevicePluginConrad)
 Q_IMPORT_PLUGIN(DevicePluginMock)
 //Q_IMPORT_PLUGIN(DevicePluginWeatherground)
 Q_IMPORT_PLUGIN(DevicePluginOpenweathermap)
+Q_IMPORT_PLUGIN(DevicePluginBoblight)
 
 int main(int argc, char *argv[])
 {

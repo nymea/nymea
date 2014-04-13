@@ -41,7 +41,7 @@ public:
     void radioData(QList<int> rawData) override;
 
 public slots:
-    void executeAction(Device *device, const Action &action) override;
+    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
 
 };
 

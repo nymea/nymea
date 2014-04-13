@@ -8,4 +8,6 @@ SUBDIRS += elro     \
 #    weatherground   \
     openweathermap  \
 
-#    boblight       \
+boblight {
+    SUBDIRS += boblight
+}

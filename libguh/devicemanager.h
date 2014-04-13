@@ -53,23 +53,27 @@ public:
         DeviceErrorMissingParameter,
         DeviceErrorPluginNotFound,
         DeviceErrorSetupFailed,
-        DeviceErrorDuplicateUuid
+        DeviceErrorDuplicateUuid,
+        DeviceErrorCreationNotSupported,
+        DeviceErrorDeviceParameterError,
+        DeviceErrorActionParameterError
     };
 
     explicit DeviceManager(QObject *parent = 0);
 
     QList<DevicePlugin*> plugins() const;
-    DevicePlugin* plugin(const QUuid &id) const;
+    DevicePlugin* plugin(const PluginId &id) const;
+    void setPluginConfig(const PluginId &pluginId, const QVariantMap &pluginConfig);
+
     QList<Vendor> supportedVendors() const;
     QList<DeviceClass> supportedDevices(const VendorId &vendorId = VendorId()) const;
 
     QList<Device*> configuredDevices() const;
     DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const QVariantMap &params, const DeviceId id = DeviceId::createDeviceId());
-    DeviceError removeConfiguredDevice(const QUuid &deviceId);
+    DeviceError removeConfiguredDevice(const DeviceId &deviceId);
 
-    Device* findConfiguredDevice(const QUuid &id) const;
-    QList<Device*> findConfiguredDevices(const QUuid &deviceClassId) const;
-    DeviceClass findDeviceClassforEvent(const QUuid &eventTypeId) const;
+    Device* findConfiguredDevice(const DeviceId &id) const;
+    QList<Device*> findConfiguredDevices(const DeviceClassId &deviceClassId) const;
     DeviceClass findDeviceClass(const QUuid &deviceClassId) const;
 
 signals:
@@ -84,6 +88,7 @@ private slots:
     void loadPlugins();
     void loadConfiguredDevices();
     void storeConfiguredDevices();
+    void createNewAutoDevices();
 
     // Only connect this to Devices. It will query the sender()
     void slotDeviceStateValueChanged(const QUuid &stateTypeId, const QVariant &value);
@@ -92,6 +97,7 @@ private slots:
     void timerEvent();
 
 private:
+    DeviceError addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QVariantMap &params, const DeviceId id = DeviceId::createDeviceId());
     bool setupDevice(Device *device);
 
     QHash<VendorId, Vendor> m_supportedVendors;

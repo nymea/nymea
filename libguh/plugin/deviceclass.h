@@ -31,6 +31,18 @@
 class DeviceClass
 {
 public:
+    enum CreateMethod {
+        CreateMethodUser,
+        CreateMethodAuto,
+        CreateMethodDiscovery
+    };
+    enum SetupMethod {
+        SetupMethodJustAdd,
+        SetupMethodDisplayPin,
+        SetupMethodEnterPin,
+        SetupMethodPushButton
+    };
+
     DeviceClass(const QUuid &pluginId = QUuid(), const VendorId &vendorId = VendorId(), const DeviceClassId &id = DeviceClassId());
 
     DeviceClassId id() const;
@@ -53,6 +65,11 @@ public:
     QVariantList params() const;
     void setParams(const QVariantList &params);
 
+    CreateMethod createMethod() const;
+    void setCreateMethod(CreateMethod createMethod);
+    SetupMethod setupMethod() const;
+    void setSetupMethod(SetupMethod setupMethod);
+
     bool operator==(const DeviceClass &device) const;
 
 private:
@@ -64,6 +81,8 @@ private:
     QList<EventType> m_events;
     QList<ActionType> m_actions;
     QVariantList m_params;
+    CreateMethod m_createMethod;
+    SetupMethod m_setupMethod;
 };
 
 #endif

@@ -68,8 +68,16 @@ QVariantMap ActionHandler::ExecuteAction(const QVariantMap &params)
         returns.insert("errorMessage", "No such device");
         returns.insert("success", false);
         break;
+    case DeviceManager::DeviceErrorActionTypeNotFound:
+        returns.insert("errorMessage", "ActionType not found");
+        returns.insert("success", false);
+        break;
+    case DeviceManager::DeviceErrorMissingParameter:
+        returns.insert("errorMessage", "Missing parameter");
+        returns.insert("success", false);
+        break;
     default:
-        returns.insert("errorMessage", "Unknown error.");
+        returns.insert("errorMessage", QString("Unknown error %1").arg(error));
         returns.insert("success", false);
     }
 

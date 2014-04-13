@@ -1,7 +1,11 @@
 #!/bin/bash
 
-if [ -z $1 ]; then
-  echo "usage $0 host"
+if [ -z $4 ]; then
+  echo "usage $0 host pluginid param1name param1value [param2name param2value]"
+elif [ -z $5 ]; then
+  (echo '{"id":1, "method":"Devices.SetPluginConfiguration", "params":{"pluginId":"'$2'", "pluginParams":{"'$3'":"'$4'"}}}'; sleep 1) | nc $1 1234
+elif [ -z $6 ]; then
+  echo "usage $0 host pluginid param1name param1value [param2name param2value]"
 else
-  (echo '{"id":1, "method":"Devices.SetPluginConfig", "params":{"pluginId":"'$2'", "params":{"foo":"bar"}}}'; sleep 1) | nc $1 1234
+  (echo '{"id":1, "method":"Devices.SetPluginConfiguration", "params":{"pluginId":"'$2'", "pluginParams":{"'$3'":"'$4'", "'$5'":"'$6'"}}}'; sleep 1) | nc $1 1234
 fi

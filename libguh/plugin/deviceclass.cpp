@@ -42,7 +42,9 @@
 DeviceClass::DeviceClass(const QUuid &pluginId, const VendorId &vendorId, const DeviceClassId &id):
     m_id(id),
     m_vendorId(vendorId),
-    m_pluginId(pluginId)
+    m_pluginId(pluginId),
+    m_createMethod(CreateMethodUser),
+    m_setupMethod(SetupMethodJustAdd)
 {
 
 }
@@ -137,6 +139,26 @@ QVariantList DeviceClass::params() const
 void DeviceClass::setParams(const QVariantList &params)
 {
     m_params = params;
+}
+
+DeviceClass::CreateMethod DeviceClass::createMethod() const
+{
+    return m_createMethod;
+}
+
+void DeviceClass::setCreateMethod(DeviceClass::CreateMethod createMethod)
+{
+    m_createMethod = createMethod;
+}
+
+DeviceClass::SetupMethod DeviceClass::setupMethod() const
+{
+    return m_setupMethod;
+}
+
+void DeviceClass::setSetupMethod(DeviceClass::SetupMethod setupMethod)
+{
+    m_setupMethod = setupMethod;
 }
 
 /*! Compare this \a deviceClass to another. This is effectively the same as calling a.id() == b.id(). Returns true if the ids match.*/

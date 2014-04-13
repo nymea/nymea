@@ -100,6 +100,7 @@ DeviceManager::DeviceManager(QObject *parent) :
     // Give hardware a chance to start up before loading plugins etc.
     QMetaObject::invokeMethod(this, "loadPlugins", Qt::QueuedConnection);
     QMetaObject::invokeMethod(this, "loadConfiguredDevices", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, "createNewAutoDevices", Qt::QueuedConnection);
     // Make sure this is always emitted after plugins and devices are loaded
     QMetaObject::invokeMethod(this, "loaded", Qt::QueuedConnection);
 }
@@ -111,9 +112,18 @@ QList<DevicePlugin *> DeviceManager::plugins() const
 }
 
 /*! Returns the \{DevicePlugin} with the given \a id. Null if the id couldn't be found. */
-DevicePlugin *DeviceManager::plugin(const QUuid &id) const
+DevicePlugin *DeviceManager::plugin(const PluginId &id) const
 {
     return m_devicePlugins.value(id);
+}
+
+void DeviceManager::setPluginConfig(const PluginId &pluginId, const QVariantMap &pluginConfig)
+{
+    DevicePlugin *plugin = m_devicePlugins.value(pluginId);
+    plugin->setConfiguration(pluginConfig);
+    QSettings settings;
+    settings.setValue(plugin->pluginId().toString(), pluginConfig);
+    createNewAutoDevices();
 }
 
 QList<Vendor> DeviceManager::supportedVendors() const
@@ -142,6 +152,19 @@ QList<DeviceClass> DeviceManager::supportedDevices(const VendorId &vendorId) con
     be generated.
 */
 DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassId &deviceClassId, const QVariantMap &params, const DeviceId id)
+{
+    DeviceClass deviceClass = findDeviceClass(deviceClassId);
+    if (deviceClass.id().isNull()) {
+        qWarning() << "cannot find a device class with id" << deviceClassId;
+        return DeviceErrorDeviceClassNotFound;
+    }
+    if (deviceClass.createMethod() == DeviceClass::CreateMethodUser) {
+        return addConfiguredDeviceInternal(deviceClassId, params, id);
+    }
+    return DeviceErrorCreationNotSupported;
+}
+
+DeviceManager::DeviceError DeviceManager::addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QVariantMap &params, const DeviceId id)
 {
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
     if (deviceClass.id().isNull()) {
@@ -182,7 +205,7 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassI
     return DeviceErrorNoError;
 }
 
-DeviceManager::DeviceError DeviceManager::removeConfiguredDevice(const QUuid &deviceId)
+DeviceManager::DeviceError DeviceManager::removeConfiguredDevice(const DeviceId &deviceId)
 {
     Device *device = findConfiguredDevice(deviceId);
     if (!device) {
@@ -207,7 +230,7 @@ DeviceManager::DeviceError DeviceManager::removeConfiguredDevice(const QUuid &de
 }
 
 /*! Returns the \l{Device} with the given \a id. Null if the id couldn't be found. */
-Device *DeviceManager::findConfiguredDevice(const QUuid &id) const
+Device *DeviceManager::findConfiguredDevice(const DeviceId &id) const
 {
     foreach (Device *device, m_configuredDevices) {
         if (device->id() == id) {
@@ -224,7 +247,7 @@ QList<Device *> DeviceManager::configuredDevices() const
 }
 
 /*! Returns all \l{Device}{Devices} matching the \l{DeviceClass} referred by \a deviceClassId. */
-QList<Device *> DeviceManager::findConfiguredDevices(const QUuid &deviceClassId) const
+QList<Device *> DeviceManager::findConfiguredDevices(const DeviceClassId &deviceClassId) const
 {
     QList<Device*> ret;
     foreach (Device *device, m_configuredDevices) {
@@ -233,19 +256,6 @@ QList<Device *> DeviceManager::findConfiguredDevices(const QUuid &deviceClassId)
         }
     }
     return ret;
-}
-
-/*! For conveninece, this returns the \{DeviceClass} that describes the \l{EventType} referred by \a eventTypeId. */
-DeviceClass DeviceManager::findDeviceClassforEvent(const QUuid &eventTypeId) const
-{
-    foreach (const DeviceClass &deviceClass, m_supportedDevices) {
-        foreach (const EventType &eventType, deviceClass.events()) {
-            if (eventType.id() == eventTypeId) {
-                return deviceClass;
-            }
-        }
-    }
-    return DeviceClass();
 }
 
 /*! For conveninece, this returns the \{DeviceClass} with the id given by \a deviceClassId.
@@ -275,14 +285,19 @@ DeviceManager::DeviceError DeviceManager::executeAction(const Action &action)
             foreach (const ActionType &actionType, deviceClass.actions()) {
                 if (actionType.id() == action.actionTypeId()) {
                     found = true;
+
+                    if (actionType.parameters().count() > action.params().count()) {
+                        return DeviceErrorMissingParameter;
+                    }
+
+                    continue;
                 }
             }
             if (!found) {
                 return DeviceErrorActionTypeNotFound;
             }
 
-            m_devicePlugins.value(device->pluginId())->executeAction(device, action);
-            return DeviceErrorNoError;
+            return m_devicePlugins.value(device->pluginId())->executeAction(device, action);
         }
     }
     return DeviceErrorDeviceNotFound;
@@ -313,6 +328,11 @@ void DeviceManager::loadPlugins()
                 m_supportedDevices.insert(deviceClass.id(), deviceClass);
                 qDebug() << "* Loaded device class:" << deviceClass.name();
             }
+            QSettings settings;
+            if (settings.contains(pluginIface->pluginId().toString())) {
+                pluginIface->setConfiguration(settings.value(pluginIface->pluginId().toString()).toMap());
+            }
+
             m_devicePlugins.insert(pluginIface->pluginId(), pluginIface);
             connect(pluginIface, &DevicePlugin::emitEvent, this, &DeviceManager::emitEvent);
         }
@@ -348,6 +368,35 @@ void DeviceManager::storeConfiguredDevices()
         settings.setValue("params", device->params());
         settings.endGroup();
     }
+}
+
+void DeviceManager::createNewAutoDevices()
+{
+    bool haveNewDevice = false;
+    foreach (const DeviceClass &deviceClass, m_supportedDevices) {
+        if (deviceClass.createMethod() != DeviceClass::CreateMethodAuto) {
+            continue;
+        }
+
+        qDebug() << "found auto device class" << deviceClass.name();
+        DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
+        bool success = false;
+        do {
+            QList<Device*> loadedDevices = findConfiguredDevices(deviceClass.id());
+            Device *device = new Device(plugin->pluginId(), DeviceId::createDeviceId(), deviceClass.id());
+            success = plugin->configureAutoDevice(loadedDevices, device);
+            if (success) {
+                qDebug() << "New device detected for" << deviceClass.name() << device->name();
+                setupDevice(device);
+                m_configuredDevices.append(device);
+                haveNewDevice = true;
+            } else {
+                qDebug() << "No newly detected devices for" << deviceClass.name();
+                delete device;
+            }
+        } while (success);
+    }
+    storeConfiguredDevices();
 }
 
 void DeviceManager::slotDeviceStateValueChanged(const QUuid &stateTypeId, const QVariant &value)

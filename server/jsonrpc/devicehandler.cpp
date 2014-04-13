@@ -57,13 +57,13 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     setReturns("GetPlugins", returns);
 
     params.clear(); returns.clear();
-    setDescription("SetPluginParams", "Set a plugin's params.");
+    setDescription("SetPluginConfiguration", "Set a plugin's params.");
     params.insert("pluginId", "uuid");
     QVariantList pluginParams;
     pluginParams.append(JsonTypes::paramTypeRef());
     params.insert("pluginParams", pluginParams);
-    setParams("SetPluginParams", params);
-    setReturns("SetPluginParams", returns);
+    setParams("SetPluginConfiguration", params);
+    setReturns("SetPluginConfiguration", returns);
 
     params.clear(); returns.clear();
     setDescription("AddConfiguredDevice", "Add a configured device.");
@@ -190,11 +190,11 @@ QVariantMap DeviceHandler::GetPlugins(const QVariantMap &params) const
     return returns;
 }
 
-QVariantMap DeviceHandler::SetPluginParams(const QVariantMap &params)
+QVariantMap DeviceHandler::SetPluginConfiguration(const QVariantMap &params)
 {
-    QUuid pluginId = params.value("pluginId").toUuid();
+    PluginId pluginId = PluginId(params.value("pluginId").toString());
     QVariantMap pluginParams = params.value("pluginParams").toMap();
-    GuhCore::instance()->deviceManager()->plugin(pluginId)->setConfiguration(pluginParams);
+    GuhCore::instance()->deviceManager()->setPluginConfig(pluginId, pluginParams);
     return QVariantMap();
 }
 
@@ -223,6 +223,10 @@ QVariantMap DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
         returns.insert("errorMessage", "Error creating device. Device setup failed.");
         returns.insert("success", false);
         break;
+    case DeviceManager::DeviceErrorCreationNotSupported:
+        returns.insert("errorMessage", "Error creating device. This device can't be created this way.");
+        returns.insert("success", false);
+        break;
     default:
         returns.insert("errorMessage", "Unknown error.");
         returns.insert("success", false);
@@ -245,7 +249,7 @@ QVariantMap DeviceHandler::GetConfiguredDevices(const QVariantMap &params) const
 QVariantMap DeviceHandler::RemoveConfiguredDevice(const QVariantMap &params)
 {
     QVariantMap returns;
-    switch(GuhCore::instance()->deviceManager()->removeConfiguredDevice(params.value("deviceId").toUuid())) {
+    switch(GuhCore::instance()->deviceManager()->removeConfiguredDevice(DeviceId(params.value("deviceId").toString()))) {
     case DeviceManager::DeviceErrorNoError:
         returns.insert("success", true);
         returns.insert("errorMessage", "");
@@ -303,7 +307,7 @@ QVariantMap DeviceHandler::GetStateValue(const QVariantMap &params) const
 {
     QVariantMap returns;
 
-    Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(params.value("deviceId").toUuid());
+    Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(DeviceId(params.value("deviceId").toString()));
     if (!device) {
         returns.insert("success", false);
         returns.insert("errorMessage", "No such device");

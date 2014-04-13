@@ -27,6 +27,7 @@
 
 VendorId guhVendorId = VendorId("2062d64d-3232-433c-88bc-0d33c0ba2ba6");
 DeviceClassId mockDeviceClassId = DeviceClassId("753f0d32-0468-4d08-82ed-1964aab03298");
+DeviceClassId mockDeviceAutoClassId = DeviceClassId("ab4257b3-7548-47ee-9bd4-7dc3004fd197");
 EventTypeId mockEvent1Id = EventTypeId("45bf3752-0fc6-46b9-89fd-ffd878b5b22b");
 EventTypeId mockEvent2Id = EventTypeId("863d5920-b1cf-4eb9-88bd-8f7b8583b1cf");
 StateTypeId mockIntStateId = StateTypeId("80baec19-54de-4948-ac46-31eabfaceb83");
@@ -103,6 +104,19 @@ QList<DeviceClass> DevicePluginMock::supportedDevices() const
 
     ret.append(deviceClassMock);
 
+    // Auto created mock device
+    DeviceClass deviceClassMockAuto(pluginId(), guhVendorId, mockDeviceAutoClassId);
+    deviceClassMockAuto.setName("Mock Device (Auto created)");
+    deviceClassMockAuto.setCreateMethod(DeviceClass::CreateMethodAuto);
+
+    mockParams.clear();
+    deviceClassMockAuto.setParams(mockParams);
+    deviceClassMockAuto.setStates(mockStates);
+    deviceClassMockAuto.setEvents(mockEvents);
+    deviceClassMockAuto.setActions(mockActions);
+
+    ret.append(deviceClassMockAuto);
+
     return ret;
 }
 
@@ -144,7 +158,24 @@ void DevicePluginMock::deviceRemoved(Device *device)
     m_daemons.take(device)->deleteLater();
 }
 
-void DevicePluginMock::executeAction(Device *device, const Action &action)
+bool DevicePluginMock::configureAutoDevice(QList<Device *> loadedDevices, Device *device) const
+{
+    Q_ASSERT(device->deviceClassId() == mockDeviceAutoClassId);
+
+    qDebug() << "checking loadedDevices" << loadedDevices.count();
+    // We only want to have one auto mock device. So if there's already anything in loadedDevices, don't crearte a new one.
+    if (loadedDevices.count() > 0) {
+        return false;
+    }
+
+    device->setName("Mock Device (Auto created)");
+    QVariantMap params;
+    params.insert("httpport", 4242);
+    device->setParams(params);
+    return true;
+}
+
+DeviceManager::DeviceError DevicePluginMock::executeAction(Device *device, const Action &action)
 {
     qDebug() << "Should execute action" << action.actionTypeId();
     m_daemons.value(device)->actionExecuted(action.actionTypeId());

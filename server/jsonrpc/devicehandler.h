@@ -35,7 +35,7 @@ public:
 
     Q_INVOKABLE QVariantMap GetPlugins(const QVariantMap &params) const;
 
-    Q_INVOKABLE QVariantMap SetPluginParams(const QVariantMap &params);
+    Q_INVOKABLE QVariantMap SetPluginConfiguration(const QVariantMap &params);
 
     Q_INVOKABLE QVariantMap AddConfiguredDevice(const QVariantMap &params);
 

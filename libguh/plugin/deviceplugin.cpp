@@ -104,6 +104,28 @@ DevicePlugin::~DevicePlugin()
 
 }
 
+/*! Override this if your plugin supports Device with DeviceClass::CreationMethodAuto.
+ This will be called at startup, after the configured devices have been loaded.
+ You should walk through loadedDevices and check whether all the detected devices
+ are contained in there. If all the detected devices are already contained, return
+ false. If instead you've found a new device which isn't known to the system yet,
+ fill in the parameters of the passed device with some details that makes it possible
+ for you to match this Device object with the detected hardware. After that, return true.
+ The DeviceManager will then insert the device into its database and call deviceCreated()
+ for this device. Therefore you should not do any hardware initialisation in this state yet
+ but rather wait for the subsequent deviceCreated() call to set it up like in any other
+ case where Device can be created.
+ Returning false will cause the passed device object to be destroyed.
+ If you have detected multiple new devices, just load them one by one. The DeviceManager
+ will continue to call this method until you return false.
+ */
+bool DevicePlugin::configureAutoDevice(QList<Device*> loadedDevices, Device *device) const
+{
+    Q_UNUSED(loadedDevices)
+    Q_UNUSED(device)
+    return false;
+}
+
 /*! This will be called when a new device is created. The plugin has the chance to do some setup.
     Return false if something bad happened during the setup. The device will be disabled.
 */

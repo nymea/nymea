@@ -34,6 +34,7 @@ int mockDevice2Port = 7331;
 
 extern VendorId guhVendorId;
 extern DeviceClassId mockDeviceClassId;
+extern DeviceClassId mockDeviceAutoClassId;
 extern ActionTypeId mockAction1Id;
 extern EventTypeId mockEvent1Id;
 extern StateTypeId mockIntStateId;
@@ -53,6 +54,10 @@ private slots:
 
     void getSupportedDevices_data();
     void getSupportedDevices();
+
+    void addConfiguredDevice_data();
+    void addConfiguredDevice();
+
     void getConfiguredDevices();
 
     void executeAction_data();
@@ -87,6 +92,10 @@ private:
 
 void TestJSONRPC::initTestcase()
 {
+    // If testcase asserts cleanup won't do. Lets clear any previous test run settings leftovers
+    QSettings settings;
+    settings.clear();
+
     QCoreApplication::instance()->setOrganizationName("guh-test");
     m_commandId = 0;
 
@@ -119,7 +128,7 @@ void TestJSONRPC::initTestcase()
 void TestJSONRPC::cleanupTestCase()
 {
     QSettings settings;
-    settings.clear();
+//    settings.clear();
 }
 
 QVariant TestJSONRPC::injectAndWait(const QString &method, const QVariantMap &params = QVariantMap())
@@ -241,8 +250,8 @@ void TestJSONRPC::getSupportedDevices_data()
     QTest::addColumn<VendorId>("vendorId");
     QTest::addColumn<int>("resultCount");
 
-    QTest::newRow("vendor guh") << guhVendorId << 1;
-    QTest::newRow("no filter") << VendorId() << 1;
+    QTest::newRow("vendor guh") << guhVendorId << 2;
+    QTest::newRow("no filter") << VendorId() << 2;
     QTest::newRow("invalid vendor") << VendorId("93e7d361-8025-4354-b17e-b68406c800bc") << 0;
 }
 
@@ -261,7 +270,43 @@ void TestJSONRPC::getSupportedDevices()
     QCOMPARE(supportedDevices.toMap().value("params").toMap().value("deviceClasses").toList().count(), resultCount);
     if (resultCount > 0) {
         QString deviceName = supportedDevices.toMap().value("params").toMap().value("deviceClasses").toList().first().toMap().value("name").toString();
-        QCOMPARE(deviceName, QString("Mock Device"));
+        QVERIFY(deviceName.startsWith(QString("Mock Device")));
+    }
+}
+
+void TestJSONRPC::addConfiguredDevice_data()
+{
+    QTest::addColumn<DeviceClassId>("deviceClassId");
+    QTest::addColumn<QVariantMap>("deviceParams");
+    QTest::addColumn<bool>("success");
+
+    QVariantMap deviceParams;
+    deviceParams.insert("httpport", mockDevice1Port - 1);
+    QTest::newRow("User, JustAdd") << mockDeviceClassId << deviceParams << true;
+    QTest::newRow("Auto, JustAdd") << mockDeviceAutoClassId << deviceParams << false;
+}
+
+void TestJSONRPC::addConfiguredDevice()
+{
+    QFETCH(DeviceClassId, deviceClassId);
+    QFETCH(QVariantMap, deviceParams);
+    QFETCH(bool, success);
+
+    QVariantMap params;
+    params.insert("deviceClassId", deviceClassId);
+    params.insert("deviceParams", deviceParams);
+    QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
+    qDebug() << "response is" << response;
+
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+    QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), success);
+
+    if (success) {
+        QUuid deviceId(response.toMap().value("params").toMap().value("deviceId").toString());
+        params.clear();
+        params.insert("deviceId", deviceId.toString());
+        injectAndWait("Devices.RemoveConfiguredDevice", params);
+        QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
     }
 }
 
@@ -270,7 +315,7 @@ void TestJSONRPC::getConfiguredDevices()
     QVariant response = injectAndWait("Devices.GetConfiguredDevices");
 
     QVariantList devices = response.toMap().value("params").toMap().value("devices").toList();
-    QCOMPARE(devices.count(), 1);
+    QCOMPARE(devices.count(), 2); // There should be one auto created mock device and the one created in initTestcase()
 }
 
 void TestJSONRPC::executeAction_data()
@@ -478,6 +523,10 @@ void TestJSONRPC::stateChangeEmitsNotifications()
 void TestJSONRPC::removeDevice()
 {
     QVERIFY(!m_mockDeviceId.isNull());
+    QSettings settings;
+    settings.beginGroup(m_mockDeviceId.toString());
+    // Make sure we have some config values for this device
+    QVERIFY(settings.allKeys().count() > 0);
 
     QVariantMap params;
     params.insert("deviceId", m_mockDeviceId);
@@ -487,7 +536,6 @@ void TestJSONRPC::removeDevice()
     QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
 
     // Make sure the device is gone from settings too
-    QSettings settings;
     QCOMPARE(settings.allKeys().count(), 0);
 }
 

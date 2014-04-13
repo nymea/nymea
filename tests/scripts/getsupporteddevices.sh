@@ -2,6 +2,8 @@
 
 if [ -z $1 ]; then
   echo "usage $0 host"
-else
+elif [ -z $2 ]; then
   (echo '{"id":1, "method":"Devices.GetSupportedDevices"}'; sleep 1) | nc $1 1234
+else
+  (echo '{"id":1, "method":"Devices.GetSupportedDevices", "params":{"vendorId":"'$2'"}}'; sleep 1) | nc $1 1234
 fi

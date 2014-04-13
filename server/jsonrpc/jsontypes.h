@@ -63,6 +63,8 @@ public:
 
     DECLARE_TYPE(basicTypes, "BasicType")
     DECLARE_TYPE(ruleTypes, "RuleType")
+    DECLARE_TYPE(createMethodTypes, "CreateMethodType")
+    DECLARE_TYPE(setupMethodTypes, "SetupMethodType")
     DECLARE_OBJECT(paramType, "ParamType")
     DECLARE_OBJECT(param, "Param")
     DECLARE_OBJECT(stateType, "StateType")
@@ -94,6 +96,8 @@ public:
     static QPair<bool, QString> validateVariant(const QVariant &templateVariant, const QVariant &variant);
     static QPair<bool, QString> validateBasicType(const QVariant &variant);
     static QPair<bool, QString> validateRuleType(const QVariant &variant);
+    static QPair<bool, QString> validateCreateMethodType(const QVariant &variant);
+    static QPair<bool, QString> validateSetupMethodType(const QVariant &variant);
 
 private:
     static bool s_initialized;

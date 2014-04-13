@@ -22,6 +22,7 @@ DECLARE_TYPE_ID(Device)
 DECLARE_TYPE_ID(EventType)
 DECLARE_TYPE_ID(StateType)
 DECLARE_TYPE_ID(ActionType)
+DECLARE_TYPE_ID(Plugin)
 
 
 #endif // TYPEUTILS_H

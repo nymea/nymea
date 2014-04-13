@@ -156,9 +156,6 @@ RuleEngine::RuleError RuleEngine::addRule(const Event &event, const QList<Action
 /*! Add a new \l{Rule} with the given \a event, \a states and \a actions to the engine. */
 RuleEngine::RuleError RuleEngine::addRule(const Event &event, const QList<State> &states, const QList<Action> &actions)
 {
-    qDebug() << "adding rule: Event:" << event.eventTypeId() << "with" << actions.count() << "actions";
-    DeviceClass eventDeviceClass = GuhCore::instance()->deviceManager()->findDeviceClassforEvent(event.eventTypeId());
-
     Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(event.deviceId());
     if (!device) {
         qWarning() << "Cannot create rule. No configured device for eventTypeId" << event.eventTypeId();

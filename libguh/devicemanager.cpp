@@ -171,13 +171,30 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDeviceInternal(const Devi
         qWarning() << "cannot find a device class with id" << deviceClassId;
         return DeviceErrorDeviceClassNotFound;
     }
+
+    // Make sure we have all required params
     foreach (const QVariant &param, deviceClass.params()) {
         if (!params.contains(param.toMap().value("name").toString())) {
             qWarning() << "Missing parameter when creating device:" << param.toMap().value("name").toString();
             return DeviceErrorMissingParameter;
         }
-        // TODO: Check if parameter type matches
     }
+    // Make sure we don't have unused params
+    foreach (const QString &paramId, params.keys()) {
+        qDebug() << "searching" << paramId << "in" << deviceClass.params();
+        bool found = false;
+        foreach (const QVariant &param, deviceClass.params()) {
+            if (param.toMap().value("name").toString() == paramId) {
+                found = true;
+                continue;
+            }
+        }
+        if (!found) {
+            // TODO: Check if parameter type matches
+            return DeviceErrorDeviceParameterError;
+        }
+    }
+
     foreach(Device *device, m_configuredDevices) {
         if (device->id() == id) {
             return DeviceErrorDuplicateUuid;

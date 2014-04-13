@@ -172,12 +172,6 @@ QList<DeviceClass> DevicePluginOpenweathermap::supportedDevices() const
     DeviceClass deviceClassOpenweathermap(pluginId(), openweathermapVendorId, DeviceClassId("985195aa-17ad-4530-88a4-cdd753d747d7"));
     deviceClassOpenweathermap.setName("Weather from openweathermap");
 
-    QVariantList weatherParams;
-    QVariantMap autoDetectParam;
-    autoDetectParam.insert("name", "autodetect");
-    autoDetectParam.insert("type", "bool");
-    weatherParams.append(autoDetectParam);
-
     // Actions
     QList<ActionType> weatherActions;
     ActionType updateWeather(ActionTypeId("cfbc6504-d86f-4856-8dfa-97b6fbb385e4"));

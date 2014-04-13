@@ -69,9 +69,11 @@ JsonRPCServer::JsonRPCServer(QObject *parent):
 
     params.clear(); returns.clear();
     setDescription("SetNotificationStatus", "Enable/Disable notifications for this connections.");
+    params.insert("enabled", "bool");
     setParams("SetNotificationStatus", params);
     returns.insert("success", "bool");
     returns.insert("enabled", "bool");
+    returns.insert("errorMessage", "string");
     setReturns("SetNotificationStatus", returns);
 
     // Now set up the logic

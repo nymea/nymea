@@ -227,6 +227,10 @@ QVariantMap DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
         returns.insert("errorMessage", "Error creating device. This device can't be created this way.");
         returns.insert("success", false);
         break;
+    case DeviceManager::DeviceErrorDeviceParameterError:
+        returns.insert("errorMessage", "Error creating device. Invalid device parameter.");
+        returns.insert("success", false);
+        break;
     default:
         returns.insert("errorMessage", "Unknown error.");
         returns.insert("success", false);

@@ -68,7 +68,7 @@ void JsonTypes::init()
     s_stateType.insert("id", "uuid");
     s_stateType.insert("name", "string");
     s_stateType.insert("type", basicTypesRef());
-//    s_stateType.insert("default", "value");
+    s_stateType.insert("defaultValue", "variant");
 
     // State
     s_state.insert("stateTypeId", "uuid");
@@ -278,10 +278,11 @@ QVariantMap JsonTypes::packRule(const Rule &rule)
 QPair<bool, QString> JsonTypes::validateMap(const QVariantMap &templateMap, const QVariantMap &map)
 {
     s_lastError.clear();
+
+    // Make sure all values defined in the template are around
     foreach (const QString &key, templateMap.keys()) {
         QString strippedKey = key;
         strippedKey.remove(QRegExp("^o:"));
-
         if (!key.startsWith("o:") && !map.contains(strippedKey)) {
             qDebug() << "*** missing key" << key;
             qDebug() << "Expected:" << templateMap;
@@ -297,6 +298,18 @@ QPair<bool, QString> JsonTypes::validateMap(const QVariantMap &templateMap, cons
             }
         }
     }
+
+    // Make sure there aren't any other parameters than the allowed ones
+    foreach (const QString &key, map.keys()) {
+        QString optKey = "o:" + key;
+
+        if (!templateMap.contains(key) && !templateMap.contains(optKey)) {
+            qDebug() << "Forbidden param" << key << "in params";
+            QJsonDocument jsonDoc = QJsonDocument::fromVariant(map);
+            return report(false, QString("Forbidden key \"%1\" in %2").arg(key).arg(QString(jsonDoc.toJson())));
+        }
+    }
+
     return report(true, "");
 }
 
@@ -331,6 +344,7 @@ QPair<bool, QString> JsonTypes::validateList(const QVariantList &templateList, c
 
     for (int i = 0; i < list.count(); ++i) {
         QVariant listEntry = list.at(i);
+        qDebug() << "validating" << list << templateList;
         QPair<bool, QString> result = validateVariant(entryTemplate, listEntry);
         if (!result.first) {
             qDebug() << "List entry not matching template";

@@ -3,7 +3,7 @@ SUBDIRS += elro     \
     intertechno     \
 #    meisteranker    \
     wifidetector    \
-    conrad          \
+#    conrad          \
     mock            \
 #    weatherground   \
     openweathermap  \

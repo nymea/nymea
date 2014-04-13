@@ -180,6 +180,17 @@ QList<DeviceClass> DevicePluginOpenweathermap::supportedDevices() const
     locationParam.insert("name", "location");
     locationParam.insert("type", "string");
     params.append(locationParam);
+
+    QVariantMap countryParam;
+    countryParam.insert("name", "country");
+    countryParam.insert("type", "string");
+    params.append(countryParam);
+
+    QVariantMap idParam;
+    idParam.insert("name", "id");
+    idParam.insert("type", "string");
+    params.append(idParam);
+
     deviceClassOpenweathermap.setParams(params);
 
     // Actions
@@ -294,7 +305,7 @@ DeviceManager::DeviceError DevicePluginOpenweathermap::discoverDevices(const Dev
 {
     qDebug() << "should discover divces for" << deviceClassId << params;
     if(params.value("location").toString() == ""){
-        m_openweaher->update();
+        m_openweaher->searchAutodetect();
         return DeviceManager::DeviceErrorNoError;
     }
     m_openweaher->search(params.value("location").toString());
@@ -318,6 +329,7 @@ PluginId DevicePluginOpenweathermap::pluginId() const
 
 void DevicePluginOpenweathermap::guhTimer()
 {
+    m_openweaher->update();
 }
 
 void DevicePluginOpenweathermap::searchResultsReady(const QList<QVariantMap> &cityList)

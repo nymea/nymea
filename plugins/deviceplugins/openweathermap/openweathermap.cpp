@@ -66,16 +66,7 @@ void OpenWeatherMap::processLocationResponse(QByteArray data)
 
     QVariantMap dataMap = jsonDoc.toVariant().toMap();
     if(dataMap.contains("city")){
-        QString cityName = dataMap.value("city").toString();
-        // skip search for cityID...
-        if(m_cityName != cityName){
-            m_cityName = cityName;
-            updateSearchData();
-            return;
-        }else{
-            updateWeatherData();
-            return;
-        }
+        search(dataMap.value("city").toString());
     }
 }
 
@@ -237,25 +228,25 @@ void OpenWeatherMap::processWeatherResponse(QByteArray data)
             // emit
         }
     }
-    //    qDebug() << "#########################################################";
-    //    qDebug() << m_cityName << m_cityId;
-    //    qDebug() << "#########################################################";
-    //    qDebug() << "temp" << m_temperatur;
-    //    qDebug() << "temp min" << m_temperaturMin;
-    //    qDebug() << "temp max" << m_temperaturMax;
-    //    qDebug() << "cloudiness" << m_cloudiness;
-    //    qDebug() << "humidity" << m_humidity;
-    //    qDebug() << "pressure" << m_pressure;
-    //    qDebug() << "wind dir" << m_windDirection;
-    //    qDebug() << "wind speed" << m_windSpeed;
-    //    qDebug() << "sunrise" << QDateTime::fromTime_t(m_sunrise);
-    //    qDebug() << "sunset" << QDateTime::fromTime_t(m_sunset);
-    //    qDebug() << "last update" << QDateTime::fromTime_t(m_lastUpdate);
+    qDebug() << "#########################################################";
+    qDebug() << m_cityName << m_cityId;
+    qDebug() << "#########################################################";
+    qDebug() << "temp" << m_temperatur;
+    qDebug() << "temp min" << m_temperaturMin;
+    qDebug() << "temp max" << m_temperaturMax;
+    qDebug() << "cloudiness" << m_cloudiness;
+    qDebug() << "humidity" << m_humidity;
+    qDebug() << "pressure" << m_pressure;
+    qDebug() << "wind dir" << m_windDirection;
+    qDebug() << "wind speed" << m_windSpeed;
+    qDebug() << "sunrise" << QDateTime::fromTime_t(m_sunrise);
+    qDebug() << "sunset" << QDateTime::fromTime_t(m_sunset);
+    qDebug() << "last update" << QDateTime::fromTime_t(m_lastUpdate);
 }
 
 void OpenWeatherMap::update()
 {
-    updateLocationData();
+    updateWeatherData();
 }
 
 void OpenWeatherMap::searchAutodetect()
@@ -280,24 +271,28 @@ void OpenWeatherMap::replyFinished(QNetworkReply *reply)
     if(reply == m_locationReply && status == 200){
         data = reply->readAll();
         processLocationResponse(data);
+        m_locationReply->deleteLater();
         return;
     }
 
     if(reply == m_searchReply && status == 200){
         data = reply->readAll();
         processSearchResponse(data);
+        m_searchReply->deleteLater();
         return;
     }
 
     if(reply == m_searchLocationReply && status == 200){
         data = reply->readAll();
         processSearchLocationResponse(data);
+        m_searchLocationReply->deleteLater();
         return;
     }
 
     if(reply == m_weatherReply && status == 200){
         data = reply->readAll();
         processWeatherResponse(data);
+        m_weatherReply->deleteLater();
         return;
     }
 }

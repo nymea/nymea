@@ -29,33 +29,41 @@ public:
 
     QString name() const override;
 
-    Q_INVOKABLE QVariantMap GetSupportedVendors(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply* GetSupportedVendors(const QVariantMap &params) const;
 
-    Q_INVOKABLE QVariantMap GetSupportedDevices(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply* GetSupportedDevices(const QVariantMap &params) const;
 
-    Q_INVOKABLE QVariantMap GetPlugins(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply* GetDiscoveredDevices(const QVariantMap &params) const;
 
-    Q_INVOKABLE QVariantMap SetPluginConfiguration(const QVariantMap &params);
+    Q_INVOKABLE JsonReply* GetPlugins(const QVariantMap &params) const;
 
-    Q_INVOKABLE QVariantMap AddConfiguredDevice(const QVariantMap &params);
+    Q_INVOKABLE JsonReply* SetPluginConfiguration(const QVariantMap &params);
 
-    Q_INVOKABLE QVariantMap GetConfiguredDevices(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply* AddConfiguredDevice(const QVariantMap &params);
 
-    Q_INVOKABLE QVariantMap RemoveConfiguredDevice(const QVariantMap &params);
+    Q_INVOKABLE JsonReply* GetConfiguredDevices(const QVariantMap &params) const;
 
-    Q_INVOKABLE QVariantMap GetEventTypes(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply* RemoveConfiguredDevice(const QVariantMap &params);
 
-    Q_INVOKABLE QVariantMap GetActionTypes(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply* GetEventTypes(const QVariantMap &params) const;
 
-    Q_INVOKABLE QVariantMap GetStateTypes(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply* GetActionTypes(const QVariantMap &params) const;
 
-    Q_INVOKABLE QVariantMap GetStateValue(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply* GetStateTypes(const QVariantMap &params) const;
+
+    Q_INVOKABLE JsonReply* GetStateValue(const QVariantMap &params) const;
 
 signals:
     void StateChanged(const QVariantMap &params);
 
 private slots:
     void deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
+
+    void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
+
+private:
+    // A cache for async replies
+    mutable QHash<DeviceClassId, JsonReply*> m_discoverRequests;
 };
 
 #endif // DEVICEHANDLER_H

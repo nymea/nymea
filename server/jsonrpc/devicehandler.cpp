@@ -86,6 +86,20 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     setReturns("GetConfiguredDevices", returns);
 
     params.clear(); returns.clear();
+    setDescription("GetDiscoveredDevices", "Performs a device discovery and returns the results. This function may take a while to return.");
+    params.insert("deviceClassId", "uuid");
+    QVariantList discoveryParams;
+    discoveryParams.append(JsonTypes::paramRef());
+    params.insert("o:discoveryParams", discoveryParams);
+    setParams("GetDiscoveredDevices", params);
+    returns.insert("success", "bool");
+    returns.insert("errorMessage", "string");
+    QVariantList deviceDescriptors;
+    deviceDescriptors.append(JsonTypes::deviceDescriptorRef());
+    returns.insert("o:deviceDescriptors", deviceDescriptors);
+    setReturns("GetDiscoveredDevices", returns);
+
+    params.clear(); returns.clear();
     setDescription("RemoveConfiguredDevice", "Remove a device from the system.");
     params.insert("deviceId", "uuid");
     setParams("RemoveConfiguredDevice", params);
@@ -146,7 +160,7 @@ QString DeviceHandler::name() const
     return "Devices";
 }
 
-QVariantMap DeviceHandler::GetSupportedVendors(const QVariantMap &params) const
+JsonReply* DeviceHandler::GetSupportedVendors(const QVariantMap &params) const
 {
     QVariantMap returns;
     QVariantList supportedVendors;
@@ -154,10 +168,10 @@ QVariantMap DeviceHandler::GetSupportedVendors(const QVariantMap &params) const
         supportedVendors.append(JsonTypes::packVendor(vendor));
     }
     returns.insert("vendors", supportedVendors);
-    return returns;
+    return createReply(returns);
 }
 
-QVariantMap DeviceHandler::GetSupportedDevices(const QVariantMap &params) const
+JsonReply* DeviceHandler::GetSupportedDevices(const QVariantMap &params) const
 {
     QVariantMap returns;
     QVariantList supportedDeviceList;
@@ -171,10 +185,37 @@ QVariantMap DeviceHandler::GetSupportedDevices(const QVariantMap &params) const
         supportedDeviceList.append(JsonTypes::packDeviceClass(deviceClass));
     }
     returns.insert("deviceClasses", supportedDeviceList);
-    return returns;
+    return createReply(returns);
 }
 
-QVariantMap DeviceHandler::GetPlugins(const QVariantMap &params) const
+JsonReply *DeviceHandler::GetDiscoveredDevices(const QVariantMap &params) const
+{
+    QVariantMap returns;
+
+    DeviceClassId deviceClassId = DeviceClassId(params.value("deviceClassId").toString());
+
+    DeviceManager::DeviceError status = GuhCore::instance()->deviceManager()->discoverDevices(deviceClassId, params.value("discoveryParams").toMap());
+    switch (status) {
+    case DeviceManager::DeviceErrorNoError: {
+        JsonReply *reply = createAsyncReply("GetDiscoveredDevices");
+        m_discoverRequests.insert(deviceClassId, reply);
+        return reply;
+    }
+    case DeviceManager::DeviceErrorDeviceClassNotFound:
+        returns.insert("errorMessage", "Cannot discover devices. Unknown DeviceClassId.");
+        break;
+    case DeviceManager::DeviceErrorPluginNotFound:
+        returns.insert("errorMessage", "Cannot discover devices. Plugin for DeviceClass not found.");
+        break;
+    default:
+        returns.insert("errorMessage", QString("Unknown error %1").arg(status));
+    }
+
+    returns.insert("success", false);
+    return createReply(returns);
+}
+
+JsonReply* DeviceHandler::GetPlugins(const QVariantMap &params) const
 {
     Q_UNUSED(params)
     QVariantMap returns;
@@ -187,18 +228,23 @@ QVariantMap DeviceHandler::GetPlugins(const QVariantMap &params) const
         plugins.append(pluginMap);
     }
     returns.insert("plugins", plugins);
-    return returns;
+    return createReply(returns);
 }
 
-QVariantMap DeviceHandler::SetPluginConfiguration(const QVariantMap &params)
+JsonReply* DeviceHandler::SetPluginConfiguration(const QVariantMap &params)
 {
+    QVariantMap returns;
     PluginId pluginId = PluginId(params.value("pluginId").toString());
     QVariantMap pluginParams = params.value("pluginParams").toMap();
     GuhCore::instance()->deviceManager()->setPluginConfig(pluginId, pluginParams);
-    return QVariantMap();
+
+    // TODO: handle return values
+    returns.insert("errorMessage", QString());
+    returns.insert("success", true);
+    return createReply(returns);
 }
 
-QVariantMap DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
+JsonReply* DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
 {
     DeviceClassId deviceClass(params.value("deviceClassId").toString());
     QVariantMap deviceParams = params.value("deviceParams").toMap();
@@ -223,7 +269,7 @@ QVariantMap DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
         returns.insert("errorMessage", "Error creating device. Device setup failed.");
         returns.insert("success", false);
         break;
-    case DeviceManager::DeviceErrorCreationNotSupported:
+    case DeviceManager::DeviceErrorCreationMethodNotSupported:
         returns.insert("errorMessage", "Error creating device. This device can't be created this way.");
         returns.insert("success", false);
         break;
@@ -235,10 +281,10 @@ QVariantMap DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
         returns.insert("errorMessage", "Unknown error.");
         returns.insert("success", false);
     }
-    return returns;
+    return createReply(returns);
 }
 
-QVariantMap DeviceHandler::GetConfiguredDevices(const QVariantMap &params) const
+JsonReply* DeviceHandler::GetConfiguredDevices(const QVariantMap &params) const
 {
     Q_UNUSED(params)
     QVariantMap returns;
@@ -247,28 +293,28 @@ QVariantMap DeviceHandler::GetConfiguredDevices(const QVariantMap &params) const
         configuredDeviceList.append(JsonTypes::packDevice(device));
     }
     returns.insert("devices", configuredDeviceList);
-    return returns;
+    return createReply(returns);
 }
 
-QVariantMap DeviceHandler::RemoveConfiguredDevice(const QVariantMap &params)
+JsonReply* DeviceHandler::RemoveConfiguredDevice(const QVariantMap &params)
 {
     QVariantMap returns;
     switch(GuhCore::instance()->deviceManager()->removeConfiguredDevice(DeviceId(params.value("deviceId").toString()))) {
     case DeviceManager::DeviceErrorNoError:
         returns.insert("success", true);
         returns.insert("errorMessage", "");
-        return returns;
+        return createReply(returns);
     case DeviceManager::DeviceErrorDeviceNotFound:
         returns.insert("success", false);
         returns.insert("errorMessage", "No such device.");
-        return returns;
+        return createReply(returns);
     }
     returns.insert("success", false);
     returns.insert("errorMessage", "Unknown error.");
-    return returns;
+    return createReply(returns);
 }
 
-QVariantMap DeviceHandler::GetEventTypes(const QVariantMap &params) const
+JsonReply* DeviceHandler::GetEventTypes(const QVariantMap &params) const
 {
     QVariantMap returns;
 
@@ -278,10 +324,10 @@ QVariantMap DeviceHandler::GetEventTypes(const QVariantMap &params) const
         eventList.append(JsonTypes::packEventType(eventType));
     }
     returns.insert("eventTypes", eventList);
-    return returns;
+    return createReply(returns);
 }
 
-QVariantMap DeviceHandler::GetActionTypes(const QVariantMap &params) const
+JsonReply* DeviceHandler::GetActionTypes(const QVariantMap &params) const
 {
     QVariantMap returns;
 
@@ -291,10 +337,10 @@ QVariantMap DeviceHandler::GetActionTypes(const QVariantMap &params) const
         actionList.append(JsonTypes::packActionType(actionType));
     }
     returns.insert("actionTypes", actionList);
-    return returns;
+    return createReply(returns);
 }
 
-QVariantMap DeviceHandler::GetStateTypes(const QVariantMap &params) const
+JsonReply* DeviceHandler::GetStateTypes(const QVariantMap &params) const
 {
     QVariantMap returns;
 
@@ -304,10 +350,10 @@ QVariantMap DeviceHandler::GetStateTypes(const QVariantMap &params) const
         stateList.append(JsonTypes::packStateType(stateType));
     }
     returns.insert("stateTypes", stateList);
-    return returns;
+    return createReply(returns);
 }
 
-QVariantMap DeviceHandler::GetStateValue(const QVariantMap &params) const
+JsonReply* DeviceHandler::GetStateValue(const QVariantMap &params) const
 {
     QVariantMap returns;
 
@@ -315,19 +361,19 @@ QVariantMap DeviceHandler::GetStateValue(const QVariantMap &params) const
     if (!device) {
         returns.insert("success", false);
         returns.insert("errorMessage", "No such device");
-        return returns;
+        return createReply(returns);
     }
     if (!device->hasState(params.value("stateTypeId").toUuid())) {
         returns.insert("success", false);
         returns.insert("errorMessage", QString("Device %1 %2 doesn't have such a state.").arg(device->name()).arg(device->id().toString()));
-        return returns;
+        return createReply(returns);
     }
     QVariant stateValue = device->stateValue(params.value("stateTypeId").toUuid());
 
     returns.insert("success", true);
     returns.insert("errorMessage", "");
     returns.insert("value", stateValue);
-    return returns;
+    return createReply(returns);
 }
 
 void DeviceHandler::deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value)
@@ -338,4 +384,24 @@ void DeviceHandler::deviceStateChanged(Device *device, const QUuid &stateTypeId,
     params.insert("value", value);
 
     emit StateChanged(params);
+}
+
+void DeviceHandler::devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors)
+{
+    if (!m_discoverRequests.contains(deviceClassId)) {
+        return; // We didn't start this discovery... Ignore it.
+    }
+
+    JsonReply *reply = m_discoverRequests.take(deviceClassId);
+    QVariantList list;
+    foreach (const DeviceDescriptor &descriptor, deviceDescriptors) {
+        list.append(JsonTypes::packDeviceDescriptor(descriptor));
+    }
+    QVariantMap returns;
+    returns.insert("deviceDescriptors", list);
+    returns.insert("success", true);
+    returns.insert("errorMessage", "");
+
+    reply->setData(returns);
+    reply->finished();
 }

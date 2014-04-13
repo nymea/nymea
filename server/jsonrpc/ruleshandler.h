@@ -29,10 +29,10 @@ public:
 
     QString name() const override;
 
-    Q_INVOKABLE QVariantMap GetRules(const QVariantMap &params);
+    Q_INVOKABLE JsonReply* GetRules(const QVariantMap &params);
 
-    Q_INVOKABLE QVariantMap AddRule(const QVariantMap &params);
-    Q_INVOKABLE QVariantMap RemoveRule(const QVariantMap &params);
+    Q_INVOKABLE JsonReply* AddRule(const QVariantMap &params);
+    Q_INVOKABLE JsonReply* RemoveRule(const QVariantMap &params);
 
 };
 

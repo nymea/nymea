@@ -44,6 +44,7 @@ QVariantMap JsonTypes::s_plugin;
 QVariantMap JsonTypes::s_vendor;
 QVariantMap JsonTypes::s_deviceClass;
 QVariantMap JsonTypes::s_device;
+QVariantMap JsonTypes::s_deviceDescriptor;
 QVariantMap JsonTypes::s_rule;
 
 void JsonTypes::init()
@@ -120,6 +121,11 @@ void JsonTypes::init()
     s_device.insert("name", "string");
     s_device.insert("params", QVariantList() << paramRef());
 
+    // DeviceDescription
+    s_deviceDescriptor.insert("id", "uuid");
+    s_deviceDescriptor.insert("title", "string");
+    s_deviceDescriptor.insert("description", "string");
+
     s_rule.insert("id", "uuid");
     s_rule.insert("ruleType", ruleTypesRef());
     s_rule.insert("events", QVariantList() << eventRef());
@@ -151,6 +157,7 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("State", stateDescription());
     allTypes.insert("Event", eventDescription());
     allTypes.insert("Device", deviceDescription());
+    allTypes.insert("DeviceDescriptor", deviceDescriptorDescription());
     allTypes.insert("Action", actionDescription());
     allTypes.insert("RuleType", ruleTypes());
     allTypes.insert("Rule", ruleDescription());
@@ -249,6 +256,15 @@ QVariantMap JsonTypes::packDevice(Device *device)
     variant.insert("deviceClassId", device->deviceClassId());
     variant.insert("name", device->name());
     variant.insert("params", device->params());
+    return variant;
+}
+
+QVariantMap JsonTypes::packDeviceDescriptor(const DeviceDescriptor &descriptor)
+{
+    QVariantMap variant;
+    variant.insert("id", descriptor.id());
+    variant.insert("title", descriptor.title());
+    variant.insert("description", descriptor.description());
     return variant;
 }
 

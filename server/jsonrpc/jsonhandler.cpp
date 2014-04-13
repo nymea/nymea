@@ -119,3 +119,90 @@ void JsonHandler::setReturns(const QString &methodName, const QVariantMap &retur
     }
     qWarning() << "Cannot set returns. No such method:" << methodName;
 }
+
+JsonReply *JsonHandler::createReply(const QVariantMap &data) const
+{
+    return JsonReply::createReply(const_cast<JsonHandler*>(this), data);
+}
+
+JsonReply* JsonHandler::createAsyncReply(const QString &method) const
+{
+    return JsonReply::createAsyncReply(const_cast<JsonHandler*>(this), method);
+}
+
+
+JsonReply::JsonReply(Type type, JsonHandler *handler, const QString &method, const QVariantMap &data):
+    m_handler(handler),
+    m_method(method),
+    m_type(type),
+    m_data(data)
+{
+    connect(&m_timeout, &QTimer::timeout, this, &JsonReply::timeout);
+}
+
+JsonReply *JsonReply::createReply(JsonHandler *handler, const QVariantMap &data)
+{
+    return new JsonReply(TypeSync, handler, QString(), data);
+}
+
+JsonReply *JsonReply::createAsyncReply(JsonHandler *handler, const QString &method)
+{
+    return new JsonReply(TypeAsync, handler, method);
+}
+
+JsonReply::Type JsonReply::type() const
+{
+    return m_type;
+}
+
+QVariantMap JsonReply::data() const
+{
+    return m_data;
+}
+
+void JsonReply::setData(const QVariantMap &data)
+{
+    m_data = data;
+}
+
+JsonHandler *JsonReply::handler() const
+{
+    return m_handler;
+}
+
+QString JsonReply::method() const
+{
+    return m_method;
+}
+
+QUuid JsonReply::clientId() const
+{
+    return m_clientId;
+}
+
+void JsonReply::setClientId(const QUuid &clientId)
+{
+    m_clientId = clientId;
+}
+
+int JsonReply::commandId() const
+{
+    return m_commandId;
+}
+
+void JsonReply::setCommandId(int commandId)
+{
+    m_commandId = commandId;
+}
+
+void JsonReply::startWait()
+{
+    m_timeout.start(5000);
+}
+
+void JsonReply::timeout()
+{
+    m_data.insert("success", false);
+    m_data.insert("errorMessage", "Command timed out.");
+    finished();
+}

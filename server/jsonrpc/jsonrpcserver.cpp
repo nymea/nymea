@@ -90,7 +90,7 @@ QString JsonRPCServer::name() const
     return QStringLiteral("JSONRPC");
 }
 
-QVariantMap JsonRPCServer::Introspect(const QVariantMap &params) const
+JsonReply* JsonRPCServer::Introspect(const QVariantMap &params) const
 {
     Q_UNUSED(params)
 
@@ -108,19 +108,19 @@ QVariantMap JsonRPCServer::Introspect(const QVariantMap &params) const
     }
     data.insert("notifications", signalsMap);
 
-    return data;
+    return createReply(data);
 }
 
-QVariantMap JsonRPCServer::Version(const QVariantMap &params) const
+JsonReply* JsonRPCServer::Version(const QVariantMap &params) const
 {
     Q_UNUSED(params)
 
     QVariantMap data;
     data.insert("version", "0.0.0");
-    return data;
+    return createReply(data);
 }
 
-QVariantMap JsonRPCServer::SetNotificationStatus(const QVariantMap &params)
+JsonReply* JsonRPCServer::SetNotificationStatus(const QVariantMap &params)
 {
     QUuid clientId = this->property("clientId").toUuid();
 //    qDebug() << "got client socket" << clientId;
@@ -129,7 +129,7 @@ QVariantMap JsonRPCServer::SetNotificationStatus(const QVariantMap &params)
     returns.insert("success", "true");
     returns.insert("errorMessage", "No error");
     returns.insert("enabled", m_clients[clientId]);
-    return returns;
+    return createReply(returns);
 }
 
 void JsonRPCServer::setup()
@@ -192,10 +192,19 @@ void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &jsonDat
     // Hack: attach clientId to handler to be able to handle the JSONRPC methods. Do not use this outside of jsonrpcserver
     handler->setProperty("clientId", clientId);
 
-    QVariantMap returns;
-    QMetaObject::invokeMethod(handler, method.toLatin1().data(), Q_RETURN_ARG(QVariantMap, returns), Q_ARG(QVariantMap, params));
-    Q_ASSERT((targetNamespace == "JSONRPC" && method == "Introspect") || handler->validateReturns(method, returns).first);
-    sendResponse(clientId, commandId, returns);
+    JsonReply *reply;
+    QMetaObject::invokeMethod(handler, method.toLatin1().data(), Q_RETURN_ARG(JsonReply*, reply), Q_ARG(QVariantMap, params));
+    if (reply->type() == JsonReply::TypeAsync) {
+        qDebug() << "got an async reply...";
+        reply->setClientId(clientId);
+        reply->setCommandId(commandId);
+        connect(reply, &JsonReply::finished, this, &JsonRPCServer::asyncReplyFinished);
+        reply->startWait();
+    } else {
+        Q_ASSERT((targetNamespace == "JSONRPC" && method == "Introspect") || handler->validateReturns(method, reply->data()).first);
+        sendResponse(clientId, commandId, reply->data());
+        reply->deleteLater();
+    }
 }
 
 void JsonRPCServer::sendNotification(const QVariantMap &params)
@@ -212,9 +221,24 @@ void JsonRPCServer::sendNotification(const QVariantMap &params)
     m_tcpServer->sendData(m_clients.keys(true), jsonDoc.toJson());
 }
 
+void JsonRPCServer::sendAsyncReply(int id, const QVariantMap &params)
+{
+    qDebug() << "should send async reply";
+}
+
+void JsonRPCServer::asyncReplyFinished()
+{
+    JsonReply *reply = qobject_cast<JsonReply*>(sender());
+    qDebug() << "got async reply:" << reply->method() << reply->data();
+    Q_ASSERT(reply->handler()->validateReturns(reply->method(), reply->data()).first);
+    sendResponse(reply->clientId(), reply->commandId(), reply->data());
+    reply->deleteLater();
+}
+
 void JsonRPCServer::registerHandler(JsonHandler *handler)
 {
     m_handlers.insert(handler->name(), handler);
+    connect(handler, &JsonHandler::asyncReply, this, &JsonRPCServer::sendAsyncReply);
     for (int i = 0; i < handler->metaObject()->methodCount(); ++i) {
         QMetaMethod method = handler->metaObject()->method(i);
         if (method.methodType() == QMetaMethod::Signal && QString(method.name()).contains(QRegExp("^[A-Z]"))) {

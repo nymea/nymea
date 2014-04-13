@@ -146,18 +146,20 @@ QList<DeviceClass> DeviceManager::supportedDevices(const VendorId &vendorId) con
     return ret;
 }
 
-QList<DeviceDescription> DeviceManager::discoveredDevices(const DeviceClassId &deviceClassId) const
+DeviceManager::DeviceError DeviceManager::discoverDevices(const DeviceClassId &deviceClassId, const QVariantMap &params) const
 {
-    QList<DeviceDescription> ret;
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
     if (!deviceClass.isValid()) {
-        return ret;
+        return DeviceManager::DeviceErrorDeviceClassNotFound;
+    }
+    if (deviceClass.createMethod() != DeviceClass::CreateMethodDiscovery) {
+        return DeviceManager::DeviceErrorCreationMethodNotSupported;
     }
     DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
     if (!plugin) {
-        return ret;
+        return DeviceManager::DeviceErrorPluginNotFound;
     }
-    ret = plugin->discoveredDevices(deviceClassId);
+    return plugin->discoverDevices(deviceClassId, params);
 }
 
 /*! Add a new configured device for the given \l{DeviceClass} and the given parameters.
@@ -175,7 +177,7 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassI
     if (deviceClass.createMethod() == DeviceClass::CreateMethodUser) {
         return addConfiguredDeviceInternal(deviceClassId, params, id);
     }
-    return DeviceErrorCreationNotSupported;
+    return DeviceErrorCreationMethodNotSupported;
 }
 
 DeviceManager::DeviceError DeviceManager::addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QVariantMap &params, const DeviceId id)
@@ -366,6 +368,7 @@ void DeviceManager::loadPlugins()
 
             m_devicePlugins.insert(pluginIface->pluginId(), pluginIface);
             connect(pluginIface, &DevicePlugin::emitEvent, this, &DeviceManager::emitEvent);
+            connect(pluginIface, &DevicePlugin::devicesDiscovered, this, &DeviceManager::slotDevicesDiscovered);
         }
     }
 }
@@ -428,6 +431,12 @@ void DeviceManager::createNewAutoDevices()
         } while (success);
     }
     storeConfiguredDevices();
+}
+
+void DeviceManager::slotDevicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors)
+{
+    m_discoveredDevices[deviceClassId] = deviceDescriptors;
+    emit devicesDiscovered(deviceClassId, deviceDescriptors);
 }
 
 void DeviceManager::slotDeviceStateValueChanged(const QUuid &stateTypeId, const QVariant &value)

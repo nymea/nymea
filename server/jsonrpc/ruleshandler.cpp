@@ -60,7 +60,7 @@ QString RulesHandler::name() const
     return "Rules";
 }
 
-QVariantMap RulesHandler::GetRules(const QVariantMap &params)
+JsonReply* RulesHandler::GetRules(const QVariantMap &params)
 {
     Q_UNUSED(params)
 
@@ -73,10 +73,10 @@ QVariantMap RulesHandler::GetRules(const QVariantMap &params)
     QVariantMap returns;
     returns.insert("rules", rulesList);
 
-    return returns;
+    return createReply(returns);
 }
 
-QVariantMap RulesHandler::AddRule(const QVariantMap &params)
+JsonReply* RulesHandler::AddRule(const QVariantMap &params)
 {
     QVariantMap eventMap = params.value("event").toMap();
 
@@ -99,7 +99,7 @@ QVariantMap RulesHandler::AddRule(const QVariantMap &params)
     if (actions.count() == 0) {
         returns.insert("success", false);
         returns.insert("errorMessage", "Missing parameter: \"actions\".");
-        return returns;
+        return createReply(returns);
     }
 
     switch(GuhCore::instance()->ruleEngine()->addRule(event, actions)) {
@@ -119,10 +119,10 @@ QVariantMap RulesHandler::AddRule(const QVariantMap &params)
         returns.insert("success", false);
         returns.insert("errorMessage", "Unknown error");
     }
-    return returns;
+    return createReply(returns);
 }
 
-QVariantMap RulesHandler::RemoveRule(const QVariantMap &params)
+JsonReply* RulesHandler::RemoveRule(const QVariantMap &params)
 {
     QVariantMap returns;
     QUuid ruleId = params.value("ruleId").toUuid();
@@ -138,5 +138,5 @@ QVariantMap RulesHandler::RemoveRule(const QVariantMap &params)
         returns.insert("success", false);
         returns.insert("errorMessage", "Unknown error");
     }
-    return returns;
+    return createReply(returns);
 }

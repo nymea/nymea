@@ -49,7 +49,7 @@ public:
     virtual DeviceManager::HardwareResources requiredHardware() const = 0;
 
     virtual bool configureAutoDevice(QList<Device *> loadedDevices, Device *device) const;
-    virtual QList<DeviceDescription> discoveredDevices(const DeviceClassId &deviceClassId) const;
+    virtual DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const QVariantMap &params) const;
 
     virtual bool deviceCreated(Device *device);
     virtual void deviceRemoved(Device *device);
@@ -67,6 +67,7 @@ public slots:
 
 signals:
     void emitEvent(const Event &event);
+    void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
 
 protected:
     DeviceManager *deviceManager() const;

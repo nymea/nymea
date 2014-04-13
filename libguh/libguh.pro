@@ -9,6 +9,7 @@ INSTALLS += target
 SOURCES += plugin/device.cpp \
            plugin/deviceclass.cpp \
            plugin/deviceplugin.cpp \
+           plugin/devicedescriptor.cpp \
            devicemanager.cpp \
            hardware/radio433.cpp \
            hardware/gpio.cpp \
@@ -19,11 +20,11 @@ SOURCES += plugin/device.cpp \
            types/eventtype.cpp \
            types/event.cpp \
            types/vendor.cpp \
-    plugin/devicedescription.cpp
 
 HEADERS += plugin/device.h \
            plugin/deviceclass.h \
            plugin/deviceplugin.h \
+           plugin/devicedescriptor.h \
            devicemanager.h \
            hardware/radio433.h \
            hardware/gpio.h \
@@ -35,5 +36,4 @@ HEADERS += plugin/device.h \
            types/event.h \
            types/vendor.h \
            types/typeutils.h \
-    plugin/devicedescription.h
 

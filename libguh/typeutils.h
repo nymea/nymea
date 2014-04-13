@@ -18,11 +18,11 @@ Q_DECLARE_METATYPE(type##Id);
 DECLARE_TYPE_ID(Vendor)
 DECLARE_TYPE_ID(DeviceClass)
 DECLARE_TYPE_ID(Device)
+DECLARE_TYPE_ID(DeviceDescriptor)
 
 DECLARE_TYPE_ID(EventType)
 DECLARE_TYPE_ID(StateType)
 DECLARE_TYPE_ID(ActionType)
 DECLARE_TYPE_ID(Plugin)
-
 
 #endif // TYPEUTILS_H

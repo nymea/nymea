@@ -29,7 +29,7 @@ public:
 
     QString name() const;
 
-    Q_INVOKABLE QVariantMap ExecuteAction(const QVariantMap &params);
+    Q_INVOKABLE JsonReply* ExecuteAction(const QVariantMap &params);
 };
 
 #endif // ACTIONHANDLER_H

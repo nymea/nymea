@@ -289,8 +289,9 @@ QList<DeviceClass> DevicePluginOpenweathermap::supportedDevices() const
     return ret;
 }
 
-QList<DeviceDescription> DevicePluginOpenweathermap::discoveredDevices(const DeviceClassId &deviceClassId) const
+DeviceManager::DeviceError DevicePluginOpenweathermap::discoverDevices(const DeviceClassId &deviceClassId, const QVariantMap &params) const
 {
+    qDebug() << "should discover divces for" << deviceClassId << params;
 //    m_openweaher->
 }
 

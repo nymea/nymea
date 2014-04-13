@@ -24,6 +24,57 @@
 #include <QObject>
 #include <QVariantMap>
 #include <QMetaMethod>
+#include <QTimer>
+
+class JsonHandler;
+
+class JsonReply: public QObject
+{
+    Q_OBJECT
+public:
+    enum Type {
+        TypeSync,
+        TypeAsync
+    };
+
+    static JsonReply* createReply(JsonHandler *handler, const QVariantMap &data);
+    static JsonReply* createAsyncReply(JsonHandler *handler, const QString &method);
+
+    Type type() const;
+    QVariantMap data() const;
+    void setData(const QVariantMap &data);
+
+    JsonHandler *handler() const;
+    QString method() const;
+
+    QUuid clientId() const;
+    void setClientId(const QUuid &clientId);
+
+    int commandId() const;
+    void setCommandId(int commandId);
+
+public slots:
+    void startWait();
+
+signals:
+    void finished();
+
+private slots:
+    void timeout();
+
+private:
+    JsonReply(Type type, JsonHandler *handler, const QString &method, const QVariantMap &data = QVariantMap());
+    Type m_type;
+    QVariantMap m_data;
+
+    JsonHandler *m_handler;
+    QString m_method;
+    QUuid m_clientId;
+    int m_commandId;
+
+    QTimer m_timeout;
+
+};
 
 class JsonHandler : public QObject
 {
@@ -39,10 +90,16 @@ public:
     QPair<bool, QString> validateParams(const QString &methodName, const QVariantMap &params);
     QPair<bool, QString> validateReturns(const QString &methodName, const QVariantMap &returns);
 
+signals:
+    void asyncReply(int id, const QVariantMap &params);
+
 protected:
     void setDescription(const QString &methodName, const QString &description);
     void setParams(const QString &methodName, const QVariantMap &params);
     void setReturns(const QString &methodName, const QVariantMap &returns);
+
+    JsonReply *createReply(const QVariantMap &data) const;
+    JsonReply *createAsyncReply(const QString &method) const;
 
 private:
     QHash<QString, QString> m_descriptions;

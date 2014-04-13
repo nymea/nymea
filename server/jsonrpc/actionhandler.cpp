@@ -43,7 +43,7 @@ QString ActionHandler::name() const
     return "Actions";
 }
 
-QVariantMap ActionHandler::ExecuteAction(const QVariantMap &params)
+JsonReply* ActionHandler::ExecuteAction(const QVariantMap &params)
 {
 
     DeviceId deviceId(params.value("deviceId").toString());
@@ -81,5 +81,5 @@ QVariantMap ActionHandler::ExecuteAction(const QVariantMap &params)
         returns.insert("success", false);
     }
 
-    return returns;
+    return createReply(returns);
 }

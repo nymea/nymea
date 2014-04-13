@@ -20,6 +20,7 @@
 #define JSONTYPES_H
 
 #include "plugin/deviceclass.h"
+#include "plugin/devicedescriptor.h"
 #include "rule.h"
 
 #include "types/event.h"
@@ -77,6 +78,7 @@ public:
     DECLARE_OBJECT(vendor, "Vendor")
     DECLARE_OBJECT(deviceClass, "DeviceClass")
     DECLARE_OBJECT(device, "Device")
+    DECLARE_OBJECT(deviceDescriptor, "DeviceDescriptor")
     DECLARE_OBJECT(rule, "Rule")
 
     static QVariantMap packEventType(const EventType &eventType);
@@ -88,6 +90,7 @@ public:
     static QVariantMap packDeviceClass(const DeviceClass &deviceClass);
     static QVariantMap packPlugin(DevicePlugin *plugin);
     static QVariantMap packDevice(Device *device);
+    static QVariantMap packDeviceDescriptor(const DeviceDescriptor &descriptor);
     static QVariantMap packRule(const Rule &rule);
 
     static QPair<bool, QString> validateMap(const QVariantMap &templateMap, const QVariantMap &map);

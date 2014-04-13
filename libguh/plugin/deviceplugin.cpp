@@ -126,9 +126,11 @@ bool DevicePlugin::configureAutoDevice(QList<Device*> loadedDevices, Device *dev
     return false;
 }
 
-QList<DeviceDescription> DevicePlugin::discoveredDevices(const DeviceClassId &deviceClassId) const
+DeviceManager::DeviceError DevicePlugin::discoverDevices(const DeviceClassId &deviceClassId, const QVariantMap &params) const
 {
-    return QList<DeviceDescription>();
+    Q_UNUSED(deviceClassId)
+    Q_UNUSED(params)
+    return DeviceManager::DeviceErrorCreationMethodNotSupported;
 }
 
 /*! This will be called when a new device is created. The plugin has the chance to do some setup.

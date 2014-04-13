@@ -21,7 +21,7 @@
 
 #include "plugin/deviceclass.h"
 #include "plugin/device.h"
-#include "plugin/devicedescription.h"
+#include "plugin/devicedescriptor.h"
 
 #include "types/event.h"
 #include "types/action.h"
@@ -55,7 +55,7 @@ public:
         DeviceErrorPluginNotFound,
         DeviceErrorSetupFailed,
         DeviceErrorDuplicateUuid,
-        DeviceErrorCreationNotSupported,
+        DeviceErrorCreationMethodNotSupported,
         DeviceErrorDeviceParameterError,
         DeviceErrorActionParameterError
     };
@@ -68,7 +68,7 @@ public:
 
     QList<Vendor> supportedVendors() const;
     QList<DeviceClass> supportedDevices(const VendorId &vendorId = VendorId()) const;
-    QList<DeviceDescription> discoveredDevices(const DeviceClassId &deviceClassId) const;
+    DeviceError discoverDevices(const DeviceClassId &deviceClassId, const QVariantMap &params) const;
 
     QList<Device*> configuredDevices() const;
     DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const QVariantMap &params, const DeviceId id = DeviceId::createDeviceId());
@@ -82,6 +82,7 @@ signals:
     void loaded();
     void emitEvent(const Event &event);
     void deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
+    void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &devices);
 
 public slots:
     DeviceError executeAction(const Action &action);
@@ -91,6 +92,7 @@ private slots:
     void loadConfiguredDevices();
     void storeConfiguredDevices();
     void createNewAutoDevices();
+    void slotDevicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
 
     // Only connect this to Devices. It will query the sender()
     void slotDeviceStateValueChanged(const QUuid &stateTypeId, const QVariant &value);
@@ -106,6 +108,7 @@ private:
     QHash<VendorId, QList<DeviceClassId> > m_vendorDeviceMap;
     QHash<DeviceClassId, DeviceClass> m_supportedDevices;
     QList<Device*> m_configuredDevices;
+    QHash<DeviceClassId, QList<DeviceDescriptor> > m_discoveredDevices;
 
     QHash<PluginId, DevicePlugin*> m_devicePlugins;
 

@@ -44,9 +44,9 @@ public:
 
     // JsonHandler API implementation
     QString name() const;
-    Q_INVOKABLE QVariantMap Introspect(const QVariantMap &params) const;
-    Q_INVOKABLE QVariantMap Version(const QVariantMap &params) const;
-    Q_INVOKABLE QVariantMap SetNotificationStatus(const QVariantMap &params);
+    Q_INVOKABLE JsonReply* Introspect(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply* Version(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply* SetNotificationStatus(const QVariantMap &params);
 
 signals:
     void commandReceived(const QString &targetNamespace, const QString &command, const QVariantMap &params);
@@ -60,6 +60,9 @@ private slots:
     void processData(const QUuid &clientId, const QByteArray &jsonData);
 
     void sendNotification(const QVariantMap &params);
+    void sendAsyncReply(int id, const QVariantMap &params);
+
+    void asyncReplyFinished();
 
 private:
     void registerHandler(JsonHandler *handler);

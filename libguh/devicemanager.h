@@ -73,7 +73,7 @@ public:
 
     QList<Device*> configuredDevices() const;
     DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const QVariantMap &params, const DeviceId id = DeviceId::createDeviceId());
-    DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId);
+    DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &id = DeviceId::createDeviceId());
     DeviceError removeConfiguredDevice(const DeviceId &deviceId);
 
     Device* findConfiguredDevice(const DeviceId &id) const;

@@ -66,11 +66,12 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     setReturns("SetPluginConfiguration", returns);
 
     params.clear(); returns.clear();
-    setDescription("AddConfiguredDevice", "Add a configured device.");
+    setDescription("AddConfiguredDevice", "Add a configured device. Use deviceDescriptorId or deviceParams, depending on the createMethod of the device class.");
     params.insert("deviceClassId", "uuid");
+    params.insert("o:deviceDescriptorId", "uuid");
     QVariantList deviceParams;
     deviceParams.append(JsonTypes::paramRef());
-    params.insert("deviceParams", deviceParams);
+    params.insert("o:deviceParams", deviceParams);
     setParams("AddConfiguredDevice", params);
     returns.insert("success", "bool");
     returns.insert("errorMessage", "string");
@@ -248,8 +249,14 @@ JsonReply* DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
 {
     DeviceClassId deviceClass(params.value("deviceClassId").toString());
     QVariantMap deviceParams = params.value("deviceParams").toMap();
+    DeviceDescriptorId deviceDescriptorId(params.value("deviceDescriptorId").toString());
     DeviceId newDeviceId = DeviceId::createDeviceId();
-    DeviceManager::DeviceError status = GuhCore::instance()->deviceManager()->addConfiguredDevice(deviceClass, deviceParams, newDeviceId);
+    DeviceManager::DeviceError status;
+    if (deviceDescriptorId.isNull()) {
+        status = GuhCore::instance()->deviceManager()->addConfiguredDevice(deviceClass, deviceParams, newDeviceId);
+    } else {
+        status = GuhCore::instance()->deviceManager()->addConfiguredDevice(deviceClass, deviceDescriptorId, newDeviceId);
+    }
     QVariantMap returns;
     switch(status) {
     case DeviceManager::DeviceErrorNoError:

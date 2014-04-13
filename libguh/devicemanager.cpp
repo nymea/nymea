@@ -180,7 +180,7 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassI
     return DeviceErrorCreationMethodNotSupported;
 }
 
-DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId)
+DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &deviceId)
 {
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
     if (!deviceClass.isValid()) {
@@ -195,7 +195,7 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassI
         return DeviceErrorDeviceDescriptorNotFound;
     }
 
-    return addConfiguredDeviceInternal(deviceClassId, descriptor.params());
+    return addConfiguredDeviceInternal(deviceClassId, descriptor.params(), deviceId);
 }
 
 DeviceManager::DeviceError DeviceManager::addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QVariantMap &params, const DeviceId id)

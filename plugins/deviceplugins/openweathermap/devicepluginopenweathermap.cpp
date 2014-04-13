@@ -291,7 +291,7 @@ QList<DeviceClass> DevicePluginOpenweathermap::supportedDevices() const
 
 QList<DeviceDescription> DevicePluginOpenweathermap::discoveredDevices(const DeviceClassId &deviceClassId) const
 {
-    m_openweaher->
+//    m_openweaher->
 }
 
 DeviceManager::HardwareResources DevicePluginOpenweathermap::requiredHardware() const

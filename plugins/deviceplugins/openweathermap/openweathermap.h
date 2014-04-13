@@ -24,6 +24,7 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QJsonDocument>
+#include <QVariantMap>
 #include <QUrl>
 
 class OpenWeatherMap : public QObject
@@ -39,8 +40,9 @@ private:
     QString m_cityId;
 
     QNetworkReply *m_locationReply;
-    QNetworkReply *m_searchReply;
+    QNetworkReply *m_searchLocationReply;
     QNetworkReply *m_weatherReply;
+    QNetworkReply *m_searchReply;
 
     QString m_country;
     QString m_weatherDescription;
@@ -62,6 +64,7 @@ private:
 
     void processLocationResponse(QByteArray data);
     void processSearchResponse(QByteArray data);
+    void processSearchLocationResponse(QByteArray data);
     void processWeatherResponse(QByteArray data);
 
 signals:
@@ -69,6 +72,7 @@ signals:
 
 public slots:
     void update();
+    void search(const QString &searchString);
 
 private slots:
     void replyFinished(QNetworkReply *reply);

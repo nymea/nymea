@@ -34,7 +34,7 @@ else
 #    (echo '{"id":1, "method":"Devices.AddConfiguredDevice", "params":{"deviceClassId": "{af2e15f0-650e-4452-b379-fa76a2dc46c6}","deviceParams":{"autodetect":"true"}}}'; sleep 1) | nc $1 1234
   elif [ $2 == "openweathermap" ]; then
     # Adds a openweathermap device
-    (echo '{"id":1, "method":"Devices.AddConfiguredDevice", "params":{"deviceClassId": "{985195aa-17ad-4530-88a4-cdd753d747d7}","deviceParams":{"autodetect":"true"}}}'; sleep 1) | nc $1 1234
+    (echo '{"id":1, "method":"Devices.AddConfiguredDevice", "params":{"deviceClassId": "{985195aa-17ad-4530-88a4-cdd753d747d7}","deviceParams":{"location":""}}}'; sleep 1) | nc $1 1234
   else
     echo "unknown type $2. Possible values are: elroremote, elroswitch, intertechnoremote, wifidetector, mock1, mock2, openweathermap"
   fi

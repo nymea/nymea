@@ -42,7 +42,7 @@ void OpenWeatherMap::updateSearchData()
     QNetworkRequest searchRequest;
     searchRequest.setUrl(QUrl(urlString));
 
-    m_searchReply = m_manager->get(searchRequest);
+    m_searchLocationReply = m_manager->get(searchRequest);
 }
 
 void OpenWeatherMap::updateWeatherData()
@@ -80,6 +80,42 @@ void OpenWeatherMap::processLocationResponse(QByteArray data)
 }
 
 void OpenWeatherMap::processSearchResponse(QByteArray data)
+{
+    QJsonParseError error;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
+
+    if(error.error != QJsonParseError::NoError) {
+        qWarning() << "failed to parse data" << data << ":" << error.errorString();
+    }
+    //qDebug() << jsonDoc.toJson();
+
+    QVariantMap dataMap = jsonDoc.toVariant().toMap();
+    qDebug() << "----------------------------------------";
+    qDebug() << "openweathermap search results";
+    qDebug() << "----------------------------------------";
+    QList<QVariantMap> cityList;
+    if(dataMap.contains("list")){
+        QVariantList list = dataMap.value("list").toList();
+        foreach (QVariant key, list) {
+            QVariantMap elemant = key.toMap();
+            qDebug() << elemant.value("name").toString();
+            qDebug() << elemant.value("sys").toMap().value("country").toString();
+            qDebug() << elemant.value("id").toString();
+            qDebug() << "--------------------------------------";
+
+            QVariantMap city;
+            city.insert("name",elemant.value("name").toString());
+            city.insert("country", elemant.value("sys").toMap().value("country").toString());
+            city.insert("id",elemant.value("id").toString());
+            cityList.append(city);
+        }
+    }
+    qDebug() << "----------------------------------------";
+    emit searchResultReady(cityList);
+
+}
+
+void OpenWeatherMap::processSearchLocationResponse(QByteArray data)
 {
     QJsonParseError error;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
@@ -217,6 +253,15 @@ void OpenWeatherMap::update()
     updateLocationData();
 }
 
+void OpenWeatherMap::search(const QString &searchString)
+{
+    QString urlString = "http://api.openweathermap.org/data/2.5/find?q=" + searchString + "&type=like&units=metric&mode=json";
+    QNetworkRequest searchRequest;
+    searchRequest.setUrl(QUrl(urlString));
+
+    m_searchReply = m_manager->get(searchRequest);
+}
+
 void OpenWeatherMap::replyFinished(QNetworkReply *reply)
 {
     int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
@@ -231,6 +276,12 @@ void OpenWeatherMap::replyFinished(QNetworkReply *reply)
     if(reply == m_searchReply && status == 200){
         data = reply->readAll();
         processSearchResponse(data);
+        return;
+    }
+
+    if(reply == m_searchLocationReply && status == 200){
+        data = reply->readAll();
+        processSearchLocationResponse(data);
         return;
     }
 

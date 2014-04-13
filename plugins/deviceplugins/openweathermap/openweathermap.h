@@ -68,7 +68,7 @@ private:
     void processWeatherResponse(QByteArray data);
 
 signals:
-
+    void searchResultReady(const QList<QVariantMap> &cityList);
 
 public slots:
     void update();

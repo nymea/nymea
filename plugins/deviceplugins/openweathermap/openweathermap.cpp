@@ -112,7 +112,6 @@ void OpenWeatherMap::processSearchResponse(QByteArray data)
     }
     qDebug() << "----------------------------------------";
     emit searchResultReady(cityList);
-
 }
 
 void OpenWeatherMap::processSearchLocationResponse(QByteArray data)

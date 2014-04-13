@@ -171,7 +171,7 @@ QList<DeviceClass> DevicePluginOpenweathermap::supportedDevices() const
 
     DeviceClass deviceClassOpenweathermap(pluginId(), openweathermapVendorId, DeviceClassId("985195aa-17ad-4530-88a4-cdd753d747d7"));
     deviceClassOpenweathermap.setName("Weather from openweathermap");
-    //deviceClassOpenweathermap.setCreateMethod(DeviceClass::CreateMethodDiscovery);
+    deviceClassOpenweathermap.setCreateMethod(DeviceClass::CreateMethodDiscovery);
 
     // Params
     QVariantList params;
@@ -292,7 +292,7 @@ QList<DeviceClass> DevicePluginOpenweathermap::supportedDevices() const
 DeviceManager::DeviceError DevicePluginOpenweathermap::discoverDevices(const DeviceClassId &deviceClassId, const QVariantMap &params) const
 {
     qDebug() << "should discover divces for" << deviceClassId << params;
-//    m_openweaher->
+    m_openweaher->search(params.value("location").toString());
     return DeviceManager::DeviceErrorNoError;
 }
 
@@ -313,7 +313,6 @@ PluginId DevicePluginOpenweathermap::pluginId() const
 
 void DevicePluginOpenweathermap::guhTimer()
 {
-    m_openweaher->search("Vie");
 }
 
 

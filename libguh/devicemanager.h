@@ -57,7 +57,8 @@ public:
         DeviceErrorDuplicateUuid,
         DeviceErrorCreationMethodNotSupported,
         DeviceErrorDeviceParameterError,
-        DeviceErrorActionParameterError
+        DeviceErrorActionParameterError,
+        DeviceErrorDeviceDescriptorNotFound
     };
 
     explicit DeviceManager(QObject *parent = 0);
@@ -72,6 +73,7 @@ public:
 
     QList<Device*> configuredDevices() const;
     DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const QVariantMap &params, const DeviceId id = DeviceId::createDeviceId());
+    DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId);
     DeviceError removeConfiguredDevice(const DeviceId &deviceId);
 
     Device* findConfiguredDevice(const DeviceId &id) const;
@@ -108,7 +110,7 @@ private:
     QHash<VendorId, QList<DeviceClassId> > m_vendorDeviceMap;
     QHash<DeviceClassId, DeviceClass> m_supportedDevices;
     QList<Device*> m_configuredDevices;
-    QHash<DeviceClassId, QList<DeviceDescriptor> > m_discoveredDevices;
+    QHash<DeviceClassId, QHash<DeviceDescriptorId, DeviceDescriptor> > m_discoveredDevices;
 
     QHash<PluginId, DevicePlugin*> m_devicePlugins;
 

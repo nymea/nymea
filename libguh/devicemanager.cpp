@@ -180,6 +180,24 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassI
     return DeviceErrorCreationMethodNotSupported;
 }
 
+DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId)
+{
+    DeviceClass deviceClass = findDeviceClass(deviceClassId);
+    if (!deviceClass.isValid()) {
+        return DeviceErrorDeviceClassNotFound;
+    }
+    if (deviceClass.createMethod() != DeviceClass::CreateMethodDiscovery) {
+        return DeviceErrorCreationMethodNotSupported;
+    }
+
+    DeviceDescriptor descriptor = m_discoveredDevices.take(deviceClassId).take(deviceDescriptorId);
+    if (!descriptor.isValid()) {
+        return DeviceErrorDeviceDescriptorNotFound;
+    }
+
+    return addConfiguredDeviceInternal(deviceClassId, descriptor.params());
+}
+
 DeviceManager::DeviceError DeviceManager::addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QVariantMap &params, const DeviceId id)
 {
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
@@ -435,7 +453,11 @@ void DeviceManager::createNewAutoDevices()
 
 void DeviceManager::slotDevicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors)
 {
-    m_discoveredDevices[deviceClassId] = deviceDescriptors;
+    QHash<DeviceDescriptorId, DeviceDescriptor> descriptorHash;
+    foreach (const DeviceDescriptor &descriptor, deviceDescriptors) {
+        descriptorHash.insert(descriptor.id(), descriptor);
+    }
+    m_discoveredDevices[deviceClassId] = descriptorHash;
     emit devicesDiscovered(deviceClassId, deviceDescriptors);
 }
 

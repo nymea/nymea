@@ -1,11 +1,21 @@
 #include "devicedescriptor.h"
 
+DeviceDescriptor::DeviceDescriptor()
+{
+
+}
+
 DeviceDescriptor::DeviceDescriptor(const DeviceDescriptorId &id, const DeviceClassId &deviceClassId, const QString &title, const QString &description) :
     m_id(id),
     m_deviceClassId(deviceClassId),
     m_title(title),
     m_description(description)
 {
+}
+
+bool DeviceDescriptor::isValid() const
+{
+    return !m_id.isNull() && !m_deviceClassId.isNull();
 }
 
 DeviceDescriptorId DeviceDescriptor::id() const

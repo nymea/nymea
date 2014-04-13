@@ -88,6 +88,19 @@ GuhCore::GuhCore(QObject *parent) :
 void GuhCore::gotEvent(const Event &event)
 {
     foreach (const Action &action, m_ruleEngine->evaluateEvent(event)) {
-        m_deviceManager->executeAction(action);
+        qDebug() << "executing action" << action.actionTypeId();
+        DeviceManager::DeviceError status = m_deviceManager->executeAction(action);
+        switch(status) {
+        case DeviceManager::DeviceErrorNoError:
+            break;
+        case DeviceManager::DeviceErrorSetupFailed:
+            qDebug() << "Error executing action. Device setup failed.";
+            break;
+        case DeviceManager::DeviceErrorActionParameterError:
+            qDebug() << "Error executing action. Invalid action parameter.";
+            break;
+        default:
+            qDebug() << "Error executing action:" << status;
+        }
     }
 }

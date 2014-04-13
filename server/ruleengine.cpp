@@ -120,28 +120,28 @@ RuleEngine::RuleEngine(QObject *parent) :
 QList<Action> RuleEngine::evaluateEvent(const Event &event)
 {
     QList<Action> actions;
-//    for (int i = 0; i < m_rules.count(); ++i) {
-//        if (m_rules.at(i).events().contains(event)) {
-//            bool statesMatching = true;
-//            qDebug() << "checking states";
-//            foreach (const State &state, m_rules.at(i).stateChanges()) {
-//                Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(state.deviceId());
-//                if (!device) {
-//                    qWarning() << "Device referenced in rule cannot be found";
-//                    break;
-//                }
-//                if (state.value() != device->stateValue(state.stateTypeId())) {
-//                    statesMatching = false;
-//                    break;
-//                }
-//            }
+    for (int i = 0; i < m_rules.count(); ++i) {
+        if (m_rules.at(i).events().contains(event)) {
+            bool statesMatching = true;
+            qDebug() << "checking states";
+            foreach (const State &state, m_rules.at(i).states()) {
+                Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(state.deviceId());
+                if (!device) {
+                    qWarning() << "Device referenced in rule cannot be found";
+                    break;
+                }
+                if (state.value() != device->stateValue(state.stateTypeId())) {
+                    statesMatching = false;
+                    break;
+                }
+            }
 
-//            qDebug() << "states matching" << statesMatching;
-//            if (statesMatching) {
-//                actions.append(m_rules.at(i).actions());
-//            }
-//        }
-//    }
+            qDebug() << "states matching" << statesMatching;
+            if (statesMatching) {
+                actions.append(m_rules.at(i).actions());
+            }
+        }
+    }
     qDebug() << "found" << actions.count() << "actions";
     return actions;
 }

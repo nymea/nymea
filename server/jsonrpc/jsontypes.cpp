@@ -83,7 +83,7 @@ void JsonTypes::init()
     // Event
     s_event.insert("eventTypeId", "uuid");
     s_event.insert("deviceId", "uuid");
-    s_event.insert("params", QVariantList() << paramRef());
+    s_event.insert("o:params", QVariantList() << paramRef());
 
     // ActionType
     s_actionType.insert("id", "uuid");
@@ -122,7 +122,7 @@ void JsonTypes::init()
 
     s_rule.insert("id", "uuid");
     s_rule.insert("ruleType", ruleTypesRef());
-    s_rule.insert("event", eventRef());
+    s_rule.insert("events", QVariantList() << eventRef());
     s_rule.insert("actions", QVariantList() << actionRef());
     s_rule.insert("states", QVariantList() << stateRef());
 
@@ -256,8 +256,14 @@ QVariantMap JsonTypes::packRule(const Rule &rule)
 {
     QVariantMap ruleMap;
     ruleMap.insert("id", rule.id());
-//    ruleMap.insert("event", JsonTypes::packEvent(rule.event()));
+    QVariantList eventList;
+    foreach (const Event &event, rule.events()) {
+        eventList.append(JsonTypes::packEvent(event));
+    }
+    ruleMap.insert("events", eventList);
+
     ruleMap.insert("ruleType", s_ruleTypes.at(rule.ruleType()));
+
     QVariantList actionList;
     foreach (const Action &action, rule.actions()) {
         actionList.append(JsonTypes::packAction(action));
@@ -277,7 +283,9 @@ QPair<bool, QString> JsonTypes::validateMap(const QVariantMap &templateMap, cons
         strippedKey.remove(QRegExp("^o:"));
 
         if (!key.startsWith("o:") && !map.contains(strippedKey)) {
-            qDebug() << "missing key" << key << templateMap << map;
+            qDebug() << "*** missing key" << key;
+            qDebug() << "Expected:" << templateMap;
+            qDebug() << "Got:" << map;
             QJsonDocument jsonDoc = QJsonDocument::fromVariant(map);
             return report(false, QString("Missing key \"%1\" in %2").arg(key).arg(QString(jsonDoc.toJson())));
         }
@@ -346,6 +354,7 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                     return result;
                 }
             } else if (refName == JsonTypes::eventRef()) {
+                qDebug() << "validating event";
                 QPair<bool, QString> result = validateMap(eventDescription(), variant.toMap());
                 if (!result.first) {
                     qDebug() << "event not valid";

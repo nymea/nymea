@@ -52,7 +52,7 @@
  \l{Rule::RuleTypeAll}.*/
 Rule::Rule(const QUuid &id, const Event &event, const QList<State> &states, const QList<Action> &actions):
     m_id(id),
-    m_event(event),
+    m_events(QList<Event>() << event),
     m_states(states),
     m_actions(actions),
     m_ruleType(RuleTypeAll)
@@ -66,9 +66,9 @@ QUuid Rule::id() const
 }
 
 /*! Returns the \l{Event} that events this Rule.*/
-Event Rule::event() const
+QList<Event> Rule::events() const
 {
-    return m_event;
+    return m_events;
 }
 
 /*! Returns the \l{State}{States} that need to be matching in order for this to Rule apply. */

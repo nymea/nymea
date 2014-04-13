@@ -37,7 +37,7 @@ public:
     Rule(const QUuid &id, const Event &event, const QList<State> &states, const QList<Action> &actions);
 
     QUuid id() const;
-    Event event() const;
+    QList<Event> events() const;
     QList<State> states() const;
     QList<Action> actions() const;
 
@@ -46,7 +46,7 @@ public:
 
 private:
     QUuid m_id;
-    Event m_event;
+    QList<Event> m_events;
     QList<State> m_states;
     StateEvaluator stateEvaluator;
     QList<Action> m_actions;

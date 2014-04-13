@@ -105,6 +105,7 @@ QVariantMap RulesHandler::AddRule(const QVariantMap &params)
     switch(GuhCore::instance()->ruleEngine()->addRule(event, actions)) {
     case RuleEngine::RuleErrorNoError:
         returns.insert("success", true);
+        returns.insert("errorMessage", "");
         break;
     case RuleEngine::RuleErrorDeviceNotFound:
         returns.insert("success", false);

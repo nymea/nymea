@@ -26,4 +26,5 @@ LIBS += -L../plugins/deviceplugins/openweathermap -lguh_devicepluginopenweatherm
 
 boblight {
     LIBS += -L../plugins/deviceplugins/boblight -lguh_devicepluginboblight -L/usr/local/lib/ -lboblight
+    DEFINES += USE_BOBLIGHT
 }

@@ -138,7 +138,7 @@ void OpenWeatherMap::processSearchLocationResponse(QByteArray data)
             cityList.append(city);
 
             m_cityId = elemant.value("id").toString();
-            updateWeatherData();
+            search(m_cityName);
             return;
         }
     }
@@ -254,6 +254,11 @@ void OpenWeatherMap::processWeatherResponse(QByteArray data)
 }
 
 void OpenWeatherMap::update()
+{
+    updateLocationData();
+}
+
+void OpenWeatherMap::searchAutodetect()
 {
     updateLocationData();
 }

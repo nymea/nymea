@@ -293,6 +293,7 @@ DeviceManager::DeviceError DevicePluginOpenweathermap::discoverDevices(const Dev
 {
     qDebug() << "should discover divces for" << deviceClassId << params;
 //    m_openweaher->
+    return DeviceManager::DeviceErrorNoError;
 }
 
 DeviceManager::HardwareResources DevicePluginOpenweathermap::requiredHardware() const

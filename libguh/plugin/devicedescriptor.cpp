@@ -1,6 +1,16 @@
 #include "devicedescriptor.h"
 
-DeviceDescriptor::DeviceDescriptor()
+DeviceDescriptor::DeviceDescriptor():
+    m_id(DeviceDescriptorId::createDeviceDescriptorId())
+{
+
+}
+
+DeviceDescriptor::DeviceDescriptor(const DeviceClassId &deviceClassId, const QString &title, const QString &description):
+    m_id(DeviceDescriptorId::createDeviceDescriptorId()),
+    m_deviceClassId(deviceClassId),
+    m_title(title),
+    m_description(description)
 {
 
 }

@@ -9,6 +9,7 @@ class DeviceDescriptor
 {
 public:
     DeviceDescriptor();
+    DeviceDescriptor(const DeviceClassId &deviceClassId, const QString &title = QString(), const QString &description = QString());
     DeviceDescriptor(const DeviceDescriptorId &id, const DeviceClassId &deviceClassId, const QString &title = QString(), const QString &description = QString());
 
     bool isValid() const;

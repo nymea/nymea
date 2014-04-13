@@ -216,9 +216,9 @@ QString DevicePluginElro::pluginName() const
     return QStringLiteral("Elro");
 }
 
-QUuid DevicePluginElro::pluginId() const
+PluginId DevicePluginElro::pluginId() const
 {
-    return QUuid("2b267f81-d9ae-4f4f-89a0-7386b547cfd3");
+    return PluginId("2b267f81-d9ae-4f4f-89a0-7386b547cfd3");
 }
 
 DeviceManager::DeviceError DevicePluginElro::executeAction(Device *device, const Action &action)

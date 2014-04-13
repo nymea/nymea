@@ -43,11 +43,11 @@ public:
         SetupMethodPushButton
     };
 
-    DeviceClass(const QUuid &pluginId = QUuid(), const VendorId &vendorId = VendorId(), const DeviceClassId &id = DeviceClassId());
+    DeviceClass(const PluginId &pluginId = PluginId(), const VendorId &vendorId = VendorId(), const DeviceClassId &id = DeviceClassId());
 
     DeviceClassId id() const;
     VendorId vendorId() const;
-    QUuid pluginId() const;
+    PluginId pluginId() const;
     bool isValid() const;
 
     QString name() const;
@@ -75,7 +75,7 @@ public:
 private:
     DeviceClassId m_id;
     VendorId m_vendorId;
-    QUuid m_pluginId;
+    PluginId m_pluginId;
     QString m_name;
     QList<StateType> m_states;
     QList<EventType> m_events;

@@ -38,7 +38,7 @@ public:
     DeviceManager::HardwareResources requiredHardware() const override;
 
     QString pluginName() const override;
-    QUuid pluginId() const override;
+    PluginId pluginId() const override;
 
     void guhTimer() override;
 

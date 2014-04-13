@@ -33,7 +33,7 @@ void OpenWeatherMap::updateLocationData()
     QNetworkRequest locationRequest;
     locationRequest.setUrl(QUrl(urlString));
 
-    m_locationReplay = m_manager->get(locationRequest);
+    m_locationReply = m_manager->get(locationRequest);
 }
 
 void OpenWeatherMap::updateSearchData()
@@ -42,7 +42,7 @@ void OpenWeatherMap::updateSearchData()
     QNetworkRequest searchRequest;
     searchRequest.setUrl(QUrl(urlString));
 
-    m_searchReplay = m_manager->get(searchRequest);
+    m_searchReply = m_manager->get(searchRequest);
 }
 
 void OpenWeatherMap::updateWeatherData()
@@ -51,7 +51,7 @@ void OpenWeatherMap::updateWeatherData()
     QNetworkRequest weatherRequest;
     weatherRequest.setUrl(QUrl(urlString));
 
-    m_weatherReplay = m_manager->get(weatherRequest);
+    m_weatherReply = m_manager->get(weatherRequest);
 }
 
 void OpenWeatherMap::processLocationResponse(QByteArray data)
@@ -222,19 +222,19 @@ void OpenWeatherMap::replyFinished(QNetworkReply *reply)
     int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     QByteArray data;
 
-    if(reply == m_locationReplay && status == 200){
+    if(reply == m_locationReply && status == 200){
         data = reply->readAll();
         processLocationResponse(data);
         return;
     }
 
-    if(reply == m_searchReplay && status == 200){
+    if(reply == m_searchReply && status == 200){
         data = reply->readAll();
         processSearchResponse(data);
         return;
     }
 
-    if(reply == m_weatherReplay && status == 200){
+    if(reply == m_weatherReply && status == 200){
         data = reply->readAll();
         processWeatherResponse(data);
         return;

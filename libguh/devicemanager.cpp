@@ -146,6 +146,20 @@ QList<DeviceClass> DeviceManager::supportedDevices(const VendorId &vendorId) con
     return ret;
 }
 
+QList<DeviceDescription> DeviceManager::discoveredDevices(const DeviceClassId &deviceClassId) const
+{
+    QList<DeviceDescription> ret;
+    DeviceClass deviceClass = findDeviceClass(deviceClassId);
+    if (!deviceClass.isValid()) {
+        return ret;
+    }
+    DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
+    if (!plugin) {
+        return ret;
+    }
+    ret = plugin->discoveredDevices(deviceClassId);
+}
+
 /*! Add a new configured device for the given \l{DeviceClass} and the given parameters.
  \a deviceClassId must refer to an existing \{DeviceClass} and \a params must match the parameter description in the \l{DeviceClass}.
     Optionally you can supply an id yourself if you must keep track of the added device. If you don't supply it, a new one will
@@ -154,7 +168,7 @@ QList<DeviceClass> DeviceManager::supportedDevices(const VendorId &vendorId) con
 DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassId &deviceClassId, const QVariantMap &params, const DeviceId id)
 {
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
-    if (deviceClass.id().isNull()) {
+    if (!deviceClass.isValid()) {
         qWarning() << "cannot find a device class with id" << deviceClassId;
         return DeviceErrorDeviceClassNotFound;
     }
@@ -362,7 +376,7 @@ void DeviceManager::loadConfiguredDevices()
     qDebug() << "loading devices from" << settings.fileName();
     foreach (const QString &idString, settings.childGroups()) {
         settings.beginGroup(idString);
-        Device *device = new Device(settings.value("pluginid").toUuid(), DeviceId(idString), DeviceClassId(settings.value("deviceClassId").toString()), this);
+        Device *device = new Device(PluginId(settings.value("pluginid").toString()), DeviceId(idString), DeviceClassId(settings.value("deviceClassId").toString()), this);
         device->setName(settings.value("devicename").toString());
         device->setParams(settings.value("params").toMap());
         settings.endGroup();

@@ -119,9 +119,9 @@ QString DevicePluginConrad::pluginName() const
     return "Conrad";
 }
 
-QUuid DevicePluginConrad::pluginId() const
+PluginId DevicePluginConrad::pluginId() const
 {
-    return QUuid("1fd1a076-f229-4ec6-b501-48ddd15935e4");
+    return PluginId("1fd1a076-f229-4ec6-b501-48ddd15935e4");
 }
 
 DeviceManager::DeviceError DevicePluginConrad::executeAction(Device *device, const Action &action)

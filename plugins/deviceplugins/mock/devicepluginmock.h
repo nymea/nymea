@@ -40,7 +40,7 @@ public:
     DeviceManager::HardwareResources requiredHardware() const override;
 
     QString pluginName() const override;
-    QUuid pluginId() const override;
+    PluginId pluginId() const override;
 
     bool deviceCreated(Device *device) override;
     void deviceRemoved(Device *device) override;

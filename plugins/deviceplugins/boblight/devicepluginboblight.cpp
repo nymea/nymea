@@ -10,7 +10,7 @@
 
 VendorId boblightVendorId = VendorId("8c5e8d4c-b5ed-4bfe-b30d-35c2790ec100");
 
-QUuid boblightPluginUuid = QUuid("e1647872-c0f5-4680-b49b-3924e5b54dcd");
+PluginId boblightPluginUuid = PluginId("e1647872-c0f5-4680-b49b-3924e5b54dcd");
 DeviceClassId boblightDeviceClassId = DeviceClassId("1647c61c-db14-461e-8060-8a3533d5d92f");
 StateTypeId colorStateTypeId = StateTypeId("97ec80cd-43a9-40fa-93b7-d1580043d981");
 ActionTypeId setColorActionTypeId = ActionTypeId("668e1aa3-fa13-49ce-8630-17a5c0a7c34b");
@@ -99,7 +99,7 @@ QString DevicePluginBoblight::pluginName() const
     return "Boblight client";
 }
 
-QUuid DevicePluginBoblight::pluginId() const
+PluginId DevicePluginBoblight::pluginId() const
 {
     return boblightPluginUuid;
 }

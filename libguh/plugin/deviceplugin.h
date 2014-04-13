@@ -42,13 +42,14 @@ public:
     virtual void init() {}
 
     virtual QString pluginName() const = 0;
-    virtual QUuid pluginId() const = 0;
+    virtual PluginId pluginId() const = 0;
 
     virtual QList<Vendor> supportedVendors() const = 0;
     virtual QList<DeviceClass> supportedDevices() const = 0;
     virtual DeviceManager::HardwareResources requiredHardware() const = 0;
 
     virtual bool configureAutoDevice(QList<Device *> loadedDevices, Device *device) const;
+    virtual QList<DeviceDescription> discoveredDevices(const DeviceClassId &deviceClassId) const;
 
     virtual bool deviceCreated(Device *device);
     virtual void deviceRemoved(Device *device);

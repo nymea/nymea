@@ -38,7 +38,7 @@ class Device: public QObject
 public:
     DeviceId id() const;
     DeviceClassId deviceClassId() const;
-    QUuid pluginId() const;
+    PluginId pluginId() const;
 
     QString name() const;
     void setName(const QString &name);
@@ -57,13 +57,13 @@ signals:
     void stateValueChanged(const QUuid &stateTypeId, const QVariant &value);
 
 private:
-    Device(const QUuid &pluginId, const DeviceId &id, const DeviceClassId &deviceClassId, QObject *parent = 0);
-    Device(const QUuid &pluginId, const DeviceClassId &deviceClassId, QObject *parent = 0);
+    Device(const PluginId &pluginId, const DeviceId &id, const DeviceClassId &deviceClassId, QObject *parent = 0);
+    Device(const PluginId &pluginId, const DeviceClassId &deviceClassId, QObject *parent = 0);
 
 private:
     DeviceId m_id;
     DeviceClassId m_deviceClassId;
-    QUuid m_pluginId;
+    PluginId m_pluginId;
     QString m_name;
     QVariantMap m_params;
     QList<State> m_states;

@@ -38,9 +38,9 @@ private:
     QString m_cityName;
     QString m_cityId;
 
-    QNetworkReply *m_locationReplay;
-    QNetworkReply *m_searchReplay;
-    QNetworkReply *m_weatherReplay;
+    QNetworkReply *m_locationReply;
+    QNetworkReply *m_searchReply;
+    QNetworkReply *m_weatherReply;
 
     QString m_country;
     QString m_weatherDescription;

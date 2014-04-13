@@ -37,10 +37,13 @@ public:
 
     QList<Vendor> supportedVendors() const override;
     QList<DeviceClass> supportedDevices() const override;
+
+    QList<DeviceDescription> discoveredDevices(const DeviceClassId &deviceClassId) const;
+
     DeviceManager::HardwareResources requiredHardware() const override;
 
     QString pluginName() const override;
-    QUuid pluginId() const override;
+    PluginId pluginId() const override;
 
     void guhTimer() override;
 

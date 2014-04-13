@@ -352,9 +352,9 @@ QString DevicePluginIntertechno::pluginName() const
     return "Intertechno";
 }
 
-QUuid DevicePluginIntertechno::pluginId() const
+PluginId DevicePluginIntertechno::pluginId() const
 {
-    return QUuid("e998d934-0397-42c1-ad63-9141bcac8563");
+    return PluginId("e998d934-0397-42c1-ad63-9141bcac8563");
 }
 
 DeviceManager::DeviceError DevicePluginIntertechno::executeAction(Device *device, const Action &action)

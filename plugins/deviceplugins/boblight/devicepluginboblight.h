@@ -24,7 +24,7 @@ public:
     bool configureAutoDevice(QList<Device *> loadedDevices, Device *device) const override;
 
     QString pluginName() const override;
-    QUuid pluginId() const override;
+    PluginId pluginId() const override;
 
     QVariantMap configuration() const override;
     void setConfiguration(const QVariantMap &configuration) override;

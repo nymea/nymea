@@ -171,6 +171,15 @@ QList<DeviceClass> DevicePluginOpenweathermap::supportedDevices() const
 
     DeviceClass deviceClassOpenweathermap(pluginId(), openweathermapVendorId, DeviceClassId("985195aa-17ad-4530-88a4-cdd753d747d7"));
     deviceClassOpenweathermap.setName("Weather from openweathermap");
+    deviceClassOpenweathermap.setCreateMethod(DeviceClass::CreateMethodDiscovery);
+
+    // Params
+    QVariantList params;
+    QVariantMap locationParam;
+    locationParam.insert("name", "location");
+    locationParam.insert("type", "string");
+    params.append(locationParam);
+    deviceClassOpenweathermap.setParams(params);
 
     // Actions
     QList<ActionType> weatherActions;
@@ -280,6 +289,11 @@ QList<DeviceClass> DevicePluginOpenweathermap::supportedDevices() const
     return ret;
 }
 
+QList<DeviceDescription> DevicePluginOpenweathermap::discoveredDevices(const DeviceClassId &deviceClassId) const
+{
+    m_openweaher->
+}
+
 DeviceManager::HardwareResources DevicePluginOpenweathermap::requiredHardware() const
 {
     return DeviceManager::HardwareResourceTimer;
@@ -290,9 +304,9 @@ QString DevicePluginOpenweathermap::pluginName() const
     return "Openweathermap";
 }
 
-QUuid DevicePluginOpenweathermap::pluginId() const
+PluginId DevicePluginOpenweathermap::pluginId() const
 {
-    return QUuid("bc6af567-2338-41d5-aac1-462dec6e4783");
+    return PluginId("bc6af567-2338-41d5-aac1-462dec6e4783");
 }
 
 void DevicePluginOpenweathermap::guhTimer()

@@ -33,7 +33,7 @@
 
 #include <QDebug>
 
-Device::Device(const QUuid &pluginId, const DeviceId &id, const DeviceClassId &deviceClassId, QObject *parent):
+Device::Device(const PluginId &pluginId, const DeviceId &id, const DeviceClassId &deviceClassId, QObject *parent):
     QObject(parent),
     m_id(id),
     m_deviceClassId(deviceClassId),
@@ -42,7 +42,7 @@ Device::Device(const QUuid &pluginId, const DeviceId &id, const DeviceClassId &d
 
 }
 
-Device::Device(const QUuid &pluginId, const DeviceClassId &deviceClassId, QObject *parent):
+Device::Device(const PluginId &pluginId, const DeviceClassId &deviceClassId, QObject *parent):
     QObject(parent),
     m_id(DeviceId::createDeviceId()),
     m_deviceClassId(deviceClassId),
@@ -64,7 +64,7 @@ DeviceClassId Device::deviceClassId() const
 }
 
 /*! Returns the id of the \l{DevicePlugin} this Device is managed by. */
-QUuid Device::pluginId() const
+PluginId Device::pluginId() const
 {
     return m_pluginId;
 }

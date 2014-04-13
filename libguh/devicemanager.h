@@ -21,6 +21,7 @@
 
 #include "plugin/deviceclass.h"
 #include "plugin/device.h"
+#include "plugin/devicedescription.h"
 
 #include "types/event.h"
 #include "types/action.h"
@@ -67,6 +68,7 @@ public:
 
     QList<Vendor> supportedVendors() const;
     QList<DeviceClass> supportedDevices(const VendorId &vendorId = VendorId()) const;
+    QList<DeviceDescription> discoveredDevices(const DeviceClassId &deviceClassId) const;
 
     QList<Device*> configuredDevices() const;
     DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const QVariantMap &params, const DeviceId id = DeviceId::createDeviceId());
@@ -105,7 +107,7 @@ private:
     QHash<DeviceClassId, DeviceClass> m_supportedDevices;
     QList<Device*> m_configuredDevices;
 
-    QHash<QUuid, DevicePlugin*> m_devicePlugins;
+    QHash<PluginId, DevicePlugin*> m_devicePlugins;
 
     // Hardware Resources
     Radio433* m_radio433;

@@ -126,6 +126,11 @@ bool DevicePlugin::configureAutoDevice(QList<Device*> loadedDevices, Device *dev
     return false;
 }
 
+QList<DeviceDescription> DevicePlugin::discoveredDevices(const DeviceClassId &deviceClassId) const
+{
+    return QList<DeviceDescription>();
+}
+
 /*! This will be called when a new device is created. The plugin has the chance to do some setup.
     Return false if something bad happened during the setup. The device will be disabled.
 */

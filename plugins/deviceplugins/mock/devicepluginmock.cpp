@@ -130,9 +130,9 @@ QString DevicePluginMock::pluginName() const
     return "Mock Devices";
 }
 
-QUuid DevicePluginMock::pluginId() const
+PluginId DevicePluginMock::pluginId() const
 {
-    return QUuid("727a4a9a-c187-446f-aadf-f1b2220607d1");
+    return PluginId("727a4a9a-c187-446f-aadf-f1b2220607d1");
 }
 
 bool DevicePluginMock::deviceCreated(Device *device)

@@ -25,7 +25,7 @@
 #include <QStringList>
 
 extern VendorId guhVendorId;
-QUuid pluginUuid = QUuid("8e0f791e-b273-4267-8605-b7c2f55a68ab");
+PluginId pluginUuid = PluginId("8e0f791e-b273-4267-8605-b7c2f55a68ab");
 DeviceClassId detectorId = DeviceClassId("bd216356-f1ec-4324-9785-6982d2174e17");
 StateTypeId inRangeStateTypeId = StateTypeId("cb43e1b5-4f61-4538-bfa2-c33055c542cf");
 
@@ -81,7 +81,7 @@ QString DevicePluginWifiDetector::pluginName() const
     return "WiFi Detector";
 }
 
-QUuid DevicePluginWifiDetector::pluginId() const
+PluginId DevicePluginWifiDetector::pluginId() const
 {
     return pluginUuid;
 }

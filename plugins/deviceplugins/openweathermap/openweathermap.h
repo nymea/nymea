@@ -72,6 +72,7 @@ signals:
 
 public slots:
     void update();
+    void searchAutodetect();
     void search(const QString &searchString);
 
 private slots:

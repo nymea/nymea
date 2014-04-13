@@ -324,7 +324,7 @@ void DevicePluginOpenweathermap::searchResultsReady(const QList<QVariantMap> &ci
 {
     QList<DeviceDescriptor> retList;
     foreach (QVariantMap elemant, cityList) {
-        DeviceDescriptor descriptor(deviceClassId,"city","searchresult");
+        DeviceDescriptor descriptor(deviceClassId, elemant.value("name").toString(),elemant.value("country").toString());
         QVariantMap params;
         params.insert("location", elemant.value("name"));
         params.insert("country", elemant.value("country"));
@@ -332,7 +332,6 @@ void DevicePluginOpenweathermap::searchResultsReady(const QList<QVariantMap> &ci
         descriptor.setParams(params);
         retList.append(descriptor);
     }
-
     emit devicesDiscovered(deviceClassId,retList);
 }
 

@@ -124,16 +124,22 @@ void OpenWeatherMap::processSearchLocationResponse(QByteArray data)
     }
     //qDebug() << jsonDoc.toJson();
 
+    QList<QVariantMap> cityList;
     QVariantMap dataMap = jsonDoc.toVariant().toMap();
     if(dataMap.contains("list")){
         QVariantList list = dataMap.value("list").toList();
         foreach (QVariant key, list) {
             QVariantMap elemant = key.toMap();
-            if(elemant.contains("id")){
-                m_cityId = elemant.value("id").toString();
-                updateWeatherData();
-                return;
-            }
+
+            QVariantMap city;
+            city.insert("name",elemant.value("name").toString());
+            city.insert("country", elemant.value("sys").toMap().value("country").toString());
+            city.insert("id",elemant.value("id").toString());
+            cityList.append(city);
+
+            m_cityId = elemant.value("id").toString();
+            updateWeatherData();
+            return;
         }
     }
 }

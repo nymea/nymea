@@ -151,10 +151,11 @@
 
 
 VendorId openweathermapVendorId = VendorId("bf1e96f0-9650-4e7c-a56c-916d54d18e7a");
-
+DeviceClassId deviceClassId = DeviceClassId("985195aa-17ad-4530-88a4-cdd753d747d7");
 DevicePluginOpenweathermap::DevicePluginOpenweathermap()
 {
     m_openweaher = new OpenWeatherMap(this);
+    connect(m_openweaher, SIGNAL(searchResultReady(QList<QVariantMap>)), this, SLOT(searchResultsReady(QList<QVariantMap>)));
 }
 
 QList<Vendor> DevicePluginOpenweathermap::supportedVendors() const
@@ -292,6 +293,10 @@ QList<DeviceClass> DevicePluginOpenweathermap::supportedDevices() const
 DeviceManager::DeviceError DevicePluginOpenweathermap::discoverDevices(const DeviceClassId &deviceClassId, const QVariantMap &params) const
 {
     qDebug() << "should discover divces for" << deviceClassId << params;
+    if(params.value("location").toString() == ""){
+        m_openweaher->update();
+        return DeviceManager::DeviceErrorNoError;
+    }
     m_openweaher->search(params.value("location").toString());
     return DeviceManager::DeviceErrorNoError;
 }
@@ -313,6 +318,20 @@ PluginId DevicePluginOpenweathermap::pluginId() const
 
 void DevicePluginOpenweathermap::guhTimer()
 {
+}
+
+void DevicePluginOpenweathermap::searchResultsReady(const QList<QVariantMap> &cityList)
+{
+    QList<DeviceDescriptor> retList;
+    foreach (QVariantMap elemant, cityList) {
+        QVariantMap params;
+        params.insert("location", elemant.value("name"));
+        params.insert("country", elemant.value("country"));
+        params.insert("id", elemant.value("id"));
+        retList.append(DeviceDescriptor(deviceClassId, params));
+    }
+
+    emit discoverDevices(deviceClassId,retList);
 }
 
 

@@ -48,6 +48,7 @@ public:
     void guhTimer() override;
 
 private slots:
+    void searchResultsReady(const QList<QVariantMap> &cityList);
 
 public slots:
 

@@ -2,11 +2,11 @@
 
 # Creates a Mumbi remote
 if [ -z $1 ]; then
-  echo "usage $0 host device"
+  echo "usage $0 host device [deviceClassId descriptorId]. In case of a discovered device, deviceClassId and descriptorId are mandatory."
 elif [ $1 == "list" ]; then
   echo "elroremote elroswitch intertechnoremote  wifidetector mock1 mock2 openweathermap"
 elif [ -z $2 ]; then
-  echo "usage $0 host device"
+  echo "usage $0 host device [deviceClassId descriptorId]. In case of a discovered device, deviceClassId and descriptorId are mandatory."
 else
   if [ $2 == "elroremote" ]; then
     # Adds an ELRO remote control on channel 00000
@@ -35,7 +35,13 @@ else
   elif [ $2 == "openweathermap" ]; then
     # Adds a openweathermap device
     (echo '{"id":1, "method":"Devices.AddConfiguredDevice", "params":{"deviceClassId": "{985195aa-17ad-4530-88a4-cdd753d747d7}","deviceParams":{"location":""}}}'; sleep 1) | nc $1 1234
+  elif [ $2 == "discovered" ]; then
+    if [ -z $4]; then
+      echo "usage $0 host device [deviceClassId descriptorId]. In case of a discovered device, deviceClassId and descriptorId are mandatory."
+    else
+      (echo '{"id":1, "method":"Devices.AddConfiguredDevice", "params":{"deviceClassId": "'$3'", "deviceDescriptorId": "'$4'"}}'; sleep 1) | nc $1 1234
+    fi
   else
-    echo "unknown type $2. Possible values are: elroremote, elroswitch, intertechnoremote, wifidetector, mock1, mock2, openweathermap"
+    echo "unknown type $2. Possible values are: elroremote, elroswitch, intertechnoremote, wifidetector, mock1, mock2, openweathermap, discovered. (In case of discovered, a deviceDescriptorId is required)"
   fi
 fi

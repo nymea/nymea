@@ -254,8 +254,10 @@ JsonReply* DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
     DeviceId newDeviceId = DeviceId::createDeviceId();
     DeviceManager::DeviceError status;
     if (deviceDescriptorId.isNull()) {
+        qDebug() << "adding a manual device.";
         status = GuhCore::instance()->deviceManager()->addConfiguredDevice(deviceClass, deviceParams, newDeviceId);
     } else {
+        qDebug() << "adding a discovered device.";
         status = GuhCore::instance()->deviceManager()->addConfiguredDevice(deviceClass, deviceDescriptorId, newDeviceId);
     }
     QVariantMap returns;

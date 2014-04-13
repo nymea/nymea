@@ -67,7 +67,7 @@ public slots:
 
 signals:
     void emitEvent(const Event &event);
-    void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
+    void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors);
 
 protected:
     DeviceManager *deviceManager() const;

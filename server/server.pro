@@ -23,6 +23,7 @@ LIBS += -L../plugins/deviceplugins/wifidetector/ -lguh_devicepluginwifidetector
 LIBS += -L../plugins/deviceplugins/mock -lguh_devicepluginmock
 #LIBS += -L../plugins/deviceplugins/weatherground -lguh_devicepluginweatherground
 LIBS += -L../plugins/deviceplugins/openweathermap -lguh_devicepluginopenweathermap
+LIBS += -L../plugins/deviceplugins/lircd -lguh_devicepluginlircd
 
 boblight {
     LIBS += -L../plugins/deviceplugins/boblight -lguh_devicepluginboblight -L/usr/local/lib/ -lboblight

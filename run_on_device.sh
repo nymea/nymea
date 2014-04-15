@@ -3,9 +3,9 @@ CODE_DIR=guh
 BUILD_DIR=builddir
 USER=root
 USER_ID=0
-PASSWORD=guh
+PASSWORD=hive
 BINARY=guh
-TARGET_IP=${TARGET_IP-10.10.10.125}
+TARGET_IP=${TARGET_IP-10.10.10.108}
 TARGET_SSH_PORT=22
 TARGET_DEBUG_PORT=3768
 RUN_OPTIONS=-qmljsdebugger=port:$TARGET_DEBUG_PORT
@@ -52,7 +52,8 @@ sync_code() {
 
 build() {
     exec_with_ssh mkdir -p $CODE_DIR/$BUILD_DIR
-    exec_with_ssh QT_SELECT=qt5 PATH=/usr/local/qt5/bin:/usr/lib/ccache:$PATH "cd $CODE_DIR/$BUILD_DIR && PATH=/usr/local/qt5/bin:/usr/lib/ccache:$PATH qmake .."
+    exec_with_ssh PATH="/usr/lib/ccache:$PATH" ccache -s
+    exec_with_ssh QT_SELECT=qt5 PATH=/usr/local/qt5/bin:/usr/lib/ccache:$PATH "cd $CODE_DIR/$BUILD_DIR && PATH=/usr/local/qt5/bin:/usr/lib/ccache:$PATH CC='ccache gcc' qmake .. CONFIG+=boblight"
     exec_with_ssh PATH=/usr/lib/ccache:$PATH "cd $CODE_DIR/$BUILD_DIR && PATH=/usr/lib/ccache:$PATH make -j2"
 }
 

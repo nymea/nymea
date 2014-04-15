@@ -29,6 +29,7 @@ Q_IMPORT_PLUGIN(DevicePluginWifiDetector)
 Q_IMPORT_PLUGIN(DevicePluginMock)
 //Q_IMPORT_PLUGIN(DevicePluginWeatherground)
 Q_IMPORT_PLUGIN(DevicePluginOpenweathermap)
+Q_IMPORT_PLUGIN(DevicePluginLircd)
 
 #if USE_BOBLIGHT
 Q_IMPORT_PLUGIN(DevicePluginBoblight)

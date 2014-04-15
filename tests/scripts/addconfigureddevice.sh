@@ -35,6 +35,8 @@ else
   elif [ $2 == "openweathermap" ]; then
     # Adds a openweathermap device
     (echo '{"id":1, "method":"Devices.AddConfiguredDevice", "params":{"deviceClassId": "{985195aa-17ad-4530-88a4-cdd753d747d7}","deviceParams":{"location":""}}}'; sleep 1) | nc $1 1234
+  elif [ $2 == "lirc" ]; then
+    (echo '{"id":1, "method":"Devices.AddConfiguredDevice", "params":{"deviceClassId": "{5c2bc4cd-ba6c-4052-b6cd-1db83323ea22}","deviceParams":{"remoteName":"'$3'"}}}'; sleep 1) | nc $1 1234
   elif [ $2 == "discovered" ]; then
     if [ -z $4]; then
       echo "usage $0 host device [deviceClassId descriptorId]. In case of a discovered device, deviceClassId and descriptorId are mandatory."
@@ -42,6 +44,6 @@ else
       (echo '{"id":1, "method":"Devices.AddConfiguredDevice", "params":{"deviceClassId": "'$3'", "deviceDescriptorId": "'$4'"}}'; sleep 1) | nc $1 1234
     fi
   else
-    echo "unknown type $2. Possible values are: elroremote, elroswitch, intertechnoremote, wifidetector, mock1, mock2, openweathermap, discovered. (In case of discovered, a deviceDescriptorId is required)"
+    echo "unknown type $2. Possible values are: elroremote, elroswitch, intertechnoremote, wifidetector, mock1, mock2, openweathermap, lirc, discovered. (In case of discovered, a deviceDescriptorId is required)"
   fi
 fi

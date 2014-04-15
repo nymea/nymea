@@ -7,6 +7,7 @@ SUBDIRS += elro     \
     mock            \
 #    weatherground   \
     openweathermap  \
+    lircd \
 
 boblight {
     SUBDIRS += boblight

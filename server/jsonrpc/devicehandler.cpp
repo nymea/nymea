@@ -314,12 +314,15 @@ JsonReply* DeviceHandler::RemoveConfiguredDevice(const QVariantMap &params)
     case DeviceManager::DeviceErrorNoError:
         returns.insert("success", true);
         returns.insert("errorMessage", "");
+        break;
     case DeviceManager::DeviceErrorDeviceNotFound:
         returns.insert("success", false);
         returns.insert("errorMessage", "No such device.");
+        break;
     default:
         returns.insert("success", false);
         returns.insert("errorMessage", "Unknown error.");
+        break;
     }
     return createReply(returns);
 }

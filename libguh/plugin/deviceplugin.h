@@ -62,8 +62,10 @@ public:
     virtual void setConfiguration(const QVariantMap &configuration);
 
 public slots:
-    virtual DeviceManager::DeviceError executeAction(Device *device, const Action &action) {Q_UNUSED(device) Q_UNUSED(action)}
-
+    virtual DeviceManager::DeviceError executeAction(Device *device, const Action &action) {
+        Q_UNUSED(device) Q_UNUSED(action)
+        return DeviceManager::DeviceErrorNoError;
+    }
 
 signals:
     void emitEvent(const Event &event);

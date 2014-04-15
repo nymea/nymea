@@ -221,11 +221,6 @@ void JsonRPCServer::sendNotification(const QVariantMap &params)
     m_tcpServer->sendData(m_clients.keys(true), jsonDoc.toJson());
 }
 
-void JsonRPCServer::sendAsyncReply(int id, const QVariantMap &params)
-{
-    qDebug() << "should send async reply";
-}
-
 void JsonRPCServer::asyncReplyFinished()
 {
     JsonReply *reply = qobject_cast<JsonReply*>(sender());
@@ -238,7 +233,6 @@ void JsonRPCServer::asyncReplyFinished()
 void JsonRPCServer::registerHandler(JsonHandler *handler)
 {
     m_handlers.insert(handler->name(), handler);
-    connect(handler, &JsonHandler::asyncReply, this, &JsonRPCServer::sendAsyncReply);
     for (int i = 0; i < handler->metaObject()->methodCount(); ++i) {
         QMetaMethod method = handler->metaObject()->method(i);
         if (method.methodType() == QMetaMethod::Signal && QString(method.name()).contains(QRegExp("^[A-Z]"))) {

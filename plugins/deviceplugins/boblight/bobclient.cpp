@@ -78,7 +78,10 @@ void BobClient::sync()
 
     for(int i = 0; i < lightsCount(); ++i) {
         //load the color into int array
-        int rgb[3] = {m_colors[i].red() * m_colors[i].alphaF(), m_colors[i].green() * m_colors[i].alphaF(), m_colors[i].blue() * m_colors[i].alphaF()};
+        int rgb[3];
+        rgb[0] = m_colors[i].red() * m_colors[i].alphaF();
+        rgb[1] = m_colors[i].green() * m_colors[i].alphaF();
+        rgb[2] = m_colors[i].blue() * m_colors[i].alphaF();
 //        qDebug() << "set color" << rgb[0] << rgb[1] << rgb[2];
 
         //set all lights to the color we want and send it

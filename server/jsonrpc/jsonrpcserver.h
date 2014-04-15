@@ -60,7 +60,6 @@ private slots:
     void processData(const QUuid &clientId, const QByteArray &jsonData);
 
     void sendNotification(const QVariantMap &params);
-    void sendAsyncReply(int id, const QVariantMap &params);
 
     void asyncReplyFinished();
 

@@ -179,6 +179,7 @@ DeviceManager::DeviceError DevicePluginMock::executeAction(Device *device, const
 {
     qDebug() << "Should execute action" << action.actionTypeId();
     m_daemons.value(device)->actionExecuted(action.actionTypeId());
+    return DeviceManager::DeviceErrorNoError;
 }
 
 void DevicePluginMock::setState(const StateTypeId &stateTypeId, const QVariant &value)

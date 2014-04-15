@@ -448,7 +448,9 @@ void DeviceManager::createNewAutoDevices()
             }
         } while (success);
     }
-    storeConfiguredDevices();
+    if (haveNewDevice) {
+        storeConfiguredDevices();
+    }
 }
 
 void DeviceManager::slotDevicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors)

@@ -61,6 +61,8 @@ QVariantMap JsonHandler::introspect(QMetaMethod::MethodType type)
                 data.insert(name() + "." + method.name(), methodData);
             }
             break;
+        default:
+            ;;// Nothing to do for slots
         }
         }
     }
@@ -132,10 +134,10 @@ JsonReply* JsonHandler::createAsyncReply(const QString &method) const
 
 
 JsonReply::JsonReply(Type type, JsonHandler *handler, const QString &method, const QVariantMap &data):
-    m_handler(handler),
-    m_method(method),
     m_type(type),
-    m_data(data)
+    m_data(data),
+    m_handler(handler),
+    m_method(method)
 {
     connect(&m_timeout, &QTimer::timeout, this, &JsonReply::timeout);
 }

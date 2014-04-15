@@ -246,7 +246,9 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass)
 
 QVariantMap JsonTypes::packPlugin(DevicePlugin *plugin)
 {
-
+    Q_UNUSED(plugin)
+    qWarning() << "packPlugin not implemented yet!";
+    return QVariantMap();
 }
 
 QVariantMap JsonTypes::packDevice(Device *device)

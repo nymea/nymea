@@ -164,6 +164,7 @@ QString DeviceHandler::name() const
 
 JsonReply* DeviceHandler::GetSupportedVendors(const QVariantMap &params) const
 {
+    Q_UNUSED(params)
     QVariantMap returns;
     QVariantList supportedVendors;
     foreach (const Vendor &vendor, GuhCore::instance()->deviceManager()->supportedVendors()) {
@@ -313,14 +314,13 @@ JsonReply* DeviceHandler::RemoveConfiguredDevice(const QVariantMap &params)
     case DeviceManager::DeviceErrorNoError:
         returns.insert("success", true);
         returns.insert("errorMessage", "");
-        return createReply(returns);
     case DeviceManager::DeviceErrorDeviceNotFound:
         returns.insert("success", false);
         returns.insert("errorMessage", "No such device.");
-        return createReply(returns);
+    default:
+        returns.insert("success", false);
+        returns.insert("errorMessage", "Unknown error.");
     }
-    returns.insert("success", false);
-    returns.insert("errorMessage", "Unknown error.");
     return createReply(returns);
 }
 

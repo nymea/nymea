@@ -319,6 +319,15 @@ DeviceManager::HardwareResources DevicePluginOpenweathermap::requiredHardware() 
     return DeviceManager::HardwareResourceTimer;
 }
 
+DeviceManager::DeviceError DevicePluginOpenweathermap::executeAction(Device *device, const Action &action)
+{
+    qDebug() << "execute action " << updateWeatherActionTypeId.toString();
+    if(action.actionTypeId() == updateWeatherActionTypeId){
+        m_openweaher->update(device->params().value("id").toString());
+    }
+    return DeviceManager::DeviceErrorNoError;
+}
+
 QString DevicePluginOpenweathermap::pluginName() const
 {
     return "Openweathermap";
@@ -362,12 +371,8 @@ void DevicePluginOpenweathermap::weatherDataReady(const QByteArray &data)
     }
 
     QVariantMap dataMap = jsonDoc.toVariant().toMap();
-    qDebug() << "##############################";
 
     foreach (Device *device, deviceManager()->findConfiguredDevices(openweathermapDeviceClassId)) {
-        qDebug() << device->params().value("id").toString();
-        qDebug() << dataMap.value("id").toString();
-        qDebug() << "##############################";
         if(device->params().value("id").toString() == dataMap.value("id").toString()){
 
             if(dataMap.contains("clouds")){

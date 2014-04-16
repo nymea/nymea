@@ -73,7 +73,6 @@ void OpenWeatherMap::processLocationResponse(QByteArray data)
 
 void OpenWeatherMap::processSearchResponse(QByteArray data)
 {
-    emit weatherDataReady(data);
 
     // TODO: return here...remove the rest from here...
 
@@ -140,88 +139,6 @@ void OpenWeatherMap::processSearchLocationResponse(QByteArray data)
     }
 }
 
-void OpenWeatherMap::processWeatherResponse(QByteArray data)
-{
-    QJsonParseError error;
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
-
-    if(error.error != QJsonParseError::NoError) {
-        qWarning() << "failed to parse data" << data << ":" << error.errorString();
-    }
-    //qDebug() << jsonDoc.toJson();
-
-    QVariantMap dataMap = jsonDoc.toVariant().toMap();
-    if(dataMap.contains("clouds")){
-        int cloudiness = dataMap.value("clouds").toMap().value("all").toInt();
-        m_cloudiness = cloudiness;
-    }
-    if(dataMap.contains("dt")){
-        uint lastUpdate = dataMap.value("dt").toUInt();
-        m_lastUpdate = lastUpdate;
-    }
-    if(dataMap.contains("name")){
-        QString description = dataMap.value("name").toString();
-        m_cityName = description;
-    }
-
-    if(dataMap.contains("sys")){
-        QString description = dataMap.value("sys").toMap().value("country").toString();
-        m_country = description;
-    }
-
-    if(dataMap.contains("main")){
-        double temperatur = dataMap.value("main").toMap().value("temp").toDouble();
-        m_temperatur = temperatur;
-
-        double temperaturMax = dataMap.value("main").toMap().value("temp_max").toDouble();
-        m_temperaturMax = temperaturMax;
-    }
-    double temperaturMin = dataMap.value("main").toMap().value("temp_min").toDouble();
-    m_temperaturMin = temperaturMin;
-
-    double pressure = dataMap.value("main").toMap().value("pressure").toDouble();
-    m_pressure = pressure;
-
-    int humidity = dataMap.value("main").toMap().value("humidity").toInt();
-    m_humidity = humidity;
-
-    if(dataMap.contains("sys")){
-        uint sunrise = dataMap.value("sys").toMap().value("sunrise").toUInt();
-        m_sunrise = sunrise;
-
-        uint sunset = dataMap.value("sys").toMap().value("sunset").toUInt();
-        m_sunset = sunset;
-    }
-
-    if(dataMap.contains("weather")){
-        QString description = dataMap.value("weather").toMap().value("description").toString();
-        m_weatherDescription = description;
-    }
-
-    if(dataMap.contains("wind")){
-        int windDirection = dataMap.value("wind").toMap().value("deg").toInt();
-        m_windDirection = windDirection;
-
-        double windSpeed = dataMap.value("wind").toMap().value("speed").toDouble();
-        m_windSpeed = windSpeed;
-    }
-
-    qDebug() << "#########################################################";
-    qDebug() << m_cityName << m_country << m_cityId;
-    qDebug() << "#########################################################";
-    qDebug() << "temp" << m_temperatur;
-    qDebug() << "temp min" << m_temperaturMin;
-    qDebug() << "temp max" << m_temperaturMax;
-    qDebug() << "cloudiness" << m_cloudiness;
-    qDebug() << "humidity" << m_humidity;
-    qDebug() << "pressure" << m_pressure;
-    qDebug() << "wind dir" << m_windDirection;
-    qDebug() << "wind speed" << m_windSpeed;
-    qDebug() << "sunrise" << QDateTime::fromTime_t(m_sunrise);
-    qDebug() << "sunset" << QDateTime::fromTime_t(m_sunset);
-    qDebug() << "last update" << QDateTime::fromTime_t(m_lastUpdate);
-}
-
 void OpenWeatherMap::replyFinished(QNetworkReply *reply)
 {
     int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
@@ -250,7 +167,7 @@ void OpenWeatherMap::replyFinished(QNetworkReply *reply)
 
     if(reply == m_weatherReply && status == 200){
         data = reply->readAll();
-        processWeatherResponse(data);
+        emit weatherDataReady(data);
         m_weatherReply->deleteLater();
         return;
     }

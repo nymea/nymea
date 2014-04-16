@@ -47,24 +47,9 @@ private:
     QNetworkReply *m_weatherReply;
     QNetworkReply *m_searchReply;
 
-    QString m_country;
-    QString m_weatherDescription;
-    uint m_lastUpdate;
-    uint m_sunrise;
-    uint m_sunset;
-    double m_temperatur;
-    double m_temperaturMin;
-    double m_temperaturMax;
-    double m_pressure;
-    double m_windSpeed;
-    int m_windDirection;
-    int m_humidity;
-    int m_cloudiness;
-
     void processLocationResponse(QByteArray data);
     void processSearchResponse(QByteArray data);
     void processSearchLocationResponse(QByteArray data);
-    void processWeatherResponse(QByteArray data);
 
 signals:
     void searchResultReady(const QList<QVariantMap> &cityList);

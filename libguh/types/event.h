@@ -23,6 +23,7 @@
 
 #include <QString>
 #include <QVariantList>
+#include <QDebug>
 
 class Event
 {
@@ -42,5 +43,7 @@ private:
     DeviceId m_deviceId;
     QVariantMap m_params;
 };
+QDebug operator<<(QDebug dbg, const Event &event);
+QDebug operator<<(QDebug dbg, const QList<Event> &events);
 
 #endif // EVENT_H

@@ -22,6 +22,7 @@
 #include "typeutils.h"
 
 #include <QVariant>
+#include <QDebug>
 
 class State
 {
@@ -31,6 +32,7 @@ public:
     StateTypeId stateTypeId() const;
     DeviceId deviceId() const;
 
+    QStringList stateNames() const;
     QVariant value() const;
     void setValue(const QVariant &value);
 
@@ -39,5 +41,9 @@ private:
     DeviceId m_deviceId;
     QVariant m_value;
 };
+
+QDebug operator<<(QDebug dbg, const State &event);
+QDebug operator<<(QDebug dbg, const QList<State> &events);
+
 
 #endif // STATE_H

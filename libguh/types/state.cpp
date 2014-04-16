@@ -62,3 +62,19 @@ void State::setValue(const QVariant &value)
 {
     m_value = value;
 }
+
+QDebug operator<<(QDebug dbg, const State &state)
+{
+    dbg.nospace() << "State(StateTypeId: " << state.stateTypeId().toString() << ", DeviceId:" << state.deviceId() << ", value:" << state.value() << ")";
+    return dbg.space();
+}
+
+QDebug operator<<(QDebug dbg, const QList<State> &states)
+{
+    dbg.nospace() << "StateList (count:" << states.count() << ")";
+    for (int i = 0; i < states.count(); i++ ) {
+        dbg.nospace() << "     " << i << ": " << states.at(i);
+    }
+
+    return dbg.space();
+}

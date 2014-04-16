@@ -119,11 +119,13 @@ RuleEngine::RuleEngine(QObject *parent) :
     list of all \l{Action}{Actions} that should be executed. */
 QList<Action> RuleEngine::evaluateEvent(const Event &event)
 {
+    qDebug() << "got event:" << event;
     QList<Action> actions;
     for (int i = 0; i < m_rules.count(); ++i) {
+        qDebug() << "evaluating rule" << i << m_rules.at(i).events();
         if (m_rules.at(i).events().contains(event)) {
             bool statesMatching = true;
-            qDebug() << "checking states";
+            qDebug() << "checking states:" << m_rules.at(i).states();
             foreach (const State &state, m_rules.at(i).states()) {
                 Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(state.deviceId());
                 if (!device) {
@@ -131,6 +133,7 @@ QList<Action> RuleEngine::evaluateEvent(const Event &event)
                     break;
                 }
                 if (state.value() != device->stateValue(state.stateTypeId())) {
+                    qDebug() << "State value not matching:" << state.value() << device->stateValue(state.stateTypeId());
                     statesMatching = false;
                     break;
                 }

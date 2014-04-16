@@ -194,6 +194,42 @@ DeviceManager *DevicePlugin::deviceManager() const
 }
 
 /*!
+ Returns a list of all configured devices belonging to this plugin.
+ */
+QList<Device *> DevicePlugin::myDevices() const
+{
+    QList<DeviceClassId> myDeviceClassIds;
+    foreach (const DeviceClass &deviceClass, supportedDevices()) {
+        myDeviceClassIds.append(deviceClass.id());
+    }
+
+    QList<Device*> ret;
+    foreach (Device *device, deviceManager()->configuredDevices()) {
+        if (myDeviceClassIds.contains(device->deviceClassId())) {
+            ret.append(device);
+        }
+    }
+    return ret;
+}
+
+/*!
+ Find a certain device from myDevices() by its params. All parameters must
+ match or the device will not be found. Be prepared for nullptrs.
+ */
+Device *DevicePlugin::findDeviceByParams(const QVariantMap &params) const
+{
+    foreach (Device *device, myDevices()) {
+        bool matching = true;
+        foreach (const QString &paramName, device->params().keys()) {
+            if (device->params().value(paramName) == params.value(paramName)) {
+                return device;
+            }
+        }
+    }
+    return nullptr;
+}
+
+/*!
  Transmits data contained in \a rawData on the Radio433 or Radio868
  devices, depending on the hardware requested by this plugin.
  \sa DevicePlugin::requiredHardware()

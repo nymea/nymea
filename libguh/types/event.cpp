@@ -75,3 +75,20 @@ bool Event::operator ==(const Event &other) const
             && m_deviceId == other.deviceId()
             && m_params == other.params();
 }
+
+QDebug operator<<(QDebug dbg, const Event &event)
+{
+    dbg.nospace() << "Event(EventTypeId: " << event.eventTypeId().toString() << ", DeviceId" << event.deviceId() << ")";
+
+    return dbg.space();
+}
+
+QDebug operator<<(QDebug dbg, const QList<Event> &events)
+{
+    dbg.nospace() << "EventList (count:" << events.count() << ")";
+    for (int i = 0; i < events.count(); i++ ) {
+        dbg.nospace() << "     " << i << ": " << events.at(i);
+    }
+
+    return dbg.space();
+}

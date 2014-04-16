@@ -39,7 +39,7 @@ public:
     QList<DeviceClass> supportedDevices() const override;
 
     DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const QVariantMap &params) const override;
-
+    bool deviceCreated(Device *device) override;
     DeviceManager::HardwareResources requiredHardware() const override;
 
     QString pluginName() const override;
@@ -49,7 +49,7 @@ public:
 
 private slots:
     void searchResultsReady(const QList<QVariantMap> &cityList);
-
+    void weatherDataReady(const QByteArray &data);
 public slots:
 
 

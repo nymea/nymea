@@ -32,6 +32,9 @@ class OpenWeatherMap : public QObject
     Q_OBJECT
 public:
     explicit OpenWeatherMap(QObject *parent = 0);
+    void update(QString id);
+    void searchAutodetect();
+    void search(QString searchString);
 
 private:
     QNetworkAccessManager *m_manager;
@@ -58,10 +61,6 @@ private:
     int m_humidity;
     int m_cloudiness;
 
-    void updateLocationData();
-    void updateSearchData();
-    void updateWeatherData();
-
     void processLocationResponse(QByteArray data);
     void processSearchResponse(QByteArray data);
     void processSearchLocationResponse(QByteArray data);
@@ -69,11 +68,10 @@ private:
 
 signals:
     void searchResultReady(const QList<QVariantMap> &cityList);
+    void weatherDataReady(const QByteArray &data);
 
 public slots:
-    void update();
-    void searchAutodetect();
-    void search(const QString &searchString);
+
 
 private slots:
     void replyFinished(QNetworkReply *reply);

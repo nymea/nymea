@@ -18,6 +18,8 @@
 
 
 #include "openweathermap.h"
+#include <QDebug>
+#include <QDateTime>
 
 OpenWeatherMap::OpenWeatherMap(QObject *parent) :
     QObject(parent)

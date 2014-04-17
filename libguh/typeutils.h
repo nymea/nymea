@@ -11,6 +11,9 @@ public: \
     type##Id(): QUuid() {} \
     static type##Id create##type##Id() { return type##Id(QUuid::createUuid().toString()); } \
     static type##Id fromUuid(const QUuid &uuid) { return type##Id(uuid.toString()); } \
+    bool operator==(const type##Id &other) const { \
+        return toString() == other.toString(); \
+    } \
 }; \
 Q_DECLARE_METATYPE(type##Id);
 
@@ -24,5 +27,15 @@ DECLARE_TYPE_ID(EventType)
 DECLARE_TYPE_ID(StateType)
 DECLARE_TYPE_ID(ActionType)
 DECLARE_TYPE_ID(Plugin)
+
+
+enum ParamOperand {
+    ParamOperandEquals,
+    ParamOperandNotEquals,
+    ParamOperandLess,
+    ParamOperandGreater,
+    ParamOperandLessThan,
+    ParamOperandGreaterThan
+};
 
 #endif // TYPEUTILS_H

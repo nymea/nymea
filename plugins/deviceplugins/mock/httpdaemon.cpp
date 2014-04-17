@@ -35,9 +35,9 @@ void HttpDaemon::incomingConnection(qintptr socket)
 
 }
 
-void HttpDaemon::actionExecuted(const QUuid &actionTypeId)
+void HttpDaemon::actionExecuted(const ActionTypeId &actionTypeId)
 {
-    m_actionList.append(qMakePair<QUuid, QDateTime>(actionTypeId, QDateTime::currentDateTime()));
+    m_actionList.append(qMakePair<ActionTypeId, QDateTime>(actionTypeId, QDateTime::currentDateTime()));
 }
 
 void HttpDaemon::readClient()
@@ -160,7 +160,7 @@ QString HttpDaemon::generateWebPage()
     body.append("<table border=2px>");
     body.append("<tr><td>Name</td><td>Type ID</td><td>Timestamp</td></tr>");
     for (int i = 0; i < m_actionList.count(); ++i) {
-        QUuid actionTypeId = m_actionList.at(i).first;
+        ActionTypeId actionTypeId = ActionTypeId(m_actionList.at(i).first);
         QDateTime timestamp = m_actionList.at(i).second;
         QString actionName;
         foreach (const ActionType &at, deviceClass.actions()) {

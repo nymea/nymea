@@ -332,7 +332,7 @@ JsonReply* DeviceHandler::GetEventTypes(const QVariantMap &params) const
     QVariantMap returns;
 
     QVariantList eventList;
-    DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(params.value("deviceClassId").toUuid());
+    DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(DeviceClassId(params.value("deviceClassId").toString()));
     foreach (const EventType &eventType, deviceClass.events()) {
         eventList.append(JsonTypes::packEventType(eventType));
     }
@@ -345,7 +345,7 @@ JsonReply* DeviceHandler::GetActionTypes(const QVariantMap &params) const
     QVariantMap returns;
 
     QVariantList actionList;
-    DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(params.value("deviceClassId").toUuid());
+    DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(DeviceClassId(params.value("deviceClassId").toString()));
     foreach (const ActionType &actionType, deviceClass.actions()) {
         actionList.append(JsonTypes::packActionType(actionType));
     }
@@ -358,7 +358,7 @@ JsonReply* DeviceHandler::GetStateTypes(const QVariantMap &params) const
     QVariantMap returns;
 
     QVariantList stateList;
-    DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(params.value("deviceClassId").toUuid());
+    DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(DeviceClassId(params.value("deviceClassId").toString()));
     foreach (const StateType &stateType, deviceClass.states()) {
         stateList.append(JsonTypes::packStateType(stateType));
     }
@@ -376,12 +376,12 @@ JsonReply* DeviceHandler::GetStateValue(const QVariantMap &params) const
         returns.insert("errorMessage", "No such device");
         return createReply(returns);
     }
-    if (!device->hasState(params.value("stateTypeId").toUuid())) {
+    if (!device->hasState(StateTypeId(params.value("stateTypeId").toString()))) {
         returns.insert("success", false);
         returns.insert("errorMessage", QString("Device %1 %2 doesn't have such a state.").arg(device->name()).arg(device->id().toString()));
         return createReply(returns);
     }
-    QVariant stateValue = device->stateValue(params.value("stateTypeId").toUuid());
+    QVariant stateValue = device->stateValue(StateTypeId(params.value("stateTypeId").toString()));
 
     returns.insert("success", true);
     returns.insert("errorMessage", "");

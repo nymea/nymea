@@ -114,12 +114,10 @@ void DevicePluginLircd::buttonPressed(const QString &remoteName, const QString &
 
     qDebug() << "found remote" << remoteName << supportedDevices().first().events().count();
     foreach (const EventType &eventType, supportedDevices().first().events()) {
-        qDebug() << "checking eventType" << eventType.name() << "with" << buttonName;
         if (eventType.name() == buttonName) {
             QVariantMap param;
             param.insert("repeat", repeat);
             Event event(eventType.id(), remote->id(), param);
-            qDebug() << "emitting event";
             emitEvent(event);
         }
     }

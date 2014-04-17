@@ -311,7 +311,7 @@ QList<Device *> DeviceManager::findConfiguredDevices(const DeviceClassId &device
 
 /*! For conveninece, this returns the \{DeviceClass} with the id given by \a deviceClassId.
     Note: The returned DeviceClass may be invalid.*/
-DeviceClass DeviceManager::findDeviceClass(const QUuid &deviceClassId) const
+DeviceClass DeviceManager::findDeviceClass(const DeviceClassId &deviceClassId) const
 {
     foreach (const DeviceClass &deviceClass, m_supportedDevices) {
         if (deviceClass.id() == deviceClassId) {

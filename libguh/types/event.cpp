@@ -71,6 +71,13 @@ void Event::setParams(const QVariantMap &params)
     Events are equal (returns true) if eventTypeId, deviceId and params match. */
 bool Event::operator ==(const Event &other) const
 {
+
+    bool result =m_eventTypeId == other.eventTypeId()
+            && m_deviceId == other.deviceId()
+            && m_params == other.params();
+
+    qDebug() << "comparing event" << *this << "with" << other << "result is" << result << "params" << m_params << "other" << other.params();
+
     return m_eventTypeId == other.eventTypeId()
             && m_deviceId == other.deviceId()
             && m_params == other.params();

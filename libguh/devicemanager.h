@@ -78,7 +78,7 @@ public:
 
     Device* findConfiguredDevice(const DeviceId &id) const;
     QList<Device*> findConfiguredDevices(const DeviceClassId &deviceClassId) const;
-    DeviceClass findDeviceClass(const QUuid &deviceClassId) const;
+    DeviceClass findDeviceClass(const DeviceClassId &deviceClassId) const;
 
 signals:
     void loaded();

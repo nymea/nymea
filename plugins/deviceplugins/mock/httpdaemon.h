@@ -18,7 +18,7 @@ public:
 
     void incomingConnection(qintptr socket) override;
 
-    void actionExecuted(const QUuid&actionTypeId);
+    void actionExecuted(const ActionTypeId &actionTypeId);
 
 signals:
     void setState(const StateTypeId &stateTypeId, const QVariant &value);
@@ -38,7 +38,7 @@ private:
     DevicePlugin *m_plugin;
     Device *m_device;
 
-    QList<QPair<QUuid, QDateTime> > m_actionList;
+    QList<QPair<ActionTypeId, QDateTime> > m_actionList;
 };
 
 #endif // HTTPDAEMON_H

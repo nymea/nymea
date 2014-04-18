@@ -60,9 +60,9 @@ void JsonTypes::init()
     // ParamType
     s_paramType.insert("name", "string");
     s_paramType.insert("type", basicTypesRef());
-    s_paramType.insert("o:defaultValue", "value");
-    s_paramType.insert("o:minValue", "value");
-    s_paramType.insert("o:maxValue", "value");
+    s_paramType.insert("o:defaultValue", "variant");
+    s_paramType.insert("o:minValue", "variant");
+    s_paramType.insert("o:maxValue", "variant");
 
     // Param
     s_param.insert("name", "string");

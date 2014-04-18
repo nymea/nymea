@@ -192,20 +192,14 @@ QList<DeviceClass> DevicePluginOpenweathermap::supportedDevices() const
     deviceClassOpenweathermap.setCreateMethod(DeviceClass::CreateMethodDiscovery);
 
     // Params
-    QVariantList params;
-    QVariantMap locationParam;
-    locationParam.insert("name", "location");
-    locationParam.insert("type", "string");
+    QList<ParamType> params;
+    ParamType locationParam("location", QVariant::String);
     params.append(locationParam);
 
-    QVariantMap countryParam;
-    countryParam.insert("name", "country");
-    countryParam.insert("type", "string");
+    ParamType countryParam("country", QVariant::String);
     params.append(countryParam);
 
-    QVariantMap idParam;
-    idParam.insert("name", "id");
-    idParam.insert("type", "string");
+    ParamType idParam("id", QVariant::String);
     params.append(idParam);
 
     deviceClassOpenweathermap.setParams(params);
@@ -310,7 +304,7 @@ DeviceManager::DeviceError DevicePluginOpenweathermap::discoverDevices(const Dev
 
 bool DevicePluginOpenweathermap::deviceCreated(Device *device)
 {
-    m_openweaher->update(device->params().value("id").toString());
+    m_openweaher->update(device->paramValue("id").toString());
     return true;
 }
 
@@ -323,7 +317,7 @@ DeviceManager::DeviceError DevicePluginOpenweathermap::executeAction(Device *dev
 {
     qDebug() << "execute action " << updateWeatherActionTypeId.toString();
     if(action.actionTypeId() == updateWeatherActionTypeId){
-        m_openweaher->update(device->params().value("id").toString());
+        m_openweaher->update(device->paramValue("id").toString());
     }
     return DeviceManager::DeviceErrorNoError;
 }
@@ -341,7 +335,7 @@ PluginId DevicePluginOpenweathermap::pluginId() const
 void DevicePluginOpenweathermap::guhTimer()
 {
     foreach (Device *device, deviceManager()->findConfiguredDevices(openweathermapDeviceClassId)) {
-        m_openweaher->update(device->params().value("id").toString());
+        m_openweaher->update(device->paramValue("id").toString());
     }
 }
 
@@ -350,10 +344,13 @@ void DevicePluginOpenweathermap::searchResultsReady(const QList<QVariantMap> &ci
     QList<DeviceDescriptor> retList;
     foreach (QVariantMap elemant, cityList) {
         DeviceDescriptor descriptor(openweathermapDeviceClassId, elemant.value("name").toString(),elemant.value("country").toString());
-        QVariantMap params;
-        params.insert("location", elemant.value("name"));
-        params.insert("country", elemant.value("country"));
-        params.insert("id", elemant.value("id"));
+        QList<Param> params;
+        Param locationParam("location", elemant.value("name"));
+        params.append(locationParam);
+        Param countryParam("country", elemant.value("country"));
+        params.append(countryParam);
+        Param idParam("id", elemant.value("id"));
+        params.append(idParam);
         descriptor.setParams(params);
         retList.append(descriptor);
     }
@@ -373,7 +370,7 @@ void DevicePluginOpenweathermap::weatherDataReady(const QByteArray &data)
     QVariantMap dataMap = jsonDoc.toVariant().toMap();
 
     foreach (Device *device, deviceManager()->findConfiguredDevices(openweathermapDeviceClassId)) {
-        if(device->params().value("id").toString() == dataMap.value("id").toString()){
+        if(device->paramValue("id").toString() == dataMap.value("id").toString()){
 
             if(dataMap.contains("clouds")){
                 int cloudiness = dataMap.value("clouds").toMap().value("all").toInt();

@@ -24,6 +24,7 @@
 #include "types/eventtype.h"
 #include "types/actiontype.h"
 #include "types/statetype.h"
+#include "types/paramtype.h"
 
 #include <QList>
 #include <QUuid>
@@ -62,8 +63,8 @@ public:
     QList<ActionType> actions() const;
     void setActions(const QList<ActionType> &actionTypes);
 
-    QVariantList params() const;
-    void setParams(const QVariantList &params);
+    QList<ParamType> params() const;
+    void setParams(const QList<ParamType> &params);
 
     CreateMethod createMethod() const;
     void setCreateMethod(CreateMethod createMethod);
@@ -80,7 +81,7 @@ private:
     QList<StateType> m_states;
     QList<EventType> m_events;
     QList<ActionType> m_actions;
-    QVariantList m_params;
+    QList<ParamType> m_params;
     CreateMethod m_createMethod;
     SetupMethod m_setupMethod;
 };

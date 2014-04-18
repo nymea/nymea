@@ -85,8 +85,10 @@ bool DevicePluginBoblight::configureAutoDevice(QList<Device *> loadedDevices, De
     if (loadedDevices.count() < m_bobClient->lightsCount()) {
         int index = loadedDevices.count();
         device->setName("Boblight Channel " + QString::number(index));
-        QVariantMap params;
-        params.insert("channel", index);
+        QList<Param> params;
+        Param param("channel");
+        param.setValue(index);
+        params.append(param);
         device->setParams(params);
         device->setStateValue(colorStateTypeId, m_bobClient->currentColor(index));
         return true;
@@ -120,12 +122,12 @@ DeviceManager::DeviceError DevicePluginBoblight::executeAction(Device *device, c
     if (!m_bobClient->connected()) {
         return DeviceManager::DeviceErrorSetupFailed;
     }
-    QColor newColor = action.params().first().value<QColor>();
+    QColor newColor = action.param("color").value().value<QColor>();
     if (!newColor.isValid()) {
         return DeviceManager::DeviceErrorActionParameterError;
     }
     qDebug() << "executing boblight action" << newColor;
-    m_bobClient->setColor(device->params().value("channel").toInt(), newColor);
+    m_bobClient->setColor(device->paramValue("channel").toInt(), newColor);
     m_bobClient->sync();
 
     device->setStateValue(colorStateTypeId, newColor);

@@ -20,6 +20,7 @@
 #define ACTION_H
 
 #include "typeutils.h"
+#include "param.h"
 
 #include <QVariantList>
 
@@ -33,13 +34,14 @@ public:
     ActionTypeId actionTypeId() const;
     DeviceId deviceId() const;
 
-    QVariantMap params() const;
-    void setParams(const QVariantMap &params);
+    QList<Param> params() const;
+    void setParams(const QList<Param> &params);
+    Param param(const QString &paramName) const;
 
 private:
     ActionTypeId m_actionTypeId;
     DeviceId m_deviceId;
-    QVariantMap m_params;
+    QList<Param> m_params;
 };
 
 #endif // ACTION_H

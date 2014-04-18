@@ -189,11 +189,9 @@ QList<DeviceClass> DevicePluginIntertechno::supportedDevices() const
     DeviceClass deviceClassIntertechnoRemote(pluginId(), intertechnoVendorId, intertechnoRemote);
     deviceClassIntertechnoRemote.setName("Intertechno Remote");
     
-    QVariantList remoteParams;
-    QVariantMap familyParam;
+    QList<ParamType> remoteParams;
     // family code = A-P
-    familyParam.insert("name", "familyCode");
-    familyParam.insert("type", "string");
+    ParamType familyParam("familyCode", QVariant::String);
     remoteParams.append(familyParam);
 
     deviceClassIntertechnoRemote.setParams(remoteParams);
@@ -309,11 +307,9 @@ QList<DeviceClass> DevicePluginIntertechno::supportedDevices() const
     DeviceClass deviceClassIntertechnoSwitch(pluginId(), intertechnoVendorId, intertechnoSwitch);
     deviceClassIntertechnoSwitch.setName("Intertechno Switch");
 
-    QVariantList switchDeviceParams;
-    QVariantMap buttonParam;
+    QList<ParamType> switchDeviceParams;
     // button code = 1-16
-    buttonParam.insert("name", "buttonCode");
-    buttonParam.insert("type", "int");
+    ParamType buttonParam("buttonCode", QVariant::Int);
 
     switchDeviceParams.append(familyParam);
     switchDeviceParams.append(buttonParam);
@@ -363,7 +359,7 @@ DeviceManager::DeviceError DevicePluginIntertechno::executeAction(Device *device
     QList<int> rawData;
     QByteArray binCode;
 
-    QString familyCode = device->params().value("familyCode").toString();
+    QString familyCode = device->paramValue("familyCode").toString();
 
     // =======================================
     // generate bin from family code
@@ -403,7 +399,7 @@ DeviceManager::DeviceError DevicePluginIntertechno::executeAction(Device *device
         return DeviceManager::DeviceErrorDeviceParameterError;
     }
 
-    QString buttonCode = device->params().value("buttonCode").toString();
+    QString buttonCode = device->paramValue("buttonCode").toString();
 
     // =======================================
     // generate bin from button code
@@ -449,7 +445,7 @@ DeviceManager::DeviceError DevicePluginIntertechno::executeAction(Device *device
 
     // =======================================
     // add power nibble
-    if(action.params().value("power").toBool()){
+    if(action.param("power").value().toBool()){
         binCode.append("0101");
     }else{
         binCode.append("0100");
@@ -476,7 +472,7 @@ DeviceManager::DeviceError DevicePluginIntertechno::executeAction(Device *device
 
     // =======================================
     // send data to driver
-    qDebug() << "transmit" << pluginName() << familyCode << buttonCode << action.params().value("power").toBool();
+    qDebug() << "transmit" << pluginName() << familyCode << buttonCode << action.param("power").value().toBool();
     transmitData(rawData);
 
     return DeviceManager::DeviceErrorNoError;
@@ -687,7 +683,7 @@ void DevicePluginIntertechno::radioData(QList<int> rawData)
     // ===================================================
     Device *device = 0;
     foreach (Device *dev, deviceList) {
-        if (dev->params().contains("familyCode") && dev->params().value("familyCode").toString() == familyCode) {
+        if (dev->paramValue("familyCode").toString() == familyCode) {
             // Yippie! We found the device.
             device = dev;
             break;
@@ -698,8 +694,9 @@ void DevicePluginIntertechno::radioData(QList<int> rawData)
         return;
     }
 
-    QVariantMap params;
-    params.insert("power", power);
+    QList<Param> params;
+    Param powerParam("power", power);
+    params.append(powerParam);
 
     // FIXME: find a better way to get to the remote DeviceClass
     DeviceClass deviceClass = supportedDevices().first();

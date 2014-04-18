@@ -58,12 +58,12 @@ void DeviceDescriptor::setDescription(const QString &description)
     m_description = description;
 }
 
-QVariantMap DeviceDescriptor::params() const
+QList<Param> DeviceDescriptor::params() const
 {
     return m_params;
 }
 
-void DeviceDescriptor::setParams(const QVariantMap &params)
+void DeviceDescriptor::setParams(const QList<Param> &params)
 {
     m_params = params;
 }

@@ -82,7 +82,7 @@ JsonReply* RulesHandler::AddRule(const QVariantMap &params)
 
     EventTypeId eventTypeId(eventMap.value("eventTypeId").toString());
     DeviceId eventDeviceId(eventMap.value("deviceId").toString());
-    QVariantMap eventParams = eventMap.value("params").toMap();
+    QList<Param> eventParams = JsonTypes::unpackParams(eventMap.value("params").toList());
     Event event(eventTypeId, eventDeviceId, eventParams);
 
     QList<Action> actions;
@@ -91,7 +91,7 @@ JsonReply* RulesHandler::AddRule(const QVariantMap &params)
     foreach (const QVariant &actionVariant, actionList) {
         QVariantMap actionMap = actionVariant.toMap();
         Action action(DeviceId(actionMap.value("deviceId").toString()), ActionTypeId(actionMap.value("actionTypeId").toString()));
-        action.setParams(actionMap.value("params").toMap());
+        action.setParams(JsonTypes::unpackParams(actionMap.value("params").toList()));
         actions.append(action);
     }
 

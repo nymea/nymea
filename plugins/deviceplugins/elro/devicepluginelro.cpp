@@ -91,22 +91,16 @@ QList<DeviceClass> DevicePluginElro::supportedDevices() const
     DeviceClass deviceClassElroRemote(pluginId(), elroVendorId, elroRemoteId);
     deviceClassElroRemote.setName("Elro Remote");
     
-    QVariantList deviceParamsRemote;
-    QVariantMap channelParam;
-    channelParam.insert("name", "channel1");
-    channelParam.insert("type", "bool");
+    QList<ParamType> deviceParamsRemote;
+    ParamType channelParam = ParamType("channel1", QVariant::Bool);
     deviceParamsRemote.append(channelParam);
-    channelParam.insert("name", "channel2");
-    channelParam.insert("type", "bool");
+    channelParam = ParamType("channel2", QVariant::Bool);
     deviceParamsRemote.append(channelParam);
-    channelParam.insert("name", "channel3");
-    channelParam.insert("type", "bool");
+    channelParam = ParamType("channel3", QVariant::Bool);
     deviceParamsRemote.append(channelParam);
-    channelParam.insert("name", "channel4");
-    channelParam.insert("type", "bool");
+    channelParam = ParamType("channel4", QVariant::Bool);
     deviceParamsRemote.append(channelParam);
-    channelParam.insert("name", "channel5");
-    channelParam.insert("type", "bool");
+    channelParam = ParamType("channel5", QVariant::Bool);
     deviceParamsRemote.append(channelParam);
     
     deviceClassElroRemote.setParams(deviceParamsRemote);
@@ -152,37 +146,26 @@ QList<DeviceClass> DevicePluginElro::supportedDevices() const
     DeviceClass deviceClassElroSwitch(pluginId(), elroVendorId, elroSwitchId);
     deviceClassElroSwitch.setName("Elro Power Switch");
     
-    QVariantList deviceParamsSwitch;
-    QVariantMap paramSwitch;
-    paramSwitch.insert("name", "channel1");
-    paramSwitch.insert("type", "bool");
+    QList<ParamType> deviceParamsSwitch;
+    ParamType paramSwitch = ParamType("channel1", QVariant::Bool);
     deviceParamsSwitch.append(paramSwitch);
-    paramSwitch.insert("name", "channel2");
-    paramSwitch.insert("type", "bool");
+    paramSwitch = ParamType("channel2", QVariant::Bool);
     deviceParamsSwitch.append(paramSwitch);
-    paramSwitch.insert("name", "channel3");
-    paramSwitch.insert("type", "bool");
+    paramSwitch = ParamType("channel3", QVariant::Bool);
     deviceParamsSwitch.append(paramSwitch);
-    paramSwitch.insert("name", "channel4");
-    paramSwitch.insert("type", "bool");
+    paramSwitch = ParamType("channel4", QVariant::Bool);
     deviceParamsSwitch.append(paramSwitch);
-    paramSwitch.insert("name", "channel5");
-    paramSwitch.insert("type", "bool");
+    paramSwitch = ParamType("channel5", QVariant::Bool);
     deviceParamsSwitch.append(paramSwitch);
-    paramSwitch.insert("name", "A");
-    paramSwitch.insert("type", "bool");
+    paramSwitch = ParamType("channel6", QVariant::Bool);
     deviceParamsSwitch.append(paramSwitch);
-    paramSwitch.insert("name", "B");
-    paramSwitch.insert("type", "bool");
+    paramSwitch = ParamType("channel7", QVariant::Bool);
     deviceParamsSwitch.append(paramSwitch);
-    paramSwitch.insert("name", "C");
-    paramSwitch.insert("type", "bool");
+    paramSwitch = ParamType("channel8", QVariant::Bool);
     deviceParamsSwitch.append(paramSwitch);
-    paramSwitch.insert("name", "D");
-    paramSwitch.insert("type", "bool");
+    paramSwitch = ParamType("channel9", QVariant::Bool);
     deviceParamsSwitch.append(paramSwitch);
-    paramSwitch.insert("name", "E");
-    paramSwitch.insert("type", "bool");
+    paramSwitch = ParamType("channel10", QVariant::Bool);
     deviceParamsSwitch.append(paramSwitch);
 
     deviceClassElroSwitch.setParams(deviceParamsSwitch);
@@ -230,27 +213,27 @@ DeviceManager::DeviceError DevicePluginElro::executeAction(Device *device, const
     // =======================================
     // create the bincode
     // channels
-    if(device->params().value("channel1").toBool()){
+    if(device->paramValue("channel1").toBool()){
         binCode.append("00");
     }else{
         binCode.append("01");
     }
-    if(device->params().value("channel2").toBool()){
+    if(device->paramValue("channel2").toBool()){
         binCode.append("00");
     }else{
         binCode.append("01");
     }
-    if(device->params().value("channel3").toBool()){
+    if(device->paramValue("channel3").toBool()){
         binCode.append("00");
     }else{
         binCode.append("01");
     }
-    if(device->params().value("channel4").toBool()){
+    if(device->paramValue("channel4").toBool()){
         binCode.append("00");
     }else{
         binCode.append("01");
     }
-    if(device->params().value("channel5").toBool()){
+    if(device->paramValue("channel5").toBool()){
         binCode.append("00");
     }else{
         binCode.append("01");
@@ -258,33 +241,33 @@ DeviceManager::DeviceError DevicePluginElro::executeAction(Device *device, const
 
     // =======================================
     // Buttons
-    if(device->params().value("A").toBool()){
+    if(device->paramValue("A").toBool()){
         binCode.append("00");
     }else{
         binCode.append("01");
     }
-    if(device->params().value("B").toBool()){
+    if(device->paramValue("B").toBool()){
         binCode.append("00");
     }else{
         binCode.append("01");
     }
-    if(device->params().value("C").toBool()){
+    if(device->paramValue("C").toBool()){
         binCode.append("00");
     }else{
         binCode.append("01");
     }
-    if(device->params().value("D").toBool()){
+    if(device->paramValue("D").toBool()){
         binCode.append("00");
     }else{
         binCode.append("01");
     }
-    if(device->params().value("E").toBool()){
+    if(device->paramValue("E").toBool()){
         binCode.append("00");
     }else{
         binCode.append("01");
     }
     // Power
-    if(action.params().value("power").toBool()){
+    if(action.param("power").value().toBool()){
         binCode.append("0001");
     }else{
         binCode.append("0100");
@@ -312,7 +295,7 @@ DeviceManager::DeviceError DevicePluginElro::executeAction(Device *device, const
     // =======================================
     // send data to driver
     //qDebug() << "rawData" << rawData;
-    qDebug() << "transmit" << pluginName() << action.params().value("power").toBool();
+    qDebug() << "transmit" << pluginName() << action.param("power").value().toBool();
     transmitData(rawData);
     return DeviceManager::DeviceErrorNoError;
 }
@@ -409,11 +392,11 @@ void DevicePluginElro::radioData(QList<int> rawData)
     Device *device = 0;
     QList<Device*> deviceList = deviceManager()->findConfiguredDevices(elroRemoteId);
     foreach (Device *dev, deviceList) {
-        if (dev->params().contains("channel1") && dev->params().value("channel1").toBool() == group.at(0) &&
-                dev->params().contains("channel2") && dev->params().value("channel2").toBool() == group.at(1) &&
-                dev->params().contains("channel3") && dev->params().value("channel3").toBool() == group.at(2) &&
-                dev->params().contains("channel4") && dev->params().value("channel4").toBool() == group.at(3) &&
-                dev->params().contains("channel5") && dev->params().value("channel5").toBool() == group.at(4)
+        if (dev->hasParam("channel1") && dev->paramValue("channel1").toBool() == group.at(0) &&
+                dev->hasParam("channel2") && dev->paramValue("channel2").toBool() == group.at(1) &&
+                dev->hasParam("channel3") && dev->paramValue("channel3").toBool() == group.at(2) &&
+                dev->hasParam("channel4") && dev->paramValue("channel4").toBool() == group.at(3) &&
+                dev->hasParam("channel5") && dev->paramValue("channel5").toBool() == group.at(4)
                 ) {
             // Yippie! We found the device.
             device = dev;
@@ -425,8 +408,9 @@ void DevicePluginElro::radioData(QList<int> rawData)
         return;
     }
 
-    QVariantMap params;
-    params.insert("power", power);
+    QList<Param> params;
+    Param powerParam("power", power);
+    params.append(powerParam);
 
     // FIXME: find a better way to get to the remote DeviceClass
     DeviceClass deviceClass = supportedDevices().first();

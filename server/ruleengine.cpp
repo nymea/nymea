@@ -80,7 +80,17 @@ RuleEngine::RuleEngine(QObject *parent) :
         settings.beginGroup("event");
         EventTypeId eventTypeId(settings.value("eventTypeId").toString());
         DeviceId deviceId(settings.value("deviceId").toString());
-        Event event(eventTypeId, deviceId, settings.value("params").toMap());
+        QList<Param> params;
+        foreach (QString groupName, settings.childGroups()) {
+            if (groupName.startsWith("Param-")) {
+                settings.beginGroup(groupName);
+                Param param(groupName.remove(QRegExp("^Param-")), settings.value("value"));
+                param.setOperand((Param::OperandType)settings.value("operand").toInt());
+                params.append(param);
+                settings.endGroup();
+            }
+        }
+        Event event(eventTypeId, deviceId, params);
         settings.endGroup();
 
         settings.beginGroup("states");
@@ -99,7 +109,18 @@ RuleEngine::RuleEngine(QObject *parent) :
         foreach (const QString &actionIdString, settings.childGroups()) {
             settings.beginGroup(actionIdString);
             Action action = Action(DeviceId(settings.value("deviceId").toString()), ActionTypeId(settings.value("actionTypeId").toString()));
-            action.setParams(settings.value("params").toMap());
+            QList<Param> params;
+            foreach (QString paramNameString, settings.childGroups()) {
+                if (paramNameString.startsWith("Param-")) {
+                    settings.beginGroup(paramNameString);
+                    Param param(paramNameString.remove(QRegExp("^Param-")), settings.value("value"));
+                    param.setOperand((Param::OperandType)settings.value("operand").toInt());
+                    params.append(param);
+                    settings.endGroup();
+                }
+            }
+            action.setParams(params);
+
             settings.endGroup();
             actions.append(action);
         }
@@ -187,7 +208,13 @@ RuleEngine::RuleError RuleEngine::addRule(const Event &event, const QList<State>
     settings.beginGroup("event");
     settings.setValue("eventTypeId", event.eventTypeId());
     settings.setValue("deviceId", event.deviceId());
-    settings.setValue("params", event.params());
+    foreach (const Param &param, event.params()) {
+        settings.beginGroup("Param-" + param.name());
+        settings.setValue("value", param.value());
+        settings.setValue("operand", param.operand());
+        settings.endGroup();
+    }
+
     settings.endGroup();
 
     settings.beginGroup("states");
@@ -205,7 +232,12 @@ RuleEngine::RuleError RuleEngine::addRule(const Event &event, const QList<State>
         settings.beginGroup(action.actionTypeId().toString());
         settings.setValue("deviceId", action.deviceId());
         settings.setValue("actionTypeId", action.actionTypeId());
-        settings.setValue("params", action.params());
+        foreach (const Param &param, action.params()) {
+            settings.beginGroup("Param-" + param.name());
+            settings.setValue("value", param.value());
+            settings.endGroup();
+        }
+
         settings.endGroup();
     }
 

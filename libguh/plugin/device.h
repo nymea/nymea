@@ -23,6 +23,7 @@
 
 #include "plugin/deviceclass.h"
 #include "types/state.h"
+#include "types/param.h"
 
 #include <QObject>
 #include <QUuid>
@@ -43,10 +44,13 @@ public:
     QString name() const;
     void setName(const QString &name);
 
-    QVariantMap params() const;
-    void setParams(const QVariantMap &params);
+    QList<Param> params() const;
+    void setParams(const QList<Param> &params);
+
+    QVariant paramValue(const QString &paramName) const;
 
     QList<State> states() const;
+    bool hasParam(const QString &paramName) const;
     void setStates(const QList<State> &states);
 
     bool hasState(const StateTypeId &stateTypeId) const;
@@ -65,7 +69,7 @@ private:
     DeviceClassId m_deviceClassId;
     PluginId m_pluginId;
     QString m_name;
-    QVariantMap m_params;
+    QList<Param> m_params;
     QList<State> m_states;
 };
 

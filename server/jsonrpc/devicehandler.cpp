@@ -250,7 +250,12 @@ JsonReply* DeviceHandler::SetPluginConfiguration(const QVariantMap &params)
 JsonReply* DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
 {
     DeviceClassId deviceClass(params.value("deviceClassId").toString());
-    QVariantMap deviceParams = params.value("deviceParams").toMap();
+    QList<Param> deviceParams;
+    foreach (const QString &paramName, params.value("deviceParams").toMap().keys()) {
+         Param param(paramName);
+         param.setValue(params.value("deviceParams").toMap().value(paramName));
+         deviceParams.append(param);
+    }
     DeviceDescriptorId deviceDescriptorId(params.value("deviceDescriptorId").toString());
     DeviceId newDeviceId = DeviceId::createDeviceId();
     DeviceManager::DeviceError status;

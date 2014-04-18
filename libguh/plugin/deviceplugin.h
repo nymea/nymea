@@ -74,7 +74,7 @@ signals:
 protected:
     DeviceManager *deviceManager() const;
     QList<Device*> myDevices() const;
-    Device* findDeviceByParams(const QVariantMap &params) const;
+    Device* findDeviceByParams(const QList<Param> &params) const;
 
     void transmitData(QList<int> rawData);
 

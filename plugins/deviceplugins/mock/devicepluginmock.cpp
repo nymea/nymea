@@ -54,10 +54,8 @@ QList<DeviceClass> DevicePluginMock::supportedDevices() const
     DeviceClass deviceClassMock(pluginId(), guhVendorId, mockDeviceClassId);
     deviceClassMock.setName("Mock Device");
 
-    QVariantList mockParams;
-    QVariantMap portParam;
-    portParam.insert("name", "httpport");
-    portParam.insert("type", "int");
+    QList<ParamType> mockParams;
+    ParamType portParam("httpport", QVariant::Int);
     mockParams.append(portParam);
 
     deviceClassMock.setParams(mockParams);
@@ -137,7 +135,7 @@ PluginId DevicePluginMock::pluginId() const
 
 bool DevicePluginMock::deviceCreated(Device *device)
 {
-    qDebug() << "Mockdevice created returning true" << device->params().value("httpport").toInt();
+    qDebug() << "Mockdevice created returning true" << device->paramValue("httpport").toInt();
 
     HttpDaemon *daemon = new HttpDaemon(device, this);
     m_daemons.insert(device, daemon);
@@ -169,8 +167,9 @@ bool DevicePluginMock::configureAutoDevice(QList<Device *> loadedDevices, Device
     }
 
     device->setName("Mock Device (Auto created)");
-    QVariantMap params;
-    params.insert("httpport", 4242);
+    QList<Param> params;
+    Param param("httpport", 4242);
+    params.append(param);
     device->setParams(params);
     return true;
 }
@@ -202,7 +201,7 @@ void DevicePluginMock::triggerEvent(const EventTypeId &id)
 
     Device *device = m_daemons.key(daemon);
 
-    Event event(id, device->id(), QVariantMap());
+    Event event(id, device->id());
 
     qDebug() << "Emitting event " << event.eventTypeId();
     emit emitEvent(event);

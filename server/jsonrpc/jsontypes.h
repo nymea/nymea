@@ -26,6 +26,7 @@
 #include "types/event.h"
 #include "types/action.h"
 #include "types/actiontype.h"
+#include "types/paramtype.h"
 
 #include <QObject>
 
@@ -66,6 +67,7 @@ public:
     DECLARE_TYPE(ruleTypes, "RuleType")
     DECLARE_TYPE(createMethodTypes, "CreateMethodType")
     DECLARE_TYPE(setupMethodTypes, "SetupMethodType")
+    DECLARE_TYPE(operandTypes, "OperandType")
     DECLARE_OBJECT(paramType, "ParamType")
     DECLARE_OBJECT(param, "Param")
     DECLARE_OBJECT(stateType, "StateType")
@@ -86,12 +88,17 @@ public:
     static QVariantMap packActionType(const ActionType &actionType);
     static QVariantMap packAction(const Action &action);
     static QVariantMap packStateType(const StateType &stateType);
+    static QVariantMap packParam(const Param &param);
+    static QVariantMap packParamType(const ParamType &paramType);
     static QVariantMap packVendor(const Vendor &vendor);
     static QVariantMap packDeviceClass(const DeviceClass &deviceClass);
     static QVariantMap packPlugin(DevicePlugin *plugin);
     static QVariantMap packDevice(Device *device);
     static QVariantMap packDeviceDescriptor(const DeviceDescriptor &descriptor);
     static QVariantMap packRule(const Rule &rule);
+
+    static Param unpackParam(const QVariantMap &paramMap);
+    static QList<Param> unpackParams(const QVariantList &paramList);
 
     static QPair<bool, QString> validateMap(const QVariantMap &templateMap, const QVariantMap &map);
     static QPair<bool, QString> validateProperty(const QVariant &templateValue, const QVariant &value);
@@ -101,6 +108,7 @@ public:
     static QPair<bool, QString> validateRuleType(const QVariant &variant);
     static QPair<bool, QString> validateCreateMethodType(const QVariant &variant);
     static QPair<bool, QString> validateSetupMethodType(const QVariant &variant);
+    static QPair<bool, QString> validateOperandType(const QVariant &variant);
 
 private:
     static bool s_initialized;

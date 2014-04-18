@@ -2,6 +2,7 @@
 #define DEVICEDESCRIPTION_H
 
 #include <typeutils.h>
+#include <types/param.h>
 
 #include <QVariantMap>
 
@@ -23,15 +24,15 @@ public:
     QString description() const;
     void setDescription(const QString &description);
 
-    QVariantMap params() const;
-    void setParams(const QVariantMap &params);
+    QList<Param> params() const;
+    void setParams(const QList<Param> &params);
 
 private:
     DeviceDescriptorId m_id;
     DeviceClassId m_deviceClassId;
     QString m_title;
     QString m_description;
-    QVariantMap m_params;
+    QList<Param> m_params;
 };
 
 #endif // DEVICEDESCRIPTION_H

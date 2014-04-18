@@ -37,10 +37,8 @@ QList<DeviceClass> DevicePluginLircd::supportedDevices() const
     DeviceClass deviceClassLircd(pluginId(), lircdVendorId, lircdDeviceClassId);
     deviceClassLircd.setName("IR Receiver");
 
-    QVariantList params;
-    QVariantMap remoteNameParam;
-    remoteNameParam.insert("name", "remoteName");
-    remoteNameParam.insert("type", "string");
+    QList<ParamType> params;
+    ParamType remoteNameParam("remoteName", QVariant::String);
     params.append(remoteNameParam);
     deviceClassLircd.setParams(params);
     
@@ -102,7 +100,7 @@ void DevicePluginLircd::buttonPressed(const QString &remoteName, const QString &
     Device *remote = nullptr;
     QList<Device*> configuredRemotes = deviceManager()->findConfiguredDevices(lircdDeviceClassId);
     foreach (Device *device, configuredRemotes) {
-        if (device->params().value("remoteName").toString() == remoteName) {
+        if (device->paramValue("remoteName").toString() == remoteName) {
             remote = device;
             break;
         }
@@ -115,9 +113,10 @@ void DevicePluginLircd::buttonPressed(const QString &remoteName, const QString &
     qDebug() << "found remote" << remoteName << supportedDevices().first().events().count();
     foreach (const EventType &eventType, supportedDevices().first().events()) {
         if (eventType.name() == buttonName) {
-            QVariantMap param;
-            param.insert("repeat", repeat);
-            Event event(eventType.id(), remote->id(), param);
+            QList<Param> params;
+            Param param("repeat", repeat);
+            params.append(param);
+            Event event(eventType.id(), remote->id(), params);
             emitEvent(event);
         }
     }

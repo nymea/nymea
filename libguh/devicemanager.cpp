@@ -167,7 +167,7 @@ DeviceManager::DeviceError DeviceManager::discoverDevices(const DeviceClassId &d
     Optionally you can supply an id yourself if you must keep track of the added device. If you don't supply it, a new one will
     be generated.
 */
-DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassId &deviceClassId, const QVariantMap &params, const DeviceId id)
+DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassId &deviceClassId, const QList<Param> &params, const DeviceId id)
 {
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
     if (!deviceClass.isValid()) {
@@ -198,7 +198,7 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassI
     return addConfiguredDeviceInternal(deviceClassId, descriptor.params(), deviceId);
 }
 
-DeviceManager::DeviceError DeviceManager::addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QVariantMap &params, const DeviceId id)
+DeviceManager::DeviceError DeviceManager::addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QList<Param> &params, const DeviceId id)
 {
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
     if (deviceClass.id().isNull()) {
@@ -207,18 +207,24 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDeviceInternal(const Devi
     }
 
     // Make sure we have all required params
-    foreach (const QVariant &param, deviceClass.params()) {
-        if (!params.contains(param.toMap().value("name").toString())) {
-            qWarning() << "Missing parameter when creating device:" << param.toMap().value("name").toString();
+    foreach (const ParamType &paramType, deviceClass.params()) {
+        bool found = false;
+        foreach (const Param &param, params) {
+            if (param.name() == paramType.name()) {
+                found = true;
+            }
+        }
+
+        if (!found) {
+            qWarning() << "Missing parameter when creating device:" << paramType.name();
             return DeviceErrorMissingParameter;
         }
     }
     // Make sure we don't have unused params
-    foreach (const QString &paramId, params.keys()) {
-        qDebug() << "searching" << paramId << "in" << deviceClass.params();
+    foreach (const Param &param, params) {
         bool found = false;
-        foreach (const QVariant &param, deviceClass.params()) {
-            if (param.toMap().value("name").toString() == paramId) {
+        foreach (const ParamType &paramType, deviceClass.params()) {
+            if (paramType.name() == param.name()) {
                 found = true;
                 continue;
             }
@@ -399,7 +405,17 @@ void DeviceManager::loadConfiguredDevices()
         settings.beginGroup(idString);
         Device *device = new Device(PluginId(settings.value("pluginid").toString()), DeviceId(idString), DeviceClassId(settings.value("deviceClassId").toString()), this);
         device->setName(settings.value("devicename").toString());
-        device->setParams(settings.value("params").toMap());
+
+        QList<Param> params;
+        foreach (QString paramNameString, settings.childGroups()) {
+            settings.beginGroup(paramNameString);
+            Param param(paramNameString.remove(QRegExp("^Param-")));
+            param.setValue(settings.value("value"));
+            param.setOperand((Param::OperandType)settings.value("operand").toInt());
+            settings.endGroup();
+        }
+        device->setParams(params);
+
         settings.endGroup();
 
         setupDevice(device);
@@ -417,7 +433,12 @@ void DeviceManager::storeConfiguredDevices()
         settings.setValue("devicename", device->name());
         settings.setValue("deviceClassId", device->deviceClassId().toString());
         settings.setValue("pluginid", device->pluginId());
-        settings.setValue("params", device->params());
+        foreach (const Param &param, device->params()) {
+            settings.beginGroup("Param-" + param.name());
+            settings.setValue("value", param.value());
+            settings.setValue("operand", param.operand());
+            settings.endGroup();
+        }
         settings.endGroup();
     }
 }

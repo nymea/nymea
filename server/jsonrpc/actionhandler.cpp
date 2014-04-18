@@ -48,7 +48,7 @@ JsonReply* ActionHandler::ExecuteAction(const QVariantMap &params)
 
     DeviceId deviceId(params.value("deviceId").toString());
     ActionTypeId actionTypeId(params.value("actionTypeId").toString());
-    QVariantMap actionParams = params.value("params").toMap();
+    QList<Param> actionParams = JsonTypes::unpackParams(params.value("params").toList());
 
     Action action(deviceId, actionTypeId);
     action.setParams(actionParams);

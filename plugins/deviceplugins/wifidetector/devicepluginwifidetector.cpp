@@ -48,10 +48,8 @@ QList<DeviceClass> DevicePluginWifiDetector::supportedDevices() const
     DeviceClass deviceClassWifiDetector(pluginId(), guhVendorId, detectorId);
     deviceClassWifiDetector.setName("WiFi Device");
     
-    QVariantList detectorParams;
-    QVariantMap macParam;
-    macParam.insert("name", "mac");
-    macParam.insert("type", "string");
+    QList<ParamType> detectorParams;
+    ParamType macParam("mac", QVariant::String);
     detectorParams.append(macParam);
 
     deviceClassWifiDetector.setParams(detectorParams);
@@ -123,7 +121,7 @@ void DevicePluginWifiDetector::processFinished(int exitCode, QProcess::ExitStatu
 
     foreach (Device *device, watchedDevices) {
         bool wasInRange = device->stateValue(inRangeStateTypeId).toBool();
-        bool wasFound = foundDevices.contains(device->params().value("mac").toString().toLower());
+        bool wasFound = foundDevices.contains(device->paramValue("mac").toString().toLower());
         if (wasInRange != wasFound) {
             device->setStateValue(inRangeStateTypeId, wasFound);
         }

@@ -72,7 +72,7 @@ public:
     DeviceError discoverDevices(const DeviceClassId &deviceClassId, const QVariantMap &params) const;
 
     QList<Device*> configuredDevices() const;
-    DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const QVariantMap &params, const DeviceId id = DeviceId::createDeviceId());
+    DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const QList<Param> &params, const DeviceId id = DeviceId::createDeviceId());
     DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &id = DeviceId::createDeviceId());
     DeviceError removeConfiguredDevice(const DeviceId &deviceId);
 
@@ -103,7 +103,7 @@ private slots:
     void timerEvent();
 
 private:
-    DeviceError addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QVariantMap &params, const DeviceId id = DeviceId::createDeviceId());
+    DeviceError addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QList<Param> &params, const DeviceId id = DeviceId::createDeviceId());
     bool setupDevice(Device *device);
 
     QHash<VendorId, Vendor> m_supportedVendors;

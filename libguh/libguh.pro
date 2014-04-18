@@ -20,6 +20,8 @@ SOURCES += plugin/device.cpp \
            types/eventtype.cpp \
            types/event.cpp \
            types/vendor.cpp \
+           types/paramtype.cpp \
+    types/param.cpp
 
 HEADERS += plugin/device.h \
            plugin/deviceclass.h \
@@ -36,4 +38,6 @@ HEADERS += plugin/device.h \
            types/event.h \
            types/vendor.h \
            types/typeutils.h \
+           types/paramtype.h \
+    types/param.h
 

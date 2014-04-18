@@ -58,13 +58,23 @@ DeviceId Action::deviceId() const
 }
 
 /*! Returns the parameters for this Action.*/
-QVariantMap Action::params() const
+QList<Param> Action::params() const
 {
     return m_params;
 }
 
 /*! Set the the parameters for this Action. \a params must match the template in the \l{ActionType} referred by \l{Action::actionTypeId()}*/
-void Action::setParams(const QVariantMap &params)
+void Action::setParams(const QList<Param> &params)
 {
     m_params = params;
+}
+
+Param Action::param(const QString &paramName) const
+{
+    foreach (const Param &param, m_params) {
+        if (param.name() == paramName) {
+            return param;
+        }
+    }
+    return Param(QString());
 }

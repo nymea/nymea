@@ -82,21 +82,41 @@ void Device::setName(const QString &name)
 }
 
 /*! Returns the parameter of this Device. It must match the parameter description in the associated \l{DeviceClass}. */
-QVariantMap Device::params() const
+QList<Param> Device::params() const
 {
     return m_params;
 }
 
 /*! Sets the \a params of this Device. It must match the parameter description in the associated \l{DeviceClass}. */
-void Device::setParams(const QVariantMap &params)
+void Device::setParams(const QList<Param> &params)
 {
     m_params = params;
+}
+
+QVariant Device::paramValue(const QString &paramName) const
+{
+    foreach (const Param &param, m_params) {
+        if (param.name() == paramName) {
+            return param.value();
+        }
+    }
+    return QVariant();
 }
 
 /*! Returns the states of this Device. It must match the \l{StateType} description in the associated \l{DeviceClass}. */
 QList<State> Device::states() const
 {
     return m_states;
+}
+
+bool Device::hasParam(const QString &paramName) const
+{
+    foreach (const Param &param, m_params) {
+        if (param.name() == paramName) {
+            return true;
+        }
+    }
+    return false;
 }
 
 /*! Sets the \a states of this Device. It must match the \l{StateType} description in the associated \l{DeviceClass}. */

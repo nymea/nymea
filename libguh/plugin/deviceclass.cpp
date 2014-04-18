@@ -129,14 +129,14 @@ void DeviceClass::setActions(const QList<ActionType> &actionTypes)
 
 /*! Returns the params description of this DeviceClass. \{Device}{Devices} created
     from this DeviceClass must have their params matching to this template. */
-QVariantList DeviceClass::params() const
+QList<ParamType> DeviceClass::params() const
 {
     return m_params;
 }
 
 /*! Set the \a params of this DeviceClass. \{Device}{Devices} created
     from this DeviceClass must have their actions matching to this template. */
-void DeviceClass::setParams(const QVariantList &params)
+void DeviceClass::setParams(const QList<ParamType> &params)
 {
     m_params = params;
 }

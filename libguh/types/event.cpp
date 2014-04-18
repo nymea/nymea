@@ -36,7 +36,7 @@
 /*! Constructs a Event reflecting the \l{Event} given by \a EventTypeId, associated with
     the \l{Device} given by \a deviceId and the parameters given by \a params. The parameters must
     match the description in the reflecting \l{Event}.*/
-Event::Event(const EventTypeId &eventTypeId, const DeviceId &deviceId, const QVariantMap &params):
+Event::Event(const EventTypeId &eventTypeId, const DeviceId &deviceId, const QList<Param> &params):
     m_eventTypeId(eventTypeId),
     m_deviceId(deviceId),
     m_params(params)
@@ -56,31 +56,43 @@ DeviceId Event::deviceId() const
 }
 
 /*! Returns the parameters of this Event.*/
-QVariantMap Event::params() const
+QList<Param> Event::params() const
 {
     return m_params;
 }
 
 /*! Set the parameters of this Event to \a params.*/
-void Event::setParams(const QVariantMap &params)
+void Event::setParams(const QList<Param> &params)
 {
     m_params = params;
+}
+
+Param Event::param(const QString &paramName) const
+{
+    foreach (const Param &param, m_params) {
+        if (param.name() == paramName) {
+            return param;
+        }
+    }
+    return Param(QString());
 }
 
 /*! Compare this Event to the Event given by \a other.
     Events are equal (returns true) if eventTypeId, deviceId and params match. */
 bool Event::operator ==(const Event &other) const
 {
-
-    bool result =m_eventTypeId == other.eventTypeId()
-            && m_deviceId == other.deviceId()
-            && m_params == other.params();
-
-    qDebug() << "comparing event" << *this << "with" << other << "result is" << result << "params" << m_params << "other" << other.params();
+    bool paramsMatch = true;
+    foreach (const Param &otherParam, other.params()) {
+        Param param = this->param(otherParam.name());
+        if (!param.isValid() || param.value() != otherParam.value()) {
+            paramsMatch = false;
+            break;
+        }
+    }
 
     return m_eventTypeId == other.eventTypeId()
             && m_deviceId == other.deviceId()
-            && m_params == other.params();
+            && paramsMatch;
 }
 
 QDebug operator<<(QDebug dbg, const Event &event)

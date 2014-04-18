@@ -216,12 +216,12 @@ QList<Device *> DevicePlugin::myDevices() const
  Find a certain device from myDevices() by its params. All parameters must
  match or the device will not be found. Be prepared for nullptrs.
  */
-Device *DevicePlugin::findDeviceByParams(const QVariantMap &params) const
+Device *DevicePlugin::findDeviceByParams(const QList<Param> &params) const
 {
     foreach (Device *device, myDevices()) {
         bool matching = true;
-        foreach (const QString &paramName, device->params().keys()) {
-            if (device->params().value(paramName) == params.value(paramName)) {
+        foreach (const Param &param, params) {
+            if (device->paramValue(param.name()) == param.value()) {
                 return device;
             }
         }

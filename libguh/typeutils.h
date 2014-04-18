@@ -28,14 +28,4 @@ DECLARE_TYPE_ID(StateType)
 DECLARE_TYPE_ID(ActionType)
 DECLARE_TYPE_ID(Plugin)
 
-
-enum ParamOperand {
-    ParamOperandEquals,
-    ParamOperandNotEquals,
-    ParamOperandLess,
-    ParamOperandGreater,
-    ParamOperandLessThan,
-    ParamOperandGreaterThan
-};
-
 #endif // TYPEUTILS_H

@@ -20,6 +20,7 @@
 #define EVENT_H
 
 #include "typeutils.h"
+#include "types/param.h"
 
 #include <QString>
 #include <QVariantList>
@@ -28,20 +29,21 @@
 class Event
 {
 public:
-    Event(const EventTypeId &eventTypeId, const DeviceId &deviceId, const QVariantMap &params);
+    Event(const EventTypeId &eventTypeId, const DeviceId &deviceId, const QList<Param> &params = QList<Param>());
 
     EventTypeId eventTypeId() const;
     DeviceId deviceId() const;
 
-    QVariantMap params() const;
-    void setParams(const QVariantMap &params);
+    QList<Param> params() const;
+    void setParams(const QList<Param> &params);
+    Param param(const QString &paramName) const;
 
     bool operator ==(const Event &other) const;
 
 private:
     EventTypeId m_eventTypeId;
     DeviceId m_deviceId;
-    QVariantMap m_params;
+    QList<Param> m_params;
 };
 QDebug operator<<(QDebug dbg, const Event &event);
 QDebug operator<<(QDebug dbg, const QList<Event> &events);

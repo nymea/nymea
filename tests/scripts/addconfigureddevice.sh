@@ -29,12 +29,9 @@ else
   elif [ $2 == "mock2" ]; then
     # Adds a Mock device
     (echo '{"id":1, "method":"Devices.AddConfiguredDevice", "params":{"deviceClassId": "{753f0d32-0468-4d08-82ed-1964aab03298}","deviceParams":{"httpport":"8082"}}}'; sleep 1) | nc $1 1234
-#  elif [ $2 == "weatherground" ]; then
-#    # Adds a weatherground device
-#    (echo '{"id":1, "method":"Devices.AddConfiguredDevice", "params":{"deviceClassId": "{af2e15f0-650e-4452-b379-fa76a2dc46c6}","deviceParams":{"autodetect":"true"}}}'; sleep 1) | nc $1 1234
   elif [ $2 == "openweathermap" ]; then
     # Adds a openweathermap device
-    (echo '{"id":1, "method":"Devices.AddConfiguredDevice", "params":{"deviceClassId": "{985195aa-17ad-4530-88a4-cdd753d747d7}","deviceParams":{"location":""}}}'; sleep 1) | nc $1 1234
+      (echo '{"id":1, "method":"Devices.AddConfiguredDevice", "params":{"deviceClassId": "{985195aa-17ad-4530-88a4-cdd753d747d7}","deviceDescriptorId":"'$4'"}}'; sleep 1) | nc $1 1234
   elif [ $2 == "lirc" ]; then
     (echo '{"id":1, "method":"Devices.AddConfiguredDevice", "params":{"deviceClassId": "{5c2bc4cd-ba6c-4052-b6cd-1db83323ea22}","deviceParams":{"remoteName":"'$3'"}}}'; sleep 1) | nc $1 1234
   elif [ $2 == "discovered" ]; then

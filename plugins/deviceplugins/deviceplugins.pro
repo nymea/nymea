@@ -8,6 +8,7 @@ SUBDIRS += elro     \
 #    weatherground   \
     openweathermap  \
     lircd \
+    googlemail \
 
 boblight {
     SUBDIRS += boblight

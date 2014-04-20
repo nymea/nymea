@@ -16,65 +16,41 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "param.h"
+#ifndef DEVICEPLUGINGOOGLEMAIL_H
+#define DEVICEPLUGINGOOGLEMAIL_H
 
-#include <QDebug>
+#include "plugin/deviceplugin.h"
+#include "smtpclient.h"
 
-Param::Param(const QString &name, const QVariant &value):
-    m_name (name),
-    m_value(value),
-    m_operand(OperandTypeEquals)
+class DevicePluginGoogleMail : public DevicePlugin
 {
-}
+    Q_OBJECT
 
-QString Param::name() const
-{
-    return m_name;
-}
+    Q_PLUGIN_METADATA(IID "guru.guh.DevicePlugin" FILE "deviceplugingooglemail.json")
+    Q_INTERFACES(DevicePlugin)
 
-void Param::setName(const QString &name)
-{
-    m_name = name;
-}
+public:
+    explicit DevicePluginGoogleMail();
+    ~DevicePluginGoogleMail();
 
-QVariant Param::value() const
-{
-    return m_value;
-}
+    QList<Vendor> supportedVendors() const override;
+    QList<DeviceClass> supportedDevices() const override;
 
-void Param::setValue(const QVariant &value)
-{
-    m_value = value;
-}
+    bool deviceCreated(Device *device) override;
+    DeviceManager::HardwareResources requiredHardware() const override;
+    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
 
-Param::OperandType Param::operand() const
-{
-    return m_operand;
-}
+    QString pluginName() const override;
+    PluginId pluginId() const override;
 
-void Param::setOperand(Param::OperandType operand)
-{
-    m_operand = operand;
-}
+private:
+    SmtpClient *m_smtpClient;
 
-bool Param::isValid() const
-{
-    return !m_name.isEmpty() && m_value.isValid();
-}
+private slots:
 
-QDebug operator<<(QDebug dbg, const Param &param)
-{
-    dbg.nospace() << "Param(Name: " << param.name() << ", Value:" << param.value() << ")";
+public slots:
 
-    return dbg.space();
-}
 
-QDebug operator<<(QDebug dbg, const QList<Param> &params)
-{
-    dbg.nospace() << "ParamList (count:" << params.count() << ")";
-    for (int i = 0; i < params.count(); i++ ) {
-        dbg.nospace() << "     " << i << ": " << params.at(i);
-    }
+};
 
-    return dbg.space();
-}
+#endif // DEVICEPLUGINMAIL_H

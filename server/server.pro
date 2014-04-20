@@ -24,6 +24,7 @@ LIBS += -L../plugins/deviceplugins/mock -lguh_devicepluginmock
 #LIBS += -L../plugins/deviceplugins/weatherground -lguh_devicepluginweatherground
 LIBS += -L../plugins/deviceplugins/openweathermap -lguh_devicepluginopenweathermap
 LIBS += -L../plugins/deviceplugins/lircd -lguh_devicepluginlircd
+LIBS += -L../plugins/deviceplugins/googlemail -lguh_deviceplugingooglemail
 
 boblight {
     xcompile {

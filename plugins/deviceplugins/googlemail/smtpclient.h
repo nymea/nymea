@@ -16,65 +16,62 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "param.h"
+#ifndef SMTPCLIENT_H
+#define SMTPCLIENT_H
 
+#include <QObject>
 #include <QDebug>
+#include <QTcpSocket>
+#include <QSslSocket>
 
-Param::Param(const QString &name, const QVariant &value):
-    m_name (name),
-    m_value(value),
-    m_operand(OperandTypeEquals)
+class SmtpClient : public QObject
 {
-}
+    Q_OBJECT
+public:
 
-QString Param::name() const
-{
-    return m_name;
-}
+    enum AuthMethod{
+        AuthPlain,
+        AuthLogin
+    };
 
-void Param::setName(const QString &name)
-{
-    m_name = name;
-}
+    enum ConnectionType{
+        TcpConnection,      // no encryption
+        SslConnection,      // SSL
+        TlsConnection       // STARTTLS
+    };
 
-QVariant Param::value() const
-{
-    return m_value;
-}
+    explicit SmtpClient(const QString &host = "smtp.gmail.com", int port = 465, ConnectionType connectionType = SslConnection);
+    bool connectToHost();
+    bool login(const QString &user, const QString &password, AuthMethod method = AuthLogin);
+    bool logout();
+    bool sendMail(const QString &from, const QString &to, const QString &subject, const QString &body);
 
-void Param::setValue(const QVariant &value)
-{
-    m_value = value;
-}
+private:
+    QSslSocket *m_socket;
+    QString m_host;
+    int m_port;
 
-Param::OperandType Param::operand() const
-{
-    return m_operand;
-}
+    ConnectionType m_connectionType;
+    AuthMethod m_authMethod;
 
-void Param::setOperand(Param::OperandType operand)
-{
-    m_operand = operand;
-}
+    int m_responseCode;
+    int m_connectionTimeout;
+    int m_responseTimeout;
+    int m_sendMessageTimeout;
+    int waitForResponse();
 
-bool Param::isValid() const
-{
-    return !m_name.isEmpty() && m_value.isValid();
-}
+signals:
 
-QDebug operator<<(QDebug dbg, const Param &param)
-{
-    dbg.nospace() << "Param(Name: " << param.name() << ", Value:" << param.value() << ")";
+private slots:
+    void socketError(QAbstractSocket::SocketError error);
+    void connected();
+    void disconnected();
+    void send(const QString &data);
 
-    return dbg.space();
-}
+public slots:
 
-QDebug operator<<(QDebug dbg, const QList<Param> &params)
-{
-    dbg.nospace() << "ParamList (count:" << params.count() << ")";
-    for (int i = 0; i < params.count(); i++ ) {
-        dbg.nospace() << "     " << i << ": " << params.at(i);
-    }
 
-    return dbg.space();
-}
+
+};
+
+#endif // SMTPCLIENT_H

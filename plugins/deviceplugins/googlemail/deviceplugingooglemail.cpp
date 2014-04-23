@@ -115,7 +115,6 @@ DeviceManager::DeviceError DevicePluginGoogleMail::executeAction(Device *device,
         if(!m_smtpClient->login(device->paramValue("user").toString(), device->paramValue("password").toString())){
             return DeviceManager::DeviceErrorDeviceParameterError;
         }
-
         m_smtpClient->sendMail(device->paramValue("user").toString(), device->paramValue("sendTo").toString(), action.param("subject").value().toString(), action.param("body").value().toString());
         m_smtpClient->logout();
     }

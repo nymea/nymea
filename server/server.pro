@@ -19,12 +19,12 @@ LIBS += -L../plugins/deviceplugins/elro/ -lguh_devicepluginelro
 LIBS += -L../plugins/deviceplugins/intertechno/ -lguh_devicepluginintertechno
 #LIBS += -L../plugins/deviceplugins/meisteranker/ -lguh_devicepluginmeisteranker
 LIBS += -L../plugins/deviceplugins/wifidetector/ -lguh_devicepluginwifidetector
-#LIBS += -L../plugins/deviceplugins/conrad -lguh_devicepluginconrad
+LIBS += -L../plugins/deviceplugins/conrad -lguh_devicepluginconrad
 LIBS += -L../plugins/deviceplugins/mock -lguh_devicepluginmock
-#LIBS += -L../plugins/deviceplugins/weatherground -lguh_devicepluginweatherground
 LIBS += -L../plugins/deviceplugins/openweathermap -lguh_devicepluginopenweathermap
 LIBS += -L../plugins/deviceplugins/lircd -lguh_devicepluginlircd
 LIBS += -L../plugins/deviceplugins/googlemail -lguh_deviceplugingooglemail
+LIBS += -L../plugins/deviceplugins/wakeonlan -lguh_devicepluginwakeonlan
 
 boblight {
     xcompile {

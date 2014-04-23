@@ -62,6 +62,7 @@
 
 VendorId conradVendorId = VendorId("986cf06f-3ef1-4271-b2a3-2cc277ebecb6");
 DeviceClassId conradRemoteId = DeviceClassId("17cd2492-28ab-4827-ba6e-5ef35be23f1b");
+EventTypeId conradRemoteButtonEventTypeId = EventTypeId("1f4050f5-4c90-4799-8d6d-e4069f3a2519");
 
 DevicePluginConrad::DevicePluginConrad()
 {
@@ -85,25 +86,41 @@ QList<DeviceClass> DevicePluginConrad::supportedDevices() const
     DeviceClass deviceClassConradRemote(pluginId(), conradVendorId, conradRemoteId);
     deviceClassConradRemote.setName("Conrad Remote");
 
-    QVariantList deviceParamsRemote;
-    QVariantMap channelParam;
-//    channelParam.insert("name", "channel1");
-//    channelParam.insert("type", "bool");
-//    deviceParamsRemote.append(channelParam);
-//    channelParam.insert("name", "channel2");
-//    channelParam.insert("type", "bool");
-//    deviceParamsRemote.append(channelParam);
-//    channelParam.insert("name", "channel3");
-//    channelParam.insert("type", "bool");
-//    deviceParamsRemote.append(channelParam);
-//    channelParam.insert("name", "channel4");
-//    channelParam.insert("type", "bool");
-//    deviceParamsRemote.append(channelParam);
-//    channelParam.insert("name", "channel5");
-//    channelParam.insert("type", "bool");
-//    deviceParamsRemote.append(channelParam);
+    // Params
+    QList<ParamType> deviceParamsRemote;
+
+    QVariantList deviceParamRemote;
+    QVariantMap nameParam;
+    nameParam.insert("name", "name");
+    nameParam.insert("type", "string");
+    deviceParamRemote.append(nameParam);
+
+    // Events
+    QList<EventType> buttonEvents;
+
+    QVariantList paramsRemote;
+    QVariantMap paramButton;
+    paramButton.insert("name", "button");
+    paramButton.insert("type", "int");
+    paramsRemote.append(paramButton);
+
+    QVariantMap paramGroup;
+    paramGroup.insert("name", "group");
+    paramGroup.insert("type", "int");
+    paramsRemote.append(paramGroup);
+
+    QVariantMap paramPower;
+    paramPower.insert("name", "power");
+    paramPower.insert("type", "bool");
+    paramsRemote.append(paramPower);
+
+    EventType buttonEvent(conradRemoteButtonEventTypeId);
+    buttonEvent.setName("Button Pressed");
+    buttonEvent.setParameters(paramsRemote);
+    buttonEvents.append(buttonEvent);
 
     deviceClassConradRemote.setParams(deviceParamsRemote);
+    deviceClassConradRemote.setEvents(buttonEvents);
     ret.append(deviceClassConradRemote);
 
     return ret;
@@ -135,16 +152,10 @@ DeviceManager::DeviceError DevicePluginConrad::executeAction(Device *device, con
 
 void DevicePluginConrad::radioData(QList<int> rawData)
 {
-    qDebug() << "!!!!!!!!!!!! called conrad radioData";
     // filter right here a wrong signal length
     if(rawData.length() != 65){
         return;
     }
-    
-//    QList<Device*> deviceList = deviceManager()->findConfiguredDevices(intertechnoRemote);
-//    if(deviceList.isEmpty()){
-//        return;
-//    }
 
     int delay = rawData.first()/10;
     QByteArray binCode;
@@ -158,13 +169,13 @@ void DevicePluginConrad::radioData(QList<int> rawData)
             int divNext;
             
             // if short
-            if(rawData.at(i) <= 800){
+            if(rawData.at(i) <= 900){
                 div = 1;
             }else{
                 div = 2;
             }
             // if long
-            if(rawData.at(i+1) < 800){
+            if(rawData.at(i+1) < 900){
                 divNext = 1;
             }else{
                 divNext = 2;
@@ -187,11 +198,11 @@ void DevicePluginConrad::radioData(QList<int> rawData)
         return;
     }
 
-    // =======================================
+    qDebug() << "CONRAD plugin understands this protocol: " << binCode;
 
-    qDebug() << "-----------------------------------------------------------";
-    qDebug() << "got conrad device...";
-    qDebug() << binCode;
+
+
+
 
 //    // FIXME: find a better way to get to the remote DeviceClass
 //    DeviceClass deviceClass = supportedDevices().first();

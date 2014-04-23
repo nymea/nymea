@@ -3,12 +3,12 @@ SUBDIRS += elro     \
     intertechno     \
 #    meisteranker    \
     wifidetector    \
-#    conrad          \
+    conrad          \
     mock            \
-#    weatherground   \
     openweathermap  \
-    lircd \
-    googlemail \
+    lircd           \
+    googlemail      \
+    wakeonlan       \
 
 boblight {
     SUBDIRS += boblight

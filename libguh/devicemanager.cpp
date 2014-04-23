@@ -409,9 +409,9 @@ void DeviceManager::loadConfiguredDevices()
         QList<Param> params;
         foreach (QString paramNameString, settings.childGroups()) {
             settings.beginGroup(paramNameString);
-            Param param(paramNameString.remove(QRegExp("^Param-")));
+            Param param(paramNameString.remove(QRegExp("Param-")));
             param.setValue(settings.value("value"));
-            param.setOperand((Param::OperandType)settings.value("operand").toInt());
+            //  param.setOperand((Param::OperandType)settings.value("operand").toInt());
             settings.endGroup();
         }
         device->setParams(params);
@@ -495,13 +495,20 @@ void DeviceManager::slotDeviceStateValueChanged(const QUuid &stateTypeId, const 
 
 void DeviceManager::radio433SignalReceived(QList<int> rawData)
 {
-    foreach (Device *device, m_configuredDevices) {
-        DeviceClass deviceClass = m_supportedDevices.value(device->deviceClassId());
-        DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
+    // TODO: this is just temporary for debugging...
+    foreach (DevicePlugin *plugin, plugins()) {
         if (plugin->requiredHardware().testFlag(HardwareResourceRadio433)) {
             plugin->radioData(rawData);
         }
     }
+
+    //    foreach (Device *device, m_configuredDevices) {
+    //        DeviceClass deviceClass = m_supportedDevices.value(device->deviceClassId());
+    //        DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
+    //        if (plugin->requiredHardware().testFlag(HardwareResourceRadio433)) {
+    //            plugin->radioData(rawData);
+    //        }
+    //    }
 }
 
 void DeviceManager::timerEvent()

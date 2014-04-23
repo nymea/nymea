@@ -16,33 +16,35 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <QCoreApplication>
-#include <guhcore.h>
+#ifndef DEVICEPLUGINWAKEONLAN_H
+#define DEVICEPLUGINWAKEONLAN_H
 
-#include <QtPlugin>
+#include "plugin/deviceplugin.h"
 
-Q_IMPORT_PLUGIN(DevicePluginElro)
-Q_IMPORT_PLUGIN(DevicePluginIntertechno)
-//Q_IMPORT_PLUGIN(DevicePluginMeisterAnker)
-Q_IMPORT_PLUGIN(DevicePluginWifiDetector)
-Q_IMPORT_PLUGIN(DevicePluginConrad)
-Q_IMPORT_PLUGIN(DevicePluginMock)
-Q_IMPORT_PLUGIN(DevicePluginOpenweathermap)
-Q_IMPORT_PLUGIN(DevicePluginLircd)
-Q_IMPORT_PLUGIN(DevicePluginGoogleMail)
-Q_IMPORT_PLUGIN(DevicePluginWakeOnLan)
+#include <QProcess>
 
-#if USE_BOBLIGHT
-Q_IMPORT_PLUGIN(DevicePluginBoblight)
-#endif
-
-int main(int argc, char *argv[])
+class DevicePluginWakeOnLan : public DevicePlugin
 {
-    QCoreApplication a(argc, argv);
+    Q_OBJECT
 
-    a.setOrganizationName("guh");
+    Q_PLUGIN_METADATA(IID "guru.guh.DevicePlugin" FILE "devicepluginwakeonlan.json")
+    Q_INTERFACES(DevicePlugin)
 
-    GuhCore::instance();
+public:
+    explicit DevicePluginWakeOnLan();
 
-    return a.exec();
-}
+    QList<Vendor> supportedVendors() const override;
+    QList<DeviceClass> supportedDevices() const override;
+    DeviceManager::HardwareResources requiredHardware() const override;
+
+    QString pluginName() const override;
+    PluginId pluginId() const override;
+    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
+
+
+private slots:
+    void wakeup(QString mac);
+
+};
+
+#endif // DEVICEPLUGINWAKEONLAN_H

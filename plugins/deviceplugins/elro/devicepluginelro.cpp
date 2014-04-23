@@ -64,6 +64,8 @@ VendorId mumbiVendorId = VendorId("5f91c01c-0168-4bdf-a5ed-37cb6971b775");
 
 DeviceClassId elroRemoteId = DeviceClassId("d85c1ef4-197c-4053-8e40-707aa671d302");
 DeviceClassId elroSwitchId = DeviceClassId("308ae6e6-38b3-4b3a-a513-3199da2764f8");
+DeviceClassId elroMotionDetectorId = DeviceClassId("4c64aee6-7a4f-41f2-b278-edc55f0da0d3");
+
 
 DevicePluginElro::DevicePluginElro()
 {
@@ -140,6 +142,20 @@ QList<DeviceClass> DevicePluginElro::supportedDevices() const
     
     deviceClassElroRemote.setEvents(buttonEvents);
     ret.append(deviceClassElroRemote);
+
+    // =======================================
+    // Motion Detector
+
+    DeviceClass deviceClassElroMotionDetector(pluginId(), elroVendorId, elroMotionDetectorId);
+    deviceClassElroMotionDetector.setName("Elro Motion Detector");
+    deviceClassElroMotionDetector.setCreateMethod(DeviceClass::CreateMethodDiscovery);
+
+    QList<EventType> motionDetectorEvents;
+    QList<ParamType> deviceParamsMotionDetector;
+
+
+
+
 
     // =======================================
     // Switch
@@ -311,7 +327,7 @@ void DevicePluginElro::radioData(QList<int> rawData)
     QByteArray binCode;
     
     // average 314
-    if(delay > 300 && delay < 400){
+    if(delay > 290 && delay < 400){
         // go trough all 48 timings (without sync signal)
         for(int i = 1; i <= 48; i+=2 ){
             int div;
@@ -347,6 +363,15 @@ void DevicePluginElro::radioData(QList<int> rawData)
         }
     }else{
         return;
+    }
+    qDebug() << "ELRO understands this protocol: " << binCode;
+
+    if(binCode.left(20) == "00000100000000000001"){
+        if(binCode.right(4) == "0100"){
+            qDebug() << "Motion Detector OFF";
+        }else{
+            qDebug() << "Motion Detector ON";
+        }
     }
 
     // get the channel of the remote signal (5 channels, true=1, false=0)
@@ -404,7 +429,6 @@ void DevicePluginElro::radioData(QList<int> rawData)
         }
     }
     if (!device) {
-        qWarning() << "couldn't find any configured device for elro:" << binCode.left(10) ;
         return;
     }
 
@@ -416,7 +440,7 @@ void DevicePluginElro::radioData(QList<int> rawData)
     DeviceClass deviceClass = supportedDevices().first();
     foreach (const EventType &eventType, deviceClass.events()) {
         if (eventType.name() == button) {
-            qDebug() << "emit event " << pluginName() << group << eventType.name() << power;
+            //qDebug() << "emit event " << pluginName() << group << eventType.name() << power;
             Event event = Event(eventType.id(), device->id(), params);
             emit emitEvent(event);
             return;

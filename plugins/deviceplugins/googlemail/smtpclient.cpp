@@ -29,7 +29,6 @@ SmtpClient::SmtpClient(const QString &host, int port, SmtpClient::ConnectionType
     m_sendMessageTimeout = 60000;
 
     connect(m_socket,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(socketError(QAbstractSocket::SocketError)));
-    connect(m_socket,SIGNAL(readyRead()),this,SLOT(readyRead()));
     connect(m_socket,SIGNAL(connected()),this,SLOT(connected()));
     connect(m_socket,SIGNAL(disconnected()),this,SLOT(disconnected()));
 

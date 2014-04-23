@@ -135,12 +135,12 @@ void Radio433::handleInterrupt()
                         rawData.append(m_timings[i]);
                         m_timings[i] = 0;
                     }
-//                    qDebug() << "-----------------------------------------------------------";
-//                    qDebug() << "|                    GENERIC signal                       |";
-//                    qDebug() << "-----------------------------------------------------------";
-//                    qDebug() << "signal length  :" << 49;
-//                    qDebug() << "delay      :" << rawData.first() /31;
-//                    qDebug() << rawData;
+                    qDebug() << "-----------------------------------------------------------";
+                    qDebug() << "|                    GENERIC signal                       |";
+                    qDebug() << "-----------------------------------------------------------";
+                    qDebug() << "signal length  :" << 49;
+                    qDebug() << "delay      :" << rawData.first() /31;
+                    qDebug() << rawData;
 
                     emit dataReceived(rawData);
                     break;

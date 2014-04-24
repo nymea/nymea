@@ -37,7 +37,7 @@ install_ssh_key() {
 }
 
 install_dependencies() {
-    exec_with_ssh $SUDO apt-get -y install build-essential gcc-4.7 g++-4.7 ccache gdb
+    exec_with_ssh $SUDO apt-get -y install build-essential gcc-4.7 g++-4.7 ccache gdb openssh
     echo "** Switching system to gcc 4.7 ***"
     exec_with_ssh update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.7 40 --slave /usr/bin/g++ g++ /usr/bin/g++-4.7
 }

@@ -221,9 +221,12 @@ Device *DevicePlugin::findDeviceByParams(const QList<Param> &params) const
     foreach (Device *device, myDevices()) {
         bool matching = true;
         foreach (const Param &param, params) {
-            if (device->paramValue(param.name()) == param.value()) {
-                return device;
+            if (device->paramValue(param.name()) != param.value()) {
+                matching = false;
             }
+        }
+        if (matching) {
+            return device;
         }
     }
     return nullptr;

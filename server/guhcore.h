@@ -35,6 +35,9 @@ class GuhCore : public QObject
 public:
     static GuhCore* instance();
 
+    // Used for testing
+    void destroy();
+
     DeviceManager* deviceManager() const;
     RuleEngine *ruleEngine() const;
 

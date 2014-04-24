@@ -408,12 +408,15 @@ void DeviceManager::loadConfiguredDevices()
 
         QList<Param> params;
         foreach (QString paramNameString, settings.childGroups()) {
+            qDebug() << "got paramNameString" << paramNameString;
             settings.beginGroup(paramNameString);
             Param param(paramNameString.remove(QRegExp("Param-")));
             param.setValue(settings.value("value"));
-            //  param.setOperand((Param::OperandType)settings.value("operand").toInt());
+            param.setOperand((Param::OperandType)settings.value("operand").toInt());
+            params.append(param);
             settings.endGroup();
         }
+        qDebug() << "loaded params from config" << params;
         device->setParams(params);
 
         settings.endGroup();

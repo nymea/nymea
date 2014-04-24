@@ -79,6 +79,8 @@ private slots:
 
     void removeDevice();
 
+    void storedDevices();
+
 private:
     QVariant injectAndWait(const QString &method, const QVariantMap &params);
     QStringList extractRefs(const QVariant &variant);
@@ -538,6 +540,40 @@ void TestJSONRPC::removeDevice()
 
     // Make sure the device is gone from settings too
     QCOMPARE(settings.allKeys().count(), 0);
+}
+
+void TestJSONRPC::storedDevices()
+{
+    QVariantMap params;
+    params.insert("deviceClassId", mockDeviceClassId);
+    QVariantMap deviceParams;
+    deviceParams.insert("httpport", 8888);
+    params.insert("deviceParams", deviceParams);
+    QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
+    QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
+    DeviceId addedDeviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
+    QVERIFY(!addedDeviceId.isNull());
+
+    // Destroy and recreate the core instance to check if settings are loaded at startup
+    GuhCore::instance()->destroy();
+    QSignalSpy spy(GuhCore::instance()->deviceManager(), SIGNAL(loaded()));
+    spy.wait();
+    m_mockTcpServer = MockTcpServer::servers().first();
+
+
+    response = injectAndWait("Devices.GetConfiguredDevices", QVariantMap());
+
+    foreach (const QVariant device, response.toMap().value("params").toMap().value("devices").toList()) {
+        qDebug() << "found stored device" << device;
+        if (DeviceId(device.toMap().value("id").toString()) == addedDeviceId) {
+            qDebug() << "found added device" << device.toMap().value("params").toList().first();
+            QCOMPARE(device.toMap().value("params").toMap(), deviceParams);
+        }
+    }
+
+    params.clear();
+    params.insert("deviceId", addedDeviceId);
+    response = injectAndWait("Devices.RemoveConfiguredDevice", params);
 }
 
 QTEST_MAIN(TestJSONRPC)

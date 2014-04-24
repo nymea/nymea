@@ -47,6 +47,12 @@ GuhCore *GuhCore::instance()
     return s_instance;
 }
 
+void GuhCore::destroy()
+{
+    delete s_instance;
+    s_instance = 0;
+}
+
 /*! Returns a pointer to the \l{DeviceManager} instance owned by GuhCore.*/
 DeviceManager *GuhCore::deviceManager() const
 {

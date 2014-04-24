@@ -410,7 +410,7 @@ QPair<bool, QString> JsonTypes::validateMap(const QVariantMap &templateMap, cons
 
 QPair<bool, QString> JsonTypes::validateProperty(const QVariant &templateValue, const QVariant &value)
 {
-    qDebug() << "validating property. template:" << templateValue << "got:" << value;
+//    qDebug() << "validating property. template:" << templateValue << "got:" << value;
     QString strippedTemplateValue = templateValue.toString();
 
     if (strippedTemplateValue == "variant") {
@@ -440,7 +440,7 @@ QPair<bool, QString> JsonTypes::validateList(const QVariantList &templateList, c
 
     for (int i = 0; i < list.count(); ++i) {
         QVariant listEntry = list.at(i);
-        qDebug() << "validating" << list << templateList;
+//        qDebug() << "validating" << list << templateList;
         QPair<bool, QString> result = validateVariant(entryTemplate, listEntry);
         if (!result.first) {
             qDebug() << "List entry not matching template";
@@ -457,14 +457,14 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
         if (templateVariant.toString().startsWith("$ref:")) {
             QString refName = templateVariant.toString();
             if (refName == actionRef()) {
-                qDebug() << "validating action";
+//                qDebug() << "validating action";
                 QPair<bool, QString> result = validateMap(actionDescription(), variant.toMap());
                 if (!result.first) {
                     qDebug() << "Error validating action";
                     return result;
                 }
             } else if (refName == eventRef()) {
-                qDebug() << "validating event";
+//                qDebug() << "validating event";
                 QPair<bool, QString> result = validateMap(eventDescription(), variant.toMap());
                 if (!result.first) {
                     qDebug() << "event not valid";

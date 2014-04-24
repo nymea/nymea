@@ -39,7 +39,7 @@ RulesHandler::RulesHandler(QObject *parent) :
 
     params.clear(); returns.clear();
     setDescription("AddRule", "Add a rule");
-    params.insert("event", JsonTypes::eventRef());
+    params.insert("eventDescriptor", JsonTypes::eventDescriptorRef());
     QVariantList actions;
     actions.append(JsonTypes::actionRef());
     params.insert("actions", actions);
@@ -82,8 +82,8 @@ JsonReply* RulesHandler::AddRule(const QVariantMap &params)
 
     EventTypeId eventTypeId(eventMap.value("eventTypeId").toString());
     DeviceId eventDeviceId(eventMap.value("deviceId").toString());
-    QList<Param> eventParams = JsonTypes::unpackParams(eventMap.value("params").toList());
-    Event event(eventTypeId, eventDeviceId, eventParams);
+    QList<ParamDescriptor> eventParams = JsonTypes::unpackParamDescriptors(eventMap.value("paramDescriptors").toList());
+    EventDescriptor eventDescriptor(eventTypeId, eventDeviceId, eventParams);
 
     QList<Action> actions;
     QVariantList actionList = params.value("actions").toList();
@@ -102,7 +102,7 @@ JsonReply* RulesHandler::AddRule(const QVariantMap &params)
         return createReply(returns);
     }
 
-    switch(GuhCore::instance()->ruleEngine()->addRule(event, actions)) {
+    switch(GuhCore::instance()->ruleEngine()->addRule(eventDescriptor, actions)) {
     case RuleEngine::RuleErrorNoError:
         returns.insert("success", true);
         returns.insert("errorMessage", "");

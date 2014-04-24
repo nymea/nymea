@@ -21,7 +21,7 @@
 
 #include "types/state.h"
 #include "types/action.h"
-#include "types/event.h"
+#include "types/eventdescriptor.h"
 #include "stateevaluator.h"
 
 #include <QUuid>
@@ -34,10 +34,10 @@ public:
         RuleTypeAny
     };
 
-    Rule(const QUuid &id, const Event &event, const QList<State> &states, const QList<Action> &actions);
+    Rule(const QUuid &id, const EventDescriptor &eventDescriptor, const QList<State> &states, const QList<Action> &actions);
 
     QUuid id() const;
-    QList<Event> events() const;
+    QList<EventDescriptor> eventDescriptors() const;
     QList<State> states() const;
     QList<Action> actions() const;
 
@@ -46,7 +46,7 @@ public:
 
 private:
     QUuid m_id;
-    QList<Event> m_events;
+    QList<EventDescriptor> m_eventDescriptors;
     QList<State> m_states;
     StateEvaluator stateEvaluator;
     QList<Action> m_actions;

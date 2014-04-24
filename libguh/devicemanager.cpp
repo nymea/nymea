@@ -412,7 +412,6 @@ void DeviceManager::loadConfiguredDevices()
             settings.beginGroup(paramNameString);
             Param param(paramNameString.remove(QRegExp("Param-")));
             param.setValue(settings.value("value"));
-            param.setOperand((Param::OperandType)settings.value("operand").toInt());
             params.append(param);
             settings.endGroup();
         }
@@ -439,7 +438,6 @@ void DeviceManager::storeConfiguredDevices()
         foreach (const Param &param, device->params()) {
             settings.beginGroup("Param-" + param.name());
             settings.setValue("value", param.value());
-            settings.setValue("operand", param.operand());
             settings.endGroup();
         }
         settings.endGroup();

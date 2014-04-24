@@ -23,13 +23,13 @@
     \ingroup rules
     \inmodule server
 
-    A Rule is always evented by an \l{Event}, has \l{State}{States}
+    A Rule is always triggered by an \l{EventDescriptor}, has \l{State}{States}
     to be compared and \l{Action}{Actions} to be executed. Additionally a
     Rule is either of type \l{Rule::RuleTypeAll} or \l{Rule::RuleTypeAny}
     which determines if all or any of the \l{State}{States} must be matching
     in order for the \l{Action}{Actions} to be executed.
 
-    \sa Event, State, Action
+    \sa EventDescriptor, State, Action
 */
 
 /*! \enum Rule::RuleType
@@ -48,11 +48,11 @@
 
 #include <QDebug>
 
-/*! Constructs a Rule with the given \a id, \a event, \a states and \a actions. The ruleType will default to
+/*! Constructs a Rule with the given \a id, \a eventDescriptor, \a states and \a actions. The ruleType will default to
  \l{Rule::RuleTypeAll}.*/
-Rule::Rule(const QUuid &id, const Event &event, const QList<State> &states, const QList<Action> &actions):
+Rule::Rule(const QUuid &id, const EventDescriptor &eventDescriptor, const QList<State> &states, const QList<Action> &actions):
     m_id(id),
-    m_events(QList<Event>() << event),
+    m_eventDescriptors(QList<EventDescriptor>() << eventDescriptor),
     m_states(states),
     m_actions(actions),
     m_ruleType(RuleTypeAll)
@@ -65,10 +65,10 @@ QUuid Rule::id() const
     return m_id;
 }
 
-/*! Returns the \l{Event} that events this Rule.*/
-QList<Event> Rule::events() const
+/*! Returns the \l{EventDescriptor} for this Rule.*/
+QList<EventDescriptor> Rule::eventDescriptors() const
 {
-    return m_events;
+    return m_eventDescriptors;
 }
 
 /*! Returns the \l{State}{States} that need to be matching in order for this to Rule apply. */
@@ -77,7 +77,7 @@ QList<State> Rule::states() const
     return m_states;
 }
 
-/*! Returns the \l{Action}{Actions} to be executed when this Rule is eventd and states match. */
+/*! Returns the \l{Action}{Actions} to be executed when this Rule is matched and states match. */
 QList<Action> Rule::actions() const
 {
     return m_actions;

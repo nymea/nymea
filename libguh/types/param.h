@@ -25,15 +25,6 @@
 class Param
 {
 public:
-    enum OperandType {
-        OperandTypeEquals,
-        OperandTypeNotEquals,
-        OperandTypeLess,
-        OperandTypeGreater,
-        OperandTypeLessThan,
-        OperandTypeGreaterThan
-    };
-
     Param(const QString &name, const QVariant &value = QVariant());
 
     QString name() const;
@@ -42,15 +33,11 @@ public:
     QVariant value() const;
     void setValue(const QVariant &value);
 
-    OperandType operand() const;
-    void setOperand(OperandType operand);
-
     bool isValid() const;
 
 private:
     QString m_name;
     QVariant m_value;
-    OperandType m_operand;
 };
 
 QDebug operator<<(QDebug dbg, const Param &param);

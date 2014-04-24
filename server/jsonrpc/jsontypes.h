@@ -27,6 +27,7 @@
 #include "types/action.h"
 #include "types/actiontype.h"
 #include "types/paramtype.h"
+#include "types/paramdescriptor.h"
 
 #include <QObject>
 
@@ -70,10 +71,12 @@ public:
     DECLARE_TYPE(operandTypes, "OperandType")
     DECLARE_OBJECT(paramType, "ParamType")
     DECLARE_OBJECT(param, "Param")
+    DECLARE_OBJECT(paramDescriptor, "ParamDescriptor")
     DECLARE_OBJECT(stateType, "StateType")
     DECLARE_OBJECT(state, "State")
     DECLARE_OBJECT(eventType, "EventType")
     DECLARE_OBJECT(event, "Event")
+    DECLARE_OBJECT(eventDescriptor, "EventDescriptor")
     DECLARE_OBJECT(actionType, "ActionType")
     DECLARE_OBJECT(action, "Action")
     DECLARE_OBJECT(plugin, "Plugin")
@@ -85,11 +88,13 @@ public:
 
     static QVariantMap packEventType(const EventType &eventType);
     static QVariantMap packEvent(const Event &event);
+    static QVariantMap packEventDescriptor(const EventDescriptor &event);
     static QVariantMap packActionType(const ActionType &actionType);
     static QVariantMap packAction(const Action &action);
     static QVariantMap packStateType(const StateType &stateType);
     static QVariantMap packParam(const Param &param);
     static QVariantMap packParamType(const ParamType &paramType);
+    static QVariantMap packParamDescriptor(const ParamDescriptor &paramDescriptor);
     static QVariantMap packVendor(const Vendor &vendor);
     static QVariantMap packDeviceClass(const DeviceClass &deviceClass);
     static QVariantMap packPlugin(DevicePlugin *plugin);
@@ -99,6 +104,8 @@ public:
 
     static Param unpackParam(const QVariantMap &paramMap);
     static QList<Param> unpackParams(const QVariantList &paramList);
+    static ParamDescriptor unpackParamDescriptor(const QVariantMap &paramDescriptorMap);
+    static QList<ParamDescriptor> unpackParamDescriptors(const QVariantList &paramDescriptorList);
 
     static QPair<bool, QString> validateMap(const QVariantMap &templateMap, const QVariantMap &map);
     static QPair<bool, QString> validateProperty(const QVariant &templateValue, const QVariant &value);

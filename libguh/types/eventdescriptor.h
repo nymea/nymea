@@ -16,54 +16,39 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "param.h"
+#ifndef EVENTDESCRIPTOR_H
+#define EVENTDESCRIPTOR_H
 
+#include "typeutils.h"
+#include "paramdescriptor.h"
+#include "event.h"
+
+#include <QString>
+#include <QVariantList>
 #include <QDebug>
 
-Param::Param(const QString &name, const QVariant &value):
-    m_name (name),
-    m_value(value)
+class EventDescriptor
 {
-}
+public:
+    EventDescriptor(const EventTypeId &eventTypeId, const DeviceId &deviceId, const QList<ParamDescriptor> &paramDescriptors = QList<ParamDescriptor>());
 
-QString Param::name() const
-{
-    return m_name;
-}
+    EventTypeId eventTypeId() const;
+    DeviceId deviceId() const;
 
-void Param::setName(const QString &name)
-{
-    m_name = name;
-}
+    QList<ParamDescriptor> paramDescriptors() const;
+    void setParamDescriptors(const QList<ParamDescriptor> &paramDescriptors);
+    ParamDescriptor paramDescriptor(const QString &paramDescriptorName) const;
 
-QVariant Param::value() const
-{
-    return m_value;
-}
+    bool operator ==(const EventDescriptor &other) const;
 
-void Param::setValue(const QVariant &value)
-{
-    m_value = value;
-}
+    bool operator ==(const Event &event) const;
 
-bool Param::isValid() const
-{
-    return !m_name.isEmpty() && m_value.isValid();
-}
+private:
+    EventTypeId m_eventTypeId;
+    DeviceId m_deviceId;
+    QList<ParamDescriptor> m_paramDescriptors;
+};
+QDebug operator<<(QDebug dbg, const EventDescriptor &eventDescriptor);
+QDebug operator<<(QDebug dbg, const QList<EventDescriptor> &eventDescriptors);
 
-QDebug operator<<(QDebug dbg, const Param &param)
-{
-    dbg.nospace() << "Param(Name: " << param.name() << ", Value:" << param.value() << ")";
-
-    return dbg.space();
-}
-
-QDebug operator<<(QDebug dbg, const QList<Param> &params)
-{
-    dbg.nospace() << "ParamList (count:" << params.count() << ")";
-    for (int i = 0; i < params.count(); i++ ) {
-        dbg.nospace() << "     " << i << ": " << params.at(i);
-    }
-
-    return dbg.space();
-}
+#endif // EVENTDESCRIPTOR_H

@@ -41,8 +41,8 @@ public:
 
     QList<Action> evaluateEvent(const Event &event);
 
-    RuleError addRule(const Event &event, const QList<Action> &actions);
-    RuleError addRule(const Event &event, const QList<State> &states, const QList<Action> &actions);
+    RuleError addRule(const EventDescriptor &eventDescriptor, const QList<Action> &actions);
+    RuleError addRule(const EventDescriptor &eventDescriptor, const QList<State> &states, const QList<Action> &actions);
     QList<Rule> rules() const;
 
     RuleError removeRule(const QUuid &ruleId);
@@ -50,6 +50,9 @@ public:
 signals:
     void ruleAdded(const QUuid &ruleId);
     void ruleRemoved(const QUuid &ruleId);
+
+private:
+    bool containsEvent(const Rule &rule, const Event &event);
 
 private:
     QString m_settingsFile;

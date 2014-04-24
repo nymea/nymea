@@ -566,8 +566,13 @@ void TestJSONRPC::storedDevices()
     foreach (const QVariant device, response.toMap().value("params").toMap().value("devices").toList()) {
         qDebug() << "found stored device" << device;
         if (DeviceId(device.toMap().value("id").toString()) == addedDeviceId) {
-            qDebug() << "found added device" << device.toMap().value("params").toList().first();
-            QCOMPARE(device.toMap().value("params").toMap(), deviceParams);
+//            foreach (const QVariant &paramVariant, device.toMap().value("params").toList()) {
+//                if ()
+//            }
+
+            qDebug() << "found added device" << device.toMap().value("params").toList().first().toMap();
+            qDebug() << "expected deviceParams:" << deviceParams;
+            QCOMPARE(device.toMap().value("params").toList().first().toMap(), deviceParams);
         }
     }
 

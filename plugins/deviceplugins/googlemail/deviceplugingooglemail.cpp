@@ -16,6 +16,120 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \page googlemail.html
+    \title Google Mail Notification
+
+    \ingroup plugins
+    \ingroup services
+
+    The Google Mail plugin allows you to send a mail notification from your Google mail
+    account by performing an \l{Action}.
+
+    ATTENTION: The password currently will be saved as plain text in the guh configuration file.
+
+    \section1 Examples
+    \section2 Adding a Google Mail Notification service
+    In order to add a Google Mail Notification service you need to configure
+    the "Google Mail login" (user), the password for your Gmail account and the address
+    of the recipient.
+    \code
+    {
+        "id":1,
+        "method":"Devices.AddConfiguredDevice",
+        "params":{
+            "deviceClassId": "{38ed6ffc-f43b-48f8-aea2-8d63cdcad87e}",
+            "deviceParams":{
+                "user":"my.address@gmail.com",
+                "password":"my_secret_password"
+                "sendTo":"recipient@example.com"}
+            }
+        }
+    }
+    \endcode
+    Before the device will be added, the plugin trys to login. If the username or the password
+    are wrong, an error message will be send.
+    \code
+    {
+        "id": 1,
+        "params": {
+            "deviceId": "{0b99ea27-896a-4a23-a044-3f1441f6a9a7}",
+            "errorMessage": "",
+            "success": true
+        },
+        "status": "success"
+    }
+    \endcode
+
+    \section2 Sending a mail notification
+    In order to send a mail notification from a configured Gmail service use following message
+    format.
+    \code
+    {
+        "id":1,
+        "method":"Actions.ExecuteAction",
+        "params":{
+            "actionTypeId": "{fa54f834-34d0-4aaf-b0ab-a165191d39d3}",
+            "deviceId":"{0b99ea27-896a-4a23-a044-3f1441f6a9a7}",
+            "params":{
+                "subject":"GUH notification",
+                "body":"Hello world!"
+            }
+        }
+    }
+    \endcode
+    response...
+    \code
+    {
+        "id": 1,
+        "params": {
+            "errorMessage": "",
+            "success": true
+        },
+        "status": "success"
+    }
+    \endcode
+
+    \section1 Plugin propertys:
+        \section2 Plugin parameters
+        Each configured plugin has following paramters:
+
+        \table
+            \header
+                \li Name
+                \li Description
+                \li Data Type
+            \row
+                \li user
+                \li This parameter holds the username (mail address) for the login
+                \li string
+            \row
+                \li password
+                \li This parameter holds the password for the login
+                \li string
+            \row
+                \li sendTo
+                \li This parameter holds the mail address of the recipient of the notification
+                \li string
+        \endtable
+
+        \section2 Plugin actions:
+        Following list contains all plugin \l{Action}s:
+            \table
+            \header
+                \li Name
+                \li Description
+                \li UUID
+            \row
+                \li sendMail
+                \li This action sends a mail to the recipient address of the configured device
+                    with a given subject and text body.
+                \li fa54f834-34d0-4aaf-b0ab-a165191d39d3
+            \endtable
+
+
+*/
+
 #include "deviceplugingooglemail.h"
 
 #include "plugin/device.h"
@@ -113,6 +227,7 @@ DeviceManager::DeviceError DevicePluginGoogleMail::executeAction(Device *device,
     qDebug() << "execute action " << sendMailActionTypeId.toString();
     if(action.actionTypeId() == sendMailActionTypeId){
         if(!m_smtpClient->login(device->paramValue("user").toString(), device->paramValue("password").toString())){
+            qDebug() << "ERROR: could nt login for sending mail";
             return DeviceManager::DeviceErrorDeviceParameterError;
         }
         m_smtpClient->sendMail(device->paramValue("user").toString(), device->paramValue("sendTo").toString(), action.param("subject").value().toString(), action.param("body").value().toString());

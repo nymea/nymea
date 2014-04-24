@@ -23,10 +23,151 @@
     \ingroup plugins
     \ingroup services
 
-    This plugin gives the possibility to get weather data...
+    This plugin alows you to get the current weather data from \l{http://www.openweathermap.org}.
+    The plugin offers two different search methods: if the user searches for a empty string,
+    the plugin makes an autodetction with the WAN ip and offers the user the found autodetectresult.
+    Otherwise the plugin return the list with the found searchresults.
 
-    \chapter Plugin propertys:
-        \section1 Actions
+    \section1 Examples
+    \section2 Autodetect location
+    If you want to autodetect your location dend a discovery request with an empty string.
+    \code
+    {
+        "id":1,
+        "method":"Devices.GetDiscoveredDevices",
+        "params":{
+            "deviceClassId":"985195aa-17ad-4530-88a4-cdd753d747d7",
+            "discoveryParams": {
+                "location":""
+            }
+        }
+    }
+    \endcode
+    response from autodetection...
+    \code
+    {
+        "id": 1,
+        "params": {
+            "deviceDescriptors": [
+                {
+                    "description": "AT",
+                    "id": "{75607672-5354-428f-a752-910140c22b18}",
+                    "title": "Vienna"
+                }
+            ],
+            "errorMessage": "",
+            "success": true
+        },
+        "status": "success"
+    }
+    \endcode
+    \section2 Searching city
+    If you want to search a string send following discovery message:
+    \code
+    {
+        "id":1,
+        "method":"Devices.GetDiscoveredDevices",
+        "params":{
+            "deviceClassId":"985195aa-17ad-4530-88a4-cdd753d747d7",
+            "discoveryParams": {
+                "location":"Vie"
+            }
+        }
+    }
+    \endcode
+    response...
+    \code
+    {
+        "id": 1,
+        "params": {
+            "deviceDescriptors": [
+                {
+                    "description": "DE",
+                    "id": "{6dc6be43-5bdc-4dbd-bcbf-6f8e1f90000b}",
+                    "title": "Viersen"
+                },
+                {
+                    "description": "VN",
+                    "id": "{af275298-77f1-40b4-843a-d0f3c7aef6bb}",
+                    "title": "Viet Tri"
+                },
+                {
+                    "description": "DE",
+                    "id": "{86a4ab63-41b4-4348-9830-4bf6c87474bf}",
+                    "title": "Viernheim"
+                },
+                {
+                    "description": "AR",
+                    "id": "{3b5f8eea-6159-4375-bd01-1f07de9c3a9d}",
+                    "title": "Viedma"
+                },
+                {
+                    "description": "FR",
+                    "id": "{f3b91f26-3275-4bb4-a594-924202a2124e}",
+                    "title": "Vierzon"
+                },
+                {
+                    "description": "AT",
+                    "id": "{b59d15f7-f52b-43a0-a9c5-a3fa80cbc2bd}",
+                    "title": "Vienna"
+                }
+            ],
+            "errorMessage": "",
+            "success": true
+        },
+        "status": "success"
+    }
+    \endcode
+    \section2 Adding a discovered city
+    If you want to add a dicovered city send the add "AddConfiguredDevice" message
+    with the deviceDescriptorId from the searchresult list. In this example the id for Vienna.
+    \code
+    {
+        "id":1,
+        "method":"Devices.AddConfiguredDevice",
+        "params":{
+            "deviceClassId":"985195aa-17ad-4530-88a4-cdd753d747d7",
+            "deviceDescriptorId": "b59d15f7-f52b-43a0-a9c5-a3fa80cbc2bd"
+        }
+    }
+    \endcode
+    response...
+    \code
+    {
+        "id": 1,
+        "params": {
+            "deviceId": "{af0f1958-b901-48da-ad97-d4d64af88cf8}",
+            "errorMessage": "",
+            "success": true
+        },
+        "status": "success"
+    }
+    \endcode
+
+    \section1 Plugin propertys:
+        \section2 Plugin parameters
+        Each configured plugin has following paramters:
+
+        \table
+            \header
+                \li Name
+                \li Description
+                \li Data Type
+            \row
+                \li location
+                \li This parameter holds the name of the city
+                \li string
+            \row
+                \li country
+                \li This parameter holds the country of the city
+                \li string
+            \row
+                \li id
+                \li This parameter holds the city id from \l{http://www.openweathermap.org}
+                \li string
+        \endtable
+
+        \section2 Actions
         Following list contains all plugin \l{Action}s:
             \table
             \header
@@ -35,23 +176,11 @@
                 \li UUID
             \row
                 \li refresh
-                \li This action refreshes all states. Only, if a state value realy changed
-                    a notification get emited.
+                \li This action refreshes all states.
                 \li cfbc6504-d86f-4856-8dfa-97b6fbb385e4
             \endtable
-        \section1 Events:
-        Following list contains all plugin \l{Event}s:
-            \table
-            \header
-                \li Name
-                \li UUID
-                \li Description
-            \row
-                \li
-                \li
-                \li
-            \endtable
-        \section1 States
+
+        \section2 States
         Following list contains all plugin \l{State}s:
             \table
             \header

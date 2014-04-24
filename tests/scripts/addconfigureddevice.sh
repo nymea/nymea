@@ -32,7 +32,7 @@ else
   elif [ $2 == "openweathermap" ]; then
       (echo '{"id":1, "method":"Devices.AddConfiguredDevice", "params":{"deviceClassId": "{985195aa-17ad-4530-88a4-cdd753d747d7}","deviceDescriptorId":"'$4'"}}'; sleep 1) | nc $1 1234
   elif [ $2 == "wol" ]; then
-      (echo '{"id":1, "method":"Devices.AddConfiguredDevice", "params":{"deviceClassId": "{3c8f2447-dcd0-4882-8c09-99e579e4d24c}","deviceParams":{"mac":"'$3'"}}}'; sleep 1) | nc $1 1234
+      (echo '{"id":1, "method":"Devices.AddConfiguredDevice", "params":{"deviceClassId": "{3c8f2447-dcd0-4882-8c09-99e579e4d24c}","deviceParams":{"mac":"'$3'", "name":"Wohnzimmer-PC"}}}'; sleep 1) | nc $1 1234
   elif [ $2 == "lirc" ]; then
     (echo '{"id":1, "method":"Devices.AddConfiguredDevice", "params":{"deviceClassId": "{5c2bc4cd-ba6c-4052-b6cd-1db83323ea22}","deviceParams":{"remoteName":"'$3'"}}}'; sleep 1) | nc $1 1234
   elif [ $2 == "discovered" ]; then

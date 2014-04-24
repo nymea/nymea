@@ -94,11 +94,12 @@ private:
 
 void TestJSONRPC::initTestcase()
 {
+    QCoreApplication::instance()->setOrganizationName("guh-test");
+
     // If testcase asserts cleanup won't do. Lets clear any previous test run settings leftovers
     QSettings settings;
     settings.clear();
 
-    QCoreApplication::instance()->setOrganizationName("guh-test");
     m_commandId = 0;
 
     GuhCore::instance();

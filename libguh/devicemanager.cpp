@@ -167,43 +167,43 @@ DeviceManager::DeviceError DeviceManager::discoverDevices(const DeviceClassId &d
     Optionally you can supply an id yourself if you must keep track of the added device. If you don't supply it, a new one will
     be generated.
 */
-DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassId &deviceClassId, const QList<Param> &params, const DeviceId id)
+QPair<DeviceManager::DeviceError, QString> DeviceManager::addConfiguredDevice(const DeviceClassId &deviceClassId, const QList<Param> &params, const DeviceId id)
 {
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
     if (!deviceClass.isValid()) {
         qWarning() << "cannot find a device class with id" << deviceClassId;
-        return DeviceErrorDeviceClassNotFound;
+        return qMakePair<DeviceError, QString>(DeviceErrorDeviceClassNotFound, deviceClassId.toString());
     }
     if (deviceClass.createMethod() == DeviceClass::CreateMethodUser) {
         return addConfiguredDeviceInternal(deviceClassId, params, id);
     }
-    return DeviceErrorCreationMethodNotSupported;
+    return qMakePair<DeviceError, QString>(DeviceErrorCreationMethodNotSupported, "CreateMethodUser");
 }
 
-DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &deviceId)
+QPair<DeviceManager::DeviceError, QString> DeviceManager::addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &deviceId)
 {
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
     if (!deviceClass.isValid()) {
-        return DeviceErrorDeviceClassNotFound;
+        return qMakePair<DeviceError, QString>(DeviceErrorDeviceClassNotFound, deviceClassId.toString());
     }
     if (deviceClass.createMethod() != DeviceClass::CreateMethodDiscovery) {
-        return DeviceErrorCreationMethodNotSupported;
+        return qMakePair<DeviceError, QString>(DeviceErrorCreationMethodNotSupported, "CreateMethodDiscovery");
     }
 
     DeviceDescriptor descriptor = m_discoveredDevices.take(deviceClassId).take(deviceDescriptorId);
     if (!descriptor.isValid()) {
-        return DeviceErrorDeviceDescriptorNotFound;
+        return qMakePair<DeviceError>(DeviceErrorDeviceDescriptorNotFound, deviceDescriptorId.toString());
     }
 
     return addConfiguredDeviceInternal(deviceClassId, descriptor.params(), deviceId);
 }
 
-DeviceManager::DeviceError DeviceManager::addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QList<Param> &params, const DeviceId id)
+QPair<DeviceManager::DeviceError, QString> DeviceManager::addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QList<Param> &params, const DeviceId id)
 {
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
     if (deviceClass.id().isNull()) {
         qWarning() << "cannot find a device class with id" << deviceClassId;
-        return DeviceErrorDeviceClassNotFound;
+        return qMakePair<DeviceError, QString>(DeviceErrorDeviceClassNotFound, deviceClassId.toString());
     }
 
     // Make sure we have all required params
@@ -217,7 +217,7 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDeviceInternal(const Devi
 
         if (!found) {
             qWarning() << "Missing parameter when creating device:" << paramType.name();
-            return DeviceErrorMissingParameter;
+            return qMakePair<DeviceError, QString>(DeviceErrorMissingParameter, paramType.name());
         }
     }
     // Make sure we don't have unused params
@@ -231,20 +231,20 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDeviceInternal(const Devi
         }
         if (!found) {
             // TODO: Check if parameter type matches
-            return DeviceErrorDeviceParameterError;
+            return qMakePair<DeviceError, QString>(DeviceErrorDeviceParameterError, param.name());
         }
     }
 
     foreach(Device *device, m_configuredDevices) {
         if (device->id() == id) {
-            return DeviceErrorDuplicateUuid;
+            return qMakePair<DeviceError, QString>(DeviceErrorDuplicateUuid, id.toString());
         }
     }
 
     DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
     if (!plugin) {
         qWarning() << "Cannot find a plugin for this device class!";
-        return DeviceErrorPluginNotFound;
+        return qMakePair<DeviceError, QString>(DeviceErrorPluginNotFound, deviceClass.pluginId().toString());
     }
 
     Device *device = new Device(plugin->pluginId(), id, deviceClassId, this);
@@ -254,19 +254,19 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDeviceInternal(const Devi
         m_configuredDevices.append(device);
     } else {
         qWarning() << "Failed to set up device.";
-        return DeviceErrorSetupFailed;
+        return qMakePair<DeviceError, QString>(DeviceErrorSetupFailed, "Plugin failure");
     }
 
     storeConfiguredDevices();
 
-    return DeviceErrorNoError;
+    return qMakePair<DeviceError, QString>(DeviceErrorNoError, QString());
 }
 
-DeviceManager::DeviceError DeviceManager::removeConfiguredDevice(const DeviceId &deviceId)
+QPair<DeviceManager::DeviceError, QString> DeviceManager::removeConfiguredDevice(const DeviceId &deviceId)
 {
     Device *device = findConfiguredDevice(deviceId);
     if (!device) {
-        return DeviceErrorDeviceNotFound;
+        return qMakePair<DeviceError, QString>(DeviceErrorDeviceNotFound, deviceId.toString());
     }
 
     m_configuredDevices.removeAll(device);
@@ -283,7 +283,7 @@ DeviceManager::DeviceError DeviceManager::removeConfiguredDevice(const DeviceId 
     settings.beginGroup(deviceId.toString());
     settings.remove("");
 
-    return DeviceErrorNoError;
+    return qMakePair<DeviceError, QString>(DeviceErrorNoError, QString());
 }
 
 /*! Returns the \l{Device} with the given \a id. Null if the id couldn't be found. */

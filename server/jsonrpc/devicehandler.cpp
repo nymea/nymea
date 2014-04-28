@@ -258,7 +258,7 @@ JsonReply* DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
     }
     DeviceDescriptorId deviceDescriptorId(params.value("deviceDescriptorId").toString());
     DeviceId newDeviceId = DeviceId::createDeviceId();
-    DeviceManager::DeviceError status;
+    QPair<DeviceManager::DeviceError, QString> status;
     if (deviceDescriptorId.isNull()) {
         qDebug() << "adding a manual device.";
         status = GuhCore::instance()->deviceManager()->addConfiguredDevice(deviceClass, deviceParams, newDeviceId);
@@ -267,34 +267,34 @@ JsonReply* DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
         status = GuhCore::instance()->deviceManager()->addConfiguredDevice(deviceClass, deviceDescriptorId, newDeviceId);
     }
     QVariantMap returns;
-    switch(status) {
+    switch(status.first) {
     case DeviceManager::DeviceErrorNoError:
         returns.insert("success", true);
         returns.insert("errorMessage", "");
         returns.insert("deviceId", newDeviceId);
         break;
     case DeviceManager::DeviceErrorDeviceClassNotFound:
-        returns.insert("errorMessage", "Error creating device. Device class not found.");
+        returns.insert("errorMessage", QString("Error creating device. Device class not found: %1").arg(status.second));
         returns.insert("success", false);
         break;
     case DeviceManager::DeviceErrorMissingParameter:
-        returns.insert("errorMessage", "Error creating device. Missing parameter.");
+        returns.insert("errorMessage", QString("Error creating device. Missing parameter: %1").arg(status.second));
         returns.insert("success", false);
         break;
     case DeviceManager::DeviceErrorSetupFailed:
-        returns.insert("errorMessage", "Error creating device. Device setup failed.");
+        returns.insert("errorMessage", QString("Error creating device. Device setup failed: %1").arg(status.second));
         returns.insert("success", false);
         break;
     case DeviceManager::DeviceErrorCreationMethodNotSupported:
-        returns.insert("errorMessage", "Error creating device. This device can't be created this way.");
+        returns.insert("errorMessage", QString("Error creating device. This device can't be created this way: %1").arg(status.second));
         returns.insert("success", false);
         break;
     case DeviceManager::DeviceErrorDeviceParameterError:
-        returns.insert("errorMessage", "Error creating device. Invalid device parameter.");
+        returns.insert("errorMessage", QString("Error creating device. Invalid device parameter: %1").arg(status.second));
         returns.insert("success", false);
         break;
     default:
-        returns.insert("errorMessage", "Unknown error.");
+        returns.insert("errorMessage", "Unknown error. Please report a bug describing what you did.");
         returns.insert("success", false);
     }
     return createReply(returns);
@@ -315,14 +315,15 @@ JsonReply* DeviceHandler::GetConfiguredDevices(const QVariantMap &params) const
 JsonReply* DeviceHandler::RemoveConfiguredDevice(const QVariantMap &params)
 {
     QVariantMap returns;
-    switch(GuhCore::instance()->deviceManager()->removeConfiguredDevice(DeviceId(params.value("deviceId").toString()))) {
+    QPair<DeviceManager::DeviceError, QString> status = GuhCore::instance()->deviceManager()->removeConfiguredDevice(DeviceId(params.value("deviceId").toString()));
+    switch(status.first) {
     case DeviceManager::DeviceErrorNoError:
         returns.insert("success", true);
         returns.insert("errorMessage", "");
         break;
     case DeviceManager::DeviceErrorDeviceNotFound:
         returns.insert("success", false);
-        returns.insert("errorMessage", "No such device.");
+        returns.insert("errorMessage", QString("No such device: %1").arg(status.second));
         break;
     default:
         returns.insert("success", false);

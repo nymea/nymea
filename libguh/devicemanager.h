@@ -72,9 +72,9 @@ public:
     DeviceError discoverDevices(const DeviceClassId &deviceClassId, const QVariantMap &params) const;
 
     QList<Device*> configuredDevices() const;
-    DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const QList<Param> &params, const DeviceId id = DeviceId::createDeviceId());
-    DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &id = DeviceId::createDeviceId());
-    DeviceError removeConfiguredDevice(const DeviceId &deviceId);
+    QPair<DeviceError, QString> addConfiguredDevice(const DeviceClassId &deviceClassId, const QList<Param> &params, const DeviceId id = DeviceId::createDeviceId());
+    QPair<DeviceError, QString> addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &id = DeviceId::createDeviceId());
+    QPair<DeviceError, QString> removeConfiguredDevice(const DeviceId &deviceId);
 
     Device* findConfiguredDevice(const DeviceId &id) const;
     QList<Device*> findConfiguredDevices(const DeviceClassId &deviceClassId) const;
@@ -103,7 +103,7 @@ private slots:
     void timerEvent();
 
 private:
-    DeviceError addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QList<Param> &params, const DeviceId id = DeviceId::createDeviceId());
+    QPair<DeviceError, QString> addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QList<Param> &params, const DeviceId id = DeviceId::createDeviceId());
     bool setupDevice(Device *device);
     QPair<bool, QString> verifyParams(const QList<ParamType> paramTypes, const QList<Param> params);
 

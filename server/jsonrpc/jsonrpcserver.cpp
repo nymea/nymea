@@ -245,6 +245,13 @@ void JsonRPCServer::clientConnected(const QUuid &clientId)
 {
     // Notifications disabled by default
     m_clients.insert(clientId, false);
+
+    QVariantMap handshake;
+    handshake.insert("id", 0);
+    handshake.insert("server", "guh JSONRPC interface");
+    handshake.insert("version", "0.0.0");
+    QJsonDocument jsonDoc = QJsonDocument::fromVariant(handshake);
+    m_tcpServer->sendData(clientId, jsonDoc.toJson());
 }
 
 void JsonRPCServer::clientDisconnected(const QUuid &clientId)

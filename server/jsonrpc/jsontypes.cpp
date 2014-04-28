@@ -122,6 +122,7 @@ void JsonTypes::init()
 
     // DeviceClass
     s_deviceClass.insert("id", "uuid");
+    s_deviceClass.insert("vendorId", "uuid");
     s_deviceClass.insert("name", "string");
     s_deviceClass.insert("states", QVariantList() << stateTypeRef());
     s_deviceClass.insert("events", QVariantList() << eventTypeRef());
@@ -300,6 +301,7 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass)
     QVariantMap variant;
     variant.insert("name", deviceClass.name());
     variant.insert("id", deviceClass.id());
+    variant.insert("vendorId", deviceClass.vendorId());
     QVariantList stateTypes;
     foreach (const StateType &stateType, deviceClass.states()) {
         stateTypes.append(packStateType(stateType));

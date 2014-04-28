@@ -74,10 +74,8 @@ QList<DeviceClass> DevicePluginBoblight::supportedDevices() const
     ActionType setColorAction(setColorActionTypeId);
     setColorAction.setName("Set color");
 
-    QVariantList actionParamsSetColor;
-    QVariantMap actionParamSetColor;
-    actionParamSetColor.insert("name", "color");
-    actionParamSetColor.insert("type", "color");
+    QList<ParamType> actionParamsSetColor;
+    ParamType actionParamSetColor("color", QVariant::Color);
     actionParamsSetColor.append(actionParamSetColor);
     setColorAction.setParameters(actionParamsSetColor);
 

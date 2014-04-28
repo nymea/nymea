@@ -185,15 +185,11 @@ QList<DeviceClass> DevicePluginGoogleMail::supportedDevices() const
     // Actions
     QList<ActionType> googleMailActions;
 
-    QVariantList actionParamsMail;
-    QVariantMap actionParamSubject;
-    actionParamSubject.insert("name", "subject");
-    actionParamSubject.insert("type", "string");
+    QList<ParamType> actionParamsMail;
+    ParamType actionParamSubject("subject", QVariant::String);
     actionParamsMail.append(actionParamSubject);
 
-    QVariantMap actionParamBody;
-    actionParamBody.insert("name", "body");
-    actionParamBody.insert("type", "string");
+    ParamType actionParamBody("body", QVariant::String);
     actionParamsMail.append(actionParamBody);
 
     ActionType sendMailAction(sendMailActionTypeId);

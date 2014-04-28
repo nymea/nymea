@@ -343,6 +343,8 @@ DeviceManager::DeviceError DeviceManager::executeAction(const Action &action)
                 if (actionType.id() == action.actionTypeId()) {
                     found = true;
 
+                    qDebug() << "checking params" << actionType.parameters().count() << action.params().count();
+                    qDebug() << "action params:" << action.params();
                     if (actionType.parameters().count() > action.params().count()) {
                         return DeviceErrorMissingParameter;
                     }

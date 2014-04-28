@@ -326,22 +326,33 @@ void TestJSONRPC::executeAction_data()
 {
     QTest::addColumn<DeviceId>("deviceId");
     QTest::addColumn<ActionTypeId>("actionTypeId");
+    QTest::addColumn<QVariantList>("actionParams");
     QTest::addColumn<bool>("success");
 
-    QTest::newRow("valid action") << m_mockDeviceId << mockAction1Id << true;
-    QTest::newRow("invalid device TypeId") << DeviceId("f2965936-0dd0-4014-8f31-4c2ef7fc5952") << mockAction1Id << false;
-    QTest::newRow("invalid action TypeId") << m_mockDeviceId << ActionTypeId("f2965936-0dd0-4014-8f31-4c2ef7fc5952") << false;
+    QVariantList params;
+    QVariantMap param1;
+    param1.insert("mockActionParam1", 5);
+    params.append(param1);
+    QVariantMap param2;
+    param2.insert("mockActionParam2", true);
+    params.append(param2);
+
+    QTest::newRow("valid action") << m_mockDeviceId << mockAction1Id << params << true;
+    QTest::newRow("invalid device TypeId") << DeviceId("f2965936-0dd0-4014-8f31-4c2ef7fc5952") << mockAction1Id << params << false;
+    QTest::newRow("invalid action TypeId") << m_mockDeviceId << ActionTypeId("f2965936-0dd0-4014-8f31-4c2ef7fc5952") << params << false;
 }
 
 void TestJSONRPC::executeAction()
 {
     QFETCH(DeviceId, deviceId);
     QFETCH(ActionTypeId, actionTypeId);
+    QFETCH(QVariantList, actionParams);
     QFETCH(bool, success);
 
     QVariantMap params;
     params.insert("actionTypeId", actionTypeId);
     params.insert("deviceId", deviceId);
+    params.insert("params", actionParams);
     QVariant response = injectAndWait("Actions.ExecuteAction", params);
     QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), success);
 

@@ -20,6 +20,7 @@
 #define ACTIONTYPE_H
 
 #include "typeutils.h"
+#include "paramtype.h"
 
 #include <QVariantList>
 
@@ -33,14 +34,14 @@ public:
     QString name() const;
     void setName(const QString &name);
 
-    QVariantList parameters() const;
-    void setParameters(const QVariantList &parameters);
+    QList<ParamType> parameters() const;
+    void setParameters(const QList<ParamType> &parameters);
 
 private:
     ActionTypeId m_id;
     QString m_name;
 
-    QVariantList m_parameters;
+    QList<ParamType> m_parameters;
 };
 
 #endif // ACTIONTYPE_H

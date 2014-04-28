@@ -90,8 +90,14 @@ QList<DeviceClass> DevicePluginMock::supportedDevices() const
 
     QList<ActionType> mockActions;
 
+    mockParams.clear();
     ActionType action1(mockAction1Id);
     action1.setName("Mock Action 1");
+    ParamType mockActionParam1("mockActionParam1", QVariant::Int);
+    mockParams.append(mockActionParam1);
+    ParamType mockActionParam2("mockActionParam2", QVariant::Bool);
+    mockParams.append(mockActionParam2);
+    action1.setParameters(mockParams);
     mockActions.append(action1);
 
     ActionType action2(mockAction2Id);

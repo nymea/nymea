@@ -187,10 +187,8 @@ QList<DeviceClass> DevicePluginElro::supportedDevices() const
     deviceClassElroSwitch.setParams(deviceParamsSwitch);
 
 
-    QVariantList actionParamsSwitch;
-    QVariantMap actionParamSwitch;
-    actionParamSwitch.insert("name", "power");
-    actionParamSwitch.insert("type", "bool");
+    QList<ParamType> actionParamsSwitch;
+    ParamType actionParamSwitch("power", QVariant::Bool);
     actionParamsSwitch.append(actionParamSwitch);
 
     QList<ActionType> switchActions;

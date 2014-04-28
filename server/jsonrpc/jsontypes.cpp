@@ -223,7 +223,11 @@ QVariantMap JsonTypes::packActionType(const ActionType &actionType)
     QVariantMap variantMap;
     variantMap.insert("id", actionType.id());
     variantMap.insert("name", actionType.name());
-    variantMap.insert("params", actionType.parameters());
+    QVariantList params;
+    foreach (const ParamType &paramType, actionType.parameters()) {
+        params.append(packParamType(paramType));
+    }
+    variantMap.insert("params", params);
     return variantMap;
 }
 

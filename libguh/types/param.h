@@ -25,7 +25,7 @@
 class Param
 {
 public:
-    Param(const QString &name, const QVariant &value = QVariant());
+    Param(const QString &name = QString(), const QVariant &value = QVariant());
 
     QString name() const;
     void setName(const QString &name);
@@ -40,6 +40,7 @@ private:
     QVariant m_value;
 };
 
+Q_DECLARE_METATYPE(Param)
 QDebug operator<<(QDebug dbg, const Param &param);
 QDebug operator<<(QDebug dbg, const QList<Param> &params);
 

@@ -318,13 +318,8 @@ QList<DeviceClass> DevicePluginIntertechno::supportedDevices() const
 
     QList<ActionType> switchActions;
 
-    QVariantList paramsSwitch;
-    QVariantMap paramSwitch;
-
-    // on  = true
-    // off = false
-    paramSwitch.insert("name", "power");
-    paramSwitch.insert("type", "bool");
+    QList<ParamType> paramsSwitch;
+    ParamType paramSwitch("power", QVariant::Bool);
     paramsSwitch.append(paramSwitch);
 
     ActionType switchActionPower(ActionTypeId("df19fb51-c3cd-4b95-8d88-ebbb535f4789"));

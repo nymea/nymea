@@ -48,7 +48,7 @@ public:
     void setConfiguration(const QVariantMap &configuration) override;
 
 public slots:
-    DeviceManager::DeviceError executeAction(Device *device, const Action &action);
+    QPair<DeviceManager::DeviceError, QString> executeAction(Device *device, const Action &action);
 
 private slots:
     void connectToBoblight();

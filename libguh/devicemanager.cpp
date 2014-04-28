@@ -330,7 +330,7 @@ DeviceClass DeviceManager::findDeviceClass(const DeviceClassId &deviceClassId) c
 /*! Execute the given \{Action}.
     This will find the \l{Device} \a action refers to in \l{Action::deviceId()} and
     its \l{DevicePlugin}. Then will dispatch the execution to the \l{DevicePlugin}.*/
-DeviceManager::DeviceError DeviceManager::executeAction(const Action &action)
+QPair<DeviceManager::DeviceError, QString> DeviceManager::executeAction(const Action &action)
 {
     foreach (Device *device, m_configuredDevices) {
         if (action.deviceId() == device->id()) {
@@ -345,21 +345,21 @@ DeviceManager::DeviceError DeviceManager::executeAction(const Action &action)
 
                     qDebug() << "checking params" << actionType.parameters().count() << action.params().count();
                     qDebug() << "action params:" << action.params();
-                    if (actionType.parameters().count() > action.params().count()) {
-                        return DeviceErrorMissingParameter;
+                    QPair<bool, QString> paramCheck = verifyParams(actionType.parameters(), action.params());
+                    if (!paramCheck.first) {
+                        return qMakePair<DeviceError, QString>(DeviceErrorMissingParameter, paramCheck.second);
                     }
-
                     continue;
                 }
             }
             if (!found) {
-                return DeviceErrorActionTypeNotFound;
+                return qMakePair<DeviceError, QString>(DeviceErrorActionTypeNotFound, action.actionTypeId().toString());
             }
 
             return m_devicePlugins.value(device->pluginId())->executeAction(device, action);
         }
     }
-    return DeviceErrorDeviceNotFound;
+    return qMakePair<DeviceError, QString>(DeviceErrorDeviceNotFound, action.deviceId().toString());
 }
 
 void DeviceManager::loadPlugins()
@@ -561,4 +561,24 @@ bool DeviceManager::setupDevice(Device *device)
 
     connect(device, SIGNAL(stateValueChanged(QUuid,QVariant)), this, SLOT(slotDeviceStateValueChanged(QUuid,QVariant)));
     return true;
+}
+
+QPair<bool, QString> DeviceManager::verifyParams(const QList<ParamType> paramTypes, const QList<Param> params)
+{
+    foreach (const ParamType &paramType, paramTypes) {
+        qDebug() << "checking paramType" << paramType.name();
+        bool found = false;
+        foreach (const Param &param, params) {
+            qDebug() << "checking param" << param.name();
+            if (param.name() == paramType.name()) {
+                if (param.value().canConvert(paramType.type())) {
+                    found = true;
+                }
+            }
+        }
+        if (!found) {
+            return qMakePair<bool, QString>(false, paramType.name());
+        }
+    }
+    return qMakePair<bool, QString>(true, QString());
 }

@@ -48,7 +48,7 @@ public:
     bool configureAutoDevice(QList<Device *> loadedDevices, Device *device) const override;
 
 public slots:
-    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
+    QPair<DeviceManager::DeviceError, QString> executeAction(Device *device, const Action &action) override;
 
 private slots:
     void setState(const StateTypeId &stateTypeId, const QVariant &value);

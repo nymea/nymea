@@ -218,7 +218,7 @@ PluginId DevicePluginElro::pluginId() const
     return PluginId("2b267f81-d9ae-4f4f-89a0-7386b547cfd3");
 }
 
-DeviceManager::DeviceError DevicePluginElro::executeAction(Device *device, const Action &action)
+QPair<DeviceManager::DeviceError, QString> DevicePluginElro::executeAction(Device *device, const Action &action)
 {
 
     QList<int> rawData;
@@ -311,7 +311,7 @@ DeviceManager::DeviceError DevicePluginElro::executeAction(Device *device, const
     //qDebug() << "rawData" << rawData;
     qDebug() << "transmit" << pluginName() << action.param("power").value().toBool();
     transmitData(rawData);
-    return DeviceManager::DeviceErrorNoError;
+    return report();
 }
 
 void DevicePluginElro::radioData(QList<int> rawData)

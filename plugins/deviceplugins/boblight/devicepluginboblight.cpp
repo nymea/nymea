@@ -133,21 +133,21 @@ void DevicePluginBoblight::setConfiguration(const QVariantMap &configuration)
     connectToBoblight();
 }
 
-DeviceManager::DeviceError DevicePluginBoblight::executeAction(Device *device, const Action &action)
+QPair<DeviceManager::DeviceError, QString> DevicePluginBoblight::executeAction(Device *device, const Action &action)
 {
     if (!m_bobClient->connected()) {
-        return DeviceManager::DeviceErrorSetupFailed;
+        return report(DeviceManager::DeviceErrorSetupFailed, device->id().toString());
     }
     QColor newColor = action.param("color").value().value<QColor>();
     if (!newColor.isValid()) {
-        return DeviceManager::DeviceErrorActionParameterError;
+        return report(DeviceManager::DeviceErrorActionParameterError, "color");
     }
     qDebug() << "executing boblight action" << newColor;
     m_bobClient->setColor(device->paramValue("channel").toInt(), newColor);
     m_bobClient->sync();
 
     device->setStateValue(colorStateTypeId, newColor);
-    return DeviceManager::DeviceErrorNoError;
+    return report();
 }
 
 void DevicePluginBoblight::connectToBoblight()

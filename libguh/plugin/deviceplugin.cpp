@@ -66,6 +66,15 @@ pure virtual methods: \l{DevicePlugin::pluginName()}, \l{DevicePlugin::pluginId(
  \fn void DevicePlugin::executeAction(Device *device, const Action &action)
  This will be called to actually execute actions on the hardware. The \{Device} and
  the \{Action} are contained in the \a device and \a action parameters.
+ Use \l{DevicePlugin::report()} to report the result. If everything worked out,
+ just return report(). Otherwise fill in the error code and a short message
+ describing the offending part. E.g:
+ If the action couldn't be executed because the device can't be reached (e.g. it is unplugged)
+ then report the appropriate error code and give the device id as message:
+ return report(DeviceManager::DeviceErrorSetupFailed, device->id());
+ Keep the message short, the DeviceManager will format it for you.
+
+ \sa DevicePlugin::report()
  */
 
 /*!
@@ -249,5 +258,16 @@ void DevicePlugin::transmitData(QList<int> rawData)
     default:
         qWarning() << "Unknown harware type. Cannot send.";
     }
+}
+
+/*!
+ Constructs a status report to be returned. By default (when called without
+ arguments) this will report \l{DeviceManager::DeviceErrorNoError} and an
+ empty message.
+ Keep the message short, the DeviceManager will format it for you.
+ */
+QPair<DeviceManager::DeviceError, QString> DevicePlugin::report(DeviceManager::DeviceError error, const QString &message)
+{
+    return qMakePair<DeviceManager::DeviceError, QString>(error, message);
 }
 

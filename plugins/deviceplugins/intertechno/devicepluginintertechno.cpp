@@ -348,7 +348,7 @@ PluginId DevicePluginIntertechno::pluginId() const
     return PluginId("e998d934-0397-42c1-ad63-9141bcac8563");
 }
 
-DeviceManager::DeviceError DevicePluginIntertechno::executeAction(Device *device, const Action &action)
+QPair<DeviceManager::DeviceError, QString> DevicePluginIntertechno::executeAction(Device *device, const Action &action)
 {
 
     QList<int> rawData;
@@ -391,7 +391,7 @@ DeviceManager::DeviceError DevicePluginIntertechno::executeAction(Device *device
     }else if(familyCode == "P"){
         binCode.append("01010101");
     }else{
-        return DeviceManager::DeviceErrorDeviceParameterError;
+        return report();
     }
 
     QString buttonCode = device->paramValue("buttonCode").toString();
@@ -431,7 +431,7 @@ DeviceManager::DeviceError DevicePluginIntertechno::executeAction(Device *device
     }else if(familyCode == "16"){
         binCode.append("01010101");
     }else{
-        return DeviceManager::DeviceErrorDeviceParameterError;
+        return report();
     }
 
     // =======================================
@@ -470,7 +470,7 @@ DeviceManager::DeviceError DevicePluginIntertechno::executeAction(Device *device
     qDebug() << "transmit" << pluginName() << familyCode << buttonCode << action.param("power").value().toBool();
     transmitData(rawData);
 
-    return DeviceManager::DeviceErrorNoError;
+    return report();
 
 }
 

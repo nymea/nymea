@@ -383,13 +383,15 @@ QVariantMap JsonTypes::packRule(const Rule &rule)
 
 Param JsonTypes::unpackParam(const QVariantMap &paramMap)
 {
-    return Param(paramMap.value("name").toString(), paramMap.value("value"));
+    QString key = paramMap.keys().first();
+    return Param(key, paramMap.value(key));
 }
 
 QList<Param> JsonTypes::unpackParams(const QVariantList &paramList)
 {
     QList<Param> params;
     foreach (const QVariant &paramVariant, paramList) {
+        qDebug() << "unpacking param" << paramVariant;
         params.append(unpackParam(paramVariant.toMap()));
     }
     return params;

@@ -218,19 +218,19 @@ DeviceManager::HardwareResources DevicePluginGoogleMail::requiredHardware() cons
     return DeviceManager::HardwareResourceNone;
 }
 
-DeviceManager::DeviceError DevicePluginGoogleMail::executeAction(Device *device, const Action &action)
+QPair<DeviceManager::DeviceError, QString> DevicePluginGoogleMail::executeAction(Device *device, const Action &action)
 {
     qDebug() << "execute action " << sendMailActionTypeId.toString();
     if(action.actionTypeId() == sendMailActionTypeId){
         if(!m_smtpClient->login(device->paramValue("user").toString(), device->paramValue("password").toString())){
             qDebug() << "ERROR: could nt login for sending mail";
-            return DeviceManager::DeviceErrorDeviceParameterError;
+            return report(DeviceManager::DeviceErrorDeviceParameterError, "user, password");
         }
         m_smtpClient->sendMail(device->paramValue("user").toString(), device->paramValue("sendTo").toString(), action.param("subject").value().toString(), action.param("body").value().toString());
         m_smtpClient->logout();
     }
 
-    return DeviceManager::DeviceErrorNoError;
+    return report();
 }
 
 QString DevicePluginGoogleMail::pluginName() const

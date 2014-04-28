@@ -41,7 +41,7 @@ public:
     void radioData(QList<int> rawData) override;
 
 public slots:
-    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
+    QPair<DeviceManager::DeviceError, QString> executeAction(Device *device, const Action &action) override;
 
 };
 

@@ -87,7 +87,7 @@ signals:
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &devices);
 
 public slots:
-    DeviceError executeAction(const Action &action);
+    QPair<DeviceError, QString> executeAction(const Action &action);
 
 private slots:
     void loadPlugins();
@@ -105,6 +105,9 @@ private slots:
 private:
     DeviceError addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QList<Param> &params, const DeviceId id = DeviceId::createDeviceId());
     bool setupDevice(Device *device);
+    QPair<bool, QString> verifyParams(const QList<ParamType> paramTypes, const QList<Param> params);
+
+private:
 
     QHash<VendorId, Vendor> m_supportedVendors;
     QHash<VendorId, QList<DeviceClassId> > m_vendorDeviceMap;

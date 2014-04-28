@@ -141,13 +141,13 @@ PluginId DevicePluginConrad::pluginId() const
     return PluginId("1fd1a076-f229-4ec6-b501-48ddd15935e4");
 }
 
-DeviceManager::DeviceError DevicePluginConrad::executeAction(Device *device, const Action &action)
+QPair<DeviceManager::DeviceError, QString> DevicePluginConrad::executeAction(Device *device, const Action &action)
 {
 
     QList<int> rawData;
     QByteArray binCode;
 
-    return DeviceManager::DeviceErrorNoError;
+    return report();
 }
 
 void DevicePluginConrad::radioData(QList<int> rawData)

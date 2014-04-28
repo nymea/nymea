@@ -57,27 +57,27 @@ JsonReply* ActionHandler::ExecuteAction(const QVariantMap &params)
 
 
     QVariantMap returns;
-    DeviceManager::DeviceError error = GuhCore::instance()->deviceManager()->executeAction(action);
+    QPair<DeviceManager::DeviceError, QString> error = GuhCore::instance()->deviceManager()->executeAction(action);
 
-    switch (error) {
+    switch (error.first) {
     case DeviceManager::DeviceErrorNoError:
         returns.insert("success", true);
         returns.insert("errorMessage", "");
         break;
     case DeviceManager::DeviceErrorDeviceNotFound:
-        returns.insert("errorMessage", "No such device");
+        returns.insert("errorMessage", QString("No such device: %1").arg(error.second));
         returns.insert("success", false);
         break;
     case DeviceManager::DeviceErrorActionTypeNotFound:
-        returns.insert("errorMessage", "ActionType not found");
+        returns.insert("errorMessage", QString("ActionType not found: %1").arg(error.second));
         returns.insert("success", false);
         break;
     case DeviceManager::DeviceErrorMissingParameter:
-        returns.insert("errorMessage", "Missing parameter");
+        returns.insert("errorMessage", QString("Missing parameter: %1").arg(error.second));
         returns.insert("success", false);
         break;
     default:
-        returns.insert("errorMessage", QString("Unknown error %1").arg(error));
+        returns.insert("errorMessage", QString("Unknown error %1 %2").arg(error.first).arg(error.second));
         returns.insert("success", false);
     }
 

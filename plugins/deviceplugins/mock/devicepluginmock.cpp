@@ -180,11 +180,11 @@ bool DevicePluginMock::configureAutoDevice(QList<Device *> loadedDevices, Device
     return true;
 }
 
-DeviceManager::DeviceError DevicePluginMock::executeAction(Device *device, const Action &action)
+QPair<DeviceManager::DeviceError, QString> DevicePluginMock::executeAction(Device *device, const Action &action)
 {
     qDebug() << "Should execute action" << action.actionTypeId();
     m_daemons.value(device)->actionExecuted(action.actionTypeId());
-    return DeviceManager::DeviceErrorNoError;
+    return report();
 }
 
 void DevicePluginMock::setState(const StateTypeId &stateTypeId, const QVariant &value)

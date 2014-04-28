@@ -62,9 +62,9 @@ public:
     virtual void setConfiguration(const QVariantMap &configuration);
 
 public slots:
-    virtual DeviceManager::DeviceError executeAction(Device *device, const Action &action) {
+    virtual QPair<DeviceManager::DeviceError, QString> executeAction(Device *device, const Action &action) {
         Q_UNUSED(device) Q_UNUSED(action)
-        return DeviceManager::DeviceErrorNoError;
+        return qMakePair<DeviceManager::DeviceError, QString>(DeviceManager::DeviceErrorNoError, "");
     }
 
 signals:
@@ -78,6 +78,7 @@ protected:
 
     void transmitData(QList<int> rawData);
 
+    QPair<DeviceManager::DeviceError, QString> report(DeviceManager::DeviceError error = DeviceManager::DeviceErrorNoError, const QString &message = QString());
 private:
     void initPlugin(DeviceManager *deviceManager);
 

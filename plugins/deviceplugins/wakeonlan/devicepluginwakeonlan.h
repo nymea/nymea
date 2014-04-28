@@ -39,7 +39,7 @@ public:
 
     QString pluginName() const override;
     PluginId pluginId() const override;
-    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
+    QPair<DeviceManager::DeviceError, QString> executeAction(Device *device, const Action &action) override;
 
 
 private slots:

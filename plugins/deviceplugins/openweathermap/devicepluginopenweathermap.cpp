@@ -442,13 +442,13 @@ DeviceManager::HardwareResources DevicePluginOpenweathermap::requiredHardware() 
     return DeviceManager::HardwareResourceTimer;
 }
 
-DeviceManager::DeviceError DevicePluginOpenweathermap::executeAction(Device *device, const Action &action)
+QPair<DeviceManager::DeviceError, QString> DevicePluginOpenweathermap::executeAction(Device *device, const Action &action)
 {
     qDebug() << "execute action " << updateWeatherActionTypeId.toString();
     if(action.actionTypeId() == updateWeatherActionTypeId){
         m_openweaher->update(device->paramValue("id").toString());
     }
-    return DeviceManager::DeviceErrorNoError;
+    return report();
 }
 
 QString DevicePluginOpenweathermap::pluginName() const

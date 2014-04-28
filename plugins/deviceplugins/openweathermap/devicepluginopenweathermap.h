@@ -41,7 +41,7 @@ public:
     DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const QVariantMap &params) const override;
     bool deviceCreated(Device *device) override;
     DeviceManager::HardwareResources requiredHardware() const override;
-    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
+    QPair<DeviceManager::DeviceError, QString> executeAction(Device *device, const Action &action) override;
 
     QString pluginName() const override;
     PluginId pluginId() const override;

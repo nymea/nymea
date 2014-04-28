@@ -180,13 +180,13 @@ PluginId DevicePluginWakeOnLan::pluginId() const
     return PluginId("b5a87848-de56-451e-84a6-edd26ad4958f");
 }
 
-DeviceManager::DeviceError DevicePluginWakeOnLan::executeAction(Device *device, const Action &action)
+QPair<DeviceManager::DeviceError, QString> DevicePluginWakeOnLan::executeAction(Device *device, const Action &action)
 {
     qDebug() << "execute action " << action.actionTypeId().toString();
     if(action.actionTypeId() == wolActionTypeId){
         wakeup(device->paramValue("mac").toString());
     }
-    return DeviceManager::DeviceErrorNoError;
+    return report();
 }
 
 void DevicePluginWakeOnLan::wakeup(QString mac)

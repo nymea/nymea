@@ -1,0 +1,22 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+# Uncomment this to turn on verbose mode.
+export DH_VERBOSE=1
+export QT_QPA_PLATFORM=minimal
+
+override_dh_auto_configure:
+	/usr/local/qt5pi/bin/qmake .
+
+override_dh_auto_build:
+	make
+
+override_dh_clean:
+	dh_clean
+
+override_dh_install:
+	dh_install --fail-missing
+
+%:
+	dh $@ --parallel
+

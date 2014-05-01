@@ -1,0 +1,15 @@
+Source: guh
+Section: utils
+Priority: optional
+Maintainer: Michael Zanetti <michael_zanetti@gmx.net>
+Build-Depends: debhelper (>= 8.0.0),
+               qt5-default,
+               qtbase5-dev,
+Standards-Version: 3.9.3
+
+Package: guh
+Architecture: any
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+Description: guh server
+  Add some description.

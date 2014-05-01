@@ -42,7 +42,7 @@
             "deviceParams":{
                 "user":"my.address@gmail.com",
                 "password":"my_secret_password"
-                "sendTo":"recipient@example.com"}
+                "recipient":"recipient@example.com"}
             }
         }
     }
@@ -108,7 +108,7 @@
                 \li This parameter holds the password for the login
                 \li string
             \row
-                \li sendTo
+                \li recipient
                 \li This parameter holds the mail address of the recipient of the notification
                 \li string
         \endtable
@@ -130,7 +130,7 @@
 
 */
 
-#include "deviceplugingooglemail.h"
+#include "devicepluginmailnotification.h"
 
 #include "plugin/device.h"
 #include "devicemanager.h"
@@ -141,20 +141,24 @@
 #include <QDateTime>
 
 extern VendorId guhVendorId;
-DeviceClassId mailDeviceClassId = DeviceClassId("38ed6ffc-f43b-48f8-aea2-8d63cdcad87e");
-ActionTypeId sendMailActionTypeId = ActionTypeId("fa54f834-34d0-4aaf-b0ab-a165191d39d3");
 
-DevicePluginGoogleMail::DevicePluginGoogleMail()
+DeviceClassId googleMailDeviceClassId = DeviceClassId("3869884a-1592-4b8f-84a7-994be18ff555");
+DeviceClassId customMailDeviceClassId = DeviceClassId("f4844c97-7ca6-4349-904e-ff9749a9fe74");
+
+ActionTypeId sendMailActionTypeId = ActionTypeId("054613b0-3666-4dad-9252-e0ebca187edc");
+
+
+DevicePluginMailNotification::DevicePluginMailNotification()
 {
     m_smtpClient = new SmtpClient();
 }
 
-DevicePluginGoogleMail::~DevicePluginGoogleMail()
+DevicePluginMailNotification::~DevicePluginMailNotification()
 {
     m_smtpClient->deleteLater();
 }
 
-QList<Vendor> DevicePluginGoogleMail::supportedVendors() const
+QList<Vendor> DevicePluginMailNotification::supportedVendors() const
 {
     QList<Vendor> ret;
     Vendor mail(guhVendorId, "guh");
@@ -162,28 +166,12 @@ QList<Vendor> DevicePluginGoogleMail::supportedVendors() const
     return ret;
 }
 
-QList<DeviceClass> DevicePluginGoogleMail::supportedDevices() const
+QList<DeviceClass> DevicePluginMailNotification::supportedDevices() const
 {
     QList<DeviceClass> ret;
 
-    DeviceClass deviceClassGoogleMail(pluginId(), guhVendorId, mailDeviceClassId);
-    deviceClassGoogleMail.setName("Google Mail Notification");
-    deviceClassGoogleMail.setCreateMethod(DeviceClass::CreateMethodUser);
-
-    // Params
-    QList<ParamType> params;
-
-    ParamType userParam("user", QVariant::String);
-    params.append(userParam);
-
-    ParamType passwordParam("password", QVariant::String);
-    params.append(passwordParam);
-
-    ParamType sendToParam("sendTo", QVariant::String);
-    params.append(sendToParam);
-
-    // Actions
-    QList<ActionType> googleMailActions;
+    // General Action
+    QList<ActionType> mailActions;
 
     QList<ParamType> actionParamsMail;
     ParamType actionParamSubject("subject", QVariant::String);
@@ -195,51 +183,125 @@ QList<DeviceClass> DevicePluginGoogleMail::supportedDevices() const
     ActionType sendMailAction(sendMailActionTypeId);
     sendMailAction.setName("send mail");
     sendMailAction.setParameters(actionParamsMail);
-    googleMailActions.append(sendMailAction);
+    mailActions.append(sendMailAction);
 
-    deviceClassGoogleMail.setActions(googleMailActions);
-    deviceClassGoogleMail.setParams(params);
+
+
+    // Google Mail
+    // ---------------------------------------------------------------
+    DeviceClass deviceClassGoogleMail(pluginId(), guhVendorId, googleMailDeviceClassId);
+    deviceClassGoogleMail.setName("Google Mail Notification");
+    deviceClassGoogleMail.setCreateMethod(DeviceClass::CreateMethodUser);
+
+    // Params
+    QList<ParamType> googleMailParams;
+
+    ParamType userGoogleParam("user", QVariant::String);
+    googleMailParams.append(userGoogleParam);
+
+    ParamType passwordGoogleParam("password", QVariant::String);
+    googleMailParams.append(passwordGoogleParam);
+
+    ParamType recipientGoogleParam("recipient", QVariant::String);
+    googleMailParams.append(recipientGoogleParam);
+
+    deviceClassGoogleMail.setActions(mailActions);
+    deviceClassGoogleMail.setParams(googleMailParams);
+
+    // Custom Mail
+    // ---------------------------------------------------------------
+    DeviceClass deviceClassCustomMail(pluginId(), guhVendorId, customMailDeviceClassId);
+    deviceClassCustomMail.setName("Custom Mail Notification");
+    deviceClassCustomMail.setCreateMethod(DeviceClass::CreateMethodUser);
+
+    // Params
+    QList<ParamType> customMailParams;
+
+    ParamType userCustomParam("user", QVariant::String);
+    customMailParams.append(userCustomParam);
+
+    ParamType passwordCustomParam("password", QVariant::String);
+    customMailParams.append(passwordCustomParam);
+
+    ParamType recipientCustomParam("recipient", QVariant::String);
+    customMailParams.append(recipientCustomParam);
+
+    ParamType hostCustomParam("host", QVariant::String);
+    customMailParams.append(hostCustomParam);
+
+    ParamType portCustomParam("port", QVariant::Int);
+    customMailParams.append(portCustomParam);
+
+    ParamType authCustomParam("auth", QVariant::String);
+    customMailParams.append(authCustomParam);
+
+    deviceClassCustomMail.setActions(mailActions);
+    deviceClassCustomMail.setParams(customMailParams);
 
     ret.append(deviceClassGoogleMail);
+    ret.append(deviceClassCustomMail);
     return ret;
 }
 
-bool DevicePluginGoogleMail::deviceCreated(Device *device)
+bool DevicePluginMailNotification::deviceCreated(Device *device)
 {
-    if(!m_smtpClient->login(device->paramValue("user").toString(), device->paramValue("password").toString(), SmtpClient::AuthLogin)){
-        return false;
-    }
-    m_smtpClient->logout();
+    // Google mail
+//    if(device->deviceClassId() == googleMailDeviceClassId){
+//        m_smtpClient->setConnectionType(SmtpClient::SslConnection);
+//        m_smtpClient->setAuthMethod(SmtpClient::AuthLogin);
+//        m_smtpClient->setPort(465);
+//        m_smtpClient->setHost("smtp.gmail.com");
+//        m_smtpClient->login(device->paramValue("user").toString(), device->paramValue("password").toString());
+//    }
     return true;
 }
 
-DeviceManager::HardwareResources DevicePluginGoogleMail::requiredHardware() const
+DeviceManager::HardwareResources DevicePluginMailNotification::requiredHardware() const
 {
     return DeviceManager::HardwareResourceNone;
 }
 
-QPair<DeviceManager::DeviceError, QString> DevicePluginGoogleMail::executeAction(Device *device, const Action &action)
+QPair<DeviceManager::DeviceError, QString> DevicePluginMailNotification::executeAction(Device *device, const Action &action)
 {
     qDebug() << "execute action " << sendMailActionTypeId.toString();
     if(action.actionTypeId() == sendMailActionTypeId){
-        if(!m_smtpClient->login(device->paramValue("user").toString(), device->paramValue("password").toString())){
-            qDebug() << "ERROR: could nt login for sending mail";
-            return report(DeviceManager::DeviceErrorDeviceParameterError, "user, password");
+        // Google mail
+        if(device->deviceClassId() == googleMailDeviceClassId){
+            m_smtpClient->setConnectionType(SmtpClient::SslConnection);
+            m_smtpClient->setAuthMethod(SmtpClient::AuthLogin);
+            m_smtpClient->setPort(465);
+            m_smtpClient->setHost("smtp.gmail.com");
+            m_smtpClient->setUser(device->paramValue("user").toString());
+            m_smtpClient->setPassword(device->paramValue("password").toString());
+            m_smtpClient->setRecipiant(device->paramValue("recipiant").toString());
         }
-        m_smtpClient->sendMail(device->paramValue("user").toString(), device->paramValue("sendTo").toString(), action.param("subject").value().toString(), action.param("body").value().toString());
-        m_smtpClient->logout();
+
+        if(device->deviceClassId() == customMailDeviceClassId){
+            m_smtpClient->setConnectionType(SmtpClient::SslConnection);
+            if(device->paramValue("auth").toString() == "PLAIN"){
+                m_smtpClient->setAuthMethod(SmtpClient::AuthPlain);
+            }else if(device->paramValue("auth").toString() == "LOGIN"){
+                m_smtpClient->setAuthMethod(SmtpClient::AuthLogin);
+            }
+            m_smtpClient->setPort(device->paramValue("port").toInt());
+            m_smtpClient->setHost(device->paramValue("host").toString());
+            m_smtpClient->setUser(device->paramValue("user").toString());
+            m_smtpClient->setPassword(device->paramValue("password").toString());
+        }
+
+        m_smtpClient->sendMail(device->paramValue("user").toString(), device->paramValue("recipient").toString(), action.param("subject").value().toString(), action.param("body").value().toString());
     }
 
     return report();
 }
 
-QString DevicePluginGoogleMail::pluginName() const
+QString DevicePluginMailNotification::pluginName() const
 {
-    return "Google Mail";
+    return "Mail notification";
 }
 
-PluginId DevicePluginGoogleMail::pluginId() const
+PluginId DevicePluginMailNotification::pluginId() const
 {
-    return PluginId("edfbbf03-e243-4b33-bc46-b31e973febdd");
+    return PluginId("72aef158-07a3-4714-93b5-fec2f9d912d1");
 }
 

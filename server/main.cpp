@@ -29,8 +29,8 @@ Q_IMPORT_PLUGIN(DevicePluginConrad)
 Q_IMPORT_PLUGIN(DevicePluginMock)
 Q_IMPORT_PLUGIN(DevicePluginOpenweathermap)
 Q_IMPORT_PLUGIN(DevicePluginLircd)
-Q_IMPORT_PLUGIN(DevicePluginGoogleMail)
 Q_IMPORT_PLUGIN(DevicePluginWakeOnLan)
+Q_IMPORT_PLUGIN(DevicePluginMailNotification)
 
 #if USE_BOBLIGHT
 Q_IMPORT_PLUGIN(DevicePluginBoblight)

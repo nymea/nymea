@@ -23,7 +23,7 @@ LIBS += -L../plugins/deviceplugins/conrad -lguh_devicepluginconrad
 LIBS += -L../plugins/deviceplugins/mock -lguh_devicepluginmock
 LIBS += -L../plugins/deviceplugins/openweathermap -lguh_devicepluginopenweathermap
 LIBS += -L../plugins/deviceplugins/lircd -lguh_devicepluginlircd
-LIBS += -L../plugins/deviceplugins/googlemail -lguh_deviceplugingooglemail
+LIBS += -L../plugins/deviceplugins/mailnotification -lguh_devicepluginmailnotification
 LIBS += -L../plugins/deviceplugins/wakeonlan -lguh_devicepluginwakeonlan
 
 boblight {

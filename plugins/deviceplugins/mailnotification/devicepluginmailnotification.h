@@ -16,22 +16,22 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef DEVICEPLUGINGOOGLEMAIL_H
-#define DEVICEPLUGINGOOGLEMAIL_H
+#ifndef DEVICEPLUGINMAILNOTIFICATION_H
+#define DEVICEPLUGINMAILNOTIFICATION_H
 
 #include "plugin/deviceplugin.h"
 #include "smtpclient.h"
 
-class DevicePluginGoogleMail : public DevicePlugin
+class DevicePluginMailNotification : public DevicePlugin
 {
     Q_OBJECT
 
-    Q_PLUGIN_METADATA(IID "guru.guh.DevicePlugin" FILE "deviceplugingooglemail.json")
+    Q_PLUGIN_METADATA(IID "guru.guh.DevicePlugin" FILE "devicepluginmailnotification.json")
     Q_INTERFACES(DevicePlugin)
 
 public:
-    explicit DevicePluginGoogleMail();
-    ~DevicePluginGoogleMail();
+    explicit DevicePluginMailNotification();
+    ~DevicePluginMailNotification();
 
     QList<Vendor> supportedVendors() const override;
     QList<DeviceClass> supportedDevices() const override;
@@ -53,4 +53,4 @@ public slots:
 
 };
 
-#endif // DEVICEPLUGINMAIL_H
+#endif // DEVICEPLUGINMAILNOTIFICATION_H

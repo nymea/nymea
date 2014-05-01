@@ -18,7 +18,7 @@ override_dh_install:
 	dh_install --fail-missing
 
 override_dh_shlibdeps:
-	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):/opt/raspi-tools/rasp-pi-rootfs/usr/lib/arm-linux-gnueabihf/ dh_shlibdeps -- --ignore-missing-info
+	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):/opt/raspi-tools/rasp-pi-rootfs/usr/lib/arm-linux-gnueabihf/:/opt/raspi-tools/rasp-pi-rootfs/opt/vc/lib/:/opt/raspi-tools/rasp-pi-rootfs/lib/arm-linux-gnueabihf/ dh_shlibdeps -- --ignore-missing-info
 
 %:
 	dh $@ --parallel

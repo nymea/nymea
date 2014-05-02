@@ -10,6 +10,7 @@ override_dh_auto_configure:
 
 override_dh_auto_build:
 	make
+	make doc
 
 override_dh_clean:
 	dh_clean

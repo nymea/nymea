@@ -1,3 +1,5 @@
+include(../guh.pri)
+
 TARGET = guh
 TEMPLATE = app
 

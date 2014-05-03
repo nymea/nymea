@@ -216,7 +216,11 @@ void TestJSONRPC::version()
 {
     QVariant response = injectAndWait("JSONRPC.Version");
 
-    QCOMPARE(response.toMap().value("params").toMap().value("version").toString(), QString("0.0.0"));
+    QString version = response.toMap().value("params").toMap().value("version").toString();
+    qDebug() << "Got version:" << version << "( Expected:" << GUH_VERSION_STRING << ")";
+
+    QVERIFY2(!version.isEmpty(), "Version is empty.");
+    QCOMPARE(version, QString(GUH_VERSION_STRING));
 }
 
 void TestJSONRPC::introspect()

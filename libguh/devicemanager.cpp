@@ -105,6 +105,14 @@ DeviceManager::DeviceManager(QObject *parent) :
     QMetaObject::invokeMethod(this, "loaded", Qt::QueuedConnection);
 }
 
+DeviceManager::~DeviceManager()
+{
+    qDebug() << "Shutting down DeviceManager";
+    foreach (DevicePlugin *plugin, m_devicePlugins) {
+        delete plugin;
+    }
+}
+
 /*! Returns all the \l{DevicePlugin}{DevicePlugins} loaded in the system. */
 QList<DevicePlugin *> DeviceManager::plugins() const
 {

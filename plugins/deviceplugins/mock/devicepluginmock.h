@@ -34,6 +34,7 @@ class DevicePluginMock : public DevicePlugin
 
 public:
     explicit DevicePluginMock();
+    ~DevicePluginMock();
 
     QList<Vendor> supportedVendors() const override;
     QList<DeviceClass> supportedDevices() const override;

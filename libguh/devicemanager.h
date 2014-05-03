@@ -69,6 +69,7 @@ public:
     };
 
     explicit DeviceManager(QObject *parent = 0);
+    ~DeviceManager();
 
     QList<DevicePlugin*> plugins() const;
     DevicePlugin* plugin(const PluginId &id) const;

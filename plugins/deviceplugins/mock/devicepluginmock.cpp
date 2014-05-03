@@ -37,6 +37,12 @@ ActionTypeId mockAction2Id = ActionTypeId("defd3ed6-1a0d-400b-8879-a0202cf39935"
 
 DevicePluginMock::DevicePluginMock()
 {
+    qDebug() << "Mock device plugin created";
+}
+
+DevicePluginMock::~DevicePluginMock()
+{
+    qDebug() << "shutting down Mock device plugin";
 }
 
 QList<Vendor> DevicePluginMock::supportedVendors() const

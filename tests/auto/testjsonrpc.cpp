@@ -16,6 +16,8 @@
  *                                                                          *
  ***************************************************************************/
 
+#include "guhtestbase.h"
+#include "testjsonrpc.h"
 #include "guhcore.h"
 #include "devicemanager.h"
 #include "mocktcpserver.h"
@@ -27,140 +29,7 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QCoreApplication>
-
-Q_IMPORT_PLUGIN(DevicePluginMock)
-
-int mockDevice1Port = 1337;
-int mockDevice2Port = 7331;
-
-extern VendorId guhVendorId;
-extern DeviceClassId mockDeviceClassId;
-extern DeviceClassId mockDeviceAutoClassId;
-extern ActionTypeId mockAction1Id;
-extern EventTypeId mockEvent1Id;
-extern StateTypeId mockIntStateId;
-
-class TestJSONRPC: public QObject
-{
-    Q_OBJECT
-private slots:
-    void initTestcase();
-    void cleanupTestCase();
-
-    void testBasicCall();
-    void version();
-    void introspect();
-
-    void getSupportedVendors();
-
-    void getSupportedDevices_data();
-    void getSupportedDevices();
-
-    void addConfiguredDevice_data();
-    void addConfiguredDevice();
-
-    void getConfiguredDevices();
-
-    void executeAction_data();
-    void executeAction();
-
-    void getActionTypes_data();
-    void getActionTypes();
-
-    void getEventTypes_data();
-    void getEventTypes();
-
-    void getStateTypes_data();
-    void getStateTypes();
-
-    void enableDisableNotifications_data();
-    void enableDisableNotifications();
-
-    void stateChangeEmitsNotifications();
-
-    void removeDevice();
-
-    void storedDevices();
-
-    void getRules();
-
-    void apiChangeBumpsVersion();
-
-private:
-    QVariant injectAndWait(const QString &method, const QVariantMap &params);
-    QStringList extractRefs(const QVariant &variant);
-
-private:
-    MockTcpServer *m_mockTcpServer;
-    QUuid m_clientId;
-    int m_commandId;
-    DeviceId m_mockDeviceId;
-};
-
-void TestJSONRPC::initTestcase()
-{
-    QCoreApplication::instance()->setOrganizationName("guh-test");
-
-    // If testcase asserts cleanup won't do. Lets clear any previous test run settings leftovers
-    QSettings settings;
-    settings.clear();
-
-    m_commandId = 0;
-
-    GuhCore::instance();
-
-    // Wait for the DeviceManager to signal that it has loaded plugins and everything
-    QSignalSpy spy(GuhCore::instance()->deviceManager(), SIGNAL(loaded()));
-    QVERIFY(spy.isValid());
-    QVERIFY(spy.wait());
-
-    // If Guh should create more than one TcpServer at some point, this needs to be updated.
-    QCOMPARE(MockTcpServer::servers().count(), 1);
-    m_mockTcpServer = MockTcpServer::servers().first();
-    m_clientId = QUuid::createUuid();
-
-    // Lets add one instance of the mockdevice
-    QVariantMap params;
-    params.insert("deviceClassId", "{753f0d32-0468-4d08-82ed-1964aab03298}");
-    QVariantMap deviceParams;
-    deviceParams.insert("httpport", mockDevice1Port);
-    params.insert("deviceParams", deviceParams);
-    QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
-
-    QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
-
-    m_mockDeviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
-    QVERIFY2(!m_mockDeviceId.isNull(), "Newly created mock device must not be null.");
-}
-
-void TestJSONRPC::cleanupTestCase()
-{
-    QSettings settings;
-//    settings.clear();
-}
-
-QVariant TestJSONRPC::injectAndWait(const QString &method, const QVariantMap &params = QVariantMap())
-{
-    QVariantMap call;
-    call.insert("id", m_commandId++);
-    call.insert("method", method);
-    call.insert("params", params);
-
-    QJsonDocument jsonDoc = QJsonDocument::fromVariant(call);
-    QSignalSpy spy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
-
-    m_mockTcpServer->injectData(m_clientId, jsonDoc.toJson());
-
-    if (spy.count() == 0) {
-        spy.wait();
-    }
-
-     // Make sure the response it a valid JSON string
-     QJsonParseError error;
-     jsonDoc = QJsonDocument::fromJson(spy.takeFirst().last().toByteArray(), &error);
-
-     return jsonDoc.toVariant();
-}
+#include <QMetaType>
 
 QStringList TestJSONRPC::extractRefs(const QVariant &variant)
 {
@@ -212,17 +81,6 @@ void TestJSONRPC::testBasicCall()
     QCOMPARE(jsonDoc.toVariant().toMap().value("id").toInt(), 42);    
 }
 
-void TestJSONRPC::version()
-{
-    QVariant response = injectAndWait("JSONRPC.Version");
-
-    QString version = response.toMap().value("params").toMap().value("version").toString();
-    qDebug() << "Got version:" << version << "( Expected:" << GUH_VERSION_STRING << ")";
-
-    QVERIFY2(!version.isEmpty(), "Version is empty.");
-    QCOMPARE(version, QString(GUH_VERSION_STRING));
-}
-
 void TestJSONRPC::introspect()
 {
     QVariant response = injectAndWait("JSONRPC.Introspect");
@@ -243,92 +101,6 @@ void TestJSONRPC::introspect()
             QVERIFY2(types.contains(typeId), QString("Undefined ref: %1").arg(ref).toLatin1().data());
         }
     }
-}
-
-void TestJSONRPC::getSupportedVendors()
-{
-    QVariant supportedVendors = injectAndWait("Devices.GetSupportedVendors");
-    qDebug() << "response" << supportedVendors;
-
-    // Make sure there is exactly 1 supported Vendor named "guh"
-    QVariantList vendorList = supportedVendors.toMap().value("params").toMap().value("vendors").toList();
-    QCOMPARE(vendorList.count(), 1);
-    VendorId vendorId = VendorId(vendorList.first().toMap().value("id").toString());
-    QCOMPARE(vendorId, guhVendorId);
-}
-
-void TestJSONRPC::getSupportedDevices_data()
-{
-    QTest::addColumn<VendorId>("vendorId");
-    QTest::addColumn<int>("resultCount");
-
-    QTest::newRow("vendor guh") << guhVendorId << 2;
-    QTest::newRow("no filter") << VendorId() << 2;
-    QTest::newRow("invalid vendor") << VendorId("93e7d361-8025-4354-b17e-b68406c800bc") << 0;
-}
-
-void TestJSONRPC::getSupportedDevices()
-{
-    QFETCH(VendorId, vendorId);
-    QFETCH(int, resultCount);
-
-    QVariantMap params;
-    if (!vendorId.isNull()) {
-        params.insert("vendorId", vendorId);
-    }
-    QVariant supportedDevices = injectAndWait("Devices.GetSupportedDevices", params);
-
-    // Make sure there is exactly 1 supported device class with the name Mock Wifi Device
-    QCOMPARE(supportedDevices.toMap().value("params").toMap().value("deviceClasses").toList().count(), resultCount);
-    if (resultCount > 0) {
-        QString deviceName = supportedDevices.toMap().value("params").toMap().value("deviceClasses").toList().first().toMap().value("name").toString();
-        QVERIFY(deviceName.startsWith(QString("Mock Device")));
-    }
-}
-
-void TestJSONRPC::addConfiguredDevice_data()
-{
-    QTest::addColumn<DeviceClassId>("deviceClassId");
-    QTest::addColumn<QVariantMap>("deviceParams");
-    QTest::addColumn<bool>("success");
-
-    QVariantMap deviceParams;
-    deviceParams.insert("httpport", mockDevice1Port - 1);
-    QTest::newRow("User, JustAdd") << mockDeviceClassId << deviceParams << true;
-    QTest::newRow("Auto, JustAdd") << mockDeviceAutoClassId << deviceParams << false;
-}
-
-void TestJSONRPC::addConfiguredDevice()
-{
-    QFETCH(DeviceClassId, deviceClassId);
-    QFETCH(QVariantMap, deviceParams);
-    QFETCH(bool, success);
-
-    QVariantMap params;
-    params.insert("deviceClassId", deviceClassId);
-    params.insert("deviceParams", deviceParams);
-    QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
-    qDebug() << "response is" << response;
-
-    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
-    QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), success);
-
-    if (success) {
-        QUuid deviceId(response.toMap().value("params").toMap().value("deviceId").toString());
-        params.clear();
-        params.insert("deviceId", deviceId.toString());
-        injectAndWait("Devices.RemoveConfiguredDevice", params);
-        QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
-    }
-}
-
-void TestJSONRPC::getConfiguredDevices()
-{
-    QVariant response = injectAndWait("Devices.GetConfiguredDevices");
-
-    QVariantList devices = response.toMap().value("params").toMap().value("devices").toList();
-    qDebug() << "got devices" << devices;
-    QCOMPARE(devices.count(), 2); // There should be one auto created mock device and the one created in initTestcase()
 }
 
 void TestJSONRPC::executeAction_data()
@@ -363,13 +135,14 @@ void TestJSONRPC::executeAction()
     params.insert("deviceId", deviceId);
     params.insert("params", actionParams);
     QVariant response = injectAndWait("Actions.ExecuteAction", params);
+    qDebug() << "executeActionresponse" << response;
     QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), success);
 
     // Fetch action execution history from mock device
     QNetworkAccessManager nam;
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
 
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/actionhistory").arg(mockDevice1Port)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/actionhistory").arg(m_mockDevice1Port)));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -383,7 +156,7 @@ void TestJSONRPC::executeAction()
 
     // cleanup for the next run
     spy.clear();
-    request.setUrl(QUrl(QString("http://localhost:%1/clearactionhistory").arg(mockDevice1Port)));
+    request.setUrl(QUrl(QString("http://localhost:%1/clearactionhistory").arg(m_mockDevice1Port)));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -502,7 +275,7 @@ void TestJSONRPC::stateChangeEmitsNotifications()
     // trigger state change in mock device
     int newVal = 1111;
     QUuid stateTypeId("80baec19-54de-4948-ac46-31eabfaceb83");
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(mockDevice1Port).arg(stateTypeId.toString()).arg(newVal)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(stateTypeId.toString()).arg(newVal)));
     QNetworkReply *reply = nam.get(request);
     reply->deleteLater();
 
@@ -525,7 +298,7 @@ void TestJSONRPC::stateChangeEmitsNotifications()
     // Fire the a statechange once again
     clientSpy.clear();
     newVal = 42;
-    request.setUrl(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(mockDevice1Port).arg(stateTypeId.toString()).arg(newVal)));
+    request.setUrl(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(stateTypeId.toString()).arg(newVal)));
     reply = nam.get(request);
     reply->deleteLater();
 
@@ -544,117 +317,8 @@ void TestJSONRPC::stateChangeEmitsNotifications()
 
 }
 
-void TestJSONRPC::removeDevice()
-{
-    QVERIFY(!m_mockDeviceId.isNull());
-    QSettings settings;
-    settings.beginGroup(m_mockDeviceId.toString());
-    // Make sure we have some config values for this device
-    QVERIFY(settings.allKeys().count() > 0);
-
-    QVariantMap params;
-    params.insert("deviceId", m_mockDeviceId);
-
-    QVariant response = injectAndWait("Devices.RemoveConfiguredDevice", params);
-
-    QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
-
-    // Make sure the device is gone from settings too
-    QCOMPARE(settings.allKeys().count(), 0);
-}
-
-void TestJSONRPC::storedDevices()
-{
-    QVariantMap params;
-    params.insert("deviceClassId", mockDeviceClassId);
-    QVariantMap deviceParams;
-    deviceParams.insert("httpport", 8888);
-    params.insert("deviceParams", deviceParams);
-    QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
-    QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
-    DeviceId addedDeviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
-    QVERIFY(!addedDeviceId.isNull());
-
-    // Destroy and recreate the core instance to check if settings are loaded at startup
-    GuhCore::instance()->destroy();
-    QSignalSpy spy(GuhCore::instance()->deviceManager(), SIGNAL(loaded()));
-    spy.wait();
-    m_mockTcpServer = MockTcpServer::servers().first();
-
-
-    response = injectAndWait("Devices.GetConfiguredDevices", QVariantMap());
-
-    foreach (const QVariant device, response.toMap().value("params").toMap().value("devices").toList()) {
-        qDebug() << "found stored device" << device;
-        if (DeviceId(device.toMap().value("id").toString()) == addedDeviceId) {
-//            foreach (const QVariant &paramVariant, device.toMap().value("params").toList()) {
-//                if ()
-//            }
-
-            qDebug() << "found added device" << device.toMap().value("params").toList().first().toMap();
-            qDebug() << "expected deviceParams:" << deviceParams;
-            QCOMPARE(device.toMap().value("params").toList().first().toMap(), deviceParams);
-        }
-    }
-
-    params.clear();
-    params.insert("deviceId", addedDeviceId);
-    response = injectAndWait("Devices.RemoveConfiguredDevice", params);
-}
-
 void TestJSONRPC::getRules()
 {
     QVariant response = injectAndWait("Rules.GetRules", QVariantMap());
     qDebug() << "got rules response" << response;
 }
-
-void TestJSONRPC::apiChangeBumpsVersion()
-{
-    QString oldFilePath = QString(TESTS_SOURCE_DIR) + "/api.json";
-    QString newFilePath = QString(TESTS_SOURCE_DIR) + "/api.json.new";
-
-    QVariant response = injectAndWait("JSONRPC.Version", QVariantMap());
-    QByteArray newVersion = response.toMap().value("params").toMap().value("version").toByteArray();
-
-    response = injectAndWait("JSONRPC.Introspect", QVariantMap());
-    QJsonDocument jsonDoc = QJsonDocument::fromVariant(response.toMap().value("params"));
-    QByteArray newApi = jsonDoc.toJson();
-
-
-    QFile oldApiFile(oldFilePath);
-    QVERIFY(oldApiFile.exists() && oldApiFile.open(QIODevice::ReadOnly));
-
-    QByteArray oldVersion = oldApiFile.readLine().trimmed();
-    QByteArray oldApi = oldApiFile.readAll();
-
-    qDebug() << "version" << oldVersion << newVersion;
-
-    if (oldVersion == newVersion && oldApi == newApi) {
-        // All fine. no changes
-        return;
-    }
-
-    if (oldVersion == newVersion && oldApi != newApi) {
-        QVERIFY2(false, "JSONRPC API has changed but version is still the same. You need to bump the API version.");
-    }
-
-    QFile newApiFile(newFilePath);
-    QVERIFY(newApiFile.open(QIODevice::ReadWrite));
-    if (newApiFile.size() > 0) {
-        newApiFile.resize(0);
-    }
-
-    newApiFile.write(newVersion + '\n');
-    newApiFile.write(newApi);
-    newApiFile.flush();
-
-    QProcess p;
-    p.execute("diff", QStringList() << "-u" << oldFilePath << newFilePath);
-    p.waitForFinished();
-    qDebug() << p.readAll();
-
-    QVERIFY2(false, QString("JSONRPC API has changed. Update %1.").arg(oldFilePath).toLatin1().data());
-}
-
-QTEST_MAIN(TestJSONRPC)
-#include "testjsonrpc.moc"

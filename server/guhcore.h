@@ -34,6 +34,7 @@ class GuhCore : public QObject
     Q_OBJECT
 public:
     static GuhCore* instance();
+    ~GuhCore();
 
     // Used for testing
     void destroy();

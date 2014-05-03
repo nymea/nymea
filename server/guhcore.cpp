@@ -47,6 +47,11 @@ GuhCore *GuhCore::instance()
     return s_instance;
 }
 
+GuhCore::~GuhCore()
+{
+    qDebug() << "Shutting down. Bye.";
+}
+
 void GuhCore::destroy()
 {
     delete s_instance;

@@ -42,7 +42,7 @@ class GuhTestBase : public QObject
 public:
     explicit GuhTestBase(QObject *parent = 0);
 
-private slots:
+protected slots:
     void initTestCase();
     void cleanupTestCase();
 

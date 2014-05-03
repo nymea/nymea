@@ -491,19 +491,9 @@ void DeviceManager::createNewAutoDevices()
                 qDebug() << "New device detected for" << deviceClass.name() << device->name();
                 haveNewDevice = true;
 
+                // We'll always add auto devices, even if setup fails in order to keep track of them.
                 QPair<DeviceSetupStatus, QString> setupStatus = setupDevice(device);
-                switch (setupStatus.first) {
-                case DeviceSetupStatusSuccess:
-                    m_configuredDevices.append(device);
-                    break;
-                case DeviceSetupStatusFailure:
-                    qDebug() << "Error during device setup. Not adding device to system.";
-                    delete device;
-                    break;
-                case DeviceSetupStatusAsync:
-                    // Nothing to do here... We'll add it to the list or destroy it in deviceSetupFinished.
-                    break;
-                }
+                m_configuredDevices.append(device);
             } else {
                 qDebug() << "No newly detected devices for" << deviceClass.name();
                 delete device;

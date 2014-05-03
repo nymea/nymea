@@ -16,7 +16,7 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "testversioning.h"
+#include "guhtestbase.h"
 #include "guhcore.h"
 #include "devicemanager.h"
 #include "mocktcpserver.h"
@@ -28,6 +28,15 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QCoreApplication>
+
+class TestVersioning: public GuhTestBase
+{
+    Q_OBJECT
+
+private slots:
+    void version();
+    void apiChangeBumpsVersion();
+};
 
 void TestVersioning::version()
 {
@@ -87,3 +96,6 @@ void TestVersioning::apiChangeBumpsVersion()
 
     QVERIFY2(false, QString("JSONRPC API has changed. Update %1.").arg(oldFilePath).toLatin1().data());
 }
+
+#include "testversioning.moc"
+QTEST_MAIN(TestVersioning)

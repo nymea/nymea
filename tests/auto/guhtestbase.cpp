@@ -27,7 +27,6 @@
 #include <QSettings>
 #include <QtTest>
 #include <QMetaType>
-#include "testdefines.h"
 
 Q_IMPORT_PLUGIN(DevicePluginMock)
 
@@ -98,24 +97,4 @@ QVariant GuhTestBase::injectAndWait(const QString &method, const QVariantMap &pa
      jsonDoc = QJsonDocument::fromJson(spy.takeFirst().last().toByteArray(), &error);
 
      return jsonDoc.toVariant();
-}
-
-int main(int argc, char *argv[])
-{
-    REGISTER_METATYPES
-
-    QGuiApplication app(argc, argv);
-    app.setAttribute(Qt::AA_Use96Dpi, true);
-    bool success = true;
-    qDebug() << "got testcases" << TESTCASES;
-    foreach (const QString &testcase, QString(TESTCASES).split(' ')) {
-        int id = QMetaType::type(testcase.toLatin1().data());
-        if (id != -1) {
-           GuhTestBase *testcase = static_cast<GuhTestBase*>(QMetaType::create(id));
-           success &= QTest::qExec(testcase, argc, argv);
-           delete testcase;
-           QCoreApplication::processEvents();
-       }
-    }
-    return success;
 }

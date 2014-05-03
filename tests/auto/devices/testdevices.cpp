@@ -16,17 +16,34 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "testdevices.h"
+#include "guhtestbase.h"
 #include "guhcore.h"
 #include "devicemanager.h"
 
 #include <QDebug>
 #include <QSignalSpy>
 
-TestDevices::TestDevices(QObject *parent) :
-    GuhTestBase(parent)
+class TestDevices : public GuhTestBase
 {
-}
+    Q_OBJECT
+
+private slots:
+
+    void getSupportedVendors();
+
+    void getSupportedDevices_data();
+    void getSupportedDevices();
+
+    void addConfiguredDevice_data();
+    void addConfiguredDevice();
+
+    void getConfiguredDevices();
+
+    void removeDevice();
+
+    void storedDevices();
+
+};
 
 void TestDevices::getSupportedVendors()
 {
@@ -172,3 +189,6 @@ void TestDevices::storedDevices()
     response = injectAndWait("Devices.RemoveConfiguredDevice", params);
 }
 
+#include "testdevices.moc"
+
+QTEST_MAIN(TestDevices)

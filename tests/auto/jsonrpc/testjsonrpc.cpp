@@ -17,7 +17,6 @@
  ***************************************************************************/
 
 #include "guhtestbase.h"
-#include "testjsonrpc.h"
 #include "guhcore.h"
 #include "devicemanager.h"
 #include "mocktcpserver.h"
@@ -30,6 +29,38 @@
 #include <QNetworkReply>
 #include <QCoreApplication>
 #include <QMetaType>
+
+class TestJSONRPC: public GuhTestBase
+{
+    Q_OBJECT
+
+private slots:
+    void testBasicCall();
+    void introspect();
+
+    void executeAction_data();
+    void executeAction();
+
+    void getActionTypes_data();
+    void getActionTypes();
+
+    void getEventTypes_data();
+    void getEventTypes();
+
+    void getStateTypes_data();
+    void getStateTypes();
+
+    void enableDisableNotifications_data();
+    void enableDisableNotifications();
+
+    void stateChangeEmitsNotifications();
+
+    void getRules();
+
+private:
+    QStringList extractRefs(const QVariant &variant);
+
+};
 
 QStringList TestJSONRPC::extractRefs(const QVariant &variant)
 {
@@ -322,3 +353,7 @@ void TestJSONRPC::getRules()
     QVariant response = injectAndWait("Rules.GetRules", QVariantMap());
     qDebug() << "got rules response" << response;
 }
+
+#include "testjsonrpc.moc"
+
+QTEST_MAIN(TestJSONRPC)

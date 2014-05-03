@@ -1,3 +1,5 @@
+include(../../guh.pri)
+
 TARGET = guhtests
 QT += testlib network
 CONFIG += testcase c++11

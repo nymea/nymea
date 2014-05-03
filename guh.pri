@@ -1,6 +1,4 @@
-guh_version_major = 0
-guh_version_minor = 0
-guh_version_patch = 1
+GUH_VERSION_STRING=$$system('dpkg-parsechangelog | sed -n -e "s/^Version: //p"')
 
 coverage {
     message("Building coverage.")
@@ -9,7 +7,4 @@ coverage {
     QMAKE_LFLAGS += -fprofile-arcs
 }
 
-DEFINES += GUH_VERSION_MAJOR=$$guh_version_major
-DEFINES += GUH_VERSION_MINOR=$$guh_version_minor
-DEFINES += GUH_VERSION_PATCH=$$guh_version_patch
-DEFINES += GUH_VERSION_STRING=\\\"$${guh_version_major}.$${guh_version_minor}.$${guh_version_patch}\\\"
+DEFINES += GUH_VERSION_STRING=\\\"$${GUH_VERSION_STRING}\\\"

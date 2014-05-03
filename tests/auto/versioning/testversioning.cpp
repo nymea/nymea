@@ -94,7 +94,11 @@ void TestVersioning::apiChangeBumpsVersion()
     p.waitForFinished();
     qDebug() << p.readAll();
 
-    QVERIFY2(false, QString("JSONRPC API has changed. Update %1.").arg(oldFilePath).toLatin1().data());
+    if (oldVersion != newVersion && oldApi == newApi) {
+        QVERIFY2(false, QString("Version has changed. Update %1.").arg(oldFilePath).toLatin1().data());
+    } else {
+        QVERIFY2(false, QString("JSONRPC API has changed. Update %1.").arg(oldFilePath).toLatin1().data());
+    }
 }
 
 #include "testversioning.moc"

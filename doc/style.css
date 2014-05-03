@@ -225,7 +225,7 @@
         clear: both;
         overflow: hidden;
         background: #4dc6a9;
-        height: 7.5em;
+        height: 10.5em;
     }
 /* end global settings*/
 
@@ -235,11 +235,17 @@
         font-size: 130%;
     }
 
+    .titleText {
+        margin-top: 2em;
+        display: inline-block;
+        vertical-align: top;
+    }
+
     .header .content
     {
         margin-bottom: 0.5em;
-        margin-top: 3em;
-        margin-left: 0.8em;
+        margin-top: 0.5em;
+        margin-left: 0.5em;
     }
 
     .naviNextPrevious

@@ -81,6 +81,8 @@ private slots:
 
     void storedDevices();
 
+    void getRules();
+
 private:
     QVariant injectAndWait(const QString &method, const QVariantMap &params);
     QStringList extractRefs(const QVariant &variant);
@@ -591,6 +593,12 @@ void TestJSONRPC::storedDevices()
     params.clear();
     params.insert("deviceId", addedDeviceId);
     response = injectAndWait("Devices.RemoveConfiguredDevice", params);
+}
+
+void TestJSONRPC::getRules()
+{
+    QVariant response = injectAndWait("Rules.GetRules", QVariantMap());
+    qDebug() << "got rules response" << response;
 }
 
 QTEST_MAIN(TestJSONRPC)

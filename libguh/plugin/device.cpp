@@ -37,7 +37,8 @@ Device::Device(const PluginId &pluginId, const DeviceId &id, const DeviceClassId
     QObject(parent),
     m_id(id),
     m_deviceClassId(deviceClassId),
-    m_pluginId(pluginId)
+    m_pluginId(pluginId),
+    m_setupComplete(false)
 {
 
 }
@@ -46,9 +47,15 @@ Device::Device(const PluginId &pluginId, const DeviceClassId &deviceClassId, QOb
     QObject(parent),
     m_id(DeviceId::createDeviceId()),
     m_deviceClassId(deviceClassId),
-    m_pluginId(pluginId)
+    m_pluginId(pluginId),
+    m_setupComplete(false)
 {
 
+}
+
+void Device::setupCompleted()
+{
+    m_setupComplete = true;
 }
 
 /*! Returns the id of this Device. */
@@ -161,4 +168,9 @@ void Device::setStateValue(const StateTypeId &stateTypeId, const QVariant &value
         }
     }
     qWarning() << "failed setting state for" << m_name;
+}
+
+bool Device::setupComplete() const
+{
+    return m_setupComplete;
 }

@@ -243,7 +243,7 @@ QList<DeviceClass> DevicePluginMailNotification::supportedDevices() const
     return ret;
 }
 
-bool DevicePluginMailNotification::deviceCreated(Device *device)
+QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginMailNotification::setupDevice(Device *device)
 {
     // Google mail
 //    if(device->deviceClassId() == googleMailDeviceClassId){
@@ -253,7 +253,7 @@ bool DevicePluginMailNotification::deviceCreated(Device *device)
 //        m_smtpClient->setHost("smtp.gmail.com");
 //        m_smtpClient->login(device->paramValue("user").toString(), device->paramValue("password").toString());
 //    }
-    return true;
+    return reportDeviceSetup();
 }
 
 DeviceManager::HardwareResources DevicePluginMailNotification::requiredHardware() const

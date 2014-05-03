@@ -165,7 +165,21 @@ DeviceManager::DeviceError DeviceManager::discoverDevices(const DeviceClassId &d
 /*! Add a new configured device for the given \l{DeviceClass} and the given parameters.
  \a deviceClassId must refer to an existing \{DeviceClass} and \a params must match the parameter description in the \l{DeviceClass}.
     Optionally you can supply an id yourself if you must keep track of the added device. If you don't supply it, a new one will
-    be generated.
+    be generated. Only devices with \l{DeviceClass::CreateMethodUser} can be created using this method.
+    Returns \l{DeviceManager::DeviceError} to inform about the result.
+    \list
+    \li DeviceManager::DeviceErrorNoError: The device has been created, set up and added to the list of configured devices correctly.
+    \li DeviceManager::DeviceErrorAsync: The device has been created, but the setup requires async operations. For instance a network query.
+    In this case, you should wait for the \l{deviceSetupFinished()} signal to get the final results.
+    \li DeviceManager::DeviceErrorCreateMethodNotSupported: The deviceId you've chosen refers to a DeviceClass which can't be created manually.
+    \li DeviceManager::DeviceErrorDeviceClassNotFound: The given deviceClassId can't be found in the list of supported devices.
+    \li DeviceManager::DeviceErrorMissingParameter: The given params do not suffice for the given deviceClassId.
+    \li DeviceManager::DeviceErrorDeviceParameterError: The given params can't be matched to the ParamTypes for the given deviceClassId.
+    \li DeviceManager::DeviceErrorDuplicateUuid: The given uuid already exists.
+    \li DeviceManager::DeviceErrorPluginNotFound: Couldn't find a plugin that handles this deviceClassId.
+    \li DeviceManager::DeviceErrorSetupFailed: The device couldn't be set up. Even though you supplied all the parameters correctly, something
+    went wrong during setup. Reasons may be a hardware/network failure, wrong username/password or similar, depending on what the device plugin
+    needs to do in order to set up the device.
 */
 QPair<DeviceManager::DeviceError, QString> DeviceManager::addConfiguredDevice(const DeviceClassId &deviceClassId, const QList<Param> &params, const DeviceId id)
 {
@@ -250,13 +264,21 @@ QPair<DeviceManager::DeviceError, QString> DeviceManager::addConfiguredDeviceInt
     Device *device = new Device(plugin->pluginId(), id, deviceClassId, this);
     device->setName(deviceClass.name());
     device->setParams(params);
-    if (setupDevice(device)) {
-        m_configuredDevices.append(device);
-    } else {
-        qWarning() << "Failed to set up device.";
-        return qMakePair<DeviceError, QString>(DeviceErrorSetupFailed, "Plugin failure");
+
+    QPair<DeviceSetupStatus, QString> status = setupDevice(device);
+    switch (status.first) {
+    case DeviceSetupStatusFailure:
+        qWarning() << "Device setup failed. Not adding device to system.";
+        delete device;
+        return qMakePair<DeviceError, QString>(DeviceErrorSetupFailed, QString("Device setup failed: %1").arg(status.second));
+    case DeviceSetupStatusAsync:
+        return qMakePair<DeviceError, QString>(DeviceErrorAsync, "");
+    case DeviceSetupStatusSuccess:
+        qDebug() << "Device setup complete.";
+        break;
     }
 
+    m_configuredDevices.append(device);
     storeConfiguredDevices();
 
     return qMakePair<DeviceError, QString>(DeviceErrorNoError, QString());
@@ -395,6 +417,7 @@ void DeviceManager::loadPlugins()
             m_devicePlugins.insert(pluginIface->pluginId(), pluginIface);
             connect(pluginIface, &DevicePlugin::emitEvent, this, &DeviceManager::emitEvent);
             connect(pluginIface, &DevicePlugin::devicesDiscovered, this, &DeviceManager::slotDevicesDiscovered);
+            connect(pluginIface, &DevicePlugin::deviceSetupFinished, this, &DeviceManager::slotDeviceSetupFinished);
         }
     }
 }
@@ -422,10 +445,13 @@ void DeviceManager::loadConfiguredDevices()
 
         settings.endGroup();
 
-        setupDevice(device);
-
-        m_configuredDevices.append(device);
         qDebug() << "found stored device" << device->name() << idString;
+
+        // We always add the device to the list in this case. If its in the storedDevices
+        // it means that it was working at some point so lets still add it as there might
+        // be rules associated with this device. Device::setupCompleted() will be false.
+        setupDevice(device);
+        m_configuredDevices.append(device);
     }
 }
 
@@ -463,9 +489,21 @@ void DeviceManager::createNewAutoDevices()
             success = plugin->configureAutoDevice(loadedDevices, device);
             if (success) {
                 qDebug() << "New device detected for" << deviceClass.name() << device->name();
-                setupDevice(device);
-                m_configuredDevices.append(device);
                 haveNewDevice = true;
+
+                QPair<DeviceSetupStatus, QString> setupStatus = setupDevice(device);
+                switch (setupStatus.first) {
+                case DeviceSetupStatusSuccess:
+                    m_configuredDevices.append(device);
+                    break;
+                case DeviceSetupStatusFailure:
+                    qDebug() << "Error during device setup. Not adding device to system.";
+                    delete device;
+                    break;
+                case DeviceSetupStatusAsync:
+                    // Nothing to do here... We'll add it to the list or destroy it in deviceSetupFinished.
+                    break;
+                }
             } else {
                 qDebug() << "No newly detected devices for" << deviceClass.name();
                 delete device;
@@ -485,6 +523,60 @@ void DeviceManager::slotDevicesDiscovered(const DeviceClassId &deviceClassId, co
     }
     m_discoveredDevices[deviceClassId] = descriptorHash;
     emit devicesDiscovered(deviceClassId, deviceDescriptors);
+}
+
+void DeviceManager::slotDeviceSetupFinished(Device *device, DeviceManager::DeviceSetupStatus status, const QString &errorMessage)
+{
+    Q_ASSERT_X(device, "DeviceManager", "Device must be a valid pointer.");
+    if (!device) {
+        qWarning() << "Received deviceSetupFinished for an invalid device... ignoring...";
+        return;
+    }
+
+    if (device->setupComplete()) {
+        qWarning() << "Received a deviceSetupFinished event, but this Device has been set up before... ignoring...";
+        return;
+    }
+
+    Q_ASSERT_X(status != DeviceSetupStatusAsync, "DeviceManager", "Bad plugin implementation. You should not emit deviceSetupFinished with status DeviceSetupStatusAsync.");
+    if (status == DeviceSetupStatusAsync) {
+        qWarning() << "Bad plugin implementation. Received a deviceSetupFinished event with status Async... ignoring...";
+        return;
+    }
+
+    if (status == DeviceSetupStatusFailure) {
+        if (m_configuredDevices.contains(device)) {
+            qWarning() << QString("Error in device setup. Device %1 (%2) will not be functional.").arg(device->name()).arg(device->id().toString());
+            emit deviceSetupFinished(device, DeviceError::DeviceErrorSetupFailed, QString("Device setup failed: %1").arg(errorMessage));
+            return;
+        } else {
+            qWarning() << QString("Error in device setup. Device %1 (%2) will not be added to the configured devices.").arg(device->name()).arg(device->id().toString());
+            emit deviceSetupFinished(device, DeviceError::DeviceErrorSetupFailed, QString("Device setup failed: %1").arg(errorMessage));
+            return;
+        }
+    }
+
+    // A device might be in here already if loaded from storedDevices. If it's not in the configuredDevices,
+    // lets add it now.
+    if (!m_configuredDevices.contains(device)) {
+        m_configuredDevices.append(device);
+        storeConfiguredDevices();
+    }
+
+    DevicePlugin *plugin = m_devicePlugins.value(device->pluginId());
+    if (plugin->requiredHardware().testFlag(HardwareResourceTimer)) {
+        if (!m_pluginTimer.isActive()) {
+            m_pluginTimer.start();
+            // Additionally fire off one event to initialize stuff
+            QTimer::singleShot(0, this, SLOT(timerEvent()));
+        }
+        m_pluginTimerUsers.append(device);
+    }
+
+    connect(device, SIGNAL(stateValueChanged(QUuid,QVariant)), this, SLOT(slotDeviceStateValueChanged(QUuid,QVariant)));
+
+    device->setupCompleted();
+    emit deviceSetupFinished(device, DeviceManager::DeviceErrorNoError, QString());
 }
 
 void DeviceManager::slotDeviceStateValueChanged(const QUuid &stateTypeId, const QVariant &value)
@@ -525,7 +617,7 @@ void DeviceManager::timerEvent()
     }
 }
 
-bool DeviceManager::setupDevice(Device *device)
+QPair<DeviceManager::DeviceSetupStatus,QString> DeviceManager::setupDevice(Device *device)
 {
     DeviceClass deviceClass = findDeviceClass(device->deviceClassId());
     DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
@@ -545,6 +637,11 @@ bool DeviceManager::setupDevice(Device *device)
         }
     }
 
+    QPair<DeviceSetupStatus, QString> status = plugin->setupDevice(device);
+    if (status.first != DeviceSetupStatusSuccess) {
+        return status;
+    }
+
     if (plugin->requiredHardware().testFlag(HardwareResourceTimer)) {
         if (!m_pluginTimer.isActive()) {
             m_pluginTimer.start();
@@ -554,13 +651,10 @@ bool DeviceManager::setupDevice(Device *device)
         m_pluginTimerUsers.append(device);
     }
 
-    if (!plugin->deviceCreated(device)) {
-        qWarning() << "Device setup for device" << device->name() << "failed.";
-        return false;
-    }
-
     connect(device, SIGNAL(stateValueChanged(QUuid,QVariant)), this, SLOT(slotDeviceStateValueChanged(QUuid,QVariant)));
-    return true;
+
+    device->setupCompleted();
+    return status;
 }
 
 QPair<bool, QString> DeviceManager::verifyParams(const QList<ParamType> paramTypes, const QList<Param> params)

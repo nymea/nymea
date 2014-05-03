@@ -36,7 +36,7 @@ public:
     QList<Vendor> supportedVendors() const override;
     QList<DeviceClass> supportedDevices() const override;
 
-    bool deviceCreated(Device *device) override;
+    QPair<DeviceManager::DeviceSetupStatus, QString> setupDevice(Device *device) override;
     DeviceManager::HardwareResources requiredHardware() const override;
     QPair<DeviceManager::DeviceError, QString> executeAction(Device *device, const Action &action) override;
 

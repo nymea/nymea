@@ -51,7 +51,7 @@ public:
     virtual bool configureAutoDevice(QList<Device *> loadedDevices, Device *device) const;
     virtual DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const QVariantMap &params) const;
 
-    virtual bool deviceCreated(Device *device);
+    virtual QPair<DeviceManager::DeviceSetupStatus, QString> setupDevice(Device *device);
     virtual void deviceRemoved(Device *device);
 
     // Hardware input
@@ -70,6 +70,7 @@ public slots:
 signals:
     void emitEvent(const Event &event);
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors);
+    void deviceSetupFinished(Device *device, DeviceManager::DeviceSetupStatus status, const QString &errorMessage);
 
 protected:
     DeviceManager *deviceManager() const;
@@ -79,6 +80,7 @@ protected:
     void transmitData(QList<int> rawData);
 
     QPair<DeviceManager::DeviceError, QString> report(DeviceManager::DeviceError error = DeviceManager::DeviceErrorNoError, const QString &message = QString());
+    QPair<DeviceManager::DeviceSetupStatus, QString> reportDeviceSetup(DeviceManager::DeviceSetupStatus status = DeviceManager::DeviceSetupStatusSuccess, const QString &message = QString());
 private:
     void initPlugin(DeviceManager *deviceManager);
 

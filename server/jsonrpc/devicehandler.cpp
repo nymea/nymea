@@ -268,6 +268,11 @@ JsonReply* DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
     }
     QVariantMap returns;
     switch(status.first) {
+    case DeviceManager::DeviceErrorAsync: {
+        JsonReply *asyncReply = createAsyncReply("AddConfiguredDevice");
+        m_asynDeviceAdditions.insert(newDeviceId, asyncReply);
+        return asyncReply;
+    }
     case DeviceManager::DeviceErrorNoError:
         returns.insert("success", true);
         returns.insert("errorMessage", "");
@@ -421,6 +426,32 @@ void DeviceHandler::devicesDiscovered(const DeviceClassId &deviceClassId, const 
     returns.insert("success", true);
     returns.insert("errorMessage", "");
 
+    reply->setData(returns);
+    reply->finished();
+}
+
+void DeviceHandler::deviceSetupFinished(Device *device, DeviceManager::DeviceError status)
+{
+    if (!m_asynDeviceAdditions.contains(device->id())) {
+        return; // Not the device we're waiting for...
+    }
+
+    JsonReply *reply = m_asynDeviceAdditions.take(device->id());
+
+    QVariantMap returns;
+
+    if(status == DeviceManager::DeviceErrorNoError) {
+        returns.insert("success", true);
+        returns.insert("errorMessage", "");
+        returns.insert("deviceId", device->deviceClassId());
+    } else if (status == DeviceManager::DeviceErrorSetupFailed) {
+        returns.insert("errorMessage", QString("Error creating device. Device setup failed."));
+        returns.insert("success", false);
+    } else {
+        Q_ASSERT_X(false, "DeviceHandler", "Unhandled status code for deviceSetupFinished");
+        returns.insert("errorMessage", "Unknown error.");
+        returns.insert("success", false);
+    }
     reply->setData(returns);
     reply->finished();
 }

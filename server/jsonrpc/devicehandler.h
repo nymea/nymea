@@ -20,6 +20,7 @@
 #define DEVICEHANDLER_H
 
 #include "jsonhandler.h"
+#include "devicemanager.h"
 
 class DeviceHandler : public JsonHandler
 {
@@ -61,9 +62,12 @@ private slots:
 
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
 
+    void deviceSetupFinished(Device *device, DeviceManager::DeviceError status);
+
 private:
     // A cache for async replies
     mutable QHash<DeviceClassId, JsonReply*> m_discoverRequests;
+    mutable QHash<DeviceId, JsonReply*> m_asynDeviceAdditions;
 };
 
 #endif // DEVICEHANDLER_H

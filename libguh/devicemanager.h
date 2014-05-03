@@ -58,7 +58,14 @@ public:
         DeviceErrorCreationMethodNotSupported,
         DeviceErrorDeviceParameterError,
         DeviceErrorActionParameterError,
-        DeviceErrorDeviceDescriptorNotFound
+        DeviceErrorDeviceDescriptorNotFound,
+        DeviceErrorAsync
+    };
+
+    enum DeviceSetupStatus {
+        DeviceSetupStatusSuccess,
+        DeviceSetupStatusFailure,
+        DeviceSetupStatusAsync
     };
 
     explicit DeviceManager(QObject *parent = 0);
@@ -85,6 +92,7 @@ signals:
     void emitEvent(const Event &event);
     void deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &devices);
+    void deviceSetupFinished(Device *device, DeviceError status, const QString &errorMessage);
 
 public slots:
     QPair<DeviceError, QString> executeAction(const Action &action);
@@ -95,6 +103,7 @@ private slots:
     void storeConfiguredDevices();
     void createNewAutoDevices();
     void slotDevicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
+    void slotDeviceSetupFinished(Device *device, DeviceManager::DeviceSetupStatus status, const QString &errorMessage);
 
     // Only connect this to Devices. It will query the sender()
     void slotDeviceStateValueChanged(const QUuid &stateTypeId, const QVariant &value);
@@ -104,7 +113,7 @@ private slots:
 
 private:
     QPair<DeviceError, QString> addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QList<Param> &params, const DeviceId id = DeviceId::createDeviceId());
-    bool setupDevice(Device *device);
+    QPair<DeviceSetupStatus, QString> setupDevice(Device *device);
     QPair<bool, QString> verifyParams(const QList<ParamType> paramTypes, const QList<Param> params);
 
 private:

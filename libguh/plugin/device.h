@@ -57,12 +57,16 @@ public:
     QVariant stateValue(const StateTypeId &stateTypeId) const;
     void setStateValue(const StateTypeId &stateTypeId, const QVariant &value);
 
+    bool setupComplete() const;
+
 signals:
     void stateValueChanged(const QUuid &stateTypeId, const QVariant &value);
 
 private:
     Device(const PluginId &pluginId, const DeviceId &id, const DeviceClassId &deviceClassId, QObject *parent = 0);
     Device(const PluginId &pluginId, const DeviceClassId &deviceClassId, QObject *parent = 0);
+
+    void setupCompleted();
 
 private:
     DeviceId m_id;
@@ -71,6 +75,7 @@ private:
     QString m_name;
     QList<Param> m_params;
     QList<State> m_states;
+    bool m_setupComplete;
 };
 
 #endif

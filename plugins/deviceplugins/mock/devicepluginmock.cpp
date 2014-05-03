@@ -139,7 +139,7 @@ PluginId DevicePluginMock::pluginId() const
     return PluginId("727a4a9a-c187-446f-aadf-f1b2220607d1");
 }
 
-bool DevicePluginMock::deviceCreated(Device *device)
+QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginMock::setupDevice(Device *device)
 {
     qDebug() << "Mockdevice created returning true" << device->paramValue("httpport").toInt();
 
@@ -148,13 +148,13 @@ bool DevicePluginMock::deviceCreated(Device *device)
 
     if (!daemon->isListening()) {
         qDebug() << "HTTP port opening failed.";
-        return false;
+        return reportDeviceSetup(DeviceManager::DeviceSetupStatusFailure, QString("Could not bind port."));
     }
 
     connect(daemon, &HttpDaemon::triggerEvent, this, &DevicePluginMock::triggerEvent);
     connect(daemon, &HttpDaemon::setState, this, &DevicePluginMock::setState);
 
-    return true;
+    return reportDeviceSetup();
 }
 
 void DevicePluginMock::deviceRemoved(Device *device)

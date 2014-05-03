@@ -120,9 +120,9 @@ DevicePlugin::~DevicePlugin()
  false. If instead you've found a new device which isn't known to the system yet,
  fill in the parameters of the passed device with some details that makes it possible
  for you to match this Device object with the detected hardware. After that, return true.
- The DeviceManager will then insert the device into its database and call deviceCreated()
+ The DeviceManager will then insert the device into its database and call setupDevice()
  for this device. Therefore you should not do any hardware initialisation in this state yet
- but rather wait for the subsequent deviceCreated() call to set it up like in any other
+ but rather wait for the subsequent setupDevice() call to set it up like in any other
  case where Device can be created.
  Returning false will cause the passed device object to be destroyed.
  If you have detected multiple new devices, just load them one by one. The DeviceManager
@@ -143,12 +143,17 @@ DeviceManager::DeviceError DevicePlugin::discoverDevices(const DeviceClassId &de
 }
 
 /*! This will be called when a new device is created. The plugin has the chance to do some setup.
-    Return false if something bad happened during the setup. The device will be disabled.
+    Return DeviceSetupStatusFailure if something bad happened during the setup in which case the device
+    will be disabled. Return DeviceSetupStatusSuccess if everything went well. If you can't tell yet and
+    need more time to set up the device (note: you should never block in this method) you can
+    return DeviceSetupStatusAsync. In that case the devicemanager will wait for you to emit
+    \l{deviceSetupFinished(Device *device, DeviceManager::DeviceSetupStatus status)} to report
+    the status.
 */
-bool DevicePlugin::deviceCreated(Device *device)
+QPair<DeviceManager::DeviceSetupStatus, QString> DevicePlugin::setupDevice(Device *device)
 {
     Q_UNUSED(device)
-    return true;
+    return reportDeviceSetup();
 }
 
 /*! This will be called when a device removed. The plugin has the chance to do some teardown.
@@ -269,5 +274,10 @@ void DevicePlugin::transmitData(QList<int> rawData)
 QPair<DeviceManager::DeviceError, QString> DevicePlugin::report(DeviceManager::DeviceError error, const QString &message)
 {
     return qMakePair<DeviceManager::DeviceError, QString>(error, message);
+}
+
+QPair<DeviceManager::DeviceSetupStatus, QString> DevicePlugin::reportDeviceSetup(DeviceManager::DeviceSetupStatus status, const QString &message)
+{
+    return qMakePair<DeviceManager::DeviceSetupStatus, QString>(status, message);
 }
 

@@ -431,10 +431,10 @@ DeviceManager::DeviceError DevicePluginOpenweathermap::discoverDevices(const Dev
     return DeviceManager::DeviceErrorNoError;
 }
 
-bool DevicePluginOpenweathermap::deviceCreated(Device *device)
+QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginOpenweathermap::setupDevice(Device *device)
 {
     m_openweaher->update(device->paramValue("id").toString());
-    return true;
+    return reportDeviceSetup();
 }
 
 DeviceManager::HardwareResources DevicePluginOpenweathermap::requiredHardware() const

@@ -42,7 +42,7 @@ public:
     QString pluginName() const override;
     PluginId pluginId() const override;
 
-    bool deviceCreated(Device *device) override;
+    QPair<DeviceManager::DeviceSetupStatus, QString> setupDevice(Device *device) override;
     void deviceRemoved(Device *device) override;
 
     bool configureAutoDevice(QList<Device *> loadedDevices, Device *device) const override;

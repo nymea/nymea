@@ -4,6 +4,7 @@ TARGET = guhtests
 QT += testlib network
 CONFIG += testcase c++11
 DEFINES += TESTING_ENABLED
+DEFINES += TESTS_SOURCE_DIR=\\\"$$top_srcdir/tests/auto/\\\"
 
 INCLUDEPATH += $$top_srcdir/server/ $$top_srcdir/server/jsonrpc $$top_srcdir/libguh $$top_srcdir/tests/auto/
 LIBS += -L$$top_builddir/libguh/ -lguh

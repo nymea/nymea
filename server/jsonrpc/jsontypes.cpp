@@ -136,6 +136,7 @@ void JsonTypes::init()
     s_device.insert("deviceClassId", "uuid");
     s_device.insert("name", "string");
     s_device.insert("params", QVariantList() << paramRef());
+    s_device.insert("setupComplete", "bool");
 
     // DeviceDescription
     s_deviceDescriptor.insert("id", "uuid");
@@ -346,6 +347,7 @@ QVariantMap JsonTypes::packDevice(Device *device)
         params.append(packParam(param));
     }
     variant.insert("params", params);
+    variant.insert("setupComplete", device->setupComplete());
     return variant;
 }
 

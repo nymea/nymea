@@ -26,6 +26,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
+#include <QCoreApplication>
 
 Q_IMPORT_PLUGIN(DevicePluginMock)
 
@@ -82,6 +83,8 @@ private slots:
     void storedDevices();
 
     void getRules();
+
+    void apiChangeBumpsVersion();
 
 private:
     QVariant injectAndWait(const QString &method, const QVariantMap &params);
@@ -599,6 +602,54 @@ void TestJSONRPC::getRules()
 {
     QVariant response = injectAndWait("Rules.GetRules", QVariantMap());
     qDebug() << "got rules response" << response;
+}
+
+void TestJSONRPC::apiChangeBumpsVersion()
+{
+    QString oldFilePath = QString(TESTS_SOURCE_DIR) + "/api.json";
+    QString newFilePath = QString(TESTS_SOURCE_DIR) + "/api.json.new";
+
+    QVariant response = injectAndWait("JSONRPC.Version", QVariantMap());
+    QByteArray newVersion = response.toMap().value("params").toMap().value("version").toByteArray();
+
+    response = injectAndWait("JSONRPC.Introspect", QVariantMap());
+    QJsonDocument jsonDoc = QJsonDocument::fromVariant(response.toMap().value("params"));
+    QByteArray newApi = jsonDoc.toJson();
+
+
+    QFile oldApiFile(oldFilePath);
+    QVERIFY(oldApiFile.exists() && oldApiFile.open(QIODevice::ReadOnly));
+
+    QByteArray oldVersion = oldApiFile.readLine().trimmed();
+    QByteArray oldApi = oldApiFile.readAll();
+
+    qDebug() << "version" << oldVersion << newVersion;
+
+    if (oldVersion == newVersion && oldApi == newApi) {
+        // All fine. no changes
+        return;
+    }
+
+    if (oldVersion == newVersion && oldApi != newApi) {
+        QVERIFY2(false, "JSONRPC API has changed but version is still the same. You need to bump the API version.");
+    }
+
+    QFile newApiFile(newFilePath);
+    QVERIFY(newApiFile.open(QIODevice::ReadWrite));
+    if (newApiFile.size() > 0) {
+        newApiFile.resize(0);
+    }
+
+    newApiFile.write(newVersion + '\n');
+    newApiFile.write(newApi);
+    newApiFile.flush();
+
+    QProcess p;
+    p.execute("diff", QStringList() << "-u" << oldFilePath << newFilePath);
+    p.waitForFinished();
+    qDebug() << p.readAll();
+
+    QVERIFY2(false, QString("JSONRPC API has changed. Update %1.").arg(oldFilePath).toLatin1().data());
 }
 
 QTEST_MAIN(TestJSONRPC)

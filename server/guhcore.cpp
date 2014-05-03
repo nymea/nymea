@@ -70,6 +70,9 @@ RuleEngine *GuhCore::ruleEngine() const
 GuhCore::GuhCore(QObject *parent) :
     QObject(parent)
 {
+    qDebug() << "*****************************************";
+    qDebug() << "* GUH version:" << GUH_VERSION_STRING << "starting up.       *";
+    qDebug() << "*****************************************";
 
     qDebug() << "*****************************************";
     qDebug() << "* Creating Device Manager               *";

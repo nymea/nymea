@@ -116,7 +116,7 @@ JsonReply* JsonRPCServer::Version(const QVariantMap &params) const
     Q_UNUSED(params)
 
     QVariantMap data;
-    data.insert("version", "0.0.0");
+    data.insert("version", GUH_VERSION_STRING);
     return createReply(data);
 }
 

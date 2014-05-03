@@ -71,6 +71,7 @@ signals:
     void emitEvent(const Event &event);
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors);
     void deviceSetupFinished(Device *device, DeviceManager::DeviceSetupStatus status, const QString &errorMessage);
+    void actionExecutionFinished(const ActionId &id, DeviceManager::DeviceError status, const QString &errorMessage);
 
 protected:
     DeviceManager *deviceManager() const;

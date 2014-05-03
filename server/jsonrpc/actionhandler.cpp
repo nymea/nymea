@@ -36,6 +36,8 @@ ActionHandler::ActionHandler(QObject *parent) :
     returns.insert("success", "bool");
     returns.insert("errorMessage", "string");
     setReturns("ExecuteAction", returns);
+
+    connect(GuhCore::instance()->deviceManager(), &DeviceManager::actionExecutionFinished, this, &ActionHandler::actionExecuted);
 }
 
 QString ActionHandler::name() const
@@ -50,36 +52,58 @@ JsonReply* ActionHandler::ExecuteAction(const QVariantMap &params)
     ActionTypeId actionTypeId(params.value("actionTypeId").toString());
     QList<Param> actionParams = JsonTypes::unpackParams(params.value("params").toList());
 
-    Action action(deviceId, actionTypeId);
+    Action action(actionTypeId, deviceId);
     action.setParams(actionParams);
 
     qDebug() << "actions params in json" << action.params() << params;
 
 
-    QVariantMap returns;
-    QPair<DeviceManager::DeviceError, QString> error = GuhCore::instance()->deviceManager()->executeAction(action);
+    QPair<DeviceManager::DeviceError, QString> status = GuhCore::instance()->deviceManager()->executeAction(action);
+    if (status.first == DeviceManager::DeviceErrorAsync) {
+        JsonReply *reply = createAsyncReply("ExecuteAction");
+        m_asyncActionExecutions.insert(action.id(), reply);
+        return reply;
+    }
 
-    switch (error.first) {
+    QVariantMap returns = statusToReply(status.first, status.second);
+    return createReply(returns);
+}
+
+void ActionHandler::actionExecuted(const ActionId &id, DeviceManager::DeviceError status, const QString &errorMessage)
+{
+    if (!m_asyncActionExecutions.contains(id)) {
+        return; // Not the action we are waiting for.
+    }
+
+    JsonReply *reply = m_asyncActionExecutions.take(id);
+    reply->setData(statusToReply(status, errorMessage));
+    reply->finished();
+}
+
+QVariantMap ActionHandler::statusToReply(DeviceManager::DeviceError status, const QString &errorMessage)
+{
+    QVariantMap returns;
+
+    switch (status) {
     case DeviceManager::DeviceErrorNoError:
         returns.insert("success", true);
         returns.insert("errorMessage", "");
         break;
     case DeviceManager::DeviceErrorDeviceNotFound:
-        returns.insert("errorMessage", QString("No such device: %1").arg(error.second));
+        returns.insert("errorMessage", QString("No such device: %1").arg(errorMessage));
         returns.insert("success", false);
         break;
     case DeviceManager::DeviceErrorActionTypeNotFound:
-        returns.insert("errorMessage", QString("ActionType not found: %1").arg(error.second));
+        returns.insert("errorMessage", QString("ActionType not found: %1").arg(errorMessage));
         returns.insert("success", false);
         break;
     case DeviceManager::DeviceErrorMissingParameter:
-        returns.insert("errorMessage", QString("Missing parameter: %1").arg(error.second));
+        returns.insert("errorMessage", QString("Missing parameter: %1").arg(errorMessage));
         returns.insert("success", false);
         break;
     default:
-        returns.insert("errorMessage", QString("Unknown error %1 %2").arg(error.first).arg(error.second));
+        returns.insert("errorMessage", QString("Unknown error %1 %2").arg(status).arg(errorMessage));
         returns.insert("success", false);
     }
-
-    return createReply(returns);
+    return returns;
 }

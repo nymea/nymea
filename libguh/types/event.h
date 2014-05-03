@@ -31,6 +31,8 @@ class Event
 public:
     Event(const EventTypeId &eventTypeId, const DeviceId &deviceId, const QList<Param> &params = QList<Param>());
 
+    EventId eventId() const;
+
     EventTypeId eventTypeId() const;
     DeviceId deviceId() const;
 
@@ -41,6 +43,7 @@ public:
     bool operator ==(const Event &other) const;
 
 private:
+    EventId m_id;
     EventTypeId m_eventTypeId;
     DeviceId m_deviceId;
     QList<Param> m_params;

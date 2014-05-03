@@ -29,6 +29,8 @@ class State
 public:
     State(const StateTypeId &stateTypeId, const DeviceId &deviceId);
 
+    StateId id() const;
+
     StateTypeId stateTypeId() const;
     DeviceId deviceId() const;
 
@@ -37,6 +39,7 @@ public:
     void setValue(const QVariant &value);
 
 private:
+    StateId m_id;
     StateTypeId m_stateTypeId;
     DeviceId m_deviceId;
     QVariant m_value;

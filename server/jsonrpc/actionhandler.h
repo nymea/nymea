@@ -20,6 +20,7 @@
 #define ACTIONHANDLER_H
 
 #include "jsonhandler.h"
+#include "devicemanager.h"
 
 class ActionHandler : public JsonHandler
 {
@@ -30,6 +31,15 @@ public:
     QString name() const;
 
     Q_INVOKABLE JsonReply* ExecuteAction(const QVariantMap &params);
+
+private slots:
+    void actionExecuted(const ActionId &id, DeviceManager::DeviceError status, const QString &errorMessage);
+
+private:
+    QVariantMap statusToReply(DeviceManager::DeviceError status, const QString &errorMessage);
+
+private:
+    QHash<ActionId, JsonReply*> m_asyncActionExecutions;
 };
 
 #endif // ACTIONHANDLER_H

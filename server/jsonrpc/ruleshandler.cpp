@@ -90,7 +90,7 @@ JsonReply* RulesHandler::AddRule(const QVariantMap &params)
     qDebug() << "got action list" << actionList.count();
     foreach (const QVariant &actionVariant, actionList) {
         QVariantMap actionMap = actionVariant.toMap();
-        Action action(DeviceId(actionMap.value("deviceId").toString()), ActionTypeId(actionMap.value("actionTypeId").toString()));
+        Action action(ActionTypeId(actionMap.value("actionTypeId").toString()), DeviceId(actionMap.value("deviceId").toString()));
         action.setParams(JsonTypes::unpackParams(actionMap.value("params").toList()));
         actions.append(action);
     }

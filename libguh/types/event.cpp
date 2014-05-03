@@ -37,10 +37,18 @@
     the \l{Device} given by \a deviceId and the parameters given by \a params. The parameters must
     match the description in the reflecting \l{Event}.*/
 Event::Event(const EventTypeId &eventTypeId, const DeviceId &deviceId, const QList<Param> &params):
+    m_id(EventId::createEventId()),
     m_eventTypeId(eventTypeId),
     m_deviceId(deviceId),
     m_params(params)
 {
+}
+
+/*! Returns this event's id. Each newly created event will have a new UUID generated. The id will be copied
+    in the copy ctor.*/
+EventId Event::eventId() const
+{
+    return m_id;
 }
 
 /*! Returns the id of the \l{EventType} which describes this Event.*/

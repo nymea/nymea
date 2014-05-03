@@ -34,9 +34,15 @@
 /*! Constructs a State reflecting the \l{StateType} given by \a stateTypeId
     and associated with the \l{Device} given by \a deviceId */
 State::State(const StateTypeId &stateTypeId, const DeviceId &deviceId):
+    m_id(StateId::createStateId()),
     m_stateTypeId(stateTypeId),
     m_deviceId(deviceId)
 {
+}
+
+StateId State::id() const
+{
+    return m_id;
 }
 
 /*! Returns the id of the StateType describing this State. */

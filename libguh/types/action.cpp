@@ -33,10 +33,16 @@
 #include "action.h"
 
 /*! Construct an Action with the given \a deviceId and \a actionTypeId */
-Action::Action(const DeviceId &deviceId, const ActionTypeId &actionTypeId) :
+Action::Action(const ActionTypeId &actionTypeId, const DeviceId &deviceId) :
+    m_id(ActionId::createActionId()),
     m_actionTypeId(actionTypeId),
     m_deviceId(deviceId)
 {
+}
+
+ActionId Action::id() const
+{
+    return m_id;
 }
 
 /*! An Action is valid if actionTypeId and deviceId are valid uuids. Returns true if valid, false if not. */

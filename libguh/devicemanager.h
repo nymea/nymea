@@ -93,6 +93,7 @@ signals:
     void deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &devices);
     void deviceSetupFinished(Device *device, DeviceError status, const QString &errorMessage);
+    void actionExecutionFinished(const ActionId, DeviceError status, const QString &errorMessage);
 
 public slots:
     QPair<DeviceError, QString> executeAction(const Action &action);

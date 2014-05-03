@@ -27,7 +27,9 @@
 class Action
 {
 public:
-    explicit Action(const DeviceId &deviceId, const ActionTypeId &actionTypeId);
+    explicit Action(const ActionTypeId &actionTypeId, const DeviceId &deviceId);
+
+    ActionId id() const;
 
     bool isValid() const;
 
@@ -39,6 +41,7 @@ public:
     Param param(const QString &paramName) const;
 
 private:
+    ActionId m_id;
     ActionTypeId m_actionTypeId;
     DeviceId m_deviceId;
     QList<Param> m_params;

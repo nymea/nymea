@@ -418,6 +418,7 @@ void DeviceManager::loadPlugins()
             connect(pluginIface, &DevicePlugin::emitEvent, this, &DeviceManager::emitEvent);
             connect(pluginIface, &DevicePlugin::devicesDiscovered, this, &DeviceManager::slotDevicesDiscovered);
             connect(pluginIface, &DevicePlugin::deviceSetupFinished, this, &DeviceManager::slotDeviceSetupFinished);
+            connect(pluginIface, &DevicePlugin::actionExecutionFinished, this, &DeviceManager::actionExecutionFinished);
         }
     }
 }

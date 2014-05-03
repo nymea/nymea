@@ -74,8 +74,20 @@ pure virtual methods: \l{DevicePlugin::pluginName()}, \l{DevicePlugin::pluginId(
  return report(DeviceManager::DeviceErrorSetupFailed, device->id());
  Keep the message short, the DeviceManager will format it for you.
 
- \sa DevicePlugin::report()
+ It is possible to execute actions asynchronously. You never should do anything blocking for
+ a long time (e.g. wait on a network reply from the internet) but instead return
+ DeviceManager::DeviceErrorAsync and continue processing in an async manner. Once
+ you have the reply ready, emit actionExecutionFinished() with the appropriate parameters.
+
+ \sa DevicePlugin::report() DevicePlugin::actionExecutionFinished()
  */
+
+/*!
+  \fn void DevicePlugin::actionExecutionFinished(const ActionId &id, DeviceManager::DeviceError status, const QString &errorMessage)
+  This signal is to be emitted when you previously have returned DeviceManager::DeviceErrorAsync
+  in a call of executeAction(). It is used to deliver the return value that previously has
+  been omitted by filling in DeviceErrorAsync.
+  */
 
 /*!
  \fn void DevicePlugin::emitEvent(const Event &event)

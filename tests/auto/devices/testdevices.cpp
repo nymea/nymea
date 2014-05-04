@@ -43,6 +43,8 @@ private slots:
 
     void storedDevices();
 
+    void discoverDevices();
+
 };
 
 void TestDevices::getSupportedVendors()
@@ -62,8 +64,8 @@ void TestDevices::getSupportedDevices_data()
     QTest::addColumn<VendorId>("vendorId");
     QTest::addColumn<int>("resultCount");
 
-    QTest::newRow("vendor guh") << guhVendorId << 2;
-    QTest::newRow("no filter") << VendorId() << 2;
+    QTest::newRow("vendor guh") << guhVendorId << 3;
+    QTest::newRow("no filter") << VendorId() << 3;
     QTest::newRow("invalid vendor") << VendorId("93e7d361-8025-4354-b17e-b68406c800bc") << 0;
 }
 
@@ -78,11 +80,11 @@ void TestDevices::getSupportedDevices()
     }
     QVariant supportedDevices = injectAndWait("Devices.GetSupportedDevices", params);
 
-    // Make sure there is exactly 1 supported device class with the name Mock Wifi Device
+    // Make sure there are the right amount of supported device classes with the name Mock Device
     QCOMPARE(supportedDevices.toMap().value("params").toMap().value("deviceClasses").toList().count(), resultCount);
     if (resultCount > 0) {
         QString deviceName = supportedDevices.toMap().value("params").toMap().value("deviceClasses").toList().first().toMap().value("name").toString();
-        QVERIFY(deviceName.startsWith(QString("Mock Device")));
+        QVERIFY2(deviceName.startsWith(QString("Mock Device")), QString("Got: %1  Expected: %2").arg(deviceName).arg("Mock Device").toLatin1().data());
     }
 }
 
@@ -97,6 +99,7 @@ void TestDevices::addConfiguredDevice_data()
 
     QTest::newRow("User, JustAdd") << mockDeviceClassId << deviceParams << true;
     QTest::newRow("Auto, JustAdd") << mockDeviceAutoClassId << deviceParams << false;
+    QTest::newRow("Discovery, JustAdd") << mockDeviceDiscoveryClassId << deviceParams << false;
 
     QVariantMap invalidDeviceParams;
     invalidDeviceParams.insert("tropptth", m_mockDevice1Port - 1);
@@ -193,6 +196,31 @@ void TestDevices::storedDevices()
     params.clear();
     params.insert("deviceId", addedDeviceId);
     response = injectAndWait("Devices.RemoveConfiguredDevice", params);
+}
+
+void TestDevices::discoverDevices()
+{
+    QVariantMap params;
+    params.insert("deviceClassId", mockDeviceDiscoveryClassId);
+    QVariant response = injectAndWait("Devices.GetDiscoveredDevices", params);
+
+    qDebug() << "response" << response;
+
+    QCOMPARE(response.toMap().value("params").toMap().value("deviceDescriptors").toList().count(), 2);
+
+    DeviceDescriptorId descriptorId = DeviceDescriptorId(response.toMap().value("params").toMap().value("deviceDescriptors").toList().first().toMap().value("id").toString());
+
+    params.insert("deviceDescriptorId", descriptorId.toString());
+    response = injectAndWait("Devices.AddConfiguredDevice", params);
+
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+    QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
+
+    DeviceId deviceId(response.toMap().value("params").toMap().value("deviceId").toString());
+    params.clear();
+    params.insert("deviceId", deviceId.toString());
+    injectAndWait("Devices.RemoveConfiguredDevice", params);
+    QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
 }
 
 #include "testdevices.moc"

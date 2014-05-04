@@ -210,6 +210,9 @@ JsonReply *DeviceHandler::GetDiscoveredDevices(const QVariantMap &params) const
     case DeviceManager::DeviceErrorPluginNotFound:
         returns.insert("errorMessage", "Cannot discover devices. Plugin for DeviceClass not found.");
         break;
+    case DeviceManager::DeviceErrorCreationMethodNotSupported:
+        returns.insert("errorMessage", "This device can't be discovered.");
+        break;
     default:
         returns.insert("errorMessage", QString("Unknown error %1").arg(status));
     }

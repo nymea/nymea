@@ -39,6 +39,7 @@ public:
     QList<Vendor> supportedVendors() const override;
     QList<DeviceClass> supportedDevices() const override;
     DeviceManager::HardwareResources requiredHardware() const override;
+    DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const QVariantMap &params) const;
 
     QString pluginName() const override;
     PluginId pluginId() const override;
@@ -54,6 +55,7 @@ public slots:
 private slots:
     void setState(const StateTypeId &stateTypeId, const QVariant &value);
     void triggerEvent(const EventTypeId &id);
+    void emitDevicesDiscovered();
 
 private:
     QHash<Device*, HttpDaemon*> m_daemons;

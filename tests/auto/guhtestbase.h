@@ -30,6 +30,7 @@
 extern VendorId guhVendorId;
 extern DeviceClassId mockDeviceClassId;
 extern DeviceClassId mockDeviceAutoClassId;
+extern DeviceClassId mockDeviceDiscoveryClassId;
 extern ActionTypeId mockAction1Id;
 extern EventTypeId mockEvent1Id;
 extern StateTypeId mockIntStateId;

@@ -28,6 +28,7 @@
 VendorId guhVendorId = VendorId("2062d64d-3232-433c-88bc-0d33c0ba2ba6");
 DeviceClassId mockDeviceClassId = DeviceClassId("753f0d32-0468-4d08-82ed-1964aab03298");
 DeviceClassId mockDeviceAutoClassId = DeviceClassId("ab4257b3-7548-47ee-9bd4-7dc3004fd197");
+DeviceClassId mockDeviceDiscoveryClassId = DeviceClassId("1bbaf751-36b7-4d3d-b05a-58dab2a3be8c");
 EventTypeId mockEvent1Id = EventTypeId("45bf3752-0fc6-46b9-89fd-ffd878b5b22b");
 EventTypeId mockEvent2Id = EventTypeId("863d5920-b1cf-4eb9-88bd-8f7b8583b1cf");
 StateTypeId mockIntStateId = StateTypeId("80baec19-54de-4948-ac46-31eabfaceb83");
@@ -127,12 +128,34 @@ QList<DeviceClass> DevicePluginMock::supportedDevices() const
 
     ret.append(deviceClassMockAuto);
 
+    // Discovery created device
+    DeviceClass deviceClassMockDiscovery(pluginId(), guhVendorId, mockDeviceDiscoveryClassId);
+    deviceClassMockDiscovery.setName("Mock Device (Discovery created)");
+    deviceClassMockDiscovery.setCreateMethod(DeviceClass::CreateMethodDiscovery);
+
+    mockParams.clear();
+    mockParams.append(portParam);
+    deviceClassMockDiscovery.setParams(mockParams);
+    deviceClassMockDiscovery.setStates(mockStates);
+    deviceClassMockDiscovery.setEvents(mockEvents);
+    deviceClassMockDiscovery.setActions(mockActions);
+
+    ret.append(deviceClassMockDiscovery);
+
     return ret;
 }
 
 DeviceManager::HardwareResources DevicePluginMock::requiredHardware() const
 {
     return DeviceManager::HardwareResourceTimer;
+}
+
+DeviceManager::DeviceError DevicePluginMock::discoverDevices(const DeviceClassId &deviceClassId, const QVariantMap &params) const
+{
+    Q_UNUSED(deviceClassId)
+    Q_UNUSED(params)
+    QTimer::singleShot(1000, this, SLOT(emitDevicesDiscovered()));
+    return DeviceManager::DeviceErrorNoError;
 }
 
 QString DevicePluginMock::pluginName() const
@@ -217,4 +240,25 @@ void DevicePluginMock::triggerEvent(const EventTypeId &id)
 
     qDebug() << "Emitting event " << event.eventTypeId();
     emit emitEvent(event);
+}
+
+void DevicePluginMock::emitDevicesDiscovered()
+{
+    QList<DeviceDescriptor> deviceDescriptors;
+
+    DeviceDescriptor d1(mockDeviceDiscoveryClassId, "Mock Device (Discovered)");
+    QList<Param> params;
+    Param httpParam("httpport", "7777");
+    params.append(httpParam);
+    d1.setParams(params);
+    deviceDescriptors.append(d1);
+
+    DeviceDescriptor d2(mockDeviceDiscoveryClassId, "Mock Device (Discovered)");
+    params.clear();
+    httpParam.setValue("7778");
+    params.append(httpParam);
+    d2.setParams(params);
+    deviceDescriptors.append(d2);
+
+    emit devicesDiscovered(mockDeviceDiscoveryClassId, deviceDescriptors);
 }

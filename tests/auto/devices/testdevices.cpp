@@ -94,8 +94,14 @@ void TestDevices::addConfiguredDevice_data()
 
     QVariantMap deviceParams;
     deviceParams.insert("httpport", m_mockDevice1Port - 1);
+
     QTest::newRow("User, JustAdd") << mockDeviceClassId << deviceParams << true;
     QTest::newRow("Auto, JustAdd") << mockDeviceAutoClassId << deviceParams << false;
+
+    QVariantMap invalidDeviceParams;
+    invalidDeviceParams.insert("tropptth", m_mockDevice1Port - 1);
+    QTest::newRow("User, JustAdd, invalid params") << mockDeviceClassId << invalidDeviceParams << false;
+
 }
 
 void TestDevices::addConfiguredDevice()

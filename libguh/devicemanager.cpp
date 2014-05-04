@@ -589,20 +589,13 @@ void DeviceManager::slotDeviceStateValueChanged(const QUuid &stateTypeId, const 
 
 void DeviceManager::radio433SignalReceived(QList<int> rawData)
 {
-    // TODO: this is just temporary for debugging...
-    foreach (DevicePlugin *plugin, plugins()) {
+    foreach (Device *device, m_configuredDevices) {
+        DeviceClass deviceClass = m_supportedDevices.value(device->deviceClassId());
+        DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
         if (plugin->requiredHardware().testFlag(HardwareResourceRadio433)) {
             plugin->radioData(rawData);
         }
     }
-
-    //    foreach (Device *device, m_configuredDevices) {
-    //        DeviceClass deviceClass = m_supportedDevices.value(device->deviceClassId());
-    //        DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
-    //        if (plugin->requiredHardware().testFlag(HardwareResourceRadio433)) {
-    //            plugin->radioData(rawData);
-    //        }
-    //    }
 }
 
 void DeviceManager::timerEvent()

@@ -136,5 +136,6 @@ private:
     friend class DevicePlugin;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(DeviceManager::HardwareResources)
+Q_DECLARE_METATYPE(DeviceManager::DeviceError)
 
 #endif // DEVICEMANAGER_H

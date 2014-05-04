@@ -101,6 +101,8 @@ void TestDevices::addConfiguredDevice_data()
     QTest::newRow("Auto, JustAdd") << mockDeviceAutoClassId << deviceParams << false;
     QTest::newRow("Discovery, JustAdd") << mockDeviceDiscoveryClassId << deviceParams << false;
     QTest::newRow("User, JustAdd, Async") << mockDeviceAsyncSetupClassId << deviceParams << true;
+    QTest::newRow("Invalid DeviceClassId") << DeviceClassId::createDeviceClassId() << deviceParams << false;
+    QTest::newRow("Setup failure") << mockDeviceBrokenClassId << deviceParams << false;
 
     QVariantMap invalidDeviceParams;
     invalidDeviceParams.insert("tropptth", m_mockDevice1Port - 1);

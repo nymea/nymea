@@ -177,6 +177,11 @@ void DevicePlugin::deviceRemoved(Device *device)
     Q_UNUSED(device)
 }
 
+QList<ParamType> DevicePlugin::configurationDescription() const
+{
+    return QList<ParamType>();
+}
+
 /*! This will be called when the DeviceManager initializes the plugin and set up the things behind the scenes.
     When implementing a new plugin, use \l{DevicePlugin::init()} instead in order to do initialisation work. */
 void DevicePlugin::initPlugin(DeviceManager *deviceManager)
@@ -190,22 +195,82 @@ void DevicePlugin::initPlugin(DeviceManager *deviceManager)
 
   When implementing a new plugin, override this and fill in the empty configuration if your plugin requires any.
  */
-QVariantMap DevicePlugin::configuration() const
+QList<Param> DevicePlugin::configuration() const
 {
-    return QVariantMap();
+    return m_config;
+}
+
+/*!
+ Use this to retrieve the values for your parameters. Values might not be set
+ at the time when your plugin is loaded, but will be set soon after. Listen to
+ configurationValueChanged() to know when something changes.
+ When implementing a new plugin, specify in configurationDescription() what you want to see here.
+ */
+QVariant DevicePlugin::configValue(const QString &paramName) const
+{
+    foreach (const Param &param, m_config) {
+        if (param.name() == paramName) {
+            return param.value();
+        }
+    }
+    return QVariant();
 }
 
 /*!
  Will be called by the DeviceManager to set a plugin's \a configuration.
-
- When implementing a new plugin, override this and react to configuration changes.
-
- TODO: Still need to define a common format for the config.
  */
-void DevicePlugin::setConfiguration(const QVariantMap &configuration)
+QPair<DeviceManager::DeviceError, QString> DevicePlugin::setConfiguration(const QList<Param> &configuration)
 {
-    Q_UNUSED(configuration)
-    qWarning() << "Plugin" << pluginName() << pluginId() << "does not support any configuration";
+    foreach (const Param &param, configuration) {
+        qDebug() << "setting config" << param;
+        QPair<DeviceManager::DeviceError, QString> result = setConfigValue(param.name(), param.value());
+        if (result.first != DeviceManager::DeviceErrorNoError) {
+            return result;
+        }
+    }
+    return report();
+}
+
+/*!
+ Will be called by the DeviceManager to set a plugin's \a configuration.
+ */
+QPair<DeviceManager::DeviceError, QString> DevicePlugin::setConfigValue(const QString &paramName, const QVariant &value)
+{
+    bool found = false;
+    foreach (const ParamType &paramType, configurationDescription()) {
+        if (paramType.name() == paramName) {
+            if (!value.canConvert(paramType.type())) {
+                return report(DeviceManager::DeviceErrorInvalidParameter, QString("Wrong parameter type for param %1. Got %2. Expected %3.")
+                              .arg(paramName).arg(value.toString()).arg(QVariant::typeToName(paramType.type())));
+            }
+
+            if (paramType.maxValue().isValid() && value > paramType.maxValue()) {
+                return report(DeviceManager::DeviceErrorInvalidParameter, QString("Value out of range for param %1. Got %2. Max: %3.")
+                              .arg(paramName).arg(value.toString()).arg(paramType.maxValue().toString()));
+            }
+            if (paramType.minValue().isValid() && value < paramType.minValue()) {
+                return report(DeviceManager::DeviceErrorInvalidParameter, QString("Value out of range for param %1. Got: %2. Min: %3.")
+                              .arg(paramName).arg(value.toString()).arg(paramType.minValue().toString()));
+            }
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        return report(DeviceManager::DeviceErrorInvalidParameter, QString("Invalid parameter %1.").arg(paramName));
+    }
+    for (int i = 0; i < m_config.count(); i++) {
+        if (m_config.at(i).name() == paramName) {
+            m_config[i].setValue(value);
+            emit configValueChanged(paramName, value);
+            return report();
+        }
+    }
+    // Still here? need to create the param
+    Param newParam(paramName, value);
+    m_config.append(newParam);
+    emit configValueChanged(paramName, value);
+    return report();
 }
 
 /*!
@@ -292,4 +357,3 @@ QPair<DeviceManager::DeviceSetupStatus, QString> DevicePlugin::reportDeviceSetup
 {
     return qMakePair<DeviceManager::DeviceSetupStatus, QString>(status, message);
 }
-

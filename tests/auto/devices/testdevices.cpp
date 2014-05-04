@@ -19,6 +19,7 @@
 #include "guhtestbase.h"
 #include "guhcore.h"
 #include "devicemanager.h"
+#include "plugin/deviceplugin.h"
 
 #include <QDebug>
 #include <QSignalSpy>
@@ -28,8 +29,13 @@ class TestDevices : public GuhTestBase
     Q_OBJECT
 
 private slots:
-
     void getPlugins();
+
+    void getPluginConfig_data();
+    void getPluginConfig();
+
+    void setPluginConfig_data();
+    void setPluginConfig();
 
     void getSupportedVendors();
 
@@ -49,6 +55,14 @@ private slots:
     void discoverDevices_data();
     void discoverDevices();
 
+    void getActionTypes_data();
+    void getActionTypes();
+
+    void getEventTypes_data();
+    void getEventTypes();
+
+    void getStateTypes_data();
+    void getStateTypes();
 };
 
 void TestDevices::getPlugins()
@@ -59,6 +73,66 @@ void TestDevices::getPlugins()
 
     QCOMPARE(plugins.count(), 1);
     QCOMPARE(PluginId(plugins.first().toMap().value("id").toString()), mockPluginId);
+}
+
+void TestDevices::getPluginConfig_data()
+{
+    QTest::addColumn<PluginId>("pluginId");
+    QTest::addColumn<bool>("success");
+
+    QTest::newRow("valid plugin") << mockPluginId << true;
+    QTest::newRow("invalid plugin") << PluginId::createPluginId() << false;
+}
+
+void TestDevices::getPluginConfig()
+{
+    QFETCH(PluginId, pluginId);
+    QFETCH(bool, success);
+
+    QVariantMap params;
+    params.insert("pluginId", pluginId);
+    QVariant response = injectAndWait("Devices.GetPluginConfiguration", params);
+    verifySuccess(response, success);
+}
+
+void TestDevices::setPluginConfig_data()
+{
+    QTest::addColumn<PluginId>("pluginId");
+    QTest::addColumn<QVariant>("value");
+    QTest::addColumn<bool>("success");
+
+    QTest::newRow("valid") << mockPluginId << QVariant(13) << true;
+    QTest::newRow("invalid plugin") << PluginId::createPluginId() << QVariant(13) <<  false;
+    QTest::newRow("too big") << mockPluginId << QVariant(130) << false;
+    QTest::newRow("too small") << mockPluginId << QVariant(-13) << false;
+    QTest::newRow("wrong type") << mockPluginId << QVariant("wrontType") << false;
+}
+
+void TestDevices::setPluginConfig()
+{
+    QFETCH(PluginId, pluginId);
+    QFETCH(QVariant, value);
+    QFETCH(bool, success);
+
+    QVariantMap params;
+    params.insert("pluginId", pluginId);
+
+    QVariantList configuration;
+    QVariantMap configParam;
+    configParam.insert("configParamInt", value);
+    configuration.append(configParam);
+    params.insert("configuration", configuration);
+    QVariant response = injectAndWait("Devices.SetPluginConfiguration", params);
+    verifySuccess(response, success);
+
+    if (success) {
+        params.clear();
+        params.insert("pluginId", pluginId);
+        response = injectAndWait("Devices.GetPluginConfiguration", params);
+        verifySuccess(response);
+        qDebug() << "222" << response.toMap().value("params").toMap().value("configuration").toList().first();
+        QVERIFY2(response.toMap().value("params").toMap().value("configuration").toList().first().toMap().value("configParamInt") == value, "Value not set correctly");
+    }
 }
 
 void TestDevices::getSupportedVendors()
@@ -172,6 +246,7 @@ void TestDevices::removeDevice()
     QFETCH(bool, success);
 
     QSettings settings;
+    settings.beginGroup("DeviceConfig");
     if (success) {
         settings.beginGroup(m_mockDeviceId.toString());
         // Make sure we have some config values for this device
@@ -212,6 +287,7 @@ void TestDevices::storedDevices()
 
     response = injectAndWait("Devices.GetConfiguredDevices", QVariantMap());
 
+    bool found = false;
     foreach (const QVariant device, response.toMap().value("params").toMap().value("devices").toList()) {
         qDebug() << "found stored device" << device;
         if (DeviceId(device.toMap().value("id").toString()) == addedDeviceId) {
@@ -222,8 +298,11 @@ void TestDevices::storedDevices()
             qDebug() << "found added device" << device.toMap().value("params").toList().first().toMap();
             qDebug() << "expected deviceParams:" << deviceParams;
             QCOMPARE(device.toMap().value("params").toList().first().toMap(), deviceParams);
+            found = true;
+            break;
         }
     }
+    QVERIFY2(found, "Device missing in config!");
 
     params.clear();
     params.insert("deviceId", addedDeviceId);
@@ -271,6 +350,81 @@ void TestDevices::discoverDevices()
         params.insert("deviceId", deviceId.toString());
         response = injectAndWait("Devices.RemoveConfiguredDevice", params);
         verifySuccess(response);
+    }
+}
+
+void TestDevices::getActionTypes_data()
+{
+    QTest::addColumn<DeviceClassId>("deviceClassId");
+    QTest::addColumn<int>("resultCount");
+
+    QTest::newRow("valid deviceclass") << mockDeviceClassId << 5;
+    QTest::newRow("invalid deviceclass") << DeviceClassId("094f8024-5caa-48c1-ab6a-de486a92088f") << 0;
+}
+
+void TestDevices::getActionTypes()
+{
+    QFETCH(DeviceClassId, deviceClassId);
+    QFETCH(int, resultCount);
+
+    QVariantMap params;
+    params.insert("deviceClassId", deviceClassId);
+    QVariant response = injectAndWait("Devices.GetActionTypes", params);
+
+    QVariantList actionTypes = response.toMap().value("params").toMap().value("actionTypes").toList();
+    QCOMPARE(actionTypes.count(), resultCount);
+    if (resultCount > 0) {
+        QCOMPARE(actionTypes.first().toMap().value("id").toString(), mockActionIdWithParams.toString());
+    }
+}
+
+void TestDevices::getEventTypes_data()
+{
+    QTest::addColumn<DeviceClassId>("deviceClassId");
+    QTest::addColumn<int>("resultCount");
+
+    QTest::newRow("valid deviceclass") << mockDeviceClassId << 2;
+    QTest::newRow("invalid deviceclass") << DeviceClassId("094f8024-5caa-48c1-ab6a-de486a92088f") << 0;
+}
+
+void TestDevices::getEventTypes()
+{
+    QFETCH(DeviceClassId, deviceClassId);
+    QFETCH(int, resultCount);
+
+    QVariantMap params;
+    params.insert("deviceClassId", deviceClassId);
+    QVariant response = injectAndWait("Devices.GetEventTypes", params);
+
+    QVariantList eventTypes = response.toMap().value("params").toMap().value("eventTypes").toList();
+    QCOMPARE(eventTypes.count(), resultCount);
+    if (resultCount > 0) {
+        QCOMPARE(eventTypes.first().toMap().value("id").toString(), mockEvent1Id.toString());
+    }
+}
+
+void TestDevices::getStateTypes_data()
+{
+    QTest::addColumn<DeviceClassId>("deviceClassId");
+    QTest::addColumn<int>("resultCount");
+
+    QTest::newRow("valid deviceclass") << mockDeviceClassId << 2;
+    QTest::newRow("invalid deviceclass") << DeviceClassId("094f8024-5caa-48c1-ab6a-de486a92088f") << 0;
+}
+
+void TestDevices::getStateTypes()
+{
+    QFETCH(DeviceClassId, deviceClassId);
+    QFETCH(int, resultCount);
+
+    QVariantMap params;
+    params.insert("deviceClassId", deviceClassId);
+    QVariant response = injectAndWait("Devices.GetStateTypes", params);
+
+    QVariantList stateTypes = response.toMap().value("params").toMap().value("stateTypes").toList();
+    QCOMPARE(stateTypes.count(), resultCount);
+    if (resultCount > 0) {
+        QCOMPARE(stateTypes.first().toMap().value("id").toString(), mockIntStateId.toString());
     }
 }
 

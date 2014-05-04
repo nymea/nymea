@@ -74,3 +74,36 @@ void ParamType::setMaxValue(const QVariant &maxValue)
 {
     m_maxValue = maxValue;
 }
+
+QPair<QVariant, QVariant> ParamType::limits() const
+{
+    return qMakePair<QVariant, QVariant>(m_minValue, m_maxValue);
+}
+
+void ParamType::setLimits(const QVariant &min, const QVariant &max)
+{
+    m_minValue = min;
+    m_maxValue = max;
+}
+
+QDebug operator<<(QDebug dbg, const ParamType &paramType)
+{
+    dbg.nospace() << "ParamType(Name: " << paramType.name()
+                  << ", Type:" << QVariant::typeToName(paramType.type())
+                  << ", Default:" << paramType.defaultValue()
+                  << ", Min:" << paramType.minValue()
+                  << ", Max:" << paramType.maxValue()
+                  << ")";
+
+    return dbg.space();
+}
+
+QDebug operator<<(QDebug dbg, const QList<ParamType> &paramTypes)
+{
+    dbg.nospace() << "ParamTypeList (count:" << paramTypes.count() << ")" << endl;
+    for (int i = 0; i < paramTypes.count(); i++ ) {
+        dbg.nospace() << "     " << i << ": " << paramTypes.at(i) << endl;
+    }
+
+    return dbg.space();
+}

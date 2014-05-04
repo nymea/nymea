@@ -83,27 +83,7 @@ void ActionHandler::actionExecuted(const ActionId &id, DeviceManager::DeviceErro
 QVariantMap ActionHandler::statusToReply(DeviceManager::DeviceError status, const QString &errorMessage)
 {
     QVariantMap returns;
-
-    switch (status) {
-    case DeviceManager::DeviceErrorNoError:
-        returns.insert("success", true);
-        returns.insert("errorMessage", "");
-        break;
-    case DeviceManager::DeviceErrorDeviceNotFound:
-        returns.insert("errorMessage", QString("No such device: %1").arg(errorMessage));
-        returns.insert("success", false);
-        break;
-    case DeviceManager::DeviceErrorActionTypeNotFound:
-        returns.insert("errorMessage", QString("ActionType not found: %1").arg(errorMessage));
-        returns.insert("success", false);
-        break;
-    case DeviceManager::DeviceErrorMissingParameter:
-        returns.insert("errorMessage", QString("Missing parameter: %1").arg(errorMessage));
-        returns.insert("success", false);
-        break;
-    default:
-        returns.insert("errorMessage", QString("Unknown error %1 %2").arg(status).arg(errorMessage));
-        returns.insert("success", false);
-    }
+    returns.insert("success", status == DeviceManager::DeviceErrorNoError);
+    returns.insert("errorMessage", errorMessage);
     return returns;
 }

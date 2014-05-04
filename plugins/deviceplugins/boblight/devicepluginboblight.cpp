@@ -36,11 +36,7 @@ ActionTypeId setColorActionTypeId = ActionTypeId("668e1aa3-fa13-49ce-8630-17a5c0
 DevicePluginBoblight::DevicePluginBoblight()
 {
     m_bobClient = new BobClient(this);
-
-    m_config.insert("boblighthost", "localhost");
-    m_config.insert("boblightport", "19333");
-
-    connectToBoblight();
+    connect(this, &DevicePlugin::configValueChanged, this, &DevicePluginBoblight::connectToBoblight);
 }
 
 QList<Vendor> DevicePluginBoblight::supportedVendors() const
@@ -122,15 +118,12 @@ PluginId DevicePluginBoblight::pluginId() const
     return boblightPluginUuid;
 }
 
-QVariantMap DevicePluginBoblight::configuration() const
+QList<ParamType> DevicePluginBoblight::configurationDescription() const
 {
-    return m_config;
-}
-
-void DevicePluginBoblight::setConfiguration(const QVariantMap &configuration)
-{
-    m_config = configuration;
-    connectToBoblight();
+    QList<ParamType> params;
+    params.append(ParamType("boblighthost", QVariant::String, "localhost"));
+    params.append(ParamType("boblightport", QVariant::String, "19333"));
+    return params;
 }
 
 QPair<DeviceManager::DeviceError, QString> DevicePluginBoblight::executeAction(Device *device, const Action &action)
@@ -152,5 +145,7 @@ QPair<DeviceManager::DeviceError, QString> DevicePluginBoblight::executeAction(D
 
 void DevicePluginBoblight::connectToBoblight()
 {
-    m_bobClient->connect(m_config.value("boblighthost").toString(), m_config.value("boblightport").toInt());
+    if (configValue("boblighthost").isValid() && configValue("boblightport").isValid()) {
+        m_bobClient->connect(configValue("boblighthost").toString(), configValue("boblightport").toInt());
+    }
 }

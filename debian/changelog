@@ -1,3 +1,9 @@
+guh (0.1.2) UNRELEASED; urgency=medium
+
+  * Added Plugin configs
+
+ -- Michael Zanetti <micha@noneyet>  Sun, 04 May 2014 22:23:34 +0200
+
 guh (0.1.1) trusty; urgency=low
 
   * Initial release.

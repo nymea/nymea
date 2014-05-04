@@ -270,6 +270,19 @@ bool DevicePluginMock::configureAutoDevice(QList<Device *> loadedDevices, Device
     return true;
 }
 
+QList<ParamType> DevicePluginMock::configurationDescription() const
+{
+    QList<ParamType> params;
+    ParamType mockParam1("configParamInt", QVariant::Int, 42);
+    mockParam1.setLimits(1, 50);
+    params.append(mockParam1);
+
+    ParamType mockParam2("configParamBool", QVariant::Bool, true);
+    params.append(mockParam2);
+
+    return params;
+}
+
 QPair<DeviceManager::DeviceError, QString> DevicePluginMock::executeAction(Device *device, const Action &action)
 {
     if (!myDevices().contains(device)) {

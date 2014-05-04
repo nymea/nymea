@@ -26,6 +26,7 @@
 #include "types/event.h"
 #include "types/action.h"
 #include "types/vendor.h"
+#include "types/param.h"
 
 #include <QObject>
 
@@ -58,8 +59,12 @@ public:
     virtual void radioData(QList<int> rawData) {Q_UNUSED(rawData)}
     virtual void guhTimer() {}
 
-    virtual QVariantMap configuration() const;
-    virtual void setConfiguration(const QVariantMap &configuration);
+    // Configuration
+    virtual QList<ParamType> configurationDescription() const;
+    QPair<DeviceManager::DeviceError, QString> setConfiguration(const QList<Param> &configuration);
+    QList<Param> configuration() const;
+    QVariant configValue(const QString &paramName) const;
+    QPair<DeviceManager::DeviceError, QString> setConfigValue(const QString &paramName, const QVariant &value);
 
 public slots:
     virtual QPair<DeviceManager::DeviceError, QString> executeAction(Device *device, const Action &action) {
@@ -72,6 +77,7 @@ signals:
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors);
     void deviceSetupFinished(Device *device, DeviceManager::DeviceSetupStatus status, const QString &errorMessage);
     void actionExecutionFinished(const ActionId &id, DeviceManager::DeviceError status, const QString &errorMessage);
+    void configValueChanged(const QString &paramName, const QVariant &value);
 
 protected:
     DeviceManager *deviceManager() const;
@@ -86,6 +92,8 @@ private:
     void initPlugin(DeviceManager *deviceManager);
 
     DeviceManager *m_deviceManager;
+
+    QList<Param> m_config;
 
     friend class DeviceManager;
 };

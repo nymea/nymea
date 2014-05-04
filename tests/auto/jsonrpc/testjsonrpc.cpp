@@ -38,15 +38,6 @@ private slots:
     void testBasicCall();
     void introspect();
 
-    void getActionTypes_data();
-    void getActionTypes();
-
-    void getEventTypes_data();
-    void getEventTypes();
-
-    void getStateTypes_data();
-    void getStateTypes();
-
     void enableDisableNotifications_data();
     void enableDisableNotifications();
 
@@ -128,81 +119,6 @@ void TestJSONRPC::introspect()
             typeId.remove("$ref:");
             QVERIFY2(types.contains(typeId), QString("Undefined ref: %1").arg(ref).toLatin1().data());
         }
-    }
-}
-
-void TestJSONRPC::getActionTypes_data()
-{
-    QTest::addColumn<DeviceClassId>("deviceClassId");
-    QTest::addColumn<int>("resultCount");
-
-    QTest::newRow("valid deviceclass") << mockDeviceClassId << 2;
-    QTest::newRow("invalid deviceclass") << DeviceClassId("094f8024-5caa-48c1-ab6a-de486a92088f") << 0;
-}
-
-void TestJSONRPC::getActionTypes()
-{
-    QFETCH(DeviceClassId, deviceClassId);
-    QFETCH(int, resultCount);
-
-    QVariantMap params;
-    params.insert("deviceClassId", deviceClassId);
-    QVariant response = injectAndWait("Devices.GetActionTypes", params);
-
-    QVariantList actionTypes = response.toMap().value("params").toMap().value("actionTypes").toList();
-    QCOMPARE(actionTypes.count(), resultCount);
-    if (resultCount > 0) {
-        QCOMPARE(actionTypes.first().toMap().value("id").toString(), mockActionIdWithParams.toString());
-    }
-}
-
-void TestJSONRPC::getEventTypes_data()
-{
-    QTest::addColumn<DeviceClassId>("deviceClassId");
-    QTest::addColumn<int>("resultCount");
-
-    QTest::newRow("valid deviceclass") << mockDeviceClassId << 2;
-    QTest::newRow("invalid deviceclass") << DeviceClassId("094f8024-5caa-48c1-ab6a-de486a92088f") << 0;
-}
-
-void TestJSONRPC::getEventTypes()
-{
-    QFETCH(DeviceClassId, deviceClassId);
-    QFETCH(int, resultCount);
-
-    QVariantMap params;
-    params.insert("deviceClassId", deviceClassId);
-    QVariant response = injectAndWait("Devices.GetEventTypes", params);
-
-    QVariantList eventTypes = response.toMap().value("params").toMap().value("eventTypes").toList();
-    QCOMPARE(eventTypes.count(), resultCount);
-    if (resultCount > 0) {
-        QCOMPARE(eventTypes.first().toMap().value("id").toString(), mockEvent1Id.toString());
-    }
-}
-
-void TestJSONRPC::getStateTypes_data()
-{
-    QTest::addColumn<DeviceClassId>("deviceClassId");
-    QTest::addColumn<int>("resultCount");
-
-    QTest::newRow("valid deviceclass") << mockDeviceClassId << 2;
-    QTest::newRow("invalid deviceclass") << DeviceClassId("094f8024-5caa-48c1-ab6a-de486a92088f") << 0;
-}
-
-void TestJSONRPC::getStateTypes()
-{
-    QFETCH(DeviceClassId, deviceClassId);
-    QFETCH(int, resultCount);
-
-    QVariantMap params;
-    params.insert("deviceClassId", deviceClassId);
-    QVariant response = injectAndWait("Devices.GetStateTypes", params);
-
-    QVariantList stateTypes = response.toMap().value("params").toMap().value("stateTypes").toList();
-    QCOMPARE(stateTypes.count(), resultCount);
-    if (resultCount > 0) {
-        QCOMPARE(stateTypes.first().toMap().value("id").toString(), mockIntStateId.toString());
     }
 }
 

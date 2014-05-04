@@ -65,7 +65,7 @@ void GuhTestBase::initTestCase()
     params.insert("deviceParams", deviceParams);
     QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
 
-    QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
+    verifySuccess(response);
 
     m_mockDeviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
     QVERIFY2(!m_mockDeviceId.isNull(), "Newly created mock device must not be null.");

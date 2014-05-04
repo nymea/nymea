@@ -60,9 +60,9 @@ QDebug operator<<(QDebug dbg, const Param &param)
 
 QDebug operator<<(QDebug dbg, const QList<Param> &params)
 {
-    dbg.nospace() << "ParamList (count:" << params.count() << ")";
+    dbg.nospace() << "ParamList (count:" << params.count() << ")" << endl;
     for (int i = 0; i < params.count(); i++ ) {
-        dbg.nospace() << "     " << i << ": " << params.at(i);
+        dbg.nospace() << "     " << i << ": " << params.at(i) << endl;
     }
 
     return dbg.space();

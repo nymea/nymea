@@ -57,12 +57,23 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     setReturns("GetPlugins", returns);
 
     params.clear(); returns.clear();
+    setDescription("GetPluginConfiguration", "Get a plugin's params.");
+    params.insert("pluginId", "uuid");
+    setParams("GetPluginConfiguration", params);
+    QVariantList pluginParams;
+    pluginParams.append(JsonTypes::paramRef());
+    returns.insert("success", "bool");
+    returns.insert("errorMessage", "string");
+    returns.insert("o:configuration", pluginParams);
+    setReturns("GetPluginConfiguration", returns);
+
+    params.clear(); returns.clear();
     setDescription("SetPluginConfiguration", "Set a plugin's params.");
     params.insert("pluginId", "uuid");
-    QVariantList pluginParams;
-    pluginParams.append(JsonTypes::paramTypeRef());
-    params.insert("pluginParams", pluginParams);
+    params.insert("configuration", pluginParams);
     setParams("SetPluginConfiguration", params);
+    returns.insert("success", "bool");
+    returns.insert("errorMessage", "string");
     setReturns("SetPluginConfiguration", returns);
 
     params.clear(); returns.clear();
@@ -231,10 +242,40 @@ JsonReply* DeviceHandler::GetPlugins(const QVariantMap &params) const
         QVariantMap pluginMap;
         pluginMap.insert("id", plugin->pluginId());
         pluginMap.insert("name", plugin->pluginName());
-        pluginMap.insert("params", plugin->configuration());
+        QVariantList params;
+        foreach (const ParamType &param, plugin->configurationDescription()) {
+            params.append(JsonTypes::packParamType(param));
+        }
+        pluginMap.insert("params", params);
         plugins.append(pluginMap);
     }
     returns.insert("plugins", plugins);
+    return createReply(returns);
+}
+
+JsonReply *DeviceHandler::GetPluginConfiguration(const QVariantMap &params) const
+{
+    DevicePlugin *plugin = 0;
+    foreach (DevicePlugin *p, GuhCore::instance()->deviceManager()->plugins()) {
+        if (p->pluginId() == PluginId(params.value("pluginId").toString())) {
+            plugin = p;
+        }
+    }
+
+    QVariantMap returns;
+    if (!plugin) {
+        returns.insert("success", false);
+        returns.insert("errorMessage", QString("Plugin not found: %1").arg(params.value("pluginId").toString()));
+        return createReply(returns);
+    }
+
+    QVariantList paramVariantList;
+    foreach (const Param &param, plugin->configuration()) {
+        paramVariantList.append(JsonTypes::packParam(param));
+    }
+    returns.insert("configuration", paramVariantList);
+    returns.insert("success", true);
+    returns.insert("errorMessage", QString());
     return createReply(returns);
 }
 
@@ -242,12 +283,14 @@ JsonReply* DeviceHandler::SetPluginConfiguration(const QVariantMap &params)
 {
     QVariantMap returns;
     PluginId pluginId = PluginId(params.value("pluginId").toString());
-    QVariantMap pluginParams = params.value("pluginParams").toMap();
-    GuhCore::instance()->deviceManager()->setPluginConfig(pluginId, pluginParams);
-
-    // TODO: handle return values
-    returns.insert("errorMessage", QString());
-    returns.insert("success", true);
+    QList<Param> pluginParams;
+    foreach (const QVariant &param, params.value("configuration").toList()) {
+        qDebug() << "got param" << param;
+        pluginParams.append(JsonTypes::unpackParam(param.toMap()));
+    }
+    QPair<DeviceManager::DeviceError, QString> result = GuhCore::instance()->deviceManager()->setPluginConfig(pluginId, pluginParams);
+    returns.insert("success", result.first == DeviceManager::DeviceErrorNoError);
+    returns.insert("errorMessage", result.second);
     return createReply(returns);
 }
 
@@ -298,7 +341,7 @@ JsonReply* DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
         returns.insert("errorMessage", QString("Error creating device. This device can't be created this way: %1").arg(status.second));
         returns.insert("success", false);
         break;
-    case DeviceManager::DeviceErrorDeviceParameterError:
+    case DeviceManager::DeviceErrorInvalidParameter:
         returns.insert("errorMessage", QString("Error creating device. Invalid device parameter: %1").arg(status.second));
         returns.insert("success", false);
         break;

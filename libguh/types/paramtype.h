@@ -20,6 +20,7 @@
 #define PARAMTYPE_H
 
 #include <QVariant>
+#include <QDebug>
 
 class ParamType
 {
@@ -41,6 +42,9 @@ public:
     QVariant maxValue() const;
     void setMaxValue(const QVariant &maxValue);
 
+    QPair<QVariant, QVariant> limits() const;
+    void setLimits(const QVariant &min, const QVariant &max);
+
 private:
     QString m_name;
     QVariant::Type m_type;
@@ -48,5 +52,8 @@ private:
     QVariant m_minValue;
     QVariant m_maxValue;
 };
+
+QDebug operator<<(QDebug dbg, const ParamType &paramType);
+QDebug operator<<(QDebug dbg, const QList<ParamType> &paramTypes);
 
 #endif // PARAMTYPE_H

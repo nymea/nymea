@@ -38,6 +38,8 @@ public:
 
     Q_INVOKABLE JsonReply* GetPlugins(const QVariantMap &params) const;
 
+    Q_INVOKABLE JsonReply* GetPluginConfiguration(const QVariantMap &params) const;
+
     Q_INVOKABLE JsonReply* SetPluginConfiguration(const QVariantMap &params);
 
     Q_INVOKABLE JsonReply* AddConfiguredDevice(const QVariantMap &params);

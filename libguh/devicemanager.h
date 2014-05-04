@@ -52,11 +52,11 @@ public:
         DeviceErrorDeviceClassNotFound,
         DeviceErrorActionTypeNotFound,
         DeviceErrorMissingParameter,
+        DeviceErrorInvalidParameter,
         DeviceErrorPluginNotFound,
         DeviceErrorSetupFailed,
         DeviceErrorDuplicateUuid,
         DeviceErrorCreationMethodNotSupported,
-        DeviceErrorDeviceParameterError,
         DeviceErrorActionParameterError,
         DeviceErrorDeviceDescriptorNotFound,
         DeviceErrorAsync
@@ -73,7 +73,7 @@ public:
 
     QList<DevicePlugin*> plugins() const;
     DevicePlugin* plugin(const PluginId &id) const;
-    void setPluginConfig(const PluginId &pluginId, const QVariantMap &pluginConfig);
+    QPair<DeviceError, QString> setPluginConfig(const PluginId &pluginId, const QList<Param> &pluginConfig);
 
     QList<Vendor> supportedVendors() const;
     QList<DeviceClass> supportedDevices(const VendorId &vendorId = VendorId()) const;
@@ -116,7 +116,11 @@ private slots:
 private:
     QPair<DeviceError, QString> addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QList<Param> &params, const DeviceId id = DeviceId::createDeviceId());
     QPair<DeviceSetupStatus, QString> setupDevice(Device *device);
-    QPair<bool, QString> verifyParams(const QList<ParamType> paramTypes, const QList<Param> params);
+    QPair<DeviceError, QString> verifyParams(const QList<ParamType> paramTypes, const QList<Param> &params, bool requireAll = true);
+    QPair<DeviceError, QString> verifyParam(const QList<ParamType> paramTypes, const Param &param);
+    QPair<DeviceError, QString> verifyParam(const ParamType &paramType, const Param &param);
+
+    QPair<DeviceError, QString> report(DeviceError error = DeviceErrorNoError, const QString &message = QString());
 
 private:
 

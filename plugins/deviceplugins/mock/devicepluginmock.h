@@ -49,6 +49,8 @@ public:
 
     bool configureAutoDevice(QList<Device *> loadedDevices, Device *device) const override;
 
+    QList<ParamType> configurationDescription() const override;
+
 public slots:
     QPair<DeviceManager::DeviceError, QString> executeAction(Device *device, const Action &action) override;
 
@@ -60,6 +62,7 @@ private slots:
     void emitActionExecuted();
 
 private:
+    QList<Param> m_config;
     QHash<Device*, HttpDaemon*> m_daemons;
     QList<Device*> m_asyncSetupDevices;
     QList<QPair<Action, Device*> > m_asyncActions;

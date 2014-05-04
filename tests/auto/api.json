@@ -1,4 +1,4 @@
-0.1.1
+0.1.2
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -78,6 +78,19 @@
                 ]
             }
         },
+        "Devices.GetPluginConfiguration": {
+            "description": "Get a plugin's params.",
+            "params": {
+                "pluginId": "uuid"
+            },
+            "returns": {
+                "errorMessage": "string",
+                "o:configuration": [
+                    "$ref:Param"
+                ],
+                "success": "bool"
+            }
+        },
         "Devices.GetPlugins": {
             "description": "Returns a list of loaded plugins.",
             "params": {
@@ -145,12 +158,14 @@
         "Devices.SetPluginConfiguration": {
             "description": "Set a plugin's params.",
             "params": {
-                "pluginId": "uuid",
-                "pluginParams": [
-                    "$ref:ParamType"
-                ]
+                "configuration": [
+                    "$ref:Param"
+                ],
+                "pluginId": "uuid"
             },
             "returns": {
+                "errorMessage": "string",
+                "success": "bool"
             }
         },
         "JSONRPC.Introspect": {

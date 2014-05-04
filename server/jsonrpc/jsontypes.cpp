@@ -438,10 +438,10 @@ QPair<bool, QString> JsonTypes::validateMap(const QVariantMap &templateMap, cons
         strippedKey.remove(QRegExp("^o:"));
         if (!key.startsWith("o:") && !map.contains(strippedKey)) {
             qDebug() << "*** missing key" << key;
-            qDebug() << "Expected:" << templateMap;
-            qDebug() << "Got:" << map;
+            qDebug() << "Expected:      " << templateMap;
+            qDebug() << "Got:           " << map;
             QJsonDocument jsonDoc = QJsonDocument::fromVariant(map);
-            return report(false, QString("Missing key \"%1\" in %2").arg(key).arg(QString(jsonDoc.toJson())));
+            return report(false, QString("Missing key %1 in %2").arg(key).arg(QString(jsonDoc.toJson())));
         }
         if (map.contains(strippedKey)) {
             QPair<bool, QString> result = validateVariant(templateMap.value(key), map.value(strippedKey));

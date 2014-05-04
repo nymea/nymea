@@ -44,8 +44,7 @@ public:
     QString pluginName() const override;
     PluginId pluginId() const override;
 
-    QVariantMap configuration() const override;
-    void setConfiguration(const QVariantMap &configuration) override;
+    QList<ParamType> configurationDescription() const override;
 
 public slots:
     QPair<DeviceManager::DeviceError, QString> executeAction(Device *device, const Action &action);
@@ -55,7 +54,7 @@ private slots:
 
 private:
     BobClient *m_bobClient;
-    QVariantMap m_config;
+    QList<Param> m_config;
 };
 
 #endif // DEVICEPLUGINBOBLIGHT_H

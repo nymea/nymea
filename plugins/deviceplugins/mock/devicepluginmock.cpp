@@ -25,6 +25,7 @@
 #include <QDebug>
 #include <QStringList>
 
+PluginId mockPluginId = PluginId("727a4a9a-c187-446f-aadf-f1b2220607d1");
 VendorId guhVendorId = VendorId("2062d64d-3232-433c-88bc-0d33c0ba2ba6");
 DeviceClassId mockDeviceClassId = DeviceClassId("753f0d32-0468-4d08-82ed-1964aab03298");
 DeviceClassId mockDeviceAutoClassId = DeviceClassId("ab4257b3-7548-47ee-9bd4-7dc3004fd197");
@@ -202,7 +203,7 @@ QString DevicePluginMock::pluginName() const
 
 PluginId DevicePluginMock::pluginId() const
 {
-    return PluginId("727a4a9a-c187-446f-aadf-f1b2220607d1");
+    return mockPluginId;
 }
 
 QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginMock::setupDevice(Device *device)

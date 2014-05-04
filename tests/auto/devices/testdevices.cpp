@@ -29,6 +29,8 @@ class TestDevices : public GuhTestBase
 
 private slots:
 
+    void getPlugins();
+
     void getSupportedVendors();
 
     void getSupportedDevices_data();
@@ -39,6 +41,7 @@ private slots:
 
     void getConfiguredDevices();
 
+    void removeDevice_data();
     void removeDevice();
 
     void storedDevices();
@@ -46,6 +49,16 @@ private slots:
     void discoverDevices();
 
 };
+
+void TestDevices::getPlugins()
+{
+    QVariant response = injectAndWait("Devices.GetPlugins");
+
+    QVariantList plugins = response.toMap().value("params").toMap().value("plugins").toList();
+
+    QCOMPARE(plugins.count(), 1);
+    QCOMPARE(PluginId(plugins.first().toMap().value("id").toString()), mockPluginId);
+}
 
 void TestDevices::getSupportedVendors()
 {
@@ -143,23 +156,38 @@ void TestDevices::getConfiguredDevices()
     QCOMPARE(devices.count(), 2); // There should be one auto created mock device and the one created in initTestcase()
 }
 
+void TestDevices::removeDevice_data()
+{
+    QTest::addColumn<DeviceId>("deviceId");
+    QTest::addColumn<bool>("success");
+
+    QTest::newRow("Existing Device") << m_mockDeviceId << true;
+    QTest::newRow("Not existing Device") << DeviceId::createDeviceId() << false;
+}
+
 void TestDevices::removeDevice()
 {
-    QVERIFY(!m_mockDeviceId.isNull());
+    QFETCH(DeviceId, deviceId);
+    QFETCH(bool, success);
+
     QSettings settings;
-    settings.beginGroup(m_mockDeviceId.toString());
-    // Make sure we have some config values for this device
-    QVERIFY(settings.allKeys().count() > 0);
+    if (success) {
+        settings.beginGroup(m_mockDeviceId.toString());
+        // Make sure we have some config values for this device
+        QVERIFY(settings.allKeys().count() > 0);
+    }
 
     QVariantMap params;
-    params.insert("deviceId", m_mockDeviceId);
+    params.insert("deviceId", deviceId);
 
     QVariant response = injectAndWait("Devices.RemoveConfiguredDevice", params);
 
-    verifySuccess(response);
+    verifySuccess(response, success);
 
-    // Make sure the device is gone from settings too
-    QCOMPARE(settings.allKeys().count(), 0);
+    if (success) {
+        // Make sure the device is gone from settings too
+        QCOMPARE(settings.allKeys().count(), 0);
+    }
 }
 
 void TestDevices::storedDevices()

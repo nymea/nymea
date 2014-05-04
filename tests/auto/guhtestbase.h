@@ -27,6 +27,7 @@
 #include <QVariantMap>
 #include <QtTest>
 
+extern PluginId mockPluginId;
 extern VendorId guhVendorId;
 extern DeviceClassId mockDeviceClassId;
 extern DeviceClassId mockDeviceAutoClassId;

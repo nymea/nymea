@@ -1,2 +1,2 @@
 TEMPLATE=subdirs
-SUBDIRS=versioning devices jsonrpc events
+SUBDIRS=versioning devices jsonrpc events states

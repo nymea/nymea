@@ -1,6 +1,6 @@
-TARGET = events
+TARGET = states
 
 include(../../../guh.pri)
 include(../autotests.pri)
 
-SOURCES += testevents.cpp
+SOURCES += teststates.cpp

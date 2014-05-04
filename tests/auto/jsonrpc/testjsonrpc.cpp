@@ -35,7 +35,9 @@ class TestJSONRPC: public GuhTestBase
     Q_OBJECT
 
 private slots:
+    void testBasicCall_data();
     void testBasicCall();
+
     void introspect();
 
     void enableDisableNotifications_data();
@@ -74,12 +76,31 @@ QStringList TestJSONRPC::extractRefs(const QVariant &variant)
     return QStringList();
 }
 
+void TestJSONRPC::testBasicCall_data()
+{
+    QTest::addColumn<QByteArray>("call");
+    QTest::addColumn<bool>("idValid");
+    QTest::addColumn<bool>("valid");
+
+    QTest::newRow("valid call") << QByteArray("{\"id\":42, \"method\":\"JSONRPC.Introspect\"}") << true << true;
+    QTest::newRow("missing id") << QByteArray("{\"method\":\"JSONRPC.Introspect\"}") << false << false;
+    QTest::newRow("missing method") << QByteArray("{\"id\":42}") << true << false;
+    QTest::newRow("borked") << QByteArray("{\"id\":42, \"method\":\"JSO") << false << false;
+    QTest::newRow("invalid function") << QByteArray("{\"id\":42, \"method\":\"JSONRPC.Foobar\"}") << true << false;
+    QTest::newRow("invalid namespace") << QByteArray("{\"id\":42, \"method\":\"FOO.Introspect\"}") << true << false;
+    QTest::newRow("missing dot") << QByteArray("{\"id\":42, \"method\":\"JSONRPCIntrospect\"}") << true << false;
+}
+
 void TestJSONRPC::testBasicCall()
 {
+    QFETCH(QByteArray, call);
+    QFETCH(bool, idValid);
+    QFETCH(bool, valid);
+
     QSignalSpy spy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
     QVERIFY(spy.isValid());
 
-    m_mockTcpServer->injectData(m_clientId, "{\"id\":42, \"method\":\"JSONRPC.Introspect\"}");
+    m_mockTcpServer->injectData(m_clientId, call);
 
     if (spy.count() == 0) {
         spy.wait();
@@ -88,7 +109,7 @@ void TestJSONRPC::testBasicCall()
     // Make sure we got exactly one response
     QVERIFY(spy.count() == 1);
 
-    // Make sure the introspect response goes to the correct clientId
+    // Make sure the response goes to the correct clientId
     QCOMPARE(spy.first().first().toString(), m_clientId.toString());
 
     // Make sure the response it a valid JSON string
@@ -97,7 +118,12 @@ void TestJSONRPC::testBasicCall()
     QCOMPARE(error.error, QJsonParseError::NoError);
 
     // Make sure the response\"s id is the same as our command
-    QCOMPARE(jsonDoc.toVariant().toMap().value("id").toInt(), 42);    
+    if (idValid) {
+        QCOMPARE(jsonDoc.toVariant().toMap().value("id").toInt(), 42);
+    }
+    if (valid) {
+        QVERIFY2(jsonDoc.toVariant().toMap().value("status").toString() == "success", "Call wasn't parsed correctly by guh.");
+    }
 }
 
 void TestJSONRPC::introspect()

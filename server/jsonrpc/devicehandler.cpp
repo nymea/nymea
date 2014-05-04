@@ -155,6 +155,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
 
     connect(GuhCore::instance()->deviceManager(), &DeviceManager::deviceStateChanged, this, &DeviceHandler::deviceStateChanged);
     connect(GuhCore::instance()->deviceManager(), &DeviceManager::devicesDiscovered, this, &DeviceHandler::devicesDiscovered);
+    connect(GuhCore::instance()->deviceManager(), &DeviceManager::deviceSetupFinished, this, &DeviceHandler::deviceSetupFinished);
 }
 
 QString DeviceHandler::name() const
@@ -435,6 +436,7 @@ void DeviceHandler::devicesDiscovered(const DeviceClassId &deviceClassId, const 
 
 void DeviceHandler::deviceSetupFinished(Device *device, DeviceManager::DeviceError status)
 {
+    qDebug() << "got a device setup finished";
     if (!m_asynDeviceAdditions.contains(device->id())) {
         return; // Not the device we're waiting for...
     }
@@ -446,7 +448,7 @@ void DeviceHandler::deviceSetupFinished(Device *device, DeviceManager::DeviceErr
     if(status == DeviceManager::DeviceErrorNoError) {
         returns.insert("success", true);
         returns.insert("errorMessage", "");
-        returns.insert("deviceId", device->deviceClassId());
+        returns.insert("deviceId", device->id());
     } else if (status == DeviceManager::DeviceErrorSetupFailed) {
         returns.insert("errorMessage", QString("Error creating device. Device setup failed."));
         returns.insert("success", false);

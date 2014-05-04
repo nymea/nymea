@@ -98,3 +98,10 @@ QVariant GuhTestBase::injectAndWait(const QString &method, const QVariantMap &pa
 
      return jsonDoc.toVariant();
 }
+
+void GuhTestBase::verifySuccess(const QVariant &response, bool success)
+{
+    QJsonDocument jsonDoc = QJsonDocument::fromVariant(response);
+    QVERIFY2(response.toMap().value("status").toString() == QString("success"), jsonDoc.toJson().data());
+    QVERIFY2(response.toMap().value("params").toMap().value("success").toBool() == success, jsonDoc.toJson().data());
+}

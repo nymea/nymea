@@ -64,8 +64,8 @@ void TestDevices::getSupportedDevices_data()
     QTest::addColumn<VendorId>("vendorId");
     QTest::addColumn<int>("resultCount");
 
-    QTest::newRow("vendor guh") << guhVendorId << 3;
-    QTest::newRow("no filter") << VendorId() << 3;
+    QTest::newRow("vendor guh") << guhVendorId << 4;
+    QTest::newRow("no filter") << VendorId() << 4;
     QTest::newRow("invalid vendor") << VendorId("93e7d361-8025-4354-b17e-b68406c800bc") << 0;
 }
 
@@ -100,6 +100,7 @@ void TestDevices::addConfiguredDevice_data()
     QTest::newRow("User, JustAdd") << mockDeviceClassId << deviceParams << true;
     QTest::newRow("Auto, JustAdd") << mockDeviceAutoClassId << deviceParams << false;
     QTest::newRow("Discovery, JustAdd") << mockDeviceDiscoveryClassId << deviceParams << false;
+    QTest::newRow("User, JustAdd, Async") << mockDeviceAsyncSetupClassId << deviceParams << true;
 
     QVariantMap invalidDeviceParams;
     invalidDeviceParams.insert("tropptth", m_mockDevice1Port - 1);
@@ -119,15 +120,14 @@ void TestDevices::addConfiguredDevice()
     QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
     qDebug() << "response is" << response;
 
-    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
-    QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), success);
+    verifySuccess(response, success);
 
     if (success) {
         QUuid deviceId(response.toMap().value("params").toMap().value("deviceId").toString());
         params.clear();
         params.insert("deviceId", deviceId.toString());
-        injectAndWait("Devices.RemoveConfiguredDevice", params);
-        QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
+        response = injectAndWait("Devices.RemoveConfiguredDevice", params);
+        verifySuccess(response);
     }
 }
 
@@ -153,7 +153,7 @@ void TestDevices::removeDevice()
 
     QVariant response = injectAndWait("Devices.RemoveConfiguredDevice", params);
 
-    QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
+    verifySuccess(response);
 
     // Make sure the device is gone from settings too
     QCOMPARE(settings.allKeys().count(), 0);
@@ -167,7 +167,7 @@ void TestDevices::storedDevices()
     deviceParams.insert("httpport", 8888);
     params.insert("deviceParams", deviceParams);
     QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
-    QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
+    verifySuccess(response);
     DeviceId addedDeviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
     QVERIFY(!addedDeviceId.isNull());
 
@@ -196,6 +196,7 @@ void TestDevices::storedDevices()
     params.clear();
     params.insert("deviceId", addedDeviceId);
     response = injectAndWait("Devices.RemoveConfiguredDevice", params);
+    verifySuccess(response);
 }
 
 void TestDevices::discoverDevices()
@@ -213,14 +214,13 @@ void TestDevices::discoverDevices()
     params.insert("deviceDescriptorId", descriptorId.toString());
     response = injectAndWait("Devices.AddConfiguredDevice", params);
 
-    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
-    QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
+    verifySuccess(response);
 
     DeviceId deviceId(response.toMap().value("params").toMap().value("deviceId").toString());
     params.clear();
     params.insert("deviceId", deviceId.toString());
-    injectAndWait("Devices.RemoveConfiguredDevice", params);
-    QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
+    response = injectAndWait("Devices.RemoveConfiguredDevice", params);
+    verifySuccess(response);
 }
 
 #include "testdevices.moc"

@@ -29,6 +29,7 @@ VendorId guhVendorId = VendorId("2062d64d-3232-433c-88bc-0d33c0ba2ba6");
 DeviceClassId mockDeviceClassId = DeviceClassId("753f0d32-0468-4d08-82ed-1964aab03298");
 DeviceClassId mockDeviceAutoClassId = DeviceClassId("ab4257b3-7548-47ee-9bd4-7dc3004fd197");
 DeviceClassId mockDeviceDiscoveryClassId = DeviceClassId("1bbaf751-36b7-4d3d-b05a-58dab2a3be8c");
+DeviceClassId mockDeviceAsyncSetupClassId = DeviceClassId("c08a8b27-8200-413d-b96b-4cff78b864d9");
 EventTypeId mockEvent1Id = EventTypeId("45bf3752-0fc6-46b9-89fd-ffd878b5b22b");
 EventTypeId mockEvent2Id = EventTypeId("863d5920-b1cf-4eb9-88bd-8f7b8583b1cf");
 StateTypeId mockIntStateId = StateTypeId("80baec19-54de-4948-ac46-31eabfaceb83");
@@ -142,6 +143,20 @@ QList<DeviceClass> DevicePluginMock::supportedDevices() const
 
     ret.append(deviceClassMockDiscovery);
 
+    // Async setup device
+    DeviceClass deviceClassMockAsync(pluginId(), guhVendorId, mockDeviceAsyncSetupClassId);
+    deviceClassMockAsync.setName("Mock Device (Async setup)");
+    deviceClassMockAsync.setCreateMethod(DeviceClass::CreateMethodUser);
+
+    mockParams.clear();
+    mockParams.append(portParam);
+    deviceClassMockAsync.setParams(mockParams);
+    deviceClassMockAsync.setStates(mockStates);
+    deviceClassMockAsync.setEvents(mockEvents);
+    deviceClassMockAsync.setActions(mockActions);
+
+    ret.append(deviceClassMockAsync);
+
     return ret;
 }
 
@@ -183,12 +198,17 @@ QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginMock::setupDevice(D
     connect(daemon, &HttpDaemon::triggerEvent, this, &DevicePluginMock::triggerEvent);
     connect(daemon, &HttpDaemon::setState, this, &DevicePluginMock::setState);
 
+    if (device->deviceClassId() == mockDeviceAsyncSetupClassId) {
+        m_asyncSetupDevices.append(device);
+        QTimer::singleShot(1000, this, SLOT(emitDeviceSetupFinished()));
+        return reportDeviceSetup(DeviceManager::DeviceSetupStatusAsync);
+    }
     return reportDeviceSetup();
 }
 
 void DevicePluginMock::deviceRemoved(Device *device)
 {
-    m_daemons.take(device)->deleteLater();
+    delete m_daemons.take(device);
 }
 
 bool DevicePluginMock::configureAutoDevice(QList<Device *> loadedDevices, Device *device) const
@@ -261,4 +281,10 @@ void DevicePluginMock::emitDevicesDiscovered()
     deviceDescriptors.append(d2);
 
     emit devicesDiscovered(mockDeviceDiscoveryClassId, deviceDescriptors);
+}
+
+void DevicePluginMock::emitDeviceSetupFinished()
+{
+    qDebug() << "emitting setup finised";
+    emit deviceSetupFinished(m_asyncSetupDevices.takeFirst(), DeviceManager::DeviceSetupStatusSuccess, QString());
 }

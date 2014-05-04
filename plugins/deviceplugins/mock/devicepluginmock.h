@@ -56,9 +56,11 @@ private slots:
     void setState(const StateTypeId &stateTypeId, const QVariant &value);
     void triggerEvent(const EventTypeId &id);
     void emitDevicesDiscovered();
+    void emitDeviceSetupFinished();
 
 private:
     QHash<Device*, HttpDaemon*> m_daemons;
+    QList<Device*> m_asyncSetupDevices;
 };
 
 #endif // DEVICEPLUGINMOCK_H

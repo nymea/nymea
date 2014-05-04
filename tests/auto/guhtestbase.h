@@ -31,6 +31,7 @@ extern VendorId guhVendorId;
 extern DeviceClassId mockDeviceClassId;
 extern DeviceClassId mockDeviceAutoClassId;
 extern DeviceClassId mockDeviceDiscoveryClassId;
+extern DeviceClassId mockDeviceAsyncSetupClassId;
 extern ActionTypeId mockAction1Id;
 extern EventTypeId mockEvent1Id;
 extern StateTypeId mockIntStateId;
@@ -49,6 +50,7 @@ protected slots:
 
 protected:
     QVariant injectAndWait(const QString &method, const QVariantMap &params = QVariantMap());
+    void verifySuccess(const QVariant &response, bool success = true);
 
 protected:
     MockTcpServer *m_mockTcpServer;

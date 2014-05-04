@@ -171,7 +171,6 @@ void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &jsonDat
     QString method = commandList.last();
     QVariantMap params = message.value("params").toMap();
 
-    qDebug() << "got:" << targetNamespace << method << params;
     emit commandReceived(targetNamespace, method, params);
 
     JsonHandler *handler = m_handlers.value(targetNamespace);

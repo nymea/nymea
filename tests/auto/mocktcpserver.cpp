@@ -57,12 +57,10 @@ void MockTcpServer::injectData(const QUuid &clientId, const QByteArray &data)
 
 bool MockTcpServer::startServer()
 {
-    qDebug() << "should start server";
     return true;
 }
 
 bool MockTcpServer::stopServer()
 {
-    qDebug() << "should stop server";
     return true;
 }

@@ -39,12 +39,10 @@ ActionTypeId mockAction2Id = ActionTypeId("defd3ed6-1a0d-400b-8879-a0202cf39935"
 
 DevicePluginMock::DevicePluginMock()
 {
-    qDebug() << "Mock device plugin created";
 }
 
 DevicePluginMock::~DevicePluginMock()
 {
-    qDebug() << "shutting down Mock device plugin";
 }
 
 QList<Vendor> DevicePluginMock::supportedVendors() const
@@ -215,7 +213,6 @@ bool DevicePluginMock::configureAutoDevice(QList<Device *> loadedDevices, Device
 {
     Q_ASSERT(device->deviceClassId() == mockDeviceAutoClassId);
 
-    qDebug() << "checking loadedDevices" << loadedDevices.count();
     // We only want to have one auto mock device. So if there's already anything in loadedDevices, don't crearte a new one.
     if (loadedDevices.count() > 0) {
         return false;

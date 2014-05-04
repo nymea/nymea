@@ -46,6 +46,7 @@ private slots:
 
     void storedDevices();
 
+    void discoverDevices_data();
     void discoverDevices();
 
 };
@@ -230,28 +231,47 @@ void TestDevices::storedDevices()
     verifySuccess(response);
 }
 
+void TestDevices::discoverDevices_data()
+{
+    QTest::addColumn<DeviceClassId>("deviceClassId");
+    QTest::addColumn<int>("resultCount");
+    QTest::addColumn<bool>("success");
+
+    QTest::newRow("valid deviceClassId") << mockDeviceDiscoveryClassId << 2 << true;
+    QTest::newRow("invalid deviceClassId") << DeviceClassId::createDeviceClassId() << 0 << false;
+    QTest::newRow("CreateMethodUser deviceClassId") << mockDeviceClassId << 0 << false;
+}
+
 void TestDevices::discoverDevices()
 {
+    QFETCH(DeviceClassId, deviceClassId);
+    QFETCH(int, resultCount);
+    QFETCH(bool, success);
+
     QVariantMap params;
-    params.insert("deviceClassId", mockDeviceDiscoveryClassId);
+    params.insert("deviceClassId", deviceClassId);
     QVariant response = injectAndWait("Devices.GetDiscoveredDevices", params);
 
-    qDebug() << "response" << response;
+    verifySuccess(response, success);
+    if (success) {
+        QCOMPARE(response.toMap().value("params").toMap().value("deviceDescriptors").toList().count(), resultCount);
+    }
 
-    QCOMPARE(response.toMap().value("params").toMap().value("deviceDescriptors").toList().count(), 2);
+    // If we found something, lets try to add it
+    if (success) {
+        DeviceDescriptorId descriptorId = DeviceDescriptorId(response.toMap().value("params").toMap().value("deviceDescriptors").toList().first().toMap().value("id").toString());
 
-    DeviceDescriptorId descriptorId = DeviceDescriptorId(response.toMap().value("params").toMap().value("deviceDescriptors").toList().first().toMap().value("id").toString());
+        params.insert("deviceDescriptorId", descriptorId.toString());
+        response = injectAndWait("Devices.AddConfiguredDevice", params);
 
-    params.insert("deviceDescriptorId", descriptorId.toString());
-    response = injectAndWait("Devices.AddConfiguredDevice", params);
+        verifySuccess(response);
 
-    verifySuccess(response);
-
-    DeviceId deviceId(response.toMap().value("params").toMap().value("deviceId").toString());
-    params.clear();
-    params.insert("deviceId", deviceId.toString());
-    response = injectAndWait("Devices.RemoveConfiguredDevice", params);
-    verifySuccess(response);
+        DeviceId deviceId(response.toMap().value("params").toMap().value("deviceId").toString());
+        params.clear();
+        params.insert("deviceId", deviceId.toString());
+        response = injectAndWait("Devices.RemoveConfiguredDevice", params);
+        verifySuccess(response);
+    }
 }
 
 #include "testdevices.moc"

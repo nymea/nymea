@@ -65,8 +65,6 @@ void TestStates::getStateValue()
 
     QVariant response = injectAndWait("Devices.GetStateValue", params);
 
-    qDebug() << "got response" << response;
-
     verifySuccess(response, success);
 }
 

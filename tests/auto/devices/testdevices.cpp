@@ -64,8 +64,8 @@ void TestDevices::getSupportedDevices_data()
     QTest::addColumn<VendorId>("vendorId");
     QTest::addColumn<int>("resultCount");
 
-    QTest::newRow("vendor guh") << guhVendorId << 4;
-    QTest::newRow("no filter") << VendorId() << 4;
+    QTest::newRow("vendor guh") << guhVendorId << 5;
+    QTest::newRow("no filter") << VendorId() << 5;
     QTest::newRow("invalid vendor") << VendorId("93e7d361-8025-4354-b17e-b68406c800bc") << 0;
 }
 

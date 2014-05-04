@@ -1,3 +1,5 @@
+include(../guh.pri)
+
 TEMPLATE = lib
 CONFIG += plugin static c++11
 

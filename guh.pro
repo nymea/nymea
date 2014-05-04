@@ -14,3 +14,7 @@ licensecheck.commands = $$top_srcdir/tests/auto/checklicenseheaders.sh $$top_src
 test.depends = licensecheck check
 
 QMAKE_EXTRA_TARGETS += licensecheck doc test
+
+coverage {
+    message("Building coverage.")
+}

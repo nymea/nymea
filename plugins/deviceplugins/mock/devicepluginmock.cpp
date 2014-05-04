@@ -312,6 +312,11 @@ void DevicePluginMock::emitDeviceSetupFinished()
 {
     qDebug() << "emitting setup finised";
     Device *device = m_asyncSetupDevices.takeFirst();
+    if (!myDevices().contains(device)) {
+        qWarning() << "Should emit deviceSetupFinished but device seems to have gone.";
+        return;
+    }
+
     if (device->deviceClassId() == mockDeviceAsyncSetupClassId) {
         emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusSuccess, QString());
     } else {

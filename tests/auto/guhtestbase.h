@@ -33,6 +33,7 @@ extern DeviceClassId mockDeviceAutoClassId;
 extern DeviceClassId mockDeviceDiscoveryClassId;
 extern DeviceClassId mockDeviceAsyncSetupClassId;
 extern DeviceClassId mockDeviceBrokenClassId;
+extern DeviceClassId mockDeviceBrokenAsyncSetupClassId;
 extern ActionTypeId mockAction1Id;
 extern EventTypeId mockEvent1Id;
 extern StateTypeId mockIntStateId;

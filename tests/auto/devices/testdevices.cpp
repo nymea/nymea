@@ -64,8 +64,8 @@ void TestDevices::getSupportedDevices_data()
     QTest::addColumn<VendorId>("vendorId");
     QTest::addColumn<int>("resultCount");
 
-    QTest::newRow("vendor guh") << guhVendorId << 5;
-    QTest::newRow("no filter") << VendorId() << 5;
+    QTest::newRow("vendor guh") << guhVendorId << 6;
+    QTest::newRow("no filter") << VendorId() << 6;
     QTest::newRow("invalid vendor") << VendorId("93e7d361-8025-4354-b17e-b68406c800bc") << 0;
 }
 
@@ -103,6 +103,7 @@ void TestDevices::addConfiguredDevice_data()
     QTest::newRow("User, JustAdd, Async") << mockDeviceAsyncSetupClassId << deviceParams << true;
     QTest::newRow("Invalid DeviceClassId") << DeviceClassId::createDeviceClassId() << deviceParams << false;
     QTest::newRow("Setup failure") << mockDeviceBrokenClassId << deviceParams << false;
+    QTest::newRow("Setup failure, Async") << mockDeviceBrokenAsyncSetupClassId << deviceParams << false;
 
     QVariantMap invalidDeviceParams;
     invalidDeviceParams.insert("tropptth", m_mockDevice1Port - 1);

@@ -31,6 +31,7 @@ DeviceClassId mockDeviceAutoClassId = DeviceClassId("ab4257b3-7548-47ee-9bd4-7dc
 DeviceClassId mockDeviceDiscoveryClassId = DeviceClassId("1bbaf751-36b7-4d3d-b05a-58dab2a3be8c");
 DeviceClassId mockDeviceAsyncSetupClassId = DeviceClassId("c08a8b27-8200-413d-b96b-4cff78b864d9");
 DeviceClassId mockDeviceBrokenClassId = DeviceClassId("ba5fb404-c9ce-4db4-8cd4-f48c61c24b13");
+DeviceClassId mockDeviceBrokenAsyncSetupClassId = DeviceClassId("bd5b78c5-53c9-4417-8eac-8ab2bce97bd0");
 EventTypeId mockEvent1Id = EventTypeId("45bf3752-0fc6-46b9-89fd-ffd878b5b22b");
 EventTypeId mockEvent2Id = EventTypeId("863d5920-b1cf-4eb9-88bd-8f7b8583b1cf");
 StateTypeId mockIntStateId = StateTypeId("80baec19-54de-4948-ac46-31eabfaceb83");
@@ -166,6 +167,18 @@ QList<DeviceClass> DevicePluginMock::supportedDevices() const
 
     ret.append(deviceClassMockBroken);
 
+    // Broken Async setup device
+    DeviceClass deviceClassMockBrokenAsyncSetup(pluginId(), guhVendorId, mockDeviceBrokenAsyncSetupClassId);
+    deviceClassMockBrokenAsyncSetup.setName("Mock Device (Async Broken setup)");
+    deviceClassMockBrokenAsyncSetup.setCreateMethod(DeviceClass::CreateMethodUser);
+
+    deviceClassMockBrokenAsyncSetup.setParams(mockParams);
+    deviceClassMockBrokenAsyncSetup.setStates(mockStates);
+    deviceClassMockBrokenAsyncSetup.setEvents(mockEvents);
+    deviceClassMockBrokenAsyncSetup.setActions(mockActions);
+
+    ret.append(deviceClassMockBrokenAsyncSetup);
+
     return ret;
 }
 
@@ -211,7 +224,7 @@ QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginMock::setupDevice(D
     connect(daemon, &HttpDaemon::triggerEvent, this, &DevicePluginMock::triggerEvent);
     connect(daemon, &HttpDaemon::setState, this, &DevicePluginMock::setState);
 
-    if (device->deviceClassId() == mockDeviceAsyncSetupClassId) {
+    if (device->deviceClassId() == mockDeviceAsyncSetupClassId || device->deviceClassId() == mockDeviceBrokenAsyncSetupClassId) {
         m_asyncSetupDevices.append(device);
         QTimer::singleShot(1000, this, SLOT(emitDeviceSetupFinished()));
         return reportDeviceSetup(DeviceManager::DeviceSetupStatusAsync);
@@ -298,5 +311,10 @@ void DevicePluginMock::emitDevicesDiscovered()
 void DevicePluginMock::emitDeviceSetupFinished()
 {
     qDebug() << "emitting setup finised";
-    emit deviceSetupFinished(m_asyncSetupDevices.takeFirst(), DeviceManager::DeviceSetupStatusSuccess, QString());
+    Device *device = m_asyncSetupDevices.takeFirst();
+    if (device->deviceClassId() == mockDeviceAsyncSetupClassId) {
+        emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusSuccess, QString());
+    } else {
+        emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusFailure, QString("This device is intentionally broken"));
+    }
 }

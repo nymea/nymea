@@ -248,7 +248,7 @@ void JsonRPCServer::clientConnected(const QUuid &clientId)
     QVariantMap handshake;
     handshake.insert("id", 0);
     handshake.insert("server", "guh JSONRPC interface");
-    handshake.insert("version", "0.0.0");
+    handshake.insert("version", GUH_VERSION_STRING);
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(handshake);
     m_tcpServer->sendData(clientId, jsonDoc.toJson());
 }

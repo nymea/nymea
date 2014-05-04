@@ -41,6 +41,8 @@ signals:
 /************** Used for testing **************************/
 
 signals:
+    void clientConnected(const QUuid &clientId);
+    void clientDisconnected(const QUuid &clientId);
     void dataAvailable(const QUuid &clientId, const QByteArray &data);
 
 public slots:

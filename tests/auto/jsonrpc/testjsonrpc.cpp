@@ -35,6 +35,8 @@ class TestJSONRPC: public GuhTestBase
     Q_OBJECT
 
 private slots:
+    void testHandshake();
+
     void testBasicCall_data();
     void testBasicCall();
 
@@ -74,6 +76,20 @@ QStringList TestJSONRPC::extractRefs(const QVariant &variant)
         return refs;
     }
     return QStringList();
+}
+
+void TestJSONRPC::testHandshake()
+{
+    QSignalSpy spy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+
+    QUuid newClientId = QUuid::createUuid();
+    m_mockTcpServer->clientConnected(newClientId);
+    QVERIFY2(spy.count() > 0, "Did not get the handshake message upon connect.");
+    QVERIFY2(spy.first().first() == newClientId, "Handshake message addressed at the wrong client.");
+
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(spy.first().at(1).toByteArray());
+    QVariantMap handShake = jsonDoc.toVariant().toMap();
+    QVERIFY2(handShake.value("version").toString() == GUH_VERSION_STRING, "Handshake version doesn't match Guh version.");
 }
 
 void TestJSONRPC::testBasicCall_data()

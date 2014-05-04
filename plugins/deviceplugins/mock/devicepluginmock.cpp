@@ -256,6 +256,11 @@ bool DevicePluginMock::configureAutoDevice(QList<Device *> loadedDevices, Device
 
 QPair<DeviceManager::DeviceError, QString> DevicePluginMock::executeAction(Device *device, const Action &action)
 {
+    if (!myDevices().contains(device)) {
+        qWarning() << "Should execute action for a device which doesn't seem to be mine.";
+        return report(DeviceManager::DeviceErrorDeviceNotFound, "Should execute an action for a device which doesn't seem to be mine.");
+    }
+
     qDebug() << "Should execute action" << action.actionTypeId();
     m_daemons.value(device)->actionExecuted(action.actionTypeId());
     return report();
@@ -312,11 +317,6 @@ void DevicePluginMock::emitDeviceSetupFinished()
 {
     qDebug() << "emitting setup finised";
     Device *device = m_asyncSetupDevices.takeFirst();
-    if (!myDevices().contains(device)) {
-        qWarning() << "Should emit deviceSetupFinished but device seems to have gone.";
-        return;
-    }
-
     if (device->deviceClassId() == mockDeviceAsyncSetupClassId) {
         emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusSuccess, QString());
     } else {

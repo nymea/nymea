@@ -90,6 +90,8 @@ void TestJSONRPC::testHandshake()
     QJsonDocument jsonDoc = QJsonDocument::fromJson(spy.first().at(1).toByteArray());
     QVariantMap handShake = jsonDoc.toVariant().toMap();
     QVERIFY2(handShake.value("version").toString() == GUH_VERSION_STRING, "Handshake version doesn't match Guh version.");
+
+    m_mockTcpServer->clientDisconnected(newClientId);
 }
 
 void TestJSONRPC::testBasicCall_data()
@@ -105,6 +107,7 @@ void TestJSONRPC::testBasicCall_data()
     QTest::newRow("invalid function") << QByteArray("{\"id\":42, \"method\":\"JSONRPC.Foobar\"}") << true << false;
     QTest::newRow("invalid namespace") << QByteArray("{\"id\":42, \"method\":\"FOO.Introspect\"}") << true << false;
     QTest::newRow("missing dot") << QByteArray("{\"id\":42, \"method\":\"JSONRPCIntrospect\"}") << true << false;
+    QTest::newRow("invalid params") << QByteArray("{\"id\":42, \"method\":\"JSONRPC.Introspect\", \"params\":{\"törööö\":\"chooo-chooo\"}}") << true << false;
 }
 
 void TestJSONRPC::testBasicCall()

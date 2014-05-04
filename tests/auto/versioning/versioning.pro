@@ -1,4 +1,4 @@
-TARGET = versioning
+TARGET = testversioning
 
 include(../../../guh.pri)
 include(../autotests.pri)

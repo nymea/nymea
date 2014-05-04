@@ -38,9 +38,6 @@ private slots:
     void testBasicCall();
     void introspect();
 
-    void executeAction_data();
-    void executeAction();
-
     void getActionTypes_data();
     void getActionTypes();
 
@@ -134,66 +131,6 @@ void TestJSONRPC::introspect()
     }
 }
 
-void TestJSONRPC::executeAction_data()
-{
-    QTest::addColumn<DeviceId>("deviceId");
-    QTest::addColumn<ActionTypeId>("actionTypeId");
-    QTest::addColumn<QVariantList>("actionParams");
-    QTest::addColumn<bool>("success");
-
-    QVariantList params;
-    QVariantMap param1;
-    param1.insert("mockActionParam1", 5);
-    params.append(param1);
-    QVariantMap param2;
-    param2.insert("mockActionParam2", true);
-    params.append(param2);
-
-    QTest::newRow("valid action") << m_mockDeviceId << mockAction1Id << params << true;
-    QTest::newRow("invalid device TypeId") << DeviceId("f2965936-0dd0-4014-8f31-4c2ef7fc5952") << mockAction1Id << params << false;
-    QTest::newRow("invalid action TypeId") << m_mockDeviceId << ActionTypeId("f2965936-0dd0-4014-8f31-4c2ef7fc5952") << params << false;
-}
-
-void TestJSONRPC::executeAction()
-{
-    QFETCH(DeviceId, deviceId);
-    QFETCH(ActionTypeId, actionTypeId);
-    QFETCH(QVariantList, actionParams);
-    QFETCH(bool, success);
-
-    QVariantMap params;
-    params.insert("actionTypeId", actionTypeId);
-    params.insert("deviceId", deviceId);
-    params.insert("params", actionParams);
-    QVariant response = injectAndWait("Actions.ExecuteAction", params);
-    qDebug() << "executeActionresponse" << response;
-    verifySuccess(response, success);
-
-    // Fetch action execution history from mock device
-    QNetworkAccessManager nam;
-    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
-
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/actionhistory").arg(m_mockDevice1Port)));
-    QNetworkReply *reply = nam.get(request);
-    spy.wait();
-    QCOMPARE(spy.count(), 1);
-    reply->deleteLater();
-
-    if (success) {
-        QCOMPARE(actionTypeId, ActionTypeId(reply->readAll()));
-    } else {
-        QCOMPARE(reply->readAll().length(), 0);
-    }
-
-    // cleanup for the next run
-    spy.clear();
-    request.setUrl(QUrl(QString("http://localhost:%1/clearactionhistory").arg(m_mockDevice1Port)));
-    reply = nam.get(request);
-    spy.wait();
-    QCOMPARE(spy.count(), 1);
-    reply->deleteLater();
-}
-
 void TestJSONRPC::getActionTypes_data()
 {
     QTest::addColumn<DeviceClassId>("deviceClassId");
@@ -215,7 +152,7 @@ void TestJSONRPC::getActionTypes()
     QVariantList actionTypes = response.toMap().value("params").toMap().value("actionTypes").toList();
     QCOMPARE(actionTypes.count(), resultCount);
     if (resultCount > 0) {
-        QCOMPARE(actionTypes.first().toMap().value("id").toString(), mockAction1Id.toString());
+        QCOMPARE(actionTypes.first().toMap().value("id").toString(), mockActionIdWithParams.toString());
     }
 }
 

@@ -57,10 +57,12 @@ private slots:
     void triggerEvent(const EventTypeId &id);
     void emitDevicesDiscovered();
     void emitDeviceSetupFinished();
+    void emitActionExecuted();
 
 private:
     QHash<Device*, HttpDaemon*> m_daemons;
     QList<Device*> m_asyncSetupDevices;
+    QList<QPair<Action, Device*> > m_asyncActions;
 };
 
 #endif // DEVICEPLUGINMOCK_H

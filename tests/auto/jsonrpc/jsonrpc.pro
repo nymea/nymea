@@ -1,5 +1,5 @@
 include(../../../guh.pri)
 include(../autotests.pri)
 
-TARGET = jsonrpc
+TARGET = testjsonrpc
 SOURCES += testjsonrpc.cpp

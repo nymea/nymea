@@ -1,5 +1,5 @@
 include(../../../guh.pri)
 include(../autotests.pri)
 
-TARGET = devices
+TARGET = testdevices
 SOURCES += testdevices.cpp

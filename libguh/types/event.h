@@ -29,12 +29,16 @@
 class Event
 {
 public:
+    Event();
     Event(const EventTypeId &eventTypeId, const DeviceId &deviceId, const QList<Param> &params = QList<Param>());
 
     EventId eventId() const;
 
     EventTypeId eventTypeId() const;
+    void setEventTypeId(const EventTypeId &eventTypeId);
+
     DeviceId deviceId() const;
+    void setDeviceId(const DeviceId &deviceId);
 
     QList<Param> params() const;
     void setParams(const QList<Param> &params);
@@ -48,6 +52,7 @@ private:
     DeviceId m_deviceId;
     QList<Param> m_params;
 };
+Q_DECLARE_METATYPE(Event)
 QDebug operator<<(QDebug dbg, const Event &event);
 QDebug operator<<(QDebug dbg, const QList<Event> &events);
 

@@ -94,7 +94,7 @@ GuhCore::GuhCore(QObject *parent) :
     qDebug() << "*****************************************";
     m_jsonServer = new JsonRPCServer(this);
 
-    connect(m_deviceManager, &DeviceManager::emitEvent, this, &GuhCore::gotEvent);
+    connect(m_deviceManager, &DeviceManager::eventTriggered, this, &GuhCore::gotEvent);
 }
 
 /*! Connected to the DeviceManager's emitEvent signal. Events received in

@@ -90,7 +90,7 @@ public:
 
 signals:
     void loaded();
-    void emitEvent(const Event &event);
+    void eventTriggered(const Event &event);
     void deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &devices);
     void deviceSetupFinished(Device *device, DeviceError status, const QString &errorMessage);

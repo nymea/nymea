@@ -33,6 +33,12 @@
 
 #include "event.h"
 
+Event::Event():
+    m_id(EventId::createEventId())
+{
+
+}
+
 /*! Constructs a Event reflecting the \l{Event} given by \a EventTypeId, associated with
     the \l{Device} given by \a deviceId and the parameters given by \a params. The parameters must
     match the description in the reflecting \l{Event}.*/
@@ -57,10 +63,22 @@ EventTypeId Event::eventTypeId() const
     return m_eventTypeId;
 }
 
+/*! Set the EventTypeId for this Event. */
+void Event::setEventTypeId(const EventTypeId &eventTypeId)
+{
+    m_eventTypeId = eventTypeId;
+}
+
 /*! Returns the id of the \l{Device} associated with this Event.*/
 DeviceId Event::deviceId() const
 {
     return m_deviceId;
+}
+
+/*! Set the DeviceId for this Event.*/
+void Event::setDeviceId(const DeviceId &deviceId)
+{
+    m_deviceId = deviceId;
 }
 
 /*! Returns the parameters of this Event.*/
@@ -105,7 +123,7 @@ bool Event::operator ==(const Event &other) const
 
 QDebug operator<<(QDebug dbg, const Event &event)
 {
-    dbg.nospace() << "Event(EventTypeId: " << event.eventTypeId().toString() << ", DeviceId" << event.deviceId() << ")";
+    dbg.nospace() << "Event(EventTypeId: " << event.eventTypeId().toString() << ", DeviceId" << event.deviceId().toString() << ")";
 
     return dbg.space();
 }

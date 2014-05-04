@@ -77,8 +77,8 @@ void HttpDaemon::readClient()
         if (url.path() == "/setstate") {
             emit setState(StateTypeId(query.queryItems().first().first), QVariant(query.queryItems().first().second));
         } else if (url.path() == "/generateevent") {
-            qDebug() << "got generateevent" << query.queryItemValue("eventid");
-            emit triggerEvent(EventTypeId(query.queryItemValue("eventid")));
+            qDebug() << "got generateevent" << query.queryItemValue("eventtypeid");
+            emit triggerEvent(EventTypeId(query.queryItemValue("eventtypeid")));
         } else if (url.path() == "/actionhistory") {
             QTextStream os(socket);
             os.setAutoDetectUnicode(true);
@@ -164,7 +164,7 @@ QString HttpDaemon::generateWebPage()
         body.append(QString(
         "<tr>"
         "<form action=\"/generateevent\" method=\"get\">"
-        "<td>%1<input type='hidden' name='eventid' value='%2'/></td>"
+        "<td>%1<input type='hidden' name='eventtypeid' value='%2'/></td>"
         "<td><input type='submit' value='Generate'/></td>"
         "</form>"
         "</tr>"

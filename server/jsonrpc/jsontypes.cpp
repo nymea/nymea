@@ -128,6 +128,7 @@ void JsonTypes::init()
     s_deviceClass.insert("events", QVariantList() << eventTypeRef());
     s_deviceClass.insert("actions", QVariantList() << actionTypeRef());
     s_deviceClass.insert("params", QVariantList() << paramTypeRef());
+    s_deviceClass.insert("discoveryParams", QVariantList() << paramTypeRef());
     s_deviceClass.insert("setupMethod", setupMethodTypesRef());
     s_deviceClass.insert("createMethod", createMethodTypesRef());
 
@@ -319,8 +320,13 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass)
     foreach (const ParamType &paramType, deviceClass.params()) {
         paramTypes.append(packParamType(paramType));
     }
+    QVariantList discoveryParamTypes;
+    foreach (const ParamType &paramType, deviceClass.discoveryParams()) {
+        discoveryParamTypes.append(packParamType(paramType));
+    }
 
     variant.insert("params", paramTypes);
+    variant.insert("discoveryParams", discoveryParamTypes);
     variant.insert("states", stateTypes);
     variant.insert("events", eventTypes);
     variant.insert("actions", actionTypes);

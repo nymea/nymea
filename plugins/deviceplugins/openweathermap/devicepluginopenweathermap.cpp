@@ -325,6 +325,9 @@ QList<DeviceClass> DevicePluginOpenweathermap::supportedDevices() const
     ParamType locationParam("location", QVariant::String);
     params.append(locationParam);
 
+    //Location is all we need for discovery.
+    deviceClassOpenweathermap.setDiscoveryParams(params);
+
     ParamType countryParam("country", QVariant::String);
     params.append(countryParam);
 

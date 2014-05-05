@@ -66,6 +66,9 @@ public:
     QList<ParamType> params() const;
     void setParams(const QList<ParamType> &params);
 
+    QList<ParamType> discoveryParams() const;
+    void setDiscoveryParams(const QList<ParamType> &params);
+
     CreateMethod createMethod() const;
     void setCreateMethod(CreateMethod createMethod);
     SetupMethod setupMethod() const;
@@ -82,6 +85,7 @@ private:
     QList<EventType> m_events;
     QList<ActionType> m_actions;
     QList<ParamType> m_params;
+    QList<ParamType> m_discoveryParams;
     CreateMethod m_createMethod;
     SetupMethod m_setupMethod;
 };

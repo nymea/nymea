@@ -1,4 +1,4 @@
-0.1.3
+0.1.4
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -296,6 +296,9 @@
                 "$ref:ActionType"
             ],
             "createMethod": "$ref:CreateMethodType",
+            "discoveryParams": [
+                "$ref:ParamType"
+            ],
             "events": [
                 "$ref:EventType"
             ],

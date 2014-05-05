@@ -141,6 +141,16 @@ void DeviceClass::setParams(const QList<ParamType> &params)
     m_params = params;
 }
 
+QList<ParamType> DeviceClass::discoveryParams() const
+{
+    return m_discoveryParams;
+}
+
+void DeviceClass::setDiscoveryParams(const QList<ParamType> &params)
+{
+    m_discoveryParams = params;
+}
+
 DeviceClass::CreateMethod DeviceClass::createMethod() const
 {
     return m_createMethod;

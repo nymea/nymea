@@ -37,6 +37,15 @@ ActionHandler::ActionHandler(QObject *parent) :
     returns.insert("errorMessage", "string");
     setReturns("ExecuteAction", returns);
 
+    params.clear(); returns.clear();
+    setDescription("GetActionType", "Get the ActionType for the given ActionTypeId");
+    params.insert("actionTypeId", "uuid");
+    setParams("GetActionType", params);
+    returns.insert("success", "bool");
+    returns.insert("errorMessage", "string");
+    returns.insert("o:actionType", JsonTypes::actionTypeDescription());
+    setReturns("GetActionType", returns);
+
     connect(GuhCore::instance()->deviceManager(), &DeviceManager::actionExecutionFinished, this, &ActionHandler::actionExecuted);
 }
 
@@ -67,6 +76,26 @@ JsonReply* ActionHandler::ExecuteAction(const QVariantMap &params)
 
     QVariantMap returns = statusToReply(status.first, status.second);
     return createReply(returns);
+}
+
+JsonReply *ActionHandler::GetActionType(const QVariantMap &params) const
+{
+    ActionTypeId actionTypeId(params.value("actionTypeId").toString());
+    foreach (const DeviceClass &deviceClass, GuhCore::instance()->deviceManager()->supportedDevices()) {
+        foreach (const ActionType &actionType, deviceClass.actions()) {
+            if (actionType.id() == actionTypeId) {
+                QVariantMap data;
+                data.insert("success", true);
+                data.insert("errorMessage", QString());
+                data.insert("actionType", JsonTypes::packActionType(actionType));
+                return createReply(data);
+            }
+        }
+    }
+    QVariantMap data;
+    data.insert("success", false);
+    data.insert("errorMessage", QString("No ActionType with id %1.").arg(actionTypeId.toString()));
+    return createReply(data);
 }
 
 void ActionHandler::actionExecuted(const ActionId &id, DeviceManager::DeviceError status, const QString &errorMessage)

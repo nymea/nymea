@@ -37,6 +37,9 @@ private slots:
     void executeAction_data();
     void executeAction();
 
+    void getActionTypes_data();
+    void getActionTypes();
+
 };
 
 void TestActions::executeAction_data()
@@ -113,6 +116,31 @@ void TestActions::executeAction()
     data = reply->readAll();
     qDebug() << "cleared data:" << data;
 
+}
+
+void TestActions::getActionTypes_data()
+{
+    QTest::addColumn<ActionTypeId>("actionTypeId");
+    QTest::addColumn<bool>("success");
+
+    QTest::newRow("valid actiontypeid") << mockActionIdWithParams << true;
+    QTest::newRow("invalid actiontypeid") << ActionTypeId::createActionTypeId() << false;
+}
+
+void TestActions::getActionTypes()
+{
+    QFETCH(ActionTypeId, actionTypeId);
+    QFETCH(bool, success);
+
+    QVariantMap params;
+    params.insert("actionTypeId", actionTypeId.toString());
+    QVariant response = injectAndWait("Actions.GetActionType", params);
+
+    verifySuccess(response, success);
+
+    if (success) {
+        QVERIFY2(ActionTypeId(response.toMap().value("params").toMap().value("actionType").toMap().value("id").toString()) == actionTypeId, "Didnt get reply for same actionTypeId as requested.");
+    }
 }
 
 

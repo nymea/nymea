@@ -17,19 +17,20 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \page googlemail.html
-    \title Google Mail Notification
+    \page mailnotification.html
+    \title Mail Notification
 
     \ingroup plugins
     \ingroup services
 
-    The Google Mail plugin allows you to send a mail notification from your Google mail
+    The mail notification plugin allows you to send a mail notification from a mail
     account by performing an \l{Action}.
 
     ATTENTION: The password currently will be saved as plain text in the guh configuration file.
 
-    \section1 Examples
-    \section2 Adding a Google Mail Notification service
+    \section1 Google Mail Notification
+    \section2 Examples
+    \section3 Adding a Google Mail Notification service
     In order to add a Google Mail Notification service you need to configure
     the "Google Mail login" (user), the password for your Gmail account and the address
     of the recipient.
@@ -61,7 +62,7 @@
     }
     \endcode
 
-    \section2 Sending a mail notification
+    \section3 Sending a mail notification
     In order to send a mail notification from a configured Gmail service use following message
     format.
     \code
@@ -90,8 +91,8 @@
     }
     \endcode
 
-    \section1 Plugin propertys:
-        \section2 Plugin parameters
+    \section2 Plugin propertys:
+        \section3 Plugin parameters
         Each configured plugin has following paramters:
 
         \table
@@ -113,7 +114,95 @@
                 \li string
         \endtable
 
-        \section2 Plugin actions:
+        \section3 Plugin actions:
+        Following list contains all plugin \l{Action}s:
+            \table
+            \header
+                \li Name
+                \li Description
+                \li UUID
+            \row
+                \li sendMail
+                \li This action sends a mail to the recipient address of the configured device
+                    with a given subject and text body.
+                \li fa54f834-34d0-4aaf-b0ab-a165191d39d3
+            \endtable
+
+    \section1 Custom Mail Notification
+    \section2 Examples
+    \section3 Adding a Custom Mail Notification service
+    In order to add a Custom Mail Notification service you need to configure
+    the smtp host address, the login (user), the password, the address
+    of the recipient, the connection port and the authentification method (PLAIN or LOGIN).
+    The plugin currently supports only SSL encryption.
+    \code
+    {
+        "id":1,
+        "method":"Devices.AddConfiguredDevice",
+        "params":{
+            "deviceClassId": "{38ed6ffc-f43b-48f8-aea2-8d63cdcad87e}",
+            "deviceParams":{
+                "user":"my.address@gmail.com",
+                "password":"my_secret_password"
+                "recipient":"recipient@example.com"}
+                "host":"smtp.mydomain.com"}
+                "port":"465"}
+                "auth":"PLAIN"}
+            }
+        }
+    }
+    \endcode
+    Before the device will be added, the plugin trys to login. If the username or the password
+    are wrong, an error message will be send.
+    \code
+    {
+        "id": 1,
+        "params": {
+            "deviceId": "{0b99ea27-896a-4a23-a044-3f1441f6a9a7}",
+            "errorMessage": "",
+            "success": true
+        },
+        "status": "success"
+    }
+    \endcode
+
+    \section2 Plugin propertys:
+        \section3 Plugin parameters
+        Each configured plugin has following paramters:
+
+        \table
+            \header
+                \li Name
+                \li Description
+                \li Data Type
+            \row
+                \li user
+                \li This parameter holds the username (mail address) for the login
+                \li string
+            \row
+                \li password
+                \li This parameter holds the password for the login
+                \li string
+            \row
+                \li recipient
+                \li This parameter holds the mail address of the recipient of the notification
+                \li string
+            \row
+                \li host
+                \li This parameter holds the smtp host address from the mail server.
+                \li string
+            \row
+                \li port
+                \li This parameter holds the smtp port from the mail server.
+                \li int
+            \row
+                \li auth
+                \li This parameter holds the authentification method from the mail server.
+                    Possible values are: PLAIN, LOGIN
+                \li string
+        \endtable
+
+        \section3 Plugin actions:
         Following list contains all plugin \l{Action}s:
             \table
             \header

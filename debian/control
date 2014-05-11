@@ -11,6 +11,7 @@ Package: guh
 Architecture: any
 Depends: libqt5network5,
          libqt5gui5,
+         libgles2-mesa,
          ${shlibs:Depends},
          ${misc:Depends},
 Description: guh server

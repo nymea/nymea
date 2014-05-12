@@ -1,6 +1,10 @@
 TEMPLATE=subdirs
 
-SUBDIRS += libguh server plugins tests
+SUBDIRS += libguh server plugins
+
+!disabletesting {
+    SUBDIRS += tests
+}
 
 server.depends = libguh plugins
 plugins.depends = libguh

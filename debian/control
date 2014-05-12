@@ -9,9 +9,7 @@ Standards-Version: 3.9.3
 
 Package: guh
 Architecture: any
-Depends: libqt5network5,
-         libqt5gui5,
-         ${shlibs:Depends},
+Depends: ${shlibs:Depends},
          ${misc:Depends},
 Description: guh server
   Add some description.

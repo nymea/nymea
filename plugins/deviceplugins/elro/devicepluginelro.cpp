@@ -173,15 +173,15 @@ QList<DeviceClass> DevicePluginElro::supportedDevices() const
     deviceParamsSwitch.append(paramSwitch);
     paramSwitch = ParamType("channel5", QVariant::Bool);
     deviceParamsSwitch.append(paramSwitch);
-    paramSwitch = ParamType("channel6", QVariant::Bool);
+    paramSwitch = ParamType("A", QVariant::Bool);
     deviceParamsSwitch.append(paramSwitch);
-    paramSwitch = ParamType("channel7", QVariant::Bool);
+    paramSwitch = ParamType("B", QVariant::Bool);
     deviceParamsSwitch.append(paramSwitch);
-    paramSwitch = ParamType("channel8", QVariant::Bool);
+    paramSwitch = ParamType("C", QVariant::Bool);
     deviceParamsSwitch.append(paramSwitch);
-    paramSwitch = ParamType("channel9", QVariant::Bool);
+    paramSwitch = ParamType("D", QVariant::Bool);
     deviceParamsSwitch.append(paramSwitch);
-    paramSwitch = ParamType("channel10", QVariant::Bool);
+    paramSwitch = ParamType("E", QVariant::Bool);
     deviceParamsSwitch.append(paramSwitch);
 
     deviceClassElroSwitch.setParams(deviceParamsSwitch);

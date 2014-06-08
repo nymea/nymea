@@ -89,7 +89,7 @@ void JsonTypes::init()
     // EventType
     s_eventType.insert("id", "uuid");
     s_eventType.insert("name", "string");
-    s_eventType.insert("params", QVariantList() << paramTypeRef());
+    s_eventType.insert("paramTypes", QVariantList() << paramTypeRef());
 
     // Event
     s_event.insert("eventTypeId", "uuid");
@@ -104,7 +104,7 @@ void JsonTypes::init()
     // ActionType
     s_actionType.insert("id", "uuid");
     s_actionType.insert("name", "string");
-    s_actionType.insert("params", QVariantList() << paramTypeRef());
+    s_actionType.insert("paramTypes", QVariantList() << paramTypeRef());
 
     // Action
     s_action.insert("actionTypeId", "uuid");
@@ -114,7 +114,7 @@ void JsonTypes::init()
     // Pugin
     s_plugin.insert("id", "uuid");
     s_plugin.insert("name", "string");
-    s_plugin.insert("params", QVariantList() << paramTypeRef());
+    s_plugin.insert("params", QVariantList() << paramRef());
 
     // Vendor
     s_vendor.insert("id", "uuid");
@@ -124,11 +124,11 @@ void JsonTypes::init()
     s_deviceClass.insert("id", "uuid");
     s_deviceClass.insert("vendorId", "uuid");
     s_deviceClass.insert("name", "string");
-    s_deviceClass.insert("states", QVariantList() << stateTypeRef());
-    s_deviceClass.insert("events", QVariantList() << eventTypeRef());
-    s_deviceClass.insert("actions", QVariantList() << actionTypeRef());
-    s_deviceClass.insert("params", QVariantList() << paramTypeRef());
-    s_deviceClass.insert("discoveryParams", QVariantList() << paramTypeRef());
+    s_deviceClass.insert("stateTypes", QVariantList() << stateTypeRef());
+    s_deviceClass.insert("eventTypes", QVariantList() << eventTypeRef());
+    s_deviceClass.insert("actionTypes", QVariantList() << actionTypeRef());
+    s_deviceClass.insert("paramTypes", QVariantList() << paramTypeRef());
+    s_deviceClass.insert("discoveryParamTypes", QVariantList() << paramTypeRef());
     s_deviceClass.insert("setupMethod", setupMethodTypesRef());
     s_deviceClass.insert("createMethod", createMethodTypesRef());
 
@@ -191,7 +191,7 @@ QVariantMap JsonTypes::packEventType(const EventType &eventType)
     QVariantMap variant;
     variant.insert("id", eventType.id());
     variant.insert("name", eventType.name());
-    variant.insert("params", eventType.parameters());
+    variant.insert("paramTypes", eventType.parameters());
     return variant;
 }
 
@@ -226,11 +226,11 @@ QVariantMap JsonTypes::packActionType(const ActionType &actionType)
     QVariantMap variantMap;
     variantMap.insert("id", actionType.id());
     variantMap.insert("name", actionType.name());
-    QVariantList params;
+    QVariantList paramTypes;
     foreach (const ParamType &paramType, actionType.parameters()) {
-        params.append(packParamType(paramType));
+        paramTypes.append(packParamType(paramType));
     }
-    variantMap.insert("params", params);
+    variantMap.insert("paramTypes", paramTypes);
     return variantMap;
 }
 
@@ -325,11 +325,11 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass)
         discoveryParamTypes.append(packParamType(paramType));
     }
 
-    variant.insert("params", paramTypes);
-    variant.insert("discoveryParams", discoveryParamTypes);
-    variant.insert("states", stateTypes);
-    variant.insert("events", eventTypes);
-    variant.insert("actions", actionTypes);
+    variant.insert("paramTypes", paramTypes);
+    variant.insert("discoveryParamTypes", discoveryParamTypes);
+    variant.insert("stateTypes", stateTypes);
+    variant.insert("eventTypes", eventTypes);
+    variant.insert("actionTypes", actionTypes);
     variant.insert("createMethod", s_createMethodTypes.at(deviceClass.createMethod()));
     variant.insert("setupMethod", s_setupMethodTypes.at(deviceClass.setupMethod()));
     return variant;

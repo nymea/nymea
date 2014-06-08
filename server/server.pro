@@ -1,5 +1,7 @@
 include(../guh.pri)
 
+message("Building guh version $${GUH_VERSION_STRING}")
+
 TARGET = guh
 TEMPLATE = app
 

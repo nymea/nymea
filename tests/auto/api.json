@@ -1,4 +1,4 @@
-0.1.4
+0.1.5
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -25,7 +25,7 @@
                 "o:actionType": {
                     "id": "uuid",
                     "name": "string",
-                    "params": [
+                    "paramTypes": [
                         "$ref:ParamType"
                     ]
                 },
@@ -266,7 +266,7 @@
         "ActionType": {
             "id": "uuid",
             "name": "string",
-            "params": [
+            "paramTypes": [
                 "$ref:ParamType"
             ]
         },
@@ -292,23 +292,23 @@
             "setupComplete": "bool"
         },
         "DeviceClass": {
-            "actions": [
+            "actionTypes": [
                 "$ref:ActionType"
             ],
             "createMethod": "$ref:CreateMethodType",
-            "discoveryParams": [
+            "discoveryParamTypes": [
                 "$ref:ParamType"
             ],
-            "events": [
+            "eventTypes": [
                 "$ref:EventType"
             ],
             "id": "uuid",
             "name": "string",
-            "params": [
+            "paramTypes": [
                 "$ref:ParamType"
             ],
             "setupMethod": "$ref:SetupMethodType",
-            "states": [
+            "stateTypes": [
                 "$ref:StateType"
             ],
             "vendorId": "uuid"
@@ -335,7 +335,7 @@
         "EventType": {
             "id": "uuid",
             "name": "string",
-            "params": [
+            "paramTypes": [
                 "$ref:ParamType"
             ]
         },
@@ -367,7 +367,7 @@
             "id": "uuid",
             "name": "string",
             "params": [
-                "$ref:ParamType"
+                "$ref:Param"
             ]
         },
         "Rule": {

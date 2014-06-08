@@ -105,14 +105,12 @@ QList<DeviceClass> DevicePluginElro::supportedDevices() const
     channelParam = ParamType("channel5", QVariant::Bool);
     deviceParamsRemote.append(channelParam);
     
-    deviceClassElroRemote.setParams(deviceParamsRemote);
+    deviceClassElroRemote.setParamTypes(deviceParamsRemote);
     
     QList<EventType> buttonEvents;
     
-    QVariantList paramsRemote;
-    QVariantMap param;
-    param.insert("name", "power");
-    param.insert("type", "bool");
+    QList<ParamType> paramsRemote;
+    ParamType param("power", QVariant::Bool);
     paramsRemote.append(param);
     
     EventType buttonAEvent(EventTypeId("9dd3f862-35f3-4b69-954e-fa3c8bd68e39"));
@@ -140,7 +138,7 @@ QList<DeviceClass> DevicePluginElro::supportedDevices() const
     buttonEEvent.setParameters(paramsRemote);
     buttonEvents.append(buttonEEvent);
     
-    deviceClassElroRemote.setEvents(buttonEvents);
+    deviceClassElroRemote.setEventTypes(buttonEvents);
     ret.append(deviceClassElroRemote);
 
     // =======================================
@@ -184,7 +182,7 @@ QList<DeviceClass> DevicePluginElro::supportedDevices() const
     paramSwitch = ParamType("E", QVariant::Bool);
     deviceParamsSwitch.append(paramSwitch);
 
-    deviceClassElroSwitch.setParams(deviceParamsSwitch);
+    deviceClassElroSwitch.setParamTypes(deviceParamsSwitch);
 
 
     QList<ParamType> actionParamsSwitch;
@@ -436,7 +434,7 @@ void DevicePluginElro::radioData(QList<int> rawData)
 
     // FIXME: find a better way to get to the remote DeviceClass
     DeviceClass deviceClass = supportedDevices().first();
-    foreach (const EventType &eventType, deviceClass.events()) {
+    foreach (const EventType &eventType, deviceClass.eventTypes()) {
         if (eventType.name() == button) {
             //qDebug() << "emit event " << pluginName() << group << eventType.name() << power;
             Event event = Event(eventType.id(), device->id(), params);

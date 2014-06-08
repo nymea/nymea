@@ -143,10 +143,10 @@ QString HttpDaemon::generateWebPage()
     body.append("<h2>States</h2>");
 
     body.append("<table>");
-    for (int i = 0; i < deviceClass.states().count(); ++i) {
+    for (int i = 0; i < deviceClass.stateTypes().count(); ++i) {
         body.append("<tr>");
         body.append("<form action=\"/setstate\" method=\"get\">");
-        const StateType &stateType = deviceClass.states().at(i);
+        const StateType &stateType = deviceClass.stateTypes().at(i);
         body.append("<td>" + stateType.name() + "</td>");
         body.append(QString("<td><input type='input'' name='%1' value='%2'></td>").arg(stateType.id().toString()).arg(m_device->states().at(i).value().toString()));
         body.append("<td><input type=submit value='Set State'/></td>");
@@ -159,16 +159,21 @@ QString HttpDaemon::generateWebPage()
     body.append("<h2>Events</h2>");
 
     body.append("<table>");
-    for (int i = 0; i < deviceClass.events().count(); ++i) {
-        const EventType &eventType = deviceClass.events().at(i);
+    for (int i = 0; i < deviceClass.eventTypes().count(); ++i) {
+        qDebug() << "adding eventType" << deviceClass.eventTypes().at(i).name();
+        const EventType &eventType = deviceClass.eventTypes().at(i);
         body.append(QString(
         "<tr>"
         "<form action=\"/generateevent\" method=\"get\">"
         "<td>%1<input type='hidden' name='eventtypeid' value='%2'/></td>"
-        "<td><input type='submit' value='Generate'/></td>"
+        "<td>").arg(eventType.name()).arg(eventType.id().toString()));
+        if (!eventType.name().endsWith(" changed")) {
+            body.append("<input type='submit' value='Generate'/>");
+        }
+        body.append("</td>"
         "</form>"
         "</tr>"
-        ).arg(eventType.name()).arg(eventType.id().toString()));
+        );
     }
     body.append("</table>");
 
@@ -181,7 +186,7 @@ QString HttpDaemon::generateWebPage()
         ActionTypeId actionTypeId = ActionTypeId(m_actionList.at(i).first);
         QDateTime timestamp = m_actionList.at(i).second;
         QString actionName;
-        foreach (const ActionType &at, deviceClass.actions()) {
+        foreach (const ActionType &at, deviceClass.actionTypes()) {
             if (at.id() == actionTypeId) {
                 actionName = at.name();
                 break;

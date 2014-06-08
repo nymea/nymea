@@ -16,33 +16,23 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef TRIGGERTYPE_H
-#define TRIGGERTYPE_H
+#ifndef EVENTHANDLER_H
+#define EVENTHANDLER_H
 
-#include "typeutils.h"
-#include "paramtype.h"
+#include "jsonhandler.h"
 
-#include <QVariantMap>
-
-class EventType
+class EventHandler : public JsonHandler
 {
+    Q_OBJECT
 public:
-    EventType(const EventTypeId &id);
+    explicit EventHandler(QObject *parent = 0);
+    QString name() const override;
 
-    EventTypeId id() const;
+signals:
+    void EventTriggered(const QVariantMap &params);
 
-    QString name() const;
-    void setName(const QString &name);
-
-    QList<ParamType> parameters() const;
-    void setParameters(const QList<ParamType> &parameters);
-
-private:
-    EventTypeId m_id;
-    QString m_name;
-
-    QList<ParamType> m_parameters;
-
+private slots:
+    void eventTriggered(const Event &event);
 };
 
-#endif // TRIGGERTYPE_H
+#endif // EVENTHANDLER_H

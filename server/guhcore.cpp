@@ -101,6 +101,10 @@ GuhCore::GuhCore(QObject *parent) :
     here will be evaluated by the \l{RuleEngine} and the according \l{Action}{Actions} are executed.*/
 void GuhCore::gotEvent(const Event &event)
 {
+    // first inform other things about it.
+    emit eventTriggered(event);
+
+    // Now execute all the associated rules
     foreach (const Action &action, m_ruleEngine->evaluateEvent(event)) {
         qDebug() << "executing action" << action.actionTypeId();
         QPair<DeviceManager::DeviceError, QString> status = m_deviceManager->executeAction(action);

@@ -383,7 +383,7 @@ void TestDevices::getEventTypes_data()
     QTest::addColumn<DeviceClassId>("deviceClassId");
     QTest::addColumn<int>("resultCount");
 
-    QTest::newRow("valid deviceclass") << mockDeviceClassId << 2;
+    QTest::newRow("valid deviceclass") << mockDeviceClassId << 4;
     QTest::newRow("invalid deviceclass") << DeviceClassId("094f8024-5caa-48c1-ab6a-de486a92088f") << 0;
 }
 

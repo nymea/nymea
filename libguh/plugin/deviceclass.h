@@ -54,20 +54,20 @@ public:
     QString name() const;
     void setName(const QString &name);
 
-    QList<StateType> states() const;
-    void setStates(const QList<StateType> &stateTypes);
+    QList<StateType> stateTypes() const;
+    void setStateTypes(const QList<StateType> &stateTypes);
 
-    QList<EventType> events() const;
-    void setEvents(const QList<EventType> &eventTypes);
+    QList<EventType> eventTypes() const;
+    void setEventTypes(const QList<EventType> &eventTypes);
 
-    QList<ActionType> actions() const;
+    QList<ActionType> actionTypes() const;
     void setActions(const QList<ActionType> &actionTypes);
 
-    QList<ParamType> params() const;
-    void setParams(const QList<ParamType> &params);
+    QList<ParamType> paramTypes() const;
+    void setParamTypes(const QList<ParamType> &paramTypes);
 
-    QList<ParamType> discoveryParams() const;
-    void setDiscoveryParams(const QList<ParamType> &params);
+    QList<ParamType> discoveryParamTypes() const;
+    void setDiscoveryParamTypes(const QList<ParamType> &paramTypes);
 
     CreateMethod createMethod() const;
     void setCreateMethod(CreateMethod createMethod);
@@ -81,11 +81,12 @@ private:
     VendorId m_vendorId;
     PluginId m_pluginId;
     QString m_name;
-    QList<StateType> m_states;
-    QList<EventType> m_events;
-    QList<ActionType> m_actions;
-    QList<ParamType> m_params;
-    QList<ParamType> m_discoveryParams;
+    QList<StateType> m_stateTypes;
+    QList<EventType> m_eventTypes;
+    QList<EventType> m_allEventTypes;
+    QList<ActionType> m_actionTypes;
+    QList<ParamType> m_paramTypes;
+    QList<ParamType> m_discoveryParamTypes;
     CreateMethod m_createMethod;
     SetupMethod m_setupMethod;
 };

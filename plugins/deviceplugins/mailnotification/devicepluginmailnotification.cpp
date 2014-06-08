@@ -295,7 +295,7 @@ QList<DeviceClass> DevicePluginMailNotification::supportedDevices() const
     googleMailParams.append(recipientGoogleParam);
 
     deviceClassGoogleMail.setActions(mailActions);
-    deviceClassGoogleMail.setParams(googleMailParams);
+    deviceClassGoogleMail.setParamTypes(googleMailParams);
 
     // Custom Mail
     // ---------------------------------------------------------------
@@ -325,7 +325,7 @@ QList<DeviceClass> DevicePluginMailNotification::supportedDevices() const
     customMailParams.append(authCustomParam);
 
     deviceClassCustomMail.setActions(mailActions);
-    deviceClassCustomMail.setParams(customMailParams);
+    deviceClassCustomMail.setParamTypes(customMailParams);
 
     ret.append(deviceClassGoogleMail);
     ret.append(deviceClassCustomMail);

@@ -58,15 +58,13 @@ QList<DeviceClass> DevicePluginLircd::supportedDevices() const
     QList<ParamType> params;
     ParamType remoteNameParam("remoteName", QVariant::String);
     params.append(remoteNameParam);
-    deviceClassLircd.setParams(params);
+    deviceClassLircd.setParamTypes(params);
     
     // TODO: find a way to load this stuff from a json file, really!
     // Ideally that file can be generated from /usr/share/lirc/remotes/*
     // Note that the IDs need to be kept static!
-    QVariantList repeatParam;
-    QVariantMap repeatParamMap;
-    repeatParamMap.insert("name", "repeat");
-    repeatParamMap.insert("type", "int");
+    QList<ParamType> repeatParam;
+    ParamType repeatParamMap("repeat", QVariant::Int);
     repeatParam.append(repeatParamMap);
 
     QList<EventType> events;
@@ -91,7 +89,7 @@ QList<DeviceClass> DevicePluginLircd::supportedDevices() const
     redButton.setParameters(repeatParam);
     events.append(redButton);
 
-    deviceClassLircd.setEvents(events);
+    deviceClassLircd.setEventTypes(events);
 
     ret.append(deviceClassLircd);
 
@@ -128,8 +126,8 @@ void DevicePluginLircd::buttonPressed(const QString &remoteName, const QString &
         return;
     }
 
-    qDebug() << "found remote" << remoteName << supportedDevices().first().events().count();
-    foreach (const EventType &eventType, supportedDevices().first().events()) {
+    qDebug() << "found remote" << remoteName << supportedDevices().first().eventTypes().count();
+    foreach (const EventType &eventType, supportedDevices().first().eventTypes()) {
         if (eventType.name() == buttonName) {
             QList<Param> params;
             Param param("repeat", repeat);

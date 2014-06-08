@@ -55,6 +55,7 @@
 #include "devicemanager.h"
 #include "plugin/device.h"
 #include "hardware/radio433.h"
+#include "types/paramtype.h"
 
 #include <QDebug>
 #include <QStringList>
@@ -98,20 +99,14 @@ QList<DeviceClass> DevicePluginConrad::supportedDevices() const
     // Events
     QList<EventType> buttonEvents;
 
-    QVariantList paramsRemote;
-    QVariantMap paramButton;
-    paramButton.insert("name", "button");
-    paramButton.insert("type", "int");
+    QList<ParamType> paramsRemote;
+    ParamType paramButton("button", QVariant::Int);
     paramsRemote.append(paramButton);
 
-    QVariantMap paramGroup;
-    paramGroup.insert("name", "group");
-    paramGroup.insert("type", "int");
+    ParamType paramGroup("group", QVariant::Int);
     paramsRemote.append(paramGroup);
 
-    QVariantMap paramPower;
-    paramPower.insert("name", "power");
-    paramPower.insert("type", "bool");
+    ParamType paramPower("power", QVariant::Bool);
     paramsRemote.append(paramPower);
 
     EventType buttonEvent(conradRemoteButtonEventTypeId);
@@ -119,8 +114,8 @@ QList<DeviceClass> DevicePluginConrad::supportedDevices() const
     buttonEvent.setParameters(paramsRemote);
     buttonEvents.append(buttonEvent);
 
-    deviceClassConradRemote.setParams(deviceParamsRemote);
-    deviceClassConradRemote.setEvents(buttonEvents);
+    deviceClassConradRemote.setParamTypes(deviceParamsRemote);
+    deviceClassConradRemote.setEventTypes(buttonEvents);
     ret.append(deviceClassConradRemote);
 
     return ret;

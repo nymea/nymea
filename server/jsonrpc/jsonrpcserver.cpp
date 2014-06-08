@@ -37,6 +37,7 @@
 #include "devicehandler.h"
 #include "actionhandler.h"
 #include "ruleshandler.h"
+#include "eventhandler.h"
 
 #include <QJsonDocument>
 #include <QStringList>
@@ -138,6 +139,7 @@ void JsonRPCServer::setup()
     registerHandler(new DeviceHandler(this));
     registerHandler(new ActionHandler(this));
     registerHandler(new RulesHandler(this));
+    registerHandler(new EventHandler(this));
 }
 
 void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &jsonData)

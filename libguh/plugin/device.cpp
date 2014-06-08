@@ -30,6 +30,7 @@
 */
 
 #include "device.h"
+#include "types/event.h"
 
 #include <QDebug>
 

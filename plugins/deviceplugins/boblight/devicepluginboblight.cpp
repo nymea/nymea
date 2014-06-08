@@ -63,7 +63,7 @@ QList<DeviceClass> DevicePluginBoblight::supportedDevices() const
     colorState.setDefaultValue(QColor(Qt::black));
     boblightStates.append(colorState);
 
-    deviceClassBoblight.setStates(boblightStates);
+    deviceClassBoblight.setStateTypes(boblightStates);
 
     QList<ActionType> boblightActons;
 

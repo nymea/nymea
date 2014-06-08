@@ -210,13 +210,19 @@ void TestJSONRPC::stateChangeEmitsNotifications()
 
     // Lets wait for the notification
     clientSpy.wait();
-    QCOMPARE(clientSpy.count(), 1);
+    QCOMPARE(clientSpy.count(), 2);
 
     // Make sure the notification contains all the stuff we expect
     QJsonDocument jsonDoc = QJsonDocument::fromJson(clientSpy.at(0).at(1).toByteArray());
     QCOMPARE(jsonDoc.toVariant().toMap().value("notification").toString(), QString("Devices.StateChanged"));
     QCOMPARE(jsonDoc.toVariant().toMap().value("params").toMap().value("stateTypeId").toUuid(), stateTypeId);
     QCOMPARE(jsonDoc.toVariant().toMap().value("params").toMap().value("value").toInt(), newVal);
+
+    // Make sure the notification contains all the stuff we expect
+    jsonDoc = QJsonDocument::fromJson(clientSpy.at(1).at(1).toByteArray());
+    QCOMPARE(jsonDoc.toVariant().toMap().value("notification").toString(), QString("Events.EventTriggered"));
+    QCOMPARE(jsonDoc.toVariant().toMap().value("params").toMap().value("event").toMap().value("eventTypeId").toUuid(), stateTypeId);
+    QCOMPARE(jsonDoc.toVariant().toMap().value("params").toMap().value("event").toMap().value("params").toList().first().toMap().value("value").toInt(), newVal);
 
     // Now turn off notifications
     params.clear();

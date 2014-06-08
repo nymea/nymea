@@ -191,7 +191,11 @@ QVariantMap JsonTypes::packEventType(const EventType &eventType)
     QVariantMap variant;
     variant.insert("id", eventType.id());
     variant.insert("name", eventType.name());
-    variant.insert("paramTypes", eventType.parameters());
+    QVariantList paramTypes;
+    foreach (const ParamType &paramType, eventType.parameters()) {
+        paramTypes.append(packParamType(paramType));
+    }
+    variant.insert("paramTypes", paramTypes);
     return variant;
 }
 
@@ -305,23 +309,23 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass)
     variant.insert("id", deviceClass.id());
     variant.insert("vendorId", deviceClass.vendorId());
     QVariantList stateTypes;
-    foreach (const StateType &stateType, deviceClass.states()) {
+    foreach (const StateType &stateType, deviceClass.stateTypes()) {
         stateTypes.append(packStateType(stateType));
     }
     QVariantList eventTypes;
-    foreach (const EventType &eventType, deviceClass.events()) {
+    foreach (const EventType &eventType, deviceClass.eventTypes()) {
         eventTypes.append(packEventType(eventType));
     }
     QVariantList actionTypes;
-    foreach (const ActionType &actionType, deviceClass.actions()) {
+    foreach (const ActionType &actionType, deviceClass.actionTypes()) {
         actionTypes.append(packActionType(actionType));
     }
     QVariantList paramTypes;
-    foreach (const ParamType &paramType, deviceClass.params()) {
+    foreach (const ParamType &paramType, deviceClass.paramTypes()) {
         paramTypes.append(packParamType(paramType));
     }
     QVariantList discoveryParamTypes;
-    foreach (const ParamType &paramType, deviceClass.discoveryParams()) {
+    foreach (const ParamType &paramType, deviceClass.discoveryParamTypes()) {
         discoveryParamTypes.append(packParamType(paramType));
     }
 

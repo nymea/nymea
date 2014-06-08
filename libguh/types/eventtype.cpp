@@ -53,19 +53,19 @@ void EventType::setName(const QString &name)
 }
 
 /*!
-  Holds a map describing possible parameters for a \l{Event} of this EventType.
-  e.g. QVariantList(QVariantMap(("name", "temperature"), ("type": QVariant::Real)))
+  Holds a List describing possible parameters for a \l{Event} of this EventType.
+  e.g. QList(ParamType("temperature", QVariant::Real))
   */
-QVariantList EventType::parameters() const
+QList<ParamType> EventType::parameters() const
 {
     return m_parameters;
 }
 
 /*!
   Set the parameter description for this EventType to \a parameters,
-  e.g. QVariantList(QVariantMap(("name", "temperature"), ("type": QVariant::Real)))
+  e.g. QList<ParamType>() << ParamType("temperature", QVariant::Real))
   */
-void EventType::setParameters(const QVariantList &parameters)
+void EventType::setParameters(const QList<ParamType> &parameters)
 {
     m_parameters = parameters;
 }

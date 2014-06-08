@@ -194,17 +194,14 @@ QList<DeviceClass> DevicePluginIntertechno::supportedDevices() const
     ParamType familyParam("familyCode", QVariant::String);
     remoteParams.append(familyParam);
 
-    deviceClassIntertechnoRemote.setParams(remoteParams);
+    deviceClassIntertechnoRemote.setParamTypes(remoteParams);
     
     QList<EventType> buttonEvents;
     
-    QVariantList paramsRemote;
-    QVariantMap paramRemote;
-
+    QList<ParamType> paramsRemote;
     // on  = true
     // off = false
-    paramRemote.insert("name", "power");
-    paramRemote.insert("type", "bool");
+    ParamType paramRemote("power", QVariant::Bool);
     paramsRemote.append(paramRemote);
 
     /*              1-16
@@ -298,7 +295,7 @@ QList<DeviceClass> DevicePluginIntertechno::supportedDevices() const
     button16Event.setParameters(paramsRemote);
     buttonEvents.append(button16Event);
 
-    deviceClassIntertechnoRemote.setEvents(buttonEvents);
+    deviceClassIntertechnoRemote.setEventTypes(buttonEvents);
     ret.append(deviceClassIntertechnoRemote);
 
 
@@ -314,7 +311,7 @@ QList<DeviceClass> DevicePluginIntertechno::supportedDevices() const
     switchDeviceParams.append(familyParam);
     switchDeviceParams.append(buttonParam);
 
-    deviceClassIntertechnoSwitch.setParams(switchDeviceParams);
+    deviceClassIntertechnoSwitch.setParamTypes(switchDeviceParams);
 
     QList<ActionType> switchActions;
 
@@ -695,7 +692,7 @@ void DevicePluginIntertechno::radioData(QList<int> rawData)
 
     // FIXME: find a better way to get to the remote DeviceClass
     DeviceClass deviceClass = supportedDevices().first();
-    foreach (const EventType &eventType, deviceClass.events()) {
+    foreach (const EventType &eventType, deviceClass.eventTypes()) {
         if (eventType.name() == buttonCode) {
             qDebug() << "emit event " << pluginName() << familyCode << eventType.name() << power;
             Event event = Event(eventType.id(), device->id(), params);

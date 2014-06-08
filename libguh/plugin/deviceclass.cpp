@@ -87,68 +87,86 @@ void DeviceClass::setName(const QString &name)
 
 /*! Returns the statesTypes of this DeviceClass. \{Device}{Devices} created
     from this DeviceClass must have their states matching to this template. */
-QList<StateType> DeviceClass::states() const
+QList<StateType> DeviceClass::stateTypes() const
 {
-    return m_states;
+    return m_stateTypes;
 }
 
 /*! Set the \a stateTypes of this DeviceClass. \{Device}{Devices} created
     from this DeviceClass must have their states matching to this template. */
-void DeviceClass::setStates(const QList<StateType> &stateTypes)
+void DeviceClass::setStateTypes(const QList<StateType> &stateTypes)
 {
-    m_states = stateTypes;
+    m_stateTypes = stateTypes;
+
+    m_allEventTypes = m_eventTypes;
+    foreach (const StateType &stateType, m_stateTypes) {
+        EventType eventType(EventTypeId(stateType.id().toString()));
+        eventType.setName(QString("%1 changed").arg(stateType.name()));
+        ParamType paramType("value", stateType.type());
+        eventType.setParameters(QList<ParamType>() << paramType);
+        m_allEventTypes.append(eventType);
+    }
 }
 
 /*! Returns the eventTypes of this DeviceClass. \{Device}{Devices} created
     from this DeviceClass must have their events matching to this template. */
-QList<EventType> DeviceClass::events() const
+QList<EventType> DeviceClass::eventTypes() const
 {
-    return m_events;
+    return m_allEventTypes;
 }
 
 /*! Set the \a eventTypes of this DeviceClass. \{Device}{Devices} created
     from this DeviceClass must have their events matching to this template. */
-void DeviceClass::setEvents(const QList<EventType> &eventTypes)
+void DeviceClass::setEventTypes(const QList<EventType> &eventTypes)
 {
-    m_events = eventTypes;
+    m_eventTypes = eventTypes;
+
+    m_allEventTypes = m_eventTypes;
+    foreach (const StateType &stateType, m_stateTypes) {
+        EventType eventType(EventTypeId(stateType.id().toString()));
+        eventType.setName(QString("%1 changed").arg(stateType.name()));
+        ParamType paramType("value", stateType.type());
+        eventType.setParameters(QList<ParamType>() << paramType);
+        m_allEventTypes.append(eventType);
+    }
 }
 
 /*! Returns the actionTypes of this DeviceClass. \{Device}{Devices} created
     from this DeviceClass must have their actions matching to this template. */
-QList<ActionType> DeviceClass::actions() const
+QList<ActionType> DeviceClass::actionTypes() const
 {
-    return m_actions;
+    return m_actionTypes;
 }
 
 /*! Set the \a actionTypes of this DeviceClass. \{Device}{Devices} created
     from this DeviceClass must have their actions matching to this template. */
 void DeviceClass::setActions(const QList<ActionType> &actionTypes)
 {
-    m_actions = actionTypes;
+    m_actionTypes = actionTypes;
 }
 
 /*! Returns the params description of this DeviceClass. \{Device}{Devices} created
     from this DeviceClass must have their params matching to this template. */
-QList<ParamType> DeviceClass::params() const
+QList<ParamType> DeviceClass::paramTypes() const
 {
-    return m_params;
+    return m_paramTypes;
 }
 
 /*! Set the \a params of this DeviceClass. \{Device}{Devices} created
     from this DeviceClass must have their actions matching to this template. */
-void DeviceClass::setParams(const QList<ParamType> &params)
+void DeviceClass::setParamTypes(const QList<ParamType> &params)
 {
-    m_params = params;
+    m_paramTypes = params;
 }
 
-QList<ParamType> DeviceClass::discoveryParams() const
+QList<ParamType> DeviceClass::discoveryParamTypes() const
 {
-    return m_discoveryParams;
+    return m_discoveryParamTypes;
 }
 
-void DeviceClass::setDiscoveryParams(const QList<ParamType> &params)
+void DeviceClass::setDiscoveryParamTypes(const QList<ParamType> &params)
 {
-    m_discoveryParams = params;
+    m_discoveryParamTypes = params;
 }
 
 DeviceClass::CreateMethod DeviceClass::createMethod() const

@@ -158,7 +158,7 @@ QList<DeviceClass> DevicePluginWakeOnLan::supportedDevices() const
     wolAction.setName("wakeup");
     wolActions.append(wolAction);
 
-    deviceClassWakeOnLan.setParams(wolParams);
+    deviceClassWakeOnLan.setParamTypes(wolParams);
     deviceClassWakeOnLan.setActions(wolActions);
 
     ret.append(deviceClassWakeOnLan);

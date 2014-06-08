@@ -241,7 +241,7 @@ QPair<DeviceManager::DeviceError, QString> DeviceManager::addConfiguredDeviceInt
         return qMakePair<DeviceError, QString>(DeviceErrorDeviceClassNotFound, deviceClassId.toString());
     }
 
-    QPair<DeviceError, QString> result = verifyParams(deviceClass.params(), params);
+    QPair<DeviceError, QString> result = verifyParams(deviceClass.paramTypes(), params);
     if (result.first != DeviceErrorNoError) {
         return result;
     }
@@ -360,7 +360,7 @@ QPair<DeviceManager::DeviceError, QString> DeviceManager::executeAction(const Ac
             // Make sure this device has an action type with this id
             DeviceClass deviceClass = findDeviceClass(device->deviceClassId());
             bool found = false;
-            foreach (const ActionType &actionType, deviceClass.actions()) {
+            foreach (const ActionType &actionType, deviceClass.actionTypes()) {
                 if (actionType.id() == action.actionTypeId()) {
                     QPair<DeviceError, QString> paramCheck = verifyParams(actionType.parameters(), action.params());
                     if (paramCheck.first != DeviceErrorNoError) {
@@ -593,6 +593,10 @@ void DeviceManager::slotDeviceStateValueChanged(const QUuid &stateTypeId, const 
         return;
     }
     emit deviceStateChanged(device, stateTypeId, value);
+
+    Param valueParam("value", value);
+    Event event(EventTypeId(stateTypeId.toString()), device->id(), QList<Param>() << valueParam);
+    emit eventTriggered(event);
 }
 
 void DeviceManager::radio433SignalReceived(QList<int> rawData)
@@ -627,7 +631,7 @@ QPair<DeviceManager::DeviceSetupStatus,QString> DeviceManager::setupDevice(Devic
     }
 
     QList<State> states;
-    foreach (const StateType &stateType, deviceClass.states()) {
+    foreach (const StateType &stateType, deviceClass.stateTypes()) {
         State state(stateType.id(), device->id());
         state.setValue(stateType.defaultValue());
         states.append(state);

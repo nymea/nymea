@@ -70,7 +70,7 @@ QList<DeviceClass> DevicePluginMock::supportedDevices() const
     ParamType portParam("httpport", QVariant::Int);
     mockParams.append(portParam);
 
-    deviceClassMock.setParams(mockParams);
+    deviceClassMock.setParamTypes(mockParams);
 
     QList<StateType> mockStates;
 
@@ -86,7 +86,7 @@ QList<DeviceClass> DevicePluginMock::supportedDevices() const
     boolState.setDefaultValue(false);
     mockStates.append(boolState);
 
-    deviceClassMock.setStates(mockStates);
+    deviceClassMock.setStateTypes(mockStates);
 
     QList<EventType> mockEvents;
     
@@ -98,7 +98,7 @@ QList<DeviceClass> DevicePluginMock::supportedDevices() const
     event2.setName("Mock Event 2");
     mockEvents.append(event2);
 
-    deviceClassMock.setEvents(mockEvents);
+    deviceClassMock.setEventTypes(mockEvents);
 
     QList<ActionType> mockActions;
 
@@ -138,9 +138,9 @@ QList<DeviceClass> DevicePluginMock::supportedDevices() const
     deviceClassMockAuto.setCreateMethod(DeviceClass::CreateMethodAuto);
 
     mockParams.clear();
-    deviceClassMockAuto.setParams(mockParams);
-    deviceClassMockAuto.setStates(mockStates);
-    deviceClassMockAuto.setEvents(mockEvents);
+    deviceClassMockAuto.setParamTypes(mockParams);
+    deviceClassMockAuto.setStateTypes(mockStates);
+    deviceClassMockAuto.setEventTypes(mockEvents);
     deviceClassMockAuto.setActions(mockActions);
 
     ret.append(deviceClassMockAuto);
@@ -152,9 +152,9 @@ QList<DeviceClass> DevicePluginMock::supportedDevices() const
 
     mockParams.clear();
     mockParams.append(portParam);
-    deviceClassMockDiscovery.setParams(mockParams);
-    deviceClassMockDiscovery.setStates(mockStates);
-    deviceClassMockDiscovery.setEvents(mockEvents);
+    deviceClassMockDiscovery.setParamTypes(mockParams);
+    deviceClassMockDiscovery.setStateTypes(mockStates);
+    deviceClassMockDiscovery.setEventTypes(mockEvents);
     deviceClassMockDiscovery.setActions(mockActions);
 
     ret.append(deviceClassMockDiscovery);
@@ -164,9 +164,9 @@ QList<DeviceClass> DevicePluginMock::supportedDevices() const
     deviceClassMockAsync.setName("Mock Device (Async)");
     deviceClassMockAsync.setCreateMethod(DeviceClass::CreateMethodUser);
 
-    deviceClassMockAsync.setParams(mockParams);
-    deviceClassMockAsync.setStates(mockStates);
-    deviceClassMockAsync.setEvents(mockEvents);
+    deviceClassMockAsync.setParamTypes(mockParams);
+    deviceClassMockAsync.setStateTypes(mockStates);
+    deviceClassMockAsync.setEventTypes(mockEvents);
     deviceClassMockAsync.setActions(mockActions);
 
     ret.append(deviceClassMockAsync);
@@ -176,9 +176,9 @@ QList<DeviceClass> DevicePluginMock::supportedDevices() const
     deviceClassMockBroken.setName("Mock Device (Broken setup)");
     deviceClassMockBroken.setCreateMethod(DeviceClass::CreateMethodUser);
 
-    deviceClassMockBroken.setParams(mockParams);
-    deviceClassMockBroken.setStates(mockStates);
-    deviceClassMockBroken.setEvents(mockEvents);
+    deviceClassMockBroken.setParamTypes(mockParams);
+    deviceClassMockBroken.setStateTypes(mockStates);
+    deviceClassMockBroken.setEventTypes(mockEvents);
     deviceClassMockBroken.setActions(mockActions);
 
     ret.append(deviceClassMockBroken);
@@ -188,9 +188,9 @@ QList<DeviceClass> DevicePluginMock::supportedDevices() const
     deviceClassMockBrokenAsyncSetup.setName("Mock Device (Async Broken setup)");
     deviceClassMockBrokenAsyncSetup.setCreateMethod(DeviceClass::CreateMethodUser);
 
-    deviceClassMockBrokenAsyncSetup.setParams(mockParams);
-    deviceClassMockBrokenAsyncSetup.setStates(mockStates);
-    deviceClassMockBrokenAsyncSetup.setEvents(mockEvents);
+    deviceClassMockBrokenAsyncSetup.setParamTypes(mockParams);
+    deviceClassMockBrokenAsyncSetup.setStateTypes(mockStates);
+    deviceClassMockBrokenAsyncSetup.setEventTypes(mockEvents);
     deviceClassMockBrokenAsyncSetup.setActions(mockActions);
 
     ret.append(deviceClassMockBrokenAsyncSetup);

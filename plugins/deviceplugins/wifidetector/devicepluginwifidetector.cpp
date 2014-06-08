@@ -52,7 +52,7 @@ QList<DeviceClass> DevicePluginWifiDetector::supportedDevices() const
     ParamType macParam("mac", QVariant::String);
     detectorParams.append(macParam);
 
-    deviceClassWifiDetector.setParams(detectorParams);
+    deviceClassWifiDetector.setParamTypes(detectorParams);
 
     QList<StateType> detectorStates;
 
@@ -62,7 +62,7 @@ QList<DeviceClass> DevicePluginWifiDetector::supportedDevices() const
     inRangeState.setDefaultValue(false);
     detectorStates.append(inRangeState);
 
-    deviceClassWifiDetector.setStates(detectorStates);
+    deviceClassWifiDetector.setStateTypes(detectorStates);
 
     ret.append(deviceClassWifiDetector);
 

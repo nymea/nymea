@@ -190,7 +190,7 @@ RuleEngine::RuleError RuleEngine::addRule(const EventDescriptor &eventDescriptor
     qDebug() << "found deviceClass" << deviceClass.name();
 
     bool eventTypeFound = false;
-    foreach (const EventType &eventType, deviceClass.events()) {
+    foreach (const EventType &eventType, deviceClass.eventTypes()) {
         if (eventType.id() == eventDescriptor.eventTypeId()) {
             eventTypeFound = true;
         }

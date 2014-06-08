@@ -1,4 +1,4 @@
-0.1.5
+0.1.6
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -252,6 +252,12 @@
                 "deviceId": "uuid",
                 "stateTypeId": "uuid",
                 "variant": "value"
+            }
+        },
+        "Events.EventTriggered": {
+            "description": "Emitted whenever an Event is triggered.",
+            "params": {
+                "event": "$ref:Event"
             }
         }
     },

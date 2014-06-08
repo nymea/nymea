@@ -82,7 +82,7 @@ JsonReply *ActionHandler::GetActionType(const QVariantMap &params) const
 {
     ActionTypeId actionTypeId(params.value("actionTypeId").toString());
     foreach (const DeviceClass &deviceClass, GuhCore::instance()->deviceManager()->supportedDevices()) {
-        foreach (const ActionType &actionType, deviceClass.actions()) {
+        foreach (const ActionType &actionType, deviceClass.actionTypes()) {
             if (actionType.id() == actionTypeId) {
                 QVariantMap data;
                 data.insert("success", true);

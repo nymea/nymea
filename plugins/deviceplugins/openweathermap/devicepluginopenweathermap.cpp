@@ -326,7 +326,7 @@ QList<DeviceClass> DevicePluginOpenweathermap::supportedDevices() const
     params.append(locationParam);
 
     //Location is all we need for discovery.
-    deviceClassOpenweathermap.setDiscoveryParams(params);
+    deviceClassOpenweathermap.setDiscoveryParamTypes(params);
 
     ParamType countryParam("country", QVariant::String);
     params.append(countryParam);
@@ -334,7 +334,7 @@ QList<DeviceClass> DevicePluginOpenweathermap::supportedDevices() const
     ParamType idParam("id", QVariant::String);
     params.append(idParam);
 
-    deviceClassOpenweathermap.setParams(params);
+    deviceClassOpenweathermap.setParamTypes(params);
 
     // Actions
     QList<ActionType> weatherActions;
@@ -417,7 +417,7 @@ QList<DeviceClass> DevicePluginOpenweathermap::supportedDevices() const
     weatherStates.append(sunriseState);
 
     deviceClassOpenweathermap.setActions(weatherActions);
-    deviceClassOpenweathermap.setStates(weatherStates);
+    deviceClassOpenweathermap.setStateTypes(weatherStates);
 
     ret.append(deviceClassOpenweathermap);
     return ret;

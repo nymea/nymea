@@ -16,33 +16,33 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef TRIGGERTYPE_H
-#define TRIGGERTYPE_H
+#include "eventhandler.h"
+#include "guhcore.h"
 
-#include "typeutils.h"
-#include "paramtype.h"
-
-#include <QVariantMap>
-
-class EventType
+EventHandler::EventHandler(QObject *parent) :
+    JsonHandler(parent)
 {
-public:
-    EventType(const EventTypeId &id);
+    QVariantMap params;
+    QVariantMap returns;
 
-    EventTypeId id() const;
+    // Notifications
+    params.clear(); returns.clear();
+    setDescription("EventTriggered", "Emitted whenever an Event is triggered.");
+    params.insert("event", JsonTypes::eventRef());
+    setParams("EventTriggered", params);
 
-    QString name() const;
-    void setName(const QString &name);
+    connect(GuhCore::instance(), &GuhCore::eventTriggered, this, &EventHandler::eventTriggered);
+}
 
-    QList<ParamType> parameters() const;
-    void setParameters(const QList<ParamType> &parameters);
+QString EventHandler::name() const
+{
+    return "Events";
+}
 
-private:
-    EventTypeId m_id;
-    QString m_name;
+void EventHandler::eventTriggered(const Event &event)
+{
+    QVariantMap params;
+    params.insert("event", JsonTypes::packEvent(event));
+    emit EventTriggered(params);
+}
 
-    QList<ParamType> m_parameters;
-
-};
-
-#endif // TRIGGERTYPE_H

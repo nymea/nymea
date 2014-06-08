@@ -42,6 +42,9 @@ public:
     DeviceManager* deviceManager() const;
     RuleEngine *ruleEngine() const;
 
+signals:
+    void eventTriggered(const Event &event);
+
 private:
     explicit GuhCore(QObject *parent = 0);
     static GuhCore *s_instance;

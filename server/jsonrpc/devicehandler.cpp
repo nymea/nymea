@@ -391,7 +391,7 @@ JsonReply* DeviceHandler::GetEventTypes(const QVariantMap &params) const
 
     QVariantList eventList;
     DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(DeviceClassId(params.value("deviceClassId").toString()));
-    foreach (const EventType &eventType, deviceClass.events()) {
+    foreach (const EventType &eventType, deviceClass.eventTypes()) {
         eventList.append(JsonTypes::packEventType(eventType));
     }
     returns.insert("eventTypes", eventList);
@@ -404,7 +404,7 @@ JsonReply* DeviceHandler::GetActionTypes(const QVariantMap &params) const
 
     QVariantList actionList;
     DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(DeviceClassId(params.value("deviceClassId").toString()));
-    foreach (const ActionType &actionType, deviceClass.actions()) {
+    foreach (const ActionType &actionType, deviceClass.actionTypes()) {
         actionList.append(JsonTypes::packActionType(actionType));
     }
     returns.insert("actionTypes", actionList);
@@ -417,7 +417,7 @@ JsonReply* DeviceHandler::GetStateTypes(const QVariantMap &params) const
 
     QVariantList stateList;
     DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(DeviceClassId(params.value("deviceClassId").toString()));
-    foreach (const StateType &stateType, deviceClass.states()) {
+    foreach (const StateType &stateType, deviceClass.stateTypes()) {
         stateList.append(JsonTypes::packStateType(stateType));
     }
     returns.insert("stateTypes", stateList);

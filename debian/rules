@@ -31,6 +31,7 @@ override_dh_auto_test:
 	make test
 
 override_dh_install:
+	# remove the folder usr/tests first because we install into package directorys
+	rm -rf $(CURDIR)/debian/tmp/usr/tests
 	dh_install --fail-missing
-	rm -rf $(CURDIR)/debian/guh/usr/tests
 

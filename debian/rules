@@ -5,6 +5,9 @@
 export DH_VERBOSE=1
 export QT_QPA_PLATFORM=minimal
 
+%:
+	dh $@ --parallel
+
 override_dh_auto_configure:
 	qmake .
 
@@ -20,7 +23,4 @@ override_dh_auto_test:
 
 override_dh_install:
 	dh_install --fail-missing
-
-%:
-	dh $@ --parallel
 

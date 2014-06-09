@@ -7,7 +7,7 @@ Build-Depends: debhelper (>= 9.0.0),
   hardening-wrapper,
   qt5-default,
   qtbase5-dev
-Standards-Version: 3.9.3
+Standards-Version: 3.9.5
 
 Package: guh
 Architecture: any

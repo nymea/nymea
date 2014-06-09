@@ -2,9 +2,11 @@ Source: guh
 Section: utils
 Priority: optional
 Maintainer: Michael Zanetti <michael_zanetti@gmx.net>
-Build-Depends: debhelper (>= 8.0.0),
-               qt5-default,
-               qtbase5-dev,
+Build-Depends: debhelper (>= 9.0.0),
+  dpkg-dev (>= 1.16.1~),
+  hardening-wrapper,
+  qt5-default,
+  qtbase5-dev
 Standards-Version: 3.9.3
 
 Package: guh

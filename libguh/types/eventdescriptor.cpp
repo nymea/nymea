@@ -32,11 +32,17 @@
 
 /*! Constructs an EventDescriptor describing an Event.
  */
-EventDescriptor::EventDescriptor(const EventTypeId &eventTypeId, const DeviceId &deviceId, const QList<ParamDescriptor> &paramDescriptors):
+EventDescriptor::EventDescriptor(const EventDescriptorId &id, const EventTypeId &eventTypeId, const DeviceId &deviceId, const QList<ParamDescriptor> &paramDescriptors):
+    m_id(id),
     m_eventTypeId(eventTypeId),
     m_deviceId(deviceId),
     m_paramDescriptors(paramDescriptors)
 {
+}
+
+EventDescriptorId EventDescriptor::id() const
+{
+    return m_id;
 }
 
 /*! Returns the id of the \l{EventType} which describes this Event.*/
@@ -98,33 +104,33 @@ bool EventDescriptor::operator ==(const Event &event) const
     }
 
     foreach (const ParamDescriptor &paramDescriptor, m_paramDescriptors) {
-        switch (paramDescriptor.operand()) {
-        case ParamDescriptor::OperandTypeEquals:
+        switch (paramDescriptor.operatorType()) {
+        case ValueOperatorEquals:
             if (event.param(paramDescriptor.name()).value() != paramDescriptor.value()) {
                 return false;
             }
             break;
-        case ParamDescriptor::OperandTypeNotEquals:
+        case ValueOperatorNotEquals:
             if (event.param(paramDescriptor.name()).value() == paramDescriptor.value()) {
                 return false;
             }
             break;
-        case ParamDescriptor::OperandTypeGreater:
+        case ValueOperatorGreater:
             if (event.param(paramDescriptor.name()).value() <= paramDescriptor.value()) {
                 return false;
             }
             break;
-        case ParamDescriptor::OperandTypeGreaterOrEqual:
+        case ValueOperatorGreaterOrEqual:
             if (event.param(paramDescriptor.name()).value() < paramDescriptor.value()) {
                 return false;
             }
             break;
-        case ParamDescriptor::OperandTypeLess:
+        case ValueOperatorLess:
             if (event.param(paramDescriptor.name()).value() >= paramDescriptor.value()) {
                 return false;
             }
             break;
-        case ParamDescriptor::OperandTypeLessOrEqual:
+        case ValueOperatorLessOrEqual:
             if (event.param(paramDescriptor.name()).value() < paramDescriptor.value()) {
                 return false;
             }

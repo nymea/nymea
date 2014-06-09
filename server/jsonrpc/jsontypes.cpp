@@ -28,16 +28,18 @@ bool JsonTypes::s_initialized = false;
 QString JsonTypes::s_lastError;
 
 QVariantList JsonTypes::s_basicTypes;
-QVariantList JsonTypes::s_ruleTypes;
+QVariantList JsonTypes::s_stateOperatorTypes;
+QVariantList JsonTypes::s_valueOperatorTypes;
 QVariantList JsonTypes::s_createMethodTypes;
 QVariantList JsonTypes::s_setupMethodTypes;
-QVariantList JsonTypes::s_operandTypes;
 
 QVariantMap JsonTypes::s_paramType;
 QVariantMap JsonTypes::s_param;
 QVariantMap JsonTypes::s_paramDescriptor;
 QVariantMap JsonTypes::s_stateType;
 QVariantMap JsonTypes::s_state;
+QVariantMap JsonTypes::s_stateDescriptor;
+QVariantMap JsonTypes::s_stateEvaluator;
 QVariantMap JsonTypes::s_eventType;
 QVariantMap JsonTypes::s_event;
 QVariantMap JsonTypes::s_eventDescriptor;
@@ -54,10 +56,10 @@ void JsonTypes::init()
 {
     // BasicTypes
     s_basicTypes << "uuid" << "string" << "integer" << "double" << "bool";
-    s_ruleTypes << "RuleTypeMatchAll" << "RuleTypeMatchAny";
+    s_stateOperatorTypes << "StateOperatorAnd" << "StateOperatorOr";
+    s_valueOperatorTypes << "OperatorTypeEquals" << "OperatorTypeNotEquals" << "OperatorTypeLess" << "OperatorTypeGreater" << "OperatorTypeLessThan" << "OperatorTypeGreaterThan";
     s_createMethodTypes << "CreateMethodUser" << "CreateMethodAuto" << "CreateMethodDiscovery";
     s_setupMethodTypes << "SetupMethodJustAdd" << "SetupMethodDisplayPin" << "SetupMethodEnterPin" << "SetupMethodPushButton";
-    s_operandTypes << "OperandTypeEquals" << "OperandTypeNotEquals" << "OperandTypeLess" << "OperandTypeGreater" << "OperandTypeLessThan" << "OperandTypeGreaterThan";
 
     // ParamType
     s_paramType.insert("name", "string");
@@ -73,7 +75,7 @@ void JsonTypes::init()
     // ParamDescriptor
     s_paramDescriptor.insert("name", "string");
     s_paramDescriptor.insert("value", basicTypesRef());
-    s_paramDescriptor.insert("operand", operandTypesRef());
+    s_paramDescriptor.insert("operator", valueOperatorTypesRef());
 
     // StateType
     s_stateType.insert("id", "uuid");
@@ -85,6 +87,19 @@ void JsonTypes::init()
     s_state.insert("stateTypeId", "uuid");
     s_state.insert("deviceId", "uuid");
     s_state.insert("value", "variant");
+
+    // StateDescriptor
+    s_stateDescriptor.insert("id", "uuid");
+    s_stateDescriptor.insert("stateTypeId", "uuid");
+    s_stateDescriptor.insert("deviceId", "uuid");
+    s_stateDescriptor.insert("value", "variant");
+    s_stateDescriptor.insert("operator", valueOperatorTypesRef());
+
+    // StateEvaluator
+    s_stateEvaluator.insert("id", "uuid");
+    s_stateEvaluator.insert("o:stateDescriptor", stateDescriptorRef());
+    s_stateEvaluator.insert("o:childEvaluators", QVariantList() << stateEvaluatorRef());
+    s_stateEvaluator.insert("o:operator", stateOperatorTypesRef());
 
     // EventType
     s_eventType.insert("id", "uuid");
@@ -146,10 +161,9 @@ void JsonTypes::init()
 
     // Rule
     s_rule.insert("id", "uuid");
-    s_rule.insert("ruleType", ruleTypesRef());
     s_rule.insert("eventDescriptors", QVariantList() << eventDescriptorRef());
     s_rule.insert("actions", QVariantList() << actionRef());
-    s_rule.insert("states", QVariantList() << stateRef());
+    s_rule.insert("stateEvaluator", stateEvaluatorRef());
 
     s_initialized = true;
 }
@@ -166,8 +180,11 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("ParamType", paramTypeDescription());
     allTypes.insert("CreateMethodType", createMethodTypes());
     allTypes.insert("SetupMethodType", setupMethodTypes());
-    allTypes.insert("OperandType", operandTypes());
+    allTypes.insert("ValueOperatorType", valueOperatorTypes());
+    allTypes.insert("StateOperatorType", stateOperatorTypes());
     allTypes.insert("StateType", stateTypeDescription());
+    allTypes.insert("StateDescriptor", stateDescriptorDescription());
+    allTypes.insert("StateEvaluator", stateEvaluatorDescription());
     allTypes.insert("Event", eventDescription());
     allTypes.insert("EventType", eventTypeDescription());
     allTypes.insert("EventDescriptor", eventDescriptorDescription());
@@ -181,7 +198,6 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("Device", deviceDescription());
     allTypes.insert("DeviceDescriptor", deviceDescriptorDescription());
     allTypes.insert("Action", actionDescription());
-    allTypes.insert("RuleType", ruleTypes());
     allTypes.insert("Rule", ruleDescription());
     return allTypes;
 }
@@ -221,7 +237,7 @@ QVariantMap JsonTypes::packEventDescriptor(const EventDescriptor &eventDescripto
     foreach (const ParamDescriptor &paramDescriptor, eventDescriptor.paramDescriptors()) {
         params.append(packParamDescriptor(paramDescriptor));
     }
-    variant.insert("params", params);
+    variant.insert("paramDescriptors", params);
     return variant;
 }
 
@@ -261,6 +277,31 @@ QVariantMap JsonTypes::packStateType(const StateType &stateType)
     return variantMap;
 }
 
+QVariantMap JsonTypes::packStateDescriptor(const StateDescriptor &stateDescriptor)
+{
+    QVariantMap variantMap;
+    variantMap.insert("id", stateDescriptor.id().toString());
+    variantMap.insert("stateTypeId", stateDescriptor.stateTypeId().toString());
+    variantMap.insert("deviceId", stateDescriptor.deviceId().toString());
+    variantMap.insert("value", stateDescriptor.stateValue());
+    variantMap.insert("operator", valueOperatorTypes().at(stateDescriptor.operatorType()));
+    return variantMap;
+}
+
+QVariantMap JsonTypes::packStateEvaluator(const StateEvaluator &stateEvaluator)
+{
+    QVariantMap variantMap;
+    variantMap.insert("id", stateEvaluator.id());
+    variantMap.insert("stateDescriptor", packStateDescriptor(stateEvaluator.stateDescriptor()));
+    QVariantList childEvaluators;
+    foreach (const StateEvaluator &childEvaluator, stateEvaluator.childEvaluators()) {
+        childEvaluators.append(packStateEvaluator(childEvaluator));
+    }
+    variantMap.insert("childEvaluators", childEvaluators);
+
+    return variantMap;
+}
+
 QVariantMap JsonTypes::packParam(const Param &param)
 {
     QVariantMap variantMap;
@@ -273,7 +314,7 @@ QVariantMap JsonTypes::packParamDescriptor(const ParamDescriptor &paramDescripto
     QVariantMap variantMap;
     variantMap.insert("name", paramDescriptor.name());
     variantMap.insert("value", paramDescriptor.value());
-    variantMap.insert("operand", s_operandTypes.at(paramDescriptor.operand()));
+    variantMap.insert("operator", s_valueOperatorTypes.at(paramDescriptor.operatorType()));
     return variantMap;
 }
 
@@ -380,16 +421,12 @@ QVariantMap JsonTypes::packRule(const Rule &rule)
     }
     ruleMap.insert("eventDescriptors", eventDescriptorList);
 
-    ruleMap.insert("ruleType", s_ruleTypes.at(rule.ruleType()));
-
     QVariantList actionList;
     foreach (const Action &action, rule.actions()) {
         actionList.append(JsonTypes::packAction(action));
     }
     ruleMap.insert("actions", actionList);
-
-    QVariantList states;
-    ruleMap.insert("states", states);
+    ruleMap.insert("stateEvaluator", JsonTypes::packStateEvaluator(rule.stateEvaluator()));
     return ruleMap;
 }
 
@@ -412,19 +449,19 @@ QList<Param> JsonTypes::unpackParams(const QVariantList &paramList)
 ParamDescriptor JsonTypes::unpackParamDescriptor(const QVariantMap &paramMap)
 {
     ParamDescriptor param(paramMap.value("name").toString(), paramMap.value("value"));
-    QString operandString = paramMap.value("operand").toString();
-    if (operandString == "OperandTypeEquals") {
-        param.setOperand(ParamDescriptor::OperandTypeEquals);
-    } else if (operandString == "OperandTypeNotEquals") {
-        param.setOperand(ParamDescriptor::OperandTypeNotEquals);
-    } else if (operandString == "OperandTypeLess") {
-        param.setOperand(ParamDescriptor::OperandTypeLess);
-    } else if (operandString == "OperandTypeGreater") {
-        param.setOperand(ParamDescriptor::OperandTypeGreater);
-    } else if (operandString == "OperandTypeLessOrEqual") {
-        param.setOperand(ParamDescriptor::OperandTypeLessOrEqual);
-    } else if (operandString == "OperandTypeGreaterOrEqual") {
-        param.setOperand(ParamDescriptor::OperandTypeGreaterOrEqual);
+    QString operatorString = paramMap.value("operator").toString();
+    if (operatorString == "ValueOperatorEquals") {
+        param.setOperatorType(ValueOperatorEquals);
+    } else if (operatorString == "ValueOperatorNotEquals") {
+        param.setOperatorType(ValueOperatorNotEquals);
+    } else if (operatorString == "ValueOperatorLess") {
+        param.setOperatorType(ValueOperatorLess);
+    } else if (operatorString == "ValueOperatorGreater") {
+        param.setOperatorType(ValueOperatorGreater);
+    } else if (operatorString == "ValueOperatorLessOrEqual") {
+        param.setOperatorType(ValueOperatorLessOrEqual);
+    } else if (operatorString == "ValueOperatorGreaterOrEqual") {
+        param.setOperatorType(ValueOperatorGreaterOrEqual);
     }
     return param;
 }
@@ -589,6 +626,18 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                     qDebug() << "state type not matching";
                     return result;
                 }
+            } else if (refName == stateEvaluatorRef()) {
+                QPair<bool, QString> result = validateMap(stateEvaluatorDescription(), variant.toMap());
+                if (!result.first) {
+                    qDebug() << "stateEvaluator type not matching";
+                    return result;
+                }
+            } else if (refName == stateDescriptorRef()) {
+                QPair<bool, QString> result = validateMap(stateDescriptorDescription(), variant.toMap());
+                if (!result.first) {
+                    qDebug() << "stateDescriptor type not matching";
+                    return result;
+                }
             } else if (refName == pluginRef()) {
                 QPair<bool, QString> result = validateMap(pluginDescription(), variant.toMap());
                 if (!result.first) {
@@ -601,16 +650,22 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                     qDebug() << "rule type not matching";
                     return result;
                 }
+            } else if (refName == eventDescriptorRef()) {
+                QPair<bool, QString> result = validateMap(eventDescriptorDescription(), variant.toMap());
+                if (!result.first) {
+                    qDebug() << "evendescriptor not matching";
+                    return result;
+                }
             } else if (refName == basicTypesRef()) {
                 QPair<bool, QString> result = validateBasicType(variant);
                 if (!result.first) {
                     qDebug() << "value not allowed in" << basicTypesRef();
                     return result;
                 }
-            } else if (refName == ruleTypesRef()) {
-                QPair<bool, QString> result = validateRuleType(variant);
+            } else if (refName == stateOperatorTypesRef()) {
+                QPair<bool, QString> result = validateStateOperatorType(variant);
                 if (!result.first) {
-                    qDebug() << "value not allowed in" << ruleTypesRef();
+                    qDebug() << "value not allowed in" << stateOperatorTypesRef();
                     return result;
                 }
             } else if (refName == createMethodTypesRef()) {
@@ -625,10 +680,10 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                     qDebug() << "value not allowed in" << createMethodTypesRef();
                     return result;
                 }
-            } else if (refName == operandTypesRef()) {
-                QPair<bool, QString> result = validateOperandType(variant);
+            } else if (refName == valueOperatorTypesRef()) {
+                QPair<bool, QString> result = validateValueOperatorType(variant);
                 if (!result.first) {
-                    qDebug() << QString("value %1 not allowed in %2").arg(variant.toString()).arg(operandTypesRef());
+                    qDebug() << QString("value %1 not allowed in %2").arg(variant.toString()).arg(valueOperatorTypesRef());
                     return result;
                 }
             } else {
@@ -685,9 +740,9 @@ QPair<bool, QString> JsonTypes::validateBasicType(const QVariant &variant)
     return report(false, QString("Error validating basic type %1.").arg(variant.toString()));
 }
 
-QPair<bool, QString> JsonTypes::validateRuleType(const QVariant &variant)
+QPair<bool, QString> JsonTypes::validateStateOperatorType(const QVariant &variant)
 {
-    return report(s_ruleTypes.contains(variant.toString()), QString("Unknown rules type %1").arg(variant.toString()));
+    return report(s_stateOperatorTypes.contains(variant.toString()), QString("Unknown state operator %1").arg(variant.toString()));
 }
 
 QPair<bool, QString> JsonTypes::validateCreateMethodType(const QVariant &variant)
@@ -700,7 +755,7 @@ QPair<bool, QString> JsonTypes::validateSetupMethodType(const QVariant &variant)
     return report(s_setupMethodTypes.contains(variant.toString()), QString("Unknwon setupMethod type %1").arg(variant.toString()));
 }
 
-QPair<bool, QString> JsonTypes::validateOperandType(const QVariant &variant)
+QPair<bool, QString> JsonTypes::validateValueOperatorType(const QVariant &variant)
 {
-    return report(s_operandTypes.contains(variant.toString()), QString("Unknown operand type %1").arg(variant.toString()));
+    return report(s_valueOperatorTypes.contains(variant.toString()), QString("Unknown value operator type %1").arg(variant.toString()));
 }

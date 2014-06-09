@@ -146,7 +146,6 @@ bool Device::hasState(const StateTypeId &stateTypeId) const
 /*! For convenience, this finds the \l{State} matching the given \a stateTypeId and returns the current valie in this Device. */
 QVariant Device::stateValue(const StateTypeId &stateTypeId) const
 {
-    qDebug() << "device has states:" << m_states.count();
     foreach (const State &state, m_states) {
         qDebug() << "checking" << stateTypeId << state.stateTypeId();
         if (state.stateTypeId() == stateTypeId) {
@@ -169,6 +168,16 @@ void Device::setStateValue(const StateTypeId &stateTypeId, const QVariant &value
         }
     }
     qWarning() << "failed setting state for" << m_name;
+}
+
+State Device::state(const StateTypeId &stateTypeId) const
+{
+    for (int i = 0; i < m_states.count(); ++i) {
+        if (m_states.at(i).stateTypeId() == stateTypeId) {
+            return m_states.at(i);
+        }
+    }
+    return State(StateTypeId(), DeviceId());
 }
 
 bool Device::setupComplete() const

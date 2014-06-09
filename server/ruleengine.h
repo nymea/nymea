@@ -21,6 +21,7 @@
 
 #include "rule.h"
 #include "types/event.h"
+#include "stateevaluator.h"
 
 #include <QObject>
 #include <QList>
@@ -32,24 +33,28 @@ class RuleEngine : public QObject
 public:
     enum RuleError {
         RuleErrorNoError,
+        RuleErrorInvalidRuleId,
         RuleErrorRuleNotFound,
         RuleErrorDeviceNotFound,
-        RuleErrorEventTypeNotFound
+        RuleErrorEventTypeNotFound,
+        RuleErrorActionTypeNotFound
     };
 
     explicit RuleEngine(QObject *parent = 0);
 
     QList<Action> evaluateEvent(const Event &event);
 
-    RuleError addRule(const EventDescriptor &eventDescriptor, const QList<Action> &actions);
-    RuleError addRule(const EventDescriptor &eventDescriptor, const QList<State> &states, const QList<Action> &actions);
+    RuleError addRule(const RuleId &ruleId, const EventDescriptor &eventDescriptor, const QList<Action> &actions);
+    RuleError addRule(const RuleId &ruleId, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actions);
     QList<Rule> rules() const;
 
-    RuleError removeRule(const QUuid &ruleId);
+    RuleError removeRule(const RuleId &ruleId);
+
+    Rule findRule(const RuleId &ruleId);
 
 signals:
-    void ruleAdded(const QUuid &ruleId);
-    void ruleRemoved(const QUuid &ruleId);
+    void ruleAdded(const RuleId &ruleId);
+    void ruleRemoved(const RuleId &ruleId);
 
 private:
     bool containsEvent(const Rule &rule, const Event &event);

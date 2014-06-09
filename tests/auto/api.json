@@ -1,4 +1,4 @@
-0.1.6
+0.1.7
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -223,6 +223,7 @@
             },
             "returns": {
                 "errorMessage": "string",
+                "o:ruleId": "uuid",
                 "success": "bool"
             }
         },
@@ -242,6 +243,8 @@
                 "ruleId": "uuid"
             },
             "returns": {
+                "errorMessage": "string",
+                "success": "bool"
             }
         }
     },
@@ -345,21 +348,13 @@
                 "$ref:ParamType"
             ]
         },
-        "OperandType": [
-            "OperandTypeEquals",
-            "OperandTypeNotEquals",
-            "OperandTypeLess",
-            "OperandTypeGreater",
-            "OperandTypeLessThan",
-            "OperandTypeGreaterThan"
-        ],
         "Param": {
             "name": "string",
             "value": "$ref:BasicType"
         },
         "ParamDescriptor": {
             "name": "string",
-            "operand": "$ref:OperandType",
+            "operator": "$ref:ValueOperatorType",
             "value": "$ref:BasicType"
         },
         "ParamType": {
@@ -384,15 +379,8 @@
                 "$ref:EventDescriptor"
             ],
             "id": "uuid",
-            "ruleType": "$ref:RuleType",
-            "states": [
-                "$ref:State"
-            ]
+            "stateEvaluator": "$ref:StateEvaluator"
         },
-        "RuleType": [
-            "RuleTypeMatchAll",
-            "RuleTypeMatchAny"
-        ],
         "SetupMethodType": [
             "SetupMethodJustAdd",
             "SetupMethodDisplayPin",
@@ -404,12 +392,39 @@
             "stateTypeId": "uuid",
             "value": "variant"
         },
+        "StateDescriptor": {
+            "deviceId": "uuid",
+            "id": "uuid",
+            "operator": "$ref:ValueOperatorType",
+            "stateTypeId": "uuid",
+            "value": "variant"
+        },
+        "StateEvaluator": {
+            "id": "uuid",
+            "o:childEvaluators": [
+                "$ref:StateEvaluator"
+            ],
+            "o:operator": "$ref:StateOperatorType",
+            "o:stateDescriptor": "$ref:StateDescriptor"
+        },
+        "StateOperatorType": [
+            "StateOperatorAnd",
+            "StateOperatorOr"
+        ],
         "StateType": {
             "defaultValue": "variant",
             "id": "uuid",
             "name": "string",
             "type": "$ref:BasicType"
         },
+        "ValueOperatorType": [
+            "OperatorTypeEquals",
+            "OperatorTypeNotEquals",
+            "OperatorTypeLess",
+            "OperatorTypeGreater",
+            "OperatorTypeLessThan",
+            "OperatorTypeGreaterThan"
+        ],
         "Vendor": {
             "id": "uuid",
             "name": "string"

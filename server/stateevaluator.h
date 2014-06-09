@@ -20,31 +20,44 @@
 #define STATEEVALUATOR_H
 
 #include "types/state.h"
+#include "types/statedescriptor.h"
 
-//class EvaluatorEntry
-//{
-//public:
-//    EvaluatorEntry();
-
-//    QUuid stateTypeId;
-//    QUuid deviceId;
-////    Rule::Operator operation;
-//    QVariant value;
-//};
-
-//class EvaluatorChain
-//{
-
-//};
+#include <QSettings>
 
 class StateEvaluator
 {
 public:
+    enum OperatorType {
+        OperatorTypeAnd,
+        OperatorTypeOr
+    };
 
     StateEvaluator();
+    StateEvaluator(const StateEvaluatorId &id, const StateDescriptor &statedescriptor);
+    StateEvaluator(const StateEvaluatorId &id, QList<StateEvaluator> childEvaluators = QList<StateEvaluator>(), StateOperator stateOperator = StateOperatorAnd);
+
+    StateEvaluatorId id() const;
+
+    StateDescriptor stateDescriptor() const;
+
+    QList<StateEvaluator> childEvaluators() const;
+    void setChildEvaluators(const QList<StateEvaluator> &childEvaluators);
+    void appendEvaluator(const StateEvaluator &stateEvaluator);
+
+    StateOperator operatorType() const;
+    void setOperatorType(StateOperator operatorType);
+
+    bool evaluate() const;
+
+    void dumpToSettings(QSettings &settings, const QString &groupName) const;
+    static StateEvaluator loadFromSettings(QSettings &settings, const QString &groupPrefix);
 
 private:
-//    EvaluatorEntry m_entry;
+    StateEvaluatorId m_id;
+    StateDescriptor m_stateDescriptor;
+
+    QList<StateEvaluator> m_childEvaluators;
+    StateOperator m_operatorType;
 
 };
 

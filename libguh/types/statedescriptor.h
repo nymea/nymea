@@ -16,55 +16,43 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef TYPEUTILS_H
-#define TYPEUTILS_H
+#ifndef STATEDESCRIPTOR_H
+#define STATEDESCRIPTOR_H
 
-#include <QMetaType>
-#include <QUuid>
+#include "typeutils.h"
+#include "paramdescriptor.h"
+#include "state.h"
 
-#define DECLARE_TYPE_ID(type) class type##Id: public QUuid \
-{ \
-public: \
-    type##Id(const QString &uuid): QUuid(uuid) {} \
-    type##Id(): QUuid() {} \
-    static type##Id create##type##Id() { return type##Id(QUuid::createUuid().toString()); } \
-    static type##Id fromUuid(const QUuid &uuid) { return type##Id(uuid.toString()); } \
-    bool operator==(const type##Id &other) const { \
-        return toString() == other.toString(); \
-    } \
-}; \
-Q_DECLARE_METATYPE(type##Id);
+#include <QString>
+#include <QVariantList>
+#include <QDebug>
 
+class StateDescriptor
+{
+public:
+    StateDescriptor();
+    StateDescriptor(const StateDescriptorId &id, const StateTypeId &stateTypeId, const DeviceId &deviceId, const QVariant &stateValue, ValueOperator operatorType = ValueOperatorEquals);
 
-DECLARE_TYPE_ID(Vendor)
-DECLARE_TYPE_ID(DeviceClass)
-DECLARE_TYPE_ID(Device)
-DECLARE_TYPE_ID(DeviceDescriptor)
+    StateDescriptorId id() const;
 
-DECLARE_TYPE_ID(EventType)
-DECLARE_TYPE_ID(Event)
-DECLARE_TYPE_ID(EventDescriptor)
-DECLARE_TYPE_ID(StateType)
-DECLARE_TYPE_ID(State)
-DECLARE_TYPE_ID(StateDescriptor)
-DECLARE_TYPE_ID(StateEvaluator)
-DECLARE_TYPE_ID(ActionType)
-DECLARE_TYPE_ID(Action)
-DECLARE_TYPE_ID(Plugin)
-DECLARE_TYPE_ID(Rule)
+    StateTypeId stateTypeId() const;
+    DeviceId deviceId() const;
+    QVariant stateValue() const;
+    ValueOperator operatorType() const;
 
-enum ValueOperator {
-    ValueOperatorEquals,
-    ValueOperatorNotEquals,
-    ValueOperatorLess,
-    ValueOperatorGreater,
-    ValueOperatorLessOrEqual,
-    ValueOperatorGreaterOrEqual
+    bool operator ==(const StateDescriptor &other) const;
+
+    bool operator ==(const State &state) const;
+    bool operator !=(const State &state) const;
+
+private:
+    StateDescriptorId m_id;
+    StateTypeId m_stateTypeId;
+    DeviceId m_deviceId;
+    QVariant m_stateValue;
+    ValueOperator m_operatorType;
 };
+QDebug operator<<(QDebug dbg, const StateDescriptor &eventDescriptor);
+QDebug operator<<(QDebug dbg, const QList<StateDescriptor> &eventDescriptors);
 
-enum StateOperator {
-    StateOperatorAnd,
-    StateOperatorOr
-};
-
-#endif // TYPEUTILS_H
+#endif // STATEDESCRIPTOR_H

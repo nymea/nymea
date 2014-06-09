@@ -79,32 +79,36 @@ RuleEngine::RuleEngine(QObject *parent) :
 
         settings.beginGroup(idString);
 
-        settings.beginGroup("event");
-        EventTypeId eventTypeId(settings.value("eventTypeId").toString());
-        DeviceId deviceId(settings.value("deviceId").toString());
-        QList<ParamDescriptor> params;
-        foreach (QString groupName, settings.childGroups()) {
-            if (groupName.startsWith("ParamDescriptor-")) {
-                settings.beginGroup(groupName);
-                ParamDescriptor paramDescriptor(groupName.remove(QRegExp("^ParamDescriptor-")), settings.value("value"));
-                paramDescriptor.setOperand((ParamDescriptor::OperandType)settings.value("operand").toInt());
-                params.append(paramDescriptor);
+        QList<EventDescriptor> eventDescriptorList;
+        settings.beginGroup("events");
+
+        foreach (QString eventGroupName, settings.childGroups()) {
+            if (eventGroupName.startsWith("EventDescriptor-")) {
+                settings.beginGroup(eventGroupName);
+                EventDescriptorId eventDescriptorId(eventGroupName.remove(QRegExp("^EventDescriptor-")));
+                EventTypeId eventTypeId(settings.value("eventTypeId").toString());
+                DeviceId deviceId(settings.value("deviceId").toString());
+
+                QList<ParamDescriptor> params;
+                foreach (QString groupName, settings.childGroups()) {
+                    if (groupName.startsWith("ParamDescriptor-")) {
+                        settings.beginGroup(groupName);
+                        ParamDescriptor paramDescriptor(groupName.remove(QRegExp("^ParamDescriptor-")), settings.value("value"));
+                        paramDescriptor.setOperatorType((ValueOperator)settings.value("operator").toInt());
+                        params.append(paramDescriptor);
+                        settings.endGroup();
+                    }
+                }
+
+                EventDescriptor eventDescriptor(eventDescriptorId, eventTypeId, deviceId, params);
+                eventDescriptorList.append(eventDescriptor);
                 settings.endGroup();
             }
         }
-        EventDescriptor eventDescriptor(eventTypeId, deviceId, params);
+
         settings.endGroup();
 
-        settings.beginGroup("states");
-        QList<State> states;
-        foreach (const QString &stateTypeIdString, settings.childGroups()) {
-            settings.beginGroup(stateTypeIdString);
-            State state(StateTypeId(stateTypeIdString), DeviceId(settings.value("deviceId").toString()));
-            state.setValue(settings.value("value"));
-            settings.endGroup();
-            states.append(state);
-        }
-        settings.endGroup();
+        StateEvaluator stateEvaluator = StateEvaluator::loadFromSettings(settings, "stateEvaluator");
 
         settings.beginGroup("actions");
         QList<Action> actions;
@@ -129,8 +133,8 @@ RuleEngine::RuleEngine(QObject *parent) :
 
         settings.endGroup();
 
-        Rule rule = Rule(QUuid(idString), eventDescriptor, states, actions);
-        m_rules.append(rule);
+//        Rule rule = Rule(RuleId(idString), eventDescriptorList, states, actions);
+//        m_rules.append(rule);
     }
 
 }
@@ -146,23 +150,8 @@ QList<Action> RuleEngine::evaluateEvent(const Event &event)
     for (int i = 0; i < m_rules.count(); ++i) {
         qDebug() << "evaluating rule" << i << m_rules.at(i).eventDescriptors();
         if (containsEvent(m_rules.at(i), event)) {
-            bool statesMatching = true;
-            qDebug() << "checking states:" << m_rules.at(i).states();
-            foreach (const State &state, m_rules.at(i).states()) {
-                Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(state.deviceId());
-                if (!device) {
-                    qWarning() << "Device referenced in rule cannot be found";
-                    break;
-                }
-                if (state.value() != device->stateValue(state.stateTypeId())) {
-                    qDebug() << "State value not matching:" << state.value() << device->stateValue(state.stateTypeId());
-                    statesMatching = false;
-                    break;
-                }
-            }
-
-            qDebug() << "states matching" << statesMatching;
-            if (statesMatching) {
+            if (m_rules.at(i).stateEvaluator().evaluate()) {
+                qDebug() << "states matching!";
                 actions.append(m_rules.at(i).actions());
             }
         }
@@ -173,60 +162,86 @@ QList<Action> RuleEngine::evaluateEvent(const Event &event)
 
 /*! Add a new \l{Rule} with the given \a event and \a actions to the engine.
     For convenience, this creates a Rule without any \l{State} comparison. */
-RuleEngine::RuleError RuleEngine::addRule(const EventDescriptor &eventDescriptor, const QList<Action> &actions)
+RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const EventDescriptor &eventDescriptor, const QList<Action> &actions)
 {
-    return addRule(eventDescriptor, QList<State>(), actions);
+    QList<EventDescriptor> eventDescriptorList;
+    eventDescriptorList.append(eventDescriptor);
+    return addRule(ruleId, eventDescriptorList, StateEvaluator(StateEvaluatorId::createStateEvaluatorId()), actions);
 }
 
 /*! Add a new \l{Rule} with the given \a event, \a states and \a actions to the engine. */
-RuleEngine::RuleError RuleEngine::addRule(const EventDescriptor &eventDescriptor, const QList<State> &states, const QList<Action> &actions)
+RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actions)
 {
-    Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(eventDescriptor.deviceId());
-    if (!device) {
-        qWarning() << "Cannot create rule. No configured device for eventTypeId" << eventDescriptor.eventTypeId();
-        return RuleErrorDeviceNotFound;
+    if (ruleId.isNull()) {
+        return RuleErrorInvalidRuleId;
     }
-    DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
-    qDebug() << "found deviceClass" << deviceClass.name();
+    if (!findRule(ruleId).id().isNull()) {
+        qWarning() << "Already have a rule with this id!";
+        return RuleErrorInvalidRuleId;
+    }
+    foreach (const EventDescriptor &eventDescriptor, eventDescriptorList) {
+        Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(eventDescriptor.deviceId());
+        if (!device) {
+            qWarning() << "Cannot create rule. No configured device for eventTypeId" << eventDescriptor.eventTypeId();
+            return RuleErrorDeviceNotFound;
+        }
+        DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
 
-    bool eventTypeFound = false;
-    foreach (const EventType &eventType, deviceClass.eventTypes()) {
-        if (eventType.id() == eventDescriptor.eventTypeId()) {
-            eventTypeFound = true;
+        bool eventTypeFound = false;
+        foreach (const EventType &eventType, deviceClass.eventTypes()) {
+            if (eventType.id() == eventDescriptor.eventTypeId()) {
+                eventTypeFound = true;
+            }
+        }
+        if (!eventTypeFound) {
+            qWarning() << "Cannot create rule. Device " + device->name() + " has no event type:" << eventDescriptor.eventTypeId();
+            return RuleErrorEventTypeNotFound;
         }
     }
-    if (!eventTypeFound) {
-        qWarning() << "Cannot create rule. Device " + device->name() + " has no event type:" << eventDescriptor.eventTypeId();
-        return RuleErrorEventTypeNotFound;
+
+    foreach (const Action &action, actions) {
+        Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(action.deviceId());
+        if (!device) {
+            qWarning() << "Cannot create rule. No configured device for actionTypeId" << action.actionTypeId();
+            return RuleErrorDeviceNotFound;
+        }
+        DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
+
+        bool actionTypeFound = false;
+        foreach (const ActionType &actionType, deviceClass.actionTypes()) {
+            if (actionType.id() == action.actionTypeId()) {
+                actionTypeFound = true;
+            }
+        }
+        if (!actionTypeFound) {
+            qWarning() << "Cannot create rule. Device " + device->name() + " has no action type:" << action.actionTypeId();
+            return RuleErrorActionTypeNotFound;
+        }
     }
 
-    Rule rule = Rule(QUuid::createUuid(), eventDescriptor, states, actions);
+    Rule rule = Rule(ruleId, eventDescriptorList, stateEvaluator, actions);
     m_rules.append(rule);
     emit ruleAdded(rule.id());
 
     QSettings settings(m_settingsFile);
     settings.beginGroup(rule.id().toString());
-    settings.beginGroup("event");
-    settings.setValue("eventTypeId", eventDescriptor.eventTypeId());
-    settings.setValue("deviceId", eventDescriptor.deviceId());
-    foreach (const ParamDescriptor &paramDescriptor, eventDescriptor.paramDescriptors()) {
-        settings.beginGroup("ParamDescriptor-" + paramDescriptor.name());
-        settings.setValue("value", paramDescriptor.value());
-        settings.setValue("operand", paramDescriptor.operand());
+    settings.beginGroup("events");
+    foreach (const EventDescriptor &eventDescriptor, eventDescriptorList) {
+        settings.beginGroup("EventDescriptor-" + eventDescriptor.id().toString());
+        settings.setValue("deviceId", eventDescriptor.deviceId().toString());
+        settings.setValue("eventTypeId", eventDescriptor.eventTypeId());
+
+        foreach (const ParamDescriptor &paramDescriptor, eventDescriptor.paramDescriptors()) {
+            settings.beginGroup("ParamDescriptor-" + paramDescriptor.name());
+            settings.setValue("value", paramDescriptor.value());
+            settings.setValue("operator", paramDescriptor.operatorType());
+            settings.endGroup();
+        }
         settings.endGroup();
     }
-
     settings.endGroup();
 
-    settings.beginGroup("states");
-    foreach (const State &state, states) {
-        settings.beginGroup(state.stateTypeId().toString());
-        settings.setValue("deviceId", state.deviceId());
-        settings.setValue("value", state.value());
-        settings.endGroup();
-    }
-
-    settings.endGroup();
+    stateEvaluator.dumpToSettings(settings, "stateEvaluator");
 
     settings.beginGroup("actions");
     foreach (const Action &action, rule.actions()) {
@@ -256,7 +271,7 @@ QList<Rule> RuleEngine::rules() const
 /*! Removes the \l{Rule} with the given \a ruleId from the Engine.
     Returns \l{RuleEngine::RuleError} which describes whether the operation
     was successful or not. */
-RuleEngine::RuleError RuleEngine::removeRule(const QUuid &ruleId)
+RuleEngine::RuleError RuleEngine::removeRule(const RuleId &ruleId)
 {
     for (int i = 0; i < m_rules.count(); ++i) {
         Rule rule = m_rules.at(i);
@@ -274,6 +289,16 @@ RuleEngine::RuleError RuleEngine::removeRule(const QUuid &ruleId)
         }
     }
     return RuleErrorRuleNotFound;
+}
+
+Rule RuleEngine::findRule(const RuleId &ruleId)
+{
+    foreach (const Rule &rule, m_rules) {
+        if (rule.id() == ruleId) {
+            return rule;
+        }
+    }
+    return Rule();
 }
 
 bool RuleEngine::containsEvent(const Rule &rule, const Event &event)

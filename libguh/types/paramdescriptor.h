@@ -20,25 +20,18 @@
 #define PARAMDESCRIPTOR_H
 
 #include "param.h"
+#include "typeutils.h"
 
 class ParamDescriptor : public Param
 {
 public:
-    enum OperandType {
-        OperandTypeEquals,
-        OperandTypeNotEquals,
-        OperandTypeLess,
-        OperandTypeGreater,
-        OperandTypeLessOrEqual,
-        OperandTypeGreaterOrEqual
-    };
     ParamDescriptor(const QString &name, const QVariant &value = QVariant());
 
-    OperandType operand() const;
-    void setOperand(OperandType operand);
+    ValueOperator operatorType() const;
+    void setOperatorType(ValueOperator operatorType);
 
 private:
-    OperandType m_operand;
+    ValueOperator m_operatorType;
 };
 
 #endif // PARAMDESCRIPTOR_H

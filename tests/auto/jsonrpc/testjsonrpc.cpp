@@ -47,8 +47,6 @@ private slots:
 
     void stateChangeEmitsNotifications();
 
-    void getRules();
-
 private:
     QStringList extractRefs(const QVariant &variant);
 
@@ -250,12 +248,6 @@ void TestJSONRPC::stateChangeEmitsNotifications()
 
     QCOMPARE(response.toMap().value("params").toMap().value("value").toInt(), newVal);
 
-}
-
-void TestJSONRPC::getRules()
-{
-    QVariant response = injectAndWait("Rules.GetRules", QVariantMap());
-    qDebug() << "got rules response" << response;
 }
 
 #include "testjsonrpc.moc"

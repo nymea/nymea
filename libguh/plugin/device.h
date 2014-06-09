@@ -45,17 +45,19 @@ public:
     void setName(const QString &name);
 
     QList<Param> params() const;
+    bool hasParam(const QString &paramName) const;
     void setParams(const QList<Param> &params);
 
     QVariant paramValue(const QString &paramName) const;
 
     QList<State> states() const;
-    bool hasParam(const QString &paramName) const;
+    bool hasState(const StateTypeId &stateTypeId) const;
     void setStates(const QList<State> &states);
 
-    bool hasState(const StateTypeId &stateTypeId) const;
     QVariant stateValue(const StateTypeId &stateTypeId) const;
     void setStateValue(const StateTypeId &stateTypeId, const QVariant &value);
+
+    State state(const StateTypeId &stateTypeId) const;
 
     bool setupComplete() const;
 

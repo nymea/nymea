@@ -1,3 +1,9 @@
+guh (0.1.7) utopic; urgency=medium
+
+  * implement StateEvaluators
+
+ -- Michael Zanetti <micha@noneyet>  Sun, 08 Jun 2014 23:27:31 +0200
+
 guh (0.1.6) utopic; urgency=medium
 
   * state changes auto generate events now

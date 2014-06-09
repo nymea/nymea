@@ -65,15 +65,17 @@ public:
     static QVariantMap allTypes();
 
     DECLARE_TYPE(basicTypes, "BasicType")
-    DECLARE_TYPE(ruleTypes, "RuleType")
+    DECLARE_TYPE(stateOperatorTypes, "StateOperatorType")
+    DECLARE_TYPE(valueOperatorTypes, "ValueOperatorType")
     DECLARE_TYPE(createMethodTypes, "CreateMethodType")
     DECLARE_TYPE(setupMethodTypes, "SetupMethodType")
-    DECLARE_TYPE(operandTypes, "OperandType")
     DECLARE_OBJECT(paramType, "ParamType")
     DECLARE_OBJECT(param, "Param")
     DECLARE_OBJECT(paramDescriptor, "ParamDescriptor")
     DECLARE_OBJECT(stateType, "StateType")
+    DECLARE_OBJECT(stateDescriptor, "StateDescriptor")
     DECLARE_OBJECT(state, "State")
+    DECLARE_OBJECT(stateEvaluator, "StateEvaluator")
     DECLARE_OBJECT(eventType, "EventType")
     DECLARE_OBJECT(event, "Event")
     DECLARE_OBJECT(eventDescriptor, "EventDescriptor")
@@ -92,6 +94,8 @@ public:
     static QVariantMap packActionType(const ActionType &actionType);
     static QVariantMap packAction(const Action &action);
     static QVariantMap packStateType(const StateType &stateType);
+    static QVariantMap packStateDescriptor(const StateDescriptor &stateDescriptor);
+    static QVariantMap packStateEvaluator(const StateEvaluator &stateEvaluator);
     static QVariantMap packParam(const Param &param);
     static QVariantMap packParamType(const ParamType &paramType);
     static QVariantMap packParamDescriptor(const ParamDescriptor &paramDescriptor);
@@ -112,10 +116,10 @@ public:
     static QPair<bool, QString> validateList(const QVariantList &templateList, const QVariantList &list);
     static QPair<bool, QString> validateVariant(const QVariant &templateVariant, const QVariant &variant);
     static QPair<bool, QString> validateBasicType(const QVariant &variant);
-    static QPair<bool, QString> validateRuleType(const QVariant &variant);
+    static QPair<bool, QString> validateStateOperatorType(const QVariant &variant);
     static QPair<bool, QString> validateCreateMethodType(const QVariant &variant);
     static QPair<bool, QString> validateSetupMethodType(const QVariant &variant);
-    static QPair<bool, QString> validateOperandType(const QVariant &variant);
+    static QPair<bool, QString> validateValueOperatorType(const QVariant &variant);
 
 private:
     static bool s_initialized;

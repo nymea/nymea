@@ -29,28 +29,19 @@
 class Rule
 {
 public:
-    enum RuleType {
-        RuleTypeAll,
-        RuleTypeAny
-    };
+    Rule();
+    Rule(const RuleId &id, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actions);
 
-    Rule(const QUuid &id, const EventDescriptor &eventDescriptor, const QList<State> &states, const QList<Action> &actions);
-
-    QUuid id() const;
+    RuleId id() const;
     QList<EventDescriptor> eventDescriptors() const;
-    QList<State> states() const;
+    StateEvaluator stateEvaluator() const;
     QList<Action> actions() const;
 
-    RuleType ruleType() const;
-    void setRuleType(RuleType ruleType);
-
 private:
-    QUuid m_id;
+    RuleId m_id;
     QList<EventDescriptor> m_eventDescriptors;
-    QList<State> m_states;
-    StateEvaluator stateEvaluator;
+    StateEvaluator m_stateEvaluator;
     QList<Action> m_actions;
-    RuleType m_ruleType;
 };
 
 #endif // RULE_H

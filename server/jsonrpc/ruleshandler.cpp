@@ -46,12 +46,15 @@ RulesHandler::RulesHandler(QObject *parent) :
     setParams("AddRule", params);
     returns.insert("success", "bool");
     returns.insert("errorMessage", "string");
+    returns.insert("o:ruleId", "uuid");
     setReturns("AddRule", returns);
 
     params.clear(); returns.clear();
     setDescription("RemoveRule", "Remove a rule");
     params.insert("ruleId", "uuid");
     setParams("RemoveRule", params);
+    returns.insert("success", "bool");
+    returns.insert("errorMessage", "string");
     setReturns("RemoveRule", returns);
 }
 
@@ -66,7 +69,6 @@ JsonReply* RulesHandler::GetRules(const QVariantMap &params)
 
     QVariantList rulesList;
     foreach (const Rule &rule, GuhCore::instance()->ruleEngine()->rules()) {
-        qDebug() << "got rule" << rule.id();
         QVariantMap ruleMap = JsonTypes::packRule(rule);
         rulesList.append(ruleMap);
     }
@@ -78,16 +80,15 @@ JsonReply* RulesHandler::GetRules(const QVariantMap &params)
 
 JsonReply* RulesHandler::AddRule(const QVariantMap &params)
 {
-    QVariantMap eventMap = params.value("event").toMap();
+    QVariantMap eventMap = params.value("eventDescriptor").toMap();
 
     EventTypeId eventTypeId(eventMap.value("eventTypeId").toString());
     DeviceId eventDeviceId(eventMap.value("deviceId").toString());
     QList<ParamDescriptor> eventParams = JsonTypes::unpackParamDescriptors(eventMap.value("paramDescriptors").toList());
-    EventDescriptor eventDescriptor(eventTypeId, eventDeviceId, eventParams);
+    EventDescriptor eventDescriptor(EventDescriptorId::createEventDescriptorId(), eventTypeId, eventDeviceId, eventParams);
 
     QList<Action> actions;
     QVariantList actionList = params.value("actions").toList();
-    qDebug() << "got action list" << actionList.count();
     foreach (const QVariant &actionVariant, actionList) {
         QVariantMap actionMap = actionVariant.toMap();
         Action action(ActionTypeId(actionMap.value("actionTypeId").toString()), DeviceId(actionMap.value("deviceId").toString()));
@@ -102,10 +103,12 @@ JsonReply* RulesHandler::AddRule(const QVariantMap &params)
         return createReply(returns);
     }
 
-    switch(GuhCore::instance()->ruleEngine()->addRule(eventDescriptor, actions)) {
+    RuleId newRuleId = RuleId::createRuleId();
+    switch(GuhCore::instance()->ruleEngine()->addRule(newRuleId, eventDescriptor, actions)) {
     case RuleEngine::RuleErrorNoError:
         returns.insert("success", true);
         returns.insert("errorMessage", "");
+        returns.insert("ruleId", newRuleId.toString());
         break;
     case RuleEngine::RuleErrorDeviceNotFound:
         returns.insert("success", false);
@@ -125,10 +128,11 @@ JsonReply* RulesHandler::AddRule(const QVariantMap &params)
 JsonReply* RulesHandler::RemoveRule(const QVariantMap &params)
 {
     QVariantMap returns;
-    QUuid ruleId = params.value("ruleId").toUuid();
+    RuleId ruleId(params.value("ruleId").toString());
     switch (GuhCore::instance()->ruleEngine()->removeRule(ruleId)) {
     case RuleEngine::RuleErrorNoError:
         returns.insert("success", true);
+        returns.insert("errorMessage", "");
         break;
     case RuleEngine::RuleErrorRuleNotFound:
         returns.insert("success", false);

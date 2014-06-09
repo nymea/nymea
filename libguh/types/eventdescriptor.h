@@ -30,7 +30,9 @@
 class EventDescriptor
 {
 public:
-    EventDescriptor(const EventTypeId &eventTypeId, const DeviceId &deviceId, const QList<ParamDescriptor> &paramDescriptors = QList<ParamDescriptor>());
+    EventDescriptor(const EventDescriptorId &id, const EventTypeId &eventTypeId, const DeviceId &deviceId, const QList<ParamDescriptor> &paramDescriptors = QList<ParamDescriptor>());
+
+    EventDescriptorId id() const;
 
     EventTypeId eventTypeId() const;
     DeviceId deviceId() const;
@@ -44,6 +46,7 @@ public:
     bool operator ==(const Event &event) const;
 
 private:
+    EventDescriptorId m_id;
     EventTypeId m_eventTypeId;
     DeviceId m_deviceId;
     QList<ParamDescriptor> m_paramDescriptors;

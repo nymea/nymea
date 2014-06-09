@@ -20,17 +20,17 @@
 
 ParamDescriptor::ParamDescriptor(const QString &name, const QVariant &value):
     Param(name, value),
-    m_operand(OperandTypeEquals)
+    m_operatorType(ValueOperatorEquals)
 {
 }
 
-ParamDescriptor::OperandType ParamDescriptor::operand() const
+ValueOperator ParamDescriptor::operatorType() const
 {
-    return m_operand;
+    return m_operatorType;
 }
 
-void ParamDescriptor::setOperand(ParamDescriptor::OperandType operand)
+void ParamDescriptor::setOperatorType(ValueOperator operatorType)
 {
-    m_operand = operand;
+    m_operatorType = operatorType;
 }
 

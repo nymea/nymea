@@ -48,19 +48,23 @@
 
 #include <QDebug>
 
-/*! Constructs a Rule with the given \a id, \a eventDescriptor, \a states and \a actions. The ruleType will default to
- \l{Rule::RuleTypeAll}.*/
-Rule::Rule(const QUuid &id, const EventDescriptor &eventDescriptor, const QList<State> &states, const QList<Action> &actions):
+/*! Constructs an empty, invalid rule. */
+Rule::Rule()
+{
+
+}
+
+/*! Constructs a Rule with the given \a id, \a eventDescriptor, \a states and \a actions.*/
+Rule::Rule(const RuleId &id, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actions):
     m_id(id),
-    m_eventDescriptors(QList<EventDescriptor>() << eventDescriptor),
-    m_states(states),
-    m_actions(actions),
-    m_ruleType(RuleTypeAll)
+    m_eventDescriptors(eventDescriptorList),
+    m_stateEvaluator(stateEvaluator),
+    m_actions(actions)
 {
 }
 
 /*! Returns the id or the Rule. */
-QUuid Rule::id() const
+RuleId Rule::id() const
 {
     return m_id;
 }
@@ -71,26 +75,14 @@ QList<EventDescriptor> Rule::eventDescriptors() const
     return m_eventDescriptors;
 }
 
-/*! Returns the \l{State}{States} that need to be matching in order for this to Rule apply. */
-QList<State> Rule::states() const
+/*! Returns the \l{StateEvaluator} that needs to evaluate successfully in order for this to Rule apply. */
+StateEvaluator Rule::stateEvaluator() const
 {
-    return m_states;
+    return m_stateEvaluator;
 }
 
 /*! Returns the \l{Action}{Actions} to be executed when this Rule is matched and states match. */
 QList<Action> Rule::actions() const
 {
     return m_actions;
-}
-
-/*! Returns the type of the rule. This defines how states are compared. The default is \l{Rule::RuleTypeAll}.*/
-Rule::RuleType Rule::ruleType() const
-{
-    return m_ruleType;
-}
-
-/*! Set the type of the rule to \a ruleType. This defines how states are compared. The default is \l{Rule::RuleTypeAll}.*/
-void Rule::setRuleType(Rule::RuleType ruleType)
-{
-    m_ruleType = ruleType;
 }

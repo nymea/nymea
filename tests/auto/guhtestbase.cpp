@@ -44,8 +44,10 @@ void GuhTestBase::initTestCase()
 {
 
     // If testcase asserts cleanup won't do. Lets clear any previous test run settings leftovers
-    QSettings settings;
-    settings.clear();
+    QSettings rulesSettings(QCoreApplication::instance()->organizationName() + "/rules");
+    rulesSettings.clear();
+    QSettings deviceSettings(QCoreApplication::instance()->organizationName() + "/devices");
+    deviceSettings.clear();
 
     GuhCore::instance();
 
@@ -104,4 +106,13 @@ void GuhTestBase::verifySuccess(const QVariant &response, bool success)
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(response);
     QVERIFY2(response.toMap().value("status").toString() == QString("success"), jsonDoc.toJson().data());
     QVERIFY2(response.toMap().value("params").toMap().value("success").toBool() == success, jsonDoc.toJson().data());
+}
+
+void GuhTestBase::restartServer()
+{
+    // Destroy and recreate the core instance...
+    GuhCore::instance()->destroy();
+    QSignalSpy spy(GuhCore::instance()->deviceManager(), SIGNAL(loaded()));
+    spy.wait();
+    m_mockTcpServer = MockTcpServer::servers().first();
 }

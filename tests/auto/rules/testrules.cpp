@@ -60,7 +60,11 @@ void TestRules::addRules_data()
     QVariantMap validEventDescriptor2;
     validEventDescriptor2.insert("eventTypeId", mockEvent2Id);
     validEventDescriptor2.insert("deviceId", m_mockDeviceId);
-    validEventDescriptor2.insert("paramDescriptors", QVariantList());
+    QVariantList params;
+    QVariantMap param1;
+    param1.insert("mockParamInt", 3);
+    params.append(param1);
+    validEventDescriptor2.insert("paramDescriptors", param1);
 
     QVariantList eventDescriptorList;
     eventDescriptorList.append(validEventDescriptor1);

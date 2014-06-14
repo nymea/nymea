@@ -167,6 +167,11 @@ void TestRules::loadStoreConfig()
     eventDescriptor2.insert("eventTypeId", mockEvent1Id);
     eventDescriptor2.insert("deviceId", m_mockDeviceId);
     eventDescriptor2.insert("paramDescriptors", QVariantList());
+    QVariantList eventParamDescriptors;
+    QVariantMap eventParam1;
+    eventParam1.insert("mockParamInt", 3);
+    eventParamDescriptors.append(eventParam1);
+    eventDescriptor2.insert("paramDescriptors", eventParamDescriptors);
 
     QVariantMap action1;
     action1.insert("actionTypeId", mockActionIdNoParams);

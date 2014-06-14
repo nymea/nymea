@@ -96,6 +96,10 @@ QList<DeviceClass> DevicePluginMock::supportedDevices() const
 
     EventType event2(mockEvent2Id);
     event2.setName("Mock Event 2");
+    QList<ParamType> event2ParamTypes;
+    ParamType event2Param1Type("mockParamInt", QVariant::Int, 42);
+    event2ParamTypes.append(event2Param1Type);
+    event2.setParameters(event2ParamTypes);
     mockEvents.append(event2);
 
     deviceClassMock.setEventTypes(mockEvents);

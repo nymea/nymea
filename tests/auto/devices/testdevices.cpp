@@ -278,12 +278,8 @@ void TestDevices::storedDevices()
     DeviceId addedDeviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
     QVERIFY(!addedDeviceId.isNull());
 
-    // Destroy and recreate the core instance to check if settings are loaded at startup
-    GuhCore::instance()->destroy();
-    QSignalSpy spy(GuhCore::instance()->deviceManager(), SIGNAL(loaded()));
-    spy.wait();
-    m_mockTcpServer = MockTcpServer::servers().first();
-
+    // Restart the core instance to check if settings are loaded at startup
+    restartServer();
 
     response = injectAndWait("Devices.GetConfiguredDevices", QVariantMap());
 

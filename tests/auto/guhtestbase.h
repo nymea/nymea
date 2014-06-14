@@ -58,6 +58,7 @@ protected slots:
 protected:
     QVariant injectAndWait(const QString &method, const QVariantMap &params = QVariantMap());
     void verifySuccess(const QVariant &response, bool success = true);
+    void restartServer();
 
 protected:
     MockTcpServer *m_mockTcpServer;

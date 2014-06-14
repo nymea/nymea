@@ -432,6 +432,9 @@ QVariantMap JsonTypes::packRule(const Rule &rule)
 
 Param JsonTypes::unpackParam(const QVariantMap &paramMap)
 {
+    if (paramMap.keys().count() == 0) {
+        return Param();
+    }
     QString key = paramMap.keys().first();
     return Param(key, paramMap.value(key));
 }

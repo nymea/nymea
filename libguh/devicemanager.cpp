@@ -86,6 +86,7 @@
 #include <QDebug>
 #include <QSettings>
 #include <QStringList>
+#include <QCoreApplication>
 
 /*! Constructs the DeviceManager with the given \a parent. There should only be one DeviceManager in the system created by \l{GuhCore}.
     Use \c GuhCore::instance()->deviceManager() instead to access the DeviceManager.
@@ -96,6 +97,8 @@ DeviceManager::DeviceManager(QObject *parent) :
 {
     m_pluginTimer.setInterval(15000);
     connect(&m_pluginTimer, &QTimer::timeout, this, &DeviceManager::timerEvent);
+
+    m_settingsFile = QCoreApplication::instance()->organizationName() + "/devices";
 
     // Give hardware a chance to start up before loading plugins etc.
     QMetaObject::invokeMethod(this, "loadPlugins", Qt::QueuedConnection);
@@ -298,7 +301,7 @@ QPair<DeviceManager::DeviceError, QString> DeviceManager::removeConfiguredDevice
 
     device->deleteLater();
 
-    QSettings settings;
+    QSettings settings(m_settingsFile);
     settings.beginGroup("DeviceConfig");
     settings.beginGroup(deviceId.toString());
     settings.remove("");
@@ -406,7 +409,7 @@ void DeviceManager::loadPlugins()
                 m_supportedDevices.insert(deviceClass.id(), deviceClass);
                 qDebug() << "* Loaded device class:" << deviceClass.name();
             }
-            QSettings settings;
+            QSettings settings(m_settingsFile);
             settings.beginGroup("PluginConfig");
             QList<Param> params;
             if (settings.childGroups().contains(pluginIface->pluginId().toString())) {
@@ -440,7 +443,7 @@ void DeviceManager::loadPlugins()
 
 void DeviceManager::loadConfiguredDevices()
 {
-    QSettings settings;
+    QSettings settings(m_settingsFile);
     settings.beginGroup("DeviceConfig");
     qDebug() << "loading devices from" << settings.fileName();
     foreach (const QString &idString, settings.childGroups()) {
@@ -472,7 +475,7 @@ void DeviceManager::loadConfiguredDevices()
 
 void DeviceManager::storeConfiguredDevices()
 {
-    QSettings settings;
+    QSettings settings(m_settingsFile);
     settings.beginGroup("DeviceConfig");
     foreach (Device *device, m_configuredDevices) {
         settings.beginGroup(device->id().toString());

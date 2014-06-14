@@ -36,8 +36,8 @@ class TestRules: public GuhTestBase
 private slots:
     void addRules_data();
     void addRules();
-    void getStateValue_data();
-    void getStateValue();
+
+    void loadStoreConfig();
 };
 
 void TestRules::addRules_data()
@@ -117,34 +117,84 @@ void TestRules::addRules()
     QVERIFY2(rules.count() == 0, "There should be no rules.");
 }
 
-void TestRules::getStateValue_data()
+void TestRules::loadStoreConfig()
 {
-    QList<Device*> devices = GuhCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId);
-    QVERIFY2(devices.count() > 0, "There needs to be at least one configured Mock Device for this test");
-    Device *device = devices.first();
+    QVariantMap eventDescriptor1;
+    eventDescriptor1.insert("eventTypeId", mockEvent1Id);
+    eventDescriptor1.insert("deviceId", m_mockDeviceId);
+    eventDescriptor1.insert("paramDescriptors", QVariantList());
 
-    QTest::addColumn<DeviceId>("deviceId");
-    QTest::addColumn<StateTypeId>("stateTypeId");
-    QTest::addColumn<bool>("success");
+    QVariantMap eventDescriptor2;
+    eventDescriptor2.insert("eventTypeId", mockEvent1Id);
+    eventDescriptor2.insert("deviceId", m_mockDeviceId);
+    eventDescriptor2.insert("paramDescriptors", QVariantList());
 
-    QTest::newRow("existing state") << device->id() << mockIntStateId << true;
-    QTest::newRow("invalid device") << DeviceId::createDeviceId() << mockIntStateId << false;
-    QTest::newRow("invalid statetype") << device->id() << StateTypeId::createStateTypeId() << false;
-}
+    QVariantMap action1;
+    action1.insert("actionTypeId", mockActionIdNoParams);
+    action1.insert("deviceId", m_mockDeviceId);
+    action1.insert("params", QVariantList());
 
-void TestRules::getStateValue()
-{
-    QFETCH(DeviceId, deviceId);
-    QFETCH(StateTypeId, stateTypeId);
-    QFETCH(bool, success);
+    QVariantMap action2;
+    action2.insert("actionTypeId", mockActionIdWithParams);
+    qDebug() << "got action id" << mockActionIdWithParams;
+    action2.insert("deviceId", m_mockDeviceId);
+    QVariantList action2Params;
+    QVariantMap action2Param1;
+    action2Param1.insert("mockActionParam1", 5);
+    action2Params.append(action2Param1);
+    QVariantMap action2Param2;
+    action2Param2.insert("mockActionParam2", true);
+    action2Params.append(action2Param2);
+    action2.insert("params", action2Params);
+
 
     QVariantMap params;
-    params.insert("deviceId", deviceId.toString());
-    params.insert("stateTypeId", stateTypeId.toString());
+    QVariantList actions;
+    actions.append(action1);
+    actions.append(action2);
+    params.insert("actions", actions);
+    params.insert("eventDescriptor", eventDescriptor1);
+    QVariant response = injectAndWait("Rules.AddRule", params);
 
-    QVariant response = injectAndWait("Devices.GetStateValue", params);
+    RuleId newRuleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
+    verifySuccess(response, true);
 
-    verifySuccess(response, success);
+    restartServer();
+
+    response = injectAndWait("Rules.GetRules");
+
+    QVariantList rules = response.toMap().value("params").toMap().value("rules").toList();
+
+    QVERIFY2(rules.count() == 1, "There should be exactly one rule");
+    QCOMPARE(RuleId(rules.first().toMap().value("id").toString()), newRuleId);
+
+    QVariantList eventDescriptors = rules.first().toMap().value("eventDescriptors").toList();
+    QVERIFY2(eventDescriptors.count() == 1, "There shoud be exactly one eventDescriptor");
+    QVERIFY2(eventDescriptors.first().toMap() == eventDescriptor1, "Event descriptor doesn't match");
+
+    QVariantList replyActions = rules.first().toMap().value("actions").toList();
+    foreach (const QVariant &actionVariant, actions) {
+        bool found = false;
+        foreach (const QVariant &replyActionVariant, replyActions) {
+            if (actionVariant.toMap().value("actionTypeId") == replyActionVariant.toMap().value("actionTypeId") &&
+                    actionVariant.toMap().value("deviceId") == replyActionVariant.toMap().value("deviceId")) {
+                found = true;
+                QVERIFY2(actionVariant == replyActionVariant, "Action doesn't match after loading from config.");
+            }
+        }
+        QVERIFY2(found, "Action not found after loading from config.");
+    }
+
+    params.clear();
+    params.insert("ruleId", newRuleId);
+    response = injectAndWait("Rules.RemoveRule", params);
+    verifySuccess(response, true);
+
+    restartServer();
+
+    response = injectAndWait("Rules.GetRules");
+    rules = response.toMap().value("params").toMap().value("rules").toList();
+    QVERIFY2(rules.count() == 0, "There should be no rules.");
 }
 
 #include "testrules.moc"

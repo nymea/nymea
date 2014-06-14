@@ -72,8 +72,8 @@ RuleEngine::RuleEngine(QObject *parent) :
     QObject(parent)
 {
     m_settingsFile = QCoreApplication::instance()->organizationName() + "/rules";
-    qDebug() << "laoding rules from" << m_settingsFile;
     QSettings settings(m_settingsFile);
+    qDebug() << "laoding rules from" << settings.fileName();
     foreach (const QString &idString, settings.childGroups()) {
         qDebug() << "found rule" << idString;
 
@@ -133,8 +133,8 @@ RuleEngine::RuleEngine(QObject *parent) :
 
         settings.endGroup();
 
-//        Rule rule = Rule(RuleId(idString), eventDescriptorList, states, actions);
-//        m_rules.append(rule);
+        Rule rule = Rule(RuleId(idString), eventDescriptorList, stateEvaluator, actions);
+        m_rules.append(rule);
     }
 
 }

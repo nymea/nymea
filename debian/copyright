@@ -1,5 +1,6 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Author: Michael Zanetti <michael_zanetti@gmx.net>
+        Simon Stürz <stuerz.simon@gmail.com>
 Download: http://www.github.com/guh
 
 License: GPL-2+
@@ -7,10 +8,11 @@ License: GPL-2+
  Public License can be found in `/usr/share/common-licenses/GPL-2'.
 
 Files: *
-Copyright: (C) 2011 Michael Zanetti <michael_zanetti@gmx.net>
+Copyright: (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>
+               2014 Simon Stürz <stuerz.simon@gmail.com>
 License: GPL-2+
 
 Files: debian/*
-Copyright: (C) 2011 Michael Zanetti <michael_zanetti@gmx.net>
+Copyright: (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>
                2014 Carsten Schoenert <c.schoenert@t-online.de>
 License: GPL-2+

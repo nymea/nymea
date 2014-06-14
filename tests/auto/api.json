@@ -1,4 +1,4 @@
-0.1.7
+0.1.8
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -214,12 +214,15 @@
             }
         },
         "Rules.AddRule": {
-            "description": "Add a rule",
+            "description": "Add a rule.",
             "params": {
                 "actions": [
                     "$ref:Action"
                 ],
-                "eventDescriptor": "$ref:EventDescriptor"
+                "o:eventDescriptor": "$ref:EventDescriptor",
+                "o:eventDescriptorList": [
+                    "$ref:EventDescriptor"
+                ]
             },
             "returns": {
                 "errorMessage": "string",

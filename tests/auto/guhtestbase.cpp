@@ -38,15 +38,17 @@ GuhTestBase::GuhTestBase(QObject *parent) :
     m_mockDevice2Port = 7331;
     QCoreApplication::instance()->setOrganizationName("guh-test");
 
+    m_rulesSettings = QCoreApplication::instance()->organizationName() + "/rules";
+    m_deviceSettings = QCoreApplication::instance()->organizationName() + "/devices";
 }
 
 void GuhTestBase::initTestCase()
 {
 
     // If testcase asserts cleanup won't do. Lets clear any previous test run settings leftovers
-    QSettings rulesSettings(QCoreApplication::instance()->organizationName() + "/rules");
+    QSettings rulesSettings(m_rulesSettings);
     rulesSettings.clear();
-    QSettings deviceSettings(QCoreApplication::instance()->organizationName() + "/devices");
+    QSettings deviceSettings(m_deviceSettings);
     deviceSettings.clear();
 
     GuhCore::instance();

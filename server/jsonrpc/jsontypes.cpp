@@ -478,6 +478,15 @@ QList<ParamDescriptor> JsonTypes::unpackParamDescriptors(const QVariantList &par
     return params;
 }
 
+EventDescriptor JsonTypes::unpackEventDescriptor(const QVariantMap &eventDescriptorMap)
+{
+    EventTypeId eventTypeId(eventDescriptorMap.value("eventTypeId").toString());
+    DeviceId eventDeviceId(eventDescriptorMap.value("deviceId").toString());
+    QList<ParamDescriptor> eventParams = JsonTypes::unpackParamDescriptors(eventDescriptorMap.value("paramDescriptors").toList());
+    EventDescriptor eventDescriptor(EventDescriptorId::createEventDescriptorId(), eventTypeId, eventDeviceId, eventParams);
+    return eventDescriptor;
+}
+
 QPair<bool, QString> JsonTypes::validateMap(const QVariantMap &templateMap, const QVariantMap &map)
 {
     s_lastError.clear();

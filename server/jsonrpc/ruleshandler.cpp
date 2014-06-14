@@ -81,12 +81,23 @@ JsonReply* RulesHandler::GetRules(const QVariantMap &params)
 
 JsonReply* RulesHandler::AddRule(const QVariantMap &params)
 {
-    QVariantMap eventMap = params.value("eventDescriptor").toMap();
+    if (params.contains("eventDescriptor") && params.contains("eventDescriptorList")) {
+        QVariantMap returns;
+        returns.insert("success", false);
+        returns.insert("errorMessage", "Only one of \"eventDescriptor\" and \"eventDescriptorList\" may be used.");
+        return createReply(returns);
+    }
 
-    EventTypeId eventTypeId(eventMap.value("eventTypeId").toString());
-    DeviceId eventDeviceId(eventMap.value("deviceId").toString());
-    QList<ParamDescriptor> eventParams = JsonTypes::unpackParamDescriptors(eventMap.value("paramDescriptors").toList());
-    EventDescriptor eventDescriptor(EventDescriptorId::createEventDescriptorId(), eventTypeId, eventDeviceId, eventParams);
+    QList<EventDescriptor> eventDescriptorList;
+    if (params.contains("eventDescriptor")) {
+        QVariantMap eventMap = params.value("eventDescriptor").toMap();
+        eventDescriptorList.append(JsonTypes::unpackEventDescriptor(eventMap));
+    } else if (params.contains("eventDescriptorList")) {
+        foreach (const QVariant &eventVariant, params.value("eventDescriptorList").toList()) {
+            QVariantMap eventMap = eventVariant.toMap();
+            eventDescriptorList.append(JsonTypes::unpackEventDescriptor(eventMap));
+        }
+    }
 
     QList<Action> actions;
     QVariantList actionList = params.value("actions").toList();
@@ -105,7 +116,7 @@ JsonReply* RulesHandler::AddRule(const QVariantMap &params)
     }
 
     RuleId newRuleId = RuleId::createRuleId();
-    switch(GuhCore::instance()->ruleEngine()->addRule(newRuleId, eventDescriptor, actions)) {
+    switch(GuhCore::instance()->ruleEngine()->addRule(newRuleId, eventDescriptorList, actions)) {
     case RuleEngine::RuleErrorNoError:
         returns.insert("success", true);
         returns.insert("errorMessage", "");

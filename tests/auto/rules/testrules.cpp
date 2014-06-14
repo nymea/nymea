@@ -52,10 +52,19 @@ void TestRules::addRules_data()
     invalidAction.insert("deviceId", m_mockDeviceId);
     invalidAction.insert("params", QVariantList());
 
-    QVariantMap validEventDescriptor;
-    validEventDescriptor.insert("eventTypeId", mockEvent1Id);
-    validEventDescriptor.insert("deviceId", m_mockDeviceId);
-    validEventDescriptor.insert("paramDescriptors", QVariantList());
+    QVariantMap validEventDescriptor1;
+    validEventDescriptor1.insert("eventTypeId", mockEvent1Id);
+    validEventDescriptor1.insert("deviceId", m_mockDeviceId);
+    validEventDescriptor1.insert("paramDescriptors", QVariantList());
+
+    QVariantMap validEventDescriptor2;
+    validEventDescriptor2.insert("eventTypeId", mockEvent2Id);
+    validEventDescriptor2.insert("deviceId", m_mockDeviceId);
+    validEventDescriptor2.insert("paramDescriptors", QVariantList());
+
+    QVariantList eventDescriptorList;
+    eventDescriptorList.append(validEventDescriptor1);
+    eventDescriptorList.append(validEventDescriptor2);
 
     QVariantMap invalidEventDescriptor;
     invalidEventDescriptor.insert("eventTypeId", mockEvent1Id);
@@ -63,26 +72,37 @@ void TestRules::addRules_data()
     invalidEventDescriptor.insert("paramDescriptors", QVariantList());
 
     QTest::addColumn<QVariantMap>("action1");
-    QTest::addColumn<QVariantMap>("eventDescriptor1");
+    QTest::addColumn<QVariantMap>("eventDescriptor");
+    QTest::addColumn<QVariantList>("eventDescriptorList");
     QTest::addColumn<bool>("success");
 
-    QTest::newRow("valid rule") << validAction << validEventDescriptor << true;
-    QTest::newRow("invalid action") << invalidAction << validEventDescriptor << false;
-    QTest::newRow("invalid event descriptor") << validAction << invalidEventDescriptor << false;
+
+    QTest::newRow("valid rule. 1 EventDescriptor, 1 Action") << validAction << validEventDescriptor1 << QVariantList() << true;
+    QTest::newRow("valid rule. 2 EventDescriptors, 1 Action") << validAction << QVariantMap() << eventDescriptorList << true;
+    QTest::newRow("invalid rule: eventDescriptor and eventDescriptorList used") << validAction << validEventDescriptor1 << eventDescriptorList << false;
+    QTest::newRow("invalid action") << invalidAction << validEventDescriptor1 << QVariantList() << false;
+    QTest::newRow("invalid event descriptor") << validAction << invalidEventDescriptor << QVariantList() << false;
 
 }
 
 void TestRules::addRules()
 {
     QFETCH(QVariantMap, action1);
-    QFETCH(QVariantMap, eventDescriptor1);
+    QFETCH(QVariantMap, eventDescriptor);
+    QFETCH(QVariantList, eventDescriptorList);
     QFETCH(bool, success);
 
     QVariantMap params;
     QVariantList actions;
     actions.append(action1);
     params.insert("actions", actions);
-    params.insert("eventDescriptor", eventDescriptor1);
+
+    if (!eventDescriptor.isEmpty()) {
+        params.insert("eventDescriptor", eventDescriptor);
+    }
+    if (!eventDescriptorList.isEmpty()) {
+        params.insert("eventDescriptorList", eventDescriptorList);
+    }
     QVariant response = injectAndWait("Rules.AddRule", params);
 
     RuleId newRuleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
@@ -99,9 +119,24 @@ void TestRules::addRules()
     QVERIFY2(rules.count() == 1, "There should be exactly one rule");
     QCOMPARE(RuleId(rules.first().toMap().value("id").toString()), newRuleId);
 
+
     QVariantList eventDescriptors = rules.first().toMap().value("eventDescriptors").toList();
-    QVERIFY2(eventDescriptors.count() == 1, "There shoud be exactly one eventDescriptor");
-    QVERIFY2(eventDescriptors.first().toMap() == eventDescriptor1, "Event descriptor doesn't match");
+    if (!eventDescriptor.isEmpty()) {
+        QVERIFY2(eventDescriptors.count() == 1, "There shoud be exactly one eventDescriptor");
+        QVERIFY2(eventDescriptors.first().toMap() == eventDescriptor, "Event descriptor doesn't match");
+    } else if (eventDescriptorList.isEmpty()){
+        QVERIFY2(eventDescriptors.count() == eventDescriptorList.count(), QString("There shoud be exactly %1 eventDescriptor").arg(eventDescriptorList.count()).toLatin1().data());
+        foreach (const QVariant &eventDescriptorVariant, eventDescriptorList) {
+            bool found = false;
+            foreach (const QVariant &replyEventDescriptorVariant, eventDescriptors) {
+                if (eventDescriptorVariant.toMap().value("deviceId") == replyEventDescriptorVariant.toMap().value("deviceId") &&
+                        eventDescriptorVariant.toMap().value("eventTypeId") == replyEventDescriptorVariant.toMap().value("eventTypeId")) {
+                    found = true;
+                    QVERIFY2(eventDescriptorVariant == replyEventDescriptorVariant, "Event descriptor doesn't match");
+                }
+            }
+        }
+    }
 
     QVariantList replyActions = rules.first().toMap().value("actions").toList();
     QVERIFY2(actions == replyActions, "Actions don't match");

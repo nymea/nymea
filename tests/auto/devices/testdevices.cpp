@@ -245,7 +245,7 @@ void TestDevices::removeDevice()
     QFETCH(DeviceId, deviceId);
     QFETCH(bool, success);
 
-    QSettings settings;
+    QSettings settings(m_deviceSettings);
     settings.beginGroup("DeviceConfig");
     if (success) {
         settings.beginGroup(m_mockDeviceId.toString());

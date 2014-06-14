@@ -110,6 +110,7 @@ public:
     static QList<Param> unpackParams(const QVariantList &paramList);
     static ParamDescriptor unpackParamDescriptor(const QVariantMap &paramDescriptorMap);
     static QList<ParamDescriptor> unpackParamDescriptors(const QVariantList &paramDescriptorList);
+    static EventDescriptor unpackEventDescriptor(const QVariantMap &eventDescriptorMap);
 
     static QPair<bool, QString> validateMap(const QVariantMap &templateMap, const QVariantMap &map);
     static QPair<bool, QString> validateProperty(const QVariant &templateValue, const QVariant &value);

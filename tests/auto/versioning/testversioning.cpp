@@ -68,14 +68,18 @@ void TestVersioning::apiChangeBumpsVersion()
     QByteArray oldVersion = oldApiFile.readLine().trimmed();
     QByteArray oldApi = oldApiFile.readAll();
 
-    qDebug() << "version" << oldVersion << newVersion;
+    QString newVersionStripped = newVersion;
+    newVersionStripped = newVersionStripped.remove(QRegExp("\\+[0-9\\.~a-f]*"));
 
-    if (oldVersion == newVersion && oldApi == newApi) {
+    qDebug() << "JSON API version:" << oldVersion;
+    qDebug() << "Binary version:" << newVersion << "(" + newVersionStripped + ")";
+
+    if (oldVersion == newVersionStripped && oldApi == newApi) {
         // All fine. no changes
         return;
     }
 
-    if (oldVersion == newVersion && oldApi != newApi) {
+    if (oldVersion == newVersionStripped && oldApi != newApi) {
         QVERIFY2(false, "JSONRPC API has changed but version is still the same. You need to bump the API version.");
     }
 
@@ -94,7 +98,7 @@ void TestVersioning::apiChangeBumpsVersion()
     p.waitForFinished();
     qDebug() << p.readAll();
 
-    if (oldVersion != newVersion && oldApi == newApi) {
+    if (oldVersion != newVersionStripped && oldApi == newApi) {
         QVERIFY2(false, QString("Version has changed. Update %1.").arg(oldFilePath).toLatin1().data());
     } else {
         QVERIFY2(false, QString("JSONRPC API has changed. Update %1.").arg(oldFilePath).toLatin1().data());

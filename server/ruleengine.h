@@ -44,7 +44,7 @@ public:
 
     QList<Action> evaluateEvent(const Event &event);
 
-    RuleError addRule(const RuleId &ruleId, const EventDescriptor &eventDescriptor, const QList<Action> &actions);
+    RuleError addRule(const RuleId &ruleId, const QList<EventDescriptor> &eventDescriptorList, const QList<Action> &actions);
     RuleError addRule(const RuleId &ruleId, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actions);
     QList<Rule> rules() const;
 

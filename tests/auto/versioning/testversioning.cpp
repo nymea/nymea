@@ -79,10 +79,6 @@ void TestVersioning::apiChangeBumpsVersion()
         return;
     }
 
-    if (oldVersion == newVersionStripped && oldApi != newApi) {
-        QVERIFY2(false, "JSONRPC API has changed but version is still the same. You need to bump the API version.");
-    }
-
     QFile newApiFile(newFilePath);
     QVERIFY(newApiFile.open(QIODevice::ReadWrite));
     if (newApiFile.size() > 0) {
@@ -94,9 +90,15 @@ void TestVersioning::apiChangeBumpsVersion()
     newApiFile.flush();
 
     QProcess p;
-    p.execute("diff", QStringList() << "-u" << oldFilePath << newFilePath);
+    p.start("diff", QStringList() << "-u" << oldFilePath << newFilePath);
     p.waitForFinished();
-    qDebug() << p.readAll();
+    QByteArray apiDiff = p.readAll();
+
+    qDebug() << "API Differences:" << endl << apiDiff;
+
+    if (oldVersion == newVersionStripped && oldApi != newApi) {
+        QVERIFY2(false, "JSONRPC API has changed but version is still the same. You need to bump the API version.");
+    }
 
     if (oldVersion != newVersionStripped && oldApi == newApi) {
         QVERIFY2(false, QString("Version has changed. Update %1.").arg(oldFilePath).toLatin1().data());

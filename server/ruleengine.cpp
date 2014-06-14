@@ -160,12 +160,10 @@ QList<Action> RuleEngine::evaluateEvent(const Event &event)
     return actions;
 }
 
-/*! Add a new \l{Rule} with the given \a event and \a actions to the engine.
+/*! Add a new \l{Rule} with the given \a EventDescriptorList and \a actions to the engine.
     For convenience, this creates a Rule without any \l{State} comparison. */
-RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const EventDescriptor &eventDescriptor, const QList<Action> &actions)
+RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QList<EventDescriptor> &eventDescriptorList, const QList<Action> &actions)
 {
-    QList<EventDescriptor> eventDescriptorList;
-    eventDescriptorList.append(eventDescriptor);
     return addRule(ruleId, eventDescriptorList, StateEvaluator(StateEvaluatorId::createStateEvaluatorId()), actions);
 }
 

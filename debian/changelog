@@ -1,3 +1,9 @@
+guh (0.1.8) utopic; urgency=medium
+
+  * allow calling AddRule with a single eventDescriptor but also with a list
+
+ -- Michael Zanetti <micha@noneyet>  Sun, 15 Jun 2014 00:33:36 +0200
+
 guh (0.1.7) utopic; urgency=medium
 
   * implement StateEvaluators

@@ -64,9 +64,11 @@ void TestRules::addRules_data()
     validEventDescriptor2.insert("deviceId", m_mockDeviceId);
     QVariantList params;
     QVariantMap param1;
-    param1.insert("mockParamInt", 3);
+    param1.insert("name", "mockParamInt");
+    param1.insert("value", 3);
+    param1.insert("operator", "OperatorTypeEquals");
     params.append(param1);
-    validEventDescriptor2.insert("paramDescriptors", param1);
+    validEventDescriptor2.insert("paramDescriptors", params);
 
     QVariantList eventDescriptorList;
     eventDescriptorList.append(validEventDescriptor1);
@@ -172,9 +174,15 @@ void TestRules::loadStoreConfig()
     eventDescriptor2.insert("paramDescriptors", QVariantList());
     QVariantList eventParamDescriptors;
     QVariantMap eventParam1;
-    eventParam1.insert("mockParamInt", 3);
+    eventParam1.insert("name", "mockParamInt");
+    eventParam1.insert("value", 3);
+    eventParam1.insert("operator", "OperatorTypeEquals");
     eventParamDescriptors.append(eventParam1);
     eventDescriptor2.insert("paramDescriptors", eventParamDescriptors);
+
+    QVariantList eventDescriptorList;
+    eventDescriptorList.append(eventDescriptor1);
+    eventDescriptorList.append(eventDescriptor2);
 
     QVariantMap action1;
     action1.insert("actionTypeId", mockActionIdNoParams);
@@ -200,7 +208,7 @@ void TestRules::loadStoreConfig()
     actions.append(action1);
     actions.append(action2);
     params.insert("actions", actions);
-    params.insert("eventDescriptor", eventDescriptor1);
+    params.insert("eventDescriptorList", eventDescriptorList);
     QVariant response = injectAndWait("Rules.AddRule", params);
 
     RuleId newRuleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
@@ -216,8 +224,18 @@ void TestRules::loadStoreConfig()
     QCOMPARE(RuleId(rules.first().toMap().value("id").toString()), newRuleId);
 
     QVariantList eventDescriptors = rules.first().toMap().value("eventDescriptors").toList();
-    QVERIFY2(eventDescriptors.count() == 1, "There shoud be exactly one eventDescriptor");
-    QVERIFY2(eventDescriptors.first().toMap() == eventDescriptor1, "Event descriptor doesn't match");
+    QVERIFY2(eventDescriptors.count() == 2, "There shoud be exactly 2 eventDescriptors");
+    foreach (const QVariant &expectedEventDescriptorVariant, eventDescriptorList) {
+        bool found = false;
+        foreach (const QVariant &replyEventDescriptorVariant, eventDescriptors) {
+            if (expectedEventDescriptorVariant.toMap().value("eventTypeId") == replyEventDescriptorVariant.toMap().value("eventTypeId") &&
+                    expectedEventDescriptorVariant.toMap().value("deviceId") == replyEventDescriptorVariant.toMap().value("deviceId")) {
+                found = true;
+                QVERIFY2(replyEventDescriptorVariant == expectedEventDescriptorVariant, "EventDescriptor doesn't match");
+            }
+        }
+        QVERIFY2(found, "missing eventdescriptor");
+    }
 
     QVariantList replyActions = rules.first().toMap().value("actions").toList();
     foreach (const QVariant &actionVariant, actions) {

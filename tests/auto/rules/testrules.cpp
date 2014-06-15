@@ -38,6 +38,8 @@ private slots:
     void addRules();
 
     void loadStoreConfig();
+
+    void evaluateEvent();
 };
 
 void TestRules::addRules_data()
@@ -139,6 +141,7 @@ void TestRules::addRules()
                     QVERIFY2(eventDescriptorVariant == replyEventDescriptorVariant, "Event descriptor doesn't match");
                 }
             }
+            QVERIFY2(found, "Missing event descriptor");
         }
     }
 
@@ -239,6 +242,50 @@ void TestRules::loadStoreConfig()
     response = injectAndWait("Rules.GetRules");
     rules = response.toMap().value("params").toMap().value("rules").toList();
     QVERIFY2(rules.count() == 0, "There should be no rules.");
+}
+
+void TestRules::evaluateEvent()
+{
+    // Add a rule
+    QVariantMap addRuleParams;
+    QVariantList events;
+    QVariantMap event1;
+    event1.insert("eventTypeId", mockEvent1Id);
+    event1.insert("deviceId", m_mockDeviceId);
+    events.append(event1);
+    addRuleParams.insert("eventDescriptorList", events);
+
+    QVariantList actions;
+    QVariantMap action;
+    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("deviceId", m_mockDeviceId);
+    actions.append(action);
+    addRuleParams.insert("actions", actions);
+    QVariant response = injectAndWait("Rules.AddRule", addRuleParams);
+    verifySuccess(response, true);
+
+    // Trigger an event
+    QNetworkAccessManager nam;
+    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+
+    // trigger event in mock device
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1Id.toString())));
+    QNetworkReply *reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    // Verify rule got executed
+    spy.clear();
+    request.setUrl(QUrl(QString("http://localhost:%1/actionhistory").arg(m_mockDevice1Port)));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+
+    reply->deleteLater();
+
+    QByteArray actionHistory = reply->readAll();
+    QVERIFY2(mockActionIdNoParams == ActionTypeId(actionHistory), "Action not triggered");
 }
 
 #include "testrules.moc"

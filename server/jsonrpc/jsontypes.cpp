@@ -591,6 +591,12 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                 if (!variant.canConvert(QVariant::Map)) {
                     report(false, "Param not valid. Should be a map.");
                 }
+            } else if (refName == paramDescriptorRef()) {
+                QPair<bool, QString> result = validateMap(paramDescriptorDescription(), variant.toMap());
+                if (!result.first) {
+                    qDebug() << "ParamDescriptor not valid";
+                    return result;
+                }
             } else if (refName == deviceRef()) {
                 QPair<bool, QString> result = validateMap(deviceDescription(), variant.toMap());
                 if (!result.first) {

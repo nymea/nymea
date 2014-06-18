@@ -43,6 +43,7 @@ extern ActionTypeId mockActionIdAsyncFailing;
 extern EventTypeId mockEvent1Id;
 extern EventTypeId mockEvent2Id;
 extern StateTypeId mockIntStateId;
+extern StateTypeId mockBoolStateId;
 
 class MockTcpServer;
 

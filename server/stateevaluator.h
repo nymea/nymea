@@ -32,11 +32,8 @@ public:
         OperatorTypeOr
     };
 
-    StateEvaluator();
-    StateEvaluator(const StateEvaluatorId &id, const StateDescriptor &statedescriptor);
-    StateEvaluator(const StateEvaluatorId &id, QList<StateEvaluator> childEvaluators = QList<StateEvaluator>(), StateOperator stateOperator = StateOperatorAnd);
-
-    StateEvaluatorId id() const;
+    StateEvaluator(const StateDescriptor &stateDescriptor);
+    StateEvaluator(QList<StateEvaluator> childEvaluators = QList<StateEvaluator>(), StateOperator stateOperator = StateOperatorAnd);
 
     StateDescriptor stateDescriptor() const;
 
@@ -53,12 +50,10 @@ public:
     static StateEvaluator loadFromSettings(QSettings &settings, const QString &groupPrefix);
 
 private:
-    StateEvaluatorId m_id;
     StateDescriptor m_stateDescriptor;
 
     QList<StateEvaluator> m_childEvaluators;
     StateOperator m_operatorType;
-
 };
 
 #endif // STATEEVALUATOR_H

@@ -31,9 +31,7 @@ class StateDescriptor
 {
 public:
     StateDescriptor();
-    StateDescriptor(const StateDescriptorId &id, const StateTypeId &stateTypeId, const DeviceId &deviceId, const QVariant &stateValue, ValueOperator operatorType = ValueOperatorEquals);
-
-    StateDescriptorId id() const;
+    StateDescriptor(const StateTypeId &stateTypeId, const DeviceId &deviceId, const QVariant &stateValue, ValueOperator operatorType = ValueOperatorEquals);
 
     StateTypeId stateTypeId() const;
     DeviceId deviceId() const;
@@ -46,7 +44,6 @@ public:
     bool operator !=(const State &state) const;
 
 private:
-    StateDescriptorId m_id;
     StateTypeId m_stateTypeId;
     DeviceId m_deviceId;
     QVariant m_stateValue;

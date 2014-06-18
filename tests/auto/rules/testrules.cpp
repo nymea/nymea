@@ -40,19 +40,37 @@ private slots:
     void loadStoreConfig();
 
     void evaluateEvent();
+
+    void testStateEvaluator_data();
+    void testStateEvaluator();
+
+    void testStateEvaluator2();
 };
 
 void TestRules::addRules_data()
 {
-    QVariantMap validAction;
-    validAction.insert("actionTypeId", mockActionIdNoParams);
-    validAction.insert("deviceId", m_mockDeviceId);
-    validAction.insert("params", QVariantList());
+    QVariantMap validActionNoParams;
+    validActionNoParams.insert("actionTypeId", mockActionIdNoParams);
+    validActionNoParams.insert("deviceId", m_mockDeviceId);
+    validActionNoParams.insert("params", QVariantList());
 
     QVariantMap invalidAction;
     invalidAction.insert("actionTypeId", ActionTypeId());
     invalidAction.insert("deviceId", m_mockDeviceId);
     invalidAction.insert("params", QVariantList());
+
+    QVariantMap stateDescriptor;
+    stateDescriptor.insert("stateTypeId", mockIntStateId);
+    stateDescriptor.insert("deviceId", m_mockDeviceId);
+    stateDescriptor.insert("operator", "OperatorTypeLess");
+    stateDescriptor.insert("value", "20");
+
+    QVariantMap validStateEvaluator;
+    validStateEvaluator.insert("stateDescriptor", stateDescriptor);
+
+    QVariantMap invalidStateEvaluator;
+    stateDescriptor.remove("deviceId");
+    invalidStateEvaluator.insert("stateDescriptor", stateDescriptor);
 
     QVariantMap validEventDescriptor1;
     validEventDescriptor1.insert("eventTypeId", mockEvent1Id);
@@ -82,14 +100,16 @@ void TestRules::addRules_data()
     QTest::addColumn<QVariantMap>("action1");
     QTest::addColumn<QVariantMap>("eventDescriptor");
     QTest::addColumn<QVariantList>("eventDescriptorList");
+    QTest::addColumn<QVariantMap>("stateEvaluator");
     QTest::addColumn<bool>("success");
 
 
-    QTest::newRow("valid rule. 1 EventDescriptor, 1 Action") << validAction << validEventDescriptor1 << QVariantList() << true;
-    QTest::newRow("valid rule. 2 EventDescriptors, 1 Action") << validAction << QVariantMap() << eventDescriptorList << true;
-    QTest::newRow("invalid rule: eventDescriptor and eventDescriptorList used") << validAction << validEventDescriptor1 << eventDescriptorList << false;
-    QTest::newRow("invalid action") << invalidAction << validEventDescriptor1 << QVariantList() << false;
-    QTest::newRow("invalid event descriptor") << validAction << invalidEventDescriptor << QVariantList() << false;
+    QTest::newRow("valid rule. 1 EventDescriptor, StateEvaluator, 1 Action") << validActionNoParams << validEventDescriptor1 << QVariantList() << validStateEvaluator << true;
+    QTest::newRow("valid rule. 2 EventDescriptors, 1 Action") << validActionNoParams << QVariantMap() << eventDescriptorList << validStateEvaluator << true;
+    QTest::newRow("invalid rule: eventDescriptor and eventDescriptorList used") << validActionNoParams << validEventDescriptor1 << eventDescriptorList << validStateEvaluator << false;
+    QTest::newRow("invalid action") << invalidAction << validEventDescriptor1 << QVariantList() << validStateEvaluator << false;
+    QTest::newRow("invalid event descriptor") << validActionNoParams << invalidEventDescriptor << QVariantList() << validStateEvaluator << false;
+//    QTest::newRow("invalid state evaluator") << validActionNoParams << invalidEventDescriptor << QVariantList() << invalidStateEvaluator << false;
 
 }
 
@@ -98,6 +118,7 @@ void TestRules::addRules()
     QFETCH(QVariantMap, action1);
     QFETCH(QVariantMap, eventDescriptor);
     QFETCH(QVariantList, eventDescriptorList);
+    QFETCH(QVariantMap, stateEvaluator);
     QFETCH(bool, success);
 
     QVariantMap params;
@@ -111,10 +132,11 @@ void TestRules::addRules()
     if (!eventDescriptorList.isEmpty()) {
         params.insert("eventDescriptorList", eventDescriptorList);
     }
+    params.insert("stateEvaluator", stateEvaluator);
     QVariant response = injectAndWait("Rules.AddRule", params);
+    verifySuccess(response, success);
 
     RuleId newRuleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
-    verifySuccess(response, success);
 
     response = injectAndWait("Rules.GetRules");
     QVariantList rules = response.toMap().value("params").toMap().value("rules").toList();
@@ -304,6 +326,58 @@ void TestRules::evaluateEvent()
 
     QByteArray actionHistory = reply->readAll();
     QVERIFY2(mockActionIdNoParams == ActionTypeId(actionHistory), "Action not triggered");
+}
+
+void TestRules::testStateEvaluator_data()
+{
+    QTest::addColumn<DeviceId>("deviceId");
+    QTest::addColumn<StateTypeId>("stateTypeId");
+    QTest::addColumn<QVariant>("value");
+    QTest::addColumn<ValueOperator>("operatorType");
+    QTest::addColumn<bool>("shouldMatch");
+
+    QTest::newRow("equals, not matching") << m_mockDeviceId << mockIntStateId << QVariant(7777) << ValueOperatorEquals << false;
+    QTest::newRow("equals, matching") << m_mockDeviceId << mockIntStateId << QVariant(10) << ValueOperatorEquals << true;
+
+    QTest::newRow("not equal, not matching") << m_mockDeviceId << mockIntStateId << QVariant(10) << ValueOperatorNotEquals << false;
+    QTest::newRow("not equal, matching") << m_mockDeviceId << mockIntStateId << QVariant(7777) << ValueOperatorNotEquals << true;
+
+    QTest::newRow("Greater, not matching") << m_mockDeviceId << mockIntStateId << QVariant(7777) << ValueOperatorGreater << false;
+    QTest::newRow("Greater, matching") << m_mockDeviceId << mockIntStateId << QVariant(2) << ValueOperatorGreater << true;
+    QTest::newRow("GreaterOrEqual, not matching") << m_mockDeviceId << mockIntStateId << QVariant(7777) << ValueOperatorGreaterOrEqual << false;
+    QTest::newRow("GreaterOrEqual, matching (greater)") << m_mockDeviceId << mockIntStateId << QVariant(2) << ValueOperatorGreaterOrEqual << true;
+    QTest::newRow("GreaterOrEqual, matching (equals)") << m_mockDeviceId << mockIntStateId << QVariant(10) << ValueOperatorGreaterOrEqual << true;
+
+    QTest::newRow("Less, not matching") << m_mockDeviceId << mockIntStateId << QVariant(2) << ValueOperatorLess << false;
+    QTest::newRow("Less, matching") << m_mockDeviceId << mockIntStateId << QVariant(7777) << ValueOperatorLess << true;
+    QTest::newRow("LessOrEqual, not matching") << m_mockDeviceId << mockIntStateId << QVariant(2) << ValueOperatorLessOrEqual << false;
+    QTest::newRow("LessOrEqual, matching (less)") << m_mockDeviceId << mockIntStateId << QVariant(777) << ValueOperatorLessOrEqual << true;
+    QTest::newRow("LessOrEqual, matching (equals)") << m_mockDeviceId << mockIntStateId << QVariant(10) << ValueOperatorLessOrEqual << true;
+}
+
+void TestRules::testStateEvaluator()
+{
+    QFETCH(DeviceId, deviceId);
+    QFETCH(StateTypeId, stateTypeId);
+    QFETCH(QVariant, value);
+    QFETCH(ValueOperator, operatorType);
+    QFETCH(bool, shouldMatch);
+
+    StateDescriptor descriptor(stateTypeId, deviceId, value, operatorType);
+    StateEvaluator evaluator(descriptor);
+    QVERIFY2(evaluator.evaluate() == shouldMatch, "State shouldn't match");
+
+}
+
+void TestRules::testStateEvaluator2()
+{
+//    StateDescriptor descriptor1(mockIntStateId, deviceId, value, operatorType);
+//    StateEvaluator evaluator1(descriptor);
+
+//    StateDescriptor descriptor2(mockBoolStateId, deviceId, value, operatorType);
+//    StateEvaluator evaluator2(descriptor);
+
+//    StateEvaluator mainEvaluator()
 }
 
 #include "testrules.moc"

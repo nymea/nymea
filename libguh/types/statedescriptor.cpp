@@ -19,25 +19,18 @@
 #include "statedescriptor.h"
 
 StateDescriptor::StateDescriptor():
-    m_id(StateDescriptorId::createStateDescriptorId()),
     m_operatorType(ValueOperatorEquals)
 {
 
 }
 
-StateDescriptor::StateDescriptor(const StateDescriptorId &id, const StateTypeId &stateTypeId, const DeviceId &deviceId, const QVariant &stateValue, ValueOperator operatorType):
-    m_id(id),
+StateDescriptor::StateDescriptor(const StateTypeId &stateTypeId, const DeviceId &deviceId, const QVariant &stateValue, ValueOperator operatorType):
     m_stateTypeId(stateTypeId),
     m_deviceId(deviceId),
     m_stateValue(stateValue),
     m_operatorType(operatorType)
 {
 
-}
-
-StateDescriptorId StateDescriptor::id() const
-{
-    return m_id;
 }
 
 StateTypeId StateDescriptor::stateTypeId() const
@@ -77,13 +70,13 @@ bool StateDescriptor::operator ==(const State &state) const
     case ValueOperatorEquals:
         return m_stateValue == state.value();
     case ValueOperatorGreater:
-        return m_stateValue > state.value();
+        return state.value() > m_stateValue;
     case ValueOperatorGreaterOrEqual:
-        return m_stateValue >= state.value();
+        return state.value() >= m_stateValue;
     case ValueOperatorLess:
-        return m_stateValue < state.value();
+        return state.value() < m_stateValue;
     case ValueOperatorLessOrEqual:
-        return m_stateValue <= state.value();
+        return state.value() <= m_stateValue;
     case ValueOperatorNotEquals:
         return m_stateValue != state.value();
     }

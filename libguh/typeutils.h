@@ -43,11 +43,8 @@ DECLARE_TYPE_ID(DeviceDescriptor)
 
 DECLARE_TYPE_ID(EventType)
 DECLARE_TYPE_ID(Event)
-DECLARE_TYPE_ID(EventDescriptor)
 DECLARE_TYPE_ID(StateType)
 DECLARE_TYPE_ID(State)
-DECLARE_TYPE_ID(StateDescriptor)
-DECLARE_TYPE_ID(StateEvaluator)
 DECLARE_TYPE_ID(ActionType)
 DECLARE_TYPE_ID(Action)
 DECLARE_TYPE_ID(Plugin)
@@ -66,5 +63,8 @@ enum StateOperator {
     StateOperatorAnd,
     StateOperatorOr
 };
+
+Q_DECLARE_METATYPE(ValueOperator)
+Q_DECLARE_METATYPE(StateOperator)
 
 #endif // TYPEUTILS_H

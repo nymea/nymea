@@ -89,14 +89,12 @@ void JsonTypes::init()
     s_state.insert("value", "variant");
 
     // StateDescriptor
-    s_stateDescriptor.insert("id", "uuid");
     s_stateDescriptor.insert("stateTypeId", "uuid");
     s_stateDescriptor.insert("deviceId", "uuid");
     s_stateDescriptor.insert("value", "variant");
     s_stateDescriptor.insert("operator", valueOperatorTypesRef());
 
     // StateEvaluator
-    s_stateEvaluator.insert("id", "uuid");
     s_stateEvaluator.insert("o:stateDescriptor", stateDescriptorRef());
     s_stateEvaluator.insert("o:childEvaluators", QVariantList() << stateEvaluatorRef());
     s_stateEvaluator.insert("o:operator", stateOperatorTypesRef());
@@ -280,7 +278,6 @@ QVariantMap JsonTypes::packStateType(const StateType &stateType)
 QVariantMap JsonTypes::packStateDescriptor(const StateDescriptor &stateDescriptor)
 {
     QVariantMap variantMap;
-    variantMap.insert("id", stateDescriptor.id().toString());
     variantMap.insert("stateTypeId", stateDescriptor.stateTypeId().toString());
     variantMap.insert("deviceId", stateDescriptor.deviceId().toString());
     variantMap.insert("value", stateDescriptor.stateValue());
@@ -291,7 +288,6 @@ QVariantMap JsonTypes::packStateDescriptor(const StateDescriptor &stateDescripto
 QVariantMap JsonTypes::packStateEvaluator(const StateEvaluator &stateEvaluator)
 {
     QVariantMap variantMap;
-    variantMap.insert("id", stateEvaluator.id());
     variantMap.insert("stateDescriptor", packStateDescriptor(stateEvaluator.stateDescriptor()));
     QVariantList childEvaluators;
     foreach (const StateEvaluator &childEvaluator, stateEvaluator.childEvaluators()) {
@@ -483,7 +479,7 @@ EventDescriptor JsonTypes::unpackEventDescriptor(const QVariantMap &eventDescrip
     EventTypeId eventTypeId(eventDescriptorMap.value("eventTypeId").toString());
     DeviceId eventDeviceId(eventDescriptorMap.value("deviceId").toString());
     QList<ParamDescriptor> eventParams = JsonTypes::unpackParamDescriptors(eventDescriptorMap.value("paramDescriptors").toList());
-    EventDescriptor eventDescriptor(EventDescriptorId::createEventDescriptorId(), eventTypeId, eventDeviceId, eventParams);
+    EventDescriptor eventDescriptor(eventTypeId, eventDeviceId, eventParams);
     return eventDescriptor;
 }
 

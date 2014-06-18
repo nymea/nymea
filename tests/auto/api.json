@@ -1,4 +1,4 @@
-0.1.8
+1
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -210,6 +210,7 @@
             "params": {
             },
             "returns": {
+                "protocol version": "string",
                 "version": "string"
             }
         },
@@ -222,7 +223,8 @@
                 "o:eventDescriptor": "$ref:EventDescriptor",
                 "o:eventDescriptorList": [
                     "$ref:EventDescriptor"
-                ]
+                ],
+                "o:stateEvaluator": "$ref:StateEvaluator"
             },
             "returns": {
                 "errorMessage": "string",
@@ -397,13 +399,11 @@
         },
         "StateDescriptor": {
             "deviceId": "uuid",
-            "id": "uuid",
             "operator": "$ref:ValueOperatorType",
             "stateTypeId": "uuid",
             "value": "variant"
         },
         "StateEvaluator": {
-            "id": "uuid",
             "o:childEvaluators": [
                 "$ref:StateEvaluator"
             ],

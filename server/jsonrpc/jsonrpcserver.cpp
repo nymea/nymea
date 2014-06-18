@@ -42,6 +42,8 @@
 #include <QJsonDocument>
 #include <QStringList>
 
+#define JSON_PROTOCOL_VERSION 1
+
 JsonRPCServer::JsonRPCServer(QObject *parent):
     JsonHandler(parent),
 #ifdef TESTING_ENABLED
@@ -66,6 +68,7 @@ JsonRPCServer::JsonRPCServer(QObject *parent):
     setDescription("Version", "Version of this Guh/JSONRPC interface.");
     setParams("Version", params);
     returns.insert("version", "string");
+    returns.insert("protocol version", "string");
     setReturns("Version", returns);
 
     params.clear(); returns.clear();
@@ -118,6 +121,7 @@ JsonReply* JsonRPCServer::Version(const QVariantMap &params) const
 
     QVariantMap data;
     data.insert("version", GUH_VERSION_STRING);
+    data.insert("protocol version", JSON_PROTOCOL_VERSION);
     return createReply(data);
 }
 
@@ -251,6 +255,7 @@ void JsonRPCServer::clientConnected(const QUuid &clientId)
     handshake.insert("id", 0);
     handshake.insert("server", "guh JSONRPC interface");
     handshake.insert("version", GUH_VERSION_STRING);
+    handshake.insert("protocol version", JSON_PROTOCOL_VERSION);
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(handshake);
     m_tcpServer->sendData(clientId, jsonDoc.toJson());
 }

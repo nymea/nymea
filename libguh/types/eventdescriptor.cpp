@@ -32,17 +32,11 @@
 
 /*! Constructs an EventDescriptor describing an Event.
  */
-EventDescriptor::EventDescriptor(const EventDescriptorId &id, const EventTypeId &eventTypeId, const DeviceId &deviceId, const QList<ParamDescriptor> &paramDescriptors):
-    m_id(id),
+EventDescriptor::EventDescriptor(const EventTypeId &eventTypeId, const DeviceId &deviceId, const QList<ParamDescriptor> &paramDescriptors):
     m_eventTypeId(eventTypeId),
     m_deviceId(deviceId),
     m_paramDescriptors(paramDescriptors)
 {
-}
-
-EventDescriptorId EventDescriptor::id() const
-{
-    return m_id;
 }
 
 /*! Returns the id of the \l{EventType} which describes this Event.*/

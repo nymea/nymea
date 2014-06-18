@@ -20,29 +20,17 @@
 #include "guhcore.h"
 #include "devicemanager.h"
 
-StateEvaluator::StateEvaluator()
+StateEvaluator::StateEvaluator(const StateDescriptor &stateDescriptor):
+    m_stateDescriptor(stateDescriptor)
 {
 
 }
 
-StateEvaluator::StateEvaluator(const StateEvaluatorId &id, const StateDescriptor &statedescriptor):
-    m_id(id),
-    m_stateDescriptor(statedescriptor)
-{
-
-}
-
-StateEvaluator::StateEvaluator(const StateEvaluatorId &id, QList<StateEvaluator> childEvaluators, StateOperator stateOperator):
-    m_id(id),
+StateEvaluator::StateEvaluator(QList<StateEvaluator> childEvaluators, StateOperator stateOperator):
+    m_stateDescriptor(),
     m_childEvaluators(childEvaluators),
-    m_operatorType(stateOperator),
-    m_stateDescriptor()
+    m_operatorType(stateOperator)
 {
-}
-
-StateEvaluatorId StateEvaluator::id() const
-{
-    return m_id;
 }
 
 StateDescriptor StateEvaluator::stateDescriptor() const
@@ -83,7 +71,7 @@ bool StateEvaluator::evaluate() const
             qWarning() << "Device not existing!";
             return false;
         }
-        if (device->hasState(m_stateDescriptor.stateTypeId())) {
+        if (!device->hasState(m_stateDescriptor.stateTypeId())) {
             qWarning() << "Device found, but it does not appear to have such a state!";
             return false;
         }
@@ -104,9 +92,7 @@ void StateEvaluator::dumpToSettings(QSettings &settings, const QString &groupNam
 {
     settings.beginGroup(groupName);
 
-    settings.setValue("id", m_id.toString());
     settings.beginGroup("stateDescriptor");
-    settings.setValue("stateDescriptorId", m_stateDescriptor.id().toString());
     settings.setValue("stateTypeId", m_stateDescriptor.stateTypeId().toString());
     settings.setValue("deviceId", m_stateDescriptor.deviceId().toString());
     settings.setValue("value", m_stateDescriptor.stateValue());
@@ -116,8 +102,8 @@ void StateEvaluator::dumpToSettings(QSettings &settings, const QString &groupNam
     settings.setValue("operator", m_operatorType);
 
     settings.beginGroup("childEvaluators");
-    foreach (const StateEvaluator &evaluator, m_childEvaluators) {
-        evaluator.dumpToSettings(settings, "stateEvaluator-" + evaluator.id().toString());
+    for (int i = 0; i < m_childEvaluators.count(); i++) {
+        m_childEvaluators.at(i).dumpToSettings(settings, "stateEvaluator-" + QString::number(i));
     }
     settings.endGroup();
 
@@ -127,18 +113,15 @@ void StateEvaluator::dumpToSettings(QSettings &settings, const QString &groupNam
 StateEvaluator StateEvaluator::loadFromSettings(QSettings &settings, const QString &groupName)
 {
     settings.beginGroup(groupName);
-    StateEvaluatorId id(settings.value("id").toString());
-
     settings.beginGroup("stateDescriptor");
-    StateDescriptorId stateDescriptorId(settings.value("stateDescriptorId").toString());
     StateTypeId stateTypeId(settings.value("stateTypeId").toString());
     DeviceId deviceId(settings.value("deviceId").toString());
     QVariant stateValue = settings.value("value");
     ValueOperator valueOperator = (ValueOperator)settings.value("operator").toInt();
-    StateDescriptor stateDescriptor(stateDescriptorId, stateTypeId, deviceId, stateValue, valueOperator);
+    StateDescriptor stateDescriptor(stateTypeId, deviceId, stateValue, valueOperator);
     settings.endGroup();
 
-    StateEvaluator ret(id, stateDescriptor);
+    StateEvaluator ret(stateDescriptor);
 
     ret.setOperatorType((StateOperator)settings.value("operator").toInt());
 

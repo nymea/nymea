@@ -41,6 +41,7 @@ RulesHandler::RulesHandler(QObject *parent) :
     setDescription("AddRule", "Add a rule.");
     params.insert("o:eventDescriptor", JsonTypes::eventDescriptorRef());
     params.insert("o:eventDescriptorList", QVariantList() << JsonTypes::eventDescriptorRef());
+    params.insert("o:stateEvaluator", JsonTypes::stateEvaluatorRef());
     QVariantList actions;
     actions.append(JsonTypes::actionRef());
     params.insert("actions", actions);

@@ -85,7 +85,6 @@ RuleEngine::RuleEngine(QObject *parent) :
         foreach (QString eventGroupName, settings.childGroups()) {
             if (eventGroupName.startsWith("EventDescriptor-")) {
                 settings.beginGroup(eventGroupName);
-                EventDescriptorId eventDescriptorId(eventGroupName.remove(QRegExp("^EventDescriptor-")));
                 EventTypeId eventTypeId(settings.value("eventTypeId").toString());
                 DeviceId deviceId(settings.value("deviceId").toString());
 
@@ -100,7 +99,7 @@ RuleEngine::RuleEngine(QObject *parent) :
                     }
                 }
 
-                EventDescriptor eventDescriptor(eventDescriptorId, eventTypeId, deviceId, params);
+                EventDescriptor eventDescriptor(eventTypeId, deviceId, params);
                 eventDescriptorList.append(eventDescriptor);
                 settings.endGroup();
             }
@@ -164,7 +163,7 @@ QList<Action> RuleEngine::evaluateEvent(const Event &event)
     For convenience, this creates a Rule without any \l{State} comparison. */
 RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QList<EventDescriptor> &eventDescriptorList, const QList<Action> &actions)
 {
-    return addRule(ruleId, eventDescriptorList, StateEvaluator(StateEvaluatorId::createStateEvaluatorId()), actions);
+    return addRule(ruleId, eventDescriptorList, StateEvaluator(), actions);
 }
 
 /*! Add a new \l{Rule} with the given \a event, \a states and \a actions to the engine. */
@@ -224,8 +223,9 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QList<Even
     QSettings settings(m_settingsFile);
     settings.beginGroup(rule.id().toString());
     settings.beginGroup("events");
-    foreach (const EventDescriptor &eventDescriptor, eventDescriptorList) {
-        settings.beginGroup("EventDescriptor-" + eventDescriptor.id().toString());
+    for (int i = 0; i < eventDescriptorList.count(); i++) {
+        const EventDescriptor &eventDescriptor = eventDescriptorList.at(i);
+        settings.beginGroup("EventDescriptor-" + QString::number(i));
         settings.setValue("deviceId", eventDescriptor.deviceId().toString());
         settings.setValue("eventTypeId", eventDescriptor.eventTypeId());
 

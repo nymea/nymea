@@ -43,10 +43,14 @@ void TestVersioning::version()
     QVariant response = injectAndWait("JSONRPC.Version");
 
     QString version = response.toMap().value("params").toMap().value("version").toString();
+    QVariant protocolVersion = response.toMap().value("params").toMap().value("protocol version");
     qDebug() << "Got version:" << version << "( Expected:" << GUH_VERSION_STRING << ")";
 
     QVERIFY2(!version.isEmpty(), "Version is empty.");
     QCOMPARE(version, QString(GUH_VERSION_STRING));
+
+    QVERIFY2(!protocolVersion.toString().isEmpty(), "Protocol version is empty.");
+    QVERIFY2(protocolVersion.canConvert(QVariant::Int), "Protocol version is not an integer.");
 }
 
 void TestVersioning::apiChangeBumpsVersion()
@@ -55,7 +59,7 @@ void TestVersioning::apiChangeBumpsVersion()
     QString newFilePath = QString(TESTS_SOURCE_DIR) + "/api.json.new";
 
     QVariant response = injectAndWait("JSONRPC.Version", QVariantMap());
-    QByteArray newVersion = response.toMap().value("params").toMap().value("version").toByteArray();
+    QByteArray newVersion = response.toMap().value("params").toMap().value("protocol version").toByteArray();
 
     response = injectAndWait("JSONRPC.Introspect", QVariantMap());
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(response.toMap().value("params"));

@@ -48,6 +48,8 @@ public:
     QList<ParamType> configurationDescription() const override;
     DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const QVariantMap &params) const override;
 
+    QPair<DeviceManager::DeviceSetupStatus, QString> setupDevice(Device *device) override;
+
     QPair<DeviceManager::DeviceSetupStatus, QString> confirmPairing(const QUuid &pairingTransactionId, const DeviceClassId &deviceClassId, const QList<Param> &params) override;
 
 public slots:
@@ -63,9 +65,7 @@ private:
     Discovery *m_discovery;
     QNetworkAccessManager *m_nam;
 
-    QHash<QNetworkReply*, QPair<QUuid, HueBridgeConnection*> > m_pairings;
-
-    QList<HueBridgeConnection*> m_bridges;
+    QHash<QNetworkReply*, QUuid> m_pairings;
 };
 
 #endif // DEVICEPLUGINBOBLIGHT_H

@@ -44,6 +44,10 @@ public:
 
     Q_INVOKABLE JsonReply* AddConfiguredDevice(const QVariantMap &params);
 
+    Q_INVOKABLE JsonReply* PairDevice(const QVariantMap &params);
+
+    Q_INVOKABLE JsonReply* ConfirmPairing(const QVariantMap &params);
+
     Q_INVOKABLE JsonReply* GetConfiguredDevices(const QVariantMap &params) const;
 
     Q_INVOKABLE JsonReply* RemoveConfiguredDevice(const QVariantMap &params);
@@ -66,10 +70,13 @@ private slots:
 
     void deviceSetupFinished(Device *device, DeviceManager::DeviceError status);
 
+    void pairingFinished(const QUuid &pairingTransactionId, DeviceManager::DeviceError status, const QString &errorMessage, const DeviceId &deviceId);
+
 private:
     // A cache for async replies
     mutable QHash<DeviceClassId, JsonReply*> m_discoverRequests;
     mutable QHash<DeviceId, JsonReply*> m_asynDeviceAdditions;
+    mutable QHash<QUuid, JsonReply*> m_asyncPairingRequests;
 };
 
 #endif // DEVICEHANDLER_H

@@ -1,4 +1,4 @@
-1
+2
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -33,13 +33,25 @@
             }
         },
         "Devices.AddConfiguredDevice": {
-            "description": "Add a configured device. Use deviceDescriptorId or deviceParams, depending on the createMethod of the device class.",
+            "description": "Add a configured device with a setupMethod of SetupMethodJustAdd. For devices with a setupMethod different than SetupMethodJustAdd, use PairDevice. Use deviceDescriptorId or deviceParams, depending on the createMethod of the device class. CreateMethodJustAdd takes the parameters you want to have with that device. CreateMethodDiscovery requires the use of a deviceDescriptorId.",
             "params": {
                 "deviceClassId": "uuid",
                 "o:deviceDescriptorId": "uuid",
                 "o:deviceParams": [
                     "$ref:Param"
                 ]
+            },
+            "returns": {
+                "errorMessage": "string",
+                "o:deviceId": "uuid",
+                "success": "bool"
+            }
+        },
+        "Devices.ConfirmPairing": {
+            "description": "Confirm an ongoing pairing. In case of SetupMethodEnterPin also provide the pin in the params.",
+            "params": {
+                "o:secret": "string",
+                "pairingTransactionId": "uuid"
             },
             "returns": {
                 "errorMessage": "string",
@@ -160,6 +172,23 @@
                 "vendors": [
                     "$ref:Vendor"
                 ]
+            }
+        },
+        "Devices.PairDevice": {
+            "description": "Pair a device. Use this for DeviceClasses with a setupMethod different than SetupMethodJustAdd.Use deviceDescriptorId or deviceParams, depending on the createMethod of the device class. CreateMethodJustAdd takes the parameters you want to have with that device. CreateMethodDiscovery requires the use of a deviceDescriptorId. If success is true, the return values will contain a pairingTransactionId, a displayMessage and the setupMethod. Depending on the setupMethod you should either proceed with AddConfiguredDevice  or PairDevice.",
+            "params": {
+                "deviceClassId": "uuid",
+                "o:deviceDescriptorId": "uuid",
+                "o:deviceParams": [
+                    "$ref:Param"
+                ]
+            },
+            "returns": {
+                "errorMessage": "string",
+                "o:displayMessage": "string",
+                "o:pairingTransactionId": "uuid",
+                "o:setupMethod": "$ref:SetupMethodType",
+                "success": "bool"
             }
         },
         "Devices.RemoveConfiguredDevice": {

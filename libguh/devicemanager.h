@@ -59,7 +59,8 @@ public:
         DeviceErrorCreationMethodNotSupported,
         DeviceErrorActionParameterError,
         DeviceErrorDeviceDescriptorNotFound,
-        DeviceErrorAsync
+        DeviceErrorAsync,
+        DeviceErrorPairingTransactionIdNotFound,
     };
 
     enum DeviceSetupStatus {
@@ -82,6 +83,9 @@ public:
     QList<Device*> configuredDevices() const;
     QPair<DeviceError, QString> addConfiguredDevice(const DeviceClassId &deviceClassId, const QList<Param> &params, const DeviceId id = DeviceId::createDeviceId());
     QPair<DeviceError, QString> addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &id = DeviceId::createDeviceId());
+    QPair<DeviceError, QString> pairDevice(const DeviceClassId &deviceClassId, const QList<Param> &params);
+    QPair<DeviceError, QString> pairDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId);
+    QPair<DeviceError, QString> confirmPairing(const QUuid &pairingTransactionId, const QString &secret = QString());
     QPair<DeviceError, QString> removeConfiguredDevice(const DeviceId &deviceId);
 
     Device* findConfiguredDevice(const DeviceId &id) const;
@@ -94,6 +98,7 @@ signals:
     void deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &devices);
     void deviceSetupFinished(Device *device, DeviceError status, const QString &errorMessage);
+    void pairingFinished(const QUuid &pairingTransactionId, DeviceError status, const QString &errorMessage, const DeviceId &deviceId = DeviceId());
     void actionExecutionFinished(const ActionId, DeviceError status, const QString &errorMessage);
 
 public slots:
@@ -106,6 +111,7 @@ private slots:
     void createNewAutoDevices();
     void slotDevicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
     void slotDeviceSetupFinished(Device *device, DeviceManager::DeviceSetupStatus status, const QString &errorMessage);
+    void slotPairingFinished(const QUuid &pairingTransactionId, DeviceManager::DeviceSetupStatus status, const QString &errorMessage);
 
     // Only connect this to Devices. It will query the sender()
     void slotDeviceStateValueChanged(const QUuid &stateTypeId, const QVariant &value);
@@ -128,7 +134,7 @@ private:
     QHash<VendorId, QList<DeviceClassId> > m_vendorDeviceMap;
     QHash<DeviceClassId, DeviceClass> m_supportedDevices;
     QList<Device*> m_configuredDevices;
-    QHash<DeviceClassId, QHash<DeviceDescriptorId, DeviceDescriptor> > m_discoveredDevices;
+    QHash<DeviceDescriptorId, DeviceDescriptor> m_discoveredDevices;
 
     QHash<PluginId, DevicePlugin*> m_devicePlugins;
 
@@ -138,6 +144,9 @@ private:
     Radio433* m_radio433;
     QTimer m_pluginTimer;
     QList<Device*> m_pluginTimerUsers;
+
+    QHash<QUuid, QPair<DeviceClassId, QList<Param> > > m_pairingsJustAdd;
+    QHash<QUuid, QPair<DeviceClassId, DeviceDescriptorId> > m_pairingsDiscovery;
 
     friend class DevicePlugin;
 };

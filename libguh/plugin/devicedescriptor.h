@@ -53,4 +53,6 @@ private:
     QList<Param> m_params;
 };
 
+Q_DECLARE_METATYPE(DeviceDescriptor)
+
 #endif // DEVICEDESCRIPTION_H

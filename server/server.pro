@@ -29,6 +29,7 @@ LIBS += -L../plugins/deviceplugins/openweathermap -lguh_devicepluginopenweatherm
 LIBS += -L../plugins/deviceplugins/lircd -lguh_devicepluginlircd
 LIBS += -L../plugins/deviceplugins/mailnotification -lguh_devicepluginmailnotification
 LIBS += -L../plugins/deviceplugins/wakeonlan -lguh_devicepluginwakeonlan
+LIBS += -L../plugins/deviceplugins/philipshue -lguh_devicepluginphilipshue
 
 boblight {
     xcompile {

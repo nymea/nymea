@@ -147,6 +147,11 @@ bool DevicePlugin::configureAutoDevice(QList<Device*> loadedDevices, Device *dev
     return false;
 }
 
+/*! Reimplement this if you support a DeviceClass with createMethod CreateMethodDiscovery.
+    This will be called to discover Devices for the given DeviceClass. This will always
+    be an async operation. Return DeviceErrorAsync or DeviceErrorNoError if the discovery
+    has been started successfully. Return an appropriate error otherwise.
+    Once devices are discovered, emit devicesDiscovered() once. */
 DeviceManager::DeviceError DevicePlugin::discoverDevices(const DeviceClassId &deviceClassId, const QVariantMap &params) const
 {
     Q_UNUSED(deviceClassId)
@@ -175,6 +180,15 @@ QPair<DeviceManager::DeviceSetupStatus, QString> DevicePlugin::setupDevice(Devic
 void DevicePlugin::deviceRemoved(Device *device)
 {
     Q_UNUSED(device)
+}
+
+QPair<DeviceManager::DeviceSetupStatus, QString> DevicePlugin::confirmPairing(const QUuid &pairingTransactionId, const DeviceClassId &deviceClassId, const QList<Param> &params)
+{
+    Q_UNUSED(pairingTransactionId)
+    Q_UNUSED(deviceClassId)
+    Q_UNUSED(params)
+
+    return reportDeviceSetup(DeviceManager::DeviceSetupStatusFailure, "Plugin does not implement pairing.");
 }
 
 QList<ParamType> DevicePlugin::configurationDescription() const

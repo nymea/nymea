@@ -55,6 +55,8 @@ public:
     virtual QPair<DeviceManager::DeviceSetupStatus, QString> setupDevice(Device *device);
     virtual void deviceRemoved(Device *device);
 
+    virtual QPair<DeviceManager::DeviceSetupStatus, QString> confirmPairing(const QUuid &pairingTransactionId, const DeviceClassId &deviceClassId, const QList<Param> &params);
+
     // Hardware input
     virtual void radioData(QList<int> rawData) {Q_UNUSED(rawData)}
     virtual void guhTimer() {}
@@ -76,6 +78,7 @@ signals:
     void emitEvent(const Event &event);
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors);
     void deviceSetupFinished(Device *device, DeviceManager::DeviceSetupStatus status, const QString &errorMessage);
+    void pairingFinished(const QUuid &pairingTransactionId, DeviceManager::DeviceSetupStatus status, const QString &errorMessage);
     void actionExecutionFinished(const ActionId &id, DeviceManager::DeviceError status, const QString &errorMessage);
     void configValueChanged(const QString &paramName, const QVariant &value);
 

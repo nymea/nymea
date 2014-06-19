@@ -428,10 +428,10 @@ DeviceManager::DeviceError DevicePluginOpenweathermap::discoverDevices(const Dev
     qDebug() << "should discover divces for" << deviceClassId << params.value("location").toString();
     if(params.value("location").toString() == ""){
         m_openweaher->searchAutodetect();
-        return DeviceManager::DeviceErrorNoError;
+        return DeviceManager::DeviceErrorAsync;
     }
     m_openweaher->search(params.value("location").toString());
-    return DeviceManager::DeviceErrorNoError;
+    return DeviceManager::DeviceErrorAsync;
 }
 
 QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginOpenweathermap::setupDevice(Device *device)

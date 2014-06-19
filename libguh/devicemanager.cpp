@@ -95,6 +95,9 @@ DeviceManager::DeviceManager(QObject *parent) :
     QObject(parent),
     m_radio433(0)
 {
+    qRegisterMetaType<DeviceClassId>();
+    qRegisterMetaType<DeviceDescriptor>();
+
     m_pluginTimer.setInterval(15000);
     connect(&m_pluginTimer, &QTimer::timeout, this, &DeviceManager::timerEvent);
 
@@ -228,12 +231,104 @@ QPair<DeviceManager::DeviceError, QString> DeviceManager::addConfiguredDevice(co
         return qMakePair<DeviceError, QString>(DeviceErrorCreationMethodNotSupported, "CreateMethodDiscovery");
     }
 
-    DeviceDescriptor descriptor = m_discoveredDevices.take(deviceClassId).take(deviceDescriptorId);
+    DeviceDescriptor descriptor = m_discoveredDevices.take(deviceDescriptorId);
     if (!descriptor.isValid()) {
         return qMakePair<DeviceError>(DeviceErrorDeviceDescriptorNotFound, deviceDescriptorId.toString());
     }
 
     return addConfiguredDeviceInternal(deviceClassId, descriptor.params(), deviceId);
+}
+
+QPair<DeviceManager::DeviceError, QString> DeviceManager::pairDevice(const DeviceClassId &deviceClassId, const QList<Param> &params)
+{
+    DeviceClass deviceClass = findDeviceClass(deviceClassId);
+    if (deviceClass.id().isNull()) {
+        qWarning() << "cannot find a device class with id" << deviceClassId;
+        return qMakePair<DeviceError, QString>(DeviceErrorDeviceClassNotFound, deviceClassId.toString());
+    }
+
+    if (deviceClass.setupMethod() == DeviceClass::SetupMethodJustAdd) {
+        qWarning() << "Cannot setup this device this way. No need to pair this device.";
+        return qMakePair<DeviceError, QString>(DeviceErrorCreationMethodNotSupported, "No need to pair this device.");
+    }
+
+    QUuid pairingTransactionId = QUuid::createUuid();
+    m_pairingsJustAdd.insert(pairingTransactionId, qMakePair<DeviceClassId, QList<Param> >(deviceClassId, params));
+
+    if (deviceClass.setupMethod() == DeviceClass::SetupMethodDisplayPin) {
+        // TODO: fetch PIN from device plugin
+        qWarning() << "SetupMethodDisplayPin not implemented yet";
+        return qMakePair<DeviceError, QString>(DeviceErrorSetupFailed, "SetupMethodDisplayPin Not implemented yet.");
+    }
+
+    return qMakePair<DeviceError, QString>(DeviceErrorNoError, pairingTransactionId.toString());
+}
+
+QPair<DeviceManager::DeviceError, QString> DeviceManager::pairDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId)
+{
+    DeviceClass deviceClass = findDeviceClass(deviceClassId);
+    if (deviceClass.id().isNull()) {
+        qWarning() << "cannot find a device class with id" << deviceClassId;
+        return qMakePair<DeviceError, QString>(DeviceErrorDeviceClassNotFound, deviceClassId.toString());
+    }
+
+    if (deviceClass.setupMethod() == DeviceClass::SetupMethodJustAdd) {
+        qWarning() << "Cannot setup this device this way. No need to pair this device.";
+        return qMakePair<DeviceError, QString>(DeviceErrorCreationMethodNotSupported, "No need to pair this device.");
+    }
+
+    if (!m_discoveredDevices.contains(deviceDescriptorId)) {
+        qWarning() << "Cannot find a DeviceDescriptor with ID" << deviceClassId.toString();
+        return qMakePair<DeviceError, QString>(DeviceErrorDeviceDescriptorNotFound, deviceDescriptorId.toString());
+    }
+
+    QUuid pairingTransactionId = QUuid::createUuid();
+    m_pairingsDiscovery.insert(pairingTransactionId, qMakePair<DeviceClassId, DeviceDescriptorId>(deviceClassId, deviceDescriptorId));
+
+    if (deviceClass.setupMethod() == DeviceClass::SetupMethodDisplayPin) {
+        // TODO: fetch PIN from device plugin
+        qWarning() << "SetupMethodDisplayPin not implemented yet";
+        return qMakePair<DeviceError, QString>(DeviceErrorSetupFailed, "SetupMethodDisplayPin Not implemented yet.");
+    }
+
+    return qMakePair<DeviceError, QString>(DeviceErrorNoError, pairingTransactionId.toString());
+}
+
+QPair<DeviceManager::DeviceError, QString> DeviceManager::confirmPairing(const QUuid &pairingTransactionId, const QString &secret)
+{
+    if (m_pairingsJustAdd.contains(pairingTransactionId)) {
+        qWarning() << "this SetupMethod is not implemented yet";
+        m_pairingsJustAdd.remove(pairingTransactionId);
+        return qMakePair<DeviceError, QString>(DeviceErrorSetupFailed, "Not implemented yet");
+    }
+
+    if (m_pairingsDiscovery.contains(pairingTransactionId)) {
+        DeviceDescriptorId deviceDescriptorId = m_pairingsDiscovery.value(pairingTransactionId).second;
+        DeviceClassId deviceClassId = m_pairingsDiscovery.value(pairingTransactionId).first;
+
+        DeviceDescriptor deviceDescriptor = m_discoveredDevices.value(deviceDescriptorId);
+
+        DevicePlugin *plugin = m_devicePlugins.value(m_supportedDevices.value(deviceClassId).pluginId());
+
+        if (!plugin) {
+            qWarning() << "Can't find a plugin for this device class";
+            return report(DeviceErrorPluginNotFound, m_supportedDevices.value(deviceClassId).pluginId().toString());
+        }
+
+        QPair<DeviceSetupStatus, QString> status = plugin->confirmPairing(pairingTransactionId, deviceClassId, deviceDescriptor.params());
+        switch (status.first) {
+        case DeviceSetupStatusSuccess:
+            m_pairingsDiscovery.remove(pairingTransactionId);
+            return report(DeviceErrorNoError);
+        case DeviceSetupStatusFailure:
+            m_pairingsDiscovery.remove(pairingTransactionId);
+            return report(DeviceErrorSetupFailed, status.second);
+        case DeviceSetupStatusAsync:
+            return report(DeviceErrorAsync);
+        }
+    }
+
+    return report(DeviceErrorPairingTransactionIdNotFound, pairingTransactionId.toString());
 }
 
 QPair<DeviceManager::DeviceError, QString> DeviceManager::addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QList<Param> &params, const DeviceId id)
@@ -242,6 +337,11 @@ QPair<DeviceManager::DeviceError, QString> DeviceManager::addConfiguredDeviceInt
     if (deviceClass.id().isNull()) {
         qWarning() << "cannot find a device class with id" << deviceClassId;
         return qMakePair<DeviceError, QString>(DeviceErrorDeviceClassNotFound, deviceClassId.toString());
+    }
+
+    if (deviceClass.setupMethod() != DeviceClass::SetupMethodJustAdd) {
+        qWarning() << "Cannot setup this device this way. You need to pair this device.";
+        return qMakePair<DeviceError, QString>(DeviceErrorCreationMethodNotSupported, "You need to pair this device.");
     }
 
     QPair<DeviceError, QString> result = verifyParams(deviceClass.paramTypes(), params);
@@ -437,6 +537,7 @@ void DeviceManager::loadPlugins()
             connect(pluginIface, &DevicePlugin::devicesDiscovered, this, &DeviceManager::slotDevicesDiscovered);
             connect(pluginIface, &DevicePlugin::deviceSetupFinished, this, &DeviceManager::slotDeviceSetupFinished);
             connect(pluginIface, &DevicePlugin::actionExecutionFinished, this, &DeviceManager::actionExecutionFinished);
+            connect(pluginIface, &DevicePlugin::pairingFinished, this, &DeviceManager::slotPairingFinished);
         }
     }
 }
@@ -527,11 +628,9 @@ void DeviceManager::createNewAutoDevices()
 
 void DeviceManager::slotDevicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors)
 {
-    QHash<DeviceDescriptorId, DeviceDescriptor> descriptorHash;
     foreach (const DeviceDescriptor &descriptor, deviceDescriptors) {
-        descriptorHash.insert(descriptor.id(), descriptor);
+        m_discoveredDevices.insert(descriptor.id(), descriptor);
     }
-    m_discoveredDevices[deviceClassId] = descriptorHash;
     emit devicesDiscovered(deviceClassId, deviceDescriptors);
 }
 
@@ -587,6 +686,78 @@ void DeviceManager::slotDeviceSetupFinished(Device *device, DeviceManager::Devic
 
     device->setupCompleted();
     emit deviceSetupFinished(device, DeviceManager::DeviceErrorNoError, QString());
+}
+
+void DeviceManager::slotPairingFinished(const QUuid &pairingTransactionId, DeviceManager::DeviceSetupStatus status, const QString &errorMessage)
+{
+    if (!m_pairingsJustAdd.contains(pairingTransactionId) && !m_pairingsDiscovery.contains(pairingTransactionId)) {
+        DevicePlugin *plugin = dynamic_cast<DevicePlugin*>(sender());
+        if (plugin) {
+            qWarning() << "Received a pairing finished without waiting for it from plugin:" << plugin->metaObject()->className();
+        } else {
+            qWarning() << "Received a pairing finished without waiting for it.";
+        }
+        return;
+    }
+
+    DeviceClassId deviceClassId;
+    QList<Param> params;
+
+    // Do this before checking status to make sure we clean up our hashes properly
+    if (m_pairingsJustAdd.contains(pairingTransactionId)) {
+        QPair<DeviceClassId, QList<Param> > pair = m_pairingsJustAdd.take(pairingTransactionId);
+        deviceClassId = pair.first;
+        params = pair.second;
+    }
+
+    if (m_pairingsDiscovery.contains(pairingTransactionId)) {
+        QPair<DeviceClassId, DeviceDescriptorId> pair = m_pairingsDiscovery.take(pairingTransactionId);
+
+        DeviceDescriptorId deviceDescriptorId = pair.second;
+        DeviceDescriptor descriptor = m_discoveredDevices.take(deviceDescriptorId);
+
+        deviceClassId = pair.first;
+        params = descriptor.params();
+    }
+
+
+    qDebug() << "pairingfinsihed!" << errorMessage;
+    if (status != DeviceSetupStatusSuccess) {
+        qDebug() << "emitting shit";
+        emit pairingFinished(pairingTransactionId, DeviceErrorSetupFailed, errorMessage);
+        return;
+    }
+
+    DeviceClass deviceClass = findDeviceClass(deviceClassId);
+    DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
+    if (!plugin) {
+        qWarning() << "Cannot find a plugin for this device class!";
+        emit pairingFinished(pairingTransactionId, DeviceErrorPluginNotFound, deviceClass.pluginId().toString());
+        return;
+    }
+
+    DeviceId id = DeviceId::createDeviceId();
+    Device *device = new Device(plugin->pluginId(), id, deviceClassId, this);
+    device->setName(deviceClass.name());
+    device->setParams(params);
+
+    QPair<DeviceSetupStatus, QString> setupStatus = setupDevice(device);
+    switch (setupStatus.first) {
+    case DeviceSetupStatusFailure:
+        qWarning() << "Device setup failed. Not adding device to system.";
+        delete device;
+        emit pairingFinished(pairingTransactionId, DeviceErrorSetupFailed, QString("Device setup failed: %1").arg(setupStatus.second));
+        return;
+    case DeviceSetupStatusAsync:
+    case DeviceSetupStatusSuccess:
+        qDebug() << "Device setup complete.";
+        break;
+    }
+
+    m_configuredDevices.append(device);
+    storeConfiguredDevices();
+
+    emit pairingFinished(pairingTransactionId, DeviceErrorNoError, QString(), id);
 }
 
 void DeviceManager::slotDeviceStateValueChanged(const QUuid &stateTypeId, const QVariant &value)

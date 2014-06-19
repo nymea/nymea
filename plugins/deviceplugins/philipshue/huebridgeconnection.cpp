@@ -16,34 +16,24 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <QCoreApplication>
-#include <guhcore.h>
+#include "huebridgeconnection.h"
 
-#include <QtPlugin>
+#include <QUuid>
 
-Q_IMPORT_PLUGIN(DevicePluginElro)
-Q_IMPORT_PLUGIN(DevicePluginIntertechno)
-//Q_IMPORT_PLUGIN(DevicePluginMeisterAnker)
-Q_IMPORT_PLUGIN(DevicePluginWifiDetector)
-Q_IMPORT_PLUGIN(DevicePluginConrad)
-Q_IMPORT_PLUGIN(DevicePluginMock)
-Q_IMPORT_PLUGIN(DevicePluginOpenweathermap)
-Q_IMPORT_PLUGIN(DevicePluginLircd)
-Q_IMPORT_PLUGIN(DevicePluginWakeOnLan)
-Q_IMPORT_PLUGIN(DevicePluginMailNotification)
-Q_IMPORT_PLUGIN(DevicePluginPhilipsHue)
-
-#if USE_BOBLIGHT
-Q_IMPORT_PLUGIN(DevicePluginBoblight)
-#endif
-
-int main(int argc, char *argv[])
+HueBridgeConnection::HueBridgeConnection(const QHostAddress &address, const QString &username, QObject *parent) :
+    QObject(parent),
+    m_address(address),
+    m_username(username)
 {
-    QCoreApplication a(argc, argv);
-
-    a.setOrganizationName("guh");
-
-    GuhCore::instance();
-
-    return a.exec();
 }
+
+QString HueBridgeConnection::username() const
+{
+    return m_username;
+}
+
+QHostAddress HueBridgeConnection::address() const
+{
+    return m_address;
+}
+

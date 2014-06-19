@@ -74,6 +74,9 @@ public:
     SetupMethod setupMethod() const;
     void setSetupMethod(SetupMethod setupMethod);
 
+    QString pairingInfo() const;
+    void setPairingInfo(const QString &pairingInfo);
+
     bool operator==(const DeviceClass &device) const;
 
 private:
@@ -89,6 +92,7 @@ private:
     QList<ParamType> m_discoveryParamTypes;
     CreateMethod m_createMethod;
     SetupMethod m_setupMethod;
+    QString m_pairingInfo;
 };
 
 #endif

@@ -77,7 +77,12 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     setReturns("SetPluginConfiguration", returns);
 
     params.clear(); returns.clear();
-    setDescription("AddConfiguredDevice", "Add a configured device. Use deviceDescriptorId or deviceParams, depending on the createMethod of the device class.");
+    setDescription("AddConfiguredDevice", "Add a configured device with a setupMethod of SetupMethodJustAdd. "
+                   "For devices with a setupMethod different than SetupMethodJustAdd, use PairDevice. "
+                   "Use deviceDescriptorId or deviceParams, depending on the createMethod of the device class. "
+                   "CreateMethodJustAdd takes the parameters you want to have with that device. "
+                   "CreateMethodDiscovery requires the use of a deviceDescriptorId."
+                   );
     params.insert("deviceClassId", "uuid");
     params.insert("o:deviceDescriptorId", "uuid");
     QVariantList deviceParams;
@@ -88,6 +93,34 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     returns.insert("errorMessage", "string");
     returns.insert("o:deviceId", "uuid");
     setReturns("AddConfiguredDevice", returns);
+
+    returns.clear(); // Reused params from above!
+    setDescription("PairDevice", "Pair a device. "
+                   "Use this for DeviceClasses with a setupMethod different than SetupMethodJustAdd."
+                   "Use deviceDescriptorId or deviceParams, depending on the createMethod of the device class. "
+                   "CreateMethodJustAdd takes the parameters you want to have with that device. "
+                   "CreateMethodDiscovery requires the use of a deviceDescriptorId. "
+                   "If success is true, the return values will contain a pairingTransactionId, a displayMessage and "
+                   "the setupMethod. Depending on the setupMethod you should either proceed with AddConfiguredDevice "
+                   " or PairDevice."
+                   );
+    setParams("PairDevice", params);
+    returns.insert("success", "bool");
+    returns.insert("errorMessage", "string");
+    returns.insert("o:pairingTransactionId", "uuid");
+    returns.insert("o:displayMessage", "string");
+    returns.insert("o:setupMethod", JsonTypes::setupMethodTypesRef());
+    setReturns("PairDevice", returns);
+
+    params.clear(); returns.clear();
+    setDescription("ConfirmPairing", "Confirm an ongoing pairing. In case of SetupMethodEnterPin also provide the pin in the params.");
+    params.insert("pairingTransactionId", "uuid");
+    params.insert("o:secret", "string");
+    setParams("ConfirmPairing", params);
+    returns.insert("success", "bool");
+    returns.insert("errorMessage", "string");
+    returns.insert("o:deviceId", "uuid");
+    setReturns("ConfirmPairing", returns);
 
     params.clear(); returns.clear();
     setDescription("GetConfiguredDevices", "Returns a list of configured devices.");
@@ -165,8 +198,9 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     setParams("StateChanged", params);
 
     connect(GuhCore::instance()->deviceManager(), &DeviceManager::deviceStateChanged, this, &DeviceHandler::deviceStateChanged);
-    connect(GuhCore::instance()->deviceManager(), &DeviceManager::devicesDiscovered, this, &DeviceHandler::devicesDiscovered);
+    connect(GuhCore::instance()->deviceManager(), &DeviceManager::devicesDiscovered, this, &DeviceHandler::devicesDiscovered, Qt::QueuedConnection);
     connect(GuhCore::instance()->deviceManager(), &DeviceManager::deviceSetupFinished, this, &DeviceHandler::deviceSetupFinished);
+    connect(GuhCore::instance()->deviceManager(), &DeviceManager::pairingFinished, this, &DeviceHandler::pairingFinished);
 }
 
 QString DeviceHandler::name() const
@@ -211,6 +245,7 @@ JsonReply *DeviceHandler::GetDiscoveredDevices(const QVariantMap &params) const
 
     DeviceManager::DeviceError status = GuhCore::instance()->deviceManager()->discoverDevices(deviceClassId, params.value("discoveryParams").toMap());
     switch (status) {
+    case DeviceManager::DeviceErrorAsync:
     case DeviceManager::DeviceErrorNoError: {
         JsonReply *reply = createAsyncReply("GetDiscoveredDevices");
         m_discoverRequests.insert(deviceClassId, reply);
@@ -350,6 +385,79 @@ JsonReply* DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
         returns.insert("success", false);
     }
     return createReply(returns);
+}
+
+JsonReply *DeviceHandler::PairDevice(const QVariantMap &params)
+{
+    DeviceClassId deviceClassId(params.value("deviceClassId").toString());
+    DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(deviceClassId);
+
+    QPair<DeviceManager::DeviceError, QString> status;
+    if (params.contains("deviceDescriptorId")) {
+        DeviceDescriptorId deviceDescriptorId(params.value("deviceDescriptorId").toString());
+        status = GuhCore::instance()->deviceManager()->pairDevice(deviceClassId, deviceDescriptorId);
+    } else {
+        QList<Param> deviceParams;
+        foreach (const QString &paramName, params.value("deviceParams").toMap().keys()) {
+             Param param(paramName);
+             param.setValue(params.value("deviceParams").toMap().value(paramName));
+             deviceParams.append(param);
+        }
+        status = GuhCore::instance()->deviceManager()->pairDevice(deviceClassId, deviceParams);
+    }
+
+    QVariantMap returns;
+    switch (status.first) {
+    case DeviceManager::DeviceErrorNoError:
+        returns.insert("success", true);
+        returns.insert("errorMessage", "");
+        returns.insert("displayMessage", deviceClass.pairingInfo());
+        returns.insert("pairingTransactionId", status.second);
+        returns.insert("setupMethod", JsonTypes::setupMethodTypes().at(deviceClass.setupMethod()));
+        break;
+    case DeviceManager::DeviceErrorDeviceClassNotFound:
+        returns.insert("errorMessage", QString("Error pairing device. Device class not found: %1").arg(status.second));
+        returns.insert("success", false);
+        break;
+    case DeviceManager::DeviceErrorDeviceDescriptorNotFound:
+        returns.insert("errorMessage", QString("Error pairing device. Device descriptor not found: %1").arg(status.second));
+        returns.insert("success", false);
+        break;
+    case DeviceManager::DeviceErrorCreationMethodNotSupported:
+        returns.insert("errorMessage", QString("Error pairing device. This device can't be created this way: %1").arg(status.second));
+        returns.insert("success", false);
+        break;
+    case DeviceManager::DeviceErrorPairingTransactionIdNotFound:
+        returns.insert("errorMessage", QString("Error pairing device. PairingTransactionId not found: %1").arg(status.second));
+        returns.insert("success", false);
+        break;
+    }
+    return createReply(returns);
+}
+
+JsonReply *DeviceHandler::ConfirmPairing(const QVariantMap &params)
+{
+    QUuid pairingTransactionId = params.value("pairingTransactionId").toUuid();
+    QString secret = params.value("secret").toString();
+    QPair<DeviceManager::DeviceError, QString> status = GuhCore::instance()->deviceManager()->confirmPairing(pairingTransactionId, secret);
+
+    JsonReply *reply = 0;
+    QVariantMap returns;
+    switch (status.first) {
+    case DeviceManager::DeviceErrorAsync:
+        reply = createAsyncReply("ConfirmPairing");
+        m_asyncPairingRequests.insert(pairingTransactionId, reply);
+        return reply;
+    case DeviceManager::DeviceErrorNoError:
+        returns.insert("success", true);
+        returns.insert("errorMessage", QString());
+    case DeviceManager::DeviceErrorSetupFailed:
+    default:
+        returns.insert("success", false);
+        returns.insert("errorMessage", status.second);
+    }
+    reply = createReply(returns);
+    return reply;
 }
 
 JsonReply* DeviceHandler::GetConfiguredDevices(const QVariantMap &params) const
@@ -499,6 +607,27 @@ void DeviceHandler::deviceSetupFinished(Device *device, DeviceManager::DeviceErr
         Q_ASSERT_X(false, "DeviceHandler", "Unhandled status code for deviceSetupFinished");
         returns.insert("errorMessage", "Unknown error.");
         returns.insert("success", false);
+    }
+    reply->setData(returns);
+    reply->finished();
+}
+
+void DeviceHandler::pairingFinished(const QUuid &pairingTransactionId, DeviceManager::DeviceError status, const QString &errorMessage, const DeviceId &deviceId)
+{
+    qDebug() << "handler: pairing finished";
+    JsonReply *reply = m_asyncPairingRequests.take(pairingTransactionId);
+    if (!reply) {
+        qDebug() << "not for me";
+        return;
+    }
+    QVariantMap returns;
+    if (status == DeviceManager::DeviceErrorNoError) {
+        returns.insert("success", true);
+        returns.insert("errorMessage", QString());
+        returns.insert("deviceId", deviceId.toString());
+    } else {
+        returns.insert("success", false);
+        returns.insert("errorMessage", errorMessage);
     }
     reply->setData(returns);
     reply->finished();

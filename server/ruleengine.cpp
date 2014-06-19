@@ -144,7 +144,10 @@ RuleEngine::RuleEngine(QObject *parent) :
     list of all \l{Action}{Actions} that should be executed. */
 QList<Action> RuleEngine::evaluateEvent(const Event &event)
 {
-    qDebug() << "got event:" << event;
+    Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(event.deviceId());
+
+    qDebug() << "got event:" << event << device->name();
+
     QList<Action> actions;
     for (int i = 0; i < m_rules.count(); ++i) {
         qDebug() << "evaluating rule" << i << m_rules.at(i).eventDescriptors();

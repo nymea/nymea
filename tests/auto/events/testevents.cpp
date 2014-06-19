@@ -36,6 +36,8 @@ class TestEvents: public GuhTestBase
 private slots:
     void triggerEvent();
     void triggerStateChangeEvent();
+
+    void params();
 };
 
 void TestEvents::triggerEvent()
@@ -91,6 +93,18 @@ void TestEvents::triggerStateChangeEvent()
     QCOMPARE(event.eventTypeId().toString(), mockIntStateId.toString());
     QCOMPARE(event.deviceId(), device->id());
     QCOMPARE(event.param("value").value().toInt(), 11);
+}
+
+void TestEvents::params()
+{
+    Event event;
+    QList<Param> params;
+    Param p("foo", "bar");
+    params.append(p);
+    event.setParams(params);
+
+    QVERIFY(event.param("foo").value().toString() == "bar");
+    QVERIFY(!event.param("baz").value().isValid());
 }
 
 #include "testevents.moc"

@@ -35,6 +35,7 @@ class TestEvents: public GuhTestBase
 
 private slots:
     void triggerEvent();
+    void triggerStateChangeEvent();
 };
 
 void TestEvents::triggerEvent()
@@ -62,6 +63,34 @@ void TestEvents::triggerEvent()
     Event event = spy.at(0).at(0).value<Event>();
     QCOMPARE(event.eventTypeId(), mockEvent1Id);
     QCOMPARE(event.deviceId(), device->id());
+}
+
+void TestEvents::triggerStateChangeEvent()
+{
+    QList<Device*> devices = GuhCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId);
+    QVERIFY2(devices.count() > 0, "There needs to be at least one configured Mock Device for this test");
+    Device *device = devices.first();
+
+    QSignalSpy spy(GuhCore::instance()->deviceManager(), SIGNAL(eventTriggered(const Event&)));
+
+    // Setup connection to mock client
+    QNetworkAccessManager nam;
+
+    // trigger state changed event in mock device
+    int port = device->paramValue("httpport").toInt();
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(port).arg(mockIntStateId.toString()).arg(11)));
+    QNetworkReply *reply = nam.get(request);
+    reply->deleteLater();
+
+    // Lets wait for the notification
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+
+    // Make sure the event contains all the stuff we expect
+    Event event = spy.at(0).at(0).value<Event>();
+    QCOMPARE(event.eventTypeId().toString(), mockIntStateId.toString());
+    QCOMPARE(event.deviceId(), device->id());
+    QCOMPARE(event.param("value").value().toInt(), 11);
 }
 
 #include "testevents.moc"

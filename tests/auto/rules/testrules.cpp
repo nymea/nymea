@@ -34,8 +34,10 @@ class TestRules: public GuhTestBase
     Q_OBJECT
 
 private slots:
-    void addRules_data();
-    void addRules();
+    void addRemoveRules_data();
+    void addRemoveRules();
+
+    void removeInvalidRule();
 
     void loadStoreConfig();
 
@@ -48,7 +50,7 @@ private slots:
     void testStateEvaluator2();
 };
 
-void TestRules::addRules_data()
+void TestRules::addRemoveRules_data()
 {
     QVariantMap validActionNoParams;
     validActionNoParams.insert("actionTypeId", mockActionIdNoParams);
@@ -114,7 +116,7 @@ void TestRules::addRules_data()
 
 }
 
-void TestRules::addRules()
+void TestRules::addRemoveRules()
 {
     QFETCH(QVariantMap, action1);
     QFETCH(QVariantMap, eventDescriptor);
@@ -182,6 +184,14 @@ void TestRules::addRules()
     response = injectAndWait("Rules.GetRules");
     rules = response.toMap().value("params").toMap().value("rules").toList();
     QVERIFY2(rules.count() == 0, "There should be no rules.");
+}
+
+void TestRules::removeInvalidRule()
+{
+    QVariantMap params;
+    params.insert("ruleId", RuleId::createRuleId());
+    QVariant response = injectAndWait("Rules.RemoveRule", params);
+    verifySuccess(response, false);
 }
 
 void TestRules::loadStoreConfig()

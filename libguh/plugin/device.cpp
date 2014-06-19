@@ -111,6 +111,18 @@ QVariant Device::paramValue(const QString &paramName) const
     return QVariant();
 }
 
+void Device::setParamValue(const QString &paramName, const QVariant &value)
+{
+    QList<Param> params;
+    foreach (Param param, m_params) {
+        if (param.name() == paramName) {
+            param.setValue(value);
+        }
+        params.append(param);
+    }
+    m_params = params;
+}
+
 /*! Returns the states of this Device. It must match the \l{StateType} description in the associated \l{DeviceClass}. */
 QList<State> Device::states() const
 {

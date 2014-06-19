@@ -49,6 +49,7 @@ public:
     void setParams(const QList<Param> &params);
 
     QVariant paramValue(const QString &paramName) const;
+    void setParamValue(const QString &paramName, const QVariant &value);
 
     QList<State> states() const;
     bool hasState(const StateTypeId &stateTypeId) const;

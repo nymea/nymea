@@ -69,6 +69,8 @@ QList<DeviceClass> DevicePluginPhilipsHue::supportedDevices() const
     QList<ParamType> paramTypes;
     ParamType ipParam("ip", QVariant::String);
     paramTypes.append(ipParam);
+    ParamType usernameParam("username", QVariant::String);
+    paramTypes.append(usernameParam);
     deviceClassHue.setParamTypes(paramTypes);
     
     QList<StateType> hueStates;
@@ -146,6 +148,12 @@ DeviceManager::DeviceError DevicePluginPhilipsHue::discoverDevices(const DeviceC
     return DeviceManager::DeviceErrorAsync;
 }
 
+QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginPhilipsHue::setupDevice(Device *device)
+{
+    qDebug() << "setupDevice" << device->params();
+    return reportDeviceSetup();
+}
+
 QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginPhilipsHue::confirmPairing(const QUuid &pairingTransactionId, const DeviceClassId &deviceClassId, const QList<Param> &params)
 {
     Param ipParam;
@@ -157,12 +165,19 @@ QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginPhilipsHue::confirm
     if (!ipParam.isValid()) {
         return reportDeviceSetup(DeviceManager::DeviceSetupStatusFailure, "Missing parameter: ip");
     }
-
-    QString username = "guh-" + QUuid::createUuid().toString().remove(QRegExp("[\\{\\}]*")).remove(QRegExp("\\-[0-9a-f\\-]*"));
+    Param usernameParam;
+    foreach (const Param &param, params) {
+        if (param.name() == "username") {
+            usernameParam = param;
+        }
+    }
+    if (!usernameParam.isValid()) {
+        return reportDeviceSetup(DeviceManager::DeviceSetupStatusFailure, "Missing parameter: username");
+    }
 
     QVariantMap createUserParams;
     createUserParams.insert("devicetype", "guh");
-    createUserParams.insert("username", username);
+    createUserParams.insert("username", usernameParam.value().toString());
 
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(createUserParams);
     QByteArray data = jsonDoc.toJson();
@@ -171,8 +186,7 @@ QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginPhilipsHue::confirm
     QNetworkReply *reply = m_nam->post(request, data);
     connect(reply, &QNetworkReply::finished, this, &DevicePluginPhilipsHue::createUserFinished);
 
-    HueBridgeConnection *bridge = new HueBridgeConnection(QHostAddress(ipParam.value().toString()), username);
-    m_pairings.insert(reply, qMakePair<QUuid, HueBridgeConnection*>(pairingTransactionId, bridge));
+    m_pairings.insert(reply, pairingTransactionId);
     return reportDeviceSetup(DeviceManager::DeviceSetupStatusAsync);
 }
 
@@ -202,6 +216,8 @@ void DevicePluginPhilipsHue::discoveryDone(const QList<QHostAddress> &bridges)
         QList<Param> params;
         Param param("ip", bridge.toString());
         params.append(param);
+        Param userParam("username", "guh-" + QUuid::createUuid().toString().remove(QRegExp("[\\{\\}]*")).remove(QRegExp("\\-[0-9a-f\\-]*")));
+        params.append(userParam);
         descriptor.setParams(params);
         deviceDescriptors.append(descriptor);
     }
@@ -214,15 +230,12 @@ void DevicePluginPhilipsHue::createUserFinished()
     QNetworkReply *reply = static_cast<QNetworkReply*>(sender());
     QByteArray data = reply->readAll();
 
-    QPair<QUuid, HueBridgeConnection*> pair = m_pairings.take(reply);
-    QUuid pairingTransactionId = pair.first;
-    HueBridgeConnection *bridge = pair.second;
+    QUuid pairingTransactionId = m_pairings.take(reply);
 
     QJsonParseError error;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
     if (error.error != QJsonParseError::NoError) {
         emit pairingFinished(pairingTransactionId, DeviceManager::DeviceSetupStatusFailure, "Pairing failed. Failed to parse response from Hue Bridge.");
-        delete bridge;
         return;
     }
 
@@ -231,12 +244,9 @@ void DevicePluginPhilipsHue::createUserFinished()
     if (response.contains("error")) {
         qDebug() << "Failed to pair Hue bridge:" << response.value("error").toMap().value("description");
         emit pairingFinished(pairingTransactionId, DeviceManager::DeviceSetupStatusFailure, "Pairing failed:" + response.value("error").toMap().value("description").toString());
-        delete bridge;
         return;
     }
 
     emit pairingFinished(pairingTransactionId, DeviceManager::DeviceSetupStatusSuccess, QString());
-
-    m_bridges.append(bridge);
     qDebug() << "response" << response << data;
 }

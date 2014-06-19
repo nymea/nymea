@@ -44,6 +44,7 @@ private slots:
     void testStateEvaluator_data();
     void testStateEvaluator();
 
+    void testStateEvaluator2_data();
     void testStateEvaluator2();
 };
 
@@ -336,6 +337,9 @@ void TestRules::testStateEvaluator_data()
     QTest::addColumn<ValueOperator>("operatorType");
     QTest::addColumn<bool>("shouldMatch");
 
+    QTest::newRow("invalid stateId") << m_mockDeviceId << StateTypeId::createStateTypeId() << QVariant(10) << ValueOperatorEquals << false;
+    QTest::newRow("invalid deviceId") << DeviceId::createDeviceId() << mockIntStateId << QVariant(10) << ValueOperatorEquals << false;
+
     QTest::newRow("equals, not matching") << m_mockDeviceId << mockIntStateId << QVariant(7777) << ValueOperatorEquals << false;
     QTest::newRow("equals, matching") << m_mockDeviceId << mockIntStateId << QVariant(10) << ValueOperatorEquals << true;
 
@@ -365,19 +369,54 @@ void TestRules::testStateEvaluator()
 
     StateDescriptor descriptor(stateTypeId, deviceId, value, operatorType);
     StateEvaluator evaluator(descriptor);
-    QVERIFY2(evaluator.evaluate() == shouldMatch, "State shouldn't match");
 
+    QVERIFY2(evaluator.evaluate() == shouldMatch, shouldMatch ? "State should match" : "State shouldn't match");
+}
+
+void TestRules::testStateEvaluator2_data()
+{
+    QTest::addColumn<int>("intValue");
+    QTest::addColumn<ValueOperator>("intOperator");
+
+    QTest::addColumn<bool>("boolValue");
+    QTest::addColumn<ValueOperator>("boolOperator");
+
+    QTest::addColumn<StateOperator>("stateOperator");
+
+    QTest::addColumn<bool>("shouldMatch");
+
+    QTest::newRow("Y: 10 && false") << 10 << ValueOperatorEquals << false << ValueOperatorEquals << StateOperatorAnd << true;
+    QTest::newRow("N: 10 && true") << 10 << ValueOperatorEquals << true << ValueOperatorEquals << StateOperatorAnd << false;
+    QTest::newRow("N: 11 && false") << 11 << ValueOperatorEquals << false << ValueOperatorEquals << StateOperatorAnd << false;
+    QTest::newRow("Y: 11 || false") << 11 << ValueOperatorEquals << false << ValueOperatorEquals << StateOperatorOr << true;
+    QTest::newRow("Y: 10 || false") << 10 << ValueOperatorEquals << false << ValueOperatorEquals << StateOperatorOr << true;
+    QTest::newRow("Y: 10 || true") << 10 << ValueOperatorEquals << true << ValueOperatorEquals << StateOperatorOr << true;
+    QTest::newRow("N: 11 || true") << 11 << ValueOperatorEquals << true << ValueOperatorEquals << StateOperatorOr << false;
 }
 
 void TestRules::testStateEvaluator2()
 {
-//    StateDescriptor descriptor1(mockIntStateId, deviceId, value, operatorType);
-//    StateEvaluator evaluator1(descriptor);
+    QFETCH(int, intValue);
+    QFETCH(ValueOperator, intOperator);
+    QFETCH(bool, boolValue);
+    QFETCH(ValueOperator, boolOperator);
+    QFETCH(StateOperator, stateOperator);
+    QFETCH(bool, shouldMatch);
 
-//    StateDescriptor descriptor2(mockBoolStateId, deviceId, value, operatorType);
-//    StateEvaluator evaluator2(descriptor);
+    StateDescriptor descriptor1(mockIntStateId, m_mockDeviceId, intValue, intOperator);
+    StateEvaluator evaluator1(descriptor1);
 
-//    StateEvaluator mainEvaluator()
+    StateDescriptor descriptor2(mockBoolStateId, m_mockDeviceId, boolValue, boolOperator);
+    StateEvaluator evaluator2(descriptor2);
+
+    QList<StateEvaluator> childEvaluators;
+    childEvaluators.append(evaluator1);
+    childEvaluators.append(evaluator2);
+
+    StateEvaluator mainEvaluator(childEvaluators);
+    mainEvaluator.setOperatorType(stateOperator);
+
+    QVERIFY2(mainEvaluator.evaluate() == shouldMatch, shouldMatch ? "State should match" : "State shouldn't match");
 }
 
 #include "testrules.moc"

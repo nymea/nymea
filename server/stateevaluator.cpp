@@ -80,6 +80,16 @@ bool StateEvaluator::evaluate() const
             return false;
         }
     }
+
+    if (m_operatorType == StateOperatorOr) {
+        foreach (const StateEvaluator &stateEvaluator, m_childEvaluators) {
+            if (stateEvaluator.evaluate()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     foreach (const StateEvaluator &stateEvaluator, m_childEvaluators) {
         if (!stateEvaluator.evaluate()) {
             return false;

@@ -5,8 +5,8 @@
 export DH_VERBOSE=1
 export QT_QPA_PLATFORM=minimal
 
-override_dh_auto_configure:
-	qmake .
+%:
+	dh $@ --parallel
 
 override_dh_auto_build:
 	make

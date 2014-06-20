@@ -20,9 +20,6 @@ include /usr/share/dpkg/buildflags.mk
 %:
 	dh $@ --parallel
 
-override_dh_auto_configure:
-	qmake .
-
 override_dh_auto_build:
 	make -j$(DEB_PARALLEL_JOBS)
 	make doc

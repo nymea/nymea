@@ -207,7 +207,7 @@ DeviceManager::HardwareResources DevicePluginMock::requiredHardware() const
     return DeviceManager::HardwareResourceTimer;
 }
 
-DeviceManager::DeviceError DevicePluginMock::discoverDevices(const DeviceClassId &deviceClassId, const QVariantMap &params) const
+DeviceManager::DeviceError DevicePluginMock::discoverDevices(const DeviceClassId &deviceClassId, const QList<Param> &params) const
 {
     Q_UNUSED(deviceClassId)
     Q_UNUSED(params)

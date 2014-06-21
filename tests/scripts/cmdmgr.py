@@ -68,10 +68,10 @@ def get_deviceClasses(vendorId = None):
 
 def list_deviceClasses(vendorId = None):
     response = get_deviceClasses(vendorId)
-    print "=== Devices ==="
+    print "=== DeviceClasses ==="
     for deviceClass in response:
         print "%40s  %s" % (deviceClass['name'], deviceClass['id'])
-    print "=== Devices ==="
+    print "=== DeviceClasses ==="
 
 def select_deviceClass():
     vendorId = select_vendor()
@@ -110,8 +110,19 @@ def list_configured_devices():
 def discover_device(deviceClassId = None):
     if deviceClassId == None:
         deviceClassId = select_deviceClass()
+    deviceClass = get_deviceClass(deviceClassId)
+    discoveryParams = []
+    for paramType in deviceClass['discoveryParamTypes']:
+        paramValue = raw_input("Please enter value for parameter %s" % paramType['name'])
+        dp = {}
+        dp[paramType['name']] = paramValue
+        discoveryParams.append(dp)
+
     params = {}
     params['deviceClassId'] = deviceClassId
+    if len(discoveryParams) > 0:
+        params['discoveryParams'] = discoveryParams
+
     print "\ndiscovering..."
     response = send_command("Devices.GetDiscoveredDevices", params)
     deviceDescriptorList = [];

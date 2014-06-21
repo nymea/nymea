@@ -21,19 +21,41 @@
 
 #include <QObject>
 #include <QHostAddress>
+#include <QNetworkAccessManager>
+#include <QPointer>
+
+class Caller
+{
+public:
+    QPointer<QObject> obj;
+    QString method;
+    int id;
+};
 
 class HueBridgeConnection : public QObject
 {
     Q_OBJECT
 public:
-    explicit HueBridgeConnection(const QHostAddress &address, const QString &username = QString(), QObject *parent = 0);
+    explicit HueBridgeConnection(QObject *parent = 0);
 
-    QHostAddress address() const;
-    QString username() const;
+    int createUser(const QHostAddress &address, const QString &username);
+
+    int get(const QHostAddress &address, const QString &username, const QString &path, QObject *caller, const QString &methodName);
+    int put(const QHostAddress &address, const QString &username, const QString &path, const QVariantMap &data, QObject *caller, const QString &methodName);
+
+private slots:
+    void slotCreateUserFinished();
+    void slotGetFinished();
+
+signals:
+    void createUserFinished(int id, const QVariantMap &map);
+    void getFinished(int id, const QVariantMap &map);
 
 private:
-    QHostAddress m_address;
-    QString m_username;
+    QNetworkAccessManager *m_nam;
+    int m_requestCounter;
+    QHash<QNetworkReply*, int> m_createUserMap;
+    QHash<QNetworkReply*, Caller> m_requestMap;
 };
 
 #endif // HUEBRIDGECONNECTION_H

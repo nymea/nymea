@@ -22,8 +22,8 @@
 #include "plugin/deviceplugin.h"
 #include "discovery.h"
 #include "huebridgeconnection.h"
+#include "light.h"
 
-class QNetworkAccessManager;
 class QNetworkReply;
 
 class DevicePluginPhilipsHue: public DevicePlugin
@@ -58,14 +58,30 @@ public slots:
 private slots:
     void discoveryDone(const QList<QHostAddress> &bridges);
 
-    void createUserFinished();
+    void createUserFinished(int id, const QVariantMap &params);
+    void getLightsFinished(int id, const QVariantMap &params);
+    void getFinished(int id, const QVariantMap &params);
+
+    void lightStateChanged();
 
 private:
     QList<Param> m_config;
     Discovery *m_discovery;
-    QNetworkAccessManager *m_nam;
 
-    QHash<QNetworkReply*, QUuid> m_pairings;
+    class PairingInfo {
+    public:
+        QUuid pairingTransactionId;
+        Param ipParam;
+        Param usernameParam;
+    };
+
+    QHash<int, PairingInfo> m_pairings;
+    HueBridgeConnection *m_bridge;
+
+    QList<Light*> m_unconfiguredLights;
+    QHash<Light*, Device*> m_lights;
+
+    QHash<Light*, Device*> m_asyncSetups;
 };
 
 #endif // DEVICEPLUGINBOBLIGHT_H

@@ -114,5 +114,17 @@ QVariantMap ActionHandler::statusToReply(DeviceManager::DeviceError status, cons
     QVariantMap returns;
     returns.insert("success", status == DeviceManager::DeviceErrorNoError);
     returns.insert("errorMessage", errorMessage);
+
+    switch (status) {
+    case DeviceManager::DeviceErrorNoError:
+        break;
+    case DeviceManager::DeviceErrorDeviceNotFound:
+        returns.insert("errorMessage", QString("Device not found: %1").arg(errorMessage));
+        break;
+    case DeviceManager::DeviceErrorSetupFailed:
+        returns.insert("errorMessage", QString("Device setup failed: %1").arg(errorMessage));
+        break;
+    }
+
     return returns;
 }

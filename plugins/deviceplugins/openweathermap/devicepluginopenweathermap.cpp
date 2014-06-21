@@ -423,14 +423,20 @@ QList<DeviceClass> DevicePluginOpenweathermap::supportedDevices() const
     return ret;
 }
 
-DeviceManager::DeviceError DevicePluginOpenweathermap::discoverDevices(const DeviceClassId &deviceClassId, const QVariantMap &params) const
+DeviceManager::DeviceError DevicePluginOpenweathermap::discoverDevices(const DeviceClassId &deviceClassId, const QList<Param> &params) const
 {
-    qDebug() << "should discover divces for" << deviceClassId << params.value("location").toString();
-    if(params.value("location").toString() == ""){
+    QString location;
+    foreach (const Param &param, params) {
+        if (param.name() == "location") {
+            location = param.value().toString();
+        }
+    }
+
+    if (location.isEmpty()){
         m_openweaher->searchAutodetect();
         return DeviceManager::DeviceErrorAsync;
     }
-    m_openweaher->search(params.value("location").toString());
+    m_openweaher->search(location);
     return DeviceManager::DeviceErrorAsync;
 }
 

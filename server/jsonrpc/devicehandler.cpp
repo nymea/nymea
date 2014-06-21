@@ -243,7 +243,13 @@ JsonReply *DeviceHandler::GetDiscoveredDevices(const QVariantMap &params) const
 
     DeviceClassId deviceClassId = DeviceClassId(params.value("deviceClassId").toString());
 
-    DeviceManager::DeviceError status = GuhCore::instance()->deviceManager()->discoverDevices(deviceClassId, params.value("discoveryParams").toMap());
+    QList<Param> discoveryParams;
+    foreach (const QVariant &discoveryParam, params.value("discoveryParams").toList()) {
+        Param dp(discoveryParam.toMap().keys().first(), discoveryParam.toMap().values().first());
+        discoveryParams.append(dp);
+    }
+
+    DeviceManager::DeviceError status = GuhCore::instance()->deviceManager()->discoverDevices(deviceClassId, discoveryParams);
     switch (status) {
     case DeviceManager::DeviceErrorAsync:
     case DeviceManager::DeviceErrorNoError: {
@@ -618,6 +624,15 @@ void DeviceHandler::pairingFinished(const QUuid &pairingTransactionId, DeviceMan
     JsonReply *reply = m_asyncPairingRequests.take(pairingTransactionId);
     if (!reply) {
         qDebug() << "not for me";
+        return;
+    }
+
+    if (status != DeviceManager::DeviceErrorNoError) {
+        QVariantMap returns;
+        returns.insert("success", false);
+        returns.insert("errorMessage", errorMessage);
+        reply->setData(returns);
+        reply->finished();
         return;
     }
 

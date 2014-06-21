@@ -78,7 +78,7 @@ public:
 
     QList<Vendor> supportedVendors() const;
     QList<DeviceClass> supportedDevices(const VendorId &vendorId = VendorId()) const;
-    DeviceError discoverDevices(const DeviceClassId &deviceClassId, const QVariantMap &params) const;
+    DeviceError discoverDevices(const DeviceClassId &deviceClassId, const QList<Param> &params) const;
 
     QList<Device*> configuredDevices() const;
     QPair<DeviceError, QString> addConfiguredDevice(const DeviceClassId &deviceClassId, const QList<Param> &params, const DeviceId id = DeviceId::createDeviceId());

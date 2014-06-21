@@ -152,7 +152,7 @@ bool DevicePlugin::configureAutoDevice(QList<Device*> loadedDevices, Device *dev
     be an async operation. Return DeviceErrorAsync or DeviceErrorNoError if the discovery
     has been started successfully. Return an appropriate error otherwise.
     Once devices are discovered, emit devicesDiscovered() once. */
-DeviceManager::DeviceError DevicePlugin::discoverDevices(const DeviceClassId &deviceClassId, const QVariantMap &params) const
+DeviceManager::DeviceError DevicePlugin::discoverDevices(const DeviceClassId &deviceClassId, const QList<Param> &params) const
 {
     Q_UNUSED(deviceClassId)
     Q_UNUSED(params)

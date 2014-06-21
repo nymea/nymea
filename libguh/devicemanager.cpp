@@ -173,7 +173,7 @@ QList<DeviceClass> DeviceManager::supportedDevices(const VendorId &vendorId) con
     return ret;
 }
 
-DeviceManager::DeviceError DeviceManager::discoverDevices(const DeviceClassId &deviceClassId, const QVariantMap &params) const
+DeviceManager::DeviceError DeviceManager::discoverDevices(const DeviceClassId &deviceClassId, const QList<Param> &params) const
 {
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
     if (!deviceClass.isValid()) {

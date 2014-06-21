@@ -157,7 +157,7 @@ QList<ParamType> DevicePluginPhilipsHue::configurationDescription() const
     return params;
 }
 
-DeviceManager::DeviceError DevicePluginPhilipsHue::discoverDevices(const DeviceClassId &deviceClassId, const QVariantMap &params) const
+DeviceManager::DeviceError DevicePluginPhilipsHue::discoverDevices(const DeviceClassId &deviceClassId, const QList<Param> &params) const
 {
     m_discovery->findBridges(4000);
     return DeviceManager::DeviceErrorAsync;

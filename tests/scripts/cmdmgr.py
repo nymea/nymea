@@ -12,7 +12,9 @@ methods = {'List supported Vendors': 'list_vendors',
            'List configured Devices': 'list_configured_devices',
            'Add Device': 'add_device',
            'Remove a device': 'remove_device',
-           'List supported Devices by vendor': 'list_deviceClasses_by_vendor' }
+           'List supported Devices by vendor': 'list_deviceClasses_by_vendor',
+           'Execute an action': 'execute_action',
+           'See a device`s states': 'list_device_states'}
 
 
 def get_selection(title, options):
@@ -24,17 +26,13 @@ def get_selection(title, options):
 
 def send_command(method, params = None):
     global commandId
-    if params == None or len(params) == 0:
-        command = '{"id": %i, "method":"%s"}\n' % (commandId, method)
-    else:
-        paramString = ""
-        for i in range(0, len(params)):
-            if paramString != "":
-                paramString = paramString + ", "
-            paramKey = params.keys()[i]
-            paramString = paramString + ('"%s":"%s"' % (paramKey, params[paramKey].encode('utf-8')))
-        command = '{"id": %i, "method":"%s", "params":{%s}}\n' % (commandId, method, paramString)
+    commandObj = {}
+    commandObj['id'] = commandId
+    commandObj['method'] = method
+    if not params == None and len(params) > 0:
+        commandObj['params'] = params
 
+    command = json.dumps(commandObj) + '\n'
     commandId = commandId + 1
     tn.write(command)
     response = json.loads(tn.read_until("\n}\n"))
@@ -89,6 +87,11 @@ def select_deviceClass():
     selection = get_selection("Please select device class", deviceClassList)
     return deviceClassIdList[selection]
 
+def get_action_types(deviceClassId):
+    params = {}
+    params['deviceClassId'] = deviceClassId
+    return send_command("Devices.GetActionTypes", params)['params']['actionTypes']
+
 def list_deviceClasses_by_vendor():
     vendorId = select_vendor()
     list_deviceClasses(vendorId)
@@ -126,6 +129,20 @@ def get_deviceClass(deviceClassId):
         if deviceClass['id'] == deviceClassId:
             return deviceClass
     return None
+
+def get_device(deviceId):
+    devices = get_configured_devices()
+    for device in devices:
+        if device['id'] == deviceId:
+            return device
+    return None
+
+def get_actionType(actionTypeId):
+    params = {}
+    params['actionTypeId'] = actionTypeId
+    response = send_command("Actions.GetActionType", params)
+    print "got actionType", response
+    return response['params']['actionType']
 
 def add_configured_device(deviceClassId):
     params = {}
@@ -208,6 +225,52 @@ def remove_device():
     else:
         print "Error deleting device %s" % deviceId
 
+def select_action_type(deviceClassId):
+    actions = get_action_types(deviceClassId)
+    actionList = []
+    actionIdList = []
+    print "got actions", actions
+    for i in range(len(actions)):
+        print "got actiontype", actions[i]
+        actionList.append(actions[i]['name'])
+        actionIdList.append(actions[i]['id'])
+    selection = get_selection("Please select an action type:", actionList)
+    return actionIdList[selection]
+
+def execute_action():
+    deviceId = select_device()
+    device = get_device(deviceId)
+    actionTypeId = select_action_type(device['deviceClassId'])
+    params = {}
+    params['actionTypeId'] = actionTypeId
+    params['deviceId'] = deviceId
+    send_command("Actions.ExecuteAction", params)
+    actionType = get_actionType(actionTypeId)
+    actionParams = []
+    for i in range(len(actionType['paramTypes'])):
+        paramType = actionType['paramTypes'][i]
+        paramValue = raw_input("Please enter value for parameter '%s' in action '%s':" % (paramType['name'], actionType['name']))
+        actionParam = {}
+        actionParam[paramType['name']] = paramValue
+        actionParams.append(actionParam)
+
+    params['params'] = actionParams
+    response = send_command("Actions.ExecuteAction", params)
+    print "execute action response", response
+
+def list_device_states():
+    deviceId = select_device()
+    device = get_device(deviceId)
+    deviceClass = get_deviceClass(device['deviceClassId'])
+    print "\n\n=== States for device %s (%s) ===" % (device['name'], deviceId)
+    for i in range(len(deviceClass['stateTypes'])):
+        params = {}
+        params['deviceId'] = deviceId
+        params['stateTypeId'] = deviceClass['stateTypes'][i]['id']
+
+        response = send_command("Devices.GetStateValue", params)
+        print "%s: %s" % (deviceClass['stateTypes'][i]['name'], response['params']['value'])
+    print "=== States ==="
 
 tn = telnetlib.Telnet(HOST, PORT)
 packet = tn.read_until("\n}\n")

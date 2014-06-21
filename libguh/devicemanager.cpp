@@ -456,6 +456,7 @@ DeviceClass DeviceManager::findDeviceClass(const DeviceClassId &deviceClassId) c
     its \l{DevicePlugin}. Then will dispatch the execution to the \l{DevicePlugin}.*/
 QPair<DeviceManager::DeviceError, QString> DeviceManager::executeAction(const Action &action)
 {
+    qDebug() << "should execute action";
     foreach (Device *device, m_configuredDevices) {
         if (action.deviceId() == device->id()) {
             // found device
@@ -464,6 +465,7 @@ QPair<DeviceManager::DeviceError, QString> DeviceManager::executeAction(const Ac
             DeviceClass deviceClass = findDeviceClass(device->deviceClassId());
             bool found = false;
             foreach (const ActionType &actionType, deviceClass.actionTypes()) {
+                qDebug() << "checking" << actionType.id() << action.actionTypeId();
                 if (actionType.id() == action.actionTypeId()) {
                     QPair<DeviceError, QString> paramCheck = verifyParams(actionType.parameters(), action.params());
                     if (paramCheck.first != DeviceErrorNoError) {
@@ -736,7 +738,12 @@ void DeviceManager::slotPairingFinished(const QUuid &pairingTransactionId, Devic
         return;
     }
 
+    // Ok... pairing went fine... Let consumers know about it and inform them about the ongoing setup with a deviceId.
     DeviceId id = DeviceId::createDeviceId();
+    emit pairingFinished(pairingTransactionId, DeviceErrorNoError, QString(), id);
+
+    QList<DeviceId> newDevices;
+    QString setupErrorMessage;
     Device *device = new Device(plugin->pluginId(), id, deviceClassId, this);
     device->setName(deviceClass.name());
     device->setParams(params);
@@ -745,19 +752,22 @@ void DeviceManager::slotPairingFinished(const QUuid &pairingTransactionId, Devic
     switch (setupStatus.first) {
     case DeviceSetupStatusFailure:
         qWarning() << "Device setup failed. Not adding device to system.";
+        setupErrorMessage = setupStatus.second;
+        emit deviceSetupFinished(device, DeviceError::DeviceErrorSetupFailed, QString("Device setup failed: %1").arg(errorMessage));
         delete device;
-        emit pairingFinished(pairingTransactionId, DeviceErrorSetupFailed, QString("Device setup failed: %1").arg(setupStatus.second));
-        return;
+        break;
     case DeviceSetupStatusAsync:
+        return;
     case DeviceSetupStatusSuccess:
         qDebug() << "Device setup complete.";
+        newDevices.append(id);
         break;
     }
 
     m_configuredDevices.append(device);
     storeConfiguredDevices();
 
-    emit pairingFinished(pairingTransactionId, DeviceErrorNoError, QString(), id);
+    emit deviceSetupFinished(device, DeviceError::DeviceErrorNoError, QString());
 }
 
 void DeviceManager::slotDeviceStateValueChanged(const QUuid &stateTypeId, const QVariant &value)
@@ -842,6 +852,7 @@ QPair<DeviceManager::DeviceSetupStatus,QString> DeviceManager::setupDevice(Devic
 QPair<DeviceManager::DeviceError, QString> DeviceManager::verifyParams(const QList<ParamType> paramTypes, const QList<Param> &params, bool requireAll)
 {
     foreach (const Param &param, params) {
+        qDebug() << "verifying param" << param.name() << paramTypes;
         QPair<DeviceManager::DeviceError, QString> result = verifyParam(paramTypes, param);
         if (result.first != DeviceErrorNoError) {
             return result;

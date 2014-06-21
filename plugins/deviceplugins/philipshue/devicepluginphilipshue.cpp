@@ -25,10 +25,6 @@
 
 #include <QDebug>
 #include <QStringList>
-#include <QJsonDocument>
-#include <QNetworkRequest>
-#include <QNetworkReply>
-#include <QNetworkAccessManager>
 #include <QColor>
 
 VendorId hueVendorId = VendorId("0ae1e001-2aa6-47ed-b8c0-334c3728a68f");
@@ -37,14 +33,19 @@ PluginId huePluginUuid = PluginId("5f2e634b-b7f3-48ee-976a-b5ae22aa5c55");
 DeviceClassId hueDeviceClassId = DeviceClassId("d8f4c397-e05e-47c1-8917-8e72d4d0d47c");
 
 StateTypeId hueColorStateTypeId = StateTypeId("d25423e7-b924-4b20-80b6-77eecc65d089");
-ActionTypeId setHueColorActionTypeId = ActionTypeId("29cc299a-818b-47b2-817f-c5a6361545e4");
+ActionTypeId hueSetColorActionTypeId = ActionTypeId("29cc299a-818b-47b2-817f-c5a6361545e4");
+
+StateTypeId huePowerStateTypeId = StateTypeId("6ac64eee-f356-4ae4-bc85-8c1244d12b02");
+ActionTypeId hueSetPowerActionTypeId = ActionTypeId("7782d91e-d73a-4321-8828-da768e2f6827");
 
 DevicePluginPhilipsHue::DevicePluginPhilipsHue():
     m_discovery(new Discovery(this))
 {
     connect(m_discovery, &Discovery::discoveryDone, this, &DevicePluginPhilipsHue::discoveryDone);
 
-    m_nam = new QNetworkAccessManager(this);
+    m_bridge = new HueBridgeConnection(this);
+    connect(m_bridge, &HueBridgeConnection::createUserFinished, this, &DevicePluginPhilipsHue::createUserFinished);
+    connect(m_bridge, &HueBridgeConnection::getFinished, this, &DevicePluginPhilipsHue::getFinished);
 }
 
 QList<Vendor> DevicePluginPhilipsHue::supportedVendors() const
@@ -71,6 +72,8 @@ QList<DeviceClass> DevicePluginPhilipsHue::supportedDevices() const
     paramTypes.append(ipParam);
     ParamType usernameParam("username", QVariant::String);
     paramTypes.append(usernameParam);
+    ParamType numberParam("number", QVariant::Int, -1);
+    paramTypes.append(numberParam);
     deviceClassHue.setParamTypes(paramTypes);
     
     QList<StateType> hueStates;
@@ -81,19 +84,31 @@ QList<DeviceClass> DevicePluginPhilipsHue::supportedDevices() const
     colorState.setDefaultValue(QColor(Qt::black));
     hueStates.append(colorState);
 
+    StateType powerState(huePowerStateTypeId);
+    powerState.setName("power");
+    powerState.setType(QVariant::Bool);
+    powerState.setDefaultValue(false);
+    hueStates.append(powerState);
+
     deviceClassHue.setStateTypes(hueStates);
 
     QList<ActionType> hueActons;
 
-    ActionType setColorAction(setHueColorActionTypeId);
+    ActionType setColorAction(hueSetColorActionTypeId);
     setColorAction.setName("Set color");
-
     QList<ParamType> actionParamsSetColor;
     ParamType actionParamSetColor("color", QVariant::Color);
     actionParamsSetColor.append(actionParamSetColor);
     setColorAction.setParameters(actionParamsSetColor);
-
     hueActons.append(setColorAction);
+
+    ActionType setPowerAction(hueSetPowerActionTypeId);
+    setPowerAction.setName("Power");
+    QList<ParamType> actionParamsSetPower;
+    ParamType actionParamSetPower("power", QVariant::Bool);
+    actionParamsSetPower.append(actionParamSetPower);
+    setPowerAction.setParameters(actionParamsSetPower);
+    hueActons.append(setPowerAction);
 
     deviceClassHue.setActions(hueActons);
 
@@ -151,7 +166,30 @@ DeviceManager::DeviceError DevicePluginPhilipsHue::discoverDevices(const DeviceC
 QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginPhilipsHue::setupDevice(Device *device)
 {
     qDebug() << "setupDevice" << device->params();
-    return reportDeviceSetup();
+
+    Light *light = nullptr;
+
+    // Lets see if this a a newly added device... In which case its hue id number is not set, well, -1...
+    if (device->paramValue("number").toInt() == -1) {
+        if (m_unconfiguredLights.count() > 0) {
+            light = m_unconfiguredLights.takeFirst();
+            device->setParamValue("number", light->id());
+        } else {
+            // this shouldn't ever happen
+            return reportDeviceSetup(DeviceManager::DeviceSetupStatusFailure, "Device not configured yet and no discovered devices around.");
+        }
+    } else {
+        // In this case it most likely comes from the config. Just read all values from there...
+        light = new Light(QHostAddress(device->paramValue("ip").toString()), device->paramValue("username").toString(), device->paramValue("number").toInt());
+    }
+
+    connect(light, &Light::stateChanged, this, &DevicePluginPhilipsHue::lightStateChanged);
+    light->refresh();
+
+    m_lights.insert(light, device);
+    m_asyncSetups.insert(light, device);
+
+    return reportDeviceSetup(DeviceManager::DeviceSetupStatusAsync);
 }
 
 QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginPhilipsHue::confirmPairing(const QUuid &pairingTransactionId, const DeviceClassId &deviceClassId, const QList<Param> &params)
@@ -175,36 +213,30 @@ QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginPhilipsHue::confirm
         return reportDeviceSetup(DeviceManager::DeviceSetupStatusFailure, "Missing parameter: username");
     }
 
-    QVariantMap createUserParams;
-    createUserParams.insert("devicetype", "guh");
-    createUserParams.insert("username", usernameParam.value().toString());
-
-    QJsonDocument jsonDoc = QJsonDocument::fromVariant(createUserParams);
-    QByteArray data = jsonDoc.toJson();
-
-    QNetworkRequest request(QUrl("http://" + ipParam.value().toString() + "/api"));
-    QNetworkReply *reply = m_nam->post(request, data);
-    connect(reply, &QNetworkReply::finished, this, &DevicePluginPhilipsHue::createUserFinished);
-
-    m_pairings.insert(reply, pairingTransactionId);
+    int id = m_bridge->createUser(QHostAddress(ipParam.value().toString()), usernameParam.value().toString());
+    PairingInfo pi;
+    pi.pairingTransactionId = pairingTransactionId;
+    pi.ipParam = ipParam;
+    pi.usernameParam = usernameParam;
+    m_pairings.insert(id, pi);
     return reportDeviceSetup(DeviceManager::DeviceSetupStatusAsync);
 }
 
 QPair<DeviceManager::DeviceError, QString> DevicePluginPhilipsHue::executeAction(Device *device, const Action &action)
 {
-//    if (!m_bobClient->connected()) {
-        return report(DeviceManager::DeviceErrorSetupFailed, device->id().toString());
-//    }
-//    QColor newColor = action.param("color").value().value<QColor>();
-//    if (!newColor.isValid()) {
-//        return report(DeviceManager::DeviceErrorActionParameterError, "color");
-//    }
-//    qDebug() << "executing boblight action" << newColor;
-//    m_bobClient->setColor(device->paramValue("channel").toInt(), newColor);
-//    m_bobClient->sync();
+    qDebug() << "Should execute action in hue plugin";
 
-//    device->setStateValue(colorStateTypeId, newColor);
-        //    return report();
+    Light *light = m_lights.key(device);
+    if (!light) {
+        return report(DeviceManager::DeviceErrorDeviceNotFound, device->id().toString());
+    }
+
+    if (action.actionTypeId() == hueSetColorActionTypeId) {
+        light->setColor(action.param("color").value().value<QColor>());
+    } else if (action.actionTypeId() == hueSetPowerActionTypeId) {
+        light->setOn(action.param("power").value().toBool());
+    }
+    return report();
 }
 
 void DevicePluginPhilipsHue::discoveryDone(const QList<QHostAddress> &bridges)
@@ -218,6 +250,8 @@ void DevicePluginPhilipsHue::discoveryDone(const QList<QHostAddress> &bridges)
         params.append(param);
         Param userParam("username", "guh-" + QUuid::createUuid().toString().remove(QRegExp("[\\{\\}]*")).remove(QRegExp("\\-[0-9a-f\\-]*")));
         params.append(userParam);
+        Param numberParam("number", -1);
+        params.append(numberParam);
         descriptor.setParams(params);
         deviceDescriptors.append(descriptor);
     }
@@ -225,28 +259,69 @@ void DevicePluginPhilipsHue::discoveryDone(const QList<QHostAddress> &bridges)
     emit devicesDiscovered(hueDeviceClassId, deviceDescriptors);
 }
 
-void DevicePluginPhilipsHue::createUserFinished()
+void DevicePluginPhilipsHue::createUserFinished(int id, const QVariantMap &response)
 {
-    QNetworkReply *reply = static_cast<QNetworkReply*>(sender());
-    QByteArray data = reply->readAll();
+    qDebug() << "createuser response" << response;
 
-    QUuid pairingTransactionId = m_pairings.take(reply);
-
-    QJsonParseError error;
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
-    if (error.error != QJsonParseError::NoError) {
-        emit pairingFinished(pairingTransactionId, DeviceManager::DeviceSetupStatusFailure, "Pairing failed. Failed to parse response from Hue Bridge.");
-        return;
-    }
-
-    QVariantMap response = jsonDoc.toVariant().toList().first().toMap();
-
+    PairingInfo pairingInfo = m_pairings.take(id);
     if (response.contains("error")) {
         qDebug() << "Failed to pair Hue bridge:" << response.value("error").toMap().value("description");
-        emit pairingFinished(pairingTransactionId, DeviceManager::DeviceSetupStatusFailure, "Pairing failed:" + response.value("error").toMap().value("description").toString());
+        emit pairingFinished(pairingInfo.pairingTransactionId, DeviceManager::DeviceSetupStatusFailure, "Pairing failed:" + response.value("error").toMap().value("description").toString());
         return;
     }
 
-    emit pairingFinished(pairingTransactionId, DeviceManager::DeviceSetupStatusSuccess, QString());
-    qDebug() << "response" << response << data;
+    // Paired successfully, check how many lightbulbs there are
+
+    int getLightsId = m_bridge->get(QHostAddress(pairingInfo.ipParam.value().toString()), pairingInfo.usernameParam.value().toString(), "lights", this, "getLightsFinished");
+    m_pairings.insert(getLightsId, pairingInfo);
+
+}
+
+void DevicePluginPhilipsHue::getLightsFinished(int id, const QVariantMap &params)
+{
+    qDebug() << "getlightsfinished" << params;
+    PairingInfo pairingInfo = m_pairings.take(id);
+
+    if (params.count() == 0) {
+        qWarning() << "No light bulbs found on this hue bridge... Cannot proceed with pairing.";
+        emit pairingFinished(pairingInfo.pairingTransactionId, DeviceManager::DeviceSetupStatusFailure, "No light bulbs found on this Hue bridge.");
+        return;
+    }
+
+    // Store a list of all known Lights
+    foreach (const QString &lightId, params.keys()) {
+        Light *light = new Light(QHostAddress(pairingInfo.ipParam.value().toString()), pairingInfo.usernameParam.value().toString(), lightId.toInt(), this);
+        m_unconfiguredLights.insert(lightId.toInt(), light);
+    }
+
+    emit pairingFinished(pairingInfo.pairingTransactionId, DeviceManager::DeviceSetupStatusSuccess, QString());
+
+//    // If we have more than one device on that bridge, tell DeviceManager that there are more.
+//    if (params.count() > 1) {
+//        emit autoDevicesAppeared();
+//    }
+}
+
+void DevicePluginPhilipsHue::getFinished(int id, const QVariantMap &params)
+{
+    qDebug() << "got lights" << params;
+}
+
+void DevicePluginPhilipsHue::lightStateChanged()
+{
+    Light *light = static_cast<Light*>(sender());
+
+    Device *device;
+    if (m_asyncSetups.contains(light)) {
+        device = m_asyncSetups.take(light);
+        device->setName(light->name());
+        emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusSuccess, QString());
+    } else {
+        device = m_lights.value(light);
+    }
+    if (!device) {
+        return;
+    }
+    device->setStateValue(hueColorStateTypeId, QVariant::fromValue(light->color()));
+    device->setStateValue(huePowerStateTypeId, light->on());
 }

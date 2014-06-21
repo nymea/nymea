@@ -81,6 +81,7 @@ signals:
     void pairingFinished(const QUuid &pairingTransactionId, DeviceManager::DeviceSetupStatus status, const QString &errorMessage);
     void actionExecutionFinished(const ActionId &id, DeviceManager::DeviceError status, const QString &errorMessage);
     void configValueChanged(const QString &paramName, const QVariant &value);
+    void autoDevicesAppeared(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors);
 
 protected:
     DeviceManager *deviceManager() const;

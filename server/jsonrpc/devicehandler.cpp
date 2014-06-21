@@ -620,15 +620,6 @@ void DeviceHandler::pairingFinished(const QUuid &pairingTransactionId, DeviceMan
         qDebug() << "not for me";
         return;
     }
-    QVariantMap returns;
-    if (status == DeviceManager::DeviceErrorNoError) {
-        returns.insert("success", true);
-        returns.insert("errorMessage", QString());
-        returns.insert("deviceId", deviceId.toString());
-    } else {
-        returns.insert("success", false);
-        returns.insert("errorMessage", errorMessage);
-    }
-    reply->setData(returns);
-    reply->finished();
+
+    m_asynDeviceAdditions.insert(deviceId, reply);
 }

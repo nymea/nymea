@@ -39,7 +39,7 @@ public:
     QList<Vendor> supportedVendors() const override;
     QList<DeviceClass> supportedDevices() const override;
     DeviceManager::HardwareResources requiredHardware() const override;
-    DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const QVariantMap &params) const;
+    DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const QList<Param> &params) const override;
 
     QString pluginName() const override;
     PluginId pluginId() const override;

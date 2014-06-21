@@ -21,7 +21,8 @@
 #include "devicemanager.h"
 
 StateEvaluator::StateEvaluator(const StateDescriptor &stateDescriptor):
-    m_stateDescriptor(stateDescriptor)
+    m_stateDescriptor(stateDescriptor),
+    m_operatorType(StateOperatorAnd)
 {
 
 }

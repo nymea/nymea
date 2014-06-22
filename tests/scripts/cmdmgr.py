@@ -14,7 +14,9 @@ methods = {'List supported Vendors': 'list_vendors',
            'Remove a device': 'remove_device',
            'List supported Devices by vendor': 'list_deviceClasses_by_vendor',
            'Execute an action': 'execute_action',
-           'See a device`s states': 'list_device_states'}
+           'See a device`s states': 'list_device_states',
+           'Add a rule': 'add_rule',
+           'List rules': 'list_rules'}
 
 
 def get_selection(title, options):
@@ -87,10 +89,25 @@ def select_deviceClass():
     selection = get_selection("Please select device class", deviceClassList)
     return deviceClassIdList[selection]
 
+def select_configured_device():
+    devices = get_configured_devices()
+    deviceList = []
+    deviceIdList = []
+    for device in devices:
+        deviceList.append(device['name'])
+        deviceIdList.append(device['id'])
+    selection = get_selection("Please select a device: ", deviceList)
+    return deviceIdList[selection]
+
 def get_action_types(deviceClassId):
     params = {}
     params['deviceClassId'] = deviceClassId
     return send_command("Devices.GetActionTypes", params)['params']['actionTypes']
+
+def get_eventTypes(deviceClassId):
+    params = {}
+    params['deviceClassId'] = deviceClassId
+    return send_command("Devices.GetEventTypes", params)['params']['eventTypes']
 
 def list_deviceClasses_by_vendor():
     vendorId = select_vendor()
@@ -112,10 +129,33 @@ def read_params(paramTypes):
     for paramType in paramTypes:
         paramValue = raw_input("Please enter value for parameter %s (type: %s): " % (paramType['name'], paramType['type']))
         param = {}
-        param[paramType['name']] = paramValue
+        param['name'] = paramType['name']
+        param['value'] = paramValue
+#        param[paramType['name']] = paramValue
         params.append(param)
     print "got params:", params
     return params
+
+
+def select_valueOperator():
+    valueOperators = ["OperatorTypeEquals", "OperatorTypeNotEquals", "OperatorTypeLess", "OperatorTypeGreater"]
+    selection = get_selection("Please select an operator to compare this parameter: ", valueOperators)
+    return valueOperators[selection]
+
+def read_paramDescriptors(paramTypes):
+    params = []
+    for paramType in paramTypes:
+        paramValue = raw_input("Please enter value for parameter %s (type: %s): " % (paramType['name'], paramType['type']))
+        operator = select_valueOperator()
+        param = {}
+        param['name'] = paramType['name']
+        param['value'] = paramValue
+        param['operator'] = operator
+#        param[paramType['name']] = paramValue
+        params.append(param)
+    print "got params:", params
+    return params
+
 
 def discover_device(deviceClassId = None):
     if deviceClassId == None:
@@ -174,8 +214,8 @@ def add_configured_device(deviceClassId):
 
     print "adddevice command params:", params
     response = send_command("Devices.AddConfiguredDevice", params)
-    if response['params']['success'] != "true":
-        print "Error executing method: %s" % response['params']['errorMessage']
+    if response['params']['success'] != True:
+        print "Error executing method: %s" % response
         return
     print "Added device: %s" % response['params']['deviceId']
 
@@ -251,35 +291,36 @@ def remove_device():
     else:
         print "Error deleting device %s" % deviceId
 
-def select_action_type(deviceClassId):
+def select_actionType(deviceClassId):
     actions = get_action_types(deviceClassId)
     actionList = []
-    actionIdList = []
     print "got actions", actions
     for i in range(len(actions)):
         print "got actiontype", actions[i]
         actionList.append(actions[i]['name'])
-        actionIdList.append(actions[i]['id'])
     selection = get_selection("Please select an action type:", actionList)
-    return actionIdList[selection]
+    return actions[selection]
+
+
+def select_eventType(deviceClassId):
+    eventTypes = get_eventTypes(deviceClassId)
+    eventTypeList = []
+    for i in range(len(eventTypes)):
+        eventTypeList.append(eventTypes[i]['name'])
+    selection = get_selection("Please select an action type:", eventTypeList)
+    return eventTypes[selection]
+
 
 def execute_action():
     deviceId = select_device()
     device = get_device(deviceId)
-    actionTypeId = select_action_type(device['deviceClassId'])
+    actionTypeId = select_actionType(device['deviceClassId'])['id']
     params = {}
     params['actionTypeId'] = actionTypeId
     params['deviceId'] = deviceId
     send_command("Actions.ExecuteAction", params)
     actionType = get_actionType(actionTypeId)
-    actionParams = []
-    for i in range(len(actionType['paramTypes'])):
-        paramType = actionType['paramTypes'][i]
-        paramValue = raw_input("Please enter value for parameter '%s' in action '%s':" % (paramType['name'], actionType['name']))
-        actionParam = {}
-        actionParam[paramType['name']] = paramValue
-        actionParams.append(actionParam)
-
+    actionParams = read_params(actionType['paramTypes'])
     params['params'] = actionParams
     response = send_command("Actions.ExecuteAction", params)
     print "execute action response", response
@@ -297,6 +338,67 @@ def list_device_states():
         response = send_command("Devices.GetStateValue", params)
         print "%s: %s" % (deviceClass['stateTypes'][i]['name'], response['params']['value'])
     print "=== States ==="
+
+
+
+def create_eventDescriptors():
+    enough = False
+    eventDescriptors = []
+    while not enough:
+        print "Creating EventDescriptor:"
+        deviceId = select_configured_device()
+        device = get_device(deviceId)
+        eventType = select_eventType(device['deviceClassId']);
+        params = read_paramDescriptors(eventType['paramTypes'])
+        eventDescriptor = {}
+        eventDescriptor['deviceId'] = deviceId
+        eventDescriptor['eventTypeId'] = eventType['id']
+        if len(params) > 0:
+            eventDescriptor['paramDescriptors'] = params
+
+        eventDescriptors.append(eventDescriptor)
+
+        input = raw_input("Do you want to add another EventDescriptor? (y/N): ")
+        if not input == "y":
+            enough = True
+    print "got eventDescriptors:", eventDescriptors
+    return eventDescriptors
+
+
+def create_actions():
+    enough = False
+    actions = []
+    while not enough:
+        print "Creating Action:"
+        deviceId = select_configured_device()
+        device = get_device(deviceId)
+        actionType = select_actionType(device['deviceClassId'])
+        params = read_params(actionType['paramTypes'])
+        action = {}
+        action['deviceId'] = deviceId
+        action['actionTypeId'] = actionType['id']
+        if len(params) > 0:
+            action['params'] = params
+
+        actions.append(action)
+
+        input = raw_input("Do you want to add another action? (y/N): ")
+        if not input == "y":
+            enough = True
+    print "got actions:", actions
+    return actions
+
+def add_rule():
+    params = {}
+    params['eventDescriptorList'] = create_eventDescriptors()
+    params['actions'] = create_actions()
+    print "adding rule:", params
+    result = send_command("Rules.AddRule", params)
+    print "AddRule result:", result
+
+def list_rules():
+    result = send_command("Rules.GetRules", {})
+    print "got rules", result
 
 
 import sys

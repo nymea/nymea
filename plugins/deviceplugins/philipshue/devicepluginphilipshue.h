@@ -58,9 +58,9 @@ public slots:
 private slots:
     void discoveryDone(const QList<QHostAddress> &bridges);
 
-    void createUserFinished(int id, const QVariantMap &params);
-    void getLightsFinished(int id, const QVariantMap &params);
-    void getFinished(int id, const QVariantMap &params);
+    void createUserFinished(int id, const QVariant &params);
+    void getLightsFinished(int id, const QVariant &params);
+    void getFinished(int id, const QVariant &params);
 
     void lightStateChanged();
 

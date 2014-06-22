@@ -9,3 +9,6 @@ coverage {
     QMAKE_LFLAGS += -fprofile-arcs
 }
 
+top_srcdir=$$PWD
+top_builddir=$$shadowed($$PWD)
+

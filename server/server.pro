@@ -2,8 +2,6 @@ include(../guh.pri)
 
 message("Building guh version $${GUH_VERSION_STRING}")
 
-message("server: $$top_srcdir")
-
 TARGET = guh
 TEMPLATE = app
 

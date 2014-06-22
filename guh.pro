@@ -1,3 +1,5 @@
+include(guh.pri)
+
 TEMPLATE=subdirs
 
 SUBDIRS += libguh server plugins

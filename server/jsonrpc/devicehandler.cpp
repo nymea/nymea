@@ -345,11 +345,13 @@ JsonReply* DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
 {
     DeviceClassId deviceClass(params.value("deviceClassId").toString());
     QList<Param> deviceParams;
-    foreach (const QString &paramName, params.value("deviceParams").toMap().keys()) {
+    foreach (const QVariant &paramVariant, params.value("deviceParams").toList()) {
+         QString paramName = paramVariant.toMap().keys().first();
          Param param(paramName);
-         param.setValue(params.value("deviceParams").toMap().value(paramName));
+         param.setValue(paramVariant.toMap().value(paramName));
          deviceParams.append(param);
     }
+
     DeviceDescriptorId deviceDescriptorId(params.value("deviceDescriptorId").toString());
     DeviceId newDeviceId = DeviceId::createDeviceId();
     QPair<DeviceManager::DeviceError, QString> status;

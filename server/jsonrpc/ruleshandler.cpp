@@ -70,7 +70,7 @@ JsonReply* RulesHandler::GetRules(const QVariantMap &params)
     Q_UNUSED(params)
 
     QVariantList rulesList;
-    foreach (const Rule &rule, GuhCore::instance()->ruleEngine()->rules()) {
+    foreach (const Rule &rule, GuhCore::instance()->rules()) {
         QVariantMap ruleMap = JsonTypes::packRule(rule);
         rulesList.append(ruleMap);
     }
@@ -117,7 +117,7 @@ JsonReply* RulesHandler::AddRule(const QVariantMap &params)
     }
 
     RuleId newRuleId = RuleId::createRuleId();
-    switch(GuhCore::instance()->ruleEngine()->addRule(newRuleId, eventDescriptorList, actions)) {
+    switch(GuhCore::instance()->addRule(newRuleId, eventDescriptorList, actions)) {
     case RuleEngine::RuleErrorNoError:
         returns.insert("success", true);
         returns.insert("errorMessage", "");
@@ -142,7 +142,7 @@ JsonReply* RulesHandler::RemoveRule(const QVariantMap &params)
 {
     QVariantMap returns;
     RuleId ruleId(params.value("ruleId").toString());
-    switch (GuhCore::instance()->ruleEngine()->removeRule(ruleId)) {
+    switch (GuhCore::instance()->removeRule(ruleId)) {
     case RuleEngine::RuleErrorNoError:
         returns.insert("success", true);
         returns.insert("errorMessage", "");

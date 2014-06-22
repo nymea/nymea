@@ -46,7 +46,7 @@ ActionHandler::ActionHandler(QObject *parent) :
     returns.insert("o:actionType", JsonTypes::actionTypeDescription());
     setReturns("GetActionType", returns);
 
-    connect(GuhCore::instance()->deviceManager(), &DeviceManager::actionExecutionFinished, this, &ActionHandler::actionExecuted);
+    connect(GuhCore::instance(), &GuhCore::actionExecuted, this, &ActionHandler::actionExecuted);
 }
 
 QString ActionHandler::name() const
@@ -67,7 +67,7 @@ JsonReply* ActionHandler::ExecuteAction(const QVariantMap &params)
     qDebug() << "actions params in json" << action.params() << params;
 
 
-    QPair<DeviceManager::DeviceError, QString> status = GuhCore::instance()->deviceManager()->executeAction(action);
+    QPair<DeviceManager::DeviceError, QString> status = GuhCore::instance()->executeAction(action);
     if (status.first == DeviceManager::DeviceErrorAsync) {
         JsonReply *reply = createAsyncReply("ExecuteAction");
         m_asyncActionExecutions.insert(action.id(), reply);
@@ -81,7 +81,7 @@ JsonReply* ActionHandler::ExecuteAction(const QVariantMap &params)
 JsonReply *ActionHandler::GetActionType(const QVariantMap &params) const
 {
     ActionTypeId actionTypeId(params.value("actionTypeId").toString());
-    foreach (const DeviceClass &deviceClass, GuhCore::instance()->deviceManager()->supportedDevices()) {
+    foreach (const DeviceClass &deviceClass, GuhCore::instance()->supportedDevices()) {
         foreach (const ActionType &actionType, deviceClass.actionTypes()) {
             if (actionType.id() == actionTypeId) {
                 QVariantMap data;

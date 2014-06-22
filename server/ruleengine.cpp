@@ -144,7 +144,7 @@ RuleEngine::RuleEngine(QObject *parent) :
     list of all \l{Action}{Actions} that should be executed. */
 QList<Action> RuleEngine::evaluateEvent(const Event &event)
 {
-    Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(event.deviceId());
+    Device *device = GuhCore::instance()->findConfiguredDevice(event.deviceId());
 
     qDebug() << "got event:" << event << device->name();
 
@@ -180,12 +180,12 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QList<Even
         return RuleErrorInvalidRuleId;
     }
     foreach (const EventDescriptor &eventDescriptor, eventDescriptorList) {
-        Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(eventDescriptor.deviceId());
+        Device *device = GuhCore::instance()->findConfiguredDevice(eventDescriptor.deviceId());
         if (!device) {
             qWarning() << "Cannot create rule. No configured device for eventTypeId" << eventDescriptor.eventTypeId();
             return RuleErrorDeviceNotFound;
         }
-        DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
+        DeviceClass deviceClass = GuhCore::instance()->findDeviceClass(device->deviceClassId());
 
         bool eventTypeFound = false;
         foreach (const EventType &eventType, deviceClass.eventTypes()) {
@@ -200,12 +200,12 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QList<Even
     }
 
     foreach (const Action &action, actions) {
-        Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(action.deviceId());
+        Device *device = GuhCore::instance()->findConfiguredDevice(action.deviceId());
         if (!device) {
             qWarning() << "Cannot create rule. No configured device for actionTypeId" << action.actionTypeId();
             return RuleErrorDeviceNotFound;
         }
-        DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
+        DeviceClass deviceClass = GuhCore::instance()->findDeviceClass(device->deviceClassId());
 
         bool actionTypeFound = false;
         foreach (const ActionType &actionType, deviceClass.actionTypes()) {

@@ -197,10 +197,10 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     params.insert("variant", "value");
     setParams("StateChanged", params);
 
-    connect(GuhCore::instance()->deviceManager(), &DeviceManager::deviceStateChanged, this, &DeviceHandler::deviceStateChanged);
-    connect(GuhCore::instance()->deviceManager(), &DeviceManager::devicesDiscovered, this, &DeviceHandler::devicesDiscovered, Qt::QueuedConnection);
-    connect(GuhCore::instance()->deviceManager(), &DeviceManager::deviceSetupFinished, this, &DeviceHandler::deviceSetupFinished);
-    connect(GuhCore::instance()->deviceManager(), &DeviceManager::pairingFinished, this, &DeviceHandler::pairingFinished);
+    connect(GuhCore::instance(), &GuhCore::deviceStateChanged, this, &DeviceHandler::deviceStateChanged);
+    connect(GuhCore::instance(), &GuhCore::devicesDiscovered, this, &DeviceHandler::devicesDiscovered, Qt::QueuedConnection);
+    connect(GuhCore::instance(), &GuhCore::deviceSetupFinished, this, &DeviceHandler::deviceSetupFinished);
+    connect(GuhCore::instance(), &GuhCore::pairingFinished, this, &DeviceHandler::pairingFinished);
 }
 
 QString DeviceHandler::name() const
@@ -213,7 +213,7 @@ JsonReply* DeviceHandler::GetSupportedVendors(const QVariantMap &params) const
     Q_UNUSED(params)
     QVariantMap returns;
     QVariantList supportedVendors;
-    foreach (const Vendor &vendor, GuhCore::instance()->deviceManager()->supportedVendors()) {
+    foreach (const Vendor &vendor, GuhCore::instance()->supportedVendors()) {
         supportedVendors.append(JsonTypes::packVendor(vendor));
     }
     returns.insert("vendors", supportedVendors);
@@ -226,9 +226,9 @@ JsonReply* DeviceHandler::GetSupportedDevices(const QVariantMap &params) const
     QVariantList supportedDeviceList;
     QList<DeviceClass> supportedDevices;
     if (params.contains("vendorId")) {
-        supportedDevices = GuhCore::instance()->deviceManager()->supportedDevices(VendorId(params.value("vendorId").toString()));
+        supportedDevices = GuhCore::instance()->supportedDevices(VendorId(params.value("vendorId").toString()));
     } else {
-        supportedDevices = GuhCore::instance()->deviceManager()->supportedDevices();
+        supportedDevices = GuhCore::instance()->supportedDevices();
     }
     foreach (const DeviceClass &deviceClass, supportedDevices) {
         supportedDeviceList.append(JsonTypes::packDeviceClass(deviceClass));
@@ -249,7 +249,7 @@ JsonReply *DeviceHandler::GetDiscoveredDevices(const QVariantMap &params) const
         discoveryParams.append(dp);
     }
 
-    DeviceManager::DeviceError status = GuhCore::instance()->deviceManager()->discoverDevices(deviceClassId, discoveryParams);
+    DeviceManager::DeviceError status = GuhCore::instance()->discoverDevices(deviceClassId, discoveryParams);
     switch (status) {
     case DeviceManager::DeviceErrorAsync:
     case DeviceManager::DeviceErrorNoError: {
@@ -279,7 +279,7 @@ JsonReply* DeviceHandler::GetPlugins(const QVariantMap &params) const
     Q_UNUSED(params)
     QVariantMap returns;
     QVariantList plugins;
-    foreach (DevicePlugin *plugin, GuhCore::instance()->deviceManager()->plugins()) {
+    foreach (DevicePlugin *plugin, GuhCore::instance()->plugins()) {
         QVariantMap pluginMap;
         pluginMap.insert("id", plugin->pluginId());
         pluginMap.insert("name", plugin->pluginName());
@@ -297,7 +297,7 @@ JsonReply* DeviceHandler::GetPlugins(const QVariantMap &params) const
 JsonReply *DeviceHandler::GetPluginConfiguration(const QVariantMap &params) const
 {
     DevicePlugin *plugin = 0;
-    foreach (DevicePlugin *p, GuhCore::instance()->deviceManager()->plugins()) {
+    foreach (DevicePlugin *p, GuhCore::instance()->plugins()) {
         if (p->pluginId() == PluginId(params.value("pluginId").toString())) {
             plugin = p;
         }
@@ -329,7 +329,7 @@ JsonReply* DeviceHandler::SetPluginConfiguration(const QVariantMap &params)
         qDebug() << "got param" << param;
         pluginParams.append(JsonTypes::unpackParam(param.toMap()));
     }
-    QPair<DeviceManager::DeviceError, QString> result = GuhCore::instance()->deviceManager()->setPluginConfig(pluginId, pluginParams);
+    QPair<DeviceManager::DeviceError, QString> result = GuhCore::instance()->setPluginConfig(pluginId, pluginParams);
     returns.insert("success", result.first == DeviceManager::DeviceErrorNoError);
     returns.insert("errorMessage", result.second);
     return createReply(returns);
@@ -349,10 +349,10 @@ JsonReply* DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
     QPair<DeviceManager::DeviceError, QString> status;
     if (deviceDescriptorId.isNull()) {
         qDebug() << "adding a manual device.";
-        status = GuhCore::instance()->deviceManager()->addConfiguredDevice(deviceClass, deviceParams, newDeviceId);
+        status = GuhCore::instance()->addConfiguredDevice(deviceClass, deviceParams, newDeviceId);
     } else {
         qDebug() << "adding a discovered device.";
-        status = GuhCore::instance()->deviceManager()->addConfiguredDevice(deviceClass, deviceDescriptorId, newDeviceId);
+        status = GuhCore::instance()->addConfiguredDevice(deviceClass, deviceDescriptorId, newDeviceId);
     }
     QVariantMap returns;
     switch(status.first) {
@@ -396,12 +396,12 @@ JsonReply* DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
 JsonReply *DeviceHandler::PairDevice(const QVariantMap &params)
 {
     DeviceClassId deviceClassId(params.value("deviceClassId").toString());
-    DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(deviceClassId);
+    DeviceClass deviceClass = GuhCore::instance()->findDeviceClass(deviceClassId);
 
     QPair<DeviceManager::DeviceError, QString> status;
     if (params.contains("deviceDescriptorId")) {
         DeviceDescriptorId deviceDescriptorId(params.value("deviceDescriptorId").toString());
-        status = GuhCore::instance()->deviceManager()->pairDevice(deviceClassId, deviceDescriptorId);
+        status = GuhCore::instance()->pairDevice(deviceClassId, deviceDescriptorId);
     } else {
         QList<Param> deviceParams;
         foreach (const QString &paramName, params.value("deviceParams").toMap().keys()) {
@@ -409,7 +409,7 @@ JsonReply *DeviceHandler::PairDevice(const QVariantMap &params)
              param.setValue(params.value("deviceParams").toMap().value(paramName));
              deviceParams.append(param);
         }
-        status = GuhCore::instance()->deviceManager()->pairDevice(deviceClassId, deviceParams);
+        status = GuhCore::instance()->pairDevice(deviceClassId, deviceParams);
     }
 
     QVariantMap returns;
@@ -445,7 +445,7 @@ JsonReply *DeviceHandler::ConfirmPairing(const QVariantMap &params)
 {
     QUuid pairingTransactionId = params.value("pairingTransactionId").toUuid();
     QString secret = params.value("secret").toString();
-    QPair<DeviceManager::DeviceError, QString> status = GuhCore::instance()->deviceManager()->confirmPairing(pairingTransactionId, secret);
+    QPair<DeviceManager::DeviceError, QString> status = GuhCore::instance()->confirmPairing(pairingTransactionId, secret);
 
     JsonReply *reply = 0;
     QVariantMap returns;
@@ -471,7 +471,7 @@ JsonReply* DeviceHandler::GetConfiguredDevices(const QVariantMap &params) const
     Q_UNUSED(params)
     QVariantMap returns;
     QVariantList configuredDeviceList;
-    foreach (Device *device, GuhCore::instance()->deviceManager()->configuredDevices()) {
+    foreach (Device *device, GuhCore::instance()->configuredDevices()) {
         configuredDeviceList.append(JsonTypes::packDevice(device));
     }
     returns.insert("devices", configuredDeviceList);
@@ -481,7 +481,7 @@ JsonReply* DeviceHandler::GetConfiguredDevices(const QVariantMap &params) const
 JsonReply* DeviceHandler::RemoveConfiguredDevice(const QVariantMap &params)
 {
     QVariantMap returns;
-    QPair<DeviceManager::DeviceError, QString> status = GuhCore::instance()->deviceManager()->removeConfiguredDevice(DeviceId(params.value("deviceId").toString()));
+    QPair<DeviceManager::DeviceError, QString> status = GuhCore::instance()->removeConfiguredDevice(DeviceId(params.value("deviceId").toString()));
     switch(status.first) {
     case DeviceManager::DeviceErrorNoError:
         returns.insert("success", true);
@@ -504,7 +504,7 @@ JsonReply* DeviceHandler::GetEventTypes(const QVariantMap &params) const
     QVariantMap returns;
 
     QVariantList eventList;
-    DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(DeviceClassId(params.value("deviceClassId").toString()));
+    DeviceClass deviceClass = GuhCore::instance()->findDeviceClass(DeviceClassId(params.value("deviceClassId").toString()));
     foreach (const EventType &eventType, deviceClass.eventTypes()) {
         eventList.append(JsonTypes::packEventType(eventType));
     }
@@ -517,7 +517,7 @@ JsonReply* DeviceHandler::GetActionTypes(const QVariantMap &params) const
     QVariantMap returns;
 
     QVariantList actionList;
-    DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(DeviceClassId(params.value("deviceClassId").toString()));
+    DeviceClass deviceClass = GuhCore::instance()->findDeviceClass(DeviceClassId(params.value("deviceClassId").toString()));
     foreach (const ActionType &actionType, deviceClass.actionTypes()) {
         actionList.append(JsonTypes::packActionType(actionType));
     }
@@ -530,7 +530,7 @@ JsonReply* DeviceHandler::GetStateTypes(const QVariantMap &params) const
     QVariantMap returns;
 
     QVariantList stateList;
-    DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(DeviceClassId(params.value("deviceClassId").toString()));
+    DeviceClass deviceClass = GuhCore::instance()->findDeviceClass(DeviceClassId(params.value("deviceClassId").toString()));
     foreach (const StateType &stateType, deviceClass.stateTypes()) {
         stateList.append(JsonTypes::packStateType(stateType));
     }
@@ -542,7 +542,7 @@ JsonReply* DeviceHandler::GetStateValue(const QVariantMap &params) const
 {
     QVariantMap returns;
 
-    Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(DeviceId(params.value("deviceId").toString()));
+    Device *device = GuhCore::instance()->findConfiguredDevice(DeviceId(params.value("deviceId").toString()));
     if (!device) {
         returns.insert("success", false);
         returns.insert("errorMessage", "No such device");

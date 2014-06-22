@@ -283,6 +283,12 @@ def list_device_states():
         print "%s: %s" % (deviceClass['stateTypes'][i]['name'], response['params']['value'])
     print "=== States ==="
 
+
+import sys
+
+if len(sys.argv) > 1:
+    HOST=sys.argv[1]
+
 tn = telnetlib.Telnet(HOST, PORT)
 packet = tn.read_until("\n}\n")
 

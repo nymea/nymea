@@ -40,6 +40,11 @@ public:
         RuleErrorActionTypeNotFound
     };
 
+    enum RemovePolicy {
+        RemovePolicyCascade,
+        RemovePolicyUpdate
+    };
+
     explicit RuleEngine(QObject *parent = 0);
 
     QList<Action> evaluateEvent(const Event &event);
@@ -47,10 +52,14 @@ public:
     RuleError addRule(const RuleId &ruleId, const QList<EventDescriptor> &eventDescriptorList, const QList<Action> &actions);
     RuleError addRule(const RuleId &ruleId, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actions);
     QList<Rule> rules() const;
+    QList<RuleId> ruleIds() const;
 
     RuleError removeRule(const RuleId &ruleId);
 
     Rule findRule(const RuleId &ruleId);
+    QList<RuleId> findRules(const DeviceId &deviceId);
+
+    void removeDeviceFromRule(const RuleId &id, const DeviceId &deviceId);
 
 signals:
     void ruleAdded(const RuleId &ruleId);
@@ -59,10 +68,12 @@ signals:
 private:
     bool containsEvent(const Rule &rule, const Event &event);
 
+    void appendRule(const Rule &rule);
+
 private:
     QString m_settingsFile;
-    QList<Rule> m_rules;
-
+    QList<RuleId> m_ruleIds; // Keeping a list of RuleIds to keep sorting order...
+    QHash<RuleId, Rule> m_rules; // ...but use a Hash for faster finding
 };
 
 #endif // RULEENGINE_H

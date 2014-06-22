@@ -133,7 +133,7 @@ RuleEngine::RuleEngine(QObject *parent) :
         settings.endGroup();
 
         Rule rule = Rule(RuleId(idString), eventDescriptorList, stateEvaluator, actions);
-        m_rules.append(rule);
+        appendRule(rule);
     }
 
 }
@@ -149,12 +149,12 @@ QList<Action> RuleEngine::evaluateEvent(const Event &event)
     qDebug() << "got event:" << event << device->name();
 
     QList<Action> actions;
-    for (int i = 0; i < m_rules.count(); ++i) {
-        qDebug() << "evaluating rule" << i << m_rules.at(i).eventDescriptors();
-        if (containsEvent(m_rules.at(i), event)) {
-            if (m_rules.at(i).stateEvaluator().evaluate()) {
+    foreach (const RuleId &id, m_ruleIds) {
+        Rule rule = m_rules.value(id);
+        if (containsEvent(rule, event)) {
+            if (rule.stateEvaluator().evaluate()) {
                 qDebug() << "states matching!";
-                actions.append(m_rules.at(i).actions());
+                actions.append(rule.actions());
             }
         }
     }
@@ -220,7 +220,7 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QList<Even
     }
 
     Rule rule = Rule(ruleId, eventDescriptorList, stateEvaluator, actions);
-    m_rules.append(rule);
+    appendRule(rule);
     emit ruleAdded(rule.id());
 
     QSettings settings(m_settingsFile);
@@ -263,10 +263,18 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QList<Even
     return RuleErrorNoError;
 }
 
-/*! Returns a list of all \l{Rule}{Rules} loaded in this Engine.*/
+/*! Returns a list of all \l{Rule}{Rules} loaded in this Engine.
+    Be aware that this does not necessarily reflect the order of the rules in the engine.
+    Use ruleIds() if you need the correct order.
+*/
 QList<Rule> RuleEngine::rules() const
 {
-    return m_rules;
+    return m_rules.values();
+}
+
+QList<RuleId> RuleEngine::ruleIds() const
+{
+    return m_ruleIds;
 }
 
 /*! Removes the \l{Rule} with the given \a ruleId from the Engine.
@@ -274,22 +282,22 @@ QList<Rule> RuleEngine::rules() const
     was successful or not. */
 RuleEngine::RuleError RuleEngine::removeRule(const RuleId &ruleId)
 {
-    for (int i = 0; i < m_rules.count(); ++i) {
-        Rule rule = m_rules.at(i);
-        if (rule.id() == ruleId) {
+    int index = m_ruleIds.indexOf(ruleId);
 
-            m_rules.takeAt(i);
-
-            QSettings settings(m_settingsFile);
-            settings.beginGroup(rule.id().toString());
-            settings.remove("");
-            settings.endGroup();
-
-            emit ruleRemoved(rule.id());
-            return RuleErrorNoError;
-        }
+    if (index < 0) {
+        return RuleErrorRuleNotFound;
     }
-    return RuleErrorRuleNotFound;
+
+    m_ruleIds.takeAt(index);
+    m_rules.remove(ruleId);
+
+    QSettings settings(m_settingsFile);
+    settings.beginGroup(ruleId.toString());
+    settings.remove("");
+    settings.endGroup();
+
+    emit ruleRemoved(ruleId);
+    return RuleErrorNoError;
 }
 
 Rule RuleEngine::findRule(const RuleId &ruleId)
@@ -302,6 +310,68 @@ Rule RuleEngine::findRule(const RuleId &ruleId)
     return Rule();
 }
 
+QList<RuleId> RuleEngine::findRules(const DeviceId &deviceId)
+{
+    // Find all offending rules
+    QList<RuleId> offendingRules;
+    foreach (const Rule &rule, m_rules) {
+        bool offending = false;
+        foreach (const EventDescriptor &eventDescriptor, rule.eventDescriptors()) {
+            if (eventDescriptor.deviceId() == deviceId) {
+                offending = true;
+                break;
+            }
+        }
+        if (!offending && rule.stateEvaluator().containsDevice(deviceId)) {
+            offending = true;
+        }
+        if (!offending) {
+            foreach (const Action &action, rule.actions()) {
+                if (action.deviceId() == deviceId) {
+                    offending = true;
+                    break;
+                }
+            }
+        }
+        if (offending) {
+            offendingRules.append(rule.id());
+        }
+    }
+    return offendingRules;
+}
+
+void RuleEngine::removeDeviceFromRule(const RuleId &id, const DeviceId &deviceId)
+{
+    if (!m_rules.contains(id)) {
+        return;
+    }
+    Rule rule = m_rules.value(id);
+    QList<EventDescriptor> eventDescriptors = rule.eventDescriptors();
+    QList<int> removeIndexes;
+    for (int i = 0; i < eventDescriptors.count(); i++) {
+        if (eventDescriptors.at(i).deviceId() == deviceId) {
+            removeIndexes.append(i);
+        }
+    }
+    while (removeIndexes.count() > 0) {
+        eventDescriptors.takeAt(removeIndexes.takeLast());
+    }
+    StateEvaluator stateEvalatuator = rule.stateEvaluator();
+    stateEvalatuator.removeDevice(deviceId);
+
+    QList<Action> actions = rule.actions();
+    for (int i = 0; i < actions.count(); i++) {
+        if (actions.at(i).deviceId() == deviceId) {
+            removeIndexes.append(i);
+        }
+    }
+    while (removeIndexes.count() > 0) {
+        actions.takeAt(removeIndexes.takeLast());
+    }
+    Rule newRule(id, eventDescriptors, stateEvalatuator, actions);
+    m_rules[id] = newRule;
+}
+
 bool RuleEngine::containsEvent(const Rule &rule, const Event &event)
 {
     foreach (const EventDescriptor &eventDescriptor, rule.eventDescriptors()) {
@@ -310,4 +380,10 @@ bool RuleEngine::containsEvent(const Rule &rule, const Event &event)
         }
     }
     return false;
+}
+
+void RuleEngine::appendRule(const Rule &rule)
+{
+    m_rules.insert(rule.id(), rule);
+    m_ruleIds.append(rule.id());
 }

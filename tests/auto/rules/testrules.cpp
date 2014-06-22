@@ -142,7 +142,7 @@ void TestRules::addRemoveRules()
     RuleId newRuleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
 
     response = injectAndWait("Rules.GetRules");
-    QVariantList rules = response.toMap().value("params").toMap().value("rules").toList();
+    QVariantList rules = response.toMap().value("params").toMap().value("ruleIds").toList();
 
     if (!success) {
         QVERIFY2(rules.count() == 0, "There should be no rules.");
@@ -150,10 +150,16 @@ void TestRules::addRemoveRules()
     }
 
     QVERIFY2(rules.count() == 1, "There should be exactly one rule");
-    QCOMPARE(RuleId(rules.first().toMap().value("id").toString()), newRuleId);
+    QCOMPARE(RuleId(rules.first().toString()), newRuleId);
 
+    params.clear();
+    params.insert("ruleId", newRuleId);
+    response = injectAndWait("Rules.GetRuleDetails", params);
+//    verifySuccess(response);
 
-    QVariantList eventDescriptors = rules.first().toMap().value("eventDescriptors").toList();
+    QVariantMap rule = response.toMap().value("params").toMap().value("rule").toMap();
+
+    QVariantList eventDescriptors = rule.value("eventDescriptors").toList();
     if (!eventDescriptor.isEmpty()) {
         QVERIFY2(eventDescriptors.count() == 1, "There shoud be exactly one eventDescriptor");
         QVERIFY2(eventDescriptors.first().toMap() == eventDescriptor, "Event descriptor doesn't match");
@@ -172,7 +178,7 @@ void TestRules::addRemoveRules()
         }
     }
 
-    QVariantList replyActions = rules.first().toMap().value("actions").toList();
+    QVariantList replyActions = rule.value("actions").toList();
     QVERIFY2(actions == replyActions, "Actions don't match");
 
 
@@ -251,12 +257,18 @@ void TestRules::loadStoreConfig()
 
     response = injectAndWait("Rules.GetRules");
 
-    QVariantList rules = response.toMap().value("params").toMap().value("rules").toList();
+    QVariantList rules = response.toMap().value("params").toMap().value("ruleIds").toList();
 
     QVERIFY2(rules.count() == 1, "There should be exactly one rule");
-    QCOMPARE(RuleId(rules.first().toMap().value("id").toString()), newRuleId);
+    QCOMPARE(RuleId(rules.first().toString()), newRuleId);
 
-    QVariantList eventDescriptors = rules.first().toMap().value("eventDescriptors").toList();
+    params.clear();
+    params.insert("ruleId", rules.first().toString());
+    response = injectAndWait("Rules.GetRuleDetails", params);
+
+    QVariantMap rule = response.toMap().value("params").toMap().value("rule").toMap();
+
+    QVariantList eventDescriptors = rule.value("eventDescriptors").toList();
     QVERIFY2(eventDescriptors.count() == 2, "There shoud be exactly 2 eventDescriptors");
     foreach (const QVariant &expectedEventDescriptorVariant, eventDescriptorList) {
         bool found = false;
@@ -270,7 +282,7 @@ void TestRules::loadStoreConfig()
         QVERIFY2(found, "missing eventdescriptor");
     }
 
-    QVariantList replyActions = rules.first().toMap().value("actions").toList();
+    QVariantList replyActions = rule.value("actions").toList();
     foreach (const QVariant &actionVariant, actions) {
         bool found = false;
         foreach (const QVariant &replyActionVariant, replyActions) {

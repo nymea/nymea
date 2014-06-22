@@ -1,4 +1,4 @@
-2
+3
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -194,7 +194,13 @@
         "Devices.RemoveConfiguredDevice": {
             "description": "Remove a device from the system.",
             "params": {
-                "deviceId": "uuid"
+                "deviceId": "uuid",
+                "o:removePolicyList": [
+                    {
+                        "policy": "$ref:RemovePolicyType",
+                        "ruleId": "uuid"
+                    }
+                ]
             },
             "returns": {
                 "errorMessage": "string",
@@ -261,13 +267,33 @@
                 "success": "bool"
             }
         },
+        "Rules.FindRules": {
+            "description": "Find a list of rules containing any of the given parameters.",
+            "params": {
+                "deviceId": "uuid"
+            },
+            "returns": {
+                "ruleIds": [
+                    "uuid"
+                ]
+            }
+        },
+        "Rules.GetRuleDetails": {
+            "description": "Get details for the rule identified by ruleId",
+            "params": {
+                "ruleId": "uuid"
+            },
+            "returns": {
+                "rule": "$ref:Rule"
+            }
+        },
         "Rules.GetRules": {
             "description": "Get all configured rules",
             "params": {
             },
             "returns": {
-                "rules": [
-                    "$ref:Rule"
+                "ruleIds": [
+                    "uuid"
                 ]
             }
         },
@@ -405,6 +431,10 @@
                 "$ref:Param"
             ]
         },
+        "RemovePolicyType": [
+            "RemovePolicyCascade",
+            "RemovePolicyUpdate"
+        ],
         "Rule": {
             "actions": [
                 "$ref:Action"

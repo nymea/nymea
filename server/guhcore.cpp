@@ -58,6 +58,102 @@ void GuhCore::destroy()
     s_instance = 0;
 }
 
+QList<DevicePlugin *> GuhCore::plugins() const
+{
+    return m_deviceManager->plugins();
+}
+
+QPair<DeviceManager::DeviceError, QString> GuhCore::setPluginConfig(const PluginId &pluginId, const QList<Param> params)
+{
+    return m_deviceManager->setPluginConfig(pluginId, params);
+}
+
+QList<Vendor> GuhCore::supportedVendors() const
+{
+    return m_deviceManager->supportedVendors();
+}
+
+QList<DeviceClass> GuhCore::supportedDevices(const VendorId &vendorId) const
+{
+    return m_deviceManager->supportedDevices(vendorId);
+}
+
+QPair<DeviceManager::DeviceError, QString> GuhCore::removeConfiguredDevice(const DeviceId &deviceId)
+{
+    // TODO: make sure we don't remove a device and keep stale rules around...
+    return m_deviceManager->removeConfiguredDevice(deviceId);
+}
+
+QPair<DeviceManager::DeviceError, QString> GuhCore::pairDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId)
+{
+    return m_deviceManager->pairDevice(deviceClassId, deviceDescriptorId);
+}
+
+QPair<DeviceManager::DeviceError, QString> GuhCore::pairDevice(const DeviceClassId &deviceClassId, const QList<Param> &params)
+{
+    return m_deviceManager->pairDevice(deviceClassId, params);
+}
+
+QPair<DeviceManager::DeviceError, QString> GuhCore::confirmPairing(const QUuid &pairingTransactionId, const QString &secret)
+{
+    return m_deviceManager->confirmPairing(pairingTransactionId, secret);
+}
+
+QPair<DeviceManager::DeviceError, QString> GuhCore::executeAction(const Action &action)
+{
+    return m_deviceManager->executeAction(action);
+}
+
+DeviceClass GuhCore::findDeviceClass(const DeviceClassId &deviceClassId) const
+{
+    return m_deviceManager->findDeviceClass(deviceClassId);
+}
+
+DeviceManager::DeviceError GuhCore::discoverDevices(const DeviceClassId &deviceClassId, const QList<Param> &params)
+{
+    return m_deviceManager->discoverDevices(deviceClassId, params);
+}
+
+QPair<DeviceManager::DeviceError, QString> GuhCore::addConfiguredDevice(const DeviceClassId &deviceClassId, const QList<Param> &params, const DeviceId &newId)
+{
+    return m_deviceManager->addConfiguredDevice(deviceClassId, params, newId);
+}
+
+QPair<DeviceManager::DeviceError, QString> GuhCore::addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &newId)
+{
+    return m_deviceManager->addConfiguredDevice(deviceClassId, deviceDescriptorId, newId);
+}
+
+QList<Device *> GuhCore::configuredDevices() const
+{
+    return m_deviceManager->configuredDevices();
+}
+
+Device *GuhCore::findConfiguredDevice(const DeviceId &deviceId) const
+{
+    return m_deviceManager->findConfiguredDevice(deviceId);
+}
+
+QList<Device *> GuhCore::findConfiguredDevices(const DeviceClassId &deviceClassId) const
+{
+    return m_deviceManager->findConfiguredDevices(deviceClassId);
+}
+
+QList<Rule> GuhCore::rules() const
+{
+    return m_ruleEngine->rules();
+}
+
+RuleEngine::RuleError GuhCore::addRule(const RuleId &id, const QList<EventDescriptor> &eventDescriptorList, const QList<Action> &actionList)
+{
+    return m_ruleEngine->addRule(id, eventDescriptorList, actionList);
+}
+
+RuleEngine::RuleError GuhCore::removeRule(const RuleId &id)
+{
+    return m_ruleEngine->removeRule(id);
+}
+
 /*! Returns a pointer to the \l{DeviceManager} instance owned by GuhCore.*/
 DeviceManager *GuhCore::deviceManager() const
 {
@@ -95,6 +191,12 @@ GuhCore::GuhCore(QObject *parent) :
     m_jsonServer = new JsonRPCServer(this);
 
     connect(m_deviceManager, &DeviceManager::eventTriggered, this, &GuhCore::gotEvent);
+    connect(m_deviceManager, &DeviceManager::deviceStateChanged, this, &GuhCore::deviceStateChanged);
+    connect(m_deviceManager, &DeviceManager::actionExecutionFinished, this, &GuhCore::actionExecuted);
+
+    connect(m_deviceManager, &DeviceManager::devicesDiscovered, this, &GuhCore::devicesDiscovered);
+    connect(m_deviceManager, &DeviceManager::deviceSetupFinished, this, &GuhCore::deviceSetupFinished);
+    connect(m_deviceManager, &DeviceManager::pairingFinished, this, &GuhCore::pairingFinished);
 }
 
 /*! Connected to the DeviceManager's emitEvent signal. Events received in

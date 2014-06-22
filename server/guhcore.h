@@ -21,12 +21,15 @@
 
 #include "rule.h"
 #include "types/event.h"
+#include "plugin/deviceclass.h"
+#include "plugin/devicedescriptor.h"
+
+#include "devicemanager.h"
+#include "ruleengine.h"
 
 #include <QObject>
 
 class JsonRPCServer;
-class DeviceManager;
-class RuleEngine;
 class Device;
 
 class GuhCore : public QObject
@@ -39,13 +42,43 @@ public:
     // Used for testing
     void destroy();
 
-    DeviceManager* deviceManager() const;
-    RuleEngine *ruleEngine() const;
+    QList<DevicePlugin *> plugins() const;
+    QPair<DeviceManager::DeviceError, QString> setPluginConfig(const PluginId &pluginId, const QList<Param> params);
+
+    // Device handling
+    QList<Vendor> supportedVendors() const;
+    QList<DeviceClass> supportedDevices(const VendorId &vendorId = VendorId()) const;
+    DeviceClass findDeviceClass(const DeviceClassId &deviceClassId) const;
+    DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const QList<Param> &params);
+    QPair<DeviceManager::DeviceError, QString> addConfiguredDevice(const DeviceClassId &deviceClassId, const QList<Param> &params, const DeviceId &newId);
+    QPair<DeviceManager::DeviceError, QString> addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &newId);
+    QList<Device*> configuredDevices() const;
+    Device *findConfiguredDevice(const DeviceId &deviceId) const;
+    QList<Device*> findConfiguredDevices(const DeviceClassId &deviceClassId) const;
+    QPair<DeviceManager::DeviceError, QString> removeConfiguredDevice(const DeviceId &deviceId);
+
+    QPair<DeviceManager::DeviceError, QString> pairDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId);
+    QPair<DeviceManager::DeviceError, QString> pairDevice(const DeviceClassId &deviceClassId, const QList<Param> &params);
+    QPair<DeviceManager::DeviceError, QString> confirmPairing(const QUuid &pairingTransactionId, const QString &secret = QString());
+
+    QPair<DeviceManager::DeviceError, QString> executeAction(const Action &action);
+
+    QList<Rule> rules() const;
+    RuleEngine::RuleError addRule(const RuleId &id, const QList<EventDescriptor> &eventDescriptorList, const QList<Action> &actionList);
+    RuleEngine::RuleError removeRule(const RuleId &id);
 
 signals:
     void eventTriggered(const Event &event);
+    void deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
+    void actionExecuted(const ActionId &id, DeviceManager::DeviceError status, const QString &errorMessage);
+
+    void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
+    void deviceSetupFinished(Device *device, DeviceManager::DeviceError status);
+    void pairingFinished(const QUuid &pairingTransactionId, DeviceManager::DeviceError status, const QString &errorMessage, const DeviceId &deviceId);
 
 private:
+    RuleEngine *ruleEngine() const;
+    DeviceManager* deviceManager() const;
     explicit GuhCore(QObject *parent = 0);
     static GuhCore *s_instance;
 
@@ -56,6 +89,7 @@ private:
 private slots:
     void gotEvent(const Event &event);
 
+    friend class GuhTestBase;
 };
 
 #endif // GUHCORE_H

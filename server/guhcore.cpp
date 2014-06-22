@@ -78,9 +78,37 @@ QList<DeviceClass> GuhCore::supportedDevices(const VendorId &vendorId) const
     return m_deviceManager->supportedDevices(vendorId);
 }
 
-QPair<DeviceManager::DeviceError, QString> GuhCore::removeConfiguredDevice(const DeviceId &deviceId)
+QPair<DeviceManager::DeviceError, QString> GuhCore::removeConfiguredDevice(const DeviceId &deviceId, const QHash<RuleId, RuleEngine::RemovePolicy> &removePolicyList)
 {
-    // TODO: make sure we don't remove a device and keep stale rules around...
+    QHash<RuleId, RuleEngine::RemovePolicy> toBeChanged;
+    QList<RuleId> unhandledRules;
+    foreach (const RuleId &ruleId, m_ruleEngine->findRules(deviceId)) {
+        bool found = false;
+        foreach (const RuleId &policyRuleId, removePolicyList.keys()) {
+            if (ruleId == policyRuleId) {
+                found = true;
+                toBeChanged.insert(ruleId, removePolicyList.value(ruleId));
+                break;
+            }
+        }
+        if (!found) {
+            unhandledRules.append(ruleId);
+        }
+    }
+
+    if (!unhandledRules.isEmpty()) {
+        return qMakePair<DeviceManager::DeviceError, QString>(DeviceManager::DeviceErrorMissingParameter, "There are unhandled rules which depend on this device.");
+    }
+
+    // Update the rules...
+    foreach (const RuleId &ruleId, toBeChanged.keys()) {
+        if (toBeChanged.value(ruleId) == RuleEngine::RemovePolicyCascade) {
+            m_ruleEngine->removeRule(ruleId);
+        } else if (toBeChanged.value(ruleId) == RuleEngine::RemovePolicyUpdate){
+            m_ruleEngine->removeDeviceFromRule(ruleId, deviceId);
+        }
+    }
+
     return m_deviceManager->removeConfiguredDevice(deviceId);
 }
 
@@ -144,6 +172,16 @@ QList<Rule> GuhCore::rules() const
     return m_ruleEngine->rules();
 }
 
+QList<RuleId> GuhCore::ruleIds() const
+{
+    return m_ruleEngine->ruleIds();
+}
+
+Rule GuhCore::findRule(const RuleId &ruleId)
+{
+    return m_ruleEngine->findRule(ruleId);
+}
+
 RuleEngine::RuleError GuhCore::addRule(const RuleId &id, const QList<EventDescriptor> &eventDescriptorList, const QList<Action> &actionList)
 {
     return m_ruleEngine->addRule(id, eventDescriptorList, actionList);
@@ -152,6 +190,11 @@ RuleEngine::RuleError GuhCore::addRule(const RuleId &id, const QList<EventDescri
 RuleEngine::RuleError GuhCore::removeRule(const RuleId &id)
 {
     return m_ruleEngine->removeRule(id);
+}
+
+QList<RuleId> GuhCore::findRules(const DeviceId &deviceId)
+{
+    return m_ruleEngine->findRules(deviceId);
 }
 
 /*! Returns a pointer to the \l{DeviceManager} instance owned by GuhCore.*/

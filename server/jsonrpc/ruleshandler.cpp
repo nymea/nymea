@@ -32,10 +32,15 @@ RulesHandler::RulesHandler(QObject *parent) :
     params.clear(); returns.clear();
     setDescription("GetRules", "Get all configured rules");
     setParams("GetRules", params);
-    QVariantList rules;
-    rules.append(JsonTypes::ruleRef());
-    returns.insert("rules", rules);
+    returns.insert("ruleIds", QVariantList() << "uuid");
     setReturns("GetRules", returns);
+
+    params.clear(); returns.clear();
+    setDescription("GetRuleDetails", "Get details for the rule identified by ruleId");
+    params.insert("ruleId", "uuid");
+    setParams("GetRuleDetails", params);
+    returns.insert("rule", JsonTypes::ruleRef());
+    setReturns("GetRuleDetails", returns);
 
     params.clear(); returns.clear();
     setDescription("AddRule", "Add a rule.");
@@ -58,6 +63,13 @@ RulesHandler::RulesHandler(QObject *parent) :
     returns.insert("success", "bool");
     returns.insert("errorMessage", "string");
     setReturns("RemoveRule", returns);
+
+    params.clear(); returns.clear();
+    setDescription("FindRules", "Find a list of rules containing any of the given parameters.");
+    params.insert("deviceId", "uuid");
+    setParams("FindRules", params);
+    returns.insert("ruleIds", QVariantList() << "uuid");
+    setReturns("FindRules", returns);
 }
 
 QString RulesHandler::name() const
@@ -70,14 +82,24 @@ JsonReply* RulesHandler::GetRules(const QVariantMap &params)
     Q_UNUSED(params)
 
     QVariantList rulesList;
-    foreach (const Rule &rule, GuhCore::instance()->rules()) {
-        QVariantMap ruleMap = JsonTypes::packRule(rule);
-        rulesList.append(ruleMap);
+    foreach (const RuleId &ruleId, GuhCore::instance()->ruleIds()) {
+        rulesList.append(ruleId);
     }
     QVariantMap returns;
-    returns.insert("rules", rulesList);
+    returns.insert("ruleIds", rulesList);
 
     return createReply(returns);
+}
+
+JsonReply *RulesHandler::GetRuleDetails(const QVariantMap &params)
+{
+    RuleId ruleId = RuleId(params.value("ruleId").toString());
+    Rule rule = GuhCore::instance()->findRule(ruleId);
+    QVariantMap ruleData;
+    if (!rule.id().isNull()) {
+        ruleData.insert("rule", JsonTypes::packRule(rule));
+    }
+    return createReply(ruleData);
 }
 
 JsonReply* RulesHandler::AddRule(const QVariantMap &params)
@@ -155,5 +177,20 @@ JsonReply* RulesHandler::RemoveRule(const QVariantMap &params)
         returns.insert("success", false);
         returns.insert("errorMessage", "Unknown error");
     }
+    return createReply(returns);
+}
+
+JsonReply *RulesHandler::FindRules(const QVariantMap &params)
+{
+    DeviceId deviceId = DeviceId(params.value("deviceId").toString());
+    QList<RuleId> rules = GuhCore::instance()->findRules(deviceId);
+
+    QVariantList rulesList;
+    foreach (const RuleId &ruleId, rules) {
+        rulesList.append(ruleId);
+    }
+
+    QVariantMap returns;
+    returns.insert("ruleIds", rulesList);
     return createReply(returns);
 }

@@ -32,6 +32,7 @@ QVariantList JsonTypes::s_stateOperatorTypes;
 QVariantList JsonTypes::s_valueOperatorTypes;
 QVariantList JsonTypes::s_createMethodTypes;
 QVariantList JsonTypes::s_setupMethodTypes;
+QVariantList JsonTypes::s_removePolicyTypes;
 
 QVariantMap JsonTypes::s_paramType;
 QVariantMap JsonTypes::s_param;
@@ -60,6 +61,7 @@ void JsonTypes::init()
     s_valueOperatorTypes << "OperatorTypeEquals" << "OperatorTypeNotEquals" << "OperatorTypeLess" << "OperatorTypeGreater" << "OperatorTypeLessThan" << "OperatorTypeGreaterThan";
     s_createMethodTypes << "CreateMethodUser" << "CreateMethodAuto" << "CreateMethodDiscovery";
     s_setupMethodTypes << "SetupMethodJustAdd" << "SetupMethodDisplayPin" << "SetupMethodEnterPin" << "SetupMethodPushButton";
+    s_removePolicyTypes << "RemovePolicyCascade" << "RemovePolicyUpdate";
 
     // ParamType
     s_paramType.insert("name", "string");
@@ -180,6 +182,7 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("SetupMethodType", setupMethodTypes());
     allTypes.insert("ValueOperatorType", valueOperatorTypes());
     allTypes.insert("StateOperatorType", stateOperatorTypes());
+    allTypes.insert("RemovePolicyType", removePolicyTypes());
     allTypes.insert("StateType", stateTypeDescription());
     allTypes.insert("StateDescriptor", stateDescriptorDescription());
     allTypes.insert("StateEvaluator", stateEvaluatorDescription());

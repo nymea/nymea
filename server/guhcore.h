@@ -55,7 +55,7 @@ public:
     QList<Device*> configuredDevices() const;
     Device *findConfiguredDevice(const DeviceId &deviceId) const;
     QList<Device*> findConfiguredDevices(const DeviceClassId &deviceClassId) const;
-    QPair<DeviceManager::DeviceError, QString> removeConfiguredDevice(const DeviceId &deviceId);
+    QPair<DeviceManager::DeviceError, QString> removeConfiguredDevice(const DeviceId &deviceId, const QHash<RuleId, RuleEngine::RemovePolicy> &removePolicyList);
 
     QPair<DeviceManager::DeviceError, QString> pairDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId);
     QPair<DeviceManager::DeviceError, QString> pairDevice(const DeviceClassId &deviceClassId, const QList<Param> &params);
@@ -64,8 +64,11 @@ public:
     QPair<DeviceManager::DeviceError, QString> executeAction(const Action &action);
 
     QList<Rule> rules() const;
+    QList<RuleId> ruleIds() const;
+    Rule findRule(const RuleId &ruleId);
     RuleEngine::RuleError addRule(const RuleId &id, const QList<EventDescriptor> &eventDescriptorList, const QList<Action> &actionList);
     RuleEngine::RuleError removeRule(const RuleId &id);
+    QList<RuleId> findRules(const DeviceId &deviceId);
 
 signals:
     void eventTriggered(const Event &event);

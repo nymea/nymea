@@ -69,6 +69,7 @@ public:
     DECLARE_TYPE(valueOperatorTypes, "ValueOperatorType")
     DECLARE_TYPE(createMethodTypes, "CreateMethodType")
     DECLARE_TYPE(setupMethodTypes, "SetupMethodType")
+    DECLARE_TYPE(removePolicyTypes, "RemovePolicyType")
     DECLARE_OBJECT(paramType, "ParamType")
     DECLARE_OBJECT(param, "Param")
     DECLARE_OBJECT(paramDescriptor, "ParamDescriptor")

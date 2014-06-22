@@ -45,6 +45,9 @@ public:
     void setOperatorType(StateOperator operatorType);
 
     bool evaluate() const;
+    bool containsDevice(const DeviceId &deviceId) const;
+
+    void removeDevice(const DeviceId &deviceId);
 
     void dumpToSettings(QSettings &settings, const QString &groupName) const;
     static StateEvaluator loadFromSettings(QSettings &settings, const QString &groupPrefix);

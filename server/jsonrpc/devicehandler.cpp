@@ -147,6 +147,12 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     params.clear(); returns.clear();
     setDescription("RemoveConfiguredDevice", "Remove a device from the system.");
     params.insert("deviceId", "uuid");
+    QVariantList removePolicyList;
+    QVariantMap policy;
+    policy.insert("ruleId", "uuid");
+    policy.insert("policy", JsonTypes::removePolicyTypesRef());
+    removePolicyList.append(policy);
+    params.insert("o:removePolicyList", removePolicyList);
     setParams("RemoveConfiguredDevice", params);
     returns.insert("success", "bool");
     returns.insert("errorMessage", "string");
@@ -480,8 +486,16 @@ JsonReply* DeviceHandler::GetConfiguredDevices(const QVariantMap &params) const
 
 JsonReply* DeviceHandler::RemoveConfiguredDevice(const QVariantMap &params)
 {
+    DeviceId deviceId = DeviceId(params.value("deviceId").toString());
+    QHash<RuleId, RuleEngine::RemovePolicy> removePolicyList;
+    foreach (const QVariant &variant, params.value("removePolicyList").toList()) {
+        RuleId ruleId = RuleId(variant.toMap().value("ruleId").toString());
+        RuleEngine::RemovePolicy policy = variant.toMap().value("policy").toString() == "RemovePolicyCascade" ? RuleEngine::RemovePolicyCascade : RuleEngine::RemovePolicyUpdate;
+        removePolicyList.insert(ruleId, policy);
+    }
+
     QVariantMap returns;
-    QPair<DeviceManager::DeviceError, QString> status = GuhCore::instance()->removeConfiguredDevice(DeviceId(params.value("deviceId").toString()));
+    QPair<DeviceManager::DeviceError, QString> status = GuhCore::instance()->removeConfiguredDevice(deviceId, removePolicyList);
     switch(status.first) {
     case DeviceManager::DeviceErrorNoError:
         returns.insert("success", true);
@@ -490,6 +504,10 @@ JsonReply* DeviceHandler::RemoveConfiguredDevice(const QVariantMap &params)
     case DeviceManager::DeviceErrorDeviceNotFound:
         returns.insert("success", false);
         returns.insert("errorMessage", QString("No such device: %1").arg(status.second));
+        break;
+    case DeviceManager::DeviceErrorMissingParameter:
+        returns.insert("success", false);
+        returns.insert("errorMessage", QString("Missing Parameter: %1").arg(status.second));
         break;
     default:
         returns.insert("success", false);

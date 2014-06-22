@@ -99,6 +99,29 @@ bool StateEvaluator::evaluate() const
     return true;
 }
 
+bool StateEvaluator::containsDevice(const DeviceId &deviceId) const
+{
+    if (m_stateDescriptor.deviceId() == deviceId) {
+        return true;
+    }
+    foreach (const StateEvaluator &childEvaluator, m_childEvaluators) {
+        if (childEvaluator.containsDevice(deviceId)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void StateEvaluator::removeDevice(const DeviceId &deviceId)
+{
+    if (m_stateDescriptor.deviceId() == deviceId) {
+        m_stateDescriptor = StateDescriptor();
+    }
+    for (int i = 0; i < m_childEvaluators.count(); i++) {
+        m_childEvaluators[i].removeDevice(deviceId);
+    }
+}
+
 void StateEvaluator::dumpToSettings(QSettings &settings, const QString &groupName) const
 {
     settings.beginGroup(groupName);

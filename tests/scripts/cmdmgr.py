@@ -107,19 +107,25 @@ def list_configured_devices():
     print "=== Configured Devices ==="
 
 
+def read_params(paramTypes):
+    params = []
+    for paramType in paramTypes:
+        paramValue = raw_input("Please enter value for parameter %s (type: %s): " % (paramType['name'], paramType['type']))
+        param = {}
+        param[paramType['name']] = paramValue
+        params.append(param)
+    print "got params:", params
+    return params
+
 def discover_device(deviceClassId = None):
     if deviceClassId == None:
         deviceClassId = select_deviceClass()
     deviceClass = get_deviceClass(deviceClassId)
-    discoveryParams = []
-    for paramType in deviceClass['discoveryParamTypes']:
-        paramValue = raw_input("Please enter value for parameter %s" % paramType['name'])
-        dp = {}
-        dp[paramType['name']] = paramValue
-        discoveryParams.append(dp)
 
     params = {}
     params['deviceClassId'] = deviceClassId
+
+    discoveryParams = read_params(deviceClass['paramTypes'])
     if len(discoveryParams) > 0:
         params['discoveryParams'] = discoveryParams
 
@@ -155,9 +161,18 @@ def get_actionType(actionTypeId):
     print "got actionType", response
     return response['params']['actionType']
 
+
 def add_configured_device(deviceClassId):
+    deviceClass = get_deviceClass(deviceClassId)
+
     params = {}
     params['deviceClassId'] = deviceClassId
+
+    deviceParams = read_params(deviceClass['paramTypes'])
+    if len(deviceParams) > 0:
+        params['deviceParams'] = deviceParams
+
+    print "adddevice command params:", params
     response = send_command("Devices.AddConfiguredDevice", params)
     if response['params']['success'] != "true":
         print "Error executing method: %s" % response['params']['errorMessage']

@@ -64,9 +64,14 @@ void GuhTestBase::initTestCase()
     // Lets add one instance of the mockdevice
     QVariantMap params;
     params.insert("deviceClassId", "{753f0d32-0468-4d08-82ed-1964aab03298}");
-    QVariantMap deviceParams;
-    deviceParams.insert("httpport", m_mockDevice1Port);
+
+    QVariantList deviceParams;
+    QVariantMap httpPortParam;
+    httpPortParam.insert("name", "httpport");
+    httpPortParam.insert("value", m_mockDevice1Port);
+    deviceParams.append(httpPortParam);
     params.insert("deviceParams", deviceParams);
+
     QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
 
     verifySuccess(response);

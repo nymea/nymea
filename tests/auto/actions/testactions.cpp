@@ -51,10 +51,12 @@ void TestActions::executeAction_data()
 
     QVariantList params;
     QVariantMap param1;
-    param1.insert("mockActionParam1", 5);
+    param1.insert("name", "mockActionParam1");
+    param1.insert("value", 5);
     params.append(param1);
     QVariantMap param2;
-    param2.insert("mockActionParam2", true);
+    param2.insert("name", "mockActionParam2");
+    param2.insert("value", true);
     params.append(param2);
 
     QTest::newRow("valid action") << m_mockDeviceId << mockActionIdWithParams << params << true;

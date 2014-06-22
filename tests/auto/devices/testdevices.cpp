@@ -119,7 +119,8 @@ void TestDevices::setPluginConfig()
 
     QVariantList configuration;
     QVariantMap configParam;
-    configParam.insert("configParamInt", value);
+    configParam.insert("name", "configParamInt");
+    configParam.insert("value", value);
     configuration.append(configParam);
     params.insert("configuration", configuration);
     QVariant response = injectAndWait("Devices.SetPluginConfiguration", params);
@@ -131,7 +132,8 @@ void TestDevices::setPluginConfig()
         response = injectAndWait("Devices.GetPluginConfiguration", params);
         verifySuccess(response);
         qDebug() << "222" << response.toMap().value("params").toMap().value("configuration").toList().first();
-        QVERIFY2(response.toMap().value("params").toMap().value("configuration").toList().first().toMap().value("configParamInt") == value, "Value not set correctly");
+        QVERIFY2(response.toMap().value("params").toMap().value("configuration").toList().first().toMap().value("name") == "configParamInt", "Value not set correctly");
+        QVERIFY2(response.toMap().value("params").toMap().value("configuration").toList().first().toMap().value("value") == value, "Value not set correctly");
     }
 }
 
@@ -179,11 +181,14 @@ void TestDevices::getSupportedDevices()
 void TestDevices::addConfiguredDevice_data()
 {
     QTest::addColumn<DeviceClassId>("deviceClassId");
-    QTest::addColumn<QVariantMap>("deviceParams");
+    QTest::addColumn<QVariantList>("deviceParams");
     QTest::addColumn<bool>("success");
 
-    QVariantMap deviceParams;
-    deviceParams.insert("httpport", m_mockDevice1Port - 1);
+    QVariantList deviceParams;
+    QVariantMap httpportParam;
+    httpportParam.insert("name", "httpport");
+    httpportParam.insert("value", m_mockDevice1Port - 1);
+    deviceParams.append(httpportParam);
 
     QTest::newRow("User, JustAdd") << mockDeviceClassId << deviceParams << true;
     QTest::newRow("Auto, JustAdd") << mockDeviceAutoClassId << deviceParams << false;
@@ -193,16 +198,25 @@ void TestDevices::addConfiguredDevice_data()
     QTest::newRow("Setup failure") << mockDeviceBrokenClassId << deviceParams << false;
     QTest::newRow("Setup failure, Async") << mockDeviceBrokenAsyncSetupClassId << deviceParams << false;
 
-    QVariantMap invalidDeviceParams;
-    invalidDeviceParams.insert("tropptth", m_mockDevice1Port - 1);
-    QTest::newRow("User, JustAdd, invalid params") << mockDeviceClassId << invalidDeviceParams << false;
+    QVariantList invalidDeviceParams;
+    QTest::newRow("User, JustAdd, missing params") << mockDeviceClassId << invalidDeviceParams << false;
+
+    QVariantMap fakeparam;
+    fakeparam.insert("name", "tropptth");
+    invalidDeviceParams.append(fakeparam);
+    QTest::newRow("User, JustAdd, invalid param") << mockDeviceClassId << invalidDeviceParams << false;
+
+    fakeparam.insert("value", "buhuu");
+    invalidDeviceParams.clear();
+    invalidDeviceParams.append(fakeparam);
+    QTest::newRow("User, JustAdd, wrong param") << mockDeviceClassId << invalidDeviceParams << false;
 
 }
 
 void TestDevices::addConfiguredDevice()
 {
     QFETCH(DeviceClassId, deviceClassId);
-    QFETCH(QVariantMap, deviceParams);
+    QFETCH(QVariantList, deviceParams);
     QFETCH(bool, success);
 
     QVariantMap params;
@@ -270,8 +284,11 @@ void TestDevices::storedDevices()
 {
     QVariantMap params;
     params.insert("deviceClassId", mockDeviceClassId);
-    QVariantMap deviceParams;
-    deviceParams.insert("httpport", 8888);
+    QVariantList deviceParams;
+    QVariantMap httpportParam;
+    httpportParam.insert("name", "httpport");
+    httpportParam.insert("value", 8888);
+    deviceParams.append(httpportParam);
     params.insert("deviceParams", deviceParams);
     QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
     verifySuccess(response);
@@ -293,7 +310,7 @@ void TestDevices::storedDevices()
 
             qDebug() << "found added device" << device.toMap().value("params").toList().first().toMap();
             qDebug() << "expected deviceParams:" << deviceParams;
-            QCOMPARE(device.toMap().value("params").toList().first().toMap(), deviceParams);
+            QCOMPARE(device.toMap().value("params").toList(), deviceParams);
             found = true;
             break;
         }

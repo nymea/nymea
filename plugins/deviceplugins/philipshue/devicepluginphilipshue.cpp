@@ -259,14 +259,14 @@ void DevicePluginPhilipsHue::discoveryDone(const QList<QHostAddress> &bridges)
     emit devicesDiscovered(hueDeviceClassId, deviceDescriptors);
 }
 
-void DevicePluginPhilipsHue::createUserFinished(int id, const QVariantMap &response)
+void DevicePluginPhilipsHue::createUserFinished(int id, const QVariant &response)
 {
     qDebug() << "createuser response" << response;
 
     PairingInfo pairingInfo = m_pairings.take(id);
-    if (response.contains("error")) {
-        qDebug() << "Failed to pair Hue bridge:" << response.value("error").toMap().value("description");
-        emit pairingFinished(pairingInfo.pairingTransactionId, DeviceManager::DeviceSetupStatusFailure, "Pairing failed:" + response.value("error").toMap().value("description").toString());
+    if (response.toMap().contains("error")) {
+        qDebug() << "Failed to pair Hue bridge:" << response.toMap().value("error").toMap().value("description");
+        emit pairingFinished(pairingInfo.pairingTransactionId, DeviceManager::DeviceSetupStatusFailure, "Pairing failed:" + response.toMap().value("error").toMap().value("description").toString());
         return;
     }
 
@@ -277,19 +277,19 @@ void DevicePluginPhilipsHue::createUserFinished(int id, const QVariantMap &respo
 
 }
 
-void DevicePluginPhilipsHue::getLightsFinished(int id, const QVariantMap &params)
+void DevicePluginPhilipsHue::getLightsFinished(int id, const QVariant &params)
 {
     qDebug() << "getlightsfinished" << params;
     PairingInfo pairingInfo = m_pairings.take(id);
 
-    if (params.count() == 0) {
+    if (params.toMap().count() == 0) {
         qWarning() << "No light bulbs found on this hue bridge... Cannot proceed with pairing.";
         emit pairingFinished(pairingInfo.pairingTransactionId, DeviceManager::DeviceSetupStatusFailure, "No light bulbs found on this Hue bridge.");
         return;
     }
 
     // Store a list of all known Lights
-    foreach (const QString &lightId, params.keys()) {
+    foreach (const QString &lightId, params.toMap().keys()) {
         Light *light = new Light(QHostAddress(pairingInfo.ipParam.value().toString()), pairingInfo.usernameParam.value().toString(), lightId.toInt(), this);
         m_unconfiguredLights.insert(lightId.toInt(), light);
     }
@@ -302,7 +302,7 @@ void DevicePluginPhilipsHue::getLightsFinished(int id, const QVariantMap &params
 //    }
 }
 
-void DevicePluginPhilipsHue::getFinished(int id, const QVariantMap &params)
+void DevicePluginPhilipsHue::getFinished(int id, const QVariant &params)
 {
     qDebug() << "got lights" << params;
 }

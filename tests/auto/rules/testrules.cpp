@@ -234,10 +234,12 @@ void TestRules::loadStoreConfig()
     action2.insert("deviceId", m_mockDeviceId);
     QVariantList action2Params;
     QVariantMap action2Param1;
-    action2Param1.insert("mockActionParam1", 5);
+    action2Param1.insert("name", "mockActionParam1");
+    action2Param1.insert("value", 5);
     action2Params.append(action2Param1);
     QVariantMap action2Param2;
-    action2Param2.insert("mockActionParam2", true);
+    action2Param2.insert("name", "mockActionParam2");
+    action2Param2.insert("value", true);
     action2Params.append(action2Param2);
     action2.insert("params", action2Params);
 
@@ -289,6 +291,8 @@ void TestRules::loadStoreConfig()
             if (actionVariant.toMap().value("actionTypeId") == replyActionVariant.toMap().value("actionTypeId") &&
                     actionVariant.toMap().value("deviceId") == replyActionVariant.toMap().value("deviceId")) {
                 found = true;
+                qDebug() << "AAA:" << actionVariant;
+                qDebug() << "BBB:" << replyActionVariant;
                 QVERIFY2(actionVariant == replyActionVariant, "Action doesn't match after loading from config.");
             }
         }

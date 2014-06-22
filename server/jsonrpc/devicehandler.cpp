@@ -346,9 +346,8 @@ JsonReply* DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
     DeviceClassId deviceClass(params.value("deviceClassId").toString());
     QList<Param> deviceParams;
     foreach (const QVariant &paramVariant, params.value("deviceParams").toList()) {
-         QString paramName = paramVariant.toMap().keys().first();
-         Param param(paramName);
-         param.setValue(paramVariant.toMap().value(paramName));
+         Param param(paramVariant.toMap().value("name").toString());
+         param.setValue(paramVariant.toMap().value("value"));
          deviceParams.append(param);
     }
 

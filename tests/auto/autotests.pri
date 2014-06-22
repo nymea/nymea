@@ -1,6 +1,7 @@
 QT += testlib network
 CONFIG += testcase c++11
 
+message ("tests: $$top_srcdir")
 include($$top_srcdir/server/server.pri)
 
 DEFINES += TESTING_ENABLED

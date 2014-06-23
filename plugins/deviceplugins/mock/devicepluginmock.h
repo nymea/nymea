@@ -47,7 +47,7 @@ public:
     QPair<DeviceManager::DeviceSetupStatus, QString> setupDevice(Device *device) override;
     void deviceRemoved(Device *device) override;
 
-    bool configureAutoDevice(QList<Device *> loadedDevices, Device *device) const override;
+    void startMonitoringAutoDevices() override;
 
     QList<ParamType> configurationDescription() const override;
 

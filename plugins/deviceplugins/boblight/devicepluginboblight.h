@@ -39,7 +39,8 @@ public:
     QList<DeviceClass> supportedDevices() const override;
     DeviceManager::HardwareResources requiredHardware() const override;
 
-    bool configureAutoDevice(QList<Device *> loadedDevices, Device *device) const override;
+    void startMonitoringAutoDevices() override;
+    QPair<DeviceManager::DeviceSetupStatus, QString> setupDevice(Device *device) override;
 
     QString pluginName() const override;
     PluginId pluginId() const override;

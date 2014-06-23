@@ -31,6 +31,7 @@ VendorId hueVendorId = VendorId("0ae1e001-2aa6-47ed-b8c0-334c3728a68f");
 
 PluginId huePluginUuid = PluginId("5f2e634b-b7f3-48ee-976a-b5ae22aa5c55");
 DeviceClassId hueDeviceClassId = DeviceClassId("d8f4c397-e05e-47c1-8917-8e72d4d0d47c");
+DeviceClassId hueDeviceClassAutoId = DeviceClassId("9cce5981-50a1-4873-a374-c53c095feb3b");
 
 StateTypeId hueColorStateTypeId = StateTypeId("d25423e7-b924-4b20-80b6-77eecc65d089");
 ActionTypeId hueSetColorActionTypeId = ActionTypeId("29cc299a-818b-47b2-817f-c5a6361545e4");
@@ -114,6 +115,20 @@ QList<DeviceClass> DevicePluginPhilipsHue::supportedDevices() const
 
     ret.append(deviceClassHue);
 
+    // Now create the same device again with CreateMethodAuto
+    // When we pair a bridge, one discovered device is created.
+    // The other light bulbs connected to the bridge will
+    // then appear as auto devices.
+    DeviceClass deviceClassHueAuto(pluginId(), hueVendorId, hueDeviceClassAutoId);
+    deviceClassHueAuto.setName("Hue");
+    deviceClassHueAuto.setCreateMethod(DeviceClass::CreateMethodAuto);
+    deviceClassHueAuto.setParamTypes(paramTypes);
+    deviceClassHueAuto.setStateTypes(hueStates);
+    deviceClassHueAuto.setActions(hueActons);
+
+    ret.append(deviceClassHueAuto);
+
+
     return ret;
 }
 
@@ -122,23 +137,10 @@ DeviceManager::HardwareResources DevicePluginPhilipsHue::requiredHardware() cons
     return DeviceManager::HardwareResourceNone;
 }
 
-bool DevicePluginPhilipsHue::configureAutoDevice(QList<Device *> loadedDevices, Device *device) const
+void DevicePluginPhilipsHue::startMonitoringAutoDevices()
 {
-//    if (!m_bobClient->connected()) {
-//        return false;
-//    }
-//    if (loadedDevices.count() < m_bobClient->lightsCount()) {
-//        int index = loadedDevices.count();
-//        device->setName("Boblight Channel " + QString::number(index));
-//        QList<Param> params;
-//        Param param("channel");
-//        param.setValue(index);
-//        params.append(param);
-//        device->setParams(params);
-//        device->setStateValue(colorStateTypeId, m_bobClient->currentColor(index));
-//        return true;
-//    }
-    return false;
+    // TODO: We could call the bridge to discover new light bulbs here maybe?
+    // Although we maybe want to think of a user triggered approach to do such things.
 }
 
 QString DevicePluginPhilipsHue::pluginName() const
@@ -188,6 +190,23 @@ QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginPhilipsHue::setupDe
 
     m_lights.insert(light, device);
     m_asyncSetups.insert(light, device);
+
+    // If we have more unconfigured lights around, lets add them as auto devices
+    QList<DeviceDescriptor> descriptorList;
+    while (!m_unconfiguredLights.isEmpty()) {
+        Light *light = m_unconfiguredLights.takeFirst();
+        DeviceDescriptor descriptor(hueDeviceClassAutoId, light->name());
+        QList<Param> params;
+        params.append(Param("number", light->id()));
+        params.append(Param("ip", light->ip().toString()));
+        params.append(Param("username", light->username()));
+        descriptor.setParams(params);
+        descriptorList.append(descriptor);
+    }
+    if (!descriptorList.isEmpty()) {
+        qDebug() << "adding" << descriptorList.count() << "autodevices";
+        metaObject()->invokeMethod(this, "autoDevicesAppeared", Qt::QueuedConnection, Q_ARG(DeviceClassId, hueDeviceClassAutoId), Q_ARG(QList<DeviceDescriptor>, descriptorList));
+    }
 
     return reportDeviceSetup(DeviceManager::DeviceSetupStatusAsync);
 }
@@ -296,10 +315,10 @@ void DevicePluginPhilipsHue::getLightsFinished(int id, const QVariant &params)
 
     emit pairingFinished(pairingInfo.pairingTransactionId, DeviceManager::DeviceSetupStatusSuccess, QString());
 
-//    // If we have more than one device on that bridge, tell DeviceManager that there are more.
-//    if (params.count() > 1) {
+    // If we have more than one device on that bridge, tell DeviceManager that there are more.
+    if (params.toMap().count() > 1) {
 //        emit autoDevicesAppeared();
-//    }
+    }
 }
 
 void DevicePluginPhilipsHue::getFinished(int id, const QVariant &params)

@@ -106,7 +106,7 @@ DeviceManager::DeviceManager(QObject *parent) :
     // Give hardware a chance to start up before loading plugins etc.
     QMetaObject::invokeMethod(this, "loadPlugins", Qt::QueuedConnection);
     QMetaObject::invokeMethod(this, "loadConfiguredDevices", Qt::QueuedConnection);
-    QMetaObject::invokeMethod(this, "createNewAutoDevices", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, "startMonitoringAutoDevices", Qt::QueuedConnection);
     // Make sure this is always emitted after plugins and devices are loaded
     QMetaObject::invokeMethod(this, "loaded", Qt::QueuedConnection);
 }
@@ -149,7 +149,6 @@ QPair<DeviceManager::DeviceError, QString> DeviceManager::setPluginConfig(const 
     }
     settings.endGroup();
     settings.endGroup();
-    createNewAutoDevices();
     return result;
 }
 
@@ -540,6 +539,7 @@ void DeviceManager::loadPlugins()
             connect(pluginIface, &DevicePlugin::deviceSetupFinished, this, &DeviceManager::slotDeviceSetupFinished);
             connect(pluginIface, &DevicePlugin::actionExecutionFinished, this, &DeviceManager::actionExecutionFinished);
             connect(pluginIface, &DevicePlugin::pairingFinished, this, &DeviceManager::slotPairingFinished);
+            connect(pluginIface, &DevicePlugin::autoDevicesAppeared, this, &DeviceManager::autoDevicesAppeared);
         }
     }
 }
@@ -595,36 +595,10 @@ void DeviceManager::storeConfiguredDevices()
     settings.endGroup();
 }
 
-void DeviceManager::createNewAutoDevices()
+void DeviceManager::startMonitoringAutoDevices()
 {
-    bool haveNewDevice = false;
-    foreach (const DeviceClass &deviceClass, m_supportedDevices) {
-        if (deviceClass.createMethod() != DeviceClass::CreateMethodAuto) {
-            continue;
-        }
-
-        qDebug() << "found auto device class" << deviceClass.name();
-        DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
-        bool success = false;
-        do {
-            QList<Device*> loadedDevices = findConfiguredDevices(deviceClass.id());
-            Device *device = new Device(plugin->pluginId(), DeviceId::createDeviceId(), deviceClass.id());
-            success = plugin->configureAutoDevice(loadedDevices, device);
-            if (success) {
-                qDebug() << "New device detected for" << deviceClass.name() << device->name();
-                haveNewDevice = true;
-
-                // We'll always add auto devices, even if setup fails in order to keep track of them.
-                QPair<DeviceSetupStatus, QString> setupStatus = setupDevice(device);
-                m_configuredDevices.append(device);
-            } else {
-                qDebug() << "No newly detected devices for" << deviceClass.name();
-                delete device;
-            }
-        } while (success);
-    }
-    if (haveNewDevice) {
-        storeConfiguredDevices();
+    foreach (DevicePlugin *plugin, m_devicePlugins) {
+        plugin->startMonitoringAutoDevices();
     }
 }
 
@@ -768,6 +742,41 @@ void DeviceManager::slotPairingFinished(const QUuid &pairingTransactionId, Devic
     storeConfiguredDevices();
 
     emit deviceSetupFinished(device, DeviceError::DeviceErrorNoError, QString());
+}
+
+void DeviceManager::autoDevicesAppeared(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors)
+{
+    DeviceClass deviceClass = findDeviceClass(deviceClassId);
+    if (!deviceClass.isValid()) {
+        return;
+    }
+    DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
+    if (!plugin) {
+        return;
+    }
+
+    foreach (const DeviceDescriptor &deviceDescriptor, deviceDescriptors) {
+        Device *device = new Device(plugin->pluginId(), deviceClassId, this);
+        device->setName(deviceClass.name());
+        device->setParams(deviceDescriptor.params());
+
+        QPair<DeviceSetupStatus, QString> setupStatus = setupDevice(device);
+        switch (setupStatus.first) {
+        case DeviceSetupStatusFailure:
+            qWarning() << "Device setup failed. Not adding device to system.";
+            emit deviceSetupFinished(device, DeviceError::DeviceErrorSetupFailed, QString("Device setup failed: %1").arg(setupStatus.second));
+            delete device;
+            break;
+        case DeviceSetupStatusAsync:
+            break;
+        case DeviceSetupStatusSuccess:
+            qDebug() << "Device setup complete.";
+            emit deviceSetupFinished(device, DeviceError::DeviceErrorNoError, QString());
+            m_configuredDevices.append(device);
+            storeConfiguredDevices();
+            break;
+        }
+    }
 }
 
 void DeviceManager::slotDeviceStateValueChanged(const QUuid &stateTypeId, const QVariant &value)

@@ -39,6 +39,9 @@ public:
 
     Light(const QHostAddress &ip, const QString &username, int id, QObject *parent = 0);
 
+    QHostAddress ip() const;
+    QString username() const;
+
     int id() const;
 
     QString name() const;

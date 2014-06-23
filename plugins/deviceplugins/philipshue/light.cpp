@@ -40,6 +40,16 @@ Light::Light(const QHostAddress &ip, const QString &username, int id, QObject *p
 {
 }
 
+QHostAddress Light::ip() const
+{
+    return m_ip;
+}
+
+QString Light::username() const
+{
+    return m_username;
+}
+
 int Light::id() const
 {
     return m_id;

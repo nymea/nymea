@@ -89,23 +89,35 @@ DeviceManager::HardwareResources DevicePluginBoblight::requiredHardware() const
     return DeviceManager::HardwareResourceNone;
 }
 
-bool DevicePluginBoblight::configureAutoDevice(QList<Device *> loadedDevices, Device *device) const
+void DevicePluginBoblight::startMonitoringAutoDevices()
 {
     if (!m_bobClient->connected()) {
-        return false;
+        return;
     }
-    if (loadedDevices.count() < m_bobClient->lightsCount()) {
-        int index = loadedDevices.count();
-        device->setName("Boblight Channel " + QString::number(index));
+
+    QList<Device*> loadedDevices = deviceManager()->findConfiguredDevices(boblightDeviceClassId);
+
+    QList<DeviceDescriptor> deviceDescriptorList;
+    for (int i = loadedDevices.count(); i < m_bobClient->lightsCount(); i++) {
+        DeviceDescriptor deviceDescriptor(boblightDeviceClassId, "Boblight Channel " + QString::number(i));
         QList<Param> params;
         Param param("channel");
-        param.setValue(index);
+        param.setValue(i);
         params.append(param);
-        device->setParams(params);
-        device->setStateValue(colorStateTypeId, m_bobClient->currentColor(index));
-        return true;
+        deviceDescriptor.setParams(params);
+        deviceDescriptorList.append(deviceDescriptor);
     }
-    return false;
+    emit autoDevicesAppeared(boblightDeviceClassId, deviceDescriptorList);
+}
+
+QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginBoblight::setupDevice(Device *device)
+{
+    if (!m_bobClient->connected()) {
+        return reportDeviceSetup(DeviceManager::DeviceSetupStatusFailure, "Cannot connect to Boblight");
+    }
+
+    m_bobClient->currentColor(device->paramValue("channel").toInt());
+    return reportDeviceSetup();
 }
 
 QString DevicePluginBoblight::pluginName() const

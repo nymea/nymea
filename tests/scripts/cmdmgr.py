@@ -165,7 +165,7 @@ def discover_device(deviceClassId = None):
     params = {}
     params['deviceClassId'] = deviceClassId
 
-    discoveryParams = read_params(deviceClass['paramTypes'])
+    discoveryParams = read_params(deviceClass['discoveryParamTypes'])
     if len(discoveryParams) > 0:
         params['discoveryParams'] = discoveryParams
 

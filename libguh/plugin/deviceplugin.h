@@ -49,7 +49,7 @@ public:
     virtual QList<DeviceClass> supportedDevices() const = 0;
     virtual DeviceManager::HardwareResources requiredHardware() const = 0;
 
-    virtual bool configureAutoDevice(QList<Device *> loadedDevices, Device *device) const;
+    virtual void startMonitoringAutoDevices();
     virtual DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const QList<Param> &params) const;
 
     virtual QPair<DeviceManager::DeviceSetupStatus, QString> setupDevice(Device *device);

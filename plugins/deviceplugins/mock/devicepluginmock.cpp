@@ -257,21 +257,19 @@ void DevicePluginMock::deviceRemoved(Device *device)
     delete m_daemons.take(device);
 }
 
-bool DevicePluginMock::configureAutoDevice(QList<Device *> loadedDevices, Device *device) const
+void DevicePluginMock::startMonitoringAutoDevices()
 {
-    Q_ASSERT(device->deviceClassId() == mockDeviceAutoClassId);
+    DeviceDescriptor mockDescriptor(mockDeviceAutoClassId, "Mock Device (Auto created)");
 
-    // We only want to have one auto mock device. So if there's already anything in loadedDevices, don't crearte a new one.
-    if (loadedDevices.count() > 0) {
-        return false;
-    }
-
-    device->setName("Mock Device (Auto created)");
     QList<Param> params;
     Param param("httpport", 4242);
     params.append(param);
-    device->setParams(params);
-    return true;
+    mockDescriptor.setParams(params);
+
+    QList<DeviceDescriptor> deviceDescriptorList;
+    deviceDescriptorList.append(mockDescriptor);
+
+    emit autoDevicesAppeared(mockDeviceAutoClassId, deviceDescriptorList);
 }
 
 QList<ParamType> DevicePluginMock::configurationDescription() const

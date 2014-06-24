@@ -16,7 +16,8 @@ methods = {'List supported Vendors': 'list_vendors',
            'Execute an action': 'execute_action',
            'See a device`s states': 'list_device_states',
            'Add a rule': 'add_rule',
-           'List rules': 'list_rules'}
+           'List rules': 'list_rules',
+           'Remove rule': 'remove_rule'}
 
 
 def get_selection(title, options):
@@ -289,7 +290,7 @@ def remove_device():
     if response['params']['success']:
         print "Successfully deleted device"
     else:
-        print "Error deleting device %s" % deviceId
+        print "Error deleting device: %s" % response['params']['errorMessage']
 
 def select_actionType(deviceClassId):
     actions = get_action_types(deviceClassId)
@@ -400,6 +401,18 @@ def list_rules():
     result = send_command("Rules.GetRules", {})
     print "got rules", result
 
+
+def select_rule():
+    ruleIds = send_command("Rules.GetRules", {})['params']['ruleIds']
+    selection = get_selection("Please select rule:", ruleIds)
+    return ruleIds[selection]
+
+def remove_rule():
+    ruleId = select_rule()
+    params = {}
+    params['ruleId'] = ruleId
+    response = send_command("Rules.RemoveRule", params)
+    print "removeRule response", response
 
 import sys
 

@@ -906,7 +906,7 @@ QPair<DeviceManager::DeviceError, QString> DeviceManager::verifyParam(const Para
             return report(DeviceManager::DeviceErrorInvalidParameter, QString("Value out of range for param %1. Got: %2. Max: %3.")
                           .arg(param.name()).arg(param.value().toString()).arg(paramType.maxValue().toString()));
         }
-        if (paramType.minValue().isValid() && param.value() < paramType.maxValue()) {
+        if (paramType.minValue().isValid() && param.value() < paramType.minValue()) {
             return report(DeviceManager::DeviceErrorInvalidParameter, QString("Value out of range for param %1. Got: %2. Min: %3.")
                           .arg(param.name()).arg(param.value().toString()).arg(paramType.minValue().toString()));
         }

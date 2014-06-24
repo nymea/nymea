@@ -39,6 +39,9 @@ ActionTypeId hueSetColorActionTypeId = ActionTypeId("29cc299a-818b-47b2-817f-c5a
 StateTypeId huePowerStateTypeId = StateTypeId("6ac64eee-f356-4ae4-bc85-8c1244d12b02");
 ActionTypeId hueSetPowerActionTypeId = ActionTypeId("7782d91e-d73a-4321-8828-da768e2f6827");
 
+StateTypeId hueBrightnessStateTypeId = StateTypeId("411f489c-4bc9-42f7-b47d-b0581dc0c29e");
+ActionTypeId hueSetBrightnessActionTypeId = ActionTypeId("3bc95552-cba0-4222-abd5-9b668132e442");
+
 DevicePluginPhilipsHue::DevicePluginPhilipsHue():
     m_discovery(new Discovery(this))
 {
@@ -91,6 +94,12 @@ QList<DeviceClass> DevicePluginPhilipsHue::supportedDevices() const
     powerState.setDefaultValue(false);
     hueStates.append(powerState);
 
+    StateType brightnessState(hueBrightnessStateTypeId);
+    brightnessState.setName("brightness");
+    brightnessState.setType(QVariant::Int);
+    brightnessState.setDefaultValue(255);
+    hueStates.append(brightnessState);
+
     deviceClassHue.setStateTypes(hueStates);
 
     QList<ActionType> hueActons;
@@ -110,6 +119,17 @@ QList<DeviceClass> DevicePluginPhilipsHue::supportedDevices() const
     actionParamsSetPower.append(actionParamSetPower);
     setPowerAction.setParameters(actionParamsSetPower);
     hueActons.append(setPowerAction);
+
+    ActionType setBrightnessAction(hueSetBrightnessActionTypeId);
+    setBrightnessAction.setName("Brightness");
+    QList<ParamType> actionParamsSetBrightness;
+    ParamType actionParamSetBrightness("brightness", QVariant::Int);
+    actionParamSetBrightness.setMinValue(0);
+    actionParamSetBrightness.setMaxValue(255);
+    actionParamSetBrightness.setDefaultValue(255);
+    actionParamsSetBrightness.append(actionParamSetBrightness);
+    setBrightnessAction.setParameters(actionParamsSetBrightness);
+    hueActons.append(setBrightnessAction);
 
     deviceClassHue.setActions(hueActons);
 
@@ -254,6 +274,8 @@ QPair<DeviceManager::DeviceError, QString> DevicePluginPhilipsHue::executeAction
         light->setColor(action.param("color").value().value<QColor>());
     } else if (action.actionTypeId() == hueSetPowerActionTypeId) {
         light->setOn(action.param("power").value().toBool());
+    } else if (action.actionTypeId() == hueSetBrightnessActionTypeId) {
+        light->setBri(action.param("brightness").value().toInt());
     }
     return report();
 }
@@ -343,4 +365,5 @@ void DevicePluginPhilipsHue::lightStateChanged()
     }
     device->setStateValue(hueColorStateTypeId, QVariant::fromValue(light->color()));
     device->setStateValue(huePowerStateTypeId, light->on());
+    device->setStateValue(hueBrightnessStateTypeId, light->bri());
 }

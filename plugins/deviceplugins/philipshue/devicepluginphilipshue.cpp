@@ -42,6 +42,8 @@ ActionTypeId hueSetPowerActionTypeId = ActionTypeId("7782d91e-d73a-4321-8828-da7
 StateTypeId hueBrightnessStateTypeId = StateTypeId("411f489c-4bc9-42f7-b47d-b0581dc0c29e");
 ActionTypeId hueSetBrightnessActionTypeId = ActionTypeId("3bc95552-cba0-4222-abd5-9b668132e442");
 
+StateTypeId hueReachableStateTypeId = StateTypeId("15794d26-fde8-4a61-8f83-d7830534975f");
+
 DevicePluginPhilipsHue::DevicePluginPhilipsHue():
     m_discovery(new Discovery(this))
 {
@@ -81,6 +83,11 @@ QList<DeviceClass> DevicePluginPhilipsHue::supportedDevices() const
     deviceClassHue.setParamTypes(paramTypes);
     
     QList<StateType> hueStates;
+
+    StateType reachableState(hueReachableStateTypeId);
+    reachableState.setName("reachable");
+    reachableState.setType(QVariant::Bool);
+    hueStates.append(reachableState);
 
     StateType colorState(hueColorStateTypeId);
     colorState.setName("color");
@@ -126,7 +133,6 @@ QList<DeviceClass> DevicePluginPhilipsHue::supportedDevices() const
     ParamType actionParamSetBrightness("brightness", QVariant::Int);
     actionParamSetBrightness.setMinValue(0);
     actionParamSetBrightness.setMaxValue(255);
-    actionParamSetBrightness.setDefaultValue(255);
     actionParamsSetBrightness.append(actionParamSetBrightness);
     setBrightnessAction.setParameters(actionParamsSetBrightness);
     hueActons.append(setBrightnessAction);
@@ -270,6 +276,10 @@ QPair<DeviceManager::DeviceError, QString> DevicePluginPhilipsHue::executeAction
         return report(DeviceManager::DeviceErrorDeviceNotFound, device->id().toString());
     }
 
+    if (!light->reachable()) {
+        return report(DeviceManager::DeviceErrorSetupFailed, "This light is currently not reachable.");
+    }
+
     if (action.actionTypeId() == hueSetColorActionTypeId) {
         light->setColor(action.param("color").value().value<QColor>());
     } else if (action.actionTypeId() == hueSetPowerActionTypeId) {
@@ -363,6 +373,7 @@ void DevicePluginPhilipsHue::lightStateChanged()
     if (!device) {
         return;
     }
+    device->setStateValue(hueReachableStateTypeId, light->reachable());
     device->setStateValue(hueColorStateTypeId, QVariant::fromValue(light->color()));
     device->setStateValue(huePowerStateTypeId, light->on());
     device->setStateValue(hueBrightnessStateTypeId, light->bri());

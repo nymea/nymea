@@ -52,6 +52,8 @@ public:
 
     QPair<DeviceManager::DeviceSetupStatus, QString> confirmPairing(const QUuid &pairingTransactionId, const DeviceClassId &deviceClassId, const QList<Param> &params) override;
 
+    void guhTimer() override;
+
 public slots:
     QPair<DeviceManager::DeviceError, QString> executeAction(Device *device, const Action &action);
 

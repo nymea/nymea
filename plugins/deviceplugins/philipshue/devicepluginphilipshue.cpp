@@ -160,7 +160,7 @@ QList<DeviceClass> DevicePluginPhilipsHue::supportedDevices() const
 
 DeviceManager::HardwareResources DevicePluginPhilipsHue::requiredHardware() const
 {
-    return DeviceManager::HardwareResourceNone;
+    return DeviceManager::HardwareResourceTimer;
 }
 
 void DevicePluginPhilipsHue::startMonitoringAutoDevices()
@@ -265,6 +265,13 @@ QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginPhilipsHue::confirm
     pi.usernameParam = usernameParam;
     m_pairings.insert(id, pi);
     return reportDeviceSetup(DeviceManager::DeviceSetupStatusAsync);
+}
+
+void DevicePluginPhilipsHue::guhTimer()
+{
+    foreach (Light *light, m_lights.keys()) {
+        light->refresh();
+    }
 }
 
 QPair<DeviceManager::DeviceError, QString> DevicePluginPhilipsHue::executeAction(Device *device, const Action &action)

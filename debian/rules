@@ -38,3 +38,5 @@ override_dh_install:
 	# installing the documentation as there is no extra install target
 	cp -a $(CURDIR)/doc/html $(CURDIR)/debian/guh-doc/usr/share/doc/guh/
 
+override_dh_strip:
+	dh_strip --dbg-package=guh-dbg

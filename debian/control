@@ -24,6 +24,21 @@ Description: server for home automation systems
  .
  It supports systems like ZigBee, Z-Wave, KNX/EIB, FS20, EnOcean and other.
 
+Package: guh-dbg
+Priority: extra
+Architecture: any
+Section: debug
+Depends: guh (= ${binary:Version}), ${misc:Depends}
+Description: server for home automation systems
+ guh stands for 'Gear Up your Home!' and provide a WebGUI and configuration
+ for various systems that provide home and house automations. It's
+ expandable with plugins for a greater functionality.
+ .
+ It supports systems like ZigBee, Z-Wave, KNX/EIB, FS20, EnOcean and other.
+ .
+ This package contains debuging symbols, install this package if you have to
+ debug something or have to make a backtrace after a crash.
+
 Package: guh-doc
 Section: doc
 Architecture: all

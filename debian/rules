@@ -28,7 +28,11 @@ override_dh_auto_test:
 	make test
 
 override_dh_install:
-	# remove the folder usr/tests first because we install into package directorys
-	rm -rf $(CURDIR)/debian/tmp/usr/tests
+	# Removing the RPATH from the various test binarys with 'chrpath' before
+	# doing the packaging install. For more infos please look at:
+	#  http://lintian.debian.org/tags/binary-or-shlib-defines-rpath.html
+	for i in `find debian/tmp/usr/tests/ -type f`; do \
+		chrpath -d $$i; \
+	done
 	dh_install --fail-missing
 

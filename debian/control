@@ -2,7 +2,8 @@ Source: guh
 Section: utils
 Priority: optional
 Maintainer: Michael Zanetti <michael_zanetti@gmx.net>
-Build-Depends: debhelper (>= 9.0.0),
+Build-Depends: chrpath,
+  debhelper (>= 9.0.0),
   dpkg-dev (>= 1.16.1~),
   hardening-wrapper,
   qt5-default,
@@ -22,6 +23,20 @@ Description: server for home automation systems
  expandable with plugins for a greater functionality.
  .
  It supports systems like ZigBee, Z-Wave, KNX/EIB, FS20, EnOcean and other.
+
+Package: guh-tests
+Architecture: any
+Depends: guh (= ${binary:Version}),
+  ${shlibs:Depends},
+  ${misc:Depends}
+Description: tests for the guh package
+ guh stands for 'Gear Up your Home!' and provide a WebGUI and configuration
+ for various systems that provide home and house automations. It's
+ expandable with plugins for a greater functionality.
+ .
+ It supports systems like ZigBee, Z-Wave, KNX/EIB, FS20, EnOcean and other.
+ .
+ This package contains some tests for the guh core.
 
 Package: libguh1
 Section: libs

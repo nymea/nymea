@@ -51,3 +51,18 @@ Description: server for home automation systems
  It supports systems like ZigBee, Z-Wave, KNX/EIB, FS20, EnOcean and other.
  .
  This package contains the guh library.
+
+Package: libguh1-dev
+Section: libdevel
+Architecture: any
+Depends: libguh1 (= ${binary:Version}),
+  ${shlibs:Depends},
+  ${misc:Depends}
+Description: server for home automation systems
+ guh stands for 'Gear Up your Home!' and provide a WebGUI and configuration
+ for various systems that provide home and house automations. It's
+ expandable with plugins for a greater functionality.
+ .
+ It supports systems like ZigBee, Z-Wave, KNX/EIB, FS20, EnOcean and other.
+ .
+ This package contains the guh devloper library links.

@@ -35,4 +35,6 @@ override_dh_install:
 		chrpath -d $$i; \
 	done
 	dh_install --fail-missing
+	# installing the documentation as there is no extra install target
+	cp -a $(CURDIR)/doc/html $(CURDIR)/debian/guh-doc/usr/share/doc/guh/
 

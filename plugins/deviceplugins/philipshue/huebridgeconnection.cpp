@@ -129,7 +129,6 @@ void HueBridgeConnection::slotGetFinished()
     QVariant response = jsonDoc.toVariant();
     emit getFinished(c.id, response.toMap());
     if (c.obj) {
-        qDebug() << "onvoking result slot at" << c.obj.data() << c.method.toLatin1().data();
         metaObject()->invokeMethod(c.obj.data(), c.method.toLatin1().data(), Q_ARG(int, c.id), Q_ARG(QVariant, response));
     }
 }

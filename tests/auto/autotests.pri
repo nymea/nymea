@@ -14,3 +14,4 @@ HEADERS += ../guhtestbase.h \
     ../mocktcpserver.h
 
 target.path = /usr/tests
+INSTALLS += target

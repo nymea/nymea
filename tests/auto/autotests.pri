@@ -12,3 +12,5 @@ SOURCES += ../guhtestbase.cpp \
 
 HEADERS += ../guhtestbase.h \
     ../mocktcpserver.h
+
+target.path = /usr/tests

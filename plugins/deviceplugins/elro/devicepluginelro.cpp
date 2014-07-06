@@ -428,7 +428,7 @@ void DevicePluginElro::radioData(QList<int> rawData)
         return;
     }
 
-    QList<Param> params;
+    ParamList params;
     Param powerParam("power", power);
     params.append(powerParam);
 

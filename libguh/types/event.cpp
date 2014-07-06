@@ -42,7 +42,7 @@ Event::Event():
 /*! Constructs a Event reflecting the \l{Event} given by \a EventTypeId, associated with
     the \l{Device} given by \a deviceId and the parameters given by \a params. The parameters must
     match the description in the reflecting \l{Event}.*/
-Event::Event(const EventTypeId &eventTypeId, const DeviceId &deviceId, const QList<Param> &params):
+Event::Event(const EventTypeId &eventTypeId, const DeviceId &deviceId, const ParamList &params):
     m_id(EventId::createEventId()),
     m_eventTypeId(eventTypeId),
     m_deviceId(deviceId),
@@ -82,13 +82,13 @@ void Event::setDeviceId(const DeviceId &deviceId)
 }
 
 /*! Returns the parameters of this Event.*/
-QList<Param> Event::params() const
+ParamList Event::params() const
 {
     return m_params;
 }
 
 /*! Set the parameters of this Event to \a params.*/
-void Event::setParams(const QList<Param> &params)
+void Event::setParams(const ParamList &params)
 {
     m_params = params;
 }

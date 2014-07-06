@@ -172,7 +172,7 @@ void DevicePlugin::deviceRemoved(Device *device)
     Q_UNUSED(device)
 }
 
-QPair<DeviceManager::DeviceSetupStatus, QString> DevicePlugin::confirmPairing(const QUuid &pairingTransactionId, const DeviceClassId &deviceClassId, const QList<Param> &params)
+QPair<DeviceManager::DeviceSetupStatus, QString> DevicePlugin::confirmPairing(const QUuid &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params)
 {
     Q_UNUSED(pairingTransactionId)
     Q_UNUSED(deviceClassId)
@@ -199,7 +199,7 @@ void DevicePlugin::initPlugin(DeviceManager *deviceManager)
 
   When implementing a new plugin, override this and fill in the empty configuration if your plugin requires any.
  */
-QList<Param> DevicePlugin::configuration() const
+ParamList DevicePlugin::configuration() const
 {
     return m_config;
 }
@@ -223,7 +223,7 @@ QVariant DevicePlugin::configValue(const QString &paramName) const
 /*!
  Will be called by the DeviceManager to set a plugin's \a configuration.
  */
-QPair<DeviceManager::DeviceError, QString> DevicePlugin::setConfiguration(const QList<Param> &configuration)
+QPair<DeviceManager::DeviceError, QString> DevicePlugin::setConfiguration(const ParamList &configuration)
 {
     foreach (const Param &param, configuration) {
         qDebug() << "setting config" << param;
@@ -311,7 +311,7 @@ QList<Device *> DevicePlugin::myDevices() const
  Find a certain device from myDevices() by its params. All parameters must
  match or the device will not be found. Be prepared for nullptrs.
  */
-Device *DevicePlugin::findDeviceByParams(const QList<Param> &params) const
+Device *DevicePlugin::findDeviceByParams(const ParamList &params) const
 {
     foreach (Device *device, myDevices()) {
         bool matching = true;

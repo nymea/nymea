@@ -30,7 +30,7 @@ class Event
 {
 public:
     Event();
-    Event(const EventTypeId &eventTypeId, const DeviceId &deviceId, const QList<Param> &params = QList<Param>());
+    Event(const EventTypeId &eventTypeId, const DeviceId &deviceId, const ParamList &params = ParamList());
 
     EventId eventId() const;
 
@@ -40,8 +40,8 @@ public:
     DeviceId deviceId() const;
     void setDeviceId(const DeviceId &deviceId);
 
-    QList<Param> params() const;
-    void setParams(const QList<Param> &params);
+    ParamList params() const;
+    void setParams(const ParamList &params);
     Param param(const QString &paramName) const;
 
     bool operator ==(const Event &other) const;
@@ -50,7 +50,7 @@ private:
     EventId m_id;
     EventTypeId m_eventTypeId;
     DeviceId m_deviceId;
-    QList<Param> m_params;
+    ParamList m_params;
 };
 Q_DECLARE_METATYPE(Event)
 QDebug operator<<(QDebug dbg, const Event &event);

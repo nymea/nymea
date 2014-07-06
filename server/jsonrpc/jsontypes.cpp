@@ -448,7 +448,7 @@ ParamList JsonTypes::unpackParams(const QVariantList &paramList)
 {
     ParamList params;
     foreach (const QVariant &paramVariant, paramList) {
-        qDebug() << "unpacking param" << paramVariant;
+//        qDebug() << "unpacking param" << paramVariant;
         params.append(unpackParam(paramVariant.toMap()));
     }
     return params;

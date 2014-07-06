@@ -44,9 +44,9 @@ public:
     QString name() const;
     void setName(const QString &name);
 
-    QList<Param> params() const;
+    ParamList params() const;
     bool hasParam(const QString &paramName) const;
-    void setParams(const QList<Param> &params);
+    void setParams(const ParamList &params);
 
     QVariant paramValue(const QString &paramName) const;
     void setParamValue(const QString &paramName, const QVariant &value);
@@ -76,7 +76,7 @@ private:
     DeviceClassId m_deviceClassId;
     PluginId m_pluginId;
     QString m_name;
-    QList<Param> m_params;
+    ParamList m_params;
     QList<State> m_states;
     bool m_setupComplete;
 };

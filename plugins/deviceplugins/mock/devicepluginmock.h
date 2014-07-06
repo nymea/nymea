@@ -62,7 +62,6 @@ private slots:
     void emitActionExecuted();
 
 private:
-    QList<Param> m_config;
     QHash<Device*, HttpDaemon*> m_daemons;
     QList<Device*> m_asyncSetupDevices;
     QList<QPair<Action, Device*> > m_asyncActions;

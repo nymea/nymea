@@ -43,7 +43,7 @@ public:
     void destroy();
 
     QList<DevicePlugin *> plugins() const;
-    QPair<DeviceManager::DeviceError, QString> setPluginConfig(const PluginId &pluginId, const QList<Param> params);
+    QPair<DeviceManager::DeviceError, QString> setPluginConfig(const PluginId &pluginId, const ParamList &params);
 
     // Device handling
     QList<Vendor> supportedVendors() const;
@@ -58,7 +58,7 @@ public:
     QPair<DeviceManager::DeviceError, QString> removeConfiguredDevice(const DeviceId &deviceId, const QHash<RuleId, RuleEngine::RemovePolicy> &removePolicyList);
 
     QPair<DeviceManager::DeviceError, QString> pairDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId);
-    QPair<DeviceManager::DeviceError, QString> pairDevice(const DeviceClassId &deviceClassId, const QList<Param> &params);
+    QPair<DeviceManager::DeviceError, QString> pairDevice(const DeviceClassId &deviceClassId, const ParamList &params);
     QPair<DeviceManager::DeviceError, QString> confirmPairing(const QUuid &pairingTransactionId, const QString &secret = QString());
 
     QPair<DeviceManager::DeviceError, QString> executeAction(const Action &action);

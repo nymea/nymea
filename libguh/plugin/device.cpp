@@ -90,13 +90,13 @@ void Device::setName(const QString &name)
 }
 
 /*! Returns the parameter of this Device. It must match the parameter description in the associated \l{DeviceClass}. */
-QList<Param> Device::params() const
+ParamList Device::params() const
 {
     return m_params;
 }
 
 /*! Sets the \a params of this Device. It must match the parameter description in the associated \l{DeviceClass}. */
-void Device::setParams(const QList<Param> &params)
+void Device::setParams(const ParamList &params)
 {
     m_params = params;
 }
@@ -113,7 +113,7 @@ QVariant Device::paramValue(const QString &paramName) const
 
 void Device::setParamValue(const QString &paramName, const QVariant &value)
 {
-    QList<Param> params;
+    ParamList params;
     foreach (Param param, m_params) {
         if (param.name() == paramName) {
             param.setValue(value);

@@ -55,7 +55,7 @@ public:
     virtual QPair<DeviceManager::DeviceSetupStatus, QString> setupDevice(Device *device);
     virtual void deviceRemoved(Device *device);
 
-    virtual QPair<DeviceManager::DeviceSetupStatus, QString> confirmPairing(const QUuid &pairingTransactionId, const DeviceClassId &deviceClassId, const QList<Param> &params);
+    virtual QPair<DeviceManager::DeviceSetupStatus, QString> confirmPairing(const QUuid &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params);
 
     // Hardware input
     virtual void radioData(QList<int> rawData) {Q_UNUSED(rawData)}
@@ -63,8 +63,8 @@ public:
 
     // Configuration
     virtual QList<ParamType> configurationDescription() const;
-    QPair<DeviceManager::DeviceError, QString> setConfiguration(const QList<Param> &configuration);
-    QList<Param> configuration() const;
+    QPair<DeviceManager::DeviceError, QString> setConfiguration(const ParamList &configuration);
+    ParamList configuration() const;
     QVariant configValue(const QString &paramName) const;
     QPair<DeviceManager::DeviceError, QString> setConfigValue(const QString &paramName, const QVariant &value);
 
@@ -86,7 +86,7 @@ signals:
 protected:
     DeviceManager *deviceManager() const;
     QList<Device*> myDevices() const;
-    Device* findDeviceByParams(const QList<Param> &params) const;
+    Device* findDeviceByParams(const ParamList &params) const;
 
     void transmitData(QList<int> rawData);
 
@@ -97,7 +97,7 @@ private:
 
     DeviceManager *m_deviceManager;
 
-    QList<Param> m_config;
+    ParamList m_config;
 
     friend class DeviceManager;
 };

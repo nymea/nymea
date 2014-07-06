@@ -37,6 +37,7 @@ public:
 
     bool startTransmitter();
     bool stopTransmitter();
+    bool setUpGpio();
 
     void sendData(QList<int> rawData);
 
@@ -51,7 +52,6 @@ private:
     bool m_allowSending;
 
     void run();
-    bool setUpGpio();
 
     QMutex m_queueMutex;
     QQueue<QList<int> > m_rawDataQueue;

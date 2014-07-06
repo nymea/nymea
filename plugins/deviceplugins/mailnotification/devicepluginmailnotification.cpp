@@ -322,6 +322,7 @@ QList<DeviceClass> DevicePluginMailNotification::supportedDevices() const
     customMailParams.append(portCustomParam);
 
     ParamType authCustomParam("auth", QVariant::String);
+    authCustomParam.setAllowedValues(QVariantList() << "PLAIN" << "LOGIN");
     customMailParams.append(authCustomParam);
 
     deviceClassCustomMail.setActions(mailActions);

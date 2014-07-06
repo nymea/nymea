@@ -69,6 +69,7 @@ void JsonTypes::init()
     s_paramType.insert("o:defaultValue", "variant");
     s_paramType.insert("o:minValue", "variant");
     s_paramType.insert("o:maxValue", "variant");
+    s_paramType.insert("o:allowedValues", QVariantList() << "variant");
 
     // Param
     s_param.insert("name", "string");
@@ -331,6 +332,9 @@ QVariantMap JsonTypes::packParamType(const ParamType &paramType)
     }
     if (paramType.maxValue().isValid()) {
         variantMap.insert("maxValue", paramType.maxValue());
+    }
+    if (!paramType.allowedValues().isEmpty()) {
+        variantMap.insert("allowedValues", paramType.allowedValues());
     }
     return variantMap;
 }

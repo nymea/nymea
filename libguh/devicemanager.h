@@ -74,7 +74,7 @@ public:
 
     QList<DevicePlugin*> plugins() const;
     DevicePlugin* plugin(const PluginId &id) const;
-    QPair<DeviceError, QString> setPluginConfig(const PluginId &pluginId, const QList<Param> &pluginConfig);
+    QPair<DeviceError, QString> setPluginConfig(const PluginId &pluginId, const ParamList &pluginConfig);
 
     QList<Vendor> supportedVendors() const;
     QList<DeviceClass> supportedDevices(const VendorId &vendorId = VendorId()) const;
@@ -83,7 +83,7 @@ public:
     QList<Device*> configuredDevices() const;
     QPair<DeviceError, QString> addConfiguredDevice(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId id = DeviceId::createDeviceId());
     QPair<DeviceError, QString> addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &id = DeviceId::createDeviceId());
-    QPair<DeviceError, QString> pairDevice(const DeviceClassId &deviceClassId, const QList<Param> &params);
+    QPair<DeviceError, QString> pairDevice(const DeviceClassId &deviceClassId, const ParamList &params);
     QPair<DeviceError, QString> pairDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId);
     QPair<DeviceError, QString> confirmPairing(const QUuid &pairingTransactionId, const QString &secret = QString());
     QPair<DeviceError, QString> removeConfiguredDevice(const DeviceId &deviceId);
@@ -146,7 +146,7 @@ private:
     QTimer m_pluginTimer;
     QList<Device*> m_pluginTimerUsers;
 
-    QHash<QUuid, QPair<DeviceClassId, QList<Param> > > m_pairingsJustAdd;
+    QHash<QUuid, QPair<DeviceClassId, ParamList> > m_pairingsJustAdd;
     QHash<QUuid, QPair<DeviceClassId, DeviceDescriptorId> > m_pairingsDiscovery;
 
     friend class DevicePlugin;

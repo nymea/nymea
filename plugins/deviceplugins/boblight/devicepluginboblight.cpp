@@ -100,7 +100,7 @@ void DevicePluginBoblight::startMonitoringAutoDevices()
     QList<DeviceDescriptor> deviceDescriptorList;
     for (int i = loadedDevices.count(); i < m_bobClient->lightsCount(); i++) {
         DeviceDescriptor deviceDescriptor(boblightDeviceClassId, "Boblight Channel " + QString::number(i));
-        QList<Param> params;
+        ParamList params;
         Param param("channel");
         param.setValue(i);
         params.append(param);

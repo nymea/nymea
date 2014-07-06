@@ -98,7 +98,7 @@ void TestEvents::triggerStateChangeEvent()
 void TestEvents::params()
 {
     Event event;
-    QList<Param> params;
+    ParamList params;
     Param p("foo", "bar");
     params.append(p);
     event.setParams(params);

@@ -63,7 +63,7 @@ QList<DevicePlugin *> GuhCore::plugins() const
     return m_deviceManager->plugins();
 }
 
-QPair<DeviceManager::DeviceError, QString> GuhCore::setPluginConfig(const PluginId &pluginId, const QList<Param> params)
+QPair<DeviceManager::DeviceError, QString> GuhCore::setPluginConfig(const PluginId &pluginId, const ParamList &params)
 {
     return m_deviceManager->setPluginConfig(pluginId, params);
 }
@@ -117,7 +117,7 @@ QPair<DeviceManager::DeviceError, QString> GuhCore::pairDevice(const DeviceClass
     return m_deviceManager->pairDevice(deviceClassId, deviceDescriptorId);
 }
 
-QPair<DeviceManager::DeviceError, QString> GuhCore::pairDevice(const DeviceClassId &deviceClassId, const QList<Param> &params)
+QPair<DeviceManager::DeviceError, QString> GuhCore::pairDevice(const DeviceClassId &deviceClassId, const ParamList &params)
 {
     return m_deviceManager->pairDevice(deviceClassId, params);
 }

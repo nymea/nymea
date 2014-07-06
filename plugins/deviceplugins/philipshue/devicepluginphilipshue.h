@@ -50,7 +50,7 @@ public:
 
     QPair<DeviceManager::DeviceSetupStatus, QString> setupDevice(Device *device) override;
 
-    QPair<DeviceManager::DeviceSetupStatus, QString> confirmPairing(const QUuid &pairingTransactionId, const DeviceClassId &deviceClassId, const QList<Param> &params) override;
+    QPair<DeviceManager::DeviceSetupStatus, QString> confirmPairing(const QUuid &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params) override;
 
     void guhTimer() override;
 
@@ -67,7 +67,6 @@ private slots:
     void lightStateChanged();
 
 private:
-    QList<Param> m_config;
     Discovery *m_discovery;
 
     class PairingInfo {

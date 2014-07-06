@@ -328,10 +328,18 @@ void TestDevices::discoverDevices_data()
     QTest::addColumn<DeviceClassId>("deviceClassId");
     QTest::addColumn<int>("resultCount");
     QTest::addColumn<bool>("success");
+    QTest::addColumn<QVariantList>("discoveryParams");
 
-    QTest::newRow("valid deviceClassId") << mockDeviceDiscoveryClassId << 2 << true;
-    QTest::newRow("invalid deviceClassId") << DeviceClassId::createDeviceClassId() << 0 << false;
-    QTest::newRow("CreateMethodUser deviceClassId") << mockDeviceClassId << 0 << false;
+    QVariantList discoveryParams;
+    QVariantMap resultCountParam;
+    resultCountParam.insert("name", "resultCount");
+    resultCountParam.insert("value", 1);
+    discoveryParams.append(resultCountParam);
+
+    QTest::newRow("valid deviceClassId") << mockDeviceDiscoveryClassId << 2 << true << QVariantList();
+    QTest::newRow("valid deviceClassId with params") << mockDeviceDiscoveryClassId << 1 << true << discoveryParams;
+    QTest::newRow("invalid deviceClassId") << DeviceClassId::createDeviceClassId() << 0 << false << QVariantList();
+    QTest::newRow("CreateMethodUser deviceClassId") << mockDeviceClassId << 0 << false << QVariantList();
 }
 
 void TestDevices::discoverDevices()
@@ -339,9 +347,11 @@ void TestDevices::discoverDevices()
     QFETCH(DeviceClassId, deviceClassId);
     QFETCH(int, resultCount);
     QFETCH(bool, success);
+    QFETCH(QVariantList, discoveryParams);
 
     QVariantMap params;
     params.insert("deviceClassId", deviceClassId);
+    params.insert("discoveryParams", discoveryParams);
     QVariant response = injectAndWait("Devices.GetDiscoveredDevices", params);
 
     verifySuccess(response, success);
@@ -353,6 +363,8 @@ void TestDevices::discoverDevices()
     if (success) {
         DeviceDescriptorId descriptorId = DeviceDescriptorId(response.toMap().value("params").toMap().value("deviceDescriptors").toList().first().toMap().value("id").toString());
 
+        params.clear();
+        params.insert("deviceClassId", deviceClassId);
         params.insert("deviceDescriptorId", descriptorId.toString());
         response = injectAndWait("Devices.AddConfiguredDevice", params);
 

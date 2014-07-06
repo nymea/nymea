@@ -108,7 +108,7 @@ public:
     static QVariantMap packRule(const Rule &rule);
 
     static Param unpackParam(const QVariantMap &paramMap);
-    static QList<Param> unpackParams(const QVariantList &paramList);
+    static ParamList unpackParams(const QVariantList &paramList);
     static ParamDescriptor unpackParamDescriptor(const QVariantMap &paramDescriptorMap);
     static QList<ParamDescriptor> unpackParamDescriptors(const QVariantList &paramDescriptorList);
     static EventDescriptor unpackEventDescriptor(const QVariantMap &eventDescriptorMap);

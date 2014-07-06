@@ -64,13 +64,13 @@ DeviceId Action::deviceId() const
 }
 
 /*! Returns the parameters for this Action.*/
-QList<Param> Action::params() const
+ParamList Action::params() const
 {
     return m_params;
 }
 
 /*! Set the the parameters for this Action. \a params must match the template in the \l{ActionType} referred by \l{Action::actionTypeId()}*/
-void Action::setParams(const QList<Param> &params)
+void Action::setParams(const ParamList &params)
 {
     m_params = params;
 }

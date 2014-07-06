@@ -49,8 +49,8 @@ public:
     QList<Vendor> supportedVendors() const;
     QList<DeviceClass> supportedDevices(const VendorId &vendorId = VendorId()) const;
     DeviceClass findDeviceClass(const DeviceClassId &deviceClassId) const;
-    DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const QList<Param> &params);
-    QPair<DeviceManager::DeviceError, QString> addConfiguredDevice(const DeviceClassId &deviceClassId, const QList<Param> &params, const DeviceId &newId);
+    QPair<DeviceManager::DeviceError, QString> discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params);
+    QPair<DeviceManager::DeviceError, QString> addConfiguredDevice(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId &newId);
     QPair<DeviceManager::DeviceError, QString> addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &newId);
     QList<Device*> configuredDevices() const;
     Device *findConfiguredDevice(const DeviceId &deviceId) const;

@@ -53,4 +53,12 @@ public:
 };
 QDebug operator<<(QDebug dbg, const ParamList &params);
 
+class ParamList: public QList<Param>
+{
+public:
+    bool hasParam(const QString &paramName) const;
+    QVariant paramValue(const QString &paramName) const;
+    void setParamValue(const QString &paramName, const QVariant &value);
+};
+
 #endif // PARAM_H

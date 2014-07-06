@@ -274,9 +274,7 @@ void DevicePluginMock::startMonitoringAutoDevices()
     DeviceDescriptor mockDescriptor(mockDeviceAutoClassId, "Mock Device (Auto created)");
 
     ParamList params;
-    qsrand(QDateTime::currentMSecsSinceEpoch());
-    int port = 4242 + (qrand() % 1000);
-    Param param("httpport", port);
+    Param param("httpport", 4242);
     params.append(param);
     mockDescriptor.setParams(params);
 

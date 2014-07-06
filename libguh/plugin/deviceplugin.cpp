@@ -142,11 +142,11 @@ void DevicePlugin::startMonitoringAutoDevices()
     be an async operation. Return DeviceErrorAsync or DeviceErrorNoError if the discovery
     has been started successfully. Return an appropriate error otherwise.
     Once devices are discovered, emit devicesDiscovered() once. */
-DeviceManager::DeviceError DevicePlugin::discoverDevices(const DeviceClassId &deviceClassId, const QList<Param> &params) const
+QPair<DeviceManager::DeviceError, QString> DevicePlugin::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
 {
     Q_UNUSED(deviceClassId)
     Q_UNUSED(params)
-    return DeviceManager::DeviceErrorCreationMethodNotSupported;
+    return report(DeviceManager::DeviceErrorCreationMethodNotSupported);
 }
 
 /*! This will be called when a new device is created. The plugin has the chance to do some setup.

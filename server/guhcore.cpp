@@ -137,12 +137,12 @@ DeviceClass GuhCore::findDeviceClass(const DeviceClassId &deviceClassId) const
     return m_deviceManager->findDeviceClass(deviceClassId);
 }
 
-DeviceManager::DeviceError GuhCore::discoverDevices(const DeviceClassId &deviceClassId, const QList<Param> &params)
+QPair<DeviceManager::DeviceError, QString> GuhCore::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
 {
     return m_deviceManager->discoverDevices(deviceClassId, params);
 }
 
-QPair<DeviceManager::DeviceError, QString> GuhCore::addConfiguredDevice(const DeviceClassId &deviceClassId, const QList<Param> &params, const DeviceId &newId)
+QPair<DeviceManager::DeviceError, QString> GuhCore::addConfiguredDevice(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId &newId)
 {
     return m_deviceManager->addConfiguredDevice(deviceClassId, params, newId);
 }

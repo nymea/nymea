@@ -44,4 +44,12 @@ Q_DECLARE_METATYPE(Param)
 QDebug operator<<(QDebug dbg, const Param &param);
 QDebug operator<<(QDebug dbg, const QList<Param> &params);
 
+class ParamList: public QList<Param>
+{
+public:
+    bool hasParam(const QString &paramName) const;
+    QVariant paramValue(const QString &paramName) const;
+    void setParamValue(const QString &paramName, const QVariant &value);
+};
+
 #endif // PARAM_H

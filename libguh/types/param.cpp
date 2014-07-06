@@ -67,3 +67,34 @@ QDebug operator<<(QDebug dbg, const QList<Param> &params)
 
     return dbg.space();
 }
+
+
+bool ParamList::hasParam(const QString &paramName) const
+{
+    foreach (const Param &param, *this) {
+        if (param.name() == paramName) {
+            return true;
+        }
+    }
+    return false;
+}
+
+QVariant ParamList::paramValue(const QString &paramName) const
+{
+    foreach (const Param &param, *this) {
+        if (param.name() == paramName) {
+            return param.value();
+        }
+    }
+    return QVariant();
+}
+
+void ParamList::setParamValue(const QString &paramName, const QVariant &value)
+{
+    for (int i = 0; i < count(); i++) {
+        if (this->operator [](i).name()  == paramName) {
+            this->operator [](i).setValue(value);
+            return;
+        }
+    }
+}

@@ -36,15 +36,15 @@ public:
     ActionTypeId actionTypeId() const;
     DeviceId deviceId() const;
 
-    QList<Param> params() const;
-    void setParams(const QList<Param> &params);
+    ParamList params() const;
+    void setParams(const ParamList &params);
     Param param(const QString &paramName) const;
 
 private:
     ActionId m_id;
     ActionTypeId m_actionTypeId;
     DeviceId m_deviceId;
-    QList<Param> m_params;
+    ParamList m_params;
 };
 
 #endif // ACTION_H

@@ -114,7 +114,7 @@ RuleEngine::RuleEngine(QObject *parent) :
         foreach (const QString &actionIdString, settings.childGroups()) {
             settings.beginGroup(actionIdString);
             Action action = Action(ActionTypeId(settings.value("actionTypeId").toString()), DeviceId(settings.value("deviceId").toString()));
-            QList<Param> params;
+            ParamList params;
             foreach (QString paramNameString, settings.childGroups()) {
                 if (paramNameString.startsWith("Param-")) {
                     settings.beginGroup(paramNameString);

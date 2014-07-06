@@ -185,10 +185,12 @@ QList<ParamType> DevicePluginPhilipsHue::configurationDescription() const
     return params;
 }
 
-DeviceManager::DeviceError DevicePluginPhilipsHue::discoverDevices(const DeviceClassId &deviceClassId, const QList<Param> &params) const
+QPair<DeviceManager::DeviceError, QString> DevicePluginPhilipsHue::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
 {
+    Q_UNUSED(deviceClassId)
+    Q_UNUSED(params)
     m_discovery->findBridges(4000);
-    return DeviceManager::DeviceErrorAsync;
+    return report(DeviceManager::DeviceErrorAsync);
 }
 
 QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginPhilipsHue::setupDevice(Device *device)
@@ -222,7 +224,7 @@ QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginPhilipsHue::setupDe
     while (!m_unconfiguredLights.isEmpty()) {
         Light *light = m_unconfiguredLights.takeFirst();
         DeviceDescriptor descriptor(hueDeviceClassAutoId, light->name());
-        QList<Param> params;
+        ParamList params;
         params.append(Param("number", light->id()));
         params.append(Param("ip", light->ip().toString()));
         params.append(Param("username", light->username()));
@@ -303,7 +305,7 @@ void DevicePluginPhilipsHue::discoveryDone(const QList<QHostAddress> &bridges)
     QList<DeviceDescriptor> deviceDescriptors;
     foreach (const QHostAddress &bridge, bridges) {
         DeviceDescriptor descriptor(hueDeviceClassId, "Philips Hue bridge", bridge.toString());
-        QList<Param> params;
+        ParamList params;
         Param param("ip", bridge.toString());
         params.append(param);
         Param userParam("username", "guh-" + QUuid::createUuid().toString().remove(QRegExp("[\\{\\}]*")).remove(QRegExp("\\-[0-9a-f\\-]*")));

@@ -153,6 +153,11 @@ QList<DeviceClass> DevicePluginMock::supportedDevices() const
     DeviceClass deviceClassMockDiscovery(pluginId(), guhVendorId, mockDeviceDiscoveryClassId);
     deviceClassMockDiscovery.setName("Mock Device (Discovery created)");
     deviceClassMockDiscovery.setCreateMethod(DeviceClass::CreateMethodDiscovery);
+    QList<ParamType> paramTypes;
+    ParamType paramType = ParamType("resultCount", QVariant::Int, 2);
+    paramType.setAllowedValues(QList<QVariant>() << 1 << 2);
+    paramTypes.append(paramType);
+    deviceClassMockDiscovery.setDiscoveryParamTypes(paramTypes);
 
     mockParams.clear();
     mockParams.append(portParam);
@@ -207,12 +212,13 @@ DeviceManager::HardwareResources DevicePluginMock::requiredHardware() const
     return DeviceManager::HardwareResourceTimer;
 }
 
-DeviceManager::DeviceError DevicePluginMock::discoverDevices(const DeviceClassId &deviceClassId, const QList<Param> &params) const
+QPair<DeviceManager::DeviceError, QString> DevicePluginMock::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
 {
     Q_UNUSED(deviceClassId)
     Q_UNUSED(params)
+    m_discoveredDeviceCount = params.paramValue("resultCount").toInt();
     QTimer::singleShot(1000, this, SLOT(emitDevicesDiscovered()));
-    return DeviceManager::DeviceErrorNoError;
+    return report(DeviceManager::DeviceErrorNoError);
 }
 
 QString DevicePluginMock::pluginName() const
@@ -261,7 +267,7 @@ void DevicePluginMock::startMonitoringAutoDevices()
 {
     DeviceDescriptor mockDescriptor(mockDeviceAutoClassId, "Mock Device (Auto created)");
 
-    QList<Param> params;
+    ParamList params;
     Param param("httpport", 4242);
     params.append(param);
     mockDescriptor.setParams(params);
@@ -337,19 +343,23 @@ void DevicePluginMock::emitDevicesDiscovered()
 {
     QList<DeviceDescriptor> deviceDescriptors;
 
-    DeviceDescriptor d1(mockDeviceDiscoveryClassId, "Mock Device (Discovered)");
-    QList<Param> params;
-    Param httpParam("httpport", "7777");
-    params.append(httpParam);
-    d1.setParams(params);
-    deviceDescriptors.append(d1);
+    if (m_discoveredDeviceCount > 0) {
+        DeviceDescriptor d1(mockDeviceDiscoveryClassId, "Mock Device (Discovered)");
+        ParamList params;
+        Param httpParam("httpport", "7777");
+        params.append(httpParam);
+        d1.setParams(params);
+        deviceDescriptors.append(d1);
+    }
 
-    DeviceDescriptor d2(mockDeviceDiscoveryClassId, "Mock Device (Discovered)");
-    params.clear();
-    httpParam.setValue("7778");
-    params.append(httpParam);
-    d2.setParams(params);
-    deviceDescriptors.append(d2);
+    if (m_discoveredDeviceCount > 1) {
+        DeviceDescriptor d2(mockDeviceDiscoveryClassId, "Mock Device (Discovered)");
+        ParamList params;
+        Param httpParam("httpport", "7778");
+        params.append(httpParam);
+        d2.setParams(params);
+        deviceDescriptors.append(d2);
+    }
 
     emit devicesDiscovered(mockDeviceDiscoveryClassId, deviceDescriptors);
 }

@@ -172,20 +172,28 @@ QList<DeviceClass> DeviceManager::supportedDevices(const VendorId &vendorId) con
     return ret;
 }
 
-DeviceManager::DeviceError DeviceManager::discoverDevices(const DeviceClassId &deviceClassId, const QList<Param> &params) const
+QPair<DeviceManager::DeviceError, QString> DeviceManager::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
 {
+    qDebug() << "DeviceManager discoverdevices" << params;
+    // Create a copy of the parameter list because we might modify it (fillig in default values etc)
+    ParamList effectiveParams = params;
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
     if (!deviceClass.isValid()) {
-        return DeviceManager::DeviceErrorDeviceClassNotFound;
+        return qMakePair<DeviceError, QString>(DeviceManager::DeviceErrorDeviceClassNotFound, deviceClass.id().toString());
     }
     if (deviceClass.createMethod() != DeviceClass::CreateMethodDiscovery) {
-        return DeviceManager::DeviceErrorCreationMethodNotSupported;
+        return  qMakePair<DeviceError, QString>(DeviceManager::DeviceErrorCreationMethodNotSupported, "");
+    }
+    QPair<DeviceError, QString> result = verifyParams(deviceClass.discoveryParamTypes(), effectiveParams);
+    if (result.first != DeviceErrorNoError) {
+        qDebug() << "got erorr" << result.first << result.second;
+        return result;
     }
     DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
     if (!plugin) {
-        return DeviceManager::DeviceErrorPluginNotFound;
+        return  qMakePair<DeviceError, QString>(DeviceManager::DeviceErrorPluginNotFound, deviceClass.pluginId().toString());
     }
-    return plugin->discoverDevices(deviceClassId, params);
+    return  plugin->discoverDevices(deviceClassId, effectiveParams);
 }
 
 /*! Add a new configured device for the given \l{DeviceClass} and the given parameters.
@@ -207,7 +215,7 @@ DeviceManager::DeviceError DeviceManager::discoverDevices(const DeviceClassId &d
     went wrong during setup. Reasons may be a hardware/network failure, wrong username/password or similar, depending on what the device plugin
     needs to do in order to set up the device.
 */
-QPair<DeviceManager::DeviceError, QString> DeviceManager::addConfiguredDevice(const DeviceClassId &deviceClassId, const QList<Param> &params, const DeviceId id)
+QPair<DeviceManager::DeviceError, QString> DeviceManager::addConfiguredDevice(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId id)
 {
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
     if (!deviceClass.isValid()) {
@@ -330,8 +338,9 @@ QPair<DeviceManager::DeviceError, QString> DeviceManager::confirmPairing(const Q
     return report(DeviceErrorPairingTransactionIdNotFound, pairingTransactionId.toString());
 }
 
-QPair<DeviceManager::DeviceError, QString> DeviceManager::addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QList<Param> &params, const DeviceId id)
+QPair<DeviceManager::DeviceError, QString> DeviceManager::addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId id)
 {
+    ParamList effectiveParams = params;
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
     if (deviceClass.id().isNull()) {
         qWarning() << "cannot find a device class with id" << deviceClassId;
@@ -343,7 +352,7 @@ QPair<DeviceManager::DeviceError, QString> DeviceManager::addConfiguredDeviceInt
         return qMakePair<DeviceError, QString>(DeviceErrorCreationMethodNotSupported, "You need to pair this device.");
     }
 
-    QPair<DeviceError, QString> result = verifyParams(deviceClass.paramTypes(), params);
+    QPair<DeviceError, QString> result = verifyParams(deviceClass.paramTypes(), effectiveParams);
     if (result.first != DeviceErrorNoError) {
         return result;
     }
@@ -362,7 +371,7 @@ QPair<DeviceManager::DeviceError, QString> DeviceManager::addConfiguredDeviceInt
 
     Device *device = new Device(plugin->pluginId(), id, deviceClassId, this);
     device->setName(deviceClass.name());
-    device->setParams(params);
+    device->setParams(effectiveParams);
 
     QPair<DeviceSetupStatus, QString> status = setupDevice(device);
     switch (status.first) {
@@ -455,6 +464,7 @@ DeviceClass DeviceManager::findDeviceClass(const DeviceClassId &deviceClassId) c
     its \l{DevicePlugin}. Then will dispatch the execution to the \l{DevicePlugin}.*/
 QPair<DeviceManager::DeviceError, QString> DeviceManager::executeAction(const Action &action)
 {
+    Action finalAction = action;
     qDebug() << "should execute action";
     foreach (Device *device, m_configuredDevices) {
         if (action.deviceId() == device->id()) {
@@ -466,10 +476,12 @@ QPair<DeviceManager::DeviceError, QString> DeviceManager::executeAction(const Ac
             foreach (const ActionType &actionType, deviceClass.actionTypes()) {
                 qDebug() << "checking" << actionType.id() << action.actionTypeId();
                 if (actionType.id() == action.actionTypeId()) {
-                    QPair<DeviceError, QString> paramCheck = verifyParams(actionType.parameters(), action.params());
+                    ParamList finalParams = action.params();
+                    QPair<DeviceError, QString> paramCheck = verifyParams(actionType.parameters(), finalParams);
                     if (paramCheck.first != DeviceErrorNoError) {
                         return paramCheck;
                     }
+                    finalAction.setParams(finalParams);
 
                     found = true;
                     continue;
@@ -479,7 +491,7 @@ QPair<DeviceManager::DeviceError, QString> DeviceManager::executeAction(const Ac
                 return qMakePair<DeviceError, QString>(DeviceErrorActionTypeNotFound, action.actionTypeId().toString());
             }
 
-            return m_devicePlugins.value(device->pluginId())->executeAction(device, action);
+            return m_devicePlugins.value(device->pluginId())->executeAction(device, finalAction);
         }
     }
     return qMakePair<DeviceError, QString>(DeviceErrorDeviceNotFound, action.deviceId().toString());
@@ -858,7 +870,7 @@ QPair<DeviceManager::DeviceSetupStatus,QString> DeviceManager::setupDevice(Devic
     return status;
 }
 
-QPair<DeviceManager::DeviceError, QString> DeviceManager::verifyParams(const QList<ParamType> paramTypes, const QList<Param> &params, bool requireAll)
+QPair<DeviceManager::DeviceError, QString> DeviceManager::verifyParams(const QList<ParamType> paramTypes, ParamList &params, bool requireAll)
 {
     foreach (const Param &param, params) {
         qDebug() << "verifying param" << param.name() << paramTypes;
@@ -877,6 +889,13 @@ QPair<DeviceManager::DeviceError, QString> DeviceManager::verifyParams(const QLi
                 found = true;
             }
         }
+
+        // This paramType has a default value... lets fill in that one.
+        if (!paramType.defaultValue().isNull()) {
+            found = true;
+            params.append(Param(paramType.name(), paramType.defaultValue()));
+        }
+
         if (!found) {
             return report(DeviceErrorMissingParameter, QString("Missing parameter: %1").arg(paramType.name()));
         }
@@ -909,6 +928,15 @@ QPair<DeviceManager::DeviceError, QString> DeviceManager::verifyParam(const Para
         if (paramType.minValue().isValid() && param.value() < paramType.minValue()) {
             return report(DeviceManager::DeviceErrorInvalidParameter, QString("Value out of range for param %1. Got: %2. Min: %3.")
                           .arg(param.name()).arg(param.value().toString()).arg(paramType.minValue().toString()));
+        }
+        if (!paramType.allowedValues().isEmpty() && !paramType.allowedValues().contains(param.value())) {
+            QStringList allowedValues;
+            foreach (const QVariant &value, paramType.allowedValues()) {
+                allowedValues.append(value.toString());
+            }
+
+            return report(DeviceManager::DeviceErrorInvalidParameter, QString("Value not in allowed values for param %1. Got: %2. Allowed: %3.")
+                          .arg(param.name()).arg(param.value().toString()).arg(allowedValues.join(",")));
         }
         return report();
     }

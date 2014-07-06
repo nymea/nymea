@@ -96,9 +96,9 @@ int Gpio::openGpio()
     int fd = open(buf, O_RDONLY | O_NONBLOCK );
     if (fd < 0) {
         qDebug() << "ERROR: could not open /sys/class/gpio" << m_gpio << "/direction";
-        return fd;
+        return false;
     }
-    return fd;
+    return true;
 }
 
 /*! Returns true, if the direction \a dir of the GPIO could be set correctly.

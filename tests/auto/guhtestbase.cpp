@@ -34,8 +34,9 @@ GuhTestBase::GuhTestBase(QObject *parent) :
     QObject(parent),
     m_commandId(0)
 {
-    m_mockDevice1Port = 1337;
-    m_mockDevice2Port = 7331;
+    qsrand(QDateTime::currentMSecsSinceEpoch());
+    m_mockDevice1Port = 1337 + (qrand() % 1000);
+    m_mockDevice2Port = 7331 + (qrand() % 1000);
     QCoreApplication::instance()->setOrganizationName("guh-test");
 
     m_rulesSettings = QCoreApplication::instance()->organizationName() + "/rules";

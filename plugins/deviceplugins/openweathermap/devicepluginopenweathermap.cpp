@@ -423,26 +423,24 @@ QList<DeviceClass> DevicePluginOpenweathermap::supportedDevices() const
     return ret;
 }
 
-DeviceManager::DeviceError DevicePluginOpenweathermap::discoverDevices(const DeviceClassId &deviceClassId, const QList<Param> &params) const
+QPair<DeviceManager::DeviceError, QString> DevicePluginOpenweathermap::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
 {
-    if(deviceClassId == openweathermapDeviceClassId){
 
-        QString location;
-        foreach (const Param &param, params) {
-            if (param.name() == "location") {
-                location = param.value().toString();
-            }
+    qDebug() << "should discover devices with params:" << params;
+    QString location;
+    foreach (const Param &param, params) {
+        qDebug() << "### got param:" << param;
+        if (param.name() == "location") {
+            location = param.value().toString();
         }
-        qDebug() << "Searching for... " << location;
-        if (location.isEmpty()){
-            m_openweaher->searchAutodetect();
-        }else{
-            m_openweaher->search(location);
-        }
-        return DeviceManager::DeviceErrorAsync;
-    }else{
-        return DeviceManager::DeviceErrorDeviceClassNotFound;
     }
+
+    if (location.isEmpty()){
+        m_openweaher->searchAutodetect();
+        return report(DeviceManager::DeviceErrorAsync);
+    }
+    m_openweaher->search(location);
+    return report(DeviceManager::DeviceErrorAsync);
 }
 
 QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginOpenweathermap::setupDevice(Device *device)
@@ -487,7 +485,7 @@ void DevicePluginOpenweathermap::searchResultsReady(const QList<QVariantMap> &ci
     QList<DeviceDescriptor> retList;
     foreach (QVariantMap elemant, cityList) {
         DeviceDescriptor descriptor(openweathermapDeviceClassId, elemant.value("name").toString(),elemant.value("country").toString());
-        QList<Param> params;
+        ParamList params;
         Param locationParam("location", elemant.value("name"));
         params.append(locationParam);
         Param countryParam("country", elemant.value("country"));

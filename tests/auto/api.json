@@ -1,4 +1,4 @@
-3
+4
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -419,6 +419,9 @@
         },
         "ParamType": {
             "name": "string",
+            "o:allowedValues": [
+                "variant"
+            ],
             "o:defaultValue": "variant",
             "o:maxValue": "variant",
             "o:minValue": "variant",

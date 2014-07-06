@@ -46,7 +46,7 @@ public:
     PluginId pluginId() const override;
 
     QList<ParamType> configurationDescription() const override;
-    DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const QList<Param> &params) const override;
+    QPair<DeviceManager::DeviceError, QString> discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
 
     QPair<DeviceManager::DeviceSetupStatus, QString> setupDevice(Device *device) override;
 

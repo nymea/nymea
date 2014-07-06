@@ -78,10 +78,10 @@ public:
 
     QList<Vendor> supportedVendors() const;
     QList<DeviceClass> supportedDevices(const VendorId &vendorId = VendorId()) const;
-    DeviceError discoverDevices(const DeviceClassId &deviceClassId, const QList<Param> &params) const;
+    QPair<DeviceError, QString> discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params);
 
     QList<Device*> configuredDevices() const;
-    QPair<DeviceError, QString> addConfiguredDevice(const DeviceClassId &deviceClassId, const QList<Param> &params, const DeviceId id = DeviceId::createDeviceId());
+    QPair<DeviceError, QString> addConfiguredDevice(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId id = DeviceId::createDeviceId());
     QPair<DeviceError, QString> addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &id = DeviceId::createDeviceId());
     QPair<DeviceError, QString> pairDevice(const DeviceClassId &deviceClassId, const QList<Param> &params);
     QPair<DeviceError, QString> pairDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId);
@@ -121,9 +121,9 @@ private slots:
     void timerEvent();
 
 private:
-    QPair<DeviceError, QString> addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QList<Param> &params, const DeviceId id = DeviceId::createDeviceId());
+    QPair<DeviceError, QString> addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId id = DeviceId::createDeviceId());
     QPair<DeviceSetupStatus, QString> setupDevice(Device *device);
-    QPair<DeviceError, QString> verifyParams(const QList<ParamType> paramTypes, const QList<Param> &params, bool requireAll = true);
+    QPair<DeviceError, QString> verifyParams(const QList<ParamType> paramTypes, ParamList &params, bool requireAll = true);
     QPair<DeviceError, QString> verifyParam(const QList<ParamType> paramTypes, const Param &param);
     QPair<DeviceError, QString> verifyParam(const ParamType &paramType, const Param &param);
 

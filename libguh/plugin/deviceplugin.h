@@ -50,7 +50,7 @@ public:
     virtual DeviceManager::HardwareResources requiredHardware() const = 0;
 
     virtual void startMonitoringAutoDevices();
-    virtual DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const QList<Param> &params) const;
+    virtual QPair<DeviceManager::DeviceError, QString> discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params);
 
     virtual QPair<DeviceManager::DeviceSetupStatus, QString> setupDevice(Device *device);
     virtual void deviceRemoved(Device *device);

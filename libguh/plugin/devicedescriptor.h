@@ -42,15 +42,15 @@ public:
     QString description() const;
     void setDescription(const QString &description);
 
-    QList<Param> params() const;
-    void setParams(const QList<Param> &params);
+    ParamList params() const;
+    void setParams(const ParamList &params);
 
 private:
     DeviceDescriptorId m_id;
     DeviceClassId m_deviceClassId;
     QString m_title;
     QString m_description;
-    QList<Param> m_params;
+    ParamList m_params;
 };
 
 Q_DECLARE_METATYPE(DeviceDescriptor)

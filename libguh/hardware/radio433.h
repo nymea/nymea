@@ -31,6 +31,9 @@ public:
     explicit Radio433(QObject *parent = 0);
     ~Radio433();
 
+    bool enabel();
+    bool disabel();
+
 private:
     Radio433Receiver *m_receiver;
     Radio433Trasmitter *m_transmitter;

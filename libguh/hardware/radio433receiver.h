@@ -36,8 +36,8 @@ public:
         ProtocolNone
     };
 
-    void startReceiver();
-    void stopReceiver();
+    bool startReceiver();
+    bool stopReceiver();
 
 private:
     int m_gpioPin;

@@ -35,8 +35,8 @@ public:
     explicit Radio433Trasmitter(QObject *parent = 0, int gpio = 22);
     ~Radio433Trasmitter();
 
-    void startTransmitter();
-    void stopTransmitter();
+    bool startTransmitter();
+    bool stopTransmitter();
 
     void sendData(QList<int> rawData);
 

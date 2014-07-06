@@ -21,6 +21,8 @@
 Radio433Trasmitter::Radio433Trasmitter(QObject *parent, int gpio) :
     QThread(parent),m_gpioPin(gpio)
 {
+    m_gpio = new Gpio(this,m_gpioPin);
+
     stopTransmitter();
 }
 
@@ -28,20 +30,40 @@ Radio433Trasmitter::~Radio433Trasmitter()
 {
 }
 
-void Radio433Trasmitter::startTransmitter()
+bool Radio433Trasmitter::startTransmitter()
 {
-    m_mutex.lock();
-    m_enabled = true;
-    m_mutex.unlock();
-
-    run();
+    if(setUpGpio()){
+        run();
+        return true;
+    }
+    return false;
 }
 
-void Radio433Trasmitter::stopTransmitter()
+bool Radio433Trasmitter::stopTransmitter()
 {
     m_mutex.lock();
     m_enabled = false;
     m_mutex.unlock();
+
+    return true;
+}
+
+bool Radio433Trasmitter::setUpGpio()
+{
+    if(!m_gpio->openGpio()){
+        return false;
+    }else{
+        m_gpio->setDirection(OUTPUT);
+        m_gpio->setValue(LOW);
+    }
+    return true;
+}
+
+void Radio433Trasmitter::sendData(QList<int> rawData)
+{
+    m_queueMutex.lock();
+    m_rawDataQueue.enqueue(rawData);
+    m_queueMutex.unlock();
 }
 
 void Radio433Trasmitter::run()
@@ -86,6 +108,10 @@ void Radio433Trasmitter::run()
                 m_allowSendingMutex.unlock();
             }
             m_gpio->setValue(LOW);
+        }else{
+            m_queueMutex.unlock();
+            m_allowSendingMutex.unlock();
+            break;
         }
         m_queueMutex.unlock();
         m_allowSendingMutex.unlock();
@@ -101,20 +127,4 @@ void Radio433Trasmitter::allowSending(bool sending)
     m_allowSendingMutex.lock();
     m_allowSending = sending;
     m_allowSendingMutex.unlock();
-}
-
-bool Radio433Trasmitter::setUpGpio()
-{
-    m_gpio = new Gpio(this,m_gpioPin);
-    if(!m_gpio->setDirection(OUTPUT) || m_gpio->setValue(LOW)){
-        return false;
-    }
-    return true;
-}
-
-void Radio433Trasmitter::sendData(QList<int> rawData)
-{
-    m_queueMutex.lock();
-    m_rawDataQueue.enqueue(rawData);
-    m_queueMutex.unlock();
 }

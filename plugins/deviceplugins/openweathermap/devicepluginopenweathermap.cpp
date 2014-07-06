@@ -425,21 +425,24 @@ QList<DeviceClass> DevicePluginOpenweathermap::supportedDevices() const
 
 QPair<DeviceManager::DeviceError, QString> DevicePluginOpenweathermap::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
 {
-    qDebug() << "should discover devices with params:" << params;
-    QString location;
-    foreach (const Param &param, params) {
-        qDebug() << "### got param:" << param;
-        if (param.name() == "location") {
-            location = param.value().toString();
-        }
-    }
+    if(deviceClassId == openweathermapDeviceClassId){
 
-    if (location.isEmpty()){
-        m_openweaher->searchAutodetect();
-        return report(DeviceManager::DeviceErrorAsync);
+        QString location;
+        foreach (const Param &param, params) {
+            if (param.name() == "location") {
+                location = param.value().toString();
+            }
+        }
+        qDebug() << "Searching for... " << location;
+        if (location.isEmpty()){
+            m_openweaher->searchAutodetect();
+        }else{
+            m_openweaher->search(location);
+        }
+        return DeviceManager::DeviceErrorAsync;
+    }else{
+        return DeviceManager::DeviceErrorDeviceClassNotFound;
     }
-    m_openweaher->search(location);
-    return report(DeviceManager::DeviceErrorAsync);
 }
 
 QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginOpenweathermap::setupDevice(Device *device)

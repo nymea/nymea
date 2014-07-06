@@ -26,6 +26,7 @@
 Radio433Receiver::Radio433Receiver(QObject *parent, int gpio) :
     QThread(parent),m_gpioPin(gpio)
 {
+    m_gpio = new Gpio(this,m_gpioPin);
     stopReceiver();
 
     connect(this,SIGNAL(timingReady(int)),this,SLOT(handleTiming(int)),Qt::DirectConnection);
@@ -35,29 +36,27 @@ Radio433Receiver::~Radio433Receiver()
 {
 }
 
-void Radio433Receiver::startReceiver()
+bool Radio433Receiver::startReceiver()
 {
-    m_mutex.lock();
-    m_enabled = true;
-    m_mutex.unlock();
-
-    m_timings.clear();
-
-    run();
+    if(setUpGpio()){
+        m_timings.clear();
+        run();
+        return true;
+    }
+    return false;
 }
 
-void Radio433Receiver::stopReceiver()
+bool Radio433Receiver::stopReceiver()
 {
     m_mutex.lock();
     m_enabled = false;
     m_mutex.unlock();
+
+    return true;
 }
 
 void Radio433Receiver::run()
 {
-    // init the gpio
-    setUpGpio();
-
     struct pollfd fdset[2];
     int gpio_fd = m_gpio->openGpio();
     char buf[1];
@@ -102,10 +101,12 @@ void Radio433Receiver::run()
 
 bool Radio433Receiver::setUpGpio()
 {
-    m_gpio = new Gpio(this,m_gpioPin);
-    m_gpio->setDirection(INPUT);
-    m_gpio->setEdgeInterrupt(EDGE_BOTH);
-
+    if(!m_gpio->openGpio()){
+        return false;
+    }else{
+        m_gpio->setDirection(INPUT);
+        m_gpio->setEdgeInterrupt(EDGE_BOTH);
+    }
     return true;
 }
 

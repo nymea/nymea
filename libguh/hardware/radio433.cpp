@@ -33,9 +33,6 @@ Radio433::Radio433(QObject *parent) :
     m_transmitter = new Radio433Trasmitter();
 
     connect(m_receiver,SIGNAL(readingChanged(bool)),this,SLOT(readingChanged(bool)));
-
-    m_receiver->startReceiver();
-    m_transmitter->startTransmitter();
 }
 
 Radio433::~Radio433()
@@ -45,6 +42,30 @@ Radio433::~Radio433()
 
     m_transmitter->wait();
     m_transmitter->quit();
+}
+
+bool Radio433::available()
+{
+    if(m_receiver->setUpGpio() && m_transmitter->setUpGpio()){
+        return true;
+    }
+    return false;
+}
+
+bool Radio433::enabel()
+{
+    if(m_receiver->startReceiver() && m_transmitter->startTransmitter()){
+        return true;
+    }
+    return false;
+}
+
+bool Radio433::disabel()
+{
+    if(m_receiver->stopReceiver() && m_transmitter->stopTransmitter()){
+        return true;
+    }
+    return false;
 }
 
 void Radio433::readingChanged(bool reading)

@@ -45,12 +45,16 @@ public:
     QPair<QVariant, QVariant> limits() const;
     void setLimits(const QVariant &min, const QVariant &max);
 
+    QList<QVariant> allowedValues() const;
+    void setAllowedValues(const QList<QVariant> allowedValues);
+
 private:
     QString m_name;
     QVariant::Type m_type;
     QVariant m_defaultValue;
     QVariant m_minValue;
     QVariant m_maxValue;
+    QVariantList m_allowedValues;
 };
 
 QDebug operator<<(QDebug dbg, const ParamType &paramType);

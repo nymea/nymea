@@ -86,6 +86,16 @@ void ParamType::setLimits(const QVariant &min, const QVariant &max)
     m_maxValue = max;
 }
 
+QList<QVariant> ParamType::allowedValues() const
+{
+    return m_allowedValues;
+}
+
+void ParamType::setAllowedValues(const QList<QVariant> allowedValues)
+{
+    m_allowedValues = allowedValues;
+}
+
 QDebug operator<<(QDebug dbg, const ParamType &paramType)
 {
     dbg.nospace() << "ParamType(Name: " << paramType.name()

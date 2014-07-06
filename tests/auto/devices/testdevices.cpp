@@ -241,7 +241,6 @@ void TestDevices::getConfiguredDevices()
     QVariant response = injectAndWait("Devices.GetConfiguredDevices");
 
     QVariantList devices = response.toMap().value("params").toMap().value("devices").toList();
-    qDebug() << "got devices" << devices;
     QCOMPARE(devices.count(), 2); // There should be one auto created mock device and the one created in initTestcase()
 }
 

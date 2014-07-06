@@ -98,3 +98,9 @@ void ParamList::setParamValue(const QString &paramName, const QVariant &value)
         }
     }
 }
+
+ParamList ParamList::operator<<(const Param &param)
+{
+    this->append(param);
+    return *this;
+}

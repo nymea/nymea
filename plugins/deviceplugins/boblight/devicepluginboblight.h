@@ -55,7 +55,6 @@ private slots:
 
 private:
     BobClient *m_bobClient;
-    QList<Param> m_config;
 };
 
 #endif // DEVICEPLUGINBOBLIGHT_H

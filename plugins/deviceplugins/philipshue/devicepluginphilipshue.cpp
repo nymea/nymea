@@ -239,7 +239,7 @@ QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginPhilipsHue::setupDe
     return reportDeviceSetup(DeviceManager::DeviceSetupStatusAsync);
 }
 
-QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginPhilipsHue::confirmPairing(const QUuid &pairingTransactionId, const DeviceClassId &deviceClassId, const QList<Param> &params)
+QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginPhilipsHue::confirmPairing(const QUuid &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params)
 {
     Param ipParam;
     foreach (const Param &param, params) {

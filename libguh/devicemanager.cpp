@@ -131,7 +131,7 @@ DevicePlugin *DeviceManager::plugin(const PluginId &id) const
     return m_devicePlugins.value(id);
 }
 
-QPair<DeviceManager::DeviceError, QString> DeviceManager::setPluginConfig(const PluginId &pluginId, const QList<Param> &pluginConfig)
+QPair<DeviceManager::DeviceError, QString> DeviceManager::setPluginConfig(const PluginId &pluginId, const ParamList &pluginConfig)
 {
     DevicePlugin *plugin = m_devicePlugins.value(pluginId);
     if (!plugin) {
@@ -246,7 +246,7 @@ QPair<DeviceManager::DeviceError, QString> DeviceManager::addConfiguredDevice(co
     return addConfiguredDeviceInternal(deviceClassId, descriptor.params(), deviceId);
 }
 
-QPair<DeviceManager::DeviceError, QString> DeviceManager::pairDevice(const DeviceClassId &deviceClassId, const QList<Param> &params)
+QPair<DeviceManager::DeviceError, QString> DeviceManager::pairDevice(const DeviceClassId &deviceClassId, const ParamList &params)
 {
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
     if (deviceClass.id().isNull()) {
@@ -260,7 +260,7 @@ QPair<DeviceManager::DeviceError, QString> DeviceManager::pairDevice(const Devic
     }
 
     QUuid pairingTransactionId = QUuid::createUuid();
-    m_pairingsJustAdd.insert(pairingTransactionId, qMakePair<DeviceClassId, QList<Param> >(deviceClassId, params));
+    m_pairingsJustAdd.insert(pairingTransactionId, qMakePair<DeviceClassId, ParamList>(deviceClassId, params));
 
     if (deviceClass.setupMethod() == DeviceClass::SetupMethodDisplayPin) {
         // TODO: fetch PIN from device plugin
@@ -524,7 +524,7 @@ void DeviceManager::loadPlugins()
             }
             QSettings settings(m_settingsFile);
             settings.beginGroup("PluginConfig");
-            QList<Param> params;
+            ParamList params;
             if (settings.childGroups().contains(pluginIface->pluginId().toString())) {
                 settings.beginGroup(pluginIface->pluginId().toString());
                 foreach (const QString &paramName, settings.allKeys()) {
@@ -566,7 +566,7 @@ void DeviceManager::loadConfiguredDevices()
         Device *device = new Device(PluginId(settings.value("pluginid").toString()), DeviceId(idString), DeviceClassId(settings.value("deviceClassId").toString()), this);
         device->setName(settings.value("devicename").toString());
 
-        QList<Param> params;
+        ParamList params;
         settings.beginGroup("Params");
         foreach (QString paramNameString, settings.allKeys()) {
             Param param(paramNameString);
@@ -689,11 +689,11 @@ void DeviceManager::slotPairingFinished(const QUuid &pairingTransactionId, Devic
     }
 
     DeviceClassId deviceClassId;
-    QList<Param> params;
+    ParamList params;
 
     // Do this before checking status to make sure we clean up our hashes properly
     if (m_pairingsJustAdd.contains(pairingTransactionId)) {
-        QPair<DeviceClassId, QList<Param> > pair = m_pairingsJustAdd.take(pairingTransactionId);
+        QPair<DeviceClassId, ParamList> pair = m_pairingsJustAdd.take(pairingTransactionId);
         deviceClassId = pair.first;
         params = pair.second;
     }
@@ -800,7 +800,7 @@ void DeviceManager::slotDeviceStateValueChanged(const QUuid &stateTypeId, const 
     emit deviceStateChanged(device, stateTypeId, value);
 
     Param valueParam("value", value);
-    Event event(EventTypeId(stateTypeId.toString()), device->id(), QList<Param>() << valueParam);
+    Event event(EventTypeId(stateTypeId.toString()), device->id(), ParamList() << valueParam);
     emit eventTriggered(event);
 }
 

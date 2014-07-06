@@ -16,47 +16,60 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-/*!
-  \class Radio433
-  \brief The Radio433 class helps to interact with the 433 MHz Receiver and Transmitter.
+#ifndef RADIO433RECEIVER_H
+#define RADIO433RECEIVER_H
 
-  \inmodule libguh
+#include <QThread>
 
-*/
+#include "gpio.h"
 
-#include "radio433.h"
-
-Radio433::Radio433(QObject *parent) :
-    QObject(parent)
+class Radio433Receiver : public QThread
 {
-    m_receiver = new Radio433Receiver();
-    m_transmitter = new Radio433Trasmitter();
+    Q_OBJECT
+public:
+    explicit Radio433Receiver(QObject *parent = 0, int gpio = 27);
+    ~Radio433Receiver();
 
-    connect(m_receiver,SIGNAL(readingChanged(bool)),this,SLOT(readingChanged(bool)));
+    enum Protocol{
+        Protocol48,
+        Protocol64,
+        ProtocolNone
+    };
 
-    m_receiver->startReceiver();
-    m_transmitter->startTransmitter();
-}
+    void startReceiver();
+    void stopReceiver();
 
-Radio433::~Radio433()
-{
-    m_receiver->wait();
-    m_receiver->quit();
+private:
+    int m_gpioPin;
+    Gpio *m_gpio;
+    unsigned int m_epochMicro;
 
-    m_transmitter->wait();
-    m_transmitter->quit();
-}
+    unsigned int m_pulseProtocolOne;
+    unsigned int m_pulseProtocolTwo;
 
-void Radio433::readingChanged(bool reading)
-{
-    if(reading){
-        m_transmitter->allowSending(false);
-    }else{
-        m_transmitter->allowSending(true);
-    }
-}
+    QList<int> m_timings;
 
-void Radio433::sendData(QList<int> rawData)
-{
-    m_transmitter->sendData(rawData);
-}
+    QMutex m_mutex;
+    bool m_enabled;
+    bool m_reading;
+
+    void run();
+    bool setUpGpio();
+    int micros();
+    bool valueInTolerance(int value, int sollValue);
+    bool checkValue(int value);
+    bool checkValues(Protocol protocol);
+    void changeReading(bool reading);
+
+private slots:
+    void handleTiming(int duration);
+
+signals:
+    void timingReady(int duration);
+    void dataReceived(QList<int> rawData);
+    void readingChanged(const bool &reading);
+
+public slots:
+};
+
+#endif // RADIO433RECEIVER_H

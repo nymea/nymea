@@ -13,8 +13,10 @@ SOURCES += plugin/device.cpp \
            plugin/deviceplugin.cpp \
            plugin/devicedescriptor.cpp \
            devicemanager.cpp \
-           hardware/radio433.cpp \
            hardware/gpio.cpp \
+           hardware/radio433.cpp \
+           hardware/radio433transmitter.cpp \
+           hardware/radio433receiver.cpp \
            types/action.cpp \
            types/actiontype.cpp \
            types/state.cpp \
@@ -26,15 +28,17 @@ SOURCES += plugin/device.cpp \
            types/paramtype.cpp \
            types/param.cpp \
            types/paramdescriptor.cpp \
-    types/statedescriptor.cpp
+           types/statedescriptor.cpp \
 
 HEADERS += plugin/device.h \
            plugin/deviceclass.h \
            plugin/deviceplugin.h \
            plugin/devicedescriptor.h \
            devicemanager.h \
-           hardware/radio433.h \
            hardware/gpio.h \
+           hardware/radio433.h \
+           hardware/radio433transmitter.h \
+           hardware/radio433receiver.h \
            types/action.h \
            types/actiontype.h \
            types/state.h \
@@ -47,5 +51,5 @@ HEADERS += plugin/device.h \
            types/paramtype.h \
            types/param.h \
            types/paramdescriptor.h \
-    types/statedescriptor.h
+           types/statedescriptor.h \
 

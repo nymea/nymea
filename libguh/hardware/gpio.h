@@ -68,14 +68,12 @@
  **********************************
  */
 
-class Gpio : public QThread
+class Gpio : public QObject
 {
     Q_OBJECT
 public:
     explicit Gpio(QObject *parent = 0, int gpio = 0);
     ~Gpio();
-
-    void run() override;
 
     bool exportGpio();
     bool unexportGpio();
@@ -87,17 +85,12 @@ public:
     int getValue();
 
     bool setEdgeInterrupt(int edge);
-    void stop();
 
 private:
     int m_gpio;
     int m_dir;
-    QMutex m_mutex;
-    bool m_enabled;
 
 signals:
-    /*! This signal is emited if the INPUT value changed, depending on the edge set in \l{setEdgeInterrupt}*/
-    void pinInterrupt();
 
 public slots:
 

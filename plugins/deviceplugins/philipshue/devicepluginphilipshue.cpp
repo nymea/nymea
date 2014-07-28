@@ -239,6 +239,17 @@ QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginPhilipsHue::setupDe
     return reportDeviceSetup(DeviceManager::DeviceSetupStatusAsync);
 }
 
+void DevicePluginPhilipsHue::deviceRemoved(Device *device)
+{
+    if (!m_lights.values().contains(device)) {
+        return;
+    }
+
+    Light *light = m_lights.key(device);
+    m_lights.remove(light);
+    m_unconfiguredLights.append(light);
+}
+
 QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginPhilipsHue::confirmPairing(const QUuid &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params)
 {
     Param ipParam;

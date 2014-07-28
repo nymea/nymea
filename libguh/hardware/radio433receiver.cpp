@@ -36,6 +36,17 @@ Radio433Receiver::~Radio433Receiver()
 {
 }
 
+bool Radio433Receiver::setUpGpio()
+{
+    if(!m_gpio->exportGpio()){
+        return false;
+    }else{
+        m_gpio->setDirection(INPUT);
+        m_gpio->setEdgeInterrupt(EDGE_BOTH);
+    }
+    return true;
+}
+
 bool Radio433Receiver::startReceiver()
 {
     if(setUpGpio()){
@@ -97,17 +108,6 @@ void Radio433Receiver::run()
         enabled = m_enabled;
         m_mutex.unlock();
     }
-}
-
-bool Radio433Receiver::setUpGpio()
-{
-    if(!m_gpio->openGpio()){
-        return false;
-    }else{
-        m_gpio->setDirection(INPUT);
-        m_gpio->setEdgeInterrupt(EDGE_BOTH);
-    }
-    return true;
 }
 
 int Radio433Receiver::micros()

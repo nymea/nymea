@@ -50,7 +50,7 @@ bool Radio433Trasmitter::stopTransmitter()
 
 bool Radio433Trasmitter::setUpGpio()
 {
-    if(!m_gpio->openGpio()){
+    if(!m_gpio->exportGpio()){
         return false;
     }else{
         m_gpio->setDirection(OUTPUT);

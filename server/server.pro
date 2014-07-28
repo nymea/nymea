@@ -30,6 +30,7 @@ LIBS += -L../plugins/deviceplugins/lircd -lguh_devicepluginlircd
 LIBS += -L../plugins/deviceplugins/mailnotification -lguh_devicepluginmailnotification
 LIBS += -L../plugins/deviceplugins/wakeonlan -lguh_devicepluginwakeonlan
 LIBS += -L../plugins/deviceplugins/philipshue -lguh_devicepluginphilipshue
+LIBS += -L../plugins/deviceplugins/eq-3 -lguh_deviceplugineq3
 
 boblight {
     xcompile {

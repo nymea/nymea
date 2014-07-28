@@ -32,6 +32,7 @@ Q_IMPORT_PLUGIN(DevicePluginLircd)
 Q_IMPORT_PLUGIN(DevicePluginWakeOnLan)
 Q_IMPORT_PLUGIN(DevicePluginMailNotification)
 Q_IMPORT_PLUGIN(DevicePluginPhilipsHue)
+Q_IMPORT_PLUGIN(DevicePluginEQ3)
 
 #if USE_BOBLIGHT
 Q_IMPORT_PLUGIN(DevicePluginBoblight)

@@ -49,6 +49,7 @@ public:
     QPair<DeviceManager::DeviceError, QString> discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
 
     QPair<DeviceManager::DeviceSetupStatus, QString> setupDevice(Device *device) override;
+    void deviceRemoved(Device *device) override;
 
     QPair<DeviceManager::DeviceSetupStatus, QString> confirmPairing(const QUuid &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params) override;
 

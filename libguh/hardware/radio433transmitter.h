@@ -37,10 +37,7 @@ public:
 
     bool startTransmitter();
     bool stopTransmitter();
-<<<<<<< HEAD
     bool setUpGpio();
-=======
->>>>>>> fixed some Radio433 bugs
 
     void sendData(QList<int> rawData);
 

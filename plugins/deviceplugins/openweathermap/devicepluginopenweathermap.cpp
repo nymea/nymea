@@ -439,9 +439,9 @@ QPair<DeviceManager::DeviceError, QString> DevicePluginOpenweathermap::discoverD
         }else{
             m_openweaher->search(location);
         }
-        return DeviceManager::DeviceErrorAsync;
+        return report(DeviceManager::DeviceErrorAsync);
     }else{
-        return DeviceManager::DeviceErrorDeviceClassNotFound;
+        return report(DeviceManager::DeviceErrorDeviceClassNotFound);
     }
 }
 

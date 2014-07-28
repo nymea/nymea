@@ -107,14 +107,15 @@ QList<ParamType> DevicePluginEQ3::configurationDescription() const
     return params;
 }
 
-DeviceManager::DeviceError DevicePluginEQ3::discoverDevices(const DeviceClassId &deviceClassId, const QList<Param> &params) const
+QPair<DeviceManager::DeviceError, QString> DevicePluginEQ3::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
 {
     if(deviceClassId == cubeDeviceClassId){
         m_cubeDiscovery->detectCubes();
-        return DeviceManager::DeviceErrorAsync;
+        return report(DeviceManager::DeviceErrorAsync);
     }
-    return DeviceManager::DeviceErrorDeviceClassNotFound;
+    return report(DeviceManager::DeviceErrorDeviceClassNotFound);
 }
+
 
 QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginEQ3::setupDevice(Device *device)
 {
@@ -167,7 +168,7 @@ void DevicePluginEQ3::discoveryDone(const QList<MaxCube *> &cubeList)
     QList<DeviceDescriptor> retList;
     foreach (MaxCube *cube, cubeList) {
         DeviceDescriptor descriptor(cubeDeviceClassId, "Max! Cube LAN Gateway",cube->serialNumber());
-        QList<Param> params;
+        ParamList params;
         Param hostParam("host address", cube->hostAddress().toString());
         params.append(hostParam);
         Param portParam("port", cube->port());

@@ -42,7 +42,6 @@
 Gpio::Gpio(QObject *parent, int gpio) :
     QObject(parent),m_gpio(gpio)
 {
-    exportGpio();
 }
 
 /*! Destroys the Gpio object and unexports the GPIO. */

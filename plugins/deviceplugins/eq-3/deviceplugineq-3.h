@@ -16,60 +16,54 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef RADIO433RECEIVER_H
-#define RADIO433RECEIVER_H
+#ifndef DEVICEPLUGINEQ3_H
+#define DEVICEPLUGINEQ3_H
 
-#include <QThread>
+#include "plugin/deviceplugin.h"
+#include "maxcubediscovery.h"
 
-#include "gpio.h"
+#include <QHostAddress>
 
-class Radio433Receiver : public QThread
+class QNetworkReply;
+
+class DevicePluginEQ3: public DevicePlugin
 {
     Q_OBJECT
+
+    Q_PLUGIN_METADATA(IID "guru.guh.DevicePlugin" FILE "deviceplugineq-3.json")
+    Q_INTERFACES(DevicePlugin)
+
 public:
-    explicit Radio433Receiver(QObject *parent = 0, int gpio = 27);
-    ~Radio433Receiver();
+    explicit DevicePluginEQ3();
 
-    enum Protocol{
-        Protocol48,
-        Protocol64,
-        ProtocolNone
-    };
+    QList<Vendor> supportedVendors() const override;
+    QList<DeviceClass> supportedDevices() const override;
+    DeviceManager::HardwareResources requiredHardware() const override;
 
-    bool setUpGpio();
-    bool startReceiver();
-    bool stopReceiver();
+    QString pluginName() const override;
+    PluginId pluginId() const override;
+
+    QList<ParamType> configurationDescription() const override;
+    DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const QList<Param> &params) const override;
+
+    QPair<DeviceManager::DeviceSetupStatus, QString> setupDevice(Device *device) override;
+
+    void guhTimer() override;
 
 private:
-    int m_gpioPin;
-    Gpio *m_gpio;
-    unsigned int m_epochMicro;
+    QList<Param> m_config;
+    MaxCubeDiscovery *m_cubeDiscovery;
+    QHash<MaxCube*, Device*> m_cubes;
 
-    unsigned int m_pulseProtocolOne;
-    unsigned int m_pulseProtocolTwo;
-
-    QList<int> m_timings;
-
-    QMutex m_mutex;
-    bool m_enabled;
-    bool m_reading;
-
-    void run();
-    int micros();
-    bool valueInTolerance(int value, int sollValue);
-    bool checkValue(int value);
-    bool checkValues(Protocol protocol);
-    void changeReading(bool reading);
-
-private slots:
-    void handleTiming(int duration);
-
-signals:
-    void timingReady(int duration);
-    void dataReceived(QList<int> rawData);
-    void readingChanged(const bool &reading);
 
 public slots:
+    QPair<DeviceManager::DeviceError, QString> executeAction(Device *device, const Action &action);
+    void cubeConnectionStatusChanged(const bool &connected);
+
+private slots:
+    void discoveryDone(const QList<MaxCube *> &cubeList);
+
+
 };
 
-#endif // RADIO433RECEIVER_H
+#endif // DEVICEPLUGINEQ3_H

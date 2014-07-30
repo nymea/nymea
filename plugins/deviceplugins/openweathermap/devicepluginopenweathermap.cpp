@@ -278,6 +278,7 @@
 #include <QVariantMap>
 #include <QDateTime>
 
+VendorId openweathermapVendorId = VendorId("");
 DeviceClassId openweathermapDeviceClassId = DeviceClassId("985195aa-17ad-4530-88a4-cdd753d747d7");
 
 ActionTypeId updateWeatherActionTypeId = ActionTypeId("cfbc6504-d86f-4856-8dfa-97b6fbb385e4");

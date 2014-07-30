@@ -63,7 +63,6 @@ DeviceClassId elroMotionDetectorId = DeviceClassId("4c64aee6-7a4f-41f2-b278-edc5
 
 DevicePluginElro::DevicePluginElro()
 {
-
 }
 
 DeviceManager::HardwareResources DevicePluginElro::requiredHardware() const

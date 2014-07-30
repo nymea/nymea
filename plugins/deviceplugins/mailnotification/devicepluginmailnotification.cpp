@@ -245,6 +245,84 @@ DevicePluginMailNotification::~DevicePluginMailNotification()
     m_smtpClient->deleteLater();
 }
 
+//QList<DeviceClass> DevicePluginMailNotification::supportedDevices() const
+//{
+//    QList<DeviceClass> ret;
+
+//    // General Action
+//    QList<ActionType> mailActions;
+
+//    QList<ParamType> actionParamsMail;
+//    ParamType actionParamSubject("subject", QVariant::String);
+//    actionParamsMail.append(actionParamSubject);
+
+//    ParamType actionParamBody("body", QVariant::String);
+//    actionParamsMail.append(actionParamBody);
+
+//    ActionType sendMailAction(sendMailActionTypeId);
+//    sendMailAction.setName("send mail");
+//    sendMailAction.setParameters(actionParamsMail);
+//    mailActions.append(sendMailAction);
+
+
+
+//    // Google Mail
+//    // ---------------------------------------------------------------
+//    DeviceClass deviceClassGoogleMail(pluginId(), supportedVendors().first().id(), googleMailDeviceClassId);
+//    deviceClassGoogleMail.setName("Google Mail Notification");
+//    deviceClassGoogleMail.setCreateMethod(DeviceClass::CreateMethodUser);
+
+//    // Params
+//    QList<ParamType> googleMailParams;
+
+//    ParamType userGoogleParam("user", QVariant::String);
+//    googleMailParams.append(userGoogleParam);
+
+//    ParamType passwordGoogleParam("password", QVariant::String);
+//    googleMailParams.append(passwordGoogleParam);
+
+//    ParamType recipientGoogleParam("recipient", QVariant::String);
+//    googleMailParams.append(recipientGoogleParam);
+
+//    deviceClassGoogleMail.setActions(mailActions);
+//    deviceClassGoogleMail.setParamTypes(googleMailParams);
+
+//    // Custom Mail
+//    // ---------------------------------------------------------------
+//    DeviceClass deviceClassCustomMail(pluginId(), supportedVendors().first().id(), customMailDeviceClassId);
+//    deviceClassCustomMail.setName("Custom Mail Notification");
+//    deviceClassCustomMail.setCreateMethod(DeviceClass::CreateMethodUser);
+
+//    // Params
+//    QList<ParamType> customMailParams;
+
+//    ParamType userCustomParam("user", QVariant::String);
+//    customMailParams.append(userCustomParam);
+
+//    ParamType passwordCustomParam("password", QVariant::String);
+//    customMailParams.append(passwordCustomParam);
+
+//    ParamType recipientCustomParam("recipient", QVariant::String);
+//    customMailParams.append(recipientCustomParam);
+
+//    ParamType hostCustomParam("host", QVariant::String);
+//    customMailParams.append(hostCustomParam);
+
+//    ParamType portCustomParam("port", QVariant::Int);
+//    customMailParams.append(portCustomParam);
+
+//    ParamType authCustomParam("auth", QVariant::String);
+//    authCustomParam.setAllowedValues(QVariantList() << "PLAIN" << "LOGIN");
+//    customMailParams.append(authCustomParam);
+
+//    deviceClassCustomMail.setActions(mailActions);
+//    deviceClassCustomMail.setParamTypes(customMailParams);
+
+//    ret.append(deviceClassGoogleMail);
+//    ret.append(deviceClassCustomMail);
+//    return ret;
+//}
+
 QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginMailNotification::setupDevice(Device *device)
 {
     // Google mail

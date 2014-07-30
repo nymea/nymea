@@ -4,36 +4,7 @@
     "vendors": [
         {
             "name": "Lirc",
-            "id": "9a53049c-8828-4b87-b3f6-7bc7708196cd",
-            "deviceClasses": [
-                {
-                    "deviceClassId": "5c2bc4cd-ba6c-4052-b6cd-1db83323ea22",
-                    "name": "IR receiver",
-                    "createMethods": ["user"],
-                    "paramTypes": [
-                        {
-                            "name": "remoteName",
-                            "type": "QString"
-                        }
-                    ],
-                    "eventTypes": [
-                        {
-                            "id": "8711471a-fa0e-410b-b174-dfc3d2aeffb1",
-                            "name": "Button pressed",
-                            "paramTypes": [
-                                {
-                                    "name": "button",
-                                    "type": "QString"
-                                },
-                                {
-                                    "name": "repeat",
-                                    "type": "int"
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ]
+            "id": "9a53049c-8828-4b87-b3f6-7bc7708196cd"
         }
     ]
 }

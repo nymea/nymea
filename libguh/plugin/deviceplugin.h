@@ -96,8 +96,6 @@ protected:
 private:
     void initPlugin(const QJsonObject &metaData, DeviceManager *deviceManager);
 
-    QList<ParamType> parseParamTypes(const QJsonArray &array) const;
-
     DeviceManager *m_deviceManager;
 
     ParamList m_config;

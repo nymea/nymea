@@ -4,40 +4,7 @@
     "vendors": [
         {
             "name": "Conrad Electronic SE",
-            "id": "986cf06f-3ef1-4271-b2a3-2cc277ebecb6",
-            "deviceClasses": [
-                {
-                    "deviceClassId": "17cd2492-28ab-4827-ba6e-5ef35be23f1b",
-                    "name": "Conrad Remote",
-                    "createMethods": ["user"],
-                    "paramTypes": [
-                        {
-                            "name": "name",
-                            "type": "QString"
-                        }
-                    ],
-                    "eventTypes": [
-                        {
-                            "id": "1f4050f5-4c90-4799-8d6d-e4069f3a2519",
-                            "name": "Button pressed",
-                            "paramTypes": [
-                                {
-                                    "name": "button",
-                                    "type": "int"
-                                },
-                                {
-                                    "name": "group",
-                                    "type": "int"
-                                },
-                                {
-                                    "name": "power",
-                                    "type": "bool"
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ]
+            "id": "986cf06f-3ef1-4271-b2a3-2cc277ebecb6"
         }
     ]
 }

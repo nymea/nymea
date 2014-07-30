@@ -32,8 +32,7 @@ public:
     explicit DevicePluginConrad();
 
     DeviceManager::HardwareResources requiredHardware() const override;
-
-    void radioData(QList<int> rawData) override;
+    void radioData(const QList<int> &rawData) override;
 
 public slots:
     QPair<DeviceManager::DeviceError, QString> executeAction(Device *device, const Action &action) override;

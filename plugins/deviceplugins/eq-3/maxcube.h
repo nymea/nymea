@@ -26,6 +26,7 @@
 
 #include "maxdevice.h"
 #include "room.h"
+#include "livemessage.h"
 
 class MaxCube : public QTcpSocket
 {
@@ -33,30 +34,42 @@ class MaxCube : public QTcpSocket
 public:
     MaxCube(QObject *parent = 0, QString serialNumber = QString(), QHostAddress hostAdress = QHostAddress(), quint16 port = 0);
 
+    enum WeekDay{
+        Saturday = 0,
+        Sunday = 1,
+        Monday = 2,
+        Tuesday = 3,
+        Wednesday = 4,
+        Thursday = 5,
+        Friday = 6
+    };
+
     // cube data access functions
-    QString serialNumber();
-    void setSerialNumber(QString serialNumber);
+    QString serialNumber() const;
+    void setSerialNumber(const QString &serialNumber);
 
-    QByteArray rfAddress();
-    void setRfAddress(QByteArray rfAddress);
+    QByteArray rfAddress() const;
+    void setRfAddress(const QByteArray &rfAddress);
 
-    int firmware();
-    void setFirmware(int firmware);
+    int firmware() const;
+    void setFirmware(const int &firmware);
 
-    QHostAddress hostAddress();
-    void setHostAddress(QHostAddress hostAddress);
+    QHostAddress hostAddress() const;
+    void setHostAddress(const QHostAddress &hostAddress);
 
-    quint16 port();
-    void setPort(quint16 port);
+    quint16 port() const;
+    void setPort(const quint16 &port);
 
-    QByteArray httpConnectionId();
-    void setHttpConnectionId(QByteArray httpConnectionId);
+    QByteArray httpConnectionId() const;
+    void setHttpConnectionId(const QByteArray &httpConnectionId);
 
-    int freeMemorySlots();
-    void setFreeMemorySlots(int freeMemorySlots);
+    int freeMemorySlots() const;
+    void setFreeMemorySlots(const int &freeMemorySlots);
 
-    QDateTime cubeDateTime();
-    void setCubeDateTime(QDateTime cubeDateTime);
+    QDateTime cubeDateTime() const;
+    void setCubeDateTime(const QDateTime &cubeDateTime);
+
+    bool portalEnabeld() const;
 
     QList<MaxDevice*> deviceList();
     QList<Room*> roomList();
@@ -64,6 +77,7 @@ public:
     void connectToCube();
     void disconnectFromCube();
     bool sendData(QByteArray data);
+
 
 private:
     // cube data
@@ -75,25 +89,34 @@ private:
     QByteArray m_httpConnectionId;
     int m_freeMemorySlots;
     QDateTime m_cubeDateTime;
+    bool m_portalEnabeld;
 
     QList<Room*> m_roomList;
     QList<MaxDevice*> m_deviceList;
 
-    void parseHelloMessage(QByteArray data);
-    void parseMetadataMessage(QByteArray data);
-    void parseConfigMessage(QByteArray data);
-    void parseDevicelistMessage(QByteArray data);
+    bool m_cubeInitialized;
+
+    void decodeHelloMessage(QByteArray data);
+    void decodeMetadataMessage(QByteArray data);
+    void decodeConfigMessage(QByteArray data);
+    void decodeDevicelistMessage(QByteArray data);
     void parseWeeklyProgram(QByteArray data);
-    void parseNewDeviceFoundMessage(QByteArray data);
+    void decodeNewDeviceFoundMessage(QByteArray data);
 
     QDateTime calculateDateTime(QByteArray dateRaw, QByteArray timeRaw);
     QString deviceTypeString(int deviceType);
+    QString weekDayString(int weekDay);
+
     QByteArray fillBin(QByteArray data, int dataLength);
+    QList<QByteArray> splitMessage(QByteArray data);
+    MaxDevice *getDeviceTypeFromRFAddress(QByteArray rfAddress);
 
 signals:
     void cubeDataAvailable(const QByteArray &data);
     void cubeACK();
     void cubeConnectionStatusChanged(const bool &connected);
+    void deviceListReady(QList<MaxDevice*> maxDeviceList);
+    void liveMessageReady(const LiveMessage &liveMessage);
 
 private slots:
     void connected();

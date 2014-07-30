@@ -27,14 +27,14 @@ class Room : public QObject
 public:
     explicit Room(QObject *parent = 0);
 
-    int roomId();
-    void setRoomId(int roomId);
+    int roomId() const;
+    void setRoomId(const int &roomId);
 
-    QString roomName();
-    void setRoomName(QString roomName);
+    QString roomName() const;
+    void setRoomName(const QString &roomName);
 
-    QByteArray groupRfAddress();
-    void setGroupRfAddress(QByteArray groupRfAddress);
+    QByteArray groupRfAddress() const;
+    void setGroupRfAddress(const QByteArray &groupRfAddress);
 
 private:
     int m_roomId;

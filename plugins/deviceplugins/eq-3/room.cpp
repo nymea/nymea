@@ -23,32 +23,32 @@ Room::Room(QObject *parent) :
 {
 }
 
-int Room::roomId()
+int Room::roomId() const
 {
     return m_roomId;
 }
 
-void Room::setRoomId(int roomId)
+void Room::setRoomId(const int &roomId)
 {
     m_roomId = roomId;
 }
 
-QString Room::roomName()
+QString Room::roomName() const
 {
     return m_roomName;
 }
 
-void Room::setRoomName(QString roomName)
+void Room::setRoomName(const QString &roomName)
 {
     m_roomName = roomName;
 }
 
-QByteArray Room::groupRfAddress()
+QByteArray Room::groupRfAddress() const
 {
     return m_groupRfAddress;
 }
 
-void Room::setGroupRfAddress(QByteArray groupRfAddress)
+void Room::setGroupRfAddress(const QByteArray &groupRfAddress)
 {
     m_groupRfAddress = groupRfAddress;
 }

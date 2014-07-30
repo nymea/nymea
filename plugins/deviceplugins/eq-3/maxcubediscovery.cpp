@@ -35,14 +35,10 @@ MaxCubeDiscovery::MaxCubeDiscovery(QObject *parent) :
 
 void MaxCubeDiscovery::detectCubes()
 {
-    qDebug() << "====================================================";
-    qDebug() << "       searching for cubes....";
-
     m_cubeList.clear();
 
     // broadcast the hello message, every cube should respond with a 26 byte message
     m_udpSocket->writeDatagram("eQ3Max*.**********I", QHostAddress::Broadcast, m_port);
-
     m_timeout->start(1500);
 }
 
@@ -63,6 +59,7 @@ void MaxCubeDiscovery::readData()
         QByteArray rfAddress = data.mid(21,3).toHex();
         int firmware = data.mid(24,2).toHex().toInt();
         qint16 port;
+
         // set port depending on the firmware
         if(firmware < 109){
             port= 80;
@@ -72,16 +69,6 @@ void MaxCubeDiscovery::readData()
 
         MaxCube *cube = new MaxCube(this, serialNumber, sender, port);
         cube->setRfAddress(rfAddress);
-        qDebug() << "====================================================";
-        qDebug() << "       cube detected...";
-        qDebug() << "====================================================";
-        qDebug() << "           serial number | " << cube->serialNumber();
-        qDebug() << "            host address | " << cube->hostAddress().toString();
-        qDebug() << "                    port | " << QString::number(cube->port());
-        qDebug() << "              rf address | " << cube->rfAddress();
-        qDebug() << "                firmware | " << QString::number(cube->firmware());
-        qDebug() << "====================================================";
-
         m_cubeList.append(cube);
     }
 }

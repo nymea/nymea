@@ -9,12 +9,14 @@ SOURCES += \
     maxcubediscovery.cpp    \
     maxcube.cpp             \
     maxdevice.cpp           \
-    room.cpp                \
+    room.cpp \
+    livemessage.cpp
 
 HEADERS += \
     deviceplugineq-3.h      \
     maxcubediscovery.h      \
     maxcube.h               \
     maxdevice.h             \
-    room.h                  \
+    room.h \
+    livemessage.h
 

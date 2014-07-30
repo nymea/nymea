@@ -34,6 +34,7 @@ StateTypeId dateTimeStateTypeId = StateTypeId("78aed123-ca8e-4e11-a823-52043c4a4
 DevicePluginEQ3::DevicePluginEQ3()
 {
     m_cubeDiscovery = new MaxCubeDiscovery(this);
+
     connect(m_cubeDiscovery,SIGNAL(cubesDetected(QList<MaxCube*>)),this,SLOT(discoveryDone(QList<MaxCube*>)));
 }
 
@@ -116,7 +117,6 @@ QPair<DeviceManager::DeviceError, QString> DevicePluginEQ3::discoverDevices(cons
     return report(DeviceManager::DeviceErrorDeviceClassNotFound);
 }
 
-
 QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginEQ3::setupDevice(Device *device)
 {
     qDebug() << "setupDevice" << device->params();
@@ -129,13 +129,26 @@ QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginEQ3::setupDevice(De
     }
 
     MaxCube *cube = new MaxCube(this,device->paramValue("serial number").toString(),QHostAddress(device->paramValue("host address").toString()),device->paramValue("port").toInt());
-    connect(cube,SIGNAL(cubeConnectionStatusChanged(bool)),this,SLOT(cubeConnectionStatusChanged(bool)));
-
     m_cubes.insert(cube,device);
+
+    connect(cube,SIGNAL(cubeConnectionStatusChanged(bool)),this,SLOT(cubeConnectionStatusChanged(bool)));
 
     cube->connectToCube();
 
     return reportDeviceSetup(DeviceManager::DeviceSetupStatusAsync);
+}
+
+void DevicePluginEQ3::deviceRemoved(Device *device)
+{
+    if (!m_cubes.values().contains(device)) {
+        return;
+    }
+
+    MaxCube *cube = m_cubes.key(device);
+    cube->disconnectFromCube();
+    qDebug() << "remove cube " << cube->serialNumber();
+    m_cubes.remove(cube);
+    cube->deleteLater();
 }
 
 void DevicePluginEQ3::guhTimer()
@@ -156,7 +169,7 @@ void DevicePluginEQ3::cubeConnectionStatusChanged(const bool &connected)
         MaxCube *cube = static_cast<MaxCube*>(sender());
         Device *device;
         if (m_cubes.contains(cube)) {
-            device = m_cubes.take(cube);
+            device = m_cubes.value(cube);
             device->setName("Max! Cube " + cube->serialNumber());
             emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusSuccess, QString());
         }
@@ -173,7 +186,7 @@ void DevicePluginEQ3::discoveryDone(const QList<MaxCube *> &cubeList)
         params.append(hostParam);
         Param portParam("port", cube->port());
         params.append(portParam);
-        Param firmwareParam("firmware version", QString::number(cube->firmware()));
+        Param firmwareParam("firmware version", cube->firmware());
         params.append(firmwareParam);
         Param serialNumberParam("serial number", cube->serialNumber());
         params.append(serialNumberParam);

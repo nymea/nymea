@@ -23,12 +23,12 @@ MaxDevice::MaxDevice(QObject *parent) :
 {
 }
 
-int MaxDevice::deviceType()
+int MaxDevice::deviceType() const
 {
     return m_deviceType;
 }
 
-void MaxDevice::setDeviceType(int deviceType)
+void MaxDevice::setDeviceType(const int &deviceType)
 {
     m_deviceType = deviceType;
 
@@ -57,58 +57,58 @@ void MaxDevice::setDeviceType(int deviceType)
     }
 }
 
-QString MaxDevice::deviceTypeString()
+QString MaxDevice::deviceTypeString() const
 {
     return m_deviceTypeString;
 }
 
-QByteArray MaxDevice::rfAddress()
+QByteArray MaxDevice::rfAddress() const
 {
     return m_rfAddress;
 }
 
-void MaxDevice::setRfAddress(QByteArray rfAddress)
+void MaxDevice::setRfAddress(const QByteArray &rfAddress)
 {
     m_rfAddress = rfAddress;
 }
 
-QString MaxDevice::serialNumber()
+QString MaxDevice::serialNumber() const
 {
     return m_serialNumber;
 }
 
-void MaxDevice::setSerialNumber(QString serialNumber)
+void MaxDevice::setSerialNumber(const QString &serialNumber)
 {
     m_serialNumber = serialNumber;
 }
 
-QString MaxDevice::deviceName()
+QString MaxDevice::deviceName() const
 {
     return m_deviceName;
 }
 
-void MaxDevice::setDeviceName(QString deviceName)
+void MaxDevice::setDeviceName(const QString &deviceName)
 {
     m_deviceName = deviceName;
 }
 
-int MaxDevice::roomId()
+int MaxDevice::roomId() const
 {
     return m_roomId;
 }
 
-void MaxDevice::setRoomId(int roomId)
+void MaxDevice::setRoomId(const int &roomId)
 {
     m_roomId = roomId;
 }
 
-Room *MaxDevice::room()
+QString MaxDevice::roomName() const
 {
-    return m_room;
+    return m_roomName;
 }
 
-void MaxDevice::setRoom(Room *room)
+void MaxDevice::setRoomName(const QString &roomName)
 {
-    m_room = room;
+    m_roomName = roomName;
 }
 

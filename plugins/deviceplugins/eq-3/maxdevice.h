@@ -38,25 +38,26 @@ public:
         DeviceEcoButton = 5
     };
 
-    int deviceType();
-    void setDeviceType(int deviceType);
+    int deviceType() const;
+    void setDeviceType(const int &deviceType);
 
-    QString deviceTypeString();
+    QString deviceTypeString() const;
 
-    QByteArray rfAddress();
-    void setRfAddress(QByteArray rfAddress);
+    QByteArray rfAddress() const;
+    void setRfAddress(const QByteArray &rfAddress);
 
-    QString serialNumber();
-    void setSerialNumber(QString serialNumber);
+    QString serialNumber() const;
+    void setSerialNumber(const QString &serialNumber);
 
-    QString deviceName();
-    void setDeviceName(QString deviceName);
+    QString deviceName() const;
+    void setDeviceName(const QString &deviceName);
 
-    int roomId();
-    void setRoomId(int roomId);
+    int roomId() const;
+    void setRoomId(const int &roomId);
 
-    Room *room();
-    void setRoom(Room *room);
+    QString roomName() const;
+    void setRoomName(const QString &roomName);
+
 private:
     int m_deviceType;
     QString m_deviceTypeString;
@@ -64,7 +65,7 @@ private:
     QString m_serialNumber;
     QString m_deviceName;
     int m_roomId;
-    Room *m_room;
+    QString m_roomName;
     bool m_batteryOk;
 
 signals:

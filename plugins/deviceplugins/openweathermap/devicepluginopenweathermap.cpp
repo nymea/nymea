@@ -447,8 +447,15 @@ QPair<DeviceManager::DeviceError, QString> DevicePluginOpenweathermap::discoverD
 
 QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginOpenweathermap::setupDevice(Device *device)
 {
+    foreach (Device *deviceListDevice, deviceManager()->findConfiguredDevices(openweathermapDeviceClassId)) {
+        if(deviceListDevice->paramValue("id").toString() == device->paramValue("id").toString()){
+            return reportDeviceSetup(DeviceManager::DeviceSetupStatusFailure,QString("Location " + device->paramValue("location").toString() + "allready in added"));
+        }
+    }
+
     m_openweaher->update(device->paramValue("id").toString());
-    return reportDeviceSetup();
+
+    return reportDeviceSetup(DeviceManager::DeviceSetupStatusSuccess);
 }
 
 DeviceManager::HardwareResources DevicePluginOpenweathermap::requiredHardware() const
@@ -514,6 +521,7 @@ void DevicePluginOpenweathermap::weatherDataReady(const QByteArray &data)
 
     foreach (Device *device, deviceManager()->findConfiguredDevices(openweathermapDeviceClassId)) {
         if(device->paramValue("id").toString() == dataMap.value("id").toString()){
+            device->setName("Weather from openweathermap.org for " + device->paramValue("location").toString());
 
             if(dataMap.contains("clouds")){
                 int cloudiness = dataMap.value("clouds").toMap().value("all").toInt();

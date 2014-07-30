@@ -1,1 +1,10 @@
-{}
+{
+    "name": "Conrad",
+    "id": "1fd1a076-f229-4ec6-b501-48ddd15935e4",
+    "vendors": [
+        {
+            "name": "Conrad Electronic SE",
+            "id": "986cf06f-3ef1-4271-b2a3-2cc277ebecb6"
+        }
+    ]
+}

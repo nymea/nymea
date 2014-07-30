@@ -36,14 +36,9 @@ class DevicePluginPhilipsHue: public DevicePlugin
 public:
     explicit DevicePluginPhilipsHue();
 
-    QList<Vendor> supportedVendors() const override;
-    QList<DeviceClass> supportedDevices() const override;
     DeviceManager::HardwareResources requiredHardware() const override;
 
     void startMonitoringAutoDevices() override;
-
-    QString pluginName() const override;
-    PluginId pluginId() const override;
 
     QList<ParamType> configurationDescription() const override;
     QPair<DeviceManager::DeviceError, QString> discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;

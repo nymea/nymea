@@ -29,6 +29,7 @@
 #include "types/param.h"
 
 #include <QObject>
+#include <QJsonObject>
 
 class DeviceManager;
 class Device;
@@ -42,11 +43,11 @@ public:
 
     virtual void init() {}
 
-    virtual QString pluginName() const = 0;
-    virtual PluginId pluginId() const = 0;
+    QString pluginName() const;
+    PluginId pluginId() const;
+    QList<Vendor> supportedVendors() const;
+    QList<DeviceClass> supportedDevices() const;
 
-    virtual QList<Vendor> supportedVendors() const = 0;
-    virtual QList<DeviceClass> supportedDevices() const = 0;
     virtual DeviceManager::HardwareResources requiredHardware() const = 0;
 
     virtual void startMonitoringAutoDevices();
@@ -93,11 +94,13 @@ protected:
     QPair<DeviceManager::DeviceError, QString> report(DeviceManager::DeviceError error = DeviceManager::DeviceErrorNoError, const QString &message = QString());
     QPair<DeviceManager::DeviceSetupStatus, QString> reportDeviceSetup(DeviceManager::DeviceSetupStatus status = DeviceManager::DeviceSetupStatusSuccess, const QString &message = QString());
 private:
-    void initPlugin(DeviceManager *deviceManager);
+    void initPlugin(const QJsonObject &metaData, DeviceManager *deviceManager);
 
     DeviceManager *m_deviceManager;
 
     ParamList m_config;
+
+    QJsonObject m_metaData;
 
     friend class DeviceManager;
 };

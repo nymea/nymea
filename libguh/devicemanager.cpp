@@ -82,6 +82,7 @@
 #include "plugin/deviceplugin.h"
 
 #include <QPluginLoader>
+#include <QStaticPlugin>
 #include <QtPlugin>
 #include <QDebug>
 #include <QSettings>
@@ -499,11 +500,11 @@ QPair<DeviceManager::DeviceError, QString> DeviceManager::executeAction(const Ac
 
 void DeviceManager::loadPlugins()
 {
-    foreach (QObject *pluginObject, QPluginLoader::staticInstances()) {
-        DevicePlugin *pluginIface = qobject_cast<DevicePlugin*>(pluginObject);
-        if (pluginIface) {
+    foreach (const QStaticPlugin &staticPlugin, QPluginLoader::staticPlugins()) {
+        DevicePlugin *pluginIface = qobject_cast<DevicePlugin*>(staticPlugin.instance());
+        if (verifyPluginMetadata(staticPlugin.metaData().value("MetaData").toObject()) && pluginIface) {
+            pluginIface->initPlugin(staticPlugin.metaData().value("MetaData").toObject(), this);
             qDebug() << "*** Loaded plugin" << pluginIface->pluginName();
-            pluginIface->initPlugin(this);
             foreach (const Vendor &vendor, pluginIface->supportedVendors()) {
                 qDebug() << "* Loaded vendor:" << vendor.name();
                 if (m_supportedVendors.contains(vendor.id())) {
@@ -824,6 +825,20 @@ void DeviceManager::timerEvent()
             plugin->guhTimer();
         }
     }
+}
+
+bool DeviceManager::verifyPluginMetadata(const QJsonObject &data)
+{
+    QStringList requiredFields;
+    requiredFields << "name" << "id" << "vendors";
+
+    foreach (const QString &field, requiredFields) {
+        if (!data.contains("name")) {
+            qWarning() << "Error loading plugin. Incomplete metadata. Missing field:" << field;
+            return false;
+        }
+    }
+    return true;
 }
 
 QPair<DeviceManager::DeviceSetupStatus,QString> DeviceManager::setupDevice(Device *device)

@@ -1,1 +1,46 @@
-{}
+{
+    "name": "Philips Hue",
+    "id": "5f2e634b-b7f3-48ee-976a-b5ae22aa5c55",
+    "vendors": [
+        {
+            "id": "0ae1e001-2aa6-47ed-b8c0-334c3728a68f",
+            "name": "Philips",
+            "deviceClasses": [
+                {
+                    "deviceClassId": "d8f4c397-e05e-47c1-8917-8e72d4d0d47c",
+                    "name": "Hue",
+                    "createMethod": "discovery",
+                    "setupMethod": "pushButton",
+                    "pairingInfo": "Please press the button on the Hue bridge and then press OK",
+                    "paramTypes": [
+                        {
+                            "name": "ip",
+                            "type" : "QString"
+                        },
+                        {
+                            "name": "username",
+                            "type" : "QString"
+                        },
+                        {
+                            "name": "lightId",
+                            "type" : "int"
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "15794d26-fde8-4a61-8f83-d7830534975f",
+                            "name": "reachable",
+                            "type": "bool"
+                        },
+                        {
+                            "id": "d25423e7-b924-4b20-80b6-77eecc65d089",
+                            "name": "color",
+                            "type": "color",
+                            "defaultValue": "black"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

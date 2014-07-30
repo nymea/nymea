@@ -61,7 +61,6 @@
 #include <QStringList>
 
 
-VendorId conradVendorId = VendorId("986cf06f-3ef1-4271-b2a3-2cc277ebecb6");
 DeviceClassId conradRemoteId = DeviceClassId("17cd2492-28ab-4827-ba6e-5ef35be23f1b");
 EventTypeId conradRemoteButtonEventTypeId = EventTypeId("1f4050f5-4c90-4799-8d6d-e4069f3a2519");
 
@@ -69,71 +68,53 @@ DevicePluginConrad::DevicePluginConrad()
 {
 }
 
-QList<Vendor> DevicePluginConrad::supportedVendors() const
-{
-    QList<Vendor> ret;
-    Vendor conrad(conradVendorId, "Conrad Electronic SE");
-    ret.append(conrad);
-    return ret;
-}
+//QList<DeviceClass> DevicePluginConrad::supportedDevices() const
+//{
+//    // TODO: load list from config with static uuid
+//    QList<DeviceClass> ret;
 
-QList<DeviceClass> DevicePluginConrad::supportedDevices() const
-{
-    // TODO: load list from config with static uuid
-    QList<DeviceClass> ret;
+//    // =======================================
+//    // Remote
+//    DeviceClass deviceClassConradRemote(pluginId(), supportedVendors().first().id(), conradRemoteId);
+//    deviceClassConradRemote.setName("Conrad Remote");
 
-    // =======================================
-    // Remote
-    DeviceClass deviceClassConradRemote(pluginId(), conradVendorId, conradRemoteId);
-    deviceClassConradRemote.setName("Conrad Remote");
+//    // Params
+//    QList<ParamType> deviceParamsRemote;
 
-    // Params
-    QList<ParamType> deviceParamsRemote;
+//    QVariantList deviceParamRemote;
+//    QVariantMap nameParam;
+//    nameParam.insert("name", "name");
+//    nameParam.insert("type", "string");
+//    deviceParamRemote.append(nameParam);
 
-    QVariantList deviceParamRemote;
-    QVariantMap nameParam;
-    nameParam.insert("name", "name");
-    nameParam.insert("type", "string");
-    deviceParamRemote.append(nameParam);
+//    // Events
+//    QList<EventType> buttonEvents;
 
-    // Events
-    QList<EventType> buttonEvents;
+//    QList<ParamType> paramsRemote;
+//    ParamType paramButton("button", QVariant::Int);
+//    paramsRemote.append(paramButton);
 
-    QList<ParamType> paramsRemote;
-    ParamType paramButton("button", QVariant::Int);
-    paramsRemote.append(paramButton);
+//    ParamType paramGroup("group", QVariant::Int);
+//    paramsRemote.append(paramGroup);
 
-    ParamType paramGroup("group", QVariant::Int);
-    paramsRemote.append(paramGroup);
+//    ParamType paramPower("power", QVariant::Bool);
+//    paramsRemote.append(paramPower);
 
-    ParamType paramPower("power", QVariant::Bool);
-    paramsRemote.append(paramPower);
+//    EventType buttonEvent(conradRemoteButtonEventTypeId);
+//    buttonEvent.setName("Button Pressed");
+//    buttonEvent.setParameters(paramsRemote);
+//    buttonEvents.append(buttonEvent);
 
-    EventType buttonEvent(conradRemoteButtonEventTypeId);
-    buttonEvent.setName("Button Pressed");
-    buttonEvent.setParameters(paramsRemote);
-    buttonEvents.append(buttonEvent);
+//    deviceClassConradRemote.setParamTypes(deviceParamsRemote);
+//    deviceClassConradRemote.setEventTypes(buttonEvents);
+//    ret.append(deviceClassConradRemote);
 
-    deviceClassConradRemote.setParamTypes(deviceParamsRemote);
-    deviceClassConradRemote.setEventTypes(buttonEvents);
-    ret.append(deviceClassConradRemote);
-
-    return ret;
-}
+//    return ret;
+//}
 
 DeviceManager::HardwareResources DevicePluginConrad::requiredHardware() const
 {
     return DeviceManager::HardwareResourceRadio433;
-}
-
-QString DevicePluginConrad::pluginName() const
-{
-    return "Conrad";
-}
-
-PluginId DevicePluginConrad::pluginId() const
-{
-    return PluginId("1fd1a076-f229-4ec6-b501-48ddd15935e4");
 }
 
 QPair<DeviceManager::DeviceError, QString> DevicePluginConrad::executeAction(Device *device, const Action &action)

@@ -121,6 +121,7 @@ private slots:
     void timerEvent();
 
 private:
+    bool verifyPluginMetadata(const QJsonObject &data);
     QPair<DeviceError, QString> addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId id = DeviceId::createDeviceId());
     QPair<DeviceSetupStatus, QString> setupDevice(Device *device);
     QPair<DeviceError, QString> verifyParams(const QList<ParamType> paramTypes, ParamList &params, bool requireAll = true);

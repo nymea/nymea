@@ -33,12 +33,8 @@ class DevicePluginWakeOnLan : public DevicePlugin
 public:
     explicit DevicePluginWakeOnLan();
 
-    QList<Vendor> supportedVendors() const override;
-    QList<DeviceClass> supportedDevices() const override;
     DeviceManager::HardwareResources requiredHardware() const override;
 
-    QString pluginName() const override;
-    PluginId pluginId() const override;
     QPair<DeviceManager::DeviceError, QString> executeAction(Device *device, const Action &action) override;
 
 

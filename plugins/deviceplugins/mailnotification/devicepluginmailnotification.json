@@ -1,1 +1,10 @@
-{}
+{
+    "name": "Mail notification",
+    "id": "72aef158-07a3-4714-93b5-fec2f9d912d1",
+    "vendors": [
+        {
+            "name": "guh",
+            "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6"
+        }
+    ]
+}

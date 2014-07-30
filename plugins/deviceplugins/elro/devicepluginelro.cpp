@@ -72,142 +72,138 @@ DevicePluginElro::DevicePluginElro()
 
 }
 
-QList<Vendor> DevicePluginElro::supportedVendors() const
-{
-    QList<Vendor> ret;
-    ret.append(Vendor(elroVendorId, "Elro"));
-    return ret;
-}
+//QList<Vendor> DevicePluginElro::supportedVendors() const
+//{
+//    QList<Vendor> ret;
+//    ret.append(Vendor(elroVendorId, "Elro"));
+//    ret.append(Vendor(mumbiVendorId, "Mumbi"));
+//    ret.append(Vendor(vivancoVendorId, "Vivanco"));
+//    ret.append(Vendor(brennenstuhlVendorId, "Brennenstuhl"));
+//    ret.append(Vendor(batVendorId, "BAT"));
+//    return ret;
+//}
+//QList<DeviceClass> DevicePluginElro::supportedDevices() const
+//{
+//    // TODO: load list from config with static uuid
+//    QList<DeviceClass> ret;
 
-QList<DeviceClass> DevicePluginElro::supportedDevices() const
-{
-    // TODO: load list from config with static uuid
-    QList<DeviceClass> ret;
-
-    // =======================================
-    // Remote
-    DeviceClass deviceClassElroRemote(pluginId(), elroVendorId, elroRemoteId);
-    deviceClassElroRemote.setName("Elro Remote");
+//    // =======================================
+//    // Remote
+//    qDebug() << "have supported vendors" << supportedVendors().count();
+//    DeviceClass deviceClassElroRemote(pluginId(), supportedVendors().first().id(), elroRemoteId);
+//    deviceClassElroRemote.setName("Elro Remote");
     
-    QList<ParamType> deviceParamsRemote;
-    ParamType channelParam = ParamType("channel 1", QVariant::Bool);
-    deviceParamsRemote.append(channelParam);
-    channelParam = ParamType("channel 2", QVariant::Bool);
-    deviceParamsRemote.append(channelParam);
-    channelParam = ParamType("channel 3", QVariant::Bool);
-    deviceParamsRemote.append(channelParam);
-    channelParam = ParamType("channel 4", QVariant::Bool);
-    deviceParamsRemote.append(channelParam);
-    channelParam = ParamType("channel 5", QVariant::Bool);
-    deviceParamsRemote.append(channelParam);
+//    QList<ParamType> deviceParamsRemote;
+//    ParamType channelParam = ParamType("channel1", QVariant::Bool);
+//    deviceParamsRemote.append(channelParam);
+//    channelParam = ParamType("channel2", QVariant::Bool);
+//    deviceParamsRemote.append(channelParam);
+//    channelParam = ParamType("channel3", QVariant::Bool);
+//    deviceParamsRemote.append(channelParam);
+//    channelParam = ParamType("channel4", QVariant::Bool);
+//    deviceParamsRemote.append(channelParam);
+//    channelParam = ParamType("channel5", QVariant::Bool);
+//    deviceParamsRemote.append(channelParam);
     
-    deviceClassElroRemote.setParamTypes(deviceParamsRemote);
+//    deviceClassElroRemote.setParamTypes(deviceParamsRemote);
     
-    QList<EventType> buttonEvents;
+//    QList<EventType> buttonEvents;
     
-    QList<ParamType> paramsRemote;
-    ParamType param("power", QVariant::Bool);
-    paramsRemote.append(param);
+//    QList<ParamType> paramsRemote;
+//    ParamType param("power", QVariant::Bool);
+//    paramsRemote.append(param);
     
-    EventType buttonAEvent(EventTypeId("9dd3f862-35f3-4b69-954e-fa3c8bd68e39"));
-    buttonAEvent.setName("A");
-    buttonAEvent.setParameters(paramsRemote);
-    buttonEvents.append(buttonAEvent);
+//    EventType buttonAEvent(EventTypeId("9dd3f862-35f3-4b69-954e-fa3c8bd68e39"));
+//    buttonAEvent.setName("A");
+//    buttonAEvent.setParameters(paramsRemote);
+//    buttonEvents.append(buttonAEvent);
     
-    EventType buttonBEvent(EventTypeId("733226eb-91ba-4e37-9d78-12c87eb5e763"));
-    buttonBEvent.setName("B");
-    buttonBEvent.setParameters(paramsRemote);
-    buttonEvents.append(buttonBEvent);
+//    EventType buttonBEvent(EventTypeId("733226eb-91ba-4e37-9d78-12c87eb5e763"));
+//    buttonBEvent.setName("B");
+//    buttonBEvent.setParameters(paramsRemote);
+//    buttonEvents.append(buttonBEvent);
     
-    EventType buttonCEvent(EventTypeId("47aaeaec-485a-4775-a543-33f339fd28c8"));
-    buttonCEvent.setName("C");
-    buttonCEvent.setParameters(paramsRemote);
-    buttonEvents.append(buttonCEvent);
+//    EventType buttonCEvent(EventTypeId("47aaeaec-485a-4775-a543-33f339fd28c8"));
+//    buttonCEvent.setName("C");
+//    buttonCEvent.setParameters(paramsRemote);
+//    buttonEvents.append(buttonCEvent);
     
-    EventType buttonDEvent(EventTypeId("db3d484c-add9-44ab-80a4-a0664e0c87c8"));
-    buttonDEvent.setName("D");
-    buttonDEvent.setParameters(paramsRemote);
-    buttonEvents.append(buttonDEvent);
+//    EventType buttonDEvent(EventTypeId("db3d484c-add9-44ab-80a4-a0664e0c87c8"));
+//    buttonDEvent.setName("D");
+//    buttonDEvent.setParameters(paramsRemote);
+//    buttonEvents.append(buttonDEvent);
     
-    EventType buttonEEvent(EventTypeId("eb914aac-fb73-4ee2-9f1b-c34b2f6cc24a"));
-    buttonEEvent.setName("E");
-    buttonEEvent.setParameters(paramsRemote);
-    buttonEvents.append(buttonEEvent);
+//    EventType buttonEEvent(EventTypeId("eb914aac-fb73-4ee2-9f1b-c34b2f6cc24a"));
+//    buttonEEvent.setName("E");
+//    buttonEEvent.setParameters(paramsRemote);
+//    buttonEvents.append(buttonEEvent);
     
-    deviceClassElroRemote.setEventTypes(buttonEvents);
-    ret.append(deviceClassElroRemote);
+//    deviceClassElroRemote.setEventTypes(buttonEvents);
+//    ret.append(deviceClassElroRemote);
 
-    // =======================================
-    // Motion Detector
+//    // =======================================
+//    // Motion Detector
 
-    DeviceClass deviceClassElroMotionDetector(pluginId(), elroVendorId, elroMotionDetectorId);
-    deviceClassElroMotionDetector.setName("Elro Motion Detector");
-    deviceClassElroMotionDetector.setCreateMethod(DeviceClass::CreateMethodDiscovery);
+//    DeviceClass deviceClassElroMotionDetector(pluginId(), supportedVendors().first().id(), elroMotionDetectorId);
+//    deviceClassElroMotionDetector.setName("Elro Motion Detector");
+//    deviceClassElroMotionDetector.setCreateMethod(DeviceClass::CreateMethodDiscovery);
 
-    QList<EventType> motionDetectorEvents;
-    QList<ParamType> deviceParamsMotionDetector;
+//    QList<EventType> motionDetectorEvents;
+//    QList<ParamType> deviceParamsMotionDetector;
 
 
-    // =======================================
-    // Switch
-    DeviceClass deviceClassElroSwitch(pluginId(), elroVendorId, elroSwitchId);
-    deviceClassElroSwitch.setName("Elro Power Switch");
+
+
+
+//    // =======================================
+//    // Switch
+//    DeviceClass deviceClassElroSwitch(pluginId(), supportedVendors().first().id(), elroSwitchId);
+//    deviceClassElroSwitch.setName("Elro Power Switch");
     
-    QList<ParamType> deviceParamsSwitch;
-    ParamType paramSwitch = ParamType("channel 1", QVariant::Bool);
-    deviceParamsSwitch.append(paramSwitch);
-    paramSwitch = ParamType("channel 2", QVariant::Bool);
-    deviceParamsSwitch.append(paramSwitch);
-    paramSwitch = ParamType("channel 3", QVariant::Bool);
-    deviceParamsSwitch.append(paramSwitch);
-    paramSwitch = ParamType("channel 4", QVariant::Bool);
-    deviceParamsSwitch.append(paramSwitch);
-    paramSwitch = ParamType("channel 5", QVariant::Bool);
-    deviceParamsSwitch.append(paramSwitch);
-    paramSwitch = ParamType("A", QVariant::Bool);
-    deviceParamsSwitch.append(paramSwitch);
-    paramSwitch = ParamType("B", QVariant::Bool);
-    deviceParamsSwitch.append(paramSwitch);
-    paramSwitch = ParamType("C", QVariant::Bool);
-    deviceParamsSwitch.append(paramSwitch);
-    paramSwitch = ParamType("D", QVariant::Bool);
-    deviceParamsSwitch.append(paramSwitch);
-    paramSwitch = ParamType("E", QVariant::Bool);
-    deviceParamsSwitch.append(paramSwitch);
+//    QList<ParamType> deviceParamsSwitch;
+//    ParamType paramSwitch = ParamType("channel1", QVariant::Bool);
+//    deviceParamsSwitch.append(paramSwitch);
+//    paramSwitch = ParamType("channel2", QVariant::Bool);
+//    deviceParamsSwitch.append(paramSwitch);
+//    paramSwitch = ParamType("channel3", QVariant::Bool);
+//    deviceParamsSwitch.append(paramSwitch);
+//    paramSwitch = ParamType("channel4", QVariant::Bool);
+//    deviceParamsSwitch.append(paramSwitch);
+//    paramSwitch = ParamType("channel5", QVariant::Bool);
+//    deviceParamsSwitch.append(paramSwitch);
+//    paramSwitch = ParamType("A", QVariant::Bool);
+//    deviceParamsSwitch.append(paramSwitch);
+//    paramSwitch = ParamType("B", QVariant::Bool);
+//    deviceParamsSwitch.append(paramSwitch);
+//    paramSwitch = ParamType("C", QVariant::Bool);
+//    deviceParamsSwitch.append(paramSwitch);
+//    paramSwitch = ParamType("D", QVariant::Bool);
+//    deviceParamsSwitch.append(paramSwitch);
+//    paramSwitch = ParamType("E", QVariant::Bool);
+//    deviceParamsSwitch.append(paramSwitch);
 
-    deviceClassElroSwitch.setParamTypes(deviceParamsSwitch);
-
-
-    QList<ParamType> actionParamsSwitch;
-    ParamType actionParamSwitch("power", QVariant::Bool);
-    actionParamsSwitch.append(actionParamSwitch);
+//    deviceClassElroSwitch.setParamTypes(deviceParamsSwitch);
 
 
-    QList<ActionType> switchActions;
+//    QList<ParamType> actionParamsSwitch;
+//    ParamType actionParamSwitch("power", QVariant::Bool);
+//    actionParamsSwitch.append(actionParamSwitch);
 
-    ActionType powerAction(ActionTypeId("31c9758e-6567-4f89-85bb-29e1a7c55d44"));
-    powerAction.setName("power");
-    powerAction.setParameters(actionParamsSwitch);
-    switchActions.append(powerAction);
+//    QList<ActionType> switchActions;
 
-    deviceClassElroSwitch.setActions(switchActions);
-    ret.append(deviceClassElroSwitch);
-    return ret;
-}
+//    ActionType powerAction(ActionTypeId("31c9758e-6567-4f89-85bb-29e1a7c55d44"));
+//    powerAction.setName("power");
+//    powerAction.setParameters(actionParamsSwitch);
+//    switchActions.append(powerAction);
+
+//    deviceClassElroSwitch.setActions(switchActions);
+//    ret.append(deviceClassElroSwitch);
+//    return ret;
+//}
 
 DeviceManager::HardwareResources DevicePluginElro::requiredHardware() const
 {
     return DeviceManager::HardwareResourceRadio433;
-}
-
-QString DevicePluginElro::pluginName() const
-{
-    return QStringLiteral("Elro");
-}
-
-PluginId DevicePluginElro::pluginId() const
-{
-    return PluginId("2b267f81-d9ae-4f4f-89a0-7386b547cfd3");
 }
 
 QPair<DeviceManager::DeviceError, QString> DevicePluginElro::executeAction(Device *device, const Action &action)

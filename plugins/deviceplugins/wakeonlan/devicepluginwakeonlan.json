@@ -1,1 +1,11 @@
-{}
+{
+    "name": "Wake on Lan",
+    "id": "b5a87848-de56-451e-84a6-edd26ad4958f",
+    "vendors": [
+        {
+            "name": "guh",
+            "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6"
+        }
+
+    ]
+}

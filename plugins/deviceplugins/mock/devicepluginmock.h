@@ -36,13 +36,8 @@ public:
     explicit DevicePluginMock();
     ~DevicePluginMock();
 
-    QList<Vendor> supportedVendors() const override;
-    QList<DeviceClass> supportedDevices() const override;
     DeviceManager::HardwareResources requiredHardware() const override;
     QPair<DeviceManager::DeviceError, QString> discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
-
-    QString pluginName() const override;
-    PluginId pluginId() const override;
 
     QPair<DeviceManager::DeviceSetupStatus, QString> setupDevice(Device *device) override;
     void deviceRemoved(Device *device) override;

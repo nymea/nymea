@@ -26,9 +26,6 @@
 #include <QDebug>
 #include <QStringList>
 
-VendorId lircdVendorId = VendorId("9a53049c-8828-4b87-b3f6-7bc7708196cd");
-
-PluginId lircdPluginUuid = PluginId("075f734f-4d76-4ce3-9ef8-34c212285676");
 DeviceClassId lircdDeviceClassId = DeviceClassId("5c2bc4cd-ba6c-4052-b6cd-1db83323ea22");
 EventTypeId LircKeypressEventTypeId = EventTypeId("8711471a-fa0e-410b-b174-dfc3d2aeffb1");
 
@@ -40,75 +37,57 @@ DevicePluginLircd::DevicePluginLircd()
     connect(m_lircClient, &LircClient::buttonPressed, this, &DevicePluginLircd::buttonPressed);
 }
 
-QList<Vendor> DevicePluginLircd::supportedVendors() const
-{
-    QList<Vendor> ret;
-    Vendor guh(lircdVendorId, "Lircd");
-    ret.append(guh);
-    return ret;
-}
+//QList<DeviceClass> DevicePluginLircd::supportedDevices() const
+//{
+//    QList<DeviceClass> ret;
 
-QList<DeviceClass> DevicePluginLircd::supportedDevices() const
-{
-    QList<DeviceClass> ret;
+//    DeviceClass deviceClassLircd(pluginId(), supportedVendors().first().id(), lircdDeviceClassId);
+//    deviceClassLircd.setName("IR Receiver");
 
-    DeviceClass deviceClassLircd(pluginId(), lircdVendorId, lircdDeviceClassId);
-    deviceClassLircd.setName("IR Receiver");
-
-    QList<ParamType> params;
-    ParamType remoteNameParam("remoteName", QVariant::String);
-    params.append(remoteNameParam);
-    deviceClassLircd.setParamTypes(params);
+//    QList<ParamType> params;
+//    ParamType remoteNameParam("remoteName", QVariant::String);
+//    params.append(remoteNameParam);
+//    deviceClassLircd.setParamTypes(params);
     
-    // TODO: find a way to load this stuff from a json file, really!
-    // Ideally that file can be generated from /usr/share/lirc/remotes/*
-    // Note that the IDs need to be kept static!
-    QList<ParamType> repeatParam;
-    ParamType repeatParamMap("repeat", QVariant::Int);
-    repeatParam.append(repeatParamMap);
+//    // TODO: find a way to load this stuff from a json file, really!
+//    // Ideally that file can be generated from /usr/share/lirc/remotes/*
+//    // Note that the IDs need to be kept static!
+//    QList<ParamType> repeatParam;
+//    ParamType repeatParamMap("repeat", QVariant::Int);
+//    repeatParam.append(repeatParamMap);
 
-    QList<EventType> events;
-    EventType powerButton(EventTypeId("d62d779f-e5c6-4767-98e6-efe9c062b662"));
-    powerButton.setName("Power");
-    powerButton.setParameters(repeatParam);
-    events.append(powerButton);
-    EventType yellowButton(EventTypeId("3313f62e-ea20-47f5-85af-28897d6ac440"));
-    yellowButton.setName("Yellow");
-    yellowButton.setParameters(repeatParam);
-    events.append(yellowButton);
-    EventType blueButton(EventTypeId("9a395d93-e482-4fa2-b4bc-e60bb4bf8652"));
-    blueButton.setName("Blue");
-    blueButton.setParameters(repeatParam);
-    events.append(blueButton);
-    EventType greenButton(EventTypeId("e8aaf18e-dc11-40da-980d-4eec42c58267"));
-    greenButton.setName("Green");
-    greenButton.setParameters(repeatParam);
-    events.append(greenButton);
-    EventType redButton(EventTypeId("b8518755-55a0-4cd4-8856-1680848edcb7"));
-    redButton.setName("Red");
-    redButton.setParameters(repeatParam);
-    events.append(redButton);
+//    QList<EventType> events;
+//    EventType powerButton(EventTypeId("d62d779f-e5c6-4767-98e6-efe9c062b662"));
+//    powerButton.setName("Power");
+//    powerButton.setParameters(repeatParam);
+//    events.append(powerButton);
+//    EventType yellowButton(EventTypeId("3313f62e-ea20-47f5-85af-28897d6ac440"));
+//    yellowButton.setName("Yellow");
+//    yellowButton.setParameters(repeatParam);
+//    events.append(yellowButton);
+//    EventType blueButton(EventTypeId("9a395d93-e482-4fa2-b4bc-e60bb4bf8652"));
+//    blueButton.setName("Blue");
+//    blueButton.setParameters(repeatParam);
+//    events.append(blueButton);
+//    EventType greenButton(EventTypeId("e8aaf18e-dc11-40da-980d-4eec42c58267"));
+//    greenButton.setName("Green");
+//    greenButton.setParameters(repeatParam);
+//    events.append(greenButton);
+//    EventType redButton(EventTypeId("b8518755-55a0-4cd4-8856-1680848edcb7"));
+//    redButton.setName("Red");
+//    redButton.setParameters(repeatParam);
+//    events.append(redButton);
 
-    deviceClassLircd.setEventTypes(events);
+//    deviceClassLircd.setEventTypes(events);
 
-    ret.append(deviceClassLircd);
+//    ret.append(deviceClassLircd);
 
-    return ret;
-}
+//    return ret;
+//}
 
 DeviceManager::HardwareResources DevicePluginLircd::requiredHardware() const
 {
     return DeviceManager::HardwareResourceNone;
-}
-
-QString DevicePluginLircd::pluginName() const
-{
-    return "Lircd receiver";
-}
-
-PluginId DevicePluginLircd::pluginId() const
-{
-    return lircdPluginUuid;
 }
 
 void DevicePluginLircd::buttonPressed(const QString &remoteName, const QString &buttonName, int repeat)

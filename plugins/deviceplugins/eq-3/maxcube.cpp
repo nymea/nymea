@@ -392,8 +392,18 @@ void MaxCube::decodeDevicelistMessage(QByteArray data)
             message.setDeviceMode(statusCode.right(2).toInt(0,2));
 
             message.setValvePosition((double)rawData.mid(12,2).toInt(0,16));
-            message.setSetpointTemperatre((double)rawData.mid(14,2).toInt(0,16)/ 2.0);
-            message.setDateTime(calculateDateTime(rawData.mid(18,4), rawData.mid(22,2)));
+
+            // calculate current temperature and setpoint temperature
+            // 00     00 00 00
+            // 10
+            QByteArray tempCode = fillBin(QByteArray::number(rawData.mid(14,2).toInt(0,16),2),8);
+            message.setSetpointTemperatre((double)tempCode.right(6).toInt(0,2) / 2.0);
+            double currentTemperature;
+            if(tempCode.left(2) == "10"){
+                currentTemperature = ((double)rawData.right(2).toInt(0,16) / 10.0) + 25.6;
+            }else{
+                currentTemperature = (double)rawData.right(2).toInt(0,16) / 10.0;
+            }
 
             qDebug() << "                raw data | " << rawData;
             qDebug() << "             device type | " << device->deviceTypeString();
@@ -412,8 +422,10 @@ void MaxCube::decodeDevicelistMessage(QByteArray data)
             qDebug() << "           gateway known | " << message.gatewayKnown();
             qDebug() << "     DST settings active | " << message.dtsActive();
             qDebug() << "             device mode | " << message.deviceModeString();
+            qDebug() << "               temp Code | " << tempCode;
+            qDebug() << "     Temperatur Setpoint | " << message.setpointTemperature();
+            qDebug() << "            Current Temp | " << currentTemperature;
             qDebug() << "                 unknown | " << rawData.right(rawData.length() - 12);
-            qDebug() << "       measured temp. 0b | " << fillBin(QByteArray::number(rawData.left(2).toInt(0,16),2),8);
             qDebug() << "-------------------------|-------------------------";
 
 

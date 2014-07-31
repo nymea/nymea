@@ -29,7 +29,7 @@ VendorId maxVendorId = VendorId("2cac0645-855e-44fa-837e-1cab0ae4304c");
 PluginId eq3PluginUuid = PluginId("f324c43c-9680-48d8-852a-93b2227139b9");
 
 DeviceClassId cubeDeviceClassId = DeviceClassId("1e892268-8bd7-442c-a001-bd4e2e6b2949");
-StateTypeId dateTimeStateTypeId = StateTypeId("78aed123-ca8e-4e11-a823-52043c4a4370");
+StateTypeId connectionStateTypeId = StateTypeId("d0a9a369-cf8c-47c4-a12e-f2d076bf12fd");
 
 DevicePluginEQ3::DevicePluginEQ3()
 {
@@ -74,11 +74,11 @@ QList<DeviceClass> DevicePluginEQ3::supportedDevices() const
 
     // States
     QList<StateType> states;
-    StateType dateTimeState(dateTimeStateTypeId);
-    dateTimeState.setName("cube time [unixtime]");
-    dateTimeState.setType(QVariant::UInt);
-    dateTimeState.setDefaultValue(0);
-    states.append(dateTimeState);
+    StateType connected(connectionStateTypeId);
+    connected.setName("connected");
+    connected.setType(QVariant::Bool);
+    connected.setDefaultValue(false);
+    states.append(connected);
 
     cubeDeviceClass.setStateTypes(states);
 
@@ -171,7 +171,15 @@ void DevicePluginEQ3::cubeConnectionStatusChanged(const bool &connected)
         if (m_cubes.contains(cube)) {
             device = m_cubes.value(cube);
             device->setName("Max! Cube " + cube->serialNumber());
+            device->setStateValue(connectionStateTypeId,true);
             emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusSuccess, QString());
+        }
+    }else{
+        MaxCube *cube = static_cast<MaxCube*>(sender());
+        Device *device;
+        if (m_cubes.contains(cube)){
+            device = m_cubes.value(cube);
+            device->setStateValue(connectionStateTypeId,true);
         }
     }
 }

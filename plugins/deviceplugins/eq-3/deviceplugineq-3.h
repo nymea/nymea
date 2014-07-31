@@ -49,7 +49,6 @@ public:
     QPair<DeviceManager::DeviceSetupStatus, QString> setupDevice(Device *device) override;
     void deviceRemoved(Device *device) override;
 
-
     void guhTimer() override;
 
 private:

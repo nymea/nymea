@@ -38,6 +38,13 @@ public:
         DeviceEcoButton = 5
     };
 
+    enum DeviceMode{
+        Auto = 0,
+        Manual = 1,
+        Temporary = 2,
+        Boost = 3
+    };
+
     int deviceType() const;
     void setDeviceType(const int &deviceType);
 

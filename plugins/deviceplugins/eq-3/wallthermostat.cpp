@@ -16,119 +16,149 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "livemessage.h"
+#include "wallthermostat.h"
 
-LiveMessage::LiveMessage(QObject *parent) :
-    QObject(parent)
+WallThermostat::WallThermostat(QObject *parent) :
+    MaxDevice(parent)
 {
 }
 
-QByteArray LiveMessage::rfAddress() const
+double WallThermostat::confortTemp() const
 {
-    return m_rfAddress;
+    return m_confortTemp;
 }
 
-void LiveMessage::setRfAddress(const QByteArray &rfAddress)
+void WallThermostat::setConfortTemp(const double &confortTemp)
 {
-    m_rfAddress = rfAddress;
+    m_confortTemp = confortTemp;
 }
 
-bool LiveMessage::informationValid() const
+double WallThermostat::ecoTemp() const
+{
+    return m_ecoTemp;
+}
+
+void WallThermostat::setEcoTemp(const double &ecoTemp)
+{
+    m_ecoTemp = ecoTemp;
+}
+
+double WallThermostat::maxSetPointTemp() const
+{
+    return m_maxSetPointTemp;
+}
+
+void WallThermostat::setMaxSetPointTemp(const double &maxSetPointTemp)
+{
+    m_maxSetPointTemp = maxSetPointTemp;
+}
+
+double WallThermostat::minSetPointTemp() const
+{
+    return m_minSetPointTemp;
+}
+
+void WallThermostat::setMinSetPointTemp(const double &minSetPointTemp)
+{
+    m_minSetPointTemp = minSetPointTemp;
+}
+
+bool WallThermostat::informationValid() const
 {
     return m_informationValid;
 }
 
-void LiveMessage::setInformationValid(const bool &informationValid)
+void WallThermostat::setInformationValid(const bool &informationValid)
 {
     m_informationValid = informationValid;
 }
 
-bool LiveMessage::errorOccured() const
+bool WallThermostat::errorOccured() const
 {
     return m_errorOccured;
 }
 
-void LiveMessage::setErrorOccured(const bool &errorOccured)
+void WallThermostat::setErrorOccured(const bool &errorOccured)
 {
     m_errorOccured = errorOccured;
 }
 
-bool LiveMessage::isAnswereToCommand() const
+bool WallThermostat::isAnswereToCommand() const
 {
     return m_isAnswerToCommand;
 }
 
-void LiveMessage::setIsAnswereToCommand(const bool &isAnswereToCommand)
+void WallThermostat::setIsAnswereToCommand(const bool &isAnswereToCommand)
 {
     m_isAnswerToCommand = isAnswereToCommand;
 }
 
-bool LiveMessage::initialized() const
+bool WallThermostat::initialized() const
 {
     return m_initialized;
 }
 
-void LiveMessage::setInitialized(const bool &initialized)
+void WallThermostat::setInitialized(const bool &initialized)
 {
     m_initialized = initialized;
 }
 
-bool LiveMessage::batteryLow() const
+bool WallThermostat::batteryLow() const
 {
     return m_batteryLow;
 }
 
-void LiveMessage::setBatteryLow(const bool &batteryLow)
+void WallThermostat::setBatteryLow(const bool &batteryLow)
 {
     m_batteryLow = batteryLow;
 }
 
-bool LiveMessage::linkStatusOK() const
+bool WallThermostat::linkStatusOK() const
 {
     return m_linkStatusOK;
 }
 
-void LiveMessage::setLinkStatusOK(const bool &linkStatusOK)
+void WallThermostat::setLinkStatusOK(const bool &linkStatusOK)
 {
     m_linkStatusOK = linkStatusOK;
 }
 
-bool LiveMessage::panelLocked() const
+bool WallThermostat::panelLocked() const
 {
     return m_panelLocked;
 }
 
-void LiveMessage::setPanelLocked(const bool &panelLocked)
+void WallThermostat::setPanelLocked(const bool &panelLocked)
 {
     m_panelLocked = panelLocked;
 }
 
-bool LiveMessage::gatewayKnown() const
+bool WallThermostat::gatewayKnown() const
 {
     return m_gatewayKnown;
 }
 
-void LiveMessage::setGatewayKnown(const bool &gatewayKnown)
+void WallThermostat::setGatewayKnown(const bool &gatewayKnown)
 {
     m_gatewayKnown = gatewayKnown;
 }
 
-bool LiveMessage::dtsActive() const
+bool WallThermostat::dtsActive() const
 {
     return m_dtsActive;
 }
 
-void LiveMessage::setDtsActive(const bool &dtsActive)
+void WallThermostat::setDtsActive(const bool &dtsActive)
 {
     m_dtsActive = dtsActive;
 }
 
-int LiveMessage::deviceMode() const
+int WallThermostat::deviceMode() const
 {
     return m_deviceMode;
 }
 
-void LiveMessage::setDeviceMode(const int &deviceMode)
+void WallThermostat::setDeviceMode(const int &deviceMode)
 {
     m_deviceMode = deviceMode;
 
@@ -149,40 +179,29 @@ void LiveMessage::setDeviceMode(const int &deviceMode)
         m_deviceModeString = "-";
         break;
     }
-
 }
 
-QString LiveMessage::deviceModeString() const
+QString WallThermostat::deviceModeString() const
 {
     return m_deviceModeString;
 }
 
-int LiveMessage::valvePosition() const
-{
-    return m_valvePosition;
-}
-
-void LiveMessage::setValvePosition(const int &valvePosition)
-{
-    m_valvePosition = valvePosition;
-}
-
-double LiveMessage::setpointTemperature() const
+double WallThermostat::setpointTemperature() const
 {
     return m_setpointTemperature;
 }
 
-void LiveMessage::setSetpointTemperatre(const double &setpointTemperature)
+void WallThermostat::setSetpointTemperatre(const double &setpointTemperature)
 {
     m_setpointTemperature = setpointTemperature;
 }
 
-QDateTime LiveMessage::dateTime() const
+double WallThermostat::currentTemperature() const
 {
-    return m_dateTime;
+    return m_currentTemperature;
 }
 
-void LiveMessage::setDateTime(const QDateTime dateTime)
+void WallThermostat::setCurrentTemperatre(const double &currentTemperature)
 {
-    m_dateTime = dateTime;
+    m_currentTemperature = currentTemperature;
 }

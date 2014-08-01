@@ -26,6 +26,7 @@ MaxCube::MaxCube(QObject *parent, QString serialNumber, QHostAddress hostAdress,
 
     connect(this,SIGNAL(connected()),this,SLOT(connected()));
     connect(this,SIGNAL(disconnected()),this,SLOT(disconnected()));
+
     connect(this,SIGNAL(readyRead()),this,SLOT(readData()));
     connect(this,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(error(QAbstractSocket::SocketError)));
 
@@ -82,26 +83,6 @@ void MaxCube::setPort(const quint16 &port)
     m_port = port;
 }
 
-QByteArray MaxCube::httpConnectionId() const
-{
-    return m_httpConnectionId;
-}
-
-void MaxCube::setHttpConnectionId(const QByteArray &httpConnectionId)
-{
-    m_httpConnectionId = httpConnectionId;
-}
-
-int MaxCube::freeMemorySlots() const
-{
-    return m_freeMemorySlots;
-}
-
-void MaxCube::setFreeMemorySlots(const int &freeMemorySlots)
-{
-    m_freeMemorySlots = freeMemorySlots;
-}
-
 QDateTime MaxCube::cubeDateTime() const
 {
     return m_cubeDateTime;
@@ -117,9 +98,14 @@ bool MaxCube::portalEnabeld() const
     return m_portalEnabeld;
 }
 
-QList<MaxDevice *> MaxCube::deviceList()
+QList<WallThermostat *> MaxCube::wallThermostatList()
 {
-    return m_deviceList;
+    return m_wallThermostatList;
+}
+
+QList<RadiatorThermostat *> MaxCube::radiatorThermostatList()
+{
+    return m_radiatorThermostatList;
 }
 
 QList<Room *> MaxCube::roomList()
@@ -153,28 +139,25 @@ void MaxCube::decodeHelloMessage(QByteArray data)
     m_rfAddress = list.at(1);
     m_firmware = list.at(2).toInt();
 
-    qDebug() << "====================================================";
-    qDebug() << "               HELLO message:";
-    qDebug() << "====================================================";
-    qDebug() << "           serial number | " << list.at(0);
-    qDebug() << "        RF address (hex) | " << list.at(1);
-    qDebug() << "                firmware | " << QString::number(list.at(2).toInt());
-    qDebug() << "      HTTP connection id | " << list.at(4);
-    qDebug() << "        duty cycle (hex) | " << list.at(5);
-    qDebug() << " free memory slots (hex) | " << list.at(6);
-    qDebug() << "               Cube date | " << m_cubeDateTime.date().toString("dd.MM.yyyy");
-    qDebug() << "               Cube time | " << m_cubeDateTime.time().toString("HH:mm");
-    qDebug() << "         State Cube Time | " << list.at(9);
-    qDebug() << "             NTP counter | " << list.at(10);
+//    qDebug() << "====================================================";
+//    qDebug() << "               HELLO message:";
+//    qDebug() << "====================================================";
+//    qDebug() << "           serial number | " << m_serialNumber;
+//    qDebug() << "        RF address (hex) | " << m_rfAddress;
+//    qDebug() << "                firmware | " << m_firmware;
+//    qDebug() << "               Cube date | " << m_cubeDateTime.date().toString("dd.MM.yyyy");
+//    qDebug() << "               Cube time | " << m_cubeDateTime.time().toString("HH:mm");
+//    qDebug() << "         State Cube Time | " << list.at(9);
+//    qDebug() << "             NTP counter | " << list.at(10);
 }
 
 void MaxCube::decodeMetadataMessage(QByteArray data)
 {
     QList<QByteArray> list = data.left(data.length()-2).split(',');
     QByteArray dataDecoded = QByteArray::fromBase64(list.at(2));
-    qDebug() << "====================================================";
-    qDebug() << "               METADATA message:";
-    qDebug() << "====================================================";
+//    qDebug() << "====================================================";
+//    qDebug() << "               METADATA message:";
+//    qDebug() << "====================================================";
 
     // parse room list
     int roomCount = dataDecoded.toHex().mid(4,2).toInt(0,16);
@@ -191,58 +174,89 @@ void MaxCube::decodeMetadataMessage(QByteArray data)
         m_roomList.append(room);
         roomRawData = roomRawData.right(roomRawData.length() - ((roomNameLength*2) + 10));
     }
-    qDebug() << "-------------------------|-------------------------";
-    qDebug() << "found " << m_roomList.count() << "rooms";
-    qDebug() << "-------------------------|-------------------------";
+//    qDebug() << "-------------------------|-------------------------";
+//    qDebug() << "found " << m_roomList.count() << "rooms";
+//    qDebug() << "-------------------------|-------------------------";
 
-    foreach (Room *room, m_roomList) {
-        qDebug() << "               Room Name | " << room->roomName();
-        qDebug() << "                 Room ID | " << room->roomId();
-        qDebug() << "        Group RF Address | " << room->groupRfAddress();
-        qDebug() << "-------------------------|-------------------------";
-    }
+//    foreach (Room *room, m_roomList) {
+//        qDebug() << "               Room Name | " << room->roomName();
+//        qDebug() << "                 Room ID | " << room->roomId();
+//        qDebug() << "        Group RF Address | " << room->groupRfAddress();
+//        qDebug() << "-------------------------|-------------------------";
+//    }
 
     // parse device list
     int deviceCount = roomRawData.left(2).toInt(0,16);
     QByteArray deviceRawData = roomRawData.right(roomRawData.length() - 2);
 
+//    qDebug() << "-------------------------|-------------------------";
+//    qDebug() << "found " << deviceCount << "devices";
+//    qDebug() << "-------------------------|-------------------------";
+
     for(int i = 0; i < deviceCount; i++){
-        MaxDevice* device = new MaxDevice(this);
-        device->setDeviceType(deviceRawData.left(2).toInt(0,16));
-        device->setRfAddress(deviceRawData.mid(2,6));
-        device->setSerialNumber(QByteArray::fromHex(deviceRawData.mid(8,20)));
-        int deviceNameLenght = deviceRawData.mid(28,2).toInt(0,16);
-        device->setDeviceName(QByteArray::fromHex(deviceRawData.mid(30,deviceNameLenght*2)));
-        device->setRoomId(deviceRawData.mid(30 + deviceNameLenght*2,2).toInt(0,16));
+        int deviceType = deviceRawData.left(2).toInt(0,16);
+        switch (deviceType) {
+        case MaxDevice::DeviceRadiatorThermostat:{
+            RadiatorThermostat* device = new RadiatorThermostat(this);
+            device->setDeviceType(deviceType);
+            device->setRfAddress(deviceRawData.mid(2,6));
+            device->setSerialNumber(QByteArray::fromHex(deviceRawData.mid(8,20)));
+            int deviceNameLenght = deviceRawData.mid(28,2).toInt(0,16);
+            device->setDeviceName(QByteArray::fromHex(deviceRawData.mid(30,deviceNameLenght*2)));
+            device->setRoomId(deviceRawData.mid(30 + deviceNameLenght*2,2).toInt(0,16));
+            deviceRawData = deviceRawData.right(deviceRawData.length() - (32 + deviceNameLenght*2));
 
-        deviceRawData = deviceRawData.right(deviceRawData.length() - (32 + deviceNameLenght*2));
-        m_deviceList.append(device);
-    }
-
-    qDebug() << "-------------------------|-------------------------";
-    qDebug() << "found " << m_deviceList.count() << "devices";
-    qDebug() << "-------------------------|-------------------------";
-
-    foreach (MaxDevice *device, m_deviceList) {
-        qDebug() << "             Device Name | " << device->deviceName();
-        qDebug() << "            Serial Number| " << device->serialNumber();
-        qDebug() << "      Device Type String | " << device->deviceTypeString();
-        qDebug() << "        RF address (hex) | " << device->rfAddress();
-        qDebug() << "                 Room ID | " << device->roomId();
-        qDebug() << "-------------------------|-------------------------";
-    }
-
-    // set room data for each device
-    foreach (MaxDevice *device, m_deviceList) {
-        foreach (Room * room, m_roomList) {
-            if(device->roomId() == room->roomId()){
-                device->setRoomName(room->roomName());
+            // set room data for each device
+            foreach (Room * room, m_roomList) {
+                if(device->roomId() == room->roomId()){
+                    device->setRoomName(room->roomName());
+                }
             }
+            m_radiatorThermostatList.append(device);
+
+//            qDebug() << "             Device Name | " << device->deviceName();
+//            qDebug() << "            Serial Number| " << device->serialNumber();
+//            qDebug() << "      Device Type String | " << device->deviceTypeString();
+//            qDebug() << "        RF address (hex) | " << device->rfAddress();
+//            qDebug() << "                 Room ID | " << device->roomId();
+//            qDebug() << "               Room Name | " << device->roomName();
+//            qDebug() << "-------------------------|-------------------------";
+            break;
+        }
+        case MaxDevice::DeviceWallThermostat:{
+            WallThermostat* device = new WallThermostat(this);
+            device->setDeviceType(deviceType);
+            device->setRfAddress(deviceRawData.mid(2,6));
+            device->setSerialNumber(QByteArray::fromHex(deviceRawData.mid(8,20)));
+            int deviceNameLenght = deviceRawData.mid(28,2).toInt(0,16);
+            device->setDeviceName(QByteArray::fromHex(deviceRawData.mid(30,deviceNameLenght*2)));
+            device->setRoomId(deviceRawData.mid(30 + deviceNameLenght*2,2).toInt(0,16));
+            deviceRawData = deviceRawData.right(deviceRawData.length() - (32 + deviceNameLenght*2));
+
+            // set room data for each device
+            foreach (Room * room, m_roomList) {
+                if(device->roomId() == room->roomId()){
+                    device->setRoomName(room->roomName());
+                }
+            }
+            m_wallThermostatList.append(device);
+
+//            qDebug() << "             Device Name | " << device->deviceName();
+//            qDebug() << "            Serial Number| " << device->serialNumber();
+//            qDebug() << "      Device Type String | " << device->deviceTypeString();
+//            qDebug() << "        RF address (hex) | " << device->rfAddress();
+//            qDebug() << "                 Room ID | " << device->roomId();
+//            qDebug() << "               Room Name | " << device->roomName();
+//            qDebug() << "-------------------------|-------------------------";
+            break;
+        }
+        default:
+            break;
         }
     }
 
-    emit deviceListReady(m_deviceList);
     m_cubeInitialized = true;
+    emit deviceListsReady();
 }
 
 void MaxCube::decodeConfigMessage(QByteArray data)
@@ -253,7 +267,7 @@ void MaxCube::decodeConfigMessage(QByteArray data)
     }
     QByteArray rfAddress = list.at(0);
     QByteArray dataRaw = QByteArray::fromBase64(list.at(1)).toHex();
-    int lengthData = dataRaw.left(2).toInt(0,16);
+    //int lengthData = dataRaw.left(2).toInt(0,16);
     if(rfAddress != dataRaw.mid(2,6)){
         qDebug() << "ERROR: rf addresses not equal!";
     }
@@ -261,88 +275,95 @@ void MaxCube::decodeConfigMessage(QByteArray data)
     //QByteArray unknown = dataRaw.mid(12,6);
 
     QByteArray serialNumber = QByteArray::fromHex(dataRaw.mid(16,20));
-    qDebug() << "====================================================";
-    qDebug() << "               CONFIG message:";
-    qDebug() << "====================================================";
-    qDebug() << "           Serial Number | " << serialNumber;
-    qDebug() << "             device Type | " << deviceTypeString(deviceType);
-    qDebug() << "        RF address (hex) | " << rfAddress;
-    qDebug() << "             data length | " << lengthData;
-    qDebug() << "-------------------------|-------------------------";
+//    qDebug() << "====================================================";
+//    qDebug() << "               CONFIG message:";
+//    qDebug() << "====================================================";
+//    qDebug() << "           Serial Number | " << serialNumber;
+//    qDebug() << "             device Type | " << deviceTypeString(deviceType);
+//    qDebug() << "        RF address (hex) | " << rfAddress;
+//    qDebug() << "             data length | " << lengthData;
+//    qDebug() << "-------------------------|-------------------------";
 
     switch (deviceType) {
     case MaxDevice::DeviceCube:{
 
         m_portalEnabeld = (bool)dataRaw.mid(36,2).toInt(0,16);
 
-        qDebug() << "          portal enabled | " << m_portalEnabeld;
-        qDebug() << "              portal URL | " << QString(QByteArray::fromHex(dataRaw.mid(170,68)));
-        qDebug() << "               time zone | " << QString(QByteArray::fromHex(dataRaw.mid(428,6)));
-        qDebug() << "      summer/winter time | " << QString(QByteArray::fromHex(dataRaw.mid(452,8)));
+//        qDebug() << "          portal enabled | " << m_portalEnabeld;
+//        qDebug() << "              portal URL | " << QString(QByteArray::fromHex(dataRaw.mid(170,68)));
+//        qDebug() << "               time zone | " << QString(QByteArray::fromHex(dataRaw.mid(428,6)));
+//        qDebug() << "      summer/winter time | " << QString(QByteArray::fromHex(dataRaw.mid(452,8)));
+        emit cubeConfigReady();
         break;
     }
     case MaxDevice::DeviceRadiatorThermostat:{
-        int roomId = dataRaw.mid(10,2).toInt(0,16);
-        int firmware = dataRaw.mid(12,2).toInt(0,16);
-        double confortTemp = (double)dataRaw.mid(36,2).toInt(0,16) / 2.0;
-        double ecoTemp = (double)dataRaw.mid(38,2).toInt(0,16) / 2.0;
-        double maxSetPointTemp = (double)dataRaw.mid(40,2).toInt(0,16) / 2.0;
-        double minSetPointTemp = (double)dataRaw.mid(42,2).toInt(0,16) / 2.0;
-        double offsetTemp = (double)(dataRaw.mid(44,2).toInt(0,16) / 2.0 ) - 3.5;
-        double windowOpenTemp = (double)dataRaw.mid(46,2).toInt(0,16)/2.0;
-        int windowOpenDuration = dataRaw.mid(48,2).toInt(0,16);
-        // boost code
-        QByteArray boostDurationCode = fillBin(QByteArray::number(dataRaw.mid(50,2).toInt(0,16),2),8);
-        int boostDuration = boostDurationCode.left(3).toInt(0,2) * 5;
-        int valveValue = boostDurationCode.right(5).toInt(0,2) * 5;
+        foreach (RadiatorThermostat* device, m_radiatorThermostatList) {
+            if(device->rfAddress() == rfAddress){
 
-        // day of week an time
-        QByteArray dowTime = fillBin(QByteArray::number(dataRaw.mid(52,2).toInt(0,16),2),8);
-        QString weekDay = weekDayString(dowTime.left(3).toInt(0,2));
-        QTime time = QTime(dowTime.right(5).toInt(0,2),0);
+                //int roomId = dataRaw.mid(10,2).toInt(0,16);
+                //int firmware = dataRaw.mid(12,2).toInt(0,16);
+                device->setConfortTemp((double)dataRaw.mid(36,2).toInt(0,16) / 2.0);
+                device->setEcoTemp((double)dataRaw.mid(38,2).toInt(0,16) / 2.0);
+                device->setMaxSetPointTemp((double)dataRaw.mid(40,2).toInt(0,16) / 2.0);
+                device->setMinSetPointTemp((double)dataRaw.mid(42,2).toInt(0,16) / 2.0);
+                device->setOffsetTemp((double)(dataRaw.mid(44,2).toInt(0,16) / 2.0 ) - 3.5);
+                device->setWindowOpenTemp((double)dataRaw.mid(46,2).toInt(0,16)/2.0);
+                device->setWindowOpenDuration(dataRaw.mid(48,2).toInt(0,16));
+                // boost code
+                QByteArray boostDurationCode = fillBin(QByteArray::number(dataRaw.mid(50,2).toInt(0,16),2),8);
+                device->setBoostDuration(boostDurationCode.left(3).toInt(0,2) * 5);
+                device->setBoostValveValue(boostDurationCode.right(5).toInt(0,2) * 5);
 
-        double valveMaximumSettings = (double)dataRaw.mid(54,2).toInt(0,16)*(double)100.0/255.0;
-        double valveOffset = (double)dataRaw.mid(56,2).toInt(0,16)*100.0/255.0;
+                // day of week an time
+                QByteArray dowTime = fillBin(QByteArray::number(dataRaw.mid(52,2).toInt(0,16),2),8);
+                device->setDiscalcingWeekDay(weekDayString(dowTime.left(3).toInt(0,2)));
+                device->setDiscalcingTime(QTime(dowTime.right(5).toInt(0,2),0));
 
-        qDebug() << "                 Room ID | " << roomId;
-        qDebug() << "                firmware | " << firmware;
-        qDebug() << "           Confort Temp. | " << confortTemp << "C";
-        qDebug() << "               Eco Temp. | " << ecoTemp << "C";
-        qDebug() << "    Max. Set Point Temp. | " << maxSetPointTemp << "C";
-        qDebug() << "    Min. Set Point Temp. | " << minSetPointTemp << "C";
-        qDebug() << "            Temp. Offset | " << offsetTemp << "C";
-        qDebug() << "       Window Open Temp. | " << windowOpenTemp << "C";
-        qDebug() << "   Window Open Duration  | " << windowOpenDuration << "min";
-        qDebug() << "             Boost code  | " << boostDurationCode;
-        qDebug() << "         Boost Duration  | " << boostDuration << "min";
-        qDebug() << "             Valve value | " << valveValue << "%";
-        qDebug() << "               dow code  | " << dowTime;
-        qDebug() << "     disclaiming run day | " << weekDay;
-        qDebug() << "    disclaiming run time | " << time.toString("HH:mm");
-        qDebug() << "  Valve Maximum Settings | " << valveMaximumSettings << "%";
-        qDebug() << "            Valve Offset | " << valveOffset << "%";
-        parseWeeklyProgram(dataRaw.right(dataRaw.length() - 58));
+                device->setValveMaximumSettings((double)dataRaw.mid(54,2).toInt(0,16)*(double)100.0/255.0);
+                device->setValveOffset((double)dataRaw.mid(56,2).toInt(0,16)*100.0/255.0);
 
+//                qDebug() << "                 Room ID | " << device->roomId();
+//                qDebug() << "                firmware | " << firmware;
+//                qDebug() << "           Confort Temp. | " << device->confortTemp() << "C";
+//                qDebug() << "               Eco Temp. | " << device->ecoTemp() << "C";
+//                qDebug() << "    Max. Set Point Temp. | " << device->maxSetPointTemp() << "C";
+//                qDebug() << "    Min. Set Point Temp. | " << device->minSetPointTemp() << "C";
+//                qDebug() << "            Temp. Offset | " << device->offsetTemp() << "C";
+//                qDebug() << "       Window Open Temp. | " << device->windowOpenTemp() << "C";
+//                qDebug() << "   Window Open Duration  | " << device->windowOpenDuration() << "min";
+//                qDebug() << "         Boost Duration  | " << device->boostDuration() << "min";
+//                qDebug() << "             Valve value | " << device->boostValveValue() << "%";
+//                qDebug() << "     disclaiming run day | " << device->discalcingWeekDay();
+//                qDebug() << "    disclaiming run time | " << device->discalcingTime().toString("HH:mm");
+//                qDebug() << "  Valve Maximum Settings | " << device->valveMaximumSettings() << "%";
+//                qDebug() << "            Valve Offset | " << device->valveOffset() << "%";
+                parseWeeklyProgram(dataRaw.right(dataRaw.length() - 58));
+            }
+        }
         break;
     }
     case MaxDevice::DeviceRadiatorThermostatPlus:
         break;
     case MaxDevice::DeviceWallThermostat:{
-        int roomId = dataRaw.mid(10,2).toInt(0,16);
-        int firmware = dataRaw.mid(12,2).toInt(0,16);
-        double confortTemp = (double)dataRaw.mid(36,2).toInt(0,16) / 2.0;
-        double ecoTemp = (double)dataRaw.mid(38,2).toInt(0,16)/2.0;
-        double maxSetPointTemp = (double)dataRaw.mid(40,2).toInt(0,16)/2.0;
-        double minSetPointTemp = (double)dataRaw.mid(42,2).toInt(0,16)/2.0;
+        foreach (WallThermostat* device, m_wallThermostatList) {
+            if(device->rfAddress() == rfAddress){
+                //int roomId = dataRaw.mid(10,2).toInt(0,16);
+                //int firmware = dataRaw.mid(12,2).toInt(0,16);
+                device->setConfortTemp((double)dataRaw.mid(36,2).toInt(0,16) / 2.0);
+                device->setEcoTemp((double)dataRaw.mid(38,2).toInt(0,16)/2.0);
+                device->setMaxSetPointTemp((double)dataRaw.mid(40,2).toInt(0,16)/2.0);
+                device->setMinSetPointTemp((double)dataRaw.mid(42,2).toInt(0,16)/2.0);
 
-        qDebug() << "                 Room ID | " << roomId;
-        qDebug() << "                firmware | " << firmware;
-        qDebug() << "           Confort Temp. | " << confortTemp;
-        qDebug() << "               Eco Temp. | " << ecoTemp;
-        qDebug() << "    Max. Set Point Temp. | " << maxSetPointTemp;
-        qDebug() << "    Min. Set Point Temp. | " << minSetPointTemp;
+//                qDebug() << "                 Room ID | " << device->roomId();
+//                qDebug() << "                firmware | " << firmware;
+//                qDebug() << "           Confort Temp. | " << device->confortTemp();
+//                qDebug() << "               Eco Temp. | " << device->ecoTemp();
+//                qDebug() << "    Max. Set Point Temp. | " << device->maxSetPointTemp();
+//                qDebug() << "    Min. Set Point Temp. | " << device->minSetPointTemp();
 
-        parseWeeklyProgram(dataRaw.right(dataRaw.length() - 44));
+                parseWeeklyProgram(dataRaw.right(dataRaw.length() - 44));
+            }
+        }
         break;
     }
     case MaxDevice::DeviceEcoButton:
@@ -357,136 +378,121 @@ void MaxCube::decodeConfigMessage(QByteArray data)
 
 void MaxCube::decodeDevicelistMessage(QByteArray data)
 {
-    qDebug() << "====================================================";
-    qDebug() << "               LIVE message:";
-    qDebug() << "====================================================";
-    //qDebug() << data;
-    QByteArray rawDataAll = QByteArray::fromBase64(data).toHex();
-    qDebug() << rawDataAll;
+//    qDebug() << "====================================================";
+//    qDebug() << "               LIVE message:";
+//    qDebug() << "====================================================";
 
+    QByteArray rawDataAll = QByteArray::fromBase64(data).toHex();
     QList<QByteArray> deviceMessageList = splitMessage(rawDataAll);
 
     foreach (QByteArray rawData, deviceMessageList) {
 
-        LiveMessage message;
-        message.setRfAddress(rawData.mid(0,6));
+        QByteArray rfAddress = rawData.mid(0,6);
+        int deviceType = deviceTypeFromRFAddress(rfAddress);
 
-        MaxDevice *device = getDeviceTypeFromRFAddress(message.rfAddress());
-
-        switch (device->deviceType()) {
+        switch (deviceType) {
         case MaxDevice::DeviceWallThermostat:{
-            QByteArray unknown = rawData.mid(6,2);
+            foreach (WallThermostat* device, m_wallThermostatList) {
+                if(device->rfAddress() == rfAddress){
 
-            QByteArray initCode = fillBin(QByteArray::number(rawData.mid(8,2).toInt(0,16),2),8);
-            message.setInformationValid((bool)initCode.mid(3,1).toInt());
-            message.setErrorOccured((bool)initCode.mid(4,1).toInt());
-            message.setIsAnswereToCommand((bool)initCode.mid(5,1).toInt());
-            message.setInitialized((bool)initCode.mid(6,1).toInt());
+                    // init/valid code
+                    QByteArray initCode = fillBin(QByteArray::number(rawData.mid(8,2).toInt(0,16),2),8);
+                    device->setInformationValid((bool)initCode.mid(3,1).toInt());
+                    device->setErrorOccured((bool)initCode.mid(4,1).toInt());
+                    device->setIsAnswereToCommand((bool)initCode.mid(5,1).toInt());
+                    device->setInitialized((bool)initCode.mid(6,1).toInt());
 
-            QByteArray statusCode = fillBin(QByteArray::number(rawData.mid(10,2).toInt(0,16),2),8);
-            message.setBatteryLow((bool)statusCode.mid(0,1).toInt());
-            message.setLinkStatusOK(!(bool)statusCode.mid(1,1).toInt());
-            message.setPanelLocked((bool)statusCode.mid(2,1).toInt());
-            message.setGatewayKnown((bool)statusCode.mid(3,1).toInt());
-            message.setDtsActive((bool)statusCode.mid(4,1).toInt());
-            message.setDeviceMode(statusCode.right(2).toInt(0,2));
+                    // status code
+                    QByteArray statusCode = fillBin(QByteArray::number(rawData.mid(10,2).toInt(0,16),2),8);
+                    device->setBatteryLow((bool)statusCode.mid(0,1).toInt());
+                    device->setLinkStatusOK(!(bool)statusCode.mid(1,1).toInt());
+                    device->setPanelLocked((bool)statusCode.mid(2,1).toInt());
+                    device->setGatewayKnown((bool)statusCode.mid(3,1).toInt());
+                    device->setDtsActive((bool)statusCode.mid(4,1).toInt());
+                    device->setDeviceMode(statusCode.right(2).toInt(0,2));
 
-            message.setValvePosition((double)rawData.mid(12,2).toInt(0,16));
+                    // calculate current temperature and setpoint temperature
+                    QByteArray tempCode = fillBin(QByteArray::number(rawData.mid(14,2).toInt(0,16),2),8);
+                    device->setSetpointTemperatre((double)tempCode.right(6).toInt(0,2) / 2.0);
+                    if(tempCode.left(2) == "10"){
+                        device->setCurrentTemperatre(((double)rawData.right(2).toInt(0,16) / 10.0) + 25.6);
+                    }else{
+                        device->setCurrentTemperatre((double)rawData.right(2).toInt(0,16) / 10.0);
+                    }
 
-            // calculate current temperature and setpoint temperature
-            // 00     00 00 00
-            // 10
-            QByteArray tempCode = fillBin(QByteArray::number(rawData.mid(14,2).toInt(0,16),2),8);
-            message.setSetpointTemperatre((double)tempCode.right(6).toInt(0,2) / 2.0);
-            double currentTemperature;
-            if(tempCode.left(2) == "10"){
-                currentTemperature = ((double)rawData.right(2).toInt(0,16) / 10.0) + 25.6;
-            }else{
-                currentTemperature = (double)rawData.right(2).toInt(0,16) / 10.0;
+//                    qDebug() << "                raw data | " << rawData;
+//                    qDebug() << "             device type | " << device->deviceTypeString();
+//                    qDebug() << "             device name | " << device->deviceName();
+//                    qDebug() << "        RF address (hex) | " << device->rfAddress();
+//                    qDebug() << "                initCode | " << initCode;
+//                    qDebug() << "       information valid | " << device->informationValid();
+//                    qDebug() << "           error occured | " << device->errorOccured();
+//                    qDebug() << " is answere to a command | " << device->isAnswereToCommand();
+//                    qDebug() << "             initialized | " << device->initialized();
+//                    qDebug() << "             battery low | " << device->batteryLow();
+//                    qDebug() << "          link status OK | " << device->linkStatusOK();
+//                    qDebug() << "            panel locked | " << device->panelLocked();
+//                    qDebug() << "           gateway known | " << device->gatewayKnown();
+//                    qDebug() << "     DST settings active | " << device->dtsActive();
+//                    qDebug() << "             device mode | " << device->deviceModeString();
+//                    qDebug() << "     Temperatur Setpoint | " << device->setpointTemperature();
+//                    qDebug() << "            Current Temp | " << device->currentTemperature();
+//                    qDebug() << "-------------------------|-------------------------";
+                }
             }
-
-            qDebug() << "                raw data | " << rawData;
-            qDebug() << "             device type | " << device->deviceTypeString();
-            qDebug() << "             device name | " << device->deviceName();
-            qDebug() << "        RF address (hex) | " << message.rfAddress();
-            qDebug() << "                 unknown | " << unknown;
-            qDebug() << "                initCode | " << initCode;
-            qDebug() << "       information valid | " << message.informationValid();
-            qDebug() << "           error occured | " << message.errorOccured();
-            qDebug() << " is answere to a command | " << message.isAnswereToCommand();
-            qDebug() << "             initialized | " << message.initialized();
-            qDebug() << "              statusCode | " << statusCode;
-            qDebug() << "             battery low | " << message.batteryLow();
-            qDebug() << "          link status OK | " << message.linkStatusOK();
-            qDebug() << "            panel locked | " << message.panelLocked();
-            qDebug() << "           gateway known | " << message.gatewayKnown();
-            qDebug() << "     DST settings active | " << message.dtsActive();
-            qDebug() << "             device mode | " << message.deviceModeString();
-            qDebug() << "               temp Code | " << tempCode;
-            qDebug() << "     Temperatur Setpoint | " << message.setpointTemperature();
-            qDebug() << "            Current Temp | " << currentTemperature;
-            qDebug() << "                 unknown | " << rawData.right(rawData.length() - 12);
-            qDebug() << "-------------------------|-------------------------";
-
-
-
-            emit liveMessageReady(message);
             break;
         }
         case MaxDevice::DeviceRadiatorThermostat:{
-            QByteArray unknown = rawData.mid(6,2);
+            foreach (RadiatorThermostat* device, m_radiatorThermostatList) {
+                if(device->rfAddress() == rfAddress){
 
-            QByteArray initCode = fillBin(QByteArray::number(rawData.mid(8,2).toInt(0,16),2),8);
-            message.setInformationValid((bool)initCode.mid(3,1).toInt());
-            message.setErrorOccured((bool)initCode.mid(4,1).toInt());
-            message.setIsAnswereToCommand((bool)initCode.mid(5,1).toInt());
-            message.setInitialized((bool)initCode.mid(6,1).toInt());
+                    QByteArray initCode = fillBin(QByteArray::number(rawData.mid(8,2).toInt(0,16),2),8);
+                    device->setInformationValid((bool)initCode.mid(3,1).toInt());
+                    device->setErrorOccured((bool)initCode.mid(4,1).toInt());
+                    device->setIsAnswereToCommand((bool)initCode.mid(5,1).toInt());
+                    device->setInitialized((bool)initCode.mid(6,1).toInt());
 
-            QByteArray statusCode = fillBin(QByteArray::number(rawData.mid(10,2).toInt(0,16),2),8);
-            message.setBatteryLow((bool)statusCode.mid(0,1).toInt());
-            message.setLinkStatusOK(!(bool)statusCode.mid(1,1).toInt());
-            message.setPanelLocked((bool)statusCode.mid(2,1).toInt());
-            message.setGatewayKnown((bool)statusCode.mid(3,1).toInt());
-            message.setDtsActive((bool)statusCode.mid(4,1).toInt());
-            message.setDeviceMode(statusCode.right(2).toInt(0,2));
+                    QByteArray statusCode = fillBin(QByteArray::number(rawData.mid(10,2).toInt(0,16),2),8);
+                    device->setBatteryLow((bool)statusCode.mid(0,1).toInt());
+                    device->setLinkStatusOK(!(bool)statusCode.mid(1,1).toInt());
+                    device->setPanelLocked((bool)statusCode.mid(2,1).toInt());
+                    device->setGatewayKnown((bool)statusCode.mid(3,1).toInt());
+                    device->setDtsActive((bool)statusCode.mid(4,1).toInt());
+                    device->setDeviceMode(statusCode.right(2).toInt(0,2));
 
-            message.setValvePosition((double)rawData.mid(12,2).toInt(0,16));
-            message.setSetpointTemperatre((double)rawData.mid(14,2).toInt(0,16)/ 2.0);
-            message.setDateTime(calculateDateTime(rawData.mid(18,4), rawData.mid(22,2)));
+                    device->setValvePosition((double)rawData.mid(12,2).toInt(0,16));
+                    device->setSetpointTemperatre((double)rawData.mid(14,2).toInt(0,16)/ 2.0);
 
-            qDebug() << "                raw data | " << rawData;
-            qDebug() << "             device type | " << device->deviceTypeString();
-            qDebug() << "             device name | " << device->deviceName();
-            qDebug() << "        RF address (hex) | " << message.rfAddress();
-            qDebug() << "                 unknown | " << unknown;
-            qDebug() << "       information valid | " << message.informationValid();
-            qDebug() << "           error occured | " << message.errorOccured();
-            qDebug() << " is answere to a command | " << message.isAnswereToCommand();
-            qDebug() << "             initialized | " << message.initialized();
-            qDebug() << "             battery low | " << message.batteryLow();
-            qDebug() << "          link status OK | " << message.linkStatusOK();
-            qDebug() << "            panel locked | " << message.panelLocked();
-            qDebug() << "           gateway known | " << message.gatewayKnown();
-            qDebug() << "     DST settings active | " << message.dtsActive();
-            qDebug() << "             device mode | " << message.deviceModeString();
-            qDebug() << "          valve position | " << message.valvePosition() << "%";
-            qDebug() << "     Temperatur Setpoint | " << message.setpointTemperature() << " deg C";
-            qDebug() << "                 unknown | " << rawData.right(rawData.length() - 12);
-            qDebug() << "-------------------------|-------------------------";
-
-            emit liveMessageReady(message);
+//                    qDebug() << "             device type | " << device->deviceTypeString();
+//                    qDebug() << "             device name | " << device->deviceName();
+//                    qDebug() << "        RF address (hex) | " << device->rfAddress();
+//                    qDebug() << "       information valid | " << device->informationValid();
+//                    qDebug() << "           error occured | " << device->errorOccured();
+//                    qDebug() << " is answere to a command | " << device->isAnswereToCommand();
+//                    qDebug() << "             initialized | " << device->initialized();
+//                    qDebug() << "             battery low | " << device->batteryLow();
+//                    qDebug() << "          link status OK | " << device->linkStatusOK();
+//                    qDebug() << "            panel locked | " << device->panelLocked();
+//                    qDebug() << "           gateway known | " << device->gatewayKnown();
+//                    qDebug() << "     DST settings active | " << device->dtsActive();
+//                    qDebug() << "             device mode | " << device->deviceModeString();
+//                    qDebug() << "          valve position | " << device->valvePosition() << "%";
+//                    qDebug() << "     Temperatur Setpoint | " << device->setpointTemperature() << " deg C";
+//                    qDebug() << "-------------------------|-------------------------";
+                }
+            }
             break;
         }
         case MaxDevice::DeviceWindowContact:{
             QByteArray windowOpenRawData = fillBin(QByteArray::number(rawData.mid(10,2).toInt(0,16),2),8);
-            bool windowOpen = (bool)windowOpenRawData.mid(5,1).toInt();
+            //bool windowOpen = (bool)windowOpenRawData.mid(5,1).toInt();
 
-            qDebug() << "                raw data | " << rawData;
-            qDebug() << "             device type | " << device->deviceTypeString();
-            qDebug() << "             device name | " << device->deviceName();
-            qDebug() << "        RF address (hex) | " << message.rfAddress();
-            qDebug() << "        window open code | " << windowOpenRawData;
-            qDebug() << "             window open | " << windowOpen;
+//            qDebug() << "                raw data | " << rawData;
+//            qDebug() << "        device type name | " << "Window Contact";
+//            qDebug() << "        RF address (hex) | " << rfAddress;
+//            qDebug() << "        window open code | " << windowOpenRawData;
+//            qDebug() << "             window open | " << windowOpen;
+//            qDebug() << "-------------------------|-------------------------";
             break;
         }
         default:
@@ -502,18 +508,16 @@ void MaxCube::parseWeeklyProgram(QByteArray data)
         //qDebug() << weekDayString(i);
         for(int i = 0; i < 52; i+=4){
             QByteArray element = fillBin(QByteArray::number(dayData.mid(i,4).toInt(0,16),2),16);
-            int minutes = element.right(9).toInt(0,2) * 5;
-            int hours = (minutes / 60) % 24;
-            minutes = minutes % 60;
-            QTime time = QTime(hours,minutes);
+            //int minutes = element.right(9).toInt(0,2) * 5;
+            //int hours = (minutes / 60) % 24;
+            //minutes = minutes % 60;
+            //QTime time = QTime(hours,minutes);
             //qDebug() << (double)element.left(7).toInt(0,2) / 2 << "\t" << "deg. until" << "\t" << time.toString("HH:mm");
         }
-
-
         data = data.right(data.length() - 52);
     }
     if(!data.isEmpty()){
-        qDebug() << "                       ? | " << data;
+        //qDebug() << "                       ? | " << data;
     }
 }
 
@@ -523,10 +527,10 @@ void MaxCube::decodeNewDeviceFoundMessage(QByteArray data)
         return;
     }
 
-    qDebug() << "====================================================";
-    qDebug() << "               NEW DEVICE message:";
-    qDebug() << "====================================================";
-    qDebug() << "           Serial Number | " << QByteArray::fromBase64(data);
+//    qDebug() << "====================================================";
+//    qDebug() << "               NEW DEVICE message:";
+//    qDebug() << "====================================================";
+//    qDebug() << "           Serial Number | " << QByteArray::fromBase64(data);
 
 }
 
@@ -623,31 +627,41 @@ QList<QByteArray> MaxCube::splitMessage(QByteArray data)
         messageList.append(data.mid(2,length));
         data = data.right(data.length() - (length+2));
     }
-    qDebug() << messageList;
+    //qDebug() << messageList;
     return messageList;
 }
 
-MaxDevice *MaxCube::getDeviceTypeFromRFAddress(QByteArray rfAddress)
+int MaxCube::deviceTypeFromRFAddress(QByteArray rfAddress)
 {
-    foreach (MaxDevice *device, m_deviceList){
+    foreach (WallThermostat* device, m_wallThermostatList) {
         if(device->rfAddress() == rfAddress){
-            return device;
+            return device->deviceType();
         }
     }
-    return NULL;
+
+    foreach (RadiatorThermostat* device, m_radiatorThermostatList) {
+        if(device->rfAddress() == rfAddress){
+            return device->deviceType();
+        }
+    }
+    return -1;
 }
 
-void MaxCube::connected()
+void MaxCube::connectionStateChanged(const QAbstractSocket::SocketState &socketState)
 {
-    qDebug() << "-> connected to cube " << m_serialNumber << m_hostAddress.toString();
-    emit cubeConnectionStatusChanged(true);
-}
-
-void MaxCube::disconnected()
-{
-    m_cubeInitialized = false;
-    qDebug() << "-> disconnected from cube " << m_serialNumber << m_hostAddress.toString();
-    emit cubeConnectionStatusChanged(false);
+    switch (socketState) {
+    case QAbstractSocket::ConnectedState:
+        qDebug() << "-> connected to cube " << m_serialNumber << m_hostAddress.toString();
+        emit cubeConnectionStatusChanged(true);
+        break;
+    case QAbstractSocket::UnconnectedState:
+        m_cubeInitialized = false;
+        qDebug() << "-> disconnected from cube " << m_serialNumber << m_hostAddress.toString();
+        emit cubeConnectionStatusChanged(false);
+        break;
+    default:
+        break;
+    }
 }
 
 void MaxCube::error(QAbstractSocket::SocketError error)

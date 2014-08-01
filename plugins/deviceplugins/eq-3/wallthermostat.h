@@ -16,27 +16,29 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef LIVEMESSAGE_H
-#define LIVEMESSAGE_H
+#ifndef WALLTHERMOSTAT_H
+#define WALLTHERMOSTAT_H
 
 #include <QObject>
-#include <QDateTime>
+#include "maxdevice.h"
 
-class LiveMessage : public QObject
+class WallThermostat : public MaxDevice
 {
     Q_OBJECT
 public:
-    explicit LiveMessage(QObject *parent = 0);
+    explicit WallThermostat(QObject *parent = 0);
 
-    enum DeviceMode{
-        Auto = 0,
-        Manual = 1,
-        Temporary = 2,
-        Boost = 3
-    };
+    double confortTemp() const;
+    void setConfortTemp(const double &confortTemp);
 
-    QByteArray rfAddress() const;
-    void setRfAddress(const QByteArray & rfAddress);
+    double ecoTemp() const;
+    void setEcoTemp(const double &ecoTemp);
+
+    double maxSetPointTemp() const;
+    void setMaxSetPointTemp(const double &maxSetPointTemp);
+
+    double minSetPointTemp() const;
+    void setMinSetPointTemp(const double &minSetPointTemp);
 
     bool informationValid() const;
     void setInformationValid(const bool &informationValid);
@@ -76,13 +78,15 @@ public:
     double setpointTemperature() const;
     void setSetpointTemperatre(const double &setpointTemperature);
 
-    QDateTime dateTime() const;
-    void setDateTime(const QDateTime dateTime);
-
+    double currentTemperature() const;
+    void setCurrentTemperatre(const double &currentTemperature);
 
 private:
+    double m_confortTemp;
+    double m_ecoTemp;
+    double m_maxSetPointTemp;
+    double m_minSetPointTemp;
 
-    QByteArray m_rfAddress;
     bool m_informationValid;
     bool m_errorOccured;
     bool m_isAnswerToCommand;
@@ -96,7 +100,7 @@ private:
     QString m_deviceModeString;
     int m_valvePosition;
     double m_setpointTemperature;
-    QDateTime m_dateTime;
+    double m_currentTemperature;
 
 signals:
 
@@ -104,4 +108,4 @@ public slots:
 
 };
 
-#endif // LIVEMESSAGE_H
+#endif // WALLTHERMOSTAT_H

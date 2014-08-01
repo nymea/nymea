@@ -10,7 +10,8 @@ SOURCES += \
     maxcube.cpp             \
     maxdevice.cpp           \
     room.cpp \
-    livemessage.cpp
+    wallthermostat.cpp \
+    radiatorthermostat.cpp
 
 HEADERS += \
     deviceplugineq-3.h      \
@@ -18,5 +19,6 @@ HEADERS += \
     maxcube.h               \
     maxdevice.h             \
     room.h \
-    livemessage.h
+    wallthermostat.h \
+    radiatorthermostat.h
 

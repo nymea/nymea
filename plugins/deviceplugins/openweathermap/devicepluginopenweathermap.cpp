@@ -307,7 +307,7 @@ DevicePluginOpenweathermap::DevicePluginOpenweathermap()
 QList<Vendor> DevicePluginOpenweathermap::supportedVendors() const
 {
     QList<Vendor> ret;
-    Vendor openweathermap(openweathermapVendorId, "openweathermap");
+    Vendor openweathermap(openweathermapVendorId, "Openweathermap");
     ret.append(openweathermap);
     return ret;
 }
@@ -521,7 +521,6 @@ void DevicePluginOpenweathermap::weatherDataReady(const QByteArray &data)
 
     foreach (Device *device, deviceManager()->findConfiguredDevices(openweathermapDeviceClassId)) {
         if(device->paramValue("id").toString() == dataMap.value("id").toString()){
-            device->setName("Weather from openweathermap.org for " + device->paramValue("location").toString());
 
             if(dataMap.contains("clouds")){
                 int cloudiness = dataMap.value("clouds").toMap().value("all").toInt();

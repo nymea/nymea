@@ -28,6 +28,7 @@
 #include "room.h"
 #include "wallthermostat.h"
 #include "radiatorthermostat.h"
+#include "plugin/deviceplugin.h"
 
 class MaxCube : public QTcpSocket
 {
@@ -75,6 +76,8 @@ public:
     void disconnectFromCube();
     bool sendData(QByteArray data);
 
+    bool isConnected();
+    bool isInitialized();
 
 private:
     // cube data
@@ -96,6 +99,7 @@ private:
     void decodeMetadataMessage(QByteArray data);
     void decodeConfigMessage(QByteArray data);
     void decodeDevicelistMessage(QByteArray data);
+    void decodeCommandMessage(QByteArray data);
     void parseWeeklyProgram(QByteArray data);
     void decodeNewDeviceFoundMessage(QByteArray data);
 
@@ -107,16 +111,22 @@ private:
     QList<QByteArray> splitMessage(QByteArray data);
     int deviceTypeFromRFAddress(QByteArray rfAddress);
 
+    ActionId m_actionId;
+
 signals:
     void cubeDataAvailable(const QByteArray &data);
     void cubeACK();
     void cubeConnectionStatusChanged(const bool &connected);
 
     // when things are parsed
-    void deviceListsReady();
     void cubeConfigReady();
-    void wallThermostatConfigReady();
-    void radiatorThermostatConfigReady();
+    void wallThermostatFound();
+    void radiatorThermostatFound();
+
+    void wallThermostatDataUpdated();
+    void radiatorThermostatDataUpdated();
+
+    void commandActionFinished(const bool &succeeded, const ActionId &actionId);
 
 private slots:
     void connectionStateChanged(const QAbstractSocket::SocketState &socketState);
@@ -130,6 +140,13 @@ public slots:
     void disablePairingMode();
     void refresh();
     void customRequest(QByteArray data);
+
+    // for actions
+    void setDeviceSetpointTemp(QByteArray rfAddress, int roomId, double temperature, ActionId actionId);
+    void setDeviceAutoMode(QByteArray rfAddress, int roomId, ActionId actionId);
+    void setDeviceManuelMode(QByteArray rfAddress, int roomId, ActionId actionId);
+    void setDeviceEcoMode(QByteArray rfAddress, int roomId, ActionId actionId);
+    void displayCurrentTemperature(QByteArray rfAddress, int roomId, bool display, ActionId actionId);
 
 };
 

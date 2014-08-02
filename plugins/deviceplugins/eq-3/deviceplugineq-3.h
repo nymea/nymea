@@ -46,9 +46,10 @@ public:
     QList<ParamType> configurationDescription() const override;
     QPair<DeviceManager::DeviceError, QString> discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
 
+    void startMonitoringAutoDevices() override;
+
     QPair<DeviceManager::DeviceSetupStatus, QString> setupDevice(Device *device) override;
     void deviceRemoved(Device *device) override;
-
     void guhTimer() override;
 
 private:
@@ -56,14 +57,20 @@ private:
     MaxCubeDiscovery *m_cubeDiscovery;
     QHash<MaxCube*, Device*> m_cubes;
 
-
 public slots:
     QPair<DeviceManager::DeviceError, QString> executeAction(Device *device, const Action &action);
-    void cubeConnectionStatusChanged(const bool &connected);
 
 private slots:
+    void cubeConnectionStatusChanged(const bool &connected);
     void discoveryDone(const QList<MaxCube *> &cubeList);
+    void commandActionFinished(const bool &succeeded, const ActionId &actionId);
 
+    void wallThermostatFound();
+    void radiatorThermostatFound();
+
+    void updateCubeConfig();
+    void wallThermostatDataUpdated();
+    void radiatorThermostatDataUpdated();
 
 };
 

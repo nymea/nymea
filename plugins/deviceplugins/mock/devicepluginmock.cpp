@@ -265,6 +265,12 @@ void DevicePluginMock::deviceRemoved(Device *device)
 
 void DevicePluginMock::startMonitoringAutoDevices()
 {
+    foreach (Device *device, myDevices()) {
+        if (device->deviceClassId() == mockDeviceAutoClassId) {
+            return; // We already have a Auto Mock device... do nothing.
+        }
+    }
+
     DeviceDescriptor mockDescriptor(mockDeviceAutoClassId, "Mock Device (Auto created)");
 
     ParamList params;

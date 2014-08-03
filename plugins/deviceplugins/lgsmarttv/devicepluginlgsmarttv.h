@@ -16,35 +16,45 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <QCoreApplication>
-#include <guhcore.h>
+#ifndef DEVICEPLUGINLGSMARTTV_H
+#define DEVICEPLUGINLGSMARTTV_H
 
-#include <QtPlugin>
+#include "plugin/deviceplugin.h"
+#include "tvdiscovery.h"
 
-Q_IMPORT_PLUGIN(DevicePluginElro)
-Q_IMPORT_PLUGIN(DevicePluginIntertechno)
-//Q_IMPORT_PLUGIN(DevicePluginMeisterAnker)
-Q_IMPORT_PLUGIN(DevicePluginWifiDetector)
-Q_IMPORT_PLUGIN(DevicePluginConrad)
-Q_IMPORT_PLUGIN(DevicePluginMock)
-Q_IMPORT_PLUGIN(DevicePluginOpenweathermap)
-Q_IMPORT_PLUGIN(DevicePluginLircd)
-Q_IMPORT_PLUGIN(DevicePluginWakeOnLan)
-Q_IMPORT_PLUGIN(DevicePluginMailNotification)
-Q_IMPORT_PLUGIN(DevicePluginPhilipsHue)
-Q_IMPORT_PLUGIN(DevicePluginLgSmartTv)
-
-#if USE_BOBLIGHT
-Q_IMPORT_PLUGIN(DevicePluginBoblight)
-#endif
-
-int main(int argc, char *argv[])
+class DevicePluginLgSmartTv : public DevicePlugin
 {
-    QCoreApplication a(argc, argv);
+    Q_OBJECT
 
-    a.setOrganizationName("guh");
+    Q_PLUGIN_METADATA(IID "guru.guh.DevicePlugin" FILE "devicepluginlgsmarttv.json")
+    Q_INTERFACES(DevicePlugin)
 
-    GuhCore::instance();
+public:
+    explicit DevicePluginLgSmartTv();
 
-    return a.exec();
-}
+    TvDiscovery *m_discovery;
+
+    QList<Vendor> supportedVendors() const override;
+    QList<DeviceClass> supportedDevices() const override;
+
+    QPair<DeviceManager::DeviceError, QString> discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
+    QPair<DeviceManager::DeviceSetupStatus, QString> setupDevice(Device *device) override;
+    DeviceManager::HardwareResources requiredHardware() const override;
+    QPair<DeviceManager::DeviceError, QString> executeAction(Device *device, const Action &action) override;
+
+    QPair<DeviceManager::DeviceSetupStatus, QString> confirmPairing(const QUuid &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params) override;
+
+    QString pluginName() const override;
+    PluginId pluginId() const override;
+
+    void guhTimer() override;
+
+private slots:
+    void discoveryDone(QList<TvDevice *> tvList);
+
+public slots:
+
+
+};
+
+#endif // DEVICEPLUGINLGSMARTTV_H

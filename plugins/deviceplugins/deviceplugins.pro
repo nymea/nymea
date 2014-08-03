@@ -10,7 +10,8 @@ SUBDIRS += elro         \
     wakeonlan           \
     mailnotification    \
     philipshue          \
-    wemo                \
+    lgsmarttv           \
+
 
 
 boblight {

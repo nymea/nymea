@@ -42,8 +42,6 @@ public:
     DeviceManager::HardwareResources requiredHardware() const override;
     QPair<DeviceManager::DeviceError, QString> executeAction(Device *device, const Action &action) override;
 
-    QPair<DeviceManager::DeviceSetupStatus, QString> confirmPairing(const QUuid &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params) override;
-
     QString pluginName() const override;
     PluginId pluginId() const override;
 

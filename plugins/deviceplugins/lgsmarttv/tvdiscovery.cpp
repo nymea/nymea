@@ -265,6 +265,5 @@ void TvDiscovery::discover(int timeout)
 
     m_tvList.clear();
     writeDatagram(searchMessage.toUtf8(),m_host,m_port);
-    writeDatagram(searchMessage.toUtf8(),m_host,m_port);
     m_timeout->start(timeout);
 }

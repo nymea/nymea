@@ -50,7 +50,7 @@ QList<DeviceClass> DevicePluginLgSmartTv::supportedDevices() const
     DeviceClass deviceClassLgSmartTv(pluginId(), lgVendorId, lgSmartTvDeviceClassId);
     deviceClassLgSmartTv.setName("Lg Smart Tv");
     deviceClassLgSmartTv.setCreateMethod(DeviceClass::CreateMethodDiscovery);
-    deviceClassLgSmartTv.setSetupMethod(DeviceClass::SetupMethodEnterPin);
+    deviceClassLgSmartTv.setSetupMethod(DeviceClass::SetupMethodDisplayPin);
 
     QList<ParamType> paramTypes;
     paramTypes.append(ParamType("name", QVariant::String));
@@ -59,6 +59,7 @@ QList<DeviceClass> DevicePluginLgSmartTv::supportedDevices() const
     paramTypes.append(ParamType("host address", QVariant::String));
     paramTypes.append(ParamType("location", QVariant::String));
     paramTypes.append(ParamType("manufacturer", QVariant::String));
+    paramTypes.append(ParamType("key", QVariant::String));
 
     deviceClassLgSmartTv.setParamTypes(paramTypes);
 
@@ -93,21 +94,6 @@ DeviceManager::HardwareResources DevicePluginLgSmartTv::requiredHardware() const
 QPair<DeviceManager::DeviceError, QString> DevicePluginLgSmartTv::executeAction(Device *device, const Action &action)
 {
     return report();
-}
-
-QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginLgSmartTv::confirmPairing(const QUuid &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params)
-{
-
-    foreach (const Param &param, params) {
-        qDebug() << "confirm pairing param" << param.name();
-    }
-
-
-
-
-
-
-    return reportDeviceSetup(DeviceManager::DeviceSetupStatusAsync);
 }
 
 QString DevicePluginLgSmartTv::pluginName() const

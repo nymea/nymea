@@ -131,6 +131,11 @@ bool WemoSwitch::powerState()
     return m_powerState;
 }
 
+bool WemoSwitch::reachabel()
+{
+    return m_reachabel;
+}
+
 void WemoSwitch::replyFinished(QNetworkReply *reply)
 {
     if(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() != 200){
@@ -141,17 +146,27 @@ void WemoSwitch::replyFinished(QNetworkReply *reply)
         m_reachabel = true;
     }
 
+    // if this is the answerer to a refresh request
     if(reply == m_refrashReplay){
         QByteArray data = reply->readAll();
         if(data.contains("<BinaryState>0</BinaryState>")){
-            qDebug() << "switch is off";
             m_powerState = false;
         }
         if(data.contains("<BinaryState>1</BinaryState>")){
-            qDebug() << "switch is on";
             m_powerState = true;
         }
     }
+    // if this is the answerer to a "set power" request
+    if(reply == m_setPowerReplay){
+        QByteArray data = reply->readAll();
+        if(data.contains("<BinaryState>1</BinaryState>") || data.contains("<BinaryState>0</BinaryState>")){
+            emit setPowerFinished(true,m_actionId);
+        }else{
+            emit setPowerFinished(false,m_actionId);
+        }
+        refresh();
+    }
+
     emit stateChanged();
 }
 
@@ -172,13 +187,17 @@ void WemoSwitch::setPower(const bool &power, const ActionId &actionId)
 {
     m_actionId = actionId;
 
+    if(m_powerState == power){
+        emit setPowerFinished(true,actionId);
+    }
+
     QByteArray setPowerMessage("<?xml version=\"1.0\" encoding=\"utf-8\"?><s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\"><s:Body><u:SetBinaryState xmlns:u=\"urn:Belkin:service:basicevent:1\"><BinaryState>" + QByteArray::number((int)power) + "</BinaryState></u:SetBinaryState></s:Body></s:Envelope>");
 
     QNetworkRequest request;
     request.setUrl(QUrl("http://" + m_hostAddress.toString() + ":" + QString::number(m_port) + "/upnp/control/basicevent1"));
     request.setHeader(QNetworkRequest::ContentTypeHeader,QVariant("text/xml; charset=\"utf-8\""));
     request.setHeader(QNetworkRequest::UserAgentHeader,QVariant("guh"));
-    request.setRawHeader("SOAPACTION", "\"urn:Belkin:service:basicevent:1#GetBinaryState\"");
+    request.setRawHeader("SOAPACTION", "\"urn:Belkin:service:basicevent:1#SetBinaryState\"");
 
-    m_refrashReplay = m_manager->post(request,setPowerMessage);
+    m_setPowerReplay = m_manager->post(request,setPowerMessage);
 }

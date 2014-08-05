@@ -53,6 +53,9 @@ public:
 private slots:
     void discoveryDone(QList<WemoSwitch *> deviceList);
     void wemoSwitchStateChanged();
+    void setPowerFinished(const bool &succeeded, const ActionId &actionId);
+
+
 public slots:
 
 

@@ -140,9 +140,10 @@ QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginWemo::setupDevice(D
         wemoSwitch->setDeviceType(device->paramValue("device type").toString());
 
         connect(wemoSwitch,SIGNAL(stateChanged()),this,SLOT(wemoSwitchStateChanged()));
-
+        connect(wemoSwitch,SIGNAL(setPowerFinished(bool,ActionId)),this,SLOT(setPowerFinished(bool,ActionId)));
 
         m_wemoSwitches.insert(wemoSwitch,device);
+        wemoSwitch->refresh();
         return reportDeviceSetup();
     }
     return reportDeviceSetup(DeviceManager::DeviceSetupStatusSuccess);
@@ -155,7 +156,18 @@ DeviceManager::HardwareResources DevicePluginWemo::requiredHardware() const
 
 QPair<DeviceManager::DeviceError, QString> DevicePluginWemo::executeAction(Device *device, const Action &action)
 {
-    return report();
+    if(device->deviceClassId() == wemoSwitchDeviceClassId){
+        if(action.actionTypeId() == powerActionTypeId){
+            WemoSwitch *wemoSwitch = m_wemoSwitches.key(device);
+            wemoSwitch->setPower(action.param("power").value().toBool(),action.id());
+
+            return report(DeviceManager::DeviceErrorAsync);
+        }else{
+            return report(DeviceManager::DeviceErrorActionTypeNotFound);
+        }
+    }
+
+    return report(DeviceManager::DeviceErrorDeviceClassNotFound);
 }
 
 void DevicePluginWemo::deviceRemoved(Device *device)
@@ -181,8 +193,8 @@ PluginId DevicePluginWemo::pluginId() const
 
 void DevicePluginWemo::guhTimer()
 {
-    foreach (WemoSwitch* device, m_wemoSwitches.keys()) {
-        device->refresh();
+    foreach (WemoSwitch* wemoSwitch, m_wemoSwitches.keys()) {
+        wemoSwitch->refresh();
     }
 }
 
@@ -210,9 +222,21 @@ void DevicePluginWemo::discoveryDone(QList<WemoSwitch *> deviceList)
 
 void DevicePluginWemo::wemoSwitchStateChanged()
 {
+    WemoSwitch *wemoSwitch = static_cast<WemoSwitch*>(sender());
 
+    if(m_wemoSwitches.contains(wemoSwitch)){
+        Device * device = m_wemoSwitches.value(wemoSwitch);
+        device->setStateValue(powerStateTypeId, wemoSwitch->powerState());
+        device->setStateValue(reachableStateTypeId, wemoSwitch->reachabel());
+    }
+}
 
-
-
+void DevicePluginWemo::setPowerFinished(const bool &succeeded, const ActionId &actionId)
+{
+    if(succeeded){
+        emit actionExecutionFinished(actionId,DeviceManager::DeviceErrorNoError,QString());
+    }else{
+        emit actionExecutionFinished(actionId,DeviceManager::DeviceErrorDeviceNotFound,QString("Action could not be executed."));
+    }
 }
 

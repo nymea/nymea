@@ -16,35 +16,46 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <QCoreApplication>
-#include <guhcore.h>
+#ifndef DEVICEPLUGINWEMO_H
+#define DEVICEPLUGINWEMO_H
 
-#include <QtPlugin>
+#include "plugin/deviceplugin.h"
+#include "wemodiscovery.h"
 
-Q_IMPORT_PLUGIN(DevicePluginElro)
-Q_IMPORT_PLUGIN(DevicePluginIntertechno)
-//Q_IMPORT_PLUGIN(DevicePluginMeisterAnker)
-Q_IMPORT_PLUGIN(DevicePluginWifiDetector)
-Q_IMPORT_PLUGIN(DevicePluginConrad)
-Q_IMPORT_PLUGIN(DevicePluginMock)
-Q_IMPORT_PLUGIN(DevicePluginOpenweathermap)
-Q_IMPORT_PLUGIN(DevicePluginLircd)
-Q_IMPORT_PLUGIN(DevicePluginWakeOnLan)
-Q_IMPORT_PLUGIN(DevicePluginMailNotification)
-Q_IMPORT_PLUGIN(DevicePluginPhilipsHue)
-Q_IMPORT_PLUGIN(DevicePluginWemo)
-
-#if USE_BOBLIGHT
-Q_IMPORT_PLUGIN(DevicePluginBoblight)
-#endif
-
-int main(int argc, char *argv[])
+class DevicePluginWemo : public DevicePlugin
 {
-    QCoreApplication a(argc, argv);
+    Q_OBJECT
 
-    a.setOrganizationName("guh");
+    Q_PLUGIN_METADATA(IID "guru.guh.DevicePlugin" FILE "devicepluginwemo.json")
+    Q_INTERFACES(DevicePlugin)
 
-    GuhCore::instance();
+public:
+    explicit DevicePluginWemo();
 
-    return a.exec();
-}
+    QList<Vendor> supportedVendors() const override;
+    QList<DeviceClass> supportedDevices() const override;
+
+    QPair<DeviceManager::DeviceError, QString> discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
+    QPair<DeviceManager::DeviceSetupStatus, QString> setupDevice(Device *device) override;
+    DeviceManager::HardwareResources requiredHardware() const override;
+    QPair<DeviceManager::DeviceError, QString> executeAction(Device *device, const Action &action) override;
+
+    void deviceRemoved(Device *device) override;
+
+    QString pluginName() const override;
+    PluginId pluginId() const override;
+
+    void guhTimer() override;
+
+    WemoDiscovery *m_discovery;
+    QHash<WemoSwitch*, Device*> m_wemoSwitches;
+
+private slots:
+    void discoveryDone(QList<WemoSwitch *> deviceList);
+    void wemoSwitchStateChanged();
+public slots:
+
+
+};
+
+#endif // DEVICEPLUGINWEMO_H

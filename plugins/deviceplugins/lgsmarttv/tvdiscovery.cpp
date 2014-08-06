@@ -256,12 +256,11 @@ void TvDiscovery::parseDeviceInformation(QByteArray data)
 void TvDiscovery::discover(int timeout)
 {
     QString searchMessage("M-SEARCH * HTTP/1.1\r\n"
-                          "HOST: 239.255.255.250:1900\r\n"
-                          "MAN: \"ssdp:discover\"\r\n"
-                          "MX: 3\r\n"
-                          "ST: udap:rootservice\r\n"
+                          "HOST:239.255.255.250:1900\r\n"
+                          "MAN:\"ssdp:discover\"\r\n"
+                          "MX:2\r\n"
+                          "ST:udap:rootservice\r\n"
                           "USER-AGENT: UDAP/2.0 \r\n\r\n");
-
 
     m_tvList.clear();
     writeDatagram(searchMessage.toUtf8(),m_host,m_port);

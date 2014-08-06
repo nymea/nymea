@@ -42,13 +42,19 @@ public:
     DeviceManager::HardwareResources requiredHardware() const override;
     QPair<DeviceManager::DeviceError, QString> executeAction(Device *device, const Action &action) override;
 
+    void deviceRemoved(Device *device) override;
+
     QString pluginName() const override;
     PluginId pluginId() const override;
 
     void guhTimer() override;
 
+    QHash<TvDevice*, Device*> m_tvList;
+
 private slots:
     void discoveryDone(QList<TvDevice *> tvList);
+    void pairingFinished(const bool &success);
+    void sendingCommandFinished(const bool &success, const ActionId &actionId);
 
 public slots:
 

@@ -1,6 +1,6 @@
 /*!
     \page index.html
-    \title guh Developer Documentation
+    \title guh - Developer Documentation
 
     \section1 Summary
     The guh backend service consists of three main modules:
@@ -19,8 +19,9 @@
             \endlist
         \li \l{Plugins}.
             \list
-                \li \l{RF 433 MHz List}
-                \li \l{Service List}
+                \li \l{RF 433 MHz Plugins}
+                \li \l{Service Plugins}
+                \li \l{Network Plugins}
             \endlist
     \endlist
 

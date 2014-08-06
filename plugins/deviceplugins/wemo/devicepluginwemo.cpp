@@ -16,6 +16,115 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \page wemo.html
+    \title WeMo
+
+    \ingroup plugins
+    \ingroup network
+
+    This plugin allows to find and controll devices from WeMo, the
+    \l{http://www.belkin.com/de/PRODUKTE/home-automation/c/wemo-home-automation/}{Belkin}
+    home automation system.
+
+
+    \chapter Supported devices
+        \section1 WeMo Switch
+            Currently, there is just the \l{http://www.belkin.com/de/F7C027-Belkin/p/P-F7C027/}
+            {WeMo Switch} supportet. For the first setup, the original app from WeMo (only availabel for
+            iOS and Android Smartphones) will be needed. Once the WeMo switch is in the private network,
+            the device can be discovered and controlled from guh.
+
+            \e{\underline{Note:} when the WeMo Switch will not be reachabel, remove the device from guh and re-discover/re-add
+            it, because the port of the device can change (between 49152-49155 so fare...).}
+
+            \section2 Device propertys
+                \section3 Device parameters
+                Following list contains all device Params:
+                    \table
+                    \header
+                        \li Name
+                        \li Description
+                        \li Data Type
+                    \row
+                        \li name
+                        \li Holds the name of the device
+                        \li string
+                    \row
+                        \li uuid
+                        \li Holds the uuid of the device (set from the manufacturer)
+                        \li string
+                    \row
+                        \li model
+                        \li Describes the model
+                        \li string
+                    \row
+                        \li host address
+                        \li Holds the ip address from the device
+                        \li string
+                    \row
+                        \li port
+                        \li Holds the port, over which the switch is reachable
+                        \li int
+                    \row
+                        \li model description
+                        \li Holds the description of the model (given from the manufacturer)
+                        \li string
+                    \row
+                        \li serial number
+                        \li Holds the serial number of the WeMo Switch
+                        \li string
+                    \row
+                        \li location
+                        \li Holds the url of the device information page (XML)
+                        \li string
+                    \row
+                        \li manufacturer
+                        \li Holds the name of the manufacturer (Belkin International Inc.)
+                        \li string
+                    \row
+                        \li device type
+                        \li Holds the type of the device (urn:Belkin:device:controllee:1)
+                        \li string
+                    \endtable
+
+                \section3 Device states
+                Following list contains all device \l{State}s:
+                    \table
+                    \header
+                        \li Name
+                        \li Description
+                        \li UUID
+                        \li Data Type
+                    \row
+                        \li power
+                        \li Thes state holds the power sate of the switch. If the WeMo Switch power state will be changed
+                            outside of guh (with the button or with the WeMo app), guh will recognize that here.
+                        \li 269f25eb-d0b7-4144-b9ef-801f4ff3e90c
+                        \li bool
+                    \row
+                        \li reachable
+                        \li Thes state gives the information, if the WeMo switch is currently reachable or not. If he's not
+                            reachabel, it can't be controlled.
+                        \li ec2f5b49-585c-4455-a233-b7aa4c608dbc
+                        \li bool
+                    \endtable
+
+                \section3 Device actions
+                Following list contains all device \l{Action}s:
+                    \table
+                    \header
+                        \li Name
+                        \li Description
+                        \li UUID
+                    \row
+                        \li Set power
+                        \li With this action you can switch WeMo ON (true) or OFF (false).
+                        \li 269f25eb-d0b7-4144-b9ef-801f4ff3e90c
+                    \endtable
+
+*/
+
 #include "devicepluginwemo.h"
 
 #include "plugin/device.h"

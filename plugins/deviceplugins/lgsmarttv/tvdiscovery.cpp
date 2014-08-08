@@ -1,3 +1,21 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *                                                                         *
+ *  This file is part of guh.                                              *
+ *                                                                         *
+ *  Guh is free software: you can redistribute it and/or modify            *
+ *  it under the terms of the GNU General Public License as published by   *
+ *  the Free Software Foundation, version 2 of the License.                *
+ *                                                                         *
+ *  Guh is distributed in the hope that it will be useful,                 *
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of         *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          *
+ *  GNU General Public License for more details.                           *
+ *                                                                         *
+ *  You should have received a copy of the GNU General Public License      *
+ *  along with guh. If not, see <http://www.gnu.org/licenses/>.            *
+ *                                                                         *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 #include "tvdiscovery.h"
 
 TvDiscovery::TvDiscovery(QObject *parent) :
@@ -124,11 +142,6 @@ void TvDiscovery::readData()
                     device->setHostAddress(sender);
                     device->setUuid(uuid);
 
-                    //                    qDebug() << "--> UPnP searcher discovered a TV...";
-                    //                    qDebug() << "location: " << location.toString();
-                    //                    qDebug() << "ip: " << sender.toString();
-                    //                    qDebug() << "uuid: " << uuid;
-                    //                    qDebug() << "--------------------------------------------";
                     m_tvList.append(device);
                     requestDeviceInformation(device);
                 }
@@ -196,6 +209,9 @@ void TvDiscovery::parseDeviceInformation(QByteArray data)
     QString modelName;
     QString deviceType;
     QString manufacturer;
+    int port;
+
+    qDebug() << printXmlData(data);
 
     while(!xml.atEnd() && !xml.hasError()){
         xml.readNext();
@@ -226,12 +242,17 @@ void TvDiscovery::parseDeviceInformation(QByteArray data)
                     if(xml.name() == "uuid" && xml.isStartElement()){
                         uuid = xml.readElementText();
                     }
+                    //check if we have port part of message
+                    if(xml.name() == "port"){
+                        port = xml.readElementText().toInt();
+                    }
+
                     xml.readNext();
                 }
             }
+
         }
     }
-
     foreach (TvDevice *device, m_tvList) {
         // find our device with this uuid
         if(device->uuid() == uuid){
@@ -239,6 +260,7 @@ void TvDiscovery::parseDeviceInformation(QByteArray data)
             device->setModelName(modelName);
             device->setDeviceType(deviceType);
             device->setManufacturer(manufacturer);
+            device->setPort(port);
 
             qDebug() << "--> fetched TV information...";
             qDebug() << "name:          " << device->name();
@@ -246,12 +268,14 @@ void TvDiscovery::parseDeviceInformation(QByteArray data)
             qDebug() << "device type:   " << device->deviceType();
             qDebug() << "manufacturer:  " << device->manufacturer();
             qDebug() << "address:       " << device->hostAddress().toString();
+            qDebug() << "port:          " << device->port();
             qDebug() << "location:      " << device->location().toString();
             qDebug() << "uuid:          " << device->uuid();
             qDebug() << "--------------------------------------------";
         }
     }
 }
+
 
 void TvDiscovery::discover(int timeout)
 {

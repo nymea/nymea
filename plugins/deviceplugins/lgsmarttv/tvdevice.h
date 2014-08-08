@@ -1,3 +1,21 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *                                                                         *
+ *  This file is part of guh.                                              *
+ *                                                                         *
+ *  Guh is free software: you can redistribute it and/or modify            *
+ *  it under the terms of the GNU General Public License as published by   *
+ *  the Free Software Foundation, version 2 of the License.                *
+ *                                                                         *
+ *  Guh is distributed in the hope that it will be useful,                 *
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of         *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          *
+ *  GNU General Public License for more details.                           *
+ *                                                                         *
+ *  You should have received a copy of the GNU General Public License      *
+ *  along with guh. If not, see <http://www.gnu.org/licenses/>.            *
+ *                                                                         *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 #ifndef TVDEVICE_H
 #define TVDEVICE_H
 
@@ -9,10 +27,12 @@
 #include <QNetworkRequest>
 #include <QUrl>
 #include <QXmlStreamReader>
+#include <QXmlReader>
 #include <QXmlStreamWriter>
 #include <QXmlStreamAttributes>
 
 #include "plugin/deviceplugin.h"
+#include "tveventhandler.h"
 
 class TvDevice : public QObject
 {
@@ -89,11 +109,15 @@ public:
         MyApps          = 417
     };
 
+    // propertys
     void setLocation(const QUrl &location);
     QUrl location() const;
 
     void setHostAddress(const QHostAddress &hostAddress);
     QHostAddress hostAddress() const;
+
+    void setPort(const int &port);
+    int port() const;
 
     void setName(const QString &name);
     QString name() const;
@@ -113,16 +137,32 @@ public:
     void setKey(const QString &key);
     QString key() const;
 
-    bool reachable() const;
     bool paired() const;
 
+    // States
+    bool reachable() const;
+    bool is3DMode() const;
+    int volumeLevel() const;
+    bool mute() const;
+    QString channelType() const;
+    QString channelName() const;
+    int channelNumber() const;
+    QString programName() const;
+    int inputSourceIndex() const;
+    QString inputSourceLabelName() const;
+
+    // public actions
     void showPairingKey();
     void requestPairing();
+    void endPairing();
     void sendCommand(TvDevice::RemoteKey key, ActionId actionId);
+    void setupEventHandler();
+    void refresh();
 
 private:
     QUrl m_location;
     QHostAddress m_hostAddress;
+    int m_port;
     QString m_name;
     QString m_modelName;
     QString m_manufacturer;
@@ -130,7 +170,18 @@ private:
     QString m_uuid;
     QString m_key;
     bool m_pairingStatus;
+
+    // States
+    bool m_is3DMode;
     bool m_reachable;
+    int m_volumeLevel;
+    bool m_mute;
+    QString m_channelType;
+    QString m_channelName;
+    int m_channelNumber;
+    QString m_programName;
+    int m_inputSourceIndex;
+    QString m_inputSourceLabel;
 
     ActionId m_actionId;
 
@@ -139,8 +190,16 @@ private:
     QNetworkReply *m_requestPairingReplay;
     QNetworkReply *m_finishingPairingReplay;
     QNetworkReply *m_sendCommandReplay;
+    QNetworkReply *m_queryVolumeInformationReplay;
+    QNetworkReply *m_queryChannelInformationReplay;
 
-    void finishingPairing();
+    TvEventHandler *m_eventHandler;
+
+    QString printXmlData(QByteArray data);
+    void queryVolumeInformation();
+    void queryChannelInformation();
+    void parseVolumeInformation(const QByteArray &data);
+    void parseChannelInformation(const QByteArray &data);
 
 signals:
     void pairingFinished(const bool &success);
@@ -149,7 +208,7 @@ signals:
 
 private slots:
     void replyFinished(QNetworkReply *reply);
-
+    void eventOccured(const QByteArray &data);
 
 public slots:
 

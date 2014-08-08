@@ -27,6 +27,16 @@ VendorId lgVendorId = VendorId("a9af9673-78db-4226-a16b-f34b304f7041");
 DeviceClassId lgSmartTvDeviceClassId = DeviceClassId("1d41b5a8-74ff-4a12-b365-c7bbe610848f");
 
 StateTypeId tvReachableStateTypeId = StateTypeId("b056c36b-df87-4177-8d5d-1e7c1e8cdc7a");
+StateTypeId tv3DModeStateTypeId = StateTypeId("8ad3d77f-d340-495d-8c2a-5569a80e9d36");
+StateTypeId tvVolumeLevelStateTypeId = StateTypeId("07d39a6e-7eab-42d0-851d-9f3bcd3bbb57");
+StateTypeId tvMuteStateTypeId = StateTypeId("a6ac9061-3de7-403a-a646-790ca5d73764");
+StateTypeId tvChannelTypeStateTypeId = StateTypeId("84c86670-77c7-4fc6-9e23-abca066e76aa");
+StateTypeId tvChannelNameStateTypeId = StateTypeId("265dc5f7-3f4d-4002-a6fe-2a53986bcf1d");
+StateTypeId tvChannelNumberStateTypeId = StateTypeId("881629a3-4ce2-42ba-8ce6-10d90c383799");
+StateTypeId tvProgramNameStateTypeId = StateTypeId("3f53e52e-1ad7-40e7-8080-76908e720cac");
+StateTypeId tvInputSourceIndexStateTypeId = StateTypeId("e895017a-139f-410c-bfb2-4d008104e164");
+StateTypeId tvInputSourceLabelNameStateTypeId = StateTypeId("58b734ec-2269-4c57-99e1-e1eeee401053");
+
 
 ActionTypeId commandVolumeUpActionTypeId = ActionTypeId("ac5d7dcd-dfe8-4a94-9ab9-21b3f804b39e");
 ActionTypeId commandVolumeDownActionTypeId = ActionTypeId("62b17bec-f461-4ffa-93d1-67a9430d55e1");
@@ -80,6 +90,7 @@ QList<DeviceClass> DevicePluginLgSmartTv::supportedDevices() const
     paramTypes.append(ParamType("uuid", QVariant::String));
     paramTypes.append(ParamType("model", QVariant::String));
     paramTypes.append(ParamType("host address", QVariant::String));
+    paramTypes.append(ParamType("port", QVariant::Int));
     paramTypes.append(ParamType("location", QVariant::String));
     paramTypes.append(ParamType("manufacturer", QVariant::String));
     paramTypes.append(ParamType("key", QVariant::String));
@@ -94,6 +105,60 @@ QList<DeviceClass> DevicePluginLgSmartTv::supportedDevices() const
     reachableState.setType(QVariant::Bool);
     reachableState.setDefaultValue(false);
     tvStates.append(reachableState);
+
+    StateType tv3DModeState(tv3DModeStateTypeId);
+    tv3DModeState.setName("3D Mode");
+    tv3DModeState.setType(QVariant::Bool);
+    tv3DModeState.setDefaultValue(false);
+    tvStates.append(tv3DModeState);
+
+    StateType tvVolumeLevelState(tvVolumeLevelStateTypeId);
+    tvVolumeLevelState.setName("volume level");
+    tvVolumeLevelState.setType(QVariant::Int);
+    tvVolumeLevelState.setDefaultValue(-1);
+    tvStates.append(tvVolumeLevelState);
+
+    StateType tvMuteState(tvMuteStateTypeId);
+    tvMuteState.setName("mute");
+    tvMuteState.setType(QVariant::Bool);
+    tvMuteState.setDefaultValue(false);
+    tvStates.append(tvMuteState);
+
+    StateType tvChannelTypeState(tvChannelTypeStateTypeId);
+    tvChannelTypeState.setName("channel type");
+    tvChannelTypeState.setType(QVariant::String);
+    tvChannelTypeState.setDefaultValue("");
+    tvStates.append(tvChannelTypeState);
+
+    StateType tvChannelNameState(tvChannelNameStateTypeId);
+    tvChannelNameState.setName("channel name");
+    tvChannelNameState.setType(QVariant::String);
+    tvChannelNameState.setDefaultValue("");
+    tvStates.append(tvChannelNameState);
+
+    StateType tvChannelNumberState(tvChannelNumberStateTypeId);
+    tvChannelNumberState.setName("channel number");
+    tvChannelNumberState.setType(QVariant::Int);
+    tvChannelNumberState.setDefaultValue(-1);
+    tvStates.append(tvChannelNumberState);
+
+    StateType tvProgramNameState(tvProgramNameStateTypeId);
+    tvProgramNameState.setName("program name");
+    tvProgramNameState.setType(QVariant::String);
+    tvProgramNameState.setDefaultValue("");
+    tvStates.append(tvProgramNameState);
+
+    StateType tvInputSourceIndexState(tvInputSourceIndexStateTypeId);
+    tvInputSourceIndexState.setName("input source index");
+    tvInputSourceIndexState.setType(QVariant::Int);
+    tvInputSourceIndexState.setDefaultValue(-1);
+    tvStates.append(tvInputSourceIndexState);
+
+    StateType tvInputSourceLabelNameState(tvInputSourceLabelNameStateTypeId);
+    tvInputSourceLabelNameState.setName("input source label");
+    tvInputSourceLabelNameState.setType(QVariant::String);
+    tvInputSourceLabelNameState.setDefaultValue("");
+    tvStates.append(tvInputSourceLabelNameState);
 
     deviceClassLgSmartTv.setStateTypes(tvStates);
 
@@ -201,12 +266,16 @@ QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginLgSmartTv::setupDev
     tvDevice->setUuid(device->paramValue("uuid").toString());
     tvDevice->setModelName(device->paramValue("model").toString());
     tvDevice->setHostAddress(QHostAddress(device->paramValue("host address").toString()));
+    tvDevice->setPort(device->paramValue("port").toInt());
     tvDevice->setLocation(QUrl(device->paramValue("location").toString()));
     tvDevice->setUuid(device->paramValue("manufacturer").toString());
     // key if there is one...
 
+    tvDevice->setupEventHandler();
+
     connect(tvDevice, &TvDevice::pairingFinished, this, &DevicePluginLgSmartTv::pairingFinished);
     connect(tvDevice, &TvDevice::sendCommandFinished, this, &DevicePluginLgSmartTv::sendingCommandFinished);
+    connect(tvDevice, &TvDevice::statusChanged, this, &DevicePluginLgSmartTv::statusChanged);
 
     tvDevice->requestPairing();
     m_tvList.insert(tvDevice,device);
@@ -308,6 +377,7 @@ void DevicePluginLgSmartTv::deviceRemoved(Device *device)
     TvDevice *tvDevice= m_tvList.key(device);
     qDebug() << "remove LG Smart Tv  " << tvDevice->modelName();
     m_tvList.remove(tvDevice);
+    tvDevice->deleteLater();
 }
 
 QString DevicePluginLgSmartTv::pluginName() const
@@ -322,7 +392,9 @@ PluginId DevicePluginLgSmartTv::pluginId() const
 
 void DevicePluginLgSmartTv::guhTimer()
 {
-
+    foreach (TvDevice *tvDevice, m_tvList.keys()) {
+        tvDevice->refresh();
+    }
 }
 
 void DevicePluginLgSmartTv::discoveryDone(QList<TvDevice*> tvList)
@@ -336,6 +408,7 @@ void DevicePluginLgSmartTv::discoveryDone(QList<TvDevice*> tvList)
         params.append(Param("model", device->modelName()));
         params.append(Param("host address", device->hostAddress().toString()));
         params.append(Param("location", device->location().toString()));
+        params.append(Param("port", device->port()));
         params.append(Param("manufacturer", device->manufacturer()));
         params.append(Param("key", device->key()));
         descriptor.setParams(params);
@@ -351,6 +424,7 @@ void DevicePluginLgSmartTv::pairingFinished(const bool &success)
 
     if(success){
         emit deviceSetupFinished(device,DeviceManager::DeviceSetupStatusSuccess,QString(""));
+        tvDevice->refresh();
     }else{
         emit deviceSetupFinished(device,DeviceManager::DeviceSetupStatusFailure,QString("Could not pair with tv."));
     }
@@ -363,6 +437,23 @@ void DevicePluginLgSmartTv::sendingCommandFinished(const bool &success, const Ac
     }else{
         emit actionExecutionFinished(actionId,DeviceManager::DeviceErrorActionTypeNotFound,QString("Could not send command"));
     }
+}
+
+void DevicePluginLgSmartTv::statusChanged()
+{
+    TvDevice *tvDevice = static_cast<TvDevice*>(sender());
+    Device *device = m_tvList.value(tvDevice);
+
+    device->setStateValue(tvReachableStateTypeId, tvDevice->reachable());
+    device->setStateValue(tv3DModeStateTypeId, tvDevice->is3DMode());
+    device->setStateValue(tvVolumeLevelStateTypeId, tvDevice->volumeLevel());
+    device->setStateValue(tvMuteStateTypeId, tvDevice->mute());
+    device->setStateValue(tvChannelTypeStateTypeId, tvDevice->channelType());
+    device->setStateValue(tvChannelNameStateTypeId, tvDevice->channelName());
+    device->setStateValue(tvChannelNumberStateTypeId, tvDevice->channelNumber());
+    device->setStateValue(tvProgramNameStateTypeId, tvDevice->programName());
+    device->setStateValue(tvInputSourceIndexStateTypeId, tvDevice->inputSourceIndex());
+    device->setStateValue(tvInputSourceLabelNameStateTypeId, tvDevice->inputSourceLabelName());
 }
 
 

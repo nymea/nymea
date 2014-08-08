@@ -16,50 +16,47 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef DEVICEPLUGINLGSMARTTV_H
-#define DEVICEPLUGINLGSMARTTV_H
+#ifndef TVEVENTHANDLER_H
+#define TVEVENTHANDLER_H
 
-#include "plugin/deviceplugin.h"
-#include "tvdiscovery.h"
+#include <QTcpServer>
+#include <QTcpSocket>
+#include <QDebug>
+#include <QDateTime>
+#include <QTextStream>
+#include <QRegExp>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
 
-class DevicePluginLgSmartTv : public DevicePlugin
+class TvEventHandler : public QTcpServer
 {
     Q_OBJECT
-
-    Q_PLUGIN_METADATA(IID "guru.guh.DevicePlugin" FILE "devicepluginlgsmarttv.json")
-    Q_INTERFACES(DevicePlugin)
-
 public:
-    explicit DevicePluginLgSmartTv();
+    explicit TvEventHandler(QObject *parent = 0, QHostAddress host = QHostAddress(), int port = 8080);
+    void incomingConnection(qintptr socket) override;
 
-    TvDiscovery *m_discovery;
+private:
+    QHostAddress m_host;
+    int m_port;
+    bool m_disabled;
 
-    QList<Vendor> supportedVendors() const override;
-    QList<DeviceClass> supportedDevices() const override;
+    bool m_expectingData;
 
-    QPair<DeviceManager::DeviceError, QString> discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
-    QPair<DeviceManager::DeviceSetupStatus, QString> setupDevice(Device *device) override;
-    DeviceManager::HardwareResources requiredHardware() const override;
-    QPair<DeviceManager::DeviceError, QString> executeAction(Device *device, const Action &action) override;
+    QNetworkAccessManager *m_manager;
 
-    void deviceRemoved(Device *device) override;
-
-    QString pluginName() const override;
-    PluginId pluginId() const override;
-
-    void guhTimer() override;
-
-    QHash<TvDevice*, Device*> m_tvList;
+signals:
+    void eventOccured(const QByteArray &path);
+    void byebyeEvent();
 
 private slots:
-    void discoveryDone(QList<TvDevice *> tvList);
-    void pairingFinished(const bool &success);
-    void sendingCommandFinished(const bool &success, const ActionId &actionId);
-    void statusChanged();
+    void readClient();
+    void discardClient();
 
 public slots:
-
+    void enable();
+    void disable();
 
 };
 
-#endif // DEVICEPLUGINLGSMARTTV_H
+#endif // TVEVENTHANDLER_H

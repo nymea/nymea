@@ -155,6 +155,7 @@ void WemoSwitch::replyFinished(QNetworkReply *reply)
         if(data.contains("<BinaryState>1</BinaryState>")){
             m_powerState = true;
         }
+        m_refrashReplay->deleteLater();
     }
     // if this is the answerer to a "set power" request
     if(reply == m_setPowerReplay){
@@ -165,6 +166,7 @@ void WemoSwitch::replyFinished(QNetworkReply *reply)
             emit setPowerFinished(false,m_actionId);
         }
         refresh();
+        m_setPowerReplay->deleteLater();
     }
 
     emit stateChanged();
@@ -189,6 +191,7 @@ void WemoSwitch::setPower(const bool &power, const ActionId &actionId)
 
     if(m_powerState == power){
         emit setPowerFinished(true,actionId);
+        return;
     }
 
     QByteArray setPowerMessage("<?xml version=\"1.0\" encoding=\"utf-8\"?><s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\"><s:Body><u:SetBinaryState xmlns:u=\"urn:Belkin:service:basicevent:1\"><BinaryState>" + QByteArray::number((int)power) + "</BinaryState></u:SetBinaryState></s:Body></s:Envelope>");

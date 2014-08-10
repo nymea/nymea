@@ -307,7 +307,7 @@ DevicePluginOpenweathermap::DevicePluginOpenweathermap()
 QList<Vendor> DevicePluginOpenweathermap::supportedVendors() const
 {
     QList<Vendor> ret;
-    Vendor openweathermap(openweathermapVendorId, "openweathermap");
+    Vendor openweathermap(openweathermapVendorId, "Openweathermap");
     ret.append(openweathermap);
     return ret;
 }
@@ -444,8 +444,15 @@ QPair<DeviceManager::DeviceError, QString> DevicePluginOpenweathermap::discoverD
 
 QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginOpenweathermap::setupDevice(Device *device)
 {
+    foreach (Device *deviceListDevice, deviceManager()->findConfiguredDevices(openweathermapDeviceClassId)) {
+        if(deviceListDevice->paramValue("id").toString() == device->paramValue("id").toString()){
+            return reportDeviceSetup(DeviceManager::DeviceSetupStatusFailure,QString("Location " + device->paramValue("location").toString() + "allready in added"));
+        }
+    }
+
     m_openweaher->update(device->paramValue("id").toString());
-    return reportDeviceSetup();
+
+    return reportDeviceSetup(DeviceManager::DeviceSetupStatusSuccess);
 }
 
 DeviceManager::HardwareResources DevicePluginOpenweathermap::requiredHardware() const

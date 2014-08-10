@@ -16,35 +16,51 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <QCoreApplication>
-#include <guhcore.h>
+#ifndef RADIO433TRASMITTER_H
+#define RADIO433TRASMITTER_H
 
-#include <QtPlugin>
+#include <QObject>
+#include <QThread>
+#include <QMutex>
+#include <QQueue>
+#include <QDebug>
 
-Q_IMPORT_PLUGIN(DevicePluginElro)
-Q_IMPORT_PLUGIN(DevicePluginIntertechno)
-//Q_IMPORT_PLUGIN(DevicePluginMeisterAnker)
-Q_IMPORT_PLUGIN(DevicePluginWifiDetector)
-Q_IMPORT_PLUGIN(DevicePluginConrad)
-Q_IMPORT_PLUGIN(DevicePluginMock)
-Q_IMPORT_PLUGIN(DevicePluginOpenweathermap)
-Q_IMPORT_PLUGIN(DevicePluginLircd)
-Q_IMPORT_PLUGIN(DevicePluginWakeOnLan)
-Q_IMPORT_PLUGIN(DevicePluginMailNotification)
-Q_IMPORT_PLUGIN(DevicePluginPhilipsHue)
-Q_IMPORT_PLUGIN(DevicePluginEQ3)
+#include "gpio.h"
 
-#if USE_BOBLIGHT
-Q_IMPORT_PLUGIN(DevicePluginBoblight)
-#endif
 
-int main(int argc, char *argv[])
+class Radio433Trasmitter : public QThread
 {
-    QCoreApplication a(argc, argv);
+    Q_OBJECT
+public:
+    explicit Radio433Trasmitter(QObject *parent = 0, int gpio = 22);
+    ~Radio433Trasmitter();
 
-    a.setOrganizationName("guh");
+    bool startTransmitter();
+    bool stopTransmitter();
+    bool setUpGpio();
 
-    GuhCore::instance();
+    void sendData(QList<int> rawData);
 
-    return a.exec();
-}
+private:
+    int m_gpioPin;
+    Gpio *m_gpio;
+
+    QMutex m_mutex;
+    bool m_enabled;
+
+    QMutex m_allowSendingMutex;
+    bool m_allowSending;
+
+    void run();
+
+    QMutex m_queueMutex;
+    QQueue<QList<int> > m_rawDataQueue;
+
+signals:
+
+public slots:
+    void allowSending(bool sending);
+
+};
+
+#endif // RADIO433TRASMITTER_H

@@ -40,9 +40,8 @@
 
 /*! Constructs a \l{Gpio} object to represent a GPIO with the given \a gpio number and the \a parent. */
 Gpio::Gpio(QObject *parent, int gpio) :
-    QThread(parent),m_gpio(gpio)
+    QObject(parent),m_gpio(gpio)
 {
-    exportGpio();
 }
 
 /*! Destroys the Gpio object and unexports the GPIO. */
@@ -51,52 +50,6 @@ Gpio::~Gpio()
     unexportGpio();
 }
 
-/*! The starting point for the thread. After calling start(), this thread calls this function and starts
- *  to poll the GPIO file. If an interrupt happens to this GPIO pin, the signal pinInterrupt() gets
- *  emited.
- */
-void Gpio::run()
-{
-    struct pollfd fdset[2];
-    int gpio_fd = openGpio();
-    int nfds = 2;
-    int rc;
-    int timeout = 3000;
-    char buf[64];
-
-    bool enabled = true;
-
-    m_mutex.lock();
-    m_enabled = true;
-    m_mutex.unlock();
-
-
-    while(enabled){
-        memset((void*)fdset, 0, sizeof(fdset));
-        fdset[0].fd = STDIN_FILENO;
-        fdset[0].events = POLLIN;
-
-        fdset[1].fd = gpio_fd;
-        fdset[1].events = POLLPRI;
-
-        rc = poll(fdset, nfds, timeout);
-
-        if (rc < 0) {
-            qDebug() << "ERROR: poll failed";
-            return;
-        }
-        if(rc == 0){
-            //timeout
-        }
-        if (fdset[1].revents & POLLPRI) {
-            read(fdset[1].fd, buf, 64);
-            emit pinInterrupt();
-        }
-        m_mutex.lock();
-        enabled = m_enabled;
-        m_mutex.unlock();
-    }
-}
 /*! Returns true if the GPIO could be exported in the system file "/sys/class/gpio/export".*/
 bool Gpio::exportGpio()
 {
@@ -142,9 +95,9 @@ int Gpio::openGpio()
     int fd = open(buf, O_RDONLY | O_NONBLOCK );
     if (fd < 0) {
         qDebug() << "ERROR: could not open /sys/class/gpio" << m_gpio << "/direction";
-        return fd;
+        return false;
     }
-    return fd;
+    return true;
 }
 
 /*! Returns true, if the direction \a dir of the GPIO could be set correctly.
@@ -320,12 +273,4 @@ bool Gpio::setEdgeInterrupt(int edge)
     }
     close(fd);
     return false;
-}
-
-/*! Stop the polling of the \l{run()} method.*/
-void Gpio::stop()
-{
-    m_mutex.lock();
-    m_enabled = false;
-    m_mutex.unlock();
 }

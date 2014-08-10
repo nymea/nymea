@@ -28,8 +28,11 @@ TcpServer::TcpServer(QObject *parent) :
     qDebug() << "network interfaces:";
     foreach(const QNetworkInterface &interface, QNetworkInterface::allInterfaces()){
         qDebug() << "   -------------------------";
-        qDebug() << "   name:" << interface.name();
-        qDebug() << "   mac: " << interface.hardwareAddress();
+        qDebug() << "   name :" << interface.name();
+        if(!interface.addressEntries().isEmpty()){
+            qDebug() << "   ip   :" << interface.addressEntries().first().ip().toString();
+        }
+        qDebug() << "   mac  : " << interface.hardwareAddress();
     }
     qDebug() << "----------------------------";
 

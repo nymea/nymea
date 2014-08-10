@@ -16,35 +16,60 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <QCoreApplication>
-#include <guhcore.h>
+#ifndef RADIO433RECEIVER_H
+#define RADIO433RECEIVER_H
 
-#include <QtPlugin>
+#include <QThread>
 
-Q_IMPORT_PLUGIN(DevicePluginElro)
-Q_IMPORT_PLUGIN(DevicePluginIntertechno)
-//Q_IMPORT_PLUGIN(DevicePluginMeisterAnker)
-Q_IMPORT_PLUGIN(DevicePluginWifiDetector)
-Q_IMPORT_PLUGIN(DevicePluginConrad)
-Q_IMPORT_PLUGIN(DevicePluginMock)
-Q_IMPORT_PLUGIN(DevicePluginOpenweathermap)
-Q_IMPORT_PLUGIN(DevicePluginLircd)
-Q_IMPORT_PLUGIN(DevicePluginWakeOnLan)
-Q_IMPORT_PLUGIN(DevicePluginMailNotification)
-Q_IMPORT_PLUGIN(DevicePluginPhilipsHue)
-Q_IMPORT_PLUGIN(DevicePluginEQ3)
+#include "gpio.h"
 
-#if USE_BOBLIGHT
-Q_IMPORT_PLUGIN(DevicePluginBoblight)
-#endif
-
-int main(int argc, char *argv[])
+class Radio433Receiver : public QThread
 {
-    QCoreApplication a(argc, argv);
+    Q_OBJECT
+public:
+    explicit Radio433Receiver(QObject *parent = 0, int gpio = 27);
+    ~Radio433Receiver();
 
-    a.setOrganizationName("guh");
+    enum Protocol{
+        Protocol48,
+        Protocol64,
+        ProtocolNone
+    };
 
-    GuhCore::instance();
+    bool setUpGpio();
+    bool startReceiver();
+    bool stopReceiver();
 
-    return a.exec();
-}
+private:
+    int m_gpioPin;
+    Gpio *m_gpio;
+    unsigned int m_epochMicro;
+
+    unsigned int m_pulseProtocolOne;
+    unsigned int m_pulseProtocolTwo;
+
+    QList<int> m_timings;
+
+    QMutex m_mutex;
+    bool m_enabled;
+    bool m_reading;
+
+    void run();
+    int micros();
+    bool valueInTolerance(int value, int sollValue);
+    bool checkValue(int value);
+    bool checkValues(Protocol protocol);
+    void changeReading(bool reading);
+
+private slots:
+    void handleTiming(int duration);
+
+signals:
+    void timingReady(int duration);
+    void dataReceived(QList<int> rawData);
+    void readingChanged(const bool &reading);
+
+public slots:
+};
+
+#endif // RADIO433RECEIVER_H

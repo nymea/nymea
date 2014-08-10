@@ -16,35 +16,41 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <QCoreApplication>
-#include <guhcore.h>
+#ifndef MAXCUBEDISCOVERY_H
+#define MAXCUBEDISCOVERY_H
 
-#include <QtPlugin>
+#include <QObject>
+#include <QUdpSocket>
+#include <QHostAddress>
+#include <QTimer>
 
-Q_IMPORT_PLUGIN(DevicePluginElro)
-Q_IMPORT_PLUGIN(DevicePluginIntertechno)
-//Q_IMPORT_PLUGIN(DevicePluginMeisterAnker)
-Q_IMPORT_PLUGIN(DevicePluginWifiDetector)
-Q_IMPORT_PLUGIN(DevicePluginConrad)
-Q_IMPORT_PLUGIN(DevicePluginMock)
-Q_IMPORT_PLUGIN(DevicePluginOpenweathermap)
-Q_IMPORT_PLUGIN(DevicePluginLircd)
-Q_IMPORT_PLUGIN(DevicePluginWakeOnLan)
-Q_IMPORT_PLUGIN(DevicePluginMailNotification)
-Q_IMPORT_PLUGIN(DevicePluginPhilipsHue)
-Q_IMPORT_PLUGIN(DevicePluginEQ3)
+#include "maxcube.h"
 
-#if USE_BOBLIGHT
-Q_IMPORT_PLUGIN(DevicePluginBoblight)
-#endif
-
-int main(int argc, char *argv[])
+class MaxCubeDiscovery : public QObject
 {
-    QCoreApplication a(argc, argv);
+    Q_OBJECT
+public:
+    explicit MaxCubeDiscovery(QObject *parent = 0);
 
-    a.setOrganizationName("guh");
+    void detectCubes();
 
-    GuhCore::instance();
+private:
+    QUdpSocket *m_udpSocket;
+    QTimer *m_timeout;
 
-    return a.exec();
-}
+    quint16 m_port;
+
+    QList<MaxCube*> m_cubeList;
+
+private slots:
+    void readData();
+    void discoverTimeout();
+
+signals:
+    void cubesDetected(const QList<MaxCube*> &cubeList);
+
+public slots:
+
+};
+
+#endif // MAXCUBEDISCOVERY_H

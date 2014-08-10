@@ -16,35 +16,69 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <QCoreApplication>
-#include <guhcore.h>
+#ifndef MAXDEVICE_H
+#define MAXDEVICE_H
 
-#include <QtPlugin>
+#include <QObject>
 
-Q_IMPORT_PLUGIN(DevicePluginElro)
-Q_IMPORT_PLUGIN(DevicePluginIntertechno)
-//Q_IMPORT_PLUGIN(DevicePluginMeisterAnker)
-Q_IMPORT_PLUGIN(DevicePluginWifiDetector)
-Q_IMPORT_PLUGIN(DevicePluginConrad)
-Q_IMPORT_PLUGIN(DevicePluginMock)
-Q_IMPORT_PLUGIN(DevicePluginOpenweathermap)
-Q_IMPORT_PLUGIN(DevicePluginLircd)
-Q_IMPORT_PLUGIN(DevicePluginWakeOnLan)
-Q_IMPORT_PLUGIN(DevicePluginMailNotification)
-Q_IMPORT_PLUGIN(DevicePluginPhilipsHue)
-Q_IMPORT_PLUGIN(DevicePluginEQ3)
+#include "room.h"
 
-#if USE_BOBLIGHT
-Q_IMPORT_PLUGIN(DevicePluginBoblight)
-#endif
-
-int main(int argc, char *argv[])
+class MaxDevice : public QObject
 {
-    QCoreApplication a(argc, argv);
+    Q_OBJECT
+public:
+    explicit MaxDevice(QObject *parent = 0);
 
-    a.setOrganizationName("guh");
+    enum MaxDeviceType{
+        DeviceCube = 0,
+        DeviceRadiatorThermostat = 1,
+        DeviceRadiatorThermostatPlus = 2,
+        DeviceWallThermostat = 3,
+        DeviceWindowContact = 4,
+        DeviceEcoButton = 5
+    };
 
-    GuhCore::instance();
+    enum DeviceMode{
+        Auto = 0,
+        Manual = 1,
+        Temporary = 2,
+        Boost = 3
+    };
 
-    return a.exec();
-}
+    int deviceType() const;
+    void setDeviceType(const int &deviceType);
+
+    QString deviceTypeString() const;
+
+    QByteArray rfAddress() const;
+    void setRfAddress(const QByteArray &rfAddress);
+
+    QString serialNumber() const;
+    void setSerialNumber(const QString &serialNumber);
+
+    QString deviceName() const;
+    void setDeviceName(const QString &deviceName);
+
+    int roomId() const;
+    void setRoomId(const int &roomId);
+
+    QString roomName() const;
+    void setRoomName(const QString &roomName);
+
+private:
+    int m_deviceType;
+    QString m_deviceTypeString;
+    QByteArray m_rfAddress;
+    QString m_serialNumber;
+    QString m_deviceName;
+    int m_roomId;
+    QString m_roomName;
+    bool m_batteryOk;
+
+signals:
+
+public slots:
+
+};
+
+#endif // MAXDEVICE_H

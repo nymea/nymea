@@ -16,35 +16,39 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <QCoreApplication>
-#include <guhcore.h>
+#include "room.h"
 
-#include <QtPlugin>
-
-Q_IMPORT_PLUGIN(DevicePluginElro)
-Q_IMPORT_PLUGIN(DevicePluginIntertechno)
-//Q_IMPORT_PLUGIN(DevicePluginMeisterAnker)
-Q_IMPORT_PLUGIN(DevicePluginWifiDetector)
-Q_IMPORT_PLUGIN(DevicePluginConrad)
-Q_IMPORT_PLUGIN(DevicePluginMock)
-Q_IMPORT_PLUGIN(DevicePluginOpenweathermap)
-Q_IMPORT_PLUGIN(DevicePluginLircd)
-Q_IMPORT_PLUGIN(DevicePluginWakeOnLan)
-Q_IMPORT_PLUGIN(DevicePluginMailNotification)
-Q_IMPORT_PLUGIN(DevicePluginPhilipsHue)
-Q_IMPORT_PLUGIN(DevicePluginEQ3)
-
-#if USE_BOBLIGHT
-Q_IMPORT_PLUGIN(DevicePluginBoblight)
-#endif
-
-int main(int argc, char *argv[])
+Room::Room(QObject *parent) :
+    QObject(parent)
 {
-    QCoreApplication a(argc, argv);
+}
 
-    a.setOrganizationName("guh");
+int Room::roomId() const
+{
+    return m_roomId;
+}
 
-    GuhCore::instance();
+void Room::setRoomId(const int &roomId)
+{
+    m_roomId = roomId;
+}
 
-    return a.exec();
+QString Room::roomName() const
+{
+    return m_roomName;
+}
+
+void Room::setRoomName(const QString &roomName)
+{
+    m_roomName = roomName;
+}
+
+QByteArray Room::groupRfAddress() const
+{
+    return m_groupRfAddress;
+}
+
+void Room::setGroupRfAddress(const QByteArray &groupRfAddress)
+{
+    m_groupRfAddress = groupRfAddress;
 }

@@ -16,36 +16,59 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <QCoreApplication>
-#include <guhcore.h>
+#ifndef WEMODISCOVERY_H
+#define WEMODISCOVERY_H
 
-#include <QtPlugin>
+#include <QUdpSocket>
+#include <QHostAddress>
+#include <QTimer>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QUrl>
+#include <QXmlStreamReader>
+#include <QXmlStreamWriter>
+#include <QXmlStreamAttributes>
 
-Q_IMPORT_PLUGIN(DevicePluginElro)
-Q_IMPORT_PLUGIN(DevicePluginIntertechno)
-//Q_IMPORT_PLUGIN(DevicePluginMeisterAnker)
-Q_IMPORT_PLUGIN(DevicePluginWifiDetector)
-Q_IMPORT_PLUGIN(DevicePluginConrad)
-Q_IMPORT_PLUGIN(DevicePluginMock)
-Q_IMPORT_PLUGIN(DevicePluginOpenweathermap)
-Q_IMPORT_PLUGIN(DevicePluginLircd)
-Q_IMPORT_PLUGIN(DevicePluginWakeOnLan)
-Q_IMPORT_PLUGIN(DevicePluginMailNotification)
-Q_IMPORT_PLUGIN(DevicePluginPhilipsHue)
-Q_IMPORT_PLUGIN(DevicePluginEQ3)
-Q_IMPORT_PLUGIN(DevicePluginWemo)
+#include "wemoswitch.h"
 
-#if USE_BOBLIGHT
-Q_IMPORT_PLUGIN(DevicePluginBoblight)
-#endif
-
-int main(int argc, char *argv[])
+class WemoDiscovery : public QUdpSocket
 {
-    QCoreApplication a(argc, argv);
+    Q_OBJECT
+public:
+    explicit WemoDiscovery(QObject *parent = 0);
 
-    a.setOrganizationName("guh");
+private:
+    QHostAddress m_host;
+    qint16 m_port;
 
-    GuhCore::instance();
+    QTimer *m_timeout;
 
-    return a.exec();
-}
+    QNetworkAccessManager *m_manager;
+
+    QByteArray m_deviceInformationData;
+    bool checkXmlData(QByteArray data);
+    QString printXmlData(QByteArray data);
+
+    QList<WemoSwitch*> m_deviceList;
+
+signals:
+    void discoveryDone(QList<WemoSwitch*> deviceList);
+
+private slots:
+    void error(QAbstractSocket::SocketError error);
+    void sendDiscoverMessage();
+    void readData();
+    void discoverTimeout();
+
+    void requestDeviceInformation(QUrl location);
+    void replyFinished(QNetworkReply *reply);
+    void parseDeviceInformation(QByteArray data);
+
+public slots:
+    void discover(int timeout);
+
+
+};
+
+#endif // WEMODISCOVERY_H

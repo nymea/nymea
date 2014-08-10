@@ -31,6 +31,7 @@ LIBS += -L../plugins/deviceplugins/mailnotification -lguh_devicepluginmailnotifi
 LIBS += -L../plugins/deviceplugins/wakeonlan -lguh_devicepluginwakeonlan
 LIBS += -L../plugins/deviceplugins/philipshue -lguh_devicepluginphilipshue
 LIBS += -L../plugins/deviceplugins/eq-3 -lguh_deviceplugineq3
+LIBS += -L../plugins/deviceplugins/wemo -lguh_devicepluginwemo
 
 boblight {
     xcompile {

@@ -11,6 +11,7 @@ SUBDIRS += elro         \
     mailnotification    \
     philipshue          \
     eq-3                \
+    wemo                \
 
 boblight {
     SUBDIRS += boblight

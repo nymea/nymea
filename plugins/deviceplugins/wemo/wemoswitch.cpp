@@ -131,19 +131,20 @@ bool WemoSwitch::powerState()
     return m_powerState;
 }
 
-bool WemoSwitch::reachabel()
+bool WemoSwitch::reachable()
 {
-    return m_reachabel;
+    return m_reachable;
 }
 
 void WemoSwitch::replyFinished(QNetworkReply *reply)
 {
     if(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() != 200){
-        m_reachabel = false;
+        m_reachable = false;
         emit stateChanged();
+        m_setPowerReplay->deleteLater();
         return;
     }else{
-        m_reachabel = true;
+        m_reachable = true;
     }
 
     // if this is the answerer to a refresh request

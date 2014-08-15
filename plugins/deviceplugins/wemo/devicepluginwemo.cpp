@@ -287,6 +287,7 @@ void DevicePluginWemo::deviceRemoved(Device *device)
 
     WemoSwitch *wemoSwitch= m_wemoSwitches.key(device);
     qDebug() << "remove wemo swich " << wemoSwitch->serialNumber();
+    wemoSwitch->deleteLater();
     m_wemoSwitches.remove(wemoSwitch);
 }
 

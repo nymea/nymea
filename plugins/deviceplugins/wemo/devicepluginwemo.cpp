@@ -337,7 +337,7 @@ void DevicePluginWemo::wemoSwitchStateChanged()
     if(m_wemoSwitches.contains(wemoSwitch)){
         Device * device = m_wemoSwitches.value(wemoSwitch);
         device->setStateValue(powerStateTypeId, wemoSwitch->powerState());
-        device->setStateValue(reachableStateTypeId, wemoSwitch->reachabel());
+        device->setStateValue(reachableStateTypeId, wemoSwitch->reachable());
     }
 }
 

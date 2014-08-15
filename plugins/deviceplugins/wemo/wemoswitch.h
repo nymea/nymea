@@ -68,7 +68,7 @@ public:
     QString uuid() const;
 
     bool powerState();
-    bool reachabel();
+    bool reachable();
 
 private:
     QUrl m_location;
@@ -87,7 +87,7 @@ private:
     QNetworkReply *m_setPowerReplay;
 
     bool m_powerState;
-    bool m_reachabel;
+    bool m_reachable;
 
     ActionId m_actionId;
 signals:

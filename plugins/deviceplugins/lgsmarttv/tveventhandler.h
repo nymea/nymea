@@ -16,37 +16,47 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <QCoreApplication>
-#include <guhcore.h>
+#ifndef TVEVENTHANDLER_H
+#define TVEVENTHANDLER_H
 
-#include <QtPlugin>
+#include <QTcpServer>
+#include <QTcpSocket>
+#include <QDebug>
+#include <QDateTime>
+#include <QTextStream>
+#include <QRegExp>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
 
-Q_IMPORT_PLUGIN(DevicePluginElro)
-Q_IMPORT_PLUGIN(DevicePluginIntertechno)
-//Q_IMPORT_PLUGIN(DevicePluginMeisterAnker)
-Q_IMPORT_PLUGIN(DevicePluginWifiDetector)
-Q_IMPORT_PLUGIN(DevicePluginConrad)
-Q_IMPORT_PLUGIN(DevicePluginMock)
-Q_IMPORT_PLUGIN(DevicePluginOpenweathermap)
-Q_IMPORT_PLUGIN(DevicePluginLircd)
-Q_IMPORT_PLUGIN(DevicePluginWakeOnLan)
-Q_IMPORT_PLUGIN(DevicePluginMailNotification)
-Q_IMPORT_PLUGIN(DevicePluginPhilipsHue)
-Q_IMPORT_PLUGIN(DevicePluginEQ3)
-Q_IMPORT_PLUGIN(DevicePluginWemo)
-Q_IMPORT_PLUGIN(DevicePluginLgSmartTv)
-
-#if USE_BOBLIGHT
-Q_IMPORT_PLUGIN(DevicePluginBoblight)
-#endif
-
-int main(int argc, char *argv[])
+class TvEventHandler : public QTcpServer
 {
-    QCoreApplication a(argc, argv);
+    Q_OBJECT
+public:
+    explicit TvEventHandler(QObject *parent = 0, QHostAddress host = QHostAddress(), int port = 8080);
+    void incomingConnection(qintptr socket) override;
 
-    a.setOrganizationName("guh");
+private:
+    QHostAddress m_host;
+    int m_port;
+    bool m_disabled;
 
-    GuhCore::instance();
+    bool m_expectingData;
 
-    return a.exec();
-}
+    QNetworkAccessManager *m_manager;
+
+signals:
+    void eventOccured(const QByteArray &path);
+    void byebyeEvent();
+
+private slots:
+    void readClient();
+    void discardClient();
+
+public slots:
+    void enable();
+    void disable();
+
+};
+
+#endif // TVEVENTHANDLER_H

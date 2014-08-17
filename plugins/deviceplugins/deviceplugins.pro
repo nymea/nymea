@@ -12,6 +12,7 @@ SUBDIRS += elro         \
     philipshue          \
     eq-3                \
     wemo                \
+    lgsmarttv           \
 
 boblight {
     SUBDIRS += boblight

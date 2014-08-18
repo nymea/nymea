@@ -26,11 +26,6 @@
 #include <QStringList>
 
 DeviceClassId mockDeviceClassId = DeviceClassId("753f0d32-0468-4d08-82ed-1964aab03298");
-DeviceClassId mockDeviceAutoClassId = DeviceClassId("ab4257b3-7548-47ee-9bd4-7dc3004fd197");
-DeviceClassId mockDeviceDiscoveryClassId = DeviceClassId("1bbaf751-36b7-4d3d-b05a-58dab2a3be8c");
-DeviceClassId mockDeviceAsyncSetupClassId = DeviceClassId("c08a8b27-8200-413d-b96b-4cff78b864d9");
-DeviceClassId mockDeviceBrokenClassId = DeviceClassId("ba5fb404-c9ce-4db4-8cd4-f48c61c24b13");
-DeviceClassId mockDeviceBrokenAsyncSetupClassId = DeviceClassId("bd5b78c5-53c9-4417-8eac-8ab2bce97bd0");
 EventTypeId mockEvent1Id = EventTypeId("45bf3752-0fc6-46b9-89fd-ffd878b5b22b");
 EventTypeId mockEvent2Id = EventTypeId("863d5920-b1cf-4eb9-88bd-8f7b8583b1cf");
 StateTypeId mockIntStateId = StateTypeId("80baec19-54de-4948-ac46-31eabfaceb83");
@@ -49,154 +44,6 @@ DevicePluginMock::~DevicePluginMock()
 {
 }
 
-//QList<DeviceClass> DevicePluginMock::supportedDevices() const
-//{
-//    QList<DeviceClass> ret;
-
-//    DeviceClass deviceClassMock(pluginId(), supportedVendors().first().id(), mockDeviceClassId);
-//    deviceClassMock.setName("Mock Device");
-
-//    QList<ParamType> mockParams;
-//    ParamType portParam("httpport", QVariant::Int);
-//    mockParams.append(portParam);
-
-//    deviceClassMock.setParamTypes(mockParams);
-
-//    QList<StateType> mockStates;
-
-//    StateType intState(mockIntStateId);
-//    intState.setName("Dummy int state");
-//    intState.setType(QVariant::Int);
-//    intState.setDefaultValue(10);
-//    mockStates.append(intState);
-
-//    StateType boolState(mockBoolStateId);
-//    boolState.setName("Dummy bool state");
-//    boolState.setType(QVariant::Int);
-//    boolState.setDefaultValue(false);
-//    mockStates.append(boolState);
-
-//    deviceClassMock.setStateTypes(mockStates);
-
-//    QList<EventType> mockEvents;
-    
-//    EventType event1(mockEvent1Id);
-//    event1.setName("Mock Event 1");
-//    mockEvents.append(event1);
-
-//    EventType event2(mockEvent2Id);
-//    event2.setName("Mock Event 2");
-//    QList<ParamType> event2ParamTypes;
-//    ParamType event2Param1Type("mockParamInt", QVariant::Int, 42);
-//    event2ParamTypes.append(event2Param1Type);
-//    event2.setParameters(event2ParamTypes);
-//    mockEvents.append(event2);
-
-//    deviceClassMock.setEventTypes(mockEvents);
-
-//    QList<ActionType> mockActions;
-
-//    mockParams.clear();
-//    ActionType action1(mockActionIdWithParams);
-//    action1.setName("Mock Action 1 (with params)");
-//    ParamType mockActionParam1("mockActionParam1", QVariant::Int);
-//    mockParams.append(mockActionParam1);
-//    ParamType mockActionParam2("mockActionParam2", QVariant::Bool);
-//    mockParams.append(mockActionParam2);
-//    action1.setParameters(mockParams);
-//    mockActions.append(action1);
-
-//    ActionType action2(mockActionIdNoParams);
-//    action2.setName("Mock Action 3 (without params)");
-//    mockActions.append(action2);
-
-//    ActionType action3(mockActionIdAsync);
-//    action3.setName("Mock Action 3 (async)");
-//    mockActions.append(action3);
-
-//    ActionType action4(mockActionIdFailing);
-//    action4.setName("Mock Action 4 (broken)");
-//    mockActions.append(action4);
-
-//    ActionType action5(mockActionIdAsyncFailing);
-//    action5.setName("Mock Action 5 (async, broken)");
-//    mockActions.append(action4);
-
-//    deviceClassMock.setActions(mockActions);
-
-//    ret.append(deviceClassMock);
-
-//    // Auto created mock device
-//    DeviceClass deviceClassMockAuto(pluginId(), supportedVendors().first().id(), mockDeviceAutoClassId);
-//    deviceClassMockAuto.setName("Mock Device (Auto created)");
-//    deviceClassMockAuto.setCreateMethod(DeviceClass::CreateMethodAuto);
-
-//    mockParams.clear();
-//    deviceClassMockAuto.setParamTypes(mockParams);
-//    deviceClassMockAuto.setStateTypes(mockStates);
-//    deviceClassMockAuto.setEventTypes(mockEvents);
-//    deviceClassMockAuto.setActions(mockActions);
-
-//    ret.append(deviceClassMockAuto);
-
-//    // Discovery created device
-//    DeviceClass deviceClassMockDiscovery(pluginId(), supportedVendors().first().id(), mockDeviceDiscoveryClassId);
-//    deviceClassMockDiscovery.setName("Mock Device (Discovery created)");
-//    deviceClassMockDiscovery.setCreateMethod(DeviceClass::CreateMethodDiscovery);
-//    QList<ParamType> paramTypes;
-//    ParamType paramType = ParamType("resultCount", QVariant::Int, 2);
-//    paramType.setAllowedValues(QList<QVariant>() << 1 << 2);
-//    paramTypes.append(paramType);
-//    deviceClassMockDiscovery.setDiscoveryParamTypes(paramTypes);
-
-//    mockParams.clear();
-//    mockParams.append(portParam);
-//    deviceClassMockDiscovery.setParamTypes(mockParams);
-//    deviceClassMockDiscovery.setStateTypes(mockStates);
-//    deviceClassMockDiscovery.setEventTypes(mockEvents);
-//    deviceClassMockDiscovery.setActions(mockActions);
-
-//    ret.append(deviceClassMockDiscovery);
-
-//    // Async setup device
-//    DeviceClass deviceClassMockAsync(pluginId(), supportedVendors().first().id(), mockDeviceAsyncSetupClassId);
-//    deviceClassMockAsync.setName("Mock Device (Async)");
-//    deviceClassMockAsync.setCreateMethod(DeviceClass::CreateMethodUser);
-
-//    deviceClassMockAsync.setParamTypes(mockParams);
-//    deviceClassMockAsync.setStateTypes(mockStates);
-//    deviceClassMockAsync.setEventTypes(mockEvents);
-//    deviceClassMockAsync.setActions(mockActions);
-
-//    ret.append(deviceClassMockAsync);
-
-//    // Async setup device
-//    DeviceClass deviceClassMockBroken(pluginId(), supportedVendors().first().id(), mockDeviceBrokenClassId);
-//    deviceClassMockBroken.setName("Mock Device (Broken setup)");
-//    deviceClassMockBroken.setCreateMethod(DeviceClass::CreateMethodUser);
-
-//    deviceClassMockBroken.setParamTypes(mockParams);
-//    deviceClassMockBroken.setStateTypes(mockStates);
-//    deviceClassMockBroken.setEventTypes(mockEvents);
-//    deviceClassMockBroken.setActions(mockActions);
-
-//    ret.append(deviceClassMockBroken);
-
-//    // Broken Async setup device
-//    DeviceClass deviceClassMockBrokenAsyncSetup(pluginId(), supportedVendors().first().id(), mockDeviceBrokenAsyncSetupClassId);
-//    deviceClassMockBrokenAsyncSetup.setName("Mock Device (Async Broken setup)");
-//    deviceClassMockBrokenAsyncSetup.setCreateMethod(DeviceClass::CreateMethodUser);
-
-//    deviceClassMockBrokenAsyncSetup.setParamTypes(mockParams);
-//    deviceClassMockBrokenAsyncSetup.setStateTypes(mockStates);
-//    deviceClassMockBrokenAsyncSetup.setEventTypes(mockEvents);
-//    deviceClassMockBrokenAsyncSetup.setActions(mockActions);
-
-//    ret.append(deviceClassMockBrokenAsyncSetup);
-
-//    return ret;
-//}
-
 DeviceManager::HardwareResources DevicePluginMock::requiredHardware() const
 {
     return DeviceManager::HardwareResourceTimer;
@@ -205,7 +52,7 @@ DeviceManager::HardwareResources DevicePluginMock::requiredHardware() const
 QPair<DeviceManager::DeviceError, QString> DevicePluginMock::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
 {
     Q_UNUSED(deviceClassId)
-    Q_UNUSED(params)
+    qDebug() << "starting mock discovery:" << params;
     m_discoveredDeviceCount = params.paramValue("resultCount").toInt();
     QTimer::singleShot(1000, this, SLOT(emitDevicesDiscovered()));
     return report(DeviceManager::DeviceErrorNoError);
@@ -213,9 +60,9 @@ QPair<DeviceManager::DeviceError, QString> DevicePluginMock::discoverDevices(con
 
 QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginMock::setupDevice(Device *device)
 {
-    qDebug() << "Mockdevice created returning true" << device->paramValue("httpport").toInt();
+    qDebug() << "Mockdevice created returning true" << device->paramValue("httpport").toInt() << device->paramValue("async").toBool() << device->paramValue("broken").toBool();
 
-    if (device->deviceClassId() == mockDeviceBrokenClassId) {
+    if (device->paramValue("broken").toBool()) {
         return reportDeviceSetup(DeviceManager::DeviceSetupStatusFailure, "This device is intentionally broken.");
     }
 
@@ -230,7 +77,7 @@ QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginMock::setupDevice(D
     connect(daemon, &HttpDaemon::triggerEvent, this, &DevicePluginMock::triggerEvent);
     connect(daemon, &HttpDaemon::setState, this, &DevicePluginMock::setState);
 
-    if (device->deviceClassId() == mockDeviceAsyncSetupClassId || device->deviceClassId() == mockDeviceBrokenAsyncSetupClassId) {
+    if (device->paramValue("async").toBool()) {
         m_asyncSetupDevices.append(device);
         QTimer::singleShot(1000, this, SLOT(emitDeviceSetupFinished()));
         return reportDeviceSetup(DeviceManager::DeviceSetupStatusAsync);
@@ -246,12 +93,12 @@ void DevicePluginMock::deviceRemoved(Device *device)
 void DevicePluginMock::startMonitoringAutoDevices()
 {
     foreach (Device *device, myDevices()) {
-        if (device->deviceClassId() == mockDeviceAutoClassId) {
+        if (device->paramValue("auto").toBool()) {
             return; // We already have a Auto Mock device... do nothing.
         }
     }
 
-    DeviceDescriptor mockDescriptor(mockDeviceAutoClassId, "Mock Device (Auto created)");
+    DeviceDescriptor mockDescriptor(mockDeviceClassId, "Mock Device (Auto created)");
 
     ParamList params;
     qsrand(QDateTime::currentMSecsSinceEpoch());
@@ -263,7 +110,7 @@ void DevicePluginMock::startMonitoringAutoDevices()
     QList<DeviceDescriptor> deviceDescriptorList;
     deviceDescriptorList.append(mockDescriptor);
 
-    emit autoDevicesAppeared(mockDeviceAutoClassId, deviceDescriptorList);
+    emit autoDevicesAppeared(mockDeviceClassId, deviceDescriptorList);
 }
 
 QList<ParamType> DevicePluginMock::configurationDescription() const
@@ -332,7 +179,7 @@ void DevicePluginMock::emitDevicesDiscovered()
     QList<DeviceDescriptor> deviceDescriptors;
 
     if (m_discoveredDeviceCount > 0) {
-        DeviceDescriptor d1(mockDeviceDiscoveryClassId, "Mock Device (Discovered)");
+        DeviceDescriptor d1(mockDeviceClassId, "Mock Device (Discovered)");
         ParamList params;
         Param httpParam("httpport", "55555");
         params.append(httpParam);
@@ -341,7 +188,7 @@ void DevicePluginMock::emitDevicesDiscovered()
     }
 
     if (m_discoveredDeviceCount > 1) {
-        DeviceDescriptor d2(mockDeviceDiscoveryClassId, "Mock Device (Discovered)");
+        DeviceDescriptor d2(mockDeviceClassId, "Mock Device (Discovered)");
         ParamList params;
         Param httpParam("httpport", "55556");
         params.append(httpParam);
@@ -349,17 +196,17 @@ void DevicePluginMock::emitDevicesDiscovered()
         deviceDescriptors.append(d2);
     }
 
-    emit devicesDiscovered(mockDeviceDiscoveryClassId, deviceDescriptors);
+    emit devicesDiscovered(mockDeviceClassId, deviceDescriptors);
 }
 
 void DevicePluginMock::emitDeviceSetupFinished()
 {
     qDebug() << "emitting setup finised";
     Device *device = m_asyncSetupDevices.takeFirst();
-    if (device->deviceClassId() == mockDeviceAsyncSetupClassId) {
-        emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusSuccess, QString());
-    } else {
+    if (device->paramValue("broken").toBool()) {
         emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusFailure, QString("This device is intentionally broken"));
+    } else {
+        emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusSuccess, QString());
     }
 }
 

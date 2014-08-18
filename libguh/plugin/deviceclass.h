@@ -33,10 +33,12 @@ class DeviceClass
 {
 public:
     enum CreateMethod {
-        CreateMethodUser,
-        CreateMethodAuto,
-        CreateMethodDiscovery
+        CreateMethodUser = 0x01,
+        CreateMethodAuto = 0x02,
+        CreateMethodDiscovery = 0x04
     };
+    Q_DECLARE_FLAGS(CreateMethods, CreateMethod)
+
     enum SetupMethod {
         SetupMethodJustAdd,
         SetupMethodDisplayPin,
@@ -61,7 +63,7 @@ public:
     void setEventTypes(const QList<EventType> &eventTypes);
 
     QList<ActionType> actionTypes() const;
-    void setActions(const QList<ActionType> &actionTypes);
+    void setActionTypes(const QList<ActionType> &actionTypes);
 
     QList<ParamType> paramTypes() const;
     void setParamTypes(const QList<ParamType> &paramTypes);
@@ -69,8 +71,8 @@ public:
     QList<ParamType> discoveryParamTypes() const;
     void setDiscoveryParamTypes(const QList<ParamType> &paramTypes);
 
-    CreateMethod createMethod() const;
-    void setCreateMethod(CreateMethod createMethod);
+    CreateMethods createMethods() const;
+    void setCreateMethods(CreateMethods createMethods);
     SetupMethod setupMethod() const;
     void setSetupMethod(SetupMethod setupMethod);
 
@@ -90,7 +92,7 @@ private:
     QList<ActionType> m_actionTypes;
     QList<ParamType> m_paramTypes;
     QList<ParamType> m_discoveryParamTypes;
-    CreateMethod m_createMethod;
+    CreateMethods m_createMethods;
     SetupMethod m_setupMethod;
     QString m_pairingInfo;
 };

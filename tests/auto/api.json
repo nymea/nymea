@@ -1,4 +1,4 @@
-4
+5
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -364,7 +364,7 @@
             "actionTypes": [
                 "$ref:ActionType"
             ],
-            "createMethod": "$ref:CreateMethodType",
+            "createMethods": "$ref:CreateMethodType",
             "discoveryParamTypes": [
                 "$ref:ParamType"
             ],

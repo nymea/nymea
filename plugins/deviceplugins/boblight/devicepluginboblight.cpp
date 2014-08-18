@@ -26,9 +26,6 @@
 #include <QDebug>
 #include <QStringList>
 
-VendorId boblightVendorId = VendorId("8c5e8d4c-b5ed-4bfe-b30d-35c2790ec100");
-
-PluginId boblightPluginUuid = PluginId("e1647872-c0f5-4680-b49b-3924e5b54dcd");
 DeviceClassId boblightDeviceClassId = DeviceClassId("1647c61c-db14-461e-8060-8a3533d5d92f");
 StateTypeId colorStateTypeId = StateTypeId("97ec80cd-43a9-40fa-93b7-d1580043d981");
 ActionTypeId setColorActionTypeId = ActionTypeId("668e1aa3-fa13-49ce-8630-17a5c0a7c34b");
@@ -37,51 +34,6 @@ DevicePluginBoblight::DevicePluginBoblight()
 {
     m_bobClient = new BobClient(this);
     connect(this, &DevicePlugin::configValueChanged, this, &DevicePluginBoblight::connectToBoblight);
-}
-
-QList<Vendor> DevicePluginBoblight::supportedVendors() const
-{
-    QList<Vendor> ret;
-    Vendor guh(boblightVendorId, "http://code.google.com/p/boblight/");
-    ret.append(guh);
-    return ret;
-}
-
-QList<DeviceClass> DevicePluginBoblight::supportedDevices() const
-{
-    QList<DeviceClass> ret;
-
-    DeviceClass deviceClassBoblight(pluginId(), boblightVendorId, boblightDeviceClassId);
-    deviceClassBoblight.setName("Boblight");
-    deviceClassBoblight.setCreateMethod(DeviceClass::CreateMethodAuto);
-    
-    QList<StateType> boblightStates;
-
-    StateType colorState(colorStateTypeId);
-    colorState.setName("color");
-    colorState.setType(QVariant::Color);
-    colorState.setDefaultValue(QColor(Qt::black));
-    boblightStates.append(colorState);
-
-    deviceClassBoblight.setStateTypes(boblightStates);
-
-    QList<ActionType> boblightActons;
-
-    ActionType setColorAction(setColorActionTypeId);
-    setColorAction.setName("Set color");
-
-    QList<ParamType> actionParamsSetColor;
-    ParamType actionParamSetColor("color", QVariant::Color);
-    actionParamsSetColor.append(actionParamSetColor);
-    setColorAction.setParameters(actionParamsSetColor);
-
-    boblightActons.append(setColorAction);
-
-    deviceClassBoblight.setActions(boblightActons);
-
-    ret.append(deviceClassBoblight);
-
-    return ret;
 }
 
 DeviceManager::HardwareResources DevicePluginBoblight::requiredHardware() const

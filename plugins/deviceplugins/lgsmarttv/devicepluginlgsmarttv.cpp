@@ -23,7 +23,6 @@
 
 #include <QDebug>
 
-VendorId lgVendorId = VendorId("a9af9673-78db-4226-a16b-f34b304f7041");
 DeviceClassId lgSmartTvDeviceClassId = DeviceClassId("1d41b5a8-74ff-4a12-b365-c7bbe610848f");
 
 StateTypeId tvReachableStateTypeId = StateTypeId("b056c36b-df87-4177-8d5d-1e7c1e8cdc7a");
@@ -64,183 +63,6 @@ DevicePluginLgSmartTv::DevicePluginLgSmartTv()
     m_discovery = new TvDiscovery(this);
 
     connect(m_discovery,SIGNAL(discoveryDone(QList<TvDevice*>)),this,SLOT(discoveryDone(QList<TvDevice*>)));
-}
-
-QList<Vendor> DevicePluginLgSmartTv::supportedVendors() const
-{
-    QList<Vendor> ret;
-    Vendor lgVendor(lgVendorId, "LG");
-    ret.append(lgVendor);
-    return ret;
-}
-
-QList<DeviceClass> DevicePluginLgSmartTv::supportedDevices() const
-{
-    QList<DeviceClass> ret;
-
-    DeviceClass deviceClassLgSmartTv(pluginId(), lgVendorId, lgSmartTvDeviceClassId);
-    deviceClassLgSmartTv.setName("LG Smart Tv");
-    deviceClassLgSmartTv.setCreateMethod(DeviceClass::CreateMethodDiscovery);
-    //deviceClassLgSmartTv.setSetupMethod(DeviceClass::SetupMethodDisplayPin);
-    // TODO: display pin...
-
-    // Params
-    QList<ParamType> paramTypes;
-    paramTypes.append(ParamType("name", QVariant::String));
-    paramTypes.append(ParamType("uuid", QVariant::String));
-    paramTypes.append(ParamType("model", QVariant::String));
-    paramTypes.append(ParamType("host address", QVariant::String));
-    paramTypes.append(ParamType("port", QVariant::Int));
-    paramTypes.append(ParamType("location", QVariant::String));
-    paramTypes.append(ParamType("manufacturer", QVariant::String));
-    paramTypes.append(ParamType("key", QVariant::String));
-
-    deviceClassLgSmartTv.setParamTypes(paramTypes);
-
-    // States
-    QList<StateType> tvStates;
-
-    StateType reachableState(tvReachableStateTypeId);
-    reachableState.setName("reachable");
-    reachableState.setType(QVariant::Bool);
-    reachableState.setDefaultValue(false);
-    tvStates.append(reachableState);
-
-    StateType tv3DModeState(tv3DModeStateTypeId);
-    tv3DModeState.setName("3D Mode");
-    tv3DModeState.setType(QVariant::Bool);
-    tv3DModeState.setDefaultValue(false);
-    tvStates.append(tv3DModeState);
-
-    StateType tvVolumeLevelState(tvVolumeLevelStateTypeId);
-    tvVolumeLevelState.setName("volume level");
-    tvVolumeLevelState.setType(QVariant::Int);
-    tvVolumeLevelState.setDefaultValue(-1);
-    tvStates.append(tvVolumeLevelState);
-
-    StateType tvMuteState(tvMuteStateTypeId);
-    tvMuteState.setName("mute");
-    tvMuteState.setType(QVariant::Bool);
-    tvMuteState.setDefaultValue(false);
-    tvStates.append(tvMuteState);
-
-    StateType tvChannelTypeState(tvChannelTypeStateTypeId);
-    tvChannelTypeState.setName("channel type");
-    tvChannelTypeState.setType(QVariant::String);
-    tvChannelTypeState.setDefaultValue("");
-    tvStates.append(tvChannelTypeState);
-
-    StateType tvChannelNameState(tvChannelNameStateTypeId);
-    tvChannelNameState.setName("channel name");
-    tvChannelNameState.setType(QVariant::String);
-    tvChannelNameState.setDefaultValue("");
-    tvStates.append(tvChannelNameState);
-
-    StateType tvChannelNumberState(tvChannelNumberStateTypeId);
-    tvChannelNumberState.setName("channel number");
-    tvChannelNumberState.setType(QVariant::Int);
-    tvChannelNumberState.setDefaultValue(-1);
-    tvStates.append(tvChannelNumberState);
-
-    StateType tvProgramNameState(tvProgramNameStateTypeId);
-    tvProgramNameState.setName("program name");
-    tvProgramNameState.setType(QVariant::String);
-    tvProgramNameState.setDefaultValue("");
-    tvStates.append(tvProgramNameState);
-
-    StateType tvInputSourceIndexState(tvInputSourceIndexStateTypeId);
-    tvInputSourceIndexState.setName("input source index");
-    tvInputSourceIndexState.setType(QVariant::Int);
-    tvInputSourceIndexState.setDefaultValue(-1);
-    tvStates.append(tvInputSourceIndexState);
-
-    StateType tvInputSourceLabelNameState(tvInputSourceLabelNameStateTypeId);
-    tvInputSourceLabelNameState.setName("input source label");
-    tvInputSourceLabelNameState.setType(QVariant::String);
-    tvInputSourceLabelNameState.setDefaultValue("");
-    tvStates.append(tvInputSourceLabelNameState);
-
-    deviceClassLgSmartTv.setStateTypes(tvStates);
-
-    // Actions
-    QList<ActionType> tvActions;
-
-    ActionType commandVolumeUpAction(commandVolumeUpActionTypeId);
-    commandVolumeUpAction.setName("volume up");
-    tvActions.append(commandVolumeUpAction);
-
-    ActionType commandVolumeDownAction(commandVolumeDownActionTypeId);
-    commandVolumeDownAction.setName("volume down");
-    tvActions.append(commandVolumeDownAction);
-
-    ActionType commandMuteAction(commandMuteActionTypeId);
-    commandMuteAction.setName("mute");
-    tvActions.append(commandMuteAction);
-
-    ActionType commandChannelUpAction(commandChannelUpActionTypeId);
-    commandChannelUpAction.setName("channel up");
-    tvActions.append(commandChannelUpAction);
-
-    ActionType commandChannelDownAction(commandChannelDownActionTypeId);
-    commandChannelDownAction.setName("channel down");
-    tvActions.append(commandChannelDownAction);
-
-    ActionType commandPowerOffAction(commandPowerOffActionTypeId);
-    commandPowerOffAction.setName("power");
-    tvActions.append(commandPowerOffAction);
-
-    ActionType commandArrowUpAction(commandArrowUpActionTypeId);
-    commandArrowUpAction.setName("arrow up");
-    tvActions.append(commandArrowUpAction);
-
-    ActionType commandArrowDownAction(commandArrowDownActionTypeId);
-    commandArrowDownAction.setName("arrow down");
-    tvActions.append(commandArrowDownAction);
-
-    ActionType commandArrowLeftAction(commandArrowLeftActionTypeId);
-    commandArrowLeftAction.setName("arrow left");
-    tvActions.append(commandArrowLeftAction);
-
-    ActionType commandArrowRightAction(commandArrowRightActionTypeId);
-    commandArrowRightAction.setName("arrow right");
-    tvActions.append(commandArrowRightAction);
-
-    ActionType commandOkAction(commandOkActionTypeId);
-    commandOkAction.setName("ok");
-    tvActions.append(commandOkAction);
-
-    ActionType commandBackAction(commandBackActionTypeId);
-    commandBackAction.setName("back");
-    tvActions.append(commandBackAction);
-
-    ActionType commandHomeAction(commandHomeActionTypeId);
-    commandHomeAction.setName("home");
-    tvActions.append(commandHomeAction);
-
-    ActionType commandInputSourceAction(commandInputSourceActionTypeId);
-    commandInputSourceAction.setName("input source");
-    tvActions.append(commandInputSourceAction);
-
-    ActionType commandExitAction(commandExitActionTypeId);
-    commandExitAction.setName("exit");
-    tvActions.append(commandExitAction);
-
-    ActionType commandInfoAction(commandInfoActionTypeId);
-    commandInfoAction.setName("info");
-    tvActions.append(commandInfoAction);
-
-    ActionType commandMyAppsAction(commandMyAppsActionTypeId);
-    commandMyAppsAction.setName("my apps");
-    tvActions.append(commandMyAppsAction);
-
-    ActionType commandProgramListAction(commandProgramListActionTypeId);
-    commandProgramListAction.setName("program list");
-    tvActions.append(commandProgramListAction);
-
-    deviceClassLgSmartTv.setActions(tvActions);
-
-    ret.append(deviceClassLgSmartTv);
-    return ret;
 }
 
 QPair<DeviceManager::DeviceError, QString> DevicePluginLgSmartTv::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
@@ -378,16 +200,6 @@ void DevicePluginLgSmartTv::deviceRemoved(Device *device)
     qDebug() << "remove LG Smart Tv  " << tvDevice->modelName();
     m_tvList.remove(tvDevice);
     tvDevice->deleteLater();
-}
-
-QString DevicePluginLgSmartTv::pluginName() const
-{
-    return "LG Smart Tv";
-}
-
-PluginId DevicePluginLgSmartTv::pluginId() const
-{
-    return PluginId("4ef7a68b-9da0-4c62-b9ac-f478dc6f9f52");
 }
 
 void DevicePluginLgSmartTv::guhTimer()

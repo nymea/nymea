@@ -182,7 +182,7 @@ QPair<DeviceManager::DeviceError, QString> DeviceManager::discoverDevices(const 
     if (!deviceClass.isValid()) {
         return qMakePair<DeviceError, QString>(DeviceManager::DeviceErrorDeviceClassNotFound, deviceClass.id().toString());
     }
-    if (deviceClass.createMethod() != DeviceClass::CreateMethodDiscovery) {
+    if (!deviceClass.createMethods().testFlag(DeviceClass::CreateMethodDiscovery)) {
         return  qMakePair<DeviceError, QString>(DeviceManager::DeviceErrorCreationMethodNotSupported, "");
     }
     QPair<DeviceError, QString> result = verifyParams(deviceClass.discoveryParamTypes(), effectiveParams);
@@ -223,7 +223,7 @@ QPair<DeviceManager::DeviceError, QString> DeviceManager::addConfiguredDevice(co
         qWarning() << "cannot find a device class with id" << deviceClassId;
         return qMakePair<DeviceError, QString>(DeviceErrorDeviceClassNotFound, deviceClassId.toString());
     }
-    if (deviceClass.createMethod() == DeviceClass::CreateMethodUser) {
+    if (deviceClass.createMethods().testFlag(DeviceClass::CreateMethodUser)) {
         return addConfiguredDeviceInternal(deviceClassId, params, id);
     }
     return qMakePair<DeviceError, QString>(DeviceErrorCreationMethodNotSupported, "CreateMethodUser");
@@ -235,7 +235,7 @@ QPair<DeviceManager::DeviceError, QString> DeviceManager::addConfiguredDevice(co
     if (!deviceClass.isValid()) {
         return qMakePair<DeviceError, QString>(DeviceErrorDeviceClassNotFound, deviceClassId.toString());
     }
-    if (deviceClass.createMethod() != DeviceClass::CreateMethodDiscovery) {
+    if (!deviceClass.createMethods().testFlag(DeviceClass::CreateMethodDiscovery)) {
         return qMakePair<DeviceError, QString>(DeviceErrorCreationMethodNotSupported, "CreateMethodDiscovery");
     }
 
@@ -478,7 +478,7 @@ QPair<DeviceManager::DeviceError, QString> DeviceManager::executeAction(const Ac
                 qDebug() << "checking" << actionType.id() << action.actionTypeId();
                 if (actionType.id() == action.actionTypeId()) {
                     ParamList finalParams = action.params();
-                    QPair<DeviceError, QString> paramCheck = verifyParams(actionType.parameters(), finalParams);
+                    QPair<DeviceError, QString> paramCheck = verifyParams(actionType.paramTypes(), finalParams);
                     if (paramCheck.first != DeviceErrorNoError) {
                         return paramCheck;
                     }

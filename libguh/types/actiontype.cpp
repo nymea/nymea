@@ -59,14 +59,14 @@ void ActionType::setName(const QString &name)
 
 /*! Returns the parameter description of this ActionType. \l{Action}{Actions} created
     from this ActionType must have their parameters matching to this template. */
-QList<ParamType> ActionType::parameters() const
+QList<ParamType> ActionType::paramTypes() const
 {
-    return m_parameters;
+    return m_paramTypes;
 }
 
 /*! Set the parameter description of this ActionType. \l{Action}{Actions} created
     from this ActionType must have their \a parameters matching to this template. */
-void ActionType::setParameters(const QList<ParamType> &parameters)
+void ActionType::setParamTypes(const QList<ParamType> &paramTypes)
 {
-    m_parameters = parameters;
+    m_paramTypes = paramTypes;
 }

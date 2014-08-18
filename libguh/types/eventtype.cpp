@@ -56,16 +56,16 @@ void EventType::setName(const QString &name)
   Holds a List describing possible parameters for a \l{Event} of this EventType.
   e.g. QList(ParamType("temperature", QVariant::Real))
   */
-QList<ParamType> EventType::parameters() const
+QList<ParamType> EventType::paramTypes() const
 {
-    return m_parameters;
+    return m_paramTypes;
 }
 
 /*!
   Set the parameter description for this EventType to \a parameters,
   e.g. QList<ParamType>() << ParamType("temperature", QVariant::Real))
   */
-void EventType::setParameters(const QList<ParamType> &parameters)
+void EventType::setParamTypes(const QList<ParamType> &paramTypes)
 {
-    m_parameters = parameters;
+    m_paramTypes = paramTypes;
 }

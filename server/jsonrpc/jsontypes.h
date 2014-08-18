@@ -106,6 +106,7 @@ public:
     static QVariantMap packDevice(Device *device);
     static QVariantMap packDeviceDescriptor(const DeviceDescriptor &descriptor);
     static QVariantMap packRule(const Rule &rule);
+    static QVariantList packCreateMethods(DeviceClass::CreateMethods createMethods);
 
     static Param unpackParam(const QVariantMap &paramMap);
     static ParamList unpackParams(const QVariantList &paramList);

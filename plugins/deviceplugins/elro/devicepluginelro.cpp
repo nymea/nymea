@@ -56,12 +56,6 @@
 #include <QDebug>
 #include <QStringList>
 
-VendorId elroVendorId = VendorId("435a13a0-65ca-4f0c-94c1-e5873b258db5");
-VendorId mumbiVendorId = VendorId("5f91c01c-0168-4bdf-a5ed-37cb6971b775");
-VendorId vivancoVendorId = VendorId("3826a836-ba69-4e50-8408-bb827fc92128");
-VendorId brennenstuhlVendorId = VendorId("4ac9dd1f-9ca9-4a76-aae1-3e91cfb86f5b");
-VendorId batVendorId = VendorId("30115ad4-c83d-454a-a483-c781c951d3b6");
-
 DeviceClassId elroRemoteId = DeviceClassId("d85c1ef4-197c-4053-8e40-707aa671d302");
 DeviceClassId elroSwitchId = DeviceClassId("308ae6e6-38b3-4b3a-a513-3199da2764f8");
 DeviceClassId elroMotionDetectorId = DeviceClassId("4c64aee6-7a4f-41f2-b278-edc55f0da0d3");

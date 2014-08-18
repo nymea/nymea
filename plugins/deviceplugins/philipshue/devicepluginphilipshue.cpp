@@ -30,7 +30,6 @@
 VendorId hueVendorId = VendorId("");
 
 DeviceClassId hueDeviceClassId = DeviceClassId("d8f4c397-e05e-47c1-8917-8e72d4d0d47c");
-DeviceClassId hueDeviceClassAutoId = DeviceClassId("9cce5981-50a1-4873-a374-c53c095feb3b");
 
 StateTypeId hueColorStateTypeId = StateTypeId("d25423e7-b924-4b20-80b6-77eecc65d089");
 ActionTypeId hueSetColorActionTypeId = ActionTypeId("29cc299a-818b-47b2-817f-c5a6361545e4");
@@ -52,76 +51,6 @@ DevicePluginPhilipsHue::DevicePluginPhilipsHue():
     connect(m_bridge, &HueBridgeConnection::createUserFinished, this, &DevicePluginPhilipsHue::createUserFinished);
     connect(m_bridge, &HueBridgeConnection::getFinished, this, &DevicePluginPhilipsHue::getFinished);
 }
-
-//QList<DeviceClass> DevicePluginPhilipsHue::supportedDevices() const
-//{
-//    QList<DeviceClass> ret;
-
-
-//    QList<StateType> hueStates;
-
-//    StateType powerState(huePowerStateTypeId);
-//    powerState.setName("power");
-//    powerState.setType(QVariant::Bool);
-//    powerState.setDefaultValue(false);
-//    hueStates.append(powerState);
-
-//    StateType brightnessState(hueBrightnessStateTypeId);
-//    brightnessState.setName("brightness");
-//    brightnessState.setType(QVariant::Int);
-//    brightnessState.setDefaultValue(255);
-//    hueStates.append(brightnessState);
-
-//    deviceClassHue.setStateTypes(hueStates);
-
-//    QList<ActionType> hueActons;
-
-//    ActionType setColorAction(hueSetColorActionTypeId);
-//    setColorAction.setName("Set color");
-//    QList<ParamType> actionParamsSetColor;
-//    ParamType actionParamSetColor("color", QVariant::Color);
-//    actionParamsSetColor.append(actionParamSetColor);
-//    setColorAction.setParameters(actionParamsSetColor);
-//    hueActons.append(setColorAction);
-
-//    ActionType setPowerAction(hueSetPowerActionTypeId);
-//    setPowerAction.setName("Power");
-//    QList<ParamType> actionParamsSetPower;
-//    ParamType actionParamSetPower("power", QVariant::Bool);
-//    actionParamsSetPower.append(actionParamSetPower);
-//    setPowerAction.setParameters(actionParamsSetPower);
-//    hueActons.append(setPowerAction);
-
-//    ActionType setBrightnessAction(hueSetBrightnessActionTypeId);
-//    setBrightnessAction.setName("Brightness");
-//    QList<ParamType> actionParamsSetBrightness;
-//    ParamType actionParamSetBrightness("brightness", QVariant::Int);
-//    actionParamSetBrightness.setMinValue(0);
-//    actionParamSetBrightness.setMaxValue(255);
-//    actionParamsSetBrightness.append(actionParamSetBrightness);
-//    setBrightnessAction.setParameters(actionParamsSetBrightness);
-//    hueActons.append(setBrightnessAction);
-
-//    deviceClassHue.setActions(hueActons);
-
-//    ret.append(deviceClassHue);
-
-//    // Now create the same device again with CreateMethodAuto
-//    // When we pair a bridge, one discovered device is created.
-//    // The other light bulbs connected to the bridge will
-//    // then appear as auto devices.
-//    DeviceClass deviceClassHueAuto(pluginId(), hueVendorId, hueDeviceClassAutoId);
-//    deviceClassHueAuto.setName("Hue");
-//    deviceClassHueAuto.setCreateMethod(DeviceClass::CreateMethodAuto);
-//    deviceClassHueAuto.setParamTypes(paramTypes);
-//    deviceClassHueAuto.setStateTypes(hueStates);
-//    deviceClassHueAuto.setActions(hueActons);
-
-//    ret.append(deviceClassHueAuto);
-
-
-//    return ret;
-//}
 
 DeviceManager::HardwareResources DevicePluginPhilipsHue::requiredHardware() const
 {
@@ -178,7 +107,7 @@ QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginPhilipsHue::setupDe
     QList<DeviceDescriptor> descriptorList;
     while (!m_unconfiguredLights.isEmpty()) {
         Light *light = m_unconfiguredLights.takeFirst();
-        DeviceDescriptor descriptor(hueDeviceClassAutoId, light->name());
+        DeviceDescriptor descriptor(hueDeviceClassId, light->name());
         ParamList params;
         params.append(Param("number", light->id()));
         params.append(Param("ip", light->ip().toString()));
@@ -188,7 +117,7 @@ QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginPhilipsHue::setupDe
     }
     if (!descriptorList.isEmpty()) {
         qDebug() << "adding" << descriptorList.count() << "autodevices";
-        metaObject()->invokeMethod(this, "autoDevicesAppeared", Qt::QueuedConnection, Q_ARG(DeviceClassId, hueDeviceClassAutoId), Q_ARG(QList<DeviceDescriptor>, descriptorList));
+        metaObject()->invokeMethod(this, "autoDevicesAppeared", Qt::QueuedConnection, Q_ARG(DeviceClassId, hueDeviceClassId), Q_ARG(QList<DeviceDescriptor>, descriptorList));
     }
 
     return reportDeviceSetup(DeviceManager::DeviceSetupStatusAsync);

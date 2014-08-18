@@ -4,7 +4,17 @@
     "vendors": [
         {
             "name": "guh",
-            "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6"
+            "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6",
+            "deviceClasses": [
+                {
+                    "deviceClassId": "3869884a-1592-4b8f-84a7-994be18ff555",
+                    "name": "GMail",
+                    "createMethods": ["user"],
+                    "paramTypes": [
+
+                    ]
+                }
+            ]
         }
     ]
 }

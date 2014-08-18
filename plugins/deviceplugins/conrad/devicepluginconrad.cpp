@@ -68,50 +68,6 @@ DevicePluginConrad::DevicePluginConrad()
 {
 }
 
-//QList<DeviceClass> DevicePluginConrad::supportedDevices() const
-//{
-//    // TODO: load list from config with static uuid
-//    QList<DeviceClass> ret;
-
-//    // =======================================
-//    // Remote
-//    DeviceClass deviceClassConradRemote(pluginId(), supportedVendors().first().id(), conradRemoteId);
-//    deviceClassConradRemote.setName("Conrad Remote");
-
-//    // Params
-//    QList<ParamType> deviceParamsRemote;
-
-//    QVariantList deviceParamRemote;
-//    QVariantMap nameParam;
-//    nameParam.insert("name", "name");
-//    nameParam.insert("type", "string");
-//    deviceParamRemote.append(nameParam);
-
-//    // Events
-//    QList<EventType> buttonEvents;
-
-//    QList<ParamType> paramsRemote;
-//    ParamType paramButton("button", QVariant::Int);
-//    paramsRemote.append(paramButton);
-
-//    ParamType paramGroup("group", QVariant::Int);
-//    paramsRemote.append(paramGroup);
-
-//    ParamType paramPower("power", QVariant::Bool);
-//    paramsRemote.append(paramPower);
-
-//    EventType buttonEvent(conradRemoteButtonEventTypeId);
-//    buttonEvent.setName("Button Pressed");
-//    buttonEvent.setParameters(paramsRemote);
-//    buttonEvents.append(buttonEvent);
-
-//    deviceClassConradRemote.setParamTypes(deviceParamsRemote);
-//    deviceClassConradRemote.setEventTypes(buttonEvents);
-//    ret.append(deviceClassConradRemote);
-
-//    return ret;
-//}
-
 DeviceManager::HardwareResources DevicePluginConrad::requiredHardware() const
 {
     return DeviceManager::HardwareResourceRadio433;

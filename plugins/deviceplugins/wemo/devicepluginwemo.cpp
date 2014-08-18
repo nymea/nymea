@@ -132,7 +132,6 @@
 
 #include <QDebug>
 
-VendorId belkinVendorId = VendorId("b241f7f5-8153-4a72-b260-f62beadc2d19");
 DeviceClassId wemoSwitchDeviceClassId = DeviceClassId("69d97d3b-a8e6-42f3-afc0-ca8a53eb7cce");
 
 StateTypeId powerStateTypeId = StateTypeId("7166c4f6-f68c-4188-8f7c-2205d72a5a6d");
@@ -145,72 +144,6 @@ DevicePluginWemo::DevicePluginWemo()
     m_discovery = new WemoDiscovery(this);
 
     connect(m_discovery,SIGNAL(discoveryDone(QList<WemoSwitch*>)),this,SLOT(discoveryDone(QList<WemoSwitch*>)));
-}
-
-QList<Vendor> DevicePluginWemo::supportedVendors() const
-{
-    QList<Vendor> ret;
-    ret.append(Vendor(belkinVendorId, "Belkin"));
-    return ret;
-}
-
-QList<DeviceClass> DevicePluginWemo::supportedDevices() const
-{
-    QList<DeviceClass> ret;
-
-    // ==============================
-    // WeMo Switch
-    DeviceClass deviceClassWemoSwitch(pluginId(), belkinVendorId, wemoSwitchDeviceClassId);
-    deviceClassWemoSwitch.setName("WeMo Switch");
-    deviceClassWemoSwitch.setCreateMethod(DeviceClass::CreateMethodDiscovery);
-
-    // params
-    QList<ParamType> paramTypes;
-
-    paramTypes.append(ParamType("name", QVariant::String));
-    paramTypes.append(ParamType("uuid", QVariant::String));
-    paramTypes.append(ParamType("model", QVariant::String));
-    paramTypes.append(ParamType("host address", QVariant::String));
-    paramTypes.append(ParamType("port", QVariant::Int));
-    paramTypes.append(ParamType("model description", QVariant::String));
-    paramTypes.append(ParamType("serial number", QVariant::String));
-    paramTypes.append(ParamType("location", QVariant::String));
-    paramTypes.append(ParamType("manufacturer", QVariant::String));
-    paramTypes.append(ParamType("device type", QVariant::String));
-
-    deviceClassWemoSwitch.setParamTypes(paramTypes);
-
-    // States
-    QList<StateType> wemoSwitchStates;
-
-    StateType powerState(powerStateTypeId);
-    powerState.setName("power");
-    powerState.setType(QVariant::Bool);
-    powerState.setDefaultValue(false);
-    wemoSwitchStates.append(powerState);
-
-    StateType reachableState(reachableStateTypeId);
-    reachableState.setName("reachable");
-    reachableState.setType(QVariant::Bool);
-    reachableState.setDefaultValue(false);
-    wemoSwitchStates.append(reachableState);
-
-    deviceClassWemoSwitch.setStateTypes(wemoSwitchStates);
-
-    // Actions
-    QList<ActionType> wemoSwitchActons;
-
-    ActionType powerAction(powerActionTypeId);
-    powerAction.setName("Set power");
-    QList<ParamType> actionParamsPower;
-    actionParamsPower.append(ParamType("power", QVariant::Bool));
-    powerAction.setParameters(actionParamsPower);
-    wemoSwitchActons.append(powerAction);
-
-    deviceClassWemoSwitch.setActions(wemoSwitchActons);
-
-    ret.append(deviceClassWemoSwitch);
-    return ret;
 }
 
 QPair<DeviceManager::DeviceError, QString> DevicePluginWemo::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
@@ -289,16 +222,6 @@ void DevicePluginWemo::deviceRemoved(Device *device)
     qDebug() << "remove wemo swich " << wemoSwitch->serialNumber();
     wemoSwitch->deleteLater();
     m_wemoSwitches.remove(wemoSwitch);
-}
-
-QString DevicePluginWemo::pluginName() const
-{
-    return "WeMo";
-}
-
-PluginId DevicePluginWemo::pluginId() const
-{
-    return PluginId("2e3b5ce0-ecf1-43de-98f0-07df4068a583");
 }
 
 void DevicePluginWemo::guhTimer()

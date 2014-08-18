@@ -35,8 +35,6 @@ class DevicePluginBoblight : public DevicePlugin
 public:
     explicit DevicePluginBoblight();
 
-    QList<Vendor> supportedVendors() const override;
-    QList<DeviceClass> supportedDevices() const override;
     DeviceManager::HardwareResources requiredHardware() const override;
 
     void startMonitoringAutoDevices() override;

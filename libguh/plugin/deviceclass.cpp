@@ -43,7 +43,7 @@ DeviceClass::DeviceClass(const PluginId &pluginId, const VendorId &vendorId, con
     m_id(id),
     m_vendorId(vendorId),
     m_pluginId(pluginId),
-    m_createMethod(CreateMethodUser),
+    m_createMethods(CreateMethodUser),
     m_setupMethod(SetupMethodJustAdd)
 {
 
@@ -103,7 +103,7 @@ void DeviceClass::setStateTypes(const QList<StateType> &stateTypes)
         EventType eventType(EventTypeId(stateType.id().toString()));
         eventType.setName(QString("%1 changed").arg(stateType.name()));
         ParamType paramType("value", stateType.type());
-        eventType.setParameters(QList<ParamType>() << paramType);
+        eventType.setParamTypes(QList<ParamType>() << paramType);
         m_allEventTypes.append(eventType);
     }
 }
@@ -126,7 +126,7 @@ void DeviceClass::setEventTypes(const QList<EventType> &eventTypes)
         EventType eventType(EventTypeId(stateType.id().toString()));
         eventType.setName(QString("%1 changed").arg(stateType.name()));
         ParamType paramType("value", stateType.type());
-        eventType.setParameters(QList<ParamType>() << paramType);
+        eventType.setParamTypes(QList<ParamType>() << paramType);
         m_allEventTypes.append(eventType);
     }
 }
@@ -140,7 +140,7 @@ QList<ActionType> DeviceClass::actionTypes() const
 
 /*! Set the \a actionTypes of this DeviceClass. \{Device}{Devices} created
     from this DeviceClass must have their actions matching to this template. */
-void DeviceClass::setActions(const QList<ActionType> &actionTypes)
+void DeviceClass::setActionTypes(const QList<ActionType> &actionTypes)
 {
     m_actionTypes = actionTypes;
 }
@@ -169,14 +169,14 @@ void DeviceClass::setDiscoveryParamTypes(const QList<ParamType> &params)
     m_discoveryParamTypes = params;
 }
 
-DeviceClass::CreateMethod DeviceClass::createMethod() const
+DeviceClass::CreateMethods DeviceClass::createMethods() const
 {
-    return m_createMethod;
+    return m_createMethods;
 }
 
-void DeviceClass::setCreateMethod(DeviceClass::CreateMethod createMethod)
+void DeviceClass::setCreateMethods(DeviceClass::CreateMethods createMethods)
 {
-    m_createMethod = createMethod;
+    m_createMethods = createMethods;
 }
 
 DeviceClass::SetupMethod DeviceClass::setupMethod() const

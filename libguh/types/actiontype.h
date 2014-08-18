@@ -34,14 +34,14 @@ public:
     QString name() const;
     void setName(const QString &name);
 
-    QList<ParamType> parameters() const;
-    void setParameters(const QList<ParamType> &parameters);
+    QList<ParamType> paramTypes() const;
+    void setParamTypes(const QList<ParamType> &paramTypes);
 
 private:
     ActionTypeId m_id;
     QString m_name;
 
-    QList<ParamType> m_parameters;
+    QList<ParamType> m_paramTypes;
 };
 
 #endif // ACTIONTYPE_H

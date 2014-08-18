@@ -154,8 +154,8 @@ void TestDevices::getSupportedDevices_data()
     QTest::addColumn<VendorId>("vendorId");
     QTest::addColumn<int>("resultCount");
 
-    QTest::newRow("vendor guh") << guhVendorId << 6;
-    QTest::newRow("no filter") << VendorId() << 6;
+    QTest::newRow("vendor guh") << guhVendorId << 1;
+    QTest::newRow("no filter") << VendorId() << 1;
     QTest::newRow("invalid vendor") << VendorId("93e7d361-8025-4354-b17e-b68406c800bc") << 0;
 }
 
@@ -184,19 +184,27 @@ void TestDevices::addConfiguredDevice_data()
     QTest::addColumn<QVariantList>("deviceParams");
     QTest::addColumn<bool>("success");
 
-    QVariantList deviceParams;
     QVariantMap httpportParam;
     httpportParam.insert("name", "httpport");
     httpportParam.insert("value", m_mockDevice1Port - 1);
-    deviceParams.append(httpportParam);
+    QVariantMap asyncParam;
+    asyncParam.insert("name", "async");
+    asyncParam.insert("value", true);
+    QVariantMap brokenParam;
+    brokenParam.insert("name", "broken");
+    brokenParam.insert("value", true);
 
+    QVariantList deviceParams;
+
+    deviceParams.clear(); deviceParams << httpportParam;
     QTest::newRow("User, JustAdd") << mockDeviceClassId << deviceParams << true;
-    QTest::newRow("Auto, JustAdd") << mockDeviceAutoClassId << deviceParams << false;
-    QTest::newRow("Discovery, JustAdd") << mockDeviceDiscoveryClassId << deviceParams << false;
-    QTest::newRow("User, JustAdd, Async") << mockDeviceAsyncSetupClassId << deviceParams << true;
+    deviceParams.clear(); deviceParams << httpportParam << asyncParam;
+    QTest::newRow("User, JustAdd, Async") << mockDeviceClassId << deviceParams << true;
     QTest::newRow("Invalid DeviceClassId") << DeviceClassId::createDeviceClassId() << deviceParams << false;
-    QTest::newRow("Setup failure") << mockDeviceBrokenClassId << deviceParams << false;
-    QTest::newRow("Setup failure, Async") << mockDeviceBrokenAsyncSetupClassId << deviceParams << false;
+    deviceParams.clear(); deviceParams << httpportParam << brokenParam;
+    QTest::newRow("Setup failure") << mockDeviceClassId << deviceParams << false;
+    deviceParams.clear(); deviceParams << httpportParam << asyncParam << brokenParam;
+    QTest::newRow("Setup failure, Async") << mockDeviceClassId << deviceParams << false;
 
     QVariantList invalidDeviceParams;
     QTest::newRow("User, JustAdd, missing params") << mockDeviceClassId << invalidDeviceParams << false;
@@ -284,6 +292,14 @@ void TestDevices::storedDevices()
     QVariantMap params;
     params.insert("deviceClassId", mockDeviceClassId);
     QVariantList deviceParams;
+    QVariantMap asyncParam;
+    asyncParam.insert("name", "async");
+    asyncParam.insert("value", false);
+    deviceParams.append(asyncParam);
+    QVariantMap brokenParam;
+    brokenParam.insert("name", "broken");
+    brokenParam.insert("value", false);
+    deviceParams.append(brokenParam);
     QVariantMap httpportParam;
     httpportParam.insert("name", "httpport");
     httpportParam.insert("value", 8888);
@@ -307,7 +323,7 @@ void TestDevices::storedDevices()
 //                if ()
 //            }
 
-            qDebug() << "found added device" << device.toMap().value("params").toList().first().toMap();
+            qDebug() << "found added device" << device.toMap().value("params");
             qDebug() << "expected deviceParams:" << deviceParams;
             QCOMPARE(device.toMap().value("params").toList(), deviceParams);
             found = true;
@@ -335,10 +351,9 @@ void TestDevices::discoverDevices_data()
     resultCountParam.insert("value", 1);
     discoveryParams.append(resultCountParam);
 
-    QTest::newRow("valid deviceClassId") << mockDeviceDiscoveryClassId << 2 << true << QVariantList();
-    QTest::newRow("valid deviceClassId with params") << mockDeviceDiscoveryClassId << 1 << true << discoveryParams;
+    QTest::newRow("valid deviceClassId") << mockDeviceClassId << 2 << true << QVariantList();
+    QTest::newRow("valid deviceClassId with params") << mockDeviceClassId << 1 << true << discoveryParams;
     QTest::newRow("invalid deviceClassId") << DeviceClassId::createDeviceClassId() << 0 << false << QVariantList();
-    QTest::newRow("CreateMethodUser deviceClassId") << mockDeviceClassId << 0 << false << QVariantList();
 }
 
 void TestDevices::discoverDevices()

@@ -150,14 +150,20 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
             QJsonObject jo = deviceClassJson.toObject();
             DeviceClass deviceClass(pluginId(), vendorId, jo.value("deviceClassId").toString());
             deviceClass.setName(jo.value("name").toString());
-            QString createMethod = jo.value("createMethod").toString();
-            if (createMethod == "discovery") {
-                deviceClass.setCreateMethod(DeviceClass::CreateMethodDiscovery);
-            } else if (createMethod == "auto") {
-                deviceClass.setCreateMethod(DeviceClass::CreateMethodAuto);
-            } else {
-                deviceClass.setCreateMethod(DeviceClass::CreateMethodUser);
+            DeviceClass::CreateMethods createMethods;
+            foreach (const QJsonValue &createMethodValue, jo.value("createMethods").toArray()) {
+                if (createMethodValue.toString() == "discovery") {
+                    createMethods |= DeviceClass::CreateMethodDiscovery;
+                } else if (createMethodValue.toString() == "auto") {
+                    createMethods |= DeviceClass::CreateMethodAuto;
+                } else {
+                    createMethods |= DeviceClass::CreateMethodUser;
+                }
             }
+            deviceClass.setCreateMethods(createMethods);
+
+            deviceClass.setDiscoveryParamTypes(parseParamTypes(jo.value("discoveryParamTypes").toArray()));
+
             QString setupMethod = jo.value("setupMethod").toString();
             if (setupMethod == "pushButton") {
                 deviceClass.setSetupMethod(DeviceClass::SetupMethodPushButton);
@@ -169,21 +175,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 deviceClass.setSetupMethod(DeviceClass::SetupMethodJustAdd);
             }
             deviceClass.setPairingInfo(jo.value("pairingInfo").toString());
-
-            QList<ParamType> paramTypes;
-            foreach (const QJsonValue &paramTypesJson, jo.value("paramTypes").toArray()) {
-                QJsonObject pt = paramTypesJson.toObject();
-                QVariant::Type t = QVariant::nameToType(pt.value("type").toString().toLatin1().data());
-                ParamType paramType(pt.value("name").toString(), t, pt.value("defaultValue").toVariant());
-                QVariantList allowedValues;
-                foreach (const QJsonValue &allowedTypesJson, pt.value("allowedValues").toArray()) {
-                    allowedValues.append(allowedTypesJson.toVariant());
-                }
-                paramType.setAllowedValues(allowedValues);
-                paramType.setLimits(pt.value("minValue").toVariant(), pt.value("maxValue").toVariant());
-                paramTypes.append(paramType);
-            }
-            deviceClass.setParamTypes(paramTypes);
+            deviceClass.setParamTypes(parseParamTypes(jo.value("paramTypes").toArray()));
 
             QList<StateType> stateTypes;
             qDebug() << "############### s" << jo;
@@ -197,6 +189,27 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 stateTypes.append(stateType);
             }
             deviceClass.setStateTypes(stateTypes);
+
+            QList<ActionType> actionTypes;
+            foreach (const QJsonValue &actionTypesJson, jo.value("actionTypes").toArray()) {
+                QJsonObject at = actionTypesJson.toObject();
+                ActionType actionType(at.value("id").toString());
+                actionType.setName(at.value("name").toString());
+                actionType.setParamTypes(parseParamTypes(at.value("paramTypes").toArray()));
+                qDebug() << "***got actionType" << actionType.id();
+                actionTypes.append(actionType);
+            }
+            deviceClass.setActionTypes(actionTypes);
+
+            QList<EventType> eventTypes;
+            foreach (const QJsonValue &eventTypesJson, jo.value("eventTypes").toArray()) {
+                QJsonObject et = eventTypesJson.toObject();
+                EventType eventType(et.value("id").toString());
+                eventType.setName(et.value("name").toString());
+                eventType.setParamTypes(parseParamTypes(et.value("paramTypes").toArray()));
+                eventTypes.append(eventType);
+            }
+            deviceClass.setEventTypes(eventTypes);
 
             deviceClasses.append(deviceClass);
         }
@@ -272,6 +285,24 @@ void DevicePlugin::initPlugin(const QJsonObject &metaData, DeviceManager *device
     m_metaData = metaData;
     m_deviceManager = deviceManager;
     init();
+}
+
+QList<ParamType> DevicePlugin::parseParamTypes(const QJsonArray &array) const
+{
+    QList<ParamType> paramTypes;
+    foreach (const QJsonValue &paramTypesJson, array) {
+        QJsonObject pt = paramTypesJson.toObject();
+        QVariant::Type t = QVariant::nameToType(pt.value("type").toString().toLatin1().data());
+        ParamType paramType(pt.value("name").toString(), t, pt.value("defaultValue").toVariant());
+        QVariantList allowedValues;
+        foreach (const QJsonValue &allowedTypesJson, pt.value("allowedValues").toArray()) {
+            allowedValues.append(allowedTypesJson.toVariant());
+        }
+        paramType.setAllowedValues(allowedValues);
+        paramType.setLimits(pt.value("minValue").toVariant(), pt.value("maxValue").toVariant());
+        paramTypes.append(paramType);
+    }
+    return paramTypes;
 }
 
 /*!

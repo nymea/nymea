@@ -4,7 +4,29 @@
     "vendors": [
         {
             "name": "guh",
-            "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6"
+            "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6",
+            "deviceClasses": [
+                {
+                    "deviceClassId": "bd216356-f1ec-4324-9785-6982d2174e17",
+                    "name": "WiFi Device",
+                    "createMethods": ["user"],
+                    "paramTypes": [
+                        {
+                            "name": "MAC",
+                            "type": "QString"
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "cb43e1b5-4f61-4538-bfa2-c33055c542cf",
+                            "name": "In Range",
+                            "type": "bool",
+                            "defaultValue": false
+                        }
+                    ]
+                }
+
+            ]
         }
 
     ]

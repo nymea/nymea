@@ -31,34 +31,6 @@ DevicePluginWifiDetector::DevicePluginWifiDetector()
 {
 }
 
-//QList<DeviceClass> DevicePluginWifiDetector::supportedDevices() const
-//{
-//    QList<DeviceClass> ret;
-
-//    DeviceClass deviceClassWifiDetector(pluginId(), supportedVendors().first().id(), detectorId);
-//    deviceClassWifiDetector.setName("WiFi Device");
-    
-//    QList<ParamType> detectorParams;
-//    ParamType macParam("mac", QVariant::String);
-//    detectorParams.append(macParam);
-
-//    deviceClassWifiDetector.setParamTypes(detectorParams);
-
-//    QList<StateType> detectorStates;
-
-//    StateType inRangeState(inRangeStateTypeId);
-//    inRangeState.setName("inRange");
-//    inRangeState.setType(QVariant::Bool);
-//    inRangeState.setDefaultValue(false);
-//    detectorStates.append(inRangeState);
-
-//    deviceClassWifiDetector.setStateTypes(detectorStates);
-
-//    ret.append(deviceClassWifiDetector);
-
-//    return ret;
-//}
-
 DeviceManager::HardwareResources DevicePluginWifiDetector::requiredHardware() const
 {
     return DeviceManager::HardwareResourceTimer;

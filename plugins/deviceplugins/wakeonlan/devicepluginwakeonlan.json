@@ -4,8 +4,30 @@
     "vendors": [
         {
             "name": "guh",
-            "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6"
+            "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6",
+            "deviceClasses": [
+                {
+                    "deviceClassId": "3c8f2447-dcd0-4882-8c09-99e579e4d24c",
+                    "name": "Wake On Lan",
+                    "createMethods": ["user"],
+                    "paramTypes": [
+                        {
+                            "name": "name",
+                            "type": "QString"
+                        },
+                        {
+                            "name": "MAC",
+                            "type": "QString"
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "fb9b9d87-218f-4f0d-9e16-39f8a105029a",
+                            "name": "Wake up device"
+                        }
+                    ]
+                }
+            ]
         }
-
     ]
 }

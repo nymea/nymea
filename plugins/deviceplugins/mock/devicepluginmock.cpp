@@ -354,7 +354,7 @@ void DevicePluginMock::emitDevicesDiscovered()
     if (m_discoveredDeviceCount > 0) {
         DeviceDescriptor d1(mockDeviceDiscoveryClassId, "Mock Device (Discovered)");
         ParamList params;
-        Param httpParam("httpport", "7777");
+        Param httpParam("httpport", "55555");
         params.append(httpParam);
         d1.setParams(params);
         deviceDescriptors.append(d1);
@@ -363,7 +363,7 @@ void DevicePluginMock::emitDevicesDiscovered()
     if (m_discoveredDeviceCount > 1) {
         DeviceDescriptor d2(mockDeviceDiscoveryClassId, "Mock Device (Discovered)");
         ParamList params;
-        Param httpParam("httpport", "7778");
+        Param httpParam("httpport", "55556");
         params.append(httpParam);
         d2.setParams(params);
         deviceDescriptors.append(d2);

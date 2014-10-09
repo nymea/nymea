@@ -13,21 +13,21 @@
                     "discoveryParamTypes": [
                         {
                             "name": "location",
-                            "type": "string"
+                            "type": "QString"
                         }
                     ],
                     "paramTypes": [
                         {
                             "name": "location",
-                            "type": "string"
+                            "type": "QString"
                         },
                         {
                             "name": "country",
-                            "type": "string"
+                            "type": "QString"
                         },
                         {
                             "name": "id",
-                            "type": "string"
+                            "type": "QString"
                         }
                     ],
                     "actionTypes": [

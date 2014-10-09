@@ -60,7 +60,7 @@ private:
 
     bool setUpGpio();
     int micros();
-    bool valueInTolerance(int value, int sollValue);
+    bool valueInTolerance(int value, int correctValue);
     bool checkValue(int value);
     bool checkValues(Protocol protocol);
     void changeReading(bool reading);

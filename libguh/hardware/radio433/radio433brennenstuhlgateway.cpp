@@ -24,7 +24,7 @@ Radio433BrennenstuhlGateway::Radio433BrennenstuhlGateway(QObject *parent) :
     m_gatewayDiscovery = new QUdpSocket(this);
     m_gateway = new QUdpSocket(this);
 
-    // connect(m_gateway, &QUdpSocket::error, this, &Radio433BrennenstuhlGateway::gatewayError) -> does not work...runtime connection error.
+    // connect(m_gateway, &QAbstractSocket::error, this, &Radio433BrennenstuhlGateway::gatewayError) -> does not work...runtime connection error.
     connect(m_gateway, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(gatewayError(QAbstractSocket::SocketError)));
 
     m_available = false;
@@ -63,10 +63,9 @@ bool Radio433BrennenstuhlGateway::sendData(int delay, QList<int> rawData)
         if(m_gateway->writeDatagram(message,m_gatewayAddress,m_gatewayPort) > 0){
             m_available = true;
             return true;
-        }else{
-            return false;
         }
     }
+    return false;
 }
 
 bool Radio433BrennenstuhlGateway::enable()
@@ -78,12 +77,14 @@ bool Radio433BrennenstuhlGateway::enable()
     connect(m_gatewayDiscovery, &QUdpSocket::readyRead, this, &Radio433BrennenstuhlGateway::readDataDiscovery);
 
     discover();
+    return true;
 }
 
 bool Radio433BrennenstuhlGateway::disable()
 {
     m_gateway->close();
     m_gatewayDiscovery->close();
+    return true;
 }
 
 void Radio433BrennenstuhlGateway::discover()
@@ -139,7 +140,7 @@ void Radio433BrennenstuhlGateway::readDataGateway()
     QHostAddress sender;
     quint16 udpPort;
 
-    // read the answere from the
+    // read the answere from the gateway
     while (m_gateway->hasPendingDatagrams()) {
         data.resize(m_gateway->pendingDatagramSize());
         m_gateway->readDatagram(data.data(), data.size(), &sender, &udpPort);
@@ -148,6 +149,7 @@ void Radio433BrennenstuhlGateway::readDataGateway()
 
 void Radio433BrennenstuhlGateway::gatewayError(QAbstractSocket::SocketError error)
 {
+    Q_UNUSED(error)
     QUdpSocket *gateway = static_cast<QUdpSocket*>(sender());
     qDebug() << "--> ERROR: Radio 433 MHz Brennenstuhl LAN Gateway disabled: " << gateway->errorString();
     m_available = false;

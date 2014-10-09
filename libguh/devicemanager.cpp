@@ -110,6 +110,11 @@ DeviceManager::DeviceManager(QObject *parent) :
     QMetaObject::invokeMethod(this, "startMonitoringAutoDevices", Qt::QueuedConnection);
     // Make sure this is always emitted after plugins and devices are loaded
     QMetaObject::invokeMethod(this, "loaded", Qt::QueuedConnection);
+
+    m_radio433 = new Radio433(this);
+    connect(m_radio433, &Radio433::dataReceived, this, &DeviceManager::radio433SignalReceived);
+    m_radio433->enable();
+    // TODO: error handling if no Radio433 detected (GPIO or network), disable radio433 plugins or something...
 }
 
 DeviceManager::~DeviceManager()
@@ -857,15 +862,6 @@ QPair<DeviceManager::DeviceSetupStatus,QString> DeviceManager::setupDevice(Devic
         states.append(state);
     }
     device->setStates(states);
-
-    if (plugin->requiredHardware().testFlag(HardwareResourceRadio433)) {
-        if (!m_radio433) {
-            m_radio433 = new Radio433(this);
-            connect(m_radio433, &Radio433::dataReceived, this, &DeviceManager::radio433SignalReceived);
-            m_radio433->enable();
-            // TODO: error handling if no Radio433 detected (GPIO or network), disable radio433 plugins or something...
-        }
-    }
 
     QPair<DeviceSetupStatus, QString> status = plugin->setupDevice(device);
     if (status.first != DeviceSetupStatusSuccess) {

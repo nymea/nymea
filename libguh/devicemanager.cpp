@@ -812,9 +812,7 @@ void DeviceManager::slotDeviceStateValueChanged(const QUuid &stateTypeId, const 
 
 void DeviceManager::radio433SignalReceived(QList<int> rawData)
 {
-    foreach (Device *device, m_configuredDevices) {
-        DeviceClass deviceClass = m_supportedDevices.value(device->deviceClassId());
-        DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
+    foreach (DevicePlugin *plugin, m_devicePlugins) {
         if (plugin->requiredHardware().testFlag(HardwareResourceRadio433)) {
             plugin->radioData(rawData);
         }

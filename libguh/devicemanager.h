@@ -58,6 +58,7 @@ public:
         DeviceErrorDuplicateUuid,
         DeviceErrorCreationMethodNotSupported,
         DeviceErrorActionParameterError,
+        DeviceErrorHardwareNotAvailable,
         DeviceErrorDeviceDescriptorNotFound,
         DeviceErrorAsync,
         DeviceErrorPairingTransactionIdNotFound,

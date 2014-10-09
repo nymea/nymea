@@ -26,35 +26,21 @@
 Radio433Receiver::Radio433Receiver(QObject *parent, int gpio) :
     QThread(parent),m_gpioPin(gpio)
 {
-    m_gpio = new Gpio(this,m_gpioPin);
-    stopReceiver();
+    m_timings.clear();
+    m_available = false;
 
-    connect(this,SIGNAL(timingReady(int)),this,SLOT(handleTiming(int)),Qt::DirectConnection);
+    m_mutex.lock();
+    m_enabled = false;
+    m_mutex.unlock();
+
+    connect(this, &Radio433Receiver::timingReady, this, &Radio433Receiver::handleTiming, Qt::DirectConnection);
 }
 
 Radio433Receiver::~Radio433Receiver()
 {
-}
-
-bool Radio433Receiver::setUpGpio()
-{
-    if(!m_gpio->exportGpio()){
-        return false;
-    }else{
-        m_gpio->setDirection(INPUT);
-        m_gpio->setEdgeInterrupt(EDGE_BOTH);
-    }
-    return true;
-}
-
-bool Radio433Receiver::startReceiver()
-{
-    if(setUpGpio()){
-        m_timings.clear();
-        run();
-        return true;
-    }
-    return false;
+    quit();
+    wait();
+    deleteLater();
 }
 
 bool Radio433Receiver::stopReceiver()
@@ -62,8 +48,12 @@ bool Radio433Receiver::stopReceiver()
     m_mutex.lock();
     m_enabled = false;
     m_mutex.unlock();
-
     return true;
+}
+
+bool Radio433Receiver::available()
+{
+    return m_available;
 }
 
 void Radio433Receiver::run()
@@ -73,13 +63,12 @@ void Radio433Receiver::run()
     char buf[1];
 
     bool enabled = true;
-
     m_mutex.lock();
     m_enabled = true;
     m_mutex.unlock();
 
     int lastTime = micros();
-    // poll the gpio file, if something changes...emit the signal wit the current pulse length
+    // poll the gpio file, if something changes...emit the signal with the current pulse length
     while(enabled){
         memset((void*)fdset, 0, sizeof(fdset));
         fdset[0].fd = STDIN_FILENO;
@@ -87,7 +76,7 @@ void Radio433Receiver::run()
 
         fdset[1].fd = gpio_fd;
         fdset[1].events = POLLPRI;
-        int rc = poll(fdset, 2, 3000);
+        int rc = poll(fdset, 2, 1000);
 
         if (rc < 0) {
             qDebug() << "ERROR: poll failed";
@@ -110,6 +99,34 @@ void Radio433Receiver::run()
     }
 }
 
+bool Radio433Receiver::setUpGpio()
+{
+    if(!m_gpio){
+        m_gpio = new Gpio(this,m_gpioPin);
+    }
+
+    if(!m_gpio->exportGpio() || !m_gpio->setDirection(INPUT) || !m_gpio->setEdgeInterrupt(EDGE_BOTH)){
+        return false;
+    }
+    return true;
+}
+
+bool Radio433Receiver::startReceiver()
+{
+    if(!setUpGpio()){
+        m_available = false;
+        return false;
+    }
+
+    m_mutex.lock();
+    m_enabled = true;
+    m_mutex.unlock();
+    m_available = true;
+
+    start();
+    return true;
+}
+
 int Radio433Receiver::micros()
 {
     struct timeval tv ;
@@ -122,8 +139,8 @@ int Radio433Receiver::micros()
 
 bool Radio433Receiver::valueInTolerance(int value, int sollValue)
 {
-    // in in range of +- 35% of sollValue return true, eles return false
-    if(value >= (double)sollValue-200 && value <= (double)sollValue+200){
+    // in in range of +- 200 [us] of sollValue return true, eles return false
+    if(value >= (double)sollValue - 200 && value <= (double)sollValue + 200){
         return true;
     }
     return false;
@@ -167,15 +184,17 @@ void Radio433Receiver::changeReading(bool reading)
 {
     if(reading != m_reading){
         m_reading = reading;
-        emit readingChanged(reading);
+
+        //TODO: create colission detection
+
+        //emit readingChanged(reading);
     }
 }
 
 void Radio433Receiver::handleTiming(int duration)
 {
-
     // to short...
-    if(duration < 50){
+    if(duration < 60){
         changeReading(false);
         m_timings.clear();
         return;
@@ -192,14 +211,14 @@ void Radio433Receiver::handleTiming(int duration)
     if(!m_timings.isEmpty() && sync){
         // 1 sync bit + 48 data bit
         if(m_timings.count() == 49 && checkValues(Protocol48)){
-            qDebug() << "48 bit ->" << m_timings << "\n--------------------------";
+            //qDebug() << "48 bit ->" << m_timings << "\n--------------------------";
             changeReading(false);
             emit dataReceived(m_timings);
         }
 
         // 1 sync bit + 64 data bit
         if(m_timings.count() == 65 && checkValues(Protocol64)){
-            qDebug() << "64 bit ->" << m_timings << "\n--------------------------";
+            //qDebug() << "64 bit ->" << m_timings << "\n--------------------------";
             changeReading(false);
             emit dataReceived(m_timings);
         }
@@ -224,22 +243,23 @@ void Radio433Receiver::handleTiming(int duration)
 
         // check if it could be a signal -> if we have a sync and 15 valid values
         // set reading true to prevent a collision from own transmitter
-        if(m_timings.count() > 20 && (checkValues(Protocol48) || checkValues(Protocol64))){
+        if(m_timings.count() == 20 && (checkValues(Protocol48) || checkValues(Protocol64))){
             changeReading(true);
         }
 
         // check if we have allready a vallid protocol
         // 1 sync bit + 48 data bit
         if(m_timings.count() == 49 && checkValues(Protocol48)){
-            qDebug() << "48 bit -> " << m_timings << "\n--------------------------";
+            //qDebug() << "48 bit -> " << m_timings << "\n--------------------------";
             emit dataReceived(m_timings);
         }
 
         // 1 sync bit + 64 data bit
         if(m_timings.count() == 65 && checkValues(Protocol64)){
-            qDebug() << "64 bit -> " << m_timings << "\n--------------------------";
+            //qDebug() << "64 bit -> " << m_timings << "\n--------------------------";
             changeReading(false);
             emit dataReceived(m_timings);
+            m_timings.clear();
         }
     }
 }

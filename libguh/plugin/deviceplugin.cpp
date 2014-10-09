@@ -107,7 +107,7 @@ pure virtual methods: \l{DevicePlugin::pluginName()}, \l{DevicePlugin::pluginId(
 #include "deviceplugin.h"
 
 #include "devicemanager.h"
-#include "hardware/radio433.h"
+#include "hardware/radio433/radio433.h"
 
 #include <QDebug>
 
@@ -332,18 +332,19 @@ Device *DevicePlugin::findDeviceByParams(const ParamList &params) const
  devices, depending on the hardware requested by this plugin.
  \sa DevicePlugin::requiredHardware()
  */
-void DevicePlugin::transmitData(QList<int> rawData)
+
+bool DevicePlugin::transmitData(int delay, QList<int> rawData)
 {
     switch (requiredHardware()) {
     case DeviceManager::HardwareResourceRadio433:
-        deviceManager()->m_radio433->sendData(rawData);
-        break;
+        return deviceManager()->m_radio433->sendData(delay, rawData);
     case DeviceManager::HardwareResourceRadio868:
         qDebug() << "Radio868 not connected yet";
-        break;
+        return false;
     default:
         qWarning() << "Unknown harware type. Cannot send.";
     }
+    return false;
 }
 
 /*!

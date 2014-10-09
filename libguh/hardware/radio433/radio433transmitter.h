@@ -25,7 +25,7 @@
 #include <QQueue>
 #include <QDebug>
 
-#include "gpio.h"
+#include "../gpio.h"
 
 
 class Radio433Trasmitter : public QThread
@@ -36,10 +36,12 @@ public:
     ~Radio433Trasmitter();
 
     bool startTransmitter();
-    bool stopTransmitter();
-    bool setUpGpio();
+    bool available();
 
-    void sendData(QList<int> rawData);
+    void sendData(int delay, QList<int> rawData);
+
+protected:
+    void run();
 
 private:
     int m_gpioPin;
@@ -51,10 +53,12 @@ private:
     QMutex m_allowSendingMutex;
     bool m_allowSending;
 
-    void run();
-
     QMutex m_queueMutex;
     QQueue<QList<int> > m_rawDataQueue;
+
+    bool m_available;
+
+    bool setUpGpio();
 
 signals:
 
@@ -62,5 +66,4 @@ public slots:
     void allowSending(bool sending);
 
 };
-
 #endif // RADIO433TRASMITTER_H

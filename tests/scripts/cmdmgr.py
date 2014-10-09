@@ -262,13 +262,13 @@ def add_device():
         print "Empty deviceClass. Can't continue"
         return
     deviceClass = get_deviceClass(deviceClassId)
-    print "createmethod is", deviceClass['createMethod']
-    if deviceClass['createMethod'] == "CreateMethodUser":
+    print "createmethods are", deviceClass['createMethods']
+    if "CreateMethodUser" in deviceClass['createMethods']:
         add_configured_device(deviceClassId)
-    elif deviceClass['createMethod'] == "CreateMethodDiscovery":
+    elif "CreateMethodDiscovery" in deviceClass['createMethods']:
         deviceDescriptorId = discover_device(deviceClassId)
         add_discovered_device(deviceClassId, deviceDescriptorId)
-    elif deviceClass['createMethod'] == "CreateMethodAuto":
+    elif "CreateMethodAuto" in deviceClass['createMethods']:
         print "Can't create this device manually. It'll be created automatically when hardware is discovered."
 
 def select_device():

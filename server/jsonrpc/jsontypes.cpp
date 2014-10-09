@@ -371,6 +371,7 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass)
     }
     QVariantList discoveryParamTypes;
     foreach (const ParamType &paramType, deviceClass.discoveryParamTypes()) {
+        qDebug() << "packing discoverparam" << packParamType(paramType);
         discoveryParamTypes.append(packParamType(paramType));
     }
 

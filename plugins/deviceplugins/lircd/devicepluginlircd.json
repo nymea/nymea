@@ -23,7 +23,7 @@
                             "paramTypes": [
                                 {
                                     "name": "button",
-                                    "type": "string"
+                                    "type": "QString"
                                 },
                                 {
                                     "name": "repeat",

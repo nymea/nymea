@@ -163,6 +163,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
             deviceClass.setCreateMethods(createMethods);
 
             deviceClass.setDiscoveryParamTypes(parseParamTypes(jo.value("discoveryParamTypes").toArray()));
+            qDebug() << "loaded deviceClass" << deviceClass.discoveryParamTypes();
 
             QString setupMethod = jo.value("setupMethod").toString();
             if (setupMethod == "pushButton") {
@@ -293,6 +294,11 @@ QList<ParamType> DevicePlugin::parseParamTypes(const QJsonArray &array) const
     foreach (const QJsonValue &paramTypesJson, array) {
         QJsonObject pt = paramTypesJson.toObject();
         QVariant::Type t = QVariant::nameToType(pt.value("type").toString().toLatin1().data());
+        Q_ASSERT_X(t != QVariant::Invalid,
+                   pluginName().toLatin1().data(),
+                   QString("Invalid type %1 for param %2 in json file.")
+                   .arg(pt.value("type").toString())
+                   .arg(pt.value("name").toString()).toLatin1().data());
         ParamType paramType(pt.value("name").toString(), t, pt.value("defaultValue").toVariant());
         QVariantList allowedValues;
         foreach (const QJsonValue &allowedTypesJson, pt.value("allowedValues").toArray()) {

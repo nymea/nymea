@@ -137,10 +137,10 @@ int Radio433Receiver::micros()
     return (int)(now - m_epochMicro) ;
 }
 
-bool Radio433Receiver::valueInTolerance(int value, int sollValue)
+bool Radio433Receiver::valueInTolerance(int value, int correctValue)
 {
     // in in range of +- 200 [us] of sollValue return true, eles return false
-    if(value >= (double)sollValue - 200 && value <= (double)sollValue + 200){
+    if(value >= (double)correctValue - 200 && value <= (double)correctValue + 200){
         return true;
     }
     return false;

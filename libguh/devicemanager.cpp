@@ -199,7 +199,12 @@ QPair<DeviceManager::DeviceError, QString> DeviceManager::discoverDevices(const 
     if (!plugin) {
         return  qMakePair<DeviceError, QString>(DeviceManager::DeviceErrorPluginNotFound, deviceClass.pluginId().toString());
     }
-    return  plugin->discoverDevices(deviceClassId, effectiveParams);
+    m_discoveringPlugins.append(plugin);
+    QPair<DeviceError, QString> ret = plugin->discoverDevices(deviceClassId, effectiveParams);
+    if (ret.first != DeviceErrorAsync) {
+        m_discoveringPlugins.removeOne(plugin);
+    }
+    return ret;
 }
 
 /*! Add a new configured device for the given \l{DeviceClass} and the given parameters.
@@ -622,6 +627,9 @@ void DeviceManager::startMonitoringAutoDevices()
 
 void DeviceManager::slotDevicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors)
 {
+    DevicePlugin *plugin = static_cast<DevicePlugin*>(sender());
+    m_discoveringPlugins.removeOne(plugin);
+
     foreach (const DeviceDescriptor &descriptor, deviceDescriptors) {
         m_discoveredDevices.insert(descriptor.id(), descriptor);
     }
@@ -812,12 +820,23 @@ void DeviceManager::slotDeviceStateValueChanged(const QUuid &stateTypeId, const 
 
 void DeviceManager::radio433SignalReceived(QList<int> rawData)
 {
+    QList<DevicePlugin*> targetPlugins;
+
     foreach (Device *device, m_configuredDevices) {
         DeviceClass deviceClass = m_supportedDevices.value(device->deviceClassId());
         DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
-        if (plugin->requiredHardware().testFlag(HardwareResourceRadio433)) {
-            plugin->radioData(rawData);
+        if (plugin->requiredHardware().testFlag(HardwareResourceRadio433) && !targetPlugins.contains(plugin)) {
+            targetPlugins.append(plugin);
         }
+    }
+    foreach (DevicePlugin *plugin, m_discoveringPlugins) {
+        if (plugin->requiredHardware().testFlag(HardwareResourceRadio433) && !targetPlugins.contains(plugin)) {
+            targetPlugins.append(plugin);
+        }
+    }
+
+    foreach (DevicePlugin *plugin, targetPlugins) {
+        plugin->radioData(rawData);
     }
 }
 

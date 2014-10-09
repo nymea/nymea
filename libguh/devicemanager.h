@@ -151,6 +151,8 @@ private:
     QHash<QUuid, QPair<DeviceClassId, ParamList> > m_pairingsJustAdd;
     QHash<QUuid, QPair<DeviceClassId, DeviceDescriptorId> > m_pairingsDiscovery;
 
+    QList<DevicePlugin*> m_discoveringPlugins;
+
     friend class DevicePlugin;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(DeviceManager::HardwareResources)

@@ -75,7 +75,7 @@
 
 #include "devicemanager.h"
 
-#include "hardware/radio433.h"
+#include "hardware/radio433/radio433.h"
 
 #include "plugin/device.h"
 #include "plugin/deviceclass.h"
@@ -845,8 +845,10 @@ QPair<DeviceManager::DeviceSetupStatus,QString> DeviceManager::setupDevice(Devic
 
     if (plugin->requiredHardware().testFlag(HardwareResourceRadio433)) {
         if (!m_radio433) {
-            m_radio433 = new Radio433();
+            m_radio433 = new Radio433(this);
             connect(m_radio433, &Radio433::dataReceived, this, &DeviceManager::radio433SignalReceived);
+            m_radio433->enable();
+            // TODO: error handling if no Radio433 detected (GPIO or network), disable radio433 plugins or something...
         }
     }
 

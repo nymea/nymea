@@ -51,10 +51,7 @@
   */
 
 #include "devicepluginelro.h"
-
 #include "devicemanager.h"
-#include "plugin/device.h"
-#include "hardware/radio433.h"
 
 #include <QDebug>
 #include <QStringList>
@@ -79,10 +76,6 @@ QList<Vendor> DevicePluginElro::supportedVendors() const
 {
     QList<Vendor> ret;
     ret.append(Vendor(elroVendorId, "Elro"));
-    ret.append(Vendor(mumbiVendorId, "Mumbi"));
-    ret.append(Vendor(vivancoVendorId, "Vivanco"));
-    ret.append(Vendor(brennenstuhlVendorId, "Brennenstuhl"));
-    ret.append(Vendor(batVendorId, "BAT"));
     return ret;
 }
 
@@ -97,15 +90,15 @@ QList<DeviceClass> DevicePluginElro::supportedDevices() const
     deviceClassElroRemote.setName("Elro Remote");
     
     QList<ParamType> deviceParamsRemote;
-    ParamType channelParam = ParamType("channel1", QVariant::Bool);
+    ParamType channelParam = ParamType("channel 1", QVariant::Bool);
     deviceParamsRemote.append(channelParam);
-    channelParam = ParamType("channel2", QVariant::Bool);
+    channelParam = ParamType("channel 2", QVariant::Bool);
     deviceParamsRemote.append(channelParam);
-    channelParam = ParamType("channel3", QVariant::Bool);
+    channelParam = ParamType("channel 3", QVariant::Bool);
     deviceParamsRemote.append(channelParam);
-    channelParam = ParamType("channel4", QVariant::Bool);
+    channelParam = ParamType("channel 4", QVariant::Bool);
     deviceParamsRemote.append(channelParam);
-    channelParam = ParamType("channel5", QVariant::Bool);
+    channelParam = ParamType("channel 5", QVariant::Bool);
     deviceParamsRemote.append(channelParam);
     
     deviceClassElroRemote.setParamTypes(deviceParamsRemote);
@@ -155,24 +148,21 @@ QList<DeviceClass> DevicePluginElro::supportedDevices() const
     QList<ParamType> deviceParamsMotionDetector;
 
 
-
-
-
     // =======================================
     // Switch
     DeviceClass deviceClassElroSwitch(pluginId(), elroVendorId, elroSwitchId);
     deviceClassElroSwitch.setName("Elro Power Switch");
     
     QList<ParamType> deviceParamsSwitch;
-    ParamType paramSwitch = ParamType("channel1", QVariant::Bool);
+    ParamType paramSwitch = ParamType("channel 1", QVariant::Bool);
     deviceParamsSwitch.append(paramSwitch);
-    paramSwitch = ParamType("channel2", QVariant::Bool);
+    paramSwitch = ParamType("channel 2", QVariant::Bool);
     deviceParamsSwitch.append(paramSwitch);
-    paramSwitch = ParamType("channel3", QVariant::Bool);
+    paramSwitch = ParamType("channel 3", QVariant::Bool);
     deviceParamsSwitch.append(paramSwitch);
-    paramSwitch = ParamType("channel4", QVariant::Bool);
+    paramSwitch = ParamType("channel 4", QVariant::Bool);
     deviceParamsSwitch.append(paramSwitch);
-    paramSwitch = ParamType("channel5", QVariant::Bool);
+    paramSwitch = ParamType("channel 5", QVariant::Bool);
     deviceParamsSwitch.append(paramSwitch);
     paramSwitch = ParamType("A", QVariant::Bool);
     deviceParamsSwitch.append(paramSwitch);
@@ -191,6 +181,7 @@ QList<DeviceClass> DevicePluginElro::supportedDevices() const
     QList<ParamType> actionParamsSwitch;
     ParamType actionParamSwitch("power", QVariant::Bool);
     actionParamsSwitch.append(actionParamSwitch);
+
 
     QList<ActionType> switchActions;
 
@@ -228,27 +219,27 @@ QPair<DeviceManager::DeviceError, QString> DevicePluginElro::executeAction(Devic
     // =======================================
     // create the bincode
     // channels
-    if(device->paramValue("channel1").toBool()){
+    if(device->paramValue("channel 1").toBool()){
         binCode.append("00");
     }else{
         binCode.append("01");
     }
-    if(device->paramValue("channel2").toBool()){
+    if(device->paramValue("channel 2").toBool()){
         binCode.append("00");
     }else{
         binCode.append("01");
     }
-    if(device->paramValue("channel3").toBool()){
+    if(device->paramValue("channel 3").toBool()){
         binCode.append("00");
     }else{
         binCode.append("01");
     }
-    if(device->paramValue("channel4").toBool()){
+    if(device->paramValue("channel 4").toBool()){
         binCode.append("00");
     }else{
         binCode.append("01");
     }
-    if(device->paramValue("channel5").toBool()){
+    if(device->paramValue("channel 5").toBool()){
         binCode.append("00");
     }else{
         binCode.append("01");
@@ -293,29 +284,32 @@ QPair<DeviceManager::DeviceError, QString> DevicePluginElro::executeAction(Devic
     int delay = 350;
 
     // sync signal
-    rawData.append(delay);
-    rawData.append(delay*31);
+    rawData.append(1);
+    rawData.append(31);
 
     // add the code
     foreach (QChar c, binCode) {
         if(c == '0'){
-            rawData.append(delay);
-            rawData.append(delay*3);
+            rawData.append(1);
+            rawData.append(3);
         }else{
-            rawData.append(delay*3);
-            rawData.append(delay);
+            rawData.append(3);
+            rawData.append(1);
         }
     }
 
     // =======================================
-    // send data to driver
-    //qDebug() << "rawData" << rawData;
-    qDebug() << "transmit" << pluginName() << action.param("power").value().toBool();
-    transmitData(rawData);
-    return report();
+    // send data to hardware resource
+    if(transmitData(delay, rawData)){
+        qDebug() << "transmitted" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
+        return report();
+    }else{
+        qDebug() << "could not transmitt" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
+        return report(DeviceManager::DeviceErrorHardwareNotAvailable,QString("Radio 433 MHz transmitter not available."));
+    }
 }
 
-void DevicePluginElro::radioData(QList<int> rawData)
+void DevicePluginElro::radioData(const QList<int> &rawData)
 {    
     // filter right here a wrong signal length
     if(rawData.length() != 49){
@@ -363,7 +357,7 @@ void DevicePluginElro::radioData(QList<int> rawData)
     }else{
         return;
     }
-    qDebug() << "ELRO understands this protocol: " << binCode;
+    //qDebug() << "ELRO understands this protocol: " << binCode;
 
     if(binCode.left(20) == "00000100000000000001"){
         if(binCode.right(4) == "0100"){
@@ -416,11 +410,11 @@ void DevicePluginElro::radioData(QList<int> rawData)
     Device *device = 0;
     QList<Device*> deviceList = deviceManager()->findConfiguredDevices(elroRemoteId);
     foreach (Device *dev, deviceList) {
-        if (dev->hasParam("channel1") && dev->paramValue("channel1").toBool() == group.at(0) &&
-                dev->hasParam("channel2") && dev->paramValue("channel2").toBool() == group.at(1) &&
-                dev->hasParam("channel3") && dev->paramValue("channel3").toBool() == group.at(2) &&
-                dev->hasParam("channel4") && dev->paramValue("channel4").toBool() == group.at(3) &&
-                dev->hasParam("channel5") && dev->paramValue("channel5").toBool() == group.at(4)
+        if (dev->hasParam("channel 1") && dev->paramValue("channel 1").toBool() == group.at(0) &&
+                dev->hasParam("channel 2") && dev->paramValue("channel 2").toBool() == group.at(1) &&
+                dev->hasParam("channel 3") && dev->paramValue("channel 3").toBool() == group.at(2) &&
+                dev->hasParam("channel 4") && dev->paramValue("channel 4").toBool() == group.at(3) &&
+                dev->hasParam("channel 5") && dev->paramValue("channel 5").toBool() == group.at(4)
                 ) {
             // Yippie! We found the device.
             device = dev;
@@ -439,7 +433,7 @@ void DevicePluginElro::radioData(QList<int> rawData)
     DeviceClass deviceClass = supportedDevices().first();
     foreach (const EventType &eventType, deviceClass.eventTypes()) {
         if (eventType.name() == button) {
-            //qDebug() << "emit event " << pluginName() << group << eventType.name() << power;
+            qDebug() << "got event: " << pluginName() << group << "power = " << power;
             Event event = Event(eventType.id(), device->id(), params);
             emit emitEvent(event);
             return;

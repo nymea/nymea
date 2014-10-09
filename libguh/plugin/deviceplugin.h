@@ -58,7 +58,7 @@ public:
     virtual QPair<DeviceManager::DeviceSetupStatus, QString> confirmPairing(const QUuid &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params);
 
     // Hardware input
-    virtual void radioData(QList<int> rawData) {Q_UNUSED(rawData)}
+    virtual void radioData(const QList<int> &rawData) {Q_UNUSED(rawData)}
     virtual void guhTimer() {}
 
     // Configuration
@@ -88,7 +88,7 @@ protected:
     QList<Device*> myDevices() const;
     Device* findDeviceByParams(const ParamList &params) const;
 
-    void transmitData(QList<int> rawData);
+    bool transmitData(int delay, QList<int> rawData);
 
     QPair<DeviceManager::DeviceError, QString> report(DeviceManager::DeviceError error = DeviceManager::DeviceErrorNoError, const QString &message = QString());
     QPair<DeviceManager::DeviceSetupStatus, QString> reportDeviceSetup(DeviceManager::DeviceSetupStatus status = DeviceManager::DeviceSetupStatusSuccess, const QString &message = QString());

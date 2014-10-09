@@ -16,60 +16,42 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef RADIO433RECEIVER_H
-#define RADIO433RECEIVER_H
+#ifndef RADIO433_H
+#define RADIO433_H
 
-#include <QThread>
+#include <QObject>
 
-#include "gpio.h"
+#include "radio433receiver.h"
+#include "radio433transmitter.h"
+#include "radio433brennenstuhlgateway.h"
 
-class Radio433Receiver : public QThread
+class Radio433 : public QObject
 {
     Q_OBJECT
 public:
-    explicit Radio433Receiver(QObject *parent = 0, int gpio = 27);
-    ~Radio433Receiver();
+    explicit Radio433(QObject *parent = 0);
+    ~Radio433();
 
-    enum Protocol{
-        Protocol48,
-        Protocol64,
-        ProtocolNone
-    };
-
-    bool setUpGpio();
-    bool startReceiver();
-    bool stopReceiver();
+    bool available();
+    bool enable();
+    bool disabel();
 
 private:
-    int m_gpioPin;
-    Gpio *m_gpio;
-    unsigned int m_epochMicro;
-
-    unsigned int m_pulseProtocolOne;
-    unsigned int m_pulseProtocolTwo;
-
-    QList<int> m_timings;
-
-    QMutex m_mutex;
-    bool m_enabled;
-    bool m_reading;
-
-    void run();
-    int micros();
-    bool valueInTolerance(int value, int sollValue);
-    bool checkValue(int value);
-    bool checkValues(Protocol protocol);
-    void changeReading(bool reading);
-
-private slots:
-    void handleTiming(int duration);
+    Radio433Receiver *m_receiver;
+    Radio433Trasmitter *m_transmitter;
+    Radio433BrennenstuhlGateway *m_brennenstuhlTransmitter;
 
 signals:
-    void timingReady(int duration);
     void dataReceived(QList<int> rawData);
-    void readingChanged(const bool &reading);
+
+private slots:
+    void readingChanged(bool reading);
+    void brennenstuhlAvailableChanged();
 
 public slots:
+    bool sendData(int delay, QList<int> rawData);
+
 };
 
-#endif // RADIO433RECEIVER_H
+#endif // RADIO433_H
+

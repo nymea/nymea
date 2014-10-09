@@ -57,7 +57,7 @@ bool Gpio::exportGpio()
 
     int fd = open("/sys/class/gpio/export", O_WRONLY);
     if (fd < 0) {
-        qDebug() << "ERROR: could not open /sys/class/gpio/export";
+        //qDebug() << "ERROR: could not open /sys/class/gpio/export";
         return false;
     }
 
@@ -75,7 +75,7 @@ bool Gpio::unexportGpio()
 
     int fd = open("/sys/class/gpio/unexport", O_WRONLY);
     if (fd < 0) {
-        qDebug() << "ERROR: could not open /sys/class/gpio/unexport";
+        //qDebug() << "ERROR: could not open /sys/class/gpio/unexport";
         return false;
     }
     int len = snprintf(buf, sizeof(buf), "%d", m_gpio);
@@ -94,10 +94,10 @@ int Gpio::openGpio()
 
     int fd = open(buf, O_RDONLY | O_NONBLOCK );
     if (fd < 0) {
-        qDebug() << "ERROR: could not open /sys/class/gpio" << m_gpio << "/direction";
-        return false;
+        //qDebug() << "ERROR: could not open /sys/class/gpio" << m_gpio << "/direction";
+        return fd;
     }
-    return true;
+    return fd;
 }
 
 /*! Returns true, if the direction \a dir of the GPIO could be set correctly.
@@ -122,7 +122,7 @@ bool Gpio::setDirection(int dir)
 
     int fd = open(buf, O_WRONLY);
     if (fd < 0) {
-        qDebug() << "ERROR: could not open /sys/class/gpio" << m_gpio << "/direction";
+        //qDebug() << "ERROR: could not open /sys/class/gpio" << m_gpio << "/direction";
         return false;
     }
     if(dir == INPUT){
@@ -164,7 +164,7 @@ bool Gpio::setValue(unsigned int value)
 
         int fd = open(buf, O_WRONLY);
         if (fd < 0) {
-            qDebug() << "ERROR: could not open /sys/class/gpio" << m_gpio << "/value";
+            //qDebug() << "ERROR: could not open /sys/class/gpio" << m_gpio << "/value";
             return false;
         }
 
@@ -208,7 +208,7 @@ int Gpio::getValue()
 
     int fd = open(buf, O_RDONLY);
     if (fd < 0) {
-        qDebug() << "ERROR: could not open /sys/class/gpio" << m_gpio << "/value";
+        //qDebug() << "ERROR: could not open /sys/class/gpio" << m_gpio << "/value";
         return -1;
     }
     char ch;
@@ -222,7 +222,7 @@ int Gpio::getValue()
     }
     close(fd);
 
-    qDebug() << "gpio" << m_gpio << "value = " << value;
+    //qDebug() << "gpio" << m_gpio << "value = " << value;
     return value;
 }
 
@@ -252,7 +252,7 @@ bool Gpio::setEdgeInterrupt(int edge)
 
     int fd = open(buf, O_WRONLY);
     if (fd < 0) {
-        qDebug() << "ERROR: could not open /sys/class/gpio" << m_gpio << "/edge";
+        //qDebug() << "ERROR: could not open /sys/class/gpio" << m_gpio << "/edge";
         return false;
     }
 

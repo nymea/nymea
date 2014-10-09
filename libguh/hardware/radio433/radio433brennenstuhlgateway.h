@@ -16,39 +16,43 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef RADIO433_H
-#define RADIO433_H
+#ifndef RADIO433BRENNENSTUHLGATEWAY_H
+#define RADIO433BRENNENSTUHLGATEWAY_H
 
 #include <QObject>
+#include <QUdpSocket>
+#include <QHostAddress>
 
-#include "radio433receiver.h"
-#include "radio433transmitter.h"
-
-class Radio433 : public QObject
+class Radio433BrennenstuhlGateway : public QObject
 {
     Q_OBJECT
 public:
-    explicit Radio433(QObject *parent = 0);
-    ~Radio433();
+    explicit Radio433BrennenstuhlGateway(QObject *parent = 0);
 
+    bool sendData(int delay, QList<int> rawData);
+    bool enable();
+    bool disable();
     bool available();
-    bool enabel();
-    bool disabel();
 
 private:
-    Radio433Receiver *m_receiver;
-    Radio433Trasmitter *m_transmitter;
+    bool m_available;
+    QUdpSocket *m_gatewayDiscovery;
+    QUdpSocket *m_gateway;
+
+    int m_gatewayPort;
+    QHostAddress m_gatewayAddress;
+
+    void discover();
+    void gatewayDiscovered(QHostAddress address, int port);
 
 signals:
-    void dataReceived(QList<int> rawData);
+    void availableChanged();
 
 private slots:
-    void readingChanged(bool reading);
-
-public slots:
-    void sendData(QList<int> rawData);
+    void readDataDiscovery();
+    void readDataGateway();
+    void gatewayError(QAbstractSocket::SocketError error);
 
 };
 
-#endif // RADIO433_H
-
+#endif // RADIO433BRENNENSTUHLGATEWAY_H

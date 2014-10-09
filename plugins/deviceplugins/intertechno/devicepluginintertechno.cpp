@@ -159,7 +159,6 @@
 
 #include "plugin/device.h"
 #include "devicemanager.h"
-#include "hardware/radio433.h"
 
 #include <QDebug>
 #include <QStringList>
@@ -443,35 +442,38 @@ QPair<DeviceManager::DeviceError, QString> DevicePluginIntertechno::executeActio
         binCode.append("0100");
     }
     //qDebug() << "bin code:" << binCode;
+
     // =======================================
     //create rawData timings list
     int delay = 350;
 
     // sync signal
-    rawData.append(delay);
-    rawData.append(delay*31);
+    rawData.append(1);
+    rawData.append(31);
 
     // add the code
     foreach (QChar c, binCode) {
         if(c == '0'){
-            rawData.append(delay);
-            rawData.append(delay*3);
+            rawData.append(1);
+            rawData.append(3);
         }else{
-            rawData.append(delay*3);
-            rawData.append(delay);
+            rawData.append(3);
+            rawData.append(1);
         }
     }
 
     // =======================================
-    // send data to driver
-    qDebug() << "transmit" << pluginName() << familyCode << buttonCode << action.param("power").value().toBool();
-    transmitData(rawData);
-
-    return report();
-
+    // send data to hardware resource
+    if(transmitData(delay, rawData)){
+        qDebug() << "transmitted" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
+        return report();
+    }else{
+        qWarning() << "ERROR: could not transmitt" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
+        return report(DeviceManager::DeviceErrorHardwareNotAvailable, QString("Radio 433 MHz transmitter not available."));
+    }
 }
 
-void DevicePluginIntertechno::radioData(QList<int> rawData)
+void DevicePluginIntertechno::radioData(const QList<int> &rawData)
 {
 
 

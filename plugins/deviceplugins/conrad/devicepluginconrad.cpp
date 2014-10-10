@@ -89,9 +89,8 @@ QPair<DeviceManager::DeviceError, QString> DevicePluginConrad::executeAction(Dev
     QByteArray wallSwitchId = "000001001101000010110110";
     QByteArray randomID     = "100010101010111010101010";
 
+
     binCode.append(wallSwitchId);
-
-
 
     // =======================================
     //create rawData timings list

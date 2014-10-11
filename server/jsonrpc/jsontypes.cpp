@@ -30,14 +30,14 @@
 bool JsonTypes::s_initialized = false;
 QString JsonTypes::s_lastError;
 
-QVariantList JsonTypes::s_basicTypes;
-QVariantList JsonTypes::s_stateOperatorTypes;
-QVariantList JsonTypes::s_valueOperatorTypes;
-QVariantList JsonTypes::s_createMethodTypes;
-QVariantList JsonTypes::s_setupMethodTypes;
-QVariantList JsonTypes::s_removePolicyTypes;
-QVariantList JsonTypes::s_deviceErrorTypes;
-QVariantList JsonTypes::s_ruleErrorTypes;
+QVariantList JsonTypes::s_basicType;
+QVariantList JsonTypes::s_stateOperator;
+QVariantList JsonTypes::s_valueOperator;
+QVariantList JsonTypes::s_createMethod;
+QVariantList JsonTypes::s_setupMethod;
+QVariantList JsonTypes::s_removePolicy;
+QVariantList JsonTypes::s_deviceError;
+QVariantList JsonTypes::s_ruleError;
 
 QVariantMap JsonTypes::s_paramType;
 QVariantMap JsonTypes::s_param;
@@ -61,114 +61,114 @@ QVariantMap JsonTypes::s_rule;
 void JsonTypes::init()
 {
     // BasicTypes
-    s_basicTypes = enumToStrings(JsonTypes::staticMetaObject, "BasicTypes");
-    s_stateOperatorTypes = enumToStrings(Types::staticMetaObject, "StateOperator");
-    s_valueOperatorTypes = enumToStrings(Types::staticMetaObject, "ValueOperator");
-    s_createMethodTypes = enumToStrings(DeviceClass::staticMetaObject, "CreateMethod");
-    s_setupMethodTypes = enumToStrings(DeviceClass::staticMetaObject, "SetupMethod");
-    s_removePolicyTypes = enumToStrings(RuleEngine::staticMetaObject, "RemovePolicy");
-    s_deviceErrorTypes  = enumToStrings(DeviceManager::staticMetaObject, "DeviceError");
-    s_ruleErrorTypes = enumToStrings(RuleEngine::staticMetaObject, "RuleError");
+    s_basicType = enumToStrings(JsonTypes::staticMetaObject, "BasicTypes");
+    s_stateOperator = enumToStrings(Types::staticMetaObject, "StateOperator");
+    s_valueOperator = enumToStrings(Types::staticMetaObject, "ValueOperator");
+    s_createMethod = enumToStrings(DeviceClass::staticMetaObject, "CreateMethod");
+    s_setupMethod = enumToStrings(DeviceClass::staticMetaObject, "SetupMethod");
+    s_removePolicy = enumToStrings(RuleEngine::staticMetaObject, "RemovePolicy");
+    s_deviceError = enumToStrings(DeviceManager::staticMetaObject, "DeviceError");
+    s_ruleError = enumToStrings(RuleEngine::staticMetaObject, "RuleError");
 
     // ParamType
-    s_paramType.insert("name", "string");
-    s_paramType.insert("type", basicTypesRef());
-    s_paramType.insert("o:defaultValue", "variant");
-    s_paramType.insert("o:minValue", "variant");
-    s_paramType.insert("o:maxValue", "variant");
-    s_paramType.insert("o:allowedValues", QVariantList() << "variant");
+    s_paramType.insert("name", basicTypeToString(String));
+    s_paramType.insert("type", basicTypeRef());
+    s_paramType.insert("o:defaultValue", basicTypeToString(Variant));
+    s_paramType.insert("o:minValue", basicTypeToString(Variant));
+    s_paramType.insert("o:maxValue", basicTypeToString(Variant));
+    s_paramType.insert("o:allowedValues", QVariantList() << basicTypeToString(Variant));
 
     // Param
-    s_param.insert("name", "string");
-    s_param.insert("value", basicTypesRef());
+    s_param.insert("name", basicTypeToString(String));
+    s_param.insert("value", basicTypeRef());
 
     // ParamDescriptor
-    s_paramDescriptor.insert("name", "string");
-    s_paramDescriptor.insert("value", basicTypesRef());
-    s_paramDescriptor.insert("operator", valueOperatorTypesRef());
+    s_paramDescriptor.insert("name", basicTypeToString(String));
+    s_paramDescriptor.insert("value", basicTypeRef());
+    s_paramDescriptor.insert("operator", valueOperatorRef());
 
     // StateType
-    s_stateType.insert("id", "uuid");
-    s_stateType.insert("name", "string");
-    s_stateType.insert("type", basicTypesRef());
-    s_stateType.insert("defaultValue", "variant");
+    s_stateType.insert("id", basicTypeToString(Uuid));
+    s_stateType.insert("name", basicTypeToString(String));
+    s_stateType.insert("type", basicTypeRef());
+    s_stateType.insert("defaultValue", basicTypeToString(Variant));
 
     // State
-    s_state.insert("stateTypeId", "uuid");
-    s_state.insert("deviceId", "uuid");
-    s_state.insert("value", "variant");
+    s_state.insert("stateTypeId", basicTypeToString(Uuid));
+    s_state.insert("deviceId", basicTypeToString(Uuid));
+    s_state.insert("value", basicTypeToString(Variant));
 
     // StateDescriptor
-    s_stateDescriptor.insert("stateTypeId", "uuid");
-    s_stateDescriptor.insert("deviceId", "uuid");
-    s_stateDescriptor.insert("value", "variant");
-    s_stateDescriptor.insert("operator", valueOperatorTypesRef());
+    s_stateDescriptor.insert("stateTypeId", basicTypeToString(Uuid));
+    s_stateDescriptor.insert("deviceId", basicTypeToString(Uuid));
+    s_stateDescriptor.insert("value", basicTypeToString(Variant));
+    s_stateDescriptor.insert("operator", valueOperatorRef());
 
     // StateEvaluator
     s_stateEvaluator.insert("o:stateDescriptor", stateDescriptorRef());
     s_stateEvaluator.insert("o:childEvaluators", QVariantList() << stateEvaluatorRef());
-    s_stateEvaluator.insert("o:operator", stateOperatorTypesRef());
+    s_stateEvaluator.insert("o:operator", stateOperatorRef());
 
     // EventType
-    s_eventType.insert("id", "uuid");
-    s_eventType.insert("name", "string");
+    s_eventType.insert("id", basicTypeToString(Uuid));
+    s_eventType.insert("name", basicTypeToString(String));
     s_eventType.insert("paramTypes", QVariantList() << paramTypeRef());
 
     // Event
-    s_event.insert("eventTypeId", "uuid");
-    s_event.insert("deviceId", "uuid");
+    s_event.insert("eventTypeId", basicTypeToString(Uuid));
+    s_event.insert("deviceId", basicTypeToString(Uuid));
     s_event.insert("o:params", QVariantList() << paramRef());
 
     // EventDescriptor
-    s_eventDescriptor.insert("eventTypeId", "uuid");
-    s_eventDescriptor.insert("deviceId", "uuid");
+    s_eventDescriptor.insert("eventTypeId", basicTypeToString(Uuid));
+    s_eventDescriptor.insert("deviceId", basicTypeToString(Uuid));
     s_eventDescriptor.insert("o:paramDescriptors", QVariantList() << paramDescriptorRef());
 
     // ActionType
-    s_actionType.insert("id", "uuid");
-    s_actionType.insert("name", "string");
+    s_actionType.insert("id", basicTypeToString(Uuid));
+    s_actionType.insert("name", basicTypeToString(Uuid));
     s_actionType.insert("paramTypes", QVariantList() << paramTypeRef());
 
     // Action
-    s_action.insert("actionTypeId", "uuid");
-    s_action.insert("deviceId", "uuid");
+    s_action.insert("actionTypeId", basicTypeToString(Uuid));
+    s_action.insert("deviceId", basicTypeToString(Uuid));
     s_action.insert("o:params", QVariantList() << paramRef());
 
     // Pugin
-    s_plugin.insert("id", "uuid");
-    s_plugin.insert("name", "string");
+    s_plugin.insert("id", basicTypeToString(Uuid));
+    s_plugin.insert("name", basicTypeToString(String));
     s_plugin.insert("params", QVariantList() << paramRef());
 
     // Vendor
-    s_vendor.insert("id", "uuid");
-    s_vendor.insert("name", "string");
+    s_vendor.insert("id", basicTypeToString(Uuid));
+    s_vendor.insert("name", basicTypeToString(String));
 
     // DeviceClass
-    s_deviceClass.insert("id", "uuid");
-    s_deviceClass.insert("vendorId", "uuid");
-    s_deviceClass.insert("name", "string");
+    s_deviceClass.insert("id", basicTypeToString(Uuid));
+    s_deviceClass.insert("vendorId", basicTypeToString(Uuid));
+    s_deviceClass.insert("name", basicTypeToString(String));
     s_deviceClass.insert("stateTypes", QVariantList() << stateTypeRef());
     s_deviceClass.insert("eventTypes", QVariantList() << eventTypeRef());
     s_deviceClass.insert("actionTypes", QVariantList() << actionTypeRef());
     s_deviceClass.insert("paramTypes", QVariantList() << paramTypeRef());
     s_deviceClass.insert("discoveryParamTypes", QVariantList() << paramTypeRef());
-    s_deviceClass.insert("setupMethod", setupMethodTypesRef());
-    s_deviceClass.insert("createMethods", createMethodTypesRef());
+    s_deviceClass.insert("setupMethod", setupMethodRef());
+    s_deviceClass.insert("createMethods", QVariantList() << createMethodRef());
 
     // Device
-    s_device.insert("id", "uuid");
-    s_device.insert("deviceClassId", "uuid");
-    s_device.insert("name", "string");
+    s_device.insert("id", basicTypeToString(Uuid));
+    s_device.insert("deviceClassId", basicTypeToString(Uuid));
+    s_device.insert("name", basicTypeToString(String));
     s_device.insert("params", QVariantList() << paramRef());
-    s_device.insert("setupComplete", "bool");
+    s_device.insert("setupComplete", basicTypeToString(Bool));
 
     // DeviceDescription
-    s_deviceDescriptor.insert("id", "uuid");
-    s_deviceDescriptor.insert("title", "string");
-    s_deviceDescriptor.insert("description", "string");
+    s_deviceDescriptor.insert("id", basicTypeToString(Uuid));
+    s_deviceDescriptor.insert("title", basicTypeToString(String));
+    s_deviceDescriptor.insert("description", basicTypeToString(String));
 
     // Rule
-    s_rule.insert("id", "uuid");
+    s_rule.insert("id", basicTypeToString(Uuid));
     s_rule.insert("eventDescriptors", QVariantList() << eventDescriptorRef());
     s_rule.insert("actions", QVariantList() << actionRef());
     s_rule.insert("stateEvaluator", stateEvaluatorRef());
@@ -186,7 +186,6 @@ QVariantList JsonTypes::enumToStrings(const QMetaObject &metaObject, const QStri
     int enumIndex = metaObject.indexOfEnumerator(enumName.toLatin1().data());
     QMetaEnum metaEnum = metaObject.enumerator(enumIndex);
 
-    qDebug() << "*** have enum" << metaEnum.name();
     QVariantList enumStrings;
     for (int i = 0; i < metaEnum.keyCount(); i++) {
         enumStrings << metaEnum.valueToKey(metaEnum.value(i));
@@ -197,15 +196,15 @@ QVariantList JsonTypes::enumToStrings(const QMetaObject &metaObject, const QStri
 QVariantMap JsonTypes::allTypes()
 {
     QVariantMap allTypes;
-    allTypes.insert("BasicType", basicTypes());
+    allTypes.insert("BasicType", basicType());
     allTypes.insert("ParamType", paramTypeDescription());
-    allTypes.insert("CreateMethodType", createMethodTypes());
-    allTypes.insert("SetupMethodType", setupMethodTypes());
-    allTypes.insert("ValueOperatorType", valueOperatorTypes());
-    allTypes.insert("StateOperatorType", stateOperatorTypes());
-    allTypes.insert("RemovePolicyType", removePolicyTypes());
-    allTypes.insert("DeviceError", deviceErrorTypes());
-    allTypes.insert("RuleError", ruleErrorTypes());
+    allTypes.insert("CreateMethod", createMethod());
+    allTypes.insert("SetupMethod", setupMethod());
+    allTypes.insert("ValueOperator", valueOperator());
+    allTypes.insert("StateOperator", stateOperator());
+    allTypes.insert("RemovePolicy", removePolicy());
+    allTypes.insert("DeviceError", deviceError());
+    allTypes.insert("RuleError", ruleError());
     allTypes.insert("StateType", stateTypeDescription());
     allTypes.insert("StateDescriptor", stateDescriptorDescription());
     allTypes.insert("StateEvaluator", stateEvaluatorDescription());
@@ -307,7 +306,7 @@ QVariantMap JsonTypes::packStateDescriptor(const StateDescriptor &stateDescripto
     variantMap.insert("stateTypeId", stateDescriptor.stateTypeId().toString());
     variantMap.insert("deviceId", stateDescriptor.deviceId().toString());
     variantMap.insert("value", stateDescriptor.stateValue());
-    variantMap.insert("operator", valueOperatorTypes().at(stateDescriptor.operatorType()));
+    variantMap.insert("operator", valueOperator().at(stateDescriptor.operatorType()));
     return variantMap;
 }
 
@@ -337,7 +336,7 @@ QVariantMap JsonTypes::packParamDescriptor(const ParamDescriptor &paramDescripto
     QVariantMap variantMap;
     variantMap.insert("name", paramDescriptor.name());
     variantMap.insert("value", paramDescriptor.value());
-    variantMap.insert("operator", s_valueOperatorTypes.at(paramDescriptor.operatorType()));
+    variantMap.insert("operator", s_valueOperator.at(paramDescriptor.operatorType()));
     return variantMap;
 }
 
@@ -403,7 +402,7 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass)
     variant.insert("eventTypes", eventTypes);
     variant.insert("actionTypes", actionTypes);
     variant.insert("createMethods", packCreateMethods(deviceClass.createMethods()));
-    variant.insert("setupMethod", s_setupMethodTypes.at(deviceClass.setupMethod()));
+    variant.insert("setupMethod", s_setupMethod.at(deviceClass.setupMethod()));
     return variant;
 }
 
@@ -525,7 +524,7 @@ EventDescriptor JsonTypes::unpackEventDescriptor(const QVariantMap &eventDescrip
 QPair<bool, QString> JsonTypes::validateMap(const QVariantMap &templateMap, const QVariantMap &map)
 {
     s_lastError.clear();
-    qDebug() << "validating Map" << templateMap << map;
+    // qDebug() << "validating Map" << templateMap << map;
 
     // Make sure all values defined in the template are around
     foreach (const QString &key, templateMap.keys()) {
@@ -541,7 +540,7 @@ QPair<bool, QString> JsonTypes::validateMap(const QVariantMap &templateMap, cons
         if (map.contains(strippedKey)) {
             QPair<bool, QString> result = validateVariant(templateMap.value(key), map.value(strippedKey));
             if (!result.first) {
-                qDebug() << "Object not matching template or object not matching" << templateMap.value(key) << map.value(strippedKey);
+                qDebug() << "Object not matching template" << templateMap.value(key) << map.value(strippedKey);
                 return result;
             }
         }
@@ -563,25 +562,25 @@ QPair<bool, QString> JsonTypes::validateMap(const QVariantMap &templateMap, cons
 
 QPair<bool, QString> JsonTypes::validateProperty(const QVariant &templateValue, const QVariant &value)
 {
-    qDebug() << "validating property. template:" << templateValue << "got:" << value;
+    //qDebug() << "validating property. template:" << templateValue << "got:" << value;
     QString strippedTemplateValue = templateValue.toString();
 
-    if (strippedTemplateValue == "variant") {
+    if (strippedTemplateValue == JsonTypes::basicTypeToString(JsonTypes::Variant)) {
         return report(true, "");
     }
-    if (strippedTemplateValue == "uuid") {
+    if (strippedTemplateValue == JsonTypes::basicTypeToString(JsonTypes::Uuid)) {
         QString errorString = QString("Param %1 is not a uuid.").arg(value.toString());
         return report(value.canConvert(QVariant::Uuid), errorString);
     }
-    if (strippedTemplateValue == "string") {
+    if (strippedTemplateValue == JsonTypes::basicTypeToString(JsonTypes::String)) {
         QString errorString = QString("Param %1 is not a string.").arg(value.toString());
         return report(value.canConvert(QVariant::String), errorString);
     }
-    if (strippedTemplateValue == "bool") {
+    if (strippedTemplateValue == JsonTypes::basicTypeToString(JsonTypes::Bool)) {
         QString errorString = QString("Param %1 is not a bool.").arg(value.toString());
         return report(value.canConvert(QVariant::Bool), errorString);
     }
-    if (strippedTemplateValue == "int") {
+    if (strippedTemplateValue == JsonTypes::basicTypeToString(JsonTypes::Int)) {
         QString errorString = QString("Param %1 is not a int.").arg(value.toString());
         return report(value.canConvert(QVariant::Int), errorString);
     }
@@ -714,38 +713,50 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                     qDebug() << "evendescriptor not matching";
                     return result;
                 }
-            } else if (refName == basicTypesRef()) {
+            } else if (refName == basicTypeRef()) {
                 QPair<bool, QString> result = validateBasicType(variant);
                 if (!result.first) {
-                    qDebug() << "value not allowed in" << basicTypesRef();
+                    qDebug() << "value not allowed in" << basicTypeRef();
                     return result;
                 }
-            } else if (refName == stateOperatorTypesRef()) {
-                QPair<bool, QString> result = validateStateOperatorType(variant);
+            } else if (refName == stateOperatorRef()) {
+                QPair<bool, QString> result = validateStateOperator(variant);
                 if (!result.first) {
-                    qDebug() << "value not allowed in" << stateOperatorTypesRef();
+                    qDebug() << "value not allowed in" << stateOperatorRef();
                     return result;
                 }
-            } else if (refName == createMethodTypesRef()) {
-                QPair<bool, QString> result = validateCreateMethodType(variant);
+            } else if (refName == createMethodRef()) {
+                QPair<bool, QString> result = validateCreateMethod(variant);
                 if (!result.first) {
-                    qDebug() << "value not allowed in" << createMethodTypesRef() << variant;
+                    qDebug() << "value not allowed in" << createMethodRef() << variant;
                     return result;
                 }
-            } else if (refName == setupMethodTypesRef()) {
-                QPair<bool, QString> result = validateSetupMethodType(variant);
+            } else if (refName == setupMethodRef()) {
+                QPair<bool, QString> result = validateSetupMethod(variant);
                 if (!result.first) {
-                    qDebug() << "value not allowed in" << createMethodTypesRef();
+                    qDebug() << "value not allowed in" << createMethodRef();
                     return result;
                 }
-            } else if (refName == valueOperatorTypesRef()) {
-                QPair<bool, QString> result = validateValueOperatorType(variant);
+            } else if (refName == valueOperatorRef()) {
+                QPair<bool, QString> result = validateValueOperator(variant);
                 if (!result.first) {
-                    qDebug() << QString("value %1 not allowed in %2").arg(variant.toString()).arg(valueOperatorTypesRef());
+                    qDebug() << QString("value %1 not allowed in %2").arg(variant.toString()).arg(valueOperatorRef());
+                    return result;
+                }
+            } else if (refName == deviceErrorRef()) {
+                QPair<bool, QString> result = validateDeviceError(variant);
+                if (!result.first) {
+                    qDebug() << QString("value %1 not allowed in %2").arg(variant.toString()).arg(deviceErrorRef());
+                    return result;
+                }
+            } else if (refName == ruleErrorRef()) {
+                QPair<bool, QString> result = validateRuleError(variant);
+                if (!result.first) {
+                    qDebug() << QString("value %1 not allowed in %2").arg(variant.toString()).arg(ruleErrorRef());
                     return result;
                 }
             } else {
-                qDebug() << "unhandled ref:" << refName;
+                Q_ASSERT_X(false, "JsonTypes", QString("Unhandled ref: %1").arg(refName).toLatin1().data());
                 return report(false, QString("Unhandled ref %1. Server implementation incomplete.").arg(refName));
             }
 
@@ -798,30 +809,32 @@ QPair<bool, QString> JsonTypes::validateBasicType(const QVariant &variant)
     return report(false, QString("Error validating basic type %1.").arg(variant.toString()));
 }
 
-QPair<bool, QString> JsonTypes::validateStateOperatorType(const QVariant &variant)
+QPair<bool, QString> JsonTypes::validateStateOperator(const QVariant &variant)
 {
-    return report(s_stateOperatorTypes.contains(variant.toString()), QString("Unknown state operator %1").arg(variant.toString()));
+    return report(s_stateOperator.contains(variant.toString()), QString("Unknown state operator %1").arg(variant.toString()));
 }
 
-QPair<bool, QString> JsonTypes::validateCreateMethodType(const QVariant &variant)
+QPair<bool, QString> JsonTypes::validateCreateMethod(const QVariant &variant)
 {
-    if (variant.toList().isEmpty()) {
-        return report(false, QString("No createMethod given."));
-    }
-    foreach (const QVariant &method, variant.toList()) {
-        if (!s_createMethodTypes.contains(method.toString())) {
-            return report(false, QString("Unknwon createMethod type %1").arg(method.toString()));
-        }
-    }
-    return report(true, QString());
+    return report(s_createMethod.contains(variant.toString()), QString("Unknwon createMethod type %1").arg(variant.toString()));
 }
 
-QPair<bool, QString> JsonTypes::validateSetupMethodType(const QVariant &variant)
+QPair<bool, QString> JsonTypes::validateSetupMethod(const QVariant &variant)
 {
-    return report(s_setupMethodTypes.contains(variant.toString()), QString("Unknwon setupMethod type %1").arg(variant.toString()));
+    return report(s_setupMethod.contains(variant.toString()), QString("Unknwon SetupMethod: %1").arg(variant.toString()));
 }
 
-QPair<bool, QString> JsonTypes::validateValueOperatorType(const QVariant &variant)
+QPair<bool, QString> JsonTypes::validateValueOperator(const QVariant &variant)
 {
-    return report(s_valueOperatorTypes.contains(variant.toString()), QString("Unknown value operator type %1").arg(variant.toString()));
+    return report(s_valueOperator.contains(variant.toString()), QString("Unknown ValueOperator: %1").arg(variant.toString()));
+}
+
+QPair<bool, QString> JsonTypes::validateDeviceError(const QVariant &variant)
+{
+    return report(s_deviceError.contains(variant.toString()), QString("Unknown DeviceError: %1").arg(variant.toString()));
+}
+
+QPair<bool, QString> JsonTypes::validateRuleError(const QVariant &variant)
+{
+    return report(s_ruleError.contains(variant.toString()), QString("Unknown RuleError: %1").arg(variant.toString()));
 }

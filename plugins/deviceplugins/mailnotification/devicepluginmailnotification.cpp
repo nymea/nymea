@@ -245,7 +245,7 @@ DevicePluginMailNotification::~DevicePluginMailNotification()
     m_smtpClient->deleteLater();
 }
 
-QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginMailNotification::setupDevice(Device *device)
+DeviceManager::DeviceSetupStatus DevicePluginMailNotification::setupDevice(Device *device)
 {
     // Google mail
 //    if(device->deviceClassId() == googleMailDeviceClassId){
@@ -255,7 +255,7 @@ QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginMailNotification::s
 //        m_smtpClient->setHost("smtp.gmail.com");
 //        m_smtpClient->login(device->paramValue("user").toString(), device->paramValue("password").toString());
 //    }
-    return reportDeviceSetup();
+    return DeviceManager::DeviceSetupStatusSuccess;
 }
 
 DeviceManager::HardwareResources DevicePluginMailNotification::requiredHardware() const

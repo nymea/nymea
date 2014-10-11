@@ -64,8 +64,8 @@ void TestActions::executeAction_data()
     QTest::newRow("invalid actionTypeId") << m_mockDeviceId << ActionTypeId::createActionTypeId() << params << DeviceManager::DeviceErrorActionTypeNotFound;
     QTest::newRow("missing params") << m_mockDeviceId << mockActionIdWithParams << QVariantList() << DeviceManager::DeviceErrorMissingParameter;
     QTest::newRow("async action") << m_mockDeviceId << mockActionIdAsync << QVariantList() << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("broken action") << m_mockDeviceId << mockActionIdFailing << QVariantList() << DeviceManager::DeviceErrorActionParameterError;
-    QTest::newRow("async broken action") << m_mockDeviceId << mockActionIdAsyncFailing << QVariantList() << DeviceManager::DeviceErrorActionParameterError;
+    QTest::newRow("broken action") << m_mockDeviceId << mockActionIdFailing << QVariantList() << DeviceManager::DeviceErrorSetupFailed;
+    QTest::newRow("async broken action") << m_mockDeviceId << mockActionIdAsyncFailing << QVariantList() << DeviceManager::DeviceErrorSetupFailed;
 }
 
 void TestActions::executeAction()
@@ -81,7 +81,7 @@ void TestActions::executeAction()
     params.insert("params", actionParams);
     QVariant response = injectAndWait("Actions.ExecuteAction", params);
     qDebug() << "executeActionresponse" << response;
-    verifyError(response, "deviceError", error);
+    verifyDeviceError(response, error);
 
     // Fetch action execution history from mock device
     QNetworkAccessManager nam;
@@ -138,7 +138,7 @@ void TestActions::getActionTypes()
     params.insert("actionTypeId", actionTypeId.toString());
     QVariant response = injectAndWait("Actions.GetActionType", params);
 
-    verifyError(response, "deviceError", error);
+    verifyDeviceError(response, error);
 
     if (error == DeviceManager::DeviceErrorNoError) {
         QVERIFY2(ActionTypeId(response.toMap().value("params").toMap().value("actionType").toMap().value("id").toString()) == actionTypeId, "Didnt get reply for same actionTypeId as requested.");

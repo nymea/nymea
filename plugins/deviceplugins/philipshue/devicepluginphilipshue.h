@@ -43,10 +43,10 @@ public:
     QList<ParamType> configurationDescription() const override;
     DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
 
-    QPair<DeviceManager::DeviceSetupStatus, QString> setupDevice(Device *device) override;
+    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
     void deviceRemoved(Device *device) override;
 
-    QPair<DeviceManager::DeviceSetupStatus, QString> confirmPairing(const QUuid &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params) override;
+    DeviceManager::DeviceSetupStatus confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params) override;
 
     void guhTimer() override;
 
@@ -67,7 +67,7 @@ private:
 
     class PairingInfo {
     public:
-        QUuid pairingTransactionId;
+        PairingTransactionId pairingTransactionId;
         Param ipParam;
         Param usernameParam;
     };

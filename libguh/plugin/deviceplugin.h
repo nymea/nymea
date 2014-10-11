@@ -53,10 +53,10 @@ public:
     virtual void startMonitoringAutoDevices();
     virtual DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params);
 
-    virtual QPair<DeviceManager::DeviceSetupStatus, QString> setupDevice(Device *device);
+    virtual DeviceManager::DeviceSetupStatus setupDevice(Device *device);
     virtual void deviceRemoved(Device *device);
 
-    virtual QPair<DeviceManager::DeviceSetupStatus, QString> confirmPairing(const QUuid &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params);
+    virtual DeviceManager::DeviceSetupStatus confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params);
 
     // Hardware input
     virtual void radioData(const QList<int> &rawData) {Q_UNUSED(rawData)}
@@ -64,10 +64,10 @@ public:
 
     // Configuration
     virtual QList<ParamType> configurationDescription() const;
-    QPair<DeviceManager::DeviceError, QString> setConfiguration(const ParamList &configuration);
+    DeviceManager::DeviceError setConfiguration(const ParamList &configuration);
     ParamList configuration() const;
     QVariant configValue(const QString &paramName) const;
-    QPair<DeviceManager::DeviceError, QString> setConfigValue(const QString &paramName, const QVariant &value);
+    DeviceManager::DeviceError setConfigValue(const QString &paramName, const QVariant &value);
 
 public slots:
     virtual DeviceManager::DeviceError executeAction(Device *device, const Action &action) {
@@ -78,9 +78,9 @@ public slots:
 signals:
     void emitEvent(const Event &event);
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors);
-    void deviceSetupFinished(Device *device, DeviceManager::DeviceSetupStatus status, const QString &errorMessage);
-    void pairingFinished(const QUuid &pairingTransactionId, DeviceManager::DeviceSetupStatus status, const QString &errorMessage);
-    void actionExecutionFinished(const ActionId &id, DeviceManager::DeviceError status, const QString &errorMessage);
+    void deviceSetupFinished(Device *device, DeviceManager::DeviceSetupStatus status);
+    void pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceSetupStatus status);
+    void actionExecutionFinished(const ActionId &id, DeviceManager::DeviceError status);
     void configValueChanged(const QString &paramName, const QVariant &value);
     void autoDevicesAppeared(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors);
 
@@ -91,8 +91,6 @@ protected:
 
     bool transmitData(int delay, QList<int> rawData);
 
-    QPair<DeviceManager::DeviceError, QString> report(DeviceManager::DeviceError error = DeviceManager::DeviceErrorNoError, const QString &message = QString());
-    QPair<DeviceManager::DeviceSetupStatus, QString> reportDeviceSetup(DeviceManager::DeviceSetupStatus status = DeviceManager::DeviceSetupStatusSuccess, const QString &message = QString());
 private:
     void initPlugin(const QJsonObject &metaData, DeviceManager *deviceManager);
 

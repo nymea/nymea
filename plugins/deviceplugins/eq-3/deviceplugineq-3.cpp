@@ -261,7 +261,7 @@ void DevicePluginEQ3::startMonitoringAutoDevices()
 
 }
 
-QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginEQ3::setupDevice(Device *device)
+DeviceManager::DeviceSetupStatus DevicePluginEQ3::setupDevice(Device *device)
 {
     qDebug() << "setupDevice" << device->params();
 
@@ -269,7 +269,7 @@ QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginEQ3::setupDevice(De
         foreach (MaxCube *cube, m_cubes.keys()) {
             if(cube->serialNumber() == device->paramValue("serial number").toString()){
                 qDebug() << cube->serialNumber() << " allready exists...";
-                return reportDeviceSetup(DeviceManager::DeviceSetupStatusFailure,QString("Cube allready in added"));
+                return DeviceManager::DeviceSetupStatusFailure;
             }
         }
 
@@ -286,13 +286,13 @@ QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginEQ3::setupDevice(De
 
         cube->connectToCube();
 
-        return reportDeviceSetup(DeviceManager::DeviceSetupStatusAsync);
+        return DeviceManager::DeviceSetupStatusAsync;
     }
     if(device->deviceClassId() == wallThermostateDeviceClassId){
         device->setName("Max! Wall Thermostat (" + device->paramValue("serial number").toString() + ")");
     }
 
-    return reportDeviceSetup();
+    return DeviceManager::DeviceSetupStatusSuccess;
 }
 
 void DevicePluginEQ3::deviceRemoved(Device *device)
@@ -354,7 +354,7 @@ void DevicePluginEQ3::cubeConnectionStatusChanged(const bool &connected)
             device = m_cubes.value(cube);
             device->setName("Max! Cube " + cube->serialNumber());
             device->setStateValue(connectionStateTypeId,true);
-            emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusSuccess, QString());
+            emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusSuccess);
         }
     }else{
         MaxCube *cube = static_cast<MaxCube*>(sender());
@@ -362,7 +362,7 @@ void DevicePluginEQ3::cubeConnectionStatusChanged(const bool &connected)
         if (m_cubes.contains(cube)){
             device = m_cubes.value(cube);
             device->setStateValue(connectionStateTypeId,false);
-            emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusFailure, QString("Could not connect to cube."));
+            emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusFailure);
         }
     }
 }
@@ -391,9 +391,9 @@ void DevicePluginEQ3::discoveryDone(const QList<MaxCube *> &cubeList)
 void DevicePluginEQ3::commandActionFinished(const bool &succeeded, const ActionId &actionId)
 {
     if(succeeded){
-        emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorNoError,QString());
+        emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorNoError);
     }else{
-        emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorSetupFailed,QString("Could not execute action on cube, unknown error"));
+        emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorSetupFailed);
     }
 }
 

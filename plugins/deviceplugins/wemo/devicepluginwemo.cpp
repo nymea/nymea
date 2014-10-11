@@ -157,13 +157,13 @@ DeviceManager::DeviceError DevicePluginWemo::discoverDevices(const DeviceClassId
     return DeviceManager::DeviceErrorAsync;
 }
 
-QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginWemo::setupDevice(Device *device)
+DeviceManager::DeviceSetupStatus DevicePluginWemo::setupDevice(Device *device)
 {
     if(device->deviceClassId() == wemoSwitchDeviceClassId){
         foreach (WemoSwitch *wemoSwitch, m_wemoSwitches.keys()) {
             if(wemoSwitch->serialNumber() == device->paramValue("serial number").toString()){
                 qWarning() << wemoSwitch->serialNumber() << " allready exists...";
-                return reportDeviceSetup(DeviceManager::DeviceSetupStatusFailure,QString("Device allready added"));
+                return DeviceManager::DeviceSetupStatusFailure;
             }
         }
 
@@ -186,9 +186,9 @@ QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginWemo::setupDevice(D
 
         m_wemoSwitches.insert(wemoSwitch,device);
         wemoSwitch->refresh();
-        return reportDeviceSetup();
+        return DeviceManager::DeviceSetupStatusSuccess;
     }
-    return reportDeviceSetup(DeviceManager::DeviceSetupStatusSuccess);
+    return DeviceManager::DeviceSetupStatusSuccess;
 }
 
 DeviceManager::HardwareResources DevicePluginWemo::requiredHardware() const
@@ -267,9 +267,9 @@ void DevicePluginWemo::wemoSwitchStateChanged()
 void DevicePluginWemo::setPowerFinished(const bool &succeeded, const ActionId &actionId)
 {
     if(succeeded){
-        emit actionExecutionFinished(actionId,DeviceManager::DeviceErrorNoError,QString());
+        emit actionExecutionFinished(actionId,DeviceManager::DeviceErrorNoError);
     }else{
-        emit actionExecutionFinished(actionId,DeviceManager::DeviceErrorDeviceNotFound,QString("Action could not be executed."));
+        emit actionExecutionFinished(actionId,DeviceManager::DeviceErrorHardwareFailure);
     }
 }
 

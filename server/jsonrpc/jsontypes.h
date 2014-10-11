@@ -71,27 +71,29 @@ class Device;
 class JsonTypes
 {
     Q_GADGET
-    Q_ENUMS(BasicTypes)
+    Q_ENUMS(BasicType)
+    Q_ENUMS(JsonError)
 public:
-    enum BasicTypes {
+    enum BasicType {
         Uuid,
         String,
         Int,
         Double,
-        Bool
+        Bool,
+        Variant,
+        Object
     };
-
 
     static QVariantMap allTypes();
 
-    DECLARE_TYPE(basicTypes, "BasicType", JsonTypes, BasicTypes)
-    DECLARE_TYPE(stateOperatorTypes, "StateOperator", Types, StateOperator)
-    DECLARE_TYPE(valueOperatorTypes, "ValueOperator", Types, ValueOperator)
-    DECLARE_TYPE(createMethodTypes, "CreateMethod", DeviceClass, CreateMethod)
-    DECLARE_TYPE(setupMethodTypes, "SetupMethod", DeviceClass, SetupMethod)
-    DECLARE_TYPE(deviceErrorTypes, "DeviceError", DeviceManager, DeviceError)
-    DECLARE_TYPE(removePolicyTypes, "RemovePolicy", RuleEngine, RemovePolicy)
-    DECLARE_TYPE(ruleErrorTypes, "RuleError", RuleEngine, RuleError)
+    DECLARE_TYPE(basicType, "BasicType", JsonTypes, BasicType)
+    DECLARE_TYPE(stateOperator, "StateOperator", Types, StateOperator)
+    DECLARE_TYPE(valueOperator, "ValueOperator", Types, ValueOperator)
+    DECLARE_TYPE(createMethod, "CreateMethod", DeviceClass, CreateMethod)
+    DECLARE_TYPE(setupMethod, "SetupMethod", DeviceClass, SetupMethod)
+    DECLARE_TYPE(deviceError, "DeviceError", DeviceManager, DeviceError)
+    DECLARE_TYPE(removePolicy, "RemovePolicy", RuleEngine, RemovePolicy)
+    DECLARE_TYPE(ruleError, "RuleError", RuleEngine, RuleError)
     DECLARE_OBJECT(paramType, "ParamType")
     DECLARE_OBJECT(param, "Param")
     DECLARE_OBJECT(paramDescriptor, "ParamDescriptor")
@@ -141,11 +143,12 @@ public:
     static QPair<bool, QString> validateList(const QVariantList &templateList, const QVariantList &list);
     static QPair<bool, QString> validateVariant(const QVariant &templateVariant, const QVariant &variant);
     static QPair<bool, QString> validateBasicType(const QVariant &variant);
-    static QPair<bool, QString> validateStateOperatorType(const QVariant &variant);
-    static QPair<bool, QString> validateCreateMethodType(const QVariant &variant);
-    static QPair<bool, QString> validateSetupMethodType(const QVariant &variant);
-    static QPair<bool, QString> validateValueOperatorType(const QVariant &variant);
-
+    static QPair<bool, QString> validateStateOperator(const QVariant &variant);
+    static QPair<bool, QString> validateCreateMethod(const QVariant &variant);
+    static QPair<bool, QString> validateSetupMethod(const QVariant &variant);
+    static QPair<bool, QString> validateValueOperator(const QVariant &variant);
+    static QPair<bool, QString> validateDeviceError(const QVariant &variant);
+    static QPair<bool, QString> validateRuleError(const QVariant &variant);
 
 private:
     static bool s_initialized;

@@ -58,20 +58,21 @@ DeviceManager::DeviceError DevicePluginMock::discoverDevices(const DeviceClassId
     return DeviceManager::DeviceErrorAsync;
 }
 
-QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginMock::setupDevice(Device *device)
+DeviceManager::DeviceSetupStatus DevicePluginMock::setupDevice(Device *device)
 {
     qDebug() << "Mockdevice created returning true" << device->paramValue("httpport").toInt() << device->paramValue("async").toBool() << device->paramValue("broken").toBool();
 
     if (device->paramValue("broken").toBool()) {
-        return reportDeviceSetup(DeviceManager::DeviceSetupStatusFailure, "This device is intentionally broken.");
+        qWarning() << "This device is intentionally broken.";
+        return DeviceManager::DeviceSetupStatusFailure;
     }
 
     HttpDaemon *daemon = new HttpDaemon(device, this);
     m_daemons.insert(device, daemon);
 
     if (!daemon->isListening()) {
-        qDebug() << "HTTP port opening failed.";
-        return reportDeviceSetup(DeviceManager::DeviceSetupStatusFailure, QString("Could not bind port."));
+        qWarning() << "HTTP port opening failed.";
+        return DeviceManager::DeviceSetupStatusFailure;
     }
 
     connect(daemon, &HttpDaemon::triggerEvent, this, &DevicePluginMock::triggerEvent);
@@ -80,9 +81,9 @@ QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginMock::setupDevice(D
     if (device->paramValue("async").toBool()) {
         m_asyncSetupDevices.append(device);
         QTimer::singleShot(1000, this, SLOT(emitDeviceSetupFinished()));
-        return reportDeviceSetup(DeviceManager::DeviceSetupStatusAsync);
+        return DeviceManager::DeviceSetupStatusAsync;
     }
-    return reportDeviceSetup();
+    return DeviceManager::DeviceSetupStatusSuccess;
 }
 
 void DevicePluginMock::deviceRemoved(Device *device)
@@ -129,7 +130,6 @@ QList<ParamType> DevicePluginMock::configurationDescription() const
 DeviceManager::DeviceError DevicePluginMock::executeAction(Device *device, const Action &action)
 {
     if (!myDevices().contains(device)) {
-        qWarning() << "Should execute action for a device which doesn't seem to be mine.";
         return DeviceManager::DeviceErrorDeviceNotFound;
     }
 
@@ -143,7 +143,6 @@ DeviceManager::DeviceError DevicePluginMock::executeAction(Device *device, const
         return DeviceManager::DeviceErrorSetupFailed;
     }
 
-    qDebug() << "Should execute action" << action.actionTypeId();
     m_daemons.value(device)->actionExecuted(action.actionTypeId());
     return DeviceManager::DeviceErrorNoError;
 }
@@ -204,9 +203,9 @@ void DevicePluginMock::emitDeviceSetupFinished()
     qDebug() << "emitting setup finised";
     Device *device = m_asyncSetupDevices.takeFirst();
     if (device->paramValue("broken").toBool()) {
-        emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusFailure, QString("This device is intentionally broken"));
+        emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusFailure);
     } else {
-        emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusSuccess, QString());
+        emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusSuccess);
     }
 }
 
@@ -215,8 +214,8 @@ void DevicePluginMock::emitActionExecuted()
     QPair<Action, Device*> action = m_asyncActions.takeFirst();
     if (action.first.actionTypeId() == mockActionIdAsync) {
         m_daemons.value(action.second)->actionExecuted(action.first.actionTypeId());
-        emit actionExecutionFinished(action.first.id(), DeviceManager::DeviceErrorNoError, QString());
+        emit actionExecutionFinished(action.first.id(), DeviceManager::DeviceErrorNoError);
     } else if (action.first.actionTypeId() == mockActionIdAsyncFailing) {
-        emit actionExecutionFinished(action.first.id(), DeviceManager::DeviceErrorSetupFailed, QString());
+        emit actionExecutionFinished(action.first.id(), DeviceManager::DeviceErrorSetupFailed);
     }
 }

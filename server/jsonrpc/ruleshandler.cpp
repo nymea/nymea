@@ -32,12 +32,12 @@ RulesHandler::RulesHandler(QObject *parent) :
     params.clear(); returns.clear();
     setDescription("GetRules", "Get all configured rules");
     setParams("GetRules", params);
-    returns.insert("ruleIds", QVariantList() << "uuid");
+    returns.insert("ruleIds", QVariantList() << JsonTypes::basicTypeToString(JsonTypes::Uuid));
     setReturns("GetRules", returns);
 
     params.clear(); returns.clear();
     setDescription("GetRuleDetails", "Get details for the rule identified by ruleId");
-    params.insert("ruleId", "uuid");
+    params.insert("ruleId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     setParams("GetRuleDetails", params);
     returns.insert("rule", JsonTypes::ruleRef());
     setReturns("GetRuleDetails", returns);
@@ -52,22 +52,22 @@ RulesHandler::RulesHandler(QObject *parent) :
     actions.append(JsonTypes::actionRef());
     params.insert("actions", actions);
     setParams("AddRule", params);
-    returns.insert("ruleError", "int");
-    returns.insert("o:ruleId", "uuid");
+    returns.insert("ruleError", JsonTypes::ruleErrorRef());
+    returns.insert("o:ruleId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     setReturns("AddRule", returns);
 
     params.clear(); returns.clear();
     setDescription("RemoveRule", "Remove a rule");
-    params.insert("ruleId", "uuid");
+    params.insert("ruleId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     setParams("RemoveRule", params);
-    returns.insert("ruleError", "int");
+    returns.insert("ruleError", JsonTypes::ruleErrorRef());
     setReturns("RemoveRule", returns);
 
     params.clear(); returns.clear();
     setDescription("FindRules", "Find a list of rules containing any of the given parameters.");
-    params.insert("deviceId", "uuid");
+    params.insert("deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     setParams("FindRules", params);
-    returns.insert("ruleIds", QVariantList() << "uuid");
+    returns.insert("ruleIds", QVariantList() << JsonTypes::basicTypeToString(JsonTypes::Uuid));
     setReturns("FindRules", returns);
 }
 
@@ -106,7 +106,7 @@ JsonReply* RulesHandler::AddRule(const QVariantMap &params)
     if (params.contains("eventDescriptor") && params.contains("eventDescriptorList")) {
         QVariantMap returns;
         qWarning() << "Only one of eventDesciptor or eventDescriptorList may be used.";
-        returns.insert("ruleError", RuleEngine::RuleErrorInvalidParameter);
+        returns.insert("ruleError", JsonTypes::ruleErrorToString(RuleEngine::RuleErrorInvalidParameter));
         return createReply(returns);
     }
 
@@ -132,7 +132,7 @@ JsonReply* RulesHandler::AddRule(const QVariantMap &params)
 
     QVariantMap returns;
     if (actions.count() == 0) {
-        returns.insert("ruleErorr", RuleEngine::RuleErrorMissingParameter);
+        returns.insert("ruleErorr", JsonTypes::ruleErrorToString(RuleEngine::RuleErrorMissingParameter));
         return createReply(returns);
     }
 
@@ -141,7 +141,7 @@ JsonReply* RulesHandler::AddRule(const QVariantMap &params)
     if (status ==  RuleEngine::RuleErrorNoError) {
         returns.insert("ruleId", newRuleId.toString());
     }
-    returns.insert("ruleError", status);
+    returns.insert("ruleError", JsonTypes::ruleErrorToString(status));
     return createReply(returns);
 }
 
@@ -150,7 +150,7 @@ JsonReply* RulesHandler::RemoveRule(const QVariantMap &params)
     QVariantMap returns;
     RuleId ruleId(params.value("ruleId").toString());
     RuleEngine::RuleError status = GuhCore::instance()->removeRule(ruleId);
-    returns.insert("ruleError", status);
+    returns.insert("ruleError", JsonTypes::ruleErrorToString(status));
     return createReply(returns);
 }
 

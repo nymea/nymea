@@ -199,8 +199,8 @@ DeviceManager::DeviceError DeviceManager::discoverDevices(const DeviceClassId &d
         return DeviceErrorPluginNotFound;
     }
     m_discoveringPlugins.append(plugin);
-    QPair<DeviceError, QString> ret = plugin->discoverDevices(deviceClassId, effectiveParams);
-    if (ret.first != DeviceErrorAsync) {
+    DeviceError ret = plugin->discoverDevices(deviceClassId, effectiveParams);
+    if (ret != DeviceErrorAsync) {
         m_discoveringPlugins.removeOne(plugin);
     }
     return ret;

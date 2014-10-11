@@ -10,8 +10,67 @@ Standards-Version: 3.9.3
 Package: guh
 Architecture: any
 Depends: libqt5network5,
-         libqt5gui5,
-         ${shlibs:Depends},
-         ${misc:Depends},
-Description: guh server
-  Add some description.
+  libqt5gui5,
+  ${shlibs:Depends},
+  ${misc:Depends}
+Description: server for home automation systems
+ 'Gear Up your Home!' - Home automation server.
+ guh is a home automation system aiming for easy integration of various
+ existing home automation and controlling devices into a fully automated
+ system.
+
+Package: guh-dbg
+Priority: extra
+Architecture: any
+Section: debug
+Depends: guh (= ${binary:Version}), ${misc:Depends}
+Description: server for home automation systems - debug symbols
+ 'Gear Up your Home!' - Home automation server.
+ guh is a home automation system aiming for easy integration of various
+ existing home automation and controlling devices into a fully automated
+ system.
+
+Package: guh-doc
+Section: doc
+Architecture: all
+Depends: ${misc:Depends}
+Recommends: guh (= ${binary:Version})
+Description: documentation for the guh package (on-site)
+ 'Gear Up your Home!' - Home automation server.
+ guh is a home automation system aiming for easy integration of various
+ existing home automation and controlling devices into a fully automated
+ system.
+
+Package: guh-tests
+Architecture: any
+Depends: guh (= ${binary:Version}),
+  ${shlibs:Depends},
+  ${misc:Depends}
+Description: tests for the guh package
+ 'Gear Up your Home!' - Home automation server.
+ guh is a home automation system aiming for easy integration of various
+ existing home automation and controlling devices into a fully automated
+ system.
+
+Package: libguh1
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends},
+  ${misc:Depends}
+Description: server for home automation systems - core library
+ 'Gear Up your Home!' - Home automation server.
+ guh is a home automation system aiming for easy integration of various
+ existing home automation and controlling devices into a fully automated
+ system.
+
+Package: libguh1-dev
+Section: libdevel
+Architecture: any
+Depends: libguh1 (= ${binary:Version}),
+  ${shlibs:Depends},
+  ${misc:Depends}
+Description: server for home automation systems - development files
+ 'Gear Up your Home!' - Home automation server.
+ guh is a home automation system aiming for easy integration of various
+ existing home automation and controlling devices into a fully automated
+ system.

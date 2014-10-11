@@ -37,7 +37,7 @@ public:
     ~DevicePluginMock();
 
     DeviceManager::HardwareResources requiredHardware() const override;
-    QPair<DeviceManager::DeviceError, QString> discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
+    DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
 
     QPair<DeviceManager::DeviceSetupStatus, QString> setupDevice(Device *device) override;
     void deviceRemoved(Device *device) override;
@@ -47,7 +47,7 @@ public:
     QList<ParamType> configurationDescription() const override;
 
 public slots:
-    QPair<DeviceManager::DeviceError, QString> executeAction(Device *device, const Action &action) override;
+    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
 
 private slots:
     void setState(const StateTypeId &stateTypeId, const QVariant &value);

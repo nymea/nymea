@@ -161,13 +161,13 @@ DeviceManager::HardwareResources DevicePluginWakeOnLan::requiredHardware() const
     return DeviceManager::HardwareResourceNone;
 }
 
-QPair<DeviceManager::DeviceError, QString> DevicePluginWakeOnLan::executeAction(Device *device, const Action &action)
+DeviceManager::DeviceError DevicePluginWakeOnLan::executeAction(Device *device, const Action &action)
 {
     qDebug() << "execute action " << action.actionTypeId().toString();
     if(action.actionTypeId() == wolActionTypeId){
         wakeup(device->paramValue("mac").toString());
     }
-    return report();
+    return DeviceManager::DeviceErrorNoError;
 }
 
 void DevicePluginWakeOnLan::wakeup(QString mac)

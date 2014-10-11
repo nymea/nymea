@@ -55,5 +55,6 @@ HEADERS += plugin/device.h \
            types/paramtype.h \
            types/param.h \
            types/paramdescriptor.h \
-           types/statedescriptor.h
+           types/statedescriptor.h \
+           typeutils.h
 

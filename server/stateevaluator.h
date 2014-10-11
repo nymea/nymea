@@ -27,13 +27,8 @@
 class StateEvaluator
 {
 public:
-    enum OperatorType {
-        OperatorTypeAnd,
-        OperatorTypeOr
-    };
-
     StateEvaluator(const StateDescriptor &stateDescriptor);
-    StateEvaluator(QList<StateEvaluator> childEvaluators = QList<StateEvaluator>(), StateOperator stateOperator = StateOperatorAnd);
+    StateEvaluator(QList<StateEvaluator> childEvaluators = QList<StateEvaluator>(), Types::StateOperator stateOperator = Types::StateOperatorAnd);
 
     StateDescriptor stateDescriptor() const;
 
@@ -41,8 +36,8 @@ public:
     void setChildEvaluators(const QList<StateEvaluator> &childEvaluators);
     void appendEvaluator(const StateEvaluator &stateEvaluator);
 
-    StateOperator operatorType() const;
-    void setOperatorType(StateOperator operatorType);
+    Types::StateOperator operatorType() const;
+    void setOperatorType(Types::StateOperator operatorType);
 
     bool evaluate() const;
     bool containsDevice(const DeviceId &deviceId) const;
@@ -56,7 +51,7 @@ private:
     StateDescriptor m_stateDescriptor;
 
     QList<StateEvaluator> m_childEvaluators;
-    StateOperator m_operatorType;
+    Types::StateOperator m_operatorType;
 };
 
 #endif // STATEEVALUATOR_H

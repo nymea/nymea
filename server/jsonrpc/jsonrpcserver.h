@@ -69,6 +69,8 @@ private:
     void sendResponse(const QUuid &clientId, int commandId, const QVariantMap &params = QVariantMap());
     void sendErrorResponse(const QUuid &clientId, int commandId, const QString &error);
 
+    QString formatAssertion(const QString &targetNamespace, const QString &method, JsonHandler *handler, const QVariantMap &data) const;
+
 private:
 #ifdef TESTING_ENABLED
     MockTcpServer *m_tcpServer;

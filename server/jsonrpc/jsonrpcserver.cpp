@@ -77,7 +77,6 @@ JsonRPCServer::JsonRPCServer(QObject *parent):
     setParams("SetNotificationStatus", params);
     returns.insert("success", "bool");
     returns.insert("enabled", "bool");
-    returns.insert("errorMessage", "string");
     setReturns("SetNotificationStatus", returns);
 
     // Now set up the logic
@@ -132,7 +131,6 @@ JsonReply* JsonRPCServer::SetNotificationStatus(const QVariantMap &params)
     m_clients[clientId] = params.value("enabled").toBool();
     QVariantMap returns;
     returns.insert("success", "true");
-    returns.insert("errorMessage", "No error");
     returns.insert("enabled", m_clients[clientId]);
     return createReply(returns);
 }
@@ -206,10 +204,21 @@ void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &jsonDat
         connect(reply, &JsonReply::finished, this, &JsonRPCServer::asyncReplyFinished);
         reply->startWait();
     } else {
-        Q_ASSERT((targetNamespace == "JSONRPC" && method == "Introspect") || handler->validateReturns(method, reply->data()).first);
+        Q_ASSERT_X((targetNamespace == "JSONRPC" && method == "Introspect") || handler->validateReturns(method, reply->data()).first
+                   ,"validating return value", formatAssertion(targetNamespace, method, handler, reply->data()).toLatin1().data());
         sendResponse(clientId, commandId, reply->data());
         reply->deleteLater();
     }
+}
+
+QString JsonRPCServer::formatAssertion(const QString &targetNamespace, const QString &method, JsonHandler *handler, const QVariantMap &data) const
+{
+    QJsonDocument doc = QJsonDocument::fromVariant(handler->introspect(QMetaMethod::Method).value(targetNamespace + "." + method));
+    QJsonDocument doc2 = QJsonDocument::fromVariant(data);
+    return QString("\nMethod: %1\nTemplate: %2\nValue: %3")
+            .arg(targetNamespace + "." + method)
+            .arg(QString(doc.toJson()))
+            .arg(QString(doc2.toJson()));
 }
 
 void JsonRPCServer::sendNotification(const QVariantMap &params)

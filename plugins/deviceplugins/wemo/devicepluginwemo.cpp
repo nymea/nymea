@@ -146,15 +146,15 @@ DevicePluginWemo::DevicePluginWemo()
     connect(m_discovery,SIGNAL(discoveryDone(QList<WemoSwitch*>)),this,SLOT(discoveryDone(QList<WemoSwitch*>)));
 }
 
-QPair<DeviceManager::DeviceError, QString> DevicePluginWemo::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
+DeviceManager::DeviceError DevicePluginWemo::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
 {
     if(deviceClassId != wemoSwitchDeviceClassId){
-        return report(DeviceManager::DeviceErrorDeviceClassNotFound);
+        return DeviceManager::DeviceErrorDeviceClassNotFound;
     }
 
     m_discovery->discover(2000);
 
-    return report(DeviceManager::DeviceErrorAsync);
+    return DeviceManager::DeviceErrorAsync;
 }
 
 QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginWemo::setupDevice(Device *device)
@@ -196,20 +196,20 @@ DeviceManager::HardwareResources DevicePluginWemo::requiredHardware() const
     return DeviceManager::HardwareResourceTimer;
 }
 
-QPair<DeviceManager::DeviceError, QString> DevicePluginWemo::executeAction(Device *device, const Action &action)
+DeviceManager::DeviceError DevicePluginWemo::executeAction(Device *device, const Action &action)
 {
     if(device->deviceClassId() == wemoSwitchDeviceClassId){
         if(action.actionTypeId() == powerActionTypeId){
             WemoSwitch *wemoSwitch = m_wemoSwitches.key(device);
             wemoSwitch->setPower(action.param("power").value().toBool(),action.id());
 
-            return report(DeviceManager::DeviceErrorAsync);
+            return DeviceManager::DeviceErrorAsync;
         }else{
-            return report(DeviceManager::DeviceErrorActionTypeNotFound);
+            return DeviceManager::DeviceErrorActionTypeNotFound;
         }
     }
 
-    return report(DeviceManager::DeviceErrorDeviceClassNotFound);
+    return DeviceManager::DeviceErrorDeviceClassNotFound;
 }
 
 void DevicePluginWemo::deviceRemoved(Device *device)

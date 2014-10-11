@@ -21,6 +21,7 @@
 
 #include "typeutils.h"
 #include "mocktcpserver.h"
+#include "devicemanager.h"
 
 #include <QObject>
 #include <QUuid>
@@ -57,7 +58,7 @@ protected slots:
 
 protected:
     QVariant injectAndWait(const QString &method, const QVariantMap &params = QVariantMap());
-    void verifySuccess(const QVariant &response, bool success = true);
+    void verifyError(const QVariant &response, const QString &fieldName, int error = 0);
     void restartServer();
 
 protected:

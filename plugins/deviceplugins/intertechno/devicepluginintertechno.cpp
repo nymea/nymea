@@ -175,7 +175,7 @@ DeviceManager::HardwareResources DevicePluginIntertechno::requiredHardware() con
     return DeviceManager::HardwareResourceRadio433;
 }
 
-QPair<DeviceManager::DeviceError, QString> DevicePluginIntertechno::executeAction(Device *device, const Action &action)
+DeviceManager::DeviceError DevicePluginIntertechno::executeAction(Device *device, const Action &action)
 {
 
     QList<int> rawData;
@@ -218,7 +218,7 @@ QPair<DeviceManager::DeviceError, QString> DevicePluginIntertechno::executeActio
     }else if(familyCode == "P"){
         binCode.append("01010101");
     }else{
-        return report();
+        return DeviceManager::DeviceErrorNoError;
     }
 
     QString buttonCode = device->paramValue("buttonCode").toString();
@@ -258,7 +258,7 @@ QPair<DeviceManager::DeviceError, QString> DevicePluginIntertechno::executeActio
     }else if(familyCode == "16"){
         binCode.append("01010101");
     }else{
-        return report();
+        return DeviceManager::DeviceErrorNoError;
     }
 
     // =======================================
@@ -297,10 +297,10 @@ QPair<DeviceManager::DeviceError, QString> DevicePluginIntertechno::executeActio
     // send data to hardware resource
     if(transmitData(delay, rawData)){
         qDebug() << "transmitted" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
-        return report();
+        return DeviceManager::DeviceErrorNoError;
     }else{
         qWarning() << "ERROR: could not transmitt" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
-        return report(DeviceManager::DeviceErrorHardwareNotAvailable, QString("Radio 433 MHz transmitter not available."));
+        return DeviceManager::DeviceErrorHardwareNotAvailable;
     }
 }
 

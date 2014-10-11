@@ -69,12 +69,12 @@ QList<ParamType> DevicePluginPhilipsHue::configurationDescription() const
     return params;
 }
 
-QPair<DeviceManager::DeviceError, QString> DevicePluginPhilipsHue::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
+DeviceManager::DeviceError DevicePluginPhilipsHue::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
 {
     Q_UNUSED(deviceClassId)
     Q_UNUSED(params)
     m_discovery->findBridges(4000);
-    return report(DeviceManager::DeviceErrorAsync);
+    return DeviceManager::DeviceErrorAsync;
 }
 
 QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginPhilipsHue::setupDevice(Device *device)
@@ -171,17 +171,18 @@ void DevicePluginPhilipsHue::guhTimer()
     }
 }
 
-QPair<DeviceManager::DeviceError, QString> DevicePluginPhilipsHue::executeAction(Device *device, const Action &action)
+DeviceManager::DeviceError DevicePluginPhilipsHue::executeAction(Device *device, const Action &action)
 {
     qDebug() << "Should execute action in hue plugin";
 
     Light *light = m_lights.key(device);
     if (!light) {
-        return report(DeviceManager::DeviceErrorDeviceNotFound, device->id().toString());
+        return DeviceManager::DeviceErrorDeviceNotFound;
     }
 
     if (!light->reachable()) {
-        return report(DeviceManager::DeviceErrorSetupFailed, "This light is currently not reachable.");
+        qWarning() << "Hue Bulb not reachable";
+        return DeviceManager::DeviceErrorSetupFailed;
     }
 
     if (action.actionTypeId() == hueSetColorActionTypeId) {
@@ -191,7 +192,7 @@ QPair<DeviceManager::DeviceError, QString> DevicePluginPhilipsHue::executeAction
     } else if (action.actionTypeId() == hueSetBrightnessActionTypeId) {
         light->setBri(action.param("brightness").value().toInt());
     }
-    return report();
+    return DeviceManager::DeviceErrorNoError;
 }
 
 void DevicePluginPhilipsHue::discoveryDone(const QList<QHostAddress> &bridges)

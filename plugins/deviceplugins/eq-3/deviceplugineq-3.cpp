@@ -247,13 +247,13 @@ QList<ParamType> DevicePluginEQ3::configurationDescription() const
     return params;
 }
 
-QPair<DeviceManager::DeviceError, QString> DevicePluginEQ3::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
+DeviceManager::DeviceError DevicePluginEQ3::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
 {
     if(deviceClassId == cubeDeviceClassId){
         m_cubeDiscovery->detectCubes();
-        return report(DeviceManager::DeviceErrorAsync);
+        return DeviceManager::DeviceErrorAsync;
     }
-    return report(DeviceManager::DeviceErrorDeviceClassNotFound);
+    return DeviceManager::DeviceErrorDeviceClassNotFound;
 }
 
 void DevicePluginEQ3::startMonitoringAutoDevices()
@@ -317,36 +317,32 @@ void DevicePluginEQ3::guhTimer()
     }
 }
 
-QPair<DeviceManager::DeviceError, QString> DevicePluginEQ3::executeAction(Device *device, const Action &action)
+DeviceManager::DeviceError DevicePluginEQ3::executeAction(Device *device, const Action &action)
 {    
     if(device->deviceClassId() == wallThermostateDeviceClassId || device->deviceClassId() == radiatorThermostateDeviceClassId){
         foreach (MaxCube *cube, m_cubes.keys()){
             if(cube->serialNumber() == device->paramValue("parent cube").toString()){
+
+                QByteArray rfAddress = device->paramValue("rf address").toByteArray();
+                int roomId = device->paramValue("room id").toInt();
+
                 if (action.actionTypeId() == setSetpointTemperatureActionTypeId){
-                    cube->setDeviceSetpointTemp(device->paramValue("rf address").toByteArray(), device->paramValue("room id").toInt(), action.param("setpoint temperature").value().toDouble(), action.id());
-                    return report(DeviceManager::DeviceErrorAsync,QString());
+                    cube->setDeviceSetpointTemp(rfAddress, roomId, action.param("setpoint temperature").value().toDouble(), action.id());
+                } else if (action.actionTypeId() == setAutoModeActionTypeId){
+                    cube->setDeviceAutoMode(rfAddress, roomId, action.id());
+                } else if (action.actionTypeId() == setManuelModeActionTypeId){
+                    cube->setDeviceManuelMode(rfAddress, roomId, action.id());
+                } else if (action.actionTypeId() == setEcoModeActionTypeId){
+                    cube->setDeviceEcoMode(rfAddress, roomId, action.id());
+                } else if (action.actionTypeId() == displayCurrentTempActionTypeId){
+                    cube->displayCurrentTemperature(rfAddress, roomId, action.param("display").value().toBool(), action.id());
                 }
-                if (action.actionTypeId() == setAutoModeActionTypeId){
-                    cube->setDeviceAutoMode(device->paramValue("rf address").toByteArray(), device->paramValue("room id").toInt(), action.id());
-                    return report(DeviceManager::DeviceErrorAsync,QString());
-                }
-                if (action.actionTypeId() == setManuelModeActionTypeId){
-                    cube->setDeviceManuelMode(device->paramValue("rf address").toByteArray(), device->paramValue("room id").toInt(), action.id());
-                    return report(DeviceManager::DeviceErrorAsync,QString());
-                }
-                if (action.actionTypeId() == setEcoModeActionTypeId){
-                    cube->setDeviceEcoMode(device->paramValue("rf address").toByteArray(), device->paramValue("room id").toInt(), action.id());
-                    return report(DeviceManager::DeviceErrorAsync,QString());
-                }
-                if (action.actionTypeId() == displayCurrentTempActionTypeId){
-                    cube->displayCurrentTemperature(device->paramValue("rf address").toByteArray(), device->paramValue("room id").toInt(), action.param("display").value().toBool(), action.id());
-                    return report(DeviceManager::DeviceErrorAsync,QString());
-                }
+                return DeviceManager::DeviceErrorAsync;
             }
         }
     }
 
-    return report(DeviceManager::DeviceErrorActionTypeNotFound,QString());
+    return DeviceManager::DeviceErrorActionTypeNotFound;
 }
 
 void DevicePluginEQ3::cubeConnectionStatusChanged(const bool &connected)

@@ -19,10 +19,13 @@
 #include "jsontypes.h"
 
 #include "plugin/device.h"
+#include "devicemanager.h"
+#include "ruleengine.h"
 
 #include <QStringList>
 #include <QJsonDocument>
 #include <QDebug>
+#include <QMetaEnum>
 
 bool JsonTypes::s_initialized = false;
 QString JsonTypes::s_lastError;
@@ -33,6 +36,8 @@ QVariantList JsonTypes::s_valueOperatorTypes;
 QVariantList JsonTypes::s_createMethodTypes;
 QVariantList JsonTypes::s_setupMethodTypes;
 QVariantList JsonTypes::s_removePolicyTypes;
+QVariantList JsonTypes::s_deviceErrorTypes;
+QVariantList JsonTypes::s_ruleErrorTypes;
 
 QVariantMap JsonTypes::s_paramType;
 QVariantMap JsonTypes::s_param;
@@ -56,12 +61,14 @@ QVariantMap JsonTypes::s_rule;
 void JsonTypes::init()
 {
     // BasicTypes
-    s_basicTypes << "uuid" << "string" << "integer" << "double" << "bool";
-    s_stateOperatorTypes << "StateOperatorAnd" << "StateOperatorOr";
-    s_valueOperatorTypes << "OperatorTypeEquals" << "OperatorTypeNotEquals" << "OperatorTypeLess" << "OperatorTypeGreater" << "OperatorTypeLessThan" << "OperatorTypeGreaterThan";
-    s_createMethodTypes << "CreateMethodUser" << "CreateMethodAuto" << "CreateMethodDiscovery";
-    s_setupMethodTypes << "SetupMethodJustAdd" << "SetupMethodDisplayPin" << "SetupMethodEnterPin" << "SetupMethodPushButton";
-    s_removePolicyTypes << "RemovePolicyCascade" << "RemovePolicyUpdate";
+    s_basicTypes = enumToStrings(JsonTypes::staticMetaObject, "BasicTypes");
+    s_stateOperatorTypes = enumToStrings(Types::staticMetaObject, "StateOperator");
+    s_valueOperatorTypes = enumToStrings(Types::staticMetaObject, "ValueOperator");
+    s_createMethodTypes = enumToStrings(DeviceClass::staticMetaObject, "CreateMethod");
+    s_setupMethodTypes = enumToStrings(DeviceClass::staticMetaObject, "SetupMethod");
+    s_removePolicyTypes = enumToStrings(RuleEngine::staticMetaObject, "RemovePolicy");
+    s_deviceErrorTypes  = enumToStrings(DeviceManager::staticMetaObject, "DeviceError");
+    s_ruleErrorTypes = enumToStrings(RuleEngine::staticMetaObject, "RuleError");
 
     // ParamType
     s_paramType.insert("name", "string");
@@ -174,6 +181,19 @@ QPair<bool, QString> JsonTypes::report(bool status, const QString &message)
     return qMakePair<bool, QString>(status, message);
 }
 
+QVariantList JsonTypes::enumToStrings(const QMetaObject &metaObject, const QString &enumName)
+{
+    int enumIndex = metaObject.indexOfEnumerator(enumName.toLatin1().data());
+    QMetaEnum metaEnum = metaObject.enumerator(enumIndex);
+
+    qDebug() << "*** have enum" << metaEnum.name();
+    QVariantList enumStrings;
+    for (int i = 0; i < metaEnum.keyCount(); i++) {
+        enumStrings << metaEnum.valueToKey(metaEnum.value(i));
+    }
+    return enumStrings;
+}
+
 QVariantMap JsonTypes::allTypes()
 {
     QVariantMap allTypes;
@@ -184,6 +204,8 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("ValueOperatorType", valueOperatorTypes());
     allTypes.insert("StateOperatorType", stateOperatorTypes());
     allTypes.insert("RemovePolicyType", removePolicyTypes());
+    allTypes.insert("DeviceError", deviceErrorTypes());
+    allTypes.insert("RuleError", ruleErrorTypes());
     allTypes.insert("StateType", stateTypeDescription());
     allTypes.insert("StateDescriptor", stateDescriptorDescription());
     allTypes.insert("StateEvaluator", stateEvaluatorDescription());
@@ -474,19 +496,11 @@ ParamDescriptor JsonTypes::unpackParamDescriptor(const QVariantMap &paramMap)
 {
     ParamDescriptor param(paramMap.value("name").toString(), paramMap.value("value"));
     QString operatorString = paramMap.value("operator").toString();
-    if (operatorString == "ValueOperatorEquals") {
-        param.setOperatorType(ValueOperatorEquals);
-    } else if (operatorString == "ValueOperatorNotEquals") {
-        param.setOperatorType(ValueOperatorNotEquals);
-    } else if (operatorString == "ValueOperatorLess") {
-        param.setOperatorType(ValueOperatorLess);
-    } else if (operatorString == "ValueOperatorGreater") {
-        param.setOperatorType(ValueOperatorGreater);
-    } else if (operatorString == "ValueOperatorLessOrEqual") {
-        param.setOperatorType(ValueOperatorLessOrEqual);
-    } else if (operatorString == "ValueOperatorGreaterOrEqual") {
-        param.setOperatorType(ValueOperatorGreaterOrEqual);
-    }
+
+    QMetaObject metaObject = Types::staticMetaObject;
+    int enumIndex = metaObject.indexOfEnumerator("ValueOperator");
+    QMetaEnum metaEnum = metaObject.enumerator(enumIndex);
+    param.setOperatorType((Types::ValueOperator)metaEnum.keyToValue(operatorString.toLatin1().data()));
     return param;
 }
 
@@ -511,6 +525,7 @@ EventDescriptor JsonTypes::unpackEventDescriptor(const QVariantMap &eventDescrip
 QPair<bool, QString> JsonTypes::validateMap(const QVariantMap &templateMap, const QVariantMap &map)
 {
     s_lastError.clear();
+    qDebug() << "validating Map" << templateMap << map;
 
     // Make sure all values defined in the template are around
     foreach (const QString &key, templateMap.keys()) {
@@ -548,7 +563,7 @@ QPair<bool, QString> JsonTypes::validateMap(const QVariantMap &templateMap, cons
 
 QPair<bool, QString> JsonTypes::validateProperty(const QVariant &templateValue, const QVariant &value)
 {
-//    qDebug() << "validating property. template:" << templateValue << "got:" << value;
+    qDebug() << "validating property. template:" << templateValue << "got:" << value;
     QString strippedTemplateValue = templateValue.toString();
 
     if (strippedTemplateValue == "variant") {
@@ -565,6 +580,10 @@ QPair<bool, QString> JsonTypes::validateProperty(const QVariant &templateValue, 
     if (strippedTemplateValue == "bool") {
         QString errorString = QString("Param %1 is not a bool.").arg(value.toString());
         return report(value.canConvert(QVariant::Bool), errorString);
+    }
+    if (strippedTemplateValue == "int") {
+        QString errorString = QString("Param %1 is not a int.").arg(value.toString());
+        return report(value.canConvert(QVariant::Int), errorString);
     }
     qWarning() << QString("Unhandled property type: %1 (expected: %2)").arg(value.toString()).arg(strippedTemplateValue);
     QString errorString = QString("Unhandled property type: %1 (expected: %2)").arg(value.toString()).arg(strippedTemplateValue);

@@ -39,7 +39,7 @@ public:
     DeviceManager::HardwareResources requiredHardware() const override;
 
     QList<ParamType> configurationDescription() const override;
-    QPair<DeviceManager::DeviceError, QString> discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
+    DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
 
     void startMonitoringAutoDevices() override;
 
@@ -53,7 +53,7 @@ private:
     QHash<MaxCube*, Device*> m_cubes;
 
 public slots:
-    QPair<DeviceManager::DeviceError, QString> executeAction(Device *device, const Action &action);
+    DeviceManager::DeviceError executeAction(Device *device, const Action &action);
 
 private slots:
     void cubeConnectionStatusChanged(const bool &connected);

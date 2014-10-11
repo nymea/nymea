@@ -31,6 +31,9 @@
 
 class DeviceClass
 {
+    Q_GADGET
+    Q_ENUMS(CreateMethod)
+    Q_ENUMS(SetupMethod)
 public:
     enum CreateMethod {
         CreateMethodUser = 0x01,

@@ -303,7 +303,7 @@ DevicePluginOpenweathermap::DevicePluginOpenweathermap()
     connect(m_openweaher, SIGNAL(weatherDataReady(QByteArray)), this, SLOT(weatherDataReady(QByteArray)));
 }
 
-QPair<DeviceManager::DeviceError, QString> DevicePluginOpenweathermap::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
+DeviceManager::DeviceError DevicePluginOpenweathermap::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
 {
     qDebug() << "should discover devices with params:" << params;
     QString location;
@@ -316,10 +316,10 @@ QPair<DeviceManager::DeviceError, QString> DevicePluginOpenweathermap::discoverD
 
     if (location.isEmpty()){
         m_openweaher->searchAutodetect();
-        return report(DeviceManager::DeviceErrorAsync);
+    } else {
+        m_openweaher->search(location);
     }
-    m_openweaher->search(location);
-    return report(DeviceManager::DeviceErrorAsync);
+    return DeviceManager::DeviceErrorAsync;
 }
 
 QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginOpenweathermap::setupDevice(Device *device)
@@ -340,13 +340,13 @@ DeviceManager::HardwareResources DevicePluginOpenweathermap::requiredHardware() 
     return DeviceManager::HardwareResourceTimer;
 }
 
-QPair<DeviceManager::DeviceError, QString> DevicePluginOpenweathermap::executeAction(Device *device, const Action &action)
+DeviceManager::DeviceError DevicePluginOpenweathermap::executeAction(Device *device, const Action &action)
 {
     qDebug() << "execute action " << updateWeatherActionTypeId.toString();
     if(action.actionTypeId() == updateWeatherActionTypeId){
         m_openweaher->update(device->paramValue("id").toString());
     }
-    return report();
+    return DeviceManager::DeviceErrorNoError;
 }
 
 void DevicePluginOpenweathermap::guhTimer()

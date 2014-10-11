@@ -515,6 +515,7 @@ void DeviceManager::loadPlugins()
 
     QStringList searchDirs;
     searchDirs << QCoreApplication::applicationDirPath() + "/../lib/guh/plugins";
+    searchDirs << QCoreApplication::applicationDirPath() + "/../plugins/";
     searchDirs << QCoreApplication::applicationDirPath() + "/../plugins/deviceplugins";
     searchDirs << QCoreApplication::applicationDirPath() + "/../../../plugins/deviceplugins";
 

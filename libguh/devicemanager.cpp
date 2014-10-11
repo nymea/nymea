@@ -870,7 +870,7 @@ DeviceManager::DeviceSetupStatus DeviceManager::setupDevice(Device *device)
     device->setStates(states);
 
     DeviceSetupStatus status = plugin->setupDevice(device);
-    if (status.first != DeviceSetupStatusSuccess) {
+    if (status != DeviceSetupStatusSuccess) {
         return status;
     }
 

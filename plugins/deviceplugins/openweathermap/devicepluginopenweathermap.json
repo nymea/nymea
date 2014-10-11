@@ -1,14 +1,14 @@
 {
-    "name": "Openweathermap",
+    "name": "OpenWeatherMap",
     "id": "bc6af567-2338-41d5-aac1-462dec6e4783",
     "vendors": [
         {
-            "name": "Openweathermap",
+            "name": "OpenWeatherMap",
             "id": "bf1e96f0-9650-4e7c-a56c-916d54d18e7a",
             "deviceClasses": [
                 {
                     "deviceClassId": "985195aa-17ad-4530-88a4-cdd753d747d7",
-                    "name": "Weather from openweathermap",
+                    "name": "Weather from OpenWeatherMap",
                     "createMethods": ["discovery"],
                     "discoveryParamTypes": [
                         {
@@ -33,7 +33,7 @@
                     "actionTypes": [
                         {
                             "id": "cfbc6504-d86f-4856-8dfa-97b6fbb385e4",
-                            "name": "Update"
+                            "name": "update"
                         }
                     ],
                     "stateTypes": [

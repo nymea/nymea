@@ -1,3 +1,9 @@
+guh (0.2.0) UNRELEASED; urgency=medium
+
+  * split plugins into dynamic libs and packages
+
+ -- Michael Zanetti <micha@noneyet>  Sat, 11 Oct 2014 05:09:41 +0200
+
 guh (0.1.8) utopic; urgency=medium
 
   * allow calling AddRule with a single eventDescriptor but also with a list

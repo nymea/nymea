@@ -514,15 +514,15 @@ void DeviceManager::loadPlugins()
 {
 
     QStringList searchDirs;
-    searchDirs << QCoreApplication::applicationDirPath() + "/../lib/guh";
-    searchDirs << QCoreApplication::applicationDirPath() + "/../";
-    searchDirs << QCoreApplication::applicationDirPath() + "/../../../";
+    searchDirs << QCoreApplication::applicationDirPath() + "/../lib/guh/guh";
+    searchDirs << QCoreApplication::applicationDirPath() + "/../plugins/deviceplugins";
+    searchDirs << QCoreApplication::applicationDirPath() + "/../../../plugins/deviceplugins";
 
     foreach (const QString &path, searchDirs) {
-        QDir dir(path + "/plugins/deviceplugins");
+        QDir dir(path);
         qDebug() << "Loading plugins from:" << dir.absolutePath();
         foreach (const QString &entry, dir.entryList()) {
-            QFileInfo fi(path + "/plugins/deviceplugins/" + entry + "/libguh_deviceplugin" + entry + ".so");
+            QFileInfo fi(path + "/" + entry + "/libguh_deviceplugin" + entry + ".so");
             if (!fi.exists()) {
                 continue;
             }

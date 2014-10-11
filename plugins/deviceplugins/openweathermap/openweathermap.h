@@ -25,35 +25,43 @@
 #include <QNetworkReply>
 #include <QJsonDocument>
 #include <QVariantMap>
+#include <QHostAddress>
 #include <QUrl>
+
+#include "plugin/deviceplugin.h"
 
 class OpenWeatherMap : public QObject
 {
     Q_OBJECT
 public:
     explicit OpenWeatherMap(QObject *parent = 0);
-    void update(QString id);
+    void update(QString id, DeviceId deviceId);
     void searchAutodetect();
     void search(QString searchString);
+    void searchGeoLocation(double lat, double lon);
 
 private:
     QNetworkAccessManager *m_manager;
 
     QString m_cityName;
+    QString m_country;
     QString m_cityId;
+    QHostAddress m_wanIp;
 
     QNetworkReply *m_locationReply;
-    QNetworkReply *m_searchLocationReply;
     QNetworkReply *m_weatherReply;
     QNetworkReply *m_searchReply;
+    QNetworkReply *m_searchGeoReply;
 
     void processLocationResponse(QByteArray data);
     void processSearchResponse(QByteArray data);
-    void processSearchLocationResponse(QByteArray data);
+    void processSearchGeoResponse(QByteArray data);
+
+    QHash<QNetworkReply*,DeviceId> m_weatherReplys;
 
 signals:
     void searchResultReady(const QList<QVariantMap> &cityList);
-    void weatherDataReady(const QByteArray &data);
+    void weatherDataReady(const QByteArray &data, const DeviceId &deviceId);
 
 public slots:
 

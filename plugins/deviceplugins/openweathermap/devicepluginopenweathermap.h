@@ -44,7 +44,7 @@ public:
 
 private slots:
     void searchResultsReady(const QList<QVariantMap> &cityList);
-    void weatherDataReady(const QByteArray &data);
+    void weatherDataReady(const QByteArray &data, const DeviceId &deviceId);
 
 public slots:
 

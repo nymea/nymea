@@ -299,25 +299,30 @@ StateTypeId sunsetStateTypeId = StateTypeId("a1dddc3d-549f-4f20-b78b-be850548f28
 DevicePluginOpenweathermap::DevicePluginOpenweathermap()
 {
     m_openweaher = new OpenWeatherMap(this);
-    connect(m_openweaher, SIGNAL(searchResultReady(QList<QVariantMap>)), this, SLOT(searchResultsReady(QList<QVariantMap>)));
-    connect(m_openweaher, SIGNAL(weatherDataReady(QByteArray)), this, SLOT(weatherDataReady(QByteArray)));
+    connect(m_openweaher, &OpenWeatherMap::searchResultReady, this, &DevicePluginOpenweathermap::searchResultsReady);
+    connect(m_openweaher, &OpenWeatherMap::weatherDataReady, this, &DevicePluginOpenweathermap::weatherDataReady);
 }
 
 QPair<DeviceManager::DeviceError, QString> DevicePluginOpenweathermap::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
 {
-    qDebug() << "should discover devices with params:" << params;
+    if(deviceClassId != openweathermapDeviceClassId){
+        return report(DeviceManager::DeviceErrorDeviceClassNotFound);
+    }
+
     QString location;
     foreach (const Param &param, params) {
-        qDebug() << "### got param:" << param;
         if (param.name() == "location") {
             location = param.value().toString();
         }
     }
 
+    // if we have an empty search string, perform an autodetection of the location with the WAN ip...
     if (location.isEmpty()){
         m_openweaher->searchAutodetect();
         return report(DeviceManager::DeviceErrorAsync);
     }
+
+    // otherwise search the given string
     m_openweaher->search(location);
     return report(DeviceManager::DeviceErrorAsync);
 }
@@ -326,11 +331,12 @@ QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginOpenweathermap::set
 {
     foreach (Device *deviceListDevice, deviceManager()->findConfiguredDevices(openweathermapDeviceClassId)) {
         if(deviceListDevice->paramValue("id").toString() == device->paramValue("id").toString()){
-            return reportDeviceSetup(DeviceManager::DeviceSetupStatusFailure,QString("Location " + device->paramValue("location").toString() + "allready in added"));
+            return reportDeviceSetup(DeviceManager::DeviceSetupStatusFailure,QString("Location " + device->paramValue("location").toString() + " already added."));
         }
     }
 
-    m_openweaher->update(device->paramValue("id").toString());
+    device->setName("Weather from OpenWeatherMap (" + device->paramValue("location").toString() + ")");
+    m_openweaher->update(device->paramValue("id").toString(), device->id());
 
     return reportDeviceSetup(DeviceManager::DeviceSetupStatusSuccess);
 }
@@ -342,9 +348,8 @@ DeviceManager::HardwareResources DevicePluginOpenweathermap::requiredHardware() 
 
 QPair<DeviceManager::DeviceError, QString> DevicePluginOpenweathermap::executeAction(Device *device, const Action &action)
 {
-    qDebug() << "execute action " << updateWeatherActionTypeId.toString();
     if(action.actionTypeId() == updateWeatherActionTypeId){
-        m_openweaher->update(device->paramValue("id").toString());
+        m_openweaher->update(device->paramValue("id").toString(), device->id());
     }
     return report();
 }
@@ -352,7 +357,7 @@ QPair<DeviceManager::DeviceError, QString> DevicePluginOpenweathermap::executeAc
 void DevicePluginOpenweathermap::guhTimer()
 {
     foreach (Device *device, deviceManager()->findConfiguredDevices(openweathermapDeviceClassId)) {
-        m_openweaher->update(device->paramValue("id").toString());
+        m_openweaher->update(device->paramValue("id").toString(), device->id());
     }
 }
 
@@ -374,7 +379,7 @@ void DevicePluginOpenweathermap::searchResultsReady(const QList<QVariantMap> &ci
     emit devicesDiscovered(openweathermapDeviceClassId,retList);
 }
 
-void DevicePluginOpenweathermap::weatherDataReady(const QByteArray &data)
+void DevicePluginOpenweathermap::weatherDataReady(const QByteArray &data, const DeviceId &deviceId)
 {
     QJsonParseError error;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
@@ -387,7 +392,7 @@ void DevicePluginOpenweathermap::weatherDataReady(const QByteArray &data)
     QVariantMap dataMap = jsonDoc.toVariant().toMap();
 
     foreach (Device *device, deviceManager()->findConfiguredDevices(openweathermapDeviceClassId)) {
-        if(device->paramValue("id").toString() == dataMap.value("id").toString()){
+        if(device->id() == deviceId){
 
             if(dataMap.contains("clouds")){
                 int cloudiness = dataMap.value("clouds").toMap().value("all").toInt();

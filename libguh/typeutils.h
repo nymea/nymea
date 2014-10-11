@@ -50,6 +50,8 @@ DECLARE_TYPE_ID(Action)
 DECLARE_TYPE_ID(Plugin)
 DECLARE_TYPE_ID(Rule)
 
+DECLARE_TYPE_ID(PairingTransaction)
+
 class Types
 {
     Q_GADGET

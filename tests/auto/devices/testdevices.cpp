@@ -92,7 +92,7 @@ void TestDevices::getPluginConfig()
     QVariantMap params;
     params.insert("pluginId", pluginId);
     QVariant response = injectAndWait("Devices.GetPluginConfiguration", params);
-    verifyError(response, "deviceError", error);
+    verifyDeviceError(response, error);
 }
 
 void TestDevices::setPluginConfig_data()
@@ -124,13 +124,13 @@ void TestDevices::setPluginConfig()
     configuration.append(configParam);
     params.insert("configuration", configuration);
     QVariant response = injectAndWait("Devices.SetPluginConfiguration", params);
-    verifyError(response, "deviceError", error);
+    verifyDeviceError(response, error);
 
     if (error == DeviceManager::DeviceErrorNoError) {
         params.clear();
         params.insert("pluginId", pluginId);
         response = injectAndWait("Devices.GetPluginConfiguration", params);
-        verifyError(response, "deviceError");
+        verifyDeviceError(response);
         qDebug() << "222" << response.toMap().value("params").toMap().value("configuration").toList().first();
         QVERIFY2(response.toMap().value("params").toMap().value("configuration").toList().first().toMap().value("name") == "configParamInt", "Value not set correctly");
         QVERIFY2(response.toMap().value("params").toMap().value("configuration").toList().first().toMap().value("value") == value, "Value not set correctly");
@@ -182,7 +182,7 @@ void TestDevices::addConfiguredDevice_data()
 {
     QTest::addColumn<DeviceClassId>("deviceClassId");
     QTest::addColumn<QVariantList>("deviceParams");
-    QTest::addColumn<bool>("success");
+    QTest::addColumn<DeviceManager::DeviceError>("deviceError");
 
     QVariantMap httpportParam;
     httpportParam.insert("name", "httpport");
@@ -197,27 +197,27 @@ void TestDevices::addConfiguredDevice_data()
     QVariantList deviceParams;
 
     deviceParams.clear(); deviceParams << httpportParam;
-    QTest::newRow("User, JustAdd") << mockDeviceClassId << deviceParams << true;
+    QTest::newRow("User, JustAdd") << mockDeviceClassId << deviceParams << DeviceManager::DeviceErrorNoError;
     deviceParams.clear(); deviceParams << httpportParam << asyncParam;
-    QTest::newRow("User, JustAdd, Async") << mockDeviceClassId << deviceParams << true;
-    QTest::newRow("Invalid DeviceClassId") << DeviceClassId::createDeviceClassId() << deviceParams << false;
+    QTest::newRow("User, JustAdd, Async") << mockDeviceClassId << deviceParams << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("Invalid DeviceClassId") << DeviceClassId::createDeviceClassId() << deviceParams << DeviceManager::DeviceErrorDeviceClassNotFound;
     deviceParams.clear(); deviceParams << httpportParam << brokenParam;
-    QTest::newRow("Setup failure") << mockDeviceClassId << deviceParams << false;
+    QTest::newRow("Setup failure") << mockDeviceClassId << deviceParams << DeviceManager::DeviceErrorSetupFailed;
     deviceParams.clear(); deviceParams << httpportParam << asyncParam << brokenParam;
-    QTest::newRow("Setup failure, Async") << mockDeviceClassId << deviceParams << false;
+    QTest::newRow("Setup failure, Async") << mockDeviceClassId << deviceParams << DeviceManager::DeviceErrorSetupFailed;
 
     QVariantList invalidDeviceParams;
-    QTest::newRow("User, JustAdd, missing params") << mockDeviceClassId << invalidDeviceParams << false;
+    QTest::newRow("User, JustAdd, missing params") << mockDeviceClassId << invalidDeviceParams << DeviceManager::DeviceErrorMissingParameter;
 
     QVariantMap fakeparam;
     fakeparam.insert("name", "tropptth");
     invalidDeviceParams.append(fakeparam);
-    QTest::newRow("User, JustAdd, invalid param") << mockDeviceClassId << invalidDeviceParams << false;
+    QTest::newRow("User, JustAdd, invalid param") << mockDeviceClassId << invalidDeviceParams << DeviceManager::DeviceErrorInvalidParameter;
 
     fakeparam.insert("value", "buhuu");
     invalidDeviceParams.clear();
     invalidDeviceParams.append(fakeparam);
-    QTest::newRow("User, JustAdd, wrong param") << mockDeviceClassId << invalidDeviceParams << false;
+    QTest::newRow("User, JustAdd, wrong param") << mockDeviceClassId << invalidDeviceParams << DeviceManager::DeviceErrorInvalidParameter;
 
 }
 
@@ -225,7 +225,7 @@ void TestDevices::addConfiguredDevice()
 {
     QFETCH(DeviceClassId, deviceClassId);
     QFETCH(QVariantList, deviceParams);
-    QFETCH(bool, success);
+    QFETCH(DeviceManager::DeviceError, deviceError);
 
     QVariantMap params;
     params.insert("deviceClassId", deviceClassId);
@@ -233,14 +233,14 @@ void TestDevices::addConfiguredDevice()
     QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
     qDebug() << "response is" << response;
 
-    verifyError(response, "deviceError", success);
+    verifyDeviceError(response, deviceError);
 
-    if (success) {
+    if (deviceError == DeviceManager::DeviceErrorNoError) {
         QUuid deviceId(response.toMap().value("params").toMap().value("deviceId").toString());
         params.clear();
         params.insert("deviceId", deviceId.toString());
         response = injectAndWait("Devices.RemoveConfiguredDevice", params);
-        verifyError(response, "deviceError");
+        verifyDeviceError(response);
     }
 }
 
@@ -255,20 +255,20 @@ void TestDevices::getConfiguredDevices()
 void TestDevices::removeDevice_data()
 {
     QTest::addColumn<DeviceId>("deviceId");
-    QTest::addColumn<bool>("success");
+    QTest::addColumn<DeviceManager::DeviceError>("deviceError");
 
-    QTest::newRow("Existing Device") << m_mockDeviceId << true;
-    QTest::newRow("Not existing Device") << DeviceId::createDeviceId() << false;
+    QTest::newRow("Existing Device") << m_mockDeviceId << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("Not existing Device") << DeviceId::createDeviceId() << DeviceManager::DeviceErrorDeviceNotFound;
 }
 
 void TestDevices::removeDevice()
 {
     QFETCH(DeviceId, deviceId);
-    QFETCH(bool, success);
+    QFETCH(DeviceManager::DeviceError, deviceError);
 
     QSettings settings(m_deviceSettings);
     settings.beginGroup("DeviceConfig");
-    if (success) {
+    if (deviceError == DeviceManager::DeviceErrorNoError) {
         settings.beginGroup(m_mockDeviceId.toString());
         // Make sure we have some config values for this device
         QVERIFY(settings.allKeys().count() > 0);
@@ -279,9 +279,9 @@ void TestDevices::removeDevice()
 
     QVariant response = injectAndWait("Devices.RemoveConfiguredDevice", params);
 
-    verifyError(response, "deviceError", success);
+    verifyDeviceError(response, deviceError);
 
-    if (success) {
+    if (DeviceManager::DeviceErrorNoError) {
         // Make sure the device is gone from settings too
         QCOMPARE(settings.allKeys().count(), 0);
     }
@@ -306,7 +306,7 @@ void TestDevices::storedDevices()
     deviceParams.append(httpportParam);
     params.insert("deviceParams", deviceParams);
     QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
-    verifyError(response, "deviceError");
+    verifyDeviceError(response);
     DeviceId addedDeviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
     QVERIFY(!addedDeviceId.isNull());
 
@@ -317,7 +317,6 @@ void TestDevices::storedDevices()
 
     bool found = false;
     foreach (const QVariant device, response.toMap().value("params").toMap().value("devices").toList()) {
-        qDebug() << "found stored device" << device;
         if (DeviceId(device.toMap().value("id").toString()) == addedDeviceId) {
 //            foreach (const QVariant &paramVariant, device.toMap().value("params").toList()) {
 //                if ()
@@ -335,7 +334,7 @@ void TestDevices::storedDevices()
     params.clear();
     params.insert("deviceId", addedDeviceId);
     response = injectAndWait("Devices.RemoveConfiguredDevice", params);
-    verifyError(response, "deviceError");
+    verifyDeviceError(response);
 }
 
 void TestDevices::discoverDevices_data()
@@ -368,7 +367,7 @@ void TestDevices::discoverDevices()
     params.insert("discoveryParams", discoveryParams);
     QVariant response = injectAndWait("Devices.GetDiscoveredDevices", params);
 
-    verifyError(response, "deviceError", error);
+    verifyDeviceError(response, error);
     if (error == DeviceManager::DeviceErrorNoError) {
         QCOMPARE(response.toMap().value("params").toMap().value("deviceDescriptors").toList().count(), resultCount);
     }
@@ -382,13 +381,13 @@ void TestDevices::discoverDevices()
         params.insert("deviceDescriptorId", descriptorId.toString());
         response = injectAndWait("Devices.AddConfiguredDevice", params);
 
-        verifyError(response, "deviceError");
+        verifyDeviceError(response);
 
         DeviceId deviceId(response.toMap().value("params").toMap().value("deviceId").toString());
         params.clear();
         params.insert("deviceId", deviceId.toString());
         response = injectAndWait("Devices.RemoveConfiguredDevice", params);
-        verifyError(response, "deviceError");
+        verifyDeviceError(response);
     }
 }
 

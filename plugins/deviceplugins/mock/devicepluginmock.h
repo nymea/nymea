@@ -39,7 +39,7 @@ public:
     DeviceManager::HardwareResources requiredHardware() const override;
     DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
 
-    QPair<DeviceManager::DeviceSetupStatus, QString> setupDevice(Device *device) override;
+    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
     void deviceRemoved(Device *device) override;
 
     void startMonitoringAutoDevices() override;

@@ -78,7 +78,7 @@ DeviceManager::DeviceError DevicePluginLgSmartTv::discoverDevices(const DeviceCl
     return DeviceManager::DeviceErrorAsync;
 }
 
-QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginLgSmartTv::setupDevice(Device *device)
+DeviceManager::DeviceSetupStatus DevicePluginLgSmartTv::setupDevice(Device *device)
 {
 
     device->setName("LG Smart Tv (" + device->paramValue("model").toString() + ")");
@@ -102,7 +102,7 @@ QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginLgSmartTv::setupDev
     tvDevice->requestPairing();
     m_tvList.insert(tvDevice,device);
 
-    return reportDeviceSetup(DeviceManager::DeviceSetupStatusAsync);
+    return DeviceManager::DeviceSetupStatusAsync;
 }
 
 DeviceManager::HardwareResources DevicePluginLgSmartTv::requiredHardware() const
@@ -201,19 +201,19 @@ void DevicePluginLgSmartTv::pairingFinished(const bool &success)
     Device *device = m_tvList.value(tvDevice);
 
     if(success){
-        emit deviceSetupFinished(device,DeviceManager::DeviceSetupStatusSuccess,QString(""));
+        emit deviceSetupFinished(device,DeviceManager::DeviceSetupStatusSuccess);
         tvDevice->refresh();
     }else{
-        emit deviceSetupFinished(device,DeviceManager::DeviceSetupStatusFailure,QString("Could not pair with tv."));
+        emit deviceSetupFinished(device,DeviceManager::DeviceSetupStatusFailure);
     }
 }
 
 void DevicePluginLgSmartTv::sendingCommandFinished(const bool &success, const ActionId &actionId)
 {
     if(success){
-        emit actionExecutionFinished(actionId,DeviceManager::DeviceErrorNoError,QString());
+        emit actionExecutionFinished(actionId,DeviceManager::DeviceErrorNoError);
     }else{
-        emit actionExecutionFinished(actionId,DeviceManager::DeviceErrorActionTypeNotFound,QString("Could not send command"));
+        emit actionExecutionFinished(actionId,DeviceManager::DeviceErrorHardwareFailure);
     }
 }
 

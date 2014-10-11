@@ -160,7 +160,6 @@ QString HttpDaemon::generateWebPage()
 
     body.append("<table>");
     for (int i = 0; i < deviceClass.eventTypes().count(); ++i) {
-        qDebug() << "adding eventType" << deviceClass.eventTypes().at(i).name();
         const EventType &eventType = deviceClass.eventTypes().at(i);
         body.append(QString(
         "<tr>"

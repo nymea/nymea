@@ -43,7 +43,7 @@ public:
 
     void startMonitoringAutoDevices() override;
 
-    QPair<DeviceManager::DeviceSetupStatus, QString> setupDevice(Device *device) override;
+    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
     void deviceRemoved(Device *device) override;
     void guhTimer() override;
 

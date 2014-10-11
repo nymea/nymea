@@ -77,7 +77,7 @@ DeviceManager::DeviceError DevicePluginPhilipsHue::discoverDevices(const DeviceC
     return DeviceManager::DeviceErrorAsync;
 }
 
-QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginPhilipsHue::setupDevice(Device *device)
+DeviceManager::DeviceSetupStatus DevicePluginPhilipsHue::setupDevice(Device *device)
 {
     qDebug() << "setupDevice" << device->params();
 
@@ -90,7 +90,8 @@ QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginPhilipsHue::setupDe
             device->setParamValue("number", light->id());
         } else {
             // this shouldn't ever happen
-            return reportDeviceSetup(DeviceManager::DeviceSetupStatusFailure, "Device not configured yet and no discovered devices around.");
+            qWarning() << "Device not configured yet and no discovered devices around. This should not happen.";
+            return DeviceManager::DeviceSetupStatusFailure;
         }
     } else {
         // In this case it most likely comes from the config. Just read all values from there...
@@ -116,11 +117,10 @@ QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginPhilipsHue::setupDe
         descriptorList.append(descriptor);
     }
     if (!descriptorList.isEmpty()) {
-        qDebug() << "adding" << descriptorList.count() << "autodevices";
         metaObject()->invokeMethod(this, "autoDevicesAppeared", Qt::QueuedConnection, Q_ARG(DeviceClassId, hueDeviceClassId), Q_ARG(QList<DeviceDescriptor>, descriptorList));
     }
 
-    return reportDeviceSetup(DeviceManager::DeviceSetupStatusAsync);
+    return DeviceManager::DeviceSetupStatusAsync;
 }
 
 void DevicePluginPhilipsHue::deviceRemoved(Device *device)
@@ -134,7 +134,7 @@ void DevicePluginPhilipsHue::deviceRemoved(Device *device)
     m_unconfiguredLights.append(light);
 }
 
-QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginPhilipsHue::confirmPairing(const QUuid &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params)
+DeviceManager::DeviceSetupStatus DevicePluginPhilipsHue::confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params)
 {
     Param ipParam;
     foreach (const Param &param, params) {
@@ -143,7 +143,8 @@ QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginPhilipsHue::confirm
         }
     }
     if (!ipParam.isValid()) {
-        return reportDeviceSetup(DeviceManager::DeviceSetupStatusFailure, "Missing parameter: ip");
+        qWarning() << "Missing parameter: ip";
+        return DeviceManager::DeviceSetupStatusFailure;
     }
     Param usernameParam;
     foreach (const Param &param, params) {
@@ -152,7 +153,8 @@ QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginPhilipsHue::confirm
         }
     }
     if (!usernameParam.isValid()) {
-        return reportDeviceSetup(DeviceManager::DeviceSetupStatusFailure, "Missing parameter: username");
+        qWarning() << "Missing parameter: username";
+        return DeviceManager::DeviceSetupStatusFailure;
     }
 
     int id = m_bridge->createUser(QHostAddress(ipParam.value().toString()), usernameParam.value().toString());
@@ -161,7 +163,7 @@ QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginPhilipsHue::confirm
     pi.ipParam = ipParam;
     pi.usernameParam = usernameParam;
     m_pairings.insert(id, pi);
-    return reportDeviceSetup(DeviceManager::DeviceSetupStatusAsync);
+    return DeviceManager::DeviceSetupStatusAsync;
 }
 
 void DevicePluginPhilipsHue::guhTimer()
@@ -173,8 +175,6 @@ void DevicePluginPhilipsHue::guhTimer()
 
 DeviceManager::DeviceError DevicePluginPhilipsHue::executeAction(Device *device, const Action &action)
 {
-    qDebug() << "Should execute action in hue plugin";
-
     Light *light = m_lights.key(device);
     if (!light) {
         return DeviceManager::DeviceErrorDeviceNotFound;
@@ -222,7 +222,7 @@ void DevicePluginPhilipsHue::createUserFinished(int id, const QVariant &response
     PairingInfo pairingInfo = m_pairings.take(id);
     if (response.toMap().contains("error")) {
         qDebug() << "Failed to pair Hue bridge:" << response.toMap().value("error").toMap().value("description");
-        emit pairingFinished(pairingInfo.pairingTransactionId, DeviceManager::DeviceSetupStatusFailure, "Pairing failed:" + response.toMap().value("error").toMap().value("description").toString());
+        emit pairingFinished(pairingInfo.pairingTransactionId, DeviceManager::DeviceSetupStatusFailure);
         return;
     }
 
@@ -240,7 +240,7 @@ void DevicePluginPhilipsHue::getLightsFinished(int id, const QVariant &params)
 
     if (params.toMap().count() == 0) {
         qWarning() << "No light bulbs found on this hue bridge... Cannot proceed with pairing.";
-        emit pairingFinished(pairingInfo.pairingTransactionId, DeviceManager::DeviceSetupStatusFailure, "No light bulbs found on this Hue bridge.");
+        emit pairingFinished(pairingInfo.pairingTransactionId, DeviceManager::DeviceSetupStatusFailure);
         return;
     }
 
@@ -250,7 +250,7 @@ void DevicePluginPhilipsHue::getLightsFinished(int id, const QVariant &params)
         m_unconfiguredLights.insert(lightId.toInt(), light);
     }
 
-    emit pairingFinished(pairingInfo.pairingTransactionId, DeviceManager::DeviceSetupStatusSuccess, QString());
+    emit pairingFinished(pairingInfo.pairingTransactionId, DeviceManager::DeviceSetupStatusSuccess);
 
     // If we have more than one device on that bridge, tell DeviceManager that there are more.
     if (params.toMap().count() > 1) {
@@ -271,7 +271,7 @@ void DevicePluginPhilipsHue::lightStateChanged()
     if (m_asyncSetups.contains(light)) {
         device = m_asyncSetups.take(light);
         device->setName(light->name());
-        emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusSuccess, QString());
+        emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusSuccess);
     } else {
         device = m_lights.value(light);
     }

@@ -22,6 +22,8 @@
 #include "typeutils.h"
 #include "mocktcpserver.h"
 #include "devicemanager.h"
+#include "ruleengine.h"
+#include "jsontypes.h"
 
 #include <QObject>
 #include <QUuid>
@@ -58,7 +60,27 @@ protected slots:
 
 protected:
     QVariant injectAndWait(const QString &method, const QVariantMap &params = QVariantMap());
-    void verifyError(const QVariant &response, const QString &fieldName, int error = 0);
+
+    inline void verifyError(const QVariant &response, const QString &fieldName, const QString &error)
+    {
+        QJsonDocument jsonDoc = QJsonDocument::fromVariant(response);
+        QVERIFY2(response.toMap().value("status").toString() == QString("success"), jsonDoc.toJson().data());
+        QVERIFY2(response.toMap().value("params").toMap().value(fieldName).toString() == error,
+                 QString("\nExpected: %1\nGot: %2\nFull message: %3\n")
+                 .arg(error)
+                 .arg(response.toMap().value("params").toMap().value(fieldName).toString())
+                 .arg(jsonDoc.toJson().data())
+                 .toLatin1().data());
+    }
+
+    inline void verifyRuleError(const QVariant &response, RuleEngine::RuleError error = RuleEngine::RuleErrorNoError) {
+        verifyError(response, "ruleError", JsonTypes::ruleErrorToString(error));
+    }
+
+    inline void verifyDeviceError(const QVariant &response, DeviceManager::DeviceError error = DeviceManager::DeviceErrorNoError) {
+        verifyError(response, "deviceError", JsonTypes::deviceErrorToString(error));
+    }
+
     void restartServer();
 
 protected:

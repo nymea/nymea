@@ -36,6 +36,7 @@ class TestStates: public GuhTestBase
 private slots:
     void getStateValue_data();
     void getStateValue();
+
 };
 
 void TestStates::getStateValue_data()
@@ -50,7 +51,7 @@ void TestStates::getStateValue_data()
 
     QTest::newRow("existing state") << device->id() << mockIntStateId << DeviceManager::DeviceErrorNoError;
     QTest::newRow("invalid device") << DeviceId::createDeviceId() << mockIntStateId << DeviceManager::DeviceErrorDeviceNotFound;
-    QTest::newRow("invalid statetype") << device->id() << StateTypeId::createStateTypeId() << DeviceManager::DeviceErrorInvalidParameter;
+    QTest::newRow("invalid statetype") << device->id() << StateTypeId::createStateTypeId() << DeviceManager::DeviceErrorStateTypeNotFound;
 }
 
 void TestStates::getStateValue()
@@ -65,7 +66,7 @@ void TestStates::getStateValue()
 
     QVariant response = injectAndWait("Devices.GetStateValue", params);
 
-    verifyError(response, "deviceError", error);
+    verifyDeviceError(response, error);
 }
 
 #include "teststates.moc"

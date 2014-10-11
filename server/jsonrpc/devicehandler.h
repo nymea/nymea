@@ -70,7 +70,7 @@ private slots:
 
     void deviceSetupFinished(Device *device, DeviceManager::DeviceError status);
 
-    void pairingFinished(const QUuid &pairingTransactionId, DeviceManager::DeviceError status, const QString &errorMessage, const DeviceId &deviceId);
+    void pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceError status, const DeviceId &deviceId);
 
 private:
     // A cache for async replies

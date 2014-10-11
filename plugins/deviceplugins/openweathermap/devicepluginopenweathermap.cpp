@@ -322,17 +322,18 @@ DeviceManager::DeviceError DevicePluginOpenweathermap::discoverDevices(const Dev
     return DeviceManager::DeviceErrorAsync;
 }
 
-QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginOpenweathermap::setupDevice(Device *device)
+DeviceManager::DeviceSetupStatus DevicePluginOpenweathermap::setupDevice(Device *device)
 {
     foreach (Device *deviceListDevice, deviceManager()->findConfiguredDevices(openweathermapDeviceClassId)) {
         if(deviceListDevice->paramValue("id").toString() == device->paramValue("id").toString()){
-            return reportDeviceSetup(DeviceManager::DeviceSetupStatusFailure,QString("Location " + device->paramValue("location").toString() + "allready in added"));
+            qWarning() << QString("Location " + device->paramValue("location").toString() + "already in added");
+            return DeviceManager::DeviceSetupStatusFailure;
         }
     }
 
     m_openweaher->update(device->paramValue("id").toString());
 
-    return reportDeviceSetup(DeviceManager::DeviceSetupStatusSuccess);
+    return DeviceManager::DeviceSetupStatusSuccess;
 }
 
 DeviceManager::HardwareResources DevicePluginOpenweathermap::requiredHardware() const

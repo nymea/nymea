@@ -49,9 +49,9 @@ public:
     QList<Vendor> supportedVendors() const;
     QList<DeviceClass> supportedDevices(const VendorId &vendorId = VendorId()) const;
     DeviceClass findDeviceClass(const DeviceClassId &deviceClassId) const;
-    QPair<DeviceManager::DeviceError, QString> discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params);
-    QPair<DeviceManager::DeviceError, QString> addConfiguredDevice(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId &newId);
-    QPair<DeviceManager::DeviceError, QString> addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &newId);
+    DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params);
+    DeviceManager::DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId &newId);
+    DeviceManager::DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &newId);
     QList<Device*> configuredDevices() const;
     Device *findConfiguredDevice(const DeviceId &deviceId) const;
     QList<Device*> findConfiguredDevices(const DeviceClassId &deviceClassId) const;
@@ -61,7 +61,7 @@ public:
     QPair<DeviceManager::DeviceError, QString> pairDevice(const DeviceClassId &deviceClassId, const ParamList &params);
     QPair<DeviceManager::DeviceError, QString> confirmPairing(const QUuid &pairingTransactionId, const QString &secret = QString());
 
-    QPair<DeviceManager::DeviceError, QString> executeAction(const Action &action);
+    DeviceManager::DeviceError executeAction(const Action &action);
 
     QList<Rule> rules() const;
     QList<RuleId> ruleIds() const;

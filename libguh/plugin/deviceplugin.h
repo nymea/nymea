@@ -51,7 +51,7 @@ public:
     virtual DeviceManager::HardwareResources requiredHardware() const = 0;
 
     virtual void startMonitoringAutoDevices();
-    virtual QPair<DeviceManager::DeviceError, QString> discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params);
+    virtual DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params);
 
     virtual QPair<DeviceManager::DeviceSetupStatus, QString> setupDevice(Device *device);
     virtual void deviceRemoved(Device *device);
@@ -70,9 +70,9 @@ public:
     QPair<DeviceManager::DeviceError, QString> setConfigValue(const QString &paramName, const QVariant &value);
 
 public slots:
-    virtual QPair<DeviceManager::DeviceError, QString> executeAction(Device *device, const Action &action) {
+    virtual DeviceManager::DeviceError executeAction(Device *device, const Action &action) {
         Q_UNUSED(device) Q_UNUSED(action)
-        return qMakePair<DeviceManager::DeviceError, QString>(DeviceManager::DeviceErrorNoError, "");
+        return DeviceManager::DeviceErrorNoError;
     }
 
 signals:

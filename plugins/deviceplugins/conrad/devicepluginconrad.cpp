@@ -72,7 +72,7 @@ DeviceManager::HardwareResources DevicePluginConrad::requiredHardware() const
     return DeviceManager::HardwareResourceRadio433;
 }
 
-QPair<DeviceManager::DeviceError, QString> DevicePluginConrad::executeAction(Device *device, const Action &action)
+DeviceManager::DeviceError DevicePluginConrad::executeAction(Device *device, const Action &action)
 {
     QList<int> rawData;
     QByteArray binCode;
@@ -117,10 +117,10 @@ QPair<DeviceManager::DeviceError, QString> DevicePluginConrad::executeAction(Dev
     // send data to driver
     if(transmitData(delay, rawData)){
         qDebug() << "action" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
-        return report();
+        return DeviceManager::DeviceErrorNoError;
     }else{
         qDebug() << "could not transmitt" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
-        return report(DeviceManager::DeviceErrorHardwareNotAvailable, "Radio 433 MHz transmitter not available.");
+        return DeviceManager::DeviceErrorHardwareNotAvailable;
     }
 }
 

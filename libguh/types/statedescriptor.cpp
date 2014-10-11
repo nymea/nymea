@@ -19,12 +19,12 @@
 #include "statedescriptor.h"
 
 StateDescriptor::StateDescriptor():
-    m_operatorType(ValueOperatorEquals)
+    m_operatorType(Types::ValueOperatorEquals)
 {
 
 }
 
-StateDescriptor::StateDescriptor(const StateTypeId &stateTypeId, const DeviceId &deviceId, const QVariant &stateValue, ValueOperator operatorType):
+StateDescriptor::StateDescriptor(const StateTypeId &stateTypeId, const DeviceId &deviceId, const QVariant &stateValue, Types::ValueOperator operatorType):
     m_stateTypeId(stateTypeId),
     m_deviceId(deviceId),
     m_stateValue(stateValue),
@@ -48,7 +48,7 @@ QVariant StateDescriptor::stateValue() const
     return m_stateValue;
 }
 
-ValueOperator StateDescriptor::operatorType() const
+Types::ValueOperator StateDescriptor::operatorType() const
 {
     return m_operatorType;
 }
@@ -67,17 +67,17 @@ bool StateDescriptor::operator ==(const State &state) const
         return false;
     }
     switch (m_operatorType) {
-    case ValueOperatorEquals:
+    case Types::ValueOperatorEquals:
         return m_stateValue == state.value();
-    case ValueOperatorGreater:
+    case Types::ValueOperatorGreater:
         return state.value() > m_stateValue;
-    case ValueOperatorGreaterOrEqual:
+    case Types::ValueOperatorGreaterOrEqual:
         return state.value() >= m_stateValue;
-    case ValueOperatorLess:
+    case Types::ValueOperatorLess:
         return state.value() < m_stateValue;
-    case ValueOperatorLessOrEqual:
+    case Types::ValueOperatorLessOrEqual:
         return state.value() <= m_stateValue;
-    case ValueOperatorNotEquals:
+    case Types::ValueOperatorNotEquals:
         return m_stateValue != state.value();
     }
     return false;

@@ -31,12 +31,12 @@ class StateDescriptor
 {
 public:
     StateDescriptor();
-    StateDescriptor(const StateTypeId &stateTypeId, const DeviceId &deviceId, const QVariant &stateValue, ValueOperator operatorType = ValueOperatorEquals);
+    StateDescriptor(const StateTypeId &stateTypeId, const DeviceId &deviceId, const QVariant &stateValue, Types::ValueOperator operatorType = Types::ValueOperatorEquals);
 
     StateTypeId stateTypeId() const;
     DeviceId deviceId() const;
     QVariant stateValue() const;
-    ValueOperator operatorType() const;
+    Types::ValueOperator operatorType() const;
 
     bool operator ==(const StateDescriptor &other) const;
 
@@ -47,7 +47,7 @@ private:
     StateTypeId m_stateTypeId;
     DeviceId m_deviceId;
     QVariant m_stateValue;
-    ValueOperator m_operatorType;
+    Types::ValueOperator m_operatorType;
 };
 QDebug operator<<(QDebug dbg, const StateDescriptor &eventDescriptor);
 QDebug operator<<(QDebug dbg, const QList<StateDescriptor> &eventDescriptors);

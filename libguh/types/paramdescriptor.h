@@ -27,11 +27,11 @@ class ParamDescriptor : public Param
 public:
     ParamDescriptor(const QString &name, const QVariant &value = QVariant());
 
-    ValueOperator operatorType() const;
-    void setOperatorType(ValueOperator operatorType);
+    Types::ValueOperator operatorType() const;
+    void setOperatorType(Types::ValueOperator operatorType);
 
 private:
-    ValueOperator m_operatorType;
+    Types::ValueOperator m_operatorType;
 };
 
 #endif // PARAMDESCRIPTOR_H

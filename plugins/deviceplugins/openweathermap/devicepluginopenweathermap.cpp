@@ -303,7 +303,7 @@ DevicePluginOpenweathermap::DevicePluginOpenweathermap()
     connect(m_openweaher, &OpenWeatherMap::weatherDataReady, this, &DevicePluginOpenweathermap::weatherDataReady);
 }
 
-QPair<DeviceManager::DeviceError, QString> DevicePluginOpenweathermap::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
+DeviceManager::DeviceError DevicePluginOpenweathermap::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
 {
     if(deviceClassId != openweathermapDeviceClassId){
         return report(DeviceManager::DeviceErrorDeviceClassNotFound);
@@ -319,14 +319,10 @@ QPair<DeviceManager::DeviceError, QString> DevicePluginOpenweathermap::discoverD
     // if we have an empty search string, perform an autodetection of the location with the WAN ip...
     if (location.isEmpty()){
         m_openweaher->searchAutodetect();
-        return report(DeviceManager::DeviceErrorAsync);
-    }else{
-        return report(DeviceManager::DeviceErrorDeviceClassNotFound);
+    } else {
+        m_openweaher->search(location);
     }
-
-    // otherwise search the given string
-    m_openweaher->search(location);
-    return report(DeviceManager::DeviceErrorAsync);
+    return DeviceManager::DeviceErrorAsync;
 }
 
 QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginOpenweathermap::setupDevice(Device *device)
@@ -348,12 +344,12 @@ DeviceManager::HardwareResources DevicePluginOpenweathermap::requiredHardware() 
     return DeviceManager::HardwareResourceTimer;
 }
 
-QPair<DeviceManager::DeviceError, QString> DevicePluginOpenweathermap::executeAction(Device *device, const Action &action)
+DeviceManager::DeviceError DevicePluginOpenweathermap::executeAction(Device *device, const Action &action)
 {
     if(action.actionTypeId() == updateWeatherActionTypeId){
         m_openweaher->update(device->paramValue("id").toString(), device->id());
     }
-    return report();
+    return DeviceManager::DeviceErrorNoError;
 }
 
 void DevicePluginOpenweathermap::guhTimer()

@@ -91,7 +91,7 @@ void GuhTestBase::initTestCase()
 
     QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
 
-    verifySuccess(response);
+    verifyError(response, "deviceError");
 
     m_mockDeviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
     QVERIFY2(!m_mockDeviceId.isNull(), "Newly created mock device must not be null.");
@@ -125,11 +125,11 @@ QVariant GuhTestBase::injectAndWait(const QString &method, const QVariantMap &pa
      return jsonDoc.toVariant();
 }
 
-void GuhTestBase::verifySuccess(const QVariant &response, bool success)
+void GuhTestBase::verifyError(const QVariant &response, const QString &fieldName, int error)
 {
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(response);
     QVERIFY2(response.toMap().value("status").toString() == QString("success"), jsonDoc.toJson().data());
-    QVERIFY2(response.toMap().value("params").toMap().value("success").toBool() == success, jsonDoc.toJson().data());
+    QVERIFY2(response.toMap().value("params").toMap().value(fieldName).toInt() == error, jsonDoc.toJson().data());
 }
 
 void GuhTestBase::restartServer()

@@ -41,8 +41,7 @@ ActionHandler::ActionHandler(QObject *parent) :
     setDescription("GetActionType", "Get the ActionType for the given ActionTypeId");
     params.insert("actionTypeId", "uuid");
     setParams("GetActionType", params);
-    returns.insert("success", "bool");
-    returns.insert("errorMessage", "string");
+    returns.insert("deviceError", "int");
     returns.insert("o:actionType", JsonTypes::actionTypeDescription());
     setReturns("GetActionType", returns);
 
@@ -67,14 +66,15 @@ JsonReply* ActionHandler::ExecuteAction(const QVariantMap &params)
     qDebug() << "actions params in json" << action.params() << params;
 
 
-    QPair<DeviceManager::DeviceError, QString> status = GuhCore::instance()->executeAction(action);
-    if (status.first == DeviceManager::DeviceErrorAsync) {
+    DeviceManager::DeviceError status = GuhCore::instance()->executeAction(action);
+    if (status == DeviceManager::DeviceErrorAsync) {
         JsonReply *reply = createAsyncReply("ExecuteAction");
         m_asyncActionExecutions.insert(action.id(), reply);
         return reply;
     }
 
-    QVariantMap returns = statusToReply(status.first, status.second);
+    QVariantMap returns;
+    returns.insert("deviceError", status);
     return createReply(returns);
 }
 
@@ -85,16 +85,14 @@ JsonReply *ActionHandler::GetActionType(const QVariantMap &params) const
         foreach (const ActionType &actionType, deviceClass.actionTypes()) {
             if (actionType.id() == actionTypeId) {
                 QVariantMap data;
-                data.insert("success", true);
-                data.insert("errorMessage", QString());
+                data.insert("deviceError", DeviceManager::DeviceErrorNoError);
                 data.insert("actionType", JsonTypes::packActionType(actionType));
                 return createReply(data);
             }
         }
     }
     QVariantMap data;
-    data.insert("success", false);
-    data.insert("errorMessage", QString("No ActionType with id %1.").arg(actionTypeId.toString()));
+    data.insert("deviceError", DeviceManager::DeviceErrorActionTypeNotFound);
     return createReply(data);
 }
 
@@ -112,19 +110,6 @@ void ActionHandler::actionExecuted(const ActionId &id, DeviceManager::DeviceErro
 QVariantMap ActionHandler::statusToReply(DeviceManager::DeviceError status, const QString &errorMessage)
 {
     QVariantMap returns;
-    returns.insert("success", status == DeviceManager::DeviceErrorNoError);
-    returns.insert("errorMessage", errorMessage);
-
-    switch (status) {
-    case DeviceManager::DeviceErrorNoError:
-        break;
-    case DeviceManager::DeviceErrorDeviceNotFound:
-        returns.insert("errorMessage", QString("Device not found: %1").arg(errorMessage));
-        break;
-    case DeviceManager::DeviceErrorSetupFailed:
-        returns.insert("errorMessage", QString("Device setup failed: %1").arg(errorMessage));
-        break;
-    }
-
+    returns.insert("deviceError", status);
     return returns;
 }

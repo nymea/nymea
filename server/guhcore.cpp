@@ -127,7 +127,7 @@ QPair<DeviceManager::DeviceError, QString> GuhCore::confirmPairing(const QUuid &
     return m_deviceManager->confirmPairing(pairingTransactionId, secret);
 }
 
-QPair<DeviceManager::DeviceError, QString> GuhCore::executeAction(const Action &action)
+DeviceManager::DeviceError GuhCore::executeAction(const Action &action)
 {
     return m_deviceManager->executeAction(action);
 }
@@ -137,17 +137,17 @@ DeviceClass GuhCore::findDeviceClass(const DeviceClassId &deviceClassId) const
     return m_deviceManager->findDeviceClass(deviceClassId);
 }
 
-QPair<DeviceManager::DeviceError, QString> GuhCore::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
+DeviceManager::DeviceError GuhCore::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
 {
     return m_deviceManager->discoverDevices(deviceClassId, params);
 }
 
-QPair<DeviceManager::DeviceError, QString> GuhCore::addConfiguredDevice(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId &newId)
+DeviceManager::DeviceError GuhCore::addConfiguredDevice(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId &newId)
 {
     return m_deviceManager->addConfiguredDevice(deviceClassId, params, newId);
 }
 
-QPair<DeviceManager::DeviceError, QString> GuhCore::addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &newId)
+DeviceManager::DeviceError GuhCore::addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &newId)
 {
     return m_deviceManager->addConfiguredDevice(deviceClassId, deviceDescriptorId, newId);
 }
@@ -252,18 +252,18 @@ void GuhCore::gotEvent(const Event &event)
     // Now execute all the associated rules
     foreach (const Action &action, m_ruleEngine->evaluateEvent(event)) {
         qDebug() << "executing action" << action.actionTypeId();
-        QPair<DeviceManager::DeviceError, QString> status = m_deviceManager->executeAction(action);
-        switch(status.first) {
+        DeviceManager::DeviceError status = m_deviceManager->executeAction(action);
+        switch(status) {
         case DeviceManager::DeviceErrorNoError:
             break;
         case DeviceManager::DeviceErrorSetupFailed:
-            qDebug() << "Error executing action. Device setup failed:" << status.second;
+            qDebug() << "Error executing action. Device setup failed.";
             break;
         case DeviceManager::DeviceErrorActionParameterError:
-            qDebug() << "Error executing action. Invalid action parameter:" << status.second;
+            qDebug() << "Error executing action. Invalid action parameter.";
             break;
         default:
-            qDebug() << "Error executing action:" << status.first << status.second;
+            qDebug() << "Error executing action:" << status;
         }
     }
 }

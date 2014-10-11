@@ -35,10 +35,10 @@ public:
 
     OpenWeatherMap *m_openweaher;
 
-    QPair<DeviceManager::DeviceError, QString> discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
+    DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
     QPair<DeviceManager::DeviceSetupStatus, QString> setupDevice(Device *device) override;
     DeviceManager::HardwareResources requiredHardware() const override;
-    QPair<DeviceManager::DeviceError, QString> executeAction(Device *device, const Action &action) override;
+    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
 
     void guhTimer() override;
 

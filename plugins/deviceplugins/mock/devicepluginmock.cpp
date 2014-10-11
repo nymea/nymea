@@ -49,13 +49,13 @@ DeviceManager::HardwareResources DevicePluginMock::requiredHardware() const
     return DeviceManager::HardwareResourceTimer;
 }
 
-QPair<DeviceManager::DeviceError, QString> DevicePluginMock::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
+DeviceManager::DeviceError DevicePluginMock::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
 {
     Q_UNUSED(deviceClassId)
     qDebug() << "starting mock discovery:" << params;
     m_discoveredDeviceCount = params.paramValue("resultCount").toInt();
     QTimer::singleShot(1000, this, SLOT(emitDevicesDiscovered()));
-    return report(DeviceManager::DeviceErrorNoError);
+    return DeviceManager::DeviceErrorAsync;
 }
 
 QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginMock::setupDevice(Device *device)
@@ -126,26 +126,26 @@ QList<ParamType> DevicePluginMock::configurationDescription() const
     return params;
 }
 
-QPair<DeviceManager::DeviceError, QString> DevicePluginMock::executeAction(Device *device, const Action &action)
+DeviceManager::DeviceError DevicePluginMock::executeAction(Device *device, const Action &action)
 {
     if (!myDevices().contains(device)) {
         qWarning() << "Should execute action for a device which doesn't seem to be mine.";
-        return report(DeviceManager::DeviceErrorDeviceNotFound, "Should execute an action for a device which doesn't seem to be mine.");
+        return DeviceManager::DeviceErrorDeviceNotFound;
     }
 
     if (action.actionTypeId() == mockActionIdAsync || action.actionTypeId() == mockActionIdAsyncFailing) {
         m_asyncActions.append(qMakePair<Action, Device*>(action, device));
         QTimer::singleShot(1000, this, SLOT(emitActionExecuted()));
-        return report(DeviceManager::DeviceErrorAsync);
+        return DeviceManager::DeviceErrorAsync;
     }
 
     if (action.actionTypeId() == mockActionIdFailing) {
-        return report(DeviceManager::DeviceErrorSetupFailed);
+        return DeviceManager::DeviceErrorSetupFailed;
     }
 
     qDebug() << "Should execute action" << action.actionTypeId();
     m_daemons.value(device)->actionExecuted(action.actionTypeId());
-    return report();
+    return DeviceManager::DeviceErrorNoError;
 }
 
 void DevicePluginMock::setState(const StateTypeId &stateTypeId, const QVariant &value)

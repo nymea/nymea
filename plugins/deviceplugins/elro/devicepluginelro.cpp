@@ -70,7 +70,7 @@ DeviceManager::HardwareResources DevicePluginElro::requiredHardware() const
     return DeviceManager::HardwareResourceRadio433;
 }
 
-QPair<DeviceManager::DeviceError, QString> DevicePluginElro::executeAction(Device *device, const Action &action)
+DeviceManager::DeviceError DevicePluginElro::executeAction(Device *device, const Action &action)
 {
 
     QList<int> rawData;
@@ -162,10 +162,10 @@ QPair<DeviceManager::DeviceError, QString> DevicePluginElro::executeAction(Devic
     // send data to hardware resource
     if(transmitData(delay, rawData)){
         qDebug() << "transmitted" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
-        return report();
+        return DeviceManager::DeviceErrorNoError;
     }else{
         qDebug() << "could not transmitt" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
-        return report(DeviceManager::DeviceErrorHardwareNotAvailable,QString("Radio 433 MHz transmitter not available."));
+        return DeviceManager::DeviceErrorHardwareNotAvailable;
     }
 }
 

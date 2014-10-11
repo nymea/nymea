@@ -37,6 +37,7 @@ class Radio433;
 class DeviceManager : public QObject
 {
     Q_OBJECT
+    Q_ENUMS(DeviceError)
 public:
     enum HardwareResource {
         HardwareResourceNone = 0x00,
@@ -62,6 +63,7 @@ public:
         DeviceErrorDeviceDescriptorNotFound,
         DeviceErrorAsync,
         DeviceErrorPairingTransactionIdNotFound,
+        // Don't forget to update JsonTypes!
     };
 
     enum DeviceSetupStatus {
@@ -79,11 +81,11 @@ public:
 
     QList<Vendor> supportedVendors() const;
     QList<DeviceClass> supportedDevices(const VendorId &vendorId = VendorId()) const;
-    QPair<DeviceError, QString> discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params);
+    DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params);
 
     QList<Device*> configuredDevices() const;
-    QPair<DeviceError, QString> addConfiguredDevice(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId id = DeviceId::createDeviceId());
-    QPair<DeviceError, QString> addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &id = DeviceId::createDeviceId());
+    DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId id = DeviceId::createDeviceId());
+    DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &id = DeviceId::createDeviceId());
     QPair<DeviceError, QString> pairDevice(const DeviceClassId &deviceClassId, const ParamList &params);
     QPair<DeviceError, QString> pairDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId);
     QPair<DeviceError, QString> confirmPairing(const QUuid &pairingTransactionId, const QString &secret = QString());
@@ -103,7 +105,7 @@ signals:
     void actionExecutionFinished(const ActionId, DeviceError status, const QString &errorMessage);
 
 public slots:
-    QPair<DeviceError, QString> executeAction(const Action &action);
+    DeviceError executeAction(const Action &action);
 
 private slots:
     void loadPlugins();
@@ -123,11 +125,11 @@ private slots:
 
 private:
     bool verifyPluginMetadata(const QJsonObject &data);
-    QPair<DeviceError, QString> addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId id = DeviceId::createDeviceId());
+    DeviceError addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId id = DeviceId::createDeviceId());
     QPair<DeviceSetupStatus, QString> setupDevice(Device *device);
-    QPair<DeviceError, QString> verifyParams(const QList<ParamType> paramTypes, ParamList &params, bool requireAll = true);
-    QPair<DeviceError, QString> verifyParam(const QList<ParamType> paramTypes, const Param &param);
-    QPair<DeviceError, QString> verifyParam(const ParamType &paramType, const Param &param);
+    DeviceError verifyParams(const QList<ParamType> paramTypes, ParamList &params, bool requireAll = true);
+    DeviceError verifyParam(const QList<ParamType> paramTypes, const Param &param);
+    DeviceError verifyParam(const ParamType &paramType, const Param &param);
 
     QPair<DeviceError, QString> report(DeviceError error = DeviceErrorNoError, const QString &message = QString());
 

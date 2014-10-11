@@ -24,8 +24,6 @@
 #include <QDebug>
 #include <QStringList>
 
-extern VendorId guhVendorId;
-PluginId pluginUuid = PluginId("8e0f791e-b273-4267-8605-b7c2f55a68ab");
 DeviceClassId detectorId = DeviceClassId("bd216356-f1ec-4324-9785-6982d2174e17");
 StateTypeId inRangeStateTypeId = StateTypeId("cb43e1b5-4f61-4538-bfa2-c33055c542cf");
 
@@ -33,55 +31,9 @@ DevicePluginWifiDetector::DevicePluginWifiDetector()
 {
 }
 
-QList<Vendor> DevicePluginWifiDetector::supportedVendors() const
-{
-    QList<Vendor> ret;
-    Vendor guh(guhVendorId, "guh");
-    ret.append(guh);
-    return ret;
-}
-
-QList<DeviceClass> DevicePluginWifiDetector::supportedDevices() const
-{
-    QList<DeviceClass> ret;
-
-    DeviceClass deviceClassWifiDetector(pluginId(), guhVendorId, detectorId);
-    deviceClassWifiDetector.setName("WiFi Device");
-    
-    QList<ParamType> detectorParams;
-    ParamType macParam("mac", QVariant::String);
-    detectorParams.append(macParam);
-
-    deviceClassWifiDetector.setParamTypes(detectorParams);
-
-    QList<StateType> detectorStates;
-
-    StateType inRangeState(inRangeStateTypeId);
-    inRangeState.setName("inRange");
-    inRangeState.setType(QVariant::Bool);
-    inRangeState.setDefaultValue(false);
-    detectorStates.append(inRangeState);
-
-    deviceClassWifiDetector.setStateTypes(detectorStates);
-
-    ret.append(deviceClassWifiDetector);
-
-    return ret;
-}
-
 DeviceManager::HardwareResources DevicePluginWifiDetector::requiredHardware() const
 {
     return DeviceManager::HardwareResourceTimer;
-}
-
-QString DevicePluginWifiDetector::pluginName() const
-{
-    return "WiFi Detector";
-}
-
-PluginId DevicePluginWifiDetector::pluginId() const
-{
-    return pluginUuid;
 }
 
 void DevicePluginWifiDetector::guhTimer()

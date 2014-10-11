@@ -1,1 +1,37 @@
-{}
+{
+    "name": "Boblight",
+    "id": "8c5e8d4c-b5ed-4bfe-b30d-35c2790ec100",
+    "vendors": [
+        {
+            "name": "Boblight",
+            "id": "e1647872-c0f5-4680-b49b-3924e5b54dcd",
+            "deviceClasses": [
+                {
+                    "deviceClassId": "1647c61c-db14-461e-8060-8a3533d5d92f",
+                    "name": "Boblight",
+                    "createMethods": ["auto"],
+                    "stateTypes": [
+                        {
+                            "id": "97ec80cd-43a9-40fa-93b7-d1580043d981",
+                            "name": "color",
+                            "type": "QColor",
+                            "defaultValue": "#000000"
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "668e1aa3-fa13-49ce-8630-17a5c0a7c34b",
+                            "name": "Set color",
+                            "paramTypes": [
+                                {
+                                    "name": "color",
+                                    "type": "QColor"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

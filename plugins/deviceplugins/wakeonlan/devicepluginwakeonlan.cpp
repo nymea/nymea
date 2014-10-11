@@ -123,7 +123,6 @@
 #include <QStringList>
 #include <QUdpSocket>
 
-extern VendorId guhVendorId;
 DeviceClassId wolDeviceClassId = DeviceClassId("3c8f2447-dcd0-4882-8c09-99e579e4d24c");
 ActionTypeId wolActionTypeId = ActionTypeId("fb9b9d87-218f-4f0d-9e16-39f8a105029a");
 
@@ -131,53 +130,35 @@ DevicePluginWakeOnLan::DevicePluginWakeOnLan()
 {
 }
 
-QList<Vendor> DevicePluginWakeOnLan::supportedVendors() const
-{
-    QList<Vendor> ret;
-    Vendor guh(guhVendorId, "guh");
-    ret.append(guh);
-    return ret;
-}
+//QList<DeviceClass> DevicePluginWakeOnLan::supportedDevices() const
+//{
+//    QList<DeviceClass> ret;
 
-QList<DeviceClass> DevicePluginWakeOnLan::supportedDevices() const
-{
-    QList<DeviceClass> ret;
-
-    DeviceClass deviceClassWakeOnLan(pluginId(), guhVendorId, wolDeviceClassId);
-    deviceClassWakeOnLan.setName("Wake On Lan");
+//    DeviceClass deviceClassWakeOnLan(pluginId(), supportedVendors().first().id(), wolDeviceClassId);
+//    deviceClassWakeOnLan.setName("Wake On Lan");
     
-    QList<ParamType> wolParams;
-    ParamType nameParam("name", QVariant::String);
-    wolParams.append(nameParam);
-    ParamType wolParam("mac", QVariant::String);
-    wolParams.append(wolParam);
+//    QList<ParamType> wolParams;
+//    ParamType nameParam("name", QVariant::String);
+//    wolParams.append(nameParam);
+//    ParamType wolParam("mac", QVariant::String);
+//    wolParams.append(wolParam);
 
 
-    QList<ActionType> wolActions;
-    ActionType wolAction(wolActionTypeId);
-    wolAction.setName("wakeup");
-    wolActions.append(wolAction);
+//    QList<ActionType> wolActions;
+//    ActionType wolAction(wolActionTypeId);
+//    wolAction.setName("wakeup");
+//    wolActions.append(wolAction);
 
-    deviceClassWakeOnLan.setParamTypes(wolParams);
-    deviceClassWakeOnLan.setActions(wolActions);
+//    deviceClassWakeOnLan.setParamTypes(wolParams);
+//    deviceClassWakeOnLan.setActions(wolActions);
 
-    ret.append(deviceClassWakeOnLan);
-    return ret;
-}
+//    ret.append(deviceClassWakeOnLan);
+//    return ret;
+//}
 
 DeviceManager::HardwareResources DevicePluginWakeOnLan::requiredHardware() const
 {
     return DeviceManager::HardwareResourceNone;
-}
-
-QString DevicePluginWakeOnLan::pluginName() const
-{
-    return "Wake On Lan";
-}
-
-PluginId DevicePluginWakeOnLan::pluginId() const
-{
-    return PluginId("b5a87848-de56-451e-84a6-edd26ad4958f");
 }
 
 QPair<DeviceManager::DeviceError, QString> DevicePluginWakeOnLan::executeAction(Device *device, const Action &action)

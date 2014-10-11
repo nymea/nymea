@@ -146,7 +146,7 @@ void JsonTypes::init()
     s_deviceClass.insert("paramTypes", QVariantList() << paramTypeRef());
     s_deviceClass.insert("discoveryParamTypes", QVariantList() << paramTypeRef());
     s_deviceClass.insert("setupMethod", setupMethodTypesRef());
-    s_deviceClass.insert("createMethod", createMethodTypesRef());
+    s_deviceClass.insert("createMethods", createMethodTypesRef());
 
     // Device
     s_device.insert("id", "uuid");
@@ -210,7 +210,7 @@ QVariantMap JsonTypes::packEventType(const EventType &eventType)
     variant.insert("id", eventType.id());
     variant.insert("name", eventType.name());
     QVariantList paramTypes;
-    foreach (const ParamType &paramType, eventType.parameters()) {
+    foreach (const ParamType &paramType, eventType.paramTypes()) {
         paramTypes.append(packParamType(paramType));
     }
     variant.insert("paramTypes", paramTypes);
@@ -249,7 +249,7 @@ QVariantMap JsonTypes::packActionType(const ActionType &actionType)
     variantMap.insert("id", actionType.id());
     variantMap.insert("name", actionType.name());
     QVariantList paramTypes;
-    foreach (const ParamType &paramType, actionType.parameters()) {
+    foreach (const ParamType &paramType, actionType.paramTypes()) {
         paramTypes.append(packParamType(paramType));
     }
     variantMap.insert("paramTypes", paramTypes);
@@ -371,6 +371,7 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass)
     }
     QVariantList discoveryParamTypes;
     foreach (const ParamType &paramType, deviceClass.discoveryParamTypes()) {
+        qDebug() << "packing discoverparam" << packParamType(paramType);
         discoveryParamTypes.append(packParamType(paramType));
     }
 
@@ -379,7 +380,7 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass)
     variant.insert("stateTypes", stateTypes);
     variant.insert("eventTypes", eventTypes);
     variant.insert("actionTypes", actionTypes);
-    variant.insert("createMethod", s_createMethodTypes.at(deviceClass.createMethod()));
+    variant.insert("createMethods", packCreateMethods(deviceClass.createMethods()));
     variant.insert("setupMethod", s_setupMethodTypes.at(deviceClass.setupMethod()));
     return variant;
 }
@@ -432,6 +433,21 @@ QVariantMap JsonTypes::packRule(const Rule &rule)
     ruleMap.insert("actions", actionList);
     ruleMap.insert("stateEvaluator", JsonTypes::packStateEvaluator(rule.stateEvaluator()));
     return ruleMap;
+}
+
+QVariantList JsonTypes::packCreateMethods(DeviceClass::CreateMethods createMethods)
+{
+    QVariantList ret;
+    if (createMethods.testFlag(DeviceClass::CreateMethodUser)) {
+        ret << "CreateMethodUser";
+    }
+    if (createMethods.testFlag(DeviceClass::CreateMethodAuto)) {
+        ret << "CreateMethodAuto";
+    }
+    if (createMethods.testFlag(DeviceClass::CreateMethodDiscovery)) {
+        ret << "CreateMethodDiscovery";
+    }
+    return ret;
 }
 
 Param JsonTypes::unpackParam(const QVariantMap &paramMap)
@@ -694,7 +710,7 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
             } else if (refName == createMethodTypesRef()) {
                 QPair<bool, QString> result = validateCreateMethodType(variant);
                 if (!result.first) {
-                    qDebug() << "value not allowed in" << createMethodTypesRef();
+                    qDebug() << "value not allowed in" << createMethodTypesRef() << variant;
                     return result;
                 }
             } else if (refName == setupMethodTypesRef()) {
@@ -770,7 +786,15 @@ QPair<bool, QString> JsonTypes::validateStateOperatorType(const QVariant &varian
 
 QPair<bool, QString> JsonTypes::validateCreateMethodType(const QVariant &variant)
 {
-    return report(s_createMethodTypes.contains(variant.toString()), QString("Unknwon createMethod type %1").arg(variant.toString()));
+    if (variant.toList().isEmpty()) {
+        return report(false, QString("No createMethod given."));
+    }
+    foreach (const QVariant &method, variant.toList()) {
+        if (!s_createMethodTypes.contains(method.toString())) {
+            return report(false, QString("Unknwon createMethod type %1").arg(method.toString()));
+        }
+    }
+    return report(true, QString());
 }
 
 QPair<bool, QString> JsonTypes::validateSetupMethodType(const QVariant &variant)

@@ -31,14 +31,9 @@ class DevicePluginConrad : public DevicePlugin
 public:
     explicit DevicePluginConrad();
 
-    QList<Vendor> supportedVendors() const override;
-    QList<DeviceClass> supportedDevices() const override;
     DeviceManager::HardwareResources requiredHardware() const override;
-
-    QString pluginName() const override;
-    PluginId pluginId() const override;
-
     void radioData(const QList<int> &rawData) override;
+
 
 public slots:
     QPair<DeviceManager::DeviceError, QString> executeAction(Device *device, const Action &action) override;

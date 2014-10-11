@@ -1,1 +1,116 @@
-{}
+{
+    "name": "Openweathermap",
+    "id": "bc6af567-2338-41d5-aac1-462dec6e4783",
+    "vendors": [
+        {
+            "name": "Openweathermap",
+            "id": "bf1e96f0-9650-4e7c-a56c-916d54d18e7a",
+            "deviceClasses": [
+                {
+                    "deviceClassId": "985195aa-17ad-4530-88a4-cdd753d747d7",
+                    "name": "Weather from openweathermap",
+                    "createMethods": ["discovery"],
+                    "discoveryParamTypes": [
+                        {
+                            "name": "location",
+                            "type": "QString"
+                        }
+                    ],
+                    "paramTypes": [
+                        {
+                            "name": "location",
+                            "type": "QString"
+                        },
+                        {
+                            "name": "country",
+                            "type": "QString"
+                        },
+                        {
+                            "name": "id",
+                            "type": "QString"
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "cfbc6504-d86f-4856-8dfa-97b6fbb385e4",
+                            "name": "Update"
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "36b2f09b-7d77-4fbc-a68f-23d735dda0b1",
+                            "name": "last update [unixtime]",
+                            "type": "uint",
+                            "defaultValue": "0"
+                        },
+                        {
+                            "id": "6013402f-b5b1-46b3-8490-f0c20d62fe61",
+                            "name": "temperature [Celsius]",
+                            "type": "double",
+                            "defaultValue": "0"
+                        },
+                        {
+                            "id": "14ec2781-cb04-4bbf-b097-7d01ef982630",
+                            "name": "temperature minimum [Celsius]",
+                            "type": "double",
+                            "defaultValue": "0"
+                        },
+                        {
+                            "id": "fefe5563-452f-4833-b5cf-49c3cc67c772",
+                            "name": "temperature maximum [Celsius]",
+                            "type": "double",
+                            "defaultValue": "0"
+                        },
+                        {
+                            "id": "6f32ec73-3240-4630-ada9-1c10b8e98123",
+                            "name": "humidity [%]",
+                            "type": "int",
+                            "defaultValue": "-1"
+                        },
+                        {
+                            "id": "4a42eea9-00eb-440b-915e-dbe42180f83b",
+                            "name": "pressure [hPa]",
+                            "type": "double",
+                            "defaultValue": "0"
+                        },
+                        {
+                            "id": "2bf63430-e9e2-4fbf-88e6-6f1b4770f287",
+                            "name": "wind speed [m/s]",
+                            "type": "double",
+                            "defaultValue": "0"
+                        },
+                        {
+                            "id": "589e2ea5-65b2-4afd-9b72-e3708a589a12",
+                            "name": "wind direction [degree]",
+                            "type": "int",
+                            "defaultValue": "0"
+                        },
+                        {
+                            "id": "798553bc-45c7-42eb-9105-430bddb5d9b7",
+                            "name": "cloudiness [%]",
+                            "type": "int",
+                            "defaultValue": "0"
+                        },
+                        {
+                            "id": "f9539108-0e0e-4736-a306-6408f8e20a26",
+                            "name": "weather description",
+                            "type": "QString"
+                        },
+                        {
+                            "id": "af155e94-9492-44e1-8608-7d0ee8b5d50d",
+                            "name": "sunset [timestamp]",
+                            "type": "uint",
+                            "defaultValue": "0"
+                        },
+                        {
+                            "id": "a1dddc3d-549f-4f20-b78b-be850548f286",
+                            "name": "sunrise [unixtime]",
+                            "type": "int",
+                            "defaultValue": "0"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -35,12 +35,7 @@ class DevicePluginLircd: public DevicePlugin
 public:
     explicit DevicePluginLircd();
 
-    QList<Vendor> supportedVendors() const override;
-    QList<DeviceClass> supportedDevices() const override;
     DeviceManager::HardwareResources requiredHardware() const override;
-
-    QString pluginName() const override;
-    PluginId pluginId() const override;
 
 //    QVariantMap configuration() const override;
 //    void setConfiguration(const QVariantMap &configuration) override;

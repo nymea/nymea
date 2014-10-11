@@ -31,13 +31,7 @@ class DevicePluginIntertechno : public DevicePlugin
 public:
     explicit DevicePluginIntertechno();
 
-    QList<Vendor> supportedVendors() const override;
-    QList<DeviceClass> supportedDevices() const override;
     DeviceManager::HardwareResources requiredHardware() const override;
-
-    QString pluginName() const override;
-    PluginId pluginId() const override;
-
     void radioData(const QList<int> &rawData) override;
 
 public slots:

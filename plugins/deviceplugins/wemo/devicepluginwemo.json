@@ -1,1 +1,81 @@
-{}
+{
+    "name": "Wemo",
+    "id": "2e3b5ce0-ecf1-43de-98f0-07df4068a583",
+    "vendors": [
+        {
+            "name": "Belkin",
+            "id": "b241f7f5-8153-4a72-b260-f62beadc2d19",
+            "deviceClasses": [
+                {
+                    "deviceClassId": "69d97d3b-a8e6-42f3-afc0-ca8a53eb7cce",
+                    "name": "WeMo Switch",
+                    "createMethods": ["discovery"],
+                    "paramTypes": [
+                        {
+                            "name": "name",
+                            "type": "QString"
+                        },
+                        {
+                            "name": "uuid",
+                            "type": "QString"
+                        },
+                        {
+                            "name": "model",
+                            "type": "QString"
+                        },
+                        {
+                            "name": "host address",
+                            "type": "QString"
+                        },
+                        {
+                            "name": "port",
+                            "type": "int"
+                        },
+                        {
+                            "name": "model description",
+                            "type": "QString"
+                        },
+                        {
+                            "name": "serial number",
+                            "type": "QString"
+                        },
+                        {
+                            "name": "location",
+                            "type": "QString"
+                        },
+                        {
+                            "name": "manufacturer",
+                            "type": "QString"
+                        },
+                        {
+                            "name": "device type",
+                            "type": "QString"
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "7166c4f6-f68c-4188-8f7c-2205d72a5a6d",
+                            "name": "power",
+                            "type": "bool",
+                            "defaultValue": false
+                        },
+                        {
+                            "id": "ec2f5b49-585c-4455-a233-b7aa4c608dbc",
+                            "name": "reachable",
+                            "type": "bool",
+                            "defaultValue": false
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "269f25eb-d0b7-4144-b9ef-801f4ff3e90c",
+                            "name": "set power",
+                            "type": "bool",
+                            "defaultValue": true
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

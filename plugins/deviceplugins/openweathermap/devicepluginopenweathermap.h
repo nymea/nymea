@@ -35,16 +35,10 @@ public:
 
     OpenWeatherMap *m_openweaher;
 
-    QList<Vendor> supportedVendors() const override;
-    QList<DeviceClass> supportedDevices() const override;
-
     QPair<DeviceManager::DeviceError, QString> discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
     QPair<DeviceManager::DeviceSetupStatus, QString> setupDevice(Device *device) override;
     DeviceManager::HardwareResources requiredHardware() const override;
     QPair<DeviceManager::DeviceError, QString> executeAction(Device *device, const Action &action) override;
-
-    QString pluginName() const override;
-    PluginId pluginId() const override;
 
     void guhTimer() override;
 

@@ -29,11 +29,6 @@ pure virtual methods: \l{DevicePlugin::pluginName()}, \l{DevicePlugin::pluginId(
 */
 
 /*!
- \fn QString DevicePlugin::pluginName() const
- Return the name of the plugin. A String presented to the user.
- */
-
-/*!
  \fn QUuid DevicePlugin::pluginId() const
  When implementing a plugin, generate a new uuid and return it here. Always return the
  same uuid and don't change it or configurations can't be matched any more.
@@ -110,19 +105,117 @@ pure virtual methods: \l{DevicePlugin::pluginName()}, \l{DevicePlugin::pluginId(
 #include "hardware/radio433/radio433.h"
 
 #include <QDebug>
+#include <QFileInfo>
+#include <QFile>
+#include <QJsonArray>
 
 /*! DevicePlugin constructor. DevicePlugins will be instantiated by the DeviceManager, its \a parent. */
 DevicePlugin::DevicePlugin(QObject *parent):
-    QObject(parent),
-    m_deviceManager(0)
+    QObject(parent)
 {
-
 }
 
 /*! Virtual destructor... */
 DevicePlugin::~DevicePlugin()
 {
 
+}
+
+QString DevicePlugin::pluginName() const
+{
+    return m_metaData.value("name").toString();
+}
+
+PluginId DevicePlugin::pluginId() const
+{
+    return m_metaData.value("id").toString();
+}
+
+QList<Vendor> DevicePlugin::supportedVendors() const
+{
+    QList<Vendor> vendors;
+    foreach (const QJsonValue &vendorJson, m_metaData.value("vendors").toArray()) {
+        Vendor vendor(vendorJson.toObject().value("id").toString(), vendorJson.toObject().value("name").toString());
+        vendors.append(vendor);
+    }
+    return vendors;
+}
+
+QList<DeviceClass> DevicePlugin::supportedDevices() const
+{
+    QList<DeviceClass> deviceClasses;
+    foreach (const QJsonValue &vendorJson, m_metaData.value("vendors").toArray()) {
+        VendorId vendorId = vendorJson.toObject().value("id").toString();
+        foreach (const QJsonValue &deviceClassJson, vendorJson.toObject().value("deviceClasses").toArray()) {
+            QJsonObject jo = deviceClassJson.toObject();
+            DeviceClass deviceClass(pluginId(), vendorId, jo.value("deviceClassId").toString());
+            deviceClass.setName(jo.value("name").toString());
+            DeviceClass::CreateMethods createMethods;
+            foreach (const QJsonValue &createMethodValue, jo.value("createMethods").toArray()) {
+                if (createMethodValue.toString() == "discovery") {
+                    createMethods |= DeviceClass::CreateMethodDiscovery;
+                } else if (createMethodValue.toString() == "auto") {
+                    createMethods |= DeviceClass::CreateMethodAuto;
+                } else {
+                    createMethods |= DeviceClass::CreateMethodUser;
+                }
+            }
+            deviceClass.setCreateMethods(createMethods);
+
+            deviceClass.setDiscoveryParamTypes(parseParamTypes(jo.value("discoveryParamTypes").toArray()));
+            qDebug() << "loaded deviceClass" << deviceClass.discoveryParamTypes();
+
+            QString setupMethod = jo.value("setupMethod").toString();
+            if (setupMethod == "pushButton") {
+                deviceClass.setSetupMethod(DeviceClass::SetupMethodPushButton);
+            } else if (setupMethod == "displayPin") {
+                deviceClass.setSetupMethod(DeviceClass::SetupMethodDisplayPin);
+            } else if (setupMethod == "enterPin") {
+                deviceClass.setSetupMethod(DeviceClass::SetupMethodEnterPin);
+            } else {
+                deviceClass.setSetupMethod(DeviceClass::SetupMethodJustAdd);
+            }
+            deviceClass.setPairingInfo(jo.value("pairingInfo").toString());
+            deviceClass.setParamTypes(parseParamTypes(jo.value("paramTypes").toArray()));
+
+            QList<StateType> stateTypes;
+            qDebug() << "############### s" << jo;
+            foreach (const QJsonValue &stateTypesJson, jo.value("stateTypes").toArray()) {
+                QJsonObject st = stateTypesJson.toObject();
+                QVariant::Type t = QVariant::nameToType(st.value("type").toString().toLatin1().data());
+                StateType stateType(st.value("id").toString());
+                stateType.setName(st.value("name").toString());
+                stateType.setType(t);
+                stateType.setDefaultValue(st.value("defaultValue").toVariant());
+                stateTypes.append(stateType);
+            }
+            deviceClass.setStateTypes(stateTypes);
+
+            QList<ActionType> actionTypes;
+            foreach (const QJsonValue &actionTypesJson, jo.value("actionTypes").toArray()) {
+                QJsonObject at = actionTypesJson.toObject();
+                ActionType actionType(at.value("id").toString());
+                actionType.setName(at.value("name").toString());
+                actionType.setParamTypes(parseParamTypes(at.value("paramTypes").toArray()));
+                qDebug() << "***got actionType" << actionType.id();
+                actionTypes.append(actionType);
+            }
+            deviceClass.setActionTypes(actionTypes);
+
+            QList<EventType> eventTypes;
+            foreach (const QJsonValue &eventTypesJson, jo.value("eventTypes").toArray()) {
+                QJsonObject et = eventTypesJson.toObject();
+                EventType eventType(et.value("id").toString());
+                eventType.setName(et.value("name").toString());
+                eventType.setParamTypes(parseParamTypes(et.value("paramTypes").toArray()));
+                eventTypes.append(eventType);
+            }
+            deviceClass.setEventTypes(eventTypes);
+
+            deviceClasses.append(deviceClass);
+        }
+    }
+    return deviceClasses;
 }
 
 /*! Override this if your plugin supports Device with DeviceClass::CreationMethodAuto.
@@ -188,10 +281,34 @@ QList<ParamType> DevicePlugin::configurationDescription() const
 
 /*! This will be called when the DeviceManager initializes the plugin and set up the things behind the scenes.
     When implementing a new plugin, use \l{DevicePlugin::init()} instead in order to do initialisation work. */
-void DevicePlugin::initPlugin(DeviceManager *deviceManager)
+void DevicePlugin::initPlugin(const QJsonObject &metaData, DeviceManager *deviceManager)
 {
+    m_metaData = metaData;
     m_deviceManager = deviceManager;
     init();
+}
+
+QList<ParamType> DevicePlugin::parseParamTypes(const QJsonArray &array) const
+{
+    QList<ParamType> paramTypes;
+    foreach (const QJsonValue &paramTypesJson, array) {
+        QJsonObject pt = paramTypesJson.toObject();
+        QVariant::Type t = QVariant::nameToType(pt.value("type").toString().toLatin1().data());
+        Q_ASSERT_X(t != QVariant::Invalid,
+                   pluginName().toLatin1().data(),
+                   QString("Invalid type %1 for param %2 in json file.")
+                   .arg(pt.value("type").toString())
+                   .arg(pt.value("name").toString()).toLatin1().data());
+        ParamType paramType(pt.value("name").toString(), t, pt.value("defaultValue").toVariant());
+        QVariantList allowedValues;
+        foreach (const QJsonValue &allowedTypesJson, pt.value("allowedValues").toArray()) {
+            allowedValues.append(allowedTypesJson.toVariant());
+        }
+        paramType.setAllowedValues(allowedValues);
+        paramType.setLimits(pt.value("minValue").toVariant(), pt.value("maxValue").toVariant());
+        paramTypes.append(paramType);
+    }
+    return paramTypes;
 }
 
 /*!

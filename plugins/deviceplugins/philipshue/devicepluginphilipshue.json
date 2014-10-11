@@ -1,1 +1,78 @@
-{}
+{
+    "name": "Philips Hue",
+    "id": "5f2e634b-b7f3-48ee-976a-b5ae22aa5c55",
+    "vendors": [
+        {
+            "id": "0ae1e001-2aa6-47ed-b8c0-334c3728a68f",
+            "name": "Philips",
+            "deviceClasses": [
+                {
+                    "deviceClassId": "d8f4c397-e05e-47c1-8917-8e72d4d0d47c",
+                    "name": "Hue",
+                    "createMethods": ["discovery", "auto"],
+                    "setupMethod": "pushButton",
+                    "pairingInfo": "Please press the button on the Hue bridge and then press OK",
+                    "paramTypes": [
+                        {
+                            "name": "ip",
+                            "type" : "QString"
+                        },
+                        {
+                            "name": "username",
+                            "type" : "QString"
+                        },
+                        {
+                            "name": "lightId",
+                            "type" : "int"
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "15794d26-fde8-4a61-8f83-d7830534975f",
+                            "name": "reachable",
+                            "type": "bool"
+                        },
+                        {
+                            "id": "d25423e7-b924-4b20-80b6-77eecc65d089",
+                            "name": "color",
+                            "type": "color",
+                            "defaultValue": "black"
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "29cc299a-818b-47b2-817f-c5a6361545e4",
+                            "name": "Set color",
+                            "paramTypes": [
+                                {
+                                    "name": "color",
+                                    "type": "QColor"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "7782d91e-d73a-4321-8828-da768e2f6827",
+                            "name": "Set power",
+                            "paramTypes": [
+                                {
+                                    "name": "power",
+                                    "type": "bool"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "3bc95552-cba0-4222-abd5-9b668132e442",
+                            "name": "Set brightness",
+                            "paramTypes": [
+                                {
+                                    "name": "brightness",
+                                    "type": "int"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

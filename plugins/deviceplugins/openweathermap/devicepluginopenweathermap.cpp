@@ -278,7 +278,6 @@
 #include <QVariantMap>
 #include <QDateTime>
 
-VendorId openweathermapVendorId = VendorId("bf1e96f0-9650-4e7c-a56c-916d54d18e7a");
 DeviceClassId openweathermapDeviceClassId = DeviceClassId("985195aa-17ad-4530-88a4-cdd753d747d7");
 
 ActionTypeId updateWeatherActionTypeId = ActionTypeId("cfbc6504-d86f-4856-8dfa-97b6fbb385e4");
@@ -302,125 +301,6 @@ DevicePluginOpenweathermap::DevicePluginOpenweathermap()
     m_openweaher = new OpenWeatherMap(this);
     connect(m_openweaher, SIGNAL(searchResultReady(QList<QVariantMap>)), this, SLOT(searchResultsReady(QList<QVariantMap>)));
     connect(m_openweaher, SIGNAL(weatherDataReady(QByteArray)), this, SLOT(weatherDataReady(QByteArray)));
-}
-
-QList<Vendor> DevicePluginOpenweathermap::supportedVendors() const
-{
-    QList<Vendor> ret;
-    Vendor openweathermap(openweathermapVendorId, "Openweathermap");
-    ret.append(openweathermap);
-    return ret;
-}
-
-QList<DeviceClass> DevicePluginOpenweathermap::supportedDevices() const
-{
-    QList<DeviceClass> ret;
-
-    DeviceClass deviceClassOpenweathermap(pluginId(), openweathermapVendorId, openweathermapDeviceClassId);
-    deviceClassOpenweathermap.setName("Weather from openweathermap.org");
-    deviceClassOpenweathermap.setCreateMethod(DeviceClass::CreateMethodDiscovery);
-
-    // Params
-    QList<ParamType> params;
-    ParamType locationParam("location", QVariant::String);
-    params.append(locationParam);
-
-    //Location is all we need for discovery.
-    deviceClassOpenweathermap.setDiscoveryParamTypes(params);
-
-    ParamType countryParam("country", QVariant::String);
-    params.append(countryParam);
-
-    ParamType idParam("id", QVariant::String);
-    params.append(idParam);
-
-    deviceClassOpenweathermap.setParamTypes(params);
-
-    // Actions
-    QList<ActionType> weatherActions;
-    ActionType updateWeather(updateWeatherActionTypeId);
-    updateWeather.setName("refresh");
-    weatherActions.append(updateWeather);
-
-    // States
-    QList<StateType> weatherStates;
-    StateType updateTimeState(updateTimeStateTypeId);
-    updateTimeState.setName("last update [unixtime]");
-    updateTimeState.setType(QVariant::UInt);
-    updateTimeState.setDefaultValue(0);
-    weatherStates.append(updateTimeState);
-
-    StateType temperatureState(temperatureStateTypeId);
-    temperatureState.setName("temperature [Celsius]");
-    temperatureState.setType(QVariant::Double);
-    temperatureState.setDefaultValue(-999.9);
-    weatherStates.append(temperatureState);
-
-    StateType temperatureMinState(temperatureMinStateTypeId);
-    temperatureMinState.setName("temperature minimum [Celsius]");
-    temperatureMinState.setType(QVariant::Double);
-    temperatureMinState.setDefaultValue(-999.9);
-    weatherStates.append(temperatureMinState);
-
-    StateType temperatureMaxState(temperatureMaxStateTypeId);
-    temperatureMaxState.setName("temperature maximum [Celsius]");
-    temperatureMaxState.setType(QVariant::Double);
-    temperatureMaxState.setDefaultValue(999.9);
-    weatherStates.append(temperatureMaxState);
-
-    StateType humidityState(humidityStateTypeId);
-    humidityState.setName("humidity [%]");
-    humidityState.setType(QVariant::Int);
-    humidityState.setDefaultValue(-1);
-    weatherStates.append(humidityState);
-
-    StateType pressureState(pressureStateTypeId);
-    pressureState.setName("pressure [hPa]");
-    pressureState.setType(QVariant::Double);
-    pressureState.setDefaultValue(-1);
-    weatherStates.append(pressureState);
-
-    StateType windSpeedState(windSpeedStateTypeId);
-    windSpeedState.setName("wind speed [m/s]");
-    windSpeedState.setType(QVariant::Double);
-    windSpeedState.setDefaultValue(-1);
-    weatherStates.append(windSpeedState);
-
-    StateType windDirectionState(windDirectionStateTypeId);
-    windDirectionState.setName("wind direction [degree]");
-    windDirectionState.setType(QVariant::Int);
-    windDirectionState.setDefaultValue(-1);
-    weatherStates.append(windDirectionState);
-
-    StateType cloudinessState(cloudinessStateTypeId);
-    cloudinessState.setName("cloudiness [%]");
-    cloudinessState.setType(QVariant::Int);
-    cloudinessState.setDefaultValue(-1);
-    weatherStates.append(cloudinessState);
-
-    StateType weatherDescriptionState(weatherDescriptionStateTypeId);
-    weatherDescriptionState.setName("weather description");
-    weatherDescriptionState.setType(QVariant::String);
-    weatherDescriptionState.setDefaultValue("");
-    weatherStates.append(weatherDescriptionState);
-
-    StateType sunsetState(sunsetStateTypeId);
-    sunsetState.setName("sunset [unixtime]");
-    sunsetState.setType(QVariant::UInt);
-    sunsetState.setDefaultValue(0);
-    weatherStates.append(sunsetState);
-
-    StateType sunriseState(sunriseStateTypeId);
-    sunriseState.setName("sunrise [unixtime]");
-    sunriseState.setType(QVariant::UInt);
-    sunriseState.setDefaultValue(0);
-    weatherStates.append(sunriseState);
-
-    deviceClassOpenweathermap.setActions(weatherActions);
-    deviceClassOpenweathermap.setStateTypes(weatherStates);
-
-    ret.append(deviceClassOpenweathermap);
-    return ret;
 }
 
 QPair<DeviceManager::DeviceError, QString> DevicePluginOpenweathermap::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
@@ -467,16 +347,6 @@ QPair<DeviceManager::DeviceError, QString> DevicePluginOpenweathermap::executeAc
         m_openweaher->update(device->paramValue("id").toString());
     }
     return report();
-}
-
-QString DevicePluginOpenweathermap::pluginName() const
-{
-    return "Openweathermap";
-}
-
-PluginId DevicePluginOpenweathermap::pluginId() const
-{
-    return PluginId("bc6af567-2338-41d5-aac1-462dec6e4783");
 }
 
 void DevicePluginOpenweathermap::guhTimer()

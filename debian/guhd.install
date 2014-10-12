@@ -1,2 +1,2 @@
 usr/bin/guhd
-data/init/guhd /etc/init.d/
+data/init/* /etc/init.d

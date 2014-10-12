@@ -2,7 +2,7 @@ include(../guh.pri)
 
 message("Building guh version $${GUH_VERSION_STRING}")
 
-TARGET = guh
+TARGET = guhd
 TEMPLATE = app
 
 INCLUDEPATH += ../libguh jsonrpc

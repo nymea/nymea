@@ -10,6 +10,18 @@ Build-Depends: debhelper (>= 9.0.0),
 Standards-Version: 3.9.5
 
 Package: guh
+Architecture: all
+Depends: guh (= ${binary:Version}),
+  guh-plugins (= ${binary:Version}),
+Description: server for home automation systems - meta package
+ 'Gear Up your Home!' - Home automation server.
+ guh is a home automation system aiming for easy integration of various
+ existing home automation and controlling devices into a fully automated
+ system.
+ This meta package installs the guh daemon and the main plugins.
+
+
+Package: guhd
 Architecture: any
 Depends: libqt5network5,
   libqt5gui5,

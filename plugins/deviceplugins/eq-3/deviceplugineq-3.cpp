@@ -249,6 +249,7 @@ QList<ParamType> DevicePluginEQ3::configurationDescription() const
 
 DeviceManager::DeviceError DevicePluginEQ3::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
 {
+    Q_UNUSED(params)
     if(deviceClassId == cubeDeviceClassId){
         m_cubeDiscovery->detectCubes();
         return DeviceManager::DeviceErrorAsync;

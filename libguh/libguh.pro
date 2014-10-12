@@ -3,8 +3,6 @@ include(../guh.pri)
 TARGET = guh
 TEMPLATE = lib
 
-CONFIG += c++11
-
 QT += network
 
 target.path = /usr/lib

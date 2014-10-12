@@ -1,5 +1,5 @@
 QT += testlib network
-CONFIG += testcase c++11
+CONFIG += testcase
 
 include($$top_srcdir/server/server.pri)
 

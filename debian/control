@@ -11,6 +11,7 @@ Standards-Version: 3.9.5
 
 Package: guh
 Architecture: all
+Section: misc
 Depends: guh (= ${binary:Version}),
   guh-plugins (= ${binary:Version}),
 Description: server for home automation systems - meta package
@@ -19,7 +20,6 @@ Description: server for home automation systems - meta package
  existing home automation and controlling devices into a fully automated
  system.
  This meta package installs the guh daemon and the main plugins.
-
 
 Package: guhd
 Architecture: any
@@ -33,7 +33,6 @@ Description: server for home automation systems
  guh is a home automation system aiming for easy integration of various
  existing home automation and controlling devices into a fully automated
  system.
-
 
 Package: guh-dbg
 Priority: extra

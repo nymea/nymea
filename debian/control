@@ -95,6 +95,7 @@ Package: guh-plugins
 Section: libs
 Architecture: any
 Depends: libguh1 (= ${binary:Version}),
+  guhd (= ${binary:Version}),
   ${shlibs:Depends},
   ${misc:Depends}
 Description: server for home automation systems - plugins

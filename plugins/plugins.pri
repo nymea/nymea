@@ -1,7 +1,7 @@
 include(../guh.pri)
 
 TEMPLATE = lib
-CONFIG += plugin static c++11
+CONFIG += plugin static
 
 INCLUDEPATH += ../../../libguh
 LIBS += -L../../../libguh -lguh

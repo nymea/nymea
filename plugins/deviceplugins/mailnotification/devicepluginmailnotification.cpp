@@ -247,6 +247,7 @@ DevicePluginMailNotification::~DevicePluginMailNotification()
 
 DeviceManager::DeviceSetupStatus DevicePluginMailNotification::setupDevice(Device *device)
 {
+    Q_UNUSED(device)
     // Google mail
 //    if(device->deviceClassId() == googleMailDeviceClassId){
 //        m_smtpClient->setConnectionType(SmtpClient::SslConnection);

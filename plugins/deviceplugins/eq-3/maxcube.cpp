@@ -881,6 +881,7 @@ void MaxCube::setDeviceEcoMode(QByteArray rfAddress, int roomId, ActionId action
 
 void MaxCube::displayCurrentTemperature(QByteArray rfAddress, int roomId, bool display, ActionId actionId)
 {
+    Q_UNUSED(roomId)
     m_actionId = actionId;
     if(!isConnected() || !isInitialized()){
         emit commandActionFinished(false,m_actionId);

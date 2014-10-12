@@ -148,6 +148,7 @@ DevicePluginWemo::DevicePluginWemo()
 
 DeviceManager::DeviceError DevicePluginWemo::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
 {
+    Q_UNUSED(params)
     if(deviceClassId != wemoSwitchDeviceClassId){
         return DeviceManager::DeviceErrorDeviceClassNotFound;
     }

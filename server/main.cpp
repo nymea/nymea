@@ -21,25 +21,6 @@
 
 #include <QtPlugin>
 
-Q_IMPORT_PLUGIN(DevicePluginElro)
-Q_IMPORT_PLUGIN(DevicePluginIntertechno)
-//Q_IMPORT_PLUGIN(DevicePluginMeisterAnker)
-Q_IMPORT_PLUGIN(DevicePluginWifiDetector)
-Q_IMPORT_PLUGIN(DevicePluginConrad)
-Q_IMPORT_PLUGIN(DevicePluginMock)
-Q_IMPORT_PLUGIN(DevicePluginOpenweathermap)
-Q_IMPORT_PLUGIN(DevicePluginLircd)
-Q_IMPORT_PLUGIN(DevicePluginWakeOnLan)
-Q_IMPORT_PLUGIN(DevicePluginMailNotification)
-Q_IMPORT_PLUGIN(DevicePluginPhilipsHue)
-Q_IMPORT_PLUGIN(DevicePluginEQ3)
-Q_IMPORT_PLUGIN(DevicePluginWemo)
-Q_IMPORT_PLUGIN(DevicePluginLgSmartTv)
-
-#if USE_BOBLIGHT
-Q_IMPORT_PLUGIN(DevicePluginBoblight)
-#endif
-
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);

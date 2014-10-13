@@ -10,6 +10,18 @@ Build-Depends: debhelper (>= 9.0.0),
 Standards-Version: 3.9.5
 
 Package: guh
+Architecture: all
+Section: misc
+Depends: guh (= ${binary:Version}),
+  guh-plugins (= ${binary:Version}),
+Description: server for home automation systems - meta package
+ 'Gear Up your Home!' - Home automation server.
+ guh is a home automation system aiming for easy integration of various
+ existing home automation and controlling devices into a fully automated
+ system.
+ This meta package installs the guh daemon and the main plugins.
+
+Package: guhd
 Architecture: any
 Depends: libqt5network5,
   libqt5gui5,
@@ -17,26 +29,21 @@ Depends: libqt5network5,
   ${shlibs:Depends},
   ${misc:Depends}
 Description: server for home automation systems
- guh stands for 'Gear Up your Home!' and provide a WebGUI and configuration
- for various systems that provide home and house automations. It's
- expandable with plugins for a greater functionality.
- .
- It supports systems like ZigBee, Z-Wave, KNX/EIB, FS20, EnOcean and other.
+ 'Gear Up your Home!' - Home automation server.
+ guh is a home automation system aiming for easy integration of various
+ existing home automation and controlling devices into a fully automated
+ system.
 
 Package: guh-dbg
 Priority: extra
 Architecture: any
 Section: debug
 Depends: guh (= ${binary:Version}), ${misc:Depends}
-Description: server for home automation systems
- guh stands for 'Gear Up your Home!' and provide a WebGUI and configuration
- for various systems that provide home and house automations. It's
- expandable with plugins for a greater functionality.
- .
- It supports systems like ZigBee, Z-Wave, KNX/EIB, FS20, EnOcean and other.
- .
- This package contains debuging symbols, install this package if you have to
- debug something or have to make a backtrace after a crash.
+Description: server for home automation systems - debug symbols
+ 'Gear Up your Home!' - Home automation server.
+ guh is a home automation system aiming for easy integration of various
+ existing home automation and controlling devices into a fully automated
+ system.
 
 Package: guh-doc
 Section: doc
@@ -44,14 +51,10 @@ Architecture: all
 Depends: ${misc:Depends}
 Recommends: guh (= ${binary:Version})
 Description: documentation for the guh package (on-site)
- guh stands for 'Gear Up your Home!' and provide a WebGUI and configuration
- for various systems that provide home and house automations. It's
- expandable with plugins for a greater functionality.
- .
- It supports systems like ZigBee, Z-Wave, KNX/EIB, FS20, EnOcean and other.
- .
- This package contains documentation for the API and ABI like C++ headers,
- classes, versions and other useful information.
+ 'Gear Up your Home!' - Home automation server.
+ guh is a home automation system aiming for easy integration of various
+ existing home automation and controlling devices into a fully automated
+ system.
 
 Package: guh-tests
 Architecture: any
@@ -59,27 +62,21 @@ Depends: guh (= ${binary:Version}),
   ${shlibs:Depends},
   ${misc:Depends}
 Description: tests for the guh package
- guh stands for 'Gear Up your Home!' and provide a WebGUI and configuration
- for various systems that provide home and house automations. It's
- expandable with plugins for a greater functionality.
- .
- It supports systems like ZigBee, Z-Wave, KNX/EIB, FS20, EnOcean and other.
- .
- This package contains some tests for the guh core.
+ 'Gear Up your Home!' - Home automation server.
+ guh is a home automation system aiming for easy integration of various
+ existing home automation and controlling devices into a fully automated
+ system.
 
 Package: libguh1
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends},
   ${misc:Depends}
-Description: server for home automation systems
- guh stands for 'Gear Up your Home!' and provide a WebGUI and configuration
- for various systems that provide home and house automations. It's
- expandable with plugins for a greater functionality.
- .
- It supports systems like ZigBee, Z-Wave, KNX/EIB, FS20, EnOcean and other.
- .
- This package contains the guh library.
+Description: server for home automation systems - core library
+ 'Gear Up your Home!' - Home automation server.
+ guh is a home automation system aiming for easy integration of various
+ existing home automation and controlling devices into a fully automated
+ system.
 
 Package: libguh1-dev
 Section: libdevel
@@ -87,11 +84,21 @@ Architecture: any
 Depends: libguh1 (= ${binary:Version}),
   ${shlibs:Depends},
   ${misc:Depends}
-Description: server for home automation systems
- guh stands for 'Gear Up your Home!' and provide a WebGUI and configuration
- for various systems that provide home and house automations. It's
- expandable with plugins for a greater functionality.
- .
- It supports systems like ZigBee, Z-Wave, KNX/EIB, FS20, EnOcean and other.
- .
- This package contains the guh devloper library links.
+Description: server for home automation systems - development files
+ 'Gear Up your Home!' - Home automation server.
+ guh is a home automation system aiming for easy integration of various
+ existing home automation and controlling devices into a fully automated
+ system.
+
+Package: guh-plugins
+Section: libs
+Architecture: any
+Depends: libguh1 (= ${binary:Version}),
+  guhd (= ${binary:Version}),
+  ${shlibs:Depends},
+  ${misc:Depends}
+Description: server for home automation systems - plugins
+ 'Gear Up your Home!' - Home automation server.
+ guh is a home automation system aiming for easy integration of various
+ existing home automation and controlling devices into a fully automated
+ system.

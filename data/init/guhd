@@ -25,7 +25,7 @@ DESC="guh daemon"
 case "$1" in
   start)
         log_daemon_msg "Starting guh daemon" "guh" || true
-        if start-stop-daemon --start --background --quiet --oknodo -m --pidfile /var/run/guh.pid --exec /usr/bin/guh -- $GUH_OPTS; then
+        if start-stop-daemon --start --background --quiet --oknodo -m --pidfile /var/run/guh.pid --exec /usr/bin/guhd -- $GUH_OPTS; then
             log_end_msg 0 || true
         else
             log_end_msg 1 || true
@@ -33,7 +33,7 @@ case "$1" in
         ;;
   stop)
         log_daemon_msg "Stopping guh daemon" "guh" || true
-        if start-stop-daemon --stop --quiet --oknodo --pidfile /var/run/guh.pid; then
+        if start-stop-daemon --stop --quiet --oknodo --pidfile /var/run/guhd.pid; then
             log_end_msg 0 || true
         else
             log_end_msg 1 || true
@@ -44,10 +44,10 @@ case "$1" in
         check_privsep_dir
         check_config
         log_daemon_msg "Restarting guh daemon" "guh" || true
-        start-stop-daemon --stop --quiet --oknodo --retry 30 --pidfile /var/run/guh.pid
+        start-stop-daemon --stop --quiet --oknodo --retry 30 --pidfile /var/run/guhd.pid
         check_for_no_start log_end_msg
         check_dev_null log_end_msg
-        if start-stop-daemon --start --background --quiet --oknodo -m --pidfile /var/run/guh.pid --exec /usr/bin/guh -- $GUH_OPTS; then
+        if start-stop-daemon --start --background --quiet --oknodo -m --pidfile /var/run/guhd.pid --exec /usr/bin/guhd -- $GUH_OPTS; then
             log_end_msg 0 || true
         else
             log_end_msg 1 || true

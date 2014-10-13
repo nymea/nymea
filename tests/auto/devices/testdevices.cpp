@@ -71,8 +71,14 @@ void TestDevices::getPlugins()
 
     QVariantList plugins = response.toMap().value("params").toMap().value("plugins").toList();
 
-    QCOMPARE(plugins.count(), 1);
-    QCOMPARE(PluginId(plugins.first().toMap().value("id").toString()), mockPluginId);
+    QCOMPARE(plugins.count() > 0, true);
+    bool found = false;
+    foreach (const QVariant &listEntry, plugins) {
+        if (PluginId(listEntry.toMap().value("id").toString()) == mockPluginId) {
+            found = true;
+        }
+    }
+    QCOMPARE(found, true);
 }
 
 void TestDevices::getPluginConfig_data()
@@ -144,9 +150,14 @@ void TestDevices::getSupportedVendors()
 
     // Make sure there is exactly 1 supported Vendor named "guh"
     QVariantList vendorList = supportedVendors.toMap().value("params").toMap().value("vendors").toList();
-    QCOMPARE(vendorList.count(), 1);
-    VendorId vendorId = VendorId(vendorList.first().toMap().value("id").toString());
-    QCOMPARE(vendorId, guhVendorId);
+    QCOMPARE(vendorList.count() > 0, true);
+    bool found = false;
+    foreach (const QVariant &listEntry, vendorList) {
+        if (VendorId(listEntry.toMap().value("id").toString()) == guhVendorId) {
+            found = true;
+        }
+    }
+    QCOMPARE(found, true);
 }
 
 void TestDevices::getSupportedDevices_data()
@@ -168,13 +179,19 @@ void TestDevices::getSupportedDevices()
     if (!vendorId.isNull()) {
         params.insert("vendorId", vendorId);
     }
-    QVariant supportedDevices = injectAndWait("Devices.GetSupportedDevices", params);
+    QVariant result = injectAndWait("Devices.GetSupportedDevices", params);
 
+    QVariantList supportedDevices = result.toMap().value("params").toMap().value("deviceClasses").toList();
     // Make sure there are the right amount of supported device classes with the name Mock Device
-    QCOMPARE(supportedDevices.toMap().value("params").toMap().value("deviceClasses").toList().count(), resultCount);
+    QCOMPARE(supportedDevices.count() >= resultCount, true);
     if (resultCount > 0) {
-        QString deviceName = supportedDevices.toMap().value("params").toMap().value("deviceClasses").toList().first().toMap().value("name").toString();
-        QVERIFY2(deviceName.startsWith(QString("Mock Device")), QString("Got: %1  Expected: %2").arg(deviceName).arg("Mock Device").toLatin1().data());
+        bool found = false;
+        foreach (const QVariant &listEntry, supportedDevices) {
+            if (listEntry.toMap().value("name").toString().startsWith("Mock Device")) {
+                found = true;
+            }
+        }
+        QVERIFY2(found, "Mock Device not found");
     }
 }
 

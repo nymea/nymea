@@ -1,68 +1,64 @@
-5
+6
 {
     "methods": {
         "Actions.ExecuteAction": {
             "description": "Execute a single action.",
             "params": {
-                "actionTypeId": "uuid",
-                "deviceId": "uuid",
+                "actionTypeId": "Uuid",
+                "deviceId": "Uuid",
                 "o:params": [
                     "$ref:Param"
                 ]
             },
             "returns": {
-                "errorMessage": "string",
-                "success": "bool"
+                "deviceError": "$ref:DeviceError"
             }
         },
         "Actions.GetActionType": {
             "description": "Get the ActionType for the given ActionTypeId",
             "params": {
-                "actionTypeId": "uuid"
+                "actionTypeId": "Uuid"
             },
             "returns": {
-                "errorMessage": "string",
+                "deviceError": "$ref:DeviceError",
                 "o:actionType": {
-                    "id": "uuid",
-                    "name": "string",
+                    "id": "Uuid",
+                    "name": "Uuid",
                     "paramTypes": [
                         "$ref:ParamType"
                     ]
-                },
-                "success": "bool"
+                }
             }
         },
         "Devices.AddConfiguredDevice": {
             "description": "Add a configured device with a setupMethod of SetupMethodJustAdd. For devices with a setupMethod different than SetupMethodJustAdd, use PairDevice. Use deviceDescriptorId or deviceParams, depending on the createMethod of the device class. CreateMethodJustAdd takes the parameters you want to have with that device. CreateMethodDiscovery requires the use of a deviceDescriptorId.",
             "params": {
-                "deviceClassId": "uuid",
-                "o:deviceDescriptorId": "uuid",
+                "deviceClassId": "Uuid",
+                "o:deviceDescriptorId": "Uuid",
                 "o:deviceParams": [
                     "$ref:Param"
                 ]
             },
             "returns": {
-                "errorMessage": "string",
-                "o:deviceId": "uuid",
-                "success": "bool"
+                "deviceError": "$ref:DeviceError",
+                "o:deviceId": "Uuid"
             }
         },
         "Devices.ConfirmPairing": {
             "description": "Confirm an ongoing pairing. In case of SetupMethodEnterPin also provide the pin in the params.",
             "params": {
-                "o:secret": "string",
-                "pairingTransactionId": "uuid"
+                "o:secret": "String",
+                "pairingTransactionId": "Uuid"
             },
             "returns": {
-                "errorMessage": "string",
-                "o:deviceId": "uuid",
-                "success": "bool"
+                "deviceError": "$ref:DeviceError",
+                "o:deviceId": "Uuid"
             }
         },
         "Devices.GetActionTypes": {
             "description": "Get action types for a specified deviceClassId.",
             "params": {
-                "deviceClassId": "uuid"
+                "deviceClassId": "Uuid"
             },
             "returns": {
                 "actionTypes": [
@@ -83,23 +79,22 @@
         "Devices.GetDiscoveredDevices": {
             "description": "Performs a device discovery and returns the results. This function may take a while to return.",
             "params": {
-                "deviceClassId": "uuid",
+                "deviceClassId": "Uuid",
                 "o:discoveryParams": [
                     "$ref:Param"
                 ]
             },
             "returns": {
-                "errorMessage": "string",
+                "deviceError": "$ref:DeviceError",
                 "o:deviceDescriptors": [
                     "$ref:DeviceDescriptor"
-                ],
-                "success": "bool"
+                ]
             }
         },
         "Devices.GetEventTypes": {
             "description": "Get event types for a specified deviceClassId.",
             "params": {
-                "deviceClassId": "uuid"
+                "deviceClassId": "Uuid"
             },
             "returns": {
                 "eventTypes": [
@@ -110,14 +105,13 @@
         "Devices.GetPluginConfiguration": {
             "description": "Get a plugin's params.",
             "params": {
-                "pluginId": "uuid"
+                "pluginId": "Uuid"
             },
             "returns": {
-                "errorMessage": "string",
+                "deviceError": "$ref:DeviceError",
                 "o:configuration": [
                     "$ref:Param"
-                ],
-                "success": "bool"
+                ]
             }
         },
         "Devices.GetPlugins": {
@@ -133,7 +127,7 @@
         "Devices.GetStateTypes": {
             "description": "Get state types for a specified deviceClassId.",
             "params": {
-                "deviceClassId": "uuid"
+                "deviceClassId": "Uuid"
             },
             "returns": {
                 "stateTypes": [
@@ -144,19 +138,18 @@
         "Devices.GetStateValue": {
             "description": "Get the value of the given device and the given stateType",
             "params": {
-                "deviceId": "uuid",
-                "stateTypeId": "uuid"
+                "deviceId": "Uuid",
+                "stateTypeId": "Uuid"
             },
             "returns": {
-                "errorMessage": "string",
-                "o:value": "variant",
-                "success": "bool"
+                "deviceError": "$ref:DeviceError",
+                "o:value": "Variant"
             }
         },
         "Devices.GetSupportedDevices": {
             "description": "Returns a list of supported Device classes, optionally filtered by vendorId.",
             "params": {
-                "o:vendorId": "uuid"
+                "o:vendorId": "Uuid"
             },
             "returns": {
                 "deviceClasses": [
@@ -177,34 +170,32 @@
         "Devices.PairDevice": {
             "description": "Pair a device. Use this for DeviceClasses with a setupMethod different than SetupMethodJustAdd.Use deviceDescriptorId or deviceParams, depending on the createMethod of the device class. CreateMethodJustAdd takes the parameters you want to have with that device. CreateMethodDiscovery requires the use of a deviceDescriptorId. If success is true, the return values will contain a pairingTransactionId, a displayMessage and the setupMethod. Depending on the setupMethod you should either proceed with AddConfiguredDevice  or PairDevice.",
             "params": {
-                "deviceClassId": "uuid",
-                "o:deviceDescriptorId": "uuid",
+                "deviceClassId": "Uuid",
+                "o:deviceDescriptorId": "Uuid",
                 "o:deviceParams": [
                     "$ref:Param"
                 ]
             },
             "returns": {
-                "errorMessage": "string",
-                "o:displayMessage": "string",
-                "o:pairingTransactionId": "uuid",
-                "o:setupMethod": "$ref:SetupMethodType",
-                "success": "bool"
+                "deviceError": "$ref:DeviceError",
+                "o:displayMessage": "String",
+                "o:pairingTransactionId": "Uuid",
+                "o:setupMethod": "$ref:SetupMethod"
             }
         },
         "Devices.RemoveConfiguredDevice": {
             "description": "Remove a device from the system.",
             "params": {
-                "deviceId": "uuid",
+                "deviceId": "Uuid",
                 "o:removePolicyList": [
                     {
-                        "policy": "$ref:RemovePolicyType",
-                        "ruleId": "uuid"
+                        "policy": "$ref:RemovePolicy",
+                        "ruleId": "Uuid"
                     }
                 ]
             },
             "returns": {
-                "errorMessage": "string",
-                "success": "bool"
+                "deviceError": "$ref:DeviceError"
             }
         },
         "Devices.SetPluginConfiguration": {
@@ -213,11 +204,10 @@
                 "configuration": [
                     "$ref:Param"
                 ],
-                "pluginId": "uuid"
+                "pluginId": "Uuid"
             },
             "returns": {
-                "errorMessage": "string",
-                "success": "bool"
+                "deviceError": "$ref:DeviceError"
             }
         },
         "JSONRPC.Introspect": {
@@ -225,19 +215,17 @@
             "params": {
             },
             "returns": {
-                "methods": "object",
-                "types": "object"
+                "methods": "Object",
+                "types": "Object"
             }
         },
         "JSONRPC.SetNotificationStatus": {
             "description": "Enable/Disable notifications for this connections.",
             "params": {
-                "enabled": "bool"
+                "enabled": "Bool"
             },
             "returns": {
-                "enabled": "bool",
-                "errorMessage": "string",
-                "success": "bool"
+                "enabled": "Bool"
             }
         },
         "JSONRPC.Version": {
@@ -245,12 +233,12 @@
             "params": {
             },
             "returns": {
-                "protocol version": "string",
-                "version": "string"
+                "protocol version": "String",
+                "version": "String"
             }
         },
         "Rules.AddRule": {
-            "description": "Add a rule.",
+            "description": "Add a rule. You can describe rules by one or many EventDesciptors and a StateEvaluator. Note that onlyone of either eventDescriptor or eventDescriptorList may be passed at a time.",
             "params": {
                 "actions": [
                     "$ref:Action"
@@ -262,26 +250,25 @@
                 "o:stateEvaluator": "$ref:StateEvaluator"
             },
             "returns": {
-                "errorMessage": "string",
-                "o:ruleId": "uuid",
-                "success": "bool"
+                "o:ruleId": "Uuid",
+                "ruleError": "$ref:RuleError"
             }
         },
         "Rules.FindRules": {
             "description": "Find a list of rules containing any of the given parameters.",
             "params": {
-                "deviceId": "uuid"
+                "deviceId": "Uuid"
             },
             "returns": {
                 "ruleIds": [
-                    "uuid"
+                    "Uuid"
                 ]
             }
         },
         "Rules.GetRuleDetails": {
             "description": "Get details for the rule identified by ruleId",
             "params": {
-                "ruleId": "uuid"
+                "ruleId": "Uuid"
             },
             "returns": {
                 "rule": "$ref:Rule"
@@ -293,18 +280,17 @@
             },
             "returns": {
                 "ruleIds": [
-                    "uuid"
+                    "Uuid"
                 ]
             }
         },
         "Rules.RemoveRule": {
             "description": "Remove a rule",
             "params": {
-                "ruleId": "uuid"
+                "ruleId": "Uuid"
             },
             "returns": {
-                "errorMessage": "string",
-                "success": "bool"
+                "ruleError": "$ref:RuleError"
             }
         }
     },
@@ -312,9 +298,9 @@
         "Devices.StateChanged": {
             "description": "Emitted whenever a State of a device changes.",
             "params": {
-                "deviceId": "uuid",
-                "stateTypeId": "uuid",
-                "variant": "value"
+                "deviceId": "Uuid",
+                "stateTypeId": "Uuid",
+                "value": "Variant"
             }
         },
         "Events.EventTriggered": {
@@ -326,115 +312,133 @@
     },
     "types": {
         "Action": {
-            "actionTypeId": "uuid",
-            "deviceId": "uuid",
+            "actionTypeId": "Uuid",
+            "deviceId": "Uuid",
             "o:params": [
                 "$ref:Param"
             ]
         },
         "ActionType": {
-            "id": "uuid",
-            "name": "string",
+            "id": "Uuid",
+            "name": "Uuid",
             "paramTypes": [
                 "$ref:ParamType"
             ]
         },
         "BasicType": [
-            "uuid",
-            "string",
-            "integer",
-            "double",
-            "bool"
         ],
-        "CreateMethodType": [
+        "CreateMethod": [
             "CreateMethodUser",
             "CreateMethodAuto",
             "CreateMethodDiscovery"
         ],
         "Device": {
-            "deviceClassId": "uuid",
-            "id": "uuid",
-            "name": "string",
+            "deviceClassId": "Uuid",
+            "id": "Uuid",
+            "name": "String",
             "params": [
                 "$ref:Param"
             ],
-            "setupComplete": "bool"
+            "setupComplete": "Bool"
         },
         "DeviceClass": {
             "actionTypes": [
                 "$ref:ActionType"
             ],
-            "createMethods": "$ref:CreateMethodType",
+            "createMethods": [
+                "$ref:CreateMethod"
+            ],
             "discoveryParamTypes": [
                 "$ref:ParamType"
             ],
             "eventTypes": [
                 "$ref:EventType"
             ],
-            "id": "uuid",
-            "name": "string",
+            "id": "Uuid",
+            "name": "String",
             "paramTypes": [
                 "$ref:ParamType"
             ],
-            "setupMethod": "$ref:SetupMethodType",
+            "setupMethod": "$ref:SetupMethod",
             "stateTypes": [
                 "$ref:StateType"
             ],
-            "vendorId": "uuid"
+            "vendorId": "Uuid"
         },
         "DeviceDescriptor": {
-            "description": "string",
-            "id": "uuid",
-            "title": "string"
+            "description": "String",
+            "id": "Uuid",
+            "title": "String"
         },
+        "DeviceError": [
+            "DeviceErrorNoError",
+            "DeviceErrorPluginNotFound",
+            "DeviceErrorDeviceNotFound",
+            "DeviceErrorDeviceClassNotFound",
+            "DeviceErrorActionTypeNotFound",
+            "DeviceErrorStateTypeNotFound",
+            "DeviceErrorEventTypeNotFound",
+            "DeviceErrorDeviceDescriptorNotFound",
+            "DeviceErrorMissingParameter",
+            "DeviceErrorInvalidParameter",
+            "DeviceErrorSetupFailed",
+            "DeviceErrorDuplicateUuid",
+            "DeviceErrorCreationMethodNotSupported",
+            "DeviceErrorSetupMethodNotSupported",
+            "DeviceErrorHardwareNotAvailable",
+            "DeviceErrorHardwareFailure",
+            "DeviceErrorAsync",
+            "DeviceErrorDeviceInUse",
+            "DeviceErrorPairingTransactionIdNotFound"
+        ],
         "Event": {
-            "deviceId": "uuid",
-            "eventTypeId": "uuid",
+            "deviceId": "Uuid",
+            "eventTypeId": "Uuid",
             "o:params": [
                 "$ref:Param"
             ]
         },
         "EventDescriptor": {
-            "deviceId": "uuid",
-            "eventTypeId": "uuid",
+            "deviceId": "Uuid",
+            "eventTypeId": "Uuid",
             "o:paramDescriptors": [
                 "$ref:ParamDescriptor"
             ]
         },
         "EventType": {
-            "id": "uuid",
-            "name": "string",
+            "id": "Uuid",
+            "name": "String",
             "paramTypes": [
                 "$ref:ParamType"
             ]
         },
         "Param": {
-            "name": "string",
+            "name": "String",
             "value": "$ref:BasicType"
         },
         "ParamDescriptor": {
-            "name": "string",
-            "operator": "$ref:ValueOperatorType",
+            "name": "String",
+            "operator": "$ref:ValueOperator",
             "value": "$ref:BasicType"
         },
         "ParamType": {
-            "name": "string",
+            "name": "String",
             "o:allowedValues": [
-                "variant"
+                "Variant"
             ],
-            "o:defaultValue": "variant",
-            "o:maxValue": "variant",
-            "o:minValue": "variant",
+            "o:defaultValue": "Variant",
+            "o:maxValue": "Variant",
+            "o:minValue": "Variant",
             "type": "$ref:BasicType"
         },
         "Plugin": {
-            "id": "uuid",
-            "name": "string",
+            "id": "Uuid",
+            "name": "String",
             "params": [
                 "$ref:Param"
             ]
         },
-        "RemovePolicyType": [
+        "RemovePolicy": [
             "RemovePolicyCascade",
             "RemovePolicyUpdate"
         ],
@@ -445,54 +449,64 @@
             "eventDescriptors": [
                 "$ref:EventDescriptor"
             ],
-            "id": "uuid",
+            "id": "Uuid",
             "stateEvaluator": "$ref:StateEvaluator"
         },
-        "SetupMethodType": [
+        "RuleError": [
+            "RuleErrorNoError",
+            "RuleErrorInvalidRuleId",
+            "RuleErrorRuleNotFound",
+            "RuleErrorDeviceNotFound",
+            "RuleErrorEventTypeNotFound",
+            "RuleErrorActionTypeNotFound",
+            "RuleErrorInvalidParameter",
+            "RuleErrorMissingParameter"
+        ],
+        "SetupMethod": [
             "SetupMethodJustAdd",
             "SetupMethodDisplayPin",
             "SetupMethodEnterPin",
             "SetupMethodPushButton"
         ],
         "State": {
-            "deviceId": "uuid",
-            "stateTypeId": "uuid",
-            "value": "variant"
+            "deviceId": "Uuid",
+            "stateTypeId": "Uuid",
+            "value": "Variant"
         },
         "StateDescriptor": {
-            "deviceId": "uuid",
-            "operator": "$ref:ValueOperatorType",
-            "stateTypeId": "uuid",
-            "value": "variant"
+            "deviceId": "Uuid",
+            "operator": "$ref:ValueOperator",
+            "stateTypeId": "Uuid",
+            "value": "Variant"
         },
         "StateEvaluator": {
             "o:childEvaluators": [
                 "$ref:StateEvaluator"
             ],
-            "o:operator": "$ref:StateOperatorType",
+            "o:operator": "$ref:StateOperator",
             "o:stateDescriptor": "$ref:StateDescriptor"
         },
-        "StateOperatorType": [
+        "StateOperator": [
             "StateOperatorAnd",
             "StateOperatorOr"
         ],
         "StateType": {
-            "defaultValue": "variant",
-            "id": "uuid",
-            "name": "string",
+            "defaultValue": "Variant",
+            "id": "Uuid",
+            "name": "String",
             "type": "$ref:BasicType"
         },
-        "ValueOperatorType": [
-            "OperatorTypeEquals",
-            "OperatorTypeNotEquals",
-            "OperatorTypeLess",
-            "OperatorTypeGreater",
-            "OperatorTypeLessThan",
-            "OperatorTypeGreaterThan"
+        "ValueOperator": [
+            "ValueOperatorEquals",
+            "ValueOperatorNotEquals",
+            "ValueOperatorLess",
+            "ValueOperatorGreater",
+            "ValueOperatorLessOrEqual",
+            "ValueOperatorGreaterOrEqual"
         ],
         "Vendor": {
-            "id": "uuid",
-            "name": "string"
+            "id": "Uuid",
+            "name": "String"
         }
     }
 }

@@ -20,6 +20,7 @@
 #include "mocktcpserver.h"
 #include "guhcore.h"
 #include "devicemanager.h"
+#include "jsontypes.h"
 
 #include <QVariantMap>
 #include <QJsonDocument>
@@ -91,7 +92,7 @@ void GuhTestBase::initTestCase()
 
     QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
 
-    verifySuccess(response);
+    verifyDeviceError(response);
 
     m_mockDeviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
     QVERIFY2(!m_mockDeviceId.isNull(), "Newly created mock device must not be null.");
@@ -123,13 +124,6 @@ QVariant GuhTestBase::injectAndWait(const QString &method, const QVariantMap &pa
      jsonDoc = QJsonDocument::fromJson(spy.takeFirst().last().toByteArray(), &error);
 
      return jsonDoc.toVariant();
-}
-
-void GuhTestBase::verifySuccess(const QVariant &response, bool success)
-{
-    QJsonDocument jsonDoc = QJsonDocument::fromVariant(response);
-    QVERIFY2(response.toMap().value("status").toString() == QString("success"), jsonDoc.toJson().data());
-    QVERIFY2(response.toMap().value("params").toMap().value("success").toBool() == success, jsonDoc.toJson().data());
 }
 
 void GuhTestBase::restartServer()

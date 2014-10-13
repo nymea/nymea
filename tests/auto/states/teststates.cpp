@@ -36,6 +36,7 @@ class TestStates: public GuhTestBase
 private slots:
     void getStateValue_data();
     void getStateValue();
+
 };
 
 void TestStates::getStateValue_data()
@@ -46,18 +47,18 @@ void TestStates::getStateValue_data()
 
     QTest::addColumn<DeviceId>("deviceId");
     QTest::addColumn<StateTypeId>("stateTypeId");
-    QTest::addColumn<bool>("success");
+    QTest::addColumn<DeviceManager::DeviceError>("error");
 
-    QTest::newRow("existing state") << device->id() << mockIntStateId << true;
-    QTest::newRow("invalid device") << DeviceId::createDeviceId() << mockIntStateId << false;
-    QTest::newRow("invalid statetype") << device->id() << StateTypeId::createStateTypeId() << false;
+    QTest::newRow("existing state") << device->id() << mockIntStateId << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("invalid device") << DeviceId::createDeviceId() << mockIntStateId << DeviceManager::DeviceErrorDeviceNotFound;
+    QTest::newRow("invalid statetype") << device->id() << StateTypeId::createStateTypeId() << DeviceManager::DeviceErrorStateTypeNotFound;
 }
 
 void TestStates::getStateValue()
 {
     QFETCH(DeviceId, deviceId);
     QFETCH(StateTypeId, stateTypeId);
-    QFETCH(bool, success);
+    QFETCH(DeviceManager::DeviceError, error);
 
     QVariantMap params;
     params.insert("deviceId", deviceId.toString());
@@ -65,7 +66,7 @@ void TestStates::getStateValue()
 
     QVariant response = injectAndWait("Devices.GetStateValue", params);
 
-    verifySuccess(response, success);
+    verifyDeviceError(response, error);
 }
 
 #include "teststates.moc"

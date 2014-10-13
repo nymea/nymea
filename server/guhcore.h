@@ -43,25 +43,25 @@ public:
     void destroy();
 
     QList<DevicePlugin *> plugins() const;
-    QPair<DeviceManager::DeviceError, QString> setPluginConfig(const PluginId &pluginId, const ParamList &params);
+    DeviceManager::DeviceError setPluginConfig(const PluginId &pluginId, const ParamList &params);
 
     // Device handling
     QList<Vendor> supportedVendors() const;
     QList<DeviceClass> supportedDevices(const VendorId &vendorId = VendorId()) const;
     DeviceClass findDeviceClass(const DeviceClassId &deviceClassId) const;
-    QPair<DeviceManager::DeviceError, QString> discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params);
-    QPair<DeviceManager::DeviceError, QString> addConfiguredDevice(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId &newId);
-    QPair<DeviceManager::DeviceError, QString> addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &newId);
+    DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params);
+    DeviceManager::DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId &newId);
+    DeviceManager::DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &newId);
     QList<Device*> configuredDevices() const;
     Device *findConfiguredDevice(const DeviceId &deviceId) const;
     QList<Device*> findConfiguredDevices(const DeviceClassId &deviceClassId) const;
-    QPair<DeviceManager::DeviceError, QString> removeConfiguredDevice(const DeviceId &deviceId, const QHash<RuleId, RuleEngine::RemovePolicy> &removePolicyList);
+    DeviceManager::DeviceError removeConfiguredDevice(const DeviceId &deviceId, const QHash<RuleId, RuleEngine::RemovePolicy> &removePolicyList);
 
-    QPair<DeviceManager::DeviceError, QString> pairDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId);
-    QPair<DeviceManager::DeviceError, QString> pairDevice(const DeviceClassId &deviceClassId, const ParamList &params);
-    QPair<DeviceManager::DeviceError, QString> confirmPairing(const QUuid &pairingTransactionId, const QString &secret = QString());
+    DeviceManager::DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId);
+    DeviceManager::DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params);
+    DeviceManager::DeviceError confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &secret = QString());
 
-    QPair<DeviceManager::DeviceError, QString> executeAction(const Action &action);
+    DeviceManager::DeviceError executeAction(const Action &action);
 
     QList<Rule> rules() const;
     QList<RuleId> ruleIds() const;
@@ -73,11 +73,11 @@ public:
 signals:
     void eventTriggered(const Event &event);
     void deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
-    void actionExecuted(const ActionId &id, DeviceManager::DeviceError status, const QString &errorMessage);
+    void actionExecuted(const ActionId &id, DeviceManager::DeviceError status);
 
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
     void deviceSetupFinished(Device *device, DeviceManager::DeviceError status);
-    void pairingFinished(const QUuid &pairingTransactionId, DeviceManager::DeviceError status, const QString &errorMessage, const DeviceId &deviceId);
+    void pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceError status, const DeviceId &deviceId);
 
 private:
     RuleEngine *ruleEngine() const;

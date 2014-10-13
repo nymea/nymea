@@ -23,3 +23,4 @@ HEADERS += $$top_srcdir/server/guhcore.h \
     $$top_srcdir/server/jsonrpc/actionhandler.h \
     $$top_srcdir/server/jsonrpc/eventhandler.h \
     $$top_srcdir/server/stateevaluator.h \
+    $$top_srcdir/server/jsontypes.h

@@ -139,14 +139,14 @@ DevicePlugin *DeviceManager::plugin(const PluginId &id) const
     return m_devicePlugins.value(id);
 }
 
-QPair<DeviceManager::DeviceError, QString> DeviceManager::setPluginConfig(const PluginId &pluginId, const ParamList &pluginConfig)
+DeviceManager::DeviceError DeviceManager::setPluginConfig(const PluginId &pluginId, const ParamList &pluginConfig)
 {
     DevicePlugin *plugin = m_devicePlugins.value(pluginId);
     if (!plugin) {
-        return report(DeviceErrorPluginNotFound, QString("No plugin with id % 1").arg(pluginId.toString()));
+        return DeviceErrorPluginNotFound;
     }
-    QPair<DeviceError, QString> result = plugin->setConfiguration(pluginConfig);
-    if (result.first != DeviceErrorNoError) {
+    DeviceError result = plugin->setConfiguration(pluginConfig);
+    if (result != DeviceErrorNoError) {
         return result;
     }
     QSettings settings;
@@ -180,30 +180,29 @@ QList<DeviceClass> DeviceManager::supportedDevices(const VendorId &vendorId) con
     return ret;
 }
 
-QPair<DeviceManager::DeviceError, QString> DeviceManager::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
+DeviceManager::DeviceError DeviceManager::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
 {
     qDebug() << "DeviceManager discoverdevices" << params;
     // Create a copy of the parameter list because we might modify it (fillig in default values etc)
     ParamList effectiveParams = params;
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
     if (!deviceClass.isValid()) {
-        return qMakePair<DeviceError, QString>(DeviceManager::DeviceErrorDeviceClassNotFound, deviceClass.id().toString());
+        return DeviceErrorDeviceClassNotFound;
     }
     if (!deviceClass.createMethods().testFlag(DeviceClass::CreateMethodDiscovery)) {
-        return  qMakePair<DeviceError, QString>(DeviceManager::DeviceErrorCreationMethodNotSupported, "");
+        return  DeviceErrorCreationMethodNotSupported;
     }
-    QPair<DeviceError, QString> result = verifyParams(deviceClass.discoveryParamTypes(), effectiveParams);
-    if (result.first != DeviceErrorNoError) {
-        qDebug() << "got erorr" << result.first << result.second;
+    DeviceError result = verifyParams(deviceClass.discoveryParamTypes(), effectiveParams);
+    if (result != DeviceErrorNoError) {
         return result;
     }
     DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
     if (!plugin) {
-        return  qMakePair<DeviceError, QString>(DeviceManager::DeviceErrorPluginNotFound, deviceClass.pluginId().toString());
+        return DeviceErrorPluginNotFound;
     }
     m_discoveringPlugins.append(plugin);
-    QPair<DeviceError, QString> ret = plugin->discoverDevices(deviceClassId, effectiveParams);
-    if (ret.first != DeviceErrorAsync) {
+    DeviceError ret = plugin->discoverDevices(deviceClassId, effectiveParams);
+    if (ret != DeviceErrorAsync) {
         m_discoveringPlugins.removeOne(plugin);
     }
     return ret;
@@ -228,98 +227,97 @@ QPair<DeviceManager::DeviceError, QString> DeviceManager::discoverDevices(const 
     went wrong during setup. Reasons may be a hardware/network failure, wrong username/password or similar, depending on what the device plugin
     needs to do in order to set up the device.
 */
-QPair<DeviceManager::DeviceError, QString> DeviceManager::addConfiguredDevice(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId id)
+DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId id)
 {
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
     if (!deviceClass.isValid()) {
-        qWarning() << "cannot find a device class with id" << deviceClassId;
-        return qMakePair<DeviceError, QString>(DeviceErrorDeviceClassNotFound, deviceClassId.toString());
+        return DeviceErrorDeviceClassNotFound;
     }
     if (deviceClass.createMethods().testFlag(DeviceClass::CreateMethodUser)) {
         return addConfiguredDeviceInternal(deviceClassId, params, id);
     }
-    return qMakePair<DeviceError, QString>(DeviceErrorCreationMethodNotSupported, "CreateMethodUser");
+    return DeviceErrorCreationMethodNotSupported;
 }
 
-QPair<DeviceManager::DeviceError, QString> DeviceManager::addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &deviceId)
+DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &deviceId)
 {
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
     if (!deviceClass.isValid()) {
-        return qMakePair<DeviceError, QString>(DeviceErrorDeviceClassNotFound, deviceClassId.toString());
+        return DeviceErrorDeviceClassNotFound;
     }
     if (!deviceClass.createMethods().testFlag(DeviceClass::CreateMethodDiscovery)) {
-        return qMakePair<DeviceError, QString>(DeviceErrorCreationMethodNotSupported, "CreateMethodDiscovery");
+        return DeviceErrorCreationMethodNotSupported;
     }
 
     DeviceDescriptor descriptor = m_discoveredDevices.take(deviceDescriptorId);
     if (!descriptor.isValid()) {
-        return qMakePair<DeviceError>(DeviceErrorDeviceDescriptorNotFound, deviceDescriptorId.toString());
+        return DeviceErrorDeviceDescriptorNotFound;
     }
 
     return addConfiguredDeviceInternal(deviceClassId, descriptor.params(), deviceId);
 }
 
-QPair<DeviceManager::DeviceError, QString> DeviceManager::pairDevice(const DeviceClassId &deviceClassId, const ParamList &params)
+DeviceManager::DeviceError DeviceManager::pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params)
 {
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
     if (deviceClass.id().isNull()) {
         qWarning() << "cannot find a device class with id" << deviceClassId;
-        return qMakePair<DeviceError, QString>(DeviceErrorDeviceClassNotFound, deviceClassId.toString());
+        return DeviceErrorDeviceClassNotFound;
     }
 
-    if (deviceClass.setupMethod() == DeviceClass::SetupMethodJustAdd) {
+    switch (deviceClass.setupMethod()) {
+    case DeviceClass::SetupMethodJustAdd:
         qWarning() << "Cannot setup this device this way. No need to pair this device.";
-        return qMakePair<DeviceError, QString>(DeviceErrorCreationMethodNotSupported, "No need to pair this device.");
+        return DeviceErrorSetupMethodNotSupported;
+    case DeviceClass::SetupMethodDisplayPin:
+        qWarning() << "SetupMethodDisplayPin not implemented yet for this CreateMethod";
+        return DeviceErrorSetupFailed;
+    case DeviceClass::SetupMethodEnterPin:
+        qWarning() << "SetupMethodEnterPin not implemented yet for this CreateMethod";
+        return DeviceErrorSetupFailed;
+    case DeviceClass::SetupMethodPushButton:
+        qWarning() << "SetupMethodPushButton not implemented yet for this CreateMethod";
+        return DeviceErrorSetupFailed;
     }
 
-    QUuid pairingTransactionId = QUuid::createUuid();
-    m_pairingsJustAdd.insert(pairingTransactionId, qMakePair<DeviceClassId, ParamList>(deviceClassId, params));
-
-    if (deviceClass.setupMethod() == DeviceClass::SetupMethodDisplayPin) {
-        // TODO: fetch PIN from device plugin
-        qWarning() << "SetupMethodDisplayPin not implemented yet";
-        return qMakePair<DeviceError, QString>(DeviceErrorSetupFailed, "SetupMethodDisplayPin Not implemented yet.");
-    }
-
-    return qMakePair<DeviceError, QString>(DeviceErrorNoError, pairingTransactionId.toString());
+    return DeviceErrorNoError;
 }
 
-QPair<DeviceManager::DeviceError, QString> DeviceManager::pairDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId)
+DeviceManager::DeviceError DeviceManager::pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId)
 {
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
     if (deviceClass.id().isNull()) {
         qWarning() << "cannot find a device class with id" << deviceClassId;
-        return qMakePair<DeviceError, QString>(DeviceErrorDeviceClassNotFound, deviceClassId.toString());
+        return DeviceErrorDeviceClassNotFound;
     }
 
     if (deviceClass.setupMethod() == DeviceClass::SetupMethodJustAdd) {
         qWarning() << "Cannot setup this device this way. No need to pair this device.";
-        return qMakePair<DeviceError, QString>(DeviceErrorCreationMethodNotSupported, "No need to pair this device.");
+        return DeviceErrorCreationMethodNotSupported;
     }
 
     if (!m_discoveredDevices.contains(deviceDescriptorId)) {
         qWarning() << "Cannot find a DeviceDescriptor with ID" << deviceClassId.toString();
-        return qMakePair<DeviceError, QString>(DeviceErrorDeviceDescriptorNotFound, deviceDescriptorId.toString());
+        return DeviceErrorDeviceDescriptorNotFound;
     }
 
-    QUuid pairingTransactionId = QUuid::createUuid();
     m_pairingsDiscovery.insert(pairingTransactionId, qMakePair<DeviceClassId, DeviceDescriptorId>(deviceClassId, deviceDescriptorId));
 
     if (deviceClass.setupMethod() == DeviceClass::SetupMethodDisplayPin) {
         // TODO: fetch PIN from device plugin
         qWarning() << "SetupMethodDisplayPin not implemented yet";
-        return qMakePair<DeviceError, QString>(DeviceErrorSetupFailed, "SetupMethodDisplayPin Not implemented yet.");
+        return DeviceErrorSetupFailed;
     }
 
-    return qMakePair<DeviceError, QString>(DeviceErrorNoError, pairingTransactionId.toString());
+    return DeviceErrorNoError;
 }
 
-QPair<DeviceManager::DeviceError, QString> DeviceManager::confirmPairing(const QUuid &pairingTransactionId, const QString &secret)
+DeviceManager::DeviceError DeviceManager::confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &secret)
 {
     if (m_pairingsJustAdd.contains(pairingTransactionId)) {
         qWarning() << "this SetupMethod is not implemented yet";
         m_pairingsJustAdd.remove(pairingTransactionId);
-        return qMakePair<DeviceError, QString>(DeviceErrorSetupFailed, "Not implemented yet");
+        return DeviceErrorSetupFailed;
     }
 
     if (m_pairingsDiscovery.contains(pairingTransactionId)) {
@@ -332,68 +330,65 @@ QPair<DeviceManager::DeviceError, QString> DeviceManager::confirmPairing(const Q
 
         if (!plugin) {
             qWarning() << "Can't find a plugin for this device class";
-            return report(DeviceErrorPluginNotFound, m_supportedDevices.value(deviceClassId).pluginId().toString());
+            return DeviceErrorPluginNotFound;
         }
 
-        QPair<DeviceSetupStatus, QString> status = plugin->confirmPairing(pairingTransactionId, deviceClassId, deviceDescriptor.params());
-        switch (status.first) {
+        DeviceSetupStatus status = plugin->confirmPairing(pairingTransactionId, deviceClassId, deviceDescriptor.params());
+        switch (status) {
         case DeviceSetupStatusSuccess:
             m_pairingsDiscovery.remove(pairingTransactionId);
-            return report(DeviceErrorNoError);
+            return DeviceErrorNoError;
         case DeviceSetupStatusFailure:
             m_pairingsDiscovery.remove(pairingTransactionId);
-            return report(DeviceErrorSetupFailed, status.second);
+            return DeviceErrorSetupFailed;
         case DeviceSetupStatusAsync:
-            return report(DeviceErrorAsync);
+            return DeviceErrorAsync;
         }
     }
 
-    return report(DeviceErrorPairingTransactionIdNotFound, pairingTransactionId.toString());
+    return DeviceErrorPairingTransactionIdNotFound;
 }
 
-QPair<DeviceManager::DeviceError, QString> DeviceManager::addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId id)
+DeviceManager::DeviceError DeviceManager::addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId id)
 {
     ParamList effectiveParams = params;
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
     if (deviceClass.id().isNull()) {
-        qWarning() << "cannot find a device class with id" << deviceClassId;
-        return qMakePair<DeviceError, QString>(DeviceErrorDeviceClassNotFound, deviceClassId.toString());
+        return DeviceErrorDeviceClassNotFound;
     }
 
     if (deviceClass.setupMethod() != DeviceClass::SetupMethodJustAdd) {
-        qWarning() << "Cannot setup this device this way. You need to pair this device.";
-        return qMakePair<DeviceError, QString>(DeviceErrorCreationMethodNotSupported, "You need to pair this device.");
+        return DeviceErrorCreationMethodNotSupported;
     }
 
-    QPair<DeviceError, QString> result = verifyParams(deviceClass.paramTypes(), effectiveParams);
-    if (result.first != DeviceErrorNoError) {
+    DeviceError result = verifyParams(deviceClass.paramTypes(), effectiveParams);
+    if (result != DeviceErrorNoError) {
         return result;
     }
 
     foreach(Device *device, m_configuredDevices) {
         if (device->id() == id) {
-            return qMakePair<DeviceError, QString>(DeviceErrorDuplicateUuid, id.toString());
+            return DeviceErrorDuplicateUuid;
         }
     }
 
     DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
     if (!plugin) {
-        qWarning() << "Cannot find a plugin for this device class!";
-        return qMakePair<DeviceError, QString>(DeviceErrorPluginNotFound, deviceClass.pluginId().toString());
+        return DeviceErrorPluginNotFound;
     }
 
     Device *device = new Device(plugin->pluginId(), id, deviceClassId, this);
     device->setName(deviceClass.name());
     device->setParams(effectiveParams);
 
-    QPair<DeviceSetupStatus, QString> status = setupDevice(device);
-    switch (status.first) {
+    DeviceSetupStatus status = setupDevice(device);
+    switch (status) {
     case DeviceSetupStatusFailure:
         qWarning() << "Device setup failed. Not adding device to system.";
         delete device;
-        return qMakePair<DeviceError, QString>(DeviceErrorSetupFailed, QString("Device setup failed: %1").arg(status.second));
+        return DeviceErrorSetupFailed;
     case DeviceSetupStatusAsync:
-        return qMakePair<DeviceError, QString>(DeviceErrorAsync, "");
+        return DeviceErrorAsync;
     case DeviceSetupStatusSuccess:
         qDebug() << "Device setup complete.";
         break;
@@ -402,14 +397,14 @@ QPair<DeviceManager::DeviceError, QString> DeviceManager::addConfiguredDeviceInt
     m_configuredDevices.append(device);
     storeConfiguredDevices();
 
-    return qMakePair<DeviceError, QString>(DeviceErrorNoError, QString());
+    return DeviceErrorNoError;
 }
 
-QPair<DeviceManager::DeviceError, QString> DeviceManager::removeConfiguredDevice(const DeviceId &deviceId)
+DeviceManager::DeviceError DeviceManager::removeConfiguredDevice(const DeviceId &deviceId)
 {
     Device *device = findConfiguredDevice(deviceId);
     if (!device) {
-        return qMakePair<DeviceError, QString>(DeviceErrorDeviceNotFound, deviceId.toString());
+        return DeviceErrorDeviceNotFound;
     }
 
     m_configuredDevices.removeAll(device);
@@ -428,7 +423,7 @@ QPair<DeviceManager::DeviceError, QString> DeviceManager::removeConfiguredDevice
     settings.remove("");
     settings.endGroup();
 
-    return qMakePair<DeviceError, QString>(DeviceErrorNoError, QString());
+    return DeviceErrorNoError;
 }
 
 /*! Returns the \l{Device} with the given \a id. Null if the id couldn't be found. */
@@ -475,10 +470,9 @@ DeviceClass DeviceManager::findDeviceClass(const DeviceClassId &deviceClassId) c
 /*! Execute the given \{Action}.
     This will find the \l{Device} \a action refers to in \l{Action::deviceId()} and
     its \l{DevicePlugin}. Then will dispatch the execution to the \l{DevicePlugin}.*/
-QPair<DeviceManager::DeviceError, QString> DeviceManager::executeAction(const Action &action)
+DeviceManager::DeviceError DeviceManager::executeAction(const Action &action)
 {
     Action finalAction = action;
-    qDebug() << "should execute action";
     foreach (Device *device, m_configuredDevices) {
         if (action.deviceId() == device->id()) {
             // found device
@@ -487,11 +481,10 @@ QPair<DeviceManager::DeviceError, QString> DeviceManager::executeAction(const Ac
             DeviceClass deviceClass = findDeviceClass(device->deviceClassId());
             bool found = false;
             foreach (const ActionType &actionType, deviceClass.actionTypes()) {
-                qDebug() << "checking" << actionType.id() << action.actionTypeId();
                 if (actionType.id() == action.actionTypeId()) {
                     ParamList finalParams = action.params();
-                    QPair<DeviceError, QString> paramCheck = verifyParams(actionType.paramTypes(), finalParams);
-                    if (paramCheck.first != DeviceErrorNoError) {
+                    DeviceError paramCheck = verifyParams(actionType.paramTypes(), finalParams);
+                    if (paramCheck != DeviceErrorNoError) {
                         return paramCheck;
                     }
                     finalAction.setParams(finalParams);
@@ -501,13 +494,13 @@ QPair<DeviceManager::DeviceError, QString> DeviceManager::executeAction(const Ac
                 }
             }
             if (!found) {
-                return qMakePair<DeviceError, QString>(DeviceErrorActionTypeNotFound, action.actionTypeId().toString());
+                return DeviceErrorActionTypeNotFound;
             }
 
             return m_devicePlugins.value(device->pluginId())->executeAction(device, finalAction);
         }
     }
-    return qMakePair<DeviceError, QString>(DeviceErrorDeviceNotFound, action.deviceId().toString());
+    return DeviceErrorDeviceNotFound;
 }
 
 void DeviceManager::loadPlugins()
@@ -574,9 +567,9 @@ void DeviceManager::loadPlugins()
                     }
                 }
                 settings.endGroup();
-                QPair<DeviceError, QString> status = pluginIface->setConfiguration(params);
-                if (status.first != DeviceErrorNoError) {
-                    qWarning() << "Error setting params to plugin. Broken configuration?" << status.second;
+                DeviceError status = pluginIface->setConfiguration(params);
+                if (status != DeviceErrorNoError) {
+                    qWarning() << "Error setting params to plugin. Broken configuration?";
                 }
 
                 m_devicePlugins.insert(pluginIface->pluginId(), pluginIface);
@@ -611,8 +604,6 @@ void DeviceManager::loadConfiguredDevices()
         device->setParams(params);
         settings.endGroup();
         settings.endGroup();
-
-        //qDebug() << "found stored device" << device->id() << device->name() << device->deviceClassId() << device->pluginId();
 
         // We always add the device to the list in this case. If its in the storedDevices
         // it means that it was working at some point so lets still add it as there might
@@ -660,7 +651,7 @@ void DeviceManager::slotDevicesDiscovered(const DeviceClassId &deviceClassId, co
     emit devicesDiscovered(deviceClassId, deviceDescriptors);
 }
 
-void DeviceManager::slotDeviceSetupFinished(Device *device, DeviceManager::DeviceSetupStatus status, const QString &errorMessage)
+void DeviceManager::slotDeviceSetupFinished(Device *device, DeviceManager::DeviceSetupStatus status)
 {
     Q_ASSERT_X(device, "DeviceManager", "Device must be a valid pointer.");
     if (!device) {
@@ -682,11 +673,11 @@ void DeviceManager::slotDeviceSetupFinished(Device *device, DeviceManager::Devic
     if (status == DeviceSetupStatusFailure) {
         if (m_configuredDevices.contains(device)) {
             qWarning() << QString("Error in device setup. Device %1 (%2) will not be functional.").arg(device->name()).arg(device->id().toString());
-            emit deviceSetupFinished(device, DeviceError::DeviceErrorSetupFailed, QString("Device setup failed: %1").arg(errorMessage));
+            emit deviceSetupFinished(device, DeviceError::DeviceErrorSetupFailed);
             return;
         } else {
             qWarning() << QString("Error in device setup. Device %1 (%2) will not be added to the configured devices.").arg(device->name()).arg(device->id().toString());
-            emit deviceSetupFinished(device, DeviceError::DeviceErrorSetupFailed, QString("Device setup failed: %1").arg(errorMessage));
+            emit deviceSetupFinished(device, DeviceError::DeviceErrorSetupFailed);
             return;
         }
     }
@@ -711,10 +702,10 @@ void DeviceManager::slotDeviceSetupFinished(Device *device, DeviceManager::Devic
     connect(device, SIGNAL(stateValueChanged(QUuid,QVariant)), this, SLOT(slotDeviceStateValueChanged(QUuid,QVariant)));
 
     device->setupCompleted();
-    emit deviceSetupFinished(device, DeviceManager::DeviceErrorNoError, QString());
+    emit deviceSetupFinished(device, DeviceManager::DeviceErrorNoError);
 }
 
-void DeviceManager::slotPairingFinished(const QUuid &pairingTransactionId, DeviceManager::DeviceSetupStatus status, const QString &errorMessage)
+void DeviceManager::slotPairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceSetupStatus status)
 {
     if (!m_pairingsJustAdd.contains(pairingTransactionId) && !m_pairingsDiscovery.contains(pairingTransactionId)) {
         DevicePlugin *plugin = dynamic_cast<DevicePlugin*>(sender());
@@ -746,11 +737,8 @@ void DeviceManager::slotPairingFinished(const QUuid &pairingTransactionId, Devic
         params = descriptor.params();
     }
 
-
-    qDebug() << "pairingfinsihed!" << errorMessage;
     if (status != DeviceSetupStatusSuccess) {
-        qDebug() << "emitting shit";
-        emit pairingFinished(pairingTransactionId, DeviceErrorSetupFailed, errorMessage);
+        emit pairingFinished(pairingTransactionId, DeviceErrorSetupFailed);
         return;
     }
 
@@ -764,20 +752,18 @@ void DeviceManager::slotPairingFinished(const QUuid &pairingTransactionId, Devic
 
     // Ok... pairing went fine... Let consumers know about it and inform them about the ongoing setup with a deviceId.
     DeviceId id = DeviceId::createDeviceId();
-    emit pairingFinished(pairingTransactionId, DeviceErrorNoError, QString(), id);
+    emit pairingFinished(pairingTransactionId, DeviceErrorNoError, id);
 
     QList<DeviceId> newDevices;
-    QString setupErrorMessage;
     Device *device = new Device(plugin->pluginId(), id, deviceClassId, this);
     device->setName(deviceClass.name());
     device->setParams(params);
 
-    QPair<DeviceSetupStatus, QString> setupStatus = setupDevice(device);
-    switch (setupStatus.first) {
+    DeviceSetupStatus setupStatus = setupDevice(device);
+    switch (setupStatus) {
     case DeviceSetupStatusFailure:
         qWarning() << "Device setup failed. Not adding device to system.";
-        setupErrorMessage = setupStatus.second;
-        emit deviceSetupFinished(device, DeviceError::DeviceErrorSetupFailed, QString("Device setup failed: %1").arg(errorMessage));
+        emit deviceSetupFinished(device, DeviceError::DeviceErrorSetupFailed);
         delete device;
         break;
     case DeviceSetupStatusAsync:
@@ -791,7 +777,7 @@ void DeviceManager::slotPairingFinished(const QUuid &pairingTransactionId, Devic
     m_configuredDevices.append(device);
     storeConfiguredDevices();
 
-    emit deviceSetupFinished(device, DeviceError::DeviceErrorNoError, QString());
+    emit deviceSetupFinished(device, DeviceError::DeviceErrorNoError);
 }
 
 void DeviceManager::autoDevicesAppeared(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors)
@@ -810,18 +796,18 @@ void DeviceManager::autoDevicesAppeared(const DeviceClassId &deviceClassId, cons
         device->setName(deviceClass.name());
         device->setParams(deviceDescriptor.params());
 
-        QPair<DeviceSetupStatus, QString> setupStatus = setupDevice(device);
-        switch (setupStatus.first) {
+        DeviceSetupStatus setupStatus = setupDevice(device);
+        switch (setupStatus) {
         case DeviceSetupStatusFailure:
             qWarning() << "Device setup failed. Not adding device to system.";
-            emit deviceSetupFinished(device, DeviceError::DeviceErrorSetupFailed, QString("Device setup failed: %1").arg(setupStatus.second));
+            emit deviceSetupFinished(device, DeviceError::DeviceErrorSetupFailed);
             delete device;
             break;
         case DeviceSetupStatusAsync:
             break;
         case DeviceSetupStatusSuccess:
             qDebug() << "Device setup complete.";
-            emit deviceSetupFinished(device, DeviceError::DeviceErrorNoError, QString());
+            emit deviceSetupFinished(device, DeviceError::DeviceErrorNoError);
             m_configuredDevices.append(device);
             storeConfiguredDevices();
             break;
@@ -889,13 +875,14 @@ bool DeviceManager::verifyPluginMetadata(const QJsonObject &data)
     return true;
 }
 
-QPair<DeviceManager::DeviceSetupStatus,QString> DeviceManager::setupDevice(Device *device)
+DeviceManager::DeviceSetupStatus DeviceManager::setupDevice(Device *device)
 {
     DeviceClass deviceClass = findDeviceClass(device->deviceClassId());
     DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
 
     if (!plugin) {
-        return qMakePair<DeviceSetupStatus, QString>(DeviceSetupStatusFailure, "Can't find a plugin for this device");
+        qWarning() << "Can't find a plugin for this device" << device->id();
+        return DeviceSetupStatusFailure;
     }
 
     QList<State> states;
@@ -906,8 +893,8 @@ QPair<DeviceManager::DeviceSetupStatus,QString> DeviceManager::setupDevice(Devic
     }
     device->setStates(states);
 
-    QPair<DeviceSetupStatus, QString> status = plugin->setupDevice(device);
-    if (status.first != DeviceSetupStatusSuccess) {
+    DeviceSetupStatus status = plugin->setupDevice(device);
+    if (status != DeviceSetupStatusSuccess) {
         return status;
     }
 
@@ -926,17 +913,16 @@ QPair<DeviceManager::DeviceSetupStatus,QString> DeviceManager::setupDevice(Devic
     return status;
 }
 
-QPair<DeviceManager::DeviceError, QString> DeviceManager::verifyParams(const QList<ParamType> paramTypes, ParamList &params, bool requireAll)
+DeviceManager::DeviceError DeviceManager::verifyParams(const QList<ParamType> paramTypes, ParamList &params, bool requireAll)
 {
     foreach (const Param &param, params) {
-        qDebug() << "verifying param" << param.name() << paramTypes;
-        QPair<DeviceManager::DeviceError, QString> result = verifyParam(paramTypes, param);
-        if (result.first != DeviceErrorNoError) {
+        DeviceManager::DeviceError result = verifyParam(paramTypes, param);
+        if (result != DeviceErrorNoError) {
             return result;
         }
     }
     if (!requireAll) {
-        return report();
+        return DeviceErrorNoError;
     }
     foreach (const ParamType &paramType, paramTypes) {
         bool found = false;
@@ -953,37 +939,39 @@ QPair<DeviceManager::DeviceError, QString> DeviceManager::verifyParams(const QLi
         }
 
         if (!found) {
-            return report(DeviceErrorMissingParameter, QString("Missing parameter: %1").arg(paramType.name()));
+            qWarning() << "Missing parameter:" << paramType.name();
+            return DeviceErrorMissingParameter;
         }
     }
-    return report();
+    return DeviceErrorNoError;
 }
 
-QPair<DeviceManager::DeviceError, QString> DeviceManager::verifyParam(const QList<ParamType> paramTypes, const Param &param)
+DeviceManager::DeviceError DeviceManager::verifyParam(const QList<ParamType> paramTypes, const Param &param)
 {
     foreach (const ParamType &paramType, paramTypes) {
         if (paramType.name() == param.name()) {
             return verifyParam(paramType, param);
         }
     }
-    return report(DeviceErrorInvalidParameter, QString("Parameter %1 not in ParamTypes list").arg(param.name()));
+    qWarning() << "Invalid parameter" << param.name() << "in parameter list";
+    return DeviceErrorInvalidParameter;
 }
 
-QPair<DeviceManager::DeviceError, QString> DeviceManager::verifyParam(const ParamType &paramType, const Param &param)
+DeviceManager::DeviceError DeviceManager::verifyParam(const ParamType &paramType, const Param &param)
 {
     if (paramType.name() == param.name()) {
         if (!param.value().canConvert(paramType.type())) {
-            return report(DeviceManager::DeviceErrorInvalidParameter, QString("Wrong parameter type for param %1. Got: %2. Expected %3.")
-                          .arg(param.name()).arg(param.value().toString()).arg(QVariant::typeToName(paramType.type())));
+            qWarning() << "Wrong parameter type for param" << param.name() << " Got:" << param.value() << " Expected:" << QVariant::typeToName(paramType.type());
+            return DeviceErrorInvalidParameter;
         }
 
         if (paramType.maxValue().isValid() && param.value() > paramType.maxValue()) {
-            return report(DeviceManager::DeviceErrorInvalidParameter, QString("Value out of range for param %1. Got: %2. Max: %3.")
-                          .arg(param.name()).arg(param.value().toString()).arg(paramType.maxValue().toString()));
+            qWarning() << "Value out of range for param" << param.name() << " Got:" << param.value() << " Max:" << paramType.maxValue();
+            return DeviceErrorInvalidParameter;
         }
         if (paramType.minValue().isValid() && param.value() < paramType.minValue()) {
-            return report(DeviceManager::DeviceErrorInvalidParameter, QString("Value out of range for param %1. Got: %2. Min: %3.")
-                          .arg(param.name()).arg(param.value().toString()).arg(paramType.minValue().toString()));
+            qWarning() << "Value out of range for param" << param.name() << " Got:" << param.value() << " Min:" << paramType.minValue();
+            return DeviceErrorInvalidParameter;
         }
         if (!paramType.allowedValues().isEmpty() && !paramType.allowedValues().contains(param.value())) {
             QStringList allowedValues;
@@ -991,16 +979,11 @@ QPair<DeviceManager::DeviceError, QString> DeviceManager::verifyParam(const Para
                 allowedValues.append(value.toString());
             }
 
-            return report(DeviceManager::DeviceErrorInvalidParameter, QString("Value not in allowed values for param %1. Got: %2. Allowed: %3.")
-                          .arg(param.name()).arg(param.value().toString()).arg(allowedValues.join(",")));
+            qWarning() << "Value not in allowed values for param" << param.name() << " Got:" << param.value() << " Allowed:" << allowedValues.join(",");
+            return DeviceErrorInvalidParameter;
         }
-        return report();
+        return DeviceErrorNoError;
     }
-    return report(DeviceErrorInvalidParameter, QString("Parameter name %1 does not match with ParamType name %2")
-                  .arg(param.name()).arg(paramType.name()));
-}
-
-QPair<DeviceManager::DeviceError, QString> DeviceManager::report(DeviceManager::DeviceError error, const QString &message)
-{
-    return qMakePair<DeviceManager::DeviceError, QString>(error, message);
+    qWarning() << "Parameter name" << param.name() << "does not match with ParamType name" << paramType.name();
+    return DeviceErrorInvalidParameter;
 }

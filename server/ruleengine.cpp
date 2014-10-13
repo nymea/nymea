@@ -93,7 +93,7 @@ RuleEngine::RuleEngine(QObject *parent) :
                     if (groupName.startsWith("ParamDescriptor-")) {
                         settings.beginGroup(groupName);
                         ParamDescriptor paramDescriptor(groupName.remove(QRegExp("^ParamDescriptor-")), settings.value("value"));
-                        paramDescriptor.setOperatorType((ValueOperator)settings.value("operator").toInt());
+                        paramDescriptor.setOperatorType((Types::ValueOperator)settings.value("operator").toInt());
                         params.append(paramDescriptor);
                         settings.endGroup();
                     }

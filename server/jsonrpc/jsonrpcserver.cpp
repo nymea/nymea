@@ -42,7 +42,7 @@
 #include <QJsonDocument>
 #include <QStringList>
 
-#define JSON_PROTOCOL_VERSION 5
+#define JSON_PROTOCOL_VERSION 6
 
 JsonRPCServer::JsonRPCServer(QObject *parent):
     JsonHandler(parent),
@@ -60,24 +60,22 @@ JsonRPCServer::JsonRPCServer(QObject *parent):
     params.clear(); returns.clear();
     setDescription("Introspect", "Introspect this API.");
     setParams("Introspect", params);
-    returns.insert("methods", "object");
-    returns.insert("types", "object");
+    returns.insert("methods", JsonTypes::basicTypeToString(JsonTypes::Object));
+    returns.insert("types", JsonTypes::basicTypeToString(JsonTypes::Object));
     setReturns("Introspect", returns);
 
     params.clear(); returns.clear();
     setDescription("Version", "Version of this Guh/JSONRPC interface.");
     setParams("Version", params);
-    returns.insert("version", "string");
-    returns.insert("protocol version", "string");
+    returns.insert("version", JsonTypes::basicTypeToString(JsonTypes::String));
+    returns.insert("protocol version", JsonTypes::basicTypeToString(JsonTypes::String));
     setReturns("Version", returns);
 
     params.clear(); returns.clear();
     setDescription("SetNotificationStatus", "Enable/Disable notifications for this connections.");
-    params.insert("enabled", "bool");
+    params.insert("enabled", JsonTypes::basicTypeToString(JsonTypes::Bool));
     setParams("SetNotificationStatus", params);
-    returns.insert("success", "bool");
-    returns.insert("enabled", "bool");
-    returns.insert("errorMessage", "string");
+    returns.insert("enabled", JsonTypes::basicTypeToString(JsonTypes::Bool));
     setReturns("SetNotificationStatus", returns);
 
     // Now set up the logic
@@ -131,8 +129,6 @@ JsonReply* JsonRPCServer::SetNotificationStatus(const QVariantMap &params)
 //    qDebug() << "got client socket" << clientId;
     m_clients[clientId] = params.value("enabled").toBool();
     QVariantMap returns;
-    returns.insert("success", "true");
-    returns.insert("errorMessage", "No error");
     returns.insert("enabled", m_clients[clientId]);
     return createReply(returns);
 }
@@ -200,16 +196,26 @@ void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &jsonDat
     JsonReply *reply;
     QMetaObject::invokeMethod(handler, method.toLatin1().data(), Q_RETURN_ARG(JsonReply*, reply), Q_ARG(QVariantMap, params));
     if (reply->type() == JsonReply::TypeAsync) {
-        qDebug() << "got an async reply...";
         reply->setClientId(clientId);
         reply->setCommandId(commandId);
         connect(reply, &JsonReply::finished, this, &JsonRPCServer::asyncReplyFinished);
         reply->startWait();
     } else {
-        Q_ASSERT((targetNamespace == "JSONRPC" && method == "Introspect") || handler->validateReturns(method, reply->data()).first);
+        Q_ASSERT_X((targetNamespace == "JSONRPC" && method == "Introspect") || handler->validateReturns(method, reply->data()).first
+                   ,"validating return value", formatAssertion(targetNamespace, method, handler, reply->data()).toLatin1().data());
         sendResponse(clientId, commandId, reply->data());
         reply->deleteLater();
     }
+}
+
+QString JsonRPCServer::formatAssertion(const QString &targetNamespace, const QString &method, JsonHandler *handler, const QVariantMap &data) const
+{
+    QJsonDocument doc = QJsonDocument::fromVariant(handler->introspect(QMetaMethod::Method).value(targetNamespace + "." + method));
+    QJsonDocument doc2 = QJsonDocument::fromVariant(data);
+    return QString("\nMethod: %1\nTemplate: %2\nValue: %3")
+            .arg(targetNamespace + "." + method)
+            .arg(QString(doc.toJson()))
+            .arg(QString(doc2.toJson()));
 }
 
 void JsonRPCServer::sendNotification(const QVariantMap &params)
@@ -229,7 +235,6 @@ void JsonRPCServer::sendNotification(const QVariantMap &params)
 void JsonRPCServer::asyncReplyFinished()
 {
     JsonReply *reply = qobject_cast<JsonReply*>(sender());
-    qDebug() << "got async reply:" << reply->method() << reply->data();
     Q_ASSERT(reply->handler()->validateReturns(reply->method(), reply->data()).first);
     sendResponse(reply->clientId(), reply->commandId(), reply->data());
     reply->deleteLater();

@@ -181,9 +181,7 @@ void TestJSONRPC::enableDisableNotifications()
     params.insert("enabled", enabled);
     QVariant response = injectAndWait("JSONRPC.SetNotificationStatus", params);
 
-    verifySuccess(response);
     QCOMPARE(response.toMap().value("params").toMap().value("enabled").toString(), enabled);
-
 }
 
 void TestJSONRPC::stateChangeEmitsNotifications()
@@ -191,7 +189,7 @@ void TestJSONRPC::stateChangeEmitsNotifications()
     QVariantMap params;
     params.insert("enabled", true);
     QVariant response = injectAndWait("JSONRPC.SetNotificationStatus", params);
-    verifySuccess(response);
+    QCOMPARE(response.toMap().value("params").toMap().value("enabled").toBool(), true);
 
     // Setup connection to mock client
     QNetworkAccessManager nam;
@@ -226,7 +224,7 @@ void TestJSONRPC::stateChangeEmitsNotifications()
     params.clear();
     params.insert("enabled", false);
     response = injectAndWait("JSONRPC.SetNotificationStatus", params);
-    verifySuccess(response);
+    QCOMPARE(response.toMap().value("params").toMap().value("enabled").toBool(), false);
 
     // Fire the a statechange once again
     clientSpy.clear();

@@ -303,10 +303,10 @@ DevicePluginOpenweathermap::DevicePluginOpenweathermap()
     connect(m_openweaher, &OpenWeatherMap::weatherDataReady, this, &DevicePluginOpenweathermap::weatherDataReady);
 }
 
-QPair<DeviceManager::DeviceError, QString> DevicePluginOpenweathermap::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
+DeviceManager::DeviceError DevicePluginOpenweathermap::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
 {
     if(deviceClassId != openweathermapDeviceClassId){
-        return report(DeviceManager::DeviceErrorDeviceClassNotFound);
+        return DeviceManager::DeviceErrorDeviceClassNotFound;
     }
 
     QString location;
@@ -319,26 +319,28 @@ QPair<DeviceManager::DeviceError, QString> DevicePluginOpenweathermap::discoverD
     // if we have an empty search string, perform an autodetection of the location with the WAN ip...
     if (location.isEmpty()){
         m_openweaher->searchAutodetect();
-        return report(DeviceManager::DeviceErrorAsync);
+    } else {
+        m_openweaher->search(location);
     }
 
     // otherwise search the given string
     m_openweaher->search(location);
-    return report(DeviceManager::DeviceErrorAsync);
+    return DeviceManager::DeviceErrorAsync;
 }
 
-QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginOpenweathermap::setupDevice(Device *device)
+DeviceManager::DeviceSetupStatus DevicePluginOpenweathermap::setupDevice(Device *device)
 {
     foreach (Device *deviceListDevice, deviceManager()->findConfiguredDevices(openweathermapDeviceClassId)) {
         if(deviceListDevice->paramValue("id").toString() == device->paramValue("id").toString()){
-            return reportDeviceSetup(DeviceManager::DeviceSetupStatusFailure,QString("Location " + device->paramValue("location").toString() + " already added."));
+            qWarning() << QString("Location " + device->paramValue("location").toString() + " already added.");
+            return DeviceManager::DeviceSetupStatusFailure;
         }
     }
 
     device->setName("Weather from OpenWeatherMap (" + device->paramValue("location").toString() + ")");
     m_openweaher->update(device->paramValue("id").toString(), device->id());
 
-    return reportDeviceSetup(DeviceManager::DeviceSetupStatusSuccess);
+    return DeviceManager::DeviceSetupStatusSuccess;
 }
 
 DeviceManager::HardwareResources DevicePluginOpenweathermap::requiredHardware() const
@@ -346,12 +348,12 @@ DeviceManager::HardwareResources DevicePluginOpenweathermap::requiredHardware() 
     return DeviceManager::HardwareResourceTimer;
 }
 
-QPair<DeviceManager::DeviceError, QString> DevicePluginOpenweathermap::executeAction(Device *device, const Action &action)
+DeviceManager::DeviceError DevicePluginOpenweathermap::executeAction(Device *device, const Action &action)
 {
     if(action.actionTypeId() == updateWeatherActionTypeId){
         m_openweaher->update(device->paramValue("id").toString(), device->id());
     }
-    return report();
+    return DeviceManager::DeviceErrorNoError;
 }
 
 void DevicePluginOpenweathermap::guhTimer()

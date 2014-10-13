@@ -35,10 +35,10 @@ public:
     Q_INVOKABLE JsonReply* GetActionType(const QVariantMap &params) const;
 
 private slots:
-    void actionExecuted(const ActionId &id, DeviceManager::DeviceError status, const QString &errorMessage);
+    void actionExecuted(const ActionId &id, DeviceManager::DeviceError status);
 
 private:
-    QVariantMap statusToReply(DeviceManager::DeviceError status, const QString &errorMessage);
+    QVariantMap statusToReply(DeviceManager::DeviceError status) const;
 
 private:
     QHash<ActionId, JsonReply*> m_asyncActionExecutions;

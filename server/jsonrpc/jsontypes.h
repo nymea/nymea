@@ -22,6 +22,8 @@
 #include "plugin/deviceclass.h"
 #include "plugin/devicedescriptor.h"
 #include "rule.h"
+#include "devicemanager.h"
+#include "ruleengine.h"
 
 #include "types/event.h"
 #include "types/action.h"
@@ -33,6 +35,7 @@
 
 #include <QVariantMap>
 #include <QString>
+#include <QMetaEnum>
 
 class DevicePlugin;
 class Device;
@@ -48,12 +51,18 @@ class Device;
     static QVariantMap s_##typeName; \
     public:
 
-#define DECLARE_TYPE(typeName, jsonName) \
+#define DECLARE_TYPE(typeName, enumString, className, enumName) \
     public: \
-    static QString typeName##Ref() { return QStringLiteral("$ref:") + QStringLiteral(jsonName); } \
+    static QString typeName##Ref() { return QStringLiteral("$ref:") + QStringLiteral(enumString); } \
     static QVariantList typeName() { \
         if (!s_initialized) { init(); } \
         return s_##typeName; \
+    } \
+    static QString typeName##ToString(className::enumName value) { \
+        QMetaObject metaObject = className::staticMetaObject; \
+        int enumIndex = metaObject.indexOfEnumerator(enumString); \
+        QMetaEnum metaEnum = metaObject.enumerator(enumIndex); \
+        return metaEnum.valueToKey(metaEnum.value(value)); \
     } \
     private: \
     static QVariantList s_##typeName; \
@@ -61,15 +70,30 @@ class Device;
 
 class JsonTypes
 {
+    Q_GADGET
+    Q_ENUMS(BasicType)
+    Q_ENUMS(JsonError)
 public:
+    enum BasicType {
+        Uuid,
+        String,
+        Int,
+        Double,
+        Bool,
+        Variant,
+        Object
+    };
+
     static QVariantMap allTypes();
 
-    DECLARE_TYPE(basicTypes, "BasicType")
-    DECLARE_TYPE(stateOperatorTypes, "StateOperatorType")
-    DECLARE_TYPE(valueOperatorTypes, "ValueOperatorType")
-    DECLARE_TYPE(createMethodTypes, "CreateMethodType")
-    DECLARE_TYPE(setupMethodTypes, "SetupMethodType")
-    DECLARE_TYPE(removePolicyTypes, "RemovePolicyType")
+    DECLARE_TYPE(basicType, "BasicType", JsonTypes, BasicType)
+    DECLARE_TYPE(stateOperator, "StateOperator", Types, StateOperator)
+    DECLARE_TYPE(valueOperator, "ValueOperator", Types, ValueOperator)
+    DECLARE_TYPE(createMethod, "CreateMethod", DeviceClass, CreateMethod)
+    DECLARE_TYPE(setupMethod, "SetupMethod", DeviceClass, SetupMethod)
+    DECLARE_TYPE(deviceError, "DeviceError", DeviceManager, DeviceError)
+    DECLARE_TYPE(removePolicy, "RemovePolicy", RuleEngine, RemovePolicy)
+    DECLARE_TYPE(ruleError, "RuleError", RuleEngine, RuleError)
     DECLARE_OBJECT(paramType, "ParamType")
     DECLARE_OBJECT(param, "Param")
     DECLARE_OBJECT(paramDescriptor, "ParamDescriptor")
@@ -119,16 +143,19 @@ public:
     static QPair<bool, QString> validateList(const QVariantList &templateList, const QVariantList &list);
     static QPair<bool, QString> validateVariant(const QVariant &templateVariant, const QVariant &variant);
     static QPair<bool, QString> validateBasicType(const QVariant &variant);
-    static QPair<bool, QString> validateStateOperatorType(const QVariant &variant);
-    static QPair<bool, QString> validateCreateMethodType(const QVariant &variant);
-    static QPair<bool, QString> validateSetupMethodType(const QVariant &variant);
-    static QPair<bool, QString> validateValueOperatorType(const QVariant &variant);
+    static QPair<bool, QString> validateStateOperator(const QVariant &variant);
+    static QPair<bool, QString> validateCreateMethod(const QVariant &variant);
+    static QPair<bool, QString> validateSetupMethod(const QVariant &variant);
+    static QPair<bool, QString> validateValueOperator(const QVariant &variant);
+    static QPair<bool, QString> validateDeviceError(const QVariant &variant);
+    static QPair<bool, QString> validateRuleError(const QVariant &variant);
 
 private:
     static bool s_initialized;
     static void init();
 
     static QPair<bool, QString> report(bool status, const QString &message);
+    static QVariantList enumToStrings(const QMetaObject &metaObject, const QString &enumName);
 
     static QString s_lastError;
 };

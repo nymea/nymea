@@ -99,32 +99,32 @@ bool EventDescriptor::operator ==(const Event &event) const
 
     foreach (const ParamDescriptor &paramDescriptor, m_paramDescriptors) {
         switch (paramDescriptor.operatorType()) {
-        case ValueOperatorEquals:
+        case Types::ValueOperatorEquals:
             if (event.param(paramDescriptor.name()).value() != paramDescriptor.value()) {
                 return false;
             }
             break;
-        case ValueOperatorNotEquals:
+        case Types::ValueOperatorNotEquals:
             if (event.param(paramDescriptor.name()).value() == paramDescriptor.value()) {
                 return false;
             }
             break;
-        case ValueOperatorGreater:
+        case Types::ValueOperatorGreater:
             if (event.param(paramDescriptor.name()).value() <= paramDescriptor.value()) {
                 return false;
             }
             break;
-        case ValueOperatorGreaterOrEqual:
+        case Types::ValueOperatorGreaterOrEqual:
             if (event.param(paramDescriptor.name()).value() < paramDescriptor.value()) {
                 return false;
             }
             break;
-        case ValueOperatorLess:
+        case Types::ValueOperatorLess:
             if (event.param(paramDescriptor.name()).value() >= paramDescriptor.value()) {
                 return false;
             }
             break;
-        case ValueOperatorLessOrEqual:
+        case Types::ValueOperatorLessOrEqual:
             if (event.param(paramDescriptor.name()).value() < paramDescriptor.value()) {
                 return false;
             }

@@ -65,20 +65,20 @@ DevicePluginLgSmartTv::DevicePluginLgSmartTv()
     connect(m_discovery,SIGNAL(discoveryDone(QList<TvDevice*>)),this,SLOT(discoveryDone(QList<TvDevice*>)));
 }
 
-QPair<DeviceManager::DeviceError, QString> DevicePluginLgSmartTv::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
+DeviceManager::DeviceError DevicePluginLgSmartTv::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
 {
     qDebug() << "should discover devices with params:" << params;
 
     if(deviceClassId != lgSmartTvDeviceClassId){
-        return report(DeviceManager::DeviceErrorDeviceClassNotFound);
+        return DeviceManager::DeviceErrorDeviceClassNotFound;
     }
 
     m_discovery->discover(3000);
 
-    return report(DeviceManager::DeviceErrorAsync);
+    return DeviceManager::DeviceErrorAsync;
 }
 
-QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginLgSmartTv::setupDevice(Device *device)
+DeviceManager::DeviceSetupStatus DevicePluginLgSmartTv::setupDevice(Device *device)
 {
 
     device->setName("LG Smart Tv (" + device->paramValue("model").toString() + ")");
@@ -102,7 +102,7 @@ QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginLgSmartTv::setupDev
     tvDevice->requestPairing();
     m_tvList.insert(tvDevice,device);
 
-    return reportDeviceSetup(DeviceManager::DeviceSetupStatusAsync);
+    return DeviceManager::DeviceSetupStatusAsync;
 }
 
 DeviceManager::HardwareResources DevicePluginLgSmartTv::requiredHardware() const
@@ -110,84 +110,50 @@ DeviceManager::HardwareResources DevicePluginLgSmartTv::requiredHardware() const
     return DeviceManager::HardwareResourceTimer;
 }
 
-QPair<DeviceManager::DeviceError, QString> DevicePluginLgSmartTv::executeAction(Device *device, const Action &action)
+DeviceManager::DeviceError DevicePluginLgSmartTv::executeAction(Device *device, const Action &action)
 {
     TvDevice * tvDevice = m_tvList.key(device);
 
     if(action.actionTypeId() == commandVolumeUpActionTypeId){
         tvDevice->sendCommand(TvDevice::VolUp, action.id());
-        return report(DeviceManager::DeviceErrorAsync);
-    }
-    if(action.actionTypeId() == commandVolumeDownActionTypeId){
+    } else if(action.actionTypeId() == commandVolumeDownActionTypeId){
         tvDevice->sendCommand(TvDevice::VolDown, action.id());
-        return report(DeviceManager::DeviceErrorAsync);
-    }
-    if(action.actionTypeId() == commandMuteActionTypeId){
+    } else if(action.actionTypeId() == commandMuteActionTypeId){
         tvDevice->sendCommand(TvDevice::Mute, action.id());
-        return report(DeviceManager::DeviceErrorAsync);
-    }
-    if(action.actionTypeId() == commandChannelUpActionTypeId){
+    } else if(action.actionTypeId() == commandChannelUpActionTypeId){
         tvDevice->sendCommand(TvDevice::ChannelUp, action.id());
-        return report(DeviceManager::DeviceErrorAsync);
-    }
-    if(action.actionTypeId() == commandChannelDownActionTypeId){
+    } else if(action.actionTypeId() == commandChannelDownActionTypeId){
         tvDevice->sendCommand(TvDevice::ChannelDown, action.id());
-        return report(DeviceManager::DeviceErrorAsync);
-    }
-    if(action.actionTypeId() == commandPowerOffActionTypeId){
+    } else if(action.actionTypeId() == commandPowerOffActionTypeId){
         tvDevice->sendCommand(TvDevice::Power, action.id());
-        return report(DeviceManager::DeviceErrorAsync);
-    }
-    if(action.actionTypeId() == commandArrowUpActionTypeId){
+    } else if(action.actionTypeId() == commandArrowUpActionTypeId){
         tvDevice->sendCommand(TvDevice::Up, action.id());
-        return report(DeviceManager::DeviceErrorAsync);
-    }
-    if(action.actionTypeId() == commandArrowDownActionTypeId){
+    } else if(action.actionTypeId() == commandArrowDownActionTypeId){
         tvDevice->sendCommand(TvDevice::Down, action.id());
-        return report(DeviceManager::DeviceErrorAsync);
-    }
-    if(action.actionTypeId() == commandArrowLeftActionTypeId){
+    } else if(action.actionTypeId() == commandArrowLeftActionTypeId){
         tvDevice->sendCommand(TvDevice::Left, action.id());
-        return report(DeviceManager::DeviceErrorAsync);
-    }
-    if(action.actionTypeId() == commandArrowRightActionTypeId){
+    } else if(action.actionTypeId() == commandArrowRightActionTypeId){
         tvDevice->sendCommand(TvDevice::Right, action.id());
-        return report(DeviceManager::DeviceErrorAsync);
-    }
-    if(action.actionTypeId() == commandOkActionTypeId){
+    } else if(action.actionTypeId() == commandOkActionTypeId){
         tvDevice->sendCommand(TvDevice::Ok, action.id());
-        return report(DeviceManager::DeviceErrorAsync);
-    }
-    if(action.actionTypeId() == commandBackActionTypeId){
+    } else if(action.actionTypeId() == commandBackActionTypeId){
         tvDevice->sendCommand(TvDevice::Back, action.id());
-        return report(DeviceManager::DeviceErrorAsync);
-    }
-    if(action.actionTypeId() == commandHomeActionTypeId){
+    } else if(action.actionTypeId() == commandHomeActionTypeId){
         tvDevice->sendCommand(TvDevice::Home, action.id());
-        return report(DeviceManager::DeviceErrorAsync);
-    }
-    if(action.actionTypeId() == commandInputSourceActionTypeId){
+    } else if(action.actionTypeId() == commandInputSourceActionTypeId){
         tvDevice->sendCommand(TvDevice::ExternalInput, action.id());
-        return report(DeviceManager::DeviceErrorAsync);
-    }
-    if(action.actionTypeId() == commandExitActionTypeId){
+    } else if(action.actionTypeId() == commandExitActionTypeId){
         tvDevice->sendCommand(TvDevice::Exit, action.id());
-        return report(DeviceManager::DeviceErrorAsync);
-    }
-    if(action.actionTypeId() == commandInfoActionTypeId){
+    } else if(action.actionTypeId() == commandInfoActionTypeId){
         tvDevice->sendCommand(TvDevice::Info, action.id());
-        return report(DeviceManager::DeviceErrorAsync);
-    }
-    if(action.actionTypeId() == commandMyAppsActionTypeId){
+    } else if(action.actionTypeId() == commandMyAppsActionTypeId){
         tvDevice->sendCommand(TvDevice::MyApps, action.id());
-        return report(DeviceManager::DeviceErrorAsync);
-    }
-    if(action.actionTypeId() == commandProgramListActionTypeId){
+    } else if(action.actionTypeId() == commandProgramListActionTypeId){
         tvDevice->sendCommand(TvDevice::ProgramList, action.id());
-        return report(DeviceManager::DeviceErrorAsync);
+    } else {
+        return DeviceManager::DeviceErrorActionTypeNotFound;
     }
-
-    return report(DeviceManager::DeviceErrorActionTypeNotFound);
+    return DeviceManager::DeviceErrorAsync;
 }
 
 void DevicePluginLgSmartTv::deviceRemoved(Device *device)
@@ -235,19 +201,19 @@ void DevicePluginLgSmartTv::pairingFinished(const bool &success)
     Device *device = m_tvList.value(tvDevice);
 
     if(success){
-        emit deviceSetupFinished(device,DeviceManager::DeviceSetupStatusSuccess,QString(""));
+        emit deviceSetupFinished(device,DeviceManager::DeviceSetupStatusSuccess);
         tvDevice->refresh();
     }else{
-        emit deviceSetupFinished(device,DeviceManager::DeviceSetupStatusFailure,QString("Could not pair with tv."));
+        emit deviceSetupFinished(device,DeviceManager::DeviceSetupStatusFailure);
     }
 }
 
 void DevicePluginLgSmartTv::sendingCommandFinished(const bool &success, const ActionId &actionId)
 {
     if(success){
-        emit actionExecutionFinished(actionId,DeviceManager::DeviceErrorNoError,QString());
+        emit actionExecutionFinished(actionId,DeviceManager::DeviceErrorNoError);
     }else{
-        emit actionExecutionFinished(actionId,DeviceManager::DeviceErrorActionTypeNotFound,QString("Could not send command"));
+        emit actionExecutionFinished(actionId,DeviceManager::DeviceErrorHardwareFailure);
     }
 }
 

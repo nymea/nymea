@@ -22,12 +22,12 @@
 
 StateEvaluator::StateEvaluator(const StateDescriptor &stateDescriptor):
     m_stateDescriptor(stateDescriptor),
-    m_operatorType(StateOperatorAnd)
+    m_operatorType(Types::StateOperatorAnd)
 {
 
 }
 
-StateEvaluator::StateEvaluator(QList<StateEvaluator> childEvaluators, StateOperator stateOperator):
+StateEvaluator::StateEvaluator(QList<StateEvaluator> childEvaluators, Types::StateOperator stateOperator):
     m_stateDescriptor(),
     m_childEvaluators(childEvaluators),
     m_operatorType(stateOperator)
@@ -54,12 +54,12 @@ void StateEvaluator::appendEvaluator(const StateEvaluator &stateEvaluator)
     m_childEvaluators.append(stateEvaluator);
 }
 
-StateOperator StateEvaluator::operatorType() const
+Types::StateOperator StateEvaluator::operatorType() const
 {
     return m_operatorType;
 }
 
-void StateEvaluator::setOperatorType(StateOperator operatorType)
+void StateEvaluator::setOperatorType(Types::StateOperator operatorType)
 {
     m_operatorType = operatorType;
 }
@@ -82,7 +82,7 @@ bool StateEvaluator::evaluate() const
         }
     }
 
-    if (m_operatorType == StateOperatorOr) {
+    if (m_operatorType == Types::StateOperatorOr) {
         foreach (const StateEvaluator &stateEvaluator, m_childEvaluators) {
             if (stateEvaluator.evaluate()) {
                 return true;
@@ -151,13 +151,13 @@ StateEvaluator StateEvaluator::loadFromSettings(QSettings &settings, const QStri
     StateTypeId stateTypeId(settings.value("stateTypeId").toString());
     DeviceId deviceId(settings.value("deviceId").toString());
     QVariant stateValue = settings.value("value");
-    ValueOperator valueOperator = (ValueOperator)settings.value("operator").toInt();
+    Types::ValueOperator valueOperator = (Types::ValueOperator)settings.value("operator").toInt();
     StateDescriptor stateDescriptor(stateTypeId, deviceId, stateValue, valueOperator);
     settings.endGroup();
 
     StateEvaluator ret(stateDescriptor);
 
-    ret.setOperatorType((StateOperator)settings.value("operator").toInt());
+    ret.setOperatorType((Types::StateOperator)settings.value("operator").toInt());
 
     settings.beginGroup("childEvaluators");
     foreach (const QString &evaluatorGroup, settings.childGroups()) {

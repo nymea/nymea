@@ -245,7 +245,7 @@ DevicePluginMailNotification::~DevicePluginMailNotification()
     m_smtpClient->deleteLater();
 }
 
-QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginMailNotification::setupDevice(Device *device)
+DeviceManager::DeviceSetupStatus DevicePluginMailNotification::setupDevice(Device *device)
 {
     // Google mail
 //    if(device->deviceClassId() == googleMailDeviceClassId){
@@ -255,7 +255,7 @@ QPair<DeviceManager::DeviceSetupStatus, QString> DevicePluginMailNotification::s
 //        m_smtpClient->setHost("smtp.gmail.com");
 //        m_smtpClient->login(device->paramValue("user").toString(), device->paramValue("password").toString());
 //    }
-    return reportDeviceSetup();
+    return DeviceManager::DeviceSetupStatusSuccess;
 }
 
 DeviceManager::HardwareResources DevicePluginMailNotification::requiredHardware() const
@@ -263,7 +263,7 @@ DeviceManager::HardwareResources DevicePluginMailNotification::requiredHardware(
     return DeviceManager::HardwareResourceNone;
 }
 
-QPair<DeviceManager::DeviceError, QString> DevicePluginMailNotification::executeAction(Device *device, const Action &action)
+DeviceManager::DeviceError DevicePluginMailNotification::executeAction(Device *device, const Action &action)
 {
     qDebug() << "execute action " << sendMailActionTypeId.toString();
     if(action.actionTypeId() == sendMailActionTypeId){
@@ -294,5 +294,5 @@ QPair<DeviceManager::DeviceError, QString> DevicePluginMailNotification::execute
         m_smtpClient->sendMail(device->paramValue("user").toString(), device->paramValue("recipient").toString(), action.param("subject").value().toString(), action.param("body").value().toString());
     }
 
-    return report();
+    return DeviceManager::DeviceErrorNoError;
 }

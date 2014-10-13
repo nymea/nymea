@@ -78,7 +78,7 @@ pure virtual methods: \l{DevicePlugin::pluginName()}, \l{DevicePlugin::pluginId(
  */
 
 /*!
-  \fn void DevicePlugin::actionExecutionFinished(const ActionId &id, DeviceManager::DeviceError status, const QString &errorMessage)
+  \fn void DevicePlugin::actionExecutionFinished(const ActionId &id, DeviceManager::DeviceError status)
   This signal is to be emitted when you previously have returned DeviceManager::DeviceErrorAsync
   in a call of executeAction(). It is used to deliver the return value that previously has
   been omitted by filling in DeviceErrorAsync.
@@ -163,7 +163,6 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
             deviceClass.setCreateMethods(createMethods);
 
             deviceClass.setDiscoveryParamTypes(parseParamTypes(jo.value("discoveryParamTypes").toArray()));
-            qDebug() << "loaded deviceClass" << deviceClass.discoveryParamTypes();
 
             QString setupMethod = jo.value("setupMethod").toString();
             if (setupMethod == "pushButton") {
@@ -179,7 +178,6 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
             deviceClass.setParamTypes(parseParamTypes(jo.value("paramTypes").toArray()));
 
             QList<StateType> stateTypes;
-            qDebug() << "############### s" << jo;
             foreach (const QJsonValue &stateTypesJson, jo.value("stateTypes").toArray()) {
                 QJsonObject st = stateTypesJson.toObject();
                 QVariant::Type t = QVariant::nameToType(st.value("type").toString().toLatin1().data());
@@ -197,7 +195,6 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 ActionType actionType(at.value("id").toString());
                 actionType.setName(at.value("name").toString());
                 actionType.setParamTypes(parseParamTypes(at.value("paramTypes").toArray()));
-                qDebug() << "***got actionType" << actionType.id();
                 actionTypes.append(actionType);
             }
             deviceClass.setActionTypes(actionTypes);
@@ -235,11 +232,11 @@ void DevicePlugin::startMonitoringAutoDevices()
     be an async operation. Return DeviceErrorAsync or DeviceErrorNoError if the discovery
     has been started successfully. Return an appropriate error otherwise.
     Once devices are discovered, emit devicesDiscovered() once. */
-QPair<DeviceManager::DeviceError, QString> DevicePlugin::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
+DeviceManager::DeviceError DevicePlugin::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
 {
     Q_UNUSED(deviceClassId)
     Q_UNUSED(params)
-    return report(DeviceManager::DeviceErrorCreationMethodNotSupported);
+    return DeviceManager::DeviceErrorCreationMethodNotSupported;
 }
 
 /*! This will be called when a new device is created. The plugin has the chance to do some setup.
@@ -250,10 +247,10 @@ QPair<DeviceManager::DeviceError, QString> DevicePlugin::discoverDevices(const D
     \l{deviceSetupFinished(Device *device, DeviceManager::DeviceSetupStatus status)} to report
     the status.
 */
-QPair<DeviceManager::DeviceSetupStatus, QString> DevicePlugin::setupDevice(Device *device)
+DeviceManager::DeviceSetupStatus DevicePlugin::setupDevice(Device *device)
 {
     Q_UNUSED(device)
-    return reportDeviceSetup();
+    return DeviceManager::DeviceSetupStatusSuccess;
 }
 
 /*! This will be called when a device removed. The plugin has the chance to do some teardown.
@@ -265,13 +262,14 @@ void DevicePlugin::deviceRemoved(Device *device)
     Q_UNUSED(device)
 }
 
-QPair<DeviceManager::DeviceSetupStatus, QString> DevicePlugin::confirmPairing(const QUuid &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params)
+DeviceManager::DeviceSetupStatus DevicePlugin::confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params)
 {
     Q_UNUSED(pairingTransactionId)
     Q_UNUSED(deviceClassId)
     Q_UNUSED(params)
 
-    return reportDeviceSetup(DeviceManager::DeviceSetupStatusFailure, "Plugin does not implement pairing.");
+    qWarning() << "Plugin does not implement pairing.";
+    return DeviceManager::DeviceSetupStatusFailure;
 }
 
 QList<ParamType> DevicePlugin::configurationDescription() const
@@ -340,58 +338,62 @@ QVariant DevicePlugin::configValue(const QString &paramName) const
 /*!
  Will be called by the DeviceManager to set a plugin's \a configuration.
  */
-QPair<DeviceManager::DeviceError, QString> DevicePlugin::setConfiguration(const ParamList &configuration)
+DeviceManager::DeviceError DevicePlugin::setConfiguration(const ParamList &configuration)
 {
     foreach (const Param &param, configuration) {
         qDebug() << "setting config" << param;
-        QPair<DeviceManager::DeviceError, QString> result = setConfigValue(param.name(), param.value());
-        if (result.first != DeviceManager::DeviceErrorNoError) {
+        DeviceManager::DeviceError result = setConfigValue(param.name(), param.value());
+        if (result != DeviceManager::DeviceErrorNoError) {
             return result;
         }
     }
-    return report();
+    return DeviceManager::DeviceErrorNoError;
 }
 
 /*!
  Will be called by the DeviceManager to set a plugin's \a configuration.
  */
-QPair<DeviceManager::DeviceError, QString> DevicePlugin::setConfigValue(const QString &paramName, const QVariant &value)
+DeviceManager::DeviceError DevicePlugin::setConfigValue(const QString &paramName, const QVariant &value)
 {
     bool found = false;
     foreach (const ParamType &paramType, configurationDescription()) {
         if (paramType.name() == paramName) {
             if (!value.canConvert(paramType.type())) {
-                return report(DeviceManager::DeviceErrorInvalidParameter, QString("Wrong parameter type for param %1. Got %2. Expected %3.")
-                              .arg(paramName).arg(value.toString()).arg(QVariant::typeToName(paramType.type())));
+                qWarning() << QString("Wrong parameter type for param %1. Got %2. Expected %3.")
+                    .arg(paramName).arg(value.toString()).arg(QVariant::typeToName(paramType.type()));
+                return DeviceManager::DeviceErrorInvalidParameter;
             }
 
             if (paramType.maxValue().isValid() && value > paramType.maxValue()) {
-                return report(DeviceManager::DeviceErrorInvalidParameter, QString("Value out of range for param %1. Got %2. Max: %3.")
-                              .arg(paramName).arg(value.toString()).arg(paramType.maxValue().toString()));
+                qWarning() << QString("Value out of range for param %1. Got %2. Max: %3.")
+                        .arg(paramName).arg(value.toString()).arg(paramType.maxValue().toString());
+                return DeviceManager::DeviceErrorInvalidParameter;
             }
             if (paramType.minValue().isValid() && value < paramType.minValue()) {
-                return report(DeviceManager::DeviceErrorInvalidParameter, QString("Value out of range for param %1. Got: %2. Min: %3.")
-                              .arg(paramName).arg(value.toString()).arg(paramType.minValue().toString()));
+                qWarning() << QString("Value out of range for param %1. Got: %2. Min: %3.")
+                        .arg(paramName).arg(value.toString()).arg(paramType.minValue().toString());
+                return DeviceManager::DeviceErrorInvalidParameter;
             }
             found = true;
             break;
         }
     }
     if (!found) {
-        return report(DeviceManager::DeviceErrorInvalidParameter, QString("Invalid parameter %1.").arg(paramName));
+        qWarning() << QString("Invalid parameter %1.").arg(paramName);
+        return DeviceManager::DeviceErrorInvalidParameter;
     }
     for (int i = 0; i < m_config.count(); i++) {
         if (m_config.at(i).name() == paramName) {
             m_config[i].setValue(value);
             emit configValueChanged(paramName, value);
-            return report();
+            return DeviceManager::DeviceErrorNoError;
         }
     }
     // Still here? need to create the param
     Param newParam(paramName, value);
     m_config.append(newParam);
     emit configValueChanged(paramName, value);
-    return report();
+    return DeviceManager::DeviceErrorNoError;
 }
 
 /*!
@@ -462,20 +464,4 @@ bool DevicePlugin::transmitData(int delay, QList<int> rawData)
         qWarning() << "Unknown harware type. Cannot send.";
     }
     return false;
-}
-
-/*!
- Constructs a status report to be returned. By default (when called without
- arguments) this will report \l{DeviceManager::DeviceErrorNoError} and an
- empty message.
- Keep the message short, the DeviceManager will format it for you.
- */
-QPair<DeviceManager::DeviceError, QString> DevicePlugin::report(DeviceManager::DeviceError error, const QString &message)
-{
-    return qMakePair<DeviceManager::DeviceError, QString>(error, message);
-}
-
-QPair<DeviceManager::DeviceSetupStatus, QString> DevicePlugin::reportDeviceSetup(DeviceManager::DeviceSetupStatus status, const QString &message)
-{
-    return qMakePair<DeviceManager::DeviceSetupStatus, QString>(status, message);
 }

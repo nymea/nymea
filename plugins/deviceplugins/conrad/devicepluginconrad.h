@@ -36,7 +36,7 @@ public:
 
 
 public slots:
-    QPair<DeviceManager::DeviceError, QString> executeAction(Device *device, const Action &action) override;
+    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
 
 };
 

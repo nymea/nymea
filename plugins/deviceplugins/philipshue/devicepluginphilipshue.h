@@ -41,17 +41,17 @@ public:
     void startMonitoringAutoDevices() override;
 
     QList<ParamType> configurationDescription() const override;
-    QPair<DeviceManager::DeviceError, QString> discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
+    DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
 
-    QPair<DeviceManager::DeviceSetupStatus, QString> setupDevice(Device *device) override;
+    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
     void deviceRemoved(Device *device) override;
 
-    QPair<DeviceManager::DeviceSetupStatus, QString> confirmPairing(const QUuid &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params) override;
+    DeviceManager::DeviceSetupStatus confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params) override;
 
     void guhTimer() override;
 
 public slots:
-    QPair<DeviceManager::DeviceError, QString> executeAction(Device *device, const Action &action);
+    DeviceManager::DeviceError executeAction(Device *device, const Action &action);
 
 private slots:
     void discoveryDone(const QList<QHostAddress> &bridges);
@@ -67,7 +67,7 @@ private:
 
     class PairingInfo {
     public:
-        QUuid pairingTransactionId;
+        PairingTransactionId pairingTransactionId;
         Param ipParam;
         Param usernameParam;
     };

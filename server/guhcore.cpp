@@ -63,7 +63,7 @@ QList<DevicePlugin *> GuhCore::plugins() const
     return m_deviceManager->plugins();
 }
 
-QPair<DeviceManager::DeviceError, QString> GuhCore::setPluginConfig(const PluginId &pluginId, const ParamList &params)
+DeviceManager::DeviceError GuhCore::setPluginConfig(const PluginId &pluginId, const ParamList &params)
 {
     return m_deviceManager->setPluginConfig(pluginId, params);
 }
@@ -78,7 +78,7 @@ QList<DeviceClass> GuhCore::supportedDevices(const VendorId &vendorId) const
     return m_deviceManager->supportedDevices(vendorId);
 }
 
-QPair<DeviceManager::DeviceError, QString> GuhCore::removeConfiguredDevice(const DeviceId &deviceId, const QHash<RuleId, RuleEngine::RemovePolicy> &removePolicyList)
+DeviceManager::DeviceError GuhCore::removeConfiguredDevice(const DeviceId &deviceId, const QHash<RuleId, RuleEngine::RemovePolicy> &removePolicyList)
 {
     QHash<RuleId, RuleEngine::RemovePolicy> toBeChanged;
     QList<RuleId> unhandledRules;
@@ -97,7 +97,8 @@ QPair<DeviceManager::DeviceError, QString> GuhCore::removeConfiguredDevice(const
     }
 
     if (!unhandledRules.isEmpty()) {
-        return qMakePair<DeviceManager::DeviceError, QString>(DeviceManager::DeviceErrorMissingParameter, "There are unhandled rules which depend on this device.");
+        qWarning() << "There are unhandled rules which depend on this device.";
+        return DeviceManager::DeviceErrorDeviceInUse;
     }
 
     // Update the rules...
@@ -112,22 +113,22 @@ QPair<DeviceManager::DeviceError, QString> GuhCore::removeConfiguredDevice(const
     return m_deviceManager->removeConfiguredDevice(deviceId);
 }
 
-QPair<DeviceManager::DeviceError, QString> GuhCore::pairDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId)
+DeviceManager::DeviceError GuhCore::pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId)
 {
-    return m_deviceManager->pairDevice(deviceClassId, deviceDescriptorId);
+    return m_deviceManager->pairDevice(pairingTransactionId, deviceClassId, deviceDescriptorId);
 }
 
-QPair<DeviceManager::DeviceError, QString> GuhCore::pairDevice(const DeviceClassId &deviceClassId, const ParamList &params)
+DeviceManager::DeviceError GuhCore::pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params)
 {
-    return m_deviceManager->pairDevice(deviceClassId, params);
+    return m_deviceManager->pairDevice(pairingTransactionId, deviceClassId, params);
 }
 
-QPair<DeviceManager::DeviceError, QString> GuhCore::confirmPairing(const QUuid &pairingTransactionId, const QString &secret)
+DeviceManager::DeviceError GuhCore::confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &secret)
 {
     return m_deviceManager->confirmPairing(pairingTransactionId, secret);
 }
 
-QPair<DeviceManager::DeviceError, QString> GuhCore::executeAction(const Action &action)
+DeviceManager::DeviceError GuhCore::executeAction(const Action &action)
 {
     return m_deviceManager->executeAction(action);
 }
@@ -137,17 +138,17 @@ DeviceClass GuhCore::findDeviceClass(const DeviceClassId &deviceClassId) const
     return m_deviceManager->findDeviceClass(deviceClassId);
 }
 
-QPair<DeviceManager::DeviceError, QString> GuhCore::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
+DeviceManager::DeviceError GuhCore::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
 {
     return m_deviceManager->discoverDevices(deviceClassId, params);
 }
 
-QPair<DeviceManager::DeviceError, QString> GuhCore::addConfiguredDevice(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId &newId)
+DeviceManager::DeviceError GuhCore::addConfiguredDevice(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId &newId)
 {
     return m_deviceManager->addConfiguredDevice(deviceClassId, params, newId);
 }
 
-QPair<DeviceManager::DeviceError, QString> GuhCore::addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &newId)
+DeviceManager::DeviceError GuhCore::addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &newId)
 {
     return m_deviceManager->addConfiguredDevice(deviceClassId, deviceDescriptorId, newId);
 }
@@ -252,18 +253,18 @@ void GuhCore::gotEvent(const Event &event)
     // Now execute all the associated rules
     foreach (const Action &action, m_ruleEngine->evaluateEvent(event)) {
         qDebug() << "executing action" << action.actionTypeId();
-        QPair<DeviceManager::DeviceError, QString> status = m_deviceManager->executeAction(action);
-        switch(status.first) {
+        DeviceManager::DeviceError status = m_deviceManager->executeAction(action);
+        switch(status) {
         case DeviceManager::DeviceErrorNoError:
             break;
         case DeviceManager::DeviceErrorSetupFailed:
-            qDebug() << "Error executing action. Device setup failed:" << status.second;
+            qDebug() << "Error executing action. Device setup failed.";
             break;
-        case DeviceManager::DeviceErrorActionParameterError:
-            qDebug() << "Error executing action. Invalid action parameter:" << status.second;
+        case DeviceManager::DeviceErrorInvalidParameter:
+            qDebug() << "Error executing action. Invalid action parameter.";
             break;
         default:
-            qDebug() << "Error executing action:" << status.first << status.second;
+            qDebug() << "Error executing action:" << status;
         }
     }
 }

@@ -50,21 +50,30 @@ DECLARE_TYPE_ID(Action)
 DECLARE_TYPE_ID(Plugin)
 DECLARE_TYPE_ID(Rule)
 
-enum ValueOperator {
-    ValueOperatorEquals,
-    ValueOperatorNotEquals,
-    ValueOperatorLess,
-    ValueOperatorGreater,
-    ValueOperatorLessOrEqual,
-    ValueOperatorGreaterOrEqual
+DECLARE_TYPE_ID(PairingTransaction)
+
+class Types
+{
+    Q_GADGET
+    Q_ENUMS(StateOperator)
+    Q_ENUMS(ValueOperator)
+
+public:
+    enum ValueOperator {
+        ValueOperatorEquals,
+        ValueOperatorNotEquals,
+        ValueOperatorLess,
+        ValueOperatorGreater,
+        ValueOperatorLessOrEqual,
+        ValueOperatorGreaterOrEqual
+    };
+    enum StateOperator {
+        StateOperatorAnd,
+        StateOperatorOr
+    };
 };
 
-enum StateOperator {
-    StateOperatorAnd,
-    StateOperatorOr
-};
-
-Q_DECLARE_METATYPE(ValueOperator)
-Q_DECLARE_METATYPE(StateOperator)
+Q_DECLARE_METATYPE(Types::ValueOperator)
+Q_DECLARE_METATYPE(Types::StateOperator)
 
 #endif // TYPEUTILS_H

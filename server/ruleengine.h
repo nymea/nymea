@@ -30,6 +30,8 @@
 class RuleEngine : public QObject
 {
     Q_OBJECT
+    Q_ENUMS(RuleError)
+    Q_ENUMS(RemovePolicy)
 public:
     enum RuleError {
         RuleErrorNoError,
@@ -37,7 +39,9 @@ public:
         RuleErrorRuleNotFound,
         RuleErrorDeviceNotFound,
         RuleErrorEventTypeNotFound,
-        RuleErrorActionTypeNotFound
+        RuleErrorActionTypeNotFound,
+        RuleErrorInvalidParameter,
+        RuleErrorMissingParameter
     };
 
     enum RemovePolicy {
@@ -75,5 +79,6 @@ private:
     QList<RuleId> m_ruleIds; // Keeping a list of RuleIds to keep sorting order...
     QHash<RuleId, Rule> m_rules; // ...but use a Hash for faster finding
 };
+Q_DECLARE_METATYPE(RuleEngine::RuleError)
 
 #endif // RULEENGINE_H

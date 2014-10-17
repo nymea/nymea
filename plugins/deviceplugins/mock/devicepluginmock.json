@@ -9,15 +9,7 @@
                 {
                     "deviceClassId": "753f0d32-0468-4d08-82ed-1964aab03298",
                     "name": "Mock Device",
-                    "createMethods": ["user", "auto", "discovery"],
-                    "discoveryParamTypes": [
-                        {
-                            "name": "resultCount",
-                            "type": "int",
-                            "defaultValue": 2,
-                            "allowedValues": [1, 2]
-                        }
-                    ],
+                    "createMethods": ["user","discovery"],
                     "paramTypes": [
                         {
                             "name": "httpport",
@@ -42,7 +34,89 @@
                         },
                         {
                             "id": "9dd6a97c-dfd1-43dc-acbd-367932742310",
-                            "name:": "Dummy boo state",
+                            "name:": "Dummy bool state",
+                            "defaultValue": "false"
+                        }
+                    ],
+                    "eventTypes": [
+                        {
+                            "id": "45bf3752-0fc6-46b9-89fd-ffd878b5b22b",
+                            "name": "Mock Event 1"
+                        },
+                        {
+                            "id": "863d5920-b1cf-4eb9-88bd-8f7b8583b1cf",
+                            "name": "Mock Event 2",
+                            "paramTypes": [
+                                {
+                                    "name": "mockParamInt",
+                                    "type": "int",
+                                    "defaultValue": 10
+                                }
+                            ]
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "dea0f4e1-65e3-4981-8eaa-2701c53a9185",
+                            "name": "Mock Action 1 (with params)",
+                            "paramTypes": [
+                                {
+                                    "name": "mockActionParam1",
+                                    "type": "int"
+                                },
+                                {
+                                    "name": "mockActionParam2",
+                                    "type": "bool"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "defd3ed6-1a0d-400b-8879-a0202cf39935",
+                            "name": "Mock Action 2 (without params)"
+                        },
+                        {
+                            "id": "fbae06d3-7666-483e-a39e-ec50fe89054e",
+                            "name": "Mock Action 3 (async)"
+                        },
+                        {
+                            "id": "df3cf33d-26d5-4577-9132-9823bd33fad0",
+                            "name": "Mock Action 4 (broken)"
+                        },
+                        {
+                            "id": "bfe89a1d-3497-4121-8318-e77c37537219",
+                            "name": "Mock Action 5 (async, broken)"
+                        }
+                    ]
+                },
+                {
+                    "deviceClassId": "ab4257b3-7548-47ee-9bd4-7dc3004fd197",
+                    "name": "Mock Device (Auto created)",
+                    "createMethods": ["auto"],
+                    "paramTypes": [
+                        {
+                            "name": "httpport",
+                            "type": "int"
+                        },
+                        {
+                            "name": "async",
+                            "type": "bool",
+                            "defaultValue": false
+                        },
+                        {
+                            "name": "broken",
+                            "type": "bool",
+                            "defaultValue": false
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "80baec19-54de-4948-ac46-31eabfaceb83",
+                            "name": "Dummy int state",
+                            "defaultValue": 10
+                        },
+                        {
+                            "id": "9dd6a97c-dfd1-43dc-acbd-367932742310",
+                            "name:": "Dummy bool state",
                             "defaultValue": "false"
                         }
                     ],

@@ -615,6 +615,7 @@ void DeviceManager::loadConfiguredDevices()
         // it means that it was working at some point so lets still add it as there might
         // be rules associated with this device. Device::setupCompleted() will be false.
         setupDevice(device);
+
         m_configuredDevices.append(device);
     }
     settings.endGroup();

@@ -26,6 +26,11 @@
 #include <QStringList>
 
 DeviceClassId mockDeviceClassId = DeviceClassId("753f0d32-0468-4d08-82ed-1964aab03298");
+DeviceClassId mockDeviceAutoClassId = DeviceClassId("ab4257b3-7548-47ee-9bd4-7dc3004fd197");
+//DeviceClassId mockDeviceDiscoveryClassId = DeviceClassId("1bbaf751-36b7-4d3d-b05a-58dab2a3be8c");
+//DeviceClassId mockDeviceAsyncSetupClassId = DeviceClassId("c08a8b27-8200-413d-b96b-4cff78b864d9");
+//DeviceClassId mockDeviceBrokenClassId = DeviceClassId("ba5fb404-c9ce-4db4-8cd4-f48c61c24b13");
+//DeviceClassId mockDeviceBrokenAsyncSetupClassId = DeviceClassId("bd5b78c5-53c9-4417-8eac-8ab2bce97bd0");
 EventTypeId mockEvent1Id = EventTypeId("45bf3752-0fc6-46b9-89fd-ffd878b5b22b");
 EventTypeId mockEvent2Id = EventTypeId("863d5920-b1cf-4eb9-88bd-8f7b8583b1cf");
 StateTypeId mockIntStateId = StateTypeId("80baec19-54de-4948-ac46-31eabfaceb83");
@@ -94,12 +99,12 @@ void DevicePluginMock::deviceRemoved(Device *device)
 void DevicePluginMock::startMonitoringAutoDevices()
 {
     foreach (Device *device, myDevices()) {
-        if (device->paramValue("auto").toBool()) {
+        if (device->deviceClassId() == mockDeviceAutoClassId) {
             return; // We already have a Auto Mock device... do nothing.
         }
     }
 
-    DeviceDescriptor mockDescriptor(mockDeviceClassId, "Mock Device (Auto created)");
+    DeviceDescriptor mockDescriptor(mockDeviceAutoClassId, "Mock Device (Auto created)");
 
     ParamList params;
     qsrand(QDateTime::currentMSecsSinceEpoch());
@@ -111,7 +116,7 @@ void DevicePluginMock::startMonitoringAutoDevices()
     QList<DeviceDescriptor> deviceDescriptorList;
     deviceDescriptorList.append(mockDescriptor);
 
-    emit autoDevicesAppeared(mockDeviceClassId, deviceDescriptorList);
+    emit autoDevicesAppeared(mockDeviceAutoClassId, deviceDescriptorList);
 }
 
 QList<ParamType> DevicePluginMock::configurationDescription() const

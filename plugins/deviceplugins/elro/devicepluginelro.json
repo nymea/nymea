@@ -3,7 +3,7 @@
     "id": "2b267f81-d9ae-4f4f-89a0-7386b547cfd3",
     "vendors": [
         {
-            "name": "Electronic Roos",
+            "name": "Elro",
             "id": "435a13a0-65ca-4f0c-94c1-e5873b258db5",
             "deviceClasses": [
                 {
@@ -12,23 +12,23 @@
                     "createMethods": ["user"],
                     "paramTypes": [
                         {
-                            "name": "channel1",
+                            "name": "channel 1",
                             "type": "bool"
                         },
                         {
-                            "name": "channel2",
+                            "name": "channel 2",
                             "type": "bool"
                         },
                         {
-                            "name": "channel3",
+                            "name": "channel 3",
                             "type": "bool"
                         },
                         {
-                            "name": "channel4",
+                            "name": "channel 4",
                             "type": "bool"
                         },
                         {
-                            "name": "channel5",
+                            "name": "channel 5",
                             "type": "bool"
                         }
                     ],
@@ -91,23 +91,23 @@
                     "createMethods": ["user"],
                     "paramTypes": [
                         {
-                            "name": "channel1",
+                            "name": "channel 1",
                             "type": "bool"
                         },
                         {
-                            "name": "channel2",
+                            "name": "channel 2",
                             "type": "bool"
                         },
                         {
-                            "name": "channel3",
+                            "name": "channel 3",
                             "type": "bool"
                         },
                         {
-                            "name": "channel4",
+                            "name": "channel 4",
                             "type": "bool"
                         },
                         {
-                            "name": "channel5",
+                            "name": "channel 5",
                             "type": "bool"
                         },
                         {
@@ -150,22 +150,6 @@
                     "createMethods": ["discovery"]
                 }
             ]
-        },
-        {
-            "name": "Mumbi",
-            "id": "5f91c01c-0168-4bdf-a5ed-37cb6971b775"
-        },
-        {
-            "name": "Vivanco",
-            "id": "3826a836-ba69-4e50-8408-bb827fc92128"
-        },
-        {
-            "name": "Brennenstuhl",
-            "id": "4ac9dd1f-9ca9-4a76-aae1-3e91cfb86f5b"
-        },
-        {
-            "name": "BAT",
-            "id": "30115ad4-c83d-454a-a483-c781c951d3b6"
         }
     ]
 }

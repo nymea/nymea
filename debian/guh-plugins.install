@@ -1,0 +1,12 @@
+usr/lib/guh/plugins/libguh_devicepluginconrad.so
+usr/lib/guh/plugins/libguh_devicepluginelro.so
+usr/lib/guh/plugins/libguh_deviceplugineq3.so
+usr/lib/guh/plugins/libguh_devicepluginintertechno.so
+usr/lib/guh/plugins/libguh_devicepluginlgsmarttv.so
+usr/lib/guh/plugins/libguh_devicepluginlircd.so
+usr/lib/guh/plugins/libguh_devicepluginmailnotification.so
+usr/lib/guh/plugins/libguh_devicepluginopenweathermap.so
+usr/lib/guh/plugins/libguh_devicepluginphilipshue.so
+usr/lib/guh/plugins/libguh_devicepluginwakeonlan.so
+usr/lib/guh/plugins/libguh_devicepluginwemo.so
+usr/lib/guh/plugins/libguh_devicepluginwifidetector.so

@@ -58,6 +58,14 @@ pure virtual methods: \l{DevicePlugin::pluginName()}, \l{DevicePlugin::pluginId(
  */
 
 /*!
+ \fn void DevicePlugin::upnpDiscoveryFinished(QList<UpnpDevice> deviceList)
+ If the plugin has requested the upnp \a deviceList using \l{DevicePlugin::upnpDiscover(QString searchTarget)},
+ this slot will be called after 3 seconds (search timeout). The list will contain all devices available on in
+ the network, which responded to the given search target string
+ \sa DevicePlugin::upnpDiscover()
+ */
+
+/*!
  \fn void DevicePlugin::executeAction(Device *device, const Action &action)
  This will be called to actually execute actions on the hardware. The \{Device} and
  the \{Action} are contained in the \a device and \a action parameters.
@@ -103,6 +111,7 @@ pure virtual methods: \l{DevicePlugin::pluginName()}, \l{DevicePlugin::pluginId(
 
 #include "devicemanager.h"
 #include "hardware/radio433/radio433.h"
+#include "hardware/upnpdiscovery/upnpdiscovery.h"
 
 #include <QDebug>
 #include <QFileInfo>
@@ -464,4 +473,18 @@ bool DevicePlugin::transmitData(int delay, QList<int> rawData)
         qWarning() << "Unknown harware type. Cannot send.";
     }
     return false;
+}
+
+/*!
+ Starts a SSDP search for a certain \a searchTarget (ST). Certain UPnP devices need a special ST (i.e. "udap:rootservice"
+ for LG Smart Tv's), otherwise they will not respond on the SSDP search. Each HTTP request to this device needs sometimes
+ also a special \a userAgent, which will be written into the HTTP header.
+ \sa DevicePlugin::requiredHardware(), DevicePlugin::upnpDiscoveryFinished()
+ */
+
+void DevicePlugin::upnpDiscover(QString searchTarget, QString userAgent)
+{
+    if(requiredHardware() == DeviceManager::HardwareResourceUpnpDisovery){
+        deviceManager()->m_upnpDiscovery->discoverDevices(searchTarget, userAgent, pluginId());
+    }
 }

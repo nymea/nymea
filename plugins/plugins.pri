@@ -3,6 +3,8 @@ include(../guh.pri)
 TEMPLATE = lib
 CONFIG += plugin
 
+QT += network
+
 INCLUDEPATH += ../../../libguh
 LIBS += -L../../../libguh -lguh
 

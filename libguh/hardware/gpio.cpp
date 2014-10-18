@@ -62,9 +62,12 @@ bool Gpio::exportGpio()
     }
 
     size_t len = snprintf(buf, sizeof(buf), "%d", m_gpio);
-    write(fd, buf, len);
+    if(write(fd, buf, len) != len){
+        qDebug() << "ERROR: could not write to gpio";
+        close(fd);
+        return false;
+    }
     close(fd);
-
     return true;
 }
 
@@ -79,9 +82,12 @@ bool Gpio::unexportGpio()
         return false;
     }
     size_t len = snprintf(buf, sizeof(buf), "%d", m_gpio);
-    write(fd, buf, len);
+    if(write(fd, buf, len) != len){
+        qDebug() << "ERROR: could not write to gpio";
+        close(fd);
+        return false;
+    }
     close(fd);
-
     return true;
 }
 
@@ -127,7 +133,7 @@ bool Gpio::setDirection(int dir)
     }
     if(dir == INPUT){
         if(write(fd, "in", 3) != 3){
-            qDebug() << "ERROR: could not set edge interrupt";
+            qDebug() << "ERROR: could not write to gpio";
             close(fd);
             return false;
         }
@@ -137,7 +143,7 @@ bool Gpio::setDirection(int dir)
     }
     if(dir == OUTPUT){
         if(write(fd, "out", 4) != 4){
-            qDebug() << "ERROR: could not set edge interrupt";
+            qDebug() << "ERROR: could not write to gpio";
             close(fd);
             return false;
         }
@@ -178,7 +184,7 @@ bool Gpio::setValue(unsigned int value)
 
         if(value == LOW){
             if(write(fd, "0", 2) != 2){
-                qDebug() << "ERROR: could not set edge interrupt";
+                qDebug() << "ERROR: could not write to gpio";
                 close(fd);
                 return false;
             }
@@ -187,7 +193,7 @@ bool Gpio::setValue(unsigned int value)
         }
         if(value == HIGH){
             if(write(fd, "1", 2) != 2){
-                qDebug() << "ERROR: could not set edge interrupt";
+                qDebug() << "ERROR: could not write to gpio";
                 close(fd);
                 return false;
             }

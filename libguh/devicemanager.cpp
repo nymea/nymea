@@ -265,6 +265,8 @@ DeviceManager::DeviceError DeviceManager::pairDevice(const PairingTransactionId 
         return DeviceErrorDeviceClassNotFound;
     }
 
+    Q_UNUSED(pairingTransactionId)
+    Q_UNUSED(params)
     switch (deviceClass.setupMethod()) {
     case DeviceClass::SetupMethodJustAdd:
         qWarning() << "Cannot setup this device this way. No need to pair this device.";
@@ -314,6 +316,7 @@ DeviceManager::DeviceError DeviceManager::pairDevice(const PairingTransactionId 
 
 DeviceManager::DeviceError DeviceManager::confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &secret)
 {
+    Q_UNUSED(secret)
     if (m_pairingsJustAdd.contains(pairingTransactionId)) {
         qWarning() << "this SetupMethod is not implemented yet";
         m_pairingsJustAdd.remove(pairingTransactionId);

@@ -136,6 +136,7 @@ void DevicePluginPhilipsHue::deviceRemoved(Device *device)
 
 DeviceManager::DeviceSetupStatus DevicePluginPhilipsHue::confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params)
 {
+    Q_UNUSED(deviceClassId)
     Param ipParam;
     foreach (const Param &param, params) {
         if (param.name() == "ip") {
@@ -260,7 +261,7 @@ void DevicePluginPhilipsHue::getLightsFinished(int id, const QVariant &params)
 
 void DevicePluginPhilipsHue::getFinished(int id, const QVariant &params)
 {
-    qDebug() << "got lights" << params;
+    qDebug() << "got lights" << params << id;
 }
 
 void DevicePluginPhilipsHue::lightStateChanged()

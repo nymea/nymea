@@ -5,6 +5,8 @@ CONFIG += plugin
 
 QT += network
 
+QT += network
+
 INCLUDEPATH += ../../../libguh
 LIBS += -L../../../libguh -lguh
 

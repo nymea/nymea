@@ -3,7 +3,9 @@ include(../guh.pri)
 TEMPLATE = lib
 CONFIG += plugin
 
-INCLUDEPATH += $$top_srcdir/libguh
+QT += network
+
+INCLUDEPATH += ../../../libguh
 LIBS += -L../../../libguh -lguh
 
 infofile.output = plugininfo.h

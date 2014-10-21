@@ -24,6 +24,8 @@
 #include <QTcpSocket>
 #include <QSslSocket>
 
+#include "plugin/deviceplugin.h"
+
 class SmtpClient : public QObject
 {
     Q_OBJECT
@@ -38,6 +40,7 @@ public:
         InitState,
         HandShakeState,
         AuthentificationState,
+        StartTlsState,
         UserState,
         PasswordState,
         MailState,
@@ -48,24 +51,27 @@ public:
         CloseState
     };
 
-    enum ConnectionType{
-        TcpConnection,      // no encryption
-        SslConnection,      // SSL
-        TlsConnection       // STARTTLS
+    enum EncryptionType{
+        EncryptionNone,  // no encryption
+        EncryptionSSL,   // SSL
+        EncryptionTLS    // STARTTLS
     };
 
-    explicit SmtpClient();
+    explicit SmtpClient(QObject *parent = 0);
+    explicit SmtpClient(QString host = QString(), int port = 465, QString user = QString(), QString password = QString(), AuthMethod authMethod = AuthPlain, EncryptionType encryptionType = EncryptionNone, QObject *parent = 0);
+
     void connectToHost();
     void login(const QString &user, const QString &password);
     void logout();
-    bool sendMail(const QString &from, const QString &to, const QString &subject, const QString &body);
+    bool sendMail(const QString &subject, const QString &body, const ActionId &actionId);
 
     void setHost(const QString &host);
     void setPort(const int &port);
-    void setConnectionType(const ConnectionType &connectionType);
+    void setEncryptionType(const EncryptionType &encryptionType);
     void setAuthMethod(const AuthMethod &authMethod);
     void setUser(const QString &user);
     void setPassword(const QString &password);
+    void setSender(const QString &sender);
     void setRecipiant(const QString &rcpt);
 
 
@@ -74,17 +80,19 @@ private:
     QSslSocket *m_socket;
     QString m_host;
     int m_port;
-    ConnectionType m_connectionType;
-    AuthMethod m_authMethod;
     QString m_user;
     QString m_password;
-    QString m_from;
+    QString m_sender;
+    AuthMethod m_authMethod;
+    EncryptionType m_encryptionType;
     QString m_rcpt;
     QString m_subject;
     QString m_boy;
     QString m_message;
+    ActionId m_actionId;
 
 signals:
+    void sendMailFinished(const bool &success, const ActionId &actionId);
 
 private slots:
     void socketError(QAbstractSocket::SocketError error);

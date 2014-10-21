@@ -42,8 +42,10 @@ private:
     QHash <SmtpClient*, Device*> m_clients;
 
 private slots:
-    void testLoginFinished(const bool &success);
+
+public slots:
     void sendMailFinished(const bool &success, const ActionId &actionId);
+
 
 };
 

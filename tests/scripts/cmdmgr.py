@@ -21,10 +21,15 @@ methods = {'List supported Vendors': 'list_vendors',
 
 
 def get_selection(title, options):
+
     print "\n\n", title
     for i in range(0,len(options)):
         print "%i: %s" % (i, options[i])
     selection = raw_input("Enter selection: ")
+    if not selection:
+	print "-> error in selection"
+	return
+      
     return int(selection)
 
 def send_command(method, params = None):
@@ -61,7 +66,8 @@ def select_vendor():
         vendorList.append(vendors[i]['name'])
         vendorIdList.append(vendors[i]['id'])
     selection = get_selection("Please select vendor", vendorList)
-    return vendorIdList[selection]
+    if selection != None:
+	return vendorIdList[selection]
 
 def get_deviceClasses(vendorId = None):
     params = {};
@@ -88,7 +94,8 @@ def select_deviceClass():
         deviceClassList.append(deviceClasses[i]['name'])
         deviceClassIdList.append(deviceClasses[i]['id'])
     selection = get_selection("Please select device class", deviceClassList)
-    return deviceClassIdList[selection]
+    if selection != None:
+	return deviceClassIdList[selection]
 
 def select_configured_device():
     devices = get_configured_devices()
@@ -98,7 +105,8 @@ def select_configured_device():
         deviceList.append(device['name'])
         deviceIdList.append(device['id'])
     selection = get_selection("Please select a device: ", deviceList)
-    return deviceIdList[selection]
+    if selection != None:    
+	return deviceIdList[selection]
 
 def get_action_types(deviceClassId):
     params = {}
@@ -141,7 +149,8 @@ def read_params(paramTypes):
 def select_valueOperator():
     valueOperators = ["OperatorTypeEquals", "OperatorTypeNotEquals", "OperatorTypeLess", "OperatorTypeGreater"]
     selection = get_selection("Please select an operator to compare this parameter: ", valueOperators)
-    return valueOperators[selection]
+    if selection != None:
+        return valueOperators[selection]
 
 def read_paramDescriptors(paramTypes):
     params = []
@@ -178,7 +187,8 @@ def discover_device(deviceClassId = None):
         deviceDescriptorList.append("%s (%s)" % (deviceDescriptor['title'], deviceDescriptor['description']))
         deviceDescriptorIdList.append(deviceDescriptor['id'])
     selection = get_selection("Please select a device descriptor", deviceDescriptorList)
-    return deviceDescriptorIdList[selection]
+    if selection != None:
+        return deviceDescriptorIdList[selection]
 
 def get_deviceClass(deviceClassId):
     deviceClasses = get_deviceClasses()
@@ -279,7 +289,8 @@ def select_device():
         deviceList.append(devices[i]['name'])
         deviceIdList.append(devices[i]['id'])
     selection = get_selection("Please select a device", deviceList)
-    return deviceIdList[selection]
+    if selection != None:
+        return deviceIdList[selection]
 
 def remove_device():
     deviceId = select_device()
@@ -309,7 +320,8 @@ def select_eventType(deviceClassId):
     for i in range(len(eventTypes)):
         eventTypeList.append(eventTypes[i]['name'])
     selection = get_selection("Please select an action type:", eventTypeList)
-    return eventTypes[selection]
+    if selection != None:
+        return eventTypes[selection]
 
 
 def execute_action():
@@ -405,7 +417,8 @@ def list_rules():
 def select_rule():
     ruleIds = send_command("Rules.GetRules", {})['params']['ruleIds']
     selection = get_selection("Please select rule:", ruleIds)
-    return ruleIds[selection]
+    if selection != None:
+	return ruleIds[selection]
 
 def remove_rule():
     ruleId = select_rule()
@@ -427,9 +440,10 @@ print "connected to", packet["server"], "\nserver version:", packet["version"], 
 
 while True:
     selection = get_selection("What do you want to do?", methods.keys())
-    selectionKey = methods.keys()
-    methodName = methods[methods.keys()[selection]]
-    methodToCall = globals()[methods[methods.keys()[selection]]]
-    methodToCall()
+    if selection != None:
+	selectionKey = methods.keys()
+	methodName = methods[methods.keys()[selection]]
+	methodToCall = globals()[methods[methods.keys()[selection]]]
+	methodToCall()
 
 

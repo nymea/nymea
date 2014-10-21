@@ -38,11 +38,12 @@ public:
     DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
 
 private:
-    SmtpClient *m_smtpClient;
+    QHash <SmtpClient*, Device*> m_clients;
 
 private slots:
 
 public slots:
+    void sendMailFinished(const bool &success, const ActionId &actionId);
 
 
 };

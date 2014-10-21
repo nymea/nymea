@@ -119,14 +119,16 @@ void SmtpClient::readData()
         break;
     case HandShakeState:
         if(responseLine == "250"){
-            qDebug() << "Handshake";
-            m_socket->startClientEncryption();
+            if(!m_socket->isEncrypted() && m_encryptionType != EncryptionNone){
+                m_socket->startClientEncryption();
+            }
             send("EHLO localhost");
             m_state = AuthentificationState;
         }
         if(responseLine == "220"){
-            qDebug() << "TLS Handshake";
-            m_socket->startClientEncryption();
+            if(!m_socket->isEncrypted() && m_encryptionType != EncryptionNone){
+                m_socket->startClientEncryption();
+            }
             send("EHLO localhost");
             m_state = AuthentificationState;
         }
@@ -152,7 +154,7 @@ void SmtpClient::readData()
         break;
     case AuthentificationState:
         if(responseLine == "250"){
-            if(m_authMethod == AuthMethodLogin){
+            if(m_authMethod == AuthLogin){
                 send("AUTH LOGIN");
                 m_state = UserState;
                 break;

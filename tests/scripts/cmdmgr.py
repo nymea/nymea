@@ -225,8 +225,8 @@ def add_configured_device(deviceClassId):
 
     print "adddevice command params:", params
     response = send_command("Devices.AddConfiguredDevice", params)
-    if response['params']['success'] != True:
-        print "Error executing method: %s" % response
+    if response['status'] != "success":
+        print "Error executing method: ",  response
         return
     print "Added device: %s" % response['params']['deviceId']
 
@@ -238,8 +238,8 @@ def add_discovered_device(deviceClassId, deviceDescriptorId):
     deviceClass = get_deviceClass(deviceClassId)
     if deviceClass['setupMethod'] == "SetupMethodJustAdd":
         response = send_command("Devices.AddConfiguredDevice", params)
-        if not response['params']['success']:
-            print "Adding device failed: %s" % response['params']['errorMessage']
+        if not response['status'] == "success":
+            print "Adding device failed: %s" % response['params']['deviceError']
         else:
             print "Device added successfully. Device ID: %s" % response['params']['deviceId']
     else:
@@ -248,8 +248,8 @@ def add_discovered_device(deviceClassId, deviceDescriptorId):
         params['deviceDescriptorId'] = deviceDescriptorId
         response = send_command("Devices.PairDevice", params)
         print "pairdevice response:", response
-        if not response['params']['success']:
-            print "Pairing failed: %s", response['params']['errorMessage']
+        if not response['status'] == "success":
+            print "Pairing failed: %s", response['params']['deviceError']
             return
         else:
             print "\nPairing device %s\n\n%s" % (deviceClass['name'], response['params']['displayMessage'])
@@ -259,11 +259,10 @@ def add_discovered_device(deviceClassId, deviceDescriptorId):
             params = {}
             params['pairingTransactionId'] = response['params']['pairingTransactionId']
             response = send_command("Devices.ConfirmPairing", params)
-            if response['params']['success']:
-                success = True
-                print "Device paired successfully"
-            else:
-                print "Error pairing device: %s" % response['params']['errorMessage']
+	if response['status'] == "success":
+            print "Device paired successfully"
+        else:
+            print "Error pairing device: %s" % response['params']['deviceError']
 
 
 def add_device():
@@ -298,10 +297,10 @@ def remove_device():
     params = {}
     params['deviceId'] = deviceId
     response = send_command("Devices.RemoveConfiguredDevice", params)
-    if response['params']['success']:
+    if response['status'] == "success":
         print "Successfully deleted device"
     else:
-        print "Error deleting device: %s" % response['params']['errorMessage']
+        print "Error deleting device: %s" % response['params']['deviceError']
 
 def select_actionType(deviceClassId):
     actions = get_action_types(deviceClassId)

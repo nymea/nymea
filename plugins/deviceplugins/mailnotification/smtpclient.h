@@ -53,17 +53,15 @@ public:
     };
 
     enum EncryptionType{
-        EncryptionNone,  // no encryption
-        EncryptionSSL,   // SSL
-        EncryptionTLS    // STARTTLS
+        EncryptionTypeNone,
+        EncryptionTypeSSL,
+        EncryptionTypeTLS
     };
 
     explicit SmtpClient(QObject *parent = 0);
-    explicit SmtpClient(QString host = QString(), int port = 465, QString user = QString(), QString password = QString(), AuthMethod authMethod = AuthPlain, EncryptionType encryptionType = EncryptionNone, QObject *parent = 0);
 
     void connectToHost();
-    void login(const QString &user, const QString &password);
-    void logout();
+    void testLogin();
     bool sendMail(const QString &subject, const QString &body, const ActionId &actionId);
 
     void setHost(const QString &host);
@@ -73,7 +71,7 @@ public:
     void setUser(const QString &user);
     void setPassword(const QString &password);
     void setSender(const QString &sender);
-    void setRecipiant(const QString &rcpt);
+    void setRecipient(const QString &rcpt);
 
 
 private:
@@ -92,8 +90,11 @@ private:
     QString m_message;
     ActionId m_actionId;
 
+    bool m_testLogin;
+
 signals:
     void sendMailFinished(const bool &success, const ActionId &actionId);
+    void testLoginFinished(const bool &success);
 
 private slots:
     void socketError(QAbstractSocket::SocketError error);

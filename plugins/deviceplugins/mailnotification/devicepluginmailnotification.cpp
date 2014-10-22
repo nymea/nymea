@@ -247,22 +247,25 @@ DeviceManager::DeviceSetupStatus DevicePluginMailNotification::setupDevice(Devic
     // Google mail
     if(device->deviceClassId() == googleMailDeviceClassId){
         device->setName("Google Mail (" + device->paramValue("user").toString() + ")");
-        SmtpClient *smtpClient = new SmtpClient("smtp.gmail.com",
-                                                465,
-                                                device->paramValue("user").toString(),
-                                                device->paramValue("password").toString(),
-                                                SmtpClient::AuthLogin,
-                                                SmtpClient::EncryptionSSL,
-                                                this);
+        SmtpClient *smtpClient = new SmtpClient(this);
+        smtpClient->setHost("smtp.gmail.com");
+        smtpClient->setPort(465);
+        smtpClient->setUser(device->paramValue("user").toString());
+
+        // TODO: use cryptography to save password not as plain text
+        smtpClient->setPassword(device->paramValue("password").toString());
+        smtpClient->setAuthMethod(SmtpClient::AuthMethodLogin);
+        smtpClient->setEncryptionType(SmtpClient::EncryptionTypeSSL);
         smtpClient->setSender(device->paramValue("user").toString());
-        smtpClient->setRecipiant(device->paramValue("recipient").toString());
+        smtpClient->setRecipient(device->paramValue("recipient").toString());
 
+        connect(smtpClient, &SmtpClient::testLoginFinished, this, &DevicePluginMailNotification::testLoginFinished);
         connect(smtpClient, &SmtpClient::sendMailFinished, this, &DevicePluginMailNotification::sendMailFinished);
-
-        // TODO: test connection;
         m_clients.insert(smtpClient,device);
-        return DeviceManager::DeviceSetupStatusSuccess;
-        //return DeviceManager::DeviceSetupStatusAsync;
+
+        smtpClient->testLogin();
+
+        return DeviceManager::DeviceSetupStatusAsync;
     }
     // Custom mail
     if(device->deviceClassId() == customMailDeviceClassId){
@@ -271,33 +274,38 @@ DeviceManager::DeviceSetupStatus DevicePluginMailNotification::setupDevice(Devic
         smtpClient->setHost(device->paramValue("SMTP server").toString());
         smtpClient->setPort(device->paramValue("port").toInt());
         smtpClient->setUser(device->paramValue("user").toString());
+
+        // TODO: use cryptography to save password not as plain text
         smtpClient->setPassword(device->paramValue("password").toString());
 
         if(device->paramValue("authentification").toString() == "PLAIN"){
-            smtpClient->setAuthMethod(SmtpClient::AuthPlain);
-        }
-        if(device->paramValue("authentification").toString() == "LOGIN"){
-            smtpClient->setAuthMethod(SmtpClient::AuthLogin);
+            smtpClient->setAuthMethod(SmtpClient::AuthMethodPlain);
+        }else if(device->paramValue("authentification").toString() == "LOGIN"){
+            smtpClient->setAuthMethod(SmtpClient::AuthMethodLogin);
+        }else{
+            return DeviceManager::DeviceSetupStatusFailure;
         }
 
         if(device->paramValue("encryption").toString() == "NONE"){
-            smtpClient->setEncryptionType(SmtpClient::EncryptionNone);
+            smtpClient->setEncryptionType(SmtpClient::EncryptionTypeNone);
+        } else if(device->paramValue("encryption").toString() == "SSL"){
+            smtpClient->setEncryptionType(SmtpClient::EncryptionTypeSSL);
+        }else if(device->paramValue("encryption").toString() == "TLS"){
+            smtpClient->setEncryptionType(SmtpClient::EncryptionTypeTLS);
+        }else{
+            return DeviceManager::DeviceSetupStatusFailure;
         }
-        if(device->paramValue("encryption").toString() == "SSL"){
-            smtpClient->setEncryptionType(SmtpClient::EncryptionSSL);
-        }
-        if(device->paramValue("encryption").toString() == "TLS"){
-            smtpClient->setEncryptionType(SmtpClient::EncryptionTLS);
-        }
-        smtpClient->setRecipiant(device->paramValue("recipient").toString());
+
+        smtpClient->setRecipient(device->paramValue("recipient").toString());
         smtpClient->setSender(device->paramValue("sender mail").toString());
 
+        connect(smtpClient, &SmtpClient::testLoginFinished, this, &DevicePluginMailNotification::testLoginFinished);
         connect(smtpClient, &SmtpClient::sendMailFinished, this, &DevicePluginMailNotification::sendMailFinished);
-
-        // TODO: test connection;
         m_clients.insert(smtpClient,device);
-        return DeviceManager::DeviceSetupStatusSuccess;
-        //return DeviceManager::DeviceSetupStatusAsync;
+
+        smtpClient->testLogin();
+
+        return DeviceManager::DeviceSetupStatusAsync;
     }
     return DeviceManager::DeviceSetupStatusFailure;
 }
@@ -316,6 +324,26 @@ DeviceManager::DeviceError DevicePluginMailNotification::executeAction(Device *d
         return DeviceManager::DeviceErrorAsync;
     }
     return DeviceManager::DeviceErrorActionTypeNotFound;
+}
+
+void DevicePluginMailNotification::deviceRemoved(Device *device)
+{
+    SmtpClient *smtpClient = m_clients.key(device);
+    m_clients.remove(smtpClient);
+    delete smtpClient;
+}
+
+void DevicePluginMailNotification::testLoginFinished(const bool &success)
+{
+    SmtpClient *smtpClient = static_cast<SmtpClient*>(sender());
+    Device *device = m_clients.value(smtpClient);
+    if(success){
+        emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusSuccess);
+    }else{
+        emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusFailure);
+        m_clients.remove(smtpClient);
+        delete smtpClient;
+    }
 }
 
 void DevicePluginMailNotification::sendMailFinished(const bool &success, const ActionId &actionId)

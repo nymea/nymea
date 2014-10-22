@@ -36,15 +36,14 @@ public:
     DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
     DeviceManager::HardwareResources requiredHardware() const override;
     DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
+    void deviceRemoved(Device *device) override;
 
 private:
     QHash <SmtpClient*, Device*> m_clients;
 
 private slots:
-
-public slots:
+    void testLoginFinished(const bool &success);
     void sendMailFinished(const bool &success, const ActionId &actionId);
-
 
 };
 

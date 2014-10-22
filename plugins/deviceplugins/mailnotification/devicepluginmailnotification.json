@@ -69,7 +69,7 @@
                         {
                             "name": "port",
                             "type": "int",
-                            "defaultValue": 25
+                            "defaultValue": "465"
                         },
                         {
                             "name": "authentification",
@@ -80,7 +80,6 @@
                         {
                             "name": "encryption",
                             "type": "QString",
-                            "defaultValue": "SSL",
                             "allowedValues": ["NONE","SSL","TLS"]
                         }
                     ],

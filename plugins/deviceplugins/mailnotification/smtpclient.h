@@ -32,8 +32,8 @@ class SmtpClient : public QObject
 public:
 
     enum AuthMethod{
-        AuthPlain,
-        AuthLogin
+        AuthMethodPlain,
+        AuthMethodLogin
     };
 
     enum SendState{
@@ -43,6 +43,7 @@ public:
         StartTlsState,
         UserState,
         PasswordState,
+        TestLoginFinishedState,
         MailState,
         RcptState,
         DataState,
@@ -52,17 +53,15 @@ public:
     };
 
     enum EncryptionType{
-        EncryptionNone,  // no encryption
-        EncryptionSSL,   // SSL
-        EncryptionTLS    // STARTTLS
+        EncryptionTypeNone,
+        EncryptionTypeSSL,
+        EncryptionTypeTLS
     };
 
     explicit SmtpClient(QObject *parent = 0);
-    explicit SmtpClient(QString host = QString(), int port = 465, QString user = QString(), QString password = QString(), AuthMethod authMethod = AuthPlain, EncryptionType encryptionType = EncryptionNone, QObject *parent = 0);
 
     void connectToHost();
-    void login(const QString &user, const QString &password);
-    void logout();
+    void testLogin();
     bool sendMail(const QString &subject, const QString &body, const ActionId &actionId);
 
     void setHost(const QString &host);
@@ -72,12 +71,12 @@ public:
     void setUser(const QString &user);
     void setPassword(const QString &password);
     void setSender(const QString &sender);
-    void setRecipiant(const QString &rcpt);
+    void setRecipient(const QString &rcpt);
 
 
 private:
-    SendState m_state;
     QSslSocket *m_socket;
+    SendState m_state;
     QString m_host;
     int m_port;
     QString m_user;
@@ -91,20 +90,18 @@ private:
     QString m_message;
     ActionId m_actionId;
 
+    bool m_testLogin;
+
 signals:
     void sendMailFinished(const bool &success, const ActionId &actionId);
+    void testLoginFinished(const bool &success);
 
 private slots:
     void socketError(QAbstractSocket::SocketError error);
     void connected();
-    void readData();
     void disconnected();
+    void readData();
     void send(const QString &data);
-
-public slots:
-
-
-
 };
 
 #endif // SMTPCLIENT_H

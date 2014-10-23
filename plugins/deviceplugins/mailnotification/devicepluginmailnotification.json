@@ -42,6 +42,41 @@
                     ]
                 },
                 {
+                    "deviceClassId": "59409e8f-0c83-414f-abd5-bbbf2758acba",
+                    "name": "Yahoo Mail",
+                    "createMethods": ["user"],
+                    "paramTypes": [
+                        {
+                            "name": "user",
+                            "type": "QString"
+                        },
+                        {
+                            "name": "password",
+                            "type": "QString"
+                        },
+                        {
+                            "name": "recipient",
+                            "type": "QString"
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "054613b0-3666-4dad-9252-e0ebca187edc",
+                            "name": "Send mail",
+                            "paramTypes": [
+                                {
+                                    "name": "subject",
+                                    "type": "QString"
+                                },
+                                {
+                                    "name": "body",
+                                    "type": "QString"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
                     "deviceClassId": "f4844c97-7ca6-4349-904e-ff9749a9fe74",
                     "name": "Custom Mail",
                     "createMethods": ["user"],

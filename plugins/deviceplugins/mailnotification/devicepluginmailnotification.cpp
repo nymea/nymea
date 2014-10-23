@@ -230,6 +230,7 @@
 #include <QDateTime>
 
 DeviceClassId googleMailDeviceClassId = DeviceClassId("3869884a-1592-4b8f-84a7-994be18ff555");
+DeviceClassId yahooMailDeviceClassId = DeviceClassId("59409e8f-0c83-414f-abd5-bbbf2758acba");
 DeviceClassId customMailDeviceClassId = DeviceClassId("f4844c97-7ca6-4349-904e-ff9749a9fe74");
 
 ActionTypeId sendMailActionTypeId = ActionTypeId("054613b0-3666-4dad-9252-e0ebca187edc");
@@ -245,13 +246,34 @@ DevicePluginMailNotification::~DevicePluginMailNotification()
 DeviceManager::DeviceSetupStatus DevicePluginMailNotification::setupDevice(Device *device)
 {
     // Google mail
-    if(device->deviceClassId() == googleMailDeviceClassId){
+    if(device->deviceClassId() == googleMailDeviceClassId) {
         device->setName("Google Mail (" + device->paramValue("user").toString() + ")");
         SmtpClient *smtpClient = new SmtpClient(this);
         smtpClient->setHost("smtp.gmail.com");
         smtpClient->setPort(465);
         smtpClient->setUser(device->paramValue("user").toString());
+        // TODO: use cryptography to save password not as plain text
+        smtpClient->setPassword(device->paramValue("password").toString());
+        smtpClient->setAuthMethod(SmtpClient::AuthMethodLogin);
+        smtpClient->setEncryptionType(SmtpClient::EncryptionTypeSSL);
+        smtpClient->setSender(device->paramValue("user").toString());
+        smtpClient->setRecipient(device->paramValue("recipient").toString());
 
+        connect(smtpClient, &SmtpClient::testLoginFinished, this, &DevicePluginMailNotification::testLoginFinished);
+        connect(smtpClient, &SmtpClient::sendMailFinished, this, &DevicePluginMailNotification::sendMailFinished);
+        m_clients.insert(smtpClient,device);
+
+        smtpClient->testLogin();
+
+        return DeviceManager::DeviceSetupStatusAsync;
+    }
+    // Yahoo mail
+    if(device->deviceClassId() == yahooMailDeviceClassId) {
+        device->setName("Yahoo Mail (" + device->paramValue("user").toString() + ")");
+        SmtpClient *smtpClient = new SmtpClient(this);
+        smtpClient->setHost("smtp.mail.yahoo.com");
+        smtpClient->setPort(465);
+        smtpClient->setUser(device->paramValue("user").toString());
         // TODO: use cryptography to save password not as plain text
         smtpClient->setPassword(device->paramValue("password").toString());
         smtpClient->setAuthMethod(SmtpClient::AuthMethodLogin);
@@ -268,7 +290,7 @@ DeviceManager::DeviceSetupStatus DevicePluginMailNotification::setupDevice(Devic
         return DeviceManager::DeviceSetupStatusAsync;
     }
     // Custom mail
-    if(device->deviceClassId() == customMailDeviceClassId){
+    if(device->deviceClassId() == customMailDeviceClassId) {
         device->setName("Custom Mail (" + device->paramValue("sender mail").toString() + ")");
         SmtpClient *smtpClient = new SmtpClient(this);
         smtpClient->setHost(device->paramValue("SMTP server").toString());
@@ -278,21 +300,21 @@ DeviceManager::DeviceSetupStatus DevicePluginMailNotification::setupDevice(Devic
         // TODO: use cryptography to save password not as plain text
         smtpClient->setPassword(device->paramValue("password").toString());
 
-        if(device->paramValue("authentification").toString() == "PLAIN"){
+        if(device->paramValue("authentification").toString() == "PLAIN") {
             smtpClient->setAuthMethod(SmtpClient::AuthMethodPlain);
-        }else if(device->paramValue("authentification").toString() == "LOGIN"){
+        } else if(device->paramValue("authentification").toString() == "LOGIN") {
             smtpClient->setAuthMethod(SmtpClient::AuthMethodLogin);
-        }else{
+        } else {
             return DeviceManager::DeviceSetupStatusFailure;
         }
 
-        if(device->paramValue("encryption").toString() == "NONE"){
+        if(device->paramValue("encryption").toString() == "NONE") {
             smtpClient->setEncryptionType(SmtpClient::EncryptionTypeNone);
-        } else if(device->paramValue("encryption").toString() == "SSL"){
+        } else if(device->paramValue("encryption").toString() == "SSL") {
             smtpClient->setEncryptionType(SmtpClient::EncryptionTypeSSL);
-        }else if(device->paramValue("encryption").toString() == "TLS"){
+        } else if(device->paramValue("encryption").toString() == "TLS") {
             smtpClient->setEncryptionType(SmtpClient::EncryptionTypeTLS);
-        }else{
+        } else {
             return DeviceManager::DeviceSetupStatusFailure;
         }
 
@@ -317,10 +339,9 @@ DeviceManager::HardwareResources DevicePluginMailNotification::requiredHardware(
 
 DeviceManager::DeviceError DevicePluginMailNotification::executeAction(Device *device, const Action &action)
 {
-    if(action.actionTypeId() == sendMailActionTypeId){
-        SmtpClient *smtpClient= m_clients.key(device);
+    if(action.actionTypeId() == sendMailActionTypeId) {
+        SmtpClient *smtpClient = m_clients.key(device);
         smtpClient->sendMail(action.param("subject").value().toString(), action.param("body").value().toString(), action.id());
-
         return DeviceManager::DeviceErrorAsync;
     }
     return DeviceManager::DeviceErrorActionTypeNotFound;
@@ -337,20 +358,22 @@ void DevicePluginMailNotification::testLoginFinished(const bool &success)
 {
     SmtpClient *smtpClient = static_cast<SmtpClient*>(sender());
     Device *device = m_clients.value(smtpClient);
-    if(success){
+    if(success) {
         emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusSuccess);
-    }else{
+    } else {
         emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusFailure);
-        m_clients.remove(smtpClient);
-        delete smtpClient;
+        if(m_clients.contains(smtpClient)) {
+            m_clients.remove(smtpClient);
+        }
+        smtpClient->deleteLater();
     }
 }
 
 void DevicePluginMailNotification::sendMailFinished(const bool &success, const ActionId &actionId)
 {
-    if(success){
+    if(success) {
         emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorNoError);
-    }else{
+    } else {
         emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorDeviceNotFound);
     }
 }

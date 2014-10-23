@@ -137,7 +137,8 @@ JsonReply::JsonReply(Type type, JsonHandler *handler, const QString &method, con
     m_type(type),
     m_data(data),
     m_handler(handler),
-    m_method(method)
+    m_method(method),
+    m_timedOut(false)
 {
     connect(&m_timeout, &QTimer::timeout, this, &JsonReply::timeout);
 }
@@ -204,7 +205,11 @@ void JsonReply::startWait()
 
 void JsonReply::timeout()
 {
-    m_data.insert("success", false);
-    m_data.insert("errorMessage", "Command timed out.");
-    finished();
+    m_timedOut = true;
+    emit finished();
+}
+
+bool JsonReply::timedOut() const
+{
+    return m_timedOut;
 }

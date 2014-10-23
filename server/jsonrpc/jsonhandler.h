@@ -53,6 +53,8 @@ public:
     int commandId() const;
     void setCommandId(int commandId);
 
+    bool timedOut() const;
+
 public slots:
     void startWait();
 
@@ -71,6 +73,7 @@ private:
     QString m_method;
     QUuid m_clientId;
     int m_commandId;
+    bool m_timedOut;
 
     QTimer m_timeout;
 

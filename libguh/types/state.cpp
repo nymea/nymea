@@ -40,6 +40,7 @@ State::State(const StateTypeId &stateTypeId, const DeviceId &deviceId):
 {
 }
 
+/*! Returns the id of this State. */
 StateId State::id() const
 {
     return m_id;

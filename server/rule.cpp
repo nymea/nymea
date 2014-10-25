@@ -24,13 +24,15 @@
     \inmodule server
 
     A Rule is always triggered by an \l{EventDescriptor}, has \l{State}{States}
-    to be compared and \l{Action}{Actions} to be executed. Additionally a
-    Rule is either of type \l{Rule::RuleTypeAll} or \l{Rule::RuleTypeAny}
-    which determines if all or any of the \l{State}{States} must be matching
-    in order for the \l{Action}{Actions} to be executed.
+    to be compared and \l{Action}{Actions} to be executed.
 
     \sa EventDescriptor, State, Action
 */
+
+//    Additionally a Rule is either of type \l{Rule::RuleTypeAll} or \l{Rule::RuleTypeAny}
+//    which determines if all or any of the \l{State}{States} must be matching
+//    in order for the \l{Action}{Actions} to be executed.
+
 
 //! \enum Rule::RuleType
 
@@ -54,7 +56,7 @@ Rule::Rule()
 
 }
 
-/*! Constructs a Rule with the given \a id, \a eventDescriptor, \a states and \a actions.*/
+/*! Constructs a Rule with the given \a id, \a eventDescriptorList, \a stateEvaluator and \a actions.*/
 Rule::Rule(const RuleId &id, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actions):
     m_id(id),
     m_eventDescriptors(eventDescriptorList),
@@ -75,7 +77,7 @@ QList<EventDescriptor> Rule::eventDescriptors() const
     return m_eventDescriptors;
 }
 
-/*! Returns the \l{StateEvaluator} that needs to evaluate successfully in order for this to Rule apply. */
+/*! Returns the StateEvaluator that needs to evaluate successfully in order for this to Rule apply. */
 StateEvaluator Rule::stateEvaluator() const
 {
     return m_stateEvaluator;

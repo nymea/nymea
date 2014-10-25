@@ -34,7 +34,7 @@ public:
     StateTypeId stateTypeId() const;
     DeviceId deviceId() const;
 
-    QStringList stateNames() const;
+    //QStringList stateNames() const;
     QVariant value() const;
     void setValue(const QVariant &value);
 

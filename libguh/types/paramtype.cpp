@@ -15,6 +15,16 @@
  *  along with guh. If not, see <http://www.gnu.org/licenses/>.            *
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/*!
+    \class ParamType
+    \brief Describes a certain ParamType.
+
+    \ingroup types
+    \inmodule libguh
+
+    \sa Device, Param
+*/
+
 
 #include "paramtype.h"
 

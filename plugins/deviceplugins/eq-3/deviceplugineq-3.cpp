@@ -17,7 +17,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \page wemo.html
+    \page eq3.html
     \title eQ-3 Max!
 
     \ingroup plugins

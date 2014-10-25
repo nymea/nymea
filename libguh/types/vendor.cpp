@@ -16,6 +16,16 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class Vendor
+    \brief Holds information about a the vendor of a \l{Device}.
+
+    \ingroup types
+    \inmodule libguh
+
+    \sa Device
+*/
+
 #include "vendor.h"
 
 Vendor::Vendor(const VendorId &id, const QString &name):

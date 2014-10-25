@@ -16,6 +16,16 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class Param
+    \brief Holds the parameters of a Param.
+
+    \ingroup types
+    \inmodule libguh
+
+    \sa Device, ParamType, ParamDescriptor
+*/
+
 #include "param.h"
 
 #include <QDebug>

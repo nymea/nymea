@@ -16,6 +16,18 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class ParamDescriptor
+    \brief Describes a certain \l{Param}.
+
+    \ingroup types
+    \inmodule libguh
+
+    An ParamDescriptor describes a \l{Param} in order to match it with a \l{Rule}.
+
+    \sa State, Rule
+*/
+
 #include "paramdescriptor.h"
 
 ParamDescriptor::ParamDescriptor(const QString &name, const QVariant &value):

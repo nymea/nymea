@@ -16,6 +16,17 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class DeviceDescriptor
+    \brief Describes \l{Device}{Devices}.
+
+    \ingroup devices
+    \inmodule libguh
+
+    \sa Device
+*/
+
+
 #include "devicedescriptor.h"
 
 DeviceDescriptor::DeviceDescriptor():

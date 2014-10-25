@@ -32,17 +32,17 @@
     \sa EventDescriptor, State, Action
 */
 
-/*! \enum Rule::RuleType
+//! \enum Rule::RuleType
 
-    Note: There is no RuleTypeNone. If you don't want to compare any
-    states, construct a rule without states in which case it doesn't
-    matter what the Rule's type is.
+//    Note: There is no RuleTypeNone. If you don't want to compare any
+//    states, construct a rule without states in which case it doesn't
+//    matter what the Rule's type is.
 
-    \value RuleTypeAll
-    All States must match in order for the Rule to apply.
-    \value RuleTypeAny
-    Any State must match in order for the Rule to apply.
-*/
+//    \value RuleTypeAll
+//    All States must match in order for the Rule to apply.
+//    \value RuleTypeAny
+//    Any State must match in order for the Rule to apply.
+
 
 #include "rule.h"
 

@@ -31,12 +31,16 @@
 
 #include "statedescriptor.h"
 
+/*! Constructs an StateDescriptor describing an \l{State}.
+ */
 StateDescriptor::StateDescriptor():
     m_operatorType(Types::ValueOperatorEquals)
 {
 
 }
 
+/*! Constructs an StateDescriptor describing an \l{State} with the given \a stateTypeId, \a deviceId, \a stateValue and \a operatorType.
+ */
 StateDescriptor::StateDescriptor(const StateTypeId &stateTypeId, const DeviceId &deviceId, const QVariant &stateValue, Types::ValueOperator operatorType):
     m_stateTypeId(stateTypeId),
     m_deviceId(deviceId),
@@ -46,26 +50,36 @@ StateDescriptor::StateDescriptor(const StateTypeId &stateTypeId, const DeviceId 
 
 }
 
+/*! Returns the StateTypeId of this \l{State}.
+ */
 StateTypeId StateDescriptor::stateTypeId() const
 {
     return m_stateTypeId;
 }
 
+/*! Returns the DeviceId of this \l{State}.
+ */
 DeviceId StateDescriptor::deviceId() const
 {
     return m_deviceId;
 }
 
+/*! Returns the Value of this \l{State}.
+ */
 QVariant StateDescriptor::stateValue() const
 {
     return m_stateValue;
 }
 
+/*! Returns the ValueOperator of this \l{State}.
+ */
 Types::ValueOperator StateDescriptor::operatorType() const
 {
     return m_operatorType;
 }
 
+/*! Overloads the == operator for this \l{State}.Returns true, if the given \a other \l{StateDescriptor} == this StateDescriptor.
+ */
 bool StateDescriptor::operator ==(const StateDescriptor &other) const
 {
     return m_stateTypeId == other.stateTypeId() &&
@@ -74,6 +88,8 @@ bool StateDescriptor::operator ==(const StateDescriptor &other) const
             m_operatorType == other.operatorType();
 }
 
+/*! Overloads the == operator for this \l{State}. Returns true, if the given \a state == an other \l{State}.
+ */
 bool StateDescriptor::operator ==(const State &state) const
 {
     if ((m_stateTypeId != state.stateTypeId()) || (m_deviceId != state.deviceId())) {
@@ -96,6 +112,8 @@ bool StateDescriptor::operator ==(const State &state) const
     return false;
 }
 
+/*! Overloads the != operator for this \l{State}. Returns true, if the given \a state != an other \l{State}.
+ */
 bool StateDescriptor::operator !=(const State &state) const
 {
     return !(operator==(state));

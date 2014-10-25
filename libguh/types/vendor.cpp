@@ -28,27 +28,32 @@
 
 #include "vendor.h"
 
+/*! Constructs an Vendor with the given \a id and the given \a name.
+ */
 Vendor::Vendor(const VendorId &id, const QString &name):
     m_id(id),
     m_name(name)
 {
 }
 
+/*! Returns the id of this vendor. */
 VendorId Vendor::id() const
 {
     return m_id;
 }
-
+/*! Set the id of this vendor with the given \a id. */
 void Vendor::setId(const VendorId &id)
 {
     m_id = id;
 }
 
+/*! Returns the name of this vendor. */
 QString Vendor::name() const
 {
     return m_name;
 }
 
+/*! Set the name of this vendor with the given \a name. */
 void Vendor::setName(const QString &name)
 {
     m_name = name;

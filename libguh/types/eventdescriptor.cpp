@@ -30,7 +30,7 @@
 
 #include "eventdescriptor.h"
 
-/*! Constructs an EventDescriptor describing an Event.
+/*! Constructs an EventDescriptor describing an \l{Event}.
  */
 EventDescriptor::EventDescriptor(const EventTypeId &eventTypeId, const DeviceId &deviceId, const QList<ParamDescriptor> &paramDescriptors):
     m_eventTypeId(eventTypeId),

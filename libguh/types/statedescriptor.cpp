@@ -16,6 +16,19 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class StateDescriptor
+    \brief Describes a certain \l{State}.
+
+    \ingroup types
+    \inmodule libguh
+
+    An StateDescriptor describes a \l{State} in order to match it with a \l{Rule}.
+
+    \sa State, Rule
+*/
+
+
 #include "statedescriptor.h"
 
 StateDescriptor::StateDescriptor():

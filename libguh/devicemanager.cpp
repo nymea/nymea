@@ -42,7 +42,8 @@
     \value HardwareResourceRadio868
         Refers to the 868 MHz radio.
     \value HardwareResourceTimer
-        Refers to the global timer managed by the \l{DeviceManager}. Plugins should not create their own timers, but rather request the global timer using the hardware resources.
+        Refers to the global timer managed by the \l{DeviceManager}. Plugins should not create their own timers,
+        but rather request the global timer using the hardware resources.
 */
 
 /*!
@@ -52,21 +53,58 @@
 
     \value DeviceErrorNoError
         No Error. Everything went fine.
+    \value DeviceErrorPluginNotFound
+        Couldn't find the Plugin for the given id.
     \value DeviceErrorDeviceNotFound
         Couldn't find a \l{Device} for the given id.
     \value DeviceErrorDeviceClassNotFound
         Couldn't find a \l{DeviceClass} for the given id.
     \value DeviceErrorActionTypeNotFound
         Couldn't find the \l{ActionType} for the given id.
+    \value DeviceErrorStateTypeNotFound
+        Couldn't find the \l{StateType} for the given id.
+    \value DeviceErrorEventTypeNotFound
+        Couldn't find the \l{EventType} for the given id.
+    \value DeviceErrorDeviceDescriptorNotFound
+        Couldn't find the \l{DeviceDescriptor} for the given id.
     \value DeviceErrorMissingParameter
         Parameters do not comply to the template.
-    \value DeviceErrorPluginNotFound
-        Couldn't find the Plugin for the given id.
+    \value DeviceErrorInvalidParameter
+        One of the given parameter is not valid.
     \value DeviceErrorSetupFailed
-        Error setting up the \{Device}. It will not be functional.
+        Error setting up the \l{Device}. It will not be functional.
+    \value DeviceErrorDuplicateUuid
+        Error setting up the \l{Device}. The given DeviceId allready exists.
+    \value DeviceErrorCreationMethodNotSupported
+        Error setting up the \l{Device}. This \l{DeviceClass}{CreateMethod} is not supported for this \l{Device}.
+    \value DeviceErrorSetupMethodNotSupported
+        Error setting up the \l{Device}. This \l{DeviceClass}{SetupMethod} is not supported for this \l{Device}.
+    \value DeviceErrorHardwareNotAvailable
+        The Hardware of the \l{Device} is not available.
+    \value DeviceErrorHardwareFailure
+        The Hardware of the \l{Device} has an error.
+    \value DeviceErrorAsync
+        The response of the \l{Device} will be asynchronous.
+    \value DeviceErrorDeviceInUse
+        The \l{Device} is currently bussy.
+    \value DeviceErrorPairingTransactionIdNotFound
+        Couldn't find the PairingTransactionId for the given id.
 */
 
-/*! \fn void DeviceManager::emitEvent(const Event &event)
+/*!
+    \enum DeviceManager::DeviceSetupStatus
+
+    This enum type specifies the setup status of a \l{Device}.
+
+    \value DeviceSetupStatusSuccess
+        No Error. Everything went fine.
+    \value DeviceSetupStatusFailure
+        Something went wrong during the setup.
+    \value DeviceSetupStatusAsync
+        The status of the \l{Device} setup will be emitted asynchronous.
+*/
+
+/*! \fn void DeviceManager::eventTriggered(const Event &event)
     The DeviceManager will emit a \l{Event} described in \a event whenever a Device
     creates one. Normally only \l{GuhCore} should connect to this and execute actions
     after checking back with the \{RulesEngine}. Exceptions might be monitoring interfaces
@@ -119,6 +157,7 @@ DeviceManager::DeviceManager(QObject *parent) :
     // TODO: error handling if no Radio433 detected (GPIO or network), disable radio433 plugins or something...
 }
 
+/*! Destructor of the DeviceManager. Each loaded \l{DevicePlugin} will be deleted.*/
 DeviceManager::~DeviceManager()
 {
     qDebug() << "Shutting down DeviceManager";
@@ -139,6 +178,8 @@ DevicePlugin *DeviceManager::plugin(const PluginId &id) const
     return m_devicePlugins.value(id);
 }
 
+/*! Returns a certain \l{DeviceError} and sets the configurations of the plugin with the given \a pluginId
+    and the given \a pluginConfig */
 DeviceManager::DeviceError DeviceManager::setPluginConfig(const PluginId &pluginId, const ParamList &pluginConfig)
 {
     DevicePlugin *plugin = m_devicePlugins.value(pluginId);
@@ -160,6 +201,7 @@ DeviceManager::DeviceError DeviceManager::setPluginConfig(const PluginId &plugin
     return result;
 }
 
+/*! Returns all the \l{Vendor}s loaded in the system. */
 QList<Vendor> DeviceManager::supportedVendors() const
 {
     return m_supportedVendors.values();
@@ -179,7 +221,8 @@ QList<DeviceClass> DeviceManager::supportedDevices(const VendorId &vendorId) con
     }
     return ret;
 }
-
+/*! Returns a certain \l{DeviceError} and starts the discovering process of the \l{Device} with the given \a deviceClassId
+    and the given \a params.*/
 DeviceManager::DeviceError DeviceManager::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
 {
     qDebug() << "DeviceManager discoverdevices" << params;
@@ -209,23 +252,10 @@ DeviceManager::DeviceError DeviceManager::discoverDevices(const DeviceClassId &d
 }
 
 /*! Add a new configured device for the given \l{DeviceClass} and the given parameters.
- \a deviceClassId must refer to an existing \{DeviceClass} and \a params must match the parameter description in the \l{DeviceClass}.
+    \a deviceClassId must refer to an existing \{DeviceClass} and \a params must match the parameter description in the \l{DeviceClass}.
     Optionally you can supply an id yourself if you must keep track of the added device. If you don't supply it, a new one will
     be generated. Only devices with \l{DeviceClass::CreateMethodUser} can be created using this method.
-    Returns \l{DeviceManager::DeviceError} to inform about the result.
-    \list
-    \li DeviceManager::DeviceErrorNoError: The device has been created, set up and added to the list of configured devices correctly.
-    \li DeviceManager::DeviceErrorAsync: The device has been created, but the setup requires async operations. For instance a network query.
-    In this case, you should wait for the \l{deviceSetupFinished()} signal to get the final results.
-    \li DeviceManager::DeviceErrorCreateMethodNotSupported: The deviceId you've chosen refers to a DeviceClass which can't be created manually.
-    \li DeviceManager::DeviceErrorDeviceClassNotFound: The given deviceClassId can't be found in the list of supported devices.
-    \li DeviceManager::DeviceErrorMissingParameter: The given params do not suffice for the given deviceClassId.
-    \li DeviceManager::DeviceErrorDeviceParameterError: The given params can't be matched to the ParamTypes for the given deviceClassId.
-    \li DeviceManager::DeviceErrorDuplicateUuid: The given uuid already exists.
-    \li DeviceManager::DeviceErrorPluginNotFound: Couldn't find a plugin that handles this deviceClassId.
-    \li DeviceManager::DeviceErrorSetupFailed: The device couldn't be set up. Even though you supplied all the parameters correctly, something
-    went wrong during setup. Reasons may be a hardware/network failure, wrong username/password or similar, depending on what the device plugin
-    needs to do in order to set up the device.
+    Returns \l{DeviceError} to inform about the result.
 */
 DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId id)
 {
@@ -239,6 +269,11 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassI
     return DeviceErrorCreationMethodNotSupported;
 }
 
+/*! Add a new configured device for the given \l{DeviceClass} the given DeviceDescriptorId. Only devices with \l{DeviceClass::CreateMethodDiscovery}
+    can be created using this method. The \a deviceClassId must refer to an existing \l{DeviceClass} and the \a deviceDescriptorId must refer to an existing DeviceDescriptorId
+    from the discovery.
+    Returns \l{DeviceError} to inform about the result.
+*/
 DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &deviceId)
 {
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
@@ -256,6 +291,10 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassI
 
     return addConfiguredDeviceInternal(deviceClassId, descriptor.params(), deviceId);
 }
+
+/*!
+    Returns \l{DeviceManager}{DeviceError} to inform about the result.
+*/
 
 DeviceManager::DeviceError DeviceManager::pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params)
 {

@@ -30,11 +30,11 @@
     \sa Event, EventDescriptor, Rule, Action
 */
 
-/*! \fn void RuleEngine::ruleAdded(const QUuid &ruleId)
+/*! \fn void RuleEngine::ruleAdded(const RuleId &ruleId)
     Will be emitted whenever a new \l{Rule} is added to this Engine.
     \a ruleId holds the id of the new rule.*/
 
-/*! \fn void RuleEngine::ruleRemoved(const QUuid &ruleId)
+/*! \fn void RuleEngine::ruleRemoved(const RuleId &ruleId)
     Will be emitted whenever a \l{Rule} is removed from this Engine.
     \a ruleId holds the id of the removed rule. You should remove any references
     or copies you hold for this rule.*/
@@ -48,7 +48,7 @@
         Couldn't find a \l{Device} with the given id.
     \value RuleErrorEventTypeNotFound
         Couldn't find a \l{EventType} with the given id.
-    */
+*/
 
 #include "ruleengine.h"
 #include "types/paramdescriptor.h"

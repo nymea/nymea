@@ -46,7 +46,7 @@ pure virtual methods: \l{DevicePlugin::pluginName()}, \l{DevicePlugin::pluginId(
  */
 
 /*!
- \fn void DevicePlugin::radioData(QList<int> rawData)
+ \fn void DevicePlugin::radioData(const QList<int> &rawData)
  If the plugin has requested any radio device using \l{DevicePlugin::requiredHardware()}, this slot will
  be called when there is \a rawData available from that device.
  */
@@ -74,7 +74,7 @@ pure virtual methods: \l{DevicePlugin::pluginName()}, \l{DevicePlugin::pluginId(
  DeviceManager::DeviceErrorAsync and continue processing in an async manner. Once
  you have the reply ready, emit actionExecutionFinished() with the appropriate parameters.
 
- \sa DevicePlugin::report() DevicePlugin::actionExecutionFinished()
+ \sa DevicePlugin::report(), DevicePlugin::actionExecutionFinished()
  */
 
 /*!

@@ -28,7 +28,7 @@
 
     The params must match the template as described in \l{EventType}.
 
-    \sa Device, EventType
+    \sa Device, EventType, EventDescriptor
 */
 
 #include "event.h"

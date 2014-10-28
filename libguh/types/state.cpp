@@ -26,7 +26,7 @@
   States hold the state values for devices. A State is associated to a \l{Device} by
   the \l{State::deviceId()} and represents the value of a state described in a \l{StateType}
 
-  \sa StateType
+  \sa StateType, StateDescriptor
 */
 
 #include "state.h"

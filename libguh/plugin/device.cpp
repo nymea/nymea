@@ -26,7 +26,7 @@
   This class holds the values for configured devices. It is associated with a \{DeviceClass} which
   can be used to get more details about the device.
 
-  \sa DeviceClass
+  \sa DeviceClass, DeviceDescriptor
 */
 
 /*! \fn void Device::stateValueChanged(const QUuid &stateTypeId, const QVariant &value)

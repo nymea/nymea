@@ -7,6 +7,9 @@
 
     \section1 Device Plugins
     \annotatedlist devices
+    
+    \section1 Hardware Resources
+    \annotatedlist hardware
 */
 
 

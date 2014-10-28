@@ -30,17 +30,21 @@
 
 #include "paramdescriptor.h"
 
+/*! Constructs an ParamDescriptor describing an \l{Param} with the given \a name and \a value.
+ *  The ValueOperator is by default ValueOperatorEquals. */
 ParamDescriptor::ParamDescriptor(const QString &name, const QVariant &value):
     Param(name, value),
     m_operatorType(Types::ValueOperatorEquals)
 {
 }
 
+/*! Returns the ValueOperator of this ParamDescriptor. */
 Types::ValueOperator ParamDescriptor::operatorType() const
 {
     return m_operatorType;
 }
 
+/*! Sets the ValueOperator of this ParamDescriptor to the given \a operatorType. */
 void ParamDescriptor::setOperatorType(Types::ValueOperator operatorType)
 {
     m_operatorType = operatorType;

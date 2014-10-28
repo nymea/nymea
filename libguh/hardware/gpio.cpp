@@ -50,7 +50,7 @@ Gpio::~Gpio()
     unexportGpio();
 }
 
-/*! Returns true if the GPIO could be exported in the system file "/sys/class/gpio/export".*/
+/*! Returns true if this GPIO could be exported in the system file "/sys/class/gpio/export". */
 bool Gpio::exportGpio()
 {
     char buf[64];
@@ -68,7 +68,7 @@ bool Gpio::exportGpio()
     return true;
 }
 
-/*! Returns true if the GPIO could be unexported in the system file "/sys/class/gpio/unexport".*/
+/*! Returns true if this GPIO could be unexported in the system file "/sys/class/gpio/unexport". */
 bool Gpio::unexportGpio()
 {
     char buf[64];
@@ -85,7 +85,7 @@ bool Gpio::unexportGpio()
     return true;
 }
 
-/*! Returns true if the GPIO file could be opend.*/
+/*! Returns true, if the file of this GPIO could be opend.*/
 int Gpio::openGpio()
 {
     char buf[64];
@@ -100,7 +100,7 @@ int Gpio::openGpio()
     return fd;
 }
 
-/*! Returns true, if the direction \a dir of the GPIO could be set correctly.
+/*! Returns true, if the direction \a dir of this GPIO could be set correctly.
  *
  * Possible directions are:
  *
@@ -242,7 +242,7 @@ int Gpio::getValue()
     return value;
 }
 
-/*! Returns true, if the \a edge of the GPIO could be set correctly. The \a edge parameter specifies,
+/*! Returns true, if the \a edge of this GPIO could be set correctly. The \a edge parameter specifies,
  *  when an interrupt occurs.
  *
  * Possible values are:

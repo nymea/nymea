@@ -40,31 +40,27 @@ EventTypeId EventType::id() const
     return m_id;
 }
 
-/*! Returns the name of this EventType, e.g. "Temperature changed" */
+/*! Returns the name of this EventType, e.g. "Temperature changed". */
 QString EventType::name() const
 {
     return m_name;
 }
 
-/*! Set the name for this EventType to \a name, e.g. "Temperature changed" */
+/*! Set the name for this EventType to \a name, e.g. "Temperature changed". */
 void EventType::setName(const QString &name)
 {
     m_name = name;
 }
 
-/*!
-  Holds a List describing possible parameters for a \l{Event} of this EventType.
-  e.g. QList(ParamType("temperature", QVariant::Real))
-  */
+/*! Holds a List describing possible parameters for a \l{Event} of this EventType.
+ *  e.g. QList(ParamType("temperature", QVariant::Real)). */
 QList<ParamType> EventType::paramTypes() const
 {
     return m_paramTypes;
 }
 
-/*!
-  Set the parameter description for this EventType to \a parameters,
-  e.g. QList<ParamType>() << ParamType("temperature", QVariant::Real))
-  */
+/*! Set the parameter description for this EventType to \a paramTypes,
+ *  e.g. QList<ParamType>() << ParamType("temperature", QVariant::Real)). */
 void EventType::setParamTypes(const QList<ParamType> &paramTypes)
 {
     m_paramTypes = paramTypes;

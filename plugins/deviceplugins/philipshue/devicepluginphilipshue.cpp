@@ -16,6 +16,29 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \page philipshue.html
+    \title Philips hue
+
+    \ingroup plugins
+    \ingroup network
+
+    This plugin allows to interact with the \l{http://www2.meethue.com/}{Philips hue} bridge. Each light bulp connected to the bridge
+    will appear automatically in the system, once the bridge is added to guh.
+
+    \chapter Plugin properties
+    Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}
+    and \l{Vendor}{Vendors} of this \l{DevicePlugin}.
+
+    Each \l{DeviceClass} has a list of \l{ParamType}{paramTypes}, \l{ActionType}{actionTypes}, \l{StateType}{stateTypes}
+    and \l{EventType}{eventTypes}. The \l{DeviceClass::CreateMethod}{createMethods} parameter describes how the \l{Device}
+    will be created in the system. A device can have more than one \l{DeviceClass::CreateMethod}{CreateMethod}.
+    The \l{DeviceClass::SetupMethod}{setupMethod} describes the setup method of the \l{Device}.
+    The detailed implementation of each \l{DeviceClass} can be found in the source code.
+
+    \quotefile plugins/deviceplugins/philipshue/devicepluginphilipshue.json
+*/
+
 #include "devicepluginphilipshue.h"
 
 #include "plugin/device.h"

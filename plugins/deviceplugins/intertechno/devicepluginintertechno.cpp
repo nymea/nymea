@@ -23,137 +23,21 @@
     \ingroup plugins
     \ingroup rf433
 
-    This plugin allows to controll RF 433 MHz actors an receive remote signals from Intertechno
-    devices (\l{http://www.intertechno.at}).
+    This plugin allows to controll RF 433 MHz actors an receive remote signals from
+    \l{http://www.intertechno.at}{Intertechno} devices.
 
-    Following devices are supported:
+    \chapter Plugin properties
+    Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}
+    and \l{Vendor}{Vendors} of this \l{DevicePlugin}.
 
-    \chapter Supported devices
-        \section1 Actors
-            \table
-            \header
-                \li Model
-                \li Device Type
-            \row
-                \li IT-1500
-                \li Socket Switch
-            \row
-                \li IT-3500L
-                \li Socket Switch
-            \row
-                \li ITLR-3500
-                \li Socket Switch
-            \row
-                \li ITLR-3500T
-                \li Socket Switch
-            \row
-                \li IT-2300
-                \li Multiple Socket Switch
-            \row
-                \li GRR-3500
-                \li Outdoor Socket Switch
-            \row
-                \li IT-3500
-                \li Socket Switch
-            \row
-                \li ITR-3500
-                \li Socket Switch
-            \row
-                \li PA3-1000
-                \li Socket Switch
-            \row
-                \li IT-300L
-                \li Socket Dimmer
-            \row
-                \li ITLR-300
-                \li Socket Dimmer
-            \row
-                \li IT-300
-                \li Socket Dimmer
-            \row
-                \li ITR-300
-                \li Socket Dimmer
-            \row
-                \li ITL-1000
-                \li Switch
-            \row
-                \li ITL-230
-                \li Switch
-            \row
-                \li CMR-1000
-                \li Switch
-            \row
-                \li ITDL-1000
-                \li Switch
-            \row
-                \li CMR-1224
-                \li Switch
-            \row
-                \li ITL-3500
-                \li Switch
-            \row
-                \li ITE-1000
-                \li Switch
-            \row
-                \li ITL-300
-                \li Dimmer
-            \row
-                \li ITL-210
-                \li Dimmer
-            \row
-                \li ITL-150
-                \li Dimmer
-            \row
-                \li ITL-250
-                \li Dimmer (LED)
-            \row
-                \li CMR-300
-                \li Dimmer
-            \row
-                \li ITE-300
-                \li Dimmer
-            \row
-                \li CMR-500
-                \li Jalousie Switch
-            \row
-                \li ITL-500
-                \li Jalousie Switch
-            \row
-                \li ITL-1000
-                \li Jalousie Switch
-            \row
-                \li LBUR-100
-                \li Lamp Switch
-            \endtable
+    Each \l{DeviceClass} has a list of \l{ParamType}{paramTypes}, \l{ActionType}{actionTypes}, \l{StateType}{stateTypes}
+    and \l{EventType}{eventTypes}. The \l{DeviceClass::CreateMethod}{createMethods} parameter describes how the \l{Device}
+    will be created in the system. A device can have more than one \l{DeviceClass::CreateMethod}{CreateMethod}.
+    The \l{DeviceClass::SetupMethod}{setupMethod} describes the setup method of the \l{Device}.
+    The detailed implementation of each \l{DeviceClass} can be found in the source code.
 
-        \section1 Remotes
-            \table
-            \header
-                \li Model
-                \li Device Type
-            \row
-                \li ITK-200
-                \li Mini Remote
-            \row
-                \li ITS-150
-                \li Remote
-            \row
-                \li ITZ-500
-                \li Remote/Timer
-            \row
-                \li YWT-8500
-                \li Wall Sender
-            \row
-                \li ITW-852
-                \li Wall Sender
-            \row
-                \li ITM-100
-                \li Magnet Sensor
-            \row
-                \li PIR-5000
-                \li Moving Sensor
-            \endtable
-  */
+    \quotefile plugins/deviceplugins/intertechno/devicepluginintertechno.json
+*/
 
 #include "devicepluginintertechno.h"
 

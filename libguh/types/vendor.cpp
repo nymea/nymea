@@ -23,7 +23,7 @@
     \ingroup types
     \inmodule libguh
 
-    \sa Device
+    \sa DevicePlugin
 */
 
 #include "vendor.h"

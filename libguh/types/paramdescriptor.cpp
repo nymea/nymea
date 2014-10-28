@@ -25,7 +25,7 @@
 
     An ParamDescriptor describes a \l{Param} in order to match it with a \l{Rule}.
 
-    \sa State, Rule
+    \sa Param, ParamType
 */
 
 #include "paramdescriptor.h"

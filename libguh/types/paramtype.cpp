@@ -22,7 +22,7 @@
     \ingroup types
     \inmodule libguh
 
-    \sa Device, Param
+    \sa Device, Param, ParamDescriptor
 */
 
 

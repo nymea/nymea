@@ -23,7 +23,7 @@
     \ingroup types
     \inmodule libguh
 
-    \sa State
+    \sa State, StateDescriptor
 */
 
 #include "statetype.h"

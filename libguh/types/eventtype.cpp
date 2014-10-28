@@ -23,7 +23,7 @@
     \ingroup types
     \inmodule libguh
 
-    \sa Event
+    \sa Event, EventDescriptor
 */
 
 #include "eventtype.h"

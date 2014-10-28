@@ -11,6 +11,8 @@ headers.fileextensions = "*.h"
 
 imagedirs = images
 
+exampledirs = ..
+
 sourcedirs = ..
-sources.fileextensions = "*.cpp *.qdoc *.json"
+sources.fileextensions = "*.cpp *.qdoc"
 

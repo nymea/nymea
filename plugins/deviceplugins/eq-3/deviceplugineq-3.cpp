@@ -31,151 +31,33 @@
     software is recomanded (min/max setpoint temperature, weekly programm...).
 
     \chapter Supported devices
-        \section1 Max! Cube LAN Gateway
-            In order to use this plugin, you need a \l{http://www.eq-3.de/max-heizungssteuerung-produktdetail/
-            items/bc-lgw-o-tw.html}{Max! Cube LAN Gateway}. This device can be discovered and has following propertys:
-            \section2 Device propertys
-                \section3 Device parameters
-                Following list contains all cube params:
-                    \table
-                    \header
-                        \li Name
-                        \li Description
-                        \li Data Type
-                    \row
-                        \li host address
-                        \li Holds the ip address from the cube
-                        \li string
-                    \row
-                        \li serial number
-                        \li Holds the serial number of the cube. This number is written on the cube.
-                        \li string
-                    \row
-                        \li port
-                        \li Holds the port, over which the cube is reachable
-                        \li int
-                    \row
-                        \li firmware version
-                        \li Holds the firmware version of the cube
-                        \li int
-                    \endtable
+        \section2 Max! Cube LAN Gateway
+            This \l{http://www.eq-3.de/max-heizungssteuerung-produktdetail/
+            items/bc-lgw-o-tw.html}{cube} can be discovered in the network. Every
+            device, which is connected with the cube, will be appear automatically, once the cube is configrued and
+            added to guh.
 
-                \section3 Device states
-                Following list contains all cube \l{State}s:
-                    \table
-                    \header
-                        \li Name
-                        \li Description
-                        \li UUID
-                        \li Data Type
-                    \row
-                        \li connected
-                        \li This state holds connection status of the cube. If the cube is connected, this state will be true.
-                        \li d0a9a369-cf8c-47c4-a12e-f2d076bf12fd
-                        \li bool
-                    \row
-                        \li portal enabled
-                        \li This state shows if the web portal of the cube is enabled. You can enable with the original
-                            Max! software an login into the cube over \l{https://max.eq-3.de/login.jsp}
-                        \li 2c2367da-c229-40ed-9d47-a6e73cd6dc3b
-                        \li bool
-                    \endtable
-
-        \section1 Max! Wall Thermostat
+        \section2 Max! Wall Thermostat
             In order to use this device, you need a \l{http://www.eq-3.de/max-heizungssteuerung-produktdetail/
             items/bc-lgw-o-tw.html}{Max! Cube LAN Gateway}. A \l{http://www.eq-3.de/max-raumloesung-produktdetail/items/bc-tc-c-wm.html}{MAX! Wall Thermostat} can not be added,
-            it will appear automaticaly in the device list, once you add it to the cube. A \l{http://www.eq-3.de/max-raumloesung-produktdetail/items/bc-tc-c-wm.html}{MAX! Wall Thermostat}
-            has following propertys:
-            \section2 Device propertys
-                \section3 Device parameters
-                Following list contains all device params:
-                    \table
-                    \header
-                        \li Name
-                        \li Description
-                        \li Data Type
-                    \row
-                        \li name
-                        \li Holds the name of the device, given during the setup in the cube
-                        \li string
-                    \row
-                        \li parent cube
-                        \li Holds the serial number of the cube, where this device is added
-                        \li string
-                    \row
-                        \li rfAddress
-                        \li Holds the RF address of the device. This parameter is not important for the user,
-                            but for the actions.
-                        \li string
-                    \row
-                        \li room number
-                        \li Holds the room number, where the device was added. This number represents the room
-                            from the cube-room management. Is not a guh paramter.
-                        \li int
-                    \row
-                        \li room name
-                        \li Holds the room name, where the device was added. This is the room name, which was given
-                            during the setup on the Cube.
-                        \li string
-                    \endtable
+            it will appear automatically in the device list, once you add it to the cube.
 
-                \section3 Device states
-                Following list contains all device \l{State}s:
-                    \table
-                    \header
-                        \li Name
-                        \li Description
-                        \li UUID
-                        \li Data Type
-                    \row
-                        \li setpoint temperature [Celsius]
-                        \li Describes the setpoint temperature. The setpoint temperatur represents the whished
-                            temperature, which influences the radiator. This temperature can be controlled also
-                            with the +/- Buttons on the device.
-                        \li 579aa8c6-8814-491b-9e7c-b98108c323d1
-                        \li double
-                    \row
-                        \li current temperature [Celsius]
-                        \li Describes the current measured temperature in the room.
-                        \li 852e7708-db1d-42d1-96e4-19c13598262c
-                        \li double
-                    \row
-                        \li comfort temperature [Celsius]
-                        \li Describes the configured comfort temperature. When the device goes into comfort mode,
-                            than this will be te setpoint temperature.
-                        \li 850380ee-a787-43e7-adb8-768a21a6e64d
-                        \li double
-                    \row
-                        \li eco temperature [Celsius]
-                        \li Describes the configured eco temperature. When the device goes into eco mode,
-                            than this will be te setpoint temperature.
-                        \li 24dfd20d-bc8d-48e4-8162-b20ae0465c41
-                        \li double
-                    \row
-                        \li max setpoint temperature [Celsius]
-                        \li Describes the highest configurable temperature.
-                        \li a8536ddf-a6e4-41c2-89c1-e7102608f5f6
-                        \li double
-                    \row
-                        \li min setpoint temperature [Celsius]
-                        \li Describes the lowest configurable temperature.
-                        \li ceb0ad05-37ad-4b79-a4d9-540c34a7e3e4
-                        \li double
-                    \endtable
+        \section2 Max! Radiator Thermostat
+            In order to use this device, you need a \l{http://www.eq-3.de/max-heizungssteuerung-produktdetail/
+            items/bc-lgw-o-tw.html}{Max! Cube LAN Gateway}. A \l{http://www.eq-3.de/max-heizungssteuerung-produktdetail/items/bc-rt-trx-cyg.html}{MAX! Radiator Thermostat} can not be added,
+            it will appear automatically in the device list, once you add it to the cube.
 
+    \chapter Plugin properties
+    Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}
+    and \l{Vendor}{Vendors} of this \l{DevicePlugin}.
 
-                \section3 Device actions
-                Following list contains all device \l{Action}s:
-                    \table
-                    \header
-                        \li Name
-                        \li Description
-                        \li UUID
-                    \row
-                        \li
-                        \li With this action you can switch WeMo ON (true) or OFF (false).
-                        \li 269f25eb-d0b7-4144-b9ef-801f4ff3e90c
-                    \endtable
+    Each \l{DeviceClass} has a list of \l{ParamType}{paramTypes}, \l{ActionType}{actionTypes}, \l{StateType}{stateTypes}
+    and \l{EventType}{eventTypes}. The \l{DeviceClass::CreateMethod}{createMethods} parameter describes how the \l{Device}
+    will be created in the system. A device can have more than one \l{DeviceClass::CreateMethod}{CreateMethod}.
+    The \l{DeviceClass::SetupMethod}{setupMethod} describes the setup method of the \l{Device}.
+    The detailed implementation of each \l{DeviceClass} can be found in the source code.
+
+    \quotefile plugins/deviceplugins/eq-3/deviceplugineq-3.json
 */
 
 

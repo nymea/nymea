@@ -33,15 +33,15 @@
 
 #include "event.h"
 
+/*! Constructs an Event. */
 Event::Event():
     m_id(EventId::createEventId())
 {
-
 }
 
-/*! Constructs a Event reflecting the \l{Event} given by \a EventTypeId, associated with
-    the \l{Device} given by \a deviceId and the parameters given by \a params. The parameters must
-    match the description in the reflecting \l{Event}.*/
+/*! Constructs an Event reflecting the \l{Event} given by \a eventTypeId, associated with
+ *  the \l{Device} given by \a deviceId and the parameters given by \a params. The parameters must
+ *  match the description in the reflecting \l{Event}. */
 Event::Event(const EventTypeId &eventTypeId, const DeviceId &deviceId, const ParamList &params):
     m_id(EventId::createEventId()),
     m_eventTypeId(eventTypeId),
@@ -50,49 +50,50 @@ Event::Event(const EventTypeId &eventTypeId, const DeviceId &deviceId, const Par
 {
 }
 
-/*! Returns this event's id. Each newly created event will have a new UUID generated. The id will be copied
-    in the copy ctor.*/
+/*! Returns the Id of this Event. Each newly created Event will have a new UUID generated. The id will be copied
+ *  in the copy constructor. */
 EventId Event::eventId() const
 {
     return m_id;
 }
 
-/*! Returns the id of the \l{EventType} which describes this Event.*/
+/*! Returns the id of the \l{EventType} which describes this Event. */
 EventTypeId Event::eventTypeId() const
 {
     return m_eventTypeId;
 }
 
-/*! Set the EventTypeId for this Event. */
+/*! Set the EventTypeId for this Event to the given \a eventTypeId. */
 void Event::setEventTypeId(const EventTypeId &eventTypeId)
 {
     m_eventTypeId = eventTypeId;
 }
 
-/*! Returns the id of the \l{Device} associated with this Event.*/
+/*! Returns the id of the \l{Device} associated with this Event. */
 DeviceId Event::deviceId() const
 {
     return m_deviceId;
 }
 
-/*! Set the DeviceId for this Event.*/
+/*! Set the \a deviceId for this Event. */
 void Event::setDeviceId(const DeviceId &deviceId)
 {
     m_deviceId = deviceId;
 }
 
-/*! Returns the parameters of this Event.*/
+/*! Returns the parameters of this Event. */
 ParamList Event::params() const
 {
     return m_params;
 }
 
-/*! Set the parameters of this Event to \a params.*/
+/*! Set the parameters of this Event to \a params. */
 void Event::setParams(const ParamList &params)
 {
     m_params = params;
 }
 
+/*! Returns the parameter of this Event with a cetrain \a paramName. */
 Param Event::param(const QString &paramName) const
 {
     foreach (const Param &param, m_params) {
@@ -104,7 +105,7 @@ Param Event::param(const QString &paramName) const
 }
 
 /*! Compare this Event to the Event given by \a other.
-    Events are equal (returns true) if eventTypeId, deviceId and params match. */
+ *  Events are equal (returns true) if eventTypeId, deviceId and params match. */
 bool Event::operator ==(const Event &other) const
 {
     bool paramsMatch = true;
@@ -121,6 +122,7 @@ bool Event::operator ==(const Event &other) const
             && paramsMatch;
 }
 
+/*! Writes the eventTypeId and the deviceId of the given \a event to \a dbg. */
 QDebug operator<<(QDebug dbg, const Event &event)
 {
     dbg.nospace() << "Event(EventTypeId: " << event.eventTypeId().toString() << ", DeviceId" << event.deviceId().toString() << ")";
@@ -128,6 +130,7 @@ QDebug operator<<(QDebug dbg, const Event &event)
     return dbg.space();
 }
 
+/*! Writes the each \l{Event} of the given \a events to \a dbg. */
 QDebug operator<<(QDebug dbg, const QList<Event> &events)
 {
     dbg.nospace() << "EventList (count:" << events.count() << ")";

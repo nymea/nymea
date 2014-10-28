@@ -27,45 +27,45 @@
     by \l{DevicePlugin}{DevicePlugins} in order to describe the hardware supported
     by the plugin.
 
-    All Actions must have valid a ActionType in order to be usful.
+    All Actions must have valid a ActionType in order to be useful.
     \sa Action
 */
 
 #include "actiontype.h"
 
-/*! Constructs an ActionType with the given \a id.*/
+/*! Constructs an ActionType with the given \a id. */
 ActionType::ActionType(const ActionTypeId &id):
     m_id(id)
 {
 }
 
-/*! Returns the id of this ActionType.*/
+/*! Returns the id of this ActionType. */
 ActionTypeId ActionType::id() const
 {
     return m_id;
 }
 
-/*! Returns the name of this ActionType */
+/*! Returns the name of this ActionType. */
 QString ActionType::name() const
 {
     return m_name;
 }
 
-/*! Set the \a name for this Action. This will be visible to to the user.*/
+/*! Set the \a name for this Action. This will be visible to the user. */
 void ActionType::setName(const QString &name)
 {
     m_name = name;
 }
 
 /*! Returns the parameter description of this ActionType. \l{Action}{Actions} created
-    from this ActionType must have their parameters matching to this template. */
+ *  from this ActionType must have their parameters matching to this template. */
 QList<ParamType> ActionType::paramTypes() const
 {
     return m_paramTypes;
 }
 
 /*! Set the parameter description of this ActionType. \l{Action}{Actions} created
-    from this ActionType must have their \a parameters matching to this template. */
+ *  from this ActionType must have their \a paramTypes matching to this template. */
 void ActionType::setParamTypes(const QList<ParamType> &paramTypes)
 {
     m_paramTypes = paramTypes;

@@ -29,11 +29,18 @@
   \sa DeviceClass
 */
 
+/*! \fn void Device::stateValueChanged(const QUuid &stateTypeId, const QVariant &value)
+    This signal is emitted when the \l{State} with the given \a stateTypeId changed.
+    The \a value parameter describes the new value of the State.
+*/
+
+
 #include "device.h"
 #include "types/event.h"
 
 #include <QDebug>
 
+/*! Construct an Device with the given \a pluginId, \a id, \a deviceClassId and \a parent. */
 Device::Device(const PluginId &pluginId, const DeviceId &id, const DeviceClassId &deviceClassId, QObject *parent):
     QObject(parent),
     m_id(id),
@@ -44,6 +51,7 @@ Device::Device(const PluginId &pluginId, const DeviceId &id, const DeviceClassId
 
 }
 
+/*! Construct an Device with the given \a pluginId, \a deviceClassId and \a parent. A new DeviceId will be created for this Device. */
 Device::Device(const PluginId &pluginId, const DeviceClassId &deviceClassId, QObject *parent):
     QObject(parent),
     m_id(DeviceId::createDeviceId()),
@@ -101,6 +109,7 @@ void Device::setParams(const ParamList &params)
     m_params = params;
 }
 
+/*! Returns the value of the \l{Param} of this Device with the given \a paramName. */
 QVariant Device::paramValue(const QString &paramName) const
 {
     foreach (const Param &param, m_params) {
@@ -111,6 +120,7 @@ QVariant Device::paramValue(const QString &paramName) const
     return QVariant();
 }
 
+/*! Sets the \a value of the \l{Param} with the given \a paramName. */
 void Device::setParamValue(const QString &paramName, const QVariant &value)
 {
     ParamList params;
@@ -129,6 +139,7 @@ QList<State> Device::states() const
     return m_states;
 }
 
+/*! Returns true, a \l{Param} with the given \a paramName exists for this Device. */
 bool Device::hasParam(const QString &paramName) const
 {
     foreach (const Param &param, m_params) {
@@ -145,6 +156,7 @@ void Device::setStates(const QList<State> &states)
     m_states = states;
 }
 
+/*! Returns true, a \l{State} with the given \a stateTypeId exists for this Device. */
 bool Device::hasState(const StateTypeId &stateTypeId) const
 {
     foreach (const State &state, m_states) {
@@ -184,6 +196,7 @@ void Device::setStateValue(const StateTypeId &stateTypeId, const QVariant &value
     qWarning() << "failed setting state for" << m_name;
 }
 
+/*! Returns the \l{State} with the given \a stateTypeId of this Device. */
 State Device::state(const StateTypeId &stateTypeId) const
 {
     for (int i = 0; i < m_states.count(); ++i) {
@@ -194,6 +207,7 @@ State Device::state(const StateTypeId &stateTypeId) const
     return State(StateTypeId(), DeviceId());
 }
 
+/*! Returns true, if setup of this Device is allready completed. */
 bool Device::setupComplete() const
 {
     return m_setupComplete;

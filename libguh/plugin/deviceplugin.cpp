@@ -50,7 +50,7 @@
  \fn DeviceManager::DeviceError DevicePlugin::executeAction(Device *device, const Action &action)
  This will be called to actually execute actions on the hardware. The \{Device} and
  the \{Action} are contained in the \a device and \a action parameters.
- Return the appropriate \l{DeviceManager}{DeviceError}.
+ Return the appropriate \l{DeviceManager::DeviceError}{DeviceError}.
 
  It is possible to execute actions asynchronously. You never should do anything blocking for
  a long time (e.g. wait on a network reply from the internet) but instead return
@@ -70,14 +70,14 @@
 /*!
   \fn void DevicePlugin::pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceSetupStatus status);
   This signal is emitted when the pairing of a \a pairingTransactionId is finished.
-  The \a status of the  will be described as \l{DeviceManager}{DeviceError}.
+  The \a status of the  will be described as \l{DeviceManager::DeviceError}{DeviceError}.
   \sa confirmPairing()
 */
 
 /*!
   \fn void DevicePlugin::deviceSetupFinished(Device *device, DeviceManager::DeviceSetupStatus status);
   This signal is emitted when the setup of a \a device in this DevicePlugin is finished. The \a status parameter describes the
-  \l{DeviceManager}{DeviceError} that occurred.
+  \l{DeviceManager::DeviceError}{DeviceError} that occurred.
 */
 
 /*!
@@ -89,7 +89,7 @@
   \fn void DevicePlugin::actionExecutionFinished(const ActionId &id, DeviceManager::DeviceError status)
   This signal is to be emitted when you previously have returned \l{DeviceManager}{DeviceErrorAsync}
   in a call of executeAction(). The \a id refers to the executed \l{Action}. The \a status of the \l{Action}
-  execution will be described as \l{DeviceManager}{DeviceError}.
+  execution will be described as \l{DeviceManager::DeviceError}{DeviceError}.
 */
 
 /*!
@@ -281,7 +281,7 @@ void DevicePlugin::deviceRemoved(Device *device)
 }
 
 /*! Confirms the pairing of a \a deviceClassId with the given \a pairingTransactionId and \a params.
- * Returns \l{DeviceManager}{DeviceError} to inform about the result. */
+ * Returns \l{DeviceManager::DeviceError}{DeviceError} to inform about the result. */
 DeviceManager::DeviceSetupStatus DevicePlugin::confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params)
 {
     Q_UNUSED(pairingTransactionId)

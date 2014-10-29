@@ -1,6 +1,6 @@
 {
     "name": "Mail notification",
-    "id": "72aef158-07a3-4714-93b5-fec2f9d912d1",
+    "id": "1ae35df1-1b51-4c93-94fa-3febc77e0318",
     "vendors": [
         {
             "name": "guh",
@@ -8,10 +8,131 @@
             "deviceClasses": [
                 {
                     "deviceClassId": "3869884a-1592-4b8f-84a7-994be18ff555",
-                    "name": "GMail",
+                    "name": "Google Mail",
                     "createMethods": ["user"],
                     "paramTypes": [
-
+                        {
+                            "name": "user",
+                            "type": "QString"
+                        },
+                        {
+                            "name": "password",
+                            "type": "QString"
+                        },
+                        {
+                            "name": "recipient",
+                            "type": "QString"
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "054613b0-3666-4dad-9252-e0ebca187edc",
+                            "name": "Send mail",
+                            "paramTypes": [
+                                {
+                                    "name": "subject",
+                                    "type": "QString"
+                                },
+                                {
+                                    "name": "body",
+                                    "type": "QString"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "deviceClassId": "59409e8f-0c83-414f-abd5-bbbf2758acba",
+                    "name": "Yahoo Mail",
+                    "createMethods": ["user"],
+                    "paramTypes": [
+                        {
+                            "name": "user",
+                            "type": "QString"
+                        },
+                        {
+                            "name": "password",
+                            "type": "QString"
+                        },
+                        {
+                            "name": "recipient",
+                            "type": "QString"
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "054613b0-3666-4dad-9252-e0ebca187edc",
+                            "name": "Send mail",
+                            "paramTypes": [
+                                {
+                                    "name": "subject",
+                                    "type": "QString"
+                                },
+                                {
+                                    "name": "body",
+                                    "type": "QString"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "deviceClassId": "f4844c97-7ca6-4349-904e-ff9749a9fe74",
+                    "name": "Custom Mail",
+                    "createMethods": ["user"],
+                    "paramTypes": [
+                        {
+                            "name": "sender mail",
+                            "type": "QString"
+                        },
+                        {
+                            "name": "user",
+                            "type": "QString"
+                        },
+                        {
+                            "name": "password",
+                            "type": "QString"
+                        },
+                        {
+                            "name": "recipient",
+                            "type": "QString"
+                        },
+                        {
+                            "name": "SMTP server",
+                            "type": "QString"
+                        },
+                        {
+                            "name": "port",
+                            "type": "int",
+                            "defaultValue": "465"
+                        },
+                        {
+                            "name": "authentification",
+                            "type": "QString",
+                            "defaultValue": "LOGIN",
+                            "allowedValues": ["PLAIN", "LOGIN"]
+                        },
+                        {
+                            "name": "encryption",
+                            "type": "QString",
+                            "allowedValues": ["NONE","SSL","TLS"]
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "054613b0-3666-4dad-9252-e0ebca187edc",
+                            "name": "Send mail",
+                            "paramTypes": [
+                                {
+                                    "name": "subject",
+                                    "type": "QString"
+                                },
+                                {
+                                    "name": "body",
+                                    "type": "QString"
+                                }
+                            ]
+                        }
                     ]
                 }
             ]

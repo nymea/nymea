@@ -107,7 +107,7 @@
 
 /*! \fn void DeviceManager::deviceSetupFinished(Device *device, DeviceError status);
     This signal is emitted when the setup of a \a device is finished. The \a status parameter describes the
-    \l{DeviceManager}{DeviceError} that occurred.
+    \l{DeviceManager::DeviceError}{DeviceError} that occurred.
 */
 
 /*! \fn void DeviceManager::deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
@@ -123,12 +123,12 @@
 
 /*! \fn void DeviceManager::actionExecutionFinished(const ActionId &actionId, DeviceError status);
     The DeviceManager will emit a this Signal when the \l{Action} with the given \a actionId is finished.
-    The \a status of the \l{Action} execution will be described as \l{DeviceManager}{DeviceError}.
+    The \a status of the \l{Action} execution will be described as \l{DeviceManager::DeviceError}{DeviceError}.
 */
 
 /*! \fn void DeviceManager::pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceError status, const DeviceId &deviceId = DeviceId());
     The DeviceManager will emit a this Signal when the pairing of a \l{Device} with the \a deviceId and \a pairingTransactionId is finished.
-    The \a status of the pairing will be described as \l{DeviceManager}{DeviceError}.
+    The \a status of the pairing will be described as \l{DeviceManager::DeviceError}{DeviceError}.
 */
 
 /*! \fn void DeviceManager::eventTriggered(const Event &event)
@@ -317,7 +317,7 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassI
 }
 
 /*! Trys to pair a Device with the given \a pairingTransactionId, \a deviceClassId and \a params.
- *  Returns \l{DeviceManager}{DeviceError} to inform about the result. */
+ *  Returns \l{DeviceManager::DeviceError}{DeviceError} to inform about the result. */
 DeviceManager::DeviceError DeviceManager::pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params)
 {
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
@@ -347,7 +347,7 @@ DeviceManager::DeviceError DeviceManager::pairDevice(const PairingTransactionId 
 }
 
 /*! Trys to pair a Device with the given \a pairingTransactionId, \a deviceClassId and \a deviceDescriptorId.
- *  Returns \l{DeviceManager}{DeviceError} to inform about the result. */
+ *  Returns \l{DeviceManager::DeviceError}{DeviceError} to inform about the result. */
 DeviceManager::DeviceError DeviceManager::pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId)
 {
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
@@ -378,7 +378,7 @@ DeviceManager::DeviceError DeviceManager::pairDevice(const PairingTransactionId 
 }
 
 /*! Confirms the pairing of a \l{Device} with the given \a pairingTransactionId and \a secret.
- *  Returns \l{DeviceManager}{DeviceError} to inform about the result. */
+ *  Returns \l{DeviceManager::DeviceError}{DeviceError} to inform about the result. */
 DeviceManager::DeviceError DeviceManager::confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &secret)
 {
     Q_UNUSED(secret)

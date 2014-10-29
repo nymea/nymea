@@ -24,22 +24,26 @@
 #include <QTcpSocket>
 #include <QSslSocket>
 
+#include "plugin/deviceplugin.h"
+
 class SmtpClient : public QObject
 {
     Q_OBJECT
 public:
 
     enum AuthMethod{
-        AuthPlain,
-        AuthLogin
+        AuthMethodPlain,
+        AuthMethodLogin
     };
 
     enum SendState{
         InitState,
         HandShakeState,
         AuthentificationState,
+        StartTlsState,
         UserState,
         PasswordState,
+        TestLoginFinishedState,
         MailState,
         RcptState,
         DataState,
@@ -48,55 +52,56 @@ public:
         CloseState
     };
 
-    enum ConnectionType{
-        TcpConnection,      // no encryption
-        SslConnection,      // SSL
-        TlsConnection       // STARTTLS
+    enum EncryptionType{
+        EncryptionTypeNone,
+        EncryptionTypeSSL,
+        EncryptionTypeTLS
     };
 
-    explicit SmtpClient();
+    explicit SmtpClient(QObject *parent = 0);
+
     void connectToHost();
-    void login(const QString &user, const QString &password);
-    void logout();
-    bool sendMail(const QString &from, const QString &to, const QString &subject, const QString &body);
+    void testLogin();
+    bool sendMail(const QString &subject, const QString &body, const ActionId &actionId);
 
     void setHost(const QString &host);
     void setPort(const int &port);
-    void setConnectionType(const ConnectionType &connectionType);
+    void setEncryptionType(const EncryptionType &encryptionType);
     void setAuthMethod(const AuthMethod &authMethod);
     void setUser(const QString &user);
     void setPassword(const QString &password);
-    void setRecipiant(const QString &rcpt);
+    void setSender(const QString &sender);
+    void setRecipient(const QString &rcpt);
 
 
 private:
-    SendState m_state;
     QSslSocket *m_socket;
+    SendState m_state;
     QString m_host;
     int m_port;
-    ConnectionType m_connectionType;
-    AuthMethod m_authMethod;
     QString m_user;
     QString m_password;
-    QString m_from;
+    QString m_sender;
+    AuthMethod m_authMethod;
+    EncryptionType m_encryptionType;
     QString m_rcpt;
     QString m_subject;
     QString m_boy;
     QString m_message;
+    ActionId m_actionId;
+
+    bool m_testLogin;
 
 signals:
+    void sendMailFinished(const bool &success, const ActionId &actionId);
+    void testLoginFinished(const bool &success);
 
 private slots:
     void socketError(QAbstractSocket::SocketError error);
     void connected();
-    void readData();
     void disconnected();
+    void readData();
     void send(const QString &data);
-
-public slots:
-
-
-
 };
 
 #endif // SMTPCLIENT_H

@@ -61,7 +61,7 @@ bool Gpio::exportGpio()
         return false;
     }
 
-    uint len = snprintf(buf, sizeof(buf), "%d", m_gpio);
+    ssize_t len = snprintf(buf, sizeof(buf), "%d", m_gpio);
     if(write(fd, buf, len) != len){
         qDebug() << "ERROR: could not set edge interrupt";
         close(fd);
@@ -82,7 +82,7 @@ bool Gpio::unexportGpio()
         return false;
     }
 
-    uint len = snprintf(buf, sizeof(buf), "%d", m_gpio);
+    ssize_t len = snprintf(buf, sizeof(buf), "%d", m_gpio);
     if(write(fd, buf, len) != len){
         qDebug() << "ERROR: could not set edge interrupt";
         close(fd);

@@ -1,7 +1,6 @@
 TEMPLATE = subdirs
 SUBDIRS += elro         \
     intertechno         \
-#   meisteranker        \
     wifidetector        \
     conrad              \
     mock                \
@@ -11,7 +10,7 @@ SUBDIRS += elro         \
     mailnotification    \
     philipshue          \
     lgsmarttv           \
-    genericelements     \
+    datetime            \
 
 
 

@@ -1,0 +1,74 @@
+{
+    "name": "Time",
+    "id": "c26014c6-87fb-4233-85ed-01d18625018d",
+    "vendors": [
+        {
+            "name": "guh",
+            "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6",
+            "deviceClasses": [
+                {
+                    "deviceClassId": "fbf665fb-9aca-423f-a5f2-924e50ebe6ca",
+                    "name": "Time",
+                    "createMethods": ["discovery"],
+                    "discoveryParamTypes": [
+                        {
+                            "name": "continent",
+                            "type": "QString",
+                            "allowedValues": ["Africa", "America", "Antarctica", "Asia", "Atlantic", "Australia", "Europe", "Indian", "Pacific"]
+                        }
+                    ],
+                    "paramTypes": [
+                        {
+                            "name": "timezone",
+                            "type": "QString"
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "4f867051-bc3c-4b55-8493-10ab74c98a49",
+                            "name": "minute",
+                            "type": "uint",
+                            "defaultValue": "0"
+                        },
+                        {
+                            "id": "5b19d9de-a533-4b6f-b42c-bf8069e31adc",
+                            "name": "hour",
+                            "type": "uint",
+                            "defaultValue": "0"
+                        },
+                        {
+                            "id": "eb5231ea-6a1b-4d7e-a95f-d49e7b25122e",
+                            "name": "day",
+                            "type": "uint",
+                            "defaultValue": "1"
+                        },
+                        {
+                            "id": "fcd8ec96-4488-438a-8b30-58bfe2a7fae2",
+                            "name": "month",
+                            "type": "uint",
+                            "defaultValue": "1"
+                        },
+                        {
+                            "id": "79d4ae9b-ea27-4346-8229-1d90f1ddfc9d",
+                            "name": "year",
+                            "type": "uint",
+                            "defaultValue": "1970"
+                        },
+                        {
+                            "id": "f627d052-cee6-4727-b9c6-0e935d41e04a",
+                            "name": "weekday",
+                            "type": "QString",
+                            "defaultValue": "-"
+                        },
+                        {
+                            "id": "4de5b57b-bb1a-4d66-9ce3-22bb280b075d",
+                            "name": "weekend",
+                            "type": "bool",
+                            "defaultValue": "false"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

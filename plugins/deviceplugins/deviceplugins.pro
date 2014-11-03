@@ -1,7 +1,6 @@
 TEMPLATE = subdirs
 SUBDIRS += elro         \
     intertechno         \
-#   meisteranker        \
     wifidetector        \
     conrad              \
     mock                \
@@ -13,6 +12,7 @@ SUBDIRS += elro         \
     eq-3                \
     wemo                \
     lgsmarttv           \
+    datetime            \
 
 boblight {
     SUBDIRS += boblight

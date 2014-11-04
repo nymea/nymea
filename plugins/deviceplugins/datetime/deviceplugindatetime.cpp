@@ -23,8 +23,6 @@
 #include "devicemanager.h"
 
 #include <QDebug>
-#include <QDateTime>
-#include <QTimeZone>
 
 DeviceClassId dateTimeDeviceClassId = DeviceClassId("fbf665fb-9aca-423f-a5f2-924e50ebe6ca");
 
@@ -32,10 +30,13 @@ StateTypeId minuteStateTypeId = StateTypeId("4f867051-bc3c-4b55-8493-10ab74c98a4
 StateTypeId hourStateTypeId = StateTypeId("5b19d9de-a533-4b6f-b42c-bf8069e31adc");
 StateTypeId dayStateTypeId = StateTypeId("eb5231ea-6a1b-4d7e-a95f-d49e7b25122e");
 StateTypeId monthStateTypeId = StateTypeId("fcd8ec96-4488-438a-8b30-58bfe2a7fae2");
+StateTypeId monthNameStateTypeId = StateTypeId("a37acc9c-5cfb-4687-adce-e56beb32586f");
+StateTypeId monthNameShortStateTypeId = StateTypeId("4d0814f2-60a6-48c4-8b3b-031a099be8e3");
 StateTypeId yearStateTypeId = StateTypeId("79d4ae9b-ea27-4346-8229-1d90f1ddfc9d");
-StateTypeId weekdayStateTypeId = StateTypeId("f627d052-cee6-4727-b9c6-0e935d41e04a");
+StateTypeId weekdayStateTypeId = StateTypeId("452c0388-7fa1-414e-aeb2-8c7c385824b4");
+StateTypeId weekdayNameStateTypeId = StateTypeId("f627d052-cee6-4727-b9c6-0e935d41e04a");
+StateTypeId weekdayNameShortStateTypeId = StateTypeId("7e8e8e53-a83b-493d-850d-b0407f03463a");
 StateTypeId weekendStateTypeId = StateTypeId("4de5b57b-bb1a-4d66-9ce3-22bb280b075d");
-
 
 DevicePluginDateTime::DevicePluginDateTime()
 {
@@ -119,8 +120,12 @@ void DevicePluginDateTime::timeout()
         device->setStateValue(hourStateTypeId, zoneTime.time().hour());
         device->setStateValue(dayStateTypeId, zoneTime.date().day());
         device->setStateValue(monthStateTypeId, zoneTime.date().month());
+        device->setStateValue(monthNameStateTypeId, zoneTime.date().longMonthName(zoneTime.date().month()));
+        device->setStateValue(monthNameShortStateTypeId, zoneTime.date().shortMonthName(zoneTime.date().month()));
         device->setStateValue(yearStateTypeId, zoneTime.date().year());
-        device->setStateValue(weekdayStateTypeId, zoneTime.date().longDayName(zoneTime.date().dayOfWeek()));
+        device->setStateValue(weekdayStateTypeId, zoneTime.date().dayOfWeek());
+        device->setStateValue(weekdayNameStateTypeId, zoneTime.date().longDayName(zoneTime.date().dayOfWeek()));
+        device->setStateValue(weekdayNameShortStateTypeId, zoneTime.date().shortDayName(zoneTime.date().dayOfWeek()));
 
         if(zoneTime.date().dayOfWeek() == 6 || zoneTime.date().dayOfWeek() == 7){
             device->setStateValue(weekendStateTypeId, true);

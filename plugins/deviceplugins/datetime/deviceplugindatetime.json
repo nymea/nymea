@@ -49,14 +49,38 @@
                             "defaultValue": "1"
                         },
                         {
+                            "id": "a37acc9c-5cfb-4687-adce-e56beb32586f",
+                            "name": "month name",
+                            "type": "QString",
+                            "defaultValue": "-"
+                        },
+                        {
+                            "id": "4d0814f2-60a6-48c4-8b3b-031a099be8e3",
+                            "name": "month name short",
+                            "type": "QString",
+                            "defaultValue": "-"
+                        },
+                        {
                             "id": "79d4ae9b-ea27-4346-8229-1d90f1ddfc9d",
                             "name": "year",
                             "type": "uint",
                             "defaultValue": "1970"
                         },
                         {
-                            "id": "f627d052-cee6-4727-b9c6-0e935d41e04a",
+                            "id": "452c0388-7fa1-414e-aeb2-8c7c385824b4",
                             "name": "weekday",
+                            "type": "int",
+                            "defaultValue": "1"
+                        },
+                        {
+                            "id": "f627d052-cee6-4727-b9c6-0e935d41e04a",
+                            "name": "weekday name",
+                            "type": "QString",
+                            "defaultValue": "-"
+                        },
+                        {
+                            "id": "7e8e8e53-a83b-493d-850d-b0407f03463a",
+                            "name": "weekday name short",
                             "type": "QString",
                             "defaultValue": "-"
                         },

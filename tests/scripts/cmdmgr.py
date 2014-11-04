@@ -28,7 +28,7 @@ def get_selection(title, options):
     selection = raw_input("Enter selection: ")
     if not selection:
 	print "-> error in selection"
-	return
+	return None
     return int(selection)
 
 def send_command(method, params = None):

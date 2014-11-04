@@ -69,6 +69,8 @@ public:
         DeviceErrorSetupMethodNotSupported,
         DeviceErrorHardwareNotAvailable,
         DeviceErrorHardwareFailure,
+        // TODO: Bump API version
+        //DeviceErrorAuthentificationFailure,
         DeviceErrorAsync,
         DeviceErrorDeviceInUse,
         DeviceErrorPairingTransactionIdNotFound,

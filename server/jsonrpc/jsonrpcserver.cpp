@@ -235,8 +235,13 @@ void JsonRPCServer::sendNotification(const QVariantMap &params)
 void JsonRPCServer::asyncReplyFinished()
 {
     JsonReply *reply = qobject_cast<JsonReply*>(sender());
-    Q_ASSERT(reply->handler()->validateReturns(reply->method(), reply->data()).first);
-    sendResponse(reply->clientId(), reply->commandId(), reply->data());
+    if (!reply->timedOut()) {
+        Q_ASSERT_X(reply->handler()->validateReturns(reply->method(), reply->data()).first
+                   ,"validating return value", formatAssertion(reply->handler()->name(), reply->method(), reply->handler(), reply->data()).toLatin1().data());
+        sendResponse(reply->clientId(), reply->commandId(), reply->data());
+    } else {
+        sendErrorResponse(reply->clientId(), reply->commandId(), "Command timed out");
+    }
     reply->deleteLater();
 }
 

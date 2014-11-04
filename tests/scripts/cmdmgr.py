@@ -21,10 +21,14 @@ methods = {'List supported Vendors': 'list_vendors',
 
 
 def get_selection(title, options):
+
     print "\n\n", title
     for i in range(0,len(options)):
         print "%i: %s" % (i, options[i])
     selection = raw_input("Enter selection: ")
+    if not selection:
+	print "-> error in selection"
+	return None
     return int(selection)
 
 def send_command(method, params = None):
@@ -61,7 +65,9 @@ def select_vendor():
         vendorList.append(vendors[i]['name'])
         vendorIdList.append(vendors[i]['id'])
     selection = get_selection("Please select vendor", vendorList)
-    return vendorIdList[selection]
+    if selection != None:
+	return vendorIdList[selection]
+      
 
 def get_deviceClasses(vendorId = None):
     params = {};
@@ -88,7 +94,8 @@ def select_deviceClass():
         deviceClassList.append(deviceClasses[i]['name'])
         deviceClassIdList.append(deviceClasses[i]['id'])
     selection = get_selection("Please select device class", deviceClassList)
-    return deviceClassIdList[selection]
+    if selection != None:
+	return deviceClassIdList[selection]
 
 def select_configured_device():
     devices = get_configured_devices()
@@ -98,7 +105,8 @@ def select_configured_device():
         deviceList.append(device['name'])
         deviceIdList.append(device['id'])
     selection = get_selection("Please select a device: ", deviceList)
-    return deviceIdList[selection]
+    if selection != None:    
+	return deviceIdList[selection]
 
 def get_action_types(deviceClassId):
     params = {}
@@ -128,25 +136,41 @@ def list_configured_devices():
 def read_params(paramTypes):
     params = []
     for paramType in paramTypes:
-        paramValue = raw_input("Please enter value for parameter %s (type: %s): " % (paramType['name'], paramType['type']))
-        param = {}
-        param['name'] = paramType['name']
-        param['value'] = paramValue
-#        param[paramType['name']] = paramValue
+        if any("allowedValues" in item for item in paramType):
+	    selection = get_selection("Please select one of following allowed values:", paramType['allowedValues'])
+	    paramValue = paramType['allowedValues'][selection]
+	    param = {}
+	    param['name'] = paramType['name']
+	    param['value'] = paramValue
+	else:  
+	    paramValue = raw_input("Please enter value for parameter %s (type: %s): " % (paramType['name'], paramType['type']))
+	    param = {}
+	    param['name'] = paramType['name']
+	    param['value'] = paramValue
         params.append(param)
     print "got params:", params
     return params
 
 
 def select_valueOperator():
-    valueOperators = ["OperatorTypeEquals", "OperatorTypeNotEquals", "OperatorTypeLess", "OperatorTypeGreater"]
+    valueOperators = ["ValueOperatorEquals", "ValueOperatorNotEquals", "ValueOperatorLess", "ValueOperatorGreater", "ValueOperatorLessOrEqual", "ValueOperatorGreaterOrEqual"]
     selection = get_selection("Please select an operator to compare this parameter: ", valueOperators)
-    return valueOperators[selection]
+    if selection != None:
+        return valueOperators[selection]
+
+
+def select_stateOperator():
+    stateOperators = ["StateOperatorAnd", "StateOperatorOr"]
+    selection = get_selection("Please select an operator to compare this state: ", stateOperators)
+    if selection != None:
+        return stateOperators[selection]
+
 
 def read_paramDescriptors(paramTypes):
     params = []
     for paramType in paramTypes:
-        paramValue = raw_input("Please enter value for parameter %s (type: %s): " % (paramType['name'], paramType['type']))
+        print paramType['allowedValues']
+        paramValue = raw_input("Please enter value for parameter <%s> (type: %s): " % (paramType['name'], paramType['type']))
         operator = select_valueOperator()
         param = {}
         param['name'] = paramType['name']
@@ -178,7 +202,8 @@ def discover_device(deviceClassId = None):
         deviceDescriptorList.append("%s (%s)" % (deviceDescriptor['title'], deviceDescriptor['description']))
         deviceDescriptorIdList.append(deviceDescriptor['id'])
     selection = get_selection("Please select a device descriptor", deviceDescriptorList)
-    return deviceDescriptorIdList[selection]
+    if selection != None:
+        return deviceDescriptorIdList[selection]
 
 def get_deviceClass(deviceClassId):
     deviceClasses = get_deviceClasses()
@@ -215,8 +240,8 @@ def add_configured_device(deviceClassId):
 
     print "adddevice command params:", params
     response = send_command("Devices.AddConfiguredDevice", params)
-    if response['params']['success'] != True:
-        print "Error executing method: %s" % response
+    if response['status'] != "success":
+        print "Error executing method: ",  response
         return
     print "Added device: %s" % response['params']['deviceId']
 
@@ -228,8 +253,8 @@ def add_discovered_device(deviceClassId, deviceDescriptorId):
     deviceClass = get_deviceClass(deviceClassId)
     if deviceClass['setupMethod'] == "SetupMethodJustAdd":
         response = send_command("Devices.AddConfiguredDevice", params)
-        if not response['params']['success']:
-            print "Adding device failed: %s" % response['params']['errorMessage']
+        if not response['status'] == "success":
+            print "Adding device failed: %s" % response['params']['deviceError']
         else:
             print "Device added successfully. Device ID: %s" % response['params']['deviceId']
     else:
@@ -238,8 +263,8 @@ def add_discovered_device(deviceClassId, deviceDescriptorId):
         params['deviceDescriptorId'] = deviceDescriptorId
         response = send_command("Devices.PairDevice", params)
         print "pairdevice response:", response
-        if not response['params']['success']:
-            print "Pairing failed: %s", response['params']['errorMessage']
+        if not response['status'] == "success":
+            print "Pairing failed: %s", response['params']['deviceError']
             return
         else:
             print "\nPairing device %s\n\n%s" % (deviceClass['name'], response['params']['displayMessage'])
@@ -249,11 +274,10 @@ def add_discovered_device(deviceClassId, deviceDescriptorId):
             params = {}
             params['pairingTransactionId'] = response['params']['pairingTransactionId']
             response = send_command("Devices.ConfirmPairing", params)
-            if response['params']['success']:
-                success = True
-                print "Device paired successfully"
-            else:
-                print "Error pairing device: %s" % response['params']['errorMessage']
+	if response['status'] == "success":
+            print "Device paired successfully"
+        else:
+            print "Error pairing device: %s" % response['params']['deviceError']
 
 
 def add_device():
@@ -279,7 +303,8 @@ def select_device():
         deviceList.append(devices[i]['name'])
         deviceIdList.append(devices[i]['id'])
     selection = get_selection("Please select a device", deviceList)
-    return deviceIdList[selection]
+    if selection != None:
+        return deviceIdList[selection]
 
 def remove_device():
     deviceId = select_device()
@@ -287,10 +312,10 @@ def remove_device():
     params = {}
     params['deviceId'] = deviceId
     response = send_command("Devices.RemoveConfiguredDevice", params)
-    if response['params']['success']:
+    if response['status'] == "success":
         print "Successfully deleted device"
     else:
-        print "Error deleting device: %s" % response['params']['errorMessage']
+        print "Error deleting device: %s" % response['params']['deviceError']
 
 def select_actionType(deviceClassId):
     actions = get_action_types(deviceClassId)
@@ -309,7 +334,8 @@ def select_eventType(deviceClassId):
     for i in range(len(eventTypes)):
         eventTypeList.append(eventTypes[i]['name'])
     selection = get_selection("Please select an action type:", eventTypeList)
-    return eventTypes[selection]
+    if selection != None:
+        return eventTypes[selection]
 
 
 def execute_action():
@@ -405,7 +431,8 @@ def list_rules():
 def select_rule():
     ruleIds = send_command("Rules.GetRules", {})['params']['ruleIds']
     selection = get_selection("Please select rule:", ruleIds)
-    return ruleIds[selection]
+    if selection != None:
+	return ruleIds[selection]
 
 def remove_rule():
     ruleId = select_rule()
@@ -427,9 +454,10 @@ print "connected to", packet["server"], "\nserver version:", packet["version"], 
 
 while True:
     selection = get_selection("What do you want to do?", methods.keys())
-    selectionKey = methods.keys()
-    methodName = methods[methods.keys()[selection]]
-    methodToCall = globals()[methods[methods.keys()[selection]]]
-    methodToCall()
+    if selection != None:
+	selectionKey = methods.keys()
+	methodName = methods[methods.keys()[selection]]
+	methodToCall = globals()[methods[methods.keys()[selection]]]
+	methodToCall()
 
 

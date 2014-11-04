@@ -29,7 +29,6 @@ def get_selection(title, options):
     if not selection:
 	print "-> error in selection"
 	return
-      
     return int(selection)
 
 def send_command(method, params = None):
@@ -68,6 +67,7 @@ def select_vendor():
     selection = get_selection("Please select vendor", vendorList)
     if selection != None:
 	return vendorIdList[selection]
+      
 
 def get_deviceClasses(vendorId = None):
     params = {};
@@ -136,26 +136,41 @@ def list_configured_devices():
 def read_params(paramTypes):
     params = []
     for paramType in paramTypes:
-        paramValue = raw_input("Please enter value for parameter %s (type: %s): " % (paramType['name'], paramType['type']))
-        param = {}
-        param['name'] = paramType['name']
-        param['value'] = paramValue
-#        param[paramType['name']] = paramValue
+        if any("allowedValues" in item for item in paramType):
+	    selection = get_selection("Please select one of following allowed values:", paramType['allowedValues'])
+	    paramValue = paramType['allowedValues'][selection]
+	    param = {}
+	    param['name'] = paramType['name']
+	    param['value'] = paramValue
+	else:  
+	    paramValue = raw_input("Please enter value for parameter %s (type: %s): " % (paramType['name'], paramType['type']))
+	    param = {}
+	    param['name'] = paramType['name']
+	    param['value'] = paramValue
         params.append(param)
     print "got params:", params
     return params
 
 
 def select_valueOperator():
-    valueOperators = ["OperatorTypeEquals", "OperatorTypeNotEquals", "OperatorTypeLess", "OperatorTypeGreater"]
+    valueOperators = ["ValueOperatorEquals", "ValueOperatorNotEquals", "ValueOperatorLess", "ValueOperatorGreater", "ValueOperatorLessOrEqual", "ValueOperatorGreaterOrEqual"]
     selection = get_selection("Please select an operator to compare this parameter: ", valueOperators)
     if selection != None:
         return valueOperators[selection]
 
+
+def select_stateOperator():
+    stateOperators = ["StateOperatorAnd", "StateOperatorOr"]
+    selection = get_selection("Please select an operator to compare this state: ", stateOperators)
+    if selection != None:
+        return stateOperators[selection]
+
+
 def read_paramDescriptors(paramTypes):
     params = []
     for paramType in paramTypes:
-        paramValue = raw_input("Please enter value for parameter %s (type: %s): " % (paramType['name'], paramType['type']))
+        print paramType['allowedValues']
+        paramValue = raw_input("Please enter value for parameter <%s> (type: %s): " % (paramType['name'], paramType['type']))
         operator = select_valueOperator()
         param = {}
         param['name'] = paramType['name']

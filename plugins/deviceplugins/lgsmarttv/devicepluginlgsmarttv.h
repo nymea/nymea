@@ -19,8 +19,9 @@
 #ifndef DEVICEPLUGINLGSMARTTV_H
 #define DEVICEPLUGINLGSMARTTV_H
 
+#include "hardware/upnpdiscovery/upnpdevicedescriptor.h"
 #include "plugin/deviceplugin.h"
-#include "tvdiscovery.h"
+#include "tvdevice.h"
 
 class DevicePluginLgSmartTv : public DevicePlugin
 {
@@ -32,12 +33,13 @@ class DevicePluginLgSmartTv : public DevicePlugin
 public:
     explicit DevicePluginLgSmartTv();
 
-    TvDiscovery *m_discovery;
 
     DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
     DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
     DeviceManager::HardwareResources requiredHardware() const override;
     DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
+    void upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &upnpDeviceDescriptorList) override;
+    void upnpNotifyReceived(const QByteArray &notifyData);
 
     void deviceRemoved(Device *device) override;
 
@@ -46,13 +48,9 @@ public:
     QHash<TvDevice*, Device*> m_tvList;
 
 private slots:
-    void discoveryDone(QList<TvDevice *> tvList);
     void pairingFinished(const bool &success);
     void sendingCommandFinished(const bool &success, const ActionId &actionId);
     void statusChanged();
-
-public slots:
-
 
 };
 

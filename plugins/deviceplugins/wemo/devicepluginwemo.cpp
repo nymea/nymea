@@ -141,9 +141,9 @@ ActionTypeId powerActionTypeId = ActionTypeId("269f25eb-d0b7-4144-b9ef-801f4ff3e
 
 DevicePluginWemo::DevicePluginWemo()
 {
-    m_discovery = new WemoDiscovery(this);
+//    m_discovery = new WemoDiscovery(this);
 
-    connect(m_discovery,SIGNAL(discoveryDone(QList<WemoSwitch*>)),this,SLOT(discoveryDone(QList<WemoSwitch*>)));
+//    connect(m_discovery,SIGNAL(discoveryDone(QList<WemoSwitch*>)),this,SLOT(discoveryDone(QList<WemoSwitch*>)));
 }
 
 DeviceManager::DeviceError DevicePluginWemo::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)

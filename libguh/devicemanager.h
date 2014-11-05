@@ -132,6 +132,7 @@ private slots:
 
     void radio433SignalReceived(QList<int> rawData);
     void upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &deviceDescriptorList, const PluginId &pluginId);
+    void upnpNotifyReceived(const QByteArray &notifyData);
     void timerEvent();
 
 private:

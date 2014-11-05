@@ -42,14 +42,14 @@ ActionTypeId hueSetBrightnessActionTypeId = ActionTypeId("3bc95552-cba0-4222-abd
 
 StateTypeId hueReachableStateTypeId = StateTypeId("15794d26-fde8-4a61-8f83-d7830534975f");
 
-DevicePluginPhilipsHue::DevicePluginPhilipsHue():
-    m_discovery(new Discovery(this))
+DevicePluginPhilipsHue::DevicePluginPhilipsHue()
+    //:m_discovery(new Discovery(this))
 {
-    connect(m_discovery, &Discovery::discoveryDone, this, &DevicePluginPhilipsHue::discoveryDone);
+//    connect(m_discovery, &Discovery::discoveryDone, this, &DevicePluginPhilipsHue::discoveryDone);
 
-    m_bridge = new HueBridgeConnection(this);
-    connect(m_bridge, &HueBridgeConnection::createUserFinished, this, &DevicePluginPhilipsHue::createUserFinished);
-    connect(m_bridge, &HueBridgeConnection::getFinished, this, &DevicePluginPhilipsHue::getFinished);
+//    m_bridge = new HueBridgeConnection(this);
+//    connect(m_bridge, &HueBridgeConnection::createUserFinished, this, &DevicePluginPhilipsHue::createUserFinished);
+//    connect(m_bridge, &HueBridgeConnection::getFinished, this, &DevicePluginPhilipsHue::getFinished);
 }
 
 DeviceManager::HardwareResources DevicePluginPhilipsHue::requiredHardware() const

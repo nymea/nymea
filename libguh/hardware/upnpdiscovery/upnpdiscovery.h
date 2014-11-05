@@ -58,6 +58,7 @@ private:
 
 signals:
     void discoveryFinished(const QList<UpnpDeviceDescriptor> &deviceDescriptorList, const PluginId & pluginId);
+    void upnpNotify(const QByteArray &notifyMessage);
 
 private slots:
     void error(QAbstractSocket::SocketError error);

@@ -525,7 +525,7 @@ bool DevicePlugin::transmitData(int delay, QList<int> rawData, int repetitions)
 
 void DevicePlugin::upnpDiscover(QString searchTarget, QString userAgent)
 {
-    if(requiredHardware() == DeviceManager::HardwareResourceUpnpDisovery){
+    if(requiredHardware().testFlag(DeviceManager::HardwareResourceUpnpDisovery)){
         deviceManager()->m_upnpDiscovery->discoverDevices(searchTarget, userAgent, pluginId());
     }
 }

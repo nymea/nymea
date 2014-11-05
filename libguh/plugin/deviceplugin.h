@@ -62,6 +62,7 @@ public:
     virtual void radioData(const QList<int> &rawData) {Q_UNUSED(rawData)}
     virtual void guhTimer() {}
     virtual void upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &upnpDeviceDescriptorList) {Q_UNUSED(upnpDeviceDescriptorList)}
+    virtual void upnpNotifyReceived(const QByteArray &notifyData) {Q_UNUSED(notifyData)}
 
     // Configuration
     virtual QList<ParamType> configurationDescription() const;

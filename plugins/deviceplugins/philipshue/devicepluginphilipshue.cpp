@@ -51,14 +51,29 @@
 #include <QStringList>
 #include <QColor>
 
-DevicePluginPhilipsHue::DevicePluginPhilipsHue():
-    m_discovery(new Discovery(this))
-{
-    connect(m_discovery, &Discovery::discoveryDone, this, &DevicePluginPhilipsHue::discoveryDone);
+VendorId hueVendorId = VendorId("");
 
-    m_bridge = new HueBridgeConnection(this);
-    connect(m_bridge, &HueBridgeConnection::createUserFinished, this, &DevicePluginPhilipsHue::createUserFinished);
-    connect(m_bridge, &HueBridgeConnection::getFinished, this, &DevicePluginPhilipsHue::getFinished);
+DeviceClassId hueDeviceClassId = DeviceClassId("d8f4c397-e05e-47c1-8917-8e72d4d0d47c");
+
+StateTypeId hueColorStateTypeId = StateTypeId("d25423e7-b924-4b20-80b6-77eecc65d089");
+ActionTypeId hueSetColorActionTypeId = ActionTypeId("29cc299a-818b-47b2-817f-c5a6361545e4");
+
+StateTypeId huePowerStateTypeId = StateTypeId("6ac64eee-f356-4ae4-bc85-8c1244d12b02");
+ActionTypeId hueSetPowerActionTypeId = ActionTypeId("7782d91e-d73a-4321-8828-da768e2f6827");
+
+StateTypeId hueBrightnessStateTypeId = StateTypeId("411f489c-4bc9-42f7-b47d-b0581dc0c29e");
+ActionTypeId hueSetBrightnessActionTypeId = ActionTypeId("3bc95552-cba0-4222-abd5-9b668132e442");
+
+StateTypeId hueReachableStateTypeId = StateTypeId("15794d26-fde8-4a61-8f83-d7830534975f");
+
+DevicePluginPhilipsHue::DevicePluginPhilipsHue()
+    //:m_discovery(new Discovery(this))
+{
+//    connect(m_discovery, &Discovery::discoveryDone, this, &DevicePluginPhilipsHue::discoveryDone);
+
+//    m_bridge = new HueBridgeConnection(this);
+//    connect(m_bridge, &HueBridgeConnection::createUserFinished, this, &DevicePluginPhilipsHue::createUserFinished);
+//    connect(m_bridge, &HueBridgeConnection::getFinished, this, &DevicePluginPhilipsHue::getFinished);
 }
 
 DeviceManager::HardwareResources DevicePluginPhilipsHue::requiredHardware() const

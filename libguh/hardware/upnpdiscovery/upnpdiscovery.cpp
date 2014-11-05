@@ -28,13 +28,13 @@ UpnpDiscovery::UpnpDiscovery(QObject *parent) :
     setSocketOption(QAbstractSocket::MulticastTtlOption,QVariant(1));
     setSocketOption(QAbstractSocket::MulticastLoopbackOption,QVariant(1));
 
-    if(!bind(QHostAddress::AnyIPv4,m_port,QUdpSocket::ShareAddress)){
-        qWarning() << "ERROR: UPnP discovery could not bind to port " << m_port;
+    if(!bind(QHostAddress::AnyIPv4, m_port, QUdpSocket::ShareAddress)){
+        qWarning() << "ERROR: UPnP discovery could not bind to port" << m_port;
         return;
     }
 
     if(!joinMulticastGroup(m_host)){
-        qWarning() << "ERROR: UPnP discovery could not join multicast group " << m_host;
+        qWarning() << "ERROR: UPnP discovery could not join multicast group" << m_host;
         return;
     }
 
@@ -53,7 +53,7 @@ UpnpDiscovery::UpnpDiscovery(QObject *parent) :
     connect(this,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(error(QAbstractSocket::SocketError)));
     connect(this, &UpnpDiscovery::readyRead, this, &UpnpDiscovery::readData);
 
-    qDebug() << "--> Successfully created UPnPDiscovery.";
+    qDebug() << "--> UPnP discovery created successfully.";
 }
 
 bool UpnpDiscovery::discoverDevices(const QString &searchTarget, const QString &userAgent, const PluginId &pluginId)
@@ -63,6 +63,11 @@ bool UpnpDiscovery::discoverDevices(const QString &searchTarget, const QString &
     foreach (QNetworkReply* reply, m_informationRequestList.keys()) {
         m_informationRequestList.remove(reply);
         reply->deleteLater();
+    }
+
+    if(state() != BoundState){
+        qDebug() << "ERROR: UPnP not bound to port 1900";
+        return false;
     }
 
     m_searchTarget = searchTarget;
@@ -76,7 +81,8 @@ bool UpnpDiscovery::discoverDevices(const QString &searchTarget, const QString &
                                               "ST: " + m_searchTarget.toUtf8() + "\r\n"
                                               "USR-AGENT: " + m_userAgent.toUtf8() + "\r\n\r\n");
 
-    writeDatagram(ssdpSearchMessage,m_host,m_port);
+    qDebug() << "--> UPnP discovery called.";
+    writeDatagram(ssdpSearchMessage, m_host, m_port);
 
     m_timer->start(3000);
     return true;
@@ -110,19 +116,25 @@ void UpnpDiscovery::readData()
         data.resize(pendingDatagramSize());
         readDatagram(data.data(), data.size(), &hostAddress);
     }
-//    qDebug() << "-----------------------";
+
+//    qDebug() << "======================";
 //    qDebug() << data;
 
+    if (data.contains("NOTIFY")) {
+        emit upnpNotify(data);
+        return;
+    }
+
     // if the data contains the HTTP OK header...
-    if(data.contains("HTTP/1.1 200 OK")){
+    if (data.contains("HTTP/1.1 200 OK")) {
         const QStringList lines = QString(data).split("\r\n");
-        foreach( const QString& line, lines){
+        foreach (const QString& line, lines) {
             int separatorIndex = line.indexOf(':');
             QString key = line.left(separatorIndex).toUpper();
             QString value = line.mid(separatorIndex+1).trimmed();
 
             // get location
-            if(key.contains("LOCATION")){
+            if (key.contains("LOCATION")) {
                 location = QUrl(value);
             }
         }
@@ -147,45 +159,48 @@ void UpnpDiscovery::replyFinished(QNetworkReply *reply)
 
         // parse XML data
         QXmlStreamReader xml(data);
-        while(!xml.atEnd() && !xml.hasError()){
+        while (!xml.atEnd() && !xml.hasError()) {
             xml.readNext();
-            if(xml.isStartDocument()){
+            if (xml.isStartDocument()) {
                 continue;
             }
-            if(xml.isStartElement()){
-                if(xml.name().toString() == "device"){
-                    while(!xml.atEnd()){
-                        if(xml.name() == "deviceType" && xml.isStartElement()){
+            if (xml.isStartElement()) {
+                if (xml.name().toString() == "device") {
+                    while (!xml.atEnd()) {
+                        if (xml.name() == "deviceType" && xml.isStartElement()) {
                             upnpDeviceDescriptor.setDeviceType(xml.readElementText());
                         }
-                        if(xml.name() == "friendlyName" && xml.isStartElement()){
+                        if (xml.name() == "friendlyName" && xml.isStartElement()) {
                             upnpDeviceDescriptor.setFriendlyName(xml.readElementText());
                         }
-                        if(xml.name() == "manufacturer" && xml.isStartElement()){
+                        if (xml.name() == "manufacturer" && xml.isStartElement()) {
                             upnpDeviceDescriptor.setManufacturer(xml.readElementText());
                         }
-                        if(xml.name() == "manufacturerURL" && xml.isStartElement()){
+                        if (xml.name() == "manufacturerURL" && xml.isStartElement()) {
                             upnpDeviceDescriptor.setManufacturerURL(QUrl(xml.readElementText()));
                         }
-                        if(xml.name() == "modelDescription" && xml.isStartElement()){
+                        if (xml.name() == "modelDescription" && xml.isStartElement()) {
                             upnpDeviceDescriptor.setModelDescription(xml.readElementText());
                         }
-                        if(xml.name() == "modelName" && xml.isStartElement()){
+                        if (xml.name() == "modelName" && xml.isStartElement()) {
                             upnpDeviceDescriptor.setModelName(xml.readElementText());
                         }
-                        if(xml.name() == "modelNumber" && xml.isStartElement()){
+                        if (xml.name() == "modelNumber" && xml.isStartElement()) {
                             upnpDeviceDescriptor.setModelNumber(xml.readElementText());
                         }
-                        if(xml.name() == "modelURL" && xml.isStartElement()){
+                        if (xml.name() == "modelURL" && xml.isStartElement()) {
                             upnpDeviceDescriptor.setModelURL(QUrl(xml.readElementText()));
                         }
-                        if(xml.name() == "serialNumber" && xml.isStartElement()){
+                        if (xml.name() == "serialNumber" && xml.isStartElement()) {
                             upnpDeviceDescriptor.setSerialNumber(xml.readElementText());
                         }
-                        if(xml.name() == "UDN" && xml.isStartElement()){
+                        if (xml.name() == "UDN" && xml.isStartElement()) {
                             upnpDeviceDescriptor.setUuid(xml.readElementText());
                         }
-                        if(xml.name() == "UPC" && xml.isStartElement()){
+                        if (xml.name() == "uuid" && xml.isStartElement()) {
+                            upnpDeviceDescriptor.setUuid(xml.readElementText());
+                        }
+                        if (xml.name() == "UPC" && xml.isStartElement()) {
                             upnpDeviceDescriptor.setUpc(xml.readElementText());
                         }
                         xml.readNext();
@@ -198,11 +213,11 @@ void UpnpDiscovery::replyFinished(QNetworkReply *reply)
         // check if we allready have the device in the list
         bool isAlreadyInList = false;
         foreach (UpnpDeviceDescriptor deviceDescriptor, m_deviceList) {
-            if(deviceDescriptor.uuid() == upnpDeviceDescriptor.uuid()){
+            if (deviceDescriptor.uuid() == upnpDeviceDescriptor.uuid()) {
                 isAlreadyInList = true;
             }
         }
-        if(!isAlreadyInList){
+        if (!isAlreadyInList) {
             m_deviceList.append(upnpDeviceDescriptor);
         }
         break;

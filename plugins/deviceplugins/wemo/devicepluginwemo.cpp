@@ -53,9 +53,9 @@
 
 DevicePluginWemo::DevicePluginWemo()
 {
-    m_discovery = new WemoDiscovery(this);
+//    m_discovery = new WemoDiscovery(this);
 
-    connect(m_discovery,SIGNAL(discoveryDone(QList<WemoSwitch*>)),this,SLOT(discoveryDone(QList<WemoSwitch*>)));
+//    connect(m_discovery,SIGNAL(discoveryDone(QList<WemoSwitch*>)),this,SLOT(discoveryDone(QList<WemoSwitch*>)));
 }
 
 DeviceManager::DeviceError DevicePluginWemo::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)

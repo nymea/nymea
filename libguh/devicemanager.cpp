@@ -184,6 +184,7 @@ DeviceManager::DeviceManager(QObject *parent) :
 
     m_upnpDiscovery = new UpnpDiscovery(this);
     connect(m_upnpDiscovery, &UpnpDiscovery::discoveryFinished, this, &DeviceManager::upnpDiscoveryFinished);
+    connect(m_upnpDiscovery, &UpnpDiscovery::upnpNotify, this, &DeviceManager::upnpNotifyReceived);
 }
 
 /*! Destructor of the DeviceManager. Each loaded \l{DevicePlugin} will be deleted. */
@@ -937,6 +938,15 @@ void DeviceManager::upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &dev
     foreach (DevicePlugin *devicePlugin, m_devicePlugins) {
         if (devicePlugin->requiredHardware().testFlag(HardwareResourceUpnpDisovery) && devicePlugin->pluginId() == pluginId) {
             devicePlugin->upnpDiscoveryFinished(deviceDescriptorList);
+        }
+    }
+}
+
+void DeviceManager::upnpNotifyReceived(const QByteArray &notifyData)
+{
+    foreach (DevicePlugin *devicePlugin, m_devicePlugins) {
+        if (devicePlugin->requiredHardware().testFlag(HardwareResourceUpnpDisovery)) {
+            devicePlugin->upnpNotifyReceived(notifyData);
         }
     }
 }

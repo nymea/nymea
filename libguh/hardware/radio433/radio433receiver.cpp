@@ -86,7 +86,9 @@ void Radio433Receiver::run()
             //timeout
         }
         if (fdset[1].revents & POLLPRI){
-            read(fdset[1].fd, buf, 1);
+            if(read(fdset[1].fd, buf, 1) != 1){
+                qWarning() << "ERROR: could not read GPIO";
+            }
             int currentTime = micros();
             int duration = currentTime - lastTime;
             lastTime = currentTime;

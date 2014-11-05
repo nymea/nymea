@@ -68,33 +68,106 @@
 #include <QDateTime>
 
 DeviceClassId googleMailDeviceClassId = DeviceClassId("3869884a-1592-4b8f-84a7-994be18ff555");
+DeviceClassId yahooMailDeviceClassId = DeviceClassId("59409e8f-0c83-414f-abd5-bbbf2758acba");
 DeviceClassId customMailDeviceClassId = DeviceClassId("f4844c97-7ca6-4349-904e-ff9749a9fe74");
 
 ActionTypeId sendMailActionTypeId = ActionTypeId("054613b0-3666-4dad-9252-e0ebca187edc");
 
-
 DevicePluginMailNotification::DevicePluginMailNotification()
 {
-    m_smtpClient = new SmtpClient();
 }
 
 DevicePluginMailNotification::~DevicePluginMailNotification()
 {
-    m_smtpClient->deleteLater();
 }
 
 DeviceManager::DeviceSetupStatus DevicePluginMailNotification::setupDevice(Device *device)
 {
-    Q_UNUSED(device)
     // Google mail
-//    if(device->deviceClassId() == googleMailDeviceClassId){
-//        m_smtpClient->setConnectionType(SmtpClient::SslConnection);
-//        m_smtpClient->setAuthMethod(SmtpClient::AuthLogin);
-//        m_smtpClient->setPort(465);
-//        m_smtpClient->setHost("smtp.gmail.com");
-//        m_smtpClient->login(device->paramValue("user").toString(), device->paramValue("password").toString());
-//    }
-    return DeviceManager::DeviceSetupStatusSuccess;
+    if(device->deviceClassId() == googleMailDeviceClassId) {
+        device->setName("Google Mail (" + device->paramValue("user").toString() + ")");
+        SmtpClient *smtpClient = new SmtpClient(this);
+        smtpClient->setHost("smtp.gmail.com");
+        smtpClient->setPort(465);
+        smtpClient->setUser(device->paramValue("user").toString());
+        // TODO: use cryptography to save password not as plain text
+        smtpClient->setPassword(device->paramValue("password").toString());
+        smtpClient->setAuthMethod(SmtpClient::AuthMethodLogin);
+        smtpClient->setEncryptionType(SmtpClient::EncryptionTypeSSL);
+        smtpClient->setSender(device->paramValue("user").toString());
+        smtpClient->setRecipient(device->paramValue("recipient").toString());
+
+        connect(smtpClient, &SmtpClient::testLoginFinished, this, &DevicePluginMailNotification::testLoginFinished);
+        connect(smtpClient, &SmtpClient::sendMailFinished, this, &DevicePluginMailNotification::sendMailFinished);
+        m_clients.insert(smtpClient,device);
+
+        smtpClient->testLogin();
+
+        return DeviceManager::DeviceSetupStatusAsync;
+    }
+    // Yahoo mail
+    if(device->deviceClassId() == yahooMailDeviceClassId) {
+        device->setName("Yahoo Mail (" + device->paramValue("user").toString() + ")");
+        SmtpClient *smtpClient = new SmtpClient(this);
+        smtpClient->setHost("smtp.mail.yahoo.com");
+        smtpClient->setPort(465);
+        smtpClient->setUser(device->paramValue("user").toString());
+        // TODO: use cryptography to save password not as plain text
+        smtpClient->setPassword(device->paramValue("password").toString());
+        smtpClient->setAuthMethod(SmtpClient::AuthMethodLogin);
+        smtpClient->setEncryptionType(SmtpClient::EncryptionTypeSSL);
+        smtpClient->setSender(device->paramValue("user").toString());
+        smtpClient->setRecipient(device->paramValue("recipient").toString());
+
+        connect(smtpClient, &SmtpClient::testLoginFinished, this, &DevicePluginMailNotification::testLoginFinished);
+        connect(smtpClient, &SmtpClient::sendMailFinished, this, &DevicePluginMailNotification::sendMailFinished);
+        m_clients.insert(smtpClient,device);
+
+        smtpClient->testLogin();
+
+        return DeviceManager::DeviceSetupStatusAsync;
+    }
+    // Custom mail
+    if(device->deviceClassId() == customMailDeviceClassId) {
+        device->setName("Custom Mail (" + device->paramValue("sender mail").toString() + ")");
+        SmtpClient *smtpClient = new SmtpClient(this);
+        smtpClient->setHost(device->paramValue("SMTP server").toString());
+        smtpClient->setPort(device->paramValue("port").toInt());
+        smtpClient->setUser(device->paramValue("user").toString());
+
+        // TODO: use cryptography to save password not as plain text
+        smtpClient->setPassword(device->paramValue("password").toString());
+
+        if(device->paramValue("authentification").toString() == "PLAIN") {
+            smtpClient->setAuthMethod(SmtpClient::AuthMethodPlain);
+        } else if(device->paramValue("authentification").toString() == "LOGIN") {
+            smtpClient->setAuthMethod(SmtpClient::AuthMethodLogin);
+        } else {
+            return DeviceManager::DeviceSetupStatusFailure;
+        }
+
+        if(device->paramValue("encryption").toString() == "NONE") {
+            smtpClient->setEncryptionType(SmtpClient::EncryptionTypeNone);
+        } else if(device->paramValue("encryption").toString() == "SSL") {
+            smtpClient->setEncryptionType(SmtpClient::EncryptionTypeSSL);
+        } else if(device->paramValue("encryption").toString() == "TLS") {
+            smtpClient->setEncryptionType(SmtpClient::EncryptionTypeTLS);
+        } else {
+            return DeviceManager::DeviceSetupStatusFailure;
+        }
+
+        smtpClient->setRecipient(device->paramValue("recipient").toString());
+        smtpClient->setSender(device->paramValue("sender mail").toString());
+
+        connect(smtpClient, &SmtpClient::testLoginFinished, this, &DevicePluginMailNotification::testLoginFinished);
+        connect(smtpClient, &SmtpClient::sendMailFinished, this, &DevicePluginMailNotification::sendMailFinished);
+        m_clients.insert(smtpClient,device);
+
+        smtpClient->testLogin();
+
+        return DeviceManager::DeviceSetupStatusAsync;
+    }
+    return DeviceManager::DeviceSetupStatusFailure;
 }
 
 DeviceManager::HardwareResources DevicePluginMailNotification::requiredHardware() const
@@ -104,34 +177,41 @@ DeviceManager::HardwareResources DevicePluginMailNotification::requiredHardware(
 
 DeviceManager::DeviceError DevicePluginMailNotification::executeAction(Device *device, const Action &action)
 {
-    qDebug() << "execute action " << sendMailActionTypeId.toString();
-    if(action.actionTypeId() == sendMailActionTypeId){
-        // Google mail
-        if(device->deviceClassId() == googleMailDeviceClassId){
-            m_smtpClient->setConnectionType(SmtpClient::SslConnection);
-            m_smtpClient->setAuthMethod(SmtpClient::AuthLogin);
-            m_smtpClient->setPort(465);
-            m_smtpClient->setHost("smtp.gmail.com");
-            m_smtpClient->setUser(device->paramValue("user").toString());
-            m_smtpClient->setPassword(device->paramValue("password").toString());
-            m_smtpClient->setRecipiant(device->paramValue("recipiant").toString());
-        }
-
-        if(device->deviceClassId() == customMailDeviceClassId){
-            m_smtpClient->setConnectionType(SmtpClient::SslConnection);
-            if(device->paramValue("auth").toString() == "PLAIN"){
-                m_smtpClient->setAuthMethod(SmtpClient::AuthPlain);
-            }else if(device->paramValue("auth").toString() == "LOGIN"){
-                m_smtpClient->setAuthMethod(SmtpClient::AuthLogin);
-            }
-            m_smtpClient->setPort(device->paramValue("port").toInt());
-            m_smtpClient->setHost(device->paramValue("host").toString());
-            m_smtpClient->setUser(device->paramValue("user").toString());
-            m_smtpClient->setPassword(device->paramValue("password").toString());
-        }
-
-        m_smtpClient->sendMail(device->paramValue("user").toString(), device->paramValue("recipient").toString(), action.param("subject").value().toString(), action.param("body").value().toString());
+    if(action.actionTypeId() == sendMailActionTypeId) {
+        SmtpClient *smtpClient = m_clients.key(device);
+        smtpClient->sendMail(action.param("subject").value().toString(), action.param("body").value().toString(), action.id());
+        return DeviceManager::DeviceErrorAsync;
     }
+    return DeviceManager::DeviceErrorActionTypeNotFound;
+}
 
-    return DeviceManager::DeviceErrorNoError;
+void DevicePluginMailNotification::deviceRemoved(Device *device)
+{
+    SmtpClient *smtpClient = m_clients.key(device);
+    m_clients.remove(smtpClient);
+    delete smtpClient;
+}
+
+void DevicePluginMailNotification::testLoginFinished(const bool &success)
+{
+    SmtpClient *smtpClient = static_cast<SmtpClient*>(sender());
+    Device *device = m_clients.value(smtpClient);
+    if(success) {
+        emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusSuccess);
+    } else {
+        emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusFailure);
+        if(m_clients.contains(smtpClient)) {
+            m_clients.remove(smtpClient);
+        }
+        smtpClient->deleteLater();
+    }
+}
+
+void DevicePluginMailNotification::sendMailFinished(const bool &success, const ActionId &actionId)
+{
+    if(success) {
+        emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorNoError);
+    } else {
+        emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorDeviceNotFound);
+    }
 }

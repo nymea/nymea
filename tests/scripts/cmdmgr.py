@@ -344,7 +344,7 @@ def execute_action():
     params = {}
     params['actionTypeId'] = actionTypeId
     params['deviceId'] = deviceId
-    send_command("Actions.ExecuteAction", params)
+#    send_command("Actions.ExecuteAction", params)
     actionType = get_actionType(actionTypeId)
     actionParams = read_params(actionType['paramTypes'])
     params['params'] = actionParams

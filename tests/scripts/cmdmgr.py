@@ -169,7 +169,6 @@ def select_stateOperator():
 def read_paramDescriptors(paramTypes):
     params = []
     for paramType in paramTypes:
-        print paramType['allowedValues']
         paramValue = raw_input("Please enter value for parameter <%s> (type: %s): " % (paramType['name'], paramType['type']))
         operator = select_valueOperator()
         param = {}

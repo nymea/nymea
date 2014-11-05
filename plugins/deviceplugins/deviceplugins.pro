@@ -11,6 +11,7 @@ SUBDIRS += elro         \
     mailnotification    \
     philipshue          \
     lgsmarttv           \
+    genericelements     \
 
 
 

@@ -319,6 +319,7 @@ QVariantMap JsonTypes::packStateEvaluator(const StateEvaluator &stateEvaluator)
         childEvaluators.append(packStateEvaluator(childEvaluator));
     }
     variantMap.insert("childEvaluators", childEvaluators);
+    variantMap.insert("operator", stateOperator().at(stateEvaluator.operatorType()));
 
     return variantMap;
 }

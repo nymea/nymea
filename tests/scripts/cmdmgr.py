@@ -388,64 +388,64 @@ def execute_action():
 
 def print_device_error_code(deviceError):
     if deviceError == "DeviceErrorNoError":
-        print "\nSuccess!"
+        print "\nSuccess! (", deviceError, ")"
     elif deviceError == "DeviceErrorPluginNotFound":
-        print "\nERROR: the plugin could not be found."
+        print "\nERROR: the plugin could not be found. (", deviceError, ")"
     elif deviceError == "DeviceErrorDeviceNotFound":
-        print "\nERROR: the device could not be found."
+        print "\nERROR: the device could not be found. (", deviceError, ")"
     elif deviceError == "DeviceErrorDeviceClassNotFound":
-        print "\nERROR: the deviceClass could not be found."
+        print "\nERROR: the deviceClass could not be found. (", deviceError, ")"
     elif deviceError == "DeviceErrorActionTypeNotFound":
-        print "\nERROR: the actionType could not be found."
+        print "\nERROR: the actionType could not be found. (", deviceError, ")"
     elif deviceError == "DeviceErrorStateTypeNotFound":
-        print "\nERROR: the stateType could not be found."
+        print "\nERROR: the stateType could not be found. (", deviceError, ")"
     elif deviceError == "DeviceErrorEventTypeNotFound":
-        print "\nERROR: the eventType could not be found."
+        print "\nERROR: the eventType could not be found. (", deviceError, ")"
     elif deviceError == "DeviceErrorDeviceDescriptorNotFound":
-        print "\nERROR: the deviceDescriptor could not be found."
+        print "\nERROR: the deviceDescriptor could not be found. (", deviceError, ")"
     elif deviceError == "DeviceErrorMissingParameter":
-        print "\nERROR: some parameters are missing."
+        print "\nERROR: some parameters are missing. (", deviceError, ")"
     elif deviceError == "DeviceErrorInvalidParameter":
-        print "\nERROR: invalid parameter."
+        print "\nERROR: invalid parameter. (", deviceError, ")"
     elif deviceError == "DeviceErrorSetupFailed":
-        print "\nERROR: setup failed."
+        print "\nERROR: setup failed. (", deviceError, ")"
     elif deviceError == "DeviceErrorDuplicateUuid":
-        print "\nERROR: uuid allready exists."
+        print "\nERROR: uuid allready exists. (", deviceError, ")"
     elif deviceError == "DeviceErrorCreationMethodNotSupported":
-        print "\nERROR: the selected CreationMethod is not supported for this device."
+        print "\nERROR: the selected CreationMethod is not supported for this device. (", deviceError, ")"
     elif deviceError == "DeviceErrorSetupMethodNotSupported":
-        print "\nERROR: the selected SetupMethod is not supported for this device."
+        print "\nERROR: the selected SetupMethod is not supported for this device. (", deviceError, ")"
     elif deviceError == "DeviceErrorHardwareNotAvailable":
-        print "\nERROR: the hardware is not available."
+        print "\nERROR: the hardware is not available. (", deviceError, ")"
     elif deviceError == "DeviceErrorHardwareFailure":
-        print "\nERROR: hardware failure. Something went wrong with the hardware."
+        print "\nERROR: hardware failure. Something went wrong with the hardware. (", deviceError, ")"
     elif deviceError == "DeviceErrorAsync":
-        print "\nINFO: the response will need some time. (asynchronous)"
+        print "\nINFO: the response will need some time. (", deviceError, ")"
     elif deviceError == "DeviceErrorDeviceInUse":
-        print "\nERROR: the device is currently in use. Try again later."
+        print "\nERROR: the device is currently in use. Try again later. (", deviceError, ")"
     elif deviceError == "DeviceErrorPairingTransactionIdNotFound":
-        print "\nERROR: the pairingTransactionId could not be found."
+        print "\nERROR: the pairingTransactionId could not be found. (", deviceError, ")"
     else:
         print "\nERROR: Unknown error code: ", deviceError,  "Please take a look at the newest API version."
 
 
 def print_rule_error_code(ruleError):
     if ruleError == "RuleErrorNoError":
-        print "\nSuccess!"
+        print "\nSuccess! (", ruleError, ")"
     elif ruleError == "RuleErrorInvalidRuleId":
-        print "\nERROR: the ruleId is not valid."
+        print "\nERROR: the ruleId is not valid. (", ruleError, ")"
     elif ruleError == "RuleErrorRuleNotFound":
-        print "\nERROR: the rule could not be found."
+        print "\nERROR: the rule could not be found. (", ruleError, ")"
     elif ruleError == "RuleErrorDeviceNotFound":
-        print "\nERROR: the device could not be found for this rule."
+        print "\nERROR: the device could not be found for this rule. (", ruleError, ")"
     elif ruleError == "RuleErrorEventTypeNotFound":
-        print "\nERROR: the eventType could not be found for this rule."
+        print "\nERROR: the eventType could not be found for this rule. (", ruleError, ")"
     elif ruleError == "RuleErrorActionTypeNotFound":
-        print "\nERROR: the actionType could not be found for this rule."
+        print "\nERROR: the actionType could not be found for this rule. (", ruleError, ")"
     elif ruleError == "RuleErrorInvalidParameter":
-        print "\nERROR: invalid parameter in this rule."
+        print "\nERROR: invalid parameter in this rule. (", ruleError, ")"
     elif ruleError == "RuleErrorMissingParameter":
-        print "\nERROR: missing parameter in this rule."
+        print "\nERROR: missing parameter in this rule. (", ruleError, ")"
     else:
         print "\nERROR: Unknown error code: ", ruleError,  "Please take a look at the newest API version."
 
@@ -462,7 +462,7 @@ def list_device_states():
         params['stateTypeId'] = deviceClass['stateTypes'][i]['id']
 
         response = send_command("Devices.GetStateValue", params)
-        print_device_error_code(response['params']['deviceError'])
+        #print_device_error_code(response['params']['deviceError'])
         print "%s: %s" % (deviceClass['stateTypes'][i]['name'], response['params']['value'])
     print "=== States ==="
 

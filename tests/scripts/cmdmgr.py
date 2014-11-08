@@ -169,7 +169,6 @@ def select_stateOperator():
 def read_paramDescriptors(paramTypes):
     params = []
     for paramType in paramTypes:
-        print paramType['allowedValues']
         paramValue = raw_input("Please enter value for parameter <%s> (type: %s): " % (paramType['name'], paramType['type']))
         operator = select_valueOperator()
         param = {}
@@ -345,7 +344,7 @@ def execute_action():
     params = {}
     params['actionTypeId'] = actionTypeId
     params['deviceId'] = deviceId
-    send_command("Actions.ExecuteAction", params)
+#    send_command("Actions.ExecuteAction", params)
     actionType = get_actionType(actionTypeId)
     actionParams = read_params(actionType['paramTypes'])
     params['params'] = actionParams

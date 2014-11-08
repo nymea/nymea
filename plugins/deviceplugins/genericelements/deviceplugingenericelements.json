@@ -1,0 +1,91 @@
+{
+    "name": "Generic Elements",
+    "id": "6e22161e-39b7-4416-8623-39e730721efb",
+    "vendors": [
+        {
+            "name": "guh",
+            "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6",
+            "deviceClasses": [
+                {
+                    "deviceClassId": "c0f511f9-70f5-499b-bd70-2c0e9ddd68c4",
+                    "name": "Toggle Button",
+                    "createMethods": ["user"],
+                    "paramTypes": [
+                        {
+                            "name": "name",
+                            "type": "QString"
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "b5e90567-54aa-49bd-a78a-3c19fb38aaf5",
+                            "name": "state",
+                            "type": "bool",
+                            "defaultValue": false
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "47bdc15a-b393-4dc2-801b-845420cdfda3",
+                            "name": "toggle"
+                        }
+                    ]
+                },
+                {
+                    "deviceClassId": "820b2f2d-0d92-48c8-8fd4-f94ce8fc4103",
+                    "name": "Button",
+                    "createMethods": ["user"],
+                    "paramTypes": [
+                        {
+                            "name": "name",
+                            "type": "QString"
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "01f38af1-b2ab-4ec3-844e-ef52f0f229a9",
+                            "name": "press"
+                        }
+                    ],
+                    "eventTypes": [
+                        {
+                            "id": "effdbc2d-e467-4b0b-80a9-9dda251bfa5c",
+                            "name": "button pressed"
+                        }
+                    ]
+                },
+                {
+                    "deviceClassId": "430d188c-476d-4825-a9bd-86dfa3094b56",
+                    "name": "ON/OFF Button",
+                    "createMethods": ["user"],
+                    "paramTypes": [
+                        {
+                            "name": "name",
+                            "type": "QString"
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "892596d2-0863-4807-97da-469b9f7003f2",
+                            "name": "press ON"
+                        },
+                        {
+                            "id": "a8d64050-0b58-4ccf-b052-77ce2b7368ad",
+                            "name": "press OFF"
+                        }
+                    ],
+                    "eventTypes": [
+                        {
+                            "id": "4eeba6a2-e4c7-4a2e-8360-2797d98114e6",
+                            "name": "ON pressed"
+                        },
+                        {
+                            "id": "b636c5f3-2eb0-4682-96d4-88a4aa9d2c12",
+                            "name": "OFF pressed"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

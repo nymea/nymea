@@ -38,6 +38,8 @@ public:
     QVariant stateValue() const;
     Types::ValueOperator operatorType() const;
 
+    bool isValid() const;
+
     bool operator ==(const StateDescriptor &other) const;
 
     bool operator ==(const State &state) const;

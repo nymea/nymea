@@ -33,6 +33,10 @@ Radio433Receiver::Radio433Receiver(QObject *parent, int gpio) :
     m_enabled = false;
     m_mutex.unlock();
 
+    if(Gpio::isAvailable()){
+
+    }
+
     connect(this, &Radio433Receiver::timingReady, this, &Radio433Receiver::handleTiming, Qt::DirectConnection);
 }
 

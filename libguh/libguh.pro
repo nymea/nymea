@@ -29,7 +29,8 @@ SOURCES += plugin/device.cpp \
            types/paramtype.cpp \
            types/param.cpp \
            types/paramdescriptor.cpp \
-           types/statedescriptor.cpp
+           types/statedescriptor.cpp \
+    hardware/gpiomonitor.cpp
 
 HEADERS += plugin/device.h \
            plugin/deviceclass.h \
@@ -54,5 +55,6 @@ HEADERS += plugin/device.h \
            types/param.h \
            types/paramdescriptor.h \
            types/statedescriptor.h \
-           typeutils.h
+           typeutils.h \
+    hardware/gpiomonitor.h
 

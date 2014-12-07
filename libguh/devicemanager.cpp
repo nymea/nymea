@@ -82,7 +82,7 @@
     \value DeviceErrorHardwareFailure
         The Hardware of the \l{Device} has an error.
     \value DeviceErrorAsync
-        The response of the \l{Device} will be asynchronous.
+        The response of the \l{Device} will be asynchronously.
     \value DeviceErrorDeviceInUse
         The \l{Device} is currently bussy.
     \value DeviceErrorPairingTransactionIdNotFound
@@ -102,7 +102,7 @@
 */
 
 /*! \fn void DeviceManager::loaded();
-    The DeviceManager will emit this Signal when all \l{Device}{Devices} are loaded.
+    The DeviceManager will emit this signal when all \l{Device}{Devices} are loaded.
 */
 
 /*! \fn void DeviceManager::deviceSetupFinished(Device *device, DeviceError status);
@@ -122,12 +122,12 @@
 */
 
 /*! \fn void DeviceManager::actionExecutionFinished(const ActionId &actionId, DeviceError status);
-    The DeviceManager will emit a this Signal when the \l{Action} with the given \a actionId is finished.
+    The DeviceManager will emit a this signal when the \l{Action} with the given \a actionId is finished.
     The \a status of the \l{Action} execution will be described as \l{DeviceManager::DeviceError}{DeviceError}.
 */
 
 /*! \fn void DeviceManager::pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceError status, const DeviceId &deviceId = DeviceId());
-    The DeviceManager will emit a this Signal when the pairing of a \l{Device} with the \a deviceId and \a pairingTransactionId is finished.
+    The DeviceManager will emit a this signal when the pairing of a \l{Device} with the \a deviceId and \a pairingTransactionId is finished.
     The \a status of the pairing will be described as \l{DeviceManager::DeviceError}{DeviceError}.
 */
 
@@ -204,7 +204,7 @@ DevicePlugin *DeviceManager::plugin(const PluginId &id) const
     return m_devicePlugins.value(id);
 }
 
-/*! Returns a certain \l{DeviceError} and sets the configurations of the plugin with the given \a pluginId
+/*! Returns a certain \l{DeviceError} and sets the configuration of the plugin with the given \a pluginId
  *  and the given \a pluginConfig. */
 DeviceManager::DeviceError DeviceManager::setPluginConfig(const PluginId &pluginId, const ParamList &pluginConfig)
 {
@@ -316,7 +316,7 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassI
     return addConfiguredDeviceInternal(deviceClassId, descriptor.params(), deviceId);
 }
 
-/*! Trys to pair a Device with the given \a pairingTransactionId, \a deviceClassId and \a params.
+/*! Initiates a pairing with a \l{DeviceClass}{Device} with the given \a pairingTransactionId, \a deviceClassId and \a params.
  *  Returns \l{DeviceManager::DeviceError}{DeviceError} to inform about the result. */
 DeviceManager::DeviceError DeviceManager::pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params)
 {
@@ -346,7 +346,7 @@ DeviceManager::DeviceError DeviceManager::pairDevice(const PairingTransactionId 
     return DeviceErrorNoError;
 }
 
-/*! Trys to pair a Device with the given \a pairingTransactionId, \a deviceClassId and \a deviceDescriptorId.
+/*! Initiates a pairing with a \l{DeviceClass}{Device} with the given \a pairingTransactionId, \a deviceClassId and \a params.
  *  Returns \l{DeviceManager::DeviceError}{DeviceError} to inform about the result. */
 DeviceManager::DeviceError DeviceManager::pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId)
 {
@@ -417,7 +417,7 @@ DeviceManager::DeviceError DeviceManager::confirmPairing(const PairingTransactio
     return DeviceErrorPairingTransactionIdNotFound;
 }
 
-/*! This Method will only be used from the DeviceManager in order to add a \l{Device} with the given \a deviceClassId, \a params and \ id.
+/*! This method will only be used from the DeviceManager in order to add a \l{Device} with the given \a deviceClassId, \a params and \ id.
  *  Returns \l{DeviceError} to inform about the result. */
 DeviceManager::DeviceError DeviceManager::addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId id)
 {
@@ -470,8 +470,8 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDeviceInternal(const Devi
     return DeviceErrorNoError;
 }
 
-/*! Removes a \l{Device} with the given \a deviceId from the list of configured Devices.
- *  This Method also deletes all saved Settings of the Device.
+/*! Removes a \l{Device} with the given \a deviceId from the list of configured \l{Device}{Devices}.
+ *  This method also deletes all saved settings of the \l{Device}.
  *  Returns \l{DeviceError} to inform about the result. */
 DeviceManager::DeviceError DeviceManager::removeConfiguredDevice(const DeviceId &deviceId)
 {
@@ -528,8 +528,8 @@ QList<Device *> DeviceManager::findConfiguredDevices(const DeviceClassId &device
     return ret;
 }
 
-/*! For conveninece, this returns the \{DeviceClass} with the id given by \a deviceClassId.
- *  Note: The returned DeviceClass may be invalid. */
+/*! For conveninece, this returns the \l{DeviceClass} with the id given by \a deviceClassId.
+ *  Note: The returned \l{DeviceClass} may be invalid. */
 DeviceClass DeviceManager::findDeviceClass(const DeviceClassId &deviceClassId) const
 {
     foreach (const DeviceClass &deviceClass, m_supportedDevices) {

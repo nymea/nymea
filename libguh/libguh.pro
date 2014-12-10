@@ -21,7 +21,7 @@ SOURCES += plugin/device.cpp \
            hardware/radio433/radio433brennenstuhlgateway.cpp \
            hardware/upnpdiscovery/upnpdiscovery.cpp \
            hardware/upnpdiscovery/upnpdevice.cpp \
-           hardware/upnpdiscovery/upnpdevicedescriptor.cpp
+           hardware/upnpdiscovery/upnpdevicedescriptor.cpp \
            types/action.cpp \
            types/actiontype.cpp \
            types/state.cpp \
@@ -34,7 +34,6 @@ SOURCES += plugin/device.cpp \
            types/param.cpp \
            types/paramdescriptor.cpp \
            types/statedescriptor.cpp \
-
 
 HEADERS += plugin/device.h \
            plugin/deviceclass.h \
@@ -49,7 +48,7 @@ HEADERS += plugin/device.h \
            hardware/radio433/radio433brennenstuhlgateway.h \
            hardware/upnpdiscovery/upnpdiscovery.h \
            hardware/upnpdiscovery/upnpdevice.h \
-           hardware/upnpdiscovery/upnpdevicedescriptor.h
+           hardware/upnpdiscovery/upnpdevicedescriptor.h \
            types/action.h \
            types/actiontype.h \
            types/state.h \

@@ -22,6 +22,7 @@
 #include <QObject>
 #include <QUdpSocket>
 #include <QHostAddress>
+#include <QTimer>
 
 class Radio433BrennenstuhlGateway : public QObject
 {
@@ -36,23 +37,22 @@ public:
 
 private:
     bool m_available;
-    QUdpSocket *m_gatewayDiscovery;
     QUdpSocket *m_gateway;
-
-    int m_gatewayPort;
     QHostAddress m_gatewayAddress;
+    int m_port;
+
+    QTimer *m_discoverTimer;
+    QTimer *m_timeout;
 
     void discover();
-    void gatewayDiscovered(QHostAddress address, int port);
 
 signals:
-    void availableChanged();
+    void availableChanged(const bool &available);
 
 private slots:
-    void readDataDiscovery();
-    void readDataGateway();
+    void readData();
     void gatewayError(QAbstractSocket::SocketError error);
-
+    void timeout();
 };
 
 #endif // RADIO433BRENNENSTUHLGATEWAY_H

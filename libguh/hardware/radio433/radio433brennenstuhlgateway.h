@@ -38,9 +38,8 @@ public:
 private:
     bool m_available;
     QUdpSocket *m_gateway;
-
-    int m_gatewayPort;
     QHostAddress m_gatewayAddress;
+    int m_port;
 
     QTimer *m_discoverTimer;
     QTimer *m_timeout;
@@ -51,7 +50,7 @@ signals:
     void availableChanged(const bool &available);
 
 private slots:
-    void readDataDiscovery();
+    void readData();
     void gatewayError(QAbstractSocket::SocketError error);
     void timeout();
 };

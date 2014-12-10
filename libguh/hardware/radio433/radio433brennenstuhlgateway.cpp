@@ -21,11 +21,11 @@
 Radio433BrennenstuhlGateway::Radio433BrennenstuhlGateway(QObject *parent) :
     QObject(parent)
 {
-    // UDP socket for discovering...
+    m_port = 49880;
 
     // UDP socket to sending data to gateway
     m_gateway = new QUdpSocket(this);
-    connect(m_gateway, &QUdpSocket::readyRead, this, &Radio433BrennenstuhlGateway::readDataDiscovery);
+    connect(m_gateway, &QUdpSocket::readyRead, this, &Radio433BrennenstuhlGateway::readData);
     connect(m_gateway, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(gatewayError(QAbstractSocket::SocketError)));
 
     // Timer for discovery of the Gateway
@@ -66,9 +66,10 @@ bool Radio433BrennenstuhlGateway::sendData(int delay, QList<int> rawData)
 
     message.append("TXP:0,0,10,0," + QString::number(delay) + "," + QString::number(rawData.count()/2) + "," + data + ";");
 
-    if (m_gateway->writeDatagram(message, m_gatewayAddress, m_gatewayPort) > 0) {
+    if (m_gateway->writeDatagram(message, m_gatewayAddress, m_port) > 0) {
         m_available = true;
     } else {
+        qDebug() << "ERROR: could not send command to Brennenstihl Gateway";
         m_available = false;
         emit availableChanged(false);
         return false;
@@ -80,8 +81,8 @@ bool Radio433BrennenstuhlGateway::enable()
 {
     m_available = false;
 
-    if (!m_gateway->bind(49880, QUdpSocket::ShareAddress)) {
-        qWarning() << "ERROR: Radio 433 MHz Brennenstuhl LAN Gateway discovery could not bind to port 49880";
+    if (!m_gateway->bind(m_port, QUdpSocket::ShareAddress)) {
+        qWarning() << "ERROR: Radio 433 MHz Brennenstuhl LAN Gateway discovery could not bind to port " << m_port;
         return false;
     }
 
@@ -100,7 +101,7 @@ bool Radio433BrennenstuhlGateway::disable()
 void Radio433BrennenstuhlGateway::discover()
 {
     // send search string to broadcast over port 49880
-    m_gateway->writeDatagram("SEARCH HCGW", QHostAddress::Broadcast, 49880);
+    m_gateway->writeDatagram("SEARCH HCGW", QHostAddress::Broadcast, m_port);
     m_timeout->start();
 }
 
@@ -109,7 +110,7 @@ bool Radio433BrennenstuhlGateway::available()
     return m_available;
 }
 
-void Radio433BrennenstuhlGateway::readDataDiscovery()
+void Radio433BrennenstuhlGateway::readData()
 {
     QByteArray data;
     QHostAddress address;
@@ -124,6 +125,7 @@ void Radio433BrennenstuhlGateway::readDataDiscovery()
     if (data.startsWith("HCGW:")) {
         m_timeout->stop();
         if (!m_available) {
+            m_gatewayAddress = address;
             m_available = true;
             emit availableChanged(true);
         }

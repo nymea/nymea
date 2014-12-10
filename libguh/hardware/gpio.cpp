@@ -59,7 +59,7 @@ bool Gpio::exportGpio()
 
     int fd = open("/sys/class/gpio/export", O_WRONLY);
     if (fd < 0) {
-        qDebug() << "ERROR: could not open /sys/class/gpio/export";
+        //qDebug() << "ERROR: could not open /sys/class/gpio/export";
         return false;
     }
 
@@ -80,7 +80,7 @@ bool Gpio::unexportGpio()
 
     int fd = open("/sys/class/gpio/unexport", O_WRONLY);
     if (fd < 0) {
-        qDebug() << "ERROR: could not open /sys/class/gpio/unexport";
+        //qDebug() << "ERROR: could not open /sys/class/gpio/unexport";
         return false;
     }
 

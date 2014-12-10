@@ -49,16 +49,16 @@ bool Radio433::enable()
     m_brennenstuhlTransmitter->enable();
 
     bool receiverAvailable = m_receiver->startReceiver();
-    if(!receiverAvailable){
+    if (!receiverAvailable) {
         //qWarning() << "ERROR: radio 433 MHz receiver not available on GPIO's";
     }
 
     bool transmitterAvailable = m_transmitter->startTransmitter();
-    if(!transmitterAvailable){
+    if (!transmitterAvailable) {
         //qWarning() << "ERROR: radio 433 MHz transmitter not available on GPIO's";
     }
 
-    if(!receiverAvailable && !transmitterAvailable){
+    if (!receiverAvailable && !transmitterAvailable) {
         qWarning() << "--> Radio 433 MHz GPIO's not available.";
         return false;
     }
@@ -69,7 +69,7 @@ bool Radio433::enable()
 bool Radio433::disabel()
 {
     m_brennenstuhlTransmitter->disable();
-    if(m_receiver->stopReceiver()){
+    if (m_receiver->stopReceiver()) {
         return true;
     }
     return false;
@@ -77,18 +77,18 @@ bool Radio433::disabel()
 
 void Radio433::readingChanged(bool reading)
 {
-    if(reading){
+    if (reading) {
         m_transmitter->allowSending(false);
-    }else{
+    } else {
         m_transmitter->allowSending(true);
     }
 }
 
-void Radio433::brennenstuhlAvailableChanged()
+void Radio433::brennenstuhlAvailableChanged(const bool &available)
 {
-    if(m_brennenstuhlTransmitter->available()){
+    if (available) {
         qDebug() << "--> Radio 433 MHz Brennenstuhl LAN Gateway available.";
-    }else{
+    } else {
         qDebug() << "--> Radio 433 MHz Brennenstuhl LAN Gateway NOT available.";
     }
 }
@@ -98,11 +98,11 @@ bool Radio433::sendData(int delay, QList<int> rawData)
     bool sendGpio = false;
     bool sendBrennenstuhl = false;
 
-    if(m_brennenstuhlTransmitter->available()){
+    if (m_brennenstuhlTransmitter->available()) {
         sendBrennenstuhl = m_brennenstuhlTransmitter->sendData(delay, rawData);
     }
 
-    if(m_transmitter->available()){
+    if (m_transmitter->available()) {
         m_transmitter->sendData(delay, rawData);
         sendGpio = true;
     }

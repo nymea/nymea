@@ -16,43 +16,28 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef RADIO433BRENNENSTUHLGATEWAY_H
-#define RADIO433BRENNENSTUHLGATEWAY_H
+#ifndef DEVICEPLUGINGENERICELEMENTS_H
+#define DEVICEPLUGINGENERICELEMENTS_H
 
-#include <QObject>
-#include <QUdpSocket>
-#include <QHostAddress>
-#include <QTimer>
+#include "plugin/deviceplugin.h"
 
-class Radio433BrennenstuhlGateway : public QObject
+class DevicePluginGenericElements : public DevicePlugin
 {
     Q_OBJECT
+
+    Q_PLUGIN_METADATA(IID "guru.guh.DevicePlugin" FILE "deviceplugingenericelements.json")
+    Q_INTERFACES(DevicePlugin)
+
 public:
-    explicit Radio433BrennenstuhlGateway(QObject *parent = 0);
+    explicit DevicePluginGenericElements();
 
-    bool sendData(int delay, QList<int> rawData);
-    bool enable();
-    bool disable();
-    bool available();
+    DeviceManager::HardwareResources requiredHardware() const override;
+    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
 
-private:
-    bool m_available;
-    QUdpSocket *m_gateway;
-    QHostAddress m_gatewayAddress;
-    int m_port;
 
-    QTimer *m_discoverTimer;
-    QTimer *m_timeout;
+public slots:
+    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
 
-    void discover();
-
-signals:
-    void availableChanged(const bool &available);
-
-private slots:
-    void readData();
-    void gatewayError(QAbstractSocket::SocketError error);
-    void timeout();
 };
 
-#endif // RADIO433BRENNENSTUHLGATEWAY_H
+#endif // DEVICEPLUGINGENERICELEMENTS_H

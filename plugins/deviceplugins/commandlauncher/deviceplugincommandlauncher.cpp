@@ -16,7 +16,6 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-
 #include "deviceplugincommandlauncher.h"
 
 #include "plugin/device.h"

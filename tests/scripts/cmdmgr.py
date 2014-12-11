@@ -229,6 +229,9 @@ def discover_device(deviceClassId = None):
     for deviceDescriptor in response['params']['deviceDescriptors']:
         deviceDescriptorList.append("%s (%s)" % (deviceDescriptor['title'], deviceDescriptor['description']))
         deviceDescriptorIdList.append(deviceDescriptor['id'])
+    if not deviceDescriptorIdList:
+        print "\n    No device found"
+        return -1
     selection = get_selection("Please select a device descriptor", deviceDescriptorList)
     if selection != None:
         return deviceDescriptorIdList[selection]
@@ -318,6 +321,8 @@ def add_device():
         add_configured_device(deviceClassId)
     elif "CreateMethodDiscovery" in deviceClass['createMethods']:
         deviceDescriptorId = discover_device(deviceClassId)
+        if deviceDescriptorId == -1:
+            return
         add_discovered_device(deviceClassId, deviceDescriptorId)
     elif "CreateMethodAuto" in deviceClass['createMethods']:
         print "Can't create this device manually. It'll be created automatically when hardware is discovered."
@@ -580,8 +585,9 @@ def list_rule_detail():
     params = {}
     params['ruleId'] = ruleId
     response = send_command("Rules.GetRuleDetails", params)
-    #print response
-    print "\nThe rule", ruleId, "depends on following EventDescriptors:\n"
+    print response
+    print "\nThe rule", ruleId, "depends on following EventDescriptors and triggers"
+    print "only if ", get_stateEvaluator_text(response['params']['rule']['stateEvaluator']['operator']), "are true.\n"
     print "Events:"
     for i in range(len(response['params']['rule']['eventDescriptors'])):
         eventDescriptor = response['params']['rule']['eventDescriptors'][i]
@@ -596,7 +602,7 @@ def list_rule_detail():
     print "\nActions:"
     for i in range(len(response['params']['rule']['actions'])):
         action = response['params']['rule']['actions'][i]
-        device = get_device(eventDescriptor['deviceId'])
+        device = get_device(action['deviceId'])
         actionType = get_actionType(response['params']['rule']['actions'][i]['actionTypeId'])
         actionParams = response['params']['rule']['actions'][i]['params']
         print  "%5s. ->  %40s -> action: %s" %(i, device['name'], actionType['name'])
@@ -619,6 +625,14 @@ def get_valueOperator_symbol(valueOperator):
         return ">=" 
     else:
         return "<unknown value operator>"
+    
+def get_stateEvaluator_text(stateEvaluator):
+    if stateEvaluator == "StateOperatorAnd":
+        return "ALL of the events/states"
+    elif stateEvaluator == "StateOperatorOr":
+        return "ONE of this events/states"
+    else:
+        return "<unknown state evaluator>"
     
     
 def list_rules_containig_deviceId():

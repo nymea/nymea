@@ -46,7 +46,7 @@ signals:
 
 private slots:
     void readingChanged(bool reading);
-    void brennenstuhlAvailableChanged();
+    void brennenstuhlAvailableChanged(const bool &available);
 
 public slots:
     bool sendData(int delay, QList<int> rawData);

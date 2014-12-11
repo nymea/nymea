@@ -13,6 +13,7 @@ SUBDIRS += elro         \
     wemo                \
     lgsmarttv           \
     datetime            \
+    genericelements     \
 
 boblight {
     SUBDIRS += boblight

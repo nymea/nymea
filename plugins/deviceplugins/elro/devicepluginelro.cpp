@@ -71,8 +71,7 @@ DeviceManager::HardwareResources DevicePluginElro::requiredHardware() const
 }
 
 DeviceManager::DeviceError DevicePluginElro::executeAction(Device *device, const Action &action)
-{
-
+{   
     QList<int> rawData;
     QByteArray binCode;
 

@@ -16,43 +16,43 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef RADIO433BRENNENSTUHLGATEWAY_H
-#define RADIO433BRENNENSTUHLGATEWAY_H
+#ifndef GPIOMONITOR_H
+#define GPIOMONITOR_H
 
-#include <QObject>
-#include <QUdpSocket>
-#include <QHostAddress>
-#include <QTimer>
+#include <QThread>
+#include <QDebug>
+#include <fcntl.h>
+#include <stdio.h>
+#include <poll.h>
+#include <errno.h>
 
-class Radio433BrennenstuhlGateway : public QObject
+#include "hardware/gpio.h"
+
+class GpioMonitor : public QThread
 {
     Q_OBJECT
 public:
-    explicit Radio433BrennenstuhlGateway(QObject *parent = 0);
+    explicit GpioMonitor(QObject *parent = 0);
+    ~GpioMonitor();
 
-    bool sendData(int delay, QList<int> rawData);
-    bool enable();
-    bool disable();
-    bool available();
+    void stop();
+    bool addGpio(Gpio *gpio, bool activeLow);
+    QList<Gpio*> gpioList();
+
 
 private:
-    bool m_available;
-    QUdpSocket *m_gateway;
-    QHostAddress m_gatewayAddress;
-    int m_port;
+    QMutex m_enabledMutex;
+    bool m_enabled;
 
-    QTimer *m_discoverTimer;
-    QTimer *m_timeout;
+    QMutex m_gpioListMutex;
+    QList<Gpio*> m_gpioList;
 
-    void discover();
+protected:
+    void run();
 
 signals:
-    void availableChanged(const bool &available);
+    void changed(const int &gpioPin, const int &value);
 
-private slots:
-    void readData();
-    void gatewayError(QAbstractSocket::SocketError error);
-    void timeout();
 };
 
-#endif // RADIO433BRENNENSTUHLGATEWAY_H
+#endif // GPIOMONITOR_H

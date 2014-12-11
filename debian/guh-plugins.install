@@ -10,4 +10,5 @@ usr/lib/guh/plugins/libguh_devicepluginphilipshue.so
 usr/lib/guh/plugins/libguh_devicepluginwakeonlan.so
 usr/lib/guh/plugins/libguh_devicepluginwemo.so
 usr/lib/guh/plugins/libguh_devicepluginwifidetector.so
+usr/lib/guh/plugins/libguh_deviceplugindatetime.so
 usr/lib/guh/plugins/libguh_deviceplugingenericelements.so

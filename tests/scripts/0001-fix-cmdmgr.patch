@@ -1,0 +1,34 @@
+From af93f794e40ebfd342d2bb0b1b050c7b2a6224f5 Mon Sep 17 00:00:00 2001
+From: Michael Zanetti <mzanetti@kde.org>
+Date: Fri, 10 Oct 2014 00:19:56 +0200
+Subject: [PATCH] fix cmdmgr
+
+---
+ tests/scripts/cmdmgr.py | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/tests/scripts/cmdmgr.py b/tests/scripts/cmdmgr.py
+index da3d430..6930e06 100755
+--- a/tests/scripts/cmdmgr.py
++++ b/tests/scripts/cmdmgr.py
+@@ -262,13 +262,13 @@ def add_device():
+         print "Empty deviceClass. Can't continue"
+         return
+     deviceClass = get_deviceClass(deviceClassId)
+-    print "createmethod is", deviceClass['createMethod']
+-    if deviceClass['createMethod'] == "CreateMethodUser":
++    print "createmethods are", deviceClass['createMethods']
++    if "CreateMethodUser" in deviceClass['createMethods']:
+         add_configured_device(deviceClassId)
+-    elif deviceClass['createMethod'] == "CreateMethodDiscovery":
++    elif "CreateMethodDiscovery" in deviceClass['createMethods']:
+         deviceDescriptorId = discover_device(deviceClassId)
+         add_discovered_device(deviceClassId, deviceDescriptorId)
+-    elif deviceClass['createMethod'] == "CreateMethodAuto":
++    elif "CreateMethodAuto" in deviceClass['createMethods']:
+         print "Can't create this device manually. It'll be created automatically when hardware is discovered."
+ 
+ def select_device():
+-- 
+2.1.0
+

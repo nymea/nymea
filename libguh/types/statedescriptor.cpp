@@ -87,3 +87,8 @@ bool StateDescriptor::operator !=(const State &state) const
 {
     return !(operator==(state));
 }
+
+bool StateDescriptor::isValid() const
+{
+    return !m_deviceId.isNull() && !m_stateTypeId.isNull() && m_stateValue.isValid();
+}

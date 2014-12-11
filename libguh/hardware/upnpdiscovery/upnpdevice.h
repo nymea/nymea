@@ -30,20 +30,46 @@ public:
     explicit UpnpDevice(QObject *parent = 0, UpnpDeviceDescriptor upnpDeviceDescriptor = UpnpDeviceDescriptor());
 
     QUrl location();
-    QHostAddress hostAddress() const;
-    int port() const;
-    QString deviceType() const;
-    QString friendlyName() const;
-    QString manufacturer() const;
-    QUrl manufacturerURL() const;
-    QString modelDescription() const;
-    QString modelName() const;
-    QString modelNumber() const;
-    QUrl modelURL() const;
-    QString serialNumber() const;
-    QString uuid() const;
-    QString upc() const;
+    void setLocation(const QUrl &location);
 
+    QHostAddress hostAddress() const;
+    void setHostAddress(const QHostAddress &hostAddress);
+
+    int port() const;
+    void setPort(const int &port);
+
+    QString deviceType() const;
+    void setDeviceType(const QString & deviceType);
+
+    QString friendlyName() const;
+    void setFriendlyName(const QString &friendlyName);
+
+    QString manufacturer() const;
+    void setManufacturer(const QString &manufacturer);
+
+    QUrl manufacturerURL() const;
+    void setManufacturerURL(const QUrl & manufacturerURL);
+
+    QString modelDescription() const;
+    void setModelDescription(const QString & modelDescription);
+
+    QString modelName() const;
+    void setModelName(const QString & modelName);
+
+    QString modelNumber() const;
+    void setModelNumber(const QString &modelNumber);
+
+    QUrl modelURL() const;
+    void setModelURL(const QUrl &modelURL);
+
+    QString serialNumber() const;
+    void setSerialNumber(const QString &serialNumber);
+
+    QString uuid() const;
+    void setUuid(const QString &uuid);
+
+    QString upc() const;
+    void setUpc(const QString &upc);
 
 private:
     QUrl m_location;

@@ -11,6 +11,8 @@ SUBDIRS += elro         \
     philipshue          \
     lgsmarttv           \
     datetime            \
+    genericelements     \
+    commandlauncher     \
 
 
 

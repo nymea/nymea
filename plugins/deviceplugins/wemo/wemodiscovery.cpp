@@ -139,7 +139,7 @@ void WemoDiscovery::readData()
             }
 
             if(!location.isEmpty() && !uuid.isEmpty()){
-                // check if we allready discovered this device
+                // check if we already discovered this device
                 foreach (WemoSwitch *device, m_deviceList) {
                     if(device->uuid() == uuid){
                         return;

@@ -72,7 +72,7 @@
     \value DeviceErrorSetupFailed
         Error setting up the \l{Device}. It will not be functional.
     \value DeviceErrorDuplicateUuid
-        Error setting up the \l{Device}. The given DeviceId allready exists.
+        Error setting up the \l{Device}. The given DeviceId already exists.
     \value DeviceErrorCreationMethodNotSupported
         Error setting up the \l{Device}. This \l{DeviceClass}{CreateMethod} is not supported for this \l{Device}.
     \value DeviceErrorSetupMethodNotSupported
@@ -346,7 +346,7 @@ DeviceManager::DeviceError DeviceManager::pairDevice(const PairingTransactionId 
     return DeviceErrorNoError;
 }
 
-/*! Initiates a pairing with a \l{DeviceClass}{Device} with the given \a pairingTransactionId, \a deviceClassId and \a params.
+/*! Initiates a pairing with a \l{DeviceClass}{Device} with the given \a pairingTransactionId, \a deviceClassId and \a deviceDescriptorId.
  *  Returns \l{DeviceManager::DeviceError}{DeviceError} to inform about the result. */
 DeviceManager::DeviceError DeviceManager::pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId)
 {

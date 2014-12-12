@@ -16,6 +16,84 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \page commandlauncher.html
+    \title Application and script launcher
+
+    \ingroup plugins
+    \ingroup services
+
+    The application and script launcher plugin allows you to execute bash commands and start bash scripts.
+
+    \chapter Application launcher
+
+    The application launcher \l{DeviceClass} allows you to call bash applications or commands (with parameters)
+    from guh. Once, the application started, the \tt running \l{State} will change to \tt true, if the application
+    is finished, the \tt running \l{State} will change to \tt false.
+
+    \section3 Example
+    An example command could be \l{http://linux.die.net/man/1/espeak}{espeak}. (\tt{apt-get install espeak})
+    \code
+    espeak -v en "Chuck Norris is using gooe" # gooe = guh spelled correctly
+    \endcode
+
+
+    \chapter Bashscript launcher
+
+    The bashscript launcher \l{DeviceClass} allows you to call bash script (with parameters)
+    from guh. Once, the script is running, the \tt running \l{State} will change to \tt true, if the script
+    is finished, the \tt running \l{State} will change to \tt false.
+
+    \section3 Example
+    An example for a very usefull script could be a backup scrip like following \tt backup.sh script.
+    \code
+    #!/bin/sh
+    # Directories to backup...
+    backup_files="/home /etc /root /opt /var/www /var/lib/jenkins"
+
+    # Destination of the backup...
+    dest="/mnt/backup"
+
+    # Create archive filename...
+    day=$(date +%Y%m%d)
+    hostname="guh.guru"
+    archive_file="$day-$hostname.tgz"
+
+    # Print start status message...
+    echo "Backing up $backup_files to $dest/$archive_file"
+    date
+    echo
+
+    # Backup the files using tar.
+    tar czf $dest/$archive_file $backup_files
+
+    echo
+    echo "Backup finished"
+    date
+    echo "==========================="
+    echo "  DONE, have a nice day!   "
+    echo "==========================="
+    \endcode
+
+    To make the script executable use following command:
+
+    \code
+    chmod +x backup.sh
+    \endcode
+
+    \chapter Plugin properties
+    Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}
+    and \l{Vendor}{Vendors} of this \l{DevicePlugin}.
+
+    Each \l{DeviceClass} has a list of \l{ParamType}{paramTypes}, \l{ActionType}{actionTypes}, \l{StateType}{stateTypes}
+    and \l{EventType}{eventTypes}. The \l{DeviceClass::CreateMethod}{createMethods} parameter describes how the \l{Device}
+    will be created in the system. A device can have more than one \l{DeviceClass::CreateMethod}{CreateMethod}.
+    The \l{DeviceClass::SetupMethod}{setupMethod} describes the setup method of the \l{Device}.
+    The detailed implementation of each \l{DeviceClass} can be found in the source code.
+
+    \quotefile plugins/deviceplugins/commandlauncher/deviceplugincommandlauncher.json
+*/
+
 #include "deviceplugincommandlauncher.h"
 
 #include "plugin/device.h"
@@ -71,7 +149,7 @@ DeviceManager::DeviceError DevicePluginCommandLauncher::executeAction(Device *de
     if (device->deviceClassId() == applicationDeviceClassId ) {
         // execute application...
         if (action.actionTypeId() == executeActionTypeId) {
-            // check if we allready have started the application
+            // check if we already have started the application
             if (m_applications.values().contains(device)) {
                 if (m_applications.key(device)->state() == QProcess::Running) {
                     return DeviceManager::DeviceErrorDeviceInUse;
@@ -106,7 +184,7 @@ DeviceManager::DeviceError DevicePluginCommandLauncher::executeAction(Device *de
     if (device->deviceClassId() == scriptDeviceClassId ) {
         // execute script...
         if (action.actionTypeId() == executeActionTypeId) {
-            // check if we allready have started the script
+            // check if we already have started the script
             if (m_scripts.values().contains(device)) {
                 if (m_scripts.key(device)->state() == QProcess::Running) {
                     return DeviceManager::DeviceErrorDeviceInUse;

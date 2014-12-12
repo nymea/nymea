@@ -16,43 +16,40 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef RADIO433BRENNENSTUHLGATEWAY_H
-#define RADIO433BRENNENSTUHLGATEWAY_H
+#ifndef DEVICEPLUGINDATETIME_H
+#define DEVICEPLUGINDATETIME_H
 
-#include <QObject>
-#include <QUdpSocket>
-#include <QHostAddress>
+#include "plugin/deviceplugin.h"
+#include <QDateTime>
+#include <QTimeZone>
 #include <QTimer>
 
-class Radio433BrennenstuhlGateway : public QObject
+class DevicePluginDateTime : public DevicePlugin
 {
     Q_OBJECT
-public:
-    explicit Radio433BrennenstuhlGateway(QObject *parent = 0);
 
-    bool sendData(int delay, QList<int> rawData);
-    bool enable();
-    bool disable();
-    bool available();
+    Q_PLUGIN_METADATA(IID "guru.guh.DevicePlugin" FILE "deviceplugindatetime.json")
+    Q_INTERFACES(DevicePlugin)
+
+public:
+    explicit DevicePluginDateTime();
+
+    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
+    DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
+    DeviceManager::HardwareResources requiredHardware() const override;
+    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
+
+    void deviceRemoved(Device *device) override;
 
 private:
-    bool m_available;
-    QUdpSocket *m_gateway;
-    QHostAddress m_gatewayAddress;
-    int m_port;
-
-    QTimer *m_discoverTimer;
-    QTimer *m_timeout;
-
-    void discover();
-
-signals:
-    void availableChanged(const bool &available);
+    QTimer *m_timer;
+    QTimeZone m_timeZone;
 
 private slots:
-    void readData();
-    void gatewayError(QAbstractSocket::SocketError error);
     void timeout();
+
+
+
 };
 
-#endif // RADIO433BRENNENSTUHLGATEWAY_H
+#endif // DEVICEPLUGINDATETIME_H

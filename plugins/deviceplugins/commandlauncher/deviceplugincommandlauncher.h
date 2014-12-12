@@ -16,43 +16,44 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef RADIO433BRENNENSTUHLGATEWAY_H
-#define RADIO433BRENNENSTUHLGATEWAY_H
+#ifndef DEVICEPLUGINCOMMANDLAUNCHER_H
+#define DEVICEPLUGINCOMMANDLAUNCHER_H
 
-#include <QObject>
-#include <QUdpSocket>
-#include <QHostAddress>
-#include <QTimer>
+#include "plugin/deviceplugin.h"
+#include <QProcess>
+#include <QFileInfo>
 
-class Radio433BrennenstuhlGateway : public QObject
+class DevicePluginCommandLauncher : public DevicePlugin
 {
     Q_OBJECT
-public:
-    explicit Radio433BrennenstuhlGateway(QObject *parent = 0);
 
-    bool sendData(int delay, QList<int> rawData);
-    bool enable();
-    bool disable();
-    bool available();
+    Q_PLUGIN_METADATA(IID "guru.guh.DevicePlugin" FILE "deviceplugincommandlauncher.json")
+    Q_INTERFACES(DevicePlugin)
+
+public:
+    explicit DevicePluginCommandLauncher();
+
+    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
+    DeviceManager::HardwareResources requiredHardware() const override;
+    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
+
+    void deviceRemoved(Device *device) override;
 
 private:
-    bool m_available;
-    QUdpSocket *m_gateway;
-    QHostAddress m_gatewayAddress;
-    int m_port;
+    QHash<QProcess*,Device*> m_scripts;
+    QHash<QProcess*,Device*> m_applications;
 
-    QTimer *m_discoverTimer;
-    QTimer *m_timeout;
-
-    void discover();
-
-signals:
-    void availableChanged(const bool &available);
+    // Hashes for action execution4
+    QHash<QProcess*,ActionId> m_startingScripts;
+    QHash<QProcess*,ActionId> m_startingApplications;
+    QHash<QProcess*,ActionId> m_killingScripts;
+    QHash<QProcess*,ActionId> m_killingApplications;
 
 private slots:
-    void readData();
-    void gatewayError(QAbstractSocket::SocketError error);
-    void timeout();
+    void scriptStateChanged(QProcess::ProcessState state);
+    void scriptFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    void applicationStateChanged(QProcess::ProcessState state);
+    void applicationFinished(int exitCode, QProcess::ExitStatus exitStatus);
 };
 
-#endif // RADIO433BRENNENSTUHLGATEWAY_H
+#endif // DEVICEPLUGINCOMMANDLAUNCHER_H

@@ -313,12 +313,17 @@ QVariantMap JsonTypes::packStateDescriptor(const StateDescriptor &stateDescripto
 QVariantMap JsonTypes::packStateEvaluator(const StateEvaluator &stateEvaluator)
 {
     QVariantMap variantMap;
-    variantMap.insert("stateDescriptor", packStateDescriptor(stateEvaluator.stateDescriptor()));
+    if (stateEvaluator.stateDescriptor().isValid()) {
+        variantMap.insert("stateDescriptor", packStateDescriptor(stateEvaluator.stateDescriptor()));
+    }
     QVariantList childEvaluators;
     foreach (const StateEvaluator &childEvaluator, stateEvaluator.childEvaluators()) {
         childEvaluators.append(packStateEvaluator(childEvaluator));
     }
-    variantMap.insert("childEvaluators", childEvaluators);
+    variantMap.insert("operator", stateOperator().at(stateEvaluator.operatorType()));
+    if (childEvaluators.count() > 0) {
+        variantMap.insert("childEvaluators", childEvaluators);
+    }
 
     return variantMap;
 }

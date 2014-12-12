@@ -112,7 +112,10 @@ bool StateDescriptor::operator !=(const State &state) const
 {
     return !(operator==(state));
 }
-
+/*! Returns the true if this \l{StateDescriptor} is valid. A \l{StateDescriptor} is valid
+ *  if the DeviceId and the StateTypeId are set and the state value of this \l{StateDescriptor} is valid.
+ * \sa StateDescriptor(), deviceId(), stateValue()
+ */
 bool StateDescriptor::isValid() const
 {
     return !m_deviceId.isNull() && !m_stateTypeId.isNull() && m_stateValue.isValid();

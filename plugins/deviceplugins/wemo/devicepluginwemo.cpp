@@ -27,6 +27,9 @@
     \l{http://www.belkin.com/de/PRODUKTE/home-automation/c/wemo-home-automation/}{Belkin}
     home automation system.
 
+    \underline{NOTE}: The devices can only be discovered if they are already in the local network. In order
+    to configure the WeMo devices please use the original software.
+
     \chapter Plugin properties
     Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}
     and \l{Vendor}{Vendors} of this \l{DevicePlugin}.
@@ -78,7 +81,7 @@ DeviceManager::DeviceSetupStatus DevicePluginWemo::setupDevice(Device *device)
     if(device->deviceClassId() == wemoSwitchDeviceClassId){
         foreach (WemoSwitch *wemoSwitch, m_wemoSwitches.keys()) {
             if(wemoSwitch->serialNumber() == device->paramValue("serial number").toString()){
-                qWarning() << wemoSwitch->serialNumber() << " allready exists...";
+                qWarning() << wemoSwitch->serialNumber() << " already exists...";
                 return DeviceManager::DeviceSetupStatusFailure;
             }
         }

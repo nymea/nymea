@@ -35,7 +35,8 @@ public:
     explicit GpioMonitor(QObject *parent = 0);
     ~GpioMonitor();
 
-    void stop();
+    void enable();
+    void disable();
     bool addGpio(Gpio *gpio, bool activeLow);
     QList<Gpio*> gpioList();
 

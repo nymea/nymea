@@ -208,7 +208,7 @@ State Device::state(const StateTypeId &stateTypeId) const
     return State(StateTypeId(), DeviceId());
 }
 
-/*! Returns true, if setup of this Device is allready completed. */
+/*! Returns true, if setup of this Device is already completed. */
 bool Device::setupComplete() const
 {
     return m_setupComplete;

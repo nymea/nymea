@@ -151,7 +151,7 @@ DeviceManager::DeviceSetupStatus DevicePluginEQ3::setupDevice(Device *device)
     if(device->deviceClassId() == cubeDeviceClassId){
         foreach (MaxCube *cube, m_cubes.keys()) {
             if(cube->serialNumber() == device->paramValue("serial number").toString()){
-                qDebug() << cube->serialNumber() << " allready exists...";
+                qDebug() << cube->serialNumber() << " already exists...";
                 return DeviceManager::DeviceSetupStatusFailure;
             }
         }

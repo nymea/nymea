@@ -161,4 +161,5 @@
         "status": "success"
     }
     \endcode
+    \quotefile tests/auto/api.json
 */

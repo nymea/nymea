@@ -47,9 +47,6 @@ private slots:
 
     void getConfiguredDevices();
 
-    void removeDevice_data();
-    void removeDevice();
-
     void storedDevices();
 
     void discoverDevices_data();
@@ -63,6 +60,17 @@ private slots:
 
     void getStateTypes_data();
     void getStateTypes();
+
+    void getStateValue_data();
+    void getStateValue();
+
+    void getStateValues_data();
+    void getStateValues();
+
+    // Keep this the last one! It'll remove the configured mock device
+    void removeDevice_data();
+    void removeDevice();
+
 };
 
 void TestDevices::getPlugins()
@@ -269,41 +277,6 @@ void TestDevices::getConfiguredDevices()
     QCOMPARE(devices.count(), 2); // There should be one auto created mock device and the one created in initTestcase()
 }
 
-void TestDevices::removeDevice_data()
-{
-    QTest::addColumn<DeviceId>("deviceId");
-    QTest::addColumn<DeviceManager::DeviceError>("deviceError");
-
-    QTest::newRow("Existing Device") << m_mockDeviceId << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("Not existing Device") << DeviceId::createDeviceId() << DeviceManager::DeviceErrorDeviceNotFound;
-}
-
-void TestDevices::removeDevice()
-{
-    QFETCH(DeviceId, deviceId);
-    QFETCH(DeviceManager::DeviceError, deviceError);
-
-    QSettings settings(m_deviceSettings);
-    settings.beginGroup("DeviceConfig");
-    if (deviceError == DeviceManager::DeviceErrorNoError) {
-        settings.beginGroup(m_mockDeviceId.toString());
-        // Make sure we have some config values for this device
-        QVERIFY(settings.allKeys().count() > 0);
-    }
-
-    QVariantMap params;
-    params.insert("deviceId", deviceId);
-
-    QVariant response = injectAndWait("Devices.RemoveConfiguredDevice", params);
-
-    verifyDeviceError(response, deviceError);
-
-    if (DeviceManager::DeviceErrorNoError) {
-        // Make sure the device is gone from settings too
-        QCOMPARE(settings.allKeys().count(), 0);
-    }
-}
-
 void TestDevices::storedDevices()
 {
     QVariantMap params;
@@ -482,6 +455,96 @@ void TestDevices::getStateTypes()
         QCOMPARE(stateTypes.first().toMap().value("id").toString(), mockIntStateId.toString());
     }
 }
+
+void TestDevices::getStateValue_data()
+{
+    QTest::addColumn<DeviceId>("deviceId");
+    QTest::addColumn<StateTypeId>("stateTypeId");
+    QTest::addColumn<DeviceManager::DeviceError>("statusCode");
+
+    QTest::newRow("valid deviceId") << m_mockDeviceId << mockIntStateId << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("invalid deviceId") << DeviceId("094f8024-5caa-48c1-ab6a-de486a92088f") << mockIntStateId << DeviceManager::DeviceErrorDeviceNotFound;
+    QTest::newRow("invalid statetypeId") << m_mockDeviceId << StateTypeId("120514f1-343e-4621-9bff-dac616169df9") << DeviceManager::DeviceErrorStateTypeNotFound;
+}
+
+void TestDevices::getStateValue()
+{
+    QFETCH(DeviceId, deviceId);
+    QFETCH(StateTypeId, stateTypeId);
+    QFETCH(DeviceManager::DeviceError, statusCode);
+
+    QVariantMap params;
+    params.insert("deviceId", deviceId);
+    params.insert("stateTypeId", stateTypeId);
+    QVariant response = injectAndWait("Devices.GetStateValue", params);
+
+    QCOMPARE(response.toMap().value("params").toMap().value("deviceError").toString(), JsonTypes::deviceErrorToString(statusCode));
+    if (statusCode == DeviceManager::DeviceErrorNoError) {
+        QVariant value = response.toMap().value("params").toMap().value("value");
+        QCOMPARE(value.toInt(), 10); // Mock device has value 10 by default...
+    }
+}
+
+void TestDevices::getStateValues_data()
+{
+    QTest::addColumn<DeviceId>("deviceId");
+    QTest::addColumn<DeviceManager::DeviceError>("statusCode");
+
+    QTest::newRow("valid deviceId") << m_mockDeviceId << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("invalid deviceId") << DeviceId("094f8024-5caa-48c1-ab6a-de486a92088f") << DeviceManager::DeviceErrorDeviceNotFound;
+}
+
+void TestDevices::getStateValues()
+{
+    QFETCH(DeviceId, deviceId);
+    QFETCH(DeviceManager::DeviceError, statusCode);
+
+    QVariantMap params;
+    params.insert("deviceId", deviceId);
+    QVariant response = injectAndWait("Devices.GetStateValues", params);
+
+    QCOMPARE(response.toMap().value("params").toMap().value("deviceError").toString(), JsonTypes::deviceErrorToString(statusCode));
+    if (statusCode == DeviceManager::DeviceErrorNoError) {
+        QVariantList values = response.toMap().value("params").toMap().value("values").toList();
+        QCOMPARE(values.count(), 2); // Mock device has two states...
+    }
+}
+
+void TestDevices::removeDevice_data()
+{
+    QTest::addColumn<DeviceId>("deviceId");
+    QTest::addColumn<DeviceManager::DeviceError>("deviceError");
+
+    QTest::newRow("Existing Device") << m_mockDeviceId << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("Not existing Device") << DeviceId::createDeviceId() << DeviceManager::DeviceErrorDeviceNotFound;
+}
+
+void TestDevices::removeDevice()
+{
+    QFETCH(DeviceId, deviceId);
+    QFETCH(DeviceManager::DeviceError, deviceError);
+
+    QSettings settings(m_deviceSettings);
+    settings.beginGroup("DeviceConfig");
+    if (deviceError == DeviceManager::DeviceErrorNoError) {
+        settings.beginGroup(m_mockDeviceId.toString());
+        // Make sure we have some config values for this device
+        QVERIFY(settings.allKeys().count() > 0);
+    }
+
+    QVariantMap params;
+    params.insert("deviceId", deviceId);
+
+    QVariant response = injectAndWait("Devices.RemoveConfiguredDevice", params);
+
+    verifyDeviceError(response, deviceError);
+
+    if (DeviceManager::DeviceErrorNoError) {
+        // Make sure the device is gone from settings too
+        QCOMPARE(settings.allKeys().count(), 0);
+    }
+}
+
 
 #include "testdevices.moc"
 

@@ -8,6 +8,7 @@
             "deviceClasses": [
                 {
                     "deviceClassId": "ab73ad2f-6594-45a3-9063-8f72d365c5e5",
+                    "idName": "intertechnoRemote",
                     "name": "Intertechno Remote",
                     "createMethods": ["user"],
                     "paramTypes": [

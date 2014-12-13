@@ -118,13 +118,11 @@
 
 #include "plugin/device.h"
 #include "devicemanager.h"
+#include "plugininfo.h"
 
 #include <QDebug>
 #include <QStringList>
 #include <QUdpSocket>
-
-DeviceClassId wolDeviceClassId = DeviceClassId("3c8f2447-dcd0-4882-8c09-99e579e4d24c");
-ActionTypeId wolActionTypeId = ActionTypeId("fb9b9d87-218f-4f0d-9e16-39f8a105029a");
 
 DevicePluginWakeOnLan::DevicePluginWakeOnLan()
 {

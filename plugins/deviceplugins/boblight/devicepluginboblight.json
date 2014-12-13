@@ -8,11 +8,13 @@
             "deviceClasses": [
                 {
                     "deviceClassId": "1647c61c-db14-461e-8060-8a3533d5d92f",
+                    "idName": "boblight",
                     "name": "Boblight",
                     "createMethods": ["auto"],
                     "stateTypes": [
                         {
                             "id": "97ec80cd-43a9-40fa-93b7-d1580043d981",
+                            "idName": "color",
                             "name": "color",
                             "type": "QColor",
                             "defaultValue": "#000000"
@@ -21,6 +23,7 @@
                     "actionTypes": [
                         {
                             "id": "668e1aa3-fa13-49ce-8630-17a5c0a7c34b",
+                            "idName": "setColor",
                             "name": "Set color",
                             "paramTypes": [
                                 {

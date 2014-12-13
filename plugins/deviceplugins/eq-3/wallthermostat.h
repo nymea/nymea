@@ -28,8 +28,8 @@ class WallThermostat : public MaxDevice
 public:
     explicit WallThermostat(QObject *parent = 0);
 
-    double confortTemp() const;
-    void setConfortTemp(const double &confortTemp);
+    double comfortTemp() const;
+    void setComfortTemp(const double &comfortTemp);
 
     double ecoTemp() const;
     void setEcoTemp(const double &ecoTemp);
@@ -82,7 +82,7 @@ public:
     void setCurrentTemperatre(const double &currentTemperature);
 
 private:
-    double m_confortTemp;
+    double m_comfortTemp;
     double m_ecoTemp;
     double m_maxSetPointTemp;
     double m_minSetPointTemp;

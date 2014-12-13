@@ -1,4 +1,4 @@
-6
+7
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -144,6 +144,21 @@
             "returns": {
                 "deviceError": "$ref:DeviceError",
                 "o:value": "Variant"
+            }
+        },
+        "Devices.GetStateValues": {
+            "description": "Get all the state values of the give device.",
+            "params": {
+                "deviceId": "Uuid"
+            },
+            "returns": {
+                "deviceError": "$ref:DeviceError",
+                "o:values": [
+                    {
+                        "stateTypeId": "Uuid",
+                        "value": "Variant"
+                    }
+                ]
             }
         },
         "Devices.GetSupportedDevices": {

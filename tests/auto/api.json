@@ -1,4 +1,4 @@
-6
+7
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -326,6 +326,13 @@
             ]
         },
         "BasicType": [
+            "Uuid",
+            "String",
+            "Int",
+            "Double",
+            "Bool",
+            "Variant",
+            "Object"
         ],
         "CreateMethod": [
             "CreateMethodUser",

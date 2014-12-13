@@ -8,6 +8,7 @@
             "deviceClasses": [
                 {
                     "deviceClassId": "753f0d32-0468-4d08-82ed-1964aab03298",
+                    "idName": "mock",
                     "name": "Mock Device",
                     "createMethods": ["user", "discovery"],
                     "discoveryParamTypes": [
@@ -84,20 +85,24 @@
                         },
                         {
                             "id": "fbae06d3-7666-483e-a39e-ec50fe89054e",
+                            "idName": "mockAsync",
                             "name": "Mock Action 3 (async)"
                         },
                         {
                             "id": "df3cf33d-26d5-4577-9132-9823bd33fad0",
+                            "idName": "mockFailing",
                             "name": "Mock Action 4 (broken)"
                         },
                         {
                             "id": "bfe89a1d-3497-4121-8318-e77c37537219",
+                            "idName": "mockAsyncFailing",
                             "name": "Mock Action 5 (async, broken)"
                         }
                     ]
                 },
                 {
                     "deviceClassId": "ab4257b3-7548-47ee-9bd4-7dc3004fd197",
+                    "idName": "mockDeviceAuto",
                     "name": "Mock Device (Auto created)",
                     "createMethods": ["auto"],
                     "paramTypes": [

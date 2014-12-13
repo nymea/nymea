@@ -159,12 +159,10 @@
 
 #include "plugin/device.h"
 #include "devicemanager.h"
+#include "plugininfo.h"
 
 #include <QDebug>
 #include <QStringList>
-
-DeviceClassId intertechnoRemote = DeviceClassId("ab73ad2f-6594-45a3-9063-8f72d365c5e5");
-DeviceClassId intertechnoSwitch = DeviceClassId("324219e8-7c53-41b5-b314-c2900cd15252");
 
 DevicePluginIntertechno::DevicePluginIntertechno()
 {
@@ -313,7 +311,7 @@ void DevicePluginIntertechno::radioData(const QList<int> &rawData)
         return;
     }
     
-    QList<Device*> deviceList = deviceManager()->findConfiguredDevices(intertechnoRemote);
+    QList<Device*> deviceList = deviceManager()->findConfiguredDevices(intertechnoRemoteDeviceClassId);
     if(deviceList.isEmpty()){
         return;
     }

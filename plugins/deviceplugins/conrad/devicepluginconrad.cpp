@@ -60,9 +60,6 @@
 #include <QStringList>
 
 
-DeviceClassId conradRemoteId = DeviceClassId("17cd2492-28ab-4827-ba6e-5ef35be23f1b");
-EventTypeId conradRemoteButtonEventTypeId = EventTypeId("1f4050f5-4c90-4799-8d6d-e4069f3a2519");
-ActionTypeId conradRemoteActionTypeId = ActionTypeId("2a3638b4-fbd6-4fdb-a3c9-7fa49705d1a3");
 DevicePluginConrad::DevicePluginConrad()
 {
 }

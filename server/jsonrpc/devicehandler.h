@@ -60,6 +60,8 @@ public:
 
     Q_INVOKABLE JsonReply* GetStateValue(const QVariantMap &params) const;
 
+    Q_INVOKABLE JsonReply* GetStateValues(const QVariantMap &params) const;
+
 signals:
     void StateChanged(const QVariantMap &params);
 

@@ -146,6 +146,21 @@
                 "o:value": "Variant"
             }
         },
+        "Devices.GetStateValues": {
+            "description": "Get all the state values of the give device.",
+            "params": {
+                "deviceId": "Uuid"
+            },
+            "returns": {
+                "deviceError": "$ref:DeviceError",
+                "o:values": [
+                    {
+                        "stateTypeId": "Uuid",
+                        "value": "Variant"
+                    }
+                ]
+            }
+        },
         "Devices.GetSupportedDevices": {
             "description": "Returns a list of supported Device classes, optionally filtered by vendorId.",
             "params": {

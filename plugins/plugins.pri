@@ -16,5 +16,4 @@ infofile.input = JSONFILES
 QMAKE_EXTRA_COMPILERS += infofile
 
 target.path = /usr/lib/guh/plugins/
-target.depends += if
 INSTALLS += target

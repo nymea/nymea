@@ -341,6 +341,13 @@
             ]
         },
         "BasicType": [
+            "Uuid",
+            "String",
+            "Int",
+            "Double",
+            "Bool",
+            "Variant",
+            "Object"
         ],
         "CreateMethod": [
             "CreateMethodUser",

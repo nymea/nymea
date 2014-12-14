@@ -132,6 +132,13 @@ JsonReply* JsonHandler::createAsyncReply(const QString &method) const
     return JsonReply::createAsyncReply(const_cast<JsonHandler*>(this), method);
 }
 
+QVariantMap JsonHandler::statusToReply(DeviceManager::DeviceError status) const
+{
+    QVariantMap returns;
+    returns.insert("deviceError", JsonTypes::deviceErrorToString(status));
+    return returns;
+}
+
 
 JsonReply::JsonReply(Type type, JsonHandler *handler, const QString &method, const QVariantMap &data):
     m_type(type),

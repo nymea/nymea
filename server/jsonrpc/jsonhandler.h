@@ -103,6 +103,7 @@ protected:
 
     JsonReply *createReply(const QVariantMap &data) const;
     JsonReply *createAsyncReply(const QString &method) const;
+    QVariantMap statusToReply(DeviceManager::DeviceError status) const;
 
 private:
     QHash<QString, QString> m_descriptions;

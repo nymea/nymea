@@ -37,8 +37,8 @@ private slots:
     void executeAction_data();
     void executeAction();
 
-    void getActionTypes_data();
-    void getActionTypes();
+    void getActionType_data();
+    void getActionType();
 
 };
 
@@ -120,7 +120,7 @@ void TestActions::executeAction()
 
 }
 
-void TestActions::getActionTypes_data()
+void TestActions::getActionType_data()
 {
     QTest::addColumn<ActionTypeId>("actionTypeId");
     QTest::addColumn<DeviceManager::DeviceError>("error");
@@ -129,7 +129,7 @@ void TestActions::getActionTypes_data()
     QTest::newRow("invalid actiontypeid") << ActionTypeId::createActionTypeId() << DeviceManager::DeviceErrorActionTypeNotFound;
 }
 
-void TestActions::getActionTypes()
+void TestActions::getActionType()
 {
     QFETCH(ActionTypeId, actionTypeId);
     QFETCH(DeviceManager::DeviceError, error);

@@ -1,4 +1,4 @@
-7
+8
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -147,7 +147,7 @@
             }
         },
         "Devices.GetStateValues": {
-            "description": "Get all the state values of the give device.",
+            "description": "Get all the state values of the given device.",
             "params": {
                 "deviceId": "Uuid"
             },

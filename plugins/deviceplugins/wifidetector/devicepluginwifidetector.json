@@ -19,6 +19,7 @@
                     "stateTypes": [
                         {
                             "id": "cb43e1b5-4f61-4538-bfa2-c33055c542cf",
+                            "idName": "inRange",
                             "name": "In Range",
                             "type": "bool",
                             "defaultValue": false

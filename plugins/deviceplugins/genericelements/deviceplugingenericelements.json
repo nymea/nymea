@@ -8,6 +8,7 @@
             "deviceClasses": [
                 {
                     "deviceClassId": "c0f511f9-70f5-499b-bd70-2c0e9ddd68c4",
+                    "idName": "toggleButton",
                     "name": "Toggle Button",
                     "createMethods": ["user"],
                     "paramTypes": [
@@ -19,6 +20,7 @@
                     "stateTypes": [
                         {
                             "id": "b5e90567-54aa-49bd-a78a-3c19fb38aaf5",
+                            "idName": "toggleButtonStatus",
                             "name": "state",
                             "type": "bool",
                             "defaultValue": false
@@ -27,12 +29,14 @@
                     "actionTypes": [
                         {
                             "id": "47bdc15a-b393-4dc2-801b-845420cdfda3",
+                            "idName": "toggleButtonToggle",
                             "name": "toggle"
                         }
                     ]
                 },
                 {
                     "deviceClassId": "820b2f2d-0d92-48c8-8fd4-f94ce8fc4103",
+                    "idName": "button",
                     "name": "Button",
                     "createMethods": ["user"],
                     "paramTypes": [
@@ -44,18 +48,21 @@
                     "actionTypes": [
                         {
                             "id": "01f38af1-b2ab-4ec3-844e-ef52f0f229a9",
+                            "idName": "buttonPress",
                             "name": "press"
                         }
                     ],
                     "eventTypes": [
                         {
                             "id": "effdbc2d-e467-4b0b-80a9-9dda251bfa5c",
+                            "idName": "buttonPressed",
                             "name": "button pressed"
                         }
                     ]
                 },
                 {
                     "deviceClassId": "430d188c-476d-4825-a9bd-86dfa3094b56",
+                    "idName": "onOffButton",
                     "name": "ON/OFF Button",
                     "createMethods": ["user"],
                     "paramTypes": [
@@ -67,20 +74,24 @@
                     "actionTypes": [
                         {
                             "id": "892596d2-0863-4807-97da-469b9f7003f2",
+                            "idName": "onOffButtonOn",
                             "name": "press ON"
                         },
                         {
                             "id": "a8d64050-0b58-4ccf-b052-77ce2b7368ad",
+                            "idName": "onOffButtonOff",
                             "name": "press OFF"
                         }
                     ],
                     "eventTypes": [
                         {
                             "id": "4eeba6a2-e4c7-4a2e-8360-2797d98114e6",
+                            "idName": "onOffButtonOn",
                             "name": "ON pressed"
                         },
                         {
                             "id": "b636c5f3-2eb0-4682-96d4-88a4aa9d2c12",
+                            "idName": "onOffButtonOff",
                             "name": "OFF pressed"
                         }
                     ]

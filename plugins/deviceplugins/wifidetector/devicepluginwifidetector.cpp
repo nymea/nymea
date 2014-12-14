@@ -20,12 +20,10 @@
 
 #include "plugin/device.h"
 #include "devicemanager.h"
+#include "plugininfo.h"
 
 #include <QDebug>
 #include <QStringList>
-
-DeviceClassId detectorId = DeviceClassId("bd216356-f1ec-4324-9785-6982d2174e17");
-StateTypeId inRangeStateTypeId = StateTypeId("cb43e1b5-4f61-4538-bfa2-c33055c542cf");
 
 DevicePluginWifiDetector::DevicePluginWifiDetector()
 {

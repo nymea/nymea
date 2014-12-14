@@ -129,15 +129,9 @@
 
 #include "plugin/device.h"
 #include "devicemanager.h"
+#include "plugininfo.h"
 
 #include <QDebug>
-
-DeviceClassId wemoSwitchDeviceClassId = DeviceClassId("69d97d3b-a8e6-42f3-afc0-ca8a53eb7cce");
-
-StateTypeId powerStateTypeId = StateTypeId("7166c4f6-f68c-4188-8f7c-2205d72a5a6d");
-StateTypeId reachableStateTypeId = StateTypeId("ec2f5b49-585c-4455-a233-b7aa4c608dbc");
-ActionTypeId powerActionTypeId = ActionTypeId("269f25eb-d0b7-4144-b9ef-801f4ff3e90c");
-
 
 DevicePluginWemo::DevicePluginWemo()
 {

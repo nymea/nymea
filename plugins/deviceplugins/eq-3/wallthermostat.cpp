@@ -23,14 +23,14 @@ WallThermostat::WallThermostat(QObject *parent) :
 {
 }
 
-double WallThermostat::confortTemp() const
+double WallThermostat::comfortTemp() const
 {
-    return m_confortTemp;
+    return m_comfortTemp;
 }
 
-void WallThermostat::setConfortTemp(const double &confortTemp)
+void WallThermostat::setComfortTemp(const double &comfortTemp)
 {
-    m_confortTemp = confortTemp;
+    m_comfortTemp = comfortTemp;
 }
 
 double WallThermostat::ecoTemp() const

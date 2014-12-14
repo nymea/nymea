@@ -79,6 +79,8 @@ RuleEngine::RuleEngine(QObject *parent) :
 
         settings.beginGroup(idString);
 
+        bool enabled = settings.value("enabled", true).toBool();
+
         QList<EventDescriptor> eventDescriptorList;
         settings.beginGroup("events");
 
@@ -133,6 +135,7 @@ RuleEngine::RuleEngine(QObject *parent) :
         settings.endGroup();
 
         Rule rule = Rule(RuleId(idString), eventDescriptorList, stateEvaluator, actions);
+        rule.setEnabled(enabled);
         appendRule(rule);
     }
 
@@ -151,6 +154,11 @@ QList<Action> RuleEngine::evaluateEvent(const Event &event)
     QList<Action> actions;
     foreach (const RuleId &id, m_ruleIds) {
         Rule rule = m_rules.value(id);
+        if (!rule.enabled()) {
+            qDebug() << "Not triggering rule because it is disabled:" << rule.id();
+            continue;
+        }
+
         if (containsEvent(rule, event)) {
             if (rule.stateEvaluator().evaluate()) {
                 qDebug() << "states matching!";
@@ -164,13 +172,13 @@ QList<Action> RuleEngine::evaluateEvent(const Event &event)
 
 /*! Add a new \l{Rule} with the given \a EventDescriptorList and \a actions to the engine.
     For convenience, this creates a Rule without any \l{State} comparison. */
-RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QList<EventDescriptor> &eventDescriptorList, const QList<Action> &actions)
+RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QList<EventDescriptor> &eventDescriptorList, const QList<Action> &actions, bool enabled)
 {
-    return addRule(ruleId, eventDescriptorList, StateEvaluator(), actions);
+    return addRule(ruleId, eventDescriptorList, StateEvaluator(), actions, enabled);
 }
 
 /*! Add a new \l{Rule} with the given \a event, \a states and \a actions to the engine. */
-RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actions)
+RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actions, bool enabled)
 {
     if (ruleId.isNull()) {
         return RuleErrorInvalidRuleId;
@@ -220,11 +228,13 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QList<Even
     }
 
     Rule rule = Rule(ruleId, eventDescriptorList, stateEvaluator, actions);
+    rule.setEnabled(enabled);
     appendRule(rule);
     emit ruleAdded(rule.id());
 
     QSettings settings(m_settingsFile);
     settings.beginGroup(rule.id().toString());
+    settings.setValue("enabled", enabled);
     settings.beginGroup("events");
     for (int i = 0; i < eventDescriptorList.count(); i++) {
         const EventDescriptor &eventDescriptor = eventDescriptorList.at(i);
@@ -297,6 +307,50 @@ RuleEngine::RuleError RuleEngine::removeRule(const RuleId &ruleId)
     settings.endGroup();
 
     emit ruleRemoved(ruleId);
+    return RuleErrorNoError;
+}
+
+/*! Enables a rule that has been previously disabled.
+    \sa disableRule */
+RuleEngine::RuleError RuleEngine::enableRule(const RuleId &ruleId)
+{
+    if (!m_rules.contains(ruleId)) {
+        qWarning() << "Rule not found. Can't enable it";
+        return RuleErrorRuleNotFound;
+    }
+    Rule rule = m_rules.value(ruleId);
+    rule.setEnabled(true);
+    m_rules[ruleId] = rule;
+    QSettings settings(m_settingsFile);
+    settings.beginGroup(ruleId.toString());
+    if (!settings.value("enabled", true).toBool()) {
+        settings.setValue("enabled", true);
+        emit ruleChanged(ruleId);
+    }
+    settings.endGroup();
+
+    return RuleErrorNoError;
+}
+
+/*! Disables a rule. Disabled rules won't be triggered.
+    \sa enableRule */
+RuleEngine::RuleError RuleEngine::disableRule(const RuleId &ruleId)
+{
+    if (!m_rules.contains(ruleId)) {
+        qWarning() << "Rule not found. Can't disable it";
+        return RuleErrorRuleNotFound;
+    }
+    Rule rule = m_rules.value(ruleId);
+    rule.setEnabled(false);
+    m_rules[ruleId] = rule;
+    QSettings settings(m_settingsFile);
+    settings.beginGroup(ruleId.toString());
+    if (settings.value("enabled", true).toBool()) {
+        settings.setValue("enabled", false);
+        emit ruleChanged(ruleId);
+    }
+    settings.endGroup();
+
     return RuleErrorNoError;
 }
 

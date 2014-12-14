@@ -183,9 +183,9 @@ Rule GuhCore::findRule(const RuleId &ruleId)
     return m_ruleEngine->findRule(ruleId);
 }
 
-RuleEngine::RuleError GuhCore::addRule(const RuleId &id, const QList<EventDescriptor> &eventDescriptorList, const QList<Action> &actionList)
+RuleEngine::RuleError GuhCore::addRule(const RuleId &id, const QList<EventDescriptor> &eventDescriptorList, const QList<Action> &actionList, bool enabled)
 {
-    return m_ruleEngine->addRule(id, eventDescriptorList, actionList);
+    return m_ruleEngine->addRule(id, eventDescriptorList, actionList, enabled);
 }
 
 RuleEngine::RuleError GuhCore::removeRule(const RuleId &id)
@@ -196,6 +196,16 @@ RuleEngine::RuleError GuhCore::removeRule(const RuleId &id)
 QList<RuleId> GuhCore::findRules(const DeviceId &deviceId)
 {
     return m_ruleEngine->findRules(deviceId);
+}
+
+RuleEngine::RuleError GuhCore::enableRule(const RuleId &ruleId)
+{
+    return m_ruleEngine->enableRule(ruleId);
+}
+
+RuleEngine::RuleError GuhCore::disableRule(const RuleId &ruleId)
+{
+    return m_ruleEngine->disableRule(ruleId);
 }
 
 /*! Returns a pointer to the \l{DeviceManager} instance owned by GuhCore.*/

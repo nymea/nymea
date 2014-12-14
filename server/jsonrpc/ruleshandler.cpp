@@ -44,10 +44,12 @@ RulesHandler::RulesHandler(QObject *parent) :
 
     params.clear(); returns.clear();
     setDescription("AddRule", "Add a rule. You can describe rules by one or many EventDesciptors and a StateEvaluator. Note that only"
-                   "one of either eventDescriptor or eventDescriptorList may be passed at a time.");
+                   "one of either eventDescriptor or eventDescriptorList may be passed at a time. A rule can be created but left disabled,"
+                   "meaning it won't actually be executed until set to enabled. If not given, enabled defaults to true.");
     params.insert("o:eventDescriptor", JsonTypes::eventDescriptorRef());
     params.insert("o:eventDescriptorList", QVariantList() << JsonTypes::eventDescriptorRef());
     params.insert("o:stateEvaluator", JsonTypes::stateEvaluatorRef());
+    params.insert("o:enabled", JsonTypes::basicTypeToString(JsonTypes::Bool));
     QVariantList actions;
     actions.append(JsonTypes::actionRef());
     params.insert("actions", actions);
@@ -69,6 +71,20 @@ RulesHandler::RulesHandler(QObject *parent) :
     setParams("FindRules", params);
     returns.insert("ruleIds", QVariantList() << JsonTypes::basicTypeToString(JsonTypes::Uuid));
     setReturns("FindRules", returns);
+
+    params.clear(); returns.clear();
+    setDescription("EnableRule", "Enabled a rule that has previously been disabled.");
+    params.insert("ruleId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    setParams("EnableRule", params);
+    returns.insert("ruleError", JsonTypes::ruleErrorRef());
+    setReturns("EnableRule", returns);
+
+    params.clear(); returns.clear();
+    setDescription("DisableRule", "Disable a rule. The rule won't be triggered by it's events or state changes while it is disabled.");
+    params.insert("ruleId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    setParams("DisableRule", params);
+    returns.insert("ruleError", JsonTypes::ruleErrorRef());
+    setReturns("DisableRule", returns);
 }
 
 QString RulesHandler::name() const
@@ -136,8 +152,10 @@ JsonReply* RulesHandler::AddRule(const QVariantMap &params)
         return createReply(returns);
     }
 
+    bool enabled = params.value("enabled", true).toBool();
+
     RuleId newRuleId = RuleId::createRuleId();
-    RuleEngine::RuleError status = GuhCore::instance()->addRule(newRuleId, eventDescriptorList, actions);
+    RuleEngine::RuleError status = GuhCore::instance()->addRule(newRuleId, eventDescriptorList, actions, enabled);
     if (status ==  RuleEngine::RuleErrorNoError) {
         returns.insert("ruleId", newRuleId.toString());
     }
@@ -167,4 +185,14 @@ JsonReply *RulesHandler::FindRules(const QVariantMap &params)
     QVariantMap returns;
     returns.insert("ruleIds", rulesList);
     return createReply(returns);
+}
+
+JsonReply *RulesHandler::EnableRule(const QVariantMap &params)
+{
+    return createReply(statusToReply(GuhCore::instance()->enableRule(RuleId(params.value("ruleId").toString()))));
+}
+
+JsonReply *RulesHandler::DisableRule(const QVariantMap &params)
+{
+    return createReply(statusToReply(GuhCore::instance()->disableRule(RuleId(params.value("ruleId").toString()))));
 }

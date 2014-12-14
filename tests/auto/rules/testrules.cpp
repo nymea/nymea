@@ -33,7 +33,14 @@ class TestRules: public GuhTestBase
 {
     Q_OBJECT
 
+private:
+    void cleanupMockHistory();
+    void cleanupRules();
+
 private slots:
+
+    void cleanup();
+
     void addRemoveRules_data();
     void addRemoveRules();
 
@@ -48,7 +55,33 @@ private slots:
 
     void testStateEvaluator2_data();
     void testStateEvaluator2();
+
+    void enableDisableRule();
 };
+
+void TestRules::cleanupMockHistory() {
+    QNetworkAccessManager nam;
+    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/clearactionhistory").arg(m_mockDevice1Port).arg(mockEvent1Id.toString())));
+    QNetworkReply *reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+}
+
+void TestRules::cleanupRules() {
+    QVariant response = injectAndWait("Rules.GetRules");
+    foreach (const QVariant &ruleId, response.toMap().value("params").toMap().value("ruleIds").toList()) {
+        QVariantMap params;
+        params.insert("ruleId", ruleId.toString());
+        verifyRuleError(injectAndWait("Rules.RemoveRule", params));
+    }
+}
+
+void TestRules::cleanup() {
+    cleanupMockHistory();
+    cleanupRules();
+}
 
 void TestRules::addRemoveRules_data()
 {
@@ -100,6 +133,7 @@ void TestRules::addRemoveRules_data()
     invalidEventDescriptor.insert("deviceId", DeviceId());
     invalidEventDescriptor.insert("paramDescriptors", QVariantList());
 
+    QTest::addColumn<bool>("enabled");
     QTest::addColumn<QVariantMap>("action1");
     QTest::addColumn<QVariantMap>("eventDescriptor");
     QTest::addColumn<QVariantList>("eventDescriptorList");
@@ -107,17 +141,19 @@ void TestRules::addRemoveRules_data()
     QTest::addColumn<RuleEngine::RuleError>("error");
 
 
-    QTest::newRow("valid rule. 1 EventDescriptor, StateEvaluator, 1 Action") << validActionNoParams << validEventDescriptor1 << QVariantList() << validStateEvaluator << RuleEngine::RuleErrorNoError;
-    QTest::newRow("valid rule. 2 EventDescriptors, 1 Action") << validActionNoParams << QVariantMap() << eventDescriptorList << validStateEvaluator << RuleEngine::RuleErrorNoError;
-    QTest::newRow("invalid rule: eventDescriptor and eventDescriptorList used") << validActionNoParams << validEventDescriptor1 << eventDescriptorList << validStateEvaluator << RuleEngine::RuleErrorInvalidParameter;
-    QTest::newRow("invalid action") << invalidAction << validEventDescriptor1 << QVariantList() << validStateEvaluator << RuleEngine::RuleErrorActionTypeNotFound;
-    QTest::newRow("invalid event descriptor") << validActionNoParams << invalidEventDescriptor << QVariantList() << validStateEvaluator << RuleEngine::RuleErrorDeviceNotFound;
+    QTest::newRow("valid rule. 1 EventDescriptor, StateEvaluator, 1 Action, enabled") << true << validActionNoParams << validEventDescriptor1 << QVariantList() << validStateEvaluator << RuleEngine::RuleErrorNoError;
+    QTest::newRow("valid rule. 1 EventDescriptor, StateEvaluator, 1 Action, diabled") << false << validActionNoParams << validEventDescriptor1 << QVariantList() << validStateEvaluator << RuleEngine::RuleErrorNoError;
+    QTest::newRow("valid rule. 2 EventDescriptors, 1 Action") << true << validActionNoParams << QVariantMap() << eventDescriptorList << validStateEvaluator << RuleEngine::RuleErrorNoError;
+    QTest::newRow("invalid rule: eventDescriptor and eventDescriptorList used") << true << validActionNoParams << validEventDescriptor1 << eventDescriptorList << validStateEvaluator << RuleEngine::RuleErrorInvalidParameter;
+    QTest::newRow("invalid action") << true << invalidAction << validEventDescriptor1 << QVariantList() << validStateEvaluator << RuleEngine::RuleErrorActionTypeNotFound;
+    QTest::newRow("invalid event descriptor") <<true << validActionNoParams << invalidEventDescriptor << QVariantList() << validStateEvaluator << RuleEngine::RuleErrorDeviceNotFound;
 //    QTest::newRow("invalid state evaluator") << validActionNoParams << invalidEventDescriptor << QVariantList() << invalidStateEvaluator << false;
 
 }
 
 void TestRules::addRemoveRules()
 {
+    QFETCH(bool, enabled);
     QFETCH(QVariantMap, action1);
     QFETCH(QVariantMap, eventDescriptor);
     QFETCH(QVariantList, eventDescriptorList);
@@ -136,6 +172,9 @@ void TestRules::addRemoveRules()
         params.insert("eventDescriptorList", eventDescriptorList);
     }
     params.insert("stateEvaluator", stateEvaluator);
+    if (!enabled) {
+        params.insert("enabled", enabled);
+    }
     QVariant response = injectAndWait("Rules.AddRule", params);
     verifyRuleError(response, error);
 
@@ -159,6 +198,7 @@ void TestRules::addRemoveRules()
 
     QVariantMap rule = response.toMap().value("params").toMap().value("rule").toMap();
 
+    QVERIFY2(rule.value("enabled").toBool() == enabled, "Rule enabled state doesn't match");
     QVariantList eventDescriptors = rule.value("eventDescriptors").toList();
     if (!eventDescriptor.isEmpty()) {
         QVERIFY2(eventDescriptors.count() == 1, "There shoud be exactly one eventDescriptor");
@@ -441,6 +481,108 @@ void TestRules::testStateEvaluator2()
     mainEvaluator.setOperatorType(stateOperator);
 
     QVERIFY2(mainEvaluator.evaluate() == shouldMatch, shouldMatch ? "State should match" : "State shouldn't match");
+}
+
+void TestRules::enableDisableRule()
+{
+    // Add a rule
+    QVariantMap addRuleParams;
+    QVariantList events;
+    QVariantMap event1;
+    event1.insert("eventTypeId", mockEvent1Id);
+    event1.insert("deviceId", m_mockDeviceId);
+    events.append(event1);
+    addRuleParams.insert("eventDescriptorList", events);
+
+    QVariantList actions;
+    QVariantMap action;
+    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("deviceId", m_mockDeviceId);
+    actions.append(action);
+    addRuleParams.insert("actions", actions);
+    QVariant response = injectAndWait("Rules.AddRule", addRuleParams);
+    verifyRuleError(response);
+    RuleId id = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
+
+    // Trigger an event
+    QNetworkAccessManager nam;
+    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+
+    // trigger event in mock device
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1Id.toString())));
+    QNetworkReply *reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    // Verify rule got executed
+    spy.clear();
+    request.setUrl(QUrl(QString("http://localhost:%1/actionhistory").arg(m_mockDevice1Port)));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+
+    QByteArray actionHistory = reply->readAll();
+    qDebug() << "have action history" << actionHistory;
+    QVERIFY2(mockActionIdNoParams == ActionTypeId(actionHistory), "Action not triggered");
+    reply->deleteLater();
+
+    cleanupMockHistory();
+
+    // Now disable the rule
+    QVariantMap disableParams;
+    disableParams.insert("ruleId", id.toString());
+    response = injectAndWait("Rules.DisableRule", disableParams);
+    verifyRuleError(response);
+
+
+    // trigger event in mock device
+    spy.clear();
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1Id.toString())));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    // Verify rule got *NOT* executed
+    spy.clear();
+    request.setUrl(QUrl(QString("http://localhost:%1/actionhistory").arg(m_mockDevice1Port)));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+
+    actionHistory = reply->readAll();
+    qDebug() << "have action history" << actionHistory;
+    QVERIFY2(actionHistory.isEmpty(), "Action is triggered while rule is disabled");
+    reply->deleteLater();
+
+    cleanupMockHistory();
+
+    // Now enable the rule again
+    response = injectAndWait("Rules.EnableRule", disableParams);
+    verifyRuleError(response);
+
+
+    // trigger event in mock device
+    spy.clear();
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1Id.toString())));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    // Verify rule got executed
+    spy.clear();
+    request.setUrl(QUrl(QString("http://localhost:%1/actionhistory").arg(m_mockDevice1Port)));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+
+    actionHistory = reply->readAll();
+    qDebug() << "have action history" << actionHistory;
+    QVERIFY2(mockActionIdNoParams == ActionTypeId(actionHistory), "Action not triggered");
+    reply->deleteLater();
+
 }
 
 #include "testrules.moc"

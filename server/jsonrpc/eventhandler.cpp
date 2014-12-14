@@ -31,6 +31,14 @@ EventHandler::EventHandler(QObject *parent) :
     params.insert("event", JsonTypes::eventRef());
     setParams("EventTriggered", params);
 
+    params.clear(); returns.clear();
+    setDescription("GetEventType", "Get the EventType for the given eventTypeId.");
+    params.insert("eventTypeId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    setParams("GetEventType", params);
+    returns.insert("deviceError", JsonTypes::deviceErrorRef());
+    returns.insert("o:eventType", JsonTypes::eventTypeRef());
+    setReturns("GetEventType", returns);
+
     connect(GuhCore::instance(), &GuhCore::eventTriggered, this, &EventHandler::eventTriggered);
 }
 
@@ -46,3 +54,17 @@ void EventHandler::eventTriggered(const Event &event)
     emit EventTriggered(params);
 }
 
+JsonReply* EventHandler::GetEventType(const QVariantMap &params) const
+{
+    EventTypeId eventTypeId(params.value("eventTypeId").toString());
+    foreach (const DeviceClass &deviceClass, GuhCore::instance()->supportedDevices()) {
+        foreach (const EventType &eventType, deviceClass.eventTypes()) {
+            if (eventType.id() == eventTypeId) {
+                QVariantMap data = statusToReply(DeviceManager::DeviceErrorNoError);
+                data.insert("eventType", JsonTypes::packEventType(eventType));
+                return createReply(data);
+            }
+        }
+    }
+    return createReply(statusToReply(DeviceManager::DeviceErrorEventTypeNotFound));
+}

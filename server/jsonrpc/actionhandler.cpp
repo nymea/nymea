@@ -97,10 +97,3 @@ void ActionHandler::actionExecuted(const ActionId &id, DeviceManager::DeviceErro
     reply->setData(statusToReply(status));
     reply->finished();
 }
-
-QVariantMap ActionHandler::statusToReply(DeviceManager::DeviceError status) const
-{
-    QVariantMap returns;
-    returns.insert("deviceError", JsonTypes::deviceErrorToString(status));
-    return returns;
-}

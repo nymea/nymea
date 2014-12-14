@@ -38,6 +38,9 @@ private slots:
     void triggerStateChangeEvent();
 
     void params();
+
+    void getEventType_data();
+    void getEventType();
 };
 
 void TestEvents::triggerEvent()
@@ -105,6 +108,31 @@ void TestEvents::params()
 
     QVERIFY(event.param("foo").value().toString() == "bar");
     QVERIFY(!event.param("baz").value().isValid());
+}
+
+void TestEvents::getEventType_data()
+{
+    QTest::addColumn<EventTypeId>("eventTypeId");
+    QTest::addColumn<DeviceManager::DeviceError>("error");
+
+    QTest::newRow("valid eventypeid") << mockEvent1Id << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("invalid eventypeid") << EventTypeId::createEventTypeId() << DeviceManager::DeviceErrorEventTypeNotFound;
+}
+
+void TestEvents::getEventType()
+{
+    QFETCH(EventTypeId, eventTypeId);
+    QFETCH(DeviceManager::DeviceError, error);
+
+    QVariantMap params;
+    params.insert("eventTypeId", eventTypeId.toString());
+    QVariant response = injectAndWait("Events.GetEventType", params);
+
+    verifyDeviceError(response, error);
+
+    if (error == DeviceManager::DeviceErrorNoError) {
+        QVERIFY2(EventTypeId(response.toMap().value("params").toMap().value("eventType").toMap().value("id").toString()) == eventTypeId, "Didnt get reply for same actionTypeId as requested.");
+    }
 }
 
 #include "testevents.moc"

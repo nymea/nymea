@@ -1,4 +1,4 @@
-8
+9
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -223,6 +223,16 @@
             },
             "returns": {
                 "deviceError": "$ref:DeviceError"
+            }
+        },
+        "Events.GetEventType": {
+            "description": "Get the EventType for the given eventTypeId.",
+            "params": {
+                "eventTypeId": "Uuid"
+            },
+            "returns": {
+                "deviceError": "$ref:DeviceError",
+                "o:eventType": "$ref:EventType"
             }
         },
         "JSONRPC.Introspect": {

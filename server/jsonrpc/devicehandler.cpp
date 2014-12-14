@@ -188,7 +188,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     setReturns("GetStateValue", returns);
 
     params.clear(); returns.clear();
-    setDescription("GetStateValues", "Get all the state values of the give device.");
+    setDescription("GetStateValues", "Get all the state values of the given device.");
     params.insert("deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     setParams("GetStateValues", params);
     returns.insert("deviceError", JsonTypes::deviceErrorRef());

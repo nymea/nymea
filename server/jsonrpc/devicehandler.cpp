@@ -187,6 +187,19 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     returns.insert("o:value", JsonTypes::basicTypeToString(JsonTypes::Variant));
     setReturns("GetStateValue", returns);
 
+    params.clear(); returns.clear();
+    setDescription("GetStateValues", "Get all the state values of the given device.");
+    params.insert("deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    setParams("GetStateValues", params);
+    returns.insert("deviceError", JsonTypes::deviceErrorRef());
+    states.clear();
+    QVariantMap state;
+    state.insert("stateTypeId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    state.insert("value", JsonTypes::basicTypeToString(JsonTypes::Variant));
+    states.append(state);
+    returns.insert("o:values", states);
+    setReturns("GetStateValues", returns);
+
     // Notifications
     params.clear(); returns.clear();
     setDescription("StateChanged", "Emitted whenever a State of a device changes.");
@@ -461,6 +474,33 @@ JsonReply* DeviceHandler::GetStateValue(const QVariantMap &params) const
 
     returns.insert("deviceError", JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorNoError));
     returns.insert("value", stateValue);
+    return createReply(returns);
+}
+
+JsonReply *DeviceHandler::GetStateValues(const QVariantMap &params) const
+{
+    QVariantMap returns;
+
+    Device *device = GuhCore::instance()->findConfiguredDevice(DeviceId(params.value("deviceId").toString()));
+    if (!device) {
+        returns.insert("deviceError", JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorDeviceNotFound));
+        return createReply(returns);
+    }
+
+    DeviceClass deviceClass = GuhCore::instance()->findDeviceClass(device->deviceClassId());
+    if (!deviceClass.isValid()) {
+        returns.insert("deviceError", JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorDeviceClassNotFound));
+        return createReply(returns);
+    }
+    QVariantList values;
+    foreach (const StateType &stateType, deviceClass.stateTypes()) {
+        QVariantMap stateValue;
+        stateValue.insert("stateTypeId", stateType.id().toString());
+        stateValue.insert("value", device->stateValue(stateType.id()));
+        values.append(stateValue);
+    }
+    returns.insert("deviceError", JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorNoError));
+    returns.insert("values", values);
     return createReply(returns);
 }
 

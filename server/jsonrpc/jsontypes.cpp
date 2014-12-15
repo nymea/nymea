@@ -169,6 +169,7 @@ void JsonTypes::init()
 
     // Rule
     s_rule.insert("id", basicTypeToString(Uuid));
+    s_rule.insert("enabled", basicTypeToString(Bool));
     s_rule.insert("eventDescriptors", QVariantList() << eventDescriptorRef());
     s_rule.insert("actions", QVariantList() << actionRef());
     s_rule.insert("stateEvaluator", stateEvaluatorRef());
@@ -447,6 +448,7 @@ QVariantMap JsonTypes::packRule(const Rule &rule)
 {
     QVariantMap ruleMap;
     ruleMap.insert("id", rule.id());
+    ruleMap.insert("enabled", rule.enabled());
     QVariantList eventDescriptorList;
     foreach (const EventDescriptor &eventDescriptor, rule.eventDescriptors()) {
         eventDescriptorList.append(JsonTypes::packEventDescriptor(eventDescriptor));

@@ -37,11 +37,16 @@ public:
     StateEvaluator stateEvaluator() const;
     QList<Action> actions() const;
 
+    bool enabled() const;
+    void setEnabled(bool enabled);
+
 private:
     RuleId m_id;
     QList<EventDescriptor> m_eventDescriptors;
     StateEvaluator m_stateEvaluator;
     QList<Action> m_actions;
+
+    bool m_enabled;
 };
 
 #endif // RULE_H

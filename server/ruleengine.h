@@ -53,12 +53,15 @@ public:
 
     QList<Action> evaluateEvent(const Event &event);
 
-    RuleError addRule(const RuleId &ruleId, const QList<EventDescriptor> &eventDescriptorList, const QList<Action> &actions);
-    RuleError addRule(const RuleId &ruleId, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actions);
+    RuleError addRule(const RuleId &ruleId, const QList<EventDescriptor> &eventDescriptorList, const QList<Action> &actions, bool enabled = true);
+    RuleError addRule(const RuleId &ruleId, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actions, bool enabled = true);
     QList<Rule> rules() const;
     QList<RuleId> ruleIds() const;
 
     RuleError removeRule(const RuleId &ruleId);
+
+    RuleError enableRule(const RuleId &ruleId);
+    RuleError disableRule(const RuleId &ruleId);
 
     Rule findRule(const RuleId &ruleId);
     QList<RuleId> findRules(const DeviceId &deviceId);
@@ -68,6 +71,7 @@ public:
 signals:
     void ruleAdded(const RuleId &ruleId);
     void ruleRemoved(const RuleId &ruleId);
+    void ruleChanged(const RuleId &ruleId);
 
 private:
     bool containsEvent(const Rule &rule, const Event &event);

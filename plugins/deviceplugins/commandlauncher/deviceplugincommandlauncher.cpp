@@ -34,7 +34,7 @@
     \section3 Example
     An example command could be \l{http://linux.die.net/man/1/espeak}{espeak}. (\tt{apt-get install espeak})
     \code
-    espeak -v en "Chuck Norris is using gooe" # gooe = guh spelled correctly
+    espeak -v en "Chuck Norris is using gooe" # gooe = guh pronounced correctly
     \endcode
 
 

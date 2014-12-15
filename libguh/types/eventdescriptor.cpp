@@ -25,13 +25,12 @@
 
     An EventDescriptor describes an \l{Event} in order to match it with a \l{Rule}.
 
-    \sa Event, Rule
+    \sa Event, EventType, Rule
 */
 
 #include "eventdescriptor.h"
 
-/*! Constructs an EventDescriptor describing an Event.
- */
+/*! Constructs an EventDescriptor describing an \l{Event} with the given \a eventTypeId, \a deviceId and the given \a paramDescriptors. */
 EventDescriptor::EventDescriptor(const EventTypeId &eventTypeId, const DeviceId &deviceId, const QList<ParamDescriptor> &paramDescriptors):
     m_eventTypeId(eventTypeId),
     m_deviceId(deviceId),
@@ -39,30 +38,31 @@ EventDescriptor::EventDescriptor(const EventTypeId &eventTypeId, const DeviceId 
 {
 }
 
-/*! Returns the id of the \l{EventType} which describes this Event.*/
+/*! Returns the id of the \l{EventType} which describes this Event. */
 EventTypeId EventDescriptor::eventTypeId() const
 {
     return m_eventTypeId;
 }
 
-/*! Returns the id of the \l{Device} associated with this Event.*/
+/*! Returns the id of the \l{Device} associated with this Event. */
 DeviceId EventDescriptor::deviceId() const
 {
     return m_deviceId;
 }
 
-/*! Returns the parameters of this Event.*/
+/*! Returns the parameters of this Event. */
 QList<ParamDescriptor> EventDescriptor::paramDescriptors() const
 {
     return m_paramDescriptors;
 }
 
-/*! Set the parameters of this Event to \a params.*/
+/*! Set the parameters of this Event to \a paramDescriptors. */
 void EventDescriptor::setParamDescriptors(const QList<ParamDescriptor> &paramDescriptors)
 {
     m_paramDescriptors = paramDescriptors;
 }
 
+/*! Set a parameters of this Event to \a paramDescriptorName. */
 ParamDescriptor EventDescriptor::paramDescriptor(const QString &paramDescriptorName) const
 {
     foreach (const ParamDescriptor &paramDescriptor, m_paramDescriptors) {
@@ -74,7 +74,7 @@ ParamDescriptor EventDescriptor::paramDescriptor(const QString &paramDescriptorN
 }
 
 /*! Compare this Event to the Event given by \a other.
-    Events are equal (returns true) if eventTypeId, deviceId and params match. */
+ *  Events are equal (returns true) if eventTypeId, deviceId and params match. */
 bool EventDescriptor::operator ==(const EventDescriptor &other) const
 {
     bool paramsMatch = true;
@@ -91,6 +91,8 @@ bool EventDescriptor::operator ==(const EventDescriptor &other) const
             && paramsMatch;
 }
 
+/*! Compare this EventDescriptor to the Event given by \a event.
+ *  Events are equal (returns true) if eventTypeId, deviceId and params match. */
 bool EventDescriptor::operator ==(const Event &event) const
 {
     if (m_eventTypeId != event.eventTypeId() || m_deviceId != event.deviceId()) {
@@ -134,6 +136,7 @@ bool EventDescriptor::operator ==(const Event &event) const
     return true;
 }
 
+/*! Writes the eventTypeId and the deviceId of the given \a eventDescriptor to \a dbg. */
 QDebug operator<<(QDebug dbg, const EventDescriptor &eventDescriptor)
 {
     dbg.nospace() << "EventDescriptor(EventTypeId: " << eventDescriptor.eventTypeId().toString() << ", DeviceId" << eventDescriptor.deviceId() << ")";
@@ -141,6 +144,7 @@ QDebug operator<<(QDebug dbg, const EventDescriptor &eventDescriptor)
     return dbg.space();
 }
 
+/*! Writes each \a eventDescriptors to \a dbg. */
 QDebug operator<<(QDebug dbg, const QList<EventDescriptor> &eventDescriptors)
 {
     dbg.nospace() << "EventDescriptorList (count:" << eventDescriptors.count() << ")";

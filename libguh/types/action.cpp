@@ -30,9 +30,10 @@
 
     \sa Device, ActionType
 */
+
 #include "action.h"
 
-/*! Construct an Action with the given \a deviceId and \a actionTypeId */
+/*! Construct an Action with the given \a deviceId and \a actionTypeId. */
 Action::Action(const ActionTypeId &actionTypeId, const DeviceId &deviceId) :
     m_id(ActionId::createActionId()),
     m_actionTypeId(actionTypeId),
@@ -40,6 +41,7 @@ Action::Action(const ActionTypeId &actionTypeId, const DeviceId &deviceId) :
 {
 }
 
+/*! Returns the actionId for this Action. */
 ActionId Action::id() const
 {
     return m_id;
@@ -51,30 +53,32 @@ bool Action::isValid() const
     return !m_actionTypeId.isNull() && !m_deviceId.isNull();
 }
 
-/*! Returns the actionTypeId for this Action */
+/*! Returns the actionTypeId for this Action.*/
 ActionTypeId Action::actionTypeId() const
 {
     return m_actionTypeId;
 }
 
-/*! Returns the deviceId this Action is associated with.*/
+/*! Returns the deviceId this Action is associated with. */
 DeviceId Action::deviceId() const
 {
     return m_deviceId;
 }
 
-/*! Returns the parameters for this Action.*/
+/*! Returns the parameters for this Action. */
 ParamList Action::params() const
 {
     return m_params;
 }
 
-/*! Set the the parameters for this Action. \a params must match the template in the \l{ActionType} referred by \l{Action::actionTypeId()}*/
+/*! Set the the parameters for this Action. \a params must match the template in the \l{ActionType}
+ *  referred by \l{Action::actionTypeId()}. */
 void Action::setParams(const ParamList &params)
 {
     m_params = params;
 }
 
+/*! Returns the parameter of this Action with a cetrain \a paramName. */
 Param Action::param(const QString &paramName) const
 {
     foreach (const Param &param, m_params) {

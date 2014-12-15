@@ -2,7 +2,7 @@
     \page hardware.html
     \title Hardware Resources
 
-    \brief This is the API for implementing guh hardware resources.
+    \brief This is the list of guh hardware resources.
 
     \annotatedlist hardware
 */

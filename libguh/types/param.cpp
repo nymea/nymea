@@ -16,41 +16,58 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class Param
+    \brief Holds the parameters of a Param.
+
+    \ingroup types
+    \inmodule libguh
+
+    \sa Device, ParamType, ParamDescriptor
+*/
+
 #include "param.h"
 
 #include <QDebug>
 
+/*! Constructs a Param with the given \a name and \a value of the paramter. */
 Param::Param(const QString &name, const QVariant &value):
     m_name (name),
     m_value(value)
 {
 }
 
+/*! Returns the name of this Param. */
 QString Param::name() const
 {
     return m_name;
 }
 
+/*! Sets the \a name of this Param. */
 void Param::setName(const QString &name)
 {
     m_name = name;
 }
 
+/*! Returns the value of this Param. */
 QVariant Param::value() const
 {
     return m_value;
 }
 
+/*! Sets the \a value of this Param. */
 void Param::setValue(const QVariant &value)
 {
     m_value = value;
 }
 
+/*! A Param is valid if name and and value are set. Returns true if valid, false if not. */
 bool Param::isValid() const
 {
     return !m_name.isEmpty() && m_value.isValid();
 }
 
+/*! Writes the name and value of the given \a param to \a dbg. */
 QDebug operator<<(QDebug dbg, const Param &param)
 {
     dbg.nospace() << "Param(Name: " << param.name() << ", Value:" << param.value() << ")";
@@ -58,6 +75,7 @@ QDebug operator<<(QDebug dbg, const Param &param)
     return dbg.space();
 }
 
+/*! Writes the param of the given \a params to \a dbg. */
 QDebug operator<<(QDebug dbg, const ParamList &params)
 {
     dbg.nospace() << "ParamList (count:" << params.count() << ")" << endl;
@@ -68,7 +86,7 @@ QDebug operator<<(QDebug dbg, const ParamList &params)
     return dbg.space();
 }
 
-
+/*! Returns true if this Param contains a Param with the given \a paramName. */
 bool ParamList::hasParam(const QString &paramName) const
 {
     foreach (const Param &param, *this) {
@@ -79,6 +97,7 @@ bool ParamList::hasParam(const QString &paramName) const
     return false;
 }
 
+/*! Returns the value of the Param with the given \a paramName. */
 QVariant ParamList::paramValue(const QString &paramName) const
 {
     foreach (const Param &param, *this) {
@@ -89,6 +108,7 @@ QVariant ParamList::paramValue(const QString &paramName) const
     return QVariant();
 }
 
+/*! Sets the value of a Param with the given \a paramName to the given \a value. */
 void ParamList::setParamValue(const QString &paramName, const QVariant &value)
 {
     for (int i = 0; i < count(); i++) {
@@ -99,6 +119,7 @@ void ParamList::setParamValue(const QString &paramName, const QVariant &value)
     }
 }
 
+/*! Appends the given \a param to a ParamList. */
 ParamList ParamList::operator<<(const Param &param)
 {
     this->append(param);

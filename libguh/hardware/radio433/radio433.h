@@ -32,7 +32,6 @@ public:
     explicit Radio433(QObject *parent = 0);
     ~Radio433();
 
-    bool available();
     bool enable();
     bool disabel();
 

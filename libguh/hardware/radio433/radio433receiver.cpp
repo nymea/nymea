@@ -249,7 +249,7 @@ void Radio433Receiver::handleTiming(int duration)
             changeReading(true);
         }
 
-        // check if we have allready a vallid protocol
+        // check if we have already a vallid protocol
         // 1 sync bit + 48 data bit
         if(m_timings.count() == 49 && checkValues(Protocol48)){
             //qDebug() << "48 bit -> " << m_timings << "\n--------------------------";

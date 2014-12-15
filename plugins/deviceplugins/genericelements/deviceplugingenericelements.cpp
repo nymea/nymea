@@ -16,6 +16,41 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \page genericelements.html
+    \title Generic elements
+
+    \ingroup plugins
+    \ingroup services
+
+    The generic elements plugin allows you create virtual buttons, which can be connected with a rule. This gives you
+    the possibility to execute multiple \l{Action}{Actions} with one signal. Without a rule this generic elements are
+    useless.
+
+    \chapter Toggle Button
+    With the "Toggle Button" \l{DeviceClass} you can create a button with one \l{Action} \unicode{0x2192} toggle. In the \tt state \l{State} you can find out,
+    what happens if the button will be pressed. The states can be true or false.
+
+    \chapter Button
+    With the "Button" \l{DeviceClass} you can create a button with one \l{Action} \unicode{0x2192} press. This button just creates one \l{Event}.
+
+    \chapter ON/OFF Button
+    With the "ON/OFF Button" \l{DeviceClass} you create a button pair with the \l{Action}{Actions} \unicode{0x2192} ON and OFF.
+
+    \chapter Plugin properties
+    Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}
+    and \l{Vendor}{Vendors} of this \l{DevicePlugin}.
+
+    Each \l{DeviceClass} has a list of \l{ParamType}{paramTypes}, \l{ActionType}{actionTypes}, \l{StateType}{stateTypes}
+    and \l{EventType}{eventTypes}. The \l{DeviceClass::CreateMethod}{createMethods} parameter describes how the \l{Device}
+    will be created in the system. A device can have more than one \l{DeviceClass::CreateMethod}{CreateMethod}.
+    The \l{DeviceClass::SetupMethod}{setupMethod} describes the setup method of the \l{Device}.
+    The detailed implementation of each \l{DeviceClass} can be found in the source code.
+
+    \quotefile plugins/deviceplugins/genericelements/deviceplugingenericelements.json
+*/
+
+
 #include "deviceplugingenericelements.h"
 #include "devicemanager.h"
 #include "plugininfo.h"

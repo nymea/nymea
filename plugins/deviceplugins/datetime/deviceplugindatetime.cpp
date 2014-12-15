@@ -16,6 +16,61 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \page datetime.html
+    \title Time
+
+    \ingroup plugins
+    \ingroup services
+
+    The time plugin allows you create rules based on the time, day, month, year, weekday or on weekend.
+
+    For the setup you need to specify the continent, afterwards you can select your city/timezone. The language
+    of the "month name" and "weekday name" depends on your locale settings. To have the correct time you need
+    \l{https://en.wikipedia.org/wiki/Network_Time_Protocol}{ntp}.
+
+    The weekday integer value stands for:
+    \table
+    \header
+        \li Weekday
+        \li int
+    \row
+        \li Monday
+        \li 1
+    \row
+        \li Tuesday
+        \li 2
+    \row
+        \li Wednesday
+        \li 3
+    \row
+        \li Thursday
+        \li 4
+    \row
+        \li Friday
+        \li 5
+    \row
+        \li Saturday
+        \li 6
+    \row
+        \li Sunday
+        \li 7
+    \endtable
+
+    The "weekend" \l{State} will be true, if the current weekday is Saturday or Sunday, otherwise it will be false.
+
+    \chapter Plugin properties
+    Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}
+    and \l{Vendor}{Vendors} of this \l{DevicePlugin}.
+
+    Each \l{DeviceClass} has a list of \l{ParamType}{paramTypes}, \l{ActionType}{actionTypes}, \l{StateType}{stateTypes}
+    and \l{EventType}{eventTypes}. The \l{DeviceClass::CreateMethod}{createMethods} parameter describes how the \l{Device}
+    will be created in the system. A device can have more than one \l{DeviceClass::CreateMethod}{CreateMethod}.
+    The \l{DeviceClass::SetupMethod}{setupMethod} describes the setup method of the \l{Device}.
+    The detailed implementation of each \l{DeviceClass} can be found in the source code.
+
+    \quotefile plugins/deviceplugins/datetime/deviceplugindatetime.json
+*/
 
 #include "deviceplugindatetime.h"
 

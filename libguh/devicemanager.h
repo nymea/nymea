@@ -107,7 +107,7 @@ signals:
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &devices);
     void deviceSetupFinished(Device *device, DeviceError status);
     void pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceError status, const DeviceId &deviceId = DeviceId());
-    void actionExecutionFinished(const ActionId, DeviceError status);
+    void actionExecutionFinished(const ActionId &actionId, DeviceError status);
 
 public slots:
     DeviceError executeAction(const Action &action);

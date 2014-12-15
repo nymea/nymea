@@ -30,7 +30,7 @@
     \section2 Event based rules
 
     Event based rules (trigger path 1) contain either one or more \l{Event}{Events} or are triggered by a \l{State} change (disregarding what
-    the changed State's value actually is). Such rules may still evaluate \l{States}{State} for a certain value (leaving
+    the changed State's value actually is). Such rules may still evaluate \l{State}{States} for a certain value (leaving
     Trigger path 1 and re-entering Trigger path 2), however, unless
     otherwise explicitly defined, the Rule is not evaluated when such a State change happens (given the Trigger path has been
     left by crossing a black arrow). Those rules are only executed for items on trigger path 1.
@@ -55,7 +55,7 @@
 
     State binding rules (Trigger path 2) are rules which only contains \l{State}{States} and \l{Action}{Actions}. Each time
     a \l{State} on that path changes, the rule is evaluated. That means, all the States in the Rule are examined. If all
-    evaluations are fulfilled, the Rule's \l{Actions}{Action} are executed. Please note, that such Rules may only check
+    evaluations are fulfilled, the Rule's \l{Action}{Actions} are executed. Please note, that such Rules may only check
     if states are equal to, unequal, less than or greater then some value.
 
     \section3 Examples

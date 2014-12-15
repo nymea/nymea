@@ -18,20 +18,49 @@
 
 /*!
   \class Gpio
-  \brief The Gpio class helps to interact with the gpio pins of the Raspberry Pi.
+  \brief The Gpio class allows to interact with the GPIOs.
 
+  \ingroup hardware
   \inmodule libguh
 
-  The Raspberry Pi offers lower-level interfaces (GPIO's) intended to connect more directly
-  with chips and subsystem modules. General Purpose Input/Output (a.k.a. GPIO) is a generic
-  pin on a chip whose behavior (including whether it is an input or output pin) can be controlled
-  through this class. An object of of the Gpio class represents a pin on the board.
+  A "General Purpose Input/Output" (GPIO) is a flexible software-controlled
+  digital signal. They are provided from many kinds of chip, and are familiar
+  to Linux developers working with embedded and custom hardware. Each GPIO
+  represents a bit connected to a particular pin, or "ball" on Ball Grid Array
+  (BGA) packages. Board schematics show which external hardware connects to
+  which GPIOs. Drivers can be written generically, so that board setup code
+  passes such pin configuration data to drivers
+  (\l{https://www.kernel.org/doc/Documentation/gpio/gpio.txt}{source}.
 
+  General Purpose Input/Output (a.k.a. GPIO) is a generic pin on a chip whose
+  behavior (including whether it is an input or output pin) can be controlled
+  through this class. An object of of the Gpio class represents a pin.
+
+  \chapter Example
+
+  Following example shows how to initialize and interact with a GPIO. The GPIO will be configured as an input,
+  set active high and the edge interrupt will be set to EDGE_BOTH.
+
+  \code
+    Gpio *gpio = new Gpio(this, 22);
+    if (!gpio->exportGpio() || !gpio->setDirection(INPUT) || !gpio->setEdgeInterrupt(EDGE_BOTH) || !gpio->setActiveLow(true)) {
+        return;
+    }
+    int value = gpio->getValue();
+    qDebug() << "value = " << value;
+  \endcode
+
+  \chapter Raspberry Pi GPIOs
   In following table is a list of all GPIO's of the Raspberry Pi Rev. 2.0:
 
-  \image gpio.png "Gpio settings"
+  \image Raspberry_Pi_GPIO_Map.png "Raspberry Pi GPIO map"
 
   Valid GPIO's for this class are those with a GPIO number (for example GPIO 22, which is on pin Nr. 15)
+
+  \chapter Beaglebone Black GPIOs
+  In following table is a list of all GPIO's of the Beaglebone Black (\l{http://pix.cs.olemiss.edu/csci581/BBBlackGPIOMap.png}{Source}):
+
+  \image Beaglebone_Black_GPIO_Map.png "Beaglebone Black GPIO map"
 
 */
 
@@ -50,7 +79,7 @@ Gpio::~Gpio()
     unexportGpio();
 }
 
-/*! Returns true if the GPIO could be exported in the system file "/sys/class/gpio/export".*/
+/*! Returns true if this GPIO could be exported in the system file "/sys/class/gpio/export". */
 bool Gpio::exportGpio()
 {
     unexportGpio();
@@ -73,7 +102,7 @@ bool Gpio::exportGpio()
     return true;
 }
 
-/*! Returns true if the GPIO could be unexported in the system file "/sys/class/gpio/unexport".*/
+/*! Returns true if this GPIO could be unexported in the system file "/sys/class/gpio/unexport". */
 bool Gpio::unexportGpio()
 {
     char buf[64];
@@ -94,7 +123,7 @@ bool Gpio::unexportGpio()
     return true;
 }
 
-/*! Returns true if the GPIO file could be opend.*/
+/*! Returns true if the file of this GPIO could be opend.*/
 int Gpio::openGpio()
 {
     char buf[64];
@@ -109,7 +138,7 @@ int Gpio::openGpio()
     return fd;
 }
 
-/*! Returns true, if the direction \a dir of the GPIO could be set correctly.
+/*! Returns true if the direction \a dir of this GPIO could be set correctly.
  *
  * Possible directions are:
  *
@@ -158,7 +187,15 @@ bool Gpio::setDirection(int dir)
     return false;
 }
 
-/*! Returns true, if the digital \a value of the GPIO could be set correctly.
+/*! Returns the direction of this GPIO.
+ * \sa setDirection()
+ */
+int Gpio::getDirection()
+{
+    return m_dir;
+}
+
+/*! Returns true if the digital \a value of the GPIO could be set correctly.
  *
  * Possible \a value 's are:
  *
@@ -255,7 +292,7 @@ int Gpio::getValue()
     return value;
 }
 
-/*! Returns true, if the \a edge of the GPIO could be set correctly. The \a edge parameter specifies,
+/*! Returns true if the \a edge of this GPIO could be set correctly. The \a edge parameter specifies,
  *  when an interrupt occurs.
  *
  * Possible values are:
@@ -316,6 +353,9 @@ bool Gpio::setEdgeInterrupt(int edge)
     return false;
 }
 
+/*! This method allows to invert the logic of this GPIO.
+ *  Returns true, if the GPIO could be set \a activeLow.
+ */
 bool Gpio::setActiveLow(bool activeLow)
 {
     char buf[64];
@@ -348,16 +388,16 @@ bool Gpio::setActiveLow(bool activeLow)
     return false;
 }
 
-int Gpio::gpioPin()
+/*! Returns the number of this GPIO.
+ * \sa Gpio::Gpio()
+ */
+int Gpio::gpioNumber()
 {
     return m_gpio;
 }
 
-int Gpio::gpioDirection()
-{
-    return m_dir;
-}
-
+/*! Returns true if the directory /sys/class/gpio does exist.
+ */
 bool Gpio::isAvailable()
 {
     QDir gpioDirectory("/sys/class/gpio");

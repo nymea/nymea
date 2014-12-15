@@ -1,4 +1,4 @@
-6
+10
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -146,6 +146,21 @@
                 "o:value": "Variant"
             }
         },
+        "Devices.GetStateValues": {
+            "description": "Get all the state values of the given device.",
+            "params": {
+                "deviceId": "Uuid"
+            },
+            "returns": {
+                "deviceError": "$ref:DeviceError",
+                "o:values": [
+                    {
+                        "stateTypeId": "Uuid",
+                        "value": "Variant"
+                    }
+                ]
+            }
+        },
         "Devices.GetSupportedDevices": {
             "description": "Returns a list of supported Device classes, optionally filtered by vendorId.",
             "params": {
@@ -210,6 +225,16 @@
                 "deviceError": "$ref:DeviceError"
             }
         },
+        "Events.GetEventType": {
+            "description": "Get the EventType for the given eventTypeId.",
+            "params": {
+                "eventTypeId": "Uuid"
+            },
+            "returns": {
+                "deviceError": "$ref:DeviceError",
+                "o:eventType": "$ref:EventType"
+            }
+        },
         "JSONRPC.Introspect": {
             "description": "Introspect this API.",
             "params": {
@@ -238,11 +263,12 @@
             }
         },
         "Rules.AddRule": {
-            "description": "Add a rule. You can describe rules by one or many EventDesciptors and a StateEvaluator. Note that onlyone of either eventDescriptor or eventDescriptorList may be passed at a time.",
+            "description": "Add a rule. You can describe rules by one or many EventDesciptors and a StateEvaluator. Note that onlyone of either eventDescriptor or eventDescriptorList may be passed at a time. A rule can be created but left disabled,meaning it won't actually be executed until set to enabled. If not given, enabled defaults to true.",
             "params": {
                 "actions": [
                     "$ref:Action"
                 ],
+                "o:enabled": "Bool",
                 "o:eventDescriptor": "$ref:EventDescriptor",
                 "o:eventDescriptorList": [
                     "$ref:EventDescriptor"
@@ -251,6 +277,24 @@
             },
             "returns": {
                 "o:ruleId": "Uuid",
+                "ruleError": "$ref:RuleError"
+            }
+        },
+        "Rules.DisableRule": {
+            "description": "Disable a rule. The rule won't be triggered by it's events or state changes while it is disabled.",
+            "params": {
+                "ruleId": "Uuid"
+            },
+            "returns": {
+                "ruleError": "$ref:RuleError"
+            }
+        },
+        "Rules.EnableRule": {
+            "description": "Enabled a rule that has previously been disabled.",
+            "params": {
+                "ruleId": "Uuid"
+            },
+            "returns": {
                 "ruleError": "$ref:RuleError"
             }
         },
@@ -326,6 +370,13 @@
             ]
         },
         "BasicType": [
+            "Uuid",
+            "String",
+            "Int",
+            "Double",
+            "Bool",
+            "Variant",
+            "Object"
         ],
         "CreateMethod": [
             "CreateMethodUser",
@@ -446,6 +497,7 @@
             "actions": [
                 "$ref:Action"
             ],
+            "enabled": "Bool",
             "eventDescriptors": [
                 "$ref:EventDescriptor"
             ],

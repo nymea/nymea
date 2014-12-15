@@ -66,50 +66,9 @@
 #include "plugin/device.h"
 #include "devicemanager.h"
 #include "types/param.h"
+#include "plugininfo.h"
 
 #include <QDebug>
-
-
-DeviceClassId cubeDeviceClassId = DeviceClassId("1e892268-8bd7-442c-a001-bd4e2e6b2949");
-StateTypeId connectionStateTypeId = StateTypeId("d0a9a369-cf8c-47c4-a12e-f2d076bf12fd");
-StateTypeId portalEnabeldStateTypeId = StateTypeId("2c2367da-c229-40ed-9d47-a6e73cd6dc3b");
-
-DeviceClassId wallThermostateDeviceClassId = DeviceClassId("ffbfec5d-06e8-4082-b62b-92cc5c3e8c4e");
-
-StateTypeId confortTempStateTypeId = StateTypeId("850380ee-a787-43e7-adb8-768a21a6e64d");
-StateTypeId ecoTempStateTypeId = StateTypeId("24dfd20d-bc8d-48e4-8162-b20ae0465c41");
-StateTypeId maxSetpointTempStateTypeId = StateTypeId("a8536ddf-a6e4-41c2-89c1-e7102608f5f6");
-StateTypeId minSetpointTempStateTypeId = StateTypeId("ceb0ad05-37ad-4b79-a4d9-540c34a7e3e4");
-StateTypeId errorOccuredStateTypeId = StateTypeId("9880247b-cf9a-453c-b0c3-d910eba8a253");
-StateTypeId initializedStateTypeId = StateTypeId("a9e29f03-063e-4686-8aac-2f6d8f8a4937");
-StateTypeId batteryLowStateTypeId = StateTypeId("53b89f32-8894-4290-92a0-6a470c6b69ab");
-StateTypeId linkStatusOKStateTypeId = StateTypeId("aff38be8-7ea6-4fd8-b0fa-e987ab05c719");
-StateTypeId panelLockedStateTypeId = StateTypeId("979df197-09a1-46f9-9217-9d323b1062bd");
-StateTypeId gatewayKnownStateTypeId = StateTypeId("1d6bd962-5c31-47ad-80a4-dda87bff98f5");
-StateTypeId dtsActiveStateTypeId = StateTypeId("1b402ba6-a8ae-45b1-8acf-2b0a89f71889");
-StateTypeId deviceModeStateTypeId = StateTypeId("639360f0-bb65-43e6-b227-50ae0ac39d6c");
-StateTypeId deviceModeStringStateTypeId = StateTypeId("ff5194e3-5641-4ac2-92c7-48c431b4a2eb");
-StateTypeId setpointTempStateTypeId = StateTypeId("579aa8c6-8814-491b-9e7c-b98108c323d1");
-StateTypeId currentTemperatureStateTypeId = StateTypeId("852e7708-db1d-42d1-96e4-19c13598262c");
-
-ActionTypeId setSetpointTemperatureActionTypeId = ActionTypeId("9c1968ba-39f9-493d-9fe2-848fa86bd2f0");
-ActionTypeId setAutoModeActionTypeId = ActionTypeId("162b4b3d-9923-4f2c-a755-b50c8a06a6f0");
-ActionTypeId setManuelModeActionTypeId = ActionTypeId("8e604437-9f5b-4c17-b5b0-e2db6007af5b");
-ActionTypeId setEcoModeActionTypeId = ActionTypeId("27a981e8-ec23-4ba8-921e-33b911a7dd89");
-ActionTypeId displayCurrentTempActionTypeId = ActionTypeId("184fb112-7a03-4560-8634-0257c969c26e");
-
-DeviceClassId radiatorThermostateDeviceClassId = DeviceClassId("f80d9481-4827-45ee-a013-b97b22412d92");
-
-StateTypeId offsetTempStateTypeId = StateTypeId("576da571-9a65-478f-96bf-19256c8b9ece");
-StateTypeId windowOpenDurationStateTypeId = StateTypeId("81c6c74a-b0cd-4daa-9eb9-f1cd68f328af");
-StateTypeId boostValueValueStateTypeId = StateTypeId("7c41fa64-b1a1-48d2-9d03-67aa16cd83ad");
-StateTypeId boostDurationStateTypeId = StateTypeId("e75c1398-9ad7-466c-b3b9-b03bbb686a30");
-StateTypeId discalcWeekDayStateTypeId = StateTypeId("bd6f5947-d4b4-444b-81c8-77eec46957e4");
-StateTypeId discalcTimeStateTypeId = StateTypeId("e78235ee-affc-41e3-a463-9f0512b4a6c3");
-StateTypeId valveMaximumSettingsStateTypeId = StateTypeId("e367fa3a-b30f-49bd-af3f-cff92360ad32");
-StateTypeId valveOffsetStateTypeId = StateTypeId("ffaff87b-b741-4db8-9875-3380af4f1885");
-StateTypeId valvePositionStateTypeId = StateTypeId("72956000-0203-4c32-a6b6-3bb7e46c03ca");
-
 
 DevicePluginEQ3::DevicePluginEQ3()
 {
@@ -213,7 +172,7 @@ DeviceManager::DeviceError DevicePluginEQ3::executeAction(Device *device, const 
                     cube->setDeviceSetpointTemp(rfAddress, roomId, action.param("setpoint temperature").value().toDouble(), action.id());
                 } else if (action.actionTypeId() == setAutoModeActionTypeId){
                     cube->setDeviceAutoMode(rfAddress, roomId, action.id());
-                } else if (action.actionTypeId() == setManuelModeActionTypeId){
+                } else if (action.actionTypeId() == setManualModeActionTypeId){
                     cube->setDeviceManuelMode(rfAddress, roomId, action.id());
                 } else if (action.actionTypeId() == setEcoModeActionTypeId){
                     cube->setDeviceEcoMode(rfAddress, roomId, action.id());
@@ -353,7 +312,7 @@ void DevicePluginEQ3::updateCubeConfig()
     Device *device;
     if (m_cubes.contains(cube)) {
         device = m_cubes.value(cube);
-        device->setStateValue(portalEnabeldStateTypeId,cube->portalEnabeld());
+        device->setStateValue(portalEnabledStateTypeId,cube->portalEnabeld());
         return;
     }
 }
@@ -365,11 +324,11 @@ void DevicePluginEQ3::wallThermostatDataUpdated()
     foreach (WallThermostat *wallThermostat, cube->wallThermostatList()) {
         foreach (Device *device, deviceManager()->findConfiguredDevices(wallThermostateDeviceClassId)){
             if(device->paramValue("serial number").toString() == wallThermostat->serialNumber()){
-                device->setStateValue(confortTempStateTypeId, wallThermostat->confortTemp());
+                device->setStateValue(comfortTempStateTypeId, wallThermostat->comfortTemp());
                 device->setStateValue(ecoTempStateTypeId, wallThermostat->ecoTemp());
                 device->setStateValue(maxSetpointTempStateTypeId, wallThermostat->maxSetPointTemp());
                 device->setStateValue(minSetpointTempStateTypeId, wallThermostat->minSetPointTemp());
-                device->setStateValue(errorOccuredStateTypeId, wallThermostat->errorOccured());
+                device->setStateValue(errorOccurredStateTypeId, wallThermostat->errorOccured());
                 device->setStateValue(initializedStateTypeId, wallThermostat->initialized());
                 device->setStateValue(batteryLowStateTypeId, wallThermostat->batteryLow());
                 device->setStateValue(linkStatusOKStateTypeId, wallThermostat->linkStatusOK());
@@ -394,11 +353,11 @@ void DevicePluginEQ3::radiatorThermostatDataUpdated()
     foreach (RadiatorThermostat *radiatorThermostat, cube->radiatorThermostatList()) {
         foreach (Device *device, deviceManager()->findConfiguredDevices(radiatorThermostateDeviceClassId)){
             if(device->paramValue("serial number").toString() == radiatorThermostat->serialNumber()){
-                device->setStateValue(confortTempStateTypeId, radiatorThermostat->confortTemp());
+                device->setStateValue(comfortTempStateTypeId, radiatorThermostat->comfortTemp());
                 device->setStateValue(ecoTempStateTypeId, radiatorThermostat->ecoTemp());
                 device->setStateValue(maxSetpointTempStateTypeId, radiatorThermostat->maxSetPointTemp());
                 device->setStateValue(minSetpointTempStateTypeId, radiatorThermostat->minSetPointTemp());
-                device->setStateValue(errorOccuredStateTypeId, radiatorThermostat->errorOccured());
+                device->setStateValue(errorOccurredStateTypeId, radiatorThermostat->errorOccured());
                 device->setStateValue(initializedStateTypeId, radiatorThermostat->initialized());
                 device->setStateValue(batteryLowStateTypeId, radiatorThermostat->batteryLow());
                 device->setStateValue(linkStatusOKStateTypeId, radiatorThermostat->linkStatusOK());
@@ -410,7 +369,7 @@ void DevicePluginEQ3::radiatorThermostatDataUpdated()
                 device->setStateValue(setpointTempStateTypeId, radiatorThermostat->setpointTemperature());
                 device->setStateValue(offsetTempStateTypeId, radiatorThermostat->offsetTemp());
                 device->setStateValue(windowOpenDurationStateTypeId, radiatorThermostat->windowOpenDuration());
-                device->setStateValue(boostValueValueStateTypeId, radiatorThermostat->boostValveValue());
+                device->setStateValue(boostValveValueStateTypeId, radiatorThermostat->boostValveValue());
                 device->setStateValue(boostDurationStateTypeId, radiatorThermostat->boostDuration());
                 device->setStateValue(discalcWeekDayStateTypeId, radiatorThermostat->discalcingWeekDay());
                 device->setStateValue(discalcTimeStateTypeId, radiatorThermostat->discalcingTime().toString("HH:mm"));

@@ -46,13 +46,10 @@
 #include "devicemanager.h"
 
 #include "bobclient.h"
+#include "plugininfo.h"
 
 #include <QDebug>
 #include <QStringList>
-
-DeviceClassId boblightDeviceClassId = DeviceClassId("1647c61c-db14-461e-8060-8a3533d5d92f");
-StateTypeId colorStateTypeId = StateTypeId("97ec80cd-43a9-40fa-93b7-d1580043d981");
-ActionTypeId setColorActionTypeId = ActionTypeId("668e1aa3-fa13-49ce-8630-17a5c0a7c34b");
 
 DevicePluginBoblight::DevicePluginBoblight()
 {

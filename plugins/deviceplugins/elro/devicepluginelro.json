@@ -1,4 +1,4 @@
-{
+ {
     "name": "Elro",
     "id": "2b267f81-d9ae-4f4f-89a0-7386b547cfd3",
     "vendors": [
@@ -8,6 +8,7 @@
             "deviceClasses": [
                 {
                     "deviceClassId": "d85c1ef4-197c-4053-8e40-707aa671d302",
+                    "idName": "elroRemote",
                     "name": "Elro Remote",
                     "createMethods": ["user"],
                     "paramTypes": [

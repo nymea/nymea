@@ -98,14 +98,9 @@
 
 #include "plugin/device.h"
 #include "devicemanager.h"
+#include "plugininfo.h"
 
 #include <QDebug>
-
-DeviceClassId applicationDeviceClassId = DeviceClassId("0f39fe9e-51ea-4230-9646-2482c6234791");
-DeviceClassId scriptDeviceClassId = DeviceClassId("96044325-a6fb-47c9-9117-f29c3b327978");
-StateTypeId runningStateTypeId = StateTypeId("28d7e933-ff05-4f4c-95a0-482689543de5");
-ActionTypeId executeActionTypeId = ActionTypeId("cf52b41d-3108-423c-8907-ca5b4d97cac5");
-ActionTypeId killActionTypeId = ActionTypeId("d21b1fed-1dd9-4c5a-a64e-0c6ba94059be");
 
 DevicePluginCommandLauncher::DevicePluginCommandLauncher()
 {

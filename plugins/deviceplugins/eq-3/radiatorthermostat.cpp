@@ -23,14 +23,14 @@ RadiatorThermostat::RadiatorThermostat(QObject *parent) :
 {
 }
 
-double RadiatorThermostat::confortTemp() const
+double RadiatorThermostat::comfortTemp() const
 {
-    return m_confortTemp;
+    return m_comfortTemp;
 }
 
-void RadiatorThermostat::setConfortTemp(const double &confortTemp)
+void RadiatorThermostat::setComfortTemp(const double &comfortTemp)
 {
-    m_confortTemp = confortTemp;
+    m_comfortTemp = comfortTemp;
 }
 
 double RadiatorThermostat::ecoTemp() const

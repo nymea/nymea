@@ -61,7 +61,7 @@ QVariantMap JsonTypes::s_rule;
 void JsonTypes::init()
 {
     // BasicTypes
-    s_basicType = enumToStrings(JsonTypes::staticMetaObject, "BasicTypes");
+    s_basicType = enumToStrings(JsonTypes::staticMetaObject, "BasicType");
     s_stateOperator = enumToStrings(Types::staticMetaObject, "StateOperator");
     s_valueOperator = enumToStrings(Types::staticMetaObject, "ValueOperator");
     s_createMethod = enumToStrings(DeviceClass::staticMetaObject, "CreateMethod");
@@ -169,6 +169,7 @@ void JsonTypes::init()
 
     // Rule
     s_rule.insert("id", basicTypeToString(Uuid));
+    s_rule.insert("enabled", basicTypeToString(Bool));
     s_rule.insert("eventDescriptors", QVariantList() << eventDescriptorRef());
     s_rule.insert("actions", QVariantList() << actionRef());
     s_rule.insert("stateEvaluator", stateEvaluatorRef());
@@ -184,6 +185,7 @@ QPair<bool, QString> JsonTypes::report(bool status, const QString &message)
 QVariantList JsonTypes::enumToStrings(const QMetaObject &metaObject, const QString &enumName)
 {
     int enumIndex = metaObject.indexOfEnumerator(enumName.toLatin1().data());
+    Q_ASSERT_X(enumIndex >= 0, "JsonTypes", QString("Enumerator %1 not found in %2").arg(enumName).arg(metaObject.className()).toLocal8Bit());
     QMetaEnum metaEnum = metaObject.enumerator(enumIndex);
 
     QVariantList enumStrings;
@@ -446,6 +448,7 @@ QVariantMap JsonTypes::packRule(const Rule &rule)
 {
     QVariantMap ruleMap;
     ruleMap.insert("id", rule.id());
+    ruleMap.insert("enabled", rule.enabled());
     QVariantList eventDescriptorList;
     foreach (const EventDescriptor &eventDescriptor, rule.eventDescriptors()) {
         eventDescriptorList.append(JsonTypes::packEventDescriptor(eventDescriptor));

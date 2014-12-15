@@ -30,8 +30,8 @@ class RadiatorThermostat : public MaxDevice
 public:
     explicit RadiatorThermostat(QObject *parent = 0);
 
-    double confortTemp() const;
-    void setConfortTemp(const double &confortTemp);
+    double comfortTemp() const;
+    void setComfortTemp(const double &comfortTemp);
 
     double ecoTemp() const;
     void setEcoTemp(const double &ecoTemp);
@@ -108,7 +108,7 @@ public:
     void setSetpointTemperatre(const double &setpointTemperature);
 
 private:
-    double m_confortTemp;
+    double m_comfortTemp;
     double m_ecoTemp;
     double m_maxSetPointTemp;
     double m_minSetPointTemp;

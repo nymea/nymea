@@ -61,17 +61,12 @@
 
 #include "plugin/device.h"
 #include "devicemanager.h"
+#include "plugininfo.h"
 
 #include <QDebug>
 #include <QJsonDocument>
 #include <QVariantMap>
 #include <QDateTime>
-
-DeviceClassId googleMailDeviceClassId = DeviceClassId("3869884a-1592-4b8f-84a7-994be18ff555");
-DeviceClassId yahooMailDeviceClassId = DeviceClassId("59409e8f-0c83-414f-abd5-bbbf2758acba");
-DeviceClassId customMailDeviceClassId = DeviceClassId("f4844c97-7ca6-4349-904e-ff9749a9fe74");
-
-ActionTypeId sendMailActionTypeId = ActionTypeId("054613b0-3666-4dad-9252-e0ebca187edc");
 
 DevicePluginMailNotification::DevicePluginMailNotification()
 {

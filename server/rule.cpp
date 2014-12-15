@@ -88,3 +88,15 @@ QList<Action> Rule::actions() const
 {
     return m_actions;
 }
+
+/*! Returns wheter the rule is enabled or not. */
+bool Rule::enabled() const {
+    return m_enabled;
+}
+
+/*! Set the \a enabled flag of this rule. In order to actually enable/disable the rule you still need to
+ * update the RulesEngine */
+void Rule::setEnabled(bool enabled)
+{
+    m_enabled = enabled;
+}

@@ -43,42 +43,9 @@
 
 #include "plugin/device.h"
 #include "devicemanager.h"
+#include "plugininfo.h"
 
 #include <QDebug>
-
-DeviceClassId lgSmartTvDeviceClassId = DeviceClassId("1d41b5a8-74ff-4a12-b365-c7bbe610848f");
-
-StateTypeId tvReachableStateTypeId = StateTypeId("b056c36b-df87-4177-8d5d-1e7c1e8cdc7a");
-StateTypeId tv3DModeStateTypeId = StateTypeId("8ad3d77f-d340-495d-8c2a-5569a80e9d36");
-StateTypeId tvVolumeLevelStateTypeId = StateTypeId("07d39a6e-7eab-42d0-851d-9f3bcd3bbb57");
-StateTypeId tvMuteStateTypeId = StateTypeId("a6ac9061-3de7-403a-a646-790ca5d73764");
-StateTypeId tvChannelTypeStateTypeId = StateTypeId("84c86670-77c7-4fc6-9e23-abca066e76aa");
-StateTypeId tvChannelNameStateTypeId = StateTypeId("265dc5f7-3f4d-4002-a6fe-2a53986bcf1d");
-StateTypeId tvChannelNumberStateTypeId = StateTypeId("881629a3-4ce2-42ba-8ce6-10d90c383799");
-StateTypeId tvProgramNameStateTypeId = StateTypeId("3f53e52e-1ad7-40e7-8080-76908e720cac");
-StateTypeId tvInputSourceIndexStateTypeId = StateTypeId("e895017a-139f-410c-bfb2-4d008104e164");
-StateTypeId tvInputSourceLabelNameStateTypeId = StateTypeId("58b734ec-2269-4c57-99e1-e1eeee401053");
-
-
-ActionTypeId commandVolumeUpActionTypeId = ActionTypeId("ac5d7dcd-dfe8-4a94-9ab9-21b3f804b39e");
-ActionTypeId commandVolumeDownActionTypeId = ActionTypeId("62b17bec-f461-4ffa-93d1-67a9430d55e1");
-ActionTypeId commandMuteActionTypeId = ActionTypeId("1aa9d7f0-0f66-4b90-bb72-f6b7b2118221");
-ActionTypeId commandUnmuteActionTypeId = ActionTypeId("b7e31999-ba67-443d-8e5c-ec104af987bd");
-ActionTypeId commandChannelUpActionTypeId = ActionTypeId("acd1f6a0-2cfa-4665-9607-cf94245ec5a3");
-ActionTypeId commandChannelDownActionTypeId = ActionTypeId("6ea66772-0e6d-40b1-978c-a01fb53871dd");
-ActionTypeId commandPowerOffActionTypeId = ActionTypeId("cbe41134-ff11-4916-815b-3ac289c64090");
-ActionTypeId commandArrowUpActionTypeId = ActionTypeId("57c483b4-4ddf-4470-828c-8d8767e7a923");
-ActionTypeId commandArrowDownActionTypeId = ActionTypeId("614cf1af-5cf7-4bb2-885c-4414078d8899");
-ActionTypeId commandArrowLeftActionTypeId = ActionTypeId("916394dd-7833-4875-8d7a-49d7d24ceeb2");
-ActionTypeId commandArrowRightActionTypeId = ActionTypeId("01e3df1e-638b-4e14-ba85-660267766062");
-ActionTypeId commandOkActionTypeId = ActionTypeId("257dfa59-0d38-4e18-a3fc-213809fdb12f");
-ActionTypeId commandBackActionTypeId = ActionTypeId("ce4184b3-6b8e-4fc3-a4cb-7b8ec72f2ce9");
-ActionTypeId commandHomeActionTypeId = ActionTypeId("33f941c1-f5fc-4449-b6e3-93eafca493e0");
-ActionTypeId commandInputSourceActionTypeId = ActionTypeId("9a6e5111-95d3-49ac-8056-249e704b1509");
-ActionTypeId commandExitActionTypeId = ActionTypeId("d76efdb8-056e-4b39-a839-2ef6d6001b00");
-ActionTypeId commandInfoActionTypeId = ActionTypeId("9c1290d5-3135-4124-a576-fc7522cffdcf");
-ActionTypeId commandMyAppsActionTypeId = ActionTypeId("47d65cac-fe75-4c36-9dee-9862c1c1130e");
-ActionTypeId commandProgramListActionTypeId = ActionTypeId("9aa3a97e-505d-4906-9764-14b6dc4e31e8");
 
 
 DevicePluginLgSmartTv::DevicePluginLgSmartTv()

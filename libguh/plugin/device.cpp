@@ -171,7 +171,6 @@ bool Device::hasState(const StateTypeId &stateTypeId) const
 QVariant Device::stateValue(const StateTypeId &stateTypeId) const
 {
     foreach (const State &state, m_states) {
-        qDebug() << "checking" << stateTypeId << state.stateTypeId();
         if (state.stateTypeId() == stateTypeId) {
             return state.value();
         }

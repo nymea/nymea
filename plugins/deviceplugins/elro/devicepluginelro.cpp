@@ -41,14 +41,10 @@
 
 #include "devicepluginelro.h"
 #include "devicemanager.h"
+#include "plugininfo.h"
 
 #include <QDebug>
 #include <QStringList>
-
-DeviceClassId elroRemoteId = DeviceClassId("d85c1ef4-197c-4053-8e40-707aa671d302");
-DeviceClassId elroSwitchId = DeviceClassId("308ae6e6-38b3-4b3a-a513-3199da2764f8");
-DeviceClassId elroMotionDetectorId = DeviceClassId("4c64aee6-7a4f-41f2-b278-edc55f0da0d3");
-
 
 DevicePluginElro::DevicePluginElro()
 {
@@ -256,7 +252,7 @@ void DevicePluginElro::radioData(const QList<int> &rawData)
     }
 
     Device *device = 0;
-    QList<Device*> deviceList = deviceManager()->findConfiguredDevices(elroRemoteId);
+    QList<Device*> deviceList = deviceManager()->findConfiguredDevices(elroRemoteDeviceClassId);
     foreach (Device *dev, deviceList) {
         if (dev->hasParam("channel 1") && dev->paramValue("channel 1").toBool() == group.at(0) &&
                 dev->hasParam("channel 2") && dev->paramValue("channel 2").toBool() == group.at(1) &&

@@ -255,11 +255,11 @@ Rule GuhCore::findRule(const RuleId &ruleId)
     return m_ruleEngine->findRule(ruleId);
 }
 
-/*! Calls the metheod RuleEngine::addRule(\a id, \a eventDescriptorList, \a actionList).
+/*! Calls the metheod RuleEngine::addRule(\a id, \a eventDescriptorList, \a actionList, \a enabled).
  *  \sa RuleEngine, */
-RuleEngine::RuleError GuhCore::addRule(const RuleId &id, const QList<EventDescriptor> &eventDescriptorList, const QList<Action> &actionList)
+RuleEngine::RuleError GuhCore::addRule(const RuleId &id, const QList<EventDescriptor> &eventDescriptorList, const QList<Action> &actionList, bool enabled)
 {
-    return m_ruleEngine->addRule(id, eventDescriptorList, actionList);
+    return m_ruleEngine->addRule(id, eventDescriptorList, actionList, enabled);
 }
 
 /*! Calls the metheod RuleEngine::removeRule(\a id).
@@ -274,6 +274,20 @@ RuleEngine::RuleError GuhCore::removeRule(const RuleId &id)
 QList<RuleId> GuhCore::findRules(const DeviceId &deviceId)
 {
     return m_ruleEngine->findRules(deviceId);
+}
+
+/*! Calls the metheod RuleEngine::enableRule(\a ruleId).
+ *  \sa RuleEngine, */
+RuleEngine::RuleError GuhCore::enableRule(const RuleId &ruleId)
+{
+    return m_ruleEngine->enableRule(ruleId);
+}
+
+/*! Calls the metheod RuleEngine::disableRule(\a ruleId).
+ *  \sa RuleEngine, */
+RuleEngine::RuleError GuhCore::disableRule(const RuleId &ruleId)
+{
+    return m_ruleEngine->disableRule(ruleId);
 }
 
 /*! Returns a pointer to the \l{DeviceManager} instance owned by GuhCore.*/

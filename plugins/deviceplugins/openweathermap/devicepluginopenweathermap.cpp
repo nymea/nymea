@@ -50,28 +50,12 @@
 
 #include "plugin/device.h"
 #include "devicemanager.h"
+#include "plugininfo.h"
 
 #include <QDebug>
 #include <QJsonDocument>
 #include <QVariantMap>
 #include <QDateTime>
-
-DeviceClassId openweathermapDeviceClassId = DeviceClassId("985195aa-17ad-4530-88a4-cdd753d747d7");
-
-ActionTypeId updateWeatherActionTypeId = ActionTypeId("cfbc6504-d86f-4856-8dfa-97b6fbb385e4");
-
-StateTypeId updateTimeStateTypeId = StateTypeId("36b2f09b-7d77-4fbc-a68f-23d735dda0b1");
-StateTypeId temperatureStateTypeId = StateTypeId("6013402f-b5b1-46b3-8490-f0c20d62fe61");
-StateTypeId temperatureMinStateTypeId = StateTypeId("14ec2781-cb04-4bbf-b097-7d01ef982630");
-StateTypeId temperatureMaxStateTypeId = StateTypeId("fefe5563-452f-4833-b5cf-49c3cc67c772");
-StateTypeId humidityStateTypeId = StateTypeId("6f32ec73-3240-4630-ada9-1c10b8e98123");
-StateTypeId pressureStateTypeId = StateTypeId("4a42eea9-00eb-440b-915e-dbe42180f83b");
-StateTypeId windSpeedStateTypeId = StateTypeId("2bf63430-e9e2-4fbf-88e6-6f1b4770f287");
-StateTypeId windDirectionStateTypeId = StateTypeId("589e2ea5-65b2-4afd-9b72-e3708a589a12");
-StateTypeId cloudinessStateTypeId = StateTypeId("798553bc-45c7-42eb-9105-430bddb5d9b7");
-StateTypeId weatherDescriptionStateTypeId = StateTypeId("f9539108-0e0e-4736-a306-6408f8e20a26");
-StateTypeId sunriseStateTypeId = StateTypeId("af155e94-9492-44e1-8608-7d0ee8b5d50d");
-StateTypeId sunsetStateTypeId = StateTypeId("a1dddc3d-549f-4f20-b78b-be850548f286");
 
 
 DevicePluginOpenweathermap::DevicePluginOpenweathermap()

@@ -20,7 +20,25 @@ methods = {'-> List supported vendors': 'list_vendors',
            '-> List rules': 'list_rules',
            '-> List rule details': 'list_rule_detail',
            '-> List rules containing a certain device' : 'list_rules_containig_deviceId',
-           '-> Remove a rule': 'remove_rule'}
+           '-> Remove a rule': 'remove_rule',
+           '-> Enable/Disable a rule': 'enable_disable_rule'}
+
+list_methods = {'-> List supported vendors': 'list_vendors',
+		'-> List supported devices': 'list_deviceClasses',
+		'-> List supported devices by vendor': 'list_deviceClasses_by_vendor'}
+
+device_methods = {'-> Add a device': 'add_device',
+	          '-> Remove a device': 'remove_device',
+		  '-> List configured devices': 'list_configured_devices',
+		  '-> Execute an action': 'execute_action',
+		  '-> List device states': 'list_device_states',
+		  '-> List device parameters': 'list_configured_device_params'}
+
+rule_methods = {'-> Add a rule': 'add_rule',
+		'-> Remove a rule': 'remove_rule',
+		'-> List rules containing a certain device' : 'list_rules_containig_deviceId',
+		'-> List rule details': 'list_rule_detail',
+		'-> List rules': 'list_rules'}
 
 
 def get_selection(title, options):
@@ -260,6 +278,12 @@ def get_actionType(actionTypeId):
     return response['params']['actionType']
 
 
+def get_eventType(eventTypeId):
+    params = {}
+    params['eventTypeId'] = eventTypeId
+    response = send_command("Events.GetEventType", params)
+    return response['params']['eventType']
+
 def add_configured_device(deviceClassId):
     deviceClass = get_deviceClass(deviceClassId)
 
@@ -270,7 +294,7 @@ def add_configured_device(deviceClassId):
     if len(deviceParams) > 0:
         params['deviceParams'] = deviceParams
 
-    print "adddevice command params:", params
+    print "add device command params:", params
     response = send_command("Devices.AddConfiguredDevice", params)
     print_device_error_code(response['params']['deviceError'])
 
@@ -455,7 +479,6 @@ def print_rule_error_code(ruleError):
         print "\nERROR: Unknown error code: ", ruleError,  "Please take a look at the newest API version."
 
 
-
 def list_device_states():
     deviceId = select_device()
     device = get_device(deviceId)
@@ -567,6 +590,34 @@ def select_rule_type():
     return ruleTypes[selection]
 
 
+def enable_disable_rule():
+    ruleId = select_rule()
+    if ruleId == "":
+        print "\n    No rules found"
+        return
+    actionTypes = ["enable", "disable"]
+    selection = get_selection("What do you want to do with this rule: ", actionTypes)     
+    if selection == 0:
+	params = {}
+	params['ruleId'] = ruleId
+	answere = send_command("Rules.EnableRule", params)
+        print_rule_error_code(response['params']['ruleError'])
+    else:
+	params = {}
+	params['ruleId'] = ruleId
+	answere = send_command("Rules.DisableRule", params)
+        print_rule_error_code(response['params']['ruleError'])
+
+
+def get_rule_status(ruleId):
+    params = {}
+    params['ruleId'] = ruleId
+    response = send_command("Rules.GetRuleDetails", params)
+    if response['params']['rule']['enabled'] == True:
+	return "enabled"
+    else:
+	return "disabled"
+
 def list_rules():
     response = send_command("Rules.GetRules", {})
     if not response['params']['ruleIds']:
@@ -574,7 +625,12 @@ def list_rules():
         return
     print "\nRules found:"
     for i in range(len(response['params']['ruleIds'])):
-        print response['params']['ruleIds'][i]
+	ruleId = response['params']['ruleIds'][i]
+	params = {}
+	params['ruleId'] = ruleId
+	ruleDetail = send_command("Rules.GetRuleDetails", params)
+	#print ruleDetail
+	print response['params']['ruleIds'][i], "(", get_rule_status(ruleId), ")"
 
 
 def list_rule_detail():
@@ -586,16 +642,14 @@ def list_rule_detail():
     params['ruleId'] = ruleId
     response = send_command("Rules.GetRuleDetails", params)
     print response
-    print "\nThe rule", ruleId, "depends on following EventDescriptors and triggers"
-    print "only if ", get_stateEvaluator_text(response['params']['rule']['stateEvaluator']['operator']), "are true.\n"
-    print "Events:"
+    print "\n Details for rule", ruleId, "which currently is", get_rule_status(ruleId) 
+    print "\n\nEvents (", get_stateEvaluator_text(response['params']['rule']['stateEvaluator']['operator']), "):"
     for i in range(len(response['params']['rule']['eventDescriptors'])):
         eventDescriptor = response['params']['rule']['eventDescriptors'][i]
-        #print eventDescriptor
         device = get_device(eventDescriptor['deviceId'])
+        eventType = get_eventType(eventDescriptor['eventTypeId'])
         paramDescriptors = eventDescriptor['paramDescriptors']
-        print  "%5s. -> %40s -> eventTypeId: %10s: " %(i, device['name'], eventDescriptor['eventTypeId'])
-        #print paramDescriptors
+        print  "%5s. -> %40s -> eventTypeId: %10s: " %(i, device['name'], eventType['name'])
         for i in range(len(paramDescriptors)):
             print "%58s %s %s" %(paramDescriptors[i]['name'], get_valueOperator_symbol(paramDescriptors[i]['operator']), paramDescriptors[i]['value'])
         print ""
@@ -628,9 +682,9 @@ def get_valueOperator_symbol(valueOperator):
     
 def get_stateEvaluator_text(stateEvaluator):
     if stateEvaluator == "StateOperatorAnd":
-        return "ALL of the events/states"
+        return "ALL of the events/states has to be valid."
     elif stateEvaluator == "StateOperatorOr":
-        return "ONE of this events/states"
+        return "ONE of this events/states has to be valid."
     else:
         return "<unknown state evaluator>"
     

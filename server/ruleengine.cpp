@@ -170,41 +170,35 @@ QList<Action> RuleEngine::evaluateEvent(const Event &event)
     QList<Action> actions;
     foreach (const RuleId &id, m_ruleIds) {
         Rule rule = m_rules.value(id);
-        qDebug() << "have a rule:" << rule.id() << rule.stateEvaluator().stateDescriptor().isValid() << rule.stateEvaluator().stateDescriptor().stateTypeId();
         if (!rule.enabled()) {
-            qDebug() << "Not triggering rule because it is disabled:" << rule.id();
             continue;
         }
 
         if (rule.eventDescriptors().isEmpty()) {
             // This rule seems to have only states, check on state changed
-            qDebug() << "***** checking state";
             if (containsState(rule.stateEvaluator(), event)) {
-                qDebug() << "Yep, this state triggers";
                 if (rule.stateEvaluator().evaluate()) {
-                    qDebug() << "Yep, all states match";
                     if (m_activeRules.contains(rule.id())) {
-                        qDebug() << "This has been executed before... not doing again";
+                        qDebug() << "Rule" << rule.id() << "still in active state.";
                     } else {
-                        qDebug() << "exectuing";
+                        qDebug() << "Rule" << rule.id() << "entered active state.";
                         m_activeRules.append(rule.id());
                         actions.append(rule.actions());
                     }
                 } else {
-                    qDebug() << "not all states matching any more!";
+                    qDebug() << "Rule" << rule.id() << "left active state.";
                     m_activeRules.removeAll(rule.id());
                 }
             }
         } else {
             if (containsEvent(rule, event)) {
                 if (rule.stateEvaluator().evaluate()) {
-                    qDebug() << "states matching!";
+                    qDebug() << "Rule" << rule.id() << "contains event" << event.eventId() << "and all states match.";
                     actions.append(rule.actions());
                 }
             }
         }
     }
-    qDebug() << "found" << actions.count() << "actions";
     return actions;
 }
 

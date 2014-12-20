@@ -158,8 +158,8 @@ RuleEngine::RuleEngine(QObject *parent) :
 }
 
 /*! Ask the Engine to evaluate all the rules for the given \a event.
-    This will search all the \l{Rule}{Rules} triggered by this \l{Event}
-    and evaluate it's states in the system. It will return a
+    This will search all the \l{Rule}{Rules} triggered by the given \a event
+    and evaluate their states in the system. It will return a
     list of all \l{Action}{Actions} that should be executed. */
 QList<Action> RuleEngine::evaluateEvent(const Event &event)
 {

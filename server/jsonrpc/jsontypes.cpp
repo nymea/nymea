@@ -322,6 +322,7 @@ QVariantMap JsonTypes::packStateEvaluator(const StateEvaluator &stateEvaluator)
     foreach (const StateEvaluator &childEvaluator, stateEvaluator.childEvaluators()) {
         childEvaluators.append(packStateEvaluator(childEvaluator));
     }
+    qDebug() << "state operator:" << stateOperator() << stateEvaluator.operatorType();
     variantMap.insert("operator", stateOperator().at(stateEvaluator.operatorType()));
     if (childEvaluators.count() > 0) {
         variantMap.insert("childEvaluators", childEvaluators);
@@ -460,7 +461,9 @@ QVariantMap JsonTypes::packRule(const Rule &rule)
         actionList.append(JsonTypes::packAction(action));
     }
     ruleMap.insert("actions", actionList);
+    qDebug() << "packing state evaluator";
     ruleMap.insert("stateEvaluator", JsonTypes::packStateEvaluator(rule.stateEvaluator()));
+    qDebug() << "done p se";
     return ruleMap;
 }
 
@@ -527,6 +530,30 @@ EventDescriptor JsonTypes::unpackEventDescriptor(const QVariantMap &eventDescrip
     QList<ParamDescriptor> eventParams = JsonTypes::unpackParamDescriptors(eventDescriptorMap.value("paramDescriptors").toList());
     EventDescriptor eventDescriptor(eventTypeId, eventDeviceId, eventParams);
     return eventDescriptor;
+}
+
+StateEvaluator JsonTypes::unpackStateEvaluator(const QVariantMap &stateEvaluatorMap)
+{
+    StateEvaluator ret(unpackStateDescriptor(stateEvaluatorMap.value("stateDescriptor").toMap()));
+    if (stateEvaluatorMap.contains("operator")) {
+        ret.setOperatorType((Types::StateOperator)s_stateOperator.indexOf(stateEvaluatorMap.value("operator").toString()));
+    }
+    QList<StateEvaluator> childEvaluators;
+    foreach (const QVariant &childEvaluator, stateEvaluatorMap.value("childEvaluators").toList()) {
+        childEvaluators.append(unpackStateEvaluator(childEvaluator.toMap()));
+    }
+    ret.setChildEvaluators(childEvaluators);
+    return ret;
+}
+
+StateDescriptor JsonTypes::unpackStateDescriptor(const QVariantMap &stateDescriptorMap)
+{
+    StateTypeId stateTypeId(stateDescriptorMap.value("stateTypeId").toString());
+    DeviceId deviceId(stateDescriptorMap.value("deviceId").toString());
+    QVariant value = stateDescriptorMap.value("value");
+    Types::ValueOperator operatorType = (Types::ValueOperator)s_valueOperator.indexOf(stateDescriptorMap.value("operator").toString());
+    StateDescriptor stateDescriptor(stateTypeId, deviceId, value, operatorType);
+    return stateDescriptor;
 }
 
 QPair<bool, QString> JsonTypes::validateMap(const QVariantMap &templateMap, const QVariantMap &map)

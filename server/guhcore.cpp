@@ -255,11 +255,11 @@ Rule GuhCore::findRule(const RuleId &ruleId)
     return m_ruleEngine->findRule(ruleId);
 }
 
-/*! Calls the metheod RuleEngine::addRule(\a id, \a eventDescriptorList, \a actionList, \a enabled).
+/*! Calls the metheod RuleEngine::addRule(\a id, \a eventDescriptorList, \a stateEvaluator \a actionList, \a enabled).
  *  \sa RuleEngine, */
-RuleEngine::RuleError GuhCore::addRule(const RuleId &id, const QList<EventDescriptor> &eventDescriptorList, const QList<Action> &actionList, bool enabled)
+RuleEngine::RuleError GuhCore::addRule(const RuleId &id, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actionList, bool enabled)
 {
-    return m_ruleEngine->addRule(id, eventDescriptorList, actionList, enabled);
+    return m_ruleEngine->addRule(id, eventDescriptorList, stateEvaluator, actionList, enabled);
 }
 
 /*! Calls the metheod RuleEngine::removeRule(\a id).

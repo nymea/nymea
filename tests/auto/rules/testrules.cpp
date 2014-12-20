@@ -37,6 +37,9 @@ private:
     void cleanupMockHistory();
     void cleanupRules();
 
+    void verifyRuleExecuted(const ActionTypeId &actionTypeId);
+    void verifyRuleNotExecuted();
+
 private slots:
 
     void cleanup();
@@ -55,6 +58,8 @@ private slots:
 
     void testStateEvaluator2_data();
     void testStateEvaluator2();
+
+    void testStateChange();
 
     void enableDisableRule();
 };
@@ -83,6 +88,39 @@ void TestRules::cleanup() {
     cleanupRules();
 }
 
+void TestRules::verifyRuleExecuted(const ActionTypeId &actionTypeId)
+{
+    // Verify rule got executed
+    QNetworkAccessManager nam;
+    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/actionhistory").arg(m_mockDevice1Port)));
+    QNetworkReply *reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+
+    QByteArray actionHistory = reply->readAll();
+    qDebug() << "have action history" << actionHistory;
+    QVERIFY2(actionTypeId == ActionTypeId(actionHistory), "Action not triggered");
+    reply->deleteLater();
+
+}
+
+void TestRules::verifyRuleNotExecuted()
+{
+    QNetworkAccessManager nam;
+    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/actionhistory").arg(m_mockDevice1Port)));
+    QNetworkReply *reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+
+    QByteArray actionHistory = reply->readAll();
+    qDebug() << "have action history" << actionHistory;
+    QVERIFY2(actionHistory.isEmpty(), "Action is triggered while it should not have been.");
+    reply->deleteLater();
+
+}
+
 void TestRules::addRemoveRules_data()
 {
     QVariantMap validActionNoParams;
@@ -103,6 +141,7 @@ void TestRules::addRemoveRules_data()
 
     QVariantMap validStateEvaluator;
     validStateEvaluator.insert("stateDescriptor", stateDescriptor);
+    validStateEvaluator.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
 
     QVariantMap invalidStateEvaluator;
     stateDescriptor.remove("deviceId");
@@ -146,9 +185,7 @@ void TestRules::addRemoveRules_data()
     QTest::newRow("valid rule. 2 EventDescriptors, 1 Action") << true << validActionNoParams << QVariantMap() << eventDescriptorList << validStateEvaluator << RuleEngine::RuleErrorNoError;
     QTest::newRow("invalid rule: eventDescriptor and eventDescriptorList used") << true << validActionNoParams << validEventDescriptor1 << eventDescriptorList << validStateEvaluator << RuleEngine::RuleErrorInvalidParameter;
     QTest::newRow("invalid action") << true << invalidAction << validEventDescriptor1 << QVariantList() << validStateEvaluator << RuleEngine::RuleErrorActionTypeNotFound;
-    QTest::newRow("invalid event descriptor") <<true << validActionNoParams << invalidEventDescriptor << QVariantList() << validStateEvaluator << RuleEngine::RuleErrorDeviceNotFound;
-//    QTest::newRow("invalid state evaluator") << validActionNoParams << invalidEventDescriptor << QVariantList() << invalidStateEvaluator << false;
-
+    QTest::newRow("invalid event descriptor") << true << validActionNoParams << invalidEventDescriptor << QVariantList() << validStateEvaluator << RuleEngine::RuleErrorDeviceNotFound;
 }
 
 void TestRules::addRemoveRules()
@@ -380,17 +417,83 @@ void TestRules::evaluateEvent()
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
 
-    // Verify rule got executed
+    verifyRuleExecuted(mockActionIdNoParams);
+}
+
+void TestRules::testStateChange() {
+    // Add a rule
+    QVariantMap addRuleParams;
+    QVariantMap stateEvaluator;
+    QVariantMap stateDescriptor;
+    stateDescriptor.insert("deviceId", m_mockDeviceId);
+    stateDescriptor.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorGreaterOrEqual));
+    stateDescriptor.insert("stateTypeId", mockIntStateId);
+    stateDescriptor.insert("value", 42);
+    stateEvaluator.insert("stateDescriptor", stateDescriptor);
+    addRuleParams.insert("stateEvaluator", stateEvaluator);
+
+    QVariantList actions;
+    QVariantMap action;
+    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("deviceId", m_mockDeviceId);
+    actions.append(action);
+    addRuleParams.insert("actions", actions);
+    QVariant response = injectAndWait("Rules.AddRule", addRuleParams);
+    verifyRuleError(response);
+
+
+    // Change the state
+    QNetworkAccessManager nam;
+    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+
+    // state state to 42
+    qDebug() << "setting mock int state to 42";
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockIntStateId.toString()).arg(42)));
+    QNetworkReply *reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    verifyRuleExecuted(mockActionIdNoParams);
+
+    cleanupMockHistory();
+
+    // set state to 45
+    qDebug() << "setting mock int state to 45";
     spy.clear();
-    request.setUrl(QUrl(QString("http://localhost:%1/actionhistory").arg(m_mockDevice1Port)));
+    request.setUrl(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockIntStateId.toString()).arg(45)));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    verifyRuleNotExecuted();
+
+    cleanupMockHistory();
+
+    // set state to 30
+    qDebug() << "setting mock int state to 30";
+    spy.clear();
+    request.setUrl(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockIntStateId.toString()).arg(30)));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    verifyRuleNotExecuted();
+
+    cleanupMockHistory();
+
+    // set state to 100
+    qDebug() << "setting mock int state to 100";
+    spy.clear();
+    request.setUrl(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockIntStateId.toString()).arg(100)));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
 
+    verifyRuleExecuted(mockActionIdNoParams);
     reply->deleteLater();
-
-    QByteArray actionHistory = reply->readAll();
-    QVERIFY2(mockActionIdNoParams == ActionTypeId(actionHistory), "Action not triggered");
 }
 
 void TestRules::testStateEvaluator_data()
@@ -515,17 +618,7 @@ void TestRules::enableDisableRule()
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
 
-    // Verify rule got executed
-    spy.clear();
-    request.setUrl(QUrl(QString("http://localhost:%1/actionhistory").arg(m_mockDevice1Port)));
-    reply = nam.get(request);
-    spy.wait();
-    QCOMPARE(spy.count(), 1);
-
-    QByteArray actionHistory = reply->readAll();
-    qDebug() << "have action history" << actionHistory;
-    QVERIFY2(mockActionIdNoParams == ActionTypeId(actionHistory), "Action not triggered");
-    reply->deleteLater();
+    verifyRuleExecuted(mockActionIdNoParams);
 
     cleanupMockHistory();
 
@@ -544,17 +637,7 @@ void TestRules::enableDisableRule()
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
 
-    // Verify rule got *NOT* executed
-    spy.clear();
-    request.setUrl(QUrl(QString("http://localhost:%1/actionhistory").arg(m_mockDevice1Port)));
-    reply = nam.get(request);
-    spy.wait();
-    QCOMPARE(spy.count(), 1);
-
-    actionHistory = reply->readAll();
-    qDebug() << "have action history" << actionHistory;
-    QVERIFY2(actionHistory.isEmpty(), "Action is triggered while rule is disabled");
-    reply->deleteLater();
+    verifyRuleNotExecuted();
 
     cleanupMockHistory();
 
@@ -571,18 +654,7 @@ void TestRules::enableDisableRule()
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
 
-    // Verify rule got executed
-    spy.clear();
-    request.setUrl(QUrl(QString("http://localhost:%1/actionhistory").arg(m_mockDevice1Port)));
-    reply = nam.get(request);
-    spy.wait();
-    QCOMPARE(spy.count(), 1);
-
-    actionHistory = reply->readAll();
-    qDebug() << "have action history" << actionHistory;
-    QVERIFY2(mockActionIdNoParams == ActionTypeId(actionHistory), "Action not triggered");
-    reply->deleteLater();
-
+    verifyRuleExecuted(mockActionIdNoParams);
 }
 
 #include "testrules.moc"

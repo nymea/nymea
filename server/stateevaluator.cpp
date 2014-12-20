@@ -66,7 +66,7 @@ void StateEvaluator::setOperatorType(Types::StateOperator operatorType)
 
 bool StateEvaluator::evaluate() const
 {
-    if (!m_stateDescriptor.stateTypeId().isNull() && !m_stateDescriptor.deviceId().isNull()) {
+    if (m_stateDescriptor.isValid()) {
         Device *device = GuhCore::instance()->findConfiguredDevice(m_stateDescriptor.deviceId());
         if (!device) {
             qWarning() << "Device not existing!";

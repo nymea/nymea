@@ -83,35 +83,38 @@ bool StateDescriptor::operator ==(const StateDescriptor &other) const
 }
 
 /*! Compare this StateDescriptor to the \l{State} given by \a state.
- *  States are equal (returns true) if stateTypeId, deviceId and ValueOperator match. */
+ *  Returns true if the given \a state matches the definition of the StateDescriptor */
 bool StateDescriptor::operator ==(const State &state) const
 {
     if ((m_stateTypeId != state.stateTypeId()) || (m_deviceId != state.deviceId())) {
         return false;
     }
+    QVariant convertedValue = state.value();
+    convertedValue.convert(m_stateValue.type());
     switch (m_operatorType) {
     case Types::ValueOperatorEquals:
-        return m_stateValue == state.value();
+        return m_stateValue == convertedValue;
     case Types::ValueOperatorGreater:
-        return state.value() > m_stateValue;
+        return convertedValue > m_stateValue;
     case Types::ValueOperatorGreaterOrEqual:
-        return state.value() >= m_stateValue;
+        return convertedValue >= m_stateValue;
     case Types::ValueOperatorLess:
-        return state.value() < m_stateValue;
+        return convertedValue < m_stateValue;
     case Types::ValueOperatorLessOrEqual:
-        return state.value() <= m_stateValue;
+        return convertedValue <= m_stateValue;
     case Types::ValueOperatorNotEquals:
-        return m_stateValue != state.value();
+        return m_stateValue != convertedValue;
     }
     return false;
 }
 
 /*! Compare this StateDescriptor to the \l{State} given by \a state.
- *  Returns true, if stateTypeId, deviceId or ValueOreator are different from the given \a state. */
+ *  returns true if the given \a state does not match the definition of the StateDescriptor */
 bool StateDescriptor::operator !=(const State &state) const
 {
     return !(operator==(state));
 }
+
 /*! Returns the true if this \l{StateDescriptor} is valid. A \l{StateDescriptor} is valid
  *  if the DeviceId and the StateTypeId are set and the state value of this \l{StateDescriptor} is valid.
  * \sa StateDescriptor(), deviceId(), stateValue()

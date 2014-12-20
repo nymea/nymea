@@ -22,6 +22,7 @@
 #include "typeutils.h"
 #include "paramdescriptor.h"
 #include "state.h"
+#include "event.h"
 
 #include <QString>
 #include <QVariantList>

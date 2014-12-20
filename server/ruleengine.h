@@ -75,6 +75,7 @@ signals:
 
 private:
     bool containsEvent(const Rule &rule, const Event &event);
+    bool containsState(const StateEvaluator &stateEvaluator, const Event &stateChangeEvent);
 
     void appendRule(const Rule &rule);
 
@@ -82,6 +83,7 @@ private:
     QString m_settingsFile;
     QList<RuleId> m_ruleIds; // Keeping a list of RuleIds to keep sorting order...
     QHash<RuleId, Rule> m_rules; // ...but use a Hash for faster finding
+    QList<RuleId> m_activeRules;
 };
 Q_DECLARE_METATYPE(RuleEngine::RuleError)
 

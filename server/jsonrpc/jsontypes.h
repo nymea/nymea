@@ -137,6 +137,8 @@ public:
     static ParamDescriptor unpackParamDescriptor(const QVariantMap &paramDescriptorMap);
     static QList<ParamDescriptor> unpackParamDescriptors(const QVariantList &paramDescriptorList);
     static EventDescriptor unpackEventDescriptor(const QVariantMap &eventDescriptorMap);
+    static StateEvaluator unpackStateEvaluator(const QVariantMap &stateEvaluatorMap);
+    static StateDescriptor unpackStateDescriptor(const QVariantMap &stateDescriptorMap);
 
     static QPair<bool, QString> validateMap(const QVariantMap &templateMap, const QVariantMap &map);
     static QPair<bool, QString> validateProperty(const QVariant &templateValue, const QVariant &value);

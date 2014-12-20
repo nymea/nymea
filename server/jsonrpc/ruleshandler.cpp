@@ -112,7 +112,9 @@ JsonReply *RulesHandler::GetRuleDetails(const QVariantMap &params)
     Rule rule = GuhCore::instance()->findRule(ruleId);
     QVariantMap ruleData;
     if (!rule.id().isNull()) {
+        qDebug() << "packing rule";
         ruleData.insert("rule", JsonTypes::packRule(rule));
+        qDebug() << "done packing";
     }
     return createReply(ruleData);
 }
@@ -137,6 +139,9 @@ JsonReply* RulesHandler::AddRule(const QVariantMap &params)
         }
     }
 
+    qDebug() << "unpacking:" << params.value("stateEvaluator").toMap();
+    StateEvaluator stateEvaluator = JsonTypes::unpackStateEvaluator(params.value("stateEvaluator").toMap());
+
     QList<Action> actions;
     QVariantList actionList = params.value("actions").toList();
     foreach (const QVariant &actionVariant, actionList) {
@@ -155,7 +160,7 @@ JsonReply* RulesHandler::AddRule(const QVariantMap &params)
     bool enabled = params.value("enabled", true).toBool();
 
     RuleId newRuleId = RuleId::createRuleId();
-    RuleEngine::RuleError status = GuhCore::instance()->addRule(newRuleId, eventDescriptorList, actions, enabled);
+    RuleEngine::RuleError status = GuhCore::instance()->addRule(newRuleId, eventDescriptorList, stateEvaluator, actions, enabled);
     if (status ==  RuleEngine::RuleErrorNoError) {
         returns.insert("ruleId", newRuleId.toString());
     }

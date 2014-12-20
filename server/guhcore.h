@@ -66,7 +66,7 @@ public:
     QList<Rule> rules() const;
     QList<RuleId> ruleIds() const;
     Rule findRule(const RuleId &ruleId);
-    RuleEngine::RuleError addRule(const RuleId &id, const QList<EventDescriptor> &eventDescriptorList, const QList<Action> &actionList, bool enabled = true);
+    RuleEngine::RuleError addRule(const RuleId &id, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actionList, bool enabled = true);
     RuleEngine::RuleError removeRule(const RuleId &id);
     QList<RuleId> findRules(const DeviceId &deviceId);
     RuleEngine::RuleError enableRule(const RuleId &ruleId);

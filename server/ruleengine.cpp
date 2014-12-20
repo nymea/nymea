@@ -162,27 +162,49 @@ RuleEngine::RuleEngine(QObject *parent) :
 }
 
 /*! Ask the Engine to evaluate all the rules for the given \a event.
-    This will search all the \l{Rule}{Rules} evented by this \l{Event}
-    and evaluate it's states according to its type. It will return a
+    This will search all the \l{Rule}{Rules} triggered by this \l{Event}
+    and evaluate it's states in the system. It will return a
     list of all \l{Action}{Actions} that should be executed. */
 QList<Action> RuleEngine::evaluateEvent(const Event &event)
 {
     Device *device = GuhCore::instance()->findConfiguredDevice(event.deviceId());
 
-    qDebug() << "got event:" << event << device->name();
+    qDebug() << "got event:" << event << device->name() << event.eventTypeId();
 
     QList<Action> actions;
     foreach (const RuleId &id, m_ruleIds) {
         Rule rule = m_rules.value(id);
+        qDebug() << "have a rule:" << rule.id() << rule.stateEvaluator().stateDescriptor().isValid() << rule.stateEvaluator().stateDescriptor().stateTypeId();
         if (!rule.enabled()) {
             qDebug() << "Not triggering rule because it is disabled:" << rule.id();
             continue;
         }
 
-        if (containsEvent(rule, event)) {
-            if (rule.stateEvaluator().evaluate()) {
-                qDebug() << "states matching!";
-                actions.append(rule.actions());
+        if (rule.eventDescriptors().isEmpty()) {
+            // This rule seems to have only states, check on state changed
+            qDebug() << "***** checking state";
+            if (containsState(rule.stateEvaluator(), event)) {
+                qDebug() << "Yep, this state triggers";
+                if (rule.stateEvaluator().evaluate()) {
+                    qDebug() << "Yep, all states match";
+                    if (m_activeRules.contains(rule.id())) {
+                        qDebug() << "This has been executed before... not doing again";
+                    } else {
+                        qDebug() << "exectuing";
+                        m_activeRules.append(rule.id());
+                        actions.append(rule.actions());
+                    }
+                } else {
+                    qDebug() << "not all states matching any more!";
+                    m_activeRules.removeAll(rule.id());
+                }
+            }
+        } else {
+            if (containsEvent(rule, event)) {
+                if (rule.stateEvaluator().evaluate()) {
+                    qDebug() << "states matching!";
+                    actions.append(rule.actions());
+                }
             }
         }
     }
@@ -457,6 +479,20 @@ bool RuleEngine::containsEvent(const Rule &rule, const Event &event)
             return true;
         }
     }
+    return false;
+}
+
+bool RuleEngine::containsState(const StateEvaluator &stateEvaluator, const Event &stateChangeEvent)
+{
+    if (stateEvaluator.stateDescriptor().isValid() && stateEvaluator.stateDescriptor().stateTypeId().toString() == stateChangeEvent.eventTypeId().toString()) {
+        return true;
+    }
+    foreach (const StateEvaluator &childEvaluator, stateEvaluator.childEvaluators()) {
+        if (containsState(childEvaluator, stateChangeEvent)) {
+            return true;
+        }
+    }
+
     return false;
 }
 

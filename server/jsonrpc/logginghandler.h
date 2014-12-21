@@ -16,37 +16,25 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ACTION_H
-#define ACTION_H
+#ifndef LOGGINGHANDLER_H
+#define LOGGINGHANDLER_H
 
-#include "typeutils.h"
-#include "param.h"
+#include "jsonhandler.h"
+#include "logging/logentry.h"
 
-#include <QVariantList>
-
-class Action
+class LoggingHandler : public JsonHandler
 {
+    Q_OBJECT
 public:
-    explicit Action(const ActionTypeId &actionTypeId = ActionTypeId(), const DeviceId &deviceId = DeviceId());
-    Action(const Action &other);
+    explicit LoggingHandler(QObject *parent = 0);
+    QString name() const override;
 
-    ActionId id() const;
+    Q_INVOKABLE JsonReply *GetLogEntries(const QVariantMap &params) const;
+signals:
+    void LogEntryAdded(const QVariantMap &params);
 
-    bool isValid() const;
-
-    ActionTypeId actionTypeId() const;
-    DeviceId deviceId() const;
-
-    ParamList params() const;
-    void setParams(const ParamList &params);
-    Param param(const QString &paramName) const;
-
-    void operator=(const Action &other);
-private:
-    ActionId m_id;
-    ActionTypeId m_actionTypeId;
-    DeviceId m_deviceId;
-    ParamList m_params;
+private slots:
+    void logEntryAdded(const LogEntry &entry);
 };
 
-#endif // ACTION_H
+#endif // LOGGINGHANDLER_H

@@ -60,6 +60,7 @@
 #include "guhcore.h"
 #include "jsonrpcserver.h"
 #include "ruleengine.h"
+#include "logging/logengine.h"
 
 #include "devicemanager.h"
 #include "plugin/device.h"
@@ -80,6 +81,7 @@ GuhCore *GuhCore::instance()
 /*! Destructor of the \l{GuhCore}. */
 GuhCore::~GuhCore()
 {
+    m_logger->logSystemEvent(false);
     qDebug() << "Shutting down. Bye.";
 }
 
@@ -182,7 +184,15 @@ DeviceManager::DeviceError GuhCore::confirmPairing(const PairingTransactionId &p
  *  \sa DeviceManager::executeAction(), */
 DeviceManager::DeviceError GuhCore::executeAction(const Action &action)
 {
-    return m_deviceManager->executeAction(action);
+    DeviceManager::DeviceError ret = m_deviceManager->executeAction(action);
+    if (ret == DeviceManager::DeviceErrorNoError) {
+        m_logger->logAction(action);
+    } else if (ret == DeviceManager::DeviceErrorAsync) {
+        m_pendingActions.insert(action.id(), action);
+    } else {
+        m_logger->logAction(action, Logging::LoggingLevelAlert, ret);
+    }
+    return ret;
 }
 
 /*! Calls the metheod DeviceManager::findDeviceClass(\a deviceClassId).
@@ -311,6 +321,8 @@ GuhCore::GuhCore(QObject *parent) :
     qDebug() << "* GUH version:" << GUH_VERSION_STRING << "starting up.       *";
     qDebug() << "*****************************************";
 
+    m_logger = new LogEngine(this);
+
     qDebug() << "*****************************************";
     qDebug() << "* Creating Device Manager               *";
     qDebug() << "*****************************************";
@@ -328,22 +340,39 @@ GuhCore::GuhCore(QObject *parent) :
 
     connect(m_deviceManager, &DeviceManager::eventTriggered, this, &GuhCore::gotEvent);
     connect(m_deviceManager, &DeviceManager::deviceStateChanged, this, &GuhCore::deviceStateChanged);
-    connect(m_deviceManager, &DeviceManager::actionExecutionFinished, this, &GuhCore::actionExecuted);
+    connect(m_deviceManager, &DeviceManager::actionExecutionFinished, this, &GuhCore::actionExecutionFinished);
 
     connect(m_deviceManager, &DeviceManager::devicesDiscovered, this, &GuhCore::devicesDiscovered);
     connect(m_deviceManager, &DeviceManager::deviceSetupFinished, this, &GuhCore::deviceSetupFinished);
     connect(m_deviceManager, &DeviceManager::pairingFinished, this, &GuhCore::pairingFinished);
+
+    m_logger->logSystemEvent(true);
 }
 
 /*! Connected to the DeviceManager's emitEvent signal. Events received in
     here will be evaluated by the \l{RuleEngine} and the according \l{Action}{Actions} are executed.*/
 void GuhCore::gotEvent(const Event &event)
 {
-    // first inform other things about it.
+    m_logger->logEvent(event);
     emit eventTriggered(event);
 
-    // Now execute all the associated rules
-    foreach (const Action &action, m_ruleEngine->evaluateEvent(event)) {
+    QList<Action> actions;
+    foreach (const Rule &rule, m_ruleEngine->evaluateEvent(event)) {
+        if (rule.eventDescriptors().count() > 0) {
+            m_logger->logRuleTriggered(rule);
+            actions.append(rule.actions());
+        } else {
+            m_logger->logRuleActiveChanged(rule);
+            if (rule.active()) {
+                actions.append(rule.actions());
+            } else {
+                // TODO: execute state exit actions
+            }
+        }
+    }
+
+    // Now execute all the associated actions
+    foreach (const Action &action, actions) {
         qDebug() << "executing action" << action.actionTypeId();
         DeviceManager::DeviceError status = m_deviceManager->executeAction(action);
         switch(status) {
@@ -359,4 +388,16 @@ void GuhCore::gotEvent(const Event &event)
             qDebug() << "Error executing action:" << status;
         }
     }
+}
+
+LogEngine* GuhCore::logEngine() const
+{
+    return m_logger;
+}
+
+void GuhCore::actionExecutionFinished(const ActionId &id, DeviceManager::DeviceError status)
+{
+    emit actionExecuted(id, status);
+    Action action = m_pendingActions.take(id);
+    m_logger->logAction(action, status == DeviceManager::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
 }

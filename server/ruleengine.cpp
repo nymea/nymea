@@ -164,14 +164,15 @@ RuleEngine::RuleEngine(QObject *parent) :
 /*! Ask the Engine to evaluate all the rules for the given \a event.
     This will search all the \l{Rule}{Rules} triggered by the given \a event
     and evaluate their states in the system. It will return a
-    list of all \l{Action}{Actions} that should be executed. */
-QList<Action> RuleEngine::evaluateEvent(const Event &event)
+    list of all \l{Rule}{Rules} that are triggered or change its active state
+    because of this \a event. */
+QList<Rule> RuleEngine::evaluateEvent(const Event &event)
 {
     Device *device = GuhCore::instance()->findConfiguredDevice(event.deviceId());
 
     qDebug() << "got event:" << event << device->name() << event.eventTypeId();
 
-    QList<Action> actions;
+    QList<Rule> rules;
     foreach (const RuleId &id, m_ruleIds) {
         Rule rule = m_rules.value(id);
         if (!rule.enabled()) {
@@ -186,11 +187,14 @@ QList<Action> RuleEngine::evaluateEvent(const Event &event)
                         qDebug() << "Rule" << rule.id() << "still in active state.";
                     } else {
                         qDebug() << "Rule" << rule.id() << "entered active state.";
+                        rule.setActive(true);
+                        m_rules[rule.id()] = rule;
                         m_activeRules.append(rule.id());
-                        actions.append(rule.actions());
+                        rules.append(rule);
                     }
                 } else {
                     qDebug() << "Rule" << rule.id() << "left active state.";
+                    m_rules[rule.id()].setActive(false);
                     m_activeRules.removeAll(rule.id());
                 }
             }
@@ -198,12 +202,12 @@ QList<Action> RuleEngine::evaluateEvent(const Event &event)
             if (containsEvent(rule, event)) {
                 if (rule.stateEvaluator().evaluate()) {
                     qDebug() << "Rule" << rule.id() << "contains event" << event.eventId() << "and all states match.";
-                    actions.append(rule.actions());
+                    rules.append(rule);
                 }
             }
         }
     }
-    return actions;
+    return rules;
 }
 
 /*! Add a new \l{Rule} with the given \a ruleId , \a eventDescriptorList, \a actions and \a enabled value to the engine.
@@ -262,7 +266,9 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QList<Even
             return RuleErrorActionTypeNotFound;
         }
     }
-
+    if (actions.count() > 0) {
+        qDebug() << "***** actions" << actions.last().actionTypeId() << actions.last().params();
+    }
     Rule rule = Rule(ruleId, eventDescriptorList, stateEvaluator, actions);
     rule.setEnabled(enabled);
     appendRule(rule);

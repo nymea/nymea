@@ -897,7 +897,7 @@ void DeviceManager::slotDeviceStateValueChanged(const QUuid &stateTypeId, const 
     emit deviceStateChanged(device, stateTypeId, value);
 
     Param valueParam("value", value);
-    Event event(EventTypeId(stateTypeId.toString()), device->id(), ParamList() << valueParam);
+    Event event(EventTypeId(stateTypeId.toString()), device->id(), ParamList() << valueParam, true);
     emit eventTriggered(event);
 }
 

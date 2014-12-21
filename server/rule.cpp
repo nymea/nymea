@@ -51,9 +51,9 @@
 #include <QDebug>
 
 /*! Constructs an empty, invalid rule. */
-Rule::Rule()
+Rule::Rule():
+    Rule(RuleId(), QList<EventDescriptor>(), StateEvaluator(), QList<Action>())
 {
-
 }
 
 /*! Constructs a Rule with the given \a id, \a eventDescriptorList, \a stateEvaluator and \a actions.*/
@@ -61,7 +61,9 @@ Rule::Rule(const RuleId &id, const QList<EventDescriptor> &eventDescriptorList, 
     m_id(id),
     m_eventDescriptors(eventDescriptorList),
     m_stateEvaluator(stateEvaluator),
-    m_actions(actions)
+    m_actions(actions),
+    m_enabled(false),
+    m_active(false)
 {
 }
 
@@ -99,4 +101,14 @@ bool Rule::enabled() const {
 void Rule::setEnabled(bool enabled)
 {
     m_enabled = enabled;
+}
+
+bool Rule::active() const
+{
+    return m_active;
+}
+
+void Rule::setActive(bool active)
+{
+    m_active = active;
 }

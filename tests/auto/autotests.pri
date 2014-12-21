@@ -1,4 +1,4 @@
-QT += testlib network
+QT += testlib network sql
 CONFIG += testcase
 
 include($$top_srcdir/server/server.pri)

@@ -326,7 +326,8 @@
                 "ruleId": "Uuid"
             },
             "returns": {
-                "rule": "$ref:Rule"
+                "o:rule": "$ref:Rule",
+                "ruleError": "$ref:RuleError"
             }
         },
         "Rules.GetRules": {

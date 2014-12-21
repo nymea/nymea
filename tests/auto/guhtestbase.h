@@ -64,7 +64,11 @@ protected:
     inline void verifyError(const QVariant &response, const QString &fieldName, const QString &error)
     {
         QJsonDocument jsonDoc = QJsonDocument::fromVariant(response);
-        QVERIFY2(response.toMap().value("status").toString() == QString("success"), jsonDoc.toJson().data());
+        QVERIFY2(response.toMap().value("status").toString() == QString("success"),
+                 QString("\nExpected status: \"success\"\nGot: %2\nFull message: %3")
+                 .arg(response.toMap().value("status").toString())
+                 .arg(jsonDoc.toJson().data())
+                 .toLatin1().data());
         QVERIFY2(response.toMap().value("params").toMap().value(fieldName).toString() == error,
                  QString("\nExpected: %1\nGot: %2\nFull message: %3\n")
                  .arg(error)

@@ -809,7 +809,6 @@ def list_logEntries():
                 value = "inactive"
 
         if entry['source'] == "LoggingSourceStates":
-            print "have state change"
             typeId = entry['typeId']
             sourceType = "State Changed"
             symbolString = "->"
@@ -832,7 +831,6 @@ def list_logEntries():
                 else:
                     deviceName = entry['deviceId']
                 deviceIdCache[entry['deviceId']] = deviceName
-                print "added entryp to devicechace 1", deviceName, entry['deviceId']
 
 
         if entry['source'] == "LoggingSourceActions":
@@ -858,7 +856,6 @@ def list_logEntries():
                 else:
                     deviceName = entry['deviceId']
                 deviceIdCache[entry['deviceId']] = deviceName
-                print "added entryp to devicechace 2", deviceName
 
         if entry['source'] == "LoggingSourceEvents":
             typeId = entry['typeId']
@@ -872,7 +869,6 @@ def list_logEntries():
                 eventTypeIdCache[typeId] = sourceName
             value = entry['value']
             if entry['deviceId'] in deviceIdCache:
-                print "entry is in devicecache"
                 deviceName = deviceIdCache[entry['deviceId']]
             else:
                 device = get_device(entry['deviceId'])
@@ -881,7 +877,6 @@ def list_logEntries():
                 else:
                     deviceName = entry['deviceId']
                 deviceIdCache[entry['deviceId']] = deviceName
-                print "added entryp to devicechace 3", deviceName
 
 
         if entry['source'] == "LoggingSourceRules":

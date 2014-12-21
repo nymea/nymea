@@ -105,6 +105,7 @@ protected:
     JsonReply *createAsyncReply(const QString &method) const;
     QVariantMap statusToReply(DeviceManager::DeviceError status) const;
     QVariantMap statusToReply(RuleEngine::RuleError status) const;
+    QVariantMap statusToReply(Logging::LoggingError status) const;
 
 private:
     QHash<QString, QString> m_descriptions;

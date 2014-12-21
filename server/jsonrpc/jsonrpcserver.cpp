@@ -38,11 +38,13 @@
 #include "actionhandler.h"
 #include "ruleshandler.h"
 #include "eventhandler.h"
+#include "logginghandler.h"
+#include "statehandler.h"
 
 #include <QJsonDocument>
 #include <QStringList>
 
-#define JSON_PROTOCOL_VERSION 10
+#define JSON_PROTOCOL_VERSION 11
 
 JsonRPCServer::JsonRPCServer(QObject *parent):
     JsonHandler(parent),
@@ -140,6 +142,8 @@ void JsonRPCServer::setup()
     registerHandler(new ActionHandler(this));
     registerHandler(new RulesHandler(this));
     registerHandler(new EventHandler(this));
+    registerHandler(new LoggingHandler(this));
+    registerHandler(new StateHandler(this));
 }
 
 void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &jsonData)

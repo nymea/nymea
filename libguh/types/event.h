@@ -30,7 +30,7 @@ class Event
 {
 public:
     Event();
-    Event(const EventTypeId &eventTypeId, const DeviceId &deviceId, const ParamList &params = ParamList());
+    Event(const EventTypeId &eventTypeId, const DeviceId &deviceId, const ParamList &params = ParamList(), bool isStateChangeEvent = false);
 
     EventId eventId() const;
 
@@ -46,11 +46,15 @@ public:
 
     bool operator ==(const Event &other) const;
 
+    bool isStateChangeEvent() const;
+
 private:
     EventId m_id;
     EventTypeId m_eventTypeId;
     DeviceId m_deviceId;
     ParamList m_params;
+
+    bool m_isStateChangeEvent;
 };
 Q_DECLARE_METATYPE(Event)
 QDebug operator<<(QDebug dbg, const Event &event);

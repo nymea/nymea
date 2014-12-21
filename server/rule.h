@@ -40,6 +40,12 @@ public:
     bool enabled() const;
     void setEnabled(bool enabled);
 
+    bool active() const;
+
+private:
+    friend class RuleEngine;
+    void setActive(bool active);
+
 private:
     RuleId m_id;
     QList<EventDescriptor> m_eventDescriptors;
@@ -47,6 +53,7 @@ private:
     QList<Action> m_actions;
 
     bool m_enabled;
+    bool m_active;
 };
 
 #endif // RULE_H

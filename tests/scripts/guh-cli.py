@@ -2,6 +2,7 @@
 
 import telnetlib
 import json
+import datetime
 
 HOST='localhost'
 PORT=1234
@@ -21,7 +22,9 @@ methods = {'1': 'add_device',
            '12': 'list_deviceClasses',
            '13': 'list_deviceClasses_by_vendor',
            '14': 'list_rules',
-           '15': 'list_rules_containig_deviceId'}  
+           '15': 'list_rules_containig_deviceId',
+           '16': 'list_logEntries'
+          }  
 
 
 def get_menu_selection():
@@ -50,6 +53,7 @@ def get_menu_selection():
     print "     13 -> List supported devices by vendor"
     print "     14 -> List configured rules"
     print "     15 -> List rules containing a certain device"
+    print "     16 -> Print log"
     print "----------------------------------------"
     print ""
     selection = raw_input("Enter selection: ")
@@ -321,7 +325,9 @@ def get_actionType(actionTypeId):
     params = {}
     params['actionTypeId'] = actionTypeId
     response = send_command("Actions.GetActionType", params)
-    return response['params']['actionType']
+    if "actionType" in response['params']:
+        return response['params']['actionType']
+    return None
 
 
 def get_eventType(eventTypeId):
@@ -668,20 +674,25 @@ def list_rules():
 	print response['params']['ruleIds'][i], "(", get_rule_status(ruleId), ")"
 
 
+def get_rule_detail(ruleId):
+    params = {}
+    params['ruleId'] = ruleId
+    response = send_command("Rules.GetRuleDetails", params)
+    if 'rule' in response['params']:
+        return response['params']['rule']
+    return None
+
 def list_rule_detail():
     ruleId = select_rule()
     if ruleId == "":
         print "\n    No rules found"
         return None
     
-    params = {}
-    params['ruleId'] = ruleId
-    response = send_command("Rules.GetRuleDetails", params)
-    print response
+    rule = get_rule_detail(ruleId)
     print "\nDetails for rule", ruleId, "which currently is", get_rule_status(ruleId) 
-    print "\nEvents ->", get_stateEvaluator_text(response['params']['rule']['stateEvaluator']['operator']), ":"
-    for i in range(len(response['params']['rule']['eventDescriptors'])):
-        eventDescriptor = response['params']['rule']['eventDescriptors'][i]
+    print "\nEvents ->", get_stateEvaluator_text(rule['stateEvaluator']['operator']), ":"
+    for i in range(len(rule['eventDescriptors'])):
+        eventDescriptor = rule['eventDescriptors'][i]
         device = get_device(eventDescriptor['deviceId'])
         eventType = get_eventType(eventDescriptor['eventTypeId'])
         paramDescriptors = eventDescriptor['paramDescriptors']
@@ -690,11 +701,11 @@ def list_rule_detail():
             print "%58s %s %s" %(paramDescriptors[i]['name'], get_valueOperator_symbol(paramDescriptors[i]['operator']), paramDescriptors[i]['value'])
 
     print "\nActions:"
-    for i in range(len(response['params']['rule']['actions'])):
-        action = response['params']['rule']['actions'][i]
+    for i in range(len(rule['actions'])):
+        action = rule['actions'][i]
         device = get_device(action['deviceId'])
-        actionType = get_actionType(response['params']['rule']['actions'][i]['actionTypeId'])
-        actionParams = response['params']['rule']['actions'][i]['params']
+        actionType = get_actionType(rule['actions'][i]['actionTypeId'])
+        actionParams = rule['actions'][i]['params']
         print  "%5s. ->  %40s -> action: %s" %(i, device['name'], actionType['name'])
         for i in range(len(actionParams)):
             print "%61s: %s" %(actionParams[i]['name'], actionParams[i]['value'])
@@ -761,7 +772,145 @@ def remove_rule():
     response = send_command("Rules.RemoveRule", params)
     print "removeRule response", response
 
+def get_stateType(stateTypeId):
+    params = {}
+    params['stateTypeId'] = stateTypeId
+    response = send_command("States.GetStateType", params);
+    if "stateType" in response['params']:
+        return response['params']['stateType']
+    return None
 
+def list_logEntries():
+    params = {}
+    response = send_command("Logging.GetLogEntries", params)
+    stateTypeIdCache = {}
+    actionTypeIdCache = {}
+    eventTypeIdCache = {}
+    deviceIdCache = {}
+    ruleIdCache = {}
+    for i in range(len(response['params']['logEntries'])):
+        entry = response['params']['logEntries'][i]
+
+        if entry['loggingLevel'] == "LoggingLevelInfo":
+            levelString = "(I)"
+            error = ""
+        else:
+            levelString = "(A)"
+            error = entry['errorCode']
+
+        if entry['source'] == "LoggingSourceSystem":
+            deviceName = "Guh Server"
+            sourceType = "System Event"
+            symbolString = "->"
+            sourceName = "Active changed"
+            if entry['active'] == True:
+                value = "active"
+            else:
+                value = "inactive"
+
+        if entry['source'] == "LoggingSourceStates":
+            typeId = entry['typeId']
+            sourceType = "State Changed"
+            symbolString = "->"
+            if typeId in stateTypeIdCache:
+                sourceName = stateTypeIdCache[typeId]
+            else:
+                stateType = get_stateType(typeId)
+                if stateType is not None:
+                    sourceName = stateType["name"]
+                    stateTypeIdCache[typeId] = sourceName
+                else:
+                    sourceName = typeId
+            value = entry['value']
+            if entry['deviceId'] in deviceIdCache:
+                deviceName = deviceIdCache[entry['deviceId']]
+            else:
+                device = get_device(entry['deviceId'])
+                if device is not None:
+                    deviceName = device['name']
+                    deviceIdCache[entry['deviceId']] = deviceName
+                else:
+                    deviceName = typeId
+
+
+        if entry['source'] == "LoggingSourceActions":
+            typeId = entry['typeId']
+            sourceType = "Action executed"
+            symbolString = "()"
+            if typeId in actionTypeIdCache:
+                sourceName = actionTypeIdCache[typeId]
+            else:
+                actionType = get_actionType(typeId)
+                if actionType is not None:
+                    sourceName = actionType['name']
+                else:
+                    sourceName = typeId
+                actionTypeIdCache[typeId] = sourceName
+            value = entry['value']
+            if entry['deviceId'] in deviceIdCache:
+                deviceName = deviceIdCache[entry['deviceId']]
+            else:
+                device = get_device(entry['deviceId'])
+                if device is not None:
+                    deviceName = device['name']
+                else:
+                    deviceName = entry['deviceId']
+                deviceIdCache[entry['deviceId']] = deviceName
+
+        if entry['source'] == "LoggingSourceEvents":
+            typeId = entry['typeId']
+            sourceType = "Event triggered"
+            symbolString = "()"
+            if typeId in eventTypeIdCache:
+                sourceName = eventTypeIdCache[typeId]
+            else:
+                eventType = get_eventType(typeId)
+                sourceName = eventType['name']
+                eventTypeIdCache[typeId] = sourceName
+            value = entry['value']
+            if entry['deviceId'] in deviceIdCache:
+                deviceName = deviceIdCache[entry['deviceId']]
+            else:
+                device = get_device(entry['deviceId'])
+                if device is not None:
+                    deviceName = device['name']
+                else:
+                    devieName = entry['deviceId']
+                deviceIdCache[entry['deviceId']] = deviceName
+
+
+        if entry['source'] == "LoggingSourceRules":
+            typeId = entry['typeId']
+            if entry['eventType'] == "LoggingEventTypeTrigger":
+                sourceType = "Rule triggered"
+                sourceName = "triggered"
+                symbolString = "()"
+                value = ""
+            else:
+                sourceType = "Rule active changed"
+                symbolString = "()"
+                sourceName = "active"
+                if entry['active']:
+                    value = "active"
+                else:
+                    value = "inactive"
+
+            if typeId in ruleIdCache:
+                deviceName = ruleIdCache[typeId]
+            else:
+                rule = get_rule_detail(typeId)
+                if rule is not None and 'name' in rule:
+                    deviceName = rule['name']
+                else:
+                    deviceName = typeId
+                ruleIdCache[typeId] = deviceName
+
+        timestamp = datetime.datetime.fromtimestamp(entry['timestamp']/1000)
+        sourceType = sourceType.ljust(20)
+        deviceName = deviceName.ljust(38)
+        sourceName = sourceName.ljust(38)
+        value = value.ljust(30)
+        print levelString, timestamp, ":", sourceType, ":", deviceName, ":", sourceName, symbolString, value, ":", error
 
 ############################################################################################
 import sys

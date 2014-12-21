@@ -277,7 +277,6 @@ void DevicePluginElro::radioData(const QList<int> &rawData)
     DeviceClass deviceClass = supportedDevices().first();
     foreach (const EventType &eventType, deviceClass.eventTypes()) {
         if (eventType.name() == button) {
-            qDebug() << "got event: " << pluginName() << group << "power = " << power;
             Event event = Event(eventType.id(), device->id(), params);
             emit emitEvent(event);
             return;

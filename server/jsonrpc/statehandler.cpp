@@ -16,37 +16,40 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ACTION_H
-#define ACTION_H
+#include "statehandler.h"
+#include "guhcore.h"
 
-#include "typeutils.h"
-#include "param.h"
-
-#include <QVariantList>
-
-class Action
+StateHandler::StateHandler(QObject *parent) :
+    JsonHandler(parent)
 {
-public:
-    explicit Action(const ActionTypeId &actionTypeId = ActionTypeId(), const DeviceId &deviceId = DeviceId());
-    Action(const Action &other);
+    QVariantMap params;
+    QVariantMap returns;
 
-    ActionId id() const;
+    params.clear(); returns.clear();
+    setDescription("GetStateType", "Get the StateType for the given stateTypeId.");
+    params.insert("stateTypeId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    setParams("GetStateType", params);
+    returns.insert("deviceError", JsonTypes::deviceErrorRef());
+    returns.insert("o:stateType", JsonTypes::stateTypeRef());
+    setReturns("GetStateType", returns);
+}
 
-    bool isValid() const;
+QString StateHandler::name() const
+{
+    return "States";
+}
 
-    ActionTypeId actionTypeId() const;
-    DeviceId deviceId() const;
-
-    ParamList params() const;
-    void setParams(const ParamList &params);
-    Param param(const QString &paramName) const;
-
-    void operator=(const Action &other);
-private:
-    ActionId m_id;
-    ActionTypeId m_actionTypeId;
-    DeviceId m_deviceId;
-    ParamList m_params;
-};
-
-#endif // ACTION_H
+JsonReply* StateHandler::GetStateType(const QVariantMap &params) const
+{
+    StateTypeId stateTypeId(params.value("stateTypeId").toString());
+    foreach (const DeviceClass &deviceClass, GuhCore::instance()->supportedDevices()) {
+        foreach (const StateType &stateType, deviceClass.stateTypes()) {
+            if (stateType.id() == stateTypeId) {
+                QVariantMap data = statusToReply(DeviceManager::DeviceErrorNoError);
+                data.insert("stateType", JsonTypes::packStateType(stateType));
+                return createReply(data);
+            }
+        }
+    }
+    return createReply(statusToReply(DeviceManager::DeviceErrorStateTypeNotFound));
+}

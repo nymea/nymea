@@ -51,7 +51,7 @@ public:
 
     explicit RuleEngine(QObject *parent = 0);
 
-    QList<Action> evaluateEvent(const Event &event);
+    QList<Rule> evaluateEvent(const Event &event);
 
     RuleError addRule(const RuleId &ruleId, const QList<EventDescriptor> &eventDescriptorList, const QList<Action> &actions, bool enabled = true);
     RuleError addRule(const RuleId &ruleId, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actions, bool enabled = true);

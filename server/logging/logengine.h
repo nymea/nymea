@@ -16,37 +16,42 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ACTION_H
-#define ACTION_H
+#ifndef LOGENGINE_H
+#define LOGENGINE_H
 
-#include "typeutils.h"
-#include "param.h"
+#include "logentry.h"
+#include "types/event.h"
+#include "types/action.h"
+#include "rule.h"
 
-#include <QVariantList>
+#include <QObject>
+#include <QSqlDatabase>
 
-class Action
+class LogEngine: public QObject
 {
+    Q_OBJECT
 public:
-    explicit Action(const ActionTypeId &actionTypeId = ActionTypeId(), const DeviceId &deviceId = DeviceId());
-    Action(const Action &other);
+    LogEngine(QObject *parent = 0);
 
-    ActionId id() const;
+    QList<LogEntry> logEntries() const;
 
-    bool isValid() const;
+signals:
+    void logEntryAdded(const LogEntry &logEntry);
 
-    ActionTypeId actionTypeId() const;
-    DeviceId deviceId() const;
-
-    ParamList params() const;
-    void setParams(const ParamList &params);
-    Param param(const QString &paramName) const;
-
-    void operator=(const Action &other);
 private:
-    ActionId m_id;
-    ActionTypeId m_actionTypeId;
-    DeviceId m_deviceId;
-    ParamList m_params;
+    // Only GuhCore is allowed to log events.
+    friend class GuhCore;
+    void logSystemEvent(bool active, Logging::LoggingLevel level = Logging::LoggingLevelInfo);
+    void logEvent(const Event &event);
+    void logAction(const Action &action, Logging::LoggingLevel level = Logging::LoggingLevelInfo, int errorCode = 0);
+    void logRuleTriggered(const Rule &rule);
+    void logRuleActiveChanged(const Rule &rule);
+
+private:
+    void initDB();
+    void appendLogEntry(const LogEntry &entry);
+
+    QSqlDatabase m_db;
 };
 
-#endif // ACTION_H
+#endif

@@ -41,6 +41,14 @@ Action::Action(const ActionTypeId &actionTypeId, const DeviceId &deviceId) :
 {
 }
 
+Action::Action(const Action &other):
+    m_id(other.id()),
+    m_actionTypeId(other.actionTypeId()),
+    m_deviceId(other.deviceId()),
+    m_params(other.params())
+{
+}
+
 /*! Returns the actionId for this Action. */
 ActionId Action::id() const
 {
@@ -87,4 +95,11 @@ Param Action::param(const QString &paramName) const
         }
     }
     return Param(QString());
+}
+
+void Action::operator =(const Action &other)
+{
+    m_id = other.id();
+    m_actionTypeId = other.actionTypeId();
+    m_params = other.params();
 }

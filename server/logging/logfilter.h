@@ -16,37 +16,16 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ACTION_H
-#define ACTION_H
+#ifndef LOGFILTER_H
+#define LOGFILTER_H
 
-#include "typeutils.h"
-#include "param.h"
+#include <QDateTime>
 
-#include <QVariantList>
-
-class Action
+class LogFilter
 {
-public:
-    explicit Action(const ActionTypeId &actionTypeId = ActionTypeId(), const DeviceId &deviceId = DeviceId());
-    Action(const Action &other);
+    QDateTime m_startDate;
+    QDateTime m_endDate;
 
-    ActionId id() const;
-
-    bool isValid() const;
-
-    ActionTypeId actionTypeId() const;
-    DeviceId deviceId() const;
-
-    ParamList params() const;
-    void setParams(const ParamList &params);
-    Param param(const QString &paramName) const;
-
-    void operator=(const Action &other);
-private:
-    ActionId m_id;
-    ActionTypeId m_actionTypeId;
-    DeviceId m_deviceId;
-    ParamList m_params;
 };
 
-#endif // ACTION_H
+#endif

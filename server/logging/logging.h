@@ -16,37 +16,43 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ACTION_H
-#define ACTION_H
+#ifndef LOGGING_H
+#define LOGGING_H
 
-#include "typeutils.h"
-#include "param.h"
+#include <QObject>
 
-#include <QVariantList>
-
-class Action
+class Logging
 {
+    Q_GADGET
+    Q_ENUMS(LoggingError)
+    Q_ENUMS(LoggingSource)
+    Q_FLAGS(LoggingSources)
+    Q_ENUMS(LoggingLevel)
+    Q_ENUMS(LoggingEventType)
 public:
-    explicit Action(const ActionTypeId &actionTypeId = ActionTypeId(), const DeviceId &deviceId = DeviceId());
-    Action(const Action &other);
+    enum LoggingError {
+        LoggingErrorNoError,
+        LoggingErrorLogEntryNotFound
+    };
 
-    ActionId id() const;
+    enum LoggingSource {
+        LoggingSourceSystem,
+        LoggingSourceEvents,
+        LoggingSourceActions,
+        LoggingSourceStates,
+        LoggingSourceRules
+    };
+    Q_DECLARE_FLAGS(LoggingSources, LoggingSource)
 
-    bool isValid() const;
+    enum LoggingLevel {
+        LoggingLevelInfo,
+        LoggingLevelAlert
+    };
 
-    ActionTypeId actionTypeId() const;
-    DeviceId deviceId() const;
-
-    ParamList params() const;
-    void setParams(const ParamList &params);
-    Param param(const QString &paramName) const;
-
-    void operator=(const Action &other);
-private:
-    ActionId m_id;
-    ActionTypeId m_actionTypeId;
-    DeviceId m_deviceId;
-    ParamList m_params;
+    enum LoggingEventType {
+        LoggingEventTypeTrigger,
+        LoggingEventTypeActiveChange
+    };
 };
 
-#endif // ACTION_H
+#endif

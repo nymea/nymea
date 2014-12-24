@@ -146,6 +146,12 @@ QVariantMap JsonHandler::statusToReply(RuleEngine::RuleError status) const
     return returns;
 }
 
+QVariantMap JsonHandler::statusToReply(Logging::LoggingError status) const
+{
+    QVariantMap returns;
+    returns.insert("loggingError", JsonTypes::loggingErrorToString(status));
+    return returns;
+}
 
 JsonReply::JsonReply(Type type, JsonHandler *handler, const QString &method, const QVariantMap &data):
     m_type(type),

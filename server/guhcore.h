@@ -31,6 +31,7 @@
 
 class JsonRPCServer;
 class Device;
+class LogEngine;
 
 class GuhCore : public QObject
 {
@@ -72,6 +73,8 @@ public:
     RuleEngine::RuleError enableRule(const RuleId &ruleId);
     RuleEngine::RuleError disableRule(const RuleId &ruleId);
 
+    LogEngine* logEngine() const;
+
 signals:
     void eventTriggered(const Event &event);
     void deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
@@ -91,8 +94,12 @@ private:
     DeviceManager *m_deviceManager;
     RuleEngine *m_ruleEngine;
 
+    LogEngine *m_logger;
+
+    QHash<ActionId, Action> m_pendingActions;
 private slots:
     void gotEvent(const Event &event);
+    void actionExecutionFinished(const ActionId &id, DeviceManager::DeviceError status);
 
     friend class GuhTestBase;
 };

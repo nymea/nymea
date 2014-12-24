@@ -1,4 +1,4 @@
-10
+11
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -262,6 +262,17 @@
                 "version": "String"
             }
         },
+        "Logging.GetLogEntries": {
+            "description": "Get the LogEntries matching the given filter.",
+            "params": {
+            },
+            "returns": {
+                "loggingError": "$ref:LoggingError",
+                "o:logEntries": [
+                    "$ref:LogEntry"
+                ]
+            }
+        },
         "Rules.AddRule": {
             "description": "Add a rule. You can describe rules by one or many EventDesciptors and a StateEvaluator. Note that onlyone of either eventDescriptor or eventDescriptorList may be passed at a time. A rule can be created but left disabled,meaning it won't actually be executed until set to enabled. If not given, enabled defaults to true.",
             "params": {
@@ -315,7 +326,8 @@
                 "ruleId": "Uuid"
             },
             "returns": {
-                "rule": "$ref:Rule"
+                "o:rule": "$ref:Rule",
+                "ruleError": "$ref:RuleError"
             }
         },
         "Rules.GetRules": {
@@ -336,6 +348,16 @@
             "returns": {
                 "ruleError": "$ref:RuleError"
             }
+        },
+        "States.GetStateType": {
+            "description": "Get the StateType for the given stateTypeId.",
+            "params": {
+                "stateTypeId": "Uuid"
+            },
+            "returns": {
+                "deviceError": "$ref:DeviceError",
+                "o:stateType": "$ref:StateType"
+            }
         }
     },
     "notifications": {
@@ -351,6 +373,12 @@
             "description": "Emitted whenever an Event is triggered.",
             "params": {
                 "event": "$ref:Event"
+            }
+        },
+        "Logging.LogEntryAdded": {
+            "description": "Emitted whenever an entry is appended to the logging system.",
+            "params": {
+                "logEntry": "$ref:LogEntry"
             }
         }
     },
@@ -463,6 +491,36 @@
                 "$ref:ParamType"
             ]
         },
+        "LogEntry": {
+            "loggingLevel": "$ref:LoggingLevel",
+            "o:active": "Bool",
+            "o:deviceId": "Uuid",
+            "o:errorCode": "String",
+            "o:eventType": "$ref:LoggingEventType",
+            "o:typeId": "Uuid",
+            "o:value": "String",
+            "source": "$ref:LoggingSource",
+            "timestamp": "Int"
+        },
+        "LoggingError": [
+            "LoggingErrorNoError",
+            "LoggingErrorLogEntryNotFound"
+        ],
+        "LoggingEventType": [
+            "LoggingEventTypeTrigger",
+            "LoggingEventTypeActiveChange"
+        ],
+        "LoggingLevel": [
+            "LoggingLevelInfo",
+            "LoggingLevelAlert"
+        ],
+        "LoggingSource": [
+            "LoggingSourceSystem",
+            "LoggingSourceEvents",
+            "LoggingSourceActions",
+            "LoggingSourceStates",
+            "LoggingSourceRules"
+        ],
         "Param": {
             "name": "String",
             "value": "$ref:BasicType"

@@ -39,7 +39,8 @@ RulesHandler::RulesHandler(QObject *parent) :
     setDescription("GetRuleDetails", "Get details for the rule identified by ruleId");
     params.insert("ruleId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     setParams("GetRuleDetails", params);
-    returns.insert("rule", JsonTypes::ruleRef());
+    returns.insert("o:rule", JsonTypes::ruleRef());
+    returns.insert("ruleError", JsonTypes::ruleErrorRef());
     setReturns("GetRuleDetails", returns);
 
     params.clear(); returns.clear();
@@ -110,13 +111,12 @@ JsonReply *RulesHandler::GetRuleDetails(const QVariantMap &params)
 {
     RuleId ruleId = RuleId(params.value("ruleId").toString());
     Rule rule = GuhCore::instance()->findRule(ruleId);
-    QVariantMap ruleData;
-    if (!rule.id().isNull()) {
-        qDebug() << "packing rule";
-        ruleData.insert("rule", JsonTypes::packRule(rule));
-        qDebug() << "done packing";
+    if (rule.id().isNull()) {
+        return createReply(statusToReply(RuleEngine::RuleErrorRuleNotFound));
     }
-    return createReply(ruleData);
+    QVariantMap returns = statusToReply(RuleEngine::RuleErrorNoError);
+    returns.insert("rule", JsonTypes::packRule(rule));
+    return createReply(returns);
 }
 
 JsonReply* RulesHandler::AddRule(const QVariantMap &params)
@@ -147,7 +147,9 @@ JsonReply* RulesHandler::AddRule(const QVariantMap &params)
     foreach (const QVariant &actionVariant, actionList) {
         QVariantMap actionMap = actionVariant.toMap();
         Action action(ActionTypeId(actionMap.value("actionTypeId").toString()), DeviceId(actionMap.value("deviceId").toString()));
+        qDebug() << "params from json" << actionMap.value("params");
         action.setParams(JsonTypes::unpackParams(actionMap.value("params").toList()));
+        qDebug() << "params in action" << action.params();
         actions.append(action);
     }
 

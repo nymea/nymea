@@ -38,6 +38,10 @@ QVariantList JsonTypes::s_setupMethod;
 QVariantList JsonTypes::s_removePolicy;
 QVariantList JsonTypes::s_deviceError;
 QVariantList JsonTypes::s_ruleError;
+QVariantList JsonTypes::s_loggingError;
+QVariantList JsonTypes::s_loggingSource;
+QVariantList JsonTypes::s_loggingLevel;
+QVariantList JsonTypes::s_loggingEventType;
 
 QVariantMap JsonTypes::s_paramType;
 QVariantMap JsonTypes::s_param;
@@ -57,6 +61,7 @@ QVariantMap JsonTypes::s_deviceClass;
 QVariantMap JsonTypes::s_device;
 QVariantMap JsonTypes::s_deviceDescriptor;
 QVariantMap JsonTypes::s_rule;
+QVariantMap JsonTypes::s_logEntry;
 
 void JsonTypes::init()
 {
@@ -69,6 +74,10 @@ void JsonTypes::init()
     s_removePolicy = enumToStrings(RuleEngine::staticMetaObject, "RemovePolicy");
     s_deviceError = enumToStrings(DeviceManager::staticMetaObject, "DeviceError");
     s_ruleError = enumToStrings(RuleEngine::staticMetaObject, "RuleError");
+    s_loggingError = enumToStrings(Logging::staticMetaObject, "LoggingError");
+    s_loggingSource = enumToStrings(Logging::staticMetaObject, "LoggingSource");
+    s_loggingLevel = enumToStrings(Logging::staticMetaObject, "LoggingLevel");
+    s_loggingEventType = enumToStrings(Logging::staticMetaObject, "LoggingEventType");
 
     // ParamType
     s_paramType.insert("name", basicTypeToString(String));
@@ -174,6 +183,17 @@ void JsonTypes::init()
     s_rule.insert("actions", QVariantList() << actionRef());
     s_rule.insert("stateEvaluator", stateEvaluatorRef());
 
+    // LogEntry
+    s_logEntry.insert("timestamp", basicTypeToString(Int));
+    s_logEntry.insert("loggingLevel", loggingLevelRef());
+    s_logEntry.insert("source", loggingSourceRef());
+    s_logEntry.insert("o:typeId", basicTypeToString(Uuid));
+    s_logEntry.insert("o:deviceId", basicTypeToString(Uuid));
+    s_logEntry.insert("o:value", basicTypeToString(String));
+    s_logEntry.insert("o:active", basicTypeToString(Bool));
+    s_logEntry.insert("o:eventType", loggingEventTypeRef());
+    s_logEntry.insert("o:errorCode", basicTypeToString(String));
+
     s_initialized = true;
 }
 
@@ -207,6 +227,11 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("RemovePolicy", removePolicy());
     allTypes.insert("DeviceError", deviceError());
     allTypes.insert("RuleError", ruleError());
+    allTypes.insert("LoggingError", loggingError());
+    allTypes.insert("LoggingLevel", loggingLevel());
+    allTypes.insert("LoggingSource", loggingSource());
+    allTypes.insert("LoggingEventType", loggingEventType());
+
     allTypes.insert("StateType", stateTypeDescription());
     allTypes.insert("StateDescriptor", stateDescriptorDescription());
     allTypes.insert("StateEvaluator", stateEvaluatorDescription());
@@ -224,6 +249,7 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("DeviceDescriptor", deviceDescriptorDescription());
     allTypes.insert("Action", actionDescription());
     allTypes.insert("Rule", ruleDescription());
+    allTypes.insert("LogEntry", logEntryDescription());
     return allTypes;
 }
 
@@ -461,10 +487,56 @@ QVariantMap JsonTypes::packRule(const Rule &rule)
         actionList.append(JsonTypes::packAction(action));
     }
     ruleMap.insert("actions", actionList);
-    qDebug() << "packing state evaluator";
     ruleMap.insert("stateEvaluator", JsonTypes::packStateEvaluator(rule.stateEvaluator()));
-    qDebug() << "done p se";
     return ruleMap;
+}
+
+QVariantMap JsonTypes::packLogEntry(const LogEntry &logEntry)
+{
+    QVariantMap logEntryMap;
+    logEntryMap.insert("timestamp", logEntry.timestamp().toMSecsSinceEpoch());
+    logEntryMap.insert("loggingLevel", s_loggingLevel.at(logEntry.level()));
+    logEntryMap.insert("source", s_loggingSource.at(logEntry.source()));
+    logEntryMap.insert("eventType", s_loggingEventType.at(logEntry.eventType()));
+
+    if (logEntry.eventType() == Logging::LoggingEventTypeActiveChange) {
+        logEntryMap.insert("active", logEntry.active());
+    }
+
+    if (logEntry.level() == Logging::LoggingLevelAlert) {
+        switch (logEntry.source()) {
+        case Logging::LoggingSourceRules:
+            logEntryMap.insert("errorCode", s_ruleError.at(logEntry.errorCode()));
+            break;
+        case Logging::LoggingSourceActions:
+        case Logging::LoggingSourceEvents:
+        case Logging::LoggingSourceStates:
+            logEntryMap.insert("errorCode", s_deviceError.at(logEntry.errorCode()));
+            break;
+        case Logging::LoggingSourceSystem:
+            // FIXME: Update this once we support error codes for the general system
+//            logEntryMap.insert("errorCode", "");
+            break;
+        }
+    }
+
+    switch (logEntry.source()) {
+    case Logging::LoggingSourceActions:
+    case Logging::LoggingSourceEvents:
+    case Logging::LoggingSourceStates:
+        logEntryMap.insert("typeId", logEntry.typeId().toString());
+        logEntryMap.insert("deviceId", logEntry.deviceId().toString());
+        logEntryMap.insert("value", logEntry.value());
+        break;
+    case Logging::LoggingSourceSystem:
+        logEntryMap.insert("active", logEntry.active());
+        break;
+    case Logging::LoggingSourceRules:
+        logEntryMap.insert("typeId", logEntry.typeId().toString());
+        break;
+    }
+
+    return logEntryMap;
 }
 
 QVariantList JsonTypes::packCreateMethods(DeviceClass::CreateMethods createMethods)
@@ -748,6 +820,12 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                     qDebug() << "evendescriptor not matching";
                     return result;
                 }
+            } else if (refName == logEntryRef()) {
+                QPair<bool, QString> result = validateMap(logEntryDescription(), variant.toMap());
+                if (!result.first) {
+                    qDebug() << "logEntry not matching";
+                    return result;
+                }
             } else if (refName == basicTypeRef()) {
                 QPair<bool, QString> result = validateBasicType(variant);
                 if (!result.first) {
@@ -755,39 +833,63 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                     return result;
                 }
             } else if (refName == stateOperatorRef()) {
-                QPair<bool, QString> result = validateStateOperator(variant);
+                QPair<bool, QString> result = validateEnum(s_stateOperator, variant);
                 if (!result.first) {
                     qDebug() << "value not allowed in" << stateOperatorRef();
                     return result;
                 }
             } else if (refName == createMethodRef()) {
-                QPair<bool, QString> result = validateCreateMethod(variant);
+                QPair<bool, QString> result = validateEnum(s_createMethod, variant);
                 if (!result.first) {
                     qDebug() << "value not allowed in" << createMethodRef() << variant;
                     return result;
                 }
             } else if (refName == setupMethodRef()) {
-                QPair<bool, QString> result = validateSetupMethod(variant);
+                QPair<bool, QString> result = validateEnum(s_setupMethod, variant);
                 if (!result.first) {
                     qDebug() << "value not allowed in" << createMethodRef();
                     return result;
                 }
             } else if (refName == valueOperatorRef()) {
-                QPair<bool, QString> result = validateValueOperator(variant);
+                QPair<bool, QString> result = validateEnum(s_valueOperator, variant);
                 if (!result.first) {
                     qDebug() << QString("value %1 not allowed in %2").arg(variant.toString()).arg(valueOperatorRef());
                     return result;
                 }
             } else if (refName == deviceErrorRef()) {
-                QPair<bool, QString> result = validateDeviceError(variant);
+                QPair<bool, QString> result = validateEnum(s_deviceError, variant);
                 if (!result.first) {
                     qDebug() << QString("value %1 not allowed in %2").arg(variant.toString()).arg(deviceErrorRef());
                     return result;
                 }
             } else if (refName == ruleErrorRef()) {
-                QPair<bool, QString> result = validateRuleError(variant);
+                QPair<bool, QString> result = validateEnum(s_ruleError, variant);
                 if (!result.first) {
                     qDebug() << QString("value %1 not allowed in %2").arg(variant.toString()).arg(ruleErrorRef());
+                    return result;
+                }
+            } else if (refName == loggingErrorRef()) {
+                QPair<bool, QString> result = validateEnum(s_loggingError, variant);
+                if (!result.first) {
+                    qDebug() << QString("value %1 not allowed in %2").arg(variant.toString()).arg(loggingErrorRef());
+                    return result;
+                }
+            } else if (refName == loggingSourceRef()) {
+                QPair<bool, QString> result = validateEnum(s_loggingSource, variant);
+                if (!result.first) {
+                    qDebug() << QString("value %1 not allowed in %2").arg(variant.toString()).arg(loggingSourceRef());
+                    return result;
+                }
+            } else if (refName == loggingLevelRef()) {
+                QPair<bool, QString> result = validateEnum(s_loggingLevel, variant);
+                if (!result.first) {
+                    qDebug() << QString("value %1 not allowed in %2").arg(variant.toString()).arg(loggingLevelRef());
+                    return result;
+                }
+            } else if (refName == loggingEventTypeRef()) {
+                QPair<bool, QString> result = validateEnum(s_loggingEventType, variant);
+                if (!result.first) {
+                    qDebug() << QString("value %1 not allowed in %2").arg(variant.toString()).arg(loggingEventTypeRef());
                     return result;
                 }
             } else {
@@ -844,32 +946,12 @@ QPair<bool, QString> JsonTypes::validateBasicType(const QVariant &variant)
     return report(false, QString("Error validating basic type %1.").arg(variant.toString()));
 }
 
-QPair<bool, QString> JsonTypes::validateStateOperator(const QVariant &variant)
+QPair<bool, QString> JsonTypes::validateEnum(const QVariantList &enumDescription, const QVariant &value)
 {
-    return report(s_stateOperator.contains(variant.toString()), QString("Unknown state operator %1").arg(variant.toString()));
-}
+    QStringList enumStrings;
+    foreach (const QVariant &variant, enumDescription) {
+        enumStrings.append(variant.toString());
+    }
 
-QPair<bool, QString> JsonTypes::validateCreateMethod(const QVariant &variant)
-{
-    return report(s_createMethod.contains(variant.toString()), QString("Unknwon createMethod type %1").arg(variant.toString()));
-}
-
-QPair<bool, QString> JsonTypes::validateSetupMethod(const QVariant &variant)
-{
-    return report(s_setupMethod.contains(variant.toString()), QString("Unknwon SetupMethod: %1").arg(variant.toString()));
-}
-
-QPair<bool, QString> JsonTypes::validateValueOperator(const QVariant &variant)
-{
-    return report(s_valueOperator.contains(variant.toString()), QString("Unknown ValueOperator: %1").arg(variant.toString()));
-}
-
-QPair<bool, QString> JsonTypes::validateDeviceError(const QVariant &variant)
-{
-    return report(s_deviceError.contains(variant.toString()), QString("Unknown DeviceError: %1").arg(variant.toString()));
-}
-
-QPair<bool, QString> JsonTypes::validateRuleError(const QVariant &variant)
-{
-    return report(s_ruleError.contains(variant.toString()), QString("Unknown RuleError: %1").arg(variant.toString()));
+    return report(enumDescription.contains(value.toString()), QString("Value %1 not allowed in %2").arg(value.toString()).arg(enumStrings.join(", ")));
 }

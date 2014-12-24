@@ -373,7 +373,11 @@ void TestRules::loadStoreConfig()
             if (actionVariant.toMap().value("actionTypeId") == replyActionVariant.toMap().value("actionTypeId") &&
                     actionVariant.toMap().value("deviceId") == replyActionVariant.toMap().value("deviceId")) {
                 found = true;
-                QVERIFY2(actionVariant == replyActionVariant, "Action doesn't match after loading from config.");
+                QJsonDocument bDoc = QJsonDocument::fromVariant(actionVariant);
+                QString bString = bDoc.toJson();
+                QJsonDocument aDoc = QJsonDocument::fromVariant(replyActionVariant);
+                QString aString = aDoc.toJson();
+                QVERIFY2(actionVariant == replyActionVariant, QString("Action doesn't match after loading from config.\nBefore storing: %1\nAfter storing:%2").arg(bString).arg(aString).toUtf8().data());
             }
         }
         QVERIFY2(found, "Action not found after loading from config.");

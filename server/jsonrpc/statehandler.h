@@ -16,37 +16,19 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ACTION_H
-#define ACTION_H
+#ifndef STATEHANDLER_H
+#define STATEHANDLER_H
 
-#include "typeutils.h"
-#include "param.h"
+#include "jsonhandler.h"
 
-#include <QVariantList>
-
-class Action
+class StateHandler : public JsonHandler
 {
+    Q_OBJECT
 public:
-    explicit Action(const ActionTypeId &actionTypeId = ActionTypeId(), const DeviceId &deviceId = DeviceId());
-    Action(const Action &other);
+    explicit StateHandler(QObject *parent = 0);
+    QString name() const override;
 
-    ActionId id() const;
-
-    bool isValid() const;
-
-    ActionTypeId actionTypeId() const;
-    DeviceId deviceId() const;
-
-    ParamList params() const;
-    void setParams(const ParamList &params);
-    Param param(const QString &paramName) const;
-
-    void operator=(const Action &other);
-private:
-    ActionId m_id;
-    ActionTypeId m_actionTypeId;
-    DeviceId m_deviceId;
-    ParamList m_params;
+    Q_INVOKABLE JsonReply *GetStateType(const QVariantMap &params) const;
 };
 
-#endif // ACTION_H
+#endif // EVENTHANDLER_H

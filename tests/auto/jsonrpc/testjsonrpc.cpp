@@ -206,7 +206,7 @@ void TestJSONRPC::stateChangeEmitsNotifications()
 
     // Lets wait for the notification
     clientSpy.wait();
-    QCOMPARE(clientSpy.count(), 2);
+    QCOMPARE(clientSpy.count(), 3); // statechangeevent, state change, log entry added
 
     // Make sure the notification contains all the stuff we expect
     QJsonDocument jsonDoc = QJsonDocument::fromJson(clientSpy.at(0).at(1).toByteArray());
@@ -216,6 +216,11 @@ void TestJSONRPC::stateChangeEmitsNotifications()
 
     // Make sure the notification contains all the stuff we expect
     jsonDoc = QJsonDocument::fromJson(clientSpy.at(1).at(1).toByteArray());
+    QCOMPARE(jsonDoc.toVariant().toMap().value("notification").toString(), QString("Logging.LogEntryAdded"));
+    QCOMPARE(jsonDoc.toVariant().toMap().value("params").toMap().value("logEntry").toMap().value("typeId").toUuid(), stateTypeId);
+
+    // Make sure the notification contains all the stuff we expect
+    jsonDoc = QJsonDocument::fromJson(clientSpy.at(2).at(1).toByteArray());
     QCOMPARE(jsonDoc.toVariant().toMap().value("notification").toString(), QString("Events.EventTriggered"));
     QCOMPARE(jsonDoc.toVariant().toMap().value("params").toMap().value("event").toMap().value("eventTypeId").toUuid(), stateTypeId);
     QCOMPARE(jsonDoc.toVariant().toMap().value("params").toMap().value("event").toMap().value("params").toList().first().toMap().value("value").toInt(), newVal);

@@ -178,14 +178,16 @@ void TestRules::addRemoveRules_data()
     QTest::addColumn<QVariantList>("eventDescriptorList");
     QTest::addColumn<QVariantMap>("stateEvaluator");
     QTest::addColumn<RuleEngine::RuleError>("error");
+    QTest::addColumn<bool>("jsonError");
 
 
-    QTest::newRow("valid rule. 1 EventDescriptor, StateEvaluator, 1 Action, enabled") << true << validActionNoParams << validEventDescriptor1 << QVariantList() << validStateEvaluator << RuleEngine::RuleErrorNoError;
-    QTest::newRow("valid rule. 1 EventDescriptor, StateEvaluator, 1 Action, diabled") << false << validActionNoParams << validEventDescriptor1 << QVariantList() << validStateEvaluator << RuleEngine::RuleErrorNoError;
-    QTest::newRow("valid rule. 2 EventDescriptors, 1 Action") << true << validActionNoParams << QVariantMap() << eventDescriptorList << validStateEvaluator << RuleEngine::RuleErrorNoError;
-    QTest::newRow("invalid rule: eventDescriptor and eventDescriptorList used") << true << validActionNoParams << validEventDescriptor1 << eventDescriptorList << validStateEvaluator << RuleEngine::RuleErrorInvalidParameter;
-    QTest::newRow("invalid action") << true << invalidAction << validEventDescriptor1 << QVariantList() << validStateEvaluator << RuleEngine::RuleErrorActionTypeNotFound;
-    QTest::newRow("invalid event descriptor") << true << validActionNoParams << invalidEventDescriptor << QVariantList() << validStateEvaluator << RuleEngine::RuleErrorDeviceNotFound;
+    QTest::newRow("valid rule. 1 EventDescriptor, StateEvaluator, 1 Action, enabled") << true << validActionNoParams << validEventDescriptor1 << QVariantList() << validStateEvaluator << RuleEngine::RuleErrorNoError << false;
+    QTest::newRow("valid rule. 1 EventDescriptor, StateEvaluator, 1 Action, diabled") << false << validActionNoParams << validEventDescriptor1 << QVariantList() << validStateEvaluator << RuleEngine::RuleErrorNoError << false;
+    QTest::newRow("valid rule. 2 EventDescriptors, 1 Action") << true << validActionNoParams << QVariantMap() << eventDescriptorList << validStateEvaluator << RuleEngine::RuleErrorNoError << false;
+    QTest::newRow("invalid rule: eventDescriptor and eventDescriptorList used") << true << validActionNoParams << validEventDescriptor1 << eventDescriptorList << validStateEvaluator << RuleEngine::RuleErrorInvalidParameter << false;
+    QTest::newRow("invalid action") << true << invalidAction << validEventDescriptor1 << QVariantList() << validStateEvaluator << RuleEngine::RuleErrorActionTypeNotFound << false;
+    QTest::newRow("invalid event descriptor") << true << validActionNoParams << invalidEventDescriptor << QVariantList() << validStateEvaluator << RuleEngine::RuleErrorDeviceNotFound << false;
+    QTest::newRow("invalid StateDescriptor") << true << validActionNoParams << validEventDescriptor1 << QVariantList() << invalidStateEvaluator << RuleEngine::RuleErrorInvalidParameter << true;
 }
 
 void TestRules::addRemoveRules()
@@ -196,6 +198,7 @@ void TestRules::addRemoveRules()
     QFETCH(QVariantList, eventDescriptorList);
     QFETCH(QVariantMap, stateEvaluator);
     QFETCH(RuleEngine::RuleError, error);
+    QFETCH(bool, jsonError);
 
     QVariantMap params;
     QVariantList actions;
@@ -213,7 +216,9 @@ void TestRules::addRemoveRules()
         params.insert("enabled", enabled);
     }
     QVariant response = injectAndWait("Rules.AddRule", params);
-    verifyRuleError(response, error);
+    if (!jsonError) {
+        verifyRuleError(response, error);
+    }
 
     RuleId newRuleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
 

@@ -383,6 +383,7 @@ void GuhCore::gotEvent(const Event &event)
         default:
             qDebug() << "Error executing action:" << status;
         }
+        m_logger->logAction(action, status == DeviceManager::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
     }
 }
 

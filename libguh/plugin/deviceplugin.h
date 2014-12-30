@@ -96,6 +96,8 @@ private:
 
     QList<ParamType> parseParamTypes(const QJsonArray &array) const;
 
+    QStringList verifyFields(const QStringList &fields, const QJsonObject &value) const;
+
     DeviceManager *m_deviceManager;
 
     ParamList m_config;

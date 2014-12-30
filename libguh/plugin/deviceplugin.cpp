@@ -165,6 +165,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
 {
     QList<DeviceClass> deviceClasses;
     foreach (const QJsonValue &vendorJson, m_metaData.value("vendors").toArray()) {
+        bool broken = false;
         VendorId vendorId = vendorJson.toObject().value("id").toString();
         foreach (const QJsonValue &deviceClassJson, vendorJson.toObject().value("deviceClasses").toArray()) {
             QJsonObject jo = deviceClassJson.toObject();
@@ -200,6 +201,13 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
             QList<StateType> stateTypes;
             foreach (const QJsonValue &stateTypesJson, jo.value("stateTypes").toArray()) {
                 QJsonObject st = stateTypesJson.toObject();
+                QStringList missingFields = verifyFields(QStringList() << "type" << "id" << "name", st);
+                if (!missingFields.isEmpty()) {
+                    qWarning() << "Skipping device class" << deviceClass.name() << "because of missing" << missingFields.join(", ") << "in stateTypes" << stateTypesJson.toVariant();
+                    broken = true;
+                    break;
+                }
+
                 QVariant::Type t = QVariant::nameToType(st.value("type").toString().toLatin1().data());
                 StateType stateType(st.value("id").toString());
                 stateType.setName(st.value("name").toString());
@@ -212,6 +220,13 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
             QList<ActionType> actionTypes;
             foreach (const QJsonValue &actionTypesJson, jo.value("actionTypes").toArray()) {
                 QJsonObject at = actionTypesJson.toObject();
+                QStringList missingFields = verifyFields(QStringList() << "id" << "name", at);
+                if (!missingFields.isEmpty()) {
+                    qWarning() << "Skipping device class" << deviceClass.name() << "because of missing" << missingFields.join(", ") << "in actionTypes";
+                    broken = true;
+                    break;
+                }
+
                 ActionType actionType(at.value("id").toString());
                 actionType.setName(at.value("name").toString());
                 actionType.setParamTypes(parseParamTypes(at.value("paramTypes").toArray()));
@@ -222,6 +237,13 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
             QList<EventType> eventTypes;
             foreach (const QJsonValue &eventTypesJson, jo.value("eventTypes").toArray()) {
                 QJsonObject et = eventTypesJson.toObject();
+                QStringList missingFields = verifyFields(QStringList() << "id" << "name", et);
+                if (!missingFields.isEmpty()) {
+                    qWarning() << "Skipping device class" << deviceClass.name() << "because of missing" << missingFields.join(", ") << "in eventTypes";
+                    broken = true;
+                    break;
+                }
+
                 EventType eventType(et.value("id").toString());
                 eventType.setName(et.value("name").toString());
                 eventType.setParamTypes(parseParamTypes(et.value("paramTypes").toArray()));
@@ -229,7 +251,9 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
             }
             deviceClass.setEventTypes(eventTypes);
 
-            deviceClasses.append(deviceClass);
+            if (!broken) {
+                deviceClasses.append(deviceClass);
+            }
         }
     }
     return deviceClasses;
@@ -481,4 +505,15 @@ bool DevicePlugin::transmitData(int delay, QList<int> rawData)
         qWarning() << "Unknown harware type. Cannot send.";
     }
     return false;
+}
+
+QStringList DevicePlugin::verifyFields(const QStringList &fields, const QJsonObject &value) const
+{
+    QStringList ret;
+    foreach (const QString &field, fields) {
+        if (!value.contains(field)) {
+            ret << field;
+        }
+    }
+    return ret;
 }

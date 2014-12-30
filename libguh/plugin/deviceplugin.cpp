@@ -203,7 +203,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 QJsonObject st = stateTypesJson.toObject();
                 QStringList missingFields = verifyFields(QStringList() << "type" << "id" << "name", st);
                 if (!missingFields.isEmpty()) {
-                    qWarning() << "Skipping device class" << deviceClass.name() << "because of missing" << missingFields.join(", ") << "in stateTypes" << stateTypesJson.toVariant();
+                    qWarning() << "Skipping device class" << deviceClass.name() << "because of missing" << missingFields.join(", ") << "in stateTypes";
                     broken = true;
                     break;
                 }

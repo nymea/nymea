@@ -156,17 +156,13 @@ StateEvaluator StateEvaluator::loadFromSettings(QSettings &settings, const QStri
     settings.endGroup();
 
     StateEvaluator ret(stateDescriptor);
-
     ret.setOperatorType((Types::StateOperator)settings.value("operator").toInt());
 
     settings.beginGroup("childEvaluators");
     foreach (const QString &evaluatorGroup, settings.childGroups()) {
-        settings.beginGroup(evaluatorGroup);
         ret.appendEvaluator(StateEvaluator::loadFromSettings(settings, evaluatorGroup));
-        settings.endGroup();
     }
     settings.endGroup();
-
     settings.endGroup();
     return ret;
 }

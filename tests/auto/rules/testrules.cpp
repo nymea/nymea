@@ -361,6 +361,7 @@ void TestRules::loadStoreConfig()
     actions.append(action2);
     params.insert("actions", actions);
     params.insert("eventDescriptorList", eventDescriptorList);
+    params.insert("stateEvaluator", stateEvaluator1);
     QVariant response = injectAndWait("Rules.AddRule", params);
 
     RuleId newRuleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
@@ -399,12 +400,12 @@ void TestRules::loadStoreConfig()
     QVariantList replyChildEvaluators = replyStateEvaluator.value("childEvaluators").toList();
     QVERIFY2(replyStateEvaluator.value("operator") == "StateOperatorAnd", "There should be the AND operator.");
     QVERIFY2(replyChildEvaluators.count() == 2, "There shoud be exactly 2 childEvaluators");
+
     foreach (const QVariant &childEvaluator, replyChildEvaluators) {
-        if (childEvaluator.toMap().contains("stateDescriptor")) {
-            QVariantMap stateDescriptor = childEvaluator.toMap().value("stateDescriptor").toMap();
-            QVERIFY2(stateDescriptor.value("deviceId") == m_mockDeviceId, "DeviceId of stateDescriptor does not match");
-            QVERIFY2(stateDescriptor.value("stateTypeId") == mockIntStateId || stateDescriptor.value("stateTypeId") == mockBoolStateId, "StateTypeId of stateDescriptor doesn't match");
-        }
+        QVERIFY2(childEvaluator.toMap().contains("stateDescriptor"), "StateDescriptor missing in StateEvaluator");
+        QVariantMap stateDescriptor = childEvaluator.toMap().value("stateDescriptor").toMap();
+        QVERIFY2(stateDescriptor.value("deviceId") == m_mockDeviceId, "DeviceId of stateDescriptor does not match");
+        QVERIFY2(stateDescriptor.value("stateTypeId") == mockIntStateId || stateDescriptor.value("stateTypeId") == mockBoolStateId, "StateTypeId of stateDescriptor doesn't match");
     }
 
     QVariantList replyActions = rule.value("actions").toList();

@@ -28,6 +28,7 @@
 #include <QSettings>
 #include <QtTest>
 #include <QMetaType>
+#include <QNetworkReply>
 
 PluginId mockPluginId = PluginId("727a4a9a-c187-446f-aadf-f1b2220607d1");
 VendorId guhVendorId = VendorId("2062d64d-3232-433c-88bc-0d33c0ba2ba6");
@@ -51,6 +52,7 @@ GuhTestBase::GuhTestBase(QObject *parent) :
     QObject(parent),
     m_commandId(0)
 {
+    qRegisterMetaType<QNetworkReply*>();
     qsrand(QDateTime::currentMSecsSinceEpoch());
     m_mockDevice1Port = 1337 + (qrand() % 1000);
     m_mockDevice2Port = 7331 + (qrand() % 1000);

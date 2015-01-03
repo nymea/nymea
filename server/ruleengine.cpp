@@ -127,6 +127,7 @@ RuleEngine::RuleEngine(QObject *parent) :
 
         StateEvaluator stateEvaluator = StateEvaluator::loadFromSettings(settings, "stateEvaluator");
 
+        
         settings.beginGroup("actions");
         QList<Action> actions;
         foreach (const QString &actionIdString, settings.childGroups()) {

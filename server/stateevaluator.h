@@ -23,6 +23,7 @@
 #include "types/statedescriptor.h"
 
 #include <QSettings>
+#include <QDebug>
 
 class StateEvaluator
 {

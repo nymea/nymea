@@ -236,7 +236,7 @@ void TestRules::addRemoveRules()
     params.clear();
     params.insert("ruleId", newRuleId);
     response = injectAndWait("Rules.GetRuleDetails", params);
-//    verifySuccess(response);
+    //    verifySuccess(response);
 
     QVariantMap rule = response.toMap().value("params").toMap().value("rule").toMap();
 
@@ -305,6 +305,35 @@ void TestRules::loadStoreConfig()
     eventDescriptorList.append(eventDescriptor1);
     eventDescriptorList.append(eventDescriptor2);
 
+
+    QVariantMap stateEvaluator1;
+    QVariantList childEvaluators;
+
+    QVariantMap stateDescriptor2;
+    stateDescriptor2.insert("deviceId", m_mockDeviceId);
+    stateDescriptor2.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
+    stateDescriptor2.insert("stateTypeId", mockIntStateId);
+    stateDescriptor2.insert("value", 1);
+    QVariantMap stateEvaluator2;
+    stateEvaluator2.insert("stateDescriptor", stateDescriptor2);
+    stateEvaluator2.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+
+
+    QVariantMap stateDescriptor3;
+    stateDescriptor3.insert("deviceId", m_mockDeviceId);
+    stateDescriptor3.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
+    stateDescriptor3.insert("stateTypeId", mockBoolStateId);
+    stateDescriptor3.insert("value", true);
+
+    QVariantMap stateEvaluator3;
+    stateEvaluator3.insert("stateDescriptor", stateDescriptor3);
+    stateEvaluator3.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+
+    childEvaluators.append(stateEvaluator2);
+    childEvaluators.append(stateEvaluator3);
+    stateEvaluator1.insert("childEvaluators", childEvaluators);
+    stateEvaluator1.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+
     QVariantMap action1;
     action1.insert("actionTypeId", mockActionIdNoParams);
     action1.insert("deviceId", m_mockDeviceId);
@@ -364,6 +393,18 @@ void TestRules::loadStoreConfig()
             }
         }
         QVERIFY2(found, "missing eventdescriptor");
+    }
+
+    QVariantMap replyStateEvaluator= rule.value("stateEvaluator").toMap();
+    QVariantList replyChildEvaluators = replyStateEvaluator.value("childEvaluators").toList();
+    QVERIFY2(replyStateEvaluator.value("operator") == "StateOperatorAnd", "There should be the AND operator.");
+    QVERIFY2(replyChildEvaluators.count() == 2, "There shoud be exactly 2 childEvaluators");
+    foreach (const QVariant &childEvaluator, replyChildEvaluators) {
+        if (childEvaluator.toMap().contains("stateDescriptor")) {
+            QVariantMap stateDescriptor = childEvaluator.toMap().value("stateDescriptor").toMap();
+            QVERIFY2(stateDescriptor.value("deviceId") == m_mockDeviceId, "DeviceId of stateDescriptor does not match");
+            QVERIFY2(stateDescriptor.value("stateTypeId") == mockIntStateId || stateDescriptor.value("stateTypeId") == mockBoolStateId, "StateTypeId of stateDescriptor doesn't match");
+        }
     }
 
     QVariantList replyActions = rule.value("actions").toList();

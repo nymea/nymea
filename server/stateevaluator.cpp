@@ -166,7 +166,6 @@ StateEvaluator StateEvaluator::loadFromSettings(QSettings &settings, const QStri
         settings.endGroup();
     }
     settings.endGroup();
-
     settings.endGroup();
     return ret;
 }

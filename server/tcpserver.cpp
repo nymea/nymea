@@ -19,11 +19,11 @@
 #include "tcpserver.h"
 #include <QDebug>
 #include <QJsonDocument>
+#include <QSettings>
 
 TcpServer::TcpServer(QObject *parent) :
     QObject(parent)
 {       
-
     qDebug() << "----------------------------";
     qDebug() << "network interfaces:";
     foreach(const QNetworkInterface &interface, QNetworkInterface::allInterfaces()){
@@ -36,6 +36,18 @@ TcpServer::TcpServer(QObject *parent) :
     }
     qDebug() << "----------------------------";
 
+    // load settings
+    bool ok;
+    QSettings settings("/etc/guh/guhd.conf");
+    settings.beginGroup("JSON-RPC Server");
+
+    uint port = settings.value("port", 1234).toUInt(&ok);
+    settings.endGroup();
+    if(ok){
+        m_port = port;
+    } else {
+        m_port = 1234;
+    }
 }
 
 void TcpServer::sendData(const QList<QUuid> &clients, const QByteArray &data)
@@ -101,8 +113,8 @@ bool TcpServer::startServer()
     // Listen on all Networkinterfaces
     foreach(const QHostAddress &address, QNetworkInterface::allAddresses()){
         QTcpServer *server = new QTcpServer(this);
-        if(server->listen(address, 1234)) {
-            qDebug() << "server listening on" << address.toString();
+        if(server->listen(address, m_port)) {
+            qDebug() << "JSON-RPC server listening on" << address.toString() << ":" << m_port;
             connect(server, SIGNAL(newConnection()), SLOT(newClientConnected()));
             m_serverList.insert(QUuid::createUuid(), server);
         } else {

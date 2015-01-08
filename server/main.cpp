@@ -20,6 +20,7 @@
 #include <guhcore.h>
 
 #include <QtPlugin>
+#include <qtservice/qtservice.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -31,40 +32,61 @@
 #include <syslog.h>
 #include <string.h>
 
-void daemonizeGuh() {
-    // Our process ID and Session ID
-    pid_t pid, sid;
 
-    // Fork off the parent process
-    pid = fork();
-    if (pid < 0) {
-        exit(EXIT_FAILURE);
-    }
-    // If we got a good PID, then we can exit the parent process.
-    if (pid > 0) {
-        exit(EXIT_SUCCESS);
+class GuhService : public QtService<QCoreApplication>
+{
+
+public:
+    GuhService(int argc, char **argv):
+        QtService<QCoreApplication>(argc, argv, "guh daemon")
+    {
+        setServiceDescription("guh daemon");
+        setServiceFlags(QtServiceBase::CanBeSuspended);
     }
 
-    // Change the file mode mask
-    umask(0);
-    // Create a new SID for the child process
-    sid = setsid();
-    if (sid < 0) {
-        // Log the failure
-        exit(EXIT_FAILURE);
+protected:
+    void start()
+    {
+        GuhCore::instance();
     }
 
-    // Change the current working directory
-    if ((chdir("/")) < 0) {
-        /* Log the failure */
-        exit(EXIT_FAILURE);
-    }
+};
 
-    // Close out the standard file descriptors
-    close(STDIN_FILENO);
-    close(STDOUT_FILENO);
-    close(STDERR_FILENO);
-}
+
+//void daemonizeGuh() {
+//    // Our process ID and Session ID
+//    pid_t pid, sid;
+
+//    // Fork off the parent process
+//    pid = fork();
+//    if (pid < 0) {
+//        exit(EXIT_FAILURE);
+//    }
+//    // If we got a good PID, then we can exit the parent process.
+//    if (pid > 0) {
+//        exit(EXIT_SUCCESS);
+//    }
+
+//    // Change the file mode mask
+//    umask(0);
+//    // Create a new SID for the child process
+//    sid = setsid();
+//    if (sid < 0) {
+//        // Log the failure
+//        exit(EXIT_FAILURE);
+//    }
+
+//    // Change the current working directory
+//    if ((chdir("/")) < 0) {
+//        /* Log the failure */
+//        exit(EXIT_FAILURE);
+//    }
+
+//    // Close out the standard file descriptors
+//    close(STDIN_FILENO);
+//    close(STDOUT_FILENO);
+//    close(STDERR_FILENO);
+//}
 
 int main(int argc, char *argv[])
 {
@@ -84,7 +106,6 @@ int main(int argc, char *argv[])
         qDebug() << "   -v,     --version           print version";
         qDebug() << "   -e,     --executable        start guh as application, not as daemon";
         qDebug() << "";
-
         exit(0);
     }
 
@@ -94,13 +115,15 @@ int main(int argc, char *argv[])
     }
 
     if (!arguments.contains("-e") && !arguments.contains("--executable")) {
-        qDebug() << "Starting guhd as daemon.";
-        daemonizeGuh();
+        qDebug() << "guhd is starting as daemon.";
+        GuhService service(argc, argv);
+        return service.exec();
+        //daemonizeGuh();
     } else {
-        qDebug() << "Starting guhd as executable application.";
+        qDebug() << "guhd is starting as executable.";
     }
-
     a.setOrganizationName("guh");
+    a.setApplicationName("guhd");
     GuhCore::instance();
     return a.exec();
 }

@@ -37,6 +37,7 @@ public:
 private:
     QHash<QUuid, QTcpServer*> m_serverList;
     QHash<QUuid, QTcpSocket*> m_clientList;
+    uint m_port;
 
 signals:
     void clientConnected(const QUuid &clientId);

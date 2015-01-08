@@ -15,6 +15,8 @@ QT += network sql
 LIBS += -L$$top_builddir/libguh/ -lguh
 
 include(server.pri)
+include(qtservice/qtservice.pri)
+
 SOURCES += main.cpp
 
 boblight {

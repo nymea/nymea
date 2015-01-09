@@ -134,6 +134,7 @@ void qtServiceLogDebug(QtMsgType type, const char* msg)
 /*!
     \class QtServiceController
 
+    \inmodule server
     \brief The QtServiceController class allows you to control
     services from separate applications.
 
@@ -471,6 +472,7 @@ int QtServiceBasePrivate::run(bool asService, const QStringList &argList)
 
 /*!
     \class QtServiceBase
+    \inmodule server
 
     \brief The QtServiceBase class provides an API for implementing
     Windows services and Unix daemons.
@@ -516,11 +518,11 @@ int QtServiceBasePrivate::run(bool asService, const QStringList &argList)
     requests from the QtServiceController class:
 
     \list
-        \o start()
-        \o pause()
-        \o processCommand()
-        \o resume()
-        \o stop()
+        \li start()
+        \li pause()
+        \li processCommand()
+        \li resume()
+        \li stop()
     \endlist
 
     You can control any given service using an instance of the
@@ -560,19 +562,19 @@ int QtServiceBasePrivate::run(bool asService, const QStringList &argList)
     The following arguments are recognized as service specific:
 
     \table
-    \header \i Short \i Long \i Explanation
-    \row \i -i \i -install \i Install the service.
-    \row \i -u \i -uninstall \i Uninstall the service.
-    \row \i -e \i -exec
-         \i Execute the service as a standalone application (useful for debug purposes).
+    \header \li Short \li Long \li Explanation
+    \row \li -i \li -install \li Install the service.
+    \row \li -u \li -uninstall \li Uninstall the service.
+    \row \li -e \li -exec
+         \li Execute the service as a standalone application (useful for debug purposes).
             This is a blocking call, the service will be executed like a normal application.
             In this mode you will not be able to communicate with the service from the contoller.
-    \row \i -t \i -terminate \i Stop the service.
-    \row \i -p \i -pause \i Pause the service.
-    \row \i -r \i -resume \i Resume a paused service.
-    \row \i -c \e{cmd} \i -command \e{cmd}
-	 \i Send the user defined command code \e{cmd} to the service application.
-    \row \i -v \i -version \i Display version and status information.
+    \row \li -t \li -terminate \li Stop the service.
+    \row \li -p \li -pause \li Pause the service.
+    \row \li -r \li -resume \li Resume a paused service.
+    \row \li -c \e{cmd} \li -command \e{cmd}
+     \li Send the user defined command code \e{cmd} to the service application.
+    \row \li -v \li -version \li Display version and status information.
     \endtable
 
     If \e none of the arguments is recognized as service specific,
@@ -979,6 +981,8 @@ void QtServiceBase::processCommand(int /*code*/)
 /*!
     \class QtService
 
+    \inmodule server
+
     \brief The QtService is a convenient template class that allows
     you to create a service for a particular application type.
 
@@ -999,7 +1003,7 @@ void QtServiceBase::processCommand(int /*code*/)
     circumstances, a service may provide a GUI itself, ref. the
     "interactive" example documentation).
 
-    \bold{Note:} On Unix systems, this class relies on facilities
+    \b{Note:} On Unix systems, this class relies on facilities
     provided by the QtNetwork module, provided as part of the
     \l{Qt Open Source Edition} and certain \l{Qt Commercial Editions}.
 

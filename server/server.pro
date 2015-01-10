@@ -17,7 +17,8 @@ LIBS += -L$$top_builddir/libguh/ -lguh
 include(server.pri)
 include(qtservice/qtservice.pri)
 
-SOURCES += main.cpp
+SOURCES += main.cpp \
+    guhservice.cpp
 
 boblight {
     xcompile {
@@ -27,3 +28,6 @@ boblight {
     }
     DEFINES += USE_BOBLIGHT
 }
+
+HEADERS += \
+    guhservice.h

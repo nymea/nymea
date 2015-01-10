@@ -39,7 +39,9 @@ TcpServer::TcpServer(QObject *parent) :
     // load settings
     bool ok;
     QSettings settings("/etc/guh/guhd.conf");
-    settings.beginGroup("JSON-RPC Server");
+    settings.beginGroup("JSONRPC");
+
+    // TODO: handle interfaces in settings (enable just localhost ecc...)
 
     uint port = settings.value("port", 1234).toUInt(&ok);
     settings.endGroup();

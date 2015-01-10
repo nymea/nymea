@@ -1005,7 +1005,7 @@ void QtServiceBase::processCommand(int /*code*/)
 
     \b{Note:} On Unix systems, this class relies on facilities
     provided by the QtNetwork module, provided as part of the
-    \l{Qt Open Source Edition} and certain \l{Qt Commercial Editions}.
+    Qt Open Source Edition and certain Qt Commercial Editions.
 
     The QtService class functionality is inherited from QtServiceBase,
     but in addition the QtService class binds an instance of

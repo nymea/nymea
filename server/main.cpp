@@ -17,53 +17,40 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <QCoreApplication>
+#include <QCommandLineParser>
 #include <QtPlugin>
-#include <unistd.h>
 
 #include "guhcore.h"
 #include "guhservice.h"
 
 int main(int argc, char *argv[])
 {
-    QStringList arguments;
-    for (int i = 0; i < argc; ++i) {
-        arguments.append(QString(argv[i]));
+    QCoreApplication application(argc, argv);
+    application.setOrganizationName("guh");
+    application.setApplicationName("guhd");
+    application.setApplicationVersion(GUH_VERSION_STRING);
+
+    QCommandLineParser parser;
+    parser.addHelpOption();
+    parser.addVersionOption();
+    QString description = QString("\nguh ( /[guːh]/ ) is an open source home automation server, which allows to\n"
+                                  "control a lot of different devices from many different manufacturers.\n"
+                                  "guhd %1 (C) 2014-2015 guh\n"
+                                  "Released under the GNU GENERAL PUBLIC LICENSE Version 2.").arg(GUH_VERSION_STRING);
+
+    parser.setApplicationDescription(description);
+
+    QCommandLineOption foregroundOption(QStringList() << "n" << "no-daemon", QCoreApplication::translate("main", "Run guhd in the foreground, not as daemon."));
+    parser.addOption(foregroundOption);
+
+    parser.process(application);
+
+    bool startForeground = parser.isSet(foregroundOption);
+    if (startForeground) {
+        GuhCore::instance()->setRunningMode(GuhCore::RunningModeApplication);
+        return application.exec();
     }
 
-    if (arguments.contains("-h") || arguments.contains("--help")) {
-        qDebug() << "guhd" << GUH_VERSION_STRING << "(C) 2014-2015 guh" ;
-        qDebug() << "Released under the GNU GENERAL PUBLIC LICENSE Version 2";
-        qDebug() << "";
-        qDebug() << "guh (/[guːh]/ - pronounced German and sounds like \"goo\") is an open source";
-        qDebug() << "home automation server, which allows to control a lot of different devices ";
-        qDebug() << "from many different manufacturers.";
-        qDebug() << "";
-        qDebug() << "options:";
-        qDebug() << "   -h,     --help              print this help message";
-        qDebug() << "   -v,     --version           print version";
-        qDebug() << "   -e,     --executable        start guh as application, not as daemon";
-        qDebug() << "";
-        exit(0);
-    }
-
-    if (arguments.contains("-v") || arguments.contains("--version")) {
-        qDebug() << "guhd" << GUH_VERSION_STRING;
-        exit(0);
-    }
-
-    if (!arguments.contains("-e") && !arguments.contains("--executable")) {
-        qDebug() << "guhd started as daemon.";
-        GuhService service(argc, argv);
-        close(STDIN_FILENO);
-        close(STDOUT_FILENO);
-        close(STDERR_FILENO);
-        return service.exec();
-    }
-
-    QCoreApplication a(argc, argv);
-    qDebug() << "guhd started as executable.";
-    a.setOrganizationName("guh");
-    a.setApplicationName("guhd");
-    GuhCore::instance();
-    return a.exec();
+    GuhService service(argc, argv);
+    return service.exec();
 }

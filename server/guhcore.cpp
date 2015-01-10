@@ -27,6 +27,13 @@
     instantiate, set up and connect all the other components.
 */
 
+/*! \enum GuhCore::RunningMode
+    \value RunningModeApplication
+        Guh runns as application.
+    \value RunningModeService
+        Guh is started as service (daemon).
+*/
+
 /*! \fn void GuhCore::eventTriggered(const Event &event);
     This signal is emitted when an \a event happend.
 */
@@ -90,6 +97,18 @@ void GuhCore::destroy()
 {
     delete s_instance;
     s_instance = 0;
+}
+
+/*! Returns the runningMode of this instance. */
+GuhCore::RunningMode GuhCore::runningMode() const
+{
+    return m_runningMode;
+}
+
+/*! Set the \a runningMode of this instance. */
+void GuhCore::setRunningMode(const GuhCore::RunningMode &runningMode)
+{
+    m_runningMode = runningMode;
 }
 
 /*! Calls the metheod DeviceManager::plugins().

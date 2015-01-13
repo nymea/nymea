@@ -16,41 +16,23 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#ifndef GUHSERVICE_H
+#define GUHSERVICE_H
+
 #include <QCoreApplication>
-#include <QCommandLineParser>
-#include <QtPlugin>
+#include "qtservice/qtservice.h"
 
 #include "guhcore.h"
-#include "guhservice.h"
 
-int main(int argc, char *argv[])
+class GuhService : public QtService<QCoreApplication>
 {
-    QCoreApplication application(argc, argv);
-    application.setOrganizationName("guh");
-    application.setApplicationName("guhd");
-    application.setApplicationVersion(GUH_VERSION_STRING);
 
-    QCommandLineParser parser;
-    parser.addHelpOption();
-    parser.addVersionOption();
-    QString description = QString("\nguh ( /[guːh]/ ) is an open source home automation server, which allows to\n"
-                                  "control a lot of different devices from many different manufacturers.\n"
-                                  "guhd %1 (C) 2014-2015 guh\n"
-                                  "Released under the GNU GENERAL PUBLIC LICENSE Version 2.").arg(GUH_VERSION_STRING);
+public:
+    explicit GuhService(int argc, char **argv);
+    ~GuhService();
 
-    parser.setApplicationDescription(description);
+protected:
+    void start();
+};
 
-    QCommandLineOption foregroundOption(QStringList() << "n" << "no-daemon", QCoreApplication::translate("main", "Run guhd in the foreground, not as daemon."));
-    parser.addOption(foregroundOption);
-
-    parser.process(application);
-
-    bool startForeground = parser.isSet(foregroundOption);
-    if (startForeground) {
-        GuhCore::instance()->setRunningMode(GuhCore::RunningModeApplication);
-        return application.exec();
-    }
-
-    GuhService service(argc, argv);
-    return service.exec();
-}
+#endif // GUHSERVICE_H

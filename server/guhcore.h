@@ -37,11 +37,19 @@ class GuhCore : public QObject
 {
     Q_OBJECT
 public:
+    enum RunningMode {
+        RunningModeApplication,
+        RunningModeService
+    };
+
     static GuhCore* instance();
     ~GuhCore();
 
     // Used for testing
     void destroy();
+
+    RunningMode runningMode() const;
+    void setRunningMode(const RunningMode &runningMode);
 
     QList<DevicePlugin *> plugins() const;
     DeviceManager::DeviceError setPluginConfig(const PluginId &pluginId, const ParamList &params);
@@ -89,6 +97,7 @@ private:
     DeviceManager* deviceManager() const;
     explicit GuhCore(QObject *parent = 0);
     static GuhCore *s_instance;
+    RunningMode m_runningMode;
 
     JsonRPCServer *m_jsonServer;
     DeviceManager *m_deviceManager;

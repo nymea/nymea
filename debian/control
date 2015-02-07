@@ -12,7 +12,6 @@ Architecture: all
 Section: misc
 Depends: guh (= ${binary:Version}),
   guh-plugins (= ${binary:Version}),
-  guh-webserver (= ${binary:Version})
 Description: server for home automation systems - meta package
  'Gear Up your Home!' - Home automation server.
  guh is a home automation system aiming for easy integration of various

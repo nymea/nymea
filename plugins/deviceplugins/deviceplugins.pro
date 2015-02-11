@@ -13,7 +13,7 @@ SUBDIRS += elro         \
     datetime            \
     genericelements     \
     commandlauncher     \
-    leynew              \
+    unitec              \
 
 
 

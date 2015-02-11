@@ -13,5 +13,4 @@ usr/lib/guh/plugins/libguh_devicepluginwifidetector.so
 usr/lib/guh/plugins/libguh_deviceplugindatetime.so
 usr/lib/guh/plugins/libguh_deviceplugingenericelements.so
 usr/lib/guh/plugins/libguh_deviceplugincommandlauncher.so
-usr/lib/guh/plugins/libguh_devicepluginleynew.so
-
+usr/lib/guh/plugins/libguh_devicepluginunitec.so

@@ -36,11 +36,11 @@ Radio433BrennenstuhlGateway::Radio433BrennenstuhlGateway(QObject *parent) :
     // Timer to detect discovery timeout
     m_timeout = new QTimer(this);
     m_timeout->setSingleShot(true);
-    m_timeout->setInterval(1000);
+    m_timeout->setInterval(1500);
     connect(m_timeout, &QTimer::timeout, this, &Radio433BrennenstuhlGateway::timeout);
 }
 
-bool Radio433BrennenstuhlGateway::sendData(int delay, QList<int> rawData)
+bool Radio433BrennenstuhlGateway::sendData(int delay, QList<int> rawData, int repetitions)
 {
     QByteArray data;
     QByteArray message;
@@ -64,7 +64,7 @@ bool Radio433BrennenstuhlGateway::sendData(int delay, QList<int> rawData)
      * ;        |   end of command
      */
 
-    message.append("TXP:0,0,20,0," + QString::number(delay) + "," + QString::number(rawData.count()/2) + "," + data + ";");
+    message.append("TXP:0,0," + QString::number(repetitions) + ",0," + QString::number(delay) + "," + QString::number(rawData.count()/2) + "," + data + ";");
 
     if (m_gateway->writeDatagram(message, m_gatewayAddress, m_port) > 0) {
         m_available = true;

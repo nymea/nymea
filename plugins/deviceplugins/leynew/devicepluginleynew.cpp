@@ -78,7 +78,7 @@ DeviceManager::DeviceError DevicePluginLeynew::executeAction(Device *device, con
     QByteArray binCode;
 
 
-    // TODO: find out how ID will be calculated to bin code or make it discoverable
+    // TODO: find out how the ID will be calculated to bin code or make it discoverable
     // =======================================
     // bincode depending on the ID
     if (device->paramValue("ID") == "0115"){
@@ -104,6 +104,8 @@ DeviceManager::DeviceError DevicePluginLeynew::executeAction(Device *device, con
     //create rawData timings list
     int delay = 200;
 
+    int repetitions = 20;
+
     // sync signal (starting with ON)
     rawData.append(1);
     rawData.append(10);
@@ -124,15 +126,15 @@ DeviceManager::DeviceError DevicePluginLeynew::executeAction(Device *device, con
     }
 
     qDebug() << binCode;
-    qDebug() << rawData;
+    qDebug() << delay << "*"  << rawData;
 
     // =======================================
     // send data to hardware resource
-    if(transmitData(delay, rawData)){
-        qDebug() << "transmitted" << pluginName() << device->name() << action.param("name").name();
+    if(transmitData(delay, rawData, repetitions)){
+        qDebug() << "transmitted" << pluginName() << device->name() << action.id();
         return DeviceManager::DeviceErrorNoError;
     }else{
-        qDebug() << "could not transmitt" << pluginName() << device->name() << action.param("name").name();
+        qDebug() << "could not transmitt" << pluginName() << device->name() << action.id();
         return DeviceManager::DeviceErrorHardwareNotAvailable;
     }
 }

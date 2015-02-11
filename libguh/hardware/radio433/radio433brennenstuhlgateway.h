@@ -30,7 +30,7 @@ class Radio433BrennenstuhlGateway : public QObject
 public:
     explicit Radio433BrennenstuhlGateway(QObject *parent = 0);
 
-    bool sendData(int delay, QList<int> rawData);
+    bool sendData(int delay, QList<int> rawData, int repetitions);
     bool enable();
     bool disable();
     bool available();

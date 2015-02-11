@@ -48,7 +48,7 @@ private slots:
     void brennenstuhlAvailableChanged(const bool &available);
 
 public slots:
-    bool sendData(int delay, QList<int> rawData);
+    bool sendData(int delay, QList<int> rawData, int repetitions);
 
 };
 

@@ -64,7 +64,7 @@ bool Radio433BrennenstuhlGateway::sendData(int delay, QList<int> rawData)
      * ;        |   end of command
      */
 
-    message.append("TXP:0,0,10,0," + QString::number(delay) + "," + QString::number(rawData.count()/2) + "," + data + ";");
+    message.append("TXP:0,0,20,0," + QString::number(delay) + "," + QString::number(rawData.count()/2) + "," + data + ";");
 
     if (m_gateway->writeDatagram(message, m_gatewayAddress, m_port) > 0) {
         m_available = true;

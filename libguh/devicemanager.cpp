@@ -936,8 +936,11 @@ void DeviceManager::radio433SignalReceived(QList<int> rawData)
 
 void DeviceManager::replyReady(const PluginId &pluginId, QNetworkReply *reply)
 {
-    Q_UNUSED(pluginId);
-    Q_UNUSED(reply);
+    foreach (DevicePlugin *devicePlugin, m_devicePlugins) {
+        if (devicePlugin->requiredHardware().testFlag(HardwareResourceNetworkManager) && devicePlugin->pluginId() == pluginId) {
+            devicePlugin->replyReady(reply);
+        }
+    }
 }
 
 void DeviceManager::timerEvent()

@@ -419,18 +419,18 @@ DeviceManager::DeviceError DevicePlugin::setConfigValue(const QString &paramName
         if (paramType.name() == paramName) {
             if (!value.canConvert(paramType.type())) {
                 qWarning() << QString("Wrong parameter type for param %1. Got %2. Expected %3.")
-                    .arg(paramName).arg(value.toString()).arg(QVariant::typeToName(paramType.type()));
+                              .arg(paramName).arg(value.toString()).arg(QVariant::typeToName(paramType.type()));
                 return DeviceManager::DeviceErrorInvalidParameter;
             }
 
             if (paramType.maxValue().isValid() && value > paramType.maxValue()) {
                 qWarning() << QString("Value out of range for param %1. Got %2. Max: %3.")
-                        .arg(paramName).arg(value.toString()).arg(paramType.maxValue().toString());
+                              .arg(paramName).arg(value.toString()).arg(paramType.maxValue().toString());
                 return DeviceManager::DeviceErrorInvalidParameter;
             }
             if (paramType.minValue().isValid() && value < paramType.minValue()) {
                 qWarning() << QString("Value out of range for param %1. Got: %2. Min: %3.")
-                        .arg(paramName).arg(value.toString()).arg(paramType.minValue().toString());
+                              .arg(paramName).arg(value.toString()).arg(paramType.minValue().toString());
                 return DeviceManager::DeviceErrorInvalidParameter;
             }
             found = true;
@@ -519,16 +519,43 @@ bool DevicePlugin::transmitData(int delay, QList<int> rawData, int repetitions)
     return false;
 }
 
-/*!
- Starts a SSDP search for a certain \a searchTarget (ST). Certain UPnP devices need a special ST (i.e. "udap:rootservice"
- for LG Smart Tv's), otherwise they will not respond on the SSDP search. Each HTTP request to this device needs sometimes
- also a special \a userAgent, which will be written into the HTTP header.
- \sa DevicePlugin::requiredHardware(), DevicePlugin::upnpDiscoveryFinished()
- */
-
-void DevicePlugin::upnpDiscover(QString searchTarget, QString userAgent)
+QNetworkReply *DevicePlugin::get(const QNetworkRequest &request)
 {
-    if(requiredHardware().testFlag(DeviceManager::HardwareResourceUpnpDisovery)){
-        deviceManager()->m_upnpDiscovery->discoverDevices(searchTarget, userAgent, pluginId());
+    if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
+        return deviceManager()->m_networkManager->get(pluginId(), request);
+    } else {
+        qWarning() << "ERROR: network manager resource missing for plugin " << pluginName();
     }
+    return nullptr;
+}
+
+QNetworkReply *DevicePlugin::post(const QNetworkRequest &request, const QByteArray &data)
+{
+    if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
+        return deviceManager()->m_networkManager->post(pluginId(), request, data);
+    } else {
+        qWarning() << "ERROR: network manager resource missing for plugin " << pluginName();
+    }
+    return nullptr;
+}
+
+QNetworkReply *DevicePlugin::put(const QNetworkRequest &request, const QByteArray &data)
+{
+    if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
+        return deviceManager()->m_networkManager->put(pluginId(), request, data);
+    } else {
+        qWarning() << "ERROR: network manager resource missing for plugin " << pluginName();
+    }
+    return nullptr;
+}
+
+QStringList DevicePlugin::verifyFields(const QStringList &fields, const QJsonObject &value) const
+{
+    QStringList ret;
+    foreach (const QString &field, fields) {
+        if (!value.contains(field)) {
+            ret << field;
+        }
+    }
+    return ret;
 }

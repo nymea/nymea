@@ -59,6 +59,7 @@
                         },
                         {
                             "id": "269cf3b8-d4dd-42e9-8309-6cb3ca8842df",
+                            "idName": "rediscover",
                             "name": "rediscover"
                         }
                     ]

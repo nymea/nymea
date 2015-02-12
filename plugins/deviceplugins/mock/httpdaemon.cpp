@@ -38,7 +38,6 @@ HttpDaemon::HttpDaemon(Device *device, DevicePlugin *parent):
 
 void HttpDaemon::incomingConnection(qintptr socket)
 {
-    qDebug() << "incoming connection";
     if (disabled)
         return;
 
@@ -70,14 +69,11 @@ void HttpDaemon::readClient()
     if (socket->canReadLine()) {
         QByteArray data = socket->readLine();
         QStringList tokens = QString(data).split(QRegExp("[ \r\n][ \r\n]*"));
-        qDebug() << "incoming data" << tokens[1];
         QUrl url("http://foo.bar" + tokens[1]);
         QUrlQuery query(url);
-        qDebug() << "query is" << url.path();
         if (url.path() == "/setstate") {
             emit setState(StateTypeId(query.queryItems().first().first), QVariant(query.queryItems().first().second));
         } else if (url.path() == "/generateevent") {
-            qDebug() << "got generateevent" << query.queryItemValue("eventtypeid");
             emit triggerEvent(EventTypeId(query.queryItemValue("eventtypeid")));
         } else if (url.path() == "/actionhistory") {
             QTextStream os(socket);
@@ -97,11 +93,8 @@ void HttpDaemon::readClient()
             os << generateWebPage();
             socket->close();
 
-            qDebug() << "Wrote to client";
-
             if (socket->state() == QTcpSocket::UnconnectedState) {
                 delete socket;
-                qDebug() << "Connection closed";
             }
         }
     }

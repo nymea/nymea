@@ -17,7 +17,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \page wemo.html
+    \page eq3.html
     \title eQ-3 Max!
 
     \ingroup plugins
@@ -31,151 +31,33 @@
     software is recomanded (min/max setpoint temperature, weekly programm...).
 
     \chapter Supported devices
-        \section1 Max! Cube LAN Gateway
-            In order to use this plugin, you need a \l{http://www.eq-3.de/max-heizungssteuerung-produktdetail/
-            items/bc-lgw-o-tw.html}{Max! Cube LAN Gateway}. This device can be discovered and has following propertys:
-            \section2 Device propertys
-                \section3 Device parameters
-                Following list contains all cube params:
-                    \table
-                    \header
-                        \li Name
-                        \li Description
-                        \li Data Type
-                    \row
-                        \li host address
-                        \li Holds the ip address from the cube
-                        \li string
-                    \row
-                        \li serial number
-                        \li Holds the serial number of the cube. This number is written on the cube.
-                        \li string
-                    \row
-                        \li port
-                        \li Holds the port, over which the cube is reachable
-                        \li int
-                    \row
-                        \li firmware version
-                        \li Holds the firmware version of the cube
-                        \li int
-                    \endtable
+        \section2 Max! Cube LAN Gateway
+            This \l{http://www.eq-3.de/max-heizungssteuerung-produktdetail/
+            items/bc-lgw-o-tw.html}{cube} can be discovered in the network. Every
+            device, which is connected with the cube, will be appear automatically, once the cube is configrued and
+            added to guh.
 
-                \section3 Device states
-                Following list contains all cube \l{State}s:
-                    \table
-                    \header
-                        \li Name
-                        \li Description
-                        \li UUID
-                        \li Data Type
-                    \row
-                        \li connected
-                        \li This state holds connection status of the cube. If the cube is connected, this state will be true.
-                        \li d0a9a369-cf8c-47c4-a12e-f2d076bf12fd
-                        \li bool
-                    \row
-                        \li portal enabled
-                        \li This state shows if the web portal of the cube is enabled. You can enable with the original
-                            Max! software an login into the cube over \l{https://max.eq-3.de/login.jsp}
-                        \li 2c2367da-c229-40ed-9d47-a6e73cd6dc3b
-                        \li bool
-                    \endtable
-
-        \section1 Max! Wall Thermostat
+        \section2 Max! Wall Thermostat
             In order to use this device, you need a \l{http://www.eq-3.de/max-heizungssteuerung-produktdetail/
             items/bc-lgw-o-tw.html}{Max! Cube LAN Gateway}. A \l{http://www.eq-3.de/max-raumloesung-produktdetail/items/bc-tc-c-wm.html}{MAX! Wall Thermostat} can not be added,
-            it will appear automaticaly in the device list, once you add it to the cube. A \l{http://www.eq-3.de/max-raumloesung-produktdetail/items/bc-tc-c-wm.html}{MAX! Wall Thermostat}
-            has following propertys:
-            \section2 Device propertys
-                \section3 Device parameters
-                Following list contains all device params:
-                    \table
-                    \header
-                        \li Name
-                        \li Description
-                        \li Data Type
-                    \row
-                        \li name
-                        \li Holds the name of the device, given during the setup in the cube
-                        \li string
-                    \row
-                        \li parent cube
-                        \li Holds the serial number of the cube, where this device is added
-                        \li string
-                    \row
-                        \li rfAddress
-                        \li Holds the RF address of the device. This parameter is not important for the user,
-                            but for the actions.
-                        \li string
-                    \row
-                        \li room number
-                        \li Holds the room number, where the device was added. This number represents the room
-                            from the cube-room management. Is not a guh paramter.
-                        \li int
-                    \row
-                        \li room name
-                        \li Holds the room name, where the device was added. This is the room name, which was given
-                            during the setup on the Cube.
-                        \li string
-                    \endtable
+            it will appear automatically in the device list, once you add it to the cube.
 
-                \section3 Device states
-                Following list contains all device \l{State}s:
-                    \table
-                    \header
-                        \li Name
-                        \li Description
-                        \li UUID
-                        \li Data Type
-                    \row
-                        \li setpoint temperature [Celsius]
-                        \li Describes the setpoint temperature. The setpoint temperatur represents the whished
-                            temperature, which influences the radiator. This temperature can be controlled also
-                            with the +/- Buttons on the device.
-                        \li 579aa8c6-8814-491b-9e7c-b98108c323d1
-                        \li double
-                    \row
-                        \li current temperature [Celsius]
-                        \li Describes the current measured temperature in the room.
-                        \li 852e7708-db1d-42d1-96e4-19c13598262c
-                        \li double
-                    \row
-                        \li confort temperature [Celsius]
-                        \li Describes the configured confort temperature. When the device goes into confort mode,
-                            than this will be te setpoint temperature.
-                        \li 850380ee-a787-43e7-adb8-768a21a6e64d
-                        \li double
-                    \row
-                        \li eco temperature [Celsius]
-                        \li Describes the configured eco temperature. When the device goes into eco mode,
-                            than this will be te setpoint temperature.
-                        \li 24dfd20d-bc8d-48e4-8162-b20ae0465c41
-                        \li double
-                    \row
-                        \li max setpoint temperature [Celsius]
-                        \li Describes the highest configurable temperature.
-                        \li a8536ddf-a6e4-41c2-89c1-e7102608f5f6
-                        \li double
-                    \row
-                        \li min setpoint temperature [Celsius]
-                        \li Describes the lowest configurable temperature.
-                        \li ceb0ad05-37ad-4b79-a4d9-540c34a7e3e4
-                        \li double
-                    \endtable
+        \section2 Max! Radiator Thermostat
+            In order to use this device, you need a \l{http://www.eq-3.de/max-heizungssteuerung-produktdetail/
+            items/bc-lgw-o-tw.html}{Max! Cube LAN Gateway}. A \l{http://www.eq-3.de/max-heizungssteuerung-produktdetail/items/bc-rt-trx-cyg.html}{MAX! Radiator Thermostat} can not be added,
+            it will appear automatically in the device list, once you add it to the cube.
 
+    \chapter Plugin properties
+    Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}
+    and \l{Vendor}{Vendors} of this \l{DevicePlugin}.
 
-                \section3 Device actions
-                Following list contains all device \l{Action}s:
-                    \table
-                    \header
-                        \li Name
-                        \li Description
-                        \li UUID
-                    \row
-                        \li
-                        \li With this action you can switch WeMo ON (true) or OFF (false).
-                        \li 269f25eb-d0b7-4144-b9ef-801f4ff3e90c
-                    \endtable
+    Each \l{DeviceClass} has a list of \l{ParamType}{paramTypes}, \l{ActionType}{actionTypes}, \l{StateType}{stateTypes}
+    and \l{EventType}{eventTypes}. The \l{DeviceClass::CreateMethod}{createMethods} parameter describes how the \l{Device}
+    will be created in the system. A device can have more than one \l{DeviceClass::CreateMethod}{CreateMethod}.
+    The \l{DeviceClass::SetupMethod}{setupMethod} describes the setup method of the \l{Device}.
+    The detailed implementation of each \l{DeviceClass} can be found in the source code.
+
+    \quotefile plugins/deviceplugins/eq-3/deviceplugineq-3.json
 */
 
 
@@ -184,50 +66,9 @@
 #include "plugin/device.h"
 #include "devicemanager.h"
 #include "types/param.h"
+#include "plugininfo.h"
 
 #include <QDebug>
-
-
-DeviceClassId cubeDeviceClassId = DeviceClassId("1e892268-8bd7-442c-a001-bd4e2e6b2949");
-StateTypeId connectionStateTypeId = StateTypeId("d0a9a369-cf8c-47c4-a12e-f2d076bf12fd");
-StateTypeId portalEnabeldStateTypeId = StateTypeId("2c2367da-c229-40ed-9d47-a6e73cd6dc3b");
-
-DeviceClassId wallThermostateDeviceClassId = DeviceClassId("ffbfec5d-06e8-4082-b62b-92cc5c3e8c4e");
-
-StateTypeId confortTempStateTypeId = StateTypeId("850380ee-a787-43e7-adb8-768a21a6e64d");
-StateTypeId ecoTempStateTypeId = StateTypeId("24dfd20d-bc8d-48e4-8162-b20ae0465c41");
-StateTypeId maxSetpointTempStateTypeId = StateTypeId("a8536ddf-a6e4-41c2-89c1-e7102608f5f6");
-StateTypeId minSetpointTempStateTypeId = StateTypeId("ceb0ad05-37ad-4b79-a4d9-540c34a7e3e4");
-StateTypeId errorOccuredStateTypeId = StateTypeId("9880247b-cf9a-453c-b0c3-d910eba8a253");
-StateTypeId initializedStateTypeId = StateTypeId("a9e29f03-063e-4686-8aac-2f6d8f8a4937");
-StateTypeId batteryLowStateTypeId = StateTypeId("53b89f32-8894-4290-92a0-6a470c6b69ab");
-StateTypeId linkStatusOKStateTypeId = StateTypeId("aff38be8-7ea6-4fd8-b0fa-e987ab05c719");
-StateTypeId panelLockedStateTypeId = StateTypeId("979df197-09a1-46f9-9217-9d323b1062bd");
-StateTypeId gatewayKnownStateTypeId = StateTypeId("1d6bd962-5c31-47ad-80a4-dda87bff98f5");
-StateTypeId dtsActiveStateTypeId = StateTypeId("1b402ba6-a8ae-45b1-8acf-2b0a89f71889");
-StateTypeId deviceModeStateTypeId = StateTypeId("639360f0-bb65-43e6-b227-50ae0ac39d6c");
-StateTypeId deviceModeStringStateTypeId = StateTypeId("ff5194e3-5641-4ac2-92c7-48c431b4a2eb");
-StateTypeId setpointTempStateTypeId = StateTypeId("579aa8c6-8814-491b-9e7c-b98108c323d1");
-StateTypeId currentTemperatureStateTypeId = StateTypeId("852e7708-db1d-42d1-96e4-19c13598262c");
-
-ActionTypeId setSetpointTemperatureActionTypeId = ActionTypeId("9c1968ba-39f9-493d-9fe2-848fa86bd2f0");
-ActionTypeId setAutoModeActionTypeId = ActionTypeId("162b4b3d-9923-4f2c-a755-b50c8a06a6f0");
-ActionTypeId setManuelModeActionTypeId = ActionTypeId("8e604437-9f5b-4c17-b5b0-e2db6007af5b");
-ActionTypeId setEcoModeActionTypeId = ActionTypeId("27a981e8-ec23-4ba8-921e-33b911a7dd89");
-ActionTypeId displayCurrentTempActionTypeId = ActionTypeId("184fb112-7a03-4560-8634-0257c969c26e");
-
-DeviceClassId radiatorThermostateDeviceClassId = DeviceClassId("f80d9481-4827-45ee-a013-b97b22412d92");
-
-StateTypeId offsetTempStateTypeId = StateTypeId("576da571-9a65-478f-96bf-19256c8b9ece");
-StateTypeId windowOpenDurationStateTypeId = StateTypeId("81c6c74a-b0cd-4daa-9eb9-f1cd68f328af");
-StateTypeId boostValueValueStateTypeId = StateTypeId("7c41fa64-b1a1-48d2-9d03-67aa16cd83ad");
-StateTypeId boostDurationStateTypeId = StateTypeId("e75c1398-9ad7-466c-b3b9-b03bbb686a30");
-StateTypeId discalcWeekDayStateTypeId = StateTypeId("bd6f5947-d4b4-444b-81c8-77eec46957e4");
-StateTypeId discalcTimeStateTypeId = StateTypeId("e78235ee-affc-41e3-a463-9f0512b4a6c3");
-StateTypeId valveMaximumSettingsStateTypeId = StateTypeId("e367fa3a-b30f-49bd-af3f-cff92360ad32");
-StateTypeId valveOffsetStateTypeId = StateTypeId("ffaff87b-b741-4db8-9875-3380af4f1885");
-StateTypeId valvePositionStateTypeId = StateTypeId("72956000-0203-4c32-a6b6-3bb7e46c03ca");
-
 
 DevicePluginEQ3::DevicePluginEQ3()
 {
@@ -269,7 +110,7 @@ DeviceManager::DeviceSetupStatus DevicePluginEQ3::setupDevice(Device *device)
     if(device->deviceClassId() == cubeDeviceClassId){
         foreach (MaxCube *cube, m_cubes.keys()) {
             if(cube->serialNumber() == device->paramValue("serial number").toString()){
-                qDebug() << cube->serialNumber() << " allready exists...";
+                qDebug() << cube->serialNumber() << " already exists...";
                 return DeviceManager::DeviceSetupStatusFailure;
             }
         }
@@ -331,7 +172,7 @@ DeviceManager::DeviceError DevicePluginEQ3::executeAction(Device *device, const 
                     cube->setDeviceSetpointTemp(rfAddress, roomId, action.param("setpoint temperature").value().toDouble(), action.id());
                 } else if (action.actionTypeId() == setAutoModeActionTypeId){
                     cube->setDeviceAutoMode(rfAddress, roomId, action.id());
-                } else if (action.actionTypeId() == setManuelModeActionTypeId){
+                } else if (action.actionTypeId() == setManualModeActionTypeId){
                     cube->setDeviceManuelMode(rfAddress, roomId, action.id());
                 } else if (action.actionTypeId() == setEcoModeActionTypeId){
                     cube->setDeviceEcoMode(rfAddress, roomId, action.id());
@@ -471,7 +312,7 @@ void DevicePluginEQ3::updateCubeConfig()
     Device *device;
     if (m_cubes.contains(cube)) {
         device = m_cubes.value(cube);
-        device->setStateValue(portalEnabeldStateTypeId,cube->portalEnabeld());
+        device->setStateValue(portalEnabledStateTypeId,cube->portalEnabeld());
         return;
     }
 }
@@ -483,11 +324,11 @@ void DevicePluginEQ3::wallThermostatDataUpdated()
     foreach (WallThermostat *wallThermostat, cube->wallThermostatList()) {
         foreach (Device *device, deviceManager()->findConfiguredDevices(wallThermostateDeviceClassId)){
             if(device->paramValue("serial number").toString() == wallThermostat->serialNumber()){
-                device->setStateValue(confortTempStateTypeId, wallThermostat->confortTemp());
+                device->setStateValue(comfortTempStateTypeId, wallThermostat->comfortTemp());
                 device->setStateValue(ecoTempStateTypeId, wallThermostat->ecoTemp());
                 device->setStateValue(maxSetpointTempStateTypeId, wallThermostat->maxSetPointTemp());
                 device->setStateValue(minSetpointTempStateTypeId, wallThermostat->minSetPointTemp());
-                device->setStateValue(errorOccuredStateTypeId, wallThermostat->errorOccured());
+                device->setStateValue(errorOccurredStateTypeId, wallThermostat->errorOccured());
                 device->setStateValue(initializedStateTypeId, wallThermostat->initialized());
                 device->setStateValue(batteryLowStateTypeId, wallThermostat->batteryLow());
                 device->setStateValue(linkStatusOKStateTypeId, wallThermostat->linkStatusOK());
@@ -512,11 +353,11 @@ void DevicePluginEQ3::radiatorThermostatDataUpdated()
     foreach (RadiatorThermostat *radiatorThermostat, cube->radiatorThermostatList()) {
         foreach (Device *device, deviceManager()->findConfiguredDevices(radiatorThermostateDeviceClassId)){
             if(device->paramValue("serial number").toString() == radiatorThermostat->serialNumber()){
-                device->setStateValue(confortTempStateTypeId, radiatorThermostat->confortTemp());
+                device->setStateValue(comfortTempStateTypeId, radiatorThermostat->comfortTemp());
                 device->setStateValue(ecoTempStateTypeId, radiatorThermostat->ecoTemp());
                 device->setStateValue(maxSetpointTempStateTypeId, radiatorThermostat->maxSetPointTemp());
                 device->setStateValue(minSetpointTempStateTypeId, radiatorThermostat->minSetPointTemp());
-                device->setStateValue(errorOccuredStateTypeId, radiatorThermostat->errorOccured());
+                device->setStateValue(errorOccurredStateTypeId, radiatorThermostat->errorOccured());
                 device->setStateValue(initializedStateTypeId, radiatorThermostat->initialized());
                 device->setStateValue(batteryLowStateTypeId, radiatorThermostat->batteryLow());
                 device->setStateValue(linkStatusOKStateTypeId, radiatorThermostat->linkStatusOK());
@@ -528,7 +369,7 @@ void DevicePluginEQ3::radiatorThermostatDataUpdated()
                 device->setStateValue(setpointTempStateTypeId, radiatorThermostat->setpointTemperature());
                 device->setStateValue(offsetTempStateTypeId, radiatorThermostat->offsetTemp());
                 device->setStateValue(windowOpenDurationStateTypeId, radiatorThermostat->windowOpenDuration());
-                device->setStateValue(boostValueValueStateTypeId, radiatorThermostat->boostValveValue());
+                device->setStateValue(boostValveValueStateTypeId, radiatorThermostat->boostValveValue());
                 device->setStateValue(boostDurationStateTypeId, radiatorThermostat->boostDuration());
                 device->setStateValue(discalcWeekDayStateTypeId, radiatorThermostat->discalcingWeekDay());
                 device->setStateValue(discalcTimeStateTypeId, radiatorThermostat->discalcingTime().toString("HH:mm"));

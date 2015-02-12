@@ -74,6 +74,7 @@ JsonReply* ActionHandler::ExecuteAction(const QVariantMap &params)
 
 JsonReply *ActionHandler::GetActionType(const QVariantMap &params) const
 {
+    qDebug() << "asked for action type" << params;
     ActionTypeId actionTypeId(params.value("actionTypeId").toString());
     foreach (const DeviceClass &deviceClass, GuhCore::instance()->supportedDevices()) {
         foreach (const ActionType &actionType, deviceClass.actionTypes()) {
@@ -96,11 +97,4 @@ void ActionHandler::actionExecuted(const ActionId &id, DeviceManager::DeviceErro
     JsonReply *reply = m_asyncActionExecutions.take(id);
     reply->setData(statusToReply(status));
     reply->finished();
-}
-
-QVariantMap ActionHandler::statusToReply(DeviceManager::DeviceError status) const
-{
-    QVariantMap returns;
-    returns.insert("deviceError", JsonTypes::deviceErrorToString(status));
-    return returns;
 }

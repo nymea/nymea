@@ -27,7 +27,8 @@
 class Action
 {
 public:
-    explicit Action(const ActionTypeId &actionTypeId, const DeviceId &deviceId);
+    explicit Action(const ActionTypeId &actionTypeId = ActionTypeId(), const DeviceId &deviceId = DeviceId());
+    Action(const Action &other);
 
     ActionId id() const;
 
@@ -40,6 +41,7 @@ public:
     void setParams(const ParamList &params);
     Param param(const QString &paramName) const;
 
+    void operator=(const Action &other);
 private:
     ActionId m_id;
     ActionTypeId m_actionTypeId;

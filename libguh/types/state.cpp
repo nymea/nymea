@@ -26,13 +26,13 @@
   States hold the state values for devices. A State is associated to a \l{Device} by
   the \l{State::deviceId()} and represents the value of a state described in a \l{StateType}
 
-  \sa StateType
+  \sa StateType, StateDescriptor
 */
 
 #include "state.h"
 
 /*! Constructs a State reflecting the \l{StateType} given by \a stateTypeId
-    and associated with the \l{Device} given by \a deviceId */
+ *  and associated with the \l{Device} given by \a deviceId */
 State::State(const StateTypeId &stateTypeId, const DeviceId &deviceId):
     m_id(StateId::createStateId()),
     m_stateTypeId(stateTypeId),
@@ -40,6 +40,7 @@ State::State(const StateTypeId &stateTypeId, const DeviceId &deviceId):
 {
 }
 
+/*! Returns the id of this State. */
 StateId State::id() const
 {
     return m_id;
@@ -57,24 +58,26 @@ DeviceId State::deviceId() const
     return m_deviceId;
 }
 
-/*! Returns the state's value.*/
+/*! Returns the state's value. */
 QVariant State::value() const
 {
     return m_value;
 }
 
-/*! Set the state's value to \a value.*/
+/*! Set the state's value to \a value. */
 void State::setValue(const QVariant &value)
 {
     m_value = value;
 }
 
+/*! Writes the stateTypeId, the deviceId and the value of the given \a state to \a dbg. */
 QDebug operator<<(QDebug dbg, const State &state)
 {
     dbg.nospace() << "State(StateTypeId: " << state.stateTypeId().toString() << ", DeviceId:" << state.deviceId() << ", value:" << state.value() << ")";
     return dbg.space();
 }
 
+/*! Writes each stateTypeId, deviceId and value of the given \a states to \a dbg. */
 QDebug operator<<(QDebug dbg, const QList<State> &states)
 {
     dbg.nospace() << "StateList (count:" << states.count() << ")";

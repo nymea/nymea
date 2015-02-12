@@ -42,15 +42,17 @@
     is running:
     \code
         $  telnet localhost 1234
+    \endcode
+    \code    
         Trying 127.0.0.1...
-        Connected to localhost.
-        Escape character is '^]'.
-        {
-            "id":0,
-            "status": "connected",
-            "server":"Guh JSONRPC Interface",
-            "version":"0.0.0"
-        }
+	Connected to localhost.
+	Escape character is '^]'.
+	{
+	    "id": 0,
+	    "protocol version": 9,
+	    "server": "guh JSONRPC interface",
+	    "version": "0.2.0"
+	}
     \endcode
     Now the connection is established and waits for commands.
 
@@ -118,7 +120,6 @@
     }
     \endcode
 
-
     \section3 Response:
     \code {
         "id": 1,
@@ -161,5 +162,8 @@
         "status": "success"
     }
     \endcode
-
+    
+    \section1 API Description
+    
+    \quotefile tests/auto/api.json
 */

@@ -22,6 +22,7 @@
 #include "typeutils.h"
 #include "paramdescriptor.h"
 #include "state.h"
+#include "event.h"
 
 #include <QString>
 #include <QVariantList>
@@ -37,6 +38,8 @@ public:
     DeviceId deviceId() const;
     QVariant stateValue() const;
     Types::ValueOperator operatorType() const;
+
+    bool isValid() const;
 
     bool operator ==(const StateDescriptor &other) const;
 

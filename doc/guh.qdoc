@@ -10,6 +10,7 @@
             \list
                 \li \l{Types}{Types used in the guh system}
                 \li \l{Device Plugins}{The Device Plugin API}
+                \li \l{Hardware Resources}{Hardware Resources}
             \endlist
         \li \l{guh server}
             \list

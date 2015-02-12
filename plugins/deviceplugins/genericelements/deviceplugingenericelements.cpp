@@ -16,24 +16,46 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \page genericelements.html
+    \title Generic elements
+
+    \ingroup plugins
+    \ingroup services
+
+    The generic elements plugin allows you create virtual buttons, which can be connected with a rule. This gives you
+    the possibility to execute multiple \l{Action}{Actions} with one signal. Without a rule this generic elements are
+    useless.
+
+    \chapter Toggle Button
+    With the "Toggle Button" \l{DeviceClass} you can create a button with one \l{Action} \unicode{0x2192} toggle. In the \tt state \l{State} you can find out,
+    what happens if the button will be pressed. The states can be true or false.
+
+    \chapter Button
+    With the "Button" \l{DeviceClass} you can create a button with one \l{Action} \unicode{0x2192} press. This button just creates one \l{Event}.
+
+    \chapter ON/OFF Button
+    With the "ON/OFF Button" \l{DeviceClass} you create a button pair with the \l{Action}{Actions} \unicode{0x2192} ON and OFF.
+
+    \chapter Plugin properties
+    Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}
+    and \l{Vendor}{Vendors} of this \l{DevicePlugin}.
+
+    Each \l{DeviceClass} has a list of \l{ParamType}{paramTypes}, \l{ActionType}{actionTypes}, \l{StateType}{stateTypes}
+    and \l{EventType}{eventTypes}. The \l{DeviceClass::CreateMethod}{createMethods} parameter describes how the \l{Device}
+    will be created in the system. A device can have more than one \l{DeviceClass::CreateMethod}{CreateMethod}.
+    The \l{DeviceClass::SetupMethod}{setupMethod} describes the setup method of the \l{Device}.
+    The detailed implementation of each \l{DeviceClass} can be found in the source code.
+
+    \quotefile plugins/deviceplugins/genericelements/deviceplugingenericelements.json
+*/
+
+
 #include "deviceplugingenericelements.h"
 #include "devicemanager.h"
+#include "plugininfo.h"
 
 #include <QDebug>
-
-DeviceClassId toggleButtonDeviceClassId = DeviceClassId("c0f511f9-70f5-499b-bd70-2c0e9ddd68c4");
-ActionTypeId toggleButtonToggleActionTypeId = ActionTypeId("47bdc15a-b393-4dc2-801b-845420cdfda3");
-StateTypeId toggleButtonStatusStateTypeId = StateTypeId("b5e90567-54aa-49bd-a78a-3c19fb38aaf5");
-
-DeviceClassId buttonDeviceClassId = DeviceClassId("820b2f2d-0d92-48c8-8fd4-f94ce8fc4103");
-ActionTypeId buttonPressActionTypeId = ActionTypeId("01f38af1-b2ab-4ec3-844e-ef52f0f229a9");
-EventTypeId buttonPressedEventTypeId = EventTypeId("effdbc2d-e467-4b0b-80a9-9dda251bfa5c");
-
-DeviceClassId onOffButtonDeviceClassId = DeviceClassId("430d188c-476d-4825-a9bd-86dfa3094b56");
-ActionTypeId onOffButtonOnActionTypeId = ActionTypeId("892596d2-0863-4807-97da-469b9f7003f2");
-ActionTypeId onOffButtonOffActionTypeId = ActionTypeId("a8d64050-0b58-4ccf-b052-77ce2b7368ad");
-EventTypeId onOffButtonOnEventTypeId = EventTypeId("4eeba6a2-e4c7-4a2e-8360-2797d98114e6");
-EventTypeId onOffButtonOffEventTypeId = EventTypeId("b636c5f3-2eb0-4682-96d4-88a4aa9d2c12");
 
 DevicePluginGenericElements::DevicePluginGenericElements()
 {

@@ -16,27 +16,69 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \page datetime.html
+    \title Time
+
+    \ingroup plugins
+    \ingroup services
+
+    The time plugin allows you create rules based on the time, day, month, year, weekday or on weekend.
+
+    For the setup you need to specify the continent, afterwards you can select your city/timezone. The language
+    of the "month name" and "weekday name" depends on your locale settings. To have the correct time you need
+    \l{https://en.wikipedia.org/wiki/Network_Time_Protocol}{ntp}.
+
+    The weekday integer value stands for:
+    \table
+    \header
+        \li Weekday
+        \li int
+    \row
+        \li Monday
+        \li 1
+    \row
+        \li Tuesday
+        \li 2
+    \row
+        \li Wednesday
+        \li 3
+    \row
+        \li Thursday
+        \li 4
+    \row
+        \li Friday
+        \li 5
+    \row
+        \li Saturday
+        \li 6
+    \row
+        \li Sunday
+        \li 7
+    \endtable
+
+    The "weekend" \l{State} will be true, if the current weekday is Saturday or Sunday, otherwise it will be false.
+
+    \chapter Plugin properties
+    Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}
+    and \l{Vendor}{Vendors} of this \l{DevicePlugin}.
+
+    Each \l{DeviceClass} has a list of \l{ParamType}{paramTypes}, \l{ActionType}{actionTypes}, \l{StateType}{stateTypes}
+    and \l{EventType}{eventTypes}. The \l{DeviceClass::CreateMethod}{createMethods} parameter describes how the \l{Device}
+    will be created in the system. A device can have more than one \l{DeviceClass::CreateMethod}{CreateMethod}.
+    The \l{DeviceClass::SetupMethod}{setupMethod} describes the setup method of the \l{Device}.
+    The detailed implementation of each \l{DeviceClass} can be found in the source code.
+
+    \quotefile plugins/deviceplugins/datetime/deviceplugindatetime.json
+*/
 
 #include "deviceplugindatetime.h"
 
 #include "plugin/device.h"
 #include "devicemanager.h"
+#include "plugininfo.h"
 
 #include <QDebug>
-
-DeviceClassId dateTimeDeviceClassId = DeviceClassId("fbf665fb-9aca-423f-a5f2-924e50ebe6ca");
-
-StateTypeId minuteStateTypeId = StateTypeId("4f867051-bc3c-4b55-8493-10ab74c98a49");
-StateTypeId hourStateTypeId = StateTypeId("5b19d9de-a533-4b6f-b42c-bf8069e31adc");
-StateTypeId dayStateTypeId = StateTypeId("eb5231ea-6a1b-4d7e-a95f-d49e7b25122e");
-StateTypeId monthStateTypeId = StateTypeId("fcd8ec96-4488-438a-8b30-58bfe2a7fae2");
-StateTypeId monthNameStateTypeId = StateTypeId("a37acc9c-5cfb-4687-adce-e56beb32586f");
-StateTypeId monthNameShortStateTypeId = StateTypeId("4d0814f2-60a6-48c4-8b3b-031a099be8e3");
-StateTypeId yearStateTypeId = StateTypeId("79d4ae9b-ea27-4346-8229-1d90f1ddfc9d");
-StateTypeId weekdayStateTypeId = StateTypeId("452c0388-7fa1-414e-aeb2-8c7c385824b4");
-StateTypeId weekdayNameStateTypeId = StateTypeId("f627d052-cee6-4727-b9c6-0e935d41e04a");
-StateTypeId weekdayNameShortStateTypeId = StateTypeId("7e8e8e53-a83b-493d-850d-b0407f03463a");
-StateTypeId weekendStateTypeId = StateTypeId("4de5b57b-bb1a-4d66-9ce3-22bb280b075d");
 
 DevicePluginDateTime::DevicePluginDateTime()
 {

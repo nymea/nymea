@@ -83,6 +83,7 @@ public:
 
     int openGpio();
     bool setDirection(int dir);
+    int getDirection();
 
     bool setValue(unsigned int value);
     int getValue();
@@ -90,9 +91,7 @@ public:
     bool setEdgeInterrupt(int edge);
     bool setActiveLow(bool activeLow);
 
-    int gpioPin();
-    int gpioDirection();
-
+    int gpioNumber();
     bool isAvailable();
 
 private:

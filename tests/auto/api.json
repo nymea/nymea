@@ -1,4 +1,4 @@
-6
+11
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -146,6 +146,21 @@
                 "o:value": "Variant"
             }
         },
+        "Devices.GetStateValues": {
+            "description": "Get all the state values of the given device.",
+            "params": {
+                "deviceId": "Uuid"
+            },
+            "returns": {
+                "deviceError": "$ref:DeviceError",
+                "o:values": [
+                    {
+                        "stateTypeId": "Uuid",
+                        "value": "Variant"
+                    }
+                ]
+            }
+        },
         "Devices.GetSupportedDevices": {
             "description": "Returns a list of supported Device classes, optionally filtered by vendorId.",
             "params": {
@@ -210,6 +225,16 @@
                 "deviceError": "$ref:DeviceError"
             }
         },
+        "Events.GetEventType": {
+            "description": "Get the EventType for the given eventTypeId.",
+            "params": {
+                "eventTypeId": "Uuid"
+            },
+            "returns": {
+                "deviceError": "$ref:DeviceError",
+                "o:eventType": "$ref:EventType"
+            }
+        },
         "JSONRPC.Introspect": {
             "description": "Introspect this API.",
             "params": {
@@ -237,12 +262,24 @@
                 "version": "String"
             }
         },
+        "Logging.GetLogEntries": {
+            "description": "Get the LogEntries matching the given filter.",
+            "params": {
+            },
+            "returns": {
+                "loggingError": "$ref:LoggingError",
+                "o:logEntries": [
+                    "$ref:LogEntry"
+                ]
+            }
+        },
         "Rules.AddRule": {
-            "description": "Add a rule. You can describe rules by one or many EventDesciptors and a StateEvaluator. Note that onlyone of either eventDescriptor or eventDescriptorList may be passed at a time.",
+            "description": "Add a rule. You can describe rules by one or many EventDesciptors and a StateEvaluator. Note that onlyone of either eventDescriptor or eventDescriptorList may be passed at a time. A rule can be created but left disabled,meaning it won't actually be executed until set to enabled. If not given, enabled defaults to true.",
             "params": {
                 "actions": [
                     "$ref:Action"
                 ],
+                "o:enabled": "Bool",
                 "o:eventDescriptor": "$ref:EventDescriptor",
                 "o:eventDescriptorList": [
                     "$ref:EventDescriptor"
@@ -251,6 +288,24 @@
             },
             "returns": {
                 "o:ruleId": "Uuid",
+                "ruleError": "$ref:RuleError"
+            }
+        },
+        "Rules.DisableRule": {
+            "description": "Disable a rule. The rule won't be triggered by it's events or state changes while it is disabled.",
+            "params": {
+                "ruleId": "Uuid"
+            },
+            "returns": {
+                "ruleError": "$ref:RuleError"
+            }
+        },
+        "Rules.EnableRule": {
+            "description": "Enabled a rule that has previously been disabled.",
+            "params": {
+                "ruleId": "Uuid"
+            },
+            "returns": {
                 "ruleError": "$ref:RuleError"
             }
         },
@@ -271,7 +326,8 @@
                 "ruleId": "Uuid"
             },
             "returns": {
-                "rule": "$ref:Rule"
+                "o:rule": "$ref:Rule",
+                "ruleError": "$ref:RuleError"
             }
         },
         "Rules.GetRules": {
@@ -292,6 +348,16 @@
             "returns": {
                 "ruleError": "$ref:RuleError"
             }
+        },
+        "States.GetStateType": {
+            "description": "Get the StateType for the given stateTypeId.",
+            "params": {
+                "stateTypeId": "Uuid"
+            },
+            "returns": {
+                "deviceError": "$ref:DeviceError",
+                "o:stateType": "$ref:StateType"
+            }
         }
     },
     "notifications": {
@@ -307,6 +373,12 @@
             "description": "Emitted whenever an Event is triggered.",
             "params": {
                 "event": "$ref:Event"
+            }
+        },
+        "Logging.LogEntryAdded": {
+            "description": "Emitted whenever an entry is appended to the logging system.",
+            "params": {
+                "logEntry": "$ref:LogEntry"
             }
         }
     },
@@ -326,6 +398,13 @@
             ]
         },
         "BasicType": [
+            "Uuid",
+            "String",
+            "Int",
+            "Double",
+            "Bool",
+            "Variant",
+            "Object"
         ],
         "CreateMethod": [
             "CreateMethodUser",
@@ -412,6 +491,36 @@
                 "$ref:ParamType"
             ]
         },
+        "LogEntry": {
+            "loggingLevel": "$ref:LoggingLevel",
+            "o:active": "Bool",
+            "o:deviceId": "Uuid",
+            "o:errorCode": "String",
+            "o:eventType": "$ref:LoggingEventType",
+            "o:typeId": "Uuid",
+            "o:value": "String",
+            "source": "$ref:LoggingSource",
+            "timestamp": "Int"
+        },
+        "LoggingError": [
+            "LoggingErrorNoError",
+            "LoggingErrorLogEntryNotFound"
+        ],
+        "LoggingEventType": [
+            "LoggingEventTypeTrigger",
+            "LoggingEventTypeActiveChange"
+        ],
+        "LoggingLevel": [
+            "LoggingLevelInfo",
+            "LoggingLevelAlert"
+        ],
+        "LoggingSource": [
+            "LoggingSourceSystem",
+            "LoggingSourceEvents",
+            "LoggingSourceActions",
+            "LoggingSourceStates",
+            "LoggingSourceRules"
+        ],
         "Param": {
             "name": "String",
             "value": "$ref:BasicType"
@@ -446,6 +555,7 @@
             "actions": [
                 "$ref:Action"
             ],
+            "enabled": "Bool",
             "eventDescriptors": [
                 "$ref:EventDescriptor"
             ],

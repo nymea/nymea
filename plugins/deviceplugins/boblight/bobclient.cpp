@@ -16,6 +16,7 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+
 #include "bobclient.h"
 
 #include "libboblight/boblight.h"

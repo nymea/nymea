@@ -18,14 +18,34 @@
 
 /*!
   \class Radio433
-  \brief The Radio433 class helps to interact with the 433 MHz Receiver and Transmitter.
+  \brief The Radio433 class helps to interact with the 433 MHz receiver and transmitter.
 
+  \ingroup hardware
   \inmodule libguh
 
+  This class handles all supported radio 433 MHz receiver and transmitter. Receiving data on the 433.92 MHz frequency
+  is only supported, if there are \l{Gpio}{GPIO's} available and a suitable receiver is connected to GPIO 27. Examples for receiver
+  can be found \l{https://www.futurlec.com/Radio-433MHZ.shtml}{here}. The antenna has a very large impact on the quality
+  of the signal and how well it is recognized. In many forums and blogs it is described that a 17, 3 mm piece of wire is enough.
+  Experiments have shown, it's not. A 50 Ohm coaxial cabel (thickness = 1mm), mounted on the antenna pin of the receiver
+  with a minimum distance of 5 cm away from the circuit and unisolated 17.3 mm at the end has shown the best results.
+
+  In order to send data to a 433 MHz device, there currently are two possibilitis. If there are \l{Gpio}{GPIO's}
+  available, the data will be sent over the transmitter connected to GPIO 22. Also in this case the antenna is a verry
+  important part.
+
+  The second possibility to sent data to a 433 MHz device is the \l{http://www.brennenstuhl.de/de-DE/steckdosenleisten-schaltgeraete-und-adapter/brematic-hausautomation/brematic-home-automation-gateway-gwy-433-1.html}
+  {Brennenstuhl 433 MHz LAN Gateway}. If there is a Gateway in the local network, this class will automaticaly detect
+  it and will be used. If both transmitter are available (Gateway + GPIO), each signal will be transmitted over both sender.
+*/
+
+/*! \fn void Radio433::dataReceived(QList<int> rawData)
+    This signal is emitted when the receiver recognized a signal. The \a rawData parameter describes the signal.
 */
 
 #include "radio433.h"
 
+/*! Construct the hardware resource Radio433 with the given \a parent. Each possible 433 MHz hardware will be initialized here. */
 Radio433::Radio433(QObject *parent) :
     QObject(parent)
 {
@@ -38,12 +58,15 @@ Radio433::Radio433(QObject *parent) :
     connect(m_brennenstuhlTransmitter, &Radio433BrennenstuhlGateway::availableChanged, this, &Radio433::brennenstuhlAvailableChanged);
 }
 
+/*! Destroys the hardware resource Radio433 object. */
 Radio433::~Radio433()
 {
     m_receiver->quit();
     m_transmitter->quit();
 }
 
+/*! Enables GPIO transmitter and receiver and the Brennenstuhl Lan Gateway.
+ *  Returns true, if the GPIO's are available and set up correctly. The status of the gateway will be emited asynchronous. */
 bool Radio433::enable()
 {
     m_brennenstuhlTransmitter->enable();
@@ -66,6 +89,7 @@ bool Radio433::enable()
     return true;
 }
 
+/*! Returns true, if the Radio433 hardware resources disabled correctly. */
 bool Radio433::disabel()
 {
     m_brennenstuhlTransmitter->disable();
@@ -93,6 +117,7 @@ void Radio433::brennenstuhlAvailableChanged(const bool &available)
     }
 }
 
+/*! Returns true, if the \a rawData with a certain \a delay (pulse length) can be sent. */
 bool Radio433::sendData(int delay, QList<int> rawData)
 {
     bool sendGpio = false;

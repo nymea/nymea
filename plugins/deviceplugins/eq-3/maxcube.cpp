@@ -313,7 +313,7 @@ void MaxCube::decodeConfigMessage(QByteArray data)
 
                 //int roomId = dataRaw.mid(10,2).toInt(0,16);
                 //int firmware = dataRaw.mid(12,2).toInt(0,16);
-                device->setConfortTemp((double)dataRaw.mid(36,2).toInt(0,16) / 2.0);
+                device->setComfortTemp((double)dataRaw.mid(36,2).toInt(0,16) / 2.0);
                 device->setEcoTemp((double)dataRaw.mid(38,2).toInt(0,16) / 2.0);
                 device->setMaxSetPointTemp((double)dataRaw.mid(40,2).toInt(0,16) / 2.0);
                 device->setMinSetPointTemp((double)dataRaw.mid(42,2).toInt(0,16) / 2.0);
@@ -361,7 +361,7 @@ void MaxCube::decodeConfigMessage(QByteArray data)
             if(device->rfAddress() == rfAddress){
                 //int roomId = dataRaw.mid(10,2).toInt(0,16);
                 //int firmware = dataRaw.mid(12,2).toInt(0,16);
-                device->setConfortTemp((double)dataRaw.mid(36,2).toInt(0,16) / 2.0);
+                device->setComfortTemp((double)dataRaw.mid(36,2).toInt(0,16) / 2.0);
                 device->setEcoTemp((double)dataRaw.mid(38,2).toInt(0,16)/2.0);
                 device->setMaxSetPointTemp((double)dataRaw.mid(40,2).toInt(0,16)/2.0);
                 device->setMinSetPointTemp((double)dataRaw.mid(42,2).toInt(0,16)/2.0);

@@ -10,12 +10,15 @@ INCLUDEPATH += ../libguh jsonrpc
 target.path = /usr/bin
 INSTALLS += target
 
-QT += network
+QT += network sql
 
 LIBS += -L$$top_builddir/libguh/ -lguh
 
 include(server.pri)
-SOURCES += main.cpp
+include(qtservice/qtservice.pri)
+
+SOURCES += main.cpp \
+    guhservice.cpp
 
 boblight {
     xcompile {
@@ -25,3 +28,6 @@ boblight {
     }
     DEFINES += USE_BOBLIGHT
 }
+
+HEADERS += \
+    guhservice.h

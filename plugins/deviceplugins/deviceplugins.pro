@@ -14,6 +14,7 @@ SUBDIRS += elro         \
     lgsmarttv           \
     datetime            \
     genericelements     \
+    commandlauncher     \
 
 boblight {
     SUBDIRS += boblight

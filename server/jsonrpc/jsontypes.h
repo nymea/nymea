@@ -31,6 +31,9 @@
 #include "types/paramtype.h"
 #include "types/paramdescriptor.h"
 
+#include "logging/logging.h"
+#include "logging/logentry.h"
+
 #include <QObject>
 
 #include <QVariantMap>
@@ -94,6 +97,10 @@ public:
     DECLARE_TYPE(deviceError, "DeviceError", DeviceManager, DeviceError)
     DECLARE_TYPE(removePolicy, "RemovePolicy", RuleEngine, RemovePolicy)
     DECLARE_TYPE(ruleError, "RuleError", RuleEngine, RuleError)
+    DECLARE_TYPE(loggingError, "LoggingError", Logging, LoggingError)
+    DECLARE_TYPE(loggingSource, "LoggingSource", Logging, LoggingSource)
+    DECLARE_TYPE(loggingLevel, "LoggingLevel", Logging, LoggingLevel)
+    DECLARE_TYPE(loggingEventType, "LoggingEventType", Logging, LoggingEventType)
     DECLARE_OBJECT(paramType, "ParamType")
     DECLARE_OBJECT(param, "Param")
     DECLARE_OBJECT(paramDescriptor, "ParamDescriptor")
@@ -112,6 +119,7 @@ public:
     DECLARE_OBJECT(device, "Device")
     DECLARE_OBJECT(deviceDescriptor, "DeviceDescriptor")
     DECLARE_OBJECT(rule, "Rule")
+    DECLARE_OBJECT(logEntry, "LogEntry")
 
     static QVariantMap packEventType(const EventType &eventType);
     static QVariantMap packEvent(const Event &event);
@@ -130,6 +138,7 @@ public:
     static QVariantMap packDevice(Device *device);
     static QVariantMap packDeviceDescriptor(const DeviceDescriptor &descriptor);
     static QVariantMap packRule(const Rule &rule);
+    static QVariantMap packLogEntry(const LogEntry &logEntry);
     static QVariantList packCreateMethods(DeviceClass::CreateMethods createMethods);
 
     static Param unpackParam(const QVariantMap &paramMap);
@@ -137,18 +146,15 @@ public:
     static ParamDescriptor unpackParamDescriptor(const QVariantMap &paramDescriptorMap);
     static QList<ParamDescriptor> unpackParamDescriptors(const QVariantList &paramDescriptorList);
     static EventDescriptor unpackEventDescriptor(const QVariantMap &eventDescriptorMap);
+    static StateEvaluator unpackStateEvaluator(const QVariantMap &stateEvaluatorMap);
+    static StateDescriptor unpackStateDescriptor(const QVariantMap &stateDescriptorMap);
 
     static QPair<bool, QString> validateMap(const QVariantMap &templateMap, const QVariantMap &map);
     static QPair<bool, QString> validateProperty(const QVariant &templateValue, const QVariant &value);
     static QPair<bool, QString> validateList(const QVariantList &templateList, const QVariantList &list);
     static QPair<bool, QString> validateVariant(const QVariant &templateVariant, const QVariant &variant);
+    static QPair<bool, QString> validateEnum(const QVariantList &enumList, const QVariant &value);
     static QPair<bool, QString> validateBasicType(const QVariant &variant);
-    static QPair<bool, QString> validateStateOperator(const QVariant &variant);
-    static QPair<bool, QString> validateCreateMethod(const QVariant &variant);
-    static QPair<bool, QString> validateSetupMethod(const QVariant &variant);
-    static QPair<bool, QString> validateValueOperator(const QVariant &variant);
-    static QPair<bool, QString> validateDeviceError(const QVariant &variant);
-    static QPair<bool, QString> validateRuleError(const QVariant &variant);
 
 private:
     static bool s_initialized;

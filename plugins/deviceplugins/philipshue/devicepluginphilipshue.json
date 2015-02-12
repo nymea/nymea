@@ -8,6 +8,7 @@
             "deviceClasses": [
                 {
                     "deviceClassId": "d8f4c397-e05e-47c1-8917-8e72d4d0d47c",
+                    "idName": "hue",
                     "name": "Hue",
                     "createMethods": ["discovery", "auto"],
                     "setupMethod": "pushButton",
@@ -29,19 +30,36 @@
                     "stateTypes": [
                         {
                             "id": "15794d26-fde8-4a61-8f83-d7830534975f",
+                            "idName": "hueReachable",
                             "name": "reachable",
                             "type": "bool"
                         },
                         {
                             "id": "d25423e7-b924-4b20-80b6-77eecc65d089",
+                            "idName": "hueColor",
                             "name": "color",
                             "type": "color",
                             "defaultValue": "black"
+                        },
+                        {
+                            "id": "90aaffe5-6a76-47d2-a14a-550f60390245",
+                            "idName": "huePower",
+                            "name": "power",
+                            "type": "bool",
+                            "defaultValue": false
+                        },
+                        {
+                            "id": "90e91f64-a208-468c-a5a2-7f47e08859e2",
+                            "idName": "hueBrightness",
+                            "name": "brightness",
+                            "type": "int",
+                            "defaultValue": 0
                         }
                     ],
                     "actionTypes": [
                         {
                             "id": "29cc299a-818b-47b2-817f-c5a6361545e4",
+                            "idName": "hueSetColor",
                             "name": "Set color",
                             "paramTypes": [
                                 {
@@ -52,6 +70,7 @@
                         },
                         {
                             "id": "7782d91e-d73a-4321-8828-da768e2f6827",
+                            "idName": "hueSetPower",
                             "name": "Set power",
                             "paramTypes": [
                                 {
@@ -62,6 +81,7 @@
                         },
                         {
                             "id": "3bc95552-cba0-4222-abd5-9b668132e442",
+                            "idName": "hueSetBrightness",
                             "name": "Set brightness",
                             "paramTypes": [
                                 {

@@ -31,16 +31,25 @@
 
 class JsonRPCServer;
 class Device;
+class LogEngine;
 
 class GuhCore : public QObject
 {
     Q_OBJECT
 public:
+    enum RunningMode {
+        RunningModeApplication,
+        RunningModeService
+    };
+
     static GuhCore* instance();
     ~GuhCore();
 
     // Used for testing
     void destroy();
+
+    RunningMode runningMode() const;
+    void setRunningMode(const RunningMode &runningMode);
 
     QList<DevicePlugin *> plugins() const;
     DeviceManager::DeviceError setPluginConfig(const PluginId &pluginId, const ParamList &params);
@@ -66,9 +75,13 @@ public:
     QList<Rule> rules() const;
     QList<RuleId> ruleIds() const;
     Rule findRule(const RuleId &ruleId);
-    RuleEngine::RuleError addRule(const RuleId &id, const QList<EventDescriptor> &eventDescriptorList, const QList<Action> &actionList);
+    RuleEngine::RuleError addRule(const RuleId &id, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actionList, bool enabled = true);
     RuleEngine::RuleError removeRule(const RuleId &id);
     QList<RuleId> findRules(const DeviceId &deviceId);
+    RuleEngine::RuleError enableRule(const RuleId &ruleId);
+    RuleEngine::RuleError disableRule(const RuleId &ruleId);
+
+    LogEngine* logEngine() const;
 
 signals:
     void eventTriggered(const Event &event);
@@ -84,13 +97,18 @@ private:
     DeviceManager* deviceManager() const;
     explicit GuhCore(QObject *parent = 0);
     static GuhCore *s_instance;
+    RunningMode m_runningMode;
 
     JsonRPCServer *m_jsonServer;
     DeviceManager *m_deviceManager;
     RuleEngine *m_ruleEngine;
 
+    LogEngine *m_logger;
+
+    QHash<ActionId, Action> m_pendingActions;
 private slots:
     void gotEvent(const Event &event);
+    void actionExecutionFinished(const ActionId &id, DeviceManager::DeviceError status);
 
     friend class GuhTestBase;
 };

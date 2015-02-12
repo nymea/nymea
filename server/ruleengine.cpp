@@ -30,25 +30,45 @@
     \sa Event, EventDescriptor, Rule, Action
 */
 
-/*! \fn void RuleEngine::ruleAdded(const QUuid &ruleId)
+/*! \fn void RuleEngine::ruleAdded(const RuleId &ruleId)
     Will be emitted whenever a new \l{Rule} is added to this Engine.
     \a ruleId holds the id of the new rule.*/
 
-/*! \fn void RuleEngine::ruleRemoved(const QUuid &ruleId)
+/*! \fn void RuleEngine::ruleRemoved(const RuleId &ruleId)
     Will be emitted whenever a \l{Rule} is removed from this Engine.
     \a ruleId holds the id of the removed rule. You should remove any references
     or copies you hold for this rule.*/
 
+/*! \fn void RuleEngine::ruleChanged(const RuleId &ruleId)
+    Will be emitted whenever a \l{Rule} changed his enable/disable status.
+    \a ruleId holds the id of the changed rule.*/
+
 /*! \enum RuleEngine::RuleError
     \value RuleErrorNoError
         No error happened. Everything is fine.
+    \value RuleErrorInvalidRuleId
+        The given RuleId is not valid.
     \value RuleErrorRuleNotFound
         Couldn't find a \l{Rule} with the given id.
     \value RuleErrorDeviceNotFound
         Couldn't find a \l{Device} with the given id.
     \value RuleErrorEventTypeNotFound
         Couldn't find a \l{EventType} with the given id.
-    */
+    \value RuleErrorActionTypeNotFound
+        Couldn't find a \l{ActionType} with the given id.
+    \value RuleErrorInvalidParameter
+        The given \l{Param} is not valid.
+    \value RuleErrorMissingParameter
+        One of the given \l{Param}s is missing.
+*/
+
+/*! \enum RuleEngine::RemovePolicy
+    \value RemovePolicyCascade
+        Remove the whole Rule.
+    \value RemovePolicyUpdate
+        Remove a \l{Device} from a rule.
+*/
+
 
 #include "ruleengine.h"
 #include "types/paramdescriptor.h"
@@ -78,6 +98,8 @@ RuleEngine::RuleEngine(QObject *parent) :
         qDebug() << "found rule" << idString;
 
         settings.beginGroup(idString);
+
+        bool enabled = settings.value("enabled", true).toBool();
 
         QList<EventDescriptor> eventDescriptorList;
         settings.beginGroup("events");
@@ -109,6 +131,7 @@ RuleEngine::RuleEngine(QObject *parent) :
 
         StateEvaluator stateEvaluator = StateEvaluator::loadFromSettings(settings, "stateEvaluator");
 
+        
         settings.beginGroup("actions");
         QList<Action> actions;
         foreach (const QString &actionIdString, settings.childGroups()) {
@@ -133,44 +156,70 @@ RuleEngine::RuleEngine(QObject *parent) :
         settings.endGroup();
 
         Rule rule = Rule(RuleId(idString), eventDescriptorList, stateEvaluator, actions);
+        rule.setEnabled(enabled);
         appendRule(rule);
     }
 
 }
 
 /*! Ask the Engine to evaluate all the rules for the given \a event.
-    This will search all the \l{Rule}{Rules} evented by this \l{Event}
-    and evaluate it's states according to its type. It will return a
-    list of all \l{Action}{Actions} that should be executed. */
-QList<Action> RuleEngine::evaluateEvent(const Event &event)
+    This will search all the \l{Rule}{Rules} triggered by the given \a event
+    and evaluate their states in the system. It will return a
+    list of all \l{Rule}{Rules} that are triggered or change its active state
+    because of this \a event. */
+QList<Rule> RuleEngine::evaluateEvent(const Event &event)
 {
     Device *device = GuhCore::instance()->findConfiguredDevice(event.deviceId());
 
-    qDebug() << "got event:" << event << device->name();
+    qDebug() << "got event:" << event << device->name() << event.eventTypeId();
 
-    QList<Action> actions;
+    QList<Rule> rules;
     foreach (const RuleId &id, m_ruleIds) {
         Rule rule = m_rules.value(id);
-        if (containsEvent(rule, event)) {
-            if (rule.stateEvaluator().evaluate()) {
-                qDebug() << "states matching!";
-                actions.append(rule.actions());
+        if (!rule.enabled()) {
+            continue;
+        }
+
+        if (rule.eventDescriptors().isEmpty()) {
+            // This rule seems to have only states, check on state changed
+            if (containsState(rule.stateEvaluator(), event)) {
+                if (rule.stateEvaluator().evaluate()) {
+                    if (m_activeRules.contains(rule.id())) {
+                        qDebug() << "Rule" << rule.id() << "still in active state.";
+                    } else {
+                        qDebug() << "Rule" << rule.id() << "entered active state.";
+                        rule.setActive(true);
+                        m_rules[rule.id()] = rule;
+                        m_activeRules.append(rule.id());
+                        rules.append(rule);
+                    }
+                } else {
+                    qDebug() << "Rule" << rule.id() << "left active state.";
+                    m_rules[rule.id()].setActive(false);
+                    m_activeRules.removeAll(rule.id());
+                }
+            }
+        } else {
+            if (containsEvent(rule, event)) {
+                if (rule.stateEvaluator().evaluate()) {
+                    qDebug() << "Rule" << rule.id() << "contains event" << event.eventId() << "and all states match.";
+                    rules.append(rule);
+                }
             }
         }
     }
-    qDebug() << "found" << actions.count() << "actions";
-    return actions;
+    return rules;
 }
 
-/*! Add a new \l{Rule} with the given \a EventDescriptorList and \a actions to the engine.
+/*! Add a new \l{Rule} with the given \a ruleId , \a eventDescriptorList, \a actions and \a enabled value to the engine.
     For convenience, this creates a Rule without any \l{State} comparison. */
-RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QList<EventDescriptor> &eventDescriptorList, const QList<Action> &actions)
+RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QList<EventDescriptor> &eventDescriptorList, const QList<Action> &actions, bool enabled)
 {
-    return addRule(ruleId, eventDescriptorList, StateEvaluator(), actions);
+    return addRule(ruleId, eventDescriptorList, StateEvaluator(), actions, enabled);
 }
 
-/*! Add a new \l{Rule} with the given \a event, \a states and \a actions to the engine. */
-RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actions)
+/*! Add a new \l{Rule} with the given \a ruleId , \a eventDescriptorList, \a stateEvaluator, the  list of \a actions and the \a enabled value to the engine.*/
+RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actions, bool enabled)
 {
     if (ruleId.isNull()) {
         return RuleErrorInvalidRuleId;
@@ -218,13 +267,17 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QList<Even
             return RuleErrorActionTypeNotFound;
         }
     }
-
+    if (actions.count() > 0) {
+        qDebug() << "***** actions" << actions.last().actionTypeId() << actions.last().params();
+    }
     Rule rule = Rule(ruleId, eventDescriptorList, stateEvaluator, actions);
+    rule.setEnabled(enabled);
     appendRule(rule);
     emit ruleAdded(rule.id());
 
     QSettings settings(m_settingsFile);
     settings.beginGroup(rule.id().toString());
+    settings.setValue("enabled", enabled);
     settings.beginGroup("events");
     for (int i = 0; i < eventDescriptorList.count(); i++) {
         const EventDescriptor &eventDescriptor = eventDescriptorList.at(i);
@@ -272,13 +325,14 @@ QList<Rule> RuleEngine::rules() const
     return m_rules.values();
 }
 
+/*! Returns a list of all ruleIds loaded in this Engine. */
 QList<RuleId> RuleEngine::ruleIds() const
 {
     return m_ruleIds;
 }
 
 /*! Removes the \l{Rule} with the given \a ruleId from the Engine.
-    Returns \l{RuleEngine::RuleError} which describes whether the operation
+    Returns \l{RuleError} which describes whether the operation
     was successful or not. */
 RuleEngine::RuleError RuleEngine::removeRule(const RuleId &ruleId)
 {
@@ -300,6 +354,51 @@ RuleEngine::RuleError RuleEngine::removeRule(const RuleId &ruleId)
     return RuleErrorNoError;
 }
 
+/*! Enables the rule with the given \a ruleId that has been previously disabled.
+    \sa disableRule(), */
+RuleEngine::RuleError RuleEngine::enableRule(const RuleId &ruleId)
+{
+    if (!m_rules.contains(ruleId)) {
+        qWarning() << "Rule not found. Can't enable it";
+        return RuleErrorRuleNotFound;
+    }
+    Rule rule = m_rules.value(ruleId);
+    rule.setEnabled(true);
+    m_rules[ruleId] = rule;
+    QSettings settings(m_settingsFile);
+    settings.beginGroup(ruleId.toString());
+    if (!settings.value("enabled", true).toBool()) {
+        settings.setValue("enabled", true);
+        emit ruleChanged(ruleId);
+    }
+    settings.endGroup();
+
+    return RuleErrorNoError;
+}
+
+/*! Disables the rule with the given \a ruleId. Disabled rules won't be triggered.
+    \sa enableRule(), */
+RuleEngine::RuleError RuleEngine::disableRule(const RuleId &ruleId)
+{
+    if (!m_rules.contains(ruleId)) {
+        qWarning() << "Rule not found. Can't disable it";
+        return RuleErrorRuleNotFound;
+    }
+    Rule rule = m_rules.value(ruleId);
+    rule.setEnabled(false);
+    m_rules[ruleId] = rule;
+    QSettings settings(m_settingsFile);
+    settings.beginGroup(ruleId.toString());
+    if (settings.value("enabled", true).toBool()) {
+        settings.setValue("enabled", false);
+        emit ruleChanged(ruleId);
+    }
+    settings.endGroup();
+
+    return RuleErrorNoError;
+}
+
+/*! Returns the \l{Rule} with the given \a ruleId. If the \l{Rule} does not exist, it will return \l{Rule::Rule()} */
 Rule RuleEngine::findRule(const RuleId &ruleId)
 {
     foreach (const Rule &rule, m_rules) {
@@ -310,6 +409,7 @@ Rule RuleEngine::findRule(const RuleId &ruleId)
     return Rule();
 }
 
+/*! Returns a list of all \l{Rule}{Rules} loaded in this Engine, which contains a \l{Device} with the given \a deviceId. */
 QList<RuleId> RuleEngine::findRules(const DeviceId &deviceId)
 {
     // Find all offending rules
@@ -340,6 +440,7 @@ QList<RuleId> RuleEngine::findRules(const DeviceId &deviceId)
     return offendingRules;
 }
 
+/*! Removes a \l{Device} from a \l{Rule} with the given \a id and \a deviceId. */
 void RuleEngine::removeDeviceFromRule(const RuleId &id, const DeviceId &deviceId)
 {
     if (!m_rules.contains(id)) {
@@ -379,6 +480,20 @@ bool RuleEngine::containsEvent(const Rule &rule, const Event &event)
             return true;
         }
     }
+    return false;
+}
+
+bool RuleEngine::containsState(const StateEvaluator &stateEvaluator, const Event &stateChangeEvent)
+{
+    if (stateEvaluator.stateDescriptor().isValid() && stateEvaluator.stateDescriptor().stateTypeId().toString() == stateChangeEvent.eventTypeId().toString()) {
+        return true;
+    }
+    foreach (const StateEvaluator &childEvaluator, stateEvaluator.childEvaluators()) {
+        if (containsState(childEvaluator, stateChangeEvent)) {
+            return true;
+        }
+    }
+
     return false;
 }
 

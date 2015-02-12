@@ -66,7 +66,7 @@ void StateEvaluator::setOperatorType(Types::StateOperator operatorType)
 
 bool StateEvaluator::evaluate() const
 {
-    if (!m_stateDescriptor.stateTypeId().isNull() && !m_stateDescriptor.deviceId().isNull()) {
+    if (m_stateDescriptor.isValid()) {
         Device *device = GuhCore::instance()->findConfiguredDevice(m_stateDescriptor.deviceId());
         if (!device) {
             qWarning() << "Device not existing!";
@@ -156,17 +156,13 @@ StateEvaluator StateEvaluator::loadFromSettings(QSettings &settings, const QStri
     settings.endGroup();
 
     StateEvaluator ret(stateDescriptor);
-
     ret.setOperatorType((Types::StateOperator)settings.value("operator").toInt());
 
     settings.beginGroup("childEvaluators");
     foreach (const QString &evaluatorGroup, settings.childGroups()) {
-        settings.beginGroup(evaluatorGroup);
         ret.appendEvaluator(StateEvaluator::loadFromSettings(settings, evaluatorGroup));
-        settings.endGroup();
     }
     settings.endGroup();
-
     settings.endGroup();
     return ret;
 }

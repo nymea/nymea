@@ -23,32 +23,21 @@
     \ingroup plugins
     \ingroup rf433
 
-    This plugin allows to controll RF 433 MHz actors an receive remote signals from Conrad
-    devices (\l{http://www.conrad.at}).
+    This plugin allows to controll RF 433 MHz actors an receive remote signals from \l{http://www.conrad.at}{Conrad}
+    devices.
 
-    Following devices are supported:
+    \chapter Plugin properties
+    Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}
+    and \l{Vendor}{Vendors} of this \l{DevicePlugin}.
 
-    \chapter Supported devices
-        \section1 Actors
-            \table
-            \header
-                \li Model
-                \li Device Type
-            \row
-                \li
-                \li
-            \endtable
+    Each \l{DeviceClass} has a list of \l{ParamType}{paramTypes}, \l{ActionType}{actionTypes}, \l{StateType}{stateTypes}
+    and \l{EventType}{eventTypes}. The \l{DeviceClass::CreateMethod}{createMethods} parameter describes how the \l{Device}
+    will be created in the system. A device can have more than one \l{DeviceClass::CreateMethod}{CreateMethod}.
+    The \l{DeviceClass::SetupMethod}{setupMethod} describes the setup method of the \l{Device}.
+    The detailed implementation of each \l{DeviceClass} can be found in the source code.
 
-        \section1 Remotes
-            \table
-            \header
-                \li Model
-                \li Device Type
-            \row
-                \li
-                \li
-            \endtable
-  */
+    \quotefile plugins/deviceplugins/conrad/devicepluginconrad.json
+*/
 
 #include "devicepluginconrad.h"
 
@@ -60,9 +49,6 @@
 #include <QStringList>
 
 
-DeviceClassId conradRemoteId = DeviceClassId("17cd2492-28ab-4827-ba6e-5ef35be23f1b");
-EventTypeId conradRemoteButtonEventTypeId = EventTypeId("1f4050f5-4c90-4799-8d6d-e4069f3a2519");
-ActionTypeId conradRemoteActionTypeId = ActionTypeId("2a3638b4-fbd6-4fdb-a3c9-7fa49705d1a3");
 DevicePluginConrad::DevicePluginConrad()
 {
 }

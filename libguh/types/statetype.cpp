@@ -18,37 +18,37 @@
 
 /*!
     \class StateType
-    \brief Describes a \l{State} for a \l{Device}.
+    \brief Describes the Type of a \l{State} from \l{Device}.
 
     \ingroup types
     \inmodule libguh
 
-    \sa State
+    \sa State, StateDescriptor
 */
 
 #include "statetype.h"
 
-/*! Constructs a State with the given \a id.
-    When creating a \l{DevicePlugin} generate a new uuid for each StateType you define and
-    hardcode it into the plugin. */
+/*! Constructs a StateType with the given \a id.
+ *  When creating a \l{DevicePlugin} generate a new uuid for each StateType you define and
+ *  hardcode it into the plugin. */
 StateType::StateType(const StateTypeId &id):
     m_id(id)
 {
 }
 
-/*! Returns the id of the StateType.*/
+/*! Returns the id of the StateType. */
 StateTypeId StateType::id() const
 {
     return m_id;
 }
 
-/*! Returns the name of the StateType. This is visible to the user (e.g. "Temperature").*/
+/*! Returns the name of the StateType. This is visible to the user (e.g. "Temperature"). */
 QString StateType::name() const
 {
     return m_name;
 }
 
-/*! Set the name of the StateType to \a name. This is visible to the user (e.g. "Temperature").*/
+/*! Set the name of the StateType to \a name. This is visible to the user (e.g. "Temperature"). */
 void StateType::setName(const QString &name)
 {
     m_name = name;
@@ -60,13 +60,13 @@ QVariant::Type StateType::type() const
     return m_type;
 }
 
-/*! Set the type fo the StateType to \a type (e.g. QVariant::Real).*/
+/*! Set the type fo the StateType to \a type (e.g. QVariant::Real). */
 void StateType::setType(const QVariant::Type &type)
 {
     m_type = type;
 }
 
-/*! Returns the default value of this StateType (e.g. 21.5) */
+/*! Returns the default value of this StateType (e.g. 21.5). */
 QVariant StateType::defaultValue() const
 {
     return m_defaultValue;

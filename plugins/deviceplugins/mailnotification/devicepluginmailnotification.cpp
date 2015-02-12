@@ -26,214 +26,47 @@
     The mail notification plugin allows you to send a mail notification from a mail
     account by performing an \l{Action}.
 
-    ATTENTION: The password currently will be saved as plain text in the guh configuration file.
+    ATTENTION: The password currently will be saved as plain text in the guh settings file.
+    This will be changed soon...
 
-    \section1 Google Mail Notification
-    \section2 Examples
-    \section3 Adding a Google Mail Notification service
-    In order to add a Google Mail Notification service you need to configure
-    the "Google Mail login" (user), the password for your Gmail account and the address
-    of the recipient.
-    \code
-    {
-        "id":1,
-        "method":"Devices.AddConfiguredDevice",
-        "params":{
-            "deviceClassId": "{38ed6ffc-f43b-48f8-aea2-8d63cdcad87e}",
-            "deviceParams":{
-                "user":"my.address@gmail.com",
-                "password":"my_secret_password"
-                "recipient":"recipient@example.com"}
-            }
-        }
-    }
-    \endcode
-    Before the device will be added, the plugin trys to login. If the username or the password
-    are wrong, an error message will be send.
-    \code
-    {
-        "id": 1,
-        "params": {
-            "deviceId": "{0b99ea27-896a-4a23-a044-3f1441f6a9a7}",
-            "errorMessage": "",
-            "success": true
-        },
-        "status": "success"
-    }
-    \endcode
+    \chapter Supported services
+                \section2 Google Mail
+                With the Google Mail Notification you can send a mail with your gmail address to a recipient. The
+                username is your mail address (e.g. "chuck.norris@gmail.com"). The recipient will receive the notification
+                from your gmail account.
 
-    \section3 Sending a mail notification
-    In order to send a mail notification from a configured Gmail service use following message
-    format.
-    \code
-    {
-        "id":1,
-        "method":"Actions.ExecuteAction",
-        "params":{
-            "actionTypeId": "{fa54f834-34d0-4aaf-b0ab-a165191d39d3}",
-            "deviceId":"{0b99ea27-896a-4a23-a044-3f1441f6a9a7}",
-            "params":{
-                "subject":"GUH notification",
-                "body":"Hello world!"
-            }
-        }
-    }
-    \endcode
-    response...
-    \code
-    {
-        "id": 1,
-        "params": {
-            "errorMessage": "",
-            "success": true
-        },
-        "status": "success"
-    }
-    \endcode
+                \section2 Yahoo Mail
+                The Yahoo Mail Notification you can send a mail with your yahoo address to a recipient. The username
+                is your mail address (e.g. "chuck.norris@yahoo.com"). The recipient will receive the notification
+                from your yahoo account.
 
-    \section2 Plugin propertys:
-        \section3 Plugin parameters
-        Each configured plugin has following paramters:
+                \section2 Custom Mail
+                With the Custom Mail Notification you can set up a custom SMTP connection. The supported authentification
+                methods are ["PLAIN", "LOGIN"], the supported encryption methods are ["NONE", "SSL", "TLS"].
 
-        \table
-            \header
-                \li Name
-                \li Description
-                \li Data Type
-            \row
-                \li user
-                \li This parameter holds the username (mail address) for the login
-                \li string
-            \row
-                \li password
-                \li This parameter holds the password for the login
-                \li string
-            \row
-                \li recipient
-                \li This parameter holds the mail address of the recipient of the notification
-                \li string
-        \endtable
+    \chapter Plugin properties
+    Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}
+    and \l{Vendor}{Vendors} of this \l{DevicePlugin}.
 
-        \section3 Plugin actions:
-        Following list contains all plugin \l{Action}s:
-            \table
-            \header
-                \li Name
-                \li Description
-                \li UUID
-            \row
-                \li sendMail
-                \li This action sends a mail to the recipient address of the configured device
-                    with a given subject and text body.
-                \li fa54f834-34d0-4aaf-b0ab-a165191d39d3
-            \endtable
+    Each \l{DeviceClass} has a list of \l{ParamType}{paramTypes}, \l{ActionType}{actionTypes}, \l{StateType}{stateTypes}
+    and \l{EventType}{eventTypes}. The \l{DeviceClass::CreateMethod}{createMethods} parameter describes how the \l{Device}
+    will be created in the system. A device can have more than one \l{DeviceClass::CreateMethod}{CreateMethod}.
+    The \l{DeviceClass::SetupMethod}{setupMethod} describes the setup method of the \l{Device}.
+    The detailed implementation of each \l{DeviceClass} can be found in the source code.
 
-    \section1 Custom Mail Notification
-    \section2 Examples
-    \section3 Adding a Custom Mail Notification service
-    In order to add a Custom Mail Notification service you need to configure
-    the smtp host address, the login (user), the password, the address
-    of the recipient, the connection port and the authentification method (PLAIN or LOGIN).
-    The plugin currently supports only SSL encryption.
-    \code
-    {
-        "id":1,
-        "method":"Devices.AddConfiguredDevice",
-        "params":{
-            "deviceClassId": "{38ed6ffc-f43b-48f8-aea2-8d63cdcad87e}",
-            "deviceParams":{
-                "user":"my.address@gmail.com",
-                "password":"my_secret_password"
-                "recipient":"recipient@example.com"}
-                "host":"smtp.mydomain.com"}
-                "port":"465"}
-                "auth":"PLAIN"}
-            }
-        }
-    }
-    \endcode
-    Before the device will be added, the plugin trys to login. If the username or the password
-    are wrong, an error message will be send.
-    \code
-    {
-        "id": 1,
-        "params": {
-            "deviceId": "{0b99ea27-896a-4a23-a044-3f1441f6a9a7}",
-            "errorMessage": "",
-            "success": true
-        },
-        "status": "success"
-    }
-    \endcode
-
-    \section2 Plugin propertys:
-        \section3 Plugin parameters
-        Each configured plugin has following paramters:
-
-        \table
-            \header
-                \li Name
-                \li Description
-                \li Data Type
-            \row
-                \li user
-                \li This parameter holds the username (mail address) for the login
-                \li string
-            \row
-                \li password
-                \li This parameter holds the password for the login
-                \li string
-            \row
-                \li recipient
-                \li This parameter holds the mail address of the recipient of the notification
-                \li string
-            \row
-                \li host
-                \li This parameter holds the smtp host address from the mail server.
-                \li string
-            \row
-                \li port
-                \li This parameter holds the smtp port from the mail server.
-                \li int
-            \row
-                \li auth
-                \li This parameter holds the authentification method from the mail server.
-                    Possible values are: PLAIN, LOGIN
-                \li string
-        \endtable
-
-        \section3 Plugin actions:
-        Following list contains all plugin \l{Action}s:
-            \table
-            \header
-                \li Name
-                \li Description
-                \li UUID
-            \row
-                \li sendMail
-                \li This action sends a mail to the recipient address of the configured device
-                    with a given subject and text body.
-                \li fa54f834-34d0-4aaf-b0ab-a165191d39d3
-            \endtable
-
-
+    \quotefile plugins/deviceplugins/mailnotification/devicepluginmailnotification.json
 */
 
 #include "devicepluginmailnotification.h"
 
 #include "plugin/device.h"
 #include "devicemanager.h"
+#include "plugininfo.h"
 
 #include <QDebug>
 #include <QJsonDocument>
 #include <QVariantMap>
 #include <QDateTime>
-
-DeviceClassId googleMailDeviceClassId = DeviceClassId("3869884a-1592-4b8f-84a7-994be18ff555");
-DeviceClassId yahooMailDeviceClassId = DeviceClassId("59409e8f-0c83-414f-abd5-bbbf2758acba");
-DeviceClassId customMailDeviceClassId = DeviceClassId("f4844c97-7ca6-4349-904e-ff9749a9fe74");
-
-ActionTypeId sendMailActionTypeId = ActionTypeId("054613b0-3666-4dad-9252-e0ebca187edc");
 
 DevicePluginMailNotification::DevicePluginMailNotification()
 {

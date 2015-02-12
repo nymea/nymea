@@ -17,27 +17,16 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-\class DevicePlugin
-\brief This is the base class interface for device plugins.
+  \class DevicePlugin
+  \brief This is the base class interface for device plugins.
 
-\ingroup devices
-\inmodule libguh
+  \ingroup devices
+  \inmodule libguh
 
-When implementing a new plugin, start by subclassing this and implementing the following
-pure virtual methods: \l{DevicePlugin::pluginName()}, \l{DevicePlugin::pluginId()},
-\l{DevicePlugin::supportedDevices()} and \l{DevicePlugin::requiredHardware()}
+  When implementing a new plugin, start by subclassing this and implementing the following
+  pure virtual methods: \l{DevicePlugin::pluginName()}, \l{DevicePlugin::pluginId()},
+  \l{DevicePlugin::supportedDevices()} and \l{DevicePlugin::requiredHardware()}
 */
-
-/*!
- \fn QUuid DevicePlugin::pluginId() const
- When implementing a plugin, generate a new uuid and return it here. Always return the
- same uuid and don't change it or configurations can't be matched any more.
- */
-
-/*!
- \fn QList<DeviceClass> DevicePlugin::supportedDevices() const
- Return a list of \l{DeviceClass}{DeviceClasses} describing all the devices supported by this plugin.
- */
 
 /*!
  \fn DeviceManager::HardwareResources DevicePlugin::requiredHardware() const
@@ -46,7 +35,7 @@ pure virtual methods: \l{DevicePlugin::pluginName()}, \l{DevicePlugin::pluginId(
  */
 
 /*!
- \fn void DevicePlugin::radioData(QList<int> rawData)
+ \fn void DevicePlugin::radioData(const QList<int> &rawData)
  If the plugin has requested any radio device using \l{DevicePlugin::requiredHardware()}, this slot will
  be called when there is \a rawData available from that device.
  */
@@ -58,6 +47,7 @@ pure virtual methods: \l{DevicePlugin::pluginName()}, \l{DevicePlugin::pluginId(
  */
 
 /*!
+<<<<<<< HEAD
  \fn void DevicePlugin::upnpDiscoveryFinished(QList<UpnpDevice> deviceList)
  If the plugin has requested the upnp \a deviceList using \l{DevicePlugin::upnpDiscover(QString searchTarget)},
  this slot will be called after 3 seconds (search timeout). The list will contain all devices available on in
@@ -67,30 +57,58 @@ pure virtual methods: \l{DevicePlugin::pluginName()}, \l{DevicePlugin::pluginId(
 
 /*!
  \fn void DevicePlugin::executeAction(Device *device, const Action &action)
+=======
+ \fn DeviceManager::DeviceError DevicePlugin::executeAction(Device *device, const Action &action)
+>>>>>>> 5068905c376398c1cd754811b15f5be51da73a3d
  This will be called to actually execute actions on the hardware. The \{Device} and
  the \{Action} are contained in the \a device and \a action parameters.
- Use \l{DevicePlugin::report()} to report the result. If everything worked out,
- just return report(). Otherwise fill in the error code and a short message
- describing the offending part. E.g:
- If the action couldn't be executed because the device can't be reached (e.g. it is unplugged)
- then report the appropriate error code and give the device id as message:
- return report(DeviceManager::DeviceErrorSetupFailed, device->id());
- Keep the message short, the DeviceManager will format it for you.
+ Return the appropriate \l{DeviceManager::DeviceError}{DeviceError}.
 
  It is possible to execute actions asynchronously. You never should do anything blocking for
  a long time (e.g. wait on a network reply from the internet) but instead return
  DeviceManager::DeviceErrorAsync and continue processing in an async manner. Once
  you have the reply ready, emit actionExecutionFinished() with the appropriate parameters.
 
- \sa DevicePlugin::report() DevicePlugin::actionExecutionFinished()
- */
+ \sa actionExecutionFinished()
+*/
+
+/*!
+  \fn void DevicePlugin::devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &devices);
+  This signal is emitted when the discovery of a \a deviceClassId of this DevicePlugin is finished. The \a devices parameter describes the
+  list of \l{DeviceDescriptor}{DeviceDescriptors} of all discovered \l{Device}{Devices}.
+  \sa discoverDevices()
+*/
+
+/*!
+  \fn void DevicePlugin::pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceSetupStatus status);
+  This signal is emitted when the pairing of a \a pairingTransactionId is finished.
+  The \a status of the  will be described as \l{DeviceManager::DeviceError}{DeviceError}.
+  \sa confirmPairing()
+*/
+
+/*!
+  \fn void DevicePlugin::deviceSetupFinished(Device *device, DeviceManager::DeviceSetupStatus status);
+  This signal is emitted when the setup of a \a device in this DevicePlugin is finished. The \a status parameter describes the
+  \l{DeviceManager::DeviceError}{DeviceError} that occurred.
+*/
+
+/*!
+  \fn void DevicePlugin::configValueChanged(const QString &paramName, const QVariant &value);
+  This signal is emitted when the \l{Param} with a certain \a paramName of a \l{Device} configuration changed the \a value.
+*/
 
 /*!
   \fn void DevicePlugin::actionExecutionFinished(const ActionId &id, DeviceManager::DeviceError status)
-  This signal is to be emitted when you previously have returned DeviceManager::DeviceErrorAsync
-  in a call of executeAction(). It is used to deliver the return value that previously has
-  been omitted by filling in DeviceErrorAsync.
-  */
+  This signal is to be emitted when you previously have returned \l{DeviceManager}{DeviceErrorAsync}
+  in a call of executeAction(). The \a id refers to the executed \l{Action}. The \a status of the \l{Action}
+  execution will be described as \l{DeviceManager::DeviceError}{DeviceError}.
+*/
+
+/*!
+  \fn void DevicePlugin::autoDevicesAppeared(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors)
+   This signal is emitted when a new \l{Device} of certain \a deviceClassId appeared. The description of the \l{Device}{Devices}
+   will be in \a deviceDescriptors. This signal can only emitted from devices with the \l{DeviceClass}{CreateMethodAuto}.
+*/
 
 /*!
  \fn void DevicePlugin::emitEvent(const Event &event)
@@ -99,13 +117,13 @@ pure virtual methods: \l{DevicePlugin::pluginName()}, \l{DevicePlugin::pluginId(
  such as \l{DevicePlugin::radioData()} or \l{DevicePlugin::guhTimer()}. Find a configured
  \l{Device} from the \l{DeviceManager} and get its \l{EventType}{EventTypes}, then
  create a \l{Event} complying to that \l{EventType} and emit it here.
- */
+*/
 
 /*!
   \fn void DevicePlugin::init()
   This will be called after constructing the DevicePlugin. Override this to do any
   initialisation work you need to do.
-  */
+*/
 
 #include "deviceplugin.h"
 
@@ -130,16 +148,21 @@ DevicePlugin::~DevicePlugin()
 
 }
 
+/*! Returns the name of this DevicePlugin. */
 QString DevicePlugin::pluginName() const
 {
     return m_metaData.value("name").toString();
 }
 
+/*! Returns the id of this DevicePlugin.
+ *  When implementing a plugin, generate a new uuid and return it here. Always return the
+ *  same uuid and don't change it or configurations can't be matched any more. */
 PluginId DevicePlugin::pluginId() const
 {
     return m_metaData.value("id").toString();
 }
 
+/*! Returns the list of \l{Vendor}{Vendors} supported by this DevicePlugin. */
 QList<Vendor> DevicePlugin::supportedVendors() const
 {
     QList<Vendor> vendors;
@@ -150,10 +173,12 @@ QList<Vendor> DevicePlugin::supportedVendors() const
     return vendors;
 }
 
+/*!  Return a list of \l{DeviceClass}{DeviceClasses} describing all the devices supported by this plugin. */
 QList<DeviceClass> DevicePlugin::supportedDevices() const
 {
     QList<DeviceClass> deviceClasses;
     foreach (const QJsonValue &vendorJson, m_metaData.value("vendors").toArray()) {
+        bool broken = false;
         VendorId vendorId = vendorJson.toObject().value("id").toString();
         foreach (const QJsonValue &deviceClassJson, vendorJson.toObject().value("deviceClasses").toArray()) {
             QJsonObject jo = deviceClassJson.toObject();
@@ -189,6 +214,13 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
             QList<StateType> stateTypes;
             foreach (const QJsonValue &stateTypesJson, jo.value("stateTypes").toArray()) {
                 QJsonObject st = stateTypesJson.toObject();
+                QStringList missingFields = verifyFields(QStringList() << "type" << "id" << "name", st);
+                if (!missingFields.isEmpty()) {
+                    qWarning() << "Skipping device class" << deviceClass.name() << "because of missing" << missingFields.join(", ") << "in stateTypes";
+                    broken = true;
+                    break;
+                }
+
                 QVariant::Type t = QVariant::nameToType(st.value("type").toString().toLatin1().data());
                 StateType stateType(st.value("id").toString());
                 stateType.setName(st.value("name").toString());
@@ -201,6 +233,13 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
             QList<ActionType> actionTypes;
             foreach (const QJsonValue &actionTypesJson, jo.value("actionTypes").toArray()) {
                 QJsonObject at = actionTypesJson.toObject();
+                QStringList missingFields = verifyFields(QStringList() << "id" << "name", at);
+                if (!missingFields.isEmpty()) {
+                    qWarning() << "Skipping device class" << deviceClass.name() << "because of missing" << missingFields.join(", ") << "in actionTypes";
+                    broken = true;
+                    break;
+                }
+
                 ActionType actionType(at.value("id").toString());
                 actionType.setName(at.value("name").toString());
                 actionType.setParamTypes(parseParamTypes(at.value("paramTypes").toArray()));
@@ -211,6 +250,13 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
             QList<EventType> eventTypes;
             foreach (const QJsonValue &eventTypesJson, jo.value("eventTypes").toArray()) {
                 QJsonObject et = eventTypesJson.toObject();
+                QStringList missingFields = verifyFields(QStringList() << "id" << "name", et);
+                if (!missingFields.isEmpty()) {
+                    qWarning() << "Skipping device class" << deviceClass.name() << "because of missing" << missingFields.join(", ") << "in eventTypes";
+                    broken = true;
+                    break;
+                }
+
                 EventType eventType(et.value("id").toString());
                 eventType.setName(et.value("name").toString());
                 eventType.setParamTypes(parseParamTypes(et.value("paramTypes").toArray()));
@@ -218,7 +264,9 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
             }
             deviceClass.setEventTypes(eventTypes);
 
-            deviceClasses.append(deviceClass);
+            if (!broken) {
+                deviceClasses.append(deviceClass);
+            }
         }
     }
     return deviceClasses;
@@ -236,11 +284,11 @@ void DevicePlugin::startMonitoringAutoDevices()
 
 }
 
-/*! Reimplement this if you support a DeviceClass with createMethod CreateMethodDiscovery.
-    This will be called to discover Devices for the given DeviceClass. This will always
-    be an async operation. Return DeviceErrorAsync or DeviceErrorNoError if the discovery
-    has been started successfully. Return an appropriate error otherwise.
-    Once devices are discovered, emit devicesDiscovered() once. */
+/*! Reimplement this if you support a DeviceClass with createMethod \l{DeviceManager}{CreateMethodDiscovery}.
+    This will be called to discover Devices for the given \a deviceClassId with the given \a params. This will always
+    be an async operation. Return \l{DeviceManager}{DeviceErrorAsync} or \l{DeviceManager}{DeviceErrorNoError}
+    if the discovery has been started successfully. Return an appropriate error otherwise.
+    Once devices are discovered, emit devicesDiscovered(). */
 DeviceManager::DeviceError DevicePlugin::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
 {
     Q_UNUSED(deviceClassId)
@@ -249,12 +297,11 @@ DeviceManager::DeviceError DevicePlugin::discoverDevices(const DeviceClassId &de
 }
 
 /*! This will be called when a new device is created. The plugin has the chance to do some setup.
-    Return DeviceSetupStatusFailure if something bad happened during the setup in which case the device
-    will be disabled. Return DeviceSetupStatusSuccess if everything went well. If you can't tell yet and
-    need more time to set up the device (note: you should never block in this method) you can
-    return DeviceSetupStatusAsync. In that case the devicemanager will wait for you to emit
-    \l{deviceSetupFinished(Device *device, DeviceManager::DeviceSetupStatus status)} to report
-    the status.
+    Return \l{DeviceManager}{DeviceSetupStatusFailure} if something bad happened during the setup in which case the \a device
+    will be disabled. Return \l{DeviceManager}{DeviceSetupStatusSuccess} if everything went well. If you can't tell yet and
+    need more time to set up the \a device (note: you should never block in this method) you can
+    return \l{DeviceManager}{DeviceSetupStatusAsync}. In that case the \l{DeviceManager} will wait for you to emit
+    \l{DevicePlugin}{deviceSetupFinished} to report the status.
 */
 DeviceManager::DeviceSetupStatus DevicePlugin::setupDevice(Device *device)
 {
@@ -262,15 +309,16 @@ DeviceManager::DeviceSetupStatus DevicePlugin::setupDevice(Device *device)
     return DeviceManager::DeviceSetupStatusSuccess;
 }
 
-/*! This will be called when a device removed. The plugin has the chance to do some teardown.
-    The device is still valid during this call, but already removed from the system.
-    The device will be deleted as soon as this method returns.
-*/
+/*! This will be called when a \a device removed. The plugin has the chance to do some teardown.
+ *  The device is still valid during this call, but already removed from the system.
+ *  The device will be deleted as soon as this method returns.*/
 void DevicePlugin::deviceRemoved(Device *device)
 {
     Q_UNUSED(device)
 }
 
+/*! Confirms the pairing of a \a deviceClassId with the given \a pairingTransactionId and \a params.
+ * Returns \l{DeviceManager::DeviceError}{DeviceError} to inform about the result. */
 DeviceManager::DeviceSetupStatus DevicePlugin::confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params)
 {
     Q_UNUSED(pairingTransactionId)
@@ -281,6 +329,7 @@ DeviceManager::DeviceSetupStatus DevicePlugin::confirmPairing(const PairingTrans
     return DeviceManager::DeviceSetupStatusFailure;
 }
 
+/*! Returns the configuration description of this DevicePlugin as a list of \l{ParamType}{ParamTypes}. */
 QList<ParamType> DevicePlugin::configurationDescription() const
 {
     return QList<ParamType>();
@@ -333,6 +382,7 @@ ParamList DevicePlugin::configuration() const
  at the time when your plugin is loaded, but will be set soon after. Listen to
  configurationValueChanged() to know when something changes.
  When implementing a new plugin, specify in configurationDescription() what you want to see here.
+ Returns the config value of a \l{Param} with the given \a paramName of this DevicePlugin.
  */
 QVariant DevicePlugin::configValue(const QString &paramName) const
 {
@@ -359,9 +409,7 @@ DeviceManager::DeviceError DevicePlugin::setConfiguration(const ParamList &confi
     return DeviceManager::DeviceErrorNoError;
 }
 
-/*!
- Will be called by the DeviceManager to set a plugin's \a configuration.
- */
+/*! Will be called by the DeviceManager to set a plugin's \l{Param} with the given \a paramName and \a value. */
 DeviceManager::DeviceError DevicePlugin::setConfigValue(const QString &paramName, const QVariant &value)
 {
     bool found = false;
@@ -410,15 +458,12 @@ DeviceManager::DeviceError DevicePlugin::setConfigValue(const QString &paramName
 
  When implementing a plugin, use this to find the \l{Device}{Devices} you need.
  */
-
 DeviceManager *DevicePlugin::deviceManager() const
 {
     return m_deviceManager;
 }
 
-/*!
- Returns a list of all configured devices belonging to this plugin.
- */
+/*! Returns a list of all configured devices belonging to this plugin. */
 QList<Device *> DevicePlugin::myDevices() const
 {
     QList<DeviceClassId> myDeviceClassIds;
@@ -436,7 +481,7 @@ QList<Device *> DevicePlugin::myDevices() const
 }
 
 /*!
- Find a certain device from myDevices() by its params. All parameters must
+ Find a certain device from myDevices() by its \a params. All parameters must
  match or the device will not be found. Be prepared for nullptrs.
  */
 Device *DevicePlugin::findDeviceByParams(const ParamList &params) const
@@ -456,11 +501,11 @@ Device *DevicePlugin::findDeviceByParams(const ParamList &params) const
 }
 
 /*!
- Transmits data contained in \a rawData on the Radio433 or Radio868
- devices, depending on the hardware requested by this plugin.
- \sa DevicePlugin::requiredHardware()
- */
+ Transmits data contained in \a rawData on the \l{Radio433} devices, depending on the hardware requested by this plugin.
+ Returns true if, the \a rawData with a certain \a delay (pulse length) can be sent.
 
+ \sa Radio433, requiredHardware()
+ */
 bool DevicePlugin::transmitData(int delay, QList<int> rawData)
 {
     switch (requiredHardware()) {
@@ -479,12 +524,24 @@ bool DevicePlugin::transmitData(int delay, QList<int> rawData)
  Starts a SSDP search for a certain \a searchTarget (ST). Certain UPnP devices need a special ST (i.e. "udap:rootservice"
  for LG Smart Tv's), otherwise they will not respond on the SSDP search. Each HTTP request to this device needs sometimes
  also a special \a userAgent, which will be written into the HTTP header.
+
  \sa DevicePlugin::requiredHardware(), DevicePlugin::upnpDiscoveryFinished()
  */
-
 void DevicePlugin::upnpDiscover(QString searchTarget, QString userAgent)
 {
     if(requiredHardware().testFlag(DeviceManager::HardwareResourceUpnpDisovery)){
         deviceManager()->m_upnpDiscovery->discoverDevices(searchTarget, userAgent, pluginId());
     }
+
+}
+
+QStringList DevicePlugin::verifyFields(const QStringList &fields, const QJsonObject &value) const
+{
+    QStringList ret;
+    foreach (const QString &field, fields) {
+        if (!value.contains(field)) {
+            ret << field;
+        }
+    }
+    return ret;
 }

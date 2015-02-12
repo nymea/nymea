@@ -62,6 +62,8 @@ public:
     virtual void radioData(const QList<int> &rawData) {Q_UNUSED(rawData)}
     virtual void guhTimer() {}
 
+    virtual void replyReady(QNetworkReply *reply) {Q_UNUSED(reply)}
+
     // Configuration
     virtual QList<ParamType> configurationDescription() const;
     DeviceManager::DeviceError setConfiguration(const ParamList &configuration);
@@ -89,7 +91,13 @@ protected:
     QList<Device*> myDevices() const;
     Device* findDeviceByParams(const ParamList &params) const;
 
+    // Radio 433
     bool transmitData(int delay, QList<int> rawData);
+
+    // Network manager
+    QNetworkReply *get(const QNetworkRequest &request);
+    QNetworkReply *post(const QNetworkRequest &request, const QByteArray &data);
+    QNetworkReply *put(const QNetworkRequest &request, const QByteArray &data);
 
 private:
     void initPlugin(const QJsonObject &metaData, DeviceManager *deviceManager);

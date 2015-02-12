@@ -404,18 +404,18 @@ DeviceManager::DeviceError DevicePlugin::setConfigValue(const QString &paramName
         if (paramType.name() == paramName) {
             if (!value.canConvert(paramType.type())) {
                 qWarning() << QString("Wrong parameter type for param %1. Got %2. Expected %3.")
-                    .arg(paramName).arg(value.toString()).arg(QVariant::typeToName(paramType.type()));
+                              .arg(paramName).arg(value.toString()).arg(QVariant::typeToName(paramType.type()));
                 return DeviceManager::DeviceErrorInvalidParameter;
             }
 
             if (paramType.maxValue().isValid() && value > paramType.maxValue()) {
                 qWarning() << QString("Value out of range for param %1. Got %2. Max: %3.")
-                        .arg(paramName).arg(value.toString()).arg(paramType.maxValue().toString());
+                              .arg(paramName).arg(value.toString()).arg(paramType.maxValue().toString());
                 return DeviceManager::DeviceErrorInvalidParameter;
             }
             if (paramType.minValue().isValid() && value < paramType.minValue()) {
                 qWarning() << QString("Value out of range for param %1. Got: %2. Min: %3.")
-                        .arg(paramName).arg(value.toString()).arg(paramType.minValue().toString());
+                              .arg(paramName).arg(value.toString()).arg(paramType.minValue().toString());
                 return DeviceManager::DeviceErrorInvalidParameter;
             }
             found = true;
@@ -502,6 +502,36 @@ bool DevicePlugin::transmitData(int delay, QList<int> rawData)
         qWarning() << "Unknown harware type. Cannot send.";
     }
     return false;
+}
+
+QNetworkReply *DevicePlugin::get(const QNetworkRequest &request)
+{
+    if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
+        return deviceManager()->m_networkManager->get(pluginId(), request);
+    } else {
+        qWarning() << "ERROR: network manager resource missing for plugin " << pluginName();
+    }
+    return nullptr;
+}
+
+QNetworkReply *DevicePlugin::post(const QNetworkRequest &request, const QByteArray &data)
+{
+    if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
+        return deviceManager()->m_networkManager->post(pluginId(), request, data);
+    } else {
+        qWarning() << "ERROR: network manager resource missing for plugin " << pluginName();
+    }
+    return nullptr;
+}
+
+QNetworkReply *DevicePlugin::put(const QNetworkRequest &request, const QByteArray &data)
+{
+    if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
+        return deviceManager()->m_networkManager->put(pluginId(), request, data);
+    } else {
+        qWarning() << "ERROR: network manager resource missing for plugin " << pluginName();
+    }
+    return nullptr;
 }
 
 QStringList DevicePlugin::verifyFields(const QStringList &fields, const QJsonObject &value) const

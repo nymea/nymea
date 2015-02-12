@@ -93,8 +93,8 @@ void UpnpDiscovery::readData()
         readDatagram(data.data(), data.size(), &hostAddress);
     }
 
-    qDebug() << "======================";
-    qDebug() << data;
+    //qDebug() << "======================";
+    //qDebug() << data;
 
     if (data.contains("NOTIFY")) {
         emit upnpNotify(data);

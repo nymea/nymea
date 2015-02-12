@@ -34,6 +34,7 @@ SOURCES += plugin/device.cpp \
            types/param.cpp \
            types/paramdescriptor.cpp \
            types/statedescriptor.cpp \
+    hardware/upnpdiscovery/upnpdiscoveryrequest.cpp
 
 HEADERS += plugin/device.h \
            plugin/deviceclass.h \
@@ -63,3 +64,4 @@ HEADERS += plugin/device.h \
            types/paramdescriptor.h \
            types/statedescriptor.h \
            typeutils.h \
+    hardware/upnpdiscovery/upnpdiscoveryrequest.h

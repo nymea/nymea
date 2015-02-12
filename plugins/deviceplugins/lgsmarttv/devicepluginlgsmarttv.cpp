@@ -63,6 +63,14 @@ DeviceManager::DeviceError DevicePluginLgSmartTv::discoverDevices(const DeviceCl
 
 DeviceManager::DeviceSetupStatus DevicePluginLgSmartTv::setupDevice(Device *device)
 {
+
+    foreach (Device* d, myDevices()) {
+        if (d->paramValue("uuid").toString() == device->paramValue("uuid").toString()) {
+            qWarning() << "LG Smart Tv (" << device->paramValue("model").toString() << ")" << "allready added....";
+            return DeviceManager::DeviceSetupStatusFailure;
+        }
+    }
+
     device->setName("LG Smart Tv (" + device->paramValue("model").toString() + ")");
 
     UpnpDeviceDescriptor upnpDeviceDescriptor;

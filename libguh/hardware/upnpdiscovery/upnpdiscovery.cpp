@@ -38,17 +38,9 @@ UpnpDiscovery::UpnpDiscovery(QObject *parent) :
         return;
     }
 
-    m_deviceList.clear();
-    m_informationRequestList.clear();
-
     // network access manager for requesting device information
     m_networkAccessManager = new QNetworkAccessManager(this);
-    connect(m_networkAccessManager,SIGNAL(finished(QNetworkReply*)),this,SLOT(replyFinished(QNetworkReply*)));
-
-    // discovery refresh timer
-    m_timer = new QTimer(this);
-    m_timer->setSingleShot(true);
-    connect(m_timer, &QTimer::timeout, this, &UpnpDiscovery::discoverTimeout);
+    connect(m_networkAccessManager, &QNetworkAccessManager::finished, this, &UpnpDiscovery::replyFinished);
 
     connect(this,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(error(QAbstractSocket::SocketError)));
     connect(this, &UpnpDiscovery::readyRead, this, &UpnpDiscovery::readData);
@@ -58,46 +50,30 @@ UpnpDiscovery::UpnpDiscovery(QObject *parent) :
 
 bool UpnpDiscovery::discoverDevices(const QString &searchTarget, const QString &userAgent, const PluginId &pluginId)
 {
-    // clear the list...
-    m_deviceList.clear();
-    foreach (QNetworkReply* reply, m_informationRequestList.keys()) {
-        m_informationRequestList.remove(reply);
-        reply->deleteLater();
-    }
-
     if(state() != BoundState){
         qDebug() << "ERROR: UPnP not bound to port 1900";
         return false;
     }
 
-    m_searchTarget = searchTarget;
-    m_userAgent = userAgent;
-    m_pluginId = pluginId;
+    // create a new request
+    UpnpDiscoveryRequest *request = new UpnpDiscoveryRequest(this, pluginId, searchTarget, userAgent);
+    connect(request, &UpnpDiscoveryRequest::discoveryTimeout, this, &UpnpDiscovery::discoverTimeout);
 
-    QByteArray ssdpSearchMessage = QByteArray("M-SEARCH * HTTP/1.1\r\n"
-                                              "HOST:239.255.255.250:1900\r\n"
-                                              "MAN:\"ssdp:discover\"\r\n"
-                                              "MX:2\r\n"
-                                              "ST: " + m_searchTarget.toUtf8() + "\r\n"
-                                              "USR-AGENT: " + m_userAgent.toUtf8() + "\r\n\r\n");
-
-    qDebug() << "--> UPnP discovery called.";
-    writeDatagram(ssdpSearchMessage, m_host, m_port);
-
-    m_timer->start(3000);
+    request->discover();
+    m_discoverRequests.append(request);
     return true;
 }
 
-void UpnpDiscovery::requestDeviceInformation(const UpnpDeviceDescriptor &upnpDeviceDescriptor)
+void UpnpDiscovery::requestDeviceInformation(const QNetworkRequest &networkRequest, const UpnpDeviceDescriptor &upnpDeviceDescriptor)
 {
-    QNetworkRequest deviceRequest;
-    deviceRequest.setUrl(upnpDeviceDescriptor.location());
-    deviceRequest.setHeader(QNetworkRequest::ContentTypeHeader,QVariant("text/xml"));
-    deviceRequest.setHeader(QNetworkRequest::UserAgentHeader,QVariant(m_userAgent));
-
     QNetworkReply *replay;
-    replay = m_networkAccessManager->get(deviceRequest);
+    replay = m_networkAccessManager->get(networkRequest);
     m_informationRequestList.insert(replay, upnpDeviceDescriptor);
+}
+
+void UpnpDiscovery::sendToMulticast(const QByteArray &data)
+{
+    writeDatagram(data, m_host, m_port);
 }
 
 void UpnpDiscovery::error(QAbstractSocket::SocketError error)
@@ -117,8 +93,8 @@ void UpnpDiscovery::readData()
         readDatagram(data.data(), data.size(), &hostAddress);
     }
 
-//    qDebug() << "======================";
-//    qDebug() << data;
+    qDebug() << "======================";
+    qDebug() << data;
 
     if (data.contains("NOTIFY")) {
         emit upnpNotify(data);
@@ -144,7 +120,10 @@ void UpnpDiscovery::readData()
         upnpDeviceDescriptor.setHostAddress(hostAddress);
         upnpDeviceDescriptor.setPort(location.port());
 
-        requestDeviceInformation(upnpDeviceDescriptor);
+        foreach (UpnpDiscoveryRequest *upnpDiscoveryRequest, m_discoverRequests) {
+            QNetworkRequest networkRequest = upnpDiscoveryRequest->createNetworkRequest(upnpDeviceDescriptor);
+            requestDeviceInformation(networkRequest, upnpDeviceDescriptor);
+        }
     }
 }
 
@@ -210,15 +189,8 @@ void UpnpDiscovery::replyFinished(QNetworkReply *reply)
             }
         }
 
-        // check if we allready have the device in the list
-        bool isAlreadyInList = false;
-        foreach (UpnpDeviceDescriptor deviceDescriptor, m_deviceList) {
-            if (deviceDescriptor.uuid() == upnpDeviceDescriptor.uuid()) {
-                isAlreadyInList = true;
-            }
-        }
-        if (!isAlreadyInList) {
-            m_deviceList.append(upnpDeviceDescriptor);
+        foreach (UpnpDiscoveryRequest *upnpDiscoveryRequest, m_discoverRequests) {
+            upnpDiscoveryRequest->addDeviceDescriptor(upnpDeviceDescriptor);
         }
         break;
     }
@@ -232,5 +204,9 @@ void UpnpDiscovery::replyFinished(QNetworkReply *reply)
 
 void UpnpDiscovery::discoverTimeout()
 {
-    emit discoveryFinished(m_deviceList, m_pluginId);
+    UpnpDiscoveryRequest *discoveryRequest = static_cast<UpnpDiscoveryRequest*>(sender());
+    emit discoveryFinished(discoveryRequest->deviceList(), discoveryRequest->pluginId());
+
+    m_discoverRequests.removeOne(discoveryRequest);
+    delete discoveryRequest;
 }

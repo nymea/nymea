@@ -184,9 +184,8 @@ DeviceManager::DeviceManager(QObject *parent) :
     m_radio433->enable();
     // TODO: error handling if no Radio433 detected (GPIO or network), disable radio433 plugins or something...
 
-    m_upnpDiscovery = new UpnpDiscovery(this);
-    connect(m_upnpDiscovery, &UpnpDiscovery::discoveryFinished, this, &DeviceManager::upnpDiscoveryFinished);
-    connect(m_upnpDiscovery, &UpnpDiscovery::upnpNotify, this, &DeviceManager::upnpNotifyReceived);
+    m_networkManager = new NetworkManager(this);
+    connect(m_networkManager, &NetworkManager::replyReady, this, &DeviceManager::replyReady);
 }
 
 /*! Destructor of the DeviceManager. Each loaded \l{DevicePlugin} will be deleted. */
@@ -935,22 +934,10 @@ void DeviceManager::radio433SignalReceived(QList<int> rawData)
     }
 }
 
-void DeviceManager::upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &deviceDescriptorList, const PluginId &pluginId)
+void DeviceManager::replyReady(const PluginId &pluginId, QNetworkReply *reply)
 {
-    foreach (DevicePlugin *devicePlugin, m_devicePlugins) {
-        if (devicePlugin->requiredHardware().testFlag(HardwareResourceUpnpDisovery) && devicePlugin->pluginId() == pluginId) {
-            devicePlugin->upnpDiscoveryFinished(deviceDescriptorList);
-        }
-    }
-}
-
-void DeviceManager::upnpNotifyReceived(const QByteArray &notifyData)
-{
-    foreach (DevicePlugin *devicePlugin, m_devicePlugins) {
-        if (devicePlugin->requiredHardware().testFlag(HardwareResourceUpnpDisovery)) {
-            devicePlugin->upnpNotifyReceived(notifyData);
-        }
-    }
+    Q_UNUSED(pluginId);
+    Q_UNUSED(reply);
 }
 
 void DeviceManager::timerEvent()

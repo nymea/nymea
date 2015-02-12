@@ -27,8 +27,7 @@
 #include "types/action.h"
 #include "types/vendor.h"
 
-#include "network/upnpdiscovery/upnpdiscovery.h"
-#include "network/upnpdiscovery/upnpdevicedescriptor.h"
+#include "network/networkmanager.h"
 
 #include <QObject>
 #include <QTimer>
@@ -48,7 +47,7 @@ public:
         HardwareResourceRadio433 = 0x01,
         HardwareResourceRadio868 = 0x02,
         HardwareResourceTimer = 0x04,
-        HardwareResourceUpnpDisovery = 0x08
+        HardwareResourceNetworkManager = 0x08
     };
     Q_DECLARE_FLAGS(HardwareResources, HardwareResource)
 
@@ -131,8 +130,7 @@ private slots:
     void slotDeviceStateValueChanged(const QUuid &stateTypeId, const QVariant &value);
 
     void radio433SignalReceived(QList<int> rawData);
-    void upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &deviceDescriptorList, const PluginId &pluginId);
-    void upnpNotifyReceived(const QByteArray &notifyData);
+    void replyReady(const PluginId &pluginId, QNetworkReply *reply);
     void timerEvent();
 
 private:
@@ -159,7 +157,7 @@ private:
     Radio433* m_radio433;
     QTimer m_pluginTimer;
     QList<Device*> m_pluginTimerUsers;
-    UpnpDiscovery* m_upnpDiscovery;
+    NetworkManager *m_networkManager;
 
     QHash<QUuid, QPair<DeviceClassId, ParamList> > m_pairingsJustAdd;
     QHash<QUuid, QPair<DeviceClassId, DeviceDescriptorId> > m_pairingsDiscovery;

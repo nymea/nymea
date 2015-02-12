@@ -2,6 +2,8 @@
 GUH_VERSION_STRING=$$system('dpkg-parsechangelog | sed -n -e "s/^Version: //p"')
 DEFINES += GUH_VERSION_STRING=\\\"$${GUH_VERSION_STRING}\\\"
 
+QT+= network
+
 QMAKE_CXXFLAGS += -Werror
 CONFIG += c++11
 

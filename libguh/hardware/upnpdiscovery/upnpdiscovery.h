@@ -30,10 +30,13 @@
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 
+#include "upnpdiscoveryrequest.h"
 #include "upnpdevicedescriptor.h"
 #include "devicemanager.h"
 
 // reference: http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf
+
+class UpnpDiscoveryRequest;
 
 class UpnpDiscovery : public QUdpSocket
 {
@@ -41,20 +44,20 @@ class UpnpDiscovery : public QUdpSocket
 public:
     explicit UpnpDiscovery(QObject *parent = 0);
     bool discoverDevices(const QString &searchTarget = "ssdp:all", const QString &userAgent = "", const PluginId &pluginId = PluginId());
+    void sendToMulticast(const QByteArray &data);
 
 private:
     QHostAddress m_host;
     qint16 m_port;
-    QTimer *m_timer;
-    PluginId m_pluginId;
-    QString m_searchTarget;
-    QString m_userAgent;
 
     QNetworkAccessManager *m_networkAccessManager;
-    QHash<QNetworkReply*,UpnpDeviceDescriptor> m_informationRequestList;
-    QList<UpnpDeviceDescriptor> m_deviceList;
 
-    void requestDeviceInformation(const UpnpDeviceDescriptor &upnpDeviceDescriptor);
+    QList<UpnpDiscoveryRequest *> m_discoverRequests;
+    QHash<QNetworkReply*,UpnpDeviceDescriptor> m_informationRequestList;
+
+    void requestDeviceInformation(const QNetworkRequest &networkRequest, const UpnpDeviceDescriptor &upnpDeviceDescriptor);
+
+protected:
 
 signals:
     void discoveryFinished(const QList<UpnpDeviceDescriptor> &deviceDescriptorList, const PluginId & pluginId);

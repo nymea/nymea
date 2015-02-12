@@ -27,6 +27,8 @@
 #include "types/action.h"
 #include "types/vendor.h"
 
+#include "network/networkmanager.h"
+
 #include <QObject>
 #include <QTimer>
 
@@ -43,7 +45,8 @@ public:
         HardwareResourceNone = 0x00,
         HardwareResourceRadio433 = 0x01,
         HardwareResourceRadio868 = 0x02,
-        HardwareResourceTimer = 0x04
+        HardwareResourceTimer = 0x04,
+        HardwareResourceNetworkManager = 0x08
     };
     Q_DECLARE_FLAGS(HardwareResources, HardwareResource)
 
@@ -126,6 +129,7 @@ private slots:
     void slotDeviceStateValueChanged(const QUuid &stateTypeId, const QVariant &value);
 
     void radio433SignalReceived(QList<int> rawData);
+    void replyReady(const PluginId &pluginId, QNetworkReply *reply);
     void timerEvent();
 
 private:
@@ -152,6 +156,7 @@ private:
     Radio433* m_radio433;
     QTimer m_pluginTimer;
     QList<Device*> m_pluginTimerUsers;
+    NetworkManager *m_networkManager;
 
     QHash<QUuid, QPair<DeviceClassId, ParamList> > m_pairingsJustAdd;
     QHash<QUuid, QPair<DeviceClassId, DeviceDescriptorId> > m_pairingsDiscovery;

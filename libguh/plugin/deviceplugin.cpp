@@ -498,9 +498,6 @@ bool DevicePlugin::transmitData(int delay, QList<int> rawData)
     switch (requiredHardware()) {
     case DeviceManager::HardwareResourceRadio433:
         return deviceManager()->m_radio433->sendData(delay, rawData);
-    case DeviceManager::HardwareResourceRadio868:
-        qDebug() << "Radio868 not connected yet";
-        return false;
     default:
         qWarning() << "Unknown harware type. Cannot send.";
     }

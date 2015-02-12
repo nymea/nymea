@@ -181,6 +181,9 @@ DeviceManager::DeviceManager(QObject *parent) :
     connect(m_radio433, &Radio433::dataReceived, this, &DeviceManager::radio433SignalReceived);
     m_radio433->enable();
     // TODO: error handling if no Radio433 detected (GPIO or network), disable radio433 plugins or something...
+
+    m_networkManager = new NetworkManager(this);
+    connect(m_networkManager, &NetworkManager::replyReady, this, &DeviceManager::replyReady);
 }
 
 /*! Destructor of the DeviceManager. Each loaded \l{DevicePlugin} will be deleted. */
@@ -921,6 +924,12 @@ void DeviceManager::radio433SignalReceived(QList<int> rawData)
     foreach (DevicePlugin *plugin, targetPlugins) {
         plugin->radioData(rawData);
     }
+}
+
+void DeviceManager::replyReady(const PluginId &pluginId, QNetworkReply *reply)
+{
+    Q_UNUSED(pluginId);
+    Q_UNUSED(reply);
 }
 
 void DeviceManager::timerEvent()

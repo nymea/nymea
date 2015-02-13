@@ -1,0 +1,36 @@
+#!/bin/sh
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#                                                                         #
+#  Copyright (C) 2015 guh                                                 #
+#                                                                         #
+#  This file is part of guh.                                              #
+#                                                                         #
+#  guh is free software: you can redistribute it and/or modify            #
+#  it under the terms of the GNU General Public License as published by   #
+#  the Free Software Foundation, version 2 of the License.                #
+#                                                                         #
+#  guh is distributed in the hope that it will be useful,                 #
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of         #
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the           #
+#  GNU General Public License for more details.                           #
+#                                                                         #
+#  You should have received a copy of the GNU General Public License      #
+#  along with guh. If not, see <http://www.gnu.org/licenses/>.            #
+#                                                                         #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+# restart the guh daemon after update if it's running
+service guhd status > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+        echo -n "Restart guh daemon..."
+        service guhd restart
+        if [ $? -eq 0 ]; then
+                echo "OK!"
+        else
+                echo "FAIL!"
+        fi
+fi
+
+exit 0
+

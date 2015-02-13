@@ -125,7 +125,7 @@
 
 #include "devicemanager.h"
 #include "hardware/radio433/radio433.h"
-#include "hardware/upnpdiscovery/upnpdiscovery.h"
+#include "network/upnpdiscovery/upnpdiscovery.h"
 
 #include <QDebug>
 #include <QFileInfo>

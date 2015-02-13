@@ -27,8 +27,8 @@
 #include "types/action.h"
 #include "types/vendor.h"
 
-#include "hardware/upnpdiscovery/upnpdiscovery.h"
-#include "hardware/upnpdiscovery/upnpdevicedescriptor.h"
+#include "network/upnpdiscovery/upnpdiscovery.h"
+#include "network/upnpdiscovery/upnpdevicedescriptor.h"
 
 #include <QObject>
 #include <QTimer>

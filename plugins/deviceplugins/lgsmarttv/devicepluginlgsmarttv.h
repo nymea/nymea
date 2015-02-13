@@ -19,9 +19,9 @@
 #ifndef DEVICEPLUGINLGSMARTTV_H
 #define DEVICEPLUGINLGSMARTTV_H
 
-#include "hardware/upnpdiscovery/upnpdevicedescriptor.h"
 #include "plugin/deviceplugin.h"
 #include "tvdevice.h"
+#include "network/upnpdiscovery/upnpdevicedescriptor.h"
 
 class DevicePluginLgSmartTv : public DevicePlugin
 {

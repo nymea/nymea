@@ -30,7 +30,7 @@
 #include <QXmlStreamAttributes>
 
 #include "plugin/deviceplugin.h"
-#include "hardware/upnpdiscovery/upnpdevice.h"
+#include "network/upnpdiscovery/upnpdevice.h"
 
 class WemoSwitch : public UpnpDevice
 {

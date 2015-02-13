@@ -33,7 +33,7 @@
 
 #include "plugin/deviceplugin.h"
 #include "tveventhandler.h"
-#include "hardware/upnpdiscovery/upnpdevice.h"
+#include "network/upnpdiscovery/upnpdevice.h"
 
 class TvDevice : public UpnpDevice
 {

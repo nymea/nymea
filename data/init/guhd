@@ -1,4 +1,25 @@
 #! /bin/sh
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#                                                                         #
+#  Copyright (C) 2015 guh                                                 #
+#                                                                         #
+#  This file is part of guh.                                              #
+#                                                                         #
+#  guh is free software: you can redistribute it and/or modify            #
+#  it under the terms of the GNU General Public License as published by   #
+#  the Free Software Foundation, version 2 of the License.                #
+#                                                                         #
+#  guh is distributed in the hope that it will be useful,                 #
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of         #
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the           #
+#  GNU General Public License for more details.                           #
+#                                                                         #
+#  You should have received a copy of the GNU General Public License      #
+#  along with guh. If not, see <http://www.gnu.org/licenses/>.            #
+#                                                                         #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 ### BEGIN INIT INFO
 # Provides:          guhd
 # Required-Start:    $remote_fs $syslog
@@ -12,7 +33,6 @@
 ### END INIT INFO
 
 # Author: Simon Stuerz <simon.stuerz@guh.guru>
-
 # Do NOT "set -e"
 
 # PATH should only include /usr/* if it runs after the mountnfs.sh script

@@ -59,7 +59,6 @@ DeviceManager::HardwareResources DevicePluginIntertechno::requiredHardware() con
 
 DeviceManager::DeviceError DevicePluginIntertechno::executeAction(Device *device, const Action &action)
 {
-
     QList<int> rawData;
     QByteArray binCode;
 
@@ -67,80 +66,80 @@ DeviceManager::DeviceError DevicePluginIntertechno::executeAction(Device *device
 
     // =======================================
     // generate bin from family code
-    if(familyCode == "A"){
+    if (familyCode == "A") {
         binCode.append("00000000");
-    }else if(familyCode == "B"){
+    } else if (familyCode == "B") {
         binCode.append("01000000");
-    }else if(familyCode == "C"){
+    } else if (familyCode == "C") {
         binCode.append("00010000");
-    }else if(familyCode == "D"){
+    } else if (familyCode == "D") {
         binCode.append("01010000");
-    }else if(familyCode == "E"){
+    } else if (familyCode == "E") {
         binCode.append("00000100");
-    }else if(familyCode == "F"){
+    } else if (familyCode == "F") {
         binCode.append("01000100");
-    }else if(familyCode == "G"){
+    } else if (familyCode == "G") {
         binCode.append("01000000");
-    }else if(familyCode == "H"){
+    } else if (familyCode == "H") {
         binCode.append("01010100");
-    }else if(familyCode == "I"){
+    } else if (familyCode == "I") {
         binCode.append("00000001");
-    }else if(familyCode == "J"){
+    } else if (familyCode == "J") {
         binCode.append("01000001");
-    }else if(familyCode == "K"){
+    } else if (familyCode == "K") {
         binCode.append("00010001");
-    }else if(familyCode == "L"){
+    } else if (familyCode == "L") {
         binCode.append("01010001");
-    }else if(familyCode == "M"){
+    } else if (familyCode == "M") {
         binCode.append("00000101");
-    }else if(familyCode == "N"){
+    } else if (familyCode == "N") {
         binCode.append("01000101");
-    }else if(familyCode == "O"){
+    } else if (familyCode == "O") {
         binCode.append("00010101");
-    }else if(familyCode == "P"){
+    } else if (familyCode == "P") {
         binCode.append("01010101");
-    }else{
-        return DeviceManager::DeviceErrorNoError;
     }
 
     QString buttonCode = device->paramValue("buttonCode").toString();
 
     // =======================================
     // generate bin from button code
-    if(familyCode == "1"){
+    if(familyCode == "1") {
         binCode.append("00000000");
-    }else if(familyCode == "2"){
+    } else if (familyCode == "2") {
         binCode.append("01000000");
-    }else if(familyCode == "3"){
+    } else if (familyCode == "3") {
         binCode.append("00010000");
-    }else if(familyCode == "4"){
+    } else if (familyCode == "4") {
         binCode.append("01010000");
-    }else if(familyCode == "5"){
+    } else if (familyCode == "5") {
         binCode.append("00000100");
-    }else if(familyCode == "6"){
+    } else if (familyCode == "6") {
         binCode.append("01000100");
-    }else if(familyCode == "7"){
+    } else if (familyCode == "7") {
         binCode.append("01000000");
-    }else if(familyCode == "8"){
+    } else if (familyCode == "8") {
         binCode.append("01010100");
-    }else if(familyCode == "9"){
+    } else if (familyCode == "9") {
         binCode.append("00000001");
-    }else if(familyCode == "10"){
+    } else if (familyCode == "10") {
         binCode.append("01000001");
-    }else if(familyCode == "11"){
+    } else if (familyCode == "11") {
         binCode.append("00010001");
-    }else if(familyCode == "12"){
+    } else if (familyCode == "12") {
         binCode.append("01010001");
-    }else if(familyCode == "13"){
+    } else if (familyCode == "13") {
         binCode.append("00000101");
-    }else if(familyCode == "14"){
+    } else if (familyCode == "14") {
         binCode.append("01000101");
-    }else if(familyCode == "15"){
+    } else if (familyCode == "15") {
         binCode.append("00010101");
-    }else if(familyCode == "16"){
+    } else if (familyCode == "16") {
         binCode.append("01010101");
-    }else{
-        return DeviceManager::DeviceErrorNoError;
+    }
+
+    if (binCode.length() != 16){
+        return DeviceManager::DeviceErrorInvalidParameter;
     }
 
     // =======================================
@@ -149,13 +148,11 @@ DeviceManager::DeviceError DevicePluginIntertechno::executeAction(Device *device
 
     // =======================================
     // add power nibble
-    if(action.param("power").value().toBool()){
+    if (action.param("power").value().toBool()) {
         binCode.append("0101");
-    }else{
+    } else {
         binCode.append("0100");
     }
-    //qDebug() << "bin code:" << binCode;
-
     // =======================================
     //create rawData timings list
     int delay = 350;
@@ -166,10 +163,10 @@ DeviceManager::DeviceError DevicePluginIntertechno::executeAction(Device *device
 
     // add the code
     foreach (QChar c, binCode) {
-        if(c == '0'){
+        if (c == '0') {
             rawData.append(1);
             rawData.append(3);
-        }else{
+        } else {
             rawData.append(3);
             rawData.append(1);
         }
@@ -177,10 +174,10 @@ DeviceManager::DeviceError DevicePluginIntertechno::executeAction(Device *device
 
     // =======================================
     // send data to hardware resource
-    if(transmitData(delay, rawData)){
+    if (transmitData(delay, rawData)) {
         qDebug() << "transmitted" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
         return DeviceManager::DeviceErrorNoError;
-    }else{
+    } else {
         qWarning() << "ERROR: could not transmitt" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
         return DeviceManager::DeviceErrorHardwareNotAvailable;
     }
@@ -188,15 +185,13 @@ DeviceManager::DeviceError DevicePluginIntertechno::executeAction(Device *device
 
 void DevicePluginIntertechno::radioData(const QList<int> &rawData)
 {
-
-
     // filter right here a wrong signal length
-    if(rawData.length() != 49){
+    if (rawData.length() != 49) {
         return;
     }
     
     QList<Device*> deviceList = deviceManager()->findConfiguredDevices(intertechnoRemoteDeviceClassId);
-    if(deviceList.isEmpty()){
+    if (deviceList.isEmpty()) {
         return;
     }
 
@@ -205,22 +200,22 @@ void DevicePluginIntertechno::radioData(const QList<int> &rawData)
     
     // =======================================
     // average 314
-    if(delay > 300 && delay < 400){
+    if (delay > 300 && delay < 400) {
         // go trough all 48 timings (without sync signal)
-        for(int i = 1; i <= 48; i+=2 ){
+        for (int i = 1; i <= 48; i+=2 ) {
             int div;
             int divNext;
             
             // if short
-            if(rawData.at(i) <= 700){
+            if (rawData.at(i) <= 700) {
                 div = 1;
-            }else{
+            } else {
                 div = 3;
             }
             // if long
-            if(rawData.at(i+1) < 700){
+            if (rawData.at(i+1) < 700) {
                 divNext = 1;
-            }else{
+            } else {
                 divNext = 3;
             }
             
@@ -229,21 +224,21 @@ void DevicePluginIntertechno::radioData(const QList<int> &rawData)
             //                 _
             // if we have  ___| | = 1 -> in 4 delays => 0001
             
-            if(div == 1 && divNext == 3){
+            if (div == 1 && divNext == 3) {
                 binCode.append('0');
-            }else if(div == 3 && divNext == 1){
+            } else if (div == 3 && divNext == 1) {
                 binCode.append('1');
-            }else{
+            } else {
                 return;
             }
         }
-    }else{
+    } else {
         return;
     }
 
     // =======================================
     // Check nibble 16-19, must be 0001
-    if(binCode.mid(16,4) != "0001"){
+    if (binCode.mid(16,4) != "0001") {
         return;
     }
 
@@ -254,9 +249,8 @@ void DevicePluginIntertechno::radioData(const QList<int> &rawData)
     QByteArray familyCodeBin = binCode.left(8);
     int famiyCodeInt = familyCodeBin.toInt(&ok,2);
 
-    if(!ok){
+    if (!ok)
         return;
-    }
 
     switch (famiyCodeInt) {
     case 0b00000000:
@@ -317,9 +311,8 @@ void DevicePluginIntertechno::radioData(const QList<int> &rawData)
     QByteArray buttonCodeBin = binCode.mid(8,8);
     int buttonCodeInt = buttonCodeBin.toInt(&ok,2);
 
-    if(!ok){
+    if (!ok)
         return;
-    }
 
     switch (buttonCodeInt) {
     case 0b00000000:
@@ -377,11 +370,11 @@ void DevicePluginIntertechno::radioData(const QList<int> &rawData)
     // =======================================
     // get power status -> On = 0100, Off = 0001
     bool power;
-    if(binCode.right(4).toInt(0,2) == 5){
+    if (binCode.right(4).toInt(0,2) == 5) {
         power = true;
-    }else if(binCode.right(4).toInt(0,2) == 4){
+    } else if (binCode.right(4).toInt(0,2) == 4) {
         power = false;
-    }else{
+    } else {
         return;
     }
 

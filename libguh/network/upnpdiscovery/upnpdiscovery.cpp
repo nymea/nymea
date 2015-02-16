@@ -15,9 +15,38 @@
  *  along with guh. If not, see <http://www.gnu.org/licenses/>.            *
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/*!
+  \class UpnpDiscovery
+  \brief Allows to detect UPnP devices in the network.
+
+  \ingroup hardware
+  \inmodule libguh
+
+  This resource allows plugins to discover UPnP devices in the network and receive notification messages. The resource
+  will bind a UDP socket to the multicast 239.255.255.250 on port 1900.
+
+  The communication was implementet using following documentation: \l{http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf}
+
+  \sa UpnpDevice, UpnpDeviceDescriptor
+*/
+
+/*!
+ \fn UpnpDiscovery::discoveryFinished(const QList<UpnpDeviceDescriptor> &deviceDescriptorList, const PluginId & pluginId)
+ This signal will be emitted if the discovery call from a \l{DevicePlugin}{Plugin} with the given \a pluginId is finished. The found devices
+ will be passed with the \a deviceDescriptorList paramter.
+ \sa DevicePlugin::upnpDiscoveryFinished()
+ */
+
+/*!
+ \fn UpnpDiscovery::upnpNotify(const QByteArray &notifyMessage)
+ This signal will be emitted when a UPnP NOTIFY message \a notifyMessage will be recognized.
+ \sa DevicePlugin::upnpNotifyReceived()
+ */
+
 
 #include "upnpdiscovery.h"
 
+/*! Construct the hardware resource UpnpDiscovery with the given \a parent. */
 UpnpDiscovery::UpnpDiscovery(QObject *parent) :
     QUdpSocket(parent)
 {
@@ -48,10 +77,12 @@ UpnpDiscovery::UpnpDiscovery(QObject *parent) :
     qDebug() << "--> UPnP discovery created successfully.";
 }
 
+/*! Returns false, if the \l{UpnpDiscovery} resource is not available. Returns true, if a device with
+ * the given \a searchTarget, \a userAgent and \a pluginId can be discovered.*/
 bool UpnpDiscovery::discoverDevices(const QString &searchTarget, const QString &userAgent, const PluginId &pluginId)
 {
     if(state() != BoundState){
-        qDebug() << "ERROR: UPnP not bound to port 1900";
+        qWarning() << "ERROR: UPnP not bound to port 1900";
         return false;
     }
 
@@ -64,6 +95,7 @@ bool UpnpDiscovery::discoverDevices(const QString &searchTarget, const QString &
     return true;
 }
 
+
 void UpnpDiscovery::requestDeviceInformation(const QNetworkRequest &networkRequest, const UpnpDeviceDescriptor &upnpDeviceDescriptor)
 {
     QNetworkReply *replay;
@@ -71,6 +103,7 @@ void UpnpDiscovery::requestDeviceInformation(const QNetworkRequest &networkReque
     m_informationRequestList.insert(replay, upnpDeviceDescriptor);
 }
 
+/*! This method will be called to send the SSDP message \a data to the UPnP multicast.*/
 void UpnpDiscovery::sendToMulticast(const QByteArray &data)
 {
     writeDatagram(data, m_host, m_port);

@@ -43,6 +43,8 @@
     \value HardwareResourceTimer
         Refers to the global timer managed by the \l{DeviceManager}. Plugins should not create their own timers,
         but rather request the global timer using the hardware resources.
+    \value HardwareResourceUpnpDisovery
+        Allowes plugins to search a UPnP devices in the network.
 */
 
 /*! \enum DeviceManager::DeviceError

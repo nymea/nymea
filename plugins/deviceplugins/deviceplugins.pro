@@ -15,6 +15,8 @@ SUBDIRS += elro         \
     datetime            \
     genericelements     \
     commandlauncher     \
+    unitec              \
+    leynew              \
 
 boblight {
     SUBDIRS += boblight

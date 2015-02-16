@@ -46,20 +46,9 @@
  on timer events.
  */
 
-/*!
-<<<<<<< HEAD
- \fn void DevicePlugin::upnpDiscoveryFinished(QList<UpnpDevice> deviceList)
- If the plugin has requested the upnp \a deviceList using \l{DevicePlugin::upnpDiscover(QString searchTarget)},
- this slot will be called after 3 seconds (search timeout). The list will contain all devices available on in
- the network, which responded to the given search target string
- \sa DevicePlugin::upnpDiscover()
- */
 
 /*!
- \fn void DevicePlugin::executeAction(Device *device, const Action &action)
-=======
  \fn DeviceManager::DeviceError DevicePlugin::executeAction(Device *device, const Action &action)
->>>>>>> 5068905c376398c1cd754811b15f5be51da73a3d
  This will be called to actually execute actions on the hardware. The \{Device} and
  the \{Action} are contained in the \a device and \a action parameters.
  Return the appropriate \l{DeviceManager::DeviceError}{DeviceError}.
@@ -506,11 +495,11 @@ Device *DevicePlugin::findDeviceByParams(const ParamList &params) const
 
  \sa Radio433, requiredHardware()
  */
-bool DevicePlugin::transmitData(int delay, QList<int> rawData)
+bool DevicePlugin::transmitData(int delay, QList<int> rawData, int repetitions)
 {
     switch (requiredHardware()) {
     case DeviceManager::HardwareResourceRadio433:
-        return deviceManager()->m_radio433->sendData(delay, rawData);
+        return deviceManager()->m_radio433->sendData(delay, rawData, repetitions);
     case DeviceManager::HardwareResourceRadio868:
         qDebug() << "Radio868 not connected yet";
         return false;

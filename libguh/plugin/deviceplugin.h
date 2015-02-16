@@ -91,8 +91,8 @@ protected:
     QList<Device*> myDevices() const;
     Device* findDeviceByParams(const ParamList &params) const;
 
-    bool transmitData(int delay, QList<int> rawData);
     void upnpDiscover(QString searchTarget = "ssdp:all", QString userAgent = QString());
+    bool transmitData(int delay, QList<int> rawData, int repetitions = 10);
 
 private:
     void initPlugin(const QJsonObject &metaData, DeviceManager *deviceManager);

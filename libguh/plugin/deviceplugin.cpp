@@ -24,8 +24,7 @@
   \inmodule libguh
 
   When implementing a new plugin, start by subclassing this and implementing the following
-  pure virtual methods: \l{DevicePlugin::pluginName()}, \l{DevicePlugin::pluginId()},
-  \l{DevicePlugin::supportedDevices()} and \l{DevicePlugin::requiredHardware()}
+  pure virtual method \l{DevicePlugin::requiredHardware()}
 */
 
 /*!
@@ -47,11 +46,18 @@
  */
 
 /*!
- \fn void DevicePlugin::upnpDiscoveryFinished(QList<UpnpDevice> deviceList)
- If the plugin has requested the upnp \a deviceList using \l{DevicePlugin::upnpDiscover(QString searchTarget)},
- this slot will be called after 3 seconds (search timeout). The list will contain all devices available on in
- the network, which responded to the given search target string
- \sa DevicePlugin::upnpDiscover()
+ \fn void DevicePlugin::upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &upnpDeviceDescriptorList)
+ If the plugin has requested the UPnP device list using \l{DevicePlugin::upnpDiscover()}, this slot will be called after 3
+ seconds (search timeout). The \a upnpDeviceDescriptorList will contain the description of all UPnP devices available
+ in the network.
+ \sa upnpDiscover(), UpnpDeviceDescriptor, UpnpDiscovery::discoveryFinished()
+ */
+
+/*!
+ \fn void DevicePlugin::upnpNotifyReceived(const QByteArray &notifyData)
+ If a UPnP device will notify a NOTIFY message in the network, the \l{UpnpDiscovery} will catch the
+ notification data and call this method with the \a notifyData.
+ \sa UpnpDiscovery
  */
 
 /*!
@@ -498,7 +504,7 @@ Device *DevicePlugin::findDeviceByParams(const ParamList &params) const
 
 /*!
  Transmits data contained in \a rawData on the \l{Radio433} devices, depending on the hardware requested by this plugin.
- Returns true if, the \a rawData with a certain \a delay (pulse length) can be sent.
+ Returns true if, the \a rawData with a certain \a delay (pulse length) can be sent \a repetitions times.
 
  \sa Radio433, requiredHardware()
  */

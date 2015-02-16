@@ -68,8 +68,6 @@ private slots:
     void readData();
     void replyFinished(QNetworkReply *reply);
     void discoverTimeout();
-
-public slots:
 };
 
 #endif // UPNPDISCOVERY_H

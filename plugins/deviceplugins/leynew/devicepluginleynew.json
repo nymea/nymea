@@ -15,7 +15,7 @@
                         {
                             "name": "ID",
                             "type": "QString",
-                            "allowedValues": ["0115", "0014"]
+                            "allowedValues": ["0008", "0115", "0014"]
                         }
                     ],
                     "actionTypes": [

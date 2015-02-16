@@ -85,6 +85,8 @@ DeviceManager::DeviceError DevicePluginLeynew::executeAction(Device *device, con
         binCode.append("001101000001");
     } else if (device->paramValue("ID") == "0014") {
         binCode.append("110000010101");
+    } else if (device->paramValue("ID") == "0008") {
+        binCode.append("111101010101");
     } else {
         return DeviceManager::DeviceErrorInvalidParameter;
     }
@@ -96,37 +98,73 @@ DeviceManager::DeviceError DevicePluginLeynew::executeAction(Device *device, con
         binCode.append("000000000011");
     } else if (action.actionTypeId() == brightnessDownActionTypeId) {
         binCode.append("000000001100");
-    } if (action.actionTypeId() == powerActionTypeId) {
+    } else if (action.actionTypeId() == powerActionTypeId) {
         binCode.append("000011000000");
+    } else if (action.actionTypeId() == redActionTypeId) {
+        binCode.append("000000001111");
+    } else if (action.actionTypeId() == greenActionTypeId) {
+        binCode.append("000000110011");
+    } else if (action.actionTypeId() == blueActionTypeId) {
+        binCode.append("000011000011");
+    } else if (action.actionTypeId() == whiteActionTypeId) {
+        binCode.append("000000111100");
+    } else if (action.actionTypeId() == orangeActionTypeId) {
+        binCode.append("000011001100");
+    } else if (action.actionTypeId() == yellowActionTypeId) {
+        binCode.append("000011110000");
+    } else if (action.actionTypeId() == cyanActionTypeId) {
+        binCode.append("001100000011");
+    } else if (action.actionTypeId() == purpleActionTypeId) {
+        binCode.append("110000000011");
+    } else if (action.actionTypeId() == playPauseActionTypeId) {
+        binCode.append("000000110000");
+    } else if (action.actionTypeId() == speedUpActionTypeId) {
+        binCode.append("001100110000");
+    } else if (action.actionTypeId() == speedDownActionTypeId) {
+        binCode.append("110000000000");
+    } else if (action.actionTypeId() == autoActionTypeId) {
+        binCode.append("001100001100");
+    } else if (action.actionTypeId() == flashActionTypeId) {
+        binCode.append("110011000000");
+    } else if (action.actionTypeId() == jump3ActionTypeId) {
+        binCode.append("111100001100");
+    } else if (action.actionTypeId() == jump7ActionTypeId) {
+        binCode.append("001111000000");
+    } else if (action.actionTypeId() == fade3ActionTypeId) {
+        binCode.append("110000110000");
+    } else if (action.actionTypeId() == fade7ActionTypeId) {
+        binCode.append("001100000000");
+    } else {
+        return DeviceManager::DeviceErrorInvalidParameter;
     }
 
     // =======================================
     //create rawData timings list
-    int delay = 200;
+    int delay = 50;
 
     int repetitions = 20;
 
     // sync signal (starting with ON)
-    rawData.append(1);
-    rawData.append(10);
+    rawData.append(3);
+    rawData.append(90);
 
     // add the code
     foreach (QChar c, binCode) {
         if(c == '0'){
-            //   _ _
-            //  |   |_
-            rawData.append(2);
-            rawData.append(1);
-        }else{
             //   _
             //  | |_ _
-            rawData.append(1);
-            rawData.append(2);
+            rawData.append(3);
+            rawData.append(9);
+        }else{
+            //   _ _
+            //  |   |_
+            rawData.append(9);
+            rawData.append(3);
         }
     }
 
-    qDebug() << binCode;
-    qDebug() << delay << "*"  << rawData;
+    //qDebug() << binCode;
+    //qDebug() << delay << "*"  << rawData;
 
     // =======================================
     // send data to hardware resource

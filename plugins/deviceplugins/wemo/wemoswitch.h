@@ -30,58 +30,19 @@
 #include <QXmlStreamAttributes>
 
 #include "plugin/deviceplugin.h"
+#include "network/upnpdiscovery/upnpdevice.h"
 
-class WemoSwitch : public QObject
+class WemoSwitch : public UpnpDevice
 {
     Q_OBJECT
 public:
-    explicit WemoSwitch(QObject *parent = 0);
-
-    void setLocation(const QUrl &location);
-    QUrl location() const;
-
-    void setHostAddress(const QHostAddress &hostAddress);
-    QHostAddress hostAddress() const;
-
-    void setPort(const int &port);
-    int port() const;
-
-    void setManufacturer(const QString &manufacturer);
-    QString manufacturer() const;
-
-    void setName(const QString &name);
-    QString name() const;
-
-    void setDeviceType(const QString &deviceType);
-    QString deviceType() const;
-
-    void setModelDescription(const QString &modelDescription);
-    QString modelDescription() const;
-
-    void setModelName(const QString &modelName);
-    QString modelName() const;
-
-    void setSerialNumber(const QString &serialNumber);
-    QString serialNumber() const;
-
-    void setUuid(const QString &uuid);
-    QString uuid() const;
+    explicit WemoSwitch(QObject *parent = 0, UpnpDeviceDescriptor upnpDeviceDescriptor = UpnpDeviceDescriptor());
+    ~WemoSwitch();
 
     bool powerState();
     bool reachable();
 
 private:
-    QUrl m_location;
-    QHostAddress m_hostAddress;
-    int m_port;
-    QString m_name;
-    QString m_deviceType;
-    QString m_modelName;
-    QString m_modelDescription;
-    QString m_manufacturer;
-    QString m_serialNumber;
-    QString m_uuid;
-
     QNetworkAccessManager *m_manager;
     QNetworkReply *m_refrashReplay;
     QNetworkReply *m_setPowerReplay;
@@ -99,7 +60,7 @@ private slots:
 
 public slots:
     void refresh();
-    void setPower(const bool &power,  const ActionId &actionId);
+    bool setPower(const bool &power,  const ActionId &actionId);
 };
 
 #endif // WEMOSWITCH_H

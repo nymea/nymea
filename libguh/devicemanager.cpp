@@ -43,6 +43,8 @@
     \value HardwareResourceTimer
         Refers to the global timer managed by the \l{DeviceManager}. Plugins should not create their own timers,
         but rather request the global timer using the hardware resources.
+    \value HardwareResourceUpnpDisovery
+        Allowes plugins to search a UPnP devices in the network.
 */
 
 /*! \enum DeviceManager::DeviceError
@@ -181,6 +183,10 @@ DeviceManager::DeviceManager(QObject *parent) :
     connect(m_radio433, &Radio433::dataReceived, this, &DeviceManager::radio433SignalReceived);
     m_radio433->enable();
     // TODO: error handling if no Radio433 detected (GPIO or network), disable radio433 plugins or something...
+
+    m_upnpDiscovery = new UpnpDiscovery(this);
+    connect(m_upnpDiscovery, &UpnpDiscovery::discoveryFinished, this, &DeviceManager::upnpDiscoveryFinished);
+    connect(m_upnpDiscovery, &UpnpDiscovery::upnpNotify, this, &DeviceManager::upnpNotifyReceived);
 }
 
 /*! Destructor of the DeviceManager. Each loaded \l{DevicePlugin} will be deleted. */
@@ -920,6 +926,24 @@ void DeviceManager::radio433SignalReceived(QList<int> rawData)
 
     foreach (DevicePlugin *plugin, targetPlugins) {
         plugin->radioData(rawData);
+    }
+}
+
+void DeviceManager::upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &deviceDescriptorList, const PluginId &pluginId)
+{
+    foreach (DevicePlugin *devicePlugin, m_devicePlugins) {
+        if (devicePlugin->requiredHardware().testFlag(HardwareResourceUpnpDisovery) && devicePlugin->pluginId() == pluginId) {
+            devicePlugin->upnpDiscoveryFinished(deviceDescriptorList);
+        }
+    }
+}
+
+void DeviceManager::upnpNotifyReceived(const QByteArray &notifyData)
+{
+    foreach (DevicePlugin *devicePlugin, m_devicePlugins) {
+        if (devicePlugin->requiredHardware().testFlag(HardwareResourceUpnpDisovery)) {
+            devicePlugin->upnpNotifyReceived(notifyData);
+        }
     }
 }
 

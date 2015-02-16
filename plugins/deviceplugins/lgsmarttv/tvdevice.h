@@ -33,12 +33,13 @@
 
 #include "plugin/deviceplugin.h"
 #include "tveventhandler.h"
+#include "network/upnpdiscovery/upnpdevice.h"
 
-class TvDevice : public QObject
+class TvDevice : public UpnpDevice
 {
     Q_OBJECT
 public:
-    explicit TvDevice(QObject *parent = 0);
+    explicit TvDevice(QObject *parent = 0, UpnpDeviceDescriptor upnpDeviceDescriptor = UpnpDeviceDescriptor());
 
     enum RemoteKey{
         Power           = 1,
@@ -110,37 +111,13 @@ public:
     };
 
     // propertys
-    void setLocation(const QUrl &location);
-    QUrl location() const;
-
-    void setHostAddress(const QHostAddress &hostAddress);
-    QHostAddress hostAddress() const;
-
-    void setPort(const int &port);
-    int port() const;
-
-    void setName(const QString &name);
-    QString name() const;
-
-    void setModelName(const QString &modelName);
-    QString modelName() const;
-
-    void setManufacturer(const QString &manufacturer);
-    QString manufacturer() const;
-
-    void setDeviceType(const QString &deviceType);
-    QString deviceType() const;
-
-    void setUuid(const QString &uuid);
-    QString uuid() const;
-
     void setKey(const QString &key);
     QString key() const;
 
     bool paired() const;
 
     // States
-    bool reachable() const;
+    bool isReachable() const;
     bool is3DMode() const;
     int volumeLevel() const;
     bool mute() const;
@@ -160,14 +137,6 @@ public:
     void refresh();
 
 private:
-    QUrl m_location;
-    QHostAddress m_hostAddress;
-    int m_port;
-    QString m_name;
-    QString m_modelName;
-    QString m_manufacturer;
-    QString m_deviceType;
-    QString m_uuid;
     QString m_key;
     bool m_pairingStatus;
 
@@ -209,8 +178,6 @@ signals:
 private slots:
     void replyFinished(QNetworkReply *reply);
     void eventOccured(const QByteArray &data);
-
-public slots:
 
 };
 

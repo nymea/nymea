@@ -16,11 +16,12 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef WEMODISCOVERY_H
-#define WEMODISCOVERY_H
+#ifndef UPNPDISCOVERY_H
+#define UPNPDISCOVERY_H
 
 #include <QUdpSocket>
 #include <QHostAddress>
+#include <QTimer>
 #include <QTimer>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -28,47 +29,45 @@
 #include <QUrl>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
-#include <QXmlStreamAttributes>
 
-#include "wemoswitch.h"
+#include "upnpdiscoveryrequest.h"
+#include "upnpdevicedescriptor.h"
+#include "devicemanager.h"
 
-class WemoDiscovery : public QUdpSocket
+// reference: http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf
+
+class UpnpDiscoveryRequest;
+
+class UpnpDiscovery : public QUdpSocket
 {
     Q_OBJECT
 public:
-    explicit WemoDiscovery(QObject *parent = 0);
+    explicit UpnpDiscovery(QObject *parent = 0);
+    bool discoverDevices(const QString &searchTarget = "ssdp:all", const QString &userAgent = "", const PluginId &pluginId = PluginId());
+    void sendToMulticast(const QByteArray &data);
 
 private:
     QHostAddress m_host;
     qint16 m_port;
 
-    QTimer *m_timeout;
+    QNetworkAccessManager *m_networkAccessManager;
 
-    QNetworkAccessManager *m_manager;
+    QList<UpnpDiscoveryRequest *> m_discoverRequests;
+    QHash<QNetworkReply*,UpnpDeviceDescriptor> m_informationRequestList;
 
-    QByteArray m_deviceInformationData;
-    bool checkXmlData(QByteArray data);
-    QString printXmlData(QByteArray data);
+    void requestDeviceInformation(const QNetworkRequest &networkRequest, const UpnpDeviceDescriptor &upnpDeviceDescriptor);
 
-    QList<WemoSwitch*> m_deviceList;
+protected:
 
 signals:
-    void discoveryDone(QList<WemoSwitch*> deviceList);
+    void discoveryFinished(const QList<UpnpDeviceDescriptor> &deviceDescriptorList, const PluginId & pluginId);
+    void upnpNotify(const QByteArray &notifyMessage);
 
 private slots:
     void error(QAbstractSocket::SocketError error);
-    void sendDiscoverMessage();
     void readData();
-    void discoverTimeout();
-
-    void requestDeviceInformation(QUrl location);
     void replyFinished(QNetworkReply *reply);
-    void parseDeviceInformation(QByteArray data);
-
-public slots:
-    void discover(int timeout);
-
-
+    void discoverTimeout();
 };
 
-#endif // WEMODISCOVERY_H
+#endif // UPNPDISCOVERY_H

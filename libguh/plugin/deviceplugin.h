@@ -61,6 +61,8 @@ public:
     // Hardware input
     virtual void radioData(const QList<int> &rawData) {Q_UNUSED(rawData)}
     virtual void guhTimer() {}
+    virtual void upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &upnpDeviceDescriptorList) {Q_UNUSED(upnpDeviceDescriptorList)}
+    virtual void upnpNotifyReceived(const QByteArray &notifyData) {Q_UNUSED(notifyData)}
 
     // Configuration
     virtual QList<ParamType> configurationDescription() const;
@@ -89,6 +91,7 @@ protected:
     QList<Device*> myDevices() const;
     Device* findDeviceByParams(const ParamList &params) const;
 
+    void upnpDiscover(QString searchTarget = "ssdp:all", QString userAgent = QString());
     bool transmitData(int delay, QList<int> rawData, int repetitions = 10);
 
 private:

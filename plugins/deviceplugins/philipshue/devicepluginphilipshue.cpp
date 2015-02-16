@@ -51,14 +51,14 @@
 #include <QStringList>
 #include <QColor>
 
-DevicePluginPhilipsHue::DevicePluginPhilipsHue():
-    m_discovery(new Discovery(this))
+DevicePluginPhilipsHue::DevicePluginPhilipsHue()
+    //m_discovery(new Discovery(this))
 {
-    connect(m_discovery, &Discovery::discoveryDone, this, &DevicePluginPhilipsHue::discoveryDone);
+//    connect(m_discovery, &Discovery::discoveryDone, this, &DevicePluginPhilipsHue::discoveryDone);
 
-    m_bridge = new HueBridgeConnection(this);
-    connect(m_bridge, &HueBridgeConnection::createUserFinished, this, &DevicePluginPhilipsHue::createUserFinished);
-    connect(m_bridge, &HueBridgeConnection::getFinished, this, &DevicePluginPhilipsHue::getFinished);
+//    m_bridge = new HueBridgeConnection(this);
+//    connect(m_bridge, &HueBridgeConnection::createUserFinished, this, &DevicePluginPhilipsHue::createUserFinished);
+//    connect(m_bridge, &HueBridgeConnection::getFinished, this, &DevicePluginPhilipsHue::getFinished);
 }
 
 DeviceManager::HardwareResources DevicePluginPhilipsHue::requiredHardware() const

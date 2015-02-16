@@ -16,57 +16,46 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef TVDISCOVERY_H
-#define TVDISCOVERY_H
+#ifndef UPNPDISCOVERYREQUEST_H
+#define UPNPDISCOVERYREQUEST_H
 
-#include <QUdpSocket>
-#include <QHostAddress>
-#include <QTimer>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QNetworkRequest>
-#include <QUrl>
-#include <QXmlStreamReader>
-#include <QXmlStreamWriter>
-#include <QXmlStreamAttributes>
+#include <QObject>
+#include <QDebug>
+#include "upnpdiscovery.h"
+#include "upnpdevicedescriptor.h"
+#include "typeutils.h"
 
-#include "tvdevice.h"
+class UpnpDiscovery;
 
-class TvDiscovery : public QUdpSocket
+class UpnpDiscoveryRequest : public QObject
 {
     Q_OBJECT
 public:
-    explicit TvDiscovery(QObject *parent = 0);
+    explicit UpnpDiscoveryRequest(UpnpDiscovery *upnpDiscovery, PluginId pluginId, QString searchTarget, QString userAgent);
+
+    void discover();
+    void addDeviceDescriptor(const UpnpDeviceDescriptor &deviceDescriptor);
+    QNetworkRequest createNetworkRequest(UpnpDeviceDescriptor deviveDescriptor);
+    QList<UpnpDeviceDescriptor> deviceList() const;
+
+    PluginId pluginId() const;
+    QString searchTarget() const;
+    QString userAgent() const;
 
 private:
-    QHostAddress m_host;
-    qint16 m_port;
+    UpnpDiscovery *m_upnpDiscovery;
+    QTimer *m_timer;
+    PluginId m_pluginId;
+    QString m_searchTarget;
+    QString m_userAgent;
 
-    QTimer *m_timeout;
-    QList<TvDevice*> m_tvList;
-
-    QNetworkAccessManager *m_manager;
-    QNetworkReply *m_deviceInformationReplay;
-
-    QByteArray m_deviceInformationData;
-    bool checkXmlData(QByteArray data);
-    QString printXmlData(QByteArray data);
+    QList<UpnpDeviceDescriptor> m_deviceList;
 
 signals:
-    void discoveryDone(const QList<TvDevice*> deviceList);
-
-private slots:
-    void error(QAbstractSocket::SocketError error);
-    void readData();
-    void discoverTimeout();
-
-    void requestDeviceInformation(TvDevice *device);
-    void replyFinished(QNetworkReply *reply);
-    void parseDeviceInformation(QByteArray data);
+    void discoveryTimeout();
 
 public slots:
-    void discover(int timeout);
 
 };
 
-#endif // TVDISCOVERY_H
+#endif // UPNPDISCOVERYREQUEST_H

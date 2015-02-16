@@ -32,6 +32,7 @@ public:
     explicit DevicePluginUnitec();
 
     DeviceManager::HardwareResources requiredHardware() const override;
+    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
 
 public slots:
     DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;

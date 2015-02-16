@@ -53,15 +53,13 @@ void Radio433Trasmitter::run()
         m_gpio->setValue(LOW);
         int flag=1;
 
-        // send raw data 10 times
-        for(int i = 0; i < 10; i++){
-            foreach (int delay, rawData) {
-                // 1 = High, 0 = Low
-                m_gpio->setValue(flag %2);
-                flag++;
-                usleep(delay);
-            }
+        foreach (int delay, rawData) {
+            // 1 = High, 0 = Low
+            m_gpio->setValue(flag %2);
+            flag++;
+            usleep(delay);
         }
+
         m_gpio->setValue(LOW);
     }
     m_queueMutex.unlock();
@@ -86,11 +84,13 @@ bool Radio433Trasmitter::setUpGpio()
     return true;
 }
 
-void Radio433Trasmitter::sendData(int delay, QList<int> rawData)
+void Radio433Trasmitter::sendData(int delay, QList<int> rawData, int repetitions)
 {
     QList<int> timings;
-    foreach (int data, rawData) {
-        timings.append(delay*data);
+    for (int i = 0; i < repetitions; i++) {
+        foreach (int data, rawData) {
+            timings.append(delay*data);
+        }
     }
 
     m_queueMutex.lock();

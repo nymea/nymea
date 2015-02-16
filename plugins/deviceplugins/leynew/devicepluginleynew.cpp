@@ -41,7 +41,7 @@
     The \l{DeviceClass::SetupMethod}{setupMethod} describes the setup method of the \l{Device}.
     The detailed implementation of each \l{DeviceClass} can be found in the source code.
 
-    \quotefile plugins/deviceplugins/elro/devicepluginleynew.json
+    \quotefile plugins/deviceplugins/leynew/devicepluginleynew.json
 */
 
 #include "devicepluginleynew.h"

@@ -1,0 +1,127 @@
+ {
+    "name": "Leynew",
+    "id": "9a6d23e6-fad8-4203-aeab-2e6e5c756990",
+    "vendors": [
+        {
+            "name": "Leynew",
+            "id": "83c649b4-49b0-4482-9334-d86a85bfbd2a",
+            "deviceClasses": [
+                {
+                    "deviceClassId": "6b1f8f37-7eb4-46c4-9f15-a6eb4904999c",
+                    "idName": "rfController",
+                    "name": "RF Controller (LN-CON-RF20B)",
+                    "createMethods": ["user"],
+                    "paramTypes": [
+                        {
+                            "name": "ID",
+                            "type": "QString",
+                            "allowedValues": ["0008", "0115", "0014"]
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "18a30ff1-28d7-4cd0-8388-290db52cd48d",
+                            "idName": "brightnessUp",
+                            "name": "Brightness up"
+                        },
+                        {
+                            "id": "d1d251b6-ffe6-4b0c-bf03-bfa8947caa1d",
+                            "idName": "brightnessDown",
+                            "name": "Brightness down"
+                        },
+                        {
+                            "id": "b8b4ef78-126f-431b-b33f-742754da5af4",
+                            "idName": "playPause",
+                            "name": "Play / Pause"
+                        },
+                        {
+                            "id": "35495871-3b80-458b-b60d-5dc614c9fbf1",
+                            "idName": "power",
+                            "name": "Power"
+                        },
+                        {
+                            "id": "737f77b6-fe2a-45ad-9945-8f0197e57741",
+                            "idName": "red",
+                            "name": "Red"
+                        },
+                        {
+                            "id": "6471e804-fd54-41dd-88ed-ec46d6cc33db",
+                            "idName": "green",
+                            "name": "Green"
+                        },
+                        {
+                            "id": "3abfe3c4-f9b3-4b22-aa3a-86ef99adedbe",
+                            "idName": "blue",
+                            "name": "Blue"
+                        },
+                        {
+                            "id": "6a92d30d-7bce-4238-8e05-d25d3475699c",
+                            "idName": "white",
+                            "name": "White"
+                        },
+                        {
+                            "id": "10a145db-adea-4eff-921d-4ce1ceb940cd",
+                            "idName": "orange",
+                            "name": "Orange"
+                        },
+                        {
+                            "id": "46bbfb97-1600-4e91-930d-6ef4be7bdd9c",
+                            "idName": "yellow",
+                            "name": "Yellow"
+                        },
+                        {
+                            "id": "7e1db150-c68f-4c54-8259-61d050f31555",
+                            "idName": "cyan",
+                            "name": "Cyan"
+                        },
+                        {
+                            "id": "4008076e-ff8c-400b-8983-0a452ed66509",
+                            "idName": "purple",
+                            "name": "Purple"
+                        },
+                        {
+                            "id": "c692b7b0-f891-4729-8e76-4e67f1f6ff4a",
+                            "idName": "auto",
+                            "name": "Auto"
+                        },
+                        {
+                            "id": "14e696ef-6f9f-4095-9731-5f9e541dd416",
+                            "idName": "jump3",
+                            "name": "Jump 3"
+                        },
+                        {
+                            "id": "1e764e9f-5ff1-4cd1-b3a8-7feb2a3f204c",
+                            "idName": "fade3",
+                            "name": "Fade 3"
+                        },
+                        {
+                            "id": "85b37c46-a44c-4989-add2-06b5537fe1a1",
+                            "idName": "speedUp",
+                            "name": "Speed up"
+                        },
+                        {
+                            "id": "7fdb9f73-e773-4839-9137-3771feabe3e9",
+                            "idName": "speedDown",
+                            "name": "Speed down"
+                        },
+                        {
+                            "id": "851e024b-0eee-4eec-8261-478c28c03557",
+                            "idName": "fade7",
+                            "name": "Fade 7"
+                        },
+                        {
+                            "id": "c40392be-323d-48db-a076-40cf4d8cc7eb",
+                            "idName": "jump7",
+                            "name": "Jump 7"
+                        },
+                        {
+                            "id": "db700960-2b02-4ad3-8257-a28cb5fc6356",
+                            "idName": "flash",
+                            "name": "Flash"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

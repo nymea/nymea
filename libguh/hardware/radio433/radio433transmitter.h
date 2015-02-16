@@ -38,7 +38,7 @@ public:
     bool startTransmitter();
     bool available();
 
-    void sendData(int delay, QList<int> rawData);
+    void sendData(int delay, QList<int> rawData, int repetitions);
 
 protected:
     void run();

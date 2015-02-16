@@ -89,7 +89,7 @@ protected:
     QList<Device*> myDevices() const;
     Device* findDeviceByParams(const ParamList &params) const;
 
-    bool transmitData(int delay, QList<int> rawData);
+    bool transmitData(int delay, QList<int> rawData, int repetitions = 10);
 
 private:
     void initPlugin(const QJsonObject &metaData, DeviceManager *deviceManager);

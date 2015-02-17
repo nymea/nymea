@@ -938,7 +938,24 @@ void DeviceManager::replyReady(const PluginId &pluginId, QNetworkReply *reply)
 {
     foreach (DevicePlugin *devicePlugin, m_devicePlugins) {
         if (devicePlugin->requiredHardware().testFlag(HardwareResourceNetworkManager) && devicePlugin->pluginId() == pluginId) {
-            devicePlugin->replyReady(reply);
+            devicePlugin->networkManagerReplyReady(reply);
+	}
+    }
+}
+void DeviceManager::upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &deviceDescriptorList, const PluginId &pluginId)
+{
+    foreach (DevicePlugin *devicePlugin, m_devicePlugins) {
+        if (devicePlugin->requiredHardware().testFlag(HardwareResourceUpnpDisovery) && devicePlugin->pluginId() == pluginId) {
+            devicePlugin->upnpDiscoveryFinished(deviceDescriptorList);
+        }
+    }
+}
+
+void DeviceManager::upnpNotifyReceived(const QByteArray &notifyData)
+{
+    foreach (DevicePlugin *devicePlugin, m_devicePlugins) {
+        if (devicePlugin->requiredHardware().testFlag(HardwareResourceUpnpDisovery)) {
+            devicePlugin->upnpNotifyReceived(notifyData);
         }
     }
 }

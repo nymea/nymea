@@ -42,15 +42,13 @@ public:
 
 private:
     QNetworkAccessManager *m_manager;
-    QHash<QNetworkReply *, PluginId> m_replys;
+    QHash<QNetworkReply *, PluginId> m_replies;
 
 signals:
     void replyReady(const PluginId &pluginId, QNetworkReply *reply);
 
 private slots:
     void replyFinished(QNetworkReply *reply);
-
-public slots:
 
 };
 

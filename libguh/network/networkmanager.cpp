@@ -93,11 +93,8 @@ QNetworkReply *NetworkManager::put(const PluginId &pluginId, const QNetworkReque
 
 void NetworkManager::replyFinished(QNetworkReply *reply)
 {
-    if (reply->error()) {
-        qWarning() << "ERROR: network manager reply error: " << reply->errorString();
-    }
-
     // NOTE: Each plugin has to delete his own replys with deleteLater()!!
+    // NOTE: also the reply->error() has to be handled in each plugin!!
     PluginId pluginId = m_replies.take(reply);
     emit replyReady(pluginId, reply);
 }

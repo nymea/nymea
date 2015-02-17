@@ -27,7 +27,7 @@
     \l{http://www.belkin.com/de/PRODUKTE/home-automation/c/wemo-home-automation/}{Belkin}
     home automation system.
 
-    \underline{NOTE}: The devices can only be discovered if they are already in the local network. In order
+    \note: The devices can only be discovered if they are already in the local network. In order
     to configure the WeMo devices please use the original software.
 
     \chapter Plugin properties
@@ -50,6 +50,11 @@
 #include "plugininfo.h"
 
 #include <QDebug>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QXmlStreamReader>
+#include <QXmlStreamWriter>
+#include <QXmlStreamAttributes>
 
 DeviceClassId wemoSwitchDeviceClassId = DeviceClassId("69d97d3b-a8e6-42f3-afc0-ca8a53eb7cce");
 
@@ -75,28 +80,16 @@ DeviceManager::DeviceError DevicePluginWemo::discoverDevices(const DeviceClassId
 DeviceManager::DeviceSetupStatus DevicePluginWemo::setupDevice(Device *device)
 {
     if (device->deviceClassId() == wemoSwitchDeviceClassId) {
-        foreach (WemoSwitch *wemoSwitch, m_wemoSwitches.keys()) {
-            if (wemoSwitch->serialNumber() == device->paramValue("serial number").toString()) {
-                qWarning() << "WeMo Switch " << wemoSwitch->serialNumber() << " allready added...";
+        foreach (Device *d, myDevices()) {
+            if (d->paramValue("serial number").toString() == device->paramValue("serial number").toString()) {
+                qWarning() << "WeMo Switch " << device->paramValue("serial number").toString() << " allready added...";
                 return DeviceManager::DeviceSetupStatusFailure;
             }
         }
 
-        UpnpDeviceDescriptor upnpDeviceDescriptor;
-        upnpDeviceDescriptor.setFriendlyName(device->paramValue("name").toString());
-        upnpDeviceDescriptor.setHostAddress(QHostAddress(device->paramValue("host address").toString()));
-        upnpDeviceDescriptor.setPort(device->paramValue("port").toInt());
-        upnpDeviceDescriptor.setSerialNumber(device->paramValue("serial number").toString());
-
         device->setName("WeMo Switch (" + device->paramValue("serial number").toString() + ")");
 
-        WemoSwitch *wemoSwitch = new WemoSwitch(this, upnpDeviceDescriptor);
-
-        connect(wemoSwitch,SIGNAL(stateChanged()),this,SLOT(wemoSwitchStateChanged()));
-        connect(wemoSwitch,SIGNAL(setPowerFinished(bool,ActionId)),this,SLOT(setPowerFinished(bool,ActionId)));
-
-        m_wemoSwitches.insert(wemoSwitch,device);
-        wemoSwitch->refresh();
+        refresh(device);
         return DeviceManager::DeviceSetupStatusSuccess;
     }
     return DeviceManager::DeviceSetupStatusFailure;
@@ -104,49 +97,93 @@ DeviceManager::DeviceSetupStatus DevicePluginWemo::setupDevice(Device *device)
 
 DeviceManager::HardwareResources DevicePluginWemo::requiredHardware() const
 {
-    return DeviceManager::HardwareResourceTimer | DeviceManager::HardwareResourceUpnpDisovery;
+    return DeviceManager::HardwareResourceTimer | DeviceManager::HardwareResourceUpnpDisovery | DeviceManager::HardwareResourceNetworkManager;
 }
 
 DeviceManager::DeviceError DevicePluginWemo::executeAction(Device *device, const Action &action)
 {
-    if (device->deviceClassId() == wemoSwitchDeviceClassId) {
-        if (action.actionTypeId() == powerActionTypeId) {
-            WemoSwitch *wemoSwitch = m_wemoSwitches.key(device);
-            if (wemoSwitch->reachable()) {
-                // setPower returns false, if the curent powerState == new powerState
-                if (wemoSwitch->setPower(action.param("power").value().toBool(), action.id())) {
-                    return DeviceManager::DeviceErrorAsync;
-                } else {
-                    return DeviceManager::DeviceErrorNoError;
-                }
-            } else {
-                return DeviceManager::DeviceErrorHardwareNotAvailable;
-            }
-        } else if (action.actionTypeId() == rediscoverActionTypeId) {
-            upnpDiscover("upnp:rootdevice");
-            return DeviceManager::DeviceErrorNoError;
-        }
-        return DeviceManager::DeviceErrorActionTypeNotFound;
+    if (device->deviceClassId() != wemoSwitchDeviceClassId) {
+        return DeviceManager::DeviceErrorDeviceClassNotFound;
     }
-    return DeviceManager::DeviceErrorDeviceClassNotFound;
+
+    // Set power
+    if (action.actionTypeId() == powerActionTypeId) {
+        // Check if wemo device is reachable
+        if (device->stateValue(reachableStateTypeId).toBool()) {
+            // setPower returns false, if the curent powerState is allready the new powerState
+            if (setPower(device, action.param("power").value().toBool(), action.id())) {
+                return DeviceManager::DeviceErrorAsync;
+            } else {
+                return DeviceManager::DeviceErrorNoError;
+            }
+        } else {
+            return DeviceManager::DeviceErrorHardwareNotAvailable;
+        }
+    }
+
+    // Rediscover
+    if (action.actionTypeId() == rediscoverActionTypeId) {
+        upnpDiscover("upnp:rootdevice");
+        return DeviceManager::DeviceErrorNoError;
+    }
+    return DeviceManager::DeviceErrorActionTypeNotFound;
 }
 
 void DevicePluginWemo::deviceRemoved(Device *device)
 {
-    if (!m_wemoSwitches.values().contains(device)) {
-        return;
+    // Check if there is a missing reply for this device
+    foreach (Device *d, m_refreshReplies.values()) {
+        if (d->id() == device->id()) {
+            QNetworkReply * reply = m_refreshReplies.key(device);
+            m_refreshReplies.remove(reply);
+            // Note: delete will be done in networkManagerReplyReady()
+        }
+    }
+    foreach (Device *d, m_setPowerReplies.values()) {
+        if (d->id() == device->id()) {
+            QNetworkReply * reply = m_setPowerReplies.key(device);
+            m_setPowerReplies.remove(reply);
+            // Note: delete will be done in networkManagerReplyReady()
+        }
+    }
+}
+
+void DevicePluginWemo::networkManagerReplyReady(QNetworkReply *reply)
+{
+    if (m_refreshReplies.contains(reply)) {
+        QByteArray data = reply->readAll();
+        Device *device = m_refreshReplies.take(reply);
+        if (reply->error()) {
+            // give only error if we don't already know that is unreachable
+            if (device->stateValue(reachableStateTypeId).toBool()) {
+                qWarning() << "ERROR: WeMo reply error: " << reply->errorString();
+            }
+            device->setStateValue(reachableStateTypeId, false);
+        } else {
+            processRefreshData(data, device);
+        }
+    } else if (m_setPowerReplies.contains(reply)) {
+        QByteArray data = reply->readAll();
+        Device *device = m_setPowerReplies.take(reply);
+        ActionId actionId = m_runningActionExecutions.take(reply);
+        if (reply->error()) {
+            // give only error if we don't already know that is unreachable
+            if (device->stateValue(reachableStateTypeId).toBool()) {
+                qWarning() << "ERROR: WeMo reply error: " << reply->errorString();
+            }
+            device->setStateValue(reachableStateTypeId, false);
+        } else {
+            processSetPowerData(data, device, actionId);
+        }
     }
 
-    WemoSwitch *wemoSwitch= m_wemoSwitches.key(device);
-    qDebug() << "remove wemo swich " << wemoSwitch->serialNumber();
-    m_wemoSwitches.remove(wemoSwitch);
-    wemoSwitch->deleteLater();
+    reply->deleteLater();
 }
 
 void DevicePluginWemo::guhTimer()
 {
-    foreach (WemoSwitch* wemoSwitch, m_wemoSwitches.keys()) {
-        wemoSwitch->refresh();
+    foreach (Device* device, myDevices()) {
+        refresh(device);
     }
 }
 
@@ -177,25 +214,22 @@ void DevicePluginWemo::upnpNotifyReceived(const QByteArray &notifyData)
 
 bool DevicePluginWemo::verifyExistingDevices(UpnpDeviceDescriptor deviceDescriptor)
 {
-    foreach (WemoSwitch *wemoSwitch, m_wemoSwitches.keys()) {
+    foreach (Device* device, myDevices()) {
         // check if we allready have added this Wemo device and verify the params
-        if (wemoSwitch->serialNumber() == deviceDescriptor.serialNumber()) {
-            qDebug() << "verify wemo paramters... of" << wemoSwitch->serialNumber();
-            Device *device = m_wemoSwitches.value(wemoSwitch);
+        if (device->paramValue("serial number").toString() == deviceDescriptor.serialNumber()) {
+            qDebug() << "verify wemo paramters... of" << deviceDescriptor.serialNumber();
             // now check if ip or port changed
             bool somethingChanged = false;
-            if (wemoSwitch->hostAddress() != deviceDescriptor.hostAddress()) {
+            if (device->paramValue("host address").toString() != deviceDescriptor.hostAddress().toString()) {
                 device->setParamValue("host address", deviceDescriptor.hostAddress().toString());
-                wemoSwitch->setHostAddress(deviceDescriptor.hostAddress());
                 somethingChanged = true;
             }
-            if(wemoSwitch->port() != deviceDescriptor.port()){
+            if(device->paramValue("port").toInt() != deviceDescriptor.port()){
                 device->setParamValue("port", deviceDescriptor.port());
-                wemoSwitch->setPort(deviceDescriptor.port());
                 somethingChanged = true;
             }
             if (somethingChanged) {
-                wemoSwitch->refresh();
+                refresh(device);
             }
             return true;
         }
@@ -203,23 +237,62 @@ bool DevicePluginWemo::verifyExistingDevices(UpnpDeviceDescriptor deviceDescript
     return false;
 }
 
-void DevicePluginWemo::wemoSwitchStateChanged()
+void DevicePluginWemo::refresh(Device *device)
 {
-    WemoSwitch *wemoSwitch = static_cast<WemoSwitch*>(sender());
+    QByteArray getBinarayStateMessage("<?xml version=\"1.0\" encoding=\"utf-8\"?><s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\"><s:Body><u:GetBinaryState xmlns:u=\"urn:Belkin:service:basicevent:1\"><BinaryState>1</BinaryState></u:GetBinaryState></s:Body></s:Envelope>");
 
-    if (m_wemoSwitches.contains(wemoSwitch)) {
-        Device * device = m_wemoSwitches.value(wemoSwitch);
-        device->setStateValue(powerStateTypeId, wemoSwitch->powerState());
-        device->setStateValue(reachableStateTypeId, wemoSwitch->reachable());
+    QNetworkRequest request;
+    request.setUrl(QUrl("http://" + device->paramValue("host address").toString() + ":" + device->paramValue("port").toString() + "/upnp/control/basicevent1"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader,QVariant("text/xml; charset=\"utf-8\""));
+    request.setHeader(QNetworkRequest::UserAgentHeader,QVariant("guh"));
+    request.setRawHeader("SOAPACTION", "\"urn:Belkin:service:basicevent:1#GetBinaryState\"");
+
+    QNetworkReply *reply = networkManagerPost(request, getBinarayStateMessage);
+    m_refreshReplies.insert(reply, device);
+}
+
+bool DevicePluginWemo::setPower(Device *device, const bool &power, const ActionId &actionId)
+{
+    // check if the power would change...
+    if (device->stateValue(powerStateTypeId).toBool() == power) {
+        return false;
+    }
+
+    QByteArray setPowerMessage("<?xml version=\"1.0\" encoding=\"utf-8\"?><s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\"><s:Body><u:SetBinaryState xmlns:u=\"urn:Belkin:service:basicevent:1\"><BinaryState>" + QByteArray::number((int)power) + "</BinaryState></u:SetBinaryState></s:Body></s:Envelope>");
+
+    QNetworkRequest request;
+    request.setUrl(QUrl("http://" + device->paramValue("host address").toString() + ":" + device->paramValue("port").toString() + "/upnp/control/basicevent1"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader,QVariant("text/xml; charset=\"utf-8\""));
+    request.setHeader(QNetworkRequest::UserAgentHeader,QVariant("guh"));
+    request.setRawHeader("SOAPACTION", "\"urn:Belkin:service:basicevent:1#SetBinaryState\"");
+
+    QNetworkReply *reply = networkManagerPost(request, setPowerMessage);
+    m_setPowerReplies.insert(reply, device);
+    m_runningActionExecutions.insert(reply, actionId);
+    return true;
+}
+
+void DevicePluginWemo::processRefreshData(const QByteArray &data, Device *device)
+{
+    if (data.contains("<BinaryState>0</BinaryState>")) {
+        device->setStateValue(powerStateTypeId, false);
+        device->setStateValue(reachableStateTypeId, true);
+    } else if (data.contains("<BinaryState>1</BinaryState>")) {
+        device->setStateValue(powerStateTypeId, true);
+        device->setStateValue(reachableStateTypeId, true);
+    } else {
+        device->setStateValue(reachableStateTypeId, false);
     }
 }
 
-void DevicePluginWemo::setPowerFinished(const bool &succeeded, const ActionId &actionId)
+void DevicePluginWemo::processSetPowerData(const QByteArray &data, Device *device, const ActionId &actionId)
 {
-    if (succeeded) {
+    if (data.contains("<BinaryState>1</BinaryState>") || data.contains("<BinaryState>0</BinaryState>")) {
         emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorNoError);
+        device->setStateValue(reachableStateTypeId, true);
+        refresh(device);
     } else {
+        device->setStateValue(reachableStateTypeId, false);
         emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorHardwareNotAvailable);
     }
 }
-

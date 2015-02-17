@@ -20,8 +20,6 @@
 #define DEVICEPLUGINOPENWEATHERMAP_H
 
 #include "plugin/deviceplugin.h"
-#include "openweathermap.h"
-
 
 class DevicePluginOpenweathermap : public DevicePlugin
 {
@@ -33,20 +31,40 @@ class DevicePluginOpenweathermap : public DevicePlugin
 public:
     explicit DevicePluginOpenweathermap();
 
-    OpenWeatherMap *m_openweaher;
-
     DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
     DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
     DeviceManager::HardwareResources requiredHardware() const override;
     DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
 
+    void deviceRemoved(Device *device) override;
+    void networkManagerReplyReady(QNetworkReply *reply) override;
     void guhTimer() override;
 
-private slots:
-    void searchResultsReady(const QList<QVariantMap> &cityList);
-    void weatherDataReady(const QByteArray &data, const DeviceId &deviceId);
+private:
+    QList<QNetworkReply *> m_autodetectionReplies;
+    QList<QNetworkReply *> m_searchReplies;
+    QList<QNetworkReply *> m_searchGeoReplies;
+    QHash<QNetworkReply *, Device *> m_weatherReplies;
 
-public slots:
+    // Autodetection data
+    QHostAddress m_wanIp;
+    QString m_country;
+    QString m_cityName;
+    double m_longitude;
+    double m_latitude;
+
+    void update();
+    void update(Device *device);
+    void searchAutodetect();
+    void search(QString searchString);
+    void searchGeoLocation(double lat, double lon);
+
+    void processAutodetectResponse(QByteArray data);
+    void processSearchResponse(QByteArray data);
+    void processGeoSearchResponse(QByteArray data);
+
+    void processSearchResults(const QList<QVariantMap> &cityList);
+    void processWeatherData(const QByteArray &data, Device *device);
 
 
 };

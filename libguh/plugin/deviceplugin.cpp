@@ -61,6 +61,12 @@
  */
 
 /*!
+ \fn DevicePlugin::networkManagerReplyReady(QNetworkReply *reply)
+ This method will be called whenever a pending network \a reply for this plugin is finished.
+ \sa NetworkManager::replyReady()
+ */
+
+/*!
  \fn void DevicePlugin::executeAction(Device *device, const Action &action)
  This will be called to actually execute actions on the hardware. The \{Device} and
  the \{Action} are contained in the \a device and \a action parameters.
@@ -518,7 +524,14 @@ bool DevicePlugin::transmitData(int delay, QList<int> rawData, int repetitions)
     }
     return false;
 }
-
+/*! Posts a request to obtain the contents of the target \a request and returns a new QNetworkReply object
+ * opened for reading which emits the replyReady() signal whenever new data arrives.
+ * The contents as well as associated headers will be downloaded.
+ *
+ * \note The plugin has to delete the QNetworkReply with the function deleteLater().
+ *
+ * \sa NetworkManager::get()
+ */
 QNetworkReply *DevicePlugin::networkManagerGet(const QNetworkRequest &request)
 {
     if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
@@ -528,7 +541,14 @@ QNetworkReply *DevicePlugin::networkManagerGet(const QNetworkRequest &request)
     }
     return nullptr;
 }
-
+/*! Sends an HTTP POST request to the destination specified by \a request and returns a new QNetworkReply object
+ * opened for reading that will contain the reply sent by the server. The contents of the \a data will be
+ * uploaded to the server.
+ *
+ * \note The plugin has to delete the QNetworkReply with the function deleteLater().
+ *
+ * \sa NetworkManager::post()
+ */
 QNetworkReply *DevicePlugin::networkManagerPost(const QNetworkRequest &request, const QByteArray &data)
 {
     if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
@@ -539,6 +559,12 @@ QNetworkReply *DevicePlugin::networkManagerPost(const QNetworkRequest &request, 
     return nullptr;
 }
 
+/*! Uploads the contents of \a data to the destination \a request and returnes a new QNetworkReply object that will be open for reply.
+ *
+ * \note The plugin has to delete the QNetworkReply with the function deleteLater().
+ *
+ * \sa NetworkManager::put()
+ */
 QNetworkReply *DevicePlugin::networkManagerPut(const QNetworkRequest &request, const QByteArray &data)
 {
     if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {

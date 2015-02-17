@@ -6,10 +6,8 @@ QT+= network
 
 SOURCES += \
     devicepluginopenweathermap.cpp \
-    openweathermap.cpp
 
 HEADERS += \
     devicepluginopenweathermap.h \
-    openweathermap.h
 
 

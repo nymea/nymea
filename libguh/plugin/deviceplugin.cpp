@@ -522,7 +522,7 @@ bool DevicePlugin::transmitData(int delay, QList<int> rawData, int repetitions)
     return false;
 }
 
-QNetworkReply *DevicePlugin::get(const QNetworkRequest &request)
+QNetworkReply *DevicePlugin::networkManagerGet(const QNetworkRequest &request)
 {
     if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
         return deviceManager()->m_networkManager->get(pluginId(), request);
@@ -532,7 +532,7 @@ QNetworkReply *DevicePlugin::get(const QNetworkRequest &request)
     return nullptr;
 }
 
-QNetworkReply *DevicePlugin::post(const QNetworkRequest &request, const QByteArray &data)
+QNetworkReply *DevicePlugin::networkManagerPost(const QNetworkRequest &request, const QByteArray &data)
 {
     if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
         return deviceManager()->m_networkManager->post(pluginId(), request, data);
@@ -542,7 +542,7 @@ QNetworkReply *DevicePlugin::post(const QNetworkRequest &request, const QByteArr
     return nullptr;
 }
 
-QNetworkReply *DevicePlugin::put(const QNetworkRequest &request, const QByteArray &data)
+QNetworkReply *DevicePlugin::networkManagerPut(const QNetworkRequest &request, const QByteArray &data)
 {
     if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
         return deviceManager()->m_networkManager->put(pluginId(), request, data);

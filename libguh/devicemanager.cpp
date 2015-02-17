@@ -938,7 +938,7 @@ void DeviceManager::replyReady(const PluginId &pluginId, QNetworkReply *reply)
 {
     foreach (DevicePlugin *devicePlugin, m_devicePlugins) {
         if (devicePlugin->requiredHardware().testFlag(HardwareResourceNetworkManager) && devicePlugin->pluginId() == pluginId) {
-            devicePlugin->replyReady(reply);
+            devicePlugin->networkManagerReplyReady(reply);
 	}
     }
 }

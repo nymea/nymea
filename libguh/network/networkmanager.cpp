@@ -29,21 +29,21 @@ NetworkManager::NetworkManager(QObject *parent) :
 QNetworkReply *NetworkManager::get(const PluginId &pluginId, const QNetworkRequest &request)
 {
     QNetworkReply  *reply = m_manager->get(request);
-    m_replys.insert(reply, pluginId);
+    m_replies.insert(reply, pluginId);
     return reply;
 }
 
 QNetworkReply *NetworkManager::post(const PluginId &pluginId, const QNetworkRequest &request, const QByteArray &data)
 {
     QNetworkReply  *reply = m_manager->post(request, data);
-    m_replys.insert(reply, pluginId);
+    m_replies.insert(reply, pluginId);
     return reply;
 }
 
 QNetworkReply *NetworkManager::put(const PluginId &pluginId, const QNetworkRequest &request, const QByteArray &data)
 {
     QNetworkReply  *reply = m_manager->put(request, data);
-    m_replys.insert(reply, pluginId);
+    m_replies.insert(reply, pluginId);
     return reply;
 }
 
@@ -54,6 +54,6 @@ void NetworkManager::replyFinished(QNetworkReply *reply)
     }
 
     // NOTE: Each plugin has to delete his own replys with deleteLater()!!
-    PluginId pluginId = m_replys.take(reply);
+    PluginId pluginId = m_replies.take(reply);
     emit replyReady(pluginId, reply);
 }

@@ -64,7 +64,7 @@ public:
     virtual void upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &upnpDeviceDescriptorList) {Q_UNUSED(upnpDeviceDescriptorList)}
     virtual void upnpNotifyReceived(const QByteArray &notifyData) {Q_UNUSED(notifyData)}
 
-    virtual void replyReady(QNetworkReply *reply) {Q_UNUSED(reply)}
+    virtual void networkManagerReplyReady(QNetworkReply *reply) {Q_UNUSED(reply)}
 
     // Configuration
     virtual QList<ParamType> configurationDescription() const;
@@ -100,9 +100,9 @@ protected:
     void upnpDiscover(QString searchTarget = "ssdp:all", QString userAgent = QString());
 
     // Network manager
-    QNetworkReply *get(const QNetworkRequest &request);
-    QNetworkReply *post(const QNetworkRequest &request, const QByteArray &data);
-    QNetworkReply *put(const QNetworkRequest &request, const QByteArray &data);
+    QNetworkReply *networkManagerGet(const QNetworkRequest &request);
+    QNetworkReply *networkManagerPost(const QNetworkRequest &request, const QByteArray &data);
+    QNetworkReply *networkManagerPut(const QNetworkRequest &request, const QByteArray &data);
 
 private:
     void initPlugin(const QJsonObject &metaData, DeviceManager *deviceManager);

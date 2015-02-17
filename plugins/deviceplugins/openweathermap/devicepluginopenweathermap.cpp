@@ -98,7 +98,7 @@ DeviceManager::DeviceSetupStatus DevicePluginOpenweathermap::setupDevice(Device 
     }
 
     device->setName("Weather from OpenWeatherMap (" + device->paramValue("location").toString() + ")");
-    update();
+    update(device);
 
     return DeviceManager::DeviceSetupStatusSuccess;
 }

@@ -169,7 +169,7 @@ DeviceManager::DeviceManager(QObject *parent) :
     qRegisterMetaType<DeviceClassId>();
     qRegisterMetaType<DeviceDescriptor>();
 
-    m_pluginTimer.setInterval(15000);
+    m_pluginTimer.setInterval(10000);
     connect(&m_pluginTimer, &QTimer::timeout, this, &DeviceManager::timerEvent);
 
     m_settingsFile = QCoreApplication::instance()->organizationName() + "/devices";

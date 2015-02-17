@@ -20,14 +20,6 @@
 #define WEMOSWITCH_H
 
 #include <QObject>
-#include <QHostAddress>
-#include <QUrl>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QNetworkRequest>
-#include <QXmlStreamReader>
-#include <QXmlStreamWriter>
-#include <QXmlStreamAttributes>
 
 #include "plugin/deviceplugin.h"
 #include "network/upnpdiscovery/upnpdevice.h"
@@ -37,30 +29,17 @@ class WemoSwitch : public UpnpDevice
     Q_OBJECT
 public:
     explicit WemoSwitch(QObject *parent = 0, UpnpDeviceDescriptor upnpDeviceDescriptor = UpnpDeviceDescriptor());
-    ~WemoSwitch();
 
-    bool powerState();
-    bool reachable();
+    void setPowerState(const bool &powerState);
+    bool powerState() const;
+
+    void setReachable(const bool &reachable);
+    bool reachable() const;
 
 private:
-    QNetworkAccessManager *m_manager;
-    QNetworkReply *m_refrashReplay;
-    QNetworkReply *m_setPowerReplay;
-
     bool m_powerState;
     bool m_reachable;
 
-    ActionId m_actionId;
-signals:
-    void stateChanged();
-    void setPowerFinished(const bool &succeeded, const ActionId &actionId);
-
-private slots:
-    void replyFinished(QNetworkReply *reply);
-
-public slots:
-    void refresh();
-    bool setPower(const bool &power,  const ActionId &actionId);
 };
 
 #endif // WEMOSWITCH_H

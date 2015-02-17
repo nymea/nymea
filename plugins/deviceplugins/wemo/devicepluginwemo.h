@@ -20,7 +20,6 @@
 #define DEVICEPLUGINWEMO_H
 
 #include "plugin/deviceplugin.h"
-#include "wemoswitch.h"
 
 class DevicePluginWemo : public DevicePlugin
 {
@@ -38,22 +37,23 @@ public:
     DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
 
     void deviceRemoved(Device *device) override;
+    void networkManagerReplyReady(QNetworkReply *reply) override;
 
     void guhTimer() override;
     void upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &upnpDeviceDescriptorList) override;
     void upnpNotifyReceived(const QByteArray &notifyData);
 
 private:
-    QHash<WemoSwitch*, Device*> m_wemoSwitches;
+    QHash<QNetworkReply *, Device *> m_refreshReplies;
+    QHash<QNetworkReply *, Device *> m_setPowerReplies;
+    QHash<QNetworkReply *, ActionId> m_runningActionExecutions;
     bool verifyExistingDevices(UpnpDeviceDescriptor deviceDescriptor);
 
-private slots:
-    void wemoSwitchStateChanged();
-    void setPowerFinished(const bool &succeeded, const ActionId &actionId);
+    void refresh(Device* device);
+    bool setPower(Device *device, const bool &power, const ActionId &actionId);
 
-
-public slots:
-
+    void processRefreshData(const QByteArray &data, Device *device);
+    void processSetPowerData(const QByteArray &data, Device *device, const ActionId &actionId);
 
 };
 

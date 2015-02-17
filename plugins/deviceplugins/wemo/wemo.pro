@@ -5,13 +5,10 @@ TARGET = $$qtLibraryTarget(guh_devicepluginwemo)
 QT+= network
 
 SOURCES += \
-    devicepluginwemo.cpp \
-    wemoswitch.cpp
-
+    devicepluginwemo.cpp
 
 HEADERS += \
-    devicepluginwemo.h \
-    wemoswitch.h
+    devicepluginwemo.h
 
 
 

@@ -16,57 +16,27 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef TVDISCOVERY_H
-#define TVDISCOVERY_H
+#ifndef DEVICEPLUGINLEYNEW_H
+#define DEVICEPLUGINLEYNEW_H
 
-#include <QUdpSocket>
-#include <QHostAddress>
-#include <QTimer>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QNetworkRequest>
-#include <QUrl>
-#include <QXmlStreamReader>
-#include <QXmlStreamWriter>
-#include <QXmlStreamAttributes>
+#include "plugin/deviceplugin.h"
 
-#include "tvdevice.h"
-
-class TvDiscovery : public QUdpSocket
+class DevicePluginLeynew : public DevicePlugin
 {
     Q_OBJECT
+
+    Q_PLUGIN_METADATA(IID "guru.guh.DevicePlugin" FILE "devicepluginleynew.json")
+    Q_INTERFACES(DevicePlugin)
+
 public:
-    explicit TvDiscovery(QObject *parent = 0);
+    explicit DevicePluginLeynew();
 
-private:
-    QHostAddress m_host;
-    qint16 m_port;
-
-    QTimer *m_timeout;
-    QList<TvDevice*> m_tvList;
-
-    QNetworkAccessManager *m_manager;
-    QNetworkReply *m_deviceInformationReplay;
-
-    QByteArray m_deviceInformationData;
-    bool checkXmlData(QByteArray data);
-    QString printXmlData(QByteArray data);
-
-signals:
-    void discoveryDone(const QList<TvDevice*> deviceList);
-
-private slots:
-    void error(QAbstractSocket::SocketError error);
-    void readData();
-    void discoverTimeout();
-
-    void requestDeviceInformation(TvDevice *device);
-    void replyFinished(QNetworkReply *reply);
-    void parseDeviceInformation(QByteArray data);
+    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
+    DeviceManager::HardwareResources requiredHardware() const override;
 
 public slots:
-    void discover(int timeout);
+    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
 
 };
 
-#endif // TVDISCOVERY_H
+#endif // DEVICEPLUGINLEYNEW_H

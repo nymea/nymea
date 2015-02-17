@@ -20,7 +20,7 @@
 #define DEVICEPLUGINWEMO_H
 
 #include "plugin/deviceplugin.h"
-#include "wemodiscovery.h"
+#include "wemoswitch.h"
 
 class DevicePluginWemo : public DevicePlugin
 {
@@ -40,12 +40,14 @@ public:
     void deviceRemoved(Device *device) override;
 
     void guhTimer() override;
+    void upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &upnpDeviceDescriptorList) override;
+    void upnpNotifyReceived(const QByteArray &notifyData);
 
-    WemoDiscovery *m_discovery;
+private:
     QHash<WemoSwitch*, Device*> m_wemoSwitches;
+    bool verifyExistingDevices(UpnpDeviceDescriptor deviceDescriptor);
 
 private slots:
-    void discoveryDone(QList<WemoSwitch *> deviceList);
     void wemoSwitchStateChanged();
     void setPowerFinished(const bool &succeeded, const ActionId &actionId);
 

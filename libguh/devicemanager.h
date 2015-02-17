@@ -28,6 +28,8 @@
 #include "types/vendor.h"
 
 #include "network/networkmanager.h"
+#include "network/upnpdiscovery/upnpdiscovery.h"
+#include "network/upnpdiscovery/upnpdevicedescriptor.h"
 
 #include <QObject>
 #include <QTimer>
@@ -35,6 +37,7 @@
 class Device;
 class DevicePlugin;
 class Radio433;
+class UpnpDiscovery;
 
 class DeviceManager : public QObject
 {
@@ -46,7 +49,8 @@ public:
         HardwareResourceRadio433 = 0x01,
         HardwareResourceRadio868 = 0x02,
         HardwareResourceTimer = 0x04,
-        HardwareResourceNetworkManager = 0x08
+        HardwareResourceNetworkManager = 0x08,
+        HardwareResourceUpnpDisovery = 0x16
     };
     Q_DECLARE_FLAGS(HardwareResources, HardwareResource)
 
@@ -129,7 +133,12 @@ private slots:
     void slotDeviceStateValueChanged(const QUuid &stateTypeId, const QVariant &value);
 
     void radio433SignalReceived(QList<int> rawData);
+
     void replyReady(const PluginId &pluginId, QNetworkReply *reply);
+
+    void upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &deviceDescriptorList, const PluginId &pluginId);
+    void upnpNotifyReceived(const QByteArray &notifyData);
+
     void timerEvent();
 
 private:
@@ -157,6 +166,7 @@ private:
     QTimer m_pluginTimer;
     QList<Device*> m_pluginTimerUsers;
     NetworkManager *m_networkManager;
+    UpnpDiscovery* m_upnpDiscovery;
 
     QHash<QUuid, QPair<DeviceClassId, ParamList> > m_pairingsJustAdd;
     QHash<QUuid, QPair<DeviceClassId, DeviceDescriptorId> > m_pairingsDiscovery;

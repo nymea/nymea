@@ -16,43 +16,46 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef RADIO433BRENNENSTUHLGATEWAY_H
-#define RADIO433BRENNENSTUHLGATEWAY_H
+#ifndef UPNPDISCOVERYREQUEST_H
+#define UPNPDISCOVERYREQUEST_H
 
 #include <QObject>
-#include <QUdpSocket>
-#include <QHostAddress>
-#include <QTimer>
+#include <QDebug>
+#include "upnpdiscovery.h"
+#include "upnpdevicedescriptor.h"
+#include "typeutils.h"
 
-class Radio433BrennenstuhlGateway : public QObject
+class UpnpDiscovery;
+
+class UpnpDiscoveryRequest : public QObject
 {
     Q_OBJECT
 public:
-    explicit Radio433BrennenstuhlGateway(QObject *parent = 0);
-
-    bool sendData(int delay, QList<int> rawData, int repetitions);
-    bool enable();
-    bool disable();
-    bool available();
-
-private:
-    bool m_available;
-    QUdpSocket *m_gateway;
-    QHostAddress m_gatewayAddress;
-    int m_port;
-
-    QTimer *m_discoverTimer;
-    QTimer *m_timeout;
+    explicit UpnpDiscoveryRequest(UpnpDiscovery *upnpDiscovery, PluginId pluginId, QString searchTarget, QString userAgent);
 
     void discover();
+    void addDeviceDescriptor(const UpnpDeviceDescriptor &deviceDescriptor);
+    QNetworkRequest createNetworkRequest(UpnpDeviceDescriptor deviveDescriptor);
+    QList<UpnpDeviceDescriptor> deviceList() const;
+
+    PluginId pluginId() const;
+    QString searchTarget() const;
+    QString userAgent() const;
+
+private:
+    UpnpDiscovery *m_upnpDiscovery;
+    QTimer *m_timer;
+    PluginId m_pluginId;
+    QString m_searchTarget;
+    QString m_userAgent;
+
+    QList<UpnpDeviceDescriptor> m_deviceList;
 
 signals:
-    void availableChanged(const bool &available);
+    void discoveryTimeout();
 
-private slots:
-    void readData();
-    void gatewayError(QAbstractSocket::SocketError error);
-    void timeout();
+public slots:
+
 };
 
-#endif // RADIO433BRENNENSTUHLGATEWAY_H
+#endif // UPNPDISCOVERYREQUEST_H

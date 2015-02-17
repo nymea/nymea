@@ -117,18 +117,18 @@ void Radio433::brennenstuhlAvailableChanged(const bool &available)
     }
 }
 
-/*! Returns true, if the \a rawData with a certain \a delay (pulse length) can be sent. */
-bool Radio433::sendData(int delay, QList<int> rawData)
+/*! Returns true, if the \a rawData with a certain \a delay (pulse length) could be sent \a repetitions times. */
+bool Radio433::sendData(int delay, QList<int> rawData, int repetitions)
 {
     bool sendGpio = false;
     bool sendBrennenstuhl = false;
 
     if (m_brennenstuhlTransmitter->available()) {
-        sendBrennenstuhl = m_brennenstuhlTransmitter->sendData(delay, rawData);
+        sendBrennenstuhl = m_brennenstuhlTransmitter->sendData(delay, rawData, repetitions);
     }
 
     if (m_transmitter->available()) {
-        m_transmitter->sendData(delay, rawData);
+        m_transmitter->sendData(delay, rawData, repetitions);
         sendGpio = true;
     }
 

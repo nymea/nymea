@@ -61,6 +61,8 @@ public:
     // Hardware input
     virtual void radioData(const QList<int> &rawData) {Q_UNUSED(rawData)}
     virtual void guhTimer() {}
+    virtual void upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &upnpDeviceDescriptorList) {Q_UNUSED(upnpDeviceDescriptorList)}
+    virtual void upnpNotifyReceived(const QByteArray &notifyData) {Q_UNUSED(notifyData)}
 
     virtual void replyReady(QNetworkReply *reply) {Q_UNUSED(reply)}
 
@@ -92,7 +94,10 @@ protected:
     Device* findDeviceByParams(const ParamList &params) const;
 
     // Radio 433
-    bool transmitData(int delay, QList<int> rawData);
+    bool transmitData(int delay, QList<int> rawData, int repetitions = 10);
+
+    // UPnP dicovery
+    void upnpDiscover(QString searchTarget = "ssdp:all", QString userAgent = QString());
 
     // Network manager
     QNetworkReply *get(const QNetworkRequest &request);

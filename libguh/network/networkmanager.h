@@ -16,59 +16,40 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef OPENWEATHERMAP_H
-#define OPENWEATHERMAP_H
+#ifndef NETWORKMANAGER_H
+#define NETWORKMANAGER_H
+
+#include "typeutils.h"
 
 #include <QObject>
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
-#include <QJsonDocument>
-#include <QVariantMap>
-#include <QHostAddress>
+#include <QDebug>
 #include <QUrl>
 
-#include "plugin/deviceplugin.h"
 
-class OpenWeatherMap : public QObject
+
+class NetworkManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit OpenWeatherMap(QObject *parent = 0);
-    void update(QString id, DeviceId deviceId);
-    void searchAutodetect();
-    void search(QString searchString);
-    void searchGeoLocation(double lat, double lon);
+    explicit NetworkManager(QObject *parent = 0);
+
+    QNetworkReply *get(const PluginId &pluginId, const QNetworkRequest &request);
+    QNetworkReply *post(const PluginId &pluginId, const QNetworkRequest &request, const QByteArray &data);
+    QNetworkReply *put(const PluginId &pluginId, const QNetworkRequest &request, const QByteArray &data);
 
 private:
     QNetworkAccessManager *m_manager;
-
-    QString m_cityName;
-    QString m_country;
-    QString m_cityId;
-    QHostAddress m_wanIp;
-
-    QNetworkReply *m_locationReply;
-    QNetworkReply *m_weatherReply;
-    QNetworkReply *m_searchReply;
-    QNetworkReply *m_searchGeoReply;
-
-    void processLocationResponse(QByteArray data);
-    void processSearchResponse(QByteArray data);
-    void processSearchGeoResponse(QByteArray data);
-
-    QHash<QNetworkReply*,DeviceId> m_weatherReplys;
+    QHash<QNetworkReply *, PluginId> m_replies;
 
 signals:
-    void searchResultReady(const QList<QVariantMap> &cityList);
-    void weatherDataReady(const QByteArray &data, const DeviceId &deviceId);
-
-public slots:
-
+    void replyReady(const PluginId &pluginId, QNetworkReply *reply);
 
 private slots:
     void replyFinished(QNetworkReply *reply);
 
 };
 
-#endif // OPENWEATHERMAP_H
+#endif // NETWORKMANAGER_H

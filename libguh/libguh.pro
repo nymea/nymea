@@ -23,6 +23,7 @@ SOURCES += plugin/device.cpp \
            network/upnpdiscovery/upnpdevice.cpp \
            network/upnpdiscovery/upnpdevicedescriptor.cpp \
            network/upnpdiscovery/upnpdiscoveryrequest.cpp \
+           network/networkmanager.cpp \
            types/action.cpp \
            types/actiontype.cpp \
            types/state.cpp \
@@ -51,6 +52,7 @@ HEADERS += plugin/device.h \
            network/upnpdiscovery/upnpdevice.h \
            network/upnpdiscovery/upnpdevicedescriptor.h \
            network/upnpdiscovery/upnpdiscoveryrequest.h \
+           network/networkmanager.h \
            types/action.h \
            types/actiontype.h \
            types/state.h \
@@ -65,3 +67,4 @@ HEADERS += plugin/device.h \
            types/paramdescriptor.h \
            types/statedescriptor.h \
            typeutils.h \
+

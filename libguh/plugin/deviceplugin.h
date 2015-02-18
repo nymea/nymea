@@ -64,6 +64,8 @@ public:
     virtual void upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &upnpDeviceDescriptorList) {Q_UNUSED(upnpDeviceDescriptorList)}
     virtual void upnpNotifyReceived(const QByteArray &notifyData) {Q_UNUSED(notifyData)}
 
+    virtual void networkManagerReplyReady(QNetworkReply *reply) {Q_UNUSED(reply)}
+
     // Configuration
     virtual QList<ParamType> configurationDescription() const;
     DeviceManager::DeviceError setConfiguration(const ParamList &configuration);
@@ -91,8 +93,16 @@ protected:
     QList<Device*> myDevices() const;
     Device* findDeviceByParams(const ParamList &params) const;
 
-    void upnpDiscover(QString searchTarget = "ssdp:all", QString userAgent = QString());
+    // Radio 433
     bool transmitData(int delay, QList<int> rawData, int repetitions = 10);
+
+    // UPnP dicovery
+    void upnpDiscover(QString searchTarget = "ssdp:all", QString userAgent = QString());
+
+    // Network manager
+    QNetworkReply *networkManagerGet(const QNetworkRequest &request);
+    QNetworkReply *networkManagerPost(const QNetworkRequest &request, const QByteArray &data);
+    QNetworkReply *networkManagerPut(const QNetworkRequest &request, const QByteArray &data);
 
 private:
     void initPlugin(const QJsonObject &metaData, DeviceManager *deviceManager);

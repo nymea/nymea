@@ -43,8 +43,10 @@
     \value HardwareResourceTimer
         Refers to the global timer managed by the \l{DeviceManager}. Plugins should not create their own timers,
         but rather request the global timer using the hardware resources.
+    \value HardwareResourceNetworkManager
+        Allows to send network requests and receive replies.
     \value HardwareResourceUpnpDisovery
-        Allowes plugins to search a UPnP devices in the network.
+        Allowes to search a UPnP devices in the network.
 */
 
 /*! \enum DeviceManager::DeviceError
@@ -167,7 +169,7 @@ DeviceManager::DeviceManager(QObject *parent) :
     qRegisterMetaType<DeviceClassId>();
     qRegisterMetaType<DeviceDescriptor>();
 
-    m_pluginTimer.setInterval(15000);
+    m_pluginTimer.setInterval(10000);
     connect(&m_pluginTimer, &QTimer::timeout, this, &DeviceManager::timerEvent);
 
     m_settingsFile = QCoreApplication::instance()->organizationName() + "/devices";
@@ -184,6 +186,11 @@ DeviceManager::DeviceManager(QObject *parent) :
     m_radio433->enable();
     // TODO: error handling if no Radio433 detected (GPIO or network), disable radio433 plugins or something...
 
+    // Network manager
+    m_networkManager = new NetworkManager(this);
+    connect(m_networkManager, &NetworkManager::replyReady, this, &DeviceManager::replyReady);
+
+    // UPnP discovery
     m_upnpDiscovery = new UpnpDiscovery(this);
     connect(m_upnpDiscovery, &UpnpDiscovery::discoveryFinished, this, &DeviceManager::upnpDiscoveryFinished);
     connect(m_upnpDiscovery, &UpnpDiscovery::upnpNotify, this, &DeviceManager::upnpNotifyReceived);
@@ -929,6 +936,14 @@ void DeviceManager::radio433SignalReceived(QList<int> rawData)
     }
 }
 
+void DeviceManager::replyReady(const PluginId &pluginId, QNetworkReply *reply)
+{
+    foreach (DevicePlugin *devicePlugin, m_devicePlugins) {
+        if (devicePlugin->requiredHardware().testFlag(HardwareResourceNetworkManager) && devicePlugin->pluginId() == pluginId) {
+            devicePlugin->networkManagerReplyReady(reply);
+	}
+    }
+}
 void DeviceManager::upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &deviceDescriptorList, const PluginId &pluginId)
 {
     foreach (DevicePlugin *devicePlugin, m_devicePlugins) {

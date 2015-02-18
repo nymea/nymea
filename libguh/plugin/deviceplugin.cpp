@@ -61,6 +61,12 @@
  */
 
 /*!
+ \fn DevicePlugin::networkManagerReplyReady(QNetworkReply *reply)
+ This method will be called whenever a pending network \a reply for this plugin is finished.
+ \sa NetworkManager::replyReady()
+ */
+
+/*!
  \fn void DevicePlugin::executeAction(Device *device, const Action &action)
  This will be called to actually execute actions on the hardware. The \{Device} and
  the \{Action} are contained in the \a device and \a action parameters.
@@ -419,18 +425,18 @@ DeviceManager::DeviceError DevicePlugin::setConfigValue(const QString &paramName
         if (paramType.name() == paramName) {
             if (!value.canConvert(paramType.type())) {
                 qWarning() << QString("Wrong parameter type for param %1. Got %2. Expected %3.")
-                    .arg(paramName).arg(value.toString()).arg(QVariant::typeToName(paramType.type()));
+                              .arg(paramName).arg(value.toString()).arg(QVariant::typeToName(paramType.type()));
                 return DeviceManager::DeviceErrorInvalidParameter;
             }
 
             if (paramType.maxValue().isValid() && value > paramType.maxValue()) {
                 qWarning() << QString("Value out of range for param %1. Got %2. Max: %3.")
-                        .arg(paramName).arg(value.toString()).arg(paramType.maxValue().toString());
+                              .arg(paramName).arg(value.toString()).arg(paramType.maxValue().toString());
                 return DeviceManager::DeviceErrorInvalidParameter;
             }
             if (paramType.minValue().isValid() && value < paramType.minValue()) {
                 qWarning() << QString("Value out of range for param %1. Got: %2. Min: %3.")
-                        .arg(paramName).arg(value.toString()).arg(paramType.minValue().toString());
+                              .arg(paramName).arg(value.toString()).arg(paramType.minValue().toString());
                 return DeviceManager::DeviceErrorInvalidParameter;
             }
             found = true;
@@ -521,6 +527,56 @@ bool DevicePlugin::transmitData(int delay, QList<int> rawData, int repetitions)
     }
     return false;
 }
+/*! Posts a request to obtain the contents of the target \a request and returns a new QNetworkReply object
+ * opened for reading which emits the replyReady() signal whenever new data arrives.
+ * The contents as well as associated headers will be downloaded.
+ *
+ * \note The plugin has to delete the QNetworkReply with the function deleteLater().
+ *
+ * \sa NetworkManager::get()
+ */
+QNetworkReply *DevicePlugin::networkManagerGet(const QNetworkRequest &request)
+{
+    if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
+        return deviceManager()->m_networkManager->get(pluginId(), request);
+    } else {
+        qWarning() << "ERROR: network manager resource missing for plugin " << pluginName();
+    }
+    return nullptr;
+}
+/*! Sends an HTTP POST request to the destination specified by \a request and returns a new QNetworkReply object
+ * opened for reading that will contain the reply sent by the server. The contents of the \a data will be
+ * uploaded to the server.
+ *
+ * \note The plugin has to delete the QNetworkReply with the function deleteLater().
+ *
+ * \sa NetworkManager::post()
+ */
+QNetworkReply *DevicePlugin::networkManagerPost(const QNetworkRequest &request, const QByteArray &data)
+{
+    if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
+        return deviceManager()->m_networkManager->post(pluginId(), request, data);
+    } else {
+        qWarning() << "ERROR: network manager resource missing for plugin " << pluginName();
+    }
+    return nullptr;
+}
+
+/*! Uploads the contents of \a data to the destination \a request and returnes a new QNetworkReply object that will be open for reply.
+ *
+ * \note The plugin has to delete the QNetworkReply with the function deleteLater().
+ *
+ * \sa NetworkManager::put()
+ */
+QNetworkReply *DevicePlugin::networkManagerPut(const QNetworkRequest &request, const QByteArray &data)
+{
+    if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
+        return deviceManager()->m_networkManager->put(pluginId(), request, data);
+    } else {
+        qWarning() << "ERROR: network manager resource missing for plugin " << pluginName();
+    }
+    return nullptr;
+}
 
 /*!
  Starts a SSDP search for a certain \a searchTarget (ST). Certain UPnP devices need a special ST (i.e. "udap:rootservice"
@@ -534,7 +590,6 @@ void DevicePlugin::upnpDiscover(QString searchTarget, QString userAgent)
     if(requiredHardware().testFlag(DeviceManager::HardwareResourceUpnpDisovery)){
         deviceManager()->m_upnpDiscovery->discoverDevices(searchTarget, userAgent, pluginId());
     }
-
 }
 
 QStringList DevicePlugin::verifyFields(const QStringList &fields, const QJsonObject &value) const

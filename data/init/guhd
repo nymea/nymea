@@ -27,8 +27,8 @@
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
 # Short-Description: guh daemon
-# Description: guh is an open source home automation server, which allows to
-#              control a lot of different devices from many different manufacturers.
+# Description:       guh is an open source home automation server, which allows to
+#                    control a lot of different devices from many different manufacturers.
 #
 ### END INIT INFO
 

@@ -10,7 +10,7 @@ Build-Depends: debhelper (>= 9.0.0),
 Standards-Version: 3.9.5
 
 Package: guh
-Architecture: all
+Architecture: any
 Section: misc
 Depends: guh (= ${binary:Version}),
   guh-plugins (= ${binary:Version}),

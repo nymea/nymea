@@ -23,12 +23,12 @@
 # restart the guh daemon after update if it's running
 service guhd status > /dev/null 2>&1
 if [ $? -eq 0 ]; then
-        echo -n "Restart guh daemon..."
+        #echo -n "Restart guh daemon..."
         service guhd restart
         if [ $? -eq 0 ]; then
-                echo "OK!"
+                echo "Successfully restarted guh daemon."
         else
-                echo "FAIL!"
+                echo "FAILED to restart guh daemon."
         fi
 fi
 

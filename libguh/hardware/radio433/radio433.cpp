@@ -44,6 +44,7 @@
 */
 
 #include "radio433.h"
+#include <QFileInfo>
 
 /*! Construct the hardware resource Radio433 with the given \a parent. Each possible 433 MHz hardware will be initialized here. */
 Radio433::Radio433(QObject *parent) :
@@ -71,19 +72,23 @@ bool Radio433::enable()
 {
     m_brennenstuhlTransmitter->enable();
 
-    bool receiverAvailable = m_receiver->startReceiver();
-    if (!receiverAvailable) {
-        //qWarning() << "ERROR: radio 433 MHz receiver not available on GPIO's";
-    }
+    // check if GPIOs are available
+    QFileInfo gpioFile("/sys/class/gpio/export");
+    if (gpioFile.exists()) {
+        bool receiverAvailable = m_receiver->startReceiver();
+        if (!receiverAvailable) {
+            //qWarning() << "ERROR: radio 433 MHz receiver not available on GPIO's";
+        }
 
-    bool transmitterAvailable = m_transmitter->startTransmitter();
-    if (!transmitterAvailable) {
-        //qWarning() << "ERROR: radio 433 MHz transmitter not available on GPIO's";
-    }
+        bool transmitterAvailable = m_transmitter->startTransmitter();
+        if (!transmitterAvailable) {
+            //qWarning() << "ERROR: radio 433 MHz transmitter not available on GPIO's";
+        }
 
-    if (!receiverAvailable && !transmitterAvailable) {
-        qWarning() << "--> Radio 433 MHz GPIO's not available.";
-        return false;
+        if (!receiverAvailable && !transmitterAvailable) {
+            qWarning() << "--> Radio 433 MHz GPIO's not available.";
+            return false;
+        }
     }
     qDebug() << "--> Radio 433 MHz GPIO's enabled.";
     return true;

@@ -136,8 +136,8 @@ void Radio433BrennenstuhlGateway::gatewayError(QAbstractSocket::SocketError erro
 {
     Q_UNUSED(error)
     QUdpSocket *gateway = static_cast<QUdpSocket*>(sender());
-    qWarning() << "--> ERROR: Radio 433 MHz Brennenstuhl LAN Gateway socket error: " << gateway->errorString();
     if (m_available) {
+        qWarning() << "--> ERROR: Radio 433 MHz Brennenstuhl LAN Gateway socket error: " << gateway->errorString();
         m_available = false;
         emit availableChanged(false);
     }

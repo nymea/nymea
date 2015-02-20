@@ -41,6 +41,7 @@ Action::Action(const ActionTypeId &actionTypeId, const DeviceId &deviceId) :
 {
 }
 
+/*! Construct a copy of an \a other Action. */
 Action::Action(const Action &other):
     m_id(other.id()),
     m_actionTypeId(other.actionTypeId()),
@@ -97,6 +98,7 @@ Param Action::param(const QString &paramName) const
     return Param(QString());
 }
 
+/*! Copy the data to an \l{Action} from an \a other action. */
 void Action::operator =(const Action &other)
 {
     m_id = other.id();

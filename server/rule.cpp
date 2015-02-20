@@ -103,6 +103,7 @@ void Rule::setEnabled(bool enabled)
     m_enabled = enabled;
 }
 
+/*! Returns true if the rule is active. */
 bool Rule::active() const
 {
     return m_active;

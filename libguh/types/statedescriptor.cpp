@@ -109,7 +109,7 @@ bool StateDescriptor::operator ==(const State &state) const
 }
 
 /*! Compare this StateDescriptor to the \l{State} given by \a state.
- *  returns true if the given \a state does not match the definition of the StateDescriptor */
+ *  Returns true if the given \a state does not match the definition of the StateDescriptor */
 bool StateDescriptor::operator !=(const State &state) const
 {
     return !(operator==(state));

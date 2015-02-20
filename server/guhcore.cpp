@@ -106,7 +106,7 @@ GuhCore::RunningMode GuhCore::runningMode() const
 }
 
 /*! Set the \a runningMode of this instance. */
-void GuhCore::setRunningMode(const GuhCore::RunningMode &runningMode)
+void GuhCore::setRunningMode(const RunningMode &runningMode)
 {
     m_runningMode = runningMode;
 }
@@ -410,6 +410,7 @@ void GuhCore::gotEvent(const Event &event)
     }
 }
 
+/*! Return the instance of the log engine */
 LogEngine* GuhCore::logEngine() const
 {
     return m_logger;

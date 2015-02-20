@@ -40,8 +40,9 @@ Event::Event():
 }
 
 /*! Constructs an Event reflecting the \l{Event} given by \a eventTypeId, associated with
- *  the \l{Device} given by \a deviceId and the parameters given by \a params. The parameters must
- *  match the description in the reflecting \l{Event}. */
+ *  the \l{Device} given by \a deviceId and the parameters given by \a params. The parameter \a isStateChangeEvent
+ *  specifies if the \l{Event} will be autogeneratet or not. The parameters must
+ *  match the description in the reflecting \l{Event}.  */
 Event::Event(const EventTypeId &eventTypeId, const DeviceId &deviceId, const ParamList &params, bool isStateChangeEvent):
     m_id(EventId::createEventId()),
     m_eventTypeId(eventTypeId),

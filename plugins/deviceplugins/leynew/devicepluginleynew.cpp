@@ -29,6 +29,7 @@
     Currently only following device is supported:
 
     \l{http://www.leynew.com/en/productview.asp?id=589}{http://www.leynew.com/en/productview.asp?id=589}
+
     \l{http://image.en.09635.com/2012-8/15/RF-Controller-Aluminum-Version-LN-CON-RF20B-H-3CH-LV-316.jpg}{http://image.en.09635.com/2012-8/15/RF-Controller-Aluminum-Version-LN-CON-RF20B-H-3CH-LV-316.jpg}
 
     \chapter Plugin properties

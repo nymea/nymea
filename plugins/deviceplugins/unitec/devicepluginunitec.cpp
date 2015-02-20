@@ -23,7 +23,7 @@
     \ingroup plugins
     \ingroup rf433
 
-    This plugin allows to controll RF 433 MHz actors an receive remote signals from \l{www.unitec-elektro.de}{Unitec}
+    This plugin allows to controll RF 433 MHz actors an receive remote signals from \l{http://www.unitec-elektro.de}{Unitec}
     devices.
 
     The unitec socket units have a learn function. If you plug in the switch, a red light will start to blink. This means

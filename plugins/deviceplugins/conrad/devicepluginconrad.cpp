@@ -41,9 +41,9 @@
 
 #include "devicepluginconrad.h"
 
-#include "devicemanager.h"
 #include "plugin/device.h"
-#include "types/paramtype.h"
+#include "devicemanager.h"
+#include "plugininfo.h"
 
 #include <QDebug>
 #include <QStringList>
@@ -58,25 +58,49 @@ DeviceManager::HardwareResources DevicePluginConrad::requiredHardware() const
     return DeviceManager::HardwareResourceRadio433;
 }
 
+DeviceManager::DeviceSetupStatus DevicePluginConrad::setupDevice(Device *device)
+{
+    if (device->deviceClassId() == conradRemoteDeviceClassId) {
+        device->setName(device->paramValue("name").toString() + " (Conrad Remote)");
+        return DeviceManager::DeviceSetupStatusSuccess;
+    }
+
+    if (device->deviceClassId() == conradShutterDeviceClassId) {
+        device->setName(device->paramValue("name").toString() + " (Conrad shutter RSM900R)");
+        return DeviceManager::DeviceSetupStatusSuccess;
+    }
+
+    return DeviceManager::DeviceSetupStatusFailure;
+}
+
 DeviceManager::DeviceError DevicePluginConrad::executeAction(Device *device, const Action &action)
 {
+
     QList<int> rawData;
     QByteArray binCode;
 
-    if(action.param("power").value().toBool()){
-        binCode = "10010011";
-    }else{
-        binCode = "10100011";
+    int repetitions = 10;
+
+    if (action.actionTypeId() == upActionTypeId) {
+        binCode = "10101000";
+    } else if (action.actionTypeId() == downActionTypeId) {
+        binCode = "10100000";
+    } else if (action.actionTypeId() == syncActionTypeId) {
+        binCode = "10100000";
+        repetitions = 20;
+    } else {
+        return DeviceManager::DeviceErrorActionTypeNotFound;
     }
 
     // append ID
-    QByteArray remoteId = "100101010110011000000001";
-    QByteArray motionDetectorId = "100100100101101101101010";
-    QByteArray wallSwitchId = "000001001101000010110110";
-    QByteArray randomID     = "100010101010111010101010";
+    binCode.append("100101010110011000000001");
+
+    //QByteArray remoteId = "100101010110011000000001";
+    //    QByteArray motionDetectorId = "100100100101101101101010";
+    //QByteArray wallSwitchId = "000001001101000010110110";
+    //    QByteArray randomID     = "100010101010111010101010";
 
 
-    binCode.append(wallSwitchId);
 
     // =======================================
     //create rawData timings list
@@ -100,11 +124,11 @@ DeviceManager::DeviceError DevicePluginConrad::executeAction(Device *device, con
 
     // =======================================
     // send data to driver
-    if(transmitData(delay, rawData)){
-        qDebug() << "action" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
+    if(transmitData(delay, rawData, repetitions)){
+        qDebug() << "action" << pluginName() << device->name() << action.actionTypeId();
         return DeviceManager::DeviceErrorNoError;
     }else{
-        qDebug() << "could not transmitt" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
+        qDebug() << "could not transmitt" << pluginName() << device->name() << action.actionTypeId();
         return DeviceManager::DeviceErrorHardwareNotAvailable;
     }
 }

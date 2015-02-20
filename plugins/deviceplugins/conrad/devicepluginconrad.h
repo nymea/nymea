@@ -32,6 +32,7 @@ public:
     explicit DevicePluginConrad();
 
     DeviceManager::HardwareResources requiredHardware() const override;
+    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
     void radioData(const QList<int> &rawData) override;
 
 public slots:

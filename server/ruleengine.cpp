@@ -194,9 +194,13 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
                         rules.append(rule);
                     }
                 } else {
-                    qDebug() << "Rule" << rule.id() << "left active state.";
-                    m_rules[rule.id()].setActive(false);
-                    m_activeRules.removeAll(rule.id());
+                    if (m_activeRules.contains(rule.id())) {
+                        qDebug() << "Rule" << rule.id() << "left active state.";
+                        rule.setActive(false);
+                        m_rules[rule.id()] = rule;
+                        m_activeRules.removeAll(rule.id());
+                        rules.append(rule);
+                    }
                 }
             }
         } else {

@@ -92,13 +92,15 @@ DeviceManager::DeviceError DevicePluginLeynew::executeAction(Device *device, con
         return DeviceManager::DeviceErrorInvalidParameter;
     }
 
+    int repetitions = 12;
     // =======================================
     // bincode depending on the action
-
     if (action.actionTypeId() == brightnessUpActionTypeId) {
         binCode.append("000000000011");
+        repetitions = 8;
     } else if (action.actionTypeId() == brightnessDownActionTypeId) {
         binCode.append("000000001100");
+        repetitions = 8;
     } else if (action.actionTypeId() == powerActionTypeId) {
         binCode.append("000011000000");
     } else if (action.actionTypeId() == redActionTypeId) {
@@ -121,8 +123,10 @@ DeviceManager::DeviceError DevicePluginLeynew::executeAction(Device *device, con
         binCode.append("000000110000");
     } else if (action.actionTypeId() == speedUpActionTypeId) {
         binCode.append("001100110000");
+        repetitions = 8;
     } else if (action.actionTypeId() == speedDownActionTypeId) {
         binCode.append("110000000000");
+        repetitions = 8;
     } else if (action.actionTypeId() == autoActionTypeId) {
         binCode.append("001100001100");
     } else if (action.actionTypeId() == flashActionTypeId) {
@@ -143,8 +147,6 @@ DeviceManager::DeviceError DevicePluginLeynew::executeAction(Device *device, con
     //create rawData timings list
     int delay = 50;
 
-    int repetitions = 20;
-
     // sync signal (starting with ON)
     rawData.append(3);
     rawData.append(90);
@@ -163,9 +165,6 @@ DeviceManager::DeviceError DevicePluginLeynew::executeAction(Device *device, con
             rawData.append(3);
         }
     }
-
-    //qDebug() << binCode;
-    //qDebug() << delay << "*"  << rawData;
 
     // =======================================
     // send data to hardware resource

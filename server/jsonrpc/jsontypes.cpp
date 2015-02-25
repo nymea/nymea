@@ -950,10 +950,16 @@ QPair<bool, QString> JsonTypes::validateBasicType(const QVariant &variant)
     if (variant.canConvert(QVariant::Int)) {
         return report(true, "");
     }
+    if (variant.canConvert(QVariant::UInt)){
+        return report(true, "");
+    }
     if (variant.canConvert(QVariant::Double)) {
         return report(true, "");
     }
     if (variant.canConvert(QVariant::Bool)) {
+        return report(true, "");
+    }
+    if (variant.canConvert(QVariant::Color)) {
         return report(true, "");
     }
     return report(false, QString("Error validating basic type %1.").arg(variant.toString()));

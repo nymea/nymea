@@ -16,11 +16,13 @@
                     "paramTypes": [
                         {
                             "name": "ip",
-                            "type" : "QString"
+                            "type" : "QString",
+                            "inputType": "IPv4Address"
                         },
                         {
                             "name": "username",
-                            "type" : "QString"
+                            "type" : "QString",
+                            "inputType": "TextLine"
                         },
                         {
                             "name": "lightId",

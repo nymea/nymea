@@ -899,6 +899,12 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                     qDebug() << QString("value %1 not allowed in %2").arg(variant.toString()).arg(loggingEventTypeRef());
                     return result;
                 }
+            } else if (refName == inputTypeRef()) {
+                QPair<bool, QString> result = validateEnum(s_inputType, variant);
+                if (!result.first) {
+                    qDebug() << QString("value %1 not allowed in %2").arg(variant.toString()).arg(inputTypeRef());
+                    return result;
+                }
             } else {
                 Q_ASSERT_X(false, "JsonTypes", QString("Unhandled ref: %1").arg(refName).toLatin1().data());
                 return report(false, QString("Unhandled ref %1. Server implementation incomplete.").arg(refName));

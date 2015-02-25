@@ -21,10 +21,11 @@
 
 #include <QVariant>
 #include <QDebug>
+#include "typeutils.h"
 
 class ParamType
 {
-public:
+public:    
     ParamType(const QString &name, const QVariant::Type type, const QVariant &defaultValue = QVariant());
 
     QString name() const;
@@ -42,6 +43,9 @@ public:
     QVariant maxValue() const;
     void setMaxValue(const QVariant &maxValue);
 
+    Types::InputType inputType() const;
+    void setInputType(const Types::InputType &inputType);
+
     QPair<QVariant, QVariant> limits() const;
     void setLimits(const QVariant &min, const QVariant &max);
 
@@ -54,6 +58,7 @@ private:
     QVariant m_defaultValue;
     QVariant m_minValue;
     QVariant m_maxValue;
+    Types::InputType m_inputType;
     QVariantList m_allowedValues;
 };
 

@@ -368,6 +368,29 @@ QList<ParamType> DevicePlugin::parseParamTypes(const QJsonArray &array) const
         foreach (const QJsonValue &allowedTypesJson, pt.value("allowedValues").toArray()) {
             allowedValues.append(allowedTypesJson.toVariant());
         }
+        // set the input type if there is any
+        if (pt.contains("inputType")) {
+            QString inputTypeString = pt.value("inputType").toString();
+            if (inputTypeString == "TextLine") {
+                paramType.setInputType(Types::InputTypeTextLine);
+            } else if (inputTypeString == "TextArea") {
+                paramType.setInputType(Types::InputTypeTextArea);
+            } else if (inputTypeString == "Password") {
+                paramType.setInputType(Types::InputTypePassword);
+            } else if (inputTypeString == "Search") {
+                paramType.setInputType(Types::InputTypeSearch);
+            } else if (inputTypeString == "Mail") {
+                paramType.setInputType(Types::InputTypeMail);
+            } else if (inputTypeString == "IPv4Address") {
+                paramType.setInputType(Types::InputTypeIPv4Address);
+            } else if (inputTypeString == "IPv6Address") {
+                paramType.setInputType(Types::InputTypeIPv6Address);
+            } else if (inputTypeString == "Url") {
+                paramType.setInputType(Types::InputTypeUrl);
+            } else if (inputTypeString == "MacAddress") {
+                paramType.setInputType(Types::InputTypeMacAddress);
+            }
+        }
         paramType.setAllowedValues(allowedValues);
         paramType.setLimits(pt.value("minValue").toVariant(), pt.value("maxValue").toVariant());
         paramTypes.append(paramType);

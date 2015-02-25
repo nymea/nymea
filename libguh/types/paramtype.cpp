@@ -32,7 +32,8 @@
 ParamType::ParamType(const QString &name, const QVariant::Type type, const QVariant &defaultValue):
     m_name(name),
     m_type(type),
-    m_defaultValue(defaultValue)
+    m_defaultValue(defaultValue),
+    m_inputType(Types::InputTypeNone)
 {
 }
 
@@ -94,6 +95,18 @@ QVariant ParamType::maxValue() const
 void ParamType::setMaxValue(const QVariant &maxValue)
 {
     m_maxValue = maxValue;
+}
+
+/*! Returns the input type of this ParamType. */
+Types::InputType ParamType::inputType() const
+{
+    return m_inputType;
+}
+
+/*! Sets the input value of this ParamType to the given \a inputType. */
+void ParamType::setInputType(const Types::InputType &inputType)
+{
+    m_inputType = inputType;
 }
 
 /*! Returns the limits of this ParamType. limits(minValue, maxValue). */

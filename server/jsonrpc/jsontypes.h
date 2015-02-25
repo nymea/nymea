@@ -81,9 +81,11 @@ public:
         Uuid,
         String,
         Int,
+        Uint,
         Double,
         Bool,
         Variant,
+        Color,
         Object
     };
 

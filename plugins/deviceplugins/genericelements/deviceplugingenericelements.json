@@ -14,7 +14,8 @@
                     "paramTypes": [
                         {
                             "name": "name",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "TextLine"
                         }
                     ],
                     "stateTypes": [
@@ -42,7 +43,8 @@
                     "paramTypes": [
                         {
                             "name": "name",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "TextLine"
                         }
                     ],
                     "actionTypes": [
@@ -68,7 +70,8 @@
                     "paramTypes": [
                         {
                             "name": "name",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "TextLine"
                         }
                     ],
                     "actionTypes": [

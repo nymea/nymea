@@ -15,6 +15,7 @@
                         {
                             "name": "ID",
                             "type": "QString",
+                            "inputType": "TextLine",
                             "allowedValues": ["0008", "0115", "0014"]
                         }
                     ],

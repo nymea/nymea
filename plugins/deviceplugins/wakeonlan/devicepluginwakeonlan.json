@@ -13,11 +13,13 @@
                     "paramTypes": [
                         {
                             "name": "name",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "TextLine"
                         },
                         {
-                            "name": "MAC",
-                            "type": "QString"
+                            "name": "Mac",
+                            "type": "QString",
+                            "inputType": "MacAddress"
                         }
                     ],
                     "actionTypes": [

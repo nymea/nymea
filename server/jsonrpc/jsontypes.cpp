@@ -88,7 +88,7 @@ void JsonTypes::init()
     s_paramType.insert("o:minValue", basicTypeToString(Variant));
     s_paramType.insert("o:maxValue", basicTypeToString(Variant));
     s_paramType.insert("o:allowedValues", QVariantList() << basicTypeToString(Variant));
-    s_paramType.insert("o:inputType",basicTypeToString(Variant));
+    s_paramType.insert("o:inputType", inputTypeRef());
 
     // Param
     s_param.insert("name", basicTypeToString(String));

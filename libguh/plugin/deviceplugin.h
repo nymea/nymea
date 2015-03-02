@@ -31,6 +31,10 @@
 #include "types/vendor.h"
 #include "types/param.h"
 
+#ifdef BLUETOOTH_LE
+#include <QBluetoothDeviceInfo>
+#endif
+
 #include <QObject>
 #include <QJsonObject>
 
@@ -71,6 +75,10 @@ public:
 
     virtual void networkManagerReplyReady(QNetworkReply *reply) {Q_UNUSED(reply)}
 
+    #ifdef BLUETOOTH_LE
+    virtual void bluetoothDiscoveryFinished(const QList<QBluetoothDeviceInfo> &deviceInfos) {Q_UNUSED(deviceInfos)}
+    #endif
+
     // Configuration
     virtual QList<ParamType> configurationDescription() const;
     DeviceManager::DeviceError setConfiguration(const ParamList &configuration);
@@ -100,6 +108,11 @@ protected:
 
     // Radio 433
     bool transmitData(int delay, QList<int> rawData);
+
+    // Bluetooth LE discovery
+    #ifdef BLUETOOTH_LE
+    bool discoverBluetooth();
+    #endif
 
     // Network manager
     QNetworkReply *networkManagerGet(const QNetworkRequest &request);

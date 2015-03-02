@@ -213,6 +213,22 @@ DeviceManager::DeviceManager(QObject *parent) :
 
     m_networkManager = new NetworkManager(this);
     connect(m_networkManager, &NetworkManager::replyReady, this, &DeviceManager::replyReady);
+
+    // UPnP discovery
+    m_upnpDiscovery = new UpnpDiscovery(this);
+    connect(m_upnpDiscovery, &UpnpDiscovery::discoveryFinished, this, &DeviceManager::upnpDiscoveryFinished);
+    connect(m_upnpDiscovery, &UpnpDiscovery::upnpNotify, this, &DeviceManager::upnpNotifyReceived);
+
+    // Bluetooth LE
+    #ifdef BLUETOOTH_LE
+    m_bluetoothScanner = new BluetoothScanner(this);
+    if (!m_bluetoothScanner->isAvailable()) {
+        delete m_bluetoothScanner;
+        m_bluetoothScanner = 0;
+    } else {
+        connect(m_bluetoothScanner, &BluetoothScanner::bluetoothDiscoveryFinished, this, &DeviceManager::bluetoothDiscoveryFinished);
+    }
+    #endif
 }
 
 /*! Destructor of the DeviceManager. Each loaded \l{DevicePlugin} will be deleted. */
@@ -1167,6 +1183,17 @@ void DeviceManager::upnpNotifyReceived(const QByteArray &notifyData)
         }
     }
 }
+
+#ifdef BLUETOOTH_LE
+void DeviceManager::bluetoothDiscoveryFinished(const PluginId &pluginId, const QList<QBluetoothDeviceInfo> &deviceInfos)
+{
+    foreach (DevicePlugin *devicePlugin, m_devicePlugins) {
+        if (devicePlugin->requiredHardware().testFlag(HardwareResourceBluetoothLE) && devicePlugin->pluginId() == pluginId) {
+            devicePlugin->bluetoothDiscoveryFinished(deviceInfos);
+        }
+    }
+}
+#endif
 
 void DeviceManager::timerEvent()
 {

@@ -32,6 +32,10 @@
 
 #include "network/networkmanager.h"
 
+#ifdef BLUETOOTH_LE
+#include "bluetooth/bluetoothscanner.h"
+#endif
+
 #include <QObject>
 #include <QTimer>
 #include <QPluginLoader>
@@ -51,7 +55,9 @@ public:
         HardwareResourceRadio433 = 0x01,
         HardwareResourceRadio868 = 0x02,
         HardwareResourceTimer = 0x04,
-        HardwareResourceNetworkManager = 0x08
+        HardwareResourceNetworkManager = 0x08,
+        HardwareResourceUpnpDisovery = 0x16,
+        HardwareResourceBluetoothLE = 0x32
     };
     Q_DECLARE_FLAGS(HardwareResources, HardwareResource)
 
@@ -146,6 +152,14 @@ private slots:
 
     void radio433SignalReceived(QList<int> rawData);
     void replyReady(const PluginId &pluginId, QNetworkReply *reply);
+
+    void upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &deviceDescriptorList, const PluginId &pluginId);
+    void upnpNotifyReceived(const QByteArray &notifyData);
+
+    #ifdef BLUETOOTH_LE
+    void bluetoothDiscoveryFinished(const PluginId &pluginId, const QList<QBluetoothDeviceInfo> &deviceInfos);
+    #endif
+
     void timerEvent();
 
 private:
@@ -171,6 +185,10 @@ private:
     QTimer m_pluginTimer;
     QList<DevicePlugin *> m_pluginTimerUsers;
     NetworkManager *m_networkManager;
+
+    #ifdef BLUETOOTH_LE
+    BluetoothScanner *m_bluetoothScanner;
+    #endif
 
     QHash<QUuid, QPair<DeviceClassId, ParamList> > m_pairingsJustAdd;
     QHash<QUuid, QPair<DeviceClassId, DeviceDescriptorId> > m_pairingsDiscovery;

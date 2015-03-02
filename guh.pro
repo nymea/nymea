@@ -12,6 +12,13 @@ SUBDIRS += libguh server plugins
     message("Building guh tests disabled")
 }
 
+# Bluetooth LE support
+contains(DEFINES, BLUETOOTH_LE) {
+    message("Bluetooth LE available (Qt $${QT_VERSION}).")
+} else {
+    message("Bluetooth LE not available (Qt $${QT_VERSION}).")
+}
+
 server.depends = libguh plugins
 plugins.depends = libguh
 tests.depends = libguh

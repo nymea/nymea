@@ -8,6 +8,11 @@ QT += network
 target.path = /usr/lib
 INSTALLS += target
 
+contains(DEFINES, BLUETOOTH_LE) {
+    SOURCES += bluetooth/bluetoothscanner.cpp
+    HEADERS += bluetooth/bluetoothscanner.h
+}
+
 SOURCES += plugin/device.cpp \
            plugin/deviceclass.cpp \
            plugin/deviceplugin.cpp \

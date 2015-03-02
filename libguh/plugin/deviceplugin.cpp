@@ -649,6 +649,30 @@ QNetworkReply *DevicePlugin::networkManagerPut(const QNetworkRequest &request, c
     return nullptr;
 }
 
+/*!
+ Starts a SSDP search for a certain \a searchTarget (ST). Certain UPnP devices need a special ST (i.e. "udap:rootservice"
+ for LG Smart Tv's), otherwise they will not respond on the SSDP search. Each HTTP request to this device needs sometimes
+ also a special \a userAgent, which will be written into the HTTP header.
+
+ \sa DevicePlugin::requiredHardware(), DevicePlugin::upnpDiscoveryFinished()
+ */
+void DevicePlugin::upnpDiscover(QString searchTarget, QString userAgent)
+{
+    if(requiredHardware().testFlag(DeviceManager::HardwareResourceUpnpDisovery)){
+        deviceManager()->m_upnpDiscovery->discoverDevices(searchTarget, userAgent, pluginId());
+    }
+}
+
+#ifdef BLUETOOTH_LE
+bool DevicePlugin::discoverBluetooth()
+{
+    if(requiredHardware().testFlag(DeviceManager::HardwareResourceBluetoothLE)){
+        return deviceManager()->m_bluetoothScanner->discover(pluginId());
+    }
+    return false;
+}
+#endif
+
 QStringList DevicePlugin::verifyFields(const QStringList &fields, const QJsonObject &value) const
 {
     QStringList ret;

@@ -7,6 +7,12 @@ QT+= network
 QMAKE_CXXFLAGS += -Werror
 CONFIG += c++11
 
+# Check for Bluetoot LE support (Qt >= 5.4.0)
+!contains(QT_VERSION, ^5\\.[0-3]\\..*) {
+    QT += bluetooth
+    DEFINES += BLUETOOTH_LE
+}
+
 # Enable coverage option    
 coverage {
     QMAKE_CXXFLAGS += -fprofile-arcs -ftest-coverage -O0

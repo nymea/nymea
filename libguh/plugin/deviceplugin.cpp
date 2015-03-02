@@ -592,6 +592,16 @@ void DevicePlugin::upnpDiscover(QString searchTarget, QString userAgent)
     }
 }
 
+#ifdef BLUETOOTH_LE
+bool DevicePlugin::discoverBluetooth()
+{
+    if(requiredHardware().testFlag(DeviceManager::HardwareResourceBluetoothLE)){
+        return deviceManager()->m_bluetoothScanner->discover(pluginId());
+    }
+    return false;
+}
+#endif
+
 QStringList DevicePlugin::verifyFields(const QStringList &fields, const QJsonObject &value) const
 {
     QStringList ret;

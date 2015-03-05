@@ -14,23 +14,28 @@
                     "paramTypes": [
                         {
                             "name": "sender mail",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "Mail"
                         },
                         {
                             "name": "user",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "TextLine"
                         },
                         {
                             "name": "password",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "Password"
                         },
                         {
                             "name": "recipient",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "Mail"
                         },
                         {
                             "name": "SMTP server",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "Url"
                         },
                         {
                             "name": "port",
@@ -56,11 +61,13 @@
                             "paramTypes": [
                                 {
                                     "name": "subject",
-                                    "type": "QString"
+                                    "type": "QString",
+                                    "inputType": "TextLine"
                                 },
                                 {
                                     "name": "body",
-                                    "type": "QString"
+                                    "type": "QString",
+                                    "inputType": "TextArea"
                                 }
                             ]
                         }
@@ -80,15 +87,18 @@
                     "paramTypes": [
                         {
                             "name": "user",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "Mail"
                         },
                         {
                             "name": "password",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "Password"
                         },
                         {
                             "name": "recipient",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "Mail"
                         }
                     ],
                     "actionTypes": [
@@ -99,11 +109,13 @@
                             "paramTypes": [
                                 {
                                     "name": "subject",
-                                    "type": "QString"
+                                    "type": "QString",
+                                    "inputType": "TextLine"
                                 },
                                 {
                                     "name": "body",
-                                    "type": "QString"
+                                    "type": "QString",
+                                    "inputType": "TextArea"
                                 }
                             ]
                         }
@@ -123,15 +135,18 @@
                     "paramTypes": [
                         {
                             "name": "user",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "Mail"
                         },
                         {
                             "name": "password",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "Password"
                         },
                         {
                             "name": "recipient",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "Mail"
                         }
                     ],
                     "actionTypes": [
@@ -141,11 +156,13 @@
                             "paramTypes": [
                                 {
                                     "name": "subject",
-                                    "type": "QString"
+                                    "type": "QString",
+                                    "inputType": "TextLine"
                                 },
                                 {
                                     "name": "body",
-                                    "type": "QString"
+                                    "type": "QString",
+                                    "inputType": "TextArea"
                                 }
                             ]
                         }

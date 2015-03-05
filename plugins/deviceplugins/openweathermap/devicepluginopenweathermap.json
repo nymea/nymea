@@ -14,21 +14,25 @@
                     "discoveryParamTypes": [
                         {
                             "name": "location",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "Search"
                         }
                     ],
                     "paramTypes": [
                         {
                             "name": "location",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "TextLine"
                         },
                         {
                             "name": "country",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "TextLine"
                         },
                         {
                             "name": "id",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "TextLine"
                         }
                     ],
                     "actionTypes": [

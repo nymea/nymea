@@ -33,6 +33,7 @@ QString JsonTypes::s_lastError;
 QVariantList JsonTypes::s_basicType;
 QVariantList JsonTypes::s_stateOperator;
 QVariantList JsonTypes::s_valueOperator;
+QVariantList JsonTypes::s_inputType;
 QVariantList JsonTypes::s_createMethod;
 QVariantList JsonTypes::s_setupMethod;
 QVariantList JsonTypes::s_removePolicy;
@@ -69,6 +70,7 @@ void JsonTypes::init()
     s_basicType = enumToStrings(JsonTypes::staticMetaObject, "BasicType");
     s_stateOperator = enumToStrings(Types::staticMetaObject, "StateOperator");
     s_valueOperator = enumToStrings(Types::staticMetaObject, "ValueOperator");
+    s_inputType = enumToStrings(Types::staticMetaObject, "InputType");
     s_createMethod = enumToStrings(DeviceClass::staticMetaObject, "CreateMethod");
     s_setupMethod = enumToStrings(DeviceClass::staticMetaObject, "SetupMethod");
     s_removePolicy = enumToStrings(RuleEngine::staticMetaObject, "RemovePolicy");
@@ -86,6 +88,7 @@ void JsonTypes::init()
     s_paramType.insert("o:minValue", basicTypeToString(Variant));
     s_paramType.insert("o:maxValue", basicTypeToString(Variant));
     s_paramType.insert("o:allowedValues", QVariantList() << basicTypeToString(Variant));
+    s_paramType.insert("o:inputType", inputTypeRef());
 
     // Param
     s_param.insert("name", basicTypeToString(String));
@@ -220,6 +223,7 @@ QVariantMap JsonTypes::allTypes()
     QVariantMap allTypes;
     allTypes.insert("BasicType", basicType());
     allTypes.insert("ParamType", paramTypeDescription());
+    allTypes.insert("InputType", inputType());
     allTypes.insert("CreateMethod", createMethod());
     allTypes.insert("SetupMethod", setupMethod());
     allTypes.insert("ValueOperator", valueOperator());
@@ -391,6 +395,9 @@ QVariantMap JsonTypes::packParamType(const ParamType &paramType)
     if (!paramType.allowedValues().isEmpty()) {
         variantMap.insert("allowedValues", paramType.allowedValues());
     }
+    if (paramType.inputType() != Types::InputTypeNone) {
+        variantMap.insert("inputType", s_inputType.at(paramType.inputType()));
+    }
     return variantMap;
 }
 
@@ -515,7 +522,7 @@ QVariantMap JsonTypes::packLogEntry(const LogEntry &logEntry)
             break;
         case Logging::LoggingSourceSystem:
             // FIXME: Update this once we support error codes for the general system
-//            logEntryMap.insert("errorCode", "");
+            //            logEntryMap.insert("errorCode", "");
             break;
         }
     }
@@ -568,7 +575,7 @@ ParamList JsonTypes::unpackParams(const QVariantList &paramList)
 {
     ParamList params;
     foreach (const QVariant &paramVariant, paramList) {
-//        qDebug() << "unpacking param" << paramVariant;
+        //        qDebug() << "unpacking param" << paramVariant;
         params.append(unpackParam(paramVariant.toMap()));
     }
     return params;
@@ -703,7 +710,7 @@ QPair<bool, QString> JsonTypes::validateList(const QVariantList &templateList, c
 
     for (int i = 0; i < list.count(); ++i) {
         QVariant listEntry = list.at(i);
-//        qDebug() << "validating" << list << templateList;
+        //        qDebug() << "validating" << list << templateList;
         QPair<bool, QString> result = validateVariant(entryTemplate, listEntry);
         if (!result.first) {
             qDebug() << "List entry not matching template";
@@ -720,14 +727,14 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
         if (templateVariant.toString().startsWith("$ref:")) {
             QString refName = templateVariant.toString();
             if (refName == actionRef()) {
-//                qDebug() << "validating action";
+                //                qDebug() << "validating action";
                 QPair<bool, QString> result = validateMap(actionDescription(), variant.toMap());
                 if (!result.first) {
                     qDebug() << "Error validating action";
                     return result;
                 }
             } else if (refName == eventRef()) {
-//                qDebug() << "validating event";
+                //                qDebug() << "validating event";
                 QPair<bool, QString> result = validateMap(eventDescription(), variant.toMap());
                 if (!result.first) {
                     qDebug() << "event not valid";
@@ -890,6 +897,12 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                 QPair<bool, QString> result = validateEnum(s_loggingEventType, variant);
                 if (!result.first) {
                     qDebug() << QString("value %1 not allowed in %2").arg(variant.toString()).arg(loggingEventTypeRef());
+                    return result;
+                }
+            } else if (refName == inputTypeRef()) {
+                QPair<bool, QString> result = validateEnum(s_inputType, variant);
+                if (!result.first) {
+                    qDebug() << QString("value %1 not allowed in %2").arg(variant.toString()).arg(inputTypeRef());
                     return result;
                 }
             } else {

@@ -13,7 +13,8 @@
                     "paramTypes": [
                         {
                             "name": "remoteName",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "TextLine"
                         }
                     ],
                     "eventTypes": [

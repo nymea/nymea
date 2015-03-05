@@ -14,11 +14,13 @@
                     "paramTypes": [
                         {
                             "name": "name",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "TextLine"
                         },
                         {
                             "name": "host address",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "IPv4Address"
                         },
                         {
                             "name": "port",
@@ -26,7 +28,8 @@
                         },
                         {
                             "name": "serial number",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "TextLine"
                         }
                     ],
                     "stateTypes": [

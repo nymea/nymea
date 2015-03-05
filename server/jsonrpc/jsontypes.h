@@ -94,6 +94,7 @@ public:
     DECLARE_TYPE(basicType, "BasicType", JsonTypes, BasicType)
     DECLARE_TYPE(stateOperator, "StateOperator", Types, StateOperator)
     DECLARE_TYPE(valueOperator, "ValueOperator", Types, ValueOperator)
+    DECLARE_TYPE(inputType, "InputType", Types, InputType)
     DECLARE_TYPE(createMethod, "CreateMethod", DeviceClass, CreateMethod)
     DECLARE_TYPE(setupMethod, "SetupMethod", DeviceClass, SetupMethod)
     DECLARE_TYPE(deviceError, "DeviceError", DeviceManager, DeviceError)

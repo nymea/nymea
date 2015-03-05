@@ -15,13 +15,15 @@
                         {
                             "name": "continent",
                             "type": "QString",
+                            "inputType": "TextLine",
                             "allowedValues": ["Africa", "America", "Antarctica", "Asia", "Atlantic", "Australia", "Europe", "Indian", "Pacific"]
                         }
                     ],
                     "paramTypes": [
                         {
                             "name": "timezone",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "TextLine"
                         }
                     ],
                     "stateTypes": [

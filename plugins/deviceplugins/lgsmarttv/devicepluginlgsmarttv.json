@@ -14,19 +14,23 @@
                     "paramTypes": [
                         {
                             "name": "name",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "TextLine"
                         },
                         {
                             "name": "uuid",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "TextLine"
                         },
                         {
                             "name": "model",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "TextLine"
                         },
                         {
                             "name": "host address",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "IPv4Address"
                         },
                         {
                             "name": "port",
@@ -34,15 +38,18 @@
                         },
                         {
                             "name": "location",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "Url"
                         },
                         {
                             "name": "manufacturer",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "TextLine"
                         },
                         {
                             "name": "key",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "Password"
                         }
                     ],
                     "stateTypes": [

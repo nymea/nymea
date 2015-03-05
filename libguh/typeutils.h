@@ -57,8 +57,22 @@ class Types
     Q_GADGET
     Q_ENUMS(StateOperator)
     Q_ENUMS(ValueOperator)
+    Q_ENUMS(InputType)
 
 public:
+    enum InputType {
+        InputTypeNone,
+        InputTypeTextLine,
+        InputTypeTextArea,
+        InputTypePassword,
+        InputTypeSearch,
+        InputTypeMail,
+        InputTypeIPv4Address,
+        InputTypeIPv6Address,
+        InputTypeUrl,
+        InputTypeMacAddress
+    };
+
     enum ValueOperator {
         ValueOperatorEquals,
         ValueOperatorNotEquals,
@@ -75,5 +89,6 @@ public:
 
 Q_DECLARE_METATYPE(Types::ValueOperator)
 Q_DECLARE_METATYPE(Types::StateOperator)
+Q_DECLARE_METATYPE(Types::InputType)
 
 #endif // TYPEUTILS_H

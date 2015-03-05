@@ -99,6 +99,7 @@ RuleEngine::RuleEngine(QObject *parent) :
 
         settings.beginGroup(idString);
 
+        QString name = settings.value("name", idString).toString();
         bool enabled = settings.value("enabled", true).toBool();
 
         QList<EventDescriptor> eventDescriptorList;
@@ -155,7 +156,7 @@ RuleEngine::RuleEngine(QObject *parent) :
 
         settings.endGroup();
 
-        Rule rule = Rule(RuleId(idString), eventDescriptorList, stateEvaluator, actions);
+        Rule rule = Rule(RuleId(idString), name, eventDescriptorList, stateEvaluator, actions);
         rule.setEnabled(enabled);
         appendRule(rule);
     }
@@ -217,13 +218,13 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
 
 /*! Add a new \l{Rule} with the given \a ruleId , \a eventDescriptorList, \a actions and \a enabled value to the engine.
     For convenience, this creates a Rule without any \l{State} comparison. */
-RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QList<EventDescriptor> &eventDescriptorList, const QList<Action> &actions, bool enabled)
+RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const QList<Action> &actions, bool enabled)
 {
-    return addRule(ruleId, eventDescriptorList, StateEvaluator(), actions, enabled);
+    return addRule(ruleId, name, eventDescriptorList, StateEvaluator(), actions, enabled);
 }
 
-/*! Add a new \l{Rule} with the given \a ruleId , \a eventDescriptorList, \a stateEvaluator, the  list of \a actions and the \a enabled value to the engine.*/
-RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actions, bool enabled)
+/*! Add a new \l{Rule} with the given \a ruleId, \a name, \a eventDescriptorList, \a stateEvaluator, the  list of \a actions and the \a enabled value to the engine.*/
+RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actions, bool enabled)
 {
     if (ruleId.isNull()) {
         return RuleErrorInvalidRuleId;
@@ -274,13 +275,14 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QList<Even
     if (actions.count() > 0) {
         qDebug() << "***** actions" << actions.last().actionTypeId() << actions.last().params();
     }
-    Rule rule = Rule(ruleId, eventDescriptorList, stateEvaluator, actions);
+    Rule rule = Rule(ruleId, name, eventDescriptorList, stateEvaluator, actions);
     rule.setEnabled(enabled);
     appendRule(rule);
     emit ruleAdded(rule.id());
 
     QSettings settings(m_settingsFile);
     settings.beginGroup(rule.id().toString());
+    settings.setValue("name", name);
     settings.setValue("enabled", enabled);
     settings.beginGroup("events");
     for (int i = 0; i < eventDescriptorList.count(); i++) {
@@ -473,7 +475,7 @@ void RuleEngine::removeDeviceFromRule(const RuleId &id, const DeviceId &deviceId
     while (removeIndexes.count() > 0) {
         actions.takeAt(removeIndexes.takeLast());
     }
-    Rule newRule(id, eventDescriptors, stateEvalatuator, actions);
+    Rule newRule(id, rule.name(), eventDescriptors, stateEvalatuator, actions);
     m_rules[id] = newRule;
 }
 

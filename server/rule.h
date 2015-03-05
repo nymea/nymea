@@ -30,13 +30,14 @@ class Rule
 {
 public:
     Rule();
-    Rule(const RuleId &id, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actions);
+    Rule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actions);
 
     RuleId id() const;
     QList<EventDescriptor> eventDescriptors() const;
     StateEvaluator stateEvaluator() const;
     QList<Action> actions() const;
 
+    QString name() const;
     bool enabled() const;
     void setEnabled(bool enabled);
 
@@ -44,10 +45,12 @@ public:
 
 private:
     friend class RuleEngine;
+    void setName(const QString &name);
     void setActive(bool active);
 
 private:
     RuleId m_id;
+    QString m_name;
     QList<EventDescriptor> m_eventDescriptors;
     StateEvaluator m_stateEvaluator;
     QList<Action> m_actions;

@@ -9,8 +9,11 @@ target.path = /usr/lib
 INSTALLS += target
 
 contains(DEFINES, BLUETOOTH_LE) {
-    SOURCES += bluetooth/bluetoothscanner.cpp
-    HEADERS += bluetooth/bluetoothscanner.h
+    SOURCES += bluetooth/bluetoothscanner.cpp \
+               bluetooth/bluetoothlowenergydevice.cpp \
+
+    HEADERS += bluetooth/bluetoothscanner.h \
+               bluetooth/bluetoothlowenergydevice.h \
 }
 
 SOURCES += plugin/device.cpp \

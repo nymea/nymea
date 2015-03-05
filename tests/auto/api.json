@@ -1,4 +1,4 @@
-13
+14
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -279,6 +279,7 @@
                 "actions": [
                     "$ref:Action"
                 ],
+                "name": "String",
                 "o:enabled": "Bool",
                 "o:eventDescriptor": "$ref:EventDescriptor",
                 "o:eventDescriptorList": [
@@ -575,6 +576,7 @@
                 "$ref:EventDescriptor"
             ],
             "id": "Uuid",
+            "name": "String",
             "stateEvaluator": "$ref:StateEvaluator"
         },
         "RuleError": [

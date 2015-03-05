@@ -1,4 +1,4 @@
-12
+13
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -401,9 +401,11 @@
             "Uuid",
             "String",
             "Int",
+            "Uint",
             "Double",
             "Bool",
             "Variant",
+            "Color",
             "Object"
         ],
         "CreateMethod": [

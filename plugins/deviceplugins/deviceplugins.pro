@@ -21,3 +21,7 @@ SUBDIRS += elro         \
 boblight {
     SUBDIRS += boblight
 }
+
+contains(DEFINES, BLUETOOTH_LE) {
+    # bluetooth plugins
+}

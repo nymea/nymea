@@ -1,4 +1,4 @@
-11
+12
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -491,6 +491,18 @@
                 "$ref:ParamType"
             ]
         },
+        "InputType": [
+            "InputTypeNone",
+            "InputTypeTextLine",
+            "InputTypeTextArea",
+            "InputTypePassword",
+            "InputTypeSearch",
+            "InputTypeMail",
+            "InputTypeIPv4Address",
+            "InputTypeIPv6Address",
+            "InputTypeUrl",
+            "InputTypeMacAddress"
+        ],
         "LogEntry": {
             "loggingLevel": "$ref:LoggingLevel",
             "o:active": "Bool",
@@ -536,6 +548,7 @@
                 "Variant"
             ],
             "o:defaultValue": "Variant",
+            "o:inputType": "$ref:InputType",
             "o:maxValue": "Variant",
             "o:minValue": "Variant",
             "type": "$ref:BasicType"

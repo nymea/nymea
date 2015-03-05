@@ -14,11 +14,13 @@
                     "paramTypes": [
                         {
                             "name": "name",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "TextLine"
                         },
                         {
                             "name": "command",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "Url"
                         }
                     ],
                     "stateTypes": [
@@ -51,11 +53,13 @@
                     "paramTypes": [
                         {
                             "name": "name",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "TextLine"
                         },
                         {
                             "name": "script",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "Url"
                         }
                     ],
                     "stateTypes": [

@@ -13,7 +13,8 @@
                     "paramTypes": [
                         {
                             "name": "MAC",
-                            "type": "QString"
+                            "type": "QString",
+                            "inputType": "MacAddress"
                         }
                     ],
                     "stateTypes": [

@@ -51,6 +51,7 @@ RulesHandler::RulesHandler(QObject *parent) :
     params.insert("o:eventDescriptorList", QVariantList() << JsonTypes::eventDescriptorRef());
     params.insert("o:stateEvaluator", JsonTypes::stateEvaluatorRef());
     params.insert("o:enabled", JsonTypes::basicTypeToString(JsonTypes::Bool));
+    params.insert("name", JsonTypes::basicTypeToString(JsonTypes::String));
     QVariantList actions;
     actions.append(JsonTypes::actionRef());
     params.insert("actions", actions);
@@ -159,10 +160,11 @@ JsonReply* RulesHandler::AddRule(const QVariantMap &params)
         return createReply(returns);
     }
 
+    QString name = params.value("name", QString()).toString();
     bool enabled = params.value("enabled", true).toBool();
 
     RuleId newRuleId = RuleId::createRuleId();
-    RuleEngine::RuleError status = GuhCore::instance()->addRule(newRuleId, eventDescriptorList, stateEvaluator, actions, enabled);
+    RuleEngine::RuleError status = GuhCore::instance()->addRule(newRuleId, name, eventDescriptorList, stateEvaluator, actions, enabled);
     if (status ==  RuleEngine::RuleErrorNoError) {
         returns.insert("ruleId", newRuleId.toString());
     }

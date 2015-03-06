@@ -52,13 +52,14 @@
 
 /*! Constructs an empty, invalid rule. */
 Rule::Rule():
-    Rule(RuleId(), QList<EventDescriptor>(), StateEvaluator(), QList<Action>())
+    Rule(RuleId(), QString(), QList<EventDescriptor>(), StateEvaluator(), QList<Action>())
 {
 }
 
-/*! Constructs a Rule with the given \a id, \a eventDescriptorList, \a stateEvaluator and \a actions.*/
-Rule::Rule(const RuleId &id, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actions):
+/*! Constructs a Rule with the given \a id, \a name, \a eventDescriptorList, \a stateEvaluator and \a actions.*/
+Rule::Rule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actions):
     m_id(id),
+    m_name(name),
     m_eventDescriptors(eventDescriptorList),
     m_stateEvaluator(stateEvaluator),
     m_actions(actions),
@@ -91,6 +92,12 @@ QList<Action> Rule::actions() const
     return m_actions;
 }
 
+/*! Returns the name of this rule. */
+QString Rule::name() const
+{
+    return m_name;
+}
+
 /*! Returns wheter the rule is enabled or not. */
 bool Rule::enabled() const {
     return m_enabled;
@@ -107,6 +114,11 @@ void Rule::setEnabled(bool enabled)
 bool Rule::active() const
 {
     return m_active;
+}
+
+void Rule::setName(const QString &name)
+{
+    m_name = name;
 }
 
 void Rule::setActive(bool active)

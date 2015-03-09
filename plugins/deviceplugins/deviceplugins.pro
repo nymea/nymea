@@ -14,6 +14,8 @@ SUBDIRS += elro         \
     genericelements     \
     commandlauncher     \
     unitec              \
+    leynew              \
+    tune                \
 
 
 

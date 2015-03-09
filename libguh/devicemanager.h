@@ -137,6 +137,7 @@ private:
     bool verifyPluginMetadata(const QJsonObject &data);
     DeviceError addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId id = DeviceId::createDeviceId());
     DeviceSetupStatus setupDevice(Device *device);
+    void postSetupDevice(Device *device);
     DeviceError verifyParams(const QList<ParamType> paramTypes, ParamList &params, bool requireAll = true);
     DeviceError verifyParam(const QList<ParamType> paramTypes, const Param &param);
     DeviceError verifyParam(const ParamType &paramType, const Param &param);

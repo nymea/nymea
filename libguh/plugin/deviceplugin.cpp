@@ -317,6 +317,12 @@ DeviceManager::DeviceSetupStatus DevicePlugin::setupDevice(Device *device)
     return DeviceManager::DeviceSetupStatusSuccess;
 }
 
+/*! This will be called when a new \a device was added successfully and the device setup is finished.*/
+void DevicePlugin::postSetupDevice(Device *device)
+{
+    Q_UNUSED(device)
+}
+
 /*! This will be called when a \a device removed. The plugin has the chance to do some teardown.
  *  The device is still valid during this call, but already removed from the system.
  *  The device will be deleted as soon as this method returns.*/

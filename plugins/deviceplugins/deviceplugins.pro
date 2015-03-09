@@ -17,6 +17,7 @@ SUBDIRS += elro         \
     commandlauncher     \
     unitec              \
     leynew              \
+    tune                \
 
 boblight {
     SUBDIRS += boblight

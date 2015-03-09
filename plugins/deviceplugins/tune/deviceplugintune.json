@@ -1,0 +1,142 @@
+{
+    "name": "Tune",
+    "id": "826c8f4a-e2e1-4891-84d4-2c7a46ab1eea",
+    "vendors": [
+        {
+            "name": "Tune",
+            "id": "9ba2d9dc-b975-46bb-9e83-dbbd03ccab6c",
+            "deviceClasses": [
+                {
+                    "deviceClassId": "a5bd9e14-c169-416b-9b60-9453b1403a97",
+                    "idName": "mood",
+                    "name": "Mood",
+                    "createMethods": ["user"],
+                    "paramTypes": [
+                        {
+                            "name": "name",
+                            "type": "QString",
+                            "inputType": "TextLine"
+                        },
+                        {
+                            "name": "position",
+                            "type": "int"
+                        },
+                        {
+                            "name": "icon",
+                            "type": "QString",
+                            "allowedValues": [
+                                "IconCouch",
+                                "IconWork",
+                                "IconToilet",
+                                "IconSex",
+                                "IconDrinking",
+                                "IconEating",
+                                "IconSmoking"
+                            ]
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "535ed312-16de-47f2-bf3a-5661f7b86a42",
+                            "idName": "active",
+                            "name": "active",
+                            "type": "bool",
+                            "defaultValue": false
+                        },
+                        {
+                            "id": "cb8a89c2-dc12-4965-b047-57896058b421",
+                            "idName": "value",
+                            "name": "value",
+                            "type": "uint",
+                            "defaultValue": 50
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "768b6a17-731b-4976-bc9e-15c04eff7df3",
+                            "idName": "toggle",
+                            "name": "toggle"
+                        },
+                        {
+                            "id": "fe942f70-b8fb-413b-8feb-2dd924b9f649",
+                            "idName": "setValue",
+                            "name": "set value",
+                            "paramTypes": [
+                                {
+                                    "name": "percentage",
+                                    "type": "uint",
+                                    "minimumValue": 0,
+                                    "maximumValue": 100
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "deviceClassId": "56c14ef8-3a19-432f-9d9f-dc7e1d489312",
+                    "idName": "todo",
+                    "name": "ToDo",
+                    "createMethods": ["user"],
+                    "paramTypes": [
+                        {
+                            "name": "name",
+                            "type": "QString",
+                            "inputType": "TextLine"
+                        },
+                        {
+                            "name": "position",
+                            "type": "int"
+                        },
+                        {
+                            "name": "icon",
+                            "type": "QString",
+                            "allowedValues": [
+                                "IconCouch",
+                                "IconWork",
+                                "IconToilet",
+                                "IconSex",
+                                "IconDrinking",
+                                "IconEating",
+                                "IconSmoking"
+                            ]
+                        }
+                    ],
+                    "eventTypes": [
+                        {
+                            "id": "52b66edc-df40-42ef-a39c-aa2b77fdf42e",
+                            "idName": "pressed",
+                            "name": "pressed"
+                        },
+                        {
+                            "id": "277f10fd-3fc3-4229-904a-661b6f1cac54",
+                            "idName": "todoLeft",
+                            "name": "left"
+                        },
+                        {
+                            "id": "a510968e-f313-4880-95bd-786bd3bcb357",
+                            "idName": "todoRight",
+                            "name": "right"
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "1a2dac4d-26b3-496f-a4c2-8cb90c75e026",
+                            "idName": "press",
+                            "name": "press"
+                        },
+                        {
+                            "id": "0c461c5a-1334-4559-816b-73b5b2afb3ba",
+                            "idName": "tickLeft",
+                            "name": "tick left"
+                        },
+                        {
+                            "id": "a67cda4a-2c6f-4815-818a-08094dfcc453",
+                            "idName": "tickRight",
+                            "name": "tick right"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

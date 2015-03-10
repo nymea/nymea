@@ -44,7 +44,7 @@
 #include <QJsonDocument>
 #include <QStringList>
 
-#define JSON_PROTOCOL_VERSION 14
+#define JSON_PROTOCOL_VERSION 15
 
 JsonRPCServer::JsonRPCServer(QObject *parent):
     JsonHandler(parent),

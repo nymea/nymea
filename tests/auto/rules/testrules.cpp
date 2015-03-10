@@ -182,7 +182,7 @@ void TestRules::addRemoveRules_data()
     QTest::addColumn<QString>("name");
 
 
-    QTest::newRow("valid rule. 1 EventDescriptor, StateEvaluator, 1 Action, enabled, name") << true << validActionNoParams << validEventDescriptor1 << QVariantList() << validStateEvaluator << RuleEngine::RuleErrorNoError << false << "TestRule";
+    QTest::newRow("valid rule. 1 EventDescriptor, StateEvaluator, 1 Action, enabled, name") << true << validActionNoParams << validEventDescriptor1 << QVariantList() << validStateEvaluator << RuleEngine::RuleErrorNoError << true << "TestRule";
     QTest::newRow("valid rule. 1 EventDescriptor, StateEvaluator, 1 Action, diabled, name") << false << validActionNoParams << validEventDescriptor1 << QVariantList() << validStateEvaluator << RuleEngine::RuleErrorNoError << false << "TestRule";
     QTest::newRow("valid rule. 2 EventDescriptors, 1 Action, name") << true << validActionNoParams << QVariantMap() << eventDescriptorList << validStateEvaluator << RuleEngine::RuleErrorNoError << false << "TestRule";
     QTest::newRow("invalid rule: eventDescriptor and eventDescriptorList used") << true << validActionNoParams << validEventDescriptor1 << eventDescriptorList << validStateEvaluator << RuleEngine::RuleErrorInvalidParameter << false << "TestRule";

@@ -496,13 +496,11 @@ QVariantMap JsonTypes::packRule(const Rule &rule)
     foreach (const Action &action, rule.actions()) {
         actionList.append(JsonTypes::packAction(action));
     }
-    if (!rule.exitActions().isEmpty()) {
-        QVariantList exitActionList;
-        foreach (const Action &action, rule.exitActions()) {
-            exitActionList.append(JsonTypes::packAction(action));
-        }
-        ruleMap.insert("exitActions", exitActionList);
+    QVariantList exitActionList;
+    foreach (const Action &action, rule.exitActions()) {
+        exitActionList.append(JsonTypes::packAction(action));
     }
+    ruleMap.insert("exitActions", exitActionList);
 
     ruleMap.insert("actions", actionList);
     ruleMap.insert("stateEvaluator", JsonTypes::packStateEvaluator(rule.stateEvaluator()));

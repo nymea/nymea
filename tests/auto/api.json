@@ -1,4 +1,4 @@
-14
+15
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -284,6 +284,9 @@
                 "o:eventDescriptor": "$ref:EventDescriptor",
                 "o:eventDescriptorList": [
                     "$ref:EventDescriptor"
+                ],
+                "o:exitActions": [
+                    "$ref:Action"
                 ],
                 "o:stateEvaluator": "$ref:StateEvaluator"
             },
@@ -575,6 +578,9 @@
             "eventDescriptors": [
                 "$ref:EventDescriptor"
             ],
+            "exitActions": [
+                "$ref:Action"
+            ],
             "id": "Uuid",
             "name": "String",
             "stateEvaluator": "$ref:StateEvaluator"
@@ -587,6 +593,7 @@
             "RuleErrorEventTypeNotFound",
             "RuleErrorActionTypeNotFound",
             "RuleErrorInvalidParameter",
+            "RuleErrorInvalidRuleFormat",
             "RuleErrorMissingParameter"
         ],
         "SetupMethod": [

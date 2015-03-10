@@ -43,8 +43,6 @@ bool TuneManager::sendData(const QByteArray &data)
 
 void TuneManager::tuneConnected()
 {
-
-
     QTcpSocket *socket = m_server->nextPendingConnection();
 
     if (m_tune) {

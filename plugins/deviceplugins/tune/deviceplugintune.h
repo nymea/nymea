@@ -34,6 +34,7 @@ public:
 
     DeviceManager::HardwareResources requiredHardware() const override;
     DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
+    void postSetupDevice(Device *device) override;
     void deviceRemoved(Device *device) override;
 
 private:

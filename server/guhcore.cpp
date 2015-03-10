@@ -286,9 +286,9 @@ Rule GuhCore::findRule(const RuleId &ruleId)
 
 /*! Calls the metheod RuleEngine::addRule(\a id, \a name, \a eventDescriptorList, \a stateEvaluator \a actionList, \a enabled).
  *  \sa RuleEngine, */
-RuleEngine::RuleError GuhCore::addRule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actionList, bool enabled)
+RuleEngine::RuleError GuhCore::addRule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actionList, const QList<Action> &exitActionList, bool enabled)
 {
-    return m_ruleEngine->addRule(id, name, eventDescriptorList, stateEvaluator, actionList, enabled);
+    return m_ruleEngine->addRule(id, name, eventDescriptorList, stateEvaluator, actionList, exitActionList, enabled);
 }
 
 /*! Calls the metheod RuleEngine::removeRule(\a id).
@@ -385,7 +385,7 @@ void GuhCore::gotEvent(const Event &event)
             if (rule.active()) {
                 actions.append(rule.actions());
             } else {
-                // TODO: execute state exit actions
+                actions.append(rule.exitActions());
             }
         }
     }

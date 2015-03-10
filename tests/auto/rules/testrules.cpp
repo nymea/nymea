@@ -133,6 +133,16 @@ void TestRules::addRemoveRules_data()
     invalidAction.insert("deviceId", m_mockDeviceId);
     invalidAction.insert("params", QVariantList());
 
+    QVariantMap validExitActionNoParams;
+    validExitActionNoParams.insert("actionTypeId", mockActionIdNoParams);
+    validExitActionNoParams.insert("deviceId", m_mockDeviceId);
+    validExitActionNoParams.insert("params", QVariantList());
+
+    QVariantMap invalidExitAction;
+    invalidExitAction.insert("actionTypeId", ActionTypeId());
+    invalidExitAction.insert("deviceId", m_mockDeviceId);
+    invalidExitAction.insert("params", QVariantList());
+
     QVariantMap stateDescriptor;
     stateDescriptor.insert("stateTypeId", mockIntStateId);
     stateDescriptor.insert("deviceId", m_mockDeviceId);
@@ -174,6 +184,7 @@ void TestRules::addRemoveRules_data()
 
     QTest::addColumn<bool>("enabled");
     QTest::addColumn<QVariantMap>("action1");
+    QTest::addColumn<QVariantMap>("exitAction1");
     QTest::addColumn<QVariantMap>("eventDescriptor");
     QTest::addColumn<QVariantList>("eventDescriptorList");
     QTest::addColumn<QVariantMap>("stateEvaluator");
@@ -181,26 +192,33 @@ void TestRules::addRemoveRules_data()
     QTest::addColumn<bool>("jsonError");
     QTest::addColumn<QString>("name");
 
+    QTest::newRow("valid rule. enabled, 1 Action, 1 Exit Action,  1 StateEvaluator, name") << true << validActionNoParams << validExitActionNoParams << QVariantMap() << QVariantList() << validStateEvaluator << RuleEngine::RuleErrorNoError << false << "TestRule";
+    QTest::newRow("valid rule. disabled, 1 Action, 1 Exit Action, 1 StateEvaluator, name") << false << validActionNoParams << validExitActionNoParams << QVariantMap() << QVariantList() << validStateEvaluator << RuleEngine::RuleErrorNoError << false << "TestRule";
+    QTest::newRow("valid rule. disabled, 1 Action, 1 invalid Exit Action, 1 StateEvaluator, name") << false << validActionNoParams << invalidExitAction << QVariantMap() << QVariantList() << validStateEvaluator << RuleEngine::RuleErrorActionTypeNotFound << false << "TestRule";
+    QTest::newRow("invalid rule. 1 Action, 1 Exit Action, 1 EventDescriptor, 1 StateEvaluator, name") << true << validActionNoParams << validExitActionNoParams << validEventDescriptor1 << QVariantList() << validStateEvaluator << RuleEngine::RuleErrorInvalidRuleFormat << false << "TestRule";
+    QTest::newRow("invalid rule. 1 Action, 1 Exit Action, eventDescriptorList, 1 StateEvaluator, name") << true << validActionNoParams << validExitActionNoParams << QVariantMap() << eventDescriptorList << validStateEvaluator << RuleEngine::RuleErrorInvalidRuleFormat << false << "TestRule";
 
-    QTest::newRow("valid rule. 1 EventDescriptor, StateEvaluator, 1 Action, enabled, name") << true << validActionNoParams << validEventDescriptor1 << QVariantList() << validStateEvaluator << RuleEngine::RuleErrorNoError << false << "TestRule";
-    QTest::newRow("valid rule. 1 EventDescriptor, StateEvaluator, 1 Action, diabled, name") << false << validActionNoParams << validEventDescriptor1 << QVariantList() << validStateEvaluator << RuleEngine::RuleErrorNoError << false << "TestRule";
-    QTest::newRow("valid rule. 2 EventDescriptors, 1 Action, name") << true << validActionNoParams << QVariantMap() << eventDescriptorList << validStateEvaluator << RuleEngine::RuleErrorNoError << false << "TestRule";
-    QTest::newRow("invalid rule: eventDescriptor and eventDescriptorList used") << true << validActionNoParams << validEventDescriptor1 << eventDescriptorList << validStateEvaluator << RuleEngine::RuleErrorInvalidParameter << false << "TestRule";
-    QTest::newRow("invalid action") << true << invalidAction << validEventDescriptor1 << QVariantList() << validStateEvaluator << RuleEngine::RuleErrorActionTypeNotFound << false << "TestRule";
-    QTest::newRow("invalid event descriptor") << true << validActionNoParams << invalidEventDescriptor << QVariantList() << validStateEvaluator << RuleEngine::RuleErrorDeviceNotFound << false << "TestRule";
-    QTest::newRow("invalid StateDescriptor") << true << validActionNoParams << validEventDescriptor1 << QVariantList() << invalidStateEvaluator << RuleEngine::RuleErrorInvalidParameter << true << "TestRule";
+
+    QTest::newRow("valid rule. enabled, 1 EventDescriptor, StateEvaluator, 1 Action, name") << true << validActionNoParams << QVariantMap() << validEventDescriptor1 << QVariantList() << validStateEvaluator << RuleEngine::RuleErrorNoError << false << "TestRule";
+    QTest::newRow("valid rule. diabled, 1 EventDescriptor, StateEvaluator, 1 Action, name") << false << validActionNoParams << QVariantMap() << validEventDescriptor1 << QVariantList() << validStateEvaluator << RuleEngine::RuleErrorNoError << false << "TestRule";
+    QTest::newRow("valid rule. 2 EventDescriptors, 1 Action, name") << true << validActionNoParams << QVariantMap() << QVariantMap() << eventDescriptorList << validStateEvaluator << RuleEngine::RuleErrorNoError << false << "TestRule";
+    QTest::newRow("invalid rule: eventDescriptor and eventDescriptorList used") << true << validActionNoParams << QVariantMap() << validEventDescriptor1 << eventDescriptorList << validStateEvaluator << RuleEngine::RuleErrorInvalidParameter << false << "TestRule";
+    QTest::newRow("invalid action") << true << invalidAction << QVariantMap() << validEventDescriptor1 << QVariantList() << validStateEvaluator << RuleEngine::RuleErrorActionTypeNotFound << false << "TestRule";
+    QTest::newRow("invalid event descriptor") << true << validActionNoParams << QVariantMap() << invalidEventDescriptor << QVariantList() << validStateEvaluator << RuleEngine::RuleErrorDeviceNotFound << false << "TestRule";
+    QTest::newRow("invalid StateDescriptor") << true << validActionNoParams << QVariantMap() << validEventDescriptor1 << QVariantList() << invalidStateEvaluator << RuleEngine::RuleErrorInvalidParameter << true << "TestRule";
 }
 
 void TestRules::addRemoveRules()
 {
-    QFETCH(QString, name);
     QFETCH(bool, enabled);
     QFETCH(QVariantMap, action1);
+    QFETCH(QVariantMap, exitAction1);
     QFETCH(QVariantMap, eventDescriptor);
     QFETCH(QVariantList, eventDescriptorList);
     QFETCH(QVariantMap, stateEvaluator);
     QFETCH(RuleEngine::RuleError, error);
     QFETCH(bool, jsonError);
+    QFETCH(QString, name);
 
     QVariantMap params;
     params.insert("name", name);
@@ -214,6 +232,11 @@ void TestRules::addRemoveRules()
     }
     if (!eventDescriptorList.isEmpty()) {
         params.insert("eventDescriptorList", eventDescriptorList);
+    }
+    if (!exitAction1.isEmpty()) {
+        QVariantList exitActions;
+        exitActions.append(exitAction1);
+        params.insert("exitActions", exitActions);
     }
     params.insert("stateEvaluator", stateEvaluator);
     if (!enabled) {

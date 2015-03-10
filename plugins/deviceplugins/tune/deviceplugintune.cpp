@@ -41,15 +41,16 @@ DeviceManager::HardwareResources DevicePluginTune::requiredHardware() const
 
 DeviceManager::DeviceSetupStatus DevicePluginTune::setupDevice(Device *device)
 {
-    if (!m_manager->tuneAvailable()) {
-        qWarning() << "WARNING: tune not connected!";
-    }
-
     // check index position
     int position = device->paramValue("position").toInt();
+
     if (position >= myDevices().count()) {
         device->setParamValue("position", myDevices().count());
     } else {
+        if (position <= 0) {
+            device->setParamValue("position", 0);
+            position = 0;
+        }
         foreach (Device *d, myDevices()) {
             int currentPosition = d->paramValue("position").toInt();
             if (currentPosition >= position) {
@@ -73,6 +74,12 @@ DeviceManager::DeviceSetupStatus DevicePluginTune::setupDevice(Device *device)
     return DeviceManager::DeviceSetupStatusFailure;
 }
 
+void DevicePluginTune::postSetupDevice(Device *device)
+{
+    Q_UNUSED(device)
+    sync();
+}
+
 void DevicePluginTune::deviceRemoved(Device *device)
 {
     int position = device->paramValue("position").toInt();
@@ -94,18 +101,30 @@ bool DevicePluginTune::sync()
     }
 
     QVariantMap message;
-    QVariantList devices;
+    QVariantList moods;
+    QVariantList todos;
     foreach (Device* device, myDevices()) {
-        qDebug() << "device id" << device->id();
-        QVariantMap d;
-        d.insert("name", device->paramValue("name"));
-        d.insert("id", device->id());
-        d.insert("deviceClassId", device->deviceClassId());
-        d.insert("pos", device->paramValue("position"));
-        d.insert("icon", device->paramValue("icon"));
-        devices.append(d);
+        if (device->deviceClassId() == moodDeviceClassId) {
+            QVariantMap mood;
+            mood.insert("name", device->paramValue("name"));
+            mood.insert("id", device->id());
+            mood.insert("deviceClassId", device->deviceClassId());
+            mood.insert("pos", device->paramValue("position"));
+            mood.insert("icon", device->paramValue("icon"));
+            moods.append(mood);
+        } else if(device->deviceClassId() == todoDeviceClassId) {
+            QVariantMap todo;
+            todo.insert("name", device->paramValue("name"));
+            todo.insert("id", device->id());
+            todo.insert("deviceClassId", device->deviceClassId());
+            todo.insert("pos", device->paramValue("position"));
+            todo.insert("icon", device->paramValue("icon"));
+            todos.append(todo);
+        }
     }
-    message.insert("devices", devices);
+    message.insert("method", "Items.Sync");
+    message.insert("moods", moods);
+    message.insert("todos", todos);
 
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(message);
     QByteArray data = jsonDoc.toJson(QJsonDocument::Compact);
@@ -133,6 +152,12 @@ void DevicePluginTune::tuneDataAvailable(const QByteArray &data)
         qDebug() << "failed to parse data" << data << ":" << error.errorString();
     }
     qDebug() << jsonDoc.toJson();
+
+
+    // Check what happend...
+
+
+
 
 }
 

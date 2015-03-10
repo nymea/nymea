@@ -185,6 +185,7 @@ void JsonTypes::init()
     s_rule.insert("enabled", basicTypeToString(Bool));
     s_rule.insert("eventDescriptors", QVariantList() << eventDescriptorRef());
     s_rule.insert("actions", QVariantList() << actionRef());
+    s_rule.insert("exitActions", QVariantList() << actionRef());
     s_rule.insert("stateEvaluator", stateEvaluatorRef());
 
     // LogEntry
@@ -495,6 +496,14 @@ QVariantMap JsonTypes::packRule(const Rule &rule)
     foreach (const Action &action, rule.actions()) {
         actionList.append(JsonTypes::packAction(action));
     }
+    if (!rule.exitActions().isEmpty()) {
+        QVariantList exitActionList;
+        foreach (const Action &action, rule.exitActions()) {
+            exitActionList.append(JsonTypes::packAction(action));
+        }
+        ruleMap.insert("exitActions", exitActionList);
+    }
+
     ruleMap.insert("actions", actionList);
     ruleMap.insert("stateEvaluator", JsonTypes::packStateEvaluator(rule.stateEvaluator()));
     return ruleMap;

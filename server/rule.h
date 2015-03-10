@@ -31,11 +31,14 @@ class Rule
 public:
     Rule();
     Rule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actions);
+    Rule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actions, const QList<Action> &exitActions);
+    Rule(const RuleId &id, const QString &name, const StateEvaluator &stateEvaluator, const QList<Action> &actions, const QList<Action> &exitActions);
 
     RuleId id() const;
     QList<EventDescriptor> eventDescriptors() const;
     StateEvaluator stateEvaluator() const;
     QList<Action> actions() const;
+    QList<Action> exitActions() const;
 
     QString name() const;
     bool enabled() const;
@@ -54,6 +57,7 @@ private:
     QList<EventDescriptor> m_eventDescriptors;
     StateEvaluator m_stateEvaluator;
     QList<Action> m_actions;
+    QList<Action> m_exitActions;
 
     bool m_enabled;
     bool m_active;

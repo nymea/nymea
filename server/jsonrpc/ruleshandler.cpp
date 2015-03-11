@@ -50,6 +50,7 @@ RulesHandler::RulesHandler(QObject *parent) :
     params.insert("o:eventDescriptor", JsonTypes::eventDescriptorRef());
     params.insert("o:eventDescriptorList", QVariantList() << JsonTypes::eventDescriptorRef());
     params.insert("o:stateEvaluator", JsonTypes::stateEvaluatorRef());
+    params.insert("o:exitActions", QVariantList() << JsonTypes::actionRef());
     params.insert("o:enabled", JsonTypes::basicTypeToString(JsonTypes::Bool));
     params.insert("name", JsonTypes::basicTypeToString(JsonTypes::String));
     QVariantList actions;
@@ -129,6 +130,16 @@ JsonReply* RulesHandler::AddRule(const QVariantMap &params)
         return createReply(returns);
     }
 
+    if (params.contains("eventDescriptor") || params.contains("eventDescriptorList")) {
+        if (params.contains("exitActions")) {
+            QVariantMap returns;
+            qWarning() << "The exitActions will never executed if this rule contains any eventDescriptor.";
+            returns.insert("ruleError", JsonTypes::ruleErrorToString(RuleEngine::RuleErrorInvalidRuleFormat));
+            return createReply(returns);
+        }
+    }
+
+
     QList<EventDescriptor> eventDescriptorList;
     if (params.contains("eventDescriptor")) {
         QVariantMap eventMap = params.value("eventDescriptor").toMap();
@@ -160,11 +171,25 @@ JsonReply* RulesHandler::AddRule(const QVariantMap &params)
         return createReply(returns);
     }
 
+    QList<Action> exitActions;
+    if (params.contains("exitActions")) {
+        QVariantList exitActionList = params.value("exitActions").toList();
+        foreach (const QVariant &actionVariant, exitActionList) {
+            QVariantMap actionMap = actionVariant.toMap();
+            Action action(ActionTypeId(actionMap.value("actionTypeId").toString()), DeviceId(actionMap.value("deviceId").toString()));
+            qDebug() << "params from json" << actionMap.value("params");
+            action.setParams(JsonTypes::unpackParams(actionMap.value("params").toList()));
+            qDebug() << "params in action" << action.params();
+            exitActions.append(action);
+        }
+    }
+
+
     QString name = params.value("name", QString()).toString();
     bool enabled = params.value("enabled", true).toBool();
 
     RuleId newRuleId = RuleId::createRuleId();
-    RuleEngine::RuleError status = GuhCore::instance()->addRule(newRuleId, name, eventDescriptorList, stateEvaluator, actions, enabled);
+    RuleEngine::RuleError status = GuhCore::instance()->addRule(newRuleId, name, eventDescriptorList, stateEvaluator, actions, exitActions, enabled);
     if (status ==  RuleEngine::RuleErrorNoError) {
         returns.insert("ruleId", newRuleId.toString());
     }

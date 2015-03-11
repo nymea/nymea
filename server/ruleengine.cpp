@@ -27,7 +27,7 @@
     You can add, remove and update rules and query the engine for actions to be executed
     for a given \l{Event} described by an \l{EventDescriptor}.
 
-    \sa Event, EventDescriptor, Rule, Action
+    \sa Event, EventDescriptor, Rule, RuleAction
 */
 
 /*! \fn void RuleEngine::ruleAdded(const RuleId &ruleId)
@@ -134,42 +134,42 @@ RuleEngine::RuleEngine(QObject *parent) :
 
         StateEvaluator stateEvaluator = StateEvaluator::loadFromSettings(settings, "stateEvaluator");
         
-        settings.beginGroup("actions");
-        QList<Action> actions;
+        settings.beginGroup("ruleActions");
+        QList<RuleAction> actions;
         foreach (const QString &actionIdString, settings.childGroups()) {
             settings.beginGroup(actionIdString);
-            Action action = Action(ActionTypeId(settings.value("actionTypeId").toString()), DeviceId(settings.value("deviceId").toString()));
-            ParamList params;
+            RuleAction action = RuleAction(ActionTypeId(settings.value("actionTypeId").toString()), DeviceId(settings.value("deviceId").toString()));
+            RuleActionParamList params;
             foreach (QString paramNameString, settings.childGroups()) {
-                if (paramNameString.startsWith("Param-")) {
+                if (paramNameString.startsWith("RuleActionParam-")) {
                     settings.beginGroup(paramNameString);
-                    Param param(paramNameString.remove(QRegExp("^Param-")), settings.value("value"));
+                    RuleActionParam param(paramNameString.remove(QRegExp("^RuleActionParam-")), settings.value("value"));
                     params.append(param);
                     settings.endGroup();
                 }
             }
-            action.setParams(params);
+            action.setRuleActionParams(params);
 
             settings.endGroup();
             actions.append(action);
         }
         settings.endGroup();
 
-        settings.beginGroup("exitActions");
-        QList<Action> exitActions;
+        settings.beginGroup("ruleExitActions");
+        QList<RuleAction> exitActions;
         foreach (const QString &actionIdString, settings.childGroups()) {
             settings.beginGroup(actionIdString);
-            Action action = Action(ActionTypeId(settings.value("actionTypeId").toString()), DeviceId(settings.value("deviceId").toString()));
-            ParamList params;
+            RuleAction action = RuleAction(ActionTypeId(settings.value("actionTypeId").toString()), DeviceId(settings.value("deviceId").toString()));
+            RuleActionParamList params;
             foreach (QString paramNameString, settings.childGroups()) {
-                if (paramNameString.startsWith("Param-")) {
+                if (paramNameString.startsWith("RuleActionParam-")) {
                     settings.beginGroup(paramNameString);
-                    Param param(paramNameString.remove(QRegExp("^Param-")), settings.value("value"));
+                    RuleActionParam param(paramNameString.remove(QRegExp("^RuleActionParam-")), settings.value("value"));
                     params.append(param);
                     settings.endGroup();
                 }
             }
-            action.setParams(params);
+            action.setRuleActionParams(params);
 
             settings.endGroup();
             exitActions.append(action);
@@ -239,13 +239,13 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
 
 /*! Add a new \l{Rule} with the given \a ruleId , \a name, \a eventDescriptorList, \a actions and \a enabled value to the engine.
     For convenience, this creates a Rule without any \l{State} comparison. */
-RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const QList<Action> &actions, bool enabled)
+RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const QList<RuleAction> &actions, bool enabled)
 {
-    return addRule(ruleId, name, eventDescriptorList, StateEvaluator(), actions, QList<Action>(), enabled);
+    return addRule(ruleId, name, eventDescriptorList, StateEvaluator(), actions, QList<RuleAction>(), enabled);
 }
 
 /*! Add a new \l{Rule} with the given \a ruleId, \a name, \a eventDescriptorList, \a stateEvaluator, the  list of \a actions the list of \a exitActions and the \a enabled value to the engine.*/
-RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actions, const QList<Action> &exitActions, bool enabled)
+RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions, bool enabled)
 {
     if (ruleId.isNull()) {
         return RuleErrorInvalidRuleId;
@@ -277,7 +277,7 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
         }
     }
 
-    foreach (const Action &action, actions) {
+    foreach (const RuleAction &action, actions) {
         Device *device = GuhCore::instance()->findConfiguredDevice(action.deviceId());
         if (!device) {
             qWarning() << "Cannot create rule. No configured device for actionTypeId" << action.actionTypeId();
@@ -297,10 +297,10 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
         }
     }
     if (actions.count() > 0) {
-        qDebug() << "***** actions" << actions.last().actionTypeId() << actions.last().params();
+        qDebug() << "***** actions" << actions.last().actionTypeId() << actions.last().ruleActionParams();
     }
 
-    foreach (const Action &action, exitActions) {
+    foreach (const RuleAction &action, exitActions) {
         Device *device = GuhCore::instance()->findConfiguredDevice(action.deviceId());
         if (!device) {
             qWarning() << "Cannot create rule. No configured device for actionTypeId" << action.actionTypeId();
@@ -320,7 +320,7 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
         }
     }
     if (exitActions.count() > 0) {
-        qDebug() << "***** exitActions" << actions.last().actionTypeId() << actions.last().params();
+        qDebug() << "***** exitActions" << actions.last().actionTypeId() << actions.last().ruleActionParams();
     }
 
     Rule rule = Rule(ruleId, name, eventDescriptorList, stateEvaluator, actions, exitActions);
@@ -351,13 +351,13 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
 
     stateEvaluator.dumpToSettings(settings, "stateEvaluator");
 
-    settings.beginGroup("actions");
-    foreach (const Action &action, rule.actions()) {
+    settings.beginGroup("ruleActions");
+    foreach (const RuleAction &action, rule.actions()) {
         settings.beginGroup(action.actionTypeId().toString());
         settings.setValue("deviceId", action.deviceId());
         settings.setValue("actionTypeId", action.actionTypeId());
-        foreach (const Param &param, action.params()) {
-            settings.beginGroup("Param-" + param.name());
+        foreach (const RuleActionParam &param, action.ruleActionParams()) {
+            settings.beginGroup("RuleActionParam-" + param.name());
             settings.setValue("value", param.value());
             settings.endGroup();
         }
@@ -367,12 +367,12 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
     settings.endGroup();
 
     settings.beginGroup("exitActions");
-    foreach (const Action &action, rule.exitActions()) {
+    foreach (const RuleAction &action, rule.exitActions()) {
         settings.beginGroup(action.actionTypeId().toString());
         settings.setValue("deviceId", action.deviceId());
         settings.setValue("actionTypeId", action.actionTypeId());
-        foreach (const Param &param, action.params()) {
-            settings.beginGroup("Param-" + param.name());
+        foreach (const RuleActionParam &param, action.ruleActionParams()) {
+            settings.beginGroup("RuleActionParam-" + param.name());
             settings.setValue("value", param.value());
             settings.endGroup();
         }
@@ -494,7 +494,7 @@ QList<RuleId> RuleEngine::findRules(const DeviceId &deviceId)
             offending = true;
         }
         if (!offending) {
-            foreach (const Action &action, rule.actions()) {
+            foreach (const RuleAction &action, rule.actions()) {
                 if (action.deviceId() == deviceId) {
                     offending = true;
                     break;
@@ -528,7 +528,7 @@ void RuleEngine::removeDeviceFromRule(const RuleId &id, const DeviceId &deviceId
     StateEvaluator stateEvalatuator = rule.stateEvaluator();
     stateEvalatuator.removeDevice(deviceId);
 
-    QList<Action> actions = rule.actions();
+    QList<RuleAction> actions = rule.actions();
     for (int i = 0; i < actions.count(); i++) {
         if (actions.at(i).deviceId() == deviceId) {
             removeIndexes.append(i);

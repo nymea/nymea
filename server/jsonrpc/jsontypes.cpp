@@ -46,6 +46,8 @@ QVariantList JsonTypes::s_loggingEventType;
 
 QVariantMap JsonTypes::s_paramType;
 QVariantMap JsonTypes::s_param;
+QVariantMap JsonTypes::s_ruleAction;
+QVariantMap JsonTypes::s_ruleActionParam;
 QVariantMap JsonTypes::s_paramDescriptor;
 QVariantMap JsonTypes::s_stateType;
 QVariantMap JsonTypes::s_state;
@@ -93,6 +95,16 @@ void JsonTypes::init()
     // Param
     s_param.insert("name", basicTypeToString(String));
     s_param.insert("value", basicTypeRef());
+
+    // RuleAction
+    s_ruleAction.insert("actionTypeId", basicTypeToString(Uuid));
+    s_ruleAction.insert("deviceId", basicTypeToString(Uuid));
+    s_ruleAction.insert("o:ruleActionParams", QVariantList() << ruleActionParamRef());
+
+    // RuleActionParam
+    s_ruleActionParam.insert("name", basicTypeToString(String));
+    s_ruleActionParam.insert("o:value", basicTypeRef());
+    s_ruleActionParam.insert("o:eventId", basicTypeToString(Uuid));
 
     // ParamDescriptor
     s_paramDescriptor.insert("name", basicTypeToString(String));
@@ -184,8 +196,8 @@ void JsonTypes::init()
     s_rule.insert("name", basicTypeToString(String));
     s_rule.insert("enabled", basicTypeToString(Bool));
     s_rule.insert("eventDescriptors", QVariantList() << eventDescriptorRef());
-    s_rule.insert("actions", QVariantList() << actionRef());
-    s_rule.insert("exitActions", QVariantList() << actionRef());
+    s_rule.insert("actions", QVariantList() << ruleActionRef());
+    s_rule.insert("exitActions", QVariantList() << ruleActionRef());
     s_rule.insert("stateEvaluator", stateEvaluatorRef());
 
     // LogEntry
@@ -249,6 +261,8 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("DeviceClass", deviceClassDescription());
     allTypes.insert("Plugin", pluginDescription());
     allTypes.insert("Param", paramDescription());
+    allTypes.insert("RuleAction", ruleActionDescription());
+    allTypes.insert("RuleActionParam", ruleActionParamDescription());
     allTypes.insert("ParamDescriptor", paramDescriptorDescription());
     allTypes.insert("State", stateDescription());
     allTypes.insert("Device", deviceDescription());
@@ -322,6 +336,28 @@ QVariantMap JsonTypes::packAction(const Action &action)
     }
     variant.insert("params", params);
     return variant;
+}
+
+QVariantMap JsonTypes::packRuleAction(const RuleAction &ruleAction)
+{
+    QVariantMap variant;
+    variant.insert("actionTypeId", ruleAction.actionTypeId());
+    variant.insert("deviceId", ruleAction.deviceId());
+    QVariantList params;
+    foreach (const RuleActionParam &ruleActionParam, ruleAction.ruleActionParams()) {
+        params.append(packRuleActionParam(ruleActionParam));
+    }
+    variant.insert("ruleActionParams", params);
+    return variant;
+}
+
+QVariantMap JsonTypes::packRuleActionParam(const RuleActionParam &ruleActionParam)
+{
+    QVariantMap variantMap;
+    variantMap.insert("name", ruleActionParam.name());
+    variantMap.insert("value", ruleActionParam.value());
+    variantMap.insert("eventTypeId", ruleActionParam.eventTypeId());
+    return variantMap;
 }
 
 QVariantMap JsonTypes::packStateType(const StateType &stateType)
@@ -493,16 +529,16 @@ QVariantMap JsonTypes::packRule(const Rule &rule)
     ruleMap.insert("eventDescriptors", eventDescriptorList);
 
     QVariantList actionList;
-    foreach (const Action &action, rule.actions()) {
-        actionList.append(JsonTypes::packAction(action));
+    foreach (const RuleAction &action, rule.actions()) {
+        actionList.append(JsonTypes::packRuleAction(action));
     }
+    ruleMap.insert("actions", actionList);
+
     QVariantList exitActionList;
-    foreach (const Action &action, rule.exitActions()) {
-        exitActionList.append(JsonTypes::packAction(action));
+    foreach (const RuleAction &action, rule.exitActions()) {
+        exitActionList.append(JsonTypes::packRuleAction(action));
     }
     ruleMap.insert("exitActions", exitActionList);
-
-    ruleMap.insert("actions", actionList);
     ruleMap.insert("stateEvaluator", JsonTypes::packStateEvaluator(rule.stateEvaluator()));
     return ruleMap;
 }
@@ -584,10 +620,29 @@ ParamList JsonTypes::unpackParams(const QVariantList &paramList)
 {
     ParamList params;
     foreach (const QVariant &paramVariant, paramList) {
-        //        qDebug() << "unpacking param" << paramVariant;
         params.append(unpackParam(paramVariant.toMap()));
     }
     return params;
+}
+
+RuleActionParam JsonTypes::unpackRuleActionParam(const QVariantMap &ruleActionParamMap)
+{
+    if (ruleActionParamMap.keys().count() == 0) {
+        return RuleActionParam();
+    }
+    QString name = ruleActionParamMap.value("name").toString();
+    QVariant value = ruleActionParamMap.value("value");
+    EventTypeId eventTypeId(ruleActionParamMap.value("eventTypeId").toString());
+    return RuleActionParam(name, value, eventTypeId);
+}
+
+RuleActionParamList JsonTypes::unpackRuleActionParams(const QVariantList &ruleActionParamList)
+{
+    RuleActionParamList ruleActionParams;
+    foreach (const QVariant &paramVariant, ruleActionParamList) {
+        ruleActionParams.append(unpackRuleActionParam(paramVariant.toMap()));
+    }
+    return ruleActionParams;
 }
 
 ParamDescriptor JsonTypes::unpackParamDescriptor(const QVariantMap &paramMap)

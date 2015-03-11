@@ -30,6 +30,7 @@
 #include "types/actiontype.h"
 #include "types/paramtype.h"
 #include "types/paramdescriptor.h"
+#include "types/ruleactionparam.h"
 
 #include "logging/logging.h"
 #include "logging/logentry.h"
@@ -107,6 +108,8 @@ public:
     DECLARE_OBJECT(paramType, "ParamType")
     DECLARE_OBJECT(param, "Param")
     DECLARE_OBJECT(paramDescriptor, "ParamDescriptor")
+    DECLARE_OBJECT(ruleAction, "RuleAction")
+    DECLARE_OBJECT(ruleActionParam, "RuleActionParam")
     DECLARE_OBJECT(stateType, "StateType")
     DECLARE_OBJECT(stateDescriptor, "StateDescriptor")
     DECLARE_OBJECT(state, "State")
@@ -129,6 +132,8 @@ public:
     static QVariantMap packEventDescriptor(const EventDescriptor &event);
     static QVariantMap packActionType(const ActionType &actionType);
     static QVariantMap packAction(const Action &action);
+    static QVariantMap packRuleAction(const RuleAction &ruleAction);
+    static QVariantMap packRuleActionParam(const RuleActionParam &ruleActionParam);
     static QVariantMap packStateType(const StateType &stateType);
     static QVariantMap packStateDescriptor(const StateDescriptor &stateDescriptor);
     static QVariantMap packStateEvaluator(const StateEvaluator &stateEvaluator);
@@ -146,6 +151,8 @@ public:
 
     static Param unpackParam(const QVariantMap &paramMap);
     static ParamList unpackParams(const QVariantList &paramList);
+    static RuleActionParam unpackRuleActionParam(const QVariantMap &ruleActionParamMap);
+    static RuleActionParamList unpackRuleActionParams(const QVariantList &ruleActionParamList);
     static ParamDescriptor unpackParamDescriptor(const QVariantMap &paramDescriptorMap);
     static QList<ParamDescriptor> unpackParamDescriptors(const QVariantList &paramDescriptorList);
     static EventDescriptor unpackEventDescriptor(const QVariantMap &eventDescriptorMap);

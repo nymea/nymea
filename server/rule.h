@@ -20,7 +20,7 @@
 #define RULE_H
 
 #include "types/state.h"
-#include "types/action.h"
+#include "types/ruleaction.h"
 #include "types/eventdescriptor.h"
 #include "stateevaluator.h"
 
@@ -30,15 +30,15 @@ class Rule
 {
 public:
     Rule();
-    Rule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actions);
-    Rule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actions, const QList<Action> &exitActions);
-    Rule(const RuleId &id, const QString &name, const StateEvaluator &stateEvaluator, const QList<Action> &actions, const QList<Action> &exitActions);
+    Rule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions);
+    Rule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions);
+    Rule(const RuleId &id, const QString &name, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions);
 
     RuleId id() const;
     QList<EventDescriptor> eventDescriptors() const;
     StateEvaluator stateEvaluator() const;
-    QList<Action> actions() const;
-    QList<Action> exitActions() const;
+    QList<RuleAction> actions() const;
+    QList<RuleAction> exitActions() const;
 
     QString name() const;
     bool enabled() const;
@@ -56,8 +56,8 @@ private:
     QString m_name;
     QList<EventDescriptor> m_eventDescriptors;
     StateEvaluator m_stateEvaluator;
-    QList<Action> m_actions;
-    QList<Action> m_exitActions;
+    QList<RuleAction> m_actions;
+    QList<RuleAction> m_exitActions;
 
     bool m_enabled;
     bool m_active;

@@ -35,6 +35,7 @@ SOURCES += plugin/device.cpp \
            types/paramtype.cpp \
            types/param.cpp \
            types/paramdescriptor.cpp \
+           types/ruleaction.cpp \
            types/ruleactionparam.cpp \
            types/statedescriptor.cpp \
 
@@ -66,6 +67,7 @@ HEADERS += plugin/device.h \
            types/paramtype.h \
            types/param.h \
            types/paramdescriptor.h \
+           types/ruleaction.h \
            types/ruleactionparam.h \
            types/statedescriptor.h \
            typeutils.h \

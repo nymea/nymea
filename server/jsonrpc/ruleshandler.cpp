@@ -154,16 +154,46 @@ JsonReply* RulesHandler::AddRule(const QVariantMap &params)
     qDebug() << "unpacking:" << params.value("stateEvaluator").toMap();
     StateEvaluator stateEvaluator = JsonTypes::unpackStateEvaluator(params.value("stateEvaluator").toMap());
 
-    QList<Action> actions;
+    QList<RuleAction> actions;
     QVariantList actionList = params.value("actions").toList();
     foreach (const QVariant &actionVariant, actionList) {
         QVariantMap actionMap = actionVariant.toMap();
-        Action action(ActionTypeId(actionMap.value("actionTypeId").toString()), DeviceId(actionMap.value("deviceId").toString()));
-        qDebug() << "params from json" << actionMap.value("params");
-        action.setParams(JsonTypes::unpackParams(actionMap.value("params").toList()));
-        qDebug() << "params in action" << action.params();
+        RuleAction action(ActionTypeId(actionMap.value("actionTypeId").toString()), DeviceId(actionMap.value("deviceId").toString()));
+        qDebug() << "params from json" << actionMap.value("ruleActionParams");
+        action.setRuleActionParams(JsonTypes::unpackRuleActionParams(actionMap.value("ruleActionParams").toList()));
+        qDebug() << "params in action" << action.ruleActionParams();
         actions.append(action);
     }
+
+    // check possible eventTypeIds in params
+    foreach (const RuleAction &ruleAction, actions) {
+        if (ruleAction.isEventBased()) {
+            foreach (const RuleActionParam &ruleActionParam, ruleAction.ruleActionParams()) {
+                if (ruleActionParam.eventTypeId() != EventTypeId()) {
+                    // We have an eventTypeId
+                    if (eventDescriptorList.isEmpty()) {
+                        QVariantMap returns;
+                        qWarning() << "RuleAction" << ruleAction.actionTypeId() << "contains an eventTypeId, but there areno eventDescriptors.";
+                        returns.insert("ruleErorr", JsonTypes::ruleErrorToString(RuleEngine::RuleErrorInvalidRuleActionPatameter));
+                        return createReply(returns);
+                    }
+                    // now check if this eventType is in the eventDescriptorList of this rule
+                    foreach (const EventDescriptor eventDescriptor, eventDescriptorList) {
+                        if (eventDescriptor.eventTypeId() == ruleActionParam.eventTypeId()) {
+                            continue;
+                        } else {
+                            // the given eventTypeId is not in the eventDescriptorList
+                            QVariantMap returns;
+                            qWarning() << "eventTypeId from RuleAction" << ruleAction.actionTypeId() << "missing in eventDescriptors.";
+                            returns.insert("ruleErorr", JsonTypes::ruleErrorToString(RuleEngine::RuleErrorInvalidRuleActionPatameter));
+                            return createReply(returns);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 
     QVariantMap returns;
     if (actions.count() == 0) {
@@ -171,15 +201,15 @@ JsonReply* RulesHandler::AddRule(const QVariantMap &params)
         return createReply(returns);
     }
 
-    QList<Action> exitActions;
+    QList<RuleAction> exitActions;
     if (params.contains("exitActions")) {
         QVariantList exitActionList = params.value("exitActions").toList();
         foreach (const QVariant &actionVariant, exitActionList) {
             QVariantMap actionMap = actionVariant.toMap();
-            Action action(ActionTypeId(actionMap.value("actionTypeId").toString()), DeviceId(actionMap.value("deviceId").toString()));
-            qDebug() << "params from json" << actionMap.value("params");
-            action.setParams(JsonTypes::unpackParams(actionMap.value("params").toList()));
-            qDebug() << "params in action" << action.params();
+            RuleAction action(ActionTypeId(actionMap.value("actionTypeId").toString()), DeviceId(actionMap.value("deviceId").toString()));
+            qDebug() << "params from json" << actionMap.value("ruleActionParams");
+            action.setRuleActionParams(JsonTypes::unpackRuleActionParams(actionMap.value("ruleActionParams").toList()));
+            qDebug() << "params in action" << action.ruleActionParams();
             exitActions.append(action);
         }
     }

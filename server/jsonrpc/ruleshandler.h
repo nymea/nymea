@@ -38,6 +38,7 @@ public:
 
     Q_INVOKABLE JsonReply* EnableRule(const QVariantMap &params);
     Q_INVOKABLE JsonReply* DisableRule(const QVariantMap &params);
+
 };
 
 #endif // RULESHANDLER_H

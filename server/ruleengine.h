@@ -42,7 +42,8 @@ public:
         RuleErrorActionTypeNotFound,
         RuleErrorInvalidParameter,
         RuleErrorInvalidRuleFormat,
-        RuleErrorMissingParameter
+        RuleErrorMissingParameter,
+        RuleErrorInvalidRuleActionPatameter
     };
 
     enum RemovePolicy {
@@ -54,8 +55,8 @@ public:
 
     QList<Rule> evaluateEvent(const Event &event);
 
-    RuleError addRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const QList<Action> &actions, bool enabled = true);
-    RuleError addRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actions, const QList<Action> &exitActions, bool enabled = true);
+    RuleError addRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const QList<RuleAction> &actions, bool enabled = true);
+    RuleError addRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions, bool enabled = true);
     QList<Rule> rules() const;
     QList<RuleId> ruleIds() const;
 

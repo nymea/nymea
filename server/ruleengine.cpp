@@ -58,6 +58,8 @@
         Couldn't find a \l{ActionType} with the given id.
     \value RuleErrorInvalidParameter
         The given \l{Param} is not valid.
+    \value RuleErrorInvalidRuleFormat
+        The format of the rule is not valid. (i.e. add \l{Rule} with exitActions and eventDescriptors)
     \value RuleErrorMissingParameter
         One of the given \l{Param}s is missing.
 */
@@ -235,14 +237,14 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
     return rules;
 }
 
-/*! Add a new \l{Rule} with the given \a ruleId , \a eventDescriptorList, \a actions and \a enabled value to the engine.
+/*! Add a new \l{Rule} with the given \a ruleId , \a name, \a eventDescriptorList, \a actions and \a enabled value to the engine.
     For convenience, this creates a Rule without any \l{State} comparison. */
 RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const QList<Action> &actions, bool enabled)
 {
     return addRule(ruleId, name, eventDescriptorList, StateEvaluator(), actions, QList<Action>(), enabled);
 }
 
-/*! Add a new \l{Rule} with the given \a ruleId, \a name, \a eventDescriptorList, \a stateEvaluator, the  list of \a actions and the \a enabled value to the engine.*/
+/*! Add a new \l{Rule} with the given \a ruleId, \a name, \a eventDescriptorList, \a stateEvaluator, the  list of \a actions the list of \a exitActions and the \a enabled value to the engine.*/
 RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actions, const QList<Action> &exitActions, bool enabled)
 {
     if (ruleId.isNull()) {

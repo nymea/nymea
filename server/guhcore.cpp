@@ -284,7 +284,7 @@ Rule GuhCore::findRule(const RuleId &ruleId)
     return m_ruleEngine->findRule(ruleId);
 }
 
-/*! Calls the metheod RuleEngine::addRule(\a id, \a name, \a eventDescriptorList, \a stateEvaluator \a actionList, \a enabled).
+/*! Calls the metheod RuleEngine::addRule(\a id, \a name, \a eventDescriptorList, \a stateEvaluator \a actionList, \a exitActionList, \a enabled).
  *  \sa RuleEngine, */
 RuleEngine::RuleError GuhCore::addRule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actionList, const QList<Action> &exitActionList, bool enabled)
 {

@@ -107,17 +107,17 @@ bool DevicePluginTune::sync()
         if (device->deviceClassId() == moodDeviceClassId) {
             QVariantMap mood;
             mood.insert("name", device->paramValue("name"));
-            mood.insert("id", device->id());
-            mood.insert("deviceClassId", device->deviceClassId());
-            mood.insert("pos", device->paramValue("position"));
+            mood.insert("deviceId", device->id());
+            mood.insert("deviceClassId", device->deviceClassId().toString());
+            mood.insert("position", device->paramValue("position"));
             mood.insert("icon", device->paramValue("icon"));
             moods.append(mood);
         } else if(device->deviceClassId() == todoDeviceClassId) {
             QVariantMap todo;
             todo.insert("name", device->paramValue("name"));
-            todo.insert("id", device->id());
-            todo.insert("deviceClassId", device->deviceClassId());
-            todo.insert("pos", device->paramValue("position"));
+            todo.insert("deviceId", device->id().toString());
+            todo.insert("deviceClassId", device->deviceClassId().toString());
+            todo.insert("position", device->paramValue("position"));
             todo.insert("icon", device->paramValue("icon"));
             todos.append(todo);
         }

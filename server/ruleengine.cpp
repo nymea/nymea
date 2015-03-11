@@ -58,6 +58,8 @@
         Couldn't find a \l{ActionType} with the given id.
     \value RuleErrorInvalidParameter
         The given \l{Param} is not valid.
+    \value RuleErrorInvalidRuleFormat
+        The format of the rule is not valid. (i.e. add \l{Rule} with exitActions and eventDescriptors)
     \value RuleErrorMissingParameter
         One of the given \l{Param}s is missing.
 */
@@ -131,7 +133,6 @@ RuleEngine::RuleEngine(QObject *parent) :
         settings.endGroup();
 
         StateEvaluator stateEvaluator = StateEvaluator::loadFromSettings(settings, "stateEvaluator");
-
         
         settings.beginGroup("actions");
         QList<Action> actions;
@@ -154,13 +155,33 @@ RuleEngine::RuleEngine(QObject *parent) :
         }
         settings.endGroup();
 
+        settings.beginGroup("exitActions");
+        QList<Action> exitActions;
+        foreach (const QString &actionIdString, settings.childGroups()) {
+            settings.beginGroup(actionIdString);
+            Action action = Action(ActionTypeId(settings.value("actionTypeId").toString()), DeviceId(settings.value("deviceId").toString()));
+            ParamList params;
+            foreach (QString paramNameString, settings.childGroups()) {
+                if (paramNameString.startsWith("Param-")) {
+                    settings.beginGroup(paramNameString);
+                    Param param(paramNameString.remove(QRegExp("^Param-")), settings.value("value"));
+                    params.append(param);
+                    settings.endGroup();
+                }
+            }
+            action.setParams(params);
+
+            settings.endGroup();
+            exitActions.append(action);
+        }
         settings.endGroup();
 
-        Rule rule = Rule(RuleId(idString), name, eventDescriptorList, stateEvaluator, actions);
+        settings.endGroup();
+
+        Rule rule = Rule(RuleId(idString), name, eventDescriptorList, stateEvaluator, actions, exitActions);
         rule.setEnabled(enabled);
         appendRule(rule);
     }
-
 }
 
 /*! Ask the Engine to evaluate all the rules for the given \a event.
@@ -216,15 +237,15 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
     return rules;
 }
 
-/*! Add a new \l{Rule} with the given \a ruleId , \a eventDescriptorList, \a actions and \a enabled value to the engine.
+/*! Add a new \l{Rule} with the given \a ruleId , \a name, \a eventDescriptorList, \a actions and \a enabled value to the engine.
     For convenience, this creates a Rule without any \l{State} comparison. */
 RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const QList<Action> &actions, bool enabled)
 {
-    return addRule(ruleId, name, eventDescriptorList, StateEvaluator(), actions, enabled);
+    return addRule(ruleId, name, eventDescriptorList, StateEvaluator(), actions, QList<Action>(), enabled);
 }
 
-/*! Add a new \l{Rule} with the given \a ruleId, \a name, \a eventDescriptorList, \a stateEvaluator, the  list of \a actions and the \a enabled value to the engine.*/
-RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actions, bool enabled)
+/*! Add a new \l{Rule} with the given \a ruleId, \a name, \a eventDescriptorList, \a stateEvaluator, the  list of \a actions the list of \a exitActions and the \a enabled value to the engine.*/
+RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actions, const QList<Action> &exitActions, bool enabled)
 {
     if (ruleId.isNull()) {
         return RuleErrorInvalidRuleId;
@@ -233,6 +254,9 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
         qWarning() << "Already have a rule with this id!";
         return RuleErrorInvalidRuleId;
     }
+
+    // TODO: check rule name for duplicated rulesnames
+
     foreach (const EventDescriptor &eventDescriptor, eventDescriptorList) {
         Device *device = GuhCore::instance()->findConfiguredDevice(eventDescriptor.deviceId());
         if (!device) {
@@ -275,7 +299,31 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
     if (actions.count() > 0) {
         qDebug() << "***** actions" << actions.last().actionTypeId() << actions.last().params();
     }
-    Rule rule = Rule(ruleId, name, eventDescriptorList, stateEvaluator, actions);
+
+    foreach (const Action &action, exitActions) {
+        Device *device = GuhCore::instance()->findConfiguredDevice(action.deviceId());
+        if (!device) {
+            qWarning() << "Cannot create rule. No configured device for actionTypeId" << action.actionTypeId();
+            return RuleErrorDeviceNotFound;
+        }
+        DeviceClass deviceClass = GuhCore::instance()->findDeviceClass(device->deviceClassId());
+
+        bool actionTypeFound = false;
+        foreach (const ActionType &actionType, deviceClass.actionTypes()) {
+            if (actionType.id() == action.actionTypeId()) {
+                actionTypeFound = true;
+            }
+        }
+        if (!actionTypeFound) {
+            qWarning() << "Cannot create rule. Device " + device->name() + " has no action type:" << action.actionTypeId();
+            return RuleErrorActionTypeNotFound;
+        }
+    }
+    if (exitActions.count() > 0) {
+        qDebug() << "***** exitActions" << actions.last().actionTypeId() << actions.last().params();
+    }
+
+    Rule rule = Rule(ruleId, name, eventDescriptorList, stateEvaluator, actions, exitActions);
     rule.setEnabled(enabled);
     appendRule(rule);
     emit ruleAdded(rule.id());
@@ -313,7 +361,21 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
             settings.setValue("value", param.value());
             settings.endGroup();
         }
+        settings.endGroup();
+    }
 
+    settings.endGroup();
+
+    settings.beginGroup("exitActions");
+    foreach (const Action &action, rule.exitActions()) {
+        settings.beginGroup(action.actionTypeId().toString());
+        settings.setValue("deviceId", action.deviceId());
+        settings.setValue("actionTypeId", action.actionTypeId());
+        foreach (const Param &param, action.params()) {
+            settings.beginGroup("Param-" + param.name());
+            settings.setValue("value", param.value());
+            settings.endGroup();
+        }
         settings.endGroup();
     }
 

@@ -52,7 +52,7 @@ Rule::Rule(const RuleId &id, const QString &name, const QList<EventDescriptor> &
 
 }
 
-/*! Constructs a Rule with the given \a id, \a name, \a eventDescriptorList, \a stateEvaluator, \a actions and exitActions.*/
+/*! Constructs a Rule with the given \a id, \a name, \a eventDescriptorList, \a stateEvaluator, \a actions and \a exitActions.*/
 Rule::Rule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actions, const QList<Action> &exitActions):
     m_id(id),
     m_name(name),

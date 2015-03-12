@@ -20,7 +20,7 @@
     \class Rule
     \brief This class represents a rule.
 
-    \ingroup rules
+    \ingroup core
     \inmodule server
 
     A Rule is always triggered by an \l{EventDescriptor}, has \l{State}{States}

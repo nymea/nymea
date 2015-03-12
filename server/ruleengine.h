@@ -43,7 +43,7 @@ public:
         RuleErrorInvalidParameter,
         RuleErrorInvalidRuleFormat,
         RuleErrorMissingParameter,
-        RuleErrorInvalidRuleActionPatameter
+        RuleErrorInvalidRuleActionParameter
     };
 
     enum RemovePolicy {

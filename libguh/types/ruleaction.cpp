@@ -16,8 +16,22 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class RuleAction
+    \brief Describes an action for a \l{Rule}.
+
+    \ingroup types
+    \inmodule libguh
+
+    A RuleAction describes a special form of an \l{Action} for a \l{Rule}. The main difference is
+    the \l{RuleActionParam}, which allows to use an EventTypeId within a \l{Rule} to execute this \l{RuleAction}.
+
+    \sa Rule, RuleActionParam,
+*/
+
 #include "ruleaction.h"
 
+/*! Constructs a RuleAction with the given by \a actionTypeId and \a deviceId. */
 RuleAction::RuleAction(const ActionTypeId &actionTypeId, const DeviceId &deviceId) :
     m_id(ActionId::createActionId()),
     m_actionTypeId(actionTypeId),
@@ -25,7 +39,7 @@ RuleAction::RuleAction(const ActionTypeId &actionTypeId, const DeviceId &deviceI
 {
 
 }
-
+/*! Constructs a copy of the given \a other RuleAction. */
 RuleAction::RuleAction(const RuleAction &other) :
     m_id(other.id()),
     m_actionTypeId(other.actionTypeId()),
@@ -35,16 +49,19 @@ RuleAction::RuleAction(const RuleAction &other) :
 
 }
 
+/*! Return the ActionId of this RuleAction.*/
 ActionId RuleAction::id() const
 {
     return m_id;
 }
 
+/*! Return true, if the actionTypeId and the deviceId of this RuleAction are valid (set).*/
 bool RuleAction::isValid() const
 {
     return !m_actionTypeId.isNull() && !m_deviceId.isNull();
 }
 
+/*! Return true, if this RuleAction contains a \l{RuleActionParam} which is based on an EventTypeId.*/
 bool RuleAction::isEventBased() const
 {
     foreach (const RuleActionParam &param, m_ruleActionParams) {
@@ -55,6 +72,8 @@ bool RuleAction::isEventBased() const
     return false;
 }
 
+/*! Converts this \l{RuleAction} to a normal \l{Action}.
+ *  \sa Action, */
 Action RuleAction::toAction() const
 {
     Action action(m_actionTypeId, m_deviceId);
@@ -69,26 +88,35 @@ Action RuleAction::toAction() const
     return action;
 }
 
+/*! Returns the actionTypeId of this RuleAction. */
 ActionTypeId RuleAction::actionTypeId() const
 {
     return m_actionTypeId;
 }
 
+/*! Returns the deviceId of this RuleAction. */
 DeviceId RuleAction::deviceId() const
 {
     return m_deviceId;
 }
 
+/*! Returns the \l{RuleActionParamList} of this RuleAction.
+ *  \sa RuleActionParam, */
 RuleActionParamList RuleAction::ruleActionParams() const
 {
     return m_ruleActionParams;
 }
 
+/*! Set the \l{RuleActionParamList} of this RuleAction to the given \a ruleActionParams.
+ *  \sa RuleActionParam, */
 void RuleAction::setRuleActionParams(const RuleActionParamList &ruleActionParams)
 {
     m_ruleActionParams = ruleActionParams;
 }
 
+/*! Returns the \l{RuleActionParam} of this RuleAction with the given \a ruleActionParamName.
+ *  If there is no \l{RuleActionParam} with th given name an invalid \l{RuleActionParam} will be returnend.
+ *  \sa RuleActionParam, */
 RuleActionParam RuleAction::ruleActionParam(const QString &ruleActionParamName) const
 {
     foreach (const RuleActionParam &ruleActionParam, m_ruleActionParams) {
@@ -99,6 +127,7 @@ RuleActionParam RuleAction::ruleActionParam(const QString &ruleActionParamName) 
     return RuleActionParam(QString());
 }
 
+/*! Copy the data to a \l{RuleAction} from an \a other rule action. */
 void RuleAction::operator=(const RuleAction &other)
 {
     m_id = other.id();

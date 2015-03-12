@@ -174,7 +174,7 @@ JsonReply* RulesHandler::AddRule(const QVariantMap &params)
                     if (eventDescriptorList.isEmpty()) {
                         QVariantMap returns;
                         qWarning() << "RuleAction" << ruleAction.actionTypeId() << "contains an eventTypeId, but there are no eventDescriptors.";
-                        returns.insert("ruleErorr", JsonTypes::ruleErrorToString(RuleEngine::RuleErrorInvalidRuleActionPatameter));
+                        returns.insert("ruleErorr", JsonTypes::ruleErrorToString(RuleEngine::RuleErrorInvalidRuleActionParameter));
                         return createReply(returns);
                     }
                     // now check if this eventType is in the eventDescriptorList of this rule
@@ -186,7 +186,7 @@ JsonReply* RulesHandler::AddRule(const QVariantMap &params)
                             // the given eventTypeId is not in the eventDescriptorList
                             QVariantMap returns;
                             qWarning() << "eventTypeId from RuleAction" << ruleAction.actionTypeId() << "missing in eventDescriptors.";
-                            returns.insert("ruleErorr", JsonTypes::ruleErrorToString(RuleEngine::RuleErrorInvalidRuleActionPatameter));
+                            returns.insert("ruleErorr", JsonTypes::ruleErrorToString(RuleEngine::RuleErrorInvalidRuleActionParameter));
                             return createReply(returns);
                         }
                     }

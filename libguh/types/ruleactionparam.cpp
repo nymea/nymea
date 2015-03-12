@@ -100,7 +100,6 @@ QDebug operator<<(QDebug dbg, const RuleActionParam &ruleActionParam)
 }
 
 // ActionTypeParamList
-
 /*!
     \class RuleActionParamList
     \brief Holds a list of \l{RuleActionParam}{RuleActionParams}
@@ -111,7 +110,7 @@ QDebug operator<<(QDebug dbg, const RuleActionParam &ruleActionParam)
     \sa RuleActionParam, RuleAction,
 */
 
-/*! Returns true if this \l{RuleActionParamList} contains a RuleActionParam with the given \a paramName. */
+/*! Returns true if this \l{RuleActionParamList} contains a \l{RuleActionParam} with the given \a ruleActionParamName. */
 bool RuleActionParamList::hasParam(const QString &ruleActionParamName) const
 {
     foreach (const RuleActionParam &param, *this) {

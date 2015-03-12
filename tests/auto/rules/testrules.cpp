@@ -126,22 +126,22 @@ void TestRules::addRemoveRules_data()
     QVariantMap validActionNoParams;
     validActionNoParams.insert("actionTypeId", mockActionIdNoParams);
     validActionNoParams.insert("deviceId", m_mockDeviceId);
-    validActionNoParams.insert("params", QVariantList());
+    validActionNoParams.insert("ruleActionParams", QVariantList());
 
     QVariantMap invalidAction;
     invalidAction.insert("actionTypeId", ActionTypeId());
     invalidAction.insert("deviceId", m_mockDeviceId);
-    invalidAction.insert("params", QVariantList());
+    invalidAction.insert("ruleActionParams", QVariantList());
 
     QVariantMap validExitActionNoParams;
     validExitActionNoParams.insert("actionTypeId", mockActionIdNoParams);
     validExitActionNoParams.insert("deviceId", m_mockDeviceId);
-    validExitActionNoParams.insert("params", QVariantList());
+    validExitActionNoParams.insert("ruleActionParams", QVariantList());
 
     QVariantMap invalidExitAction;
     invalidExitAction.insert("actionTypeId", ActionTypeId());
     invalidExitAction.insert("deviceId", m_mockDeviceId);
-    invalidExitAction.insert("params", QVariantList());
+    invalidExitAction.insert("ruleActionParams", QVariantList());
 
     QVariantMap stateDescriptor;
     stateDescriptor.insert("stateTypeId", mockIntStateId);
@@ -363,7 +363,7 @@ void TestRules::loadStoreConfig()
     QVariantMap action1;
     action1.insert("actionTypeId", mockActionIdNoParams);
     action1.insert("deviceId", m_mockDeviceId);
-    action1.insert("params", QVariantList());
+    action1.insert("ruleActionParams", QVariantList());
 
     QVariantMap action2;
     action2.insert("actionTypeId", mockActionIdWithParams);
@@ -378,7 +378,7 @@ void TestRules::loadStoreConfig()
     action2Param2.insert("name", "mockActionParam2");
     action2Param2.insert("value", true);
     action2Params.append(action2Param2);
-    action2.insert("params", action2Params);
+    action2.insert("ruleActionParams", action2Params);
 
     // First rule
     QVariantMap params;
@@ -454,6 +454,10 @@ void TestRules::loadStoreConfig()
     }
 
     QVariantList replyActions = rule1.value("actions").toList();
+    qDebug() << "----------------------------------------------";
+    qDebug() << rule1;
+    qDebug() << "----------------------------------------------";
+
     foreach (const QVariant &actionVariant, actions) {
         bool found = false;
         foreach (const QVariant &replyActionVariant, replyActions) {

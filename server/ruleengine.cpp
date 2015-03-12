@@ -21,7 +21,7 @@
     \brief The Engine that evaluates \l{Rule}{Rules} and finds
     \l{Action}{Actions} to be executed.
 
-    \ingroup rules
+    \ingroup core
     \inmodule server
 
     You can add, remove and update rules and query the engine for actions to be executed
@@ -57,12 +57,14 @@
     \value RuleErrorInvalidRuleFormat
         The format of the rule is not valid. (i.e. add \l{Rule} with exitActions and eventDescriptors)
     \value RuleErrorMissingParameter
-        One of the given \l{Param}s is missing.
+        One of the given \l{Param}{Params} is missing.
+    \value RuleErrorInvalidRuleActionParameter
+        One of the given \l{RuleActionParam}{RuleActionParams} is not valid.
 */
 
 /*! \enum RuleEngine::RemovePolicy
     \value RemovePolicyCascade
-        Remove the whole Rule.
+        Remove the whole \l{Rule}.
     \value RemovePolicyUpdate
         Remove a \l{Device} from a rule.
 */

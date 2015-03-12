@@ -1,4 +1,4 @@
-16
+17
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -607,7 +607,7 @@
             "RuleErrorInvalidParameter",
             "RuleErrorInvalidRuleFormat",
             "RuleErrorMissingParameter",
-            "RuleErrorInvalidRuleActionPatameter"
+            "RuleErrorInvalidRuleActionParameter"
         ],
         "SetupMethod": [
             "SetupMethodJustAdd",

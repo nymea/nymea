@@ -50,11 +50,11 @@ RulesHandler::RulesHandler(QObject *parent) :
     params.insert("o:eventDescriptor", JsonTypes::eventDescriptorRef());
     params.insert("o:eventDescriptorList", QVariantList() << JsonTypes::eventDescriptorRef());
     params.insert("o:stateEvaluator", JsonTypes::stateEvaluatorRef());
-    params.insert("o:exitActions", QVariantList() << JsonTypes::actionRef());
+    params.insert("o:exitActions", QVariantList() << JsonTypes::ruleActionRef());
     params.insert("o:enabled", JsonTypes::basicTypeToString(JsonTypes::Bool));
     params.insert("name", JsonTypes::basicTypeToString(JsonTypes::String));
     QVariantList actions;
-    actions.append(JsonTypes::actionRef());
+    actions.append(JsonTypes::ruleActionRef());
     params.insert("actions", actions);
     setParams("AddRule", params);
     returns.insert("ruleError", JsonTypes::ruleErrorRef());
@@ -173,13 +173,14 @@ JsonReply* RulesHandler::AddRule(const QVariantMap &params)
                     // We have an eventTypeId
                     if (eventDescriptorList.isEmpty()) {
                         QVariantMap returns;
-                        qWarning() << "RuleAction" << ruleAction.actionTypeId() << "contains an eventTypeId, but there areno eventDescriptors.";
+                        qWarning() << "RuleAction" << ruleAction.actionTypeId() << "contains an eventTypeId, but there are no eventDescriptors.";
                         returns.insert("ruleErorr", JsonTypes::ruleErrorToString(RuleEngine::RuleErrorInvalidRuleActionPatameter));
                         return createReply(returns);
                     }
                     // now check if this eventType is in the eventDescriptorList of this rule
                     foreach (const EventDescriptor eventDescriptor, eventDescriptorList) {
                         if (eventDescriptor.eventTypeId() == ruleActionParam.eventTypeId()) {
+                            // TODO: check if they match
                             continue;
                         } else {
                             // the given eventTypeId is not in the eventDescriptorList
@@ -207,7 +208,7 @@ JsonReply* RulesHandler::AddRule(const QVariantMap &params)
         foreach (const QVariant &actionVariant, exitActionList) {
             QVariantMap actionMap = actionVariant.toMap();
             RuleAction action(ActionTypeId(actionMap.value("actionTypeId").toString()), DeviceId(actionMap.value("deviceId").toString()));
-            qDebug() << "params from json" << actionMap.value("ruleActionParams");
+                qDebug() << "params from json" << actionMap.value("ruleActionParams");
             action.setRuleActionParams(JsonTypes::unpackRuleActionParams(actionMap.value("ruleActionParams").toList()));
             qDebug() << "params in action" << action.ruleActionParams();
             exitActions.append(action);

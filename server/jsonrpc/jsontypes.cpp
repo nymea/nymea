@@ -104,7 +104,7 @@ void JsonTypes::init()
     // RuleActionParam
     s_ruleActionParam.insert("name", basicTypeToString(String));
     s_ruleActionParam.insert("o:value", basicTypeRef());
-    s_ruleActionParam.insert("o:eventId", basicTypeToString(Uuid));
+    s_ruleActionParam.insert("o:eventTypeId", basicTypeToString(Uuid));
 
     // ParamDescriptor
     s_paramDescriptor.insert("name", basicTypeToString(String));
@@ -355,8 +355,13 @@ QVariantMap JsonTypes::packRuleActionParam(const RuleActionParam &ruleActionPara
 {
     QVariantMap variantMap;
     variantMap.insert("name", ruleActionParam.name());
-    variantMap.insert("value", ruleActionParam.value());
-    variantMap.insert("eventTypeId", ruleActionParam.eventTypeId());
+
+    // if this ruleaction param has a valid EventTypeId, there is no value
+    if (ruleActionParam.eventTypeId() != EventTypeId()) {
+        variantMap.insert("eventTypeId", ruleActionParam.eventTypeId());
+    } else {
+        variantMap.insert("value", ruleActionParam.value());
+    }
     return variantMap;
 }
 
@@ -841,6 +846,18 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                 QPair<bool, QString> result = validateMap(paramTypeDescription(), variant.toMap());
                 if (!result.first) {
                     qDebug() << "param types not matching";
+                    return result;
+                }
+            } else if (refName == ruleActionRef()) {
+                QPair<bool, QString> result = validateMap(ruleActionDescription(), variant.toMap());
+                if (!result.first) {
+                    qDebug() << "ruleAction type not matching";
+                    return result;
+                }
+            } else if (refName == ruleActionParamRef()) {
+                QPair<bool, QString> result = validateMap(ruleActionParamDescription(), variant.toMap());
+                if (!result.first) {
+                    qDebug() << "ruleActionParam type not matching";
                     return result;
                 }
             } else if (refName == actionTypeRef()) {

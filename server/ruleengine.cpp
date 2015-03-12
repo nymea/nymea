@@ -143,7 +143,7 @@ RuleEngine::RuleEngine(QObject *parent) :
             foreach (QString paramNameString, settings.childGroups()) {
                 if (paramNameString.startsWith("RuleActionParam-")) {
                     settings.beginGroup(paramNameString);
-                    RuleActionParam param(paramNameString.remove(QRegExp("^RuleActionParam-")), settings.value("value"));
+                    RuleActionParam param(paramNameString.remove(QRegExp("^RuleActionParam-")), settings.value("value",QVariant()), EventTypeId(settings.value("eventTypeId", EventTypeId()).toString()));
                     params.append(param);
                     settings.endGroup();
                 }
@@ -358,6 +358,7 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
         settings.setValue("actionTypeId", action.actionTypeId());
         foreach (const RuleActionParam &param, action.ruleActionParams()) {
             settings.beginGroup("RuleActionParam-" + param.name());
+            settings.setValue("eventTypeId", param.eventTypeId());
             settings.setValue("value", param.value());
             settings.endGroup();
         }
@@ -366,7 +367,7 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
 
     settings.endGroup();
 
-    settings.beginGroup("exitActions");
+    settings.beginGroup("ruleExitActions");
     foreach (const RuleAction &action, rule.exitActions()) {
         settings.beginGroup(action.actionTypeId().toString());
         settings.setValue("deviceId", action.deviceId());

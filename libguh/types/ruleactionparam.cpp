@@ -35,7 +35,8 @@
  *  \sa Param, */
 RuleActionParam::RuleActionParam(const Param &param) :
     m_name(param.name()),
-    m_value(param.value())
+    m_value(param.value()),
+    m_eventTypeId(EventTypeId())
 {
 }
 

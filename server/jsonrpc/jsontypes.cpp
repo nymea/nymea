@@ -105,6 +105,7 @@ void JsonTypes::init()
     s_ruleActionParam.insert("name", basicTypeToString(String));
     s_ruleActionParam.insert("o:value", basicTypeRef());
     s_ruleActionParam.insert("o:eventTypeId", basicTypeToString(Uuid));
+    s_ruleActionParam.insert("o:eventParamName", basicTypeToString(String));
 
     // ParamDescriptor
     s_paramDescriptor.insert("name", basicTypeToString(String));
@@ -355,10 +356,10 @@ QVariantMap JsonTypes::packRuleActionParam(const RuleActionParam &ruleActionPara
 {
     QVariantMap variantMap;
     variantMap.insert("name", ruleActionParam.name());
-
     // if this ruleaction param has a valid EventTypeId, there is no value
     if (ruleActionParam.eventTypeId() != EventTypeId()) {
         variantMap.insert("eventTypeId", ruleActionParam.eventTypeId());
+        variantMap.insert("eventParamName", ruleActionParam.eventParamName());
     } else {
         variantMap.insert("value", ruleActionParam.value());
     }
@@ -635,10 +636,12 @@ RuleActionParam JsonTypes::unpackRuleActionParam(const QVariantMap &ruleActionPa
     if (ruleActionParamMap.keys().count() == 0) {
         return RuleActionParam();
     }
+
     QString name = ruleActionParamMap.value("name").toString();
     QVariant value = ruleActionParamMap.value("value");
-    EventTypeId eventTypeId(ruleActionParamMap.value("eventTypeId").toString());
-    return RuleActionParam(name, value, eventTypeId);
+    EventTypeId eventTypeId = EventTypeId(ruleActionParamMap.value("eventTypeId").toString());
+    QString eventParamName = ruleActionParamMap.value("eventParamName").toString();
+    return RuleActionParam(name, value, eventTypeId, eventParamName);
 }
 
 RuleActionParamList JsonTypes::unpackRuleActionParams(const QVariantList &ruleActionParamList)

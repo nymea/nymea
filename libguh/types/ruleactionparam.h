@@ -26,14 +26,17 @@
 #include "param.h"
 #include "typeutils.h"
 
-class RuleActionParam : public Param
+class RuleActionParam
 {
 public:
     RuleActionParam(const Param &param);
-    RuleActionParam(const QString &name = QString(), const QVariant &value = QVariant(), const EventTypeId &eventTypeId = EventTypeId());
+    RuleActionParam(const QString &name = QString(), const QVariant &value = QVariant(), const EventTypeId &eventTypeId = EventTypeId(), const QString &eventParamName = QString());
 
     QString name() const;
     void setName(const QString &name);
+
+    QString eventParamName() const;
+    void setEventParamName(const QString &eventParamName);
 
     QVariant value() const;
     void setValue(const QVariant &value);
@@ -47,11 +50,12 @@ private:
     QString m_name;
     QVariant m_value;
     EventTypeId m_eventTypeId;
+    QString m_eventParamName;
 
 };
-Q_DECLARE_METATYPE(RuleActionParam)
-QDebug operator<<(QDebug dbg, const RuleActionParam &ruleActionParams);
 
+Q_DECLARE_METATYPE(RuleActionParam)
+QDebug operator<<(QDebug dbg, const RuleActionParam &ruleActionParam);
 
 class RuleActionParamList: public QList<RuleActionParam>
 {

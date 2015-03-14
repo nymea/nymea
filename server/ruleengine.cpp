@@ -145,7 +145,7 @@ RuleEngine::RuleEngine(QObject *parent) :
             foreach (QString paramNameString, settings.childGroups()) {
                 if (paramNameString.startsWith("RuleActionParam-")) {
                     settings.beginGroup(paramNameString);
-                    RuleActionParam param(paramNameString.remove(QRegExp("^RuleActionParam-")), settings.value("value",QVariant()), EventTypeId(settings.value("eventTypeId", EventTypeId()).toString()));
+                    RuleActionParam param(paramNameString.remove(QRegExp("^RuleActionParam-")), settings.value("value",QVariant()), EventTypeId(settings.value("eventTypeId", EventTypeId()).toString()), settings.value("eventParamName", QString()).toString());
                     params.append(param);
                     settings.endGroup();
                 }
@@ -330,6 +330,7 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
     appendRule(rule);
     emit ruleAdded(rule.id());
 
+    // Save Events / EventDescriptors
     QSettings settings(m_settingsFile);
     settings.beginGroup(rule.id().toString());
     settings.setValue("name", name);
@@ -351,8 +352,10 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
     }
     settings.endGroup();
 
+    // Save StateEvaluator
     stateEvaluator.dumpToSettings(settings, "stateEvaluator");
 
+    // Save ruleActions
     settings.beginGroup("ruleActions");
     foreach (const RuleAction &action, rule.actions()) {
         settings.beginGroup(action.actionTypeId().toString());
@@ -361,6 +364,7 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
         foreach (const RuleActionParam &param, action.ruleActionParams()) {
             settings.beginGroup("RuleActionParam-" + param.name());
             settings.setValue("eventTypeId", param.eventTypeId());
+            settings.setValue("eventParamName", param.eventParamName());
             settings.setValue("value", param.value());
             settings.endGroup();
         }
@@ -369,6 +373,7 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
 
     settings.endGroup();
 
+    // Save ruleExitActions
     settings.beginGroup("ruleExitActions");
     foreach (const RuleAction &action, rule.exitActions()) {
         settings.beginGroup(action.actionTypeId().toString());

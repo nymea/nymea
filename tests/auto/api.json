@@ -1,4 +1,4 @@
-17
+18
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -594,6 +594,7 @@
         },
         "RuleActionParam": {
             "name": "String",
+            "o:eventParamName": "String",
             "o:eventTypeId": "Uuid",
             "o:value": "$ref:BasicType"
         },

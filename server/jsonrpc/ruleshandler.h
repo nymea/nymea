@@ -39,6 +39,10 @@ public:
     Q_INVOKABLE JsonReply* EnableRule(const QVariantMap &params);
     Q_INVOKABLE JsonReply* DisableRule(const QVariantMap &params);
 
+private:
+    QVariant::Type getActionParamType(const ActionTypeId &actionTypeId, const QString &paramName);
+    QVariant::Type getEventParamType(const EventTypeId &eventTypeId, const QString &paramName);
+    bool checkEventDescriptors(const QList<EventDescriptor> eventDescriptors, const EventTypeId &eventTypeId);
 };
 
 #endif // RULESHANDLER_H

@@ -396,18 +396,24 @@ void GuhCore::gotEvent(const Event &event)
         }
     }
 
-    // Convert event based RuleActions to normal action, depending on the event value
-    foreach (const RuleAction &ruleAction, eventBasedActions) {
+    // Set action params, depending on the event value
+    foreach (RuleAction ruleAction, eventBasedActions) {
+        RuleActionParamList newParams;
         foreach (RuleActionParam ruleActionParam, ruleAction.ruleActionParams()) {
             // if this event param should be taken over in this action
             if (event.eventTypeId() == ruleActionParam.eventTypeId()) {
-                QVariant eventValue = event.param(ruleActionParam.name()).value();
+                QVariant eventValue = event.params().first().value();
+
+                // TODO: get param names...
 
                 // TODO:  limits / scale calculation -> actionValue = eventValue * x
 
                 ruleActionParam.setValue(eventValue);
+                qDebug() << ruleActionParam.value();
             }
+            newParams.append(ruleActionParam);
         }
+        ruleAction.setRuleActionParams(newParams);
         actions.append(ruleAction);
     }
 

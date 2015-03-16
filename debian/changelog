@@ -1,3 +1,9 @@
+guh (0.3.0) utopic; urgency=medium
+
+  * update rule engine and many other small changes
+
+ -- Simon Stürz <simon.stuerz@guh.guru>  Mon, 16 Mar 2015 09:52:40 +0100
+
 guh (0.2.0) UNRELEASED; urgency=medium
 
   * split plugins into dynamic libs and packages

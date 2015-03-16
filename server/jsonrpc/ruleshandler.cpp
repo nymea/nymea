@@ -203,7 +203,7 @@ JsonReply* RulesHandler::AddRule(const QVariantMap &params)
                     if (eventParamType != actionParamType) {
                         QVariantMap returns;
                         qWarning() << "RuleActionParam" << ruleActionParam.name() << " and given event param have not the same type.";
-                        returns.insert("ruleError", JsonTypes::ruleErrorToString(RuleEngine::RuleErrorInvalidRuleActionParameter));
+                        returns.insert("ruleError", JsonTypes::ruleErrorToString(RuleEngine::RuleErrorTypesNotMatching));
                         return createReply(returns);
                     }
                 }

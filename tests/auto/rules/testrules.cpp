@@ -291,7 +291,6 @@ void TestRules::addRemoveRules()
     QVariantList replyActions = rule.value("actions").toList();
     QVERIFY2(actions == replyActions, "Actions don't match");
 
-
     params.clear();
     params.insert("ruleId", newRuleId);
     response = injectAndWait("Rules.RemoveRule", params);
@@ -332,7 +331,6 @@ void TestRules::loadStoreConfig()
     QVariantList eventDescriptorList;
     eventDescriptorList.append(eventDescriptor1);
     eventDescriptorList.append(eventDescriptor2);
-
 
     QVariantMap stateEvaluator1;
     QVariantList childEvaluators;
@@ -382,7 +380,7 @@ void TestRules::loadStoreConfig()
     action2Params.append(action2Param2);
     action2.insert("params", action2Params);
 
-
+    // First rule
     QVariantMap params;
     QVariantList actions;
     actions.append(action1);
@@ -396,22 +394,39 @@ void TestRules::loadStoreConfig()
     RuleId newRuleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
     verifyRuleError(response);
 
+    // Second rule
+    QVariantMap params2;
+    QVariantList actions2;
+    actions2.append(action1);
+    QVariantList exitActions2;
+    exitActions2.append(action2);
+    params2.insert("actions", actions2);
+    params2.insert("exitActions", exitActions2);
+    params2.insert("stateEvaluator", stateEvaluator1);
+    params2.insert("name", "TestRule2");
+    QVariant response2 = injectAndWait("Rules.AddRule", params2);
+
+    RuleId newRuleId2 = RuleId(response2.toMap().value("params").toMap().value("ruleId").toString());
+    verifyRuleError(response2);
+
     restartServer();
 
     response = injectAndWait("Rules.GetRules");
 
     QVariantList rules = response.toMap().value("params").toMap().value("ruleIds").toList();
 
-    QVERIFY2(rules.count() == 1, "There should be exactly one rule");
-    QCOMPARE(RuleId(rules.first().toString()), newRuleId);
+    QVERIFY2(rules.count() == 2, "There should be exactly two rule.");
+    QVERIFY2(rules.contains(newRuleId.toString()), "Rule 1 should be in ruleIds list.");
+    QVERIFY2(rules.contains(newRuleId2.toString()), "Rule 2 should be in ruleIds list.");
+
 
     params.clear();
-    params.insert("ruleId", rules.first().toString());
+    params.insert("ruleId", newRuleId);
     response = injectAndWait("Rules.GetRuleDetails", params);
 
-    QVariantMap rule = response.toMap().value("params").toMap().value("rule").toMap();
+    QVariantMap rule1 = response.toMap().value("params").toMap().value("rule").toMap();
 
-    QVariantList eventDescriptors = rule.value("eventDescriptors").toList();
+    QVariantList eventDescriptors = rule1.value("eventDescriptors").toList();
     QVERIFY2(eventDescriptors.count() == 2, "There shoud be exactly 2 eventDescriptors");
     foreach (const QVariant &expectedEventDescriptorVariant, eventDescriptorList) {
         bool found = false;
@@ -425,8 +440,8 @@ void TestRules::loadStoreConfig()
         QVERIFY2(found, "missing eventdescriptor");
     }
 
-    QVERIFY2(rule.value("name").toString() == "TestRule", "Loaded wrong name for rule");
-    QVariantMap replyStateEvaluator= rule.value("stateEvaluator").toMap();
+    QVERIFY2(rule1.value("name").toString() == "TestRule", "Loaded wrong name for rule");
+    QVariantMap replyStateEvaluator= rule1.value("stateEvaluator").toMap();
     QVariantList replyChildEvaluators = replyStateEvaluator.value("childEvaluators").toList();
     QVERIFY2(replyStateEvaluator.value("operator") == "StateOperatorAnd", "There should be the AND operator.");
     QVERIFY2(replyChildEvaluators.count() == 2, "There shoud be exactly 2 childEvaluators");
@@ -438,7 +453,7 @@ void TestRules::loadStoreConfig()
         QVERIFY2(stateDescriptor.value("stateTypeId") == mockIntStateId || stateDescriptor.value("stateTypeId") == mockBoolStateId, "StateTypeId of stateDescriptor doesn't match");
     }
 
-    QVariantList replyActions = rule.value("actions").toList();
+    QVariantList replyActions = rule1.value("actions").toList();
     foreach (const QVariant &actionVariant, actions) {
         bool found = false;
         foreach (const QVariant &replyActionVariant, replyActions) {
@@ -455,9 +470,70 @@ void TestRules::loadStoreConfig()
         QVERIFY2(found, "Action not found after loading from config.");
     }
 
+
+    params.clear();
+    params.insert("ruleId", newRuleId2);
+    response = injectAndWait("Rules.GetRuleDetails", params);
+
+    QVariantMap rule2 = response.toMap().value("params").toMap().value("rule").toMap();
+
+    QVERIFY2(rule2.value("name").toString() == "TestRule2", "Loaded wrong name for rule");
+    QVariantMap replyStateEvaluator2= rule2.value("stateEvaluator").toMap();
+    QVariantList replyChildEvaluators2 = replyStateEvaluator.value("childEvaluators").toList();
+    QVERIFY2(replyStateEvaluator2.value("operator") == "StateOperatorAnd", "There should be the AND operator.");
+    QVERIFY2(replyChildEvaluators2.count() == 2, "There shoud be exactly 2 childEvaluators");
+
+    foreach (const QVariant &childEvaluator, replyChildEvaluators2) {
+        QVERIFY2(childEvaluator.toMap().contains("stateDescriptor"), "StateDescriptor missing in StateEvaluator");
+        QVariantMap stateDescriptor = childEvaluator.toMap().value("stateDescriptor").toMap();
+        QVERIFY2(stateDescriptor.value("deviceId") == m_mockDeviceId, "DeviceId of stateDescriptor does not match");
+        QVERIFY2(stateDescriptor.value("stateTypeId") == mockIntStateId || stateDescriptor.value("stateTypeId") == mockBoolStateId, "StateTypeId of stateDescriptor doesn't match");
+    }
+
+    QVariantList replyActions2 = rule2.value("actions").toList();
+    QVERIFY2(replyActions2.count() == 1, "Rule 2 should have exactly 1 action");
+    foreach (const QVariant &actionVariant, actions2) {
+        bool found = false;
+        foreach (const QVariant &replyActionVariant, replyActions2) {
+            if (actionVariant.toMap().value("actionTypeId") == replyActionVariant.toMap().value("actionTypeId") &&
+                    actionVariant.toMap().value("deviceId") == replyActionVariant.toMap().value("deviceId")) {
+                found = true;
+                QJsonDocument bDoc = QJsonDocument::fromVariant(actionVariant);
+                QString bString = bDoc.toJson();
+                QJsonDocument aDoc = QJsonDocument::fromVariant(replyActionVariant);
+                QString aString = aDoc.toJson();
+                QVERIFY2(actionVariant == replyActionVariant, QString("Action doesn't match after loading from config.\nBefore storing: %1\nAfter storing:%2").arg(bString).arg(aString).toUtf8().data());
+            }
+        }
+        QVERIFY2(found, "Action not found after loading from config.");
+    }
+
+    QVariantList replyExitActions2 = rule2.value("exitActions").toList();
+    QVERIFY2(replyExitActions2.count() == 1, "Rule 2 should have exactly 1 exitAction");
+    foreach (const QVariant &exitActionVariant, replyExitActions2) {
+        bool found = false;
+        foreach (const QVariant &replyActionVariant, replyExitActions2) {
+            if (exitActionVariant.toMap().value("actionTypeId") == replyActionVariant.toMap().value("actionTypeId") &&
+                    exitActionVariant.toMap().value("deviceId") == replyActionVariant.toMap().value("deviceId")) {
+                found = true;
+                QJsonDocument bDoc = QJsonDocument::fromVariant(exitActionVariant);
+                QString bString = bDoc.toJson();
+                QJsonDocument aDoc = QJsonDocument::fromVariant(replyActionVariant);
+                QString aString = aDoc.toJson();
+                QVERIFY2(exitActionVariant == replyActionVariant, QString("Action doesn't match after loading from config.\nBefore storing: %1\nAfter storing:%2").arg(bString).arg(aString).toUtf8().data());
+            }
+        }
+        QVERIFY2(found, "Exit Action not found after loading from config.");
+    }
+
     params.clear();
     params.insert("ruleId", newRuleId);
     response = injectAndWait("Rules.RemoveRule", params);
+    verifyRuleError(response);
+
+    params2.clear();
+    params2.insert("ruleId", newRuleId2);
+    response = injectAndWait("Rules.RemoveRule", params2);
     verifyRuleError(response);
 
     restartServer();

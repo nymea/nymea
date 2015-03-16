@@ -183,6 +183,11 @@ void TestRules::addRemoveRules_data()
     validEventDescriptor3.insert("deviceId", m_mockDeviceId);
     validEventDescriptor3.insert("paramDescriptors", QVariantList());
 
+    QVariantMap validEventDescriptor4;
+    validEventDescriptor4.insert("eventTypeId", mockEvent1Id);
+    validEventDescriptor4.insert("deviceId", m_mockDeviceId);
+    validEventDescriptor4.insert("paramDescriptors", QVariantList());
+
 
     // EventDescriptorList
     QVariantList eventDescriptorList;
@@ -225,6 +230,14 @@ void TestRules::addRemoveRules_data()
     invalidActionEventBasedParam3.insert("value", 2);
     invalidActionEventBased2.insert("ruleActionParams", QVariantList() << invalidActionEventBasedParam2 << invalidActionEventBasedParam3);
 
+    QVariantMap invalidActionEventBased3;
+    invalidActionEventBased3.insert("actionTypeId", mockActionIdWithParams);
+    invalidActionEventBased3.insert("deviceId", m_mockDeviceId);
+    QVariantMap invalidActionEventBasedParam4;
+    invalidActionEventBasedParam4.insert("name", "mockActionParam1");
+    invalidActionEventBasedParam4.insert("eventTypeId", mockEvent1Id);
+    invalidActionEventBasedParam4.insert("eventParamName", "mockParamInt");
+    invalidActionEventBased3.insert("ruleActionParams", QVariantList() << invalidActionEventBasedParam4);
 
 
     QTest::addColumn<bool>("enabled");
@@ -240,6 +253,9 @@ void TestRules::addRemoveRules_data()
     // Rules with event based actions
     QTest::newRow("valid rule. enabled, 1 Action (eventBased), 1 EventDescriptor, name")                << true     << validActionEventBased    << QVariantMap()            << validEventDescriptor3    << QVariantList()       << QVariantMap()            << RuleEngine::RuleErrorNoError << true << "ActionEventRule1";
     QTest::newRow("invalid rule. enabled, 1 Action (eventBased), 1 EventDescriptor, name")              << true     << invalidActionEventBased2 << QVariantMap()            << validEventDescriptor3    << QVariantList()       << QVariantMap()            << RuleEngine::RuleErrorInvalidRuleActionParameter << false << "TestRule";
+
+    QTest::newRow("invalid rule. enabled, 1 Action (eventBased), types not matching, name")             << true     << invalidActionEventBased3 << QVariantMap()            << validEventDescriptor4    << QVariantList()       << QVariantMap()            << RuleEngine::RuleErrorTypesNotMatching << false << "TestRule";
+
     QTest::newRow("invalid rule. enabled, 1 Action (eventBased), 1 EventDescriptor, name")              << true     << invalidActionEventBased  << QVariantMap()            << validEventDescriptor2    << QVariantList()       << QVariantMap()            << RuleEngine::RuleErrorInvalidRuleActionParameter << false << "TestRule";
     QTest::newRow("invalid rule. enabled, 1 Action (eventBased), 1 StateEvaluator, name")               << true     << validActionEventBased    << QVariantMap()            << QVariantMap()            << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorInvalidRuleActionParameter << false << "TestRule";
     QTest::newRow("invalid rule. enabled, 1 Action (eventBased), 1 EventDescriptor, name")              << true     << validActionEventBased    << validActionEventBased    << validEventDescriptor2    << QVariantList()       << QVariantMap()            << RuleEngine::RuleErrorInvalidRuleFormat << false << "TestRule";

@@ -27,7 +27,6 @@
 
     It is also responsible for loading Plugins and managing common hardware resources between
     \l{DevicePlugin}{device plugins}.
-
 */
 
 /*! \enum DeviceManager::HardwareResource

@@ -40,6 +40,7 @@ public:
 private:
     TuneManager *m_manager;
     bool sync();
+    void syncStates(Device *device);
 
 private slots:
     void tuneConnectionStatusChanged(const bool &connected);

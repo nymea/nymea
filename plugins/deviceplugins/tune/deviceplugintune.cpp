@@ -65,12 +65,6 @@ DeviceManager::DeviceSetupStatus DevicePluginTune::setupDevice(Device *device)
         return DeviceManager::DeviceSetupStatusSuccess;
     }
 
-    // todo
-    if (device->deviceClassId() == todoDeviceClassId) {
-        device->setName(device->paramValue("name").toString() + " (Todo)");
-        return DeviceManager::DeviceSetupStatusSuccess;
-    }
-
     return DeviceManager::DeviceSetupStatusFailure;
 }
 
@@ -102,7 +96,6 @@ bool DevicePluginTune::sync()
 
     QVariantMap message;
     QVariantList moods;
-    QVariantList todos;
     foreach (Device* device, myDevices()) {
         if (device->deviceClassId() == moodDeviceClassId) {
             QVariantMap mood;
@@ -111,29 +104,46 @@ bool DevicePluginTune::sync()
             mood.insert("deviceClassId", device->deviceClassId().toString());
             mood.insert("position", device->paramValue("position"));
             mood.insert("icon", device->paramValue("icon"));
+            QVariantMap states;
+            states.insert("value", device->stateValue(valueStateTypeId).toInt());
+            states.insert("active", device->stateValue(activeStateTypeId).toBool());
+            mood.insert("states", states);
             moods.append(mood);
-        } else if(device->deviceClassId() == todoDeviceClassId) {
-            QVariantMap todo;
-            todo.insert("name", device->paramValue("name"));
-            todo.insert("deviceId", device->id().toString());
-            todo.insert("deviceClassId", device->deviceClassId().toString());
-            todo.insert("position", device->paramValue("position"));
-            todo.insert("icon", device->paramValue("icon"));
-            todos.append(todo);
         }
     }
+
     message.insert("method", "Items.Sync");
     message.insert("moods", moods);
-    message.insert("todos", todos);
 
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(message);
     QByteArray data = jsonDoc.toJson(QJsonDocument::Compact);
 
-    qDebug() << data;
+    //qDebug() << data;
+
+    m_manager->sendData(data);
+    return true;
+}
+
+void DevicePluginTune::syncStates(Device *device)
+{
+    QVariantMap message;
+    QVariantMap mood;
+    QVariantMap states;
+    states.insert("value", device->stateValue(valueStateTypeId).toInt());
+    states.insert("active", device->stateValue(activeStateTypeId).toBool());
+    mood.insert("states", states);
+    mood.insert("deviceId", device->id());
+    mood.insert("position", device->paramValue("position"));
+    message.insert("method", "Items.SyncStates");
+    message.insert("mood", mood);
+
+    QJsonDocument jsonDoc = QJsonDocument::fromVariant(message);
+    QByteArray data = jsonDoc.toJson(QJsonDocument::Compact);
+
+    //qDebug() << jsonDoc.toJson();
 
     m_manager->sendData(data);
 
-    return true;
 }
 
 void DevicePluginTune::tuneConnectionStatusChanged(const bool &connected)
@@ -151,14 +161,22 @@ void DevicePluginTune::tuneDataAvailable(const QByteArray &data)
     if(error.error != QJsonParseError::NoError) {
         qDebug() << "failed to parse data" << data << ":" << error.errorString();
     }
-    qDebug() << jsonDoc.toJson();
+
+    QVariantMap message = jsonDoc.toVariant().toMap();
+    if (message.contains("method")) {
+        if (message.value("method").toString() == "Items.SyncStates") {
+            QVariantMap mood = message.value("mood").toMap();
 
 
-    // Check what happend...
-
-
-
-
+            foreach (Device *device, myDevices()) {
+                if (device->id() == DeviceId(mood.value("deviceId").toString())) {
+                    device->setStateValue(activeStateTypeId, mood.value("states").toMap().value("active"));
+                    device->setStateValue(valueStateTypeId, mood.value("states").toMap().value("value"));
+                    return;
+                }
+            }
+        }
+    }
 }
 
 DeviceManager::DeviceError DevicePluginTune::executeAction(Device *device, const Action &action)
@@ -172,17 +190,15 @@ DeviceManager::DeviceError DevicePluginTune::executeAction(Device *device, const
         if (action.actionTypeId() == toggleActionTypeId) {
             bool currentState = device->stateValue(activeStateTypeId).toBool();
             device->setStateValue(activeStateTypeId, !currentState);
+            syncStates(device);
+            return DeviceManager::DeviceErrorNoError;
+        }
+        if (action.actionTypeId() == setValueActionTypeId) {
+            device->setStateValue(valueStateTypeId, action.param("percentage").value().toInt());
+            syncStates(device);
             return DeviceManager::DeviceErrorNoError;
         }
         return DeviceManager::DeviceErrorActionTypeNotFound;
-    }
-
-    // Todo
-    if (device->deviceClassId() == todoDeviceClassId) {
-        if (action.actionTypeId() == pressActionTypeId) {
-            emit emitEvent(Event(pressedEventTypeId, device->id()));
-            return DeviceManager::DeviceErrorNoError;
-        }
     }
 
     return DeviceManager::DeviceErrorDeviceClassNotFound;

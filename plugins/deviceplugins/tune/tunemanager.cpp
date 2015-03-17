@@ -76,7 +76,7 @@ void TuneManager::readData()
     QByteArray message;
     while (m_tune->canReadLine()) {
         QByteArray dataLine = m_tune->readLine();
-        qDebug() << " --> tune line in:" << dataLine;
+        //qDebug() << " --> tune line in:" << dataLine;
         message.append(dataLine);
         if (dataLine.endsWith('\n')) {
             emit dataReady(message);

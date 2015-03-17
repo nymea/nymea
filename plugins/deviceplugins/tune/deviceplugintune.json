@@ -26,12 +26,14 @@
                             "type": "QString",
                             "allowedValues": [
                                 "IconCouch",
-                                "IconWork",
-                                "IconToilet",
-                                "IconSex",
-                                "IconDrinking",
-                                "IconEating",
-                                "IconSmoking"
+                                "IconLamp",
+                                "IconLamp1",
+                                "IconLamp2",
+                                "IconLamp3",
+                                "IconSmoking",
+                                "IconSocket",
+                                "IconThermometer",
+                                "IconWork"
                             ]
                         }
                     ],
@@ -47,7 +49,7 @@
                             "id": "cb8a89c2-dc12-4965-b047-57896058b421",
                             "idName": "value",
                             "name": "value",
-                            "type": "uint",
+                            "type": "int",
                             "defaultValue": 50
                         }
                     ],
@@ -64,75 +66,11 @@
                             "paramTypes": [
                                 {
                                     "name": "percentage",
-                                    "type": "uint",
+                                    "type": "int",
                                     "minimumValue": 0,
                                     "maximumValue": 100
                                 }
                             ]
-                        }
-                    ]
-                },
-                {
-                    "deviceClassId": "56c14ef8-3a19-432f-9d9f-dc7e1d489312",
-                    "idName": "todo",
-                    "name": "ToDo",
-                    "createMethods": ["user"],
-                    "paramTypes": [
-                        {
-                            "name": "name",
-                            "type": "QString",
-                            "inputType": "TextLine"
-                        },
-                        {
-                            "name": "position",
-                            "type": "int"
-                        },
-                        {
-                            "name": "icon",
-                            "type": "QString",
-                            "allowedValues": [
-                                "IconCouch",
-                                "IconWork",
-                                "IconToilet",
-                                "IconSex",
-                                "IconDrinking",
-                                "IconEating",
-                                "IconSmoking"
-                            ]
-                        }
-                    ],
-                    "eventTypes": [
-                        {
-                            "id": "52b66edc-df40-42ef-a39c-aa2b77fdf42e",
-                            "idName": "pressed",
-                            "name": "pressed"
-                        },
-                        {
-                            "id": "277f10fd-3fc3-4229-904a-661b6f1cac54",
-                            "idName": "todoLeft",
-                            "name": "left"
-                        },
-                        {
-                            "id": "a510968e-f313-4880-95bd-786bd3bcb357",
-                            "idName": "todoRight",
-                            "name": "right"
-                        }
-                    ],
-                    "actionTypes": [
-                        {
-                            "id": "1a2dac4d-26b3-496f-a4c2-8cb90c75e026",
-                            "idName": "press",
-                            "name": "press"
-                        },
-                        {
-                            "id": "0c461c5a-1334-4559-816b-73b5b2afb3ba",
-                            "idName": "tickLeft",
-                            "name": "tick left"
-                        },
-                        {
-                            "id": "a67cda4a-2c6f-4815-818a-08094dfcc453",
-                            "idName": "tickRight",
-                            "name": "tick right"
                         }
                     ]
                 }

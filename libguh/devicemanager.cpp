@@ -27,7 +27,6 @@
 
     It is also responsible for loading Plugins and managing common hardware resources between
     \l{DevicePlugin}{device plugins}.
-
 */
 
 /*! \enum DeviceManager::HardwareResource
@@ -862,7 +861,6 @@ void DeviceManager::slotPairingFinished(const PairingTransactionId &pairingTrans
 
     m_configuredDevices.append(device);
     storeConfiguredDevices();
-
     emit deviceSetupFinished(device, DeviceError::DeviceErrorNoError);
     postSetupDevice(device);
 }
@@ -894,10 +892,10 @@ void DeviceManager::autoDevicesAppeared(const DeviceClassId &deviceClassId, cons
             break;
         case DeviceSetupStatusSuccess:
             qDebug() << "Device setup complete.";
-            emit deviceSetupFinished(device, DeviceError::DeviceErrorNoError);
-            postSetupDevice(device);
             m_configuredDevices.append(device);
             storeConfiguredDevices();
+            emit deviceSetupFinished(device, DeviceError::DeviceErrorNoError);
+            postSetupDevice(device);
             break;
         }
     }

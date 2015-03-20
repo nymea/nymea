@@ -20,13 +20,13 @@
     \class Rule
     \brief This class represents a rule.
 
-    \ingroup rules
+    \ingroup core
     \inmodule server
 
     A Rule is always triggered by an \l{EventDescriptor}, has \l{State}{States}
-    to be compared and \l{Action}{Actions} to be executed.
+    to be compared and \l{RuleAction}{RuleActions} to be executed.
 
-    \sa EventDescriptor, State, Action
+    \sa EventDescriptor, State, RuleAction
 */
 
 #include "rule.h"
@@ -35,12 +35,12 @@
 
 /*! Constructs an empty, invalid rule. */
 Rule::Rule():
-    Rule(RuleId(), QString(), QList<EventDescriptor>(), StateEvaluator(), QList<Action>(), QList<Action>())
+    Rule(RuleId(), QString(), QList<EventDescriptor>(), StateEvaluator(), QList<RuleAction>(), QList<RuleAction>())
 {
 }
 
 /*! Constructs a Rule with the given \a id, \a name, \a eventDescriptorList, \a stateEvaluator and \a actions.*/
-Rule::Rule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actions) :
+Rule::Rule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions) :
     m_id(id),
     m_name(name),
     m_eventDescriptors(eventDescriptorList),
@@ -53,7 +53,7 @@ Rule::Rule(const RuleId &id, const QString &name, const QList<EventDescriptor> &
 }
 
 /*! Constructs a Rule with the given \a id, \a name, \a eventDescriptorList, \a stateEvaluator, \a actions and \a exitActions.*/
-Rule::Rule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actions, const QList<Action> &exitActions):
+Rule::Rule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions):
     m_id(id),
     m_name(name),
     m_eventDescriptors(eventDescriptorList),
@@ -68,7 +68,7 @@ Rule::Rule(const RuleId &id, const QString &name, const QList<EventDescriptor> &
 /*! Constructs a Rule with the given \a id, \a name, \a stateEvaluator, \a actions and \a exitActions. This type of rule
  *  works only state based and executes the \a actions once the rule enters the active state and executes the \a exitActions
  *  once the rule exits the active state.*/
-Rule::Rule(const RuleId &id, const QString &name, const StateEvaluator &stateEvaluator, const QList<Action> &actions, const QList<Action> &exitActions) :
+Rule::Rule(const RuleId &id, const QString &name, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions) :
     m_id(id),
     m_name(name),
     m_stateEvaluator(stateEvaluator),
@@ -97,14 +97,14 @@ StateEvaluator Rule::stateEvaluator() const
     return m_stateEvaluator;
 }
 
-/*! Returns the \l{Action}{Actions} to be executed when this Rule is matched and states match. */
-QList<Action> Rule::actions() const
+/*! Returns the \l{RuleAction}{RuleActions} to be executed when this Rule is matched and states match. */
+QList<RuleAction> Rule::actions() const
 {
     return m_actions;
 }
 
-/*! Returns the \l{Action}{Actions} to be executed when this Rule leaves the active state. */
-QList<Action> Rule::exitActions() const
+/*! Returns the \l{RuleAction}{RuleActions} to be executed when this Rule leaves the active state. */
+QList<RuleAction> Rule::exitActions() const
 {
     return m_exitActions;
 }

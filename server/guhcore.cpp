@@ -286,7 +286,7 @@ Rule GuhCore::findRule(const RuleId &ruleId)
 
 /*! Calls the metheod RuleEngine::addRule(\a id, \a name, \a eventDescriptorList, \a stateEvaluator \a actionList, \a exitActionList, \a enabled).
  *  \sa RuleEngine, */
-RuleEngine::RuleError GuhCore::addRule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actionList, const QList<Action> &exitActionList, bool enabled)
+RuleEngine::RuleError GuhCore::addRule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actionList, const QList<RuleAction> &exitActionList, bool enabled)
 {
     return m_ruleEngine->addRule(id, name, eventDescriptorList, stateEvaluator, actionList, exitActionList, enabled);
 }
@@ -369,18 +369,28 @@ GuhCore::GuhCore(QObject *parent) :
 }
 
 /*! Connected to the DeviceManager's emitEvent signal. Events received in
-    here will be evaluated by the \l{RuleEngine} and the according \l{Action}{Actions} are executed.*/
+    here will be evaluated by the \l{RuleEngine} and the according \l{RuleAction}{RuleActions} are executed.*/
 void GuhCore::gotEvent(const Event &event)
 {
     m_logger->logEvent(event);
     emit eventTriggered(event);
 
-    QList<Action> actions;
+    QList<RuleAction> actions;
+    QList<RuleAction> eventBasedActions;
     foreach (const Rule &rule, m_ruleEngine->evaluateEvent(event)) {
+        // Event based
         if (rule.eventDescriptors().count() > 0) {
             m_logger->logRuleTriggered(rule);
-            actions.append(rule.actions());
+            // check if we have an event based action or a normal action
+            foreach (const RuleAction &action, rule.actions()) {
+                if (action.isEventBased()) {
+                    eventBasedActions.append(action);
+                } else {
+                    actions.append(rule.actions());
+                }
+            }
         } else {
+            // State based rule
             m_logger->logRuleActiveChanged(rule);
             if (rule.active()) {
                 actions.append(rule.actions());
@@ -390,9 +400,31 @@ void GuhCore::gotEvent(const Event &event)
         }
     }
 
+    // Set action params, depending on the event value
+    foreach (RuleAction ruleAction, eventBasedActions) {
+        RuleActionParamList newParams;
+        foreach (RuleActionParam ruleActionParam, ruleAction.ruleActionParams()) {
+            // if this event param should be taken over in this action
+            if (event.eventTypeId() == ruleActionParam.eventTypeId()) {
+                QVariant eventValue = event.params().first().value();
+
+                // TODO: get param names...
+
+                // TODO:  limits / scale calculation -> actionValue = eventValue * x
+
+                ruleActionParam.setValue(eventValue);
+                qDebug() << ruleActionParam.value();
+            }
+            newParams.append(ruleActionParam);
+        }
+        ruleAction.setRuleActionParams(newParams);
+        actions.append(ruleAction);
+    }
+
     // Now execute all the associated actions
-    foreach (const Action &action, actions) {
-        qDebug() << "executing action" << action.actionTypeId();
+    foreach (const RuleAction &ruleAction, actions) {
+        Action action = ruleAction.toAction();
+        qDebug() << "executing action" << ruleAction.actionTypeId();
         DeviceManager::DeviceError status = m_deviceManager->executeAction(action);
         switch(status) {
         case DeviceManager::DeviceErrorNoError:

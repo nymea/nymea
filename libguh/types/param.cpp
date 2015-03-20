@@ -86,6 +86,16 @@ QDebug operator<<(QDebug dbg, const ParamList &params)
     return dbg.space();
 }
 
+/*!
+    \class ParamList
+    \brief Holds a list of \l{Param}{Params}
+
+    \ingroup types
+    \inmodule libguh
+
+    \sa Param,
+*/
+
 /*! Returns true if this Param contains a Param with the given \a paramName. */
 bool ParamList::hasParam(const QString &paramName) const
 {

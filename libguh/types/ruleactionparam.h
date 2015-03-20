@@ -16,51 +16,56 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef RULE_H
-#define RULE_H
+#ifndef RULEACTIONPARAM_H
+#define RULEACTIONPARAM_H
 
-#include "types/state.h"
-#include "types/ruleaction.h"
-#include "types/eventdescriptor.h"
-#include "stateevaluator.h"
+#include <QDebug>
+#include <QString>
+#include <QVariant>
 
-#include <QUuid>
+#include "param.h"
+#include "typeutils.h"
 
-class Rule
+class RuleActionParam
 {
 public:
-    Rule();
-    Rule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions);
-    Rule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions);
-    Rule(const RuleId &id, const QString &name, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions);
-
-    RuleId id() const;
-    QList<EventDescriptor> eventDescriptors() const;
-    StateEvaluator stateEvaluator() const;
-    QList<RuleAction> actions() const;
-    QList<RuleAction> exitActions() const;
+    RuleActionParam(const Param &param);
+    RuleActionParam(const QString &name = QString(), const QVariant &value = QVariant(), const EventTypeId &eventTypeId = EventTypeId(), const QString &eventParamName = QString());
 
     QString name() const;
-    bool enabled() const;
-    void setEnabled(bool enabled);
-
-    bool active() const;
-
-private:
-    friend class RuleEngine;
     void setName(const QString &name);
-    void setActive(bool active);
+
+    QString eventParamName() const;
+    void setEventParamName(const QString &eventParamName);
+
+    QVariant value() const;
+    void setValue(const QVariant &value);
+
+    bool isValid() const;
+
+    EventTypeId eventTypeId() const;
+    void setEventTypeId(const EventTypeId &eventTypeId);
 
 private:
-    RuleId m_id;
     QString m_name;
-    QList<EventDescriptor> m_eventDescriptors;
-    StateEvaluator m_stateEvaluator;
-    QList<RuleAction> m_actions;
-    QList<RuleAction> m_exitActions;
+    QVariant m_value;
+    EventTypeId m_eventTypeId;
+    QString m_eventParamName;
 
-    bool m_enabled;
-    bool m_active;
 };
 
-#endif // RULE_H
+Q_DECLARE_METATYPE(RuleActionParam)
+QDebug operator<<(QDebug dbg, const RuleActionParam &ruleActionParam);
+
+class RuleActionParamList: public QList<RuleActionParam>
+{
+public:
+    bool hasParam(const QString &ruleActionParamName) const;
+    QVariant paramValue(const QString &ruleActionParamName) const;
+    void setParamValue(const QString &ruleActionParamName, const QVariant &value);
+    RuleActionParamList operator<<(const RuleActionParam &ruleActionParam);
+};
+QDebug operator<<(QDebug dbg, const RuleActionParamList &ruleActionParams);
+
+
+#endif // RULEACTIONPARAM_H

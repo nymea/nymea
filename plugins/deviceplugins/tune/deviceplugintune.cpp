@@ -30,8 +30,6 @@ DevicePluginTune::DevicePluginTune()
 
     connect(m_manager, &TuneManager::tuneConnectionStatusChanged, this, &DevicePluginTune::tuneConnectionStatusChanged);
     connect(m_manager, &TuneManager::dataReady, this, &DevicePluginTune::tuneDataAvailable);
-
-    m_manager->start();
 }
 
 DeviceManager::HardwareResources DevicePluginTune::requiredHardware() const
@@ -39,28 +37,41 @@ DeviceManager::HardwareResources DevicePluginTune::requiredHardware() const
     return DeviceManager::HardwareResourceNone;
 }
 
+void DevicePluginTune::startMonitoringAutoDevices()
+{
+    m_manager->start();
+}
+
 DeviceManager::DeviceSetupStatus DevicePluginTune::setupDevice(Device *device)
 {
-    // check index position
-    int position = device->paramValue("position").toInt();
 
-    if (position >= myDevices().count()) {
-        device->setParamValue("position", myDevices().count());
-    } else {
-        if (position <= 0) {
-            device->setParamValue("position", 0);
-            position = 0;
-        }
-        foreach (Device *d, myDevices()) {
-            int currentPosition = d->paramValue("position").toInt();
-            if (currentPosition >= position) {
-                d->setParamValue("position", currentPosition + 1);
-            }
-        }
+    // tune
+    if (device->deviceClassId() == tuneDeviceClassId && !tuneAdded()) {
+        m_tuneDeviceId = device->id();
+        return DeviceManager::DeviceSetupStatusSuccess;
     }
 
     // mood
-    if (device->deviceClassId() == moodDeviceClassId) {
+    if ((device->deviceClassId() == moodDeviceClassId) && tuneAdded()) {
+
+        // check index position
+        int position = device->paramValue("position").toInt();
+
+        if (position >= myDevices().count()) {
+            device->setParamValue("position", myDevices().count());
+        } else {
+            if (position <= 0) {
+                device->setParamValue("position", 0);
+                position = 0;
+            }
+            foreach (Device *d, myDevices()) {
+                int currentPosition = d->paramValue("position").toInt();
+                if (currentPosition >= position) {
+                    d->setParamValue("position", currentPosition + 1);
+                }
+            }
+        }
+
         device->setName(device->paramValue("name").toString() + " (Mood)");
         return DeviceManager::DeviceSetupStatusSuccess;
     }
@@ -76,15 +87,20 @@ void DevicePluginTune::postSetupDevice(Device *device)
 
 void DevicePluginTune::deviceRemoved(Device *device)
 {
-    int position = device->paramValue("position").toInt();
+    if (device->deviceClassId() == moodDeviceClassId) {
+        int position = device->paramValue("position").toInt();
 
-    foreach (Device *d, myDevices()) {
-        int currentPosition = d->paramValue("position").toInt();
-        if (currentPosition >= position ) {
-            d->setParamValue("position", currentPosition - 1);
+        foreach (Device *d, myDevices()) {
+            int currentPosition = d->paramValue("position").toInt();
+            if (currentPosition >= position ) {
+                d->setParamValue("position", currentPosition - 1);
+            }
         }
+        sync();
     }
-    sync();
+    if (device->deviceClassId() == tuneDeviceClassId && m_manager->tuneAvailable()) {
+        tuneAutodetected();
+    }
 }
 
 bool DevicePluginTune::sync()
@@ -96,12 +112,12 @@ bool DevicePluginTune::sync()
 
     QVariantMap message;
     QVariantList moods;
+    QVariantMap tune;
     foreach (Device* device, myDevices()) {
         if (device->deviceClassId() == moodDeviceClassId) {
             QVariantMap mood;
             mood.insert("name", device->paramValue("name"));
             mood.insert("deviceId", device->id());
-            mood.insert("deviceClassId", device->deviceClassId().toString());
             mood.insert("position", device->paramValue("position"));
             mood.insert("icon", device->paramValue("icon"));
             QVariantMap states;
@@ -110,15 +126,24 @@ bool DevicePluginTune::sync()
             mood.insert("states", states);
             moods.append(mood);
         }
+        if (device->deviceClassId() == tuneDeviceClassId) {
+            tune.insert("name", device->paramValue("name"));
+            tune.insert("deviceId", device->id());
+            QVariantMap states;
+            states.insert("value", device->stateValue(brightnessStateTypeId).toInt());
+            states.insert("active", device->stateValue(powerStateTypeId).toBool());
+            tune.insert("states", states);
+        }
     }
 
     message.insert("method", "Items.Sync");
     message.insert("moods", moods);
+    message.insert("tune", tune);
 
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(message);
     QByteArray data = jsonDoc.toJson(QJsonDocument::Compact);
 
-    //qDebug() << data;
+    //qDebug() << jsonDoc.toJson();
 
     m_manager->sendData(data);
     return true;
@@ -127,29 +152,70 @@ bool DevicePluginTune::sync()
 void DevicePluginTune::syncStates(Device *device)
 {
     QVariantMap message;
-    QVariantMap mood;
-    QVariantMap states;
-    states.insert("value", device->stateValue(valueStateTypeId).toInt());
-    states.insert("active", device->stateValue(activeStateTypeId).toBool());
-    mood.insert("states", states);
-    mood.insert("deviceId", device->id());
-    mood.insert("position", device->paramValue("position"));
-    message.insert("method", "Items.SyncStates");
-    message.insert("mood", mood);
+
+    if (device->deviceClassId() == moodDeviceClassId) {
+        QVariantMap mood;
+        QVariantMap states;
+        states.insert("value", device->stateValue(valueStateTypeId).toInt());
+        states.insert("active", device->stateValue(activeStateTypeId).toBool());
+        mood.insert("states", states);
+        mood.insert("deviceId", device->id());
+        message.insert("method", "Items.SyncStates");
+        message.insert("mood", mood);
+    }
+
+    if (device->deviceClassId() == tuneDeviceClassId) {
+        QVariantMap tune;
+        QVariantMap states;
+        states.insert("value", device->stateValue(brightnessStateTypeId).toInt());
+        states.insert("active", device->stateValue(powerStateTypeId).toBool());
+        tune.insert("states", states);
+        tune.insert("deviceId", device->id());
+        message.insert("method", "Items.SyncStates");
+        message.insert("tune", tune);
+    }
 
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(message);
     QByteArray data = jsonDoc.toJson(QJsonDocument::Compact);
-
-    //qDebug() << jsonDoc.toJson();
 
     m_manager->sendData(data);
 
 }
 
+bool DevicePluginTune::tuneAdded()
+{
+    foreach (Device *device, myDevices()) {
+        if (device->deviceClassId() == tuneDeviceClassId) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void DevicePluginTune::tuneAutodetected()
+{
+    QList<DeviceDescriptor> descriptorList;
+    DeviceDescriptor descriptor(tuneDeviceClassId);
+    ParamList params;
+    params.append(Param("name", "Wohnzimmer"));
+    descriptor.setParams(params);
+    descriptorList.append(descriptor);
+    metaObject()->invokeMethod(this, "autoDevicesAppeared", Qt::QueuedConnection, Q_ARG(DeviceClassId, tuneDeviceClassId), Q_ARG(QList<DeviceDescriptor>, descriptorList));
+}
+
 void DevicePluginTune::tuneConnectionStatusChanged(const bool &connected)
 {
     if (connected) {
+        if (!tuneAdded()) {
+            tuneAutodetected();
+        } else {
+            Device *device = deviceManager()->findConfiguredDevice(m_tuneDeviceId);
+            device->setStateValue(reachableStateTypeId, true);
+        }
         sync();
+    } else {
+        Device *device = deviceManager()->findConfiguredDevice(m_tuneDeviceId);
+        device->setStateValue(reachableStateTypeId, false);
     }
 }
 
@@ -162,18 +228,35 @@ void DevicePluginTune::tuneDataAvailable(const QByteArray &data)
         qDebug() << "failed to parse data" << data << ":" << error.errorString();
     }
 
+    qDebug() << jsonDoc.toJson();
+
     QVariantMap message = jsonDoc.toVariant().toMap();
-    if (message.contains("method")) {
-        if (message.value("method").toString() == "Items.SyncStates") {
+    if (message.value("method").toString() == "Items.SyncStates") {
+        if (message.contains("mood")) {
             QVariantMap mood = message.value("mood").toMap();
+            Device *device = deviceManager()->findConfiguredDevice(DeviceId(mood.value("deviceId").toString()));
+            if (device) {
+                qDebug() << "update device" << device->name();
+                QVariantMap states = mood.value("states").toMap();
+                bool activeValue = states.value("active").toBool();
+                int value = states.value("value").toInt();
 
+                // TODO: disable other mood befor enabling this one...
 
-            foreach (Device *device, myDevices()) {
-                if (device->id() == DeviceId(mood.value("deviceId").toString())) {
-                    device->setStateValue(activeStateTypeId, mood.value("states").toMap().value("active"));
-                    device->setStateValue(valueStateTypeId, mood.value("states").toMap().value("value"));
-                    return;
-                }
+                device->setStateValue(activeStateTypeId, activeValue);
+                device->setStateValue(valueStateTypeId, value);
+            }
+        } else if (message.contains("tune")) {
+            QVariantMap tune = message.value("tune").toMap();
+            Device *device = deviceManager()->findConfiguredDevice(DeviceId(tune.value("deviceId").toString()));
+            if (device) {
+                QVariantMap states = tune.value("states").toMap();
+                device->setStateValue(powerStateTypeId, states.value("active").toBool());
+                device->setStateValue(brightnessStateTypeId, states.value("value").toInt());
+                device->setStateValue(approximationDetectedStateTypeId, states.value("approximationDetected").toBool());
+                device->setStateValue(lightIntensityStateTypeId, states.value("lightIntensity").toInt());
+                device->setStateValue(humidityStateTypeId, states.value("humidity").toInt());
+                device->setStateValue(temperatureStateTypeId, states.value("temperature").toDouble());
             }
         }
     }
@@ -199,6 +282,20 @@ DeviceManager::DeviceError DevicePluginTune::executeAction(Device *device, const
             return DeviceManager::DeviceErrorNoError;
         }
         return DeviceManager::DeviceErrorActionTypeNotFound;
+    }
+
+    if (device->deviceClassId() == tuneDeviceClassId) {
+        if (action.actionTypeId() == toggleLightActionTypeId) {
+            bool currentState = device->stateValue(powerStateTypeId).toBool();
+            device->setStateValue(powerStateTypeId, !currentState);
+            syncStates(device);
+            return DeviceManager::DeviceErrorNoError;
+        }
+        if (action.actionTypeId() == setBrightnessActionTypeId) {
+            device->setStateValue(brightnessStateTypeId, action.param("brightness").value().toInt());
+            syncStates(device);
+            return DeviceManager::DeviceErrorNoError;
+        }
     }
 
     return DeviceManager::DeviceErrorDeviceClassNotFound;

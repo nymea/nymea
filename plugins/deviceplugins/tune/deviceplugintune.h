@@ -33,14 +33,19 @@ public:
     explicit DevicePluginTune();
 
     DeviceManager::HardwareResources requiredHardware() const override;
+    void startMonitoringAutoDevices() override;
     DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
     void postSetupDevice(Device *device) override;
     void deviceRemoved(Device *device) override;
 
 private:
     TuneManager *m_manager;
+    DeviceId m_tuneDeviceId;
     bool sync();
     void syncStates(Device *device);
+
+    bool tuneAdded();
+    void tuneAutodetected();
 
 private slots:
     void tuneConnectionStatusChanged(const bool &connected);

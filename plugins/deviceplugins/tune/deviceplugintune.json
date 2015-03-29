@@ -26,6 +26,7 @@
                             "type": "QString",
                             "allowedValues": [
                                 "IconCouch",
+                                "IconTv",
                                 "IconLamp",
                                 "IconLamp1",
                                 "IconLamp2",
@@ -71,6 +72,84 @@
                                     "maximumValue": 100
                                 }
                             ]
+                        }
+                    ]
+                },
+                {
+                    "deviceClassId": "3a928446-923a-4777-b653-1f71324888c7",
+                    "idName": "tune",
+                    "name": "Tune",
+                    "createMethods": ["auto"],
+                    "paramTypes": [
+                        {
+                            "name": "name",
+                            "type": "QString",
+                            "inputType": "TextLine"
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "7c6cbed1-1b04-4b7e-bce5-df9cc8a56029",
+                            "idName": "reachable",
+                            "name": "reachable",
+                            "type": "bool",
+                            "defaultValue": false
+                        },
+                        {
+                            "id": "a5bc1855-91e7-4f3b-acaf-a1209121586b",
+                            "idName": "approximationDetected",
+                            "name": "approximation detected",
+                            "type": "bool"
+                        },
+                        {
+                            "id": "ccc656b0-7b66-473d-875e-b0b9a47d300c",
+                            "idName": "temperature",
+                            "name": "temperature",
+                            "type": "double"
+                        },
+                        {
+                            "id": "94df310d-32eb-40f7-b80e-32781b3f8a3e",
+                            "idName": "humidity",
+                            "name": "humidity",
+                            "type": "int"
+                        },
+                        {
+                            "id": "9f1212c9-0523-4a00-991e-b652c79b04ed",
+                            "idName": "lightIntensity",
+                            "name": "light intensity",
+                            "type": "int"
+                        },
+                        {
+                            "id": "6c049f8f-408f-4265-a4f7-46a855d5c340",
+                            "idName": "power",
+                            "name": "power",
+                            "type": "bool"
+                        },
+                        {
+                            "id": "677cd9ec-c264-47ee-9d2e-d3662237792c",
+                            "idName": "brightness",
+                            "name": "brightness",
+                            "type": "int"
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "cfc35f13-2a17-4c7b-9343-b5bd8a242eef",
+                            "idName": "setBrightness",
+                            "name": "set brightness",
+                            "paramTypes": [
+                                {
+                                    "name": "brightness",
+                                    "type": "int",
+                                    "minimumValue": 0,
+                                    "maximumValue": 100
+                                }
+                            ]
+                        },
+                        {
+                            "id": "36c3cb61-45ee-4549-a0f9-cf34f0efae2b",
+                            "idName": "toggleLight",
+                            "name": "toggle light"
                         }
                     ]
                 }

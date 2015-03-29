@@ -20,31 +20,14 @@
     \class Rule
     \brief This class represents a rule.
 
-    \ingroup rules
+    \ingroup core
     \inmodule server
 
     A Rule is always triggered by an \l{EventDescriptor}, has \l{State}{States}
-    to be compared and \l{Action}{Actions} to be executed.
+    to be compared and \l{RuleAction}{RuleActions} to be executed.
 
-    \sa EventDescriptor, State, Action
+    \sa EventDescriptor, State, RuleAction
 */
-
-//    Additionally a Rule is either of type \l{Rule::RuleTypeAll} or \l{Rule::RuleTypeAny}
-//    which determines if all or any of the \l{State}{States} must be matching
-//    in order for the \l{Action}{Actions} to be executed.
-
-
-//! \enum Rule::RuleType
-
-//    Note: There is no RuleTypeNone. If you don't want to compare any
-//    states, construct a rule without states in which case it doesn't
-//    matter what the Rule's type is.
-
-//    \value RuleTypeAll
-//    All States must match in order for the Rule to apply.
-//    \value RuleTypeAny
-//    Any State must match in order for the Rule to apply.
-
 
 #include "rule.h"
 
@@ -52,16 +35,45 @@
 
 /*! Constructs an empty, invalid rule. */
 Rule::Rule():
-    Rule(RuleId(), QList<EventDescriptor>(), StateEvaluator(), QList<Action>())
+    Rule(RuleId(), QString(), QList<EventDescriptor>(), StateEvaluator(), QList<RuleAction>(), QList<RuleAction>())
 {
 }
 
-/*! Constructs a Rule with the given \a id, \a eventDescriptorList, \a stateEvaluator and \a actions.*/
-Rule::Rule(const RuleId &id, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<Action> &actions):
+/*! Constructs a Rule with the given \a id, \a name, \a eventDescriptorList, \a stateEvaluator and \a actions.*/
+Rule::Rule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions) :
     m_id(id),
+    m_name(name),
     m_eventDescriptors(eventDescriptorList),
     m_stateEvaluator(stateEvaluator),
     m_actions(actions),
+    m_enabled(false),
+    m_active(false)
+{
+
+}
+
+/*! Constructs a Rule with the given \a id, \a name, \a eventDescriptorList, \a stateEvaluator, \a actions and \a exitActions.*/
+Rule::Rule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions):
+    m_id(id),
+    m_name(name),
+    m_eventDescriptors(eventDescriptorList),
+    m_stateEvaluator(stateEvaluator),
+    m_actions(actions),
+    m_exitActions(exitActions),
+    m_enabled(false),
+    m_active(false)
+{
+}
+
+/*! Constructs a Rule with the given \a id, \a name, \a stateEvaluator, \a actions and \a exitActions. This type of rule
+ *  works only state based and executes the \a actions once the rule enters the active state and executes the \a exitActions
+ *  once the rule exits the active state.*/
+Rule::Rule(const RuleId &id, const QString &name, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions) :
+    m_id(id),
+    m_name(name),
+    m_stateEvaluator(stateEvaluator),
+    m_actions(actions),
+    m_exitActions(exitActions),
     m_enabled(false),
     m_active(false)
 {
@@ -85,10 +97,22 @@ StateEvaluator Rule::stateEvaluator() const
     return m_stateEvaluator;
 }
 
-/*! Returns the \l{Action}{Actions} to be executed when this Rule is matched and states match. */
-QList<Action> Rule::actions() const
+/*! Returns the \l{RuleAction}{RuleActions} to be executed when this Rule is matched and states match. */
+QList<RuleAction> Rule::actions() const
 {
     return m_actions;
+}
+
+/*! Returns the \l{RuleAction}{RuleActions} to be executed when this Rule leaves the active state. */
+QList<RuleAction> Rule::exitActions() const
+{
+    return m_exitActions;
+}
+
+/*! Returns the name of this rule. */
+QString Rule::name() const
+{
+    return m_name;
 }
 
 /*! Returns wheter the rule is enabled or not. */
@@ -107,6 +131,11 @@ void Rule::setEnabled(bool enabled)
 bool Rule::active() const
 {
     return m_active;
+}
+
+void Rule::setName(const QString &name)
+{
+    m_name = name;
 }
 
 void Rule::setActive(bool active)

@@ -16,33 +16,39 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef RULESHANDLER_H
-#define RULESHANDLER_H
+#ifndef RULEACTION_H
+#define RULEACTION_H
 
-#include "jsonhandler.h"
+#include "action.h"
+#include "ruleactionparam.h"
 
-class RulesHandler : public JsonHandler
+class RuleAction
 {
-    Q_OBJECT
 public:
-    explicit RulesHandler(QObject *parent = 0);
+    explicit RuleAction(const ActionTypeId &actionTypeId = ActionTypeId(), const DeviceId &deviceId = DeviceId());
+    RuleAction(const RuleAction &other);
 
-    QString name() const override;
+    ActionId id() const;
+    bool isValid() const;
 
-    Q_INVOKABLE JsonReply* GetRules(const QVariantMap &params);
-    Q_INVOKABLE JsonReply* GetRuleDetails(const QVariantMap &params);
+    bool isEventBased() const;
 
-    Q_INVOKABLE JsonReply* AddRule(const QVariantMap &params);
-    Q_INVOKABLE JsonReply* RemoveRule(const QVariantMap &params);
-    Q_INVOKABLE JsonReply* FindRules(const QVariantMap &params);
+    Action toAction() const;
 
-    Q_INVOKABLE JsonReply* EnableRule(const QVariantMap &params);
-    Q_INVOKABLE JsonReply* DisableRule(const QVariantMap &params);
+    ActionTypeId actionTypeId() const;
+    DeviceId deviceId() const;
+
+    RuleActionParamList ruleActionParams() const;
+    void setRuleActionParams(const RuleActionParamList &ruleActionParams);
+    RuleActionParam ruleActionParam(const QString &ruleActionParamName) const;
+
+    void operator=(const RuleAction &other);
 
 private:
-    QVariant::Type getActionParamType(const ActionTypeId &actionTypeId, const QString &paramName);
-    QVariant::Type getEventParamType(const EventTypeId &eventTypeId, const QString &paramName);
-    bool checkEventDescriptors(const QList<EventDescriptor> eventDescriptors, const EventTypeId &eventTypeId);
+    ActionId m_id;
+    ActionTypeId m_actionTypeId;
+    DeviceId m_deviceId;
+    RuleActionParamList m_ruleActionParams;
 };
 
-#endif // RULESHANDLER_H
+#endif // RULEACTION_H

@@ -27,7 +27,6 @@
 
     It is also responsible for loading Plugins and managing common hardware resources between
     \l{DevicePlugin}{device plugins}.
-
 */
 
 /*! \enum DeviceManager::HardwareResource
@@ -490,7 +489,7 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDeviceInternal(const Devi
 
     m_configuredDevices.append(device);
     storeConfiguredDevices();
-
+    postSetupDevice(device);
     return DeviceErrorNoError;
 }
 
@@ -873,8 +872,8 @@ void DeviceManager::slotPairingFinished(const PairingTransactionId &pairingTrans
 
     m_configuredDevices.append(device);
     storeConfiguredDevices();
-
     emit deviceSetupFinished(device, DeviceError::DeviceErrorNoError);
+    postSetupDevice(device);
 }
 
 void DeviceManager::autoDevicesAppeared(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors)
@@ -904,9 +903,10 @@ void DeviceManager::autoDevicesAppeared(const DeviceClassId &deviceClassId, cons
             break;
         case DeviceSetupStatusSuccess:
             qDebug() << "Device setup complete.";
-            emit deviceSetupFinished(device, DeviceError::DeviceErrorNoError);
             m_configuredDevices.append(device);
             storeConfiguredDevices();
+            emit deviceSetupFinished(device, DeviceError::DeviceErrorNoError);
+            postSetupDevice(device);
             break;
         }
     }
@@ -1045,6 +1045,14 @@ DeviceManager::DeviceSetupStatus DeviceManager::setupDevice(Device *device)
 
     device->setupCompleted();
     return status;
+}
+
+void DeviceManager::postSetupDevice(Device *device)
+{
+    DeviceClass deviceClass = findDeviceClass(device->deviceClassId());
+    DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
+
+    plugin->postSetupDevice(device);
 }
 
 DeviceManager::DeviceError DeviceManager::verifyParams(const QList<ParamType> paramTypes, ParamList &params, bool requireAll)

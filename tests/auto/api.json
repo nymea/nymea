@@ -1,4 +1,4 @@
-12
+19
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -277,12 +277,16 @@
             "description": "Add a rule. You can describe rules by one or many EventDesciptors and a StateEvaluator. Note that onlyone of either eventDescriptor or eventDescriptorList may be passed at a time. A rule can be created but left disabled,meaning it won't actually be executed until set to enabled. If not given, enabled defaults to true.",
             "params": {
                 "actions": [
-                    "$ref:Action"
+                    "$ref:RuleAction"
                 ],
+                "name": "String",
                 "o:enabled": "Bool",
                 "o:eventDescriptor": "$ref:EventDescriptor",
                 "o:eventDescriptorList": [
                     "$ref:EventDescriptor"
+                ],
+                "o:exitActions": [
+                    "$ref:RuleAction"
                 ],
                 "o:stateEvaluator": "$ref:StateEvaluator"
             },
@@ -401,9 +405,11 @@
             "Uuid",
             "String",
             "Int",
+            "Uint",
             "Double",
             "Bool",
             "Variant",
+            "Color",
             "Object"
         ],
         "CreateMethod": [
@@ -566,14 +572,31 @@
         ],
         "Rule": {
             "actions": [
-                "$ref:Action"
+                "$ref:RuleAction"
             ],
             "enabled": "Bool",
             "eventDescriptors": [
                 "$ref:EventDescriptor"
             ],
+            "exitActions": [
+                "$ref:RuleAction"
+            ],
             "id": "Uuid",
+            "name": "String",
             "stateEvaluator": "$ref:StateEvaluator"
+        },
+        "RuleAction": {
+            "actionTypeId": "Uuid",
+            "deviceId": "Uuid",
+            "o:ruleActionParams": [
+                "$ref:RuleActionParam"
+            ]
+        },
+        "RuleActionParam": {
+            "name": "String",
+            "o:eventParamName": "String",
+            "o:eventTypeId": "Uuid",
+            "o:value": "$ref:BasicType"
         },
         "RuleError": [
             "RuleErrorNoError",
@@ -583,7 +606,10 @@
             "RuleErrorEventTypeNotFound",
             "RuleErrorActionTypeNotFound",
             "RuleErrorInvalidParameter",
-            "RuleErrorMissingParameter"
+            "RuleErrorInvalidRuleFormat",
+            "RuleErrorMissingParameter",
+            "RuleErrorInvalidRuleActionParameter",
+            "RuleErrorTypesNotMatching"
         ],
         "SetupMethod": [
             "SetupMethodJustAdd",

@@ -23,14 +23,8 @@
                 \li \l{RF 433 MHz Plugins}
                 \li \l{Service Plugins}
                 \li \l{Network Plugins}
-            \endlist        
-    \endlist
-
-    \section1 API's
-    The guh daemon provides two API's:
-    \list
-        \li \l{JSON-RPC API}{JSON-RPC}
-        \li \l{https://github.com/guh/guh/wiki/REST-Api-documentation}{REST}
+                \li \l{Bluetooth Plugins}
+            \endlist
     \endlist
 
     \section1 Write your own plugin

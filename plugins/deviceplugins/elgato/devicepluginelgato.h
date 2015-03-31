@@ -16,48 +16,38 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef BLUETOOTHLOWENERGYDEVICE_H
-#define BLUETOOTHLOWENERGYDEVICE_H
+#ifndef DEVICEPLUGINELGATO_H
+#define DEVICEPLUGINELGATO_H
 
-#include <QObject>
-#include <QBluetoothDeviceInfo>
-#include <QBluetoothAddress>
-#include <QBluetoothServiceInfo>
-#include <QLowEnergyController>
+#include "plugin/deviceplugin.h"
+#include "bluetooth/bluetoothlowenergydevice.h"
+#include "aveabulb.h"
 
-class BluetoothLowEnergyDevice : public QObject
+class DevicePluginElgato : public DevicePlugin
 {
     Q_OBJECT
+
+    Q_PLUGIN_METADATA(IID "guru.guh.DevicePlugin" FILE "devicepluginelgato.json")
+    Q_INTERFACES(DevicePlugin)
+
 public:
-    explicit BluetoothLowEnergyDevice(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType = QLowEnergyController::PublicAddress, QObject *parent = 0);
+    explicit DevicePluginElgato();
 
-    QString name() const;
-    QBluetoothAddress address() const;
+    DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
+    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
+    DeviceManager::HardwareResources requiredHardware() const override;
+    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
 
-    void connectDevice();
-    void disconnectDevice();
-
-    bool isConnected() const;
-    bool isDiscovered() const;
-
-protected:
-    QLowEnergyController *controller() const;
+    void bluetoothDiscoveryFinished(const QList<QBluetoothDeviceInfo> &deviceInfos);
+    void deviceRemoved(Device *device) override;
 
 private:
-    QBluetoothDeviceInfo m_deviceInfo;
-    QLowEnergyController *m_controller;
-
-    bool m_connected;
-    bool m_discovered;
-
-signals:
-    void connectionStatusChanged();
-    void servicesDiscoveryFinished();
+    QHash<AveaBulb *, Device *> m_bulbs;
+    bool verifyExistingDevices(const QBluetoothDeviceInfo &deviceInfo);
 
 private slots:
-    void connected();
-    void disconnected();
-    void deviceError(const QLowEnergyController::Error &error);
+    void bulbAvailableChanged();
+    void actionFinished(const ActionId actionId, const bool &success);
 };
 
-#endif // BLUETOOTHLOWENERGYDEVICE_H
+#endif // DEVICEPLUGINELGATO_H

@@ -98,16 +98,16 @@ bool Radio433::enable()
     if (gpioFile.exists()) {
 //        bool receiverAvailable = m_receiver->startReceiver();
 //        if (!receiverAvailable) {
-//            //qCWarning(dcHardware) << "ERROR: radio 433 MHz receiver not available on GPIO's";
+//            //qWarning() << "ERROR: radio 433 MHz receiver not available on GPIO's";
 //        }
 
 //        bool transmitterAvailable = m_transmitter->startTransmitter();
 //        if (!transmitterAvailable) {
-//            //qCWarning(dcHardware) << "ERROR: radio 433 MHz transmitter not available on GPIO's";
+//            //qWarning() << "ERROR: radio 433 MHz transmitter not available on GPIO's";
 //        }
 
 //        if (!receiverAvailable && !transmitterAvailable) {
-//            qCWarning(dcHardware) << "--> Radio 433 MHz GPIO's not available.";
+//            qWarning() << "--> Radio 433 MHz GPIO's not available.";
 //            return false;
 //        }
     }

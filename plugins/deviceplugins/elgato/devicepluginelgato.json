@@ -1,0 +1,56 @@
+{
+    "name": "Elgato",
+    "id": "c5c03ad4-bfdb-444a-8eca-2c234c46cc27",
+    "vendors": [
+        {
+            "name": "Elgato",
+            "id": "90a3091d-1053-4f77-8dc3-92e27bbcebe7",
+            "deviceClasses": [
+                {
+                    "deviceClassId": "164f9602-90ee-4693-bda3-9cafae37603e",
+                    "idName": "avea",
+                    "name": "Avea",
+                    "createMethods": ["discovery"],
+                    "paramTypes": [
+                        {
+                            "name": "name",
+                            "type": "QString",
+                            "inputType": "TextLine"
+                        },
+                        {
+                            "name": "mac address",
+                            "type": "QString",
+                            "inputType": "MacAddress"
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "6d5e792a-c786-40d2-ae35-a48ac6fafcbc",
+                            "idName": "available",
+                            "name": "available",
+                            "type": "bool",
+                            "defaultValue": false
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "30b6334d-37cd-4b94-a397-3b9b642c762e",
+                            "idName": "reconnect",
+                            "name": "reconnect"
+                        },
+                        {
+                            "id": "7936bd51-7ea3-4df4-9998-7325de85b677",
+                            "idName": "white",
+                            "name": "white"
+                        },
+                        {
+                            "id": "b2f39b7b-dd11-4db4-a82b-dd3d4b973bd5",
+                            "idName": "powerOff",
+                            "name": "power off"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

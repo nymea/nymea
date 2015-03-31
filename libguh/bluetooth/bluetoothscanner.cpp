@@ -23,7 +23,7 @@ BluetoothScanner::BluetoothScanner(QObject *parent) :
 {
     m_timer = new QTimer(this);
     m_timer->setSingleShot(true);
-    m_timer->setInterval(10000);
+    m_timer->setInterval(5000);
     connect(m_timer, &QTimer::timeout, this, &BluetoothScanner::discoveryTimeout);
 }
 
@@ -86,7 +86,7 @@ bool BluetoothScanner::discover(const PluginId &pluginId)
 
 void BluetoothScanner::deviceDiscovered(const QBluetoothDeviceInfo &device)
 {
-    // check if this is LE device
+    // check if this is a LE device
     bool bluetoothLE = false;
     if (device.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration) {
         bluetoothLE = true;
@@ -98,14 +98,16 @@ void BluetoothScanner::deviceDiscovered(const QBluetoothDeviceInfo &device)
 
 void BluetoothScanner::onError(QBluetoothDeviceDiscoveryAgent::Error error)
 {
-    Q_UNUSED(error);
+    Q_UNUSED(error)
+
     m_available = false;
-    if (m_timer->isActive()) {
+
+    if (m_timer->isActive())
         m_timer->stop();
-    }
-    if (isRunning()) {
+
+    if (isRunning())
         m_discoveryAgent->stop();
-    }
+
     qWarning() << "ERROR: Bluetooth discovery:" << m_discoveryAgent->errorString();
 }
 

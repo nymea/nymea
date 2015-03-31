@@ -26,5 +26,5 @@ boblight {
 }
 
 contains(DEFINES, BLUETOOTH_LE) {
-    # bluetooth plugins
+    SUBDIRS += elgato
 }

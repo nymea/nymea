@@ -16,8 +16,27 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+  \class BluetoothScanner
+  \brief Allows to discover bluetooth low energy devices.
+
+  \ingroup hardware
+  \inmodule libguh
+
+  The bluetooth scanner hardware resource allows to discover bluetooth low energy devices.
+
+  \note: Only available for Qt >= 5.4.0!
+*/
+
+/*!
+ * \fn BluetoothScanner::bluetoothDiscoveryFinished(const PluginId &pluginId, const QList<QBluetoothDeviceInfo> &deviceInfos)
+ * This signal will be emitted whenever a bluetooth discover for the plugin with the given \a pluginId is finished.
+ * The passed list of \a deviceInfos contains the information of the discovered devices.
+ */
+
 #include "bluetoothscanner.h"
 
+/*! Construct the hardware resource BluetoothScanner with the given \a parent. */
 BluetoothScanner::BluetoothScanner(QObject *parent) :
     QObject(parent)
 {
@@ -27,6 +46,7 @@ BluetoothScanner::BluetoothScanner(QObject *parent) :
     connect(m_timer, &QTimer::timeout, this, &BluetoothScanner::discoveryTimeout);
 }
 
+/*! Returns true, if a bluetooth hardware is available. */
 bool BluetoothScanner::isAvailable()
 {    
     //Using default Bluetooth adapter
@@ -66,11 +86,14 @@ bool BluetoothScanner::isAvailable()
     return true;
 }
 
+/*! Returns true, if the discovering agent currently is running. */
 bool BluetoothScanner::isRunning()
 {
     return m_discoveryAgent->isActive();
 }
 
+/*! This method will start the discovering process for the plugin with the given \a pluginId.
+ *  Returns true if the discovery could be started. */
 bool BluetoothScanner::discover(const PluginId &pluginId)
 {
     if (m_available && !m_discoveryAgent->isActive()) {

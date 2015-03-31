@@ -64,6 +64,8 @@
         One of the given \l{Param}{Params} is missing.
     \value RuleErrorInvalidRuleActionParameter
         One of the given \l{RuleActionParam}{RuleActionParams} is not valid.
+    \value RuleErrorTypesNotMatching
+        The types of the \l{RuleActionParam} and the corresponding \l{Event} \l{Param} do not match.
 */
 
 /*! \enum RuleEngine::RemovePolicy

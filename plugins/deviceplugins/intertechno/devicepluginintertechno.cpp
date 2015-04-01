@@ -104,7 +104,7 @@ DeviceManager::DeviceError DevicePluginIntertechno::executeAction(Device *device
 
     // =======================================
     // generate bin from button code
-    if(familyCode == "1") {
+    if (familyCode == "1") {
         binCode.append("00000000");
     } else if (familyCode == "2") {
         binCode.append("01000000");
@@ -190,10 +190,10 @@ void DevicePluginIntertechno::radioData(const QList<int> &rawData)
         return;
     }
     
-    QList<Device*> deviceList = deviceManager()->findConfiguredDevices(intertechnoRemoteDeviceClassId);
-    if (deviceList.isEmpty()) {
-        return;
-    }
+    //    QList<Device*> deviceList = deviceManager()->findConfiguredDevices(intertechnoRemoteDeviceClassId);
+    //    if (deviceList.isEmpty()) {
+    //        return;
+    //    }
 
     int delay = rawData.first()/31;
     QByteArray binCode;
@@ -378,34 +378,6 @@ void DevicePluginIntertechno::radioData(const QList<int> &rawData)
         return;
     }
 
-    qDebug() << "family code = " << familyCode << "button code =" << buttonCode << power;
+    qDebug() << "INTERTECHNO: family code = " << familyCode << "button code =" << buttonCode << power;
 
-    // ===================================================
-    Device *device = 0;
-    foreach (Device *dev, deviceList) {
-        if (dev->paramValue("familyCode").toString() == familyCode) {
-            // Yippie! We found the device.
-            device = dev;
-            break;
-        }
-    }
-    if (!device) {
-        qWarning() << "couldn't find any configured device for intertech familyCode:" << familyCode;
-        return;
-    }
-
-    ParamList params;
-    Param powerParam("power", power);
-    params.append(powerParam);
-
-    // FIXME: find a better way to get to the remote DeviceClass
-    DeviceClass deviceClass = supportedDevices().first();
-    foreach (const EventType &eventType, deviceClass.eventTypes()) {
-        if (eventType.name() == buttonCode) {
-            qDebug() << "emit event " << pluginName() << familyCode << eventType.name() << power;
-            Event event = Event(eventType.id(), device->id(), params);
-            emit emitEvent(event);
-            return;
-        }
-    }
 }

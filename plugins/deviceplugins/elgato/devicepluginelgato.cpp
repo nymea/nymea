@@ -450,6 +450,12 @@ DeviceManager::DeviceError DevicePluginElgato::executeAction(Device *device, con
     if (device->deviceClassId() == aveaDeviceClassId) {
         AveaBulb *bulb = m_bulbs.key(device);
 
+        // reconnect action does not need available true
+        if (action.actionTypeId() == reconnectActionTypeId) {
+            bulb->reconnectDevice();
+            return DeviceManager::DeviceErrorNoError;
+        }
+        // check available
         if (!bulb->isAvailable())
             return DeviceManager::DeviceErrorHardwareNotAvailable;
 
@@ -458,9 +464,10 @@ DeviceManager::DeviceError DevicePluginElgato::executeAction(Device *device, con
             bulb->actionPowerOff(action.id());
             return DeviceManager::DeviceErrorAsync;
         } else if (action.actionTypeId() == whiteActionTypeId) {
-            bulb->setWhite(action.id());
+            bulb->testMethod();
             return DeviceManager::DeviceErrorAsync;
         }
+
         return DeviceManager::DeviceErrorActionTypeNotFound;
     }
     return DeviceManager::DeviceErrorDeviceClassNotFound;
@@ -511,6 +518,10 @@ void DevicePluginElgato::bulbAvailableChanged()
     AveaBulb *bulb =static_cast<AveaBulb *>(sender());
     Device *device = m_bulbs.value(bulb);
     device->setStateValue(availableStateTypeId, bulb->isAvailable());
+
+    if (bulb->isAvailable()) {
+        bulb->testMethod();
+    }
 }
 
 void DevicePluginElgato::actionFinished(const ActionId actionId, const bool &success)

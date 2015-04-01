@@ -35,6 +35,7 @@ public:
     QBluetoothAddress address() const;
 
     void connectDevice();
+    void reconnectDevice();
     void disconnectDevice();
 
     bool isConnected() const;

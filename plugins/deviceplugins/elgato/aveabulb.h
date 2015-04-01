@@ -21,6 +21,12 @@ private:
     QBluetoothUuid m_colorSeviceUuid;
     QLowEnergyService *m_colorService;
 
+    QBluetoothUuid m_imageSeviceUuid;
+    QLowEnergyService *m_imageService;
+
+    QBluetoothUuid m_imageCharacteristicUuid;
+    QLowEnergyCharacteristic m_imageCharacteristic;
+
     QBluetoothUuid m_colorCharacteristicUuid;
     QLowEnergyCharacteristic m_colorCharacteristic;
 
@@ -36,16 +42,17 @@ private slots:
     void serviceStateChanged(const QLowEnergyService::ServiceState &state);
     void serviceCharacteristicChanged(const QLowEnergyCharacteristic &characteristic, const QByteArray &value);
     void confirmedCharacteristicWritten(const QLowEnergyCharacteristic &characteristic, const QByteArray &value);
+    void confirmedDescriptorWritten(const QLowEnergyDescriptor &descriptor, const QByteArray &value);
     void serviceError(const QLowEnergyService::ServiceError &error);
 
-    bool enableNotification();
-    bool testMethod();
 
 public slots:
+    bool enableNotification();
+    bool testMethod();
     // actions
     bool actionPowerOff(ActionId actionId);
     bool setWhite(ActionId actionId);
-
+    bool setZauberwald();
 };
 
 #endif // AVEABULB_H

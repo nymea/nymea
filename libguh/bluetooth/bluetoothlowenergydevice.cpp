@@ -50,6 +50,12 @@ void BluetoothLowEnergyDevice::connectDevice()
     m_controller->connectToDevice();
 }
 
+void BluetoothLowEnergyDevice::reconnectDevice()
+{
+    if (!isConnected())
+        m_controller->connectToDevice();
+}
+
 void BluetoothLowEnergyDevice::disconnectDevice()
 {
     m_controller->disconnectFromDevice();
@@ -63,8 +69,9 @@ bool BluetoothLowEnergyDevice::isConnected() const
 void BluetoothLowEnergyDevice::connected()
 {
     m_connected = true;
-    qDebug() << "connected successfully to bluetooth LE device:" << name() << address().toString();
+    qDebug() << "connected to bluetooth LE device:" << name() << address().toString();
     emit connectionStatusChanged();
+    qDebug() << "discover services...";
     m_controller->discoverServices();
 }
 
@@ -77,5 +84,6 @@ void BluetoothLowEnergyDevice::disconnected()
 
 void BluetoothLowEnergyDevice::deviceError(const QLowEnergyController::Error &error)
 {
-    qWarning() << "ERROR: Bluetooth LE device:" << name() << address().toString() << ": " << error << m_controller->errorString();
+    if (isConnected())
+        qWarning() << "ERROR: Bluetooth LE device:" << name() << address().toString() << ": " << error << m_controller->errorString();
 }

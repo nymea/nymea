@@ -12,6 +12,11 @@
                     "createMethods": ["user"],
                     "paramTypes": [
                         {
+                            "name": "Name",
+                            "type": "QString",
+                            "inputType": "TextLine"
+                        },
+                        {
                             "name": "Channel",
                             "type": "QString",
                             "allowedValues": ["A", "B", "C", "D"]

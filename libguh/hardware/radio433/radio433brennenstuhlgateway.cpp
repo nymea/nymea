@@ -30,13 +30,13 @@ Radio433BrennenstuhlGateway::Radio433BrennenstuhlGateway(QObject *parent) :
 
     // Timer for discovery of the Gateway
     m_discoverTimer = new QTimer(this);
-    m_discoverTimer->setInterval(2000);
+    m_discoverTimer->setInterval(5000);
     connect(m_discoverTimer, &QTimer::timeout, this, &Radio433BrennenstuhlGateway::discover);
 
     // Timer to detect discovery timeout
     m_timeout = new QTimer(this);
     m_timeout->setSingleShot(true);
-    m_timeout->setInterval(1500);
+    m_timeout->setInterval(3000);
     connect(m_timeout, &QTimer::timeout, this, &Radio433BrennenstuhlGateway::timeout);
 }
 

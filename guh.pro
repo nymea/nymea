@@ -22,6 +22,14 @@ test.commands = LD_LIBRARY_PATH=$$top_builddir/libguh make check
 
 QMAKE_EXTRA_TARGETS += licensecheck doc test
 
+message("Building guh version $${GUH_VERSION_STRING}")
+
 coverage {
     message("Building coverage.")
+}
+
+contains(DEFINES, GPIO433){
+    message("Radio 433 for GPIO's enabled")
+} else {
+    message("Radio 433 for GPIO's disabled")
 }

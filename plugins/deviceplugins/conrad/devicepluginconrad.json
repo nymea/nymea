@@ -7,40 +7,6 @@
             "id": "986cf06f-3ef1-4271-b2a3-2cc277ebecb6",
             "deviceClasses": [
                 {
-                    "deviceClassId": "17cd2492-28ab-4827-ba6e-5ef35be23f1b",
-                    "name": "Conrad Remote",
-                    "idName": "conradRemote",
-                    "createMethods": ["user"],
-                    "paramTypes": [
-                        {
-                            "name": "name",
-                            "type": "QString",
-                            "inputType": "TextLine"
-                        }
-                    ],
-                    "eventTypes": [
-                        {
-                            "id": "1f4050f5-4c90-4799-8d6d-e4069f3a2519",
-                            "name": "Button pressed",
-                            "idName": "remoteButtonPressed",
-                            "paramTypes": [
-                                {
-                                    "name": "button",
-                                    "type": "int"
-                                },
-                                {
-                                    "name": "group",
-                                    "type": "int"
-                                },
-                                {
-                                    "name": "power",
-                                    "type": "bool"
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
                     "deviceClassId": "2bb14180-aa5d-4999-992d-e6d464cff486",
                     "name": "Conrad shutter RSM900R",
                     "idName": "conradShutter",

@@ -37,6 +37,10 @@
   The second possibility to sent data to a 433 MHz device is the \l{http://www.brennenstuhl.de/de-DE/steckdosenleisten-schaltgeraete-und-adapter/brematic-hausautomation/brematic-home-automation-gateway-gwy-433-1.html}
   {Brennenstuhl 433 MHz LAN Gateway}. If there is a Gateway in the local network, this class will automaticaly detect
   it and will be used. If both transmitter are available (Gateway + GPIO), each signal will be transmitted over both sender.
+
+  \note: Radio 433 on GPIO's is by default disabled. If you want to enable it, you need to compile the source with the qmake config \tt{CONFIG+=radio433gpio}
+
+
 */
 
 /*! \fn void Radio433::dataReceived(QList<int> rawData)
@@ -50,20 +54,26 @@
 Radio433::Radio433(QObject *parent) :
     QObject(parent)
 {
+
+    #ifdef GPIO433
     m_receiver = new Radio433Receiver(this,27);
     m_transmitter = new Radio433Trasmitter(this,22);
-    m_brennenstuhlTransmitter = new Radio433BrennenstuhlGateway(this);
 
     connect(m_receiver, &Radio433Receiver::readingChanged, this, &Radio433::readingChanged);
     connect(m_receiver, &Radio433Receiver::dataReceived, this, &Radio433::dataReceived);
+    #endif
+
+    m_brennenstuhlTransmitter = new Radio433BrennenstuhlGateway(this);
     connect(m_brennenstuhlTransmitter, &Radio433BrennenstuhlGateway::availableChanged, this, &Radio433::brennenstuhlAvailableChanged);
 }
 
 /*! Destroys the hardware resource Radio433 object. */
 Radio433::~Radio433()
 {
+    #ifdef GPIO433
     m_receiver->quit();
     m_transmitter->quit();
+    #endif
 }
 
 /*! Enables GPIO transmitter and receiver and the Brennenstuhl Lan Gateway.
@@ -72,6 +82,7 @@ bool Radio433::enable()
 {
     m_brennenstuhlTransmitter->enable();
 
+    #ifdef GPIO433
     // check if GPIOs are available
     QFileInfo gpioFile("/sys/class/gpio/export");
     if (gpioFile.exists()) {
@@ -91,6 +102,8 @@ bool Radio433::enable()
         }
     }
     qDebug() << "--> Radio 433 MHz GPIO's enabled.";
+    #endif
+
     return true;
 }
 
@@ -98,19 +111,14 @@ bool Radio433::enable()
 bool Radio433::disabel()
 {
     m_brennenstuhlTransmitter->disable();
+
+    #ifdef GPIO433
     if (m_receiver->stopReceiver()) {
         return true;
     }
     return false;
-}
-
-void Radio433::readingChanged(bool reading)
-{
-    if (reading) {
-        m_transmitter->allowSending(false);
-    } else {
-        m_transmitter->allowSending(true);
-    }
+    #endif
+    return true;
 }
 
 void Radio433::brennenstuhlAvailableChanged(const bool &available)
@@ -132,10 +140,12 @@ bool Radio433::sendData(int delay, QList<int> rawData, int repetitions)
         sendBrennenstuhl = m_brennenstuhlTransmitter->sendData(delay, rawData, repetitions);
     }
 
+    #ifdef GPIO433
     if (m_transmitter->available()) {
         m_transmitter->sendData(delay, rawData, repetitions);
         sendGpio = true;
     }
+    #endif
 
     return (sendGpio || sendBrennenstuhl);
 }

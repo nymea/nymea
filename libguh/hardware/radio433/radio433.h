@@ -21,8 +21,11 @@
 
 #include <QObject>
 
+#ifdef GPIO433
 #include "radio433receiver.h"
 #include "radio433transmitter.h"
+#endif
+
 #include "radio433brennenstuhlgateway.h"
 
 class Radio433 : public QObject
@@ -36,15 +39,17 @@ public:
     bool disabel();
 
 private:
+    #ifdef GPIO433
     Radio433Receiver *m_receiver;
     Radio433Trasmitter *m_transmitter;
+    #endif
+
     Radio433BrennenstuhlGateway *m_brennenstuhlTransmitter;
 
 signals:
     void dataReceived(QList<int> rawData);
 
 private slots:
-    void readingChanged(bool reading);
     void brennenstuhlAvailableChanged(const bool &available);
 
 public slots:

@@ -12,6 +12,11 @@
                     "createMethods": ["user"],
                     "paramTypes": [
                         {
+                            "name": "Name",
+                            "type": "QString",
+                            "inputType": "TextLine"
+                        },
+                        {
                             "name": "MAC",
                             "type": "QString",
                             "inputType": "MacAddress"

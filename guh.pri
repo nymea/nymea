@@ -20,6 +20,11 @@ coverage {
     QMAKE_LFLAGS += -fprofile-arcs
 }
 
+# Enable Radio 433 MHz for GPIO's
+enable433gpio {
+    DEFINES += GPIO433
+}
+
 top_srcdir=$$PWD
 top_builddir=$$shadowed($$PWD)
 

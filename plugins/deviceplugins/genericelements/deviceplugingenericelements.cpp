@@ -47,6 +47,9 @@
     The \l{DeviceClass::SetupMethod}{setupMethod} describes the setup method of the \l{Device}.
     The detailed implementation of each \l{DeviceClass} can be found in the source code.
 
+    \note If a \l{StateType} has the parameter \tt{"writable": true}, an \l{ActionType} with the same uuid and \l{ParamType}{ParamTypes}
+    will be created automatically.
+
     \quotefile plugins/deviceplugins/genericelements/deviceplugingenericelements.json
 */
 
@@ -90,8 +93,8 @@ DeviceManager::DeviceError DevicePluginGenericElements::executeAction(Device *de
 {
     // Toggle Button
     if (device->deviceClassId() == toggleButtonDeviceClassId ) {
-        if (action.actionTypeId() == toggleButtonToggleActionTypeId) {
-            device->setStateValue(toggleButtonStatusStateTypeId, !device->stateValue(toggleButtonStatusStateTypeId).toBool());
+        if (action.actionTypeId() == stateActionTypeId) {
+            device->setStateValue(stateStateTypeId, !device->stateValue(stateStateTypeId).toBool());
             return DeviceManager::DeviceErrorNoError;
         }
         return DeviceManager::DeviceErrorActionTypeNotFound;

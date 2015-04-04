@@ -17,7 +17,7 @@
                             "inputType": "TextLine"
                         },
                         {
-                            "name": "Mac",
+                            "name": "mac",
                             "type": "QString",
                             "inputType": "MacAddress"
                         }
@@ -26,7 +26,7 @@
                         {
                             "id": "fb9b9d87-218f-4f0d-9e16-39f8a105029a",
                             "idName": "wol",
-                            "name": "Wake up device"
+                            "name": "wake up device"
                         }
                     ]
                 }

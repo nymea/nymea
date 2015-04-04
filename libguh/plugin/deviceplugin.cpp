@@ -219,6 +219,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
             deviceClass.setPairingInfo(jo.value("pairingInfo").toString());
             deviceClass.setParamTypes(parseParamTypes(jo.value("paramTypes").toArray()));
 
+            QList<ActionType> actionTypes;
             QList<StateType> stateTypes;
             foreach (const QJsonValue &stateTypesJson, jo.value("stateTypes").toArray()) {
                 QJsonObject st = stateTypesJson.toObject();
@@ -235,10 +236,19 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 stateType.setType(t);
                 stateType.setDefaultValue(st.value("defaultValue").toVariant());
                 stateTypes.append(stateType);
+
+                // create ActionType if this StateType is writable
+                if (st.value("writable").toBool()) {
+                    ActionType actionType(st.value("id").toString());
+                    actionType.setName("set " + st.value("name").toString());
+                    // param already checked in StateType
+                    ParamType paramType(st.value("name").toString(), t);
+                    actionType.setParamTypes(QList<ParamType>() << paramType);
+                    actionTypes.append(actionType);
+                }
             }
             deviceClass.setStateTypes(stateTypes);
 
-            QList<ActionType> actionTypes;
             foreach (const QJsonValue &actionTypesJson, jo.value("actionTypes").toArray()) {
                 QJsonObject at = actionTypesJson.toObject();
                 QStringList missingFields = verifyFields(QStringList() << "id" << "name", at);

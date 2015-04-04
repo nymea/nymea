@@ -57,6 +57,9 @@
     The \l{DeviceClass::SetupMethod}{setupMethod} describes the setup method of the \l{Device}.
     The detailed implementation of each \l{DeviceClass} can be found in the source code.
 
+    \note If a \l{StateType} has the parameter \tt{"writable": true}, an \l{ActionType} with the same uuid and \l{ParamType}{ParamTypes}
+    will be created automatically.
+
     \quotefile plugins/deviceplugins/eq-3/deviceplugineq-3.json
 */
 
@@ -168,8 +171,8 @@ DeviceManager::DeviceError DevicePluginEQ3::executeAction(Device *device, const 
                 QByteArray rfAddress = device->paramValue("rf address").toByteArray();
                 int roomId = device->paramValue("room id").toInt();
 
-                if (action.actionTypeId() == setSetpointTemperatureActionTypeId){
-                    cube->setDeviceSetpointTemp(rfAddress, roomId, action.param("setpoint temperature").value().toDouble(), action.id());
+                if (action.actionTypeId() == desiredTemperatureActionTypeId){
+                    cube->setDeviceSetpointTemp(rfAddress, roomId, action.param("desired temperature").value().toDouble(), action.id());
                 } else if (action.actionTypeId() == setAutoModeActionTypeId){
                     cube->setDeviceAutoMode(rfAddress, roomId, action.id());
                 } else if (action.actionTypeId() == setManualModeActionTypeId){
@@ -337,7 +340,7 @@ void DevicePluginEQ3::wallThermostatDataUpdated()
                 device->setStateValue(dtsActiveStateTypeId, wallThermostat->dtsActive());
                 device->setStateValue(deviceModeStateTypeId, wallThermostat->deviceMode());
                 device->setStateValue(deviceModeStringStateTypeId, wallThermostat->deviceModeString());
-                device->setStateValue(setpointTempStateTypeId, wallThermostat->setpointTemperature());
+                device->setStateValue(desiredTemperatureStateTypeId, wallThermostat->setpointTemperature());
                 device->setStateValue(currentTemperatureStateTypeId, wallThermostat->currentTemperature());
 
 
@@ -366,7 +369,7 @@ void DevicePluginEQ3::radiatorThermostatDataUpdated()
                 device->setStateValue(dtsActiveStateTypeId, radiatorThermostat->dtsActive());
                 device->setStateValue(deviceModeStateTypeId, radiatorThermostat->deviceMode());
                 device->setStateValue(deviceModeStringStateTypeId, radiatorThermostat->deviceModeString());
-                device->setStateValue(setpointTempStateTypeId, radiatorThermostat->setpointTemperature());
+                device->setStateValue(desiredTemperatureStateTypeId, radiatorThermostat->setpointTemperature());
                 device->setStateValue(offsetTempStateTypeId, radiatorThermostat->offsetTemp());
                 device->setStateValue(windowOpenDurationStateTypeId, radiatorThermostat->windowOpenDuration());
                 device->setStateValue(boostValveValueStateTypeId, radiatorThermostat->boostValveValue());

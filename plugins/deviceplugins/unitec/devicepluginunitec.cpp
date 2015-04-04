@@ -36,7 +36,10 @@
     The \l{DeviceClass::SetupMethod}{setupMethod} describes the setup method of the \l{Device}.
     The detailed implementation of each \l{DeviceClass} can be found in the source code.
 
-    \quotefile plugins/deviceplugins/elro/devicepluginelro.json
+    \note If a \l{StateType} has the parameter \tt{"writable": true}, an \l{ActionType} with the same uuid and \l{ParamType}{ParamTypes}
+    will be created automatically.
+
+    \quotefile plugins/deviceplugins/unitec/devicepluginunitec.json
 */
 
 #include "devicepluginunitec.h"

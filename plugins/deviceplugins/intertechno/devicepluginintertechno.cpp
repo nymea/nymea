@@ -36,6 +36,9 @@
     The \l{DeviceClass::SetupMethod}{setupMethod} describes the setup method of the \l{Device}.
     The detailed implementation of each \l{DeviceClass} can be found in the source code.
 
+    \note If a \l{StateType} has the parameter \tt{"writable": true}, an \l{ActionType} with the same uuid and \l{ParamType}{ParamTypes}
+    will be created automatically.
+
     \quotefile plugins/deviceplugins/intertechno/devicepluginintertechno.json
 */
 
@@ -62,7 +65,7 @@ DeviceManager::DeviceError DevicePluginIntertechno::executeAction(Device *device
     QList<int> rawData;
     QByteArray binCode;
 
-    QString familyCode = device->paramValue("familyCode").toString();
+    QString familyCode = device->paramValue("family code").toString();
 
     // =======================================
     // generate bin from family code
@@ -100,41 +103,41 @@ DeviceManager::DeviceError DevicePluginIntertechno::executeAction(Device *device
         binCode.append("01010101");
     }
 
-    QString buttonCode = device->paramValue("buttonCode").toString();
+    QString buttonCode = device->paramValue("button code").toString();
 
     // =======================================
     // generate bin from button code
-    if (familyCode == "1") {
+    if (buttonCode == "1") {
         binCode.append("00000000");
-    } else if (familyCode == "2") {
+    } else if (buttonCode == "2") {
         binCode.append("01000000");
-    } else if (familyCode == "3") {
+    } else if (buttonCode == "3") {
         binCode.append("00010000");
-    } else if (familyCode == "4") {
+    } else if (buttonCode == "4") {
         binCode.append("01010000");
-    } else if (familyCode == "5") {
+    } else if (buttonCode == "5") {
         binCode.append("00000100");
-    } else if (familyCode == "6") {
+    } else if (buttonCode == "6") {
         binCode.append("01000100");
-    } else if (familyCode == "7") {
+    } else if (buttonCode == "7") {
         binCode.append("01000000");
-    } else if (familyCode == "8") {
+    } else if (buttonCode == "8") {
         binCode.append("01010100");
-    } else if (familyCode == "9") {
+    } else if (buttonCode == "9") {
         binCode.append("00000001");
-    } else if (familyCode == "10") {
+    } else if (buttonCode == "10") {
         binCode.append("01000001");
-    } else if (familyCode == "11") {
+    } else if (buttonCode == "11") {
         binCode.append("00010001");
-    } else if (familyCode == "12") {
+    } else if (buttonCode == "12") {
         binCode.append("01010001");
-    } else if (familyCode == "13") {
+    } else if (buttonCode == "13") {
         binCode.append("00000101");
-    } else if (familyCode == "14") {
+    } else if (buttonCode == "14") {
         binCode.append("01000101");
-    } else if (familyCode == "15") {
+    } else if (buttonCode == "15") {
         binCode.append("00010101");
-    } else if (familyCode == "16") {
+    } else if (buttonCode == "16") {
         binCode.append("01010101");
     }
 

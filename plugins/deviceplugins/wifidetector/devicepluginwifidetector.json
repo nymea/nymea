@@ -12,12 +12,12 @@
                     "createMethods": ["user"],
                     "paramTypes": [
                         {
-                            "name": "Name",
+                            "name": "name",
                             "type": "QString",
                             "inputType": "TextLine"
                         },
                         {
-                            "name": "MAC",
+                            "name": "mac",
                             "type": "QString",
                             "inputType": "MacAddress"
                         }
@@ -26,7 +26,7 @@
                         {
                             "id": "cb43e1b5-4f61-4538-bfa2-c33055c542cf",
                             "idName": "inRange",
-                            "name": "In Range",
+                            "name": "in Range",
                             "type": "bool",
                             "defaultValue": false
                         }

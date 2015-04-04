@@ -36,6 +36,9 @@
     The \l{DeviceClass::SetupMethod}{setupMethod} describes the setup method of the \l{Device}.
     The detailed implementation of each \l{DeviceClass} can be found in the source code.
 
+    \note If a \l{StateType} has the parameter \tt{"writable": true}, an \l{ActionType} with the same uuid and \l{ParamType}{ParamTypes}
+    will be created automatically.
+
     \quotefile plugins/deviceplugins/elro/devicepluginelro.json
 */
 
@@ -58,7 +61,7 @@ DeviceManager::HardwareResources DevicePluginElro::requiredHardware() const
 DeviceManager::DeviceError DevicePluginElro::executeAction(Device *device, const Action &action)
 {   
 
-    if (action.actionTypeId() != powerOnActionTypeId && action.actionTypeId() != powerOffActionTypeId) {
+    if (action.actionTypeId() != powerActionTypeId) {
         return DeviceManager::DeviceErrorActionTypeNotFound;
     }
 
@@ -121,12 +124,10 @@ DeviceManager::DeviceError DevicePluginElro::executeAction(Device *device, const
     }
 
     // Power
-    if (action.actionTypeId() == powerOnActionTypeId) {
+    if (action.param("power").value().toBool()) {
         binCode.append("0001");
-    } else if (action.actionTypeId() == powerOffActionTypeId) {
-        binCode.append("0100");
     } else {
-        return DeviceManager::DeviceErrorActionTypeNotFound;
+        binCode.append("0100");
     }
 
     //create rawData timings list

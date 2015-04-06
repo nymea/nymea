@@ -5,12 +5,12 @@ TARGET = $$qtLibraryTarget(guh_devicepluginelgato)
 SOURCES += \
     devicepluginelgato.cpp \
     aveabulb.cpp \
-    imagefairywoods.cpp
+    commandrequest.cpp
 
 HEADERS += \
     devicepluginelgato.h \
     aveabulb.h \
-    imagefairywoods.h
+    commandrequest.h
 
 
 

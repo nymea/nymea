@@ -451,10 +451,16 @@ DeviceManager::DeviceError DevicePluginElgato::executeAction(Device *device, con
         AveaBulb *bulb = m_bulbs.key(device);
 
         // reconnect action does not need available true
-        if (action.actionTypeId() == reconnectActionTypeId) {
+        if (action.actionTypeId() == connectActionTypeId) {
             bulb->reconnectDevice();
             return DeviceManager::DeviceErrorNoError;
         }
+
+        if (action.actionTypeId() == disconnectActionTypeId) {
+            bulb->disconnectDevice();
+            return DeviceManager::DeviceErrorNoError;
+        }
+
         // check available
         if (!bulb->isAvailable())
             return DeviceManager::DeviceErrorHardwareNotAvailable;
@@ -463,11 +469,67 @@ DeviceManager::DeviceError DevicePluginElgato::executeAction(Device *device, con
         if (action.actionTypeId() == powerOffActionTypeId) {
             bulb->actionPowerOff(action.id());
             return DeviceManager::DeviceErrorAsync;
-        } else if (action.actionTypeId() == whiteActionTypeId) {
-            bulb->testMethod();
-            return DeviceManager::DeviceErrorAsync;
+        } else if (action.actionTypeId() == colorActionTypeId) {
+            if (action.param("color").value().toString() == "green") {
+                bulb->setGreen(action.id());
+                return DeviceManager::DeviceErrorAsync;
+            }
+            if (action.param("color").value().toString() == "blue") {
+                bulb->setBlue(action.id());
+                return DeviceManager::DeviceErrorAsync;
+            }
+            if (action.param("color").value().toString() == "red") {
+                bulb->setRed(action.id());
+                return DeviceManager::DeviceErrorAsync;
+            }
+            if (action.param("color").value().toString() == "yellow") {
+                bulb->setYellow(action.id());
+                return DeviceManager::DeviceErrorAsync;
+            }
+            if (action.param("color").value().toString() == "orange") {
+                bulb->setOrange(action.id());
+                return DeviceManager::DeviceErrorAsync;
+            }
+            if (action.param("color").value().toString() == "purple") {
+                bulb->setPurple(action.id());
+                return DeviceManager::DeviceErrorAsync;
+            }
+            if (action.param("color").value().toString() == "white") {
+                bulb->setWhite(action.id());
+                return DeviceManager::DeviceErrorAsync;
+            }
+            return DeviceManager::DeviceErrorInvalidParameter;
+        } else if (action.actionTypeId() == moodActionTypeId) {
+            if (action.param("mood").value().toString() == "calm provence") {
+                bulb->setCalmProvence(action.id());
+                return DeviceManager::DeviceErrorAsync;
+            }
+            if (action.param("mood").value().toString() == "cozy flames") {
+                bulb->setCozyFlames(action.id());
+                return DeviceManager::DeviceErrorAsync;
+            }
+            if (action.param("mood").value().toString() == "cherry blossom") {
+                bulb->setCherryBlossom(action.id());
+                return DeviceManager::DeviceErrorAsync;
+            }
+            if (action.param("mood").value().toString() == "mountain breeze") {
+                bulb->setMountainBreeze(action.id());
+                return DeviceManager::DeviceErrorAsync;
+            }
+            if (action.param("mood").value().toString() == "northern glow") {
+                bulb->setNorthernGlow(action.id());
+                return DeviceManager::DeviceErrorAsync;
+            }
+            if (action.param("mood").value().toString() == "fairy woods") {
+                bulb->setFairyWoods(action.id());
+                return DeviceManager::DeviceErrorAsync;
+            }
+            if (action.param("mood").value().toString() == "magic hour") {
+                bulb->setMagicHour(action.id());
+                return DeviceManager::DeviceErrorAsync;
+            }
+            return DeviceManager::DeviceErrorInvalidParameter;
         }
-
         return DeviceManager::DeviceErrorActionTypeNotFound;
     }
     return DeviceManager::DeviceErrorDeviceClassNotFound;
@@ -519,9 +581,6 @@ void DevicePluginElgato::bulbAvailableChanged()
     Device *device = m_bulbs.value(bulb);
     device->setStateValue(availableStateTypeId, bulb->isAvailable());
 
-    if (bulb->isAvailable()) {
-        bulb->testMethod();
-    }
 }
 
 void DevicePluginElgato::actionFinished(const ActionId actionId, const bool &success)

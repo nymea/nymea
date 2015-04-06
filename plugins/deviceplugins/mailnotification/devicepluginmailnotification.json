@@ -9,7 +9,7 @@
                 {
                     "deviceClassId": "f4844c97-7ca6-4349-904e-ff9749a9fe74",
                     "idName": "customMail",
-                    "name": "Custom Mail",
+                    "name": "Custom mail",
                     "createMethods": ["user"],
                     "paramTypes": [
                         {
@@ -57,7 +57,7 @@
                     "actionTypes": [
                         {
                             "id": "054613b0-3666-4dad-9252-e0ebca187edc",
-                            "name": "Send mail",
+                            "name": "send mail",
                             "paramTypes": [
                                 {
                                     "name": "subject",
@@ -82,7 +82,7 @@
                 {
                     "deviceClassId": "3869884a-1592-4b8f-84a7-994be18ff555",
                     "idName": "googleMail",
-                    "name": "Google Mail",
+                    "name": "Google mail",
                     "createMethods": ["user"],
                     "paramTypes": [
                         {
@@ -105,7 +105,7 @@
                         {
                             "id": "054613b0-3666-4dad-9252-e0ebca187edc",
                             "idName": "sendMail",
-                            "name": "Send mail",
+                            "name": "send mail",
                             "paramTypes": [
                                 {
                                     "name": "subject",
@@ -130,7 +130,7 @@
                 {
                     "deviceClassId": "59409e8f-0c83-414f-abd5-bbbf2758acba",
                     "idName": "yahooMail",
-                    "name": "Yahoo Mail",
+                    "name": "Yahoo mail",
                     "createMethods": ["user"],
                     "paramTypes": [
                         {
@@ -152,7 +152,7 @@
                     "actionTypes": [
                         {
                             "id": "054613b0-3666-4dad-9252-e0ebca187edc",
-                            "name": "Send mail",
+                            "name": "send mail",
                             "paramTypes": [
                                 {
                                     "name": "subject",

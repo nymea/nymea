@@ -21,17 +21,11 @@
                     "stateTypes": [
                         {
                             "id": "b5e90567-54aa-49bd-a78a-3c19fb38aaf5",
-                            "idName": "toggleButtonStatus",
+                            "idName": "state",
                             "name": "state",
                             "type": "bool",
-                            "defaultValue": false
-                        }
-                    ],
-                    "actionTypes": [
-                        {
-                            "id": "47bdc15a-b393-4dc2-801b-845420cdfda3",
-                            "idName": "toggleButtonToggle",
-                            "name": "toggle"
+                            "defaultValue": false,
+                            "writable": true
                         }
                     ]
                 },

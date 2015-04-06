@@ -17,20 +17,8 @@
                             "idName": "color",
                             "name": "color",
                             "type": "QColor",
-                            "defaultValue": "#000000"
-                        }
-                    ],
-                    "actionTypes": [
-                        {
-                            "id": "668e1aa3-fa13-49ce-8630-17a5c0a7c34b",
-                            "idName": "setColor",
-                            "name": "Set color",
-                            "paramTypes": [
-                                {
-                                    "name": "color",
-                                    "type": "QColor"
-                                }
-                            ]
+                            "defaultValue": "#000000",
+                            "writable": true
                         }
                     ]
                 }

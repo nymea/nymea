@@ -38,7 +38,9 @@
                             "idName": "power",
                             "name": "power",
                             "type": "bool",
-                            "defaultValue": false
+                            "defaultValue": false,
+                            "writable": true
+
                         },
                         {
                             "id": "ec2f5b49-585c-4455-a233-b7aa4c608dbc",
@@ -49,17 +51,6 @@
                         }
                     ],
                     "actionTypes": [
-                        {
-                            "id": "269f25eb-d0b7-4144-b9ef-801f4ff3e90c",
-                            "idName": "power",
-                            "name": "set power",
-                            "paramTypes": [
-                                {
-                                    "name": "power",
-                                    "type": "bool"
-                                }
-                            ]
-                        },
                         {
                             "id": "269cf3b8-d4dd-42e9-8309-6cb3ca8842df",
                             "idName": "rediscover",

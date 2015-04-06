@@ -13,7 +13,7 @@
                     "createMethods": ["user"],
                     "paramTypes": [
                         {
-                            "name": "Name",
+                            "name": "name",
                             "type": "QString",
                             "inputType": "TextLine"
                         },
@@ -61,13 +61,14 @@
                     "actionTypes": [
                         {
                             "id": "31c9758e-6567-4f89-85bb-29e1a7c55d44",
-                            "idName": "powerOn",
-                            "name": "On"
-                        },
-                        {
-                            "id": "9ceb3233-20a3-46bf-b2af-faed1b7ab1ad",
-                            "idName": "powerOff",
-                            "name": "Off"
+                            "idName": "power",
+                            "name": "set power",
+                            "paramTypes": [
+                                {
+                                    "name": "power",
+                                    "type": "bool"
+                                }
+                            ]
                         }
                     ]
                 },
@@ -126,11 +127,14 @@
                     "actionTypes": [
                         {
                             "id": "31c9758e-6567-4f89-85bb-29e1a7c55d44",
-                            "name": "On"
-                        },
-                        {
-                            "id": "9ceb3233-20a3-46bf-b2af-faed1b7ab1ad",
-                            "name": "Off"
+                            "idName": "power",
+                            "name": "set power",
+                            "paramTypes": [
+                                {
+                                    "name": "power",
+                                    "type": "bool"
+                                }
+                            ]
                         }
                     ]
                 },
@@ -189,11 +193,14 @@
                     "actionTypes": [
                         {
                             "id": "31c9758e-6567-4f89-85bb-29e1a7c55d44",
-                            "name": "On"
-                        },
-                        {
-                            "id": "9ceb3233-20a3-46bf-b2af-faed1b7ab1ad",
-                            "name": "Off"
+                            "idName": "power",
+                            "name": "set power",
+                            "paramTypes": [
+                                {
+                                    "name": "power",
+                                    "type": "bool"
+                                }
+                            ]
                         }
                     ]
                 },
@@ -252,11 +259,14 @@
                     "actionTypes": [
                         {
                             "id": "31c9758e-6567-4f89-85bb-29e1a7c55d44",
-                            "name": "On"
-                        },
-                        {
-                            "id": "9ceb3233-20a3-46bf-b2af-faed1b7ab1ad",
-                            "name": "Off"
+                            "idName": "power",
+                            "name": "set power",
+                            "paramTypes": [
+                                {
+                                    "name": "power",
+                                    "type": "bool"
+                                }
+                            ]
                         }
                     ]
                 }

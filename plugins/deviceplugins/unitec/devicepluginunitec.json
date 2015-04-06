@@ -8,26 +8,26 @@
             "deviceClasses": [
                 {
                     "deviceClassId": "8468a15d-ecc0-43b6-98ca-e1e4ac9e2df3",
-                    "name": "Unitec switch 48111",
+                    "name": "Unitec switch (48111)",
                     "idName": "switch",
                     "createMethods": ["user"],
                     "paramTypes": [
                         {
-                            "name": "Name",
+                            "name": "name",
                             "type": "QString",
                             "inputType": "TextLine"
                         },
                         {
-                            "name": "Channel",
+                            "name": "channel",
                             "type": "QString",
                             "allowedValues": ["A", "B", "C", "D"]
                         }
                     ],
                     "actionTypes": [
                         {
-                            "id": "a85b5443-e91f-4814-a813-c75b04d7a823",
-                            "name": "Set power",
+                            "id": "3ca1ebc2-bb8e-4429-9664-a7bc4569e73b",
                             "idName": "power",
+                            "name": "set power",
                             "paramTypes": [
                                 {
                                     "name": "power",

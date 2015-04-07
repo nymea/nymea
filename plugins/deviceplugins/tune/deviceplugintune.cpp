@@ -270,13 +270,13 @@ DeviceManager::DeviceError DevicePluginTune::executeAction(Device *device, const
 
     // Mood
     if (device->deviceClassId() == moodDeviceClassId) {
-        if (action.actionTypeId() == toggleActionTypeId) {
+        if (action.actionTypeId() == activeActionTypeId) {
             bool currentState = device->stateValue(activeStateTypeId).toBool();
             device->setStateValue(activeStateTypeId, !currentState);
             syncStates(device);
             return DeviceManager::DeviceErrorNoError;
         }
-        if (action.actionTypeId() == setValueActionTypeId) {
+        if (action.actionTypeId() == valueActionTypeId) {
             device->setStateValue(valueStateTypeId, action.param("percentage").value().toInt());
             syncStates(device);
             return DeviceManager::DeviceErrorNoError;
@@ -285,13 +285,13 @@ DeviceManager::DeviceError DevicePluginTune::executeAction(Device *device, const
     }
 
     if (device->deviceClassId() == tuneDeviceClassId) {
-        if (action.actionTypeId() == toggleLightActionTypeId) {
+        if (action.actionTypeId() == powerActionTypeId) {
             bool currentState = device->stateValue(powerStateTypeId).toBool();
             device->setStateValue(powerStateTypeId, !currentState);
             syncStates(device);
             return DeviceManager::DeviceErrorNoError;
         }
-        if (action.actionTypeId() == setBrightnessActionTypeId) {
+        if (action.actionTypeId() == brightnessActionTypeId) {
             device->setStateValue(brightnessStateTypeId, action.param("brightness").value().toInt());
             syncStates(device);
             return DeviceManager::DeviceErrorNoError;

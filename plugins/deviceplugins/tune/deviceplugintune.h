@@ -44,8 +44,9 @@ private:
     bool sync();
     void syncStates(Device *device);
 
-    bool tuneAdded();
+    bool tuneAlreadyAdded();
     void tuneAutodetected();
+    void activateMood(Device* device);
 
 private slots:
     void tuneConnectionStatusChanged(const bool &connected);

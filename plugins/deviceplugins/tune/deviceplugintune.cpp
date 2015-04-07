@@ -46,13 +46,13 @@ DeviceManager::DeviceSetupStatus DevicePluginTune::setupDevice(Device *device)
 {
 
     // tune
-    if (device->deviceClassId() == tuneDeviceClassId && !tuneAdded()) {
+    if (device->deviceClassId() == tuneDeviceClassId && !tuneAlreadyAdded()) {
         m_tuneDeviceId = device->id();
         return DeviceManager::DeviceSetupStatusSuccess;
     }
 
     // mood
-    if ((device->deviceClassId() == moodDeviceClassId) && tuneAdded()) {
+    if ((device->deviceClassId() == moodDeviceClassId) && tuneAlreadyAdded()) {
 
         // check index position
         int position = device->paramValue("position").toInt();
@@ -143,7 +143,7 @@ bool DevicePluginTune::sync()
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(message);
     QByteArray data = jsonDoc.toJson(QJsonDocument::Compact);
 
-    //qDebug() << jsonDoc.toJson();
+    qDebug() << jsonDoc.toJson();
 
     m_manager->sendData(data);
     return true;
@@ -182,7 +182,7 @@ void DevicePluginTune::syncStates(Device *device)
 
 }
 
-bool DevicePluginTune::tuneAdded()
+bool DevicePluginTune::tuneAlreadyAdded()
 {
     foreach (Device *device, myDevices()) {
         if (device->deviceClassId() == tuneDeviceClassId) {
@@ -203,10 +203,24 @@ void DevicePluginTune::tuneAutodetected()
     metaObject()->invokeMethod(this, "autoDevicesAppeared", Qt::QueuedConnection, Q_ARG(DeviceClassId, tuneDeviceClassId), Q_ARG(QList<DeviceDescriptor>, descriptorList));
 }
 
+void DevicePluginTune::activateMood(Device *device)
+{
+    foreach (Device* d, myDevices()) {
+        if (d->deviceClassId() == moodDeviceClassId) {
+            if (d->id() == device->id()) {
+                d->setStateValue(activeStateTypeId, true);
+            } else {
+                d->setStateValue(activeStateTypeId, false);
+            }
+        }
+    }
+    sync();
+}
+
 void DevicePluginTune::tuneConnectionStatusChanged(const bool &connected)
 {
     if (connected) {
-        if (!tuneAdded()) {
+        if (!tuneAlreadyAdded()) {
             tuneAutodetected();
         } else {
             Device *device = deviceManager()->findConfiguredDevice(m_tuneDeviceId);
@@ -241,9 +255,12 @@ void DevicePluginTune::tuneDataAvailable(const QByteArray &data)
                 bool activeValue = states.value("active").toBool();
                 int value = states.value("value").toInt();
 
-                // TODO: disable other mood befor enabling this one...
-
-                device->setStateValue(activeStateTypeId, activeValue);
+                if (activeValue) {
+                    // disable any active mood
+                    activateMood(device);
+                } else {
+                    device->setStateValue(activeStateTypeId, activeValue);
+                }
                 device->setStateValue(valueStateTypeId, value);
             }
         } else if (message.contains("tune")) {

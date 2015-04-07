@@ -60,9 +60,9 @@
                             "idName": "value",
                             "name": "value",
                             "type": "int",
-                            "minimumValue": 0,
-                            "maximumValue": 100,
-                            "defaultValue": 50,
+                            "minValue": 0,
+                            "maxValue": 100,
+                            "defaultValue": 100,
                             "writable": true
                         }
                     ]
@@ -123,6 +123,9 @@
                             "idName": "brightness",
                             "name": "brightness",
                             "type": "int",
+                            "minValue": 0,
+                            "maxValue": 100,
+                            "defaultValue": 100,
                             "writable": true
                         }
                     ]

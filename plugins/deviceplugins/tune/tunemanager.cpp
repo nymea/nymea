@@ -46,7 +46,7 @@ void TuneManager::tuneConnected()
     QTcpSocket *socket = m_server->nextPendingConnection();
 
     if (m_tune) {
-        qWarning() << "--> ATTENTION: tune allready connected! connection refused.";
+        qWarning() << "--> ATTENTION: tune already connected! connection refused.";
         socket->disconnect();
         delete socket;
         return;

@@ -241,8 +241,11 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 if (st.value("writable").toBool()) {
                     ActionType actionType(st.value("id").toString());
                     actionType.setName("set " + st.value("name").toString());
-                    // param already checked in StateType
-                    ParamType paramType(st.value("name").toString(), t);
+                    // Note: fields already checked in StateType
+                    ParamType paramType(st.value("name").toString(), t, st.value("defaultValue").toVariant());
+                    // states don't have allowed values
+                    // states don't have input types
+                    paramType.setLimits(st.value("minValue").toVariant(), st.value("maxValue").toVariant());
                     actionType.setParamTypes(QList<ParamType>() << paramType);
                     actionTypes.append(actionType);
                 }

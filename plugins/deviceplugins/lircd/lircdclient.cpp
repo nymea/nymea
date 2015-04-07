@@ -24,7 +24,6 @@
 LircClient::LircClient(QObject *parent) :
     QObject(parent)
 {
-
     m_socket = new QLocalSocket(this);
     QObject::connect(m_socket, &QLocalSocket::readyRead, this, &LircClient::readyRead);
 }
@@ -33,17 +32,12 @@ bool LircClient::connect()
 {
     m_socket->connectToServer("/var/run/lirc/lircd", QIODevice::ReadWrite);
     if (!m_socket->isOpen()) {
-        qWarning() << "Error connecting to lircd socket. Is Lircd running?";
+        qWarning() << "--> Lirc daemon NOT available.";
         return false;
     }
-
-    qDebug() << "connected to lircd!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11111";
-
-    qDebug() << "wrote to lirc:" << m_socket->write("LIST\n");
-
+    m_socket->write("LIST\n");
+    qDebug() << "--> Lirc daemon available.";
     return true;
-
-
 }
 
 void LircClient::readyRead()
@@ -53,7 +47,7 @@ void LircClient::readyRead()
     bool inBlock = false;
     while (m_socket->canReadLine()) {
         QByteArray line = m_socket->readLine().trimmed();
-        qDebug() << "got line:" << line;
+        //qDebug() << "got line:" << line;
         if (line == "BEGIN") {
             inBlock = true;
             continue;
@@ -87,7 +81,7 @@ void LircClient::readRemotes()
 {
     m_socket->readLine(); // IGNORE DATA
     int remoteCount = m_socket->readLine().trimmed().toInt();
-    qDebug() << "found" << remoteCount << "remotes";
+    qDebug() << "found" << remoteCount << "lirc remotes";
     for (int i = 0; i < remoteCount; i++) {
         QByteArray line = m_socket->readLine().trimmed();
         m_remotes.append(line);

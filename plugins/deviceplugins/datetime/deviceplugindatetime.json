@@ -102,7 +102,7 @@
                             "idName": "weekend",
                             "name": "weekend",
                             "type": "bool",
-                            "defaultValue": "false"
+                            "defaultValue": false
                         }
                     ]
                 }

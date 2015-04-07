@@ -618,7 +618,7 @@ void DeviceManager::loadPlugins()
                 foreach (const Vendor &vendor, pluginIface->supportedVendors()) {
                     qDebug() << "* Loaded vendor:" << vendor.name();
                     if (m_supportedVendors.contains(vendor.id())) {
-                        qWarning() << "! Duplicate vendor. Ignoring vendor" << vendor.name();
+                        //qWarning() << "! Duplicate vendor. Ignoring vendor" << vendor.name();
                         continue;
                     }
                     m_supportedVendors.insert(vendor.id(), vendor);

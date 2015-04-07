@@ -36,6 +36,9 @@
     The \l{DeviceClass::SetupMethod}{setupMethod} describes the setup method of the \l{Device}.
     The detailed implementation of each \l{DeviceClass} can be found in the source code.
 
+    \note If a \l{StateType} has the parameter \tt{"writable": true}, an \l{ActionType} with the same uuid and \l{ParamType}{ParamTypes}
+    will be created automatically.
+
     \quotefile plugins/deviceplugins/conrad/devicepluginconrad.json
 */
 
@@ -60,11 +63,6 @@ DeviceManager::HardwareResources DevicePluginConrad::requiredHardware() const
 
 DeviceManager::DeviceSetupStatus DevicePluginConrad::setupDevice(Device *device)
 {
-    if (device->deviceClassId() == conradRemoteDeviceClassId) {
-        device->setName(device->paramValue("name").toString() + " (Conrad Remote)");
-        return DeviceManager::DeviceSetupStatusSuccess;
-    }
-
     if (device->deviceClassId() == conradShutterDeviceClassId) {
         device->setName(device->paramValue("name").toString() + " (Conrad shutter RSM900R)");
         return DeviceManager::DeviceSetupStatusSuccess;
@@ -184,15 +182,4 @@ void DevicePluginConrad::radioData(const QList<int> &rawData)
     }
 
     qDebug() << "CONRAD: " << binCode.left(binCode.length() - 24) << "  ID = " << binCode.right(24);
-
-    //    // FIXME: find a better way to get to the remote DeviceClass
-    //    DeviceClass deviceClass = supportedDevices().first();
-    //    foreach (const EventType &eventType, deviceClass.events()) {
-    //        if (eventType.name() == buttonCode) {
-    //            qDebug() << "emit event " << pluginName() << familyCode << eventType.name() << power;
-    //            Event event = Event(eventType.id(), device->id(), params);
-    //            emit emitEvent(event);
-    //            return;
-    //        }
-    //    }
 }

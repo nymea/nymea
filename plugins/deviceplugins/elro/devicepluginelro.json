@@ -7,90 +7,16 @@
             "id": "435a13a0-65ca-4f0c-94c1-e5873b258db5",
             "deviceClasses": [
                 {
-                    "deviceClassId": "d85c1ef4-197c-4053-8e40-707aa671d302",
-                    "idName": "elroRemote",
-                    "name": "Elro Remote",
-                    "createMethods": ["user"],
-                    "paramTypes": [
-                        {
-                            "name": "channel 1",
-                            "type": "bool"
-                        },
-                        {
-                            "name": "channel 2",
-                            "type": "bool"
-                        },
-                        {
-                            "name": "channel 3",
-                            "type": "bool"
-                        },
-                        {
-                            "name": "channel 4",
-                            "type": "bool"
-                        },
-                        {
-                            "name": "channel 5",
-                            "type": "bool"
-                        }
-                    ],
-                    "eventTypes": [
-                        {
-                            "id": "9dd3f862-35f3-4b69-954e-fa3c8bd68e39",
-                            "name": "A",
-                            "paramTypes": [
-                                {
-                                    "name": "power",
-                                    "type": "bool"
-                                }
-                            ]
-                        },
-                        {
-                            "id": "733226eb-91ba-4e37-9d78-12c87eb5e763",
-                            "name": "B",
-                            "paramTypes": [
-                                {
-                                    "name": "power",
-                                    "type": "bool"
-                                }
-                            ]
-                        },
-                        {
-                            "id": "47aaeaec-485a-4775-a543-33f339fd28c8",
-                            "name": "C",
-                            "paramTypes": [
-                                {
-                                    "name": "power",
-                                    "type": "bool"
-                                }
-                            ]
-                        },
-                        {
-                            "id": "db3d484c-add9-44ab-80a4-a0664e0c87c8",
-                            "name": "D",
-                            "paramTypes": [
-                                {
-                                    "name": "power",
-                                    "type": "bool"
-                                }
-                            ]
-                        },
-                        {
-                            "id": "eb914aac-fb73-4ee2-9f1b-c34b2f6cc24a",
-                            "name": "E",
-                            "paramTypes": [
-                                {
-                                    "name": "power",
-                                    "type": "bool"
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
                     "deviceClassId": "308ae6e6-38b3-4b3a-a513-3199da2764f8",
-                    "name": "Elro switch",
+                    "name": "Elro Socket (AB440D)",
+                    "idName": "socketAB440D",
                     "createMethods": ["user"],
                     "paramTypes": [
+                        {
+                            "name": "name",
+                            "type": "QString",
+                            "inputType": "TextLine"
+                        },
                         {
                             "name": "channel 1",
                             "type": "bool"
@@ -135,7 +61,8 @@
                     "actionTypes": [
                         {
                             "id": "31c9758e-6567-4f89-85bb-29e1a7c55d44",
-                            "name": "Set power",
+                            "idName": "power",
+                            "name": "set power",
                             "paramTypes": [
                                 {
                                     "name": "power",
@@ -146,9 +73,202 @@
                     ]
                 },
                 {
-                    "deviceClassId": "4c64aee6-7a4f-41f2-b278-edc55f0da0d3",
-                    "name": "Elro motion detector",
-                    "createMethods": ["discovery"]
+                    "deviceClassId": "d29cf309-8a3e-4bcc-90ab-87d1adfb8985",
+                    "name": "Elro Bulb (AB440L)",
+                    "idName": "bulbAB440L",
+                    "createMethods": ["user"],
+                    "paramTypes": [
+                        {
+                            "name": "Name",
+                            "type": "QString",
+                            "inputType": "TextLine"
+                        },
+                        {
+                            "name": "channel 1",
+                            "type": "bool"
+                        },
+                        {
+                            "name": "channel 2",
+                            "type": "bool"
+                        },
+                        {
+                            "name": "channel 3",
+                            "type": "bool"
+                        },
+                        {
+                            "name": "channel 4",
+                            "type": "bool"
+                        },
+                        {
+                            "name": "channel 5",
+                            "type": "bool"
+                        },
+                        {
+                            "name": "A",
+                            "type": "bool"
+                        },
+                        {
+                            "name": "B",
+                            "type": "bool"
+                        },
+                        {
+                            "name": "C",
+                            "type": "bool"
+                        },
+                        {
+                            "name": "D",
+                            "type": "bool"
+                        },
+                        {
+                            "name": "E",
+                            "type": "bool"
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "31c9758e-6567-4f89-85bb-29e1a7c55d44",
+                            "idName": "power",
+                            "name": "set power",
+                            "paramTypes": [
+                                {
+                                    "name": "power",
+                                    "type": "bool"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "deviceClassId": "9516c818-7cbe-4ec2-a961-f29d7b918437",
+                    "name": "Elro Socket (AB440S)",
+                    "idName": "socketAB440S",
+                    "createMethods": ["user"],
+                    "paramTypes": [
+                        {
+                            "name": "Name",
+                            "type": "QString",
+                            "inputType": "TextLine"
+                        },
+                        {
+                            "name": "channel 1",
+                            "type": "bool"
+                        },
+                        {
+                            "name": "channel 2",
+                            "type": "bool"
+                        },
+                        {
+                            "name": "channel 3",
+                            "type": "bool"
+                        },
+                        {
+                            "name": "channel 4",
+                            "type": "bool"
+                        },
+                        {
+                            "name": "channel 5",
+                            "type": "bool"
+                        },
+                        {
+                            "name": "A",
+                            "type": "bool"
+                        },
+                        {
+                            "name": "B",
+                            "type": "bool"
+                        },
+                        {
+                            "name": "C",
+                            "type": "bool"
+                        },
+                        {
+                            "name": "D",
+                            "type": "bool"
+                        },
+                        {
+                            "name": "E",
+                            "type": "bool"
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "31c9758e-6567-4f89-85bb-29e1a7c55d44",
+                            "idName": "power",
+                            "name": "set power",
+                            "paramTypes": [
+                                {
+                                    "name": "power",
+                                    "type": "bool"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "deviceClassId": "e03adc74-b972-451a-afd5-b562a7ab91cd",
+                    "name": "Elro outdoor socket (AB440WD)",
+                    "idName": "socketAB440WD",
+                    "createMethods": ["user"],
+                    "paramTypes": [
+                        {
+                            "name": "Name",
+                            "type": "QString",
+                            "inputType": "TextLine"
+                        },
+                        {
+                            "name": "channel 1",
+                            "type": "bool"
+                        },
+                        {
+                            "name": "channel 2",
+                            "type": "bool"
+                        },
+                        {
+                            "name": "channel 3",
+                            "type": "bool"
+                        },
+                        {
+                            "name": "channel 4",
+                            "type": "bool"
+                        },
+                        {
+                            "name": "channel 5",
+                            "type": "bool"
+                        },
+                        {
+                            "name": "A",
+                            "type": "bool"
+                        },
+                        {
+                            "name": "B",
+                            "type": "bool"
+                        },
+                        {
+                            "name": "C",
+                            "type": "bool"
+                        },
+                        {
+                            "name": "D",
+                            "type": "bool"
+                        },
+                        {
+                            "name": "E",
+                            "type": "bool"
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "31c9758e-6567-4f89-85bb-29e1a7c55d44",
+                            "idName": "power",
+                            "name": "set power",
+                            "paramTypes": [
+                                {
+                                    "name": "power",
+                                    "type": "bool"
+                                }
+                            ]
+                        }
+                    ]
                 }
             ]
         }

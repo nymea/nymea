@@ -8,6 +8,7 @@
             "deviceClasses": [
                 {
                     "deviceClassId": "5c2bc4cd-ba6c-4052-b6cd-1db83323ea22",
+                    "idName": "irReceiver",
                     "name": "IR receiver",
                     "createMethods": ["user"],
                     "paramTypes": [
@@ -20,7 +21,8 @@
                     "eventTypes": [
                         {
                             "id": "8711471a-fa0e-410b-b174-dfc3d2aeffb1",
-                            "name": "Button pressed",
+                            "idName": "buttonPressed",
+                            "name": "button pressed",
                             "paramTypes": [
                                 {
                                     "name": "button",

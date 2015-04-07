@@ -81,26 +81,18 @@
                     ],
                     "actionTypes": [
                         {
-                            "id": "9c1968ba-39f9-493d-9fe2-848fa86bd2f0",
-                            "name": "set setpoint temperature",
-                            "paramTypes": [
-                                {
-                                    "name": "temperature",
-                                    "type": "double",
-                                    "defaultValue": 0
-                                }
-                            ]
-                        },
-                        {
                             "id": "162b4b3d-9923-4f2c-a755-b50c8a06a6f0",
+                            "idName": "setAutoMode",
                             "name": "set auto mode"
                         },
                         {
                             "id": "8e604437-9f5b-4c17-b5b0-e2db6007af5b",
+                            "idName": "setManualMode",
                             "name": "set manual mode"
                         },
                         {
                             "id": "27a981e8-ec23-4ba8-921e-33b911a7dd89",
+                            "idName": "setEcoMode",
                             "name": "set eco mode"
                         },
                         {
@@ -209,10 +201,12 @@
                         },
                         {
                             "id": "579aa8c6-8814-491b-9e7c-b98108c323d1",
-                            "idName": "setpointTemp",
-                            "name": "set point temp",
+                            "idName": "desiredTemperature",
+                            "name": "desired temperature",
                             "type": "double",
-                            "defaultValue": 0
+                            "defaultValue": 0,
+                            "writable": true
+
                         },
                         {
                             "id": "852e7708-db1d-42d1-96e4-19c13598262c",
@@ -256,18 +250,6 @@
                     ],
                     "actionTypes": [
                         {
-                            "id": "9c1968ba-39f9-493d-9fe2-848fa86bd2f0",
-                            "idName": "setSetpointTemperature",
-                            "name": "set setpoint temperature",
-                            "paramTypes": [
-                                {
-                                    "name": "temperature",
-                                    "type": "double",
-                                    "defaultValue": 0
-                                }
-                            ]
-                        },
-                        {
                             "id": "162b4b3d-9923-4f2c-a755-b50c8a06a6f0",
                             "idName": "setAutoMode",
                             "name": "set auto mode"
@@ -286,86 +268,101 @@
                     "stateTypes": [
                         {
                             "id": "850380ee-a787-43e7-adb8-768a21a6e64d",
+                            "idName": "comfortTemp",
                             "name": "comfort temperature",
                             "type": "double",
                             "defaultValue": 0
                         },
                         {
                             "id": "24dfd20d-bc8d-48e4-8162-b20ae0465c41",
+                            "idName": "comfortTemp",
                             "name": "eco temperature",
                             "type": "double",
                             "defaultValue": 0
                         },
                         {
                             "id": "a8536ddf-a6e4-41c2-89c1-e7102608f5f6",
+                            "idName": "maxSetpointTemp",
                             "name": "max setpoint",
                             "type": "double",
                             "defaultValue": 0
                         },
                         {
                             "id": "ceb0ad05-37ad-4b79-a4d9-540c34a7e3e4",
+                            "idName": "maxSetpointTemp",
                             "name": "min setpoint",
                             "type": "double",
                             "defaultValue": 0
                         },
                         {
                             "id": "9880247b-cf9a-453c-b0c3-d910eba8a253",
+                            "idName": "maxSetpointTemp",
                             "name": "error occured",
                             "type": "bool",
                             "defaultValue": false
                         },
                         {
                             "id": "a9e29f03-063e-4686-8aac-2f6d8f8a4937",
+                            "idName": "initialized",
                             "name": "initialized",
                             "type": "bool",
                             "defaultValue": false
                         },
                         {
                             "id": "53b89f32-8894-4290-92a0-6a470c6b69ab",
+                            "idName": "batteryLow",
                             "name": "battery low",
                             "type": "bool",
                             "defaultValue": false
                         },
                         {
                             "id": "aff38be8-7ea6-4fd8-b0fa-e987ab05c719",
+                            "idName": "batteryLow",
                             "name": "link status ok",
                             "type": "bool",
                             "defaultValue": false
                         },
                         {
                             "id": "979df197-09a1-46f9-9217-9d323b1062bd",
+                            "idName": "panelLocked",
                             "name": "panel locked",
                             "type": "bool",
                             "defaultValue": false
                         },
                         {
                             "id": "1d6bd962-5c31-47ad-80a4-dda87bff98f5",
+                            "idName": "gatewayKnown",
                             "name": "gateway known",
                             "type": "bool",
                             "defaultValue": false
                         },
                         {
                             "id": "1b402ba6-a8ae-45b1-8acf-2b0a89f71889",
+                            "idName": "dtsActive",
                             "name": "dts active",
                             "type": "bool",
                             "defaultValue": false
                         },
                         {
                             "id": "639360f0-bb65-43e6-b227-50ae0ac39d6c",
+                            "idName": "deviceMode",
                             "name": "device mode",
                             "type": "int",
                             "defaultValue": -1
                         },
                         {
                             "id": "ff5194e3-5641-4ac2-92c7-48c431b4a2eb",
+                            "idName": "deviceModeString",
                             "name": "device mode string",
                             "type": "QString"
                         },
                         {
                             "id": "579aa8c6-8814-491b-9e7c-b98108c323d1",
-                            "name": "set point temp",
+                            "idName": "desiredTemperature",
+                            "name": "desired temperature",
                             "type": "double",
-                            "defaultValue": 0
+                            "defaultValue": 0,
+                            "writable": true
                         },
                         {
                             "id": "576da571-9a65-478f-96bf-19256c8b9ece",

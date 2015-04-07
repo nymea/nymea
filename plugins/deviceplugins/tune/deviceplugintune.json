@@ -25,16 +25,24 @@
                             "name": "icon",
                             "type": "QString",
                             "allowedValues": [
+                                "IconBed",
+                                "IconBlinds",
+                                "IconCeilingLamp",
                                 "IconCouch",
-                                "IconTv",
+                                "IconDeskLamp",
+                                "IconDesk",
+                                "IconHifi",
                                 "IconLamp",
-                                "IconLamp1",
-                                "IconLamp2",
-                                "IconLamp3",
+                                "IconRadio",
+                                "IconSmartPhone",
                                 "IconSmoking",
                                 "IconSocket",
+                                "IconStandardLamp",
+                                "IconSun",
+                                "IconTablet",
                                 "IconThermometer",
-                                "IconWork"
+                                "IconTune",
+                                "IconTv"
                             ]
                         }
                     ],
@@ -44,34 +52,18 @@
                             "idName": "active",
                             "name": "active",
                             "type": "bool",
-                            "defaultValue": false
+                            "defaultValue": false,
+                            "writable": true
                         },
                         {
                             "id": "cb8a89c2-dc12-4965-b047-57896058b421",
                             "idName": "value",
                             "name": "value",
                             "type": "int",
-                            "defaultValue": 50
-                        }
-                    ],
-                    "actionTypes": [
-                        {
-                            "id": "768b6a17-731b-4976-bc9e-15c04eff7df3",
-                            "idName": "toggle",
-                            "name": "toggle"
-                        },
-                        {
-                            "id": "fe942f70-b8fb-413b-8feb-2dd924b9f649",
-                            "idName": "setValue",
-                            "name": "set value",
-                            "paramTypes": [
-                                {
-                                    "name": "percentage",
-                                    "type": "int",
-                                    "minimumValue": 0,
-                                    "maximumValue": 100
-                                }
-                            ]
+                            "minimumValue": 0,
+                            "maximumValue": 100,
+                            "defaultValue": 50,
+                            "writable": true
                         }
                     ]
                 },
@@ -123,33 +115,15 @@
                             "id": "6c049f8f-408f-4265-a4f7-46a855d5c340",
                             "idName": "power",
                             "name": "power",
-                            "type": "bool"
+                            "type": "bool",
+                            "writable": true
                         },
                         {
                             "id": "677cd9ec-c264-47ee-9d2e-d3662237792c",
                             "idName": "brightness",
                             "name": "brightness",
-                            "type": "int"
-                        }
-                    ],
-                    "actionTypes": [
-                        {
-                            "id": "cfc35f13-2a17-4c7b-9343-b5bd8a242eef",
-                            "idName": "setBrightness",
-                            "name": "set brightness",
-                            "paramTypes": [
-                                {
-                                    "name": "brightness",
-                                    "type": "int",
-                                    "minimumValue": 0,
-                                    "maximumValue": 100
-                                }
-                            ]
-                        },
-                        {
-                            "id": "36c3cb61-45ee-4549-a0f9-cf34f0efae2b",
-                            "idName": "toggleLight",
-                            "name": "toggle light"
+                            "type": "int",
+                            "writable": true
                         }
                     ]
                 }

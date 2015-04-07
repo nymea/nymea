@@ -24,8 +24,8 @@
                         {
                             "name": "button code",
                             "type": "int",
-                            "minimumValue": 1,
-                            "maximumValue": 16
+                            "minValue": 1,
+                            "maxValue": 16
                         }
                     ],
                     "actionTypes": [

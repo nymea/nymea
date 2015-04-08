@@ -205,16 +205,17 @@ void DevicePluginTune::tuneAutodetected()
 
 void DevicePluginTune::activateMood(Device *device)
 {
+    // first deactivate every current active mood
     foreach (Device* d, myDevices()) {
         if (d->deviceClassId() == moodDeviceClassId) {
-            if (d->id() == device->id()) {
-                d->setStateValue(activeStateTypeId, true);
-            } else {
+            if (d->stateValue(activeStateTypeId).toBool()) {
                 d->setStateValue(activeStateTypeId, false);
+                syncStates(d);
             }
         }
     }
-    sync();
+    device->setStateValue(activeStateTypeId, true);
+    syncStates(device);
 }
 
 void DevicePluginTune::tuneConnectionStatusChanged(const bool &connected)
@@ -254,16 +255,15 @@ void DevicePluginTune::tuneDataAvailable(const QByteArray &data)
                 QVariantMap states = mood.value("states").toMap();
                 bool activeValue = states.value("active").toBool();
                 int value = states.value("value").toInt();
-
                 if (activeValue) {
-                    // disable any active mood
                     activateMood(device);
                 } else {
                     device->setStateValue(activeStateTypeId, activeValue);
                 }
                 device->setStateValue(valueStateTypeId, value);
             }
-        } else if (message.contains("tune")) {
+        }
+        if (message.contains("tune")) {
             QVariantMap tune = message.value("tune").toMap();
             Device *device = deviceManager()->findConfiguredDevice(DeviceId(tune.value("deviceId").toString()));
             if (device) {

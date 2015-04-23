@@ -16,47 +16,48 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef DEVICEPLUGINTUNE_H
-#define DEVICEPLUGINTUNE_H
+#ifndef JSONRPCSERVER_H
+#define JSONRPCSERVER_H
 
-#include "plugin/deviceplugin.h"
-#include "jsonrpcserver.h"
+#include <QObject>
+#include <QDebug>
+#include <QJsonDocument>
 
-class JsonRpcServer;
+#include "tunemanager.h"
+#include "plugin/device.h"
+#include "types/action.h"
 
-class DevicePluginTune : public DevicePlugin
+class JsonRpcServer : public QObject
 {
     Q_OBJECT
-
-    Q_PLUGIN_METADATA(IID "guru.guh.DevicePlugin" FILE "deviceplugintune.json")
-    Q_INTERFACES(DevicePlugin)
-
 public:
-    explicit DevicePluginTune();
+    explicit JsonRpcServer(QObject *parent = 0);
 
-    DeviceManager::HardwareResources requiredHardware() const override;
-    void startMonitoringAutoDevices() override;
-    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
-    void postSetupDevice(Device *device) override;
-    void deviceRemoved(Device *device) override;
+    void start();
+    void stop();
+
+    bool tuneAvailable();
+    bool sync(QList<Device *> deviceList);
+    void executeAction(Device* device, const Action &action);
 
 private:
-    JsonRpcServer *m_server;
-    DeviceId m_tuneDeviceId;
-    bool sync();
+    TuneManager *m_manager;
+    int m_id;
 
-    bool tuneAlreadyAdded();
-    void tuneAutodetected();
+    QHash<int, QVariantMap> m_requests;
+
+    QByteArray formatResponse(int commandId, const QVariantMap &responseParams = QVariantMap());
+    QByteArray formatErrorResponse(int commandId, const QString &errorMessage);
+    void handleResponse(const QVariantMap &response);
+
+signals:
+    void connectionStatusChanged(const bool &connectionStatus);
+    void gotTuneSync(const QVariantMap &params);
+    void gotMoodSync(const QVariantMap &params);
+    void gotActionResponse(const QVariantMap &response);
 
 private slots:
-    void tuneConnectionStatusChanged(const bool &connected);
-    void updateMood(const QVariantMap &message);
-    void updateTune(const QVariantMap &message);
-    void processActionResponse(const QVariantMap &message);
-
-public slots:
-    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
-
+    void processData(const QByteArray &data);
 };
 
-#endif // DEVICEPLUGINTUNE_H
+#endif // JSONRPCSERVER_H

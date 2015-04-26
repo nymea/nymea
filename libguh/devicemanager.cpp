@@ -1085,12 +1085,12 @@ DeviceManager::DeviceError DeviceManager::verifyParam(const ParamType &paramType
             return DeviceErrorInvalidParameter;
         }
 
-        if (paramType.maxValue().isValid() && param.value() > paramType.maxValue()) {
+        if (paramType.maxValue().isValid() && param.value().convert(paramType.type()) > paramType.maxValue().convert(paramType.type())) {
             qWarning() << "Value out of range for param" << param.name() << " Got:" << param.value() << " Max:" << paramType.maxValue();
             return DeviceErrorInvalidParameter;
         }
         if (paramType.minValue().isValid() && param.value() < paramType.minValue()) {
-            qWarning() << "Value out of range for param" << param.name() << " Got:" << param.value() << " Min:" << paramType.minValue();
+            qWarning() << "Value out of range for param" << param.name() << " Got:" << param.value().convert(paramType.type()) << " Min:" << paramType.minValue().convert(paramType.type());
             return DeviceErrorInvalidParameter;
         }
         if (!paramType.allowedValues().isEmpty() && !paramType.allowedValues().contains(param.value())) {

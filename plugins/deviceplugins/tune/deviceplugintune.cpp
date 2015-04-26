@@ -175,7 +175,7 @@ void DevicePluginTune::updateTune(const QVariantMap &message)
 void DevicePluginTune::processActionResponse(const QVariantMap &message)
 {
     bool success = message.value("success").toBool();
-    ActionId actionId = ActionId(message.value("params").toMap().value("actionId").toString());
+    ActionId actionId = ActionId(message.value("actionId").toString());
     if (success) {
         emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorNoError);
     } else {
@@ -189,16 +189,20 @@ DeviceManager::DeviceError DevicePluginTune::executeAction(Device *device, const
         return DeviceManager::DeviceErrorHardwareNotAvailable;
     }
 
-    if (device->deviceClassId() != moodDeviceClassId || device->deviceClassId() != tuneDeviceClassId) {
+    // check DeviceClassId
+    if (device->deviceClassId() != moodDeviceClassId && device->deviceClassId() != tuneDeviceClassId) {
         return DeviceManager::DeviceErrorDeviceClassNotFound;
     }
 
-    if (action.actionTypeId() != powerActionTypeId ||
-            action.actionTypeId() != brightnessActionTypeId ||
-            action.actionTypeId() != valueActionTypeId){
+    // check ActionTypeId
+    if (action.actionTypeId() != powerActionTypeId &&
+            action.actionTypeId() != brightnessActionTypeId &&
+            action.actionTypeId() != valueActionTypeId &&
+            action.actionTypeId() != activeActionTypeId){
         return DeviceManager::DeviceErrorActionTypeNotFound;
     }
 
+    // request the action execution on tune
     m_server->executeAction(device, action);
     return DeviceManager::DeviceErrorAsync;
 }

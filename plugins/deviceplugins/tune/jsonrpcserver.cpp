@@ -110,13 +110,13 @@ void JsonRpcServer::executeAction(Device *device, const Action &action)
     QVariantMap message;
     QVariantMap params;
 
-    params.insert("deviceId", device->deviceClassId());
+    params.insert("deviceId", device->id());
     params.insert("actionId", action.id());
 
     if (device->deviceClassId() == moodDeviceClassId) {
         message.insert("method", "Mood.ExecuteAction");
         if (action.actionTypeId() == valueActionTypeId) {
-            params.insert("value", action.param("percentage").value().toInt());
+            params.insert("value", action.param("value").value().toInt());
             params.insert("active", device->stateValue(activeStateTypeId).toBool());
         } else if (action.actionTypeId() == activeActionTypeId) {
             params.insert("value", device->stateValue(valueStateTypeId).toInt());
@@ -124,10 +124,10 @@ void JsonRpcServer::executeAction(Device *device, const Action &action)
         }
     } else if(device->deviceClassId() == tuneDeviceClassId) {
         message.insert("method", "Tune.ExecuteAction");
-        if (action.actionTypeId() == valueActionTypeId) {
+        if (action.actionTypeId() == brightnessActionTypeId) {
             params.insert("brightness", action.param("brightness").value().toInt());
             params.insert("power", device->stateValue(powerStateTypeId).toBool());
-        } else if (action.actionTypeId() == activeActionTypeId) {
+        } else if (action.actionTypeId() == powerActionTypeId) {
             params.insert("brightness", device->stateValue(brightnessStateTypeId).toInt());
             params.insert("power", action.param("power").value().toBool());
         }
@@ -173,7 +173,7 @@ void JsonRpcServer::handleResponse(const QVariantMap &response)
         return;
     }
 
-    // remove it request since we have a response now...
+    // remove it request because we have a response now...
     QVariantMap request = m_requests.take(responseId);
 
     // Note: maby we have to do something if any request fails

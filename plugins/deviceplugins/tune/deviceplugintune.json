@@ -62,7 +62,7 @@
                             "type": "int",
                             "minValue": 0,
                             "maxValue": 100,
-                            "defaultValue": 100,
+                            "defaultValue": 0,
                             "writable": true
                         }
                     ]
@@ -116,6 +116,7 @@
                             "idName": "power",
                             "name": "power",
                             "type": "bool",
+                            "defaultValue": 0,
                             "writable": true
                         },
                         {
@@ -125,7 +126,7 @@
                             "type": "int",
                             "minValue": 0,
                             "maxValue": 100,
-                            "defaultValue": 100,
+                            "defaultValue": 0,
                             "writable": true
                         }
                     ]

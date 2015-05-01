@@ -208,7 +208,19 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     params.insert("value", JsonTypes::basicTypeToString(JsonTypes::Variant));
     setParams("StateChanged", params);
 
+    params.clear(); returns.clear();
+    setDescription("DeviceRemoved", "Emitted whenever a Device was removed.");
+    params.insert("deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    setParams("DeviceRemoved", params);
+
+    params.clear(); returns.clear();
+    setDescription("DeviceAdded", "Emitted whenever a Device was added.");
+    params.insert("device", JsonTypes::deviceRef());
+    setParams("DeviceAdded", params);
+
     connect(GuhCore::instance(), &GuhCore::deviceStateChanged, this, &DeviceHandler::deviceStateChanged);
+    connect(GuhCore::instance(), &GuhCore::deviceRemoved, this, &DeviceHandler::deviceRemovedNotification);
+    connect(GuhCore::instance(), &GuhCore::deviceAdded, this, &DeviceHandler::deviceAddedNotification);
     connect(GuhCore::instance(), &GuhCore::devicesDiscovered, this, &DeviceHandler::devicesDiscovered, Qt::QueuedConnection);
     connect(GuhCore::instance(), &GuhCore::deviceSetupFinished, this, &DeviceHandler::deviceSetupFinished);
     connect(GuhCore::instance(), &GuhCore::pairingFinished, this, &DeviceHandler::pairingFinished);
@@ -512,6 +524,22 @@ void DeviceHandler::deviceStateChanged(Device *device, const QUuid &stateTypeId,
     params.insert("value", value);
 
     emit StateChanged(params);
+}
+
+void DeviceHandler::deviceRemovedNotification(const QUuid &deviceId)
+{
+    QVariantMap params;
+    params.insert("deviceId", deviceId);
+
+    emit DeviceRemoved(params);
+}
+
+void DeviceHandler::deviceAddedNotification(Device *device)
+{
+    QVariantMap params;
+    params.insert("device", JsonTypes::packDevice(device));
+
+    emit DeviceAdded(params);
 }
 
 void DeviceHandler::devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors)

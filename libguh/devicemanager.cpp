@@ -479,6 +479,9 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDeviceInternal(const Devi
     m_configuredDevices.append(device);
     storeConfiguredDevices();
     postSetupDevice(device);
+
+    emit deviceAdded(device);
+
     return DeviceErrorNoError;
 }
 
@@ -507,6 +510,8 @@ DeviceManager::DeviceError DeviceManager::removeConfiguredDevice(const DeviceId 
     settings.beginGroup(deviceId.toString());
     settings.remove("");
     settings.endGroup();
+
+    emit deviceRemoved(deviceId);
 
     return DeviceErrorNoError;
 }

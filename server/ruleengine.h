@@ -72,7 +72,7 @@ public:
     void removeDeviceFromRule(const RuleId &id, const DeviceId &deviceId);
 
 signals:
-    void ruleAdded(const RuleId &ruleId);
+    void ruleAdded(const Rule &rule);
     void ruleRemoved(const RuleId &ruleId);
     void ruleChanged(const RuleId &ruleId);
 

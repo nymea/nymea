@@ -1,7 +1,7 @@
 Source: guh
 Section: utils
 Priority: optional
-Maintainer: Michael Zanetti <michael_zanetti@gmx.net>
+Maintainer: Simon Stuerz <simon.stuerz@guh.guru>
 Build-Depends: debhelper (>= 9.0.0),
   dpkg-dev (>= 1.16.1~),
   hardening-wrapper,
@@ -15,11 +15,11 @@ Architecture: any
 Section: misc
 Depends: guh (= ${binary:Version}),
   guh-plugins (= ${binary:Version}),
-Description: server for home automation systems - meta package
- 'Gear Up your Home!' - Home automation server.
- guh is a home automation system aiming for easy integration of various
- existing home automation and controlling devices into a fully automated
- system.
+Description: Server for home automation systems - meta package
+ guh is an open source home automation server, which allows to control
+ a lot of different devices from many different manufacturers. With the
+ powerful rule engine you are able to connect any device available in
+ the system and create individual scenes and behaviors for your home.
  This meta package installs the guh daemon and the main plugins.
 
 Package: guhd
@@ -30,11 +30,11 @@ Depends: libqt5network5,
   libguh1 (= ${binary:Version}),
   ${shlibs:Depends},
   ${misc:Depends}
-Description: server for home automation systems
- 'Gear Up your Home!' - Home automation server.
- guh is a home automation system aiming for easy integration of various
- existing home automation and controlling devices into a fully automated
- system.
+Description: Server daemon for home automation systems
+ guh is an open source home automation server, which allows to control
+ a lot of different devices from many different manufacturers. With the
+ powerful rule engine you are able to connect any device available in
+ the system and create individual scenes and behaviors for your home.
 
 Package: guh-dbg
 Priority: extra
@@ -42,43 +42,43 @@ Architecture: any
 Section: debug
 Depends: guh (= ${binary:Version}), ${misc:Depends}
 Description: server for home automation systems - debug symbols
- 'Gear Up your Home!' - Home automation server.
- guh is a home automation system aiming for easy integration of various
- existing home automation and controlling devices into a fully automated
- system.
+ guh is an open source home automation server, which allows to control
+ a lot of different devices from many different manufacturers. With the
+ powerful rule engine you are able to connect any device available in
+ the system and create individual scenes and behaviors for your home.
 
 Package: guh-doc
 Section: doc
 Architecture: all
 Depends: ${misc:Depends}
 Recommends: guh (= ${binary:Version})
-Description: documentation for the guh package (on-site)
- 'Gear Up your Home!' - Home automation server.
- guh is a home automation system aiming for easy integration of various
- existing home automation and controlling devices into a fully automated
- system.
+Description: Documentation for the guh package (on-site) - documentation
+ guh is an open source home automation server, which allows to control
+ a lot of different devices from many different manufacturers. With the
+ powerful rule engine you are able to connect any device available in
+ the system and create individual scenes and behaviors for your home.
 
 Package: guh-tests
 Architecture: any
 Depends: guh (= ${binary:Version}),
   ${shlibs:Depends},
   ${misc:Depends}
-Description: tests for the guh package
- 'Gear Up your Home!' - Home automation server.
- guh is a home automation system aiming for easy integration of various
- existing home automation and controlling devices into a fully automated
- system.
+Description: Tests for the guh package
+ guh is an open source home automation server, which allows to control
+ a lot of different devices from many different manufacturers. With the
+ powerful rule engine you are able to connect any device available in
+ the system and create individual scenes and behaviors for your home.
 
 Package: libguh1
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends},
   ${misc:Depends}
-Description: server for home automation systems - core library
- 'Gear Up your Home!' - Home automation server.
- guh is a home automation system aiming for easy integration of various
- existing home automation and controlling devices into a fully automated
- system.
+Description: Server for home automation systems - core library
+ guh is an open source home automation server, which allows to control
+ a lot of different devices from many different manufacturers. With the
+ powerful rule engine you are able to connect any device available in
+ the system and create individual scenes and behaviors for your home.
 
 Package: libguh1-dev
 Section: libdevel
@@ -86,11 +86,11 @@ Architecture: any
 Depends: libguh1 (= ${binary:Version}),
   ${shlibs:Depends},
   ${misc:Depends}
-Description: server for home automation systems - development files
- 'Gear Up your Home!' - Home automation server.
- guh is a home automation system aiming for easy integration of various
- existing home automation and controlling devices into a fully automated
- system.
+Description: Server for home automation systems - development files
+ guh is an open source home automation server, which allows to control
+ a lot of different devices from many different manufacturers. With the
+ powerful rule engine you are able to connect any device available in
+ the system and create individual scenes and behaviors for your home.
 
 Package: guh-plugins
 Section: libs
@@ -99,8 +99,8 @@ Depends: libguh1 (= ${binary:Version}),
   guhd (= ${binary:Version}),
   ${shlibs:Depends},
   ${misc:Depends}
-Description: server for home automation systems - plugins
- 'Gear Up your Home!' - Home automation server.
- guh is a home automation system aiming for easy integration of various
- existing home automation and controlling devices into a fully automated
- system.
+Description: Plugins for guh server home automation systems
+ guh is an open source home automation server, which allows to control
+ a lot of different devices from many different manufacturers. With the
+ powerful rule engine you are able to connect any device available in
+ the system and create individual scenes and behaviors for your home.

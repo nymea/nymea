@@ -1,4 +1,4 @@
-19
+20
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -365,6 +365,18 @@
         }
     },
     "notifications": {
+        "Devices.DeviceAdded": {
+            "description": "Emitted whenever a Device was added.",
+            "params": {
+                "device": "$ref:Device"
+            }
+        },
+        "Devices.DeviceRemoved": {
+            "description": "Emitted whenever a Device was removed.",
+            "params": {
+                "deviceId": "Uuid"
+            }
+        },
         "Devices.StateChanged": {
             "description": "Emitted whenever a State of a device changes.",
             "params": {
@@ -383,6 +395,18 @@
             "description": "Emitted whenever an entry is appended to the logging system.",
             "params": {
                 "logEntry": "$ref:LogEntry"
+            }
+        },
+        "Rules.RuleAdded": {
+            "description": "Emitted whenever a Rule was added.",
+            "params": {
+                "rule": "$ref:Rule"
+            }
+        },
+        "Rules.RuleRemoved": {
+            "description": "Emitted whenever a Rule was removed.",
+            "params": {
+                "ruleId": "Uuid"
             }
         }
     },

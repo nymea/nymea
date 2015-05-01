@@ -88,6 +88,21 @@ RulesHandler::RulesHandler(QObject *parent) :
     setParams("DisableRule", params);
     returns.insert("ruleError", JsonTypes::ruleErrorRef());
     setReturns("DisableRule", returns);
+
+    // Notifications
+    params.clear(); returns.clear();
+    setDescription("RuleRemoved", "Emitted whenever a Rule was removed.");
+    params.insert("ruleId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    setParams("RuleRemoved", params);
+
+    params.clear(); returns.clear();
+    setDescription("RuleAdded", "Emitted whenever a Rule was added.");
+    params.insert("rule", JsonTypes::ruleRef());
+    setParams("RuleAdded", params);
+
+    connect(GuhCore::instance(), &GuhCore::ruleAdded, this, &RulesHandler::ruleAddedNotification);
+    connect(GuhCore::instance(), &GuhCore::ruleRemoved, this, &RulesHandler::ruleRemovedNotification);
+
 }
 
 QString RulesHandler::name() const
@@ -330,4 +345,20 @@ bool RulesHandler::checkEventDescriptors(const QList<EventDescriptor> eventDescr
         }
     }
     return false;
+}
+
+void RulesHandler::ruleRemovedNotification(const RuleId &ruleId)
+{
+    QVariantMap params;
+    params.insert("ruleId", ruleId);
+
+    emit RuleRemoved(params);
+}
+
+void RulesHandler::ruleAddedNotification(const Rule &rule)
+{
+    QVariantMap params;
+    params.insert("rule", JsonTypes::packRule(rule));
+
+    emit RuleRemoved(params);
 }

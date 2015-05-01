@@ -328,7 +328,7 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
     Rule rule = Rule(ruleId, name, eventDescriptorList, stateEvaluator, actions, exitActions);
     rule.setEnabled(enabled);
     appendRule(rule);
-    emit ruleAdded(rule.id());
+    emit ruleAdded(rule);
 
     // Save Events / EventDescriptors
     QSettings settings(m_settingsFile);

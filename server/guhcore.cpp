@@ -362,10 +362,12 @@ GuhCore::GuhCore(QObject *parent) :
     connect(m_deviceManager, &DeviceManager::deviceAdded, this, &GuhCore::deviceAdded);
     connect(m_deviceManager, &DeviceManager::deviceRemoved, this, &GuhCore::deviceRemoved);
     connect(m_deviceManager, &DeviceManager::actionExecutionFinished, this, &GuhCore::actionExecutionFinished);
-
     connect(m_deviceManager, &DeviceManager::devicesDiscovered, this, &GuhCore::devicesDiscovered);
     connect(m_deviceManager, &DeviceManager::deviceSetupFinished, this, &GuhCore::deviceSetupFinished);
     connect(m_deviceManager, &DeviceManager::pairingFinished, this, &GuhCore::pairingFinished);
+
+    connect(m_ruleEngine, &RuleEngine::ruleAdded, this, &GuhCore::ruleAdded);
+    connect(m_ruleEngine, &RuleEngine::ruleRemoved, this, &GuhCore::ruleRemoved);
 
     m_logger->logSystemEvent(true);
 }

@@ -64,9 +64,15 @@ public:
 
 signals:
     void StateChanged(const QVariantMap &params);
+    void DeviceRemoved(const QVariantMap &params);
+    void DeviceAdded(const QVariantMap &params);
 
 private slots:
     void deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
+
+    void deviceRemovedNotification(const QUuid &deviceId);
+
+    void deviceAddedNotification(Device *device);
 
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
 

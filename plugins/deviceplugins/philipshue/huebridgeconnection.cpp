@@ -1,5 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2013 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *

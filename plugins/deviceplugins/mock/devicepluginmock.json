@@ -32,7 +32,8 @@
                         {
                             "name": "broken",
                             "type": "bool",
-                            "defaultValue": false
+                            "defaultValue": false,
+                            "editable": false
                         }
                     ],
                     "stateTypes": [

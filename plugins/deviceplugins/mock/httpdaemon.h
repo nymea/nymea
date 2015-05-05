@@ -41,6 +41,8 @@ public:
 
     void actionExecuted(const ActionTypeId &actionTypeId);
 
+    void updateDevice(Device *device);
+
 signals:
     void setState(const StateTypeId &stateTypeId, const QVariant &value);
     void triggerEvent(const EventTypeId &eventTypeId);

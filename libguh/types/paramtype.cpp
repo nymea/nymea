@@ -37,7 +37,8 @@ ParamType::ParamType(const QString &name, const QVariant::Type type, const QVari
     m_name(name),
     m_type(type),
     m_defaultValue(defaultValue),
-    m_inputType(Types::InputTypeNone)
+    m_inputType(Types::InputTypeNone),
+    m_editable(true)
 {
 }
 
@@ -138,7 +139,19 @@ void ParamType::setAllowedValues(const QList<QVariant> allowedValues)
     m_allowedValues = allowedValues;
 }
 
-/*! Writes the name, type defaultValue, min and max value of the given \a paramType to \a dbg. */
+/*! Returns true if this ParamType is editable by the user. By default each ParamType is editable. */
+bool ParamType::editable() const
+{
+    return m_editable;
+}
+
+/*! Sets this ParamType \a editable. By default each ParamType is editable. */
+void ParamType::setEditable(const bool &editable)
+{
+    m_editable = editable;
+}
+
+/*! Writes the name, type defaultValue, min value, max value and editable of the given \a paramType to \a dbg. */
 QDebug operator<<(QDebug dbg, const ParamType &paramType)
 {
     dbg.nospace() << "ParamType(Name: " << paramType.name()
@@ -146,6 +159,8 @@ QDebug operator<<(QDebug dbg, const ParamType &paramType)
                   << ", Default:" << paramType.defaultValue()
                   << ", Min:" << paramType.minValue()
                   << ", Max:" << paramType.maxValue()
+                  << ", Allowed values:" << paramType.allowedValues()
+                  << ", Editable:" << paramType.editable()
                   << ")";
 
     return dbg.space();

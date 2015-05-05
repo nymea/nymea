@@ -70,6 +70,9 @@ private slots:
     void getStateValues_data();
     void getStateValues();
 
+    void editDevices_data();
+    void editDevices();
+
     // Keep this the last one! It'll remove the configured mock device
     void removeDevice_data();
     void removeDevice();
@@ -512,6 +515,122 @@ void TestDevices::getStateValues()
         QCOMPARE(values.count(), 2); // Mock device has two states...
     }
 }
+
+void TestDevices::editDevices_data()
+{
+    QVariantList asyncChangeDeviceParams;
+    QVariantMap asyncParamDifferent;
+    asyncParamDifferent.insert("name", "async");
+    asyncParamDifferent.insert("value", true);
+    asyncChangeDeviceParams.append(asyncParamDifferent);
+
+    QVariantList httpportChangeDeviceParams;
+    QVariantMap httpportParamDifferent;
+    httpportParamDifferent.insert("name", "httpport");
+    httpportParamDifferent.insert("value", 666);
+    httpportChangeDeviceParams.append(httpportParamDifferent);
+
+    QVariantList brokenChangedDeviceParams;
+    QVariantMap brokenParamDifferent;
+    brokenParamDifferent.insert("name", "broken");
+    brokenParamDifferent.insert("value", true);
+    brokenChangedDeviceParams.append(brokenParamDifferent);
+
+    QVariantList asyncAndPortChangeDeviceParams;
+    asyncAndPortChangeDeviceParams.append(asyncParamDifferent);
+    asyncAndPortChangeDeviceParams.append(httpportParamDifferent);
+
+    QVariantList changeAllDeviceParams;
+    changeAllDeviceParams.append(asyncParamDifferent);
+    changeAllDeviceParams.append(httpportParamDifferent);
+    changeAllDeviceParams.append(brokenParamDifferent);
+
+
+    QTest::addColumn<QVariantList>("newDeviceParams");
+    QTest::addColumn<DeviceManager::DeviceError>("deviceError");
+
+    QTest::newRow("valid - change async param") << asyncChangeDeviceParams << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("valid - change httpport param") << httpportChangeDeviceParams << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("valid - change httpport and async param") << asyncAndPortChangeDeviceParams << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("invalid - change broken param (not editable)") << brokenChangedDeviceParams << DeviceManager::DeviceErrorParameterNotEditable;
+    QTest::newRow("invalid - change all params (also the not editable one)") << changeAllDeviceParams << DeviceManager::DeviceErrorParameterNotEditable;
+}
+
+void TestDevices::editDevices()
+{
+    QFETCH(QVariantList, newDeviceParams);
+    QFETCH(DeviceManager::DeviceError, deviceError);
+
+    // add device
+    QVariantMap params;
+    params.insert("deviceClassId", mockDeviceClassId);
+    QVariantList deviceParams;
+    QVariantMap asyncParam;
+    asyncParam.insert("name", "async");
+    asyncParam.insert("value", false);
+    deviceParams.append(asyncParam);
+    QVariantMap brokenParam;
+    brokenParam.insert("name", "broken");
+    brokenParam.insert("value", false);
+    deviceParams.append(brokenParam);
+    QVariantMap httpportParam;
+    httpportParam.insert("name", "httpport");
+    httpportParam.insert("value", 8890);
+    deviceParams.append(httpportParam);
+    params.insert("deviceParams", deviceParams);
+    QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
+    verifyDeviceError(response);
+
+    // now edit the added device
+    DeviceId deviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
+    QVERIFY(!deviceId.isNull());
+
+    QVariantMap editParams;
+    editParams.insert("deviceId", deviceId);
+    editParams.insert("deviceParams", newDeviceParams);
+
+    response.clear();
+    response = injectAndWait("Devices.EditDevice", editParams);
+    verifyDeviceError(response, deviceError);
+
+    if (deviceError != DeviceManager::DeviceErrorNoError) {
+        params.clear();
+        params.insert("deviceId", deviceId);
+        response.clear();
+        response = injectAndWait("Devices.RemoveConfiguredDevice", params);
+        verifyDeviceError(response);
+        return;
+    }
+
+    // Restart the core instance to check if settings are loaded at startup
+    restartServer();
+
+    response = injectAndWait("Devices.GetConfiguredDevices", QVariantMap());
+
+    bool found = false;
+    foreach (const QVariant device, response.toMap().value("params").toMap().value("devices").toList()) {
+        if (DeviceId(device.toMap().value("id").toString()) == deviceId) {
+            qDebug() << "found added device" << device.toMap().value("params");
+
+            foreach (QVariant newParam, newDeviceParams) {
+                foreach (QVariant deviceParam, device.toMap().value("params").toList()) {
+                    if (newParam.toMap().value("name").toString() == deviceParam.toMap().value("name").toString()) {
+                        QCOMPARE(newParam.toMap().value("value"), deviceParam.toMap().value("value"));
+                    }
+                }
+            }
+            found = true;
+            break;
+        }
+    }
+    QVERIFY2(found, "Device missing in config!");
+
+    params.clear();
+    params.insert("deviceId", deviceId);
+    response = injectAndWait("Devices.RemoveConfiguredDevice", params);
+    verifyDeviceError(response);
+}
+
 
 void TestDevices::removeDevice_data()
 {

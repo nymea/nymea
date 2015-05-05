@@ -80,6 +80,26 @@ DeviceManager::DeviceSetupStatus DevicePluginMock::setupDevice(Device *device)
     return DeviceManager::DeviceSetupStatusSuccess;
 }
 
+DeviceManager::DeviceSetupStatus DevicePluginMock::editDevice(Device *device)
+{
+    qDebug() << "Mockdevice edit params to" << device->paramValue("httpport").toInt() << device->paramValue("async").toBool() << device->paramValue("broken").toBool();
+
+    if (device->paramValue("broken").toBool()) {
+        qWarning() << "This device is intentionally broken.";
+        return DeviceManager::DeviceSetupStatusFailure;
+    }
+
+    HttpDaemon *daemon = m_daemons.take(device);
+    daemon->updateDevice(device);
+
+    if (device->paramValue("async").toBool()) {
+        m_asyncSetupDevices.append(device);
+        QTimer::singleShot(1000, this, SLOT(emitDeviceSetupFinished()));
+        return DeviceManager::DeviceSetupStatusAsync;
+    }
+    return DeviceManager::DeviceSetupStatusSuccess;
+}
+
 void DevicePluginMock::deviceRemoved(Device *device)
 {
     delete m_daemons.take(device);

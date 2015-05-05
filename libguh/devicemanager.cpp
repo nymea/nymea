@@ -325,6 +325,77 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassI
     return addConfiguredDeviceInternal(deviceClassId, descriptor.params(), deviceId);
 }
 
+DeviceManager::DeviceError DeviceManager::editDevice(const DeviceId &deviceId, const ParamList &params)
+{
+    qDebug() << "EDIT DEVICE!!!!";
+
+    Device *device = findConfiguredDevice(deviceId);
+    if (!device) {
+        return DeviceErrorDeviceNotFound;
+    }
+
+    ParamList effectiveParams = params;
+    DeviceClass deviceClass = findDeviceClass(device->deviceClassId());
+    if (deviceClass.id().isNull()) {
+        return DeviceErrorDeviceClassNotFound;
+    }
+
+    DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
+    if (!plugin) {
+        return DeviceErrorPluginNotFound;
+    }
+
+    // check if one of the given params is not editable
+    foreach (const ParamType &paramType, deviceClass.paramTypes()) {
+        foreach (const Param &param, params) {
+            if (paramType.name() == param.name()) {
+                if (!paramType.editable())
+                    return DeviceErrorParameterNotEditable;
+            }
+        }
+    }
+
+    DeviceError result = verifyParams(deviceClass.paramTypes(), effectiveParams, false);
+    if (result != DeviceErrorNoError) {
+        return result;
+    }
+
+    device->setSetupComplete(false);
+
+    // set new params
+    foreach (const Param &param, effectiveParams) {
+        device->setParamValue(param.name(), param.value());
+    }
+
+    DeviceSetupStatus status = plugin->editDevice(device);
+    switch (status) {
+    case DeviceSetupStatusFailure:
+        qWarning() << "Device edit failed. Not saving changes of device paramters.";
+        return DeviceErrorSetupFailed;
+    case DeviceSetupStatusAsync:
+        qDebug() << "Device edit async. Waiting for complete...";
+        m_asyncDeviceEdit.append(device);
+        return DeviceErrorAsync;
+    case DeviceSetupStatusSuccess:
+        qDebug() << "Device params edit complete.";
+        break;
+    }
+
+    storeConfiguredDevices();
+    postSetupDevice(device);
+    emit deviceParamsChanged(device);
+
+    return DeviceErrorNoError;
+}
+
+DeviceManager::DeviceError DeviceManager::editDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId)
+{
+    Q_UNUSED(deviceId)
+    Q_UNUSED(deviceDescriptorId)
+
+    return DeviceErrorNoError;
+}
+
 /*! Initiates a pairing with a \l{DeviceClass}{Device} with the given \a pairingTransactionId, \a deviceClassId and \a params.
  *  Returns \l{DeviceManager::DeviceError}{DeviceError} to inform about the result. */
 DeviceManager::DeviceError DeviceManager::pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params)
@@ -792,6 +863,16 @@ void DeviceManager::slotDeviceSetupFinished(Device *device, DeviceManager::Devic
         m_pluginTimerUsers.append(device);
     }
 
+    // if this is a async device edit
+    if (m_asyncDeviceEdit.contains(device)) {
+        m_asyncDeviceEdit.removeAll(device);
+        storeConfiguredDevices();
+        device->setupCompleted();
+        qDebug() << "emit Device edit finished!!!";
+        emit deviceEditFinished(device, DeviceManager::DeviceErrorNoError);
+        return;
+    }
+
     connect(device, SIGNAL(stateValueChanged(QUuid,QVariant)), this, SLOT(slotDeviceStateValueChanged(QUuid,QVariant)));
 
     device->setupCompleted();
@@ -879,6 +960,7 @@ void DeviceManager::autoDevicesAppeared(const DeviceClassId &deviceClassId, cons
     if (!deviceClass.isValid()) {
         return;
     }
+
     DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
     if (!plugin) {
         return;

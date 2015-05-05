@@ -74,11 +74,11 @@ public:
         DeviceErrorSetupMethodNotSupported,
         DeviceErrorHardwareNotAvailable,
         DeviceErrorHardwareFailure,
-        // TODO: Bump API version
-        //DeviceErrorAuthentificationFailure,
+        DeviceErrorAuthentificationFailure,
         DeviceErrorAsync,
         DeviceErrorDeviceInUse,
         DeviceErrorPairingTransactionIdNotFound,
+        DeviceErrorParameterNotEditable
     };
 
     enum DeviceSetupStatus {
@@ -101,6 +101,10 @@ public:
     QList<Device*> configuredDevices() const;
     DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId id = DeviceId::createDeviceId());
     DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &id = DeviceId::createDeviceId());
+
+    DeviceError editDevice(const DeviceId &deviceId, const ParamList &params);
+    DeviceError editDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId);
+    
     DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params);
     DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId);
     DeviceError confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &secret = QString());
@@ -116,8 +120,10 @@ signals:
     void deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
     void deviceRemoved(const DeviceId &deviceId);
     void deviceAdded(Device *device);
+    void deviceParamsChanged(Device *device);
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &devices);
     void deviceSetupFinished(Device *device, DeviceError status);
+    void deviceEditFinished(Device *device, DeviceError status);
     void pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceError status, const DeviceId &deviceId = DeviceId());
     void actionExecutionFinished(const ActionId &actionId, DeviceError status);
 
@@ -176,6 +182,8 @@ private:
 
     QHash<QUuid, QPair<DeviceClassId, ParamList> > m_pairingsJustAdd;
     QHash<QUuid, QPair<DeviceClassId, DeviceDescriptorId> > m_pairingsDiscovery;
+
+    QList<Device*> m_asyncDeviceEdit;
 
     QList<DevicePlugin*> m_discoveringPlugins;
 

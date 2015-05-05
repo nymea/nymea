@@ -215,3 +215,8 @@ bool Device::setupComplete() const
 {
     return m_setupComplete;
 }
+
+void Device::setSetupComplete(const bool &complete)
+{
+    m_setupComplete = complete;
+}

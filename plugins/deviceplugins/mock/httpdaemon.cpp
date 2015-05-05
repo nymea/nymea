@@ -60,6 +60,14 @@ void HttpDaemon::actionExecuted(const ActionTypeId &actionTypeId)
     m_actionList.append(qMakePair<ActionTypeId, QDateTime>(actionTypeId, QDateTime::currentDateTime()));
 }
 
+void HttpDaemon::updateDevice(Device *device)
+{
+    m_device = device;
+    close();
+    listen(QHostAddress::Any, device->paramValue("httpport").toInt());
+    qDebug() << "Mockdevice updated and listening now on" << device->paramValue("httpport").toInt();
+}
+
 void HttpDaemon::readClient()
 {
     if (disabled)

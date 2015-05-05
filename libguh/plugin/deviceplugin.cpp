@@ -333,6 +333,12 @@ DeviceManager::DeviceSetupStatus DevicePlugin::setupDevice(Device *device)
     return DeviceManager::DeviceSetupStatusSuccess;
 }
 
+DeviceManager::DeviceSetupStatus DevicePlugin::editDevice(Device *device)
+{
+    Q_UNUSED(device)
+    return DeviceManager::DeviceSetupStatusSuccess;
+}
+
 /*! This will be called when a new \a device was added successfully and the device setup is finished.*/
 void DevicePlugin::postSetupDevice(Device *device)
 {
@@ -412,6 +418,11 @@ QList<ParamType> DevicePlugin::parseParamTypes(const QJsonArray &array) const
             } else if (inputTypeString == "MacAddress") {
                 paramType.setInputType(Types::InputTypeMacAddress);
             }
+        }
+
+        // set editable if given (default true)
+        if (pt.contains("editable")) {
+            paramType.setEditable(pt.value("editable").toBool());
         }
         paramType.setAllowedValues(allowedValues);
         paramType.setLimits(pt.value("minValue").toVariant(), pt.value("maxValue").toVariant());

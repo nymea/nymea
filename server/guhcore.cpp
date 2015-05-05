@@ -266,6 +266,11 @@ QList<Device *> GuhCore::findConfiguredDevices(const DeviceClassId &deviceClassI
     return m_deviceManager->findConfiguredDevices(deviceClassId);
 }
 
+DeviceManager::DeviceError GuhCore::editDevice(const DeviceId &deviceId, const ParamList &params)
+{
+    return m_deviceManager->editDevice(deviceId, params);
+}
+
 /*! Calls the metheod RuleEngine::rule().
  *  \sa RuleEngine, */
 QList<Rule> GuhCore::rules() const
@@ -367,6 +372,7 @@ GuhCore::GuhCore(QObject *parent) :
     connect(m_deviceManager, &DeviceManager::actionExecutionFinished, this, &GuhCore::actionExecutionFinished);
     connect(m_deviceManager, &DeviceManager::devicesDiscovered, this, &GuhCore::devicesDiscovered);
     connect(m_deviceManager, &DeviceManager::deviceSetupFinished, this, &GuhCore::deviceSetupFinished);
+    connect(m_deviceManager, &DeviceManager::deviceEditFinished, this, &GuhCore::deviceEditFinished);
     connect(m_deviceManager, &DeviceManager::pairingFinished, this, &GuhCore::pairingFinished);
 
     connect(m_ruleEngine, &RuleEngine::ruleAdded, this, &GuhCore::ruleAdded);

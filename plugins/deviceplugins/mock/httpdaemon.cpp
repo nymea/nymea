@@ -62,10 +62,13 @@ void HttpDaemon::actionExecuted(const ActionTypeId &actionTypeId)
 
 void HttpDaemon::updateDevice(Device *device)
 {
+    if (device->paramValue("httpport").toInt() != m_device->paramValue("httpport").toInt()) {
+        close();
+        listen(QHostAddress::Any, device->paramValue("httpport").toInt());
+        qDebug() << "Mockdevice httpport updated and listening now on" << device->paramValue("httpport").toInt();
+    }
+
     m_device = device;
-    close();
-    listen(QHostAddress::Any, device->paramValue("httpport").toInt());
-    qDebug() << "Mockdevice updated and listening now on" << device->paramValue("httpport").toInt();
 }
 
 void HttpDaemon::readClient()

@@ -139,13 +139,13 @@ void ParamType::setAllowedValues(const QList<QVariant> allowedValues)
     m_allowedValues = allowedValues;
 }
 
-/*! Returns true if this ParamType is editable by the user. By default each ParamType is editable. */
+/*! Returns true if this ParamType is editable by the user. By default a ParamType is always editable. */
 bool ParamType::editable() const
 {
     return m_editable;
 }
 
-/*! Sets this ParamType \a editable. By default each ParamType is editable. */
+/*! Sets this ParamType \a editable. By default a ParamType is always editable. */
 void ParamType::setEditable(const bool &editable)
 {
     m_editable = editable;

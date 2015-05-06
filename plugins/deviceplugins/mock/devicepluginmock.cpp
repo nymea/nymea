@@ -54,7 +54,11 @@ DeviceManager::DeviceError DevicePluginMock::discoverDevices(const DeviceClassId
 
 DeviceManager::DeviceSetupStatus DevicePluginMock::setupDevice(Device *device)
 {
-    qDebug() << "Mockdevice created returning true" << device->paramValue("httpport").toInt() << device->paramValue("async").toBool() << device->paramValue("broken").toBool();
+    qDebug() << "Mockdevice created returning true"
+             << device->paramValue("name").toString()
+             << device->paramValue("httpport").toInt()
+             << device->paramValue("async").toBool()
+             << device->paramValue("broken").toBool();
 
     if (device->paramValue("broken").toBool()) {
         qWarning() << "This device is intentionally broken.";
@@ -82,7 +86,11 @@ DeviceManager::DeviceSetupStatus DevicePluginMock::setupDevice(Device *device)
 
 DeviceManager::DeviceSetupStatus DevicePluginMock::editDevice(Device *device)
 {
-    qDebug() << "Mockdevice edit params to" << device->paramValue("httpport").toInt() << device->paramValue("async").toBool() << device->paramValue("broken").toBool();
+    qDebug() << "Mockdevice edit params to"
+             << device->paramValue("name").toString()
+             << device->paramValue("httpport").toInt()
+             << device->paramValue("async").toBool()
+             << device->paramValue("broken").toBool();
 
     if (device->paramValue("broken").toBool()) {
         qWarning() << "This device is intentionally broken.";
@@ -192,18 +200,22 @@ void DevicePluginMock::emitDevicesDiscovered()
     QList<DeviceDescriptor> deviceDescriptors;
 
     if (m_discoveredDeviceCount > 0) {
-        DeviceDescriptor d1(mockDeviceClassId, "Mock Device (Discovered)");
+        DeviceDescriptor d1(mockDeviceClassId, "Mock Device 1 (Discovered)", "55555");
         ParamList params;
+        Param name("name", "Discovered Mock Device 1");
         Param httpParam("httpport", "55555");
+        params.append(name);
         params.append(httpParam);
         d1.setParams(params);
         deviceDescriptors.append(d1);
     }
 
     if (m_discoveredDeviceCount > 1) {
-        DeviceDescriptor d2(mockDeviceClassId, "Mock Device (Discovered)");
+        DeviceDescriptor d2(mockDeviceClassId, "Mock Device 2 (Discovered)", "55556");
         ParamList params;
+        Param name("name", "Discovered Mock Device 2");
         Param httpParam("httpport", "55556");
+        params.append(name);
         params.append(httpParam);
         d2.setParams(params);
         deviceDescriptors.append(d2);

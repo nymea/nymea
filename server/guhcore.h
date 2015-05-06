@@ -68,6 +68,7 @@ public:
     Device *findConfiguredDevice(const DeviceId &deviceId) const;
     QList<Device*> findConfiguredDevices(const DeviceClassId &deviceClassId) const;
     DeviceManager::DeviceError editDevice(const DeviceId &deviceId, const ParamList &params);
+    DeviceManager::DeviceError editDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId);
     DeviceManager::DeviceError removeConfiguredDevice(const DeviceId &deviceId, const QHash<RuleId, RuleEngine::RemovePolicy> &removePolicyList);
 
     DeviceManager::DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId);
@@ -92,6 +93,7 @@ signals:
     void deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
     void deviceRemoved(const DeviceId &deviceId);
     void deviceAdded(Device *device);
+    void deviceParamsChanged(Device *device);
     void actionExecuted(const ActionId &id, DeviceManager::DeviceError status);
 
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);

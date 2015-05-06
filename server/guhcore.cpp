@@ -271,6 +271,11 @@ DeviceManager::DeviceError GuhCore::editDevice(const DeviceId &deviceId, const P
     return m_deviceManager->editDevice(deviceId, params);
 }
 
+DeviceManager::DeviceError GuhCore::editDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId)
+{
+    return m_deviceManager->editDevice(deviceId, deviceDescriptorId);
+}
+
 /*! Calls the metheod RuleEngine::rule().
  *  \sa RuleEngine, */
 QList<Rule> GuhCore::rules() const

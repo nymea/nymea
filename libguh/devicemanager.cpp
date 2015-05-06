@@ -857,7 +857,6 @@ void DeviceManager::slotDeviceSetupFinished(Device *device, DeviceManager::Devic
                 qWarning() << QString("Error in device setup after edit params. Device %1 (%2) would not be functional.").arg(device->name()).arg(device->id().toString());
 
                 storeConfiguredDevices();
-                device->setupCompleted();
 
                 // TODO: recover old params.??
 

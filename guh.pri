@@ -1,6 +1,10 @@
 # Parse and export GUH_VERSION_STRING
 GUH_VERSION_STRING=$$system('dpkg-parsechangelog | sed -n -e "s/^Version: //p"')
-DEFINES += GUH_VERSION_STRING=\\\"$${GUH_VERSION_STRING}\\\"
+
+# define JSON protocol version
+JSON_PROTOCOL_VERSION=21
+
+DEFINES += GUH_VERSION_STRING=\\\"$${GUH_VERSION_STRING}\\\" JSON_PROTOCOL_VERSION=21
 
 QT+= network
 

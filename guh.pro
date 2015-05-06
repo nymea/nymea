@@ -22,7 +22,7 @@ test.commands = LD_LIBRARY_PATH=$$top_builddir/libguh make check
 
 QMAKE_EXTRA_TARGETS += licensecheck doc test
 
-message("Building guh version $${GUH_VERSION_STRING}")
+message("Building guh version $${GUH_VERSION_STRING} (API version $${JSON_PROTOCOL_VERSION})")
 
 coverage {
     message("Building coverage.")

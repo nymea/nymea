@@ -73,6 +73,9 @@ private slots:
     void editDevices_data();
     void editDevices();
 
+    void editByDiscovery_data();
+    void editByDiscovery();
+
     // Keep this the last one! It'll remove the configured mock device
     void removeDevice_data();
     void removeDevice();
@@ -288,6 +291,10 @@ void TestDevices::storedDevices()
     QVariantMap params;
     params.insert("deviceClassId", mockDeviceClassId);
     QVariantList deviceParams;
+    QVariantMap nameParam;
+    nameParam.insert("name", "name");
+    nameParam.insert("value", "Blub Blub device");
+    deviceParams.append(nameParam);
     QVariantMap asyncParam;
     asyncParam.insert("name", "async");
     asyncParam.insert("value", false);
@@ -301,6 +308,7 @@ void TestDevices::storedDevices()
     httpportParam.insert("value", 8888);
     deviceParams.append(httpportParam);
     params.insert("deviceParams", deviceParams);
+
     QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
     verifyDeviceError(response);
     DeviceId addedDeviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
@@ -314,18 +322,15 @@ void TestDevices::storedDevices()
     bool found = false;
     foreach (const QVariant device, response.toMap().value("params").toMap().value("devices").toList()) {
         if (DeviceId(device.toMap().value("id").toString()) == addedDeviceId) {
-//            foreach (const QVariant &paramVariant, device.toMap().value("params").toList()) {
-//                if ()
-//            }
-
             qDebug() << "found added device" << device.toMap().value("params");
             qDebug() << "expected deviceParams:" << deviceParams;
-            QCOMPARE(device.toMap().value("params").toList(), deviceParams);
+            verifyParams(deviceParams, device.toMap().value("params").toList());
             found = true;
             break;
         }
     }
     QVERIFY2(found, "Device missing in config!");
+
 
     params.clear();
     params.insert("deviceId", addedDeviceId);
@@ -536,28 +541,39 @@ void TestDevices::editDevices_data()
     brokenParamDifferent.insert("value", true);
     brokenChangedDeviceParams.append(brokenParamDifferent);
 
+    QVariantList nameChangedDeviceParams;
+    QVariantMap nameParam;
+    nameParam.insert("name", "name");
+    nameParam.insert("value", "Awesome Mockdevice");
+    nameChangedDeviceParams.append(nameParam);
+
+
     QVariantList asyncAndPortChangeDeviceParams;
     asyncAndPortChangeDeviceParams.append(asyncParamDifferent);
     asyncAndPortChangeDeviceParams.append(httpportParamDifferent);
 
-    QVariantList changeAllDeviceParams;
-    changeAllDeviceParams.append(asyncParamDifferent);
-    changeAllDeviceParams.append(httpportParamDifferent);
-    changeAllDeviceParams.append(brokenParamDifferent);
+
+    QVariantList changeAllEditableDeviceParams;
+    changeAllEditableDeviceParams.append(nameParam);
+    changeAllEditableDeviceParams.append(asyncParamDifferent);
+    changeAllEditableDeviceParams.append(httpportParamDifferent);
+    //changeAllEditableDeviceParams.append(brokenParamDifferent);
 
 
+    QTest::addColumn<bool>("broken");
     QTest::addColumn<QVariantList>("newDeviceParams");
     QTest::addColumn<DeviceManager::DeviceError>("deviceError");
 
-    QTest::newRow("valid - change async param") << asyncChangeDeviceParams << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("valid - change httpport param") << httpportChangeDeviceParams << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("valid - change httpport and async param") << asyncAndPortChangeDeviceParams << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("invalid - change broken param (not editable)") << brokenChangedDeviceParams << DeviceManager::DeviceErrorParameterNotEditable;
-    QTest::newRow("invalid - change all params (also the not editable one)") << changeAllDeviceParams << DeviceManager::DeviceErrorParameterNotEditable;
+    QTest::newRow("valid - change async param") << false << asyncChangeDeviceParams << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("valid - change httpport param") << false <<  httpportChangeDeviceParams << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("valid - change httpport and async param") << false << asyncAndPortChangeDeviceParams << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("invalid - change name param (not editable)") << false << nameChangedDeviceParams << DeviceManager::DeviceErrorParameterNotEditable;
+    QTest::newRow("invalid - change all params (except broken)") << false << changeAllEditableDeviceParams << DeviceManager::DeviceErrorParameterNotEditable;
 }
 
 void TestDevices::editDevices()
 {
+    QFETCH(bool, broken);
     QFETCH(QVariantList, newDeviceParams);
     QFETCH(DeviceManager::DeviceError, deviceError);
 
@@ -565,13 +581,17 @@ void TestDevices::editDevices()
     QVariantMap params;
     params.insert("deviceClassId", mockDeviceClassId);
     QVariantList deviceParams;
+    QVariantMap nameParam;
+    nameParam.insert("name", "name");
+    nameParam.insert("value", "Test edit mockdevice");
+    deviceParams.append(nameParam);
     QVariantMap asyncParam;
     asyncParam.insert("name", "async");
     asyncParam.insert("value", false);
     deviceParams.append(asyncParam);
     QVariantMap brokenParam;
     brokenParam.insert("name", "broken");
-    brokenParam.insert("value", false);
+    brokenParam.insert("value", broken);
     deviceParams.append(brokenParam);
     QVariantMap httpportParam;
     httpportParam.insert("name", "httpport");
@@ -581,10 +601,13 @@ void TestDevices::editDevices()
     QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
     verifyDeviceError(response);
 
-    // now edit the added device
     DeviceId deviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
     QVERIFY(!deviceId.isNull());
 
+    // now EDIT the added device
+    response = injectAndWait("Devices.GetConfiguredDevices", QVariantMap());
+
+    // edit the added and verified device
     QVariantMap editParams;
     editParams.insert("deviceId", deviceId);
     editParams.insert("deviceParams", newDeviceParams);
@@ -593,40 +616,220 @@ void TestDevices::editDevices()
     response = injectAndWait("Devices.EditDevice", editParams);
     verifyDeviceError(response, deviceError);
 
-    if (deviceError != DeviceManager::DeviceErrorNoError) {
+    // if the edit should have been successfull
+    if (deviceError == DeviceManager::DeviceErrorNoError) {
+
+        response = injectAndWait("Devices.GetConfiguredDevices", QVariantMap());
+
+        bool found = false;
+        foreach (const QVariant device, response.toMap().value("params").toMap().value("devices").toList()) {
+            if (DeviceId(device.toMap().value("id").toString()) == deviceId) {
+                qDebug() << "found added device" << device.toMap().value("params");
+                qDebug() << "expected deviceParams:" << newDeviceParams;
+                // check if the edit was ok
+                verifyParams(newDeviceParams, device.toMap().value("params").toList(), false);
+                found = true;
+                break;
+            }
+        }
+        QVERIFY2(found, "Device missing in config!");
+
+        // Restart the core instance to check if settings are loaded at startup
+        restartServer();
+
+        response = injectAndWait("Devices.GetConfiguredDevices", QVariantMap());
+
+        found = false;
+        foreach (const QVariant device, response.toMap().value("params").toMap().value("devices").toList()) {
+            if (DeviceId(device.toMap().value("id").toString()) == deviceId) {
+                qDebug() << "found added device" << device.toMap().value("params");
+                qDebug() << "expected deviceParams:" << newDeviceParams;
+                // check if the edit was ok
+                verifyParams(newDeviceParams, device.toMap().value("params").toList(), false);
+                found = true;
+                break;
+            }
+        }
+        QVERIFY2(found, "Device missing in config!");
+
+        // delete it
         params.clear();
         params.insert("deviceId", deviceId);
         response.clear();
         response = injectAndWait("Devices.RemoveConfiguredDevice", params);
         verifyDeviceError(response);
         return;
+    } else {
+        // The edit was not ok, check if the old params are still there
+        response = injectAndWait("Devices.GetConfiguredDevices", QVariantMap());
+
+        bool found = false;
+        foreach (const QVariant device, response.toMap().value("params").toMap().value("devices").toList()) {
+            if (DeviceId(device.toMap().value("id").toString()) == deviceId) {
+                qDebug() << "found added device" << device.toMap().value("params");
+                qDebug() << "expected deviceParams:" << newDeviceParams;
+                // check if the params are unchanged
+                verifyParams(deviceParams, device.toMap().value("params").toList());
+                found = true;
+                break;
+            }
+        }
+        QVERIFY2(found, "Device missing in config!");
+
+        // Restart the core instance to check if settings are loaded at startup
+        restartServer();
+
+        response = injectAndWait("Devices.GetConfiguredDevices", QVariantMap());
+
+        found = false;
+        foreach (const QVariant device, response.toMap().value("params").toMap().value("devices").toList()) {
+            if (DeviceId(device.toMap().value("id").toString()) == deviceId) {
+                qDebug() << "found added device" << device.toMap().value("params");
+                qDebug() << "expected deviceParams:" << newDeviceParams;
+                // check if after the reboot the settings are unchanged
+                verifyParams(deviceParams, device.toMap().value("params").toList());
+                found = true;
+                break;
+            }
+        }
+        QVERIFY2(found, "Device missing in config!");
     }
 
-    // Restart the core instance to check if settings are loaded at startup
-    restartServer();
+    // delete it
+    params.clear();
+    params.insert("deviceId", deviceId);
+    response = injectAndWait("Devices.RemoveConfiguredDevice", params);
+    verifyDeviceError(response);
+}
 
+
+void TestDevices::editByDiscovery_data()
+{
+    QTest::addColumn<DeviceClassId>("deviceClassId");
+    QTest::addColumn<int>("resultCount");
+    QTest::addColumn<DeviceManager::DeviceError>("error");
+    QTest::addColumn<QVariantList>("discoveryParams");
+
+    QVariantList discoveryParams;
+    QVariantMap resultCountParam;
+    resultCountParam.insert("name", "resultCount");
+    resultCountParam.insert("value", 2);
+    discoveryParams.append(resultCountParam);
+
+    QTest::newRow("discover 2 devices with params") << mockDeviceClassId << 2 << DeviceManager::DeviceErrorNoError << discoveryParams;
+}
+
+void TestDevices::editByDiscovery()
+{
+    QFETCH(DeviceClassId, deviceClassId);
+    QFETCH(int, resultCount);
+    QFETCH(DeviceManager::DeviceError, error);
+    QFETCH(QVariantList, discoveryParams);
+
+    QVariantMap params;
+    params.insert("deviceClassId", deviceClassId);
+    params.insert("discoveryParams", discoveryParams);
+    QVariant response = injectAndWait("Devices.GetDiscoveredDevices", params);
+
+    verifyDeviceError(response);
+    if (error == DeviceManager::DeviceErrorNoError) {
+        QCOMPARE(response.toMap().value("params").toMap().value("deviceDescriptors").toList().count(), resultCount);
+    }
+
+    // add Discovered Device 1 port 55555
+    QVariantList deviceDescriptors = response.toMap().value("params").toMap().value("deviceDescriptors").toList();
+
+    DeviceDescriptorId descriptorId1;
+    foreach (const QVariant &descriptor, deviceDescriptors) {
+        // find the device with port 55555
+        if (descriptor.toMap().value("description").toString() == "55555") {
+            descriptorId1 = DeviceDescriptorId(descriptor.toMap().value("id").toString());
+            qDebug() << descriptorId1.toString();
+            break;
+        }
+    }
+
+    qDebug() << "adding descriptorId 1" << descriptorId1;
+
+    QVERIFY(!descriptorId1.isNull());
+
+    params.clear();
+    response.clear();
+    params.insert("deviceClassId", deviceClassId);
+    params.insert("deviceDescriptorId", descriptorId1);
+    response = injectAndWait("Devices.AddConfiguredDevice", params);
+
+    DeviceId deviceId(response.toMap().value("params").toMap().value("deviceId").toString());
+    QVERIFY(!deviceId.isNull());
+
+    // and now rediscover, and edit the first device with the second
+    params.clear();
+    response.clear();
+    params.insert("deviceClassId", deviceClassId);
+    params.insert("discoveryParams", discoveryParams);
+    response = injectAndWait("Devices.GetDiscoveredDevices", params);
+
+    verifyDeviceError(response, error);
+    if (error == DeviceManager::DeviceErrorNoError) {
+        QCOMPARE(response.toMap().value("params").toMap().value("deviceDescriptors").toList().count(), resultCount);
+    }
+
+    // get the second device
+    DeviceDescriptorId descriptorId2;
+    foreach (const QVariant &descriptor, deviceDescriptors) {
+        // find the device with port 55556
+        if (descriptor.toMap().value("description").toString() == "55556") {
+            descriptorId2 = DeviceDescriptorId(descriptor.toMap().value("id").toString());
+            break;
+        }
+    }
+    QVERIFY(!descriptorId2.isNull());
+
+    qDebug() << "edit device 1 (55555) with descriptor 2 (55556) " << descriptorId2;
+
+    // EDIT
+    response.clear();
+    params.clear();
+    params.insert("deviceId", deviceId.toString());
+    params.insert("deviceDescriptorId", descriptorId2);
+    response = injectAndWait("Devices.EditDevice", params);
+    verifyDeviceError(response, error);
+
+    response.clear();
     response = injectAndWait("Devices.GetConfiguredDevices", QVariantMap());
 
+    QVariantMap deviceMap;
     bool found = false;
     foreach (const QVariant device, response.toMap().value("params").toMap().value("devices").toList()) {
         if (DeviceId(device.toMap().value("id").toString()) == deviceId) {
             qDebug() << "found added device" << device.toMap().value("params");
-
-            foreach (QVariant newParam, newDeviceParams) {
-                foreach (QVariant deviceParam, device.toMap().value("params").toList()) {
-                    if (newParam.toMap().value("name").toString() == deviceParam.toMap().value("name").toString()) {
-                        QCOMPARE(newParam.toMap().value("value"), deviceParam.toMap().value("value"));
-                    }
-                }
-            }
             found = true;
+            deviceMap = device.toMap();
             break;
         }
     }
+
+    printJson(deviceMap);
+
     QVERIFY2(found, "Device missing in config!");
+    QCOMPARE(deviceMap.value("id").toString(), deviceId.toString());
+    if (deviceMap.contains("setupComplete")) {
+        QVERIFY2(deviceMap.value("setupComplete").toBool(), "Setup not completed after edit");
+    }
+
+    // Note: this shows that by discovery a not editable param (name) can be changed!
+    foreach (QVariant param, deviceMap.value("params").toList()) {
+        if (param.toMap().value("name") == "name") {
+            QCOMPARE(param.toMap().value("value").toString(), QString("Discovered Mock Device 2"));
+        }
+        if (param.toMap().value("name") == "httpport") {
+            QCOMPARE(param.toMap().value("value").toInt(), 55556);
+        }
+    }
+
 
     params.clear();
-    params.insert("deviceId", deviceId);
+    params.insert("deviceId", deviceId.toString());
     response = injectAndWait("Devices.RemoveConfiguredDevice", params);
     verifyDeviceError(response);
 }
@@ -666,7 +869,6 @@ void TestDevices::removeDevice()
         QCOMPARE(settings.allKeys().count(), 0);
     }
 }
-
 
 #include "testdevices.moc"
 

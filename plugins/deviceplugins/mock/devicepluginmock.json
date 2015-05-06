@@ -21,6 +21,13 @@
                     ],
                     "paramTypes": [
                         {
+                            "name": "name",
+                            "type": "QString",
+                            "inputType": "TextLine",
+                            "defaultValue": "Mock device",
+                            "editable": false
+                        },
+                        {
                             "name": "httpport",
                             "type": "int"
                         },
@@ -32,8 +39,7 @@
                         {
                             "name": "broken",
                             "type": "bool",
-                            "defaultValue": false,
-                            "editable": false
+                            "defaultValue": false
                         }
                     ],
                     "stateTypes": [
@@ -109,6 +115,13 @@
                     "name": "Mock Device (Auto created)",
                     "createMethods": ["auto"],
                     "paramTypes": [
+                        {
+                            "name": "name",
+                            "type": "QString",
+                            "inputType": "TextLine",
+                            "defaultValue": "Mock device",
+                            "editable": false
+                        },
                         {
                             "name": "httpport",
                             "type": "int"

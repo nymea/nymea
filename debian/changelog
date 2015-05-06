@@ -1,3 +1,9 @@
+guh (0.4.0) vivid; urgency=medium
+
+  * add EditDevice and notifications
+
+ -- Simon Stürz <simon.stuerz@guh.guru>  Wed, 06 May 2015 10:13:58 +0200
+
 guh (0.3.0) utopic; urgency=medium
 
   * update rule engine and many other small changes

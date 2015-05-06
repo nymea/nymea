@@ -369,6 +369,7 @@ GuhCore::GuhCore(QObject *parent) :
     connect(m_deviceManager, &DeviceManager::eventTriggered, this, &GuhCore::gotEvent);
     connect(m_deviceManager, &DeviceManager::deviceStateChanged, this, &GuhCore::deviceStateChanged);
     connect(m_deviceManager, &DeviceManager::deviceAdded, this, &GuhCore::deviceAdded);
+    connect(m_deviceManager, &DeviceManager::deviceParamsChanged, this, &GuhCore::deviceParamsChanged);
     connect(m_deviceManager, &DeviceManager::deviceRemoved, this, &GuhCore::deviceRemoved);
     connect(m_deviceManager, &DeviceManager::actionExecutionFinished, this, &GuhCore::actionExecutionFinished);
     connect(m_deviceManager, &DeviceManager::devicesDiscovered, this, &GuhCore::devicesDiscovered);

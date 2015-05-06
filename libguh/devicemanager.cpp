@@ -390,8 +390,8 @@ DeviceManager::DeviceError DeviceManager::editDevice(const DeviceId &deviceId, c
     storeConfiguredDevices();
     postSetupDevice(device);
     device->setupCompleted();
-
     emit deviceParamsChanged(device);
+
     return DeviceErrorNoError;
 }
 
@@ -858,7 +858,10 @@ void DeviceManager::slotDeviceSetupFinished(Device *device, DeviceManager::Devic
 
                 storeConfiguredDevices();
                 device->setupCompleted();
+
                 // TODO: recover old params.??
+
+                emit deviceParamsChanged(device);
                 emit deviceEditFinished(device, DeviceError::DeviceErrorSetupFailed);
             }
             qWarning() << QString("Error in device setup. Device %1 (%2) will not be functional.").arg(device->name()).arg(device->id().toString());
@@ -893,8 +896,8 @@ void DeviceManager::slotDeviceSetupFinished(Device *device, DeviceManager::Devic
         m_asyncDeviceEdit.removeAll(device);
         storeConfiguredDevices();
         device->setupCompleted();
-        emit deviceEditFinished(device, DeviceManager::DeviceErrorNoError);
         emit deviceParamsChanged(device);
+        emit deviceEditFinished(device, DeviceManager::DeviceErrorNoError);
         return;
     }
 

@@ -26,6 +26,9 @@
 
 #include <QDebug>
 #include <QSignalSpy>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
 
 class TestDevices : public GuhTestBase
 {
@@ -532,7 +535,7 @@ void TestDevices::editDevices_data()
     QVariantList httpportChangeDeviceParams;
     QVariantMap httpportParamDifferent;
     httpportParamDifferent.insert("name", "httpport");
-    httpportParamDifferent.insert("value", 666);
+    httpportParamDifferent.insert("value", 8893); // if change -> change also newPort in editDevices()
     httpportChangeDeviceParams.append(httpportParamDifferent);
 
     QVariantList brokenChangedDeviceParams;
@@ -557,7 +560,6 @@ void TestDevices::editDevices_data()
     changeAllEditableDeviceParams.append(nameParam);
     changeAllEditableDeviceParams.append(asyncParamDifferent);
     changeAllEditableDeviceParams.append(httpportParamDifferent);
-    //changeAllEditableDeviceParams.append(brokenParamDifferent);
 
 
     QTest::addColumn<bool>("broken");
@@ -595,9 +597,11 @@ void TestDevices::editDevices()
     deviceParams.append(brokenParam);
     QVariantMap httpportParam;
     httpportParam.insert("name", "httpport");
-    httpportParam.insert("value", 8890);
+    httpportParam.insert("value", 8892);
     deviceParams.append(httpportParam);
     params.insert("deviceParams", deviceParams);
+
+    // add a mockdevice
     QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
     verifyDeviceError(response);
 
@@ -605,20 +609,15 @@ void TestDevices::editDevices()
     QVERIFY(!deviceId.isNull());
 
     // now EDIT the added device
-    response = injectAndWait("Devices.GetConfiguredDevices", QVariantMap());
-
-    // edit the added and verified device
+    response.clear();
     QVariantMap editParams;
     editParams.insert("deviceId", deviceId);
     editParams.insert("deviceParams", newDeviceParams);
-
-    response.clear();
     response = injectAndWait("Devices.EditDevice", editParams);
     verifyDeviceError(response, deviceError);
 
     // if the edit should have been successfull
     if (deviceError == DeviceManager::DeviceErrorNoError) {
-
         response = injectAndWait("Devices.GetConfiguredDevices", QVariantMap());
 
         bool found = false;
@@ -809,8 +808,6 @@ void TestDevices::editByDiscovery()
         }
     }
 
-    printJson(deviceMap);
-
     QVERIFY2(found, "Device missing in config!");
     QCOMPARE(deviceMap.value("id").toString(), deviceId.toString());
     if (deviceMap.contains("setupComplete")) {
@@ -827,6 +824,23 @@ void TestDevices::editByDiscovery()
         }
     }
 
+    // check if the daemons are running
+    QNetworkAccessManager nam;
+    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+
+    // check if old daemon is still running (should not)
+    QNetworkRequest request(QUrl(QString("http://localhost:%1").arg(55555)));
+    QNetworkReply *reply = nam.get(request);
+    spy.wait();
+    QVERIFY2(reply->error(), "The old daemon is still running");
+    reply->deleteLater();
+
+    // check if the daemon is realy running on the new port
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1").arg(55556)));
+    reply = nam.get(request);
+    spy.wait();
+    QVERIFY2(reply->error() == QNetworkReply::NoError, "The new daemon is not running");
+    reply->deleteLater();
 
     params.clear();
     params.insert("deviceId", deviceId.toString());

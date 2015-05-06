@@ -36,12 +36,10 @@ class HttpDaemon : public QTcpServer
     Q_OBJECT
 public:
     HttpDaemon(Device *device, DevicePlugin* parent = 0);
-
+    ~HttpDaemon();
     void incomingConnection(qintptr socket) override;
 
     void actionExecuted(const ActionTypeId &actionTypeId);
-
-    void updateDevice(Device *device);
 
 signals:
     void setState(const StateTypeId &stateTypeId, const QVariant &value);

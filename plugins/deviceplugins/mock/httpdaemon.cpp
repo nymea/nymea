@@ -39,6 +39,11 @@ HttpDaemon::HttpDaemon(Device *device, DevicePlugin *parent):
     listen(QHostAddress::Any, device->paramValue("httpport").toInt());
 }
 
+HttpDaemon::~HttpDaemon()
+{
+    close();
+}
+
 void HttpDaemon::incomingConnection(qintptr socket)
 {
     if (disabled)
@@ -58,17 +63,6 @@ void HttpDaemon::incomingConnection(qintptr socket)
 void HttpDaemon::actionExecuted(const ActionTypeId &actionTypeId)
 {
     m_actionList.append(qMakePair<ActionTypeId, QDateTime>(actionTypeId, QDateTime::currentDateTime()));
-}
-
-void HttpDaemon::updateDevice(Device *device)
-{
-    if (device->paramValue("httpport").toInt() != m_device->paramValue("httpport").toInt()) {
-        close();
-        listen(QHostAddress::Any, device->paramValue("httpport").toInt());
-        qDebug() << "Mockdevice httpport updated and listening now on" << device->paramValue("httpport").toInt();
-    }
-
-    m_device = device;
 }
 
 void HttpDaemon::readClient()
@@ -144,7 +138,7 @@ QString HttpDaemon::generateWebPage()
                 "<h2>Device Information</h2>"
         "Name: %1<br>"
         "ID: %2<br>"
-        "DeviceClass ID: %3<br>").arg(m_device->name()).arg(m_device->id().toString()).arg(deviceClass.id().toString());
+        "DeviceClass ID: %3<br>").arg(m_device->paramValue("name").toString()).arg(m_device->id().toString()).arg(deviceClass.id().toString());
 
     body.append("<hr>");
     body.append("<h2>States</h2>");

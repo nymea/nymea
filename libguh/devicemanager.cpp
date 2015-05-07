@@ -93,6 +93,10 @@
         The \l{Device} is currently bussy.
     \value DeviceErrorPairingTransactionIdNotFound
         Couldn't find the PairingTransactionId for the given id.
+    \value DeviceErrorAuthentificationFailure
+        The device could not authentificate with something.
+    \value DeviceErrorParameterNotEditable
+        One of the given device params is not editable.
 */
 
 /*! \enum DeviceManager::DeviceSetupStatus
@@ -119,6 +123,26 @@
 /*! \fn void DeviceManager::deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
     This signal is emitted when the \l{State} of a \a device changed. The \a stateTypeId parameter describes the
     \l{StateType} and the \a value parameter holds the new value.
+*/
+
+/*! \fn void DeviceManager::deviceRemoved(const DeviceId &deviceId);
+    This signal is emitted when the \l{Device} with the given \a deviceId was removed from the system. This signal will
+    create the Devices.DeviceRemoved notification.
+*/
+
+/*! \fn void DeviceManager::deviceAdded(Device *device);
+    This signal is emitted when a \a \device  was added to the system. This signal will
+    create the Devices.DeviceAdded notification.
+*/
+
+/*! \fn void DeviceManager::deviceParamsChanged(Device *device);
+    This signal is emitted when a \a \device  was changed in the system (by edit or rediscover). This signal will
+    create the Devices.DeviceParamsChanged notification.
+*/
+
+/*! \fn void DeviceManager::deviceEditFinished(Device *device, DeviceError status);
+    This signal is emitted when the edit process of a \a device is finished.  The \a status parameter describes the
+    \l{DeviceManager::DeviceError}{DeviceError} that occurred.
 */
 
 /*! \fn void DeviceManager::devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &devices);
@@ -331,7 +355,13 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassI
     return addConfiguredDeviceInternal(deviceClassId, descriptor.params(), deviceId);
 }
 
-DeviceManager::DeviceError DeviceManager::editDevice(const DeviceId &deviceId, const ParamList &params, const bool fromDiscovery)
+
+/*! Edit the \l{ParamList}{Params} of a configured device with the given \a deviceId to the new given \a params.
+ *  The given parameter \a fromDiscovery specifies if the new \a params came
+ *  from a discovery or if the user set them. If it came from discovery not editable will be changed too.
+ *
+ *  Returns \l{DeviceError} to inform about the result. */
+DeviceManager::DeviceError DeviceManager::editDevice(const DeviceId &deviceId, const ParamList &params, const bool &fromDiscovery)
 {
     Device *device = findConfiguredDevice(deviceId);
     if (!device) {
@@ -395,6 +425,13 @@ DeviceManager::DeviceError DeviceManager::editDevice(const DeviceId &deviceId, c
     return DeviceErrorNoError;
 }
 
+/*! Edit the \l{Param}{Params} of a configured device to the \l{Param}{Params} of the DeviceDescriptor with the
+ *  given \a deviceId to the given DeviceDescriptorId.
+ *  Only devices with \l{DeviceClass}{CreateMethodDiscovery} can be changed using this method.
+ *  The \a deviceDescriptorId must refer to an existing DeviceDescriptorId from the discovery.
+ *  This method allows to rediscover a device and update it's \l{Param}{Params}.
+ *
+ *  Returns \l{DeviceError} to inform about the result. */
 DeviceManager::DeviceError DeviceManager::editDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId)
 {
     Device *device = findConfiguredDevice(deviceId);

@@ -33,9 +33,9 @@
     \sa Event, EventDescriptor, Rule, RuleAction
 */
 
-/*! \fn void RuleEngine::ruleAdded(const RuleId &ruleId)
+/*! \fn void RuleEngine::ruleAdded(const Rule &rule)
     Will be emitted whenever a new \l{Rule} is added to this Engine.
-    \a ruleId holds the id of the new rule.*/
+    The \a rule parameter holds the entire new rule.*/
 
 /*! \fn void RuleEngine::ruleRemoved(const RuleId &ruleId)
     Will be emitted whenever a \l{Rule} is removed from this Engine.
@@ -63,6 +63,8 @@
         One of the given \l{Param}{Params} is missing.
     \value RuleErrorInvalidRuleActionParameter
         One of the given \l{RuleActionParam}{RuleActionParams} is not valid.
+    \value RuleErrorTypesNotMatching
+        One of the RuleActionParams type does not match with the corresponding EventParam type.
 */
 
 /*! \enum RuleEngine::RemovePolicy

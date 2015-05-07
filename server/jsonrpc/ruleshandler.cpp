@@ -363,5 +363,5 @@ void RulesHandler::ruleAddedNotification(const Rule &rule)
     QVariantMap params;
     params.insert("rule", JsonTypes::packRule(rule));
 
-    emit RuleRemoved(params);
+    emit RuleAdded(params);
 }

@@ -333,21 +333,6 @@ DeviceManager::DeviceSetupStatus DevicePlugin::setupDevice(Device *device)
     return DeviceManager::DeviceSetupStatusSuccess;
 }
 
-/*! This will be called when the \l{ParamList}{Params} of the given \a device was changed.
- *  Here you have the chance to set up the device with the new \l{ParamList}{Params} without creating a new one.
- *
- *  Return \l{DeviceManager}{DeviceSetupStatusFailure} if something bad happened during the setup in which case the \a device
- *  will be disabled. Return \l{DeviceManager}{DeviceSetupStatusSuccess} if everything went well. If you can't tell yet and
- *  need more time to set up the \a device (note: you should never block in this method) you can
- *  return \l{DeviceManager}{DeviceSetupStatusAsync}. In that case the \l{DeviceManager} will wait for you to emit
- *  \l{DevicePlugin}{deviceSetupFinished} to report the status.
- */
-DeviceManager::DeviceSetupStatus DevicePlugin::editDevice(Device *device)
-{
-    Q_UNUSED(device)
-    return DeviceManager::DeviceSetupStatusSuccess;
-}
-
 /*! This will be called when a new \a device was added successfully and the device setup is finished.*/
 void DevicePlugin::postSetupDevice(Device *device)
 {
@@ -429,9 +414,9 @@ QList<ParamType> DevicePlugin::parseParamTypes(const QJsonArray &array) const
             }
         }
 
-        // set editable if given (default true)
-        if (pt.contains("editable")) {
-            paramType.setEditable(pt.value("editable").toBool());
+        // set readOnly if given (default false)
+        if (pt.contains("readOnly")) {
+            paramType.setReadOnly(pt.value("readOnly").toBool());
         }
         paramType.setAllowedValues(allowedValues);
         paramType.setLimits(pt.value("minValue").toVariant(), pt.value("maxValue").toVariant());

@@ -95,8 +95,8 @@
         Couldn't find the PairingTransactionId for the given id.
     \value DeviceErrorAuthentificationFailure
         The device could not authentificate with something.
-    \value DeviceErrorParameterNotEditable
-        One of the given device params is not editable.
+    \value DeviceErrorParameterNotWritable
+        One of the given device params is not writable.
 */
 
 /*! \enum DeviceManager::DeviceSetupStatus
@@ -358,10 +358,10 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassI
 
 /*! Edit the \l{ParamList}{Params} of a configured device with the given \a deviceId to the new given \a params.
  *  The given parameter \a fromDiscovery specifies if the new \a params came
- *  from a discovery or if the user set them. If it came from discovery not editable will be changed too.
+ *  from a discovery or if the user set them. If it came from discovery not writable parameters (readOnly) will be changed too.
  *
  *  Returns \l{DeviceError} to inform about the result. */
-DeviceManager::DeviceError DeviceManager::editDevice(const DeviceId &deviceId, const ParamList &params, const bool &fromDiscovery)
+DeviceManager::DeviceError DeviceManager::editDevice(const DeviceId &deviceId, const ParamList &params, bool fromDiscovery)
 {
     Device *device = findConfiguredDevice(deviceId);
     if (!device) {
@@ -385,8 +385,8 @@ DeviceManager::DeviceError DeviceManager::editDevice(const DeviceId &deviceId, c
         foreach (const ParamType &paramType, deviceClass.paramTypes()) {
             foreach (const Param &param, params) {
                 if (paramType.name() == param.name()) {
-                    if (!paramType.editable())
-                        return DeviceErrorParameterNotEditable;
+                    if (paramType.readOnly())
+                        return DeviceErrorParameterNotWritable;
                 }
             }
         }
@@ -397,6 +397,10 @@ DeviceManager::DeviceError DeviceManager::editDevice(const DeviceId &deviceId, c
         return result;
     }
 
+    // first remove the device in the plugin
+    plugin->deviceRemoved(device);
+
+    // mark setup as incomplete
     device->setSetupComplete(false);
 
     // set new params
@@ -404,10 +408,11 @@ DeviceManager::DeviceError DeviceManager::editDevice(const DeviceId &deviceId, c
         device->setParamValue(param.name(), param.value());
     }
 
-    DeviceSetupStatus status = plugin->editDevice(device);
+    // try to setup the device with the new params
+    DeviceSetupStatus status = plugin->setupDevice(device);
     switch (status) {
     case DeviceSetupStatusFailure:
-        qWarning() << "Device edit failed. Not saving changes of device paramters.";
+        qWarning() << "Device edit failed. Not saving changes of device paramters. Device setup incomplete.";
         return DeviceErrorSetupFailed;
     case DeviceSetupStatusAsync:
         m_asyncDeviceEdit.append(device);

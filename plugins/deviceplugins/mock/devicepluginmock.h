@@ -43,7 +43,6 @@ public:
     DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
 
     DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
-    DeviceManager::DeviceSetupStatus editDevice(Device *device) override;
     void deviceRemoved(Device *device) override;
 
     void startMonitoringAutoDevices() override;

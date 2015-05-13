@@ -57,7 +57,6 @@ public:
     virtual DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params);
 
     virtual DeviceManager::DeviceSetupStatus setupDevice(Device *device);
-    virtual DeviceManager::DeviceSetupStatus editDevice(Device *device);
     virtual void postSetupDevice(Device *device);
     virtual void deviceRemoved(Device *device);
 

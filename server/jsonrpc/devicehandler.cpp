@@ -145,8 +145,8 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     setDescription("EditDevice", "Edit the parameters of a device. The device params will be set to the "
                    "passed parameters and the setup device will be called. If the device is discoverable, "
                    "you can perform a GetDiscoveredDevices before calling this method and pass "
-                   "the new DeviceDescriptor (rediscover). If a parameter is not editable, you will find a "
-                   "'editable': false in the ParamType. By default, every Param is editable.");
+                   "the new DeviceDescriptor (rediscover). If a parameter is not writable, you will find a "
+                   "'readOnly': true in the ParamType. By default, every Param is writable.");
     params.insert("deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     params.insert("o:deviceDescriptorId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     QVariantList newDeviceParams;

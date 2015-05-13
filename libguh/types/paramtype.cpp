@@ -38,7 +38,7 @@ ParamType::ParamType(const QString &name, const QVariant::Type type, const QVari
     m_type(type),
     m_defaultValue(defaultValue),
     m_inputType(Types::InputTypeNone),
-    m_editable(true)
+    m_readOnly(false)
 {
 }
 
@@ -139,19 +139,19 @@ void ParamType::setAllowedValues(const QList<QVariant> allowedValues)
     m_allowedValues = allowedValues;
 }
 
-/*! Returns true if this ParamType is editable by the user. By default a ParamType is always editable. */
-bool ParamType::editable() const
+/*! Returns false if this ParamType is writable by the user. By default a ParamType is always writable. */
+bool ParamType::readOnly() const
 {
-    return m_editable;
+    return m_readOnly;
 }
 
-/*! Sets this ParamType \a editable. By default a ParamType is always editable. */
-void ParamType::setEditable(const bool &editable)
+/*! Sets this ParamType \a readOnly. By default a ParamType is always writable. */
+void ParamType::setReadOnly(const bool &readOnly)
 {
-    m_editable = editable;
+    m_readOnly = readOnly;
 }
 
-/*! Writes the name, type defaultValue, min value, max value and editable of the given \a paramType to \a dbg. */
+/*! Writes the name, type defaultValue, min value, max value and readOnly of the given \a paramType to \a dbg. */
 QDebug operator<<(QDebug dbg, const ParamType &paramType)
 {
     dbg.nospace() << "ParamType(Name: " << paramType.name()
@@ -160,7 +160,7 @@ QDebug operator<<(QDebug dbg, const ParamType &paramType)
                   << ", Min:" << paramType.minValue()
                   << ", Max:" << paramType.maxValue()
                   << ", Allowed values:" << paramType.allowedValues()
-                  << ", Editable:" << paramType.editable()
+                  << ", ReadOnly:" << paramType.readOnly()
                   << ")";
 
     return dbg.space();

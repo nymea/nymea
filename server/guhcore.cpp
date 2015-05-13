@@ -46,6 +46,18 @@
     \l{StateType} and the \a value parameter holds the new value.
 */
 
+/*! \fn void GuhCore::deviceRemoved(const DeviceId &deviceId);
+    This signal is emitted when a \l{Device} with the given \a deviceId was removed.
+*/
+
+/*! \fn void GuhCore::deviceAdded(Device *device);
+    This signal is emitted when a \a device was added to the system.
+*/
+
+/*! \fn void GuhCore::deviceParamsChanged(Device *device);
+    This signal is emitted when the \l{ParamList}{Params} of a \a device have been changed.
+*/
+
 /*! \fn void GuhCore::actionExecuted(const ActionId &id, DeviceManager::DeviceError status);
     This signal is emitted when the \l{Action} with the given \a id is finished.
     The \a status of the \l{Action} execution will be described as \l{DeviceManager::DeviceError}{DeviceError}.
@@ -62,10 +74,24 @@
     \l{DeviceManager::DeviceError}{DeviceError} that occurred.
 */
 
+/*! \fn void GuhCore::deviceEditFinished(Device *device, DeviceManager::DeviceError status);
+    This signal is emitted when the edit request of a \a device is finished. The \a status of the edit request will be
+    described as \l{DeviceManager::DeviceError}{DeviceError}.
+*/
+
 /*! \fn void GuhCore::pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceError status, const DeviceId &deviceId);
     The DeviceManager will emit a this Signal when the pairing of a \l{Device} with the \a deviceId and \a pairingTransactionId is finished.
     The \a status of the pairing will be described as \l{DeviceManager::DeviceError}{DeviceError}.
 */
+
+/*! \fn void GuhCore::ruleRemoved(const RuleId &ruleId);
+    This signal is emitted when a \l{Rule} with the given \a ruleId was removed.
+*/
+
+/*! \fn void GuhCore::ruleAdded(const Rule &rule);
+    This signal is emitted when a \a rule was added to the system.
+*/
+
 
 #include "guhcore.h"
 #include "jsonrpcserver.h"
@@ -266,11 +292,15 @@ QList<Device *> GuhCore::findConfiguredDevices(const DeviceClassId &deviceClassI
     return m_deviceManager->findConfiguredDevices(deviceClassId);
 }
 
+/*! Calls the metheod DeviceManager::editDevice(\a deviceId, \a params).
+ *  \sa DeviceManager::editDevice(), */
 DeviceManager::DeviceError GuhCore::editDevice(const DeviceId &deviceId, const ParamList &params)
 {
     return m_deviceManager->editDevice(deviceId, params);
 }
 
+/*! Calls the metheod DeviceManager::editDevice(\a deviceId, \a deviceDescriptorId).
+ *  \sa DeviceManager::editDevice(), */
 DeviceManager::DeviceError GuhCore::editDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId)
 {
     return m_deviceManager->editDevice(deviceId, deviceDescriptorId);

@@ -556,10 +556,10 @@ void TestDevices::editDevices_data()
     asyncAndPortChangeDeviceParams.append(httpportParamDifferent);
 
 
-    QVariantList changeAllEditableDeviceParams;
-    changeAllEditableDeviceParams.append(nameParam);
-    changeAllEditableDeviceParams.append(asyncParamDifferent);
-    changeAllEditableDeviceParams.append(httpportParamDifferent);
+    QVariantList changeAllWritableDeviceParams;
+    changeAllWritableDeviceParams.append(nameParam);
+    changeAllWritableDeviceParams.append(asyncParamDifferent);
+    changeAllWritableDeviceParams.append(httpportParamDifferent);
 
 
     QTest::addColumn<bool>("broken");
@@ -569,8 +569,8 @@ void TestDevices::editDevices_data()
     QTest::newRow("valid - change async param") << false << asyncChangeDeviceParams << DeviceManager::DeviceErrorNoError;
     QTest::newRow("valid - change httpport param") << false <<  httpportChangeDeviceParams << DeviceManager::DeviceErrorNoError;
     QTest::newRow("valid - change httpport and async param") << false << asyncAndPortChangeDeviceParams << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("invalid - change name param (not editable)") << false << nameChangedDeviceParams << DeviceManager::DeviceErrorParameterNotEditable;
-    QTest::newRow("invalid - change all params (except broken)") << false << changeAllEditableDeviceParams << DeviceManager::DeviceErrorParameterNotEditable;
+    QTest::newRow("invalid - change name param (not writable)") << false << nameChangedDeviceParams << DeviceManager::DeviceErrorParameterNotWritable;
+    QTest::newRow("invalid - change all params (except broken)") << false << changeAllWritableDeviceParams << DeviceManager::DeviceErrorParameterNotWritable;
 }
 
 void TestDevices::editDevices()

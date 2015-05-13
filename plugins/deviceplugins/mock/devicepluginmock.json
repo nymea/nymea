@@ -25,7 +25,7 @@
                             "type": "QString",
                             "inputType": "TextLine",
                             "defaultValue": "Mock device",
-                            "editable": false
+                            "readOnly": true
                         },
                         {
                             "name": "httpport",
@@ -120,7 +120,7 @@
                             "type": "QString",
                             "inputType": "TextLine",
                             "defaultValue": "Mock device",
-                            "editable": false
+                            "readOnly": true
                         },
                         {
                             "name": "httpport",

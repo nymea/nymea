@@ -55,8 +55,8 @@ public:
     QList<QVariant> allowedValues() const;
     void setAllowedValues(const QList<QVariant> allowedValues);
 
-    bool editable() const;
-    void setEditable(const bool &editable);
+    bool readOnly() const;
+    void setReadOnly(const bool &readOnly);
 
 private:
     QString m_name;
@@ -66,7 +66,7 @@ private:
     QVariant m_maxValue;
     Types::InputType m_inputType;
     QVariantList m_allowedValues;
-    bool m_editable;
+    bool m_readOnly;
 };
 
 QDebug operator<<(QDebug dbg, const ParamType &paramType);

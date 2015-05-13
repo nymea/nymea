@@ -75,7 +75,7 @@ public:
         DeviceErrorAsync,
         DeviceErrorDeviceInUse,
         DeviceErrorPairingTransactionIdNotFound,
-        DeviceErrorParameterNotEditable
+        DeviceErrorParameterNotWritable
     };
 
     enum DeviceSetupStatus {
@@ -99,7 +99,7 @@ public:
     DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId id = DeviceId::createDeviceId());
     DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &id = DeviceId::createDeviceId());
 
-    DeviceError editDevice(const DeviceId &deviceId, const ParamList &params, const bool &fromDiscovery = false);
+    DeviceError editDevice(const DeviceId &deviceId, const ParamList &params, bool fromDiscovery = false);
     DeviceError editDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId);
     
     DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params);

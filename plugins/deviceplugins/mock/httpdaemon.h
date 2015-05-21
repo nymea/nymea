@@ -36,7 +36,7 @@ class HttpDaemon : public QTcpServer
     Q_OBJECT
 public:
     HttpDaemon(Device *device, DevicePlugin* parent = 0);
-
+    ~HttpDaemon();
     void incomingConnection(qintptr socket) override;
 
     void actionExecuted(const ActionTypeId &actionTypeId);

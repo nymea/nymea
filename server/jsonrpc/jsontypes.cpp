@@ -94,6 +94,7 @@ void JsonTypes::init()
     s_paramType.insert("o:maxValue", basicTypeToString(Variant));
     s_paramType.insert("o:allowedValues", QVariantList() << basicTypeToString(Variant));
     s_paramType.insert("o:inputType", inputTypeRef());
+    s_paramType.insert("o:readOnly", basicTypeToString(Bool));
 
     // Param
     s_param.insert("name", basicTypeToString(String));
@@ -430,6 +431,7 @@ QVariantMap JsonTypes::packParamType(const ParamType &paramType)
     QVariantMap variantMap;
     variantMap.insert("name", paramType.name());
     variantMap.insert("type", QVariant::typeToName(paramType.type()));
+    // optional
     if (paramType.defaultValue().isValid()) {
         variantMap.insert("defaultValue", paramType.defaultValue());
     }
@@ -444,6 +446,10 @@ QVariantMap JsonTypes::packParamType(const ParamType &paramType)
     }
     if (paramType.inputType() != Types::InputTypeNone) {
         variantMap.insert("inputType", s_inputType.at(paramType.inputType()));
+    }
+    // only add if this param is NOT ediable
+    if (!paramType.readOnly()) {
+        variantMap.insert("readOnly", paramType.readOnly());
     }
     return variantMap;
 }

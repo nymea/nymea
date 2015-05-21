@@ -52,6 +52,8 @@ private slots:
     void deviceAddedRemovedNotifications();
     void ruleAddedRemovedNotifications();
 
+    void deviceParamsChangedNotifications();
+
 private:
     QStringList extractRefs(const QVariant &variant);
 
@@ -259,6 +261,8 @@ void TestJSONRPC::stateChangeEmitsNotifications()
 
 }
 
+
+
 void TestJSONRPC::deviceAddedRemovedNotifications()
 {
     // enable notificartions
@@ -416,6 +420,112 @@ void TestJSONRPC::ruleAddedRemovedNotifications()
     QCOMPARE(jsonDocNotification.toVariant().toMap().value("params").toMap().value("ruleId").toString(), ruleId.toString());
 }
 
+void TestJSONRPC::deviceParamsChangedNotifications()
+{
+    // enable notificartions
+    QVariantMap params;
+    params.insert("enabled", true);
+    QVariant response = injectAndWait("JSONRPC.SetNotificationStatus", params);
+    QCOMPARE(response.toMap().value("params").toMap().value("enabled").toBool(), true);
+
+    // Setup connection to mock client
+    QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+
+    // ADD
+
+    // add device and wait for notification
+    QVariantList deviceParams;
+    QVariantMap httpportParam;
+    httpportParam.insert("name", "httpport");
+    httpportParam.insert("value", 23234);
+    deviceParams.append(httpportParam);
+
+    params.clear(); response.clear();
+    params.insert("deviceClassId", mockDeviceClassId);
+    params.insert("deviceParams", deviceParams);
+    response = injectAndWait("Devices.AddConfiguredDevice", params);
+
+    // Lets wait for the notification
+    clientSpy.wait(500);
+    QCOMPARE(clientSpy.count(), 2); // wait for device added notification and response
+
+    QJsonDocument jsonDocResponse = QJsonDocument::fromJson(clientSpy.at(1).at(1).toByteArray());
+    QJsonDocument jsonDocNotification = QJsonDocument::fromJson(clientSpy.at(0).at(1).toByteArray());
+
+    verifyDeviceError(jsonDocResponse.toVariant());
+    DeviceId deviceId = DeviceId(jsonDocResponse.toVariant().toMap().value("params").toMap().value("deviceId").toString());
+    QVERIFY(!deviceId.isNull());
+
+    // check the DeviceAdded notification
+    QCOMPARE(jsonDocNotification.toVariant().toMap().value("notification").toString(), QString("Devices.DeviceAdded"));
+    QVariantMap notificationDeviceMap = jsonDocNotification.toVariant().toMap().value("params").toMap().value("device").toMap();
+
+    QCOMPARE(notificationDeviceMap.value("deviceClassId").toString(), mockDeviceClassId.toString());
+    QCOMPARE(notificationDeviceMap.value("id").toString(), deviceId.toString());
+    foreach (const QVariant &param, notificationDeviceMap.value("params").toList()) {
+        if (param.toMap().value("name").toString() == "httpport") {
+            QCOMPARE(param.toMap().value("value").toInt(), httpportParam.value("value").toInt());
+        }
+    }
+
+    // EDIT
+
+    // Setup connection to mock client
+    QSignalSpy clientSpy2(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+
+    // now edit the device and check the deviceParamsChanged notification
+    QVariantList newDeviceParams;
+    QVariantMap newHttpportParam;
+    newHttpportParam.insert("name", "httpport");
+    newHttpportParam.insert("value", 45473);
+    newDeviceParams.append(newHttpportParam);
+
+    params.clear(); response.clear();
+    params.insert("deviceId", deviceId);
+    params.insert("deviceParams", newDeviceParams);
+    response = injectAndWait("Devices.EditDevice", params);
+
+    clientSpy2.wait(500);
+    QCOMPARE(clientSpy2.count(), 2);
+
+    jsonDocResponse = QJsonDocument::fromJson(clientSpy2.at(1).at(1).toByteArray());
+    jsonDocNotification = QJsonDocument::fromJson(clientSpy2.at(0).at(1).toByteArray());
+
+    verifyDeviceError(jsonDocResponse.toVariant());
+
+    QCOMPARE(jsonDocNotification.toVariant().toMap().value("notification").toString(), QString("Devices.DeviceParamsChanged"));
+
+    QVariantMap editDeviceNotificationMap = jsonDocNotification.toVariant().toMap().value("params").toMap().value("device").toMap();
+    QCOMPARE(editDeviceNotificationMap.value("deviceClassId").toString(), mockDeviceClassId.toString());
+    QCOMPARE(editDeviceNotificationMap.value("id").toString(), deviceId.toString());
+    foreach (const QVariant &param, editDeviceNotificationMap.value("params").toList()) {
+        if (param.toMap().value("name").toString() == "httpport") {
+            QCOMPARE(param.toMap().value("value").toInt(), newHttpportParam.value("value").toInt());
+        }
+    }
+
+    // REMOVE
+
+    // Setup connection to mock client
+    QSignalSpy clientSpy3(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+
+    // now remove the device and check the device removed notification
+    params.clear(); response.clear();
+    params.insert("deviceId", deviceId);
+    response = injectAndWait("Devices.RemoveConfiguredDevice", params);
+
+    clientSpy3.wait(500);
+    QCOMPARE(clientSpy3.count(), 2); // wait for device removed notification and response
+
+    jsonDocResponse = QJsonDocument::fromJson(clientSpy3.at(1).at(1).toByteArray());
+    jsonDocNotification = QJsonDocument::fromJson(clientSpy3.at(0).at(1).toByteArray());
+
+    verifyDeviceError(jsonDocResponse.toVariant());
+
+    // check the DeviceRemoved notification
+    QCOMPARE(jsonDocNotification.toVariant().toMap().value("notification").toString(), QString("Devices.DeviceRemoved"));
+    QCOMPARE(jsonDocNotification.toVariant().toMap().value("params").toMap().value("deviceId").toString(), deviceId.toString());
+}
 
 #include "testjsonrpc.moc"
 

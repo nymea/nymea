@@ -1,4 +1,4 @@
-20
+22
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -53,6 +53,19 @@
             "returns": {
                 "deviceError": "$ref:DeviceError",
                 "o:deviceId": "Uuid"
+            }
+        },
+        "Devices.EditDevice": {
+            "description": "Edit the parameters of a device. The device params will be set to the passed parameters and the setup device will be called. If the device is discoverable, you can perform a GetDiscoveredDevices before calling this method and pass the new DeviceDescriptor (rediscover). If a parameter is not writable, you will find a 'readOnly': true in the ParamType. By default, every Param is writable.",
+            "params": {
+                "deviceId": "Uuid",
+                "o:deviceDescriptorId": "Uuid",
+                "o:deviceParams": [
+                    "$ref:Param"
+                ]
+            },
+            "returns": {
+                "deviceError": "$ref:DeviceError"
             }
         },
         "Devices.GetActionTypes": {
@@ -371,6 +384,12 @@
                 "device": "$ref:Device"
             }
         },
+        "Devices.DeviceParamsChanged": {
+            "description": "Emitted whenever the params of a Device changed (by editing or rediscovering).",
+            "params": {
+                "device": "$ref:Device"
+            }
+        },
         "Devices.DeviceRemoved": {
             "description": "Emitted whenever a Device was removed.",
             "params": {
@@ -496,9 +515,11 @@
             "DeviceErrorSetupMethodNotSupported",
             "DeviceErrorHardwareNotAvailable",
             "DeviceErrorHardwareFailure",
+            "DeviceErrorAuthentificationFailure",
             "DeviceErrorAsync",
             "DeviceErrorDeviceInUse",
-            "DeviceErrorPairingTransactionIdNotFound"
+            "DeviceErrorPairingTransactionIdNotFound",
+            "DeviceErrorParameterNotWritable"
         ],
         "Event": {
             "deviceId": "Uuid",
@@ -581,6 +602,7 @@
             "o:inputType": "$ref:InputType",
             "o:maxValue": "Variant",
             "o:minValue": "Variant",
+            "o:readOnly": "Bool",
             "type": "$ref:BasicType"
         },
         "Plugin": {

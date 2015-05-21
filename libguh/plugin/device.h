@@ -73,6 +73,7 @@ private:
     Device(const PluginId &pluginId, const DeviceClassId &deviceClassId, QObject *parent = 0);
 
     void setupCompleted();
+    void setSetupComplete(const bool &complete);
 
 private:
     DeviceId m_id;

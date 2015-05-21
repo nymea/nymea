@@ -413,6 +413,11 @@ QList<ParamType> DevicePlugin::parseParamTypes(const QJsonArray &array) const
                 paramType.setInputType(Types::InputTypeMacAddress);
             }
         }
+
+        // set readOnly if given (default false)
+        if (pt.contains("readOnly")) {
+            paramType.setReadOnly(pt.value("readOnly").toBool());
+        }
         paramType.setAllowedValues(allowedValues);
         paramType.setLimits(pt.value("minValue").toVariant(), pt.value("maxValue").toVariant());
         paramTypes.append(paramType);

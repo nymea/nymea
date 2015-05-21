@@ -93,6 +93,10 @@
         The \l{Device} is currently bussy.
     \value DeviceErrorPairingTransactionIdNotFound
         Couldn't find the PairingTransactionId for the given id.
+    \value DeviceErrorAuthentificationFailure
+        The device could not authentificate with something.
+    \value DeviceErrorParameterNotWritable
+        One of the given device params is not writable.
 */
 
 /*! \enum DeviceManager::DeviceSetupStatus
@@ -119,6 +123,26 @@
 /*! \fn void DeviceManager::deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
     This signal is emitted when the \l{State} of a \a device changed. The \a stateTypeId parameter describes the
     \l{StateType} and the \a value parameter holds the new value.
+*/
+
+/*! \fn void DeviceManager::deviceRemoved(const DeviceId &deviceId);
+    This signal is emitted when the \l{Device} with the given \a deviceId was removed from the system. This signal will
+    create the Devices.DeviceRemoved notification.
+*/
+
+/*! \fn void DeviceManager::deviceAdded(Device *device);
+    This signal is emitted when a \a \device  was added to the system. This signal will
+    create the Devices.DeviceAdded notification.
+*/
+
+/*! \fn void DeviceManager::deviceParamsChanged(Device *device);
+    This signal is emitted when a \a \device  was changed in the system (by edit or rediscover). This signal will
+    create the Devices.DeviceParamsChanged notification.
+*/
+
+/*! \fn void DeviceManager::deviceEditFinished(Device *device, DeviceError status);
+    This signal is emitted when the edit process of a \a device is finished.  The \a status parameter describes the
+    \l{DeviceManager::DeviceError}{DeviceError} that occurred.
 */
 
 /*! \fn void DeviceManager::devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &devices);
@@ -329,6 +353,111 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassI
     }
 
     return addConfiguredDeviceInternal(deviceClassId, descriptor.params(), deviceId);
+}
+
+
+/*! Edit the \l{ParamList}{Params} of a configured device with the given \a deviceId to the new given \a params.
+ *  The given parameter \a fromDiscovery specifies if the new \a params came
+ *  from a discovery or if the user set them. If it came from discovery not writable parameters (readOnly) will be changed too.
+ *
+ *  Returns \l{DeviceError} to inform about the result. */
+DeviceManager::DeviceError DeviceManager::editDevice(const DeviceId &deviceId, const ParamList &params, bool fromDiscovery)
+{
+    Device *device = findConfiguredDevice(deviceId);
+    if (!device) {
+        return DeviceErrorDeviceNotFound;
+    }
+
+    ParamList effectiveParams = params;
+    DeviceClass deviceClass = findDeviceClass(device->deviceClassId());
+    if (deviceClass.id().isNull()) {
+        return DeviceErrorDeviceClassNotFound;
+    }
+
+    DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
+    if (!plugin) {
+        return DeviceErrorPluginNotFound;
+    }
+
+    // if the params are discovered and not set by the user
+    if (!fromDiscovery) {
+        // check if one of the given params is not editable
+        foreach (const ParamType &paramType, deviceClass.paramTypes()) {
+            foreach (const Param &param, params) {
+                if (paramType.name() == param.name()) {
+                    if (paramType.readOnly())
+                        return DeviceErrorParameterNotWritable;
+                }
+            }
+        }
+    }
+
+    DeviceError result = verifyParams(deviceClass.paramTypes(), effectiveParams, false);
+    if (result != DeviceErrorNoError) {
+        return result;
+    }
+
+    // first remove the device in the plugin
+    plugin->deviceRemoved(device);
+
+    // mark setup as incomplete
+    device->setSetupComplete(false);
+
+    // set new params
+    foreach (const Param &param, effectiveParams) {
+        device->setParamValue(param.name(), param.value());
+    }
+
+    // try to setup the device with the new params
+    DeviceSetupStatus status = plugin->setupDevice(device);
+    switch (status) {
+    case DeviceSetupStatusFailure:
+        qWarning() << "Device edit failed. Not saving changes of device paramters. Device setup incomplete.";
+        return DeviceErrorSetupFailed;
+    case DeviceSetupStatusAsync:
+        m_asyncDeviceEdit.append(device);
+        return DeviceErrorAsync;
+    case DeviceSetupStatusSuccess:
+        qDebug() << "Device edit complete.";
+        break;
+    }
+
+    storeConfiguredDevices();
+    postSetupDevice(device);
+    device->setupCompleted();
+    emit deviceParamsChanged(device);
+
+    return DeviceErrorNoError;
+}
+
+/*! Edit the \l{Param}{Params} of a configured device to the \l{Param}{Params} of the DeviceDescriptor with the
+ *  given \a deviceId to the given DeviceDescriptorId.
+ *  Only devices with \l{DeviceClass}{CreateMethodDiscovery} can be changed using this method.
+ *  The \a deviceDescriptorId must refer to an existing DeviceDescriptorId from the discovery.
+ *  This method allows to rediscover a device and update it's \l{Param}{Params}.
+ *
+ *  Returns \l{DeviceError} to inform about the result. */
+DeviceManager::DeviceError DeviceManager::editDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId)
+{
+    Device *device = findConfiguredDevice(deviceId);
+    if (!device) {
+        return DeviceErrorDeviceNotFound;
+    }
+
+    DeviceClass deviceClass = findDeviceClass(device->deviceClassId());
+    if (!deviceClass.isValid()) {
+        return DeviceErrorDeviceClassNotFound;
+    }
+    if (!deviceClass.createMethods().testFlag(DeviceClass::CreateMethodDiscovery)) {
+        return DeviceErrorCreationMethodNotSupported;
+    }
+
+    DeviceDescriptor descriptor = m_discoveredDevices.take(deviceDescriptorId);
+    if (!descriptor.isValid()) {
+        return DeviceErrorDeviceDescriptorNotFound;
+    }
+
+    return editDevice(deviceId, descriptor.params(), true);
 }
 
 /*! Initiates a pairing with a \l{DeviceClass}{Device} with the given \a pairingTransactionId, \a deviceClassId and \a params.
@@ -765,6 +894,17 @@ void DeviceManager::slotDeviceSetupFinished(Device *device, DeviceManager::Devic
 
     if (status == DeviceSetupStatusFailure) {
         if (m_configuredDevices.contains(device)) {
+            if (m_asyncDeviceEdit.contains(device)) {
+                m_asyncDeviceEdit.removeAll(device);
+                qWarning() << QString("Error in device setup after edit params. Device %1 (%2) would not be functional.").arg(device->name()).arg(device->id().toString());
+
+                storeConfiguredDevices();
+
+                // TODO: recover old params.??
+
+                emit deviceParamsChanged(device);
+                emit deviceEditFinished(device, DeviceError::DeviceErrorSetupFailed);
+            }
             qWarning() << QString("Error in device setup. Device %1 (%2) will not be functional.").arg(device->name()).arg(device->id().toString());
             emit deviceSetupFinished(device, DeviceError::DeviceErrorSetupFailed);
             return;
@@ -790,6 +930,16 @@ void DeviceManager::slotDeviceSetupFinished(Device *device, DeviceManager::Devic
             QTimer::singleShot(0, this, SLOT(timerEvent()));
         }
         m_pluginTimerUsers.append(device);
+    }
+
+    // if this is a async device edit result
+    if (m_asyncDeviceEdit.contains(device)) {
+        m_asyncDeviceEdit.removeAll(device);
+        storeConfiguredDevices();
+        device->setupCompleted();
+        emit deviceParamsChanged(device);
+        emit deviceEditFinished(device, DeviceManager::DeviceErrorNoError);
+        return;
     }
 
     connect(device, SIGNAL(stateValueChanged(QUuid,QVariant)), this, SLOT(slotDeviceStateValueChanged(QUuid,QVariant)));
@@ -879,6 +1029,7 @@ void DeviceManager::autoDevicesAppeared(const DeviceClassId &deviceClassId, cons
     if (!deviceClass.isValid()) {
         return;
     }
+
     DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
     if (!plugin) {
         return;
@@ -949,7 +1100,7 @@ void DeviceManager::replyReady(const PluginId &pluginId, QNetworkReply *reply)
     foreach (DevicePlugin *devicePlugin, m_devicePlugins) {
         if (devicePlugin->requiredHardware().testFlag(HardwareResourceNetworkManager) && devicePlugin->pluginId() == pluginId) {
             devicePlugin->networkManagerReplyReady(reply);
-	}
+        }
     }
 }
 void DeviceManager::upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &deviceDescriptorList, const PluginId &pluginId)
@@ -1061,7 +1212,7 @@ DeviceManager::DeviceError DeviceManager::verifyParams(const QList<ParamType> pa
         }
 
         // This paramType has a default value... lets fill in that one.
-        if (!paramType.defaultValue().isNull()) {
+        if (!paramType.defaultValue().isNull() && !found) {
             found = true;
             params.append(Param(paramType.name(), paramType.defaultValue()));
         }

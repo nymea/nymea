@@ -101,7 +101,7 @@ DeviceManager::DeviceSetupStatus DevicePluginDateTime::setupDevice(Device *devic
     }
 
     // make shore there is just one date/time
-    if(deviceManager()->findConfiguredDevices(dateTimeDeviceClassId).count() != 0){
+    if (myDevices().count() != 0 && myDevices().takeFirst()->id() != device->id()) {
         return DeviceManager::DeviceSetupStatusFailure;
     }
 

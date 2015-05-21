@@ -88,6 +88,30 @@ protected:
         verifyError(response, "deviceError", JsonTypes::deviceErrorToString(error));
     }
 
+    inline void verifyParams(const QVariantList &requestList, const QVariantList &responseList, bool allRequired = true)
+    {
+        if (allRequired)
+            QVERIFY2(requestList.count() == responseList.count(), "Not the same count of param in response.");
+        foreach (const QVariant &requestParam, requestList) {
+            bool found = false;
+            foreach (const QVariant &responseParam, responseList) {
+                if (requestParam.toMap().value("name") == responseParam.toMap().value("name")){
+                    QCOMPARE(requestParam.toMap().value("value"), responseParam.toMap().value("value"));
+                    found = true;
+                    break;
+                }
+            }
+            if (allRequired)
+                QVERIFY2(found, "Param missing");
+        }
+    }
+
+    // just for debugging
+    inline void printJson(const QVariant &response) {
+        QJsonDocument jsonDoc = QJsonDocument::fromVariant(response);
+        qDebug() << jsonDoc.toJson();
+    }
+
     void restartServer();
 
 protected:

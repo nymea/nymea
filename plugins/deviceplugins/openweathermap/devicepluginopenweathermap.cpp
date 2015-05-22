@@ -95,12 +95,12 @@ DeviceManager::DeviceSetupStatus DevicePluginOpenweathermap::setupDevice(Device 
         return DeviceManager::DeviceSetupStatusFailure;
     }
 
-    foreach (Device *deviceListDevice, deviceManager()->findConfiguredDevices(openweathermapDeviceClassId)) {
-        if(deviceListDevice->paramValue("id").toString() == device->paramValue("id").toString()){
-            qWarning() << QString("Location " + device->paramValue("location").toString() + " already added.");
-            return DeviceManager::DeviceSetupStatusFailure;
-        }
-    }
+    //    foreach (Device *d, myDevices()) {
+    //        if(d->paramValue("id").toString() == device->paramValue("id").toString()){
+    //            qWarning() << QString("ERROR: Location " + d->paramValue("location").toString() + " with id " +  d->paramValue("id").toString() + ") " + " already added: ");
+    //            return DeviceManager::DeviceSetupStatusFailure;
+    //        }
+    //    }
 
     device->setName("Weather from OpenWeatherMap (" + device->paramValue("location").toString() + ")");
     update(device);

@@ -447,8 +447,8 @@ QVariantMap JsonTypes::packParamType(const ParamType &paramType)
     if (paramType.inputType() != Types::InputTypeNone) {
         variantMap.insert("inputType", s_inputType.at(paramType.inputType()));
     }
-    // only add if this param is NOT ediable
-    if (!paramType.readOnly()) {
+    // only add if this param is NOT writable
+    if (paramType.readOnly()) {
         variantMap.insert("readOnly", paramType.readOnly());
     }
     return variantMap;

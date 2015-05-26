@@ -42,6 +42,7 @@ public:
     DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
     void upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &upnpDeviceDescriptorList) override;
     void upnpNotifyReceived(const QByteArray &notifyData);
+    void postSetupDevice(Device *device) override;
 
     void deviceRemoved(Device *device) override;
 

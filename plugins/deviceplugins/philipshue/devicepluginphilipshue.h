@@ -22,7 +22,6 @@
 #define DEVICEPLUGINPHILIPSHUE_H
 
 #include "plugin/deviceplugin.h"
-#include "discovery.h"
 #include "huebridgeconnection.h"
 #include "light.h"
 
@@ -47,6 +46,7 @@ public:
 
     DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
     void deviceRemoved(Device *device) override;
+    void upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &upnpDeviceDescriptorList) override;
 
     DeviceManager::DeviceSetupStatus confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params) override;
 
@@ -56,8 +56,6 @@ public slots:
     DeviceManager::DeviceError executeAction(Device *device, const Action &action);
 
 private slots:
-    void discoveryDone(const QList<QHostAddress> &bridges);
-
     void createUserFinished(int id, const QVariant &params);
     void getLightsFinished(int id, const QVariant &params);
     void getFinished(int id, const QVariant &params);
@@ -65,7 +63,6 @@ private slots:
     void lightStateChanged();
 
 private:
-    Discovery *m_discovery;
 
     class PairingInfo {
     public:

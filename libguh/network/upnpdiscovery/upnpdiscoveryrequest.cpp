@@ -37,7 +37,7 @@ void UpnpDiscoveryRequest::discover()
     QByteArray ssdpSearchMessage = QByteArray("M-SEARCH * HTTP/1.1\r\n"
                                               "HOST:239.255.255.250:1900\r\n"
                                               "MAN:\"ssdp:discover\"\r\n"
-                                              "MX:2\r\n"
+                                              "MX:4\r\n"
                                               "ST: " + m_searchTarget.toUtf8() + "\r\n"
                                               "USR-AGENT: " + m_userAgent.toUtf8() + "\r\n\r\n");
 

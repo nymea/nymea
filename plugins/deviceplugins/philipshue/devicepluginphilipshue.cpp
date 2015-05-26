@@ -1,6 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
  *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -72,18 +73,15 @@ ActionTypeId hueSetBrightnessActionTypeId = ActionTypeId("3bc95552-cba0-4222-abd
 StateTypeId hueReachableStateTypeId = StateTypeId("15794d26-fde8-4a61-8f83-d7830534975f");
 
 DevicePluginPhilipsHue::DevicePluginPhilipsHue()
-    //:m_discovery(new Discovery(this))
 {
-//    connect(m_discovery, &Discovery::discoveryDone, this, &DevicePluginPhilipsHue::discoveryDone);
-
-//    m_bridge = new HueBridgeConnection(this);
-//    connect(m_bridge, &HueBridgeConnection::createUserFinished, this, &DevicePluginPhilipsHue::createUserFinished);
-//    connect(m_bridge, &HueBridgeConnection::getFinished, this, &DevicePluginPhilipsHue::getFinished);
+    m_bridge = new HueBridgeConnection(this);
+    connect(m_bridge, &HueBridgeConnection::createUserFinished, this, &DevicePluginPhilipsHue::createUserFinished);
+    connect(m_bridge, &HueBridgeConnection::getFinished, this, &DevicePluginPhilipsHue::getFinished);
 }
 
 DeviceManager::HardwareResources DevicePluginPhilipsHue::requiredHardware() const
 {
-    return DeviceManager::HardwareResourceTimer;
+    return DeviceManager::HardwareResourceTimer | DeviceManager::HardwareResourceUpnpDisovery;
 }
 
 void DevicePluginPhilipsHue::startMonitoringAutoDevices()
@@ -102,13 +100,13 @@ DeviceManager::DeviceError DevicePluginPhilipsHue::discoverDevices(const DeviceC
 {
     Q_UNUSED(deviceClassId)
     Q_UNUSED(params)
-    m_discovery->findBridges(4000);
+    upnpDiscover("libhue:idl");
     return DeviceManager::DeviceErrorAsync;
 }
 
 DeviceManager::DeviceSetupStatus DevicePluginPhilipsHue::setupDevice(Device *device)
 {
-    qDebug() << "setupDevice" << device->params();
+    //qDebug() << "setupDevice" << device->params();
 
     Light *light = nullptr;
 
@@ -117,6 +115,7 @@ DeviceManager::DeviceSetupStatus DevicePluginPhilipsHue::setupDevice(Device *dev
         if (m_unconfiguredLights.count() > 0) {
             light = m_unconfiguredLights.takeFirst();
             device->setParamValue("number", light->id());
+            device->setParamValue("name", QString("Hue light %1").arg(light->id()));
         } else {
             // this shouldn't ever happen
             qWarning() << "Device not configured yet and no discovered devices around. This should not happen.";
@@ -139,6 +138,7 @@ DeviceManager::DeviceSetupStatus DevicePluginPhilipsHue::setupDevice(Device *dev
         Light *light = m_unconfiguredLights.takeFirst();
         DeviceDescriptor descriptor(hueDeviceClassId, light->name());
         ParamList params;
+        params.append(Param("name", light->name()));
         params.append(Param("number", light->id()));
         params.append(Param("ip", light->ip().toString()));
         params.append(Param("username", light->username()));
@@ -161,6 +161,28 @@ void DevicePluginPhilipsHue::deviceRemoved(Device *device)
     Light *light = m_lights.key(device);
     m_lights.remove(light);
     m_unconfiguredLights.append(light);
+}
+
+void DevicePluginPhilipsHue::upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &upnpDeviceDescriptorList)
+{
+    qDebug() << "discovered bridges" << upnpDeviceDescriptorList.count();
+
+    foreach (const UpnpDeviceDescriptor &descriptor, upnpDeviceDescriptorList) {
+        qDebug() << descriptor;
+    }
+
+    QList<DeviceDescriptor> deviceDescriptors;
+    foreach (const UpnpDeviceDescriptor &upnpDevice, upnpDeviceDescriptorList) {
+        DeviceDescriptor descriptor(hueDeviceClassId, "Philips Hue bridge", upnpDevice.hostAddress().toString());
+        ParamList params;
+        params.append(Param("ip", upnpDevice.hostAddress().toString()));
+        params.append(Param("username", "guh-" + QUuid::createUuid().toString().remove(QRegExp("[\\{\\}]*")).remove(QRegExp("\\-[0-9a-f\\-]*"))));
+        params.append(Param("number", -1));
+        descriptor.setParams(params);
+        deviceDescriptors.append(descriptor);
+    }
+
+    emit devicesDiscovered(hueDeviceClassId, deviceDescriptors);
 }
 
 DeviceManager::DeviceSetupStatus DevicePluginPhilipsHue::confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params)
@@ -212,38 +234,19 @@ DeviceManager::DeviceError DevicePluginPhilipsHue::executeAction(Device *device,
 
     if (!light->reachable()) {
         qWarning() << "Hue Bulb not reachable";
-        return DeviceManager::DeviceErrorSetupFailed;
+        return DeviceManager::DeviceErrorHardwareNotAvailable;
     }
 
-    if (action.actionTypeId() == hueSetColorActionTypeId) {
+    if (action.actionTypeId() == hueColorActionTypeId) {
         light->setColor(action.param("color").value().value<QColor>());
-    } else if (action.actionTypeId() == hueSetPowerActionTypeId) {
+    } else if (action.actionTypeId() == huePowerActionTypeId) {
         light->setOn(action.param("power").value().toBool());
-    } else if (action.actionTypeId() == hueSetBrightnessActionTypeId) {
+    } else if (action.actionTypeId() == hueBrightnessActionTypeId) {
         light->setBri(action.param("brightness").value().toInt());
     }
     return DeviceManager::DeviceErrorNoError;
 }
 
-void DevicePluginPhilipsHue::discoveryDone(const QList<QHostAddress> &bridges)
-{
-    qDebug() << "discovered bridges" << bridges.count();
-    QList<DeviceDescriptor> deviceDescriptors;
-    foreach (const QHostAddress &bridge, bridges) {
-        DeviceDescriptor descriptor(hueDeviceClassId, "Philips Hue bridge", bridge.toString());
-        ParamList params;
-        Param param("ip", bridge.toString());
-        params.append(param);
-        Param userParam("username", "guh-" + QUuid::createUuid().toString().remove(QRegExp("[\\{\\}]*")).remove(QRegExp("\\-[0-9a-f\\-]*")));
-        params.append(userParam);
-        Param numberParam("number", -1);
-        params.append(numberParam);
-        descriptor.setParams(params);
-        deviceDescriptors.append(descriptor);
-    }
-
-    emit devicesDiscovered(hueDeviceClassId, deviceDescriptors);
-}
 
 void DevicePluginPhilipsHue::createUserFinished(int id, const QVariant &response)
 {
@@ -301,6 +304,7 @@ void DevicePluginPhilipsHue::lightStateChanged()
     if (m_asyncSetups.contains(light)) {
         device = m_asyncSetups.take(light);
         device->setName(light->name());
+        device->setParamValue("name", light->name());
         emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusSuccess);
     } else {
         device = m_lights.value(light);

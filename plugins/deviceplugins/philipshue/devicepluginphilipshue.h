@@ -78,6 +78,9 @@ private:
     QHash<Light*, Device*> m_lights;
 
     QHash<Light*, Device*> m_asyncSetups;
+
+    int brightnessToPercentage(int brightness);
+    int percentageToBrightness(int percentage);
 };
 
 #endif // DEVICEPLUGINBOBLIGHT_H

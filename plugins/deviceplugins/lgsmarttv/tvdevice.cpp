@@ -172,7 +172,7 @@ void TvDevice::sendCommand(TvDevice::RemoteKey key, ActionId actionId)
 void TvDevice::setupEventHandler()
 {
     //qDebug() << "set up event handler " << m_hostAddress.toString() << m_port;
-    m_eventHandler = new TvEventHandler(this,hostAddress(),port());
+    m_eventHandler = new TvEventHandler(this, hostAddress(), port());
     connect(m_eventHandler, &TvEventHandler::eventOccured, this, &TvDevice::eventOccured);
 }
 

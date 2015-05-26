@@ -103,13 +103,6 @@ DeviceManager::DeviceError DevicePluginLgSmartTv::discoverDevices(const DeviceCl
 DeviceManager::DeviceSetupStatus DevicePluginLgSmartTv::setupDevice(Device *device)
 {
 
-    foreach (Device* d, myDevices()) {
-        if (d->paramValue("uuid").toString() == device->paramValue("uuid").toString()) {
-            qWarning() << "LG Smart Tv (" << device->paramValue("model").toString() << ")" << "allready added....";
-            return DeviceManager::DeviceSetupStatusFailure;
-        }
-    }
-
     device->setName("LG Smart Tv (" + device->paramValue("model").toString() + ")");
 
     UpnpDeviceDescriptor upnpDeviceDescriptor;
@@ -125,7 +118,6 @@ DeviceManager::DeviceSetupStatus DevicePluginLgSmartTv::setupDevice(Device *devi
 
     // TODO: make dynamic...displayPin setup!!!
     tvDevice->setKey("539887");
-    tvDevice->setupEventHandler();
 
     connect(tvDevice, &TvDevice::pairingFinished, this, &DevicePluginLgSmartTv::pairingFinished);
     connect(tvDevice, &TvDevice::sendCommandFinished, this, &DevicePluginLgSmartTv::sendingCommandFinished);
@@ -211,8 +203,12 @@ void DevicePluginLgSmartTv::upnpDiscoveryFinished(const QList<UpnpDeviceDescript
 void DevicePluginLgSmartTv::upnpNotifyReceived(const QByteArray &notifyData)
 {
     Q_UNUSED(notifyData);
-//    qDebug() << "######################################";
-//    qDebug() << notifyData;
+}
+
+void DevicePluginLgSmartTv::postSetupDevice(Device *device)
+{
+    TvDevice *tvDevice= m_tvList.key(device);
+    tvDevice->setupEventHandler();
 }
 
 void DevicePluginLgSmartTv::deviceRemoved(Device *device)
@@ -223,8 +219,9 @@ void DevicePluginLgSmartTv::deviceRemoved(Device *device)
 
     TvDevice *tvDevice= m_tvList.key(device);
     qDebug() << "remove LG SmartTv  " << tvDevice->modelName();
+    tvDevice->endPairing();
     m_tvList.remove(tvDevice);
-    tvDevice->deleteLater();
+    delete tvDevice;
 }
 
 void DevicePluginLgSmartTv::guhTimer()
@@ -239,14 +236,6 @@ void DevicePluginLgSmartTv::pairingFinished(const bool &success)
 {
     TvDevice *tvDevice = static_cast<TvDevice*>(sender());
     Device *device = m_tvList.value(tvDevice);
-
-    // check if we allready set up this device...
-    foreach (Device *configuredDevice, deviceManager()->findConfiguredDevices(lgSmartTvDeviceClassId)) {
-        if (configuredDevice->paramValue("uuid").toString() == device->paramValue("uuid").toString()) {
-            tvDevice->refresh();
-            return;
-        }
-    }
 
     // ...otherwise emit deviceSetupFinished with appropriate DeviceError
     if (success) {

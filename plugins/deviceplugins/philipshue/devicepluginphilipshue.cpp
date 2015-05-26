@@ -242,7 +242,7 @@ DeviceManager::DeviceError DevicePluginPhilipsHue::executeAction(Device *device,
     } else if (action.actionTypeId() == huePowerActionTypeId) {
         light->setOn(action.param("power").value().toBool());
     } else if (action.actionTypeId() == hueBrightnessActionTypeId) {
-        light->setBri(action.param("brightness").value().toInt());
+        light->setBri(percentageToBrightness(action.param("brightness").value().toInt()));
     }
     return DeviceManager::DeviceErrorNoError;
 }
@@ -315,5 +315,15 @@ void DevicePluginPhilipsHue::lightStateChanged()
     device->setStateValue(hueReachableStateTypeId, light->reachable());
     device->setStateValue(hueColorStateTypeId, QVariant::fromValue(light->color()));
     device->setStateValue(huePowerStateTypeId, light->on());
-    device->setStateValue(hueBrightnessStateTypeId, light->bri());
+    device->setStateValue(hueBrightnessStateTypeId, brightnessToPercentage(light->bri()));
+}
+
+int DevicePluginPhilipsHue::brightnessToPercentage(int brightness)
+{
+    return (int)(((100.0 * brightness) / 255.0) + 0.5);
+}
+
+int DevicePluginPhilipsHue::percentageToBrightness(int percentage)
+{
+    return (int)(((255.0 * percentage) / 100.0) + 0.5);
 }

@@ -15,18 +15,26 @@
                     "pairingInfo": "Please press the button on the Hue bridge and then press OK",
                     "paramTypes": [
                         {
-                            "name": "ip",
-                            "type" : "QString",
-                            "inputType": "IPv4Address"
-                        },
-                        {
-                            "name": "username",
+                            "name": "name",
                             "type" : "QString",
                             "inputType": "TextLine"
                         },
                         {
+                            "name": "ip",
+                            "type" : "QString",
+                            "inputType": "IPv4Address",
+                            "readOnly": true
+                        },
+                        {
+                            "name": "username",
+                            "type" : "QString",
+                            "inputType": "TextLine",
+                            "readOnly": true
+                        },
+                        {
                             "name": "lightId",
-                            "type" : "int"
+                            "type" : "int",
+                            "readOnly": true
                         }
                     ],
                     "stateTypes": [
@@ -40,57 +48,28 @@
                             "id": "d25423e7-b924-4b20-80b6-77eecc65d089",
                             "idName": "hueColor",
                             "name": "color",
-                            "type": "color",
-                            "defaultValue": "black"
+                            "type": "QColor",
+                            "defaultValue": "#000000",
+                            "writable": true
+
                         },
                         {
                             "id": "90aaffe5-6a76-47d2-a14a-550f60390245",
                             "idName": "huePower",
                             "name": "power",
                             "type": "bool",
-                            "defaultValue": false
+                            "defaultValue": false,
+                            "writable": true
                         },
                         {
                             "id": "90e91f64-a208-468c-a5a2-7f47e08859e2",
                             "idName": "hueBrightness",
                             "name": "brightness",
                             "type": "int",
-                            "defaultValue": 0
-                        }
-                    ],
-                    "actionTypes": [
-                        {
-                            "id": "29cc299a-818b-47b2-817f-c5a6361545e4",
-                            "idName": "hueSetColor",
-                            "name": "Set color",
-                            "paramTypes": [
-                                {
-                                    "name": "color",
-                                    "type": "QColor"
-                                }
-                            ]
-                        },
-                        {
-                            "id": "7782d91e-d73a-4321-8828-da768e2f6827",
-                            "idName": "hueSetPower",
-                            "name": "Set power",
-                            "paramTypes": [
-                                {
-                                    "name": "power",
-                                    "type": "bool"
-                                }
-                            ]
-                        },
-                        {
-                            "id": "3bc95552-cba0-4222-abd5-9b668132e442",
-                            "idName": "hueSetBrightness",
-                            "name": "Set brightness",
-                            "paramTypes": [
-                                {
-                                    "name": "brightness",
-                                    "type": "int"
-                                }
-                            ]
+                            "minValue": 0,
+                            "maxValue": 100,
+                            "defaultValue": 0,
+                            "writable": true
                         }
                     ]
                 }

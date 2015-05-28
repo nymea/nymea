@@ -84,20 +84,14 @@ DeviceManager::DeviceError DevicePluginWemo::discoverDevices(const DeviceClassId
 
 DeviceManager::DeviceSetupStatus DevicePluginWemo::setupDevice(Device *device)
 {
-    if (device->deviceClassId() == wemoSwitchDeviceClassId) {
-        foreach (Device *d, myDevices()) {
-            if (d->paramValue("serial number").toString() == device->paramValue("serial number").toString()) {
-                qWarning() << "WeMo Switch " << device->paramValue("serial number").toString() << " allready added...";
-                return DeviceManager::DeviceSetupStatusFailure;
-            }
-        }
-
-        device->setName("WeMo Switch (" + device->paramValue("serial number").toString() + ")");
-
-        refresh(device);
-        return DeviceManager::DeviceSetupStatusSuccess;
+    if (device->deviceClassId() != wemoSwitchDeviceClassId) {
+        return DeviceManager::DeviceSetupStatusFailure;
     }
-    return DeviceManager::DeviceSetupStatusFailure;
+
+    device->setName("WeMo Switch (" + device->paramValue("serial number").toString() + ")");
+
+    refresh(device);
+    return DeviceManager::DeviceSetupStatusSuccess;
 }
 
 DeviceManager::HardwareResources DevicePluginWemo::requiredHardware() const
@@ -126,11 +120,6 @@ DeviceManager::DeviceError DevicePluginWemo::executeAction(Device *device, const
         }
     }
 
-    // Rediscover
-    if (action.actionTypeId() == rediscoverActionTypeId) {
-        upnpDiscover("upnp:rootdevice");
-        return DeviceManager::DeviceErrorNoError;
-    }
     return DeviceManager::DeviceErrorActionTypeNotFound;
 }
 
@@ -197,16 +186,14 @@ void DevicePluginWemo::upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &
     QList<DeviceDescriptor> deviceDescriptors;
     foreach (UpnpDeviceDescriptor upnpDeviceDescriptor, upnpDeviceDescriptorList) {
         if (upnpDeviceDescriptor.friendlyName() == "WeMo Switch") {
-            if (!verifyExistingDevices(upnpDeviceDescriptor)) {
-                DeviceDescriptor descriptor(wemoSwitchDeviceClassId, "WemoSwitch", upnpDeviceDescriptor.serialNumber());
-                ParamList params;
-                params.append(Param("name", upnpDeviceDescriptor.friendlyName()));
-                params.append(Param("host address", upnpDeviceDescriptor.hostAddress().toString()));
-                params.append(Param("port", upnpDeviceDescriptor.port()));
-                params.append(Param("serial number", upnpDeviceDescriptor.serialNumber()));
-                descriptor.setParams(params);
-                deviceDescriptors.append(descriptor);
-            }
+            DeviceDescriptor descriptor(wemoSwitchDeviceClassId, "WemoSwitch", upnpDeviceDescriptor.serialNumber());
+            ParamList params;
+            params.append(Param("name", upnpDeviceDescriptor.friendlyName()));
+            params.append(Param("host address", upnpDeviceDescriptor.hostAddress().toString()));
+            params.append(Param("port", upnpDeviceDescriptor.port()));
+            params.append(Param("serial number", upnpDeviceDescriptor.serialNumber()));
+            descriptor.setParams(params);
+            deviceDescriptors.append(descriptor);
         }
     }
     emit devicesDiscovered(wemoSwitchDeviceClassId, deviceDescriptors);
@@ -217,30 +204,6 @@ void DevicePluginWemo::upnpNotifyReceived(const QByteArray &notifyData)
     Q_UNUSED(notifyData);
 }
 
-bool DevicePluginWemo::verifyExistingDevices(UpnpDeviceDescriptor deviceDescriptor)
-{
-    foreach (Device* device, myDevices()) {
-        // check if we allready have added this Wemo device and verify the params
-        if (device->paramValue("serial number").toString() == deviceDescriptor.serialNumber()) {
-            qDebug() << "verify wemo paramters... of" << deviceDescriptor.serialNumber();
-            // now check if ip or port changed
-            bool somethingChanged = false;
-            if (device->paramValue("host address").toString() != deviceDescriptor.hostAddress().toString()) {
-                device->setParamValue("host address", deviceDescriptor.hostAddress().toString());
-                somethingChanged = true;
-            }
-            if(device->paramValue("port").toInt() != deviceDescriptor.port()){
-                device->setParamValue("port", deviceDescriptor.port());
-                somethingChanged = true;
-            }
-            if (somethingChanged) {
-                refresh(device);
-            }
-            return true;
-        }
-    }
-    return false;
-}
 
 void DevicePluginWemo::refresh(Device *device)
 {
@@ -276,6 +239,7 @@ bool DevicePluginWemo::setPower(Device *device, const bool &power, const ActionI
     m_runningActionExecutions.insert(reply, actionId);
     return true;
 }
+
 
 void DevicePluginWemo::processRefreshData(const QByteArray &data, Device *device)
 {

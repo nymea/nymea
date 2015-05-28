@@ -179,27 +179,6 @@ void Light::setColor(const QColor &color)
     quint16 hue = color.hue() * 65535 / 360;
     quint8 sat = color.saturation();
 
-//    // Transform from RGB to XYZ
-//    QGenericMatrix<3, 3, qreal> rgb2xyzMatrix;
-//    rgb2xyzMatrix(0, 0) = 0.412453;    rgb2xyzMatrix(0, 1) = 0.357580;    rgb2xyzMatrix(0, 2) = 0.180423;
-//    rgb2xyzMatrix(1, 0) = 0.212671;    rgb2xyzMatrix(1, 1) = 0.715160;    rgb2xyzMatrix(1, 2) = 0.072169;
-//    rgb2xyzMatrix(2, 0) = 0.019334;    rgb2xyzMatrix(2, 1) = 0.119193;    rgb2xyzMatrix(2, 2) = 0.950227;
-
-//    QGenericMatrix<1, 3, qreal> rgbMatrix;
-//    rgbMatrix(0, 0) = 1.0 * color.red() / 255;
-//    rgbMatrix(1, 0) = 1.0 * color.green() / 255;
-//    rgbMatrix(2, 0) = 1.0 * color.blue() / 255;
-
-//    QGenericMatrix<1, 3, qreal> xyzMatrix = rgb2xyzMatrix * rgbMatrix;
-
-//    // transform from XYZ to CIELUV u' and v'
-//    qreal u = 4*xyzMatrix(0, 0) / (xyzMatrix(0, 0) + 15*xyzMatrix(1, 0) + 3*xyzMatrix(2, 0));
-//    qreal v = 9*xyzMatrix(1, 0) / (xyzMatrix(0, 0) + 15*xyzMatrix(1, 0) + 3*xyzMatrix(2, 0));
-
-    // Transform from CIELUV to (x,y)
-//    qreal x = 27*u / (18*u - 48*v + 36);
-//    qreal y = 12*v / (18*u - 48*v + 36);
-
     qDebug() << "setting color" << color;
     if (m_busyStateChangeId == -1) {
         QVariantMap params;
@@ -210,11 +189,6 @@ void Light::setColor(const QColor &color)
         // Lets just assume it always succeeds
         m_sat = sat;
 
-//        QVariantList xyList;
-//        xyList << x << y;
-//        params.insert("xy", xyList);
-
-
         params.insert("on", true);
         m_busyStateChangeId = m_bridge->put(m_ip, m_username, "lights/" + QString::number(m_id) + "/state", params, this, "setStateFinished");
     } else {
@@ -222,8 +196,6 @@ void Light::setColor(const QColor &color)
         m_hueDirty = true;
         m_dirtySat = sat;
         m_satDirty = true;
-//        m_xyDirty = true;
-//        m_dirtyXy = QPointF(x, y);
     }
 }
 
@@ -341,7 +313,7 @@ void Light::responseReceived(int id, const QVariant &response)
     m_reachable = stateMap.value("reachable").toBool();
     emit stateChanged();
 
-//    qDebug() << "got light response" << m_modelId << m_type << m_swversion << m_on << m_bri << m_reachable;
+    qDebug() << "got light response" << m_modelId << m_type << m_swversion << m_on << m_bri << m_reachable;
 }
 
 void Light::setDescriptionFinished(int id, const QVariant &response)

@@ -25,6 +25,7 @@
 #include <QPointF>
 #include <QColor>
 #include <QHostAddress>
+#include <QTimer>
 
 class HueBridgeConnection;
 
@@ -128,6 +129,11 @@ private:
     quint16 m_dirtyCt;
     bool m_xyDirty;
     QPointF m_dirtyXy;
+
+    // FIXME: This is needed as sometimes we don't get a reply from the bridge
+    // Can't use guhtimer right now as that triggers in intervals that aren't
+    // related to our sending. Perhaps we should create a guhtimeout thing?
+    QTimer m_busyTimeout;
 };
 
 #endif

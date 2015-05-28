@@ -40,6 +40,9 @@ Light::Light(const QHostAddress &ip, const QString &username, int id, QObject *p
     m_ctDirty(false),
     m_xyDirty(false)
 {
+    m_busyTimeout.setSingleShot(true);
+    m_busyTimeout.setInterval(2000);
+    connect(&m_busyTimeout, &QTimer::timeout, [this]{ setStateFinished(m_busyStateChangeId, QVariant()); });
 }
 
 QHostAddress Light::ip() const
@@ -140,6 +143,7 @@ void Light::setBri(quint8 bri)
                 params.insert("on", true);
             }
             m_busyStateChangeId = m_bridge->put(m_ip, m_username, "lights/" + QString::number(m_id) + "/state", params, this, "setStateFinished");
+            m_busyTimeout.start();
         } else {
             m_dirtyBri = bri;
             m_briDirty = true;
@@ -196,6 +200,7 @@ void Light::setColor(const QColor &color)
 
         params.insert("on", true);
         m_busyStateChangeId = m_bridge->put(m_ip, m_username, "lights/" + QString::number(m_id) + "/state", params, this, "setStateFinished");
+        m_busyTimeout.start();
     } else {
         m_dirtyHue = hue;
         m_hueDirty = true;
@@ -229,6 +234,7 @@ void Light::setCt(quint16 ct)
         params.insert("ct", ct);
         params.insert("on", true);
         m_busyStateChangeId = m_bridge->put(m_ip, m_username, "lights/" + QString::number(m_id) + "/state", params, this, "setStateFinished");
+        m_busyTimeout.start();
     } else {
         m_dirtyCt = ct;
         m_ctDirty = true;
@@ -371,6 +377,7 @@ void Light::setStateFinished(int id, const QVariant &response)
     emit stateChanged();
 
     if (m_busyStateChangeId == id) {
+        m_busyTimeout.stop();
         m_busyStateChangeId = -1;
         if (m_hueDirty || m_satDirty || m_briDirty) {
             QVariantMap params;
@@ -392,12 +399,14 @@ void Light::setStateFinished(int id, const QVariant &response)
             m_sat = m_dirtySat;
 
             m_busyStateChangeId = m_bridge->put(QHostAddress(m_ip), m_username, "lights/" + QString::number(m_id) + "/state", params, this, "setStateFinished");
+            m_busyTimeout.start();
         } else if(m_ctDirty) {
             QVariantMap params;
             params.insert("ct", m_dirtyCt);
             m_ctDirty = false;
 
             m_busyStateChangeId = m_bridge->put(m_ip, m_username, "lights/" + QString::number(m_id) + "/state", params, this, "setStateFinished");
+            m_busyTimeout.start();
         } else if (m_xyDirty) {
             QVariantMap params;
             QVariantList xyList;
@@ -406,6 +415,7 @@ void Light::setStateFinished(int id, const QVariant &response)
             m_xyDirty = false;
 
             m_busyStateChangeId = m_bridge->put(m_ip, m_username, "lights/" + QString::number(m_id) + "/state", params, this, "setStateFinished");
+            m_busyTimeout.start();
         }
     }
 }

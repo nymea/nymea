@@ -158,7 +158,7 @@ void DevicePluginPhilipsHue::deviceRemoved(Device *device)
 
     Light *light = m_lights.key(device);
     m_lights.remove(light);
-    m_unconfiguredLights.append(light);
+    light->deleteLater();
 }
 
 void DevicePluginPhilipsHue::upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &upnpDeviceDescriptorList)

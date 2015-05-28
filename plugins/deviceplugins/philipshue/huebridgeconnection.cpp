@@ -96,6 +96,8 @@ void HueBridgeConnection::slotCreateUserFinished()
     QByteArray data = reply->readAll();
     int id = m_createUserMap.take(reply);
 
+    reply->deleteLater();
+
     QJsonParseError error;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
 
@@ -119,6 +121,8 @@ void HueBridgeConnection::slotGetFinished()
     QNetworkReply *reply = static_cast<QNetworkReply*>(sender());
     QByteArray data = reply->readAll();
     Caller c = m_requestMap.take(reply);
+
+    reply->deleteLater();
 
     QJsonParseError error;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);

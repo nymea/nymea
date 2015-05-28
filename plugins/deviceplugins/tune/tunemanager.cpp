@@ -100,14 +100,14 @@ bool TuneManager::start()
         delete m_server;
         return false;
     }
-    qDebug() << " --> Tune server started" << localhost << m_port;
+    qDebug() << "--> Tune server started" << localhost << m_port;
     connect(m_server, &QTcpServer::newConnection, this, &TuneManager::tuneConnected);
     return true;
 }
 
 void TuneManager::stop()
 {
-    qDebug() << " --> close Tune server" << m_server->serverAddress().toString();
+    qDebug() << "--> close Tune server" << m_server->serverAddress().toString();
     m_server->close();
     delete m_server;
     m_server = 0;

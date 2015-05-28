@@ -91,8 +91,6 @@ DeviceManager::DeviceError DevicePluginPhilipsHue::discoverDevices(const DeviceC
 
 DeviceManager::DeviceSetupStatus DevicePluginPhilipsHue::setupDevice(Device *device)
 {
-    //qDebug() << "setupDevice" << device->params();
-
     Light *light = nullptr;
 
     // Lets see if this a a newly added device... In which case its hue id number is not set, well, -1...
@@ -145,26 +143,26 @@ void DevicePluginPhilipsHue::deviceRemoved(Device *device)
 
     Light *light = m_lights.key(device);
     m_lights.remove(light);
-    m_unconfiguredLights.append(light);
+    light->deleteLater();
 }
 
 void DevicePluginPhilipsHue::upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &upnpDeviceDescriptorList)
 {
-    qDebug() << "discovered bridges" << upnpDeviceDescriptorList.count();
-
     foreach (const UpnpDeviceDescriptor &descriptor, upnpDeviceDescriptorList) {
         qDebug() << descriptor;
     }
 
     QList<DeviceDescriptor> deviceDescriptors;
     foreach (const UpnpDeviceDescriptor &upnpDevice, upnpDeviceDescriptorList) {
-        DeviceDescriptor descriptor(hueDeviceClassId, "Philips Hue bridge", upnpDevice.hostAddress().toString());
-        ParamList params;
-        params.append(Param("ip", upnpDevice.hostAddress().toString()));
-        params.append(Param("username", "guh-" + QUuid::createUuid().toString().remove(QRegExp("[\\{\\}]*")).remove(QRegExp("\\-[0-9a-f\\-]*"))));
-        params.append(Param("number", -1));
-        descriptor.setParams(params);
-        deviceDescriptors.append(descriptor);
+        if (upnpDevice.modelDescription().contains("Philips")) {
+            DeviceDescriptor descriptor(hueDeviceClassId, "Philips hue bridge", upnpDevice.hostAddress().toString());
+            ParamList params;
+            params.append(Param("ip", upnpDevice.hostAddress().toString()));
+            params.append(Param("username", "guh-" + QUuid::createUuid().toString().remove(QRegExp("[\\{\\}]*")).remove(QRegExp("\\-[0-9a-f\\-]*"))));
+            params.append(Param("number", -1));
+            descriptor.setParams(params);
+            deviceDescriptors.append(descriptor);
+        }
     }
 
     emit devicesDiscovered(hueDeviceClassId, deviceDescriptors);
@@ -245,7 +243,6 @@ void DevicePluginPhilipsHue::createUserFinished(int id, const QVariant &response
     }
 
     // Paired successfully, check how many lightbulbs there are
-
     int getLightsId = m_bridge->get(QHostAddress(pairingInfo.ipParam.value().toString()), pairingInfo.usernameParam.value().toString(), "lights", this, "getLightsFinished");
     m_pairings.insert(getLightsId, pairingInfo);
 
@@ -269,11 +266,6 @@ void DevicePluginPhilipsHue::getLightsFinished(int id, const QVariant &params)
     }
 
     emit pairingFinished(pairingInfo.pairingTransactionId, DeviceManager::DeviceSetupStatusSuccess);
-
-    // If we have more than one device on that bridge, tell DeviceManager that there are more.
-    if (params.toMap().count() > 1) {
-//        emit autoDevicesAppeared();
-    }
 }
 
 void DevicePluginPhilipsHue::getFinished(int id, const QVariant &params)

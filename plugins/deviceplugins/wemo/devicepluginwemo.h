@@ -49,7 +49,6 @@ private:
     QHash<QNetworkReply *, Device *> m_refreshReplies;
     QHash<QNetworkReply *, Device *> m_setPowerReplies;
     QHash<QNetworkReply *, ActionId> m_runningActionExecutions;
-    bool verifyExistingDevices(UpnpDeviceDescriptor deviceDescriptor);
 
     void refresh(Device* device);
     bool setPower(Device *device, const bool &power, const ActionId &actionId);

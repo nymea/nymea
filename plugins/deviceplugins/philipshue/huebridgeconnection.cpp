@@ -76,7 +76,7 @@ int HueBridgeConnection::put(const QHostAddress &address, const QString &usernam
 
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(data);
     QByteArray jsonData = jsonDoc.toJson();
-    qDebug() << "putting" << url << jsonData;
+    //qDebug() << "putting" << url << jsonData;
 
     QNetworkReply *reply = m_nam->put(request, jsonData);
     connect(reply, &QNetworkReply::finished, this, &HueBridgeConnection::slotGetFinished);
@@ -96,8 +96,13 @@ void HueBridgeConnection::slotCreateUserFinished()
     QByteArray data = reply->readAll();
     int id = m_createUserMap.take(reply);
 
+    reply->deleteLater();
+
     QJsonParseError error;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
+
+    qDebug() << jsonDoc.toJson();
+
     if (error.error != QJsonParseError::NoError) {
         QVariantMap params;
         QVariantMap errorMap;
@@ -117,8 +122,11 @@ void HueBridgeConnection::slotGetFinished()
     QByteArray data = reply->readAll();
     Caller c = m_requestMap.take(reply);
 
+    reply->deleteLater();
+
     QJsonParseError error;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
+
     if (error.error != QJsonParseError::NoError) {
         QVariantMap params;
         QVariantMap errorMap;
@@ -126,6 +134,10 @@ void HueBridgeConnection::slotGetFinished()
         params.insert("error", errorMap);
         emit createUserFinished(c.id, params);
         return;
+    }
+
+    if (jsonDoc.toJson().contains("error")){
+        qDebug() << jsonDoc.toJson();
     }
 
     QVariant response = jsonDoc.toVariant();

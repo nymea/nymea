@@ -91,7 +91,7 @@ DeviceManager::DeviceError DevicePluginPhilipsHue::discoverDevices(const DeviceC
 
 DeviceManager::DeviceSetupStatus DevicePluginPhilipsHue::setupDevice(Device *device)
 {
-    //qDebug() << "setupDevice" << device->params();
+    qDebug() << "setupDevice" << device->params();
 
     Light *light = nullptr;
 
@@ -150,21 +150,21 @@ void DevicePluginPhilipsHue::deviceRemoved(Device *device)
 
 void DevicePluginPhilipsHue::upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &upnpDeviceDescriptorList)
 {
-    qDebug() << "discovered bridges" << upnpDeviceDescriptorList.count();
-
     foreach (const UpnpDeviceDescriptor &descriptor, upnpDeviceDescriptorList) {
         qDebug() << descriptor;
     }
 
     QList<DeviceDescriptor> deviceDescriptors;
     foreach (const UpnpDeviceDescriptor &upnpDevice, upnpDeviceDescriptorList) {
-        DeviceDescriptor descriptor(hueDeviceClassId, "Philips Hue bridge", upnpDevice.hostAddress().toString());
-        ParamList params;
-        params.append(Param("ip", upnpDevice.hostAddress().toString()));
-        params.append(Param("username", "guh-" + QUuid::createUuid().toString().remove(QRegExp("[\\{\\}]*")).remove(QRegExp("\\-[0-9a-f\\-]*"))));
-        params.append(Param("number", -1));
-        descriptor.setParams(params);
-        deviceDescriptors.append(descriptor);
+        if (upnpDevice.modelDescription().contains("Philips")) {
+            DeviceDescriptor descriptor(hueDeviceClassId, "Philips hue bridge", upnpDevice.hostAddress().toString());
+            ParamList params;
+            params.append(Param("ip", upnpDevice.hostAddress().toString()));
+            params.append(Param("username", "guh-" + QUuid::createUuid().toString().remove(QRegExp("[\\{\\}]*")).remove(QRegExp("\\-[0-9a-f\\-]*"))));
+            params.append(Param("number", -1));
+            descriptor.setParams(params);
+            deviceDescriptors.append(descriptor);
+        }
     }
 
     emit devicesDiscovered(hueDeviceClassId, deviceDescriptors);
@@ -227,7 +227,7 @@ DeviceManager::DeviceError DevicePluginPhilipsHue::executeAction(Device *device,
     } else if (action.actionTypeId() == huePowerActionTypeId) {
         light->setOn(action.param("power").value().toBool());
     } else if (action.actionTypeId() == hueBrightnessActionTypeId) {
-        light->setBri(action.param("brightness").value().toInt());
+        light->setBri(percentageToBrightness(action.param("brightness").value().toInt()));
     }
     return DeviceManager::DeviceErrorNoError;
 }
@@ -245,7 +245,6 @@ void DevicePluginPhilipsHue::createUserFinished(int id, const QVariant &response
     }
 
     // Paired successfully, check how many lightbulbs there are
-
     int getLightsId = m_bridge->get(QHostAddress(pairingInfo.ipParam.value().toString()), pairingInfo.usernameParam.value().toString(), "lights", this, "getLightsFinished");
     m_pairings.insert(getLightsId, pairingInfo);
 
@@ -300,5 +299,15 @@ void DevicePluginPhilipsHue::lightStateChanged()
     device->setStateValue(hueReachableStateTypeId, light->reachable());
     device->setStateValue(hueColorStateTypeId, QVariant::fromValue(light->color()));
     device->setStateValue(huePowerStateTypeId, light->on());
-    device->setStateValue(hueBrightnessStateTypeId, light->bri());
+    device->setStateValue(hueBrightnessStateTypeId, brightnessToPercentage(light->bri()));
+}
+
+int DevicePluginPhilipsHue::brightnessToPercentage(int brightness)
+{
+    return (int)(((100.0 * brightness) / 255.0) + 0.5);
+}
+
+int DevicePluginPhilipsHue::percentageToBrightness(int percentage)
+{
+    return (int)(((255.0 * percentage) / 100.0) + 0.5);
 }

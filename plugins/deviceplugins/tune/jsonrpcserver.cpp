@@ -45,6 +45,7 @@ JsonRpcServer::JsonRpcServer(QObject *parent) :
 
     connect(m_manager, &TuneManager::tuneConnectionStatusChanged, this, &JsonRpcServer::connectionStatusChanged);
     connect(m_manager, &TuneManager::dataReady, this, &JsonRpcServer::processData);
+
 }
 
 void JsonRpcServer::start()

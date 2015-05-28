@@ -98,6 +98,9 @@ void HueBridgeConnection::slotCreateUserFinished()
 
     QJsonParseError error;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
+
+    qDebug() << jsonDoc.toJson();
+
     if (error.error != QJsonParseError::NoError) {
         QVariantMap params;
         QVariantMap errorMap;
@@ -119,6 +122,7 @@ void HueBridgeConnection::slotGetFinished()
 
     QJsonParseError error;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
+
     if (error.error != QJsonParseError::NoError) {
         QVariantMap params;
         QVariantMap errorMap;
@@ -126,6 +130,10 @@ void HueBridgeConnection::slotGetFinished()
         params.insert("error", errorMap);
         emit createUserFinished(c.id, params);
         return;
+    }
+
+    if (jsonDoc.toJson().contains("error")){
+        qDebug() << jsonDoc.toJson();
     }
 
     QVariant response = jsonDoc.toVariant();

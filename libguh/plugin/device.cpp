@@ -187,6 +187,7 @@ void Device::setStateValue(const StateTypeId &stateTypeId, const QVariant &value
     for (int i = 0; i < m_states.count(); ++i) {
         if (m_states.at(i).stateTypeId() == stateTypeId) {
             if (m_states.at(i).value() == value) {
+                //qDebug() << name() << m_states.at(i).value() << "-----> value unchanged";
                 return;
             }
             State newState(stateTypeId, m_id);

@@ -24,6 +24,7 @@
 #include <QObject>
 #include <QDebug>
 #include <QJsonDocument>
+#include <QTimer>
 
 #include "tunemanager.h"
 #include "plugin/device.h"

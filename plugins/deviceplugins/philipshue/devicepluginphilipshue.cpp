@@ -106,8 +106,6 @@ DeviceManager::DeviceError DevicePluginPhilipsHue::discoverDevices(const DeviceC
 
 DeviceManager::DeviceSetupStatus DevicePluginPhilipsHue::setupDevice(Device *device)
 {
-    qDebug() << "setupDevice" << device->params();
-
     Light *light = nullptr;
 
     // Lets see if this a a newly added device... In which case its hue id number is not set, well, -1...
@@ -283,11 +281,6 @@ void DevicePluginPhilipsHue::getLightsFinished(int id, const QVariant &params)
     }
 
     emit pairingFinished(pairingInfo.pairingTransactionId, DeviceManager::DeviceSetupStatusSuccess);
-
-    // If we have more than one device on that bridge, tell DeviceManager that there are more.
-    if (params.toMap().count() > 1) {
-//        emit autoDevicesAppeared();
-    }
 }
 
 void DevicePluginPhilipsHue::getFinished(int id, const QVariant &params)

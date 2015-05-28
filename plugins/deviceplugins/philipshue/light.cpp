@@ -132,8 +132,13 @@ void Light::setBri(quint8 bri)
         qDebug() << "setting brightness to" << bri << m_busyStateChangeId;
         if (m_busyStateChangeId == -1) {
             QVariantMap params;
-            params.insert("bri", bri);
-            params.insert("on", true);
+            if (bri == 0) {
+                params.insert("bri", bri);
+                params.insert("on", false);
+            } else {
+                params.insert("bri", bri);
+                params.insert("on", true);
+            }
             m_busyStateChangeId = m_bridge->put(m_ip, m_username, "lights/" + QString::number(m_id) + "/state", params, this, "setStateFinished");
         } else {
             m_dirtyBri = bri;

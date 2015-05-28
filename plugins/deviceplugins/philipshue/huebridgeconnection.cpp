@@ -76,7 +76,7 @@ int HueBridgeConnection::put(const QHostAddress &address, const QString &usernam
 
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(data);
     QByteArray jsonData = jsonDoc.toJson();
-    qDebug() << "putting" << url << jsonData;
+    //qDebug() << "putting" << url << jsonData;
 
     QNetworkReply *reply = m_nam->put(request, jsonData);
     connect(reply, &QNetworkReply::finished, this, &HueBridgeConnection::slotGetFinished);

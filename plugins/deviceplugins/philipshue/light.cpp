@@ -313,7 +313,7 @@ void Light::responseReceived(int id, const QVariant &response)
     m_reachable = stateMap.value("reachable").toBool();
     emit stateChanged();
 
-    qDebug() << "got light response" << m_modelId << m_type << m_swversion << m_on << m_bri << m_reachable;
+    //qDebug() << "got light response" << m_modelId << m_type << m_swversion << m_on << m_bri << m_reachable;
 }
 
 void Light::setDescriptionFinished(int id, const QVariant &response)

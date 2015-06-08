@@ -437,6 +437,7 @@ void GuhCore::gotEvent(const Event &event)
         } else {
             // State based rule
             m_logger->logRuleActiveChanged(rule);
+            emit ruleActiveChanged(rule);
             if (rule.active()) {
                 actions.append(rule.actions());
             } else {

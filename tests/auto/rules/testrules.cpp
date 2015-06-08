@@ -81,9 +81,9 @@ void TestRules::cleanupMockHistory() {
 
 void TestRules::cleanupRules() {
     QVariant response = injectAndWait("Rules.GetRules");
-    foreach (const QVariant &ruleId, response.toMap().value("params").toMap().value("ruleIds").toList()) {
+    foreach (const QVariant &ruleDescription, response.toMap().value("params").toMap().value("ruleDescriptions").toList()) {
         QVariantMap params;
-        params.insert("ruleId", ruleId.toString());
+        params.insert("ruleId", ruleDescription.toMap().value("id").toString());
         verifyRuleError(injectAndWait("Rules.RemoveRule", params));
     }
 }
@@ -319,7 +319,7 @@ void TestRules::addRemoveRules()
     RuleId newRuleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
 
     response = injectAndWait("Rules.GetRules");
-    QVariantList rules = response.toMap().value("params").toMap().value("ruleIds").toList();
+    QVariantList rules = response.toMap().value("params").toMap().value("ruleDescriptions").toList();
 
     if (error != RuleEngine::RuleErrorNoError) {
         QVERIFY2(rules.count() == 0, "There should be no rules.");
@@ -327,7 +327,7 @@ void TestRules::addRemoveRules()
     }
 
     QVERIFY2(rules.count() == 1, "There should be exactly one rule");
-    QCOMPARE(RuleId(rules.first().toString()), newRuleId);
+    QCOMPARE(RuleId(rules.first().toMap().value("id").toString()), newRuleId);
 
     params.clear();
     params.insert("ruleId", newRuleId);
@@ -369,7 +369,7 @@ void TestRules::addRemoveRules()
     verifyRuleError(response);
 
     response = injectAndWait("Rules.GetRules");
-    rules = response.toMap().value("params").toMap().value("rules").toList();
+    rules = response.toMap().value("params").toMap().value("ruleDescriptions").toList();
     QVERIFY2(rules.count() == 0, "There should be no rules.");
 }
 
@@ -518,12 +518,18 @@ void TestRules::loadStoreConfig()
 
     response = injectAndWait("Rules.GetRules");
 
-    QVariantList rules = response.toMap().value("params").toMap().value("ruleIds").toList();
+    QVariantList rules = response.toMap().value("params").toMap().value("ruleDescriptions").toList();
 
     QVERIFY2(rules.count() == 3, "There should be exactly three rule.");
-    QVERIFY2(rules.contains(newRuleId.toString()), "Rule 1 should be in ruleIds list.");
-    QVERIFY2(rules.contains(newRuleId2.toString()), "Rule 2 should be in ruleIds list.");
-    QVERIFY2(rules.contains(newRuleId3.toString()), "Rule 3 should be in ruleIds list.");
+
+    QStringList idList;
+    foreach (const QVariant &ruleDescription, rules) {
+        idList.append(ruleDescription.toMap().value("id").toString());
+    }
+
+    QVERIFY2(idList.contains(newRuleId.toString()), "Rule 1 should be in ruleIds list.");
+    QVERIFY2(idList.contains(newRuleId2.toString()), "Rule 2 should be in ruleIds list.");
+    QVERIFY2(idList.contains(newRuleId3.toString()), "Rule 3 should be in ruleIds list.");
 
     // Rule 1
     params.clear();

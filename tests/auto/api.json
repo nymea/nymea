@@ -1,4 +1,4 @@
-22
+23
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -287,12 +287,13 @@
             }
         },
         "Rules.AddRule": {
-            "description": "Add a rule. You can describe rules by one or many EventDesciptors and a StateEvaluator. Note that onlyone of either eventDescriptor or eventDescriptorList may be passed at a time. A rule can be created but left disabled,meaning it won't actually be executed until set to enabled. If not given, enabled defaults to true.",
+            "description": "Add a rule. You can describe rules by one or many EventDesciptors and a StateEvaluator. Note that only one of either eventDescriptor or eventDescriptorList may be passed at a time. A rule can be created but left disabled, meaning it won't actually be executed until set to enabled. If not given, enabled defaults to true.",
             "params": {
                 "actions": [
                     "$ref:RuleAction"
                 ],
                 "name": "String",
+                "o:active": "Bool",
                 "o:enabled": "Bool",
                 "o:eventDescriptor": "$ref:EventDescriptor",
                 "o:eventDescriptorList": [
@@ -348,12 +349,12 @@
             }
         },
         "Rules.GetRules": {
-            "description": "Get all configured rules",
+            "description": "Get the descriptions of all configured rules. If you need more information about a specific rule use the method Rules.GetRuleDetails.",
             "params": {
             },
             "returns": {
-                "ruleIds": [
-                    "Uuid"
+                "ruleDescriptions": [
+                    "$ref:RuleDescription"
                 ]
             }
         },
@@ -414,6 +415,13 @@
             "description": "Emitted whenever an entry is appended to the logging system.",
             "params": {
                 "logEntry": "$ref:LogEntry"
+            }
+        },
+        "Rules.RuleActiveChanged": {
+            "description": "Emitted whenever the active state of a Rule changed.",
+            "params": {
+                "active": "Bool",
+                "ruleId": "Uuid"
             }
         },
         "Rules.RuleAdded": {
@@ -620,6 +628,7 @@
             "actions": [
                 "$ref:RuleAction"
             ],
+            "active": "Bool",
             "enabled": "Bool",
             "eventDescriptors": [
                 "$ref:EventDescriptor"
@@ -643,6 +652,12 @@
             "o:eventParamName": "String",
             "o:eventTypeId": "Uuid",
             "o:value": "$ref:BasicType"
+        },
+        "RuleDescription": {
+            "active": "Bool",
+            "enabled": "Bool",
+            "id": "Uuid",
+            "name": "String"
         },
         "RuleError": [
             "RuleErrorNoError",

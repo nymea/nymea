@@ -100,12 +100,12 @@ RuleEngine::RuleEngine(QObject *parent) :
     QSettings settings(m_settingsFile);
     qDebug() << "laoding rules from" << settings.fileName();
     foreach (const QString &idString, settings.childGroups()) {
-        qDebug() << "found rule" << idString;
-
         settings.beginGroup(idString);
 
         QString name = settings.value("name", idString).toString();
         bool enabled = settings.value("enabled", true).toBool();
+
+        qDebug() << "found rule" << name << idString;
 
         QList<EventDescriptor> eventDescriptorList;
         settings.beginGroup("events");
@@ -132,37 +132,46 @@ RuleEngine::RuleEngine(QObject *parent) :
                 settings.endGroup();
             }
         }
-
         settings.endGroup();
 
         StateEvaluator stateEvaluator = StateEvaluator::loadFromSettings(settings, "stateEvaluator");
         
-        settings.beginGroup("ruleActions");
         QList<RuleAction> actions;
-        foreach (const QString &actionIdString, settings.childGroups()) {
-            settings.beginGroup(actionIdString);
-            RuleAction action = RuleAction(ActionTypeId(settings.value("actionTypeId").toString()), DeviceId(settings.value("deviceId").toString()));
+        settings.beginGroup("ruleActions");
+        foreach (const QString &actionNumber, settings.childGroups()) {
+            settings.beginGroup(actionNumber);
+
+            RuleAction action = RuleAction(ActionTypeId(settings.value("actionTypeId").toString()),
+                                           DeviceId(settings.value("deviceId").toString()));
+
             RuleActionParamList params;
             foreach (QString paramNameString, settings.childGroups()) {
                 if (paramNameString.startsWith("RuleActionParam-")) {
                     settings.beginGroup(paramNameString);
-                    RuleActionParam param(paramNameString.remove(QRegExp("^RuleActionParam-")), settings.value("value",QVariant()), EventTypeId(settings.value("eventTypeId", EventTypeId()).toString()), settings.value("eventParamName", QString()).toString());
+                    RuleActionParam param(paramNameString.remove(QRegExp("^RuleActionParam-")),
+                                          settings.value("value",QVariant()),
+                                          EventTypeId(settings.value("eventTypeId", EventTypeId()).toString()),
+                                          settings.value("eventParamName", QString()).toString());
                     params.append(param);
                     settings.endGroup();
                 }
             }
+
             action.setRuleActionParams(params);
+            actions.append(action);
 
             settings.endGroup();
-            actions.append(action);
         }
         settings.endGroup();
 
-        settings.beginGroup("ruleExitActions");
         QList<RuleAction> exitActions;
-        foreach (const QString &actionIdString, settings.childGroups()) {
-            settings.beginGroup(actionIdString);
-            RuleAction action = RuleAction(ActionTypeId(settings.value("actionTypeId").toString()), DeviceId(settings.value("deviceId").toString()));
+        settings.beginGroup("ruleExitActions");
+        foreach (const QString &actionNumber, settings.childGroups()) {
+            settings.beginGroup(actionNumber);
+
+            RuleAction action = RuleAction(ActionTypeId(settings.value("actionTypeId").toString()),
+                                           DeviceId(settings.value("deviceId").toString()));
+
             RuleActionParamList params;
             foreach (QString paramNameString, settings.childGroups()) {
                 if (paramNameString.startsWith("RuleActionParam-")) {
@@ -173,17 +182,15 @@ RuleEngine::RuleEngine(QObject *parent) :
                 }
             }
             action.setRuleActionParams(params);
-
-            settings.endGroup();
             exitActions.append(action);
+            settings.endGroup();
         }
-        settings.endGroup();
-
         settings.endGroup();
 
         Rule rule = Rule(RuleId(idString), name, eventDescriptorList, stateEvaluator, actions, exitActions);
         rule.setEnabled(enabled);
         appendRule(rule);
+        settings.endGroup();
     }
 }
 
@@ -341,7 +348,7 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
         const EventDescriptor &eventDescriptor = eventDescriptorList.at(i);
         settings.beginGroup("EventDescriptor-" + QString::number(i));
         settings.setValue("deviceId", eventDescriptor.deviceId().toString());
-        settings.setValue("eventTypeId", eventDescriptor.eventTypeId());
+        settings.setValue("eventTypeId", eventDescriptor.eventTypeId().toString());
 
         foreach (const ParamDescriptor &paramDescriptor, eventDescriptor.paramDescriptors()) {
             settings.beginGroup("ParamDescriptor-" + paramDescriptor.name());
@@ -357,37 +364,41 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
     stateEvaluator.dumpToSettings(settings, "stateEvaluator");
 
     // Save ruleActions
+    int i = 0;
     settings.beginGroup("ruleActions");
     foreach (const RuleAction &action, rule.actions()) {
-        settings.beginGroup(action.actionTypeId().toString());
-        settings.setValue("deviceId", action.deviceId());
-        settings.setValue("actionTypeId", action.actionTypeId());
+        settings.beginGroup(QString::number(i));
+        settings.setValue("deviceId", action.deviceId().toString());
+        settings.setValue("actionTypeId", action.actionTypeId().toString());
         foreach (const RuleActionParam &param, action.ruleActionParams()) {
             settings.beginGroup("RuleActionParam-" + param.name());
-            settings.setValue("eventTypeId", param.eventTypeId());
-            settings.setValue("eventParamName", param.eventParamName());
             settings.setValue("value", param.value());
+            if (param.eventTypeId() != EventTypeId()) {
+                settings.setValue("eventTypeId", param.eventTypeId().toString());
+                settings.setValue("eventParamName", param.eventParamName());
+            }
             settings.endGroup();
         }
+        i++;
         settings.endGroup();
     }
-
     settings.endGroup();
 
     // Save ruleExitActions
     settings.beginGroup("ruleExitActions");
+    i = 0;
     foreach (const RuleAction &action, rule.exitActions()) {
-        settings.beginGroup(action.actionTypeId().toString());
-        settings.setValue("deviceId", action.deviceId());
-        settings.setValue("actionTypeId", action.actionTypeId());
+        settings.beginGroup(QString::number(i));
+        settings.setValue("deviceId", action.deviceId().toString());
+        settings.setValue("actionTypeId", action.actionTypeId().toString());
         foreach (const RuleActionParam &param, action.ruleActionParams()) {
             settings.beginGroup("RuleActionParam-" + param.name());
             settings.setValue("value", param.value());
             settings.endGroup();
         }
+        i++;
         settings.endGroup();
     }
-
     settings.endGroup();
 
     return RuleErrorNoError;

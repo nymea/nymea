@@ -33,9 +33,10 @@ RulesHandler::RulesHandler(QObject *parent) :
     QVariantMap returns;
 
     params.clear(); returns.clear();
-    setDescription("GetRules", "Get all configured rules");
+    setDescription("GetRules", "Get the descriptions of all configured rules. If you need more information about a specific rule use the "
+                   "method Rules.GetRuleDetails.");
     setParams("GetRules", params);
-    returns.insert("ruleIds", QVariantList() << JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    returns.insert("ruleDescriptions", QVariantList() << JsonTypes::ruleDescriptionRef());
     setReturns("GetRules", returns);
 
     params.clear(); returns.clear();
@@ -47,8 +48,8 @@ RulesHandler::RulesHandler(QObject *parent) :
     setReturns("GetRuleDetails", returns);
 
     params.clear(); returns.clear();
-    setDescription("AddRule", "Add a rule. You can describe rules by one or many EventDesciptors and a StateEvaluator. Note that only"
-                   "one of either eventDescriptor or eventDescriptorList may be passed at a time. A rule can be created but left disabled,"
+    setDescription("AddRule", "Add a rule. You can describe rules by one or many EventDesciptors and a StateEvaluator. Note that only "
+                   "one of either eventDescriptor or eventDescriptorList may be passed at a time. A rule can be created but left disabled, "
                    "meaning it won't actually be executed until set to enabled. If not given, enabled defaults to true.");
     params.insert("o:eventDescriptor", JsonTypes::eventDescriptorRef());
     params.insert("o:eventDescriptorList", QVariantList() << JsonTypes::eventDescriptorRef());
@@ -103,9 +104,15 @@ RulesHandler::RulesHandler(QObject *parent) :
     params.insert("rule", JsonTypes::ruleRef());
     setParams("RuleAdded", params);
 
+    params.clear(); returns.clear();
+    setDescription("RuleActiveChanged", "Emitted whenever the active state of a Rule changed.");
+    params.insert("ruleId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    params.insert("active", JsonTypes::basicTypeToString(JsonTypes::Bool));
+    setParams("RuleActiveChanged", params);
+
     connect(GuhCore::instance(), &GuhCore::ruleAdded, this, &RulesHandler::ruleAddedNotification);
     connect(GuhCore::instance(), &GuhCore::ruleRemoved, this, &RulesHandler::ruleRemovedNotification);
-
+    connect(GuhCore::instance(), &GuhCore::ruleActiveChanged, this, &RulesHandler::ruleActiveChangedNotification);
 }
 
 QString RulesHandler::name() const
@@ -118,11 +125,11 @@ JsonReply* RulesHandler::GetRules(const QVariantMap &params)
     Q_UNUSED(params)
 
     QVariantList rulesList;
-    foreach (const RuleId &ruleId, GuhCore::instance()->ruleIds()) {
-        rulesList.append(ruleId);
+    foreach (const Rule &rule, GuhCore::instance()->rules()) {
+        rulesList.append(JsonTypes::packRuleDescription(rule));
     }
     QVariantMap returns;
-    returns.insert("ruleIds", rulesList);
+    returns.insert("ruleDescriptions", rulesList);
 
     return createReply(returns);
 }
@@ -364,4 +371,13 @@ void RulesHandler::ruleAddedNotification(const Rule &rule)
     params.insert("rule", JsonTypes::packRule(rule));
 
     emit RuleAdded(params);
+}
+
+void RulesHandler::ruleActiveChangedNotification(const Rule &rule)
+{
+    QVariantMap params;
+    params.insert("ruleId", rule.id());
+    params.insert("active", rule.active());
+
+    emit RuleActiveChanged(params);
 }

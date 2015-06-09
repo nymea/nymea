@@ -67,6 +67,7 @@ QVariantMap JsonTypes::s_deviceClass;
 QVariantMap JsonTypes::s_device;
 QVariantMap JsonTypes::s_deviceDescriptor;
 QVariantMap JsonTypes::s_rule;
+QVariantMap JsonTypes::s_ruleDescription;
 QVariantMap JsonTypes::s_logEntry;
 
 void JsonTypes::init()
@@ -200,10 +201,17 @@ void JsonTypes::init()
     s_rule.insert("id", basicTypeToString(Uuid));
     s_rule.insert("name", basicTypeToString(String));
     s_rule.insert("enabled", basicTypeToString(Bool));
+    s_rule.insert("active", basicTypeToString(Bool));
     s_rule.insert("eventDescriptors", QVariantList() << eventDescriptorRef());
     s_rule.insert("actions", QVariantList() << ruleActionRef());
     s_rule.insert("exitActions", QVariantList() << ruleActionRef());
     s_rule.insert("stateEvaluator", stateEvaluatorRef());
+
+    // RuleDescription
+    s_ruleDescription.insert("id", basicTypeToString(Uuid));
+    s_ruleDescription.insert("name", basicTypeToString(String));
+    s_ruleDescription.insert("enabled", basicTypeToString(Bool));
+    s_ruleDescription.insert("active", basicTypeToString(Bool));
 
     // LogEntry
     s_logEntry.insert("timestamp", basicTypeToString(Int));
@@ -274,6 +282,7 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("DeviceDescriptor", deviceDescriptorDescription());
     allTypes.insert("Action", actionDescription());
     allTypes.insert("Rule", ruleDescription());
+    allTypes.insert("RuleDescription", ruleDescriptionDescription());
     allTypes.insert("LogEntry", logEntryDescription());
     return allTypes;
 }
@@ -537,6 +546,7 @@ QVariantMap JsonTypes::packRule(const Rule &rule)
     ruleMap.insert("id", rule.id());
     ruleMap.insert("name", rule.name());
     ruleMap.insert("enabled", rule.enabled());
+    ruleMap.insert("active", rule.active());
     QVariantList eventDescriptorList;
     foreach (const EventDescriptor &eventDescriptor, rule.eventDescriptors()) {
         eventDescriptorList.append(JsonTypes::packEventDescriptor(eventDescriptor));
@@ -556,6 +566,16 @@ QVariantMap JsonTypes::packRule(const Rule &rule)
     ruleMap.insert("exitActions", exitActionList);
     ruleMap.insert("stateEvaluator", JsonTypes::packStateEvaluator(rule.stateEvaluator()));
     return ruleMap;
+}
+
+QVariantMap JsonTypes::packRuleDescription(const Rule &rule)
+{
+    QVariantMap ruleDescriptionMap;
+    ruleDescriptionMap.insert("id", rule.id());
+    ruleDescriptionMap.insert("name", rule.name());
+    ruleDescriptionMap.insert("enabled", rule.enabled());
+    ruleDescriptionMap.insert("active", rule.active());
+    return ruleDescriptionMap;
 }
 
 QVariantMap JsonTypes::packLogEntry(const LogEntry &logEntry)
@@ -912,6 +932,12 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                 QPair<bool, QString> result = validateMap(ruleDescription(), variant.toMap());
                 if (!result.first) {
                     qDebug() << "rule type not matching";
+                    return result;
+                }
+            } else if (refName == ruleDescriptionRef()) {
+                QPair<bool, QString> result = validateMap(s_ruleDescription, variant.toMap());
+                if (!result.first) {
+                    qDebug() << "ruleDescription type not matching";
                     return result;
                 }
             } else if (refName == eventDescriptorRef()) {

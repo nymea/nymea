@@ -45,6 +45,7 @@ public:
 signals:
     void RuleRemoved(const QVariantMap &params);
     void RuleAdded(const QVariantMap &params);
+    void RuleActiveChanged(const QVariantMap &params);
 
 private:
     QVariant::Type getActionParamType(const ActionTypeId &actionTypeId, const QString &paramName);
@@ -55,6 +56,7 @@ private:
 private slots:
     void ruleRemovedNotification(const RuleId &ruleId);
     void ruleAddedNotification(const Rule &rule);
+    void ruleActiveChangedNotification(const Rule &rule);
 
 };
 

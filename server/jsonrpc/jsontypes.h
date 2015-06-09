@@ -128,6 +128,7 @@ public:
     DECLARE_OBJECT(device, "Device")
     DECLARE_OBJECT(deviceDescriptor, "DeviceDescriptor")
     DECLARE_OBJECT(rule, "Rule")
+    DECLARE_OBJECT(ruleDescription, "RuleDescription")
     DECLARE_OBJECT(logEntry, "LogEntry")
 
     static QVariantMap packEventType(const EventType &eventType);
@@ -149,6 +150,7 @@ public:
     static QVariantMap packDevice(Device *device);
     static QVariantMap packDeviceDescriptor(const DeviceDescriptor &descriptor);
     static QVariantMap packRule(const Rule &rule);
+    static QVariantMap packRuleDescription(const Rule &rule);
     static QVariantMap packLogEntry(const LogEntry &logEntry);
     static QVariantList packCreateMethods(DeviceClass::CreateMethods createMethods);
 

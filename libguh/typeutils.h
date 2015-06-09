@@ -19,6 +19,17 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \headerfile TypeUtils
+    \brief Provides meta types and enums used in guh.
+
+    \ingroup types
+    \inmodule libguh
+
+
+
+*/
+
 #ifndef TYPEUTILS_H
 #define TYPEUTILS_H
 
@@ -61,6 +72,7 @@ class Types
     Q_ENUMS(StateOperator)
     Q_ENUMS(ValueOperator)
     Q_ENUMS(InputType)
+    Q_ENUMS(Unit)
 
 public:
     enum InputType {
@@ -74,6 +86,45 @@ public:
         InputTypeIPv6Address,
         InputTypeUrl,
         InputTypeMacAddress
+    };
+
+    enum Unit {
+        UnitSeconds,
+        UnitMinutes,
+        UnitHours,
+        UnitUnixTime,
+        UnitMeterPerSecond,
+        UnitKilometerPerHour,
+        UnitDegree,
+        UnitRadiant,
+        UnitDegreeCelsius,
+        UnitDegreeKelvin,
+        UnitMilliBar,
+        UnitBar,
+        UnitPascal,
+        UnitHectoPascal,
+        UnitAtmosphere,
+        UnitLumen,
+        UnitLux,
+        UnitCandela,
+        UnitMilliMeter,
+        UnitCentiMeter,
+        UnitMeter,
+        UnitKiloMeter,
+        UnitGram,
+        UnitKiloGram,
+        UnitDezibel,
+        UnitKiloByte,
+        UnitMegaByte,
+        UnitGigaByte,
+        UnitTeraByte,
+        UnitMilliWatt,
+        UnitWatt,
+        UnitKiloWatt,
+        UnitKiloWattHour,
+        UnitPercentage,
+        UnitEuro,
+        UnitDollar
     };
 
     enum ValueOperator {
@@ -93,5 +144,6 @@ public:
 Q_DECLARE_METATYPE(Types::ValueOperator)
 Q_DECLARE_METATYPE(Types::StateOperator)
 Q_DECLARE_METATYPE(Types::InputType)
+Q_DECLARE_METATYPE(Types::Unit)
 
 #endif // TYPEUTILS_H

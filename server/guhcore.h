@@ -103,6 +103,7 @@ signals:
 
     void ruleRemoved(const RuleId &ruleId);
     void ruleAdded(const Rule &rule);
+    void ruleActiveChanged(const Rule &rule);
 
 
 private:

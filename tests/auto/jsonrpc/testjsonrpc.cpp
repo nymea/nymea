@@ -52,6 +52,8 @@ private slots:
     void deviceAddedRemovedNotifications();
     void ruleAddedRemovedNotifications();
 
+    void ruleActiveChangedNotifications();
+
     void deviceParamsChangedNotifications();
 
 private:
@@ -412,6 +414,135 @@ void TestJSONRPC::ruleAddedRemovedNotifications()
 
     jsonDocResponse = QJsonDocument::fromJson(clientSpy2.at(1).at(1).toByteArray());
     jsonDocNotification = QJsonDocument::fromJson(clientSpy2.at(0).at(1).toByteArray());
+
+    verifyRuleError(jsonDocResponse.toVariant());
+
+    // check the DeviceRemoved notification
+    QCOMPARE(jsonDocNotification.toVariant().toMap().value("notification").toString(), QString("Rules.RuleRemoved"));
+    QCOMPARE(jsonDocNotification.toVariant().toMap().value("params").toMap().value("ruleId").toString(), ruleId.toString());
+}
+
+void TestJSONRPC::ruleActiveChangedNotifications()
+{
+    // enable notificartions
+    QVariantMap params;
+    params.insert("enabled", true);
+    QVariant response = injectAndWait("JSONRPC.SetNotificationStatus", params);
+    QCOMPARE(response.toMap().value("params").toMap().value("enabled").toBool(), true);
+
+    // Add rule and wait for notification
+    // StateDescriptor
+    QVariantMap stateDescriptor;
+    stateDescriptor.insert("stateTypeId", mockIntStateId);
+    stateDescriptor.insert("deviceId", m_mockDeviceId);
+    stateDescriptor.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
+    stateDescriptor.insert("value", "20");
+
+    QVariantMap stateEvaluator;
+    stateEvaluator.insert("stateDescriptor", stateDescriptor);
+
+    // RuleAction
+    QVariantMap actionNoParams;
+    actionNoParams.insert("actionTypeId", mockActionIdNoParams);
+    actionNoParams.insert("deviceId", m_mockDeviceId);
+    actionNoParams.insert("ruleActionParams", QVariantList());
+
+    params.clear(); response.clear();
+    params.insert("name", "Test Rule notifications");
+    params.insert("actions", QVariantList() << actionNoParams);
+    params.insert("stateEvaluator", stateEvaluator);
+
+    // Setup connection to mock client
+    QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+
+    response = injectAndWait("Rules.AddRule", params);
+
+    clientSpy.wait(500);
+    qDebug() << "got" << clientSpy.count() << "notifications";
+    QCOMPARE(clientSpy.count(), 2);
+
+    QJsonDocument jsonDocResponse = QJsonDocument::fromJson(clientSpy.at(1).at(1).toByteArray());
+    QJsonDocument jsonDocNotification = QJsonDocument::fromJson(clientSpy.at(0).at(1).toByteArray());
+
+    verifyRuleError(jsonDocResponse.toVariant());
+    RuleId ruleId = RuleId(jsonDocResponse.toVariant().toMap().value("params").toMap().value("ruleId").toString());
+    QVERIFY(!ruleId.isNull());
+
+    // check the DeviceAdded notification
+    QCOMPARE(jsonDocNotification.toVariant().toMap().value("notification").toString(), QString("Rules.RuleAdded"));
+    QVariantMap notificationRuleMap = jsonDocNotification.toVariant().toMap().value("params").toMap().value("rule").toMap();
+
+    QCOMPARE(notificationRuleMap.value("enabled").toBool(), true);
+    QCOMPARE(notificationRuleMap.value("name").toString(), params.value("name").toString());
+    QCOMPARE(notificationRuleMap.value("id").toString(), ruleId.toString());
+    QCOMPARE(notificationRuleMap.value("actions").toList(), QVariantList() << actionNoParams);
+    QCOMPARE(notificationRuleMap.value("stateEvaluator").toMap().value("stateDescriptor").toMap(), stateDescriptor);
+    QCOMPARE(notificationRuleMap.value("exitActions").toList(), QVariantList());
+
+    // set the rule active
+    QNetworkAccessManager nam;
+    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy clientSpy2(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+
+    // state state to 20
+    qDebug() << "setting mock int state to 20";
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockIntStateId.toString()).arg(20)));
+    QNetworkReply *reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    clientSpy2.wait(500);
+    qDebug() << "got" << clientSpy2.count() << "notifications";
+    QCOMPARE(clientSpy2.count(), 6);
+
+    for (int i = 0; i < clientSpy2.count(); i++) {
+        QByteArray notification = clientSpy2.at(i).at(1).toByteArray();
+        if (notification.contains("Rules.RuleActiveChanged")) {
+            QVariantMap notificationMap = QJsonDocument::fromJson(notification).toVariant().toMap();
+            QCOMPARE(notificationMap.value("notification").toString(), QString("Rules.RuleActiveChanged"));
+            QCOMPARE(notificationMap.value("params").toMap().value("ruleId").toString(), ruleId.toString());
+            QCOMPARE(notificationMap.value("params").toMap().value("active").toBool(), true);
+        }
+    }
+    clientSpy2.clear();
+    spy.clear();
+
+    // set the rule inactive
+    qDebug() << "setting mock int state to 42";
+    QNetworkRequest request2(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockIntStateId.toString()).arg(42)));
+    QNetworkReply *reply2 = nam.get(request2);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply2->deleteLater();
+
+    clientSpy2.wait(500);
+    QCOMPARE(clientSpy2.count(), 5);
+
+    for (int i = 0; i < clientSpy2.count(); i++) {
+        QByteArray notification = clientSpy2.at(i).at(1).toByteArray();
+        if (notification.contains("Rules.RuleActiveChanged")) {
+            QVariantMap notificationMap = QJsonDocument::fromJson(notification).toVariant().toMap();
+            QCOMPARE(notificationMap.value("notification").toString(), QString("Rules.RuleActiveChanged"));
+            QCOMPARE(notificationMap.value("params").toMap().value("ruleId").toString(), ruleId.toString());
+            QCOMPARE(notificationMap.value("params").toMap().value("active").toBool(), false);
+        }
+    }
+
+    // Setup connection to mock client
+    QSignalSpy clientSpy3(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+
+    // now remove the rule and check the RuleRemoved notification
+    params.clear(); response.clear();
+    params.insert("ruleId", ruleId);
+    response = injectAndWait("Rules.RemoveRule", params);
+
+    clientSpy3.wait(500);
+    qDebug() << "got" << clientSpy3.count() << "notifications";
+    QCOMPARE(clientSpy3.count(), 2); // wait for RuleRemoved notification and response
+
+    jsonDocResponse = QJsonDocument::fromJson(clientSpy3.at(1).at(1).toByteArray());
+    jsonDocNotification = QJsonDocument::fromJson(clientSpy3.at(0).at(1).toByteArray());
 
     verifyRuleError(jsonDocResponse.toVariant());
 

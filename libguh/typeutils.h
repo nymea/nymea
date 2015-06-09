@@ -19,17 +19,6 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-/*!
-    \headerfile TypeUtils
-    \brief Provides meta types and enums used in guh.
-
-    \ingroup types
-    \inmodule libguh
-
-
-
-*/
-
 #ifndef TYPEUTILS_H
 #define TYPEUTILS_H
 
@@ -135,6 +124,7 @@ public:
         ValueOperatorLessOrEqual,
         ValueOperatorGreaterOrEqual
     };
+
     enum StateOperator {
         StateOperatorAnd,
         StateOperatorOr

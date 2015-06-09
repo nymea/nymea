@@ -42,11 +42,15 @@ public:
     QVariant defaultValue() const;
     void setDefaultValue(const QVariant &defaultValue);
 
+    Types::Unit unit() const;
+    void setUnit(const Types::Unit &unit);
+
 private:
     StateTypeId m_id;
     QString m_name;
     QVariant::Type m_type;
     QVariant m_defaultValue;
+    Types::Unit m_unit;
 };
 
 #endif // STATETYPE_H

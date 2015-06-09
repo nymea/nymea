@@ -46,63 +46,72 @@
                         {
                             "id": "36b2f09b-7d77-4fbc-a68f-23d735dda0b1",
                             "idName": "updateTime",
-                            "name": "last update [unixtime]",
+                            "name": "last update",
+                            "unit": "UnixTime",
                             "type": "uint",
                             "defaultValue": 0
                         },
                         {
                             "id": "6013402f-b5b1-46b3-8490-f0c20d62fe61",
                             "idName": "temperature",
-                            "name": "temperature [Celsius]",
+                            "name": "temperature",
+                            "unit": "DegreeCelsius",
                             "type": "double",
                             "defaultValue": 0
                         },
                         {
                             "id": "14ec2781-cb04-4bbf-b097-7d01ef982630",
                             "idName": "temperatureMin",
-                            "name": "temperature minimum [Celsius]",
+                            "name": "temperature minimum",
+                            "unit": "DegreeCelsius",
                             "type": "double",
                             "defaultValue": 0
                         },
                         {
                             "id": "fefe5563-452f-4833-b5cf-49c3cc67c772",
                             "idName": "temperatureMax",
-                            "name": "temperature maximum [Celsius]",
+                            "name": "temperature maximum",
+                            "unit": "DegreeCelsius",
                             "type": "double",
                             "defaultValue": 0
                         },
                         {
                             "id": "6f32ec73-3240-4630-ada9-1c10b8e98123",
                             "idName": "humidity",
-                            "name": "humidity [%]",
+                            "name": "humidity",
+                            "unit": "Percentage",
                             "type": "int",
                             "defaultValue": 0
                         },
                         {
                             "id": "4a42eea9-00eb-440b-915e-dbe42180f83b",
                             "idName": "pressure",
-                            "name": "pressure [hPa]",
+                            "name": "pressure",
+                            "unit": "HectoPascal",
                             "type": "double",
                             "defaultValue": 0
                         },
                         {
                             "id": "2bf63430-e9e2-4fbf-88e6-6f1b4770f287",
                             "idName": "windSpeed",
-                            "name": "wind speed [m/s]",
+                            "name": "wind speed",
+                            "unit": "MeterPerSecond",
                             "type": "double",
                             "defaultValue": 0
                         },
                         {
                             "id": "589e2ea5-65b2-4afd-9b72-e3708a589a12",
                             "idName": "windDirection",
-                            "name": "wind direction [degree]",
+                            "name": "wind direction",
+                            "unit": "Degree",
                             "type": "int",
                             "defaultValue": 0
                         },
                         {
                             "id": "798553bc-45c7-42eb-9105-430bddb5d9b7",
                             "idName": "cloudiness",
-                            "name": "cloudiness [%]",
+                            "name": "cloudiness",
+                            "unit": "Percentage",
                             "type": "int",
                             "defaultValue": 0
                         },
@@ -115,14 +124,16 @@
                         {
                             "id": "af155e94-9492-44e1-8608-7d0ee8b5d50d",
                             "idName": "sunset",
-                            "name": "sunset [unixtime]",
+                            "name": "sunset",
+                            "unit": "UnixTime",
                             "type": "uint",
                             "defaultValue": 0
                         },
                         {
                             "id": "a1dddc3d-549f-4f20-b78b-be850548f286",
                             "idName": "sunrise",
-                            "name": "sunrise [unixtime]",
+                            "name": "sunrise",
+                            "unit": "UnixTime",
                             "type": "int",
                             "defaultValue": 0
                         }

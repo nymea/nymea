@@ -125,6 +125,7 @@ void JsonTypes::init()
     s_stateType.insert("name", basicTypeToString(String));
     s_stateType.insert("type", basicTypeRef());
     s_stateType.insert("defaultValue", basicTypeToString(Variant));
+    s_stateType.insert("o:unit", unitRef());
 
     // State
     s_state.insert("stateTypeId", basicTypeToString(Uuid));
@@ -390,6 +391,11 @@ QVariantMap JsonTypes::packStateType(const StateType &stateType)
     variantMap.insert("name", stateType.name());
     variantMap.insert("type", QVariant::typeToName(stateType.type()));
     variantMap.insert("defaultValue", stateType.defaultValue());
+
+    if(stateType.unit() != Types::UnitNone) {
+        variantMap.insert("unit", s_unit.at(stateType.unit()));
+    }
+
     return variantMap;
 }
 
@@ -461,7 +467,7 @@ QVariantMap JsonTypes::packParamType(const ParamType &paramType)
         variantMap.insert("inputType", s_inputType.at(paramType.inputType()));
     }
     if (paramType.unit() != Types::UnitNone) {
-        variantMap.insert("unit", s_inputType.at(paramType.unit()));
+        variantMap.insert("unit", s_unit.at(paramType.unit()));
     }
     // only add if this param is NOT writable
     if (paramType.readOnly()) {
@@ -1029,6 +1035,12 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                 QPair<bool, QString> result = validateEnum(s_inputType, variant);
                 if (!result.first) {
                     qDebug() << QString("value %1 not allowed in %2").arg(variant.toString()).arg(inputTypeRef());
+                    return result;
+                }
+            } else if (refName == unitRef()) {
+                QPair<bool, QString> result = validateEnum(s_unit, variant);
+                if (!result.first) {
+                    qDebug() << QString("value %1 not allowed in %2").arg(variant.toString()).arg(unitRef());
                     return result;
                 }
             } else {

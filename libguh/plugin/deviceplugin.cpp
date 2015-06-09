@@ -414,6 +414,82 @@ QList<ParamType> DevicePlugin::parseParamTypes(const QJsonArray &array) const
             }
         }
 
+        // set the unit if there is any
+        if (pt.contains("unit")) {
+            QString unitString = pt.value("unit").toString();
+            if (unitString == "Seconds") {
+                paramType.setUnit(Types::UnitSeconds);
+            } else if (unitString == "Minutes") {
+                paramType.setUnit(Types::UnitMinutes);
+            } else if (unitString == "Hours") {
+                paramType.setUnit(Types::UnitHours);
+            } else if (unitString == "UnixTime") {
+                paramType.setUnit(Types::UnitUnixTime);
+            } else if (unitString == "MeterPerSecond") {
+                paramType.setUnit(Types::UnitMeterPerSecond);
+            } else if (unitString == "KiloMeterPerHour") {
+                paramType.setUnit(Types::UnitKiloMeterPerHour);
+            } else if (unitString == "Degree") {
+                paramType.setUnit(Types::UnitDegree);
+            } else if (unitString == "Radiant") {
+                paramType.setUnit(Types::UnitRadiant);
+            } else if (unitString == "DegreeCelsius") {
+                paramType.setUnit(Types::UnitDegreeCelsius);
+            } else if (unitString == "DegreeKelvin") {
+                paramType.setUnit(Types::UnitDegreeKelvin);
+            } else if (unitString == "MilliBar") {
+                paramType.setUnit(Types::UnitMilliBar);
+            } else if (unitString == "Bar") {
+                paramType.setUnit(Types::UnitBar);
+            } else if (unitString == "Pascal") {
+                paramType.setUnit(Types::UnitPascal);
+            } else if (unitString == "HectoPascal") {
+                paramType.setUnit(Types::UnitHectoPascal);
+            } else if (unitString == "Atmosphere") {
+                paramType.setUnit(Types::UnitAtmosphere);
+            } else if (unitString == "Lumen") {
+                paramType.setUnit(Types::UnitLumen);
+            } else if (unitString == "Lux") {
+                paramType.setUnit(Types::UnitLux);
+            } else if (unitString == "Candela") {
+                paramType.setUnit(Types::UnitCandela);
+            } else if (unitString == "MilliMeter") {
+                paramType.setUnit(Types::UnitMilliMeter);
+            } else if (unitString == "CentiMeter") {
+                paramType.setUnit(Types::UnitCentiMeter);
+            } else if (unitString == "Meter") {
+                paramType.setUnit(Types::UnitMeter);
+            } else if (unitString == "KiloMeter") {
+                paramType.setUnit(Types::UnitKiloMeter);
+            } else if (unitString == "Gram") {
+                paramType.setUnit(Types::UnitGram);
+            } else if (unitString == "KiloGram") {
+                paramType.setUnit(Types::UnitKiloGram);
+            } else if (unitString == "Dezibel") {
+                paramType.setUnit(Types::UnitDezibel);
+            } else if (unitString == "KiloByte") {
+                paramType.setUnit(Types::UnitKiloByte);
+            } else if (unitString == "MegaByte") {
+                paramType.setUnit(Types::UnitMegaByte);
+            } else if (unitString == "GigaByte") {
+                paramType.setUnit(Types::UnitGigaByte);
+            } else if (unitString == "TeraByte") {
+                paramType.setUnit(Types::UnitTeraByte);
+            } else if (unitString == "MilliWatt") {
+                paramType.setUnit(Types::UnitMilliWatt);
+            } else if (unitString == "Watt") {
+                paramType.setUnit(Types::UnitWatt);
+            } else if (unitString == "KiloWatt") {
+                paramType.setUnit(Types::UnitKiloWatt);
+            } else if (unitString == "KiloWattHour") {
+                paramType.setUnit(Types::UnitKiloWattHour);
+            } else if (unitString == "Euro") {
+                paramType.setUnit(Types::UnitEuro);
+            } else if (unitString == "Dollar") {
+                paramType.setUnit(Types::UnitDollar);
+            }
+        }
+
         // set readOnly if given (default false)
         if (pt.contains("readOnly")) {
             paramType.setReadOnly(pt.value("readOnly").toBool());

@@ -293,7 +293,6 @@
                     "$ref:RuleAction"
                 ],
                 "name": "String",
-                "o:active": "Bool",
                 "o:enabled": "Bool",
                 "o:eventDescriptor": "$ref:EventDescriptor",
                 "o:eventDescriptorList": [

@@ -38,6 +38,7 @@ ParamType::ParamType(const QString &name, const QVariant::Type type, const QVari
     m_type(type),
     m_defaultValue(defaultValue),
     m_inputType(Types::InputTypeNone),
+    m_unit(Types::UnitNone),
     m_readOnly(false)
 {
 }
@@ -112,6 +113,18 @@ Types::InputType ParamType::inputType() const
 void ParamType::setInputType(const Types::InputType &inputType)
 {
     m_inputType = inputType;
+}
+
+/*! Returns the unit of this ParamType. */
+Types::Unit ParamType::unit() const
+{
+    return m_unit;
+}
+
+/*! Sets the unit of this ParamType to the given \a unit. */
+void ParamType::setUnit(const Types::Unit &unit)
+{
+    m_unit = unit;
 }
 
 /*! Returns the limits of this ParamType. limits(minValue, maxValue). */

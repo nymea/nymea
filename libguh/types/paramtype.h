@@ -49,6 +49,9 @@ public:
     Types::InputType inputType() const;
     void setInputType(const Types::InputType &inputType);
 
+    Types::Unit unit() const;
+    void setUnit(const Types::Unit &unit);
+
     QPair<QVariant, QVariant> limits() const;
     void setLimits(const QVariant &min, const QVariant &max);
 
@@ -65,6 +68,7 @@ private:
     QVariant m_minValue;
     QVariant m_maxValue;
     Types::InputType m_inputType;
+    Types::Unit m_unit;
     QVariantList m_allowedValues;
     bool m_readOnly;
 };

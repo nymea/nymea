@@ -78,12 +78,13 @@ public:
     };
 
     enum Unit {
+        UnitNone,
         UnitSeconds,
         UnitMinutes,
         UnitHours,
         UnitUnixTime,
         UnitMeterPerSecond,
-        UnitKilometerPerHour,
+        UnitKiloMeterPerHour,
         UnitDegree,
         UnitRadiant,
         UnitDegreeCelsius,

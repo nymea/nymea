@@ -9,7 +9,6 @@
         \li \l{libguh}
             \list
                 \li \l{Types}{Types used in the guh system}
-                \li \l{MetaTypes}{MetaTypes and enums used in the guh system}
                 \li \l{Device Plugins}{The Device Plugin API}
                 \li \l{Hardware Resources}{Hardware Resources}
             \endlist

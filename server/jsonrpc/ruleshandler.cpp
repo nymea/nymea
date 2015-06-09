@@ -56,7 +56,6 @@ RulesHandler::RulesHandler(QObject *parent) :
     params.insert("o:stateEvaluator", JsonTypes::stateEvaluatorRef());
     params.insert("o:exitActions", QVariantList() << JsonTypes::ruleActionRef());
     params.insert("o:enabled", JsonTypes::basicTypeToString(JsonTypes::Bool));
-    params.insert("o:active", JsonTypes::basicTypeToString(JsonTypes::Bool));
     params.insert("name", JsonTypes::basicTypeToString(JsonTypes::String));
     QVariantList actions;
     actions.append(JsonTypes::ruleActionRef());

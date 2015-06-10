@@ -68,6 +68,7 @@
                             "type": "int",
                             "minValue": 0,
                             "maxValue": 100,
+                            "unit": "Percentage",
                             "defaultValue": 0,
                             "writable": true
                         }

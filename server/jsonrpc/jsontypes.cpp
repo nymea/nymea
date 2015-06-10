@@ -37,6 +37,7 @@ QVariantList JsonTypes::s_basicType;
 QVariantList JsonTypes::s_stateOperator;
 QVariantList JsonTypes::s_valueOperator;
 QVariantList JsonTypes::s_inputType;
+QVariantList JsonTypes::s_unit;
 QVariantList JsonTypes::s_createMethod;
 QVariantList JsonTypes::s_setupMethod;
 QVariantList JsonTypes::s_removePolicy;
@@ -77,6 +78,7 @@ void JsonTypes::init()
     s_stateOperator = enumToStrings(Types::staticMetaObject, "StateOperator");
     s_valueOperator = enumToStrings(Types::staticMetaObject, "ValueOperator");
     s_inputType = enumToStrings(Types::staticMetaObject, "InputType");
+    s_unit = enumToStrings(Types::staticMetaObject, "Unit");
     s_createMethod = enumToStrings(DeviceClass::staticMetaObject, "CreateMethod");
     s_setupMethod = enumToStrings(DeviceClass::staticMetaObject, "SetupMethod");
     s_removePolicy = enumToStrings(RuleEngine::staticMetaObject, "RemovePolicy");
@@ -95,6 +97,7 @@ void JsonTypes::init()
     s_paramType.insert("o:maxValue", basicTypeToString(Variant));
     s_paramType.insert("o:allowedValues", QVariantList() << basicTypeToString(Variant));
     s_paramType.insert("o:inputType", inputTypeRef());
+    s_paramType.insert("o:unit", unitRef());
     s_paramType.insert("o:readOnly", basicTypeToString(Bool));
 
     // Param
@@ -122,6 +125,7 @@ void JsonTypes::init()
     s_stateType.insert("name", basicTypeToString(String));
     s_stateType.insert("type", basicTypeRef());
     s_stateType.insert("defaultValue", basicTypeToString(Variant));
+    s_stateType.insert("o:unit", unitRef());
 
     // State
     s_state.insert("stateTypeId", basicTypeToString(Uuid));
@@ -251,6 +255,7 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("BasicType", basicType());
     allTypes.insert("ParamType", paramTypeDescription());
     allTypes.insert("InputType", inputType());
+    allTypes.insert("Unit", unit());
     allTypes.insert("CreateMethod", createMethod());
     allTypes.insert("SetupMethod", setupMethod());
     allTypes.insert("ValueOperator", valueOperator());
@@ -386,6 +391,11 @@ QVariantMap JsonTypes::packStateType(const StateType &stateType)
     variantMap.insert("name", stateType.name());
     variantMap.insert("type", QVariant::typeToName(stateType.type()));
     variantMap.insert("defaultValue", stateType.defaultValue());
+
+    if(stateType.unit() != Types::UnitNone) {
+        variantMap.insert("unit", s_unit.at(stateType.unit()));
+    }
+
     return variantMap;
 }
 
@@ -455,6 +465,9 @@ QVariantMap JsonTypes::packParamType(const ParamType &paramType)
     }
     if (paramType.inputType() != Types::InputTypeNone) {
         variantMap.insert("inputType", s_inputType.at(paramType.inputType()));
+    }
+    if (paramType.unit() != Types::UnitNone) {
+        variantMap.insert("unit", s_unit.at(paramType.unit()));
     }
     // only add if this param is NOT writable
     if (paramType.readOnly()) {
@@ -1022,6 +1035,12 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                 QPair<bool, QString> result = validateEnum(s_inputType, variant);
                 if (!result.first) {
                     qDebug() << QString("value %1 not allowed in %2").arg(variant.toString()).arg(inputTypeRef());
+                    return result;
+                }
+            } else if (refName == unitRef()) {
+                QPair<bool, QString> result = validateEnum(s_unit, variant);
+                if (!result.first) {
+                    qDebug() << QString("value %1 not allowed in %2").arg(variant.toString()).arg(unitRef());
                     return result;
                 }
             } else {

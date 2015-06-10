@@ -60,6 +60,7 @@
                             "idName": "value",
                             "name": "value",
                             "type": "int",
+                            "unit": "Percentage",
                             "minValue": 0,
                             "maxValue": 100,
                             "defaultValue": 0,
@@ -97,18 +98,21 @@
                             "id": "ccc656b0-7b66-473d-875e-b0b9a47d300c",
                             "idName": "temperature",
                             "name": "temperature",
+                            "unit": "DegreeCelsius",
                             "type": "double"
                         },
                         {
                             "id": "94df310d-32eb-40f7-b80e-32781b3f8a3e",
                             "idName": "humidity",
                             "name": "humidity",
+                            "unit": "Percentage",
                             "type": "int"
                         },
                         {
                             "id": "9f1212c9-0523-4a00-991e-b652c79b04ed",
                             "idName": "lightIntensity",
                             "name": "light intensity",
+                            "unit": "Lumen",
                             "type": "int"
                         },
                         {
@@ -124,6 +128,7 @@
                             "idName": "brightness",
                             "name": "brightness",
                             "type": "int",
+                            "unit": "Percentage",
                             "minValue": 0,
                             "maxValue": 100,
                             "defaultValue": 0,

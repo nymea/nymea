@@ -508,9 +508,15 @@ DeviceManager::DeviceError DeviceManager::pairDevice(const PairingTransactionId 
     m_pairingsDiscovery.insert(pairingTransactionId, qMakePair<DeviceClassId, DeviceDescriptorId>(deviceClassId, deviceDescriptorId));
 
     if (deviceClass.setupMethod() == DeviceClass::SetupMethodDisplayPin) {
-        // TODO: fetch PIN from device plugin
-        qCWarning(dcDeviceManager) << "SetupMethodDisplayPin not implemented yet";
-        return DeviceErrorSetupFailed;
+        DeviceDescriptor deviceDescriptor = m_discoveredDevices.value(deviceDescriptorId);
+
+        DevicePlugin *plugin = m_devicePlugins.value(m_supportedDevices.value(deviceClassId).pluginId());
+        if (!plugin) {
+            qWarning() << "Can't find a plugin for this device class";
+            return DeviceErrorPluginNotFound;
+        }
+
+        return plugin->displayPin(pairingTransactionId, deviceDescriptor);
     }
 
     return DeviceErrorNoError;
@@ -520,7 +526,6 @@ DeviceManager::DeviceError DeviceManager::pairDevice(const PairingTransactionId 
  *  Returns \l{DeviceManager::DeviceError}{DeviceError} to inform about the result. */
 DeviceManager::DeviceError DeviceManager::confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &secret)
 {
-    Q_UNUSED(secret)
     if (m_pairingsJustAdd.contains(pairingTransactionId)) {
         qCWarning(dcDeviceManager) << "this SetupMethod is not implemented yet";
         m_pairingsJustAdd.remove(pairingTransactionId);
@@ -540,7 +545,7 @@ DeviceManager::DeviceError DeviceManager::confirmPairing(const PairingTransactio
             return DeviceErrorPluginNotFound;
         }
 
-        DeviceSetupStatus status = plugin->confirmPairing(pairingTransactionId, deviceClassId, deviceDescriptor.params());
+        DeviceSetupStatus status = plugin->confirmPairing(pairingTransactionId, deviceClassId, deviceDescriptor.params(), secret);
         switch (status) {
         case DeviceSetupStatusSuccess:
             m_pairingsDiscovery.remove(pairingTransactionId);

@@ -211,9 +211,19 @@ void DevicePluginPhilipsHue::upnpDiscoveryFinished(const QList<UpnpDeviceDescrip
     emit devicesDiscovered(hueBridgeDeviceClassId, deviceDescriptors);
 }
 
-DeviceManager::DeviceSetupStatus DevicePluginPhilipsHue::confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params)
+DeviceManager::DeviceSetupStatus DevicePluginPhilipsHue::confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret)
 {
-    if (deviceClassId != hueBridgeDeviceClassId) {
+    Q_UNUSED(deviceClassId)
+    Q_UNUSED(secret)
+
+    Param ipParam;
+    foreach (const Param &param, params) {
+        if (param.name() == "ip") {
+            ipParam = param;
+        }
+    }
+    if (!ipParam.isValid()) {
+        qWarning() << "Missing parameter: ip";
         return DeviceManager::DeviceSetupStatusFailure;
     }
 

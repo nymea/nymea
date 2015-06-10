@@ -11,6 +11,8 @@
                     "idName": "lgSmartTv",
                     "name": "LG Smart Tv",
                     "createMethods": ["discovery"],
+                    "setupMethod": "displayPin",
+                    "pairingInfo": "Please enter the pairing key displayed on the Tv.",
                     "paramTypes": [
                         {
                             "name": "name",
@@ -18,12 +20,12 @@
                             "inputType": "TextLine"
                         },
                         {
-                            "name": "uuid",
+                            "name": "model",
                             "type": "QString",
                             "inputType": "TextLine"
                         },
                         {
-                            "name": "model",
+                            "name": "uuid",
                             "type": "QString",
                             "inputType": "TextLine"
                         },
@@ -35,16 +37,6 @@
                         {
                             "name": "port",
                             "type": "int"
-                        },
-                        {
-                            "name": "location",
-                            "type": "QString",
-                            "inputType": "Url"
-                        },
-                        {
-                            "name": "manufacturer",
-                            "type": "QString",
-                            "inputType": "TextLine"
                         },
                         {
                             "name": "key",

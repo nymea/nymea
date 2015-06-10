@@ -44,11 +44,18 @@ public:
     void upnpNotifyReceived(const QByteArray &notifyData);
     void postSetupDevice(Device *device) override;
 
+    DeviceManager::DeviceError displayPin(const PairingTransactionId &pairingTransactionId, const DeviceDescriptor &deviceDescriptor) override;
+    DeviceManager::DeviceSetupStatus confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret) override;
+
+    void networkManagerReplyReady(QNetworkReply *reply) override;
+
     void deviceRemoved(Device *device) override;
 
     void guhTimer() override;
 
+private:
     QHash<TvDevice*, Device*> m_tvList;
+    QNetworkReply *m_showPinReply;
 
 private slots:
     void pairingFinished(const bool &success);

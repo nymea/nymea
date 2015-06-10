@@ -168,9 +168,11 @@ void DevicePluginPhilipsHue::upnpDiscoveryFinished(const QList<UpnpDeviceDescrip
     emit devicesDiscovered(hueDeviceClassId, deviceDescriptors);
 }
 
-DeviceManager::DeviceSetupStatus DevicePluginPhilipsHue::confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params)
+DeviceManager::DeviceSetupStatus DevicePluginPhilipsHue::confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret)
 {
     Q_UNUSED(deviceClassId)
+    Q_UNUSED(secret)
+
     Param ipParam;
     foreach (const Param &param, params) {
         if (param.name() == "ip") {

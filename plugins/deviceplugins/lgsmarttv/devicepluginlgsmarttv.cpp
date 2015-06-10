@@ -68,7 +68,6 @@ DeviceManager::DeviceError DevicePluginLgSmartTv::discoverDevices(const DeviceCl
 
 DeviceManager::DeviceSetupStatus DevicePluginLgSmartTv::setupDevice(Device *device)
 {
-
     device->setName("LG Smart Tv (" + device->paramValue("model").toString() + ")");
 
     UpnpDeviceDescriptor upnpDeviceDescriptor;
@@ -83,7 +82,7 @@ DeviceManager::DeviceSetupStatus DevicePluginLgSmartTv::setupDevice(Device *devi
     TvDevice *tvDevice = new TvDevice(this, upnpDeviceDescriptor);
 
     // TODO: make dynamic...displayPin setup!!!
-    tvDevice->setKey("539887");
+    //tvDevice->setKey("539887");
 
     connect(tvDevice, &TvDevice::pairingFinished, this, &DevicePluginLgSmartTv::pairingFinished);
     connect(tvDevice, &TvDevice::sendCommandFinished, this, &DevicePluginLgSmartTv::sendingCommandFinished);
@@ -97,7 +96,9 @@ DeviceManager::DeviceSetupStatus DevicePluginLgSmartTv::setupDevice(Device *devi
 
 DeviceManager::HardwareResources DevicePluginLgSmartTv::requiredHardware() const
 {
-    return DeviceManager::HardwareResourceTimer | DeviceManager::HardwareResourceUpnpDisovery;
+    return DeviceManager::HardwareResourceTimer |
+            DeviceManager::HardwareResourceUpnpDisovery |
+            DeviceManager::HardwareResourceNetworkManager;
 }
 
 DeviceManager::DeviceError DevicePluginLgSmartTv::executeAction(Device *device, const Action &action)
@@ -156,10 +157,8 @@ void DevicePluginLgSmartTv::upnpDiscoveryFinished(const QList<UpnpDeviceDescript
         params.append(Param("uuid", upnpDeviceDescriptor.uuid()));
         params.append(Param("model", upnpDeviceDescriptor.modelName()));
         params.append(Param("host address", upnpDeviceDescriptor.hostAddress().toString()));
-        params.append(Param("location", upnpDeviceDescriptor.hostAddress().toString()));
         params.append(Param("port", upnpDeviceDescriptor.port()));
-        params.append(Param("manufacturer", upnpDeviceDescriptor.manufacturer()));
-        params.append(Param("key", "539887"));
+        params.append(Param("key", QString()));
         descriptor.setParams(params);
         deviceDescriptors.append(descriptor);
     }
@@ -175,6 +174,43 @@ void DevicePluginLgSmartTv::postSetupDevice(Device *device)
 {
     TvDevice *tvDevice= m_tvList.key(device);
     tvDevice->setupEventHandler();
+}
+
+DeviceManager::DeviceError DevicePluginLgSmartTv::displayPin(const PairingTransactionId &pairingTransactionId, const DeviceDescriptor &deviceDescriptor)
+{
+    Q_UNUSED(pairingTransactionId)
+
+    QString urlString = "http://" + deviceDescriptor.params().paramValue("host address").toString() + ":" + deviceDescriptor.params().paramValue("port").toString() + "/udap/api/pairing";
+
+    QNetworkRequest request;
+    request.setUrl(QUrl(urlString));
+    request.setHeader(QNetworkRequest::ContentTypeHeader,QVariant("text/xml; charset=utf-8"));
+    request.setHeader(QNetworkRequest::UserAgentHeader,QVariant("UDAP/2.0"));
+
+    QByteArray data = "<?xml version=\"1.0\" encoding=\"utf-8\"?><envelope><api type=\"pairing\"> <name>showKey</name></api></envelope>";
+
+    m_showPinReply = networkManagerPost(request, data);
+
+    return DeviceManager::DeviceErrorNoError;
+}
+
+DeviceManager::DeviceSetupStatus DevicePluginLgSmartTv::confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret)
+{
+    Q_UNUSED(pairingTransactionId)
+    Q_UNUSED(deviceClassId)
+    Q_UNUSED(params)
+    qDebug() << "pair device with pin: " << secret;
+
+
+
+    return DeviceManager::DeviceSetupStatusAsync;
+}
+
+void DevicePluginLgSmartTv::networkManagerReplyReady(QNetworkReply *reply)
+{
+    if (reply == m_showPinReply) {
+        reply->deleteLater();
+    }
 }
 
 void DevicePluginLgSmartTv::deviceRemoved(Device *device)

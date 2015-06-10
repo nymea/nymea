@@ -1,4 +1,4 @@
-24
+25
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -610,6 +610,7 @@
             "o:maxValue": "Variant",
             "o:minValue": "Variant",
             "o:readOnly": "Bool",
+            "o:unit": "$ref:Unit",
             "type": "$ref:BasicType"
         },
         "Plugin": {
@@ -703,8 +704,48 @@
             "defaultValue": "Variant",
             "id": "Uuid",
             "name": "String",
+            "o:unit": "$ref:Unit",
             "type": "$ref:BasicType"
         },
+        "Unit": [
+            "UnitNone",
+            "UnitSeconds",
+            "UnitMinutes",
+            "UnitHours",
+            "UnitUnixTime",
+            "UnitMeterPerSecond",
+            "UnitKiloMeterPerHour",
+            "UnitDegree",
+            "UnitRadiant",
+            "UnitDegreeCelsius",
+            "UnitDegreeKelvin",
+            "UnitMilliBar",
+            "UnitBar",
+            "UnitPascal",
+            "UnitHectoPascal",
+            "UnitAtmosphere",
+            "UnitLumen",
+            "UnitLux",
+            "UnitCandela",
+            "UnitMilliMeter",
+            "UnitCentiMeter",
+            "UnitMeter",
+            "UnitKiloMeter",
+            "UnitGram",
+            "UnitKiloGram",
+            "UnitDezibel",
+            "UnitKiloByte",
+            "UnitMegaByte",
+            "UnitGigaByte",
+            "UnitTeraByte",
+            "UnitMilliWatt",
+            "UnitWatt",
+            "UnitKiloWatt",
+            "UnitKiloWattHour",
+            "UnitPercentage",
+            "UnitEuro",
+            "UnitDollar"
+        ],
         "ValueOperator": [
             "ValueOperatorEquals",
             "ValueOperatorNotEquals",

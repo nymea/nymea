@@ -237,6 +237,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 StateType stateType(st.value("id").toString());
                 stateType.setName(st.value("name").toString());
                 stateType.setType(t);
+                stateType.setUnit(unitStringToUnit(st.value("unit").toString()));
                 stateType.setDefaultValue(st.value("defaultValue").toVariant());
                 stateTypes.append(stateType);
 
@@ -248,6 +249,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                     ParamType paramType(st.value("name").toString(), t, st.value("defaultValue").toVariant());
                     // states don't have allowed values
                     // states don't have input types
+                    paramType.setUnit(unitStringToUnit(st.value("unit").toString()));
                     paramType.setLimits(st.value("minValue").toVariant(), st.value("maxValue").toVariant());
                     actionType.setParamTypes(QList<ParamType>() << paramType);
                     actionTypes.append(actionType);
@@ -412,6 +414,11 @@ QList<ParamType> DevicePlugin::parseParamTypes(const QJsonArray &array) const
             } else if (inputTypeString == "MacAddress") {
                 paramType.setInputType(Types::InputTypeMacAddress);
             }
+        }
+
+        // set the unit if there is any
+        if (pt.contains("unit")) {
+            paramType.setUnit(unitStringToUnit(pt.value("unit").toString()));
         }
 
         // set readOnly if given (default false)
@@ -651,4 +658,86 @@ QStringList DevicePlugin::verifyFields(const QStringList &fields, const QJsonObj
         }
     }
     return ret;
+}
+
+Types::Unit DevicePlugin::unitStringToUnit(const QString &unitString) const
+{
+    if (unitString == QString()) {
+        return Types::UnitNone;
+    } else if (unitString == "Seconds") {
+        return Types::UnitSeconds;
+    } else if (unitString == "Minutes") {
+        return Types::UnitMinutes;
+    } else if (unitString == "Hours") {
+        return Types::UnitHours;
+    } else if (unitString == "UnixTime") {
+        return Types::UnitUnixTime;
+    } else if (unitString == "MeterPerSecond") {
+        return Types::UnitMeterPerSecond;
+    } else if (unitString == "KiloMeterPerHour") {
+        return Types::UnitKiloMeterPerHour;
+    } else if (unitString == "Degree") {
+        return Types::UnitDegree;
+    } else if (unitString == "Radiant") {
+        return Types::UnitRadiant;
+    } else if (unitString == "DegreeCelsius") {
+        return Types::UnitDegreeCelsius;
+    } else if (unitString == "DegreeKelvin") {
+        return Types::UnitDegreeKelvin;
+    } else if (unitString == "MilliBar") {
+        return Types::UnitMilliBar;
+    } else if (unitString == "Bar") {
+        return Types::UnitBar;
+    } else if (unitString == "Pascal") {
+        return Types::UnitPascal;
+    } else if (unitString == "HectoPascal") {
+        return Types::UnitHectoPascal;
+    } else if (unitString == "Atmosphere") {
+        return Types::UnitAtmosphere;
+    } else if (unitString == "Lumen") {
+        return Types::UnitLumen;
+    } else if (unitString == "Lux") {
+        return Types::UnitLux;
+    } else if (unitString == "Candela") {
+        return Types::UnitCandela;
+    } else if (unitString == "MilliMeter") {
+        return Types::UnitMilliMeter;
+    } else if (unitString == "CentiMeter") {
+        return Types::UnitCentiMeter;
+    } else if (unitString == "Meter") {
+        return Types::UnitMeter;
+    } else if (unitString == "KiloMeter") {
+        return Types::UnitKiloMeter;
+    } else if (unitString == "Gram") {
+        return Types::UnitGram;
+    } else if (unitString == "KiloGram") {
+        return Types::UnitKiloGram;
+    } else if (unitString == "Dezibel") {
+        return Types::UnitDezibel;
+    } else if (unitString == "KiloByte") {
+        return Types::UnitKiloByte;
+    } else if (unitString == "MegaByte") {
+        return Types::UnitMegaByte;
+    } else if (unitString == "GigaByte") {
+        return Types::UnitGigaByte;
+    } else if (unitString == "TeraByte") {
+        return Types::UnitTeraByte;
+    } else if (unitString == "MilliWatt") {
+        return Types::UnitMilliWatt;
+    } else if (unitString == "Watt") {
+        return Types::UnitWatt;
+    } else if (unitString == "KiloWatt") {
+        return Types::UnitKiloWatt;
+    } else if (unitString == "KiloWattHour") {
+        return Types::UnitKiloWattHour;
+    } else if (unitString == "Percentage") {
+        return Types::UnitPercentage;
+    } else if (unitString == "Euro") {
+        return Types::UnitEuro;
+    } else if (unitString == "Dollar") {
+        return Types::UnitDollar;
+    } else {
+        qWarning() << "Could not parse unit:" << unitString << "in plugin" << this->pluginName();
+    }
+    return Types::UnitNone;
 }

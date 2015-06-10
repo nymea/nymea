@@ -114,6 +114,7 @@
                             "idName": "comfortTemp",
                             "name": "comfort temperature",
                             "type": "double",
+                            "unit": "DegreeCelsius",
                             "defaultValue": 0
                         },
                         {
@@ -121,6 +122,7 @@
                             "idName": "ecoTemp",
                             "name": "eco temperature",
                             "type": "double",
+                            "unit": "DegreeCelsius",
                             "defaultValue": 0
                         },
                         {
@@ -128,6 +130,7 @@
                             "idName": "maxSetpointTemp",
                             "name": "max setpoint",
                             "type": "double",
+                            "unit": "DegreeCelsius",
                             "defaultValue": 0
                         },
                         {
@@ -135,6 +138,7 @@
                             "idName": "minSetpointTemp",
                             "name": "min setpoint",
                             "type": "double",
+                            "unit": "DegreeCelsius",
                             "defaultValue": 0
                         },
                         {
@@ -204,6 +208,7 @@
                             "idName": "desiredTemperature",
                             "name": "desired temperature",
                             "type": "double",
+                            "unit": "DegreeCelsius",
                             "defaultValue": 0,
                             "writable": true
 
@@ -212,6 +217,7 @@
                             "id": "852e7708-db1d-42d1-96e4-19c13598262c",
                             "idName": "currentTemperature",
                             "name": "current temp",
+                            "unit": "DegreeCelsius",
                             "type": "double",
                             "defaultValue": 0
                         }
@@ -270,6 +276,7 @@
                             "id": "850380ee-a787-43e7-adb8-768a21a6e64d",
                             "idName": "comfortTemp",
                             "name": "comfort temperature",
+                            "unit": "DegreeCelsius",
                             "type": "double",
                             "defaultValue": 0
                         },
@@ -277,6 +284,7 @@
                             "id": "24dfd20d-bc8d-48e4-8162-b20ae0465c41",
                             "idName": "comfortTemp",
                             "name": "eco temperature",
+                            "unit": "DegreeCelsius",
                             "type": "double",
                             "defaultValue": 0
                         },
@@ -284,19 +292,21 @@
                             "id": "a8536ddf-a6e4-41c2-89c1-e7102608f5f6",
                             "idName": "maxSetpointTemp",
                             "name": "max setpoint",
+                            "unit": "DegreeCelsius",
                             "type": "double",
                             "defaultValue": 0
                         },
                         {
                             "id": "ceb0ad05-37ad-4b79-a4d9-540c34a7e3e4",
-                            "idName": "maxSetpointTemp",
+                            "idName": "minSetpointTemp",
                             "name": "min setpoint",
+                            "unit": "DegreeCelsius",
                             "type": "double",
                             "defaultValue": 0
                         },
                         {
                             "id": "9880247b-cf9a-453c-b0c3-d910eba8a253",
-                            "idName": "maxSetpointTemp",
+                            "idName": "errorOccurred",
                             "name": "error occured",
                             "type": "bool",
                             "defaultValue": false
@@ -360,6 +370,7 @@
                             "id": "579aa8c6-8814-491b-9e7c-b98108c323d1",
                             "idName": "desiredTemperature",
                             "name": "desired temperature",
+                            "unit": "DegreeCelsius",
                             "type": "double",
                             "defaultValue": 0,
                             "writable": true
@@ -368,6 +379,7 @@
                             "id": "576da571-9a65-478f-96bf-19256c8b9ece",
                             "idName": "offsetTemp",
                             "name": "offset temperature",
+                            "unit": "DegreeCelsius",
                             "type": "double",
                             "defaultValue": 0
                         },
@@ -375,6 +387,7 @@
                             "id": "81c6c74a-b0cd-4daa-9eb9-f1cd68f328af",
                             "idName": "windowOpenDuration",
                             "name": "window open duration",
+                            "unit": "Minutes",
                             "type": "int",
                             "defaultValue": 0
                         },
@@ -389,6 +402,7 @@
                             "id": "e75c1398-9ad7-466c-b3b9-b03bbb686a30",
                             "idName": "boostDuration",
                             "name": "boost duration",
+                            "unit": "Seconds",
                             "type": "int",
                             "defaultValue": 0
                         },
@@ -416,14 +430,16 @@
                         {
                             "id": "ffaff87b-b741-4db8-9875-3380af4f1885",
                             "idName": "valveOffset",
-                            "name": "valve offset %",
+                            "name": "valve offset",
+                            "unit": "Percentage",
                             "type": "int",
                             "defaultValue": 0
                         },
                         {
                             "id": "72956000-0203-4c32-a6b6-3bb7e46c03ca",
                             "idName": "valvePosition",
-                            "name": "valve position %",
+                            "name": "valve position",
+                            "unit": "Percentage",
                             "type": "int",
                             "defaultValue": 0
                         }

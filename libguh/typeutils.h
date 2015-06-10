@@ -61,6 +61,7 @@ class Types
     Q_ENUMS(StateOperator)
     Q_ENUMS(ValueOperator)
     Q_ENUMS(InputType)
+    Q_ENUMS(Unit)
 
 public:
     enum InputType {
@@ -76,6 +77,46 @@ public:
         InputTypeMacAddress
     };
 
+    enum Unit {
+        UnitNone,
+        UnitSeconds,
+        UnitMinutes,
+        UnitHours,
+        UnitUnixTime,
+        UnitMeterPerSecond,
+        UnitKiloMeterPerHour,
+        UnitDegree,
+        UnitRadiant,
+        UnitDegreeCelsius,
+        UnitDegreeKelvin,
+        UnitMilliBar,
+        UnitBar,
+        UnitPascal,
+        UnitHectoPascal,
+        UnitAtmosphere,
+        UnitLumen,
+        UnitLux,
+        UnitCandela,
+        UnitMilliMeter,
+        UnitCentiMeter,
+        UnitMeter,
+        UnitKiloMeter,
+        UnitGram,
+        UnitKiloGram,
+        UnitDezibel,
+        UnitKiloByte,
+        UnitMegaByte,
+        UnitGigaByte,
+        UnitTeraByte,
+        UnitMilliWatt,
+        UnitWatt,
+        UnitKiloWatt,
+        UnitKiloWattHour,
+        UnitPercentage,
+        UnitEuro,
+        UnitDollar
+    };
+
     enum ValueOperator {
         ValueOperatorEquals,
         ValueOperatorNotEquals,
@@ -84,6 +125,7 @@ public:
         ValueOperatorLessOrEqual,
         ValueOperatorGreaterOrEqual
     };
+
     enum StateOperator {
         StateOperatorAnd,
         StateOperatorOr
@@ -93,5 +135,6 @@ public:
 Q_DECLARE_METATYPE(Types::ValueOperator)
 Q_DECLARE_METATYPE(Types::StateOperator)
 Q_DECLARE_METATYPE(Types::InputType)
+Q_DECLARE_METATYPE(Types::Unit)
 
 #endif // TYPEUTILS_H

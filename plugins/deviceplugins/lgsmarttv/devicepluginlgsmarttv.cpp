@@ -103,7 +103,13 @@ DeviceManager::DeviceError DevicePluginLgSmartTv::discoverDevices(const DeviceCl
 
 DeviceManager::DeviceSetupStatus DevicePluginLgSmartTv::setupDevice(Device *device)
 {
-    device->setName("LG Smart Tv (" + device->paramValue("model").toString() + ")");
+
+    qDebug() << "setup tv";
+    qDebug() << device->params();
+
+    QString key = m_tvKeys.value(device->paramValue("uuid").toString());
+    qDebug() << "key for this device" << key;
+    device->setParamValue("key", key);
 
     UpnpDeviceDescriptor upnpDeviceDescriptor;
     upnpDeviceDescriptor.setFriendlyName(device->paramValue("name").toString());
@@ -112,21 +118,17 @@ DeviceManager::DeviceSetupStatus DevicePluginLgSmartTv::setupDevice(Device *devi
     upnpDeviceDescriptor.setHostAddress(QHostAddress(device->paramValue("host address").toString()));
     upnpDeviceDescriptor.setPort(device->paramValue("port").toInt());
     upnpDeviceDescriptor.setLocation(QUrl(device->paramValue("location").toString()));
-    upnpDeviceDescriptor.setManufacturer(device->paramValue("manufacturer").toString());
-    // key if there is one...
+
     TvDevice *tvDevice = new TvDevice(this, upnpDeviceDescriptor);
+    tvDevice->setKey(key);
 
-    // TODO: make dynamic...displayPin setup!!!
-    //tvDevice->setKey("539887");
-
-    connect(tvDevice, &TvDevice::pairingFinished, this, &DevicePluginLgSmartTv::pairingFinished);
+    connect(tvDevice, &TvDevice::pairingFinished, this, &DevicePluginLgSmartTv::slotPairingFinished);
     connect(tvDevice, &TvDevice::sendCommandFinished, this, &DevicePluginLgSmartTv::sendingCommandFinished);
     connect(tvDevice, &TvDevice::statusChanged, this, &DevicePluginLgSmartTv::statusChanged);
 
-    tvDevice->requestPairing();
     m_tvList.insert(tvDevice, device);
 
-    return DeviceManager::DeviceSetupStatusAsync;
+    return DeviceManager::DeviceSetupStatusSuccess;
 }
 
 DeviceManager::HardwareResources DevicePluginLgSmartTv::requiredHardware() const
@@ -231,19 +233,51 @@ DeviceManager::DeviceError DevicePluginLgSmartTv::displayPin(const PairingTransa
 
 DeviceManager::DeviceSetupStatus DevicePluginLgSmartTv::confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret)
 {
-    Q_UNUSED(pairingTransactionId)
     Q_UNUSED(deviceClassId)
-    Q_UNUSED(params)
-    qDebug() << "pair device with pin: " << secret;
 
+    QString urlString = "http://" + params.paramValue("host address").toString() + ":" + params.paramValue("port").toString() + "/udap/api/pairing";
 
+    QNetworkRequest request;
+    request.setUrl(QUrl(urlString));
+    request.setHeader(QNetworkRequest::ContentTypeHeader,QVariant("text/xml; charset=utf-8"));
+    request.setHeader(QNetworkRequest::UserAgentHeader,QVariant("UDAP/2.0 guh"));
+
+    QByteArray data = "<?xml version=\"1.0\" encoding=\"utf-8\"?><envelope><api type=\"pairing\"><name>hello</name><value>" + secret.toUtf8() + "</value><port>8080</port></api></envelope>";
+
+    QNetworkReply *pairingReply = networkManagerPost(request, data);
+    m_pairingTv.insert(pairingReply, pairingTransactionId);
+
+    m_tvKeys.insert(params.paramValue("uuid").toString(), secret);
 
     return DeviceManager::DeviceSetupStatusAsync;
 }
 
 void DevicePluginLgSmartTv::networkManagerReplyReady(QNetworkReply *reply)
 {
+    int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+
     if (reply == m_showPinReply) {
+        reply->deleteLater();
+    } else if (m_pairingTv.keys().contains(reply)) {
+        PairingTransactionId pairingTransactionId = m_pairingTv.take(reply);
+        if(status != 200) {
+            qWarning() << "Could not pair: please check the key and retry";
+            emit pairingFinished(pairingTransactionId, DeviceManager::DeviceSetupStatusFailure);
+        } else {
+            qWarning() << "Paired successfully";
+            // now unpair the device, because setupdevice will try that again
+            QString urlString = "http://" + hostAddress().toString()  + ":" + QString::number(port()) + "/udap/api/pairing";
+
+            QNetworkRequest request;
+            request.setUrl(QUrl(urlString));
+            request.setHeader(QNetworkRequest::ContentTypeHeader,QVariant("text/xml; charset=utf-8"));
+            request.setHeader(QNetworkRequest::UserAgentHeader,QVariant("UDAP/2.0 guh"));
+            request.setRawHeader("Connection", "Close");
+
+            QByteArray data = "<?xml version=\"1.0\" encoding=\"utf-8\"?><envelope><api type=\"pairing\"><name>byebye</name><port>8080</port></api></envelope>";
+
+            m_finishingPairingReplay = m_manager->post(request,data);
+        }
         reply->deleteLater();
     }
 }
@@ -269,7 +303,7 @@ void DevicePluginLgSmartTv::guhTimer()
 }
 
 
-void DevicePluginLgSmartTv::pairingFinished(const bool &success)
+void DevicePluginLgSmartTv::slotPairingFinished(const bool &success)
 {
     TvDevice *tvDevice = static_cast<TvDevice*>(sender());
     Device *device = m_tvList.value(tvDevice);

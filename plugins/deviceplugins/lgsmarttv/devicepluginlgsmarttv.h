@@ -54,11 +54,14 @@ public:
     void guhTimer() override;
 
 private:
-    QHash<TvDevice*, Device*> m_tvList;
+    QHash<TvDevice *, Device *> m_tvList;
+    QHash<QNetworkReply *, PairingTransactionId> m_pairingTv;
+    QHash<QNetworkReply *, PairingTransactionId> m_unpairTv;
+    QHash<QString, QString> m_tvKeys;
     QNetworkReply *m_showPinReply;
 
 private slots:
-    void pairingFinished(const bool &success);
+    void slotPairingFinished(const bool &success);
     void sendingCommandFinished(const bool &success, const ActionId &actionId);
     void statusChanged();
 

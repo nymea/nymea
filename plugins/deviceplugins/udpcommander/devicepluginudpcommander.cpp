@@ -39,9 +39,12 @@
 
     \code
     $ echo "Light 1 ON" | nc -u localhost 2323
+    OK
     \endcode
 
     This allows you to execute \l{Action}{Actions} in your home automation system when a certain UDP message will be sent to guh.
+
+    If the command will be recognized from guh, the sender will receive as answere a \c{"OK"} string.
 
     \chapter Plugin properties
     Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}

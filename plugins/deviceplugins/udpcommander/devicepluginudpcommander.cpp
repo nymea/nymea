@@ -63,7 +63,7 @@ DeviceManager::DeviceSetupStatus DevicePluginUdpCommander::setupDevice(Device *d
     // check port
     bool portOk = false;
     int port = device->paramValue("port").toInt(&portOk);
-    if (!portOk) {
+    if (!portOk || port <= 0 || port > 65535) {
         qWarning() << "ERROR: UDP commander" << device->paramValue("name") << ": invalid port:" << device->paramValue("port").toString() << ".";
         return DeviceManager::DeviceSetupStatusFailure;
     }

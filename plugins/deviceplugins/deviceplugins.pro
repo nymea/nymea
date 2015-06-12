@@ -16,6 +16,7 @@ SUBDIRS += elro         \
     unitec              \
     leynew              \
     tune                \
+    udpcommander        \
 
 
 

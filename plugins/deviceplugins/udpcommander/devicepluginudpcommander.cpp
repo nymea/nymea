@@ -109,5 +109,6 @@ void DevicePluginUdpCommander::readPendingDatagrams()
             datagram == device->paramValue("command").toByteArray() + "\n") {
         qDebug() << device->paramValue("name").toString() << " got command from" << sender.toString() << senderPort;
         emit emitEvent(Event(commandReceivedEventTypeId, device->id()));
+        socket->writeDatagram("OK\n", sender, senderPort);
     }
 }

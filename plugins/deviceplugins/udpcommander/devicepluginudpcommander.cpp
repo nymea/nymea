@@ -28,7 +28,7 @@
     This plugin allows to receive UDP packages over a certain UDP port and generates an \l{Event} if the message content matches
     the \l{Param} command.
 
-    \note This plugin is ment to be cominend with a \l{Rule}.
+    \note This plugin is ment to be combined with a \l{Rule}.
 
     \section3 Example
 

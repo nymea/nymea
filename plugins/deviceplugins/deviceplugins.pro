@@ -18,6 +18,7 @@ SUBDIRS += elro         \
     unitec              \
     leynew              \
     tune                \
+    udpcommander        \
 
 boblight {
     SUBDIRS += boblight

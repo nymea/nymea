@@ -68,14 +68,6 @@ DeviceManager::DeviceError DevicePluginLgSmartTv::discoverDevices(const DeviceCl
 
 DeviceManager::DeviceSetupStatus DevicePluginLgSmartTv::setupDevice(Device *device)
 {
-
-    qDebug() << "setup tv";
-    qDebug() << device->params();
-
-    QString key = m_tvKeys.value(device->paramValue("uuid").toString());
-    qDebug() << "key for this device" << key;
-    device->setParamValue("key", key);
-
     UpnpDeviceDescriptor upnpDeviceDescriptor;
     upnpDeviceDescriptor.setFriendlyName(device->paramValue("name").toString());
     upnpDeviceDescriptor.setUuid(device->paramValue("uuid").toString());
@@ -85,15 +77,34 @@ DeviceManager::DeviceSetupStatus DevicePluginLgSmartTv::setupDevice(Device *devi
     upnpDeviceDescriptor.setLocation(QUrl(device->paramValue("location").toString()));
 
     TvDevice *tvDevice = new TvDevice(this, upnpDeviceDescriptor);
-    tvDevice->setKey(key);
+
+    // check if the key wasn't loaded
+    if (device->paramValue("key") == QString()) {
+        // check if we know the key from the pairing procedure
+        if (!m_tvKeys.contains(device->paramValue("uuid").toString())) {
+            qWarning() << "could not find any pairing key";
+            return DeviceManager::DeviceSetupStatusFailure;
+        }
+        // use the key from the pairing procedure
+        tvDevice->endPairing();
+        QString key = m_tvKeys.value(device->paramValue("uuid").toString());
+        tvDevice->setKey(key);
+        device->setParamValue("key", key);
+    } else {
+        // add the key for editing
+        if (!m_tvKeys.contains(device->paramValue("uuid").toString())) {
+            m_tvKeys.insert(tvDevice->uuid(), tvDevice->key());
+        }
+    }
 
     connect(tvDevice, &TvDevice::pairingFinished, this, &DevicePluginLgSmartTv::slotPairingFinished);
     connect(tvDevice, &TvDevice::sendCommandFinished, this, &DevicePluginLgSmartTv::sendingCommandFinished);
     connect(tvDevice, &TvDevice::statusChanged, this, &DevicePluginLgSmartTv::statusChanged);
 
     m_tvList.insert(tvDevice, device);
+    tvDevice->requestPairing();
 
-    return DeviceManager::DeviceSetupStatusSuccess;
+    return DeviceManager::DeviceSetupStatusAsync;
 }
 
 DeviceManager::HardwareResources DevicePluginLgSmartTv::requiredHardware() const
@@ -229,19 +240,8 @@ void DevicePluginLgSmartTv::networkManagerReplyReady(QNetworkReply *reply)
             qWarning() << "Could not pair: please check the key and retry";
             emit pairingFinished(pairingTransactionId, DeviceManager::DeviceSetupStatusFailure);
         } else {
-            qWarning() << "Paired successfully";
-            // now unpair the device, because setupdevice will try that again
-            QString urlString = "http://" + hostAddress().toString()  + ":" + QString::number(port()) + "/udap/api/pairing";
-
-            QNetworkRequest request;
-            request.setUrl(QUrl(urlString));
-            request.setHeader(QNetworkRequest::ContentTypeHeader,QVariant("text/xml; charset=utf-8"));
-            request.setHeader(QNetworkRequest::UserAgentHeader,QVariant("UDAP/2.0 guh"));
-            request.setRawHeader("Connection", "Close");
-
-            QByteArray data = "<?xml version=\"1.0\" encoding=\"utf-8\"?><envelope><api type=\"pairing\"><name>byebye</name><port>8080</port></api></envelope>";
-
-            m_finishingPairingReplay = m_manager->post(request,data);
+            qDebug() << "Paired tv successfully";
+            emit pairingFinished(pairingTransactionId, DeviceManager::DeviceSetupStatusSuccess);
         }
         reply->deleteLater();
     }

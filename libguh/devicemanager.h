@@ -158,7 +158,7 @@ private:
     QHash<VendorId, Vendor> m_supportedVendors;
     QHash<VendorId, QList<DeviceClassId> > m_vendorDeviceMap;
     QHash<DeviceClassId, DeviceClass> m_supportedDevices;
-    QList<Device*> m_configuredDevices;
+    QList<Device *> m_configuredDevices;
     QHash<DeviceDescriptorId, DeviceDescriptor> m_discoveredDevices;
 
     QHash<PluginId, DevicePlugin*> m_devicePlugins;
@@ -168,15 +168,15 @@ private:
     // Hardware Resources
     Radio433* m_radio433;
     QTimer m_pluginTimer;
-    QList<Device*> m_pluginTimerUsers;
+    QList<DevicePlugin *> m_pluginTimerUsers;
     NetworkManager *m_networkManager;
 
     QHash<QUuid, QPair<DeviceClassId, ParamList> > m_pairingsJustAdd;
     QHash<QUuid, QPair<DeviceClassId, DeviceDescriptorId> > m_pairingsDiscovery;
 
-    QList<Device*> m_asyncDeviceEdit;
+    QList<Device *> m_asyncDeviceEdit;
 
-    QList<DevicePlugin*> m_discoveringPlugins;
+    QList<DevicePlugin *> m_discoveringPlugins;
 
     friend class DevicePlugin;
 };

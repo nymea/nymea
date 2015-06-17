@@ -624,11 +624,22 @@ DeviceManager::DeviceError DeviceManager::removeConfiguredDevice(const DeviceId 
     m_configuredDevices.removeAll(device);
     m_devicePlugins.value(device->pluginId())->deviceRemoved(device);
 
-    m_pluginTimerUsers.removeAll(device);
-    if (m_pluginTimerUsers.isEmpty()) {
-        m_pluginTimer.stop();
+    // check if this plugin still needs the guhTimer call
+    bool pluginNeedsTimer = false;
+    foreach (Device* d, m_configuredDevices) {
+        if (d->pluginId() == device->pluginId()) {
+            pluginNeedsTimer = true;
+            break;
+        }
     }
 
+    // if this plugin doesn't need any longer the guhTimer call
+    if (!pluginNeedsTimer) {
+        m_pluginTimerUsers.removeAll(plugin(device->pluginId()));
+        if (m_pluginTimerUsers.isEmpty()) {
+            m_pluginTimer.stop();
+        }
+    }
     device->deleteLater();
 
     QSettings settings(m_settingsFile);
@@ -929,7 +940,9 @@ void DeviceManager::slotDeviceSetupFinished(Device *device, DeviceManager::Devic
             // Additionally fire off one event to initialize stuff
             QTimer::singleShot(0, this, SLOT(timerEvent()));
         }
-        m_pluginTimerUsers.append(device);
+        if (!m_pluginTimerUsers.contains(plugin)) {
+            m_pluginTimerUsers.append(plugin);
+        }
     }
 
     // if this is a async device edit result
@@ -1123,10 +1136,8 @@ void DeviceManager::upnpNotifyReceived(const QByteArray &notifyData)
 
 void DeviceManager::timerEvent()
 {
-    foreach (Device *device, m_configuredDevices) {
-        DeviceClass deviceClass = m_supportedDevices.value(device->deviceClassId());
-        DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
-        if (plugin && plugin->requiredHardware().testFlag(HardwareResourceTimer)) {
+    foreach (DevicePlugin *plugin, m_pluginTimerUsers) {
+        if (plugin->requiredHardware().testFlag(HardwareResourceTimer)) {
             plugin->guhTimer();
         }
     }
@@ -1175,7 +1186,9 @@ DeviceManager::DeviceSetupStatus DeviceManager::setupDevice(Device *device)
             // Additionally fire off one event to initialize stuff
             QTimer::singleShot(0, this, SLOT(timerEvent()));
         }
-        m_pluginTimerUsers.append(device);
+        if (!m_pluginTimerUsers.contains(plugin)) {
+            m_pluginTimerUsers.append(plugin);
+        }
     }
 
     connect(device, SIGNAL(stateValueChanged(QUuid,QVariant)), this, SLOT(slotDeviceStateValueChanged(QUuid,QVariant)));

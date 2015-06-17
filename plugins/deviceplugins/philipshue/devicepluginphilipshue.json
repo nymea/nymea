@@ -12,7 +12,7 @@
                     "name": "Hue Bridge",
                     "createMethods": ["discovery"],
                     "setupMethod": "pushButton",
-                    "pairingInfo": "Please press the button on the Hue Bridge before you continue",
+                    "pairingInfo": "Please press within 30 seconds the button on the Hue Bridge before you continue",
                     "paramTypes": [
                         {
                             "name": "name",
@@ -54,13 +54,6 @@
                             "idName": "bridgeReachable",
                             "name": "reachable",
                             "type": "bool"
-                        }
-                    ],
-                    "actionTypes": [
-                        {
-                            "id": "001476ce-2f17-475f-939f-d4234751ef35",
-                            "idName": "searchLamps",
-                            "name": "search new lamps"
                         }
                     ]
                 },

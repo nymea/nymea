@@ -89,6 +89,7 @@ public:
         UnitRadiant,
         UnitDegreeCelsius,
         UnitDegreeKelvin,
+        UnitMired,
         UnitMilliBar,
         UnitBar,
         UnitPascal,

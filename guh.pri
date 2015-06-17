@@ -2,7 +2,7 @@
 GUH_VERSION_STRING=$$system('dpkg-parsechangelog | sed -n -e "s/^Version: //p"')
 
 # define JSON protocol version
-JSON_PROTOCOL_VERSION=25
+JSON_PROTOCOL_VERSION=26
 
 DEFINES += GUH_VERSION_STRING=\\\"$${GUH_VERSION_STRING}\\\" JSON_PROTOCOL_VERSION=\\\"$${JSON_PROTOCOL_VERSION}\\\"
 
@@ -25,4 +25,3 @@ enable433gpio {
 
 top_srcdir=$$PWD
 top_builddir=$$shadowed($$PWD)
-

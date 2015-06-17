@@ -72,6 +72,7 @@ private:
     QList<HueLight *> m_unconfiguredLights;
 
     QHash<QNetworkReply *, Device *> m_lightRefreshRequests;
+    QHash<QNetworkReply *, Device *> m_lightSetNameRequests;
     QHash<QNetworkReply *, Device *> m_bridgeRefreshRequests;
     QHash<QNetworkReply *, QPair<Device *, ActionId> > m_asyncActions;
 
@@ -81,8 +82,11 @@ private:
     void refreshLight(Device *device);
     void refreshBridge(Device *device);
 
+    void setName(Device *device, QString name);
+
     void processLightRefreshResponse(Device *device, const QByteArray &data);
     void processBridgeRefreshResponse(Device *device, const QByteArray &data);
+    void processSetNameResponse(Device *device, const QByteArray &data);
     void processPairingResponse(const PairingInfo &pairingInfo, const QByteArray &data);
     void processInformationResponse(const PairingInfo &pairingInfo, const QByteArray &data);
     void processActionResponse(Device *device, const ActionId actionId, const QByteArray &data);

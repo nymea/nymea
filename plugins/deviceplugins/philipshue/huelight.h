@@ -44,7 +44,7 @@ public:
         ColorModeCT
     };
 
-    explicit HueLight(const int &lightId, const QHostAddress &hostAddress, const QString &name, const QString &username, const QString &modelId, const DeviceId &bridgeId, QObject *parent = 0);
+    explicit HueLight(const int &lightId, const QHostAddress &hostAddress, const QString &name, const QString &apiKey, const QString &modelId, const DeviceId &bridgeId, QObject *parent = 0);
 
     int lightId() const;
     void setLightId(const int &lightId);
@@ -58,8 +58,8 @@ public:
     QString name() const;
     void setName(const QString &name);
 
-    QString username() const;
-    void setUsername(const QString &username);
+    QString apiKey() const;
+    void setApiKey(const QString &apiKey);
 
     QString modelId() const;
     void setModelId(const QString &modelId);
@@ -103,7 +103,7 @@ public:
     void setColorMode(const ColorMode &colorMode);
 
     // update states
-    void setStates(const QVariantMap &statesMap);
+    void updateStates(const QVariantMap &statesMap);
     void processActionResponse(const QVariantList &responseList);
 
     // create action requests
@@ -118,7 +118,7 @@ private:
     int m_lightId;
     QHostAddress m_hostAddress;
     QString m_name;
-    QString m_username;
+    QString m_apiKey;
     QString m_modelId;
     DeviceId m_bridgeId;
     QString m_type;
@@ -138,8 +138,6 @@ private:
 
 signals:
     void stateChanged();
-
-public slots:
 
 };
 

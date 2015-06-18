@@ -62,7 +62,7 @@ private:
     public:
         PairingTransactionId pairingTransactionId;
         QHostAddress host;
-        QString username;
+        QString apiKey;
     };
 
     QHash<QNetworkReply *, PairingInfo> m_pairingRequests;
@@ -82,7 +82,7 @@ private:
     void refreshLight(Device *device);
     void refreshBridge(Device *device);
 
-    void setName(Device *device, QString name);
+    void setLightName(Device *device, QString name);
 
     void processLightRefreshResponse(Device *device, const QByteArray &data);
     void processBridgeRefreshResponse(Device *device, const QByteArray &data);
@@ -90,6 +90,8 @@ private:
     void processPairingResponse(const PairingInfo &pairingInfo, const QByteArray &data);
     void processInformationResponse(const PairingInfo &pairingInfo, const QByteArray &data);
     void processActionResponse(Device *device, const ActionId actionId, const QByteArray &data);
+
+    void onBridgeError(Device *device);
 
     int brightnessToPercentage(int brightness);
     int percentageToBrightness(int percentage);

@@ -20,9 +20,9 @@
 
 #include "huebridge.h"
 
-HueBridge::HueBridge(QString username, QHostAddress hostAddress, QObject *parent) :
+HueBridge::HueBridge(QString apiKey, QHostAddress hostAddress, QObject *parent) :
     QObject(parent),
-    m_username(username),
+    m_apiKey(apiKey),
     m_hostAddress(hostAddress),
     m_name(QString()),
     m_macAddress(QString()),
@@ -42,14 +42,14 @@ void HueBridge::setName(const QString &name)
     m_name = name;
 }
 
-QString HueBridge::username() const
+QString HueBridge::apiKey() const
 {
-    return m_username;
+    return m_apiKey;
 }
 
-void HueBridge::setUsername(const QString &username)
+void HueBridge::setApiKey(const QString &apiKey)
 {
-    m_username = username;
+    m_apiKey = apiKey;
 }
 
 QHostAddress HueBridge::hostAddress() const

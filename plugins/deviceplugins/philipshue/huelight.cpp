@@ -21,12 +21,12 @@
 
 #include "huelight.h"
 
-HueLight::HueLight(const int &lightId, const QHostAddress &hostAddress, const QString &name, const QString &username, const QString &modelId, const DeviceId &bridgeId, QObject *parent) :
+HueLight::HueLight(const int &lightId, const QHostAddress &hostAddress, const QString &name, const QString &apiKey, const QString &modelId, const DeviceId &bridgeId, QObject *parent) :
     QObject(parent),
     m_lightId(lightId),
     m_hostAddress(hostAddress),
     m_name(name),
-    m_username(username),
+    m_apiKey(apiKey),
     m_modelId(modelId),
     m_bridgeId(bridgeId)
 {
@@ -72,14 +72,14 @@ void HueLight::setName(const QString &name)
     m_name = name;
 }
 
-QString HueLight::username() const
+QString HueLight::apiKey() const
 {
-    return m_username;
+    return m_apiKey;
 }
 
-void HueLight::setUsername(const QString &username)
+void HueLight::setApiKey(const QString &apiKey)
 {
-    m_username = username;
+    m_apiKey = apiKey;
 }
 
 QString HueLight::modelId() const
@@ -217,7 +217,7 @@ void HueLight::setColorMode(const HueLight::ColorMode &colorMode)
     m_colorMode = colorMode;
 }
 
-void HueLight::setStates(const QVariantMap &statesMap)
+void HueLight::updateStates(const QVariantMap &statesMap)
 {
     // color mode
     if (statesMap.value("colormode").toString() == "hs") {
@@ -237,7 +237,6 @@ void HueLight::setStates(const QVariantMap &statesMap)
 
     // alert (none, select, lselect)
     setAlert(statesMap.value("alert").toString());
-
     setBrigtness(statesMap.value("bri").toInt());
     setCt(statesMap.value("ct").toInt());
     setPower(statesMap.value("on").toBool());
@@ -286,14 +285,7 @@ void HueLight::processActionResponse(const QVariantList &responseList)
                 }
             }
             if (successMap.contains("/lights/" + QString::number(m_lightId) + "/state/alert")) {
-                QString alert = successMap.value("/lights/" + QString::number(m_lightId) + "/state/alert").toString();
-                if (alert == "none") {
-                    m_alert = "none";
-                } else if (alert == "select") {
-                    m_alert = "flash";
-                } else if (alert == "lselect") {
-                    m_alert = "flash 30 seconds";
-                }
+                m_alert = successMap.value("/lights/" + QString::number(m_lightId) + "/state/alert").toString();
             }
 
         }
@@ -308,7 +300,7 @@ QPair<QNetworkRequest, QByteArray> HueLight::createSetPowerRequest(const bool &p
 
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(requestMap);
 
-    QNetworkRequest request(QUrl("http://" + hostAddress().toString() + "/api/" + username() +
+    QNetworkRequest request(QUrl("http://" + hostAddress().toString() + "/api/" + apiKey() +
                                  "/lights/" + QString::number(lightId()) + "/state"));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
     return QPair<QNetworkRequest, QByteArray>(request, jsonDoc.toJson());
@@ -323,7 +315,7 @@ QPair<QNetworkRequest, QByteArray> HueLight::createSetColorRequest(const QColor 
 
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(requestMap);
 
-    QNetworkRequest request(QUrl("http://" + hostAddress().toString() + "/api/" + username() +
+    QNetworkRequest request(QUrl("http://" + hostAddress().toString() + "/api/" + apiKey() +
                                  "/lights/" + QString::number(lightId()) + "/state"));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
     return QPair<QNetworkRequest, QByteArray>(request, jsonDoc.toJson());
@@ -341,7 +333,7 @@ QPair<QNetworkRequest, QByteArray> HueLight::createSetBrightnessRequest(const in
 
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(requestMap);
 
-    QNetworkRequest request(QUrl("http://" + hostAddress().toString() + "/api/" + username() +
+    QNetworkRequest request(QUrl("http://" + hostAddress().toString() + "/api/" + apiKey() +
                                  "/lights/" + QString::number(lightId()) + "/state"));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
     return QPair<QNetworkRequest, QByteArray>(request, jsonDoc.toJson());
@@ -358,7 +350,7 @@ QPair<QNetworkRequest, QByteArray> HueLight::createSetEffectRequest(const QStrin
     }
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(requestMap);
 
-    QNetworkRequest request(QUrl("http://" + hostAddress().toString() + "/api/" + username() +
+    QNetworkRequest request(QUrl("http://" + hostAddress().toString() + "/api/" + apiKey() +
                                  "/lights/" + QString::number(lightId()) + "/state"));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
     return QPair<QNetworkRequest, QByteArray>(request, jsonDoc.toJson());
@@ -372,7 +364,7 @@ QPair<QNetworkRequest, QByteArray> HueLight::createSetTemperatureRequest(const i
 
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(requestMap);
 
-    QNetworkRequest request(QUrl("http://" + hostAddress().toString() + "/api/" + username() +
+    QNetworkRequest request(QUrl("http://" + hostAddress().toString() + "/api/" + apiKey() +
                                  "/lights/" + QString::number(lightId()) + "/state"));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
     return QPair<QNetworkRequest, QByteArray>(request, jsonDoc.toJson());
@@ -381,16 +373,14 @@ QPair<QNetworkRequest, QByteArray> HueLight::createSetTemperatureRequest(const i
 QPair<QNetworkRequest, QByteArray> HueLight::createFlashRequest(const QString &alert)
 {
     QVariantMap requestMap;
-    if (alert == "none") {
-        requestMap.insert("alert", "none");
-    } else if (alert == "flash") {
+    if (alert == "flash once") {
         requestMap.insert("alert", "select");
     } else if (alert == "flash 30 seconds") {
         requestMap.insert("alert", "lselect");
     }
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(requestMap);
 
-    QNetworkRequest request(QUrl("http://" + hostAddress().toString() + "/api/" + username() +
+    QNetworkRequest request(QUrl("http://" + hostAddress().toString() + "/api/" + apiKey() +
                                  "/lights/" + QString::number(lightId()) + "/state"));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
     return QPair<QNetworkRequest, QByteArray>(request, jsonDoc.toJson());

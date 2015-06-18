@@ -30,13 +30,13 @@ class HueBridge : public QObject
 {
     Q_OBJECT
 public:
-    explicit HueBridge(QString username, QHostAddress hostAddress, QObject *parent = 0);
+    explicit HueBridge(QString apiKey, QHostAddress hostAddress, QObject *parent = 0);
 
     QString name() const;
     void setName(const QString &name);
 
-    QString username() const;
-    void setUsername(const QString &username);
+    QString apiKey() const;
+    void setApiKey(const QString &apiKey);
 
     QHostAddress hostAddress() const;
     void setHostAddress(const QHostAddress &hostAddress);
@@ -54,7 +54,7 @@ public:
     void addLight(HueLight *light);
 
 private:
-    QString m_username;
+    QString m_apiKey;
     QHostAddress m_hostAddress;
     QString m_name;
     QString m_macAddress;
@@ -62,10 +62,6 @@ private:
     int m_zigbeeChannel;
 
     QList<HueLight *> m_lights;
-signals:
-
-
-public slots:
 
 };
 

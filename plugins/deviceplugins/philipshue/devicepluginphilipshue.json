@@ -7,12 +7,12 @@
             "name": "Philips",
             "deviceClasses": [
                 {
-                    "deviceClassId": "d8f4c397-e05e-47c1-8917-8e72d4d0d47c",
-                    "idName": "hue",
-                    "name": "Hue",
-                    "createMethods": ["discovery", "auto"],
+                    "deviceClassId": "642aa4c7-19aa-45ed-ba06-aa1ae6c9edf7",
+                    "idName": "hueBridge",
+                    "name": "Hue Bridge",
+                    "createMethods": ["discovery"],
                     "setupMethod": "pushButton",
-                    "pairingInfo": "Please press the button on the Hue bridge and then press OK",
+                    "pairingInfo": "Please press within 30 seconds the button on the Hue Bridge before you continue",
                     "paramTypes": [
                         {
                             "name": "name",
@@ -20,19 +20,30 @@
                             "inputType": "TextLine"
                         },
                         {
-                            "name": "ip",
-                            "type" : "QString",
-                            "inputType": "IPv4Address",
-                            "readOnly": true
-                        },
-                        {
-                            "name": "username",
+                            "name": "api key",
                             "type" : "QString",
                             "inputType": "TextLine",
                             "readOnly": true
                         },
                         {
-                            "name": "lightId",
+                            "name": "host address",
+                            "type" : "QString",
+                            "inputType": "IPv4Address",
+                            "readOnly": true
+                        },
+                        {
+                            "name": "mac address",
+                            "type" : "QString",
+                            "inputType": "MacAddress",
+                            "readOnly": true
+                        },
+                        {
+                            "name": "api version",
+                            "type" : "QString",
+                            "readOnly": true
+                        },
+                        {
+                            "name": "zigbee channel",
                             "type" : "int",
                             "readOnly": true
                         }
@@ -40,9 +51,76 @@
                     "stateTypes": [
                         {
                             "id": "15794d26-fde8-4a61-8f83-d7830534975f",
+                            "idName": "bridgeReachable",
+                            "name": "reachable",
+                            "type": "bool"
+                        }
+                    ]
+                },
+                {
+                    "deviceClassId": "0edba26c-96ab-44fb-a6a2-c0574d19630e",
+                    "idName": "hueLight",
+                    "name": "Hue Light",
+                    "createMethods": ["auto"],
+                    "paramTypes": [
+                        {
+                            "name": "name",
+                            "type" : "QString",
+                            "inputType": "TextLine"
+                        },
+                        {
+                            "name": "bridge",
+                            "type" : "QString",
+                            "readOnly": true
+                        },
+                        {
+                            "name": "model id",
+                            "type" : "QString",
+                            "readOnly": true
+                        },
+                        {
+                            "name": "api key",
+                            "type" : "QString",
+                            "inputType": "TextLine",
+                            "readOnly": true
+                        },
+                        {
+                            "name": "host address",
+                            "type" : "QString",
+                            "inputType": "IPv4Address",
+                            "readOnly": true
+                        },
+                        {
+                            "name": "light id",
+                            "type" : "int",
+                            "readOnly": true
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "19bb8d10-1b28-4ba3-99b7-a634138dcfde",
                             "idName": "hueReachable",
                             "name": "reachable",
                             "type": "bool"
+                        },
+                        {
+                            "id": "90aaffe5-6a76-47d2-a14a-550f60390245",
+                            "idName": "huePower",
+                            "name": "power",
+                            "type": "bool",
+                            "defaultValue": false,
+                            "writable": true
+                        },
+                        {
+                            "id": "c0f4206f-f219-4f06-93c4-4ca515a56f79",
+                            "idName": "hueTemperature",
+                            "name": "color temperature",
+                            "type": "int",
+                            "unit": "Mired",
+                            "writable": true,
+                            "defaultValue": 170,
+                            "minValue": 154,
+                            "maxValue": 500
                         },
                         {
                             "id": "d25423e7-b924-4b20-80b6-77eecc65d089",
@@ -54,23 +132,44 @@
 
                         },
                         {
-                            "id": "90aaffe5-6a76-47d2-a14a-550f60390245",
-                            "idName": "huePower",
-                            "name": "power",
-                            "type": "bool",
-                            "defaultValue": false,
-                            "writable": true
-                        },
-                        {
                             "id": "90e91f64-a208-468c-a5a2-7f47e08859e2",
                             "idName": "hueBrightness",
                             "name": "brightness",
                             "type": "int",
+                            "unit": "Percentage",
+                            "writable": true,
                             "minValue": 0,
                             "maxValue": 100,
-                            "unit": "Percentage",
-                            "defaultValue": 0,
-                            "writable": true
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "0b7cdd8d-4db8-4183-abe2-f3c01d1c9afc",
+                            "idName": "hueEffect",
+                            "name": "effect",
+                            "type": "QString",
+                            "writable": true,
+                            "defaultValue": "none",
+                            "allowedValues": [
+                                "none",
+                                "color loop"
+                            ]
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "d25dcfbc-d28c-4905-80e3-300ffb1248f5",
+                            "idName": "hueAlert",
+                            "name": "flash",
+                            "paramTypes": [
+                                {
+                                    "name": "alert",
+                                    "type": "QString",
+                                    "allowedValues": [
+                                        "flash once",
+                                        "flash 30 seconds"
+                                    ]
+                                }
+                            ]
                         }
                     ]
                 }

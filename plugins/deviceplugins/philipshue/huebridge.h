@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -18,46 +18,51 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HUEBRIDGECONNECTION_H
-#define HUEBRIDGECONNECTION_H
+#ifndef HUEBRIDGE_H
+#define HUEBRIDGE_H
 
 #include <QObject>
 #include <QHostAddress>
-#include <QNetworkAccessManager>
-#include <QPointer>
 
-class Caller
-{
-public:
-    QPointer<QObject> obj;
-    QString method;
-    int id;
-};
+#include "huelight.h"
 
-class HueBridgeConnection : public QObject
+class HueBridge : public QObject
 {
     Q_OBJECT
 public:
-    explicit HueBridgeConnection(QObject *parent = 0);
+    explicit HueBridge(QString apiKey, QHostAddress hostAddress, QObject *parent = 0);
 
-    int createUser(const QHostAddress &address, const QString &username);
+    QString name() const;
+    void setName(const QString &name);
 
-    int get(const QHostAddress &address, const QString &username, const QString &path, QObject *caller, const QString &methodName);
-    int put(const QHostAddress &address, const QString &username, const QString &path, const QVariantMap &data, QObject *caller, const QString &methodName);
+    QString apiKey() const;
+    void setApiKey(const QString &apiKey);
 
-private slots:
-    void slotCreateUserFinished();
-    void slotGetFinished();
+    QHostAddress hostAddress() const;
+    void setHostAddress(const QHostAddress &hostAddress);
 
-signals:
-    void createUserFinished(int id, const QVariantMap &map);
-    void getFinished(int id, const QVariantMap &map);
+    QString macAddress() const;
+    void setMacAddress(const QString &macAddress);
+
+    QString apiVersion() const;
+    void setApiVersion(const QString &apiVersion);
+
+    int zigbeeChannel() const;
+    void setZigbeeChannel(const int &zigbeeChannel);
+
+    QList<HueLight *> lights() const;
+    void addLight(HueLight *light);
 
 private:
-    QNetworkAccessManager *m_nam;
-    int m_requestCounter;
-    QHash<QNetworkReply*, int> m_createUserMap;
-    QHash<QNetworkReply*, Caller> m_requestMap;
+    QString m_apiKey;
+    QHostAddress m_hostAddress;
+    QString m_name;
+    QString m_macAddress;
+    QString m_apiVersion;
+    int m_zigbeeChannel;
+
+    QList<HueLight *> m_lights;
+
 };
 
-#endif // HUEBRIDGECONNECTION_H
+#endif // HUEBRIDGE_H

@@ -247,7 +247,13 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                     actionType.setName("set " + st.value("name").toString());
                     // Note: fields already checked in StateType
                     ParamType paramType(st.value("name").toString(), t, st.value("defaultValue").toVariant());
-                    // states don't have allowed values
+                    if (st.contains("allowedValues")) {
+                        QVariantList allowedValues;
+                        foreach (const QJsonValue &allowedTypesJson, st.value("allowedValues").toArray()) {
+                            allowedValues.append(allowedTypesJson.toVariant());
+                        }
+                        paramType.setAllowedValues(allowedValues);
+                    }
                     // states don't have input types
                     paramType.setUnit(unitStringToUnit(st.value("unit").toString()));
                     paramType.setLimits(st.value("minValue").toVariant(), st.value("maxValue").toVariant());
@@ -684,6 +690,8 @@ Types::Unit DevicePlugin::unitStringToUnit(const QString &unitString) const
         return Types::UnitDegreeCelsius;
     } else if (unitString == "DegreeKelvin") {
         return Types::UnitDegreeKelvin;
+    } else if (unitString == "Mired") {
+        return Types::UnitMired;
     } else if (unitString == "MilliBar") {
         return Types::UnitMilliBar;
     } else if (unitString == "Bar") {

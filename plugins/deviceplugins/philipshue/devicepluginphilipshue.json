@@ -20,7 +20,7 @@
                             "inputType": "TextLine"
                         },
                         {
-                            "name": "username",
+                            "name": "api key",
                             "type" : "QString",
                             "inputType": "TextLine",
                             "readOnly": true
@@ -79,7 +79,7 @@
                             "readOnly": true
                         },
                         {
-                            "name": "username",
+                            "name": "api key",
                             "type" : "QString",
                             "inputType": "TextLine",
                             "readOnly": true
@@ -137,35 +137,39 @@
                             "name": "brightness",
                             "type": "int",
                             "unit": "Percentage",
+                            "writable": true,
                             "minValue": 0,
                             "maxValue": 100,
-                            "defaultValue": 0,
-                            "writable": true
+                            "defaultValue": 0
                         },
                         {
                             "id": "0b7cdd8d-4db8-4183-abe2-f3c01d1c9afc",
                             "idName": "hueEffect",
                             "name": "effect",
                             "type": "QString",
+                            "writable": true,
                             "defaultValue": "none",
                             "allowedValues": [
                                 "none",
                                 "color loop"
-                            ],
-                            "writable": true
-                        },
+                            ]
+                        }
+                    ],
+                    "actionTypes": [
                         {
-                            "id": "acd09e71-3305-451c-910a-bc2d6e1d5144",
+                            "id": "d25dcfbc-d28c-4905-80e3-300ffb1248f5",
                             "idName": "hueAlert",
-                            "name": "alert",
-                            "type": "QString",
-                            "defaultValue": "none",
-                            "allowedValues": [
-                                "none",
-                                "flash",
-                                "flash 30 seconds"
-                            ],
-                            "writable": true
+                            "name": "flash",
+                            "paramTypes": [
+                                {
+                                    "name": "alert",
+                                    "type": "QString",
+                                    "allowedValues": [
+                                        "flash once",
+                                        "flash 30 seconds"
+                                    ]
+                                }
+                            ]
                         }
                     ]
                 }

@@ -92,6 +92,12 @@
     This signal is emitted when a \a rule was added to the system.
 */
 
+/*! \fn void ruleActiveChanged(const Rule &rule);
+    This signal is emitted when a \a rule changed the active state.
+    A \l{Rule} is active, when all \l{State}{States} match with the \l{StateDescriptor} conditions.
+
+    \sa Rule::active()
+*/
 
 #include "guhcore.h"
 #include "jsonrpcserver.h"
@@ -431,7 +437,7 @@ void GuhCore::gotEvent(const Event &event)
                 if (action.isEventBased()) {
                     eventBasedActions.append(action);
                 } else {
-                    actions.append(rule.actions());
+                    actions.append(action);
                 }
             }
         } else {
@@ -454,12 +460,13 @@ void GuhCore::gotEvent(const Event &event)
             if (event.eventTypeId() == ruleActionParam.eventTypeId()) {
                 QVariant eventValue = event.params().first().value();
 
-                // TODO: get param names...
+                // TODO: get param names...when an event has more than one parameter
 
-                // TODO:  limits / scale calculation -> actionValue = eventValue * x
+                // TODO: limits / scale calculation -> actionValue = eventValue * x
+                //       something like a EventParamDescriptor
 
                 ruleActionParam.setValue(eventValue);
-                qDebug() << ruleActionParam.value();
+                qDebug() << "take over event param value" << ruleActionParam.value();
             }
             newParams.append(ruleActionParam);
         }
@@ -476,10 +483,13 @@ void GuhCore::gotEvent(const Event &event)
         case DeviceManager::DeviceErrorNoError:
             break;
         case DeviceManager::DeviceErrorSetupFailed:
-            qDebug() << "Error executing action. Device setup failed.";
+            qWarning() << "Error executing action. Device setup failed.";
+            break;
+        case DeviceManager::DeviceErrorAsync:
+            qDebug() << "Executing asynchronous action.";
             break;
         case DeviceManager::DeviceErrorInvalidParameter:
-            qDebug() << "Error executing action. Invalid action parameter.";
+            qWarning() << "Error executing action. Invalid action parameter.";
             break;
         default:
             qDebug() << "Error executing action:" << status;

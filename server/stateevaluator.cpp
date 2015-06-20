@@ -22,6 +22,7 @@
 #include "stateevaluator.h"
 #include "guhcore.h"
 #include "devicemanager.h"
+#include "loggingcategorys.h"
 
 StateEvaluator::StateEvaluator(const StateDescriptor &stateDescriptor):
     m_stateDescriptor(stateDescriptor),
@@ -72,11 +73,11 @@ bool StateEvaluator::evaluate() const
     if (m_stateDescriptor.isValid()) {
         Device *device = GuhCore::instance()->findConfiguredDevice(m_stateDescriptor.deviceId());
         if (!device) {
-            qWarning() << "Device not existing!";
+            qCWarning(dcRuleEngine) << "Device not existing!";
             return false;
         }
         if (!device->hasState(m_stateDescriptor.stateTypeId())) {
-            qWarning() << "Device found, but it does not appear to have such a state!";
+            qCWarning(dcRuleEngine) << "Device found, but it does not appear to have such a state!";
             return false;
         }
         if (m_stateDescriptor != device->state(m_stateDescriptor.stateTypeId())) {

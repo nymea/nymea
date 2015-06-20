@@ -19,6 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "radio433brennenstuhlgateway.h"
+#include "loggingcategorys.h"
 
 Radio433BrennenstuhlGateway::Radio433BrennenstuhlGateway(QObject *parent) :
     QObject(parent)
@@ -71,7 +72,7 @@ bool Radio433BrennenstuhlGateway::sendData(int delay, QList<int> rawData, int re
     if (m_gateway->writeDatagram(message, m_gatewayAddress, m_port) > 0) {
         m_available = true;
     } else {
-        qDebug() << "ERROR: could not send command to Brennenstihl Gateway";
+        qCWarning(dcHardware) << "could not send command to Brennenstihl Gateway";
         m_available = false;
         emit availableChanged(false);
         return false;
@@ -84,7 +85,7 @@ bool Radio433BrennenstuhlGateway::enable()
     m_available = false;
 
     if (!m_gateway->bind(m_port, QUdpSocket::ShareAddress)) {
-        qWarning() << "ERROR: Radio 433 MHz Brennenstuhl LAN Gateway discovery could not bind to port " << m_port;
+        qCWarning(dcHardware) << "Radio 433 MHz Brennenstuhl LAN Gateway discovery could not bind to port " << m_port;
         return false;
     }
 
@@ -139,7 +140,7 @@ void Radio433BrennenstuhlGateway::gatewayError(QAbstractSocket::SocketError erro
     Q_UNUSED(error)
     QUdpSocket *gateway = static_cast<QUdpSocket*>(sender());
     if (m_available) {
-        qWarning() << "--> ERROR: Radio 433 MHz Brennenstuhl LAN Gateway socket error: " << gateway->errorString();
+        qCWarning(dcHardware) << "--> ERROR: Radio 433 MHz Brennenstuhl LAN Gateway socket error: " << gateway->errorString();
         m_available = false;
         emit availableChanged(false);
     }

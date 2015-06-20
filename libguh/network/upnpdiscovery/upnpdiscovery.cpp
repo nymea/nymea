@@ -48,6 +48,7 @@
 
 
 #include "upnpdiscovery.h"
+#include "loggingcategorys.h"
 
 /*! Construct the hardware resource UpnpDiscovery with the given \a parent. */
 UpnpDiscovery::UpnpDiscovery(QObject *parent) :
@@ -61,12 +62,12 @@ UpnpDiscovery::UpnpDiscovery(QObject *parent) :
     setSocketOption(QAbstractSocket::MulticastLoopbackOption,QVariant(1));
 
     if(!bind(QHostAddress::AnyIPv4, m_port, QUdpSocket::ShareAddress)){
-        qWarning() << "ERROR: UPnP discovery could not bind to port" << m_port;
+        qCWarning(dcHardware) << "UPnP discovery could not bind to port" << m_port;
         return;
     }
 
     if(!joinMulticastGroup(m_host)){
-        qWarning() << "ERROR: UPnP discovery could not join multicast group" << m_host;
+        qCWarning(dcHardware) << "UPnP discovery could not join multicast group" << m_host;
         return;
     }
 
@@ -77,7 +78,7 @@ UpnpDiscovery::UpnpDiscovery(QObject *parent) :
     connect(this,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(error(QAbstractSocket::SocketError)));
     connect(this, &UpnpDiscovery::readyRead, this, &UpnpDiscovery::readData);
 
-    qDebug() << "--> UPnP discovery created successfully.";
+    qCDebug(dcHardware) << "--> UPnP discovery created successfully.";
 }
 
 /*! Returns false, if the \l{UpnpDiscovery} resource is not available. Returns true, if a device with
@@ -85,7 +86,7 @@ UpnpDiscovery::UpnpDiscovery(QObject *parent) :
 bool UpnpDiscovery::discoverDevices(const QString &searchTarget, const QString &userAgent, const PluginId &pluginId)
 {
     if(state() != BoundState){
-        qWarning() << "ERROR: UPnP not bound to port 1900";
+        qCWarning(dcHardware) << "UPnP not bound to port 1900";
         return false;
     }
 
@@ -114,7 +115,7 @@ void UpnpDiscovery::sendToMulticast(const QByteArray &data)
 
 void UpnpDiscovery::error(QAbstractSocket::SocketError error)
 {
-    qWarning() << errorString() << error;
+    qCWarning(dcHardware) << "UPnP socket error:" << error << errorString();
 }
 
 void UpnpDiscovery::readData()
@@ -128,9 +129,6 @@ void UpnpDiscovery::readData()
         data.resize(pendingDatagramSize());
         readDatagram(data.data(), data.size(), &hostAddress);
     }
-
-    //qDebug() << "======================";
-    //qDebug() << data;
 
     if (data.contains("NOTIFY")) {
         emit upnpNotify(data);
@@ -231,7 +229,7 @@ void UpnpDiscovery::replyFinished(QNetworkReply *reply)
         break;
     }
     default:
-        qWarning() << "HTTP request error " << status;
+        qCWarning(dcHardware) << "HTTP request error " << status;
         m_informationRequestList.remove(reply);
     }
 

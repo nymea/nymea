@@ -19,6 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "logengine.h"
+#include "loggingcategorys.h"
 #include "logging.h"
 
 #include <QSqlDatabase>
@@ -35,7 +36,7 @@ LogEngine::LogEngine(QObject *parent):
     m_db = QSqlDatabase::addDatabase("QSQLITE");
     m_db.setDatabaseName("/tmp/guhd-logs.sqlite");
     if (!m_db.open()) {
-        qWarning() << "Error opening log database:" << m_db.lastError().driverText() << m_db.lastError().databaseText();
+        qCWarning(dcLogEngine) << "Error opening log database:" << m_db.lastError().driverText() << m_db.lastError().databaseText();
         return;
     }
 
@@ -141,7 +142,7 @@ void LogEngine::appendLogEntry(const LogEntry &entry)
     query.exec(queryString);
 
     if (query.lastError().isValid()) {
-        qWarning() << "Error writing log entry. Driver error:" << query.lastError().driverText() << "Database error:" << query.lastError().databaseText();
+        qCWarning(dcLogEngine) << "Error writing log entry. Driver error:" << query.lastError().driverText() << "Database error:" << query.lastError().databaseText();
     }
 }
 
@@ -161,17 +162,17 @@ void LogEngine::initDB()
     if (query.next()) {
         int version = query.value("data").toInt();
         if (version != DB_SCHEMA_VERSION) {
-            qWarning() << "Log schema version not matching! Schema upgrade not implemented yet. Logging might fail.";
+            qCWarning(dcLogEngine) << "Log schema version not matching! Schema upgrade not implemented yet. Logging might fail.";
         } else {
-            qDebug() << "version matches";
+            qCDebug(dcLogEngine) << "Log database schema version matches";
         }
     } else {
-        qWarning() << "Broken log database. Version not found in metadata table.";
+        qCWarning(dcLogEngine) << "Broken log database. Version not found in metadata table.";
     }
 
     if (!m_db.tables().contains("sourceTypes")) {
         query.exec("CREATE TABLE sourceTypes (id int, name varchar(20), PRIMARY KEY(id));");
-        qDebug() << query.lastError().databaseText();
+        qCDebug(dcLogEngine) << query.lastError().databaseText();
         QMetaEnum logTypes = Logging::staticMetaObject.enumerator(Logging::staticMetaObject.indexOfEnumerator("LoggingSource"));
         Q_ASSERT_X(logTypes.isValid(), "LogEngine", "Logging has no enum LoggingSource");
         for (int i = 0; i < logTypes.keyCount(); i++) {
@@ -181,7 +182,7 @@ void LogEngine::initDB()
 
     if (!m_db.tables().contains("loggingEventTypes")) {
         query.exec("CREATE TABLE loggingEventTypes (id int, name varchar(20), PRIMARY KEY(id));");
-        qDebug() << query.lastError().databaseText();
+        qCDebug(dcLogEngine) << query.lastError().databaseText();
         QMetaEnum logTypes = Logging::staticMetaObject.enumerator(Logging::staticMetaObject.indexOfEnumerator("LoggingEventType"));
         Q_ASSERT_X(logTypes.isValid(), "LogEngine", "Logging has no enum LoggingEventType");
         for (int i = 0; i < logTypes.keyCount(); i++) {
@@ -205,7 +206,7 @@ void LogEngine::initDB()
                    "FOREIGN KEY(loggingEventType) REFERENCES loggingEventTypes(id)"
                    ");");
         if (query.lastError().isValid()) {
-            qWarning() << "Error creating log table in database. Driver error:" << query.lastError().driverText() << "Database error:" << query.lastError().databaseText();
+            qCWarning(dcLogEngine) << "Error creating log table in database. Driver error:" << query.lastError().driverText() << "Database error:" << query.lastError().databaseText();
         }
     }
 }

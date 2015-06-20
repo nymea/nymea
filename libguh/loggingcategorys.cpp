@@ -1,7 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
  *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
- *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -19,42 +18,13 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "statehandler.h"
-#include "guhcore.h"
 #include "loggingcategorys.h"
 
-StateHandler::StateHandler(QObject *parent) :
-    JsonHandler(parent)
-{
-    QVariantMap params;
-    QVariantMap returns;
+Q_LOGGING_CATEGORY(dcApplication, "Application")
+Q_LOGGING_CATEGORY(dcDeviceManager,"DeviceManager")
+Q_LOGGING_CATEGORY(dcRuleEngine,"RuleEngine")
+Q_LOGGING_CATEGORY(dcHardware,"Hardware")
+Q_LOGGING_CATEGORY(dcConnection,"Connection")
+Q_LOGGING_CATEGORY(dcJsonRpc,"JsonRpc")
+Q_LOGGING_CATEGORY(dcLogEngine,"LogEngine")
 
-    params.clear(); returns.clear();
-    setDescription("GetStateType", "Get the StateType for the given stateTypeId.");
-    params.insert("stateTypeId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    setParams("GetStateType", params);
-    returns.insert("deviceError", JsonTypes::deviceErrorRef());
-    returns.insert("o:stateType", JsonTypes::stateTypeRef());
-    setReturns("GetStateType", returns);
-}
-
-QString StateHandler::name() const
-{
-    return "States";
-}
-
-JsonReply* StateHandler::GetStateType(const QVariantMap &params) const
-{
-    qCDebug(dcJsonRpc) << "asked for state type" << params;
-    StateTypeId stateTypeId(params.value("stateTypeId").toString());
-    foreach (const DeviceClass &deviceClass, GuhCore::instance()->supportedDevices()) {
-        foreach (const StateType &stateType, deviceClass.stateTypes()) {
-            if (stateType.id() == stateTypeId) {
-                QVariantMap data = statusToReply(DeviceManager::DeviceErrorNoError);
-                data.insert("stateType", JsonTypes::packStateType(stateType));
-                return createReply(data);
-            }
-        }
-    }
-    return createReply(statusToReply(DeviceManager::DeviceErrorStateTypeNotFound));
-}

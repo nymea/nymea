@@ -22,6 +22,7 @@
 #include "logginghandler.h"
 #include "logging/logengine.h"
 #include "guhcore.h"
+#include "loggingcategorys.h"
 
 LoggingHandler::LoggingHandler(QObject *parent) :
     JsonHandler(parent)
@@ -60,8 +61,7 @@ void LoggingHandler::logEntryAdded(const LogEntry &logEntry)
 
 JsonReply* LoggingHandler::GetLogEntries(const QVariantMap &params) const
 {
-    Q_UNUSED(params)
-
+    qCDebug(dcJsonRpc) << "asked for log entries" << params;
     QVariantList entries;
     foreach (const LogEntry &entry, GuhCore::instance()->logEngine()->logEntries()) {
         entries.append(JsonTypes::packLogEntry(entry));

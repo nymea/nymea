@@ -137,6 +137,7 @@
 */
 
 #include "deviceplugin.h"
+#include "loggingcategorys.h"
 
 #include "devicemanager.h"
 #include "hardware/radio433/radio433.h"
@@ -228,7 +229,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 QJsonObject st = stateTypesJson.toObject();
                 QStringList missingFields = verifyFields(QStringList() << "type" << "id" << "name", st);
                 if (!missingFields.isEmpty()) {
-                    qWarning() << "Skipping device class" << deviceClass.name() << "because of missing" << missingFields.join(", ") << "in stateTypes";
+                    qCWarning(dcDeviceManager) << "Skipping device class" << deviceClass.name() << "because of missing" << missingFields.join(", ") << "in stateTypes";
                     broken = true;
                     break;
                 }
@@ -267,7 +268,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 QJsonObject at = actionTypesJson.toObject();
                 QStringList missingFields = verifyFields(QStringList() << "id" << "name", at);
                 if (!missingFields.isEmpty()) {
-                    qWarning() << "Skipping device class" << deviceClass.name() << "because of missing" << missingFields.join(", ") << "in actionTypes";
+                    qCWarning(dcDeviceManager) << "Skipping device class" << deviceClass.name() << "because of missing" << missingFields.join(", ") << "in actionTypes";
                     broken = true;
                     break;
                 }
@@ -284,7 +285,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 QJsonObject et = eventTypesJson.toObject();
                 QStringList missingFields = verifyFields(QStringList() << "id" << "name", et);
                 if (!missingFields.isEmpty()) {
-                    qWarning() << "Skipping device class" << deviceClass.name() << "because of missing" << missingFields.join(", ") << "in eventTypes";
+                    qCWarning(dcDeviceManager) << "Skipping device class" << deviceClass.name() << "because of missing" << missingFields.join(", ") << "in eventTypes";
                     broken = true;
                     break;
                 }
@@ -363,7 +364,7 @@ DeviceManager::DeviceSetupStatus DevicePlugin::confirmPairing(const PairingTrans
     Q_UNUSED(deviceClassId)
     Q_UNUSED(params)
 
-    qWarning() << "Plugin does not implement pairing.";
+    qCWarning(dcDeviceManager) << "Plugin does not implement pairing.";
     return DeviceManager::DeviceSetupStatusFailure;
 }
 
@@ -471,7 +472,7 @@ QVariant DevicePlugin::configValue(const QString &paramName) const
 DeviceManager::DeviceError DevicePlugin::setConfiguration(const ParamList &configuration)
 {
     foreach (const Param &param, configuration) {
-        qDebug() << "setting config" << param;
+        qCDebug(dcDeviceManager) << "setting config" << param;
         DeviceManager::DeviceError result = setConfigValue(param.name(), param.value());
         if (result != DeviceManager::DeviceErrorNoError) {
             return result;
@@ -487,18 +488,18 @@ DeviceManager::DeviceError DevicePlugin::setConfigValue(const QString &paramName
     foreach (const ParamType &paramType, configurationDescription()) {
         if (paramType.name() == paramName) {
             if (!value.canConvert(paramType.type())) {
-                qWarning() << QString("Wrong parameter type for param %1. Got %2. Expected %3.")
+                qCWarning(dcDeviceManager) << QString("Wrong parameter type for param %1. Got %2. Expected %3.")
                               .arg(paramName).arg(value.toString()).arg(QVariant::typeToName(paramType.type()));
                 return DeviceManager::DeviceErrorInvalidParameter;
             }
 
             if (paramType.maxValue().isValid() && value > paramType.maxValue()) {
-                qWarning() << QString("Value out of range for param %1. Got %2. Max: %3.")
+                qCWarning(dcDeviceManager) << QString("Value out of range for param %1. Got %2. Max: %3.")
                               .arg(paramName).arg(value.toString()).arg(paramType.maxValue().toString());
                 return DeviceManager::DeviceErrorInvalidParameter;
             }
             if (paramType.minValue().isValid() && value < paramType.minValue()) {
-                qWarning() << QString("Value out of range for param %1. Got: %2. Min: %3.")
+                qCWarning(dcDeviceManager) << QString("Value out of range for param %1. Got: %2. Min: %3.")
                               .arg(paramName).arg(value.toString()).arg(paramType.minValue().toString());
                 return DeviceManager::DeviceErrorInvalidParameter;
             }
@@ -507,7 +508,7 @@ DeviceManager::DeviceError DevicePlugin::setConfigValue(const QString &paramName
         }
     }
     if (!found) {
-        qWarning() << QString("Invalid parameter %1.").arg(paramName);
+        qCWarning(dcDeviceManager) << QString("Invalid parameter %1.").arg(paramName);
         return DeviceManager::DeviceErrorInvalidParameter;
     }
     for (int i = 0; i < m_config.count(); i++) {
@@ -583,10 +584,10 @@ bool DevicePlugin::transmitData(int delay, QList<int> rawData, int repetitions)
     case DeviceManager::HardwareResourceRadio433:
         return deviceManager()->m_radio433->sendData(delay, rawData, repetitions);
     case DeviceManager::HardwareResourceRadio868:
-        qDebug() << "Radio868 not connected yet";
+        qCDebug(dcDeviceManager) << "Radio868 not connected yet";
         return false;
     default:
-        qWarning() << "Unknown harware type. Cannot send.";
+        qCWarning(dcDeviceManager) << "Unknown harware type. Cannot send.";
     }
     return false;
 }
@@ -603,7 +604,7 @@ QNetworkReply *DevicePlugin::networkManagerGet(const QNetworkRequest &request)
     if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
         return deviceManager()->m_networkManager->get(pluginId(), request);
     } else {
-        qWarning() << "ERROR: network manager resource missing for plugin " << pluginName();
+        qCWarning(dcDeviceManager) << "network manager resource missing for plugin " << pluginName();
     }
     return nullptr;
 }
@@ -620,7 +621,7 @@ QNetworkReply *DevicePlugin::networkManagerPost(const QNetworkRequest &request, 
     if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
         return deviceManager()->m_networkManager->post(pluginId(), request, data);
     } else {
-        qWarning() << "ERROR: network manager resource missing for plugin " << pluginName();
+        qCWarning(dcDeviceManager) << "network manager resource missing for plugin " << pluginName();
     }
     return nullptr;
 }
@@ -636,7 +637,7 @@ QNetworkReply *DevicePlugin::networkManagerPut(const QNetworkRequest &request, c
     if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
         return deviceManager()->m_networkManager->put(pluginId(), request, data);
     } else {
-        qWarning() << "ERROR: network manager resource missing for plugin " << pluginName();
+        qCWarning(dcDeviceManager) << "network manager resource missing for plugin " << pluginName();
     }
     return nullptr;
 }
@@ -745,7 +746,7 @@ Types::Unit DevicePlugin::unitStringToUnit(const QString &unitString) const
     } else if (unitString == "Dollar") {
         return Types::UnitDollar;
     } else {
-        qWarning() << "Could not parse unit:" << unitString << "in plugin" << this->pluginName();
+        qCWarning(dcDeviceManager) << "Could not parse unit:" << unitString << "in plugin" << this->pluginName();
     }
     return Types::UnitNone;
 }

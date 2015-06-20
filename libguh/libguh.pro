@@ -38,6 +38,7 @@ SOURCES += plugin/device.cpp \
            types/ruleaction.cpp \
            types/ruleactionparam.cpp \
            types/statedescriptor.cpp \
+           loggingcategorys.cpp \
 
 HEADERS += plugin/device.h \
            plugin/deviceclass.h \
@@ -71,4 +72,5 @@ HEADERS += plugin/device.h \
            types/ruleactionparam.h \
            types/statedescriptor.h \
            typeutils.h \
+           loggingcategorys.h \
 

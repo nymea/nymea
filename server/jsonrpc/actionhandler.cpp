@@ -24,6 +24,7 @@
 #include "guhcore.h"
 #include "devicemanager.h"
 #include "types/action.h"
+#include "loggingcategorys.h"
 
 #include <QDebug>
 
@@ -77,7 +78,7 @@ JsonReply* ActionHandler::ExecuteAction(const QVariantMap &params)
 
 JsonReply *ActionHandler::GetActionType(const QVariantMap &params) const
 {
-    qDebug() << "asked for action type" << params;
+    qCDebug(dcJsonRpc) << "asked for action type" << params;
     ActionTypeId actionTypeId(params.value("actionTypeId").toString());
     foreach (const DeviceClass &deviceClass, GuhCore::instance()->supportedDevices()) {
         foreach (const ActionType &actionType, deviceClass.actionTypes()) {

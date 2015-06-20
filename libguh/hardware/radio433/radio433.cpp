@@ -50,6 +50,8 @@
 */
 
 #include "radio433.h"
+#include "loggingcategorys.h"
+
 #include <QFileInfo>
 
 /*! Construct the hardware resource Radio433 with the given \a parent. Each possible 433 MHz hardware will be initialized here. */
@@ -90,20 +92,20 @@ bool Radio433::enable()
     if (gpioFile.exists()) {
 //        bool receiverAvailable = m_receiver->startReceiver();
 //        if (!receiverAvailable) {
-//            //qWarning() << "ERROR: radio 433 MHz receiver not available on GPIO's";
+//            //qCWarning(dcHardware) << "ERROR: radio 433 MHz receiver not available on GPIO's";
 //        }
 
 //        bool transmitterAvailable = m_transmitter->startTransmitter();
 //        if (!transmitterAvailable) {
-//            //qWarning() << "ERROR: radio 433 MHz transmitter not available on GPIO's";
+//            //qCWarning(dcHardware) << "ERROR: radio 433 MHz transmitter not available on GPIO's";
 //        }
 
 //        if (!receiverAvailable && !transmitterAvailable) {
-//            qWarning() << "--> Radio 433 MHz GPIO's not available.";
+//            qCWarning(dcHardware) << "--> Radio 433 MHz GPIO's not available.";
 //            return false;
 //        }
     }
-    qDebug() << "--> Radio 433 MHz GPIO's enabled.";
+    qCDebug(dcHardware) << "--> Radio 433 MHz GPIO's enabled.";
     #endif
 
     return true;
@@ -126,9 +128,9 @@ bool Radio433::disabel()
 void Radio433::brennenstuhlAvailableChanged(const bool &available)
 {
     if (available) {
-        qDebug() << "--> Radio 433 MHz Brennenstuhl LAN Gateway available.";
+        qCDebug(dcHardware) << "--> Radio 433 MHz Brennenstuhl LAN Gateway available.";
     } else {
-        qDebug() << "--> Radio 433 MHz Brennenstuhl LAN Gateway NOT available.";
+        qCWarning(dcHardware) << "--> Radio 433 MHz Brennenstuhl LAN Gateway NOT available.";
     }
 }
 

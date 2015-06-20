@@ -18,29 +18,17 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <unistd.h>
-#include "guhservice.h"
-#include "loggingcategorys.h"
+#ifndef LOGGINGCATEGORYS_H
+#define LOGGINGCATEGORYS_H
 
-GuhService::GuhService(int argc, char **argv):
-    QtService<QCoreApplication>(argc, argv, "guh daemon")
-{
-    qDebug() << "guhd started as daemon.";
-    application()->setOrganizationName("guh");
-    application()->setApplicationName("guhd");
-    application()->setApplicationVersion(GUH_VERSION_STRING);
-    close(STDIN_FILENO);
-    close(STDOUT_FILENO);
-    close(STDERR_FILENO);
-    setServiceDescription("guh daemon");
-    setServiceFlags(QtServiceBase::CanBeSuspended);
-}
+#include <QLoggingCategory>
 
-GuhService::~GuhService()
-{
-}
+Q_DECLARE_LOGGING_CATEGORY(dcApplication)
+Q_DECLARE_LOGGING_CATEGORY(dcDeviceManager)
+Q_DECLARE_LOGGING_CATEGORY(dcRuleEngine)
+Q_DECLARE_LOGGING_CATEGORY(dcHardware)
+Q_DECLARE_LOGGING_CATEGORY(dcConnection)
+Q_DECLARE_LOGGING_CATEGORY(dcJsonRpc)
+Q_DECLARE_LOGGING_CATEGORY(dcLogEngine)
 
-void GuhService::start()
-{
-    GuhCore::instance()->setRunningMode(GuhCore::RunningModeService);
-}
+#endif // LOGGINGCATEGORYS_H

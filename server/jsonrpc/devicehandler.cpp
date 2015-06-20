@@ -22,6 +22,7 @@
 #include "devicehandler.h"
 #include "guhcore.h"
 #include "devicemanager.h"
+#include "loggingcategorys.h"
 #include "plugin/device.h"
 #include "plugin/deviceclass.h"
 #include "plugin/deviceplugin.h"
@@ -621,7 +622,7 @@ void DeviceHandler::devicesDiscovered(const DeviceClassId &deviceClassId, const 
 
 void DeviceHandler::deviceSetupFinished(Device *device, DeviceManager::DeviceError status)
 {
-    qDebug() << "got a device setup finished";
+    qCDebug(dcJsonRpc) << "got a device setup finished";
     if (!m_asynDeviceAdditions.contains(device->id())) {
         return; // Not the device we're waiting for...
     }
@@ -641,7 +642,7 @@ void DeviceHandler::deviceSetupFinished(Device *device, DeviceManager::DeviceErr
 
 void DeviceHandler::deviceEditFinished(Device *device, DeviceManager::DeviceError status)
 {
-    qDebug() << "got async edit finished";
+    qCDebug(dcJsonRpc) << "got async edit finished";
     if (!m_asynDeviceEditAdditions.contains(device->id())) {
         return;
     }
@@ -655,10 +656,9 @@ void DeviceHandler::deviceEditFinished(Device *device, DeviceManager::DeviceErro
 
 void DeviceHandler::pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceError status, const DeviceId &deviceId)
 {
-    qDebug() << "handler: pairing finished";
+    qCDebug(dcJsonRpc) << "got pairing finished";
     JsonReply *reply = m_asyncPairingRequests.take(pairingTransactionId);
     if (!reply) {
-        qDebug() << "not for me";
         return;
     }
 

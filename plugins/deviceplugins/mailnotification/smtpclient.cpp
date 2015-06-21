@@ -19,6 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "smtpclient.h"
+#include "loggingcategorys.h"
 
 SmtpClient::SmtpClient(QObject *parent):
     QObject(parent)
@@ -280,7 +281,7 @@ void SmtpClient::setRecipient(const QString &rcpt)
 
 void SmtpClient::socketError(QAbstractSocket::SocketError error)
 {
-    qWarning() << "ERROR: mail socket -> " << error << m_socket->errorString();
+    qCWarning(dcMailNotification) << "ERROR: mail socket -> " << error << m_socket->errorString();
 }
 
 void SmtpClient::send(const QString &data)

@@ -19,6 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "tvdevice.h"
+#include "loggingcategorys.h"
 
 TvDevice::TvDevice(QObject *parent, UpnpDeviceDescriptor upnpDeviceDescriptor) :
     UpnpDevice(parent, upnpDeviceDescriptor)
@@ -171,7 +172,7 @@ void TvDevice::sendCommand(TvDevice::RemoteKey key, ActionId actionId)
 
 void TvDevice::setupEventHandler()
 {
-    //qDebug() << "set up event handler " << m_hostAddress.toString() << m_port;
+    qCDebug(dcLgSmartTv) << "set up event handler " << hostAddress().toString() << port();
     m_eventHandler = new TvEventHandler(this, hostAddress(), port());
     connect(m_eventHandler, &TvEventHandler::eventOccured, this, &TvDevice::eventOccured);
 }
@@ -214,7 +215,7 @@ void TvDevice::queryChannelInformation()
 
 void TvDevice::parseVolumeInformation(const QByteArray &data)
 {
-    //qDebug() << printXmlData(data);
+    qCDebug(dcLgSmartTv) << printXmlData(data);
     QXmlStreamReader xml(data);
 
     while(!xml.atEnd() && !xml.hasError()) {
@@ -232,7 +233,7 @@ void TvDevice::parseVolumeInformation(const QByteArray &data)
 
 void TvDevice::parseChannelInformation(const QByteArray &data)
 {
-    //qDebug() << printXmlData(data);
+    qCDebug(dcLgSmartTv) << printXmlData(data);
     QXmlStreamReader xml(data);
 
     while(!xml.atEnd() && !xml.hasError()) {
@@ -274,8 +275,7 @@ QString TvDevice::printXmlData(QByteArray data)
         }
     }
     if(reader.hasError()) {
-        qDebug() << "ERROR reading XML device information:   " << reader.errorString();
-        qDebug() << "--------------------------------------------";
+        qCWarning(dcLgSmartTv) << "error reading XML device information:   " << reader.errorString();
     }
     return xmlOut;
 }
@@ -292,7 +292,7 @@ void TvDevice::replyFinished(QNetworkReply *reply)
 
     if(reply == m_showKeyReplay) {
         if(status != 200) {
-            //qWarning() << "ERROR: could not request to show pairing key on screen " << status;
+           qCWarning(dcLgSmartTv) << "ERROR: could not request to show pairing key on screen " << status;
         }
         m_showKeyReplay->deleteLater();
     }
@@ -300,10 +300,10 @@ void TvDevice::replyFinished(QNetworkReply *reply)
         if(status != 200) {
             m_pairingStatus = false;
             emit pairingFinished(false);
-            //qWarning() << "ERROR: could not pair with device" << status;
+            qCWarning(dcLgSmartTv) << "could not pair with device" << status;
         } else {
             m_pairingStatus = true;
-            //qDebug() << "successfully paired with tv " << modelName();
+            qCDebug(dcLgSmartTv) << "successfully paired with tv " << modelName();
             emit pairingFinished(true);
         }
         m_requestPairingReplay->deleteLater();
@@ -312,7 +312,7 @@ void TvDevice::replyFinished(QNetworkReply *reply)
     if(reply == m_finishingPairingReplay) {
         if(status == 200) {
             m_pairingStatus = false;
-            //qDebug() << "successfully unpaired from tv " << modelName();
+            qCDebug(dcLgSmartTv) << "successfully unpaired from tv " << modelName();
         }
         m_finishingPairingReplay->deleteLater();
     }
@@ -320,10 +320,10 @@ void TvDevice::replyFinished(QNetworkReply *reply)
     if(reply == m_sendCommandReplay) {
         if (status != 200) {
             emit sendCommandFinished(false,m_actionId);
-            qWarning() << "ERROR: could not send comand" << status;
+            qCWarning(dcLgSmartTv) << "ERROR: could not send comand" << status;
         } else {
             m_pairingStatus = true;
-            //qDebug() << "successfully sent command to tv " << modelName();
+            qCDebug(dcLgSmartTv) << "successfully sent command to tv " << modelName();
             emit sendCommandFinished(true,m_actionId);
             refresh();
         }
@@ -352,7 +352,7 @@ void TvDevice::eventOccured(const QByteArray &data)
     // if the tv suspends, it will send a byebye message, which means
     // the pairing will be closed.
     if(data.contains("api type=\"pairing\"") && data.contains("byebye")) {
-        qDebug() << "--> tv ended pairing";
+        qCDebug(dcLgSmartTv) << "--> tv ended pairing";
         m_pairingStatus = false;
         m_reachable = false;
         emit statusChanged();

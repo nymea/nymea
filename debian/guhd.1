@@ -21,6 +21,59 @@ Displays version information.
 .TP
 \fB\-n\fR, \fB\-\-no\-daemon\fR
 Run guhd in the foreground, not as daemon.
+.TP
+\fB\-d\fR, \fB\-\-debug\fR, \fB\<[No\]DebugCategory>\fR
+Debug categories to enable. Prefix with \"No\" to disable. Warnings from all 
+categories will be printed unless explicitly muted with "NoWarnings". 
+.RS
+.TP
+Categories are:
+.IP \fIApplication\fR\ (default\ enabled) 
+Print the debug messages from the core application.
+.IP \fICommandLauncher\fR\ (default\ disabled)
+Print the debug messages from the command launcher device plugin.
+.IP \fIConnection\fR\ (default\ enabled)
+Print the debug messages from the TCP connections in guh.
+.IP \fIDeviceManager\fR\ (default\ enabled)
+Print the debug messages from the device manager.
+.IP \fIEQ-3\fR\ (default\ disabled)
+Print the debug messages from eQ-3 device plugin. 
+.IP \fIHardware\fR\ (default\ disabled)
+Print the debug messages from hardware resources in guh.
+.IP \fIJsonRpc\fR\ (default\ disabled)
+Print the debug messages from JSON-RPC interface.
+.IP \fILgSmartTv\fR\ (default\ disabled)
+Print the debug messages from Lg Smart Tv device plugin.
+.IP \fILircd\fR\ (default\ disabled)
+Print the debug messages from lircd device plugin.
+.IP \fILogEngine\fR\ (default\ disabled)
+Print the debug messages from logging engine.
+.IP \fIMailNotification\fR\ (default\ disabled)
+Print the debug messages from the mail notification device plugin.
+.IP \fIMock\fR\ (default\ disabled)
+Print the debug messages from the mock device plugin.
+.IP \fIOpenweahtermap\fR\ (default\ disabled)
+Print the debug messages from the open weathermap device plugin.
+.IP \fIPhilipsHue\fR\ (default\ disabled)
+Print the debug messages from the Philips Hue device plugin.
+.IP \fIRF433\fR\ (default\ disabled)
+Print the debug messages from the RF 433 MHz plugins. Each plugin which uses the RF 433 MHz 
+hardware resource is in this debug caterogry. 
+.IP \fIRuleEngine\fR\ (default\ enabled)
+Print the debug messages from the rule engine.
+.IP \fITune\fR\ (default\ disabled)
+Print the debug messages from the tune device plugin.
+.IP \fIUdpCommander\fR\ (default\ disabled)
+Print the debug messages from the UPD commander device plugin.
+.IP \fIWakeOnLan\fR\ (default\ disabled)
+Print the debug messages from the wake on lan device plugin.
+.IP \fIWarnings\fR\ (default\ enabled)
+Print warnings of all categories. 
+.IP \fIWemo\fR\ (default\ disabled)
+Print the debug messages from the wemo device plugin.
+.IP \fIWifiDetector\fR\ (default\ disabled)  
+Print the debug messages from the WiFi detector device plugin.
+
 .SH SEE ALSO
 Full developer documentation at: <http://dev.guh.guru>
 .br

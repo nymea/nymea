@@ -50,6 +50,7 @@
 #include "plugin/device.h"
 #include "devicemanager.h"
 #include "plugininfo.h"
+#include "loggingcategorys.h"
 
 #include <QDebug>
 #include <QStringList>
@@ -126,10 +127,10 @@ DeviceManager::DeviceError DevicePluginConrad::executeAction(Device *device, con
     // =======================================
     // send data to driver
     if(transmitData(delay, rawData, repetitions)){
-        qDebug() << "action" << pluginName() << device->name() << action.actionTypeId();
+        qCDebug(dcRF433) << "transmitted successfully" << pluginName() << device->name() << action.actionTypeId();
         return DeviceManager::DeviceErrorNoError;
     }else{
-        qDebug() << "could not transmitt" << pluginName() << device->name() << action.actionTypeId();
+        qCWarning(dcRF433) << "could not transmitt" << pluginName() << device->name() << action.actionTypeId();
         return DeviceManager::DeviceErrorHardwareNotAvailable;
     }
 }
@@ -141,7 +142,7 @@ void DevicePluginConrad::radioData(const QList<int> &rawData)
         return;
     }
 
-    // qDebug() << rawData;
+    qCDebug(dcRF433) << rawData;
 
     int delay = rawData.first()/10;
     QByteArray binCode;
@@ -184,5 +185,5 @@ void DevicePluginConrad::radioData(const QList<int> &rawData)
         return;
     }
 
-    qDebug() << "CONRAD: " << binCode.left(binCode.length() - 24) << "  ID = " << binCode.right(24);
+    qCDebug(dcRF433) << "Conrad: " << binCode.left(binCode.length() - 24) << "  ID = " << binCode.right(24);
 }

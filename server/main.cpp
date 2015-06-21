@@ -52,6 +52,7 @@ int main(int argc, char *argv[])
     application.setApplicationName("guhd");
     application.setApplicationVersion(GUH_VERSION_STRING);
 
+    // filter for core and libguh
     s_loggingFilters.insert("Application", true);
     s_loggingFilters.insert("Warnings", true);
     s_loggingFilters.insert("DeviceManager", true);
@@ -61,28 +62,51 @@ int main(int argc, char *argv[])
     s_loggingFilters.insert("Hardware", false);
     s_loggingFilters.insert("LogEngine", false);
 
+    // plugins
+    #ifdef boblight
+    s_loggingFilters.insert("Boblight", false);
+    #endif
+    s_loggingFilters.insert("CommandLauncher", false);
+    s_loggingFilters.insert("RF433", false);
+    s_loggingFilters.insert("EQ-3", false);
+    s_loggingFilters.insert("LgSmartTv", false);
+    s_loggingFilters.insert("Lircd", false);
+    s_loggingFilters.insert("MailNotification", false);
+    s_loggingFilters.insert("Mock", false);
+    s_loggingFilters.insert("Openweahtermap", false);
+    s_loggingFilters.insert("PhilipsHue", false);
+    s_loggingFilters.insert("Tune", false);
+    s_loggingFilters.insert("UdpCommander", false);
+    s_loggingFilters.insert("WakeOnLan", false);
+    s_loggingFilters.insert("Wemo", false);
+    s_loggingFilters.insert("WifiDetector", false);
+
+
     QCommandLineParser parser;
     parser.addHelpOption();
     parser.addVersionOption();
     QString applicationDescription = QString("\nguh ( /[guːh]/ ) is an open source home automation server, which allows to\n"
-                                  "control a lot of different devices from many different manufacturers.\n"
+                                  "control a lot of different devices from many different manufacturers.\n\n"
                                   "guhd %1 (C) 2014-2015 guh\n"
                                   "Released under the GNU GENERAL PUBLIC LICENSE Version 2.").arg(GUH_VERSION_STRING);
 
     parser.setApplicationDescription(applicationDescription);
 
-    QString debugDescription = QString("Debug categories to enable. Prefix with \"No\" to disable. Warnings from all categories will be printed unless explicitly muted with \"NoWarnings\". \nCategories are:");
-    foreach (const QString &filterName, s_loggingFilters.keys()) {
-        debugDescription += "\n" + filterName + " (" + (s_loggingFilters.value(filterName) ? "yes" : "no") + ")";
+    QCommandLineOption foregroundOption(QStringList() << "n" << "no-daemon", QCoreApplication::translate("main", "Run guhd in the foreground, not as daemon."));
+    parser.addOption(foregroundOption);
+
+    QString debugDescription = QString("Debug categories to enable. Prefix with \"No\" to disable. Warnings from all categories will be printed unless explicitly muted with \"NoWarnings\". \n\nCategories are:");
+    QStringList sortedFilterList = QStringList(s_loggingFilters.keys());
+    sortedFilterList.sort();
+    foreach (const QString &filterName, sortedFilterList) {
+        debugDescription += "\n- " + filterName + " (" + (s_loggingFilters.value(filterName) ? "yes" : "no") + ")";
     }
     QCommandLineOption debugOption(QStringList() << "d" << "debug", debugDescription, "[No]DebugCategory");
     parser.addOption(debugOption);
 
-    QCommandLineOption foregroundOption(QStringList() << "n" << "no-daemon", QCoreApplication::translate("main", "Run guhd in the foreground, not as daemon."));
-    parser.addOption(foregroundOption);
-
     parser.process(application);
 
+    // check debug area
     foreach (QString debugArea, parser.values(debugOption)) {
         bool enable = !debugArea.startsWith("No");
         debugArea.remove(QRegExp("^No"));

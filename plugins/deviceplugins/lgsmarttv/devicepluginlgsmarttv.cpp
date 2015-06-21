@@ -49,6 +49,7 @@
 #include "plugin/device.h"
 #include "devicemanager.h"
 #include "plugininfo.h"
+#include "loggingcategorys.h"
 
 #include <QDebug>
 
@@ -184,7 +185,7 @@ void DevicePluginLgSmartTv::deviceRemoved(Device *device)
     }
 
     TvDevice *tvDevice= m_tvList.key(device);
-    qDebug() << "remove LG SmartTv  " << tvDevice->modelName();
+    qCDebug(dcLgSmartTv) << "remove LG SmartTv  " << tvDevice->modelName();
     tvDevice->endPairing();
     m_tvList.remove(tvDevice);
     delete tvDevice;

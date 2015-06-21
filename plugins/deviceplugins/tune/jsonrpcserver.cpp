@@ -19,6 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "jsonrpcserver.h"
+#include "loggingcategorys.h"
 
 extern PluginId pluginId;
 extern DeviceClassId moodDeviceClassId;
@@ -103,7 +104,7 @@ bool JsonRpcServer::sync(QList<Device *> deviceList)
     m_requests.insert(m_id, message);
 
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(message);
-    qDebug() << jsonDoc.toJson();
+    qCDebug(dcTune) << jsonDoc.toJson();
     m_manager->sendData(jsonDoc.toJson(QJsonDocument::Compact));
     return true;
 }
@@ -143,7 +144,7 @@ void JsonRpcServer::executeAction(Device *device, const Action &action)
     m_requests.insert(m_id, message);
 
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(message);
-    qDebug() << jsonDoc.toJson();
+    qCDebug(dcTune) << jsonDoc.toJson();
     m_manager->sendData(jsonDoc.toJson(QJsonDocument::Compact));
 }
 
@@ -172,7 +173,7 @@ void JsonRpcServer::handleResponse(const QVariantMap &response)
     int responseId = response.value("id").toInt();
 
     if (!m_requests.contains(responseId)) {
-        qWarning() << "ERROR: got a response without a corresponding request!!!!";
+        qCWarning(dcTune) << "got a response without a corresponding request!!!!";
         return;
     }
 
@@ -181,7 +182,7 @@ void JsonRpcServer::handleResponse(const QVariantMap &response)
 
     // Note: maby we have to do something if any request fails
     if (!response.value("success").toBool()) {
-        qWarning() << "ERROR: for request:" << request << response.value("error").toString();
+        qCWarning(dcTune) << "error for request:" << request << response.value("error").toString();
     }
 
     // check if this is a response to an action execution
@@ -196,7 +197,7 @@ void JsonRpcServer::processData(const QByteArray &data)
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
 
     if(error.error != QJsonParseError::NoError) {
-        qDebug() << "failed to parse data" << data << ":" << error.errorString();
+        qCWarning(dcTune) << "failed to parse data" << data << ":" << error.errorString();
         return;
     }
 
@@ -204,7 +205,7 @@ void JsonRpcServer::processData(const QByteArray &data)
 
     // check if the message has an id
     if (!message.contains("id")) {
-        qWarning() << "ERROR: message does not contain a valid id" << message;
+        qCWarning(dcTune) << "message does not contain a valid id" << message;
         return;
     }
 
@@ -216,7 +217,7 @@ void JsonRpcServer::processData(const QByteArray &data)
 
     // otherwise we need a method
     if (!message.contains("method")) {
-        qWarning() << "ERROR: message does not contain a valid method" << message;
+        qCWarning(dcTune) << "message does not contain a valid method" << message;
         return;
     }
 

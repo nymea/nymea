@@ -52,6 +52,7 @@
 #include "plugin/device.h"
 #include "devicemanager.h"
 #include "plugininfo.h"
+#include "loggingcategorys.h"
 
 #include <QDebug>
 #include <QStringList>
@@ -78,8 +79,7 @@ void DevicePluginWifiDetector::processFinished(int exitCode, QProcess::ExitStatu
     p->deleteLater();
 
     if (exitCode != 0 || exitStatus != QProcess::NormalExit) {
-        qWarning() << "error performing network scan:";
-        qWarning() << p->readAllStandardError();
+        qCWarning(dcWifiDetector) << "error performing network scan:" << p->readAllStandardError();
         return;
     }
 

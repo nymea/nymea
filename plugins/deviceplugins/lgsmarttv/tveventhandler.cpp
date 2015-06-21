@@ -19,6 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "tveventhandler.h"
+#include "loggingcategorys.h"
 
 TvEventHandler::TvEventHandler(QObject *parent, QHostAddress host, int port) :
     QTcpServer(parent),m_host(host),m_port(port)
@@ -41,7 +42,7 @@ void TvEventHandler::incomingConnection(qintptr socket)
     connect(tcpSocket, &QTcpSocket::disconnected, this, &TvEventHandler::discardClient);
     tcpSocket->setSocketDescriptor(socket);
 
-    //qDebug() << "incomming connection" << s->peerAddress().toString() << s->peerName();
+    qCDebug(dcLgSmartTv) << "incomming connection" << tcpSocket->peerAddress().toString() << tcpSocket->peerName();
 }
 
 void TvEventHandler::readClient()
@@ -86,9 +87,8 @@ void TvEventHandler::readClient()
         // check if we got header
         if (data.startsWith("POST") && !m_expectingData) {
             m_expectingData = true;
-//            QStringList tokens = QString(data).split(QRegExp("[ \r\n][ \r\n]*"));
-//            qDebug() << "==================================";
-//            qDebug() << "event occured" << "http://" << m_host.toString() << ":" << m_port << tokens[1];
+            QStringList tokens = QString(data).split(QRegExp("[ \r\n][ \r\n]*"));
+            qCDebug(dcLgSmartTv) << "event occured" << "http://" << m_host.toString() << ":" << m_port << tokens[1];
         }
     }
 }

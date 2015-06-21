@@ -68,6 +68,7 @@ int main(int argc, char *argv[])
     #endif
     s_loggingFilters.insert("CommandLauncher", false);
     s_loggingFilters.insert("RF433", false);
+    s_loggingFilters.insert("DateTime", false);
     s_loggingFilters.insert("EQ-3", false);
     s_loggingFilters.insert("LgSmartTv", false);
     s_loggingFilters.insert("Lircd", false);
@@ -113,7 +114,7 @@ int main(int argc, char *argv[])
         if (s_loggingFilters.contains(debugArea)) {
             s_loggingFilters[debugArea] = enable;
         } else {
-            qWarning() << "No such debug category:" << debugArea;
+            qCWarning(dcApplication) << "No such debug category:" << debugArea;
         }
     }
     QLoggingCategory::installFilter(loggingCategoryFilter);

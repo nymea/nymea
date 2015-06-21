@@ -35,6 +35,7 @@ Q_LOGGING_CATEGORY(dcBoblight, "Boblight")
 
 Q_LOGGING_CATEGORY(dcCommandLauncher, "CommandLauncher")
 Q_LOGGING_CATEGORY(dcRF433, "RF433")
+Q_LOGGING_CATEGORY(dcDateTime, "DateTime")
 Q_LOGGING_CATEGORY(dcEQ3, "EQ-3")
 Q_LOGGING_CATEGORY(dcLgSmartTv, "LgSmartTv")
 Q_LOGGING_CATEGORY(dcLircd, "Lircd")

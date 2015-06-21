@@ -21,6 +21,7 @@
 
 #include "eventhandler.h"
 #include "guhcore.h"
+#include "loggingcategories.h"
 
 EventHandler::EventHandler(QObject *parent) :
     JsonHandler(parent)
@@ -59,6 +60,7 @@ void EventHandler::eventTriggered(const Event &event)
 
 JsonReply* EventHandler::GetEventType(const QVariantMap &params) const
 {
+    qCDebug(dcJsonRpc) << "asked for event type" << params;
     EventTypeId eventTypeId(params.value("eventTypeId").toString());
     foreach (const DeviceClass &deviceClass, GuhCore::instance()->supportedDevices()) {
         foreach (const EventType &eventType, deviceClass.eventTypes()) {

@@ -19,6 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "tunemanager.h"
+#include "loggingcategories.h"
 
 TuneManager::TuneManager(int port, QObject *parent) :
     QObject(parent),
@@ -48,7 +49,7 @@ void TuneManager::tuneConnected()
     QTcpSocket *socket = m_server->nextPendingConnection();
 
     if (m_tune) {
-        qWarning() << "--> ATTENTION: tune already connected! connection refused.";
+        qCWarning(dcTune) << "tune already connected! connection refused.";
         socket->disconnect();
         delete socket;
         return;
@@ -59,14 +60,14 @@ void TuneManager::tuneConnected()
     connect(m_tune, &QTcpSocket::readyRead, this, &TuneManager::readData);
     connect(m_tune, &QTcpSocket::disconnected, this, &TuneManager::tuneDisconnected);
 
-    qDebug() << " --> tune connected:" << m_tune->peerAddress().toString() << m_port;
+    qCDebug(dcTune) << "Tune connected:" << m_tune->peerAddress().toString() << m_port;
     m_connected = true;
     emit tuneConnectionStatusChanged(true);
 }
 
 void TuneManager::tuneDisconnected()
 {
-    qWarning() << " --> tune disconnected:" << m_tune->peerAddress().toString();
+    qCWarning(dcTune) << "Tune disconnected:" << m_tune->peerAddress().toString();
     m_connected = false;
     emit tuneConnectionStatusChanged(false);
     delete m_tune;
@@ -96,18 +97,18 @@ bool TuneManager::start()
 
     QHostAddress localhost = QHostAddress(QHostAddress::LocalHost);
     if(!m_server->listen(localhost, m_port)) {
-        qWarning() << "ERROR: Tune server can not listen on" << localhost << m_port;
+        qCWarning(dcTune) << "Tune server can not listen on" << localhost << m_port;
         delete m_server;
         return false;
     }
-    qDebug() << "--> Tune server started" << localhost << m_port;
+    qCDebug(dcTune) << "Tune server started" << localhost << m_port;
     connect(m_server, &QTcpServer::newConnection, this, &TuneManager::tuneConnected);
     return true;
 }
 
 void TuneManager::stop()
 {
-    qDebug() << "--> close Tune server" << m_server->serverAddress().toString();
+    qCDebug(dcTune) << "close Tune server" << m_server->serverAddress().toString();
     m_server->close();
     delete m_server;
     m_server = 0;

@@ -67,6 +67,8 @@
 */
 
 #include "gpio.h"
+#include "loggingcategories.h"
+
 #include <QDebug>
 
 /*! Constructs a \l{Gpio} object to represent a GPIO with the given \a gpio number and the \a parent. */
@@ -90,13 +92,13 @@ bool Gpio::exportGpio()
 
     int fd = open("/sys/class/gpio/export", O_WRONLY);
     if (fd < 0) {
-        //qDebug() << "ERROR: could not open /sys/class/gpio/export";
+        //qCWarning(dcHardware) << "could not open /sys/class/gpio/export";
         return false;
     }
 
     ssize_t len = snprintf(buf, sizeof(buf), "%d", m_gpio);
     if(write(fd, buf, len) != len){
-        qDebug() << "ERROR: could not write to gpio (export)";
+        qCWarning(dcHardware) << "could not write to gpio (export)";
         close(fd);
         return false;
     }
@@ -111,13 +113,13 @@ bool Gpio::unexportGpio()
 
     int fd = open("/sys/class/gpio/unexport", O_WRONLY);
     if (fd < 0) {
-        //qDebug() << "ERROR: could not open /sys/class/gpio/unexport";
+        //qCWarning(dcHardware) << "could not open /sys/class/gpio/unexport";
         return false;
     }
 
     ssize_t len = snprintf(buf, sizeof(buf), "%d", m_gpio);
     if(write(fd, buf, len) != len){
-        //qDebug() << "ERROR: could not write to gpio (unexport)";
+        //qCWarning(dcHardware) << "could not write to gpio (unexport)";
         close(fd);
         return false;
     }
@@ -134,7 +136,7 @@ int Gpio::openGpio()
 
     int fd = open(buf, O_RDONLY | O_NONBLOCK );
     if (fd < 0) {
-        qDebug() << "ERROR: could not open /sys/class/gpio" << m_gpio << "/direction";
+        qCWarning(dcHardware) << "could not open /sys/class/gpio" << m_gpio << "/direction";
         return fd;
     }
     return fd;
@@ -162,12 +164,12 @@ bool Gpio::setDirection(int dir)
 
     int fd = open(buf, O_WRONLY);
     if (fd < 0) {
-        qDebug() << "ERROR: could not open /sys/class/gpio" << m_gpio << "/direction";
+        qCWarning(dcHardware) << "could not open /sys/class/gpio" << m_gpio << "/direction";
         return false;
     }
     if(dir == INPUT){
         if(write(fd, "in", 3) != 3){
-            qDebug() << "ERROR: could not write to gpio (set INPUT)";
+            qCWarning(dcHardware) << "could not write to gpio (set INPUT)";
             close(fd);
             return false;
         }
@@ -177,7 +179,7 @@ bool Gpio::setDirection(int dir)
     }
     if(dir == OUTPUT){
         if(write(fd, "out", 4) != 4){
-            qDebug() << "ERROR: could not write to gpio (set OUTPUT)";
+            qCWarning(dcHardware) << "could not write to gpio (set OUTPUT)";
             close(fd);
             return false;
         }
@@ -221,13 +223,13 @@ bool Gpio::setValue(unsigned int value)
 
         int fd = open(buf, O_WRONLY);
         if (fd < 0) {
-            qDebug() << "ERROR: could not open /sys/class/gpio" << m_gpio << "/value";
+            qCWarning(dcHardware) << "could not open /sys/class/gpio" << m_gpio << "/value";
             return false;
         }
 
         if(value == LOW){
             if(write(fd, "0", 2) != 2){
-                qDebug() << "ERROR: could not write to gpio (set LOW)";
+                qCWarning(dcHardware) << "could not write to gpio (set LOW)";
                 close(fd);
                 return false;
             }
@@ -236,7 +238,7 @@ bool Gpio::setValue(unsigned int value)
         }
         if(value == HIGH){
             if(write(fd, "1", 2) != 2){
-                qDebug() << "ERROR: could not write to gpio (set HIGH)";
+                qCWarning(dcHardware) << "could not write to gpio (set HIGH)";
                 close(fd);
                 return false;
             }
@@ -246,7 +248,7 @@ bool Gpio::setValue(unsigned int value)
         close(fd);
         return false;
     }else{
-        qDebug() << "ERROR: Gpio" << m_gpio << "is not an OUTPUT.";
+        qCWarning(dcHardware) << "Gpio" << m_gpio << "is not an OUTPUT.";
         return false;
     }
 }
@@ -274,7 +276,7 @@ int Gpio::getValue()
 
     int fd = open(buf, O_RDONLY);
     if (fd < 0) {
-        qDebug() << "ERROR: could not open /sys/class/gpio" << m_gpio << "/value";
+        qCWarning(dcHardware) << "could not open /sys/class/gpio" << m_gpio << "/value";
         return -1;
     }
     char ch;
@@ -320,13 +322,13 @@ bool Gpio::setEdgeInterrupt(int edge)
 
     int fd = open(buf, O_WRONLY);
     if (fd < 0) {
-        qDebug() << "ERROR: could not open /sys/class/gpio" << m_gpio << "/edge";
+        qCWarning(dcHardware) << "could not open /sys/class/gpio" << m_gpio << "/edge";
         return false;
     }
 
     if(edge == EDGE_FALLING){
         if(write(fd, "falling", 8) != 8){
-            qDebug() << "ERROR: could not write to gpio (set EDGE_FALLING)";
+            qCWarning(dcHardware) << "could not write to gpio (set EDGE_FALLING)";
             close(fd);
             return false;
         }
@@ -335,7 +337,7 @@ bool Gpio::setEdgeInterrupt(int edge)
     }
     if(edge == EDGE_RISING){
         if(write(fd, "rising", 7) != 7){
-            qDebug() << "ERROR: could not write to gpio (set EDGE_RISING)";
+            qCWarning(dcHardware) << "could not write to gpio (set EDGE_RISING)";
             close(fd);
             return false;
         }
@@ -344,7 +346,7 @@ bool Gpio::setEdgeInterrupt(int edge)
     }
     if(edge == EDGE_BOTH){
         if(write(fd, "both", 5) != 5){
-            qDebug() << "ERROR: could not write to gpio (set EDGE_BOTH)";
+            qCWarning(dcHardware) << "could not write to gpio (set EDGE_BOTH)";
             close(fd);
             return false;
         }
@@ -364,13 +366,13 @@ bool Gpio::setActiveLow(bool activeLow)
     snprintf(buf, sizeof(buf), "/sys/class/gpio/gpio%d/active_low", m_gpio);
     int fd = open(buf, O_WRONLY);
     if (fd < 0) {
-        qDebug() << "ERROR: could not open /sys/class/gpio" << m_gpio << "/active_low";
+        qCWarning(dcHardware) << "could not open /sys/class/gpio" << m_gpio << "/active_low";
         return false;
     }
 
     if(activeLow){
         if(write(fd, "0", 2) != 2){
-            qDebug() << "ERROR: could not write to gpio (set Active LOW)";
+            qCWarning(dcHardware) << "could not write to gpio (set Active LOW)";
             close(fd);
             return false;
         }
@@ -379,7 +381,7 @@ bool Gpio::setActiveLow(bool activeLow)
     }
     if(!activeLow){
         if(write(fd, "1", 2) != 2){
-            qDebug() << "ERROR: could not write to gpio (set Active HIGH)";
+            qCWarning(dcHardware) << "could not write to gpio (set Active HIGH)";
             close(fd);
             return false;
         }

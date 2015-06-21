@@ -36,6 +36,7 @@
 #include "plugin/device.h"
 #include "rule.h"
 #include "ruleengine.h"
+#include "loggingcategories.h"
 
 #include "devicehandler.h"
 #include "actionhandler.h"
@@ -129,7 +130,6 @@ JsonReply* JsonRPCServer::Version(const QVariantMap &params) const
 JsonReply* JsonRPCServer::SetNotificationStatus(const QVariantMap &params)
 {
     QUuid clientId = this->property("clientId").toUuid();
-//    qDebug() << "got client socket" << clientId;
     m_clients[clientId] = params.value("enabled").toBool();
     QVariantMap returns;
     returns.insert("enabled", m_clients[clientId]);
@@ -153,23 +153,22 @@ void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &jsonDat
     QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData, &error);
 
     if(error.error != QJsonParseError::NoError) {
-        qDebug() << "failed to parse data" << jsonData << ":" << error.errorString();
+        qCWarning(dcJsonRpc) << "failed to parse data" << jsonData << ":" << error.errorString();
     }
-//    qDebug() << "-------------------------\n" << jsonDoc.toJson();
 
     QVariantMap message = jsonDoc.toVariant().toMap();
 
     bool success;
     int commandId = message.value("id").toInt(&success);
     if (!success) {
-        qWarning() << "Error parsing command. Missing \"id\":" << jsonData;
+        qCWarning(dcJsonRpc) << "Error parsing command. Missing \"id\":" << jsonData;
         sendErrorResponse(clientId, commandId, "Error parsing command. Missing 'id'");
         return;
     }
 
     QStringList commandList = message.value("method").toString().split('.');
     if (commandList.count() != 2) {
-        qWarning() << "Error parsing method.\nGot:" << message.value("method").toString() << "\nExpected: \"Namespace.method\"";
+        qCWarning(dcJsonRpc) << "Error parsing method.\nGot:" << message.value("method").toString() << "\nExpected: \"Namespace.method\"";
         sendErrorResponse(clientId, commandId, QString("Error parsing method. Got: '%1'', Expected: 'Namespace.method'").arg(message.value("method").toString()));
         return;
     }

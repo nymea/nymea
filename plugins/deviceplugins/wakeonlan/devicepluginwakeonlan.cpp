@@ -53,6 +53,7 @@
 #include "plugin/device.h"
 #include "devicemanager.h"
 #include "plugininfo.h"
+#include "loggingcategorys.h"
 
 #include <QDebug>
 #include <QStringList>
@@ -62,32 +63,6 @@ DevicePluginWakeOnLan::DevicePluginWakeOnLan()
 {
 }
 
-//QList<DeviceClass> DevicePluginWakeOnLan::supportedDevices() const
-//{
-//    QList<DeviceClass> ret;
-
-//    DeviceClass deviceClassWakeOnLan(pluginId(), supportedVendors().first().id(), wolDeviceClassId);
-//    deviceClassWakeOnLan.setName("Wake On Lan");
-    
-//    QList<ParamType> wolParams;
-//    ParamType nameParam("name", QVariant::String);
-//    wolParams.append(nameParam);
-//    ParamType wolParam("mac", QVariant::String);
-//    wolParams.append(wolParam);
-
-
-//    QList<ActionType> wolActions;
-//    ActionType wolAction(wolActionTypeId);
-//    wolAction.setName("wakeup");
-//    wolActions.append(wolAction);
-
-//    deviceClassWakeOnLan.setParamTypes(wolParams);
-//    deviceClassWakeOnLan.setActions(wolActions);
-
-//    ret.append(deviceClassWakeOnLan);
-//    return ret;
-//}
-
 DeviceManager::HardwareResources DevicePluginWakeOnLan::requiredHardware() const
 {
     return DeviceManager::HardwareResourceNone;
@@ -95,8 +70,8 @@ DeviceManager::HardwareResources DevicePluginWakeOnLan::requiredHardware() const
 
 DeviceManager::DeviceError DevicePluginWakeOnLan::executeAction(Device *device, const Action &action)
 {
-    qDebug() << "execute action " << action.actionTypeId().toString();
     if(action.actionTypeId() == wolActionTypeId){
+        qCDebug(dcWakeOnLan) << "wake up" << device->name();
         wakeup(device->paramValue("mac").toString());
     }
     return DeviceManager::DeviceErrorNoError;
@@ -109,9 +84,8 @@ void DevicePluginWakeOnLan::wakeup(QString mac)
     for(int i = 0; i < 16; ++i) {
         packet.append(QByteArray::fromHex(mac.remove(':').toLocal8Bit()));
     }
-    qDebug() << "created magic packet:" << packet.toHex();
+    qCDebug(dcWakeOnLan) << "created magic packet:" << packet.toHex();
     QUdpSocket udpSocket;
     udpSocket.writeDatagram(packet.data(), packet.size(), QHostAddress::Broadcast, 9);
-
 }
 

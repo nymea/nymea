@@ -47,6 +47,7 @@
 #include "devicepluginunitec.h"
 #include "devicemanager.h"
 #include "plugininfo.h"
+#include "loggingcategorys.h"
 
 #include <QDebug>
 #include <QStringList>
@@ -58,6 +59,23 @@ DevicePluginUnitec::DevicePluginUnitec()
 DeviceManager::HardwareResources DevicePluginUnitec::requiredHardware() const
 {
     return DeviceManager::HardwareResourceRadio433;
+}
+
+DeviceManager::DeviceSetupStatus DevicePluginUnitec::setupDevice(Device *device)
+{
+    if (device->deviceClassId() != switchDeviceClassId) {
+        return DeviceManager::DeviceSetupStatusFailure;
+    }
+
+    foreach (Device* d, myDevices()) {
+        if (d->paramValue("Channel").toString() == device->paramValue("Channel").toString()) {
+            qCWarning(dcRF433) << "Unitec switch with channel " << device->paramValue("Channel").toString() << "already added.";
+            return DeviceManager::DeviceSetupStatusFailure;
+        }
+    }
+
+    device->setName("Unitec switch 48111 (" + device->paramValue("Channel").toString() + ")");
+    return DeviceManager::DeviceSetupStatusSuccess;
 }
 
 DeviceManager::DeviceError DevicePluginUnitec::executeAction(Device *device, const Action &action)
@@ -111,10 +129,10 @@ DeviceManager::DeviceError DevicePluginUnitec::executeAction(Device *device, con
     // =======================================
     // send data to hardware resource
     if(transmitData(delay, rawData)){
-        qDebug() << "transmitted" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
+        qCDebug(dcRF433) << "transmitted" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
         return DeviceManager::DeviceErrorNoError;
     }else{
-        qDebug() << "could not transmitt" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
+        qCWarning(dcRF433) << "could not transmitt" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
         return DeviceManager::DeviceErrorHardwareNotAvailable;
     }
 }

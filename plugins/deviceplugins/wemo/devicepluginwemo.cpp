@@ -53,6 +53,7 @@
 #include "plugin/device.h"
 #include "devicemanager.h"
 #include "plugininfo.h"
+#include "loggingcategorys.h"
 
 #include <QDebug>
 #include <QNetworkReply>
@@ -150,7 +151,7 @@ void DevicePluginWemo::networkManagerReplyReady(QNetworkReply *reply)
         if (reply->error()) {
             // give only error if we don't already know that is unreachable
             if (device->stateValue(reachableStateTypeId).toBool()) {
-                qWarning() << "ERROR: WeMo reply error: " << reply->errorString();
+                qCWarning(dcWemo) << "WeMo reply error: " << reply->errorString();
             }
             device->setStateValue(reachableStateTypeId, false);
         } else {
@@ -163,7 +164,7 @@ void DevicePluginWemo::networkManagerReplyReady(QNetworkReply *reply)
         if (reply->error()) {
             // give only error if we don't already know that is unreachable
             if (device->stateValue(reachableStateTypeId).toBool()) {
-                qWarning() << "ERROR: WeMo reply error: " << reply->errorString();
+                qCWarning(dcWemo) << "WeMo reply error: " << reply->errorString();
             }
             device->setStateValue(reachableStateTypeId, false);
         } else {

@@ -53,6 +53,7 @@
 #include "devicepluginleynew.h"
 #include "devicemanager.h"
 #include "plugininfo.h"
+#include "loggingcategorys.h"
 
 #include <QDebug>
 #include <QStringList>
@@ -174,10 +175,10 @@ DeviceManager::DeviceError DevicePluginLeynew::executeAction(Device *device, con
     // =======================================
     // send data to hardware resource
     if(transmitData(delay, rawData, repetitions)){
-        qDebug() << "transmitted" << pluginName() << device->name() << action.id();
+        qCDebug(dcRF433) << "transmitted" << pluginName() << device->name() << action.id();
         return DeviceManager::DeviceErrorNoError;
     }else{
-        qDebug() << "could not transmitt" << pluginName() << device->name() << action.id();
+        qCWarning(dcRF433) << "could not transmitt" << pluginName() << device->name() << action.id();
         return DeviceManager::DeviceErrorHardwareNotAvailable;
     }
 }

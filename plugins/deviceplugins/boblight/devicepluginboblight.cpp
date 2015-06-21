@@ -50,6 +50,7 @@
 
 #include "plugin/device.h"
 #include "devicemanager.h"
+#include "loggingcategorys.h"
 
 #include "bobclient.h"
 #include "plugininfo.h"
@@ -126,7 +127,7 @@ QPair<DeviceManager::DeviceError, QString> DevicePluginBoblight::executeAction(D
     if (!newColor.isValid()) {
         return report(DeviceManager::DeviceErrorActionParameterError, "color");
     }
-    qDebug() << "executing boblight action" << newColor;
+    qCDebug(dcBoblight) << "executing boblight action" << newColor;
     m_bobClient->setColor(device->paramValue("channel").toInt(), newColor);
     m_bobClient->sync();
 

@@ -51,6 +51,7 @@
 #include "plugin/device.h"
 #include "types/param.h"
 #include "plugininfo.h"
+#include "loggingcategorys.h"
 
 #include <QDebug>
 #include <QStringList>
@@ -246,7 +247,7 @@ void DevicePluginPhilipsHue::networkManagerReplyReady(QNetworkReply *reply)
 
         // check HTTP status code
         if (status != 200) {
-            qWarning() << "Request error:" << status << reply->errorString();
+            qCWarning(dcPhilipsHue) << "Request error:" << status << reply->errorString();
             reply->deleteLater();
             return;
         }
@@ -257,7 +258,7 @@ void DevicePluginPhilipsHue::networkManagerReplyReady(QNetworkReply *reply)
 
         // check HTTP status code
         if (status != 200) {
-            qWarning() << "Request error:" << status << reply->errorString();
+            qCWarning(dcPhilipsHue) << "Request error:" << status << reply->errorString();
             reply->deleteLater();
             return;
         }
@@ -269,7 +270,7 @@ void DevicePluginPhilipsHue::networkManagerReplyReady(QNetworkReply *reply)
 
         // check HTTP status code
         if (status != 200) {
-            qWarning() << "Refresh Hue Light request error:" << status << reply->errorString();
+            qCWarning(dcPhilipsHue) << "Refresh Hue Light request error:" << status << reply->errorString();
             onBridgeError(device);
             reply->deleteLater();
             return;
@@ -282,7 +283,7 @@ void DevicePluginPhilipsHue::networkManagerReplyReady(QNetworkReply *reply)
 
         // check HTTP status code
         if (status != 200) {
-            qWarning() << "Refresh Hue Bridge request error:" << status << reply->errorString();
+            qCWarning(dcPhilipsHue) << "Refresh Hue Bridge request error:" << status << reply->errorString();
             onBridgeError(device);
             reply->deleteLater();
             return;
@@ -295,7 +296,7 @@ void DevicePluginPhilipsHue::networkManagerReplyReady(QNetworkReply *reply)
 
         // check HTTP status code
         if (status != 200) {
-            qWarning() << "Refresh Hue Light request error:" << status << reply->errorString();
+            qCWarning(dcPhilipsHue) << "Refresh Hue Light request error:" << status << reply->errorString();
             onBridgeError(actionInfo.first);
             emit actionExecutionFinished(actionInfo.second, DeviceManager::DeviceErrorHardwareNotAvailable);
             reply->deleteLater();
@@ -310,7 +311,7 @@ void DevicePluginPhilipsHue::networkManagerReplyReady(QNetworkReply *reply)
 
         // check HTTP status code
         if (status != 200) {
-            qWarning() << "Set name of Hue Light request error:" << status << reply->errorString();
+            qCWarning(dcPhilipsHue) << "Set name of Hue Light request error:" << status << reply->errorString();
             reply->deleteLater();
             return;
         }
@@ -432,13 +433,13 @@ void DevicePluginPhilipsHue::processLightRefreshResponse(Device *device, const Q
 
     // check JSON error
     if (error.error != QJsonParseError::NoError) {
-        qWarning() << "Hue Bridge json error in response" << error.errorString();
+        qCWarning(dcPhilipsHue) << "Hue Bridge json error in response" << error.errorString();
         return;
     }
 
     // check response error
     if (data.contains("error")) {
-        qWarning() << "Failed to refresh Hue Light:" << jsonDoc.toVariant().toList().first().toMap().value("error").toMap().value("description").toString();
+        qCWarning(dcPhilipsHue) << "Failed to refresh Hue Light:" << jsonDoc.toVariant().toList().first().toMap().value("error").toMap().value("description").toString();
         return;
     }
 
@@ -453,13 +454,13 @@ void DevicePluginPhilipsHue::processBridgeRefreshResponse(Device *device, const 
 
     // check JSON error
     if (error.error != QJsonParseError::NoError) {
-        qWarning() << "Hue Bridge json error in response" << error.errorString();
+        qCWarning(dcPhilipsHue) << "Hue Bridge json error in response" << error.errorString();
         return;
     }
 
     // check response error
     if (data.contains("error")) {
-        qWarning() << "Failed to refresh Hue Bridge:" << jsonDoc.toVariant().toList().first().toMap().value("error").toMap().value("description").toString();
+        qCWarning(dcPhilipsHue) << "Failed to refresh Hue Bridge:" << jsonDoc.toVariant().toList().first().toMap().value("error").toMap().value("description").toString();
         return;
     }
 
@@ -485,14 +486,14 @@ void DevicePluginPhilipsHue::processSetNameResponse(Device *device, const QByteA
 
     // check JSON error
     if (error.error != QJsonParseError::NoError) {
-        qWarning() << "Hue Bridge json error in response" << error.errorString();
+        qCWarning(dcPhilipsHue) << "Hue Bridge json error in response" << error.errorString();
         emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusFailure);
         return;
     }
 
     // check response error
     if (data.contains("error")) {
-        qWarning() << "Failed to set name of Hue:" << jsonDoc.toVariant().toList().first().toMap().value("error").toMap().value("description").toString();
+        qCWarning(dcPhilipsHue) << "Failed to set name of Hue:" << jsonDoc.toVariant().toList().first().toMap().value("error").toMap().value("description").toString();
         emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusFailure);
         return;
     }
@@ -511,14 +512,14 @@ void DevicePluginPhilipsHue::processPairingResponse(const DevicePluginPhilipsHue
 
     // check JSON error
     if (error.error != QJsonParseError::NoError) {
-        qWarning() << "Hue Bridge json error in response" << error.errorString();
+        qCWarning(dcPhilipsHue) << "Hue Bridge json error in response" << error.errorString();
         emit pairingFinished(pairingInfo.pairingTransactionId, DeviceManager::DeviceSetupStatusFailure);
         return;
     }
 
     // check response error
     if (data.contains("error")) {
-        qWarning() << "Failed to pair Hue Bridge:" << jsonDoc.toVariant().toList().first().toMap().value("error").toMap().value("description").toString();
+        qCWarning(dcPhilipsHue) << "Failed to pair Hue Bridge:" << jsonDoc.toVariant().toList().first().toMap().value("error").toMap().value("description").toString();
         emit pairingFinished(pairingInfo.pairingTransactionId, DeviceManager::DeviceSetupStatusFailure);
         return;
     }
@@ -538,7 +539,7 @@ void DevicePluginPhilipsHue::processInformationResponse(const DevicePluginPhilip
 
     // check JSON error
     if (error.error != QJsonParseError::NoError) {
-        qWarning() << "Hue Bridge json error in response" << error.errorString();
+        qCWarning(dcPhilipsHue) << "Hue Bridge json error in response" << error.errorString();
         emit pairingFinished(pairingInfo.pairingTransactionId, DeviceManager::DeviceSetupStatusFailure);
         return;
     }
@@ -547,7 +548,7 @@ void DevicePluginPhilipsHue::processInformationResponse(const DevicePluginPhilip
 
     // check response error
     if (response.contains("error")) {
-        qWarning() << "Failed to get information from Hue Bridge:" << response.value("error").toMap().value("description").toString();
+        qCWarning(dcPhilipsHue) << "Failed to get information from Hue Bridge:" << response.value("error").toMap().value("description").toString();
         emit pairingFinished(pairingInfo.pairingTransactionId, DeviceManager::DeviceSetupStatusFailure);
         return;
     }
@@ -592,14 +593,14 @@ void DevicePluginPhilipsHue::processActionResponse(Device *device, const ActionI
 
     // check JSON error
     if (error.error != QJsonParseError::NoError) {
-        qWarning() << "Hue Bridge json error in response" << error.errorString();
+        qCWarning(dcPhilipsHue) << "Hue Bridge json error in response" << error.errorString();
         emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorHardwareNotAvailable);
         return;
     }
 
     // check response error
     if (data.contains("error")) {
-        qWarning() << "Failed to execute Hue action:" << jsonDoc.toVariant().toList().first().toMap().value("error").toMap().value("description").toString();
+        qCWarning(dcPhilipsHue) << "Failed to execute Hue action:" << jsonDoc.toVariant().toList().first().toMap().value("error").toMap().value("description").toString();
         emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorHardwareNotAvailable);
         return;
     }

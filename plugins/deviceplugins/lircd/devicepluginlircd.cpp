@@ -50,6 +50,7 @@
 
 #include "plugin/device.h"
 #include "devicemanager.h"
+#include "loggingcategorys.h"
 
 #include "lircdclient.h"
 
@@ -83,11 +84,11 @@ void DevicePluginLircd::buttonPressed(const QString &remoteName, const QString &
         }
     }
     if (!remote) {
-        qDebug() << "Unhandled remote" << remoteName << buttonName;
+        qCWarning(dcLircd) << "Unhandled remote" << remoteName << buttonName;
         return;
     }
 
-    qDebug() << "found remote" << remoteName << supportedDevices().first().eventTypes().count();
+    qCDebug(dcLircd) << "found remote" << remoteName << supportedDevices().first().eventTypes().count();
     ParamList params;
     Param buttonParam("button", buttonName);
     params.append(buttonParam);

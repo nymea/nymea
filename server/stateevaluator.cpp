@@ -22,7 +22,7 @@
 #include "stateevaluator.h"
 #include "guhcore.h"
 #include "devicemanager.h"
-#include "loggingcategorys.h"
+#include "loggingcategories.h"
 
 StateEvaluator::StateEvaluator(const StateDescriptor &stateDescriptor):
     m_stateDescriptor(stateDescriptor),

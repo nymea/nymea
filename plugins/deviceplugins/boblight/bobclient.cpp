@@ -21,7 +21,7 @@
 
 
 #include "bobclient.h"
-#include "loggingcategorys.h"
+#include "loggingcategories.h"
 
 #include "libboblight/boblight.h"
 

@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "radio433brennenstuhlgateway.h"
-#include "loggingcategorys.h"
+#include "loggingcategories.h"
 
 Radio433BrennenstuhlGateway::Radio433BrennenstuhlGateway(QObject *parent) :
     QObject(parent)

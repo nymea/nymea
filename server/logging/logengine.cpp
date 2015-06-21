@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "logengine.h"
-#include "loggingcategorys.h"
+#include "loggingcategories.h"
 #include "logging.h"
 
 #include <QSqlDatabase>

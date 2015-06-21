@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "tvdevice.h"
-#include "loggingcategorys.h"
+#include "loggingcategories.h"
 
 TvDevice::TvDevice(QObject *parent, UpnpDeviceDescriptor upnpDeviceDescriptor) :
     UpnpDevice(parent, upnpDeviceDescriptor)

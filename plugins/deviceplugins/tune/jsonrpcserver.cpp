@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "jsonrpcserver.h"
-#include "loggingcategorys.h"
+#include "loggingcategories.h"
 
 extern PluginId pluginId;
 extern DeviceClassId moodDeviceClassId;

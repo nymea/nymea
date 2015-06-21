@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "lircdclient.h"
-#include "loggingcategorys.h"
+#include "loggingcategories.h"
 
 #include <QDebug>
 #include <QLocalSocket>

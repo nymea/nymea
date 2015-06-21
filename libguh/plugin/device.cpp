@@ -40,7 +40,7 @@
 
 #include "device.h"
 #include "types/event.h"
-#include "loggingcategorys.h"
+#include "loggingcategories.h"
 
 #include <QDebug>
 

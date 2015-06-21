@@ -18,7 +18,7 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "loggingcategorys.h"
+#include "loggingcategories.h"
 
 Q_LOGGING_CATEGORY(dcApplication, "Application")
 Q_LOGGING_CATEGORY(dcDeviceManager, "DeviceManager")

@@ -100,7 +100,7 @@
 */
 
 #include "guhcore.h"
-#include "loggingcategorys.h"
+#include "loggingcategories.h"
 #include "jsonrpcserver.h"
 #include "ruleengine.h"
 #include "logging/logengine.h"

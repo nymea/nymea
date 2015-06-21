@@ -23,7 +23,7 @@
 
 #include "guhcore.h"
 #include "ruleengine.h"
-#include "loggingcategorys.h"
+#include "loggingcategories.h"
 
 #include <QDebug>
 

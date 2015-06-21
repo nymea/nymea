@@ -24,7 +24,7 @@
 #include "plugin/device.h"
 #include "devicemanager.h"
 #include "ruleengine.h"
-#include "loggingcategorys.h"
+#include "loggingcategories.h"
 
 #include <QStringList>
 #include <QJsonDocument>

@@ -21,7 +21,7 @@
 
 #include "eventhandler.h"
 #include "guhcore.h"
-#include "loggingcategorys.h"
+#include "loggingcategories.h"
 
 EventHandler::EventHandler(QObject *parent) :
     JsonHandler(parent)

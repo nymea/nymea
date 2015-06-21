@@ -20,7 +20,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "jsonhandler.h"
-#include "loggingcategorys.h"
+#include "loggingcategories.h"
 
 #include <QMetaMethod>
 #include <QDebug>

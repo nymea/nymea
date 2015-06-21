@@ -137,7 +137,7 @@
 */
 
 #include "deviceplugin.h"
-#include "loggingcategorys.h"
+#include "loggingcategories.h"
 
 #include "devicemanager.h"
 #include "hardware/radio433/radio433.h"

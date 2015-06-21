@@ -24,7 +24,7 @@
 #include <sys/time.h>
 
 #include "radio433receiver.h"
-#include "loggingcategorys.h"
+#include "loggingcategories.h"
 
 Radio433Receiver::Radio433Receiver(QObject *parent, int gpio) :
     QThread(parent),m_gpioPin(gpio)

@@ -25,7 +25,7 @@
 #include "plugin/deviceclass.h"
 #include "plugin/deviceplugin.h"
 #include "types/statetype.h"
-#include "loggingcategorys.h"
+#include "loggingcategories.h"
 
 #include <QTcpSocket>
 #include <QDebug>

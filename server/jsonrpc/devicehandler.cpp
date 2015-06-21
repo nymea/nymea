@@ -22,7 +22,7 @@
 #include "devicehandler.h"
 #include "guhcore.h"
 #include "devicemanager.h"
-#include "loggingcategorys.h"
+#include "loggingcategories.h"
 #include "plugin/device.h"
 #include "plugin/deviceclass.h"
 #include "plugin/deviceplugin.h"

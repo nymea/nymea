@@ -76,7 +76,7 @@
 
 
 #include "ruleengine.h"
-#include "loggingcategorys.h"
+#include "loggingcategories.h"
 #include "types/paramdescriptor.h"
 #include "types/eventdescriptor.h"
 

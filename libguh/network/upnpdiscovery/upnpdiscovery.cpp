@@ -48,7 +48,7 @@
 
 
 #include "upnpdiscovery.h"
-#include "loggingcategorys.h"
+#include "loggingcategories.h"
 
 /*! Construct the hardware resource UpnpDiscovery with the given \a parent. */
 UpnpDiscovery::UpnpDiscovery(QObject *parent) :

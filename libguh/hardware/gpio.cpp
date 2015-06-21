@@ -67,7 +67,7 @@
 */
 
 #include "gpio.h"
-#include "loggingcategorys.h"
+#include "loggingcategories.h"
 
 #include <QDebug>
 

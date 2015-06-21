@@ -37,7 +37,7 @@
  */
 
 #include "networkmanager.h"
-#include "loggingcategorys.h"
+#include "loggingcategories.h"
 
 /*! Construct the hardware resource NetworkManager with the given \a parent. */
 NetworkManager::NetworkManager(QObject *parent) :

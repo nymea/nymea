@@ -169,7 +169,7 @@
 */
 
 #include "devicemanager.h"
-#include "loggingcategorys.h"
+#include "loggingcategories.h"
 
 #include "hardware/radio433/radio433.h"
 

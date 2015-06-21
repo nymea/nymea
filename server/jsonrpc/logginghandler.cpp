@@ -22,7 +22,7 @@
 #include "logginghandler.h"
 #include "logging/logengine.h"
 #include "guhcore.h"
-#include "loggingcategorys.h"
+#include "loggingcategories.h"
 
 LoggingHandler::LoggingHandler(QObject *parent) :
     JsonHandler(parent)

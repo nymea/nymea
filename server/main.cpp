@@ -28,7 +28,7 @@
 
 #include "guhcore.h"
 #include "guhservice.h"
-#include "loggingcategorys.h"
+#include "loggingcategories.h"
 
 QHash<QString, bool> s_loggingFilters;
 

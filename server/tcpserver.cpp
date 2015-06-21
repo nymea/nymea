@@ -20,7 +20,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "tcpserver.h"
-#include "loggingcategorys.h"
+#include "loggingcategories.h"
 
 #include <QDebug>
 #include <QJsonDocument>

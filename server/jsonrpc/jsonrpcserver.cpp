@@ -36,7 +36,7 @@
 #include "plugin/device.h"
 #include "rule.h"
 #include "ruleengine.h"
-#include "loggingcategorys.h"
+#include "loggingcategories.h"
 
 #include "devicehandler.h"
 #include "actionhandler.h"

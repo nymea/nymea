@@ -21,7 +21,7 @@
 
 #include "statehandler.h"
 #include "guhcore.h"
-#include "loggingcategorys.h"
+#include "loggingcategories.h"
 
 StateHandler::StateHandler(QObject *parent) :
     JsonHandler(parent)

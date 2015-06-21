@@ -24,7 +24,7 @@
 #include "guhcore.h"
 #include "devicemanager.h"
 #include "types/action.h"
-#include "loggingcategorys.h"
+#include "loggingcategories.h"
 
 #include <QDebug>
 

@@ -50,7 +50,7 @@
 */
 
 #include "radio433.h"
-#include "loggingcategorys.h"
+#include "loggingcategories.h"
 
 #include <QFileInfo>
 

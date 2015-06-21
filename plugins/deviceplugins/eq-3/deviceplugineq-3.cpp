@@ -72,7 +72,7 @@
 #include "devicemanager.h"
 #include "types/param.h"
 #include "plugininfo.h"
-#include "loggingcategorys.h"
+#include "loggingcategories.h"
 
 #include <QDebug>
 

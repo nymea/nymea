@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "upnpdiscoveryrequest.h"
-#include "loggingcategorys.h"
+#include "loggingcategories.h"
 
 UpnpDiscoveryRequest::UpnpDiscoveryRequest(UpnpDiscovery *upnpDiscovery, PluginId pluginId, QString searchTarget, QString userAgent):
     QObject(upnpDiscovery),

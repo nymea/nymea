@@ -148,7 +148,7 @@
  */
 
 #include "gpiomonitor.h"
-#include "loggingcategorys.h"
+#include "loggingcategories.h"
 
 /*! Constructs a \l{GpioMonitor} object with the given \a parent. */
 GpioMonitor::GpioMonitor(QObject *parent) :

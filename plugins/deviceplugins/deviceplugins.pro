@@ -17,6 +17,7 @@ SUBDIRS += elro         \
     leynew              \
     tune                \
     udpcommander        \
+    kodi                \
 
 
 

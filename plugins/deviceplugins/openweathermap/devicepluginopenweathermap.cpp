@@ -130,7 +130,7 @@ void DevicePluginOpenweathermap::deviceRemoved(Device *device)
 void DevicePluginOpenweathermap::networkManagerReplyReady(QNetworkReply *reply)
 {
     if (reply->error()) {
-        qWarning() << "ERROR: OpenWeatherMap reply error: " << reply->errorString();
+        qCWarning(dcOpenweathermap) << "OpenWeatherMap reply error: " << reply->errorString();
     }
 
     if (m_autodetectionReplies.contains(reply)) {
@@ -219,7 +219,7 @@ void DevicePluginOpenweathermap::processAutodetectResponse(QByteArray data)
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
 
     if(error.error != QJsonParseError::NoError) {
-        qWarning() << "failed to parse data" << data << ":" << error.errorString();
+        qCWarning(dcOpenweathermap) << "failed to parse data" << data << ":" << error.errorString();
     }
 
     // search by geographic coordinates

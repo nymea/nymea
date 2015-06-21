@@ -55,7 +55,7 @@ void TvEventHandler::readClient()
 
     // reject everything, except the tv
     if(socket->peerAddress() != m_host){
-        qWarning() << "reject connection from " << socket->peerAddress().toString();
+        qCWarning(dcLgSmartTv) << "reject connection from " << socket->peerAddress().toString();
         socket->close();
         if (socket->state() == QTcpSocket::UnconnectedState) {
             delete socket;

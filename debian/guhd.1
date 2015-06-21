@@ -27,27 +27,33 @@ Debug categories to enable. Prefix with \"No\" to disable. Warnings from all
 categories will be printed unless explicitly muted with "NoWarnings". 
 .RS
 .TP
-Categories are:
+\fBMain\ debug\ categories:\fR
 .IP \fIApplication\fR\ (default\ enabled) 
 Print the debug messages from the core application.
-.IP \fICommandLauncher\fR\ (default\ disabled)
-Print the debug messages from the command launcher device plugin.
 .IP \fIConnection\fR\ (default\ enabled)
 Print the debug messages from the TCP connections in guh.
 .IP \fIDeviceManager\fR\ (default\ enabled)
 Print the debug messages from the device manager.
-.IP \fIEQ-3\fR\ (default\ disabled)
-Print the debug messages from eQ-3 device plugin. 
 .IP \fIHardware\fR\ (default\ disabled)
 Print the debug messages from hardware resources in guh.
 .IP \fIJsonRpc\fR\ (default\ disabled)
 Print the debug messages from JSON-RPC interface.
+.IP \fILogEngine\fR\ (default\ disabled)
+Print the debug messages from logging engine.
+.IP \fIRuleEngine\fR\ (default\ enabled)
+Print the debug messages from the rule engine.
+.TP
+\fBDebug\ categories\ for\ plugins:\fR
+.IP \fICommandLauncher\fR\ (default\ disabled)
+Print the debug messages from the command launcher device plugin.
+.IP \fIDateTime\fR\ (default\ disabled)
+Print the debug messages from the date/time device plugin.
+.IP \fIEQ-3\fR\ (default\ disabled)
+Print the debug messages from eQ-3 device plugin. 
 .IP \fILgSmartTv\fR\ (default\ disabled)
 Print the debug messages from Lg Smart Tv device plugin.
 .IP \fILircd\fR\ (default\ disabled)
 Print the debug messages from lircd device plugin.
-.IP \fILogEngine\fR\ (default\ disabled)
-Print the debug messages from logging engine.
 .IP \fIMailNotification\fR\ (default\ disabled)
 Print the debug messages from the mail notification device plugin.
 .IP \fIMock\fR\ (default\ disabled)
@@ -59,8 +65,6 @@ Print the debug messages from the Philips Hue device plugin.
 .IP \fIRF433\fR\ (default\ disabled)
 Print the debug messages from the RF 433 MHz plugins. Each plugin which uses the RF 433 MHz 
 hardware resource is in this debug caterogry. 
-.IP \fIRuleEngine\fR\ (default\ enabled)
-Print the debug messages from the rule engine.
 .IP \fITune\fR\ (default\ disabled)
 Print the debug messages from the tune device plugin.
 .IP \fIUdpCommander\fR\ (default\ disabled)

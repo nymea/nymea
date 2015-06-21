@@ -19,6 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "lircdclient.h"
+#include "loggingcategories.h"
 
 #include <QDebug>
 #include <QLocalSocket>
@@ -34,22 +35,22 @@ bool LircClient::connect()
 {
     m_socket->connectToServer("/var/run/lirc/lircd", QIODevice::ReadWrite);
     if (!m_socket->isOpen()) {
-        qWarning() << "--> Lirc daemon NOT available.";
+        qCWarning(dcLircd) << "--> Lirc daemon NOT available.";
         return false;
     }
     m_socket->write("LIST\n");
-    qDebug() << "--> Lirc daemon available.";
+    qCDebug(dcLircd) << "--> Lirc daemon available.";
     return true;
 }
 
 void LircClient::readyRead()
 {
-//    qDebug() << "got data" << m_socket->readAll();
+    qCDebug(dcLircd) << "got data" << m_socket->readAll();
 
     bool inBlock = false;
     while (m_socket->canReadLine()) {
         QByteArray line = m_socket->readLine().trimmed();
-        //qDebug() << "got line:" << line;
+        qCDebug(dcLircd) << "got line:" << line;
         if (line == "BEGIN") {
             inBlock = true;
             continue;
@@ -58,7 +59,7 @@ void LircClient::readyRead()
             if (m_socket->readLine().trimmed() == "SUCCESS") {
                 readRemotes();
             } else {
-                qWarning() << "Error reading remotes from Lircd";
+                qCWarning(dcLircd) << "Error reading remotes from Lircd";
             }
             continue;
         }
@@ -70,10 +71,10 @@ void LircClient::readyRead()
         if (!inBlock) {
             QList<QByteArray> parts = line.split(' ');
             if (parts.count() != 4) {
-                qWarning() << "Don't understand IR command. ignoring...";
+                qCWarning(dcLircd) << "Don't understand IR command. ignoring...";
                 continue;
             }
-            qDebug() << "emitting buttonpress";
+            qCDebug(dcLircd) << "emitting buttonpress";
             emit buttonPressed(QString(parts.at(3)), QString(parts.at(2)), parts.at(1).toInt());
         }
     }
@@ -83,7 +84,7 @@ void LircClient::readRemotes()
 {
     m_socket->readLine(); // IGNORE DATA
     int remoteCount = m_socket->readLine().trimmed().toInt();
-    qDebug() << "found" << remoteCount << "lirc remotes";
+    qCDebug(dcLircd) << "found" << remoteCount << "lirc remotes";
     for (int i = 0; i < remoteCount; i++) {
         QByteArray line = m_socket->readLine().trimmed();
         m_remotes.append(line);

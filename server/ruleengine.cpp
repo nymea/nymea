@@ -80,6 +80,7 @@
 
 
 #include "ruleengine.h"
+#include "loggingcategories.h"
 #include "types/paramdescriptor.h"
 #include "types/eventdescriptor.h"
 
@@ -102,14 +103,14 @@ RuleEngine::RuleEngine(QObject *parent) :
 {
     m_settingsFile = QCoreApplication::instance()->organizationName() + "/rules";
     QSettings settings(m_settingsFile);
-    qDebug() << "laoding rules from" << settings.fileName();
+    qCDebug(dcRuleEngine) << "laoding rules from" << settings.fileName();
     foreach (const QString &idString, settings.childGroups()) {
         settings.beginGroup(idString);
 
         QString name = settings.value("name", idString).toString();
         bool enabled = settings.value("enabled", true).toBool();
 
-        qDebug() << "found rule" << name << idString;
+        qCDebug(dcRuleEngine) << "load rule" << name << idString;
 
         QList<EventDescriptor> eventDescriptorList;
         settings.beginGroup("events");
@@ -207,7 +208,7 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
 {
     Device *device = GuhCore::instance()->findConfiguredDevice(event.deviceId());
 
-    qDebug() << "got event:" << event << device->name() << event.eventTypeId();
+    qCDebug(dcRuleEngine) << "got event:" << event << device->name() << event.eventTypeId();
 
     QList<Rule> rules;
     foreach (const RuleId &id, m_ruleIds) {
@@ -221,9 +222,9 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
             if (containsState(rule.stateEvaluator(), event)) {
                 if (rule.stateEvaluator().evaluate()) {
                     if (m_activeRules.contains(rule.id())) {
-                        qDebug() << "Rule" << rule.id() << "still in active state.";
+                        qCDebug(dcRuleEngine) << "Rule" << rule.id() << "still in active state.";
                     } else {
-                        qDebug() << "Rule" << rule.id() << "entered active state.";
+                        qCDebug(dcRuleEngine) << "Rule" << rule.id() << "entered active state.";
                         rule.setActive(true);
                         m_rules[rule.id()] = rule;
                         m_activeRules.append(rule.id());
@@ -231,7 +232,7 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
                     }
                 } else {
                     if (m_activeRules.contains(rule.id())) {
-                        qDebug() << "Rule" << rule.id() << "left active state.";
+                        qCDebug(dcRuleEngine) << "Rule" << rule.id() << "left active state.";
                         rule.setActive(false);
                         m_rules[rule.id()] = rule;
                         m_activeRules.removeAll(rule.id());
@@ -242,7 +243,7 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
         } else {
             if (containsEvent(rule, event)) {
                 if (rule.stateEvaluator().evaluate()) {
-                    qDebug() << "Rule" << rule.id() << "contains event" << event.eventId() << "and all states match.";
+                    qCDebug(dcRuleEngine) << "Rule" << rule.id() << "contains event" << event.eventId() << "and all states match.";
                     rules.append(rule);
                 }
             }
@@ -265,7 +266,7 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
         return RuleErrorInvalidRuleId;
     }
     if (!findRule(ruleId).id().isNull()) {
-        qWarning() << "Already have a rule with this id!";
+        qCWarning(dcRuleEngine) << "Already have a rule with this id!";
         return RuleErrorInvalidRuleId;
     }
 
@@ -274,7 +275,7 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
     foreach (const EventDescriptor &eventDescriptor, eventDescriptorList) {
         Device *device = GuhCore::instance()->findConfiguredDevice(eventDescriptor.deviceId());
         if (!device) {
-            qWarning() << "Cannot create rule. No configured device for eventTypeId" << eventDescriptor.eventTypeId();
+            qCWarning(dcRuleEngine) << "Cannot create rule. No configured device for eventTypeId" << eventDescriptor.eventTypeId();
             return RuleErrorDeviceNotFound;
         }
         DeviceClass deviceClass = GuhCore::instance()->findDeviceClass(device->deviceClassId());
@@ -286,7 +287,7 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
             }
         }
         if (!eventTypeFound) {
-            qWarning() << "Cannot create rule. Device " + device->name() + " has no event type:" << eventDescriptor.eventTypeId();
+            qCWarning(dcRuleEngine) << "Cannot create rule. Device " + device->name() + " has no event type:" << eventDescriptor.eventTypeId();
             return RuleErrorEventTypeNotFound;
         }
     }
@@ -294,7 +295,7 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
     foreach (const RuleAction &action, actions) {
         Device *device = GuhCore::instance()->findConfiguredDevice(action.deviceId());
         if (!device) {
-            qWarning() << "Cannot create rule. No configured device for actionTypeId" << action.actionTypeId();
+            qCWarning(dcRuleEngine) << "Cannot create rule. No configured device for actionTypeId" << action.actionTypeId();
             return RuleErrorDeviceNotFound;
         }
         DeviceClass deviceClass = GuhCore::instance()->findDeviceClass(device->deviceClassId());
@@ -306,18 +307,18 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
             }
         }
         if (!actionTypeFound) {
-            qWarning() << "Cannot create rule. Device " + device->name() + " has no action type:" << action.actionTypeId();
+            qCWarning(dcRuleEngine) << "Cannot create rule. Device " + device->name() + " has no action type:" << action.actionTypeId();
             return RuleErrorActionTypeNotFound;
         }
     }
     if (actions.count() > 0) {
-        qDebug() << "***** actions" << actions.last().actionTypeId() << actions.last().ruleActionParams();
+        qCDebug(dcRuleEngine) << "actions" << actions.last().actionTypeId() << actions.last().ruleActionParams();
     }
 
     foreach (const RuleAction &action, exitActions) {
         Device *device = GuhCore::instance()->findConfiguredDevice(action.deviceId());
         if (!device) {
-            qWarning() << "Cannot create rule. No configured device for actionTypeId" << action.actionTypeId();
+            qCWarning(dcRuleEngine) << "Cannot create rule. No configured device for actionTypeId" << action.actionTypeId();
             return RuleErrorDeviceNotFound;
         }
         DeviceClass deviceClass = GuhCore::instance()->findDeviceClass(device->deviceClassId());
@@ -329,12 +330,12 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
             }
         }
         if (!actionTypeFound) {
-            qWarning() << "Cannot create rule. Device " + device->name() + " has no action type:" << action.actionTypeId();
+            qCWarning(dcRuleEngine) << "Cannot create rule. Device " + device->name() + " has no action type:" << action.actionTypeId();
             return RuleErrorActionTypeNotFound;
         }
     }
     if (exitActions.count() > 0) {
-        qDebug() << "***** exitActions" << actions.last().actionTypeId() << actions.last().ruleActionParams();
+        qCDebug(dcRuleEngine) << "exit actions" << exitActions.last().actionTypeId() << exitActions.last().ruleActionParams();
     }
 
     Rule rule = Rule(ruleId, name, eventDescriptorList, stateEvaluator, actions, exitActions);
@@ -451,7 +452,7 @@ RuleEngine::RuleError RuleEngine::removeRule(const RuleId &ruleId)
 RuleEngine::RuleError RuleEngine::enableRule(const RuleId &ruleId)
 {
     if (!m_rules.contains(ruleId)) {
-        qWarning() << "Rule not found. Can't enable it";
+        qCWarning(dcRuleEngine) << "Rule not found. Can't enable it";
         return RuleErrorRuleNotFound;
     }
     Rule rule = m_rules.value(ruleId);
@@ -473,7 +474,7 @@ RuleEngine::RuleError RuleEngine::enableRule(const RuleId &ruleId)
 RuleEngine::RuleError RuleEngine::disableRule(const RuleId &ruleId)
 {
     if (!m_rules.contains(ruleId)) {
-        qWarning() << "Rule not found. Can't disable it";
+        qCWarning(dcRuleEngine) << "Rule not found. Can't disable it";
         return RuleErrorRuleNotFound;
     }
     Rule rule = m_rules.value(ruleId);

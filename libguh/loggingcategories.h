@@ -18,29 +18,44 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <unistd.h>
-#include "guhservice.h"
-#include "loggingcategories.h"
+#ifndef LOGGINGCATEGORYS_H
+#define LOGGINGCATEGORYS_H
 
-GuhService::GuhService(int argc, char **argv):
-    QtService<QCoreApplication>(argc, argv, "guh daemon")
-{
-    qDebug() << "guhd started as daemon.";
-    application()->setOrganizationName("guh");
-    application()->setApplicationName("guhd");
-    application()->setApplicationVersion(GUH_VERSION_STRING);
-    close(STDIN_FILENO);
-    close(STDOUT_FILENO);
-    close(STDERR_FILENO);
-    setServiceDescription("guh daemon");
-    setServiceFlags(QtServiceBase::CanBeSuspended);
-}
+#include <QLoggingCategory>
 
-GuhService::~GuhService()
-{
-}
+// Core / libguh
+Q_DECLARE_LOGGING_CATEGORY(dcApplication)
+Q_DECLARE_LOGGING_CATEGORY(dcDeviceManager)
+Q_DECLARE_LOGGING_CATEGORY(dcRuleEngine)
+Q_DECLARE_LOGGING_CATEGORY(dcHardware)
+Q_DECLARE_LOGGING_CATEGORY(dcConnection)
+Q_DECLARE_LOGGING_CATEGORY(dcJsonRpc)
+Q_DECLARE_LOGGING_CATEGORY(dcLogEngine)
 
-void GuhService::start()
-{
-    GuhCore::instance()->setRunningMode(GuhCore::RunningModeService);
-}
+// Plugins
+
+#ifdef boblight
+Q_DECLARE_LOGGING_CATEGORY(dcBoblight)
+#endif
+
+Q_DECLARE_LOGGING_CATEGORY(dcCommandLauncher)
+Q_DECLARE_LOGGING_CATEGORY(dcRF433)
+Q_DECLARE_LOGGING_CATEGORY(dcDateTime)
+Q_DECLARE_LOGGING_CATEGORY(dcEQ3)
+Q_DECLARE_LOGGING_CATEGORY(dcLgSmartTv)
+Q_DECLARE_LOGGING_CATEGORY(dcLircd)
+Q_DECLARE_LOGGING_CATEGORY(dcMailNotification)
+Q_DECLARE_LOGGING_CATEGORY(dcMock)
+Q_DECLARE_LOGGING_CATEGORY(dcOpenweathermap)
+Q_DECLARE_LOGGING_CATEGORY(dcPhilipsHue)
+Q_DECLARE_LOGGING_CATEGORY(dcTune)
+Q_DECLARE_LOGGING_CATEGORY(dcUdpCommander)
+Q_DECLARE_LOGGING_CATEGORY(dcWakeOnLan)
+Q_DECLARE_LOGGING_CATEGORY(dcWemo)
+Q_DECLARE_LOGGING_CATEGORY(dcWifiDetector)
+
+
+
+
+
+#endif // LOGGINGCATEGORYS_H

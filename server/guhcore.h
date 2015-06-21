@@ -31,6 +31,7 @@
 #include "ruleengine.h"
 
 #include <QObject>
+#include <QDebug>
 
 class JsonRPCServer;
 class Device;

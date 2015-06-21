@@ -25,6 +25,7 @@
 #include "plugin/device.h"
 #include "devicemanager.h"
 #include "plugininfo.h"
+#include "loggingcategories.h"
 
 #include <QDebug>
 #include <QStringList>
@@ -46,7 +47,7 @@ DeviceManager::HardwareResources DevicePluginMock::requiredHardware() const
 DeviceManager::DeviceError DevicePluginMock::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
 {
     Q_UNUSED(deviceClassId)
-    qDebug() << "starting mock discovery:" << params;
+    qCDebug(dcMock) << "starting mock discovery:" << params;
     m_discoveredDeviceCount = params.paramValue("resultCount").toInt();
     QTimer::singleShot(1000, this, SLOT(emitDevicesDiscovered()));
     return DeviceManager::DeviceErrorAsync;
@@ -54,14 +55,14 @@ DeviceManager::DeviceError DevicePluginMock::discoverDevices(const DeviceClassId
 
 DeviceManager::DeviceSetupStatus DevicePluginMock::setupDevice(Device *device)
 {
-    qDebug() << "Mockdevice created returning true"
+    qCDebug(dcMock) << "Mockdevice created returning true"
              << device->paramValue("name").toString()
              << device->paramValue("httpport").toInt()
              << device->paramValue("async").toBool()
              << device->paramValue("broken").toBool();
 
     if (device->paramValue("broken").toBool()) {
-        qWarning() << "This device is intentionally broken.";
+        qCWarning(dcMock) << "This device is intentionally broken.";
         return DeviceManager::DeviceSetupStatusFailure;
     }
 
@@ -69,7 +70,7 @@ DeviceManager::DeviceSetupStatus DevicePluginMock::setupDevice(Device *device)
     m_daemons.insert(device, daemon);
 
     if (!daemon->isListening()) {
-        qWarning() << "HTTP port opening failed.";
+        qCWarning(dcMock) << "HTTP port opening failed.";
         return DeviceManager::DeviceSetupStatusFailure;
     }
 
@@ -167,7 +168,7 @@ void DevicePluginMock::triggerEvent(const EventTypeId &id)
 
     Event event(id, device->id());
 
-    qDebug() << "Emitting event " << event.eventTypeId();
+    qCDebug(dcMock) << "Emitting event " << event.eventTypeId();
     emit emitEvent(event);
 }
 
@@ -202,7 +203,7 @@ void DevicePluginMock::emitDevicesDiscovered()
 
 void DevicePluginMock::emitDeviceSetupFinished()
 {
-    qDebug() << "emitting setup finised";
+    qCDebug(dcMock) << "emitting setup finised";
     Device *device = m_asyncSetupDevices.takeFirst();
     if (device->paramValue("broken").toBool()) {
         emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusFailure);

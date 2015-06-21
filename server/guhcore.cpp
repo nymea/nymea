@@ -100,14 +100,13 @@
 */
 
 #include "guhcore.h"
+#include "loggingcategories.h"
 #include "jsonrpcserver.h"
 #include "ruleengine.h"
 #include "logging/logengine.h"
 
 #include "devicemanager.h"
 #include "plugin/device.h"
-
-#include <QDebug>
 
 GuhCore* GuhCore::s_instance = 0;
 
@@ -124,7 +123,7 @@ GuhCore *GuhCore::instance()
 GuhCore::~GuhCore()
 {
     m_logger->logSystemEvent(false);
-    qDebug() << "Shutting down. Bye.";
+    qCDebug(dcApplication) << "Shutting down. Bye.";
 }
 
 /*! Destroyes the \l{GuhCore} instance. */
@@ -194,7 +193,7 @@ DeviceManager::DeviceError GuhCore::removeConfiguredDevice(const DeviceId &devic
     }
 
     if (!unhandledRules.isEmpty()) {
-        qWarning() << "There are unhandled rules which depend on this device.";
+        qCWarning(dcDeviceManager) << "There are unhandled rules which depend on this device.";
         return DeviceManager::DeviceErrorDeviceInUse;
     }
 
@@ -385,25 +384,17 @@ RuleEngine *GuhCore::ruleEngine() const
 GuhCore::GuhCore(QObject *parent) :
     QObject(parent)
 {
-    qDebug() << "*****************************************";
-    qDebug() << "* GUH version:" << GUH_VERSION_STRING << "starting up.       *";
-    qDebug() << "*****************************************";
+    qCDebug(dcApplication) << "guh version:" << GUH_VERSION_STRING << "starting up.";
 
     m_logger = new LogEngine(this);
 
-    qDebug() << "*****************************************";
-    qDebug() << "* Creating Device Manager               *";
-    qDebug() << "*****************************************";
+    qCDebug(dcApplication) << "Creating Device Manager";
     m_deviceManager = new DeviceManager(this);
 
-    qDebug() << "*****************************************";
-    qDebug() << "* Creating Rule Engine                  *";
-    qDebug() << "*****************************************";
+    qCDebug(dcApplication) << "Creating Rule Engine";
     m_ruleEngine = new RuleEngine(this);
 
-    qDebug() << "*****************************************";
-    qDebug() << "* Starting JSON RPC Server              *";
-    qDebug() << "*****************************************";
+    qCDebug(dcApplication) << "Starting JSON RPC Server";
     m_jsonServer = new JsonRPCServer(this);
 
     connect(m_deviceManager, &DeviceManager::eventTriggered, this, &GuhCore::gotEvent);
@@ -470,7 +461,7 @@ void GuhCore::gotEvent(const Event &event)
                 //       something like a EventParamDescriptor
 
                 ruleActionParam.setValue(eventValue);
-                qDebug() << "take over event param value" << ruleActionParam.value();
+                qCDebug(dcRuleEngine) << "take over event param value" << ruleActionParam.value();
             }
             newParams.append(ruleActionParam);
         }
@@ -481,22 +472,22 @@ void GuhCore::gotEvent(const Event &event)
     // Now execute all the associated actions
     foreach (const RuleAction &ruleAction, actions) {
         Action action = ruleAction.toAction();
-        qDebug() << "executing action" << ruleAction.actionTypeId();
+        qCDebug(dcRuleEngine) << "executing action" << ruleAction.actionTypeId();
         DeviceManager::DeviceError status = m_deviceManager->executeAction(action);
         switch(status) {
         case DeviceManager::DeviceErrorNoError:
             break;
         case DeviceManager::DeviceErrorSetupFailed:
-            qWarning() << "Error executing action. Device setup failed.";
+            qCWarning(dcRuleEngine) << "Error executing action. Device setup failed.";
             break;
         case DeviceManager::DeviceErrorAsync:
-            qDebug() << "Executing asynchronous action.";
+            qCDebug(dcRuleEngine) << "Executing asynchronous action.";
             break;
         case DeviceManager::DeviceErrorInvalidParameter:
-            qWarning() << "Error executing action. Invalid action parameter.";
+            qCWarning(dcRuleEngine) << "Error executing action. Invalid action parameter.";
             break;
         default:
-            qDebug() << "Error executing action:" << status;
+            qCWarning(dcRuleEngine) << "Error executing action:" << status;
         }
         m_logger->logAction(action, status == DeviceManager::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
     }

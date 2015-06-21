@@ -1,7 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
  *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
- *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -19,42 +18,33 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "statehandler.h"
-#include "guhcore.h"
 #include "loggingcategories.h"
 
-StateHandler::StateHandler(QObject *parent) :
-    JsonHandler(parent)
-{
-    QVariantMap params;
-    QVariantMap returns;
+Q_LOGGING_CATEGORY(dcApplication, "Application")
+Q_LOGGING_CATEGORY(dcDeviceManager, "DeviceManager")
+Q_LOGGING_CATEGORY(dcRuleEngine, "RuleEngine")
+Q_LOGGING_CATEGORY(dcHardware, "Hardware")
+Q_LOGGING_CATEGORY(dcConnection, "Connection")
+Q_LOGGING_CATEGORY(dcJsonRpc, "JsonRpc")
+Q_LOGGING_CATEGORY(dcLogEngine, "LogEngine")
 
-    params.clear(); returns.clear();
-    setDescription("GetStateType", "Get the StateType for the given stateTypeId.");
-    params.insert("stateTypeId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    setParams("GetStateType", params);
-    returns.insert("deviceError", JsonTypes::deviceErrorRef());
-    returns.insert("o:stateType", JsonTypes::stateTypeRef());
-    setReturns("GetStateType", returns);
-}
+// Plugins
+#ifdef boblight
+Q_LOGGING_CATEGORY(dcBoblight, "Boblight")
+#endif
 
-QString StateHandler::name() const
-{
-    return "States";
-}
-
-JsonReply* StateHandler::GetStateType(const QVariantMap &params) const
-{
-    qCDebug(dcJsonRpc) << "asked for state type" << params;
-    StateTypeId stateTypeId(params.value("stateTypeId").toString());
-    foreach (const DeviceClass &deviceClass, GuhCore::instance()->supportedDevices()) {
-        foreach (const StateType &stateType, deviceClass.stateTypes()) {
-            if (stateType.id() == stateTypeId) {
-                QVariantMap data = statusToReply(DeviceManager::DeviceErrorNoError);
-                data.insert("stateType", JsonTypes::packStateType(stateType));
-                return createReply(data);
-            }
-        }
-    }
-    return createReply(statusToReply(DeviceManager::DeviceErrorStateTypeNotFound));
-}
+Q_LOGGING_CATEGORY(dcCommandLauncher, "CommandLauncher")
+Q_LOGGING_CATEGORY(dcRF433, "RF433")
+Q_LOGGING_CATEGORY(dcDateTime, "DateTime")
+Q_LOGGING_CATEGORY(dcEQ3, "EQ-3")
+Q_LOGGING_CATEGORY(dcLgSmartTv, "LgSmartTv")
+Q_LOGGING_CATEGORY(dcLircd, "Lircd")
+Q_LOGGING_CATEGORY(dcMailNotification, "MailNotification")
+Q_LOGGING_CATEGORY(dcMock, "Mock")
+Q_LOGGING_CATEGORY(dcOpenweathermap, "Openweahtermap")
+Q_LOGGING_CATEGORY(dcPhilipsHue, "PhilipsHue")
+Q_LOGGING_CATEGORY(dcTune, "Tune")
+Q_LOGGING_CATEGORY(dcUdpCommander, "UdpCommander")
+Q_LOGGING_CATEGORY(dcWakeOnLan, "WakeOnLan")
+Q_LOGGING_CATEGORY(dcWemo, "Wemo")
+Q_LOGGING_CATEGORY(dcWifiDetector, "WifiDetector")

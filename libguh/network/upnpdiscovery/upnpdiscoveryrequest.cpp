@@ -19,6 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "upnpdiscoveryrequest.h"
+#include "loggingcategories.h"
 
 UpnpDiscoveryRequest::UpnpDiscoveryRequest(UpnpDiscovery *upnpDiscovery, PluginId pluginId, QString searchTarget, QString userAgent):
     QObject(upnpDiscovery),
@@ -42,7 +43,7 @@ void UpnpDiscoveryRequest::discover()
                                               "USR-AGENT: " + m_userAgent.toUtf8() + "\r\n\r\n");
 
     m_upnpDiscovery->sendToMulticast(ssdpSearchMessage);
-    qDebug() << "--> UPnP discovery called.";
+    qCDebug(dcHardware) << "--> UPnP discovery called.";
 
     m_timer->start(3000);
 }

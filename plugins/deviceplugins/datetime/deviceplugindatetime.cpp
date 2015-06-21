@@ -82,6 +82,7 @@
 #include "plugin/device.h"
 #include "devicemanager.h"
 #include "plugininfo.h"
+#include "loggingcategories.h"
 
 #include <QDebug>
 
@@ -110,7 +111,7 @@ DeviceManager::DeviceSetupStatus DevicePluginDateTime::setupDevice(Device *devic
 
     if(m_timeZone.isValid()){
         QDateTime zoneTime = QDateTime(QDate::currentDate(), QTime::currentTime(), m_timeZone).toLocalTime();
-        qDebug() << zoneTime.toLocalTime().date() << zoneTime.toLocalTime().time()  << QLocale::countryToString(m_timeZone.country());
+        qCDebug(dcDateTime) << zoneTime.toLocalTime().date() << zoneTime.toLocalTime().time()  << QLocale::countryToString(m_timeZone.country());
         m_timer->start();
 
         return DeviceManager::DeviceSetupStatusSuccess;

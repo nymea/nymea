@@ -22,9 +22,11 @@
 #define DEVICEPLUGINKODI_H
 
 #include "plugin/deviceplugin.h"
+#include "kodiconnection.h"
 
 #include <QHash>
 #include <QDebug>
+#include <QTcpSocket>
 
 class DevicePluginKodi : public DevicePlugin
 {
@@ -39,16 +41,20 @@ public:
     DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
     void deviceRemoved(Device *device) override;
 
-    DeviceManager::DeviceSetupStatus confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params) override;
-
     DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
     void upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &upnpDeviceDescriptorList) override;
-    void networkManagerReplyReady(QNetworkReply *reply) override;
-    void guhTimer() override;
+
+    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
 
 private:
+    QHash<KodiConnection *, Device *> m_kodiConnections;
+
+signals:
+    void dataReady(KodiConnection *kodiConnection, const QByteArray &data);
 
 private slots:
+    void onConnectionChanged(const bool &connected);
+    void dataReceived(const QByteArray &data);
 
 };
 

@@ -81,6 +81,7 @@ int main(int argc, char *argv[])
     s_loggingFilters.insert("WakeOnLan", false);
     s_loggingFilters.insert("Wemo", false);
     s_loggingFilters.insert("WifiDetector", false);
+    s_loggingFilters.insert("Kodi", true);
 
 
     QCommandLineParser parser;

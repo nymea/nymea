@@ -8,13 +8,60 @@
             "deviceClasses": [
                 {
                     "deviceClassId": "d09953e3-c5bd-415b-973b-0d0bf2be3f69",
+                    "idName": "kodi",
                     "name": "Kodi",
-                    "createMethods": ["discovery"],
+                    "createMethods": ["user", "discovery"],
                     "paramTypes": [
                         {
                             "name": "name",
                             "type": "QString",
                             "inputType": "TextLine"
+                        },
+                        {
+                            "name": "ip",
+                            "type" : "QString",
+                            "inputType": "IPv4Address"
+                        },
+                        {
+                            "name": "port",
+                            "type" : "int"
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "09dfbd40-c97c-4a20-9ecd-f80e389a4864",
+                            "idName": "connected",
+                            "name": "connected",
+                            "type": "bool"
+                        },
+                        {
+                            "id": "bc98cdb0-4d0e-48ca-afc7-922e49bb7813",
+                            "idName": "mute",
+                            "name": "mute",
+                            "type": "bool"
+                        },
+                        {
+                            "id": "9dfe5d78-4c3f-497c-bab1-bb9fdf7e93a9",
+                            "idName": "volume",
+                            "name": "volume",
+                            "unit": "Percentage",
+                            "type": "int",
+                            "writable": true,
+                            "minValue": 0,
+                            "maxValue": 100
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "dc0aa3b5-4eae-4e58-a4ac-d4c124da53f1",
+                            "idName": "sendNotification",
+                            "name": "send notification",
+                            "paramTypes": [
+                                {
+                                    "name": "message",
+                                    "type": "QString"
+                                }
+                            ]
                         }
                     ]
                 }

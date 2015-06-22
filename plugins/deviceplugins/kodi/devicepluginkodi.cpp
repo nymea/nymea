@@ -25,6 +25,8 @@
     \ingroup plugins
     \ingroup network
 
+    TODO: description
+
 
     \chapter Plugin properties
     Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}
@@ -45,6 +47,7 @@
 #include "devicepluginkodi.h"
 #include "plugin/device.h"
 #include "plugininfo.h"
+#include "loggingcategories.h"
 
 DevicePluginKodi::DevicePluginKodi()
 {
@@ -53,52 +56,85 @@ DevicePluginKodi::DevicePluginKodi()
 
 DeviceManager::HardwareResources DevicePluginKodi::requiredHardware() const
 {
-    return DeviceManager::HardwareResourceNone;
+    return DeviceManager::HardwareResourceTimer | DeviceManager::HardwareResourceUpnpDisovery;
 }
 
 DeviceManager::DeviceSetupStatus DevicePluginKodi::setupDevice(Device *device)
 {
-    Q_UNUSED(device)
+    KodiConnection *kodiConnection = new KodiConnection(QHostAddress(device->paramValue("ip").toString()), 9090, this);
 
+    connect(kodiConnection, &KodiConnection::connectionStateChanged, this, &DevicePluginKodi::onConnectionChanged);
+
+    kodiConnection->connectToKodi();
+
+    m_kodiConnections.insert(kodiConnection, device);
     return DeviceManager::DeviceSetupStatusSuccess;
 }
 
 void DevicePluginKodi::deviceRemoved(Device *device)
 {
-    Q_UNUSED(device)
+    KodiConnection *kodiConnection = m_kodiConnections.key(device);
+    m_kodiConnections.remove(kodiConnection);
+    qCDebug(dcKodi) << "delete Kodi" << device->paramValue("name");
+    kodiConnection->deleteLater();
 }
 
-DeviceManager::DeviceSetupStatus DevicePluginKodi::confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params)
-{
-    Q_UNUSED(pairingTransactionId)
-    Q_UNUSED(deviceClassId)
-    Q_UNUSED(params)
-
-    return DeviceManager::DeviceSetupStatusSuccess;
-}
 
 DeviceManager::DeviceError DevicePluginKodi::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
 {
     Q_UNUSED(params)
     Q_UNUSED(deviceClassId)
-
+    qCDebug(dcKodi) << "start Kodi UPnP search";
     upnpDiscover();
-
-    return DeviceManager::DeviceErrorNoError;
+    return DeviceManager::DeviceErrorAsync;
 }
 
 void DevicePluginKodi::upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &upnpDeviceDescriptorList)
 {
-    Q_UNUSED(upnpDeviceDescriptorList)
-
+    QList<DeviceDescriptor> deviceDescriptors;
+    foreach (const UpnpDeviceDescriptor &upnpDescriptor, upnpDeviceDescriptorList) {
+        if (upnpDescriptor.modelName().contains("Kodi")) {
+            qCDebug(dcKodi) << upnpDescriptor;
+            DeviceDescriptor deviceDescriptor(kodiDeviceClassId, "Kodi - Media Center", upnpDescriptor.hostAddress().toString());
+            ParamList params;
+            params.append(Param("name", upnpDescriptor.friendlyName()));
+            params.append(Param("ip", upnpDescriptor.hostAddress().toString()));
+            params.append(Param("port", 9090));
+            deviceDescriptor.setParams(params);
+            deviceDescriptors.append(deviceDescriptor);
+        }
+    }
+    emit devicesDiscovered(kodiDeviceClassId, deviceDescriptors);
 }
 
-void DevicePluginKodi::networkManagerReplyReady(QNetworkReply *reply)
+DeviceManager::DeviceError DevicePluginKodi::executeAction(Device *device, const Action &action)
 {
-    Q_UNUSED(reply)
+    if (device->deviceClassId() == kodiDeviceClassId) {
+        if (action.actionTypeId() == sendNotificationActionTypeId) {
+
+
+            return DeviceManager::DeviceErrorNoError;
+        } else if (action.actionTypeId() == volumeActionTypeId) {
+
+
+            return DeviceManager::DeviceErrorNoError;
+        }
+        return DeviceManager::DeviceErrorActionTypeNotFound;
+    }
+    return DeviceManager::DeviceErrorDeviceClassNotFound;
 }
 
-void DevicePluginKodi::guhTimer()
+void DevicePluginKodi::onConnectionChanged(const bool &connected)
 {
+    KodiConnection *kodiConnection = static_cast<KodiConnection *>(sender());
+    Device *device = m_kodiConnections.value(kodiConnection);
 
+    device->setStateValue(connectedStateTypeId, connected);
 }
+
+void DevicePluginKodi::dataReceived(const QByteArray &data)
+{
+    KodiConnection *kodiConnection = static_cast<KodiConnection *>(sender());
+    emit dataReady(kodiConnection, data);
+}
+

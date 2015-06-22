@@ -72,6 +72,7 @@
 #include "devicemanager.h"
 #include "types/param.h"
 #include "plugininfo.h"
+#include "loggingcategories.h"
 
 #include <QDebug>
 
@@ -110,12 +111,12 @@ void DevicePluginEQ3::startMonitoringAutoDevices()
 
 DeviceManager::DeviceSetupStatus DevicePluginEQ3::setupDevice(Device *device)
 {
-    qDebug() << "setupDevice" << device->params();
+    qCDebug(dcEQ3) << "setupDevice" << device->params();
 
     if(device->deviceClassId() == cubeDeviceClassId){
         foreach (MaxCube *cube, m_cubes.keys()) {
             if(cube->serialNumber() == device->paramValue("serial number").toString()){
-                qDebug() << cube->serialNumber() << " already exists...";
+                qCDebug(dcEQ3) << cube->serialNumber() << " already exists...";
                 return DeviceManager::DeviceSetupStatusFailure;
             }
         }
@@ -150,7 +151,7 @@ void DevicePluginEQ3::deviceRemoved(Device *device)
 
     MaxCube *cube = m_cubes.key(device);
     cube->disconnectFromCube();
-    qDebug() << "remove cube " << cube->serialNumber();
+    qCDebug(dcEQ3) << "remove cube " << cube->serialNumber();
     m_cubes.remove(cube);
     cube->deleteLater();
 }

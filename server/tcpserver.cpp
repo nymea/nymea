@@ -20,6 +20,8 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "tcpserver.h"
+#include "loggingcategories.h"
+
 #include <QDebug>
 #include <QJsonDocument>
 #include <QSettings>
@@ -27,17 +29,17 @@
 TcpServer::TcpServer(QObject *parent) :
     QObject(parent)
 {       
-    qDebug() << "----------------------------";
-    qDebug() << "network interfaces:";
+    qCDebug(dcConnection) << "----------------------------";
+    qCDebug(dcConnection) << "network interfaces:";
     foreach(const QNetworkInterface &interface, QNetworkInterface::allInterfaces()){
-        qDebug() << "   -------------------------";
-        qDebug() << "   name :" << interface.name();
+        qCDebug(dcConnection) << "   -------------------------";
+        qCDebug(dcConnection) << "   name :" << interface.name();
         if(!interface.addressEntries().isEmpty()){
-            qDebug() << "   ip   :" << interface.addressEntries().first().ip().toString();
+            qCDebug(dcConnection) << "   ip   :" << interface.addressEntries().first().ip().toString();
         }
-        qDebug() << "   mac  : " << interface.hardwareAddress();
+        qCDebug(dcConnection) << "   mac  : " << interface.hardwareAddress();
     }
-    qDebug() << "----------------------------";
+    qCDebug(dcConnection) << "----------------------------";
 
     // load settings
     bool ok;
@@ -75,7 +77,7 @@ void TcpServer::newClientConnected()
     // got a new client connected
     QTcpServer *server = qobject_cast<QTcpServer*>(sender());
     QTcpSocket *newConnection = server->nextPendingConnection();
-    qDebug() << "new client connected:" << newConnection->peerAddress().toString();
+    qCDebug(dcConnection) << "new client connected:" << newConnection->peerAddress().toString();
 
     QUuid clientId = QUuid::createUuid();
 
@@ -92,11 +94,11 @@ void TcpServer::newClientConnected()
 void TcpServer::readPackage()
 {
     QTcpSocket *client = qobject_cast<QTcpSocket*>(sender());
-    qDebug() << "-----------> data comming from" << client->peerAddress().toString();
+    qCDebug(dcConnection) << "data comming from" << client->peerAddress().toString();
     QByteArray message;
     while(client->canReadLine()){
         QByteArray dataLine = client->readLine();
-        qDebug() << "line in:" << dataLine;
+        qCDebug(dcConnection) << "line in:" << dataLine;
         message.append(dataLine);
         if(dataLine.endsWith('\n')){
             emit dataAvailable(m_clientList.key(client), message);
@@ -108,7 +110,7 @@ void TcpServer::readPackage()
 void TcpServer::slotClientDisconnected()
 {
     QTcpSocket *client = qobject_cast<QTcpSocket*>(sender());
-    qDebug() << "client disconnected:" << client->peerAddress().toString();
+    qCDebug(dcConnection) << "client disconnected:" << client->peerAddress().toString();
     QUuid clientId = m_clientList.key(client);
     m_clientList.take(clientId)->deleteLater();
 }
@@ -119,11 +121,11 @@ bool TcpServer::startServer()
     foreach(const QHostAddress &address, QNetworkInterface::allAddresses()){
         QTcpServer *server = new QTcpServer(this);
         if(server->listen(address, m_port)) {
-            qDebug() << "JSON-RPC server listening on" << address.toString() << ":" << m_port;
+            qCDebug(dcConnection) << "JSON-RPC server listening on" << address.toString() << ":" << m_port;
             connect(server, SIGNAL(newConnection()), SLOT(newClientConnected()));
             m_serverList.insert(QUuid::createUuid(), server);
         } else {
-            qDebug() << "ERROR: can not listening to" << address.toString();
+            qCWarning(dcConnection) << "can not listening to" << address.toString() << ":" << m_port;
             delete server;
         }
     }
@@ -137,7 +139,7 @@ bool TcpServer::stopServer()
 {
     // Listen on all Networkinterfaces
     foreach(QTcpServer *server, m_serverList){
-        qDebug() << "close server " << server->serverAddress().toString();
+        qCDebug(dcConnection) << "close server " << server->serverAddress().toString();
         server->close();
         delete server;
     }

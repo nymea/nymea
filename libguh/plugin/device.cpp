@@ -40,6 +40,7 @@
 
 #include "device.h"
 #include "types/event.h"
+#include "loggingcategories.h"
 
 #include <QDebug>
 
@@ -187,7 +188,6 @@ void Device::setStateValue(const StateTypeId &stateTypeId, const QVariant &value
     for (int i = 0; i < m_states.count(); ++i) {
         if (m_states.at(i).stateTypeId() == stateTypeId) {
             if (m_states.at(i).value() == value) {
-                //qDebug() << name() << m_states.at(i).value() << "-----> value unchanged";
                 return;
             }
             State newState(stateTypeId, m_id);
@@ -197,7 +197,7 @@ void Device::setStateValue(const StateTypeId &stateTypeId, const QVariant &value
             return;
         }
     }
-    qWarning() << "failed setting state for" << m_name;
+    qCWarning(dcDeviceManager) << "failed setting state for" << m_name;
 }
 
 /*! Returns the \l{State} with the given \a stateTypeId of this Device. */

@@ -65,6 +65,7 @@
 #include "devicepluginudpcommander.h"
 #include "plugin/device.h"
 #include "plugininfo.h"
+#include "loggingcategories.h"
 
 DevicePluginUdpCommander::DevicePluginUdpCommander()
 {
@@ -82,14 +83,14 @@ DeviceManager::DeviceSetupStatus DevicePluginUdpCommander::setupDevice(Device *d
     bool portOk = false;
     int port = device->paramValue("port").toInt(&portOk);
     if (!portOk || port <= 0 || port > 65535) {
-        qWarning() << "ERROR: UDP commander" << device->paramValue("name") << ": invalid port:" << device->paramValue("port").toString() << ".";
+        qCWarning(dcUdpCommander) << device->paramValue("name") << ": invalid port:" << device->paramValue("port").toString() << ".";
         return DeviceManager::DeviceSetupStatusFailure;
     }
 
     QUdpSocket *udpSocket = new QUdpSocket(this);
 
     if (!udpSocket->bind(QHostAddress::Any, port)) {
-        qWarning() << "ERROR: UDP commander" << device->paramValue("name") << "can't bind to port" << port << ".";
+        qCWarning(dcUdpCommander) << device->paramValue("name") << "can't bind to port" << port << ".";
         delete udpSocket;
         return DeviceManager::DeviceSetupStatusFailure;
     }
@@ -125,7 +126,7 @@ void DevicePluginUdpCommander::readPendingDatagrams()
 
     if (datagram == device->paramValue("command").toByteArray() ||
             datagram == device->paramValue("command").toByteArray() + "\n") {
-        qDebug() << device->paramValue("name").toString() << " got command from" << sender.toString() << senderPort;
+        qCDebug(dcUdpCommander) << device->paramValue("name").toString() << " got command from" << sender.toString() << senderPort;
         emit emitEvent(Event(commandReceivedEventTypeId, device->id()));
         socket->writeDatagram("OK\n", sender, senderPort);
     }

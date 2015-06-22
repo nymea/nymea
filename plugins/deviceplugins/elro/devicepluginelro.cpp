@@ -47,6 +47,7 @@
 #include "devicepluginelro.h"
 #include "devicemanager.h"
 #include "plugininfo.h"
+#include "loggingcategories.h"
 
 #include <QDebug>
 #include <QStringList>
@@ -152,10 +153,10 @@ DeviceManager::DeviceError DevicePluginElro::executeAction(Device *device, const
 
     // send data to hardware resource
     if (transmitData(delay, rawData)) {
-        qDebug() << "transmitted" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
+        qCDebug(dcRF433) << "transmitted" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
         return DeviceManager::DeviceErrorNoError;
     } else {
-        qDebug() << "could not transmitt" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
+        qCWarning(dcRF433) << "could not transmitt" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
         return DeviceManager::DeviceErrorHardwareNotAvailable;
     }
 }
@@ -207,13 +208,13 @@ void DevicePluginElro::radioData(const QList<int> &rawData)
         return;
     }
 
-    qDebug() << "ELRO understands this protocol: " << binCode;
+    qCDebug(dcRF433) << "ELRO understands this protocol: " << binCode;
 
     if (binCode.left(20) == "00000100000000000001") {
         if (binCode.right(4) == "0100") {
-            qDebug() << "Motion Detector OFF";
+            qCDebug(dcRF433) << "Motion Detector OFF";
         } else {
-            qDebug() << "Motion Detector ON";
+            qCDebug(dcRF433) << "Motion Detector ON";
         }
     }
 
@@ -257,5 +258,5 @@ void DevicePluginElro::radioData(const QList<int> &rawData)
         return;
     }
 
-    qDebug() << "ELRO:" << group << buttonCode << power;
+    qCDebug(dcRF433) << "Elro:" << group << buttonCode << power;
 }

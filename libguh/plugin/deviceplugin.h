@@ -116,6 +116,7 @@ private:
     QStringList verifyFields(const QStringList &fields, const QJsonObject &value) const;
 
     Types::Unit unitStringToUnit(const QString &unitString) const;
+    Types::InputType inputTypeStringToInputType(const QString &inputType) const;
 
     DeviceManager *m_deviceManager;
 

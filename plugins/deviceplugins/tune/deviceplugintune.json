@@ -53,7 +53,7 @@
                             "name": "active",
                             "type": "bool",
                             "defaultValue": false,
-                            "writable": true
+                            "writable": {}
                         },
                         {
                             "id": "cb8a89c2-dc12-4965-b047-57896058b421",
@@ -61,10 +61,11 @@
                             "name": "value",
                             "type": "int",
                             "unit": "Percentage",
-                            "minValue": 0,
-                            "maxValue": 100,
                             "defaultValue": 0,
-                            "writable": true
+                            "writable": {
+                                "minValue": 0,
+                                "maxValue": 100
+                            }
                         }
                     ]
                 },
@@ -121,7 +122,7 @@
                             "name": "power",
                             "type": "bool",
                             "defaultValue": 0,
-                            "writable": true
+                            "writable": {}
                         },
                         {
                             "id": "677cd9ec-c264-47ee-9d2e-d3662237792c",
@@ -129,10 +130,11 @@
                             "name": "brightness",
                             "type": "int",
                             "unit": "Percentage",
-                            "minValue": 0,
-                            "maxValue": 100,
                             "defaultValue": 0,
-                            "writable": true
+                            "writable": {
+                                "minValue": 0,
+                                "maxValue": 100
+                            }
                         }
                     ]
                 }

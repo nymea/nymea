@@ -109,7 +109,7 @@
                             "name": "power",
                             "type": "bool",
                             "defaultValue": false,
-                            "writable": true
+                            "writable": {}
                         },
                         {
                             "id": "c0f4206f-f219-4f06-93c4-4ca515a56f79",
@@ -117,10 +117,11 @@
                             "name": "color temperature",
                             "type": "int",
                             "unit": "Mired",
-                            "writable": true,
                             "defaultValue": 170,
-                            "minValue": 154,
-                            "maxValue": 500
+                            "writable": {
+                                "minValue": 154,
+                                "maxValue": 500
+                            }
                         },
                         {
                             "id": "d25423e7-b924-4b20-80b6-77eecc65d089",
@@ -128,7 +129,7 @@
                             "name": "color",
                             "type": "QColor",
                             "defaultValue": "#000000",
-                            "writable": true
+                            "writable": {}
 
                         },
                         {
@@ -137,22 +138,25 @@
                             "name": "brightness",
                             "type": "int",
                             "unit": "Percentage",
-                            "writable": true,
-                            "minValue": 0,
-                            "maxValue": 100,
-                            "defaultValue": 0
+                            "defaultValue": 0,
+                            "writable": {
+                                "minValue": 0,
+                                "maxValue": 100
+                            }
                         },
                         {
                             "id": "0b7cdd8d-4db8-4183-abe2-f3c01d1c9afc",
                             "idName": "hueEffect",
                             "name": "effect",
                             "type": "QString",
-                            "writable": true,
                             "defaultValue": "none",
-                            "allowedValues": [
-                                "none",
-                                "color loop"
-                            ]
+                            "writable": {
+                                "allowedValues": [
+                                    "none",
+                                    "color loop"
+                                ]
+                            }
+
                         }
                     ],
                     "actionTypes": [

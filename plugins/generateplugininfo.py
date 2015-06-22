@@ -9,99 +9,98 @@ outputfile = open(sys.argv[2], "w")
 variableNames = []
 
 try:
-	pluginMap = json.loads(inputFile.read())
-	
+    pluginMap = json.loads(inputFile.read())
+    
 except ValueError as e:
-	print " --> Error loading input file \"%s\"" % (sys.argv[1])
-	print "     %s" % (e)
-	exit -1
+    print " --> Error loading input file \"%s\"" % (sys.argv[1])
+    print "     %s" % (e)
+    exit -1
 
 
 def out(line):
-	outputfile.write("%s\n" % line)
+    outputfile.write("%s\n" % line)
 
 def extractVendors(pluginMap):
-	for vendor in pluginMap['vendors']:
-		try:
-			out("VendorId %sVendorId = VendorId(\"%s\");" % pluginMap["idName"], pluginMap["id"])
-		except:
-			pass
-		extractDeviceClasses(vendor)
+    for vendor in pluginMap['vendors']:
+        try:
+            out("VendorId %sVendorId = VendorId(\"%s\");" % pluginMap["idName"], pluginMap["id"])
+        except:
+            pass
+        extractDeviceClasses(vendor)
 
 
 def extractDeviceClasses(vendorMap):
-	for deviceClass in vendorMap["deviceClasses"]:
-		print("have deviceclass %s" % deviceClass["deviceClassId"])
-		try:
-			variableName = "%sDeviceClassId" % (deviceClass["idName"]) 
-			if not variableName in variableNames:
-				variableNames.append(variableName)
-				out("DeviceClassId %s = DeviceClassId(\"%s\");" % (variableName, deviceClass["deviceClassId"]))
-			else:
-				print("duplicated variable name \"%s\" for DeviceClassId %s -> skipping") % (variableName, deviceClass["deviceClassId"])
-		except:
-			pass
-		extractActionTypes(deviceClass)
-		extractStateTypes(deviceClass)
-		extractEventTypes(deviceClass)
+    for deviceClass in vendorMap["deviceClasses"]:
+        print("have deviceclass %s" % deviceClass["deviceClassId"])
+        try:
+            variableName = "%sDeviceClassId" % (deviceClass["idName"]) 
+            if not variableName in variableNames:
+                variableNames.append(variableName)
+                out("DeviceClassId %s = DeviceClassId(\"%s\");" % (variableName, deviceClass["deviceClassId"]))
+            else:
+                print("duplicated variable name \"%s\" for DeviceClassId %s -> skipping") % (variableName, deviceClass["deviceClassId"])
+        except:
+            pass
+        extractActionTypes(deviceClass)
+        extractStateTypes(deviceClass)
+        extractEventTypes(deviceClass)
 
 
 def extractStateTypes(deviceClassMap):
-	try:
-		for stateType in deviceClassMap["stateTypes"]:
-			try:
-				variableName = "%sStateTypeId" % (stateType["idName"])
-				if not variableName in variableNames:
-					variableNames.append(variableName)
-					out("StateTypeId %s = StateTypeId(\"%s\");" % (variableName, stateType["id"]))
-				else:
-					print("duplicated variable name \"%s\" for StateTypeId %s -> skipping") % (variableName, stateType["id"])
-				# create ActionTypeId if the state is writable
-				if 'writable' in stateType:
-					if stateType['writable'] == True:
-						print("create ActionTypeId for StateType %s" % stateType["id"])
-						vName = "%sActionTypeId" % (stateType["idName"]) 
-						if not vName in variableNames:
-							variableNames.append(vName)
-							out("ActionTypeId %s = ActionTypeId(\"%s\");" % (vName, stateType["id"]))
-						else:
-							print("duplicated variable name \"%s\" for ActionTypeId %s -> skipping") % (variableName, stateType["id"])
-			except:
-				pass
-	except:
-		pass
+    try:
+        for stateType in deviceClassMap["stateTypes"]:
+            try:
+                variableName = "%sStateTypeId" % (stateType["idName"])
+                if not variableName in variableNames:
+                    variableNames.append(variableName)
+                    out("StateTypeId %s = StateTypeId(\"%s\");" % (variableName, stateType["id"]))
+                else:
+                    print("duplicated variable name \"%s\" for StateTypeId %s -> skipping") % (variableName, stateType["id"])
+                # create ActionTypeId if the state is writable
+                if 'writable' in stateType:
+                    print("create ActionTypeId for StateType %s" % stateType["id"])
+                    vName = "%sActionTypeId" % (stateType["idName"]) 
+                    if not vName in variableNames:
+                        variableNames.append(vName)
+                        out("ActionTypeId %s = ActionTypeId(\"%s\");" % (vName, stateType["id"]))
+                    else:
+                        print("duplicated variable name \"%s\" for ActionTypeId %s -> skipping") % (variableName, stateType["id"])
+            except:
+                pass
+    except:
+        pass
 
 
 def extractActionTypes(deviceClassMap):
-	try:
-		for actionType in deviceClassMap["actionTypes"]:
-			try:
-				variableName = "%sActionTypeId" % (actionType["idName"])
-				if not variableName in variableNames:
-					variableNames.append(variableName)
-					out("ActionTypeId %s = ActionTypeId(\"%s\");" % (variableName, actionType["id"]))
-				else:
-					print("duplicated variable name \"%s\" for ActionTypeId %s -> skipping") % (variableName, actionType["id"])
-			except:
-				pass
-	except:
-		pass
+    try:
+        for actionType in deviceClassMap["actionTypes"]:
+            try:
+                variableName = "%sActionTypeId" % (actionType["idName"])
+                if not variableName in variableNames:
+                    variableNames.append(variableName)
+                    out("ActionTypeId %s = ActionTypeId(\"%s\");" % (variableName, actionType["id"]))
+                else:
+                    print("duplicated variable name \"%s\" for ActionTypeId %s -> skipping") % (variableName, actionType["id"])
+            except:
+                pass
+    except:
+        pass
 
 
 def extractEventTypes(deviceClassMap):
-	try:
-		for eventType in deviceClassMap["eventTypes"]:
-			try:
-				variableName = "%sEventTypeId" % (eventType["idName"])
-				if not variableName in variableNames:
-					variableNames.append(variableName)
-					out("EventTypeId %s = EventTypeId(\"%s\");" % (variableName, eventType["id"]))
-				else:
-					print("duplicated variable name \"%s\" for EventTypeId %s -> skipping") % (variableName, eventType["id"])
-			except:
-				pass
-	except:
-		pass
+    try:
+        for eventType in deviceClassMap["eventTypes"]:
+            try:
+                variableName = "%sEventTypeId" % (eventType["idName"])
+                if not variableName in variableNames:
+                    variableNames.append(variableName)
+                    out("EventTypeId %s = EventTypeId(\"%s\");" % (variableName, eventType["id"]))
+                else:
+                    print("duplicated variable name \"%s\" for EventTypeId %s -> skipping") % (variableName, eventType["id"])
+            except:
+                pass
+    except:
+        pass
 
 
 print " --> generate plugininfo.h"

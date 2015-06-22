@@ -242,21 +242,22 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 stateTypes.append(stateType);
 
                 // create ActionType if this StateType is writable
-                if (st.value("writable").toBool()) {
+                if (st.contains("writable")) {
                     ActionType actionType(st.value("id").toString());
                     actionType.setName("set " + st.value("name").toString());
                     // Note: fields already checked in StateType
                     ParamType paramType(st.value("name").toString(), t, st.value("defaultValue").toVariant());
-                    if (st.contains("allowedValues")) {
+                    if (st.value("writable").toObject().contains("allowedValues")) {
                         QVariantList allowedValues;
-                        foreach (const QJsonValue &allowedTypesJson, st.value("allowedValues").toArray()) {
+                        foreach (const QJsonValue &allowedTypesJson, st.value("writable").toObject().value("allowedValues").toArray()) {
                             allowedValues.append(allowedTypesJson.toVariant());
                         }
                         paramType.setAllowedValues(allowedValues);
                     }
-                    // states don't have input types
+                    paramType.setInputType(inputTypeStringToInputType(st.value("writable").toObject().value("inputType").toString()));
                     paramType.setUnit(unitStringToUnit(st.value("unit").toString()));
-                    paramType.setLimits(st.value("minValue").toVariant(), st.value("maxValue").toVariant());
+                    paramType.setLimits(st.value("writable").toObject().value("minValue").toVariant(),
+                                        st.value("writable").toObject().value("maxValue").toVariant());
                     actionType.setParamTypes(QList<ParamType>() << paramType);
                     actionTypes.append(actionType);
                 }
@@ -400,26 +401,7 @@ QList<ParamType> DevicePlugin::parseParamTypes(const QJsonArray &array) const
         }
         // set the input type if there is any
         if (pt.contains("inputType")) {
-            QString inputTypeString = pt.value("inputType").toString();
-            if (inputTypeString == "TextLine") {
-                paramType.setInputType(Types::InputTypeTextLine);
-            } else if (inputTypeString == "TextArea") {
-                paramType.setInputType(Types::InputTypeTextArea);
-            } else if (inputTypeString == "Password") {
-                paramType.setInputType(Types::InputTypePassword);
-            } else if (inputTypeString == "Search") {
-                paramType.setInputType(Types::InputTypeSearch);
-            } else if (inputTypeString == "Mail") {
-                paramType.setInputType(Types::InputTypeMail);
-            } else if (inputTypeString == "IPv4Address") {
-                paramType.setInputType(Types::InputTypeIPv4Address);
-            } else if (inputTypeString == "IPv6Address") {
-                paramType.setInputType(Types::InputTypeIPv6Address);
-            } else if (inputTypeString == "Url") {
-                paramType.setInputType(Types::InputTypeUrl);
-            } else if (inputTypeString == "MacAddress") {
-                paramType.setInputType(Types::InputTypeMacAddress);
-            }
+            paramType.setInputType(inputTypeStringToInputType(pt.value("inputType").toString()));
         }
 
         // set the unit if there is any
@@ -748,4 +730,28 @@ Types::Unit DevicePlugin::unitStringToUnit(const QString &unitString) const
         qWarning() << "Could not parse unit:" << unitString << "in plugin" << this->pluginName();
     }
     return Types::UnitNone;
+}
+
+Types::InputType DevicePlugin::inputTypeStringToInputType(const QString &inputType) const
+{
+    if (inputType == "TextLine") {
+        return Types::InputTypeTextLine;
+    } else if (inputType == "TextArea") {
+        return Types::InputTypeTextArea;
+    } else if (inputType == "Password") {
+        return Types::InputTypePassword;
+    } else if (inputType == "Search") {
+        return Types::InputTypeSearch;
+    } else if (inputType == "Mail") {
+        return Types::InputTypeMail;
+    } else if (inputType == "IPv4Address") {
+        return Types::InputTypeIPv4Address;
+    } else if (inputType == "IPv6Address") {
+        return Types::InputTypeIPv6Address;
+    } else if (inputType == "Url") {
+        return Types::InputTypeUrl;
+    } else if (inputType == "MacAddress") {
+        return Types::InputTypeMacAddress;
+    }
+    return Types::InputTypeNone;
 }

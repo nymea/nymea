@@ -2,6 +2,8 @@ include(../../plugins.pri)
 
 TARGET = $$qtLibraryTarget(guh_devicepluginkodi)
 
+RESOURCES += images.qrc \
+
 SOURCES += \
     devicepluginkodi.cpp \
     kodiconnection.cpp \

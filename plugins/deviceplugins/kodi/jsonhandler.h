@@ -9,6 +9,8 @@ class JsonHandler : public QObject
 public:
     explicit JsonHandler(QObject *parent = 0);
 
+    //static QByteArray createHelloMessage(QString title, QString message);
+
 signals:
 
 public slots:

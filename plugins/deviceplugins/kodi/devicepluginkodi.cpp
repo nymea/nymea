@@ -79,6 +79,18 @@ void DevicePluginKodi::deviceRemoved(Device *device)
     kodiConnection->deleteLater();
 }
 
+void DevicePluginKodi::guhTimer()
+{
+    foreach (KodiConnection *kodi, m_kodiConnections.keys()) {
+        if (!kodi->connected()) {
+            kodi->connectToKodi();
+            continue;
+        } else {
+            // update.. ?
+        }
+    }
+}
+
 
 DeviceManager::DeviceError DevicePluginKodi::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
 {
@@ -94,6 +106,18 @@ void DevicePluginKodi::upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &
     QList<DeviceDescriptor> deviceDescriptors;
     foreach (const UpnpDeviceDescriptor &upnpDescriptor, upnpDeviceDescriptorList) {
         if (upnpDescriptor.modelName().contains("Kodi")) {
+
+            // check if we allready found the kodi on this ip
+            bool alreadyAdded = false;
+            foreach (const DeviceDescriptor dDescriptor, deviceDescriptors) {
+                if (dDescriptor.params().paramValue("ip").toString() == upnpDescriptor.hostAddress().toString()) {
+                    alreadyAdded = true;
+                    break;
+                }
+            }
+            if (alreadyAdded)
+                continue;
+
             qCDebug(dcKodi) << upnpDescriptor;
             DeviceDescriptor deviceDescriptor(kodiDeviceClassId, "Kodi - Media Center", upnpDescriptor.hostAddress().toString());
             ParamList params;

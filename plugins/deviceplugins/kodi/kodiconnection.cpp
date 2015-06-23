@@ -1,10 +1,14 @@
 #include "kodiconnection.h"
 #include "loggingcategories.h"
+#include "jsonhandler.h"
+
+#include <QPixmap>
 
 KodiConnection::KodiConnection(const QHostAddress &hostAddress, const int &port, QObject *parent) :
     QObject(parent),
     m_hostAddress(hostAddress),
-    m_port(port)
+    m_port(port),
+    m_connected(false)
 {
     m_socket = new QTcpSocket(this);
 
@@ -16,6 +20,9 @@ KodiConnection::KodiConnection(const QHostAddress &hostAddress, const int &port,
 
 void KodiConnection::connectToKodi()
 {
+    if (m_socket->state() == QAbstractSocket::ConnectingState) {
+        return;
+    }
     m_socket->connectToHost(m_hostAddress, m_port);
 }
 
@@ -34,15 +41,24 @@ int KodiConnection::port() const
     return m_port;
 }
 
+bool KodiConnection::connected()
+{
+    return m_connected;
+}
+
 void KodiConnection::onConnected()
 {
     qCDebug(dcKodi) << "connected successfully to" << hostAddress().toString() << port();
+    m_connected = true;
+//    QPixmap logo = QPixmap(":/images/guh-logo.png");
+//    qCDebug(dcKodi) << "image size" << logo.size();
     emit connectionStateChanged(true);
 }
 
 void KodiConnection::onDisconnected()
 {
     qCDebug(dcKodi) << "disconnected from" << hostAddress().toString() << port();
+    m_connected = false;
     emit connectionStateChanged(false);
 }
 
@@ -64,7 +80,6 @@ void KodiConnection::readData()
     }
     qCDebug(dcKodi) << "data received:" << jsonDoc.toJson();
 
-    unsigned short m_IconSize;
     emit dataReady(data);
 }
 

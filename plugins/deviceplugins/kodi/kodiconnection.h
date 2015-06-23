@@ -18,11 +18,13 @@ public:
     QHostAddress hostAddress() const;
     int port() const;
 
+    bool connected();
+
 private:
     QHostAddress m_hostAddress;
     int m_port;
     int m_id;
-
+    bool m_connected;
 
 
     QTcpSocket *m_socket;

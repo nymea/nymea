@@ -1,42 +1,133 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *                                                                         *
+ *  This file is part of guh.                                              *
+ *                                                                         *
+ *  Guh is free software: you can redistribute it and/or modify            *
+ *  it under the terms of the GNU General Public License as published by   *
+ *  the Free Software Foundation, version 2 of the License.                *
+ *                                                                         *
+ *  Guh is distributed in the hope that it will be useful,                 *
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of         *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          *
+ *  GNU General Public License for more details.                           *
+ *                                                                         *
+ *  You should have received a copy of the GNU General Public License      *
+ *  along with guh. If not, see <http://www.gnu.org/licenses/>.            *
+ *                                                                         *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 #include "jsonhandler.h"
 #include "loggingcategories.h"
 
-#include <QPixmap>
-#include <QBuffer>
+#include <QJsonDocument>
 
-JsonHandler::JsonHandler(QObject *parent) :
-    QObject(parent)
+JsonHandler::JsonHandler(KodiConnection *connection, QObject *parent) :
+    QObject(parent),
+    m_connection(connection),
+    m_id(0)
 {
+    connect(m_connection, &KodiConnection::dataReady, this, &JsonHandler::processResponse);
 }
 
-//QByteArray JsonHandler::createHelloMessage(QString title, QString message)
-//{
-//    QByteArray payload;
+void JsonHandler::sendData(const QString &method, const QVariantMap &params, const ActionId &actionId)
+{
+    QVariantMap package;
+    package.insert("id", m_id);
+    package.insert("method", method);
+    package.insert("params", params);
+    package.insert("jsonrpc", "2.0");
 
-//    QByteArray iconData;
-//    QBuffer buffer(&iconData);
-//    buffer.open(QIODevice::WriteOnly);
-//    icon.save(&buffer, "PNG");
-//    //    payload.clear();
+    m_replys.insert(m_id, KodiReply(method, params, actionId));
 
-//    //    // titel
-//    //    payload.push_back(QByteArray::fromStdString(title.toStdString()));
-//    //    payload.push_back('\0');
+    QJsonDocument jsonDoc = QJsonDocument::fromVariant(package);
+    qCDebug(dcKodi) << "sending data" << jsonDoc.toJson();
+    m_connection->sendData(jsonDoc.toJson());
+    m_id++;
+}
 
-//    //    // message
-//    //    payload.push_back(QByteArray::fromStdString(message.toStdString()));
-//    //    payload.push_back('\0');
+void JsonHandler::processNotification(const QString &method, const QVariantMap &params)
+{
+    if (method == "Application.OnVolumeChanged") {
+        QVariantMap data = params.value("data").toMap();
+        qCDebug(dcKodi) << "got volume changed notification" << "volume:" << data.value("volume").toInt() << "  muted:" << data.value("muted").toBool();
+        emit volumeChanged(data.value("volume").toInt(), data.value("muted").toBool());
+    } else if (method == "Player.onPlayerPlay") {
+        qCDebug(dcKodi) << "got player play notification";
+        emit onPlayerPlay();
+    } else if (method == "Player.onPlayerPause") {
+        qCDebug(dcKodi) << "got player pause notification";
+        emit onPlayerPause();
+    } else if (method == "Player.onPlayerStop") {
+        qCDebug(dcKodi) << "got player stop notification";
+        emit onPlayerPause();
+    }
 
-//    //    // icontype ( 0=>NOICON, 1=>JPEG , 2=>PNG , 3=>GIF )
-//    //    payload.push_back(2);
+}
 
-//    //    payload.push_back("0000");
+void JsonHandler::processActionResponse(const KodiReply &reply, const QVariantMap &response)
+{
+    if (response.contains("error")) {
+        qCDebug(dcKodi) << QJsonDocument::fromVariant(response).toJson();
+        qCWarning(dcKodi) << "got action error response:" << response.value("error").toMap().value("message").toString();
+        emit actionExecuted(reply.actionId(), false);
+    } else {
+        emit actionExecuted(reply.actionId(), true);
+    }
+}
 
-//    //    // image data
-//    //    payload.push_back(iconData);
-//    //    payload.push_back('\0');
+void JsonHandler::processRequestResponse(const KodiReply &reply, const QVariantMap &response)
+{
+    if (response.contains("error")) {
+        qCDebug(dcKodi) << QJsonDocument::fromVariant(response).toJson();
+        qCWarning(dcKodi) << "got request error response:" << response.value("error").toMap().value("message").toString();
+    }
 
-//    //    qCDebug(dcKodi) << payload;
+    if (reply.method() == "Application.GetProperties") {
+        qCDebug(dcKodi) << "got update response" << response;
+        emit updateDataReceived(response.value("result").toMap());
+    }
+}
 
-//    return payload;
-//}
+void JsonHandler::processResponse(const QByteArray &data)
+{
+    QJsonParseError error;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
+
+    if(error.error != QJsonParseError::NoError) {
+        qCWarning(dcKodi) << "failed to parse JSON data:" << data << ":" << error.errorString();
+        return;
+    }
+    qCDebug(dcKodi) << "data received:" << jsonDoc.toJson();
+
+    QVariantMap message = jsonDoc.toVariant().toMap();
+
+    // check jsonrpc value
+    if (!message.contains("jsonrpc") || message.value("jsonrpc").toString() != "2.0") {
+        qCWarning(dcKodi) << "jsonrpc 2.0 value missing in message" << data;
+    }
+
+    // check id (if there is no id, it's an notification from kodi)
+    if (!message.contains("id")) {
+
+        // check method
+        if (!message.contains("method")) {
+            qCWarning(dcKodi) << "method missing in message" << data;
+        }
+
+        processNotification(message.value("method").toString(), message.value("params").toMap());
+        return;
+    }
+
+    int id = message.value("id").toInt();
+    KodiReply reply = m_replys.take(id);
+
+    // check if this message is a response to an action call
+    if (reply.actionId() != ActionId()) {
+        processActionResponse(reply, message);
+        return;
+    }
+
+    processRequestResponse(reply, message);
+}

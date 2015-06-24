@@ -53,15 +53,123 @@
                             }
                         }
                     ],
+                    "eventTypes": [
+                        {
+                            "id": "2535a1eb-7643-4874-98f6-b027fdff6311",
+                            "idName": "onPlayerPlay",
+                            "name": "player play"
+                        },
+                        {
+                            "id": "99498b1c-e9c0-480a-9e91-662ee79ba976",
+                            "idName": "onPlayerPause",
+                            "name": "player pause"
+                        },
+                        {
+                            "id": "a02ce255-3abb-435d-a92e-7f99c952ecb2",
+                            "idName": "onPlayerStop",
+                            "name": "player stop"
+                        }
+                    ],
                     "actionTypes": [
                         {
                             "id": "dc0aa3b5-4eae-4e58-a4ac-d4c124da53f1",
-                            "idName": "sendNotification",
-                            "name": "send notification",
+                            "idName": "showNotification",
+                            "name": "show notification",
                             "paramTypes": [
                                 {
                                     "name": "message",
-                                    "type": "QString"
+                                    "type": "QString",
+                                    "inputType": "TextLine"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "28060803-aa85-44a4-9dec-ee669dfb629f",
+                            "idName": "pressButton",
+                            "name": "press button",
+                            "paramTypes": [
+                                {
+                                    "name": "button",
+                                    "type": "QString",
+                                    "allowedValues": [
+                                        "left",
+                                        "right",
+                                        "up",
+                                        "down",
+                                        "pageup",
+                                        "pagedown",
+                                        "select",
+                                        "back",
+                                        "info",
+                                        "pause",
+                                        "stop",
+                                        "skipnext",
+                                        "skipprevious",
+                                        "stepforward",
+                                        "stepback",
+                                        "osd",
+                                        "play",
+                                        "playpause",
+                                        "fastforward",
+                                        "rewind",
+                                        "togglefullscreen",
+                                        "mute",
+                                        "volumeup",
+                                        "volumedown",
+                                        "channelup",
+                                        "channeldown",
+                                        "red",
+                                        "green",
+                                        "yellow",
+                                        "blue"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "id": "8d51cd64-ecef-44f8-85b0-697bef252ce5",
+                            "idName": "system",
+                            "name": "system",
+                            "paramTypes": [
+                                {
+                                    "name": "command",
+                                    "type": "QString",
+                                    "allowedValues": [
+                                        "hibernate",
+                                        "reboot",
+                                        "shutdown",
+                                        "suspend"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "id": "59f7ad10-16eb-40b7-a88b-c8393ae8e413",
+                            "idName": "videoLibrary",
+                            "name": "video library",
+                            "paramTypes": [
+                                {
+                                    "name": "command",
+                                    "type": "QString",
+                                    "allowedValues": [
+                                        "scan",
+                                        "clean"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "id": "3d5120eb-1007-46c3-b76e-d9d4b105b9f2",
+                            "idName": "audioLibrary",
+                            "name": "audio library",
+                            "paramTypes": [
+                                {
+                                    "name": "command",
+                                    "type": "QString",
+                                    "allowedValues": [
+                                        "scan",
+                                        "clean"
+                                    ]
                                 }
                             ]
                         }

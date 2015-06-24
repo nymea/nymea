@@ -20,13 +20,34 @@
 
 /*!
     \page kodi.html
-    \title Kodi
+    \title Kodi - Media Center
 
     \ingroup plugins
     \ingroup network
 
-    TODO: description
+    This plugin allowes you to controll the media center \l{http://kodi.tv/}{Kodi}. If you want to discover
+    and control Kodi with guh, you need to activate the remote access and the UPnP service.
 
+    \chapter "Activate UPnP"
+    In order to discover Kodi in the network, you need to activate the UPnP serive in the Kodi settings:
+
+    \section2 Settings
+    \image kodi_settings.png
+
+    \section2 Settings \unicode{0x2192} Services
+    \image kodi_services.png
+
+    \section2 Settings \unicode{0x2192} Services  \unicode{0x2192} UPnP
+    Activate all options.
+    \image kodi_upnp.png
+
+
+    \chapter Activate "Remote Control"
+    In order to control Kodi over the network with guh, you need to activate the remote control permissions:
+
+    \section2 Settings \unicode{0x2192} Services  \unicode{0x2192} Remote Control
+    Activate all options.
+    \image kodi_remote.png
 
     \chapter Plugin properties
     Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}
@@ -41,7 +62,7 @@
     \note If a \l{StateType} has the parameter \tt{"writable": true}, an \l{ActionType} with the same uuid and \l{ParamType}{ParamTypes}
     will be created automatically.
 
-    \quotefile plugins/deviceplugins/udpcommander/devicepluginudpcommander.json
+    \quotefile plugins/deviceplugins/kodi/devicepluginkodi.json
 */
 
 #include "devicepluginkodi.h"
@@ -61,32 +82,38 @@ DeviceManager::HardwareResources DevicePluginKodi::requiredHardware() const
 
 DeviceManager::DeviceSetupStatus DevicePluginKodi::setupDevice(Device *device)
 {
-    KodiConnection *kodiConnection = new KodiConnection(QHostAddress(device->paramValue("ip").toString()), 9090, this);
+    Kodi *kodi= new Kodi(QHostAddress(device->paramValue("ip").toString()), 9090, this);
 
-    connect(kodiConnection, &KodiConnection::connectionStateChanged, this, &DevicePluginKodi::onConnectionChanged);
+    connect(kodi, &Kodi::connectionStatusChanged, this, &DevicePluginKodi::onConnectionChanged);
+    connect(kodi, &Kodi::stateChanged, this, &DevicePluginKodi::onStateChanged);
+    connect(kodi, &Kodi::actionExecuted, this, &DevicePluginKodi::onActionExecuted);
+    connect(kodi, &Kodi::onPlayerPlay, this, &DevicePluginKodi::onPlayerPlay);
+    connect(kodi, &Kodi::onPlayerPause, this, &DevicePluginKodi::onPlayerPause);
+    connect(kodi, &Kodi::onPlayerStop, this, &DevicePluginKodi::onPlayerStop);
 
-    kodiConnection->connectToKodi();
+    kodi->connectKodi();
 
-    m_kodiConnections.insert(kodiConnection, device);
+    m_kodis.insert(kodi, device);
     return DeviceManager::DeviceSetupStatusSuccess;
 }
 
 void DevicePluginKodi::deviceRemoved(Device *device)
 {
-    KodiConnection *kodiConnection = m_kodiConnections.key(device);
-    m_kodiConnections.remove(kodiConnection);
-    qCDebug(dcKodi) << "delete Kodi" << device->paramValue("name");
-    kodiConnection->deleteLater();
+    Kodi *kodi = m_kodis.key(device);
+    m_kodis.remove(kodi);
+    qCDebug(dcKodi) << "delete " << device->paramValue("name");
+    kodi->deleteLater();
 }
 
 void DevicePluginKodi::guhTimer()
 {
-    foreach (KodiConnection *kodi, m_kodiConnections.keys()) {
+    foreach (Kodi *kodi, m_kodis.keys()) {
         if (!kodi->connected()) {
-            kodi->connectToKodi();
+            kodi->connectKodi();
             continue;
         } else {
-            // update.. ?
+            // no need for polling information, notifications do the job
+            //kodi->update();
         }
     }
 }
@@ -96,7 +123,7 @@ DeviceManager::DeviceError DevicePluginKodi::discoverDevices(const DeviceClassId
 {
     Q_UNUSED(params)
     Q_UNUSED(deviceClassId)
-    qCDebug(dcKodi) << "start Kodi UPnP search";
+    qCDebug(dcKodi) << "start UPnP search";
     upnpDiscover();
     return DeviceManager::DeviceErrorAsync;
 }
@@ -134,31 +161,90 @@ void DevicePluginKodi::upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &
 DeviceManager::DeviceError DevicePluginKodi::executeAction(Device *device, const Action &action)
 {
     if (device->deviceClassId() == kodiDeviceClassId) {
-        if (action.actionTypeId() == sendNotificationActionTypeId) {
+        Kodi *kodi = m_kodis.key(device);
 
+        // check connection state
+        if (!kodi->connected()) {
+            return DeviceManager::DeviceErrorHardwareNotAvailable;
+        }
 
-            return DeviceManager::DeviceErrorNoError;
+        if (action.actionTypeId() == showNotificationActionTypeId) {
+            kodi->showNotification(action.param("message").value().toString(), 8000, action.id());
+            return DeviceManager::DeviceErrorAsync;
         } else if (action.actionTypeId() == volumeActionTypeId) {
-
-
-            return DeviceManager::DeviceErrorNoError;
+            kodi->setVolume(action.param("volume").value().toInt(), action.id());
+            return DeviceManager::DeviceErrorAsync;
+        } else if (action.actionTypeId() == muteActionTypeId) {
+            kodi->setMuted(action.param("mute").value().toBool(), action.id());
+            return DeviceManager::DeviceErrorAsync;
+        } else if (action.actionTypeId() == pressButtonActionTypeId) {
+            kodi->pressButton(action.param("button").value().toString(), action.id());
+            return DeviceManager::DeviceErrorAsync;
+        } else if (action.actionTypeId() == systemActionTypeId) {
+            kodi->systemCommand(action.param("command").value().toString(), action.id());
+            return DeviceManager::DeviceErrorAsync;
+        } else if (action.actionTypeId() == videoLibraryActionTypeId) {
+            kodi->videoLibrary(action.param("command").value().toString(), action.id());
+            return DeviceManager::DeviceErrorAsync;
+        } else if (action.actionTypeId() == audioLibraryActionTypeId) {
+            kodi->audioLibrary(action.param("command").value().toString(), action.id());
+            return DeviceManager::DeviceErrorAsync;
         }
         return DeviceManager::DeviceErrorActionTypeNotFound;
     }
     return DeviceManager::DeviceErrorDeviceClassNotFound;
 }
 
-void DevicePluginKodi::onConnectionChanged(const bool &connected)
+void DevicePluginKodi::onConnectionChanged()
 {
-    KodiConnection *kodiConnection = static_cast<KodiConnection *>(sender());
-    Device *device = m_kodiConnections.value(kodiConnection);
+    Kodi *kodi = static_cast<Kodi *>(sender());
+    Device *device = m_kodis.value(kodi);
 
-    device->setStateValue(connectedStateTypeId, connected);
+    if (kodi->connected()) {
+        kodi->showNotification("Connected", 2000, ActionId());
+        kodi->update();
+    }
+
+    device->setStateValue(connectedStateTypeId, kodi->connected());
 }
 
-void DevicePluginKodi::dataReceived(const QByteArray &data)
+void DevicePluginKodi::onStateChanged()
 {
-    KodiConnection *kodiConnection = static_cast<KodiConnection *>(sender());
-    emit dataReady(kodiConnection, data);
+    Kodi *kodi = static_cast<Kodi *>(sender());
+    Device *device = m_kodis.value(kodi);
+
+    // set device state values
+    device->setStateValue(volumeStateTypeId, kodi->volume());
+    device->setStateValue(muteStateTypeId, kodi->muted());
+}
+
+void DevicePluginKodi::onActionExecuted(const ActionId &actionId, const bool &success)
+{
+    if (success) {
+        emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorNoError);
+    } else {
+        emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorInvalidParameter);
+    }
+}
+
+void DevicePluginKodi::onPlayerPlay()
+{
+    Kodi *kodi = static_cast<Kodi *>(sender());
+    Device *device = m_kodis.value(kodi);
+    emit emitEvent(Event(onPlayerPlayEventTypeId, device->id()));
+}
+
+void DevicePluginKodi::onPlayerPause()
+{
+    Kodi *kodi = static_cast<Kodi *>(sender());
+    Device *device = m_kodis.value(kodi);
+    emit emitEvent(Event(onPlayerPauseEventTypeId, device->id()));
+}
+
+void DevicePluginKodi::onPlayerStop()
+{
+    Kodi *kodi = static_cast<Kodi *>(sender());
+    Device *device = m_kodis.value(kodi);
+    emit emitEvent(Event(onPlayerStopEventTypeId, device->id()));
 }
 

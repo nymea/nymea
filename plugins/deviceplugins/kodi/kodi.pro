@@ -7,10 +7,14 @@ RESOURCES += images.qrc \
 SOURCES += \
     devicepluginkodi.cpp \
     kodiconnection.cpp \
-    jsonhandler.cpp
+    jsonhandler.cpp \
+    kodi.cpp \
+    kodireply.cpp
 
 HEADERS += \
     devicepluginkodi.h \
     kodiconnection.h \
-    jsonhandler.h
+    jsonhandler.h \
+    kodi.h \
+    kodireply.h
 

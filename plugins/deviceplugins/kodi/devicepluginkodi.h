@@ -22,7 +22,7 @@
 #define DEVICEPLUGINKODI_H
 
 #include "plugin/deviceplugin.h"
-#include "kodiconnection.h"
+#include "kodi.h"
 
 #include <QHash>
 #include <QDebug>
@@ -48,15 +48,16 @@ public:
     DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
 
 private:
-    QHash<KodiConnection *, Device *> m_kodiConnections;
-
-signals:
-    void dataReady(KodiConnection *kodiConnection, const QByteArray &data);
+    QHash<Kodi *, Device *> m_kodis;
 
 private slots:
-    void onConnectionChanged(const bool &connected);
-    void dataReceived(const QByteArray &data);
+    void onConnectionChanged();
+    void onStateChanged();
+    void onActionExecuted(const ActionId &actionId, const bool &success);
 
+    void onPlayerPlay();
+    void onPlayerPause();
+    void onPlayerStop();
 };
 
 #endif // DEVICEPLUGINKODI_H

@@ -18,47 +18,34 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef JSONHANDLER_H
-#define JSONHANDLER_H
+#ifndef KODIREPLY_H
+#define KODIREPLY_H
 
-#include <QObject>
 #include <QVariant>
-#include <QHash>
+#include <QString>
 
-#include "kodiconnection.h"
-#include "kodireply.h"
 #include "typeutils.h"
 
-class JsonHandler : public QObject
+class KodiReply
 {
-    Q_OBJECT
 public:
-    explicit JsonHandler(KodiConnection *connection = 0, QObject *parent = 0);
+    KodiReply();
+    KodiReply(const QString &method, const QVariantMap &params, const ActionId &actionId = ActionId());
 
-    void sendData(const QString &method, const QVariantMap &params, const ActionId &actionId);
+    void setActionId(const ActionId &actionId);
+    ActionId actionId() const;
+
+    void setMethod(const QString &method);
+    QString method() const;
+
+    void setParams(const QVariantMap &params);
+    QVariantMap params() const;
 
 private:
-    KodiConnection *m_connection;
-    int m_id;
-
-    QHash<int, KodiReply> m_replys;
-
-    void processNotification(const QString &method, const QVariantMap &params);
-    void processActionResponse(const KodiReply &reply, const QVariantMap &response);
-    void processRequestResponse(const KodiReply &reply, const QVariantMap &response);
-
-signals:
-    void volumeChanged(const int &volume, const bool &muted);
-    void actionExecuted(const ActionId &actionId, const bool &success);
-    void updateDataReceived(const QVariantMap &data);
-
-    void onPlayerPlay();
-    void onPlayerPause();
-    void onPlayerStop();
-
-private slots:
-    void processResponse(const QByteArray &data);
+    QString m_method;
+    QVariantMap m_params;
+    ActionId m_actionId;
 
 };
 
-#endif // JSONHANDLER_H
+#endif // KODIREPLY_H

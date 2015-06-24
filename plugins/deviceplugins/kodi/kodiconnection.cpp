@@ -1,3 +1,23 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *                                                                         *
+ *  This file is part of guh.                                              *
+ *                                                                         *
+ *  Guh is free software: you can redistribute it and/or modify            *
+ *  it under the terms of the GNU General Public License as published by   *
+ *  the Free Software Foundation, version 2 of the License.                *
+ *                                                                         *
+ *  Guh is distributed in the hope that it will be useful,                 *
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of         *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          *
+ *  GNU General Public License for more details.                           *
+ *                                                                         *
+ *  You should have received a copy of the GNU General Public License      *
+ *  along with guh. If not, see <http://www.gnu.org/licenses/>.            *
+ *                                                                         *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 #include "kodiconnection.h"
 #include "loggingcategories.h"
 #include "jsonhandler.h"
@@ -18,7 +38,7 @@ KodiConnection::KodiConnection(const QHostAddress &hostAddress, const int &port,
     connect(m_socket, &QTcpSocket::readyRead, this, &KodiConnection::readData);
 }
 
-void KodiConnection::connectToKodi()
+void KodiConnection::connectKodi()
 {
     if (m_socket->state() == QAbstractSocket::ConnectingState) {
         return;
@@ -26,7 +46,7 @@ void KodiConnection::connectToKodi()
     m_socket->connectToHost(m_hostAddress, m_port);
 }
 
-void KodiConnection::disconnectFromKodi()
+void KodiConnection::disconnectKodi()
 {
     m_socket->close();
 }
@@ -50,51 +70,31 @@ void KodiConnection::onConnected()
 {
     qCDebug(dcKodi) << "connected successfully to" << hostAddress().toString() << port();
     m_connected = true;
-//    QPixmap logo = QPixmap(":/images/guh-logo.png");
-//    qCDebug(dcKodi) << "image size" << logo.size();
-    emit connectionStateChanged(true);
+    emit connectionStatusChanged();
 }
 
 void KodiConnection::onDisconnected()
 {
     qCDebug(dcKodi) << "disconnected from" << hostAddress().toString() << port();
     m_connected = false;
-    emit connectionStateChanged(false);
+    emit connectionStatusChanged();
 }
 
 void KodiConnection::onError(QAbstractSocket::SocketError socketError)
 {
-    qCWarning(dcKodi) << "socket error:" << socketError << m_socket->errorString();
+    if (connected()) {
+        qCWarning(dcKodi) << "socket error:" << socketError << m_socket->errorString();
+    }
 }
 
 void KodiConnection::readData()
 {
     QByteArray data = m_socket->readAll();
-
-    QJsonParseError error;
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
-
-    if(error.error != QJsonParseError::NoError) {
-        qCWarning(dcKodi) << "failed to parse JSON data:" << data << ":" << error.errorString();
-        return;
-    }
-    qCDebug(dcKodi) << "data received:" << jsonDoc.toJson();
-
     emit dataReady(data);
 }
 
-void KodiConnection::sendData(const QString &method, const QVariantMap &params)
+void KodiConnection::sendData(const QByteArray &message)
 {
-    QVariantMap package;
-    package.insert("id", m_id);
-    package.insert("method", method);
-    package.insert("params", params);
-    package.insert("jsonrpc", "2.0");
-    m_id++;
-
-    QJsonDocument jsonDoc = QJsonDocument::fromVariant(package);
-    qCDebug(dcKodi) << "sending data" << jsonDoc.toJson();
-
-    m_socket->write(jsonDoc.toJson());
+    m_socket->write(message);
 }
 

@@ -1,4 +1,4 @@
-25
+26
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -719,6 +719,7 @@
             "UnitRadiant",
             "UnitDegreeCelsius",
             "UnitDegreeKelvin",
+            "UnitMired",
             "UnitMilliBar",
             "UnitBar",
             "UnitPascal",

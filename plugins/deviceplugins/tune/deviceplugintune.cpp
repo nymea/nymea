@@ -25,6 +25,7 @@
 #include "deviceplugintune.h"
 #include "devicemanager.h"
 #include "plugininfo.h"
+#include "loggingcategories.h"
 
 DevicePluginTune::DevicePluginTune()
 {
@@ -151,11 +152,10 @@ void DevicePluginTune::tuneConnectionStatusChanged(const bool &connected)
 void DevicePluginTune::updateMood(const QVariantMap &message)
 {
     QVariantMap mood = message.value("mood").toMap();
-    qDebug () << QJsonDocument::fromVariant(message).toJson();
+    qCDebug(dcTune) << QJsonDocument::fromVariant(message).toJson();
     Device *device = deviceManager()->findConfiguredDevice(DeviceId(mood.value("deviceId").toString()));
     if (device) {
         QVariantMap states = mood.value("states").toMap();
-        //qDebug() << "======>" << device->name() << states.value("active").toBool() << states.value("value").toInt();
         device->setStateValue(activeStateTypeId, states.value("active").toBool());
         device->setStateValue(valueStateTypeId, states.value("value").toInt());
     }

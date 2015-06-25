@@ -71,7 +71,7 @@
     The \l{DeviceClass::SetupMethod}{setupMethod} describes the setup method of the \l{Device}.
     The detailed implementation of each \l{DeviceClass} can be found in the source code.
 
-    \note If a \l{StateType} has the parameter \tt{"writable": true}, an \l{ActionType} with the same uuid and \l{ParamType}{ParamTypes}
+    \note If a \l{StateType} has the parameter \tt{"writable": {...}}, an \l{ActionType} with the same uuid and \l{ParamType}{ParamTypes}
     will be created automatically.
 
     \quotefile plugins/deviceplugins/datetime/deviceplugindatetime.json
@@ -82,6 +82,7 @@
 #include "plugin/device.h"
 #include "devicemanager.h"
 #include "plugininfo.h"
+#include "loggingcategories.h"
 
 #include <QDebug>
 
@@ -110,7 +111,7 @@ DeviceManager::DeviceSetupStatus DevicePluginDateTime::setupDevice(Device *devic
 
     if(m_timeZone.isValid()){
         QDateTime zoneTime = QDateTime(QDate::currentDate(), QTime::currentTime(), m_timeZone).toLocalTime();
-        qDebug() << zoneTime.toLocalTime().date() << zoneTime.toLocalTime().time()  << QLocale::countryToString(m_timeZone.country());
+        qCDebug(dcDateTime) << zoneTime.toLocalTime().date() << zoneTime.toLocalTime().time()  << QLocale::countryToString(m_timeZone.country());
         m_timer->start();
 
         return DeviceManager::DeviceSetupStatusSuccess;

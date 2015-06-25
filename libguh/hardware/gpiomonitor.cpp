@@ -148,6 +148,7 @@
  */
 
 #include "gpiomonitor.h"
+#include "loggingcategories.h"
 
 /*! Constructs a \l{GpioMonitor} object with the given \a parent. */
 GpioMonitor::GpioMonitor(QObject *parent) :
@@ -246,12 +247,12 @@ void GpioMonitor::run()
                     emit changed(m_gpioList[i]->gpioNumber(), m_gpioList[i]->getValue());
 
                     if (retVal < 0) {
-                        qWarning() << "ERROR: poll failed";
+                        qCWarning(dcHardware) << "GpioMonitor poll failed";
                     }
                 }
             }
         } else if (ret < 0) {
-            qWarning() << "ERROR: poll failed: " << errno;
+            qCWarning(dcHardware) << "poll failed: " << errno;
         }
         m_gpioListMutex.unlock();
 

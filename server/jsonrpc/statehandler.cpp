@@ -21,6 +21,7 @@
 
 #include "statehandler.h"
 #include "guhcore.h"
+#include "loggingcategories.h"
 
 StateHandler::StateHandler(QObject *parent) :
     JsonHandler(parent)
@@ -44,6 +45,7 @@ QString StateHandler::name() const
 
 JsonReply* StateHandler::GetStateType(const QVariantMap &params) const
 {
+    qCDebug(dcJsonRpc) << "asked for state type" << params;
     StateTypeId stateTypeId(params.value("stateTypeId").toString());
     foreach (const DeviceClass &deviceClass, GuhCore::instance()->supportedDevices()) {
         foreach (const StateType &stateType, deviceClass.stateTypes()) {

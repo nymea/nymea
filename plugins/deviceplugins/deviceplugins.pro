@@ -18,6 +18,8 @@ SUBDIRS += elro         \
     unitec              \
     leynew              \
     tune                \
+    udpcommander        \
+    kodi                \
 
 boblight {
     SUBDIRS += boblight

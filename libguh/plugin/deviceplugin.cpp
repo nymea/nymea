@@ -137,6 +137,7 @@
 */
 
 #include "deviceplugin.h"
+#include "loggingcategories.h"
 
 #include "devicemanager.h"
 #include "hardware/radio433/radio433.h"
@@ -228,7 +229,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 QJsonObject st = stateTypesJson.toObject();
                 QStringList missingFields = verifyFields(QStringList() << "type" << "id" << "name", st);
                 if (!missingFields.isEmpty()) {
-                    qWarning() << "Skipping device class" << deviceClass.name() << "because of missing" << missingFields.join(", ") << "in stateTypes";
+                    qCWarning(dcDeviceManager) << "Skipping device class" << deviceClass.name() << "because of missing" << missingFields.join(", ") << "in stateTypes";
                     broken = true;
                     break;
                 }
@@ -242,15 +243,22 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 stateTypes.append(stateType);
 
                 // create ActionType if this StateType is writable
-                if (st.value("writable").toBool()) {
+                if (st.contains("writable")) {
                     ActionType actionType(st.value("id").toString());
                     actionType.setName("set " + st.value("name").toString());
                     // Note: fields already checked in StateType
                     ParamType paramType(st.value("name").toString(), t, st.value("defaultValue").toVariant());
-                    // states don't have allowed values
-                    // states don't have input types
+                    if (st.value("writable").toObject().contains("allowedValues")) {
+                        QVariantList allowedValues;
+                        foreach (const QJsonValue &allowedTypesJson, st.value("writable").toObject().value("allowedValues").toArray()) {
+                            allowedValues.append(allowedTypesJson.toVariant());
+                        }
+                        paramType.setAllowedValues(allowedValues);
+                    }
+                    paramType.setInputType(inputTypeStringToInputType(st.value("writable").toObject().value("inputType").toString()));
                     paramType.setUnit(unitStringToUnit(st.value("unit").toString()));
-                    paramType.setLimits(st.value("minValue").toVariant(), st.value("maxValue").toVariant());
+                    paramType.setLimits(st.value("writable").toObject().value("minValue").toVariant(),
+                                        st.value("writable").toObject().value("maxValue").toVariant());
                     actionType.setParamTypes(QList<ParamType>() << paramType);
                     actionTypes.append(actionType);
                 }
@@ -261,7 +269,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 QJsonObject at = actionTypesJson.toObject();
                 QStringList missingFields = verifyFields(QStringList() << "id" << "name", at);
                 if (!missingFields.isEmpty()) {
-                    qWarning() << "Skipping device class" << deviceClass.name() << "because of missing" << missingFields.join(", ") << "in actionTypes";
+                    qCWarning(dcDeviceManager) << "Skipping device class" << deviceClass.name() << "because of missing" << missingFields.join(", ") << "in actionTypes";
                     broken = true;
                     break;
                 }
@@ -278,7 +286,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 QJsonObject et = eventTypesJson.toObject();
                 QStringList missingFields = verifyFields(QStringList() << "id" << "name", et);
                 if (!missingFields.isEmpty()) {
-                    qWarning() << "Skipping device class" << deviceClass.name() << "because of missing" << missingFields.join(", ") << "in eventTypes";
+                    qCWarning(dcDeviceManager) << "Skipping device class" << deviceClass.name() << "because of missing" << missingFields.join(", ") << "in eventTypes";
                     broken = true;
                     break;
                 }
@@ -368,7 +376,7 @@ DeviceManager::DeviceSetupStatus DevicePlugin::confirmPairing(const PairingTrans
     Q_UNUSED(params)
     Q_UNUSED(secret)
 
-    qWarning() << "Plugin does not implement pairing.";
+    qCWarning(dcDeviceManager) << "Plugin does not implement pairing.";
     return DeviceManager::DeviceSetupStatusFailure;
 }
 
@@ -405,26 +413,7 @@ QList<ParamType> DevicePlugin::parseParamTypes(const QJsonArray &array) const
         }
         // set the input type if there is any
         if (pt.contains("inputType")) {
-            QString inputTypeString = pt.value("inputType").toString();
-            if (inputTypeString == "TextLine") {
-                paramType.setInputType(Types::InputTypeTextLine);
-            } else if (inputTypeString == "TextArea") {
-                paramType.setInputType(Types::InputTypeTextArea);
-            } else if (inputTypeString == "Password") {
-                paramType.setInputType(Types::InputTypePassword);
-            } else if (inputTypeString == "Search") {
-                paramType.setInputType(Types::InputTypeSearch);
-            } else if (inputTypeString == "Mail") {
-                paramType.setInputType(Types::InputTypeMail);
-            } else if (inputTypeString == "IPv4Address") {
-                paramType.setInputType(Types::InputTypeIPv4Address);
-            } else if (inputTypeString == "IPv6Address") {
-                paramType.setInputType(Types::InputTypeIPv6Address);
-            } else if (inputTypeString == "Url") {
-                paramType.setInputType(Types::InputTypeUrl);
-            } else if (inputTypeString == "MacAddress") {
-                paramType.setInputType(Types::InputTypeMacAddress);
-            }
+            paramType.setInputType(inputTypeStringToInputType(pt.value("inputType").toString()));
         }
 
         // set the unit if there is any
@@ -476,7 +465,7 @@ QVariant DevicePlugin::configValue(const QString &paramName) const
 DeviceManager::DeviceError DevicePlugin::setConfiguration(const ParamList &configuration)
 {
     foreach (const Param &param, configuration) {
-        qDebug() << "setting config" << param;
+        qCDebug(dcDeviceManager) << "setting config" << param;
         DeviceManager::DeviceError result = setConfigValue(param.name(), param.value());
         if (result != DeviceManager::DeviceErrorNoError) {
             return result;
@@ -492,18 +481,18 @@ DeviceManager::DeviceError DevicePlugin::setConfigValue(const QString &paramName
     foreach (const ParamType &paramType, configurationDescription()) {
         if (paramType.name() == paramName) {
             if (!value.canConvert(paramType.type())) {
-                qWarning() << QString("Wrong parameter type for param %1. Got %2. Expected %3.")
+                qCWarning(dcDeviceManager) << QString("Wrong parameter type for param %1. Got %2. Expected %3.")
                               .arg(paramName).arg(value.toString()).arg(QVariant::typeToName(paramType.type()));
                 return DeviceManager::DeviceErrorInvalidParameter;
             }
 
             if (paramType.maxValue().isValid() && value > paramType.maxValue()) {
-                qWarning() << QString("Value out of range for param %1. Got %2. Max: %3.")
+                qCWarning(dcDeviceManager) << QString("Value out of range for param %1. Got %2. Max: %3.")
                               .arg(paramName).arg(value.toString()).arg(paramType.maxValue().toString());
                 return DeviceManager::DeviceErrorInvalidParameter;
             }
             if (paramType.minValue().isValid() && value < paramType.minValue()) {
-                qWarning() << QString("Value out of range for param %1. Got: %2. Min: %3.")
+                qCWarning(dcDeviceManager) << QString("Value out of range for param %1. Got: %2. Min: %3.")
                               .arg(paramName).arg(value.toString()).arg(paramType.minValue().toString());
                 return DeviceManager::DeviceErrorInvalidParameter;
             }
@@ -512,7 +501,7 @@ DeviceManager::DeviceError DevicePlugin::setConfigValue(const QString &paramName
         }
     }
     if (!found) {
-        qWarning() << QString("Invalid parameter %1.").arg(paramName);
+        qCWarning(dcDeviceManager) << QString("Invalid parameter %1.").arg(paramName);
         return DeviceManager::DeviceErrorInvalidParameter;
     }
     for (int i = 0; i < m_config.count(); i++) {
@@ -588,10 +577,10 @@ bool DevicePlugin::transmitData(int delay, QList<int> rawData, int repetitions)
     case DeviceManager::HardwareResourceRadio433:
         return deviceManager()->m_radio433->sendData(delay, rawData, repetitions);
     case DeviceManager::HardwareResourceRadio868:
-        qDebug() << "Radio868 not connected yet";
+        qCDebug(dcDeviceManager) << "Radio868 not connected yet";
         return false;
     default:
-        qWarning() << "Unknown harware type. Cannot send.";
+        qCWarning(dcDeviceManager) << "Unknown harware type. Cannot send.";
     }
     return false;
 }
@@ -608,7 +597,7 @@ QNetworkReply *DevicePlugin::networkManagerGet(const QNetworkRequest &request)
     if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
         return deviceManager()->m_networkManager->get(pluginId(), request);
     } else {
-        qWarning() << "ERROR: network manager resource missing for plugin " << pluginName();
+        qCWarning(dcDeviceManager) << "network manager resource missing for plugin " << pluginName();
     }
     return nullptr;
 }
@@ -625,7 +614,7 @@ QNetworkReply *DevicePlugin::networkManagerPost(const QNetworkRequest &request, 
     if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
         return deviceManager()->m_networkManager->post(pluginId(), request, data);
     } else {
-        qWarning() << "ERROR: network manager resource missing for plugin " << pluginName();
+        qCWarning(dcDeviceManager) << "network manager resource missing for plugin " << pluginName();
     }
     return nullptr;
 }
@@ -641,7 +630,7 @@ QNetworkReply *DevicePlugin::networkManagerPut(const QNetworkRequest &request, c
     if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
         return deviceManager()->m_networkManager->put(pluginId(), request, data);
     } else {
-        qWarning() << "ERROR: network manager resource missing for plugin " << pluginName();
+        qCWarning(dcDeviceManager) << "network manager resource missing for plugin " << pluginName();
     }
     return nullptr;
 }
@@ -695,6 +684,8 @@ Types::Unit DevicePlugin::unitStringToUnit(const QString &unitString) const
         return Types::UnitDegreeCelsius;
     } else if (unitString == "DegreeKelvin") {
         return Types::UnitDegreeKelvin;
+    } else if (unitString == "Mired") {
+        return Types::UnitMired;
     } else if (unitString == "MilliBar") {
         return Types::UnitMilliBar;
     } else if (unitString == "Bar") {
@@ -748,7 +739,31 @@ Types::Unit DevicePlugin::unitStringToUnit(const QString &unitString) const
     } else if (unitString == "Dollar") {
         return Types::UnitDollar;
     } else {
-        qWarning() << "Could not parse unit:" << unitString << "in plugin" << this->pluginName();
+        qCWarning(dcDeviceManager) << "Could not parse unit:" << unitString << "in plugin" << this->pluginName();
     }
     return Types::UnitNone;
+}
+
+Types::InputType DevicePlugin::inputTypeStringToInputType(const QString &inputType) const
+{
+    if (inputType == "TextLine") {
+        return Types::InputTypeTextLine;
+    } else if (inputType == "TextArea") {
+        return Types::InputTypeTextArea;
+    } else if (inputType == "Password") {
+        return Types::InputTypePassword;
+    } else if (inputType == "Search") {
+        return Types::InputTypeSearch;
+    } else if (inputType == "Mail") {
+        return Types::InputTypeMail;
+    } else if (inputType == "IPv4Address") {
+        return Types::InputTypeIPv4Address;
+    } else if (inputType == "IPv6Address") {
+        return Types::InputTypeIPv6Address;
+    } else if (inputType == "Url") {
+        return Types::InputTypeUrl;
+    } else if (inputType == "MacAddress") {
+        return Types::InputTypeMacAddress;
+    }
+    return Types::InputTypeNone;
 }

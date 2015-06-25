@@ -44,7 +44,7 @@
     The \l{DeviceClass::SetupMethod}{setupMethod} describes the setup method of the \l{Device}.
     The detailed implementation of each \l{DeviceClass} can be found in the source code.
 
-    \note If a \l{StateType} has the parameter \tt{"writable": true}, an \l{ActionType} with the same uuid and \l{ParamType}{ParamTypes}
+    \note If a \l{StateType} has the parameter \tt{"writable": {...}}, an \l{ActionType} with the same uuid and \l{ParamType}{ParamTypes}
     will be created automatically.
 
     \quotefile plugins/deviceplugins/openweathermap/devicepluginopenweathermap.json
@@ -56,6 +56,7 @@
 #include "plugin/device.h"
 #include "devicemanager.h"
 #include "plugininfo.h"
+#include "loggingcategories.h"
 
 #include <QDebug>
 #include <QJsonDocument>
@@ -95,13 +96,6 @@ DeviceManager::DeviceSetupStatus DevicePluginOpenweathermap::setupDevice(Device 
         return DeviceManager::DeviceSetupStatusFailure;
     }
 
-    //    foreach (Device *d, myDevices()) {
-    //        if(d->paramValue("id").toString() == device->paramValue("id").toString()){
-    //            qWarning() << QString("ERROR: Location " + d->paramValue("location").toString() + " with id " +  d->paramValue("id").toString() + ") " + " already added: ");
-    //            return DeviceManager::DeviceSetupStatusFailure;
-    //        }
-    //    }
-
     device->setName("Weather from OpenWeatherMap (" + device->paramValue("location").toString() + ")");
     update(device);
 
@@ -136,7 +130,7 @@ void DevicePluginOpenweathermap::deviceRemoved(Device *device)
 void DevicePluginOpenweathermap::networkManagerReplyReady(QNetworkReply *reply)
 {
     if (reply->error()) {
-        qWarning() << "ERROR: OpenWeatherMap reply error: " << reply->errorString();
+        qCWarning(dcOpenweathermap) << "OpenWeatherMap reply error: " << reply->errorString();
     }
 
     if (m_autodetectionReplies.contains(reply)) {
@@ -225,7 +219,7 @@ void DevicePluginOpenweathermap::processAutodetectResponse(QByteArray data)
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
 
     if(error.error != QJsonParseError::NoError) {
-        qWarning() << "failed to parse data" << data << ":" << error.errorString();
+        qCWarning(dcOpenweathermap) << "failed to parse data" << data << ":" << error.errorString();
     }
 
     // search by geographic coordinates
@@ -242,15 +236,15 @@ void DevicePluginOpenweathermap::processAutodetectResponse(QByteArray data)
     if (dataMap.contains("lon") && dataMap.contains("lat")) {
         m_longitude = dataMap.value("lon").toDouble();
         m_latitude = dataMap.value("lat").toDouble();
-        qDebug() << "----------------------------------------";
-        qDebug() << "Autodetection of location: ";
-        qDebug() << "----------------------------------------";
-        qDebug() << "       name:" << m_cityName;
-        qDebug() << "    country:" << m_country;
-        qDebug() << "     WAN IP:" << m_wanIp.toString();
-        qDebug() << "   latitude:" << m_latitude;
-        qDebug() << "  longitude:" << m_longitude;
-        qDebug() << "----------------------------------------";
+        qCDebug(dcOpenweathermap) << "----------------------------------------";
+        qCDebug(dcOpenweathermap) << "Autodetection of location: ";
+        qCDebug(dcOpenweathermap) << "----------------------------------------";
+        qCDebug(dcOpenweathermap) << "       name:" << m_cityName;
+        qCDebug(dcOpenweathermap) << "    country:" << m_country;
+        qCDebug(dcOpenweathermap) << "     WAN IP:" << m_wanIp.toString();
+        qCDebug(dcOpenweathermap) << "   latitude:" << m_latitude;
+        qCDebug(dcOpenweathermap) << "  longitude:" << m_longitude;
+        qCDebug(dcOpenweathermap) << "----------------------------------------";
         searchGeoLocation(m_latitude, m_longitude);
     }
 }
@@ -261,7 +255,7 @@ void DevicePluginOpenweathermap::processSearchResponse(QByteArray data)
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
 
     if(error.error != QJsonParseError::NoError) {
-        qWarning() << "failed to parse data" << data << ":" << error.errorString();
+        qCWarning(dcOpenweathermap) << "failed to parse data" << data << ":" << error.errorString();
     }
 
     QVariantMap dataMap = jsonDoc.toVariant().toMap();
@@ -286,7 +280,7 @@ void DevicePluginOpenweathermap::processGeoSearchResponse(QByteArray data)
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
 
     if(error.error != QJsonParseError::NoError) {
-        qWarning() << "failed to parse data" << data << ":" << error.errorString();
+        qCWarning(dcOpenweathermap) << "failed to parse data" << data << ":" << error.errorString();
     }
 
     QVariantMap dataMap = jsonDoc.toVariant().toMap();
@@ -333,7 +327,7 @@ void DevicePluginOpenweathermap::processWeatherData(const QByteArray &data, Devi
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
 
     if (error.error != QJsonParseError::NoError) {
-        qWarning() << "failed to parse weather data for device " << device->name() << ": " << data << ":" << error.errorString();
+        qCWarning(dcOpenweathermap) << "failed to parse weather data for device " << device->name() << ": " << data << ":" << error.errorString();
         return;
     }
 

@@ -44,7 +44,7 @@
     The \l{DeviceClass::SetupMethod}{setupMethod} describes the setup method of the \l{Device}.
     The detailed implementation of each \l{DeviceClass} can be found in the source code.
 
-    \note If a \l{StateType} has the parameter \tt{"writable": true}, an \l{ActionType} with the same uuid and \l{ParamType}{ParamTypes}
+    \note If a \l{StateType} has the parameter \tt{"writable": {...}}, an \l{ActionType} with the same uuid and \l{ParamType}{ParamTypes}
     will be created automatically.
 
     \quotefile plugins/deviceplugins/unitec/devicepluginunitec.json
@@ -53,6 +53,7 @@
 #include "devicepluginunitec.h"
 #include "devicemanager.h"
 #include "plugininfo.h"
+#include "loggingcategories.h"
 
 #include <QDebug>
 #include <QStringList>
@@ -74,7 +75,7 @@ DeviceManager::DeviceSetupStatus DevicePluginUnitec::setupDevice(Device *device)
 
     foreach (Device* d, myDevices()) {
         if (d->paramValue("Channel").toString() == device->paramValue("Channel").toString()) {
-            qWarning() << "ERROR: Unitec switch with channel " << device->paramValue("Channel").toString() << "already added.";
+            qCWarning(dcRF433) << "Unitec switch with channel " << device->paramValue("Channel").toString() << "already added.";
             return DeviceManager::DeviceSetupStatusFailure;
         }
     }
@@ -133,10 +134,10 @@ DeviceManager::DeviceError DevicePluginUnitec::executeAction(Device *device, con
     // =======================================
     // send data to hardware resource
     if(transmitData(delay, rawData)){
-        qDebug() << "transmitted" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
+        qCDebug(dcRF433) << "transmitted" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
         return DeviceManager::DeviceErrorNoError;
     }else{
-        qDebug() << "could not transmitt" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
+        qCWarning(dcRF433) << "could not transmitt" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
         return DeviceManager::DeviceErrorHardwareNotAvailable;
     }
 }

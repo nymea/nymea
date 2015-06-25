@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -18,46 +18,45 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HUEBRIDGECONNECTION_H
-#define HUEBRIDGECONNECTION_H
+#ifndef LOGGINGCATEGORYS_H
+#define LOGGINGCATEGORYS_H
 
-#include <QObject>
-#include <QHostAddress>
-#include <QNetworkAccessManager>
-#include <QPointer>
+#include <QLoggingCategory>
 
-class Caller
-{
-public:
-    QPointer<QObject> obj;
-    QString method;
-    int id;
-};
+// Core / libguh
+Q_DECLARE_LOGGING_CATEGORY(dcApplication)
+Q_DECLARE_LOGGING_CATEGORY(dcDeviceManager)
+Q_DECLARE_LOGGING_CATEGORY(dcRuleEngine)
+Q_DECLARE_LOGGING_CATEGORY(dcHardware)
+Q_DECLARE_LOGGING_CATEGORY(dcConnection)
+Q_DECLARE_LOGGING_CATEGORY(dcJsonRpc)
+Q_DECLARE_LOGGING_CATEGORY(dcLogEngine)
 
-class HueBridgeConnection : public QObject
-{
-    Q_OBJECT
-public:
-    explicit HueBridgeConnection(QObject *parent = 0);
+// Plugins
 
-    int createUser(const QHostAddress &address, const QString &username);
+#ifdef boblight
+Q_DECLARE_LOGGING_CATEGORY(dcBoblight)
+#endif
 
-    int get(const QHostAddress &address, const QString &username, const QString &path, QObject *caller, const QString &methodName);
-    int put(const QHostAddress &address, const QString &username, const QString &path, const QVariantMap &data, QObject *caller, const QString &methodName);
+Q_DECLARE_LOGGING_CATEGORY(dcCommandLauncher)
+Q_DECLARE_LOGGING_CATEGORY(dcRF433)
+Q_DECLARE_LOGGING_CATEGORY(dcDateTime)
+Q_DECLARE_LOGGING_CATEGORY(dcEQ3)
+Q_DECLARE_LOGGING_CATEGORY(dcLgSmartTv)
+Q_DECLARE_LOGGING_CATEGORY(dcLircd)
+Q_DECLARE_LOGGING_CATEGORY(dcMailNotification)
+Q_DECLARE_LOGGING_CATEGORY(dcMock)
+Q_DECLARE_LOGGING_CATEGORY(dcOpenweathermap)
+Q_DECLARE_LOGGING_CATEGORY(dcPhilipsHue)
+Q_DECLARE_LOGGING_CATEGORY(dcTune)
+Q_DECLARE_LOGGING_CATEGORY(dcUdpCommander)
+Q_DECLARE_LOGGING_CATEGORY(dcWakeOnLan)
+Q_DECLARE_LOGGING_CATEGORY(dcWemo)
+Q_DECLARE_LOGGING_CATEGORY(dcWifiDetector)
+Q_DECLARE_LOGGING_CATEGORY(dcKodi)
 
-private slots:
-    void slotCreateUserFinished();
-    void slotGetFinished();
 
-signals:
-    void createUserFinished(int id, const QVariantMap &map);
-    void getFinished(int id, const QVariantMap &map);
 
-private:
-    QNetworkAccessManager *m_nam;
-    int m_requestCounter;
-    QHash<QNetworkReply*, int> m_createUserMap;
-    QHash<QNetworkReply*, Caller> m_requestMap;
-};
 
-#endif // HUEBRIDGECONNECTION_H
+
+#endif // LOGGINGCATEGORYS_H

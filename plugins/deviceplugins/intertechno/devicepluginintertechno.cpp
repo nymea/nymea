@@ -38,7 +38,7 @@
     The \l{DeviceClass::SetupMethod}{setupMethod} describes the setup method of the \l{Device}.
     The detailed implementation of each \l{DeviceClass} can be found in the source code.
 
-    \note If a \l{StateType} has the parameter \tt{"writable": true}, an \l{ActionType} with the same uuid and \l{ParamType}{ParamTypes}
+    \note If a \l{StateType} has the parameter \tt{"writable": {...}}, an \l{ActionType} with the same uuid and \l{ParamType}{ParamTypes}
     will be created automatically.
 
     \quotefile plugins/deviceplugins/intertechno/devicepluginintertechno.json
@@ -49,6 +49,7 @@
 #include "plugin/device.h"
 #include "devicemanager.h"
 #include "plugininfo.h"
+#include "loggingcategories.h"
 
 #include <QDebug>
 #include <QStringList>
@@ -180,10 +181,10 @@ DeviceManager::DeviceError DevicePluginIntertechno::executeAction(Device *device
     // =======================================
     // send data to hardware resource
     if (transmitData(delay, rawData)) {
-        qDebug() << "transmitted" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
+        qCDebug(dcRF433) << "transmitted" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
         return DeviceManager::DeviceErrorNoError;
     } else {
-        qWarning() << "ERROR: could not transmitt" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
+        qCWarning(dcRF433) << "could not transmitt" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
         return DeviceManager::DeviceErrorHardwareNotAvailable;
     }
 }
@@ -383,6 +384,6 @@ void DevicePluginIntertechno::radioData(const QList<int> &rawData)
         return;
     }
 
-    qDebug() << "INTERTECHNO: family code = " << familyCode << "button code =" << buttonCode << power;
+    qCDebug(dcRF433) << "Intertechno: family code = " << familyCode << "button code =" << buttonCode << power;
 
 }

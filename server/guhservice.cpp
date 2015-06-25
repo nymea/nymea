@@ -20,6 +20,7 @@
 
 #include <unistd.h>
 #include "guhservice.h"
+#include "loggingcategories.h"
 
 GuhService::GuhService(int argc, char **argv):
     QtService<QCoreApplication>(argc, argv, "guh daemon")

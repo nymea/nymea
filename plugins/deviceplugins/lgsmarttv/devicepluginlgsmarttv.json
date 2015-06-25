@@ -47,7 +47,7 @@
                     "stateTypes": [
                         {
                             "id": "b056c36b-df87-4177-8d5d-1e7c1e8cdc7a",
-                            "idName": "tvReachable",
+                            "idName": "reachable",
                             "name": "reachable",
                             "type": "bool",
                             "defaultValue": false
@@ -64,6 +64,7 @@
                             "idName": "tvVolumeLevel",
                             "name": "volume level",
                             "type": "int",
+                            "unit": "Percentage",
                             "defaultValue": 0
                         },
                         {
@@ -77,13 +78,15 @@
                             "id": "84c86670-77c7-4fc6-9e23-abca066e76aa",
                             "idName": "tvChannelType",
                             "name": "tv channel type",
-                            "type": "QString"
+                            "type": "QString",
+                            "defaultValue": "-"
                         },
                         {
                             "id": "265dc5f7-3f4d-4002-a6fe-2a53986bcf1d",
                             "idName": "tvChannelName",
                             "name": "channel name",
-                            "type": "QString"
+                            "type": "QString",
+                            "defaultValue": "-"
                         },
                         {
                             "id": "881629a3-4ce2-42ba-8ce6-10d90c383799",
@@ -96,7 +99,8 @@
                             "id": "3f53e52e-1ad7-40e7-8080-76908e720cac",
                             "idName": "tvProgramName",
                             "name": "program name",
-                            "type": "QString"
+                            "type": "QString",
+                            "defaultValue": "-"
                         },
                         {
                             "id": "e895017a-139f-410c-bfb2-4d008104e164",
@@ -109,7 +113,8 @@
                             "id": "58b734ec-2269-4c57-99e1-e1eeee401053",
                             "idName": "tvInputSourceLabelName",
                             "name": "input source label",
-                            "type": "QString"
+                            "type": "QString",
+                            "defaultValue": "-"
                         }
                     ],
                     "actionTypes": [

@@ -35,13 +35,12 @@
 
 #include "plugin/deviceplugin.h"
 #include "tveventhandler.h"
-#include "network/upnpdiscovery/upnpdevice.h"
 
-class TvDevice : public UpnpDevice
+class TvDevice : public QObject
 {
     Q_OBJECT
 public:
-    explicit TvDevice(QObject *parent = 0, UpnpDeviceDescriptor upnpDeviceDescriptor = UpnpDeviceDescriptor());
+    explicit TvDevice(const QHostAddress &hostAddress, const int &port, QObject *parent = 0);
 
     enum RemoteKey{
         Power           = 1,
@@ -116,10 +115,22 @@ public:
     void setKey(const QString &key);
     QString key() const;
 
-    bool paired() const;
+    void setHostAddress(const QHostAddress &hostAddress);
+    QHostAddress hostAddress() const;
+
+    void setPort(const int &port);
+    int port() const;
+
+    void setUuid(const QString &uuid);
+    QString uuid() const;
 
     // States
-    bool isReachable() const;
+    void setPaired(const bool &paired);
+    bool paired() const;
+
+    void setReachable(const bool &reachable);
+    bool reachable() const;
+
     bool is3DMode() const;
     int volumeLevel() const;
     bool mute() const;
@@ -130,55 +141,45 @@ public:
     int inputSourceIndex() const;
     QString inputSourceLabelName() const;
 
-    // public actions
-    void showPairingKey();
-    void requestPairing();
-    void endPairing();
-    void sendCommand(TvDevice::RemoteKey key, ActionId actionId);
-    void setupEventHandler();
-    void refresh();
+    // other methods
+    static QPair<QNetworkRequest, QByteArray> createDisplayKeyRequest(const QHostAddress &host, const int &port);
+    static QPair<QNetworkRequest, QByteArray> createPairingRequest(const QHostAddress &host, const int &port, const QString &key);
+    static QPair<QNetworkRequest, QByteArray> createEndPairingRequest(const QUrl &url);
+    static QPair<QNetworkRequest, QByteArray> createEndPairingRequest(const QHostAddress &host, const int &port);
+    QPair<QNetworkRequest, QByteArray> createPressButtonRequest(const TvDevice::RemoteKey &key);
+
+    QNetworkRequest createVolumeInformationRequest();
+    QNetworkRequest createChannelInformationRequest();
+    void onVolumeInformationUpdate(const QByteArray &data);
+    void onChannelInformationUpdate(const QByteArray &data);
 
 private:
-    QString m_key;
-    bool m_pairingStatus;
-
-    // States
-    bool m_is3DMode;
-    bool m_reachable;
-    int m_volumeLevel;
-    bool m_mute;
-    QString m_channelType;
-    QString m_channelName;
-    int m_channelNumber;
-    QString m_programName;
-    int m_inputSourceIndex;
-    QString m_inputSourceLabel;
-
-    ActionId m_actionId;
-
-    QNetworkAccessManager *m_manager;
-    QNetworkReply *m_showKeyReplay;
-    QNetworkReply *m_requestPairingReplay;
-    QNetworkReply *m_finishingPairingReplay;
-    QNetworkReply *m_sendCommandReplay;
-    QNetworkReply *m_queryVolumeInformationReplay;
-    QNetworkReply *m_queryChannelInformationReplay;
-
     TvEventHandler *m_eventHandler;
 
-    QString printXmlData(QByteArray data);
-    void queryVolumeInformation();
-    void queryChannelInformation();
-    void parseVolumeInformation(const QByteArray &data);
-    void parseChannelInformation(const QByteArray &data);
+    QHostAddress m_hostAddress;
+    int m_port;
+    QString m_uuid;
+    QString m_key;
+
+    // States
+    bool m_paired;
+    bool m_reachable;
+    bool m_is3DMode;
+    bool m_mute;
+    int m_volumeLevel;
+    int m_inputSourceIndex;
+    int m_channelNumber;
+    QString m_channelType;
+    QString m_channelName;
+    QString m_programName;
+    QString m_inputSourceLabel;
+
+    QString printXmlData(const QByteArray &data);
 
 signals:
-    void pairingFinished(const bool &success);
-    void statusChanged();
-    void sendCommandFinished(const bool &succeeded, const ActionId &actionId);
+    void stateChanged();
 
 private slots:
-    void replyFinished(QNetworkReply *reply);
     void eventOccured(const QByteArray &data);
 
 };

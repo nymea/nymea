@@ -35,29 +35,20 @@ class TvEventHandler : public QTcpServer
 {
     Q_OBJECT
 public:
-    explicit TvEventHandler(QObject *parent = 0, QHostAddress host = QHostAddress(), int port = 8080);
+    explicit TvEventHandler(const QHostAddress &host, const int &port = 8080, QObject *parent = 0);
     void incomingConnection(qintptr socket) override;
 
 private:
     QHostAddress m_host;
     int m_port;
-    bool m_disabled;
-
     bool m_expectingData;
-
-    QNetworkAccessManager *m_manager;
 
 signals:
     void eventOccured(const QByteArray &path);
-    void byebyeEvent();
 
 private slots:
     void readClient();
-    void discardClient();
-
-public slots:
-    void enable();
-    void disable();
+    void onDisconnected();
 
 };
 

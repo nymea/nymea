@@ -21,16 +21,21 @@
 #include "tvdevice.h"
 #include "loggingcategories.h"
 
-TvDevice::TvDevice(QObject *parent, UpnpDeviceDescriptor upnpDeviceDescriptor) :
-    UpnpDevice(parent, upnpDeviceDescriptor)
+TvDevice::TvDevice(const QHostAddress &hostAddress, const int &port, QObject *parent) :
+    QObject(parent),
+    m_hostAddress(hostAddress),
+    m_port(port),
+    m_paired(false),
+    m_reachable(false),
+    m_is3DMode(false),
+    m_mute(false),
+    m_volumeLevel(-1),
+    m_inputSourceIndex(-1),
+    m_channelNumber(-1)
 {
-    m_manager = new QNetworkAccessManager(this);
+    m_eventHandler = new TvEventHandler(hostAddress, port, this);
 
-    m_key = "0";
-    m_pairingStatus = false;
-    m_reachable = false;
-
-    connect(m_manager, &QNetworkAccessManager::finished, this, &TvDevice::replyFinished);
+    connect(m_eventHandler, &TvEventHandler::eventOccured, this, &TvDevice::eventOccured);
 }
 
 void TvDevice::setKey(const QString &key)
@@ -43,14 +48,60 @@ QString TvDevice::key() const
     return m_key;
 }
 
-bool TvDevice::isReachable() const
+void TvDevice::setHostAddress(const QHostAddress &hostAddress)
 {
-    return m_reachable;
+    m_hostAddress = hostAddress;
+}
+
+QHostAddress TvDevice::hostAddress() const
+{
+    return m_hostAddress;
+}
+
+void TvDevice::setPort(const int &port)
+{
+    m_port = port;
+}
+
+int TvDevice::port() const
+{
+    return m_port;
+}
+
+void TvDevice::setUuid(const QString &uuid)
+{
+    m_uuid = uuid;
+}
+
+QString TvDevice::uuid() const
+{
+    return m_uuid;
+}
+
+void TvDevice::setPaired(const bool &paired)
+{
+    if (m_paired != paired) {
+        m_paired = paired;
+        stateChanged();
+    }
 }
 
 bool TvDevice::paired() const
 {
-    return m_pairingStatus;
+    return m_paired;
+}
+
+void TvDevice::setReachable(const bool &reachable)
+{
+    if (m_reachable != reachable) {
+        m_reachable = reachable;
+        emit stateChanged();
+    }
+}
+
+bool TvDevice::reachable() const
+{
+    return m_reachable;
 }
 
 bool TvDevice::is3DMode() const
@@ -98,42 +149,45 @@ QString TvDevice::inputSourceLabelName() const
     return m_inputSourceLabel;
 }
 
-void TvDevice::showPairingKey()
+QPair<QNetworkRequest, QByteArray> TvDevice::createDisplayKeyRequest(const QHostAddress &host, const int &port)
 {
-    QString urlString = "http://" + hostAddress().toString() + ":" + QString::number(port()) + "/udap/api/pairing";
-
+    QString urlString = "http://" + host.toString() + ":" + QString::number(port) + "/udap/api/pairing";
     QNetworkRequest request;
     request.setUrl(QUrl(urlString));
     request.setHeader(QNetworkRequest::ContentTypeHeader,QVariant("text/xml; charset=utf-8"));
     request.setHeader(QNetworkRequest::UserAgentHeader,QVariant("UDAP/2.0"));
 
     QByteArray data = "<?xml version=\"1.0\" encoding=\"utf-8\"?><envelope><api type=\"pairing\"> <name>showKey</name></api></envelope>";
-
-    m_showKeyReplay = m_manager->post(request,data);
+    return QPair<QNetworkRequest, QByteArray>(request, data);
 }
 
-void TvDevice::requestPairing()
+QPair<QNetworkRequest, QByteArray> TvDevice::createPairingRequest(const QHostAddress &host, const int &port, const QString &key)
 {
-    if(m_key.isNull()){
-        emit pairingFinished(false);
-    }
-
-    QString urlString = "http://" + hostAddress().toString()  + ":" + QString::number(port()) + "/udap/api/pairing";
-
+    QString urlString = "http://" + host.toString() + ":" + QString::number(port) + "/udap/api/pairing";
     QNetworkRequest request;
     request.setUrl(QUrl(urlString));
     request.setHeader(QNetworkRequest::ContentTypeHeader,QVariant("text/xml; charset=utf-8"));
     request.setHeader(QNetworkRequest::UserAgentHeader,QVariant("UDAP/2.0 guh"));
 
-    QByteArray data = "<?xml version=\"1.0\" encoding=\"utf-8\"?><envelope><api type=\"pairing\"><name>hello</name><value>" + m_key.toUtf8() + "</value><port>8080</port></api></envelope>";
-
-    m_requestPairingReplay = m_manager->post(request,data);
+    QByteArray data = "<?xml version=\"1.0\" encoding=\"utf-8\"?><envelope><api type=\"pairing\"><name>hello</name><value>" + key.toUtf8() + "</value><port>8080</port></api></envelope>";
+    return QPair<QNetworkRequest, QByteArray>(request, data);
 }
 
-void TvDevice::endPairing()
+QPair<QNetworkRequest, QByteArray> TvDevice::createEndPairingRequest(const QUrl &url)
 {
-    QString urlString = "http://" + hostAddress().toString()  + ":" + QString::number(port()) + "/udap/api/pairing";
+    QNetworkRequest request;
+    request.setUrl(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader,QVariant("text/xml; charset=utf-8"));
+    request.setHeader(QNetworkRequest::UserAgentHeader,QVariant("UDAP/2.0 guh"));
+    request.setRawHeader("Connection", "Close");
 
+    QByteArray data = "<?xml version=\"1.0\" encoding=\"utf-8\"?><envelope><api type=\"pairing\"><name>byebye</name><port>8080</port></api></envelope>";
+    return QPair<QNetworkRequest, QByteArray>(request, data);
+}
+
+QPair<QNetworkRequest, QByteArray> TvDevice::createEndPairingRequest(const QHostAddress &host, const int &port)
+{
+    QString urlString = "http://" + host.toString() + ":" + QString::number(port) + "/udap/api/pairing";
     QNetworkRequest request;
     request.setUrl(QUrl(urlString));
     request.setHeader(QNetworkRequest::ContentTypeHeader,QVariant("text/xml; charset=utf-8"));
@@ -141,81 +195,49 @@ void TvDevice::endPairing()
     request.setRawHeader("Connection", "Close");
 
     QByteArray data = "<?xml version=\"1.0\" encoding=\"utf-8\"?><envelope><api type=\"pairing\"><name>byebye</name><port>8080</port></api></envelope>";
-
-    m_finishingPairingReplay = m_manager->post(request,data);
+    return QPair<QNetworkRequest, QByteArray>(request, data);
 }
 
-
-void TvDevice::sendCommand(TvDevice::RemoteKey key, ActionId actionId)
-{
-    m_actionId = actionId;
-
-    if(!m_pairingStatus) {
-        requestPairing();
-        return;
-    }
-
-    QString urlString = "http://" + hostAddress().toString()  + ":" + QString::number(port()) + "/udap/api/command";
-
-    QByteArray data;
-    data.append("<?xml version=\"1.0\" encoding=\"utf-8\"?><envelope><api type=\"command\"><name>HandleKeyInput</name><value>");
-    data.append(QString::number(key).toUtf8());
-    data.append("</value></api></envelope>");
-
-    QNetworkRequest request;
-    request.setUrl(QUrl(urlString));
-    request.setHeader(QNetworkRequest::ContentTypeHeader,QVariant("text/xml; charset=utf-8"));
-    request.setHeader(QNetworkRequest::UserAgentHeader,QVariant("UDAP/2.0 guh"));
-
-    m_sendCommandReplay = m_manager->post(request,data);
-}
-
-void TvDevice::setupEventHandler()
-{
-    qCDebug(dcLgSmartTv) << "set up event handler " << hostAddress().toString() << port();
-    m_eventHandler = new TvEventHandler(this, hostAddress(), port());
-    connect(m_eventHandler, &TvEventHandler::eventOccured, this, &TvDevice::eventOccured);
-}
-
-void TvDevice::refresh()
-{
-    if(paired()) {
-        queryChannelInformation();
-        queryVolumeInformation();
-    }else{
-        requestPairing();
-    }
-}
-
-void TvDevice::queryVolumeInformation()
+QNetworkRequest TvDevice::createVolumeInformationRequest()
 {
     QString urlString = "http://" + hostAddress().toString()  + ":" + QString::number(port()) + "/udap/api/data?target=volume_info";
-
     QNetworkRequest request;
     request.setUrl(QUrl(urlString));
     request.setHeader(QNetworkRequest::ContentTypeHeader,QVariant("text/xml"));
     request.setHeader(QNetworkRequest::UserAgentHeader,QVariant("UDAP/2.0"));
     request.setRawHeader("Connection", "Close");
-
-    m_queryVolumeInformationReplay = m_manager->get(request);
+    return request;
 }
 
-void TvDevice::queryChannelInformation()
+QNetworkRequest TvDevice::createChannelInformationRequest()
 {
     QString urlString = "http://" + hostAddress().toString()  + ":" + QString::number(port()) + "/udap/api/data?target=cur_channel";
-
-    QNetworkRequest deviceRequest;
-    deviceRequest.setUrl(QUrl(urlString));
-    deviceRequest.setHeader(QNetworkRequest::ContentTypeHeader,QVariant("text/xml"));
-    deviceRequest.setHeader(QNetworkRequest::UserAgentHeader,QVariant("UDAP/2.0"));
-    deviceRequest.setRawHeader("Connection", "Close");
-
-    m_queryChannelInformationReplay = m_manager->get(deviceRequest);
+    QNetworkRequest request;
+    request.setUrl(QUrl(urlString));
+    request.setHeader(QNetworkRequest::ContentTypeHeader,QVariant("text/xml"));
+    request.setHeader(QNetworkRequest::UserAgentHeader,QVariant("UDAP/2.0"));
+    request.setRawHeader("Connection", "Close");
+    return request;
 }
 
-void TvDevice::parseVolumeInformation(const QByteArray &data)
+QPair<QNetworkRequest, QByteArray> TvDevice::createPressButtonRequest(const TvDevice::RemoteKey &key)
 {
-    qCDebug(dcLgSmartTv) << printXmlData(data);
+    QString urlString = "http://" + hostAddress().toString()  + ":" + QString::number(port()) + "/udap/api/command";
+    QNetworkRequest request;
+    request.setUrl(QUrl(urlString));
+    request.setHeader(QNetworkRequest::ContentTypeHeader,QVariant("text/xml; charset=utf-8"));
+    request.setHeader(QNetworkRequest::UserAgentHeader,QVariant("UDAP/2.0 guh"));
+
+    QByteArray data;
+    data.append("<?xml version=\"1.0\" encoding=\"utf-8\"?><envelope><api type=\"command\"><name>HandleKeyInput</name><value>");
+    data.append(QString::number(key).toUtf8());
+    data.append("</value></api></envelope>");
+    return QPair<QNetworkRequest, QByteArray>(request, data);
+}
+
+void TvDevice::onVolumeInformationUpdate(const QByteArray &data)
+{
+    //qCDebug(dcLgSmartTv) << printXmlData(data);
     QXmlStreamReader xml(data);
 
     while(!xml.atEnd() && !xml.hasError()) {
@@ -228,12 +250,12 @@ void TvDevice::parseVolumeInformation(const QByteArray &data)
             m_volumeLevel = QVariant(xml.readElementText()).toInt();
         }
     }
-    emit statusChanged();
+    emit stateChanged();
 }
 
-void TvDevice::parseChannelInformation(const QByteArray &data)
+void TvDevice::onChannelInformationUpdate(const QByteArray &data)
 {
-    qCDebug(dcLgSmartTv) << printXmlData(data);
+    //qCDebug(dcLgSmartTv) << printXmlData(data);
     QXmlStreamReader xml(data);
 
     while(!xml.atEnd() && !xml.hasError()) {
@@ -258,10 +280,10 @@ void TvDevice::parseChannelInformation(const QByteArray &data)
             m_inputSourceLabel = xml.readElementText();
         }
     }
-    emit statusChanged();
+    emit stateChanged();
 }
 
-QString TvDevice::printXmlData(QByteArray data)
+QString TvDevice::printXmlData(const QByteArray &data)
 {
     QString xmlOut;
     QXmlStreamReader reader(data);
@@ -275,87 +297,29 @@ QString TvDevice::printXmlData(QByteArray data)
         }
     }
     if(reader.hasError()) {
-        qCWarning(dcLgSmartTv) << "error reading XML device information:   " << reader.errorString();
+        qCWarning(dcLgSmartTv) << "error reading XML device information:" << reader.errorString();
     }
     return xmlOut;
 }
 
-void TvDevice::replyFinished(QNetworkReply *reply)
-{
-    int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-
-    if(status != 200)  {
-        m_reachable = false;
-    } else {
-        m_reachable = true;
-    }
-
-    if(reply == m_showKeyReplay) {
-        if(status != 200) {
-           qCWarning(dcLgSmartTv) << "ERROR: could not request to show pairing key on screen " << status;
-        }
-        m_showKeyReplay->deleteLater();
-    }
-    if(reply == m_requestPairingReplay) {
-        if(status != 200) {
-            m_pairingStatus = false;
-            emit pairingFinished(false);
-            qCWarning(dcLgSmartTv) << "could not pair with device" << status;
-        } else {
-            m_pairingStatus = true;
-            qCDebug(dcLgSmartTv) << "successfully paired with tv " << modelName();
-            emit pairingFinished(true);
-        }
-        m_requestPairingReplay->deleteLater();
-    }
-
-    if(reply == m_finishingPairingReplay) {
-        if(status == 200) {
-            m_pairingStatus = false;
-            qCDebug(dcLgSmartTv) << "successfully unpaired from tv " << modelName();
-        }
-        m_finishingPairingReplay->deleteLater();
-    }
-
-    if(reply == m_sendCommandReplay) {
-        if (status != 200) {
-            emit sendCommandFinished(false,m_actionId);
-            qCWarning(dcLgSmartTv) << "ERROR: could not send comand" << status;
-        } else {
-            m_pairingStatus = true;
-            qCDebug(dcLgSmartTv) << "successfully sent command to tv " << modelName();
-            emit sendCommandFinished(true,m_actionId);
-            refresh();
-        }
-        m_sendCommandReplay->deleteLater();
-    }
-    if(reply == m_queryVolumeInformationReplay) {
-        parseVolumeInformation(reply->readAll());
-        m_queryVolumeInformationReplay->deleteLater();
-    }
-    if(reply == m_queryChannelInformationReplay) {
-        parseChannelInformation(reply->readAll());
-        m_queryChannelInformationReplay->deleteLater();
-    }
-
-    emit statusChanged();
-}
-
 void TvDevice::eventOccured(const QByteArray &data)
 {
+    qCDebug(dcLgSmartTv) << "event handler data received" << printXmlData(data);
+
     // if we got a channel changed event...
     if(data.contains("ChannelChanged")) {
-        parseChannelInformation(data);
+        onChannelInformationUpdate(data);
         return;
     }
+
+    //TODO: handle ip address change (dhcp) notification from the tv!
 
     // if the tv suspends, it will send a byebye message, which means
     // the pairing will be closed.
     if(data.contains("api type=\"pairing\"") && data.contains("byebye")) {
-        qCDebug(dcLgSmartTv) << "--> tv ended pairing";
-        m_pairingStatus = false;
-        m_reachable = false;
-        emit statusChanged();
+        qCDebug(dcLgSmartTv) << "ended pairing (host)";
+        setPaired(false);
+        setReachable(false);
         return;
     }
 
@@ -374,6 +338,5 @@ void TvDevice::eventOccured(const QByteArray &data)
             }
         }
     }
-
-    emit statusChanged();
+    emit stateChanged();
 }

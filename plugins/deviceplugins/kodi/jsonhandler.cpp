@@ -42,25 +42,23 @@ void JsonHandler::sendData(const QString &method, const QVariantMap &params, con
     m_replys.insert(m_id, KodiReply(method, params, actionId));
 
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(package);
-    qCDebug(dcKodi) << "sending data" << jsonDoc.toJson();
     m_connection->sendData(jsonDoc.toJson());
+    //qCDebug(dcKodi) << "sending data" << jsonDoc.toJson();
     m_id++;
 }
 
 void JsonHandler::processNotification(const QString &method, const QVariantMap &params)
 {
+    qCDebug(dcKodi) << "got notification" << method;
+
     if (method == "Application.OnVolumeChanged") {
         QVariantMap data = params.value("data").toMap();
-        qCDebug(dcKodi) << "got volume changed notification" << "volume:" << data.value("volume").toInt() << "  muted:" << data.value("muted").toBool();
         emit volumeChanged(data.value("volume").toInt(), data.value("muted").toBool());
     } else if (method == "Player.onPlayerPlay") {
-        qCDebug(dcKodi) << "got player play notification";
         emit onPlayerPlay();
     } else if (method == "Player.onPlayerPause") {
-        qCDebug(dcKodi) << "got player pause notification";
         emit onPlayerPause();
     } else if (method == "Player.onPlayerStop") {
-        qCDebug(dcKodi) << "got player stop notification";
         emit onPlayerPause();
     }
 
@@ -70,7 +68,7 @@ void JsonHandler::processActionResponse(const KodiReply &reply, const QVariantMa
 {
     if (response.contains("error")) {
         qCDebug(dcKodi) << QJsonDocument::fromVariant(response).toJson();
-        qCWarning(dcKodi) << "got action error response:" << response.value("error").toMap().value("message").toString();
+        qCWarning(dcKodi) << "got error response for action"  << reply.method() << ":" << response.value("error").toMap().value("message").toString();
         emit actionExecuted(reply.actionId(), false);
     } else {
         emit actionExecuted(reply.actionId(), true);
@@ -81,12 +79,17 @@ void JsonHandler::processRequestResponse(const KodiReply &reply, const QVariantM
 {
     if (response.contains("error")) {
         qCDebug(dcKodi) << QJsonDocument::fromVariant(response).toJson();
-        qCWarning(dcKodi) << "got request error response:" << response.value("error").toMap().value("message").toString();
+        qCWarning(dcKodi) << "got error response for request " << reply.method() << ":" << response.value("error").toMap().value("message").toString();
     }
 
     if (reply.method() == "Application.GetProperties") {
-        qCDebug(dcKodi) << "got update response" << response;
+        qCDebug(dcKodi) << "got update response" << reply.method();
         emit updateDataReceived(response.value("result").toMap());
+    }
+
+    if (reply.method() == "JSONRPC.Version") {
+        qCDebug(dcKodi) << "got version response" << reply.method();
+        emit versionDataReceived(response.value("result").toMap());
     }
 }
 
@@ -99,7 +102,8 @@ void JsonHandler::processResponse(const QByteArray &data)
         qCWarning(dcKodi) << "failed to parse JSON data:" << data << ":" << error.errorString();
         return;
     }
-    qCDebug(dcKodi) << "data received:" << jsonDoc.toJson();
+
+    //qCDebug(dcKodi) << "data received:" << jsonDoc.toJson();
 
     QVariantMap message = jsonDoc.toVariant().toMap();
 

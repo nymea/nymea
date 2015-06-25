@@ -72,7 +72,19 @@
 
 DevicePluginKodi::DevicePluginKodi()
 {
+    Q_INIT_RESOURCE(images);
+    QFile file(":/images/guh-logo.png");
+    if (!file.open(QIODevice::ReadOnly)) {
+        qCWarning(dcKodi) << "could not open" << file.fileName();
+        return;
+    }
 
+    QByteArray guhLogoByteArray = file.readAll();
+    if (guhLogoByteArray.isEmpty()) {
+        qCWarning(dcKodi) << "could not read" << file.fileName();
+        return;
+    }
+    m_logo = guhLogoByteArray;
 }
 
 DeviceManager::HardwareResources DevicePluginKodi::requiredHardware() const
@@ -82,11 +94,13 @@ DeviceManager::HardwareResources DevicePluginKodi::requiredHardware() const
 
 DeviceManager::DeviceSetupStatus DevicePluginKodi::setupDevice(Device *device)
 {
-    Kodi *kodi= new Kodi(QHostAddress(device->paramValue("ip").toString()), 9090, this);
+    Kodi *kodi= new Kodi(m_logo, QHostAddress(device->paramValue("ip").toString()), 9090, this);
 
     connect(kodi, &Kodi::connectionStatusChanged, this, &DevicePluginKodi::onConnectionChanged);
     connect(kodi, &Kodi::stateChanged, this, &DevicePluginKodi::onStateChanged);
     connect(kodi, &Kodi::actionExecuted, this, &DevicePluginKodi::onActionExecuted);
+    connect(kodi, &Kodi::versionDataReceived, this, &DevicePluginKodi::versionDataReceived);
+    connect(kodi, &Kodi::updateDataReceived, this, &DevicePluginKodi::onSetupFinished);
     connect(kodi, &Kodi::onPlayerPlay, this, &DevicePluginKodi::onPlayerPlay);
     connect(kodi, &Kodi::onPlayerPause, this, &DevicePluginKodi::onPlayerPause);
     connect(kodi, &Kodi::onPlayerStop, this, &DevicePluginKodi::onPlayerStop);
@@ -94,7 +108,8 @@ DeviceManager::DeviceSetupStatus DevicePluginKodi::setupDevice(Device *device)
     kodi->connectKodi();
 
     m_kodis.insert(kodi, device);
-    return DeviceManager::DeviceSetupStatusSuccess;
+    m_asyncSetups.append(kodi);
+    return DeviceManager::DeviceSetupStatusAsync;
 }
 
 void DevicePluginKodi::deviceRemoved(Device *device)
@@ -169,7 +184,7 @@ DeviceManager::DeviceError DevicePluginKodi::executeAction(Device *device, const
         }
 
         if (action.actionTypeId() == showNotificationActionTypeId) {
-            kodi->showNotification(action.param("message").value().toString(), 8000, action.id());
+            kodi->showNotification(action.param("message").value().toString(), 8000, action.param("type").value().toString(), action.id());
             return DeviceManager::DeviceErrorAsync;
         } else if (action.actionTypeId() == volumeActionTypeId) {
             kodi->setVolume(action.param("volume").value().toInt(), action.id());
@@ -201,8 +216,11 @@ void DevicePluginKodi::onConnectionChanged()
     Device *device = m_kodis.value(kodi);
 
     if (kodi->connected()) {
-        kodi->showNotification("Connected", 2000, ActionId());
-        kodi->update();
+        // if this is the first setup, check version
+        if (m_asyncSetups.contains(kodi)) {
+            m_asyncSetups.removeAll(kodi);
+            kodi->checkVersion();
+        }
     }
 
     device->setStateValue(connectedStateTypeId, kodi->connected());
@@ -225,6 +243,37 @@ void DevicePluginKodi::onActionExecuted(const ActionId &actionId, const bool &su
     } else {
         emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorInvalidParameter);
     }
+}
+
+void DevicePluginKodi::versionDataReceived(const QVariantMap &data)
+{
+    Kodi *kodi = static_cast<Kodi *>(sender());
+    Device *device = m_kodis.value(kodi);
+
+    QVariantMap version = data.value("version").toMap();
+    QString apiVersion = QString("%1.%2.%3").arg(version.value("major").toString()).arg(version.value("minor").toString()).arg(version.value("patch").toString());
+    qCDebug(dcKodi) << "API Version:" << apiVersion;
+
+    if (version.value("major").toInt() < 6) {
+        qCWarning(dcKodi) << "incompatible api version:" << apiVersion;
+        emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusFailure);
+        return;
+    }
+    kodi->update();
+}
+
+void DevicePluginKodi::onSetupFinished(const QVariantMap &data)
+{
+    Kodi *kodi = static_cast<Kodi *>(sender());
+    Device *device = m_kodis.value(kodi);
+
+    QVariantMap version = data.value("version").toMap();
+    QString kodiVersion = QString("%1.%2 (%3)").arg(version.value("major").toString()).arg(version.value("minor").toString()).arg(version.value("tag").toString());
+    qCDebug(dcKodi) << "Version:" << kodiVersion;
+
+    emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusSuccess);
+
+    kodi->showNotification("Connected", 2000, "info", ActionId());
 }
 
 void DevicePluginKodi::onPlayerPlay()

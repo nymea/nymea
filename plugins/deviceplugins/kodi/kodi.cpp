@@ -20,8 +20,11 @@
 
 #include "kodi.h"
 
-Kodi::Kodi(const QHostAddress &hostAddress, const int &port, QObject *parent) :
-    QObject(parent)
+Kodi::Kodi(const QByteArray &logo, const QHostAddress &hostAddress, const int &port, QObject *parent) :
+    QObject(parent),
+    m_logo(logo),
+    m_muted(false),
+    m_volume(-1)
 {
     m_connection = new KodiConnection(hostAddress, port, this);
     connect (m_connection, &KodiConnection::connectionStatusChanged, this, &Kodi::connectionStatusChanged);
@@ -29,6 +32,8 @@ Kodi::Kodi(const QHostAddress &hostAddress, const int &port, QObject *parent) :
     m_jsonHandler = new JsonHandler(m_connection, this);
     connect(m_jsonHandler, &JsonHandler::volumeChanged, this, &Kodi::onVolumeChanged);
     connect(m_jsonHandler, &JsonHandler::actionExecuted, this, &Kodi::actionExecuted);
+    connect(m_jsonHandler, &JsonHandler::versionDataReceived, this, &Kodi::versionDataReceived);
+    connect(m_jsonHandler, &JsonHandler::updateDataReceived, this, &Kodi::updateDataReceived);
     connect(m_jsonHandler, &JsonHandler::updateDataReceived, this, &Kodi::onUpdateFinished);
     connect(m_jsonHandler, &JsonHandler::onPlayerPlay, this, &Kodi::onPlayerPlay);
     connect(m_jsonHandler, &JsonHandler::onPlayerPause, this, &Kodi::onPlayerPause);
@@ -76,12 +81,14 @@ int Kodi::volume() const
     return m_volume;
 }
 
-void Kodi::showNotification(const QString &message, const int &displayTime, const ActionId &actionId)
+void Kodi::showNotification(const QString &message, const int &displayTime, const QString &notificationType, const ActionId &actionId)
 {
     QVariantMap params;
     params.insert("title", "guh notification");
     params.insert("message", message);
     params.insert("displaytime", displayTime);
+    params.insert("image", notificationType);
+
     m_jsonHandler->sendData("GUI.ShowNotification", params, actionId);
 }
 
@@ -151,6 +158,11 @@ void Kodi::update()
     m_jsonHandler->sendData("Application.GetProperties", params, ActionId());
 }
 
+void Kodi::checkVersion()
+{
+    m_jsonHandler->sendData("JSONRPC.Version", QVariantMap(), ActionId());
+}
+
 void Kodi::connectKodi()
 {
     m_connection->connectKodi();
@@ -176,7 +188,7 @@ void Kodi::onUpdateFinished(const QVariantMap &data)
         m_volume = data.value("volume").toInt();
     }
     if (data.contains("muted")) {
-        m_volume = data.value("muted").toBool();
+        m_muted = data.value("muted").toBool();
     }
     emit stateChanged();
 }

@@ -60,7 +60,8 @@ public:
     virtual void postSetupDevice(Device *device);
     virtual void deviceRemoved(Device *device);
 
-    virtual DeviceManager::DeviceSetupStatus confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params);
+    virtual DeviceManager::DeviceError displayPin(const PairingTransactionId &pairingTransactionId, const DeviceDescriptor &deviceDescriptor);
+    virtual DeviceManager::DeviceSetupStatus confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret);
 
     // Hardware input
     virtual void radioData(const QList<int> &rawData) {Q_UNUSED(rawData)}

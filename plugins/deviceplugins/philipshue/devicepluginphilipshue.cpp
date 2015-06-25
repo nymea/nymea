@@ -196,8 +196,10 @@ void DevicePluginPhilipsHue::upnpDiscoveryFinished(const QList<UpnpDeviceDescrip
     emit devicesDiscovered(hueBridgeDeviceClassId, deviceDescriptors);
 }
 
-DeviceManager::DeviceSetupStatus DevicePluginPhilipsHue::confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params)
+DeviceManager::DeviceSetupStatus DevicePluginPhilipsHue::confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret)
 {
+    Q_UNUSED(secret)
+
     if (deviceClassId != hueBridgeDeviceClassId) {
         return DeviceManager::DeviceSetupStatusFailure;
     }

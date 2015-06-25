@@ -357,13 +357,24 @@ void DevicePlugin::deviceRemoved(Device *device)
     Q_UNUSED(device)
 }
 
+DeviceManager::DeviceError DevicePlugin::displayPin(const PairingTransactionId &pairingTransactionId, const DeviceDescriptor &deviceDescriptor)
+{
+    Q_UNUSED(pairingTransactionId)
+    Q_UNUSED(deviceDescriptor)
+
+    qWarning() << "Plugin does not implement the display pin setup method.";
+
+    return DeviceManager::DeviceErrorNoError;
+}
+
 /*! Confirms the pairing of a \a deviceClassId with the given \a pairingTransactionId and \a params.
  * Returns \l{DeviceManager::DeviceError}{DeviceError} to inform about the result. */
-DeviceManager::DeviceSetupStatus DevicePlugin::confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params)
+DeviceManager::DeviceSetupStatus DevicePlugin::confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret = QString())
 {
     Q_UNUSED(pairingTransactionId)
     Q_UNUSED(deviceClassId)
     Q_UNUSED(params)
+    Q_UNUSED(secret)
 
     qCWarning(dcDeviceManager) << "Plugin does not implement pairing.";
     return DeviceManager::DeviceSetupStatusFailure;

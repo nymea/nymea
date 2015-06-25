@@ -18,45 +18,49 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef LOGGINGCATEGORYS_H
-#define LOGGINGCATEGORYS_H
+#ifndef KODICONNECTION_H
+#define KODICONNECTION_H
 
-#include <QLoggingCategory>
+#include <QObject>
+#include <QTcpSocket>
+#include <QHostAddress>
+#include <QJsonDocument>
 
-// Core / libguh
-Q_DECLARE_LOGGING_CATEGORY(dcApplication)
-Q_DECLARE_LOGGING_CATEGORY(dcDeviceManager)
-Q_DECLARE_LOGGING_CATEGORY(dcRuleEngine)
-Q_DECLARE_LOGGING_CATEGORY(dcHardware)
-Q_DECLARE_LOGGING_CATEGORY(dcConnection)
-Q_DECLARE_LOGGING_CATEGORY(dcJsonRpc)
-Q_DECLARE_LOGGING_CATEGORY(dcLogEngine)
+class KodiConnection : public QObject
+{
+    Q_OBJECT
+public:
+    explicit KodiConnection(const QHostAddress &hostAddress, const int &port = 9090, QObject *parent = 0);
 
-// Plugins
+    void connectKodi();
+    void disconnectKodi();
 
-#ifdef boblight
-Q_DECLARE_LOGGING_CATEGORY(dcBoblight)
-#endif
+    QHostAddress hostAddress() const;
+    int port() const;
 
-Q_DECLARE_LOGGING_CATEGORY(dcCommandLauncher)
-Q_DECLARE_LOGGING_CATEGORY(dcRF433)
-Q_DECLARE_LOGGING_CATEGORY(dcDateTime)
-Q_DECLARE_LOGGING_CATEGORY(dcEQ3)
-Q_DECLARE_LOGGING_CATEGORY(dcLgSmartTv)
-Q_DECLARE_LOGGING_CATEGORY(dcLircd)
-Q_DECLARE_LOGGING_CATEGORY(dcMailNotification)
-Q_DECLARE_LOGGING_CATEGORY(dcMock)
-Q_DECLARE_LOGGING_CATEGORY(dcOpenweathermap)
-Q_DECLARE_LOGGING_CATEGORY(dcPhilipsHue)
-Q_DECLARE_LOGGING_CATEGORY(dcTune)
-Q_DECLARE_LOGGING_CATEGORY(dcUdpCommander)
-Q_DECLARE_LOGGING_CATEGORY(dcWakeOnLan)
-Q_DECLARE_LOGGING_CATEGORY(dcWemo)
-Q_DECLARE_LOGGING_CATEGORY(dcWifiDetector)
-Q_DECLARE_LOGGING_CATEGORY(dcKodi)
+    bool connected();
+
+private:
+    QTcpSocket *m_socket;
+
+    QHostAddress m_hostAddress;
+    int m_port;
+    bool m_connected;
 
 
+private slots:
+    void onConnected();
+    void onDisconnected();
+    void onError(QAbstractSocket::SocketError socketError);
+    void readData();
 
+signals:
+    void connectionStatusChanged();
+    void dataReady(const QByteArray &data);
 
+public slots:
+    void sendData(const QByteArray &message);
 
-#endif // LOGGINGCATEGORYS_H
+};
+
+#endif // KODICONNECTION_H

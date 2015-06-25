@@ -18,45 +18,47 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef LOGGINGCATEGORYS_H
-#define LOGGINGCATEGORYS_H
+#ifndef JSONHANDLER_H
+#define JSONHANDLER_H
 
-#include <QLoggingCategory>
+#include <QObject>
+#include <QVariant>
+#include <QHash>
 
-// Core / libguh
-Q_DECLARE_LOGGING_CATEGORY(dcApplication)
-Q_DECLARE_LOGGING_CATEGORY(dcDeviceManager)
-Q_DECLARE_LOGGING_CATEGORY(dcRuleEngine)
-Q_DECLARE_LOGGING_CATEGORY(dcHardware)
-Q_DECLARE_LOGGING_CATEGORY(dcConnection)
-Q_DECLARE_LOGGING_CATEGORY(dcJsonRpc)
-Q_DECLARE_LOGGING_CATEGORY(dcLogEngine)
+#include "kodiconnection.h"
+#include "kodireply.h"
+#include "typeutils.h"
 
-// Plugins
+class JsonHandler : public QObject
+{
+    Q_OBJECT
+public:
+    explicit JsonHandler(KodiConnection *connection = 0, QObject *parent = 0);
 
-#ifdef boblight
-Q_DECLARE_LOGGING_CATEGORY(dcBoblight)
-#endif
+    void sendData(const QString &method, const QVariantMap &params, const ActionId &actionId);
 
-Q_DECLARE_LOGGING_CATEGORY(dcCommandLauncher)
-Q_DECLARE_LOGGING_CATEGORY(dcRF433)
-Q_DECLARE_LOGGING_CATEGORY(dcDateTime)
-Q_DECLARE_LOGGING_CATEGORY(dcEQ3)
-Q_DECLARE_LOGGING_CATEGORY(dcLgSmartTv)
-Q_DECLARE_LOGGING_CATEGORY(dcLircd)
-Q_DECLARE_LOGGING_CATEGORY(dcMailNotification)
-Q_DECLARE_LOGGING_CATEGORY(dcMock)
-Q_DECLARE_LOGGING_CATEGORY(dcOpenweathermap)
-Q_DECLARE_LOGGING_CATEGORY(dcPhilipsHue)
-Q_DECLARE_LOGGING_CATEGORY(dcTune)
-Q_DECLARE_LOGGING_CATEGORY(dcUdpCommander)
-Q_DECLARE_LOGGING_CATEGORY(dcWakeOnLan)
-Q_DECLARE_LOGGING_CATEGORY(dcWemo)
-Q_DECLARE_LOGGING_CATEGORY(dcWifiDetector)
-Q_DECLARE_LOGGING_CATEGORY(dcKodi)
+private:
+    KodiConnection *m_connection;
+    int m_id;
+    QHash<int, KodiReply> m_replys;
 
+    void processNotification(const QString &method, const QVariantMap &params);
+    void processActionResponse(const KodiReply &reply, const QVariantMap &response);
+    void processRequestResponse(const KodiReply &reply, const QVariantMap &response);
 
+signals:
+    void volumeChanged(const int &volume, const bool &muted);
+    void actionExecuted(const ActionId &actionId, const bool &success);
+    void updateDataReceived(const QVariantMap &data);
+    void versionDataReceived(const QVariantMap &data);
 
+    void onPlayerPlay();
+    void onPlayerPause();
+    void onPlayerStop();
 
+private slots:
+    void processResponse(const QByteArray &data);
 
-#endif // LOGGINGCATEGORYS_H
+};
+
+#endif // JSONHANDLER_H

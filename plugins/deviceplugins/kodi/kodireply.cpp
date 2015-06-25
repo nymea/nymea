@@ -18,45 +18,45 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef LOGGINGCATEGORYS_H
-#define LOGGINGCATEGORYS_H
+#include "kodireply.h"
 
-#include <QLoggingCategory>
+KodiReply::KodiReply()
+{
+}
 
-// Core / libguh
-Q_DECLARE_LOGGING_CATEGORY(dcApplication)
-Q_DECLARE_LOGGING_CATEGORY(dcDeviceManager)
-Q_DECLARE_LOGGING_CATEGORY(dcRuleEngine)
-Q_DECLARE_LOGGING_CATEGORY(dcHardware)
-Q_DECLARE_LOGGING_CATEGORY(dcConnection)
-Q_DECLARE_LOGGING_CATEGORY(dcJsonRpc)
-Q_DECLARE_LOGGING_CATEGORY(dcLogEngine)
+KodiReply::KodiReply(const QString &method, const QVariantMap &params, const ActionId &actionId) :
+    m_method(method),
+    m_params(params),
+    m_actionId(actionId)
+{
+}
 
-// Plugins
+void KodiReply::setActionId(const ActionId &actionId)
+{
+    m_actionId = actionId;
+}
 
-#ifdef boblight
-Q_DECLARE_LOGGING_CATEGORY(dcBoblight)
-#endif
+ActionId KodiReply::actionId() const
+{
+    return m_actionId;
+}
 
-Q_DECLARE_LOGGING_CATEGORY(dcCommandLauncher)
-Q_DECLARE_LOGGING_CATEGORY(dcRF433)
-Q_DECLARE_LOGGING_CATEGORY(dcDateTime)
-Q_DECLARE_LOGGING_CATEGORY(dcEQ3)
-Q_DECLARE_LOGGING_CATEGORY(dcLgSmartTv)
-Q_DECLARE_LOGGING_CATEGORY(dcLircd)
-Q_DECLARE_LOGGING_CATEGORY(dcMailNotification)
-Q_DECLARE_LOGGING_CATEGORY(dcMock)
-Q_DECLARE_LOGGING_CATEGORY(dcOpenweathermap)
-Q_DECLARE_LOGGING_CATEGORY(dcPhilipsHue)
-Q_DECLARE_LOGGING_CATEGORY(dcTune)
-Q_DECLARE_LOGGING_CATEGORY(dcUdpCommander)
-Q_DECLARE_LOGGING_CATEGORY(dcWakeOnLan)
-Q_DECLARE_LOGGING_CATEGORY(dcWemo)
-Q_DECLARE_LOGGING_CATEGORY(dcWifiDetector)
-Q_DECLARE_LOGGING_CATEGORY(dcKodi)
+void KodiReply::setMethod(const QString &method)
+{
+    m_method = method;
+}
 
+QString KodiReply::method() const
+{
+    return m_method;
+}
 
+void KodiReply::setParams(const QVariantMap &params)
+{
+    m_params = params;
+}
 
-
-
-#endif // LOGGINGCATEGORYS_H
+QVariantMap KodiReply::params() const
+{
+    return m_params;
+}

@@ -18,45 +18,54 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef LOGGINGCATEGORYS_H
-#define LOGGINGCATEGORYS_H
+#ifndef DEVICEPLUGINKODI_H
+#define DEVICEPLUGINKODI_H
 
-#include <QLoggingCategory>
+#include "plugin/deviceplugin.h"
+#include "kodi.h"
 
-// Core / libguh
-Q_DECLARE_LOGGING_CATEGORY(dcApplication)
-Q_DECLARE_LOGGING_CATEGORY(dcDeviceManager)
-Q_DECLARE_LOGGING_CATEGORY(dcRuleEngine)
-Q_DECLARE_LOGGING_CATEGORY(dcHardware)
-Q_DECLARE_LOGGING_CATEGORY(dcConnection)
-Q_DECLARE_LOGGING_CATEGORY(dcJsonRpc)
-Q_DECLARE_LOGGING_CATEGORY(dcLogEngine)
+#include <QHash>
+#include <QDebug>
+#include <QTcpSocket>
+#include <QPixmap>
+#include <QFile>
+#include <QImage>
 
-// Plugins
+class DevicePluginKodi : public DevicePlugin
+{
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "guru.guh.DevicePlugin" FILE "devicepluginkodi.json")
+    Q_INTERFACES(DevicePlugin)
 
-#ifdef boblight
-Q_DECLARE_LOGGING_CATEGORY(dcBoblight)
-#endif
+public:
+    explicit DevicePluginKodi();
 
-Q_DECLARE_LOGGING_CATEGORY(dcCommandLauncher)
-Q_DECLARE_LOGGING_CATEGORY(dcRF433)
-Q_DECLARE_LOGGING_CATEGORY(dcDateTime)
-Q_DECLARE_LOGGING_CATEGORY(dcEQ3)
-Q_DECLARE_LOGGING_CATEGORY(dcLgSmartTv)
-Q_DECLARE_LOGGING_CATEGORY(dcLircd)
-Q_DECLARE_LOGGING_CATEGORY(dcMailNotification)
-Q_DECLARE_LOGGING_CATEGORY(dcMock)
-Q_DECLARE_LOGGING_CATEGORY(dcOpenweathermap)
-Q_DECLARE_LOGGING_CATEGORY(dcPhilipsHue)
-Q_DECLARE_LOGGING_CATEGORY(dcTune)
-Q_DECLARE_LOGGING_CATEGORY(dcUdpCommander)
-Q_DECLARE_LOGGING_CATEGORY(dcWakeOnLan)
-Q_DECLARE_LOGGING_CATEGORY(dcWemo)
-Q_DECLARE_LOGGING_CATEGORY(dcWifiDetector)
-Q_DECLARE_LOGGING_CATEGORY(dcKodi)
+    DeviceManager::HardwareResources requiredHardware() const override;
+    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
+    void deviceRemoved(Device *device) override;
+    void guhTimer() override;
 
+    DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
+    void upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &upnpDeviceDescriptorList) override;
 
+    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
+
+private:
+    QHash<Kodi *, Device *> m_kodis;
+    QList<Kodi *> m_asyncSetups;
+    QByteArray m_logo;
 
 
+private slots:
+    void onConnectionChanged();
+    void onStateChanged();
+    void onActionExecuted(const ActionId &actionId, const bool &success);
+    void versionDataReceived(const QVariantMap &data);
+    void onSetupFinished(const QVariantMap &data);
 
-#endif // LOGGINGCATEGORYS_H
+    void onPlayerPlay();
+    void onPlayerPause();
+    void onPlayerStop();
+};
+
+#endif // DEVICEPLUGINKODI_H

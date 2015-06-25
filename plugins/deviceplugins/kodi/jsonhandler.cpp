@@ -54,14 +54,13 @@ void JsonHandler::processNotification(const QString &method, const QVariantMap &
     if (method == "Application.OnVolumeChanged") {
         QVariantMap data = params.value("data").toMap();
         emit volumeChanged(data.value("volume").toInt(), data.value("muted").toBool());
-    } else if (method == "Player.onPlayerPlay") {
+    } else if (method == "Player.OnPlay") {
         emit onPlayerPlay();
-    } else if (method == "Player.onPlayerPause") {
+    } else if (method == "Player.OnPause") {
         emit onPlayerPause();
-    } else if (method == "Player.onPlayerStop") {
-        emit onPlayerPause();
+    } else if (method == "Player.OnStop") {
+        emit onPlayerStop();
     }
-
 }
 
 void JsonHandler::processActionResponse(const KodiReply &reply, const QVariantMap &response)

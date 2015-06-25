@@ -2,7 +2,7 @@ include(../../plugins.pri)
 
 TARGET = $$qtLibraryTarget(guh_devicepluginkodi)
 
-RESOURCES += images.qrc \
+RESOURCES += images.qrc
 
 SOURCES += \
     devicepluginkodi.cpp \

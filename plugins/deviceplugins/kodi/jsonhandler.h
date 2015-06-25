@@ -40,7 +40,6 @@ public:
 private:
     KodiConnection *m_connection;
     int m_id;
-
     QHash<int, KodiReply> m_replys;
 
     void processNotification(const QString &method, const QVariantMap &params);
@@ -51,6 +50,7 @@ signals:
     void volumeChanged(const int &volume, const bool &muted);
     void actionExecuted(const ActionId &actionId, const bool &success);
     void updateDataReceived(const QVariantMap &data);
+    void versionDataReceived(const QVariantMap &data);
 
     void onPlayerPlay();
     void onPlayerPause();

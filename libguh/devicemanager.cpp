@@ -250,7 +250,7 @@ DeviceManager::DeviceError DeviceManager::setPluginConfig(const PluginId &plugin
     if (result != DeviceErrorNoError) {
         return result;
     }
-    QSettings settings;
+    QSettings settings(m_settingsFile);
     settings.beginGroup("PluginConfig");
     settings.beginGroup(plugin->pluginId().toString());
     foreach (const Param &param, pluginConfig) {

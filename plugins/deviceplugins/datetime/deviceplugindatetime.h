@@ -36,12 +36,15 @@ class DevicePluginDateTime : public DevicePlugin
 public:
     explicit DevicePluginDateTime();
 
-    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
-    DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
     DeviceManager::HardwareResources requiredHardware() const override;
+    QList<ParamType> configurationDescription() const override;
+    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
+    void deviceRemoved(Device *device) override;
+
     DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
 
-    void deviceRemoved(Device *device) override;
+    void startMonitoringAutoDevices() override;
+
 
 private:
     QTimer *m_timer;
@@ -49,6 +52,7 @@ private:
 
 private slots:
     void timeout();
+    void onConfigValueChanged(const QString &paramName, const QVariant &value);
 
 
 

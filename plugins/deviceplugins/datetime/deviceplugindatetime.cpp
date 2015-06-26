@@ -84,27 +84,40 @@
 #include "plugininfo.h"
 #include "loggingcategories.h"
 
-#include <QDebug>
-
 DevicePluginDateTime::DevicePluginDateTime()
 {
     m_timer = new QTimer(this);
     m_timer->setInterval(1000);
 
+    qCDebug(dcDateTime) << configuration();
+
+    m_timeZone = QTimeZone(configValue("timezone").toByteArray());
+
     connect(m_timer, &QTimer::timeout, this, &DevicePluginDateTime::timeout);
+    connect(this, &DevicePluginDateTime::configValueChanged, this, &DevicePluginDateTime::onConfigValueChanged);
+}
+
+DeviceManager::HardwareResources DevicePluginDateTime::requiredHardware() const
+{
+    return DeviceManager::HardwareResourceNone;
+}
+
+QList<ParamType> DevicePluginDateTime::configurationDescription() const
+{
+    QList<ParamType> params;
+    ParamType timezoneParamType("timezone", QVariant::String, "Europe/Vienna");
+    QList<QVariant> allowedValues;
+    foreach (QByteArray timeZone, QTimeZone::availableTimeZoneIds()) {
+        allowedValues.append(timeZone);
+    }
+    timezoneParamType.setAllowedValues(allowedValues);
+    params.append(timezoneParamType);
+    return params;
 }
 
 DeviceManager::DeviceSetupStatus DevicePluginDateTime::setupDevice(Device *device)
 {
     // check the DeviceClassId
-    if(device->deviceClassId() != dateTimeDeviceClassId){
-        return DeviceManager::DeviceSetupStatusFailure;
-    }
-
-    // make shore there is just one date/time
-    if (myDevices().count() != 0 && myDevices().takeFirst()->id() != device->id()) {
-        return DeviceManager::DeviceSetupStatusFailure;
-    }
 
     device->setName("Time (" + device->paramValue("timezone").toString() + ")");
     m_timeZone = QTimeZone(device->paramValue("timezone").toByteArray());
@@ -119,29 +132,10 @@ DeviceManager::DeviceSetupStatus DevicePluginDateTime::setupDevice(Device *devic
     return DeviceManager::DeviceSetupStatusFailure;
 }
 
-DeviceManager::DeviceError DevicePluginDateTime::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
+void DevicePluginDateTime::deviceRemoved(Device *device)
 {
-    Q_UNUSED(deviceClassId);
-
-    QList<DeviceDescriptor> deviceDescriptors;
-    foreach (QByteArray timeZone, QTimeZone::availableTimeZoneIds()) {
-        QByteArray continent = params.paramValue("continent").toByteArray();
-        if(timeZone.contains(continent)){
-            DeviceDescriptor descriptor(dateTimeDeviceClassId, timeZone.right(timeZone.length() - (continent.length() + 1)), continent);
-            ParamList params;
-            params.append(Param("timezone", timeZone));
-            descriptor.setParams(params);
-            deviceDescriptors.append(descriptor);
-        }
-    }
-    emit devicesDiscovered(dateTimeDeviceClassId, deviceDescriptors);
-
-    return DeviceManager::DeviceErrorAsync;
-}
-
-DeviceManager::HardwareResources DevicePluginDateTime::requiredHardware() const
-{
-    return DeviceManager::HardwareResourceNone;
+    Q_UNUSED(device);
+    m_timer->stop();
 }
 
 DeviceManager::DeviceError DevicePluginDateTime::executeAction(Device *device, const Action &action)
@@ -152,20 +146,30 @@ DeviceManager::DeviceError DevicePluginDateTime::executeAction(Device *device, c
     return DeviceManager::DeviceErrorNoError;
 }
 
-void DevicePluginDateTime::deviceRemoved(Device *device)
+void DevicePluginDateTime::startMonitoringAutoDevices()
 {
-    Q_UNUSED(device);
-    m_timer->stop();
+    foreach (Device *device, myDevices()) {
+        if (device->deviceClassId() == dateDeviceClassId) {
+            return; // We already have a Auto Mock device... do nothing.
+        }
+    }
+
+    DeviceDescriptor dateDescriptor(dateDeviceClassId, QString("Date"), QString(m_timeZone.id()));
+    ParamList params;
+    params.append(Param("name", m_timeZone.id()));
+    dateDescriptor.setParams(params);
+
+    emit autoDevicesAppeared(dateDeviceClassId, QList<DeviceDescriptor>() << dateDescriptor);
 }
 
 void DevicePluginDateTime::timeout()
 {
-    QDateTime zoneTime = QDateTime(QDate::currentDate(), QTime::currentTime(), m_timeZone).toLocalTime();
+    QDateTime zoneTime = QDateTime::currentDateTime().toTimeZone(m_timeZone);
 
-    if(deviceManager()->findConfiguredDevices(dateTimeDeviceClassId).count() == 1){
-        Device *device = deviceManager()->findConfiguredDevices(dateTimeDeviceClassId).first();
-        device->setStateValue(minuteStateTypeId, zoneTime.time().minute());
-        device->setStateValue(hourStateTypeId, zoneTime.time().hour());
+    qCDebug(dcDateTime) << m_timeZone.id() << zoneTime.toString();
+
+    if(deviceManager()->findConfiguredDevices(dateDeviceClassId).count() == 1){
+        Device *device = deviceManager()->findConfiguredDevices(dateDeviceClassId).first();
         device->setStateValue(dayStateTypeId, zoneTime.date().day());
         device->setStateValue(monthStateTypeId, zoneTime.date().month());
         device->setStateValue(monthNameStateTypeId, zoneTime.date().longMonthName(zoneTime.date().month()));
@@ -180,6 +184,23 @@ void DevicePluginDateTime::timeout()
         }else{
             device->setStateValue(weekendStateTypeId, false);
         }
+    }
+}
+
+void DevicePluginDateTime::onConfigValueChanged(const QString &paramName, const QVariant &value)
+{
+    Q_UNUSED(paramName)
+
+    QTimeZone newZone = QTimeZone(value.toByteArray());
+    if (newZone.isValid()) {
+        m_timeZone = newZone;
+        QDateTime zoneTime = QDateTime(QDate::currentDate(), QTime::currentTime(), m_timeZone);
+        qCDebug(dcDateTime) << "set new time zone:" << value.toString();
+        qCDebug(dcDateTime) << "current time" << zoneTime.currentDateTime().toString();
+        qCDebug(dcDateTime) << "-----------------------------";
+        timeout();
+    } else {
+        qCWarning(dcDateTime) << "could not set new timezone" << value.toString() << ". keeping old time zone:" << m_timeZone;
     }
 }
 

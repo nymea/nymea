@@ -3,8 +3,10 @@ include (../../plugins.pri)
 TARGET = $$qtLibraryTarget(guh_deviceplugindatetime)
 
 SOURCES += \
-    deviceplugindatetime.cpp
+    deviceplugindatetime.cpp \
+    alarm.cpp
 
 HEADERS += \
-    deviceplugindatetime.h
+    deviceplugindatetime.h \
+    alarm.h
 

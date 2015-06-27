@@ -79,7 +79,6 @@ signals:
     void noon();
     void sunrise();
     void dawn();
-    void timeDataChanged();
     void minuteChanged();
     void hourChanged();
     void dayChanged();
@@ -87,7 +86,6 @@ signals:
 private slots:
     void onTimeout();
     void onAlarm();
-    void onTimeDataUpdate();
     void onMinuteChanged();
     void onHourChanged();
     void onDayChanged();

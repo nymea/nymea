@@ -102,7 +102,6 @@ DevicePluginDateTime::DevicePluginDateTime() :
     connect(this, &DevicePluginDateTime::minuteChanged, this, &DevicePluginDateTime::onMinuteChanged);
     connect(this, &DevicePluginDateTime::hourChanged, this, &DevicePluginDateTime::onHourChanged);
     connect(this, &DevicePluginDateTime::dayChanged, this, &DevicePluginDateTime::onDayChanged);
-    connect(this, &DevicePluginDateTime::timeDataChanged, this, &DevicePluginDateTime::onTimeDataUpdate);
     connect(this, &DevicePluginDateTime::configValueChanged, this, &DevicePluginDateTime::onConfigValueChanged);
 }
 
@@ -173,8 +172,10 @@ DeviceManager::DeviceSetupStatus DevicePluginDateTime::setupDevice(Device *devic
 void DevicePluginDateTime::postSetupDevice(Device *device)
 {
     Q_UNUSED(device)
-    qCDebug(dcDateTime) << "post setup";
-    searchGeoLocation();
+    onMinuteChanged();
+    onHourChanged();
+    onDayChanged();
+    onTimeout();
 }
 
 void DevicePluginDateTime::deviceRemoved(Device *device)
@@ -334,7 +335,32 @@ void DevicePluginDateTime::processTimesData(const QByteArray &data)
     m_dawn = QDateTime(QDate::currentDate(), QTime::fromString(dawnString, "h:m:s AP"), Qt::UTC).toTimeZone(m_timeZone);
     m_sunset = QDateTime(QDate::currentDate(), QTime::fromString(sunsetString, "h:m:s AP"), Qt::UTC).toTimeZone(m_timeZone);
 
-    emit timeDataChanged();
+    // calculate the times in each alarm
+    qCDebug(dcDateTime) << " dusk     :" << m_dusk.toString();
+    qCDebug(dcDateTime) << " sunrise  :" << m_sunrise.toString();
+    qCDebug(dcDateTime) << " noon     :" << m_noon.toString();
+    qCDebug(dcDateTime) << " sunset   :" << m_sunset.toString();
+    qCDebug(dcDateTime) << " dawn     :" << m_dawn.toString();
+    qCDebug(dcDateTime) << "---------------------------------------------";
+
+    // alarms
+    foreach (Alarm *alarm, m_alarms.values()) {
+        alarm->setDusk(m_dusk);
+        alarm->setSunrise(m_sunrise);
+        alarm->setNoon(m_noon);
+        alarm->setDawn(m_dawn);
+        alarm->setSunset(m_sunset);
+    }
+
+    // date
+    if (m_todayDevice == 0)
+        return;
+
+    m_todayDevice->setStateValue(duskStateTypeId, m_dusk.toTime_t());
+    m_todayDevice->setStateValue(sunriseStateTypeId, m_sunrise.toTime_t());
+    m_todayDevice->setStateValue(noonStateTypeId, m_noon.toTime_t());
+    m_todayDevice->setStateValue(dawnStateTypeId, m_dawn.toTime_t());
+    m_todayDevice->setStateValue(sunsetStateTypeId, m_sunset.toTime_t());
 }
 
 
@@ -342,6 +368,8 @@ void DevicePluginDateTime::onTimeout()
 {
     QDateTime zoneTime = QDateTime::currentDateTime().toTimeZone(m_timeZone);
     //qCDebug(dcDateTime) << m_timeZone.id() << zoneTime.toString();
+
+    validateTimeTypes(zoneTime);
 
     if (zoneTime.date() != m_currentDateTime.date())
         emit dayChanged();
@@ -351,13 +379,6 @@ void DevicePluginDateTime::onTimeout()
 
     if (zoneTime.time().minute() != m_currentDateTime.time().minute())
         emit minuteChanged();
-
-    foreach (Device *device, deviceManager()->findConfiguredDevices(alarmDeviceClassId)) {
-        Alarm *alarm = m_alarms.value(device);
-        alarm->validateTimes(zoneTime);
-    }
-
-    validateTimeTypes(zoneTime);
 
     // just store for compairing
     m_currentDateTime = zoneTime;
@@ -371,37 +392,6 @@ void DevicePluginDateTime::onAlarm()
     qCDebug(dcDateTime) << alarm->name() << "alarm!";
 
     emit emitEvent(Event(alarmEventTypeId, device->id()));
-}
-
-void DevicePluginDateTime::onTimeDataUpdate()
-{
-    // calculate the times in each alarm
-    qCDebug(dcDateTime) << " dusk     :" << m_dusk.toString();
-    qCDebug(dcDateTime) << " sunrise  :" << m_sunrise.toString();
-    qCDebug(dcDateTime) << " noon     :" << m_noon.toString();
-    qCDebug(dcDateTime) << " dawn     :" << m_dawn.toString();
-    qCDebug(dcDateTime) << " sunset   :" << m_sunset.toString();
-    qCDebug(dcDateTime) << "---------------------------------------------";
-
-    // alarms
-    foreach (Alarm *alarm, m_alarms.values()) {
-        alarm->setDusk(m_dusk);
-        alarm->setSunrise(m_sunrise);
-        alarm->setNoon(m_noon);
-        alarm->setDawn(m_dawn);
-        alarm->setSunset(m_sunset);
-    }
-
-    // date
-    if (m_todayDevice != 0)
-        return;
-
-    m_todayDevice->setStateValue(duskStateTypeId, m_dusk.toTime_t());
-    m_todayDevice->setStateValue(sunriseStateTypeId, m_sunrise.toTime_t());
-    m_todayDevice->setStateValue(noonStateTypeId, m_noon.toTime_t());
-    m_todayDevice->setStateValue(dawnStateTypeId, m_dawn.toTime_t());
-    m_todayDevice->setStateValue(sunsetStateTypeId, m_sunset.toTime_t());
-
 }
 
 void DevicePluginDateTime::onMinuteChanged()
@@ -467,9 +457,8 @@ void DevicePluginDateTime::onConfigValueChanged(const QString &paramName, const 
 
 void DevicePluginDateTime::validateTimeTypes(const QDateTime &dateTime)
 {
-    if (m_todayDevice == 0) {
+    if (m_todayDevice == 0)
         return;
-    }
 
     if (dateTime == m_dusk) {
         emit emitEvent(Event(duskEventTypeId, m_todayDevice->id()));
@@ -481,5 +470,10 @@ void DevicePluginDateTime::validateTimeTypes(const QDateTime &dateTime)
         emit emitEvent(Event(dawnEventTypeId, m_todayDevice->id()));
     } else if (dateTime == m_sunset) {
         emit emitEvent(Event(sunsetEventTypeId, m_todayDevice->id()));
+    }
+
+    foreach (Device *device, deviceManager()->findConfiguredDevices(alarmDeviceClassId)) {
+        Alarm *alarm = m_alarms.value(device);
+        alarm->validateTimes(dateTime);
     }
 }

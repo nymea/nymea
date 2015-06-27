@@ -22,8 +22,11 @@
 #define DEVICEPLUGINDATETIME_H
 
 #include "plugin/deviceplugin.h"
+#include "alarm.h"
+
 #include <QDateTime>
 #include <QTimeZone>
+#include <QTime>
 #include <QTimer>
 
 class DevicePluginDateTime : public DevicePlugin
@@ -39,22 +42,58 @@ public:
     DeviceManager::HardwareResources requiredHardware() const override;
     QList<ParamType> configurationDescription() const override;
     DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
+    void postSetupDevice(Device *device) override;
     void deviceRemoved(Device *device) override;
 
-    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
+    void networkManagerReplyReady(QNetworkReply *reply) override;
 
     void startMonitoringAutoDevices() override;
 
-
 private:
     QTimer *m_timer;
+    Device *m_todayDevice;
     QTimeZone m_timeZone;
+    QDateTime m_currentDateTime;
+
+    QHash<Device *, Alarm *> m_alarms;
+
+    QDateTime m_dusk;
+    QDateTime m_sunrise;
+    QDateTime m_noon;
+    QDateTime m_dawn;
+    QDateTime m_sunset;
+
+
+    QList<QNetworkReply *> m_locationReplies;
+    QList<QNetworkReply *> m_timeReplies;
+
+    void searchGeoLocation();
+    void processGeoLocationData(const QByteArray &data);
+
+    void getTimes(const QString &latitude, const QString &longitude);
+    void processTimesData(const QByteArray &data);
+
+signals:
+    void dusk();
+    void sunset();
+    void noon();
+    void sunrise();
+    void dawn();
+    void timeDataChanged();
+    void minuteChanged();
+    void hourChanged();
+    void dayChanged();
 
 private slots:
-    void timeout();
+    void onTimeout();
+    void onAlarm();
+    void onTimeDataUpdate();
+    void onMinuteChanged();
+    void onHourChanged();
+    void onDayChanged();
+
     void onConfigValueChanged(const QString &paramName, const QVariant &value);
-
-
+    void validateTimeTypes(const QDateTime &dateTime);
 
 };
 

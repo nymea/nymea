@@ -353,7 +353,6 @@ void TestJSONRPC::ruleAddedRemovedNotifications()
     QVariantMap stateEvaluator;
     stateEvaluator.insert("stateDescriptor", stateDescriptor);
 
-
     // RuleAction
     QVariantMap actionNoParams;
     actionNoParams.insert("actionTypeId", mockActionIdNoParams);

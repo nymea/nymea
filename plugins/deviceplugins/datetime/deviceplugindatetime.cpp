@@ -84,106 +84,365 @@
 #include "plugininfo.h"
 #include "loggingcategories.h"
 
-DevicePluginDateTime::DevicePluginDateTime()
+#include <QJsonDocument>
+#include <QUrlQuery>
+
+DevicePluginDateTime::DevicePluginDateTime() :
+    m_timer(0),
+    m_todayDevice(0),
+    m_timeZone(QTimeZone("Europe/Vienna"))
 {
     m_timer = new QTimer(this);
     m_timer->setInterval(1000);
 
-    qCDebug(dcDateTime) << configuration();
-
     m_timeZone = QTimeZone(configValue("timezone").toByteArray());
+    m_currentDateTime = QDateTime(QDate::currentDate(), QTime::currentTime(), m_timeZone);
 
-    connect(m_timer, &QTimer::timeout, this, &DevicePluginDateTime::timeout);
+    connect(m_timer, &QTimer::timeout, this, &DevicePluginDateTime::onTimeout);
+    connect(this, &DevicePluginDateTime::minuteChanged, this, &DevicePluginDateTime::onMinuteChanged);
+    connect(this, &DevicePluginDateTime::hourChanged, this, &DevicePluginDateTime::onHourChanged);
+    connect(this, &DevicePluginDateTime::dayChanged, this, &DevicePluginDateTime::onDayChanged);
+    connect(this, &DevicePluginDateTime::timeDataChanged, this, &DevicePluginDateTime::onTimeDataUpdate);
     connect(this, &DevicePluginDateTime::configValueChanged, this, &DevicePluginDateTime::onConfigValueChanged);
 }
 
 DeviceManager::HardwareResources DevicePluginDateTime::requiredHardware() const
 {
-    return DeviceManager::HardwareResourceNone;
+    return DeviceManager::HardwareResourceNetworkManager;
 }
 
 QList<ParamType> DevicePluginDateTime::configurationDescription() const
 {
     QList<ParamType> params;
     ParamType timezoneParamType("timezone", QVariant::String, "Europe/Vienna");
+
     QList<QVariant> allowedValues;
     foreach (QByteArray timeZone, QTimeZone::availableTimeZoneIds()) {
         allowedValues.append(timeZone);
     }
     timezoneParamType.setAllowedValues(allowedValues);
+
     params.append(timezoneParamType);
     return params;
 }
 
 DeviceManager::DeviceSetupStatus DevicePluginDateTime::setupDevice(Device *device)
 {
-    // check the DeviceClassId
-
-    device->setName("Time (" + device->paramValue("timezone").toString() + ")");
-    m_timeZone = QTimeZone(device->paramValue("timezone").toByteArray());
-
-    if(m_timeZone.isValid()){
-        QDateTime zoneTime = QDateTime(QDate::currentDate(), QTime::currentTime(), m_timeZone).toLocalTime();
-        qCDebug(dcDateTime) << zoneTime.toLocalTime().date() << zoneTime.toLocalTime().time()  << QLocale::countryToString(m_timeZone.country());
-        m_timer->start();
-
-        return DeviceManager::DeviceSetupStatusSuccess;
+    // check timezone
+    if(!m_timeZone.isValid()){
+        qCWarning(dcDateTime) << "invalid time zone.";
+        return DeviceManager::DeviceSetupStatusFailure;
     }
-    return DeviceManager::DeviceSetupStatusFailure;
+
+    // date
+    if (device->deviceClassId() == todayDeviceClassId) {
+        if (m_todayDevice != 0) {
+            qCWarning(dcDateTime) << "there is already a date device or not deleted correctly! this should never happen!!";
+            return DeviceManager::DeviceSetupStatusFailure;
+        }
+        m_todayDevice = device;
+        qCDebug(dcDateTime) << "create today device: current time" << m_currentDateTime.currentDateTime().toString();
+    }
+
+    // alarm
+    if (device->deviceClassId() == alarmDeviceClassId) {
+        Alarm *alarm = new Alarm(this);
+        alarm->setName(device->paramValue("name").toString());
+        alarm->setMonday(device->paramValue("monday").toBool());
+        alarm->setTuesday(device->paramValue("tuesday").toBool());
+        alarm->setWednesday(device->paramValue("wednesday").toBool());
+        alarm->setThursday(device->paramValue("thursday").toBool());
+        alarm->setFriday(device->paramValue("friday").toBool());
+        alarm->setSaturday(device->paramValue("saturday").toBool());
+        alarm->setSunday(device->paramValue("sunday").toBool());
+        alarm->setMinutes(device->paramValue("minutes").toInt());
+        alarm->setHours(device->paramValue("hours").toInt());
+        alarm->setTimeType(device->paramValue("time type").toString());
+        alarm->setOffset(device->paramValue("offset").toInt());
+
+        connect(alarm, &Alarm::alarm, this, &DevicePluginDateTime::onAlarm);
+
+        m_alarms.insert(device, alarm);
+    }
+
+    m_timer->start();
+
+    return DeviceManager::DeviceSetupStatusSuccess;
+}
+
+void DevicePluginDateTime::postSetupDevice(Device *device)
+{
+    Q_UNUSED(device)
+    qCDebug(dcDateTime) << "post setup";
+    searchGeoLocation();
 }
 
 void DevicePluginDateTime::deviceRemoved(Device *device)
 {
-    Q_UNUSED(device);
-    m_timer->stop();
+    // check if we still need the timer
+    if (myDevices().count() == 0) {
+        m_timer->stop();
+    }
+
+    // date
+    if (device->deviceClassId() == todayDeviceClassId) {
+        m_todayDevice = 0;
+    }
+
+    // alarm
+    if (device->deviceClassId() == alarmDeviceClassId) {
+        Alarm *alarm = m_alarms.take(device);
+        alarm->deleteLater();
+    }
+    startMonitoringAutoDevices();
 }
 
-DeviceManager::DeviceError DevicePluginDateTime::executeAction(Device *device, const Action &action)
+void DevicePluginDateTime::networkManagerReplyReady(QNetworkReply *reply)
 {
-    Q_UNUSED(device);
-    Q_UNUSED(action);
+    int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
-    return DeviceManager::DeviceErrorNoError;
+    if (m_locationReplies.contains(reply)) {
+        m_locationReplies.removeAll(reply);
+        if (status != 200) {
+            qCWarning(dcDateTime) << "http error status for location request:" << status << reply->error();
+        } else {
+            processGeoLocationData(reply->readAll());
+        }
+    } else if (m_timeReplies.contains(reply)) {
+        m_timeReplies.removeAll(reply);
+        if (status != 200) {
+            qCWarning(dcDateTime) << "http error status for time request:" << status << reply->error();
+        } else {
+            processTimesData(reply->readAll());
+        }
+    }
+    reply->deleteLater();
 }
 
 void DevicePluginDateTime::startMonitoringAutoDevices()
 {
     foreach (Device *device, myDevices()) {
-        if (device->deviceClassId() == dateDeviceClassId) {
-            return; // We already have a Auto Mock device... do nothing.
+        if (device->deviceClassId() == todayDeviceClassId) {
+            return; // We already have the date device... do nothing.
         }
     }
 
-    DeviceDescriptor dateDescriptor(dateDeviceClassId, QString("Date"), QString(m_timeZone.id()));
+    DeviceDescriptor dateDescriptor(todayDeviceClassId, QString("Date"), QString(m_timeZone.id()));
     ParamList params;
     params.append(Param("name", m_timeZone.id()));
     dateDescriptor.setParams(params);
 
-    emit autoDevicesAppeared(dateDeviceClassId, QList<DeviceDescriptor>() << dateDescriptor);
+    emit autoDevicesAppeared(todayDeviceClassId, QList<DeviceDescriptor>() << dateDescriptor);
 }
 
-void DevicePluginDateTime::timeout()
+void DevicePluginDateTime::searchGeoLocation()
+{
+    if (m_todayDevice == 0)
+        return;
+
+    QNetworkRequest request;
+    request.setUrl(QUrl("http://ip-api.com/json"));
+
+    qCDebug(dcDateTime) << "request geo location.";
+
+    QNetworkReply *reply = networkManagerGet(request);
+    m_locationReplies.append(reply);
+}
+
+void DevicePluginDateTime::processGeoLocationData(const QByteArray &data)
+{
+    QJsonParseError error;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
+
+    if(error.error != QJsonParseError::NoError) {
+        qCWarning(dcDateTime) << "failed to parse location JSON data:" << error.errorString() << ":" << data ;
+        return;
+    }
+
+    //qCDebug(dcDateTime) << "geo location data received:" << jsonDoc.toJson();
+    QVariantMap response = jsonDoc.toVariant().toMap();
+    if (response.value("status") != "success") {
+        qCWarning(dcDateTime) << "failed to request geo location:" << response.value("status");
+    }
+
+    // check timezone
+    QString timeZone = response.value("timezone").toString();
+    if (QString(m_timeZone.id()) != timeZone) {
+        qCWarning(dcDateTime) << "error: configured timezone does not match the discovered timezone";
+        qCWarning(dcDateTime) << "    configured:" << m_timeZone.id();
+        qCWarning(dcDateTime) << "    discovered:" << timeZone;
+        return;
+    }
+
+    qCDebug(dcDateTime) << "---------------------------------------------";
+    qCDebug(dcDateTime) << "autodetected location for" << response.value("query").toString();
+    qCDebug(dcDateTime) << " city     :" << response.value("city").toString();
+    qCDebug(dcDateTime) << " country  :" << response.value("country").toString();
+    qCDebug(dcDateTime) << " code     :" << response.value("countryCode").toString();
+    qCDebug(dcDateTime) << " zip code :" << response.value("zip").toString();
+    qCDebug(dcDateTime) << " lon      :" << response.value("lon").toByteArray();
+    qCDebug(dcDateTime) << " lat      :" << response.value("lat").toByteArray();
+    qCDebug(dcDateTime) << "---------------------------------------------";
+
+    getTimes(response.value("lat").toString(), response.value("lon").toString());
+}
+
+void DevicePluginDateTime::getTimes(const QString &latitude, const QString &longitude)
+{
+    QUrlQuery urlQuery;
+    urlQuery.addQueryItem("lat", latitude);
+    urlQuery.addQueryItem("lng", longitude);
+    urlQuery.addQueryItem("date", "today");
+
+    QUrl url = QUrl("http://api.sunrise-sunset.org/json");
+    url.setQuery(urlQuery.toString());
+
+    QNetworkRequest request;
+    request.setUrl(url);
+
+    QNetworkReply *reply = networkManagerGet(request);
+    m_timeReplies.append(reply);
+}
+
+void DevicePluginDateTime::processTimesData(const QByteArray &data)
+{
+    QJsonParseError error;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
+
+    if(error.error != QJsonParseError::NoError) {
+        qCWarning(dcDateTime) << "failed to parse time JSON data:" << error.errorString() << ":" << data ;
+        return;
+    }
+
+    QVariantMap response = jsonDoc.toVariant().toMap();
+    if (response.value("status") != "OK") {
+        qCWarning(dcDateTime) << "failed to request time data:" << response.value("status");
+        return;
+    }
+
+    // given time is always in UTC
+    QVariantMap result = response.value("results").toMap();
+    QString duskString = result.value("civil_twilight_begin").toString();
+    QString sunriseString = result.value("sunrise").toString();
+    QString noonString = result.value("solar_noon").toString();
+    QString dawnString = result.value("civil_twilight_end").toString();
+    QString sunsetString = result.value("sunset").toString();
+
+    m_dusk = QDateTime(QDate::currentDate(), QTime::fromString(duskString, "h:m:s AP"), Qt::UTC).toTimeZone(m_timeZone);
+    m_sunrise = QDateTime(QDate::currentDate(), QTime::fromString(sunriseString, "h:m:s AP"), Qt::UTC).toTimeZone(m_timeZone);
+    m_noon = QDateTime(QDate::currentDate(), QTime::fromString(noonString, "h:m:s AP"), Qt::UTC).toTimeZone(m_timeZone);
+    m_dawn = QDateTime(QDate::currentDate(), QTime::fromString(dawnString, "h:m:s AP"), Qt::UTC).toTimeZone(m_timeZone);
+    m_sunset = QDateTime(QDate::currentDate(), QTime::fromString(sunsetString, "h:m:s AP"), Qt::UTC).toTimeZone(m_timeZone);
+
+    emit timeDataChanged();
+}
+
+
+void DevicePluginDateTime::onTimeout()
 {
     QDateTime zoneTime = QDateTime::currentDateTime().toTimeZone(m_timeZone);
+    //qCDebug(dcDateTime) << m_timeZone.id() << zoneTime.toString();
 
-    qCDebug(dcDateTime) << m_timeZone.id() << zoneTime.toString();
+    if (zoneTime.date() != m_currentDateTime.date())
+        emit dayChanged();
 
-    if(deviceManager()->findConfiguredDevices(dateDeviceClassId).count() == 1){
-        Device *device = deviceManager()->findConfiguredDevices(dateDeviceClassId).first();
-        device->setStateValue(dayStateTypeId, zoneTime.date().day());
-        device->setStateValue(monthStateTypeId, zoneTime.date().month());
-        device->setStateValue(monthNameStateTypeId, zoneTime.date().longMonthName(zoneTime.date().month()));
-        device->setStateValue(monthNameShortStateTypeId, zoneTime.date().shortMonthName(zoneTime.date().month()));
-        device->setStateValue(yearStateTypeId, zoneTime.date().year());
-        device->setStateValue(weekdayStateTypeId, zoneTime.date().dayOfWeek());
-        device->setStateValue(weekdayNameStateTypeId, zoneTime.date().longDayName(zoneTime.date().dayOfWeek()));
-        device->setStateValue(weekdayNameShortStateTypeId, zoneTime.date().shortDayName(zoneTime.date().dayOfWeek()));
+    if (zoneTime.time().hour() != m_currentDateTime.time().hour())
+        emit hourChanged();
 
-        if(zoneTime.date().dayOfWeek() == 6 || zoneTime.date().dayOfWeek() == 7){
-            device->setStateValue(weekendStateTypeId, true);
-        }else{
-            device->setStateValue(weekendStateTypeId, false);
-        }
+    if (zoneTime.time().minute() != m_currentDateTime.time().minute())
+        emit minuteChanged();
+
+    foreach (Device *device, deviceManager()->findConfiguredDevices(alarmDeviceClassId)) {
+        Alarm *alarm = m_alarms.value(device);
+        alarm->validateTimes(zoneTime);
+    }
+
+    validateTimeTypes(zoneTime);
+
+    // just store for compairing
+    m_currentDateTime = zoneTime;
+}
+
+void DevicePluginDateTime::onAlarm()
+{
+    Alarm *alarm = static_cast<Alarm *>(sender());
+    Device *device = m_alarms.key(alarm);
+
+    qCDebug(dcDateTime) << alarm->name() << "alarm!";
+
+    emit emitEvent(Event(alarmEventTypeId, device->id()));
+}
+
+void DevicePluginDateTime::onTimeDataUpdate()
+{
+    // calculate the times in each alarm
+    qCDebug(dcDateTime) << " dusk     :" << m_dusk.toString();
+    qCDebug(dcDateTime) << " sunrise  :" << m_sunrise.toString();
+    qCDebug(dcDateTime) << " noon     :" << m_noon.toString();
+    qCDebug(dcDateTime) << " dawn     :" << m_dawn.toString();
+    qCDebug(dcDateTime) << " sunset   :" << m_sunset.toString();
+    qCDebug(dcDateTime) << "---------------------------------------------";
+
+    // alarms
+    foreach (Alarm *alarm, m_alarms.values()) {
+        alarm->setDusk(m_dusk);
+        alarm->setSunrise(m_sunrise);
+        alarm->setNoon(m_noon);
+        alarm->setDawn(m_dawn);
+        alarm->setSunset(m_sunset);
+    }
+
+    // date
+    if (m_todayDevice != 0)
+        return;
+
+    m_todayDevice->setStateValue(duskStateTypeId, m_dusk.toTime_t());
+    m_todayDevice->setStateValue(sunriseStateTypeId, m_sunrise.toTime_t());
+    m_todayDevice->setStateValue(noonStateTypeId, m_noon.toTime_t());
+    m_todayDevice->setStateValue(dawnStateTypeId, m_dawn.toTime_t());
+    m_todayDevice->setStateValue(sunsetStateTypeId, m_sunset.toTime_t());
+
+}
+
+void DevicePluginDateTime::onMinuteChanged()
+{
+    QDateTime zoneTime = QDateTime::currentDateTime().toTimeZone(m_timeZone);
+    qCDebug(dcDateTime) << "minute changed" << zoneTime.toString();
+
+    // validate alerts
+    foreach (Device *device, deviceManager()->findConfiguredDevices(alarmDeviceClassId)) {
+        Alarm *alarm = m_alarms.value(device);
+        alarm->validate(zoneTime);
+    }
+}
+
+void DevicePluginDateTime::onHourChanged()
+{
+    QDateTime zoneTime = QDateTime::currentDateTime().toTimeZone(m_timeZone);
+    qCDebug(dcDateTime) << "hour changed" << zoneTime.toString();
+
+    // check every hour in case we are offline in the wrong moment
+    searchGeoLocation();
+}
+
+void DevicePluginDateTime::onDayChanged()
+{
+    QDateTime zoneTime = QDateTime::currentDateTime().toTimeZone(m_timeZone);
+    qCDebug(dcDateTime) << "day changed" << zoneTime.toString();
+
+    if (m_todayDevice == 0)
+        return;
+
+    m_todayDevice->setStateValue(dayStateTypeId, zoneTime.date().day());
+    m_todayDevice->setStateValue(monthStateTypeId, zoneTime.date().month());
+    m_todayDevice->setStateValue(yearStateTypeId, zoneTime.date().year());
+    m_todayDevice->setStateValue(weekdayStateTypeId, zoneTime.date().dayOfWeek());
+    m_todayDevice->setStateValue(weekdayNameStateTypeId, zoneTime.date().longDayName(zoneTime.date().dayOfWeek()));
+    m_todayDevice->setStateValue(monthNameStateTypeId, zoneTime.date().longMonthName(zoneTime.date().month()));
+    if(zoneTime.date().dayOfWeek() == 6 || zoneTime.date().dayOfWeek() == 7){
+        m_todayDevice->setStateValue(weekendStateTypeId, true);
+    }else{
+        m_todayDevice->setStateValue(weekendStateTypeId, false);
     }
 }
 
@@ -195,12 +454,32 @@ void DevicePluginDateTime::onConfigValueChanged(const QString &paramName, const 
     if (newZone.isValid()) {
         m_timeZone = newZone;
         QDateTime zoneTime = QDateTime(QDate::currentDate(), QTime::currentTime(), m_timeZone);
-        qCDebug(dcDateTime) << "set new time zone:" << value.toString();
-        qCDebug(dcDateTime) << "current time" << zoneTime.currentDateTime().toString();
+        qCDebug(dcDateTime) << "        time zone:" << value.toString();
+        qCDebug(dcDateTime) << "     current time:" << zoneTime.currentDateTime().toString();
         qCDebug(dcDateTime) << "-----------------------------";
-        timeout();
     } else {
         qCWarning(dcDateTime) << "could not set new timezone" << value.toString() << ". keeping old time zone:" << m_timeZone;
     }
+
+    // update everything with the new timezone
+    onTimeout();
 }
 
+void DevicePluginDateTime::validateTimeTypes(const QDateTime &dateTime)
+{
+    if (m_todayDevice == 0) {
+        return;
+    }
+
+    if (dateTime == m_dusk) {
+        emit emitEvent(Event(duskEventTypeId, m_todayDevice->id()));
+    } else if (dateTime == m_sunrise) {
+        emit emitEvent(Event(sunriseEventTypeId, m_todayDevice->id()));
+    } else if (dateTime == m_noon) {
+        emit emitEvent(Event(noonEventTypeId, m_todayDevice->id()));
+    } else if (dateTime == m_dawn) {
+        emit emitEvent(Event(dawnEventTypeId, m_todayDevice->id()));
+    } else if (dateTime == m_sunset) {
+        emit emitEvent(Event(sunsetEventTypeId, m_todayDevice->id()));
+    }
+}

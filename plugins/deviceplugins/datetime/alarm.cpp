@@ -272,7 +272,7 @@ bool Alarm::checkTimeTypes(const QDateTime &dateTime)
 
 void Alarm::validate(const QDateTime &dateTime)
 {
-    qCDebug(dcDateTime) << name() << "validate" << dateTime.toString() << "...";
+    qCDebug(dcDateTime) << name() << "validate...";
 
     if (!checkDayOfWeek(dateTime))
         return;
@@ -285,7 +285,7 @@ void Alarm::validate(const QDateTime &dateTime)
         if (!checkMinute(dateTime))
             return;
 
-        qCDebug(dcDateTime) << name() << "match time" << QTime(hours(), minutes()).toString("hh:mm") << "with offset" << m_offset;
+        qCDebug(dcDateTime) << name() << "time match" << QTime(hours(), minutes()).toString("hh:mm") << "with offset" << m_offset;
         emit alarm();
     }
 }

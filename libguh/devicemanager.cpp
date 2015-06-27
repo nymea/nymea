@@ -846,9 +846,11 @@ void DeviceManager::loadConfiguredDevices()
         // We always add the device to the list in this case. If its in the storedDevices
         // it means that it was working at some point so lets still add it as there might
         // be rules associated with this device. Device::setupCompleted() will be false.
-        setupDevice(device);
-
+        DeviceSetupStatus status = setupDevice(device);
         m_configuredDevices.append(device);
+
+        if (status == DeviceSetupStatus::DeviceSetupStatusSuccess)
+            postSetupDevice(device);
     }
     settings.endGroup();
 }

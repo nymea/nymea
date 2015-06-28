@@ -126,7 +126,7 @@
                             "idName": "sunset",
                             "name": "sunset",
                             "unit": "UnixTime",
-                            "type": "uint",
+                            "type": "int",
                             "defaultValue": 0
                         },
                         {

@@ -215,9 +215,9 @@
                         {
                             "name": "offset",
                             "type": "int",
+                            "minValue": -120,
+                            "maxValue": 120,
                             "unit": "Minutes",
-                            "minValue": -59,
-                            "maxValue": 59,
                             "defaultValue": 0
                         }
                     ],

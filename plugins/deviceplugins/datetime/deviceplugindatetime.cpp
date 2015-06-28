@@ -172,10 +172,10 @@ DeviceManager::DeviceSetupStatus DevicePluginDateTime::setupDevice(Device *devic
 void DevicePluginDateTime::postSetupDevice(Device *device)
 {
     Q_UNUSED(device)
+    updateTimes();
     onMinuteChanged();
     onHourChanged();
     onDayChanged();
-    onTimeout();
 }
 
 void DevicePluginDateTime::deviceRemoved(Device *device)
@@ -343,24 +343,7 @@ void DevicePluginDateTime::processTimesData(const QByteArray &data)
     qCDebug(dcDateTime) << " dawn     :" << m_dawn.toString();
     qCDebug(dcDateTime) << "---------------------------------------------";
 
-    // alarms
-    foreach (Alarm *alarm, m_alarms.values()) {
-        alarm->setDusk(m_dusk);
-        alarm->setSunrise(m_sunrise);
-        alarm->setNoon(m_noon);
-        alarm->setDawn(m_dawn);
-        alarm->setSunset(m_sunset);
-    }
-
-    // date
-    if (m_todayDevice == 0)
-        return;
-
-    m_todayDevice->setStateValue(duskStateTypeId, m_dusk.toTime_t());
-    m_todayDevice->setStateValue(sunriseStateTypeId, m_sunrise.toTime_t());
-    m_todayDevice->setStateValue(noonStateTypeId, m_noon.toTime_t());
-    m_todayDevice->setStateValue(dawnStateTypeId, m_dawn.toTime_t());
-    m_todayDevice->setStateValue(sunsetStateTypeId, m_sunset.toTime_t());
+    updateTimes();
 }
 
 
@@ -434,6 +417,28 @@ void DevicePluginDateTime::onDayChanged()
     }else{
         m_todayDevice->setStateValue(weekendStateTypeId, false);
     }
+}
+
+void DevicePluginDateTime::updateTimes()
+{
+    // alarms
+    foreach (Alarm *alarm, m_alarms.values()) {
+        alarm->setDusk(m_dusk);
+        alarm->setSunrise(m_sunrise);
+        alarm->setNoon(m_noon);
+        alarm->setDawn(m_dawn);
+        alarm->setSunset(m_sunset);
+    }
+
+    // date
+    if (m_todayDevice == 0)
+        return;
+
+    m_todayDevice->setStateValue(duskStateTypeId, m_dusk.toTime_t());
+    m_todayDevice->setStateValue(sunriseStateTypeId, m_sunrise.toTime_t());
+    m_todayDevice->setStateValue(noonStateTypeId, m_noon.toTime_t());
+    m_todayDevice->setStateValue(dawnStateTypeId, m_dawn.toTime_t());
+    m_todayDevice->setStateValue(sunsetStateTypeId, m_sunset.toTime_t());
 }
 
 void DevicePluginDateTime::onConfigValueChanged(const QString &paramName, const QVariant &value)

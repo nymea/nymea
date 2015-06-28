@@ -1,3 +1,23 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *                                                                         *
+ *  This file is part of guh.                                              *
+ *                                                                         *
+ *  Guh is free software: you can redistribute it and/or modify            *
+ *  it under the terms of the GNU General Public License as published by   *
+ *  the Free Software Foundation, version 2 of the License.                *
+ *                                                                         *
+ *  Guh is distributed in the hope that it will be useful,                 *
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of         *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          *
+ *  GNU General Public License for more details.                           *
+ *                                                                         *
+ *  You should have received a copy of the GNU General Public License      *
+ *  along with guh. If not, see <http://www.gnu.org/licenses/>.            *
+ *                                                                         *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 #ifndef ALARM_H
 #define ALARM_H
 
@@ -55,8 +75,8 @@ public:
     void setDusk(const QDateTime &dusk);
     void setSunrise(const QDateTime &sunrise);
     void setNoon(const QDateTime &noon);
-    void setDawn(const QDateTime &dawn);
     void setSunset(const QDateTime &sunset);
+    void setDawn(const QDateTime &dawn);
 
     void setTimeType(const TimeType &timeType);
     void setTimeType(const QString &timeType);

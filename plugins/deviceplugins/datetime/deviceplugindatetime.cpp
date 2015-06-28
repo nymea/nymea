@@ -450,9 +450,6 @@ void DevicePluginDateTime::onConfigValueChanged(const QString &paramName, const 
     } else {
         qCWarning(dcDateTime) << "could not set new timezone" << value.toString() << ". keeping old time zone:" << m_timeZone;
     }
-
-    // update everything with the new timezone
-    onTimeout();
 }
 
 void DevicePluginDateTime::validateTimeTypes(const QDateTime &dateTime)

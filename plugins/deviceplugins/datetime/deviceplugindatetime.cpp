@@ -90,7 +90,12 @@
 DevicePluginDateTime::DevicePluginDateTime() :
     m_timer(0),
     m_todayDevice(0),
-    m_timeZone(QTimeZone("Europe/Vienna"))
+    m_timeZone(QTimeZone("Europe/Vienna")),
+    m_dusk(QDateTime(QDate(1970, 1, 1), QTime(0,0,0))),
+    m_sunrise(QDateTime(QDate(1970, 1, 1), QTime(0,0,0))),
+    m_noon(QDateTime(QDate(1970, 1, 1), QTime(0,0,0))),
+    m_sunset(QDateTime(QDate(1970, 1, 1), QTime(0,0,0))),
+    m_dawn(QDateTime(QDate(1970, 1, 1), QTime(0,0,0)))
 {
     m_timer = new QTimer(this);
     m_timer->setInterval(1000);
@@ -98,10 +103,7 @@ DevicePluginDateTime::DevicePluginDateTime() :
     m_timeZone = QTimeZone(configValue("timezone").toByteArray());
     m_currentDateTime = QDateTime(QDate::currentDate(), QTime::currentTime(), m_timeZone);
 
-    connect(m_timer, &QTimer::timeout, this, &DevicePluginDateTime::onTimeout);
-    connect(this, &DevicePluginDateTime::minuteChanged, this, &DevicePluginDateTime::onMinuteChanged);
-    connect(this, &DevicePluginDateTime::hourChanged, this, &DevicePluginDateTime::onHourChanged);
-    connect(this, &DevicePluginDateTime::dayChanged, this, &DevicePluginDateTime::onDayChanged);
+    connect(m_timer, &QTimer::timeout, this, &DevicePluginDateTime::onSecondChanged);
     connect(this, &DevicePluginDateTime::configValueChanged, this, &DevicePluginDateTime::onConfigValueChanged);
 }
 
@@ -172,10 +174,11 @@ DeviceManager::DeviceSetupStatus DevicePluginDateTime::setupDevice(Device *devic
 void DevicePluginDateTime::postSetupDevice(Device *device)
 {
     Q_UNUSED(device)
+    QDateTime zoneTime = QDateTime::currentDateTime().toTimeZone(m_timeZone);
     updateTimes();
-    onMinuteChanged();
-    onHourChanged();
-    onDayChanged();
+    onMinuteChanged(zoneTime);
+    onHourChanged(zoneTime);
+    onDayChanged(zoneTime);
 }
 
 void DevicePluginDateTime::deviceRemoved(Device *device)
@@ -346,27 +349,6 @@ void DevicePluginDateTime::processTimesData(const QByteArray &data)
     updateTimes();
 }
 
-
-void DevicePluginDateTime::onTimeout()
-{
-    QDateTime zoneTime = QDateTime::currentDateTime().toTimeZone(m_timeZone);
-    //qCDebug(dcDateTime) << m_timeZone.id() << zoneTime.toString();
-
-    validateTimeTypes(zoneTime);
-
-    if (zoneTime.date() != m_currentDateTime.date())
-        emit dayChanged();
-
-    if (zoneTime.time().hour() != m_currentDateTime.time().hour())
-        emit hourChanged();
-
-    if (zoneTime.time().minute() != m_currentDateTime.time().minute())
-        emit minuteChanged();
-
-    // just store for compairing
-    m_currentDateTime = zoneTime;
-}
-
 void DevicePluginDateTime::onAlarm()
 {
     Alarm *alarm = static_cast<Alarm *>(sender());
@@ -377,42 +359,58 @@ void DevicePluginDateTime::onAlarm()
     emit emitEvent(Event(alarmEventTypeId, device->id()));
 }
 
-void DevicePluginDateTime::onMinuteChanged()
+void DevicePluginDateTime::onSecondChanged()
 {
-    QDateTime zoneTime = QDateTime::currentDateTime().toTimeZone(m_timeZone);
-    qCDebug(dcDateTime) << "minute changed" << zoneTime.toString();
+    QDateTime currentTime = QDateTime::currentDateTime().toTimeZone(m_timeZone);
+    // make shore that ms are 0
+    QDateTime zoneTime = QDateTime(QDate(currentTime.date()), QTime(currentTime.time().hour(), currentTime.time().minute(), currentTime.time().second(), 0));
+
+    validateTimeTypes(zoneTime);
+
+    if (zoneTime.date() != m_currentDateTime.date())
+        onDayChanged(zoneTime);
+
+    if (zoneTime.time().hour() != m_currentDateTime.time().hour())
+        onHourChanged(zoneTime);
+
+    if (zoneTime.time().minute() != m_currentDateTime.time().minute())
+        onMinuteChanged(zoneTime);
+
+    // just store for compairing
+    m_currentDateTime = zoneTime;
+}
+
+void DevicePluginDateTime::onMinuteChanged(const QDateTime &dateTime)
+{
+    qCDebug(dcDateTime) << "minute changed" << dateTime.toString();
 
     // validate alerts
-    foreach (Device *device, deviceManager()->findConfiguredDevices(alarmDeviceClassId)) {
-        Alarm *alarm = m_alarms.value(device);
-        alarm->validate(zoneTime);
+    foreach (Alarm *alarm, m_alarms.values()) {
+        alarm->validate(dateTime);
     }
 }
 
-void DevicePluginDateTime::onHourChanged()
+void DevicePluginDateTime::onHourChanged(const QDateTime &dateTime)
 {
-    QDateTime zoneTime = QDateTime::currentDateTime().toTimeZone(m_timeZone);
-    qCDebug(dcDateTime) << "hour changed" << zoneTime.toString();
-
+    qCDebug(dcDateTime) << "hour changed" <<  dateTime.toString();
     // check every hour in case we are offline in the wrong moment
     searchGeoLocation();
 }
 
-void DevicePluginDateTime::onDayChanged()
+void DevicePluginDateTime::onDayChanged(const QDateTime &dateTime)
 {
-    QDateTime zoneTime = QDateTime::currentDateTime().toTimeZone(m_timeZone);
-    qCDebug(dcDateTime) << "day changed" << zoneTime.toString();
+    qCDebug(dcDateTime) << "day changed" << dateTime.toString();
 
     if (m_todayDevice == 0)
         return;
 
-    m_todayDevice->setStateValue(dayStateTypeId, zoneTime.date().day());
-    m_todayDevice->setStateValue(monthStateTypeId, zoneTime.date().month());
-    m_todayDevice->setStateValue(yearStateTypeId, zoneTime.date().year());
-    m_todayDevice->setStateValue(weekdayStateTypeId, zoneTime.date().dayOfWeek());
-    m_todayDevice->setStateValue(weekdayNameStateTypeId, zoneTime.date().longDayName(zoneTime.date().dayOfWeek()));
-    m_todayDevice->setStateValue(monthNameStateTypeId, zoneTime.date().longMonthName(zoneTime.date().month()));
-    if(zoneTime.date().dayOfWeek() == 6 || zoneTime.date().dayOfWeek() == 7){
+    m_todayDevice->setStateValue(dayStateTypeId, dateTime.date().day());
+    m_todayDevice->setStateValue(monthStateTypeId, dateTime.date().month());
+    m_todayDevice->setStateValue(yearStateTypeId, dateTime.date().year());
+    m_todayDevice->setStateValue(weekdayStateTypeId, dateTime.date().dayOfWeek());
+    m_todayDevice->setStateValue(weekdayNameStateTypeId, dateTime.date().longDayName(dateTime.date().dayOfWeek()));
+    m_todayDevice->setStateValue(monthNameStateTypeId, dateTime.date().longMonthName(dateTime.date().month()));
+    if(dateTime.date().dayOfWeek() == 6 || dateTime.date().dayOfWeek() == 7){
         m_todayDevice->setStateValue(weekendStateTypeId, true);
     }else{
         m_todayDevice->setStateValue(weekendStateTypeId, false);
@@ -474,8 +472,7 @@ void DevicePluginDateTime::validateTimeTypes(const QDateTime &dateTime)
         emit emitEvent(Event(sunsetEventTypeId, m_todayDevice->id()));
     }
 
-    foreach (Device *device, deviceManager()->findConfiguredDevices(alarmDeviceClassId)) {
-        Alarm *alarm = m_alarms.value(device);
+    foreach (Alarm *alarm, m_alarms.values()) {
         alarm->validateTimes(dateTime);
     }
 }

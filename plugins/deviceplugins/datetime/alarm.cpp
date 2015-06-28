@@ -22,7 +22,12 @@
 #include "loggingcategories.h"
 
 Alarm::Alarm(QObject *parent) :
-    QObject(parent)
+    QObject(parent),
+    m_duskOffset(QDateTime(QDate(1970, 1, 1), QTime(0,0,0))),
+    m_sunriseOffset(QDateTime(QDate(1970, 1, 1), QTime(0,0,0))),
+    m_noonOffset(QDateTime(QDate(1970, 1, 1), QTime(0,0,0))),
+    m_sunsetOffset(QDateTime(QDate(1970, 1, 1), QTime(0,0,0))),
+    m_dawnOffset(QDateTime(QDate(1970, 1, 1), QTime(0,0,0)))
 {
 }
 
@@ -174,7 +179,7 @@ void Alarm::setTimeType(const QString &timeType)
         m_timeType = TimeTypeDusk;
     } else if (timeType == "sunrise") {
         m_timeType = TimeTypeSunrise;
-    } else if (timeType == "noon") {
+    } else if (timeType == "sunnoon") {
         m_timeType = TimeTypeNoon;
     } else if (timeType == "sunset") {
         m_timeType = TimeTypeSunset;
@@ -186,6 +191,11 @@ void Alarm::setTimeType(const QString &timeType)
 Alarm::TimeType Alarm::timeType() const
 {
     return m_timeType;
+}
+
+QDateTime Alarm::getAlertTime() const
+{
+    return QDateTime(QDate::currentDate(), QTime(hours(), minutes())).addSecs(m_offset * 60);
 }
 
 QDateTime Alarm::calculateOffsetTime(const QDateTime &dateTime) const
@@ -201,10 +211,8 @@ QDateTime Alarm::calculateOffsetTime(const QDateTime &dateTime) const
 }
 
 bool Alarm::checkDayOfWeek(const QDateTime &dateTime)
-{
-    QDateTime offsetTime = calculateOffsetTime(dateTime);
-
-    switch (offsetTime.date().dayOfWeek()) {
+{    
+    switch (dateTime.date().dayOfWeek()) {
     case Qt::Monday:
         return monday();
     case Qt::Tuesday:
@@ -226,22 +234,18 @@ bool Alarm::checkDayOfWeek(const QDateTime &dateTime)
 
 bool Alarm::checkHour(const QDateTime &dateTime)
 {
-    QDateTime offsetTime = calculateOffsetTime(dateTime);
-
-    if (offsetTime.time().hour() != m_hours) {
-        return false;
+    if (getAlertTime().time().hour() == dateTime.time().hour()) {
+        return true;
     }
-    return true;
+    return false;
 }
 
 bool Alarm::checkMinute(const QDateTime &dateTime)
 {
-    QDateTime offsetTime = calculateOffsetTime(dateTime);
-
-    if (offsetTime.time().minute() != m_minutes) {
-        return false;
+    if (getAlertTime().time().minute() == dateTime.time().minute()) {
+        return true;
     }
-    return true;
+    return false;
 }
 
 bool Alarm::checkTimeTypes(const QDateTime &dateTime)
@@ -313,7 +317,7 @@ void Alarm::validate(const QDateTime &dateTime)
         return;
     }
 
-    qCDebug(dcDateTime) << name() << "time match" << QTime(hours(), minutes()).toString("hh:mm") << "with offset" << m_offset;
+    qCDebug(dcDateTime) << name() << "time match" << dateTime.time().toString() << QTime(hours(), minutes()).toString("hh:mm") << "with offset" << m_offset;
     emit alarm();
 }
 

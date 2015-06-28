@@ -23,11 +23,11 @@
 
 Alarm::Alarm(QObject *parent) :
     QObject(parent),
-    m_duskOffset(QDateTime(QDate(1970, 1, 1), QTime(0,0,0))),
-    m_sunriseOffset(QDateTime(QDate(1970, 1, 1), QTime(0,0,0))),
-    m_noonOffset(QDateTime(QDate(1970, 1, 1), QTime(0,0,0))),
-    m_sunsetOffset(QDateTime(QDate(1970, 1, 1), QTime(0,0,0))),
-    m_dawnOffset(QDateTime(QDate(1970, 1, 1), QTime(0,0,0)))
+    m_duskOffset(QDateTime()),
+    m_sunriseOffset(QDateTime()),
+    m_noonOffset(QDateTime()),
+    m_sunsetOffset(QDateTime()),
+    m_dawnOffset(QDateTime())
 {
 }
 

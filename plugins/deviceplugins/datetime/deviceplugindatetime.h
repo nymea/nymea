@@ -23,6 +23,7 @@
 
 #include "plugin/deviceplugin.h"
 #include "alarm.h"
+#include "countdown.h"
 
 #include <QDateTime>
 #include <QTimeZone>
@@ -45,6 +46,7 @@ public:
     void postSetupDevice(Device *device) override;
     void deviceRemoved(Device *device) override;
 
+    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
     void networkManagerReplyReady(QNetworkReply *reply) override;
 
     void startMonitoringAutoDevices() override;
@@ -56,6 +58,7 @@ private:
     QDateTime m_currentDateTime;
 
     QHash<Device *, Alarm *> m_alarms;
+    QHash<Device *, Countdown *> m_countdowns;
 
     QDateTime m_dusk;
     QDateTime m_sunrise;
@@ -81,6 +84,8 @@ signals:
 
 private slots:
     void onAlarm();
+    void onCountdownTimeout();
+    void onCountdownRunningChanged(const bool &running);
     void onSecondChanged();
     void onMinuteChanged(const QDateTime &dateTime);
     void onHourChanged(const QDateTime &dateTime);

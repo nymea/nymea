@@ -1260,9 +1260,6 @@ DeviceManager::DeviceError DeviceManager::verifyParam(const QList<ParamType> par
 DeviceManager::DeviceError DeviceManager::verifyParam(const ParamType &paramType, const Param &param)
 {
     if (paramType.name() == param.name()) {
-        qCDebug(dcDeviceManager) << paramType;
-        qCDebug(dcDeviceManager) << param;
-        qCDebug(dcDeviceManager) << QVariant::typeToName(paramType.type()) << param.value() << param.value().convert(paramType.type());
 
         if (!param.value().canConvert(paramType.type())) {
             qCWarning(dcDeviceManager) << "Wrong parameter type for param" << param.name() << " Got:" << param.value() << " Expected:" << QVariant::typeToName(paramType.type());

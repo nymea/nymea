@@ -200,14 +200,7 @@ QDateTime Alarm::getAlertTime() const
 
 QDateTime Alarm::calculateOffsetTime(const QDateTime &dateTime) const
 {
-    QDateTime offsetTime = QDateTime(dateTime).addSecs(m_offset * 60);
-
-    qCDebug(dcDateTime) << name() << "original time:" << dateTime.toString();
-    qCDebug(dcDateTime) << name() << "offset:" << m_offset << "minutes";
-    qCDebug(dcDateTime) << name() << "new time:" << offsetTime.toString();
-    qCDebug(dcDateTime) << name() << "--------------------------------------------";
-
-    return offsetTime;
+    return QDateTime(dateTime).addSecs(m_offset * 60);
 }
 
 bool Alarm::checkDayOfWeek(const QDateTime &dateTime)
@@ -297,27 +290,17 @@ void Alarm::validate(const QDateTime &dateTime)
     if (m_timeType != TimeTypeTime)
         return;
 
-    qCDebug(dcDateTime) << name() << "validate...";
-
-    if (!checkDayOfWeek(dateTime)) {
-        qCDebug(dcDateTime) << name() << "check day...FAIL";
+    if (!checkDayOfWeek(dateTime))
         return;
-    }
-    qCDebug(dcDateTime) << name() << "check day...OK";
 
     // check if should use the given time
-    if (!checkHour(dateTime)) {
-        qCDebug(dcDateTime) << name() << "check hour...FAIL";
+    if (!checkHour(dateTime))
         return;
-    }
-    qCDebug(dcDateTime) << name() << "check hour...OK";
 
-    if (!checkMinute(dateTime)) {
-        qCDebug(dcDateTime) << name() << "check minute...FAIL";
+    if (!checkMinute(dateTime))
         return;
-    }
 
-    qCDebug(dcDateTime) << name() << "time match" << dateTime.time().toString() << QTime(hours(), minutes()).toString("hh:mm") << "with offset" << m_offset;
+    qCDebug(dcDateTime) << name() << "time match" << dateTime.time().toString("hh:mm") << QTime(hours(), minutes()).toString("hh:mm") << "with offset" << m_offset;
     emit alarm();
 }
 

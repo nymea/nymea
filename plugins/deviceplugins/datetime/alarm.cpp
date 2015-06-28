@@ -190,8 +190,13 @@ Alarm::TimeType Alarm::timeType() const
 
 QDateTime Alarm::calculateOffsetTime(const QDateTime &dateTime) const
 {
-    QDateTime offsetTime = QDateTime(dateTime);
-    offsetTime.time().addSecs(m_offset * 60);
+    QDateTime offsetTime = QDateTime(dateTime).addSecs(m_offset * 60);
+
+    qCDebug(dcDateTime) << name() << "original time:" << dateTime.toString();
+    qCDebug(dcDateTime) << name() << "offset:" << m_offset << "minutes";
+    qCDebug(dcDateTime) << name() << "new time:" << offsetTime.toString();
+    qCDebug(dcDateTime) << name() << "--------------------------------------------";
+
     return offsetTime;
 }
 
@@ -285,6 +290,9 @@ bool Alarm::checkTimeTypes(const QDateTime &dateTime)
 
 void Alarm::validate(const QDateTime &dateTime)
 {
+    if (m_timeType != TimeTypeTime)
+        return;
+
     qCDebug(dcDateTime) << name() << "validate...";
 
     if (!checkDayOfWeek(dateTime)) {
@@ -294,21 +302,19 @@ void Alarm::validate(const QDateTime &dateTime)
     qCDebug(dcDateTime) << name() << "check day...OK";
 
     // check if should use the given time
-    if (m_timeType == TimeTypeTime) {
-        if (!checkHour(dateTime)) {
-            qCDebug(dcDateTime) << name() << "check hour...FAIL";
-            return;
-        }
-        qCDebug(dcDateTime) << name() << "check hour...OK";
-
-        if (!checkMinute(dateTime)) {
-            qCDebug(dcDateTime) << name() << "check minute...FAIL";
-            return;
-        }
-
-        qCDebug(dcDateTime) << name() << "time match" << QTime(hours(), minutes()).toString("hh:mm") << "with offset" << m_offset;
-        emit alarm();
+    if (!checkHour(dateTime)) {
+        qCDebug(dcDateTime) << name() << "check hour...FAIL";
+        return;
     }
+    qCDebug(dcDateTime) << name() << "check hour...OK";
+
+    if (!checkMinute(dateTime)) {
+        qCDebug(dcDateTime) << name() << "check minute...FAIL";
+        return;
+    }
+
+    qCDebug(dcDateTime) << name() << "time match" << QTime(hours(), minutes()).toString("hh:mm") << "with offset" << m_offset;
+    emit alarm();
 }
 
 void Alarm::validateTimes(const QDateTime &dateTime)

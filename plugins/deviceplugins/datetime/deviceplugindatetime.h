@@ -90,6 +90,8 @@ private slots:
     void onHourChanged();
     void onDayChanged();
 
+    void updateTimes();
+
     void onConfigValueChanged(const QString &paramName, const QVariant &value);
     void validateTimeTypes(const QDateTime &dateTime);
 

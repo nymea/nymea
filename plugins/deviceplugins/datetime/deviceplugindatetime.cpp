@@ -91,11 +91,11 @@ DevicePluginDateTime::DevicePluginDateTime() :
     m_timer(0),
     m_todayDevice(0),
     m_timeZone(QTimeZone("Europe/Vienna")),
-    m_dusk(QDateTime(QDate(1970, 1, 1), QTime(0,0,0))),
-    m_sunrise(QDateTime(QDate(1970, 1, 1), QTime(0,0,0))),
-    m_noon(QDateTime(QDate(1970, 1, 1), QTime(0,0,0))),
-    m_sunset(QDateTime(QDate(1970, 1, 1), QTime(0,0,0))),
-    m_dawn(QDateTime(QDate(1970, 1, 1), QTime(0,0,0)))
+    m_dusk(QDateTime()),
+    m_sunrise(QDateTime()),
+    m_noon(QDateTime()),
+    m_sunset(QDateTime()),
+    m_dawn(QDateTime())
 {
     m_timer = new QTimer(this);
     m_timer->setInterval(1000);
@@ -190,12 +190,13 @@ DeviceManager::DeviceSetupStatus DevicePluginDateTime::setupDevice(Device *devic
 
 void DevicePluginDateTime::postSetupDevice(Device *device)
 {
-    Q_UNUSED(device)
-    QDateTime zoneTime = QDateTime::currentDateTime().toTimeZone(m_timeZone);
-    updateTimes();
-    onMinuteChanged(zoneTime);
-    onHourChanged(zoneTime);
-    onDayChanged(zoneTime);
+    if (device->deviceClassId() == todayDeviceClassId) {
+        QDateTime zoneTime = QDateTime::currentDateTime().toTimeZone(m_timeZone);
+        updateTimes();
+        onMinuteChanged(zoneTime);
+        onHourChanged(zoneTime);
+        onDayChanged(zoneTime);
+    }
 }
 
 void DevicePluginDateTime::deviceRemoved(Device *device)
@@ -489,11 +490,31 @@ void DevicePluginDateTime::updateTimes()
     if (m_todayDevice == 0)
         return;
 
-    m_todayDevice->setStateValue(duskStateTypeId, m_dusk.toTime_t());
-    m_todayDevice->setStateValue(sunriseStateTypeId, m_sunrise.toTime_t());
-    m_todayDevice->setStateValue(noonStateTypeId, m_noon.toTime_t());
-    m_todayDevice->setStateValue(dawnStateTypeId, m_dawn.toTime_t());
-    m_todayDevice->setStateValue(sunsetStateTypeId, m_sunset.toTime_t());
+    if (m_dusk.isValid()) {
+        m_todayDevice->setStateValue(duskStateTypeId, m_dusk.toTime_t());
+    } else {
+        m_todayDevice->setStateValue(duskStateTypeId, 0);
+    }
+    if (m_dusk.isValid()) {
+        m_todayDevice->setStateValue(sunriseStateTypeId, m_sunrise.toTime_t());
+    } else {
+        m_todayDevice->setStateValue(sunriseStateTypeId, 0);
+    }
+    if (m_dusk.isValid()) {
+        m_todayDevice->setStateValue(noonStateTypeId, m_noon.toTime_t());
+    } else {
+        m_todayDevice->setStateValue(noonStateTypeId, 0);
+    }
+    if (m_dusk.isValid()) {
+        m_todayDevice->setStateValue(sunsetStateTypeId, m_sunset.toTime_t());
+    } else {
+        m_todayDevice->setStateValue(sunsetStateTypeId, 0);
+    }
+    if (m_dusk.isValid()) {
+        m_todayDevice->setStateValue(dawnStateTypeId, m_dawn.toTime_t());
+    } else {
+        m_todayDevice->setStateValue(dawnStateTypeId, 0);
+    }
 }
 
 void DevicePluginDateTime::onConfigValueChanged(const QString &paramName, const QVariant &value)

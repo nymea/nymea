@@ -60,9 +60,8 @@ private:
     QDateTime m_dusk;
     QDateTime m_sunrise;
     QDateTime m_noon;
-    QDateTime m_dawn;
     QDateTime m_sunset;
-
+    QDateTime m_dawn;
 
     QList<QNetworkReply *> m_locationReplies;
     QList<QNetworkReply *> m_timeReplies;
@@ -79,16 +78,13 @@ signals:
     void noon();
     void sunrise();
     void dawn();
-    void minuteChanged();
-    void hourChanged();
-    void dayChanged();
 
 private slots:
-    void onTimeout();
     void onAlarm();
-    void onMinuteChanged();
-    void onHourChanged();
-    void onDayChanged();
+    void onSecondChanged();
+    void onMinuteChanged(const QDateTime &dateTime);
+    void onHourChanged(const QDateTime &dateTime);
+    void onDayChanged(const QDateTime &dateTime);
 
     void updateTimes();
 

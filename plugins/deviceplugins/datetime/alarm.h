@@ -103,6 +103,7 @@ private:
     QDateTime m_sunsetOffset;
     QDateTime m_dawnOffset;
 
+    QDateTime getAlertTime() const;
     QDateTime calculateOffsetTime(const QDateTime &dateTime) const;
 
     bool checkDayOfWeek(const QDateTime &dateTime);

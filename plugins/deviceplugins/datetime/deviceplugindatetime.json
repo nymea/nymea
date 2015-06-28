@@ -227,6 +227,16 @@
                             "idName": "alarm",
                             "name": "alarm"
                         }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "261b79b5-b60d-4b14-af95-dc87184ec332",
+                            "idName": "nextAlarm",
+                            "name": "next alarm",
+                            "unit": "UnixTime",
+                            "type": "int",
+                            "defaultValue": 0
+                        }
                     ]
                 }
             ]

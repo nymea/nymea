@@ -1,3 +1,23 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *                                                                         *
+ *  This file is part of guh.                                              *
+ *                                                                         *
+ *  Guh is free software: you can redistribute it and/or modify            *
+ *  it under the terms of the GNU General Public License as published by   *
+ *  the Free Software Foundation, version 2 of the License.                *
+ *                                                                         *
+ *  Guh is distributed in the hope that it will be useful,                 *
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of         *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          *
+ *  GNU General Public License for more details.                           *
+ *                                                                         *
+ *  You should have received a copy of the GNU General Public License      *
+ *  along with guh. If not, see <http://www.gnu.org/licenses/>.            *
+ *                                                                         *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 #include "alarm.h"
 #include "loggingcategories.h"
 
@@ -131,14 +151,14 @@ void Alarm::setNoon(const QDateTime &noon)
     m_noonOffset = calculateOffsetTime(noon);
 }
 
-void Alarm::setDawn(const QDateTime &dawn)
-{
-    m_dawnOffset = calculateOffsetTime(dawn);
-}
-
 void Alarm::setSunset(const QDateTime &sunset)
 {
     m_sunsetOffset = calculateOffsetTime(sunset);
+}
+
+void Alarm::setDawn(const QDateTime &dawn)
+{
+    m_dawnOffset = calculateOffsetTime(dawn);
 }
 
 void Alarm::setTimeType(const Alarm::TimeType &timeType)
@@ -156,10 +176,10 @@ void Alarm::setTimeType(const QString &timeType)
         m_timeType = TimeTypeSunrise;
     } else if (timeType == "noon") {
         m_timeType = TimeTypeNoon;
-    } else if (timeType == "dawn") {
-        m_timeType = TimeTypeDawn;
     } else if (timeType == "sunset") {
         m_timeType = TimeTypeSunset;
+    } else if (timeType == "dawn") {
+        m_timeType = TimeTypeDawn;
     }
 }
 
@@ -182,25 +202,18 @@ bool Alarm::checkDayOfWeek(const QDateTime &dateTime)
     switch (offsetTime.date().dayOfWeek()) {
     case Qt::Monday:
         return monday();
-        break;
     case Qt::Tuesday:
         return tuesday();
-        break;
     case Qt::Wednesday:
         return wednesday();
-        break;
     case Qt::Thursday:
         return thursday();
-        break;
     case Qt::Friday:
         return friday();
-        break;
     case Qt::Saturday:
         return saturday();
-        break;
     case Qt::Sunday:
         return sunday();
-        break;
     default:
         return false;
     }
@@ -231,36 +244,36 @@ bool Alarm::checkTimeTypes(const QDateTime &dateTime)
     bool checkOk = false;
     switch (m_timeType) {
     case TimeTypeTime:
-        qCWarning(dcDateTime) << name() << "wrong time type";
+        qCWarning(dcDateTime) << name() << "wrong time type. This should never happen!";
         checkOk = false;
         break;
     case TimeTypeDusk:
         if (m_duskOffset == dateTime) {
-            qCDebug(dcDateTime) << name() << "match dusk with offset" << m_offset;
+            qCDebug(dcDateTime) << name() << "time:" << dateTime.time().toString() << "matches dusk time" << m_duskOffset.time().toString() << "with offset" << m_offset;
             checkOk = true;
         }
         break;
     case TimeTypeSunrise:
         if (m_sunriseOffset == dateTime) {
-            qCDebug(dcDateTime) << name() << "match sunrise with offset" << m_offset;
+            qCDebug(dcDateTime) << name() << "time:" << dateTime.time().toString() << "matches sunrise time" << m_sunriseOffset.time().toString() << "with offset" << m_offset;
             checkOk = true;
         }
         break;
     case TimeTypeNoon:
         if (m_noonOffset == dateTime) {
-            qCDebug(dcDateTime) << name() << "match noon with offset" << m_offset;
-            checkOk = true;
-        }
-        break;
-    case TimeTypeDawn:
-        if (m_dawnOffset == dateTime) {
-            qCDebug(dcDateTime) << name() << "match dawn with offset" << m_offset;
+            qCDebug(dcDateTime) << name() << "time:" << dateTime.time().toString() << "matches noon time" << m_noonOffset.time().toString() << "with offset" << m_offset;
             checkOk = true;
         }
         break;
     case TimeTypeSunset:
         if (m_sunsetOffset == dateTime) {
-            qCDebug(dcDateTime) << name() << "match sunset with offset" << m_offset;
+            qCDebug(dcDateTime) << name() << "time:" << dateTime.time().toString() << "matches sunset time" << m_sunsetOffset.time().toString() << "with offset" << m_offset;
+            checkOk = true;
+        }
+        break;
+    case TimeTypeDawn:
+        if (m_dawnOffset == dateTime) {
+            qCDebug(dcDateTime) << name() << "time:" << dateTime.time().toString() << "matches dawn time" << m_dawnOffset.time().toString() << "with offset" << m_offset;
             checkOk = true;
         }
         break;
@@ -274,16 +287,24 @@ void Alarm::validate(const QDateTime &dateTime)
 {
     qCDebug(dcDateTime) << name() << "validate...";
 
-    if (!checkDayOfWeek(dateTime))
+    if (!checkDayOfWeek(dateTime)) {
+        qCDebug(dcDateTime) << name() << "check day...FAIL";
         return;
+    }
+    qCDebug(dcDateTime) << name() << "check day...OK";
 
     // check if should use the given time
     if (m_timeType == TimeTypeTime) {
-        if (!checkHour(dateTime))
+        if (!checkHour(dateTime)) {
+            qCDebug(dcDateTime) << name() << "check hour...FAIL";
             return;
+        }
+        qCDebug(dcDateTime) << name() << "check hour...OK";
 
-        if (!checkMinute(dateTime))
+        if (!checkMinute(dateTime)) {
+            qCDebug(dcDateTime) << name() << "check minute...FAIL";
             return;
+        }
 
         qCDebug(dcDateTime) << name() << "time match" << QTime(hours(), minutes()).toString("hh:mm") << "with offset" << m_offset;
         emit alarm();

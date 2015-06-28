@@ -238,6 +238,81 @@
                             "defaultValue": 0
                         }
                     ]
+                },
+                {
+                    "deviceClassId": "805c8948-e663-4ba6-aa67-df7446ed7098",
+                    "idName": "countdown",
+                    "name": "Countdown",
+                    "createMethods": ["user"],
+                    "paramTypes": [
+                        {
+                            "name": "name",
+                            "type": "QString",
+                            "inputType": "TextLine"
+                        },
+                        {
+                            "name": "seconds",
+                            "type": "int",
+                            "unit": "Seconds",
+                            "minValue": 0,
+                            "maxValue": 60,
+                            "defaultValue": 0
+                        },
+                        {
+                            "name": "minutes",
+                            "type": "int",
+                            "unit": "Minutes",
+                            "minValue": 0,
+                            "maxValue": 60,
+                            "defaultValue": 0
+                        },
+                        {
+                            "name": "hours",
+                            "type": "int",
+                            "unit": "Hours",
+                            "minValue": 0,
+                            "maxValue": 24,
+                            "defaultValue": 0
+                        },
+                        {
+                            "name": "repeating",
+                            "type": "bool",
+                            "defaultValue": false
+                        }
+                    ],
+                    "eventTypes": [
+                        {
+                            "id": "1db11351-ad67-448e-a784-216741a06a58",
+                            "idName": "timeout",
+                            "name": "timeout"
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "b21ccd53-1ebd-41a0-a2a3-662874e79837",
+                            "idName": "running",
+                            "name": "running",
+                            "type": "bool",
+                            "defaultValue": false
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "436e9923-6eff-444e-bde7-a61228a4d748",
+                            "idName": "start",
+                            "name": "start"
+                        },
+                        {
+                            "id": "bf4d1def-4159-4254-a76d-fd31aaa84e2d",
+                            "idName": "stop",
+                            "name": "stop"
+                        },
+                        {
+                            "id": "14aad613-b972-411f-93c9-f00bfd254285",
+                            "idName": "restart",
+                            "name": "restart"
+                        }
+                    ]
                 }
             ]
         }

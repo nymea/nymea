@@ -160,10 +160,27 @@ DeviceManager::DeviceSetupStatus DevicePluginDateTime::setupDevice(Device *devic
         alarm->setHours(device->paramValue("hours").toInt());
         alarm->setTimeType(device->paramValue("time type").toString());
         alarm->setOffset(device->paramValue("offset").toInt());
+        alarm->setDusk(m_dusk);
+        alarm->setSunrise(m_sunrise);
+        alarm->setNoon(m_noon);
+        alarm->setDawn(m_dawn);
+        alarm->setSunset(m_sunset);
 
         connect(alarm, &Alarm::alarm, this, &DevicePluginDateTime::onAlarm);
 
         m_alarms.insert(device, alarm);
+    }
+
+    if (device->deviceClassId() == countdownDeviceClassId) {
+        Countdown *countdown = new Countdown(device->paramValue("name").toString(),
+                                             QTime(device->paramValue("hours").toInt(),
+                                                   device->paramValue("minutes").toInt(),
+                                                   device->paramValue("seconds").toInt()),
+                                             device->paramValue("repeating").toBool());
+
+        connect(countdown, &Countdown::countdownTimeout, this, &DevicePluginDateTime::onCountdownTimeout);
+        qCDebug(dcDateTime) << "setup countdown" << countdown->name() << countdown->time().toString();
+        m_countdowns.insert(device, countdown);
     }
 
     m_timer->start();
@@ -198,7 +215,33 @@ void DevicePluginDateTime::deviceRemoved(Device *device)
         Alarm *alarm = m_alarms.take(device);
         alarm->deleteLater();
     }
+
+    // countdown
+    if (device->deviceClassId() == countdownDeviceClassId) {
+        Countdown *countdown = m_countdowns.take(device);
+        countdown->deleteLater();
+    }
+
     startMonitoringAutoDevices();
+}
+
+DeviceManager::DeviceError DevicePluginDateTime::executeAction(Device *device, const Action &action)
+{
+    if (device->deviceClassId() == countdownDeviceClassId) {
+        Countdown *countdown = m_countdowns.value(device);
+        if (action.actionTypeId() == startActionTypeId) {
+            countdown->start();
+            return DeviceManager::DeviceErrorNoError;
+        } else if (action.actionTypeId() == restartActionTypeId) {
+            countdown->restart();
+            return DeviceManager::DeviceErrorNoError;
+        } else if (action.actionTypeId() == stopActionTypeId) {
+            countdown->stop();
+            return DeviceManager::DeviceErrorNoError;
+        }
+        return DeviceManager::DeviceErrorActionTypeNotFound;
+    }
+    return DeviceManager::DeviceErrorNoError;
 }
 
 void DevicePluginDateTime::networkManagerReplyReady(QNetworkReply *reply)
@@ -354,9 +397,23 @@ void DevicePluginDateTime::onAlarm()
     Alarm *alarm = static_cast<Alarm *>(sender());
     Device *device = m_alarms.key(alarm);
 
-    qCDebug(dcDateTime) << alarm->name() << "alarm!";
-
     emit emitEvent(Event(alarmEventTypeId, device->id()));
+}
+
+void DevicePluginDateTime::onCountdownTimeout()
+{
+    Countdown *countdown = static_cast<Countdown *>(sender());
+    Device *device = m_countdowns.key(countdown);
+
+    emit emitEvent(Event(timeoutEventTypeId, device->id()));
+}
+
+void DevicePluginDateTime::onCountdownRunningChanged(const bool &running)
+{
+    Countdown *countdown = static_cast<Countdown *>(sender());
+    Device *device = m_countdowns.key(countdown);
+
+    device->setStateValue(runningStateTypeId, running);
 }
 
 void DevicePluginDateTime::onSecondChanged()

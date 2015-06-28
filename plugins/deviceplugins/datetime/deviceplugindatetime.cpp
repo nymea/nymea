@@ -27,9 +27,9 @@
 
     The time plugin allows you create rules based on the time, day, month, year, weekday or on weekend.
 
-    For the setup you need to specify the continent, afterwards you can select your city/timezone. The language
-    of the "month name" and "weekday name" depends on your locale settings. To have the correct time you need
-    \l{https://en.wikipedia.org/wiki/Network_Time_Protocol}{ntp}.
+    For the correct setup you can configure the time zone in the plugin configuration. The language
+    of the "month name" and "weekday name" depends on the locale settings of the system. To have the correct
+    time you need \l{https://en.wikipedia.org/wiki/Network_Time_Protocol}{ntp}.
 
     The weekday integer value stands for:
     \table
@@ -60,6 +60,25 @@
     \endtable
 
     The "weekend" \l{State} will be true, if the current weekday is Saturday or Sunday, otherwise it will be false.
+
+    \chapter Today
+    The today plugin gives you information about the current day and some special times of the day like
+    dawn, sunrise, noon, sunset and dawn. In order to get the correct times of the current day for your location, the plugin needs to know where
+    you are. The plugin will autodetect your location according to you wan ip (\l{http://ip-api.com/json}{http://ip-api.com/json})
+    and will download the sunset / sunrise times from the online database \l{http://sunrise-sunset.org/}{http://sunrise-sunset.org/}.
+    If the configured timezone does not match with the autodetected timezone from the ip the specialdates will be set to 0 (01.01.1970 - 00:00.00).
+
+    \image day-times.png
+
+    Special times of a day (\l{https://en.wikipedia.org/wiki/Twilight#/media/File:Twilight_description_full_day.svg}{original source})
+
+    \chapter Alarm
+    The alarm plugin allowes you to define an alarm which depends on a certain time, weekday or special day time like sunrise or
+    sunset. An offset can also be definend.
+
+    \chapter Countdown
+    The countdown plugin allowes you to define a countown which triggers an \l{Event} on timeout.
+
 
     \chapter Plugin properties
     Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}
@@ -179,6 +198,8 @@ DeviceManager::DeviceSetupStatus DevicePluginDateTime::setupDevice(Device *devic
                                              device->paramValue("repeating").toBool());
 
         connect(countdown, &Countdown::countdownTimeout, this, &DevicePluginDateTime::onCountdownTimeout);
+        connect(countdown, &Countdown::runningStateChanged, this, &DevicePluginDateTime::onCountdownRunningChanged);
+
         qCDebug(dcDateTime) << "setup countdown" << countdown->name() << countdown->time().toString();
         m_countdowns.insert(device, countdown);
     }

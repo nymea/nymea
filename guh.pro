@@ -33,3 +33,24 @@ contains(DEFINES, GPIO433){
 } else {
     message("Radio 433 for GPIO's disabled")
 }
+
+ubuntu {
+    message("Building Ubuntu snappy package.")
+    meta.files = meta/package.yaml \
+                 meta/readme.md
+    meta.path = /meta/
+
+    wrapper.files = meta/guhd-wrapper.sh
+    wrapper.path = /usr/bin/
+
+    # We need to bring our own Qt libs, at least for now
+    qtlibs.files=/usr/lib/arm-linux-gnueabihf/libQt5Network.so.5 \
+                 /usr/lib/arm-linux-gnueabihf/libQt5Sql.so.5 \
+                 /usr/lib/arm-linux-gnueabihf/libQt5Core.so.5 \
+                 /usr/lib/arm-linux-gnueabihf/libicui18n.so.52 \
+                 /usr/lib/arm-linux-gnueabihf/libicuuc.so.52 \
+                 /usr/lib/arm-linux-gnueabihf/libicudata.so.52
+    qtlibs.path=/usr/lib/
+
+    INSTALLS += meta wrapper qtlibs
+}

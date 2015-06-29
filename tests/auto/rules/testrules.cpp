@@ -77,7 +77,7 @@ void TestRules::cleanupMockHistory() {
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
     QNetworkRequest request(QUrl(QString("http://localhost:%1/clearactionhistory").arg(m_mockDevice1Port).arg(mockEvent1Id.toString())));
     QNetworkReply *reply = nam.get(request);
-    spy.wait();
+    spy.wait(500);
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
 }
@@ -103,7 +103,7 @@ void TestRules::verifyRuleExecuted(const ActionTypeId &actionTypeId)
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
     QNetworkRequest request(QUrl(QString("http://localhost:%1/actionhistory").arg(m_mockDevice1Port)));
     QNetworkReply *reply = nam.get(request);
-    spy.wait();
+    spy.wait(500);
     QCOMPARE(spy.count(), 1);
 
     QByteArray actionHistory = reply->readAll();
@@ -662,11 +662,9 @@ void TestRules::editRules()
     response = injectAndWait("Rules.EditRule", params);
     verifyRuleError(response, error);
     if (error == RuleEngine::RuleErrorNoError){
-        clientSpy.wait();
-
+        clientSpy.wait(500);
         QVariant notification = checkNotification(clientSpy, "Rules.RuleConfigurationChanged");
         QVERIFY2(notification != QVariant(), "not received \"Rules.RuleConfigurationChanged\" notification");
-
 
         // now check if the received rule matches the our new rule
         QVariantMap rule = response.toMap().value("params").toMap().value("rule").toMap();

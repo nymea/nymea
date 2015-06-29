@@ -226,6 +226,35 @@ DeviceManager::~DeviceManager()
     }
 }
 
+QList<QJsonObject> DeviceManager::pluginNames()
+{
+    QStringList searchDirs;
+    searchDirs << QCoreApplication::applicationDirPath() + "/../lib/guh/plugins";
+    searchDirs << QCoreApplication::applicationDirPath() + "/../plugins/";
+    searchDirs << QCoreApplication::applicationDirPath() + "/../plugins/deviceplugins";
+    searchDirs << QCoreApplication::applicationDirPath() + "/../../../plugins/deviceplugins";
+
+    QList<QJsonObject> pluginList;
+    foreach (const QString &path, searchDirs) {
+        QDir dir(path);
+        qCDebug(dcDeviceManager) << "Loading plugins from:" << dir.absolutePath();
+        foreach (const QString &entry, dir.entryList()) {
+            QFileInfo fi;
+            if (entry.startsWith("libguh_deviceplugin") && entry.endsWith(".so")) {
+                fi.setFile(path + "/" + entry);
+            } else {
+                fi.setFile(path + "/" + entry + "/libguh_deviceplugin" + entry + ".so");
+            }
+            if (!fi.exists()) {
+                continue;
+            }
+            QPluginLoader loader(fi.absoluteFilePath());
+            pluginList.append(loader.metaData().value("MetaData").toObject());
+        }
+    }
+    return pluginList;
+}
+
 /*! Returns all the \l{DevicePlugin}{DevicePlugins} loaded in the system. */
 QList<DevicePlugin *> DeviceManager::plugins() const
 {

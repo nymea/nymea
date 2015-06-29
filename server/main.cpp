@@ -62,27 +62,9 @@ int main(int argc, char *argv[])
     s_loggingFilters.insert("Hardware", false);
     s_loggingFilters.insert("LogEngine", false);
 
-    // plugins
-    #ifdef boblight
-    s_loggingFilters.insert("Boblight", false);
-    #endif
-    s_loggingFilters.insert("CommandLauncher", false);
-    s_loggingFilters.insert("RF433", false);
-    s_loggingFilters.insert("DateTime", false);
-    s_loggingFilters.insert("EQ-3", false);
-    s_loggingFilters.insert("LgSmartTv", false);
-    s_loggingFilters.insert("Lircd", false);
-    s_loggingFilters.insert("MailNotification", false);
-    s_loggingFilters.insert("Mock", false);
-    s_loggingFilters.insert("Openweahtermap", false);
-    s_loggingFilters.insert("PhilipsHue", false);
-    s_loggingFilters.insert("Tune", false);
-    s_loggingFilters.insert("UdpCommander", false);
-    s_loggingFilters.insert("WakeOnLan", false);
-    s_loggingFilters.insert("Wemo", false);
-    s_loggingFilters.insert("WifiDetector", false);
-    s_loggingFilters.insert("Kodi", false);
-
+    foreach (const QJsonObject &object, DeviceManager::pluginNames()) {
+        s_loggingFilters.insert("dc" + object.value("idName").toString(), false);
+    }
 
     QCommandLineParser parser;
     parser.addHelpOption();

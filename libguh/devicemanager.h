@@ -34,6 +34,7 @@
 
 #include <QObject>
 #include <QTimer>
+#include <QPluginLoader>
 
 class Device;
 class DevicePlugin;
@@ -86,6 +87,8 @@ public:
 
     explicit DeviceManager(QObject *parent = 0);
     ~DeviceManager();
+
+    static QList<QJsonObject> pluginNames();
 
     QList<DevicePlugin*> plugins() const;
     DevicePlugin* plugin(const PluginId &id) const;

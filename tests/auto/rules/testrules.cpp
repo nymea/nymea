@@ -662,6 +662,8 @@ void TestRules::editRules()
     response = injectAndWait("Rules.EditRule", params);
     verifyRuleError(response, error);
     if (error == RuleEngine::RuleErrorNoError){
+        clientSpy.wait();
+
         QVariant notification = checkNotification(clientSpy, "Rules.RuleConfigurationChanged");
         QVERIFY2(notification != QVariant(), "not received \"Rules.RuleConfigurationChanged\" notification");
 

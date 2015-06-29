@@ -168,16 +168,21 @@ bool GuhTestBase::enableNotifications()
     QVariantMap notificationParams;
     notificationParams.insert("enabled", true);
     QVariant response = injectAndWait("JSONRPC.SetNotificationStatus", notificationParams);
-
-    return response.toMap().value("params").toMap().value("enabled").toBool();
+    if (response.toMap().value("params").toMap().value("enabled").toBool() != true) {
+        return false;
+    }
+    return true;
 }
 
 bool GuhTestBase::disableNotifications()
 {
     QVariantMap notificationParams;
-    notificationParams.insert("enabled", true);
+    notificationParams.insert("enabled", false);
     QVariant response = injectAndWait("JSONRPC.SetNotificationStatus", notificationParams);
-    return !response.toMap().value("params").toMap().value("enabled").toBool();
+    if (response.toMap().value("params").toMap().value("enabled").toBool() != false) {
+        return false;
+    }
+    return true;
 }
 
 void GuhTestBase::restartServer()

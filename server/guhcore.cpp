@@ -92,6 +92,10 @@
     This signal is emitted when a \a rule was added to the system.
 */
 
+/*! \fn void GuhCore::ruleConfigurationChanged(const Rule &rule);
+    This signal is emitted when the configuration of \a rule changed.
+*/
+
 /*! \fn void ruleActiveChanged(const Rule &rule);
     This signal is emitted when a \a rule changed the active state.
     A \l{Rule} is active, when all \l{State}{States} match with the \l{StateDescriptor} conditions.
@@ -311,34 +315,36 @@ DeviceManager::DeviceError GuhCore::editDevice(const DeviceId &deviceId, const D
     return m_deviceManager->editDevice(deviceId, deviceDescriptorId);
 }
 
-/*! Calls the metheod RuleEngine::rule().
- *  \sa RuleEngine, */
+/*! Calls the metheod RuleEngine::rules().
+ *  \sa RuleEngine::rules(), */
 QList<Rule> GuhCore::rules() const
 {
     return m_ruleEngine->rules();
 }
 
 /*! Calls the metheod RuleEngine::ruleIds().
- *  \sa RuleEngine, */
+ *  \sa RuleEngine::ruleIds(), */
 QList<RuleId> GuhCore::ruleIds() const
 {
     return m_ruleEngine->ruleIds();
 }
 
 /*! Calls the metheod RuleEngine::findRule(\a ruleId).
- *  \sa RuleEngine, */
+ *  \sa RuleEngine::findRule(), */
 Rule GuhCore::findRule(const RuleId &ruleId)
 {
     return m_ruleEngine->findRule(ruleId);
 }
 
 /*! Calls the metheod RuleEngine::addRule(\a id, \a name, \a eventDescriptorList, \a stateEvaluator \a actionList, \a exitActionList, \a enabled).
- *  \sa RuleEngine, */
+ *  \sa RuleEngine::addRule(), */
 RuleEngine::RuleError GuhCore::addRule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actionList, const QList<RuleAction> &exitActionList, bool enabled)
 {
     return m_ruleEngine->addRule(id, name, eventDescriptorList, stateEvaluator, actionList, exitActionList, enabled);
 }
 
+/*! Calls the metheod RuleEngine::editRule(\a id, \a name, \a eventDescriptorList, \a stateEvaluator \a actionList, \a exitActionList, \a enabled).
+ *  \sa RuleEngine::editRule(), */
 RuleEngine::RuleError GuhCore::editRule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actionList, const QList<RuleAction> &exitActionList, bool enabled)
 {
     return m_ruleEngine->editRule(id, name, eventDescriptorList, stateEvaluator, actionList, exitActionList, enabled);
@@ -358,11 +364,15 @@ QList<RuleId> GuhCore::findRules(const DeviceId &deviceId)
     return m_ruleEngine->findRules(deviceId);
 }
 
+/*! Calls the metheod RuleEngine::enableRule(\a ruleId).
+ *  \sa RuleEngine::enableRule(), */
 RuleEngine::RuleError GuhCore::enableRule(const RuleId &ruleId)
 {
     return m_ruleEngine->enableRule(ruleId);
 }
 
+/*! Calls the metheod RuleEngine::disableRule(\a ruleId).
+ *  \sa RuleEngine::disableRule(), */
 RuleEngine::RuleError GuhCore::disableRule(const RuleId &ruleId)
 {
     return m_ruleEngine->disableRule(ruleId);

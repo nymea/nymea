@@ -42,9 +42,9 @@
     \a ruleId holds the id of the removed rule. You should remove any references
     or copies you hold for this rule.*/
 
-/*! \fn void RuleEngine::ruleConfigurationChanged(const RuleId &ruleId)
+/*! \fn void RuleEngine::ruleConfigurationChanged(const Rule &rule)
     Will be emitted whenever a \l{Rule} changed his enable/disable status.
-    \a ruleId holds the id of the changed rule.*/
+    The parameter \a rule holds the changed rule.*/
 
 /*! \enum RuleEngine::RuleError
     \value RuleErrorNoError
@@ -348,13 +348,17 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
     return RuleErrorNoError;
 }
 
+/*! Edit a \l{Rule} with the given \a ruleId, \a name, \a eventDescriptorList, \a stateEvaluator, the  list of \a actions the list of \a exitActions and the \a enabled in the engine. */
 RuleEngine::RuleError RuleEngine::editRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions, bool enabled)
 {
     if (ruleId.isNull()) {
         return RuleErrorInvalidRuleId;
     }
 
-    if (findRule(ruleId).id().isNull()) {
+    // store rule in case the add new rule fails
+    Rule rule = findRule(ruleId);
+
+    if (rule.id().isNull()) {
         qCWarning(dcRuleEngine) << "Cannot edit rule. There is no rule with id:" << ruleId.toString();
         return RuleErrorRuleNotFound;
     }
@@ -362,12 +366,15 @@ RuleEngine::RuleError RuleEngine::editRule(const RuleId &ruleId, const QString &
     // first remove old rule with this id
     RuleError removeResult = removeRule(ruleId, true);
     if (removeResult != RuleErrorNoError) {
+        // no need to restore, rule is still in system
         return removeResult;
     }
 
     // the rule is removed, now add it with the same id and new vonfiguration
     RuleError addResult = addRule(ruleId, name, eventDescriptorList, stateEvaluator, actions, exitActions, enabled, true);
     if (addResult != RuleErrorNoError) {
+        // restore rule
+        appendRule(rule);
         return addResult;
     }
 

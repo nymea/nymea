@@ -357,6 +357,8 @@ void DevicePlugin::deviceRemoved(Device *device)
     Q_UNUSED(device)
 }
 
+/*! This method will be called for \l{Device}{Devices} with the \l{DeviceClass::SetupMethodDisplayPin} right after the paring request
+ *  with the given \a pairingTransactionId for the given \a deviceDescriptor.*/
 DeviceManager::DeviceError DevicePlugin::displayPin(const PairingTransactionId &pairingTransactionId, const DeviceDescriptor &deviceDescriptor)
 {
     Q_UNUSED(pairingTransactionId)
@@ -368,7 +370,8 @@ DeviceManager::DeviceError DevicePlugin::displayPin(const PairingTransactionId &
 }
 
 /*! Confirms the pairing of a \a deviceClassId with the given \a pairingTransactionId and \a params.
- * Returns \l{DeviceManager::DeviceError}{DeviceError} to inform about the result. */
+ * Returns \l{DeviceManager::DeviceError}{DeviceError} to inform about the result. The optional paramerter
+ * \a secret contains for example the pin for \l{Device}{Devices} with the setup method \l{DeviceClass::SetupMethodDisplayPin}.*/
 DeviceManager::DeviceSetupStatus DevicePlugin::confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret = QString())
 {
     Q_UNUSED(pairingTransactionId)

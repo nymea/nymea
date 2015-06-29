@@ -339,6 +339,11 @@ RuleEngine::RuleError GuhCore::addRule(const RuleId &id, const QString &name, co
     return m_ruleEngine->addRule(id, name, eventDescriptorList, stateEvaluator, actionList, exitActionList, enabled);
 }
 
+RuleEngine::RuleError GuhCore::editRule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actionList, const QList<RuleAction> &exitActionList, bool enabled)
+{
+    return m_ruleEngine->editRule(id, name, eventDescriptorList, stateEvaluator, actionList, exitActionList, enabled);
+}
+
 /*! Calls the metheod RuleEngine::removeRule(\a id).
  *  \sa RuleEngine, */
 RuleEngine::RuleError GuhCore::removeRule(const RuleId &id)
@@ -410,6 +415,7 @@ GuhCore::GuhCore(QObject *parent) :
 
     connect(m_ruleEngine, &RuleEngine::ruleAdded, this, &GuhCore::ruleAdded);
     connect(m_ruleEngine, &RuleEngine::ruleRemoved, this, &GuhCore::ruleRemoved);
+    connect(m_ruleEngine, &RuleEngine::ruleConfigurationChanged, this, &GuhCore::ruleConfigurationChanged);
 
     m_logger->logSystemEvent(true);
 }

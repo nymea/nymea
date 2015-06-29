@@ -60,11 +60,14 @@ public:
     QList<Rule> evaluateEvent(const Event &event);
 
     RuleError addRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const QList<RuleAction> &actions, bool enabled = true);
-    RuleError addRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions, bool enabled = true);
+    RuleError addRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions, bool enabled = true, bool fromEdit = false);
+    RuleError editRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions, bool enabled = true);
+
+
     QList<Rule> rules() const;
     QList<RuleId> ruleIds() const;
 
-    RuleError removeRule(const RuleId &ruleId);
+    RuleError removeRule(const RuleId &ruleId, bool fromEdit = false);
 
     RuleError enableRule(const RuleId &ruleId);
     RuleError disableRule(const RuleId &ruleId);
@@ -77,13 +80,14 @@ public:
 signals:
     void ruleAdded(const Rule &rule);
     void ruleRemoved(const RuleId &ruleId);
-    void ruleChanged(const RuleId &ruleId);
+    void ruleConfigurationChanged(const Rule &rule);
 
 private:
     bool containsEvent(const Rule &rule, const Event &event);
     bool containsState(const StateEvaluator &stateEvaluator, const Event &stateChangeEvent);
 
     void appendRule(const Rule &rule);
+    void saveRule(const Rule &rule);
 
 private:
     QString m_settingsFile;

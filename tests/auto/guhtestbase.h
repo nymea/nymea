@@ -31,6 +31,7 @@
 #include <QObject>
 #include <QUuid>
 #include <QVariantMap>
+#include <QSignalSpy>
 #include <QtTest>
 
 extern DeviceClassId mockDeviceClassId;
@@ -63,6 +64,10 @@ protected slots:
 
 protected:
     QVariant injectAndWait(const QString &method, const QVariantMap &params = QVariantMap());
+    QVariant checkNotification(const QSignalSpy &spy, const QString &notification);
+
+    bool enableNotifications();
+    bool disableNotifications();
 
     inline void verifyError(const QVariant &response, const QString &fieldName, const QString &error)
     {

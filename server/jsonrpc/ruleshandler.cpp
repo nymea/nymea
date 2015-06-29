@@ -277,7 +277,7 @@ JsonReply *RulesHandler::EditRule(const QVariantMap &params)
     RuleEngine::RuleError status = GuhCore::instance()->editRule(ruleId, name, eventDescriptorList, stateEvaluator, actions, exitActions, enabled);
     QVariantMap returns;
     if (status ==  RuleEngine::RuleErrorNoError) {
-        returns.insert("ruleId", ruleId.toString());
+        returns.insert("rule", JsonTypes::packRule(GuhCore::instance()->findRule(ruleId)));
     }
     returns.insert("ruleError", JsonTypes::ruleErrorToString(status));
     return createReply(returns);

@@ -1,0 +1,16 @@
+name: guh
+version: 0.1.0
+architecture: [armhf]
+services:
+ - name: guhd
+   start: usr/bin/guhd-wrapper.sh
+   description: "guhd - gear up your home daemon"
+   security-template: unconfined
+   caps:
+    - networking
+    - network-service
+binaries:
+ - name: guh-webserver
+   start: usr/bin/guh-webserver
+ - name: guh-cli
+   exec: usr/bin/guh-cli

@@ -19,7 +19,6 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "kodiconnection.h"
-#include "loggingcategories.h"
 #include "jsonhandler.h"
 #include "extern-plugininfo.h"
 

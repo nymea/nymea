@@ -1,9 +1,11 @@
 {
     "name": "Wemo",
+    "idName": "Wemo",
     "id": "2e3b5ce0-ecf1-43de-98f0-07df4068a583",
     "vendors": [
         {
             "name": "Belkin",
+            "idName": "belkin",
             "id": "b241f7f5-8153-4a72-b260-f62beadc2d19",
             "deviceClasses": [
                 {

@@ -226,18 +226,21 @@ DeviceManager::~DeviceManager()
     }
 }
 
-QList<QJsonObject> DeviceManager::pluginNames()
+QStringList DeviceManager::pluginSearchDirs()
 {
     QStringList searchDirs;
     searchDirs << QCoreApplication::applicationDirPath() + "/../lib/guh/plugins";
     searchDirs << QCoreApplication::applicationDirPath() + "/../plugins/";
     searchDirs << QCoreApplication::applicationDirPath() + "/../plugins/deviceplugins";
     searchDirs << QCoreApplication::applicationDirPath() + "/../../../plugins/deviceplugins";
+    return searchDirs;
+}
 
+QList<QJsonObject> DeviceManager::pluginsMetadata()
+{
     QList<QJsonObject> pluginList;
-    foreach (const QString &path, searchDirs) {
+    foreach (const QString &path, pluginSearchDirs()) {
         QDir dir(path);
-        qCDebug(dcDeviceManager) << "Loading plugins from:" << dir.absolutePath();
         foreach (const QString &entry, dir.entryList()) {
             QFileInfo fi;
             if (entry.startsWith("libguh_deviceplugin") && entry.endsWith(".so")) {
@@ -767,13 +770,7 @@ DeviceManager::DeviceError DeviceManager::executeAction(const Action &action)
 
 void DeviceManager::loadPlugins()
 {
-    QStringList searchDirs;
-    searchDirs << QCoreApplication::applicationDirPath() + "/../lib/guh/plugins";
-    searchDirs << QCoreApplication::applicationDirPath() + "/../plugins/";
-    searchDirs << QCoreApplication::applicationDirPath() + "/../plugins/deviceplugins";
-    searchDirs << QCoreApplication::applicationDirPath() + "/../../../plugins/deviceplugins";
-
-    foreach (const QString &path, searchDirs) {
+    foreach (const QString &path, pluginSearchDirs()) {
         QDir dir(path);
         qCDebug(dcDeviceManager) << "Loading plugins from:" << dir.absolutePath();
         foreach (const QString &entry, dir.entryList()) {
@@ -1317,3 +1314,4 @@ DeviceManager::DeviceError DeviceManager::verifyParam(const ParamType &paramType
     qCWarning(dcDeviceManager) << "Parameter name" << param.name() << "does not match with ParamType name" << paramType.name();
     return DeviceErrorInvalidParameter;
 }
+

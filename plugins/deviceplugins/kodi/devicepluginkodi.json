@@ -1,11 +1,12 @@
 {
+    "id": "e7186890-99fa-4c5b-8247-09c6d450d490",
     "name": "Kodi",
     "idName": "Kodi",
-    "id": "e7186890-99fa-4c5b-8247-09c6d450d490",
     "vendors": [
         {
-            "name": "Kodi",
             "id": "447bf3d6-a86e-4636-9db0-8936c0e4d9e9",
+            "name": "Kodi",
+            "idName": "kodi",
             "deviceClasses": [
                 {
                     "deviceClassId": "d09953e3-c5bd-415b-973b-0d0bf2be3f69",

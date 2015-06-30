@@ -101,7 +101,6 @@
 #include "plugin/device.h"
 #include "devicemanager.h"
 #include "plugininfo.h"
-#include "loggingcategories.h"
 
 #include <QJsonDocument>
 #include <QUrlQuery>

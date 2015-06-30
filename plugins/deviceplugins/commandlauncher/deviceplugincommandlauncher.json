@@ -1,5 +1,6 @@
 {
     "name": "Application and script launcher",
+    "idName": "CommandLauncher",
     "id": "5d37b796-4872-4eab-a7af-94ca9ddd8199",
     "vendors": [
         {

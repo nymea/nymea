@@ -47,7 +47,6 @@
 #include "devicepluginunitec.h"
 #include "devicemanager.h"
 #include "plugininfo.h"
-#include "loggingcategories.h"
 
 #include <QDebug>
 #include <QStringList>
@@ -69,7 +68,7 @@ DeviceManager::DeviceSetupStatus DevicePluginUnitec::setupDevice(Device *device)
 
     foreach (Device* d, myDevices()) {
         if (d->paramValue("Channel").toString() == device->paramValue("Channel").toString()) {
-            qCWarning(dcRF433) << "Unitec switch with channel " << device->paramValue("Channel").toString() << "already added.";
+            qCWarning(dcUnitec) << "Unitec switch with channel " << device->paramValue("Channel").toString() << "already added.";
             return DeviceManager::DeviceSetupStatusFailure;
         }
     }
@@ -129,10 +128,10 @@ DeviceManager::DeviceError DevicePluginUnitec::executeAction(Device *device, con
     // =======================================
     // send data to hardware resource
     if(transmitData(delay, rawData)){
-        qCDebug(dcRF433) << "transmitted" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
+        qCDebug(dcUnitec) << "transmitted" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
         return DeviceManager::DeviceErrorNoError;
     }else{
-        qCWarning(dcRF433) << "could not transmitt" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
+        qCWarning(dcUnitec) << "could not transmitt" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
         return DeviceManager::DeviceErrorHardwareNotAvailable;
     }
 }

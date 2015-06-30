@@ -20,6 +20,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "huelight.h"
+#include "extern-plugininfo.h"
 
 HueLight::HueLight(const int &lightId, const QHostAddress &hostAddress, const QString &name, const QString &apiKey, const QString &modelId, const DeviceId &bridgeId, QObject *parent) :
     QObject(parent),

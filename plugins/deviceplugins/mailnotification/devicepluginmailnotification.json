@@ -1,9 +1,11 @@
 {
     "name": "Mail notification",
+    "idName": "MailNotification",
     "id": "1ae35df1-1b51-4c93-94fa-3febc77e0318",
     "vendors": [
         {
             "name": "guh",
+            "idName": "guh",
             "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6",
             "deviceClasses": [
                 {

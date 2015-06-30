@@ -29,6 +29,8 @@
 
 #include <QDebug>
 
+namespace guhserver {
+
 DeviceHandler::DeviceHandler(QObject *parent) :
     JsonHandler(parent)
 {
@@ -671,4 +673,6 @@ void DeviceHandler::pairingFinished(const PairingTransactionId &pairingTransacti
     }
 
     m_asynDeviceAdditions.insert(deviceId, reply);
+}
+
 }

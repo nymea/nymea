@@ -34,6 +34,8 @@
 #include <QMetaType>
 #include <QNetworkReply>
 
+namespace guhserver {
+
 PluginId mockPluginId = PluginId("727a4a9a-c187-446f-aadf-f1b2220607d1");
 VendorId guhVendorId = VendorId("2062d64d-3232-433c-88bc-0d33c0ba2ba6");
 DeviceClassId mockDeviceClassId = DeviceClassId("753f0d32-0468-4d08-82ed-1964aab03298");
@@ -192,4 +194,6 @@ void GuhTestBase::restartServer()
     QSignalSpy spy(GuhCore::instance()->deviceManager(), SIGNAL(loaded()));
     spy.wait();
     m_mockTcpServer = MockTcpServer::servers().first();
+}
+
 }

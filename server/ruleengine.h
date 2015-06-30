@@ -30,6 +30,8 @@
 #include <QList>
 #include <QUuid>
 
+namespace guhserver {
+
 class RuleEngine : public QObject
 {
     Q_OBJECT
@@ -95,6 +97,9 @@ private:
     QHash<RuleId, Rule> m_rules; // ...but use a Hash for faster finding
     QList<RuleId> m_activeRules;
 };
-Q_DECLARE_METATYPE(RuleEngine::RuleError)
+
+}
+
+Q_DECLARE_METATYPE(guhserver::RuleEngine::RuleError)
 
 #endif // RULEENGINE_H

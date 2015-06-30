@@ -22,6 +22,7 @@
 #ifndef JSONRPCSERVER_H
 #define JSONRPCSERVER_H
 
+#include "plugin/device.h"
 #include "plugin/deviceclass.h"
 #include "jsonhandler.h"
 
@@ -32,12 +33,14 @@
 #include <QVariantMap>
 #include <QString>
 
+
+namespace guhserver {
+
 #ifdef TESTING_ENABLED
 class MockTcpServer;
 #else
 class TcpServer;
 #endif
-class Device;
 
 class JsonRPCServer: public JsonHandler
 {
@@ -88,4 +91,6 @@ private:
     int m_notificationId;
 };
 
-#endif
+}
+
+#endif // JSONRPCSERVER_H

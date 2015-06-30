@@ -24,6 +24,8 @@
 
 #include "rule.h"
 #include "types/event.h"
+#include "plugin/device.h"
+#include "plugin/deviceplugin.h"
 #include "plugin/deviceclass.h"
 #include "plugin/devicedescriptor.h"
 
@@ -33,8 +35,9 @@
 #include <QObject>
 #include <QDebug>
 
+namespace guhserver {
+
 class JsonRPCServer;
-class Device;
 class LogEngine;
 
 class GuhCore : public QObject
@@ -130,5 +133,7 @@ private slots:
 
     friend class GuhTestBase;
 };
+
+}
 
 #endif // GUHCORE_H

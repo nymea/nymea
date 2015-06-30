@@ -58,6 +58,9 @@
 #include <QMap>
 #include <QSettings>
 #include <QProcess>
+#include <QStringList>
+
+namespace guhserver {
 
 static QString encodeName(const QString &name, bool allowUpper = false)
 {
@@ -472,3 +475,4 @@ void QtServiceBase::setServiceFlags(QtServiceBase::ServiceFlags flags)
         d_ptr->sysd->serviceFlags = flags;
 }
 
+}

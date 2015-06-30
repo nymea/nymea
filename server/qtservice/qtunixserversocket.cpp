@@ -45,6 +45,8 @@
 #include <string.h>
 #include <unistd.h>
 
+namespace guhserver {
+
 #ifndef SUN_LEN
 #define SUN_LEN(ptr) ((size_t)(((struct sockaddr_un *) 0)->sun_path) \
                       +strlen ((ptr)->sun_path))
@@ -89,4 +91,6 @@ void QtUnixServerSocket::close()
         ::unlink(path_.toLatin1().constData());
         path_.clear();
     }
+}
+
 }

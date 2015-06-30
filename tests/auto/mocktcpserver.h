@@ -25,6 +25,8 @@
 #include <QNetworkInterface>
 #include <QDebug>
 
+namespace guhserver {
+
 class MockTcpServer : public QObject
 {
     Q_OBJECT
@@ -54,6 +56,8 @@ public slots:
 private:
     static QList<MockTcpServer*> s_allServers;
 };
+
+}
 
 #endif // TCPSERVER_H
 

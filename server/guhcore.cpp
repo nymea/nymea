@@ -112,6 +112,9 @@
 #include "devicemanager.h"
 #include "plugin/device.h"
 
+
+namespace guhserver {
+
 GuhCore* GuhCore::s_instance = 0;
 
 /*! Returns a pointer to the single \l{GuhCore} instance. */
@@ -516,4 +519,6 @@ void GuhCore::actionExecutionFinished(const ActionId &id, DeviceManager::DeviceE
     emit actionExecuted(id, status);
     Action action = m_pendingActions.take(id);
     m_logger->logAction(action, status == DeviceManager::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
+}
+
 }

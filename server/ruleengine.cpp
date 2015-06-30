@@ -95,6 +95,8 @@
 #include <QStandardPaths>
 #include <QCoreApplication>
 
+namespace guhserver {
+
 /*! Constructs the RuleEngine with the given \a parent. Although it wouldn't harm to have multiple RuleEngines, there is one
     instance available from \l{GuhCore}. This one should be used instead of creating multiple ones.
     */
@@ -628,4 +630,6 @@ void RuleEngine::saveRule(const Rule &rule)
         settings.endGroup();
     }
     settings.endGroup();
+}
+
 }

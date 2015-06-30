@@ -23,6 +23,8 @@
 
 #include <QObject>
 
+namespace guhserver {
+
 class Logging
 {
     Q_GADGET
@@ -57,4 +59,6 @@ public:
     };
 };
 
-#endif
+}
+
+#endif // LOGGING_H

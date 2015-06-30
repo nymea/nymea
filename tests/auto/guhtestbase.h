@@ -34,6 +34,8 @@
 #include <QSignalSpy>
 #include <QtTest>
 
+namespace guhserver {
+
 extern DeviceClassId mockDeviceClassId;
 extern DeviceClassId mockDeviceAutoClassId;
 extern DeviceClassId mockDeviceDiscoveryClassId;
@@ -49,6 +51,7 @@ extern EventTypeId mockEvent1Id;
 extern EventTypeId mockEvent2Id;
 extern StateTypeId mockIntStateId;
 extern StateTypeId mockBoolStateId;
+
 
 class MockTcpServer;
 
@@ -135,5 +138,7 @@ protected:
     QString m_deviceSettings;
     QString m_rulesSettings;
 };
+
+}
 
 #endif // GUHTESTBASE_H

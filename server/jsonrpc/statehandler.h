@@ -24,6 +24,8 @@
 
 #include "jsonhandler.h"
 
+namespace guhserver {
+
 class StateHandler : public JsonHandler
 {
     Q_OBJECT
@@ -33,5 +35,7 @@ public:
 
     Q_INVOKABLE JsonReply *GetStateType(const QVariantMap &params) const;
 };
+
+}
 
 #endif // EVENTHANDLER_H

@@ -29,6 +29,8 @@
 #include <QObject>
 #include <QSqlDatabase>
 
+namespace guhserver {
+
 class LogEngine: public QObject
 {
     Q_OBJECT
@@ -55,5 +57,7 @@ private:
 
     QSqlDatabase m_db;
 };
+
+}
 
 #endif

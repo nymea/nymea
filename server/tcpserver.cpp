@@ -26,6 +26,8 @@
 #include <QJsonDocument>
 #include <QSettings>
 
+namespace guhserver {
+
 TcpServer::TcpServer(QObject *parent) :
     QObject(parent)
 {       
@@ -149,4 +151,4 @@ bool TcpServer::stopServer()
     return true;
 }
 
-
+}

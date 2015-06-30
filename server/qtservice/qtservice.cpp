@@ -59,6 +59,7 @@
 #include <stdlib.h>
 #endif
 
+class QStringList;
 
 static QFile* f = 0;
 
@@ -204,7 +205,6 @@ void qtServiceLogDebug(QtMsgType type, const char* msg)
     \sa startupType()
 */
 namespace guhserver {
-
 
 /*!
     Creates a controller object for the service with the given

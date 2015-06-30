@@ -22,7 +22,6 @@
 #ifndef JSONRPCSERVER_H
 #define JSONRPCSERVER_H
 
-#include "plugin/device.h"
 #include "plugin/deviceclass.h"
 #include "jsonhandler.h"
 
@@ -33,6 +32,7 @@
 #include <QVariantMap>
 #include <QString>
 
+class Device;
 
 namespace guhserver {
 

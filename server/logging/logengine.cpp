@@ -30,6 +30,8 @@
 
 #define DB_SCHEMA_VERSION 1
 
+namespace guhserver {
+
 LogEngine::LogEngine(QObject *parent):
     QObject(parent)
 {
@@ -209,4 +211,6 @@ void LogEngine::initDB()
             qCWarning(dcLogEngine) << "Error creating log table in database. Driver error:" << query.lastError().driverText() << "Database error:" << query.lastError().databaseText();
         }
     }
+}
+
 }

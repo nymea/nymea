@@ -33,6 +33,8 @@
 #include <QCoreApplication>
 #include <QMetaType>
 
+using namespace guhserver;
+
 class TestJSONRPC: public GuhTestBase
 {
     Q_OBJECT

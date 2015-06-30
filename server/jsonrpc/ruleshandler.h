@@ -24,6 +24,8 @@
 
 #include "jsonhandler.h"
 
+namespace guhserver {
+
 class RulesHandler : public JsonHandler
 {
     Q_OBJECT
@@ -67,5 +69,7 @@ private slots:
     void ruleConfigurationChangedNotification(const Rule &rule);
 
 };
+
+}
 
 #endif // RULESHANDLER_H

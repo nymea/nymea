@@ -28,6 +28,8 @@
 #include <QTcpSocket>
 #include <QUuid>
 
+namespace guhserver {
+
 class TcpServer : public QObject
 {
     Q_OBJECT
@@ -56,5 +58,7 @@ public slots:
     bool startServer();
     bool stopServer();
 };
+
+}
 
 #endif // TCPSERVER_H

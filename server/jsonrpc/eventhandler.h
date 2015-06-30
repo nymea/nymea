@@ -24,6 +24,8 @@
 
 #include "jsonhandler.h"
 
+namespace guhserver {
+
 class EventHandler : public JsonHandler
 {
     Q_OBJECT
@@ -38,5 +40,7 @@ signals:
 private slots:
     void eventTriggered(const Event &event);
 };
+
+}
 
 #endif // EVENTHANDLER_H

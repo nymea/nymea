@@ -22,6 +22,8 @@
 
 #include <QDebug>
 
+namespace guhserver {
+
 LogEntry::LogEntry(QDateTime timestamp, Logging::LoggingLevel level, Logging::LoggingSource source, int errorCode):
     m_timestamp(timestamp),
     m_level(level),
@@ -108,4 +110,6 @@ void LogEntry::setActive(bool active)
 int LogEntry::errorCode() const
 {
     return m_errorCode;
+}
+
 }

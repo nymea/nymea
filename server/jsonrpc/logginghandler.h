@@ -25,6 +25,8 @@
 #include "jsonhandler.h"
 #include "logging/logentry.h"
 
+namespace guhserver {
+
 class LoggingHandler : public JsonHandler
 {
     Q_OBJECT
@@ -39,5 +41,7 @@ signals:
 private slots:
     void logEntryAdded(const LogEntry &entry);
 };
+
+}
 
 #endif // LOGGINGHANDLER_H

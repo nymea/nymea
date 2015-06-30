@@ -24,6 +24,8 @@
 #include "devicemanager.h"
 #include "loggingcategories.h"
 
+namespace guhserver {
+
 StateEvaluator::StateEvaluator(const StateDescriptor &stateDescriptor):
     m_stateDescriptor(stateDescriptor),
     m_operatorType(Types::StateOperatorAnd)
@@ -171,4 +173,4 @@ StateEvaluator StateEvaluator::loadFromSettings(QSettings &settings, const QStri
     return ret;
 }
 
-
+}

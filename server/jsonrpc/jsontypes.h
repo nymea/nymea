@@ -47,6 +47,8 @@
 class DevicePlugin;
 class Device;
 
+namespace guhserver {
+
 #define DECLARE_OBJECT(typeName, jsonName) \
     public: \
     static QString typeName##Ref() { return QStringLiteral("$ref:") + QStringLiteral(jsonName); } \
@@ -181,5 +183,7 @@ private:
 
     static QString s_lastError;
 };
+
+}
 
 #endif // JSONTYPES_H

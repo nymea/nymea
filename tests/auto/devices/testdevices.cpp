@@ -30,6 +30,8 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 
+using namespace guhserver;
+
 class TestDevices : public GuhTestBase
 {
     Q_OBJECT
@@ -885,5 +887,5 @@ void TestDevices::removeDevice()
 }
 
 #include "testdevices.moc"
-
 QTEST_MAIN(TestDevices)
+

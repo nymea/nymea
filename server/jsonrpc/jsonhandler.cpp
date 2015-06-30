@@ -26,6 +26,8 @@
 #include <QDebug>
 #include <QRegExp>
 
+namespace guhserver {
+
 JsonHandler::JsonHandler(QObject *parent) :
     QObject(parent)
 {
@@ -237,4 +239,6 @@ void JsonReply::timeout()
 bool JsonReply::timedOut() const
 {
     return m_timedOut;
+}
+
 }

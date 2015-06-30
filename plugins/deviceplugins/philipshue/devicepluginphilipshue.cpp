@@ -51,7 +51,6 @@
 #include "plugin/device.h"
 #include "types/param.h"
 #include "plugininfo.h"
-#include "loggingcategories.h"
 
 #include <QDebug>
 #include <QStringList>

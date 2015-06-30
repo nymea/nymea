@@ -1,9 +1,11 @@
 {
     "name": "Tune",
+    "idName": "Tune",
     "id": "826c8f4a-e2e1-4891-84d4-2c7a46ab1eea",
     "vendors": [
         {
             "name": "Tune",
+            "idName": "tune",
             "id": "9ba2d9dc-b975-46bb-9e83-dbbd03ccab6c",
             "deviceClasses": [
                 {

@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "alarm.h"
-#include "loggingcategories.h"
+#include "extern-plugininfo.h"
 
 Alarm::Alarm(QObject *parent) :
     QObject(parent),

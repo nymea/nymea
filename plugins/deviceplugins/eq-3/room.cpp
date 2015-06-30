@@ -19,6 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "room.h"
+#include "extern-plugininfo.h"
 
 Room::Room(QObject *parent) :
     QObject(parent)

@@ -25,7 +25,6 @@
 #include "deviceplugintune.h"
 #include "devicemanager.h"
 #include "plugininfo.h"
-#include "loggingcategories.h"
 
 DevicePluginTune::DevicePluginTune()
 {

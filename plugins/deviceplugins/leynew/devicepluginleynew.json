@@ -1,9 +1,11 @@
  {
     "name": "Leynew",
+    "idName": "Leynew",
     "id": "9a6d23e6-fad8-4203-aeab-2e6e5c756990",
     "vendors": [
         {
             "name": "Leynew",
+            "idName": "leynew",
             "id": "83c649b4-49b0-4482-9334-d86a85bfbd2a",
             "deviceClasses": [
                 {

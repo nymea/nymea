@@ -1,9 +1,11 @@
 {
     "name": "UDP Commander",
+    "idName": "UdpCommander",
     "id": "24a8474c-1d86-499e-a76e-9cbfbf48dd72",
     "vendors": [
         {
             "name": "guh",
+            "idName": "guh",
             "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6",
             "deviceClasses": [
                 {

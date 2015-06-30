@@ -46,13 +46,12 @@ void loggingCategoryFilter(QLoggingCategory *category)
 
 int main(int argc, char *argv[])
 {
-    //qInstallMessageHandler(myMessageOutput);
     QCoreApplication application(argc, argv);
     application.setOrganizationName("guh");
     application.setApplicationName("guhd");
     application.setApplicationVersion(GUH_VERSION_STRING);
 
-    // filter for core and libguh
+    // logging filers for core and libguh
     s_loggingFilters.insert("Application", true);
     s_loggingFilters.insert("Warnings", true);
     s_loggingFilters.insert("DeviceManager", true);
@@ -62,27 +61,10 @@ int main(int argc, char *argv[])
     s_loggingFilters.insert("Hardware", false);
     s_loggingFilters.insert("LogEngine", false);
 
-    // plugins
-    #ifdef boblight
-    s_loggingFilters.insert("Boblight", false);
-    #endif
-    s_loggingFilters.insert("CommandLauncher", false);
-    s_loggingFilters.insert("RF433", false);
-    s_loggingFilters.insert("DateTime", false);
-    s_loggingFilters.insert("EQ-3", false);
-    s_loggingFilters.insert("LgSmartTv", false);
-    s_loggingFilters.insert("Lircd", false);
-    s_loggingFilters.insert("MailNotification", false);
-    s_loggingFilters.insert("Mock", false);
-    s_loggingFilters.insert("Openweahtermap", false);
-    s_loggingFilters.insert("PhilipsHue", false);
-    s_loggingFilters.insert("Tune", false);
-    s_loggingFilters.insert("UdpCommander", false);
-    s_loggingFilters.insert("WakeOnLan", false);
-    s_loggingFilters.insert("Wemo", false);
-    s_loggingFilters.insert("WifiDetector", false);
-    s_loggingFilters.insert("Kodi", false);
-
+    QHash<QString, bool> loggingFiltersPlugins;
+    foreach (const QJsonObject &pluginMetadata, DeviceManager::pluginsMetadata()) {
+        loggingFiltersPlugins.insert(pluginMetadata.value("idName").toString(), false);
+    }
 
     QCommandLineParser parser;
     parser.addHelpOption();
@@ -90,7 +72,8 @@ int main(int argc, char *argv[])
     QString applicationDescription = QString("\nguh ( /[guːh]/ ) is an open source home automation server, which allows to\n"
                                   "control a lot of different devices from many different manufacturers.\n\n"
                                   "guhd %1 (C) 2014-2015 guh\n"
-                                  "Released under the GNU GENERAL PUBLIC LICENSE Version 2.").arg(GUH_VERSION_STRING);
+                                  "Released under the GNU GENERAL PUBLIC LICENSE Version 2.\n\n"
+                                  "API version: %2\n").arg(GUH_VERSION_STRING).arg(JSON_PROTOCOL_VERSION);
 
     parser.setApplicationDescription(applicationDescription);
 
@@ -98,15 +81,29 @@ int main(int argc, char *argv[])
     parser.addOption(foregroundOption);
 
     QString debugDescription = QString("Debug categories to enable. Prefix with \"No\" to disable. Warnings from all categories will be printed unless explicitly muted with \"NoWarnings\". \n\nCategories are:");
+    // create sorted loggingFiler list
     QStringList sortedFilterList = QStringList(s_loggingFilters.keys());
     sortedFilterList.sort();
     foreach (const QString &filterName, sortedFilterList) {
         debugDescription += "\n- " + filterName + " (" + (s_loggingFilters.value(filterName) ? "yes" : "no") + ")";
     }
+    // create sorted plugin loggingFiler list
+    QStringList sortedPluginList = QStringList(loggingFiltersPlugins.keys());
+    sortedPluginList.sort();
+    debugDescription += "\n\nPlugin categories:\n";
+    foreach (const QString &filterName, sortedPluginList) {
+        debugDescription += "\n- " + filterName + " (" + (s_loggingFilters.value(filterName) ? "yes" : "no") + ")";
+    }
+
     QCommandLineOption debugOption(QStringList() << "d" << "debug", debugDescription, "[No]DebugCategory");
     parser.addOption(debugOption);
 
     parser.process(application);
+
+    // add plugin metadata to the static hash
+    foreach (const QString &category, loggingFiltersPlugins.keys()) {
+        s_loggingFilters.insert(category, false);
+    }
 
     // check debug area
     foreach (QString debugArea, parser.values(debugOption)) {

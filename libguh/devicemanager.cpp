@@ -875,9 +875,11 @@ void DeviceManager::loadConfiguredDevices()
         // We always add the device to the list in this case. If its in the storedDevices
         // it means that it was working at some point so lets still add it as there might
         // be rules associated with this device. Device::setupCompleted() will be false.
-        setupDevice(device);
-
+        DeviceSetupStatus status = setupDevice(device);
         m_configuredDevices.append(device);
+
+        if (status == DeviceSetupStatus::DeviceSetupStatusSuccess)
+            postSetupDevice(device);
     }
     settings.endGroup();
 }
@@ -1287,6 +1289,7 @@ DeviceManager::DeviceError DeviceManager::verifyParam(const QList<ParamType> par
 DeviceManager::DeviceError DeviceManager::verifyParam(const ParamType &paramType, const Param &param)
 {
     if (paramType.name() == param.name()) {
+
         if (!param.value().canConvert(paramType.type())) {
             qCWarning(dcDeviceManager) << "Wrong parameter type for param" << param.name() << " Got:" << param.value() << " Expected:" << QVariant::typeToName(paramType.type());
             return DeviceErrorInvalidParameter;
@@ -1296,8 +1299,8 @@ DeviceManager::DeviceError DeviceManager::verifyParam(const ParamType &paramType
             qCWarning(dcDeviceManager) << "Value out of range for param" << param.name() << " Got:" << param.value() << " Max:" << paramType.maxValue();
             return DeviceErrorInvalidParameter;
         }
-        if (paramType.minValue().isValid() && param.value() < paramType.minValue()) {
-            qCWarning(dcDeviceManager) << "Value out of range for param" << param.name() << " Got:" << param.value().convert(paramType.type()) << " Min:" << paramType.minValue().convert(paramType.type());
+        if (paramType.minValue().isValid() && param.value().convert(paramType.type()) < paramType.minValue().convert(paramType.type())) {
+            qCWarning(dcDeviceManager) << "Value out of range for param" << param.name() << " Got:" << param.value() << " Min:" << paramType.minValue().convert(paramType.type());
             return DeviceErrorInvalidParameter;
         }
         if (!paramType.allowedValues().isEmpty() && !paramType.allowedValues().contains(param.value())) {

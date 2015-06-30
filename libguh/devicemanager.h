@@ -91,7 +91,8 @@ public:
     explicit DeviceManager(QObject *parent = 0);
     ~DeviceManager();
 
-    static QList<QJsonObject> pluginNames();
+    static QStringList pluginSearchDirs();
+    static QList<QJsonObject> pluginsMetadata();
 
     QList<DevicePlugin*> plugins() const;
     DevicePlugin* plugin(const PluginId &id) const;
@@ -165,7 +166,6 @@ private:
     DeviceError verifyParam(const ParamType &paramType, const Param &param);
 
 private:
-
     QHash<VendorId, Vendor> m_supportedVendors;
     QHash<VendorId, QList<DeviceClassId> > m_vendorDeviceMap;
     QHash<DeviceClassId, DeviceClass> m_supportedDevices;

@@ -19,24 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "jsonrpcserver.h"
-#include "loggingcategories.h"
-
-extern PluginId pluginId;
-extern DeviceClassId moodDeviceClassId;
-extern StateTypeId activeStateTypeId;
-extern ActionTypeId activeActionTypeId;
-extern StateTypeId valueStateTypeId;
-extern ActionTypeId valueActionTypeId;
-extern DeviceClassId tuneDeviceClassId;
-extern StateTypeId reachableStateTypeId;
-extern StateTypeId approximationDetectedStateTypeId;
-extern StateTypeId temperatureStateTypeId;
-extern StateTypeId humidityStateTypeId;
-extern StateTypeId lightIntensityStateTypeId;
-extern StateTypeId powerStateTypeId;
-extern ActionTypeId powerActionTypeId;
-extern StateTypeId brightnessStateTypeId;
-extern ActionTypeId brightnessActionTypeId;
+#include "extern-plugininfo.h"
 
 JsonRpcServer::JsonRpcServer(QObject *parent) :
     QObject(parent),

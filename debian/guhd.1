@@ -1,6 +1,6 @@
 .\" Manpage for guhd.
 .\" Contact simon.stuerz@guh.guru to correct errors or typos.
-.TH man 1 "May 2015" "1.0" "guhd man page"
+.TH man 1 "June 2015" "1.1" "guhd man page"
 .SH NAME
 guhd \- Server for home automation systems
 .SH SYNOPSIS
@@ -23,8 +23,9 @@ Displays version information.
 Run guhd in the foreground, not as daemon.
 .TP
 \fB\-d\fR, \fB\-\-debug\fR, \fB\<[No\]DebugCategory>\fR
-Debug categories to enable. Prefix with \"No\" to disable. Warnings from all 
-categories will be printed unless explicitly muted with "NoWarnings". 
+Debug categories to enable. In order to disable a category which is enabled by 
+default, you can add \"No\" to the category. Warnings from all 
+categories will be printed unless they are explicitly muted with "NoWarnings".
 .RS
 .TP
 \fBMain\ debug\ categories:\fR
@@ -44,42 +45,17 @@ Print the debug messages from logging engine.
 Print the debug messages from the rule engine.
 .TP
 \fBDebug\ categories\ for\ plugins:\fR
-.IP \fICommandLauncher\fR\ (default\ disabled)
-Print the debug messages from the command launcher device plugin.
-.IP \fIDateTime\fR\ (default\ disabled)
-Print the debug messages from the date/time device plugin.
-.IP \fIEQ-3\fR\ (default\ disabled)
-Print the debug messages from eQ-3 device plugin. 
-.IP \fILgSmartTv\fR\ (default\ disabled)
-Print the debug messages from Lg Smart Tv device plugin.
-.IP \fIKodi\fR\ (default\ disabled)
-Print the debug messages from kodi device plugin.
-.IP \fILircd\fR\ (default\ disabled)
-Print the debug messages from lircd device plugin.
-.IP \fIMailNotification\fR\ (default\ disabled)
-Print the debug messages from the mail notification device plugin.
-.IP \fIMock\fR\ (default\ disabled)
-Print the debug messages from the mock device plugin.
-.IP \fIOpenweahtermap\fR\ (default\ disabled)
-Print the debug messages from the open weathermap device plugin.
-.IP \fIPhilipsHue\fR\ (default\ disabled)
-Print the debug messages from the Philips Hue device plugin.
-.IP \fIRF433\fR\ (default\ disabled)
-Print the debug messages from the RF 433 MHz plugins. Each plugin which uses the RF 433 MHz 
-hardware resource is in this debug caterogry. 
-.IP \fITune\fR\ (default\ disabled)
-Print the debug messages from the tune device plugin.
-.IP \fIUdpCommander\fR\ (default\ disabled)
-Print the debug messages from the UPD commander device plugin.
-.IP \fIWakeOnLan\fR\ (default\ disabled)
-Print the debug messages from the wake on lan device plugin.
-.IP \fIWarnings\fR\ (default\ enabled)
-Print warnings of all categories. 
-.IP \fIWemo\fR\ (default\ disabled)
-Print the debug messages from the wemo device plugin.
-.IP \fIWifiDetector\fR\ (default\ disabled)  
-Print the debug messages from the WiFi detector device plugin.
-
+Since guh loads the plugins dynamically, the list of supported
+plugin debug categories depends on your plugin installation. Please use 
+the \fB-h\fR command to see which categories are available for your system.
+.SH EXAMPLES
+.TP
+To start guhd in the foreground and read the debug messages from the Hardware:
+.IP $ guhd -n -d Hardware
+.TP
+To start guhd in the foreground, disable debug messages from the DeviceManager 
+and enable debug messages for JsonRpc and LogEngine:
+.IP $ guhd -n -d NoDeviceManager JsonRpc LogEngine
 .SH SEE ALSO
 Full developer documentation at: <http://dev.guh.guru>
 .br

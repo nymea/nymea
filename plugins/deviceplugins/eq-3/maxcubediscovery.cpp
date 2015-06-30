@@ -19,6 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "maxcubediscovery.h"
+#include "extern-plugininfo.h"
 
 MaxCubeDiscovery::MaxCubeDiscovery(QObject *parent) :
     QObject(parent)

@@ -1,9 +1,11 @@
 {
     "name": "Intertechno",
+    "idName": "Intertechno",
     "id": "e998d934-0397-42c1-ad63-9141bcac8563",
     "vendors": [
         {
             "name": "Intertechno",
+            "idName": "intertechno",
             "id": "6a852bc2-34dd-4f4c-9ac9-dd4c32ddbcba",
             "deviceClasses": [
                 {

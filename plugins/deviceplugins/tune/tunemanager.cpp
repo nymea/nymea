@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "tunemanager.h"
-#include "loggingcategories.h"
+#include "extern-plugininfo.h"
 
 TuneManager::TuneManager(int port, QObject *parent) :
     QObject(parent),

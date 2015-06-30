@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "jsonhandler.h"
-#include "loggingcategories.h"
+#include "extern-plugininfo.h"
 
 #include <QJsonDocument>
 

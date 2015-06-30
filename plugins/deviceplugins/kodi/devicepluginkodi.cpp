@@ -68,7 +68,6 @@
 #include "devicepluginkodi.h"
 #include "plugin/device.h"
 #include "plugininfo.h"
-#include "loggingcategories.h"
 
 DevicePluginKodi::DevicePluginKodi()
 {

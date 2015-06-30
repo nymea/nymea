@@ -50,8 +50,7 @@
 
 #include "plugin/device.h"
 #include "devicemanager.h"
-#include "loggingcategories.h"
-
+#include "plugininfo.h"
 #include "lircdclient.h"
 
 #include <QDebug>

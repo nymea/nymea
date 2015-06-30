@@ -1,10 +1,12 @@
 {
     "name": "Philips Hue",
+    "idName": "PhilipsHue",
     "id": "5f2e634b-b7f3-48ee-976a-b5ae22aa5c55",
     "vendors": [
         {
             "id": "0ae1e001-2aa6-47ed-b8c0-334c3728a68f",
             "name": "Philips",
+            "idName": "philips",
             "deviceClasses": [
                 {
                     "deviceClassId": "642aa4c7-19aa-45ed-ba06-aa1ae6c9edf7",

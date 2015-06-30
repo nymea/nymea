@@ -50,7 +50,6 @@
 
 #include "plugin/device.h"
 #include "devicemanager.h"
-#include "loggingcategories.h"
 
 #include "bobclient.h"
 #include "plugininfo.h"

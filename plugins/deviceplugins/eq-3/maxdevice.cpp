@@ -19,6 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "maxdevice.h"
+#include "extern-plugininfo.h"
 
 MaxDevice::MaxDevice(QObject *parent) :
     QObject(parent)

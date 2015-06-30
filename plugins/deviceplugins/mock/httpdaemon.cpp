@@ -25,7 +25,7 @@
 #include "plugin/deviceclass.h"
 #include "plugin/deviceplugin.h"
 #include "types/statetype.h"
-#include "loggingcategories.h"
+#include "extern-plugininfo.h"
 
 #include <QTcpSocket>
 #include <QDebug>
@@ -114,7 +114,7 @@ void HttpDaemon::discardClient()
     QTcpSocket* socket = (QTcpSocket*)sender();
     socket->deleteLater();
 
-    qCDebug(dcMock) << "Connection closed";
+    qCDebug(dcMockDevice) << "Connection closed";
 }
 
 QString HttpDaemon::generateHeader()

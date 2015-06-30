@@ -65,7 +65,6 @@
 #include "devicepluginudpcommander.h"
 #include "plugin/device.h"
 #include "plugininfo.h"
-#include "loggingcategories.h"
 
 DevicePluginUdpCommander::DevicePluginUdpCommander()
 {

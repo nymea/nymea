@@ -1,4 +1,4 @@
-26
+27
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -309,7 +309,7 @@
             }
         },
         "Rules.DisableRule": {
-            "description": "Disable a rule. The rule won't be triggered by it's events or state changes while it is disabled.",
+            "description": "Disable a rule. The rule won't be triggered by it's events or state changes while it is disabled. If successfull, the notification \"Rule.RuleConfigurationChanged\" will be emitted.",
             "params": {
                 "ruleId": "Uuid"
             },
@@ -317,8 +317,31 @@
                 "ruleError": "$ref:RuleError"
             }
         },
+        "Rules.EditRule": {
+            "description": "Edit the parameters of a rule. The configuration of the rule with the given ruleId will be replaced with the new given configuration. In ordert to enable or disable a Rule, please use the methods \"Rules.EnableRule\" and \"Rules.DisableRule\". If successfull, the notification \"Rule.RuleConfigurationChanged\" will be emitted.",
+            "params": {
+                "actions": [
+                    "$ref:RuleAction"
+                ],
+                "name": "String",
+                "o:enabled": "Bool",
+                "o:eventDescriptor": "$ref:EventDescriptor",
+                "o:eventDescriptorList": [
+                    "$ref:EventDescriptor"
+                ],
+                "o:exitActions": [
+                    "$ref:RuleAction"
+                ],
+                "o:stateEvaluator": "$ref:StateEvaluator",
+                "ruleId": "Uuid"
+            },
+            "returns": {
+                "o:rule": "$ref:Rule",
+                "ruleError": "$ref:RuleError"
+            }
+        },
         "Rules.EnableRule": {
-            "description": "Enabled a rule that has previously been disabled.",
+            "description": "Enabled a rule that has previously been disabled.If successfull, the notification \"Rule.RuleConfigurationChanged\" will be emitted.",
             "params": {
                 "ruleId": "Uuid"
             },
@@ -425,6 +448,12 @@
         },
         "Rules.RuleAdded": {
             "description": "Emitted whenever a Rule was added.",
+            "params": {
+                "rule": "$ref:Rule"
+            }
+        },
+        "Rules.RuleConfigurationChanged": {
+            "description": "Emitted whenever the configuration of a Rule changed.",
             "params": {
                 "rule": "$ref:Rule"
             }

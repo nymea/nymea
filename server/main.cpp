@@ -24,13 +24,17 @@
 #include <QLoggingCategory>
 #include <QCommandLineOption>
 #include <QMessageLogger>
+#include <QStringList>
 #include <QtPlugin>
 
 #include "guhcore.h"
 #include "guhservice.h"
 #include "loggingcategories.h"
 
+
 QHash<QString, bool> s_loggingFilters;
+
+using namespace guhserver;
 
 void loggingCategoryFilter(QLoggingCategory *category)
 {

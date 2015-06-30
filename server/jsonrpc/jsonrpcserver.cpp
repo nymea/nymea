@@ -48,6 +48,8 @@
 #include <QJsonDocument>
 #include <QStringList>
 
+namespace guhserver {
+
 JsonRPCServer::JsonRPCServer(QObject *parent):
     JsonHandler(parent),
 #ifdef TESTING_ENABLED
@@ -301,4 +303,4 @@ void JsonRPCServer::sendErrorResponse(const QUuid &clientId, int commandId, cons
     m_tcpServer->sendData(clientId, jsonDoc.toJson());
 }
 
-
+}

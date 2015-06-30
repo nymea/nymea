@@ -29,6 +29,8 @@
 #include <QMetaMethod>
 #include <QTimer>
 
+namespace guhserver {
+
 class JsonHandler;
 
 class JsonReply: public QObject
@@ -115,5 +117,7 @@ private:
     QHash<QString, QVariantMap> m_params;
     QHash<QString, QVariantMap> m_returns;
 };
+
+}
 
 #endif // JSONHANDLER_H

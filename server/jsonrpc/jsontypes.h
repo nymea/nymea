@@ -23,6 +23,8 @@
 #define JSONTYPES_H
 
 #include "plugin/deviceclass.h"
+#include "plugin/device.h"
+#include "plugin/deviceplugin.h"
 #include "plugin/devicedescriptor.h"
 #include "rule.h"
 #include "devicemanager.h"
@@ -44,8 +46,7 @@
 #include <QString>
 #include <QMetaEnum>
 
-class DevicePlugin;
-class Device;
+namespace guhserver {
 
 #define DECLARE_OBJECT(typeName, jsonName) \
     public: \
@@ -181,5 +182,7 @@ private:
 
     static QString s_lastError;
 };
+
+}
 
 #endif // JSONTYPES_H

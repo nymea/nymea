@@ -32,6 +32,8 @@
 #include <QNetworkReply>
 #include <QCoreApplication>
 
+using namespace guhserver;
+
 class TestActions: public GuhTestBase
 {
     Q_OBJECT
@@ -147,7 +149,6 @@ void TestActions::getActionType()
         QVERIFY2(ActionTypeId(response.toMap().value("params").toMap().value("actionType").toMap().value("id").toString()) == actionTypeId, "Didnt get reply for same actionTypeId as requested.");
     }
 }
-
 
 #include "testactions.moc"
 QTEST_MAIN(TestActions)

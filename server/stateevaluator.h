@@ -28,6 +28,8 @@
 #include <QSettings>
 #include <QDebug>
 
+namespace guhserver {
+
 class StateEvaluator
 {
 public:
@@ -57,5 +59,7 @@ private:
     QList<StateEvaluator> m_childEvaluators;
     Types::StateOperator m_operatorType;
 };
+
+}
 
 #endif // STATEEVALUATOR_H

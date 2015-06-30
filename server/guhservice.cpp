@@ -22,6 +22,8 @@
 #include "guhservice.h"
 #include "loggingcategories.h"
 
+namespace guhserver {
+
 GuhService::GuhService(int argc, char **argv):
     QtService<QCoreApplication>(argc, argv, "guh daemon")
 {
@@ -43,4 +45,6 @@ GuhService::~GuhService()
 void GuhService::start()
 {
     GuhCore::instance()->setRunningMode(GuhCore::RunningModeService);
+}
+
 }

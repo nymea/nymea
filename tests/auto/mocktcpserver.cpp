@@ -22,6 +22,8 @@
 
 #include <QUuid>
 
+namespace guhserver {
+
 QList<MockTcpServer*> MockTcpServer::s_allServers;
 
 MockTcpServer::MockTcpServer(QObject *parent):
@@ -65,4 +67,6 @@ bool MockTcpServer::startServer()
 bool MockTcpServer::stopServer()
 {
     return true;
+}
+
 }

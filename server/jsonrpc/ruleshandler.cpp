@@ -27,6 +27,8 @@
 
 #include <QDebug>
 
+namespace guhserver {
+
 RulesHandler::RulesHandler(QObject *parent) :
     JsonHandler(parent)
 {
@@ -510,4 +512,6 @@ void RulesHandler::ruleConfigurationChangedNotification(const Rule &rule)
     params.insert("rule", JsonTypes::packRule(rule));
 
     emit RuleConfigurationChanged(params);
+}
+
 }

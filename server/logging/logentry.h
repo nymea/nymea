@@ -27,6 +27,8 @@
 #include <QObject>
 #include <QDateTime>
 
+namespace guhserver {
+
 class LogEntry
 {
     Q_GADGET
@@ -75,5 +77,7 @@ private:
     bool m_active;
     int m_errorCode;
 };
+
+}
 
 #endif

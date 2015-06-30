@@ -29,6 +29,8 @@
 
 #include <QUuid>
 
+namespace guhserver {
+
 class Rule
 {
 public:
@@ -65,5 +67,7 @@ private:
     bool m_enabled;
     bool m_active;
 };
+
+}
 
 #endif // RULE_H

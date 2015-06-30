@@ -43,6 +43,8 @@
 
 #include <QTcpServer>
 
+namespace guhserver {
+
 class QtUnixServerSocket : public QTcpServer
 {
     Q_OBJECT
@@ -57,5 +59,6 @@ private:
     QString path_;
 };
 
+}
 
 #endif

@@ -49,7 +49,6 @@
 #include "plugin/device.h"
 #include "devicemanager.h"
 #include "plugininfo.h"
-#include "loggingcategories.h"
 
 #include <QDebug>
 #include <QStringList>
@@ -181,10 +180,10 @@ DeviceManager::DeviceError DevicePluginIntertechno::executeAction(Device *device
     // =======================================
     // send data to hardware resource
     if (transmitData(delay, rawData)) {
-        qCDebug(dcRF433) << "transmitted" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
+        qCDebug(dcIntertechno) << "transmitted" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
         return DeviceManager::DeviceErrorNoError;
     } else {
-        qCWarning(dcRF433) << "could not transmitt" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
+        qCWarning(dcIntertechno) << "could not transmitt" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
         return DeviceManager::DeviceErrorHardwareNotAvailable;
     }
 }
@@ -384,6 +383,6 @@ void DevicePluginIntertechno::radioData(const QList<int> &rawData)
         return;
     }
 
-    qCDebug(dcRF433) << "Intertechno: family code = " << familyCode << "button code =" << buttonCode << power;
+    qCDebug(dcIntertechno) << "Intertechno: family code = " << familyCode << "button code =" << buttonCode << power;
 
 }

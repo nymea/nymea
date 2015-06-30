@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "countdown.h"
-#include "loggingcategories.h"
+#include "extern-plugininfo.h"
 
 Countdown::Countdown(const QString &name, const QTime &time, const bool &repeating, QObject *parent) :
     QObject(parent),

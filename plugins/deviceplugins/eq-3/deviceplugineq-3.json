@@ -1,9 +1,11 @@
 {
     "name": "eQ-3",
+    "idName": "EQ3",
     "id": "f324c43c-9680-48d8-852a-93b2227139b9",
     "vendors": [
         {
             "name": "eQ-3",
+            "idName": "eq3",
             "id": "2cac0645-855e-44fa-837e-1cab0ae4304c",
             "deviceClasses": [
                 {

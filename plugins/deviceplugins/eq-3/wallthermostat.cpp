@@ -19,6 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "wallthermostat.h"
+#include "extern-plugininfo.h"
 
 WallThermostat::WallThermostat(QObject *parent) :
     MaxDevice(parent)

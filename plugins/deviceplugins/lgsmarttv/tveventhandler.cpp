@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "tveventhandler.h"
-#include "loggingcategories.h"
+#include "extern-plugininfo.h"
 
 TvEventHandler::TvEventHandler(const QHostAddress &host, const int &port, QObject *parent) :
     QTcpServer(parent),

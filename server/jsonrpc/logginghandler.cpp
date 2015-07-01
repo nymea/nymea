@@ -21,8 +21,9 @@
 
 #include "logginghandler.h"
 #include "logging/logengine.h"
-#include "guhcore.h"
+#include "logging/logfilter.h"
 #include "loggingcategories.h"
+#include "guhcore.h"
 
 namespace guhserver {
 
@@ -40,7 +41,16 @@ LoggingHandler::LoggingHandler(QObject *parent) :
 
     params.clear(); returns.clear();
     setDescription("GetLogEntries", "Get the LogEntries matching the given filter.");
-    //    params.insert("eventTypeId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+
+    params.insert("o:startTime", JsonTypes::basicTypeToString(JsonTypes::Int));
+    params.insert("o:endTime", JsonTypes::basicTypeToString(JsonTypes::Int));
+    params.insert("o:loggingSources", QVariantList() << JsonTypes::loggingSourceRef());
+    params.insert("o:loggingLevels", QVariantList() << JsonTypes::loggingLevelRef());
+    params.insert("o:eventTypes", QVariantList() << JsonTypes::loggingEventTypeRef());
+    params.insert("o:typeIds", QVariantList() << JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    params.insert("o:deviceIds", QVariantList() << JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    params.insert("o:values", QVariantList() << JsonTypes::basicTypeToString(JsonTypes::Variant));
+
     setParams("GetLogEntries", params);
     returns.insert("loggingError", JsonTypes::loggingErrorRef());
     returns.insert("o:logEntries", QVariantList() << JsonTypes::logEntryRef());
@@ -64,8 +74,11 @@ void LoggingHandler::logEntryAdded(const LogEntry &logEntry)
 JsonReply* LoggingHandler::GetLogEntries(const QVariantMap &params) const
 {
     qCDebug(dcJsonRpc) << "asked for log entries" << params;
+
+    LogFilter filter = JsonTypes::unpackLogFilter(params);
+
     QVariantList entries;
-    foreach (const LogEntry &entry, GuhCore::instance()->logEngine()->logEntries()) {
+    foreach (const LogEntry &entry, GuhCore::instance()->logEngine()->logEntries(filter)) {
         entries.append(JsonTypes::packLogEntry(entry));
     }
     QVariantMap returns = statusToReply(Logging::LoggingErrorNoError);

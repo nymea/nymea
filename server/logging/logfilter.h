@@ -1,6 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
  *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -23,13 +24,65 @@
 
 #include <QDateTime>
 
+#include "logging.h"
+#include "typeutils.h"
+
 namespace guhserver {
 
 class LogFilter
 {
+public:
+    LogFilter();
+
+    QString queryString() const;
+
+    void setStartDate(const QDateTime &startDate);
+    QDateTime startDate() const;
+
+    void setEndDate(const QDateTime &endDate);
+    QDateTime endDate() const;
+
+    void addLoggingSource(const Logging::LoggingSource &source) ;
+    QList<Logging::LoggingSource> loggingSources() const;
+
+    void addLoggingLevel(const Logging::LoggingLevel &level);
+    QList<Logging::LoggingLevel> loggingLevels() const;
+
+    void addLoggingEventType(const Logging::LoggingEventType &eventType);
+    QList<Logging::LoggingEventType> loggingEventTypes() const;
+
+    // Valid for LoggingSourceStates, LoggingSourceEvents, LoggingSourceActions, LoggingSourceRules
+    void addTypeId(const QUuid &typeId);
+    QList<QUuid> typeIds() const;
+
+    // Valid for LoggingSourceStates, LoggingSourceEvents, LoggingSourceActions
+    void addDeviceId(const DeviceId &deviceId);
+    QList<DeviceId> deviceIds() const;
+
+    // Valid for LoggingSourceStates
+    void addValue(const QString &value);
+    QList<QString> values() const;
+
+    bool isEmpty() const;
+
+private:
     QDateTime m_startDate;
     QDateTime m_endDate;
 
+    QList<Logging::LoggingSource> m_sources;
+    QList<Logging::LoggingLevel> m_levels;
+    QList<Logging::LoggingEventType> m_eventTypes;
+    QList<QUuid> m_typeIds;
+    QList<DeviceId> m_deviceIds;
+    QList<QString> m_values;
+
+    QString createDateString() const;
+    QString createSourcesString() const;
+    QString createLevelsString() const;
+    QString createEventTypesString() const;
+    QString createTypeIdsString() const;
+    QString createDeviceIdString() const;
+    QString createValuesString() const;
 };
 
 }

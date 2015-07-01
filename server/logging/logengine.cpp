@@ -1,6 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
  *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -37,6 +38,12 @@ LogEngine::LogEngine(QObject *parent):
 {
     m_db = QSqlDatabase::addDatabase("QSQLITE");
     m_db.setDatabaseName("/tmp/guhd-logs.sqlite");
+
+    if (!m_db.isValid()) {
+        qCWarning(dcLogEngine) << "Database not valid:" << m_db.lastError().driverText() << m_db.lastError().databaseText();
+        return;
+    }
+
     if (!m_db.open()) {
         qCWarning(dcLogEngine) << "Error opening log database:" << m_db.lastError().driverText() << m_db.lastError().databaseText();
         return;
@@ -45,25 +52,38 @@ LogEngine::LogEngine(QObject *parent):
     initDB();
 }
 
-QList<LogEntry> LogEngine::logEntries() const
+QList<LogEntry> LogEngine::logEntries(const LogFilter &filter) const
 {
+    qCDebug(dcLogEngine) << "Read logging database" << m_db.databaseName();
+
     QList<LogEntry> results;
     QSqlQuery query;
-    query.exec("SELECT * FROM entries;");
+
+    QString queryCall = "SELECT * FROM entries;";
+    if (filter.isEmpty()) {
+        query.exec(queryCall);
+    } else {
+        queryCall = QString("SELECT * FROM entries WHERE %1;").arg(filter.queryString());
+        query.exec(queryCall);
+    }
+
     while (query.next()) {
         LogEntry entry(
-           QDateTime::fromMSecsSinceEpoch(query.value("timestamp").toLongLong()),
-           (Logging::LoggingLevel)query.value("loggingLevel").toInt(),
-           (Logging::LoggingSource)query.value("sourceType").toInt(),
-           query.value("errorCode").toInt());
+                    QDateTime::fromMSecsSinceEpoch(query.value("timestamp").toLongLong()),
+                    (Logging::LoggingLevel)query.value("loggingLevel").toInt(),
+                    (Logging::LoggingSource)query.value("sourceType").toInt(),
+                    query.value("errorCode").toInt());
         entry.setTypeId(query.value("typeId").toUuid());
         entry.setDeviceId(DeviceId(query.value("deviceId").toString()));
         entry.setValue(query.value("value").toString());
         if ((Logging::LoggingEventType)query.value("loggingEventType").toInt() == Logging::LoggingEventTypeActiveChange) {
             entry.setActive(query.value("active").toBool());
         }
+        //qCDebug(dcLogEngine) << entry;
         results.append(entry);
     }
+    qCDebug(dcLogEngine) << "Fetched" << results.count() << "entries for db query:" << queryCall;
+
     return results;
 }
 

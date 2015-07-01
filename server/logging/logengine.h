@@ -1,6 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
  *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -22,6 +23,7 @@
 #define LOGENGINE_H
 
 #include "logentry.h"
+#include "logfilter.h"
 #include "types/event.h"
 #include "types/action.h"
 #include "rule.h"
@@ -37,7 +39,7 @@ class LogEngine: public QObject
 public:
     LogEngine(QObject *parent = 0);
 
-    QList<LogEntry> logEntries() const;
+    QList<LogEntry> logEntries(const LogFilter &filter = LogFilter()) const;
 
 signals:
     void logEntryAdded(const LogEntry &logEntry);

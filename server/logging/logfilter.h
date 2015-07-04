@@ -22,6 +22,7 @@
 #ifndef LOGFILTER_H
 #define LOGFILTER_H
 
+#include <QPair>
 #include <QDateTime>
 
 #include "logging.h"
@@ -36,11 +37,9 @@ public:
 
     QString queryString() const;
 
-    void setStartDate(const QDateTime &startDate);
-    QDateTime startDate() const;
 
-    void setEndDate(const QDateTime &endDate);
-    QDateTime endDate() const;
+    void addTimeFilter(const QDateTime &startDate = QDateTime(), const QDateTime &endDate = QDateTime());
+    QList<QPair<QDateTime, QDateTime> > timeFilters() const;
 
     void addLoggingSource(const Logging::LoggingSource &source) ;
     QList<Logging::LoggingSource> loggingSources() const;
@@ -66,9 +65,7 @@ public:
     bool isEmpty() const;
 
 private:
-    QDateTime m_startDate;
-    QDateTime m_endDate;
-
+    QList<QPair<QDateTime, QDateTime > > m_timeFilters;
     QList<Logging::LoggingSource> m_sources;
     QList<Logging::LoggingLevel> m_levels;
     QList<Logging::LoggingEventType> m_eventTypes;
@@ -77,6 +74,7 @@ private:
     QList<QString> m_values;
 
     QString createDateString() const;
+    QString createTimeFilterString(QPair<QDateTime, QDateTime> timeFilter) const;
     QString createSourcesString() const;
     QString createLevelsString() const;
     QString createEventTypesString() const;

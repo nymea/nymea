@@ -159,6 +159,7 @@ int LogEntry::errorCode() const
 QDebug operator<<(QDebug dbg, const LogEntry &entry)
 {
     dbg.nospace() << "LogEntry (count:" << entry.timestamp().toString() << endl;
+    dbg.nospace() << " time stamp: " << entry.timestamp().toTime_t() << endl;
     dbg.nospace() << "   DeviceId: " << entry.deviceId().toString() << endl;
     dbg.nospace() << "    type id: " << entry.typeId().toString() << endl;
     dbg.nospace() << "     source: " << entry.sourceString() << endl;

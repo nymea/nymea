@@ -278,6 +278,30 @@
         "Logging.GetLogEntries": {
             "description": "Get the LogEntries matching the given filter.",
             "params": {
+                "o:deviceIds": [
+                    "Uuid"
+                ],
+                "o:eventTypes": [
+                    "$ref:LoggingEventType"
+                ],
+                "o:loggingLevels": [
+                    "$ref:LoggingLevel"
+                ],
+                "o:loggingSources": [
+                    "$ref:LoggingSource"
+                ],
+                "o:timeFilters": [
+                    {
+                        "o:endDate": "Int",
+                        "o:startDate": "Int"
+                    }
+                ],
+                "o:typeIds": [
+                    "Uuid"
+                ],
+                "o:values": [
+                    "Variant"
+                ]
             },
             "returns": {
                 "loggingError": "$ref:LoggingError",
@@ -434,7 +458,7 @@
             }
         },
         "Logging.LogEntryAdded": {
-            "description": "Emitted whenever an entry is appended to the logging system.",
+            "description": "Emitted whenever an entry is appended to the logging system. The filters can be combinend.",
             "params": {
                 "logEntry": "$ref:LogEntry"
             }
@@ -603,7 +627,8 @@
         },
         "LoggingError": [
             "LoggingErrorNoError",
-            "LoggingErrorLogEntryNotFound"
+            "LoggingErrorLogEntryNotFound",
+            "LoggingErrorInvalidFilterParameter"
         ],
         "LoggingEventType": [
             "LoggingEventTypeTrigger",

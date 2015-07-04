@@ -29,7 +29,7 @@
 #include <QMetaEnum>
 #include <QDateTime>
 
-#define DB_SCHEMA_VERSION 1
+#define DB_SCHEMA_VERSION 2
 
 namespace guhserver {
 
@@ -43,7 +43,6 @@ LogEngine::LogEngine(QObject *parent):
         qCWarning(dcLogEngine) << "Database not valid:" << m_db.lastError().driverText() << m_db.lastError().databaseText();
         return;
     }
-
     if (!m_db.open()) {
         qCWarning(dcLogEngine) << "Error opening log database:" << m_db.lastError().driverText() << m_db.lastError().databaseText();
         return;
@@ -69,7 +68,7 @@ QList<LogEntry> LogEngine::logEntries(const LogFilter &filter) const
 
     while (query.next()) {
         LogEntry entry(
-                    QDateTime::fromMSecsSinceEpoch(query.value("timestamp").toLongLong()),
+                    QDateTime::fromTime_t(query.value("timestamp").toLongLong()),
                     (Logging::LoggingLevel)query.value("loggingLevel").toInt(),
                     (Logging::LoggingSource)query.value("sourceType").toInt(),
                     query.value("errorCode").toInt());
@@ -150,7 +149,7 @@ void LogEngine::logRuleActiveChanged(const Rule &rule)
 void LogEngine::appendLogEntry(const LogEntry &entry)
 {
     QString queryString = QString("INSERT INTO entries (timestamp, loggingEventType, loggingLevel, sourceType, typeId, deviceId, value, active, errorCode) values ('%1', '%2', '%3', '%4', '%5', '%6', '%7', '%8', '%9');")
-            .arg(entry.timestamp().toMSecsSinceEpoch())
+            .arg(entry.timestamp().toTime_t())
             .arg(entry.eventType())
             .arg(entry.level())
             .arg(entry.source())
@@ -186,7 +185,7 @@ void LogEngine::initDB()
         if (version != DB_SCHEMA_VERSION) {
             qCWarning(dcLogEngine) << "Log schema version not matching! Schema upgrade not implemented yet. Logging might fail.";
         } else {
-            qCDebug(dcLogEngine) << "Log database schema version matches";
+            qCDebug(dcLogEngine) << "Log database schema version" << DB_SCHEMA_VERSION << "matches";
         }
     } else {
         qCWarning(dcLogEngine) << "Broken log database. Version not found in metadata table.";
@@ -194,7 +193,7 @@ void LogEngine::initDB()
 
     if (!m_db.tables().contains("sourceTypes")) {
         query.exec("CREATE TABLE sourceTypes (id int, name varchar(20), PRIMARY KEY(id));");
-        qCDebug(dcLogEngine) << query.lastError().databaseText();
+        //qCDebug(dcLogEngine) << query.lastError().databaseText();
         QMetaEnum logTypes = Logging::staticMetaObject.enumerator(Logging::staticMetaObject.indexOfEnumerator("LoggingSource"));
         Q_ASSERT_X(logTypes.isValid(), "LogEngine", "Logging has no enum LoggingSource");
         for (int i = 0; i < logTypes.keyCount(); i++) {
@@ -204,7 +203,7 @@ void LogEngine::initDB()
 
     if (!m_db.tables().contains("loggingEventTypes")) {
         query.exec("CREATE TABLE loggingEventTypes (id int, name varchar(20), PRIMARY KEY(id));");
-        qCDebug(dcLogEngine) << query.lastError().databaseText();
+        //qCDebug(dcLogEngine) << query.lastError().databaseText();
         QMetaEnum logTypes = Logging::staticMetaObject.enumerator(Logging::staticMetaObject.indexOfEnumerator("LoggingEventType"));
         Q_ASSERT_X(logTypes.isValid(), "LogEngine", "Logging has no enum LoggingEventType");
         for (int i = 0; i < logTypes.keyCount(); i++) {

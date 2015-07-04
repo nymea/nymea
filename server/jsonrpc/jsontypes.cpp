@@ -754,12 +754,21 @@ StateDescriptor JsonTypes::unpackStateDescriptor(const QVariantMap &stateDescrip
 LogFilter JsonTypes::unpackLogFilter(const QVariantMap &logFilterMap)
 {
     LogFilter filter;
-    if (logFilterMap.contains("startTime")) {
-        filter.setStartDate(QDateTime::fromMSecsSinceEpoch(logFilterMap.value("startTime").toInt()));
+    if (logFilterMap.contains("timeFilters")) {
+        QVariantList timeFilters = logFilterMap.value("timeFilters").toList();
+        foreach (const QVariant &timeFilter, timeFilters) {
+            QVariantMap timeFilterMap = timeFilter.toMap();
+            QDateTime startDate; QDateTime endDate;
+            if (timeFilterMap.contains("startDate")) {
+                startDate = QDateTime::fromTime_t(timeFilterMap.value("startDate").toInt());
+            }
+            if (timeFilterMap.contains("endDate")) {
+                endDate = QDateTime::fromTime_t(timeFilterMap.value("endDate").toInt());
+            }
+            filter.addTimeFilter(startDate, endDate);
+        }
     }
-    if (logFilterMap.contains("endTime")) {
-        filter.setEndDate(QDateTime::fromMSecsSinceEpoch(logFilterMap.value("endTime").toInt()));
-    }
+
     if (logFilterMap.contains("loggingSources")) {
         QVariantList loggingSources = logFilterMap.value("loggingSources").toList();
         foreach (const QVariant &source, loggingSources) {

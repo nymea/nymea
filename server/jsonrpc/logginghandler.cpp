@@ -35,15 +35,18 @@ LoggingHandler::LoggingHandler(QObject *parent) :
 
     // Notifications
     params.clear(); returns.clear();
-    setDescription("LogEntryAdded", "Emitted whenever an entry is appended to the logging system.");
+    setDescription("LogEntryAdded", "Emitted whenever an entry is appended to the logging system. "
+                   "The filters can be combinend.");
     params.insert("logEntry", JsonTypes::logEntryRef());
     setParams("LogEntryAdded", params);
 
     params.clear(); returns.clear();
     setDescription("GetLogEntries", "Get the LogEntries matching the given filter.");
 
-    params.insert("o:startTime", JsonTypes::basicTypeToString(JsonTypes::Int));
-    params.insert("o:endTime", JsonTypes::basicTypeToString(JsonTypes::Int));
+    QVariantMap timeFilter;
+    timeFilter.insert("o:startDate", JsonTypes::basicTypeToString(JsonTypes::Int));
+    timeFilter.insert("o:endDate", JsonTypes::basicTypeToString(JsonTypes::Int));
+    params.insert("o:timeFilters", QVariantList() << timeFilter);
     params.insert("o:loggingSources", QVariantList() << JsonTypes::loggingSourceRef());
     params.insert("o:loggingLevels", QVariantList() << JsonTypes::loggingLevelRef());
     params.insert("o:eventTypes", QVariantList() << JsonTypes::loggingEventTypeRef());
@@ -73,7 +76,7 @@ void LoggingHandler::logEntryAdded(const LogEntry &logEntry)
 
 JsonReply* LoggingHandler::GetLogEntries(const QVariantMap &params) const
 {
-    qCDebug(dcJsonRpc) << "asked for log entries" << params;
+    qCDebug(dcJsonRpc) << "Asked for log entries" << params;
 
     LogFilter filter = JsonTypes::unpackLogFilter(params);
 

@@ -19,6 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "logfilter.h"
+#include "loggingcategories.h"
 
 namespace guhserver {
 
@@ -69,24 +70,16 @@ QString LogFilter::queryString() const
     return query;
 }
 
-void LogFilter::setStartDate(const QDateTime &startDate)
+void LogFilter::addTimeFilter(const QDateTime &startDate, const QDateTime &endDate)
 {
-    m_startDate = startDate;
+    QPair<QDateTime, QDateTime> timeFilter(startDate, endDate);
+    if (!m_timeFilters.contains(timeFilter))
+        m_timeFilters.append(timeFilter);
 }
 
-QDateTime LogFilter::startDate() const
+QList<QPair<QDateTime, QDateTime> > LogFilter::timeFilters() const
 {
-    return m_startDate;
-}
-
-void LogFilter::setEndDate(const QDateTime &endDate)
-{
-    m_endDate = endDate;
-}
-
-QDateTime LogFilter::endDate() const
-{
-    return m_endDate;
+    return m_timeFilters;
 }
 
 void LogFilter::addLoggingSource(const Logging::LoggingSource &source)
@@ -157,8 +150,7 @@ QList<QString> LogFilter::values() const
 
 bool LogFilter::isEmpty() const
 {
-    return m_endDate.isNull() &&
-            m_startDate.isNull() &&
+    return m_timeFilters.isEmpty() &&
             m_sources.isEmpty() &&
             m_levels.isEmpty() &&
             m_eventTypes.isEmpty() &&
@@ -170,22 +162,50 @@ bool LogFilter::isEmpty() const
 QString LogFilter::createDateString() const
 {
     QString query;
-    if (m_startDate.isValid() && !m_endDate.isValid()) {
+    if (!m_timeFilters.isEmpty()) {
+        if (m_timeFilters.count() == 1) {
+            QPair<QDateTime, QDateTime> timeFilter = m_timeFilters.first();
+            query.append(createTimeFilterString(timeFilter));
+        } else {
+            query.append("( ");
+            QPair<QDateTime, QDateTime> timeFilter;
+            foreach (timeFilter, m_timeFilters) {
+                query.append(createTimeFilterString(timeFilter));
+                if (timeFilter != m_timeFilters.last())
+                    query.append("OR ");
+            }
+            query.append(") ");
+        }
+    }
+    return query;
+}
+
+QString LogFilter::createTimeFilterString(QPair<QDateTime, QDateTime> timeFilter) const
+{
+    QString query;
+    QDateTime startDate = timeFilter.first;
+    QDateTime endDate = timeFilter.second;
+
+    qCDebug(dcLogEngine) << "create timefiler for" << startDate.toString() << endDate.toString();
+
+    query.append("( ");
+    if (startDate.isValid() && !endDate.isValid()) {
         // only start date is valid
         query.append(QString("timestamp BETWEEN '%1' AND '%2' ")
-                     .arg(m_startDate.toMSecsSinceEpoch())
-                     .arg(QDateTime::currentDateTime().toMSecsSinceEpoch()));
-    } else if (!m_startDate.isValid() && m_endDate.isValid()) {
+                     .arg(startDate.toTime_t())
+                     .arg(QDateTime::currentDateTime().toTime_t()));
+    } else if (!startDate.isValid() && endDate.isValid()) {
         // only end date is valid
         query.append(QString("timestamp NOT BETWEEN '%1' AND '%2' ")
-                     .arg(m_endDate.toMSecsSinceEpoch())
-                     .arg(QDateTime::currentDateTime().toMSecsSinceEpoch()));
-    } else if (m_startDate.isValid() && m_endDate.isValid()) {
+                     .arg(endDate.toTime_t())
+                     .arg(QDateTime::currentDateTime().toTime_t()));
+    } else if (startDate.isValid() && endDate.isValid()) {
         // both dates are valid
         query.append(QString("timestamp BETWEEN '%1' AND '%2' ")
-                     .arg(m_startDate.toMSecsSinceEpoch())
-                     .arg(m_endDate.toMSecsSinceEpoch()));
+                     .arg(startDate.toTime_t())
+                     .arg(endDate.toTime_t()));
     }
+    query.append(") ");
     return query;
 }
 

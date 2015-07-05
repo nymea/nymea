@@ -213,7 +213,11 @@ DeviceManager::DeviceError GuhCore::removeConfiguredDevice(const DeviceId &devic
         }
     }
 
-    return m_deviceManager->removeConfiguredDevice(deviceId);
+    DeviceManager::DeviceError removeError = m_deviceManager->removeConfiguredDevice(deviceId);
+    if (removeError == DeviceManager::DeviceErrorNoError)
+        m_logger->removeDeviceLogs(deviceId);
+
+    return removeError;
 }
 
 /*! Calls the metheod DeviceManager::pairDevice(\a pairingTransactionId, \a deviceClassId, \a deviceDescriptorId).
@@ -357,7 +361,11 @@ RuleEngine::RuleError GuhCore::editRule(const RuleId &id, const QString &name, c
  *  \sa RuleEngine, */
 RuleEngine::RuleError GuhCore::removeRule(const RuleId &id)
 {
-    return m_ruleEngine->removeRule(id);
+    RuleEngine::RuleError removeError = m_ruleEngine->removeRule(id);
+    if (removeError != RuleEngine::RuleErrorNoError)
+        m_logger->removeRuleLogs(id);
+
+    return removeError;
 }
 
 /*! Calls the metheod RuleEngine::findRules(\a deviceId).

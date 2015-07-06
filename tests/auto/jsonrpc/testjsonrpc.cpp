@@ -198,16 +198,11 @@ void TestJSONRPC::enableDisableNotifications()
 
 void TestJSONRPC::stateChangeEmitsNotifications()
 {
-    QVariantMap params;
-    params.insert("enabled", true);
-    QVariant response = injectAndWait("JSONRPC.SetNotificationStatus", params);
-    QCOMPARE(response.toMap().value("params").toMap().value("enabled").toBool(), true);
+    QCOMPARE(enableNotifications(), true);
 
     // Setup connection to mock client
     QNetworkAccessManager nam;
-
     QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
-
 
     // trigger state change in mock device
     int newVal = 1111;
@@ -238,10 +233,7 @@ void TestJSONRPC::stateChangeEmitsNotifications()
     QCOMPARE(jsonDoc.toVariant().toMap().value("params").toMap().value("event").toMap().value("params").toList().first().toMap().value("value").toInt(), newVal);
 
     // Now turn off notifications
-    params.clear();
-    params.insert("enabled", false);
-    response = injectAndWait("JSONRPC.SetNotificationStatus", params);
-    QCOMPARE(response.toMap().value("params").toMap().value("enabled").toBool(), false);
+    QCOMPARE(disableNotifications(), true);
 
     // Fire the a statechange once again
     clientSpy.clear();
@@ -256,13 +248,12 @@ void TestJSONRPC::stateChangeEmitsNotifications()
     QCOMPARE(clientSpy.count(), 0);
 
     // Now check that the state has indeed changed even though we didn't get a notification
-    params.clear();
+    QVariantMap params;
     params.insert("deviceId", m_mockDeviceId);
     params.insert("stateTypeId", stateTypeId);
-    response = injectAndWait("Devices.GetStateValue", params);
+    QVariant response = injectAndWait("Devices.GetStateValue", params);
 
     QCOMPARE(response.toMap().value("params").toMap().value("value").toInt(), newVal);
-
 }
 
 
@@ -282,7 +273,7 @@ void TestJSONRPC::deviceAddedRemovedNotifications()
     httpportParam.insert("value", 8765);
     deviceParams.append(httpportParam);
 
-    QVariantMap params;
+    QVariantMap params; clientSpy.clear();
     params.insert("deviceClassId", mockDeviceClassId);
     params.insert("deviceParams", deviceParams);
     QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
@@ -310,7 +301,7 @@ void TestJSONRPC::deviceAddedRemovedNotifications()
     verifyDeviceError(response);
     checkNotification(clientSpy, "Devices.DeviceRemoved");
 
-    //QCOMPARE(disableNotifications(), true);
+    QCOMPARE(disableNotifications(), true);
 }
 
 void TestJSONRPC::ruleAddedRemovedNotifications()

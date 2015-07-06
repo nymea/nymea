@@ -23,6 +23,7 @@
 #include "guhcore.h"
 #include "devicemanager.h"
 #include "loggingcategories.h"
+#include "guhsettings.h"
 
 namespace guhserver {
 
@@ -128,7 +129,7 @@ void StateEvaluator::removeDevice(const DeviceId &deviceId)
     }
 }
 
-void StateEvaluator::dumpToSettings(QSettings &settings, const QString &groupName) const
+void StateEvaluator::dumpToSettings(GuhSettings &settings, const QString &groupName) const
 {
     settings.beginGroup(groupName);
 
@@ -150,7 +151,7 @@ void StateEvaluator::dumpToSettings(QSettings &settings, const QString &groupNam
     settings.endGroup();
 }
 
-StateEvaluator StateEvaluator::loadFromSettings(QSettings &settings, const QString &groupName)
+StateEvaluator StateEvaluator::loadFromSettings(GuhSettings &settings, const QString &groupName)
 {
     settings.beginGroup(groupName);
     settings.beginGroup("stateDescriptor");

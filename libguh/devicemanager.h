@@ -174,8 +174,6 @@ private:
 
     QHash<PluginId, DevicePlugin*> m_devicePlugins;
 
-    QString m_settingsFile;
-
     // Hardware Resources
     Radio433* m_radio433;
     QTimer m_pluginTimer;

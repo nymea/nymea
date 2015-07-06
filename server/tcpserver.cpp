@@ -21,10 +21,10 @@
 
 #include "tcpserver.h"
 #include "loggingcategories.h"
+#include "guhsettings.h"
 
 #include <QDebug>
 #include <QJsonDocument>
-#include <QSettings>
 
 namespace guhserver {
 
@@ -45,7 +45,7 @@ TcpServer::TcpServer(QObject *parent) :
 
     // load settings
     bool ok;
-    QSettings settings("/etc/guh/guhd.conf");
+    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
     settings.beginGroup("JSONRPC");
 
     // TODO: handle interfaces in settings (enable just localhost ecc...)

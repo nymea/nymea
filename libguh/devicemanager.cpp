@@ -176,12 +176,12 @@
 #include "plugin/device.h"
 #include "plugin/deviceclass.h"
 #include "plugin/deviceplugin.h"
+#include "guhsettings.h"
 
 #include <QPluginLoader>
 #include <QStaticPlugin>
 #include <QtPlugin>
 #include <QDebug>
-#include <QSettings>
 #include <QStringList>
 #include <QCoreApplication>
 #include <QStandardPaths>
@@ -198,8 +198,6 @@ DeviceManager::DeviceManager(QObject *parent) :
 
     m_pluginTimer.setInterval(10000);
     connect(&m_pluginTimer, &QTimer::timeout, this, &DeviceManager::timerEvent);
-
-    m_settingsFile = QCoreApplication::instance()->organizationName() + "/devices";
 
     // Give hardware a chance to start up before loading plugins etc.
     QMetaObject::invokeMethod(this, "loadPlugins", Qt::QueuedConnection);
@@ -282,7 +280,7 @@ DeviceManager::DeviceError DeviceManager::setPluginConfig(const PluginId &plugin
     if (result != DeviceErrorNoError) {
         return result;
     }
-    QSettings settings(m_settingsFile);
+    GuhSettings settings(GuhSettings::SettingsRolePlugins);
     settings.beginGroup("PluginConfig");
     settings.beginGroup(plugin->pluginId().toString());
     foreach (const Param &param, pluginConfig) {
@@ -680,7 +678,7 @@ DeviceManager::DeviceError DeviceManager::removeConfiguredDevice(const DeviceId 
     }
     device->deleteLater();
 
-    QSettings settings(m_settingsFile);
+    GuhSettings settings(GuhSettings::SettingsRoleDevices);
     settings.beginGroup("DeviceConfig");
     settings.beginGroup(deviceId.toString());
     settings.remove("");
@@ -807,7 +805,7 @@ void DeviceManager::loadPlugins()
                     m_supportedDevices.insert(deviceClass.id(), deviceClass);
                     qCDebug(dcDeviceManager) << "* Loaded device class:" << deviceClass.name();
                 }
-                QSettings settings(m_settingsFile);
+                GuhSettings settings(GuhSettings::SettingsRolePlugins);
                 settings.beginGroup("PluginConfig");
                 ParamList params;
                 if (settings.childGroups().contains(pluginIface->pluginId().toString())) {
@@ -850,7 +848,7 @@ void DeviceManager::loadPlugins()
 
 void DeviceManager::loadConfiguredDevices()
 {
-    QSettings settings(m_settingsFile);
+    GuhSettings settings(GuhSettings::SettingsRoleDevices);
     settings.beginGroup("DeviceConfig");
     qCDebug(dcDeviceManager) << "loading devices from" << settings.fileName();
     foreach (const QString &idString, settings.childGroups()) {
@@ -883,7 +881,7 @@ void DeviceManager::loadConfiguredDevices()
 
 void DeviceManager::storeConfiguredDevices()
 {
-    QSettings settings(m_settingsFile);
+    GuhSettings settings(GuhSettings::SettingsRoleDevices);
     settings.beginGroup("DeviceConfig");
     foreach (Device *device, m_configuredDevices) {
         settings.beginGroup(device->id().toString());

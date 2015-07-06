@@ -1,7 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
  *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
- *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -19,48 +18,53 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef STATEEVALUATOR_H
-#define STATEEVALUATOR_H
+#ifndef GUHSETTINGS_H
+#define GUHSETTINGS_H
 
-#include "types/state.h"
-#include "types/statedescriptor.h"
+#include <QObject>
+#include <QVariant>
 
-#include <QDebug>
+class QSettings;
 
-class GuhSettings;
-
-namespace guhserver {
-
-class StateEvaluator
+class GuhSettings : public QObject
 {
+    Q_OBJECT
 public:
-    StateEvaluator(const StateDescriptor &stateDescriptor);
-    StateEvaluator(QList<StateEvaluator> childEvaluators = QList<StateEvaluator>(), Types::StateOperator stateOperator = Types::StateOperatorAnd);
+    enum SettingsRole {
+        SettingsRoleNone,
+        SettingsRoleDevices,
+        SettingsRoleRules,
+        SettingsRolePlugins,
+        SettingsRoleGlobal
+    };
 
-    StateDescriptor stateDescriptor() const;
+    explicit GuhSettings(const SettingsRole &role = SettingsRoleNone, QObject *parent = 0);
+    ~GuhSettings();
 
-    QList<StateEvaluator> childEvaluators() const;
-    void setChildEvaluators(const QList<StateEvaluator> &childEvaluators);
-    void appendEvaluator(const StateEvaluator &stateEvaluator);
+    SettingsRole settingsRole() const;
 
-    Types::StateOperator operatorType() const;
-    void setOperatorType(Types::StateOperator operatorType);
+    static bool isRoot();
+    static QString logPath();
 
-    bool evaluate() const;
-    bool containsDevice(const DeviceId &deviceId) const;
-
-    void removeDevice(const DeviceId &deviceId);
-
-    void dumpToSettings(GuhSettings &settings, const QString &groupName) const;
-    static StateEvaluator loadFromSettings(GuhSettings &settings, const QString &groupPrefix);
+    // forwarded QSettings methods
+    QStringList	allKeys() const;
+    void beginGroup(const QString &prefix);
+    QStringList	childGroups() const;
+    QStringList	childKeys() const;
+    void clear();
+    bool contains(const QString &key) const;
+    void endGroup();
+    QString	group() const;
+    QString	fileName() const;
+    bool isWritable() const;
+    void remove(const QString &key);
+    void setValue(const QString & key, const QVariant &value);
+    QVariant value(const QString & key, const QVariant & defaultValue = QVariant()) const;
 
 private:
-    StateDescriptor m_stateDescriptor;
+    QSettings *m_settings;
+    SettingsRole m_role;
 
-    QList<StateEvaluator> m_childEvaluators;
-    Types::StateOperator m_operatorType;
 };
 
-}
-
-#endif // STATEEVALUATOR_H
+#endif // GUHSETTINGS_H

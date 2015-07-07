@@ -21,8 +21,9 @@
 
 #include "logginghandler.h"
 #include "logging/logengine.h"
-#include "guhcore.h"
+#include "logging/logfilter.h"
 #include "loggingcategories.h"
+#include "guhcore.h"
 
 namespace guhserver {
 
@@ -32,21 +33,42 @@ LoggingHandler::LoggingHandler(QObject *parent) :
     QVariantMap params;
     QVariantMap returns;
 
-    // Notifications
+    QVariantMap timeFilter;
     params.clear(); returns.clear();
-    setDescription("LogEntryAdded", "Emitted whenever an entry is appended to the logging system.");
-    params.insert("logEntry", JsonTypes::logEntryRef());
-    setParams("LogEntryAdded", params);
-
-    params.clear(); returns.clear();
-    setDescription("GetLogEntries", "Get the LogEntries matching the given filter.");
-    //    params.insert("eventTypeId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    setDescription("GetLogEntries", "Get the LogEntries matching the given filter. "
+                   "Each list element of a given filter will be connected with OR "
+                   "to each other. Each of the given filters will be connected with AND "
+                   "to each other.");
+    timeFilter.insert("o:startDate", JsonTypes::basicTypeToString(JsonTypes::Int));
+    timeFilter.insert("o:endDate", JsonTypes::basicTypeToString(JsonTypes::Int));
+    params.insert("o:timeFilters", QVariantList() << timeFilter);
+    params.insert("o:loggingSources", QVariantList() << JsonTypes::loggingSourceRef());
+    params.insert("o:loggingLevels", QVariantList() << JsonTypes::loggingLevelRef());
+    params.insert("o:eventTypes", QVariantList() << JsonTypes::loggingEventTypeRef());
+    params.insert("o:typeIds", QVariantList() << JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    params.insert("o:deviceIds", QVariantList() << JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    params.insert("o:values", QVariantList() << JsonTypes::basicTypeToString(JsonTypes::Variant));
     setParams("GetLogEntries", params);
     returns.insert("loggingError", JsonTypes::loggingErrorRef());
     returns.insert("o:logEntries", QVariantList() << JsonTypes::logEntryRef());
     setReturns("GetLogEntries", returns);
 
+    // Notifications
+    params.clear();
+    setDescription("LogEntryAdded", "Emitted whenever an entry is appended to the logging system. ");
+    params.insert("logEntry", JsonTypes::logEntryRef());
+    setParams("LogEntryAdded", params);
+
+    params.clear();
+    setDescription("LogDatabaseUpdated", "Emitted whenever the database was updated. "
+                   "The database will be updated when a log entry was deleted. A log "
+                   "entry will be deleted when the corresponding device or a rule will "
+                   "be removed, or when the oldest entry of the database was deleted to "
+                   "keep to database in the size limits.");
+    setParams("LogDatabaseUpdated", params);
+
     connect(GuhCore::instance()->logEngine(), &LogEngine::logEntryAdded, this, &LoggingHandler::logEntryAdded);
+    connect(GuhCore::instance()->logEngine(), &LogEngine::logDatabaseUpdated, this, &LoggingHandler::logDatabaseUpdated);
 }
 
 QString LoggingHandler::name() const
@@ -56,16 +78,26 @@ QString LoggingHandler::name() const
 
 void LoggingHandler::logEntryAdded(const LogEntry &logEntry)
 {
+    qCDebug(dcJsonRpc) << "Notify \"Logging.LogEntryAdded\"";
     QVariantMap params;
     params.insert("logEntry", JsonTypes::packLogEntry(logEntry));
     emit LogEntryAdded(params);
 }
 
+void LoggingHandler::logDatabaseUpdated()
+{
+    qCDebug(dcJsonRpc) << "Notify \"Logging.LogDatabaseUpdated\"";
+    emit LogDatabaseUpdated(QVariantMap());
+}
+
 JsonReply* LoggingHandler::GetLogEntries(const QVariantMap &params) const
 {
-    qCDebug(dcJsonRpc) << "asked for log entries" << params;
+    qCDebug(dcJsonRpc) << "Asked for log entries" << params;
+
+    LogFilter filter = JsonTypes::unpackLogFilter(params);
+
     QVariantList entries;
-    foreach (const LogEntry &entry, GuhCore::instance()->logEngine()->logEntries()) {
+    foreach (const LogEntry &entry, GuhCore::instance()->logEngine()->logEntries(filter)) {
         entries.append(JsonTypes::packLogEntry(entry));
     }
     QVariantMap returns = statusToReply(Logging::LoggingErrorNoError);

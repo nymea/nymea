@@ -1,6 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
  *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -41,8 +42,11 @@ public:
     // Valid for all LoggingSources
     QDateTime timestamp() const;
     Logging::LoggingLevel level() const;
+    QString levelString() const;
     Logging::LoggingSource source() const;
+    QString sourceString() const;
     Logging::LoggingEventType eventType() const;
+    QString eventTypeString() const;
 
     // Valid for LoggingSourceStates, LoggingSourceEvents, LoggingSourceActions, LoggingSourceRules
     QUuid typeId() const;
@@ -77,6 +81,7 @@ private:
     bool m_active;
     int m_errorCode;
 };
+QDebug operator<<(QDebug dbg, const LogEntry &entry);
 
 }
 

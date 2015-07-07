@@ -252,7 +252,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="3.959798"
-     inkscape:cx="32.543484"
+     inkscape:cx="-30.717319"
      inkscape:cy="168.16621"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
@@ -279,6 +279,13 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-732.36215)">
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:none"
+       id="rect4243"
+       width="320"
+       height="320"
+       x="0"
+       y="732.36218" />
     <g
        transform="matrix(1.4104708,0,0,1.4104708,-430.40212,560.36683)"
        id="g41">

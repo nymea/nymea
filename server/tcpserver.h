@@ -50,9 +50,7 @@ private:
     QList<QNetworkInterface> m_networkInterfaces;
     QStringList m_ipVersions;
 
-//    QList<QHostAddress> serversToCreate();
-//    QList<QHostAddress> serversToRemove();
-
+    void reloadNetworkInterfaces();
 
 signals:
     void clientConnected(const QUuid &clientId);
@@ -62,7 +60,8 @@ signals:
 private slots:
     void newClientConnected();
     void readPackage();
-    void slotClientDisconnected();
+    void onClientDisconnected();
+    void onError(const QAbstractSocket::SocketError &error);
     void onTimeout();
 
 public slots:

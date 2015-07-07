@@ -188,7 +188,7 @@ void GuhSettings::remove(const QString &key)
 
 void GuhSettings::setValue(const QString &key, const QVariant &value)
 {
-    Q_ASSERT_X(m_role != GuhSettings::SettingsRoleGlobal, "GuhSettings", "Bad settings implementation. The global settings file is read only.");
+    Q_ASSERT_X(m_role != GuhSettings::SettingsRoleGlobal, "GuhSettings", "Bad settings usage. The global settings file should be read only.");
     m_settings->setValue(key, value);
 }
 

@@ -86,6 +86,7 @@ int main(int argc, char *argv[])
     parser.addOption(foregroundOption);
 
     QString debugDescription = QString("Debug categories to enable. Prefix with \"No\" to disable. Warnings from all categories will be printed unless explicitly muted with \"NoWarnings\". \n\nCategories are:");
+
     // create sorted loggingFiler list
     QStringList sortedFilterList = QStringList(s_loggingFilters.keys());
     sortedFilterList.sort();

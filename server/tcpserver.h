@@ -23,10 +23,11 @@
 #define TCPSERVER_H
 
 #include <QObject>
-#include <QNetworkInterface>
 #include <QTcpServer>
 #include <QTcpSocket>
+#include <QNetworkInterface>
 #include <QUuid>
+#include <QTimer>
 
 namespace guhserver {
 
@@ -40,9 +41,18 @@ public:
     void sendData(const QList<QUuid> &clients, const QByteArray &data);
 
 private:
+    QTimer *m_timer;
+
     QHash<QUuid, QTcpServer*> m_serverList;
     QHash<QUuid, QTcpSocket*> m_clientList;
+
     uint m_port;
+    QList<QNetworkInterface> m_networkInterfaces;
+    QStringList m_ipVersions;
+
+//    QList<QHostAddress> serversToCreate();
+//    QList<QHostAddress> serversToRemove();
+
 
 signals:
     void clientConnected(const QUuid &clientId);
@@ -53,6 +63,7 @@ private slots:
     void newClientConnected();
     void readPackage();
     void slotClientDisconnected();
+    void onTimeout();
 
 public slots:
     bool startServer();

@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "kodiconnection.h"
-#include "jsonhandler.h"
+#include "kodijsonhandler.h"
 #include "extern-plugininfo.h"
 
 #include <QPixmap>

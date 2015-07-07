@@ -27,7 +27,7 @@
 #include <QPixmap>
 
 #include "kodiconnection.h"
-#include "jsonhandler.h"
+#include "kodijsonhandler.h"
 
 class Kodi : public QObject
 {
@@ -63,7 +63,7 @@ public:
 
 private:
     KodiConnection *m_connection;
-    JsonHandler *m_jsonHandler;
+    KodiJsonHandler *m_jsonHandler;
     QByteArray m_logo;
     bool m_muted;
     int m_volume;

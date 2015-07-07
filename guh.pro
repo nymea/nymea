@@ -74,7 +74,7 @@ contains(DEFINES, GPIO433){
     message("Radio 433 for GPIO's disabled")
 }
 
-ubuntu {
+snappy {
     message("Building Ubuntu snappy package.")
     meta.files = meta/package.yaml \
                  meta/readme.md \

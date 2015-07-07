@@ -31,32 +31,35 @@ namespace guhserver {
 TcpServer::TcpServer(QObject *parent) :
     QObject(parent)
 {       
-    qCDebug(dcConnection) << "----------------------------";
-    qCDebug(dcConnection) << "network interfaces:";
-    foreach(const QNetworkInterface &interface, QNetworkInterface::allInterfaces()){
-        qCDebug(dcConnection) << "   -------------------------";
-        qCDebug(dcConnection) << "   name :" << interface.name();
-        if(!interface.addressEntries().isEmpty()){
-            qCDebug(dcConnection) << "   ip   :" << interface.addressEntries().first().ip().toString();
-        }
-        qCDebug(dcConnection) << "   mac  : " << interface.hardwareAddress();
-    }
-    qCDebug(dcConnection) << "----------------------------";
+    // Timer for scanning network interfaces ever 5 seconds
+    // Note: QNetworkConfigurationManager does not work on embedded platforms
+    m_timer = new QTimer(this);
+    m_timer->setInterval(5000);
+    connect (m_timer, &QTimer::timeout, this, &TcpServer::onTimeout);
 
-    // load settings
-    bool ok;
+    // load JSON-RPC server settings
     GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    qCDebug(dcConnection) << "Loading TCP server settings from:" << settings.fileName();
     settings.beginGroup("JSONRPC");
 
-    // TODO: handle interfaces in settings (enable just localhost ecc...)
+    // load port
+    m_port = settings.value("port", 1234).toUInt();
 
-    uint port = settings.value("port", 1234).toUInt(&ok);
-    settings.endGroup();
-    if(ok){
-        m_port = port;
+    // load interfaces
+    QStringList interfaceList = settings.value("interfaces", QStringList("all")).toStringList();
+    if (interfaceList.contains("all")) {
+        m_networkInterfaces = QNetworkInterface::allInterfaces();
     } else {
-        m_port = 1234;
+        foreach (const QNetworkInterface &interface, QNetworkInterface::allInterfaces()) {
+            if (interfaceList.contains(interface.name())) {
+                m_networkInterfaces.append(interface);
+            }
+        }
     }
+
+    // load IP versions (IPv4, IPv6 or any)
+    m_ipVersions = settings.value("ip", QStringList("any")).toStringList();
+    settings.endGroup();
 }
 
 void TcpServer::sendData(const QList<QUuid> &clients, const QByteArray &data)
@@ -65,6 +68,7 @@ void TcpServer::sendData(const QList<QUuid> &clients, const QByteArray &data)
         sendData(client, data);
     }
 }
+
 
 void TcpServer::sendData(const QUuid &clientId, const QByteArray &data)
 {
@@ -98,11 +102,11 @@ void TcpServer::readPackage()
     QTcpSocket *client = qobject_cast<QTcpSocket*>(sender());
     qCDebug(dcConnection) << "data comming from" << client->peerAddress().toString();
     QByteArray message;
-    while(client->canReadLine()){
+    while (client->canReadLine()) {
         QByteArray dataLine = client->readLine();
         qCDebug(dcConnection) << "line in:" << dataLine;
         message.append(dataLine);
-        if(dataLine.endsWith('\n')){
+        if (dataLine.endsWith('\n')) {
             emit dataAvailable(m_clientList.key(client), message);
             message.clear();
         }
@@ -117,37 +121,106 @@ void TcpServer::slotClientDisconnected()
     m_clientList.take(clientId)->deleteLater();
 }
 
+void TcpServer::onTimeout()
+{
+    //    // check all networkinterfaces
+    //    bool ipV4 = m_ipVersions.contains("IPv4");
+    //    bool ipV6 = m_ipVersions.contains("IPv6");
+    //    if (m_ipVersions.contains("any")) {
+    //        ipV4 = ipV6 = true;
+    //    }
+
+    //    QList<QHostAddress *> m_serversToCreate;
+    //    QList<QTcpServer *> m_serversToDelete;
+
+    //    // check all available interfaces
+    //    foreach (const QNetworkInterface &interface, m_networkInterfaces) {
+    //        QList<QNetworkAddressEntry> addresseEntries = interface.addressEntries();
+    //        QList<QHostAddress> addresses;
+
+    //        foreach (QNetworkAddressEntry entry, addresseEntries) {
+    //            if (ipV4 && entry.ip().protocol() == QAbstractSocket::IPv4Protocol) {
+    //                addresses.append(entry.ip());
+    //            }
+    //            if (ipV6 && entry.ip().protocol() == QAbstractSocket::IPv6Protocol) {
+    //                addresses.append(entry.ip());
+    //            }
+    //        }
+
+    //        // check each host address of this interface
+
+    //        foreach (QTcpServer *s, m_serverList) {
+    //            if (!addresses.contains(s->serverAddress()))
+    //                return;
+
+
+
+
+    //        }
+    //    }
+}
+
 bool TcpServer::startServer()
 {
-    // Listen on all Networkinterfaces
-    foreach(const QHostAddress &address, QNetworkInterface::allAddresses()){
-        QTcpServer *server = new QTcpServer(this);
-        if(server->listen(address, m_port)) {
-            qCDebug(dcConnection) << "JSON-RPC server listening on" << address.toString() << ":" << m_port;
-            connect(server, SIGNAL(newConnection()), SLOT(newClientConnected()));
-            m_serverList.insert(QUuid::createUuid(), server);
-        } else {
-            qCWarning(dcConnection) << "can not listening to" << address.toString() << ":" << m_port;
-            delete server;
+    qCDebug(dcConnection) << "----------------------------";
+    qCDebug(dcConnection) << "JSON-RPC server listening on:";
+    qCDebug(dcConnection) << "----------------------------";
+
+    bool ipV4 = m_ipVersions.contains("IPv4");
+    bool ipV6 = m_ipVersions.contains("IPv6");
+    if (m_ipVersions.contains("any")) {
+        ipV4 = ipV6 = true;
+    }
+
+    foreach (const QNetworkInterface &interface, m_networkInterfaces) {
+        QList<QNetworkAddressEntry> addresseEntries = interface.addressEntries();
+        QList<QHostAddress> addresses;
+
+        foreach (QNetworkAddressEntry entry, addresseEntries) {
+            if (ipV4 && entry.ip().protocol() == QAbstractSocket::IPv4Protocol) {
+                addresses.append(entry.ip());
+            }
+            if (ipV6 && entry.ip().protocol() == QAbstractSocket::IPv6Protocol) {
+                addresses.append(entry.ip());
+            }
+        }
+
+        foreach(const QHostAddress &address, addresses){
+            QTcpServer *server = new QTcpServer(this);
+            if(server->listen(address, m_port)) {
+                qCDebug(dcConnection) << "\tname |" << interface.name();
+                qCDebug(dcConnection) << "\tip   |" << address.toString();
+                qCDebug(dcConnection) << "\tport |" << m_port;
+                qCDebug(dcConnection) << "\tmac  |" << interface.hardwareAddress();
+                qCDebug(dcConnection) << "\t-----+-------------------";
+
+                connect(server, SIGNAL(newConnection()), SLOT(newClientConnected()));
+                m_serverList.insert(QUuid::createUuid(), server);
+            } else {
+                qCWarning(dcConnection) << "ERROR: can not listen to" << interface.name() << address.toString() << m_port;
+                delete server;
+            }
         }
     }
-    if(m_serverList.empty()){
+
+    if (m_serverList.empty())
         return false;
-    }
+
     return true;
 }
 
 bool TcpServer::stopServer()
 {
     // Listen on all Networkinterfaces
-    foreach(QTcpServer *server, m_serverList){
+    foreach (QTcpServer *server, m_serverList) {
         qCDebug(dcConnection) << "close server " << server->serverAddress().toString();
         server->close();
         delete server;
     }
-    if(!m_serverList.empty()){
+
+    if (!m_serverList.empty())
         return false;
-    }
+
     return true;
 }
 

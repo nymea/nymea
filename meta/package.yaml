@@ -4,7 +4,7 @@ architecture: [armhf]
 services:
  - name: guhd
    start: usr/bin/guhd-wrapper.sh
-   description: "guhd - gear up your home daemon"
+   description: "guhd - Server daemon for home automation systems"
    security-template: unconfined
    caps:
     - networking

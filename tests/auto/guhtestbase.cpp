@@ -136,6 +136,11 @@ QVariant GuhTestBase::injectAndWait(const QString &method, const QVariantMap &pa
             return QVariant();
         }
         QVariantMap response = jsonDoc.toVariant().toMap();
+
+        // skip notifications
+        if (response.contains("notification"))
+            continue;
+
         if (response.value("id").toInt() == m_commandId) {
             m_commandId++;
             return jsonDoc.toVariant();

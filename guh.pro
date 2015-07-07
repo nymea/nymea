@@ -37,7 +37,9 @@ contains(DEFINES, GPIO433){
 ubuntu {
     message("Building Ubuntu snappy package.")
     meta.files = meta/package.yaml \
-                 meta/readme.md
+                 meta/readme.md \
+                 meta/guh-logo.svg \
+                 meta/license.txt
     meta.path = /meta/
 
     wrapper.files = meta/guhd-wrapper.sh
@@ -51,6 +53,8 @@ ubuntu {
                  /usr/lib/arm-linux-gnueabihf/libicuuc.so.52 \
                  /usr/lib/arm-linux-gnueabihf/libicudata.so.52
     qtlibs.path=/usr/lib/
+
+    DEFINES += SNAPPY
 
     INSTALLS += meta wrapper qtlibs
 }

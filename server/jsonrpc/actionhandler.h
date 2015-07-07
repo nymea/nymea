@@ -25,6 +25,8 @@
 #include "jsonhandler.h"
 #include "devicemanager.h"
 
+namespace guhserver {
+
 class ActionHandler : public JsonHandler
 {
     Q_OBJECT
@@ -43,5 +45,7 @@ private slots:
 private:
     QHash<ActionId, JsonReply*> m_asyncActionExecutions;
 };
+
+}
 
 #endif // ACTIONHANDLER_H

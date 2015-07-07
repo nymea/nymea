@@ -1,60 +1,38 @@
 {
     "name": "Time",
+    "idName": "DateTime",
     "id": "c26014c6-87fb-4233-85ed-01d18625018d",
     "vendors": [
         {
             "name": "guh",
+            "idName": "guh",
             "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6",
             "deviceClasses": [
                 {
                     "deviceClassId": "fbf665fb-9aca-423f-a5f2-924e50ebe6ca",
-                    "idName": "dateTime",
-                    "name": "Time",
-                    "createMethods": ["discovery"],
-                    "discoveryParamTypes": [
-                        {
-                            "name": "continent",
-                            "type": "QString",
-                            "inputType": "TextLine",
-                            "allowedValues": ["Africa", "America", "Antarctica", "Asia", "Atlantic", "Australia", "Europe", "Indian", "Pacific"]
-                        }
-                    ],
+                    "idName": "today",
+                    "name": "Today",
+                    "createMethods": ["auto"],
                     "paramTypes": [
                         {
-                            "name": "timezone",
+                            "name": "name",
                             "type": "QString",
                             "inputType": "TextLine"
                         }
                     ],
                     "stateTypes": [
                         {
-                            "id": "4f867051-bc3c-4b55-8493-10ab74c98a49",
-                            "idName": "minute",
-                            "name": "minute",
-                            "type": "uint",
-                            "unit": "Minutes",
-                            "defaultValue": "0"
-                        },
-                        {
-                            "id": "5b19d9de-a533-4b6f-b42c-bf8069e31adc",
-                            "idName": "hour",
-                            "name": "hour",
-                            "type": "uint",
-                            "unit": "Hours",
-                            "defaultValue": "0"
-                        },
-                        {
                             "id": "eb5231ea-6a1b-4d7e-a95f-d49e7b25122e",
                             "name": "day",
                             "idName": "day",
-                            "type": "uint",
+                            "type": "int",
                             "defaultValue": "1"
                         },
                         {
                             "id": "fcd8ec96-4488-438a-8b30-58bfe2a7fae2",
                             "name": "month",
                             "idName": "month",
-                            "type": "uint",
+                            "type": "int",
                             "defaultValue": "1"
                         },
                         {
@@ -65,17 +43,10 @@
                             "defaultValue": "-"
                         },
                         {
-                            "id": "4d0814f2-60a6-48c4-8b3b-031a099be8e3",
-                            "idName": "monthNameShort",
-                            "name": "month name short",
-                            "type": "QString",
-                            "defaultValue": "-"
-                        },
-                        {
                             "id": "79d4ae9b-ea27-4346-8229-1d90f1ddfc9d",
                             "idName": "year",
                             "name": "year",
-                            "type": "uint",
+                            "type": "int",
                             "defaultValue": "1970"
                         },
                         {
@@ -93,18 +64,255 @@
                             "defaultValue": "-"
                         },
                         {
-                            "id": "7e8e8e53-a83b-493d-850d-b0407f03463a",
-                            "idName": "weekdayNameShort",
-                            "name": "weekday name short",
-                            "type": "QString",
-                            "defaultValue": "-"
-                        },
-                        {
                             "id": "4de5b57b-bb1a-4d66-9ce3-22bb280b075d",
                             "idName": "weekend",
                             "name": "weekend",
                             "type": "bool",
                             "defaultValue": false
+                        },
+                        {
+                            "id": "44a99419-fbcd-4d8e-9441-897848b8f77c",
+                            "idName": "dusk",
+                            "name": "dusk",
+                            "unit": "UnixTime",
+                            "type": "int",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "3a08824d-285b-412e-a515-9664b491a85c",
+                            "idName": "sunrise",
+                            "name": "sunrise",
+                            "unit": "UnixTime",
+                            "type": "int",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "d92be29a-929c-4240-91a0-30153850f838",
+                            "idName": "noon",
+                            "name": "sun noon",
+                            "unit": "UnixTime",
+                            "type": "int",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "a5779b11-0499-4a6d-a7bd-8143dcc546b4",
+                            "idName": "dawn",
+                            "name": "dawn",
+                            "unit": "UnixTime",
+                            "type": "int",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "377f04a7-df58-42ad-a234-e9e23bdc2f85",
+                            "idName": "sunset",
+                            "name": "sunset",
+                            "unit": "UnixTime",
+                            "type": "int",
+                            "defaultValue": 0
+                        }
+                    ],
+                    "eventTypes": [
+                        {
+                            "id": "792885f3-f505-42db-8c74-3d0460b575a1",
+                            "idName": "dusk",
+                            "name": "dusk"
+                        },
+                        {
+                            "id": "792885f3-f505-42db-8c74-3d0460b575a1",
+                            "idName": "sunrise",
+                            "name": "sunrise"
+                        },
+                        {
+                            "id": "97ae8dd8-640c-4f9b-8773-aa7abb1d32fa",
+                            "idName": "noon",
+                            "name": "noon"
+                        },
+                        {
+                            "id": "5e3657b0-a459-4837-a632-0b20de4b7349",
+                            "idName": "dawn",
+                            "name": "dawn"
+                        },
+                        {
+                            "id": "f40d6e0f-fda2-475e-a6ae-c3fee03138b9",
+                            "idName": "sunset",
+                            "name": "sunset"
+                        }
+                    ]
+                },
+                {
+                    "deviceClassId": "3f3c7ecc-9915-4e4e-95a1-e11f4f9d174d",
+                    "idName": "alarm",
+                    "name": "Alarm",
+                    "createMethods": ["user"],
+                    "paramTypes": [
+                        {
+                            "name": "name",
+                            "type": "QString",
+                            "inputType": "TextLine"
+                        },
+                        {
+                            "name": "monday",
+                            "type": "bool",
+                            "defaultValue": false
+                        },
+                        {
+                            "name": "tuesday",
+                            "type": "bool",
+                            "defaultValue": false
+                        },
+                        {
+                            "name": "wednesday",
+                            "type": "bool",
+                            "defaultValue": false
+                        },
+                        {
+                            "name": "thursday",
+                            "type": "bool",
+                            "defaultValue": false
+                        },
+                        {
+                            "name": "friday",
+                            "type": "bool",
+                            "defaultValue": false
+                        },
+                        {
+                            "name": "saturday",
+                            "type": "bool",
+                            "defaultValue": false
+                        },
+                        {
+                            "name": "sunday",
+                            "type": "bool",
+                            "defaultValue": false
+                        },
+                        {
+                            "name": "minutes",
+                            "type": "int",
+                            "unit": "Minutes",
+                            "minValue": 0,
+                            "maxValue": 60,
+                            "defaultValue": 0
+                        },
+                        {
+                            "name": "hours",
+                            "type": "int",
+                            "minValue": 0,
+                            "maxValue": 24,
+                            "unit": "Hours",
+                            "defaultValue": 12
+                        },
+                        {
+                            "name": "time type",
+                            "type": "QString",
+                            "allowedValues": [
+                                "time",
+                                "dusk",
+                                "sunrise",
+                                "sunnoon",
+                                "sunset",
+                                "dawn"
+                            ],
+                            "defaultValue": "time"
+                        },
+                        {
+                            "name": "offset",
+                            "type": "int",
+                            "minValue": -120,
+                            "maxValue": 120,
+                            "unit": "Minutes",
+                            "defaultValue": 0
+                        }
+                    ],
+                    "eventTypes": [
+                        {
+                            "id": "5ec9a4af-d5ea-4f68-ab32-f7a3fcd75ccc",
+                            "idName": "alarm",
+                            "name": "alarm"
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "261b79b5-b60d-4b14-af95-dc87184ec332",
+                            "idName": "nextAlarm",
+                            "name": "next alarm",
+                            "unit": "UnixTime",
+                            "type": "int",
+                            "defaultValue": 0
+                        }
+                    ]
+                },
+                {
+                    "deviceClassId": "805c8948-e663-4ba6-aa67-df7446ed7098",
+                    "idName": "countdown",
+                    "name": "Countdown",
+                    "createMethods": ["user"],
+                    "paramTypes": [
+                        {
+                            "name": "name",
+                            "type": "QString",
+                            "inputType": "TextLine"
+                        },
+                        {
+                            "name": "seconds",
+                            "type": "int",
+                            "unit": "Seconds",
+                            "minValue": 0,
+                            "maxValue": 60,
+                            "defaultValue": 0
+                        },
+                        {
+                            "name": "minutes",
+                            "type": "int",
+                            "unit": "Minutes",
+                            "minValue": 0,
+                            "maxValue": 60,
+                            "defaultValue": 0
+                        },
+                        {
+                            "name": "hours",
+                            "type": "int",
+                            "unit": "Hours",
+                            "minValue": 0,
+                            "maxValue": 24,
+                            "defaultValue": 0
+                        },
+                        {
+                            "name": "repeating",
+                            "type": "bool",
+                            "defaultValue": false
+                        }
+                    ],
+                    "eventTypes": [
+                        {
+                            "id": "1db11351-ad67-448e-a784-216741a06a58",
+                            "idName": "timeout",
+                            "name": "timeout"
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "b21ccd53-1ebd-41a0-a2a3-662874e79837",
+                            "idName": "running",
+                            "name": "running",
+                            "type": "bool",
+                            "defaultValue": false
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "436e9923-6eff-444e-bde7-a61228a4d748",
+                            "idName": "start",
+                            "name": "start"
+                        },
+                        {
+                            "id": "bf4d1def-4159-4254-a76d-fd31aaa84e2d",
+                            "idName": "stop",
+                            "name": "stop"
+                        },
+                        {
+                            "id": "14aad613-b972-411f-93c9-f00bfd254285",
+                            "idName": "restart",
+                            "name": "restart"
                         }
                     ]
                 }

@@ -1,9 +1,11 @@
 {
     "name": "LG Smart Tv",
+    "idName": "LgSmartTv",
     "id": "4ef7a68b-9da0-4c62-b9ac-f478dc6f9f52",
     "vendors": [
         {
             "name": "LG",
+            "idName": "lg",
             "id": "a9af9673-78db-4226-a16b-f34b304f7041",
             "deviceClasses": [
                 {

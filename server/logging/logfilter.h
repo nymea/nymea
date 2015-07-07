@@ -23,11 +23,15 @@
 
 #include <QDateTime>
 
+namespace guhserver {
+
 class LogFilter
 {
     QDateTime m_startDate;
     QDateTime m_endDate;
 
 };
+
+}
 
 #endif

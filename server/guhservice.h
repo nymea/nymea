@@ -26,6 +26,8 @@
 
 #include "guhcore.h"
 
+namespace guhserver {
+
 class GuhService : public QtService<QCoreApplication>
 {
 
@@ -36,5 +38,7 @@ public:
 protected:
     void start();
 };
+
+}
 
 #endif // GUHSERVICE_H

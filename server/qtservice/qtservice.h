@@ -42,6 +42,7 @@
 #define QTSERVICE_H
 
 #include <QCoreApplication>
+#include <QStringList>
 
 #if defined(Q_OS_WIN)
 #  if !defined(QT_QTSERVICE_EXPORT) && !defined(QT_QTSERVICE_IMPORT)
@@ -59,7 +60,8 @@
 #  define QT_QTSERVICE_EXPORT
 #endif
 
-class QStringList;
+namespace guhserver {
+
 class QtServiceControllerPrivate;
 
 class QT_QTSERVICE_EXPORT QtServiceController
@@ -186,7 +188,8 @@ protected:
 private:
     Application *app;
 };
-
 Q_DECLARE_OPERATORS_FOR_FLAGS(QtServiceBase::ServiceFlags)
+
+}
 
 #endif // QTSERVICE_H

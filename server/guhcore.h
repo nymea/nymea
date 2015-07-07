@@ -24,6 +24,7 @@
 
 #include "rule.h"
 #include "types/event.h"
+#include "plugin/deviceplugin.h"
 #include "plugin/deviceclass.h"
 #include "plugin/devicedescriptor.h"
 
@@ -33,8 +34,11 @@
 #include <QObject>
 #include <QDebug>
 
-class JsonRPCServer;
 class Device;
+
+namespace guhserver {
+
+class JsonRPCServer;
 class LogEngine;
 
 class GuhCore : public QObject
@@ -82,6 +86,7 @@ public:
     QList<RuleId> ruleIds() const;
     Rule findRule(const RuleId &ruleId);
     RuleEngine::RuleError addRule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actionList, const QList<RuleAction> &exitActionList, bool enabled = true);
+    RuleEngine::RuleError editRule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actionList, const QList<RuleAction> &exitActionList, bool enabled = true);
     RuleEngine::RuleError removeRule(const RuleId &id);
     QList<RuleId> findRules(const DeviceId &deviceId);
     RuleEngine::RuleError enableRule(const RuleId &ruleId);
@@ -105,6 +110,7 @@ signals:
     void ruleRemoved(const RuleId &ruleId);
     void ruleAdded(const Rule &rule);
     void ruleActiveChanged(const Rule &rule);
+    void ruleConfigurationChanged(const Rule &rule);
 
 
 private:
@@ -128,5 +134,7 @@ private slots:
 
     friend class GuhTestBase;
 };
+
+}
 
 #endif // GUHCORE_H

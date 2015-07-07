@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "smtpclient.h"
-#include "loggingcategories.h"
+#include "extern-plugininfo.h"
 
 SmtpClient::SmtpClient(QObject *parent):
     QObject(parent)

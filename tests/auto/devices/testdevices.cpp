@@ -30,6 +30,8 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 
+using namespace guhserver;
+
 class TestDevices : public GuhTestBase
 {
     Q_OBJECT
@@ -286,7 +288,7 @@ void TestDevices::getConfiguredDevices()
     QVariant response = injectAndWait("Devices.GetConfiguredDevices");
 
     QVariantList devices = response.toMap().value("params").toMap().value("devices").toList();
-    QCOMPARE(devices.count(), 2); // There should be one auto created mock device and the one created in initTestcase()
+    QCOMPARE(devices.count(), 3); // There should be one auto created mock device, one auto today device and the one created in initTestcase()
 }
 
 void TestDevices::storedDevices()
@@ -885,5 +887,5 @@ void TestDevices::removeDevice()
 }
 
 #include "testdevices.moc"
-
 QTEST_MAIN(TestDevices)
+

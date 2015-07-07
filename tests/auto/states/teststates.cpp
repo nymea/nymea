@@ -32,6 +32,8 @@
 #include <QNetworkReply>
 #include <QCoreApplication>
 
+using namespace guhserver;
+
 class TestStates: public GuhTestBase
 {
     Q_OBJECT

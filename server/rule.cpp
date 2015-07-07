@@ -36,6 +36,8 @@
 
 #include <QDebug>
 
+namespace guhserver {
+
 /*! Constructs an empty, invalid rule. */
 Rule::Rule():
     Rule(RuleId(), QString(), QList<EventDescriptor>(), StateEvaluator(), QList<RuleAction>(), QList<RuleAction>())
@@ -144,4 +146,6 @@ void Rule::setName(const QString &name)
 void Rule::setActive(bool active)
 {
     m_active = active;
+}
+
 }

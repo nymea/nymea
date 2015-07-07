@@ -32,12 +32,15 @@
 #include <QVariantMap>
 #include <QString>
 
+class Device;
+
+namespace guhserver {
+
 #ifdef TESTING_ENABLED
 class MockTcpServer;
 #else
 class TcpServer;
 #endif
-class Device;
 
 class JsonRPCServer: public JsonHandler
 {
@@ -88,4 +91,6 @@ private:
     int m_notificationId;
 };
 
-#endif
+}
+
+#endif // JSONRPCSERVER_H

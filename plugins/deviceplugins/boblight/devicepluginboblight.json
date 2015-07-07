@@ -1,6 +1,7 @@
 {
-    "name": "Boblight",
     "id": "8c5e8d4c-b5ed-4bfe-b30d-35c2790ec100",
+    "name": "Boblight",
+    "idName": "Boblight",
     "vendors": [
         {
             "name": "Boblight",

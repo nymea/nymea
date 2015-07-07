@@ -23,6 +23,8 @@
 #include "guhcore.h"
 #include "loggingcategories.h"
 
+namespace guhserver {
+
 EventHandler::EventHandler(QObject *parent) :
     JsonHandler(parent)
 {
@@ -72,4 +74,6 @@ JsonReply* EventHandler::GetEventType(const QVariantMap &params) const
         }
     }
     return createReply(statusToReply(DeviceManager::DeviceErrorEventTypeNotFound));
+}
+
 }

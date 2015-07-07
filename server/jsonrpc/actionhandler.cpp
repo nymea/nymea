@@ -28,6 +28,8 @@
 
 #include <QDebug>
 
+namespace guhserver {
+
 ActionHandler::ActionHandler(QObject *parent) :
     JsonHandler(parent)
 {
@@ -101,4 +103,6 @@ void ActionHandler::actionExecuted(const ActionId &id, DeviceManager::DeviceErro
     JsonReply *reply = m_asyncActionExecutions.take(id);
     reply->setData(statusToReply(status));
     reply->finished();
+}
+
 }

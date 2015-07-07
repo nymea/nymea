@@ -25,6 +25,8 @@
 #include "jsonhandler.h"
 #include "devicemanager.h"
 
+namespace guhserver {
+
 class DeviceHandler : public JsonHandler
 {
     Q_OBJECT
@@ -97,5 +99,7 @@ private:
     mutable QHash<DeviceId, JsonReply*> m_asynDeviceEditAdditions;
     mutable QHash<QUuid, JsonReply*> m_asyncPairingRequests;
 };
+
+}
 
 #endif // DEVICEHANDLER_H

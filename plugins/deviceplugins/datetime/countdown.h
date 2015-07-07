@@ -1,7 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
  *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
- *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -19,29 +18,45 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef LOGGINGHANDLER_H
-#define LOGGINGHANDLER_H
+#ifndef COUNTDOWN_H
+#define COUNTDOWN_H
 
-#include "jsonhandler.h"
-#include "logging/logentry.h"
+#include <QObject>
+#include <QTime>
+#include <QTimer>
 
-namespace guhserver {
-
-class LoggingHandler : public JsonHandler
+class Countdown : public QObject
 {
     Q_OBJECT
 public:
-    explicit LoggingHandler(QObject *parent = 0);
-    QString name() const override;
+    explicit Countdown(const QString &name, const QTime &time, const bool &repeating, QObject *parent = 0);
 
-    Q_INVOKABLE JsonReply *GetLogEntries(const QVariantMap &params) const;
+    void start();
+    void stop();
+    void restart();
+
+    QString name() const;
+    bool running() const;
+    bool repeating() const;
+
+    QTime time() const;
+    QTime currentTime() const;
+
+private:
+    QString m_name;
+    QTime m_time;
+    QTime m_currentTime;
+    QTimer *m_timer;
+    bool m_repeating;
+    bool m_running;
+
 signals:
-    void LogEntryAdded(const QVariantMap &params);
+    void countdownTimeout();
+    void runningStateChanged(const bool &running);
 
 private slots:
-    void logEntryAdded(const LogEntry &entry);
+    void onTimeout();
+
 };
 
-}
-
-#endif // LOGGINGHANDLER_H
+#endif // COUNTDOWN_H

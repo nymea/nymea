@@ -23,6 +23,8 @@
 #include "guhcore.h"
 #include "loggingcategories.h"
 
+namespace guhserver {
+
 StateHandler::StateHandler(QObject *parent) :
     JsonHandler(parent)
 {
@@ -57,4 +59,6 @@ JsonReply* StateHandler::GetStateType(const QVariantMap &params) const
         }
     }
     return createReply(statusToReply(DeviceManager::DeviceErrorStateTypeNotFound));
+}
+
 }

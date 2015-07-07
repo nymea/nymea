@@ -1,9 +1,11 @@
 {
     "name": "Lirc receiver",
+    "idName": "Lircd",
     "id": "075f734f-4d76-4ce3-9ef8-34c212285676",
     "vendors": [
         {
             "name": "Lirc",
+            "idName": "lirc",
             "id": "9a53049c-8828-4b87-b3f6-7bc7708196cd",
             "deviceClasses": [
                 {

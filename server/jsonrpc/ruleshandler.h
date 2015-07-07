@@ -24,6 +24,8 @@
 
 #include "jsonhandler.h"
 
+namespace guhserver {
+
 class RulesHandler : public JsonHandler
 {
     Q_OBJECT
@@ -36,6 +38,7 @@ public:
     Q_INVOKABLE JsonReply* GetRuleDetails(const QVariantMap &params);
 
     Q_INVOKABLE JsonReply* AddRule(const QVariantMap &params);
+    Q_INVOKABLE JsonReply* EditRule(const QVariantMap &params);
     Q_INVOKABLE JsonReply* RemoveRule(const QVariantMap &params);
     Q_INVOKABLE JsonReply* FindRules(const QVariantMap &params);
 
@@ -46,6 +49,7 @@ signals:
     void RuleRemoved(const QVariantMap &params);
     void RuleAdded(const QVariantMap &params);
     void RuleActiveChanged(const QVariantMap &params);
+    void RuleConfigurationChanged(const QVariantMap &params);
 
 private:
     QVariant::Type getActionParamType(const ActionTypeId &actionTypeId, const QString &paramName);
@@ -53,11 +57,19 @@ private:
 
     bool checkEventDescriptors(const QList<EventDescriptor> eventDescriptors, const EventTypeId &eventTypeId);
 
+    RuleEngine::RuleError verifyRuleConsistency(const QVariantMap &params);
+    QPair<QList<EventDescriptor>, RuleEngine::RuleError> verifyEventDescriptors(const QVariantMap &params);
+    QPair<QList<RuleAction>, RuleEngine::RuleError> verifyActions(const QVariantMap &params, const QList<EventDescriptor> &eventDescriptorList);
+    QPair<QList<RuleAction>, RuleEngine::RuleError> verifyExitActions(const QVariantMap &params);
+
 private slots:
     void ruleRemovedNotification(const RuleId &ruleId);
     void ruleAddedNotification(const Rule &rule);
     void ruleActiveChangedNotification(const Rule &rule);
+    void ruleConfigurationChangedNotification(const Rule &rule);
 
 };
+
+}
 
 #endif // RULESHANDLER_H

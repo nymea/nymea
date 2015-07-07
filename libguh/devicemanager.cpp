@@ -232,6 +232,38 @@ DeviceManager::~DeviceManager()
     }
 }
 
+QStringList DeviceManager::pluginSearchDirs()
+{
+    QStringList searchDirs;
+    searchDirs << QCoreApplication::applicationDirPath() + "/../lib/guh/plugins";
+    searchDirs << QCoreApplication::applicationDirPath() + "/../plugins/";
+    searchDirs << QCoreApplication::applicationDirPath() + "/../plugins/deviceplugins";
+    searchDirs << QCoreApplication::applicationDirPath() + "/../../../plugins/deviceplugins";
+    return searchDirs;
+}
+
+QList<QJsonObject> DeviceManager::pluginsMetadata()
+{
+    QList<QJsonObject> pluginList;
+    foreach (const QString &path, pluginSearchDirs()) {
+        QDir dir(path);
+        foreach (const QString &entry, dir.entryList()) {
+            QFileInfo fi;
+            if (entry.startsWith("libguh_deviceplugin") && entry.endsWith(".so")) {
+                fi.setFile(path + "/" + entry);
+            } else {
+                fi.setFile(path + "/" + entry + "/libguh_deviceplugin" + entry + ".so");
+            }
+            if (!fi.exists()) {
+                continue;
+            }
+            QPluginLoader loader(fi.absoluteFilePath());
+            pluginList.append(loader.metaData().value("MetaData").toObject());
+        }
+    }
+    return pluginList;
+}
+
 /*! Returns all the \l{DevicePlugin}{DevicePlugins} loaded in the system. */
 QList<DevicePlugin *> DeviceManager::plugins() const
 {
@@ -744,13 +776,7 @@ DeviceManager::DeviceError DeviceManager::executeAction(const Action &action)
 
 void DeviceManager::loadPlugins()
 {
-    QStringList searchDirs;
-    searchDirs << QCoreApplication::applicationDirPath() + "/../lib/guh/plugins";
-    searchDirs << QCoreApplication::applicationDirPath() + "/../plugins/";
-    searchDirs << QCoreApplication::applicationDirPath() + "/../plugins/deviceplugins";
-    searchDirs << QCoreApplication::applicationDirPath() + "/../../../plugins/deviceplugins";
-
-    foreach (const QString &path, searchDirs) {
+    foreach (const QString &path, pluginSearchDirs()) {
         QDir dir(path);
         qCDebug(dcDeviceManager) << "Loading plugins from:" << dir.absolutePath();
         foreach (const QString &entry, dir.entryList()) {
@@ -846,9 +872,11 @@ void DeviceManager::loadConfiguredDevices()
         // We always add the device to the list in this case. If its in the storedDevices
         // it means that it was working at some point so lets still add it as there might
         // be rules associated with this device. Device::setupCompleted() will be false.
-        setupDevice(device);
-
+        DeviceSetupStatus status = setupDevice(device);
         m_configuredDevices.append(device);
+
+        if (status == DeviceSetupStatus::DeviceSetupStatusSuccess)
+            postSetupDevice(device);
     }
     settings.endGroup();
 }
@@ -1258,6 +1286,7 @@ DeviceManager::DeviceError DeviceManager::verifyParam(const QList<ParamType> par
 DeviceManager::DeviceError DeviceManager::verifyParam(const ParamType &paramType, const Param &param)
 {
     if (paramType.name() == param.name()) {
+
         if (!param.value().canConvert(paramType.type())) {
             qCWarning(dcDeviceManager) << "Wrong parameter type for param" << param.name() << " Got:" << param.value() << " Expected:" << QVariant::typeToName(paramType.type());
             return DeviceErrorInvalidParameter;
@@ -1267,8 +1296,8 @@ DeviceManager::DeviceError DeviceManager::verifyParam(const ParamType &paramType
             qCWarning(dcDeviceManager) << "Value out of range for param" << param.name() << " Got:" << param.value() << " Max:" << paramType.maxValue();
             return DeviceErrorInvalidParameter;
         }
-        if (paramType.minValue().isValid() && param.value() < paramType.minValue()) {
-            qCWarning(dcDeviceManager) << "Value out of range for param" << param.name() << " Got:" << param.value().convert(paramType.type()) << " Min:" << paramType.minValue().convert(paramType.type());
+        if (paramType.minValue().isValid() && param.value().convert(paramType.type()) < paramType.minValue().convert(paramType.type())) {
+            qCWarning(dcDeviceManager) << "Value out of range for param" << param.name() << " Got:" << param.value() << " Min:" << paramType.minValue().convert(paramType.type());
             return DeviceErrorInvalidParameter;
         }
         if (!paramType.allowedValues().isEmpty() && !paramType.allowedValues().contains(param.value())) {
@@ -1285,3 +1314,4 @@ DeviceManager::DeviceError DeviceManager::verifyParam(const ParamType &paramType
     qCWarning(dcDeviceManager) << "Parameter name" << param.name() << "does not match with ParamType name" << paramType.name();
     return DeviceErrorInvalidParameter;
 }
+

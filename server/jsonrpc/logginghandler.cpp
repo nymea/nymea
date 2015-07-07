@@ -24,6 +24,8 @@
 #include "guhcore.h"
 #include "loggingcategories.h"
 
+namespace guhserver {
+
 LoggingHandler::LoggingHandler(QObject *parent) :
     JsonHandler(parent)
 {
@@ -38,7 +40,7 @@ LoggingHandler::LoggingHandler(QObject *parent) :
 
     params.clear(); returns.clear();
     setDescription("GetLogEntries", "Get the LogEntries matching the given filter.");
-//    params.insert("eventTypeId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    //    params.insert("eventTypeId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     setParams("GetLogEntries", params);
     returns.insert("loggingError", JsonTypes::loggingErrorRef());
     returns.insert("o:logEntries", QVariantList() << JsonTypes::logEntryRef());
@@ -69,4 +71,6 @@ JsonReply* LoggingHandler::GetLogEntries(const QVariantMap &params) const
     QVariantMap returns = statusToReply(Logging::LoggingErrorNoError);
     returns.insert("logEntries", entries);
     return createReply(returns);
+}
+
 }

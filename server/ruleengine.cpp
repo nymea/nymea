@@ -42,9 +42,9 @@
     \a ruleId holds the id of the removed rule. You should remove any references
     or copies you hold for this rule.*/
 
-/*! \fn void RuleEngine::ruleChanged(const RuleId &ruleId)
+/*! \fn void RuleEngine::ruleConfigurationChanged(const Rule &rule)
     Will be emitted whenever a \l{Rule} changed his enable/disable status.
-    \a ruleId holds the id of the changed rule.*/
+    The parameter \a rule holds the changed rule.*/
 
 /*! \enum RuleEngine::RuleError
     \value RuleErrorNoError
@@ -94,6 +94,8 @@
 #include <QStringList>
 #include <QStandardPaths>
 #include <QCoreApplication>
+
+namespace guhserver {
 
 /*! Constructs the RuleEngine with the given \a parent. Although it wouldn't harm to have multiple RuleEngines, there is one
     instance available from \l{GuhCore}. This one should be used instead of creating multiple ones.
@@ -259,8 +261,10 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
     return addRule(ruleId, name, eventDescriptorList, StateEvaluator(), actions, QList<RuleAction>(), enabled);
 }
 
-/*! Add a new \l{Rule} with the given \a ruleId, \a name, \a eventDescriptorList, \a stateEvaluator, the  list of \a actions the list of \a exitActions and the \a enabled value to the engine.*/
-RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions, bool enabled)
+/*! Add a new \l{Rule} with the given \a ruleId, \a name, \a eventDescriptorList, \a stateEvaluator, the  list of \a actions the list of \a exitActions and the \a enabled value to the engine.
+    If \a fromEdit is true, the notification Rules.RuleAdded will not be emitted.
+*/
+RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions, bool enabled, bool fromEdit)
 {
     if (ruleId.isNull()) {
         return RuleErrorInvalidRuleId;
@@ -269,8 +273,6 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
         qCWarning(dcRuleEngine) << "Already have a rule with this id!";
         return RuleErrorInvalidRuleId;
     }
-
-    // TODO: check rule name for duplicated rulesnames
 
     foreach (const EventDescriptor &eventDescriptor, eventDescriptorList) {
         Device *device = GuhCore::instance()->findConfiguredDevice(eventDescriptor.deviceId());
@@ -341,70 +343,44 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
     Rule rule = Rule(ruleId, name, eventDescriptorList, stateEvaluator, actions, exitActions);
     rule.setEnabled(enabled);
     appendRule(rule);
-    emit ruleAdded(rule);
+    saveRule(rule);
+    if (!fromEdit)
+        emit ruleAdded(rule);
 
-    // Save Events / EventDescriptors
-    QSettings settings(m_settingsFile);
-    settings.beginGroup(rule.id().toString());
-    settings.setValue("name", name);
-    settings.setValue("enabled", enabled);
-    settings.beginGroup("events");
-    for (int i = 0; i < eventDescriptorList.count(); i++) {
-        const EventDescriptor &eventDescriptor = eventDescriptorList.at(i);
-        settings.beginGroup("EventDescriptor-" + QString::number(i));
-        settings.setValue("deviceId", eventDescriptor.deviceId().toString());
-        settings.setValue("eventTypeId", eventDescriptor.eventTypeId().toString());
+    return RuleErrorNoError;
+}
 
-        foreach (const ParamDescriptor &paramDescriptor, eventDescriptor.paramDescriptors()) {
-            settings.beginGroup("ParamDescriptor-" + paramDescriptor.name());
-            settings.setValue("value", paramDescriptor.value());
-            settings.setValue("operator", paramDescriptor.operatorType());
-            settings.endGroup();
-        }
-        settings.endGroup();
+/*! Edit a \l{Rule} with the given \a ruleId, \a name, \a eventDescriptorList, \a stateEvaluator, the  list of \a actions the list of \a exitActions and the \a enabled in the engine. */
+RuleEngine::RuleError RuleEngine::editRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions, bool enabled)
+{
+    if (ruleId.isNull()) {
+        return RuleErrorInvalidRuleId;
     }
-    settings.endGroup();
 
-    // Save StateEvaluator
-    stateEvaluator.dumpToSettings(settings, "stateEvaluator");
+    // store rule in case the add new rule fails
+    Rule rule = findRule(ruleId);
 
-    // Save ruleActions
-    int i = 0;
-    settings.beginGroup("ruleActions");
-    foreach (const RuleAction &action, rule.actions()) {
-        settings.beginGroup(QString::number(i));
-        settings.setValue("deviceId", action.deviceId().toString());
-        settings.setValue("actionTypeId", action.actionTypeId().toString());
-        foreach (const RuleActionParam &param, action.ruleActionParams()) {
-            settings.beginGroup("RuleActionParam-" + param.name());
-            settings.setValue("value", param.value());
-            if (param.eventTypeId() != EventTypeId()) {
-                settings.setValue("eventTypeId", param.eventTypeId().toString());
-                settings.setValue("eventParamName", param.eventParamName());
-            }
-            settings.endGroup();
-        }
-        i++;
-        settings.endGroup();
+    if (rule.id().isNull()) {
+        qCWarning(dcRuleEngine) << "Cannot edit rule. There is no rule with id:" << ruleId.toString();
+        return RuleErrorRuleNotFound;
     }
-    settings.endGroup();
 
-    // Save ruleExitActions
-    settings.beginGroup("ruleExitActions");
-    i = 0;
-    foreach (const RuleAction &action, rule.exitActions()) {
-        settings.beginGroup(QString::number(i));
-        settings.setValue("deviceId", action.deviceId().toString());
-        settings.setValue("actionTypeId", action.actionTypeId().toString());
-        foreach (const RuleActionParam &param, action.ruleActionParams()) {
-            settings.beginGroup("RuleActionParam-" + param.name());
-            settings.setValue("value", param.value());
-            settings.endGroup();
-        }
-        i++;
-        settings.endGroup();
+    // first remove old rule with this id
+    RuleError removeResult = removeRule(ruleId, true);
+    if (removeResult != RuleErrorNoError) {
+        // no need to restore, rule is still in system
+        return removeResult;
     }
-    settings.endGroup();
+
+    // the rule is removed, now add it with the same id and new vonfiguration
+    RuleError addResult = addRule(ruleId, name, eventDescriptorList, stateEvaluator, actions, exitActions, enabled, true);
+    if (addResult != RuleErrorNoError) {
+        // restore rule
+        appendRule(rule);
+        return addResult;
+    }
+
+    emit ruleConfigurationChanged(m_rules.value(ruleId));
 
     return RuleErrorNoError;
 }
@@ -426,8 +402,10 @@ QList<RuleId> RuleEngine::ruleIds() const
 
 /*! Removes the \l{Rule} with the given \a ruleId from the Engine.
     Returns \l{RuleError} which describes whether the operation
-    was successful or not. */
-RuleEngine::RuleError RuleEngine::removeRule(const RuleId &ruleId)
+    was successful or not. If \a fromEdit is true, the notification Rules.RuleRemoved
+    will not be emitted.
+*/
+RuleEngine::RuleError RuleEngine::removeRule(const RuleId &ruleId, bool fromEdit)
 {
     int index = m_ruleIds.indexOf(ruleId);
 
@@ -443,7 +421,9 @@ RuleEngine::RuleError RuleEngine::removeRule(const RuleId &ruleId)
     settings.remove("");
     settings.endGroup();
 
-    emit ruleRemoved(ruleId);
+    if (!fromEdit)
+        emit ruleRemoved(ruleId);
+
     return RuleErrorNoError;
 }
 
@@ -458,13 +438,9 @@ RuleEngine::RuleError RuleEngine::enableRule(const RuleId &ruleId)
     Rule rule = m_rules.value(ruleId);
     rule.setEnabled(true);
     m_rules[ruleId] = rule;
-    QSettings settings(m_settingsFile);
-    settings.beginGroup(ruleId.toString());
-    if (!settings.value("enabled", true).toBool()) {
-        settings.setValue("enabled", true);
-        emit ruleChanged(ruleId);
-    }
-    settings.endGroup();
+
+    saveRule(rule);
+    emit ruleConfigurationChanged(rule);
 
     return RuleErrorNoError;
 }
@@ -480,14 +456,8 @@ RuleEngine::RuleError RuleEngine::disableRule(const RuleId &ruleId)
     Rule rule = m_rules.value(ruleId);
     rule.setEnabled(false);
     m_rules[ruleId] = rule;
-    QSettings settings(m_settingsFile);
-    settings.beginGroup(ruleId.toString());
-    if (settings.value("enabled", true).toBool()) {
-        settings.setValue("enabled", false);
-        emit ruleChanged(ruleId);
-    }
-    settings.endGroup();
-
+    saveRule(rule);
+    emit ruleConfigurationChanged(rule);
     return RuleErrorNoError;
 }
 
@@ -594,4 +564,72 @@ void RuleEngine::appendRule(const Rule &rule)
 {
     m_rules.insert(rule.id(), rule);
     m_ruleIds.append(rule.id());
+}
+
+void RuleEngine::saveRule(const Rule &rule)
+{
+    // Save Events / EventDescriptors
+    QSettings settings(m_settingsFile);
+    settings.beginGroup(rule.id().toString());
+    settings.setValue("name", rule.name());
+    settings.setValue("enabled", rule.enabled());
+    settings.beginGroup("events");
+    for (int i = 0; i < rule.eventDescriptors().count(); i++) {
+        const EventDescriptor &eventDescriptor = rule.eventDescriptors().at(i);
+        settings.beginGroup("EventDescriptor-" + QString::number(i));
+        settings.setValue("deviceId", eventDescriptor.deviceId().toString());
+        settings.setValue("eventTypeId", eventDescriptor.eventTypeId().toString());
+
+        foreach (const ParamDescriptor &paramDescriptor, eventDescriptor.paramDescriptors()) {
+            settings.beginGroup("ParamDescriptor-" + paramDescriptor.name());
+            settings.setValue("value", paramDescriptor.value());
+            settings.setValue("operator", paramDescriptor.operatorType());
+            settings.endGroup();
+        }
+        settings.endGroup();
+    }
+    settings.endGroup();
+
+    // Save StateEvaluator
+    rule.stateEvaluator().dumpToSettings(settings, "stateEvaluator");
+
+    // Save ruleActions
+    int i = 0;
+    settings.beginGroup("ruleActions");
+    foreach (const RuleAction &action, rule.actions()) {
+        settings.beginGroup(QString::number(i));
+        settings.setValue("deviceId", action.deviceId().toString());
+        settings.setValue("actionTypeId", action.actionTypeId().toString());
+        foreach (const RuleActionParam &param, action.ruleActionParams()) {
+            settings.beginGroup("RuleActionParam-" + param.name());
+            settings.setValue("value", param.value());
+            if (param.eventTypeId() != EventTypeId()) {
+                settings.setValue("eventTypeId", param.eventTypeId().toString());
+                settings.setValue("eventParamName", param.eventParamName());
+            }
+            settings.endGroup();
+        }
+        i++;
+        settings.endGroup();
+    }
+    settings.endGroup();
+
+    // Save ruleExitActions
+    settings.beginGroup("ruleExitActions");
+    i = 0;
+    foreach (const RuleAction &action, rule.exitActions()) {
+        settings.beginGroup(QString::number(i));
+        settings.setValue("deviceId", action.deviceId().toString());
+        settings.setValue("actionTypeId", action.actionTypeId().toString());
+        foreach (const RuleActionParam &param, action.ruleActionParams()) {
+            settings.beginGroup("RuleActionParam-" + param.name());
+            settings.setValue("value", param.value());
+            settings.endGroup();
+        }
+        i++;
+        settings.endGroup();
+    }
+    settings.endGroup();
+}
+
 }

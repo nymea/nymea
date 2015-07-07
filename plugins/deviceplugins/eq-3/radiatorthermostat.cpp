@@ -19,6 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "radiatorthermostat.h"
+#include "extern-plugininfo.h"
 
 RadiatorThermostat::RadiatorThermostat(QObject *parent) :
     MaxDevice(parent)

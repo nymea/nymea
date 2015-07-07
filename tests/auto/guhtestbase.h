@@ -31,7 +31,10 @@
 #include <QObject>
 #include <QUuid>
 #include <QVariantMap>
+#include <QSignalSpy>
 #include <QtTest>
+
+namespace guhserver {
 
 extern DeviceClassId mockDeviceClassId;
 extern DeviceClassId mockDeviceAutoClassId;
@@ -49,6 +52,7 @@ extern EventTypeId mockEvent2Id;
 extern StateTypeId mockIntStateId;
 extern StateTypeId mockBoolStateId;
 
+
 class MockTcpServer;
 
 class GuhTestBase : public QObject
@@ -63,6 +67,10 @@ protected slots:
 
 protected:
     QVariant injectAndWait(const QString &method, const QVariantMap &params = QVariantMap());
+    QVariant checkNotification(const QSignalSpy &spy, const QString &notification);
+
+    bool enableNotifications();
+    bool disableNotifications();
 
     inline void verifyError(const QVariant &response, const QString &fieldName, const QString &error)
     {
@@ -130,5 +138,7 @@ protected:
     QString m_deviceSettings;
     QString m_rulesSettings;
 };
+
+}
 
 #endif // GUHTESTBASE_H

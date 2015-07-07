@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "tvdevice.h"
-#include "loggingcategories.h"
+#include "extern-plugininfo.h"
 
 TvDevice::TvDevice(const QHostAddress &hostAddress, const int &port, QObject *parent) :
     QObject(parent),

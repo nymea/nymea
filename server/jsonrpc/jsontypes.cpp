@@ -31,6 +31,8 @@
 #include <QDebug>
 #include <QMetaEnum>
 
+namespace guhserver {
+
 bool JsonTypes::s_initialized = false;
 QString JsonTypes::s_lastError;
 
@@ -1106,4 +1108,6 @@ QPair<bool, QString> JsonTypes::validateEnum(const QVariantList &enumDescription
     }
 
     return report(enumDescription.contains(value.toString()), QString("Value %1 not allowed in %2").arg(value.toString()).arg(enumStrings.join(", ")));
+}
+
 }

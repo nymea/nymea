@@ -121,11 +121,11 @@ QString GuhSettings::logPath()
     QString organisationName = QCoreApplication::instance()->organizationName();
 
     if (organisationName == "guh-test") {
-        logPath = QDir::homePath() + ".config/" + organisationName + "/guhd-test.log";
+        logPath = "/tmp/guhd-test.log";
     } else if (GuhSettings::isRoot()) {
         logPath = "/var/log/guhd.log";
     } else {
-        logPath = QDir::homePath() + ".config/" + organisationName + "/guhd.log";
+        logPath = QDir::homePath() + "/.config/" + organisationName + "/guhd.log";
     }
 
     return logPath;

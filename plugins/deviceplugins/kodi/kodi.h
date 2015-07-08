@@ -23,18 +23,16 @@
 
 #include <QObject>
 #include <QHostAddress>
-#include <QImage>
-#include <QPixmap>
 
 #include "kodiconnection.h"
-#include "jsonhandler.h"
+#include "kodijsonhandler.h"
 
 class Kodi : public QObject
 {
     Q_OBJECT
 public:
 
-    explicit Kodi(const QByteArray &logo, const QHostAddress &hostAddress, const int &port = 9090, QObject *parent = 0);
+    explicit Kodi(const QHostAddress &hostAddress, const int &port = 9090, QObject *parent = 0);
 
     QHostAddress hostAddress() const;
     int port() const;
@@ -63,8 +61,7 @@ public:
 
 private:
     KodiConnection *m_connection;
-    JsonHandler *m_jsonHandler;
-    QByteArray m_logo;
+    KodiJsonHandler *m_jsonHandler;
     bool m_muted;
     int m_volume;
 

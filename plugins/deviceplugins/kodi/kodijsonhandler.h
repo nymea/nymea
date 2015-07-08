@@ -18,8 +18,8 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef JSONHANDLER_H
-#define JSONHANDLER_H
+#ifndef KODIJSONHANDLER_H
+#define KODIJSONHANDLER_H
 
 #include <QObject>
 #include <QVariant>
@@ -29,11 +29,11 @@
 #include "kodireply.h"
 #include "typeutils.h"
 
-class JsonHandler : public QObject
+class KodiJsonHandler : public QObject
 {
     Q_OBJECT
 public:
-    explicit JsonHandler(KodiConnection *connection = 0, QObject *parent = 0);
+    explicit KodiJsonHandler(KodiConnection *connection = 0, QObject *parent = 0);
 
     void sendData(const QString &method, const QVariantMap &params, const ActionId &actionId);
 
@@ -61,4 +61,4 @@ private slots:
 
 };
 
-#endif // JSONHANDLER_H
+#endif // KODIJSONHANDLER_H

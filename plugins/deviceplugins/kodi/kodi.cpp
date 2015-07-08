@@ -20,24 +20,23 @@
 
 #include "kodi.h"
 
-Kodi::Kodi(const QByteArray &logo, const QHostAddress &hostAddress, const int &port, QObject *parent) :
+Kodi::Kodi(const QHostAddress &hostAddress, const int &port, QObject *parent) :
     QObject(parent),
-    m_logo(logo),
     m_muted(false),
     m_volume(-1)
 {
     m_connection = new KodiConnection(hostAddress, port, this);
     connect (m_connection, &KodiConnection::connectionStatusChanged, this, &Kodi::connectionStatusChanged);
 
-    m_jsonHandler = new JsonHandler(m_connection, this);
-    connect(m_jsonHandler, &JsonHandler::volumeChanged, this, &Kodi::onVolumeChanged);
-    connect(m_jsonHandler, &JsonHandler::actionExecuted, this, &Kodi::actionExecuted);
-    connect(m_jsonHandler, &JsonHandler::versionDataReceived, this, &Kodi::versionDataReceived);
-    connect(m_jsonHandler, &JsonHandler::updateDataReceived, this, &Kodi::updateDataReceived);
-    connect(m_jsonHandler, &JsonHandler::updateDataReceived, this, &Kodi::onUpdateFinished);
-    connect(m_jsonHandler, &JsonHandler::onPlayerPlay, this, &Kodi::onPlayerPlay);
-    connect(m_jsonHandler, &JsonHandler::onPlayerPause, this, &Kodi::onPlayerPause);
-    connect(m_jsonHandler, &JsonHandler::onPlayerStop, this, &Kodi::onPlayerStop);
+    m_jsonHandler = new KodiJsonHandler(m_connection, this);
+    connect(m_jsonHandler, &KodiJsonHandler::volumeChanged, this, &Kodi::onVolumeChanged);
+    connect(m_jsonHandler, &KodiJsonHandler::actionExecuted, this, &Kodi::actionExecuted);
+    connect(m_jsonHandler, &KodiJsonHandler::versionDataReceived, this, &Kodi::versionDataReceived);
+    connect(m_jsonHandler, &KodiJsonHandler::updateDataReceived, this, &Kodi::updateDataReceived);
+    connect(m_jsonHandler, &KodiJsonHandler::updateDataReceived, this, &Kodi::onUpdateFinished);
+    connect(m_jsonHandler, &KodiJsonHandler::onPlayerPlay, this, &Kodi::onPlayerPlay);
+    connect(m_jsonHandler, &KodiJsonHandler::onPlayerPause, this, &Kodi::onPlayerPause);
+    connect(m_jsonHandler, &KodiJsonHandler::onPlayerStop, this, &Kodi::onPlayerStop);
 }
 
 QHostAddress Kodi::hostAddress() const

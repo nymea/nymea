@@ -18,20 +18,20 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "jsonhandler.h"
+#include "kodijsonhandler.h"
 #include "extern-plugininfo.h"
 
 #include <QJsonDocument>
 
-JsonHandler::JsonHandler(KodiConnection *connection, QObject *parent) :
+KodiJsonHandler::KodiJsonHandler(KodiConnection *connection, QObject *parent) :
     QObject(parent),
     m_connection(connection),
     m_id(0)
 {
-    connect(m_connection, &KodiConnection::dataReady, this, &JsonHandler::processResponse);
+    connect(m_connection, &KodiConnection::dataReady, this, &KodiJsonHandler::processResponse);
 }
 
-void JsonHandler::sendData(const QString &method, const QVariantMap &params, const ActionId &actionId)
+void KodiJsonHandler::sendData(const QString &method, const QVariantMap &params, const ActionId &actionId)
 {
     QVariantMap package;
     package.insert("id", m_id);
@@ -47,7 +47,7 @@ void JsonHandler::sendData(const QString &method, const QVariantMap &params, con
     m_id++;
 }
 
-void JsonHandler::processNotification(const QString &method, const QVariantMap &params)
+void KodiJsonHandler::processNotification(const QString &method, const QVariantMap &params)
 {
     qCDebug(dcKodi) << "got notification" << method;
 
@@ -63,7 +63,7 @@ void JsonHandler::processNotification(const QString &method, const QVariantMap &
     }
 }
 
-void JsonHandler::processActionResponse(const KodiReply &reply, const QVariantMap &response)
+void KodiJsonHandler::processActionResponse(const KodiReply &reply, const QVariantMap &response)
 {
     if (response.contains("error")) {
         qCDebug(dcKodi) << QJsonDocument::fromVariant(response).toJson();
@@ -74,7 +74,7 @@ void JsonHandler::processActionResponse(const KodiReply &reply, const QVariantMa
     }
 }
 
-void JsonHandler::processRequestResponse(const KodiReply &reply, const QVariantMap &response)
+void KodiJsonHandler::processRequestResponse(const KodiReply &reply, const QVariantMap &response)
 {
     if (response.contains("error")) {
         qCDebug(dcKodi) << QJsonDocument::fromVariant(response).toJson();
@@ -92,7 +92,7 @@ void JsonHandler::processRequestResponse(const KodiReply &reply, const QVariantM
     }
 }
 
-void JsonHandler::processResponse(const QByteArray &data)
+void KodiJsonHandler::processResponse(const QByteArray &data)
 {
     QJsonParseError error;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);

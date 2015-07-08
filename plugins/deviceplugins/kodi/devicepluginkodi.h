@@ -27,9 +27,6 @@
 #include <QHash>
 #include <QDebug>
 #include <QTcpSocket>
-#include <QPixmap>
-#include <QFile>
-#include <QImage>
 
 class DevicePluginKodi : public DevicePlugin
 {
@@ -53,7 +50,6 @@ public:
 private:
     QHash<Kodi *, Device *> m_kodis;
     QList<Kodi *> m_asyncSetups;
-    QByteArray m_logo;
 
 
 private slots:

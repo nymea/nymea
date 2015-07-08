@@ -1,4 +1,4 @@
-27
+28
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -276,8 +276,32 @@
             }
         },
         "Logging.GetLogEntries": {
-            "description": "Get the LogEntries matching the given filter.",
+            "description": "Get the LogEntries matching the given filter. Each list element of a given filter will be connected with OR to each other. Each of the given filters will be connected with AND to each other.",
             "params": {
+                "o:deviceIds": [
+                    "Uuid"
+                ],
+                "o:eventTypes": [
+                    "$ref:LoggingEventType"
+                ],
+                "o:loggingLevels": [
+                    "$ref:LoggingLevel"
+                ],
+                "o:loggingSources": [
+                    "$ref:LoggingSource"
+                ],
+                "o:timeFilters": [
+                    {
+                        "o:endDate": "Int",
+                        "o:startDate": "Int"
+                    }
+                ],
+                "o:typeIds": [
+                    "Uuid"
+                ],
+                "o:values": [
+                    "Variant"
+                ]
             },
             "returns": {
                 "loggingError": "$ref:LoggingError",
@@ -433,8 +457,13 @@
                 "event": "$ref:Event"
             }
         },
+        "Logging.LogDatabaseUpdated": {
+            "description": "Emitted whenever the database was updated. The database will be updated when a log entry was deleted. A log entry will be deleted when the corresponding device or a rule will be removed, or when the oldest entry of the database was deleted to keep to database in the size limits.",
+            "params": {
+            }
+        },
         "Logging.LogEntryAdded": {
-            "description": "Emitted whenever an entry is appended to the logging system.",
+            "description": "Emitted whenever an entry is appended to the logging system. ",
             "params": {
                 "logEntry": "$ref:LogEntry"
             }
@@ -603,7 +632,8 @@
         },
         "LoggingError": [
             "LoggingErrorNoError",
-            "LoggingErrorLogEntryNotFound"
+            "LoggingErrorLogEntryNotFound",
+            "LoggingErrorInvalidFilterParameter"
         ],
         "LoggingEventType": [
             "LoggingEventTypeTrigger",

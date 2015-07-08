@@ -92,7 +92,6 @@ private:
     void saveRule(const Rule &rule);
 
 private:
-    QString m_settingsFile;
     QList<RuleId> m_ruleIds; // Keeping a list of RuleIds to keep sorting order...
     QHash<RuleId, Rule> m_rules; // ...but use a Hash for faster finding
     QList<RuleId> m_activeRules;

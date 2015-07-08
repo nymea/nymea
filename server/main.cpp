@@ -27,6 +27,7 @@
 #include <QStringList>
 #include <QtPlugin>
 
+#include "unistd.h"
 #include "guhcore.h"
 #include "guhservice.h"
 #include "loggingcategories.h"
@@ -85,6 +86,7 @@ int main(int argc, char *argv[])
     parser.addOption(foregroundOption);
 
     QString debugDescription = QString("Debug categories to enable. Prefix with \"No\" to disable. Warnings from all categories will be printed unless explicitly muted with \"NoWarnings\". \n\nCategories are:");
+
     // create sorted loggingFiler list
     QStringList sortedFilterList = QStringList(s_loggingFilters.keys());
     sortedFilterList.sort();
@@ -123,6 +125,15 @@ int main(int argc, char *argv[])
 
     bool startForeground = parser.isSet(foregroundOption);
     if (startForeground) {
+        // inform about userid
+        int userId = getuid();
+        if (userId != 0) {
+            qCDebug(dcApplication) << "guhd started as user with ID" << userId;
+        } else {
+            qCDebug(dcApplication) << "guhd started as root.";
+        }
+
+        // create core instance
         GuhCore::instance()->setRunningMode(GuhCore::RunningModeApplication);
         return application.exec();
     }

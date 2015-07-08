@@ -1,7 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
  *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
- *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -19,48 +18,47 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef STATEEVALUATOR_H
-#define STATEEVALUATOR_H
+#ifndef KODIJSONHANDLER_H
+#define KODIJSONHANDLER_H
 
-#include "types/state.h"
-#include "types/statedescriptor.h"
+#include <QObject>
+#include <QVariant>
+#include <QHash>
 
-#include <QDebug>
+#include "kodiconnection.h"
+#include "kodireply.h"
+#include "typeutils.h"
 
-class GuhSettings;
-
-namespace guhserver {
-
-class StateEvaluator
+class KodiJsonHandler : public QObject
 {
+    Q_OBJECT
 public:
-    StateEvaluator(const StateDescriptor &stateDescriptor);
-    StateEvaluator(QList<StateEvaluator> childEvaluators = QList<StateEvaluator>(), Types::StateOperator stateOperator = Types::StateOperatorAnd);
+    explicit KodiJsonHandler(KodiConnection *connection = 0, QObject *parent = 0);
 
-    StateDescriptor stateDescriptor() const;
-
-    QList<StateEvaluator> childEvaluators() const;
-    void setChildEvaluators(const QList<StateEvaluator> &childEvaluators);
-    void appendEvaluator(const StateEvaluator &stateEvaluator);
-
-    Types::StateOperator operatorType() const;
-    void setOperatorType(Types::StateOperator operatorType);
-
-    bool evaluate() const;
-    bool containsDevice(const DeviceId &deviceId) const;
-
-    void removeDevice(const DeviceId &deviceId);
-
-    void dumpToSettings(GuhSettings &settings, const QString &groupName) const;
-    static StateEvaluator loadFromSettings(GuhSettings &settings, const QString &groupPrefix);
+    void sendData(const QString &method, const QVariantMap &params, const ActionId &actionId);
 
 private:
-    StateDescriptor m_stateDescriptor;
+    KodiConnection *m_connection;
+    int m_id;
+    QHash<int, KodiReply> m_replys;
 
-    QList<StateEvaluator> m_childEvaluators;
-    Types::StateOperator m_operatorType;
+    void processNotification(const QString &method, const QVariantMap &params);
+    void processActionResponse(const KodiReply &reply, const QVariantMap &response);
+    void processRequestResponse(const KodiReply &reply, const QVariantMap &response);
+
+signals:
+    void volumeChanged(const int &volume, const bool &muted);
+    void actionExecuted(const ActionId &actionId, const bool &success);
+    void updateDataReceived(const QVariantMap &data);
+    void versionDataReceived(const QVariantMap &data);
+
+    void onPlayerPlay();
+    void onPlayerPause();
+    void onPlayerStop();
+
+private slots:
+    void processResponse(const QByteArray &data);
+
 };
 
-}
-
-#endif // STATEEVALUATOR_H
+#endif // KODIJSONHANDLER_H

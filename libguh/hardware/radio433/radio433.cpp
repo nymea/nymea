@@ -51,6 +51,7 @@
 
 #include "radio433.h"
 #include "loggingcategories.h"
+#include "guhsettings.h"
 
 #include <QFileInfo>
 
@@ -58,11 +59,16 @@
 Radio433::Radio433(QObject *parent) :
     QObject(parent)
 {
-
     #ifdef GPIO433
-    m_receiver = new Radio433Receiver(this,27);
-    m_transmitter = new Radio433Trasmitter(this,22);
+    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    qCDebug(dcHardware) << "Loading GPIO settings from:" << settings.fileName();
+    settings.beginGroup("GPIO");
+    int receiverGpioNumber = settings.value("rf433rx",27).toInt();
+    int transmitterGpioNumber = settings.value("rf433tx",22).toInt();
+    settings.endGroup();
 
+    m_receiver = new Radio433Receiver(this, receiverGpioNumber);
+    m_transmitter = new Radio433Trasmitter(this, transmitterGpioNumber);
     connect(m_receiver, &Radio433Receiver::readingChanged, this, &Radio433::readingChanged);
     connect(m_receiver, &Radio433Receiver::dataReceived, this, &Radio433::dataReceived);
     #endif

@@ -37,6 +37,7 @@
 
 #include "logging/logging.h"
 #include "logging/logentry.h"
+#include "logging/logfilter.h"
 
 #include <QObject>
 
@@ -166,6 +167,7 @@ public:
     static EventDescriptor unpackEventDescriptor(const QVariantMap &eventDescriptorMap);
     static StateEvaluator unpackStateEvaluator(const QVariantMap &stateEvaluatorMap);
     static StateDescriptor unpackStateDescriptor(const QVariantMap &stateDescriptorMap);
+    static LogFilter unpackLogFilter(const QVariantMap &logFilterMap);
 
     static QPair<bool, QString> validateMap(const QVariantMap &templateMap, const QVariantMap &map);
     static QPair<bool, QString> validateProperty(const QVariant &templateValue, const QVariant &value);

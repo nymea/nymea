@@ -198,16 +198,11 @@ void TestJSONRPC::enableDisableNotifications()
 
 void TestJSONRPC::stateChangeEmitsNotifications()
 {
-    QVariantMap params;
-    params.insert("enabled", true);
-    QVariant response = injectAndWait("JSONRPC.SetNotificationStatus", params);
-    QCOMPARE(response.toMap().value("params").toMap().value("enabled").toBool(), true);
+    QCOMPARE(enableNotifications(), true);
 
     // Setup connection to mock client
     QNetworkAccessManager nam;
-
     QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
-
 
     // trigger state change in mock device
     int newVal = 1111;
@@ -216,32 +211,24 @@ void TestJSONRPC::stateChangeEmitsNotifications()
     QNetworkReply *reply = nam.get(request);
     reply->deleteLater();
 
-    // Lets wait for the notification
-    clientSpy.wait();
-    QCOMPARE(clientSpy.count(), 3); // statechangeevent, state change, log entry added
+    clientSpy.wait(500);
 
     // Make sure the notification contains all the stuff we expect
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(clientSpy.at(0).at(1).toByteArray());
-    QCOMPARE(jsonDoc.toVariant().toMap().value("notification").toString(), QString("Devices.StateChanged"));
-    QCOMPARE(jsonDoc.toVariant().toMap().value("params").toMap().value("stateTypeId").toUuid(), stateTypeId);
-    QCOMPARE(jsonDoc.toVariant().toMap().value("params").toMap().value("value").toInt(), newVal);
+    QVariant stateChangedVariant = checkNotification(clientSpy, "Devices.StateChanged");
+    QCOMPARE(stateChangedVariant.toMap().value("params").toMap().value("stateTypeId").toUuid(), stateTypeId);
+    QCOMPARE(stateChangedVariant.toMap().value("params").toMap().value("value").toInt(), newVal);
 
     // Make sure the notification contains all the stuff we expect
-    jsonDoc = QJsonDocument::fromJson(clientSpy.at(1).at(1).toByteArray());
-    QCOMPARE(jsonDoc.toVariant().toMap().value("notification").toString(), QString("Logging.LogEntryAdded"));
-    QCOMPARE(jsonDoc.toVariant().toMap().value("params").toMap().value("logEntry").toMap().value("typeId").toUuid(), stateTypeId);
+    QVariant loggEntryAddedVariant = checkNotification(clientSpy, "Logging.LogEntryAdded");
+    QCOMPARE(loggEntryAddedVariant.toMap().value("params").toMap().value("logEntry").toMap().value("typeId").toUuid(), stateTypeId);
 
     // Make sure the notification contains all the stuff we expect
-    jsonDoc = QJsonDocument::fromJson(clientSpy.at(2).at(1).toByteArray());
-    QCOMPARE(jsonDoc.toVariant().toMap().value("notification").toString(), QString("Events.EventTriggered"));
-    QCOMPARE(jsonDoc.toVariant().toMap().value("params").toMap().value("event").toMap().value("eventTypeId").toUuid(), stateTypeId);
-    QCOMPARE(jsonDoc.toVariant().toMap().value("params").toMap().value("event").toMap().value("params").toList().first().toMap().value("value").toInt(), newVal);
+    QVariant eventTriggeredVariant = checkNotification(clientSpy, "Events.EventTriggered");
+    QCOMPARE(eventTriggeredVariant.toMap().value("params").toMap().value("event").toMap().value("eventTypeId").toUuid(), stateTypeId);
+    QCOMPARE(eventTriggeredVariant.toMap().value("params").toMap().value("event").toMap().value("params").toList().first().toMap().value("value").toInt(), newVal);
 
     // Now turn off notifications
-    params.clear();
-    params.insert("enabled", false);
-    response = injectAndWait("JSONRPC.SetNotificationStatus", params);
-    QCOMPARE(response.toMap().value("params").toMap().value("enabled").toBool(), false);
+    QCOMPARE(disableNotifications(), true);
 
     // Fire the a statechange once again
     clientSpy.clear();
@@ -256,13 +243,12 @@ void TestJSONRPC::stateChangeEmitsNotifications()
     QCOMPARE(clientSpy.count(), 0);
 
     // Now check that the state has indeed changed even though we didn't get a notification
-    params.clear();
+    QVariantMap params;
     params.insert("deviceId", m_mockDeviceId);
     params.insert("stateTypeId", stateTypeId);
-    response = injectAndWait("Devices.GetStateValue", params);
+    QVariant response = injectAndWait("Devices.GetStateValue", params);
 
     QCOMPARE(response.toMap().value("params").toMap().value("value").toInt(), newVal);
-
 }
 
 
@@ -282,7 +268,7 @@ void TestJSONRPC::deviceAddedRemovedNotifications()
     httpportParam.insert("value", 8765);
     deviceParams.append(httpportParam);
 
-    QVariantMap params;
+    QVariantMap params; clientSpy.clear();
     params.insert("deviceClassId", mockDeviceClassId);
     params.insert("deviceParams", deviceParams);
     QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
@@ -310,7 +296,7 @@ void TestJSONRPC::deviceAddedRemovedNotifications()
     verifyDeviceError(response);
     checkNotification(clientSpy, "Devices.DeviceRemoved");
 
-    //QCOMPARE(disableNotifications(), true);
+    QCOMPARE(disableNotifications(), true);
 }
 
 void TestJSONRPC::ruleAddedRemovedNotifications()
@@ -412,22 +398,13 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
     response = injectAndWait("Rules.AddRule", params);
-
     clientSpy.wait(500);
-    qDebug() << "got" << clientSpy.count() << "notifications";
-    QCOMPARE(clientSpy.count(), 2);
+    QVariant notificationVariant = checkNotification(clientSpy, "Rules.RuleAdded");
+    verifyRuleError(response);
 
-    QJsonDocument jsonDocResponse = QJsonDocument::fromJson(clientSpy.at(1).at(1).toByteArray());
-    QJsonDocument jsonDocNotification = QJsonDocument::fromJson(clientSpy.at(0).at(1).toByteArray());
-
-    verifyRuleError(jsonDocResponse.toVariant());
-    RuleId ruleId = RuleId(jsonDocResponse.toVariant().toMap().value("params").toMap().value("ruleId").toString());
+    QVariantMap notificationRuleMap = notificationVariant.toMap().value("params").toMap().value("rule").toMap();
+    RuleId ruleId = RuleId(notificationRuleMap.value("id").toString());
     QVERIFY(!ruleId.isNull());
-
-    // check the DeviceAdded notification
-    QCOMPARE(jsonDocNotification.toVariant().toMap().value("notification").toString(), QString("Rules.RuleAdded"));
-    QVariantMap notificationRuleMap = jsonDocNotification.toVariant().toMap().value("params").toMap().value("rule").toMap();
-
     QCOMPARE(notificationRuleMap.value("enabled").toBool(), true);
     QCOMPARE(notificationRuleMap.value("name").toString(), params.value("name").toString());
     QCOMPARE(notificationRuleMap.value("id").toString(), ruleId.toString());
@@ -438,31 +415,21 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     // set the rule active
     QNetworkAccessManager nam;
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
-    QSignalSpy clientSpy2(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
     // state state to 20
     qDebug() << "setting mock int state to 20";
     QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockIntStateId.toString()).arg(20)));
     QNetworkReply *reply = nam.get(request);
-    spy.wait(500);
-    QCOMPARE(spy.count(), 1);
     reply->deleteLater();
 
-    clientSpy2.wait(500);
-    qDebug() << "got" << clientSpy2.count() << "notifications";
-    QCOMPARE(clientSpy2.count(), 6);
+    clientSpy.wait(500);
+    notificationVariant = checkNotification(clientSpy, "Rules.RuleActiveChanged");
+    verifyRuleError(response);
 
-    for (int i = 0; i < clientSpy2.count(); i++) {
-        QByteArray notification = clientSpy2.at(i).at(1).toByteArray();
-        if (notification.contains("Rules.RuleActiveChanged")) {
-            QVariantMap notificationMap = QJsonDocument::fromJson(notification).toVariant().toMap();
-            QCOMPARE(notificationMap.value("notification").toString(), QString("Rules.RuleActiveChanged"));
-            QCOMPARE(notificationMap.value("params").toMap().value("ruleId").toString(), ruleId.toString());
-            QCOMPARE(notificationMap.value("params").toMap().value("active").toBool(), true);
-        }
-    }
-    clientSpy2.clear();
-    spy.clear();
+    QCOMPARE(notificationVariant.toMap().value("params").toMap().value("ruleId").toString(), ruleId.toString());
+    QCOMPARE(notificationVariant.toMap().value("params").toMap().value("active").toBool(), true);
+
+    spy.clear(); clientSpy.clear();
 
     // set the rule inactive
     qDebug() << "setting mock int state to 42";
@@ -472,39 +439,24 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     QCOMPARE(spy.count(), 1);
     reply2->deleteLater();
 
-    clientSpy2.wait(500);
-    QCOMPARE(clientSpy2.count(), 5);
+    clientSpy.wait(500);
+    notificationVariant = checkNotification(clientSpy, "Rules.RuleActiveChanged");
+    verifyRuleError(response);
 
-    for (int i = 0; i < clientSpy2.count(); i++) {
-        QByteArray notification = clientSpy2.at(i).at(1).toByteArray();
-        if (notification.contains("Rules.RuleActiveChanged")) {
-            QVariantMap notificationMap = QJsonDocument::fromJson(notification).toVariant().toMap();
-            QCOMPARE(notificationMap.value("notification").toString(), QString("Rules.RuleActiveChanged"));
-            QCOMPARE(notificationMap.value("params").toMap().value("ruleId").toString(), ruleId.toString());
-            QCOMPARE(notificationMap.value("params").toMap().value("active").toBool(), false);
-        }
-    }
-
-    // Setup connection to mock client
-    QSignalSpy clientSpy3(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QCOMPARE(notificationVariant.toMap().value("params").toMap().value("ruleId").toString(), ruleId.toString());
+    QCOMPARE(notificationVariant.toMap().value("params").toMap().value("active").toBool(), false);
 
     // now remove the rule and check the RuleRemoved notification
     params.clear(); response.clear();
     params.insert("ruleId", ruleId);
     response = injectAndWait("Rules.RemoveRule", params);
 
-    clientSpy3.wait(500);
-    qDebug() << "got" << clientSpy3.count() << "notifications";
-    QCOMPARE(clientSpy3.count(), 2); // wait for RuleRemoved notification and response
+    clientSpy.wait(500);
+    notificationVariant = checkNotification(clientSpy, "Rules.RuleRemoved");
+    checkNotification(clientSpy, "Logging.LogDatabaseUpdated");
+    verifyRuleError(response);
 
-    jsonDocResponse = QJsonDocument::fromJson(clientSpy3.at(1).at(1).toByteArray());
-    jsonDocNotification = QJsonDocument::fromJson(clientSpy3.at(0).at(1).toByteArray());
-
-    verifyRuleError(jsonDocResponse.toVariant());
-
-    // check the DeviceRemoved notification
-    QCOMPARE(jsonDocNotification.toVariant().toMap().value("notification").toString(), QString("Rules.RuleRemoved"));
-    QCOMPARE(jsonDocNotification.toVariant().toMap().value("params").toMap().value("ruleId").toString(), ruleId.toString());
+    QCOMPARE(notificationVariant.toMap().value("params").toMap().value("ruleId").toString(), ruleId.toString());
 }
 
 void TestJSONRPC::deviceParamsChangedNotifications()
@@ -519,7 +471,6 @@ void TestJSONRPC::deviceParamsChangedNotifications()
     QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
     // ADD
-
     // add device and wait for notification
     QVariantList deviceParams;
     QVariantMap httpportParam;
@@ -527,25 +478,15 @@ void TestJSONRPC::deviceParamsChangedNotifications()
     httpportParam.insert("value", 23234);
     deviceParams.append(httpportParam);
 
-    params.clear(); response.clear();
+    params.clear(); response.clear(); clientSpy.clear();
     params.insert("deviceClassId", mockDeviceClassId);
     params.insert("deviceParams", deviceParams);
     response = injectAndWait("Devices.AddConfiguredDevice", params);
-
-    // Lets wait for the notification
-    clientSpy.wait(500);
-    QCOMPARE(clientSpy.count(), 2); // wait for device added notification and response
-
-    QJsonDocument jsonDocResponse = QJsonDocument::fromJson(clientSpy.at(1).at(1).toByteArray());
-    QJsonDocument jsonDocNotification = QJsonDocument::fromJson(clientSpy.at(0).at(1).toByteArray());
-
-    verifyDeviceError(jsonDocResponse.toVariant());
-    DeviceId deviceId = DeviceId(jsonDocResponse.toVariant().toMap().value("params").toMap().value("deviceId").toString());
+    DeviceId deviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
     QVERIFY(!deviceId.isNull());
-
-    // check the DeviceAdded notification
-    QCOMPARE(jsonDocNotification.toVariant().toMap().value("notification").toString(), QString("Devices.DeviceAdded"));
-    QVariantMap notificationDeviceMap = jsonDocNotification.toVariant().toMap().value("params").toMap().value("device").toMap();
+    clientSpy.wait(500);
+    verifyDeviceError(response);
+    QVariantMap notificationDeviceMap = checkNotification(clientSpy, "Devices.DeviceAdded").toMap().value("params").toMap().value("device").toMap();
 
     QCOMPARE(notificationDeviceMap.value("deviceClassId").toString(), mockDeviceClassId.toString());
     QCOMPARE(notificationDeviceMap.value("id").toString(), deviceId.toString());
@@ -556,10 +497,6 @@ void TestJSONRPC::deviceParamsChangedNotifications()
     }
 
     // EDIT
-
-    // Setup connection to mock client
-    QSignalSpy clientSpy2(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
-
     // now edit the device and check the deviceParamsChanged notification
     QVariantList newDeviceParams;
     QVariantMap newHttpportParam;
@@ -567,22 +504,13 @@ void TestJSONRPC::deviceParamsChangedNotifications()
     newHttpportParam.insert("value", 45473);
     newDeviceParams.append(newHttpportParam);
 
-    params.clear(); response.clear();
+    params.clear(); response.clear(); clientSpy.clear();
     params.insert("deviceId", deviceId);
     params.insert("deviceParams", newDeviceParams);
     response = injectAndWait("Devices.EditDevice", params);
-
-    clientSpy2.wait(500);
-    QCOMPARE(clientSpy2.count(), 2);
-
-    jsonDocResponse = QJsonDocument::fromJson(clientSpy2.at(1).at(1).toByteArray());
-    jsonDocNotification = QJsonDocument::fromJson(clientSpy2.at(0).at(1).toByteArray());
-
-    verifyDeviceError(jsonDocResponse.toVariant());
-
-    QCOMPARE(jsonDocNotification.toVariant().toMap().value("notification").toString(), QString("Devices.DeviceParamsChanged"));
-
-    QVariantMap editDeviceNotificationMap = jsonDocNotification.toVariant().toMap().value("params").toMap().value("device").toMap();
+    clientSpy.wait(500);
+    verifyDeviceError(response);
+    QVariantMap editDeviceNotificationMap = checkNotification(clientSpy, "Devices.DeviceParamsChanged").toMap().value("params").toMap().value("device").toMap();
     QCOMPARE(editDeviceNotificationMap.value("deviceClassId").toString(), mockDeviceClassId.toString());
     QCOMPARE(editDeviceNotificationMap.value("id").toString(), deviceId.toString());
     foreach (const QVariant &param, editDeviceNotificationMap.value("params").toList()) {
@@ -592,26 +520,14 @@ void TestJSONRPC::deviceParamsChangedNotifications()
     }
 
     // REMOVE
-
-    // Setup connection to mock client
-    QSignalSpy clientSpy3(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
-
     // now remove the device and check the device removed notification
-    params.clear(); response.clear();
+    params.clear(); response.clear(); clientSpy.clear();
     params.insert("deviceId", deviceId);
     response = injectAndWait("Devices.RemoveConfiguredDevice", params);
-
-    clientSpy3.wait(500);
-    QCOMPARE(clientSpy3.count(), 2); // wait for device removed notification and response
-
-    jsonDocResponse = QJsonDocument::fromJson(clientSpy3.at(1).at(1).toByteArray());
-    jsonDocNotification = QJsonDocument::fromJson(clientSpy3.at(0).at(1).toByteArray());
-
-    verifyDeviceError(jsonDocResponse.toVariant());
-
-    // check the DeviceRemoved notification
-    QCOMPARE(jsonDocNotification.toVariant().toMap().value("notification").toString(), QString("Devices.DeviceRemoved"));
-    QCOMPARE(jsonDocNotification.toVariant().toMap().value("params").toMap().value("deviceId").toString(), deviceId.toString());
+    clientSpy.wait(500);
+    verifyDeviceError(response);
+    checkNotification(clientSpy, "Devices.DeviceRemoved");
+    checkNotification(clientSpy, "Logging.LogDatabaseUpdated");
 }
 
 #include "testjsonrpc.moc"

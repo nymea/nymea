@@ -36,7 +36,8 @@ class Logging
 public:
     enum LoggingError {
         LoggingErrorNoError,
-        LoggingErrorLogEntryNotFound
+        LoggingErrorLogEntryNotFound,
+        LoggingErrorInvalidFilterParameter
     };
 
     enum LoggingSource {

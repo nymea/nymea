@@ -1,6 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
  *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -22,6 +23,7 @@
 #define LOGENGINE_H
 
 #include "logentry.h"
+#include "logfilter.h"
 #include "types/event.h"
 #include "types/action.h"
 #include "rule.h"
@@ -37,10 +39,18 @@ class LogEngine: public QObject
 public:
     LogEngine(QObject *parent = 0);
 
-    QList<LogEntry> logEntries() const;
+    QList<LogEntry> logEntries(const LogFilter &filter = LogFilter()) const;
 
 signals:
     void logEntryAdded(const LogEntry &logEntry);
+    void logDatabaseUpdated();
+
+private:
+    QSqlDatabase m_db;
+
+    void initDB();
+    void appendLogEntry(const LogEntry &entry);
+    void checkDBSize();
 
 private:
     // Only GuhCore is allowed to log events.
@@ -50,12 +60,9 @@ private:
     void logAction(const Action &action, Logging::LoggingLevel level = Logging::LoggingLevelInfo, int errorCode = 0);
     void logRuleTriggered(const Rule &rule);
     void logRuleActiveChanged(const Rule &rule);
+    void removeDeviceLogs(const DeviceId &deviceId);
+    void removeRuleLogs(const RuleId &ruleId);
 
-private:
-    void initDB();
-    void appendLogEntry(const LogEntry &entry);
-
-    QSqlDatabase m_db;
 };
 
 }

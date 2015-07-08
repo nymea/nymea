@@ -18,47 +18,53 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef JSONHANDLER_H
-#define JSONHANDLER_H
+#ifndef GUHSETTINGS_H
+#define GUHSETTINGS_H
 
 #include <QObject>
 #include <QVariant>
-#include <QHash>
 
-#include "kodiconnection.h"
-#include "kodireply.h"
-#include "typeutils.h"
+class QSettings;
 
-class JsonHandler : public QObject
+class GuhSettings : public QObject
 {
     Q_OBJECT
 public:
-    explicit JsonHandler(KodiConnection *connection = 0, QObject *parent = 0);
+    enum SettingsRole {
+        SettingsRoleNone,
+        SettingsRoleDevices,
+        SettingsRoleRules,
+        SettingsRolePlugins,
+        SettingsRoleGlobal
+    };
 
-    void sendData(const QString &method, const QVariantMap &params, const ActionId &actionId);
+    explicit GuhSettings(const SettingsRole &role = SettingsRoleNone, QObject *parent = 0);
+    ~GuhSettings();
+
+    SettingsRole settingsRole() const;
+
+    static bool isRoot();
+    static QString logPath();
+
+    // forwarded QSettings methods
+    QStringList	allKeys() const;
+    void beginGroup(const QString &prefix);
+    QStringList	childGroups() const;
+    QStringList	childKeys() const;
+    void clear();
+    bool contains(const QString &key) const;
+    void endGroup();
+    QString	group() const;
+    QString	fileName() const;
+    bool isWritable() const;
+    void remove(const QString &key);
+    void setValue(const QString & key, const QVariant &value);
+    QVariant value(const QString & key, const QVariant & defaultValue = QVariant()) const;
 
 private:
-    KodiConnection *m_connection;
-    int m_id;
-    QHash<int, KodiReply> m_replys;
-
-    void processNotification(const QString &method, const QVariantMap &params);
-    void processActionResponse(const KodiReply &reply, const QVariantMap &response);
-    void processRequestResponse(const KodiReply &reply, const QVariantMap &response);
-
-signals:
-    void volumeChanged(const int &volume, const bool &muted);
-    void actionExecuted(const ActionId &actionId, const bool &success);
-    void updateDataReceived(const QVariantMap &data);
-    void versionDataReceived(const QVariantMap &data);
-
-    void onPlayerPlay();
-    void onPlayerPause();
-    void onPlayerStop();
-
-private slots:
-    void processResponse(const QByteArray &data);
+    QSettings *m_settings;
+    SettingsRole m_role;
 
 };
 
-#endif // JSONHANDLER_H
+#endif // GUHSETTINGS_H

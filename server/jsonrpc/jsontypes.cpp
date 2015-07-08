@@ -751,6 +751,64 @@ StateDescriptor JsonTypes::unpackStateDescriptor(const QVariantMap &stateDescrip
     return stateDescriptor;
 }
 
+LogFilter JsonTypes::unpackLogFilter(const QVariantMap &logFilterMap)
+{
+    LogFilter filter;
+    if (logFilterMap.contains("timeFilters")) {
+        QVariantList timeFilters = logFilterMap.value("timeFilters").toList();
+        foreach (const QVariant &timeFilter, timeFilters) {
+            QVariantMap timeFilterMap = timeFilter.toMap();
+            QDateTime startDate; QDateTime endDate;
+            if (timeFilterMap.contains("startDate")) {
+                startDate = QDateTime::fromTime_t(timeFilterMap.value("startDate").toInt());
+            }
+            if (timeFilterMap.contains("endDate")) {
+                endDate = QDateTime::fromTime_t(timeFilterMap.value("endDate").toInt());
+            }
+            filter.addTimeFilter(startDate, endDate);
+        }
+    }
+
+    if (logFilterMap.contains("loggingSources")) {
+        QVariantList loggingSources = logFilterMap.value("loggingSources").toList();
+        foreach (const QVariant &source, loggingSources) {
+            filter.addLoggingSource((Logging::LoggingSource)s_loggingSource.indexOf(source.toString()));
+        }
+    }
+    if (logFilterMap.contains("loggingLevels")) {
+        QVariantList loggingLevels = logFilterMap.value("loggingLevels").toList();
+        foreach (const QVariant &level, loggingLevels) {
+            filter.addLoggingLevel((Logging::LoggingLevel)s_loggingLevel.indexOf(level.toString()));
+        }
+    }
+    if (logFilterMap.contains("eventTypes")) {
+        QVariantList eventTypes = logFilterMap.value("eventTypes").toList();
+        foreach (const QVariant &eventType, eventTypes) {
+            filter.addLoggingEventType((Logging::LoggingEventType)s_loggingEventType.indexOf(eventType.toString()));
+        }
+    }
+    if (logFilterMap.contains("typeIds")) {
+        QVariantList typeIds = logFilterMap.value("typeIds").toList();
+        foreach (const QVariant &typeId, typeIds) {
+            filter.addTypeId(typeId.toUuid());
+        }
+    }
+    if (logFilterMap.contains("deviceIds")) {
+        QVariantList deviceIds = logFilterMap.value("deviceIds").toList();
+        foreach (const QVariant &deviceId, deviceIds) {
+            filter.addDeviceId(DeviceId(deviceId.toString()));
+        }
+    }
+    if (logFilterMap.contains("values")) {
+        QVariantList values = logFilterMap.value("values").toList();
+        foreach (const QVariant &value, values) {
+            filter.addValue(value.toString());
+        }
+    }
+
+    return filter;
+}
+
 QPair<bool, QString> JsonTypes::validateMap(const QVariantMap &templateMap, const QVariantMap &map)
 {
     s_lastError.clear();

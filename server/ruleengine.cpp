@@ -83,13 +83,13 @@
 #include "loggingcategories.h"
 #include "types/paramdescriptor.h"
 #include "types/eventdescriptor.h"
+#include "guhsettings.h"
 
 #include "guhcore.h"
 
 #include "devicemanager.h"
 #include "plugin/device.h"
 
-#include <QSettings>
 #include <QDebug>
 #include <QStringList>
 #include <QStandardPaths>
@@ -103,8 +103,7 @@ namespace guhserver {
 RuleEngine::RuleEngine(QObject *parent) :
     QObject(parent)
 {
-    m_settingsFile = QCoreApplication::instance()->organizationName() + "/rules";
-    QSettings settings(m_settingsFile);
+    GuhSettings settings(GuhSettings::SettingsRoleRules);
     qCDebug(dcRuleEngine) << "laoding rules from" << settings.fileName();
     foreach (const QString &idString, settings.childGroups()) {
         settings.beginGroup(idString);
@@ -416,7 +415,7 @@ RuleEngine::RuleError RuleEngine::removeRule(const RuleId &ruleId, bool fromEdit
     m_ruleIds.takeAt(index);
     m_rules.remove(ruleId);
 
-    QSettings settings(m_settingsFile);
+    GuhSettings settings(GuhSettings::SettingsRoleRules);
     settings.beginGroup(ruleId.toString());
     settings.remove("");
     settings.endGroup();
@@ -569,7 +568,7 @@ void RuleEngine::appendRule(const Rule &rule)
 void RuleEngine::saveRule(const Rule &rule)
 {
     // Save Events / EventDescriptors
-    QSettings settings(m_settingsFile);
+    GuhSettings settings(GuhSettings::SettingsRoleRules);
     settings.beginGroup(rule.id().toString());
     settings.setValue("name", rule.name());
     settings.setValue("enabled", rule.enabled());

@@ -211,26 +211,21 @@ void TestJSONRPC::stateChangeEmitsNotifications()
     QNetworkReply *reply = nam.get(request);
     reply->deleteLater();
 
-    // Lets wait for the notification
-    clientSpy.wait();
-    QCOMPARE(clientSpy.count(), 3); // statechangeevent, state change, log entry added
+    clientSpy.wait(500);
 
     // Make sure the notification contains all the stuff we expect
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(clientSpy.at(0).at(1).toByteArray());
-    QCOMPARE(jsonDoc.toVariant().toMap().value("notification").toString(), QString("Devices.StateChanged"));
-    QCOMPARE(jsonDoc.toVariant().toMap().value("params").toMap().value("stateTypeId").toUuid(), stateTypeId);
-    QCOMPARE(jsonDoc.toVariant().toMap().value("params").toMap().value("value").toInt(), newVal);
+    QVariant stateChangedVariant = checkNotification(clientSpy, "Devices.StateChanged");
+    QCOMPARE(stateChangedVariant.toMap().value("params").toMap().value("stateTypeId").toUuid(), stateTypeId);
+    QCOMPARE(stateChangedVariant.toMap().value("params").toMap().value("value").toInt(), newVal);
 
     // Make sure the notification contains all the stuff we expect
-    jsonDoc = QJsonDocument::fromJson(clientSpy.at(1).at(1).toByteArray());
-    QCOMPARE(jsonDoc.toVariant().toMap().value("notification").toString(), QString("Logging.LogEntryAdded"));
-    QCOMPARE(jsonDoc.toVariant().toMap().value("params").toMap().value("logEntry").toMap().value("typeId").toUuid(), stateTypeId);
+    QVariant loggEntryAddedVariant = checkNotification(clientSpy, "Logging.LogEntryAdded");
+    QCOMPARE(loggEntryAddedVariant.toMap().value("params").toMap().value("logEntry").toMap().value("typeId").toUuid(), stateTypeId);
 
     // Make sure the notification contains all the stuff we expect
-    jsonDoc = QJsonDocument::fromJson(clientSpy.at(2).at(1).toByteArray());
-    QCOMPARE(jsonDoc.toVariant().toMap().value("notification").toString(), QString("Events.EventTriggered"));
-    QCOMPARE(jsonDoc.toVariant().toMap().value("params").toMap().value("event").toMap().value("eventTypeId").toUuid(), stateTypeId);
-    QCOMPARE(jsonDoc.toVariant().toMap().value("params").toMap().value("event").toMap().value("params").toList().first().toMap().value("value").toInt(), newVal);
+    QVariant eventTriggeredVariant = checkNotification(clientSpy, "Events.EventTriggered");
+    QCOMPARE(eventTriggeredVariant.toMap().value("params").toMap().value("event").toMap().value("eventTypeId").toUuid(), stateTypeId);
+    QCOMPARE(eventTriggeredVariant.toMap().value("params").toMap().value("event").toMap().value("params").toList().first().toMap().value("value").toInt(), newVal);
 
     // Now turn off notifications
     QCOMPARE(disableNotifications(), true);

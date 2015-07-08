@@ -22,6 +22,7 @@
 #include "guhtestbase.h"
 #include "guhcore.h"
 #include "devicemanager.h"
+#include "guhsettings.h"
 #include "plugin/deviceplugin.h"
 
 #include <QDebug>
@@ -865,7 +866,7 @@ void TestDevices::removeDevice()
     QFETCH(DeviceId, deviceId);
     QFETCH(DeviceManager::DeviceError, deviceError);
 
-    QSettings settings(m_deviceSettings);
+    GuhSettings settings(GuhSettings::SettingsRoleDevices);
     settings.beginGroup("DeviceConfig");
     if (deviceError == DeviceManager::DeviceErrorNoError) {
         settings.beginGroup(m_mockDeviceId.toString());

@@ -135,8 +135,6 @@ protected:
 
     DeviceId m_mockDeviceId;
 
-    QString m_deviceSettings;
-    QString m_rulesSettings;
 };
 
 }

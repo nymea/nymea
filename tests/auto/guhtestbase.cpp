@@ -22,6 +22,7 @@
 #include "guhtestbase.h"
 #include "mocktcpserver.h"
 #include "guhcore.h"
+#include "guhsettings.h"
 #include "devicemanager.h"
 #include "jsontypes.h"
 
@@ -29,7 +30,6 @@
 #include <QJsonDocument>
 #include <QJsonParseError>
 #include <QSignalSpy>
-#include <QSettings>
 #include <QtTest>
 #include <QMetaType>
 #include <QNetworkReply>
@@ -63,18 +63,15 @@ GuhTestBase::GuhTestBase(QObject *parent) :
     m_mockDevice1Port = 1337 + (qrand() % 1000);
     m_mockDevice2Port = 7331 + (qrand() % 1000);
     QCoreApplication::instance()->setOrganizationName("guh-test");
-
-    m_rulesSettings = QCoreApplication::instance()->organizationName() + "/rules";
-    m_deviceSettings = QCoreApplication::instance()->organizationName() + "/devices";
 }
 
 void GuhTestBase::initTestCase()
 {
 
     // If testcase asserts cleanup won't do. Lets clear any previous test run settings leftovers
-    QSettings rulesSettings(m_rulesSettings);
+    GuhSettings rulesSettings(GuhSettings::SettingsRoleRules);
     rulesSettings.clear();
-    QSettings deviceSettings(m_deviceSettings);
+    GuhSettings deviceSettings(GuhSettings::SettingsRoleDevices);
     deviceSettings.clear();
 
     GuhCore::instance();

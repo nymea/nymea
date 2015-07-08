@@ -19,6 +19,7 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include "guhsettings.h"
 #include "logengine.h"
 #include "loggingcategories.h"
 #include "logging.h"
@@ -41,7 +42,9 @@ LogEngine::LogEngine(QObject *parent):
 {
 
     m_db = QSqlDatabase::addDatabase("QSQLITE");
-    m_db.setDatabaseName("/tmp/guhd.log");
+    m_db.setDatabaseName(GuhSettings::logPath());
+
+    qCDebug(dcLogEngine) << "Opening logging database" << m_db.databaseName();
 
     if (!m_db.isValid()) {
         qCWarning(dcLogEngine) << "Database not valid:" << m_db.lastError().driverText() << m_db.lastError().databaseText();

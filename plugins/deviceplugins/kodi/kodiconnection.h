@@ -47,7 +47,6 @@ private:
     int m_port;
     bool m_connected;
 
-
 private slots:
     void onConnected();
     void onDisconnected();

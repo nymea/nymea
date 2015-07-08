@@ -90,7 +90,21 @@ void KodiConnection::onError(QAbstractSocket::SocketError socketError)
 void KodiConnection::readData()
 {
     QByteArray data = m_socket->readAll();
-    emit dataReady(data);
+
+    QStringList commandList = QString(data).split("}{");
+    for(int i = 0; i < commandList.count(); ++i) {
+        QString command = commandList.at(i);
+        if(command.isEmpty()) {
+            continue;
+        }
+        if(i < commandList.count() - 1) {
+            command.append("}");
+        }
+        if(i > 0) {
+            command.prepend("{");
+        }
+        emit dataReady(command.toUtf8());
+    }
 }
 
 void KodiConnection::sendData(const QByteArray &message)

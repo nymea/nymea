@@ -20,9 +20,8 @@
 
 #include "kodi.h"
 
-Kodi::Kodi(const QByteArray &logo, const QHostAddress &hostAddress, const int &port, QObject *parent) :
+Kodi::Kodi(const QHostAddress &hostAddress, const int &port, QObject *parent) :
     QObject(parent),
-    m_logo(logo),
     m_muted(false),
     m_volume(-1)
 {

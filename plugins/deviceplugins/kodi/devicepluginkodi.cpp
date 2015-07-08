@@ -71,19 +71,19 @@
 
 DevicePluginKodi::DevicePluginKodi()
 {
-    Q_INIT_RESOURCE(images);
-    QFile file(":/images/guh-logo.png");
-    if (!file.open(QIODevice::ReadOnly)) {
-        qCWarning(dcKodi) << "could not open" << file.fileName();
-        return;
-    }
+//    Q_INIT_RESOURCE(images);
+//    QFile file(":/images/guh-logo.png");
+//    if (!file.open(QIODevice::ReadOnly)) {
+//        qCWarning(dcKodi) << "could not open" << file.fileName();
+//        return;
+//    }
 
-    QByteArray guhLogoByteArray = file.readAll();
-    if (guhLogoByteArray.isEmpty()) {
-        qCWarning(dcKodi) << "could not read" << file.fileName();
-        return;
-    }
-    m_logo = guhLogoByteArray;
+//    QByteArray guhLogoByteArray = file.readAll();
+//    if (guhLogoByteArray.isEmpty()) {
+//        qCWarning(dcKodi) << "could not read" << file.fileName();
+//        return;
+//    }
+//    m_logo = guhLogoByteArray;
 }
 
 DeviceManager::HardwareResources DevicePluginKodi::requiredHardware() const
@@ -93,7 +93,8 @@ DeviceManager::HardwareResources DevicePluginKodi::requiredHardware() const
 
 DeviceManager::DeviceSetupStatus DevicePluginKodi::setupDevice(Device *device)
 {
-    Kodi *kodi= new Kodi(m_logo, QHostAddress(device->paramValue("ip").toString()), 9090, this);
+    qCDebug(dcKodi) << "Setup Kodi device" << device->paramValue("ip").toString();
+    Kodi *kodi= new Kodi(QHostAddress(device->paramValue("ip").toString()), 9090, this);
 
     connect(kodi, &Kodi::connectionStatusChanged, this, &DevicePluginKodi::onConnectionChanged);
     connect(kodi, &Kodi::stateChanged, this, &DevicePluginKodi::onStateChanged);
@@ -104,10 +105,11 @@ DeviceManager::DeviceSetupStatus DevicePluginKodi::setupDevice(Device *device)
     connect(kodi, &Kodi::onPlayerPause, this, &DevicePluginKodi::onPlayerPause);
     connect(kodi, &Kodi::onPlayerStop, this, &DevicePluginKodi::onPlayerStop);
 
-    kodi->connectKodi();
-
     m_kodis.insert(kodi, device);
     m_asyncSetups.append(kodi);
+
+    kodi->connectKodi();
+
     return DeviceManager::DeviceSetupStatusAsync;
 }
 

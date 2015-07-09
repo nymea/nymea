@@ -61,6 +61,36 @@ GuhSettings::GuhSettings(const SettingsRole &role, QObject *parent):
     QObject(parent),
     m_role(role)
 {
+
+#ifdef SNAPPY
+    QString settingsFile;
+    switch (role) {
+    case SettingsRoleNone:
+        break;
+    case SettingsRoleDevices:
+        settingsFile = "config/devices.conf";
+        m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
+        qDebug() << "Created device settings" << m_settings->fileName();
+        break;
+    case SettingsRoleRules:
+        settingsFile = "config/rules.conf";
+        m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
+        qDebug() << "Created rule settings" << m_settings->fileName();
+        break;
+    case SettingsRolePlugins:
+        settingsFile = "config/plugins.conf";
+        m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
+        qDebug() << "Created plugin settings" << m_settings->fileName();
+        break;
+    case SettingsRoleGlobal:
+        settingsFile = "config/guhd.conf";
+        m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
+        qDebug() << "Created guhd settings" << m_settings->fileName();
+        break;
+    default:
+        break;
+    }
+#else
     QString settingsFile;
     QString settingsPrefix = QCoreApplication::instance()->organizationName();
     bool rootPrivilege = isRoot();
@@ -115,6 +145,7 @@ GuhSettings::GuhSettings(const SettingsRole &role, QObject *parent):
     default:
         break;
     }
+#endif // SNAPPY
 }
 
 /*! Destructor of the GuhSettings.*/
@@ -146,6 +177,9 @@ bool GuhSettings::isRoot()
 QString GuhSettings::logPath()
 {
     QString logPath;
+#ifdef SNAPPY
+    logPath = "/var/log/guhd.log";
+#else
     QString organisationName = QCoreApplication::instance()->organizationName();
 
     if (organisationName == "guh-test") {
@@ -155,7 +189,7 @@ QString GuhSettings::logPath()
     } else {
         logPath = QDir::homePath() + "/.config/" + organisationName + "/guhd.sqlite";
     }
-
+#endif // SNAPPY
     return logPath;
 }
 

@@ -3,6 +3,8 @@ version: 0.1.0
 vendor: Simon Stürz <simon.stuerz@guh.guru>
 architecture: [armhf]
 icon: meta/guh-logo.svg
+source: https://github.com/guh/guh
+license-version: "GPLv2"
 services:
  - name: guhd
    start: usr/bin/guhd-wrapper.sh
@@ -11,4 +13,3 @@ services:
    caps:
     - networking
     - network-service
-

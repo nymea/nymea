@@ -23,5 +23,10 @@ enable433gpio {
     DEFINES += GPIO433
 }
 
+snappy {
+    DEFINES += SNAPPY
+}
+
+
 top_srcdir=$$PWD
 top_builddir=$$shadowed($$PWD)

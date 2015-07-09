@@ -40,6 +40,7 @@ namespace guhserver {
 LogEngine::LogEngine(QObject *parent):
     QObject(parent)
 {
+    qCDebug(dcLogEngine) << "Using log file" << GuhSettings::logPath();
 
     m_db = QSqlDatabase::addDatabase("QSQLITE");
     m_db.setDatabaseName(GuhSettings::logPath());

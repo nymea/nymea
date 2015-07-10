@@ -190,6 +190,7 @@ QString GuhSettings::logPath()
         logPath = QDir::homePath() + "/.config/" + organisationName + "/guhd.sqlite";
     }
 #endif // SNAPPY
+
     return logPath;
 }
 

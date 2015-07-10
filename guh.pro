@@ -79,7 +79,8 @@ contains(DEFINES, SNAPPY){
     meta.files = meta/package.yaml \
                  meta/readme.md \
                  meta/guh-logo.svg \
-                 meta/license.txt
+                 meta/license.txt \
+                 meta/packLibs.sh
     meta.path = /meta/
 
     wrapper.files = meta/guhd-wrapper.sh
@@ -100,5 +101,16 @@ contains(DEFINES, SNAPPY){
     sqlplugin.files = /usr/lib/arm-linux-gnueabihf/qt5/plugins/sqldrivers/libqsqlite.so
     sqlplugin.path = /usr/lib/qt5/plugins/sqldrivers/
 
-    INSTALLS += meta wrapper qtlibs sqlplugin
+    # install guhd.conf
+    guhdconf.files = data/config/guhd.conf
+    guhdconf.path = /config/
+
+    INSTALLS += meta wrapper qtlibs sqlplugin guhdconf
+
+    # command to pack libs for snappy package
+    packlibs.depends = libguh server
+    packlibs.commands = $$top_srcdir/meta/packLibs.sh $$top_srcdir
+
+    QMAKE_EXTRA_TARGETS += packlibs
+
 }

@@ -162,6 +162,7 @@ QString GuhSettings::logPath()
         logPath = QDir::homePath() + "/.config/" + organisationName + "/guhd.log";
     }
 #endif // SNAPPY
+
     return logPath;
 }
 

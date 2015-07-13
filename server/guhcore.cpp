@@ -496,7 +496,7 @@ void GuhCore::gotEvent(const Event &event)
     foreach (const RuleAction &ruleAction, actions) {
         Action action = ruleAction.toAction();
         qCDebug(dcRuleEngine) << "executing action" << ruleAction.actionTypeId();
-        DeviceManager::DeviceError status = m_deviceManager->executeAction(action);
+        DeviceManager::DeviceError status = executeAction(action);
         switch(status) {
         case DeviceManager::DeviceErrorNoError:
             break;
@@ -512,7 +512,9 @@ void GuhCore::gotEvent(const Event &event)
         default:
             qCWarning(dcRuleEngine) << "Error executing action:" << status;
         }
-        m_logger->logAction(action, status == DeviceManager::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
+
+        if (status != DeviceManager::DeviceErrorAsync)
+            m_logger->logAction(action, status == DeviceManager::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
     }
 }
 

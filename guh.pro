@@ -45,27 +45,8 @@ coverage {
     message("Building coverage.")
 }
 
-# Build tests
-!disabletesting {
-    message("Building guh with tests")
-    SUBDIRS += tests
-    DEFINES += TESTING_ENABLED
-} else {
-    message("Building guh without tests")
-}
-
-# Bluetooth LE support
-contains(DEFINES, BLUETOOTH_LE) {
-    message("Bluetooth LE enabled.")
-} else {
-    message("Bluetooth LE disabled (Qt $${QT_VERSION} < 5.4.0).")
-}
-
-# Websocket support
-contains(DEFINES, WEBSOCKET){
-    message("Building guh with websocket.")
-} else {
-    message("Building guh without websocket.")
+!isEmpty(PREFIX) {
+    message("Install guhd to $$PREFIX")
 }
 
 contains(DEFINES, GPIO433){
@@ -76,40 +57,46 @@ contains(DEFINES, GPIO433){
 
 contains(DEFINES, SNAPPY){
     message("Building Ubuntu snappy package.")
+    isEmpty(PREFIX) {
+        INSTALLDIR = ""
+    } else {
+        INSTALLDIR = $$PREFIX
+    }
+
     meta.files = meta/package.yaml \
                  meta/readme.md \
                  meta/guh-logo.svg \
                  meta/license.txt \
                  meta/packLibs.sh
-    meta.path = /meta/
+    meta.path = $$INSTALLDIR/meta/
 
     wrapper.files = meta/guhd-wrapper.sh
-    wrapper.path = /usr/bin/
+    wrapper.path = $$INSTALLDIR/usr/bin/
 
-    # We need to bring our own Qt libs, at least for now
-    qtlibs.files = /usr/lib/arm-linux-gnueabihf/libQt5Network.so.5 \
-                   /usr/lib/arm-linux-gnueabihf/libQt5Sql.so.5 \
-                   /usr/lib/arm-linux-gnueabihf/libQt5Core.so.5 \
-                   /usr/lib/arm-linux-gnueabihf/libQt5Test.so.5 \
-                   /usr/lib/arm-linux-gnueabihf/libQt5Gui.so.5 \
-                   /usr/lib/arm-linux-gnueabihf/libicui18n.so.52 \
-                   /usr/lib/arm-linux-gnueabihf/libicuuc.so.52 \
-                   /usr/lib/arm-linux-gnueabihf/libicudata.so.52
-    qtlibs.path = /usr/lib/
+#    # We need to bring our own Qt libs, at least for now
+#    qtlibs.files = /usr/lib/arm-linux-gnueabihf/libQt5Network.so.5 \
+#                   /usr/lib/arm-linux-gnueabihf/libQt5Sql.so.5 \
+#                   /usr/lib/arm-linux-gnueabihf/libQt5Core.so.5 \
+#                   /usr/lib/arm-linux-gnueabihf/libQt5Test.so.5 \
+#                   /usr/lib/arm-linux-gnueabihf/libQt5Gui.so.5 \
+#                   /usr/lib/arm-linux-gnueabihf/libicui18n.so.52 \
+#                   /usr/lib/arm-linux-gnueabihf/libicuuc.so.52 \
+#                   /usr/lib/arm-linux-gnueabihf/libicudata.so.52
+#    qtlibs.path = /usr/lib/
 
     # install sqlite driver
     sqlplugin.files = /usr/lib/arm-linux-gnueabihf/qt5/plugins/sqldrivers/libqsqlite.so
-    sqlplugin.path = /usr/lib/qt5/plugins/sqldrivers/
+    sqlplugin.path = $$INSTALLDIR/usr/lib/qt5/plugins/sqldrivers/
 
     # install guhd.conf
     guhdconf.files = data/config/guhd.conf
-    guhdconf.path = /config/
+    guhdconf.path =  $$INSTALLDIR/config/
 
-    INSTALLS += meta wrapper qtlibs sqlplugin guhdconf
+    INSTALLS += meta wrapper guhdconf sqlplugin
 
     # command to pack libs for snappy package
     packlibs.depends = libguh server
-    packlibs.commands = $$top_srcdir/meta/packLibs.sh $$top_srcdir
+    packlibs.commands = $$top_srcdir/meta/packLibs.sh $$INSTALLDIR/usr/lib/
 
     QMAKE_EXTRA_TARGETS += packlibs
 

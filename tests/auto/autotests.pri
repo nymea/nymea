@@ -17,5 +17,11 @@ SOURCES += ../guhtestbase.cpp \
 HEADERS += ../guhtestbase.h \
     ../mocktcpserver.h
 
-target.path = /usr/tests
+isEmpty(PREFIX) {
+    INSTALLDIR = /usr/tests/
+} else {
+    INSTALLDIR = $$PREFIX/usr/tests
+}
+
+target.path = $$INSTALLDIR
 INSTALLS += target

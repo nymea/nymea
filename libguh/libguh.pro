@@ -8,7 +8,13 @@ DEFINES += LIBGUH_LIBRARY
 
 QMAKE_LFLAGS += -fPIC
 
-target.path = /usr/lib
+# define installation path
+isEmpty(PREFIX) {
+    INSTALLDIR = /usr/lib/
+} else {
+    INSTALLDIR = $$PREFIX/usr/lib/
+}
+target.path = $$INSTALLDIR
 INSTALLS += target
 
 contains(DEFINES, BLUETOOTH_LE) {

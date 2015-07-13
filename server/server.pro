@@ -5,7 +5,13 @@ TEMPLATE = app
 
 INCLUDEPATH += ../libguh jsonrpc
 
-target.path = /usr/bin
+isEmpty(PREFIX) {
+    INSTALLDIR = /usr/bin
+} else {
+    INSTALLDIR = $$PREFIX/usr/bin/
+}
+
+target.path = $$INSTALLDIR
 INSTALLS += target
 
 QT += network sql

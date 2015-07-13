@@ -17,5 +17,11 @@ infofile.input = JSONFILES
 
 QMAKE_EXTRA_COMPILERS += infofile
 
-target.path = /usr/lib/guh/plugins/
+isEmpty(PREFIX) {
+    INSTALLDIR = /usr/lib/guh/plugins/
+} else {
+    INSTALLDIR = $$PREFIX/usr/lib/guh/plugins/
+}
+
+target.path = $$INSTALLDIR
 INSTALLS += target

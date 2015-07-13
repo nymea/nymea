@@ -5,7 +5,13 @@ TEMPLATE = lib
 
 QT += network
 
-target.path = /usr/lib
+# define installation path
+isEmpty(PREFIX) {
+    INSTALLDIR = /usr/lib/
+} else {
+    INSTALLDIR = $$PREFIX/usr/lib/
+}
+target.path = $$INSTALLDIR
 INSTALLS += target
 
 SOURCES += plugin/device.cpp \

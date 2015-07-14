@@ -4,7 +4,7 @@ vendor: Simon Stürz <simon.stuerz@guh.guru>
 architecture: [armhf]
 icon: meta/guh-logo.svg
 source: https://github.com/guh/guh
-license-version: "GPLv2"
+license-version: "GNU GPL v2"
 services:
  - name: guhd
    start: usr/bin/guhd-wrapper.sh

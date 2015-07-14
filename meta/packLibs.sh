@@ -28,6 +28,6 @@ if [ -d $1 ]; then
     rm -rf $1/*
 fi
 
-packLib ./libguh/libguh.so $1
-packLib ./server/guhd $1
+packLib $1/usr/lib/libguh.so $1
+packLib $1/usr/bin/guhd $1
 

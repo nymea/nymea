@@ -5,7 +5,10 @@ TEMPLATE=subdirs
 SUBDIRS += libguh server plugins
 
 !disabletesting {
+    message("Building guh tests enabled")
     SUBDIRS += tests
+} else {
+    message("Building guh tests disabled")
 }
 
 server.depends = libguh plugins

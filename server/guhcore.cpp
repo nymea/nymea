@@ -524,6 +524,11 @@ LogEngine* GuhCore::logEngine() const
     return m_logger;
 }
 
+JsonRPCServer *GuhCore::jsonRPCServer() const
+{
+    return m_jsonServer;
+}
+
 void GuhCore::actionExecutionFinished(const ActionId &id, DeviceManager::DeviceError status)
 {
     emit actionExecuted(id, status);

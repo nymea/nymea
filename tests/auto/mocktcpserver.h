@@ -25,17 +25,21 @@
 #include <QNetworkInterface>
 #include <QDebug>
 
+#include "transportinterface.h"
+
 namespace guhserver {
 
-class MockTcpServer : public QObject
+class JsonRPCServer;
+
+class MockTcpServer : public TransportInterface
 {
     Q_OBJECT
 public:
     explicit MockTcpServer(QObject *parent = 0);
     ~MockTcpServer();
 
-    void sendData(const QUuid &clientId, const QByteArray &data);
-    void sendData(const QList<QUuid> &clients, const QByteArray &data);
+    void sendData(const QUuid &clientId, const QVariantMap &data);
+    void sendData(const QList<QUuid> &clients, const QVariantMap &data);
 
 /************** Used for testing **************************/
     static QList<MockTcpServer*> servers();
@@ -44,10 +48,9 @@ signals:
     void outgoingData(const QUuid &clientId, const QByteArray &data);
 /************** Used for testing **************************/
 
-signals:
-    void clientConnected(const QUuid &clientId);
-    void clientDisconnected(const QUuid &clientId);
-    void dataAvailable(const QUuid &clientId, const QByteArray &data);
+public:
+    void sendResponse(const QUuid &clientId, int commandId, const QVariantMap &params = QVariantMap());
+    void sendErrorResponse(const QUuid &clientId, int commandId, const QString &error);
 
 public slots:
     bool startServer();

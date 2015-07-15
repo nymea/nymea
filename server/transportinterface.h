@@ -1,7 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
  *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
- *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -19,58 +18,31 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef TCPSERVER_H
-#define TCPSERVER_H
+#ifndef TRANSPORTINTERFACE_H
+#define TRANSPORTINTERFACE_H
 
 #include <QObject>
-#include <QTcpServer>
-#include <QTcpSocket>
-#include <QNetworkInterface>
-#include <QUuid>
-#include <QTimer>
-
-#include "transportinterface.h"
 
 namespace guhserver {
 
-class TcpServer : public TransportInterface
+class TransportInterface : public QObject
 {
     Q_OBJECT
 public:
-    explicit TcpServer(QObject *parent = 0);
-    
-    void sendData(const QUuid &clientId, const QVariantMap &data);
-    void sendData(const QList<QUuid> &clients, const QVariantMap &data);
+    explicit TransportInterface(QObject *parent = 0);
+    virtual void sendData(const QUuid &clientId, const QVariantMap &data) = 0;
+    virtual void sendData(const QList<QUuid> &clients, const QVariantMap &data) = 0;
 
-private:
-    QTimer *m_timer;
-
-    QHash<QUuid, QTcpServer*> m_serverList;
-    QHash<QUuid, QTcpSocket*> m_clientList;
-
-    uint m_port;
-    QList<QNetworkInterface> m_networkInterfaces;
-    QStringList m_ipVersions;
-
-    void reloadNetworkInterfaces();
-    void validateMessage(const QUuid &clientId, const QByteArray &data);
-
-public:
-    void sendResponse(const QUuid &clientId, int commandId, const QVariantMap &params = QVariantMap());
-    void sendErrorResponse(const QUuid &clientId, int commandId, const QString &error);
-
-private slots:
-    void newClientConnected();
-    void readPackage();
-    void onClientDisconnected();
-    void onError(const QAbstractSocket::SocketError &error);
-    void onTimeout();
+signals:
+    void clientConnected(const QUuid &clientId);
+    void clientDisconnected(const QUuid &clientId);
+    void dataAvailable(const QUuid &clientId, const QString &targetNamespace, const QString &method, const QVariantMap &message);
 
 public slots:
-    bool startServer();
-    bool stopServer();
+    virtual bool startServer() = 0;
+    virtual bool stopServer() = 0;
 };
 
 }
 
-#endif // TCPSERVER_H
+#endif // TRANSPORTINTERFACE_H

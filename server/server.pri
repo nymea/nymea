@@ -15,6 +15,9 @@ SOURCES += $$top_srcdir/server/guhcore.cpp \
     $$top_srcdir/server/logging/logengine.cpp \
     $$top_srcdir/server/logging/logfilter.cpp \
     $$top_srcdir/server/logging/logentry.cpp \
+    $$top_srcdir/server/webserver.cpp \
+    $$top_srcdir/server/transportinterface.cpp \
+
 
 HEADERS += $$top_srcdir/server/guhcore.h \
     $$top_srcdir/server/tcpserver.h \
@@ -35,3 +38,6 @@ HEADERS += $$top_srcdir/server/guhcore.h \
     $$top_srcdir/server/logging/logengine.h \
     $$top_srcdir/server/logging/logfilter.h \
     $$top_srcdir/server/logging/logentry.h \
+    $$top_srcdir/server/webserver.h \
+    $$top_srcdir/server/transportinterface.h \
+

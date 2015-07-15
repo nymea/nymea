@@ -87,7 +87,7 @@ JsonRPCServer::JsonRPCServer(QObject *parent):
     // Now set up the logic
     connect(m_tcpServer, SIGNAL(clientConnected(const QUuid &)), this, SLOT(clientConnected(const QUuid &)));
     connect(m_tcpServer, SIGNAL(clientDisconnected(const QUuid &)), this, SLOT(clientDisconnected(const QUuid &)));
-    connect(m_tcpServer, SIGNAL(dataAvailable(const QUuid &, QByteArray)), this, SLOT(processData(const QUuid &, QByteArray)));
+    connect(m_tcpServer, SIGNAL(dataAvailable(QUuid, QString, QString, QVariantMap)), this, SLOT(processData(QUuid, QString, QString, QVariantMap)));
     m_tcpServer->startServer();
 
     QMetaObject::invokeMethod(this, "setup", Qt::QueuedConnection);
@@ -138,6 +138,11 @@ JsonReply* JsonRPCServer::SetNotificationStatus(const QVariantMap &params)
     return createReply(returns);
 }
 
+QHash<QString, JsonHandler *> JsonRPCServer::handlers() const
+{
+    return m_handlers;
+}
+
 void JsonRPCServer::setup()
 {
     registerHandler(this);
@@ -149,50 +154,19 @@ void JsonRPCServer::setup()
     registerHandler(new StateHandler(this));
 }
 
-void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &jsonData)
+void JsonRPCServer::processData(const QUuid &clientId, const QString &targetNamespace, const QString &method, const QVariantMap &message)
 {
-    QJsonParseError error;
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData, &error);
+    // Note: id, targetNamespace and method already checked in TcpServer
 
-    if(error.error != QJsonParseError::NoError) {
-        qCWarning(dcJsonRpc) << "failed to parse data" << jsonData << ":" << error.errorString();
-    }
-
-    QVariantMap message = jsonDoc.toVariant().toMap();
-
-    bool success;
-    int commandId = message.value("id").toInt(&success);
-    if (!success) {
-        qCWarning(dcJsonRpc) << "Error parsing command. Missing \"id\":" << jsonData;
-        sendErrorResponse(clientId, commandId, "Error parsing command. Missing 'id'");
-        return;
-    }
-
-    QStringList commandList = message.value("method").toString().split('.');
-    if (commandList.count() != 2) {
-        qCWarning(dcJsonRpc) << "Error parsing method.\nGot:" << message.value("method").toString() << "\nExpected: \"Namespace.method\"";
-        sendErrorResponse(clientId, commandId, QString("Error parsing method. Got: '%1'', Expected: 'Namespace.method'").arg(message.value("method").toString()));
-        return;
-    }
-
-    QString targetNamespace = commandList.first();
-    QString method = commandList.last();
+    int commandId = message.value("id").toInt();
     QVariantMap params = message.value("params").toMap();
 
     emit commandReceived(targetNamespace, method, params);
 
-    JsonHandler *handler = m_handlers.value(targetNamespace);
-    if (!handler) {
-        sendErrorResponse(clientId, commandId, "No such namespace");
-        return;
-    }
-    if (!handler->hasMethod(method)) {
-        sendErrorResponse(clientId, commandId, "No such method");
-        return;
-    }
+     JsonHandler *handler = m_handlers.value(targetNamespace);
     QPair<bool, QString> validationResult = handler->validateParams(method, params);
     if (!validationResult.first) {
-        sendErrorResponse(clientId, commandId, "Invalid params: " + validationResult.second);
+        m_tcpServer->sendErrorResponse(clientId, commandId, "Invalid params: " + validationResult.second);
         return;
     }
 
@@ -209,7 +183,7 @@ void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &jsonDat
     } else {
         Q_ASSERT_X((targetNamespace == "JSONRPC" && method == "Introspect") || handler->validateReturns(method, reply->data()).first
                    ,"validating return value", formatAssertion(targetNamespace, method, handler, reply->data()).toLatin1().data());
-        sendResponse(clientId, commandId, reply->data());
+        m_tcpServer->sendResponse(clientId, commandId, reply->data());
         reply->deleteLater();
     }
 }
@@ -234,8 +208,7 @@ void JsonRPCServer::sendNotification(const QVariantMap &params)
     notification.insert("notification", handler->name() + "." + method.name());
     notification.insert("params", params);
 
-    QJsonDocument jsonDoc = QJsonDocument::fromVariant(notification);
-    m_tcpServer->sendData(m_clients.keys(true), jsonDoc.toJson());
+    m_tcpServer->sendData(m_clients.keys(true), notification);
 }
 
 void JsonRPCServer::asyncReplyFinished()
@@ -244,10 +217,11 @@ void JsonRPCServer::asyncReplyFinished()
     if (!reply->timedOut()) {
         Q_ASSERT_X(reply->handler()->validateReturns(reply->method(), reply->data()).first
                    ,"validating return value", formatAssertion(reply->handler()->name(), reply->method(), reply->handler(), reply->data()).toLatin1().data());
-        sendResponse(reply->clientId(), reply->commandId(), reply->data());
+        m_tcpServer->sendResponse(reply->clientId(), reply->commandId(), reply->data());
     } else {
-        sendErrorResponse(reply->clientId(), reply->commandId(), "Command timed out");
+        m_tcpServer->sendErrorResponse(reply->clientId(), reply->commandId(), "Command timed out");
     }
+
     reply->deleteLater();
 }
 
@@ -272,35 +246,12 @@ void JsonRPCServer::clientConnected(const QUuid &clientId)
     handshake.insert("server", "guh JSONRPC interface");
     handshake.insert("version", GUH_VERSION_STRING);
     handshake.insert("protocol version", JSON_PROTOCOL_VERSION);
-    QJsonDocument jsonDoc = QJsonDocument::fromVariant(handshake);
-    m_tcpServer->sendData(clientId, jsonDoc.toJson());
+    m_tcpServer->sendData(clientId, handshake);
 }
 
 void JsonRPCServer::clientDisconnected(const QUuid &clientId)
 {
     m_clients.remove(clientId);
-}
-
-void JsonRPCServer::sendResponse(const QUuid &clientId, int commandId, const QVariantMap &params)
-{
-    QVariantMap rsp;
-    rsp.insert("id", commandId);
-    rsp.insert("status", "success");
-    rsp.insert("params", params);
-
-    QJsonDocument jsonDoc = QJsonDocument::fromVariant(rsp);
-    m_tcpServer->sendData(clientId, jsonDoc.toJson());
-}
-
-void JsonRPCServer::sendErrorResponse(const QUuid &clientId, int commandId, const QString &error)
-{
-    QVariantMap rsp;
-    rsp.insert("id", commandId);
-    rsp.insert("status", "error");
-    rsp.insert("error", error);
-
-    QJsonDocument jsonDoc = QJsonDocument::fromVariant(rsp);
-    m_tcpServer->sendData(clientId, jsonDoc.toJson());
 }
 
 }

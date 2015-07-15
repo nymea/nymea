@@ -25,6 +25,8 @@ Q_LOGGING_CATEGORY(dcDeviceManager, "DeviceManager")
 Q_LOGGING_CATEGORY(dcRuleEngine, "RuleEngine")
 Q_LOGGING_CATEGORY(dcHardware, "Hardware")
 Q_LOGGING_CATEGORY(dcConnection, "Connection")
+Q_LOGGING_CATEGORY(dcTcpServer, "TcpServer")
+Q_LOGGING_CATEGORY(dcWebServer, "WebServer")
 Q_LOGGING_CATEGORY(dcJsonRpc, "JsonRpc")
 Q_LOGGING_CATEGORY(dcLogEngine, "LogEngine")
 

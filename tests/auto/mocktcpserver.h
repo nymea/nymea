@@ -38,8 +38,8 @@ public:
     explicit MockTcpServer(QObject *parent = 0);
     ~MockTcpServer();
 
-    void sendData(const QUuid &clientId, const QVariantMap &data);
-    void sendData(const QList<QUuid> &clients, const QVariantMap &data);
+    void sendData(const QUuid &clientId, const QVariantMap &data) override;
+    void sendData(const QList<QUuid> &clients, const QVariantMap &data) override;
 
 /************** Used for testing **************************/
     static QList<MockTcpServer*> servers();
@@ -53,8 +53,8 @@ public:
     void sendErrorResponse(const QUuid &clientId, int commandId, const QString &error);
 
 public slots:
-    bool startServer();
-    bool stopServer();
+    bool startServer() override;
+    bool stopServer() override;
 
 private:
     static QList<MockTcpServer*> s_allServers;

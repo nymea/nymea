@@ -23,6 +23,7 @@
 
 #include <QObject>
 #include <QHash>
+#include <QDir>
 
 #include "transportinterface.h"
 
@@ -30,27 +31,41 @@ class QTcpServer;
 class QTcpSocket;
 class QUuid;
 
+// Note: Status codes according to HTTP 1.1: https://tools.ietf.org/html/rfc7231
+
 namespace guhserver {
 
 class WebServer :  public TransportInterface
 {
     Q_OBJECT
 public:
+    enum RequestMethod {
+        Get,
+        Post,
+        Put,
+        Delete,
+        Unhandled
+    };
+
     explicit WebServer(QObject *parent = 0);
     ~WebServer();
-    void sendData(const QUuid &clientId, const QByteArray &data);
-    void sendData(const QList<QUuid> &clients, const QByteArray &data);
+
+    void sendData(const QUuid &clientId, const QVariantMap &data) override;
+    void sendData(const QList<QUuid> &clients, const QVariantMap &data) override;
 
 private:
     QTcpServer *m_server;
-    QHash<QUuid, QTcpSocket *> m_clientList;
 
+    QHash<QUuid, QTcpSocket *> m_clientList;
     bool m_enabled;
     qint16 m_port;
+    QDir m_webinterfaceDir;
 
-    QString createContentHeader();
+    bool verifyFile(QTcpSocket *socket, const QString &fileName);
+    QString fileName(const QString &query);
+    RequestMethod getRequestMethodType(const QString &methodString);
 
-signals:
+    void writeData(QTcpSocket *socket, const QByteArray &data);
 
 private slots:
     void onNewConnection();
@@ -58,8 +73,8 @@ private slots:
     void discardClient();
 
 public slots:
-    bool startServer();
-    bool stopServer();
+    bool startServer() override;
+    bool stopServer() override;
 
 };
 

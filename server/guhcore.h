@@ -30,6 +30,7 @@
 
 #include "devicemanager.h"
 #include "ruleengine.h"
+#include "webserver.h"
 
 #include <QObject>
 #include <QDebug>
@@ -122,6 +123,7 @@ private:
     static GuhCore *s_instance;
     RunningMode m_runningMode;
 
+    WebServer *m_webServer;
     JsonRPCServer *m_jsonServer;
     DeviceManager *m_deviceManager;
     RuleEngine *m_ruleEngine;

@@ -419,6 +419,9 @@ GuhCore::GuhCore(QObject *parent) :
     qCDebug(dcApplication) << "Starting JSON RPC Server";
     m_jsonServer = new JsonRPCServer(this);
 
+    qCDebug(dcApplication) << "Starting REST Webserver";
+    m_webServer = new WebServer(this);
+
     connect(m_deviceManager, &DeviceManager::eventTriggered, this, &GuhCore::gotEvent);
     connect(m_deviceManager, &DeviceManager::deviceStateChanged, this, &GuhCore::deviceStateChanged);
     connect(m_deviceManager, &DeviceManager::deviceAdded, this, &GuhCore::deviceAdded);
@@ -435,6 +438,7 @@ GuhCore::GuhCore(QObject *parent) :
     connect(m_ruleEngine, &RuleEngine::ruleConfigurationChanged, this, &GuhCore::ruleConfigurationChanged);
 
     m_logger->logSystemEvent(true);
+    m_webServer->startServer();
 }
 
 /*! Connected to the DeviceManager's emitEvent signal. Events received in

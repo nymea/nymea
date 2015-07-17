@@ -39,8 +39,8 @@ class TcpServer : public TransportInterface
 public:
     explicit TcpServer(QObject *parent = 0);
     
-    void sendData(const QUuid &clientId, const QVariantMap &data);
-    void sendData(const QList<QUuid> &clients, const QVariantMap &data);
+    void sendData(const QUuid &clientId, const QVariantMap &data) override;
+    void sendData(const QList<QUuid> &clients, const QVariantMap &data) override;
 
 private:
     QTimer *m_timer;
@@ -67,8 +67,8 @@ private slots:
     void onTimeout();
 
 public slots:
-    bool startServer();
-    bool stopServer();
+    bool startServer() override;
+    bool stopServer() override;
 };
 
 }

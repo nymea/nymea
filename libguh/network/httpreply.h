@@ -50,7 +50,7 @@ public:
         HttpVersionNotSupported = 505
     };
 
-    enum HeaderType {
+    enum HttpHeaderType {
         ContentTypeHeader,
         ContentLenghtHeader,
         ConnectionHeader,
@@ -71,13 +71,11 @@ public:
     QByteArray payload() const;
 
     void setRawHeader(const QByteArray headerType, const QByteArray &value);
-    void setHeader(const HeaderType &headerType, const QByteArray &value);
+    void setHeader(const HttpHeaderType &headerType, const QByteArray &value);
     QHash<QByteArray, QByteArray> rawHeaderList() const;
     QByteArray rawHeader() const;
 
-    bool isValid() const;
     bool isEmpty() const;
-
     void clear();
 
     QByteArray packReply();
@@ -90,7 +88,7 @@ private:
     QHash<QByteArray, QByteArray> m_rawHeaderList;
 
     QByteArray getHttpReasonPhrase(const HttpStatusCode &statusCode);
-    QByteArray getHeaderType(const HeaderType &headerType);
+    QByteArray getHeaderType(const HttpHeaderType &headerType);
 
     QByteArray packHeader() const;
 };

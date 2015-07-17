@@ -46,7 +46,8 @@ private slots:
     void checkAllowedMethodCall_data();
     void checkAllowedMethodCall();
 
-
+    void getFiles_data();
+    void getFiles();
 
 private:
     // for debugging
@@ -113,7 +114,6 @@ void TestWebserver::checkAllowedMethodCall()
     QFETCH(QString, method);
     QFETCH(int, expectedStatusCode);
 
-
     QNetworkAccessManager *nam = new QNetworkAccessManager(this);
     QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
 
@@ -149,10 +149,50 @@ void TestWebserver::checkAllowedMethodCall()
     reply->deleteLater();
 }
 
+void TestWebserver::getFiles_data()
+{
+    QTest::addColumn<QString>("query");
+    QTest::addColumn<int>("expectedStatusCode");
+
+    QTest::newRow("get /etc/passwd") << "/etc/passwd" << 404;
+    QTest::newRow("get /etc/guh/guhd.conf") << "/etc/guh/guhd.conf" << 404;
+    QTest::newRow("get /etc/sudoers") <<  "/etc/sudoers" << 404;
+    QTest::newRow("get /root/.ssh/id_rsa.pub") <<  "/root/.ssh/id_rsa.pub" << 404;
+
+
+}
+
+void TestWebserver::getFiles()
+{
+    QFETCH(QString, query);
+    QFETCH(int, expectedStatusCode);
+
+    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
+    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
+
+    QNetworkRequest request;
+    request.setUrl(QUrl("http://localhost:3000" + query));
+    QNetworkReply *reply = nam->get(request);
+
+    clientSpy.wait(200);
+    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
+
+    printResponse(reply);
+
+    bool ok = false;
+    qDebug() << reply->readAll();
+    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(&ok);
+    QVERIFY2(ok, "Could not convert statuscode from response to int");
+    QCOMPARE(statusCode, expectedStatusCode);
+
+    reply->deleteLater();
+}
+
 void TestWebserver::printResponse(QNetworkReply *reply)
 {
     qDebug() << "-------------------------------";
     qDebug() << "Response header:";
+    qDebug() << reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString();
     foreach (const  QNetworkReply::RawHeaderPair &headerPair, reply->rawHeaderPairs()) {
         qDebug() << headerPair.first << ":" << headerPair.second;
     }

@@ -157,7 +157,6 @@ void JsonRPCServer::setup()
 void JsonRPCServer::processData(const QUuid &clientId, const QString &targetNamespace, const QString &method, const QVariantMap &message)
 {
     // Note: id, targetNamespace and method already checked in TcpServer
-
     int commandId = message.value("id").toInt();
     QVariantMap params = message.value("params").toMap();
 

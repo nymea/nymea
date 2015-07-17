@@ -18,82 +18,169 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+  \class HttpReply
+  \brief Represents a reply of the guh webserver.
+
+  \ingroup types
+  \inmodule libguh
+
+  This class holds the header and the payload data of a network reply and represents a response
+  from the guh webserver.
+
+  \note RFC 7231 HTTP/1.1 Semantics and Content -> \l{http://tools.ietf.org/html/rfc7231}{http://tools.ietf.org/html/rfc7231}
+
+
+*/
+
+/*! \enum HttpReply::HttpStatusCode
+
+    This enum type specifies the status code of a HTTP webserver reply.
+
+    \value Ok
+        The request was understood and everything is Ok.
+    \value Created
+        ...
+    \value Accepted
+        ...
+    \value NoContent
+        ...
+    \value Found
+        ...
+    \value BadRequest
+        ...
+    \value Forbidden
+        ...
+    \value NotFound
+        ...
+    \value MethodNotAllowed
+        ...
+    \value RequestTimeout
+        ...
+    \value Conflict
+        ...
+    \value InternalServerError
+        ...
+    \value NotImplemented
+        ...
+    \value BadGateway
+        ...
+    \value ServiceUnavailable
+        ...
+    \value GatewayTimeout
+        ...
+    \value HttpVersionNotSupported
+        ...
+*/
+
+/*! \enum HttpReply::HttpHeaderType
+
+    This enum type specifies the known type of a header in a HTTP webserver reply.
+
+    \value ContentTypeHeader
+        The request was understood and everything is Ok.
+    \value ContentLenghtHeader
+        ...
+    \value ConnectionHeader
+        ...
+    \value LocationHeader
+        ...
+    \value UserAgentHeader
+        ...
+    \value CacheControlHeader
+        ...
+    \value AllowHeader
+        ...
+    \value DateHeader
+        ...
+    \value ServerHeader
+        ...
+*/
+
 #include "httpreply.h"
 
 #include <QDateTime>
 #include <QPair>
 
-// Note: RFC 7231 HTTP/1.1 Semantics and Content -> http://tools.ietf.org/html/rfc7231
-
+/*! Construct a HttpReply with the given \a statusCode. */
 HttpReply::HttpReply(const HttpStatusCode &statusCode) :
     m_statusCode(statusCode),
     m_payload(QByteArray())
 {
     // set known headers
-    //setHeader(HeaderType::ContentTypeHeader, "application/x-www-form-urlencoded; charset=\"utf-8\"");
-    setHeader(HeaderType::ServerHeader, "guh/" + QByteArray(GUH_VERSION_STRING));
-    setHeader(HeaderType::UserAgentHeader, "guh/" + QByteArray(REST_API_VERSION));
-    setHeader(HeaderType::DateHeader, QDateTime::currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8() + " GMT");
-    setHeader(HeaderType::CacheControlHeader, "no-cache");
+    setHeader(HttpHeaderType::ServerHeader, "guh/" + QByteArray(GUH_VERSION_STRING));
+    setHeader(HttpHeaderType::UserAgentHeader, "guh/" + QByteArray(REST_API_VERSION));
+    setHeader(HttpHeaderType::DateHeader, QDateTime::currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8() + " GMT");
+    setHeader(HttpHeaderType::CacheControlHeader, "no-cache");
 }
 
+/*! Set the \a statusCode for this \l{HttpReply}.*/
 void HttpReply::setHttpStatusCode(const HttpReply::HttpStatusCode &statusCode)
 {
     m_statusCode = statusCode;
 }
 
+/*! Returns the status code of this \l{HttpReply}.*/
 HttpReply::HttpStatusCode HttpReply::httpStatusCode() const
 {
     return m_statusCode;
 }
 
+/*! Set the payload of this \l{HttpReply} to the given \a data.*/
 void HttpReply::setPayload(const QByteArray &data)
 {
     m_payload = data;
-    setHeader(HeaderType::ContentLenghtHeader, QByteArray::number(data.length()));
+    setHeader(HttpHeaderType::ContentLenghtHeader, QByteArray::number(data.length()));
 }
 
+/*! Returns the payload of this \l{HttpReply}.*/
 QByteArray HttpReply::payload() const
 {
     return m_payload;
 }
 
+/*! This method appends a raw header to the header list of this \l{HttpReply}.
+    The Header will be set to \a headerType : \a value.
+*/
 void HttpReply::setRawHeader(const QByteArray headerType, const QByteArray &value)
 {
     // if the header is already set, overwrite it
     if (m_rawHeaderList.keys().contains(headerType)) {
         m_rawHeaderList.remove(headerType);
     }
-
     m_rawHeaderList.insert(headerType, value);
 }
 
-void HttpReply::setHeader(const HttpReply::HeaderType &headerType, const QByteArray &value)
+/*! This method appends a known header to the header list of this \l{HttpReply}.
+    The Header will be set to \a headerType : \a value.
+*/
+void HttpReply::setHeader(const HttpHeaderType &headerType, const QByteArray &value)
 {
     setRawHeader(getHeaderType(headerType), value);
 }
 
+/*! Returns the list of all set headers in this \l{HttpReply}.*/
 QHash<QByteArray, QByteArray> HttpReply::rawHeaderList() const
 {
     return m_rawHeaderList;
 }
 
+/*! Returns the raw headers of this \l{HttpReply}.
+    \note The header will be empty until the method \l{packReply()} was called.
+    \sa packReply()
+*/
 QByteArray HttpReply::rawHeader() const
 {
     return m_rawHeader;
 }
 
-bool HttpReply::isValid() const
-{
-    // TODO: verify if header is valid and payload is valid
-    return true;
-}
-
+/*! Returns true if the raw header and the payload of this \l{HttpReply} is empty.*/
 bool HttpReply::isEmpty() const
 {
     return m_rawHeader.isEmpty() && m_payload.isEmpty() && m_rawHeaderList.isEmpty();
 }
 
+/*! Clears all data of this \l{HttpReply}. */
 void HttpReply::clear()
 {
     m_rawHeader.clear();
@@ -101,6 +188,7 @@ void HttpReply::clear()
     m_rawHeaderList.clear();
 }
 
+/*! Returns the whole reply data of this \l{HttpReply}. The data contain the HTTP header and the payload. */
 QByteArray HttpReply::packReply()
 {
     // set status code
@@ -159,7 +247,7 @@ QByteArray HttpReply::getHttpReasonPhrase(const HttpReply::HttpStatusCode &statu
     }
 }
 
-QByteArray HttpReply::getHeaderType(const HttpReply::HeaderType &headerType)
+QByteArray HttpReply::getHeaderType(const HttpReply::HttpHeaderType &headerType)
 {
     switch (headerType) {
     case ContentTypeHeader:

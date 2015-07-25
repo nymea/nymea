@@ -78,12 +78,15 @@ public:
     bool isEmpty() const;
     void clear();
 
-    QByteArray packReply();
+    void packReply();
+
+    QByteArray data() const;
 
 private:
     HttpStatusCode m_statusCode;
     QByteArray m_rawHeader;
     QByteArray m_payload;
+    QByteArray m_data;
 
     QHash<QByteArray, QByteArray> m_rawHeaderList;
 

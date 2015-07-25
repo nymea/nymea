@@ -25,12 +25,19 @@ test.commands = LD_LIBRARY_PATH=$$top_builddir/libguh make check
 
 QMAKE_EXTRA_TARGETS += licensecheck doc test
 
+message(Qt version: $$[QT_VERSION])
 message("Building guh version $${GUH_VERSION_STRING}")
 message("JSON-RPC API version $${JSON_PROTOCOL_VERSION}")
 message("REST API version $${REST_API_VERSION}")
 
 coverage {
     message("Building coverage.")
+}
+
+contains(DEFINES, WEBSERVER){
+    message("Building guh with webserver.")
+} else {
+    message("Building guh without webserver.")
 }
 
 contains(DEFINES, GPIO433){

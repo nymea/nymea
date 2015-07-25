@@ -187,11 +187,13 @@ void HttpReply::clear()
     m_payload.clear();
     m_rawHeaderList.clear();
 }
-
-/*! Returns the whole reply data of this \l{HttpReply}. The data contain the HTTP header and the payload. */
-QByteArray HttpReply::packReply()
+/*! Packs the whole reply data of this \l{HttpReply}. The data can be accessed with \l{HttpReply::data()}.
+    \sa data()
+*/
+void HttpReply::packReply()
 {
     // set status code
+    m_data.clear();
     m_rawHeader.clear();
     m_rawHeader.append("HTTP/1.1 " + QByteArray::number(m_statusCode) + " " + getHttpReasonPhrase(m_statusCode) + "\r\n");
 
@@ -201,8 +203,12 @@ QByteArray HttpReply::packReply()
     }
 
     m_rawHeader.append("\r\n");
-    m_rawHeader.append(m_payload);
-    return m_rawHeader;
+    m_data = m_rawHeader.append(m_payload);
+}
+
+QByteArray HttpReply::data() const
+{
+    return m_data;
 }
 
 QByteArray HttpReply::getHttpReasonPhrase(const HttpReply::HttpStatusCode &statusCode)

@@ -1,7 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
  *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
- *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -19,58 +18,45 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef TCPSERVER_H
-#define TCPSERVER_H
+#ifndef HTTPREQUEST_H
+#define HTTPREQUEST_H
 
-#include <QObject>
-#include <QTcpServer>
-#include <QTcpSocket>
-#include <QNetworkInterface>
-#include <QUuid>
-#include <QTimer>
+#include <QByteArray>
+#include <QUrlQuery>
+#include <QString>
+#include <QHash>
 
-#include "transportinterface.h"
-
-namespace guhserver {
-
-class TcpServer : public TransportInterface
+class HttpRequest
 {
-    Q_OBJECT
 public:
-    explicit TcpServer(QObject *parent = 0);
-    
-    void sendData(const QUuid &clientId, const QVariantMap &data) override;
-    void sendData(const QList<QUuid> &clients, const QVariantMap &data) override;
+    explicit HttpRequest(QByteArray rawData);
+
+    QByteArray rawHeader() const;
+    QHash<QByteArray, QByteArray> rawHeaderList() const;
+
+    QByteArray method() const;
+    QByteArray httpVersion() const;
+    QUrlQuery urlQuery() const;
+
+    QByteArray payload() const;
+
+    bool isValid() const;
+    bool hasPayload() const;
 
 private:
-    QTimer *m_timer;
+    QByteArray m_rawData;
+    QByteArray m_rawHeader;
+    QHash<QByteArray, QByteArray> m_rawHeaderList;
 
-    QHash<QUuid, QTcpServer*> m_serverList;
-    QHash<QUuid, QTcpSocket*> m_clientList;
+    QByteArray m_method;
+    QByteArray m_httpVersion;
+    QUrlQuery m_urlQuery;
 
-    uint m_port;
-    QList<QNetworkInterface> m_networkInterfaces;
-    QStringList m_ipVersions;
+    QByteArray m_payload;
 
-    void reloadNetworkInterfaces();
-    void validateMessage(const QUuid &clientId, const QByteArray &data);
-
-public:
-    void sendResponse(const QUuid &clientId, int commandId, const QVariantMap &params = QVariantMap());
-    void sendErrorResponse(const QUuid &clientId, int commandId, const QString &error);
-
-private slots:
-    void onClientConnected();
-    void onClientDisconnected();
-    void readPackage();
-    void onError(const QAbstractSocket::SocketError &error);
-    void onTimeout();
-
-public slots:
-    bool startServer() override;
-    bool stopServer() override;
+    bool m_valid;
 };
 
-}
+QDebug operator<< (QDebug debug, const HttpRequest &httpRequest);
 
-#endif // TCPSERVER_H
+#endif // HTTPREQUEST_H

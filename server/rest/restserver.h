@@ -1,7 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
  *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
- *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -19,78 +18,42 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef JSONRPCSERVER_H
-#define JSONRPCSERVER_H
-
-#include "plugin/deviceclass.h"
-#include "jsonhandler.h"
-
-#include "types/action.h"
-#include "types/event.h"
+#ifndef RESTSERVER_H
+#define RESTSERVER_H
 
 #include <QObject>
-#include <QVariantMap>
-#include <QString>
 
-class Device;
+#include "webserver.h"
+#include "jsonhandler.h"
+
+class HttpRequest;
+class HttpReply;
 
 namespace guhserver {
 
-#ifdef TESTING_ENABLED
-class MockTcpServer;
-#else
-class TcpServer;
-#endif
-
-class JsonRPCServer: public JsonHandler
+class RestServer : public QObject
 {
     Q_OBJECT
 public:
-    JsonRPCServer(QObject *parent = 0);
+    explicit RestServer(QObject *parent = 0);
 
-    // JsonHandler API implementation
-    QString name() const;
-    Q_INVOKABLE JsonReply* Introspect(const QVariantMap &params) const;
-    Q_INVOKABLE JsonReply* Version(const QVariantMap &params) const;
-    Q_INVOKABLE JsonReply* SetNotificationStatus(const QVariantMap &params);
-
-    QHash<QString, JsonHandler*> handlers() const;
+private:
+    WebServer *m_webserver;
+    QList<QUuid> m_clientList;
+    QHash<QUuid, JsonReply *> m_asyncReplies;
 
 signals:
-    void commandReceived(const QString &targetNamespace, const QString &command, const QVariantMap &params);
-    void notificationDataReady(const QVariantMap &notification);
+    void httpReplyReady(const HttpReply &httpReply);
 
 private slots:
-    void setup();
-
     void clientConnected(const QUuid &clientId);
     void clientDisconnected(const QUuid &clientId);
-
-    void processData(const QUuid &clientId, const QString &targetNamespace, const QString &method, const QVariantMap &message);
-
-    void sendNotification(const QVariantMap &params);
-
+    
+    void processHttpRequest(const QUuid &clientId, const HttpRequest &request);
     void asyncReplyFinished();
 
-private:
-    void registerHandler(JsonHandler *handler);
-
-    QString formatAssertion(const QString &targetNamespace, const QString &method, JsonHandler *handler, const QVariantMap &data) const;
-
-private:
-#ifdef TESTING_ENABLED
-    MockTcpServer *m_tcpServer;
-#else
-    TcpServer *m_tcpServer;
-#endif
-    QHash<QString, JsonHandler*> m_handlers;
-
-    // clientId, notificationsEnabled
-    QHash<QUuid, bool> m_clients;
-
-    int m_notificationId;
 };
 
 }
 
-#endif // JSONRPCSERVER_H
+#endif // RESTSERVER_H

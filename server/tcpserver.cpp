@@ -167,7 +167,7 @@ void TcpServer::sendData(const QUuid &clientId, const QVariantMap &data)
     }
 }
 
-void TcpServer::newClientConnected()
+void TcpServer::onClientConnected()
 {
     // got a new client connected
     QTcpServer *server = qobject_cast<QTcpServer*>(sender());
@@ -184,7 +184,6 @@ void TcpServer::newClientConnected()
 
     emit clientConnected(clientId);
 }
-
 
 void TcpServer::readPackage()
 {
@@ -278,7 +277,7 @@ void TcpServer::onTimeout()
         QTcpServer *server = new QTcpServer(this);
         if(server->listen(address, m_port)) {
             qCDebug(dcConnection) << "Started TCP server on" << address.toString() << m_port;
-            connect(server, SIGNAL(newConnection()), SLOT(newClientConnected()));
+            connect(server, &QTcpServer::newConnection, this, &TcpServer::onClientConnected);
             m_serverList.insert(QUuid::createUuid(), server);
         } else {
             qCWarning(dcConnection) << "Tcp server error: can not listen on" << address.toString() << m_port;
@@ -292,7 +291,6 @@ void TcpServer::onTimeout()
             qCDebug(dcConnection) << "  - Tcp server on" << s->serverAddress().toString() << s->serverPort();
         }
     }
-
 }
 
 bool TcpServer::startServer()
@@ -321,7 +319,7 @@ bool TcpServer::startServer()
             QTcpServer *server = new QTcpServer(this);
             if(server->listen(address, m_port)) {
                 qCDebug(dcConnection) << "Started Tcp server on" << server->serverAddress().toString() << server->serverPort();
-                connect(server, SIGNAL(newConnection()), SLOT(newClientConnected()));
+                connect(server, SIGNAL(newConnection()), SLOT(onClientConnected()));
                 m_serverList.insert(QUuid::createUuid(), server);
             } else {
                 qCWarning(dcConnection) << "Tcp server error: can not listen on" << interface.name() << address.toString() << m_port;

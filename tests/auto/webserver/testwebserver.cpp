@@ -69,15 +69,13 @@ void TestWebserver::httpVersion()
 
     QSignalSpy clientSpy(socket, SIGNAL(readyRead()));
 
-    socket->write("Confusing, non HTTP protocol stuff which should not be accepted.");
+    socket->write("GET /hello/guh HTTP/1.0\r\n\r\n");
     bool filesWritten = socket->waitForBytesWritten(500);
     QVERIFY2(filesWritten, "could not write to webserver.");
 
     clientSpy.wait(500);
     QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
-
     QByteArray data = socket->readAll();
-
     QVERIFY2(!data.isEmpty(), "got no response");
 
     QStringList lines = QString(data).split("\r\n");

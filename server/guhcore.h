@@ -30,7 +30,7 @@
 
 #include "devicemanager.h"
 #include "ruleengine.h"
-#include "webserver.h"
+#include "servermanager.h"
 
 #include <QObject>
 #include <QDebug>
@@ -95,6 +95,7 @@ public:
 
     LogEngine* logEngine() const;
     JsonRPCServer *jsonRPCServer() const;
+    RestServer *restServer() const;
 
 signals:
     void eventTriggered(const Event &event);
@@ -123,8 +124,7 @@ private:
     static GuhCore *s_instance;
     RunningMode m_runningMode;
 
-    WebServer *m_webServer;
-    JsonRPCServer *m_jsonServer;
+    ServerManager *m_serverManager;
     DeviceManager *m_deviceManager;
     RuleEngine *m_ruleEngine;
 

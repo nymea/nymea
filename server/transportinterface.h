@@ -22,6 +22,9 @@
 #define TRANSPORTINTERFACE_H
 
 #include <QObject>
+#include <QString>
+#include <QList>
+#include <QUuid>
 
 namespace guhserver {
 
@@ -30,7 +33,8 @@ class TransportInterface : public QObject
     Q_OBJECT
 public:
     explicit TransportInterface(QObject *parent = 0);
-    virtual ~TransportInterface() = default;
+    virtual ~TransportInterface();
+
     virtual void sendData(const QUuid &clientId, const QVariantMap &data) = 0;
     virtual void sendData(const QList<QUuid> &clients, const QVariantMap &data) = 0;
 

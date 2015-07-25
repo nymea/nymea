@@ -416,11 +416,8 @@ GuhCore::GuhCore(QObject *parent) :
     qCDebug(dcApplication) << "Creating Rule Engine";
     m_ruleEngine = new RuleEngine(this);
 
-    qCDebug(dcApplication) << "Starting JSON RPC Server";
-    m_jsonServer = new JsonRPCServer(this);
 
-    qCDebug(dcApplication) << "Starting REST Webserver";
-    m_webServer = new WebServer(this);
+    m_serverManager = new ServerManager(this);
 
     connect(m_deviceManager, &DeviceManager::eventTriggered, this, &GuhCore::gotEvent);
     connect(m_deviceManager, &DeviceManager::deviceStateChanged, this, &GuhCore::deviceStateChanged);
@@ -438,7 +435,6 @@ GuhCore::GuhCore(QObject *parent) :
     connect(m_ruleEngine, &RuleEngine::ruleConfigurationChanged, this, &GuhCore::ruleConfigurationChanged);
 
     m_logger->logSystemEvent(true);
-    m_webServer->startServer();
 }
 
 /*! Connected to the DeviceManager's emitEvent signal. Events received in
@@ -530,7 +526,12 @@ LogEngine* GuhCore::logEngine() const
 
 JsonRPCServer *GuhCore::jsonRPCServer() const
 {
-    return m_jsonServer;
+    return m_serverManager->jsonServer();
+}
+
+RestServer *GuhCore::restServer() const
+{
+    return m_serverManager->restServer();
 }
 
 void GuhCore::actionExecutionFinished(const ActionId &id, DeviceManager::DeviceError status)

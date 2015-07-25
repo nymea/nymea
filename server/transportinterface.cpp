@@ -27,4 +27,8 @@ TransportInterface::TransportInterface(QObject *parent) :
 {
 }
 
+TransportInterface::~TransportInterface()
+{
+}
+
 }

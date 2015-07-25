@@ -52,11 +52,11 @@ namespace guhserver {
 
 JsonRPCServer::JsonRPCServer(QObject *parent):
     JsonHandler(parent),
-#ifdef TESTING_ENABLED
+    #ifdef TESTING_ENABLED
     m_tcpServer(new MockTcpServer(this)),
-#else
+    #else
     m_tcpServer(new TcpServer(this)),
-#endif
+    #endif
     m_notificationId(0)
 {
     // First, define our own JSONRPC methods
@@ -162,7 +162,7 @@ void JsonRPCServer::processData(const QUuid &clientId, const QString &targetName
 
     emit commandReceived(targetNamespace, method, params);
 
-     JsonHandler *handler = m_handlers.value(targetNamespace);
+    JsonHandler *handler = m_handlers.value(targetNamespace);
     QPair<bool, QString> validationResult = handler->validateParams(method, params);
     if (!validationResult.first) {
         m_tcpServer->sendErrorResponse(clientId, commandId, "Invalid params: " + validationResult.second);
@@ -206,6 +206,8 @@ void JsonRPCServer::sendNotification(const QVariantMap &params)
     notification.insert("id", m_notificationId++);
     notification.insert("notification", handler->name() + "." + method.name());
     notification.insert("params", params);
+
+    emit notificationDataReady(notification);
 
     m_tcpServer->sendData(m_clients.keys(true), notification);
 }

@@ -1,3 +1,9 @@
+
+contains(DEFINES, WEBSERVER){
+    QT += websockets
+}
+
+
 SOURCES += $$top_srcdir/server/guhcore.cpp \
     $$top_srcdir/server/tcpserver.cpp \
     $$top_srcdir/server/ruleengine.cpp \
@@ -17,6 +23,9 @@ SOURCES += $$top_srcdir/server/guhcore.cpp \
     $$top_srcdir/server/logging/logentry.cpp \
     $$top_srcdir/server/webserver.cpp \
     $$top_srcdir/server/transportinterface.cpp \
+    $$top_srcdir/server/servermanager.cpp \
+    $$top_srcdir/server/websocketserver.cpp \
+    $$top_srcdir/server/rest/restserver.cpp
 
 
 HEADERS += $$top_srcdir/server/guhcore.h \
@@ -33,11 +42,14 @@ HEADERS += $$top_srcdir/server/guhcore.h \
     $$top_srcdir/server/jsonrpc/statehandler.h \
     $$top_srcdir/server/jsonrpc/logginghandler.h \
     $$top_srcdir/server/stateevaluator.h \
-    $$top_srcdir/server/jsontypes.h \
     $$top_srcdir/server/logging/logging.h \
     $$top_srcdir/server/logging/logengine.h \
     $$top_srcdir/server/logging/logfilter.h \
     $$top_srcdir/server/logging/logentry.h \
     $$top_srcdir/server/webserver.h \
     $$top_srcdir/server/transportinterface.h \
+    $$top_srcdir/server/servermanager.h \
+    $$top_srcdir/server/websocketserver.h \
+    $$top_srcdir/server/rest/restserver.h \
+
 

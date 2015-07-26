@@ -24,13 +24,6 @@
 #include "network/httpreply.h"
 #include "guhcore.h"
 
-#include "devicehandler.h"
-#include "actionhandler.h"
-#include "ruleshandler.h"
-#include "eventhandler.h"
-#include "logginghandler.h"
-#include "statehandler.h"
-
 #include <QJsonDocument>
 
 namespace guhserver {
@@ -42,6 +35,10 @@ RestServer::RestServer(QObject *parent) :
     connect(m_webserver, &WebServer::clientConnected, this, &RestServer::clientConnected);
     connect(m_webserver, &WebServer::clientDisconnected, this, &RestServer::clientDisconnected);
     connect(m_webserver, &WebServer::httpRequestReady, this, &RestServer::processHttpRequest);
+
+    // Resources
+    m_deviceResource = new DevicesResource(this);
+
 
     m_webserver->startServer();
 }
@@ -58,57 +55,87 @@ void RestServer::clientDisconnected(const QUuid &clientId)
 
 void RestServer::processHttpRequest(const QUuid &clientId, const HttpRequest &request)
 {
-    qCDebug(dcWebServer) << "process http request" << clientId << request.method() << request.urlQuery().query();
+    qCDebug(dcRest) << "Process HTTP request" << clientId << request.method() << request.urlQuery().query();
 
-    QString targetNamespace;
-    QString method;
-    QVariantMap params;
+    QStringList urlTokens = request.urlQuery().query(QUrl::FullyDecoded).split("/");
+    urlTokens.removeAll(QString());
 
-    if (request.urlQuery().hasQueryItem("devices")) {
-        qCDebug(dcWebServer) << "devices resource";
+    qCDebug(dcRest) << urlTokens;
 
+    if (urlTokens.count() < 3) {
+        m_webserver->sendHttpReply(clientId, HttpReply(HttpReply::BadRequest));
+        return;
     }
 
-    if (request.method() == "GET" && request.urlQuery().query() == "/api/v1/devices.json") {
-        targetNamespace = "Devices";
-        method = "GetConfiguredDevices";
-    } else if (request.method() == "GET" && request.urlQuery().query() == "/api/v1/devices.json") {
-        targetNamespace = "Devices";
-        method = "GetConfiguredDevices";
-    } else {
-        HttpReply httpReply(HttpReply::BadRequest);
-        httpReply.setPayload("400 Bad Request.");
-        httpReply.packReply();
+    if (urlTokens.at(2) == "devices") {
+        HttpReply httpReply = m_deviceResource->proccessDeviceRequest(request, urlTokens);
+        qCDebug(dcRest) << "sending header" << httpReply.rawHeader();
         m_webserver->sendHttpReply(clientId, httpReply);
         return;
     }
 
-    JsonHandler *handler = GuhCore::instance()->jsonRPCServer()->handlers().value(targetNamespace);
 
-    QPair<bool, QString> validationResult = handler->validateParams(method, params);
-    if (!validationResult.first) {
-        qCWarning(dcWebServer) << "Invalid params: " << validationResult.second;
-        return;
-    }
+    //    QString targetNamespace;
+    //    QString method;
+    //    QVariantMap params;
 
-    JsonReply *jsonReply;
-    QMetaObject::invokeMethod(handler, method.toLatin1().data(), Q_RETURN_ARG(JsonReply*, jsonReply), Q_ARG(QVariantMap, params));
-    if (jsonReply->type() == JsonReply::TypeAsync) {
-        jsonReply->setClientId(clientId);
-        connect(jsonReply, &JsonReply::finished, this, &RestServer::asyncReplyFinished);
-        jsonReply->startWait();
-        m_asyncReplies.insert(clientId, jsonReply);
-        return;
-    }
+    // // check filter
+    //        QVariantList deviceList;
+    //        if (!request.urlQuery().hasQueryItem("id")) {
+    //            HttpReply httpReply = m_deviceResource->proccessDeviceRequest(request);
+    //            m_webserver->sendHttpReply(clientId, httpReply);
+    //            return;
+    //        } else {
+    //            foreach (const QString& idString, request.urlQuery().allQueryItemValues("id")) {
+    //                Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(DeviceId(idString));
+    //                if (device == Device()) {
 
-    HttpReply httpReply(HttpReply::Ok);
-    httpReply.setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
-    httpReply.setPayload(QJsonDocument::fromVariant(jsonReply->data()).toJson());
-    httpReply.packReply();
+    //                }
+    //            }
+    //        }
+    //    }
 
-    m_webserver->sendHttpReply(clientId, httpReply);
 
-    jsonReply->deleteLater();
+    //    if (request.method() == HttpRequest::Get && request.urlQuery().query() == "/api/v1/devices.json") {
+    //        targetNamespace = "Devices";
+    //        method = "GetConfiguredDevices";
+    //    } else if (request.method() == HttpRequest::Get && request.urlQuery().query() == "/api/v1/devices.json") {
+    //        targetNamespace = "Devices";
+    //        method = "GetConfiguredDevices";
+    //    } else {
+    //        HttpReply httpReply(HttpReply::BadRequest);
+    //        httpReply.setPayload("400 Bad Request.");
+    //        httpReply.packReply();
+    //        m_webserver->sendHttpReply(clientId, httpReply);
+    //        return;
+    //    }
+
+    //    JsonHandler *handler = GuhCore::instance()->jsonRPCServer()->handlers().value(targetNamespace);
+
+    //    QPair<bool, QString> validationResult = handler->validateParams(method, params);
+    //    if (!validationResult.first) {
+    //        qCWarning(dcWebServer) << "Invalid params: " << validationResult.second;
+    //        return;
+    //    }
+
+    //    JsonReply *jsonReply;
+    //    QMetaObject::invokeMethod(handler, method.toLatin1().data(), Q_RETURN_ARG(JsonReply*, jsonReply), Q_ARG(QVariantMap, params));
+    //    if (jsonReply->type() == JsonReply::TypeAsync) {
+    //        jsonReply->setClientId(clientId);
+    //        connect(jsonReply, &JsonReply::finished, this, &RestServer::asyncReplyFinished);
+    //        jsonReply->startWait();
+    //        m_asyncReplies.insert(clientId, jsonReply);
+    //        return;
+    //    }
+
+    //    HttpReply httpReply(HttpReply::Ok);
+    //    httpReply.setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
+    //    httpReply.setPayload(QJsonDocument::fromVariant(jsonReply->data()).toJson());
+    //    httpReply.packReply();
+
+    //    m_webserver->sendHttpReply(clientId, httpReply);
+
+    //    jsonReply->deleteLater();
 }
 
 void RestServer::asyncReplyFinished()

@@ -62,7 +62,7 @@ public:
         ServerHeader
     };
 
-    explicit HttpReply(const HttpStatusCode &statusCode);
+    explicit HttpReply(const HttpStatusCode &statusCode = HttpStatusCode::Ok);
 
     void setHttpStatusCode(const HttpStatusCode &statusCode);
     HttpStatusCode httpStatusCode() const;

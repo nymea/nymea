@@ -25,6 +25,7 @@
 
 #include "webserver.h"
 #include "jsonhandler.h"
+#include "devicesresource.h"
 
 class HttpRequest;
 class HttpReply;
@@ -41,6 +42,8 @@ private:
     WebServer *m_webserver;
     QList<QUuid> m_clientList;
     QHash<QUuid, JsonReply *> m_asyncReplies;
+
+    DevicesResource *m_deviceResource;
 
 signals:
     void httpReplyReady(const HttpReply &httpReply);

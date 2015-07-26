@@ -18,16 +18,39 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "loggingcategories.h"
+#ifndef DEVICESRESOURCE_H
+#define DEVICESRESOURCE_H
 
-Q_LOGGING_CATEGORY(dcApplication, "Application")
-Q_LOGGING_CATEGORY(dcDeviceManager, "DeviceManager")
-Q_LOGGING_CATEGORY(dcRuleEngine, "RuleEngine")
-Q_LOGGING_CATEGORY(dcHardware, "Hardware")
-Q_LOGGING_CATEGORY(dcConnection, "Connection")
-Q_LOGGING_CATEGORY(dcTcpServer, "TcpServer")
-Q_LOGGING_CATEGORY(dcWebServer, "WebServer")
-Q_LOGGING_CATEGORY(dcJsonRpc, "JsonRpc")
-Q_LOGGING_CATEGORY(dcRest, "Rest")
-Q_LOGGING_CATEGORY(dcLogEngine, "LogEngine")
+#include <QObject>
+#include "jsontypes.h"
 
+class HttpReply;
+class HttpRequest;
+
+namespace guhserver {
+
+class DevicesResource : public QObject
+{
+    Q_OBJECT
+public:
+    explicit DevicesResource(QObject *parent = 0);
+
+    HttpReply proccessDeviceRequest(const HttpRequest &request, const QStringList &urlTokens);
+
+private:
+    HttpReply getConfiguredDevices();
+    HttpReply getConfiguredDevice(Device *device);
+    HttpReply getDeviceStateValues(Device *device);
+    HttpReply getDeviceStateValue(Device *device, const StateTypeId &stateTypeId);
+
+    HttpReply removeDevice(Device *device);
+
+signals:
+
+public slots:
+
+};
+
+}
+
+#endif // DEVICESRESOURCE_H

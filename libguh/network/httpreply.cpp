@@ -109,9 +109,9 @@ HttpReply::HttpReply(const HttpStatusCode &statusCode) :
 {
     // set known headers
     setHeader(HttpHeaderType::ServerHeader, "guh/" + QByteArray(GUH_VERSION_STRING));
-    setHeader(HttpHeaderType::UserAgentHeader, "guh/" + QByteArray(REST_API_VERSION));
     setHeader(HttpHeaderType::DateHeader, QDateTime::currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8() + " GMT");
     setHeader(HttpHeaderType::CacheControlHeader, "no-cache");
+    packReply();
 }
 
 /*! Set the \a statusCode for this \l{HttpReply}.*/

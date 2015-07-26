@@ -29,12 +29,20 @@
 class HttpRequest
 {
 public:
+    enum RequestMethod {
+        Get,
+        Post,
+        Put,
+        Delete,
+        Unhandled
+    };
+
     explicit HttpRequest(QByteArray rawData);
 
     QByteArray rawHeader() const;
     QHash<QByteArray, QByteArray> rawHeaderList() const;
 
-    QByteArray method() const;
+    RequestMethod method() const;
     QByteArray httpVersion() const;
     QUrlQuery urlQuery() const;
 
@@ -48,13 +56,15 @@ private:
     QByteArray m_rawHeader;
     QHash<QByteArray, QByteArray> m_rawHeaderList;
 
-    QByteArray m_method;
+    RequestMethod m_method;
     QByteArray m_httpVersion;
     QUrlQuery m_urlQuery;
 
     QByteArray m_payload;
 
     bool m_valid;
+
+    RequestMethod getRequestMethodType(const QString &methodString);
 };
 
 QDebug operator<< (QDebug debug, const HttpRequest &httpRequest);

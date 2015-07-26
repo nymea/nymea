@@ -43,13 +43,7 @@ class WebServer : public TransportInterface
 {
     Q_OBJECT
 public:
-    enum RequestMethod {
-        Get,
-        Post,
-        Put,
-        Delete,
-        Unhandled
-    };
+
 
     explicit WebServer(QObject *parent = 0);
     ~WebServer();
@@ -70,7 +64,6 @@ private:
     bool verifyFile(QTcpSocket *socket, const QString &fileName);
 
     QString fileName(const QString &query);
-    RequestMethod getRequestMethodType(const QString &methodString);
 
     void writeData(QTcpSocket *socket, const QByteArray &data);
 

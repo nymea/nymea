@@ -262,29 +262,16 @@ QString DeviceHandler::name() const
 JsonReply* DeviceHandler::GetSupportedVendors(const QVariantMap &params) const
 {
     Q_UNUSED(params)
+
     QVariantMap returns;
-    QVariantList supportedVendors;
-    foreach (const Vendor &vendor, GuhCore::instance()->supportedVendors()) {
-        supportedVendors.append(JsonTypes::packVendor(vendor));
-    }
-    returns.insert("vendors", supportedVendors);
+    returns.insert("vendors", JsonTypes::packSupportedVendors());
     return createReply(returns);
 }
 
 JsonReply* DeviceHandler::GetSupportedDevices(const QVariantMap &params) const
 {
     QVariantMap returns;
-    QVariantList supportedDeviceList;
-    QList<DeviceClass> supportedDevices;
-    if (params.contains("vendorId")) {
-        supportedDevices = GuhCore::instance()->supportedDevices(VendorId(params.value("vendorId").toString()));
-    } else {
-        supportedDevices = GuhCore::instance()->supportedDevices();
-    }
-    foreach (const DeviceClass &deviceClass, supportedDevices) {
-        supportedDeviceList.append(JsonTypes::packDeviceClass(deviceClass));
-    }
-    returns.insert("deviceClasses", supportedDeviceList);
+    returns.insert("deviceClasses", JsonTypes::packSupportedDevices(VendorId(params.value("vendorId").toString())));
     return createReply(returns);
 }
 
@@ -309,20 +296,9 @@ JsonReply *DeviceHandler::GetDiscoveredDevices(const QVariantMap &params) const
 JsonReply* DeviceHandler::GetPlugins(const QVariantMap &params) const
 {
     Q_UNUSED(params)
+
     QVariantMap returns;
-    QVariantList plugins;
-    foreach (DevicePlugin *plugin, GuhCore::instance()->plugins()) {
-        QVariantMap pluginMap;
-        pluginMap.insert("id", plugin->pluginId());
-        pluginMap.insert("name", plugin->pluginName());
-        QVariantList params;
-        foreach (const ParamType &param, plugin->configurationDescription()) {
-            params.append(JsonTypes::packParamType(param));
-        }
-        pluginMap.insert("params", params);
-        plugins.append(pluginMap);
-    }
-    returns.insert("plugins", plugins);
+    returns.insert("plugins", JsonTypes::packPlugins());
     return createReply(returns);
 }
 
@@ -531,14 +507,14 @@ JsonReply* DeviceHandler::GetStateValue(const QVariantMap &params) const
         returns.insert("deviceError", JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorDeviceNotFound));
         return createReply(returns);
     }
-    if (!device->hasState(StateTypeId(params.value("stateTypeId").toString()))) {
+    StateTypeId stateTypeId = StateTypeId(params.value("stateTypeId").toString());
+    if (!device->hasState(stateTypeId)) {
         returns.insert("deviceError", JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorStateTypeNotFound));
         return createReply(returns);
     }
-    QVariant stateValue = device->stateValue(StateTypeId(params.value("stateTypeId").toString()));
 
     returns.insert("deviceError", JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorNoError));
-    returns.insert("value", stateValue);
+    returns.insert("value", device->state(stateTypeId).value());
     return createReply(returns);
 }
 
@@ -552,20 +528,8 @@ JsonReply *DeviceHandler::GetStateValues(const QVariantMap &params) const
         return createReply(returns);
     }
 
-    DeviceClass deviceClass = GuhCore::instance()->findDeviceClass(device->deviceClassId());
-    if (!deviceClass.isValid()) {
-        returns.insert("deviceError", JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorDeviceClassNotFound));
-        return createReply(returns);
-    }
-    QVariantList values;
-    foreach (const StateType &stateType, deviceClass.stateTypes()) {
-        QVariantMap stateValue;
-        stateValue.insert("stateTypeId", stateType.id().toString());
-        stateValue.insert("value", device->stateValue(stateType.id()));
-        values.append(stateValue);
-    }
     returns.insert("deviceError", JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorNoError));
-    returns.insert("values", values);
+    returns.insert("values", JsonTypes::packDeviceStates(device));
     return createReply(returns);
 }
 

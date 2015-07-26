@@ -40,7 +40,7 @@ WebServer::WebServer(QObject *parent) :
 {
     // load webserver settings
     GuhSettings settings(GuhSettings::SettingsRoleGlobal);
-    qCDebug(dcTcpServer) << "Loading Webserver settings from:" << settings.fileName();
+    qCDebug(dcTcpServer) << "Loading webserver settings from:" << settings.fileName();
 
     settings.beginGroup("Webserver");
     m_port = settings.value("port", 3000).toInt();
@@ -140,21 +140,6 @@ QString WebServer::fileName(const QString &query)
     return QFileInfo(m_webinterfaceDir.path() + fileName).canonicalFilePath();
 }
 
-
-WebServer::RequestMethod WebServer::getRequestMethodType(const QString &methodString)
-{
-    if (methodString == "GET") {
-        return RequestMethod::Get;
-    } else if (methodString == "POST") {
-        return RequestMethod::Post;
-    } else if (methodString == "PUT") {
-        return RequestMethod::Put;
-    } else if (methodString == "DELETE") {
-        return RequestMethod::Delete;
-    }
-    return RequestMethod::Unhandled;
-}
-
 void WebServer::writeData(QTcpSocket *socket, const QByteArray &data)
 {
     QTextStream os(socket);
@@ -195,10 +180,10 @@ void WebServer::readClient()
         return;
     }
 
-    // read http request
+    // read HTTP request
     HttpRequest request = HttpRequest(socket->readAll());
     if (!request.isValid()) {
-        qCWarning(dcWebServer) << "Invalid request.";
+        qCWarning(dcWebServer) << "Got invalid request.";
         HttpReply reply(HttpReply::BadRequest);
         reply.setPayload("400 Bad Request.");
         reply.packReply();
@@ -220,9 +205,7 @@ void WebServer::readClient()
     qCDebug(dcWebServer) << request;
 
     // verify method
-    RequestMethod requestMethod = getRequestMethodType(request.method());
-    if (requestMethod == RequestMethod::Unhandled) {
-        qCWarning(dcWebServer) << "method" << request.method() << "not allowed";
+    if (request.method() == HttpRequest::Unhandled) {
         HttpReply reply(HttpReply::MethodNotAllowed);
         reply.setHeader(HttpReply::AllowHeader, "GET, PUT, POST, DELETE");
         reply.setPayload("405 Method not allowed.");
@@ -238,7 +221,7 @@ void WebServer::readClient()
     }
 
     // request for a file...
-    if (requestMethod == RequestMethod::Get) {
+    if (request.method() == HttpRequest::Get) {
         if (!verifyFile(socket, fileName(request.urlQuery().query())))
             return;
 

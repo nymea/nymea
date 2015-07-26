@@ -50,15 +50,17 @@ HttpRequest::HttpRequest(QByteArray rawData) :
         return;
     }
 
-    m_method = statusLineTokens.at(0).toUtf8().simplified();
-    m_urlQuery = QUrlQuery(statusLineTokens.at(1).simplified());
+    // verify http version
     m_httpVersion = statusLineTokens.at(2).toUtf8().simplified();
-
     if (!m_httpVersion.contains("HTTP")) {
         qCWarning(dcWebServer) << "Unknown HTTP version:" << m_httpVersion;
         return;
     }
+    m_method = getRequestMethodType(statusLineTokens.at(0).simplified());
 
+    m_urlQuery = QUrlQuery(statusLineTokens.at(1).simplified());
+
+    // verify headers
     foreach (const QString &line, headerLines) {
         if (!line.contains(":")) {
             qCWarning(dcWebServer) << "Invalid HTTP header:" << line;
@@ -69,6 +71,8 @@ HttpRequest::HttpRequest(QByteArray rawData) :
         QByteArray value = line.right(line.count() - index - 1).toUtf8().simplified();
         m_rawHeaderList.insert(key, value);
     }
+
+    // TODO: check content size
 
     m_valid = true;
 }
@@ -83,7 +87,7 @@ QHash<QByteArray, QByteArray> HttpRequest::rawHeaderList() const
     return m_rawHeaderList;
 }
 
-QByteArray HttpRequest::method() const
+HttpRequest::RequestMethod HttpRequest::method() const
 {
     return m_method;
 }
@@ -111,6 +115,21 @@ bool HttpRequest::isValid() const
 bool HttpRequest::hasPayload() const
 {
     return !m_payload.isEmpty();
+}
+
+HttpRequest::RequestMethod HttpRequest::getRequestMethodType(const QString &methodString)
+{
+    if (methodString == "GET") {
+        return RequestMethod::Get;
+    } else if (methodString == "POST") {
+        return RequestMethod::Post;
+    } else if (methodString == "PUT") {
+        return RequestMethod::Put;
+    } else if (methodString == "DELETE") {
+        return RequestMethod::Delete;
+    }
+    qCWarning(dcWebServer) << "Method" << methodString << "will not be handled.";
+    return RequestMethod::Unhandled;
 }
 
 QDebug operator<<(QDebug debug, const HttpRequest &httpRequest)

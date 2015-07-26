@@ -135,6 +135,7 @@ public:
     DECLARE_OBJECT(ruleDescription, "RuleDescription")
     DECLARE_OBJECT(logEntry, "LogEntry")
 
+    // pack types
     static QVariantMap packEventType(const EventType &eventType);
     static QVariantMap packEvent(const Event &event);
     static QVariantMap packEventDescriptor(const EventDescriptor &event);
@@ -142,6 +143,7 @@ public:
     static QVariantMap packAction(const Action &action);
     static QVariantMap packRuleAction(const RuleAction &ruleAction);
     static QVariantMap packRuleActionParam(const RuleActionParam &ruleActionParam);
+    static QVariantMap packState(const State &state);
     static QVariantMap packStateType(const StateType &stateType);
     static QVariantMap packStateDescriptor(const StateDescriptor &stateDescriptor);
     static QVariantMap packStateEvaluator(const StateEvaluator &stateEvaluator);
@@ -158,6 +160,16 @@ public:
     static QVariantMap packLogEntry(const LogEntry &logEntry);
     static QVariantList packCreateMethods(DeviceClass::CreateMethods createMethods);
 
+    // pack resources
+    static QVariantList packSupportedVendors();
+    static QVariantList packSupportedDevices(const VendorId &vendorId);
+    static QVariantList packConfiguredDevices();
+    static QVariantList packDeviceStates(Device *device);
+
+    static QVariantList packPlugins();
+
+
+    // unpack Types
     static Param unpackParam(const QVariantMap &paramMap);
     static ParamList unpackParams(const QVariantList &paramList);
     static RuleActionParam unpackRuleActionParam(const QVariantMap &ruleActionParamMap);
@@ -169,6 +181,7 @@ public:
     static StateDescriptor unpackStateDescriptor(const QVariantMap &stateDescriptorMap);
     static LogFilter unpackLogFilter(const QVariantMap &logFilterMap);
 
+    // validate
     static QPair<bool, QString> validateMap(const QVariantMap &templateMap, const QVariantMap &map);
     static QPair<bool, QString> validateProperty(const QVariant &templateValue, const QVariant &value);
     static QPair<bool, QString> validateList(const QVariantList &templateList, const QVariantList &list);

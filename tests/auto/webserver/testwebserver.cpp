@@ -40,7 +40,6 @@ class TestWebserver: public GuhTestBase
     Q_OBJECT
 
 private slots:
-    void pingServer();
     void httpVersion();
 
     void checkAllowedMethodCall_data();
@@ -54,11 +53,6 @@ private:
     void printResponse(QNetworkReply *reply);
 
 };
-
-void TestWebserver::pingServer()
-{
-    // TODO: when QWebsocket will be used
-}
 
 void TestWebserver::httpVersion()
 {
@@ -156,8 +150,6 @@ void TestWebserver::getFiles_data()
     QTest::newRow("get /etc/guh/guhd.conf") << "/etc/guh/guhd.conf" << 404;
     QTest::newRow("get /etc/sudoers") <<  "/etc/sudoers" << 404;
     QTest::newRow("get /root/.ssh/id_rsa.pub") <<  "/root/.ssh/id_rsa.pub" << 404;
-
-
 }
 
 void TestWebserver::getFiles()

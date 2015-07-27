@@ -600,6 +600,15 @@ QVariantMap JsonTypes::packRule(const Rule &rule)
     return ruleMap;
 }
 
+QVariantList JsonTypes::packRules(const QList<Rule> rules)
+{
+    QVariantList rulesList;
+    foreach (const Rule &rule, rules) {
+        rulesList.append(JsonTypes::packRule(rule));
+    }
+    return rulesList;
+}
+
 QVariantMap JsonTypes::packRuleDescription(const Rule &rule)
 {
     QVariantMap ruleDescriptionMap;
@@ -693,11 +702,7 @@ QVariantList JsonTypes::packSupportedDevices(const VendorId &vendorId)
 
 QVariantList JsonTypes::packConfiguredDevices()
 {
-    QVariantList configuredDeviceList;
-    foreach (Device *device, GuhCore::instance()->configuredDevices()) {
-        configuredDeviceList.append(packDevice(device));
-    }
-    return configuredDeviceList;
+    return packRules(GuhCore::instance()->rules());
 }
 
 QVariantList JsonTypes::packDeviceStates(Device *device)
@@ -720,6 +725,24 @@ QVariantList JsonTypes::packDeviceDescriptors(const QList<DeviceDescriptor> devi
         deviceDescriptorList.append(JsonTypes::packDeviceDescriptor(deviceDescriptor));
     }
     return deviceDescriptorList;
+}
+
+QVariantList JsonTypes::packRuleDescriptions()
+{
+    QVariantList rulesList;
+    foreach (const Rule &rule, GuhCore::instance()->rules()) {
+        rulesList.append(JsonTypes::packRuleDescription(rule));
+    }
+    return rulesList;
+}
+
+QVariantList JsonTypes::packRuleDescriptions(const QList<Rule> rules)
+{
+    QVariantList rulesList;
+    foreach (const Rule &rule, rules) {
+        rulesList.append(JsonTypes::packRuleDescription(rule));
+    }
+    return rulesList;
 }
 
 QVariantList JsonTypes::packActionTypes(const DeviceClass &deviceClass)

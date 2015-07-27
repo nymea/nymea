@@ -20,6 +20,10 @@
 
 #include "pluginsresource.h"
 #include "network/httprequest.h"
+#include "loggingcategories.h"
+#include "guhcore.h"
+
+#include <QJsonDocument>
 
 namespace guhserver {
 
@@ -35,43 +39,134 @@ QString PluginsResource::name() const
 
 HttpReply *PluginsResource::proccessRequest(const HttpRequest &request, const QStringList &urlTokens)
 {
-    Q_UNUSED(request)
-    Q_UNUSED(urlTokens)
+    // get the main resource
 
-    return createErrorReply(HttpReply::NotImplemented);
+    // /api/v1/plugins/{pluginId}/
+    if (urlTokens.count() >= 4) {
+        m_pluginId = PluginId(urlTokens.at(3));
+        if (m_pluginId.isNull()) {
+            qCWarning(dcRest) << "Could not parse PluginId:" << urlTokens.at(3);
+            return createErrorReply(HttpReply::BadRequest);
+        }
+    }
+
+    // check method
+    HttpReply *reply;
+    switch (request.method()) {
+    case HttpRequest::Get:
+        reply = proccessGetRequest(request, urlTokens);
+        break;
+    case HttpRequest::Put:
+        reply = proccessPutRequest(request, urlTokens);
+        break;
+    default:
+        reply = createErrorReply(HttpReply::BadRequest);
+        break;
+    }
+    return reply;
 }
 
 HttpReply *PluginsResource::proccessGetRequest(const HttpRequest &request, const QStringList &urlTokens)
 {
     Q_UNUSED(request)
-    Q_UNUSED(urlTokens)
 
-    return createErrorReply(HttpReply::NotImplemented);
-}
+    // GET /api/v1/plugins
+    if (urlTokens.count() == 3)
+        return getPlugins();
 
-HttpReply *PluginsResource::proccessDeleteRequest(const HttpRequest &request, const QStringList &urlTokens)
-{
-    Q_UNUSED(request)
-    Q_UNUSED(urlTokens)
+    // GET /api/v1/plugins/{pluginId}
+    if (urlTokens.count() == 4)
+        return getPlugin(m_pluginId);
+
+    // GET /api/v1/plugins/{pluginId}/configuration
+    if (urlTokens.count() == 5 && urlTokens.at(4) == "configuration") {
+        return getPluginConfiguration(m_pluginId);
+    }
 
     return createErrorReply(HttpReply::NotImplemented);
 }
 
 HttpReply *PluginsResource::proccessPutRequest(const HttpRequest &request, const QStringList &urlTokens)
 {
-    Q_UNUSED(request)
-    Q_UNUSED(urlTokens)
+    // PUT /api/v1/plugins/{pluginId}/configuration
+    if (urlTokens.count() == 5 && urlTokens.at(4) == "configuration") {
+        return setPluginConfiguration(m_pluginId, request.payload());
+    }
 
     return createErrorReply(HttpReply::NotImplemented);
 }
 
-HttpReply *PluginsResource::proccessPostRequest(const HttpRequest &request, const QStringList &urlTokens)
+HttpReply *PluginsResource::getPlugins() const
 {
-    Q_UNUSED(request)
-    Q_UNUSED(urlTokens)
+    qCDebug(dcRest) << "Get plugins";
+    HttpReply *reply = createSuccessReply();
+    reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packPlugins()).toJson());
+    return reply;
+}
 
-    return createErrorReply(HttpReply::NotImplemented);
+HttpReply *PluginsResource::getPlugin(const PluginId &pluginId) const
+{
+    qCDebug(dcRest) << "Get plugin with id" << pluginId;
+    HttpReply *reply = createSuccessReply();
+    foreach (DevicePlugin *plugin, GuhCore::instance()->plugins()) {
+        if (plugin->pluginId() == pluginId) {
+            reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packPlugin(plugin)).toJson());
+            return reply;
+        }
+    }
+    return createErrorReply(HttpReply::NotFound);
+}
+
+HttpReply *PluginsResource::getPluginConfiguration(const PluginId &pluginId) const
+{
+    qCDebug(dcRest) << "Get configuration of plugin with id" << pluginId.toString();
+
+    DevicePlugin *plugin = 0;
+    plugin = findPlugin(pluginId);
+    if (!plugin)
+        return createErrorReply(HttpReply::NotFound);
+
+    QVariantList configurationParamsList;
+    foreach (const Param &param, plugin->configuration()) {
+        configurationParamsList.append(JsonTypes::packParam(param));
+    }
+
+    HttpReply *reply = createSuccessReply();
+    reply->setPayload(QJsonDocument::fromVariant(configurationParamsList).toJson());
+    return reply;
+}
+
+HttpReply *PluginsResource::setPluginConfiguration(const PluginId &pluginId, const QByteArray &payload) const
+{
+    DevicePlugin *plugin = 0;
+    plugin = findPlugin(pluginId);
+    if (!plugin)
+        return createErrorReply(HttpReply::NotFound);
+
+    qCDebug(dcRest) << "Set configuration of plugin with id" << pluginId.toString();
+
+    QPair<bool, QVariant> verification = RestResource::verifyPayload(payload);
+    if (!verification.first)
+        return createErrorReply(HttpReply::BadRequest);
+
+    QVariantMap params = verification.second.toMap();
+    ParamList pluginParams = JsonTypes::unpackParams(params.value("configuration").toList());
+    DeviceManager::DeviceError result = GuhCore::instance()->setPluginConfig(pluginId, pluginParams);
+
+    if (result != DeviceManager::DeviceErrorNoError)
+        return createErrorReply(HttpReply::BadRequest);
+
+    return createSuccessReply();
+}
+
+DevicePlugin *PluginsResource::findPlugin(const PluginId &pluginId) const
+{
+    foreach (DevicePlugin *plugin, GuhCore::instance()->plugins()) {
+        if (plugin->pluginId() == pluginId) {
+            return plugin;
+        }
+    }
+    return 0;
 }
 
 }
-

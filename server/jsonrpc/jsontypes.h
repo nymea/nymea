@@ -156,6 +156,7 @@ public:
     static QVariantMap packDevice(Device *device);
     static QVariantMap packDeviceDescriptor(const DeviceDescriptor &descriptor);
     static QVariantMap packRule(const Rule &rule);
+    static QVariantList packRules(const QList<Rule> rules);
     static QVariantMap packRuleDescription(const Rule &rule);
     static QVariantMap packLogEntry(const LogEntry &logEntry);
     static QVariantList packCreateMethods(DeviceClass::CreateMethods createMethods);
@@ -167,12 +168,12 @@ public:
     static QVariantList packDeviceStates(Device *device);
     static QVariantList packDeviceDescriptors(const QList<DeviceDescriptor> deviceDescriptors);
 
+    static QVariantList packRuleDescriptions();
+    static QVariantList packRuleDescriptions(const QList<Rule> rules);
 
     static QVariantList packActionTypes(const DeviceClass &deviceClass);
     static QVariantList packStateTypes(const DeviceClass &deviceClass);
     static QVariantList packEventTypes(const DeviceClass &deviceClass);
-
-
     static QVariantList packPlugins();
 
 

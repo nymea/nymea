@@ -66,8 +66,6 @@ HttpReply *DeviceClassesResource::proccessRequest(const HttpRequest &request, co
         break;
     }
     return reply;
-
-    return createErrorReply(HttpReply::NotImplemented);
 }
 
 HttpReply *DeviceClassesResource::proccessGetRequest(const HttpRequest &request, const QStringList &urlTokens)

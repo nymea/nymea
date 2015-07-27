@@ -59,8 +59,6 @@ HttpReply *VendorsResource::proccessRequest(const HttpRequest &request, const QS
         break;
     }
     return reply;
-
-    return createErrorReply(HttpReply::NotImplemented);
 }
 
 HttpReply *VendorsResource::proccessGetRequest(const HttpRequest &request, const QStringList &urlTokens)

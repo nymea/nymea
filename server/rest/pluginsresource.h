@@ -43,20 +43,22 @@ public:
     HttpReply *proccessRequest(const HttpRequest &request, const QStringList &urlTokens) override;
 
 private:
+    PluginId m_pluginId;
+
     // Process method
     HttpReply *proccessGetRequest(const HttpRequest &request, const QStringList &urlTokens) override;
-    HttpReply *proccessDeleteRequest(const HttpRequest &request, const QStringList &urlTokens) override;
     HttpReply *proccessPutRequest(const HttpRequest &request, const QStringList &urlTokens) override;
-    HttpReply *proccessPostRequest(const HttpRequest &request, const QStringList &urlTokens) override;
 
     // Get methods
-
-    // Delete methods
-
-    // Post methods
+    HttpReply *getPlugins() const;
+    HttpReply *getPlugin(const PluginId &pluginId) const;
+    HttpReply *getPluginConfiguration(const PluginId &pluginId) const;
+    HttpReply *setPluginConfiguration(const PluginId &pluginId, const QByteArray &payload) const;
 
     // Put methods
 
+
+    DevicePlugin *findPlugin(const PluginId &pluginId) const;
 };
 
 }

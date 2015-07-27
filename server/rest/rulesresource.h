@@ -43,6 +43,8 @@ public:
     HttpReply *proccessRequest(const HttpRequest &request, const QStringList &urlTokens) override;
 
 private:
+    RuleId m_ruleId;
+
     // Process method
     HttpReply *proccessGetRequest(const HttpRequest &request, const QStringList &urlTokens) override;
     HttpReply *proccessDeleteRequest(const HttpRequest &request, const QStringList &urlTokens) override;
@@ -50,6 +52,8 @@ private:
     HttpReply *proccessPostRequest(const HttpRequest &request, const QStringList &urlTokens) override;
 
     // Get methods
+    HttpReply *getRules() const;
+    HttpReply *getRuleDetails(const RuleId &ruleId) const;
 
     // Delete methods
 
@@ -57,6 +61,8 @@ private:
 
     // Put methods
 
+
+    Rule findRule(const RuleId &ruleId) const;
 };
 
 }

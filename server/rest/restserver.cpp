@@ -47,6 +47,8 @@ void RestServer::setup()
     m_deviceResource = new DevicesResource(this);
     m_deviceClassesResource = new DeviceClassesResource(this);
     m_vendorsResource = new VendorsResource(this);
+    m_pluginsResource = new PluginsResource(this);
+    m_rulesResource = new RulesResource(this);
 }
 
 void RestServer::clientConnected(const QUuid &clientId)
@@ -76,6 +78,8 @@ void RestServer::processHttpRequest(const QUuid &clientId, const HttpRequest &re
         reply->deleteLater();
         return;
     }
+
+    // TODO: make generic with resource name
 
     if (urlTokens.at(2) == "devices") {
         HttpReply *reply = m_deviceResource->proccessRequest(request, urlTokens);
@@ -118,6 +122,38 @@ void RestServer::processHttpRequest(const QUuid &clientId, const HttpRequest &re
         reply->deleteLater();
         return;
     }
+
+    if (urlTokens.at(2) == "plugins") {
+        HttpReply *reply = m_pluginsResource->proccessRequest(request, urlTokens);
+        reply->setClientId(clientId);
+        if (reply->type() == HttpReply::TypeAsync) {
+            connect(reply, &HttpReply::finished, this, &RestServer::asyncReplyFinished);
+            reply->startWait();
+            m_asyncReplies.insert(clientId, reply);
+            return;
+        }
+        m_webserver->sendHttpReply(reply);
+        reply->deleteLater();
+        return;
+    }
+
+    if (urlTokens.at(2) == "rules") {
+        HttpReply *reply = m_rulesResource->proccessRequest(request, urlTokens);
+        reply->setClientId(clientId);
+        if (reply->type() == HttpReply::TypeAsync) {
+            connect(reply, &HttpReply::finished, this, &RestServer::asyncReplyFinished);
+            reply->startWait();
+            m_asyncReplies.insert(clientId, reply);
+            return;
+        }
+        m_webserver->sendHttpReply(reply);
+        reply->deleteLater();
+        return;
+    }
+
+    HttpReply *reply = RestResource::createErrorReply(HttpReply::BadRequest);
+    m_webserver->sendHttpReply(reply);
+    reply->deleteLater();
 }
 
 void RestServer::asyncReplyFinished()

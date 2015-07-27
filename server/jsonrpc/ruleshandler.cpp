@@ -154,12 +154,8 @@ JsonReply* RulesHandler::GetRules(const QVariantMap &params)
 {
     Q_UNUSED(params)
 
-    QVariantList rulesList;
-    foreach (const Rule &rule, GuhCore::instance()->rules()) {
-        rulesList.append(JsonTypes::packRuleDescription(rule));
-    }
     QVariantMap returns;
-    returns.insert("ruleDescriptions", rulesList);
+    returns.insert("ruleDescriptions", JsonTypes::packRuleDescriptions());
 
     return createReply(returns);
 }

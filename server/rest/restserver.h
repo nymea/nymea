@@ -28,6 +28,8 @@
 #include "devicesresource.h"
 #include "deviceclassesresource.h"
 #include "vendorsresource.h"
+#include "pluginsresource.h"
+#include "rulesresource.h"
 
 class HttpRequest;
 class HttpReply;
@@ -49,6 +51,8 @@ private:
     DevicesResource *m_deviceResource;
     DeviceClassesResource *m_deviceClassesResource;
     VendorsResource *m_vendorsResource;
+    PluginsResource *m_pluginsResource;
+    RulesResource *m_rulesResource;
 
 private slots:
     void setup();

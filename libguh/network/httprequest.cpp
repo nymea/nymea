@@ -56,9 +56,13 @@ HttpRequest::HttpRequest(QByteArray rawData) :
         qCWarning(dcWebServer) << "Unknown HTTP version:" << m_httpVersion;
         return;
     }
-    m_method = getRequestMethodType(statusLineTokens.at(0).simplified());
+    m_methodString = statusLineTokens.at(0).simplified();
+    m_method = getRequestMethodType(m_methodString);
 
-    m_urlQuery = QUrlQuery(statusLineTokens.at(1).simplified());
+    m_url = QUrl("http://example.com" + statusLineTokens.at(1).simplified());
+
+    if (m_url.hasQuery())
+        m_urlQuery = QUrlQuery(m_url.query());
 
     // verify headers
     foreach (const QString &line, headerLines) {
@@ -92,9 +96,19 @@ HttpRequest::RequestMethod HttpRequest::method() const
     return m_method;
 }
 
+QString HttpRequest::methodString() const
+{
+    return m_methodString;
+}
+
 QByteArray HttpRequest::httpVersion() const
 {
     return m_httpVersion;
+}
+
+QUrl HttpRequest::url() const
+{
+    return m_url;
 }
 
 QUrlQuery HttpRequest::urlQuery() const
@@ -134,9 +148,10 @@ HttpRequest::RequestMethod HttpRequest::getRequestMethodType(const QString &meth
 
 QDebug operator<<(QDebug debug, const HttpRequest &httpRequest)
 {
-    debug << "===================================" << "\n";
+    debug << "\n===================================" << "\n";
     debug << "  http version: " << httpRequest.httpVersion() << "\n";
-    debug << "        method: " << httpRequest.method() << "\n";
+    debug << "        method: " << httpRequest.methodString() << "\n";
+    debug << "      URL path: " << httpRequest.url().path() << "\n";
     debug << "     URL query: " << httpRequest.urlQuery().query() << "\n";
     debug << "      is valid: " << httpRequest.isValid() << "\n";
     debug << "-----------------------------------" << "\n";

@@ -574,12 +574,9 @@ void DeviceHandler::devicesDiscovered(const DeviceClassId &deviceClassId, const 
     }
 
     JsonReply *reply = m_discoverRequests.take(deviceClassId);
-    QVariantList list;
-    foreach (const DeviceDescriptor &descriptor, deviceDescriptors) {
-        list.append(JsonTypes::packDeviceDescriptor(descriptor));
-    }
+
     QVariantMap returns;
-    returns.insert("deviceDescriptors", list);
+    returns.insert("deviceDescriptors", JsonTypes::packDeviceDescriptors(deviceDescriptors));
     returns.insert("deviceError", JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorNoError));
 
     reply->setData(returns);

@@ -26,7 +26,13 @@ SOURCES += $$top_srcdir/server/guhcore.cpp \
     $$top_srcdir/server/servermanager.cpp \
     $$top_srcdir/server/websocketserver.cpp \
     $$top_srcdir/server/rest/restserver.cpp \
+    $$top_srcdir/server/rest/restresource.cpp \
     $$top_srcdir/server/rest/devicesresource.cpp \
+    $$top_srcdir/server/rest/deviceclassesresource.cpp \
+    $$top_srcdir/server/rest/vendorsresource.cpp \
+    $$top_srcdir/server/rest/logsresource.cpp \
+    $$top_srcdir/server/rest/pluginsresource.cpp \
+    $$top_srcdir/server/rest/rulesresource.cpp \
 
 
 HEADERS += $$top_srcdir/server/guhcore.h \
@@ -52,6 +58,12 @@ HEADERS += $$top_srcdir/server/guhcore.h \
     $$top_srcdir/server/servermanager.h \
     $$top_srcdir/server/websocketserver.h \
     $$top_srcdir/server/rest/restserver.h \
+    $$top_srcdir/server/rest/restresource.h \
     $$top_srcdir/server/rest/devicesresource.h \
+    $$top_srcdir/server/rest/deviceclassesresource.h \
+    $$top_srcdir/server/rest/vendorsresource.h \
+    $$top_srcdir/server/rest/logsresource.h \
+    $$top_srcdir/server/rest/pluginsresource.h \
+    $$top_srcdir/server/rest/rulesresource.h \
 
 

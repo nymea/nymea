@@ -97,16 +97,41 @@
         ...
 */
 
+/*! \enum HttpReply::Type
+
+*/
+
 #include "httpreply.h"
 
 #include <QDateTime>
 #include <QPair>
 
 /*! Construct a HttpReply with the given \a statusCode. */
-HttpReply::HttpReply(const HttpStatusCode &statusCode) :
-    m_statusCode(statusCode),
-    m_payload(QByteArray())
+HttpReply::HttpReply(QObject *parent) :
+    QObject(parent),
+    m_statusCode(HttpReply::Ok),
+    m_type(HttpReply::TypeSync),
+    m_payload(QByteArray()),
+    m_timedOut(false)
 {
+    connect(&m_timer, &QTimer::timeout, this, &HttpReply::timedOut);
+
+    // set known headers
+    setHeader(HttpHeaderType::ServerHeader, "guh/" + QByteArray(GUH_VERSION_STRING));
+    setHeader(HttpHeaderType::DateHeader, QDateTime::currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8() + " GMT");
+    setHeader(HttpHeaderType::CacheControlHeader, "no-cache");
+    packReply();
+}
+
+HttpReply::HttpReply(const HttpReply::HttpStatusCode &statusCode, const HttpReply::Type &type, QObject *parent):
+    QObject(parent),
+    m_statusCode(statusCode),
+    m_type(type),
+    m_payload(QByteArray()),
+    m_timedOut(false)
+{
+    connect(&m_timer, &QTimer::timeout, this, &HttpReply::timedOut);
+
     // set known headers
     setHeader(HttpHeaderType::ServerHeader, "guh/" + QByteArray(GUH_VERSION_STRING));
     setHeader(HttpHeaderType::DateHeader, QDateTime::currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8() + " GMT");
@@ -118,6 +143,7 @@ HttpReply::HttpReply(const HttpStatusCode &statusCode) :
 void HttpReply::setHttpStatusCode(const HttpReply::HttpStatusCode &statusCode)
 {
     m_statusCode = statusCode;
+    packReply();
 }
 
 /*! Returns the status code of this \l{HttpReply}.*/
@@ -126,11 +152,30 @@ HttpReply::HttpStatusCode HttpReply::httpStatusCode() const
     return m_statusCode;
 }
 
+/*! Returns the type of this \l{HttpReply}.
+ * \sa Type
+ */
+HttpReply::Type HttpReply::type() const
+{
+    return m_type;
+}
+
+void HttpReply::setClientId(const QUuid &clientId)
+{
+    m_clientId = clientId;
+}
+
+QUuid HttpReply::clientId() const
+{
+    return m_clientId;
+}
+
 /*! Set the payload of this \l{HttpReply} to the given \a data.*/
 void HttpReply::setPayload(const QByteArray &data)
 {
     m_payload = data;
     setHeader(HttpHeaderType::ContentLenghtHeader, QByteArray::number(data.length()));
+    packReply();
 }
 
 /*! Returns the payload of this \l{HttpReply}.*/
@@ -149,6 +194,7 @@ void HttpReply::setRawHeader(const QByteArray headerType, const QByteArray &valu
         m_rawHeaderList.remove(headerType);
     }
     m_rawHeaderList.insert(headerType, value);
+    packReply();
 }
 
 /*! This method appends a known header to the header list of this \l{HttpReply}.
@@ -209,6 +255,11 @@ void HttpReply::packReply()
 QByteArray HttpReply::data() const
 {
     return m_data;
+}
+
+bool HttpReply::timedOut() const
+{
+    return m_timedOut;
 }
 
 QByteArray HttpReply::getHttpReasonPhrase(const HttpReply::HttpStatusCode &statusCode)
@@ -277,4 +328,15 @@ QByteArray HttpReply::getHeaderType(const HttpReply::HttpHeaderType &headerType)
     default:
         return QByteArray();
     }
+}
+
+void HttpReply::startWait()
+{
+    m_timer.start(5000);
+}
+
+void HttpReply::timeout()
+{
+    m_timedOut = true;
+    emit finished();
 }

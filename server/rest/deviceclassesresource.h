@@ -18,8 +18,8 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef DEVICESRESOURCE_H
-#define DEVICESRESOURCE_H
+#ifndef DEVICECLASSESRESOURCE_H
+#define DEVICECLASSESRESOURCE_H
 
 #include <QObject>
 #include <QHash>
@@ -32,51 +32,43 @@ class HttpRequest;
 
 namespace guhserver {
 
-class DevicesResource: public RestResource
+class DeviceClassesResource : public RestResource
 {
     Q_OBJECT
 public:
-    explicit DevicesResource(QObject *parent = 0);
+    explicit DeviceClassesResource(QObject *parent = 0);
 
     HttpReply *proccessRequest(const HttpRequest &request, const QStringList &urlTokens) override;
 
 private:
-    mutable QHash<ActionId, HttpReply *> m_asyncActionExecutions;
-    mutable QHash<DeviceId, HttpReply *> m_asynDeviceAdditions;
-    mutable QHash<Device *, HttpReply *> m_asyncEditDevice;
-    mutable QHash<QUuid, HttpReply *> m_asyncPairingRequests;
+    mutable QHash<DeviceClassId, HttpReply *> m_discoverRequests;
 
-    Device *m_device;
+    DeviceClass m_deviceClass;
 
     // Process method
     HttpReply *proccessGetRequest(const HttpRequest &request, const QStringList &urlTokens) override;
-    HttpReply *proccessDeleteRequest(const HttpRequest &request, const QStringList &urlTokens) override;
-    HttpReply *proccessPutRequest(const HttpRequest &request, const QStringList &urlTokens) override;
-    HttpReply *proccessPostRequest(const HttpRequest &request, const QStringList &urlTokens) override;
 
     // Get methods
-    HttpReply *getConfiguredDevices() const;
-    HttpReply *getConfiguredDevice(Device *device) const;
-    HttpReply *getDeviceStateValues(Device *device) const;
-    HttpReply *getDeviceStateValue(Device *device, const StateTypeId &stateTypeId) const;
+    HttpReply *getDeviceClasses(const VendorId &vendorId);
+    HttpReply *getDeviceClass();
 
-    // Delete methods
-    HttpReply *removeDevice(Device *device) const;
+    HttpReply *getActionTypes();
+    HttpReply *getActionType(const ActionTypeId &actionTypeId);
 
-    // Post methods
-    HttpReply *executeAction(Device *device, const ActionTypeId &actionTypeId, const QByteArray &payload) const;
-    HttpReply *addConfiguredDevice(const QByteArray &payload) const;
+    HttpReply *getStateTypes();
+    HttpReply *getStateType(const StateTypeId &stateTypeId);
 
-    // Put methods
-    HttpReply *editDevice(Device *device, const QByteArray &payload) const;
+    HttpReply *getEventTypes();
+    HttpReply *getEventType(const EventTypeId &eventTypeId);
+
+    HttpReply *getDiscoverdDevices(const ParamList &discoveryParams);
 
 private slots:
-    void actionExecuted(const ActionId &actionId, DeviceManager::DeviceError status);
-    void deviceSetupFinished(Device *device, DeviceManager::DeviceError status);
-    void deviceEditFinished(Device *device, DeviceManager::DeviceError status);
+    void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
+
 
 };
 
 }
 
-#endif // DEVICESRESOURCE_H
+#endif // DEVICECLASSESRESOURCE_H

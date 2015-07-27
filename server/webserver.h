@@ -50,7 +50,7 @@ public:
 
     void sendData(const QUuid &clientId, const QVariantMap &data) override;
     void sendData(const QList<QUuid> &clients, const QVariantMap &data) override;
-    void sendHttpReply(const QUuid &clientId, const HttpReply &reply);
+    void sendHttpReply(HttpReply *reply);
 
 private:
     QTcpServer *m_server;

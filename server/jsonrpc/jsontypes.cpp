@@ -713,6 +713,42 @@ QVariantList JsonTypes::packDeviceStates(Device *device)
     return stateValues;
 }
 
+QVariantList JsonTypes::packDeviceDescriptors(const QList<DeviceDescriptor> deviceDescriptors)
+{
+    QVariantList deviceDescriptorList;
+    foreach (const DeviceDescriptor &deviceDescriptor, deviceDescriptors) {
+        deviceDescriptorList.append(JsonTypes::packDeviceDescriptor(deviceDescriptor));
+    }
+    return deviceDescriptorList;
+}
+
+QVariantList JsonTypes::packActionTypes(const DeviceClass &deviceClass)
+{
+    QVariantList actionTypes;
+    foreach (const ActionType &actionType, deviceClass.actionTypes()) {
+        actionTypes.append(JsonTypes::packActionType(actionType));
+    }
+    return actionTypes;
+}
+
+QVariantList JsonTypes::packStateTypes(const DeviceClass &deviceClass)
+{
+    QVariantList stateTypes;
+    foreach (const StateType &stateType, deviceClass.stateTypes()) {
+        stateTypes.append(JsonTypes::packStateType(stateType));
+    }
+    return stateTypes;
+}
+
+QVariantList JsonTypes::packEventTypes(const DeviceClass &deviceClass)
+{
+    QVariantList eventTypes;
+    foreach (const EventType &eventType, deviceClass.eventTypes()) {
+        eventTypes.append(JsonTypes::packEventType(eventType));
+    }
+    return eventTypes;
+}
+
 QVariantList JsonTypes::packPlugins()
 {
     QVariantList pluginsList;

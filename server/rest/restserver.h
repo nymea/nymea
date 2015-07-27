@@ -26,6 +26,7 @@
 #include "webserver.h"
 #include "jsonhandler.h"
 #include "devicesresource.h"
+#include "deviceclassesresource.h"
 
 class HttpRequest;
 class HttpReply;
@@ -38,17 +39,17 @@ class RestServer : public QObject
 public:
     explicit RestServer(QObject *parent = 0);
 
+
 private:
     WebServer *m_webserver;
     QList<QUuid> m_clientList;
-    QHash<QUuid, JsonReply *> m_asyncReplies;
+    QHash<QUuid, HttpReply *> m_asyncReplies;
 
     DevicesResource *m_deviceResource;
-
-signals:
-    void httpReplyReady(const HttpReply &httpReply);
+    DeviceClassesResource *m_deviceClassesResource;
 
 private slots:
+    void setup();
     void clientConnected(const QUuid &clientId);
     void clientDisconnected(const QUuid &clientId);
     

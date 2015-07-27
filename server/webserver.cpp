@@ -84,10 +84,16 @@ void WebServer::sendData(const QList<QUuid> &clients, const QVariantMap &data)
     }
 }
 
-void WebServer::sendHttpReply(const QUuid &clientId, const HttpReply &reply)
+void WebServer::sendHttpReply(HttpReply *reply)
 {
-    QTcpSocket *socket = m_clientList.value(clientId);
-    writeData(socket, reply.data());
+    QTcpSocket *socket = 0;
+    socket = m_clientList.value(reply->clientId());
+
+    if (!socket) {
+        qCDebug(dcWebServer) << "Invalid socket pointer! This should never happen!!!";
+        return;
+    }
+    writeData(socket, reply->data());
 }
 
 bool WebServer::verifyFile(QTcpSocket *socket, const QString &fileName)
@@ -202,7 +208,6 @@ void WebServer::readClient()
     }
 
     qCDebug(dcWebServer) << QString("Got valid request from %1:%2").arg(socket->peerAddress().toString()).arg(socket->peerPort());
-    qCDebug(dcWebServer) << request;
 
     // verify method
     if (request.method() == HttpRequest::Unhandled) {
@@ -215,7 +220,7 @@ void WebServer::readClient()
     }
 
     // verify query
-    if (request.urlQuery().query().startsWith("/api/v1")) {
+    if (request.url().path().startsWith("/api/v1")) {
         emit httpRequestReady(clientId, request);
         return;
     }

@@ -21,13 +21,17 @@
 #ifndef HTTPREPLY_H
 #define HTTPREPLY_H
 
+#include <QObject>
 #include <QByteArray>
 #include <QHash>
+#include <QTimer>
+#include <QUuid>
 
 // Note: RFC 7231 HTTP/1.1 Semantics and Content -> http://tools.ietf.org/html/rfc7231
 
-class HttpReply
+class HttpReply: public QObject
 {
+    Q_OBJECT
 public:
 
     enum HttpStatusCode {
@@ -62,10 +66,21 @@ public:
         ServerHeader
     };
 
-    explicit HttpReply(const HttpStatusCode &statusCode = HttpStatusCode::Ok);
+    enum Type {
+        TypeSync,
+        TypeAsync
+    };
+
+    HttpReply(QObject *parent = 0);
+    HttpReply(const HttpStatusCode &statusCode = HttpStatusCode::Ok, const Type &type = TypeSync, QObject *parent = 0);
 
     void setHttpStatusCode(const HttpStatusCode &statusCode);
     HttpStatusCode httpStatusCode() const;
+
+    Type type() const;
+
+    void setClientId(const QUuid &clientId);
+    QUuid clientId() const;
 
     void setPayload(const QByteArray &data);
     QByteArray payload() const;
@@ -82,18 +97,34 @@ public:
 
     QByteArray data() const;
 
+    bool timedOut() const;
+
 private:
     HttpStatusCode m_statusCode;
+    Type m_type;
+    QUuid m_clientId;
+
     QByteArray m_rawHeader;
     QByteArray m_payload;
     QByteArray m_data;
 
     QHash<QByteArray, QByteArray> m_rawHeaderList;
 
+    QTimer m_timer;
+    bool m_timedOut;
+
     QByteArray getHttpReasonPhrase(const HttpStatusCode &statusCode);
     QByteArray getHeaderType(const HttpHeaderType &headerType);
 
-    QByteArray packHeader() const;
+public slots:
+    void startWait();
+
+signals:
+    void finished();
+
+private slots:
+    void timeout();
+
 };
 
 #endif // HTTPREPLY_H

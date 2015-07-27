@@ -27,6 +27,11 @@ RulesResource::RulesResource(QObject *parent) :
 {
 }
 
+QString RulesResource::name() const
+{
+    return "rules";
+}
+
 HttpReply *RulesResource::proccessRequest(const HttpRequest &request, const QStringList &urlTokens)
 {
     Q_UNUSED(request)

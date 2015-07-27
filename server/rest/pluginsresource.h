@@ -38,6 +38,8 @@ class PluginsResource : public RestResource
 public:
     explicit PluginsResource(QObject *parent = 0);
 
+    QString name() const override;
+
     HttpReply *proccessRequest(const HttpRequest &request, const QStringList &urlTokens) override;
 
 private:

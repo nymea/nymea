@@ -38,6 +38,8 @@ class DeviceClassesResource : public RestResource
 public:
     explicit DeviceClassesResource(QObject *parent = 0);
 
+    QString name() const override;
+
     HttpReply *proccessRequest(const HttpRequest &request, const QStringList &urlTokens) override;
 
 private:

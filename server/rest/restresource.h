@@ -39,6 +39,8 @@ public:
     explicit RestResource(QObject *parent = 0);
     virtual ~RestResource() = 0;
 
+    virtual QString name() const = 0;
+
     virtual HttpReply *proccessRequest(const HttpRequest &request, const QStringList &urlTokens) = 0;
 
     static HttpReply *createSuccessReply();

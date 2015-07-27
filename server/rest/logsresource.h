@@ -38,6 +38,8 @@ class LogsResource : public RestResource
 public:
     explicit LogsResource(QObject *parent = 0);
 
+    QString name() const override;
+
     HttpReply *proccessRequest(const HttpRequest &request, const QStringList &urlTokens) override;
 
 private:

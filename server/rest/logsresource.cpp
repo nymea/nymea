@@ -28,6 +28,11 @@ LogsResource::LogsResource(QObject *parent) :
 {
 }
 
+QString LogsResource::name() const
+{
+    return "logs";
+}
+
 HttpReply *LogsResource::proccessRequest(const HttpRequest &request, const QStringList &urlTokens)
 {
     Q_UNUSED(request)

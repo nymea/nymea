@@ -46,6 +46,7 @@ void RestServer::setup()
     // Create resources
     m_deviceResource = new DevicesResource(this);
     m_deviceClassesResource = new DeviceClassesResource(this);
+    m_vendorsResource = new VendorsResource(this);
 }
 
 void RestServer::clientConnected(const QUuid &clientId)
@@ -92,6 +93,20 @@ void RestServer::processHttpRequest(const QUuid &clientId, const HttpRequest &re
 
     if (urlTokens.at(2) == "deviceclasses") {
         HttpReply *reply = m_deviceClassesResource->proccessRequest(request, urlTokens);
+        reply->setClientId(clientId);
+        if (reply->type() == HttpReply::TypeAsync) {
+            connect(reply, &HttpReply::finished, this, &RestServer::asyncReplyFinished);
+            reply->startWait();
+            m_asyncReplies.insert(clientId, reply);
+            return;
+        }
+        m_webserver->sendHttpReply(reply);
+        reply->deleteLater();
+        return;
+    }
+
+    if (urlTokens.at(2) == "vendors") {
+        HttpReply *reply = m_vendorsResource->proccessRequest(request, urlTokens);
         reply->setClientId(clientId);
         if (reply->type() == HttpReply::TypeAsync) {
             connect(reply, &HttpReply::finished, this, &RestServer::asyncReplyFinished);

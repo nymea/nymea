@@ -32,6 +32,11 @@ DeviceClassesResource::DeviceClassesResource(QObject *parent) :
     connect(GuhCore::instance(), &GuhCore::devicesDiscovered, this, &DeviceClassesResource::devicesDiscovered, Qt::QueuedConnection);
 }
 
+QString DeviceClassesResource::name() const
+{
+    return "deviceclasses";
+}
+
 HttpReply *DeviceClassesResource::proccessRequest(const HttpRequest &request, const QStringList &urlTokens)
 {
 
@@ -248,6 +253,7 @@ void DeviceClassesResource::devicesDiscovered(const DeviceClassId &deviceClassId
         return; // Not the discovery we are waiting for.
 
     qCDebug(dcRest) << "Discovery finished. Found" << deviceDescriptors.count() << "devices.";
+
     HttpReply *reply = m_discoverRequests.take(deviceClassId);
     reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packDeviceDescriptors(deviceDescriptors)).toJson());
     reply->finished();

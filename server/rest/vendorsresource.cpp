@@ -20,6 +20,10 @@
 
 #include "vendorsresource.h"
 #include "network/httprequest.h"
+#include "loggingcategories.h"
+#include "guhcore.h"
+
+#include <QJsonDocument>
 
 namespace guhserver {
 
@@ -28,10 +32,33 @@ VendorsResource::VendorsResource(QObject *parent) :
 {
 }
 
+QString VendorsResource::name() const
+{
+    return "vendors";
+}
+
 HttpReply *VendorsResource::proccessRequest(const HttpRequest &request, const QStringList &urlTokens)
 {
-    Q_UNUSED(request)
-    Q_UNUSED(urlTokens)
+    // /api/v1/vendors/{vendorId}/
+    if (urlTokens.count() >= 4) {
+        m_vendorId = VendorId(urlTokens.at(3));
+        if (m_vendorId.isNull()) {
+            qCWarning(dcRest) << "Could not parse VendorId:" << urlTokens.at(3);
+            return createErrorReply(HttpReply::BadRequest);
+        }
+    }
+
+    // check method
+    HttpReply *reply;
+    switch (request.method()) {
+    case HttpRequest::Get:
+        reply = proccessGetRequest(request, urlTokens);
+        break;
+    default:
+        reply = createErrorReply(HttpReply::BadRequest);
+        break;
+    }
+    return reply;
 
     return createErrorReply(HttpReply::NotImplemented);
 }
@@ -39,33 +66,42 @@ HttpReply *VendorsResource::proccessRequest(const HttpRequest &request, const QS
 HttpReply *VendorsResource::proccessGetRequest(const HttpRequest &request, const QStringList &urlTokens)
 {
     Q_UNUSED(request)
-    Q_UNUSED(urlTokens)
+
+    // GET /api/v1/vendors
+    if (urlTokens.count() == 3)
+        return getVendors();
+
+    // GET /api/v1/vendors/{vendorId}
+    if (urlTokens.count() == 4)
+        return getVendor(m_vendorId);
 
     return createErrorReply(HttpReply::NotImplemented);
 }
 
-HttpReply *VendorsResource::proccessDeleteRequest(const HttpRequest &request, const QStringList &urlTokens)
+HttpReply *VendorsResource::getVendors() const
 {
-    Q_UNUSED(request)
-    Q_UNUSED(urlTokens)
+    qCDebug(dcRest) << "Get vendors";
+    HttpReply *reply = createSuccessReply();
 
-    return createErrorReply(HttpReply::NotImplemented);
+    QVariantList vendorsList;
+    foreach (const Vendor &vendor, GuhCore::instance()->supportedVendors()) {
+        vendorsList.append(JsonTypes::packVendor(vendor));
+    }
+    reply->setPayload(QJsonDocument::fromVariant(vendorsList).toJson());
+    return reply;
 }
 
-HttpReply *VendorsResource::proccessPutRequest(const HttpRequest &request, const QStringList &urlTokens)
+HttpReply *VendorsResource::getVendor(const VendorId &vendorId) const
 {
-    Q_UNUSED(request)
-    Q_UNUSED(urlTokens)
-
-    return createErrorReply(HttpReply::NotImplemented);
-}
-
-HttpReply *VendorsResource::proccessPostRequest(const HttpRequest &request, const QStringList &urlTokens)
-{
-    Q_UNUSED(request)
-    Q_UNUSED(urlTokens)
-
-    return createErrorReply(HttpReply::NotImplemented);
+    qCDebug(dcRest) << "Get vendor with id" << vendorId;
+    foreach (const Vendor &vendor, GuhCore::instance()->supportedVendors()) {
+        if (vendor.id() == vendorId) {
+            HttpReply *reply = createSuccessReply();
+            reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packVendor(vendor)).toJson());
+            return reply;
+        }
+    }
+    return createErrorReply(HttpReply::NotFound);
 }
 
 }

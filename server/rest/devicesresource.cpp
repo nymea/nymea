@@ -36,6 +36,11 @@ DevicesResource::DevicesResource(QObject *parent) :
     connect(GuhCore::instance(), &GuhCore::deviceEditFinished, this, &DevicesResource::deviceEditFinished);
 }
 
+QString DevicesResource::name() const
+{
+    return "devices";
+}
+
 HttpReply *DevicesResource::proccessRequest(const HttpRequest &request, const QStringList &urlTokens)
 {
     m_device = 0;
@@ -258,10 +263,10 @@ HttpReply *DevicesResource::addConfiguredDevice(const QByteArray &payload) const
 
     DeviceManager::DeviceError status;
     if (deviceDescriptorId.isNull()) {
-        qCDebug(dcRest) << "...adding device with params" << deviceParams;
+        qCDebug(dcRest) << "Adding device with params" << deviceParams;
         status = GuhCore::instance()->addConfiguredDevice(deviceClass, deviceParams, newDeviceId);
     } else {
-        qCDebug(dcRest) << "...adding discovered device with descriptor id" << deviceDescriptorId;
+        qCDebug(dcRest) << "Adding discovered device";
         status = GuhCore::instance()->addConfiguredDevice(deviceClass, deviceDescriptorId, newDeviceId);
     }
     if (status == DeviceManager::DeviceErrorAsync) {
@@ -274,7 +279,6 @@ HttpReply *DevicesResource::addConfiguredDevice(const QByteArray &payload) const
         return createErrorReply(HttpReply::InternalServerError);
 
     return createSuccessReply();
-
 }
 
 HttpReply *DevicesResource::editDevice(Device *device, const QByteArray &payload) const

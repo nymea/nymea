@@ -27,6 +27,7 @@
 #include "jsonhandler.h"
 #include "devicesresource.h"
 #include "deviceclassesresource.h"
+#include "vendorsresource.h"
 
 class HttpRequest;
 class HttpReply;
@@ -47,6 +48,7 @@ private:
 
     DevicesResource *m_deviceResource;
     DeviceClassesResource *m_deviceClassesResource;
+    VendorsResource *m_vendorsResource;
 
 private slots:
     void setup();

@@ -38,6 +38,8 @@ class RulesResource : public RestResource
 public:
     explicit RulesResource(QObject *parent = 0);
 
+    QString name() const override;
+
     HttpReply *proccessRequest(const HttpRequest &request, const QStringList &urlTokens) override;
 
 private:

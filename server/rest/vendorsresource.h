@@ -38,22 +38,19 @@ class VendorsResource : public RestResource
 public:
     explicit VendorsResource(QObject *parent = 0);
 
+    QString name() const override;
+
     HttpReply *proccessRequest(const HttpRequest &request, const QStringList &urlTokens) override;
 
 private:
+    VendorId m_vendorId;
+
     // Process method
     HttpReply *proccessGetRequest(const HttpRequest &request, const QStringList &urlTokens) override;
-    HttpReply *proccessDeleteRequest(const HttpRequest &request, const QStringList &urlTokens) override;
-    HttpReply *proccessPutRequest(const HttpRequest &request, const QStringList &urlTokens) override;
-    HttpReply *proccessPostRequest(const HttpRequest &request, const QStringList &urlTokens) override;
 
     // Get methods
-
-    // Delete methods
-
-    // Post methods
-
-    // Put methods
+    HttpReply *getVendors() const;
+    HttpReply *getVendor(const VendorId &vendorId) const;
 
 };
 

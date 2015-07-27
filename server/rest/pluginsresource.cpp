@@ -28,6 +28,11 @@ PluginsResource::PluginsResource(QObject *parent) :
 {
 }
 
+QString PluginsResource::name() const
+{
+    return "plugins";
+}
+
 HttpReply *PluginsResource::proccessRequest(const HttpRequest &request, const QStringList &urlTokens)
 {
     Q_UNUSED(request)

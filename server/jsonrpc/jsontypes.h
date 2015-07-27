@@ -165,6 +165,13 @@ public:
     static QVariantList packSupportedDevices(const VendorId &vendorId);
     static QVariantList packConfiguredDevices();
     static QVariantList packDeviceStates(Device *device);
+    static QVariantList packDeviceDescriptors(const QList<DeviceDescriptor> deviceDescriptors);
+
+
+    static QVariantList packActionTypes(const DeviceClass &deviceClass);
+    static QVariantList packStateTypes(const DeviceClass &deviceClass);
+    static QVariantList packEventTypes(const DeviceClass &deviceClass);
+
 
     static QVariantList packPlugins();
 

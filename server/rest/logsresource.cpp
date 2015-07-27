@@ -18,61 +18,54 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HTTPREQUEST_H
-#define HTTPREQUEST_H
+#include "logsresource.h"
+#include "network/httprequest.h"
 
-#include <QByteArray>
-#include <QUrlQuery>
-#include <QString>
-#include <QHash>
+namespace guhserver {
 
-class HttpRequest
+LogsResource::LogsResource(QObject *parent) :
+    RestResource(parent)
 {
-public:
-    enum RequestMethod {
-        Get,
-        Post,
-        Put,
-        Delete,
-        Unhandled
-    };
+}
 
-    explicit HttpRequest(QByteArray rawData);
+HttpReply *LogsResource::proccessRequest(const HttpRequest &request, const QStringList &urlTokens)
+{
+    Q_UNUSED(request)
+    Q_UNUSED(urlTokens)
 
-    QByteArray rawHeader() const;
-    QHash<QByteArray, QByteArray> rawHeaderList() const;
+    return createErrorReply(HttpReply::NotImplemented);
+}
 
-    RequestMethod method() const;
-    QString methodString() const;
-    QByteArray httpVersion() const;
+HttpReply *LogsResource::proccessGetRequest(const HttpRequest &request, const QStringList &urlTokens)
+{
+    Q_UNUSED(request)
+    Q_UNUSED(urlTokens)
 
-    QUrl url() const;
-    QUrlQuery urlQuery() const;
+    return createErrorReply(HttpReply::NotImplemented);}
 
-    QByteArray payload() const;
+HttpReply *LogsResource::proccessDeleteRequest(const HttpRequest &request, const QStringList &urlTokens)
+{
+    Q_UNUSED(request)
+    Q_UNUSED(urlTokens)
 
-    bool isValid() const;
-    bool hasPayload() const;
+    return createErrorReply(HttpReply::NotImplemented);
+}
 
-private:
-    QByteArray m_rawData;
-    QByteArray m_rawHeader;
-    QHash<QByteArray, QByteArray> m_rawHeaderList;
+HttpReply *LogsResource::proccessPutRequest(const HttpRequest &request, const QStringList &urlTokens)
+{
+    Q_UNUSED(request)
+    Q_UNUSED(urlTokens)
 
-    RequestMethod m_method;
-    QString m_methodString;
-    QByteArray m_httpVersion;
+    return createErrorReply(HttpReply::NotImplemented);
+}
 
-    QUrl m_url;
-    QUrlQuery m_urlQuery;
+HttpReply *LogsResource::proccessPostRequest(const HttpRequest &request, const QStringList &urlTokens)
+{
+    Q_UNUSED(request)
+    Q_UNUSED(urlTokens)
 
-    QByteArray m_payload;
+    return createErrorReply(HttpReply::NotImplemented);
+}
 
-    bool m_valid;
+}
 
-    RequestMethod getRequestMethodType(const QString &methodString);
-};
-
-QDebug operator<< (QDebug debug, const HttpRequest &httpRequest);
-
-#endif // HTTPREQUEST_H

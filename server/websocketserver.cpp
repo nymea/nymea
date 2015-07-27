@@ -23,8 +23,9 @@
 namespace guhserver {
 
 WebSocketServer::WebSocketServer(QObject *parent) :
-    QObject(parent)
+    TransportInterface(parent)
 {
+
 }
 
 }

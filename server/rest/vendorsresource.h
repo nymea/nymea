@@ -18,8 +18,8 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef DEVICESRESOURCE_H
-#define DEVICESRESOURCE_H
+#ifndef VENDORSRESOURCE_H
+#define VENDORSRESOURCE_H
 
 #include <QObject>
 #include <QHash>
@@ -32,22 +32,15 @@ class HttpRequest;
 
 namespace guhserver {
 
-class DevicesResource: public RestResource
+class VendorsResource : public RestResource
 {
     Q_OBJECT
 public:
-    explicit DevicesResource(QObject *parent = 0);
+    explicit VendorsResource(QObject *parent = 0);
 
     HttpReply *proccessRequest(const HttpRequest &request, const QStringList &urlTokens) override;
 
 private:
-    mutable QHash<ActionId, HttpReply *> m_asyncActionExecutions;
-    mutable QHash<DeviceId, HttpReply *> m_asynDeviceAdditions;
-    mutable QHash<Device *, HttpReply *> m_asyncEditDevice;
-    mutable QHash<QUuid, HttpReply *> m_asyncPairingRequests;
-
-    Device *m_device;
-
     // Process method
     HttpReply *proccessGetRequest(const HttpRequest &request, const QStringList &urlTokens) override;
     HttpReply *proccessDeleteRequest(const HttpRequest &request, const QStringList &urlTokens) override;
@@ -55,28 +48,15 @@ private:
     HttpReply *proccessPostRequest(const HttpRequest &request, const QStringList &urlTokens) override;
 
     // Get methods
-    HttpReply *getConfiguredDevices() const;
-    HttpReply *getConfiguredDevice(Device *device) const;
-    HttpReply *getDeviceStateValues(Device *device) const;
-    HttpReply *getDeviceStateValue(Device *device, const StateTypeId &stateTypeId) const;
 
     // Delete methods
-    HttpReply *removeDevice(Device *device) const;
 
     // Post methods
-    HttpReply *executeAction(Device *device, const ActionTypeId &actionTypeId, const QByteArray &payload) const;
-    HttpReply *addConfiguredDevice(const QByteArray &payload) const;
 
     // Put methods
-    HttpReply *editDevice(Device *device, const QByteArray &payload) const;
-
-private slots:
-    void actionExecuted(const ActionId &actionId, DeviceManager::DeviceError status);
-    void deviceSetupFinished(Device *device, DeviceManager::DeviceError status);
-    void deviceEditFinished(Device *device, DeviceManager::DeviceError status);
 
 };
 
 }
 
-#endif // DEVICESRESOURCE_H
+#endif // VENDORSRESOURCE_H

@@ -23,12 +23,14 @@
 
 #include <QObject>
 
+#include "transportinterface.h"
+
 // Note: WebSocket Protocol from the Internet Engineering Task Force (IETF) -> RFC6455 V13:
 //       http://tools.ietf.org/html/rfc6455
 
 namespace guhserver {
 
-class WebSocketServer : public QObject
+class WebSocketServer : public TransportInterface
 {
     Q_OBJECT
 public:

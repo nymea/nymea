@@ -18,61 +18,42 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HTTPREQUEST_H
-#define HTTPREQUEST_H
+#ifndef RESTRESOURCE_H
+#define RESTRESOURCE_H
 
-#include <QByteArray>
-#include <QUrlQuery>
-#include <QString>
-#include <QHash>
+#include <QObject>
+#include <QPair>
 
-class HttpRequest
+#include "network/httpreply.h"
+
+class HttpRequest;
+class HttpReply;
+class QVariant;
+
+namespace guhserver {
+
+class RestResource : public QObject
 {
+    Q_OBJECT
 public:
-    enum RequestMethod {
-        Get,
-        Post,
-        Put,
-        Delete,
-        Unhandled
-    };
+    explicit RestResource(QObject *parent = 0);
+    virtual ~RestResource() = 0;
 
-    explicit HttpRequest(QByteArray rawData);
+    virtual HttpReply *proccessRequest(const HttpRequest &request, const QStringList &urlTokens) = 0;
 
-    QByteArray rawHeader() const;
-    QHash<QByteArray, QByteArray> rawHeaderList() const;
-
-    RequestMethod method() const;
-    QString methodString() const;
-    QByteArray httpVersion() const;
-
-    QUrl url() const;
-    QUrlQuery urlQuery() const;
-
-    QByteArray payload() const;
-
-    bool isValid() const;
-    bool hasPayload() const;
+    static HttpReply *createSuccessReply();
+    static HttpReply *createErrorReply(const HttpReply::HttpStatusCode &statusCode);
+    static HttpReply *createAsyncReply();
+    static QPair<bool, QVariant> verifyPayload(const QByteArray &payload);
 
 private:
-    QByteArray m_rawData;
-    QByteArray m_rawHeader;
-    QHash<QByteArray, QByteArray> m_rawHeaderList;
+    virtual HttpReply *proccessGetRequest(const HttpRequest &request, const QStringList &urlTokens);
+    virtual HttpReply *proccessDeleteRequest(const HttpRequest &request, const QStringList &urlTokens);
+    virtual HttpReply *proccessPutRequest(const HttpRequest &request, const QStringList &urlTokens);
+    virtual HttpReply *proccessPostRequest(const HttpRequest &request, const QStringList &urlTokens);
 
-    RequestMethod m_method;
-    QString m_methodString;
-    QByteArray m_httpVersion;
-
-    QUrl m_url;
-    QUrlQuery m_urlQuery;
-
-    QByteArray m_payload;
-
-    bool m_valid;
-
-    RequestMethod getRequestMethodType(const QString &methodString);
 };
 
-QDebug operator<< (QDebug debug, const HttpRequest &httpRequest);
+}
 
-#endif // HTTPREQUEST_H
+#endif // RESTRESOURCE_H

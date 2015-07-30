@@ -275,8 +275,6 @@ void TestRestDeviceClasses::discoverDevices()
     QVariantList foundDevices = jsonDoc.toVariant().toList();
     QCOMPARE(foundDevices.count(), resultCount);
 
-    qDebug() << jsonDoc.toJson();
-
     // add the discovered device
     request.setUrl(QUrl("http://localhost:3000/api/v1/devices"));
     DeviceDescriptorId descriptorId = DeviceDescriptorId(foundDevices.first().toMap().value("id").toString());

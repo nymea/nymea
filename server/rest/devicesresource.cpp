@@ -312,12 +312,13 @@ HttpReply *DevicesResource::editDevice(Device *device, const QByteArray &payload
     QVariantMap params = verification.second.toMap();
     ParamList deviceParams = JsonTypes::unpackParams(params.value("deviceParams").toList());
 
-    qCDebug(dcRest) << "Edit device with params:" << deviceParams;
     DeviceManager::DeviceError status;
     DeviceDescriptorId deviceDescriptorId(params.value("deviceDescriptorId").toString());
     if (deviceDescriptorId.isNull()) {
+        qCDebug(dcRest) << "Edit device with params:" << deviceParams;
         status = GuhCore::instance()->editDevice(device->id(), deviceParams);
     } else {
+        qCDebug(dcRest) << "Edit device using the discovered device with descriptorId:" << deviceDescriptorId.toString();
         status = GuhCore::instance()->editDevice(device->id(), deviceDescriptorId);
     }
 

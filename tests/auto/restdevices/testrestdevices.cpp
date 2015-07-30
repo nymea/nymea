@@ -365,11 +365,9 @@ void TestRestDevices::editDevices_data()
     nameParam.insert("value", "Awesome Mockdevice");
     nameChangedDeviceParams.append(nameParam);
 
-
     QVariantList asyncAndPortChangeDeviceParams;
     asyncAndPortChangeDeviceParams.append(asyncParamDifferent);
     asyncAndPortChangeDeviceParams.append(httpportParamDifferent);
-
 
     QVariantList changeAllWritableDeviceParams;
     changeAllWritableDeviceParams.append(nameParam);
@@ -482,11 +480,210 @@ void TestRestDevices::editDevices()
 
 void TestRestDevices::editByDiscovery_data()
 {
+    QTest::addColumn<DeviceClassId>("deviceClassId");
+    QTest::addColumn<int>("resultCount");
+    QTest::addColumn<QVariantList>("discoveryParams");
+    QTest::addColumn<int>("expectedStatusCode");
 
+    QVariantList discoveryParams;
+    QVariantMap resultCountParam;
+    resultCountParam.insert("name", "resultCount");
+    resultCountParam.insert("value", 2);
+    discoveryParams.append(resultCountParam);
+
+    QTest::newRow("discover 2 devices with params") << mockDeviceClassId << 2 << discoveryParams << 200;
 }
 
 void TestRestDevices::editByDiscovery()
 {
+    QFETCH(DeviceClassId, deviceClassId);
+    QFETCH(int, resultCount);
+    QFETCH(QVariantList, discoveryParams);
+    QFETCH(int, expectedStatusCode);
+
+    QVariantMap params;
+    params.insert("deviceClassId", deviceClassId);
+    params.insert("discoveryParams", discoveryParams);
+
+    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
+    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
+
+    QUrl url(QString("http://localhost:3000/api/v1/deviceclasses/%1/discover").arg(deviceClassId.toString()));
+
+    if (!discoveryParams.isEmpty()) {
+        QUrlQuery query;
+        query.addQueryItem("params", QJsonDocument::fromVariant(discoveryParams).toJson(QJsonDocument::Compact));
+        url.setQuery(query);
+    }
+
+    clientSpy.clear();
+    QNetworkRequest request(url);
+    QNetworkReply *reply = nam->get(request);
+    clientSpy.wait();
+    QCOMPARE(clientSpy.count(), 1);
+    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    QCOMPARE(statusCode, expectedStatusCode);
+    QByteArray data = reply->readAll();
+    reply->deleteLater();
+
+    // check response
+    QJsonParseError error;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
+    QCOMPARE(error.error, QJsonParseError::NoError);
+    QVariantList foundDevices = jsonDoc.toVariant().toList();
+    QCOMPARE(foundDevices.count(), resultCount);
+
+    // add Discovered Device 1 port 55555
+    request.setUrl(QUrl("http://localhost:3000/api/v1/devices"));
+    DeviceDescriptorId descriptorId1;
+    foreach (const QVariant &descriptor, foundDevices) {
+        // find the device with port 55555
+        if (descriptor.toMap().value("description").toString() == "55555") {
+            descriptorId1 = DeviceDescriptorId(descriptor.toMap().value("id").toString());
+            qDebug() << descriptorId1.toString();
+            break;
+        }
+    }
+    params.clear();
+    params.insert("deviceClassId", deviceClassId);
+    params.insert("deviceDescriptorId", descriptorId1.toString());
+
+    clientSpy.clear();
+    QByteArray payload = QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact);
+    reply = nam->post(request, payload);
+    clientSpy.wait();
+    QCOMPARE(clientSpy.count(), 1);
+    statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    QCOMPARE(statusCode, expectedStatusCode);
+    data = reply->readAll();
+    reply->deleteLater();
+    jsonDoc = QJsonDocument::fromJson(data, &error);
+    QCOMPARE(error.error, QJsonParseError::NoError);
+    QVariantMap response = jsonDoc.toVariant().toMap();
+
+    DeviceId deviceId = DeviceId(response.value("deviceId").toString());
+    QVERIFY(!deviceId.isNull());
+
+
+    // and now rediscover, and edit the first device with the second
+    params.clear();
+    params.insert("deviceClassId", deviceClassId);
+    params.insert("discoveryParams", discoveryParams);
+
+    clientSpy.clear();
+    url = QUrl(QString("http://localhost:3000/api/v1/deviceclasses/%1/discover").arg(deviceClassId.toString()));
+    QUrlQuery query2;
+    query2.addQueryItem("params", QJsonDocument::fromVariant(discoveryParams).toJson(QJsonDocument::Compact));
+    url.setQuery(query2);
+    request = QNetworkRequest(url);
+    reply = nam->get(request);
+    clientSpy.wait();
+    QCOMPARE(clientSpy.count(), 1);
+    statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    QCOMPARE(statusCode, expectedStatusCode);
+    data = reply->readAll();
+    reply->deleteLater();
+    // check response
+    jsonDoc = QJsonDocument::fromJson(data, &error);
+    QCOMPARE(error.error, QJsonParseError::NoError);
+    foundDevices = jsonDoc.toVariant().toList();
+    QCOMPARE(foundDevices.count(), resultCount);
+
+    // get the second device
+    DeviceDescriptorId descriptorId2;
+    foreach (const QVariant &descriptor, foundDevices) {
+        // find the device with port 55556
+        if (descriptor.toMap().value("description").toString() == "55556") {
+            descriptorId2 = DeviceDescriptorId(descriptor.toMap().value("id").toString());
+            break;
+        }
+    }
+    QVERIFY(!descriptorId2.isNull());
+    qDebug() << "edit device 1 (55555) with descriptor 2 (55556) " << descriptorId2;
+
+    // EDIT
+    response.clear();
+    params.clear();
+    params.insert("deviceId", deviceId.toString());
+    params.insert("deviceDescriptorId", descriptorId2);
+
+    request = QNetworkRequest(QUrl(QString("http://localhost:3000/api/v1/devices/%1").arg(deviceId.toString())));
+
+    clientSpy.clear();
+    payload = QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact);
+    reply = nam->put(request, payload);
+    clientSpy.wait();
+    QCOMPARE(clientSpy.count(), 1);
+    statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    QCOMPARE(statusCode, expectedStatusCode);
+    reply->deleteLater();
+
+
+
+//    response = injectAndWait("Devices.EditDevice", params);
+//    verifyDeviceError(response, error);
+
+//    response.clear();
+//    response = injectAndWait("Devices.GetConfiguredDevices", QVariantMap());
+
+//    QVariantMap deviceMap;
+//    bool found = false;
+//    foreach (const QVariant device, response.toMap().value("params").toMap().value("devices").toList()) {
+//        if (DeviceId(device.toMap().value("id").toString()) == deviceId) {
+//            qDebug() << "found added device" << device.toMap().value("params");
+//            found = true;
+//            deviceMap = device.toMap();
+//            break;
+//        }
+//    }
+
+//    QVERIFY2(found, "Device missing in config!");
+//    QCOMPARE(deviceMap.value("id").toString(), deviceId.toString());
+//    if (deviceMap.contains("setupComplete")) {
+//        QVERIFY2(deviceMap.value("setupComplete").toBool(), "Setup not completed after edit");
+//    }
+
+//    // Note: this shows that by discovery a not editable param (name) can be changed!
+//    foreach (QVariant param, deviceMap.value("params").toList()) {
+//        if (param.toMap().value("name") == "name") {
+//            QCOMPARE(param.toMap().value("value").toString(), QString("Discovered Mock Device 2"));
+//        }
+//        if (param.toMap().value("name") == "httpport") {
+//            QCOMPARE(param.toMap().value("value").toInt(), 55556);
+//        }
+//    }
+
+//    // check if the daemons are running
+//    QNetworkAccessManager nam;
+//    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+
+//    // check if old daemon is still running (should not)
+//    QNetworkRequest request(QUrl(QString("http://localhost:%1").arg(55555)));
+//    QNetworkReply *reply = nam.get(request);
+//    spy.wait();
+//    QVERIFY2(reply->error(), "The old daemon is still running");
+//    reply->deleteLater();
+
+//    // check if the daemon is realy running on the new port
+//    request = QNetworkRequest(QUrl(QString("http://localhost:%1").arg(55556)));
+//    reply = nam.get(request);
+//    spy.wait();
+//    QVERIFY2(reply->error() == QNetworkReply::NoError, "The new daemon is not running");
+//    reply->deleteLater();
+
+
+
+
+    // remove added device
+    request = QNetworkRequest(QUrl(QString("http://localhost:3000/api/v1/devices/%1").arg(deviceId.toString())));
+    clientSpy.clear();
+    reply = nam->deleteResource(request);
+    clientSpy.wait();
+    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
+    statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    reply->deleteLater();
+    QCOMPARE(statusCode, expectedStatusCode);
+    nam->deleteLater();
 
 }
 

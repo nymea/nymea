@@ -285,7 +285,7 @@ void WebServer::onDisconnected()
 void WebServer::onError(QAbstractSocket::SocketError error)
 {
     QTcpSocket* socket = qobject_cast<QTcpSocket *>(sender());
-    qWarning(dcWebServer) << "Client socket error" << socket->peerAddress() << error << socket->errorString();
+    qCWarning(dcConnection) << "Client socket error" << socket->peerAddress() << error << socket->errorString();
 }
 
 bool WebServer::startServer()

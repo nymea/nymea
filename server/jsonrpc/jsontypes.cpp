@@ -702,7 +702,11 @@ QVariantList JsonTypes::packSupportedDevices(const VendorId &vendorId)
 
 QVariantList JsonTypes::packConfiguredDevices()
 {
-    return packRules(GuhCore::instance()->rules());
+    QVariantList configuredDeviceList;
+    foreach (Device *device, GuhCore::instance()->configuredDevices()) {
+        configuredDeviceList.append(packDevice(device));
+    }
+    return configuredDeviceList;
 }
 
 QVariantList JsonTypes::packDeviceStates(Device *device)
@@ -736,7 +740,7 @@ QVariantList JsonTypes::packRuleDescriptions()
     return rulesList;
 }
 
-QVariantList JsonTypes::packRuleDescriptions(const QList<Rule> rules)
+QVariantList JsonTypes::packRuleDescriptions(const QList<Rule> &rules)
 {
     QVariantList rulesList;
     foreach (const Rule &rule, rules) {

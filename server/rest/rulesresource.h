@@ -26,7 +26,7 @@
 
 #include "jsontypes.h"
 #include "restresource.h"
-#include "network/httpreply.h"
+#include "httpreply.h"
 
 class HttpRequest;
 
@@ -52,17 +52,18 @@ private:
     HttpReply *proccessPostRequest(const HttpRequest &request, const QStringList &urlTokens) override;
 
     // Get methods
-    HttpReply *getRules() const;
+    HttpReply *getRules(const DeviceId &deviceId) const;
     HttpReply *getRuleDetails(const RuleId &ruleId) const;
 
     // Delete methods
+    HttpReply *removeRule(const RuleId &ruleId) const;
 
     // Post methods
+    HttpReply *addRule(const QByteArray &payload) const;
 
     // Put methods
+    HttpReply *editRule(const RuleId &ruleId, const QByteArray &payload) const;
 
-
-    Rule findRule(const RuleId &ruleId) const;
 };
 
 }

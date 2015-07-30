@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "restresource.h"
-#include "network/httprequest.h"
+#include "httprequest.h"
 #include "loggingcategories.h"
 #include "guhcore.h"
 
@@ -47,6 +47,7 @@ HttpReply *RestResource::createSuccessReply()
 HttpReply *RestResource::createErrorReply(const HttpReply::HttpStatusCode &statusCode)
 {
     HttpReply *reply = new HttpReply(statusCode, HttpReply::TypeSync);
+    reply->setPayload(QByteArray::number(reply->httpStatusCode()) + " " + reply->httpReasonPhrase());
     return reply;
 }
 

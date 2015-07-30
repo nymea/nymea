@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "pluginsresource.h"
-#include "network/httprequest.h"
+#include "httprequest.h"
 #include "loggingcategories.h"
 #include "guhcore.h"
 
@@ -30,6 +30,7 @@ namespace guhserver {
 PluginsResource::PluginsResource(QObject *parent) :
     RestResource(parent)
 {
+
 }
 
 QString PluginsResource::name() const

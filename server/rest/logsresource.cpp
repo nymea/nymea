@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "logsresource.h"
-#include "network/httprequest.h"
+#include "httprequest.h"
 
 namespace guhserver {
 

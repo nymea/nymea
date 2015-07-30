@@ -169,7 +169,7 @@ public:
     static QVariantList packDeviceDescriptors(const QList<DeviceDescriptor> deviceDescriptors);
 
     static QVariantList packRuleDescriptions();
-    static QVariantList packRuleDescriptions(const QList<Rule> rules);
+    static QVariantList packRuleDescriptions(const QList<Rule> &rules);
 
     static QVariantList packActionTypes(const DeviceClass &deviceClass);
     static QVariantList packStateTypes(const DeviceClass &deviceClass);

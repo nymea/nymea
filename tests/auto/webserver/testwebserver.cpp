@@ -216,10 +216,20 @@ void TestWebserver::badRequests_data()
     wrongContentLength.append("\r\n");
     wrongContentLength.append("longer content than told in the header");
 
+    QByteArray wrongHeaderFormatting;
+    wrongHeaderFormatting.append("PUT / HTTP/1.1\r\n");
+    wrongHeaderFormatting.append("User-Agent webserver test\r\n");
+    wrongHeaderFormatting.append("Content-Length: 1\r\n");
+    wrongHeaderFormatting.append("\r\n");
 
+    QByteArray userAgentMissing;
+    userAgentMissing.append("GET / HTTP/1.1\r\n");
+    userAgentMissing.append("\r\n");
 
 
     QTest::newRow("wrong content length") << wrongContentLength << 400;
+    QTest::newRow("invalid header formatting") << wrongHeaderFormatting << 400;
+    QTest::newRow("user agent missing") << userAgentMissing << 400;
 
 }
 

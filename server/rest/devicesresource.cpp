@@ -282,7 +282,7 @@ HttpReply *DevicesResource::addConfiguredDevice(const QByteArray &payload) const
         qCDebug(dcRest) << "Adding device with " << deviceParams;
         status = GuhCore::instance()->addConfiguredDevice(deviceClassId, deviceParams, newDeviceId);
     } else {
-        qCDebug(dcRest) << "Adding discovered device";
+        qCDebug(dcRest) << "Adding discovered device with DeviceDescriptorId" << deviceDescriptorId.toString();
         status = GuhCore::instance()->addConfiguredDevice(deviceClassId, deviceDescriptorId, newDeviceId);
     }
     if (status == DeviceManager::DeviceErrorAsync) {

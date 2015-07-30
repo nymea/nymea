@@ -1,2 +1,15 @@
 TEMPLATE=subdirs
-SUBDIRS=versioning devices jsonrpc events states actions rules plugins webserver restdevices
+
+SUBDIRS=versioning \
+        devices \
+        jsonrpc \
+        events \
+        states \
+        actions \
+        rules \
+        plugins \
+        webserver \
+        restdevices \
+        restdeviceclasses \
+        restplugins \
+        restvendors \

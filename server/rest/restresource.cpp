@@ -78,7 +78,6 @@ HttpReply *RestResource::proccessPostRequest(const HttpRequest &request, const Q
 {
     Q_UNUSED(request)
     Q_UNUSED(urlTokens)
-
     return createErrorReply(HttpReply::NotImplemented);
 }
 
@@ -86,7 +85,6 @@ HttpReply *RestResource::proccessPutRequest(const HttpRequest &request, const QS
 {
     Q_UNUSED(request)
     Q_UNUSED(urlTokens)
-
     return createErrorReply(HttpReply::NotImplemented);
 }
 
@@ -94,7 +92,6 @@ HttpReply *RestResource::proccessDeleteRequest(const HttpRequest &request, const
 {
     Q_UNUSED(request)
     Q_UNUSED(urlTokens)
-
     return createErrorReply(HttpReply::NotImplemented);
 }
 
@@ -102,7 +99,6 @@ HttpReply *RestResource::proccessGetRequest(const HttpRequest &request, const QS
 {
     Q_UNUSED(request)
     Q_UNUSED(urlTokens)
-
     return createErrorReply(HttpReply::NotImplemented);
 }
 

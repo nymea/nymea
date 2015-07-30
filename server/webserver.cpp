@@ -102,7 +102,7 @@ bool WebServer::verifyFile(QTcpSocket *socket, const QString &fileName)
 
     // make shore the file exists
     if (!file.exists()) {
-        qCWarning(dcWebServer) << "requested file" << file.fileName() << "does not exist.";
+        qCWarning(dcWebServer) << "requested file" << file.filePath() << "does not exist.";
         HttpReply reply(HttpReply::NotFound);
         reply.setPayload("404 Not found.");
         reply.packReply();
@@ -195,6 +195,7 @@ void WebServer::readClient()
 
     HttpRequest request;
     if (m_incompleteRequests.contains(socket)) {
+        qCWarning(dcWebServer) << "Append data to incomlete request";
         request = m_incompleteRequests.take(socket);
         request.appendData(data);
     } else {
@@ -202,7 +203,6 @@ void WebServer::readClient()
     }
 
     if (!request.isComplete()) {
-        qCWarning(dcWebServer) << "Hash incomplete message.";
         m_incompleteRequests.insert(socket, request);
         return;
     }

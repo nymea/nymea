@@ -53,6 +53,12 @@ private slots:
     void getStateValue_data();
     void getStateValue();
 
+    void editDevices_data();
+    void editDevices();
+
+    void editByDiscovery_data();
+    void editByDiscovery();
+
 private:
     // for debugging
     void printResponse(QNetworkReply *reply, const QByteArray &data);
@@ -331,6 +337,157 @@ void TestRestDevices::getStateValue()
     int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     QCOMPARE(statusCode, expectedStatusCode);
     reply->deleteLater();
+}
+
+void TestRestDevices::editDevices_data()
+{
+    QVariantList asyncChangeDeviceParams;
+    QVariantMap asyncParamDifferent;
+    asyncParamDifferent.insert("name", "async");
+    asyncParamDifferent.insert("value", true);
+    asyncChangeDeviceParams.append(asyncParamDifferent);
+
+    QVariantList httpportChangeDeviceParams;
+    QVariantMap httpportParamDifferent;
+    httpportParamDifferent.insert("name", "httpport");
+    httpportParamDifferent.insert("value", 8893); // if change -> change also newPort in editDevices()
+    httpportChangeDeviceParams.append(httpportParamDifferent);
+
+    QVariantList brokenChangedDeviceParams;
+    QVariantMap brokenParamDifferent;
+    brokenParamDifferent.insert("name", "broken");
+    brokenParamDifferent.insert("value", true);
+    brokenChangedDeviceParams.append(brokenParamDifferent);
+
+    QVariantList nameChangedDeviceParams;
+    QVariantMap nameParam;
+    nameParam.insert("name", "name");
+    nameParam.insert("value", "Awesome Mockdevice");
+    nameChangedDeviceParams.append(nameParam);
+
+
+    QVariantList asyncAndPortChangeDeviceParams;
+    asyncAndPortChangeDeviceParams.append(asyncParamDifferent);
+    asyncAndPortChangeDeviceParams.append(httpportParamDifferent);
+
+
+    QVariantList changeAllWritableDeviceParams;
+    changeAllWritableDeviceParams.append(nameParam);
+    changeAllWritableDeviceParams.append(asyncParamDifferent);
+    changeAllWritableDeviceParams.append(httpportParamDifferent);
+
+
+    QTest::addColumn<bool>("broken");
+    QTest::addColumn<QVariantList>("newDeviceParams");
+    QTest::addColumn<int>("expectedStatusCode");
+
+    QTest::newRow("valid - change async param") << false << asyncChangeDeviceParams << 200;
+    QTest::newRow("valid - change httpport param") << false <<  httpportChangeDeviceParams << 200;
+    QTest::newRow("valid - change httpport and async param") << false << asyncAndPortChangeDeviceParams << 200;
+    QTest::newRow("invalid - change name param (not writable)") << false << nameChangedDeviceParams << 500;
+    QTest::newRow("invalid - change all params (except broken)") << false << changeAllWritableDeviceParams << 500;
+}
+
+void TestRestDevices::editDevices()
+{
+    QFETCH(bool, broken);
+    QFETCH(QVariantList, newDeviceParams);
+    QFETCH(int, expectedStatusCode);
+
+    // add device
+    QVariantMap params;
+    params.insert("deviceClassId", mockDeviceClassId);
+    QVariantList deviceParams;
+    QVariantMap nameParam;
+    nameParam.insert("name", "name");
+    nameParam.insert("value", "Test edit mockdevice");
+    deviceParams.append(nameParam);
+    QVariantMap asyncParam;
+    asyncParam.insert("name", "async");
+    asyncParam.insert("value", false);
+    deviceParams.append(asyncParam);
+    QVariantMap brokenParam;
+    brokenParam.insert("name", "broken");
+    brokenParam.insert("value", broken);
+    deviceParams.append(brokenParam);
+    QVariantMap httpportParam;
+    httpportParam.insert("name", "httpport");
+    httpportParam.insert("value", 8892);
+    deviceParams.append(httpportParam);
+    params.insert("deviceParams", deviceParams);
+
+    // add a mockdevice
+    QNetworkAccessManager *nam = new QNetworkAccessManager();
+    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
+
+    QNetworkRequest request(QUrl(QString("http://localhost:3000/api/v1/devices")));
+
+    QNetworkReply *reply = nam->post(request, QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact));
+    clientSpy.wait();
+    QCOMPARE(clientSpy.count(), 1);
+
+    QByteArray data = reply->readAll();
+    int statusCode;
+
+    QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
+    reply->deleteLater();
+    QVariantMap responseMap = QJsonDocument::fromJson(data).toVariant().toMap();
+    DeviceId deviceId = DeviceId(responseMap.value("deviceId").toString());
+    qDebug() << deviceId.toString();
+    QVERIFY2(deviceId != DeviceId(), "DeviceId not returned");
+
+
+    // now EDIT the added device
+    QVariantMap editParams;
+    editParams.insert("deviceId", deviceId);
+    editParams.insert("deviceParams", newDeviceParams);
+
+    request.setUrl(QUrl(QString("http://localhost:3000/api/v1/devices/%1").arg(deviceId.toString())));
+    clientSpy.clear();
+    reply = nam->put(request, QJsonDocument::fromVariant(editParams).toJson(QJsonDocument::Compact));
+    clientSpy.wait();
+    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
+    statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    QCOMPARE(statusCode, expectedStatusCode);
+    reply->deleteLater();
+
+    // if the edit should have been successfull
+    if (expectedStatusCode == 200) {
+
+        request.setUrl(QUrl(QString("http://localhost:3000/api/v1/devices/%1").arg(deviceId.toString())));
+        clientSpy.clear();
+        reply = nam->get(request);
+        clientSpy.wait();
+        QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
+        statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+
+        QVariantMap deviceMap = QJsonDocument::fromJson(reply->readAll()).toVariant().toMap();
+
+        verifyParams(newDeviceParams, deviceMap.value("params").toList(), false);
+
+        QCOMPARE(statusCode, 200);
+        reply->deleteLater();
+    }
+
+    // delete it
+    request.setUrl(QUrl(QString("http://localhost:3000/api/v1/devices/%1").arg(deviceId.toString())));
+    clientSpy.clear();
+    reply = nam->deleteResource(request);
+    clientSpy.wait();
+    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
+    statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    reply->deleteLater();
+    QCOMPARE(statusCode, 200);
+}
+
+void TestRestDevices::editByDiscovery_data()
+{
+
+}
+
+void TestRestDevices::editByDiscovery()
+{
+
 }
 
 void TestRestDevices::printResponse(QNetworkReply *reply, const QByteArray &data)

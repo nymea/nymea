@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "vendorsresource.h"
-#include "network/httprequest.h"
+#include "httprequest.h"
 #include "loggingcategories.h"
 #include "guhcore.h"
 

@@ -26,7 +26,7 @@
 
 #include "jsontypes.h"
 #include "restresource.h"
-#include "network/httpreply.h"
+#include "httpreply.h"
 
 class HttpRequest;
 
@@ -44,7 +44,7 @@ public:
 
 private:
     mutable QHash<ActionId, HttpReply *> m_asyncActionExecutions;
-    mutable QHash<DeviceId, HttpReply *> m_asynDeviceAdditions;
+    mutable QHash<DeviceId, HttpReply *> m_asyncDeviceAdditions;
     mutable QHash<Device *, HttpReply *> m_asyncEditDevice;
     mutable QHash<QUuid, HttpReply *> m_asyncPairingRequests;
 

@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "deviceclassesresource.h"
-#include "network/httprequest.h"
+#include "httprequest.h"
 #include "guhcore.h"
 
 #include <QJsonDocument>
@@ -135,19 +135,17 @@ HttpReply *DeviceClassesResource::proccessGetRequest(const HttpRequest &request,
 
     // GET /api/v1/deviceclasses/{deviceClassId}/discover?name=paramName&value=paramValue
     if (urlTokens.count() == 5 && urlTokens.at(4) == "discover") {
+        ParamList params;
+        if (request.urlQuery().hasQueryItem("params")) {
+            QString paramMapString = request.urlQuery().queryItemValue("params");
 
-        // FIXME: find a better way to get discovery params
-
-        ParamList paramList;
-        if (request.url().hasQuery()) {
-            if (request.urlQuery().hasQueryItem("name") && request.urlQuery().hasQueryItem("name")) {
-                paramList.append(Param(request.urlQuery().queryItemValue("name"), QVariant(request.urlQuery().queryItemValue("value"))));
-            } else {
-                qCWarning(dcRest) << "Invalid discovery params in" << request.urlQuery().query();
+            QPair<bool, QVariant> verification = verifyPayload(paramMapString.toUtf8());
+            if (!verification.first)
                 return createErrorReply(HttpReply::BadRequest);
-            }
+
+            params = JsonTypes::unpackParams(verification.second.toList());
         }
-        return getDiscoverdDevices(paramList);
+        return getDiscoverdDevices(params);
     }
 
     return createErrorReply(HttpReply::BadRequest);
@@ -230,6 +228,7 @@ HttpReply *DeviceClassesResource::getEventType(const EventTypeId &eventTypeId)
 HttpReply *DeviceClassesResource::getDiscoverdDevices(const ParamList &discoveryParams)
 {
     qCDebug(dcRest) << "Discover devices for DeviceClass" << m_deviceClass.id();
+    qCDebug(dcRest) << discoveryParams;
 
     DeviceManager::DeviceError status = GuhCore::instance()->discoverDevices(m_deviceClass.id(), discoveryParams);
 

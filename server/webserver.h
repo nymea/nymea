@@ -25,12 +25,11 @@
 #include <QHash>
 #include <QDir>
 #include <QUuid>
-
+#include <QTcpSocket>
 
 #include "transportinterface.h"
 
 class QTcpServer;
-class QTcpSocket;
 class HttpRequest;
 class HttpReply;
 
@@ -56,6 +55,7 @@ private:
     QTcpServer *m_server;
 
     QHash<QUuid, QTcpSocket *> m_clientList;
+    QHash<QTcpSocket *, HttpRequest> m_incompleteRequests;
 
     bool m_enabled;
     qint16 m_port;
@@ -74,6 +74,7 @@ private slots:
     void onNewConnection();
     void readClient();
     void onDisconnected();
+    void onError(QAbstractSocket::SocketError error);
 
 public slots:
     bool startServer() override;

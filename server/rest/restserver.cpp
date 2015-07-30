@@ -20,8 +20,8 @@
 
 #include "restserver.h"
 #include "loggingcategories.h"
-#include "network/httprequest.h"
-#include "network/httpreply.h"
+#include "httprequest.h"
+#include "httpreply.h"
 #include "guhcore.h"
 
 #include <QJsonDocument>
@@ -64,7 +64,6 @@ void RestServer::clientDisconnected(const QUuid &clientId)
 void RestServer::processHttpRequest(const QUuid &clientId, const HttpRequest &request)
 {
     qCDebug(dcRest) << "Process HTTP request";
-    qCDebug(dcRest) << request;
 
     QStringList urlTokens = request.url().path().split("/");
     urlTokens.removeAll(QString());
@@ -86,8 +85,8 @@ void RestServer::processHttpRequest(const QUuid &clientId, const HttpRequest &re
         reply->setClientId(clientId);
         if (reply->type() == HttpReply::TypeAsync) {
             connect(reply, &HttpReply::finished, this, &RestServer::asyncReplyFinished);
-            reply->startWait();
             m_asyncReplies.insert(clientId, reply);
+            reply->startWait();
             return;
         }
         m_webserver->sendHttpReply(reply);
@@ -100,8 +99,8 @@ void RestServer::processHttpRequest(const QUuid &clientId, const HttpRequest &re
         reply->setClientId(clientId);
         if (reply->type() == HttpReply::TypeAsync) {
             connect(reply, &HttpReply::finished, this, &RestServer::asyncReplyFinished);
-            reply->startWait();
             m_asyncReplies.insert(clientId, reply);
+            reply->startWait();
             return;
         }
         m_webserver->sendHttpReply(reply);
@@ -114,8 +113,8 @@ void RestServer::processHttpRequest(const QUuid &clientId, const HttpRequest &re
         reply->setClientId(clientId);
         if (reply->type() == HttpReply::TypeAsync) {
             connect(reply, &HttpReply::finished, this, &RestServer::asyncReplyFinished);
-            reply->startWait();
             m_asyncReplies.insert(clientId, reply);
+            reply->startWait();
             return;
         }
         m_webserver->sendHttpReply(reply);
@@ -128,8 +127,8 @@ void RestServer::processHttpRequest(const QUuid &clientId, const HttpRequest &re
         reply->setClientId(clientId);
         if (reply->type() == HttpReply::TypeAsync) {
             connect(reply, &HttpReply::finished, this, &RestServer::asyncReplyFinished);
-            reply->startWait();
             m_asyncReplies.insert(clientId, reply);
+            reply->startWait();
             return;
         }
         m_webserver->sendHttpReply(reply);
@@ -142,8 +141,8 @@ void RestServer::processHttpRequest(const QUuid &clientId, const HttpRequest &re
         reply->setClientId(clientId);
         if (reply->type() == HttpReply::TypeAsync) {
             connect(reply, &HttpReply::finished, this, &RestServer::asyncReplyFinished);
-            reply->startWait();
             m_asyncReplies.insert(clientId, reply);
+            reply->startWait();
             return;
         }
         m_webserver->sendHttpReply(reply);
@@ -160,13 +159,10 @@ void RestServer::asyncReplyFinished()
 {
     HttpReply *reply = qobject_cast<HttpReply*>(sender());
 
-    qCDebug(dcWebServer) << "sending reply" << reply->data();
+    qCDebug(dcWebServer) << "Async reply finished";
 
-    if (!reply->timedOut()) {
-        reply->setHttpStatusCode(HttpReply::Ok);
-    } else {
+    if (reply->timedOut())
         reply->setHttpStatusCode(HttpReply::GatewayTimeout);
-    }
 
     m_webserver->sendHttpReply(reply);
     reply->deleteLater();

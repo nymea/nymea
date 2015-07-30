@@ -77,6 +77,8 @@ public:
     void setHttpStatusCode(const HttpStatusCode &statusCode);
     HttpStatusCode httpStatusCode() const;
 
+    QByteArray httpReasonPhrase() const;
+
     Type type() const;
 
     void setClientId(const QUuid &clientId);
@@ -101,6 +103,7 @@ public:
 
 private:
     HttpStatusCode m_statusCode;
+    QByteArray m_reasonPhrase;
     Type m_type;
     QUuid m_clientId;
 
@@ -110,11 +113,14 @@ private:
 
     QHash<QByteArray, QByteArray> m_rawHeaderList;
 
-    QTimer m_timer;
+    QTimer *m_timer;
     bool m_timedOut;
 
     QByteArray getHttpReasonPhrase(const HttpStatusCode &statusCode);
     QByteArray getHeaderType(const HttpHeaderType &headerType);
+
+private slots:
+    void timeout();
 
 public slots:
     void startWait();
@@ -122,8 +128,6 @@ public slots:
 signals:
     void finished();
 
-private slots:
-    void timeout();
 
 };
 

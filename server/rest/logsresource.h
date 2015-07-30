@@ -26,7 +26,7 @@
 
 #include "jsontypes.h"
 #include "restresource.h"
-#include "network/httpreply.h"
+#include "httpreply.h"
 
 class HttpRequest;
 

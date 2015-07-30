@@ -632,7 +632,6 @@ void DeviceHandler::pairingFinished(const PairingTransactionId &pairingTransacti
         reply->finished();
         return;
     }
-
     m_asynDeviceAdditions.insert(deviceId, reply);
 }
 

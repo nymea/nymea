@@ -19,7 +19,8 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "rulesresource.h"
-#include "network/httprequest.h"
+#include "httprequest.h"
+#include "typeutils.h"
 #include "loggingcategories.h"
 #include "guhcore.h"
 
@@ -46,6 +47,10 @@ HttpReply *RulesResource::proccessRequest(const HttpRequest &request, const QStr
             qCWarning(dcRest) << "Could not parse RuleId:" << urlTokens.at(3);
             return createErrorReply(HttpReply::BadRequest);
         }
+
+        if (GuhCore::instance()->findRule(m_ruleId).id().isNull())
+            return createErrorReply(HttpReply::NotFound);
+
     }
 
     // check method
@@ -72,8 +77,16 @@ HttpReply *RulesResource::proccessGetRequest(const HttpRequest &request, const Q
     Q_UNUSED(request)
 
     // GET /api/v1/rules
-    if (urlTokens.count() == 3)
-        return getRules();
+    if (urlTokens.count() == 3) {
+        // check if we should filter for rules containing a certain device
+        DeviceId deviceId;
+        if (request.url().hasQuery() && request.urlQuery().hasQueryItem("deviceId")) {
+            deviceId = DeviceId(request.urlQuery().queryItemValue("deviceId"));
+            if (deviceId.isNull())
+                createErrorReply(HttpReply::BadRequest);
+        }
+        return getRules(deviceId);
+    }
 
     // GET /api/v1/rules/{ruleId}
     if (urlTokens.count() == 4)
@@ -85,48 +98,64 @@ HttpReply *RulesResource::proccessGetRequest(const HttpRequest &request, const Q
 HttpReply *RulesResource::proccessDeleteRequest(const HttpRequest &request, const QStringList &urlTokens)
 {
     Q_UNUSED(request)
-    Q_UNUSED(urlTokens)
+
+    // DELETE /api/v1/rules
+    if (urlTokens.count() == 3)
+        return createErrorReply(HttpReply::BadRequest);
+
+    // DELETE /api/v1/rules/{ruleId}
+    if (urlTokens.count() == 4)
+        return removeRule(m_ruleId);
 
     return createErrorReply(HttpReply::NotImplemented);
 }
 
 HttpReply *RulesResource::proccessPutRequest(const HttpRequest &request, const QStringList &urlTokens)
 {
-    Q_UNUSED(request)
-    Q_UNUSED(urlTokens)
+    // PUT /api/v1/rules
+    if (urlTokens.count() == 3)
+        return createErrorReply(HttpReply::BadRequest);
+
+    // PUT /api/v1/rules/{ruleId}
+    if (urlTokens.count() == 4)
+        return editRule(m_ruleId, request.payload());
 
     return createErrorReply(HttpReply::NotImplemented);
 }
 
 HttpReply *RulesResource::proccessPostRequest(const HttpRequest &request, const QStringList &urlTokens)
-{
-    Q_UNUSED(request)
-    Q_UNUSED(urlTokens)
+{    
+    // POST /api/v1/rules
+    if (urlTokens.count() == 3)
+        return addRule(request.payload());
 
     return createErrorReply(HttpReply::NotImplemented);
 }
 
-HttpReply *RulesResource::getRules() const
+HttpReply *RulesResource::getRules(const DeviceId &deviceId) const
 {
-    qCDebug(dcRest) << "Get rule descriptions";
     HttpReply *reply = createSuccessReply();
-    reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packRuleDescriptions()).toJson());
-    return reply;
-}
 
-Rule RulesResource::findRule(const RuleId &ruleId) const
-{
-    foreach (const Rule &rule, GuhCore::instance()->rules()) {
-        if (rule.id() == ruleId) {
-            return rule;
+    if (deviceId.isNull()) {
+        qCDebug(dcRest) << "Get rule descriptions";
+        reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packRuleDescriptions()).toJson());
+    } else {
+        qCDebug(dcRest) << "Get rule descriptions which contain the device with id" << deviceId.toString();
+        QList<RuleId> ruleIdsList = GuhCore::instance()->findRules(deviceId);
+        QList<Rule> ruleList;
+        foreach (const RuleId &ruleId, ruleIdsList) {
+            Rule rule = GuhCore::instance()->findRule(ruleId);
+            if (!rule.id().isNull())
+                ruleList.append(rule);
         }
+        reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packRuleDescriptions(ruleList)).toJson());
     }
-    return Rule();
+    return reply;
 }
 
 HttpReply *RulesResource::getRuleDetails(const RuleId &ruleId) const
 {
-    Rule rule = findRule(ruleId);
+    Rule rule = GuhCore::instance()->findRule(ruleId);
     if (rule.id().isNull())
         return createErrorReply(HttpReply::NotFound);
 
@@ -134,6 +163,35 @@ HttpReply *RulesResource::getRuleDetails(const RuleId &ruleId) const
     HttpReply *reply = createSuccessReply();
     reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packRule(rule)).toJson());
     return reply;
+}
+
+HttpReply *RulesResource::removeRule(const RuleId &ruleId) const
+{
+    qCDebug(dcRest) << "Remove rule with id" << ruleId.toString();
+
+    RuleEngine::RuleError status = GuhCore::instance()->removeRule(ruleId);
+
+    if (status == RuleEngine::RuleErrorNoError)
+        return createSuccessReply();
+
+    return createErrorReply(HttpReply::InternalServerError);
+}
+
+HttpReply *RulesResource::addRule(const QByteArray &payload) const
+{
+    Q_UNUSED(payload)
+    qCDebug(dcRest) << "Add new rule";
+
+
+    return createErrorReply(HttpReply::NotImplemented);
+}
+
+HttpReply *RulesResource::editRule(const RuleId &ruleId, const QByteArray &payload) const
+{
+    Q_UNUSED(payload)
+    qCDebug(dcRest) << "Edit rule with id" << ruleId;
+
+    return createErrorReply(HttpReply::NotImplemented);
 }
 
 }

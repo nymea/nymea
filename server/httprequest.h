@@ -37,7 +37,8 @@ public:
         Unhandled
     };
 
-    explicit HttpRequest(QByteArray rawData);
+    HttpRequest();
+    HttpRequest(QByteArray rawData);
 
     QByteArray rawHeader() const;
     QHash<QByteArray, QByteArray> rawHeaderList() const;
@@ -52,7 +53,10 @@ public:
     QByteArray payload() const;
 
     bool isValid() const;
+    bool isComplete() const;
     bool hasPayload() const;
+
+    void appendData(const QByteArray &data);
 
 private:
     QByteArray m_rawData;
@@ -69,7 +73,9 @@ private:
     QByteArray m_payload;
 
     bool m_valid;
+    bool m_isComplete;
 
+    void validate();
     RequestMethod getRequestMethodType(const QString &methodString);
 };
 

@@ -24,10 +24,9 @@
 #include <QObject>
 #include <QPair>
 
-#include "network/httpreply.h"
+#include "httpreply.h"
+#include "httprequest.h"
 
-class HttpRequest;
-class HttpReply;
 class QVariant;
 
 namespace guhserver {
@@ -53,6 +52,10 @@ private:
     virtual HttpReply *proccessDeleteRequest(const HttpRequest &request, const QStringList &urlTokens);
     virtual HttpReply *proccessPutRequest(const HttpRequest &request, const QStringList &urlTokens);
     virtual HttpReply *proccessPostRequest(const HttpRequest &request, const QStringList &urlTokens);
+
+    QHash<QPair<HttpRequest::RequestMethod, QString>, QString> m_descriptions;
+    QHash<QString, QVariantMap> m_params;
+    QHash<QString, QVariantMap> m_returns;
 
 };
 

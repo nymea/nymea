@@ -25,6 +25,8 @@ SOURCES += $$top_srcdir/server/guhcore.cpp \
     $$top_srcdir/server/transportinterface.cpp \
     $$top_srcdir/server/servermanager.cpp \
     $$top_srcdir/server/websocketserver.cpp \
+    $$top_srcdir/server/httprequest.cpp \
+    $$top_srcdir/server/httpreply.cpp \
     $$top_srcdir/server/rest/restserver.cpp \
     $$top_srcdir/server/rest/restresource.cpp \
     $$top_srcdir/server/rest/devicesresource.cpp \
@@ -57,6 +59,8 @@ HEADERS += $$top_srcdir/server/guhcore.h \
     $$top_srcdir/server/transportinterface.h \
     $$top_srcdir/server/servermanager.h \
     $$top_srcdir/server/websocketserver.h \
+    $$top_srcdir/server/httprequest.h \
+    $$top_srcdir/server/httpreply.h \
     $$top_srcdir/server/rest/restserver.h \
     $$top_srcdir/server/rest/restresource.h \
     $$top_srcdir/server/rest/devicesresource.h \

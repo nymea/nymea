@@ -30,7 +30,6 @@
 
   \note RFC 7231 HTTP/1.1 Semantics and Content -> \l{http://tools.ietf.org/html/rfc7231}{http://tools.ietf.org/html/rfc7231}
 
-
 */
 
 /*! \enum HttpReply::HttpStatusCode
@@ -105,6 +104,7 @@
 
 #include <QDateTime>
 #include <QPair>
+#include <QDebug>
 
 /*! Construct a HttpReply with the given \a statusCode. */
 HttpReply::HttpReply(QObject *parent) :
@@ -114,7 +114,10 @@ HttpReply::HttpReply(QObject *parent) :
     m_payload(QByteArray()),
     m_timedOut(false)
 {
-    connect(&m_timer, &QTimer::timeout, this, &HttpReply::timedOut);
+    m_timer = new QTimer(this);
+    connect(m_timer, &QTimer::timeout, this, &HttpReply::timedOut);
+
+    m_reasonPhrase = getHttpReasonPhrase(m_statusCode);
 
     // set known headers
     setHeader(HttpHeaderType::ServerHeader, "guh/" + QByteArray(GUH_VERSION_STRING));
@@ -130,7 +133,10 @@ HttpReply::HttpReply(const HttpReply::HttpStatusCode &statusCode, const HttpRepl
     m_payload(QByteArray()),
     m_timedOut(false)
 {
-    connect(&m_timer, &QTimer::timeout, this, &HttpReply::timedOut);
+    m_timer = new QTimer(this);
+    connect(m_timer, &QTimer::timeout, this, &HttpReply::timeout);
+
+    m_reasonPhrase = getHttpReasonPhrase(m_statusCode);
 
     // set known headers
     setHeader(HttpHeaderType::ServerHeader, "guh/" + QByteArray(GUH_VERSION_STRING));
@@ -150,6 +156,11 @@ void HttpReply::setHttpStatusCode(const HttpReply::HttpStatusCode &statusCode)
 HttpReply::HttpStatusCode HttpReply::httpStatusCode() const
 {
     return m_statusCode;
+}
+
+QByteArray HttpReply::httpReasonPhrase() const
+{
+    return m_reasonPhrase;
 }
 
 /*! Returns the type of this \l{HttpReply}.
@@ -332,11 +343,12 @@ QByteArray HttpReply::getHeaderType(const HttpReply::HttpHeaderType &headerType)
 
 void HttpReply::startWait()
 {
-    m_timer.start(5000);
+    m_timer->start(5000);
 }
 
 void HttpReply::timeout()
 {
+    qDebug() << "Http reply timeout";
     m_timedOut = true;
     emit finished();
 }

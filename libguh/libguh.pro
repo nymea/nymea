@@ -40,8 +40,7 @@ SOURCES += plugin/device.cpp \
            types/statedescriptor.cpp \
            loggingcategories.cpp \
            guhsettings.cpp \
-           network/httpreply.cpp \
-    network/httprequest.cpp
+
 
 HEADERS += plugin/device.h \
            plugin/deviceclass.h \
@@ -76,6 +75,4 @@ HEADERS += plugin/device.h \
            typeutils.h \
            loggingcategories.h \
            guhsettings.h \
-           network/httpreply.h \
-    network/httprequest.h
 

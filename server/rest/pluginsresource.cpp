@@ -150,8 +150,9 @@ HttpReply *PluginsResource::setPluginConfiguration(const PluginId &pluginId, con
     if (!verification.first)
         return createErrorReply(HttpReply::BadRequest);
 
-    QVariantMap params = verification.second.toMap();
-    ParamList pluginParams = JsonTypes::unpackParams(params.value("configuration").toList());
+    QVariantList configuration = verification.second.toList();
+    ParamList pluginParams = JsonTypes::unpackParams(configuration);
+    qCDebug(dcRest) << pluginParams;
     DeviceManager::DeviceError result = GuhCore::instance()->setPluginConfig(pluginId, pluginParams);
 
     if (result != DeviceManager::DeviceErrorNoError)

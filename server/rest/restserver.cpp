@@ -49,6 +49,12 @@ void RestServer::setup()
     m_vendorsResource = new VendorsResource(this);
     m_pluginsResource = new PluginsResource(this);
     m_rulesResource = new RulesResource(this);
+
+    m_resources.insert(m_deviceResource->name(), m_deviceResource);
+    m_resources.insert(m_deviceClassesResource->name(), m_deviceClassesResource);
+    m_resources.insert(m_vendorsResource->name(), m_vendorsResource);
+    m_resources.insert(m_pluginsResource->name(), m_pluginsResource);
+    m_resources.insert(m_rulesResource->name(), m_rulesResource);
 }
 
 void RestServer::clientConnected(const QUuid &clientId)
@@ -68,91 +74,37 @@ void RestServer::processHttpRequest(const QUuid &clientId, const HttpRequest &re
     QStringList urlTokens = request.url().path().split("/");
     urlTokens.removeAll(QString());
 
-    qCDebug(dcRest) << urlTokens;
-
+    // check token count
     if (urlTokens.count() < 3) {
-        HttpReply *reply = new HttpReply(HttpReply::BadRequest, HttpReply::TypeSync, this);
+        HttpReply *reply = RestResource::createErrorReply(HttpReply::BadRequest);
         reply->setClientId(clientId);
         m_webserver->sendHttpReply(reply);
         reply->deleteLater();
         return;
     }
 
-    // TODO: make generic with resource name
-
-    if (urlTokens.at(2) == "devices") {
-        HttpReply *reply = m_deviceResource->proccessRequest(request, urlTokens);
+    // check resource
+    QString resourceName = urlTokens.at(2);
+    if (!m_resources.contains(resourceName)) {
+        HttpReply *reply = RestResource::createErrorReply(HttpReply::BadRequest);
         reply->setClientId(clientId);
-        if (reply->type() == HttpReply::TypeAsync) {
-            connect(reply, &HttpReply::finished, this, &RestServer::asyncReplyFinished);
-            m_asyncReplies.insert(clientId, reply);
-            reply->startWait();
-            return;
-        }
         m_webserver->sendHttpReply(reply);
         reply->deleteLater();
-        return;
     }
 
-    if (urlTokens.at(2) == "deviceclasses") {
-        HttpReply *reply = m_deviceClassesResource->proccessRequest(request, urlTokens);
-        reply->setClientId(clientId);
-        if (reply->type() == HttpReply::TypeAsync) {
-            connect(reply, &HttpReply::finished, this, &RestServer::asyncReplyFinished);
-            m_asyncReplies.insert(clientId, reply);
-            reply->startWait();
-            return;
-        }
-        m_webserver->sendHttpReply(reply);
-        reply->deleteLater();
+    // process request in corresponding resource
+    RestResource *resource = m_resources.value(resourceName);
+    HttpReply *reply = resource->proccessRequest(request, urlTokens);
+    reply->setClientId(clientId);
+    if (reply->type() == HttpReply::TypeAsync) {
+        connect(reply, &HttpReply::finished, this, &RestServer::asyncReplyFinished);
+        m_asyncReplies.insert(clientId, reply);
+        reply->startWait();
         return;
     }
-
-    if (urlTokens.at(2) == "vendors") {
-        HttpReply *reply = m_vendorsResource->proccessRequest(request, urlTokens);
-        reply->setClientId(clientId);
-        if (reply->type() == HttpReply::TypeAsync) {
-            connect(reply, &HttpReply::finished, this, &RestServer::asyncReplyFinished);
-            m_asyncReplies.insert(clientId, reply);
-            reply->startWait();
-            return;
-        }
-        m_webserver->sendHttpReply(reply);
-        reply->deleteLater();
-        return;
-    }
-
-    if (urlTokens.at(2) == "plugins") {
-        HttpReply *reply = m_pluginsResource->proccessRequest(request, urlTokens);
-        reply->setClientId(clientId);
-        if (reply->type() == HttpReply::TypeAsync) {
-            connect(reply, &HttpReply::finished, this, &RestServer::asyncReplyFinished);
-            m_asyncReplies.insert(clientId, reply);
-            reply->startWait();
-            return;
-        }
-        m_webserver->sendHttpReply(reply);
-        reply->deleteLater();
-        return;
-    }
-
-    if (urlTokens.at(2) == "rules") {
-        HttpReply *reply = m_rulesResource->proccessRequest(request, urlTokens);
-        reply->setClientId(clientId);
-        if (reply->type() == HttpReply::TypeAsync) {
-            connect(reply, &HttpReply::finished, this, &RestServer::asyncReplyFinished);
-            m_asyncReplies.insert(clientId, reply);
-            reply->startWait();
-            return;
-        }
-        m_webserver->sendHttpReply(reply);
-        reply->deleteLater();
-        return;
-    }
-
-    HttpReply *reply = RestResource::createErrorReply(HttpReply::BadRequest);
     m_webserver->sendHttpReply(reply);
     reply->deleteLater();
+    return;
 }
 
 void RestServer::asyncReplyFinished()

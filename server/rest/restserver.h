@@ -30,6 +30,7 @@
 #include "vendorsresource.h"
 #include "pluginsresource.h"
 #include "rulesresource.h"
+#include "logsresource.h"
 
 class HttpRequest;
 class HttpReply;
@@ -55,6 +56,7 @@ private:
     VendorsResource *m_vendorsResource;
     PluginsResource *m_pluginsResource;
     RulesResource *m_rulesResource;
+    LogsResource *m_logsResource;
 
 private slots:
     void setup();

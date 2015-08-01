@@ -20,6 +20,11 @@
 
 #include "logsresource.h"
 #include "httprequest.h"
+#include "loggingcategories.h"
+#include "guhcore.h"
+#include "logging/logengine.h"
+
+#include <QJsonDocument>
 
 namespace guhserver {
 
@@ -35,41 +40,53 @@ QString LogsResource::name() const
 
 HttpReply *LogsResource::proccessRequest(const HttpRequest &request, const QStringList &urlTokens)
 {
-    Q_UNUSED(request)
-    Q_UNUSED(urlTokens)
-
-    return createErrorReply(HttpReply::NotImplemented);
+    // check method
+    HttpReply *reply;
+    switch (request.method()) {
+    case HttpRequest::Get:
+        reply = proccessGetRequest(request, urlTokens);
+        break;
+    default:
+        reply = createErrorReply(HttpReply::BadRequest);
+        break;
+    }
+    return reply;
 }
 
 HttpReply *LogsResource::proccessGetRequest(const HttpRequest &request, const QStringList &urlTokens)
 {
-    Q_UNUSED(request)
-    Q_UNUSED(urlTokens)
-
+    // GET /api/v1/logs?filter={ogFilter}
+    if (urlTokens.count() == 3) {
+        // check filter
+        QString filterString;
+        if (request.url().hasQuery()) {
+            if (request.urlQuery().hasQueryItem("filter")) {
+                filterString = request.urlQuery().queryItemValue("filter");
+            }
+        }
+        return getLogEntries(filterString);
+    }
     return createErrorReply(HttpReply::NotImplemented);}
 
-HttpReply *LogsResource::proccessDeleteRequest(const HttpRequest &request, const QStringList &urlTokens)
+HttpReply *LogsResource::getLogEntries(const QString &filterString)
 {
-    Q_UNUSED(request)
-    Q_UNUSED(urlTokens)
+    qCDebug(dcRest) << "Get log entries";
 
-    return createErrorReply(HttpReply::NotImplemented);
-}
+    QPair<bool, QVariant> verification = RestResource::verifyPayload(filterString.toUtf8());
+    if (!verification.first)
+        return createErrorReply(HttpReply::BadRequest);
 
-HttpReply *LogsResource::proccessPutRequest(const HttpRequest &request, const QStringList &urlTokens)
-{
-    Q_UNUSED(request)
-    Q_UNUSED(urlTokens)
+    QVariantMap filterMap = verification.second.toMap();
 
-    return createErrorReply(HttpReply::NotImplemented);
-}
+    LogFilter filter = JsonTypes::unpackLogFilter(filterMap);
 
-HttpReply *LogsResource::proccessPostRequest(const HttpRequest &request, const QStringList &urlTokens)
-{
-    Q_UNUSED(request)
-    Q_UNUSED(urlTokens)
-
-    return createErrorReply(HttpReply::NotImplemented);
+    QVariantList entries;
+    foreach (const LogEntry &entry, GuhCore::instance()->logEngine()->logEntries(filter)) {
+        entries.append(JsonTypes::packLogEntry(entry));
+    }
+    HttpReply *reply = createSuccessReply();
+    reply->setPayload(QJsonDocument::fromVariant(entries).toJson());
+    return reply;
 }
 
 }

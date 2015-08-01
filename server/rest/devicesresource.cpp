@@ -34,6 +34,7 @@ DevicesResource::DevicesResource(QObject *parent) :
     connect(GuhCore::instance(), &GuhCore::actionExecuted, this, &DevicesResource::actionExecuted);
     connect(GuhCore::instance(), &GuhCore::deviceSetupFinished, this, &DevicesResource::deviceSetupFinished);
     connect(GuhCore::instance(), &GuhCore::deviceEditFinished, this, &DevicesResource::deviceEditFinished);
+    connect(GuhCore::instance(), &GuhCore::pairingFinished, this, &DevicesResource::pairingFinished);
 }
 
 QString DevicesResource::name() const
@@ -128,17 +129,18 @@ HttpReply *DevicesResource::proccessDeleteRequest(const HttpRequest &request, co
         return removeDevice(m_device);
 
     // TODO: /api/v1/devices/{deviceId}?ruleId={ruleId}&removePolicy={RemovePolicy}
+
     return createErrorReply(HttpReply::NotImplemented);
 }
 
 HttpReply *DevicesResource::proccessPutRequest(const HttpRequest &request, const QStringList &urlTokens)
 {
     Q_UNUSED(request)
-    // POST /api/v1/devices
+    // PUT /api/v1/devices
     if (urlTokens.count() == 3)
         return createErrorReply(HttpReply::BadRequest);
 
-    // POST /api/v1/devices/{deviceId}
+    // PUT /api/v1/devices/{deviceId}
     if (urlTokens.count() == 4)
         return editDevice(m_device, request.payload());
 
@@ -151,6 +153,14 @@ HttpReply *DevicesResource::proccessPostRequest(const HttpRequest &request, cons
     // POST /api/v1/devices
     if (urlTokens.count() == 3)
         return addConfiguredDevice(request.payload());
+
+    // POST /api/v1/devices/pair
+    if (urlTokens.count() == 4 && urlTokens.at(3) == "pair")
+        return pairDevice(request.payload());
+
+    // POST /api/v1/devices/confirmpairing
+    if (urlTokens.count() == 4 && urlTokens.at(3) == "confirmpairing")
+        return confirmPairDevice(request.payload());
 
     // POST /api/v1/devices/{deviceId}
     if (urlTokens.count() == 4)
@@ -301,6 +311,71 @@ HttpReply *DevicesResource::addConfiguredDevice(const QByteArray &payload) const
     return reply;
 }
 
+HttpReply *DevicesResource::pairDevice(const QByteArray &payload) const
+{
+    QPair<bool, QVariant> verification = RestResource::verifyPayload(payload);
+    if (!verification.first)
+        return createErrorReply(HttpReply::BadRequest);
+
+    QVariantMap params = verification.second.toMap();
+
+    DeviceClassId deviceClassId(params.value("deviceClassId").toString());
+    DeviceClass deviceClass = GuhCore::instance()->findDeviceClass(deviceClassId);
+
+    if (deviceClassId.isNull()) {
+        qCWarning(dcRest) << "Could not find deviceClassId" << params.value("deviceClassId").toString();
+        return createErrorReply(HttpReply::BadRequest);
+    }
+
+    qCDebug(dcRest) << "Pair device with deviceClassId" << deviceClassId.toString();
+
+    DeviceManager::DeviceError status;
+    PairingTransactionId pairingTransactionId = PairingTransactionId::createPairingTransactionId();
+    if (params.contains("deviceDescriptorId")) {
+        DeviceDescriptorId deviceDescriptorId(params.value("deviceDescriptorId").toString());
+        status = GuhCore::instance()->pairDevice(pairingTransactionId, deviceClassId, deviceDescriptorId);
+    } else {
+        ParamList deviceParams = JsonTypes::unpackParams(params.value("deviceParams").toList());
+        status = GuhCore::instance()->pairDevice(pairingTransactionId, deviceClassId, deviceParams);
+    }
+
+    if (status != DeviceManager::DeviceErrorNoError)
+        return createErrorReply(HttpReply::BadRequest);
+
+    QVariantMap returns;
+    returns.insert("displayMessage", deviceClass.pairingInfo());
+    returns.insert("pairingTransactionId", pairingTransactionId.toString());
+    returns.insert("setupMethod", JsonTypes::setupMethod().at(deviceClass.setupMethod()));
+    HttpReply *reply = createSuccessReply();
+    reply->setPayload(QJsonDocument::fromVariant(returns).toJson());
+    return reply;
+}
+
+HttpReply *DevicesResource::confirmPairDevice(const QByteArray &payload) const
+{
+    QPair<bool, QVariant> verification = RestResource::verifyPayload(payload);
+    if (!verification.first)
+        return createErrorReply(HttpReply::BadRequest);
+
+    QVariantMap params = verification.second.toMap();
+
+    PairingTransactionId pairingTransactionId = PairingTransactionId(params.value("pairingTransactionId").toString());
+    QString secret = params.value("secret").toString();
+    DeviceManager::DeviceError status = GuhCore::instance()->confirmPairing(pairingTransactionId, secret);
+
+    if (status == DeviceManager::DeviceErrorAsync) {
+        HttpReply *reply = createAsyncReply();
+        qCDebug(dcRest) << "Confirm pairing async reply";
+        m_asyncPairingRequests.insert(pairingTransactionId, reply);
+        return reply;
+    }
+
+    if (status != DeviceManager::DeviceErrorNoError)
+        return createErrorReply(HttpReply::InternalServerError);
+
+    return createSuccessReply();
+}
+
 HttpReply *DevicesResource::editDevice(Device *device, const QByteArray &payload) const
 {
     qCDebug(dcRest) << "Edit device" << device->id();
@@ -382,6 +457,26 @@ void DevicesResource::deviceEditFinished(Device *device, DeviceManager::DeviceEr
         reply->setHttpStatusCode(HttpReply::Ok);
     } else {
         qCDebug(dcRest) << "Device edit finished with error" << status;
+        reply->setHttpStatusCode(HttpReply::InternalServerError);
+    }
+
+    reply->finished();
+}
+
+void DevicesResource::pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceError status, const DeviceId &deviceId)
+{
+    if (!m_asyncPairingRequests.contains(pairingTransactionId))
+        return; // Not the device pairing we are waiting for.
+
+    HttpReply *reply = m_asyncPairingRequests.take(pairingTransactionId);
+    if (status == DeviceManager::DeviceErrorNoError) {
+        qCDebug(dcRest) << "Pairing device finished successfully";
+        QVariantMap response;
+        response.insert("deviceId", deviceId.toString());
+        reply->setPayload(QJsonDocument::fromVariant(response).toJson());
+        reply->setHttpStatusCode(HttpReply::Ok);
+    } else {
+        qCDebug(dcRest) << "Pairing device finished with error" << status;
         reply->setHttpStatusCode(HttpReply::InternalServerError);
     }
 

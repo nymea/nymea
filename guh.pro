@@ -34,10 +34,10 @@ coverage {
     message("Building coverage.")
 }
 
-contains(DEFINES, WEBSERVER){
-    message("Building guh with webserver.")
+contains(DEFINES, WEBSOCKET){
+    message("Building guh with websocket.")
 } else {
-    message("Building guh without webserver.")
+    message("Building guh without websocket.")
 }
 
 contains(DEFINES, GPIO433){

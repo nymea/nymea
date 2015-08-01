@@ -60,6 +60,8 @@ private:
 
     // Post methods
     HttpReply *addRule(const QByteArray &payload) const;
+    HttpReply *enableRule(const RuleId &ruleId) const;
+    HttpReply *disableRule(const RuleId &ruleId) const;
 
     // Put methods
     HttpReply *editRule(const RuleId &ruleId, const QByteArray &payload) const;

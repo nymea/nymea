@@ -28,9 +28,8 @@ enable433gpio {
 
 # check webserver support
 equals(QT_MAJOR_VERSION, 5):greaterThan(QT_MINOR_VERSION, 3) {
-    DEFINES += WEBSERVER
+    DEFINES += WEBSOCKET
 }
-
 
 top_srcdir=$$PWD
 top_builddir=$$shadowed($$PWD)

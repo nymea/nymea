@@ -1,6 +1,6 @@
-TEMPLATE=subdirs
+TEMPLATE = subdirs
 
-SUBDIRS=versioning \
+SUBDIRS = versioning \
         devices \
         jsonrpc \
         events \
@@ -13,3 +13,4 @@ SUBDIRS=versioning \
         restdeviceclasses \
         restplugins \
         restvendors \
+        restrules \

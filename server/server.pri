@@ -1,5 +1,5 @@
 
-contains(DEFINES, WEBSERVER){
+contains(DEFINES, WEBSOCKET){
     QT += websockets
 }
 

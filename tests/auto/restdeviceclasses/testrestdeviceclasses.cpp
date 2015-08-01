@@ -248,6 +248,7 @@ void TestRestDeviceClasses::discoverDevices()
     QNetworkAccessManager *nam = new QNetworkAccessManager();
     QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
 
+    // DISCOVER
     QUrl url(QString("http://localhost:3000/api/v1/deviceclasses/%1/discover").arg(deviceClassId.toString()));
 
     if (!discoveryParams.isEmpty()) {
@@ -275,7 +276,7 @@ void TestRestDeviceClasses::discoverDevices()
     QVariantList foundDevices = jsonDoc.toVariant().toList();
     QCOMPARE(foundDevices.count(), resultCount);
 
-    // add the discovered device
+    // ADD the discovered device
     request.setUrl(QUrl("http://localhost:3000/api/v1/devices"));
     DeviceDescriptorId descriptorId = DeviceDescriptorId(foundDevices.first().toMap().value("id").toString());
     qDebug() << descriptorId;
@@ -294,7 +295,7 @@ void TestRestDeviceClasses::discoverDevices()
     reply->deleteLater();
     QCOMPARE(statusCode, expectedStatusCode);
 
-    // remove added device
+    // REMOVE added device
     jsonDoc = QJsonDocument::fromJson(data, &error);
     QCOMPARE(error.error, QJsonParseError::NoError);
     QVariantMap response = jsonDoc.toVariant().toMap();

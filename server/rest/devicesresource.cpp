@@ -45,7 +45,6 @@ HttpReply *DevicesResource::proccessRequest(const HttpRequest &request, const QS
 {
     m_device = 0;
 
-
     // get the main resource
     if (urlTokens.count() >= 4) {
         DeviceId deviceId = DeviceId(urlTokens.at(3));

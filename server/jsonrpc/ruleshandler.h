@@ -51,17 +51,6 @@ signals:
     void RuleActiveChanged(const QVariantMap &params);
     void RuleConfigurationChanged(const QVariantMap &params);
 
-private:
-    QVariant::Type getActionParamType(const ActionTypeId &actionTypeId, const QString &paramName);
-    QVariant::Type getEventParamType(const EventTypeId &eventTypeId, const QString &paramName);
-
-    bool checkEventDescriptors(const QList<EventDescriptor> eventDescriptors, const EventTypeId &eventTypeId);
-
-    RuleEngine::RuleError verifyRuleConsistency(const QVariantMap &params);
-    QPair<QList<EventDescriptor>, RuleEngine::RuleError> verifyEventDescriptors(const QVariantMap &params);
-    QPair<QList<RuleAction>, RuleEngine::RuleError> verifyActions(const QVariantMap &params, const QList<EventDescriptor> &eventDescriptorList);
-    QPair<QList<RuleAction>, RuleEngine::RuleError> verifyExitActions(const QVariantMap &params);
-
 private slots:
     void ruleRemovedNotification(const RuleId &ruleId);
     void ruleAddedNotification(const Rule &rule);

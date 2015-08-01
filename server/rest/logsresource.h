@@ -45,17 +45,10 @@ public:
 private:
     // Process method
     HttpReply *proccessGetRequest(const HttpRequest &request, const QStringList &urlTokens) override;
-    HttpReply *proccessDeleteRequest(const HttpRequest &request, const QStringList &urlTokens) override;
-    HttpReply *proccessPutRequest(const HttpRequest &request, const QStringList &urlTokens) override;
-    HttpReply *proccessPostRequest(const HttpRequest &request, const QStringList &urlTokens) override;
 
     // Get methods
+    HttpReply *getLogEntries(const QString &filterString);
 
-    // Delete methods
-
-    // Post methods
-
-    // Put methods
 
 };
 

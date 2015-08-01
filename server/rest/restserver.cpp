@@ -49,12 +49,14 @@ void RestServer::setup()
     m_vendorsResource = new VendorsResource(this);
     m_pluginsResource = new PluginsResource(this);
     m_rulesResource = new RulesResource(this);
+    m_logsResource = new LogsResource(this);
 
     m_resources.insert(m_deviceResource->name(), m_deviceResource);
     m_resources.insert(m_deviceClassesResource->name(), m_deviceClassesResource);
     m_resources.insert(m_vendorsResource->name(), m_vendorsResource);
     m_resources.insert(m_pluginsResource->name(), m_pluginsResource);
     m_resources.insert(m_rulesResource->name(), m_rulesResource);
+    m_resources.insert(m_logsResource->name(), m_logsResource);
 }
 
 void RestServer::clientConnected(const QUuid &clientId)
@@ -69,8 +71,6 @@ void RestServer::clientDisconnected(const QUuid &clientId)
 
 void RestServer::processHttpRequest(const QUuid &clientId, const HttpRequest &request)
 {
-    qCDebug(dcRest) << "Process HTTP request";
-
     QStringList urlTokens = request.url().path().split("/");
     urlTokens.removeAll(QString());
 

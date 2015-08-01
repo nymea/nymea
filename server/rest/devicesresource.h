@@ -46,7 +46,7 @@ private:
     mutable QHash<ActionId, HttpReply *> m_asyncActionExecutions;
     mutable QHash<DeviceId, HttpReply *> m_asyncDeviceAdditions;
     mutable QHash<Device *, HttpReply *> m_asyncEditDevice;
-    mutable QHash<QUuid, HttpReply *> m_asyncPairingRequests;
+    mutable QHash<PairingTransactionId, HttpReply *> m_asyncPairingRequests;
 
     Device *m_device;
 
@@ -68,6 +68,8 @@ private:
     // Post methods
     HttpReply *executeAction(Device *device, const ActionTypeId &actionTypeId, const QByteArray &payload) const;
     HttpReply *addConfiguredDevice(const QByteArray &payload) const;
+    HttpReply *pairDevice(const QByteArray &payload) const;
+    HttpReply *confirmPairDevice(const QByteArray &payload) const;
 
     // Put methods
     HttpReply *editDevice(Device *device, const QByteArray &payload) const;
@@ -76,6 +78,7 @@ private slots:
     void actionExecuted(const ActionId &actionId, DeviceManager::DeviceError status);
     void deviceSetupFinished(Device *device, DeviceManager::DeviceError status);
     void deviceEditFinished(Device *device, DeviceManager::DeviceError status);
+    void pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceError status, const DeviceId &deviceId);
 
 };
 

@@ -219,7 +219,7 @@ void WebServer::incomingConnection(qintptr socketDescriptor)
         socket->setLocalCertificate(m_certificate);
         connect(socket, SIGNAL(encrypted()), this, SLOT(onEncrypted()));
         socket->startServerEncryption();
-        // wait for encrypted connection before continue
+        // wait for encrypted connection before continue with this client
         return;
     }
 
@@ -319,8 +319,8 @@ void WebServer::readClient()
     }
 
     // reject everything else...
-    qCWarning(dcWebServer) << "Unknown message received. Respond client with 501: Not Implemented.";
-    HttpReply reply(HttpReply::NotImplemented);
+    qCWarning(dcWebServer) << "Unknown message received. Respond client with 400: Not Implemented.";
+    HttpReply reply(HttpReply::NotFound);
     reply.setPayload("404 Not found.");
     writeData(socket, reply.data());
 }

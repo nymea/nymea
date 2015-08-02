@@ -90,6 +90,7 @@ void RestServer::processHttpRequest(const QUuid &clientId, const HttpRequest &re
         reply->setClientId(clientId);
         m_webserver->sendHttpReply(reply);
         reply->deleteLater();
+        return;
     }
 
     // process request in corresponding resource
@@ -104,7 +105,6 @@ void RestServer::processHttpRequest(const QUuid &clientId, const HttpRequest &re
     }
     m_webserver->sendHttpReply(reply);
     reply->deleteLater();
-    return;
 }
 
 void RestServer::asyncReplyFinished()

@@ -76,28 +76,6 @@ WebServer::~WebServer()
     this->close();
 }
 
-void WebServer::sendData(const QUuid &clientId, const QVariantMap &data)
-{
-    QSslSocket *socket = m_clientList.value(clientId);
-    HttpReply reply(HttpReply::Ok);
-    reply.setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
-    reply.setPayload(QJsonDocument::fromVariant(data).toJson());
-    reply.packReply();
-    writeData(socket, reply.data());
-}
-
-void WebServer::sendData(const QList<QUuid> &clients, const QVariantMap &data)
-{
-    foreach (const QUuid &client, clients) {
-        QSslSocket *socket = m_clientList.value(client);
-        HttpReply reply(HttpReply::Ok);
-        reply.setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
-        reply.setPayload(QJsonDocument::fromVariant(data).toJson());
-        reply.packReply();
-        writeData(socket, reply.data());
-    }
-}
-
 void WebServer::sendHttpReply(HttpReply *reply)
 {
     QSslSocket *socket = 0;

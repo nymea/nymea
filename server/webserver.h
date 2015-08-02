@@ -45,8 +45,6 @@ public:
     explicit WebServer(QObject *parent = 0);
     ~WebServer();
 
-    void sendData(const QUuid &clientId, const QVariantMap &data);
-    void sendData(const QList<QUuid> &clients, const QVariantMap &data);
     void sendHttpReply(HttpReply *reply);
 
 private:

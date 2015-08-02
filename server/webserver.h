@@ -22,14 +22,14 @@
 #define WEBSERVER_H
 
 #include <QObject>
+#include <QTcpServer>
+#include <QTcpSocket>
 #include <QHash>
 #include <QDir>
-#include <QUuid>
-#include <QTcpSocket>
+#include <QSslSocket>
+#include <QSslCertificate>
+#include <QSslKey>
 
-#include "transportinterface.h"
-
-class QTcpServer;
 class HttpRequest;
 class HttpReply;
 
@@ -38,47 +38,53 @@ class HttpReply;
 
 namespace guhserver {
 
-class WebServer : public TransportInterface
+class WebServer : public QTcpServer
 {
     Q_OBJECT
 public:
-
-
     explicit WebServer(QObject *parent = 0);
     ~WebServer();
 
-    void sendData(const QUuid &clientId, const QVariantMap &data) override;
-    void sendData(const QList<QUuid> &clients, const QVariantMap &data) override;
+    void sendData(const QUuid &clientId, const QVariantMap &data);
+    void sendData(const QList<QUuid> &clients, const QVariantMap &data);
     void sendHttpReply(HttpReply *reply);
 
 private:
-    QTcpServer *m_server;
-
-    QHash<QUuid, QTcpSocket *> m_clientList;
-    QHash<QTcpSocket *, HttpRequest> m_incompleteRequests;
+    QHash<QUuid, QSslSocket *> m_clientList;
+    QHash<QSslSocket *, HttpRequest> m_incompleteRequests;
 
     bool m_enabled;
+    bool m_useSsl;
     qint16 m_port;
     QDir m_webinterfaceDir;
+    QSslCertificate m_certificate;
+    QSslKey m_certificateKey;
 
-    bool verifyFile(QTcpSocket *socket, const QString &fileName);
-
+    bool verifyFile(QSslSocket *socket, const QString &fileName);
     QString fileName(const QString &query);
 
-    void writeData(QTcpSocket *socket, const QByteArray &data);
+    bool loadCertificate(const QString &keyFileName, const QString &certificateFileName);
+
+    void writeData(QSslSocket *socket, const QByteArray &data);
+
+protected:
+    void incomingConnection(qintptr socketDescriptor) override;
 
 signals:
     void httpRequestReady(const QUuid &clientId, const HttpRequest &httpRequest);
+    void clientConnected(const QUuid &clientId);
+    void clientDisconnected(const QUuid &clientId);
+    void dataAvailable(const QUuid &clientId, const QString &targetNamespace, const QString &method, const QVariantMap &message);
 
 private slots:
-    void onNewConnection();
     void readClient();
     void onDisconnected();
+    void onEncrypted();
     void onError(QAbstractSocket::SocketError error);
 
 public slots:
-    bool startServer() override;
-    bool stopServer() override;
+    bool startServer();
+    bool stopServer();
 
 };
 

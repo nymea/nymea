@@ -1,3 +1,9 @@
+guh (0.5.0) vivid; urgency=medium
+
+  * Add webserver and REST API
+
+ -- Simon Stürz <simon.stuerz@guh.guru>  Sat, 01 Aug 2015 14:52:12 +0200
+
 guh (0.4.0) vivid; urgency=medium
 
   * add EditDevice and notifications

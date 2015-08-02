@@ -25,7 +25,32 @@ namespace guhserver {
 WebSocketServer::WebSocketServer(QObject *parent) :
     TransportInterface(parent)
 {
+}
 
+WebSocketServer::~WebSocketServer()
+{
+}
+
+void WebSocketServer::sendData(const QUuid &clientId, const QVariantMap &data)
+{
+    Q_UNUSED(clientId)
+    Q_UNUSED(data)
+}
+
+void WebSocketServer::sendData(const QList<QUuid> &clients, const QVariantMap &data)
+{
+    Q_UNUSED(clients)
+    Q_UNUSED(data)
+}
+
+bool WebSocketServer::startServer()
+{
+    return false;
+}
+
+bool WebSocketServer::stopServer()
+{
+    return false;
 }
 
 }

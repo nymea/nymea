@@ -63,7 +63,7 @@ private slots:
     void onClientConnected();
     void onClientDisconnected();
     void readPackage();
-    void onError(const QAbstractSocket::SocketError &error);
+    void onError(QAbstractSocket::SocketError error);
     void onTimeout();
 
 public slots:

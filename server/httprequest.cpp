@@ -204,7 +204,7 @@ HttpRequest::RequestMethod HttpRequest::getRequestMethodType(const QString &meth
 
 QDebug operator<<(QDebug debug, const HttpRequest &httpRequest)
 {
-    debug << "\n===================================" << "\n";
+    debug << "===================================" << "\n";
     debug << "  HTTP version: " << httpRequest.httpVersion() << "\n";
     debug << "        method: " << httpRequest.methodString() << "\n";
     debug << "      URL path: " << httpRequest.url().path() << "\n";

@@ -21,7 +21,7 @@
 #ifndef TRANSPORTINTERFACE_H
 #define TRANSPORTINTERFACE_H
 
-#include <QObject>
+#include <QVariant>
 #include <QString>
 #include <QList>
 #include <QUuid>

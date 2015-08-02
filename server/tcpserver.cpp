@@ -209,7 +209,7 @@ void TcpServer::onClientDisconnected()
     m_clientList.take(clientId)->deleteLater();
 }
 
-void TcpServer::onError(const QAbstractSocket::SocketError &error)
+void TcpServer::onError(QAbstractSocket::SocketError error)
 {
     QTcpServer *server = qobject_cast<QTcpServer *>(sender());
     QUuid uuid = m_serverList.key(server);

@@ -22,6 +22,9 @@
 #define WEBSOCKETSERVER_H
 
 #include <QObject>
+#include <QUuid>
+#include <QVariant>
+#include <QList>
 
 #include "transportinterface.h"
 
@@ -35,11 +38,14 @@ class WebSocketServer : public TransportInterface
     Q_OBJECT
 public:
     explicit WebSocketServer(QObject *parent = 0);
+    ~WebSocketServer();
 
-signals:
+    void sendData(const QUuid &clientId, const QVariantMap &data) override;
+    void sendData(const QList<QUuid> &clients, const QVariantMap &data) override;
 
 public slots:
-
+    bool startServer() override;
+    bool stopServer() override;
 };
 
 }

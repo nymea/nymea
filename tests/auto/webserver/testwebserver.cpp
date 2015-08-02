@@ -142,7 +142,7 @@ void TestWebserver::multiPackageMessage()
     bool ok = false;
     int statusCode = firstLineTokens.at(1).toInt(&ok);
     QVERIFY2(ok, "Could not convert statuscode from response to int");
-    QCOMPARE(statusCode, 501);
+    QCOMPARE(statusCode, 404);
 
     socket->close();
     socket->deleteLater();

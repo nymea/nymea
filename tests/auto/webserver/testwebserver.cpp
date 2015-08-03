@@ -174,7 +174,7 @@ void TestWebserver::checkAllowedMethodCall()
 
     QNetworkRequest request;
     request.setUrl(QUrl("http://localhost:3000"));
-    QNetworkReply *reply;
+    QNetworkReply *reply = 0;
 
     if (method == "GET") {
         reply = nam->get(request);
@@ -192,6 +192,9 @@ void TestWebserver::checkAllowedMethodCall()
         reply = nam->sendCustomRequest(request, "OPTIONS");
     } else if(method == "TRACE") {
         reply = nam->sendCustomRequest(request, "TRACE");
+    } else {
+        // just to make shore there will be a reply to delete
+        reply = nam->get(request);
     }
 
     clientSpy.wait(200);

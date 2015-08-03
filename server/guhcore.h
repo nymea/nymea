@@ -30,6 +30,7 @@
 
 #include "devicemanager.h"
 #include "ruleengine.h"
+#include "servermanager.h"
 
 #include <QObject>
 #include <QDebug>
@@ -93,6 +94,8 @@ public:
     RuleEngine::RuleError disableRule(const RuleId &ruleId);
 
     LogEngine* logEngine() const;
+    JsonRPCServer *jsonRPCServer() const;
+    RestServer *restServer() const;
 
 signals:
     void eventTriggered(const Event &event);
@@ -115,12 +118,13 @@ signals:
 
 private:
     RuleEngine *ruleEngine() const;
-    DeviceManager* deviceManager() const;
+    DeviceManager *deviceManager() const;
+
     explicit GuhCore(QObject *parent = 0);
     static GuhCore *s_instance;
     RunningMode m_runningMode;
 
-    JsonRPCServer *m_jsonServer;
+    ServerManager *m_serverManager;
     DeviceManager *m_deviceManager;
     RuleEngine *m_ruleEngine;
 

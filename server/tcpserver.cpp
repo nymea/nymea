@@ -22,6 +22,8 @@
 #include "tcpserver.h"
 #include "loggingcategories.h"
 #include "guhsettings.h"
+#include "guhcore.h"
+#include "jsonrpcserver.h"
 
 #include <QDebug>
 #include <QJsonDocument>
@@ -29,7 +31,7 @@
 namespace guhserver {
 
 TcpServer::TcpServer(QObject *parent) :
-    QObject(parent)
+    TransportInterface(parent)
 {       
     // Timer for scanning network interfaces ever 5 seconds
     // Note: QNetworkConfigurationManager does not work on embedded platforms
@@ -40,7 +42,7 @@ TcpServer::TcpServer(QObject *parent) :
 
     // load JSON-RPC server settings
     GuhSettings settings(GuhSettings::SettingsRoleGlobal);
-    qCDebug(dcConnection) << "Loading TCP server settings from:" << settings.fileName();
+    qCDebug(dcTcpServer) << "Loading Tcp server settings from:" << settings.fileName();
     settings.beginGroup("JSONRPC");
 
     // load port
@@ -63,7 +65,7 @@ TcpServer::TcpServer(QObject *parent) :
     settings.endGroup();
 }
 
-void TcpServer::sendData(const QList<QUuid> &clients, const QByteArray &data)
+void TcpServer::sendData(const QList<QUuid> &clients, const QVariantMap &data)
 {
     foreach (const QUuid &client, clients) {
         sendData(client, data);
@@ -92,20 +94,85 @@ void TcpServer::reloadNetworkInterfaces()
 }
 
 
-void TcpServer::sendData(const QUuid &clientId, const QByteArray &data)
+void TcpServer::validateMessage(const QUuid &clientId, const QByteArray &data)
+{
+    QJsonParseError error;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
+
+    if(error.error != QJsonParseError::NoError) {
+        qCWarning(dcJsonRpc) << "Failed to parse JSON data" << data << ":" << error.errorString();
+        sendErrorResponse(clientId, -1, QString("Failed to parse JSON data: %1").arg(error.errorString()));
+        return;
+    }
+
+    QVariantMap message = jsonDoc.toVariant().toMap();
+
+    bool success;
+    int commandId = message.value("id").toInt(&success);
+    if (!success) {
+        qCWarning(dcJsonRpc) << "Error parsing command. Missing \"id\":" << message;
+        sendErrorResponse(clientId, commandId, "Error parsing command. Missing 'id'");
+        return;
+    }
+
+    QStringList commandList = message.value("method").toString().split('.');
+    if (commandList.count() != 2) {
+        qCWarning(dcJsonRpc) << "Error parsing method.\nGot:" << message.value("method").toString() << "\nExpected: \"Namespace.method\"";
+        sendErrorResponse(clientId, commandId, QString("Error parsing method. Got: '%1'', Expected: 'Namespace.method'").arg(message.value("method").toString()));
+        return;
+    }
+
+    QString targetNamespace = commandList.first();
+    QString method = commandList.last();
+
+    JsonHandler *handler = GuhCore::instance()->jsonRPCServer()->handlers().value(targetNamespace);
+    if (!handler) {
+        sendErrorResponse(clientId, commandId, "No such namespace");
+        return;
+    }
+    if (!handler->hasMethod(method)) {
+        sendErrorResponse(clientId, commandId, "No such method");
+        return;
+    }
+
+    emit dataAvailable(clientId, targetNamespace, method, message);
+}
+
+void TcpServer::sendResponse(const QUuid &clientId, int commandId, const QVariantMap &params)
+{
+    QVariantMap response;
+    response.insert("id", commandId);
+    response.insert("status", "success");
+    response.insert("params", params);
+
+    sendData(clientId, response);
+}
+
+void TcpServer::sendErrorResponse(const QUuid &clientId, int commandId, const QString &error)
+{
+    QVariantMap errorResponse;
+    errorResponse.insert("id", commandId);
+    errorResponse.insert("status", "error");
+    errorResponse.insert("error", error);
+
+    sendData(clientId, errorResponse);
+}
+
+
+void TcpServer::sendData(const QUuid &clientId, const QVariantMap &data)
 {
     QTcpSocket *client = m_clientList.value(clientId);
     if (client) {
-        client->write(data);
+        client->write(QJsonDocument::fromVariant(data).toJson());
     }
 }
 
-void TcpServer::newClientConnected()
+void TcpServer::onClientConnected()
 {
     // got a new client connected
     QTcpServer *server = qobject_cast<QTcpServer*>(sender());
     QTcpSocket *newConnection = server->nextPendingConnection();
-    qCDebug(dcConnection) << "new client connected:" << newConnection->peerAddress().toString();
+    qCDebug(dcConnection) << "Tcp server: new client connected:" << newConnection->peerAddress().toString();
 
     QUuid clientId = QUuid::createUuid();
 
@@ -118,18 +185,17 @@ void TcpServer::newClientConnected()
     emit clientConnected(clientId);
 }
 
-
 void TcpServer::readPackage()
 {
     QTcpSocket *client = qobject_cast<QTcpSocket*>(sender());
-    qCDebug(dcConnection) << "data comming from" << client->peerAddress().toString();
+    qCDebug(dcTcpServer) << "data comming from" << client->peerAddress().toString();
     QByteArray message;
     while (client->canReadLine()) {
         QByteArray dataLine = client->readLine();
-        qCDebug(dcConnection) << "line in:" << dataLine;
+        qCDebug(dcTcpServer) << "line in:" << dataLine;
         message.append(dataLine);
         if (dataLine.endsWith('\n')) {
-            emit dataAvailable(m_clientList.key(client), message);
+            validateMessage(m_clientList.key(client), message);
             message.clear();
         }
     }
@@ -138,17 +204,17 @@ void TcpServer::readPackage()
 void TcpServer::onClientDisconnected()
 {
     QTcpSocket *client = qobject_cast<QTcpSocket*>(sender());
-    qCDebug(dcConnection) << "client disconnected:" << client->peerAddress().toString();
+    qCDebug(dcConnection) << "Tcp server: client disconnected:" << client->peerAddress().toString();
     QUuid clientId = m_clientList.key(client);
     m_clientList.take(clientId)->deleteLater();
 }
 
-void TcpServer::onError(const QAbstractSocket::SocketError &error)
+void TcpServer::onError(QAbstractSocket::SocketError error)
 {
     QTcpServer *server = qobject_cast<QTcpServer *>(sender());
     QUuid uuid = m_serverList.key(server);
-    qCWarning(dcConnection) << "TCP server" << server->serverAddress().toString() << "error:" << error << server->errorString();
-    qCWarning(dcConnection) << "shutting down TCP server" << server->serverAddress().toString();
+    qCWarning(dcTcpServer) << "Tcp server" << server->serverAddress().toString() << "error:" << error << server->errorString();
+    qCWarning(dcTcpServer) << "shutting down Tcp server" << server->serverAddress().toString();
 
     server->close();
     m_serverList.take(uuid)->deleteLater();
@@ -211,7 +277,7 @@ void TcpServer::onTimeout()
         QTcpServer *server = new QTcpServer(this);
         if(server->listen(address, m_port)) {
             qCDebug(dcConnection) << "Started TCP server on" << address.toString() << m_port;
-            connect(server, SIGNAL(newConnection()), SLOT(newClientConnected()));
+            connect(server, &QTcpServer::newConnection, this, &TcpServer::onClientConnected);
             m_serverList.insert(QUuid::createUuid(), server);
         } else {
             qCWarning(dcConnection) << "Tcp server error: can not listen on" << address.toString() << m_port;
@@ -220,17 +286,15 @@ void TcpServer::onTimeout()
     }
 
     if (!serversToCreate.isEmpty() || !serversToDelete.isEmpty()) {
-        qCDebug(dcConnection) << "current server list:";
+        qCDebug(dcConnection) << "Current server list:";
         foreach (QTcpServer *s, m_serverList) {
             qCDebug(dcConnection) << "  - Tcp server on" << s->serverAddress().toString() << s->serverPort();
         }
     }
-
 }
 
 bool TcpServer::startServer()
 {
-
     bool ipV4 = m_ipVersions.contains("IPv4");
     bool ipV6 = m_ipVersions.contains("IPv6");
     if (m_ipVersions.contains("any")) {
@@ -255,7 +319,7 @@ bool TcpServer::startServer()
             QTcpServer *server = new QTcpServer(this);
             if(server->listen(address, m_port)) {
                 qCDebug(dcConnection) << "Started Tcp server on" << server->serverAddress().toString() << server->serverPort();
-                connect(server, SIGNAL(newConnection()), SLOT(newClientConnected()));
+                connect(server, SIGNAL(newConnection()), SLOT(onClientConnected()));
                 m_serverList.insert(QUuid::createUuid(), server);
             } else {
                 qCWarning(dcConnection) << "Tcp server error: can not listen on" << interface.name() << address.toString() << m_port;

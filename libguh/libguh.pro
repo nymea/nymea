@@ -41,6 +41,7 @@ SOURCES += plugin/device.cpp \
            loggingcategories.cpp \
            guhsettings.cpp \
 
+
 HEADERS += plugin/device.h \
            plugin/deviceclass.h \
            plugin/deviceplugin.h \
@@ -65,7 +66,6 @@ HEADERS += plugin/device.h \
            types/event.h \
            types/eventdescriptor.h \
            types/vendor.h \
-           types/typeutils.h \
            types/paramtype.h \
            types/param.h \
            types/paramdescriptor.h \

@@ -29,16 +29,18 @@
 #include <QUuid>
 #include <QTimer>
 
+#include "transportinterface.h"
+
 namespace guhserver {
 
-class TcpServer : public QObject
+class TcpServer : public TransportInterface
 {
     Q_OBJECT
 public:
     explicit TcpServer(QObject *parent = 0);
     
-    void sendData(const QUuid &clientId, const QByteArray &data);
-    void sendData(const QList<QUuid> &clients, const QByteArray &data);
+    void sendData(const QUuid &clientId, const QVariantMap &data) override;
+    void sendData(const QList<QUuid> &clients, const QVariantMap &data) override;
 
 private:
     QTimer *m_timer;
@@ -51,22 +53,22 @@ private:
     QStringList m_ipVersions;
 
     void reloadNetworkInterfaces();
+    void validateMessage(const QUuid &clientId, const QByteArray &data);
 
-signals:
-    void clientConnected(const QUuid &clientId);
-    void clientDisconnected(const QUuid &clientId);
-    void dataAvailable(const QUuid &clientId, const QByteArray &data);
-    
+public:
+    void sendResponse(const QUuid &clientId, int commandId, const QVariantMap &params = QVariantMap());
+    void sendErrorResponse(const QUuid &clientId, int commandId, const QString &error);
+
 private slots:
-    void newClientConnected();
-    void readPackage();
+    void onClientConnected();
     void onClientDisconnected();
-    void onError(const QAbstractSocket::SocketError &error);
+    void readPackage();
+    void onError(QAbstractSocket::SocketError error);
     void onTimeout();
 
 public slots:
-    bool startServer();
-    bool stopServer();
+    bool startServer() override;
+    bool stopServer() override;
 };
 
 }

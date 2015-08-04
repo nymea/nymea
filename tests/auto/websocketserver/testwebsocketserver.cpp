@@ -29,8 +29,11 @@
 #include <QMetaType>
 #include <QByteArray>
 #include <QSignalSpy>
-#include <QWebSocket>
 #include <QJsonDocument>
+
+#ifdef WEBSOCKET
+#include <QWebSocket>
+#endif
 
 using namespace guhserver;
 
@@ -39,16 +42,19 @@ class TestWebSocketServer: public GuhTestBase
     Q_OBJECT
 
 private slots:
+#ifdef WEBSOCKET
+
     void testHandshake();
 
     void pingTest();
 
     void introspect();
-
+#endif
 private:
 
 };
 
+#ifdef WEBSOCKET
 
 void TestWebSocketServer::testHandshake()
 {
@@ -88,6 +94,8 @@ void TestWebSocketServer::introspect()
 {
 
 }
+
+#endif
 
 #include "testwebsocketserver.moc"
 QTEST_MAIN(TestWebSocketServer)

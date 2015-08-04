@@ -107,6 +107,8 @@ JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject 
     m_websocketServer->startServer();
 
     m_interfaces.append(m_websocketServer);
+#else
+    Q_UNUSED(sslConfiguration)
 #endif
 
     QMetaObject::invokeMethod(this, "setup", Qt::QueuedConnection);

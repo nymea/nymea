@@ -36,68 +36,82 @@
 
     This enum type specifies the status code of a HTTP webserver reply.
 
+    You can find more information here: \l{http://tools.ietf.org/html/rfc7231#section-6.1}{http://tools.ietf.org/html/rfc7231#section-6.1}
+
     \value Ok
         The request was understood and everything is Ok.
     \value Created
-        ...
+        The resource was created sucessfully.
     \value Accepted
-        ...
+        The resource was accepted.
     \value NoContent
-        ...
+        The request has no content but it was expected.
     \value Found
-        ...
+        The resource was found.
     \value BadRequest
-        ...
+        The request was bad formatted. Also if a \l{Param} was not understood or the header is not correct.
     \value Forbidden
-        ...
+        The request tries to get access to a forbidden space.
     \value NotFound
-        ...
+        The requested resource could not be found.
     \value MethodNotAllowed
-        ...
+        The request method is not allowed. See "Allowed-Methods" header for the allowed methods.
     \value RequestTimeout
-        ...
+        The request method timed out. Default timeout = 5s.
     \value Conflict
-        ...
+        The request resource conflicts with an other.
     \value InternalServerError
-        ...
+        There was an internal server error.
     \value NotImplemented
-        ...
+        The requestet method call is not implemented.
     \value BadGateway
-        ...
+        The gateway is not correct.
     \value ServiceUnavailable
-        ...
+        The service is not available at the moment.
     \value GatewayTimeout
-        ...
+        The gateway timed out.
     \value HttpVersionNotSupported
-        ...
+        The HTTP version is not supported. The only supported version is HTTP/1.1.
 */
 
 /*! \enum guhserver::HttpReply::HttpHeaderType
 
     This enum type specifies the known type of a header in a HTTP webserver reply.
 
+    You can find more information here: \l{http://tools.ietf.org/html/rfc7231#section-5}
+
     \value ContentTypeHeader
-        The request was understood and everything is Ok.
+        The content type header i.e. application/json.
     \value ContentLenghtHeader
-        ...
+        The length of the sent content.
     \value ConnectionHeader
-        ...
+        The connection header.
     \value LocationHeader
-        ...
+        The location header.
     \value UserAgentHeader
-        ...
+        The user agent of the client.
     \value CacheControlHeader
-        ...
+        The cache control header.
     \value AllowHeader
-        ...
+        The allowed methods header.
     \value DateHeader
-        ...
+        The server date header.
     \value ServerHeader
-        ...
+        The name of the server i.e. "Server: guh/0.6.0"
 */
 
 /*! \enum guhserver::HttpReply::Type
 
+    This enum type describes the type of this \l{HttpReply}. There are two types:
+
+    \value TypeSync
+        The \l{HttpReply} can be responded imediatly.
+    \value TypeAsync
+        The \l{HttpReply} is asynchron and has to be responded later.
+*/
+
+/*! \fn void guhserver::HttpReply::finished();
+    This signal is emitted when this async \l{HttpReply} is finished.
 */
 
 #include "httpreply.h"
@@ -108,7 +122,7 @@
 
 namespace guhserver {
 
-/*! Construct a HttpReply with the given \a statusCode. */
+/*! Construct an empty \l{HttpReply} with the given \a parent. */
 HttpReply::HttpReply(QObject *parent) :
     QObject(parent),
     m_statusCode(HttpReply::Ok),
@@ -128,6 +142,7 @@ HttpReply::HttpReply(QObject *parent) :
     packReply();
 }
 
+/*! Construct a \l{HttpReply} with the given \a statusCode, \a type and \a parent. */
 HttpReply::HttpReply(const HttpReply::HttpStatusCode &statusCode, const HttpReply::Type &type, QObject *parent):
     QObject(parent),
     m_statusCode(statusCode),
@@ -160,6 +175,7 @@ HttpReply::HttpStatusCode HttpReply::httpStatusCode() const
     return m_statusCode;
 }
 
+/*! Returns the error code reason phrase for the current \l{HttpStatusCode}.*/
 QByteArray HttpReply::httpReasonPhrase() const
 {
     return m_reasonPhrase;
@@ -173,11 +189,13 @@ HttpReply::Type HttpReply::type() const
     return m_type;
 }
 
+/*! Set the \a clientId of this \l{HttpReply}.*/
 void HttpReply::setClientId(const QUuid &clientId)
 {
     m_clientId = clientId;
 }
 
+/*! Returns the clientId of this \l{HttpReply}.*/
 QUuid HttpReply::clientId() const
 {
     return m_clientId;
@@ -265,11 +283,13 @@ void HttpReply::packReply()
     m_data = m_rawHeader.append(m_payload);
 }
 
+/*! Returns the current raw data (header + payload) of this \l{HttpReply}.*/
 QByteArray HttpReply::data() const
 {
     return m_data;
 }
 
+/*! Return true if the response took to long for the request.*/
 bool HttpReply::timedOut() const
 {
     return m_timedOut;

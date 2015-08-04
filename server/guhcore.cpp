@@ -524,11 +524,13 @@ LogEngine* GuhCore::logEngine() const
     return m_logger;
 }
 
+/*! Returns the pointer to the \l{JsonRPCServer} of this instance. */
 JsonRPCServer *GuhCore::jsonRPCServer() const
 {
     return m_serverManager->jsonServer();
 }
 
+/*! Returns the pointer to the \l{RestServer} of this instance. */
 RestServer *GuhCore::restServer() const
 {
     return m_serverManager->restServer();

@@ -14,8 +14,6 @@ SUBDIRS = versioning \
         restplugins \
         restvendors \
         restrules \
+        websocketserver \
 
-contains(DEFINES, WEBSOCKET){
-    SUBDIRS += websocketserver
-}
 

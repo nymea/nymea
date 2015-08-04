@@ -21,14 +21,7 @@
 
 #include "jsonrpcserver.h"
 #include "jsontypes.h"
-
-#ifdef TESTING_ENABLED
-#include "mocktcpserver.h"
-#else
-#include "tcpserver.h"
-#endif
 #include "jsonhandler.h"
-
 #include "guhcore.h"
 #include "devicemanager.h"
 #include "plugin/deviceplugin.h"
@@ -44,6 +37,12 @@
 #include "eventhandler.h"
 #include "logginghandler.h"
 #include "statehandler.h"
+
+#ifndef TESTING_ENABLED
+#include "tcpserver.h"
+#else
+#include "mocktcpserver.h"
+#endif
 
 #ifdef WEBSOCKET
 #include "websocketserver.h"

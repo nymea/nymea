@@ -27,7 +27,7 @@
 
 #include "transportinterface.h"
 
-namespace guhserver {
+using namespace guhserver;
 
 class JsonRPCServer;
 
@@ -59,8 +59,6 @@ public slots:
 private:
     static QList<MockTcpServer*> s_allServers;
 };
-
-}
 
 #endif // TCPSERVER_H
 

@@ -7,6 +7,7 @@ SUBDIRS += libguh server plugins
 !disabletesting {
     message("Building guh tests enabled")
     SUBDIRS += tests
+    DEFINES += TESTING_ENABLED
 } else {
     message("Building guh tests disabled")
 }

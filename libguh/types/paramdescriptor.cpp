@@ -26,7 +26,7 @@
     \ingroup types
     \inmodule libguh
 
-    An ParamDescriptor describes a \l{Param} in order to match it with a \l{guhserver::yRule}.
+    An ParamDescriptor describes a \l{Param} in order to match it with a \l{guhserver::Rule}.
 
     \sa Param, ParamType
 */

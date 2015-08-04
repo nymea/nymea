@@ -1,9 +1,8 @@
 include(../../../guh.pri)
 include(../autotests.pri)
 
-TARGET = websocketserver
+QT += websockets
 
-contains(DEFINES, WEBSOCKET){
-    QT += websockets
-    SOURCES += testwebsocketserver.cpp
-}
+TARGET = websocketserver
+SOURCES += testwebsocketserver.cpp
+

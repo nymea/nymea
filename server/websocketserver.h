@@ -33,13 +33,15 @@
 // Note: WebSocket Protocol from the Internet Engineering Task Force (IETF) -> RFC6455 V13:
 //       http://tools.ietf.org/html/rfc6455
 
+class QSslConfiguration;
+
 namespace guhserver {
 
 class WebSocketServer : public TransportInterface
 {
     Q_OBJECT
 public:
-    explicit WebSocketServer(QObject *parent = 0);
+    explicit WebSocketServer(const QSslConfiguration &sslConfiguration = QSslConfiguration(), QObject *parent = 0);
     ~WebSocketServer();
 
     void sendData(const QUuid &clientId, const QVariantMap &data) override;
@@ -49,8 +51,10 @@ private:
     QWebSocketServer *m_server;
     QHash<QUuid, QWebSocket *> m_clientList;
 
-    bool m_enabled;
+    QSslConfiguration m_sslConfiguration;
     bool m_useSsl;
+
+    bool m_enabled;
     qint16 m_port;
 
 private slots:

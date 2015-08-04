@@ -70,7 +70,7 @@ void TestRestDeviceClasses::getSupportedDevices()
 
     // Get all devices
     QNetworkRequest request;
-    request.setUrl(QUrl("http://localhost:3000/api/v1/deviceclasses"));
+    request.setUrl(QUrl("http://localhost:3333/api/v1/deviceclasses"));
     QNetworkReply *reply = nam->get(request);
     clientSpy.wait();
     QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
@@ -88,7 +88,7 @@ void TestRestDeviceClasses::getSupportedDevices()
         QVariantMap deviceClassMap = deviceClass.toMap();
         QNetworkRequest request;
         request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
-        request.setUrl(QUrl(QString("http://localhost:3000/api/v1/deviceclasses/%1").arg(deviceClassMap.value("id").toString())));
+        request.setUrl(QUrl(QString("http://localhost:3333/api/v1/deviceclasses/%1").arg(deviceClassMap.value("id").toString())));
         clientSpy.clear();
         QNetworkReply *reply = nam->get(request);
         clientSpy.wait();
@@ -126,10 +126,10 @@ void TestRestDeviceClasses::getActionTypes()
 
     QNetworkRequest request;
     if (!actionTypeId.isNull()) {
-        request.setUrl(QUrl(QString("http://localhost:3000/api/v1/deviceclasses/%1/actiontypes/%2").arg(deviceClassId.toString()).arg(actionTypeId.toString())));
+        request.setUrl(QUrl(QString("http://localhost:3333/api/v1/deviceclasses/%1/actiontypes/%2").arg(deviceClassId.toString()).arg(actionTypeId.toString())));
     } else {
         // Get all actiontypes
-        request.setUrl(QUrl(QString("http://localhost:3000/api/v1/deviceclasses/%1/actiontypes").arg(deviceClassId.toString())));
+        request.setUrl(QUrl(QString("http://localhost:3333/api/v1/deviceclasses/%1/actiontypes").arg(deviceClassId.toString())));
     }
 
     QNetworkReply *reply = nam->get(request);
@@ -164,10 +164,10 @@ void TestRestDeviceClasses::getStateTypes()
 
     QNetworkRequest request;
     if (!stateTypeId.isNull()) {
-        request.setUrl(QUrl(QString("http://localhost:3000/api/v1/deviceclasses/%1/statetypes/%2").arg(deviceClassId.toString()).arg(stateTypeId.toString())));
+        request.setUrl(QUrl(QString("http://localhost:3333/api/v1/deviceclasses/%1/statetypes/%2").arg(deviceClassId.toString()).arg(stateTypeId.toString())));
     } else {
         // Get all actiontypes
-        request.setUrl(QUrl(QString("http://localhost:3000/api/v1/deviceclasses/%1/statetypes").arg(deviceClassId.toString())));
+        request.setUrl(QUrl(QString("http://localhost:3333/api/v1/deviceclasses/%1/statetypes").arg(deviceClassId.toString())));
     }
 
     QNetworkReply *reply = nam->get(request);
@@ -202,10 +202,10 @@ void TestRestDeviceClasses::getEventTypes()
 
     QNetworkRequest request;
     if (!eventTypeId.isNull()) {
-        request.setUrl(QUrl(QString("http://localhost:3000/api/v1/deviceclasses/%1/eventtypes/%2").arg(deviceClassId.toString()).arg(eventTypeId.toString())));
+        request.setUrl(QUrl(QString("http://localhost:3333/api/v1/deviceclasses/%1/eventtypes/%2").arg(deviceClassId.toString()).arg(eventTypeId.toString())));
     } else {
         // Get all actiontypes
-        request.setUrl(QUrl(QString("http://localhost:3000/api/v1/deviceclasses/%1/eventtypes").arg(deviceClassId.toString())));
+        request.setUrl(QUrl(QString("http://localhost:3333/api/v1/deviceclasses/%1/eventtypes").arg(deviceClassId.toString())));
     }
 
     QNetworkReply *reply = nam->get(request);
@@ -249,7 +249,7 @@ void TestRestDeviceClasses::discoverDevices()
     QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
 
     // DISCOVER
-    QUrl url(QString("http://localhost:3000/api/v1/deviceclasses/%1/discover").arg(deviceClassId.toString()));
+    QUrl url(QString("http://localhost:3333/api/v1/deviceclasses/%1/discover").arg(deviceClassId.toString()));
 
     if (!discoveryParams.isEmpty()) {
         QUrlQuery query;
@@ -277,7 +277,7 @@ void TestRestDeviceClasses::discoverDevices()
     QCOMPARE(foundDevices.count(), resultCount);
 
     // ADD the discovered device
-    request.setUrl(QUrl("http://localhost:3000/api/v1/devices"));
+    request.setUrl(QUrl("http://localhost:3333/api/v1/devices"));
     DeviceDescriptorId descriptorId = DeviceDescriptorId(foundDevices.first().toMap().value("id").toString());
     qDebug() << descriptorId;
     params.clear();
@@ -302,7 +302,7 @@ void TestRestDeviceClasses::discoverDevices()
 
     DeviceId deviceId = DeviceId(response.value("deviceId").toString());
 
-    request = QNetworkRequest(QUrl(QString("http://localhost:3000/api/v1/devices/%1").arg(deviceId.toString())));
+    request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
     clientSpy.clear();
     reply = nam->deleteResource(request);
     clientSpy.wait();

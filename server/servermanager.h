@@ -27,6 +27,10 @@
 #include "jsonrpc/jsonrpcserver.h"
 #include "rest/restserver.h"
 
+class QSslConfiguration;
+class QSslCertificate;
+class QSslKey;
+
 namespace guhserver {
 
 class ServerManager : public QObject
@@ -41,6 +45,13 @@ public:
 private:
     JsonRPCServer *m_jsonServer;
     RestServer *m_restServer;
+
+    QSslConfiguration m_sslConfiguration;
+    QSslKey m_certificateKey;
+    QSslCertificate m_certificate;
+
+
+    bool loadCertificate(const QString &certificateKeyFileName, const QString &certificateFileName);
 
 };
 

@@ -34,6 +34,7 @@
 #include <QString>
 
 class Device;
+class QSslConfiguration;
 
 namespace guhserver {
 #ifdef WEBSOCKET
@@ -50,7 +51,7 @@ class JsonRPCServer: public JsonHandler
 {
     Q_OBJECT
 public:
-    JsonRPCServer(QObject *parent = 0);
+    JsonRPCServer(const QSslConfiguration &sslConfiguration = QSslConfiguration(), QObject *parent = 0);
 
     // JsonHandler API implementation
     QString name() const;

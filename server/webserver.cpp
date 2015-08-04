@@ -35,34 +35,32 @@
 
 namespace guhserver {
 
-WebServer::WebServer(QObject *parent) :
+WebServer::WebServer(const QSslConfiguration &sslConfiguration, QObject *parent) :
     QTcpServer(parent),
-    m_enabled(false),
-    m_useSsl(false)
+    m_sslConfiguration(sslConfiguration),
+    m_useSsl(false),
+    m_enabled(false)
 {
     // load webserver settings
     GuhSettings settings(GuhSettings::SettingsRoleGlobal);
-    qCDebug(dcWebSocketServer) << "Loading web socket server settings from:" << settings.fileName();
+    qCDebug(dcWebSocketServer) << "Loading web socket server settings from" << settings.fileName();
 
-    settings.beginGroup("WebSocketServer");
-    m_port = settings.value("port", 3000).toInt();
+    settings.beginGroup("WebServer");
+    // 3333 Official free according to https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers
+    m_port = settings.value("port", 3333).toInt();
     m_useSsl = settings.value("https", false).toBool();
-    QString certificateFileName = settings.value("certificate", QVariant("/etc/ssl/certs/guhd-certificate.crt")).toString();
-    QString keyFileName = settings.value("certificate-key", QVariant("/etc/ssl/private/guhd-certificate.key")).toString();
+    m_webinterfaceDir = QDir(settings.value("publicFolder", "/usr/share/guh-webinterface/public/").toString());
     settings.endGroup();
 
-    // check SSL
-    if (m_useSsl && !QSslSocket::supportsSsl()) {
-        qCWarning(dcWebServer) << "SSL is not supported/installed on this platform.";
-        m_useSsl = false;
-    }
+    // check public directory
+    qCDebug(dcWebServer) << "Publish webinterface folder" << m_webinterfaceDir.path();
+    if (!m_webinterfaceDir.exists())
+        qCWarning(dcWebServer) << "Web interface public folder" << m_webinterfaceDir.path() << "does not exist.";
 
-    if (m_useSsl && !loadCertificate(keyFileName, certificateFileName)) {
-        qCWarning(dcWebServer) << "SSL encryption disabled";
+
+    // check SSL
+    if (m_useSsl && m_sslConfiguration.isNull())
         m_useSsl = false;
-        return;
-    }
-    qCDebug(dcWebServer) << "Using SSL lib version:" << QSslSocket::sslLibraryVersionString();
 }
 
 WebServer::~WebServer()
@@ -74,7 +72,6 @@ void WebServer::sendHttpReply(HttpReply *reply)
 {
     QSslSocket *socket = 0;
     socket = m_clientList.value(reply->clientId());
-
     if (!socket) {
         qCDebug(dcWebServer) << "Invalid socket pointer! This should never happen!!!";
         return;
@@ -132,33 +129,6 @@ QString WebServer::fileName(const QString &query)
     return m_webinterfaceDir.path() + fileName;
 }
 
-bool WebServer::loadCertificate(const QString &keyFileName, const QString &certificateFileName)
-{
-    QByteArray certificateData;
-    QByteArray certificateKeyData;
-
-    QFile certificateKeyFile(keyFileName);
-    if (!certificateKeyFile.open(QIODevice::ReadOnly)) {
-        qCWarning(dcWebServer) << "Could not open" << certificateKeyFile.fileName() << ":" << certificateKeyFile.errorString();
-        return false;
-    }
-    certificateKeyData = certificateKeyFile.readAll();
-    certificateKeyFile.close();
-    qCDebug(dcWebServer) << "Loaded successfully private certificate key.";
-
-    QFile certificateFile(certificateFileName);
-    if (!certificateFile.open(QIODevice::ReadOnly)) {
-        qCWarning(dcWebServer) << "Could not open" << certificateFile.fileName() << ":" << certificateFile.errorString();
-        return false;
-    }
-    certificateData = certificateFile.readAll();
-    certificateFile.close();
-    qCDebug(dcWebServer) << "Loaded successfully certificate file.";
-
-    m_certificate = QSslCertificate(certificateData);
-    m_certificateKey = QSslKey(certificateKeyData, QSsl::Rsa);
-    return true;
-}
 
 void WebServer::writeData(QSslSocket *socket, const QByteArray &data)
 {
@@ -174,6 +144,7 @@ void WebServer::incomingConnection(qintptr socketDescriptor)
     QSslSocket *socket = new QSslSocket();
     if (!socket->setSocketDescriptor(socketDescriptor)) {
         qCWarning(dcConnection) << "Could not set socket descriptor. Rejecting connection.";
+        socket->close();
         delete socket;
         return;
     }
@@ -186,9 +157,7 @@ void WebServer::incomingConnection(qintptr socketDescriptor)
 
     if (m_useSsl) {
         // configure client connection
-        socket->setProtocol(QSsl::TlsV1_2);
-        socket->setPrivateKey(m_certificateKey);
-        socket->setLocalCertificate(m_certificate);
+        socket->setSslConfiguration(m_sslConfiguration);
         connect(socket, SIGNAL(encrypted()), this, SLOT(onEncrypted()));
         socket->startServerEncryption();
         // wait for encrypted connection before continue with this client

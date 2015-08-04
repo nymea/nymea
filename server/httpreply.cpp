@@ -19,17 +19,16 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-  \class guhserver::HttpReply
-  \brief Represents a reply of the guh webserver.
+    \class guhserver::HttpReply
+    \brief Represents a reply of the guh webserver to a \l{HttpRequest}.
 
-  \ingroup core
-  \inmodule server
+    \ingroup core
+    \inmodule server
 
-  This class holds the header and the payload data of a network reply and represents a response
-  from the guh webserver.
+    This class holds the header and the payload data of a network reply and represents a response
+    from the guh webserver to a \l{HttpRequest}.
 
-  \note RFC 7231 HTTP/1.1 Semantics and Content -> \l{http://tools.ietf.org/html/rfc7231}{http://tools.ietf.org/html/rfc7231}
-
+    \note RFC 7231 HTTP/1.1 Semantics and Content -> \l{http://tools.ietf.org/html/rfc7231}{http://tools.ietf.org/html/rfc7231}
 */
 
 /*! \enum guhserver::HttpReply::HttpStatusCode
@@ -75,9 +74,7 @@
 */
 
 /*! \enum guhserver::HttpReply::HttpHeaderType
-
     This enum type specifies the known type of a header in a HTTP webserver reply.
-
     You can find more information here: \l{http://tools.ietf.org/html/rfc7231#section-5}
 
     \value ContentTypeHeader
@@ -162,7 +159,7 @@ HttpReply::HttpReply(const HttpReply::HttpStatusCode &statusCode, const HttpRepl
     packReply();
 }
 
-/*! Set the \a statusCode for this \l{HttpReply}.*/
+/*! Set the \l{HttpStatusCode} \a statusCode for this \l{HttpReply}. */
 void HttpReply::setHttpStatusCode(const HttpReply::HttpStatusCode &statusCode)
 {
     m_statusCode = statusCode;
@@ -363,6 +360,10 @@ QByteArray HttpReply::getHeaderType(const HttpReply::HttpHeaderType &headerType)
     }
 }
 
+/*! Starts the timer for an async \l{HttpReply}.
+ *
+ *  \sa finished()
+*/
 void HttpReply::startWait()
 {
     m_timer->start(5000);

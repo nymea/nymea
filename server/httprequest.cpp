@@ -148,9 +148,10 @@ bool HttpRequest::hasPayload() const
     return !m_payload.isEmpty();
 }
 
-/*! Appends data to the current raw data of this \l{HttpRequest}. This method will be used if a \l{HttpRequest} is not complete yet.
-
-  \sa isComplete()
+/*! Appends the given \a data to the current raw data of this \l{HttpRequest}.
+ *  This method will be used if a \l{HttpRequest} is not complete yet.
+ *
+ *  \sa isComplete()
 */
 void HttpRequest::appendData(const QByteArray &data)
 {

@@ -34,7 +34,7 @@
 #include <QMetaType>
 #include <QNetworkReply>
 
-namespace guhserver {
+using namespace guhserver;
 
 PluginId mockPluginId = PluginId("727a4a9a-c187-446f-aadf-f1b2220607d1");
 VendorId guhVendorId = VendorId("2062d64d-3232-433c-88bc-0d33c0ba2ba6");
@@ -67,7 +67,6 @@ GuhTestBase::GuhTestBase(QObject *parent) :
 
 void GuhTestBase::initTestCase()
 {
-
     // If testcase asserts cleanup won't do. Lets clear any previous test run settings leftovers
     GuhSettings rulesSettings(GuhSettings::SettingsRoleRules);
     rulesSettings.clear();
@@ -198,4 +197,3 @@ void GuhTestBase::restartServer()
     m_mockTcpServer = MockTcpServer::servers().first();
 }
 
-}

@@ -72,6 +72,7 @@
 */
 
 /*! \enum guhserver::RuleEngine::RemovePolicy
+
     \value RemovePolicyCascade
         Remove the whole \l{Rule}.
     \value RemovePolicyUpdate
@@ -99,7 +100,7 @@ namespace guhserver {
 
 /*! Constructs the RuleEngine with the given \a parent. Although it wouldn't harm to have multiple RuleEngines, there is one
     instance available from \l{GuhCore}. This one should be used instead of creating multiple ones.
-    */
+ */
 RuleEngine::RuleEngine(QObject *parent) :
     QObject(parent)
 {
@@ -204,7 +205,8 @@ RuleEngine::RuleEngine(QObject *parent) :
     This will search all the \l{Rule}{Rules} triggered by the given \a event
     and evaluate their states in the system. It will return a
     list of all \l{Rule}{Rules} that are triggered or change its active state
-    because of this \a event. */
+    because of this \a event.
+*/
 QList<Rule> RuleEngine::evaluateEvent(const Event &event)
 {
     Device *device = GuhCore::instance()->findConfiguredDevice(event.deviceId());
@@ -254,7 +256,8 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
 }
 
 /*! Add a new \l{Rule} with the given \a ruleId , \a name, \a eventDescriptorList, \a actions and \a enabled value to the engine.
-    For convenience, this creates a Rule without any \l{State} comparison. */
+    For convenience, this creates a Rule without any \l{State} comparison.
+*/
 RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const QList<RuleAction> &actions, bool enabled)
 {
     return addRule(ruleId, name, eventDescriptorList, StateEvaluator(), actions, QList<RuleAction>(), enabled);
@@ -349,7 +352,9 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
     return RuleErrorNoError;
 }
 
-/*! Edit a \l{Rule} with the given \a ruleId, \a name, \a eventDescriptorList, \a stateEvaluator, the  list of \a actions the list of \a exitActions and the \a enabled in the engine. */
+/*! Edit a \l{Rule} with the given \a ruleId, \a name, \a eventDescriptorList, \a stateEvaluator,
+    the  list of \a actions the list of \a exitActions and the \a enabled in the engine.
+*/
 RuleEngine::RuleError RuleEngine::editRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions, bool enabled)
 {
     if (ruleId.isNull()) {
@@ -427,7 +432,9 @@ RuleEngine::RuleError RuleEngine::removeRule(const RuleId &ruleId, bool fromEdit
 }
 
 /*! Enables the rule with the given \a ruleId that has been previously disabled.
-    \sa disableRule(), */
+
+    \sa disableRule()
+*/
 RuleEngine::RuleError RuleEngine::enableRule(const RuleId &ruleId)
 {
     if (!m_rules.contains(ruleId)) {
@@ -445,7 +452,9 @@ RuleEngine::RuleError RuleEngine::enableRule(const RuleId &ruleId)
 }
 
 /*! Disables the rule with the given \a ruleId. Disabled rules won't be triggered.
-    \sa enableRule(), */
+
+    \sa enableRule()
+*/
 RuleEngine::RuleError RuleEngine::disableRule(const RuleId &ruleId)
 {
     if (!m_rules.contains(ruleId)) {

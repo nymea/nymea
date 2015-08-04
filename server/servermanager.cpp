@@ -19,17 +19,47 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "servermanager.h"
+#include "guhsettings.h"
+
+#include <QSslCertificate>
+#include <QSslConfiguration>
+#include <QSslKey>
 
 namespace guhserver {
 
 ServerManager::ServerManager(QObject *parent) :
-    QObject(parent)
+    QObject(parent),
+    m_sslConfiguration(QSslConfiguration())
 {
+    // check SSL
+    if (!QSslSocket::supportsSsl()) {
+        qCWarning(dcConnection) << "SSL is not supported/installed on this platform.";
+    } else {
+        qCDebug(dcConnection) << "SSL library version:" << QSslSocket::sslLibraryVersionString();
+
+        // load SSL configuration settings
+        GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+        qCDebug(dcConnection) << "Loading SSL-configuration from" << settings.fileName();
+
+        settings.beginGroup("SSL-Configuration");
+        QString certificateFileName = settings.value("certificate", QVariant("/etc/ssl/certs/guhd-certificate.crt")).toString();
+        QString keyFileName = settings.value("certificate-key", QVariant("/etc/ssl/private/guhd-certificate.key")).toString();
+        settings.endGroup();
+
+        if (!loadCertificate(keyFileName, certificateFileName)) {
+            qCWarning(dcConnection) << "SSL encryption disabled";
+        } else {
+            m_sslConfiguration.setProtocol(QSsl::TlsV1_2);
+            m_sslConfiguration.setPrivateKey(m_certificateKey);
+            m_sslConfiguration.setLocalCertificate(m_certificate);
+        }
+    }
+
     qCDebug(dcApplication) << "Starting JSON RPC Server";
-    m_jsonServer = new JsonRPCServer(this);
+    m_jsonServer = new JsonRPCServer(m_sslConfiguration, this);
 
     qCDebug(dcApplication) << "Starting REST Server";
-    m_restServer = new RestServer(this);
+    m_restServer = new RestServer(m_sslConfiguration, this);
 }
 
 JsonRPCServer *ServerManager::jsonServer() const
@@ -40,6 +70,29 @@ JsonRPCServer *ServerManager::jsonServer() const
 RestServer *ServerManager::restServer() const
 {
     return m_restServer;
+}
+
+bool ServerManager::loadCertificate(const QString &certificateKeyFileName, const QString &certificateFileName)
+{
+    QFile certificateKeyFile(certificateKeyFileName);
+    if (!certificateKeyFile.open(QIODevice::ReadOnly)) {
+        qCWarning(dcWebServer) << "Could not open" << certificateKeyFile.fileName() << ":" << certificateKeyFile.errorString();
+        return false;
+    }
+    m_certificateKey = QSslKey(certificateKeyFile.readAll(), QSsl::Rsa);
+    qCDebug(dcWebServer) << "Loaded successfully private certificate key " << certificateKeyFileName;
+    certificateKeyFile.close();
+
+    QFile certificateFile(certificateFileName);
+    if (!certificateFile.open(QIODevice::ReadOnly)) {
+        qCWarning(dcWebServer) << "Could not open" << certificateFile.fileName() << ":" << certificateFile.errorString();
+        return false;
+    }
+    m_certificate = QSslCertificate(certificateFile.readAll());
+    qCDebug(dcWebServer) << "Loaded successfully certificate file " << certificateFileName;
+    certificateFile.close();
+
+    return true;
 }
 
 }

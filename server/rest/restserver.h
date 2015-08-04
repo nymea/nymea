@@ -32,16 +32,18 @@
 #include "rulesresource.h"
 #include "logsresource.h"
 
-class HttpRequest;
-class HttpReply;
+class QSslConfiguration;
 
 namespace guhserver {
+
+class HttpRequest;
+class HttpReply;
 
 class RestServer : public QObject
 {
     Q_OBJECT
 public:
-    explicit RestServer(QObject *parent = 0);
+    explicit RestServer(const QSslConfiguration &sslConfiguration = QSslConfiguration(), QObject *parent = 0);
 
 
 private:

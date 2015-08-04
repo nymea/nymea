@@ -30,4 +30,4 @@ Q_LOGGING_CATEGORY(dcWebServer, "WebServer")
 Q_LOGGING_CATEGORY(dcJsonRpc, "JsonRpc")
 Q_LOGGING_CATEGORY(dcRest, "Rest")
 Q_LOGGING_CATEGORY(dcLogEngine, "LogEngine")
-
+Q_LOGGING_CATEGORY(dcWebSocketServer, "WebSocketServer")

@@ -45,17 +45,25 @@
 #include "logginghandler.h"
 #include "statehandler.h"
 
+#ifdef WEBSOCKET
+#include "websocketserver.h"
+#endif
+
 #include <QJsonDocument>
 #include <QStringList>
+#include <QSslConfiguration>
 
 namespace guhserver {
 
-JsonRPCServer::JsonRPCServer(QObject *parent):
+JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject *parent):
     JsonHandler(parent),
     #ifdef TESTING_ENABLED
     m_tcpServer(new MockTcpServer(this)),
     #else
     m_tcpServer(new TcpServer(this)),
+    #endif
+    #ifdef WEBSOCKET
+    m_websocketServer(new WebSocketServer(sslConfiguration, this)),
     #endif
     m_notificationId(0)
 {
@@ -89,6 +97,19 @@ JsonRPCServer::JsonRPCServer(QObject *parent):
     connect(m_tcpServer, SIGNAL(clientDisconnected(const QUuid &)), this, SLOT(clientDisconnected(const QUuid &)));
     connect(m_tcpServer, SIGNAL(dataAvailable(QUuid, QString, QString, QVariantMap)), this, SLOT(processData(QUuid, QString, QString, QVariantMap)));
     m_tcpServer->startServer();
+
+    m_interfaces.append(m_tcpServer);
+
+#ifdef WEBSOCKET
+    connect(m_websocketServer, SIGNAL(clientConnected(const QUuid &)), this, SLOT(clientConnected(const QUuid &)));
+    connect(m_websocketServer, SIGNAL(clientDisconnected(const QUuid &)), this, SLOT(clientDisconnected(const QUuid &)));
+    connect(m_websocketServer, SIGNAL(dataAvailable(QUuid, QString, QString, QVariantMap)), this, SLOT(processData(QUuid, QString, QString, QVariantMap)));
+
+    m_websocketServer->startServer();
+    m_interfaces.append(m_websocketServer);
+#else
+    Q_UNUSED(sslConfiguration)
+#endif
 
     QMetaObject::invokeMethod(this, "setup", Qt::QueuedConnection);
 }
@@ -156,6 +177,8 @@ void JsonRPCServer::setup()
 
 void JsonRPCServer::processData(const QUuid &clientId, const QString &targetNamespace, const QString &method, const QVariantMap &message)
 {
+    TransportInterface *interface = qobject_cast<TransportInterface *>(sender());
+
     // Note: id, targetNamespace and method already checked in TcpServer
     int commandId = message.value("id").toInt();
     QVariantMap params = message.value("params").toMap();
@@ -165,7 +188,7 @@ void JsonRPCServer::processData(const QUuid &clientId, const QString &targetName
     JsonHandler *handler = m_handlers.value(targetNamespace);
     QPair<bool, QString> validationResult = handler->validateParams(method, params);
     if (!validationResult.first) {
-        m_tcpServer->sendErrorResponse(clientId, commandId, "Invalid params: " + validationResult.second);
+        interface->sendErrorResponse(clientId, commandId, "Invalid params: " + validationResult.second);
         return;
     }
 
@@ -175,6 +198,7 @@ void JsonRPCServer::processData(const QUuid &clientId, const QString &targetName
     JsonReply *reply;
     QMetaObject::invokeMethod(handler, method.toLatin1().data(), Q_RETURN_ARG(JsonReply*, reply), Q_ARG(QVariantMap, params));
     if (reply->type() == JsonReply::TypeAsync) {
+        m_asyncReplies.insert(reply, interface);
         reply->setClientId(clientId);
         reply->setCommandId(commandId);
         connect(reply, &JsonReply::finished, this, &JsonRPCServer::asyncReplyFinished);
@@ -182,7 +206,7 @@ void JsonRPCServer::processData(const QUuid &clientId, const QString &targetName
     } else {
         Q_ASSERT_X((targetNamespace == "JSONRPC" && method == "Introspect") || handler->validateReturns(method, reply->data()).first
                    ,"validating return value", formatAssertion(targetNamespace, method, handler, reply->data()).toLatin1().data());
-        m_tcpServer->sendResponse(clientId, commandId, reply->data());
+        interface->sendResponse(clientId, commandId, reply->data());
         reply->deleteLater();
     }
 }
@@ -199,7 +223,7 @@ QString JsonRPCServer::formatAssertion(const QString &targetNamespace, const QSt
 
 void JsonRPCServer::sendNotification(const QVariantMap &params)
 {
-    JsonHandler *handler = qobject_cast<JsonHandler*>(sender());
+    JsonHandler *handler = qobject_cast<JsonHandler *>(sender());
     QMetaMethod method = handler->metaObject()->method(senderSignalIndex());
 
     QVariantMap notification;
@@ -207,20 +231,21 @@ void JsonRPCServer::sendNotification(const QVariantMap &params)
     notification.insert("notification", handler->name() + "." + method.name());
     notification.insert("params", params);
 
-    emit notificationDataReady(notification);
-
-    m_tcpServer->sendData(m_clients.keys(true), notification);
+    foreach (TransportInterface *interface, m_interfaces) {
+        interface->sendData(m_clients.keys(true), notification);
+    }
 }
 
 void JsonRPCServer::asyncReplyFinished()
 {
-    JsonReply *reply = qobject_cast<JsonReply*>(sender());
+    JsonReply *reply = qobject_cast<JsonReply *>(sender());
+    TransportInterface *interface = m_asyncReplies.take(reply);
     if (!reply->timedOut()) {
         Q_ASSERT_X(reply->handler()->validateReturns(reply->method(), reply->data()).first
                    ,"validating return value", formatAssertion(reply->handler()->name(), reply->method(), reply->handler(), reply->data()).toLatin1().data());
-        m_tcpServer->sendResponse(reply->clientId(), reply->commandId(), reply->data());
+        interface->sendResponse(reply->clientId(), reply->commandId(), reply->data());
     } else {
-        m_tcpServer->sendErrorResponse(reply->clientId(), reply->commandId(), "Command timed out");
+        interface->sendErrorResponse(reply->clientId(), reply->commandId(), "Command timed out");
     }
 
     reply->deleteLater();
@@ -239,15 +264,17 @@ void JsonRPCServer::registerHandler(JsonHandler *handler)
 
 void JsonRPCServer::clientConnected(const QUuid &clientId)
 {
-    // Notifications disabled by default
-    m_clients.insert(clientId, false);
+    // Notifications enabled by default
+    m_clients.insert(clientId, true);
+
+    TransportInterface *interface = qobject_cast<TransportInterface *>(sender());
 
     QVariantMap handshake;
     handshake.insert("id", 0);
     handshake.insert("server", "guh JSONRPC interface");
     handshake.insert("version", GUH_VERSION_STRING);
     handshake.insert("protocol version", JSON_PROTOCOL_VERSION);
-    m_tcpServer->sendData(clientId, handshake);
+    interface->sendData(clientId, handshake);
 }
 
 void JsonRPCServer::clientDisconnected(const QUuid &clientId)

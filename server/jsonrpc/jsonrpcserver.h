@@ -24,6 +24,7 @@
 
 #include "plugin/deviceclass.h"
 #include "jsonhandler.h"
+#include "transportinterface.h"
 
 #include "types/action.h"
 #include "types/event.h"
@@ -33,8 +34,12 @@
 #include <QString>
 
 class Device;
+class QSslConfiguration;
 
 namespace guhserver {
+#ifdef WEBSOCKET
+class WebSocketServer;
+#endif
 
 #ifdef TESTING_ENABLED
 class MockTcpServer;
@@ -46,7 +51,7 @@ class JsonRPCServer: public JsonHandler
 {
     Q_OBJECT
 public:
-    JsonRPCServer(QObject *parent = 0);
+    JsonRPCServer(const QSslConfiguration &sslConfiguration = QSslConfiguration(), QObject *parent = 0);
 
     // JsonHandler API implementation
     QString name() const;
@@ -58,7 +63,6 @@ public:
 
 signals:
     void commandReceived(const QString &targetNamespace, const QString &command, const QVariantMap &params);
-    void notificationDataReady(const QVariantMap &notification);
 
 private slots:
     void setup();
@@ -83,7 +87,14 @@ private:
 #else
     TcpServer *m_tcpServer;
 #endif
-    QHash<QString, JsonHandler*> m_handlers;
+
+#ifdef WEBSOCKET
+    WebSocketServer *m_websocketServer;
+#endif
+
+    QList<TransportInterface *> m_interfaces;
+    QHash<QString, JsonHandler *> m_handlers;
+    QHash<JsonReply *, TransportInterface *> m_asyncReplies;
 
     // clientId, notificationsEnabled
     QHash<QUuid, bool> m_clients;

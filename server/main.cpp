@@ -62,10 +62,11 @@ int main(int argc, char *argv[])
     s_loggingFilters.insert("DeviceManager", true);
     s_loggingFilters.insert("RuleEngine", true);
     s_loggingFilters.insert("Connection", true);
-    s_loggingFilters.insert("TcpServer", true);
-    s_loggingFilters.insert("WebServer", true);
+    s_loggingFilters.insert("TcpServer", false);
+    s_loggingFilters.insert("WebServer", false);
+    s_loggingFilters.insert("WebSocketServer", false);
     s_loggingFilters.insert("JsonRpc", false);
-    s_loggingFilters.insert("Rest", true);
+    s_loggingFilters.insert("Rest", false);
     s_loggingFilters.insert("Hardware", false);
     s_loggingFilters.insert("LogEngine", false);
 

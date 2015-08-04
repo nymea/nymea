@@ -38,7 +38,8 @@ class TcpServer : public TransportInterface
     Q_OBJECT
 public:
     explicit TcpServer(QObject *parent = 0);
-    
+    ~TcpServer();
+
     void sendData(const QUuid &clientId, const QVariantMap &data) override;
     void sendData(const QList<QUuid> &clients, const QVariantMap &data) override;
 
@@ -53,11 +54,7 @@ private:
     QStringList m_ipVersions;
 
     void reloadNetworkInterfaces();
-    void validateMessage(const QUuid &clientId, const QByteArray &data);
 
-public:
-    void sendResponse(const QUuid &clientId, int commandId, const QVariantMap &params = QVariantMap());
-    void sendErrorResponse(const QUuid &clientId, int commandId, const QString &error);
 
 private slots:
     void onClientConnected();

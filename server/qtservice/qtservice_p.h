@@ -44,8 +44,6 @@
 #include <QStringList>
 #include "qtservice.h"
 
-namespace guhserver {
-
 class QtServiceControllerPrivate
 {
     Q_DECLARE_PUBLIC(QtServiceController)
@@ -85,7 +83,5 @@ public:
     void sysCleanup();
     class QtServiceSysPrivate *sysd;
 };
-
-}
 
 #endif

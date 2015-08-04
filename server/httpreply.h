@@ -29,6 +29,8 @@
 
 // Note: RFC 7231 HTTP/1.1 Semantics and Content -> http://tools.ietf.org/html/rfc7231
 
+namespace guhserver {
+
 class HttpReply: public QObject
 {
     Q_OBJECT
@@ -128,7 +130,8 @@ public slots:
 signals:
     void finished();
 
-
 };
+
+}
 
 #endif // HTTPREPLY_H

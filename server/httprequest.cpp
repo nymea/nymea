@@ -23,6 +23,7 @@
 
 #include <QUrlQuery>
 
+namespace guhserver {
 
 HttpRequest::HttpRequest() :
     m_rawData(QByteArray()),
@@ -216,4 +217,6 @@ QDebug operator<<(QDebug debug, const HttpRequest &httpRequest)
     debug << httpRequest.payload() << "\n";
     debug << "-----------------------------------" << "\n";
     return debug;
+}
+
 }

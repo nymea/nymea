@@ -20,7 +20,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class RuleEngine
+    \class guhserver::RuleEngine
     \brief The Engine that evaluates \l{Rule}{Rules} and finds
     \l{Action}{Actions} to be executed.
 
@@ -33,20 +33,20 @@
     \sa Event, EventDescriptor, Rule, RuleAction
 */
 
-/*! \fn void RuleEngine::ruleAdded(const Rule &rule)
+/*! \fn void guhserver::RuleEngine::ruleAdded(const Rule &rule)
     Will be emitted whenever a new \l{Rule} is added to this Engine.
     The \a rule parameter holds the entire new rule.*/
 
-/*! \fn void RuleEngine::ruleRemoved(const RuleId &ruleId)
+/*! \fn void guhserver::RuleEngine::ruleRemoved(const RuleId &ruleId)
     Will be emitted whenever a \l{Rule} is removed from this Engine.
     \a ruleId holds the id of the removed rule. You should remove any references
     or copies you hold for this rule.*/
 
-/*! \fn void RuleEngine::ruleConfigurationChanged(const Rule &rule)
+/*! \fn void guhserver::RuleEngine::ruleConfigurationChanged(const Rule &rule)
     Will be emitted whenever a \l{Rule} changed his enable/disable status.
     The parameter \a rule holds the changed rule.*/
 
-/*! \enum RuleEngine::RuleError
+/*! \enum guhserver::RuleEngine::RuleError
     \value RuleErrorNoError
         No error happened. Everything is fine.
     \value RuleErrorInvalidRuleId
@@ -71,7 +71,7 @@
         One of the RuleActionParams type does not match with the corresponding EventParam type.
 */
 
-/*! \enum RuleEngine::RemovePolicy
+/*! \enum guhserver::RuleEngine::RemovePolicy
     \value RemovePolicyCascade
         Remove the whole \l{Rule}.
     \value RemovePolicyUpdate

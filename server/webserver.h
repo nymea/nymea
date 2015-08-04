@@ -28,21 +28,22 @@
 #include <QDir>
 #include <QSslSocket>
 #include <QSslCertificate>
+#include <QSslConfiguration>
 #include <QSslKey>
-
-class HttpRequest;
-class HttpReply;
 
 // Note: Hypertext Transfer Protocol (HTTP/1.1) from the Internet Engineering Task Force (IETF):
 //       https://tools.ietf.org/html/rfc7231
 
 namespace guhserver {
 
+class HttpRequest;
+class HttpReply;
+
 class WebServer : public QTcpServer
 {
     Q_OBJECT
 public:
-    explicit WebServer(QObject *parent = 0);
+    explicit WebServer(const QSslConfiguration &sslConfiguration = QSslConfiguration(), QObject *parent = 0);
     ~WebServer();
 
     void sendHttpReply(HttpReply *reply);
@@ -51,17 +52,16 @@ private:
     QHash<QUuid, QSslSocket *> m_clientList;
     QHash<QSslSocket *, HttpRequest> m_incompleteRequests;
 
-    bool m_enabled;
+    QSslConfiguration m_sslConfiguration;
     bool m_useSsl;
+
+    bool m_enabled;
     qint16 m_port;
     QDir m_webinterfaceDir;
-    QSslCertificate m_certificate;
-    QSslKey m_certificateKey;
+
 
     bool verifyFile(QSslSocket *socket, const QString &fileName);
     QString fileName(const QString &query);
-
-    bool loadCertificate(const QString &keyFileName, const QString &certificateFileName);
 
     void writeData(QSslSocket *socket, const QByteArray &data);
 

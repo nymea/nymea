@@ -42,11 +42,12 @@ TcpServer::TcpServer(QObject *parent) :
 
     // load JSON-RPC server settings
     GuhSettings settings(GuhSettings::SettingsRoleGlobal);
-    qCDebug(dcTcpServer) << "Loading Tcp server settings from:" << settings.fileName();
+    qCDebug(dcTcpServer) << "Loading Tcp server settings from" << settings.fileName();
     settings.beginGroup("JSONRPC");
 
     // load port
-    m_port = settings.value("port", 1234).toUInt();
+    // 2222 Official free according to https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers
+    m_port = settings.value("port", 2222).toUInt();
 
     // load interfaces
     QStringList interfaceList = settings.value("interfaces", QStringList("all")).toStringList();
@@ -63,6 +64,10 @@ TcpServer::TcpServer(QObject *parent) :
     // load IP versions (IPv4, IPv6 or any)
     m_ipVersions = settings.value("ip", QStringList("any")).toStringList();
     settings.endGroup();
+}
+
+TcpServer::~TcpServer()
+{
 }
 
 void TcpServer::sendData(const QList<QUuid> &clients, const QVariantMap &data)
@@ -93,75 +98,10 @@ void TcpServer::reloadNetworkInterfaces()
     settings.endGroup();
 }
 
-
-void TcpServer::validateMessage(const QUuid &clientId, const QByteArray &data)
-{
-    QJsonParseError error;
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
-
-    if(error.error != QJsonParseError::NoError) {
-        qCWarning(dcJsonRpc) << "Failed to parse JSON data" << data << ":" << error.errorString();
-        sendErrorResponse(clientId, -1, QString("Failed to parse JSON data: %1").arg(error.errorString()));
-        return;
-    }
-
-    QVariantMap message = jsonDoc.toVariant().toMap();
-
-    bool success;
-    int commandId = message.value("id").toInt(&success);
-    if (!success) {
-        qCWarning(dcJsonRpc) << "Error parsing command. Missing \"id\":" << message;
-        sendErrorResponse(clientId, commandId, "Error parsing command. Missing 'id'");
-        return;
-    }
-
-    QStringList commandList = message.value("method").toString().split('.');
-    if (commandList.count() != 2) {
-        qCWarning(dcJsonRpc) << "Error parsing method.\nGot:" << message.value("method").toString() << "\nExpected: \"Namespace.method\"";
-        sendErrorResponse(clientId, commandId, QString("Error parsing method. Got: '%1'', Expected: 'Namespace.method'").arg(message.value("method").toString()));
-        return;
-    }
-
-    QString targetNamespace = commandList.first();
-    QString method = commandList.last();
-
-    JsonHandler *handler = GuhCore::instance()->jsonRPCServer()->handlers().value(targetNamespace);
-    if (!handler) {
-        sendErrorResponse(clientId, commandId, "No such namespace");
-        return;
-    }
-    if (!handler->hasMethod(method)) {
-        sendErrorResponse(clientId, commandId, "No such method");
-        return;
-    }
-
-    emit dataAvailable(clientId, targetNamespace, method, message);
-}
-
-void TcpServer::sendResponse(const QUuid &clientId, int commandId, const QVariantMap &params)
-{
-    QVariantMap response;
-    response.insert("id", commandId);
-    response.insert("status", "success");
-    response.insert("params", params);
-
-    sendData(clientId, response);
-}
-
-void TcpServer::sendErrorResponse(const QUuid &clientId, int commandId, const QString &error)
-{
-    QVariantMap errorResponse;
-    errorResponse.insert("id", commandId);
-    errorResponse.insert("status", "error");
-    errorResponse.insert("error", error);
-
-    sendData(clientId, errorResponse);
-}
-
-
 void TcpServer::sendData(const QUuid &clientId, const QVariantMap &data)
 {
-    QTcpSocket *client = m_clientList.value(clientId);
+    QTcpSocket *client = 0;
+    client = m_clientList.value(clientId);
     if (client) {
         client->write(QJsonDocument::fromVariant(data).toJson());
     }

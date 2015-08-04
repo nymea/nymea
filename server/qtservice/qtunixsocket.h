@@ -43,8 +43,6 @@
 
 #include <QTcpSocket>
 
-namespace guhserver {
-
 class QtUnixSocket : public QTcpSocket
 {
     Q_OBJECT
@@ -54,5 +52,4 @@ public:
     bool connectTo(const QString &path);
 };
 
-}
 #endif

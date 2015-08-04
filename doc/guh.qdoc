@@ -12,7 +12,7 @@
                 \li \l{Device Plugins}{The Device Plugin API}
                 \li \l{Hardware Resources}{Hardware Resources}
             \endlist
-        \li \l{guh server}
+        \li \l{guhserver}
             \list
                 \li \l{guh Core}
                 \li \l{JSONRPC Interface}
@@ -28,6 +28,7 @@
 
     \section2 Quicklinks
     \list
-        \li \l{All guh Classes}
+        \li \l{All guh Classes}        
+        \li \l{All Modules}
     \endlist
 */

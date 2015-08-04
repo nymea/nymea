@@ -19,11 +19,11 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-  \class HttpReply
+  \class guhserver::HttpReply
   \brief Represents a reply of the guh webserver.
 
-  \ingroup types
-  \inmodule libguh
+  \ingroup core
+  \inmodule server
 
   This class holds the header and the payload data of a network reply and represents a response
   from the guh webserver.
@@ -32,7 +32,7 @@
 
 */
 
-/*! \enum HttpReply::HttpStatusCode
+/*! \enum guhserver::HttpReply::HttpStatusCode
 
     This enum type specifies the status code of a HTTP webserver reply.
 
@@ -72,7 +72,7 @@
         ...
 */
 
-/*! \enum HttpReply::HttpHeaderType
+/*! \enum guhserver::HttpReply::HttpHeaderType
 
     This enum type specifies the known type of a header in a HTTP webserver reply.
 
@@ -96,7 +96,7 @@
         ...
 */
 
-/*! \enum HttpReply::Type
+/*! \enum guhserver::HttpReply::Type
 
 */
 
@@ -105,6 +105,8 @@
 #include <QDateTime>
 #include <QPair>
 #include <QDebug>
+
+namespace guhserver {
 
 /*! Construct a HttpReply with the given \a statusCode. */
 HttpReply::HttpReply(QObject *parent) :
@@ -351,4 +353,6 @@ void HttpReply::timeout()
     qDebug() << "Http reply timeout";
     m_timedOut = true;
     emit finished();
+}
+
 }

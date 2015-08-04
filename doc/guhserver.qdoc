@@ -1,17 +1,7 @@
 /*!
-    \module server
-    \title guh server
-    The guh server is the instance that communicates with the hardware and provides a JSONRPC interface
-    for communicating with the UI. It consists of those parts:
-
-    \section3 guh core
-    \annotatedlist core
-
-    \section3 JSRONRPC Interface
-    \annotatedlist jsonrpc
-
-    \section3 Rules Engine
-    \annotatedlist rules
+    \namespace guhserver
+    \brief The namespace for the server.
+    \inmodule server
 */
 
 

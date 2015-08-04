@@ -25,6 +25,8 @@
 #include <QUuid>
 #include <QVariant>
 #include <QList>
+#include <QWebSocket>
+#include <QWebSocketServer>
 
 #include "transportinterface.h"
 
@@ -42,6 +44,23 @@ public:
 
     void sendData(const QUuid &clientId, const QVariantMap &data) override;
     void sendData(const QList<QUuid> &clients, const QVariantMap &data) override;
+
+private:
+    QWebSocketServer *m_server;
+    QHash<QUuid, QWebSocket *> m_clientList;
+
+    bool m_enabled;
+    bool m_useSsl;
+    qint16 m_port;
+
+private slots:
+    void onClientConnected();
+    void onClientDisconnected();
+    void onBinaryMessageReceived(const QByteArray &data);
+    void onTextMessageReceived(const QString &message);
+    void onClientError(QAbstractSocket::SocketError error);
+    void onServerError(QAbstractSocket::SocketError error);
+    void onPing(quint64 elapsedTime, const QByteArray & payload);
 
 public slots:
     bool startServer() override;

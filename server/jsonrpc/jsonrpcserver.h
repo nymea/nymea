@@ -24,6 +24,7 @@
 
 #include "plugin/deviceclass.h"
 #include "jsonhandler.h"
+#include "transportinterface.h"
 
 #include "types/action.h"
 #include "types/event.h"
@@ -35,6 +36,9 @@
 class Device;
 
 namespace guhserver {
+#ifdef WEBSOCKET
+class WebSocketServer;
+#endif
 
 #ifdef TESTING_ENABLED
 class MockTcpServer;
@@ -58,7 +62,6 @@ public:
 
 signals:
     void commandReceived(const QString &targetNamespace, const QString &command, const QVariantMap &params);
-    void notificationDataReady(const QVariantMap &notification);
 
 private slots:
     void setup();
@@ -83,7 +86,14 @@ private:
 #else
     TcpServer *m_tcpServer;
 #endif
-    QHash<QString, JsonHandler*> m_handlers;
+
+#ifdef WEBSOCKET
+    WebSocketServer *m_websocketServer;
+#endif
+
+    QList<TransportInterface *> m_interfaces;
+    QHash<QString, JsonHandler *> m_handlers;
+    QHash<JsonReply *, TransportInterface *> m_asyncReplies;
 
     // clientId, notificationsEnabled
     QHash<QUuid, bool> m_clients;

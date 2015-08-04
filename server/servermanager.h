@@ -26,8 +26,7 @@
 #include "loggingcategories.h"
 #include "jsonrpc/jsonrpcserver.h"
 #include "rest/restserver.h"
-
-
+#include "websocketserver.h"
 
 namespace guhserver {
 

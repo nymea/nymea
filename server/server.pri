@@ -1,6 +1,8 @@
 
 contains(DEFINES, WEBSOCKET){
     QT += websockets
+    SOURCES += $$top_srcdir/server/websocketserver.cpp
+    HEADERS += $$top_srcdir/server/websocketserver.h
 }
 
 
@@ -24,7 +26,6 @@ SOURCES += $$top_srcdir/server/guhcore.cpp \
     $$top_srcdir/server/webserver.cpp \
     $$top_srcdir/server/transportinterface.cpp \
     $$top_srcdir/server/servermanager.cpp \
-    $$top_srcdir/server/websocketserver.cpp \
     $$top_srcdir/server/httprequest.cpp \
     $$top_srcdir/server/httpreply.cpp \
     $$top_srcdir/server/rest/restserver.cpp \
@@ -35,7 +36,6 @@ SOURCES += $$top_srcdir/server/guhcore.cpp \
     $$top_srcdir/server/rest/logsresource.cpp \
     $$top_srcdir/server/rest/pluginsresource.cpp \
     $$top_srcdir/server/rest/rulesresource.cpp \
-
 
 HEADERS += $$top_srcdir/server/guhcore.h \
     $$top_srcdir/server/tcpserver.h \
@@ -58,7 +58,6 @@ HEADERS += $$top_srcdir/server/guhcore.h \
     $$top_srcdir/server/webserver.h \
     $$top_srcdir/server/transportinterface.h \
     $$top_srcdir/server/servermanager.h \
-    $$top_srcdir/server/websocketserver.h \
     $$top_srcdir/server/httprequest.h \
     $$top_srcdir/server/httpreply.h \
     $$top_srcdir/server/rest/restserver.h \

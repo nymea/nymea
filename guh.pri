@@ -26,7 +26,7 @@ enable433gpio {
     DEFINES += GPIO433
 }
 
-# check webserver support
+# check websocket support
 equals(QT_MAJOR_VERSION, 5):greaterThan(QT_MINOR_VERSION, 3) {
     DEFINES += WEBSOCKET
 }

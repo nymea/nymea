@@ -28,12 +28,12 @@
     This plugin allows to receive UDP packages over a certain UDP port and generates an \l{Event} if the message content matches
     the \l{Param} command.
 
-    \note This plugin is ment to be combined with a \l{Rule}.
+    \note This plugin is ment to be combined with a \l{guhserver::Rule}.
 
     \section3 Example
 
     If you create an UDP Commander on port 2323 and with the command \c{"Light 1 ON"}, following command will trigger an \l{Event} in guh
-    and allows you to connect this \l{Event} with a \l{Rule}.
+    and allows you to connect this \l{Event} with a \l{guhserver::Rule}.
 
     \note In this example guh is running on \c localhost
 

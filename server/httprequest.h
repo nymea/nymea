@@ -26,6 +26,8 @@
 #include <QString>
 #include <QHash>
 
+namespace guhserver {
+
 class HttpRequest
 {
 public:
@@ -81,4 +83,5 @@ private:
 
 QDebug operator<< (QDebug debug, const HttpRequest &httpRequest);
 
+}
 #endif // HTTPREQUEST_H

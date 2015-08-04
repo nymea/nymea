@@ -20,7 +20,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class Rule
+    \class guhserver::Rule
     \brief This class represents a rule.
 
     \ingroup core

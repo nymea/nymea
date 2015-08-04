@@ -60,8 +60,6 @@
 #  define QT_QTSERVICE_EXPORT
 #endif
 
-namespace guhserver {
-
 class QtServiceControllerPrivate;
 
 class QT_QTSERVICE_EXPORT QtServiceController
@@ -189,7 +187,5 @@ private:
     Application *app;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QtServiceBase::ServiceFlags)
-
-}
 
 #endif // QTSERVICE_H

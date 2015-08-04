@@ -62,8 +62,6 @@
 #include <QDebug>
 #endif
 
-namespace guhserver {
-
 typedef SERVICE_STATUS_HANDLE(WINAPI*PRegisterServiceCtrlHandler)(const wchar_t*,LPHANDLER_FUNCTION);
 static PRegisterServiceCtrlHandler pRegisterServiceCtrlHandler = 0;
 typedef BOOL(WINAPI*PSetServiceStatus)(SERVICE_STATUS_HANDLE,LPSERVICE_STATUS);
@@ -942,6 +940,4 @@ void QtServiceBase::setServiceFlags(QtServiceBase::ServiceFlags flags)
     d_ptr->serviceFlags = flags;
     if (d_ptr->sysd)
         d_ptr->sysd->setServiceFlags(flags);
-}
-
 }

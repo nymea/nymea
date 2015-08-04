@@ -26,7 +26,7 @@
     \ingroup devices
     \inmodule libguh
 
-    An DeviceDescriptor describes an \l{Device} in order to match it with a \l{Rule}.
+    An DeviceDescriptor describes an \l{Device} in order to match it with a \l{guhserver::Rule}.
 
     \sa Device
 */

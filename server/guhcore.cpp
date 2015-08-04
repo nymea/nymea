@@ -20,7 +20,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class GuhCore
+    \class guhserver::GuhCore
     \brief The main entry point for the Guh Server and the place where all the messages are dispatched.
 
     \ingroup core
@@ -30,69 +30,69 @@
     instantiate, set up and connect all the other components.
 */
 
-/*! \enum GuhCore::RunningMode
+/*! \enum guhserver::GuhCore::RunningMode
     \value RunningModeApplication
         Guh runns as application.
     \value RunningModeService
         Guh is started as service (daemon).
 */
 
-/*! \fn void GuhCore::eventTriggered(const Event &event);
+/*! \fn void guhserver::GuhCore::eventTriggered(const Event &event);
     This signal is emitted when an \a event happend.
 */
 
-/*! \fn void GuhCore::deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
+/*! \fn void guhserver::GuhCore::deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
     This signal is emitted when the \l{State} of a \a device changed. The \a stateTypeId parameter describes the
     \l{StateType} and the \a value parameter holds the new value.
 */
 
-/*! \fn void GuhCore::deviceRemoved(const DeviceId &deviceId);
+/*! \fn void guhserver::GuhCore::deviceRemoved(const DeviceId &deviceId);
     This signal is emitted when a \l{Device} with the given \a deviceId was removed.
 */
 
-/*! \fn void GuhCore::deviceAdded(Device *device);
+/*! \fn void guhserver::GuhCore::deviceAdded(Device *device);
     This signal is emitted when a \a device was added to the system.
 */
 
-/*! \fn void GuhCore::deviceParamsChanged(Device *device);
+/*! \fn void guhserver::GuhCore::deviceParamsChanged(Device *device);
     This signal is emitted when the \l{ParamList}{Params} of a \a device have been changed.
 */
 
-/*! \fn void GuhCore::actionExecuted(const ActionId &id, DeviceManager::DeviceError status);
+/*! \fn void guhserver::GuhCore::actionExecuted(const ActionId &id, DeviceManager::DeviceError status);
     This signal is emitted when the \l{Action} with the given \a id is finished.
     The \a status of the \l{Action} execution will be described as \l{DeviceManager::DeviceError}{DeviceError}.
 */
 
-/*! \fn void GuhCore::devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
+/*! \fn void guhserver::GuhCore::devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
     This signal is emitted when the discovery of a \a deviceClassId is finished. The \a deviceDescriptors parameter describes the
     list of \l{DeviceDescriptor}{DeviceDescriptors} of all discovered \l{Device}{Devices}.
     \sa discoverDevices()
 */
 
-/*! \fn void GuhCore::deviceSetupFinished(Device *device, DeviceManager::DeviceError status);
+/*! \fn void guhserver::GuhCore::deviceSetupFinished(Device *device, DeviceManager::DeviceError status);
     This signal is emitted when the setup of a \a device is finished. The \a status parameter describes the
     \l{DeviceManager::DeviceError}{DeviceError} that occurred.
 */
 
-/*! \fn void GuhCore::deviceEditFinished(Device *device, DeviceManager::DeviceError status);
+/*! \fn void guhserver::GuhCore::deviceEditFinished(Device *device, DeviceManager::DeviceError status);
     This signal is emitted when the edit request of a \a device is finished. The \a status of the edit request will be
     described as \l{DeviceManager::DeviceError}{DeviceError}.
 */
 
-/*! \fn void GuhCore::pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceError status, const DeviceId &deviceId);
+/*! \fn void guhserver::GuhCore::pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceError status, const DeviceId &deviceId);
     The DeviceManager will emit a this Signal when the pairing of a \l{Device} with the \a deviceId and \a pairingTransactionId is finished.
     The \a status of the pairing will be described as \l{DeviceManager::DeviceError}{DeviceError}.
 */
 
-/*! \fn void GuhCore::ruleRemoved(const RuleId &ruleId);
+/*! \fn void guhserver::GuhCore::ruleRemoved(const RuleId &ruleId);
     This signal is emitted when a \l{Rule} with the given \a ruleId was removed.
 */
 
-/*! \fn void GuhCore::ruleAdded(const Rule &rule);
+/*! \fn void guhserver::GuhCore::ruleAdded(const Rule &rule);
     This signal is emitted when a \a rule was added to the system.
 */
 
-/*! \fn void GuhCore::ruleConfigurationChanged(const Rule &rule);
+/*! \fn void guhserver::GuhCore::ruleConfigurationChanged(const Rule &rule);
     This signal is emitted when the configuration of \a rule changed.
 */
 

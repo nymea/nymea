@@ -4,7 +4,8 @@
 
     \table 80%
     \row \li \l{libguh} \li Common data types and plugin interfaces
-    \row \li \l{guh server} \li The guh server daemon implementation
+    \row \li \l{guhserver} \li The guh server daemon implementation    
+    \row \li \l{Plugins} \li The device plugins of the guh server
     \endtable
 */
 

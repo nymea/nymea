@@ -28,9 +28,10 @@
 #include "restresource.h"
 #include "httpreply.h"
 
-class HttpRequest;
 
 namespace guhserver {
+
+class HttpRequest;
 
 class DeviceClassesResource : public RestResource
 {

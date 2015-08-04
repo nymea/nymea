@@ -104,8 +104,8 @@ JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject 
     connect(m_websocketServer, SIGNAL(clientConnected(const QUuid &)), this, SLOT(clientConnected(const QUuid &)));
     connect(m_websocketServer, SIGNAL(clientDisconnected(const QUuid &)), this, SLOT(clientDisconnected(const QUuid &)));
     connect(m_websocketServer, SIGNAL(dataAvailable(QUuid, QString, QString, QVariantMap)), this, SLOT(processData(QUuid, QString, QString, QVariantMap)));
-    m_websocketServer->startServer();
 
+    m_websocketServer->startServer();
     m_interfaces.append(m_websocketServer);
 #else
     Q_UNUSED(sslConfiguration)

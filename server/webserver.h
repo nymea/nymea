@@ -31,13 +31,13 @@
 #include <QSslConfiguration>
 #include <QSslKey>
 
-class HttpRequest;
-class HttpReply;
-
 // Note: Hypertext Transfer Protocol (HTTP/1.1) from the Internet Engineering Task Force (IETF):
 //       https://tools.ietf.org/html/rfc7231
 
 namespace guhserver {
+
+class HttpRequest;
+class HttpReply;
 
 class WebServer : public QTcpServer
 {

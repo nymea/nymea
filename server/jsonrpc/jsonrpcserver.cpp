@@ -51,10 +51,11 @@
 
 #include <QJsonDocument>
 #include <QStringList>
+#include <QSslConfiguration>
 
 namespace guhserver {
 
-JsonRPCServer::JsonRPCServer(QObject *parent):
+JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject *parent):
     JsonHandler(parent),
     #ifdef TESTING_ENABLED
     m_tcpServer(new MockTcpServer(this)),
@@ -62,7 +63,7 @@ JsonRPCServer::JsonRPCServer(QObject *parent):
     m_tcpServer(new TcpServer(this)),
     #endif
     #ifdef WEBSOCKET
-    m_websocketServer(new WebSocketServer(this)),
+    m_websocketServer(new WebSocketServer(sslConfiguration, this)),
     #endif
     m_notificationId(0)
 {

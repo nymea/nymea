@@ -52,7 +52,7 @@ void TestRestVendors::getVendors()
 
     // Get all vendors
     QNetworkRequest request;
-    request.setUrl(QUrl("http://localhost:3000/api/v1/vendors"));
+    request.setUrl(QUrl("http://localhost:3333/api/v1/vendors"));
     QNetworkReply *reply = nam->get(request);
     clientSpy.wait();
     QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
@@ -71,7 +71,7 @@ void TestRestVendors::getVendors()
     // Get each of thouse vendors individualy
     foreach (const QVariant &vendor, vendorList) {
         QVariantMap vendorMap = vendor.toMap();
-        QNetworkRequest request(QUrl(QString("http://localhost:3000/api/v1/vendors/%1").arg(vendorMap.value("id").toString())));
+        QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/vendors/%1").arg(vendorMap.value("id").toString())));
         request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
         clientSpy.clear();
         QNetworkReply *reply = nam->get(request);

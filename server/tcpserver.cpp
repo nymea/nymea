@@ -42,11 +42,12 @@ TcpServer::TcpServer(QObject *parent) :
 
     // load JSON-RPC server settings
     GuhSettings settings(GuhSettings::SettingsRoleGlobal);
-    qCDebug(dcTcpServer) << "Loading Tcp server settings from:" << settings.fileName();
+    qCDebug(dcTcpServer) << "Loading Tcp server settings from" << settings.fileName();
     settings.beginGroup("JSONRPC");
 
     // load port
-    m_port = settings.value("port", 1234).toUInt();
+    // 2222 Official free according to https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers
+    m_port = settings.value("port", 2222).toUInt();
 
     // load interfaces
     QStringList interfaceList = settings.value("interfaces", QStringList("all")).toStringList();

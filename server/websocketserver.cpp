@@ -23,27 +23,30 @@
 #include "loggingcategories.h"
 
 #include <QJsonDocument>
+#include <QSslConfiguration>
 
 namespace guhserver {
 
-WebSocketServer::WebSocketServer(QObject *parent) :
+WebSocketServer::WebSocketServer(const QSslConfiguration &sslConfiguration, QObject *parent) :
     TransportInterface(parent),
-    m_server(0)
+    m_server(0),
+    m_sslConfiguration(sslConfiguration),
+    m_useSsl(false),
+    m_enabled(false)
 {
     // load webserver settings
     GuhSettings settings(GuhSettings::SettingsRoleGlobal);
-    qCDebug(dcWebServer) << "Loading webserver settings from:" << settings.fileName();
+    qCDebug(dcWebServer) << "Loading webserver settings from" << settings.fileName();
 
     settings.beginGroup("WebSocketServer");
-    m_port = settings.value("port", 3001).toInt();
+    // 4444 Official free according to https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers
+    m_port = settings.value("port", 4444).toInt();
     m_useSsl = settings.value("https", false).toBool();
     settings.endGroup();
 
     // check SSL
-    if (m_useSsl && !QSslSocket::supportsSsl()) {
-        qCWarning(dcWebServer) << "SSL is not supported/installed on this platform.";
+    if (m_useSsl && m_sslConfiguration.isNull())
         m_useSsl = false;
-    }
 }
 
 WebSocketServer::~WebSocketServer()
@@ -141,6 +144,7 @@ bool WebSocketServer::startServer()
 
     if (m_useSsl) {
         m_server = new QWebSocketServer("guh", QWebSocketServer::SecureMode, this);
+        m_server->setSslConfiguration(m_sslConfiguration);
     } else {
         m_server = new QWebSocketServer("guh", QWebSocketServer::NonSecureMode, this);
     }
@@ -157,8 +161,6 @@ bool WebSocketServer::startServer()
     } else {
         qCDebug(dcConnection) << "Started websocket server" << m_server->serverName() << QString("on wss://%1:%2").arg(m_server->serverAddress().toString()).arg(m_port);
     }
-    qCDebug(dcWebSocketServer) << "Supported protocol versions" << m_server->supportedVersions();
-
     return true;
 }
 

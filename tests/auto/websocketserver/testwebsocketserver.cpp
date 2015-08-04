@@ -54,7 +54,7 @@ void TestWebSocketServer::testHandshake()
 {
     QWebSocket *socket = new QWebSocket("guh tests", QWebSocketProtocol::Version13);
     QSignalSpy spy(socket, SIGNAL(textMessageReceived(QString)));
-    socket->open(QUrl(QStringLiteral("ws://localhost:3001")));
+    socket->open(QUrl(QStringLiteral("ws://localhost:4444")));
     spy.wait();
     QVERIFY2(spy.count() > 0, "Did not get the handshake message upon connect.");
     QJsonDocument jsonDoc = QJsonDocument::fromJson(spy.first().first().toByteArray());
@@ -73,7 +73,7 @@ void TestWebSocketServer::pingTest()
 {
     QWebSocket *socket = new QWebSocket("guh tests", QWebSocketProtocol::Version13);
     QSignalSpy spyConnection(socket, SIGNAL(connected()));
-    socket->open(QUrl(QStringLiteral("ws://localhost:3001")));
+    socket->open(QUrl(QStringLiteral("ws://localhost:4444")));
     spyConnection.wait();
     QVERIFY2(spyConnection.count() > 0, "not connected");
 

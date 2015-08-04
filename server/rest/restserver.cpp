@@ -25,13 +25,14 @@
 #include "guhcore.h"
 
 #include <QJsonDocument>
+#include <QSslConfiguration>
 
 namespace guhserver {
 
-RestServer::RestServer(QObject *parent) :
+RestServer::RestServer(const QSslConfiguration &sslConfiguration, QObject *parent) :
     QObject(parent)
 {
-    m_webserver = new WebServer(this);
+    m_webserver = new WebServer(sslConfiguration, this);
     connect(m_webserver, &WebServer::clientConnected, this, &RestServer::clientConnected);
     connect(m_webserver, &WebServer::clientDisconnected, this, &RestServer::clientDisconnected);
     connect(m_webserver, &WebServer::httpRequestReady, this, &RestServer::processHttpRequest);

@@ -77,7 +77,7 @@ void TestRestRules::cleanupRules()
     QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
 
     // Get all rules
-    QNetworkRequest request = QNetworkRequest(QUrl("http://localhost:3000/api/v1/rules"));
+    QNetworkRequest request = QNetworkRequest(QUrl("http://localhost:3333/api/v1/rules"));
     QNetworkReply *reply = nam->get(request);
     clientSpy.wait();
     QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
@@ -95,7 +95,7 @@ void TestRestRules::cleanupRules()
     foreach (const QVariant &rule, rulesList) {
         clientSpy.clear();
         QVariantMap ruleMap = rule.toMap();
-        QNetworkRequest request(QUrl(QString("http://localhost:3000/api/v1/rules/%1").arg(ruleMap.value("id").toString())));
+        QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/rules/%1").arg(ruleMap.value("id").toString())));
         request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
         reply = nam->deleteResource(request);
         clientSpy.wait();
@@ -331,7 +331,7 @@ void TestRestRules::addRemoveRules()
 
     // Get rules and verify there is no rule added
     QNetworkRequest request;
-    request.setUrl(QUrl("http://localhost:3000/api/v1/rules"));
+    request.setUrl(QUrl("http://localhost:3333/api/v1/rules"));
     QNetworkReply *reply = nam->get(request);
     clientSpy.wait();
     QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
@@ -348,7 +348,7 @@ void TestRestRules::addRemoveRules()
 
     // ADD rule
     clientSpy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:3000/api/v1/rules")));
+    request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/rules")));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     reply = nam->post(request, QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact));
     clientSpy.wait();
@@ -368,7 +368,7 @@ void TestRestRules::addRemoveRules()
 
     // GET rule details
     clientSpy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:3000/api/v1/rules/%1").arg(ruleId.toString())));
+    request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/rules/%1").arg(ruleId.toString())));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     reply = nam->get(request);
     clientSpy.wait();
@@ -382,7 +382,7 @@ void TestRestRules::addRemoveRules()
 
     // REMOVE rule
     clientSpy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:3000/api/v1/rules/%1").arg(ruleId.toString())));
+    request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/rules/%1").arg(ruleId.toString())));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     reply = nam->deleteResource(request);
     clientSpy.wait();
@@ -648,7 +648,7 @@ void TestRestRules::editRules()
 
     // Get rules and verify there is no rule added
     QNetworkRequest request;
-    request.setUrl(QUrl("http://localhost:3000/api/v1/rules"));
+    request.setUrl(QUrl("http://localhost:3333/api/v1/rules"));
     QNetworkReply *reply = nam->get(request);
     clientSpy.wait();
     QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
@@ -665,7 +665,7 @@ void TestRestRules::editRules()
 
     // ADD rule
     clientSpy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:3000/api/v1/rules")));
+    request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/rules")));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     reply = nam->post(request, QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact));
     clientSpy.wait();
@@ -707,7 +707,7 @@ void TestRestRules::editRules()
 
     // EDIT rule
     clientSpy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:3000/api/v1/rules/%1").arg(ruleId.toString())));
+    request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/rules/%1").arg(ruleId.toString())));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     reply = nam->put(request, QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact));
     clientSpy.wait();
@@ -718,7 +718,7 @@ void TestRestRules::editRules()
     if (expectedStatusCode == 200) {
         // get edit rule and verify params
         clientSpy.clear();
-        request = QNetworkRequest(QUrl(QString("http://localhost:3000/api/v1/rules")));
+        request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/rules")));
         request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
         reply = nam->get(request);
         clientSpy.wait();
@@ -732,7 +732,7 @@ void TestRestRules::editRules()
 
     // REMOVE rule
     clientSpy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:3000/api/v1/rules/%1").arg(ruleId.toString())));
+    request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/rules/%1").arg(ruleId.toString())));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     reply = nam->deleteResource(request);
     clientSpy.wait();
@@ -744,7 +744,7 @@ void TestRestRules::editRules()
 
     // check if removed
     clientSpy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:3000/api/v1/rules/%1").arg(ruleId.toString())));
+    request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/rules/%1").arg(ruleId.toString())));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     reply = nam->get(request);
     clientSpy.wait();
@@ -778,7 +778,7 @@ void TestRestRules::enableDisableRule()
     QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
 
     // ADD rule
-    QNetworkRequest request = QNetworkRequest(QUrl(QString("http://localhost:3000/api/v1/rules")));
+    QNetworkRequest request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/rules")));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     QNetworkReply *reply = nam->post(request, QJsonDocument::fromVariant(addRuleParams).toJson(QJsonDocument::Compact));
     clientSpy.wait();
@@ -797,7 +797,7 @@ void TestRestRules::enableDisableRule()
 
     // ENABLE rule
     clientSpy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:3000/api/v1/rules/%1/enable").arg(ruleId.toString())));
+    request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/rules/%1/enable").arg(ruleId.toString())));
     reply = nam->post(request, QByteArray());
     clientSpy.wait();
     QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
@@ -821,7 +821,7 @@ void TestRestRules::enableDisableRule()
 
     // DISABLE the rule
     clientSpy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:3000/api/v1/rules/%1/disable").arg(ruleId.toString())));
+    request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/rules/%1/disable").arg(ruleId.toString())));
     reply = nam->post(request, QByteArray());
     clientSpy.wait();
     QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
@@ -844,7 +844,7 @@ void TestRestRules::enableDisableRule()
 
     // ENABLE again
     clientSpy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:3000/api/v1/rules/%1/enable").arg(ruleId.toString())));
+    request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/rules/%1/enable").arg(ruleId.toString())));
     reply = nam->post(request, QByteArray());
     clientSpy.wait();
     QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
@@ -872,7 +872,7 @@ void TestRestRules::getRules()
 
     // Get all rules
     QNetworkRequest request;
-    request.setUrl(QUrl("http://localhost:3000/api/v1/rules"));
+    request.setUrl(QUrl("http://localhost:3333/api/v1/rules"));
     QNetworkReply *reply = nam->get(request);
     clientSpy.wait();
     QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
@@ -890,7 +890,7 @@ void TestRestRules::getRules()
     // Get each of thouse rules individualy
     foreach (const QVariant &rule, rulesList) {
         QVariantMap ruleMap = rule.toMap();
-        QNetworkRequest request(QUrl(QString("http://localhost:3000/api/v1/rules/%1").arg(ruleMap.value("id").toString())));
+        QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/rules/%1").arg(ruleMap.value("id").toString())));
         request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
         clientSpy.clear();
         QNetworkReply *reply = nam->get(request);

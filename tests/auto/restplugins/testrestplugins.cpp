@@ -57,7 +57,7 @@ void TestRestDeviceClasses::getPlugins()
 
     // Get all plugins
     QNetworkRequest request;
-    request.setUrl(QUrl("http://localhost:3000/api/v1/plugins"));
+    request.setUrl(QUrl("http://localhost:3333/api/v1/plugins"));
     QNetworkReply *reply = nam->get(request);
     clientSpy.wait();
     QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
@@ -74,7 +74,7 @@ void TestRestDeviceClasses::getPlugins()
     // Get each of thouse devices individualy
     foreach (const QVariant &plugin, pluginList) {
         QVariantMap pluginMap = plugin.toMap();
-        QNetworkRequest request(QUrl(QString("http://localhost:3000/api/v1/plugins/%1").arg(pluginMap.value("id").toString())));
+        QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/plugins/%1").arg(pluginMap.value("id").toString())));
         request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
         clientSpy.clear();
         QNetworkReply *reply = nam->get(request);
@@ -95,7 +95,7 @@ void TestRestDeviceClasses::getPluginConfiguration()
 
     // Get all plugins
     QNetworkRequest request;
-    request.setUrl(QUrl(QString("http://localhost:3000/api/v1/plugins/%1/configuration").arg(mockPluginId.toString())));
+    request.setUrl(QUrl(QString("http://localhost:3333/api/v1/plugins/%1/configuration").arg(mockPluginId.toString())));
     QNetworkReply *reply = nam->get(request);
     clientSpy.wait();
     QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
@@ -157,7 +157,7 @@ void TestRestDeviceClasses::setPluginConfiguration()
 
     // Get plugin configuration
     QNetworkRequest request;
-    request.setUrl(QUrl(QString("http://localhost:3000/api/v1/plugins/%1/configuration").arg(pluginId.toString())));
+    request.setUrl(QUrl(QString("http://localhost:3333/api/v1/plugins/%1/configuration").arg(pluginId.toString())));
     QNetworkReply *reply = nam->get(request);
     clientSpy.wait();
     QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
@@ -181,7 +181,7 @@ void TestRestDeviceClasses::setPluginConfiguration()
 
     // Set new configuration
     clientSpy.clear();
-    request.setUrl(QUrl(QString("http://localhost:3000/api/v1/plugins/%1/configuration").arg(pluginId.toString())));
+    request.setUrl(QUrl(QString("http://localhost:3333/api/v1/plugins/%1/configuration").arg(pluginId.toString())));
     reply = nam->put(request, QJsonDocument::fromVariant(newConfigurations).toJson(QJsonDocument::Compact));
     clientSpy.wait();
     QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
@@ -194,7 +194,7 @@ void TestRestDeviceClasses::setPluginConfiguration()
 
     // check new configurations
     clientSpy.clear();
-    request.setUrl(QUrl(QString("http://localhost:3000/api/v1/plugins/%1/configuration").arg(pluginId.toString())));
+    request.setUrl(QUrl(QString("http://localhost:3333/api/v1/plugins/%1/configuration").arg(pluginId.toString())));
     reply = nam->get(request);
     clientSpy.wait();
     QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
@@ -215,7 +215,7 @@ void TestRestDeviceClasses::setPluginConfiguration()
 
     // check new configurations after restart
     clientSpy.clear();
-    request.setUrl(QUrl(QString("http://localhost:3000/api/v1/plugins/%1/configuration").arg(pluginId.toString())));
+    request.setUrl(QUrl(QString("http://localhost:3333/api/v1/plugins/%1/configuration").arg(pluginId.toString())));
     reply = nam->get(request);
     clientSpy.wait();
     QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");

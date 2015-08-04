@@ -63,7 +63,7 @@ private:
 void TestWebserver::httpVersion()
 {
     QTcpSocket *socket = new QTcpSocket(this);
-    socket->connectToHost(QHostAddress("127.0.0.1"), 3000);
+    socket->connectToHost(QHostAddress("127.0.0.1"), 3333);
     bool connected = socket->waitForConnected(1000);
     QVERIFY2(connected, "could not connect to webserver.");
 
@@ -100,7 +100,7 @@ void TestWebserver::multiPackageMessage()
 {
 
     QTcpSocket *socket = new QTcpSocket(this);
-    socket->connectToHost(QHostAddress("127.0.0.1"), 3000);
+    socket->connectToHost(QHostAddress("127.0.0.1"), 3333);
     bool connected = socket->waitForConnected(1000);
     QVERIFY2(connected, "could not connect to webserver.");
 
@@ -173,7 +173,7 @@ void TestWebserver::checkAllowedMethodCall()
     QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
 
     QNetworkRequest request;
-    request.setUrl(QUrl("http://localhost:3000"));
+    request.setUrl(QUrl("http://localhost:3333"));
     QNetworkReply *reply = 0;
 
     if (method == "GET") {
@@ -242,7 +242,7 @@ void TestWebserver::badRequests()
     QFETCH(int, expectedStatusCode);
 
     QTcpSocket *socket = new QTcpSocket(this);
-    socket->connectToHost(QHostAddress("127.0.0.1"), 3000);
+    socket->connectToHost(QHostAddress("127.0.0.1"), 3333);
     bool connected = socket->waitForConnected(1000);
     QVERIFY2(connected, "could not connect to webserver.");
 
@@ -291,7 +291,7 @@ void TestWebserver::getFiles()
     QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
 
     QNetworkRequest request;
-    request.setUrl(QUrl("http://localhost:3000" + query));
+    request.setUrl(QUrl("http://localhost:3333" + query));
     QNetworkReply *reply = nam->get(request);
 
     clientSpy.wait();

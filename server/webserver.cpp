@@ -42,20 +42,14 @@ WebServer::WebServer(QObject *parent) :
 {
     // load webserver settings
     GuhSettings settings(GuhSettings::SettingsRoleGlobal);
-    qCDebug(dcWebServer) << "Loading webserver settings from:" << settings.fileName();
+    qCDebug(dcWebSocketServer) << "Loading web socket server settings from:" << settings.fileName();
 
-    settings.beginGroup("Webserver");
+    settings.beginGroup("WebSocketServer");
     m_port = settings.value("port", 3000).toInt();
     m_useSsl = settings.value("https", false).toBool();
-    m_webinterfaceDir = QDir(settings.value("publicFolder", "/usr/share/guh-webinterface/public/").toString());
     QString certificateFileName = settings.value("certificate", QVariant("/etc/ssl/certs/guhd-certificate.crt")).toString();
     QString keyFileName = settings.value("certificate-key", QVariant("/etc/ssl/private/guhd-certificate.key")).toString();
     settings.endGroup();
-
-    // check public directory
-    qCDebug(dcWebServer) << "Publish webinterface folder" << m_webinterfaceDir.path();
-    if (!m_webinterfaceDir.exists())
-        qCWarning(dcWebServer) << "Web interface public folder" << m_webinterfaceDir.path() << "does not exist.";
 
     // check SSL
     if (m_useSsl && !QSslSocket::supportsSsl()) {

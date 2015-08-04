@@ -14,3 +14,6 @@ SUBDIRS = versioning \
         restplugins \
         restvendors \
         restrules \
+        websocketserver \
+
+

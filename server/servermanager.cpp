@@ -19,6 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "servermanager.h"
+#include "guhsettings.h"
 
 namespace guhserver {
 

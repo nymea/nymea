@@ -1,12 +1,9 @@
 /*!
     \module libguh
-    \title libguh
+    \title The guh library
 
     \section1 Types
     \annotatedlist types
-
-    \section1 Meta Types
-    \annotatedlist metatypes
 
     \section1 Device Plugins
     \annotatedlist devices

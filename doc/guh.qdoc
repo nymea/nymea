@@ -1,6 +1,5 @@
 /*!
     \page index.html
-    \title guh - Developer Documentation
 
     \section1 Overview
     The guh backend service consists of three main modules:
@@ -9,7 +8,7 @@
         \li \l{guhserver}{The guh server}
             \list
                 \li \l{guhserver}{The guh server namespace}
-                \li \l{Rules}
+                \li \l{Rules}{The Rule Engine}
             \endlist
         \li \l{libguh}{The guh library}
             \list
@@ -33,7 +32,7 @@
 
     \section1 How To's
     \list
-        \li How to write a plugin
+        \li \l{How to write a plugin}
     \endlist
 
     \section1 Quicklinks

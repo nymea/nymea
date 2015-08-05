@@ -5,9 +5,6 @@ TEMPLATE = lib
 
 QT += network
 
-target.path = /usr/lib
-INSTALLS += target
-
 SOURCES += plugin/device.cpp \
            plugin/deviceclass.cpp \
            plugin/deviceplugin.cpp \
@@ -74,3 +71,10 @@ HEADERS += plugin/device.h \
            loggingcategories.h \
            guhsettings.h \
 
+
+target.path = /usr/lib
+
+headers.files = $$HEADERS
+headers.path = /usr/include/guh
+
+INSTALLS += target headers

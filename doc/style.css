@@ -223,16 +223,17 @@
     {
         display: block;
         clear: both;
-        overflow: hidden;
+        /*overflow: hidden;*/ 
         background: #69938C;
-        height: 10.5em;
+        height: 10em;
     }
 /* end global settings*/
 
 /* header elements */
-    .header .indexref
+    .header .ind    exref
     {
-        font-size: 130%;
+        font-size: 140%;
+        font-weight: bold
     }
 
     .titleText {

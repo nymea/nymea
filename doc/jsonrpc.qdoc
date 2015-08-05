@@ -1,6 +1,6 @@
 /*!
     \page jsonrpc.html
-    \title JSONRPC Interface
+    \title JSON-RPC API
     \ingroup jsonrpc
 
     \brief The JSON RPC interface represents a TCP socket connection using plaintext string communication.

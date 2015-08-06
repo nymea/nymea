@@ -23,12 +23,25 @@
 #                                                                         #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+import argparse
+import traceback
 import json
 import sys
 
-inputFile = open(sys.argv[1], "r")
-outputfile = open(sys.argv[2], "w")
-outputfile2 = open("extern-" + sys.argv[2], "w")
+__version__="1.0.0"
+
+parser = argparse.ArgumentParser(description='The guh-generateplugininfo is a precompiler for building plugins. This precompiler will create a plugininfo.h containing the uuid definitions from the plugin json file.')
+parser.add_argument("input", help="The JSON input file with the plugin description")
+parser.add_argument("output", help="The plugininfo.h outputfile file with the uuid declarations")
+parser.add_argument('-v','--version', action='version', version=__version__)
+args = parser.parse_args()
+
+inputFile = open(args.input, "r")
+outputfile = open(args.output, "w")
+outputfile2 = open("extern-" + args.output, "w")
+
+print "%s -> %s" %(args.input, args.output)
+
 variableNames = []
 externDefinitions = []
 

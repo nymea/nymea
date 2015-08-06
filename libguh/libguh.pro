@@ -76,10 +76,19 @@ HEADERS += plugin/device.h \
 
 
 # install files for libguh-dev
-headers.files = $$HEADERS
-headers.path = /usr/include/guh
-
-generateplugininfo.files = $$top_srcdir/plugins/generateplugininfo
+generateplugininfo.files = $$top_srcdir/plugins/guh-generateplugininfo
 generateplugininfo.path = /usr/bin
 
-INSTALLS += headers generateplugininfo
+INSTALLS +=  generateplugininfo
+
+# install header file with relative subdirectory
+for(header, HEADERS) {
+  path = /usr/include/guh/$${dirname(header)}
+  eval(headers_$${path}.files += $${header})
+  eval(headers_$${path}.path = $${path})
+  eval(INSTALLS *= headers_$${path})
+}
+
+
+
+

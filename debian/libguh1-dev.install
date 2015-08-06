@@ -1,3 +1,4 @@
 usr/lib/libguh.so
 usr/include/guh/* usr/include/guh
+usr/bin/generateplugininfo usr/bin
 

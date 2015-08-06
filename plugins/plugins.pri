@@ -9,8 +9,8 @@ INCLUDEPATH += $$top_srcdir/libguh
 LIBS += -L../../../libguh -lguh
 
 infofile.output = plugininfo.h
-infofile.commands = $$top_srcdir/plugins/generateplugininfo ${QMAKE_FILE_NAME} ${QMAKE_FILE_OUT}
-infofile.depends = $$top_srcdir/plugins/generateplugininfo
+infofile.commands = $$top_srcdir/plugins/guh-generateplugininfo ${QMAKE_FILE_NAME} ${QMAKE_FILE_OUT}
+infofile.depends = $$top_srcdir/plugins/guh-generateplugininfo
 infofile.CONFIG = no_link
 JSONFILES = deviceplugin"$$TARGET".json
 infofile.input = JSONFILES

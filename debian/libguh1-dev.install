@@ -1,2 +1,4 @@
 usr/lib/libguh.so
-usr/lib/libguh.so.1.0
+usr/include/guh/* usr/include/guh
+usr/bin/guh-generateplugininfo usr/bin
+

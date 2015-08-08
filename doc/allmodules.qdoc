@@ -7,5 +7,7 @@
     \row \li \l{libguh} \li Common data types and plugin interfaces
     \row \li \l{Plugins} \li The device plugins of the guh server
     \endtable
+
+    \generatelist legalese-command
 */
 

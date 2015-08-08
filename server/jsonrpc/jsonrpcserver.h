@@ -65,9 +65,6 @@ public:
 
     QHash<QString, JsonHandler*> handlers() const;
 
-signals:
-    void commandReceived(const QString &targetNamespace, const QString &command, const QVariantMap &params);
-
 private slots:
     void setup();
 

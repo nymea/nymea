@@ -40,7 +40,6 @@ SOURCES += plugin/device.cpp \
            loggingcategories.cpp \
            guhsettings.cpp \
 
-
 HEADERS += plugin/device.h \
            plugin/deviceclass.h \
            plugin/deviceplugin.h \

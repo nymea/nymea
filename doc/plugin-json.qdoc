@@ -3,22 +3,31 @@
     \title The plugin JSON File
     \brief Description of the plugin JSON file structure.
     
-    Each \l{DevicePlugin}{Plugin} in guh will be definend in the corresponding JSON file. You can find information how to read JSON \l{http://json.org/}{here}. This file will be loaded from the \l{DeviceManager} to define the plugin and the corresponding DeviceClasses internal. The \tt guh-generateplugininfo precompiler will parse this file and generates a \e plugininfo.h and a \e extern-plugininfo.h file containing the definitions of:
+    Each \l{DevicePlugin}{Plugin} in guh will be defined in the corresponding JSON file. You can find information how to read JSON \l{http://json.org/}{here}. This file will be loaded from the \l{DeviceManager} to define the plugin and the corresponding DeviceClasses internal. 
+
+
+    \section1 The \e guh-generateplugininfo precompiler
+    
+    The \tt {\b guh-generateplugininfo} precompiler will parse this file and generates a \tt plugininfo.h and a \tt extern-plugininfo.h file containing the definitions of:
     \list
-        \li \b PluginId: <\e idName>PluginId -> the definend UUID for the \l{DevicePlugin}.     
-        \li \b VendorId's: <\e idName>VendorId -> the definend UUID for the corresponding \l{Vendor}. 
-        \li \b DeviceClassId's: <\e idName>DeviceClassId -> the definend UUID for the corresponding \l{DeviceClass}.
-        \li \b ActionTypeId's: <\e idName>ActionTypeId -> the definend UUID for the corresponding \l{ActionType}.
-        \li \b StateTypeId's: <\e idName>StateTypeId -> the definend UUID for the corresponding \l{StateType}.
-        \li \b EventTypeId's:  <\e idName>EventTypeId -> the definend UUID for the corresponding \l{EventType}.
-        \li \b {Logging Category}
+        \li \l{PluginId}: <\e idName>PluginId -> the defined UUID for the \l{DevicePlugin}.     
+        \li \l{VendorId}: <\e idName>VendorId -> the defined UUID for the corresponding \l{Vendor}. 
+        \li \l{DeviceClassId}: <\e idName>DeviceClassId -> the definend UUID for the corresponding \l{DeviceClass}.
+        \li \l{ActionTypeId}: <\e idName>ActionTypeId -> the defined UUID for the corresponding \l{ActionType}.
+        \li \l{StateTypeId}: <\e idName>StateTypeId -> the defidefinednend UUID for the corresponding \l{StateType}.
+        \li \l{EventTypeId}:  <\e idName>EventTypeId -> the defined UUID for the corresponding \l{EventType}.
+        \li Logging Category
     \endlist
 
-    The \e plugininfo.h has to be included in the main plugin \tt cpp file (deviceplugin<\e pluginName>.cpp). The \e extern-plugininfo.h can be included in other classes/files of the plugin to get the extern definitions of the ID's and the logging category. 
+    The \tt plugininfo.h has to be included in the main plugin \tt cpp file (\tt{deviceplugin<\b pluginName>.cpp}). The \tt extern-plugininfo.h can be included in other classes/files of the plugin to get the extern definitions of the ID's and the logging category. 
 
-    The name convention fot the json file is:
+
+
+    \section1 Basic structure
+
+    The name convention fot the plugin json file is:
     
-    \e{deviceplugin\b{<pluginName>}.json}
+    \tt{deviceplugin\b{<pluginName>}.json}
 
     The basic structure of a plugin looks like this:
 
@@ -41,7 +50,7 @@
         }
     \endcode 
     
-    \warning For each new Object which has an \e uuid value, you need to generate a new uuid. The easyest way to do this is using the comman \tt uuidgen:
+    \warning For each new Object which has an \e "uuid" value, you need to generate a new UUID. The easyest way to do this is using the command \tt uuidgen:
 
     \code
     $ sudo apt-get install uuid-runtime
@@ -53,7 +62,11 @@
     \endcode
 
 
-    \section1 The Plugin definition
+
+
+    \section1 Writing the plugin JSON file 
+
+    \section2 The Plugin definition
     The parameters of the first Object (\e name, \e idName, \e id and \e vendors) describe the properties of the plugin it self. 
     
     \code
@@ -72,21 +85,21 @@
     \note All parameters \underline{must} be definend! 
 
     \list
-        \li - \e name: The visible name of the plugin \unicode{0x2192} \l{DevicePlugin::pluginName()}
-        \li - \e idName: This parameter will be used to define the PluginId variable named <idName>PluginId in the plugininfo.h, so it can be used in the code. This parameter also defines the logging categorie for this plugin. The loging category will always definend as \tt dc<idName> and can be used as follows ("idName":"Example"):
+        \li - \underline{\e name:} The visible name of the plugin \unicode{0x2192} \l{DevicePlugin::pluginName()}
+        \li - \underline{\e idName:} This parameter will be used to define the PluginId variable named <idName>PluginId in the plugininfo.h, so it can be used in the code. This parameter also defines the logging categorie for this plugin. The loging category will always definend as \tt dc<idName> and can be used as follows (\tt {"idName":"Example"}):
 
         \code
             qCdebug(dcExample) << "Hello world!"; 
             qCWarning(dcExample) << "Warning the world!"; 
         \endcode
-            
-        Please start allways with a capital letter i.e. "idName": "ExamplePlugin". The logging category allowes you to categorise the debug output. It can be configured with the \tt -d argument of guhd (see \tt {$ man guhd}).
-        \li - \e id: The actual uuid (PluginId) of the plugin \unicode{0x2192} \l{DevicePlugin::pluginId()}   
-        \li - \e vendors: The list of \l{Vendor}{Vendors} objects (see section "\l{The Vendor definition}");
+        
+        Please start allways with a capital letter i.e. \tt {"idName": "Example"}. The logging category allowes you to categorise the debug output. It can be configured with the \tt -d argument of guhd (see \tt {$ man guhd}).
+        \li - \underline{\e id:} The actual uuid (\l{PluginId}) of the plugin \unicode{0x2192} \l{DevicePlugin::pluginId()}   
+        \li - \underline{\e vendors:} The list of \l{Vendor}{Vendors} objects (see section "\l{The Vendor definition}");
     \endlist
 
     
-    \section1 The Vendor definition
+    \section2 The Vendor definition
     A plugin can support more then one \l{Vendor}, so the parameter \e vendors in the plugin definition is a list. Each element of this list represents a \l{Vendor} in guh.
 
     \code
@@ -108,13 +121,13 @@
     \note All parameters \underline{must} be definend. 
 
     \list
-        \li - \e name: The visible name of the vendor \unicode{0x2192} \l{Vendor::name()}.
-        \li - \e idName: This parameter will be used to define the VendorId variable named <idName>VendorId in the plugininfo.h, so it can be used in the code.
-        \li - \e id: The actual uuid (VendorId) of the plugin \unicode{0x2192} \l{Vendor::id()}.  
-        \li - \e deviceClasses: A list of \l{DeviceClass}{DeviceClasses} objects (see section "\l{The DeviceClass definition}").
+        \li - \underline{\e name:} The visible name of the vendor \unicode{0x2192} \l{Vendor::name()}.
+        \li - \underline{\e idName:} This parameter will be used to define the VendorId variable named <idName>VendorId in the plugininfo.h, so it can be used in the code.
+        \li - \underline{\e id:} The actual uuid (\l{VendorId}) of the plugin \unicode{0x2192} \l{Vendor::id()}.  
+        \li - \underline{\e deviceClasses:} A list of \l{DeviceClass}{DeviceClasses} objects (see section "\l{The DeviceClass definition}").
     \endlist
 
-    \section1 The DeviceClass definition
+    \section2 The DeviceClass definition
     A \l{Vendor} can support more then one \l{DeviceClass}, so the parameter \e deviceClasses in the vendor definition is a list. Each element of this list represents a \l{DeviceClass} in guh. 
 
     \code
@@ -152,32 +165,32 @@
 
     A \l{DeviceClass} contains following parameters:
     \list
-        \li - \e name: The visible name of the \l{DeviceClass} \unicode{0x2192} \l{DeviceClass::name()}
-        \li - \e idName: This parameter will be used to define the DeviceClassId variable named <idName>DeviceClassId in the plugininfo.h, so it can be used in the code.
-        \li - \e deviceClassesId: The actual uuid (DeviceClassId) of the \l{DeviceClass} \unicode{0x2192} \l{DeviceClass::id()}.
-        \li - \e createMethods: A list of possible \l{DeviceClass::CreateMethod}{CreateMethods} for this device \unicode{0x2192} \l{DeviceClass::createMethods()}. Some devices can be created in different ways. Possible values are:
+        \li - \underline{\e name:} The visible name of the \l{DeviceClass} \unicode{0x2192} \l{DeviceClass::name()}
+        \li - \underline{\e idName:} This parameter will be used to define the DeviceClassId variable named <idName>DeviceClassId in the plugininfo.h, so it can be used in the code.
+        \li - \underline{\e deviceClassesId:} The actual uuid (\l{DeviceClassId}) of the \l{DeviceClass} \unicode{0x2192} \l{DeviceClass::id()}.
+        \li - \underline{\e createMethods:} A list of possible \l{DeviceClass::CreateMethod}{CreateMethods} for this device \unicode{0x2192} \l{DeviceClass::createMethods()}. Some devices can be created in different ways. Possible values are:
         \list
             \li \e user \unicode{0x2192} \l{DeviceClass::CreateMethodUser}
             \li \e discovery \unicode{0x2192} \l{DeviceClass::CreateMethodDiscovery}
             \li \e auto \unicode{0x2192} \l{DeviceClass::CreateMethodAuto}
         \endlist
-        \li - \e setupMethod: Definens the \l{DeviceClass::SetupMethod}{SetupMethod} of this device  \unicode{0x2192} \l{DeviceClass::setupMethod()}. Possible values are:
+        \li - \underline{\e setupMethod:} Definens the \l{DeviceClass::SetupMethod}{SetupMethod} of this device  \unicode{0x2192} \l{DeviceClass::setupMethod()}. Possible values are:
         \list
             \li \e justAdd  \unicode{0x2192} \l{DeviceClass::SetupMethodJustAdd}
             \li \e displayPin \unicode{0x2192} \l{DeviceClass::SetupMethodDisplayPin}
             \li \e enterPin \unicode{0x2192} \l{DeviceClass::SetupMethodEnterPin}
             \li \e pushButton \unicode{0x2192} \l{DeviceClass::SetupMethodPushButton}
         \endlist
-        \li - \e pairingInfo: The \l{DeviceClass::pairingInfo()}{pairingInfo} will inform the user how to pair the device \unicode{0x2192} \l{DeviceClass::setupMethod()}. This parameter will only be used for \l{DeviceClass::SetupMethodDisplayPin}{DisplayPin} and \l{DeviceClass::SetupMethodEnterPin}{EnterPin} and \l{DeviceClass::SetupMethodPushButton}{PushButton}. Example: "Please press the button on the device before continue."
-        \li - \e discoveryParamTypes: A list of \l{ParamType}{ParamTypes} which will be needed for discovering a device \unicode{0x2192} \l{DeviceClass::discoveryParamTypes()}. This parameter will only be used for devices with the \l{DeviceClass::CreateMethodDiscovery}{CreateMethodDiscovery} (see section "\l{The ParamType definition}").
-        \li - \e paramTypes: A list of \l{ParamType}{ParamTypes} which define the paramters of a device \unicode{0x2192} \l{DeviceClass::paramTypes()} (see section "\l{The ParamType definition}").
-        \li - \e stateTypes: A list of \l{StateType}{StateTypes} of the device \unicode{0x2192} \l{DeviceClass::stateTypes()}. (see section "\l{The StateType definition}").
-        \li - \e actionTypes: A list of \l{ActionType}{ActionTypes} of the device \unicode{0x2192} \l{DeviceClass::actionTypes()}. (see section "\l{The ActionType definition}").
-        \li - \e eventTypes: A list of \l{EventType}{EventTypes} of the device \unicode{0x2192} \l{DeviceClass::eventTypes()}. (see section "\l{The EventType definition}").
+        \li - \underline{\e pairingInfo:} The \l{DeviceClass::pairingInfo()}{pairingInfo} will inform the user how to pair the device \unicode{0x2192} \l{DeviceClass::setupMethod()}. This parameter will only be used for \l{DeviceClass::SetupMethodDisplayPin}{DisplayPin} and \l{DeviceClass::SetupMethodEnterPin}{EnterPin} and \l{DeviceClass::SetupMethodPushButton}{PushButton}. Example: "Please press the button on the device before continue."
+        \li - \underline{\e discoveryParamTypes:} A list of \l{ParamType}{ParamTypes} which will be needed for discovering a device \unicode{0x2192} \l{DeviceClass::discoveryParamTypes()}. This parameter will only be used for devices with the \l{DeviceClass::CreateMethodDiscovery}{CreateMethodDiscovery} (see section "\l{The ParamType definition}").
+        \li - \underline{\e paramTypes:} A list of \l{ParamType}{ParamTypes} which define the paramters of a device \unicode{0x2192} \l{DeviceClass::paramTypes()} (see section "\l{The ParamType definition}").
+        \li - \underline{\e stateTypes:} A list of \l{StateType}{StateTypes} of the device \unicode{0x2192} \l{DeviceClass::stateTypes()} (see section "\l{The StateType definition}").
+        \li - \underline{\e actionTypes:} A list of \l{ActionType}{ActionTypes} of the device \unicode{0x2192} \l{DeviceClass::actionTypes()} (see section "\l{The ActionType definition}").
+        \li - \underline{\e eventTypes:} A list of \l{EventType}{EventTypes} of the device \unicode{0x2192} \l{DeviceClass::eventTypes()} (see section "\l{The EventType definition}").
     \endlist
 
 
-    \section1 The ParamType definition
+    \section2 The ParamType definition
     A \l{DeviceClass} can have a list of \l{ParamType}{ParamTypes} which will be filled out during the setup and describe the device. Each device should have a parameter "name" to allow the user to give a device an individual name like: "Desk lamp in the living room". \l{ParamType}{ParamTypes} will be used for \e discoveryParamType in the \l{DeviceClass} definition and in the \l{ActionType} and \l{EventType} definition.
 
     \code
@@ -203,20 +216,36 @@
     \endcode
 
     \list
-        \li - \e name: The visible name of the \l{ParamType} \unicode{0x2192} \l{ParamType::name()}.
-        \li - \e type: The data type of this paramter \unicode{0x2192} \l{ParamType::type()}.  
-        \li - \e inputType: A paramter for clients to know which kind of InputType this.
-        \li - \e defaultValue: Sets the default value of the \{ParamType}. If a parameter will not be set by the user, the parameter will be set to this value \unicode{0x2192} \l{ParamType::defaultValue()}.
-        \li - \e unit: With this parameter you can specify the unit of the parameter i.e. \unicode{0x00B0}C \unicode{0x2192} DegreeCelsius.
-        \li - \e minValue: Sets the minimum limit for this \{ParamType}. Can only be set for \e int and \e double values. If the user tries to set the value smaller than the \e minValue, the DeviceManager will catch the invalid parameter and report the error code. You don't have to check this value in the plugin implementation.
-        \li - \e maxValue: Sets the maximum limit for this \{ParamType}. Can only be set for \e int and \e double values. If the user tries to set the value greater than the \e maxValue, the DeviceManager will catch the invalid parameter and report the error code. You don't have to check this value in the plugin implementation.
-        \li - \e allowedValues: Gives you the possibility to define a list of allowed values. If the user tries to set the value which is not in the \e allowedValues list, the DeviceManager will catch the invalid parameter and report the error code. You don't have to check this value in the plugin implementation. This is typically used for strings i.e. ["North", "East", "South", "West"].
-        \li - \e readOnly: Bool value to make this \{ParamType} realOnly. When you want to edit the params of a device you only can edit the parameters which are \tt {"readOnly": false}. If not specified, the parameter is writeable by default.
+        \li - \underline{\e name:} The visible name of the \l{ParamType} \unicode{0x2192} \l{ParamType::name()}.
+        \li - \underline{\e type:} The data type of this paramter \unicode{0x2192} \l{ParamType::type()}.  
+        \li - \underline{\e inputType:} A paramter for clients to know which kind of \l{Types::InputType}{InputType} this. See enum \l{Types::InputType} for more information. The expected value for the \e inputType parameter matches the enum name like this:
+
+        \tt {Types::InputTypeTextArea} \unicode{0x2192} \tt {"inputType": "TextArea"}
+
+        \tt {Types::InputTypePassword} \unicode{0x2192} \tt {"inputType": "Password"}
+
+        \tt ...        
+
+
+        \li - \underline{\e defaultValue:} Sets the default value of the \{ParamType}. If a parameter will not be set by the user, the parameter will be set to this value \unicode{0x2192} \l{ParamType::defaultValue()}.
+        \li - \underline{\e unit:} With this parameter you can specify the \l{Types::Unit}{Unit} of the parameter i.e. \unicode{0x00B0}C \unicode{0x2192} DegreeCelsius. See enum \l{Types::Unit} for more information. The expected value for the \e unit parameter matches the enum name like this:
+            
+        \tt {Types::UnitDegreeCelsius} \unicode{0x2192} \tt {"unit": "DegreeCelsius"}
+
+        \tt {Types::UnitMetersPerHour} \unicode{0x2192} \tt {"unit": "MetersPerHour"}
+
+        \tt ...        
+
+        \li - \underline{\e minValue:} Sets the minimum limit for this \l{ParamType}. Can only be set for \e int and \e double values. If the user tries to set the value smaller than the \e minValue, the DeviceManager will catch the invalid parameter and report the error code. You don't have to check this value in the plugin implementation.
+        \li - \underline{\e maxValue:} Sets the maximum limit for this \l{ParamType}. Can only be set for \e int and \e double values. If the user tries to set the value greater than the \e maxValue, the DeviceManager will catch the invalid parameter and report the error code. You don't have to check this value in the plugin implementation.
+        \li - \underline{\e allowedValues:} Gives you the possibility to define a list of allowed values. If the user tries to set the value which is not in the \e allowedValues list, the DeviceManager will catch the invalid parameter and report the error code. You don't have to check this value in the plugin implementation. This is typically used for strings i.e. ["North", "East", "South", "West"].
+        \li - \underline{\e readOnly:} Bool value to make this \l{ParamType} realOnly. When you want to edit the params of a device you only can edit the parameters which are \tt {"readOnly": false}. If not specified, the parameter is writeable by default.
     \endlist
     
 
-    \section1 The StateType definition
-    A \l{DeviceClass} can have a list of \l{StateType}{StateTypes} which allow you to represent a state of a device. A \l{State} can be changed/updated in the plugin code. If you change a state in the plugin using \l{Device::setStateValue()} an \l{Event} will generate automatically in the \l{guhserver::GuhCore}. This \l{Event} has the same uuid (EventTypeId) like the \l{State} which created the "<stateName> changed" \l{Event}. The event will have exactly one \l{Param}, which has the same properties like the \l{StateType} value and contains the new value.
+
+    \section2 The StateType definition
+    A \l{DeviceClass} can have a list of \l{StateType}{StateTypes} which allow you to represent a state of a device. A \l{State} can be changed/updated in the plugin code. If you change a state in the plugin using \l{Device::setStateValue()} an \l{Event} will generate automatically in the \l{guhserver::GuhCore}. This \l{Event} has the same uuid (\l{EventTypeId}) like the \l{State} which created the "<stateName> changed" \l{Event}. The event will have exactly one \l{Param}, which has the same properties like the \l{StateType} value and contains the new value.
 
 A \l{StateType} has following parameters:
 
@@ -240,20 +269,20 @@ A \l{StateType} has following parameters:
     \endcode
 
     \list
-        \li - \e name: The visible name of the \l{ParamType} \unicode{0x2192} \l{ParamType::name()}.
-        \li - \e idName: This parameter will be used to define the StateTypeId variable named <idName>StateTypeId in the plugininfo.h, so it can be used in the code.
-        \li - \e id: The actual uuid (StateTypeId) of the \l{StateType} \unicode{0x2192} \l{StateType::id()}.
-        \li - \e type: The data type of this state \unicode{0x2192} \l{StateType::type()}.  
-        \li - \e unit: With this parameter you can specify the unit of the state value i.e. \unicode{0x00B0}C \unicode{0x2192} DegreeCelsius.
-        \li - \e defaultValue: The state will be initialized with this value.
-        \li - \e writable: If you define the \e writable object an \l{ActionType} will be created to set the \l{State} value.  The created \l{ActionType} has the same uuid (ActionTypeId) like the \l{StateType} uuid and will be named "set <stateName>". Since a \l{ParamType} has some properties which are not in the \{StateType} definition like \e allowedValues or \e minValue / \e maxValue, you can specify them in the \e writable Object.
+        \li - \underline{\e name:} The visible name of the \l{ParamType} \unicode{0x2192} \l{ParamType::name()}.
+        \li - \underline{\e idName:} This parameter will be used to define the StateTypeId variable named <idName>StateTypeId in the plugininfo.h, so it can be used in the code.
+        \li - \underline{\e id:} The actual uuid (\l{StateTypeId}) of the \l{StateType} \unicode{0x2192} \l{StateType::id()}.
+        \li - \underline{\e type:} The data type of this state \unicode{0x2192} \l{StateType::type()}.  
+        \li - \underline{\e unit:} With this parameter you can specify the unit of the state value i.e. \unicode{0x00B0}C \unicode{0x2192} DegreeCelsius.
+        \li - \underline{\e defaultValue:} The state will be initialized with this value.
+        \li - \underline{\e writable:} If you define the \e writable object an \l{ActionType} will be created to set the \l{State} value.  The created \l{ActionType} has the same uuid (\l{ActionTypeId}) like the \l{StateType} uuid and will be named "set <stateName>". Since a \l{ParamType} has some properties which are not in the \l{StateType} definition like \e allowedValues or \e minValue / \e maxValue, you can specify them in the \e writable Object.
 
 
-If a \l{StateType} has the property \e writable the \l{DeviceManager} will create automatically an \l{ActionType} for this state, which will also have exactly one \l{Param} with the same properties like the \l{StateType}. The created \l{ActionType} has the same uuid (ActionTypeId) like the \l{StateType} uuid and will be named "set <stateName>".
+If a \l{StateType} has the property \e writable the \l{DeviceManager} will create automatically an \l{ActionType} for this state, which will also have exactly one \l{Param} with the same properties like the \l{StateType}. The created \l{ActionType} has the same uuid (\l{ActionTypeId}) like the \l{StateType} uuid and will be named "set <stateName>".
 
 This mechanism was created to ensure that the \l{EventType} and \l{ActionType} which correspond to a certain \l{StateType} will always be equal. This makes it possible for clients to know that an \l{Action} will set the \a value of a \l{State}, and an \l{Event} was generated by the corresponding \l{State}. 
 
-\tt {StateTypeId == EventTypeId == ActionTypeId}
+\tt {\l{StateTypeId} == \l{EventTypeId} == \l{ActionTypeId}}
 
         Example \l{StateType}: Following \l{StateType} stands for a volume \l{State} named \e volume. The value of this \l{State} has the data type \tt int and the unit \tt \%. This \l{StateType} is writable, which means there will be an \l{ActionType} generated with \e id \tt 9bc84381-785f-46bf-94c8-6e35116f50d3. The generated \l{ActionType} will have one \e paramType which has the \e name = \tt volume, \e type = \tt int, \e minValue = \tt 0, \e maxValue =\tt 100, \e unit = \tt Percentage. The \l{ActionType} name will be "set volume". If the value of the \l{State} will be changed, an \l{Event} will be generated. The \l{ParamType} of the event will be equal to the \l{ParamType} of the generated \l{ActionType}.
 
@@ -306,7 +335,7 @@ This mechanism was created to ensure that the \l{EventType} and \l{ActionType} w
         \endcode
     \endlist
     
-    \section1 The ActionType definition
+    \section2 The ActionType definition
     A \l{DeviceClass} can have more then one \l{ActionType}, so the parameter \e actionTypes in the \l{DeviceClass} definition is a list. Each element of this list represents an \l{ActionType} in guh.
 
     \code
@@ -326,13 +355,13 @@ This mechanism was created to ensure that the \l{EventType} and \l{ActionType} w
     \endcode
 
     \list
-        \li - \e name: The visible name of the \l{ActionType} \unicode{0x2192} \l{ActionType::name()}.
-        \li - \e idName: This parameter will be used to define the ActionTypeId variable named <idName>ActionTypeId in the plugininfo.h, so it can be used in the code.
-        \li - \e id: The actual uuid (ActionTypeId) of the \l{ActionType} \unicode{0x2192} \l{ActionType::id()}.  
-        \li - \e paramTypes: A list of \l{ParamType}{ParamTypes} (see section "\l{The ParamType definition}") for this \l{ActionType}. This parameter is optional. You can also create an \l{ActionType} which has no \l{ParamType}{ParamTypes}.
+        \li - \underline{\e name:} The visible name of the \l{ActionType} \unicode{0x2192} \l{ActionType::name()}.
+        \li - \underline{\e idName:} This parameter will be used to define the ActionTypeId variable named <idName>ActionTypeId in the plugininfo.h, so it can be used in the code.
+        \li - \underline{\e id:} The actual uuid (\l{ActionTypeId}) of the \l{ActionType} \unicode{0x2192} \l{ActionType::id()}.  
+        \li - \underline{\e paramTypes:} A list of \l{ParamType}{ParamTypes} (see section "\l{The ParamType definition}") for this \l{ActionType}. This parameter is optional. You can also create an \l{ActionType} which has no \l{ParamType}{ParamTypes}.
     \endlist
 
-    \section1 The EventType definition
+    \section2 The EventType definition
     A \l{DeviceClass} can have more then one \l{EventType}, so the parameter \e eventTypes in the \l{DeviceClass} definition is a list. Each element of this list represents an \l{EventType} in guh.
 
     \code
@@ -352,10 +381,10 @@ This mechanism was created to ensure that the \l{EventType} and \l{ActionType} w
     \endcode
 
     \list
-        \li - \e name: The visible name of the \l{EventType} \unicode{0x2192} \l{EventType::name()}.
-        \li - \e idName: This parameter will be used to define the EventTypeId variable named <idName>EventTypeId in the plugininfo.h, so it can be used in the code.
-        \li - \e id: The actual uuid (EventTypeId) of the \l{EventType} \unicode{0x2192} \l{EventType::id()}.  
-        \li - \e paramTypes: A list of \l{ParamType}{ParamTypes} (see section "\l{The ParamType definition}") for this \l{EventType}. This parameter is optional. You can also create an \l{EventType} which has no \l{ParamType}{ParamTypes}.
+        \li - \underline{\e name:} The visible name of the \l{EventType} \unicode{0x2192} \l{EventType::name()}.
+        \li - \underline{\e idName:} This parameter will be used to define the EventTypeId variable named <idName>EventTypeId in the plugininfo.h, so it can be used in the code.
+        \li - \underline{\e id:} The actual uuid (\l{EventTypeId}) of the \l{EventType} \unicode{0x2192} \l{EventType::id()}.  
+        \li - \underline{\e paramTypes:} A list of \l{ParamType}{ParamTypes} (see section "\l{The ParamType definition}") for this \l{EventType}. This parameter is optional. You can also create an \l{EventType} which has no \l{ParamType}{ParamTypes}.
     \endlist
 
 */

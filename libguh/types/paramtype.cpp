@@ -23,7 +23,7 @@
     \class ParamType
     \brief Describes a certain ParamType.
 
-    \ingroup types
+    \ingroup guh-types
     \inmodule libguh
 
     \sa Device, Param, ParamDescriptor

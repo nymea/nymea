@@ -22,8 +22,8 @@
     \class guhserver::WebServer
     \brief This class represents the web server for guhd.
 
-    \ingroup core
-    \inmodule server
+    \ingroup server
+    \inmodule core
 
     The \l{WebServer} class provides a HTTP/1.1 web server. The web server
     provides access to the guh-webinterface and the path can be specified

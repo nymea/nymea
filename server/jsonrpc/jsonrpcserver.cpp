@@ -19,6 +19,23 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::JsonRPCServer
+    \brief This class provides a JSON-RPC API interface to the \l{TransportInterface}{TransportInterfaces}.
+
+    \ingroup server
+    \inmodule core
+
+    The \l{JsonRPCServer} class provides the server interface for a JSON-RPC API call. This class
+    communicates with \l{TransportInterface}{TransportInterfaces} and processes the
+    JSON-RPC request in the corresponding \l{JsonHandler}. The \l{JsonRPCServer} it self is also
+    an \l{JsonHandler} and provides the introspection, version and notification control methods
+    for the \l{JSON-RPC API}.
+
+    \sa ServerManager, TransportInterface, TcpServer, WebSocketServer
+*/
+
+
 #include "jsonrpcserver.h"
 #include "jsontypes.h"
 #include "jsonhandler.h"
@@ -54,6 +71,7 @@
 
 namespace guhserver {
 
+/*! Constructs a \l{JsonRPCServer} with the given \a sslConfiguration and \a parent. */
 JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject *parent):
     JsonHandler(parent),
     #ifdef TESTING_ENABLED
@@ -113,6 +131,7 @@ JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject 
     QMetaObject::invokeMethod(this, "setup", Qt::QueuedConnection);
 }
 
+/*! Returns the \e namespace of \l{JsonHandler}. */
 QString JsonRPCServer::name() const
 {
     return QStringLiteral("JSONRPC");
@@ -158,6 +177,7 @@ JsonReply* JsonRPCServer::SetNotificationStatus(const QVariantMap &params)
     return createReply(returns);
 }
 
+/*! Returns the list of registred \l{JsonHandler}{JsonHandlers} and their name.*/
 QHash<QString, JsonHandler *> JsonRPCServer::handlers() const
 {
     return m_handlers;
@@ -181,8 +201,6 @@ void JsonRPCServer::processData(const QUuid &clientId, const QString &targetName
     // Note: id, targetNamespace and method already checked in TcpServer
     int commandId = message.value("id").toInt();
     QVariantMap params = message.value("params").toMap();
-
-    emit commandReceived(targetNamespace, method, params);
 
     JsonHandler *handler = m_handlers.value(targetNamespace);
     QPair<bool, QString> validationResult = handler->validateParams(method, params);

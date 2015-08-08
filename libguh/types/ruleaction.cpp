@@ -23,7 +23,7 @@
     \class RuleAction
     \brief Describes an action for a \l{guhserver::Rule}.
 
-    \ingroup types
+    \ingroup guh-types
     \inmodule libguh
 
     A RuleAction describes a special form of an \l{Action} for a \l{guhserver::Rule}. The main difference is

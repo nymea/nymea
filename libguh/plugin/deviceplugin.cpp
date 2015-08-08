@@ -32,8 +32,10 @@
 
 /*!
  \fn DeviceManager::HardwareResources DevicePlugin::requiredHardware() const
- Return flags describing the common hardware resources required by this plugin.
- \sa DevicePlugin::transmitData(), DevicePlugin::radioData(), DevicePlugin::guhTimer()
+ Return flags describing the common hardware resources required by this plugin. If you want to
+ use more than one resource, you can combine them ith the OR operator.
+
+ \sa DeviceManager::HardwareResource
  */
 
 /*!
@@ -53,6 +55,7 @@
  If the plugin has requested the UPnP device list using \l{DevicePlugin::upnpDiscover()}, this slot will be called after 3
  seconds (search timeout). The \a upnpDeviceDescriptorList will contain the description of all UPnP devices available
  in the network.
+
  \sa upnpDiscover(), UpnpDeviceDescriptor, UpnpDiscovery::discoveryFinished()
  */
 
@@ -60,12 +63,20 @@
  \fn void DevicePlugin::upnpNotifyReceived(const QByteArray &notifyData)
  If a UPnP device will notify a NOTIFY message in the network, the \l{UpnpDiscovery} will catch the
  notification data and call this method with the \a notifyData.
+
+ \note Only if if the plugin has requested the \l{DeviceManager::HardwareResourceUpnpDisovery} resource
+ using \l{DevicePlugin::requiredHardware()}, this slot will be called.
+
  \sa UpnpDiscovery
  */
 
 /*!
  \fn DevicePlugin::networkManagerReplyReady(QNetworkReply *reply)
  This method will be called whenever a pending network \a reply for this plugin is finished.
+
+ \note Only if if the plugin has requested the \l{DeviceManager::HardwareResourceNetworkManager}
+ resource using \l{DevicePlugin::requiredHardware()}, this slot will be called.
+
  \sa NetworkManager::replyReady()
  */
 

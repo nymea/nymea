@@ -22,8 +22,8 @@
     \class guhserver::HttpReply
     \brief Represents a reply of the guh webserver to a \l{HttpRequest}.
 
-    \ingroup core
-    \inmodule server
+    \ingroup api
+    \inmodule core
 
     This class holds the header and the payload data of a network reply and represents a response
     from the guh webserver to a \l{HttpRequest}.

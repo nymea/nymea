@@ -7,6 +7,7 @@ SUBDIRS += libguh server plugins
 !disabletesting {
     message("Building guh tests enabled")
     SUBDIRS += tests
+    DEFINES += TESTING_ENABLED
 } else {
     message("Building guh tests disabled")
 }
@@ -16,7 +17,8 @@ plugins.depends = libguh
 tests.depends = libguh
 
 doc.depends = libguh server
-doc.commands = cd $$top_srcdir/doc; qdoc config.qdocconf; cp images/logo.png html/images/
+doc.commands = cd $$top_srcdir/doc; qdoc config.qdocconf; cp images/logo.png html/images/; \
+               cp -r $$top_srcdir/doc/html $$top_builddir/
 
 licensecheck.commands = $$top_srcdir/tests/auto/checklicenseheaders.sh $$top_srcdir
 

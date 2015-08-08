@@ -18,6 +18,45 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::RestResource
+    \brief This class provides an interface for REST API resources.
+
+    \ingroup api
+    \inmodule core
+
+    The \l{RestResource} class provides an interface for subclassing a new resource for
+    the REST API. A resource represents an Object in the core like \l{Device}{Devices}
+    or \l{DevicePlugin}{Plugins}. A \l{RestResource} will be identified by it's
+    \l{RestResource::name()}{name}.
+
+    Each subclass of \l{RestResource} has to implement the method \l{RestResource::proccessRequest()}
+    where a valid \l{HttpRequest} will be processed.
+
+    This name of the resource will define the endpoint of the an API call:
+    \code
+    http://localhost:3333/api/v1/<resourceName>
+    \endcode
+
+    \sa RestServer
+*/
+
+/*! \fn QString guhserver::RestResource::name() const;
+    This method must be implemented in a subclass of \l{RestResource}. It returns
+    the endpoint name of this \l{RestResource} i.e. if this method returns \tt "example"
+    the API resource will be accessable with the URL:
+
+    \code
+    http://localhost:3333/api/v1/example
+    \endcode
+
+*/
+
+/*! \fn HttpReply *guhserver::RestResource::proccessRequest(const HttpRequest &request, const QStringList &urlTokens)
+    This method will be called from the \l{RestServer} once a \l{HttpRequest} \a request was identified to belong
+    to this \l{RestResource}. The given \a urlTokens contain the full list of URL tokens from this request.
+*/
+
 #include "restresource.h"
 #include "httprequest.h"
 #include "loggingcategories.h"
@@ -28,15 +67,18 @@
 
 namespace guhserver {
 
+/*! Constructs a \l{RestResource} with the given \a parent. */
 RestResource::RestResource(QObject *parent) :
     QObject(parent)
 {
 }
 
+/*! Pure virtual destructor for this \l{RestResource}. */
 RestResource::~RestResource()
 {
 }
 
+/*! Returns the pointer to a new created \l{HttpReply} initialized with \l{HttpReply::Ok} and \l{HttpReply::TypeSync}.  */
 HttpReply *RestResource::createSuccessReply()
 {
     HttpReply *reply = new HttpReply(HttpReply::Ok, HttpReply::TypeSync);
@@ -44,6 +86,7 @@ HttpReply *RestResource::createSuccessReply()
     return reply;
 }
 
+/*! Returns the pointer to a new created error \l{HttpReply} initialized with the given \a statusCode and \l{HttpReply::TypeSync}.  */
 HttpReply *RestResource::createErrorReply(const HttpReply::HttpStatusCode &statusCode)
 {
     HttpReply *reply = new HttpReply(statusCode, HttpReply::TypeSync);
@@ -51,12 +94,18 @@ HttpReply *RestResource::createErrorReply(const HttpReply::HttpStatusCode &statu
     return reply;
 }
 
+/*! Returns the pointer to a new created \l{HttpReply} initialized with \l{HttpReply::Ok} and \l{HttpReply::TypeAsync}.  */
 HttpReply *RestResource::createAsyncReply()
 {
     HttpReply *reply = new HttpReply(HttpReply::Ok, HttpReply::TypeAsync);
     return reply;
 }
 
+/*! This method can be used from every \l{RestResource} in order to verify if the \a payload of a
+    \l{HttpRequest} is a valid JSON document. Returns \tt true and the valid \e QVariant if there
+    was no error while parsing JSON. Returns \tt false and an invalid \e QVariant if the \a payload
+    could not be parsed.
+*/
 QPair<bool, QVariant> RestResource::verifyPayload(const QByteArray &payload)
 {
     QVariant data;

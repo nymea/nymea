@@ -96,6 +96,7 @@ public:
     LogEngine* logEngine() const;
     JsonRPCServer *jsonRPCServer() const;
     RestServer *restServer() const;
+    DeviceManager *deviceManager() const;
 
 signals:
     void eventTriggered(const Event &event);
@@ -118,7 +119,6 @@ signals:
 
 private:
     RuleEngine *ruleEngine() const;
-    DeviceManager *deviceManager() const;
 
     explicit GuhCore(QObject *parent = 0);
     static GuhCore *s_instance;

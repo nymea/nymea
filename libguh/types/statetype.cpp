@@ -23,7 +23,7 @@
     \class StateType
     \brief Describes the Type of a \l{State} from \l{Device}.
 
-    \ingroup types
+    \ingroup guh-types
     \inmodule libguh
 
     \sa State, StateDescriptor

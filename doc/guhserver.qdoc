@@ -1,7 +1,7 @@
 /*!
     \namespace guhserver
-    \brief The namespace for the server.
-    \inmodule server
+    \brief The namespace for the guh server.
+    \inmodule core        
+
+    This namespace represents the whole guh server. This prevents duplicated class names in plugin and core.
 */
-
-

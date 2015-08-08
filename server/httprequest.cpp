@@ -18,6 +18,39 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+  \class guhserver::HttpRequest
+  \brief Represents a HTTP request from a client to the guh \l{WebServer}.
+
+  \ingroup api
+  \inmodule core
+
+  This class holds the header and the payload data of a network request from a client to the \l{WebServer}.
+
+  \note RFC 7231 HTTP/1.1 Semantics and Content -> \l{http://tools.ietf.org/html/rfc7231}{http://tools.ietf.org/html/rfc7231}
+
+*/
+
+/*! \enum guhserver::HttpRequest::RequestMethod
+
+    This enum type describes the method of a \l{HttpRequest}. Following methods are allowed/handled:
+
+    \value Get
+        Represents the HTTP/1.1 GET method.
+    \value Post
+        Represents the HTTP/1.1 POST method.
+    \value Put
+        Represents the HTTP/1.1 PUT method.
+    \value Delete
+        Represents the HTTP/1.1 DELETE method.
+    \value Unhandled
+        Represents every other method which is not handled.
+*/
+
+/*! \fn QDebug guhserver::operator<< (QDebug debug, const HttpRequest &httpRequest);
+    Writes the \l{HttpRequest} \a httpRequest to the given \a debug. This method gets used just for debugging.
+*/
+
 #include "httprequest.h"
 #include "loggingcategories.h"
 
@@ -25,6 +58,7 @@
 
 namespace guhserver {
 
+/*! Construct an empty \l{HttpRequest}. */
 HttpRequest::HttpRequest() :
     m_rawData(QByteArray()),
     m_valid(false),
@@ -32,6 +66,11 @@ HttpRequest::HttpRequest() :
 {
 }
 
+/*! Construct a \l{HttpRequest} with the given \a rawData. The \a rawData will be parsed in this constructor. You can check
+    if the data is valid with \l{isValid()}. You can check if the request is complete with \l{isComplete}.
+
+    \sa isValid(), isComplete()
+*/
 HttpRequest::HttpRequest(QByteArray rawData) :
     m_rawData(rawData),
     m_valid(false),
@@ -40,61 +79,80 @@ HttpRequest::HttpRequest(QByteArray rawData) :
     validate();
 }
 
+/*! Returns the raw header of this request.*/
 QByteArray HttpRequest::rawHeader() const
 {
     return m_rawHeader;
 }
 
+/*! Returns the list of raw header splitted into key and value.*/
 QHash<QByteArray, QByteArray> HttpRequest::rawHeaderList() const
 {
     return m_rawHeaderList;
 }
 
+/*! Returns the \l{RequestMethod} of this request.
+
+  \sa RequestMethod
+*/
 HttpRequest::RequestMethod HttpRequest::method() const
 {
     return m_method;
 }
 
+/*! Returns the method as human readable string.*/
 QString HttpRequest::methodString() const
 {
     return m_methodString;
 }
 
+/*! Returns the HTTP version of this \l{HttpRequest}.*/
 QByteArray HttpRequest::httpVersion() const
 {
     return m_httpVersion;
 }
 
+/*! Returns the URL of this \l{HttpRequest}.*/
 QUrl HttpRequest::url() const
 {
     return m_url;
 }
 
+/*! Returns the URL query of this \l{HttpRequest}.*/
 QUrlQuery HttpRequest::urlQuery() const
 {
     return m_urlQuery;
 }
 
+/*! Returns the payload (content) of this \l{HttpRequest}.*/
 QByteArray HttpRequest::payload() const
 {
     return m_payload;
 }
 
+/*! Returns true if this \l{HttpRequest} is valid. A HTTP request is valid if the header and the payload were paresed successfully without errors.*/
 bool HttpRequest::isValid() const
 {
     return m_valid;
 }
 
+/*! Returns true if this \l{HttpRequest} is complete. A HTTP request is complete if "Content-Length" header value matches the actual payload size. Bigger packages will be sent in multiple TCP packages. */
 bool HttpRequest::isComplete() const
 {
     return m_isComplete;
 }
 
+/*! Returns true if this \l{HttpRequest} has a payload.*/
 bool HttpRequest::hasPayload() const
 {
     return !m_payload.isEmpty();
 }
 
+/*! Appends the given \a data to the current raw data of this \l{HttpRequest}.
+ *  This method will be used if a \l{HttpRequest} is not complete yet.
+ *
+ *  \sa isComplete()
+*/
 void HttpRequest::appendData(const QByteArray &data)
 {
     m_rawData.append(data);

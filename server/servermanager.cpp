@@ -18,6 +18,20 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::ServerManager
+    \brief This class represents the manager of all server interfaces of the guh server.
+
+    \ingroup server
+    \inmodule core
+
+    The \l{ServerManager} starts the \l{JsonRPCServer} and the \l{RestServer}. He also loads
+    and provides the SSL configurations for the secure \l{WebServer} and \l{WebSocketServer}
+    connection.
+
+    \sa JsonRPCServer, RestServer
+*/
+
 #include "servermanager.h"
 #include "guhsettings.h"
 
@@ -27,6 +41,7 @@
 
 namespace guhserver {
 
+/*! Constructs a \l{ServerManager} with the given \a parent. */
 ServerManager::ServerManager(QObject *parent) :
     QObject(parent),
     m_sslConfiguration(QSslConfiguration())
@@ -62,11 +77,13 @@ ServerManager::ServerManager(QObject *parent) :
     m_restServer = new RestServer(m_sslConfiguration, this);
 }
 
+/*! Returns the pointer to the created \l{JsonRPCServer} in this \l{ServerManager}. */
 JsonRPCServer *ServerManager::jsonServer() const
 {
     return m_jsonServer;
 }
 
+/*! Returns the pointer to the created \l{RestServer} in this \l{ServerManager}. */
 RestServer *ServerManager::restServer() const
 {
     return m_restServer;

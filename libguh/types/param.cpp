@@ -23,7 +23,7 @@
     \class Param
     \brief Holds the parameters of a Param.
 
-    \ingroup types
+    \ingroup guh-types
     \inmodule libguh
 
     \sa Device, ParamType, ParamDescriptor

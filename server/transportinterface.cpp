@@ -18,6 +18,58 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::TransportInterface
+    \brief This class provides an interface for the JSON servers.
+
+    \ingroup server
+    \inmodule core
+
+    \sa WebSocketServer, TcpServer
+*/
+
+/*! \fn void guhserver::TransportInterface::clientConnected(const QUuid &clientId);
+    This signal is emitted when a new client with the given \a clientId has been connected.
+
+    \sa WebSocketServer, TcpServer
+*/
+
+/*! \fn void guhserver::TransportInterface::clientDisconnected(const QUuid &clientId);
+    This signal is emitted when a new client with the given \a clientId has been connected.
+
+    \sa WebSocketServer, TcpServer
+*/
+
+/*! \fn bool guhserver::TransportInterface::startServer();
+    Pure virtual public slot for starting the corresponding \l{TransportInterface}. Returns true
+    if started successfully.
+
+    \sa WebSocketServer::startServer(), TcpServer::startServer()
+*/
+
+/*! \fn bool guhserver::TransportInterface::stopServer();
+    Pure virtual public slot for stopping the corresponding \l{TransportInterface}. Returns true
+    if stopped successfully.
+
+    \sa WebSocketServer::stopServer(), TcpServer::stopServer()
+*/
+
+/*! \fn void guhserver::TransportInterface::sendData(const QUuid &clientId, const QVariantMap &data);
+    Pure virtual method for sending \a data to the client with the id \a clientId over the corresponding \l{TransportInterface}.
+*/
+
+/*! \fn void guhserver::TransportInterface::sendData(const QList<QUuid> &clients, const QVariantMap &data);
+    Pure virtual method for sending \a data to \a clients over the corresponding \l{TransportInterface}.
+*/
+
+/*! \fn void guhserver::TransportInterface::dataAvailable(const QUuid &clientId, const QString &targetNamespace, const QString &method, const QVariantMap &message);
+    This signal is emitted when valid data from the client with the given \a clientId are available.
+    Data are valid if the corresponding \l{TransportInterface} has parsed successfully the given
+    \a targetNamespace, \a method and \a message.
+
+    \sa WebSocketServer, TcpServer
+*/
+
 #include "transportinterface.h"
 #include "loggingcategories.h"
 #include "jsonhandler.h"
@@ -27,15 +79,20 @@
 
 namespace guhserver {
 
+/*! Constructs a \l{TransportInterface} with the given \a parent. */
 TransportInterface::TransportInterface(QObject *parent) :
     QObject(parent)
 {
 }
 
+/*! Pure virtual destructor for \l{TransportInterface}. */
 TransportInterface::~TransportInterface()
 {
 }
 
+/*! Send a JSON success response to the client with the given \a clientId,
+ * \a commandId and \a params to the inerted \l{TransportInterface}.
+ */
 void TransportInterface::sendResponse(const QUuid &clientId, int commandId, const QVariantMap &params)
 {
     QVariantMap response;
@@ -46,6 +103,10 @@ void TransportInterface::sendResponse(const QUuid &clientId, int commandId, cons
     sendData(clientId, response);
 }
 
+
+/*! Send a JSON error response to the client with the given \a clientId,
+ * \a commandId and \a error to the inerted \l{TransportInterface}.
+ */
 void TransportInterface::sendErrorResponse(const QUuid &clientId, int commandId, const QString &error)
 {
     QVariantMap errorResponse;
@@ -56,7 +117,12 @@ void TransportInterface::sendErrorResponse(const QUuid &clientId, int commandId,
     sendData(clientId, errorResponse);
 }
 
-
+/*! Validates the given \a data from the client with the id \a clientId. If the validation was
+ *  successfull, the signal \l{dataAvailable()} will be emitted, otherwise an error response
+ *  will be sent to the client.
+ *
+ *  \sa dataAvailable()
+ */
 void TransportInterface::validateMessage(const QUuid &clientId, const QByteArray &data)
 {
     QJsonParseError error;

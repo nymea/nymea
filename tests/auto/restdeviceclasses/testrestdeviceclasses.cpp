@@ -93,8 +93,8 @@ void TestRestDeviceClasses::getSupportedDevices()
         QNetworkReply *reply = nam->get(request);
         clientSpy.wait();
         QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
-        jsonDoc = QJsonDocument::fromJson(reply->readAll(), &error);
-        QCOMPARE(error.error, QJsonParseError::NoError);
+        //        jsonDoc = QJsonDocument::fromJson(reply->readAll(), &error);
+        //        QCOMPARE(error.error, QJsonParseError::NoError);
         reply->deleteLater();
     }
     nam->deleteLater();

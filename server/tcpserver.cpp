@@ -19,6 +19,20 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::TcpServer
+    \brief This class represents the tcp server for guhd.
+
+    \ingroup server
+    \inmodule core
+
+    \inherits TransportInterface
+
+    The TCP server allowes clients to connect to the JSON-RPC API.
+
+    \sa WebSocketServer, TransportInterface
+*/
+
 #include "tcpserver.h"
 #include "loggingcategories.h"
 #include "guhsettings.h"
@@ -30,6 +44,10 @@
 
 namespace guhserver {
 
+/*! Constructs a \l{TcpServer} with the given \a parent.
+ *
+ *  \sa ServerManager
+ */
 TcpServer::TcpServer(QObject *parent) :
     TransportInterface(parent)
 {       
@@ -66,14 +84,26 @@ TcpServer::TcpServer(QObject *parent) :
     settings.endGroup();
 }
 
+/*! Destructor of this \l{TcpServer}. */
 TcpServer::~TcpServer()
 {
 }
 
+/*! Sending \a data to a list of \a clients.*/
 void TcpServer::sendData(const QList<QUuid> &clients, const QVariantMap &data)
 {
     foreach (const QUuid &client, clients) {
         sendData(client, data);
+    }
+}
+
+/*! Sending \a data to the client with the given \a clientId.*/
+void TcpServer::sendData(const QUuid &clientId, const QVariantMap &data)
+{
+    QTcpSocket *client = 0;
+    client = m_clientList.value(clientId);
+    if (client) {
+        client->write(QJsonDocument::fromVariant(data).toJson());
     }
 }
 
@@ -96,15 +126,6 @@ void TcpServer::reloadNetworkInterfaces()
         }
     }
     settings.endGroup();
-}
-
-void TcpServer::sendData(const QUuid &clientId, const QVariantMap &data)
-{
-    QTcpSocket *client = 0;
-    client = m_clientList.value(clientId);
-    if (client) {
-        client->write(QJsonDocument::fromVariant(data).toJson());
-    }
 }
 
 void TcpServer::onClientConnected()
@@ -233,6 +254,10 @@ void TcpServer::onTimeout()
     }
 }
 
+/*! Returns true if this \l{TcpServer} started successfully.
+ *
+ * \sa TransportInterface::startServer()
+ */
 bool TcpServer::startServer()
 {
     bool ipV4 = m_ipVersions.contains("IPv4");
@@ -276,6 +301,10 @@ bool TcpServer::startServer()
     return true;
 }
 
+/*! Returns true if this \l{TcpServer} stopped successfully.
+ *
+ * \sa TransportInterface::startServer()
+ */
 bool TcpServer::stopServer()
 {
     // Listen on all Networkinterfaces

@@ -27,8 +27,7 @@
 #include <QHash>
 #include <QJsonDocument>
 
-
-namespace guhserver {
+using namespace guhserver;
 
 QList<MockTcpServer*> MockTcpServer::s_allServers;
 
@@ -133,6 +132,4 @@ bool MockTcpServer::startServer()
 bool MockTcpServer::stopServer()
 {
     return true;
-}
-
 }

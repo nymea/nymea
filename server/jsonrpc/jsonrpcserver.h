@@ -36,14 +36,18 @@
 class Device;
 class QSslConfiguration;
 
+
+#ifdef TESTING_ENABLED
+class MockTcpServer;
+#endif
+
 namespace guhserver {
+
 #ifdef WEBSOCKET
 class WebSocketServer;
 #endif
 
-#ifdef TESTING_ENABLED
-class MockTcpServer;
-#else
+#ifndef TESTING_ENABLED
 class TcpServer;
 #endif
 
@@ -61,9 +65,6 @@ public:
 
     QHash<QString, JsonHandler*> handlers() const;
 
-signals:
-    void commandReceived(const QString &targetNamespace, const QString &command, const QVariantMap &params);
-
 private slots:
     void setup();
 
@@ -75,11 +76,6 @@ private slots:
     void sendNotification(const QVariantMap &params);
 
     void asyncReplyFinished();
-
-private:
-    void registerHandler(JsonHandler *handler);
-
-    QString formatAssertion(const QString &targetNamespace, const QString &method, JsonHandler *handler, const QVariantMap &data) const;
 
 private:
 #ifdef TESTING_ENABLED
@@ -100,6 +96,9 @@ private:
     QHash<QUuid, bool> m_clients;
 
     int m_notificationId;
+
+    void registerHandler(JsonHandler *handler);
+    QString formatAssertion(const QString &targetNamespace, const QString &method, JsonHandler *handler, const QVariantMap &data) const;
 };
 
 }

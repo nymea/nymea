@@ -72,7 +72,6 @@ signals:
     void httpRequestReady(const QUuid &clientId, const HttpRequest &httpRequest);
     void clientConnected(const QUuid &clientId);
     void clientDisconnected(const QUuid &clientId);
-    void dataAvailable(const QUuid &clientId, const QString &targetNamespace, const QString &method, const QVariantMap &message);
 
 private slots:
     void readClient();

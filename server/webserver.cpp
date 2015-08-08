@@ -18,6 +18,58 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::WebServer
+    \brief This class represents the web server for guhd.
+
+    \ingroup server
+    \inmodule core
+
+    The \l{WebServer} class provides a HTTP/1.1 web server. The web server
+    provides access to the guh-webinterface and the path can be specified
+    in the \tt /etc/guh/guhd.conf file and to the guh \l{https://github.com/guh/guh/wiki/REST-Api-documentation}{REST API}.
+    The default port for the web server is 3333, which is according to this
+    \l{https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers}{list}
+    officially free.
+
+    The URL for the insecure guh-webinterface access:
+    \code http://localhost:3333\endcode
+
+    The URL for the secure HTTPS (TLS 1.2) guh-webinterface access:
+    \code https://localhost:3333\endcode
+
+    The URL for the insecure REST API access to a \l{RestResource}:
+    \code http://localhost:3333/api/v1/{resource}\endcode
+
+    The URL for the secure HTTPS (TLS 1.2) REST API access to a \l{RestResource}:
+    \code https://localhost:3333/api/v1/{RestResource}\endcode
+
+    You can turn on the HTTPS server in the \tt WebServer section of the \tt /etc/guh/guhd.conf file.
+
+    \note For \tt HTTPS you need to have a certificate and configure it in the \tt SSL-configuration
+    section of the \tt /etc/guh/guhd.conf file.
+
+    \sa WebSocketServer, TcpServer
+*/
+
+/*! \fn void guhserver::WebServer::httpRequestReady(const QUuid &clientId, const HttpRequest &httpRequest);
+    This signal is emitted when a \a httpRequest from a client with the given \a clientId is ready.
+
+    \sa RestServer, HttpRequest
+*/
+
+/*! \fn void guhserver::WebServer::clientConnected(const QUuid &clientId);
+    This signal is emitted when a new client with the given \a clientId has been connected.
+*/
+
+/*! \fn void guhserver::WebServer::clientDisconnected(const QUuid &clientId);
+    This signal is emitted when a client with the given \a clientId has been disconnected.
+*/
+
+/*! \fn void guhserver::WebServer::incomingConnection(qintptr socketDescriptor);
+    Overwritten virtual method from \l{http://doc.qt.io/qt-5/qtcpserver.html#incomingConnection}{QTcpServer::incomingConnection( \a socketDescriptor)}.
+*/
+
 #include "webserver.h"
 #include "loggingcategories.h"
 #include "guhsettings.h"
@@ -35,6 +87,10 @@
 
 namespace guhserver {
 
+/*! Constructs a \l{WebServer} with the given \a sslConfiguration and \a parent.
+ *
+ *  \sa ServerManager
+ */
 WebServer::WebServer(const QSslConfiguration &sslConfiguration, QObject *parent) :
     QTcpServer(parent),
     m_sslConfiguration(sslConfiguration),
@@ -63,11 +119,16 @@ WebServer::WebServer(const QSslConfiguration &sslConfiguration, QObject *parent)
         m_useSsl = false;
 }
 
+/*! Destructor of this \l{WebServer}. */
 WebServer::~WebServer()
 {
     this->close();
 }
 
+/*! Send the given \a reply map to the corresponding client.
+ *
+ * \sa HttpReply
+ */
 void WebServer::sendHttpReply(HttpReply *reply)
 {
     QSslSocket *socket = 0;
@@ -297,6 +358,7 @@ void WebServer::onError(QAbstractSocket::SocketError error)
     qCWarning(dcConnection) << "Client socket error" << socket->peerAddress() << error << socket->errorString();
 }
 
+/*! Returns true if this \l{WebServer} started successfully. */
 bool WebServer::startServer()
 {
     if (!listen(QHostAddress::Any, m_port)) {
@@ -313,6 +375,7 @@ bool WebServer::startServer()
     return true;
 }
 
+/*! Returns true if this \l{WebServer} stopped successfully. */
 bool WebServer::stopServer()
 {
     close();

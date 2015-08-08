@@ -23,7 +23,7 @@
     \class Event
     \brief Holds information required to emit a event described by a \l{EventType}.
 
-    \ingroup types
+    \ingroup guh-types
     \inmodule libguh
 
     It is bound to a \l{Device} and a \l{EventType} and holds the parameters

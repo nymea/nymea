@@ -18,6 +18,35 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::WebSocketServer
+    \brief This class represents the websocket server for guhd.
+
+    \ingroup server
+    \inmodule core
+
+    \note The WebSocketServer is only available for builds with Qt version greater than Qt 5.3.0!
+
+    The websocket server provides a server for websocket clients based on
+    \l{http://tools.ietf.org/html/rfc6455}{Protocol Version 13}. The default
+    port for the websocket server is 4444, which is according to this
+    \l{https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers}{list}
+    officially free.
+
+    The URL for the insecure websocket:
+    \code ws://localhost:4444\endcode
+
+    The URL for the secure websocket (TLS 1.2):
+    \code wss://localhost:4444\endcode
+
+    You can turn on the \tt wss server in the \tt WebServerServer section of the \tt /etc/guh/guhd.conf file.
+
+    \note For \tt wss you need to have a certificate and configure it in the \tt SSL-configuration
+    section of the \tt /etc/guh/guhd.conf file.
+
+    \sa WebServer, TcpServer, TransportInterface
+*/
+
 #include "websocketserver.h"
 #include "guhsettings.h"
 #include "loggingcategories.h"
@@ -27,6 +56,10 @@
 
 namespace guhserver {
 
+/*! Constructs a \l{WebSocketServer} with the given \a sslConfiguration and \a parent.
+ *
+ *  \sa ServerManager
+ */
 WebSocketServer::WebSocketServer(const QSslConfiguration &sslConfiguration, QObject *parent) :
     TransportInterface(parent),
     m_server(0),
@@ -49,10 +82,15 @@ WebSocketServer::WebSocketServer(const QSslConfiguration &sslConfiguration, QObj
         m_useSsl = false;
 }
 
+/*! Destructor of this \l{WebSocketServer}. */
 WebSocketServer::~WebSocketServer()
 {
 }
 
+/*! Send the given \a data map to the client with the given \a clientId.
+ *
+ * \sa TransportInterface::sendData()
+ */
 void WebSocketServer::sendData(const QUuid &clientId, const QVariantMap &data)
 {
     QWebSocket *client = 0;
@@ -62,6 +100,10 @@ void WebSocketServer::sendData(const QUuid &clientId, const QVariantMap &data)
     }
 }
 
+/*! Send the given \a data map to the given list of \a clients.
+ *
+ * \sa TransportInterface::sendData()
+ */
 void WebSocketServer::sendData(const QList<QUuid> &clients, const QVariantMap &data)
 {
     foreach (const QUuid &client, clients) {
@@ -135,6 +177,10 @@ void WebSocketServer::onPing(quint64 elapsedTime, const QByteArray &payload)
     qCDebug(dcWebSocketServer) << "ping response" << client->peerAddress() << elapsedTime << payload;
 }
 
+/*! Returns true if this \l{WebSocketServer} started successfully.
+ *
+ * \sa TransportInterface::startServer()
+ */
 bool WebSocketServer::startServer()
 {
     if (m_server) {
@@ -164,6 +210,10 @@ bool WebSocketServer::startServer()
     return true;
 }
 
+/*! Returns true if this \l{WebSocketServer} stopped successfully.
+ *
+ * \sa TransportInterface::stopServer()
+ */
 bool WebSocketServer::stopServer()
 {
     qCDebug(dcConnection) << "Stopping websocket server";

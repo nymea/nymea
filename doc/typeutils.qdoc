@@ -1,0 +1,305 @@
+/*!
+    \page typeutils.h
+    \title Type Utils
+   
+    \chapter Types::StateOperator
+    \table
+        \header
+            \li Constant
+            \li Value
+            \li Description
+        \row
+            \li Types::StateOperatorAnd
+            \li 0
+            \li The logical AND \tt & operator for two \l{State}{States}
+        \row
+            \li Types::StateOperatorOr
+            \li 1
+            \li The logical OR \tt | operator for two \l{State}{States}
+    \endtable
+        
+
+
+    \chapter Types::ValueOperator
+    \table
+        \header
+            \li Constant
+            \li Value
+            \li Description
+        \row
+            \li Types::ValueOperatorEquals
+            \li 0
+            \li The \tt = operator to compare two \a values of a \l{Param}. 
+        \row
+            \li Types::ValueOperatorNotEquals
+            \li 1
+            \li The \tt != operator to compare two \a values of a \l{Param}. 
+        \row
+            \li Types::ValueOperatorLess
+            \li 2
+            \li The \tt < operator to compare two \a values of a \l{Param}.
+        \row
+            \li Types::ValueOperatorGreater
+            \li 3
+            \li The \tt > operator to compare two \a values of a \l{Param}.
+        \row
+            \li Types::ValueOperatorLessOrEqual
+            \li 4
+            \li The \tt <= operator to compare two \a values of a \l{Param}.
+        \row
+            \li Types::ValueOperatorGreaterOrEqual
+            \li 5
+            \li The \tt >= operator to compare two \a values of a \l{Param}.
+    \endtable
+
+
+    \chapter Types::InputType
+    \table
+        \header
+            \li Constant
+            \li Value
+            \li Description
+        \row
+            \li Types::InputTypeNone
+            \li 0
+            \li The \l{ParamType} has no \l{Types::InputType}{InputType}
+        \row
+            \li Types::InputTypeTextLine
+            \li 1
+            \li The \l{ParamType} suggests a string text line as \l{Types::InputType}{InputType}
+        \row
+            \li Types::InputTypeTextArea
+            \li 2
+            \li The \l{ParamType} suggests a string text area as \l{Types::InputType}{InputType}
+        \row
+            \li Types::InputTypePassword
+            \li 3
+            \li The \l{ParamType} indicates that this is a password \l{Types::InputType}{InputType}. Maby the characters should be covered.
+        \row
+            \li Types::InputTypeSearch
+            \li 4
+            \li The \l{ParamType} indicates that this is a search \l{Types::InputType}{InputType}.
+        \row
+            \li Types::InputTypeMail
+            \li 5
+            \li The \l{ParamType} indicates that a mail address is requested as \l{Types::InputType}{InputType}.
+        \row
+            \li Types::InputTypeIPv4Address
+            \li 6
+            \li The \l{ParamType} indicates that a IPv4 address is requested as \l{Types::InputType}{InputType}.
+        \row
+            \li Types::InputTypeIPv6Address
+            \li 7
+            \li The \l{ParamType} indicates that a IPv6 address is requested as \l{Types::InputType}{InputType}.
+        \row
+            \li Types::InputTypeUrl
+            \li 8
+            \li The \l{ParamType} indicates that a URL is requested as \l{Types::InputType}{InputType}.
+        \row
+            \li Types::InputTypeMacAddress
+            \li 9
+            \li The \l{ParamType} indicates that a MAC hardware address is requested as \l{Types::InputType}{InputType}.
+    \endtable
+
+
+    \chapter Types::Unit
+    \table
+        \header
+            \li Constant
+            \li Value
+            \li Description
+        \row
+            \li Types::UnitNone
+            \li 0
+            \li The value of the \l{Param} has no unit.
+        \row
+            \li Types::UnitSeconds
+            \li 1
+            \li The value of the \l{Param} has unit \tt [s] \unicode{0x2192} seconds.
+        \row
+            \li Types::UnitMinutes
+            \li 2
+            \li The value of the \l{Param} has unit \tt [min] \unicode{0x2192} minutes.
+        \row
+            \li Types::UnitHours
+            \li 3
+            \li The value of the \l{Param} has unit \tt [h] \unicode{0x2192} hours.
+        \row
+            \li Types::UnitUnixTime
+            \li 4
+            \li The value of the \l{Param} has unit \tt [s] \unicode{0x2192} seconds since epoch.
+        \row
+            \li Types::UnitMeterPerSecond
+            \li 5
+            \li The value of the \l{Param} has unit \tt [m/s] \unicode{0x2192} meters per second.
+        \row
+            \li Types::UnitKiloMeterPerHour
+            \li 6
+            \li The value of the \l{Param} has unit \tt [km/h] \unicode{0x2192} kilo meters per hour.
+        \row
+            \li Types::UnitDegree
+            \li 7
+            \li The value of the \l{Param} has unit \tt {[\unicode{0x00B0}]} \unicode{0x2192} degree.
+        \row
+            \li Types::UnitRadiant
+            \li 8
+            \li The value of the \l{Param} has unit \tt [rad] \unicode{0x2192} radiant.
+        \row
+            \li Types::UnitDegreeCelsius
+            \li 9
+            \li The value of the \l{Param} has unit \tt {[\unicode{0x00B0} C]} \unicode{0x2192} degree celsius.
+        \row
+            \li Types::UnitDegreeKelvin
+            \li 10
+            \li The value of the \l{Param} has unit \tt {[K]} \unicode{0x2192} kelvin.
+        \row
+            \li Types::UnitMired
+            \li 11
+            \li The value of the \l{Param} has unit \tt {[mir]} \unicode{0x2192} mired.
+        \row
+            \li Types::UnitMilliBar
+            \li 12
+            \li The value of the \l{Param} has unit \tt {[mbar]} \unicode{0x2192} milli bar.
+        \row
+            \li Types::UnitBar
+            \li 13
+            \li The value of the \l{Param} has unit \tt {[bar]} \unicode{0x2192} bar.
+        \row
+            \li Types::UnitPascal
+            \li 14
+            \li The value of the \l{Param} has unit \tt {[Pa]} \unicode{0x2192} pascal.
+        \row
+            \li Types::UnitHectoPascal
+            \li 15
+            \li The value of the \l{Param} has unit \tt {[hPa]} \unicode{0x2192} hecto pascal.
+        \row
+            \li Types::UnitAtmosphere
+            \li 16
+            \li The value of the \l{Param} has unit \tt {[atm]} \unicode{0x2192} atmosphere.
+        \row
+            \li Types::UnitLumen
+            \li 17
+            \li The value of the \l{Param} has unit \tt {[lm]} \unicode{0x2192} lumen.
+        \row
+            \li Types::UnitLux
+            \li 18
+            \li The value of the \l{Param} has unit \tt {[lx]} \unicode{0x2192} lux.
+        \row
+            \li Types::UnitCandela
+            \li 19
+            \li The value of the \l{Param} has unit \tt {[cd]} \unicode{0x2192} candela.
+        \row
+            \li Types::UnitMilliMeter
+            \li 20
+            \li The value of the \l{Param} has unit \tt {[mm]} \unicode{0x2192} milli meter.
+        \row
+            \li Types::UnitCentiMeter
+            \li 21
+            \li The value of the \l{Param} has unit \tt {[cm]} \unicode{0x2192} centi meter.
+        \row
+            \li Types::UnitMeter
+            \li 22
+            \li The value of the \l{Param} has unit \tt {[m]} \unicode{0x2192} meter.
+        \row
+            \li Types::UnitKiloMeter
+            \li 23
+            \li The value of the \l{Param} has unit \tt {[km]} \unicode{0x2192} kilo meter.
+        \row
+            \li Types::UnitGram
+            \li 24
+            \li The value of the \l{Param} has unit \tt {[g]} \unicode{0x2192} gram.
+        \row
+            \li Types::UnitKiloGram
+            \li 25
+            \li The value of the \l{Param} has unit \tt {[gg]} \unicode{0x2192} kilo gram.
+        \row
+            \li Types::UnitDezibel
+            \li 26
+            \li The value of the \l{Param} has unit \tt {[db]} \unicode{0x2192} dezibel.
+        \row
+            \li Types::UnitKiloByte
+            \li 27
+            \li The value of the \l{Param} has unit \tt {[kB]} \unicode{0x2192} kilo byte.
+        \row
+            \li Types::UnitMegaByte
+            \li 28
+            \li The value of the \l{Param} has unit \tt {[mB]} \unicode{0x2192} mega byte.
+        \row
+            \li Types::UnitGigaByte
+            \li 29
+            \li The value of the \l{Param} has unit \tt {[GB]} \unicode{0x2192} giga byte.
+        \row
+            \li Types::UnitTeraByte
+            \li 30
+            \li The value of the \l{Param} has unit \tt {[TB]} \unicode{0x2192} tera byte.
+        \row
+            \li Types::UnitMilliWatt
+            \li 31
+            \li The value of the \l{Param} has unit \tt {[mW]} \unicode{0x2192} milli watt.
+        \row
+            \li Types::UnitWatt
+            \li 32
+            \li The value of the \l{Param} has unit \tt {[W]} \unicode{0x2192} watt.
+        \row
+            \li Types::UnitKiloWatt
+            \li 33
+            \li The value of the \l{Param} has unit \tt {[kW]} \unicode{0x2192} kilo watt.
+        \row
+            \li Types::UnitKiloWattHour
+            \li 34
+            \li The value of the \l{Param} has unit \tt {[kWh]} \unicode{0x2192} kilo watt hour.
+        \row
+            \li Types::UnitPercentage
+            \li 35
+            \li The value of the \l{Param} has unit \tt {[\%]} \unicode{0x2192} percentage.
+        \row
+            \li Types::UnitEuro
+            \li 36
+            \li The value of the \l{Param} has unit \tt {[€]} \unicode{0x2192} euro.
+        \row
+            \li Types::UnitDollar
+            \li 37
+            \li The value of the \l{Param} has unit \tt {[\$]} \unicode{0x2192} dollar.
+    \endtable
+
+    \chapter UUID Types
+
+    \section2 PluginId
+    This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{DevicePlugin}.
+
+    \section2 VendorId
+    This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{Vendor}.
+    \section2 DeviceClassId    
+    This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{DeviceClass}.
+    \section2 DeviceId
+   This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{Device}.
+
+    \section2 DeviceDescriptorId
+   This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{DeviceDescriptor}.
+
+    \section2 EventTypeId
+   This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{EventType}.
+
+    \section2 EventId
+   This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{Event}.
+
+    \section2 StateTypeId
+   This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{StateType}.
+
+    \section2 StateId
+   This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{State}.    
+
+    \section2 ActionTypeId
+   This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{ActionType}.
+
+    \section2 ActionId
+   This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{Action} and \l{RuleAction}.
+
+    \section2 RuleId
+   This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{guhserver::Rule}.
+
+    \section2 PairingTransactionId
+   This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a pairing transaction.
+
+*/
+

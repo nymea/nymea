@@ -23,8 +23,8 @@
     \class guhserver::TcpServer
     \brief This class represents the tcp server for guhd.
 
-    \ingroup core
-    \inmodule server
+    \ingroup server
+    \inmodule core
 
     \inherits TransportInterface
 

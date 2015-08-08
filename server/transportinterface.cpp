@@ -22,8 +22,8 @@
     \class guhserver::TransportInterface
     \brief This class provides an interface for the JSON servers.
 
-    \ingroup core
-    \inmodule server
+    \ingroup server
+    \inmodule core
 
     \sa WebSocketServer, TcpServer
 */

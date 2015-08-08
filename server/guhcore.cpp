@@ -23,8 +23,7 @@
     \class guhserver::GuhCore
     \brief The main entry point for the Guh Server and the place where all the messages are dispatched.
 
-    \ingroup core
-    \inmodule server
+    \inmodule core
 
     GuhCore is a singleton instance and the main entry point of the Guh daemon. It is responsible to
     instantiate, set up and connect all the other components.

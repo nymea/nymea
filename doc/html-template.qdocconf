@@ -8,8 +8,9 @@ HTML.postheader = \
     "  <div class=\"breadcrumb toolblock\">\n" \
     "    <ul>\n" \
     "      <li class=\"first\"><a href=\"index.html\">Home</a></li>\n" \
-    "      <!--  Breadcrumbs go here -->\n"
-
+    "      <li class=\"third\"><a href=\"guhserver.html\">Server</a></li>\n" \
+    "      <li class=\"second\"><a href=\"libguh-module.html\">Lib</a></li>\n" \
+    "      <li class=\"second\"><a href=\"plugins.html\">Plugins</a></li>\n" 
 HTML.postpostheader = \
     "    </ul>\n" \
     "  </div>\n" \

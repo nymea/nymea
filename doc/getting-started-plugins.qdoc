@@ -38,7 +38,7 @@
 
     The \b TARGET parameter definens the name of the resulting plugin lib file and should should have following name structure: 
 
-    \e{guh_deviceplugin\b<pluginName>} 
+    \tt {guh_deviceplugin\b<pluginName>} 
 
     In this example the pluginname is \e minimal, which means the lib file name will be \e guh_devicepluginminimal.so. You can check the name of the plugin in the "Project Messages" (\tt{alt + 6} in Qt Creator).
 
@@ -83,7 +83,7 @@
     \section2 devicepluginminimal.json
     The properties of a plugin will be definend with in the \tt JSON file containing all needed information for guh to load it. The name convention fot the json file is:
     
-    \e{deviceplugin\b{<pluginName>}.json}
+    \tt {deviceplugin\b{<pluginName>}.json}
 
     This file must have a clear, definend structure and looking like this:
 
@@ -124,7 +124,7 @@
     \section2 devicepluginminimal.h
     The main header file of the plugin. The naming convention is:
 
-    \e{deviceplugin\b<pluginName>.h}
+    \tt {deviceplugin\b<pluginName>.h}
     
     In this file you can find the main class of the plugin: \e DevicePluginMinimal. As you can see the \e DevicePluginMinimal inherits from the class \l{DevicePlugin}. You can check out the \l{DevicePlugin} class description to find how a \l{DevicePlugin} looks like.
 
@@ -157,7 +157,7 @@
         \section2 devicepluginminimal.cpp
     The implementation of the \l{DevicePlugin}. The naming convention is:
 
-    \e{deviceplugin\b<pluginName>.cpp}
+    \tt {deviceplugin\b<pluginName>.cpp}
     
     \code
         #include "devicepluginminimal.h"

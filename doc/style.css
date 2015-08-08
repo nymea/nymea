@@ -228,13 +228,21 @@
 /* end font style elements */
 
 /* global settings*/
-    .header, .footer
+    .header
     {
         display: block;
         clear: both;
         overflow: hidden;
         background: #404244;
         height: 11.5em;
+    }
+    .footer
+    {
+        display: block;
+        clear: both;
+        overflow: hidden;
+        background: #404244;
+        height: 3.5em;
     }
 /* end global settings*/
 
@@ -602,16 +610,16 @@
     .footer
     {
         color: #393735;
-        font-size: 1em;
+        font-size: 0.8em;
         text-align: center;
-        padding-top: 1.5em;
+        padding-top: 0.75em;
         padding-bottom: 1em;
         background-color: #E6E7E8;
         margin: 0;
     }
     .footer p
     {
-        margin: 0.25em
+        margin: 1.2em
     }
     .small
     {

@@ -24,8 +24,8 @@
     \brief The Engine that evaluates \l{Rule}{Rules} and finds
     \l{Action}{Actions} to be executed.
 
-    \ingroup core
-    \inmodule server
+    \ingroup rules
+    \inmodule core
 
     You can add, remove and update rules and query the engine for actions to be executed
     for a given \l{Event} described by an \l{EventDescriptor}.

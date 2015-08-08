@@ -22,8 +22,8 @@
     \class guhserver::WebSocketServer
     \brief This class represents the websocket server for guhd.
 
-    \ingroup core
-    \inmodule server
+    \ingroup server
+    \inmodule core
 
     \note The WebSocketServer is only available for builds with Qt version greater than Qt 5.3.0!
 

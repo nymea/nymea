@@ -3,19 +3,14 @@
     \title How to write a plugin
     \brief This tutorial shows you how to write a plugin for your own device / service / protocol.
 
-    
-
     \chapter Create the build environment    
     Assuming you are working an an Ubuntu system here are the steps how to set up the build environment. 
     
-    \section1 Install guh
-    
-    
-    
-    \section1 Install Qt
+ 
+    \section2 Install Qt
         
 
-    \section1 Install guh dependencys
+    \section2 Install guh dependencys
 
     \code
     $ sudo apt-get install guh libguh1-dev 

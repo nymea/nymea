@@ -18,6 +18,22 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::RestServer
+    \brief This class provides the REST API interface to the \l{WebServer}{WebServers}.
+
+    \ingroup server
+    \inmodule core
+
+    The \l{RestServer} class provides the server interface for a REST API call. The \l{RestServer}
+    will create a \l{WebServer} object. The \l{WebServer} will parse the \l{HttpRequest} and emits
+    the signal \l{WebServer::httpRequestReady()}. This signal will be catched from this \l{RestServer}
+    and processed by the corresponding \l{RestResource}. Once the \l{HttpRequest} is finished, the
+    \l{RestServer} will send a \l{HttpReply} back to the client using \l{WebServer::sendHttpReply()}.
+
+    \sa ServerManager, WebServer, HttpRequest, HttpReply
+*/
+
 #include "restserver.h"
 #include "loggingcategories.h"
 #include "httprequest.h"
@@ -29,6 +45,7 @@
 
 namespace guhserver {
 
+/*! Constructs a \l{RestServer} with the given \a sslConfiguration and \a parent. */
 RestServer::RestServer(const QSslConfiguration &sslConfiguration, QObject *parent) :
     QObject(parent)
 {

@@ -22,8 +22,8 @@
   \class guhserver::HttpRequest
   \brief Represents a HTTP request from a client to the guh \l{WebServer}.
 
-  \ingroup core
-  \inmodule server
+  \ingroup api
+  \inmodule core
 
   This class holds the header and the payload data of a network request from a client to the \l{WebServer}.
 

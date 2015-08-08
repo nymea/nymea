@@ -22,8 +22,8 @@
     \class guhserver::ServerManager
     \brief This class represents the manager of all server interfaces of the guh server.
 
-    \ingroup core
-    \inmodule server
+    \ingroup server
+    \inmodule core
 
     The \l{ServerManager} starts the \l{JsonRPCServer} and the \l{RestServer}. He also loads
     and provides the SSL configurations for the secure \l{WebServer} and \l{WebSocketServer}

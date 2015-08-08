@@ -71,18 +71,19 @@ void TestRestVendors::getVendors()
     // Get each of thouse vendors individualy
     foreach (const QVariant &vendor, vendorList) {
         QVariantMap vendorMap = vendor.toMap();
-        QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/vendors/%1").arg(vendorMap.value("id").toString())));
-        request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
-        clientSpy.clear();
-        QNetworkReply *reply = nam->get(request);
-        clientSpy.wait();
-        QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
-        int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-        QCOMPARE(statusCode, 200);
-        jsonDoc = QJsonDocument::fromJson(reply->readAll(), &error);
-        QCOMPARE(error.error, QJsonParseError::NoError);
-        reply->deleteLater();
-
+        if (!VendorId(vendorMap.value("id").toString()).isNull()) {
+            QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/vendors/%1").arg(vendorMap.value("id").toString())));
+            request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
+            clientSpy.clear();
+            QNetworkReply *reply = nam->get(request);
+            clientSpy.wait();
+            QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
+            int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+            QCOMPARE(statusCode, 200);
+            jsonDoc = QJsonDocument::fromJson(reply->readAll(), &error);
+            QCOMPARE(error.error, QJsonParseError::NoError);
+            reply->deleteLater();
+        }
     }
     nam->deleteLater();
 }

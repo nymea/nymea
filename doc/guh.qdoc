@@ -33,6 +33,9 @@
     \section1 How To's
     \list
         \li \l{How to write a plugin}
+        \li \l{Getting started}
+        \li \l{The plugin JSON File}
+        \li \l{Tutorial 1}{Tutorial 1 - The "Minimal" plugin}
     \endlist
 
     \section1 Quicklinks

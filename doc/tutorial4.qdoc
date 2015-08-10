@@ -1,0 +1,117 @@
+/*!
+    \page tutorial4.html
+    \title Tutorial 4 - The alternative "Power Button"
+    \brief This device demonstrates how a writable state works.
+    \ingroup tutorials
+  
+    In the fourth tutorial you will see how a \e writable \l State works. We use the \l DeviceClass \b {"Power Button"} from the previouse \l{Tutorial 3 - The "Power Button" device}{Tutorial 3} for that and create a new one called \b {"Alternative Power Button"}. It does exactly the same like the \b {"Power Button"} except it will be created in a different way for a good reason.
+
+    \section1 Add a new DeviceClass
+    Let's start again with the \tt devicepluginbuttons.json and append a new \l DeviceClass definition: 
+ 
+    \code    
+        ...
+        
+        },
+        {
+            "deviceClassId": "910b2f58-70dc-4da3-89ae-9e7393290ccb",
+            "idName": "alternativePowerButton",
+            "name": "Alternative Power Button",
+            "createMethods": ["user"],
+            "paramTypes": [
+                {
+                    "name": "name",
+                    "type": "QString",
+                    "defaultValue": "Alternative power button device default name"
+                }
+            ],
+            "stateTypes": [
+                {
+                    "id": "fa63c0b9-10e5-4280-9cc2-243bf27c05ad",
+                    "idName": "alternativePower",
+                    "name": "power",
+                    "type": "bool",
+                    "defaultValue": false,
+                    "writable": {}
+                }
+            ]
+        }
+        
+        ...
+    \endcode
+
+    As you can see, there is only one \tt bool \l State which has the property \e {"writable"}. This property indicates, that this \l State is writable and we need an \l Action for doing that. You can find more details about this property in \l {The StateType definition} documentation.
+
+    We learnend in the previouse tutorial that a \l State will allways generate an \l Event when he changes his \e {value}. This \l Event has the same UUID as the \l State which generated the \l Event. The same thing happens with the \l Action if you make a \l State writable. The devicemanager defines a new \l ActionType which has the same UUID as the \State which will be changed with the \l Action.
+
+    \tt {\l{StateTypeId} == \l{EventTypeId} == \l{ActionTypeId}}    
+    
+    This makes it possible for clients to link the \l Action to the \l State which will be changed to the \l Event which will be emitted if the \l State was changed. All the types have the same UUID and the same Param.
+
+    \section1 Writing the plugin
+    The implementation in the \tt executeAction() is almost the same like in the previous tutorial execpt the UUID variables changed and a new debug output was inseted to show the UUID.
+    
+    \code
+        ...
+
+        // Check the DeviceClassId for "Alternative Power Button"
+        if (device->deviceClassId() == alternativePowerButtonDeviceClassId) {
+
+            // check if this is the "set power" action
+            if (action.actionTypeId() == alternativePowerActionTypeId) {
+
+                // get the param value
+                Param powerParam = action.param("power");
+                bool power = powerParam.value().toBool();
+
+                qCDebug(dcButtons) << "Alternative power button" << device->paramValue("name").toString() << "set power to" << power;
+                qCDebug(dcButtons) << "ActionTypeId :" << action.actionTypeId().toString();
+                qCDebug(dcButtons) << "StateTypeId  :" << alternativePowerStateTypeId.toString();
+
+                // Set the "power" state
+                device->setStateValue(alternativePowerStateTypeId, power);
+
+                return DeviceManager::DeviceErrorNoError;
+            }
+            return DeviceManager::DeviceErrorActionTypeNotFound;
+        }
+
+        ...
+    \endcode
+
+
+    \section1 Test the plugin
+   Rebuild the whole project to make shore all changes are registered and install the plugin (see \l{Tutorial 1 - The "Minimal" plugin}{Tutorial 1}).
+
+    \list 1    
+        \li Start guh with following command:
+
+            \code
+                $ guhd -n -d Buttons
+            \endcode
+
+        \li Start guh-cli and add the a new \b {"Alternative Power Button"} \l Device. Give an appropriate name like \b {Alternative Light}.
+        \li Use guh-cli to check the current power \l State, it should be \tt false (default value).
+        \li Use guh-cli to execute the \b {set power} \l Action: 
+
+            \tt "Devices" \unicode{0x2192} \tt "Execute an action" \unicode{0x2192} \tt {"Your device name (Alternative Power Button)"} \unicode{0x2192} \tt {set power} \unicode{0x2192} \tt {true}
+    \endlist
+    
+    In the guhd stdout you should see the debug output from you plugin. You will notice that the ActionTypeId, StateTypeId and EventTypeId are equal.
+  
+    \code
+        ...
+
+        Connection: Tcp server: new client connected: "127.0.0.1"
+        Buttons: Alternative power button "Alternative Light" set power to true
+        Buttons: ActionTypeId : "{fa63c0b9-10e5-4280-9cc2-243bf27c05ad}"
+        Buttons: StateTypeId  : "{fa63c0b9-10e5-4280-9cc2-243bf27c05ad}"
+        RuleEngine: got event: Event(EventTypeId: "{fa63c0b9-10e5-4280-9cc2-243bf27c05ad}",
+                               DeviceId"{bb1c6795-2701-49e3-9529-45d87136b731}") "Alternative Power Button" 
+                               QUuid("{fa63c0b9-10e5-4280-9cc2-243bf27c05ad}")
+
+    \endcode
+  
+
+
+*/

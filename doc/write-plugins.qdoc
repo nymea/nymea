@@ -9,7 +9,10 @@
         \li \l{Tutorials}
             \list
                 \li \l{Tutorial 1 - The "Minimal" plugin}
-                \li \l{Tutorial 2 - The "NetworkInfo" plugin}
+                \li \l{Tutorial 2 - The "Buttons" plugin}
+                \li \l{Tutorial 3 - The "Power Button" device}
+                \li \l{Tutorial 4 - The alternative "Power Button"}
+                \li \l{Tutorial 5 - The "Network Info" plugin}
             \endlist
     \endlist
 */

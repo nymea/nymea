@@ -1,7 +1,7 @@
 /*!
     \page tutorial1.html
     \title Tutorial 1 - The "Minimal" plugin
-    \brief The smallest and simplest plugin possible
+    \brief This tutorial shows you how to open, edit, build and load the first plugin.
     \ingroup tutorials
 
     This first tutorial shows you how to open, edit, build and load the first plugin.
@@ -123,6 +123,8 @@
             If you started \b {\tt guhd} with the parameters \b {\tt{-n -d Minimal}} you will see following debug output:
 
             \code
+            ...
+
             Connection: Tcp server: new client connected: "127.0.0.1"
             Minimal: Hello word! Setting up a new device: "Minimal device"
             Minimal: The new device has the DeviceId "{b8d1f5a3-e892-4995-94b1-fa9aef662db2}"
@@ -133,6 +135,6 @@
             \endcode
     \endlist
     
-    Now you can take a look at \l{Tutorial 2 - The "NetworkInfo" plugin}.
+    Now you can take a look at \l{Tutorial 2 - The "Buttons" plugin}.
 
 */

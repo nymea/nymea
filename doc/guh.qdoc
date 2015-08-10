@@ -33,14 +33,14 @@
         \li \l{https://github.com/guh/guh/wiki/REST-Api-documentation}{REST}
     \endlist
 
-    \section1 How To's
-    Here you can find some tutorials for developing and working with the guh:
+    \section1 Write your own plugin
+    Here you can find some tutorials for developing and working with guh:
     \list
-        \li \l{How to write a plugin}
+        \li \l{Set up the build environment}
         \li \l{Getting started}
         \li \l{The plugin JSON File}
-        \li \l{Tutorial 1}{Tutorial 1 - The "Minimal" plugin}
-        \li \l{Tutorial 2}{Tutorial 2 - The "NetworkInfo" plugin}
+        \li \l{Tutorial 1 - The "Minimal" plugin}
+        \li \l{Tutorial 2 - The "NetworkInfo" plugin}
     \endlist
 
     \section1 Quicklinks

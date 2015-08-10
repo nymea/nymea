@@ -35,7 +35,7 @@
 */
 
 /*! \fn void guhserver::TransportInterface::clientDisconnected(const QUuid &clientId);
-    This signal is emitted when a new client with the given \a clientId has been connected.
+    This signal is emitted when a new client with the given \a clientId has been disconnected.
 
     \sa WebSocketServer, TcpServer
 */

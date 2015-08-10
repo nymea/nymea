@@ -1,6 +1,259 @@
 /*!
     \page tutorial2.html
-    \title Tutorial 2
+    \title Tutorial 2 - The "NetworkInfo" plugin
+    \brief The first plugin which actualy does something.
+    \ingroup tutorials
+    
+
+    In the second tutorial we make our own first plugin with the name \b {"Network Info"}. We will use this name for the naming concentions of the filenames. 
+    
+    This plugin will use the \l{NetworkManager} hardware resource to fetch the location and WAN ip of your internet connection from \l{http://ip-api.com/json}. It will have an \l Action called \e "update" which will refresh the \l{State}{States} of the \l{Device}.
+
+In order to get started with our new \b {"Network Info"} plugin we use the minimal plugin as template and start from there. Make a copy of the minimal folder and name the new folder \b networkinfo-diy. In this case \b{networkinfo-diy} because the folder \b networkinfo already exits from the \tt plugin-template repository.
+    
+    \section1 Create the basic structure
+    \code
+        $ cp -rv minimal/ networkinfo-diy
+        ‘minimal/’ -> ‘networkinfo-diy’
+        ‘minimal/plugins.pri’ -> ‘networkinfo-diy/plugins.pri’
+        ‘minimal/minimal.pro’ -> ‘networkinfo-diy/minimal.pro’
+        ‘minimal/devicepluginminimal.json’ -> ‘networkinfo-diy/devicepluginminimal.json’
+        ‘minimal/devicepluginminimal.h’ -> ‘networkinfo-diy/devicepluginminimal.h’
+        ‘minimal/devicepluginminimal.cpp’ -> ‘networkinfo-diy/devicepluginminimal.cpp’
+    \endcode
+    
+    \note Delete the minimal.pro.user file if there is any.
+    
+    Now we can rename the files using the plugin name convention:
+    \code
+        $ cd networkinfo-diy/
+        $ mv minimal.pro networkinfo.pro
+        $ mv devicepluginminimal.h devicepluginnetworkinfo.h
+        $ mv devicepluginminimal.cpp devicepluginnetworkinfo.cpp
+        $ mv devicepluginminimal.json devicepluginnetworkinfo.json
+    \endcode
+    
+    \section2 Change the \tt networkinfo.pro
+    Open the \tt networkinfo.pro file with the \e {Qt Creator} and open that file in the editor:
+
+    \code
+        include(plugins.pri)
+
+        TARGET = $$qtLibraryTarget(guh_devicepluginminimal)
+
+        message("Building $$deviceplugin$${TARGET}.so")
+
+        SOURCES += \
+            devicepluginminimal.cpp \
+
+        HEADERS += \
+            devicepluginminimal.h \
+
+    \endcode
+    
+    \list 1
+        \li Change the \tt TARGET name form \tt guh_devicepluginminimal \unicode{0x2192} \tt guh_devicepluginnetworkinfo
+        \li Change the SOURCES file from \tt devicepluginminimal.cpp \unicode{0x2192} \tt devicepluginnetworkinfo.cpp
+        \li Change the HEADERS file from \tt devicepluginminimal.h \unicode{0x2192} \tt devicepluginnetworkinfo.h
+    \endlist
+
+    Your file sould look now like this:
+    \code
+        include(plugins.pri)
+
+        TARGET = $$qtLibraryTarget(guh_devicepluginnetworkinfo)
+
+        message("Building $$deviceplugin$${TARGET}.so")
+
+        SOURCES += \
+            devicepluginnetworkinfo.cpp \
+
+        HEADERS += \
+            devicepluginnetworkinfo.h \
+    \endcode
+    
+    If you save the file, the header and source file should appear in the project structure of the \e {Qt Creator}.
+
+    \section2 Change the \tt devicepluginnetworkinfo.h
+    Open the \tt devicepluginnetworkinfo.h file.
+    
+    \code
+        #ifndef DEVICEPLUGINMINIMAL_H
+        #define DEVICEPLUGINMINIMAL_H
+
+        #include "plugin/deviceplugin.h"
+        #include "devicemanager.h"
+
+        class DevicePluginMinimal : public DevicePlugin
+        {
+            Q_OBJECT
+
+            Q_PLUGIN_METADATA(IID "guru.guh.DevicePlugin" FILE "devicepluginminimal.json")
+            Q_INTERFACES(DevicePlugin)
+
+        public:
+            explicit DevicePluginMinimal();
+
+            DeviceManager::HardwareResources requiredHardware() const override;
+            DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
+        };
+
+        #endif // DEVICEPLUGINMINIMAL_H
+    \endcode
+    
+    \list 1
+        \li Change the \tt {#ifndef}, \tt {#define} and \tt #define name from \tt DEVICEPLUGINMINIMAL_H \unicode{0x2192} \tt DEVICEPLUGINNETWORKINFO_H
+        \li Change the class name form \tt DevicePluginMinimal \unicode{0x2192} \tt DevicePluginNetworkInfo
+        \li Change in the \tt Q_PLUGIN_METADATA line the \tt FILE parameter from \tt "devicepluginminimal.json" \unicode{0x2192} \tt "devicepluginnetworkinfo.json" to set \l{The Plugin JSON file}.
+        \li Change the constructor name from \tt DevicePluginMinimal \unicode{0x2192} \tt DevicePluginNetworkInfo
+    \endlist
+
+    Your file sould look now like this:
+    
+    \code
+        #ifndef DEVICEPLUGINNETWORKINFO_H
+        #define DEVICEPLUGINNETWORKINFO_H
+
+        #include "plugin/deviceplugin.h"
+        #include "devicemanager.h"
+
+        class DevicePluginNetworkInfo : public DevicePlugin
+        {
+            Q_OBJECT
+
+            Q_PLUGIN_METADATA(IID "guru.guh.DevicePlugin" FILE "devicepluginnetworkinfo.json")
+            Q_INTERFACES(DevicePlugin)
+
+        public:
+            explicit DevicePluginNetworkInfo();
+
+            DeviceManager::HardwareResources requiredHardware() const override;
+            DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
+        };
+
+        #endif // DEVICEPLUGINNETWORKINFO_H
+    \endcode
+
+    \section2 Change the \tt devicepluginnetworkinfo.cpp
+
+    Open the \tt devicepluginnetworkinfo.h file.
+    
+    \code
+        #include "devicepluginminimal.h"
+        #include "plugininfo.h"
+
+        DevicePluginMinimal::DevicePluginMinimal()
+        {
+        }
+
+        DeviceManager::HardwareResources DevicePluginMinimal::requiredHardware() const
+        {
+            return DeviceManager::HardwareResourceNone;
+        }
+
+        DeviceManager::DeviceSetupStatus DevicePluginMinimal::setupDevice(Device *device)
+        {
+            Q_UNUSED(device)
+            qCDebug(dcMinimal) << "Hello word! Setting up a new device:" << device->name();
+            qCDebug(dcMinimal) << "The new device has the DeviceId" << device->id().toString();
+            qCDebug(dcMinimal) << device->params();
+
+            return DeviceManager::DeviceSetupStatusSuccess;
+        }
+    \endcode
+    
+    \list 1
+        \li Change the \tt {#include "devicepluginminimal.h"} \unicode{0x2192} \tt {#include "devicepluginnetworkinfo.h"}
+        \li Change in each method implementation the \tt DevicePluginMinimal \unicode{0x2192} \tt DevicePluginNetworkInfo namespace.
+    \endlist
+        
+    Your file sould look now like this:
+    
+    \code
+        #include "devicepluginnetworkinfo.h"
+        #include "plugininfo.h"
+
+        DevicePluginNetworkInfo::DevicePluginNetworkInfo()
+        {
+        }
+
+        DeviceManager::HardwareResources DevicePluginNetworkInfo::requiredHardware() const
+        {
+            return DeviceManager::HardwareResourceNone;
+        }
+
+        DeviceManager::DeviceSetupStatus DevicePluginNetworkInfo::setupDevice(Device *device)
+        {
+            Q_UNUSED(device)
+            qCDebug(dcMinimal) << "Hello word! Setting up a new device:" << device->name();
+            qCDebug(dcMinimal) << "The new device has the DeviceId" << device->id().toString();
+            qCDebug(dcMinimal) << device->params();
+
+            return DeviceManager::DeviceSetupStatusSuccess;
+        }
+    \endcode
+
+    The basic structure of our new \l{DevicePlugin} is finished. You may recognize that the \tt {plugininfo.h} file does not exist yet. You have to build the plugin to generate that file. Each time you change \l{The Plugin JSON file} this file will be new generated. Once the build step is finished, you can take a look at that file (curser in line \tt {#include "plugininfo.h"} and press \tt F2)
+
+    You will see in the build output following section:    
+    \code
+        /usr/bin/guh-generateplugininfo ../networkinfo-diy/devicepluginnetworkinfo.json plugininfo.h
+        ../networkinfo-diy/devicepluginnetworkinfo.json -> plugininfo.h
+         --> generate plugininfo.h
+        PluginId for plugin "Minimal plugin" = 6878754a-f27d-4007-a4e5-b030b55853f5
+        define VendorId MinimalVendorId = 3897e82e-7c48-4591-9a2f-0f56c55a96a4
+        define DeviceClassId minimalDeviceClassId = 7014e5f1-5b04-407a-a819-bbebd11fa372
+        define logging category: "dcMinimal"
+         --> generated successfully "plugininfo.h"
+         --> generate extern-plugininfo.h
+         --> generated successfully "extern-plugininfo.h"
+    \endcode
+    
+    This shows you how the \tt{plugininfo.h} and \tt{extern-plugininfo.h} will be generated. As you can see the UUID definitions and the logging category will be definend for the \b {Minimal} plugin because we have not changed yet \l{The Plugin JSON file}.
+
+    The generated \tt {plugininfo.h} file will look like this:
+    \code
+        #ifndef PLUGININFO_H
+        #define PLUGININFO_H
+        #include "typeutils.h"
+        #include <QLoggingCategory>
+
+        // Id definitions
+        PluginId pluginId = PluginId("6878754a-f27d-4007-a4e5-b030b55853f5");
+        VendorId minimalVendorId = VendorId("3897e82e-7c48-4591-9a2f-0f56c55a96a4");
+        DeviceClassId minimalDeviceClassId = DeviceClassId("7014e5f1-5b04-407a-a819-bbebd11fa372");
+
+        // Loging category
+        Q_DECLARE_LOGGING_CATEGORY(dcMinimal)
+        Q_LOGGING_CATEGORY(dcMinimal, "Minimal")
+
+        #endif // PLUGININFO_H    
+    \endcode
+
+    The generated \tt {extern-plugininfo.h} file will look like this:
+    \code
+        #ifndef EXTERNPLUGININFO_H
+        #define EXTERNPLUGININFO_H
+        #include "typeutils.h"
+        #include <QLoggingCategory>
+
+        // Id definitions
+        extern VendorId minimalVendorId;
+        extern DeviceClassId minimalDeviceClassId;
+
+        // Logging category definition
+        Q_DECLARE_LOGGING_CATEGORY(dcMinimal)
+
+        #endif // EXTERNPLUGININFO_H    
+    \endcode
+    
+    \section2 Change the \tt devicepluginnetworkinfo.json
+    
+
+
+
+
+
 
 */ 
 

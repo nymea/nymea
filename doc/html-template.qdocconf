@@ -8,19 +8,23 @@ HTML.postheader = \
     "  <div class=\"breadcrumb toolblock\">\n" \
     "    <ul>\n" \
     "      <li class=\"first\"><a href=\"index.html\">Home</a></li>\n" \
-    "      <li class=\"third\"><a href=\"guhserver.html\">Server</a></li>\n" \
-    "      <li class=\"second\"><a href=\"libguh-module.html\">Lib</a></li>\n" \
-    "      <li class=\"second\"><a href=\"plugins.html\">Plugins</a></li>\n" 
+    "      <li class=\"second\"><a href=\"guhserver.html\">Server</a></li>\n" \
+    "      <li class=\"third\"><a href=\"libguh-module.html\">Lib</a></li>\n" \
+    "      <li class=\"fourth\"><a href=\"plugins.html\">Plugins</a></li>\n" \
+    "      <li class=\"fifth\"><a href=\"api.html\">API</a></li>\n" \
+    "      <li class=\"sixth\"><a href=\"write-plugins.html\">Write Plugins</a></li>\n" 
+
 HTML.postpostheader = \
     "    </ul>\n" \
     "  </div>\n" \
     "</div>\n" \
     "<div class=\"content mainContent\">\n"
 
+
 HTML.footer = \
     "<div class=\"footer\">\n" \
     "    <p>\n" \
-    "      <acronym title=\"Copyright\">&copy;</acronym> 2013-2015 ARGE guh. All rights reserved. <a href=\"license.html\">License</a>" \
+    "      <acronym title=\"Copyright\">&copy;</acronym> 2013-2015 guh. All rights reserved.  <a href=\"license.html\">License</a>" \
     "    </p>\n" \
     "</div>\n" \
 

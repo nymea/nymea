@@ -1,37 +1,19 @@
 /*!
     \page write-plugins.html
-    \title How to write a plugin
-    \brief This tutorial shows you how to write a plugin for your own device / service / protocol.
+    \title Write your own plugin
 
-    \chapter Create the build environment    
-    Assuming you are working an an Ubuntu system here are the steps how to set up the build environment. 
-    
- 
-    \section2 Install Qt
-        
-
-    \section2 Install guh dependencys
-
-    \code
-    $ sudo apt-get install guh libguh1-dev 
-    \endcode
-    
-    \code
-    $ git clone https://github.com/guh/plugin-templates.git
-    \endcode
-
-    \chapter Tutorials
     \list
+        \li \l{Set up the build environment}
         \li \l{Getting started}
         \li \l{The plugin JSON File}
-        \li \l{Tutorial 1}{Tutorial 1 - The "Minimal" plugin}
+        \li \l{Tutorials}
+            \list
+                \li \l{Tutorial 1 - The "Minimal" plugin}
+                \li \l{Tutorial 2 - The "Buttons" plugin}
+                \li \l{Tutorial 3 - The "Power Button" device}
+                \li \l{Tutorial 4 - The alternative "Power Button"}
+                \li \l{Tutorial 5 - The "Network Info" plugin}
+            \endlist
     \endlist
-
 */
-
-
-
-
-
-
 

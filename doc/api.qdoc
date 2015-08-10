@@ -1,0 +1,14 @@
+/*!
+    \page api.html
+    \title Overview of guh API's
+
+    The guh server provides two different API's:
+    \list
+        \li \l{JSON-RPC API}{JSON-RPC}
+        \li \l{https://github.com/guh/guh/wiki/REST-Api-documentation}{REST}
+    \endlist
+
+    
+
+*/
+

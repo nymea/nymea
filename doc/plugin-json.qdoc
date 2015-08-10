@@ -15,16 +15,16 @@
     Each \l{DevicePlugin}{Plugin} in guh will be defined in the corresponding JSON file. You can find information how to read JSON \l{http://json.org/}{here}. This file will be loaded from the \l{DeviceManager} to define the plugin and the corresponding DeviceClasses internal. 
 
 
-    \section1 The \e guh-generateplugininfo precompiler
+    \section1 The \b {\tt guh-generateplugininfo} precompiler
     
     The \tt {\b guh-generateplugininfo} precompiler will parse this file and generates a \tt plugininfo.h and a \tt extern-plugininfo.h file containing the definitions of:
     \list
-        \li \l{PluginId}: <\e idName>PluginId -> the defined UUID for the \l{DevicePlugin}.     
-        \li \l{VendorId}: <\e idName>VendorId -> the defined UUID for the corresponding \l{Vendor}. 
-        \li \l{DeviceClassId}: <\e idName>DeviceClassId -> the definend UUID for the corresponding \l{DeviceClass}.
-        \li \l{ActionTypeId}: <\e idName>ActionTypeId -> the defined UUID for the corresponding \l{ActionType}.
-        \li \l{StateTypeId}: <\e idName>StateTypeId -> the defidefinednend UUID for the corresponding \l{StateType}.
-        \li \l{EventTypeId}:  <\e idName>EventTypeId -> the defined UUID for the corresponding \l{EventType}.
+        \li \l{PluginId}: <\e idName>PluginId \unicode{0x2192} the defined UUID for the \l{DevicePlugin}.     
+        \li \l{VendorId}: <\e idName>VendorId \unicode{0x2192} the defined UUID for the corresponding \l{Vendor}. 
+        \li \l{DeviceClassId}: <\e idName>DeviceClassId \unicode{0x2192} the definend UUID for the corresponding \l{DeviceClass}.
+        \li \l{ActionTypeId}: <\e idName>ActionTypeId \unicode{0x2192} the defined UUID for the corresponding \l{ActionType}.
+        \li \l{StateTypeId}: <\e idName>StateTypeId \unicode{0x2192} the defidefinednend UUID for the corresponding \l{StateType}.
+        \li \l{EventTypeId}:  <\e idName>EventTypeId \unicode{0x2192} the defined UUID for the corresponding \l{EventType}.
         \li Logging Category
     \endlist
 

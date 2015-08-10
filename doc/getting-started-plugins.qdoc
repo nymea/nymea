@@ -1,15 +1,46 @@
 /*!
     \page getting-started-plugins.html
     \title Getting Started
+    \brief Understanding the basic concept of guh plugins
+
+    Plugins in guh are used to exand the functionalitys and capabilitys of the guh server. A plugin is basically a shared library, which will be loaded dynamically from the guh server during the start up process. Each plugin has a \e name, a \e uuid and a list of supported \e vendors which will be visible in the system once the plugin is loaded. Each of thouse \l{Vendor}{Vendors} contains a list of supported \l{DeviceClass}{DeviceClasses}. A \l{DeviceClass} describes how the supported \l{Device} looks like, how it will be created (\l{DeviceClass::CreateMethod}{CreateMethod}), how the setup (\l{DeviceClass::SetupMethod}{SetupMethod}) looks like and what you can do with the \l{Device}.
+
+    \section1 Devices
+    A device in guh can represent a real device, a gateway or even a service like weather. When you want to represent you own device / service in guh, you should try to abstract that device and think in terms like:
     
+    \list
+        \li \l{ParamType}{ParamTypes} \unicode{0x2192} A \l{Device} can have \l{Param}{Params}, which will be needed to set up the device (like IP addresses or device configurations) and give information for the user like name or location. The \l{ParamType} represents the description of an actual \l{Param}.
+        \li \l{StateType}{StateTypes} \unicode{0x2192} A \l{Device} can have \l{State}{States}, which basically represent a value of a \l{Device} like \e {current temperature} or \e ON/OFF. The \l{StateType} represents the description of an actual \l{State}.
+        \li \l{EventType}{EventTypes} \unicode{0x2192} A \l{Device} can emit \l{Event}{Events}, which basically represent a signal. An example of an \l{Event} could be: \e {Button pressed}. An \l{Event} can have \l{Param}{Params} to give the possibility to pass information with the signal. The \l{EventType} represents the description of an actual \l{Event}. 
+        \li \l{ActionType}{ActionTypes} \unicode{0x2192} A \l{Device} can execute \l{Action}{Actions}, which represent basically a method for the \l{Device} which the user can execute. An example of an \l{Action} could be: \e {Set temperature}. An \l{Action} can have \l{Param}{Params} to give the possibility to parameterize the action. The \l{ActionType} represents the description of an actual \l{Action}.
+    \endlist
+
+    The \l{DeviceClass} represents the description of an actual \l{Device}.
+
+    \section1 Hardware resources
+    The \e libguh provides a list of \l{Hardware Resources}{HardwareResources}, which can be used in every plugin. When sou start writing a plugin, you need to know which resource you will need. Each resource provides it's own interface for a \l{DevicePlugin}. In the plugin you don't have to take care about the resource. 
+    
+        
+    \section1 Getting started with a plugin
     In order to show how a plugin ist structured here is an example of the most minimalistic device plugin possible for the guh system.
     
-    \chapter Basic structure
-    The name of the plugin should be clear and inform about the content in one word. In this first minimalistic example the \b <pluginName> is \e "minimal".
 
-    The basic structure of the minimal plugin looks like this:
+    For an easier start we provide a set of plugin templates which can be used for your own plugin and to have a basic for the tutorials described in this documentation. You can get the templates with following command:
 
     \code
+    $ git clone https://github.com/guh/plugin-templates.git
+    \endcode
+
+    This will create the \tt plugin-templates folder containing all templates and examples you will need to write your own plugin. Let's start with the smallest, simplest plugin.
+
+    \section2 Basic structure
+    
+    The name of the plugin should be clear and inform about the content in one word. In this first minimalistic example the \b <pluginName> is \e "minimal".
+
+    The basic structure of the \e minimal plugin looks like this:
+
+    \code
+        $ cd plugin-templates
         $ ls -l minimal/ 
 
         devicepluginminimal.cpp
@@ -19,7 +50,7 @@
         plugins.pri
     \endcode    
 
-    \section2 minimal.pro
+    \section3 minimal.pro
     The \tt minimal.pro file is the project file of the plugin, which can be openend with the \tt{Qt Creator}. The name of this file should be the same as the folder name of the project. In this example the name would be \e "minimal".
 
     \code
@@ -46,7 +77,7 @@
 
 
 
-    \section2 plugins.pri
+    \section3 plugins.pri
     The \tt plugins.pri file contains all relevant definitions and configuration to build a plugin. Each plugin must contain this file and \underline{should not} be changed. In this file the precompiler \b guh-generateplugininfo will be called.
     \code
         TEMPLATE = lib
@@ -80,7 +111,7 @@
     \endcode
 
 
-    \section2 devicepluginminimal.json
+    \section3 devicepluginminimal.json
     The properties of a plugin will be definend with in the \tt JSON file containing all needed information for guh to load it. The name convention fot the json file is:
     
     \tt {deviceplugin\b{<pluginName>}.json}
@@ -121,7 +152,7 @@
 
     In this minimal example of a device plugin we have one \l{Vendor} ("Minimal vendor") with the VendorId \tt {3897e82e-7c48-4591-9a2f-0f56c55a96a4}, which contains one \l{DeviceClass} with the name "Minimal device". The \l{DeviceClass} has one QString \l{Param} called \e name.
 
-    \section2 devicepluginminimal.h
+    \section3 devicepluginminimal.h
     The main header file of the plugin. The naming convention is:
 
     \tt {deviceplugin\b<pluginName>.h}
@@ -154,7 +185,7 @@
 
     As you can see this class has two methods which override the corresponding method in the \l{DevicePlugin} class. These two methods are pure virtual, which meas you \underline{must} implement them.     
 
-        \section2 devicepluginminimal.cpp
+        \section3 devicepluginminimal.cpp
     The implementation of the \l{DevicePlugin}. The naming convention is:
 
     \tt {deviceplugin\b<pluginName>.cpp}
@@ -181,4 +212,6 @@
         }
     \endcode
     
+    You can start with \l{Tutorial 1 - The "Minimal" plugin}.
+
 */

@@ -1,10 +1,28 @@
 include(html-template.qdocconf)
 
-project = guh
+project = guh | documentation
 description = Gear up your Home!
+
+dita.metadata.default.author      = Simon Stürz
+dita.metadata.default.permissions = all
+dita.metadata.default.publisher   = guh
+dita.metadata.default.copyryear = 2015
+dita.metadata.default.copyrholder = Simon Stürz
+dita.metadata.default.audience = programmer
+
+defines = DECLARE_TYPE_ID
 
 outputdir = html
 outputformats = HTML
+
+language = Cpp
+
+naturallanguage         = en_US
+outputencoding          = UTF-8
+sourceencoding          = UTF-8
+
+syntaxhighlighting = true
+versionsym = GUH_VERSION_STRING
 
 headerdirs = ..
 headers.fileextensions = "*.h"
@@ -15,4 +33,5 @@ exampledirs = ..
 
 sourcedirs = ..
 sources.fileextensions = "*.cpp *.qdoc"
+
 

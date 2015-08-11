@@ -1,5 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -33,25 +35,48 @@ class DevicePluginLgSmartTv : public DevicePlugin
 public:
     explicit DevicePluginLgSmartTv();
 
-
+    DeviceManager::HardwareResources requiredHardware() const override;
     DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
     DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
-    DeviceManager::HardwareResources requiredHardware() const override;
-    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
-    void upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &upnpDeviceDescriptorList) override;
-    void upnpNotifyReceived(const QByteArray &notifyData);
-
     void deviceRemoved(Device *device) override;
+
+    void upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &upnpDeviceDescriptorList) override;
+
+    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
+    DeviceManager::DeviceError displayPin(const PairingTransactionId &pairingTransactionId, const DeviceDescriptor &deviceDescriptor) override;
+    DeviceManager::DeviceSetupStatus confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret) override;
+
+    void networkManagerReplyReady(QNetworkReply *reply) override;
 
     void guhTimer() override;
 
-    QHash<TvDevice*, Device*> m_tvList;
+private:
+    QHash<TvDevice *, Device *> m_tvList;
+    QHash<QString, QString> m_tvKeys;
+
+    // first pairing setup
+    QHash<QNetworkReply *, PairingTransactionId> m_setupPairingTv;
+    QHash<QNetworkReply *, PairingTransactionId> m_setupEndPairingTv;
+    QList<QNetworkReply *> m_showPinReply;
+
+    // async setup
+    QHash<QNetworkReply *, Device *> m_asyncSetup;
+    QHash<QNetworkReply *, Device *> m_pairRequests;
+    QList<QNetworkReply *> m_deleteTv;
+
+    // action requests
+    QHash<QNetworkReply *, ActionId> m_asyncActions;
+
+    // update requests
+    QHash<QNetworkReply *, Device *> m_volumeInfoRequests;
+    QHash<QNetworkReply *, Device *> m_channelInfoRequests;
+
+    void pairTvDevice(Device *device, const bool &setup = false);
+    void unpairTvDevice(Device *device);
+    void refreshTv(Device *device);
 
 private slots:
-    void pairingFinished(const bool &success);
-    void sendingCommandFinished(const bool &success, const ActionId &actionId);
-    void statusChanged();
-
+    void stateChanged();
 };
 
 #endif // DEVICEPLUGINLGSMARTTV_H

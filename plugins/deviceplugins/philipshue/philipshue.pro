@@ -6,16 +6,18 @@ QT += network
 
 SOURCES += \
     devicepluginphilipshue.cpp \
-    discovery.cpp \
-    huebridgeconnection.cpp \
-    light.cpp
+    #huebridgeconnection.cpp \
+    #light.cpp \
+    huebridge.cpp \
+    huelight.cpp
 
 HEADERS += \
     devicepluginphilipshue.h \
-    discovery.h \
-    huebridgeconnection.h \
-    light.h \
-    lightinterface.h
+    #huebridgeconnection.h \
+    #light.h \
+    #lightinterface.h \
+    huebridge.h \
+    huelight.h
 
 
 

@@ -1,5 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -17,6 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "wallthermostat.h"
+#include "extern-plugininfo.h"
 
 WallThermostat::WallThermostat(QObject *parent) :
     MaxDevice(parent)

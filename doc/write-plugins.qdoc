@@ -1,0 +1,19 @@
+/*!
+    \page write-plugins.html
+    \title Write your own plugin
+
+    \list
+        \li \l{Set up the build environment}
+        \li \l{Getting started}
+        \li \l{The plugin JSON File}
+        \li \l{Tutorials}
+            \list
+                \li \l{Tutorial 1 - The "Minimal" plugin}
+                \li \l{Tutorial 2 - The "Buttons" plugin}
+                \li \l{Tutorial 3 - The "Power Button" device}
+                \li \l{Tutorial 4 - The alternative "Power Button"}
+                \li \l{Tutorial 5 - The "Network Info" plugin}
+            \endlist
+    \endlist
+*/
+

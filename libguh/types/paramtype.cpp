@@ -1,5 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -15,11 +18,12 @@
  *  along with guh. If not, see <http://www.gnu.org/licenses/>.            *
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 /*!
     \class ParamType
     \brief Describes a certain ParamType.
 
-    \ingroup types
+    \ingroup guh-types
     \inmodule libguh
 
     \sa Device, Param, ParamDescriptor
@@ -33,7 +37,9 @@ ParamType::ParamType(const QString &name, const QVariant::Type type, const QVari
     m_name(name),
     m_type(type),
     m_defaultValue(defaultValue),
-    m_inputType(Types::InputTypeNone)
+    m_inputType(Types::InputTypeNone),
+    m_unit(Types::UnitNone),
+    m_readOnly(false)
 {
 }
 
@@ -109,6 +115,18 @@ void ParamType::setInputType(const Types::InputType &inputType)
     m_inputType = inputType;
 }
 
+/*! Returns the unit of this ParamType. */
+Types::Unit ParamType::unit() const
+{
+    return m_unit;
+}
+
+/*! Sets the unit of this ParamType to the given \a unit. */
+void ParamType::setUnit(const Types::Unit &unit)
+{
+    m_unit = unit;
+}
+
 /*! Returns the limits of this ParamType. limits(minValue, maxValue). */
 QPair<QVariant, QVariant> ParamType::limits() const
 {
@@ -134,7 +152,19 @@ void ParamType::setAllowedValues(const QList<QVariant> allowedValues)
     m_allowedValues = allowedValues;
 }
 
-/*! Writes the name, type defaultValue, min and max value of the given \a paramType to \a dbg. */
+/*! Returns false if this ParamType is writable by the user. By default a ParamType is always writable. */
+bool ParamType::readOnly() const
+{
+    return m_readOnly;
+}
+
+/*! Sets this ParamType \a readOnly. By default a ParamType is always writable. */
+void ParamType::setReadOnly(const bool &readOnly)
+{
+    m_readOnly = readOnly;
+}
+
+/*! Writes the name, type defaultValue, min value, max value and readOnly of the given \a paramType to \a dbg. */
 QDebug operator<<(QDebug dbg, const ParamType &paramType)
 {
     dbg.nospace() << "ParamType(Name: " << paramType.name()
@@ -142,6 +172,8 @@ QDebug operator<<(QDebug dbg, const ParamType &paramType)
                   << ", Default:" << paramType.defaultValue()
                   << ", Min:" << paramType.minValue()
                   << ", Max:" << paramType.maxValue()
+                  << ", Allowed values:" << paramType.allowedValues()
+                  << ", ReadOnly:" << paramType.readOnly()
                   << ")";
 
     return dbg.space();

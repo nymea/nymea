@@ -1,5 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -21,6 +24,8 @@
 
 #include "jsonhandler.h"
 
+namespace guhserver {
+
 class EventHandler : public JsonHandler
 {
     Q_OBJECT
@@ -35,5 +40,7 @@ signals:
 private slots:
     void eventTriggered(const Event &event);
 };
+
+}
 
 #endif // EVENTHANDLER_H

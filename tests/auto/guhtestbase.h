@@ -1,20 +1,23 @@
-/****************************************************************************
- *                                                                          *
- *  This file is part of guh.                                               *
- *                                                                          *
- *  Guh is free software: you can redistribute it and/or modify             *
- *  it under the terms of the GNU General Public License as published by    *
- *  the Free Software Foundation, version 2 of the License.                 *
- *                                                                          *
- *  Guh is distributed in the hope that it will be useful,                  *
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of          *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
- *  GNU General Public License for more details.                            *
- *                                                                          *
- *  You should have received a copy of the GNU General Public License       *
- *  along with guh.  If not, see <http://www.gnu.org/licenses/>.            *
- *                                                                          *
- ***************************************************************************/
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
+ *  This file is part of guh.                                              *
+ *                                                                         *
+ *  Guh is free software: you can redistribute it and/or modify            *
+ *  it under the terms of the GNU General Public License as published by   *
+ *  the Free Software Foundation, version 2 of the License.                *
+ *                                                                         *
+ *  Guh is distributed in the hope that it will be useful,                 *
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of         *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          *
+ *  GNU General Public License for more details.                           *
+ *                                                                         *
+ *  You should have received a copy of the GNU General Public License      *
+ *  along with guh. If not, see <http://www.gnu.org/licenses/>.            *
+ *                                                                         *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #ifndef GUHTESTBASE_H
 #define GUHTESTBASE_H
@@ -28,6 +31,7 @@
 #include <QObject>
 #include <QUuid>
 #include <QVariantMap>
+#include <QSignalSpy>
 #include <QtTest>
 
 extern DeviceClassId mockDeviceClassId;
@@ -46,6 +50,8 @@ extern EventTypeId mockEvent2Id;
 extern StateTypeId mockIntStateId;
 extern StateTypeId mockBoolStateId;
 
+using namespace guhserver;
+
 class MockTcpServer;
 
 class GuhTestBase : public QObject
@@ -60,6 +66,10 @@ protected slots:
 
 protected:
     QVariant injectAndWait(const QString &method, const QVariantMap &params = QVariantMap());
+    QVariant checkNotification(const QSignalSpy &spy, const QString &notification);
+
+    bool enableNotifications();
+    bool disableNotifications();
 
     inline void verifyError(const QVariant &response, const QString &fieldName, const QString &error)
     {
@@ -85,6 +95,30 @@ protected:
         verifyError(response, "deviceError", JsonTypes::deviceErrorToString(error));
     }
 
+    inline void verifyParams(const QVariantList &requestList, const QVariantList &responseList, bool allRequired = true)
+    {
+        if (allRequired)
+            QVERIFY2(requestList.count() == responseList.count(), "Not the same count of param in response.");
+        foreach (const QVariant &requestParam, requestList) {
+            bool found = false;
+            foreach (const QVariant &responseParam, responseList) {
+                if (requestParam.toMap().value("name") == responseParam.toMap().value("name")){
+                    QCOMPARE(requestParam.toMap().value("value"), responseParam.toMap().value("value"));
+                    found = true;
+                    break;
+                }
+            }
+            if (allRequired)
+                QVERIFY2(found, "Param missing");
+        }
+    }
+
+    // just for debugging
+    inline void printJson(const QVariant &response) {
+        QJsonDocument jsonDoc = QJsonDocument::fromVariant(response);
+        qDebug() << jsonDoc.toJson();
+    }
+
     void restartServer();
 
 protected:
@@ -100,8 +134,6 @@ protected:
 
     DeviceId m_mockDeviceId;
 
-    QString m_deviceSettings;
-    QString m_rulesSettings;
 };
 
 #endif // GUHTESTBASE_H

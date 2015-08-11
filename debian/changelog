@@ -1,3 +1,21 @@
+guh (0.6.0) vivid; urgency=medium
+
+  * Add websocket server
+
+ -- Simon Stürz <simon.stuerz@guh.guru>  Sat, 04 Aug 2015 16:13:43 +0200
+
+guh (0.5.0) vivid; urgency=medium
+
+  * Add webserver and REST API
+
+ -- Simon Stürz <simon.stuerz@guh.guru>  Sat, 01 Aug 2015 14:52:12 +0200
+
+guh (0.4.0) vivid; urgency=medium
+
+  * add EditDevice and notifications
+
+ -- Simon Stürz <simon.stuerz@guh.guru>  Wed, 06 May 2015 10:13:58 +0200
+
 guh (0.3.0) utopic; urgency=medium
 
   * update rule engine and many other small changes
@@ -8,13 +26,13 @@ guh (0.2.0) UNRELEASED; urgency=medium
 
   * split plugins into dynamic libs and packages
 
- -- Michael Zanetti <micha@noneyet>  Sat, 11 Oct 2014 05:09:41 +0200
+ -- Michael Zanetti <michael_zanetti@gmx.net>  Sat, 11 Oct 2014 05:09:41 +0200
 
 guh (0.1.8) utopic; urgency=medium
 
   * allow calling AddRule with a single eventDescriptor but also with a list
 
- -- Michael Zanetti <micha@noneyet>  Sun, 15 Jun 2014 00:33:36 +0200
+ -- Michael Zanetti <michael_zanetti@gmx.net>  Sun, 15 Jun 2014 00:33:36 +0200
 
 guh (0.1.7) utopic; urgency=medium
 

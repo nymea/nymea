@@ -1,5 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -20,8 +23,11 @@
 
 #include "guhcore.h"
 #include "ruleengine.h"
+#include "loggingcategories.h"
 
 #include <QDebug>
+
+namespace guhserver {
 
 RulesHandler::RulesHandler(QObject *parent) :
     JsonHandler(parent)
@@ -30,9 +36,10 @@ RulesHandler::RulesHandler(QObject *parent) :
     QVariantMap returns;
 
     params.clear(); returns.clear();
-    setDescription("GetRules", "Get all configured rules");
+    setDescription("GetRules", "Get the descriptions of all configured rules. If you need more information about a specific rule use the "
+                   "method Rules.GetRuleDetails.");
     setParams("GetRules", params);
-    returns.insert("ruleIds", QVariantList() << JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    returns.insert("ruleDescriptions", QVariantList() << JsonTypes::ruleDescriptionRef());
     setReturns("GetRules", returns);
 
     params.clear(); returns.clear();
@@ -44,8 +51,8 @@ RulesHandler::RulesHandler(QObject *parent) :
     setReturns("GetRuleDetails", returns);
 
     params.clear(); returns.clear();
-    setDescription("AddRule", "Add a rule. You can describe rules by one or many EventDesciptors and a StateEvaluator. Note that only"
-                   "one of either eventDescriptor or eventDescriptorList may be passed at a time. A rule can be created but left disabled,"
+    setDescription("AddRule", "Add a rule. You can describe rules by one or many EventDesciptors and a StateEvaluator. Note that only "
+                   "one of either eventDescriptor or eventDescriptorList may be passed at a time. A rule can be created but left disabled, "
                    "meaning it won't actually be executed until set to enabled. If not given, enabled defaults to true.");
     params.insert("o:eventDescriptor", JsonTypes::eventDescriptorRef());
     params.insert("o:eventDescriptorList", QVariantList() << JsonTypes::eventDescriptorRef());
@@ -60,6 +67,25 @@ RulesHandler::RulesHandler(QObject *parent) :
     returns.insert("ruleError", JsonTypes::ruleErrorRef());
     returns.insert("o:ruleId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     setReturns("AddRule", returns);
+
+    params.clear(); returns.clear(); actions.clear();
+    setDescription("EditRule", "Edit the parameters of a rule. The configuration of the rule with the given ruleId "
+                   "will be replaced with the new given configuration. In ordert to enable or disable a Rule, please use the "
+                   "methods \"Rules.EnableRule\" and \"Rules.DisableRule\". If successfull, the notification \"Rule.RuleConfigurationChanged\" "
+                   "will be emitted.");
+    params.insert("ruleId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    params.insert("name", JsonTypes::basicTypeToString(JsonTypes::String));
+    params.insert("o:eventDescriptor", JsonTypes::eventDescriptorRef());
+    params.insert("o:eventDescriptorList", QVariantList() << JsonTypes::eventDescriptorRef());
+    params.insert("o:stateEvaluator", JsonTypes::stateEvaluatorRef());
+    params.insert("o:exitActions", QVariantList() << JsonTypes::ruleActionRef());
+    params.insert("o:enabled", JsonTypes::basicTypeToString(JsonTypes::Bool));
+    actions.append(JsonTypes::ruleActionRef());
+    params.insert("actions", actions);
+    setParams("EditRule", params);
+    returns.insert("ruleError", JsonTypes::ruleErrorRef());
+    returns.insert("o:rule", JsonTypes::ruleRef());
+    setReturns("EditRule", returns);
 
     params.clear(); returns.clear();
     setDescription("RemoveRule", "Remove a rule");
@@ -76,18 +102,47 @@ RulesHandler::RulesHandler(QObject *parent) :
     setReturns("FindRules", returns);
 
     params.clear(); returns.clear();
-    setDescription("EnableRule", "Enabled a rule that has previously been disabled.");
+    setDescription("EnableRule", "Enabled a rule that has previously been disabled."
+                   "If successfull, the notification \"Rule.RuleConfigurationChanged\" will be emitted.");
     params.insert("ruleId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     setParams("EnableRule", params);
     returns.insert("ruleError", JsonTypes::ruleErrorRef());
     setReturns("EnableRule", returns);
 
     params.clear(); returns.clear();
-    setDescription("DisableRule", "Disable a rule. The rule won't be triggered by it's events or state changes while it is disabled.");
+    setDescription("DisableRule", "Disable a rule. The rule won't be triggered by it's events or state changes while it is disabled. "
+                   "If successfull, the notification \"Rule.RuleConfigurationChanged\" will be emitted.");
     params.insert("ruleId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     setParams("DisableRule", params);
     returns.insert("ruleError", JsonTypes::ruleErrorRef());
     setReturns("DisableRule", returns);
+
+    // Notifications
+    params.clear(); returns.clear();
+    setDescription("RuleRemoved", "Emitted whenever a Rule was removed.");
+    params.insert("ruleId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    setParams("RuleRemoved", params);
+
+    params.clear(); returns.clear();
+    setDescription("RuleAdded", "Emitted whenever a Rule was added.");
+    params.insert("rule", JsonTypes::ruleRef());
+    setParams("RuleAdded", params);
+
+    params.clear(); returns.clear();
+    setDescription("RuleActiveChanged", "Emitted whenever the active state of a Rule changed.");
+    params.insert("ruleId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    params.insert("active", JsonTypes::basicTypeToString(JsonTypes::Bool));
+    setParams("RuleActiveChanged", params);
+
+    params.clear(); returns.clear();
+    setDescription("RuleConfigurationChanged", "Emitted whenever the configuration of a Rule changed.");
+    params.insert("rule", JsonTypes::ruleRef());
+    setParams("RuleConfigurationChanged", params);
+
+    connect(GuhCore::instance(), &GuhCore::ruleAdded, this, &RulesHandler::ruleAddedNotification);
+    connect(GuhCore::instance(), &GuhCore::ruleRemoved, this, &RulesHandler::ruleRemovedNotification);
+    connect(GuhCore::instance(), &GuhCore::ruleActiveChanged, this, &RulesHandler::ruleActiveChangedNotification);
+    connect(GuhCore::instance(), &GuhCore::ruleConfigurationChanged, this, &RulesHandler::ruleConfigurationChangedNotification);
 }
 
 QString RulesHandler::name() const
@@ -99,12 +154,8 @@ JsonReply* RulesHandler::GetRules(const QVariantMap &params)
 {
     Q_UNUSED(params)
 
-    QVariantList rulesList;
-    foreach (const RuleId &ruleId, GuhCore::instance()->ruleIds()) {
-        rulesList.append(ruleId);
-    }
     QVariantMap returns;
-    returns.insert("ruleIds", rulesList);
+    returns.insert("ruleDescriptions", JsonTypes::packRuleDescriptions());
 
     return createReply(returns);
 }
@@ -123,133 +174,107 @@ JsonReply *RulesHandler::GetRuleDetails(const QVariantMap &params)
 
 JsonReply* RulesHandler::AddRule(const QVariantMap &params)
 {
-    if (params.contains("eventDescriptor") && params.contains("eventDescriptorList")) {
+    // check rule consistency
+    RuleEngine::RuleError ruleConsistencyError = JsonTypes::verifyRuleConsistency(params);
+    if (ruleConsistencyError !=  RuleEngine::RuleErrorNoError) {
         QVariantMap returns;
-        qWarning() << "Only one of eventDesciptor or eventDescriptorList may be used.";
-        returns.insert("ruleError", JsonTypes::ruleErrorToString(RuleEngine::RuleErrorInvalidParameter));
+        returns.insert("ruleError", JsonTypes::ruleErrorToString(ruleConsistencyError));
         return createReply(returns);
     }
 
-    if (params.contains("eventDescriptor") || params.contains("eventDescriptorList")) {
-        if (params.contains("exitActions")) {
-            QVariantMap returns;
-            qWarning() << "The exitActions will never be executed if the rule contains an eventDescriptor.";
-            returns.insert("ruleError", JsonTypes::ruleErrorToString(RuleEngine::RuleErrorInvalidRuleFormat));
-            return createReply(returns);
-        }
-    }
-
-    // Check and unpack eventDescriptors
-    QList<EventDescriptor> eventDescriptorList;
-    if (params.contains("eventDescriptor")) {
-        QVariantMap eventMap = params.value("eventDescriptor").toMap();
-        qDebug() << "unpacking eventDescriptor" << eventMap;
-        eventDescriptorList.append(JsonTypes::unpackEventDescriptor(eventMap));
-    } else if (params.contains("eventDescriptorList")) {
-        QVariantList eventDescriptors = params.value("eventDescriptorList").toList();
-        qDebug() << "unpacking eventDescriptorList:" << eventDescriptors;
-        foreach (const QVariant &eventVariant, eventDescriptors) {
-            QVariantMap eventMap = eventVariant.toMap();
-            eventDescriptorList.append(JsonTypes::unpackEventDescriptor(eventMap));
-        }
+    // Check and upack eventDescriptorList
+    QPair<QList<EventDescriptor>, RuleEngine::RuleError> eventDescriptorVerification = JsonTypes::verifyEventDescriptors(params);
+    QList<EventDescriptor> eventDescriptorList = eventDescriptorVerification.first;
+    if (eventDescriptorVerification.second != RuleEngine::RuleErrorNoError) {
+        QVariantMap returns;
+        returns.insert("ruleError", JsonTypes::ruleErrorToString(eventDescriptorVerification.second));
+        return createReply(returns);
     }
 
     // Check and unpack stateEvaluator
-    qDebug() << "unpacking stateEvaluator:" << params.value("stateEvaluator").toMap();
+    qCDebug(dcJsonRpc) << "unpacking stateEvaluator:" << params.value("stateEvaluator").toMap();
     StateEvaluator stateEvaluator = JsonTypes::unpackStateEvaluator(params.value("stateEvaluator").toMap());
 
     // Check and unpack actions
-    QList<RuleAction> actions;
-    QVariantList actionList = params.value("actions").toList();
-    qDebug() << "unpacking actions:" << actionList;
-    foreach (const QVariant &actionVariant, actionList) {
-        QVariantMap actionMap = actionVariant.toMap();
-        RuleAction action(ActionTypeId(actionMap.value("actionTypeId").toString()), DeviceId(actionMap.value("deviceId").toString()));
-        RuleActionParamList actionParamList = JsonTypes::unpackRuleActionParams(actionMap.value("ruleActionParams").toList());
-        foreach (const RuleActionParam &ruleActionParam, actionParamList) {
-            if (!ruleActionParam.isValid()) {
-                qWarning() << "ERROR: got actionParam with value AND eventTypeId!";
-                QVariantMap returns;
-                returns.insert("ruleError", JsonTypes::ruleErrorToString(RuleEngine::RuleErrorInvalidRuleActionParameter));
-                return createReply(returns);
-            }
-        }
-
-        action.setRuleActionParams(actionParamList);
-        actions.append(action);
-    }
-
-    // check possible eventTypeIds in params
-    foreach (const RuleAction &ruleAction, actions) {
-        if (ruleAction.isEventBased()) {
-            foreach (const RuleActionParam &ruleActionParam, ruleAction.ruleActionParams()) {
-                if (ruleActionParam.eventTypeId() != EventTypeId()) {
-                    // We have an eventTypeId
-                    if (eventDescriptorList.isEmpty()) {
-                        QVariantMap returns;
-                        qWarning() << "RuleAction" << ruleAction.actionTypeId() << "contains an eventTypeId, but there are no eventDescriptors.";
-                        returns.insert("ruleError", JsonTypes::ruleErrorToString(RuleEngine::RuleErrorInvalidRuleActionParameter));
-                        return createReply(returns);
-                    }
-                    // now check if this eventType is in the eventDescriptorList of this rule
-                    if (!checkEventDescriptors(eventDescriptorList, ruleActionParam.eventTypeId())) {
-                        QVariantMap returns;
-                        qWarning() << "eventTypeId from RuleAction" << ruleAction.actionTypeId() << "missing in eventDescriptors.";
-                        returns.insert("ruleError", JsonTypes::ruleErrorToString(RuleEngine::RuleErrorInvalidRuleActionParameter));
-                        return createReply(returns);
-                    }
-
-                    // check if the param type of the event and the action match
-                    QVariant::Type eventParamType = getEventParamType(ruleActionParam.eventTypeId(), ruleActionParam.eventParamName());
-                    QVariant::Type actionParamType = getActionParamType(ruleAction.actionTypeId(), ruleActionParam.name());
-                    if (eventParamType != actionParamType) {
-                        QVariantMap returns;
-                        qWarning() << "RuleActionParam" << ruleActionParam.name() << " and given event param " << ruleActionParam.eventParamName() << "have not the same type:";
-                        qWarning() << "        -> actionParamType:" << actionParamType;
-                        qWarning() << "        ->  eventParamType:" << eventParamType;
-                        returns.insert("ruleError", JsonTypes::ruleErrorToString(RuleEngine::RuleErrorTypesNotMatching));
-                        return createReply(returns);
-                    }
-                }
-            }
-        }
-    }
-
-
-    QVariantMap returns;
-    if (actions.count() == 0) {
-        returns.insert("ruleError", JsonTypes::ruleErrorToString(RuleEngine::RuleErrorMissingParameter));
+    QPair<QList<RuleAction>, RuleEngine::RuleError> actionsVerification = JsonTypes::verifyActions(params, eventDescriptorList);
+    QList<RuleAction> actions = actionsVerification.first;
+    if (actionsVerification.second != RuleEngine::RuleErrorNoError) {
+        QVariantMap returns;
+        returns.insert("ruleError", JsonTypes::ruleErrorToString(actionsVerification.second));
         return createReply(returns);
     }
 
     // Check and unpack exitActions
-    QList<RuleAction> exitActions;
-    if (params.contains("exitActions")) {
-        QVariantList exitActionList = params.value("exitActions").toList();
-        qDebug() << "unpacking exitActions:" << exitActionList;
-        foreach (const QVariant &actionVariant, exitActionList) {
-            QVariantMap actionMap = actionVariant.toMap();
-            RuleAction action(ActionTypeId(actionMap.value("actionTypeId").toString()), DeviceId(actionMap.value("deviceId").toString()));
-            if (action.isEventBased()) {
-                qWarning() << "ERROR: got exitAction with a param value containing an eventTypeId!";
-                QVariantMap returns;
-                returns.insert("ruleError", JsonTypes::ruleErrorToString(RuleEngine::RuleErrorInvalidRuleActionParameter));
-                return createReply(returns);
-            }
-            action.setRuleActionParams(JsonTypes::unpackRuleActionParams(actionMap.value("ruleActionParams").toList()));
-            qDebug() << "params in exitAction" << action.ruleActionParams();
-            exitActions.append(action);
-        }
+    QPair<QList<RuleAction>, RuleEngine::RuleError> exitActionsVerification = JsonTypes::verifyExitActions(params);
+    QList<RuleAction> exitActions = exitActionsVerification.first;
+    if (exitActionsVerification.second != RuleEngine::RuleErrorNoError) {
+        QVariantMap returns;
+        returns.insert("ruleError", JsonTypes::ruleErrorToString(exitActionsVerification.second));
+        return createReply(returns);
     }
-
 
     QString name = params.value("name", QString()).toString();
     bool enabled = params.value("enabled", true).toBool();
 
     RuleId newRuleId = RuleId::createRuleId();
     RuleEngine::RuleError status = GuhCore::instance()->addRule(newRuleId, name, eventDescriptorList, stateEvaluator, actions, exitActions, enabled);
+    QVariantMap returns;
     if (status ==  RuleEngine::RuleErrorNoError) {
         returns.insert("ruleId", newRuleId.toString());
+    }
+    returns.insert("ruleError", JsonTypes::ruleErrorToString(status));
+    return createReply(returns);
+}
+
+JsonReply *RulesHandler::EditRule(const QVariantMap &params)
+{
+    // check rule consistency
+    RuleEngine::RuleError ruleConsistencyError = JsonTypes::verifyRuleConsistency(params);
+    if (ruleConsistencyError !=  RuleEngine::RuleErrorNoError) {
+        QVariantMap returns;
+        returns.insert("ruleError", JsonTypes::ruleErrorToString(ruleConsistencyError));
+        return createReply(returns);
+    }
+
+    // Check and upack eventDescriptorList
+    QPair<QList<EventDescriptor>, RuleEngine::RuleError> eventDescriptorVerification = JsonTypes::verifyEventDescriptors(params);
+    QList<EventDescriptor> eventDescriptorList = eventDescriptorVerification.first;
+    if (eventDescriptorVerification.second != RuleEngine::RuleErrorNoError) {
+        QVariantMap returns;
+        returns.insert("ruleError", JsonTypes::ruleErrorToString(eventDescriptorVerification.second));
+        return createReply(returns);
+    }
+
+    // Check and unpack stateEvaluator
+    qCDebug(dcJsonRpc) << "unpacking stateEvaluator:" << params.value("stateEvaluator").toMap();
+    StateEvaluator stateEvaluator = JsonTypes::unpackStateEvaluator(params.value("stateEvaluator").toMap());
+
+    // Check and unpack actions
+    QPair<QList<RuleAction>, RuleEngine::RuleError> actionsVerification = JsonTypes::verifyActions(params, eventDescriptorList);
+    QList<RuleAction> actions = actionsVerification.first;
+    if (actionsVerification.second != RuleEngine::RuleErrorNoError) {
+        QVariantMap returns;
+        returns.insert("ruleError", JsonTypes::ruleErrorToString(actionsVerification.second));
+        return createReply(returns);
+    }
+
+    // Check and unpack exitActions
+    QPair<QList<RuleAction>, RuleEngine::RuleError> exitActionsVerification = JsonTypes::verifyExitActions(params);
+    QList<RuleAction> exitActions = exitActionsVerification.first;
+    if (exitActionsVerification.second != RuleEngine::RuleErrorNoError) {
+        QVariantMap returns;
+        returns.insert("ruleError", JsonTypes::ruleErrorToString(exitActionsVerification.second));
+        return createReply(returns);
+    }
+
+    QString name = params.value("name", QString()).toString();
+    bool enabled = params.value("enabled", true).toBool();
+
+    RuleId ruleId = RuleId(params.value("ruleId").toString());
+    RuleEngine::RuleError status = GuhCore::instance()->editRule(ruleId, name, eventDescriptorList, stateEvaluator, actions, exitActions, enabled);
+    QVariantMap returns;
+    if (status ==  RuleEngine::RuleErrorNoError) {
+        returns.insert("rule", JsonTypes::packRule(GuhCore::instance()->findRule(ruleId)));
     }
     returns.insert("ruleError", JsonTypes::ruleErrorToString(status));
     return createReply(returns);
@@ -289,45 +314,37 @@ JsonReply *RulesHandler::DisableRule(const QVariantMap &params)
     return createReply(statusToReply(GuhCore::instance()->disableRule(RuleId(params.value("ruleId").toString()))));
 }
 
-QVariant::Type RulesHandler::getActionParamType(const ActionTypeId &actionTypeId, const QString &paramName)
+void RulesHandler::ruleRemovedNotification(const RuleId &ruleId)
 {
-    foreach (const DeviceClass &deviceClass, GuhCore::instance()->supportedDevices()) {
-        foreach (const ActionType &actionType, deviceClass.actionTypes()) {
-            if (actionType.id() == actionTypeId) {
-                foreach (const ParamType &paramType, actionType.paramTypes()) {
-                    if (paramType.name() == paramName) {
-                        return paramType.type();
-                    }
-                }
-            }
-        }
-    }
-    return QVariant::Invalid;
+    QVariantMap params;
+    params.insert("ruleId", ruleId);
+
+    emit RuleRemoved(params);
 }
 
-QVariant::Type RulesHandler::getEventParamType(const EventTypeId &eventTypeId, const QString &paramName)
+void RulesHandler::ruleAddedNotification(const Rule &rule)
 {
-    foreach (const DeviceClass &deviceClass, GuhCore::instance()->supportedDevices()) {
-        foreach (const EventType &eventType, deviceClass.eventTypes()) {
-            if (eventType.id() == eventTypeId) {
-                foreach (const ParamType &paramType, eventType.paramTypes()) {
-                    // get ParamType of Event
-                    if (paramType.name() == paramName) {
-                        return paramType.type();
-                    }
-                }
-            }
-        }
-    }
-    return QVariant::Invalid;
+    QVariantMap params;
+    params.insert("rule", JsonTypes::packRule(rule));
+
+    emit RuleAdded(params);
 }
 
-bool RulesHandler::checkEventDescriptors(const QList<EventDescriptor> eventDescriptors, const EventTypeId &eventTypeId)
+void RulesHandler::ruleActiveChangedNotification(const Rule &rule)
 {
-    foreach (const EventDescriptor eventDescriptor, eventDescriptors) {
-        if (eventDescriptor.eventTypeId() == eventTypeId) {
-            return true;
-        }
-    }
-    return false;
+    QVariantMap params;
+    params.insert("ruleId", rule.id());
+    params.insert("active", rule.active());
+
+    emit RuleActiveChanged(params);
+}
+
+void RulesHandler::ruleConfigurationChangedNotification(const Rule &rule)
+{
+    QVariantMap params;
+    params.insert("rule", JsonTypes::packRule(rule));
+
+    emit RuleConfigurationChanged(params);
+}
+
 }

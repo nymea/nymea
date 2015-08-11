@@ -1,5 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -16,13 +19,29 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::ActionHandler
+    \brief This subclass of \l{JsonHandler} processes the JSON requests for the \tt Action namespace.
+
+    \ingroup json
+    \inmodule core
+
+    This \l{JsonHandler} will be created in the \l{JsonRPCServer} and used to handle JSON-RPC requests
+    for the \tt {Action} namespace of the API.
+
+    \sa JsonHandler, JsonRPCServer
+*/
+
 #include "actionhandler.h"
 
 #include "guhcore.h"
 #include "devicemanager.h"
 #include "types/action.h"
+#include "loggingcategories.h"
 
 #include <QDebug>
+
+namespace guhserver {
 
 ActionHandler::ActionHandler(QObject *parent) :
     JsonHandler(parent)
@@ -74,7 +93,7 @@ JsonReply* ActionHandler::ExecuteAction(const QVariantMap &params)
 
 JsonReply *ActionHandler::GetActionType(const QVariantMap &params) const
 {
-    qDebug() << "asked for action type" << params;
+    qCDebug(dcJsonRpc) << "asked for action type" << params;
     ActionTypeId actionTypeId(params.value("actionTypeId").toString());
     foreach (const DeviceClass &deviceClass, GuhCore::instance()->supportedDevices()) {
         foreach (const ActionType &actionType, deviceClass.actionTypes()) {
@@ -97,4 +116,6 @@ void ActionHandler::actionExecuted(const ActionId &id, DeviceManager::DeviceErro
     JsonReply *reply = m_asyncActionExecutions.take(id);
     reply->setData(statusToReply(status));
     reply->finished();
+}
+
 }

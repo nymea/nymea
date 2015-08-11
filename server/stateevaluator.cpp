@@ -1,5 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -19,6 +22,10 @@
 #include "stateevaluator.h"
 #include "guhcore.h"
 #include "devicemanager.h"
+#include "loggingcategories.h"
+#include "guhsettings.h"
+
+namespace guhserver {
 
 StateEvaluator::StateEvaluator(const StateDescriptor &stateDescriptor):
     m_stateDescriptor(stateDescriptor),
@@ -69,11 +76,11 @@ bool StateEvaluator::evaluate() const
     if (m_stateDescriptor.isValid()) {
         Device *device = GuhCore::instance()->findConfiguredDevice(m_stateDescriptor.deviceId());
         if (!device) {
-            qWarning() << "Device not existing!";
+            qCWarning(dcRuleEngine) << "Device not existing!";
             return false;
         }
         if (!device->hasState(m_stateDescriptor.stateTypeId())) {
-            qWarning() << "Device found, but it does not appear to have such a state!";
+            qCWarning(dcRuleEngine) << "Device found, but it does not appear to have such a state!";
             return false;
         }
         if (m_stateDescriptor != device->state(m_stateDescriptor.stateTypeId())) {
@@ -122,7 +129,7 @@ void StateEvaluator::removeDevice(const DeviceId &deviceId)
     }
 }
 
-void StateEvaluator::dumpToSettings(QSettings &settings, const QString &groupName) const
+void StateEvaluator::dumpToSettings(GuhSettings &settings, const QString &groupName) const
 {
     settings.beginGroup(groupName);
 
@@ -144,7 +151,7 @@ void StateEvaluator::dumpToSettings(QSettings &settings, const QString &groupNam
     settings.endGroup();
 }
 
-StateEvaluator StateEvaluator::loadFromSettings(QSettings &settings, const QString &groupName)
+StateEvaluator StateEvaluator::loadFromSettings(GuhSettings &settings, const QString &groupName)
 {
     settings.beginGroup(groupName);
     settings.beginGroup("stateDescriptor");
@@ -167,4 +174,4 @@ StateEvaluator StateEvaluator::loadFromSettings(QSettings &settings, const QStri
     return ret;
 }
 
-
+}

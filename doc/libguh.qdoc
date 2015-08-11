@@ -1,15 +1,16 @@
 /*!
     \module libguh
-    \title libguh
+    \title The guh library
 
-    \section1 Types
-    \annotatedlist types
+    \chapter Types of libguh
+    \annotatedlist guh-types
 
-    \section1 Device Plugins
+    \chapter Device Plugins
     \annotatedlist devices
     
-    \section1 Hardware Resources
+    \chapter Hardware Resources
     \annotatedlist hardware
+
 */
 
 

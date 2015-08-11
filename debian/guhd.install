@@ -1,2 +1,3 @@
 usr/bin/guhd
 data/init/* /etc/init.d
+data/config/guhd.conf /etc/guh/

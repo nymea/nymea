@@ -1,5 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -36,7 +38,7 @@
     The \l{DeviceClass::SetupMethod}{setupMethod} describes the setup method of the \l{Device}.
     The detailed implementation of each \l{DeviceClass} can be found in the source code.
 
-    \note If a \l{StateType} has the parameter \tt{"writable": true}, an \l{ActionType} with the same uuid and \l{ParamType}{ParamTypes}
+    \note If a \l{StateType} has the parameter \tt{"writable": {...}}, an \l{ActionType} with the same uuid and \l{ParamType}{ParamTypes}
     will be created automatically.
 
     \quotefile plugins/deviceplugins/elro/devicepluginelro.json
@@ -150,10 +152,10 @@ DeviceManager::DeviceError DevicePluginElro::executeAction(Device *device, const
 
     // send data to hardware resource
     if (transmitData(delay, rawData)) {
-        qDebug() << "transmitted" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
+        qCDebug(dcElro) << "transmitted" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
         return DeviceManager::DeviceErrorNoError;
     } else {
-        qDebug() << "could not transmitt" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
+        qCWarning(dcElro) << "could not transmitt" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
         return DeviceManager::DeviceErrorHardwareNotAvailable;
     }
 }
@@ -205,13 +207,13 @@ void DevicePluginElro::radioData(const QList<int> &rawData)
         return;
     }
 
-    qDebug() << "ELRO understands this protocol: " << binCode;
+    qCDebug(dcElro) << "ELRO understands this protocol: " << binCode;
 
     if (binCode.left(20) == "00000100000000000001") {
         if (binCode.right(4) == "0100") {
-            qDebug() << "Motion Detector OFF";
+            qCDebug(dcElro) << "Motion Detector OFF";
         } else {
-            qDebug() << "Motion Detector ON";
+            qCDebug(dcElro) << "Motion Detector ON";
         }
     }
 
@@ -255,5 +257,5 @@ void DevicePluginElro::radioData(const QList<int> &rawData)
         return;
     }
 
-    qDebug() << "ELRO:" << group << buttonCode << power;
+    qCDebug(dcElro) << "Elro:" << group << buttonCode << power;
 }

@@ -1,5 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -20,7 +23,7 @@
     \class Action
     \brief Holds information required to execute an action described by a \l{ActionType}.
 
-    \ingroup types
+    \ingroup guh-types
     \inmodule libguh
 
     It is bound to a \l{Device} and an \l{ActionType} and holds the parameters

@@ -57,5 +57,4 @@ private:
     QString path_;
 };
 
-
 #endif

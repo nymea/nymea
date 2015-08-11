@@ -1,5 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -20,38 +23,51 @@
 #define TCPSERVER_H
 
 #include <QObject>
-#include <QNetworkInterface>
 #include <QTcpServer>
 #include <QTcpSocket>
+#include <QNetworkInterface>
 #include <QUuid>
+#include <QTimer>
 
-class TcpServer : public QObject
+#include "transportinterface.h"
+
+namespace guhserver {
+
+class TcpServer : public TransportInterface
 {
     Q_OBJECT
 public:
     explicit TcpServer(QObject *parent = 0);
-    
-    void sendData(const QUuid &clientId, const QByteArray &data);
-    void sendData(const QList<QUuid> &clients, const QByteArray &data);
+    ~TcpServer();
+
+    void sendData(const QUuid &clientId, const QVariantMap &data) override;
+    void sendData(const QList<QUuid> &clients, const QVariantMap &data) override;
 
 private:
+    QTimer *m_timer;
+
     QHash<QUuid, QTcpServer*> m_serverList;
     QHash<QUuid, QTcpSocket*> m_clientList;
-    uint m_port;
 
-signals:
-    void clientConnected(const QUuid &clientId);
-    void clientDisconnected(const QUuid &clientId);
-    void dataAvailable(const QUuid &clientId, const QByteArray &data);
-    
+    uint m_port;
+    QList<QNetworkInterface> m_networkInterfaces;
+    QStringList m_ipVersions;
+
+    void reloadNetworkInterfaces();
+
+
 private slots:
-    void newClientConnected();
+    void onClientConnected();
+    void onClientDisconnected();
     void readPackage();
-    void slotClientDisconnected();
+    void onError(QAbstractSocket::SocketError error);
+    void onTimeout();
 
 public slots:
-    bool startServer();
-    bool stopServer();
+    bool startServer() override;
+    bool stopServer() override;
 };
+
+}
 
 #endif // TCPSERVER_H

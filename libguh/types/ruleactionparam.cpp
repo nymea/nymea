@@ -1,5 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -20,13 +23,13 @@
     \class RuleActionParam
     \brief Holds the parameters for a \l{RuleAction}.
 
-    \ingroup types
+    \ingroup guh-types
     \inmodule libguh
 
     A RuleActionParam allows rules to take over an \l{Event} parameter into a rule
     \l{RuleAction}.
 
-    \sa Rule, RuleAction,
+    \sa guhserver::Rule, RuleAction,
 */
 
 #include "ruleactionparam.h"
@@ -110,8 +113,12 @@ void RuleActionParam::setEventTypeId(const EventTypeId &eventTypeId)
 /*! Writes the name, value, eventId and eventParamName of the given \a ruleActionParam to \a dbg. */
 QDebug operator<<(QDebug dbg, const RuleActionParam &ruleActionParam)
 {
-    dbg.nospace() << "RuleActionParam(Name: " << ruleActionParam.name() << ", Value:" << ruleActionParam.value() << ", EventTypeId:" << ruleActionParam.eventTypeId().toString() << ", EventParamName:" << ruleActionParam.eventParamName() << ")";
-
+    dbg.nospace() << "RuleActionParam(Name: " << ruleActionParam.name() << ", Value:" << ruleActionParam.value();
+    if (ruleActionParam.eventTypeId() != EventTypeId()) {
+       dbg.nospace() << ", EventTypeId:" << ruleActionParam.eventTypeId().toString() << ", EventParamName:" << ruleActionParam.eventParamName() << ")";
+    } else {
+       dbg.nospace() << ")";
+    }
     return dbg.space();
 }
 

@@ -1,5 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -17,6 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "upnpdiscoveryrequest.h"
+#include "loggingcategories.h"
 
 UpnpDiscoveryRequest::UpnpDiscoveryRequest(UpnpDiscovery *upnpDiscovery, PluginId pluginId, QString searchTarget, QString userAgent):
     QObject(upnpDiscovery),
@@ -35,12 +38,12 @@ void UpnpDiscoveryRequest::discover()
     QByteArray ssdpSearchMessage = QByteArray("M-SEARCH * HTTP/1.1\r\n"
                                               "HOST:239.255.255.250:1900\r\n"
                                               "MAN:\"ssdp:discover\"\r\n"
-                                              "MX:2\r\n"
+                                              "MX:4\r\n"
                                               "ST: " + m_searchTarget.toUtf8() + "\r\n"
                                               "USR-AGENT: " + m_userAgent.toUtf8() + "\r\n\r\n");
 
     m_upnpDiscovery->sendToMulticast(ssdpSearchMessage);
-    qDebug() << "--> UPnP discovery called.";
+    qCDebug(dcHardware) << "--> UPnP discovery called.";
 
     m_timer->start(3000);
 }

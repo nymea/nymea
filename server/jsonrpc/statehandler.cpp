@@ -1,5 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -18,6 +21,9 @@
 
 #include "statehandler.h"
 #include "guhcore.h"
+#include "loggingcategories.h"
+
+namespace guhserver {
 
 StateHandler::StateHandler(QObject *parent) :
     JsonHandler(parent)
@@ -41,6 +47,7 @@ QString StateHandler::name() const
 
 JsonReply* StateHandler::GetStateType(const QVariantMap &params) const
 {
+    qCDebug(dcJsonRpc) << "asked for state type" << params;
     StateTypeId stateTypeId(params.value("stateTypeId").toString());
     foreach (const DeviceClass &deviceClass, GuhCore::instance()->supportedDevices()) {
         foreach (const StateType &stateType, deviceClass.stateTypes()) {
@@ -52,4 +59,6 @@ JsonReply* StateHandler::GetStateType(const QVariantMap &params) const
         }
     }
     return createReply(statusToReply(DeviceManager::DeviceErrorStateTypeNotFound));
+}
+
 }

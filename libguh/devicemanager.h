@@ -1,5 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -37,6 +40,7 @@
 
 #include <QObject>
 #include <QTimer>
+#include <QPluginLoader>
 
 class Device;
 class DevicePlugin;
@@ -76,11 +80,11 @@ public:
         DeviceErrorSetupMethodNotSupported,
         DeviceErrorHardwareNotAvailable,
         DeviceErrorHardwareFailure,
-        // TODO: Bump API version
-        //DeviceErrorAuthentificationFailure,
+        DeviceErrorAuthentificationFailure,
         DeviceErrorAsync,
         DeviceErrorDeviceInUse,
         DeviceErrorPairingTransactionIdNotFound,
+        DeviceErrorParameterNotWritable
     };
 
     enum DeviceSetupStatus {
@@ -91,6 +95,9 @@ public:
 
     explicit DeviceManager(QObject *parent = 0);
     ~DeviceManager();
+
+    static QStringList pluginSearchDirs();
+    static QList<QJsonObject> pluginsMetadata();
 
     QList<DevicePlugin*> plugins() const;
     DevicePlugin* plugin(const PluginId &id) const;
@@ -103,6 +110,10 @@ public:
     QList<Device*> configuredDevices() const;
     DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId id = DeviceId::createDeviceId());
     DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &id = DeviceId::createDeviceId());
+
+    DeviceError editDevice(const DeviceId &deviceId, const ParamList &params, bool fromDiscovery = false);
+    DeviceError editDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId);
+    
     DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params);
     DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId);
     DeviceError confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &secret = QString());
@@ -116,8 +127,12 @@ signals:
     void loaded();
     void eventTriggered(const Event &event);
     void deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
+    void deviceRemoved(const DeviceId &deviceId);
+    void deviceAdded(Device *device);
+    void deviceParamsChanged(Device *device);
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &devices);
     void deviceSetupFinished(Device *device, DeviceError status);
+    void deviceEditFinished(Device *device, DeviceError status);
     void pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceError status, const DeviceId &deviceId = DeviceId());
     void actionExecutionFinished(const ActionId &actionId, DeviceError status);
 
@@ -160,21 +175,18 @@ private:
     DeviceError verifyParam(const ParamType &paramType, const Param &param);
 
 private:
-
     QHash<VendorId, Vendor> m_supportedVendors;
     QHash<VendorId, QList<DeviceClassId> > m_vendorDeviceMap;
     QHash<DeviceClassId, DeviceClass> m_supportedDevices;
-    QList<Device*> m_configuredDevices;
+    QList<Device *> m_configuredDevices;
     QHash<DeviceDescriptorId, DeviceDescriptor> m_discoveredDevices;
 
     QHash<PluginId, DevicePlugin*> m_devicePlugins;
 
-    QString m_settingsFile;
-
     // Hardware Resources
     Radio433* m_radio433;
     QTimer m_pluginTimer;
-    QList<Device*> m_pluginTimerUsers;
+    QList<DevicePlugin *> m_pluginTimerUsers;
     NetworkManager *m_networkManager;
     UpnpDiscovery* m_upnpDiscovery;
 
@@ -185,7 +197,9 @@ private:
     QHash<QUuid, QPair<DeviceClassId, ParamList> > m_pairingsJustAdd;
     QHash<QUuid, QPair<DeviceClassId, DeviceDescriptorId> > m_pairingsDiscovery;
 
-    QList<DevicePlugin*> m_discoveringPlugins;
+    QList<Device *> m_asyncDeviceEdit;
+
+    QList<DevicePlugin *> m_discoveringPlugins;
 
     friend class DevicePlugin;
 };

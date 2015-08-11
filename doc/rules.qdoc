@@ -10,13 +10,13 @@
     A rule is composed by a set of \l{Event}{Events}, \l{State}{States} and \l{Action}{Actions}.
 
     This diagram shows how rules are composed and interpreted by
-    the \l{RuleEngine}.
+    the \l{guhserver::RuleEngine}.
 
     \image Rules_definition.svg "Rules definition"
 
-    A basic concept of a \l{Rule} is the trigger path. This is the path that defines when a \l{Rule}
+    A basic concept of a \l{guhserver::Rule} is the trigger path. This is the path that defines when a \l{guhserver::Rule}
     is triggered for evaluation. Each element added on a trigger path (either red or blue) has the possibility to trigger the
-    \l{RuleEngine} to evaluate the complete rule and ultimately execute the defined \l{Action}{Actions} if the
+    \l{guhserver::RuleEngine} to evaluate the complete rule and ultimately execute the defined \l{Action}{Actions} if the
     whole rule evaluates to true. Once the trigger path has been left (i.e. a black arrow is followed),
     subsequent elements will still be evaluated when the rule is triggered, but they won't trigger the
     evaluation themselves.

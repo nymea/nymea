@@ -1,20 +1,23 @@
-/****************************************************************************
- *                                                                          *
- *  This file is part of guh.                                               *
- *                                                                          *
- *  Guh is free software: you can redistribute it and/or modify             *
- *  it under the terms of the GNU General Public License as published by    *
- *  the Free Software Foundation, version 2 of the License.                 *
- *                                                                          *
- *  Guh is distributed in the hope that it will be useful,                  *
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of          *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
- *  GNU General Public License for more details.                            *
- *                                                                          *
- *  You should have received a copy of the GNU General Public License       *
- *  along with guh.  If not, see <http://www.gnu.org/licenses/>.            *
- *                                                                          *
- ***************************************************************************/
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
+ *  This file is part of guh.                                              *
+ *                                                                         *
+ *  Guh is free software: you can redistribute it and/or modify            *
+ *  it under the terms of the GNU General Public License as published by   *
+ *  the Free Software Foundation, version 2 of the License.                *
+ *                                                                         *
+ *  Guh is distributed in the hope that it will be useful,                 *
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of         *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          *
+ *  GNU General Public License for more details.                           *
+ *                                                                         *
+ *  You should have received a copy of the GNU General Public License      *
+ *  along with guh. If not, see <http://www.gnu.org/licenses/>.            *
+ *                                                                         *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
     \page conrad.html
@@ -36,7 +39,7 @@
     The \l{DeviceClass::SetupMethod}{setupMethod} describes the setup method of the \l{Device}.
     The detailed implementation of each \l{DeviceClass} can be found in the source code.
 
-    \note If a \l{StateType} has the parameter \tt{"writable": true}, an \l{ActionType} with the same uuid and \l{ParamType}{ParamTypes}
+    \note If a \l{StateType} has the parameter \tt{"writable": {...}}, an \l{ActionType} with the same uuid and \l{ParamType}{ParamTypes}
     will be created automatically.
 
     \quotefile plugins/deviceplugins/conrad/devicepluginconrad.json
@@ -123,10 +126,10 @@ DeviceManager::DeviceError DevicePluginConrad::executeAction(Device *device, con
     // =======================================
     // send data to driver
     if(transmitData(delay, rawData, repetitions)){
-        qDebug() << "action" << pluginName() << device->name() << action.actionTypeId();
+        qCDebug(dcConrad) << "transmitted successfully" << pluginName() << device->name() << action.actionTypeId();
         return DeviceManager::DeviceErrorNoError;
     }else{
-        qDebug() << "could not transmitt" << pluginName() << device->name() << action.actionTypeId();
+        qCWarning(dcConrad) << "could not transmitt" << pluginName() << device->name() << action.actionTypeId();
         return DeviceManager::DeviceErrorHardwareNotAvailable;
     }
 }
@@ -138,7 +141,7 @@ void DevicePluginConrad::radioData(const QList<int> &rawData)
         return;
     }
 
-    // qDebug() << rawData;
+    qCDebug(dcConrad) << rawData;
 
     int delay = rawData.first()/10;
     QByteArray binCode;
@@ -181,5 +184,5 @@ void DevicePluginConrad::radioData(const QList<int> &rawData)
         return;
     }
 
-    qDebug() << "CONRAD: " << binCode.left(binCode.length() - 24) << "  ID = " << binCode.right(24);
+    qCDebug(dcConrad) << "Conrad: " << binCode.left(binCode.length() - 24) << "  ID = " << binCode.right(24);
 }

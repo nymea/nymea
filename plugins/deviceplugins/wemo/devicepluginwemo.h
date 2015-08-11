@@ -1,5 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -47,7 +49,6 @@ private:
     QHash<QNetworkReply *, Device *> m_refreshReplies;
     QHash<QNetworkReply *, Device *> m_setPowerReplies;
     QHash<QNetworkReply *, ActionId> m_runningActionExecutions;
-    bool verifyExistingDevices(UpnpDeviceDescriptor deviceDescriptor);
 
     void refresh(Device* device);
     bool setPower(Device *device, const bool &power, const ActionId &actionId);

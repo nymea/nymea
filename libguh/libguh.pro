@@ -8,6 +8,7 @@ QT += network
 target.path = /usr/lib
 INSTALLS += target
 
+# check Bluetooth LE support
 contains(DEFINES, BLUETOOTH_LE) {
     SOURCES += bluetooth/bluetoothscanner.cpp \
                bluetooth/bluetoothlowenergydevice.cpp \
@@ -46,6 +47,8 @@ SOURCES += plugin/device.cpp \
            types/ruleaction.cpp \
            types/ruleactionparam.cpp \
            types/statedescriptor.cpp \
+           loggingcategories.cpp \
+           guhsettings.cpp \
 
 HEADERS += plugin/device.h \
            plugin/deviceclass.h \
@@ -71,7 +74,6 @@ HEADERS += plugin/device.h \
            types/event.h \
            types/eventdescriptor.h \
            types/vendor.h \
-           types/typeutils.h \
            types/paramtype.h \
            types/param.h \
            types/paramdescriptor.h \
@@ -79,4 +81,24 @@ HEADERS += plugin/device.h \
            types/ruleactionparam.h \
            types/statedescriptor.h \
            typeutils.h \
+           loggingcategories.h \
+           guhsettings.h \
+
+
+# install files for libguh-dev
+generateplugininfo.files = $$top_srcdir/plugins/guh-generateplugininfo
+generateplugininfo.path = /usr/bin
+
+INSTALLS +=  generateplugininfo
+
+# install header file with relative subdirectory
+for(header, HEADERS) {
+  path = /usr/include/guh/$${dirname(header)}
+  eval(headers_$${path}.files += $${header})
+  eval(headers_$${path}.path = $${path})
+  eval(INSTALLS *= headers_$${path})
+}
+
+
+
 

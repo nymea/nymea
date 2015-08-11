@@ -1,5 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -25,6 +28,8 @@
 #include <QVariantMap>
 #include <QMetaMethod>
 #include <QTimer>
+
+namespace guhserver {
 
 class JsonHandler;
 
@@ -112,5 +117,7 @@ private:
     QHash<QString, QVariantMap> m_params;
     QHash<QString, QVariantMap> m_returns;
 };
+
+}
 
 #endif // JSONHANDLER_H

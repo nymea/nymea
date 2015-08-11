@@ -1,5 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -34,6 +37,7 @@
 
 #include "logging/logging.h"
 #include "logging/logentry.h"
+#include "logging/logfilter.h"
 
 #include <QObject>
 
@@ -43,6 +47,8 @@
 
 class DevicePlugin;
 class Device;
+
+namespace guhserver {
 
 #define DECLARE_OBJECT(typeName, jsonName) \
     public: \
@@ -96,6 +102,7 @@ public:
     DECLARE_TYPE(stateOperator, "StateOperator", Types, StateOperator)
     DECLARE_TYPE(valueOperator, "ValueOperator", Types, ValueOperator)
     DECLARE_TYPE(inputType, "InputType", Types, InputType)
+    DECLARE_TYPE(unit, "Unit", Types, Unit)
     DECLARE_TYPE(createMethod, "CreateMethod", DeviceClass, CreateMethod)
     DECLARE_TYPE(setupMethod, "SetupMethod", DeviceClass, SetupMethod)
     DECLARE_TYPE(deviceError, "DeviceError", DeviceManager, DeviceError)
@@ -125,8 +132,10 @@ public:
     DECLARE_OBJECT(device, "Device")
     DECLARE_OBJECT(deviceDescriptor, "DeviceDescriptor")
     DECLARE_OBJECT(rule, "Rule")
+    DECLARE_OBJECT(ruleDescription, "RuleDescription")
     DECLARE_OBJECT(logEntry, "LogEntry")
 
+    // pack types
     static QVariantMap packEventType(const EventType &eventType);
     static QVariantMap packEvent(const Event &event);
     static QVariantMap packEventDescriptor(const EventDescriptor &event);
@@ -134,6 +143,7 @@ public:
     static QVariantMap packAction(const Action &action);
     static QVariantMap packRuleAction(const RuleAction &ruleAction);
     static QVariantMap packRuleActionParam(const RuleActionParam &ruleActionParam);
+    static QVariantMap packState(const State &state);
     static QVariantMap packStateType(const StateType &stateType);
     static QVariantMap packStateDescriptor(const StateDescriptor &stateDescriptor);
     static QVariantMap packStateEvaluator(const StateEvaluator &stateEvaluator);
@@ -146,9 +156,28 @@ public:
     static QVariantMap packDevice(Device *device);
     static QVariantMap packDeviceDescriptor(const DeviceDescriptor &descriptor);
     static QVariantMap packRule(const Rule &rule);
+    static QVariantList packRules(const QList<Rule> rules);
+    static QVariantMap packRuleDescription(const Rule &rule);
     static QVariantMap packLogEntry(const LogEntry &logEntry);
     static QVariantList packCreateMethods(DeviceClass::CreateMethods createMethods);
 
+    // pack resources
+    static QVariantList packSupportedVendors();
+    static QVariantList packSupportedDevices(const VendorId &vendorId);
+    static QVariantList packConfiguredDevices();
+    static QVariantList packDeviceStates(Device *device);
+    static QVariantList packDeviceDescriptors(const QList<DeviceDescriptor> deviceDescriptors);
+
+    static QVariantList packRuleDescriptions();
+    static QVariantList packRuleDescriptions(const QList<Rule> &rules);
+
+    static QVariantList packActionTypes(const DeviceClass &deviceClass);
+    static QVariantList packStateTypes(const DeviceClass &deviceClass);
+    static QVariantList packEventTypes(const DeviceClass &deviceClass);
+    static QVariantList packPlugins();
+
+
+    // unpack Types
     static Param unpackParam(const QVariantMap &paramMap);
     static ParamList unpackParams(const QVariantList &paramList);
     static RuleActionParam unpackRuleActionParam(const QVariantMap &ruleActionParamMap);
@@ -158,13 +187,24 @@ public:
     static EventDescriptor unpackEventDescriptor(const QVariantMap &eventDescriptorMap);
     static StateEvaluator unpackStateEvaluator(const QVariantMap &stateEvaluatorMap);
     static StateDescriptor unpackStateDescriptor(const QVariantMap &stateDescriptorMap);
+    static LogFilter unpackLogFilter(const QVariantMap &logFilterMap);
 
+    // validate
     static QPair<bool, QString> validateMap(const QVariantMap &templateMap, const QVariantMap &map);
     static QPair<bool, QString> validateProperty(const QVariant &templateValue, const QVariant &value);
     static QPair<bool, QString> validateList(const QVariantList &templateList, const QVariantList &list);
     static QPair<bool, QString> validateVariant(const QVariant &templateVariant, const QVariant &variant);
     static QPair<bool, QString> validateEnum(const QVariantList &enumList, const QVariant &value);
     static QPair<bool, QString> validateBasicType(const QVariant &variant);
+
+    // rule validation helper methods
+    static bool checkEventDescriptors(const QList<EventDescriptor> eventDescriptors, const EventTypeId &eventTypeId);
+    static QVariant::Type getActionParamType(const ActionTypeId &actionTypeId, const QString &paramName);
+    static QVariant::Type getEventParamType(const EventTypeId &eventTypeId, const QString &paramName);
+    static RuleEngine::RuleError verifyRuleConsistency(const QVariantMap &params);
+    static QPair<QList<EventDescriptor>, RuleEngine::RuleError> verifyEventDescriptors(const QVariantMap &params);
+    static QPair<QList<RuleAction>, RuleEngine::RuleError> verifyActions(const QVariantMap &params, const QList<EventDescriptor> &eventDescriptorList);
+    static QPair<QList<RuleAction>, RuleEngine::RuleError> verifyExitActions(const QVariantMap &params);
 
 private:
     static bool s_initialized;
@@ -175,5 +215,7 @@ private:
 
     static QString s_lastError;
 };
+
+}
 
 #endif // JSONTYPES_H

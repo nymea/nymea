@@ -90,3 +90,4 @@ void QtUnixServerSocket::close()
         path_.clear();
     }
 }
+

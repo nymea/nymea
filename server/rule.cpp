@@ -1,5 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -17,11 +20,11 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class Rule
+    \class guhserver::Rule
     \brief This class represents a rule.
 
-    \ingroup core
-    \inmodule server
+    \ingroup rules
+    \inmodule core
 
     A Rule is always triggered by an \l{EventDescriptor}, has \l{State}{States}
     to be compared and \l{RuleAction}{RuleActions} to be executed.
@@ -32,6 +35,8 @@
 #include "rule.h"
 
 #include <QDebug>
+
+namespace guhserver {
 
 /*! Constructs an empty, invalid rule. */
 Rule::Rule():
@@ -141,4 +146,6 @@ void Rule::setName(const QString &name)
 void Rule::setActive(bool active)
 {
     m_active = active;
+}
+
 }

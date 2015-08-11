@@ -1,5 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -17,10 +20,13 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "jsonhandler.h"
+#include "loggingcategories.h"
 
 #include <QMetaMethod>
 #include <QDebug>
 #include <QRegExp>
+
+namespace guhserver {
 
 JsonHandler::JsonHandler(QObject *parent) :
     QObject(parent)
@@ -42,6 +48,7 @@ QVariantMap JsonHandler::introspect(QMetaMethod::MethodType type)
             if (!m_descriptions.contains(method.name()) || !m_params.contains(method.name()) || !m_returns.contains(method.name())) {
                 continue;
             }
+            qCDebug(dcJsonRpc) << "got method" << method.name();
             QVariantMap methodData;
             methodData.insert("description", m_descriptions.value(method.name()));
             methodData.insert("params", m_params.value(method.name()));
@@ -54,7 +61,7 @@ QVariantMap JsonHandler::introspect(QMetaMethod::MethodType type)
                 continue;
             }
             if (QString(method.name()).contains(QRegExp("^[A-Z]"))) {
-                qDebug() << "got signal" << method.name();
+                qCDebug(dcJsonRpc) << "got signal" << method.name();
                 QVariantMap methodData;
                 methodData.insert("description", m_descriptions.value(method.name()));
                 methodData.insert("params", m_params.value(method.name()));
@@ -95,7 +102,7 @@ void JsonHandler::setDescription(const QString &methodName, const QString &descr
             return;
         }
     }
-    qWarning() << "Cannot set description. No such method:" << methodName;
+    qCWarning(dcJsonRpc) << "Cannot set description. No such method:" << methodName;
 }
 
 void JsonHandler::setParams(const QString &methodName, const QVariantMap &params)
@@ -107,7 +114,7 @@ void JsonHandler::setParams(const QString &methodName, const QVariantMap &params
             return;
         }
     }
-    qWarning() << "Cannot set params. No such method:" << methodName;
+    qCWarning(dcJsonRpc) << "Cannot set params. No such method:" << methodName;
 }
 
 void JsonHandler::setReturns(const QString &methodName, const QVariantMap &returns)
@@ -119,7 +126,7 @@ void JsonHandler::setReturns(const QString &methodName, const QVariantMap &retur
             return;
         }
     }
-    qWarning() << "Cannot set returns. No such method:" << methodName;
+    qCWarning(dcJsonRpc) << "Cannot set returns. No such method:" << methodName;
 }
 
 JsonReply *JsonHandler::createReply(const QVariantMap &data) const
@@ -232,4 +239,6 @@ void JsonReply::timeout()
 bool JsonReply::timedOut() const
 {
     return m_timedOut;
+}
+
 }

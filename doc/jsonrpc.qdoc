@@ -1,6 +1,6 @@
 /*!
     \page jsonrpc.html
-    \title JSONRPC Interface
+    \title JSON-RPC API
     \ingroup jsonrpc
 
     \brief The JSON RPC interface represents a TCP socket connection using plaintext string communication.
@@ -12,7 +12,7 @@
     transport channel is not based on HTTP. It is an internal RPC mechanism to allow communication
     between the guh Server and the main controller interface. This communication socket is not meant
     to be exported to the outside of the of the systen as it allows arbitrary commands to manipulate
-    the system. A more limited REST API implementation might be added in the main controller interface.
+    the system.
 
     The JSON message protocol communicates by exchanging JSON Objects with the following properties:
     \list
@@ -34,14 +34,12 @@
     Parameters are optional if the type is the type is prefixed with "o:" for optional.
 
     \section1 Communicating with the server
-    The server listens on TCP port 1234 for incoming TCP connections. It will respond to incoming
-    connections with a some information about the server. Telnet can be used to issue commands for
-    testing.
+    The server listens by default on TCP port 2222 for incoming TCP connections. It will respond to incoming connections with a some information about the server. Telnet can be used to issue commands for testing.
 
     An example how to communicate with the API using telnet on the same host where the guh server
     is running:
     \code
-        $  telnet localhost 1234
+        $  telnet localhost 2222
     \endcode
     \code    
         Trying 127.0.0.1...
@@ -49,9 +47,9 @@
 	Escape character is '^]'.
 	{
 	    "id": 0,
-	    "protocol version": 9,
+	    "protocol version": 28,
 	    "server": "guh JSONRPC interface",
-	    "version": "0.2.0"
+	    "version": "0.6.0"
 	}
     \endcode
     Now the connection is established and waits for commands.
@@ -163,7 +161,7 @@
     }
     \endcode
     
-    \section1 API Description
+    \section1 Newest JSON-RPC API
     
     \quotefile tests/auto/api.json
 */

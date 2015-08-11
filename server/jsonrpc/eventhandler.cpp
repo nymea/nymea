@@ -1,5 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -18,6 +21,9 @@
 
 #include "eventhandler.h"
 #include "guhcore.h"
+#include "loggingcategories.h"
+
+namespace guhserver {
 
 EventHandler::EventHandler(QObject *parent) :
     JsonHandler(parent)
@@ -56,6 +62,7 @@ void EventHandler::eventTriggered(const Event &event)
 
 JsonReply* EventHandler::GetEventType(const QVariantMap &params) const
 {
+    qCDebug(dcJsonRpc) << "asked for event type" << params;
     EventTypeId eventTypeId(params.value("eventTypeId").toString());
     foreach (const DeviceClass &deviceClass, GuhCore::instance()->supportedDevices()) {
         foreach (const EventType &eventType, deviceClass.eventTypes()) {
@@ -67,4 +74,6 @@ JsonReply* EventHandler::GetEventType(const QVariantMap &params) const
         }
     }
     return createReply(statusToReply(DeviceManager::DeviceErrorEventTypeNotFound));
+}
+
 }

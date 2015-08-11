@@ -1,24 +1,24 @@
 /*!
     \page index.html
-    \title guh - Developer Documentation
 
-    \section1 Summary
-    The guh backend service consists of three main modules:
+    \section1 Overview
+    The guh daemon consists of three main modules:
 
     \list
-        \li \l{libguh}
+        \li \l{guhserver}{The guh server}
             \list
-                \li \l{Types}{Types used in the guh system}
+                \li \l{guhserver}{The guh server namespace}
+                \li \l{Server classes}{The server classes}
+                \li \l{Rules}{The Rule Engine}
+            \endlist
+        \li \l{libguh}{The guh library}
+            \list
+                \li \l{Types of libguh}{Types used in the guh system}
                 \li \l{Device Plugins}{The Device Plugin API}
-                \li \l{Hardware Resources}{Hardware Resources}
+                \li \l{Hardware Resources}{Hardware resources available for plugins}
+                \li \l{Type Utils}{Global types in guh}
             \endlist
-        \li \l{guh server}
-            \list
-                \li \l{guh Core}
-                \li \l{JSONRPC Interface}
-                \li \l{Rules}
-            \endlist
-        \li \l{Plugins}.
+        \li \l{Plugins}{The guh plugins}
             \list
                 \li \l{RF 433 MHz Plugins}
                 \li \l{Service Plugins}
@@ -27,8 +27,29 @@
             \endlist
     \endlist
 
-    \section2 Quicklinks
+    \section1 API's
+    The guh daemon provides two API's:
     \list
-        \li \l{All guh Classes}
+        \li \l{JSON-RPC API}{JSON-RPC}
+        \li \l{https://github.com/guh/guh/wiki/REST-Api-documentation}{REST}
+    \endlist
+
+    \section1 Write your own plugin
+    Here you can find some tutorials for developing and working with guh:
+    \list
+        \li \l{Set up the build environment}
+        \li \l{Getting started}
+        \li \l{The plugin JSON File}
+        \li \l{Tutorial 1 - The "Minimal" plugin}
+        \li \l{Tutorial 2 - The "Buttons" plugin}
+    \endlist
+
+    \section1 Quicklinks
+    Overview of all classes and modules in guh
+    \list
+        \li \l{All guh Classes}        
+        \li \l{All guh Modules}
     \endlist
 */
+
+

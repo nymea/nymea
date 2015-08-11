@@ -1,4 +1,4 @@
-19
+28
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -53,6 +53,19 @@
             "returns": {
                 "deviceError": "$ref:DeviceError",
                 "o:deviceId": "Uuid"
+            }
+        },
+        "Devices.EditDevice": {
+            "description": "Edit the parameters of a device. The device params will be set to the passed parameters and the setup device will be called. If the device is discoverable, you can perform a GetDiscoveredDevices before calling this method and pass the new DeviceDescriptor (rediscover). If a parameter is not writable, you will find a 'readOnly': true in the ParamType. By default, every Param is writable.",
+            "params": {
+                "deviceId": "Uuid",
+                "o:deviceDescriptorId": "Uuid",
+                "o:deviceParams": [
+                    "$ref:Param"
+                ]
+            },
+            "returns": {
+                "deviceError": "$ref:DeviceError"
             }
         },
         "Devices.GetActionTypes": {
@@ -263,8 +276,32 @@
             }
         },
         "Logging.GetLogEntries": {
-            "description": "Get the LogEntries matching the given filter.",
+            "description": "Get the LogEntries matching the given filter. Each list element of a given filter will be connected with OR to each other. Each of the given filters will be connected with AND to each other.",
             "params": {
+                "o:deviceIds": [
+                    "Uuid"
+                ],
+                "o:eventTypes": [
+                    "$ref:LoggingEventType"
+                ],
+                "o:loggingLevels": [
+                    "$ref:LoggingLevel"
+                ],
+                "o:loggingSources": [
+                    "$ref:LoggingSource"
+                ],
+                "o:timeFilters": [
+                    {
+                        "o:endDate": "Int",
+                        "o:startDate": "Int"
+                    }
+                ],
+                "o:typeIds": [
+                    "Uuid"
+                ],
+                "o:values": [
+                    "Variant"
+                ]
             },
             "returns": {
                 "loggingError": "$ref:LoggingError",
@@ -274,7 +311,7 @@
             }
         },
         "Rules.AddRule": {
-            "description": "Add a rule. You can describe rules by one or many EventDesciptors and a StateEvaluator. Note that onlyone of either eventDescriptor or eventDescriptorList may be passed at a time. A rule can be created but left disabled,meaning it won't actually be executed until set to enabled. If not given, enabled defaults to true.",
+            "description": "Add a rule. You can describe rules by one or many EventDesciptors and a StateEvaluator. Note that only one of either eventDescriptor or eventDescriptorList may be passed at a time. A rule can be created but left disabled, meaning it won't actually be executed until set to enabled. If not given, enabled defaults to true.",
             "params": {
                 "actions": [
                     "$ref:RuleAction"
@@ -296,7 +333,7 @@
             }
         },
         "Rules.DisableRule": {
-            "description": "Disable a rule. The rule won't be triggered by it's events or state changes while it is disabled.",
+            "description": "Disable a rule. The rule won't be triggered by it's events or state changes while it is disabled. If successfull, the notification \"Rule.RuleConfigurationChanged\" will be emitted.",
             "params": {
                 "ruleId": "Uuid"
             },
@@ -304,8 +341,31 @@
                 "ruleError": "$ref:RuleError"
             }
         },
+        "Rules.EditRule": {
+            "description": "Edit the parameters of a rule. The configuration of the rule with the given ruleId will be replaced with the new given configuration. In ordert to enable or disable a Rule, please use the methods \"Rules.EnableRule\" and \"Rules.DisableRule\". If successfull, the notification \"Rule.RuleConfigurationChanged\" will be emitted.",
+            "params": {
+                "actions": [
+                    "$ref:RuleAction"
+                ],
+                "name": "String",
+                "o:enabled": "Bool",
+                "o:eventDescriptor": "$ref:EventDescriptor",
+                "o:eventDescriptorList": [
+                    "$ref:EventDescriptor"
+                ],
+                "o:exitActions": [
+                    "$ref:RuleAction"
+                ],
+                "o:stateEvaluator": "$ref:StateEvaluator",
+                "ruleId": "Uuid"
+            },
+            "returns": {
+                "o:rule": "$ref:Rule",
+                "ruleError": "$ref:RuleError"
+            }
+        },
         "Rules.EnableRule": {
-            "description": "Enabled a rule that has previously been disabled.",
+            "description": "Enabled a rule that has previously been disabled.If successfull, the notification \"Rule.RuleConfigurationChanged\" will be emitted.",
             "params": {
                 "ruleId": "Uuid"
             },
@@ -335,12 +395,12 @@
             }
         },
         "Rules.GetRules": {
-            "description": "Get all configured rules",
+            "description": "Get the descriptions of all configured rules. If you need more information about a specific rule use the method Rules.GetRuleDetails.",
             "params": {
             },
             "returns": {
-                "ruleIds": [
-                    "Uuid"
+                "ruleDescriptions": [
+                    "$ref:RuleDescription"
                 ]
             }
         },
@@ -365,6 +425,24 @@
         }
     },
     "notifications": {
+        "Devices.DeviceAdded": {
+            "description": "Emitted whenever a Device was added.",
+            "params": {
+                "device": "$ref:Device"
+            }
+        },
+        "Devices.DeviceParamsChanged": {
+            "description": "Emitted whenever the params of a Device changed (by editing or rediscovering).",
+            "params": {
+                "device": "$ref:Device"
+            }
+        },
+        "Devices.DeviceRemoved": {
+            "description": "Emitted whenever a Device was removed.",
+            "params": {
+                "deviceId": "Uuid"
+            }
+        },
         "Devices.StateChanged": {
             "description": "Emitted whenever a State of a device changes.",
             "params": {
@@ -379,10 +457,40 @@
                 "event": "$ref:Event"
             }
         },
+        "Logging.LogDatabaseUpdated": {
+            "description": "Emitted whenever the database was updated. The database will be updated when a log entry was deleted. A log entry will be deleted when the corresponding device or a rule will be removed, or when the oldest entry of the database was deleted to keep to database in the size limits.",
+            "params": {
+            }
+        },
         "Logging.LogEntryAdded": {
-            "description": "Emitted whenever an entry is appended to the logging system.",
+            "description": "Emitted whenever an entry is appended to the logging system. ",
             "params": {
                 "logEntry": "$ref:LogEntry"
+            }
+        },
+        "Rules.RuleActiveChanged": {
+            "description": "Emitted whenever the active state of a Rule changed.",
+            "params": {
+                "active": "Bool",
+                "ruleId": "Uuid"
+            }
+        },
+        "Rules.RuleAdded": {
+            "description": "Emitted whenever a Rule was added.",
+            "params": {
+                "rule": "$ref:Rule"
+            }
+        },
+        "Rules.RuleConfigurationChanged": {
+            "description": "Emitted whenever the configuration of a Rule changed.",
+            "params": {
+                "rule": "$ref:Rule"
+            }
+        },
+        "Rules.RuleRemoved": {
+            "description": "Emitted whenever a Rule was removed.",
+            "params": {
+                "ruleId": "Uuid"
             }
         }
     },
@@ -472,9 +580,11 @@
             "DeviceErrorSetupMethodNotSupported",
             "DeviceErrorHardwareNotAvailable",
             "DeviceErrorHardwareFailure",
+            "DeviceErrorAuthentificationFailure",
             "DeviceErrorAsync",
             "DeviceErrorDeviceInUse",
-            "DeviceErrorPairingTransactionIdNotFound"
+            "DeviceErrorPairingTransactionIdNotFound",
+            "DeviceErrorParameterNotWritable"
         ],
         "Event": {
             "deviceId": "Uuid",
@@ -522,7 +632,8 @@
         },
         "LoggingError": [
             "LoggingErrorNoError",
-            "LoggingErrorLogEntryNotFound"
+            "LoggingErrorLogEntryNotFound",
+            "LoggingErrorInvalidFilterParameter"
         ],
         "LoggingEventType": [
             "LoggingEventTypeTrigger",
@@ -557,6 +668,8 @@
             "o:inputType": "$ref:InputType",
             "o:maxValue": "Variant",
             "o:minValue": "Variant",
+            "o:readOnly": "Bool",
+            "o:unit": "$ref:Unit",
             "type": "$ref:BasicType"
         },
         "Plugin": {
@@ -574,6 +687,7 @@
             "actions": [
                 "$ref:RuleAction"
             ],
+            "active": "Bool",
             "enabled": "Bool",
             "eventDescriptors": [
                 "$ref:EventDescriptor"
@@ -597,6 +711,12 @@
             "o:eventParamName": "String",
             "o:eventTypeId": "Uuid",
             "o:value": "$ref:BasicType"
+        },
+        "RuleDescription": {
+            "active": "Bool",
+            "enabled": "Bool",
+            "id": "Uuid",
+            "name": "String"
         },
         "RuleError": [
             "RuleErrorNoError",
@@ -643,8 +763,49 @@
             "defaultValue": "Variant",
             "id": "Uuid",
             "name": "String",
+            "o:unit": "$ref:Unit",
             "type": "$ref:BasicType"
         },
+        "Unit": [
+            "UnitNone",
+            "UnitSeconds",
+            "UnitMinutes",
+            "UnitHours",
+            "UnitUnixTime",
+            "UnitMeterPerSecond",
+            "UnitKiloMeterPerHour",
+            "UnitDegree",
+            "UnitRadiant",
+            "UnitDegreeCelsius",
+            "UnitDegreeKelvin",
+            "UnitMired",
+            "UnitMilliBar",
+            "UnitBar",
+            "UnitPascal",
+            "UnitHectoPascal",
+            "UnitAtmosphere",
+            "UnitLumen",
+            "UnitLux",
+            "UnitCandela",
+            "UnitMilliMeter",
+            "UnitCentiMeter",
+            "UnitMeter",
+            "UnitKiloMeter",
+            "UnitGram",
+            "UnitKiloGram",
+            "UnitDezibel",
+            "UnitKiloByte",
+            "UnitMegaByte",
+            "UnitGigaByte",
+            "UnitTeraByte",
+            "UnitMilliWatt",
+            "UnitWatt",
+            "UnitKiloWatt",
+            "UnitKiloWattHour",
+            "UnitPercentage",
+            "UnitEuro",
+            "UnitDollar"
+        ],
         "ValueOperator": [
             "ValueOperatorEquals",
             "ValueOperatorNotEquals",

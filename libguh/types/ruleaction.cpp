@@ -1,5 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -18,15 +21,15 @@
 
 /*!
     \class RuleAction
-    \brief Describes an action for a \l{Rule}.
+    \brief Describes an action for a \l{guhserver::Rule}.
 
-    \ingroup types
+    \ingroup guh-types
     \inmodule libguh
 
-    A RuleAction describes a special form of an \l{Action} for a \l{Rule}. The main difference is
-    the \l{RuleActionParam}, which allows to use an EventTypeId within a \l{Rule} to execute this \l{RuleAction}.
+    A RuleAction describes a special form of an \l{Action} for a \l{guhserver::Rule}. The main difference is
+    the \l{RuleActionParam}, which allows to use an EventTypeId within a \l{guhserver::Rule} to execute this \l{RuleAction}.
 
-    \sa Rule, RuleActionParam,
+    \sa guhserver::Rule, RuleActionParam,
 */
 
 #include "ruleaction.h"

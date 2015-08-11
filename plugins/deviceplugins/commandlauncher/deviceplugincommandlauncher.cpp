@@ -1,5 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -123,15 +126,15 @@ DeviceManager::DeviceSetupStatus DevicePluginCommandLauncher::setupDevice(Device
         // check if script exists and if it is executable
         QFileInfo fileInfo(scriptArguments.first());
         if (!fileInfo.exists()) {
-            qWarning() << "ERROR: script " << scriptArguments.first() << "does not exist.";
+            qCWarning(dcCommandLauncher) << "script " << scriptArguments.first() << "does not exist.";
             return DeviceManager::DeviceSetupStatusFailure;
         }
         if (!fileInfo.isExecutable()) {
-            qWarning() << "ERROR: script " << scriptArguments.first() << "is not executable. Please check the permissions.";
+            qCWarning(dcCommandLauncher) << "script " << scriptArguments.first() << "is not executable. Please check the permissions.";
             return DeviceManager::DeviceSetupStatusFailure;
         }
         if (!fileInfo.isReadable()) {
-            qWarning() << "ERROR: script " << scriptArguments.first() << "is not readable. Please check the permissions.";
+            qCWarning(dcCommandLauncher) << "script " << scriptArguments.first() << "is not readable. Please check the permissions.";
             return DeviceManager::DeviceSetupStatusFailure;
         }
 

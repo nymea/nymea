@@ -1,5 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -20,9 +23,8 @@
 #define DEVICEPLUGINPHILIPSHUE_H
 
 #include "plugin/deviceplugin.h"
-#include "discovery.h"
-#include "huebridgeconnection.h"
-#include "light.h"
+#include "huebridge.h"
+#include "huelight.h"
 
 class QNetworkReply;
 
@@ -37,16 +39,14 @@ public:
     explicit DevicePluginPhilipsHue();
 
     DeviceManager::HardwareResources requiredHardware() const override;
-
-    void startMonitoringAutoDevices() override;
-
-    QList<ParamType> configurationDescription() const override;
-    DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
-
     DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
+    DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
     void deviceRemoved(Device *device) override;
+    void upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &upnpDeviceDescriptorList) override;
 
-    DeviceManager::DeviceSetupStatus confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params) override;
+    DeviceManager::DeviceSetupStatus confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret) override;
+
+    void networkManagerReplyReady(QNetworkReply *reply) override;
 
     void guhTimer() override;
 
@@ -54,31 +54,47 @@ public slots:
     DeviceManager::DeviceError executeAction(Device *device, const Action &action);
 
 private slots:
-    void discoveryDone(const QList<QHostAddress> &bridges);
-
-    void createUserFinished(int id, const QVariant &params);
-    void getLightsFinished(int id, const QVariant &params);
-    void getFinished(int id, const QVariant &params);
-
     void lightStateChanged();
 
 private:
-    Discovery *m_discovery;
 
     class PairingInfo {
     public:
         PairingTransactionId pairingTransactionId;
-        Param ipParam;
-        Param usernameParam;
+        QHostAddress host;
+        QString apiKey;
     };
 
-    QHash<int, PairingInfo> m_pairings;
-    HueBridgeConnection *m_bridge;
+    QHash<QNetworkReply *, PairingInfo> m_pairingRequests;
+    QHash<QNetworkReply *, PairingInfo> m_informationRequests;
 
-    QList<Light*> m_unconfiguredLights;
-    QHash<Light*, Device*> m_lights;
+    QList<HueBridge *> m_unconfiguredBridges;
+    QList<HueLight *> m_unconfiguredLights;
 
-    QHash<Light*, Device*> m_asyncSetups;
+    QHash<QNetworkReply *, Device *> m_lightRefreshRequests;
+    QHash<QNetworkReply *, Device *> m_lightSetNameRequests;
+    QHash<QNetworkReply *, Device *> m_bridgeRefreshRequests;
+    QHash<QNetworkReply *, QPair<Device *, ActionId> > m_asyncActions;
+
+    QHash<HueBridge*, Device*> m_bridges;
+    QHash<HueLight*, Device*> m_lights;
+
+    void refreshLight(Device *device);
+    void refreshBridge(Device *device);
+
+    void setLightName(Device *device, QString name);
+
+    void processLightRefreshResponse(Device *device, const QByteArray &data);
+    void processBridgeRefreshResponse(Device *device, const QByteArray &data);
+    void processSetNameResponse(Device *device, const QByteArray &data);
+    void processPairingResponse(const PairingInfo &pairingInfo, const QByteArray &data);
+    void processInformationResponse(const PairingInfo &pairingInfo, const QByteArray &data);
+    void processActionResponse(Device *device, const ActionId actionId, const QByteArray &data);
+
+    void onBridgeError(Device *device);
+
+    int brightnessToPercentage(int brightness);
+    int percentageToBrightness(int percentage);
 };
 
 #endif // DEVICEPLUGINBOBLIGHT_H

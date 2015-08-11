@@ -1,5 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -19,11 +22,14 @@
 #include "devicehandler.h"
 #include "guhcore.h"
 #include "devicemanager.h"
+#include "loggingcategories.h"
 #include "plugin/device.h"
 #include "plugin/deviceclass.h"
 #include "plugin/deviceplugin.h"
 
 #include <QDebug>
+
+namespace guhserver {
 
 DeviceHandler::DeviceHandler(QObject *parent) :
     JsonHandler(parent)
@@ -139,6 +145,21 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     setReturns("GetDiscoveredDevices", returns);
 
     params.clear(); returns.clear();
+    setDescription("EditDevice", "Edit the parameters of a device. The device params will be set to the "
+                   "passed parameters and the setup device will be called. If the device is discoverable, "
+                   "you can perform a GetDiscoveredDevices before calling this method and pass "
+                   "the new DeviceDescriptor (rediscover). If a parameter is not writable, you will find a "
+                   "'readOnly': true in the ParamType. By default, every Param is writable.");
+    params.insert("deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    params.insert("o:deviceDescriptorId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    QVariantList newDeviceParams;
+    newDeviceParams.append(JsonTypes::paramRef());
+    params.insert("o:deviceParams", newDeviceParams);
+    setParams("EditDevice", params);
+    returns.insert("deviceError", JsonTypes::deviceErrorRef());
+    setReturns("EditDevice", returns);
+
+    params.clear(); returns.clear();
     setDescription("RemoveConfiguredDevice", "Remove a device from the system.");
     params.insert("deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     QVariantList removePolicyList;
@@ -208,9 +229,28 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     params.insert("value", JsonTypes::basicTypeToString(JsonTypes::Variant));
     setParams("StateChanged", params);
 
+    params.clear(); returns.clear();
+    setDescription("DeviceRemoved", "Emitted whenever a Device was removed.");
+    params.insert("deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    setParams("DeviceRemoved", params);
+
+    params.clear(); returns.clear();
+    setDescription("DeviceAdded", "Emitted whenever a Device was added.");
+    params.insert("device", JsonTypes::deviceRef());
+    setParams("DeviceAdded", params);
+
+    params.clear(); returns.clear();
+    setDescription("DeviceParamsChanged", "Emitted whenever the params of a Device changed (by editing or rediscovering).");
+    params.insert("device", JsonTypes::deviceRef());
+    setParams("DeviceParamsChanged", params);
+
     connect(GuhCore::instance(), &GuhCore::deviceStateChanged, this, &DeviceHandler::deviceStateChanged);
+    connect(GuhCore::instance(), &GuhCore::deviceRemoved, this, &DeviceHandler::deviceRemovedNotification);
+    connect(GuhCore::instance(), &GuhCore::deviceAdded, this, &DeviceHandler::deviceAddedNotification);
+    connect(GuhCore::instance(), &GuhCore::deviceParamsChanged, this, &DeviceHandler::deviceParamsChangedNotification);
     connect(GuhCore::instance(), &GuhCore::devicesDiscovered, this, &DeviceHandler::devicesDiscovered, Qt::QueuedConnection);
     connect(GuhCore::instance(), &GuhCore::deviceSetupFinished, this, &DeviceHandler::deviceSetupFinished);
+    connect(GuhCore::instance(), &GuhCore::deviceEditFinished, this, &DeviceHandler::deviceEditFinished);
     connect(GuhCore::instance(), &GuhCore::pairingFinished, this, &DeviceHandler::pairingFinished);
 }
 
@@ -222,29 +262,16 @@ QString DeviceHandler::name() const
 JsonReply* DeviceHandler::GetSupportedVendors(const QVariantMap &params) const
 {
     Q_UNUSED(params)
+
     QVariantMap returns;
-    QVariantList supportedVendors;
-    foreach (const Vendor &vendor, GuhCore::instance()->supportedVendors()) {
-        supportedVendors.append(JsonTypes::packVendor(vendor));
-    }
-    returns.insert("vendors", supportedVendors);
+    returns.insert("vendors", JsonTypes::packSupportedVendors());
     return createReply(returns);
 }
 
 JsonReply* DeviceHandler::GetSupportedDevices(const QVariantMap &params) const
 {
     QVariantMap returns;
-    QVariantList supportedDeviceList;
-    QList<DeviceClass> supportedDevices;
-    if (params.contains("vendorId")) {
-        supportedDevices = GuhCore::instance()->supportedDevices(VendorId(params.value("vendorId").toString()));
-    } else {
-        supportedDevices = GuhCore::instance()->supportedDevices();
-    }
-    foreach (const DeviceClass &deviceClass, supportedDevices) {
-        supportedDeviceList.append(JsonTypes::packDeviceClass(deviceClass));
-    }
-    returns.insert("deviceClasses", supportedDeviceList);
+    returns.insert("deviceClasses", JsonTypes::packSupportedDevices(VendorId(params.value("vendorId").toString())));
     return createReply(returns);
 }
 
@@ -269,20 +296,9 @@ JsonReply *DeviceHandler::GetDiscoveredDevices(const QVariantMap &params) const
 JsonReply* DeviceHandler::GetPlugins(const QVariantMap &params) const
 {
     Q_UNUSED(params)
+
     QVariantMap returns;
-    QVariantList plugins;
-    foreach (DevicePlugin *plugin, GuhCore::instance()->plugins()) {
-        QVariantMap pluginMap;
-        pluginMap.insert("id", plugin->pluginId());
-        pluginMap.insert("name", plugin->pluginName());
-        QVariantList params;
-        foreach (const ParamType &param, plugin->configurationDescription()) {
-            params.append(JsonTypes::packParamType(param));
-        }
-        pluginMap.insert("params", params);
-        plugins.append(pluginMap);
-    }
-    returns.insert("plugins", plugins);
+    returns.insert("plugins", JsonTypes::packPlugins());
     return createReply(returns);
 }
 
@@ -402,6 +418,31 @@ JsonReply* DeviceHandler::GetConfiguredDevices(const QVariantMap &params) const
     return createReply(returns);
 }
 
+JsonReply *DeviceHandler::EditDevice(const QVariantMap &params)
+{
+    Q_UNUSED(params);
+    DeviceId deviceId = DeviceId(params.value("deviceId").toString());
+    ParamList deviceParams = JsonTypes::unpackParams(params.value("deviceParams").toList());
+
+    DeviceManager::DeviceError status;
+    DeviceDescriptorId deviceDescriptorId(params.value("deviceDescriptorId").toString());
+    if (deviceDescriptorId.isNull()) {
+        status = GuhCore::instance()->editDevice(deviceId, deviceParams);
+    } else {
+        status = GuhCore::instance()->editDevice(deviceId, deviceDescriptorId);
+    }
+
+    if (status == DeviceManager::DeviceErrorAsync) {
+        JsonReply *asyncReply = createAsyncReply("EditDevice");
+        m_asynDeviceEditAdditions.insert(deviceId, asyncReply);
+        return asyncReply;
+    }
+
+    QVariantMap returns;
+    returns.insert("deviceError", JsonTypes::deviceErrorToString(status));
+    return createReply(returns);
+}
+
 JsonReply* DeviceHandler::RemoveConfiguredDevice(const QVariantMap &params)
 {
     DeviceId deviceId = DeviceId(params.value("deviceId").toString());
@@ -466,14 +507,14 @@ JsonReply* DeviceHandler::GetStateValue(const QVariantMap &params) const
         returns.insert("deviceError", JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorDeviceNotFound));
         return createReply(returns);
     }
-    if (!device->hasState(StateTypeId(params.value("stateTypeId").toString()))) {
+    StateTypeId stateTypeId = StateTypeId(params.value("stateTypeId").toString());
+    if (!device->hasState(stateTypeId)) {
         returns.insert("deviceError", JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorStateTypeNotFound));
         return createReply(returns);
     }
-    QVariant stateValue = device->stateValue(StateTypeId(params.value("stateTypeId").toString()));
 
     returns.insert("deviceError", JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorNoError));
-    returns.insert("value", stateValue);
+    returns.insert("value", device->state(stateTypeId).value());
     return createReply(returns);
 }
 
@@ -487,20 +528,8 @@ JsonReply *DeviceHandler::GetStateValues(const QVariantMap &params) const
         return createReply(returns);
     }
 
-    DeviceClass deviceClass = GuhCore::instance()->findDeviceClass(device->deviceClassId());
-    if (!deviceClass.isValid()) {
-        returns.insert("deviceError", JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorDeviceClassNotFound));
-        return createReply(returns);
-    }
-    QVariantList values;
-    foreach (const StateType &stateType, deviceClass.stateTypes()) {
-        QVariantMap stateValue;
-        stateValue.insert("stateTypeId", stateType.id().toString());
-        stateValue.insert("value", device->stateValue(stateType.id()));
-        values.append(stateValue);
-    }
     returns.insert("deviceError", JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorNoError));
-    returns.insert("values", values);
+    returns.insert("values", JsonTypes::packDeviceStates(device));
     return createReply(returns);
 }
 
@@ -514,6 +543,30 @@ void DeviceHandler::deviceStateChanged(Device *device, const QUuid &stateTypeId,
     emit StateChanged(params);
 }
 
+void DeviceHandler::deviceRemovedNotification(const QUuid &deviceId)
+{
+    QVariantMap params;
+    params.insert("deviceId", deviceId);
+
+    emit DeviceRemoved(params);
+}
+
+void DeviceHandler::deviceAddedNotification(Device *device)
+{
+    QVariantMap params;
+    params.insert("device", JsonTypes::packDevice(device));
+
+    emit DeviceAdded(params);
+}
+
+void DeviceHandler::deviceParamsChangedNotification(Device *device)
+{
+    QVariantMap params;
+    params.insert("device", JsonTypes::packDevice(device));
+
+    emit DeviceParamsChanged(params);
+}
+
 void DeviceHandler::devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors)
 {
     if (!m_discoverRequests.contains(deviceClassId)) {
@@ -521,12 +574,9 @@ void DeviceHandler::devicesDiscovered(const DeviceClassId &deviceClassId, const 
     }
 
     JsonReply *reply = m_discoverRequests.take(deviceClassId);
-    QVariantList list;
-    foreach (const DeviceDescriptor &descriptor, deviceDescriptors) {
-        list.append(JsonTypes::packDeviceDescriptor(descriptor));
-    }
+
     QVariantMap returns;
-    returns.insert("deviceDescriptors", list);
+    returns.insert("deviceDescriptors", JsonTypes::packDeviceDescriptors(deviceDescriptors));
     returns.insert("deviceError", JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorNoError));
 
     reply->setData(returns);
@@ -535,7 +585,7 @@ void DeviceHandler::devicesDiscovered(const DeviceClassId &deviceClassId, const 
 
 void DeviceHandler::deviceSetupFinished(Device *device, DeviceManager::DeviceError status)
 {
-    qDebug() << "got a device setup finished";
+    qCDebug(dcJsonRpc) << "got a device setup finished";
     if (!m_asynDeviceAdditions.contains(device->id())) {
         return; // Not the device we're waiting for...
     }
@@ -550,14 +600,28 @@ void DeviceHandler::deviceSetupFinished(Device *device, DeviceManager::DeviceErr
     }
     reply->setData(returns);
     reply->finished();
+
+}
+
+void DeviceHandler::deviceEditFinished(Device *device, DeviceManager::DeviceError status)
+{
+    qCDebug(dcJsonRpc) << "got async edit finished";
+    if (!m_asynDeviceEditAdditions.contains(device->id())) {
+        return;
+    }
+    JsonReply *reply = m_asynDeviceEditAdditions.take(device->id());
+
+    QVariantMap returns;
+    returns.insert("deviceError", JsonTypes::deviceErrorToString(status));
+    reply->setData(returns);
+    reply->finished();
 }
 
 void DeviceHandler::pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceError status, const DeviceId &deviceId)
 {
-    qDebug() << "handler: pairing finished";
+    qCDebug(dcJsonRpc) << "got pairing finished";
     JsonReply *reply = m_asyncPairingRequests.take(pairingTransactionId);
     if (!reply) {
-        qDebug() << "not for me";
         return;
     }
 
@@ -568,6 +632,7 @@ void DeviceHandler::pairingFinished(const PairingTransactionId &pairingTransacti
         reply->finished();
         return;
     }
-
     m_asynDeviceAdditions.insert(deviceId, reply);
+}
+
 }

@@ -1,9 +1,11 @@
 {
     "name": "WiFi Detector",
+    "idName": "WifiDetector",
     "id": "8e0f791e-b273-4267-8605-b7c2f55a68ab",
     "vendors": [
         {
             "name": "guh",
+            "idName": "guh",
             "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6",
             "deviceClasses": [
                 {

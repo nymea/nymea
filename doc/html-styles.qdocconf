@@ -7,11 +7,15 @@ HTML.templatedir = .
 HTML.stylesheets = style.css
 
 HTML.scripts     =
+
+extraimages.HTML = images/logo.png \
+                   images/favicon.ico \
     
 # Include the style sheets and scripts used.
 
 HTML.headerstyles = \
-    "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/style.css\" />\n"
+    "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/style.css\" />\n" \
+    "  <link rel=\"shortcut icon\" type=\"image/ico\" href=\"favicon.ico\" />\n"
 
 HTML.headerscripts = 
 

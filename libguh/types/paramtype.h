@@ -1,5 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -46,11 +49,17 @@ public:
     Types::InputType inputType() const;
     void setInputType(const Types::InputType &inputType);
 
+    Types::Unit unit() const;
+    void setUnit(const Types::Unit &unit);
+
     QPair<QVariant, QVariant> limits() const;
     void setLimits(const QVariant &min, const QVariant &max);
 
     QList<QVariant> allowedValues() const;
     void setAllowedValues(const QList<QVariant> allowedValues);
+
+    bool readOnly() const;
+    void setReadOnly(const bool &readOnly);
 
 private:
     QString m_name;
@@ -59,7 +68,9 @@ private:
     QVariant m_minValue;
     QVariant m_maxValue;
     Types::InputType m_inputType;
+    Types::Unit m_unit;
     QVariantList m_allowedValues;
+    bool m_readOnly;
 };
 
 QDebug operator<<(QDebug dbg, const ParamType &paramType);

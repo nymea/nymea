@@ -1,9 +1,11 @@
 {
     "name": "Mail notification",
+    "idName": "MailNotification",
     "id": "1ae35df1-1b51-4c93-94fa-3febc77e0318",
     "vendors": [
         {
             "name": "guh",
+            "idName": "guh",
             "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6",
             "deviceClasses": [
                 {
@@ -77,7 +79,7 @@
         },
         {
             "name": "Google",
-            "id": "d02399c5-8e79-40be-8cf6-e00b55bbfe7c",
+            "id": "d02399c5-8e79-4  0be-8cf6-e00b55bbfe7c",
             "deviceClasses": [
                 {
                     "deviceClassId": "3869884a-1592-4b8f-84a7-994be18ff555",

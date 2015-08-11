@@ -1,5 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -17,54 +20,90 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class GuhCore
+    \class guhserver::GuhCore
     \brief The main entry point for the Guh Server and the place where all the messages are dispatched.
 
-    \ingroup core
-    \inmodule server
+    \inmodule core
 
     GuhCore is a singleton instance and the main entry point of the Guh daemon. It is responsible to
     instantiate, set up and connect all the other components.
 */
 
-/*! \enum GuhCore::RunningMode
+/*! \enum guhserver::GuhCore::RunningMode
     \value RunningModeApplication
         Guh runns as application.
     \value RunningModeService
         Guh is started as service (daemon).
 */
 
-/*! \fn void GuhCore::eventTriggered(const Event &event);
+/*! \fn void guhserver::GuhCore::eventTriggered(const Event &event);
     This signal is emitted when an \a event happend.
 */
 
-/*! \fn void GuhCore::deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
+/*! \fn void guhserver::GuhCore::deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
     This signal is emitted when the \l{State} of a \a device changed. The \a stateTypeId parameter describes the
     \l{StateType} and the \a value parameter holds the new value.
 */
 
-/*! \fn void GuhCore::actionExecuted(const ActionId &id, DeviceManager::DeviceError status);
+/*! \fn void guhserver::GuhCore::deviceRemoved(const DeviceId &deviceId);
+    This signal is emitted when a \l{Device} with the given \a deviceId was removed.
+*/
+
+/*! \fn void guhserver::GuhCore::deviceAdded(Device *device);
+    This signal is emitted when a \a device was added to the system.
+*/
+
+/*! \fn void guhserver::GuhCore::deviceParamsChanged(Device *device);
+    This signal is emitted when the \l{ParamList}{Params} of a \a device have been changed.
+*/
+
+/*! \fn void guhserver::GuhCore::actionExecuted(const ActionId &id, DeviceManager::DeviceError status);
     This signal is emitted when the \l{Action} with the given \a id is finished.
     The \a status of the \l{Action} execution will be described as \l{DeviceManager::DeviceError}{DeviceError}.
 */
 
-/*! \fn void GuhCore::devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
+/*! \fn void guhserver::GuhCore::devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
     This signal is emitted when the discovery of a \a deviceClassId is finished. The \a deviceDescriptors parameter describes the
     list of \l{DeviceDescriptor}{DeviceDescriptors} of all discovered \l{Device}{Devices}.
     \sa discoverDevices()
 */
 
-/*! \fn void GuhCore::deviceSetupFinished(Device *device, DeviceManager::DeviceError status);
+/*! \fn void guhserver::GuhCore::deviceSetupFinished(Device *device, DeviceManager::DeviceError status);
     This signal is emitted when the setup of a \a device is finished. The \a status parameter describes the
     \l{DeviceManager::DeviceError}{DeviceError} that occurred.
 */
 
-/*! \fn void GuhCore::pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceError status, const DeviceId &deviceId);
+/*! \fn void guhserver::GuhCore::deviceEditFinished(Device *device, DeviceManager::DeviceError status);
+    This signal is emitted when the edit request of a \a device is finished. The \a status of the edit request will be
+    described as \l{DeviceManager::DeviceError}{DeviceError}.
+*/
+
+/*! \fn void guhserver::GuhCore::pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceError status, const DeviceId &deviceId);
     The DeviceManager will emit a this Signal when the pairing of a \l{Device} with the \a deviceId and \a pairingTransactionId is finished.
     The \a status of the pairing will be described as \l{DeviceManager::DeviceError}{DeviceError}.
 */
 
+/*! \fn void guhserver::GuhCore::ruleRemoved(const RuleId &ruleId);
+    This signal is emitted when a \l{Rule} with the given \a ruleId was removed.
+*/
+
+/*! \fn void guhserver::GuhCore::ruleAdded(const Rule &rule);
+    This signal is emitted when a \a rule was added to the system.
+*/
+
+/*! \fn void guhserver::GuhCore::ruleConfigurationChanged(const Rule &rule);
+    This signal is emitted when the configuration of \a rule changed.
+*/
+
+/*! \fn void ruleActiveChanged(const Rule &rule);
+    This signal is emitted when a \a rule changed the active state.
+    A \l{Rule} is active, when all \l{State}{States} match with the \l{StateDescriptor} conditions.
+
+    \sa Rule::active()
+*/
+
 #include "guhcore.h"
+#include "loggingcategories.h"
 #include "jsonrpcserver.h"
 #include "ruleengine.h"
 #include "logging/logengine.h"
@@ -72,7 +111,8 @@
 #include "devicemanager.h"
 #include "plugin/device.h"
 
-#include <QDebug>
+
+namespace guhserver {
 
 GuhCore* GuhCore::s_instance = 0;
 
@@ -89,7 +129,7 @@ GuhCore *GuhCore::instance()
 GuhCore::~GuhCore()
 {
     m_logger->logSystemEvent(false);
-    qDebug() << "Shutting down. Bye.";
+    qCDebug(dcApplication) << "Shutting down. Bye.";
 }
 
 /*! Destroyes the \l{GuhCore} instance. */
@@ -159,7 +199,7 @@ DeviceManager::DeviceError GuhCore::removeConfiguredDevice(const DeviceId &devic
     }
 
     if (!unhandledRules.isEmpty()) {
-        qWarning() << "There are unhandled rules which depend on this device.";
+        qCWarning(dcDeviceManager) << "There are unhandled rules which depend on this device.";
         return DeviceManager::DeviceErrorDeviceInUse;
     }
 
@@ -172,7 +212,11 @@ DeviceManager::DeviceError GuhCore::removeConfiguredDevice(const DeviceId &devic
         }
     }
 
-    return m_deviceManager->removeConfiguredDevice(deviceId);
+    DeviceManager::DeviceError removeError = m_deviceManager->removeConfiguredDevice(deviceId);
+    if (removeError == DeviceManager::DeviceErrorNoError)
+        m_logger->removeDeviceLogs(deviceId);
+
+    return removeError;
 }
 
 /*! Calls the metheod DeviceManager::pairDevice(\a pairingTransactionId, \a deviceClassId, \a deviceDescriptorId).
@@ -263,39 +307,64 @@ QList<Device *> GuhCore::findConfiguredDevices(const DeviceClassId &deviceClassI
     return m_deviceManager->findConfiguredDevices(deviceClassId);
 }
 
-/*! Calls the metheod RuleEngine::rule().
- *  \sa RuleEngine, */
+/*! Calls the metheod DeviceManager::editDevice(\a deviceId, \a params).
+ *  \sa DeviceManager::editDevice(), */
+DeviceManager::DeviceError GuhCore::editDevice(const DeviceId &deviceId, const ParamList &params)
+{
+    return m_deviceManager->editDevice(deviceId, params);
+}
+
+/*! Calls the metheod DeviceManager::editDevice(\a deviceId, \a deviceDescriptorId).
+ *  \sa DeviceManager::editDevice(), */
+DeviceManager::DeviceError GuhCore::editDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId)
+{
+    return m_deviceManager->editDevice(deviceId, deviceDescriptorId);
+}
+
+/*! Calls the metheod RuleEngine::rules().
+ *  \sa RuleEngine::rules(), */
 QList<Rule> GuhCore::rules() const
 {
     return m_ruleEngine->rules();
 }
 
 /*! Calls the metheod RuleEngine::ruleIds().
- *  \sa RuleEngine, */
+ *  \sa RuleEngine::ruleIds(), */
 QList<RuleId> GuhCore::ruleIds() const
 {
     return m_ruleEngine->ruleIds();
 }
 
 /*! Calls the metheod RuleEngine::findRule(\a ruleId).
- *  \sa RuleEngine, */
+ *  \sa RuleEngine::findRule(), */
 Rule GuhCore::findRule(const RuleId &ruleId)
 {
     return m_ruleEngine->findRule(ruleId);
 }
 
 /*! Calls the metheod RuleEngine::addRule(\a id, \a name, \a eventDescriptorList, \a stateEvaluator \a actionList, \a exitActionList, \a enabled).
- *  \sa RuleEngine, */
+ *  \sa RuleEngine::addRule(), */
 RuleEngine::RuleError GuhCore::addRule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actionList, const QList<RuleAction> &exitActionList, bool enabled)
 {
     return m_ruleEngine->addRule(id, name, eventDescriptorList, stateEvaluator, actionList, exitActionList, enabled);
+}
+
+/*! Calls the metheod RuleEngine::editRule(\a id, \a name, \a eventDescriptorList, \a stateEvaluator \a actionList, \a exitActionList, \a enabled).
+ *  \sa RuleEngine::editRule(), */
+RuleEngine::RuleError GuhCore::editRule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actionList, const QList<RuleAction> &exitActionList, bool enabled)
+{
+    return m_ruleEngine->editRule(id, name, eventDescriptorList, stateEvaluator, actionList, exitActionList, enabled);
 }
 
 /*! Calls the metheod RuleEngine::removeRule(\a id).
  *  \sa RuleEngine, */
 RuleEngine::RuleError GuhCore::removeRule(const RuleId &id)
 {
-    return m_ruleEngine->removeRule(id);
+    RuleEngine::RuleError removeError = m_ruleEngine->removeRule(id);
+    if (removeError != RuleEngine::RuleErrorNoError)
+        m_logger->removeRuleLogs(id);
+
+    return removeError;
 }
 
 /*! Calls the metheod RuleEngine::findRules(\a deviceId).
@@ -306,14 +375,14 @@ QList<RuleId> GuhCore::findRules(const DeviceId &deviceId)
 }
 
 /*! Calls the metheod RuleEngine::enableRule(\a ruleId).
- *  \sa RuleEngine, */
+ *  \sa RuleEngine::enableRule(), */
 RuleEngine::RuleError GuhCore::enableRule(const RuleId &ruleId)
 {
     return m_ruleEngine->enableRule(ruleId);
 }
 
 /*! Calls the metheod RuleEngine::disableRule(\a ruleId).
- *  \sa RuleEngine, */
+ *  \sa RuleEngine::disableRule(), */
 RuleEngine::RuleError GuhCore::disableRule(const RuleId &ruleId)
 {
     return m_ruleEngine->disableRule(ruleId);
@@ -336,34 +405,33 @@ RuleEngine *GuhCore::ruleEngine() const
 GuhCore::GuhCore(QObject *parent) :
     QObject(parent)
 {
-    qDebug() << "*****************************************";
-    qDebug() << "* GUH version:" << GUH_VERSION_STRING << "starting up.       *";
-    qDebug() << "*****************************************";
+    qCDebug(dcApplication) << "guh version:" << GUH_VERSION_STRING << "starting up.";
 
     m_logger = new LogEngine(this);
 
-    qDebug() << "*****************************************";
-    qDebug() << "* Creating Device Manager               *";
-    qDebug() << "*****************************************";
+    qCDebug(dcApplication) << "Creating Device Manager";
     m_deviceManager = new DeviceManager(this);
 
-    qDebug() << "*****************************************";
-    qDebug() << "* Creating Rule Engine                  *";
-    qDebug() << "*****************************************";
+    qCDebug(dcApplication) << "Creating Rule Engine";
     m_ruleEngine = new RuleEngine(this);
 
-    qDebug() << "*****************************************";
-    qDebug() << "* Starting JSON RPC Server              *";
-    qDebug() << "*****************************************";
-    m_jsonServer = new JsonRPCServer(this);
+
+    m_serverManager = new ServerManager(this);
 
     connect(m_deviceManager, &DeviceManager::eventTriggered, this, &GuhCore::gotEvent);
     connect(m_deviceManager, &DeviceManager::deviceStateChanged, this, &GuhCore::deviceStateChanged);
+    connect(m_deviceManager, &DeviceManager::deviceAdded, this, &GuhCore::deviceAdded);
+    connect(m_deviceManager, &DeviceManager::deviceParamsChanged, this, &GuhCore::deviceParamsChanged);
+    connect(m_deviceManager, &DeviceManager::deviceRemoved, this, &GuhCore::deviceRemoved);
     connect(m_deviceManager, &DeviceManager::actionExecutionFinished, this, &GuhCore::actionExecutionFinished);
-
     connect(m_deviceManager, &DeviceManager::devicesDiscovered, this, &GuhCore::devicesDiscovered);
     connect(m_deviceManager, &DeviceManager::deviceSetupFinished, this, &GuhCore::deviceSetupFinished);
+    connect(m_deviceManager, &DeviceManager::deviceEditFinished, this, &GuhCore::deviceEditFinished);
     connect(m_deviceManager, &DeviceManager::pairingFinished, this, &GuhCore::pairingFinished);
+
+    connect(m_ruleEngine, &RuleEngine::ruleAdded, this, &GuhCore::ruleAdded);
+    connect(m_ruleEngine, &RuleEngine::ruleRemoved, this, &GuhCore::ruleRemoved);
+    connect(m_ruleEngine, &RuleEngine::ruleConfigurationChanged, this, &GuhCore::ruleConfigurationChanged);
 
     m_logger->logSystemEvent(true);
 }
@@ -386,12 +454,13 @@ void GuhCore::gotEvent(const Event &event)
                 if (action.isEventBased()) {
                     eventBasedActions.append(action);
                 } else {
-                    actions.append(rule.actions());
+                    actions.append(action);
                 }
             }
         } else {
             // State based rule
             m_logger->logRuleActiveChanged(rule);
+            emit ruleActiveChanged(rule);
             if (rule.active()) {
                 actions.append(rule.actions());
             } else {
@@ -408,12 +477,13 @@ void GuhCore::gotEvent(const Event &event)
             if (event.eventTypeId() == ruleActionParam.eventTypeId()) {
                 QVariant eventValue = event.params().first().value();
 
-                // TODO: get param names...
+                // TODO: get param names...when an event has more than one parameter
 
-                // TODO:  limits / scale calculation -> actionValue = eventValue * x
+                // TODO: limits / scale calculation -> actionValue = eventValue * x
+                //       something like a EventParamDescriptor
 
                 ruleActionParam.setValue(eventValue);
-                qDebug() << ruleActionParam.value();
+                qCDebug(dcRuleEngine) << "take over event param value" << ruleActionParam.value();
             }
             newParams.append(ruleActionParam);
         }
@@ -424,21 +494,26 @@ void GuhCore::gotEvent(const Event &event)
     // Now execute all the associated actions
     foreach (const RuleAction &ruleAction, actions) {
         Action action = ruleAction.toAction();
-        qDebug() << "executing action" << ruleAction.actionTypeId();
-        DeviceManager::DeviceError status = m_deviceManager->executeAction(action);
+        qCDebug(dcRuleEngine) << "executing action" << ruleAction.actionTypeId();
+        DeviceManager::DeviceError status = executeAction(action);
         switch(status) {
         case DeviceManager::DeviceErrorNoError:
             break;
         case DeviceManager::DeviceErrorSetupFailed:
-            qDebug() << "Error executing action. Device setup failed.";
+            qCWarning(dcRuleEngine) << "Error executing action. Device setup failed.";
+            break;
+        case DeviceManager::DeviceErrorAsync:
+            qCDebug(dcRuleEngine) << "Executing asynchronous action.";
             break;
         case DeviceManager::DeviceErrorInvalidParameter:
-            qDebug() << "Error executing action. Invalid action parameter.";
+            qCWarning(dcRuleEngine) << "Error executing action. Invalid action parameter.";
             break;
         default:
-            qDebug() << "Error executing action:" << status;
+            qCWarning(dcRuleEngine) << "Error executing action:" << status;
         }
-        m_logger->logAction(action, status == DeviceManager::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
+
+        if (status != DeviceManager::DeviceErrorAsync)
+            m_logger->logAction(action, status == DeviceManager::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
     }
 }
 
@@ -448,9 +523,23 @@ LogEngine* GuhCore::logEngine() const
     return m_logger;
 }
 
+/*! Returns the pointer to the \l{JsonRPCServer} of this instance. */
+JsonRPCServer *GuhCore::jsonRPCServer() const
+{
+    return m_serverManager->jsonServer();
+}
+
+/*! Returns the pointer to the \l{RestServer} of this instance. */
+RestServer *GuhCore::restServer() const
+{
+    return m_serverManager->restServer();
+}
+
 void GuhCore::actionExecutionFinished(const ActionId &id, DeviceManager::DeviceError status)
 {
     emit actionExecuted(id, status);
     Action action = m_pendingActions.take(id);
     m_logger->logAction(action, status == DeviceManager::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
+}
+
 }

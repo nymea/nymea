@@ -1,5 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -21,6 +24,8 @@
 
 #include "jsonhandler.h"
 #include "devicemanager.h"
+
+namespace guhserver {
 
 class DeviceHandler : public JsonHandler
 {
@@ -50,6 +55,8 @@ public:
 
     Q_INVOKABLE JsonReply* GetConfiguredDevices(const QVariantMap &params) const;
 
+    Q_INVOKABLE JsonReply* EditDevice(const QVariantMap &params);
+
     Q_INVOKABLE JsonReply* RemoveConfiguredDevice(const QVariantMap &params);
 
     Q_INVOKABLE JsonReply* GetEventTypes(const QVariantMap &params) const;
@@ -64,13 +71,24 @@ public:
 
 signals:
     void StateChanged(const QVariantMap &params);
+    void DeviceRemoved(const QVariantMap &params);
+    void DeviceAdded(const QVariantMap &params);
+    void DeviceParamsChanged(const QVariantMap &params);
 
 private slots:
     void deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
 
+    void deviceRemovedNotification(const QUuid &deviceId);
+
+    void deviceAddedNotification(Device *device);
+
+    void deviceParamsChangedNotification(Device *device);
+
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
 
     void deviceSetupFinished(Device *device, DeviceManager::DeviceError status);
+
+    void deviceEditFinished(Device *device, DeviceManager::DeviceError status);
 
     void pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceError status, const DeviceId &deviceId);
 
@@ -78,7 +96,10 @@ private:
     // A cache for async replies
     mutable QHash<DeviceClassId, JsonReply*> m_discoverRequests;
     mutable QHash<DeviceId, JsonReply*> m_asynDeviceAdditions;
+    mutable QHash<DeviceId, JsonReply*> m_asynDeviceEditAdditions;
     mutable QHash<QUuid, JsonReply*> m_asyncPairingRequests;
 };
+
+}
 
 #endif // DEVICEHANDLER_H

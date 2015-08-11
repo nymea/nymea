@@ -17,11 +17,11 @@ SUBDIRS += elro         \
     commandlauncher     \
     unitec              \
     leynew              \
+    tune                \
+    udpcommander        \
+    kodi                \
+    elgato              \
 
 boblight {
     SUBDIRS += boblight
-}
-
-contains(DEFINES, BLUETOOTH_LE) {
-    SUBDIRS += elgato
 }

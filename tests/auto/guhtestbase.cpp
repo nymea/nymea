@@ -1,34 +1,40 @@
-/****************************************************************************
- *                                                                          *
- *  This file is part of guh.                                               *
- *                                                                          *
- *  Guh is free software: you can redistribute it and/or modify             *
- *  it under the terms of the GNU General Public License as published by    *
- *  the Free Software Foundation, version 2 of the License.                 *
- *                                                                          *
- *  Guh is distributed in the hope that it will be useful,                  *
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of          *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
- *  GNU General Public License for more details.                            *
- *                                                                          *
- *  You should have received a copy of the GNU General Public License       *
- *  along with guh.  If not, see <http://www.gnu.org/licenses/>.            *
- *                                                                          *
- ***************************************************************************/
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
+ *  This file is part of guh.                                              *
+ *                                                                         *
+ *  Guh is free software: you can redistribute it and/or modify            *
+ *  it under the terms of the GNU General Public License as published by   *
+ *  the Free Software Foundation, version 2 of the License.                *
+ *                                                                         *
+ *  Guh is distributed in the hope that it will be useful,                 *
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of         *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          *
+ *  GNU General Public License for more details.                           *
+ *                                                                         *
+ *  You should have received a copy of the GNU General Public License      *
+ *  along with guh. If not, see <http://www.gnu.org/licenses/>.            *
+ *                                                                         *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "guhtestbase.h"
 #include "mocktcpserver.h"
 #include "guhcore.h"
+#include "guhsettings.h"
 #include "devicemanager.h"
 #include "jsontypes.h"
 
 #include <QVariantMap>
 #include <QJsonDocument>
+#include <QJsonParseError>
 #include <QSignalSpy>
-#include <QSettings>
 #include <QtTest>
 #include <QMetaType>
 #include <QNetworkReply>
+
+using namespace guhserver;
 
 PluginId mockPluginId = PluginId("727a4a9a-c187-446f-aadf-f1b2220607d1");
 VendorId guhVendorId = VendorId("2062d64d-3232-433c-88bc-0d33c0ba2ba6");
@@ -57,18 +63,14 @@ GuhTestBase::GuhTestBase(QObject *parent) :
     m_mockDevice1Port = 1337 + (qrand() % 1000);
     m_mockDevice2Port = 7331 + (qrand() % 1000);
     QCoreApplication::instance()->setOrganizationName("guh-test");
-
-    m_rulesSettings = QCoreApplication::instance()->organizationName() + "/rules";
-    m_deviceSettings = QCoreApplication::instance()->organizationName() + "/devices";
 }
 
 void GuhTestBase::initTestCase()
 {
-
     // If testcase asserts cleanup won't do. Lets clear any previous test run settings leftovers
-    QSettings rulesSettings(m_rulesSettings);
+    GuhSettings rulesSettings(GuhSettings::SettingsRoleRules);
     rulesSettings.clear();
-    QSettings deviceSettings(m_deviceSettings);
+    GuhSettings deviceSettings(GuhSettings::SettingsRoleDevices);
     deviceSettings.clear();
 
     GuhCore::instance();
@@ -108,7 +110,7 @@ void GuhTestBase::cleanupTestCase()
 QVariant GuhTestBase::injectAndWait(const QString &method, const QVariantMap &params)
 {
     QVariantMap call;
-    call.insert("id", m_commandId++);
+    call.insert("id", m_commandId);
     call.insert("method", method);
     call.insert("params", params);
 
@@ -121,11 +123,69 @@ QVariant GuhTestBase::injectAndWait(const QString &method, const QVariantMap &pa
         spy.wait();
     }
 
-     // Make sure the response it a valid JSON string
-     QJsonParseError error;
-     jsonDoc = QJsonDocument::fromJson(spy.takeFirst().last().toByteArray(), &error);
+    for (int i = 0; i < spy.count(); i++) {
+        // Make sure the response it a valid JSON string
+        QJsonParseError error;
+        jsonDoc = QJsonDocument::fromJson(spy.at(i).last().toByteArray(), &error);
+        if (error.error != QJsonParseError::NoError) {
+            qWarning() << "JSON parser error" << error.errorString();
+            return QVariant();
+        }
+        QVariantMap response = jsonDoc.toVariant().toMap();
 
-     return jsonDoc.toVariant();
+        // skip notifications
+        if (response.contains("notification"))
+            continue;
+
+        if (response.value("id").toInt() == m_commandId) {
+            m_commandId++;
+            return jsonDoc.toVariant();
+        }
+    }
+    m_commandId++;
+    return QVariant();
+}
+
+QVariant GuhTestBase::checkNotification(const QSignalSpy &spy, const QString &notification)
+{
+    qDebug() << "Got" << spy.count() << "notifications while waiting for" << notification;
+    for (int i = 0; i < spy.count(); i++) {
+        // Make sure the response it a valid JSON string
+        QJsonParseError error;
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(spy.at(i).last().toByteArray(), &error);
+        if (error.error != QJsonParseError::NoError) {
+            qWarning() << "JSON parser error" << error.errorString();
+            return QVariant();
+        }
+
+        QVariantMap response = jsonDoc.toVariant().toMap();
+        if (response.value("notification").toString() == notification) {
+            return jsonDoc.toVariant();
+        }
+    }
+    return QVariant();
+}
+
+bool GuhTestBase::enableNotifications()
+{
+    QVariantMap notificationParams;
+    notificationParams.insert("enabled", true);
+    QVariant response = injectAndWait("JSONRPC.SetNotificationStatus", notificationParams);
+    if (response.toMap().value("params").toMap().value("enabled").toBool() != true) {
+        return false;
+    }
+    return true;
+}
+
+bool GuhTestBase::disableNotifications()
+{
+    QVariantMap notificationParams;
+    notificationParams.insert("enabled", false);
+    QVariant response = injectAndWait("JSONRPC.SetNotificationStatus", notificationParams);
+    if (response.toMap().value("params").toMap().value("enabled").toBool() != false) {
+        return false;
+    }
+    return true;
 }
 
 void GuhTestBase::restartServer()
@@ -136,3 +196,4 @@ void GuhTestBase::restartServer()
     spy.wait();
     m_mockTcpServer = MockTcpServer::servers().first();
 }
+

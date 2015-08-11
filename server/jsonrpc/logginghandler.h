@@ -1,5 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -22,6 +25,8 @@
 #include "jsonhandler.h"
 #include "logging/logentry.h"
 
+namespace guhserver {
+
 class LoggingHandler : public JsonHandler
 {
     Q_OBJECT
@@ -32,9 +37,14 @@ public:
     Q_INVOKABLE JsonReply *GetLogEntries(const QVariantMap &params) const;
 signals:
     void LogEntryAdded(const QVariantMap &params);
+    void LogDatabaseUpdated(const QVariantMap &params);
 
 private slots:
     void logEntryAdded(const LogEntry &entry);
+    void logDatabaseUpdated();
+
 };
+
+}
 
 #endif // LOGGINGHANDLER_H

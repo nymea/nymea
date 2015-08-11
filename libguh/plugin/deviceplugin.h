@@ -1,5 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -61,7 +64,8 @@ public:
     virtual void postSetupDevice(Device *device);
     virtual void deviceRemoved(Device *device);
 
-    virtual DeviceManager::DeviceSetupStatus confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params);
+    virtual DeviceManager::DeviceError displayPin(const PairingTransactionId &pairingTransactionId, const DeviceDescriptor &deviceDescriptor);
+    virtual DeviceManager::DeviceSetupStatus confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret);
 
     // Hardware input
     virtual void radioData(const QList<int> &rawData) {Q_UNUSED(rawData)}
@@ -124,6 +128,9 @@ private:
     QList<ParamType> parseParamTypes(const QJsonArray &array) const;
 
     QStringList verifyFields(const QStringList &fields, const QJsonObject &value) const;
+
+    Types::Unit unitStringToUnit(const QString &unitString) const;
+    Types::InputType inputTypeStringToInputType(const QString &inputType) const;
 
     DeviceManager *m_deviceManager;
 

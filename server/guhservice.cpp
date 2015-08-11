@@ -1,5 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -16,9 +18,27 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+
+/*!
+    \class guhserver::GuhService
+    \brief The daemon service reprenetation of the guh server.
+
+    \ingroup core
+    \inmodule server
+
+    The \l{GuhService} represents the forked guhd.
+
+    \sa QtService
+*/
+
+
 #include <unistd.h>
 #include "guhservice.h"
+#include "loggingcategories.h"
 
+namespace guhserver {
+
+/*! Constructs the forked guhd application with the given argument count \a argc and argument vector \a argv. */
 GuhService::GuhService(int argc, char **argv):
     QtService<QCoreApplication>(argc, argv, "guh daemon")
 {
@@ -33,11 +53,15 @@ GuhService::GuhService(int argc, char **argv):
     setServiceFlags(QtServiceBase::CanBeSuspended);
 }
 
+/*! Destroyes the forked guhd application. */
 GuhService::~GuhService()
 {
 }
 
+/*! Starts the forked guhd application. */
 void GuhService::start()
 {
     GuhCore::instance()->setRunningMode(GuhCore::RunningModeService);
+}
+
 }

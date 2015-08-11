@@ -1,5 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -22,6 +25,7 @@
 #include "plugin/deviceclass.h"
 #include "plugin/deviceplugin.h"
 #include "types/statetype.h"
+#include "extern-plugininfo.h"
 
 #include <QTcpSocket>
 #include <QDebug>
@@ -34,6 +38,11 @@ HttpDaemon::HttpDaemon(Device *device, DevicePlugin *parent):
     QTcpServer(parent), disabled(false), m_plugin(parent), m_device(device)
 {
     listen(QHostAddress::Any, device->paramValue("httpport").toInt());
+}
+
+HttpDaemon::~HttpDaemon()
+{
+    close();
 }
 
 void HttpDaemon::incomingConnection(qintptr socket)
@@ -105,7 +114,7 @@ void HttpDaemon::discardClient()
     QTcpSocket* socket = (QTcpSocket*)sender();
     socket->deleteLater();
 
-    qDebug() << "Connection closed";
+    qCDebug(dcMockDevice) << "Connection closed";
 }
 
 QString HttpDaemon::generateHeader()
@@ -130,7 +139,7 @@ QString HttpDaemon::generateWebPage()
                 "<h2>Device Information</h2>"
         "Name: %1<br>"
         "ID: %2<br>"
-        "DeviceClass ID: %3<br>").arg(m_device->name()).arg(m_device->id().toString()).arg(deviceClass.id().toString());
+        "DeviceClass ID: %3<br>").arg(m_device->paramValue("name").toString()).arg(m_device->id().toString()).arg(deviceClass.id().toString());
 
     body.append("<hr>");
     body.append("<h2>States</h2>");

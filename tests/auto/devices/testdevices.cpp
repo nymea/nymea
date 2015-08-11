@@ -1,28 +1,37 @@
-/****************************************************************************
- *                                                                          *
- *  This file is part of guh.                                               *
- *                                                                          *
- *  Guh is free software: you can redistribute it and/or modify             *
- *  it under the terms of the GNU General Public License as published by    *
- *  the Free Software Foundation, version 2 of the License.                 *
- *                                                                          *
- *  Guh is distributed in the hope that it will be useful,                  *
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of          *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
- *  GNU General Public License for more details.                            *
- *                                                                          *
- *  You should have received a copy of the GNU General Public License       *
- *  along with guh.  If not, see <http://www.gnu.org/licenses/>.            *
- *                                                                          *
- ***************************************************************************/
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
+ *  This file is part of guh.                                              *
+ *                                                                         *
+ *  Guh is free software: you can redistribute it and/or modify            *
+ *  it under the terms of the GNU General Public License as published by   *
+ *  the Free Software Foundation, version 2 of the License.                *
+ *                                                                         *
+ *  Guh is distributed in the hope that it will be useful,                 *
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of         *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          *
+ *  GNU General Public License for more details.                           *
+ *                                                                         *
+ *  You should have received a copy of the GNU General Public License      *
+ *  along with guh. If not, see <http://www.gnu.org/licenses/>.            *
+ *                                                                         *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "guhtestbase.h"
 #include "guhcore.h"
 #include "devicemanager.h"
+#include "guhsettings.h"
 #include "plugin/deviceplugin.h"
 
 #include <QDebug>
 #include <QSignalSpy>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+
+using namespace guhserver;
 
 class TestDevices : public GuhTestBase
 {
@@ -66,6 +75,12 @@ private slots:
 
     void getStateValues_data();
     void getStateValues();
+
+    void editDevices_data();
+    void editDevices();
+
+    void editByDiscovery_data();
+    void editByDiscovery();
 
     // Keep this the last one! It'll remove the configured mock device
     void removeDevice_data();
@@ -274,7 +289,7 @@ void TestDevices::getConfiguredDevices()
     QVariant response = injectAndWait("Devices.GetConfiguredDevices");
 
     QVariantList devices = response.toMap().value("params").toMap().value("devices").toList();
-    QCOMPARE(devices.count(), 2); // There should be one auto created mock device and the one created in initTestcase()
+    QCOMPARE(devices.count(), 3); // There should be one auto created mock device, one auto today device and the one created in initTestcase()
 }
 
 void TestDevices::storedDevices()
@@ -282,6 +297,10 @@ void TestDevices::storedDevices()
     QVariantMap params;
     params.insert("deviceClassId", mockDeviceClassId);
     QVariantList deviceParams;
+    QVariantMap nameParam;
+    nameParam.insert("name", "name");
+    nameParam.insert("value", "Blub Blub device");
+    deviceParams.append(nameParam);
     QVariantMap asyncParam;
     asyncParam.insert("name", "async");
     asyncParam.insert("value", false);
@@ -295,6 +314,7 @@ void TestDevices::storedDevices()
     httpportParam.insert("value", 8888);
     deviceParams.append(httpportParam);
     params.insert("deviceParams", deviceParams);
+
     QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
     verifyDeviceError(response);
     DeviceId addedDeviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
@@ -308,18 +328,15 @@ void TestDevices::storedDevices()
     bool found = false;
     foreach (const QVariant device, response.toMap().value("params").toMap().value("devices").toList()) {
         if (DeviceId(device.toMap().value("id").toString()) == addedDeviceId) {
-//            foreach (const QVariant &paramVariant, device.toMap().value("params").toList()) {
-//                if ()
-//            }
-
             qDebug() << "found added device" << device.toMap().value("params");
             qDebug() << "expected deviceParams:" << deviceParams;
-            QCOMPARE(device.toMap().value("params").toList(), deviceParams);
+            verifyParams(deviceParams, device.toMap().value("params").toList());
             found = true;
             break;
         }
     }
     QVERIFY2(found, "Device missing in config!");
+
 
     params.clear();
     params.insert("deviceId", addedDeviceId);
@@ -510,6 +527,331 @@ void TestDevices::getStateValues()
     }
 }
 
+void TestDevices::editDevices_data()
+{
+    QVariantList asyncChangeDeviceParams;
+    QVariantMap asyncParamDifferent;
+    asyncParamDifferent.insert("name", "async");
+    asyncParamDifferent.insert("value", true);
+    asyncChangeDeviceParams.append(asyncParamDifferent);
+
+    QVariantList httpportChangeDeviceParams;
+    QVariantMap httpportParamDifferent;
+    httpportParamDifferent.insert("name", "httpport");
+    httpportParamDifferent.insert("value", 8893); // if change -> change also newPort in editDevices()
+    httpportChangeDeviceParams.append(httpportParamDifferent);
+
+    QVariantList brokenChangedDeviceParams;
+    QVariantMap brokenParamDifferent;
+    brokenParamDifferent.insert("name", "broken");
+    brokenParamDifferent.insert("value", true);
+    brokenChangedDeviceParams.append(brokenParamDifferent);
+
+    QVariantList nameChangedDeviceParams;
+    QVariantMap nameParam;
+    nameParam.insert("name", "name");
+    nameParam.insert("value", "Awesome Mockdevice");
+    nameChangedDeviceParams.append(nameParam);
+
+
+    QVariantList asyncAndPortChangeDeviceParams;
+    asyncAndPortChangeDeviceParams.append(asyncParamDifferent);
+    asyncAndPortChangeDeviceParams.append(httpportParamDifferent);
+
+
+    QVariantList changeAllWritableDeviceParams;
+    changeAllWritableDeviceParams.append(nameParam);
+    changeAllWritableDeviceParams.append(asyncParamDifferent);
+    changeAllWritableDeviceParams.append(httpportParamDifferent);
+
+
+    QTest::addColumn<bool>("broken");
+    QTest::addColumn<QVariantList>("newDeviceParams");
+    QTest::addColumn<DeviceManager::DeviceError>("deviceError");
+
+    QTest::newRow("valid - change async param") << false << asyncChangeDeviceParams << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("valid - change httpport param") << false <<  httpportChangeDeviceParams << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("valid - change httpport and async param") << false << asyncAndPortChangeDeviceParams << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("invalid - change name param (not writable)") << false << nameChangedDeviceParams << DeviceManager::DeviceErrorParameterNotWritable;
+    QTest::newRow("invalid - change all params (except broken)") << false << changeAllWritableDeviceParams << DeviceManager::DeviceErrorParameterNotWritable;
+}
+
+void TestDevices::editDevices()
+{
+    QFETCH(bool, broken);
+    QFETCH(QVariantList, newDeviceParams);
+    QFETCH(DeviceManager::DeviceError, deviceError);
+
+    // add device
+    QVariantMap params;
+    params.insert("deviceClassId", mockDeviceClassId);
+    QVariantList deviceParams;
+    QVariantMap nameParam;
+    nameParam.insert("name", "name");
+    nameParam.insert("value", "Test edit mockdevice");
+    deviceParams.append(nameParam);
+    QVariantMap asyncParam;
+    asyncParam.insert("name", "async");
+    asyncParam.insert("value", false);
+    deviceParams.append(asyncParam);
+    QVariantMap brokenParam;
+    brokenParam.insert("name", "broken");
+    brokenParam.insert("value", broken);
+    deviceParams.append(brokenParam);
+    QVariantMap httpportParam;
+    httpportParam.insert("name", "httpport");
+    httpportParam.insert("value", 8892);
+    deviceParams.append(httpportParam);
+    params.insert("deviceParams", deviceParams);
+
+    // add a mockdevice
+    QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
+    verifyDeviceError(response);
+
+    DeviceId deviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
+    QVERIFY(!deviceId.isNull());
+
+    // now EDIT the added device
+    response.clear();
+    QVariantMap editParams;
+    editParams.insert("deviceId", deviceId);
+    editParams.insert("deviceParams", newDeviceParams);
+    response = injectAndWait("Devices.EditDevice", editParams);
+    verifyDeviceError(response, deviceError);
+
+    // if the edit should have been successfull
+    if (deviceError == DeviceManager::DeviceErrorNoError) {
+        response = injectAndWait("Devices.GetConfiguredDevices", QVariantMap());
+
+        bool found = false;
+        foreach (const QVariant device, response.toMap().value("params").toMap().value("devices").toList()) {
+            if (DeviceId(device.toMap().value("id").toString()) == deviceId) {
+                qDebug() << "found added device" << device.toMap().value("params");
+                qDebug() << "expected deviceParams:" << newDeviceParams;
+                // check if the edit was ok
+                verifyParams(newDeviceParams, device.toMap().value("params").toList(), false);
+                found = true;
+                break;
+            }
+        }
+        QVERIFY2(found, "Device missing in config!");
+
+        // Restart the core instance to check if settings are loaded at startup
+        restartServer();
+
+        response = injectAndWait("Devices.GetConfiguredDevices", QVariantMap());
+
+        found = false;
+        foreach (const QVariant device, response.toMap().value("params").toMap().value("devices").toList()) {
+            if (DeviceId(device.toMap().value("id").toString()) == deviceId) {
+                qDebug() << "found added device" << device.toMap().value("params");
+                qDebug() << "expected deviceParams:" << newDeviceParams;
+                // check if the edit was ok
+                verifyParams(newDeviceParams, device.toMap().value("params").toList(), false);
+                found = true;
+                break;
+            }
+        }
+        QVERIFY2(found, "Device missing in config!");
+
+        // delete it
+        params.clear();
+        params.insert("deviceId", deviceId);
+        response.clear();
+        response = injectAndWait("Devices.RemoveConfiguredDevice", params);
+        verifyDeviceError(response);
+        return;
+    } else {
+        // The edit was not ok, check if the old params are still there
+        response = injectAndWait("Devices.GetConfiguredDevices", QVariantMap());
+
+        bool found = false;
+        foreach (const QVariant device, response.toMap().value("params").toMap().value("devices").toList()) {
+            if (DeviceId(device.toMap().value("id").toString()) == deviceId) {
+                qDebug() << "found added device" << device.toMap().value("params");
+                qDebug() << "expected deviceParams:" << newDeviceParams;
+                // check if the params are unchanged
+                verifyParams(deviceParams, device.toMap().value("params").toList());
+                found = true;
+                break;
+            }
+        }
+        QVERIFY2(found, "Device missing in config!");
+
+        // Restart the core instance to check if settings are loaded at startup
+        restartServer();
+
+        response = injectAndWait("Devices.GetConfiguredDevices", QVariantMap());
+
+        found = false;
+        foreach (const QVariant device, response.toMap().value("params").toMap().value("devices").toList()) {
+            if (DeviceId(device.toMap().value("id").toString()) == deviceId) {
+                qDebug() << "found added device" << device.toMap().value("params");
+                qDebug() << "expected deviceParams:" << newDeviceParams;
+                // check if after the reboot the settings are unchanged
+                verifyParams(deviceParams, device.toMap().value("params").toList());
+                found = true;
+                break;
+            }
+        }
+        QVERIFY2(found, "Device missing in config!");
+    }
+
+    // delete it
+    params.clear();
+    params.insert("deviceId", deviceId);
+    response = injectAndWait("Devices.RemoveConfiguredDevice", params);
+    verifyDeviceError(response);
+}
+
+
+void TestDevices::editByDiscovery_data()
+{
+    QTest::addColumn<DeviceClassId>("deviceClassId");
+    QTest::addColumn<int>("resultCount");
+    QTest::addColumn<DeviceManager::DeviceError>("error");
+    QTest::addColumn<QVariantList>("discoveryParams");
+
+    QVariantList discoveryParams;
+    QVariantMap resultCountParam;
+    resultCountParam.insert("name", "resultCount");
+    resultCountParam.insert("value", 2);
+    discoveryParams.append(resultCountParam);
+
+    QTest::newRow("discover 2 devices with params") << mockDeviceClassId << 2 << DeviceManager::DeviceErrorNoError << discoveryParams;
+}
+
+void TestDevices::editByDiscovery()
+{
+    QFETCH(DeviceClassId, deviceClassId);
+    QFETCH(int, resultCount);
+    QFETCH(DeviceManager::DeviceError, error);
+    QFETCH(QVariantList, discoveryParams);
+
+    QVariantMap params;
+    params.insert("deviceClassId", deviceClassId);
+    params.insert("discoveryParams", discoveryParams);
+    QVariant response = injectAndWait("Devices.GetDiscoveredDevices", params);
+
+    verifyDeviceError(response);
+    if (error == DeviceManager::DeviceErrorNoError) {
+        QCOMPARE(response.toMap().value("params").toMap().value("deviceDescriptors").toList().count(), resultCount);
+    }
+
+    // add Discovered Device 1 port 55555
+    QVariantList deviceDescriptors = response.toMap().value("params").toMap().value("deviceDescriptors").toList();
+
+    DeviceDescriptorId descriptorId1;
+    foreach (const QVariant &descriptor, deviceDescriptors) {
+        // find the device with port 55555
+        if (descriptor.toMap().value("description").toString() == "55555") {
+            descriptorId1 = DeviceDescriptorId(descriptor.toMap().value("id").toString());
+            qDebug() << descriptorId1.toString();
+            break;
+        }
+    }
+
+    qDebug() << "adding descriptorId 1" << descriptorId1;
+
+    QVERIFY(!descriptorId1.isNull());
+
+    params.clear();
+    response.clear();
+    params.insert("deviceClassId", deviceClassId);
+    params.insert("deviceDescriptorId", descriptorId1);
+    response = injectAndWait("Devices.AddConfiguredDevice", params);
+
+    DeviceId deviceId(response.toMap().value("params").toMap().value("deviceId").toString());
+    QVERIFY(!deviceId.isNull());
+
+    // and now rediscover, and edit the first device with the second
+    params.clear();
+    response.clear();
+    params.insert("deviceClassId", deviceClassId);
+    params.insert("discoveryParams", discoveryParams);
+    response = injectAndWait("Devices.GetDiscoveredDevices", params);
+
+    verifyDeviceError(response, error);
+    if (error == DeviceManager::DeviceErrorNoError) {
+        QCOMPARE(response.toMap().value("params").toMap().value("deviceDescriptors").toList().count(), resultCount);
+    }
+
+    // get the second device
+    DeviceDescriptorId descriptorId2;
+    foreach (const QVariant &descriptor, deviceDescriptors) {
+        // find the device with port 55556
+        if (descriptor.toMap().value("description").toString() == "55556") {
+            descriptorId2 = DeviceDescriptorId(descriptor.toMap().value("id").toString());
+            break;
+        }
+    }
+    QVERIFY(!descriptorId2.isNull());
+
+    qDebug() << "edit device 1 (55555) with descriptor 2 (55556) " << descriptorId2;
+
+    // EDIT
+    response.clear();
+    params.clear();
+    params.insert("deviceId", deviceId.toString());
+    params.insert("deviceDescriptorId", descriptorId2);
+    response = injectAndWait("Devices.EditDevice", params);
+    verifyDeviceError(response, error);
+
+    response.clear();
+    response = injectAndWait("Devices.GetConfiguredDevices", QVariantMap());
+
+    QVariantMap deviceMap;
+    bool found = false;
+    foreach (const QVariant device, response.toMap().value("params").toMap().value("devices").toList()) {
+        if (DeviceId(device.toMap().value("id").toString()) == deviceId) {
+            qDebug() << "found added device" << device.toMap().value("params");
+            found = true;
+            deviceMap = device.toMap();
+            break;
+        }
+    }
+
+    QVERIFY2(found, "Device missing in config!");
+    QCOMPARE(deviceMap.value("id").toString(), deviceId.toString());
+    if (deviceMap.contains("setupComplete")) {
+        QVERIFY2(deviceMap.value("setupComplete").toBool(), "Setup not completed after edit");
+    }
+
+    // Note: this shows that by discovery a not editable param (name) can be changed!
+    foreach (QVariant param, deviceMap.value("params").toList()) {
+        if (param.toMap().value("name") == "name") {
+            QCOMPARE(param.toMap().value("value").toString(), QString("Discovered Mock Device 2"));
+        }
+        if (param.toMap().value("name") == "httpport") {
+            QCOMPARE(param.toMap().value("value").toInt(), 55556);
+        }
+    }
+
+    // check if the daemons are running
+    QNetworkAccessManager nam;
+    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+
+    // check if old daemon is still running (should not)
+    QNetworkRequest request(QUrl(QString("http://localhost:%1").arg(55555)));
+    QNetworkReply *reply = nam.get(request);
+    spy.wait();
+    QVERIFY2(reply->error(), "The old daemon is still running");
+    reply->deleteLater();
+
+    // check if the daemon is realy running on the new port
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1").arg(55556)));
+    reply = nam.get(request);
+    spy.wait();
+    QVERIFY2(reply->error() == QNetworkReply::NoError, "The new daemon is not running");
+    reply->deleteLater();
+
+    params.clear();
+    params.insert("deviceId", deviceId.toString());
+    response = injectAndWait("Devices.RemoveConfiguredDevice", params);
+    verifyDeviceError(response);
+}
+
+
 void TestDevices::removeDevice_data()
 {
     QTest::addColumn<DeviceId>("deviceId");
@@ -524,7 +866,7 @@ void TestDevices::removeDevice()
     QFETCH(DeviceId, deviceId);
     QFETCH(DeviceManager::DeviceError, deviceError);
 
-    QSettings settings(m_deviceSettings);
+    GuhSettings settings(GuhSettings::SettingsRoleDevices);
     settings.beginGroup("DeviceConfig");
     if (deviceError == DeviceManager::DeviceErrorNoError) {
         settings.beginGroup(m_mockDeviceId.toString());
@@ -545,7 +887,6 @@ void TestDevices::removeDevice()
     }
 }
 
-
 #include "testdevices.moc"
-
 QTEST_MAIN(TestDevices)
+

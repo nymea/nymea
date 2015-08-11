@@ -36,20 +36,22 @@
                             "idName": "brightness",
                             "name": "brightness",
                             "type": "int",
-                            "minimumValue": 0,
-                            "maximumValue": 100,
                             "defaultValue": 100,
-                            "writable": true
+                            "writable": {
+                                "minValue": 0,
+                                "maxValue": 100
+                            }
                         },
                         {
                             "id": "2073b44b-2f99-4abf-8d9f-6b33be8e1763",
                             "idName": "liveliness",
                             "name": "liveliness",
                             "type": "int",
-                            "minimumValue": 0,
-                            "maximumValue": 100,
                             "defaultValue": 100,
-                            "writable": true
+                            "writable": {
+                                "minValue": 0,
+                                "maxValue": 100
+                            }
                         }
                     ],
                     "actionTypes": [
@@ -108,7 +110,6 @@
                                 }
                             ]
                         }
-
                     ]
                 }
             ]

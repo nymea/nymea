@@ -1,5 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -35,6 +37,7 @@
  */
 
 #include "networkmanager.h"
+#include "loggingcategories.h"
 
 /*! Construct the hardware resource NetworkManager with the given \a parent. */
 NetworkManager::NetworkManager(QObject *parent) :
@@ -43,7 +46,7 @@ NetworkManager::NetworkManager(QObject *parent) :
     m_manager = new QNetworkAccessManager(this);
     connect(m_manager, &QNetworkAccessManager::finished, this, &NetworkManager::replyFinished);
 
-    qDebug() << "--> Network manager created successfully.";
+    qCDebug(dcHardware) << "--> Network manager created successfully.";
 }
 
 /*! Posts a request to obtain the contents of the target \a request from the plugin with the given \a pluginId

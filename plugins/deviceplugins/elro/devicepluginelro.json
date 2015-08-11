@@ -1,9 +1,11 @@
  {
     "name": "Elro",
+    "idName": "Elro",
     "id": "2b267f81-d9ae-4f4f-89a0-7386b547cfd3",
     "vendors": [
         {
             "name": "Elro",
+            "idName": "elro",
             "id": "435a13a0-65ca-4f0c-94c1-e5873b258db5",
             "deviceClasses": [
                 {

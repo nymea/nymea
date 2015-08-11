@@ -76,3 +76,4 @@ bool QtUnixSocket::connectTo(const QString &path)
     }
     return ret;
 }
+

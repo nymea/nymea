@@ -1,5 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -16,16 +19,26 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::JsonRPCServer
+    \brief This class provides a JSON-RPC API interface to the \l{TransportInterface}{TransportInterfaces}.
+
+    \ingroup server
+    \inmodule core
+
+    The \l{JsonRPCServer} class provides the server interface for a JSON-RPC API call. This class
+    communicates with \l{TransportInterface}{TransportInterfaces} and processes the
+    JSON-RPC request in the corresponding \l{JsonHandler}. The \l{JsonRPCServer} it self is also
+    an \l{JsonHandler} and provides the introspection, version and notification control methods
+    for the \l{JSON-RPC API}.
+
+    \sa ServerManager, TransportInterface, TcpServer, WebSocketServer
+*/
+
+
 #include "jsonrpcserver.h"
 #include "jsontypes.h"
-
-#ifdef TESTING_ENABLED
-#include "mocktcpserver.h"
-#else
-#include "tcpserver.h"
-#endif
 #include "jsonhandler.h"
-
 #include "guhcore.h"
 #include "devicemanager.h"
 #include "plugin/deviceplugin.h"
@@ -33,6 +46,7 @@
 #include "plugin/device.h"
 #include "rule.h"
 #include "ruleengine.h"
+#include "loggingcategories.h"
 
 #include "devicehandler.h"
 #include "actionhandler.h"
@@ -41,18 +55,33 @@
 #include "logginghandler.h"
 #include "statehandler.h"
 
+#ifndef TESTING_ENABLED
+#include "tcpserver.h"
+#else
+#include "mocktcpserver.h"
+#endif
+
+#ifdef WEBSOCKET
+#include "websocketserver.h"
+#endif
+
 #include <QJsonDocument>
 #include <QStringList>
+#include <QSslConfiguration>
 
-#define JSON_PROTOCOL_VERSION 19
+namespace guhserver {
 
-JsonRPCServer::JsonRPCServer(QObject *parent):
+/*! Constructs a \l{JsonRPCServer} with the given \a sslConfiguration and \a parent. */
+JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject *parent):
     JsonHandler(parent),
-#ifdef TESTING_ENABLED
+    #ifdef TESTING_ENABLED
     m_tcpServer(new MockTcpServer(this)),
-#else
+    #else
     m_tcpServer(new TcpServer(this)),
-#endif
+    #endif
+    #ifdef WEBSOCKET
+    m_websocketServer(new WebSocketServer(sslConfiguration, this)),
+    #endif
     m_notificationId(0)
 {
     // First, define our own JSONRPC methods
@@ -83,12 +112,26 @@ JsonRPCServer::JsonRPCServer(QObject *parent):
     // Now set up the logic
     connect(m_tcpServer, SIGNAL(clientConnected(const QUuid &)), this, SLOT(clientConnected(const QUuid &)));
     connect(m_tcpServer, SIGNAL(clientDisconnected(const QUuid &)), this, SLOT(clientDisconnected(const QUuid &)));
-    connect(m_tcpServer, SIGNAL(dataAvailable(const QUuid &, QByteArray)), this, SLOT(processData(const QUuid &, QByteArray)));
+    connect(m_tcpServer, SIGNAL(dataAvailable(QUuid, QString, QString, QVariantMap)), this, SLOT(processData(QUuid, QString, QString, QVariantMap)));
     m_tcpServer->startServer();
+
+    m_interfaces.append(m_tcpServer);
+
+#ifdef WEBSOCKET
+    connect(m_websocketServer, SIGNAL(clientConnected(const QUuid &)), this, SLOT(clientConnected(const QUuid &)));
+    connect(m_websocketServer, SIGNAL(clientDisconnected(const QUuid &)), this, SLOT(clientDisconnected(const QUuid &)));
+    connect(m_websocketServer, SIGNAL(dataAvailable(QUuid, QString, QString, QVariantMap)), this, SLOT(processData(QUuid, QString, QString, QVariantMap)));
+
+    m_websocketServer->startServer();
+    m_interfaces.append(m_websocketServer);
+#else
+    Q_UNUSED(sslConfiguration)
+#endif
 
     QMetaObject::invokeMethod(this, "setup", Qt::QueuedConnection);
 }
 
+/*! Returns the \e namespace of \l{JsonHandler}. */
 QString JsonRPCServer::name() const
 {
     return QStringLiteral("JSONRPC");
@@ -128,11 +171,16 @@ JsonReply* JsonRPCServer::Version(const QVariantMap &params) const
 JsonReply* JsonRPCServer::SetNotificationStatus(const QVariantMap &params)
 {
     QUuid clientId = this->property("clientId").toUuid();
-//    qDebug() << "got client socket" << clientId;
     m_clients[clientId] = params.value("enabled").toBool();
     QVariantMap returns;
     returns.insert("enabled", m_clients[clientId]);
     return createReply(returns);
+}
+
+/*! Returns the list of registred \l{JsonHandler}{JsonHandlers} and their name.*/
+QHash<QString, JsonHandler *> JsonRPCServer::handlers() const
+{
+    return m_handlers;
 }
 
 void JsonRPCServer::setup()
@@ -146,51 +194,18 @@ void JsonRPCServer::setup()
     registerHandler(new StateHandler(this));
 }
 
-void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &jsonData)
+void JsonRPCServer::processData(const QUuid &clientId, const QString &targetNamespace, const QString &method, const QVariantMap &message)
 {
-    QJsonParseError error;
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData, &error);
+    TransportInterface *interface = qobject_cast<TransportInterface *>(sender());
 
-    if(error.error != QJsonParseError::NoError) {
-        qDebug() << "failed to parse data" << jsonData << ":" << error.errorString();
-    }
-//    qDebug() << "-------------------------\n" << jsonDoc.toJson();
-
-    QVariantMap message = jsonDoc.toVariant().toMap();
-
-    bool success;
-    int commandId = message.value("id").toInt(&success);
-    if (!success) {
-        qWarning() << "Error parsing command. Missing \"id\":" << jsonData;
-        sendErrorResponse(clientId, commandId, "Error parsing command. Missing 'id'");
-        return;
-    }
-
-    QStringList commandList = message.value("method").toString().split('.');
-    if (commandList.count() != 2) {
-        qWarning() << "Error parsing method.\nGot:" << message.value("method").toString() << "\nExpected: \"Namespace.method\"";
-        sendErrorResponse(clientId, commandId, QString("Error parsing method. Got: '%1'', Expected: 'Namespace.method'").arg(message.value("method").toString()));
-        return;
-    }
-
-    QString targetNamespace = commandList.first();
-    QString method = commandList.last();
+    // Note: id, targetNamespace and method already checked in TcpServer
+    int commandId = message.value("id").toInt();
     QVariantMap params = message.value("params").toMap();
 
-    emit commandReceived(targetNamespace, method, params);
-
     JsonHandler *handler = m_handlers.value(targetNamespace);
-    if (!handler) {
-        sendErrorResponse(clientId, commandId, "No such namespace");
-        return;
-    }
-    if (!handler->hasMethod(method)) {
-        sendErrorResponse(clientId, commandId, "No such method");
-        return;
-    }
     QPair<bool, QString> validationResult = handler->validateParams(method, params);
     if (!validationResult.first) {
-        sendErrorResponse(clientId, commandId, "Invalid params: " + validationResult.second);
+        interface->sendErrorResponse(clientId, commandId, "Invalid params: " + validationResult.second);
         return;
     }
 
@@ -200,6 +215,7 @@ void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &jsonDat
     JsonReply *reply;
     QMetaObject::invokeMethod(handler, method.toLatin1().data(), Q_RETURN_ARG(JsonReply*, reply), Q_ARG(QVariantMap, params));
     if (reply->type() == JsonReply::TypeAsync) {
+        m_asyncReplies.insert(reply, interface);
         reply->setClientId(clientId);
         reply->setCommandId(commandId);
         connect(reply, &JsonReply::finished, this, &JsonRPCServer::asyncReplyFinished);
@@ -207,7 +223,7 @@ void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &jsonDat
     } else {
         Q_ASSERT_X((targetNamespace == "JSONRPC" && method == "Introspect") || handler->validateReturns(method, reply->data()).first
                    ,"validating return value", formatAssertion(targetNamespace, method, handler, reply->data()).toLatin1().data());
-        sendResponse(clientId, commandId, reply->data());
+        interface->sendResponse(clientId, commandId, reply->data());
         reply->deleteLater();
     }
 }
@@ -224,7 +240,7 @@ QString JsonRPCServer::formatAssertion(const QString &targetNamespace, const QSt
 
 void JsonRPCServer::sendNotification(const QVariantMap &params)
 {
-    JsonHandler *handler = qobject_cast<JsonHandler*>(sender());
+    JsonHandler *handler = qobject_cast<JsonHandler *>(sender());
     QMetaMethod method = handler->metaObject()->method(senderSignalIndex());
 
     QVariantMap notification;
@@ -232,20 +248,23 @@ void JsonRPCServer::sendNotification(const QVariantMap &params)
     notification.insert("notification", handler->name() + "." + method.name());
     notification.insert("params", params);
 
-    QJsonDocument jsonDoc = QJsonDocument::fromVariant(notification);
-    m_tcpServer->sendData(m_clients.keys(true), jsonDoc.toJson());
+    foreach (TransportInterface *interface, m_interfaces) {
+        interface->sendData(m_clients.keys(true), notification);
+    }
 }
 
 void JsonRPCServer::asyncReplyFinished()
 {
-    JsonReply *reply = qobject_cast<JsonReply*>(sender());
+    JsonReply *reply = qobject_cast<JsonReply *>(sender());
+    TransportInterface *interface = m_asyncReplies.take(reply);
     if (!reply->timedOut()) {
         Q_ASSERT_X(reply->handler()->validateReturns(reply->method(), reply->data()).first
                    ,"validating return value", formatAssertion(reply->handler()->name(), reply->method(), reply->handler(), reply->data()).toLatin1().data());
-        sendResponse(reply->clientId(), reply->commandId(), reply->data());
+        interface->sendResponse(reply->clientId(), reply->commandId(), reply->data());
     } else {
-        sendErrorResponse(reply->clientId(), reply->commandId(), "Command timed out");
+        interface->sendErrorResponse(reply->clientId(), reply->commandId(), "Command timed out");
     }
+
     reply->deleteLater();
 }
 
@@ -262,16 +281,17 @@ void JsonRPCServer::registerHandler(JsonHandler *handler)
 
 void JsonRPCServer::clientConnected(const QUuid &clientId)
 {
-    // Notifications disabled by default
-    m_clients.insert(clientId, false);
+    // Notifications enabled by default
+    m_clients.insert(clientId, true);
+
+    TransportInterface *interface = qobject_cast<TransportInterface *>(sender());
 
     QVariantMap handshake;
     handshake.insert("id", 0);
     handshake.insert("server", "guh JSONRPC interface");
     handshake.insert("version", GUH_VERSION_STRING);
     handshake.insert("protocol version", JSON_PROTOCOL_VERSION);
-    QJsonDocument jsonDoc = QJsonDocument::fromVariant(handshake);
-    m_tcpServer->sendData(clientId, jsonDoc.toJson());
+    interface->sendData(clientId, handshake);
 }
 
 void JsonRPCServer::clientDisconnected(const QUuid &clientId)
@@ -279,26 +299,4 @@ void JsonRPCServer::clientDisconnected(const QUuid &clientId)
     m_clients.remove(clientId);
 }
 
-void JsonRPCServer::sendResponse(const QUuid &clientId, int commandId, const QVariantMap &params)
-{
-    QVariantMap rsp;
-    rsp.insert("id", commandId);
-    rsp.insert("status", "success");
-    rsp.insert("params", params);
-
-    QJsonDocument jsonDoc = QJsonDocument::fromVariant(rsp);
-    m_tcpServer->sendData(clientId, jsonDoc.toJson());
 }
-
-void JsonRPCServer::sendErrorResponse(const QUuid &clientId, int commandId, const QString &error)
-{
-    QVariantMap rsp;
-    rsp.insert("id", commandId);
-    rsp.insert("status", "error");
-    rsp.insert("error", error);
-
-    QJsonDocument jsonDoc = QJsonDocument::fromVariant(rsp);
-    m_tcpServer->sendData(clientId, jsonDoc.toJson());
-}
-
-

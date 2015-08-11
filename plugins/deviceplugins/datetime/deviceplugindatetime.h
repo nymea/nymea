@@ -1,5 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -20,8 +22,12 @@
 #define DEVICEPLUGINDATETIME_H
 
 #include "plugin/deviceplugin.h"
+#include "alarm.h"
+#include "countdown.h"
+
 #include <QDateTime>
 #include <QTimeZone>
+#include <QTime>
 #include <QTimer>
 
 class DevicePluginDateTime : public DevicePlugin
@@ -34,21 +40,61 @@ class DevicePluginDateTime : public DevicePlugin
 public:
     explicit DevicePluginDateTime();
 
-    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
-    DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
     DeviceManager::HardwareResources requiredHardware() const override;
-    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
-
+    QList<ParamType> configurationDescription() const override;
+    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
+    void postSetupDevice(Device *device) override;
     void deviceRemoved(Device *device) override;
+
+    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
+    void networkManagerReplyReady(QNetworkReply *reply) override;
+
+    void startMonitoringAutoDevices() override;
 
 private:
     QTimer *m_timer;
+    Device *m_todayDevice;
     QTimeZone m_timeZone;
+    QDateTime m_currentDateTime;
+
+    QHash<Device *, Alarm *> m_alarms;
+    QHash<Device *, Countdown *> m_countdowns;
+
+    QDateTime m_dusk;
+    QDateTime m_sunrise;
+    QDateTime m_noon;
+    QDateTime m_sunset;
+    QDateTime m_dawn;
+
+    QList<QNetworkReply *> m_locationReplies;
+    QList<QNetworkReply *> m_timeReplies;
+
+    void searchGeoLocation();
+    void processGeoLocationData(const QByteArray &data);
+
+    void getTimes(const QString &latitude, const QString &longitude);
+    void processTimesData(const QByteArray &data);
+
+signals:
+    void dusk();
+    void sunset();
+    void noon();
+    void sunrise();
+    void dawn();
 
 private slots:
-    void timeout();
+    void onAlarm();
+    void onCountdownTimeout();
+    void onCountdownRunningChanged(const bool &running);
+    void onSecondChanged();
+    void onMinuteChanged(const QDateTime &dateTime);
+    void onHourChanged(const QDateTime &dateTime);
+    void onDayChanged(const QDateTime &dateTime);
 
+    void updateTimes();
 
+    void onConfigValueChanged(const QString &paramName, const QVariant &value);
+    void validateTimeTypes(const QDateTime &dateTime);
 
 };
 

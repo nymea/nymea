@@ -1,20 +1,23 @@
-/****************************************************************************
- *                                                                          *
- *  This file is part of guh.                                               *
- *                                                                          *
- *  Guh is free software: you can redistribute it and/or modify             *
- *  it under the terms of the GNU General Public License as published by    *
- *  the Free Software Foundation, version 2 of the License.                 *
- *                                                                          *
- *  Guh is distributed in the hope that it will be useful,                  *
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of          *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
- *  GNU General Public License for more details.                            *
- *                                                                          *
- *  You should have received a copy of the GNU General Public License       *
- *  along with guh.  If not, see <http://www.gnu.org/licenses/>.            *
- *                                                                          *
- ***************************************************************************/
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
+ *  This file is part of guh.                                              *
+ *                                                                         *
+ *  Guh is free software: you can redistribute it and/or modify            *
+ *  it under the terms of the GNU General Public License as published by   *
+ *  the Free Software Foundation, version 2 of the License.                *
+ *                                                                         *
+ *  Guh is distributed in the hope that it will be useful,                 *
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of         *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          *
+ *  GNU General Public License for more details.                           *
+ *                                                                         *
+ *  You should have received a copy of the GNU General Public License      *
+ *  along with guh. If not, see <http://www.gnu.org/licenses/>.            *
+ *                                                                         *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "guhtestbase.h"
 #include "guhcore.h"
@@ -28,6 +31,8 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QCoreApplication>
+
+using namespace guhserver;
 
 class TestRules: public GuhTestBase
 {
@@ -46,6 +51,9 @@ private slots:
 
     void addRemoveRules_data();
     void addRemoveRules();
+
+    void editRules_data();
+    void editRules();
 
     void removeInvalidRule();
 
@@ -71,16 +79,16 @@ void TestRules::cleanupMockHistory() {
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
     QNetworkRequest request(QUrl(QString("http://localhost:%1/clearactionhistory").arg(m_mockDevice1Port).arg(mockEvent1Id.toString())));
     QNetworkReply *reply = nam.get(request);
-    spy.wait();
+    spy.wait(500);
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
 }
 
 void TestRules::cleanupRules() {
     QVariant response = injectAndWait("Rules.GetRules");
-    foreach (const QVariant &ruleId, response.toMap().value("params").toMap().value("ruleIds").toList()) {
+    foreach (const QVariant &ruleDescription, response.toMap().value("params").toMap().value("ruleDescriptions").toList()) {
         QVariantMap params;
-        params.insert("ruleId", ruleId.toString());
+        params.insert("ruleId", ruleDescription.toMap().value("id").toString());
         verifyRuleError(injectAndWait("Rules.RemoveRule", params));
     }
 }
@@ -97,7 +105,7 @@ void TestRules::verifyRuleExecuted(const ActionTypeId &actionTypeId)
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
     QNetworkRequest request(QUrl(QString("http://localhost:%1/actionhistory").arg(m_mockDevice1Port)));
     QNetworkReply *reply = nam.get(request);
-    spy.wait();
+    spy.wait(500);
     QCOMPARE(spy.count(), 1);
 
     QByteArray actionHistory = reply->readAll();
@@ -316,7 +324,7 @@ void TestRules::addRemoveRules()
     RuleId newRuleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
 
     response = injectAndWait("Rules.GetRules");
-    QVariantList rules = response.toMap().value("params").toMap().value("ruleIds").toList();
+    QVariantList rules = response.toMap().value("params").toMap().value("ruleDescriptions").toList();
 
     if (error != RuleEngine::RuleErrorNoError) {
         QVERIFY2(rules.count() == 0, "There should be no rules.");
@@ -324,7 +332,7 @@ void TestRules::addRemoveRules()
     }
 
     QVERIFY2(rules.count() == 1, "There should be exactly one rule");
-    QCOMPARE(RuleId(rules.first().toString()), newRuleId);
+    QCOMPARE(RuleId(rules.first().toMap().value("id").toString()), newRuleId);
 
     params.clear();
     params.insert("ruleId", newRuleId);
@@ -366,7 +374,339 @@ void TestRules::addRemoveRules()
     verifyRuleError(response);
 
     response = injectAndWait("Rules.GetRules");
-    rules = response.toMap().value("params").toMap().value("rules").toList();
+    rules = response.toMap().value("params").toMap().value("ruleDescriptions").toList();
+    QVERIFY2(rules.count() == 0, "There should be no rules.");
+}
+
+void TestRules::editRules_data()
+{
+    // RuleAction
+    QVariantMap validActionNoParams;
+    validActionNoParams.insert("actionTypeId", mockActionIdNoParams);
+    validActionNoParams.insert("deviceId", m_mockDeviceId);
+    validActionNoParams.insert("ruleActionParams", QVariantList());
+
+    QVariantMap invalidAction;
+    invalidAction.insert("actionTypeId", ActionTypeId());
+    invalidAction.insert("deviceId", m_mockDeviceId);
+    invalidAction.insert("ruleActionParams", QVariantList());
+
+    // RuleExitAction
+    QVariantMap validExitActionNoParams;
+    validExitActionNoParams.insert("actionTypeId", mockActionIdNoParams);
+    validExitActionNoParams.insert("deviceId", m_mockDeviceId);
+    validExitActionNoParams.insert("ruleActionParams", QVariantList());
+
+    QVariantMap invalidExitAction;
+    invalidExitAction.insert("actionTypeId", ActionTypeId());
+    invalidExitAction.insert("deviceId", m_mockDeviceId);
+    invalidExitAction.insert("ruleActionParams", QVariantList());
+
+    // StateDescriptor
+    QVariantMap stateDescriptor;
+    stateDescriptor.insert("stateTypeId", mockIntStateId);
+    stateDescriptor.insert("deviceId", m_mockDeviceId);
+    stateDescriptor.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorLess));
+    stateDescriptor.insert("value", "20");
+
+    // StateEvaluator
+    QVariantMap validStateEvaluator;
+    validStateEvaluator.insert("stateDescriptor", stateDescriptor);
+    validStateEvaluator.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+
+    QVariantMap invalidStateEvaluator;
+    stateDescriptor.remove("deviceId");
+    invalidStateEvaluator.insert("stateDescriptor", stateDescriptor);
+
+    // EventDescriptor
+    QVariantMap validEventDescriptor1;
+    validEventDescriptor1.insert("eventTypeId", mockEvent1Id);
+    validEventDescriptor1.insert("deviceId", m_mockDeviceId);
+    validEventDescriptor1.insert("paramDescriptors", QVariantList());
+
+    QVariantMap validEventDescriptor2;
+    validEventDescriptor2.insert("eventTypeId", mockEvent2Id);
+    validEventDescriptor2.insert("deviceId", m_mockDeviceId);
+    QVariantList params;
+    QVariantMap param1;
+    param1.insert("name", "mockParamInt");
+    param1.insert("value", 3);
+    param1.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
+    params.append(param1);
+    validEventDescriptor2.insert("paramDescriptors", params);
+
+    QVariantMap validEventDescriptor3;
+    validEventDescriptor3.insert("eventTypeId", mockEvent2Id);
+    validEventDescriptor3.insert("deviceId", m_mockDeviceId);
+    validEventDescriptor3.insert("paramDescriptors", QVariantList());
+
+    // EventDescriptorList
+    QVariantList eventDescriptorList;
+    eventDescriptorList.append(validEventDescriptor1);
+    eventDescriptorList.append(validEventDescriptor2);
+
+    QVariantMap invalidEventDescriptor;
+    invalidEventDescriptor.insert("eventTypeId", mockEvent1Id);
+    invalidEventDescriptor.insert("deviceId", DeviceId());
+    invalidEventDescriptor.insert("paramDescriptors", QVariantList());
+
+    // RuleAction event based
+    QVariantMap validActionEventBased;
+    validActionEventBased.insert("actionTypeId", mockActionIdWithParams);
+    validActionEventBased.insert("deviceId", m_mockDeviceId);
+    QVariantMap validActionEventBasedParam1;
+    validActionEventBasedParam1.insert("name", "mockActionParam1");
+    validActionEventBasedParam1.insert("eventTypeId", mockEvent2Id);
+    validActionEventBasedParam1.insert("eventParamName", "mockParamInt");
+    QVariantMap validActionEventBasedParam2;
+    validActionEventBasedParam2.insert("name", "mockActionParam2");
+    validActionEventBasedParam2.insert("value", false);
+    validActionEventBased.insert("ruleActionParams", QVariantList() << validActionEventBasedParam1 << validActionEventBasedParam2);
+
+    QVariantMap invalidActionEventBased;
+    invalidActionEventBased.insert("actionTypeId", mockActionIdNoParams);
+    invalidActionEventBased.insert("deviceId", m_mockDeviceId);
+    validActionEventBasedParam1.insert("value", 10);
+    invalidActionEventBased.insert("ruleActionParams", QVariantList() << validActionEventBasedParam1);
+
+    QVariantMap invalidActionEventBased2;
+    invalidActionEventBased2.insert("actionTypeId", mockActionIdWithParams);
+    invalidActionEventBased2.insert("deviceId", m_mockDeviceId);
+    QVariantMap invalidActionEventBasedParam2;
+    invalidActionEventBasedParam2.insert("name", "mockActionParam1");
+    invalidActionEventBasedParam2.insert("eventTypeId", mockEvent1Id);
+    invalidActionEventBasedParam2.insert("eventParamName", "value");
+    QVariantMap invalidActionEventBasedParam3;
+    invalidActionEventBasedParam3.insert("name", "mockActionParam2");
+    invalidActionEventBasedParam3.insert("value", 2);
+    invalidActionEventBased2.insert("ruleActionParams", QVariantList() << invalidActionEventBasedParam2 << invalidActionEventBasedParam3);
+
+    QVariantMap invalidActionEventBased3;
+    invalidActionEventBased3.insert("actionTypeId", mockActionIdWithParams);
+    invalidActionEventBased3.insert("deviceId", m_mockDeviceId);
+    QVariantMap invalidActionEventBasedParam4;
+    invalidActionEventBasedParam4.insert("name", "mockActionParam1");
+    invalidActionEventBasedParam4.insert("eventTypeId", mockEvent1Id);
+    invalidActionEventBasedParam4.insert("eventParamName", "mockParamInt");
+    invalidActionEventBased3.insert("ruleActionParams", QVariantList() << invalidActionEventBasedParam4);
+
+    QTest::addColumn<bool>("enabled");
+    QTest::addColumn<QVariantMap>("action");
+    QTest::addColumn<QVariantMap>("exitAction");
+    QTest::addColumn<QVariantMap>("eventDescriptor");
+    QTest::addColumn<QVariantList>("eventDescriptorList");
+    QTest::addColumn<QVariantMap>("stateEvaluator");
+    QTest::addColumn<RuleEngine::RuleError>("error");
+    QTest::addColumn<QString>("name");
+
+    // Rules with event based actions
+    QTest::newRow("valid rule. enabled, 1 Action (eventBased), 1 EventDescriptor, name")                << true     << validActionEventBased    << QVariantMap()            << validEventDescriptor3    << QVariantList()       << QVariantMap()            << RuleEngine::RuleErrorNoError << "ActionEventRule1";
+    QTest::newRow("invalid rule. enabled, 1 Action (eventBased), 1 EventDescriptor, name")              << true     << invalidActionEventBased2 << QVariantMap()            << validEventDescriptor3    << QVariantList()       << QVariantMap()            << RuleEngine::RuleErrorInvalidRuleActionParameter  << "TestRule";
+
+    QTest::newRow("invalid rule. enabled, 1 Action (eventBased), types not matching, name")             << true     << invalidActionEventBased3 << QVariantMap()            << validEventDescriptor1    << QVariantList()       << QVariantMap()            << RuleEngine::RuleErrorTypesNotMatching << "TestRule";
+
+    QTest::newRow("invalid rule. enabled, 1 Action (eventBased), 1 EventDescriptor, name")              << true     << invalidActionEventBased  << QVariantMap()            << validEventDescriptor2    << QVariantList()       << QVariantMap()            << RuleEngine::RuleErrorInvalidRuleActionParameter << "TestRule";
+    QTest::newRow("invalid rule. enabled, 1 Action (eventBased), 1 StateEvaluator, name")               << true     << validActionEventBased    << QVariantMap()            << QVariantMap()            << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorInvalidRuleActionParameter << "TestRule";
+    QTest::newRow("invalid rule. enabled, 1 Action (eventBased), 1 EventDescriptor, name")              << true     << validActionEventBased    << validActionEventBased    << validEventDescriptor2    << QVariantList()       << QVariantMap()            << RuleEngine::RuleErrorInvalidRuleFormat << "TestRule";
+    QTest::newRow("invalid rule. enabled, 1 Action, 1 ExitAction (EventBased), name")                   << true     << validActionNoParams      << validActionEventBased    << validEventDescriptor2    << QVariantList()       << QVariantMap()            << RuleEngine::RuleErrorInvalidRuleFormat << "TestRule";
+
+    // Rules with exit actions
+    QTest::newRow("valid rule. enabled, 1 Action, 1 Exit Action,  1 StateEvaluator, name")              << true     << validActionNoParams      << validExitActionNoParams  << QVariantMap()            << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorNoError << "TestRule";
+    QTest::newRow("valid rule. disabled, 1 Action, 1 Exit Action, 1 StateEvaluator, name")              << false    << validActionNoParams      << validExitActionNoParams  << QVariantMap()            << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorNoError << "TestRule";
+    QTest::newRow("invalid rule. 1 Action, 1 Exit Action, 1 EventDescriptor, 1 StateEvaluator, name")   << true     << validActionNoParams      << validExitActionNoParams  << validEventDescriptor1    << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorInvalidRuleFormat << "TestRule";
+    QTest::newRow("invalid rule. 1 Action, 1 Exit Action, eventDescriptorList, 1 StateEvaluator, name") << true     << validActionNoParams      << validExitActionNoParams  << QVariantMap()            << eventDescriptorList  << validStateEvaluator      << RuleEngine::RuleErrorInvalidRuleFormat << "TestRule";
+
+    // Rules without exit actions
+    QTest::newRow("valid rule. enabled, 1 EventDescriptor, StateEvaluator, 1 Action, name")             << true     << validActionNoParams      << QVariantMap()            << validEventDescriptor1    << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorNoError << "TestRule";
+    QTest::newRow("valid rule. diabled, 1 EventDescriptor, StateEvaluator, 1 Action, name")             << false    << validActionNoParams      << QVariantMap()            << validEventDescriptor1    << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorNoError << "TestRule";
+    QTest::newRow("valid rule. 2 EventDescriptors, 1 Action, name")                                     << true     << validActionNoParams      << QVariantMap()            << QVariantMap()            << eventDescriptorList  << validStateEvaluator      << RuleEngine::RuleErrorNoError << "TestRule";
+    QTest::newRow("invalid rule: eventDescriptor and eventDescriptorList used")                         << true     << validActionNoParams      << QVariantMap()            << validEventDescriptor1    << eventDescriptorList  << validStateEvaluator      << RuleEngine::RuleErrorInvalidParameter << "TestRule";
+}
+
+void TestRules::editRules()
+{
+    QFETCH(bool, enabled);
+    QFETCH(QVariantMap, action);
+    QFETCH(QVariantMap, exitAction);
+    QFETCH(QVariantMap, eventDescriptor);
+    QFETCH(QVariantList, eventDescriptorList);
+    QFETCH(QVariantMap, stateEvaluator);
+    QFETCH(RuleEngine::RuleError, error);
+    QFETCH(QString, name);
+
+    // Add the rule we want to edit
+    QVariantList eventParamDescriptors;
+    QVariantMap eventDescriptor1;
+    eventDescriptor1.insert("eventTypeId", mockEvent1Id);
+    eventDescriptor1.insert("deviceId", m_mockDeviceId);
+    eventDescriptor1.insert("paramDescriptors", QVariantList());
+    QVariantMap eventDescriptor2;
+    eventDescriptor2.insert("eventTypeId", mockEvent2Id);
+    eventDescriptor2.insert("deviceId", m_mockDeviceId);
+    eventDescriptor2.insert("paramDescriptors", QVariantList());
+    QVariantMap eventParam1;
+    eventParam1.insert("name", "mockParamInt");
+    eventParam1.insert("value", 3);
+    eventParam1.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
+    eventParamDescriptors.append(eventParam1);
+    eventDescriptor2.insert("paramDescriptors", eventParamDescriptors);
+
+    QVariantList eventDescriptorList1;
+    eventDescriptorList1.append(eventDescriptor1);
+    eventDescriptorList1.append(eventDescriptor2);
+
+    QVariantMap stateEvaluator0;
+    QVariantMap stateDescriptor1;
+    stateDescriptor1.insert("deviceId", m_mockDeviceId);
+    stateDescriptor1.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
+    stateDescriptor1.insert("stateTypeId", mockIntStateId);
+    stateDescriptor1.insert("value", 1);
+    QVariantMap stateDescriptor2;
+    stateDescriptor2.insert("deviceId", m_mockDeviceId);
+    stateDescriptor2.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
+    stateDescriptor2.insert("stateTypeId", mockBoolStateId);
+    stateDescriptor2.insert("value", true);
+    QVariantMap stateEvaluator1;
+    stateEvaluator1.insert("stateDescriptor", stateDescriptor1);
+    stateEvaluator1.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+    QVariantMap stateEvaluator2;
+    stateEvaluator2.insert("stateDescriptor", stateDescriptor2);
+    stateEvaluator2.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+    QVariantList childEvaluators;
+    childEvaluators.append(stateEvaluator1);
+    childEvaluators.append(stateEvaluator2);
+    stateEvaluator0.insert("childEvaluators", childEvaluators);
+    stateEvaluator0.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+
+    QVariantMap action1;
+    action1.insert("actionTypeId", mockActionIdNoParams);
+    action1.insert("deviceId", m_mockDeviceId);
+    action1.insert("ruleActionParams", QVariantList());
+    QVariantMap action2;
+    action2.insert("actionTypeId", mockActionIdWithParams);
+    qDebug() << "got action id" << mockActionIdWithParams;
+    action2.insert("deviceId", m_mockDeviceId);
+    QVariantList action2Params;
+    QVariantMap action2Param1;
+    action2Param1.insert("name", "mockActionParam1");
+    action2Param1.insert("value", 5);
+    action2Params.append(action2Param1);
+    QVariantMap action2Param2;
+    action2Param2.insert("name", "mockActionParam2");
+    action2Param2.insert("value", true);
+    action2Params.append(action2Param2);
+    action2.insert("ruleActionParams", action2Params);
+
+    // RuleAction event based
+    QVariantMap validActionEventBased;
+    validActionEventBased.insert("actionTypeId", mockActionIdWithParams);
+    validActionEventBased.insert("deviceId", m_mockDeviceId);
+    QVariantMap validActionEventBasedParam1;
+    validActionEventBasedParam1.insert("name", "mockActionParam1");
+    validActionEventBasedParam1.insert("eventTypeId", mockEvent2Id);
+    validActionEventBasedParam1.insert("eventParamName", "mockParamInt");
+    QVariantMap validActionEventBasedParam2;
+    validActionEventBasedParam2.insert("name", "mockActionParam2");
+    validActionEventBasedParam2.insert("value", false);
+    validActionEventBased.insert("ruleActionParams", QVariantList() << validActionEventBasedParam1 << validActionEventBasedParam2);
+
+    QVariantList validEventDescriptors3;
+    QVariantMap validEventDescriptor3;
+    validEventDescriptor3.insert("eventTypeId", mockEvent2Id);
+    validEventDescriptor3.insert("deviceId", m_mockDeviceId);
+    validEventDescriptor3.insert("paramDescriptors", QVariantList());
+    validEventDescriptors3.append(validEventDescriptor3);
+
+    QVariantMap params;
+    QVariantList actions;
+    actions.append(action1);
+    actions.append(action2);
+    params.insert("actions", actions);
+    params.insert("eventDescriptorList", eventDescriptorList1);
+    params.insert("stateEvaluator", stateEvaluator0);
+    params.insert("name", "TestRule");
+    QVariant response = injectAndWait("Rules.AddRule", params);
+
+    RuleId ruleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
+    verifyRuleError(response);
+
+    // enable notifications
+    QCOMPARE(enableNotifications(), true);
+
+    // now create the new rule and edit the original one
+    params.clear();
+    params.insert("ruleId", ruleId.toString());
+    params.insert("name", name);
+
+    if (!eventDescriptor.isEmpty()) {
+        params.insert("eventDescriptor", eventDescriptor);
+    }
+    if (!eventDescriptorList.isEmpty()) {
+        params.insert("eventDescriptorList", eventDescriptorList);
+    }
+    actions.clear();
+    actions.append(action);
+    params.insert("actions", actions);
+
+    QVariantList exitActions;
+    if (!exitAction.isEmpty()) {
+        exitActions.append(exitAction);
+        params.insert("exitActions", exitActions);
+    }
+    params.insert("stateEvaluator", stateEvaluator);
+    if (!enabled) {
+        params.insert("enabled", enabled);
+    }
+
+    // Setup connection to mock client
+    QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    response.clear();
+    response = injectAndWait("Rules.EditRule", params);
+    verifyRuleError(response, error);
+    if (error == RuleEngine::RuleErrorNoError){
+        clientSpy.wait(500);
+        QVariant notification = checkNotification(clientSpy, "Rules.RuleConfigurationChanged");
+        QVERIFY2(notification != QVariant(), "not received \"Rules.RuleConfigurationChanged\" notification");
+
+        // now check if the received rule matches the our new rule
+        QVariantMap rule = response.toMap().value("params").toMap().value("rule").toMap();
+
+        QVERIFY2(rule.value("enabled").toBool() == enabled, "Rule enabled state doesn't match");
+        QVariantList eventDescriptors = rule.value("eventDescriptors").toList();
+        if (!eventDescriptor.isEmpty()) {
+            QVERIFY2(eventDescriptors.count() == 1, "There shoud be exactly one eventDescriptor");
+            QVERIFY2(eventDescriptors.first().toMap() == eventDescriptor, "Event descriptor doesn't match");
+        } else if (eventDescriptorList.isEmpty()){
+            QVERIFY2(eventDescriptors.count() == eventDescriptorList.count(), QString("There shoud be exactly %1 eventDescriptor").arg(eventDescriptorList.count()).toLatin1().data());
+            foreach (const QVariant &eventDescriptorVariant, eventDescriptorList) {
+                bool found = false;
+                foreach (const QVariant &replyEventDescriptorVariant, eventDescriptors) {
+                    if (eventDescriptorVariant.toMap().value("deviceId") == replyEventDescriptorVariant.toMap().value("deviceId") &&
+                            eventDescriptorVariant.toMap().value("eventTypeId") == replyEventDescriptorVariant.toMap().value("eventTypeId")) {
+                        found = true;
+                        QVERIFY2(eventDescriptorVariant == replyEventDescriptorVariant, "Event descriptor doesn't match");
+                    }
+                }
+                QVERIFY2(found, "Missing event descriptor");
+            }
+        }
+
+        QVariantList replyActions = rule.value("actions").toList();
+        QVERIFY2(actions == replyActions, "Actions don't match");
+
+        QVariantList replyExitActions = rule.value("exitActions").toList();
+        QVERIFY2(exitActions == replyExitActions, "ExitActions don't match");
+    }
+
+    // Remove th rule
+    params.clear();
+    params.insert("ruleId", ruleId);
+    response = injectAndWait("Rules.RemoveRule", params);
+    verifyRuleError(response);
+
+    // check if removed
+    response = injectAndWait("Rules.GetRules");
+    QVariantList rules = response.toMap().value("params").toMap().value("rules").toList();
     QVERIFY2(rules.count() == 0, "There should be no rules.");
 }
 
@@ -515,12 +855,18 @@ void TestRules::loadStoreConfig()
 
     response = injectAndWait("Rules.GetRules");
 
-    QVariantList rules = response.toMap().value("params").toMap().value("ruleIds").toList();
+    QVariantList rules = response.toMap().value("params").toMap().value("ruleDescriptions").toList();
 
     QVERIFY2(rules.count() == 3, "There should be exactly three rule.");
-    QVERIFY2(rules.contains(newRuleId.toString()), "Rule 1 should be in ruleIds list.");
-    QVERIFY2(rules.contains(newRuleId2.toString()), "Rule 2 should be in ruleIds list.");
-    QVERIFY2(rules.contains(newRuleId3.toString()), "Rule 3 should be in ruleIds list.");
+
+    QStringList idList;
+    foreach (const QVariant &ruleDescription, rules) {
+        idList.append(ruleDescription.toMap().value("id").toString());
+    }
+
+    QVERIFY2(idList.contains(newRuleId.toString()), "Rule 1 should be in ruleIds list.");
+    QVERIFY2(idList.contains(newRuleId2.toString()), "Rule 2 should be in ruleIds list.");
+    QVERIFY2(idList.contains(newRuleId3.toString()), "Rule 3 should be in ruleIds list.");
 
     // Rule 1
     params.clear();

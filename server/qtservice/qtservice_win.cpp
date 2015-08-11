@@ -941,5 +941,3 @@ void QtServiceBase::setServiceFlags(QtServiceBase::ServiceFlags flags)
     if (d_ptr->sysd)
         d_ptr->sysd->setServiceFlags(flags);
 }
-
-

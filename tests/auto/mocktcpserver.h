@@ -1,5 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -23,15 +25,21 @@
 #include <QNetworkInterface>
 #include <QDebug>
 
-class MockTcpServer : public QObject
+#include "transportinterface.h"
+
+using namespace guhserver;
+
+class JsonRPCServer;
+
+class MockTcpServer : public TransportInterface
 {
     Q_OBJECT
 public:
     explicit MockTcpServer(QObject *parent = 0);
     ~MockTcpServer();
 
-    void sendData(const QUuid &clientId, const QByteArray &data);
-    void sendData(const QList<QUuid> &clients, const QByteArray &data);
+    void sendData(const QUuid &clientId, const QVariantMap &data) override;
+    void sendData(const QList<QUuid> &clients, const QVariantMap &data) override;
 
 /************** Used for testing **************************/
     static QList<MockTcpServer*> servers();
@@ -40,14 +48,13 @@ signals:
     void outgoingData(const QUuid &clientId, const QByteArray &data);
 /************** Used for testing **************************/
 
-signals:
-    void clientConnected(const QUuid &clientId);
-    void clientDisconnected(const QUuid &clientId);
-    void dataAvailable(const QUuid &clientId, const QByteArray &data);
+public:
+    void sendResponse(const QUuid &clientId, int commandId, const QVariantMap &params = QVariantMap());
+    void sendErrorResponse(const QUuid &clientId, int commandId, const QString &error);
 
 public slots:
-    bool startServer();
-    bool stopServer();
+    bool startServer() override;
+    bool stopServer() override;
 
 private:
     static QList<MockTcpServer*> s_allServers;

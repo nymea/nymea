@@ -1,5 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -37,7 +40,7 @@
     The \l{DeviceClass::SetupMethod}{setupMethod} describes the setup method of the \l{Device}.
     The detailed implementation of each \l{DeviceClass} can be found in the source code.
 
-    \note If a \l{StateType} has the parameter \tt{"writable": true}, an \l{ActionType} with the same uuid and \l{ParamType}{ParamTypes}
+    \note If a \l{StateType} has the parameter \tt{"writable": {...}}, an \l{ActionType} with the same uuid and \l{ParamType}{ParamTypes}
     will be created automatically.
 
     \quotefile plugins/deviceplugins/wifidetector/devicepluginwifidetector.json
@@ -75,8 +78,7 @@ void DevicePluginWifiDetector::processFinished(int exitCode, QProcess::ExitStatu
     p->deleteLater();
 
     if (exitCode != 0 || exitStatus != QProcess::NormalExit) {
-        qWarning() << "error performing network scan:";
-        qWarning() << p->readAllStandardError();
+        qCWarning(dcWifiDetector) << "error performing network scan:" << p->readAllStandardError();
         return;
     }
 

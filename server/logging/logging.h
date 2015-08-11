@@ -1,5 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -21,6 +23,8 @@
 
 #include <QObject>
 
+namespace guhserver {
+
 class Logging
 {
     Q_GADGET
@@ -32,7 +36,8 @@ class Logging
 public:
     enum LoggingError {
         LoggingErrorNoError,
-        LoggingErrorLogEntryNotFound
+        LoggingErrorLogEntryNotFound,
+        LoggingErrorInvalidFilterParameter
     };
 
     enum LoggingSource {
@@ -55,4 +60,6 @@ public:
     };
 };
 
-#endif
+}
+
+#endif // LOGGING_H

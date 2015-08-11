@@ -1,5 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -22,6 +24,7 @@
 #include <sys/time.h>
 
 #include "radio433receiver.h"
+#include "loggingcategories.h"
 
 Radio433Receiver::Radio433Receiver(QObject *parent, int gpio) :
     QThread(parent),m_gpioPin(gpio)
@@ -79,7 +82,7 @@ void Radio433Receiver::run()
         int rc = poll(fdset, 2, 1000);
 
         if (rc < 0) {
-            qDebug() << "ERROR: poll failed";
+            qCWarning(dcHardware) << "ERROR: poll failed";
             return;
         }
         if(rc == 0){
@@ -87,7 +90,7 @@ void Radio433Receiver::run()
         }
         if (fdset[1].revents & POLLPRI){
             if(read(fdset[1].fd, buf, 1) != 1){
-                qWarning() << "ERROR: could not read GPIO";
+                qCWarning(dcHardware) << "could not read GPIO";
             }
             int currentTime = micros();
             int duration = currentTime - lastTime;
@@ -213,14 +216,14 @@ void Radio433Receiver::handleTiming(int duration)
     if(!m_timings.isEmpty() && sync){
         // 1 sync bit + 48 data bit
         if(m_timings.count() == 49 && checkValues(Protocol48)){
-            //qDebug() << "48 bit ->" << m_timings << "\n--------------------------";
+            //qCWarning(dcHardware) << "48 bit ->" << m_timings << "\n--------------------------";
             changeReading(false);
             emit dataReceived(m_timings);
         }
 
         // 1 sync bit + 64 data bit
         if(m_timings.count() == 65 && checkValues(Protocol64)){
-            //qDebug() << "64 bit ->" << m_timings << "\n--------------------------";
+            //qCWarning(dcHardware) << "64 bit ->" << m_timings << "\n--------------------------";
             changeReading(false);
             emit dataReceived(m_timings);
         }
@@ -252,13 +255,13 @@ void Radio433Receiver::handleTiming(int duration)
         // check if we have already a vallid protocol
         // 1 sync bit + 48 data bit
         if(m_timings.count() == 49 && checkValues(Protocol48)){
-            //qDebug() << "48 bit -> " << m_timings << "\n--------------------------";
+            //qCWarning(dcHardware) << "48 bit -> " << m_timings << "\n--------------------------";
             emit dataReceived(m_timings);
         }
 
         // 1 sync bit + 64 data bit
         if(m_timings.count() == 65 && checkValues(Protocol64)){
-            //qDebug() << "64 bit -> " << m_timings << "\n--------------------------";
+            //qCWarning(dcHardware) << "64 bit -> " << m_timings << "\n--------------------------";
             changeReading(false);
             emit dataReceived(m_timings);
             m_timings.clear();

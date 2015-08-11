@@ -1,5 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -22,7 +24,6 @@
 #include <QObject>
 #include <QDebug>
 #include <QTimer>
-#include <QtBluetooth>
 #include <QBluetoothHostInfo>
 #include <QBluetoothDeviceInfo>
 #include <QBluetoothAddress>

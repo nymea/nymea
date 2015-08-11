@@ -1,9 +1,11 @@
  {
     "name": "Unitec",
+    "idName": "Unitec",
     "id": "aefca391-f8bf-4f6c-a205-6764de3c2c3c",
     "vendors": [
         {
             "name": "Unitec",
+            "idName": "unitec",
             "id": "f2cd9a76-5a7f-4c01-bf8c-5eae8b12e95c",
             "deviceClasses": [
                 {

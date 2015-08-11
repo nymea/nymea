@@ -1,9 +1,11 @@
 {
     "name": "Generic Elements",
+    "idName": "GenericElements",
     "id": "6e22161e-39b7-4416-8623-39e730721efb",
     "vendors": [
         {
             "name": "guh",
+            "idName": "guh",
             "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6",
             "deviceClasses": [
                 {
@@ -25,7 +27,7 @@
                             "name": "state",
                             "type": "bool",
                             "defaultValue": false,
-                            "writable": true
+                            "writable": {}
                         }
                     ]
                 },

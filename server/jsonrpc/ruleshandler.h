@@ -1,5 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -21,6 +24,8 @@
 
 #include "jsonhandler.h"
 
+namespace guhserver {
+
 class RulesHandler : public JsonHandler
 {
     Q_OBJECT
@@ -33,16 +38,27 @@ public:
     Q_INVOKABLE JsonReply* GetRuleDetails(const QVariantMap &params);
 
     Q_INVOKABLE JsonReply* AddRule(const QVariantMap &params);
+    Q_INVOKABLE JsonReply* EditRule(const QVariantMap &params);
     Q_INVOKABLE JsonReply* RemoveRule(const QVariantMap &params);
     Q_INVOKABLE JsonReply* FindRules(const QVariantMap &params);
 
     Q_INVOKABLE JsonReply* EnableRule(const QVariantMap &params);
     Q_INVOKABLE JsonReply* DisableRule(const QVariantMap &params);
 
-private:
-    QVariant::Type getActionParamType(const ActionTypeId &actionTypeId, const QString &paramName);
-    QVariant::Type getEventParamType(const EventTypeId &eventTypeId, const QString &paramName);
-    bool checkEventDescriptors(const QList<EventDescriptor> eventDescriptors, const EventTypeId &eventTypeId);
+signals:
+    void RuleRemoved(const QVariantMap &params);
+    void RuleAdded(const QVariantMap &params);
+    void RuleActiveChanged(const QVariantMap &params);
+    void RuleConfigurationChanged(const QVariantMap &params);
+
+private slots:
+    void ruleRemovedNotification(const RuleId &ruleId);
+    void ruleAddedNotification(const Rule &rule);
+    void ruleActiveChangedNotification(const Rule &rule);
+    void ruleConfigurationChangedNotification(const Rule &rule);
+
 };
+
+}
 
 #endif // RULESHANDLER_H

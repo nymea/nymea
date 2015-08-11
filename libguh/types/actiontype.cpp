@@ -1,5 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -20,7 +23,7 @@
     \class ActionType
     \brief Describes an \l{Action} for a \l{Device}.
 
-    \ingroup types
+    \ingroup guh-types
     \inmodule libguh
 
     ActionTypes are contained in \l{DeviceClass} templates returned

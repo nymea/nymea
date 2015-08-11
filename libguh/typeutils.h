@@ -1,5 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -58,6 +61,7 @@ class Types
     Q_ENUMS(StateOperator)
     Q_ENUMS(ValueOperator)
     Q_ENUMS(InputType)
+    Q_ENUMS(Unit)
 
 public:
     enum InputType {
@@ -73,6 +77,47 @@ public:
         InputTypeMacAddress
     };
 
+    enum Unit {
+        UnitNone,
+        UnitSeconds,
+        UnitMinutes,
+        UnitHours,
+        UnitUnixTime,
+        UnitMeterPerSecond,
+        UnitKiloMeterPerHour,
+        UnitDegree,
+        UnitRadiant,
+        UnitDegreeCelsius,
+        UnitDegreeKelvin,
+        UnitMired,
+        UnitMilliBar,
+        UnitBar,
+        UnitPascal,
+        UnitHectoPascal,
+        UnitAtmosphere,
+        UnitLumen,
+        UnitLux,
+        UnitCandela,
+        UnitMilliMeter,
+        UnitCentiMeter,
+        UnitMeter,
+        UnitKiloMeter,
+        UnitGram,
+        UnitKiloGram,
+        UnitDezibel,
+        UnitKiloByte,
+        UnitMegaByte,
+        UnitGigaByte,
+        UnitTeraByte,
+        UnitMilliWatt,
+        UnitWatt,
+        UnitKiloWatt,
+        UnitKiloWattHour,
+        UnitPercentage,
+        UnitEuro,
+        UnitDollar
+    };
+
     enum ValueOperator {
         ValueOperatorEquals,
         ValueOperatorNotEquals,
@@ -81,14 +126,18 @@ public:
         ValueOperatorLessOrEqual,
         ValueOperatorGreaterOrEqual
     };
+
     enum StateOperator {
         StateOperatorAnd,
         StateOperatorOr
     };
+
+    Types(QObject *parent = 0);
 };
 
 Q_DECLARE_METATYPE(Types::ValueOperator)
 Q_DECLARE_METATYPE(Types::StateOperator)
 Q_DECLARE_METATYPE(Types::InputType)
+Q_DECLARE_METATYPE(Types::Unit)
 
 #endif // TYPEUTILS_H

@@ -1,5 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -22,8 +25,11 @@
 #include "types/state.h"
 #include "types/statedescriptor.h"
 
-#include <QSettings>
 #include <QDebug>
+
+class GuhSettings;
+
+namespace guhserver {
 
 class StateEvaluator
 {
@@ -45,8 +51,8 @@ public:
 
     void removeDevice(const DeviceId &deviceId);
 
-    void dumpToSettings(QSettings &settings, const QString &groupName) const;
-    static StateEvaluator loadFromSettings(QSettings &settings, const QString &groupPrefix);
+    void dumpToSettings(GuhSettings &settings, const QString &groupName) const;
+    static StateEvaluator loadFromSettings(GuhSettings &settings, const QString &groupPrefix);
 
 private:
     StateDescriptor m_stateDescriptor;
@@ -54,5 +60,7 @@ private:
     QList<StateEvaluator> m_childEvaluators;
     Types::StateOperator m_operatorType;
 };
+
+}
 
 #endif // STATEEVALUATOR_H

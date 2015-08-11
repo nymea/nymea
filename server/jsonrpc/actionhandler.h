@@ -1,5 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
@@ -22,6 +25,8 @@
 #include "jsonhandler.h"
 #include "devicemanager.h"
 
+namespace guhserver {
+
 class ActionHandler : public JsonHandler
 {
     Q_OBJECT
@@ -40,5 +45,7 @@ private slots:
 private:
     QHash<ActionId, JsonReply*> m_asyncActionExecutions;
 };
+
+}
 
 #endif // ACTIONHANDLER_H

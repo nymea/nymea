@@ -5,6 +5,11 @@ CONFIG += plugin
 
 QT += network
 
+# check Bluetooth LE support
+contains(DEFINES, BLUETOOTH_LE) {
+    QT += bluetooth
+}
+
 INCLUDEPATH += $$top_srcdir/libguh
 LIBS += -L../../../libguh -lguh
 
@@ -19,3 +24,4 @@ QMAKE_EXTRA_COMPILERS += infofile
 
 target.path = /usr/lib/guh/plugins/
 INSTALLS += target
+

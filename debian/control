@@ -7,7 +7,8 @@ Build-Depends: debhelper (>= 9.0.0),
   hardening-wrapper,
   python,
   qt5-default,
-  qtbase5-dev
+  qtbase5-dev,
+  qtconnectivity5-dev
 Standards-Version: 3.9.5
 
 Package: guh
@@ -31,7 +32,8 @@ Depends: libqt5network5,
   ${shlibs:Depends},
   ${misc:Depends}
 Recommends:
-  libqt5websockets5
+  libqt5websockets5,
+  libqt5bluetooth5
 Description: Server daemon for home automation systems
  guh is an open source home automation server, which allows to control
  a lot of different devices from many different manufacturers. With the
@@ -75,7 +77,8 @@ Package: libguh1
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends},
-  ${misc:Depends}
+  ${misc:Depends},
+  libqt5bluetooth5
 Description: Server for home automation systems - core library
  guh is an open source home automation server, which allows to control
  a lot of different devices from many different manufacturers. With the

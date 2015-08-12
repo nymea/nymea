@@ -31,6 +31,10 @@
 #include "types/vendor.h"
 #include "types/param.h"
 
+#ifdef BLUETOOTH_LE
+#include <QBluetoothDeviceInfo>
+#endif
+
 #include <QObject>
 #include <QJsonObject>
 
@@ -71,6 +75,10 @@ public:
 
     virtual void networkManagerReplyReady(QNetworkReply *reply) {Q_UNUSED(reply)}
 
+    #ifdef BLUETOOTH_LE
+    virtual void bluetoothDiscoveryFinished(const QList<QBluetoothDeviceInfo> &deviceInfos) {Q_UNUSED(deviceInfos)}
+    #endif
+
     // Configuration
     virtual QList<ParamType> configurationDescription() const;
     DeviceManager::DeviceError setConfiguration(const ParamList &configuration);
@@ -103,6 +111,11 @@ protected:
 
     // UPnP dicovery
     void upnpDiscover(QString searchTarget = "ssdp:all", QString userAgent = QString());
+
+    // Bluetooth LE discovery
+    #ifdef BLUETOOTH_LE
+    bool discoverBluetooth();
+    #endif
 
     // Network manager
     QNetworkReply *networkManagerGet(const QNetworkRequest &request);

@@ -20,6 +20,7 @@ SUBDIRS += elro         \
     tune                \
     udpcommander        \
     kodi                \
+    elgato              \
 
 boblight {
     SUBDIRS += boblight

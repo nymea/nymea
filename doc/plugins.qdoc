@@ -13,6 +13,8 @@
     \section2 Network Plugins
     \annotatedlist network
 
+    \section1 Bluetooth Plugins
+    \annotatedlist bluetooth
 
 */
 

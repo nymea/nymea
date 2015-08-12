@@ -68,7 +68,7 @@
     \value RuleErrorInvalidRuleActionParameter
         One of the given \l{RuleActionParam}{RuleActionParams} is not valid.
     \value RuleErrorTypesNotMatching
-        One of the RuleActionParams type does not match with the corresponding EventParam type.
+        The types of the \l{RuleActionParam} and the corresponding \l{Event} \l{Param} do not match.
 */
 
 /*! \enum guhserver::RuleEngine::RemovePolicy

@@ -39,7 +39,7 @@
     \code https://localhost:3333\endcode
 
     The URL for the insecure REST API access to a \l{RestResource}:
-    \code http://localhost:3333/api/v1/{resource}\endcode
+    \code http://localhost:3333/api/v1/{RestResource}\endcode
 
     The URL for the secure HTTPS (TLS 1.2) REST API access to a \l{RestResource}:
     \code https://localhost:3333/api/v1/{RestResource}\endcode

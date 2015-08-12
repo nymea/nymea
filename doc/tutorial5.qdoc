@@ -1,13 +1,11 @@
 /*!
     \page tutorial5.html
     \title Tutorial 5 - The "Network Info" plugin
-    \brief The plugin shows you how the Network Manager hardware resource works
+    \brief The plugin shows you how to use the NetworkManager and how asynchronous actions work
     \ingroup tutorials
     
 
-    In the second tutorial we make our own first plugin with the name \b {"Network Info"}. We will use this name for the naming concentions of the filenames. 
-    
-    This plugin will use the \l{NetworkManager} hardware resource to fetch the location and WAN ip of your internet connection from \l{http://ip-api.com/json}. It will have an \l Action called \e "update" which will refresh the \l{State}{States} of the \l{Device}.
+    In the tutorial we make a plugin with the name \b {"Network Info"}. This plugin will use the \l{NetworkManager} hardware resource to fetch the location and WAN ip of your internet connection from \l{http://ip-api.com/json}. It will have an \l Action called \e "update" which will refresh the \l{State}{States} of the \l{Device}.
 
 In order to get started with our new \b {"Network Info"} plugin we use the minimal plugin as template and start from there. Make a copy of the minimal folder and name the new folder \b networkinfo-diy. In this case \b{networkinfo-diy} because the folder \b networkinfo already exits from the \tt plugin-template repository.
     
@@ -560,7 +558,7 @@ parameter from \l{The Plugin JSON file}.
 
     \section1 Test the plugin
     
-    Rebuild the whole project to make shore all changes are registered and install the plugin (see \l{Tutorial 1 - The "Minimal" plugin}{Tutorial 1}).
+    Rebuild the whole project to make shore all changes are registered and install the plugin (see \l{Install the plugin}{Tutorial 1 - Install the plugin}).
 
     \list 1    
         \li Start guh with following command:

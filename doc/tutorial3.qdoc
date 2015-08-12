@@ -101,7 +101,7 @@
     \note You \underline don't have to check if the \l State value has changed or not when you set the value. i.e. if the current \l State value of the power \l State is \tt true, and the \l Action \l Param is also \tt true, this code will not generate the \l Event because the value has not changed.
 
     \section1 Test the plugin
-    Rebuild the whole project to make shore all changes are registered and install the plugin (see \l{Tutorial 1 - The "Minimal" plugin}{Tutorial 1}).
+    Rebuild the whole project to make shore all changes are registered and install the plugin (see \l{Install the plugin}{Tutorial 1 - Install the plugin}).
 
     \list 1    
         \li Start guh with following command:

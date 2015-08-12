@@ -81,7 +81,7 @@
 
 
     \section1 Test the plugin
-   Rebuild the whole project to make shore all changes are registered and install the plugin (see \l{Tutorial 1 - The "Minimal" plugin}{Tutorial 1}).
+   Rebuild the whole project to make shore all changes are registered and install the plugin (see \l{Install the plugin}{Tutorial 1 - Install the plugin}).
 
     \list 1    
         \li Start guh with following command:
@@ -94,10 +94,10 @@
         \li Use guh-cli to check the current power \l State, it should be \tt false (default value).
         \li Use guh-cli to execute the \b {set power} \l Action: 
 
-            \tt "Devices" \unicode{0x2192} \tt "Execute an action" \unicode{0x2192} \tt {"Your device name (Alternative Power Button)"} \unicode{0x2192} \tt {set power} \unicode{0x2192} \tt {true}
+            \tt "Devices" \unicode{0x2192} \tt {"Execute an action"} \unicode{0x2192} \tt {"Your device name (Alternative Power Button)"} \unicode{0x2192} \tt {set power} \unicode{0x2192} \tt {true}
     \endlist
     
-    In the guhd stdout you should see the debug output from you plugin. You will notice that the ActionTypeId, StateTypeId and EventTypeId are equal.
+    In the guhd STDOUT you should see the debug output from you plugin. You will notice that the ActionTypeId, StateTypeId and EventTypeId are equal.
   
     \code
         ...
@@ -112,6 +112,5 @@
 
     \endcode
   
-
-
+    Now you can take a look at \l{Tutorial 5 - The "Network Info" plugin}.
 */

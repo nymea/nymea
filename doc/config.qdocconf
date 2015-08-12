@@ -1,6 +1,6 @@
 include(html-template.qdocconf)
 
-project = guh | documentation
+project = guh - developer
 description = Gear up your Home!
 
 dita.metadata.default.author      = Simon Stürz

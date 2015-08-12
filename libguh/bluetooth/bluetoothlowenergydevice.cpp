@@ -19,6 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "bluetoothlowenergydevice.h"
+#include "loggingcategories.h"
 
 BluetoothLowEnergyDevice::BluetoothLowEnergyDevice(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType, QObject *parent) :
     QObject(parent), m_deviceInfo(deviceInfo)
@@ -71,21 +72,21 @@ bool BluetoothLowEnergyDevice::isConnected() const
 void BluetoothLowEnergyDevice::connected()
 {
     m_connected = true;
-    qDebug() << "connected to bluetooth LE device:" << name() << address().toString();
+    qCDebug(dcHardware) << "Connected to Bluetooth LE device:" << name() << address().toString();
     emit connectionStatusChanged();
-    qDebug() << "discover services...";
+    qCDebug(dcHardware) << "Discover Bluetooth LE services...";
     m_controller->discoverServices();
 }
 
 void BluetoothLowEnergyDevice::disconnected()
 {
     m_connected = false;
-    qWarning() << "disconnected from bluetooth LE device:" << name() << address().toString();
+    qCWarning(dcHardware) << "Disconnected from Bluetooth LE device:" << name() << address().toString();
     emit connectionStatusChanged();
 }
 
 void BluetoothLowEnergyDevice::deviceError(const QLowEnergyController::Error &error)
 {
     if (isConnected())
-        qWarning() << "ERROR: Bluetooth LE device:" << name() << address().toString() << ": " << error << m_controller->errorString();
+        qCWarning(dcHardware)  << "Bluetooth LE device:" << name() << address().toString() << ": " << error << m_controller->errorString();
 }

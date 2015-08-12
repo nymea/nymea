@@ -16,6 +16,8 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#ifdef BLUETOOTH_LE
+
 #include "commandrequest.h"
 
 CommandRequest::CommandRequest() :
@@ -46,3 +48,5 @@ QByteArray CommandRequest::value() const
 {
     return m_value;
 }
+
+#endif // BLUETOOTH_LE

@@ -19,6 +19,8 @@
 #ifndef DEVICEPLUGINELGATO_H
 #define DEVICEPLUGINELGATO_H
 
+#ifdef BLUETOOTH_LE
+
 #include "plugin/deviceplugin.h"
 #include "bluetooth/bluetoothlowenergydevice.h"
 #include "aveabulb.h"
@@ -49,5 +51,6 @@ private slots:
     void bulbAvailableChanged();
     void actionFinished(const ActionId actionId, const bool &success);
 };
+#endif // BLUETOOTH_LE
 
 #endif // DEVICEPLUGINELGATO_H

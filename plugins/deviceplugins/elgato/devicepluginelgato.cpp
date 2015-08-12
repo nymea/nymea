@@ -397,6 +397,8 @@
     \quotefile plugins/deviceplugins/elgato/devicepluginelgato.json
 */
 
+#ifdef BLUETOOTH_LE
+
 #include "devicepluginelgato.h"
 
 #include "plugin/device.h"
@@ -592,5 +594,6 @@ void DevicePluginElgato::actionFinished(const ActionId actionId, const bool &suc
     }
 }
 
+#endif // BLUETOOTH_LE
 
 

@@ -19,6 +19,8 @@
 #ifndef AVEABULB_H
 #define AVEABULB_H
 
+#ifdef BLUETOOTH_LE
+
 #include <QObject>
 #include <QQueue>
 
@@ -95,5 +97,6 @@ public slots:
     bool setMagicHour(ActionId actionId);
 
 };
+#endif // BLUETOOTH_LE
 
 #endif // AVEABULB_H

@@ -23,7 +23,8 @@
                 \li \l{RF 433 MHz Plugins}
                 \li \l{Service Plugins}
                 \li \l{Network Plugins}
-            \endlist        
+                \li \l{Bluetooth Plugins}
+            \endlist
     \endlist
 
     \section1 API's

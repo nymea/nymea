@@ -8,6 +8,15 @@ QT += network
 target.path = /usr/lib
 INSTALLS += target
 
+# check Bluetooth LE support
+contains(DEFINES, BLUETOOTH_LE) {
+    SOURCES += bluetooth/bluetoothscanner.cpp \
+               bluetooth/bluetoothlowenergydevice.cpp \
+
+    HEADERS += bluetooth/bluetoothscanner.h \
+               bluetooth/bluetoothlowenergydevice.h \
+}
+
 SOURCES += plugin/device.cpp \
            plugin/deviceclass.cpp \
            plugin/deviceplugin.cpp \

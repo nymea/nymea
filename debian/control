@@ -77,7 +77,8 @@ Package: libguh1
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends},
-  ${misc:Depends}
+  ${misc:Depends},
+  libqt5bluetooth5
 Description: Server for home automation systems - core library
  guh is an open source home automation server, which allows to control
  a lot of different devices from many different manufacturers. With the

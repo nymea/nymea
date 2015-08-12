@@ -440,7 +440,7 @@
     You can see in the implementation that a new \l{Event} will be generated in guh. This is the way how you emit an Event for a device.
 
     \section1 Test the plugin
-    Rebuild the whole project to make shore all changes are registered and install the plugin (see \l{Tutorial 1 - The "Minimal" plugin}{Tutorial 1}).
+    Rebuild the whole project to make shore all changes are registered and install the plugin (see \l{Install the plugin}{Tutorial 1 - Install the plugin}).
 
     \list 1    
         \li Start guh with following command:

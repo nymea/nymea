@@ -6,14 +6,14 @@
 
     This first tutorial shows you how to open, edit, build and load the first plugin.
 
-    \section1 Open
+    \section1 Open the project
     Assuming you already have downloaded the \l{https://github.com/guh/plugin-templates}{plugin-templates} you can open the \tt {plugin-templates \unicode{0x2192} minimal \unicode{0x2192} minimal.pro} file with the Qt Creator.
 
     \image minimal-project-open.png "Qt Creator"
 
     Qt will create next to the \tt {plugin-templates \unicode{0x2192} minimal \unicode{0x2192}} folder the build directory (shadow build). 
 
-    \section1 Build
+    \section1 Build the plugin
     In order to compile your first plugin you can press the \b "Build" button in the lower left corner of the \e {Qt Creator} window. You can follow the build process in the \e {Compile Output} window (\tt alt + \tt 4).
 
     The resulting build directory should look like this:
@@ -34,7 +34,7 @@
 
     The \b {\tt libguh_devicepluginminimal.so} file is our fresh compiled deviceplugin. 
     
-    \section1 Install
+    \section1 Install the plugin
         
     I you have installed guh using the repository (see \l{Set up the build environment}) you will find the installed plugins here:
 
@@ -60,7 +60,7 @@
 
     Once you have installed the new plugin you can test it.
 
-    \section1 Test
+    \section1 Test the plugin
 
     If order to test the new plugin we need to restart the guh daemon. Please make shore there is only one instance of guh running on your system, otherwise one of the daemons will colide with the ports of the other one. Once you have installed the \b {\tt libguh_devicepluginminimal.so} file you need a clean start of the guh daemon. 
 

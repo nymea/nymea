@@ -93,10 +93,10 @@ INSTALLS +=  generateplugininfo
 
 # install header file with relative subdirectory
 for(header, HEADERS) {
-  path = /usr/include/guh/$${dirname(header)}
-  eval(headers_$${path}.files += $${header})
-  eval(headers_$${path}.path = $${path})
-  eval(INSTALLS *= headers_$${path})
+    path = /usr/include/guh/$${dirname(header)}
+    eval(headers_$${path}.files += $${header})
+    eval(headers_$${path}.path = $${path})
+    eval(INSTALLS *= headers_$${path})
 }
 
 

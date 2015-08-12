@@ -19,6 +19,8 @@
 #ifndef COMMANDREQUEST_H
 #define COMMANDREQUEST_H
 
+#ifdef BLUETOOTH_LE
+
 #include <QLowEnergyService>
 #include <QLowEnergyCharacteristic>
 #include <QByteArray>
@@ -40,5 +42,7 @@ private:
     QByteArray m_value;
 
 };
+
+#endif // BLUETOOTH_LE
 
 #endif // COMMANDREQUEST_H

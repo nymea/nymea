@@ -111,7 +111,7 @@ bool Radio433::enable()
 //            return false;
 //        }
     }
-    qCDebug(dcHardware) << "--> Radio 433 MHz GPIO's enabled.";
+    qCDebug(dcDeviceManager) << "--> Radio 433 MHz GPIO's enabled.";
     #endif
 
     return true;
@@ -134,7 +134,7 @@ bool Radio433::disabel()
 void Radio433::brennenstuhlAvailableChanged(const bool &available)
 {
     if (available) {
-        qCDebug(dcHardware) << "--> Radio 433 MHz Brennenstuhl LAN Gateway available.";
+        qCDebug(dcDeviceManager) << "--> Radio 433 MHz Brennenstuhl LAN Gateway available.";
     } else {
         qCWarning(dcHardware) << "--> Radio 433 MHz Brennenstuhl LAN Gateway NOT available.";
     }

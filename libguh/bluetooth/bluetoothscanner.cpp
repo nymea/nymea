@@ -35,6 +35,7 @@
  */
 
 #include "bluetoothscanner.h"
+#include "loggingcategories.h"
 
 /*! Construct the hardware resource BluetoothScanner with the given \a parent. */
 BluetoothScanner::BluetoothScanner(QObject *parent) :
@@ -54,7 +55,7 @@ bool BluetoothScanner::isAvailable()
 
     // Check if Bluetooth is available on this device
     if (!localDevice.isValid()) {
-        qWarning() << "ERROR: no bluetooth device found.";
+        qCWarning(dcHardware) << "No Bluetooth device found.";
         m_available = false;
         return false;
     }
@@ -68,7 +69,7 @@ bool BluetoothScanner::isAvailable()
     // Get connected devices
     QList<QBluetoothHostInfo> remotes = localDevice.allDevices();
     if (remotes.isEmpty()) {
-        qWarning() << "ERROR: no bluetooth host info found.";
+        qCWarning(dcHardware) << "No Bluetooth host info found.";
         m_available = false;
         return false;
     }
@@ -81,7 +82,7 @@ bool BluetoothScanner::isAvailable()
     connect(m_discoveryAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered, this, &BluetoothScanner::deviceDiscovered);
     connect(m_discoveryAgent, SIGNAL(error(QBluetoothDeviceDiscoveryAgent::Error)), this, SLOT(onError(QBluetoothDeviceDiscoveryAgent::Error)));
 
-    qDebug() << "--> Bluetooth discovery created successfully.";
+    qCDebug(dcDeviceManager) << "--> Bluetooth discovery created successfully.";
     m_available = true;
     return true;
 }
@@ -101,7 +102,7 @@ bool BluetoothScanner::discover(const PluginId &pluginId)
         m_deviceInfos.clear();
         m_discoveryAgent->start();
         m_timer->start();
-        qDebug() << "Bluetooth discovery started...";
+        qCDebug(dcHardware) << "Bluetooth discovery started...";
         return true;
     }
     return false;
@@ -114,7 +115,7 @@ void BluetoothScanner::deviceDiscovered(const QBluetoothDeviceInfo &device)
     if (device.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration) {
         bluetoothLE = true;
     }
-    qDebug() << "Bluetooth device discovered:" << device.name() << device.address() << "LE:" << bluetoothLE;
+    qCDebug(dcHardware) << "Bluetooth device discovered:" << device.name() << device.address() << "LE:" << bluetoothLE;
 
     m_deviceInfos.append(device);
 }
@@ -131,12 +132,12 @@ void BluetoothScanner::onError(QBluetoothDeviceDiscoveryAgent::Error error)
     if (isRunning())
         m_discoveryAgent->stop();
 
-    qWarning() << "ERROR: Bluetooth discovery:" << m_discoveryAgent->errorString();
+    qCWarning(dcHardware) << "Bluetooth discovery error:" << m_discoveryAgent->errorString();
 }
 
 void BluetoothScanner::discoveryTimeout()
 {
-    qDebug() << "Bluetooth discovery finished.";
+    qCDebug(dcHardware) << "Bluetooth discovery finished.";
     m_discoveryAgent->stop();
     emit bluetoothDiscoveryFinished(m_pluginId, m_deviceInfos);
 }

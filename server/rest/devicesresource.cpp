@@ -46,6 +46,7 @@
 
 namespace guhserver {
 
+/*! Constructs a \l DevicesResource with the given \a parent. */
 DevicesResource::DevicesResource(QObject *parent) :
     RestResource(parent)
 {
@@ -55,11 +56,20 @@ DevicesResource::DevicesResource(QObject *parent) :
     connect(GuhCore::instance(), &GuhCore::pairingFinished, this, &DevicesResource::pairingFinished);
 }
 
+/*! Returns the name of the \l{RestResource}. In this case \b devices.
+
+    \sa RestResource::name()
+*/
 QString DevicesResource::name() const
 {
     return "devices";
 }
 
+/*! This method will be used to process the given \a request and the given \a urlTokens. The request
+    has to be in this namespace. Returns the resulting \l HttpReply.
+
+    \sa HttpRequest, HttpReply, RestResource::proccessRequest()
+*/
 HttpReply *DevicesResource::proccessRequest(const HttpRequest &request, const QStringList &urlTokens)
 {
     m_device = 0;

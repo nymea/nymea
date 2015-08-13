@@ -18,6 +18,23 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::RulesResource
+    \brief This subclass of \l{RestResource} processes the REST requests for the \tt Rules namespace.
+
+    \ingroup json
+    \inmodule core
+
+    This \l{RestResource} will be created in the \l{RestServer} and used to handle REST requests
+    for the \tt {Rules} namespace of the API.
+
+    \code
+        http://localhost:3333/api/v1/rules
+    \endcode
+
+    \sa Rule, RestResource, RestServer
+*/
+
 #include "rulesresource.h"
 #include "httprequest.h"
 #include "typeutils.h"
@@ -28,16 +45,26 @@
 
 namespace guhserver {
 
+/*! Constructs a \l RulesResource with the given \a parent. */
 RulesResource::RulesResource(QObject *parent) :
     RestResource(parent)
 {
 }
 
+/*! Returns the name of the \l{RestResource}. In this case \b rules.
+
+    \sa RestResource::name()
+*/
 QString RulesResource::name() const
 {
     return "rules";
 }
 
+/*! This method will be used to process the given \a request and the given \a urlTokens. The request
+    has to be in this namespace. Returns the resulting \l HttpReply.
+
+    \sa HttpRequest, HttpReply, RestResource::proccessRequest()
+*/
 HttpReply *RulesResource::proccessRequest(const HttpRequest &request, const QStringList &urlTokens)
 {
     // /api/v1/rules/{ruleId}/

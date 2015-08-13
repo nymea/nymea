@@ -18,6 +18,23 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::PluginsResource
+    \brief This subclass of \l{RestResource} processes the REST requests for the \tt Plugins namespace.
+
+    \ingroup json
+    \inmodule core
+
+    This \l{RestResource} will be created in the \l{RestServer} and used to handle REST requests
+    for the \tt {Plugins} namespace of the API.
+
+    \code
+        http://localhost:3333/api/v1/plugins
+    \endcode
+
+    \sa DevicePlugin, RestResource, RestServer
+*/
+
 #include "pluginsresource.h"
 #include "httprequest.h"
 #include "loggingcategories.h"
@@ -27,17 +44,27 @@
 
 namespace guhserver {
 
+/*! Constructs a \l PluginsResource with the given \a parent. */
 PluginsResource::PluginsResource(QObject *parent) :
     RestResource(parent)
 {
 
 }
 
+/*! Returns the name of the \l{RestResource}. In this case \b plugins.
+
+    \sa RestResource::name()
+*/
 QString PluginsResource::name() const
 {
     return "plugins";
 }
 
+/*! This method will be used to process the given \a request and the given \a urlTokens. The request
+    has to be in this namespace. Returns the resulting \l HttpReply.
+
+    \sa HttpRequest, HttpReply, RestResource::proccessRequest()
+*/
 HttpReply *PluginsResource::proccessRequest(const HttpRequest &request, const QStringList &urlTokens)
 {
     // get the main resource

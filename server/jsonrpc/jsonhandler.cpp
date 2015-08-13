@@ -185,6 +185,7 @@ QVariantMap JsonHandler::statusToReply(Logging::LoggingError status) const
 */
 
 
+
 JsonReply::JsonReply(Type type, JsonHandler *handler, const QString &method, const QVariantMap &data):
     m_type(type),
     m_data(data),

@@ -36,6 +36,7 @@ public:
         Post,
         Put,
         Delete,
+        Options,
         Unhandled
     };
 

@@ -158,9 +158,9 @@ void TestWebserver::checkAllowedMethodCall_data()
     QTest::newRow("PUT") <<  "PUT" << 200;
     QTest::newRow("POST") << "POST" << 200;
     QTest::newRow("DELETE") << "DELETE" << 200;
+    QTest::newRow("OPTIONS") << "OPTIONS" << 200;
     QTest::newRow("HEAD") << "HEAD" << 405;
     QTest::newRow("CONNECT") << "CONNECT" << 405;
-    QTest::newRow("OPTIONS") << "OPTIONS" << 405;
     QTest::newRow("TRACE") << "TRACE" << 405;
 }
 

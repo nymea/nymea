@@ -43,6 +43,8 @@
         Represents the HTTP/1.1 PUT method.
     \value Delete
         Represents the HTTP/1.1 DELETE method.
+    \value Options
+        Represents the HTTP/1.1 OPTIONS method.
     \value Unhandled
         Represents every other method which is not handled.
 */
@@ -256,6 +258,8 @@ HttpRequest::RequestMethod HttpRequest::getRequestMethodType(const QString &meth
         return RequestMethod::Put;
     } else if (methodString == "DELETE") {
         return RequestMethod::Delete;
+    } else if (methodString == "OPTIONS") {
+        return RequestMethod::Options;
     }
     qCWarning(dcWebServer) << "Method" << methodString << "will not be handled.";
     return RequestMethod::Unhandled;

@@ -19,6 +19,16 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::JsonHandler
+    \brief This class represents an interface for developing a handler for the JSON-RPC API.
+
+    \ingroup json
+    \inmodule core
+
+    \sa JsonRPCServer, JsonReply
+*/
+
 #include "jsonhandler.h"
 #include "loggingcategories.h"
 
@@ -28,11 +38,13 @@
 
 namespace guhserver {
 
+/*! Constructs a new \l JsonHandler with the given \a parent. */
 JsonHandler::JsonHandler(QObject *parent) :
     QObject(parent)
 {
 }
 
+/*! Returns a map with all supported methods, notifications and types for the given meta \a type. */
 QVariantMap JsonHandler::introspect(QMetaMethod::MethodType type)
 {
     QVariantMap data;
@@ -76,6 +88,7 @@ QVariantMap JsonHandler::introspect(QMetaMethod::MethodType type)
     return data;
 }
 
+/*! Returns true if this \l JsonHandler has a method with the given \a methodName.*/
 bool JsonHandler::hasMethod(const QString &methodName)
 {
     return m_descriptions.contains(methodName) && m_params.contains(methodName) && m_returns.contains(methodName);
@@ -159,6 +172,18 @@ QVariantMap JsonHandler::statusToReply(Logging::LoggingError status) const
     returns.insert("loggingError", JsonTypes::loggingErrorToString(status));
     return returns;
 }
+
+
+/*!
+    \class guhserver::JsonReply
+    \brief This class represents a reply for the JSON-RPC API request.
+
+    \ingroup json
+    \inmodule core
+
+    \sa JsonHandler, JsonRPCServer
+*/
+
 
 JsonReply::JsonReply(Type type, JsonHandler *handler, const QString &method, const QVariantMap &data):
     m_type(type),

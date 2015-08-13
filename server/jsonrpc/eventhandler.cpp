@@ -19,6 +19,19 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::EventHandler
+    \brief This subclass of \l{JsonHandler} processes the JSON requests for the \tt Events namespace.
+
+    \ingroup json
+    \inmodule core
+
+    This \l{JsonHandler} will be created in the \l{JsonRPCServer} and used to handle JSON-RPC requests
+    for the \tt {Events} namespace of the API.
+
+    \sa Event, JsonHandler, JsonRPCServer
+*/
+
 #include "eventhandler.h"
 #include "guhcore.h"
 #include "loggingcategories.h"

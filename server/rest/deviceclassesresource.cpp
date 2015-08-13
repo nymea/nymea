@@ -18,6 +18,23 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::DeviceClassesResource
+    \brief This subclass of \l{RestResource} processes the REST requests for the \tt DeviceClasses namespace.
+
+    \ingroup json
+    \inmodule core
+
+    This \l{RestResource} will be created in the \l{RestServer} and used to handle REST requests
+    for the \tt {DeviceClasses} namespace of the API.
+
+    \code
+        http://localhost:3333/api/v1/deviceclasses
+    \endcode
+
+    \sa DeviceClass, RestResource, RestServer
+*/
+
 #include "deviceclassesresource.h"
 #include "httprequest.h"
 #include "guhcore.h"
@@ -26,17 +43,27 @@
 
 namespace guhserver {
 
+/*! Constructs a \l DeviceClassesResource with the given \a parent. */
 DeviceClassesResource::DeviceClassesResource(QObject *parent) :
     RestResource(parent)
 {
     connect(GuhCore::instance(), &GuhCore::devicesDiscovered, this, &DeviceClassesResource::devicesDiscovered, Qt::QueuedConnection);
 }
 
+/*! Returns the name of the \l{RestResource}. In this case \b deviceclasses.
+
+    \sa RestResource::name()
+*/
 QString DeviceClassesResource::name() const
 {
     return "deviceclasses";
 }
 
+/*! This method will be used to process the given \a request and the given \a urlTokens. The request
+    has to be in this namespace. Returns the resulting \l HttpReply.
+
+    \sa HttpRequest, HttpReply, RestResource::proccessRequest()
+*/
 HttpReply *DeviceClassesResource::proccessRequest(const HttpRequest &request, const QStringList &urlTokens)
 {
 

@@ -25,7 +25,7 @@ tests.depends = libguh
 
 doc.depends = libguh server
 doc.commands = cd $$top_srcdir/doc; qdoc config.qdocconf; cp images/logo.png html/images/; \
-               cp -v favicons/* html/; cp -r $$top_srcdir/doc/html $$top_builddir/
+               cp favicons/* html/; cp -r $$top_srcdir/doc/html $$top_builddir/
 
 licensecheck.commands = $$top_srcdir/tests/auto/checklicenseheaders.sh $$top_srcdir
 

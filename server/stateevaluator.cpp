@@ -19,6 +19,21 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::StateEvaluator
+    \brief This class helps to evaluate a \l{State} and .
+
+    \ingroup rules
+    \inmodule core
+
+    The \l StateEvaluator class helps to evaluate a \l StateDescriptor and check if all \l {State}{States}
+    from the given \l StateDescriptor are valid. A \l StateDescriptor is valid if conditions of the
+    \l StateDescriptor are true.
+
+    \sa StateDescriptor, State, RuleEngine
+*/
+
+
 #include "stateevaluator.h"
 #include "guhcore.h"
 #include "devicemanager.h"
@@ -27,6 +42,7 @@
 
 namespace guhserver {
 
+/*! Constructs a new StateEvaluator for the given \a stateDescriptor. */
 StateEvaluator::StateEvaluator(const StateDescriptor &stateDescriptor):
     m_stateDescriptor(stateDescriptor),
     m_operatorType(Types::StateOperatorAnd)
@@ -34,6 +50,7 @@ StateEvaluator::StateEvaluator(const StateDescriptor &stateDescriptor):
 
 }
 
+/*! Constructs a new StateEvaluator for the given \a childEvaluators and \a stateOperator. */
 StateEvaluator::StateEvaluator(QList<StateEvaluator> childEvaluators, Types::StateOperator stateOperator):
     m_stateDescriptor(),
     m_childEvaluators(childEvaluators),
@@ -41,36 +58,46 @@ StateEvaluator::StateEvaluator(QList<StateEvaluator> childEvaluators, Types::Sta
 {
 }
 
+/*! Returns the \l StateDescriptor of this \l StateEvaluator. */
 StateDescriptor StateEvaluator::stateDescriptor() const
 {
     return m_stateDescriptor;
 }
 
+/*! Returns the list of child \l {StateEvaluator}{StateEvaluators} of this \l StateEvaluator. */
 QList<StateEvaluator> StateEvaluator::childEvaluators() const
 {
     return m_childEvaluators;
 }
 
+/*! Sets the list of child evaluators of this \l StateEvaluator to the given \a stateEvaluators.*/
 void StateEvaluator::setChildEvaluators(const QList<StateEvaluator> &stateEvaluators)
 {
     m_childEvaluators = stateEvaluators;
 }
 
+/*! Appends the given \a stateEvaluator to the child evaluators of this \l StateEvaluator.
+    \sa childEvaluators()
+*/
 void StateEvaluator::appendEvaluator(const StateEvaluator &stateEvaluator)
 {
     m_childEvaluators.append(stateEvaluator);
 }
 
+/*! Returns the \l {Types::StateOperator}{StateOperator} for this \l StateEvaluator.*/
 Types::StateOperator StateEvaluator::operatorType() const
 {
     return m_operatorType;
 }
 
+/*! Sets the \l {Types::StateOperator}{StateOperator} for this \l StateEvaluator to the given.
+ * \a operatorType. This operator will be used to evaluate the child evaluator list.*/
 void StateEvaluator::setOperatorType(Types::StateOperator operatorType)
 {
     m_operatorType = operatorType;
 }
 
+/*! Returns true, if all child evaluator conditions are true depending on the \l {Types::StateOperator}{StateOperator}.*/
 bool StateEvaluator::evaluate() const
 {
     if (m_stateDescriptor.isValid()) {
@@ -106,6 +133,7 @@ bool StateEvaluator::evaluate() const
     return true;
 }
 
+/*! Returns true if this \l StateEvaluator has a \l Device in it with the given \a deviceId. */
 bool StateEvaluator::containsDevice(const DeviceId &deviceId) const
 {
     if (m_stateDescriptor.deviceId() == deviceId) {
@@ -119,6 +147,7 @@ bool StateEvaluator::containsDevice(const DeviceId &deviceId) const
     return false;
 }
 
+/*! Removes a \l Device with the given \a deviceId from this \l StateEvaluator. */
 void StateEvaluator::removeDevice(const DeviceId &deviceId)
 {
     if (m_stateDescriptor.deviceId() == deviceId) {
@@ -129,6 +158,8 @@ void StateEvaluator::removeDevice(const DeviceId &deviceId)
     }
 }
 
+/*! This method will be used to save this \l StateEvaluator to the given \a settings.
+    The \a groupName will normally be the corresponding \l Rule. */
 void StateEvaluator::dumpToSettings(GuhSettings &settings, const QString &groupName) const
 {
     settings.beginGroup(groupName);
@@ -151,6 +182,8 @@ void StateEvaluator::dumpToSettings(GuhSettings &settings, const QString &groupN
     settings.endGroup();
 }
 
+/*! This method will be used to load a \l StateEvaluator from the given \a settings.
+    The \a groupName will be the corresponding \l RuleId. Returns the loaded \l StateEvaluator. */
 StateEvaluator StateEvaluator::loadFromSettings(GuhSettings &settings, const QString &groupName)
 {
     settings.beginGroup(groupName);

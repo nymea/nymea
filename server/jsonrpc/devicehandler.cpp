@@ -19,6 +19,20 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::DeviceHandler
+    \brief This subclass of \l{JsonHandler} processes the JSON requests for the \tt Devices namespace of the JSON-RPC API.
+
+    \ingroup json
+    \inmodule core
+
+    This \l{JsonHandler} will be created in the \l{JsonRPCServer} and used to handle JSON-RPC requests
+    for the \tt {Devices} namespace of the API.
+
+    \sa Device, JsonHandler, JsonRPCServer
+*/
+
+
 #include "devicehandler.h"
 #include "guhcore.h"
 #include "devicemanager.h"

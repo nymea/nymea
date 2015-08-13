@@ -18,6 +18,24 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::DevicesResource
+    \brief This subclass of \l{RestResource} processes the REST requests for the \tt Devices namespace.
+
+    \ingroup json
+    \inmodule core
+
+    This \l{RestResource} will be created in the \l{RestServer} and used to handle REST requests
+    for the \tt {Devices} namespace of the API.
+
+    \code
+        http://localhost:3333/api/v1/devices
+    \endcode
+
+    \sa Device, RestResource, RestServer
+*/
+
+
 #include "devicesresource.h"
 #include "httpreply.h"
 #include "httprequest.h"

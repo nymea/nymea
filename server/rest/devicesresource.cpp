@@ -204,7 +204,13 @@ HttpReply *DevicesResource::getConfiguredDevice(Device *device) const
 {
     qCDebug(dcRest) << "Get configured device with id:" << device->id().toString();
     HttpReply *reply = createSuccessReply();
-    reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packDevice(device)).toJson());
+    QVariantMap deviceMap = JsonTypes::packDevice(device);
+    QVariantList deviceStates = JsonTypes::packDeviceStates(device);
+    deviceMap.insert("states", deviceStates);
+
+    qCDebug(dcRest) << deviceMap;
+
+    reply->setPayload(QJsonDocument::fromVariant(deviceMap).toJson());
     return reply;
 }
 

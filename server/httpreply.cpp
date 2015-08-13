@@ -135,7 +135,9 @@ HttpReply::HttpReply(QObject *parent) :
     // set known headers
     setHeader(HttpHeaderType::ServerHeader, "guh/" + QByteArray(GUH_VERSION_STRING));
     setHeader(HttpHeaderType::DateHeader, QDateTime::currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8() + " GMT");
+    setRawHeader("Access-Control-Allow-Origin","*");
     setHeader(HttpHeaderType::CacheControlHeader, "no-cache");
+    setHeader(HttpHeaderType::ConnectionHeader, "Keep-Alive");
     packReply();
 }
 
@@ -155,7 +157,9 @@ HttpReply::HttpReply(const HttpReply::HttpStatusCode &statusCode, const HttpRepl
     // set known headers
     setHeader(HttpHeaderType::ServerHeader, "guh/" + QByteArray(GUH_VERSION_STRING));
     setHeader(HttpHeaderType::DateHeader, QDateTime::currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8() + " GMT");
+    setRawHeader("Access-Control-Allow-Origin","*");
     setHeader(HttpHeaderType::CacheControlHeader, "no-cache");
+    setHeader(HttpHeaderType::ConnectionHeader, "Keep-Alive");
     packReply();
 }
 

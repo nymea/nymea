@@ -79,7 +79,8 @@
         },
         {
             "name": "Google",
-            "id": "d02399c5-8e79-4  0be-8cf6-e00b55bbfe7c",
+            "idName": "google",
+            "id": "d02399c5-8e79-40be-8cf6-e00b55bbfe7c",
             "deviceClasses": [
                 {
                     "deviceClassId": "3869884a-1592-4b8f-84a7-994be18ff555",
@@ -127,6 +128,7 @@
         },
         {
             "name": "Yahoo",
+            "idName": "yahoo",
             "id": "5eb3e1e9-25a7-4740-806e-5cfc836e4bf5",
             "deviceClasses": [
                 {

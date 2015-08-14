@@ -250,9 +250,11 @@ HttpReply *DevicesResource::removeDevice(Device *device) const
 
     // TODO: /api/v1/devices/{deviceId}?ruleId={ruleId}&removePolicy={RemovePolicy}
 
-    if (result == DeviceManager::DeviceErrorNoError)
-        return createSuccessReply();
-
+    if (result == DeviceManager::DeviceErrorNoError) {
+        HttpReply *reply = createSuccessReply();
+        reply->setCloseConnection(true);
+        return reply;
+    }
     return createErrorReply(HttpReply::Forbidden);
 }
 
@@ -322,7 +324,7 @@ HttpReply *DevicesResource::addConfiguredDevice(const QByteArray &payload) const
         return createErrorReply(HttpReply::InternalServerError);
 
     QVariantMap result;
-    result.insert("deviceId", newDeviceId);
+    result.insert("id", newDeviceId);
     HttpReply *reply = createSuccessReply();
     reply->setPayload(QJsonDocument::fromVariant(result).toJson());
     return reply;
@@ -458,7 +460,7 @@ void DevicesResource::deviceSetupFinished(Device *device, DeviceManager::DeviceE
     }
 
     QVariantMap result;
-    result.insert("deviceId", device->id());
+    result.insert("id", device->id());
     reply->setPayload(QJsonDocument::fromVariant(result).toJson());
     reply->finished();
 }
@@ -489,7 +491,7 @@ void DevicesResource::pairingFinished(const PairingTransactionId &pairingTransac
     if (status == DeviceManager::DeviceErrorNoError) {
         qCDebug(dcRest) << "Pairing device finished successfully";
         QVariantMap response;
-        response.insert("deviceId", deviceId.toString());
+        response.insert("id", deviceId.toString());
         reply->setPayload(QJsonDocument::fromVariant(response).toJson());
         reply->setHttpStatusCode(HttpReply::Ok);
     } else {

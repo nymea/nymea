@@ -176,6 +176,8 @@ void TestWebserver::checkAllowedMethodCall()
     request.setUrl(QUrl("http://localhost:3333"));
     QNetworkReply *reply = 0;
 
+    clientSpy.clear();
+
     if (method == "GET") {
         reply = nam->get(request);
     } else if(method == "PUT") {
@@ -189,6 +191,7 @@ void TestWebserver::checkAllowedMethodCall()
     } else if(method == "CONNECT") {
         reply = nam->sendCustomRequest(request, "CONNECT");
     } else if(method == "OPTIONS") {
+        request.setUrl(QUrl("http://localhost:3333/api/v1/devices"));
         reply = nam->sendCustomRequest(request, "OPTIONS");
     } else if(method == "TRACE") {
         reply = nam->sendCustomRequest(request, "TRACE");
@@ -197,8 +200,13 @@ void TestWebserver::checkAllowedMethodCall()
         reply = nam->get(request);
     }
 
-    clientSpy.wait(200);
-    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
+    clientSpy.wait();
+
+    printResponse(reply);
+
+    QCOMPARE(clientSpy.count(), 1);
+    //QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
+
     if (expectedStatusCode == 405){
         QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), expectedStatusCode);
         QVERIFY2(reply->hasRawHeader("Allow"), "405 should contain the allowed methods header");
@@ -228,7 +236,6 @@ void TestWebserver::badRequests_data()
     QByteArray userAgentMissing;
     userAgentMissing.append("GET / HTTP/1.1\r\n");
     userAgentMissing.append("\r\n");
-
 
     QTest::newRow("wrong content length") << wrongContentLength << 400;
     QTest::newRow("invalid header formatting") << wrongHeaderFormatting << 400;

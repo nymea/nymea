@@ -133,10 +133,12 @@ void WebServer::sendHttpReply(HttpReply *reply)
     QSslSocket *socket = 0;
     socket = m_clientList.value(reply->clientId());
     if (!socket) {
-        qCDebug(dcWebServer) << "Invalid socket pointer! This should never happen!!!";
+        qCDebug(dcWebServer) << "Invalid socket pointer! This should never happen!!! Missing clientId in reply?";
         return;
     }
+
     writeData(socket, reply->data());
+    socket->close();
 }
 
 bool WebServer::verifyFile(QSslSocket *socket, const QString &fileName)
@@ -190,7 +192,6 @@ QString WebServer::fileName(const QString &query)
 void WebServer::writeData(QSslSocket *socket, const QByteArray &data)
 {
     socket->write(data);
-    //socket->close();
 }
 
 void WebServer::incomingConnection(qintptr socketDescriptor)
@@ -289,13 +290,6 @@ void WebServer::readClient()
         reply.setPayload("405 Method not allowed.");
         writeData(socket, reply.data());
         return;
-    }
-
-    // check CORS call
-    if (request.method() == HttpRequest::Options) {
-        HttpReply reply(HttpReply::Ok);
-        reply.setRawHeader("Access-Control-Allow-Methods","PUT, POST, GET, DELETE, OPTIONS");
-        writeData(socket, reply.data());
     }
 
     // verify API query

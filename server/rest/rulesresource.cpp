@@ -234,7 +234,7 @@ HttpReply *RulesResource::addRule(const QByteArray &payload) const
 
     if (status ==  RuleEngine::RuleErrorNoError) {
         QVariantMap returns;
-        returns.insert("ruleId", newRuleId.toString());
+        returns.insert("id", newRuleId.toString());
         HttpReply *reply = createSuccessReply();
         reply->setPayload(QJsonDocument::fromVariant(returns).toJson());
         return reply;

@@ -125,6 +125,7 @@ HttpReply::HttpReply(QObject *parent) :
     m_statusCode(HttpReply::Ok),
     m_type(HttpReply::TypeSync),
     m_payload(QByteArray()),
+    m_closeConnection(false),
     m_timedOut(false)
 {
     m_timer = new QTimer(this);
@@ -250,6 +251,16 @@ QHash<QByteArray, QByteArray> HttpReply::rawHeaderList() const
 QByteArray HttpReply::rawHeader() const
 {
     return m_rawHeader;
+}
+
+void HttpReply::setCloseConnection(const bool &close)
+{
+    m_closeConnection = close;
+}
+
+bool HttpReply::closeConnection() const
+{
+    return m_closeConnection;
 }
 
 /*! Returns true if the raw header and the payload of this \l{HttpReply} is empty.*/

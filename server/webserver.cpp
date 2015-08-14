@@ -113,7 +113,6 @@ WebServer::WebServer(const QSslConfiguration &sslConfiguration, QObject *parent)
     if (!m_webinterfaceDir.exists())
         qCWarning(dcWebServer) << "Web interface public folder" << m_webinterfaceDir.path() << "does not exist.";
 
-
     // check SSL
     if (m_useSsl && m_sslConfiguration.isNull())
         m_useSsl = false;
@@ -134,10 +133,12 @@ void WebServer::sendHttpReply(HttpReply *reply)
     QSslSocket *socket = 0;
     socket = m_clientList.value(reply->clientId());
     if (!socket) {
-        qCDebug(dcWebServer) << "Invalid socket pointer! This should never happen!!!";
+        qCDebug(dcWebServer) << "Invalid socket pointer! This should never happen!!! Missing clientId in reply?";
         return;
     }
+
     writeData(socket, reply->data());
+    socket->close();
 }
 
 bool WebServer::verifyFile(QSslSocket *socket, const QString &fileName)
@@ -161,7 +162,6 @@ bool WebServer::verifyFile(QSslSocket *socket, const QString &fileName)
         reply.setPayload("403 Forbidden.");
         reply.packReply();
         writeData(socket, reply.data());
-        socket->close();
         return false;
     }
 
@@ -172,7 +172,6 @@ bool WebServer::verifyFile(QSslSocket *socket, const QString &fileName)
         reply.setPayload("403 Forbidden. Page not readable.");
         reply.packReply();
         writeData(socket, reply.data());
-        socket->close();
         return false;
     }
     return true;
@@ -190,11 +189,9 @@ QString WebServer::fileName(const QString &query)
     return m_webinterfaceDir.path() + fileName;
 }
 
-
 void WebServer::writeData(QSslSocket *socket, const QByteArray &data)
 {
     socket->write(data);
-    socket->close();
 }
 
 void WebServer::incomingConnection(qintptr socketDescriptor)
@@ -289,7 +286,7 @@ void WebServer::readClient()
     // verify method
     if (request.method() == HttpRequest::Unhandled) {
         HttpReply reply(HttpReply::MethodNotAllowed);
-        reply.setHeader(HttpReply::AllowHeader, "GET, PUT, POST, DELETE");
+        reply.setHeader(HttpReply::AllowHeader, "GET, PUT, POST, DELETE, OPTIONS");
         reply.setPayload("405 Method not allowed.");
         writeData(socket, reply.data());
         return;

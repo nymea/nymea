@@ -363,7 +363,7 @@ void TestRestRules::addRemoveRules()
     QCOMPARE(error.error, QJsonParseError::NoError);
     reply->deleteLater();
 
-    RuleId ruleId = RuleId(jsonDoc.toVariant().toMap().value("ruleId").toString());
+    RuleId ruleId = RuleId(jsonDoc.toVariant().toMap().value("id").toString());
     QVERIFY(!ruleId.isNull());
 
     // GET rule details
@@ -677,7 +677,7 @@ void TestRestRules::editRules()
     QCOMPARE(error.error, QJsonParseError::NoError);
     reply->deleteLater();
 
-    RuleId ruleId = RuleId(jsonDoc.toVariant().toMap().value("ruleId").toString());
+    RuleId ruleId = RuleId(jsonDoc.toVariant().toMap().value("id").toString());
     QVERIFY(!ruleId.isNull());
 
     // now create the new rule and edit the original one
@@ -792,7 +792,7 @@ void TestRestRules::enableDisableRule()
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
     QCOMPARE(error.error, QJsonParseError::NoError);
 
-    RuleId ruleId = RuleId(jsonDoc.toVariant().toMap().value("ruleId").toString());
+    RuleId ruleId = RuleId(jsonDoc.toVariant().toMap().value("id").toString());
     QVERIFY(!ruleId.isNull());
 
     // ENABLE rule

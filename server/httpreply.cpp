@@ -125,6 +125,7 @@ HttpReply::HttpReply(QObject *parent) :
     m_statusCode(HttpReply::Ok),
     m_type(HttpReply::TypeSync),
     m_payload(QByteArray()),
+    m_closeConnection(false),
     m_timedOut(false)
 {
     m_timer = new QTimer(this);
@@ -135,7 +136,9 @@ HttpReply::HttpReply(QObject *parent) :
     // set known headers
     setHeader(HttpHeaderType::ServerHeader, "guh/" + QByteArray(GUH_VERSION_STRING));
     setHeader(HttpHeaderType::DateHeader, QDateTime::currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8() + " GMT");
+    setRawHeader("Access-Control-Allow-Origin","*");
     setHeader(HttpHeaderType::CacheControlHeader, "no-cache");
+    setHeader(HttpHeaderType::ConnectionHeader, "Keep-Alive");
     packReply();
 }
 
@@ -155,7 +158,9 @@ HttpReply::HttpReply(const HttpReply::HttpStatusCode &statusCode, const HttpRepl
     // set known headers
     setHeader(HttpHeaderType::ServerHeader, "guh/" + QByteArray(GUH_VERSION_STRING));
     setHeader(HttpHeaderType::DateHeader, QDateTime::currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8() + " GMT");
+    setRawHeader("Access-Control-Allow-Origin","*");
     setHeader(HttpHeaderType::CacheControlHeader, "no-cache");
+    setHeader(HttpHeaderType::ConnectionHeader, "Keep-Alive");
     packReply();
 }
 
@@ -246,6 +251,16 @@ QHash<QByteArray, QByteArray> HttpReply::rawHeaderList() const
 QByteArray HttpReply::rawHeader() const
 {
     return m_rawHeader;
+}
+
+void HttpReply::setCloseConnection(const bool &close)
+{
+    m_closeConnection = close;
+}
+
+bool HttpReply::closeConnection() const
+{
+    return m_closeConnection;
 }
 
 /*! Returns true if the raw header and the payload of this \l{HttpReply} is empty.*/

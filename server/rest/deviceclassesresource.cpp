@@ -51,6 +51,7 @@ HttpReply *DeviceClassesResource::proccessRequest(const HttpRequest &request, co
         }
         m_deviceClass = GuhCore::instance()->findDeviceClass(deviceClassId);
         if (!m_deviceClass.isValid()) {
+            qCWarning(dcRest) << "DeviceClassId" << deviceClassId.toString() << "not found";
             return createErrorReply(HttpReply::NotFound);
         }
     }

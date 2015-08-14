@@ -202,7 +202,8 @@ void TestRestDevices::addConfiguredDevice()
         QCOMPARE(error.error, QJsonParseError::NoError);
         QVariantMap response = jsonDoc.toVariant().toMap();
 
-        DeviceId deviceId = DeviceId(response.value("deviceId").toString());
+        DeviceId deviceId = DeviceId(response.value("id").toString());
+        QVERIFY2(!deviceId.isNull(),"invalid device id for removing");
 
         request.setUrl(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
         clientSpy.clear();
@@ -430,7 +431,7 @@ void TestRestDevices::editDevices()
     QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
     reply->deleteLater();
     QVariantMap responseMap = QJsonDocument::fromJson(data).toVariant().toMap();
-    DeviceId deviceId = DeviceId(responseMap.value("deviceId").toString());
+    DeviceId deviceId = DeviceId(responseMap.value("id").toString());
     qDebug() << deviceId.toString();
     QVERIFY2(deviceId != DeviceId(), "DeviceId not returned");
 
@@ -561,7 +562,7 @@ void TestRestDevices::editByDiscovery()
     QCOMPARE(error.error, QJsonParseError::NoError);
     QVariantMap response = jsonDoc.toVariant().toMap();
 
-    DeviceId deviceId = DeviceId(response.value("deviceId").toString());
+    DeviceId deviceId = DeviceId(response.value("id").toString());
     QVERIFY(!deviceId.isNull());
 
 
@@ -617,62 +618,6 @@ void TestRestDevices::editByDiscovery()
     statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     QCOMPARE(statusCode, expectedStatusCode);
     reply->deleteLater();
-
-
-
-//    response = injectAndWait("Devices.EditDevice", params);
-//    verifyDeviceError(response, error);
-
-//    response.clear();
-//    response = injectAndWait("Devices.GetConfiguredDevices", QVariantMap());
-
-//    QVariantMap deviceMap;
-//    bool found = false;
-//    foreach (const QVariant device, response.toMap().value("params").toMap().value("devices").toList()) {
-//        if (DeviceId(device.toMap().value("id").toString()) == deviceId) {
-//            qDebug() << "found added device" << device.toMap().value("params");
-//            found = true;
-//            deviceMap = device.toMap();
-//            break;
-//        }
-//    }
-
-//    QVERIFY2(found, "Device missing in config!");
-//    QCOMPARE(deviceMap.value("id").toString(), deviceId.toString());
-//    if (deviceMap.contains("setupComplete")) {
-//        QVERIFY2(deviceMap.value("setupComplete").toBool(), "Setup not completed after edit");
-//    }
-
-//    // Note: this shows that by discovery a not editable param (name) can be changed!
-//    foreach (QVariant param, deviceMap.value("params").toList()) {
-//        if (param.toMap().value("name") == "name") {
-//            QCOMPARE(param.toMap().value("value").toString(), QString("Discovered Mock Device 2"));
-//        }
-//        if (param.toMap().value("name") == "httpport") {
-//            QCOMPARE(param.toMap().value("value").toInt(), 55556);
-//        }
-//    }
-
-//    // check if the daemons are running
-//    QNetworkAccessManager nam;
-//    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
-
-//    // check if old daemon is still running (should not)
-//    QNetworkRequest request(QUrl(QString("http://localhost:%1").arg(55555)));
-//    QNetworkReply *reply = nam.get(request);
-//    spy.wait();
-//    QVERIFY2(reply->error(), "The old daemon is still running");
-//    reply->deleteLater();
-
-//    // check if the daemon is realy running on the new port
-//    request = QNetworkRequest(QUrl(QString("http://localhost:%1").arg(55556)));
-//    reply = nam.get(request);
-//    spy.wait();
-//    QVERIFY2(reply->error() == QNetworkReply::NoError, "The new daemon is not running");
-//    reply->deleteLater();
-
-
-
 
     // remove added device
     request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));

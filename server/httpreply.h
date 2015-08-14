@@ -94,6 +94,9 @@ public:
     QHash<QByteArray, QByteArray> rawHeaderList() const;
     QByteArray rawHeader() const;
 
+    void setCloseConnection(const bool &close);
+    bool closeConnection() const;
+
     bool isEmpty() const;
     void clear();
 
@@ -114,6 +117,8 @@ private:
     QByteArray m_data;
 
     QHash<QByteArray, QByteArray> m_rawHeaderList;
+
+    bool m_closeConnection;
 
     QTimer *m_timer;
     bool m_timedOut;

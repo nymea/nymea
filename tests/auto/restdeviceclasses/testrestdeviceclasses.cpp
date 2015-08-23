@@ -93,8 +93,8 @@ void TestRestDeviceClasses::getSupportedDevices()
         QNetworkReply *reply = nam->get(request);
         clientSpy.wait();
         QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
-        //        jsonDoc = QJsonDocument::fromJson(reply->readAll(), &error);
-        //        QCOMPARE(error.error, QJsonParseError::NoError);
+        jsonDoc = QJsonDocument::fromJson(reply->readAll(), &error);
+        QCOMPARE(error.error, QJsonParseError::NoError);
         reply->deleteLater();
     }
     nam->deleteLater();
@@ -276,8 +276,11 @@ void TestRestDeviceClasses::discoverDevices()
     QVariantList foundDevices = jsonDoc.toVariant().toList();
     QCOMPARE(foundDevices.count(), resultCount);
 
+    qDebug() << jsonDoc.toJson();
+
     // ADD the discovered device
     request.setUrl(QUrl("http://localhost:3333/api/v1/devices"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     DeviceDescriptorId descriptorId = DeviceDescriptorId(foundDevices.first().toMap().value("id").toString());
     qDebug() << descriptorId;
     params.clear();
@@ -286,21 +289,25 @@ void TestRestDeviceClasses::discoverDevices()
 
     clientSpy.clear();
     QByteArray payload = QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact);
+    qDebug() << payload;
     reply = nam->post(request, payload);
     clientSpy.wait();
     QCOMPARE(clientSpy.count(), 1);
     data = reply->readAll();
-    qDebug() << reply->rawHeaderList();
+    qDebug() << data;
+
     statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     reply->deleteLater();
     QCOMPARE(statusCode, expectedStatusCode);
 
-    // REMOVE added device
     jsonDoc = QJsonDocument::fromJson(data, &error);
     QCOMPARE(error.error, QJsonParseError::NoError);
     QVariantMap response = jsonDoc.toVariant().toMap();
 
-    DeviceId deviceId = DeviceId(response.value("deviceId").toString());
+    DeviceId deviceId = DeviceId(response.value("id").toString());
+    QVERIFY2(!deviceId.isNull(), "got invalid device id");
+
+    // REMOVE added device
 
     request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
     clientSpy.clear();

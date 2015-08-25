@@ -23,13 +23,13 @@
     \class RuleActionParam
     \brief Holds the parameters for a \l{RuleAction}.
 
-    \ingroup types
+    \ingroup guh-types
     \inmodule libguh
 
     A RuleActionParam allows rules to take over an \l{Event} parameter into a rule
     \l{RuleAction}.
 
-    \sa Rule, RuleAction,
+    \sa guhserver::Rule, RuleAction,
 */
 
 #include "ruleactionparam.h"

@@ -20,11 +20,11 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class Rule
+    \class guhserver::Rule
     \brief This class represents a rule.
 
-    \ingroup core
-    \inmodule server
+    \ingroup rules
+    \inmodule core
 
     A Rule is always triggered by an \l{EventDescriptor}, has \l{State}{States}
     to be compared and \l{RuleAction}{RuleActions} to be executed.

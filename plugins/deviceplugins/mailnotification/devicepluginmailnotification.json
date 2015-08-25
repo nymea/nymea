@@ -79,6 +79,7 @@
         },
         {
             "name": "Google",
+            "idName": "google",
             "id": "d02399c5-8e79-40be-8cf6-e00b55bbfe7c",
             "deviceClasses": [
                 {
@@ -127,6 +128,7 @@
         },
         {
             "name": "Yahoo",
+            "idName": "yahoo",
             "id": "5eb3e1e9-25a7-4740-806e-5cfc836e4bf5",
             "deviceClasses": [
                 {

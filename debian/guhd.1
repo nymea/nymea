@@ -1,6 +1,6 @@
 .\" Manpage for guhd.
 .\" Contact simon.stuerz@guh.guru to correct errors or typos.
-.TH man 1 "June 2015" "1.1" "guhd man page"
+.TH man 1 "August 2015" "1.2" "guhd man page"
 .SH NAME
 guhd \- Server for home automation systems
 .SH SYNOPSIS
@@ -38,11 +38,21 @@ Print the debug messages from the device manager.
 .IP \fIHardware\fR\ (default\ disabled)
 Print the debug messages from hardware resources in guh.
 .IP \fIJsonRpc\fR\ (default\ disabled)
-Print the debug messages from JSON-RPC interface.
+Print the debug messages from JSON-RPC API.
 .IP \fILogEngine\fR\ (default\ disabled)
 Print the debug messages from logging engine.
+.IP \fIRest\fR\ (default\ disbaled)
+Print the debug messages from REST API.
 .IP \fIRuleEngine\fR\ (default\ enabled)
 Print the debug messages from the rule engine.
+.IP \fITcpServer\fR\ (default\ disabled)
+Print the debug messages from the TCP server.
+.IP \fIWarning\fR\ (default\ enabled)
+Print warnings.
+.IP \fIWebServer\fR\ (default\ enabled)
+Print the debug messages from the web server.
+.IP \fIWebSocketServer\fR\ (default\ enabled)
+Print the debug messages from the websocket server.
 .TP
 \fBDebug\ categories\ for\ plugins:\fR
 Since guh loads the plugins dynamically, the list of supported
@@ -58,6 +68,9 @@ To start guhd in the foreground, disable debug messages from the DeviceManager
 and enable debug messages for JsonRpc and LogEngine:
 .IP 
 $ guhd -n -d NoDeviceManager JsonRpc LogEngine
+.SH FILES
+.TP
+The settings of the guh server can be found in \fI/etc/guh/guhd.conf\fR
 .SH SEE ALSO
 Full developer documentation at: <http://dev.guh.guru>
 .br

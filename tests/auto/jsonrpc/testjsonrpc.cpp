@@ -98,7 +98,8 @@ void TestJSONRPC::testHandshake()
 
     QJsonDocument jsonDoc = QJsonDocument::fromJson(spy.first().at(1).toByteArray());
     QVariantMap handShake = jsonDoc.toVariant().toMap();
-    QVERIFY2(handShake.value("version").toString() == GUH_VERSION_STRING, "Handshake version doesn't match Guh version.");
+    QString guhVersionString(GUH_VERSION_STRING);
+    QVERIFY2(handShake.value("version").toString() == guhVersionString, "Handshake version doesn't match Guh version.");
 
     m_mockTcpServer->clientDisconnected(newClientId);
 }

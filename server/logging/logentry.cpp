@@ -19,6 +19,10 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*! \fn QDebug guhserver::operator<< (QDebug dbg, const LogEntry &entry);;
+    Writes the \l{LogEntry} \a entry to the given \a dbg. This method gets used just for debugging.
+*/
+
 #include "logentry.h"
 #include "jsonrpc/jsontypes.h"
 

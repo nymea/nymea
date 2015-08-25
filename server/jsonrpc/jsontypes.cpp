@@ -23,6 +23,7 @@
 
 #include "plugin/device.h"
 #include "devicemanager.h"
+#include "guhcore.h"
 #include "ruleengine.h"
 #include "loggingcategories.h"
 
@@ -387,6 +388,14 @@ QVariantMap JsonTypes::packRuleActionParam(const RuleActionParam &ruleActionPara
     return variantMap;
 }
 
+QVariantMap JsonTypes::packState(const State &state)
+{
+    QVariantMap stateMap;
+    stateMap.insert("stateTypeId", state.stateTypeId().toString());
+    stateMap.insert("value", state.value());
+    return stateMap;
+}
+
 QVariantMap JsonTypes::packStateType(const StateType &stateType)
 {
     QVariantMap variantMap;
@@ -526,9 +535,17 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass)
 
 QVariantMap JsonTypes::packPlugin(DevicePlugin *plugin)
 {
-    Q_UNUSED(plugin)
-    qCWarning(dcDeviceManager) << "packPlugin not implemented yet!";
-    return QVariantMap();
+    QVariantMap pluginMap;
+    pluginMap.insert("id", plugin->pluginId());
+    pluginMap.insert("name", plugin->pluginName());
+
+    QVariantList params;
+    foreach (const ParamType &param, plugin->configurationDescription()) {
+        params.append(packParamType(param));
+    }
+    pluginMap.insert("params", params);
+
+    return pluginMap;
 }
 
 QVariantMap JsonTypes::packDevice(Device *device)
@@ -581,6 +598,15 @@ QVariantMap JsonTypes::packRule(const Rule &rule)
     ruleMap.insert("exitActions", exitActionList);
     ruleMap.insert("stateEvaluator", JsonTypes::packStateEvaluator(rule.stateEvaluator()));
     return ruleMap;
+}
+
+QVariantList JsonTypes::packRules(const QList<Rule> rules)
+{
+    QVariantList rulesList;
+    foreach (const Rule &rule, rules) {
+        rulesList.append(JsonTypes::packRule(rule));
+    }
+    return rulesList;
 }
 
 QVariantMap JsonTypes::packRuleDescription(const Rule &rule)
@@ -654,6 +680,110 @@ QVariantList JsonTypes::packCreateMethods(DeviceClass::CreateMethods createMetho
         ret << "CreateMethodDiscovery";
     }
     return ret;
+}
+
+QVariantList JsonTypes::packSupportedVendors()
+{
+    QVariantList supportedVendors;
+    foreach (const Vendor &vendor, GuhCore::instance()->supportedVendors()) {
+        supportedVendors.append(packVendor(vendor));
+    }
+    return supportedVendors;
+}
+
+QVariantList JsonTypes::packSupportedDevices(const VendorId &vendorId)
+{
+    QVariantList supportedDeviceList;
+    foreach (const DeviceClass &deviceClass, GuhCore::instance()->supportedDevices(vendorId)) {
+        supportedDeviceList.append(packDeviceClass(deviceClass));
+    }
+    return supportedDeviceList;
+}
+
+QVariantList JsonTypes::packConfiguredDevices()
+{
+    QVariantList configuredDeviceList;
+    foreach (Device *device, GuhCore::instance()->configuredDevices()) {
+        configuredDeviceList.append(packDevice(device));
+    }
+    return configuredDeviceList;
+}
+
+QVariantList JsonTypes::packDeviceStates(Device *device)
+{
+    DeviceClass deviceClass = GuhCore::instance()->findDeviceClass(device->deviceClassId());
+    QVariantList stateValues;
+    foreach (const StateType &stateType, deviceClass.stateTypes()) {
+        QVariantMap stateValue;
+        stateValue.insert("stateTypeId", stateType.id().toString());
+        stateValue.insert("value", device->stateValue(stateType.id()));
+        stateValues.append(stateValue);
+    }
+    return stateValues;
+}
+
+QVariantList JsonTypes::packDeviceDescriptors(const QList<DeviceDescriptor> deviceDescriptors)
+{
+    QVariantList deviceDescriptorList;
+    foreach (const DeviceDescriptor &deviceDescriptor, deviceDescriptors) {
+        deviceDescriptorList.append(JsonTypes::packDeviceDescriptor(deviceDescriptor));
+    }
+    return deviceDescriptorList;
+}
+
+QVariantList JsonTypes::packRuleDescriptions()
+{
+    QVariantList rulesList;
+    foreach (const Rule &rule, GuhCore::instance()->rules()) {
+        rulesList.append(JsonTypes::packRuleDescription(rule));
+    }
+    return rulesList;
+}
+
+QVariantList JsonTypes::packRuleDescriptions(const QList<Rule> &rules)
+{
+    QVariantList rulesList;
+    foreach (const Rule &rule, rules) {
+        rulesList.append(JsonTypes::packRuleDescription(rule));
+    }
+    return rulesList;
+}
+
+QVariantList JsonTypes::packActionTypes(const DeviceClass &deviceClass)
+{
+    QVariantList actionTypes;
+    foreach (const ActionType &actionType, deviceClass.actionTypes()) {
+        actionTypes.append(JsonTypes::packActionType(actionType));
+    }
+    return actionTypes;
+}
+
+QVariantList JsonTypes::packStateTypes(const DeviceClass &deviceClass)
+{
+    QVariantList stateTypes;
+    foreach (const StateType &stateType, deviceClass.stateTypes()) {
+        stateTypes.append(JsonTypes::packStateType(stateType));
+    }
+    return stateTypes;
+}
+
+QVariantList JsonTypes::packEventTypes(const DeviceClass &deviceClass)
+{
+    QVariantList eventTypes;
+    foreach (const EventType &eventType, deviceClass.eventTypes()) {
+        eventTypes.append(JsonTypes::packEventType(eventType));
+    }
+    return eventTypes;
+}
+
+QVariantList JsonTypes::packPlugins()
+{
+    QVariantList pluginsList;
+    foreach (DevicePlugin *plugin, GuhCore::instance()->plugins()) {
+        QVariantMap pluginMap = packPlugin(plugin);
+        pluginsList.append(pluginMap);
+    }
+    return pluginsList;
 }
 
 Param JsonTypes::unpackParam(const QVariantMap &paramMap)
@@ -1156,6 +1286,168 @@ QPair<bool, QString> JsonTypes::validateBasicType(const QVariant &variant)
         return report(true, "");
     }
     return report(false, QString("Error validating basic type %1.").arg(variant.toString()));
+}
+
+QVariant::Type JsonTypes::getActionParamType(const ActionTypeId &actionTypeId, const QString &paramName)
+{
+    foreach (const DeviceClass &deviceClass, GuhCore::instance()->supportedDevices()) {
+        foreach (const ActionType &actionType, deviceClass.actionTypes()) {
+            if (actionType.id() == actionTypeId) {
+                foreach (const ParamType &paramType, actionType.paramTypes()) {
+                    if (paramType.name() == paramName) {
+                        return paramType.type();
+                    }
+                }
+            }
+        }
+    }
+    return QVariant::Invalid;
+}
+
+QVariant::Type JsonTypes::getEventParamType(const EventTypeId &eventTypeId, const QString &paramName)
+{
+    foreach (const DeviceClass &deviceClass, GuhCore::instance()->supportedDevices()) {
+        foreach (const EventType &eventType, deviceClass.eventTypes()) {
+            if (eventType.id() == eventTypeId) {
+                foreach (const ParamType &paramType, eventType.paramTypes()) {
+                    // get ParamType of Event
+                    if (paramType.name() == paramName) {
+                        return paramType.type();
+                    }
+                }
+            }
+        }
+    }
+    return QVariant::Invalid;
+}
+
+bool JsonTypes::checkEventDescriptors(const QList<EventDescriptor> eventDescriptors, const EventTypeId &eventTypeId)
+{
+    foreach (const EventDescriptor eventDescriptor, eventDescriptors) {
+        if (eventDescriptor.eventTypeId() == eventTypeId) {
+            return true;
+        }
+    }
+    return false;
+}
+
+RuleEngine::RuleError JsonTypes::verifyRuleConsistency(const QVariantMap &params)
+{
+    // check if there are an eventDescriptor and an eventDescriptorList
+    if (params.contains("eventDescriptor") && params.contains("eventDescriptorList")) {
+        qCWarning(dcJsonRpc) << "Only one of eventDesciptor or eventDescriptorList may be used.";
+        return RuleEngine::RuleErrorInvalidParameter;
+    }
+
+    // check if this rules is based on any event and contains exit actions
+    if (params.contains("eventDescriptor") || params.contains("eventDescriptorList")) {
+        if (params.contains("exitActions")) {
+            qCWarning(dcJsonRpc) << "The exitActions will never be executed if the rule contains an eventDescriptor.";
+            return RuleEngine::RuleErrorInvalidRuleFormat;
+        }
+    }
+
+    // check if there are any actions
+    if (params.value("actions").toList().isEmpty()) {
+        qCWarning(dcJsonRpc) << "Rule actions missing. A rule without actions has no effect.";
+        return RuleEngine::RuleErrorMissingParameter;
+    }
+
+    // TODO: check if events and stateEvaluators are missing
+
+    return RuleEngine::RuleErrorNoError;
+}
+
+QPair<QList<EventDescriptor>, RuleEngine::RuleError> JsonTypes::verifyEventDescriptors(const QVariantMap &params)
+{
+    // Check and unpack eventDescriptors
+    QList<EventDescriptor> eventDescriptorList = QList<EventDescriptor>();
+    if (params.contains("eventDescriptor")) {
+        QVariantMap eventMap = params.value("eventDescriptor").toMap();
+        qCDebug(dcJsonRpc) << "unpacking eventDescriptor" << eventMap;
+        eventDescriptorList.append(JsonTypes::unpackEventDescriptor(eventMap));
+    } else if (params.contains("eventDescriptorList")) {
+        QVariantList eventDescriptors = params.value("eventDescriptorList").toList();
+        qCDebug(dcJsonRpc) << "unpacking eventDescriptorList:" << eventDescriptors;
+        foreach (const QVariant &eventVariant, eventDescriptors) {
+            QVariantMap eventMap = eventVariant.toMap();
+            eventDescriptorList.append(JsonTypes::unpackEventDescriptor(eventMap));
+        }
+    }
+    return QPair<QList<EventDescriptor>, RuleEngine::RuleError>(eventDescriptorList, RuleEngine::RuleErrorNoError);
+}
+
+QPair<QList<RuleAction>, RuleEngine::RuleError> JsonTypes::verifyActions(const QVariantMap &params, const QList<EventDescriptor> &eventDescriptorList)
+{
+    QList<RuleAction> actions;
+    QVariantList actionList = params.value("actions").toList();
+    qCDebug(dcJsonRpc) << "unpacking actions:" << actionList;
+    foreach (const QVariant &actionVariant, actionList) {
+        QVariantMap actionMap = actionVariant.toMap();
+        RuleAction action(ActionTypeId(actionMap.value("actionTypeId").toString()), DeviceId(actionMap.value("deviceId").toString()));
+        RuleActionParamList actionParamList = JsonTypes::unpackRuleActionParams(actionMap.value("ruleActionParams").toList());
+        foreach (const RuleActionParam &ruleActionParam, actionParamList) {
+            if (!ruleActionParam.isValid()) {
+                qCWarning(dcJsonRpc) << "got an actionParam with value AND eventTypeId!";
+                return QPair<QList<RuleAction>, RuleEngine::RuleError>(actions, RuleEngine::RuleErrorInvalidRuleActionParameter);
+            }
+        }
+        qCDebug(dcJsonRpc) << "params in exitAction" << action.ruleActionParams();
+        action.setRuleActionParams(actionParamList);
+        actions.append(action);
+    }
+
+    // check possible eventTypeIds in params
+    foreach (const RuleAction &ruleAction, actions) {
+        if (ruleAction.isEventBased()) {
+            foreach (const RuleActionParam &ruleActionParam, ruleAction.ruleActionParams()) {
+                if (ruleActionParam.eventTypeId() != EventTypeId()) {
+                    // We have an eventTypeId
+                    if (eventDescriptorList.isEmpty()) {
+                        qCWarning(dcJsonRpc) << "RuleAction" << ruleAction.actionTypeId() << "contains an eventTypeId, but there are no eventDescriptors.";
+                        return QPair<QList<RuleAction>, RuleEngine::RuleError>(actions, RuleEngine::RuleErrorInvalidRuleActionParameter);
+                    }
+                    // now check if this eventType is in the eventDescriptorList of this rule
+                    if (!checkEventDescriptors(eventDescriptorList, ruleActionParam.eventTypeId())) {
+                        qCWarning(dcJsonRpc) << "eventTypeId from RuleAction" << ruleAction.actionTypeId() << "missing in eventDescriptors.";
+                        return QPair<QList<RuleAction>, RuleEngine::RuleError>(actions, RuleEngine::RuleErrorInvalidRuleActionParameter);
+                    }
+
+                    // check if the param type of the event and the action match
+                    QVariant::Type eventParamType = getEventParamType(ruleActionParam.eventTypeId(), ruleActionParam.eventParamName());
+                    QVariant::Type actionParamType = getActionParamType(ruleAction.actionTypeId(), ruleActionParam.name());
+                    if (eventParamType != actionParamType) {
+                        qCWarning(dcJsonRpc) << "RuleActionParam" << ruleActionParam.name() << " and given event param " << ruleActionParam.eventParamName() << "have not the same type:";
+                        qCWarning(dcJsonRpc) << "        -> actionParamType:" << actionParamType;
+                        qCWarning(dcJsonRpc) << "        ->  eventParamType:" << eventParamType;
+                        return QPair<QList<RuleAction>, RuleEngine::RuleError>(actions, RuleEngine::RuleErrorTypesNotMatching);
+                    }
+                }
+            }
+        }
+    }
+    return QPair<QList<RuleAction>, RuleEngine::RuleError>(actions, RuleEngine::RuleErrorNoError);
+}
+
+QPair<QList<RuleAction>, RuleEngine::RuleError> JsonTypes::verifyExitActions(const QVariantMap &params)
+{
+    QList<RuleAction> exitActions;
+    if (params.contains("exitActions")) {
+        QVariantList exitActionList = params.value("exitActions").toList();
+        qCDebug(dcJsonRpc) << "unpacking exitActions:" << exitActionList;
+        foreach (const QVariant &actionVariant, exitActionList) {
+            QVariantMap actionMap = actionVariant.toMap();
+            RuleAction action(ActionTypeId(actionMap.value("actionTypeId").toString()), DeviceId(actionMap.value("deviceId").toString()));
+            if (action.isEventBased()) {
+                qCWarning(dcJsonRpc) << "got exitAction with a param value containing an eventTypeId!";
+                return QPair<QList<RuleAction>, RuleEngine::RuleError>(exitActions, RuleEngine::RuleErrorInvalidRuleActionParameter);
+            }
+            qCDebug(dcJsonRpc) << "params in exitAction" << action.ruleActionParams();
+            action.setRuleActionParams(JsonTypes::unpackRuleActionParams(actionMap.value("ruleActionParams").toList()));
+            exitActions.append(action);
+        }
+    }
+    return QPair<QList<RuleAction>, RuleEngine::RuleError>(exitActions, RuleEngine::RuleErrorNoError);
 }
 
 QPair<bool, QString> JsonTypes::validateEnum(const QVariantList &enumDescription, const QVariant &value)

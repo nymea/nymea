@@ -14,6 +14,15 @@ isEmpty(PREFIX) {
 target.path = $$INSTALLDIR
 INSTALLS += target
 
+# check Bluetooth LE support
+contains(DEFINES, BLUETOOTH_LE) {
+    SOURCES += bluetooth/bluetoothscanner.cpp \
+               bluetooth/bluetoothlowenergydevice.cpp \
+
+    HEADERS += bluetooth/bluetoothscanner.h \
+               bluetooth/bluetoothlowenergydevice.h \
+}
+
 SOURCES += plugin/device.cpp \
            plugin/deviceclass.cpp \
            plugin/deviceplugin.cpp \
@@ -71,7 +80,6 @@ HEADERS += plugin/device.h \
            types/event.h \
            types/eventdescriptor.h \
            types/vendor.h \
-           types/typeutils.h \
            types/paramtype.h \
            types/param.h \
            types/paramdescriptor.h \
@@ -81,4 +89,22 @@ HEADERS += plugin/device.h \
            typeutils.h \
            loggingcategories.h \
            guhsettings.h \
+
+
+# install files for libguh-dev
+generateplugininfo.files = $$top_srcdir/plugins/guh-generateplugininfo
+generateplugininfo.path = /usr/bin
+
+INSTALLS +=  generateplugininfo
+
+# install header file with relative subdirectory
+for(header, HEADERS) {
+    path = /usr/include/guh/$${dirname(header)}
+    eval(headers_$${path}.files += $${header})
+    eval(headers_$${path}.path = $${path})
+    eval(INSTALLS *= headers_$${path})
+}
+
+
+
 

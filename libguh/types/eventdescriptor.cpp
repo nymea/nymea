@@ -23,12 +23,12 @@
     \class EventDescriptor
     \brief Describes a certain \l{Event}.
 
-    \ingroup types
+    \ingroup guh-types
     \inmodule libguh
 
-    An EventDescriptor describes an \l{Event} in order to match it with a \l{Rule}.
+    An EventDescriptor describes an \l{Event} in order to match it with a \l{guhserver::Rule}.
 
-    \sa Event, EventType, Rule
+    \sa Event, EventType, guhserver::Rule
 */
 
 #include "eventdescriptor.h"

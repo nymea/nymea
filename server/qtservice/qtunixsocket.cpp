@@ -50,8 +50,6 @@
                       +strlen ((ptr)->sun_path))
 #endif
 
-namespace guhserver {
-
 QtUnixSocket::QtUnixSocket(QObject *parent)
     : QTcpSocket(parent)
 {
@@ -79,4 +77,3 @@ bool QtUnixSocket::connectTo(const QString &path)
     return ret;
 }
 
-}

@@ -49,6 +49,8 @@
         Allows to send network requests and receive replies.
     \value HardwareResourceUpnpDisovery
         Allowes to search a UPnP devices in the network.
+    \value HardwareResourceBluetoothLE
+        Allows to interact with bluetooth low energy devices.
 */
 
 /*! \enum DeviceManager::DeviceError
@@ -163,8 +165,8 @@
 
 /*! \fn void DeviceManager::eventTriggered(const Event &event)
     The DeviceManager will emit a \l{Event} described in \a event whenever a Device
-    creates one. Normally only \l{GuhCore} should connect to this and execute actions
-    after checking back with the \{RulesEngine}. Exceptions might be monitoring interfaces
+    creates one. Normally only \l{guhserver::GuhCore} should connect to this and execute actions
+    after checking back with the \{guhserver::RulesEngine}. Exceptions might be monitoring interfaces
     or similar, but you should never directly react to this in a \l{DevicePlugin}.
 */
 
@@ -187,8 +189,8 @@
 #include <QStandardPaths>
 #include <QDir>
 
-/*! Constructs the DeviceManager with the given \a parent. There should only be one DeviceManager in the system created by \l{GuhCore}.
- *  Use \c GuhCore::instance()->deviceManager() instead to access the DeviceManager. */
+/*! Constructs the DeviceManager with the given \a parent. There should only be one DeviceManager in the system created by \l{guhserver::GuhCore}.
+ *  Use \c guhserver::GuhCore::instance()->deviceManager() instead to access the DeviceManager. */
 DeviceManager::DeviceManager(QObject *parent) :
     QObject(parent),
     m_radio433(0)
@@ -219,6 +221,17 @@ DeviceManager::DeviceManager(QObject *parent) :
     m_upnpDiscovery = new UpnpDiscovery(this);
     connect(m_upnpDiscovery, &UpnpDiscovery::discoveryFinished, this, &DeviceManager::upnpDiscoveryFinished);
     connect(m_upnpDiscovery, &UpnpDiscovery::upnpNotify, this, &DeviceManager::upnpNotifyReceived);
+
+    // Bluetooth LE
+    #ifdef BLUETOOTH_LE
+    m_bluetoothScanner = new BluetoothScanner(this);
+    if (!m_bluetoothScanner->isAvailable()) {
+        delete m_bluetoothScanner;
+        m_bluetoothScanner = 0;
+    } else {
+        connect(m_bluetoothScanner, &BluetoothScanner::bluetoothDiscoveryFinished, this, &DeviceManager::bluetoothDiscoveryFinished);
+    }
+    #endif
 }
 
 /*! Destructor of the DeviceManager. Each loaded \l{DevicePlugin} will be deleted. */
@@ -230,6 +243,7 @@ DeviceManager::~DeviceManager()
     }
 }
 
+/*! Returns the list of search direcorys where \l{DevicePlugin} will be searched. */
 QStringList DeviceManager::pluginSearchDirs()
 {
     QStringList searchDirs;
@@ -240,6 +254,7 @@ QStringList DeviceManager::pluginSearchDirs()
     return searchDirs;
 }
 
+/*! Returns the list of json objects containing the metadata of the installed plugins. */
 QList<QJsonObject> DeviceManager::pluginsMetadata()
 {
     QList<QJsonObject> pluginList;
@@ -1165,6 +1180,17 @@ void DeviceManager::upnpNotifyReceived(const QByteArray &notifyData)
         }
     }
 }
+
+#ifdef BLUETOOTH_LE
+void DeviceManager::bluetoothDiscoveryFinished(const PluginId &pluginId, const QList<QBluetoothDeviceInfo> &deviceInfos)
+{
+    foreach (DevicePlugin *devicePlugin, m_devicePlugins) {
+        if (devicePlugin->requiredHardware().testFlag(HardwareResourceBluetoothLE) && devicePlugin->pluginId() == pluginId) {
+            devicePlugin->bluetoothDiscoveryFinished(deviceInfos);
+        }
+    }
+}
+#endif
 
 void DeviceManager::timerEvent()
 {

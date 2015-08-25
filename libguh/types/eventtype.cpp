@@ -23,7 +23,7 @@
     \class EventType
     \brief Describes a \l{Event} for a \l{Device}.
 
-    \ingroup types
+    \ingroup guh-types
     \inmodule libguh
 
     \sa Event, EventDescriptor

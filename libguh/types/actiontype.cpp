@@ -23,7 +23,7 @@
     \class ActionType
     \brief Describes an \l{Action} for a \l{Device}.
 
-    \ingroup types
+    \ingroup guh-types
     \inmodule libguh
 
     ActionTypes are contained in \l{DeviceClass} templates returned

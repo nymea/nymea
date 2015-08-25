@@ -21,15 +21,15 @@
 
 /*!
     \class RuleAction
-    \brief Describes an action for a \l{Rule}.
+    \brief Describes an action for a \l{guhserver::Rule}.
 
-    \ingroup types
+    \ingroup guh-types
     \inmodule libguh
 
-    A RuleAction describes a special form of an \l{Action} for a \l{Rule}. The main difference is
-    the \l{RuleActionParam}, which allows to use an EventTypeId within a \l{Rule} to execute this \l{RuleAction}.
+    A RuleAction describes a special form of an \l{Action} for a \l{guhserver::Rule}. The main difference is
+    the \l{RuleActionParam}, which allows to use an EventTypeId within a \l{guhserver::Rule} to execute this \l{RuleAction}.
 
-    \sa Rule, RuleActionParam,
+    \sa guhserver::Rule, RuleActionParam,
 */
 
 #include "ruleaction.h"

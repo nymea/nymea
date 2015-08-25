@@ -1,0 +1,8 @@
+/*!
+    \page tutorials.html
+    \title Tutorials
+    
+    In order to getting started with your own \l DevicePlugin it is recommanded to walk trough following tutorials to understand how the mechanism works:      
+
+     \annotatedlist tutorials
+*/

@@ -78,7 +78,7 @@ UpnpDiscovery::UpnpDiscovery(QObject *parent) :
     connect(this,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(error(QAbstractSocket::SocketError)));
     connect(this, &UpnpDiscovery::readyRead, this, &UpnpDiscovery::readData);
 
-    qCDebug(dcHardware) << "--> UPnP discovery created successfully.";
+    qCDebug(dcDeviceManager) << "--> UPnP discovery created successfully.";
 }
 
 /*! Returns false, if the \l{UpnpDiscovery} resource is not available. Returns true, if a device with

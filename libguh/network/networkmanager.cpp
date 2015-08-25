@@ -46,7 +46,7 @@ NetworkManager::NetworkManager(QObject *parent) :
     m_manager = new QNetworkAccessManager(this);
     connect(m_manager, &QNetworkAccessManager::finished, this, &NetworkManager::replyFinished);
 
-    qCDebug(dcHardware) << "--> Network manager created successfully.";
+    qCDebug(dcDeviceManager) << "--> Network manager created successfully.";
 }
 
 /*! Posts a request to obtain the contents of the target \a request from the plugin with the given \a pluginId

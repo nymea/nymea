@@ -5,12 +5,17 @@ CONFIG += plugin
 
 QT += network
 
+# check Bluetooth LE support
+contains(DEFINES, BLUETOOTH_LE) {
+    QT += bluetooth
+}
+
 INCLUDEPATH += $$top_srcdir/libguh
 LIBS += -L../../../libguh -lguh
 
 infofile.output = plugininfo.h
-infofile.commands = $$top_srcdir/plugins/generateplugininfo.py ${QMAKE_FILE_NAME} ${QMAKE_FILE_OUT}
-infofile.depends = $$top_srcdir/plugins/generateplugininfo.py
+infofile.commands = $$top_srcdir/plugins/guh-generateplugininfo ${QMAKE_FILE_NAME} ${QMAKE_FILE_OUT}
+infofile.depends = $$top_srcdir/plugins/guh-generateplugininfo
 infofile.CONFIG = no_link
 JSONFILES = deviceplugin"$$TARGET".json
 infofile.input = JSONFILES
@@ -25,3 +30,4 @@ isEmpty(PREFIX) {
 
 target.path = $$INSTALLDIR
 INSTALLS += target
+

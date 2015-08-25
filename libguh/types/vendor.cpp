@@ -23,7 +23,7 @@
     \class Vendor
     \brief Holds information about a the vendor of a \l{Device}.
 
-    \ingroup types
+    \ingroup guh-types
     \inmodule libguh
 
     \sa DevicePlugin

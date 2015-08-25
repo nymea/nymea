@@ -60,8 +60,6 @@
 #include <QProcess>
 #include <QStringList>
 
-namespace guhserver {
-
 static QString encodeName(const QString &name, bool allowUpper = false)
 {
     QString n = name.toLower();
@@ -473,6 +471,4 @@ void QtServiceBase::setServiceFlags(QtServiceBase::ServiceFlags flags)
     d_ptr->serviceFlags = flags;
     if (d_ptr->sysd)
         d_ptr->sysd->serviceFlags = flags;
-}
-
 }

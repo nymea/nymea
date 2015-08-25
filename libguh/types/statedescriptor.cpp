@@ -23,12 +23,12 @@
     \class StateDescriptor
     \brief Describes a certain \l{State}.
 
-    \ingroup types
+    \ingroup guh-types
     \inmodule libguh
 
-    An StateDescriptor describes a \l{State} in order to match it with a \l{Rule}.
+    An StateDescriptor describes a \l{State} in order to match it with a \l{guhserver::Rule}.
 
-    \sa State, Rule
+    \sa State, guhserver::Rule
 */
 
 

@@ -23,10 +23,10 @@
     \class ParamDescriptor
     \brief Describes a certain \l{Param}.
 
-    \ingroup types
+    \ingroup guh-types
     \inmodule libguh
 
-    An ParamDescriptor describes a \l{Param} in order to match it with a \l{Rule}.
+    An ParamDescriptor describes a \l{Param} in order to match it with a \l{guhserver::Rule}.
 
     \sa Param, ParamType
 */

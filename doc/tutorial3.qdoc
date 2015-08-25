@@ -1,0 +1,135 @@
+/*!
+    \page tutorial3.html
+    \title Tutorial 3 - The "Power Button" device
+    \brief This device demonstrates the usage of states and params.
+    \ingroup tutorials
+    
+
+    In the third tutorial we use the project from \l{Tutorial 2 - The "Buttons" plugin}{Tutorial 2} and add a new button type to the existing plugin.
+    
+    This device will show you how to implement \l{State}{States} and how \l{Param}{Params} will be used in \l{Action}{Actions} and \l{Event}{Events}.
+
+    Our new "Power Button" will be able to execute an \l Action and set the \l State of the \l Device  \tt true or \tt false .
+
+    \section1 Add a new DeviceClass
+
+    Open the \tt devicepluginbuttons.json:
+
+    Add the new DeviceClass right behind the existing one:
+
+    \code
+            ...
+        },
+        {
+            "deviceClassId": "fb587886-a649-42d0-9609-8423de587685",
+            "idName": "powerButton",
+            "name": "Power Button",
+            "createMethods": ["user"],
+            "paramTypes": [
+                {
+                    "name": "name",
+                    "type": "QString",
+                    "defaultValue": "Power button device default name"
+                }
+            ],
+            "actionTypes": [
+                {
+                    "id": "1e97a057-c525-463d-a593-9b8dce16645f",
+                    "idName": "setPowerButton",
+                    "name": "set power",
+                    "paramTypes": [
+                        {
+                            "name": "power",
+                            "type": "bool",
+                            "defaultValue": false
+                        }
+                    ]
+                }
+            ],
+            "stateTypes": [
+                {
+                    "id": "9328693e-9054-47bc-b95f-ae3e42d50b8b",
+                    "idName": "power",
+                    "name": "power",
+                    "type": "bool",
+                    "defaultValue": false
+                }
+            ]
+        }
+
+        ...
+    \endcode
+
+    As you can see we added a \l ParamType to the \l ActionType, removed the \l EventType and added a \l StateType definition.
+
+    When the \l Action "set power" will be executed, a \l Param named "power" will be passed with it from type \tt bool. This param holds the power status, which can be true or false and set the new \l State with the name "power".
+
+  \section1 Writing the plugin
+    
+    Since we have a new ActionType and a new DeviceClass, we have to change the \tt {executeAction()} method in the \b {"Button"} plugin.
+
+    \code        
+        ...
+    
+       // Check the DeviceClassId for "Power Button"
+        if (device->deviceClassId() == powerButtonDeviceClassId ) {
+
+            // check if this is the "set power" action
+            if (action.actionTypeId() == setPowerButtonActionTypeId) {
+
+                // get the param value
+                Param powerParam = action.param("power");
+                bool power = powerParam.value().toBool();
+
+                qCDebug(dcButtons) << "Power button" << device->paramValue("name").toString() << "set power to" << power;
+
+                // Set the "power" state
+                device->setStateValue(powerStateTypeId, power);
+
+                return DeviceManager::DeviceErrorNoError;
+            }
+            return DeviceManager::DeviceErrorActionTypeNotFound;
+        }
+
+        ...
+    \endcode
+
+    When a \l State value of a \l Device will be set, that will generate an \l Event in guh, which contains a \l Param holding the new \l State value. 
+
+    \note You \underline don't have to take care about that \l Event, it will be generated automatically and will have the same uuid as \l EventTypeId like the \l StateTypeId. This makes it possible for client applications to link the \l Event to the corresponding \l State which generated the \l Event.
+
+    \note You \underline don't have to check if the \l State value has changed or not when you set the value. i.e. if the current \l State value of the power \l State is \tt true, and the \l Action \l Param is also \tt true, this code will not generate the \l Event because the value has not changed.
+
+    \section1 Test the plugin
+    Rebuild the whole project to make shore all changes are registered and install the plugin (see \l{Install the plugin}{Tutorial 1 - Install the plugin}).
+
+    \list 1    
+        \li Start guh with following command:
+
+            \code
+                $ guhd -n -d Buttons
+            \endcode
+
+        \li Start guh-cli and add the a new \b {"Power Button"} \l Device. Give an appropriate name like \b {Light}.
+        \li Use guh-cli to check the current power \l State, it should be \tt false (default value).
+        \li Use guh-cli to execute the \b {set power} \l Action: 
+
+            \tt "Devices" \unicode{0x2192} \tt "Execute an action" \unicode{0x2192} \tt {"Your device name (Power Button)"} \unicode{0x2192} \tt {set power} \unicode{0x2192} \tt {true}
+    \endlist
+    
+    In the guhd stdout you should see the debug output from you plugin.
+    \code
+        ...        
+
+        Connection: Tcp server: new client connected: "127.0.0.1"
+        Buttons: Power button "Light" set power to true
+        RuleEngine: got event: Event(EventTypeId: "{9328693e-9054-47bc-b95f-ae3e42d50b8b}",
+                    DeviceId"{2304632a-a77a-452f-b438-87e7d69e9a00}") "Power Button" 
+                    QUuid("{9328693e-9054-47bc-b95f-ae3e42d50b8b}")
+    \endcode
+
+    Now you have successfully implemented you first DeviceClass, which has an parametrized \l Action and a \l State which generates an \l Event containig the new \l State value. This new DeviceClass can be used in the \l {guhserver::RuleEngine}{RuleEngine}. Feel free to play with the Device and the Rule engine to get a feeling how the system works.
+
+    Now you can take a look at \l{Tutorial 4 - The alternative "Power Button"}.
+
+*/

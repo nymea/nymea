@@ -1,15 +1,24 @@
 # Parse and export GUH_VERSION_STRING
 GUH_VERSION_STRING=$$system('dpkg-parsechangelog | sed -n -e "s/^Version: //p"')
 
-# define JSON protocol version
+# define protocol versions
 JSON_PROTOCOL_VERSION=28
+REST_API_VERSION=1
 
-DEFINES += GUH_VERSION_STRING=\\\"$${GUH_VERSION_STRING}\\\" JSON_PROTOCOL_VERSION=\\\"$${JSON_PROTOCOL_VERSION}\\\"
+DEFINES += GUH_VERSION_STRING=\\\"$${GUH_VERSION_STRING}\\\" \
+           JSON_PROTOCOL_VERSION=\\\"$${JSON_PROTOCOL_VERSION}\\\" \
+           REST_API_VERSION=\\\"$${REST_API_VERSION}\\\"
 
 QT+= network
 
 QMAKE_CXXFLAGS += -Werror
 CONFIG += c++11
+
+# Check for Bluetoot LE support (Qt >= 5.4)
+equals(QT_MAJOR_VERSION, 5):greaterThan(QT_MINOR_VERSION, 3) {
+    QT += bluetooth
+    DEFINES += BLUETOOTH_LE
+}
 
 # Enable coverage option    
 coverage {
@@ -27,6 +36,10 @@ snappy {
     DEFINES += SNAPPY
 }
 
+# check websocket support (Qt >= 5.3)
+equals(QT_MAJOR_VERSION, 5):greaterThan(QT_MINOR_VERSION, 2) {
+    DEFINES += WEBSOCKET
+}
 
 top_srcdir=$$PWD
 top_builddir=$$shadowed($$PWD)

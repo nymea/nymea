@@ -1,0 +1,118 @@
+{
+    "name": "Elgato",
+    "id": "c5c03ad4-bfdb-444a-8eca-2c234c46cc27",
+    "vendors": [
+        {
+            "name": "Elgato",
+            "id": "90a3091d-1053-4f77-8dc3-92e27bbcebe7",
+            "deviceClasses": [
+                {
+                    "deviceClassId": "164f9602-90ee-4693-bda3-9cafae37603e",
+                    "idName": "avea",
+                    "name": "Avea",
+                    "createMethods": ["discovery"],
+                    "paramTypes": [
+                        {
+                            "name": "name",
+                            "type": "QString",
+                            "inputType": "TextLine"
+                        },
+                        {
+                            "name": "mac address",
+                            "type": "QString",
+                            "inputType": "MacAddress"
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "6d5e792a-c786-40d2-ae35-a48ac6fafcbc",
+                            "idName": "available",
+                            "name": "available",
+                            "type": "bool",
+                            "defaultValue": false
+                        },
+                        {
+                            "id": "c38181a0-e19b-423f-8b66-dedda94e89b5",
+                            "idName": "brightness",
+                            "name": "brightness",
+                            "type": "int",
+                            "defaultValue": 100,
+                            "writable": {
+                                "minValue": 0,
+                                "maxValue": 100
+                            }
+                        },
+                        {
+                            "id": "2073b44b-2f99-4abf-8d9f-6b33be8e1763",
+                            "idName": "liveliness",
+                            "name": "liveliness",
+                            "type": "int",
+                            "defaultValue": 100,
+                            "writable": {
+                                "minValue": 0,
+                                "maxValue": 100
+                            }
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "30b6334d-37cd-4b94-a397-3b9b642c762e",
+                            "idName": "connect",
+                            "name": "connect"
+                        },
+                        {
+                            "id": "1daa8def-85d7-44fb-b0bd-77a4301056e5",
+                            "idName": "disconnect",
+                            "name": "disconnect"
+                        },
+                        {
+                            "id": "b2f39b7b-dd11-4db4-a82b-dd3d4b973bd5",
+                            "idName": "powerOff",
+                            "name": "power off"
+                        },
+                        {
+                            "id": "7936bd51-7ea3-4df4-9998-7325de85b677",
+                            "idName": "color",
+                            "name": "set color",
+                            "paramTypes": [
+                                {
+                                    "name": "color",
+                                    "type": "QString",
+                                    "allowedValues": [
+                                        "green",
+                                        "yellow",
+                                        "orange",
+                                        "red",
+                                        "purple",
+                                        "blue",
+                                        "white"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "id": "dfbc86e8-3891-4782-ae14-05228e70423e",
+                            "idName": "mood",
+                            "name": "set mood",
+                            "paramTypes": [
+                                {
+                                    "name": "mood",
+                                    "type": "QString",
+                                    "allowedValues": [
+                                        "calm provence",
+                                        "cozy flames",
+                                        "cherry blossom",
+                                        "mountain breeze",
+                                        "northern glow",
+                                        "fairy woods",
+                                        "magic hour"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

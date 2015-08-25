@@ -1,0 +1,70 @@
+/*!
+    \page build-environment.html
+    \title Set up the build environment
+    \brief This tutorial shows you how to set up the build environment for developing guh.
+  
+    Assuming you are working on an Ubuntu system here are the steps how to set up the build environment. Basically you can choose your prefered SDK but all tutorials are based on the Qt Creator and we recommand to use that one. You can also use the Ubuntu SDK, which is basically a modified Qt Creator. 
+    
+    \note Please take care that you are using the Qt version from the system for building. The guh server will allways be built with the official Qt version for the appropriate system version. The plugin \underline{must} have the same version like the guh server.    
+
+    \section2 Install Qt
+    In the first step you need to install the Qt libraries:
+
+    \code
+    $ sudo apt-get install qtcreator qt5-default qtbase5-dev python dpkg-dev debhelper hardening-wrapper
+    \endcode    
+
+    \section2 Install guh dependencys
+
+    You can find a good instructions how to install the guh repository on your system here:
+
+    \b {\unicode{0x2192}} \l{https://github.com/guh/guh/wiki/Install}{guh install wiki}
+
+    For example, if you are working on Ubuntu 15.04 Vivid, you can create a source list file and add the guh repository like this:
+
+    \code 
+    $ sudo nano /etc/apt/sources.list.d/guh.list
+    \endcode
+    
+    Copy following 3 lines in the \tt /etc/apt/sources.list.d/guh.list file, save and close it
+    \code 
+    ## guh repo
+    deb http://repo.guh.guru vivid main
+    deb-src http://repo.guh.guru vivid main
+    \endcode
+
+    Now you need to add the public key of the \e guh-repository to your key list with following command:
+
+    \code
+    $ sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key 6B9376B0
+    \endcode
+    
+    Update your package lists:    
+
+    \code
+    $ sudo apt-get update 
+    \endcode
+    
+    Now you are ready to install the guh packages: 
+    
+    \code
+    $ sudo apt-get install guh guh-webinterface guh-cli guh-doc libguh1-dev
+    \endcode
+    
+    \list
+        \li \underline{\e guh} \unicode{0x2192} the \tt guh package is a meta package and will install the \tt guhd, \tt libguh1 and \tt guh-plugins package so you can start the guh daemon.
+        \li \underline{\e guh-webinterface} \unicode{0x2192} the \tt guh-webinterface package will install the webinterface for guh, which is accessable on \l{http://localhost:3333}. 
+        \li \underline{\e guh-cli} \unicode{0x2192} the \tt guh-cli package will install the command line interface for the guh JSON-RPC API. You can find more infomation \l{https://github.com/guh/guh/wiki/guh-cli}{here}.
+        \li \underline{\e guh-doc} \unicode{0x2192} the \tt guh-doc package will install the offline documentation on your system (this homepage). You can access the documentation in your brwoser with \l{file:///usr/share/doc/guh/html/index.html}{file:///usr/share/doc/guh/html/index.html}.
+        \li \underline{\e libguh1-dev} \unicode{0x2192} the \tt libguh1-dev package brings all development files of guh (header files and lib) which will be needed to write a plugin.
+    \endlist
+        
+    Once you have successfully installed everything you are ready for \l{Getting started}.
+*/
+
+
+
+
+
+
+

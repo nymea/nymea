@@ -1,16 +1,20 @@
 /*!
     \page plugins.html
     \title Plugins
+    
+    Here you can find the current list of supported plugins.    
 
-    \section1 RF 433 MHz Plugins
+    \section2 RF 433 MHz Plugins
     \annotatedlist rf433
     
-    \section1 Services
+    \section2 Services
     \annotatedlist services
 
-    \section1 Network Plugins
+    \section2 Network Plugins
     \annotatedlist network
 
+    \section1 Bluetooth Plugins
+    \annotatedlist bluetooth
 
 */
 

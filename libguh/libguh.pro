@@ -113,15 +113,26 @@ HEADERS += devicemanager.h \
            types/ruleactionparam.h \
            types/statedescriptor.h \
 
-# install plugininfo python script for libguh-dev
+# install files for libguh-dev
+isEmpty(PREFIX) {
+    INSTALLDIR = /usr/bin
+} else {
+    INSTALLDIR = $$PREFIX/usr/bin
+}
 generateplugininfo.files = $$top_srcdir/plugins/guh-generateplugininfo
-generateplugininfo.path = /usr/bin
+generateplugininfo.path = $$INSTALLDIR
 
 INSTALLS +=  generateplugininfo
 
 # install header file with relative subdirectory
+isEmpty(PREFIX) {
+    INSTALLDIR = /usr/include
+} else {
+    INSTALLDIR = $$PREFIX/usr/include
+}
+
 for(header, HEADERS) {
-    path = /usr/include/guh/$${dirname(header)}
+    path = $$INSTALLDIR/guh/$${dirname(header)}
     eval(headers_$${path}.files += $${header})
     eval(headers_$${path}.path = $${path})
     eval(INSTALLS *= headers_$${path})

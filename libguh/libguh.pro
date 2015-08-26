@@ -114,6 +114,8 @@ HEADERS += devicemanager.h \
            types/statedescriptor.h \
 
 # install files for libguh-dev
+
+# install guh-generateplugininfo precompiler
 isEmpty(PREFIX) {
     INSTALLDIR = /usr/bin
 } else {
@@ -122,7 +124,7 @@ isEmpty(PREFIX) {
 generateplugininfo.files = $$top_srcdir/plugins/guh-generateplugininfo
 generateplugininfo.path = $$INSTALLDIR
 
-INSTALLS +=  generateplugininfo
+INSTALLS += generateplugininfo
 
 # install header file with relative subdirectory
 isEmpty(PREFIX) {

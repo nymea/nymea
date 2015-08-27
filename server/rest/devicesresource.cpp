@@ -75,6 +75,9 @@ HttpReply *DevicesResource::proccessRequest(const HttpRequest &request, const QS
     case HttpRequest::Delete:
         reply = proccessDeleteRequest(request, urlTokens);
         break;
+    case HttpRequest::Options:
+        reply = proccessOptionsRequest(request, urlTokens);
+        break;
     default:
         reply = createErrorReply(HttpReply::BadRequest);
         break;
@@ -190,6 +193,14 @@ HttpReply *DevicesResource::proccessPostRequest(const HttpRequest &request, cons
     }
 
     return createErrorReply(HttpReply::NotImplemented);
+}
+
+HttpReply *DevicesResource::proccessOptionsRequest(const HttpRequest &request, const QStringList &urlTokens)
+{
+    Q_UNUSED(request)
+    Q_UNUSED(urlTokens)
+    qCDebug(dcRest) << "process options request\n" << request;
+    return RestResource::createCorsSuccessReply();
 }
 
 HttpReply *DevicesResource::getConfiguredDevices() const

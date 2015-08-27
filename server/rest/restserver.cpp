@@ -111,16 +111,12 @@ void RestServer::processHttpRequest(const QUuid &clientId, const HttpRequest &re
         return;
     }
 
-    // check CORS call
-    if (request.method() == HttpRequest::Options) {
-        HttpReply *reply = RestResource::createSuccessReply();
-        reply->setHeader(HttpReply::ContentTypeHeader, "text/plain;");
-        reply->setRawHeader("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS");
-        reply->setRawHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    // check CORS call for main resource
+    if (request.method() == HttpRequest::Options && urlTokens.count() == 3) {
+        qCDebug(dcRest) << "process options request\n" << request;
+        HttpReply *reply = RestResource::createCorsSuccessReply();
         reply->setClientId(clientId);
-        reply->setCloseConnection(true);
         m_webserver->sendHttpReply(reply);
-
         reply->deleteLater();
         return;
     }

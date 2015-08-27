@@ -137,8 +137,11 @@ void WebServer::sendHttpReply(HttpReply *reply)
         return;
     }
 
+    //qCDebug(dcWebServer()) << "sending header to" << socket->peerAddress().toString() << socket->peerPort() << "\n" << reply->rawHeader();
     writeData(socket, reply->data());
-    socket->close();
+    if (reply->closeConnection())
+        socket->close();
+
 }
 
 bool WebServer::verifyFile(QSslSocket *socket, const QString &fileName)
@@ -191,7 +194,7 @@ QString WebServer::fileName(const QString &query)
 
 void WebServer::writeData(QSslSocket *socket, const QByteArray &data)
 {
-    socket->write(data);
+    socket->write(data + "\r\n");
 }
 
 void WebServer::incomingConnection(qintptr socketDescriptor)
@@ -205,6 +208,28 @@ void WebServer::incomingConnection(qintptr socketDescriptor)
         socket->close();
         delete socket;
         return;
+    }
+
+    // check webserver client
+    bool existing = false;
+    foreach (WebServerClient *client, m_webServerClients) {
+        if (client->address() == socket->peerAddress()) {
+            if (client->connections().count() >= 50) {
+                qCWarning(dcConnection) << QString("Maximum connections for this client reached: rejecting connection from client %1:%2").arg(socket->peerAddress().toString()).arg(socket->peerPort());
+                socket->close();
+                delete socket;
+                return;
+            }
+            client->addConnection(socket);
+            existing = true;
+            break;
+        }
+    }
+
+    if (!existing) {
+        WebServerClient *webServerClient = new WebServerClient(socket->peerAddress());
+        webServerClient->addConnection(socket);
+        m_webServerClients.append(webServerClient);
     }
 
     // append the new client to the client list
@@ -282,6 +307,14 @@ void WebServer::readClient()
 
     qCDebug(dcWebServer) << QString("Got valid request from %1:%2").arg(socket->peerAddress().toString()).arg(socket->peerPort());
     qCDebug(dcWebServer) << request.methodString() << request.url().path();
+
+    // reset timout
+    foreach (WebServerClient *webserverClient, m_webServerClients) {
+        if (webserverClient->address() == socket->peerAddress()) {
+            webserverClient->resetTimout(socket);
+            break;
+        }
+    }
 
     // verify method
     if (request.method() == HttpRequest::Unhandled) {
@@ -379,6 +412,67 @@ bool WebServer::stopServer()
     m_enabled = false;
     qCDebug(dcConnection) << "Webserver closed.";
     return true;
+}
+
+
+WebServerClient::WebServerClient(const QHostAddress &address, QObject *parent):
+    QObject(parent),
+    m_address(address)
+{
+}
+
+QHostAddress WebServerClient::address() const
+{
+    return m_address;
+}
+
+QList<QSslSocket *> WebServerClient::connections()
+{
+    return m_connections;
+}
+
+void WebServerClient::addConnection(QSslSocket *socket)
+{
+    QTimer *timer = new QTimer(this);
+    timer->setSingleShot(true);
+    timer->setInterval(6000);
+    connect(timer, &QTimer::timeout, this, &WebServerClient::onTimout);
+
+    m_runningConnections.insert(timer, socket);
+    m_connections.append(socket);
+
+    connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
+
+    timer->start();
+}
+
+void WebServerClient::resetTimout(QSslSocket *socket)
+{
+    QTimer *timer = 0;
+    timer = m_runningConnections.key(socket);
+    if (timer)
+        timer->start();
+}
+
+void WebServerClient::onTimout()
+{
+    QTimer *timer =  static_cast<QTimer *>(sender());
+    QSslSocket *socket = m_runningConnections.take(timer);
+    qCDebug(dcWebServer) << QString("Client connection timout %1:%2 -> closing connection").arg(socket->peerAddress().toString()).arg(socket->peerPort());
+    socket->close();
+
+    timer->deleteLater();
+}
+
+void WebServerClient::onDisconnected()
+{
+    QSslSocket *socket = static_cast<QSslSocket *>(sender());
+    if (!m_runningConnections.values().contains(socket))
+        return;
+
+    QTimer *timer = m_runningConnections.key(socket);
+    m_runningConnections.remove(timer);
+    timer->deleteLater();
 }
 
 }

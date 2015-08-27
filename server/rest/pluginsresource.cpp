@@ -60,6 +60,9 @@ HttpReply *PluginsResource::proccessRequest(const HttpRequest &request, const QS
     case HttpRequest::Put:
         reply = proccessPutRequest(request, urlTokens);
         break;
+    case HttpRequest::Options:
+        reply = proccessOptionsRequest(request, urlTokens);
+        break;
     default:
         reply = createErrorReply(HttpReply::BadRequest);
         break;
@@ -95,6 +98,13 @@ HttpReply *PluginsResource::proccessPutRequest(const HttpRequest &request, const
     }
 
     return createErrorReply(HttpReply::NotImplemented);
+}
+
+HttpReply *PluginsResource::proccessOptionsRequest(const HttpRequest &request, const QStringList &urlTokens)
+{
+    Q_UNUSED(request)
+    Q_UNUSED(urlTokens)
+    return RestResource::createCorsSuccessReply();
 }
 
 HttpReply *PluginsResource::getPlugins() const

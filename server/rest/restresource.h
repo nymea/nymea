@@ -43,6 +43,7 @@ public:
     virtual HttpReply *proccessRequest(const HttpRequest &request, const QStringList &urlTokens) = 0;
 
     static HttpReply *createSuccessReply();
+    static HttpReply *createCorsSuccessReply();
     static HttpReply *createErrorReply(const HttpReply::HttpStatusCode &statusCode);
     static HttpReply *createAsyncReply();
     static QPair<bool, QVariant> verifyPayload(const QByteArray &payload);
@@ -52,6 +53,7 @@ private:
     virtual HttpReply *proccessDeleteRequest(const HttpRequest &request, const QStringList &urlTokens);
     virtual HttpReply *proccessPutRequest(const HttpRequest &request, const QStringList &urlTokens);
     virtual HttpReply *proccessPostRequest(const HttpRequest &request, const QStringList &urlTokens);
+    virtual HttpReply *proccessOptionsRequest(const HttpRequest &request, const QStringList &urlTokens);
 
     QHash<QPair<HttpRequest::RequestMethod, QString>, QString> m_descriptions;
     QHash<QString, QVariantMap> m_params;

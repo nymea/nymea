@@ -90,10 +90,12 @@ HttpReply *RestResource::createCorsSuccessReply()
 {
     HttpReply *reply = RestResource::createSuccessReply();
     reply->setHeader(HttpReply::ContentTypeHeader, "text/plain");
+    reply->setRawHeader("Accept","text/plain");
+    reply->setRawHeader("Allow", "PUT, POST, GET, DELETE, OPTIONS");
     reply->setRawHeader("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS");
     reply->setRawHeader("Access-Control-Allow-Headers", "Origin, Content-Type, Accept");
     reply->setRawHeader("Access-Control-Max-Age", "1728000");
-    reply->setCloseConnection(true);
+    //reply->setCloseConnection(true);
     return reply;
 }
 

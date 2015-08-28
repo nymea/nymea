@@ -116,6 +116,7 @@ void RestServer::processHttpRequest(const QUuid &clientId, const HttpRequest &re
         qCDebug(dcRest) << "process options request\n" << request;
         HttpReply *reply = RestResource::createCorsSuccessReply();
         reply->setClientId(clientId);
+        qCDebug(dcRest) << reply->data();
         m_webserver->sendHttpReply(reply);
         reply->deleteLater();
         return;
@@ -142,8 +143,10 @@ void RestServer::asyncReplyFinished()
 
     qCDebug(dcWebServer) << "Async reply finished";
 
-    if (reply->timedOut())
+    if (reply->timedOut()) {
+        reply->clear();
         reply->setHttpStatusCode(HttpReply::GatewayTimeout);
+    }
 
     m_webserver->sendHttpReply(reply);
     reply->deleteLater();

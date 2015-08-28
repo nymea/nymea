@@ -139,7 +139,7 @@ HttpReply::HttpReply(QObject *parent) :
     setRawHeader("Access-Control-Allow-Origin","*");
     setRawHeader("Keep-Alive", "timeout=6, max=50");
     setHeader(HttpHeaderType::CacheControlHeader, "no-cache");
-    setHeader(HttpHeaderType::ConnectionHeader, "Keep-Alive");
+    setHeader(HttpHeaderType::ConnectionHeader, "keep-alive");
     packReply();
 }
 
@@ -275,6 +275,9 @@ bool HttpReply::isEmpty() const
 /*! Clears all data of this \l{HttpReply}. */
 void HttpReply::clear()
 {
+    m_closeConnection = false;
+    m_type = TypeSync;
+    m_statusCode = Ok;
     m_rawHeader.clear();
     m_payload.clear();
     m_rawHeaderList.clear();

@@ -88,8 +88,6 @@ private:
     bool verifyFile(QSslSocket *socket, const QString &fileName);
     QString fileName(const QString &query);
 
-    void writeData(QSslSocket *socket, const QByteArray &data);
-
 protected:
     void incomingConnection(qintptr socketDescriptor) override;
 

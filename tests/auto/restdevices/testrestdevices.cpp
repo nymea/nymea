@@ -419,7 +419,7 @@ void TestRestDevices::editDevices()
 
     QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/devices")));
 
-    QNetworkReply *reply = nam->post(request, QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact));
+    QNetworkReply *reply = nam->post(request, QJsonDocument::fromVariant(params).toJson());
     clientSpy.wait();
     QCOMPARE(clientSpy.count(), 1);
 

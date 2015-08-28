@@ -142,11 +142,10 @@ void TestWebserver::multiPackageMessage()
     bool ok = false;
     int statusCode = firstLineTokens.at(1).toInt(&ok);
     QVERIFY2(ok, "Could not convert statuscode from response to int");
-    QCOMPARE(statusCode, 404);
+    QCOMPARE(statusCode, 501);
 
     socket->close();
     socket->deleteLater();
-
 }
 
 void TestWebserver::checkAllowedMethodCall_data()
@@ -205,7 +204,6 @@ void TestWebserver::checkAllowedMethodCall()
     printResponse(reply);
 
     QCOMPARE(clientSpy.count(), 1);
-    //QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
 
     if (expectedStatusCode == 405){
         QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), expectedStatusCode);

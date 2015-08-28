@@ -84,16 +84,17 @@ DeviceManager::DeviceError DevicePluginLeynew::executeAction(Device *device, con
     QByteArray binCode;
 
 
-    // TODO: find out how the ID will be calculated to bin code or make it discoverable
+    // TODO: find out how the id will be calculated to bin code or make it discoverable
     // =======================================
-    // bincode depending on the ID
-    if (device->paramValue("ID") == "0115"){
+    // bincode depending on the id
+    if (device->paramValue("id") == "0115"){
         binCode.append("001101000001");
-    } else if (device->paramValue("ID") == "0014") {
+    } else if (device->paramValue("id") == "0014") {
         binCode.append("110000010101");
-    } else if (device->paramValue("ID") == "0008") {
+    } else if (device->paramValue("id") == "0008") {
         binCode.append("111101010101");
     } else {
+        qCWarning(dcLeynew) << "Could not get id of device: invalid parameter" << device->paramValue("id");
         return DeviceManager::DeviceErrorInvalidParameter;
     }
 
@@ -145,7 +146,7 @@ DeviceManager::DeviceError DevicePluginLeynew::executeAction(Device *device, con
     } else if (action.actionTypeId() == fade7ActionTypeId) {
         binCode.append("001100000000");
     } else {
-        return DeviceManager::DeviceErrorInvalidParameter;
+        return DeviceManager::DeviceErrorActionTypeNotFound;
     }
 
     // =======================================

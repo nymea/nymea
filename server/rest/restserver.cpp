@@ -113,10 +113,8 @@ void RestServer::processHttpRequest(const QUuid &clientId, const HttpRequest &re
 
     // check CORS call for main resource
     if (request.method() == HttpRequest::Options && urlTokens.count() == 3) {
-        qCDebug(dcRest) << "process options request\n" << request;
         HttpReply *reply = RestResource::createCorsSuccessReply();
         reply->setClientId(clientId);
-        qCDebug(dcRest) << reply->data();
         m_webserver->sendHttpReply(reply);
         reply->deleteLater();
         return;

@@ -101,7 +101,6 @@ HttpReply *DevicesResource::proccessGetRequest(const HttpRequest &request, const
     if (urlTokens.count() == 5 && urlTokens.at(4) == "states")
         return getDeviceStateValues(m_device);
 
-
     // /api/v1/devices/{deviceId}/states/{stateTypeId}
     if (urlTokens.count() >= 6 && urlTokens.at(4) == "states") {
         StateTypeId stateTypeId = StateTypeId(urlTokens.at(5));
@@ -152,7 +151,6 @@ HttpReply *DevicesResource::proccessPutRequest(const HttpRequest &request, const
 
 HttpReply *DevicesResource::proccessPostRequest(const HttpRequest &request, const QStringList &urlTokens)
 {
-
     // POST /api/v1/devices
     if (urlTokens.count() == 3)
         return addConfiguredDevice(request.payload());
@@ -199,7 +197,6 @@ HttpReply *DevicesResource::proccessOptionsRequest(const HttpRequest &request, c
 {
     Q_UNUSED(request)
     Q_UNUSED(urlTokens)
-    qCDebug(dcRest) << "process options request\n" << request;
     return RestResource::createCorsSuccessReply();
 }
 
@@ -263,7 +260,6 @@ HttpReply *DevicesResource::removeDevice(Device *device) const
 
     if (result == DeviceManager::DeviceErrorNoError) {
         HttpReply *reply = createSuccessReply();
-        reply->setCloseConnection(true);
         return reply;
     }
     return createErrorReply(HttpReply::Forbidden);

@@ -383,6 +383,7 @@ void WebServer::onDisconnected()
         if (client->address() == socket->peerAddress()) {
             client->removeConnection(socket);
             if (client->connections().isEmpty()) {
+                qCDebug(dcWebServer) << "delete client" << client->address().toString();
                 m_webServerClients.removeAll(client);
                 client->deleteLater();
             }
@@ -445,7 +446,6 @@ bool WebServer::stopServer()
     qCDebug(dcConnection) << "Webserver closed.";
     return true;
 }
-
 
 WebServerClient::WebServerClient(const QHostAddress &address, QObject *parent):
     QObject(parent),

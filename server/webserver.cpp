@@ -1,3 +1,4 @@
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
  *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
@@ -141,11 +142,12 @@ void WebServer::sendHttpReply(HttpReply *reply)
 
     // send raw data
     reply->packReply();
+    qCDebug(dcWebServer) << "respond" << reply->httpStatusCode() << reply->httpReasonPhrase();
     socket->write(reply->data());
 
-    // close the connection if wanted
-    if (reply->closeConnection())
-        socket->close();
+    //    // close the connection if wanted
+    //    if (reply->closeConnection())
+    //        socket->close();
 
 }
 
@@ -255,7 +257,6 @@ void WebServer::incomingConnection(qintptr socketDescriptor)
     emit clientConnected(clientId);
 }
 
-
 void WebServer::readClient()
 {
     if (!m_enabled)
@@ -268,7 +269,6 @@ void WebServer::readClient()
     if (clientId.isNull()) {
         qCWarning(dcWebServer) << "Client not recognized";
         socket->close();
-        socket->deleteLater();
         return;
     }
 
@@ -350,6 +350,9 @@ void WebServer::readClient()
             if (file.fileName().endsWith(".html")) {
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html; charset=\"utf-8\";");
             }
+            if (file.fileName().endsWith(".css")) {
+                reply->setHeader(HttpReply::ContentTypeHeader, "text/css; charset=\"utf-8\";");
+            }
             reply->setPayload(file.readAll());
             reply->setClientId(clientId);
             sendHttpReply(reply);
@@ -369,15 +372,30 @@ void WebServer::readClient()
 void WebServer::onDisconnected()
 {    
     QSslSocket* socket = static_cast<QSslSocket *>(sender());
-    qCDebug(dcConnection) << "Webserver client disonnected.";
+
+    // remove connection from server client
+    foreach (WebServerClient *client, m_webServerClients) {
+        if (client->address() == socket->peerAddress()) {
+            client->removeConnection(socket);
+            qCDebug(dcWebServer) << "connection count" << client->connections().count();
+            if (client->connections().isEmpty()) {
+                m_webServerClients.removeAll(client);
+                qCDebug(dcWebServer) << "delete client" << client->address().toString();
+                client->deleteLater();
+            }
+            break;
+        }
+    }
+
+    qCDebug(dcConnection) << QString("Webserver client disonnected %1:%2").arg(socket->peerAddress().toString()).arg(socket->peerPort());
 
     // clean up
     QUuid clientId = m_clientList.key(socket);
     m_clientList.remove(clientId);
     m_incompleteRequests.remove(socket);
-    socket->deleteLater();
-
     emit clientDisconnected(clientId);
+
+    socket->deleteLater();
 }
 
 void WebServer::onEncrypted()
@@ -405,6 +423,7 @@ bool WebServer::startServer()
         m_enabled = false;
         return false;
     }
+
     if (m_useSsl) {
         qCDebug(dcConnection) << "Started webserver on" << QString("https://%1:%2").arg(serverAddress().toString()).arg(m_port);
     } else {
@@ -444,15 +463,22 @@ void WebServerClient::addConnection(QSslSocket *socket)
 {
     QTimer *timer = new QTimer(this);
     timer->setSingleShot(true);
-    timer->setInterval(6000);
+    timer->setInterval(9500);
     connect(timer, &QTimer::timeout, this, &WebServerClient::onTimout);
 
     m_runningConnections.insert(timer, socket);
     m_connections.append(socket);
 
-    connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
-
     timer->start();
+}
+
+void WebServerClient::removeConnection(QSslSocket *socket)
+{
+    QTimer *timer = m_runningConnections.key(socket);
+    m_runningConnections.remove(timer);
+    m_connections.removeAll(socket);
+
+    timer->deleteLater();
 }
 
 void WebServerClient::resetTimout(QSslSocket *socket)
@@ -466,22 +492,10 @@ void WebServerClient::resetTimout(QSslSocket *socket)
 void WebServerClient::onTimout()
 {
     QTimer *timer =  static_cast<QTimer *>(sender());
-    QSslSocket *socket = m_runningConnections.take(timer);
+    QSslSocket *socket = m_runningConnections.value(timer);
     qCDebug(dcWebServer) << QString("Client connection timout %1:%2 -> closing connection").arg(socket->peerAddress().toString()).arg(socket->peerPort());
     socket->close();
-
-    timer->deleteLater();
 }
 
-void WebServerClient::onDisconnected()
-{
-    QSslSocket *socket = static_cast<QSslSocket *>(sender());
-    if (!m_runningConnections.values().contains(socket))
-        return;
-
-    QTimer *timer = m_runningConnections.key(socket);
-    m_runningConnections.remove(timer);
-    timer->deleteLater();
-}
 
 }

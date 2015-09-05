@@ -82,6 +82,7 @@ RestResource::~RestResource()
 HttpReply *RestResource::createSuccessReply()
 {
     HttpReply *reply = new HttpReply(HttpReply::Ok, HttpReply::TypeSync);
+    reply->setPayload("200 Ok");
     reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     return reply;
 }
@@ -90,12 +91,12 @@ HttpReply *RestResource::createCorsSuccessReply()
 {
     HttpReply *reply = RestResource::createSuccessReply();
     reply->setHeader(HttpReply::ContentTypeHeader, "text/plain");
-    reply->setRawHeader("Accept","text/plain");
+    reply->setRawHeader("Accept","application/json");
     reply->setRawHeader("Allow", "PUT, POST, GET, DELETE, OPTIONS");
     reply->setRawHeader("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS");
+    reply->setHeader(HttpReply::ContentLenghtHeader, QByteArray::number(0));
     reply->setRawHeader("Access-Control-Allow-Headers", "Origin, Content-Type, Accept");
     reply->setRawHeader("Access-Control-Max-Age", "1728000");
-    //reply->setCloseConnection(true);
     return reply;
 }
 
@@ -111,6 +112,7 @@ HttpReply *RestResource::createErrorReply(const HttpReply::HttpStatusCode &statu
 HttpReply *RestResource::createAsyncReply()
 {
     HttpReply *reply = new HttpReply(HttpReply::Ok, HttpReply::TypeAsync);
+    reply->setPayload(QByteArray::number(reply->httpStatusCode()) + " " + reply->httpReasonPhrase());
     return reply;
 }
 

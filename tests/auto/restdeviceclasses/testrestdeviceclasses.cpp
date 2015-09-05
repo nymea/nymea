@@ -297,19 +297,19 @@ void TestRestDeviceClasses::discoverDevices()
     qDebug() << data;
 
     statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    reply->deleteLater();
     QCOMPARE(statusCode, expectedStatusCode);
-
     jsonDoc = QJsonDocument::fromJson(data, &error);
     QCOMPARE(error.error, QJsonParseError::NoError);
+    reply->deleteLater();
+
     QVariantMap response = jsonDoc.toVariant().toMap();
 
     DeviceId deviceId = DeviceId(response.value("id").toString());
     QVERIFY2(!deviceId.isNull(), "got invalid device id");
-
     // REMOVE added device
 
     request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
+    qDebug() << request.url().toString();
     clientSpy.clear();
     reply = nam->deleteResource(request);
     clientSpy.wait();

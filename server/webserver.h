@@ -50,6 +50,7 @@ public:
 
     QList<QSslSocket *> connections();
     void addConnection(QSslSocket *socket);
+    void removeConnection(QSslSocket *socket);
 
     void resetTimout(QSslSocket *socket);
 
@@ -60,7 +61,7 @@ private:
 
 private slots:
     void onTimout();
-    void onDisconnected();
+
 };
 
 

@@ -160,7 +160,7 @@ void TestRestDeviceClasses::setPluginConfiguration()
     request.setUrl(QUrl(QString("http://localhost:3333/api/v1/plugins/%1/configuration").arg(pluginId.toString())));
     QNetworkReply *reply = nam->get(request);
     clientSpy.wait();
-    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
+    QCOMPARE(clientSpy.count(), 1);
     int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     reply->deleteLater();
 
@@ -184,7 +184,7 @@ void TestRestDeviceClasses::setPluginConfiguration()
     request.setUrl(QUrl(QString("http://localhost:3333/api/v1/plugins/%1/configuration").arg(pluginId.toString())));
     reply = nam->put(request, QJsonDocument::fromVariant(newConfigurations).toJson(QJsonDocument::Compact));
     clientSpy.wait();
-    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
+    QCOMPARE(clientSpy.count(), 1);
     statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     QCOMPARE(statusCode, expectedStatusCode);
     reply->deleteLater();
@@ -197,7 +197,7 @@ void TestRestDeviceClasses::setPluginConfiguration()
     request.setUrl(QUrl(QString("http://localhost:3333/api/v1/plugins/%1/configuration").arg(pluginId.toString())));
     reply = nam->get(request);
     clientSpy.wait();
-    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
+    QCOMPARE(clientSpy.count(), 1);
     statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     QCOMPARE(statusCode, expectedStatusCode);
     data = reply->readAll();
@@ -211,14 +211,12 @@ void TestRestDeviceClasses::setPluginConfiguration()
     // verify new configurations
     verifyParams(newConfigurations, checkConfigurations);
 
-    restartServer();
-
     // check new configurations after restart
     clientSpy.clear();
     request.setUrl(QUrl(QString("http://localhost:3333/api/v1/plugins/%1/configuration").arg(pluginId.toString())));
     reply = nam->get(request);
     clientSpy.wait();
-    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
+    QCOMPARE(clientSpy.count(), 1);
     statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     QCOMPARE(statusCode, 200);
     data = reply->readAll();

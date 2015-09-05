@@ -170,6 +170,7 @@ HttpReply::HttpReply(const HttpReply::HttpStatusCode &statusCode, const HttpRepl
 void HttpReply::setHttpStatusCode(const HttpReply::HttpStatusCode &statusCode)
 {
     m_statusCode = statusCode;
+    m_reasonPhrase = getHttpReasonPhrase(m_statusCode);
     packReply();
 }
 

@@ -137,6 +137,8 @@ signals:
 
 };
 
+QDebug operator<< (QDebug debug, const HttpReply &httpReply);
+
 }
 
 #endif // HTTPREPLY_H

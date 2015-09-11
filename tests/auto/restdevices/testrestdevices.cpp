@@ -332,12 +332,10 @@ void TestRestDevices::getStateValue()
     clientSpy.wait();
     QCOMPARE(clientSpy.count(), 1);
 
-    QByteArray data = reply->readAll();
-    qDebug() << data;
-
     int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     QCOMPARE(statusCode, expectedStatusCode);
     reply->deleteLater();
+    nam->deleteLater();
 }
 
 void TestRestDevices::editDevices_data()
@@ -351,7 +349,7 @@ void TestRestDevices::editDevices_data()
     QVariantList httpportChangeDeviceParams;
     QVariantMap httpportParamDifferent;
     httpportParamDifferent.insert("name", "httpport");
-    httpportParamDifferent.insert("value", 8893); // if change -> change also newPort in editDevices()
+    httpportParamDifferent.insert("value", 8895); // if change -> change also newPort in editDevices()
     httpportChangeDeviceParams.append(httpportParamDifferent);
 
     QVariantList brokenChangedDeviceParams;
@@ -411,7 +409,7 @@ void TestRestDevices::editDevices()
     deviceParams.append(brokenParam);
     QVariantMap httpportParam;
     httpportParam.insert("name", "httpport");
-    httpportParam.insert("value", 8892);
+    httpportParam.insert("value", 8896);
     deviceParams.append(httpportParam);
     params.insert("deviceParams", deviceParams);
 
@@ -426,10 +424,11 @@ void TestRestDevices::editDevices()
     QCOMPARE(clientSpy.count(), 1);
 
     QByteArray data = reply->readAll();
-    int statusCode;
-
-    QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
+    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     reply->deleteLater();
+
+    QCOMPARE(statusCode, 200);
+
     QVariantMap responseMap = QJsonDocument::fromJson(data).toVariant().toMap();
     DeviceId deviceId = DeviceId(responseMap.value("id").toString());
     qDebug() << deviceId.toString();
@@ -445,7 +444,7 @@ void TestRestDevices::editDevices()
     clientSpy.clear();
     reply = nam->put(request, QJsonDocument::fromVariant(editParams).toJson(QJsonDocument::Compact));
     clientSpy.wait();
-    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
+    QCOMPARE(clientSpy.count(), 1);
     statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     QCOMPARE(statusCode, expectedStatusCode);
     reply->deleteLater();
@@ -457,7 +456,7 @@ void TestRestDevices::editDevices()
         clientSpy.clear();
         reply = nam->get(request);
         clientSpy.wait();
-        QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
+        QCOMPARE(clientSpy.count(), 1);
         statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
         QVariantMap deviceMap = QJsonDocument::fromJson(reply->readAll()).toVariant().toMap();
@@ -473,10 +472,11 @@ void TestRestDevices::editDevices()
     clientSpy.clear();
     reply = nam->deleteResource(request);
     clientSpy.wait();
-    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
+    QCOMPARE(clientSpy.count(), 1);
     statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     reply->deleteLater();
     QCOMPARE(statusCode, 200);
+    nam->deleteLater();
 }
 
 void TestRestDevices::editByDiscovery_data()
@@ -629,7 +629,6 @@ void TestRestDevices::editByDiscovery()
     reply->deleteLater();
     QCOMPARE(statusCode, expectedStatusCode);
     nam->deleteLater();
-
 }
 
 void TestRestDevices::printResponse(QNetworkReply *reply, const QByteArray &data)

@@ -182,9 +182,11 @@ HttpReply *RulesResource::removeRule(const RuleId &ruleId) const
 
     RuleEngine::RuleError status = GuhCore::instance()->removeRule(ruleId);
 
-    if (status == RuleEngine::RuleErrorNoError)
-        return createSuccessReply();
-
+    if (status == RuleEngine::RuleErrorNoError) {
+        HttpReply *reply = createSuccessReply();
+        reply->setHeader(HttpReply::ContentLenghtHeader, "0");
+        return reply;
+    }
     return createErrorReply(HttpReply::InternalServerError);
 }
 

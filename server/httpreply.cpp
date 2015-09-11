@@ -137,8 +137,9 @@ HttpReply::HttpReply(QObject *parent) :
     setHeader(HttpHeaderType::ServerHeader, "guh/" + QByteArray(GUH_VERSION_STRING));
     setHeader(HttpHeaderType::DateHeader, QDateTime::currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8() + " GMT");
     setRawHeader("Access-Control-Allow-Origin","*");
+    setRawHeader("Keep-Alive", "timeout=6, max=50");
     setHeader(HttpHeaderType::CacheControlHeader, "no-cache");
-    setHeader(HttpHeaderType::ConnectionHeader, "Keep-Alive");
+    setHeader(HttpHeaderType::ConnectionHeader, "keep-alive");
     packReply();
 }
 
@@ -159,6 +160,7 @@ HttpReply::HttpReply(const HttpReply::HttpStatusCode &statusCode, const HttpRepl
     setHeader(HttpHeaderType::ServerHeader, "guh/" + QByteArray(GUH_VERSION_STRING));
     setHeader(HttpHeaderType::DateHeader, QDateTime::currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8() + " GMT");
     setRawHeader("Access-Control-Allow-Origin","*");
+    setRawHeader("Keep-Alive", "timeout=10, max=50");
     setHeader(HttpHeaderType::CacheControlHeader, "no-cache");
     setHeader(HttpHeaderType::ConnectionHeader, "Keep-Alive");
     packReply();
@@ -168,6 +170,7 @@ HttpReply::HttpReply(const HttpReply::HttpStatusCode &statusCode, const HttpRepl
 void HttpReply::setHttpStatusCode(const HttpReply::HttpStatusCode &statusCode)
 {
     m_statusCode = statusCode;
+    m_reasonPhrase = getHttpReasonPhrase(m_statusCode);
     packReply();
 }
 
@@ -195,6 +198,7 @@ HttpReply::Type HttpReply::type() const
 void HttpReply::setClientId(const QUuid &clientId)
 {
     m_clientId = clientId;
+    packReply();
 }
 
 /*! Returns the clientId of this \l{HttpReply}.*/
@@ -272,6 +276,9 @@ bool HttpReply::isEmpty() const
 /*! Clears all data of this \l{HttpReply}. */
 void HttpReply::clear()
 {
+    m_closeConnection = false;
+    m_type = TypeSync;
+    m_statusCode = Ok;
     m_rawHeader.clear();
     m_payload.clear();
     m_rawHeaderList.clear();
@@ -389,6 +396,16 @@ void HttpReply::timeout()
     qDebug() << "Http reply timeout";
     m_timedOut = true;
     emit finished();
+}
+
+QDebug operator<<(QDebug debug, const HttpReply &httpReply)
+{
+    debug << "-----------------------------------" << "\n";
+    debug << httpReply.rawHeader() << "\n";
+    debug << "-----------------------------------" << "\n";
+    debug << httpReply.payload() << "\n";
+    debug << "-----------------------------------" << "\n";
+    return debug;
 }
 
 }

@@ -1,3 +1,4 @@
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
  *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
@@ -75,6 +76,7 @@
 #include "guhsettings.h"
 #include "httpreply.h"
 #include "httprequest.h"
+#include "rest/restresource.h"
 
 #include <QJsonDocument>
 #include <QTcpServer>
@@ -130,15 +132,18 @@ WebServer::~WebServer()
  */
 void WebServer::sendHttpReply(HttpReply *reply)
 {
+    // get the right socket
     QSslSocket *socket = 0;
     socket = m_clientList.value(reply->clientId());
     if (!socket) {
-        qCDebug(dcWebServer) << "Invalid socket pointer! This should never happen!!! Missing clientId in reply?";
+        qCWarning(dcWebServer) << "Invalid socket pointer! This should never happen!!! Missing clientId in reply?";
         return;
     }
 
-    writeData(socket, reply->data());
-    socket->close();
+    // send raw data
+    reply->packReply();
+    qCDebug(dcWebServer) << "respond" << reply->httpStatusCode() << reply->httpReasonPhrase();
+    socket->write(reply->data());
 }
 
 bool WebServer::verifyFile(QSslSocket *socket, const QString &fileName)
@@ -148,30 +153,31 @@ bool WebServer::verifyFile(QSslSocket *socket, const QString &fileName)
     // make shore the file exists
     if (!file.exists()) {
         qCWarning(dcWebServer) << "requested file" << file.filePath() << "does not exist.";
-        HttpReply reply(HttpReply::NotFound);
-        reply.setPayload("404 Not found.");
-        reply.packReply();
-        writeData(socket, reply.data());
+        HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
+        reply->setClientId(m_clientList.key(socket));
+        sendHttpReply(reply);
+        reply->deleteLater();
         return false;
     }
 
     // make shore the file is in the public directory
     if (!file.canonicalFilePath().startsWith(m_webinterfaceDir.path())) {
         qCWarning(dcWebServer) << "requested file" << file.fileName() << "is outside the public folder.";
-        HttpReply reply(HttpReply::Forbidden);
-        reply.setPayload("403 Forbidden.");
-        reply.packReply();
-        writeData(socket, reply.data());
+        HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
+        reply->setClientId(m_clientList.key(socket));
+        sendHttpReply(reply);
+        reply->deleteLater();
         return false;
     }
 
     // make shore we can read the file
     if (!file.isReadable()) {
         qCWarning(dcWebServer) << "requested file" << file.fileName() << "is not readable.";
-        HttpReply reply(HttpReply::Forbidden);
-        reply.setPayload("403 Forbidden. Page not readable.");
-        reply.packReply();
-        writeData(socket, reply.data());
+        HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
+        reply->setClientId(m_clientList.key(socket));
+        reply->setPayload("403 Forbidden. File not readable");
+        sendHttpReply(reply);
+        reply->deleteLater();
         return false;
     }
     return true;
@@ -189,11 +195,6 @@ QString WebServer::fileName(const QString &query)
     return m_webinterfaceDir.path() + fileName;
 }
 
-void WebServer::writeData(QSslSocket *socket, const QByteArray &data)
-{
-    socket->write(data);
-}
-
 void WebServer::incomingConnection(qintptr socketDescriptor)
 {
     if (!m_enabled)
@@ -205,6 +206,28 @@ void WebServer::incomingConnection(qintptr socketDescriptor)
         socket->close();
         delete socket;
         return;
+    }
+
+    // check webserver client
+    bool existing = false;
+    foreach (WebServerClient *client, m_webServerClients) {
+        if (client->address() == socket->peerAddress()) {
+            if (client->connections().count() >= 50) {
+                qCWarning(dcConnection) << QString("Maximum connections for this client reached: rejecting connection from client %1:%2").arg(socket->peerAddress().toString()).arg(socket->peerPort());
+                socket->close();
+                delete socket;
+                return;
+            }
+            client->addConnection(socket);
+            existing = true;
+            break;
+        }
+    }
+
+    if (!existing) {
+        WebServerClient *webServerClient = new WebServerClient(socket->peerAddress());
+        webServerClient->addConnection(socket);
+        m_webServerClients.append(webServerClient);
     }
 
     // append the new client to the client list
@@ -229,7 +252,6 @@ void WebServer::incomingConnection(qintptr socketDescriptor)
     emit clientConnected(clientId);
 }
 
-
 void WebServer::readClient()
 {
     if (!m_enabled)
@@ -242,7 +264,6 @@ void WebServer::readClient()
     if (clientId.isNull()) {
         qCWarning(dcWebServer) << "Client not recognized";
         socket->close();
-        socket->deleteLater();
         return;
     }
 
@@ -251,44 +272,57 @@ void WebServer::readClient()
 
     HttpRequest request;
     if (m_incompleteRequests.contains(socket)) {
-        qCWarning(dcWebServer) << "Append data to incomlete request";
+        qCDebug(dcWebServer) << "Append data to incomlete request";
         request = m_incompleteRequests.take(socket);
         request.appendData(data);
     } else {
         request = HttpRequest(data);
     }
 
+    // check if the request is complete
     if (!request.isComplete()) {
         m_incompleteRequests.insert(socket, request);
         return;
     }
 
+    // check if the request is valid
     if (!request.isValid()) {
         qCWarning(dcWebServer) << "Got invalid request.";
-        HttpReply reply(HttpReply::BadRequest);
-        reply.setPayload("400 Bad Request.");
-        writeData(socket, reply.data());
+        HttpReply *reply = RestResource::createErrorReply(HttpReply::BadRequest);
+        reply->setClientId(clientId);
+        sendHttpReply(reply);
+        reply->deleteLater();
         return;
     }
 
-    // verify HTTP version
+    // check HTTP version
     if (request.httpVersion() != "HTTP/1.1") {
-        qCWarning(dcWebServer) << "HTTP version is not supported." ;
-        HttpReply reply(HttpReply::HttpVersionNotSupported);
-        reply.setPayload("505 HTTP version is not supported.");
-        writeData(socket, reply.data());
+        qCWarning(dcWebServer) << "HTTP version is not supported.";
+        HttpReply *reply = RestResource::createErrorReply(HttpReply::HttpVersionNotSupported);
+        reply->setClientId(clientId);
+        sendHttpReply(reply);
+        reply->deleteLater();
         return;
     }
 
     qCDebug(dcWebServer) << QString("Got valid request from %1:%2").arg(socket->peerAddress().toString()).arg(socket->peerPort());
     qCDebug(dcWebServer) << request.methodString() << request.url().path();
 
+    // reset timout
+    foreach (WebServerClient *webserverClient, m_webServerClients) {
+        if (webserverClient->address() == socket->peerAddress()) {
+            webserverClient->resetTimout(socket);
+            break;
+        }
+    }
+
     // verify method
     if (request.method() == HttpRequest::Unhandled) {
-        HttpReply reply(HttpReply::MethodNotAllowed);
-        reply.setHeader(HttpReply::AllowHeader, "GET, PUT, POST, DELETE, OPTIONS");
-        reply.setPayload("405 Method not allowed.");
-        writeData(socket, reply.data());
+        HttpReply *reply = RestResource::createErrorReply(HttpReply::MethodNotAllowed);
+        reply->setClientId(clientId);
+        reply->setHeader(HttpReply::AllowHeader, "GET, PUT, POST, DELETE, OPTIONS");
+        sendHttpReply(reply);
+        reply->deleteLater();
         return;
     }
 
@@ -299,7 +333,17 @@ void WebServer::readClient()
     }
 
     // request for a file...
-    if (request.method() == HttpRequest::Get && m_webinterfaceDir.exists()) {
+    if (request.method() == HttpRequest::Get) {
+        // check if the webinterface dir does exist, otherwise a filerequest is not relevant
+        if (!m_webinterfaceDir.exists()) {
+            qCWarning(dcWebServer) << "webinterface folder" << m_webinterfaceDir.path() << "does not exist.";
+            HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
+            reply->setClientId(clientId);
+            sendHttpReply(reply);
+            reply->deleteLater();
+            return;
+        }
+
         QString path = fileName(request.url().path());
         if (!verifyFile(socket, path))
             return;
@@ -307,35 +351,55 @@ void WebServer::readClient()
         QFile file(path);
         if (file.open(QFile::ReadOnly | QFile::Truncate)) {
             qCDebug(dcWebServer) << "load file" << file.fileName();
-            HttpReply reply(HttpReply::Ok);
+            HttpReply *reply = RestResource::createSuccessReply();
             if (file.fileName().endsWith(".html")) {
-                reply.setHeader(HttpReply::ContentTypeHeader, "text/html; charset=\"utf-8\";");
+                reply->setHeader(HttpReply::ContentTypeHeader, "text/html; charset=\"utf-8\";");
             }
-            reply.setPayload(file.readAll());
-            writeData(socket, reply.data());
+            if (file.fileName().endsWith(".css")) {
+                reply->setHeader(HttpReply::ContentTypeHeader, "text/css; charset=\"utf-8\";");
+            }
+            reply->setPayload(file.readAll());
+            reply->setClientId(clientId);
+            sendHttpReply(reply);
+            reply->deleteLater();
             return;
         }
     }
 
     // reject everything else...
-    qCWarning(dcWebServer) << "Unknown message received. Respond client with 400: Not Implemented.";
-    HttpReply reply(HttpReply::NotFound);
-    reply.setPayload("404 Not found.");
-    writeData(socket, reply.data());
+    qCWarning(dcWebServer) << "Unknown message received.";
+    HttpReply *reply = RestResource::createErrorReply(HttpReply::NotImplemented);
+    reply->setClientId(clientId);
+    sendHttpReply(reply);
+    reply->deleteLater();
 }
 
 void WebServer::onDisconnected()
 {    
     QSslSocket* socket = static_cast<QSslSocket *>(sender());
-    qCDebug(dcConnection) << "Webserver client disonnected.";
+
+    // remove connection from server client
+    foreach (WebServerClient *client, m_webServerClients) {
+        if (client->address() == socket->peerAddress()) {
+            client->removeConnection(socket);
+            if (client->connections().isEmpty()) {
+                qCDebug(dcWebServer) << "delete client" << client->address().toString();
+                m_webServerClients.removeAll(client);
+                client->deleteLater();
+            }
+            break;
+        }
+    }
+
+    qCDebug(dcConnection) << QString("Webserver client disonnected %1:%2").arg(socket->peerAddress().toString()).arg(socket->peerPort());
 
     // clean up
     QUuid clientId = m_clientList.key(socket);
     m_clientList.remove(clientId);
     m_incompleteRequests.remove(socket);
-    socket->deleteLater();
-
     emit clientDisconnected(clientId);
+
+    socket->deleteLater();
 }
 
 void WebServer::onEncrypted()
@@ -351,8 +415,9 @@ void WebServer::onEncrypted()
 
 void WebServer::onError(QAbstractSocket::SocketError error)
 {
+    Q_UNUSED(error)
     QSslSocket* socket = static_cast<QSslSocket *>(sender());
-    qCWarning(dcConnection) << "Client socket error" << socket->peerAddress() << error << socket->errorString();
+    qCWarning(dcConnection) << QString("Client socket error %1:%2 ->").arg(socket->peerAddress().toString()).arg(socket->peerPort()) << socket->errorString();
 }
 
 /*! Returns true if this \l{WebServer} started successfully. */
@@ -363,6 +428,7 @@ bool WebServer::startServer()
         m_enabled = false;
         return false;
     }
+
     if (m_useSsl) {
         qCDebug(dcConnection) << "Started webserver on" << QString("https://%1:%2").arg(serverAddress().toString()).arg(m_port);
     } else {
@@ -379,6 +445,60 @@ bool WebServer::stopServer()
     m_enabled = false;
     qCDebug(dcConnection) << "Webserver closed.";
     return true;
+}
+
+WebServerClient::WebServerClient(const QHostAddress &address, QObject *parent):
+    QObject(parent),
+    m_address(address)
+{
+}
+
+QHostAddress WebServerClient::address() const
+{
+    return m_address;
+}
+
+QList<QSslSocket *> WebServerClient::connections()
+{
+    return m_connections;
+}
+
+void WebServerClient::addConnection(QSslSocket *socket)
+{
+    QTimer *timer = new QTimer(this);
+    timer->setSingleShot(true);
+    timer->setInterval(9500);
+    connect(timer, &QTimer::timeout, this, &WebServerClient::onTimout);
+
+    m_runningConnections.insert(timer, socket);
+    m_connections.append(socket);
+
+    timer->start();
+}
+
+void WebServerClient::removeConnection(QSslSocket *socket)
+{
+    QTimer *timer = m_runningConnections.key(socket);
+    m_runningConnections.remove(timer);
+    m_connections.removeAll(socket);
+
+    timer->deleteLater();
+}
+
+void WebServerClient::resetTimout(QSslSocket *socket)
+{
+    QTimer *timer = 0;
+    timer = m_runningConnections.key(socket);
+    if (timer)
+        timer->start();
+}
+
+void WebServerClient::onTimout()
+{
+    QTimer *timer =  static_cast<QTimer *>(sender());
+    QSslSocket *socket = m_runningConnections.value(timer);
+    qCDebug(dcWebServer) << QString("Client connection timout %1:%2 -> closing connection").arg(socket->peerAddress().toString()).arg(socket->peerPort());
+    socket->close();
 }
 
 }

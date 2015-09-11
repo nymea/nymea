@@ -111,16 +111,11 @@ void RestServer::processHttpRequest(const QUuid &clientId, const HttpRequest &re
         return;
     }
 
-    // check CORS call
-    if (request.method() == HttpRequest::Options) {
-        HttpReply *reply = RestResource::createSuccessReply();
-        reply->setHeader(HttpReply::ContentTypeHeader, "text/plain;");
-        reply->setRawHeader("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS");
-        reply->setRawHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    // check CORS call for main resource
+    if (request.method() == HttpRequest::Options && urlTokens.count() == 3) {
+        HttpReply *reply = RestResource::createCorsSuccessReply();
         reply->setClientId(clientId);
-        reply->setCloseConnection(true);
         m_webserver->sendHttpReply(reply);
-
         reply->deleteLater();
         return;
     }
@@ -146,8 +141,10 @@ void RestServer::asyncReplyFinished()
 
     qCDebug(dcWebServer) << "Async reply finished";
 
-    if (reply->timedOut())
+    if (reply->timedOut()) {
+        reply->clear();
         reply->setHttpStatusCode(HttpReply::GatewayTimeout);
+    }
 
     m_webserver->sendHttpReply(reply);
     reply->deleteLater();

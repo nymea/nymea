@@ -142,11 +142,10 @@ void TestWebserver::multiPackageMessage()
     bool ok = false;
     int statusCode = firstLineTokens.at(1).toInt(&ok);
     QVERIFY2(ok, "Could not convert statuscode from response to int");
-    QCOMPARE(statusCode, 404);
+    QCOMPARE(statusCode, 501);
 
     socket->close();
     socket->deleteLater();
-
 }
 
 void TestWebserver::checkAllowedMethodCall_data()
@@ -191,8 +190,8 @@ void TestWebserver::checkAllowedMethodCall()
     } else if(method == "CONNECT") {
         reply = nam->sendCustomRequest(request, "CONNECT");
     } else if(method == "OPTIONS") {
-        request.setUrl(QUrl("http://localhost:3333/api/v1/devices"));
-        reply = nam->sendCustomRequest(request, "OPTIONS");
+        QNetworkRequest req(QUrl("http://localhost:3333/api/v1/devices"));
+        reply = nam->sendCustomRequest(req, "OPTIONS");
     } else if(method == "TRACE") {
         reply = nam->sendCustomRequest(request, "TRACE");
     } else {
@@ -205,14 +204,13 @@ void TestWebserver::checkAllowedMethodCall()
     printResponse(reply);
 
     QCOMPARE(clientSpy.count(), 1);
-    //QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
 
     if (expectedStatusCode == 405){
         QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), expectedStatusCode);
         QVERIFY2(reply->hasRawHeader("Allow"), "405 should contain the allowed methods header");
     }
-
     reply->deleteLater();
+    nam->deleteLater();
 }
 
 void TestWebserver::badRequests_data()
@@ -318,7 +316,7 @@ void TestWebserver::printResponse(QNetworkReply *reply)
 {
     qDebug() << "-------------------------------";
     qDebug() << "Response header:";
-    qDebug() << reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString();
+    qDebug() << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() << reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString();
     foreach (const  QNetworkReply::RawHeaderPair &headerPair, reply->rawHeaderPairs()) {
         qDebug() << headerPair.first << ":" << headerPair.second;
     }

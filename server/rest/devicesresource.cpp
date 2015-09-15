@@ -215,6 +215,7 @@ HttpReply *DevicesResource::getConfiguredDevices() const
         finalDevices.append(deviceMap);
     }
 
+    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     reply->setPayload(QJsonDocument::fromVariant(finalDevices).toJson());
     return reply;
 }
@@ -229,6 +230,7 @@ HttpReply *DevicesResource::getConfiguredDevice(Device *device) const
 
     qCDebug(dcRest) << deviceMap;
 
+    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     reply->setPayload(QJsonDocument::fromVariant(deviceMap).toJson());
     return reply;
 }
@@ -237,6 +239,7 @@ HttpReply *DevicesResource::getDeviceStateValues(Device *device) const
 {
     qCDebug(dcRest) << "Get states of device with id:" << device->id().toString();
     HttpReply *reply = createSuccessReply();
+    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packDeviceStates(device)).toJson());
     return reply;
 }
@@ -247,6 +250,7 @@ HttpReply *DevicesResource::getDeviceStateValue(Device *device, const StateTypeI
     HttpReply *reply = createSuccessReply();
     QVariantMap stateValueMap;
     stateValueMap.insert("value", device->state(stateTypeId).value());
+    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     reply->setPayload(QJsonDocument::fromVariant(stateValueMap).toJson());
     return reply;
 }
@@ -333,6 +337,7 @@ HttpReply *DevicesResource::addConfiguredDevice(const QByteArray &payload) const
     QVariantMap result;
     result.insert("id", newDeviceId);
     HttpReply *reply = createSuccessReply();
+    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     reply->setPayload(QJsonDocument::fromVariant(result).toJson());
     return reply;
 }
@@ -373,6 +378,7 @@ HttpReply *DevicesResource::pairDevice(const QByteArray &payload) const
     returns.insert("pairingTransactionId", pairingTransactionId.toString());
     returns.insert("setupMethod", JsonTypes::setupMethod().at(deviceClass.setupMethod()));
     HttpReply *reply = createSuccessReply();
+    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     reply->setPayload(QJsonDocument::fromVariant(returns).toJson());
     return reply;
 }
@@ -468,6 +474,7 @@ void DevicesResource::deviceSetupFinished(Device *device, DeviceManager::DeviceE
 
     QVariantMap result;
     result.insert("id", device->id());
+    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     reply->setPayload(QJsonDocument::fromVariant(result).toJson());
     reply->finished();
 }
@@ -499,6 +506,7 @@ void DevicesResource::pairingFinished(const PairingTransactionId &pairingTransac
         qCDebug(dcRest) << "Pairing device finished successfully";
         QVariantMap response;
         response.insert("id", deviceId.toString());
+        reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
         reply->setPayload(QJsonDocument::fromVariant(response).toJson());
         reply->setHttpStatusCode(HttpReply::Ok);
     } else {

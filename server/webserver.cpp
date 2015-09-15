@@ -358,6 +358,9 @@ void WebServer::readClient()
             if (file.fileName().endsWith(".css")) {
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/css; charset=\"utf-8\";");
             }
+            if (file.fileName().endsWith(".css")) {
+                reply->setHeader(HttpReply::ContentTypeHeader, "text/css; charset=\"utf-8\";");
+            }
             reply->setPayload(file.readAll());
             reply->setClientId(clientId);
             sendHttpReply(reply);

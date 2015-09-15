@@ -352,12 +352,32 @@ void WebServer::readClient()
         if (file.open(QFile::ReadOnly | QFile::Truncate)) {
             qCDebug(dcWebServer) << "load file" << file.fileName();
             HttpReply *reply = RestResource::createSuccessReply();
+
+            // check content type
             if (file.fileName().endsWith(".html")) {
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html; charset=\"utf-8\";");
-            }
-            if (file.fileName().endsWith(".css")) {
+            } else if (file.fileName().endsWith(".css")) {
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/css; charset=\"utf-8\";");
+            } else if (file.fileName().endsWith(".pdf")) {
+                reply->setHeader(HttpReply::ContentTypeHeader, "application/pdf");
+            } else if (file.fileName().endsWith(".js")) {
+                reply->setHeader(HttpReply::ContentTypeHeader, "text/javascript; charset=\"utf-8\";");
+            } else if (file.fileName().endsWith(".ttf")) {
+                reply->setHeader(HttpReply::ContentTypeHeader, "application/x-font-ttf");
+            } else if (file.fileName().endsWith(".eot")) {
+                reply->setHeader(HttpReply::ContentTypeHeader, "application/vnd.ms-fontobject");
+            } else if (file.fileName().endsWith(".woff")) {
+                reply->setHeader(HttpReply::ContentTypeHeader, "application/x-font-woff");
+            } else if (file.fileName().endsWith(".jpg") || file.fileName().endsWith(".jpeg")) {
+                reply->setHeader(HttpReply::ContentTypeHeader, "image/jpeg");
+            } else if (file.fileName().endsWith(".png") || file.fileName().endsWith(".PNG")) {
+                reply->setHeader(HttpReply::ContentTypeHeader, "image/png");
+            } else if (file.fileName().endsWith(".ico")) {
+                reply->setHeader(HttpReply::ContentTypeHeader, "image/x-icon");
+            } else if (file.fileName().endsWith(".svg")) {
+                reply->setHeader(HttpReply::ContentTypeHeader, "image/svg+xml; charset=\"utf-8\";");
             }
+
             reply->setPayload(file.readAll());
             reply->setClientId(clientId);
             sendHttpReply(reply);
@@ -383,7 +403,7 @@ void WebServer::onDisconnected()
         if (client->address() == socket->peerAddress()) {
             client->removeConnection(socket);
             if (client->connections().isEmpty()) {
-                qCDebug(dcWebServer) << "delete client" << client->address().toString();
+                qCDebug(dcWebServer) << "Delete client" << client->address().toString();
                 m_webServerClients.removeAll(client);
                 client->deleteLater();
             }

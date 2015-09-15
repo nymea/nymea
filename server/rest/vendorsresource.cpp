@@ -85,6 +85,7 @@ HttpReply *VendorsResource::getVendors() const
     foreach (const Vendor &vendor, GuhCore::instance()->supportedVendors()) {
         vendorsList.append(JsonTypes::packVendor(vendor));
     }
+    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     reply->setPayload(QJsonDocument::fromVariant(vendorsList).toJson());
     return reply;
 }
@@ -95,6 +96,7 @@ HttpReply *VendorsResource::getVendor(const VendorId &vendorId) const
     foreach (const Vendor &vendor, GuhCore::instance()->supportedVendors()) {
         if (vendor.id() == vendorId) {
             HttpReply *reply = createSuccessReply();
+            reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
             reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packVendor(vendor)).toJson());
             return reply;
         }

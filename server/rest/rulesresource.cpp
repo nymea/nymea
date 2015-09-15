@@ -159,6 +159,7 @@ HttpReply *RulesResource::getRules(const DeviceId &deviceId) const
             if (!rule.id().isNull())
                 ruleList.append(rule);
         }
+        reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
         reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packRuleDescriptions(ruleList)).toJson());
     }
     return reply;
@@ -172,6 +173,7 @@ HttpReply *RulesResource::getRuleDetails(const RuleId &ruleId) const
 
     qCDebug(dcRest) << "Get rule details";
     HttpReply *reply = createSuccessReply();
+    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packRule(rule)).toJson());
     return reply;
 }
@@ -184,7 +186,6 @@ HttpReply *RulesResource::removeRule(const RuleId &ruleId) const
 
     if (status == RuleEngine::RuleErrorNoError) {
         HttpReply *reply = createSuccessReply();
-        reply->setHeader(HttpReply::ContentLenghtHeader, "0");
         return reply;
     }
     return createErrorReply(HttpReply::InternalServerError);
@@ -238,6 +239,7 @@ HttpReply *RulesResource::addRule(const QByteArray &payload) const
         QVariantMap returns;
         returns.insert("id", newRuleId.toString());
         HttpReply *reply = createSuccessReply();
+        reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
         reply->setPayload(QJsonDocument::fromVariant(returns).toJson());
         return reply;
     }

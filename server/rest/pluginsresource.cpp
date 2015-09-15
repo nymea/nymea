@@ -111,6 +111,7 @@ HttpReply *PluginsResource::getPlugins() const
 {
     qCDebug(dcRest) << "Get plugins";
     HttpReply *reply = createSuccessReply();
+    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packPlugins()).toJson());
     return reply;
 }
@@ -121,6 +122,7 @@ HttpReply *PluginsResource::getPlugin(const PluginId &pluginId) const
     HttpReply *reply = createSuccessReply();
     foreach (DevicePlugin *plugin, GuhCore::instance()->plugins()) {
         if (plugin->pluginId() == pluginId) {
+            reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
             reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packPlugin(plugin)).toJson());
             return reply;
         }
@@ -143,6 +145,7 @@ HttpReply *PluginsResource::getPluginConfiguration(const PluginId &pluginId) con
     }
 
     HttpReply *reply = createSuccessReply();
+    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     reply->setPayload(QJsonDocument::fromVariant(configurationParamsList).toJson());
     return reply;
 }

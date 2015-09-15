@@ -134,12 +134,13 @@ HttpReply::HttpReply(QObject *parent) :
     m_reasonPhrase = getHttpReasonPhrase(m_statusCode);
 
     // set known headers
+    setHeader(HttpReply::ContentTypeHeader, "text/plain; charset=\"utf-8\";");
     setHeader(HttpHeaderType::ServerHeader, "guh/" + QByteArray(GUH_VERSION_STRING));
     setHeader(HttpHeaderType::DateHeader, QDateTime::currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8() + " GMT");
-    setRawHeader("Access-Control-Allow-Origin","*");
-    setRawHeader("Keep-Alive", "timeout=6, max=50");
     setHeader(HttpHeaderType::CacheControlHeader, "no-cache");
-    setHeader(HttpHeaderType::ConnectionHeader, "keep-alive");
+    setHeader(HttpHeaderType::ConnectionHeader, "Keep-Alive");
+    setRawHeader("Access-Control-Allow-Origin","*");
+    setRawHeader("Keep-Alive", "timeout=10, max=50");
     packReply();
 }
 
@@ -156,13 +157,14 @@ HttpReply::HttpReply(const HttpReply::HttpStatusCode &statusCode, const HttpRepl
 
     m_reasonPhrase = getHttpReasonPhrase(m_statusCode);
 
-    // set known headers
+    // set known / default headers
+    setHeader(HttpReply::ContentTypeHeader, "text/plain; charset=\"utf-8\";");
     setHeader(HttpHeaderType::ServerHeader, "guh/" + QByteArray(GUH_VERSION_STRING));
     setHeader(HttpHeaderType::DateHeader, QDateTime::currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8() + " GMT");
-    setRawHeader("Access-Control-Allow-Origin","*");
-    setRawHeader("Keep-Alive", "timeout=10, max=50");
     setHeader(HttpHeaderType::CacheControlHeader, "no-cache");
     setHeader(HttpHeaderType::ConnectionHeader, "Keep-Alive");
+    setRawHeader("Access-Control-Allow-Origin","*");
+    setRawHeader("Keep-Alive", "timeout=10, max=50");
     packReply();
 }
 

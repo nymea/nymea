@@ -236,8 +236,7 @@ HttpReply *RulesResource::addRule(const QByteArray &payload) const
     RuleEngine::RuleError status = GuhCore::instance()->addRule(newRuleId, name, eventDescriptorList, stateEvaluator, actions, exitActions, enabled);
 
     if (status ==  RuleEngine::RuleErrorNoError) {
-        QVariantMap returns;
-        returns.insert("id", newRuleId.toString());
+        QVariant returns = JsonTypes::packRule(GuhCore::instance()->findRule(newRuleId));
         HttpReply *reply = createSuccessReply();
         reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
         reply->setPayload(QJsonDocument::fromVariant(returns).toJson());

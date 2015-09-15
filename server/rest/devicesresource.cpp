@@ -334,8 +334,7 @@ HttpReply *DevicesResource::addConfiguredDevice(const QByteArray &payload) const
     if (status != DeviceManager::DeviceErrorNoError)
         return createErrorReply(HttpReply::InternalServerError);
 
-    QVariantMap result;
-    result.insert("id", newDeviceId);
+    QVariant result = JsonTypes::packDevice(GuhCore::instance()->findConfiguredDevice(newDeviceId));
     HttpReply *reply = createSuccessReply();
     reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     reply->setPayload(QJsonDocument::fromVariant(result).toJson());
@@ -472,8 +471,7 @@ void DevicesResource::deviceSetupFinished(Device *device, DeviceManager::DeviceE
         reply->setHttpStatusCode(HttpReply::InternalServerError);
     }
 
-    QVariantMap result;
-    result.insert("id", device->id());
+    QVariant result = JsonTypes::packDevice(device);
     reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     reply->setPayload(QJsonDocument::fromVariant(result).toJson());
     reply->finished();
@@ -504,10 +502,9 @@ void DevicesResource::pairingFinished(const PairingTransactionId &pairingTransac
     HttpReply *reply = m_asyncPairingRequests.take(pairingTransactionId);
     if (status == DeviceManager::DeviceErrorNoError) {
         qCDebug(dcRest) << "Pairing device finished successfully";
-        QVariantMap response;
-        response.insert("id", deviceId.toString());
+        QVariant result = JsonTypes::packDevice(GuhCore::instance()->findConfiguredDevice(deviceId));
         reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
-        reply->setPayload(QJsonDocument::fromVariant(response).toJson());
+        reply->setPayload(QJsonDocument::fromVariant(result).toJson());
         reply->setHttpStatusCode(HttpReply::Ok);
     } else {
         qCDebug(dcRest) << "Pairing device finished with error" << status;

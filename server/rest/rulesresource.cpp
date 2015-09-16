@@ -68,6 +68,9 @@ HttpReply *RulesResource::proccessRequest(const HttpRequest &request, const QStr
     case HttpRequest::Delete:
         reply = proccessDeleteRequest(request, urlTokens);
         break;
+    case HttpRequest::Options:
+        reply = proccessOptionsRequest(request, urlTokens);
+        break;
     default:
         reply = createErrorReply(HttpReply::BadRequest);
         break;
@@ -141,6 +144,13 @@ HttpReply *RulesResource::proccessPostRequest(const HttpRequest &request, const 
         return disableRule(m_ruleId);
 
     return createErrorReply(HttpReply::NotImplemented);
+}
+
+HttpReply *RulesResource::proccessOptionsRequest(const HttpRequest &request, const QStringList &urlTokens)
+{
+    Q_UNUSED(request)
+    Q_UNUSED(urlTokens)
+    return RestResource::createCorsSuccessReply();
 }
 
 HttpReply *RulesResource::getRules(const DeviceId &deviceId) const

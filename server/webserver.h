@@ -27,6 +27,8 @@
 #include <QHash>
 #include <QDir>
 #include <QTimer>
+#include <QImage>
+#include <QBuffer>
 #include <QSslSocket>
 #include <QSslCertificate>
 #include <QSslConfiguration>
@@ -88,6 +90,8 @@ private:
 
     bool verifyFile(QSslSocket *socket, const QString &fileName);
     QString fileName(const QString &query);
+
+    HttpReply *processIconRequest(const QString &fileName);
 
 protected:
     void incomingConnection(qintptr socketDescriptor) override;

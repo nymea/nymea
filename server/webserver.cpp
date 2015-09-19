@@ -195,6 +195,28 @@ QString WebServer::fileName(const QString &query)
     return m_webinterfaceDir.path() + fileName;
 }
 
+HttpReply *WebServer::processIconRequest(const QString &fileName)
+{
+    if (!fileName.endsWith(".png"))
+        return RestResource::createErrorReply(HttpReply::NotFound);
+
+    QByteArray imageData;
+
+    QImage image(":" + fileName);
+    QBuffer buffer(&imageData);
+    buffer.open(QIODevice::WriteOnly);
+    image.save(&buffer, "png");
+
+    if (!imageData.isEmpty()) {
+        HttpReply *reply = RestResource::createSuccessReply();
+        reply->setHeader(HttpReply::ContentTypeHeader, "image/png");
+        reply->setPayload(imageData);
+        return reply;
+    }
+
+    return RestResource::createErrorReply(HttpReply::NotFound);
+}
+
 void WebServer::incomingConnection(qintptr socketDescriptor)
 {
     if (!m_enabled)
@@ -329,6 +351,15 @@ void WebServer::readClient()
     // verify API query
     if (request.url().path().startsWith("/api/v1")) {
         emit httpRequestReady(clientId, request);
+        return;
+    }
+
+    // check icon call
+    if (request.url().path().startsWith("/icons/") && request.method() == HttpRequest::Get) {
+        HttpReply *reply = processIconRequest(request.url().path());
+        reply->setClientId(clientId);
+        sendHttpReply(reply);
+        reply->deleteLater();
         return;
     }
 

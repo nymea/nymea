@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="">
+        <file>icons/guh-logo.svg</file>
+        <file>icons/guh-logo-8x8.png</file>
+        <file>icons/guh-logo-16x16.png</file>
+        <file>icons/guh-logo-22x22.png</file>
+        <file>icons/guh-logo-32x32.png</file>
+        <file>icons/guh-logo-48x48.png</file>
+        <file>icons/guh-logo-64x64.png</file>
+        <file>icons/guh-logo-128x128.png</file>
+        <file>icons/guh-logo-256x256.png</file>
+        <file>icons/guh-logo-512x512.png</file>
+    </qresource>
+</RCC>

@@ -27,7 +27,7 @@ Architecture: any
 Depends: libqt5network5,
   libqt5gui5,
   libqt5sql5,
-  libqt5bluetooth5,
+  libqt5xml5,
   libguh1 (= ${binary:Version}),
   ${shlibs:Depends},
   ${misc:Depends}

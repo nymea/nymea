@@ -38,6 +38,7 @@ SOURCES += $$top_srcdir/server/guhcore.cpp \
     $$top_srcdir/server/rest/pluginsresource.cpp \
     $$top_srcdir/server/rest/rulesresource.cpp \
 
+
 HEADERS += $$top_srcdir/server/guhcore.h \
     $$top_srcdir/server/tcpserver.h \
     $$top_srcdir/server/ruleengine.h \

@@ -1,4 +1,3 @@
-
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
  *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
@@ -79,6 +78,8 @@
 #include "rest/restresource.h"
 
 #include <QJsonDocument>
+#include <QNetworkInterface>
+#include <QXmlStreamWriter>
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QSslSocket>
@@ -118,6 +119,7 @@ WebServer::WebServer(const QSslConfiguration &sslConfiguration, QObject *parent)
     // check SSL
     if (m_useSsl && m_sslConfiguration.isNull())
         m_useSsl = false;
+
 }
 
 /*! Destructor of this \l{WebServer}. */
@@ -144,6 +146,25 @@ void WebServer::sendHttpReply(HttpReply *reply)
     reply->packReply();
     qCDebug(dcWebServer) << "respond" << reply->httpStatusCode() << reply->httpReasonPhrase();
     socket->write(reply->data());
+}
+
+int WebServer::port() const
+{
+    return m_port;
+}
+
+QList<QHostAddress> WebServer::serverAddressList()
+{
+    QList<QHostAddress> addresses;
+    foreach (const QNetworkInterface &interface,  QNetworkInterface::allInterfaces()) {
+        // listen only on IPv4
+        foreach (QNetworkAddressEntry entry, interface.addressEntries()) {
+            if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol) {
+                addresses.append(entry.ip());
+            }
+        }
+    }
+    return addresses;
 }
 
 bool WebServer::verifyFile(QSslSocket *socket, const QString &fileName)
@@ -195,6 +216,135 @@ QString WebServer::fileName(const QString &query)
     return m_webinterfaceDir.path() + fileName;
 }
 
+QByteArray WebServer::createServerXmlDocument(QHostAddress address)
+{
+    GuhSettings settings(GuhSettings::SettingsRoleDevices);
+    settings.beginGroup("guhd");
+    QByteArray uuid = settings.value("uuid", QVariant()).toByteArray();
+    if (uuid.isEmpty()) {
+        uuid = QUuid::createUuid().toByteArray().replace("{", "").replace("}","");
+        settings.setValue("uuid", uuid);
+    }
+    settings.endGroup();
+
+
+    QByteArray data;
+    QXmlStreamWriter writer(&data);
+    writer.setAutoFormatting(true);
+    writer.writeStartDocument("1.0");
+    writer.writeStartElement("root");
+    writer.writeAttribute("xmlns", "urn:schemas-upnp-org:device-1-0");
+
+    writer.writeStartElement("specVersion");
+    writer.writeTextElement("major", "1");
+    writer.writeTextElement("minor", "1");
+    writer.writeEndElement(); // specVersion
+
+//    if (m_useSsl) {
+//        writer.writeTextElement("URLBase", "https://" + address.toString() + ":" + QString::number(m_port));
+//    } else {
+//        writer.writeTextElement("URLBase", "http://" + address.toString() + ":" + QString::number(m_port));
+//    }
+    writer.writeStartElement("device");
+    writer.writeTextElement("deviceType", "urn:schemas-upnp-org:device:Basic:1");
+    writer.writeTextElement("friendlyName", "guhd");
+    writer.writeTextElement("manufacturer", "ARGE guh");
+    writer.writeTextElement("manufacturerURL", "http://guh.guru");
+    writer.writeTextElement("modelDescription", "Home automation server");
+    writer.writeTextElement("modelName", "guhd");
+    writer.writeTextElement("modelNumber", GUH_VERSION_STRING);
+    writer.writeTextElement("modelURL", "http://guh.io"); // (optional)
+    writer.writeTextElement("UDN", "uuid:" + uuid);
+    if (m_useSsl) {
+        writer.writeTextElement("presentationURL", "https://" + address.toString() + ":" + QString::number(m_port));
+    } else {
+        writer.writeTextElement("presentationURL", "http://" + address.toString() + ":" + QString::number(m_port));
+    }
+
+    //writer.writeTextElement("presentationURL", "/");
+
+    writer.writeStartElement("iconList");
+
+    writer.writeStartElement("icon");
+    writer.writeTextElement("mimetype", "image/png");
+    writer.writeTextElement("width", "8");
+    writer.writeTextElement("height", "8");
+    writer.writeTextElement("depth", "24");
+    writer.writeTextElement("url", "/icons/guh-logo-8x8.png");
+    writer.writeEndElement(); // icon
+
+    writer.writeStartElement("icon");
+    writer.writeTextElement("mimetype", "image/png");
+    writer.writeTextElement("width", "16");
+    writer.writeTextElement("height", "16");
+    writer.writeTextElement("depth", "24");
+    writer.writeTextElement("url", "/icons/guh-logo-16x16.png");
+    writer.writeEndElement(); // icon
+
+    writer.writeStartElement("icon");
+    writer.writeTextElement("mimetype", "image/png");
+    writer.writeTextElement("width", "22");
+    writer.writeTextElement("height", "22");
+    writer.writeTextElement("depth", "24");
+    writer.writeTextElement("url", "/icons/guh-logo-22x22.png");
+    writer.writeEndElement(); // icon
+
+    writer.writeStartElement("icon");
+    writer.writeTextElement("mimetype", "image/png");
+    writer.writeTextElement("width", "32");
+    writer.writeTextElement("height", "32");
+    writer.writeTextElement("depth", "24");
+    writer.writeTextElement("url", "/icons/guh-logo-32x32.png");
+    writer.writeEndElement(); // icon
+
+    writer.writeStartElement("icon");
+    writer.writeTextElement("mimetype", "image/png");
+    writer.writeTextElement("width", "48");
+    writer.writeTextElement("height", "48");
+    writer.writeTextElement("depth", "24");
+    writer.writeTextElement("url", "/icons/guh-logo-48x48.png");
+    writer.writeEndElement(); // icon
+
+    writer.writeStartElement("icon");
+    writer.writeTextElement("mimetype", "image/png");
+    writer.writeTextElement("width", "64");
+    writer.writeTextElement("height", "64");
+    writer.writeTextElement("depth", "24");
+    writer.writeTextElement("url", "/icons/guh-logo-64x64.png");
+    writer.writeEndElement(); // icon
+
+    writer.writeStartElement("icon");
+    writer.writeTextElement("mimetype", "image/png");
+    writer.writeTextElement("width", "128");
+    writer.writeTextElement("height", "128");
+    writer.writeTextElement("depth", "24");
+    writer.writeTextElement("url", "/icons/guh-logo-128x128.png");
+    writer.writeEndElement(); // icon
+
+    writer.writeStartElement("icon");
+    writer.writeTextElement("mimetype", "image/png");
+    writer.writeTextElement("width", "256");
+    writer.writeTextElement("height", "256");
+    writer.writeTextElement("depth", "24");
+    writer.writeTextElement("url", "/icons/guh-logo-256x256.png");
+    writer.writeEndElement(); // icon
+
+    writer.writeStartElement("icon");
+    writer.writeTextElement("mimetype", "image/png");
+    writer.writeTextElement("width", "512");
+    writer.writeTextElement("height", "512");
+    writer.writeTextElement("depth", "24");
+    writer.writeTextElement("url", "/icons/guh-logo-512x512.png");
+    writer.writeEndElement(); // icon
+
+    writer.writeEndElement(); // iconList
+
+    writer.writeEndElement(); // device
+    writer.writeEndElement(); // root
+    writer.writeEndDocument();
+    return data;
+}
+
 HttpReply *WebServer::processIconRequest(const QString &fileName)
 {
     if (!fileName.endsWith(".png"))
@@ -215,6 +365,17 @@ HttpReply *WebServer::processIconRequest(const QString &fileName)
     }
 
     return RestResource::createErrorReply(HttpReply::NotFound);
+}
+
+QHostAddress WebServer::getServerAddress(QHostAddress clientAddress)
+{
+    foreach (QHostAddress address, serverAddressList()) {
+        if (clientAddress.isInSubnet(QHostAddress::parseSubnet(address.toString() + "/24"))) {
+            qCDebug(dcWebServer) << "server for" << clientAddress.toString() << " ->" << address.toString();
+            return address;
+        }
+    }
+    return QHostAddress();
 }
 
 void WebServer::incomingConnection(qintptr socketDescriptor)
@@ -363,6 +524,20 @@ void WebServer::readClient()
         return;
     }
 
+    // check server.xml call
+    if (request.url().path() == "/server.xml" && request.method() == HttpRequest::Get) {
+        qCDebug(dcWebServer) << "server XML request call";
+        HttpReply *reply = RestResource::createSuccessReply();
+        reply->setHeader(HttpReply::ContentTypeHeader, "text/xml");
+        QHostAddress serverAddress = getServerAddress(socket->peerAddress());
+        reply->setPayload(createServerXmlDocument(serverAddress));
+        reply->setClientId(clientId);
+        sendHttpReply(reply);
+        reply->deleteLater();
+        return;
+    }
+
+
     // request for a file...
     if (request.method() == HttpRequest::Get) {
         // check if the webinterface dir does exist, otherwise a filerequest is not relevant
@@ -474,17 +649,20 @@ void WebServer::onError(QAbstractSocket::SocketError error)
 /*! Returns true if this \l{WebServer} started successfully. */
 bool WebServer::startServer()
 {
-    if (!listen(QHostAddress::Any, m_port)) {
+    if (!listen(QHostAddress::AnyIPv4, m_port)) {
         qCWarning(dcConnection) << "Webserver could not listen on" << serverAddress().toString() << m_port;
         m_enabled = false;
         return false;
     }
 
-    if (m_useSsl) {
-        qCDebug(dcConnection) << "Started webserver on" << QString("https://%1:%2").arg(serverAddress().toString()).arg(m_port);
-    } else {
-        qCDebug(dcConnection) << "Started webserver on" << QString("http://%1:%2").arg(serverAddress().toString()).arg(m_port);
+    foreach (QHostAddress address, serverAddressList()) {
+        if (m_useSsl) {
+            qCDebug(dcConnection) << "Started webserver on" << QString("https://%1:%2").arg(address.toString()).arg(m_port);
+        } else {
+            qCDebug(dcConnection) << "Started webserver on" << QString("http://%1:%2").arg(address.toString()).arg(m_port);
+        }
     }
+
     m_enabled = true;
     return true;
 }

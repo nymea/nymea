@@ -215,10 +215,9 @@ void HttpRequest::validate()
     }
 
     // check User-Agent
-    if (!m_rawHeaderList.contains("User-Agent")) {
+    if (!m_rawHeaderList.contains("User-Agent"))
         qWarning() << "User-Agent header is missing";
-        return;
-    }
+
 
     // verify content length with actual payload
     if (m_rawHeaderList.contains("Content-Length")) {

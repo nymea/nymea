@@ -341,7 +341,7 @@ void WebServer::readClient()
 
     // check if the request is valid
     if (!request.isValid()) {
-        qCWarning(dcWebServer) << "Got invalid request.";
+        qCWarning(dcWebServer) << "Got invalid request:" << request.url().path();
         HttpReply *reply = RestResource::createErrorReply(HttpReply::BadRequest);
         reply->setClientId(clientId);
         sendHttpReply(reply);
@@ -596,7 +596,7 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
     writer.writeTextElement("mimetype", "image/png");
     writer.writeTextElement("width", "8");
     writer.writeTextElement("height", "8");
-    writer.writeTextElement("depth", "24");
+    writer.writeTextElement("depth", "8");
     writer.writeTextElement("url", "/icons/guh-logo-8x8.png");
     writer.writeEndElement(); // icon
 
@@ -604,7 +604,7 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
     writer.writeTextElement("mimetype", "image/png");
     writer.writeTextElement("width", "16");
     writer.writeTextElement("height", "16");
-    writer.writeTextElement("depth", "24");
+    writer.writeTextElement("depth", "8");
     writer.writeTextElement("url", "/icons/guh-logo-16x16.png");
     writer.writeEndElement(); // icon
 
@@ -612,7 +612,7 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
     writer.writeTextElement("mimetype", "image/png");
     writer.writeTextElement("width", "22");
     writer.writeTextElement("height", "22");
-    writer.writeTextElement("depth", "24");
+    writer.writeTextElement("depth", "8");
     writer.writeTextElement("url", "/icons/guh-logo-22x22.png");
     writer.writeEndElement(); // icon
 
@@ -620,7 +620,7 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
     writer.writeTextElement("mimetype", "image/png");
     writer.writeTextElement("width", "32");
     writer.writeTextElement("height", "32");
-    writer.writeTextElement("depth", "24");
+    writer.writeTextElement("depth", "8");
     writer.writeTextElement("url", "/icons/guh-logo-32x32.png");
     writer.writeEndElement(); // icon
 
@@ -628,7 +628,7 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
     writer.writeTextElement("mimetype", "image/png");
     writer.writeTextElement("width", "48");
     writer.writeTextElement("height", "48");
-    writer.writeTextElement("depth", "24");
+    writer.writeTextElement("depth", "8");
     writer.writeTextElement("url", "/icons/guh-logo-48x48.png");
     writer.writeEndElement(); // icon
 
@@ -636,15 +636,23 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
     writer.writeTextElement("mimetype", "image/png");
     writer.writeTextElement("width", "64");
     writer.writeTextElement("height", "64");
-    writer.writeTextElement("depth", "24");
+    writer.writeTextElement("depth", "8");
     writer.writeTextElement("url", "/icons/guh-logo-64x64.png");
+    writer.writeEndElement(); // icon
+
+    writer.writeStartElement("icon");
+    writer.writeTextElement("mimetype", "image/png");
+    writer.writeTextElement("width", "120");
+    writer.writeTextElement("height", "120");
+    writer.writeTextElement("depth", "8");
+    writer.writeTextElement("url", "/icons/guh-logo-120x120.png");
     writer.writeEndElement(); // icon
 
     writer.writeStartElement("icon");
     writer.writeTextElement("mimetype", "image/png");
     writer.writeTextElement("width", "128");
     writer.writeTextElement("height", "128");
-    writer.writeTextElement("depth", "24");
+    writer.writeTextElement("depth", "8");
     writer.writeTextElement("url", "/icons/guh-logo-128x128.png");
     writer.writeEndElement(); // icon
 
@@ -652,7 +660,7 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
     writer.writeTextElement("mimetype", "image/png");
     writer.writeTextElement("width", "256");
     writer.writeTextElement("height", "256");
-    writer.writeTextElement("depth", "24");
+    writer.writeTextElement("depth", "8");
     writer.writeTextElement("url", "/icons/guh-logo-256x256.png");
     writer.writeEndElement(); // icon
 
@@ -660,7 +668,7 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
     writer.writeTextElement("mimetype", "image/png");
     writer.writeTextElement("width", "512");
     writer.writeTextElement("height", "512");
-    writer.writeTextElement("depth", "24");
+    writer.writeTextElement("depth", "8");
     writer.writeTextElement("url", "/icons/guh-logo-512x512.png");
     writer.writeEndElement(); // icon
 

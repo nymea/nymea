@@ -84,7 +84,7 @@ UpnpDiscovery::UpnpDiscovery(QObject *parent) :
     connect(this, &UpnpDiscovery::readyRead, this, &UpnpDiscovery::readData);
 
     m_notificationTimer = new QTimer(this);
-    m_notificationTimer->setInterval(3000);
+    m_notificationTimer->setInterval(30000);
     m_notificationTimer->setSingleShot(false);
 
     connect(m_notificationTimer, &QTimer::timeout, this, &UpnpDiscovery::notificationTimeout);
@@ -196,8 +196,8 @@ void UpnpDiscovery::readData()
     }
 
     if (data.contains("M-SEARCH")) {
-        qCDebug(dcHardware) << "--------------------------------------";
-        qCDebug(dcHardware) << QString("UPnP data: %1:%2 \n").arg(hostAddress.toString()).arg(QString::number(port)) <<  data;
+        //qCDebug(dcHardware) << "--------------------------------------";
+        //qCDebug(dcHardware) << QString("UPnP data: %1:%2 \n").arg(hostAddress.toString()).arg(QString::number(port)) <<  data;
         respondToSearchRequest(hostAddress, port);
         return;
     }
@@ -351,7 +351,6 @@ void UpnpDiscovery::notificationTimeout()
             }
         }
     }
-
 }
 
 void UpnpDiscovery::discoverTimeout()

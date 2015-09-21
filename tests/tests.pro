@@ -1,2 +1,5 @@
 TEMPLATE = subdirs
-SUBDIRS = auto
+
+SUBDIRS = auto libguh-core
+
+auto.depends = libguh-core

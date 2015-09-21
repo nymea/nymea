@@ -70,7 +70,7 @@ void TestWebserver::httpVersion()
     QSignalSpy clientSpy(socket, SIGNAL(readyRead()));
 
     QByteArray requestData;
-    requestData.append("GET /hello/guh HTTP/1.0\r\n");
+    requestData.append("GET /hello/guh HTTP/1\r\n");
     requestData.append("User-Agent: guh webserver test\r\n\r\n");
 
     socket->write(requestData);

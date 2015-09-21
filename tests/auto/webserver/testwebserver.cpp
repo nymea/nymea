@@ -237,7 +237,7 @@ void TestWebserver::badRequests_data()
 
     QTest::newRow("wrong content length") << wrongContentLength << 400;
     QTest::newRow("invalid header formatting") << wrongHeaderFormatting << 400;
-    QTest::newRow("user agent missing") << userAgentMissing << 400;
+    QTest::newRow("user agent missing") << userAgentMissing << 404;
 
 }
 

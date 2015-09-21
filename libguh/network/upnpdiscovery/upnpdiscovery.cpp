@@ -120,7 +120,7 @@ void UpnpDiscovery::requestDeviceInformation(const QNetworkRequest &networkReque
     m_informationRequestList.insert(replay, upnpDeviceDescriptor);
 }
 
-void UpnpDiscovery::respondToSearchRequest()
+void UpnpDiscovery::respondToSearchRequest(QHostAddress host, int port)
 {
     GuhSettings settings(GuhSettings::SettingsRoleDevices);
     settings.beginGroup("guhd");
@@ -133,34 +133,38 @@ void UpnpDiscovery::respondToSearchRequest()
 
     GuhSettings globalSettings(GuhSettings::SettingsRoleGlobal);
     globalSettings.beginGroup("WebServer");
-    int port = settings.value("port", 3333).toInt();
+    int serverPort = settings.value("port", 3333).toInt();
     bool useSsl = settings.value("https", false).toBool();
     globalSettings.endGroup();
 
     foreach (const QNetworkInterface &interface,  QNetworkInterface::allInterfaces()) {
-        // listen only on IPv4
         foreach (QNetworkAddressEntry entry, interface.addressEntries()) {
+            // check IPv4
             if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol) {
-                QString locationString;
-                if (useSsl) {
-                    locationString = "https://" + entry.ip().toString() + ":" + QString::number(port) + "/server.xml";
-                } else {
-                    locationString = "http://" + entry.ip().toString() + ":" + QString::number(port) + "/server.xml";
+                // check subnet
+                if (host.isInSubnet(QHostAddress::parseSubnet(entry.ip().toString() + "/24"))) {
+                    QString locationString;
+                    if (useSsl) {
+                        locationString = "https://" + entry.ip().toString() + ":" + QString::number(serverPort) + "/server.xml";
+                    } else {
+                        locationString = "http://" + entry.ip().toString() + ":" + QString::number(serverPort) + "/server.xml";
+                    }
+
+                    // http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
+                    QByteArray rootdeviceResponseMessage = QByteArray("HTTP/1.1 200 OK\r\n"
+                                                                      "Cache-Control: max-age=1900\r\n"
+                                                                      "DATE: " + QDateTime::currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8() + " GMT\r\n"
+                                                                      "EXT:\r\n"
+                                                                      "CONTENT-LENGTH:0\r\n"
+                                                                      "Location: " + locationString.toUtf8() + "\r\n"
+                                                                      "Server: guh/" + QByteArray(GUH_VERSION_STRING) + " UPnP/1.1 \r\n"
+                                                                      "ST:upnp:rootdevice\r\n"
+                                                                      "USN:uuid:" + uuid + "::urn:schemas-upnp-org:device:Basic:1\r\n"
+                                                                      "\r\n");
+
+                    //qCDebug(dcHardware) << QString("Sending response to %1:%2\n").arg(host.toString()).arg(port);
+                    writeDatagram(rootdeviceResponseMessage, host, port);
                 }
-
-                // http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
-                QByteArray rootdeviceResponseMessage = QByteArray("HTTP/1.1 200 OK\r\n"
-                                                                  "CACHE-CONTROL: max-age=1900\r\n"
-                                                                  "DATE: " + QDateTime::currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8() + " GMT\r\n"
-                                                                  "EXT:\r\n"
-                                                                  "CONTENT-LENGTH:0\r\n"
-                                                                  "LOCATION: " + locationString.toUtf8() + "\r\n"
-                                                                  "SERVER: guh/" + QByteArray(GUH_VERSION_STRING) + " UPnP/1.1 \r\n"
-                                                                  "ST:upnp:rootdevice\r\n"
-                                                                  "USN:uuid:" + uuid + "::urn:schemas-upnp-org:device:Basic:1\r\n"
-                                                                  "\r\n");
-
-                sendToMulticast(rootdeviceResponseMessage);
             }
         }
     }
@@ -169,7 +173,7 @@ void UpnpDiscovery::respondToSearchRequest()
 /*! This method will be called to send the SSDP message \a data to the UPnP multicast.*/
 void UpnpDiscovery::sendToMulticast(const QByteArray &data)
 {
-    qCDebug(dcHardware) << "sending to multicast\n" << data;
+    //qCDebug(dcHardware) << "sending to multicast\n" << data;
     writeDatagram(data, m_host, m_port);
 }
 
@@ -181,19 +185,20 @@ void UpnpDiscovery::error(QAbstractSocket::SocketError error)
 void UpnpDiscovery::readData()
 {
     QByteArray data;
+    quint16 port;
     QHostAddress hostAddress;
     QUrl location;
 
     // read the answere from the multicast
     while (hasPendingDatagrams()) {
         data.resize(pendingDatagramSize());
-        readDatagram(data.data(), data.size(), &hostAddress);
+        readDatagram(data.data(), data.size(), &hostAddress, &port);
     }
 
     if (data.contains("M-SEARCH")) {
         qCDebug(dcHardware) << "--------------------------------------";
-        qCDebug(dcHardware) << "UPnP data:" << hostAddress.toString() << "\n" <<  data;
-        respondToSearchRequest();
+        qCDebug(dcHardware) << QString("UPnP data: %1:%2 \n").arg(hostAddress.toString()).arg(QString::number(port)) <<  data;
+        respondToSearchRequest(hostAddress, port);
         return;
     }
 
@@ -333,16 +338,13 @@ void UpnpDiscovery::notificationTimeout()
 
                 // http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
                 QByteArray rootdeviceResponseMessage = QByteArray("NOTIFY * HTTP/1.1\r\n"
-                                                                  "CACHE-CONTROL: max-age=1900\r\n"
                                                                   "HOST:239.255.255.250:1900\r\n"
+                                                                  "Cache-Control: max-age=1900\r\n"
+                                                                  "Location: " + locationString.toUtf8() + "\r\n"
                                                                   "NT:urn:schemas-upnp-org:device:Basic:1\r\n"
-                                                                  "NTS:ssdp:alive\r\n"
-                                                                  "DATE: " + QDateTime::currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8() + " GMT\r\n"
-                                                                  "EXT:\r\n"
-                                                                  "CONTENT-LENGTH:0\r\n"
-                                                                  "LOCATION: " + locationString.toUtf8() + "\r\n"
-                                                                  "SERVER: guh/" + QByteArray(GUH_VERSION_STRING) + " UPnP/1.1 \r\n"
                                                                   "USN:uuid:" + uuid + "::urn:schemas-upnp-org:device:Basic:1\r\n"
+                                                                  "NTS: ssdp:alive\r\n"
+                                                                  "SERVER: guh/" + QByteArray(GUH_VERSION_STRING) + " UPnP/1.1 \r\n"
                                                                   "\r\n");
 
                 sendToMulticast(rootdeviceResponseMessage);

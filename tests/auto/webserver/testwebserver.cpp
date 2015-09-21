@@ -51,6 +51,9 @@ private slots:
     void badRequests_data();
     void badRequests();
 
+    void getOptions_data();
+    void getOptions();
+
     void getFiles_data();
     void getFiles();
 
@@ -232,7 +235,7 @@ void TestWebserver::badRequests_data()
     wrongHeaderFormatting.append("\r\n");
 
     QByteArray userAgentMissing;
-    userAgentMissing.append("GET / HTTP/1.1\r\n");
+    userAgentMissing.append("GET /abc HTTP/1.1\r\n");
     userAgentMissing.append("\r\n");
 
     QTest::newRow("wrong content length") << wrongContentLength << 400;
@@ -274,6 +277,43 @@ void TestWebserver::badRequests()
 
     socket->close();
     socket->deleteLater();
+}
+
+void TestWebserver::getOptions_data()
+{
+    QTest::addColumn<QString>("path");
+
+    QTest::newRow("get OPTIONS /api/v1/devices") << "/api/v1/devices";
+    QTest::newRow("get OPTIONS /api/v1/devices/{id}") << "/api/v1/devices/" + m_mockDeviceId.toString();
+    QTest::newRow("get OPTIONS /api/v1/devices/pair") << "/api/v1/devices/pair";
+    QTest::newRow("get OPTIONS /api/v1/devices/confirmpairing") << "/api/v1/devices/confirmpairing";
+    QTest::newRow("get OPTIONS /api/v1/rules") << "/api/v1/rules";
+    QTest::newRow("get OPTIONS /api/v1/plugins") << "/api/v1/plugins";
+    QTest::newRow("get OPTIONS /api/v1/logs") << "/api/v1/logs";
+    QTest::newRow("get OPTIONS /api/v1/deviceclasses") << "/api/v1/deviceclasses";
+    QTest::newRow("get OPTIONS /api/v1/vendors") << "/api/v1/vendors";
+}
+
+void TestWebserver::getOptions()
+{
+    QFETCH(QString, path);
+
+    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
+    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
+
+    QNetworkRequest request;
+    request.setUrl(QUrl("http://localhost:3333" + path));
+    QNetworkReply *reply = nam->sendCustomRequest(request, "OPTIONS");
+
+    clientSpy.wait();
+    QCOMPARE(clientSpy.count(), 1);
+
+    bool ok = false;
+    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(&ok);
+    QVERIFY2(ok, "Could not convert statuscode from response to int");
+    QCOMPARE(statusCode, 200);
+
+    reply->deleteLater();
 }
 
 void TestWebserver::getFiles_data()

@@ -70,7 +70,7 @@ void TestWebserver::httpVersion()
     QSignalSpy clientSpy(socket, SIGNAL(readyRead()));
 
     QByteArray requestData;
-    requestData.append("GET /hello/guh HTTP/1.0\r\n");
+    requestData.append("GET /hello/guh HTTP/1\r\n");
     requestData.append("User-Agent: guh webserver test\r\n\r\n");
 
     socket->write(requestData);
@@ -237,7 +237,7 @@ void TestWebserver::badRequests_data()
 
     QTest::newRow("wrong content length") << wrongContentLength << 400;
     QTest::newRow("invalid header formatting") << wrongHeaderFormatting << 400;
-    QTest::newRow("user agent missing") << userAgentMissing << 400;
+    QTest::newRow("user agent missing") << userAgentMissing << 404;
 
 }
 

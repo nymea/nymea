@@ -138,8 +138,11 @@ void RestServer::processHttpRequest(const QUuid &clientId, const HttpRequest &re
 void RestServer::asyncReplyFinished()
 {
     HttpReply *reply = qobject_cast<HttpReply*>(sender());
+    QUuid clientId = m_asyncReplies.key(reply);
+    m_asyncReplies.remove(clientId);
 
     qCDebug(dcWebServer) << "Async reply finished";
+    reply->setClientId(clientId);
 
     if (reply->timedOut()) {
         reply->clear();

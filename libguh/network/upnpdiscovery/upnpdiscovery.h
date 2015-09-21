@@ -58,7 +58,7 @@ private:
     QHash<QNetworkReply*,UpnpDeviceDescriptor> m_informationRequestList;
 
     void requestDeviceInformation(const QNetworkRequest &networkRequest, const UpnpDeviceDescriptor &upnpDeviceDescriptor);
-    void respondToSearchRequest();
+    void respondToSearchRequest(QHostAddress host, int port);
 
 protected:
 

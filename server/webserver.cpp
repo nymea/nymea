@@ -216,135 +216,6 @@ QString WebServer::fileName(const QString &query)
     return m_webinterfaceDir.path() + fileName;
 }
 
-QByteArray WebServer::createServerXmlDocument(QHostAddress address)
-{
-    GuhSettings settings(GuhSettings::SettingsRoleDevices);
-    settings.beginGroup("guhd");
-    QByteArray uuid = settings.value("uuid", QVariant()).toByteArray();
-    if (uuid.isEmpty()) {
-        uuid = QUuid::createUuid().toByteArray().replace("{", "").replace("}","");
-        settings.setValue("uuid", uuid);
-    }
-    settings.endGroup();
-
-
-    QByteArray data;
-    QXmlStreamWriter writer(&data);
-    writer.setAutoFormatting(true);
-    writer.writeStartDocument("1.0");
-    writer.writeStartElement("root");
-    writer.writeAttribute("xmlns", "urn:schemas-upnp-org:device-1-0");
-
-    writer.writeStartElement("specVersion");
-    writer.writeTextElement("major", "1");
-    writer.writeTextElement("minor", "1");
-    writer.writeEndElement(); // specVersion
-
-//    if (m_useSsl) {
-//        writer.writeTextElement("URLBase", "https://" + address.toString() + ":" + QString::number(m_port));
-//    } else {
-//        writer.writeTextElement("URLBase", "http://" + address.toString() + ":" + QString::number(m_port));
-//    }
-    writer.writeStartElement("device");
-    writer.writeTextElement("deviceType", "urn:schemas-upnp-org:device:Basic:1");
-    writer.writeTextElement("friendlyName", "guhd");
-    writer.writeTextElement("manufacturer", "ARGE guh");
-    writer.writeTextElement("manufacturerURL", "http://guh.guru");
-    writer.writeTextElement("modelDescription", "Home automation server");
-    writer.writeTextElement("modelName", "guhd");
-    writer.writeTextElement("modelNumber", GUH_VERSION_STRING);
-    writer.writeTextElement("modelURL", "http://guh.io"); // (optional)
-    writer.writeTextElement("UDN", "uuid:" + uuid);
-    if (m_useSsl) {
-        writer.writeTextElement("presentationURL", "https://" + address.toString() + ":" + QString::number(m_port));
-    } else {
-        writer.writeTextElement("presentationURL", "http://" + address.toString() + ":" + QString::number(m_port));
-    }
-
-    //writer.writeTextElement("presentationURL", "/");
-
-    writer.writeStartElement("iconList");
-
-    writer.writeStartElement("icon");
-    writer.writeTextElement("mimetype", "image/png");
-    writer.writeTextElement("width", "8");
-    writer.writeTextElement("height", "8");
-    writer.writeTextElement("depth", "24");
-    writer.writeTextElement("url", "/icons/guh-logo-8x8.png");
-    writer.writeEndElement(); // icon
-
-    writer.writeStartElement("icon");
-    writer.writeTextElement("mimetype", "image/png");
-    writer.writeTextElement("width", "16");
-    writer.writeTextElement("height", "16");
-    writer.writeTextElement("depth", "24");
-    writer.writeTextElement("url", "/icons/guh-logo-16x16.png");
-    writer.writeEndElement(); // icon
-
-    writer.writeStartElement("icon");
-    writer.writeTextElement("mimetype", "image/png");
-    writer.writeTextElement("width", "22");
-    writer.writeTextElement("height", "22");
-    writer.writeTextElement("depth", "24");
-    writer.writeTextElement("url", "/icons/guh-logo-22x22.png");
-    writer.writeEndElement(); // icon
-
-    writer.writeStartElement("icon");
-    writer.writeTextElement("mimetype", "image/png");
-    writer.writeTextElement("width", "32");
-    writer.writeTextElement("height", "32");
-    writer.writeTextElement("depth", "24");
-    writer.writeTextElement("url", "/icons/guh-logo-32x32.png");
-    writer.writeEndElement(); // icon
-
-    writer.writeStartElement("icon");
-    writer.writeTextElement("mimetype", "image/png");
-    writer.writeTextElement("width", "48");
-    writer.writeTextElement("height", "48");
-    writer.writeTextElement("depth", "24");
-    writer.writeTextElement("url", "/icons/guh-logo-48x48.png");
-    writer.writeEndElement(); // icon
-
-    writer.writeStartElement("icon");
-    writer.writeTextElement("mimetype", "image/png");
-    writer.writeTextElement("width", "64");
-    writer.writeTextElement("height", "64");
-    writer.writeTextElement("depth", "24");
-    writer.writeTextElement("url", "/icons/guh-logo-64x64.png");
-    writer.writeEndElement(); // icon
-
-    writer.writeStartElement("icon");
-    writer.writeTextElement("mimetype", "image/png");
-    writer.writeTextElement("width", "128");
-    writer.writeTextElement("height", "128");
-    writer.writeTextElement("depth", "24");
-    writer.writeTextElement("url", "/icons/guh-logo-128x128.png");
-    writer.writeEndElement(); // icon
-
-    writer.writeStartElement("icon");
-    writer.writeTextElement("mimetype", "image/png");
-    writer.writeTextElement("width", "256");
-    writer.writeTextElement("height", "256");
-    writer.writeTextElement("depth", "24");
-    writer.writeTextElement("url", "/icons/guh-logo-256x256.png");
-    writer.writeEndElement(); // icon
-
-    writer.writeStartElement("icon");
-    writer.writeTextElement("mimetype", "image/png");
-    writer.writeTextElement("width", "512");
-    writer.writeTextElement("height", "512");
-    writer.writeTextElement("depth", "24");
-    writer.writeTextElement("url", "/icons/guh-logo-512x512.png");
-    writer.writeEndElement(); // icon
-
-    writer.writeEndElement(); // iconList
-
-    writer.writeEndElement(); // device
-    writer.writeEndElement(); // root
-    writer.writeEndDocument();
-    return data;
-}
-
 HttpReply *WebServer::processIconRequest(const QString &fileName)
 {
     if (!fileName.endsWith(".png"))
@@ -479,8 +350,8 @@ void WebServer::readClient()
     }
 
     // check HTTP version
-    if (request.httpVersion() != "HTTP/1.1") {
-        qCWarning(dcWebServer) << "HTTP version is not supported.";
+    if (request.httpVersion() != "HTTP/1.1" && request.httpVersion() != "HTTP/1.0") {
+        qCWarning(dcWebServer) << "HTTP version is not supported." << request.httpVersion();
         HttpReply *reply = RestResource::createErrorReply(HttpReply::HttpVersionNotSupported);
         reply->setClientId(clientId);
         sendHttpReply(reply);
@@ -675,6 +546,132 @@ bool WebServer::stopServer()
     qCDebug(dcConnection) << "Webserver closed.";
     return true;
 }
+
+
+QByteArray WebServer::createServerXmlDocument(QHostAddress address)
+{
+    GuhSettings settings(GuhSettings::SettingsRoleDevices);
+    settings.beginGroup("guhd");
+    QByteArray uuid = settings.value("uuid", QVariant()).toByteArray();
+    if (uuid.isEmpty()) {
+        uuid = QUuid::createUuid().toByteArray().replace("{", "").replace("}","");
+        settings.setValue("uuid", uuid);
+    }
+    settings.endGroup();
+
+
+    QByteArray data;
+    QXmlStreamWriter writer(&data);
+    writer.setAutoFormatting(true);
+    writer.writeStartDocument("1.0");
+    writer.writeStartElement("root");
+    writer.writeAttribute("xmlns", "urn:schemas-upnp-org:device-1-0");
+
+    writer.writeStartElement("specVersion");
+    writer.writeTextElement("major", "1");
+    writer.writeTextElement("minor", "1");
+    writer.writeEndElement(); // specVersion
+
+    if (m_useSsl) {
+        writer.writeTextElement("URLBase", "https://" + address.toString() + ":" + QString::number(m_port));
+    } else {
+        writer.writeTextElement("URLBase", "http://" + address.toString() + ":" + QString::number(m_port));
+    }
+    writer.writeTextElement("presentationURL", "/");
+
+    writer.writeStartElement("device");
+    writer.writeTextElement("deviceType", "urn:schemas-upnp-org:device:Basic:1");
+    writer.writeTextElement("friendlyName", "guhd");
+    writer.writeTextElement("manufacturer", "guh");
+    writer.writeTextElement("manufacturerURL", "http://guh.guru");
+    writer.writeTextElement("modelDescription", "Home automation server");
+    writer.writeTextElement("modelName", "guhd");
+    writer.writeTextElement("modelNumber", GUH_VERSION_STRING);
+    writer.writeTextElement("modelURL", "http://guh.io"); // (optional)
+    writer.writeTextElement("UDN", "uuid:" + uuid);
+
+    writer.writeStartElement("iconList");
+
+    writer.writeStartElement("icon");
+    writer.writeTextElement("mimetype", "image/png");
+    writer.writeTextElement("width", "8");
+    writer.writeTextElement("height", "8");
+    writer.writeTextElement("depth", "24");
+    writer.writeTextElement("url", "/icons/guh-logo-8x8.png");
+    writer.writeEndElement(); // icon
+
+    writer.writeStartElement("icon");
+    writer.writeTextElement("mimetype", "image/png");
+    writer.writeTextElement("width", "16");
+    writer.writeTextElement("height", "16");
+    writer.writeTextElement("depth", "24");
+    writer.writeTextElement("url", "/icons/guh-logo-16x16.png");
+    writer.writeEndElement(); // icon
+
+    writer.writeStartElement("icon");
+    writer.writeTextElement("mimetype", "image/png");
+    writer.writeTextElement("width", "22");
+    writer.writeTextElement("height", "22");
+    writer.writeTextElement("depth", "24");
+    writer.writeTextElement("url", "/icons/guh-logo-22x22.png");
+    writer.writeEndElement(); // icon
+
+    writer.writeStartElement("icon");
+    writer.writeTextElement("mimetype", "image/png");
+    writer.writeTextElement("width", "32");
+    writer.writeTextElement("height", "32");
+    writer.writeTextElement("depth", "24");
+    writer.writeTextElement("url", "/icons/guh-logo-32x32.png");
+    writer.writeEndElement(); // icon
+
+    writer.writeStartElement("icon");
+    writer.writeTextElement("mimetype", "image/png");
+    writer.writeTextElement("width", "48");
+    writer.writeTextElement("height", "48");
+    writer.writeTextElement("depth", "24");
+    writer.writeTextElement("url", "/icons/guh-logo-48x48.png");
+    writer.writeEndElement(); // icon
+
+    writer.writeStartElement("icon");
+    writer.writeTextElement("mimetype", "image/png");
+    writer.writeTextElement("width", "64");
+    writer.writeTextElement("height", "64");
+    writer.writeTextElement("depth", "24");
+    writer.writeTextElement("url", "/icons/guh-logo-64x64.png");
+    writer.writeEndElement(); // icon
+
+    writer.writeStartElement("icon");
+    writer.writeTextElement("mimetype", "image/png");
+    writer.writeTextElement("width", "128");
+    writer.writeTextElement("height", "128");
+    writer.writeTextElement("depth", "24");
+    writer.writeTextElement("url", "/icons/guh-logo-128x128.png");
+    writer.writeEndElement(); // icon
+
+    writer.writeStartElement("icon");
+    writer.writeTextElement("mimetype", "image/png");
+    writer.writeTextElement("width", "256");
+    writer.writeTextElement("height", "256");
+    writer.writeTextElement("depth", "24");
+    writer.writeTextElement("url", "/icons/guh-logo-256x256.png");
+    writer.writeEndElement(); // icon
+
+    writer.writeStartElement("icon");
+    writer.writeTextElement("mimetype", "image/png");
+    writer.writeTextElement("width", "512");
+    writer.writeTextElement("height", "512");
+    writer.writeTextElement("depth", "24");
+    writer.writeTextElement("url", "/icons/guh-logo-512x512.png");
+    writer.writeEndElement(); // icon
+
+    writer.writeEndElement(); // iconList
+
+    writer.writeEndElement(); // device
+    writer.writeEndElement(); // root
+    writer.writeEndDocument();
+    return data;
+}
+
 
 WebServerClient::WebServerClient(const QHostAddress &address, QObject *parent):
     QObject(parent),

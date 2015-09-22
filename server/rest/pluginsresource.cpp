@@ -60,6 +60,9 @@ HttpReply *PluginsResource::proccessRequest(const HttpRequest &request, const QS
     case HttpRequest::Put:
         reply = proccessPutRequest(request, urlTokens);
         break;
+    case HttpRequest::Options:
+        reply = proccessOptionsRequest(request, urlTokens);
+        break;
     default:
         reply = createErrorReply(HttpReply::BadRequest);
         break;
@@ -97,10 +100,18 @@ HttpReply *PluginsResource::proccessPutRequest(const HttpRequest &request, const
     return createErrorReply(HttpReply::NotImplemented);
 }
 
+HttpReply *PluginsResource::proccessOptionsRequest(const HttpRequest &request, const QStringList &urlTokens)
+{
+    Q_UNUSED(request)
+    Q_UNUSED(urlTokens)
+    return RestResource::createCorsSuccessReply();
+}
+
 HttpReply *PluginsResource::getPlugins() const
 {
     qCDebug(dcRest) << "Get plugins";
     HttpReply *reply = createSuccessReply();
+    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packPlugins()).toJson());
     return reply;
 }
@@ -111,6 +122,7 @@ HttpReply *PluginsResource::getPlugin(const PluginId &pluginId) const
     HttpReply *reply = createSuccessReply();
     foreach (DevicePlugin *plugin, GuhCore::instance()->plugins()) {
         if (plugin->pluginId() == pluginId) {
+            reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
             reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packPlugin(plugin)).toJson());
             return reply;
         }
@@ -133,6 +145,7 @@ HttpReply *PluginsResource::getPluginConfiguration(const PluginId &pluginId) con
     }
 
     HttpReply *reply = createSuccessReply();
+    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     reply->setPayload(QJsonDocument::fromVariant(configurationParamsList).toJson());
     return reply;
 }

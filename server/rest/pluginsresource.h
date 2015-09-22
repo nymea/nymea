@@ -48,6 +48,7 @@ private:
     // Process method
     HttpReply *proccessGetRequest(const HttpRequest &request, const QStringList &urlTokens) override;
     HttpReply *proccessPutRequest(const HttpRequest &request, const QStringList &urlTokens) override;
+    HttpReply *proccessOptionsRequest(const HttpRequest &request, const QStringList &urlTokens) override;
 
     // Get methods
     HttpReply *getPlugins() const;

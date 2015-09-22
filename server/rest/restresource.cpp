@@ -82,7 +82,18 @@ RestResource::~RestResource()
 HttpReply *RestResource::createSuccessReply()
 {
     HttpReply *reply = new HttpReply(HttpReply::Ok, HttpReply::TypeSync);
-    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
+    reply->setPayload("200 Ok");
+    return reply;
+}
+
+HttpReply *RestResource::createCorsSuccessReply()
+{
+    HttpReply *reply = RestResource::createSuccessReply();
+    reply->setRawHeader("Accept","application/json");
+    reply->setRawHeader("Allow", "PUT, POST, GET, DELETE, OPTIONS");
+    reply->setRawHeader("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS");
+    reply->setRawHeader("Access-Control-Allow-Headers", "Origin, Content-Type, Accept");
+    reply->setRawHeader("Access-Control-Max-Age", "1728000");
     return reply;
 }
 
@@ -98,6 +109,7 @@ HttpReply *RestResource::createErrorReply(const HttpReply::HttpStatusCode &statu
 HttpReply *RestResource::createAsyncReply()
 {
     HttpReply *reply = new HttpReply(HttpReply::Ok, HttpReply::TypeAsync);
+    reply->setPayload(QByteArray::number(reply->httpStatusCode()) + " " + reply->httpReasonPhrase());
     return reply;
 }
 
@@ -124,6 +136,13 @@ QPair<bool, QVariant> RestResource::verifyPayload(const QByteArray &payload)
 }
 
 HttpReply *RestResource::proccessPostRequest(const HttpRequest &request, const QStringList &urlTokens)
+{
+    Q_UNUSED(request)
+    Q_UNUSED(urlTokens)
+    return createErrorReply(HttpReply::NotImplemented);
+}
+
+HttpReply *RestResource::proccessOptionsRequest(const HttpRequest &request, const QStringList &urlTokens)
 {
     Q_UNUSED(request)
     Q_UNUSED(urlTokens)

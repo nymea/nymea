@@ -55,6 +55,7 @@ private:
     HttpReply *proccessDeleteRequest(const HttpRequest &request, const QStringList &urlTokens) override;
     HttpReply *proccessPutRequest(const HttpRequest &request, const QStringList &urlTokens) override;
     HttpReply *proccessPostRequest(const HttpRequest &request, const QStringList &urlTokens) override;
+    HttpReply *proccessOptionsRequest(const HttpRequest &request, const QStringList &urlTokens) override;
 
     // Get methods
     HttpReply *getConfiguredDevices() const;
@@ -79,7 +80,6 @@ private slots:
     void deviceSetupFinished(Device *device, DeviceManager::DeviceError status);
     void deviceEditFinished(Device *device, DeviceManager::DeviceError status);
     void pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceError status, const DeviceId &deviceId);
-
 };
 
 }

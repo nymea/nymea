@@ -51,6 +51,9 @@ private slots:
     void badRequests_data();
     void badRequests();
 
+    void getOptions_data();
+    void getOptions();
+
     void getFiles_data();
     void getFiles();
 
@@ -70,7 +73,7 @@ void TestWebserver::httpVersion()
     QSignalSpy clientSpy(socket, SIGNAL(readyRead()));
 
     QByteArray requestData;
-    requestData.append("GET /hello/guh HTTP/1.0\r\n");
+    requestData.append("GET /hello/guh HTTP/1\r\n");
     requestData.append("User-Agent: guh webserver test\r\n\r\n");
 
     socket->write(requestData);
@@ -142,11 +145,10 @@ void TestWebserver::multiPackageMessage()
     bool ok = false;
     int statusCode = firstLineTokens.at(1).toInt(&ok);
     QVERIFY2(ok, "Could not convert statuscode from response to int");
-    QCOMPARE(statusCode, 404);
+    QCOMPARE(statusCode, 501);
 
     socket->close();
     socket->deleteLater();
-
 }
 
 void TestWebserver::checkAllowedMethodCall_data()
@@ -191,8 +193,8 @@ void TestWebserver::checkAllowedMethodCall()
     } else if(method == "CONNECT") {
         reply = nam->sendCustomRequest(request, "CONNECT");
     } else if(method == "OPTIONS") {
-        request.setUrl(QUrl("http://localhost:3333/api/v1/devices"));
-        reply = nam->sendCustomRequest(request, "OPTIONS");
+        QNetworkRequest req(QUrl("http://localhost:3333/api/v1/devices"));
+        reply = nam->sendCustomRequest(req, "OPTIONS");
     } else if(method == "TRACE") {
         reply = nam->sendCustomRequest(request, "TRACE");
     } else {
@@ -205,14 +207,13 @@ void TestWebserver::checkAllowedMethodCall()
     printResponse(reply);
 
     QCOMPARE(clientSpy.count(), 1);
-    //QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
 
     if (expectedStatusCode == 405){
         QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), expectedStatusCode);
         QVERIFY2(reply->hasRawHeader("Allow"), "405 should contain the allowed methods header");
     }
-
     reply->deleteLater();
+    nam->deleteLater();
 }
 
 void TestWebserver::badRequests_data()
@@ -234,12 +235,12 @@ void TestWebserver::badRequests_data()
     wrongHeaderFormatting.append("\r\n");
 
     QByteArray userAgentMissing;
-    userAgentMissing.append("GET / HTTP/1.1\r\n");
+    userAgentMissing.append("GET /abc HTTP/1.1\r\n");
     userAgentMissing.append("\r\n");
 
     QTest::newRow("wrong content length") << wrongContentLength << 400;
     QTest::newRow("invalid header formatting") << wrongHeaderFormatting << 400;
-    QTest::newRow("user agent missing") << userAgentMissing << 400;
+    QTest::newRow("user agent missing") << userAgentMissing << 404;
 
 }
 
@@ -276,6 +277,43 @@ void TestWebserver::badRequests()
 
     socket->close();
     socket->deleteLater();
+}
+
+void TestWebserver::getOptions_data()
+{
+    QTest::addColumn<QString>("path");
+
+    QTest::newRow("get OPTIONS /api/v1/devices") << "/api/v1/devices";
+    QTest::newRow("get OPTIONS /api/v1/devices/{id}") << "/api/v1/devices/" + m_mockDeviceId.toString();
+    QTest::newRow("get OPTIONS /api/v1/devices/pair") << "/api/v1/devices/pair";
+    QTest::newRow("get OPTIONS /api/v1/devices/confirmpairing") << "/api/v1/devices/confirmpairing";
+    QTest::newRow("get OPTIONS /api/v1/rules") << "/api/v1/rules";
+    QTest::newRow("get OPTIONS /api/v1/plugins") << "/api/v1/plugins";
+    QTest::newRow("get OPTIONS /api/v1/logs") << "/api/v1/logs";
+    QTest::newRow("get OPTIONS /api/v1/deviceclasses") << "/api/v1/deviceclasses";
+    QTest::newRow("get OPTIONS /api/v1/vendors") << "/api/v1/vendors";
+}
+
+void TestWebserver::getOptions()
+{
+    QFETCH(QString, path);
+
+    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
+    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
+
+    QNetworkRequest request;
+    request.setUrl(QUrl("http://localhost:3333" + path));
+    QNetworkReply *reply = nam->sendCustomRequest(request, "OPTIONS");
+
+    clientSpy.wait();
+    QCOMPARE(clientSpy.count(), 1);
+
+    bool ok = false;
+    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(&ok);
+    QVERIFY2(ok, "Could not convert statuscode from response to int");
+    QCOMPARE(statusCode, 200);
+
+    reply->deleteLater();
 }
 
 void TestWebserver::getFiles_data()
@@ -318,7 +356,7 @@ void TestWebserver::printResponse(QNetworkReply *reply)
 {
     qDebug() << "-------------------------------";
     qDebug() << "Response header:";
-    qDebug() << reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString();
+    qDebug() << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() << reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString();
     foreach (const  QNetworkReply::RawHeaderPair &headerPair, reply->rawHeaderPairs()) {
         qDebug() << headerPair.first << ":" << headerPair.second;
     }

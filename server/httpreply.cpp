@@ -134,11 +134,13 @@ HttpReply::HttpReply(QObject *parent) :
     m_reasonPhrase = getHttpReasonPhrase(m_statusCode);
 
     // set known headers
+    setHeader(HttpReply::ContentTypeHeader, "text/plain; charset=\"utf-8\";");
     setHeader(HttpHeaderType::ServerHeader, "guh/" + QByteArray(GUH_VERSION_STRING));
     setHeader(HttpHeaderType::DateHeader, QDateTime::currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8() + " GMT");
-    setRawHeader("Access-Control-Allow-Origin","*");
     setHeader(HttpHeaderType::CacheControlHeader, "no-cache");
     setHeader(HttpHeaderType::ConnectionHeader, "Keep-Alive");
+    setRawHeader("Access-Control-Allow-Origin","*");
+    setRawHeader("Keep-Alive", "timeout=10, max=50");
     packReply();
 }
 
@@ -155,12 +157,14 @@ HttpReply::HttpReply(const HttpReply::HttpStatusCode &statusCode, const HttpRepl
 
     m_reasonPhrase = getHttpReasonPhrase(m_statusCode);
 
-    // set known headers
+    // set known / default headers
+    setHeader(HttpReply::ContentTypeHeader, "text/plain; charset=\"utf-8\";");
     setHeader(HttpHeaderType::ServerHeader, "guh/" + QByteArray(GUH_VERSION_STRING));
     setHeader(HttpHeaderType::DateHeader, QDateTime::currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8() + " GMT");
-    setRawHeader("Access-Control-Allow-Origin","*");
     setHeader(HttpHeaderType::CacheControlHeader, "no-cache");
     setHeader(HttpHeaderType::ConnectionHeader, "Keep-Alive");
+    setRawHeader("Access-Control-Allow-Origin","*");
+    setRawHeader("Keep-Alive", "timeout=10, max=50");
     packReply();
 }
 
@@ -168,6 +172,7 @@ HttpReply::HttpReply(const HttpReply::HttpStatusCode &statusCode, const HttpRepl
 void HttpReply::setHttpStatusCode(const HttpReply::HttpStatusCode &statusCode)
 {
     m_statusCode = statusCode;
+    m_reasonPhrase = getHttpReasonPhrase(m_statusCode);
     packReply();
 }
 
@@ -195,6 +200,7 @@ HttpReply::Type HttpReply::type() const
 void HttpReply::setClientId(const QUuid &clientId)
 {
     m_clientId = clientId;
+    packReply();
 }
 
 /*! Returns the clientId of this \l{HttpReply}.*/
@@ -272,6 +278,9 @@ bool HttpReply::isEmpty() const
 /*! Clears all data of this \l{HttpReply}. */
 void HttpReply::clear()
 {
+    m_closeConnection = false;
+    m_type = TypeSync;
+    m_statusCode = Ok;
     m_rawHeader.clear();
     m_payload.clear();
     m_rawHeaderList.clear();
@@ -381,7 +390,7 @@ QByteArray HttpReply::getHeaderType(const HttpReply::HttpHeaderType &headerType)
 */
 void HttpReply::startWait()
 {
-    m_timer->start(5000);
+    m_timer->start(10000);
 }
 
 void HttpReply::timeout()
@@ -389,6 +398,16 @@ void HttpReply::timeout()
     qDebug() << "Http reply timeout";
     m_timedOut = true;
     emit finished();
+}
+
+QDebug operator<<(QDebug debug, const HttpReply &httpReply)
+{
+    debug << "-----------------------------------" << "\n";
+    debug << httpReply.rawHeader() << "\n";
+    debug << "-----------------------------------" << "\n";
+    debug << httpReply.payload() << "\n";
+    debug << "-----------------------------------" << "\n";
+    return debug;
 }
 
 }

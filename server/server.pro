@@ -14,7 +14,7 @@ isEmpty(PREFIX) {
 target.path = $$INSTALLDIR
 INSTALLS += target
 
-QT += sql
+QT += sql xml
 
 LIBS += -L$$top_builddir/libguh/ -lguh
 
@@ -22,7 +22,7 @@ include(server.pri)
 include(qtservice/qtservice.pri)
 
 SOURCES += main.cpp \
-    guhservice.cpp \
+    guhservice.cpp
 
 boblight {
     xcompile {
@@ -34,4 +34,4 @@ boblight {
 }
 
 HEADERS += \
-    guhservice.h \
+    guhservice.h

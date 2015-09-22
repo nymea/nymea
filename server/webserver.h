@@ -26,6 +26,9 @@
 #include <QTcpSocket>
 #include <QHash>
 #include <QDir>
+#include <QTimer>
+#include <QImage>
+#include <QBuffer>
 #include <QSslSocket>
 #include <QSslCertificate>
 #include <QSslConfiguration>
@@ -39,6 +42,31 @@ namespace guhserver {
 class HttpRequest;
 class HttpReply;
 
+class WebServerClient : public QObject
+{
+    Q_OBJECT
+public:
+    WebServerClient(const QHostAddress &address, QObject *parent = 0);
+
+    QHostAddress address() const;
+
+    QList<QSslSocket *> connections();
+    void addConnection(QSslSocket *socket);
+    void removeConnection(QSslSocket *socket);
+
+    void resetTimout(QSslSocket *socket);
+
+private:
+    QHostAddress m_address;
+    QList<QSslSocket *> m_connections;
+    QHash<QTimer *, QSslSocket *> m_runningConnections;
+
+private slots:
+    void onTimout();
+
+};
+
+
 class WebServer : public QTcpServer
 {
     Q_OBJECT
@@ -47,9 +75,13 @@ public:
     ~WebServer();
 
     void sendHttpReply(HttpReply *reply);
+    int port() const;
+    QList<QHostAddress> serverAddressList();
+
 
 private:
     QHash<QUuid, QSslSocket *> m_clientList;
+    QList<WebServerClient *> m_webServerClients;
     QHash<QSslSocket *, HttpRequest> m_incompleteRequests;
 
     QSslConfiguration m_sslConfiguration;
@@ -59,11 +91,12 @@ private:
     qint16 m_port;
     QDir m_webinterfaceDir;
 
-
     bool verifyFile(QSslSocket *socket, const QString &fileName);
     QString fileName(const QString &query);
 
-    void writeData(QSslSocket *socket, const QByteArray &data);
+    QByteArray createServerXmlDocument(QHostAddress address);
+    HttpReply *processIconRequest(const QString &fileName);
+    QHostAddress getServerAddress(QHostAddress clientAddress);
 
 protected:
     void incomingConnection(qintptr socketDescriptor) override;

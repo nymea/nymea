@@ -142,16 +142,21 @@ void RestServer::asyncReplyFinished()
     m_asyncReplies.remove(clientId);
 
     qCDebug(dcWebServer) << "Async reply finished";
-    reply->setClientId(clientId);
 
+    // check if the reply timeouted
     if (reply->timedOut()) {
         reply->clear();
         reply->setHttpStatusCode(HttpReply::GatewayTimeout);
     }
 
-    m_webserver->sendHttpReply(reply);
+    // check if client is still connected
+    if (!m_clientList.contains(clientId)) {
+        qCWarning(dcWebServer) << "Client for async reply not longer connected.";
+    } else {
+        reply->setClientId(clientId);
+        m_webserver->sendHttpReply(reply);
+    }
     reply->deleteLater();
 }
-
 
 }

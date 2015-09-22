@@ -47,7 +47,7 @@ HttpReply *DevicesResource::proccessRequest(const HttpRequest &request, const QS
     m_device = 0;
 
     // get the main resource
-    if (urlTokens.count() >= 4) {
+    if (urlTokens.count() >= 4 && urlTokens.at(3) != "pair" && urlTokens.at(3) != "confirmpairing") {
         DeviceId deviceId = DeviceId(urlTokens.at(3));
         if (deviceId.isNull()) {
             qCWarning(dcRest) << "Could not parse DeviceId:" << urlTokens.at(3);

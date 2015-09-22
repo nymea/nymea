@@ -50,7 +50,7 @@
                             "idName": "updateTime",
                             "name": "last update",
                             "unit": "UnixTime",
-                            "type": "uint",
+                            "type": "int",
                             "defaultValue": 0
                         },
                         {

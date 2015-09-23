@@ -14,10 +14,12 @@ QT+= network
 QMAKE_CXXFLAGS += -Werror -std=c++11
 QMAKE_LFLAGS += -std=c++11
 
-# Check for Bluetoot LE support (Qt >= 5.4.0)
-!contains(QT_VERSION, ^5\\.[0-3]\\..*) {
-    QT += bluetooth
-    DEFINES += BLUETOOTH_LE
+!snappy {
+    # Check for Bluetoot LE support (Qt >= 5.4)
+    equals(QT_MAJOR_VERSION, 5):greaterThan(QT_MINOR_VERSION, 3) {
+        QT += bluetooth
+        DEFINES += BLUETOOTH_LE
+    }
 }
 
 # Enable coverage option    

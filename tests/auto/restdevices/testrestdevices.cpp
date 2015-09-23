@@ -47,6 +47,9 @@ private slots:
     void addConfiguredDevice_data();
     void addConfiguredDevice();
 
+    void addPushButtonDevices_data();
+    void addPushButtonDevices();
+
     void executeAction_data();
     void executeAction();
 
@@ -210,6 +213,121 @@ void TestRestDevices::addConfiguredDevice()
         reply = nam->deleteResource(request);
         clientSpy.wait();
         QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
+        statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+        reply->deleteLater();
+        QCOMPARE(statusCode, 200);
+    }
+    nam->deleteLater();
+}
+
+void TestRestDevices::addPushButtonDevices_data()
+{
+    QTest::addColumn<DeviceClassId>("deviceClassId");
+    QTest::addColumn<int>("expectedStatusCode");
+    QTest::addColumn<bool>("waitForButtonPressed");
+
+    QTest::newRow("Valid: Add PushButton device") << mockPushButtonDeviceClassId << 200 << true;
+    QTest::newRow("Invalid: Add PushButton device (press to early)") << mockPushButtonDeviceClassId << 500 << false;
+}
+
+void TestRestDevices::addPushButtonDevices()
+{
+    QFETCH(DeviceClassId, deviceClassId);
+    QFETCH(int, expectedStatusCode);
+    QFETCH(bool, waitForButtonPressed);
+
+    // Discover device
+    QVariantList discoveryParams;
+    QVariantMap resultCountParam;
+    resultCountParam.insert("name", "resultCount");
+    resultCountParam.insert("value", 1);
+    discoveryParams.append(resultCountParam);
+
+    // Discover
+    QVariantMap params;
+    params.insert("deviceClassId", deviceClassId);
+    params.insert("discoveryParams", discoveryParams);
+
+    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
+    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
+
+    QUrl url(QString("http://localhost:3333/api/v1/deviceclasses/%1/discover").arg(deviceClassId.toString()));
+
+    QUrlQuery query;
+    query.addQueryItem("params", QJsonDocument::fromVariant(discoveryParams).toJson(QJsonDocument::Compact));
+    url.setQuery(query);
+
+    clientSpy.clear();
+    QNetworkRequest request(url);
+    QNetworkReply *reply = nam->get(request);
+    clientSpy.wait();
+    QCOMPARE(clientSpy.count(), 1);
+    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    QCOMPARE(statusCode, 200);
+    QByteArray data = reply->readAll();
+    reply->deleteLater();
+
+    // check response
+    QJsonParseError error;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
+    QCOMPARE(error.error, QJsonParseError::NoError);
+    QVariantList foundDevices = jsonDoc.toVariant().toList();
+    QCOMPARE(foundDevices.count(), 1);
+
+    DeviceDescriptorId deviceDescriptoId(foundDevices.first().toMap().value("id").toString());
+
+    // Pair
+    params.clear();
+    params.insert("deviceClassId", deviceClassId.toString());
+    params.insert("deviceDescriptorId", deviceDescriptoId);
+
+    QNetworkRequest pairRequest(QUrl("http://localhost:3333/api/v1/devices/pair"));
+    clientSpy.clear();
+    reply = nam->post(pairRequest, QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact));
+    clientSpy.wait();
+    QCOMPARE(clientSpy.count(), 1);
+    statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    QCOMPARE(statusCode, 200);
+    data = reply->readAll();
+    reply->deleteLater();
+
+
+    // check response
+    jsonDoc = QJsonDocument::fromJson(data, &error);
+    QCOMPARE(error.error, QJsonParseError::NoError);
+    PairingTransactionId pairingTransactionId(jsonDoc.toVariant().toMap().value("pairingTransactionId").toString());
+    QString displayMessage = jsonDoc.toVariant().toMap().value("displayMessage").toString();
+
+    qDebug() << "displayMessage" << displayMessage;
+
+    if (waitForButtonPressed)
+        QTest::qWait(3500);
+
+    // Confirm pairing
+    params.clear();
+    params.insert("pairingTransactionId", pairingTransactionId.toString());
+
+    QNetworkRequest confirmPairingRequest(QUrl("http://localhost:3333/api/v1/devices/confirmpairing"));
+    clientSpy.clear();
+    reply = nam->post(confirmPairingRequest, QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact));
+    clientSpy.wait();
+    QCOMPARE(clientSpy.count(), 1);
+    statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    QCOMPARE(statusCode, expectedStatusCode);
+    data = reply->readAll();
+    reply->deleteLater();
+
+    if (expectedStatusCode == 200) {
+        jsonDoc = QJsonDocument::fromJson(data, &error);
+        QCOMPARE(error.error, QJsonParseError::NoError);
+
+        DeviceId deviceId(jsonDoc.toVariant().toMap().value("id").toString());
+        // delete it
+        request.setUrl(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
+        clientSpy.clear();
+        reply = nam->deleteResource(request);
+        clientSpy.wait();
+        QCOMPARE(clientSpy.count(), 1);
         statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
         reply->deleteLater();
         QCOMPARE(statusCode, 200);

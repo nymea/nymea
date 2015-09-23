@@ -500,18 +500,16 @@ void DevicesResource::pairingFinished(const PairingTransactionId &pairingTransac
         return; // Not the device pairing we are waiting for.
 
     HttpReply *reply = m_asyncPairingRequests.take(pairingTransactionId);
-    if (status == DeviceManager::DeviceErrorNoError) {
-        qCDebug(dcRest) << "Pairing device finished successfully";
-        QVariant result = JsonTypes::packDevice(GuhCore::instance()->findConfiguredDevice(deviceId));
-        reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
-        reply->setPayload(QJsonDocument::fromVariant(result).toJson());
-        reply->setHttpStatusCode(HttpReply::Ok);
-    } else {
-        qCDebug(dcRest) << "Pairing device finished with error" << status;
+    if (status != DeviceManager::DeviceErrorNoError) {
+        qCDebug(dcRest) << "Pairing device finished with error.";
         reply->setHttpStatusCode(HttpReply::InternalServerError);
+        reply->finished();
+        return;
     }
+    qCDebug(dcRest) << "Pairing device finished successfully";
 
-    reply->finished();
+    // Add device to async device addtions
+    m_asyncDeviceAdditions.insert(deviceId, reply);
 }
 
 }

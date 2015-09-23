@@ -600,6 +600,7 @@ DeviceManager::DeviceError DeviceManager::confirmPairing(const PairingTransactio
         switch (status) {
         case DeviceSetupStatusSuccess:
             m_pairingsDiscovery.remove(pairingTransactionId);
+            // TODO: setup the device if the pairing status can be fetched directly
             return DeviceErrorNoError;
         case DeviceSetupStatusFailure:
             m_pairingsDiscovery.remove(pairingTransactionId);

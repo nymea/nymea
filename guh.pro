@@ -21,6 +21,7 @@ test.commands = LD_LIBRARY_PATH=$$top_builddir/libguh make check
 QMAKE_EXTRA_TARGETS += licensecheck doc test
 
 # Inform about guh build
+message("--------------------------------------")
 message(Qt version: $$[QT_VERSION])
 message("Building guh version $${GUH_VERSION_STRING}")
 message("JSON-RPC API version $${JSON_PROTOCOL_VERSION}")
@@ -29,15 +30,6 @@ message("REST API version $${REST_API_VERSION}")
 # Build coverage
 coverage {
     message("Building coverage.")
-}
-
-# Build tests
-!disabletesting {
-    message("Building guh tests enabled")
-    SUBDIRS += tests
-    DEFINES += TESTING_ENABLED
-} else {
-    message("Building guh tests disabled")
 }
 
 # Bluetooth LE support
@@ -68,6 +60,9 @@ contains(DEFINES, GPIO433){
 
 contains(DEFINES, SNAPPY){
     message("Building Ubuntu snappy package.")
+
+    CONFIG += disabletesting
+
     isEmpty(PREFIX) {
         INSTALLDIR = ""
     } else {
@@ -88,15 +83,44 @@ contains(DEFINES, SNAPPY){
     sqlplugin.files = /usr/lib/arm-linux-gnueabihf/qt5/plugins/sqldrivers/libqsqlite.so
     sqlplugin.path = $$INSTALLDIR/usr/lib/qt5/plugins/sqldrivers/
 
+    # We need to bring our own Qt libs, at least for now
+    qtlibs.files = /usr/lib/arm-linux-gnueabihf/libQt5Network.so.5 \
+                   /usr/lib/arm-linux-gnueabihf/libQt5Sql.so.5 \
+                   /usr/lib/arm-linux-gnueabihf/libQt5Core.so.5 \
+                   /usr/lib/arm-linux-gnueabihf/libQt5Test.so.5 \
+                   /usr/lib/arm-linux-gnueabihf/libQt5Gui.so.5 \
+                   /usr/lib/arm-linux-gnueabihf/libQt5WebSockets.so.5 \
+                   /usr/lib/arm-linux-gnueabihf/libicui18n.so.52 \
+                   /usr/lib/arm-linux-gnueabihf/libicuuc.so.52 \
+                   /usr/lib/arm-linux-gnueabihf/libpng12.so.0 \
+                   /usr/lib/arm-linux-gnueabihf/libharfbuzz.so.0 \
+                   /usr/lib/arm-linux-gnueabihf/libicudata.so.52 \
+                   /usr/lib/arm-linux-gnueabihf/mesa-egl/libGLESv2.so \
+                   /usr/lib/arm-linux-gnueabihf/mesa-egl/libGLESv2.so.2.0.0 \
+                   /usr/lib/arm-linux-gnueabihf/mesa-egl/libGLESv2.so.2 \
+                   /usr/lib/arm-linux-gnueabihf/libfreetype.so.6 \
+                   /usr/lib/arm-linux-gnueabihf/libgraphite2.so.3 \
+                   /usr/lib/arm-linux-gnueabihf/libglapi.so.0
+    qtlibs.path = /usr/lib/
+
     # install guhd.conf
     guhdconf.files = data/config/guhd.conf
     guhdconf.path =  $$INSTALLDIR/config/
 
-    INSTALLS += meta wrapper guhdconf sqlplugin
+    INSTALLS += meta wrapper guhdconf qtlibs sqlplugin
 
     # command to pack libs for snappy package
     packlibs.depends = libguh server
     packlibs.commands = $$top_srcdir/meta/packLibs.sh $$INSTALLDIR
 
     QMAKE_EXTRA_TARGETS += packlibs
+}
+
+# Build tests
+!disabletesting {
+    message("Building guh tests enabled")
+    SUBDIRS += tests
+    DEFINES += TESTING_ENABLED
+} else {
+    message("Building guh tests disabled")
 }

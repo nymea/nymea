@@ -47,6 +47,8 @@ public:
 
     void startMonitoringAutoDevices() override;
 
+    DeviceManager::DeviceSetupStatus confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret) override;
+
     QList<ParamType> configurationDescription() const override;
 
 public slots:
@@ -56,15 +58,22 @@ private slots:
     void setState(const StateTypeId &stateTypeId, const QVariant &value);
     void triggerEvent(const EventTypeId &id);
     void emitDevicesDiscovered();
+    void emitPushButtonDevicesDiscovered();
     void emitDeviceSetupFinished();
     void emitActionExecuted();
+
+    void onPushButtonPressed();
+    void onPushButtonPairingFinished();
 
 private:
     QHash<Device*, HttpDaemon*> m_daemons;
     QList<Device*> m_asyncSetupDevices;
     QList<QPair<Action, Device*> > m_asyncActions;
 
+    PairingTransactionId m_pairingId;
+
     int m_discoveredDeviceCount;
+    bool m_pushbuttonPressed;
 };
 
 #endif // DEVICEPLUGINMOCK_H

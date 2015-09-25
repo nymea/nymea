@@ -20,6 +20,7 @@
 
 #include "guhsettings.h"
 #include "unistd.h"
+#include "loggingcategories.h"
 
 #include <QSettings>
 #include <QCoreApplication>
@@ -32,29 +33,30 @@ GuhSettings::GuhSettings(const SettingsRole &role, QObject *parent):
 {
 
 #ifdef SNAPPY
+    QString settingsFilePath = qgetenv("SNAP_APP_DATA_PATH");
     QString settingsFile;
     switch (role) {
     case SettingsRoleNone:
         break;
     case SettingsRoleDevices:
-        settingsFile = "config/devices.conf";
+        settingsFile = settingsFilePath + "/devices.conf";
         m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
-        qDebug() << "Created device settings" << m_settings->fileName();
+        //qCDebug(dcApplication) << "Created device settings" << m_settings->fileName();
         break;
     case SettingsRoleRules:
-        settingsFile = "config/rules.conf";
+        settingsFile = settingsFilePath + "/rules.conf";
         m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
-        qDebug() << "Created rule settings" << m_settings->fileName();
+        //qCDebug(dcApplication) << "Created rule settings" << m_settings->fileName();
         break;
     case SettingsRolePlugins:
-        settingsFile = "config/plugins.conf";
+        settingsFile = settingsFilePath + "/plugins.conf";
         m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
-        qDebug() << "Created plugin settings" << m_settings->fileName();
+        //qCDebug(dcApplication) << "Created plugin settings" << m_settings->fileName();
         break;
     case SettingsRoleGlobal:
-        settingsFile = "config/guhd.conf";
+        settingsFile = settingsFilePath + "/guhd.conf";
         m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
-        qDebug() << "Created guhd settings" << m_settings->fileName();
+        //qCDebug(dcApplication) << "Created guhd settings" << m_settings->fileName();
         break;
     default:
         break;
@@ -72,15 +74,15 @@ GuhSettings::GuhSettings(const SettingsRole &role, QObject *parent):
         if (settingsPrefix == "guh-test") {
             settingsFile = settingsPrefix + "/test-devices";
             m_settings = new QSettings(settingsFile, QSettings::NativeFormat, this);
-            qDebug() << "Created test-devices settings" << m_settings->fileName();
+            //qCDebug(dcApplication) << "Created test-devices settings" << m_settings->fileName();
         } else if (rootPrivilege) {
             settingsFile = "/etc/" + settingsPrefix + "/devices.conf";
             m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
-            qDebug() << "Created device settings" << m_settings->fileName();
+            //qCDebug(dcApplication) << "Created device settings" << m_settings->fileName();
         } else {
             settingsFile = settingsPrefix + "/devices";
             m_settings = new QSettings(settingsFile, QSettings::NativeFormat, this);
-            qDebug() << "Created device settings" << m_settings->fileName();
+            //qCDebug(dcApplication) << "Created device settings" << m_settings->fileName();
         }
         break;
     case SettingsRoleRules:
@@ -88,15 +90,15 @@ GuhSettings::GuhSettings(const SettingsRole &role, QObject *parent):
         if (settingsPrefix == "guh-test") {
             settingsFile = settingsPrefix + "/test-rules";
             m_settings = new QSettings(settingsFile, QSettings::NativeFormat, this);
-            qDebug() << "Created test-rules settings" << m_settings->fileName();
+            //qCDebug(dcApplication) << "Created test-rules settings" << m_settings->fileName();
         } else if (rootPrivilege) {
             settingsFile = "/etc/" + settingsPrefix + "/rules.conf";
             m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
-            qDebug() << "Created rule settings" << m_settings->fileName();
+            //qCDebug(dcApplication) << "Created rule settings" << m_settings->fileName();
         } else {
             settingsFile = settingsPrefix + "/rules";
             m_settings = new QSettings(settingsFile, QSettings::NativeFormat, this);
-            qDebug() << "Created rule settings" << m_settings->fileName();
+            //qCDebug(dcApplication) << "Created rule settings" << m_settings->fileName();
         }
         break;
     case SettingsRolePlugins:
@@ -104,22 +106,22 @@ GuhSettings::GuhSettings(const SettingsRole &role, QObject *parent):
         if (settingsPrefix == "guh-test") {
             settingsFile = settingsPrefix + "/test-plugins";
             m_settings = new QSettings(settingsFile, QSettings::NativeFormat, this);
-            qDebug() << "Created test-plugins settings" << m_settings->fileName();
+            //qCDebug(dcApplication) << "Created test-plugins settings" << m_settings->fileName();
         } else if (rootPrivilege) {
             settingsFile = "/etc/" + settingsPrefix + "/plugins.conf";
             m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
-            qDebug() << "Created plugin settings" << m_settings->fileName();
+            //qCDebug(dcApplication) << "Created plugin settings" << m_settings->fileName();
         } else {
             settingsFile = settingsPrefix + "/plugins";
             m_settings = new QSettings(settingsFile, QSettings::NativeFormat, this);
-            qDebug() << "Created plugin settings" << m_settings->fileName();
+            //qCDebug(dcApplication) << "Created plugin settings" << m_settings->fileName();
         }
         break;
     case SettingsRoleGlobal:
         // this file schould always be readable and should never be written
         settingsFile = "/etc/guh/guhd.conf";
         m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
-        qDebug() << "Created test guhd settings" << m_settings->fileName();
+        qCDebug(dcApplication) << "Created test guhd settings" << m_settings->fileName();
         break;
     default:
         break;
@@ -150,7 +152,7 @@ QString GuhSettings::logPath()
 {
     QString logPath;
 #ifdef SNAPPY
-    logPath = "/var/log/guhd.log";
+    logPath = qgetenv("SNAP_APP_DATA_PATH") + "/guhd.log";
 #else
     QString organisationName = QCoreApplication::instance()->organizationName();
 
@@ -223,7 +225,7 @@ void GuhSettings::remove(const QString &key)
 
 void GuhSettings::setValue(const QString &key, const QVariant &value)
 {
-    //Q_ASSERT_X(m_role != GuhSettings::SettingsRoleGlobal, "GuhSettings", "Bad settings usage. The global settings file should be read only.");
+    Q_ASSERT_X(m_role != GuhSettings::SettingsRoleGlobal, "GuhSettings", "Bad settings usage. The global settings file should be read only.");
     m_settings->setValue(key, value);
 }
 

@@ -79,10 +79,10 @@ int main(int argc, char *argv[])
     parser.addHelpOption();
     parser.addVersionOption();
     QString applicationDescription = QString("\nguh ( /[guːh]/ ) is an open source home automation server, which allows to\n"
-                                  "control a lot of different devices from many different manufacturers.\n\n"
-                                  "guhd %1 (C) 2014-2015 guh\n"
-                                  "Released under the GNU GENERAL PUBLIC LICENSE Version 2.\n\n"
-                                  "API version: %2\n").arg(GUH_VERSION_STRING).arg(JSON_PROTOCOL_VERSION);
+                                             "control a lot of different devices from many different manufacturers.\n\n"
+                                             "guhd %1 (C) 2014-2015 guh\n"
+                                             "Released under the GNU GENERAL PUBLIC LICENSE Version 2.\n\n"
+                                             "API version: %2\n").arg(GUH_VERSION_STRING).arg(JSON_PROTOCOL_VERSION);
 
     parser.setApplicationDescription(applicationDescription);
 
@@ -137,6 +137,13 @@ int main(int argc, char *argv[])
             qCDebug(dcApplication) << "guhd started as root.";
         }
 
+#ifdef SNAPPY
+        qCDebug(dcApplication) << "Snappy name     :" << qgetenv("SNAP_FULLNAME");
+        qCDebug(dcApplication) << "Snappy version  :" << qgetenv("SNAP_VERSION");
+        qCDebug(dcApplication) << "Snappy directory:" << qgetenv("SNAP_APP_PATH");
+        qCDebug(dcApplication) << "Snappy user data:" << qgetenv("SNAP_APP_USER_DATA_PATH");
+        qCDebug(dcApplication) << "Snappy app  data:" << qgetenv("SNAP_APP_DATA_PATH");
+#endif
         // create core instance
         GuhCore::instance()->setRunningMode(GuhCore::RunningModeApplication);
         return application.exec();

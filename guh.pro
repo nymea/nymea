@@ -108,19 +108,28 @@ contains(DEFINES, SNAPPY){
                    /usr/lib/arm-linux-gnueabihf/libpng12.so.0 \
                    /usr/lib/arm-linux-gnueabihf/libharfbuzz.so.0 \
                    /usr/lib/arm-linux-gnueabihf/libicudata.so.52 \
-                   /usr/lib/arm-linux-gnueabihf/mesa-egl/libGLESv2.so \
+                   /usr/lib/arm-linux-gnueabihf/libz.so \
+                   /usr/lib/arm-linux-gnueabihf/libicuuc.so.52 \
+                   /usr/lib/arm-linux-gnueabihf/libicui18n.so.52 \
+                   /usr/lib/arm-linux-gnueabihf/libstdc++.so.6 \
+                   /usr/lib/arm-linux-gnueabihf/libsqlite3.so.0 \
                    /usr/lib/arm-linux-gnueabihf/mesa-egl/libGLESv2.so.2.0.0 \
                    /usr/lib/arm-linux-gnueabihf/mesa-egl/libGLESv2.so.2 \
+                   /usr/lib/arm-linux-gnueabihf/mesa-egl/libGLESv2.so \
                    /usr/lib/arm-linux-gnueabihf/libfreetype.so.6 \
                    /usr/lib/arm-linux-gnueabihf/libgraphite2.so.3 \
-                   /usr/lib/arm-linux-gnueabihf/libglapi.so.0
+                   /usr/lib/arm-linux-gnueabihf/libglapi.so.0 \
+                   /usr/lib/arm-linux-gnueabihf/libpthread.so \
+                   /usr/lib/arm-linux-gnueabihf/libdl.so \
+                   /usr/lib/arm-linux-gnueabihf/librt.so \
+                   /usr/lib/arm-linux-gnueabihf/libm.so
     qtlibs.path = /usr/lib/
 
     # install guhd.conf
     guhdconf.files = data/config/guhd.conf
     guhdconf.path =  $$INSTALLDIR/config/
 
-    INSTALLS += meta wrapper guhdconf qtlibs sqlplugin
+    INSTALLS += wrapper qtlibs sqlplugin
 
     # command to pack libs for snappy package
     packlibs.depends = libguh server

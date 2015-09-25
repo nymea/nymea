@@ -113,7 +113,7 @@ WebServer::WebServer(const QSslConfiguration &sslConfiguration, QObject *parent)
     settings.endGroup();
 
 #ifdef SNAPPY
-    m_webinterfaceDir = QDir("/apps/guh.sideload/current/public/");
+    m_webinterfaceDir = QDir(qgetenv("SNAP_APP_PATH") + "/public/");
 #endif
 
     // check public directory

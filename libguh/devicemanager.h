@@ -64,6 +64,7 @@ public:
     enum DeviceError {
         DeviceErrorNoError,
         DeviceErrorPluginNotFound,
+        DeviceErrorVendorNotFound,
         DeviceErrorDeviceNotFound,
         DeviceErrorDeviceClassNotFound,
         DeviceErrorActionTypeNotFound,

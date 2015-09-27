@@ -1,4 +1,4 @@
-28
+29
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -566,6 +566,7 @@
         "DeviceError": [
             "DeviceErrorNoError",
             "DeviceErrorPluginNotFound",
+            "DeviceErrorVendorNotFound",
             "DeviceErrorDeviceNotFound",
             "DeviceErrorDeviceClassNotFound",
             "DeviceErrorActionTypeNotFound",

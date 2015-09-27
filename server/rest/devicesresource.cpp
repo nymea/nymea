@@ -51,12 +51,12 @@ HttpReply *DevicesResource::proccessRequest(const HttpRequest &request, const QS
         DeviceId deviceId = DeviceId(urlTokens.at(3));
         if (deviceId.isNull()) {
             qCWarning(dcRest) << "Could not parse DeviceId:" << urlTokens.at(3);
-            return createErrorReply(HttpReply::BadRequest);
+            return createDeviceErrorReply(HttpReply::BadRequest, DeviceManager::DeviceErrorDeviceNotFound);
         }
         m_device = GuhCore::instance()->findConfiguredDevice(deviceId);
         if (!m_device) {
             qCWarning(dcRest) << "Could find any device with DeviceId:" << urlTokens.at(3);
-            return createErrorReply(HttpReply::NotFound);
+            return createDeviceErrorReply(HttpReply::NotFound, DeviceManager::DeviceErrorDeviceNotFound);
         }
     }
 
@@ -106,12 +106,12 @@ HttpReply *DevicesResource::proccessGetRequest(const HttpRequest &request, const
         StateTypeId stateTypeId = StateTypeId(urlTokens.at(5));
         if (stateTypeId.isNull()) {
             qCWarning(dcRest) << "Could not parse StateTypeId:" << urlTokens.at(5);
-            return createErrorReply(HttpReply::BadRequest);
+            return createDeviceErrorReply(HttpReply::BadRequest, DeviceManager::DeviceErrorStateTypeNotFound);
         }
 
         if (!m_device->hasState(stateTypeId)){
             qCWarning(dcRest) << "This device has no StateTypeId:" << urlTokens.at(5);
-            return createErrorReply(HttpReply::NotFound);
+            return createDeviceErrorReply(HttpReply::NotFound, DeviceManager::DeviceErrorStateTypeNotFound);
         }
         return getDeviceStateValue(m_device, stateTypeId);
     }
@@ -172,7 +172,7 @@ HttpReply *DevicesResource::proccessPostRequest(const HttpRequest &request, cons
         ActionTypeId actionTypeId = ActionTypeId(urlTokens.at(5));
         if (actionTypeId.isNull()) {
             qCWarning(dcRest) << "Could not parse ActionTypeId:" << urlTokens.at(5);
-            return createErrorReply(HttpReply::BadRequest);
+            return createDeviceErrorReply(HttpReply::BadRequest, DeviceManager::DeviceErrorActionTypeNotFound);
         }
         bool found = false;
         DeviceClass deviceClass = GuhCore::instance()->findDeviceClass(m_device->deviceClassId());
@@ -184,7 +184,7 @@ HttpReply *DevicesResource::proccessPostRequest(const HttpRequest &request, cons
         }
         if (!found) {
             qCWarning(dcRest) << "Could not find ActionTypeId:" << actionTypeId.toString();
-            return createErrorReply(HttpReply::NotFound);
+            return createDeviceErrorReply(HttpReply::NotFound, DeviceManager::DeviceErrorActionTypeNotFound);
         }
 
         return executeAction(m_device, actionTypeId, request.payload());
@@ -263,10 +263,10 @@ HttpReply *DevicesResource::removeDevice(Device *device) const
     // TODO: /api/v1/devices/{deviceId}?ruleId={ruleId}&removePolicy={RemovePolicy}
 
     if (result == DeviceManager::DeviceErrorNoError) {
-        HttpReply *reply = createSuccessReply();
+        HttpReply *reply = createDeviceErrorReply(HttpReply::Ok, result);
         return reply;
     }
-    return createErrorReply(HttpReply::Forbidden);
+    return createDeviceErrorReply(HttpReply::BadRequest, result);
 }
 
 HttpReply *DevicesResource::executeAction(Device *device, const ActionTypeId &actionTypeId, const QByteArray &payload) const
@@ -295,9 +295,9 @@ HttpReply *DevicesResource::executeAction(Device *device, const ActionTypeId &ac
     }
 
     if (status != DeviceManager::DeviceErrorNoError)
-        return createErrorReply(HttpReply::InternalServerError);
+        return createDeviceErrorReply(HttpReply::InternalServerError, status);
 
-    return createSuccessReply();
+    return createDeviceErrorReply(HttpReply::Ok, status);
 }
 
 HttpReply *DevicesResource::addConfiguredDevice(const QByteArray &payload) const
@@ -310,7 +310,7 @@ HttpReply *DevicesResource::addConfiguredDevice(const QByteArray &payload) const
 
     DeviceClassId deviceClassId(params.value("deviceClassId").toString());
     if (deviceClassId.isNull())
-        return createErrorReply(HttpReply::BadRequest);
+        return createDeviceErrorReply(HttpReply::BadRequest, DeviceManager::DeviceErrorDeviceClassNotFound);
 
     DeviceId newDeviceId = DeviceId::createDeviceId();
     ParamList deviceParams = JsonTypes::unpackParams(params.value("deviceParams").toList());
@@ -332,7 +332,7 @@ HttpReply *DevicesResource::addConfiguredDevice(const QByteArray &payload) const
     }
 
     if (status != DeviceManager::DeviceErrorNoError)
-        return createErrorReply(HttpReply::InternalServerError);
+        return createDeviceErrorReply(HttpReply::InternalServerError, status);
 
     QVariant result = JsonTypes::packDevice(GuhCore::instance()->findConfiguredDevice(newDeviceId));
     HttpReply *reply = createSuccessReply();
@@ -354,7 +354,7 @@ HttpReply *DevicesResource::pairDevice(const QByteArray &payload) const
 
     if (deviceClassId.isNull()) {
         qCWarning(dcRest) << "Could not find deviceClassId" << params.value("deviceClassId").toString();
-        return createErrorReply(HttpReply::BadRequest);
+        return createDeviceErrorReply(HttpReply::BadRequest, DeviceManager::DeviceErrorDeviceClassNotFound);
     }
 
     qCDebug(dcRest) << "Pair device with deviceClassId" << deviceClassId.toString();
@@ -370,7 +370,7 @@ HttpReply *DevicesResource::pairDevice(const QByteArray &payload) const
     }
 
     if (status != DeviceManager::DeviceErrorNoError)
-        return createErrorReply(HttpReply::BadRequest);
+        return createDeviceErrorReply(HttpReply::BadRequest, status);
 
     QVariantMap returns;
     returns.insert("displayMessage", deviceClass.pairingInfo());
@@ -402,9 +402,9 @@ HttpReply *DevicesResource::confirmPairDevice(const QByteArray &payload) const
     }
 
     if (status != DeviceManager::DeviceErrorNoError)
-        return createErrorReply(HttpReply::InternalServerError);
+        return createDeviceErrorReply(HttpReply::InternalServerError, status);
 
-    return createSuccessReply();
+    return createDeviceErrorReply(HttpReply::Ok, DeviceManager::DeviceErrorNoError);
 }
 
 HttpReply *DevicesResource::editDevice(Device *device, const QByteArray &payload) const
@@ -435,9 +435,9 @@ HttpReply *DevicesResource::editDevice(Device *device, const QByteArray &payload
     }
 
     if (status != DeviceManager::DeviceErrorNoError)
-        return createErrorReply(HttpReply::InternalServerError);
+        return createDeviceErrorReply(HttpReply::InternalServerError, status);
 
-    return createSuccessReply();
+    return createDeviceErrorReply(HttpReply::Ok, DeviceManager::DeviceErrorNoError);
 }
 
 void DevicesResource::actionExecuted(const ActionId &actionId, DeviceManager::DeviceError status)
@@ -445,13 +445,21 @@ void DevicesResource::actionExecuted(const ActionId &actionId, DeviceManager::De
     if (!m_asyncActionExecutions.contains(actionId))
         return; // Not the action we are waiting for.
 
+    QVariantMap response;
+    response.insert("error", JsonTypes::deviceErrorToString(status));
+
     HttpReply *reply = m_asyncActionExecutions.take(actionId);
+    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     if (status == DeviceManager::DeviceErrorNoError) {
         qCDebug(dcRest) << "Action execution finished successfully";
         reply->setHttpStatusCode(HttpReply::Ok);
+        reply->setPayload(QJsonDocument::fromVariant(response).toJson());
     } else {
         qCDebug(dcRest) << "Action execution finished with error" << status;
+        QVariantMap response;
+        response.insert("error", JsonTypes::deviceErrorToString(status));
         reply->setHttpStatusCode(HttpReply::InternalServerError);
+        reply->setPayload(QJsonDocument::fromVariant(response).toJson());
     }
 
     reply->finished();
@@ -462,13 +470,19 @@ void DevicesResource::deviceSetupFinished(Device *device, DeviceManager::DeviceE
     if (!m_asyncDeviceAdditions.contains(device->id()))
         return; // Not the device we are waiting for.
 
+    QVariantMap response;
+    response.insert("error", JsonTypes::deviceErrorToString(status));
+
     HttpReply *reply = m_asyncDeviceAdditions.take(device->id());
+    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     if (status == DeviceManager::DeviceErrorNoError) {
         qCDebug(dcRest) << "Device setup finished successfully";
         reply->setHttpStatusCode(HttpReply::Ok);
+        reply->setPayload(QJsonDocument::fromVariant(response).toJson());
     } else {
         qCDebug(dcRest) << "Device setup finished with error" << status;
         reply->setHttpStatusCode(HttpReply::InternalServerError);
+        reply->setPayload(QJsonDocument::fromVariant(response).toJson());
     }
 
     QVariant result = JsonTypes::packDevice(device);
@@ -482,13 +496,19 @@ void DevicesResource::deviceEditFinished(Device *device, DeviceManager::DeviceEr
     if (!m_asyncEditDevice.contains(device))
         return; // Not the device we are waiting for.
 
+    QVariantMap response;
+    response.insert("error", JsonTypes::deviceErrorToString(status));
+
     HttpReply *reply = m_asyncEditDevice.take(device);
+    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     if (status == DeviceManager::DeviceErrorNoError) {
         qCDebug(dcRest) << "Device edit finished successfully";
         reply->setHttpStatusCode(HttpReply::Ok);
+        reply->setPayload(QJsonDocument::fromVariant(response).toJson());
     } else {
         qCDebug(dcRest) << "Device edit finished with error" << status;
         reply->setHttpStatusCode(HttpReply::InternalServerError);
+        reply->setPayload(QJsonDocument::fromVariant(response).toJson());
     }
 
     reply->finished();
@@ -499,10 +519,15 @@ void DevicesResource::pairingFinished(const PairingTransactionId &pairingTransac
     if (!m_asyncPairingRequests.contains(pairingTransactionId))
         return; // Not the device pairing we are waiting for.
 
+    QVariantMap response;
+    response.insert("error", JsonTypes::deviceErrorToString(status));
+
     HttpReply *reply = m_asyncPairingRequests.take(pairingTransactionId);
     if (status != DeviceManager::DeviceErrorNoError) {
         qCDebug(dcRest) << "Pairing device finished with error.";
+        reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
         reply->setHttpStatusCode(HttpReply::InternalServerError);
+        reply->setPayload(QJsonDocument::fromVariant(response).toJson());
         reply->finished();
         return;
     }

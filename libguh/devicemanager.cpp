@@ -61,6 +61,8 @@
         No Error. Everything went fine.
     \value DeviceErrorPluginNotFound
         Couldn't find the Plugin for the given id.
+    \value DeviceErrorVendorNotFound
+        Couldn't find the Vendor for the given id.
     \value DeviceErrorDeviceNotFound
         Couldn't find a \l{Device} for the given id.
     \value DeviceErrorDeviceClassNotFound

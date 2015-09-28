@@ -705,7 +705,7 @@ void WebServerClient::addConnection(QSslSocket *socket)
 {
     QTimer *timer = new QTimer(this);
     timer->setSingleShot(true);
-    timer->setInterval(9500);
+    timer->setInterval(12000);
     connect(timer, &QTimer::timeout, this, &WebServerClient::onTimout);
 
     m_runningConnections.insert(timer, socket);

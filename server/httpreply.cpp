@@ -140,7 +140,7 @@ HttpReply::HttpReply(QObject *parent) :
     setHeader(HttpHeaderType::CacheControlHeader, "no-cache");
     setHeader(HttpHeaderType::ConnectionHeader, "Keep-Alive");
     setRawHeader("Access-Control-Allow-Origin","*");
-    setRawHeader("Keep-Alive", "timeout=10, max=50");
+    setRawHeader("Keep-Alive", "timeout=12, max=50");
     packReply();
 }
 
@@ -164,7 +164,7 @@ HttpReply::HttpReply(const HttpReply::HttpStatusCode &statusCode, const HttpRepl
     setHeader(HttpHeaderType::CacheControlHeader, "no-cache");
     setHeader(HttpHeaderType::ConnectionHeader, "Keep-Alive");
     setRawHeader("Access-Control-Allow-Origin","*");
-    setRawHeader("Keep-Alive", "timeout=10, max=50");
+    setRawHeader("Keep-Alive", "timeout=12, max=50");
     packReply();
 }
 

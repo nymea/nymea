@@ -247,6 +247,28 @@
                                 "minValue": 0,
                                 "maxValue": 100
                             }
+                        },
+                        {
+                            "id": "05f63f9c-f61e-4dcf-ad55-3f13fde2765b",
+                            "idName": "allowedValues",
+                            "name": "allowed values",
+                            "type": "QString",
+                            "defaultValue": "String value 1",
+                            "writable": {
+                                "allowedValues": [
+                                    "String value 1",
+                                    "String value 2",
+                                    "String value 3",
+                                    "String value 4"
+                                ]
+                            }
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "54646e7c-bc54-4895-81a2-590d72d120f9",
+                            "idName": "timeout",
+                            "name": "Timout action"
                         }
                     ]
                 }

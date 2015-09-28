@@ -190,6 +190,11 @@ DeviceManager::DeviceError DevicePluginMock::executeAction(Device *device, const
         } else if (action.actionTypeId() == percentageActionTypeId) {
             device->setStateValue(percentageStateTypeId, action.param("percentage").value().toInt());
             return DeviceManager::DeviceErrorNoError;
+        } else if (action.actionTypeId() == allowedValuesActionTypeId) {
+            device->setStateValue(allowedValuesStateTypeId, action.param("allowed values").value().toString());
+            return DeviceManager::DeviceErrorNoError;
+        } else if (action.actionTypeId() == timeoutActionTypeId) {
+            return DeviceManager::DeviceErrorAsync;
         }
         return DeviceManager::DeviceErrorActionTypeNotFound;
     }

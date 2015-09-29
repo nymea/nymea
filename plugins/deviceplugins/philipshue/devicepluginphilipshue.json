@@ -121,7 +121,7 @@
                             "unit": "Mired",
                             "defaultValue": 170,
                             "writable": {
-                                "minValue": 154,
+                                "minValue": 153,
                                 "maxValue": 500
                             }
                         },

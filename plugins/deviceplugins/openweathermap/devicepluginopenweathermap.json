@@ -22,7 +22,7 @@
                     ],
                     "paramTypes": [
                         {
-                            "name": "location",
+                            "name": "name",
                             "type": "QString",
                             "inputType": "TextLine"
                         },
@@ -118,10 +118,19 @@
                             "defaultValue": 0
                         },
                         {
+                            "id": "1e10d129-cb88-48b0-9244-e3e7e7b175d9",
+                            "idName": "visibility",
+                            "name": "visibility",
+                            "unit": "Meter",
+                            "type": "int",
+                            "defaultValue": 0
+                        },
+                        {
                             "id": "f9539108-0e0e-4736-a306-6408f8e20a26",
                             "idName": "weatherDescription",
                             "name": "weather description",
-                            "type": "QString"
+                            "type": "QString",
+                            "defaultValue": "-"
                         },
                         {
                             "id": "af155e94-9492-44e1-8608-7d0ee8b5d50d",

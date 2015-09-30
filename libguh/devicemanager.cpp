@@ -985,6 +985,7 @@ void DeviceManager::slotDeviceSetupFinished(Device *device, DeviceManager::Devic
     // lets add it now.
     if (!m_configuredDevices.contains(device)) {
         m_configuredDevices.append(device);
+        emit deviceAdded(device);
         storeConfiguredDevices();
     }
 
@@ -1086,6 +1087,7 @@ void DeviceManager::slotPairingFinished(const PairingTransactionId &pairingTrans
     }
 
     m_configuredDevices.append(device);
+    emit deviceAdded(device);
     storeConfiguredDevices();
     emit deviceSetupFinished(device, DeviceError::DeviceErrorNoError);
     postSetupDevice(device);
@@ -1122,6 +1124,7 @@ void DeviceManager::autoDevicesAppeared(const DeviceClassId &deviceClassId, cons
             m_configuredDevices.append(device);
             storeConfiguredDevices();
             emit deviceSetupFinished(device, DeviceError::DeviceErrorNoError);
+            emit deviceAdded(device);
             postSetupDevice(device);
             break;
         }

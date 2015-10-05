@@ -18,6 +18,36 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class GuhSettings
+    \brief The settings class for guh.
+
+    \ingroup devices
+    \inmodule libguh
+
+    Depending on how the guh server was started (which user started guhd), the setting have to
+    be stored in different locations. This class represents a centralized mechanism to store
+    settings of the system. The different settings are represented ba the \l{SettingsRole} and
+    can be used everywhere in the project.
+
+*/
+
+/*! \enum GuhSettings::SettingsRole
+    Represents the role for the \l{GuhSettings}. Each role creates its own settings file.
+
+    \value SettingsRoleNone
+        No role will be used. This sould not be used!
+    \value SettingsRoleDevices
+        This role will create the \b{devices.conf} file and is used to store the configured \l{Device}{Devices}.
+    \value SettingsRoleRules
+        This role will create the \b{rules.conf} file and is used to store the configured \l{guhserver::Rule}{Rules}.
+    \value SettingsRolePlugins
+        This role will create the \b{plugins.conf} file and is used to store the \l{DevicePlugin}{Plugin} configurations.
+    \value SettingsRoleGlobal
+        This role will create the \b{guhd.conf} file and is used to store the global settings of the guh system. This settings
+        file is read only.
+*/
+
 #include "guhsettings.h"
 #include "unistd.h"
 
@@ -26,6 +56,7 @@
 #include <QDir>
 #include <QDebug>
 
+/*! Constructs a \l{GuhSettings} instance with the given \a role and \a parent. */
 GuhSettings::GuhSettings(const SettingsRole &role, QObject *parent):
     QObject(parent),
     m_role(role)
@@ -96,17 +127,20 @@ GuhSettings::GuhSettings(const SettingsRole &role, QObject *parent):
     }
 }
 
+/*! Destructor of the GuhSettings.*/
 GuhSettings::~GuhSettings()
 {
     m_settings->sync();
     delete m_settings;
 }
 
+/*! Returns the \l{SettingsRole} of this \l{GuhSettings}.*/
 GuhSettings::SettingsRole GuhSettings::settingsRole() const
 {
     return m_role;
 }
 
+/*! Returns true if guhd is started as \b{root}.*/
 bool GuhSettings::isRoot()
 {
     if (getuid() != 0)
@@ -115,6 +149,10 @@ bool GuhSettings::isRoot()
     return true;
 }
 
+/*! Returns the path where the logging database will be stored.
+
+  \sa guhserver::LogEngine
+*/
 QString GuhSettings::logPath()
 {
     QString logPath;
@@ -131,67 +169,81 @@ QString GuhSettings::logPath()
     return logPath;
 }
 
+/*! Return a list of all settings keys.*/
 QStringList GuhSettings::allKeys() const
 {
     return m_settings->allKeys();
 }
 
+/*! Begins a new group with the given \a prefix.*/
 void GuhSettings::beginGroup(const QString &prefix)
 {
     m_settings->beginGroup(prefix);
 }
 
+/*! Returns a list of all key top-level groups that contain keys that can be read
+ *  using the \l{GuhSettings} object.*/
 QStringList GuhSettings::childGroups() const
 {
     return m_settings->childGroups();
 }
 
+/*! Returns a list of all top-level keys that can be read using the \l{GuhSettings} object.*/
 QStringList GuhSettings::childKeys() const
 {
     return m_settings->childKeys();
 }
 
+/*! Removes all entries in the primary location associated to this \l{GuhSettings} object.*/
 void GuhSettings::clear()
 {
     m_settings->clear();
 }
 
+/*! Returns true if there exists a setting called \a key; returns false otherwise. */
 bool GuhSettings::contains(const QString &key) const
 {
     return m_settings->contains(key);
 }
 
+/*! Resets the group to what it was before the corresponding beginGroup() call. */
 void GuhSettings::endGroup()
 {
     m_settings->endGroup();
 }
 
+/*! Returns the current group. */
 QString GuhSettings::group() const
 {
     return m_settings->group();
 }
 
+/*! Returns the path where settings written using this \l{GuhSettings} object are stored. */
 QString GuhSettings::fileName() const
 {
     return m_settings->fileName();
 }
 
+/*! Returns true if settings can be written using this \l{GuhSettings} object; returns false otherwise. */
 bool GuhSettings::isWritable() const
 {
     return m_settings->isWritable();
 }
 
+/*! Removes the setting key and any sub-settings of \a key. */
 void GuhSettings::remove(const QString &key)
 {
     m_settings->remove(key);
 }
 
+/*! Sets the \a value of setting \a key to value. If the \a key already exists, the previous value is overwritten. */
 void GuhSettings::setValue(const QString &key, const QVariant &value)
 {
     //Q_ASSERT_X(m_role != GuhSettings::SettingsRoleGlobal, "GuhSettings", "Bad settings usage. The global settings file should be read only.");
     m_settings->setValue(key, value);
 }
 
+/*! Returns the value for setting \a key. If the setting doesn't exist, returns \a defaultValue. */
 QVariant GuhSettings::value(const QString &key, const QVariant &defaultValue) const
 {
     return m_settings->value(key, defaultValue);

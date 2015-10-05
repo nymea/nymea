@@ -87,6 +87,7 @@ HttpReply *RestResource::createSuccessReply()
     return reply;
 }
 
+/*! Returns the pointer to a new created \l{HttpReply} which represents a response to a CORS request. */
 HttpReply *RestResource::createCorsSuccessReply()
 {
     HttpReply *reply = RestResource::createSuccessReply();
@@ -117,6 +118,8 @@ HttpReply *RestResource::createDeviceErrorReply(const HttpReply::HttpStatusCode 
     return reply;
 }
 
+/*! Returns the pointer to a new created \l{HttpReply} with the given \a statusCode and \a ruleError. This method will
+ *  be used to create an error response for the \l{guhserver::RulesResource}{RulesResource}. The \a ruleError will be written in the payload of this reply.*/
 HttpReply *RestResource::createRuleErrorReply(const HttpReply::HttpStatusCode &statusCode, const RuleEngine::RuleError &ruleError)
 {
     HttpReply *reply = new HttpReply(statusCode, HttpReply::TypeSync);
@@ -127,6 +130,8 @@ HttpReply *RestResource::createRuleErrorReply(const HttpReply::HttpStatusCode &s
     return reply;
 }
 
+/*! Returns the pointer to a new created \l{HttpReply} with the given \a statusCode and \a loggingError. This method will
+ *  be used to create an error response for the \l{guhserver::LogsResource}{LogsResource}. The \a loggingError will be written in the payload of this reply.*/
 HttpReply *RestResource::createLoggingErrorReply(const HttpReply::HttpStatusCode &statusCode, const Logging::LoggingError &loggingError)
 {
     HttpReply *reply = new HttpReply(statusCode, HttpReply::TypeSync);

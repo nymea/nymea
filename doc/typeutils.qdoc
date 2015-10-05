@@ -147,11 +147,11 @@
         \row
             \li Types::UnitDegreeCelsius
             \li 9
-            \li The value of the \l{Param} has unit \tt {[\unicode{0x00B0} C]} \unicode{0x2192} degree celsius.
+            \li The value of the \l{Param} has unit \tt {[\unicode{0x00B0}C]} \unicode{0x2192} degree celsius.
         \row
             \li Types::UnitDegreeKelvin
             \li 10
-            \li The value of the \l{Param} has unit \tt {[K]} \unicode{0x2192} kelvin.
+            \li The value of the \l{Param} has unit \tt {[\unicode{0x00B0}K]} \unicode{0x2192} kelvin.
         \row
             \li Types::UnitMired
             \li 11
@@ -223,7 +223,7 @@
         \row
             \li Types::UnitMegaByte
             \li 28
-            \li The value of the \l{Param} has unit \tt {[mB]} \unicode{0x2192} mega byte.
+            \li The value of the \l{Param} has unit \tt {[MB]} \unicode{0x2192} mega byte.
         \row
             \li Types::UnitGigaByte
             \li 29

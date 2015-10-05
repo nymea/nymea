@@ -21,7 +21,7 @@
 
 /*!
     \class guhserver::ActionHandler
-    \brief This subclass of \l{JsonHandler} processes the JSON requests for the \tt Action namespace.
+    \brief This subclass of \l{JsonHandler} processes the JSON requests for the \tt Actions namespace.
 
     \ingroup json
     \inmodule core
@@ -29,7 +29,7 @@
     This \l{JsonHandler} will be created in the \l{JsonRPCServer} and used to handle JSON-RPC requests
     for the \tt {Action} namespace of the API.
 
-    \sa JsonHandler, JsonRPCServer
+    \sa Action, JsonHandler, JsonRPCServer
 */
 
 #include "actionhandler.h"

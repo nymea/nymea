@@ -42,7 +42,7 @@
 
     As you can see, there is only one \tt bool \l State which has the property \e {"writable"}. This property indicates, that this \l State is writable and we need an \l Action for doing that. You can find more details about this property in \l {The StateType definition} documentation.
 
-    We learnend in the previouse tutorial that a \l State will allways generate an \l Event when he changes his \e {value}. This \l Event has the same UUID as the \l State which generated the \l Event. The same thing happens with the \l Action if you make a \l State writable. The devicemanager defines a new \l ActionType which has the same UUID as the \State which will be changed with the \l Action.
+    We learnend in the previouse tutorial that a \l State will allways generate an \l Event when he changes his \e {value}. This \l Event has the same UUID as the \l State which generated the \l Event. The same thing happens with the \l Action if you make a \l State writable. The devicemanager defines a new \l ActionType which has the same UUID as the \l State which will be changed with the \l Action.
 
     \tt {\l{StateTypeId} == \l{EventTypeId} == \l{ActionTypeId}}    
     

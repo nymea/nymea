@@ -19,6 +19,19 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::LogEntry
+    \brief  Represents an entry of the log database.
+
+    \ingroup logs
+    \inmodule core
+
+    A \l{LogEntry} represents an a guh event which can be stored from the \l{LogEngine} to the database.
+    Each LogEntry has a timestamp an can be loaded from the database and stored in the database.
+
+    \sa LogEngine, LogFilter, LogsResource, LoggingHandler
+*/
+
 /*! \fn QDebug guhserver::operator<< (QDebug dbg, const LogEntry &entry);;
     Writes the \l{LogEntry} \a entry to the given \a dbg. This method gets used just for debugging.
 */

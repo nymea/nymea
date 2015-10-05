@@ -19,6 +19,19 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::LoggingHandler
+    \brief This subclass of \l{JsonHandler} processes the JSON requests for the \tt Logging namespace of the JSON-RPC API.
+
+    \ingroup json
+    \inmodule core
+
+    This \l{JsonHandler} will be created in the \l{JsonRPCServer} and used to handle JSON-RPC requests
+    for the \tt {Logging} namespace of the API.
+
+    \sa LogEngine, JsonHandler, JsonRPCServer
+*/
+
 #include "logginghandler.h"
 #include "logging/logengine.h"
 #include "logging/logfilter.h"

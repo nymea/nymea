@@ -8,15 +8,17 @@
         \li \l{guhserver}{The guh server}
             \list
                 \li \l{guhserver}{The guh server namespace}
-                \li \l{Server classes}{The server classes}
                 \li \l{Rules}{The Rule Engine}
+                \li \l{Server classes}{The server classes}
+                \li \l{Logging classes}{The Log Engine classes}
             \endlist
         \li \l{libguh}{The guh library}
             \list
-                \li \l{Types of libguh}{Types used in the guh system}
+                \li \l{Types of libguh}
                 \li \l{Device Plugins}{The Device Plugin API}
                 \li \l{Hardware Resources}{Hardware resources available for plugins}
-                \li \l{Type Utils}{Global types in guh}
+                \li \l{GuhSettings}{Settings of guh}
+                \li \l{Type Utils}{Global types of guh (Type Utils)}
             \endlist
         \li \l{Plugins}{The guh plugins}
             \list

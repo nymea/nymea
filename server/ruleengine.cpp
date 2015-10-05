@@ -21,8 +21,7 @@
 
 /*!
     \class guhserver::RuleEngine
-    \brief The Engine that evaluates \l{Rule}{Rules} and finds
-    \l{Action}{Actions} to be executed.
+    \brief The Engine that evaluates \l{Rule}{Rules} and finds \l{Action}{Actions} to be executed.
 
     \ingroup rules
     \inmodule core

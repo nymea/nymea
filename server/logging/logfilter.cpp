@@ -18,6 +18,19 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::LogFilter
+    \brief  Represents a filter to access the logging databse.
+
+    \ingroup logs
+    \inmodule core
+
+    A \l{LogFilter} can be used to get \l{LogEntry}{LogEntries} from the \l{LogEngine} matching
+    a certain pattern.
+
+    \sa LogEngine, LogEntry, LogsResource, LoggingHandler
+*/
+
 #include "logfilter.h"
 #include "loggingcategories.h"
 

@@ -61,6 +61,8 @@
         No Error. Everything went fine.
     \value DeviceErrorPluginNotFound
         Couldn't find the Plugin for the given id.
+    \value DeviceErrorVendorNotFound
+        Couldn't find the Vendor for the given id.
     \value DeviceErrorDeviceNotFound
         Couldn't find a \l{Device} for the given id.
     \value DeviceErrorDeviceClassNotFound
@@ -600,6 +602,7 @@ DeviceManager::DeviceError DeviceManager::confirmPairing(const PairingTransactio
         switch (status) {
         case DeviceSetupStatusSuccess:
             m_pairingsDiscovery.remove(pairingTransactionId);
+            // TODO: setup the device if the pairing status can be fetched directly
             return DeviceErrorNoError;
         case DeviceSetupStatusFailure:
             m_pairingsDiscovery.remove(pairingTransactionId);
@@ -977,6 +980,7 @@ void DeviceManager::slotDeviceSetupFinished(Device *device, DeviceManager::Devic
     // lets add it now.
     if (!m_configuredDevices.contains(device)) {
         m_configuredDevices.append(device);
+        emit deviceAdded(device);
         storeConfiguredDevices();
     }
 
@@ -1078,6 +1082,7 @@ void DeviceManager::slotPairingFinished(const PairingTransactionId &pairingTrans
     }
 
     m_configuredDevices.append(device);
+    emit deviceAdded(device);
     storeConfiguredDevices();
     emit deviceSetupFinished(device, DeviceError::DeviceErrorNoError);
     postSetupDevice(device);
@@ -1114,6 +1119,7 @@ void DeviceManager::autoDevicesAppeared(const DeviceClassId &deviceClassId, cons
             m_configuredDevices.append(device);
             storeConfiguredDevices();
             emit deviceSetupFinished(device, DeviceError::DeviceErrorNoError);
+            emit deviceAdded(device);
             postSetupDevice(device);
             break;
         }
@@ -1316,12 +1322,17 @@ DeviceManager::DeviceError DeviceManager::verifyParam(const ParamType &paramType
             return DeviceErrorInvalidParameter;
         }
 
-        if (paramType.maxValue().isValid() && param.value().convert(paramType.type()) > paramType.maxValue().convert(paramType.type())) {
+        if (!param.value().convert(paramType.type())) {
+            qCWarning(dcDeviceManager) << "Could not convert value of param" << param.name() << " to:" << QVariant::typeToName(paramType.type()) << " Got:" << param.value();
+            return DeviceErrorInvalidParameter;
+        }
+
+        if (paramType.maxValue().isValid() && param.value() > paramType.maxValue()) {
             qCWarning(dcDeviceManager) << "Value out of range for param" << param.name() << " Got:" << param.value() << " Max:" << paramType.maxValue();
             return DeviceErrorInvalidParameter;
         }
-        if (paramType.minValue().isValid() && param.value().convert(paramType.type()) < paramType.minValue().convert(paramType.type())) {
-            qCWarning(dcDeviceManager) << "Value out of range for param" << param.name() << " Got:" << param.value() << " Min:" << paramType.minValue().convert(paramType.type());
+        if (paramType.minValue().isValid() && param.value() < paramType.minValue()) {
+            qCWarning(dcDeviceManager) << "Value out of range for param" << param.name() << " Got:" << param.value() << " Min:" << paramType.minValue();
             return DeviceErrorInvalidParameter;
         }
         if (!paramType.allowedValues().isEmpty() && !paramType.allowedValues().contains(param.value())) {

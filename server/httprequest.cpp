@@ -175,6 +175,7 @@ void HttpRequest::validate()
         qCWarning(dcWebServer) << "Could not parse end of HTTP header (empty line between header and body):" << m_rawData;
         return;
     }
+
     m_rawHeader = m_rawData.left(headerEndIndex);
     m_payload = m_rawData.right(m_rawData.length() - headerEndIndex).simplified();
 
@@ -214,10 +215,9 @@ void HttpRequest::validate()
     }
 
     // check User-Agent
-    if (!m_rawHeaderList.contains("User-Agent")) {
+    if (!m_rawHeaderList.contains("User-Agent"))
         qWarning() << "User-Agent header is missing";
-        return;
-    }
+
 
     // verify content length with actual payload
     if (m_rawHeaderList.contains("Content-Length")) {

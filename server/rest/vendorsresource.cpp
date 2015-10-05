@@ -72,7 +72,7 @@ HttpReply *VendorsResource::proccessRequest(const HttpRequest &request, const QS
         m_vendorId = VendorId(urlTokens.at(3));
         if (m_vendorId.isNull()) {
             qCWarning(dcRest) << "Could not parse VendorId:" << urlTokens.at(3);
-            return createErrorReply(HttpReply::BadRequest);
+            return createDeviceErrorReply(HttpReply::BadRequest, DeviceManager::DeviceErrorVendorNotFound);
         }
     }
 
@@ -113,6 +113,7 @@ HttpReply *VendorsResource::getVendors() const
     foreach (const Vendor &vendor, GuhCore::instance()->supportedVendors()) {
         vendorsList.append(JsonTypes::packVendor(vendor));
     }
+    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     reply->setPayload(QJsonDocument::fromVariant(vendorsList).toJson());
     return reply;
 }
@@ -123,11 +124,12 @@ HttpReply *VendorsResource::getVendor(const VendorId &vendorId) const
     foreach (const Vendor &vendor, GuhCore::instance()->supportedVendors()) {
         if (vendor.id() == vendorId) {
             HttpReply *reply = createSuccessReply();
+            reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
             reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packVendor(vendor)).toJson());
             return reply;
         }
     }
-    return createErrorReply(HttpReply::NotFound);
+    return createDeviceErrorReply(HttpReply::NotFound, DeviceManager::DeviceErrorVendorNotFound);
 }
 
 }

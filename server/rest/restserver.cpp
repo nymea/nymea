@@ -111,16 +111,11 @@ void RestServer::processHttpRequest(const QUuid &clientId, const HttpRequest &re
         return;
     }
 
-    // check CORS call
-    if (request.method() == HttpRequest::Options) {
-        HttpReply *reply = RestResource::createSuccessReply();
-        reply->setHeader(HttpReply::ContentTypeHeader, "text/plain;");
-        reply->setRawHeader("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS");
-        reply->setRawHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    // check CORS call for main resource
+    if (request.method() == HttpRequest::Options && urlTokens.count() == 3) {
+        HttpReply *reply = RestResource::createCorsSuccessReply();
         reply->setClientId(clientId);
-        reply->setCloseConnection(true);
         m_webserver->sendHttpReply(reply);
-
         reply->deleteLater();
         return;
     }
@@ -143,15 +138,25 @@ void RestServer::processHttpRequest(const QUuid &clientId, const HttpRequest &re
 void RestServer::asyncReplyFinished()
 {
     HttpReply *reply = qobject_cast<HttpReply*>(sender());
+    QUuid clientId = m_asyncReplies.key(reply);
+    m_asyncReplies.remove(clientId);
 
     qCDebug(dcWebServer) << "Async reply finished";
 
-    if (reply->timedOut())
+    // check if the reply timeouted
+    if (reply->timedOut()) {
+        reply->clear();
         reply->setHttpStatusCode(HttpReply::GatewayTimeout);
+    }
 
-    m_webserver->sendHttpReply(reply);
+    // check if client is still connected
+    if (!m_clientList.contains(clientId)) {
+        qCWarning(dcWebServer) << "Client for async reply not longer connected.";
+    } else {
+        reply->setClientId(clientId);
+        m_webserver->sendHttpReply(reply);
+    }
     reply->deleteLater();
 }
-
 
 }

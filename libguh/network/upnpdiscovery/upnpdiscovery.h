@@ -24,19 +24,17 @@
 #include <QUdpSocket>
 #include <QHostAddress>
 #include <QTimer>
-#include <QTimer>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QUrl>
-#include <QXmlStreamReader>
-#include <QXmlStreamWriter>
 
 #include "upnpdiscoveryrequest.h"
 #include "upnpdevicedescriptor.h"
 #include "devicemanager.h"
 
-// reference: http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf
+// Discovering UPnP devices reference: http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf
+// guh basic device reference: http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
 
 class UpnpDiscoveryRequest;
 
@@ -52,12 +50,15 @@ private:
     QHostAddress m_host;
     qint16 m_port;
 
+    QTimer *m_notificationTimer;
+
     QNetworkAccessManager *m_networkAccessManager;
 
     QList<UpnpDiscoveryRequest *> m_discoverRequests;
     QHash<QNetworkReply*,UpnpDeviceDescriptor> m_informationRequestList;
 
     void requestDeviceInformation(const QNetworkRequest &networkRequest, const UpnpDeviceDescriptor &upnpDeviceDescriptor);
+    void respondToSearchRequest(QHostAddress host, int port);
 
 protected:
 
@@ -69,6 +70,7 @@ private slots:
     void error(QAbstractSocket::SocketError error);
     void readData();
     void replyFinished(QNetworkReply *reply);
+    void notificationTimeout();
     void discoverTimeout();
 };
 

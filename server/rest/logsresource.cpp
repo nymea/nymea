@@ -112,6 +112,7 @@ HttpReply *LogsResource::getLogEntries(const QString &filterString)
         entries.append(JsonTypes::packLogEntry(entry));
     }
     HttpReply *reply = createSuccessReply();
+    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     reply->setPayload(QJsonDocument::fromVariant(entries).toJson());
     return reply;
 }

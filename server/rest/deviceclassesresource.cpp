@@ -74,12 +74,12 @@ HttpReply *DeviceClassesResource::proccessRequest(const HttpRequest &request, co
         DeviceClassId deviceClassId = DeviceClassId(urlTokens.at(3));
         if (deviceClassId.isNull()) {
             qCWarning(dcRest) << "Could not parse DeviceClassId:" << urlTokens.at(3);
-            return createErrorReply(HttpReply::BadRequest);
+            return createDeviceErrorReply(HttpReply::BadRequest, DeviceManager::DeviceErrorDeviceClassNotFound);
         }
         m_deviceClass = GuhCore::instance()->findDeviceClass(deviceClassId);
         if (!m_deviceClass.isValid()) {
             qCWarning(dcRest) << "DeviceClassId" << deviceClassId.toString() << "not found";
-            return createErrorReply(HttpReply::NotFound);
+            return createDeviceErrorReply(HttpReply::NotFound, DeviceManager::DeviceErrorDeviceClassNotFound);
         }
     }
 
@@ -108,7 +108,7 @@ HttpReply *DeviceClassesResource::proccessGetRequest(const HttpRequest &request,
                 vendorId = VendorId(request.urlQuery().queryItemValue("vendorId"));
                 if (vendorId.isNull()) {
                     qCWarning(dcRest) << "Could not parse VendorId:" << request.urlQuery().queryItemValue("vendorId");
-                    return createErrorReply(HttpReply::BadRequest);
+                    return createDeviceErrorReply(HttpReply::BadRequest, DeviceManager::DeviceErrorVendorNotFound);
                 }
             }
         }
@@ -128,7 +128,7 @@ HttpReply *DeviceClassesResource::proccessGetRequest(const HttpRequest &request,
         ActionTypeId actionTypeId = ActionTypeId(urlTokens.at(5));
         if (actionTypeId.isNull()) {
             qCWarning(dcRest) << "Could not parse ActionTypeId:" << urlTokens.at(5);
-            return createErrorReply(HttpReply::BadRequest);
+            return createDeviceErrorReply(HttpReply::BadRequest, DeviceManager::DeviceErrorActionTypeNotFound);
         }
         return getActionType(actionTypeId);
     }
@@ -142,7 +142,7 @@ HttpReply *DeviceClassesResource::proccessGetRequest(const HttpRequest &request,
         StateTypeId stateTypeId = StateTypeId(urlTokens.at(5));
         if (stateTypeId.isNull()) {
             qCWarning(dcRest) << "Could not parse StateTypeId:" << urlTokens.at(5);
-            return createErrorReply(HttpReply::BadRequest);
+            return createDeviceErrorReply(HttpReply::BadRequest, DeviceManager::DeviceErrorStateTypeNotFound);
         }
         return getStateType(stateTypeId);
     }
@@ -156,7 +156,7 @@ HttpReply *DeviceClassesResource::proccessGetRequest(const HttpRequest &request,
         EventTypeId eventTypeId = EventTypeId(urlTokens.at(5));
         if (eventTypeId.isNull()) {
             qCWarning(dcRest) << "Could not parse EventTypeId:" << urlTokens.at(5);
-            return createErrorReply(HttpReply::BadRequest);
+            return createDeviceErrorReply(HttpReply::BadRequest, DeviceManager::DeviceErrorEventTypeNotFound);
         }
         return getEventType(eventTypeId);
     }
@@ -183,6 +183,7 @@ HttpReply *DeviceClassesResource::getDeviceClass()
 {
     qCDebug(dcRest) << "Get device class with id " << m_deviceClass.id();
     HttpReply *reply = createSuccessReply();
+    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packDeviceClass(m_deviceClass)).toJson());
     return reply;
 }
@@ -191,6 +192,7 @@ HttpReply *DeviceClassesResource::getActionTypes()
 {
     qCDebug(dcRest) << "Get action types for device class" << m_deviceClass.id();
     HttpReply *reply = createSuccessReply();
+    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packActionTypes(m_deviceClass)).toJson());
     return reply;
 }
@@ -202,17 +204,19 @@ HttpReply *DeviceClassesResource::getActionType(const ActionTypeId &actionTypeId
     foreach (const ActionType &actionType, m_deviceClass.actionTypes()) {
         if (actionType.id() == actionTypeId) {
             HttpReply *reply = createSuccessReply();
+            reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
             reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packActionType(actionType)).toJson());
             return reply;
         }
     }
-    return createErrorReply(HttpReply::NotFound);
+    return createDeviceErrorReply(HttpReply::NotFound, DeviceManager::DeviceErrorActionTypeNotFound);
 }
 
 HttpReply *DeviceClassesResource::getStateTypes()
 {
     qCDebug(dcRest) << "Get state types for device class" << m_deviceClass.id();
     HttpReply *reply = createSuccessReply();
+    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packStateTypes(m_deviceClass)).toJson());
     return reply;
 }
@@ -224,17 +228,19 @@ HttpReply *DeviceClassesResource::getStateType(const StateTypeId &stateTypeId)
     foreach (const StateType &stateType, m_deviceClass.stateTypes()) {
         if (stateType.id() == stateTypeId) {
             HttpReply *reply = createSuccessReply();
+            reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
             reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packStateType(stateType)).toJson());
             return reply;
         }
     }
-    return createErrorReply(HttpReply::NotFound);
+    return createDeviceErrorReply(HttpReply::NotFound, DeviceManager::DeviceErrorStateTypeNotFound);
 }
 
 HttpReply *DeviceClassesResource::getEventTypes()
 {
     qCDebug(dcRest) << "Get event types for device class" << m_deviceClass.id();
     HttpReply *reply = createSuccessReply();
+    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packEventTypes(m_deviceClass)).toJson());
     return reply;
 }
@@ -246,11 +252,12 @@ HttpReply *DeviceClassesResource::getEventType(const EventTypeId &eventTypeId)
     foreach (const EventType &eventType, m_deviceClass.eventTypes()) {
         if (eventType.id() == eventTypeId) {
             HttpReply *reply = createSuccessReply();
+            reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
             reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packEventType(eventType)).toJson());
             return reply;
         }
     }
-    return createErrorReply(HttpReply::NotFound);
+    return createDeviceErrorReply(HttpReply::NotFound, DeviceManager::DeviceErrorEventTypeNotFound);
 }
 
 HttpReply *DeviceClassesResource::getDiscoverdDevices(const ParamList &discoveryParams)
@@ -267,7 +274,7 @@ HttpReply *DeviceClassesResource::getDiscoverdDevices(const ParamList &discovery
     }
 
     if (status != DeviceManager::DeviceErrorNoError)
-        return createErrorReply(HttpReply::InternalServerError);
+        return createDeviceErrorReply(HttpReply::InternalServerError, status);
 
     return createSuccessReply();
 }
@@ -280,6 +287,7 @@ void DeviceClassesResource::devicesDiscovered(const DeviceClassId &deviceClassId
     qCDebug(dcRest) << "Discovery finished. Found" << deviceDescriptors.count() << "devices.";
 
     HttpReply *reply = m_discoverRequests.take(deviceClassId);
+    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packDeviceDescriptors(deviceDescriptors)).toJson());
     reply->finished();
 }
@@ -293,6 +301,7 @@ HttpReply *DeviceClassesResource::getDeviceClasses(const VendorId &vendorId)
     }
 
     HttpReply *reply = createSuccessReply();
+    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packSupportedDevices(vendorId)).toJson());
     return reply;
 }

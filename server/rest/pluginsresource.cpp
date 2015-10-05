@@ -74,7 +74,7 @@ HttpReply *PluginsResource::proccessRequest(const HttpRequest &request, const QS
         m_pluginId = PluginId(urlTokens.at(3));
         if (m_pluginId.isNull()) {
             qCWarning(dcRest) << "Could not parse PluginId:" << urlTokens.at(3);
-            return createErrorReply(HttpReply::BadRequest);
+            return createDeviceErrorReply(HttpReply::BadRequest, DeviceManager::DeviceErrorPluginNotFound);
         }
     }
 
@@ -86,6 +86,9 @@ HttpReply *PluginsResource::proccessRequest(const HttpRequest &request, const QS
         break;
     case HttpRequest::Put:
         reply = proccessPutRequest(request, urlTokens);
+        break;
+    case HttpRequest::Options:
+        reply = proccessOptionsRequest(request, urlTokens);
         break;
     default:
         reply = createErrorReply(HttpReply::BadRequest);
@@ -124,10 +127,18 @@ HttpReply *PluginsResource::proccessPutRequest(const HttpRequest &request, const
     return createErrorReply(HttpReply::NotImplemented);
 }
 
+HttpReply *PluginsResource::proccessOptionsRequest(const HttpRequest &request, const QStringList &urlTokens)
+{
+    Q_UNUSED(request)
+    Q_UNUSED(urlTokens)
+    return RestResource::createCorsSuccessReply();
+}
+
 HttpReply *PluginsResource::getPlugins() const
 {
     qCDebug(dcRest) << "Get plugins";
     HttpReply *reply = createSuccessReply();
+    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packPlugins()).toJson());
     return reply;
 }
@@ -138,11 +149,12 @@ HttpReply *PluginsResource::getPlugin(const PluginId &pluginId) const
     HttpReply *reply = createSuccessReply();
     foreach (DevicePlugin *plugin, GuhCore::instance()->plugins()) {
         if (plugin->pluginId() == pluginId) {
+            reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
             reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packPlugin(plugin)).toJson());
             return reply;
         }
     }
-    return createErrorReply(HttpReply::NotFound);
+    return createDeviceErrorReply(HttpReply::NotFound, DeviceManager::DeviceErrorPluginNotFound);
 }
 
 HttpReply *PluginsResource::getPluginConfiguration(const PluginId &pluginId) const
@@ -152,7 +164,7 @@ HttpReply *PluginsResource::getPluginConfiguration(const PluginId &pluginId) con
     DevicePlugin *plugin = 0;
     plugin = findPlugin(pluginId);
     if (!plugin)
-        return createErrorReply(HttpReply::NotFound);
+        return createDeviceErrorReply(HttpReply::NotFound, DeviceManager::DeviceErrorPluginNotFound);
 
     QVariantList configurationParamsList;
     foreach (const Param &param, plugin->configuration()) {
@@ -160,6 +172,7 @@ HttpReply *PluginsResource::getPluginConfiguration(const PluginId &pluginId) con
     }
 
     HttpReply *reply = createSuccessReply();
+    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     reply->setPayload(QJsonDocument::fromVariant(configurationParamsList).toJson());
     return reply;
 }
@@ -169,7 +182,7 @@ HttpReply *PluginsResource::setPluginConfiguration(const PluginId &pluginId, con
     DevicePlugin *plugin = 0;
     plugin = findPlugin(pluginId);
     if (!plugin)
-        return createErrorReply(HttpReply::NotFound);
+        return createDeviceErrorReply(HttpReply::NotFound, DeviceManager::DeviceErrorPluginNotFound);
 
     qCDebug(dcRest) << "Set configuration of plugin with id" << pluginId.toString();
 
@@ -183,9 +196,9 @@ HttpReply *PluginsResource::setPluginConfiguration(const PluginId &pluginId, con
     DeviceManager::DeviceError result = GuhCore::instance()->setPluginConfig(pluginId, pluginParams);
 
     if (result != DeviceManager::DeviceErrorNoError)
-        return createErrorReply(HttpReply::BadRequest);
+        return createDeviceErrorReply(HttpReply::BadRequest, result);
 
-    return createSuccessReply();
+    return createDeviceErrorReply(HttpReply::Ok, result);
 }
 
 DevicePlugin *PluginsResource::findPlugin(const PluginId &pluginId) const

@@ -202,6 +202,75 @@
                             "name": "Mock Action 5 (async, broken)"
                         }
                     ]
+                },
+                {
+                    "deviceClassId": "9e03144c-e436-4eea-82d9-ccb33ef778db",
+                    "idName": "mockPushButton",
+                    "name": "Mock Device (Push Button)",
+                    "createMethods": ["discovery"],
+                    "setupMethod": "pushButton",
+                    "pairingInfo": "Wait 3 second before you continue, the push button will be pressed automatically.",
+                    "discoveryParamTypes": [
+                        {
+                            "name": "resultCount",
+                            "type": "int",
+                            "defaultValue": 2,
+                            "allowedValues": [1, 2]
+                        }
+                    ],
+                    "paramTypes": [
+                        {
+                            "name": "name",
+                            "type": "QString",
+                            "inputType": "TextLine",
+                            "defaultValue": "Mock device",
+                            "readOnly": true
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "20dc7c22-c50e-42db-837c-2bbced939f8e",
+                            "idName": "color",
+                            "name": "color",
+                            "type": "QColor",
+                            "defaultValue": "#000000",
+                            "writable": {}
+                        },
+                        {
+                            "id": "72981c04-267a-4ba0-a59e-9921d2f3af9c",
+                            "idName": "percentage",
+                            "name": "percentage",
+                            "type": "int",
+                            "unit": "Percentage",
+                            "defaultValue": 0,
+                            "writable": {
+                                "minValue": 0,
+                                "maxValue": 100
+                            }
+                        },
+                        {
+                            "id": "05f63f9c-f61e-4dcf-ad55-3f13fde2765b",
+                            "idName": "allowedValues",
+                            "name": "allowed values",
+                            "type": "QString",
+                            "defaultValue": "String value 1",
+                            "writable": {
+                                "allowedValues": [
+                                    "String value 1",
+                                    "String value 2",
+                                    "String value 3",
+                                    "String value 4"
+                                ]
+                            }
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "54646e7c-bc54-4895-81a2-590d72d120f9",
+                            "idName": "timeout",
+                            "name": "Timout action"
+                        }
+                    ]
                 }
             ]
         }

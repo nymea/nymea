@@ -49,6 +49,11 @@
 
 #include "upnpdiscovery.h"
 #include "loggingcategories.h"
+#include "guhsettings.h"
+
+#include <QNetworkInterface>
+#include <QXmlStreamReader>
+#include <QXmlStreamWriter>
 
 /*! Construct the hardware resource UpnpDiscovery with the given \a parent. */
 UpnpDiscovery::UpnpDiscovery(QObject *parent) :
@@ -75,8 +80,16 @@ UpnpDiscovery::UpnpDiscovery(QObject *parent) :
     m_networkAccessManager = new QNetworkAccessManager(this);
     connect(m_networkAccessManager, &QNetworkAccessManager::finished, this, &UpnpDiscovery::replyFinished);
 
-    connect(this,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(error(QAbstractSocket::SocketError)));
+    connect(this, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(error(QAbstractSocket::SocketError)));
     connect(this, &UpnpDiscovery::readyRead, this, &UpnpDiscovery::readData);
+
+    m_notificationTimer = new QTimer(this);
+    m_notificationTimer->setInterval(30000);
+    m_notificationTimer->setSingleShot(false);
+
+    connect(m_notificationTimer, &QTimer::timeout, this, &UpnpDiscovery::notificationTimeout);
+
+    m_notificationTimer->start();
 
     qCDebug(dcDeviceManager) << "--> UPnP discovery created successfully.";
 }
@@ -107,9 +120,60 @@ void UpnpDiscovery::requestDeviceInformation(const QNetworkRequest &networkReque
     m_informationRequestList.insert(replay, upnpDeviceDescriptor);
 }
 
+void UpnpDiscovery::respondToSearchRequest(QHostAddress host, int port)
+{
+    GuhSettings settings(GuhSettings::SettingsRoleDevices);
+    settings.beginGroup("guhd");
+    QByteArray uuid = settings.value("uuid", QVariant()).toByteArray();
+    if (uuid.isEmpty()) {
+        uuid = QUuid::createUuid().toByteArray().replace("{", "").replace("}","");
+        settings.setValue("uuid", uuid);
+    }
+    settings.endGroup();
+
+    GuhSettings globalSettings(GuhSettings::SettingsRoleGlobal);
+    globalSettings.beginGroup("WebServer");
+    int serverPort = settings.value("port", 3333).toInt();
+    bool useSsl = settings.value("https", false).toBool();
+    globalSettings.endGroup();
+
+    foreach (const QNetworkInterface &interface,  QNetworkInterface::allInterfaces()) {
+        foreach (QNetworkAddressEntry entry, interface.addressEntries()) {
+            // check IPv4
+            if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol) {
+                // check subnet
+                if (host.isInSubnet(QHostAddress::parseSubnet(entry.ip().toString() + "/24"))) {
+                    QString locationString;
+                    if (useSsl) {
+                        locationString = "https://" + entry.ip().toString() + ":" + QString::number(serverPort) + "/server.xml";
+                    } else {
+                        locationString = "http://" + entry.ip().toString() + ":" + QString::number(serverPort) + "/server.xml";
+                    }
+
+                    // http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
+                    QByteArray rootdeviceResponseMessage = QByteArray("HTTP/1.1 200 OK\r\n"
+                                                                      "Cache-Control: max-age=1900\r\n"
+                                                                      "DATE: " + QDateTime::currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8() + " GMT\r\n"
+                                                                      "EXT:\r\n"
+                                                                      "CONTENT-LENGTH:0\r\n"
+                                                                      "Location: " + locationString.toUtf8() + "\r\n"
+                                                                      "Server: guh/" + QByteArray(GUH_VERSION_STRING) + " UPnP/1.1 \r\n"
+                                                                      "ST:upnp:rootdevice\r\n"
+                                                                      "USN:uuid:" + uuid + "::urn:schemas-upnp-org:device:Basic:1\r\n"
+                                                                      "\r\n");
+
+                    //qCDebug(dcHardware) << QString("Sending response to %1:%2\n").arg(host.toString()).arg(port);
+                    writeDatagram(rootdeviceResponseMessage, host, port);
+                }
+            }
+        }
+    }
+}
+
 /*! This method will be called to send the SSDP message \a data to the UPnP multicast.*/
 void UpnpDiscovery::sendToMulticast(const QByteArray &data)
 {
+    //qCDebug(dcHardware) << "sending to multicast\n" << data;
     writeDatagram(data, m_host, m_port);
 }
 
@@ -121,13 +185,21 @@ void UpnpDiscovery::error(QAbstractSocket::SocketError error)
 void UpnpDiscovery::readData()
 {
     QByteArray data;
+    quint16 port;
     QHostAddress hostAddress;
     QUrl location;
 
     // read the answere from the multicast
     while (hasPendingDatagrams()) {
         data.resize(pendingDatagramSize());
-        readDatagram(data.data(), data.size(), &hostAddress);
+        readDatagram(data.data(), data.size(), &hostAddress, &port);
+    }
+
+    if (data.contains("M-SEARCH")) {
+        //qCDebug(dcHardware) << "--------------------------------------";
+        //qCDebug(dcHardware) << QString("UPnP data: %1:%2 \n").arg(hostAddress.toString()).arg(QString::number(port)) <<  data;
+        respondToSearchRequest(hostAddress, port);
+        return;
     }
 
     if (data.contains("NOTIFY")) {
@@ -234,6 +306,51 @@ void UpnpDiscovery::replyFinished(QNetworkReply *reply)
     }
 
     reply->deleteLater();
+}
+
+void UpnpDiscovery::notificationTimeout()
+{
+    GuhSettings settings(GuhSettings::SettingsRoleDevices);
+    settings.beginGroup("guhd");
+    QByteArray uuid = settings.value("uuid", QVariant()).toByteArray();
+    if (uuid.isEmpty()) {
+        uuid = QUuid::createUuid().toByteArray().replace("{", "").replace("}","");
+        settings.setValue("uuid", uuid);
+    }
+    settings.endGroup();
+
+    GuhSettings globalSettings(GuhSettings::SettingsRoleGlobal);
+    globalSettings.beginGroup("WebServer");
+    int port = settings.value("port", 3333).toInt();
+    bool useSsl = settings.value("https", false).toBool();
+    globalSettings.endGroup();
+
+    foreach (const QNetworkInterface &interface,  QNetworkInterface::allInterfaces()) {
+        // listen only on IPv4
+        foreach (QNetworkAddressEntry entry, interface.addressEntries()) {
+            if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol) {
+                QString locationString;
+                if (useSsl) {
+                    locationString = "https://" + entry.ip().toString() + ":" + QString::number(port) + "/server.xml";
+                } else {
+                    locationString = "http://" + entry.ip().toString() + ":" + QString::number(port) + "/server.xml";
+                }
+
+                // http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
+                QByteArray rootdeviceResponseMessage = QByteArray("NOTIFY * HTTP/1.1\r\n"
+                                                                  "HOST:239.255.255.250:1900\r\n"
+                                                                  "Cache-Control: max-age=1900\r\n"
+                                                                  "Location: " + locationString.toUtf8() + "\r\n"
+                                                                  "NT:urn:schemas-upnp-org:device:Basic:1\r\n"
+                                                                  "USN:uuid:" + uuid + "::urn:schemas-upnp-org:device:Basic:1\r\n"
+                                                                  "NTS: ssdp:alive\r\n"
+                                                                  "SERVER: guh/" + QByteArray(GUH_VERSION_STRING) + " UPnP/1.1 \r\n"
+                                                                  "\r\n");
+
+                sendToMulticast(rootdeviceResponseMessage);
+            }
+        }
+    }
 }
 
 void UpnpDiscovery::discoverTimeout()

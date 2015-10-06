@@ -91,6 +91,7 @@ DeviceManager::DeviceError DevicePluginPhilipsHue::discoverDevices(const DeviceC
     Q_UNUSED(deviceClassId)
     Q_UNUSED(params)
 
+    qCDebug(dcPhilipsHue) << "Start discovering Hue Bridges...";
     upnpDiscover("libhue:idl");
     return DeviceManager::DeviceErrorAsync;
 }
@@ -111,9 +112,26 @@ DeviceManager::DeviceSetupStatus DevicePluginPhilipsHue::setupDevice(Device *dev
                 device->setParamValue("id", b->id());
                 device->setParamValue("mac address", b->macAddress());
                 m_bridges.insert(b, device);
-                device->setStateValue(bridgeReachableStateTypeId, true);
-                discoverBridgeDevices(b);
-                m_timer->start();
+
+                // now add the child lights from this bridge as auto device
+                QList<DeviceDescriptor> descriptors;
+                foreach (HueLight *light, b->lights()) {
+                    DeviceDescriptor descriptor(hueLightDeviceClassId, "Philips Hue Light", light->name());
+                    ParamList params;
+                    params.append(Param("name", light->name()));
+                    params.append(Param("api key", light->apiKey()));
+                    params.append(Param("bridge", device->id().toString()));
+                    params.append(Param("host address", light->hostAddress().toString()));
+                    params.append(Param("model id", light->modelId()));
+                    params.append(Param("light id", light->lightId()));
+                    descriptor.setParams(params);
+                    descriptors.append(descriptor);
+                    qCDebug(dcPhilipsHue) << "Emit auto device appeared: light" << light->name();
+                }
+
+                emit autoDevicesAppeared(hueLightDeviceClassId, descriptors);
+
+                qCDebug(dcPhilipsHue) << "Adding Hue bridge" << b->hostAddress().toString();
                 return DeviceManager::DeviceSetupStatusSuccess;
             }
         }
@@ -130,7 +148,7 @@ DeviceManager::DeviceSetupStatus DevicePluginPhilipsHue::setupDevice(Device *dev
         bridge->setZigbeeChannel(device->paramValue("zigbee channel").toInt());
 
         m_bridges.insert(bridge, device);
-        m_timer->start();
+        qCDebug(dcPhilipsHue) << "Setup Hue bridge success" << bridge->hostAddress().toString();
         return DeviceManager::DeviceSetupStatusSuccess;
     }
 
@@ -176,8 +194,7 @@ DeviceManager::DeviceSetupStatus DevicePluginPhilipsHue::setupDevice(Device *dev
         connect(hueLight, &HueLight::stateChanged, this, &DevicePluginPhilipsHue::lightStateChanged);
 
         m_lights.insert(hueLight, device);
-        refreshLight(device);
-
+        qCDebug(dcPhilipsHue) << "Setup hue light" << hueLight->name();
         setLightName(device, device->paramValue("name").toString());
         return DeviceManager::DeviceSetupStatusSuccess;
     }
@@ -254,6 +271,7 @@ void DevicePluginPhilipsHue::upnpDiscoveryFinished(const QList<UpnpDeviceDescrip
             params.append(Param("zigbee channel", -1));
             descriptor.setParams(params);
             deviceDescriptors.append(descriptor);
+            qCDebug(dcPhilipsHue) << "Found Hue bridge on" << upnpDevice.hostAddress().toString();
         }
     }
 
@@ -686,6 +704,8 @@ void DevicePluginPhilipsHue::setLightName(Device *device, const QString &name)
 {
     HueLight *light = m_lights.key(device);
 
+    qCDebug(dcPhilipsHue) << "Set hue light name" << name;
+
     QVariantMap requestMap;
     requestMap.insert("name", name);
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(requestMap);
@@ -866,6 +886,8 @@ void DevicePluginPhilipsHue::processLightRefreshResponse(Device *device, const Q
     QJsonParseError error;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
 
+    qCDebug(dcPhilipsHue) << "Process hue bridge response";
+
     // check JSON error
     if (error.error != QJsonParseError::NoError) {
         qCWarning(dcPhilipsHue) << "Hue Bridge json error in response" << error.errorString();
@@ -1005,6 +1027,8 @@ void DevicePluginPhilipsHue::processSetNameResponse(Device *device, const QByteA
     QJsonParseError error;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
 
+    qCDebug(dcPhilipsHue) << "Process set name response";
+
     // check JSON error
     if (error.error != QJsonParseError::NoError) {
         qCWarning(dcPhilipsHue) << "Hue Bridge json error in response" << error.errorString();
@@ -1034,6 +1058,8 @@ void DevicePluginPhilipsHue::processPairingResponse(PairingInfo *pairingInfo, co
 {
     QJsonParseError error;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
+
+    qCDebug(dcPhilipsHue) << "Process pairing response";
 
     // check JSON error
     if (error.error != QJsonParseError::NoError) {
@@ -1079,6 +1105,8 @@ void DevicePluginPhilipsHue::processInformationResponse(PairingInfo *pairingInfo
     QJsonParseError error;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
 
+    qCDebug(dcPhilipsHue) << "Process get information response";
+
     // check JSON error
     if (error.error != QJsonParseError::NoError) {
         qCWarning(dcPhilipsHue) << "Hue Bridge json error in response" << error.errorString();
@@ -1117,8 +1145,27 @@ void DevicePluginPhilipsHue::processInformationResponse(PairingInfo *pairingInfo
 
     m_unconfiguredBridges.append(bridge);
 
-    emit pairingFinished(pairingInfo->pairingTransactionId(), DeviceManager::DeviceSetupStatusSuccess);
-    pairingInfo->deleteLater();
+    // create Lights
+    QVariantMap lightsMap = response.value("lights").toMap();
+    foreach (QString lightId, lightsMap.keys()) {
+        QVariantMap lightMap = lightsMap.value(lightId).toMap();
+        HueLight *hueLight = new HueLight(lightId.toInt(),
+                                          bridge->hostAddress(),
+                                          lightMap.value("name").toString(),
+                                          pairingInfo.apiKey,
+                                          lightMap.value("modelid").toString(),
+                                          DeviceId(),
+                                          this);
+
+        hueLight->updateStates(lightMap.value("state").toMap());
+
+        bridge->addLight(hueLight);
+        m_unconfiguredLights.append(hueLight);
+
+        connect(hueLight, &HueLight::stateChanged, this, &DevicePluginPhilipsHue::lightStateChanged);
+    }
+    qCDebug(dcPhilipsHue) << "Emit pairing finished";
+    emit pairingFinished(pairingInfo.pairingTransactionId, DeviceManager::DeviceSetupStatusSuccess);
 }
 
 void DevicePluginPhilipsHue::processActionResponse(Device *device, const ActionId actionId, const QByteArray &data)
@@ -1152,25 +1199,14 @@ void DevicePluginPhilipsHue::processActionResponse(Device *device, const ActionI
 
 void DevicePluginPhilipsHue::bridgeReachableChanged(Device *device, const bool &reachable)
 {
-    if (reachable) {
-        device->setStateValue(bridgeReachableStateTypeId, true);
-    } else {
-        // mark bridge and corresponding hue devices unreachable
-        if (device->deviceClassId() == hueBridgeDeviceClassId) {
-            device->setStateValue(bridgeReachableStateTypeId, false);
+    qCWarning(dcPhilipsHue) << "Bridge error happend" << device->id().toString();
 
-            foreach (HueLight *light, m_lights.keys()) {
-                if (light->bridgeId() == device->id()) {
-                    light->setReachable(false);
-                    m_lights.value(light)->setStateValue(hueReachableStateTypeId, false);
-                }
-            }
-
-            foreach (HueRemote *remote, m_remotes.keys()) {
-                if (remote->bridgeId() == device->id()) {
-                    remote->setReachable(false);
-                    m_remotes.value(remote)->setStateValue(hueReachableStateTypeId, false);
-                }
+    // mark bridge and lamps unreachable
+    if (device->deviceClassId() == hueBridgeDeviceClassId) {
+        device->setStateValue(bridgeReachableStateTypeId, false);
+        foreach (HueLight *light, m_lights.keys()) {
+            if (light->bridgeId() == device->id()) {
+                device->setStateValue(hueReachableStateTypeId, false);
             }
         }
     }

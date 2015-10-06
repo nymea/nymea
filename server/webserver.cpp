@@ -49,7 +49,7 @@
     \note For \tt HTTPS you need to have a certificate and configure it in the \tt SSL-configuration
     section of the \tt /etc/guh/guhd.conf file.
 
-    \sa WebSocketServer, TcpServer
+    \sa WebServerClient, WebSocketServer, TcpServer
 */
 
 /*! \fn void guhserver::WebServer::httpRequestReady(const QUuid &clientId, const HttpRequest &httpRequest);
@@ -152,11 +152,14 @@ void WebServer::sendHttpReply(HttpReply *reply)
     socket->write(reply->data());
 }
 
+
+/*! Returns the port on which the webserver is listening. */
 int WebServer::port() const
 {
     return m_port;
 }
 
+/*! Returns the list of addresses on which the webserver is listening. */
 QList<QHostAddress> WebServer::serverAddressList()
 {
     QList<QHostAddress> addresses;
@@ -685,22 +688,46 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
 }
 
 
+/*!
+    \class guhserver::WebServerClient
+    \brief This class represents a client the web server for guhd.
+
+    \ingroup server
+    \inmodule core
+
+    The \l{WebServerClient} represents a client for the guh \l{WebServer}. Each client can
+    have up to 50 connections and each connection will timeout after 12 seconds if the
+    connection will not be used.
+
+    If all connections of a \l{WebServerClient} are closed, the client will be removed from
+    system.
+
+    \sa WebServer
+*/
+
+/*! Constructs a \l{WebServerClient} with the given \a address and \a parent. */
 WebServerClient::WebServerClient(const QHostAddress &address, QObject *parent):
     QObject(parent),
     m_address(address)
 {
 }
 
+/*! Returns the address of this \l{WebServerClient}. */
 QHostAddress WebServerClient::address() const
 {
     return m_address;
 }
 
+/*! Returns the list of connections (sockets) of this \l{WebServerClient}. */
 QList<QSslSocket *> WebServerClient::connections()
 {
     return m_connections;
 }
 
+/*! Adds a new connection (\a socket) to this \l{WebServerClient}. A \l{WebServerClient}
+ *  can have up to 50 connecections. The connection will timout and closed if the client
+ *  does not use the connection for 12 seconds.
+ */
 void WebServerClient::addConnection(QSslSocket *socket)
 {
     QTimer *timer = new QTimer(this);
@@ -714,6 +741,7 @@ void WebServerClient::addConnection(QSslSocket *socket)
     timer->start();
 }
 
+/*! Removes a connection the given \a socket from the connection list of this \l{WebServerClient}. */
 void WebServerClient::removeConnection(QSslSocket *socket)
 {
     QTimer *timer = m_runningConnections.key(socket);
@@ -723,6 +751,9 @@ void WebServerClient::removeConnection(QSslSocket *socket)
     timer->deleteLater();
 }
 
+/*! Resets the connection timeout for the given \a socket. If the socket will not be used for 12 seconds the
+ *  connection will be closed.
+ */
 void WebServerClient::resetTimout(QSslSocket *socket)
 {
     QTimer *timer = 0;

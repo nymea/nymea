@@ -19,8 +19,20 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "ruleshandler.h"
+/*!
+    \class guhserver::RulesHandler
+    \brief This subclass of \l{JsonHandler} processes the JSON requests for the \tt Rules namespace of the JSON-RPC API.
 
+    \ingroup json
+    \inmodule core
+
+    This \l{JsonHandler} will be created in the \l{JsonRPCServer} and used to handle JSON-RPC requests
+    for the \tt {Rules} namespace of the API.
+
+    \sa RuleEngine, JsonHandler, JsonRPCServer
+*/
+
+#include "ruleshandler.h"
 #include "guhcore.h"
 #include "ruleengine.h"
 #include "loggingcategories.h"

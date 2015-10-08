@@ -25,6 +25,7 @@
 #include "plugin/deviceplugin.h"
 #include "huebridge.h"
 #include "huelight.h"
+#include "pairinginfo.h"
 
 class QNetworkReply;
 
@@ -57,16 +58,8 @@ private slots:
     void lightStateChanged();
 
 private:
-
-    class PairingInfo {
-    public:
-        PairingTransactionId pairingTransactionId;
-        QHostAddress host;
-        QString apiKey;
-    };
-
-    QHash<QNetworkReply *, PairingInfo> m_pairingRequests;
-    QHash<QNetworkReply *, PairingInfo> m_informationRequests;
+    QHash<QNetworkReply *, PairingInfo *> m_pairingRequests;
+    QHash<QNetworkReply *, PairingInfo *> m_informationRequests;
 
     QList<HueBridge *> m_unconfiguredBridges;
     QList<HueLight *> m_unconfiguredLights;
@@ -87,8 +80,8 @@ private:
     void processLightRefreshResponse(Device *device, const QByteArray &data);
     void processBridgeRefreshResponse(Device *device, const QByteArray &data);
     void processSetNameResponse(Device *device, const QByteArray &data);
-    void processPairingResponse(const PairingInfo &pairingInfo, const QByteArray &data);
-    void processInformationResponse(const PairingInfo &pairingInfo, const QByteArray &data);
+    void processPairingResponse(PairingInfo *pairingInfo, const QByteArray &data);
+    void processInformationResponse(PairingInfo *pairingInfo, const QByteArray &data);
     void processActionResponse(Device *device, const ActionId actionId, const QByteArray &data);
 
     void onBridgeError(Device *device);

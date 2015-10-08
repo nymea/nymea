@@ -18,55 +18,33 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HUEBRIDGE_H
-#define HUEBRIDGE_H
+#ifndef PAIRINGINFO_H
+#define PAIRINGINFO_H
 
 #include <QObject>
 #include <QHostAddress>
 
-#include "huelight.h"
+#include "typeutils.h"
 
-class HueBridge : public QObject
+class PairingInfo : public QObject
 {
     Q_OBJECT
 public:
-    explicit HueBridge(QString apiKey, QHostAddress hostAddress, QObject *parent = 0);
+    explicit PairingInfo(QObject *parent = 0);
 
-    QString name() const;
-    void setName(const QString &name);
+    PairingTransactionId pairingTransactionId() const;
+    void setPairingTransactionId(const PairingTransactionId &pairingTransactionId);
+
+    QHostAddress host() const;
+    void setHost(const QHostAddress &host);
 
     QString apiKey() const;
     void setApiKey(const QString &apiKey);
 
-    QHostAddress hostAddress() const;
-    void setHostAddress(const QHostAddress &hostAddress);
-
-    QString macAddress() const;
-    void setMacAddress(const QString &macAddress);
-
-    QString apiVersion() const;
-    void setApiVersion(const QString &apiVersion);
-
-    QString softwareVersion() const;
-    void setSoftwareVersion(const QString &softwareVersion);
-
-    int zigbeeChannel() const;
-    void setZigbeeChannel(const int &zigbeeChannel);
-
-    QList<HueLight *> lights() const;
-    void addLight(HueLight *light);
-
 private:
+    PairingTransactionId m_pairingTransactionId;
+    QHostAddress m_host;
     QString m_apiKey;
-    QHostAddress m_hostAddress;
-    QString m_name;
-    QString m_macAddress;
-    QString m_apiVersion;
-    QString m_softwareVersion;
-    int m_zigbeeChannel;
-
-    QList<HueLight *> m_lights;
-
 };
 
-#endif // HUEBRIDGE_H
+#endif // PAIRINGINFO_H

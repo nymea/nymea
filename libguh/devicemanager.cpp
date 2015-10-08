@@ -1215,6 +1215,7 @@ bool DeviceManager::verifyPluginMetadata(const QJsonObject &data)
     foreach (const QString &field, requiredFields) {
         if (!data.contains("name")) {
             qCWarning(dcDeviceManager) << "Error loading plugin. Incomplete metadata. Missing field:" << field;
+            qCWarning(dcDeviceManager) << data;
             return false;
         }
     }

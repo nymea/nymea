@@ -390,24 +390,24 @@ void DevicePluginDateTime::processTimesData(const QByteArray &data)
 
     // given time is always in UTC
     QVariantMap result = response.value("results").toMap();
-    QString duskString = result.value("civil_twilight_begin").toString();
+    QString dawnString = result.value("civil_twilight_begin").toString();
     QString sunriseString = result.value("sunrise").toString();
     QString noonString = result.value("solar_noon").toString();
-    QString dawnString = result.value("civil_twilight_end").toString();
     QString sunsetString = result.value("sunset").toString();
+    QString duskString = result.value("civil_twilight_end").toString();
 
-    m_dusk = QDateTime(QDate::currentDate(), QTime::fromString(duskString, "h:m:s AP"), Qt::UTC).toTimeZone(m_timeZone);
+    m_dawn = QDateTime(QDate::currentDate(), QTime::fromString(dawnString, "h:m:s AP"), Qt::UTC).toTimeZone(m_timeZone);
     m_sunrise = QDateTime(QDate::currentDate(), QTime::fromString(sunriseString, "h:m:s AP"), Qt::UTC).toTimeZone(m_timeZone);
     m_noon = QDateTime(QDate::currentDate(), QTime::fromString(noonString, "h:m:s AP"), Qt::UTC).toTimeZone(m_timeZone);
-    m_dawn = QDateTime(QDate::currentDate(), QTime::fromString(dawnString, "h:m:s AP"), Qt::UTC).toTimeZone(m_timeZone);
     m_sunset = QDateTime(QDate::currentDate(), QTime::fromString(sunsetString, "h:m:s AP"), Qt::UTC).toTimeZone(m_timeZone);
+    m_dusk = QDateTime(QDate::currentDate(), QTime::fromString(duskString, "h:m:s AP"), Qt::UTC).toTimeZone(m_timeZone);
 
     // calculate the times in each alarm
-    qCDebug(dcDateTime) << " dusk     :" << m_dusk.toString();
+    qCDebug(dcDateTime) << " dawn     :" << m_dawn.toString();
     qCDebug(dcDateTime) << " sunrise  :" << m_sunrise.toString();
     qCDebug(dcDateTime) << " noon     :" << m_noon.toString();
     qCDebug(dcDateTime) << " sunset   :" << m_sunset.toString();
-    qCDebug(dcDateTime) << " dawn     :" << m_dawn.toString();
+    qCDebug(dcDateTime) << " dusk     :" << m_dusk.toString();
     qCDebug(dcDateTime) << "---------------------------------------------";
 
     updateTimes();

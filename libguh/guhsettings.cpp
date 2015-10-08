@@ -71,7 +71,7 @@ GuhSettings::GuhSettings(const SettingsRole &role, QObject *parent):
     case SettingsRoleDevices:
         // check if we are running a test
         if (settingsPrefix == "guh-test") {
-            settingsFile = settingsPrefix + "/test-devices";
+            settingsFile = "/tmp/" + settingsPrefix + "/test-devices.conf";
             m_settings = new QSettings(settingsFile, QSettings::NativeFormat, this);
             qDebug() << "Created test-devices settings" << m_settings->fileName();
         } else if (rootPrivilege) {
@@ -79,7 +79,7 @@ GuhSettings::GuhSettings(const SettingsRole &role, QObject *parent):
             m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
             qDebug() << "Created device settings" << m_settings->fileName();
         } else {
-            settingsFile = settingsPrefix + "/devices";
+            settingsFile = QDir::homePath() + "/.config/" + settingsPrefix + "/devices.conf";
             m_settings = new QSettings(settingsFile, QSettings::NativeFormat, this);
             qDebug() << "Created device settings" << m_settings->fileName();
         }
@@ -87,7 +87,7 @@ GuhSettings::GuhSettings(const SettingsRole &role, QObject *parent):
     case SettingsRoleRules:
         // check if we are running a test
         if (settingsPrefix == "guh-test") {
-            settingsFile = settingsPrefix + "/test-rules";
+            settingsFile = "/tmp/" + settingsPrefix + "/test-rules.conf";
             m_settings = new QSettings(settingsFile, QSettings::NativeFormat, this);
             qDebug() << "Created test-rules settings" << m_settings->fileName();
         } else if (rootPrivilege) {
@@ -95,7 +95,7 @@ GuhSettings::GuhSettings(const SettingsRole &role, QObject *parent):
             m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
             qDebug() << "Created rule settings" << m_settings->fileName();
         } else {
-            settingsFile = settingsPrefix + "/rules";
+            settingsFile = QDir::homePath() + "/.config/" + settingsPrefix + "/rules.conf";
             m_settings = new QSettings(settingsFile, QSettings::NativeFormat, this);
             qDebug() << "Created rule settings" << m_settings->fileName();
         }
@@ -103,7 +103,7 @@ GuhSettings::GuhSettings(const SettingsRole &role, QObject *parent):
     case SettingsRolePlugins:
         // check if we are running a test
         if (settingsPrefix == "guh-test") {
-            settingsFile = settingsPrefix + "/test-plugins";
+            settingsFile = "/tmp/" + settingsPrefix + "/test-plugins.conf";
             m_settings = new QSettings(settingsFile, QSettings::NativeFormat, this);
             qDebug() << "Created test-plugins settings" << m_settings->fileName();
         } else if (rootPrivilege) {
@@ -111,7 +111,7 @@ GuhSettings::GuhSettings(const SettingsRole &role, QObject *parent):
             m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
             qDebug() << "Created plugin settings" << m_settings->fileName();
         } else {
-            settingsFile = settingsPrefix + "/plugins";
+            settingsFile = QDir::homePath() + "/.config/" + settingsPrefix + "/plugins.conf";
             m_settings = new QSettings(settingsFile, QSettings::NativeFormat, this);
             qDebug() << "Created plugin settings" << m_settings->fileName();
         }
@@ -159,7 +159,7 @@ QString GuhSettings::logPath()
     QString organisationName = QCoreApplication::instance()->organizationName();
 
     if (organisationName == "guh-test") {
-        logPath = "/tmp/guhd-test.log";
+        logPath = "/tmp/" + organisationName + "/guhd-test.logs";
     } else if (GuhSettings::isRoot()) {
         logPath = "/var/log/guhd.log";
     } else {

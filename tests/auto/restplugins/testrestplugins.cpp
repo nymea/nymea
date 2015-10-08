@@ -142,8 +142,8 @@ void TestRestPlugins::setPluginConfiguration_data()
 
     QTest::newRow("valid plugin configuration") << mockPluginId << validConfigurations  << 200;
     QTest::newRow("invalid plugin id") << PluginId::createPluginId() << validConfigurations  << 404;
-//    QTest::newRow("invalid plugin configuration") << mockPluginId << invalidConfigurations  << 400;
-//    QTest::newRow("invalid plugin configuration 2") << mockPluginId << invalidConfigurations2  << 400;
+    QTest::newRow("invalid plugin configuration") << mockPluginId << invalidConfigurations  << 400;
+    QTest::newRow("invalid plugin configuration 2") << mockPluginId << invalidConfigurations2  << 400;
 }
 
 void TestRestPlugins::setPluginConfiguration()
@@ -163,13 +163,8 @@ void TestRestPlugins::setPluginConfiguration()
     QCOMPARE(clientSpy.count(), 1);
     int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     reply->deleteLater();
-
-    if (expectedStatusCode == 200) {
-        QCOMPARE(statusCode, 200);
-    } else {
-        QCOMPARE(statusCode, expectedStatusCode);
+    if (expectedStatusCode == 404)
         return;
-    }
 
     QByteArray data = reply->readAll();
     reply->deleteLater();

@@ -79,7 +79,7 @@ GuhSettings::GuhSettings(const SettingsRole &role, QObject *parent):
             m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
             qDebug() << "Created device settings" << m_settings->fileName();
         } else {
-            settingsFile = settingsPrefix + "/devices";
+            settingsFile = QDir::homePath() + "/.config/" + settingsPrefix + "/devices.conf";
             m_settings = new QSettings(settingsFile, QSettings::NativeFormat, this);
             qDebug() << "Created device settings" << m_settings->fileName();
         }
@@ -95,7 +95,7 @@ GuhSettings::GuhSettings(const SettingsRole &role, QObject *parent):
             m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
             qDebug() << "Created rule settings" << m_settings->fileName();
         } else {
-            settingsFile = settingsPrefix + "/rules";
+            settingsFile = QDir::homePath() + "/.config/" + settingsPrefix + "/rules.conf";
             m_settings = new QSettings(settingsFile, QSettings::NativeFormat, this);
             qDebug() << "Created rule settings" << m_settings->fileName();
         }
@@ -111,7 +111,7 @@ GuhSettings::GuhSettings(const SettingsRole &role, QObject *parent):
             m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
             qDebug() << "Created plugin settings" << m_settings->fileName();
         } else {
-            settingsFile = settingsPrefix + "/plugins";
+            settingsFile = QDir::homePath() + "/.config/" + settingsPrefix + "/plugins.conf";
             m_settings = new QSettings(settingsFile, QSettings::NativeFormat, this);
             qDebug() << "Created plugin settings" << m_settings->fileName();
         }

@@ -45,6 +45,11 @@
                             "readOnly": true
                         },
                         {
+                            "name": "software version",
+                            "type" : "QString",
+                            "readOnly": true
+                        },
+                        {
                             "name": "zigbee channel",
                             "type" : "int",
                             "readOnly": true

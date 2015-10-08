@@ -390,10 +390,10 @@ void DevicePluginDateTime::processTimesData(const QByteArray &data)
 
     // given time is always in UTC
     QVariantMap result = response.value("results").toMap();
-    QString duskString = result.value("civil_twilight_begin").toString();
+    QString duskString = result.value("civil_twilight_end").toString();
     QString sunriseString = result.value("sunrise").toString();
     QString noonString = result.value("solar_noon").toString();
-    QString dawnString = result.value("civil_twilight_end").toString();
+    QString dawnString = result.value("civil_twilight_begin").toString();
     QString sunsetString = result.value("sunset").toString();
 
     m_dusk = QDateTime(QDate::currentDate(), QTime::fromString(duskString, "h:m:s AP"), Qt::UTC).toTimeZone(m_timeZone);

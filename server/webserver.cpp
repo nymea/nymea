@@ -566,6 +566,11 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
     }
     settings.endGroup();
 
+    GuhSettings globalSettings(GuhSettings::SettingsRoleGlobal);
+    globalSettings.beginGroup("WebSocketServer");
+    int websocketPort = globalSettings.value("port", 4444).toInt();
+    globalSettings.endGroup();
+
 
     QByteArray data;
     QXmlStreamWriter writer(&data);
@@ -584,6 +589,13 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
     } else {
         writer.writeTextElement("URLBase", "http://" + address.toString() + ":" + QString::number(m_port));
     }
+
+    if (m_useSsl) {
+        writer.writeTextElement("websocketURL", "wss://" + address.toString() + ":" + QString::number(websocketPort));
+    } else {
+        writer.writeTextElement("websocketURL", "ws://" + address.toString() + ":" + QString::number(websocketPort));
+    }
+
     writer.writeTextElement("presentationURL", "/");
 
     writer.writeStartElement("device");

@@ -33,6 +33,14 @@
                             "type": "double",
                             "unit": "EuroPerMegaWattHour",
                             "defaultValue": 0
+                        },
+                        {
+                            "id": "d5a8a176-aca0-45b1-b043-95c43750f383",
+                            "idName": "validUntil",
+                            "name": "valid until",
+                            "unit": "UnixTime",
+                            "type": "int",
+                            "defaultValue": 0
                         }
                     ]
                 }

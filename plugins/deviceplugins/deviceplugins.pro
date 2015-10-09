@@ -18,6 +18,8 @@ SUBDIRS += elro         \
     tune                \
     udpcommander        \
     kodi                \
+    elgato              \
+    awattar             \
 
 
 

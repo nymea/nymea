@@ -1,4 +1,4 @@
-29
+30
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -803,6 +803,7 @@
             "UnitWatt",
             "UnitKiloWatt",
             "UnitKiloWattHour",
+            "UnitEuroPerMegaWattHour",
             "UnitPercentage",
             "UnitEuro",
             "UnitDollar"

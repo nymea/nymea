@@ -249,16 +249,20 @@
             \li 34
             \li The value of the \l{Param} has unit \tt {[kWh]} \unicode{0x2192} kilo watt hour.
         \row
-            \li Types::UnitPercentage
+            \li Types::UnitEuroPerMegaWattHour
             \li 35
+            \li The value of the \l{Param} has unit \tt {[€/MWh]} \unicode{0x2192} euro per mega watt hour.
+        \row
+            \li Types::UnitPercentage
+            \li 36
             \li The value of the \l{Param} has unit \tt {[\%]} \unicode{0x2192} percentage.
         \row
             \li Types::UnitEuro
-            \li 36
+            \li 37
             \li The value of the \l{Param} has unit \tt {[€]} \unicode{0x2192} euro.
         \row
             \li Types::UnitDollar
-            \li 37
+            \li 38
             \li The value of the \l{Param} has unit \tt {[\$]} \unicode{0x2192} dollar.
     \endtable
 

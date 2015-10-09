@@ -29,7 +29,7 @@
     In order to use this plugin you need to enter the access token from your energy provider. You can find more
     information about you accesstoken \l{https://www.awattar.com/api-unser-datenfeed}{here}.
 
-    The data will be fetched every hour. The API allows you a maximum of 100 calls per day.
+    The data will be updated every hour. The API allows a maximum of 100 calls per day.
 
     \chapter Plugin properties
     Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}
@@ -146,6 +146,7 @@ void DevicePluginAwattar::processData(Device *device, const QVariantMap &data, c
             qCDebug(dcAwattar) << "end    :" << endTime.toString();
             qCDebug(dcAwattar) << "price  :" << marketPrice << elementMap.value("unit").toString();
             device->setStateValue(currentMarketPriceStateTypeId, marketPrice);
+            device->setStateValue(validUntilStateTypeId, endTime.toLocalTime().toTime_t());
         }
     }
 

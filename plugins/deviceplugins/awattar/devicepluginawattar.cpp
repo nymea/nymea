@@ -116,6 +116,26 @@ void DevicePluginAwattar::networkManagerReplyReady(QNetworkReply *reply)
         }
 
         processData(device, jsonDoc.toVariant().toMap(), true);
+    } else if (m_update.keys().contains(reply)) {
+        Device *device = m_update.take(reply);
+
+        // check HTTP status code
+        if (status != 200) {
+            qCWarning(dcAwattar) << "Update reply HTTP error:" << status << reply->errorString();
+            reply->deleteLater();
+            return;
+        }
+
+        // check JSON file
+        QJsonParseError error;
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(reply->readAll(), &error);
+        if (error.error != QJsonParseError::NoError) {
+            qCWarning(dcAwattar) << "Update reply JSON error:" << error.errorString();
+            reply->deleteLater();
+            return;
+        }
+
+        processData(device, jsonDoc.toVariant().toMap());
     }
     reply->deleteLater();
 }
@@ -162,8 +182,7 @@ QNetworkReply *DevicePluginAwattar::requestData(const QString &token)
     QString header = "Basic " + data;
     QNetworkRequest request(QUrl("https://api.awattar.com/v1/marketdata"));
     request.setRawHeader("Authorization", header.toLocal8Bit());
-    request.setSslConfiguration( QSslConfiguration::defaultConfiguration());
-
+    request.setSslConfiguration(QSslConfiguration::defaultConfiguration());
     return networkManagerGet(request);
 }
 

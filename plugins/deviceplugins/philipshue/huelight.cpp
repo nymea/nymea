@@ -149,8 +149,7 @@ void HueLight::updateStates(const QVariantMap &statesMap)
     setPower(statesMap.value("on").toBool());
     setSat(statesMap.value("sat").toInt());
     setHue(statesMap.value("hue").toInt());
-    if (!statesMap.value("xy").toList().isEmpty())
-        setXy(QPointF(statesMap.value("xy").toList().first().toFloat(), statesMap.value("xy").toList().last().toFloat()));
+    //setXy(QPointF(statesMap.value("xy").toList().first().toFloat(),statesMap.value("xy").toList().last().toFloat()));
 
     emit stateChanged();
 }

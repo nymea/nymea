@@ -52,7 +52,8 @@ Rule::Rule(const RuleId &id, const QString &name, const QList<EventDescriptor> &
     m_stateEvaluator(stateEvaluator),
     m_actions(actions),
     m_enabled(false),
-    m_active(false)
+    m_active(false),
+    m_executable(false)
 {
 
 }
@@ -66,7 +67,8 @@ Rule::Rule(const RuleId &id, const QString &name, const QList<EventDescriptor> &
     m_actions(actions),
     m_exitActions(exitActions),
     m_enabled(false),
-    m_active(false)
+    m_active(false),
+    m_executable(false)
 {
 }
 
@@ -80,7 +82,8 @@ Rule::Rule(const RuleId &id, const QString &name, const StateEvaluator &stateEva
     m_actions(actions),
     m_exitActions(exitActions),
     m_enabled(false),
-    m_active(false)
+    m_active(false),
+    m_executable(false)
 {
 }
 
@@ -120,13 +123,13 @@ QString Rule::name() const
     return m_name;
 }
 
-/*! Returns wheter the rule is enabled or not. */
+/*! Returns true if the rule is enabled. */
 bool Rule::enabled() const {
     return m_enabled;
 }
 
-/*! Set the disabled flag of this rule. In order to actually disable the rule you still need to
- * update the RulesEngine */
+/*! Set the \a enabled flag of this rule. In order to actually enable/disable the rule you still need to
+ * update the \l{RulesEngine} */
 void Rule::setEnabled(bool enabled)
 {
     m_enabled = enabled;
@@ -136,6 +139,18 @@ void Rule::setEnabled(bool enabled)
 bool Rule::active() const
 {
     return m_active;
+}
+
+/*! Set the rule \a executable. */
+void Rule::setExecutable(const bool &executable)
+{
+    m_executable = executable;
+}
+
+/*! Returns true if the rule is executable. */
+bool Rule::executable() const
+{
+    return m_executable;
 }
 
 void Rule::setName(const QString &name)

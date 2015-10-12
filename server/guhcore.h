@@ -83,15 +83,19 @@ public:
 
     DeviceManager::DeviceError executeAction(const Action &action);
 
+    void executeRuleActions(const QList<RuleAction> ruleActions);
+
     QList<Rule> rules() const;
     QList<RuleId> ruleIds() const;
     Rule findRule(const RuleId &ruleId);
-    RuleEngine::RuleError addRule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actionList, const QList<RuleAction> &exitActionList, bool enabled = true);
-    RuleEngine::RuleError editRule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actionList, const QList<RuleAction> &exitActionList, bool enabled = true);
+    RuleEngine::RuleError addRule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actionList, const QList<RuleAction> &exitActionList, bool enabled = true, bool executable = true);
+    RuleEngine::RuleError editRule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actionList, const QList<RuleAction> &exitActionList, bool enabled = true, bool executable = true);
     RuleEngine::RuleError removeRule(const RuleId &id);
     QList<RuleId> findRules(const DeviceId &deviceId);
     RuleEngine::RuleError enableRule(const RuleId &ruleId);
     RuleEngine::RuleError disableRule(const RuleId &ruleId);
+    RuleEngine::RuleError executeRuleActions(const RuleId &ruleId);
+    RuleEngine::RuleError executeRuleExitActions(const RuleId &ruleId);
 
     LogEngine* logEngine() const;
     JsonRPCServer *jsonRPCServer() const;

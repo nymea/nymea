@@ -170,6 +170,14 @@ HttpReply *RulesResource::proccessPostRequest(const HttpRequest &request, const 
     if (urlTokens.count() == 5 && urlTokens.at(4) == "disable")
         return disableRule(m_ruleId);
 
+    // POST /api/v1/rules/{ruleId}/executeactions
+    if (urlTokens.count() == 5 && urlTokens.at(4) == "executeactions")
+        return executeActions(m_ruleId);
+
+    // POST /api/v1/rules/{ruleId}/executeexitactions
+    if (urlTokens.count() == 5 && urlTokens.at(4) == "executeexitactions")
+        return executeExitActions(m_ruleId);
+
     return createErrorReply(HttpReply::NotImplemented);
 }
 
@@ -299,6 +307,30 @@ HttpReply *RulesResource::disableRule(const RuleId &ruleId) const
     qCDebug(dcRest) << "Disable rule with id" << ruleId.toString();
 
     RuleEngine::RuleError status = GuhCore::instance()->disableRule(ruleId);
+
+    if (status != RuleEngine::RuleErrorNoError)
+        return createRuleErrorReply(HttpReply::InternalServerError, status);
+
+    return createRuleErrorReply(HttpReply::Ok, status);
+}
+
+HttpReply *RulesResource::executeActions(const RuleId &ruleId) const
+{
+    qCDebug(dcRest) << "Execute actions of rule with id" << ruleId.toString();
+
+    RuleEngine::RuleError status = GuhCore::instance()->executeRuleActions(ruleId);
+
+    if (status != RuleEngine::RuleErrorNoError)
+        return createRuleErrorReply(HttpReply::InternalServerError, status);
+
+    return createRuleErrorReply(HttpReply::Ok, status);
+}
+
+HttpReply *RulesResource::executeExitActions(const RuleId &ruleId) const
+{
+    qCDebug(dcRest) << "Execute exit actions of rule with id" << ruleId.toString();
+
+    RuleEngine::RuleError status = GuhCore::instance()->executeRuleExitActions(ruleId);
 
     if (status != RuleEngine::RuleErrorNoError)
         return createRuleErrorReply(HttpReply::InternalServerError, status);

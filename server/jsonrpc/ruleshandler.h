@@ -34,16 +34,19 @@ public:
 
     QString name() const override;
 
-    Q_INVOKABLE JsonReply* GetRules(const QVariantMap &params);
-    Q_INVOKABLE JsonReply* GetRuleDetails(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *GetRules(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *GetRuleDetails(const QVariantMap &params);
 
-    Q_INVOKABLE JsonReply* AddRule(const QVariantMap &params);
-    Q_INVOKABLE JsonReply* EditRule(const QVariantMap &params);
-    Q_INVOKABLE JsonReply* RemoveRule(const QVariantMap &params);
-    Q_INVOKABLE JsonReply* FindRules(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *AddRule(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *EditRule(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *RemoveRule(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *FindRules(const QVariantMap &params);
 
-    Q_INVOKABLE JsonReply* EnableRule(const QVariantMap &params);
-    Q_INVOKABLE JsonReply* DisableRule(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *EnableRule(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *DisableRule(const QVariantMap &params);
+
+    Q_INVOKABLE JsonReply *ExecuteActions(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *ExecuteExitActions(const QVariantMap &params);
 
 signals:
     void RuleRemoved(const QVariantMap &params);

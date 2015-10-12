@@ -258,6 +258,33 @@ DeviceManager::DeviceError GuhCore::executeAction(const Action &action)
     return ret;
 }
 
+void GuhCore::executeRuleActions(const QList<RuleAction> ruleActions)
+{
+    foreach (const RuleAction &ruleAction, ruleActions) {
+        Action action = ruleAction.toAction();
+        qCDebug(dcRuleEngine) << "executing action" << ruleAction.actionTypeId() << action.params();
+        DeviceManager::DeviceError status = executeAction(action);
+        switch(status) {
+        case DeviceManager::DeviceErrorNoError:
+            break;
+        case DeviceManager::DeviceErrorSetupFailed:
+            qCWarning(dcRuleEngine) << "Error executing action. Device setup failed.";
+            break;
+        case DeviceManager::DeviceErrorAsync:
+            qCDebug(dcRuleEngine) << "Executing asynchronous action.";
+            break;
+        case DeviceManager::DeviceErrorInvalidParameter:
+            qCWarning(dcRuleEngine) << "Error executing action. Invalid action parameter.";
+            break;
+        default:
+            qCWarning(dcRuleEngine) << "Error executing action:" << status;
+        }
+
+        if (status != DeviceManager::DeviceErrorAsync)
+            m_logger->logAction(action, status == DeviceManager::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
+    }
+}
+
 /*! Calls the metheod DeviceManager::findDeviceClass(\a deviceClassId).
  *  \sa DeviceManager::findDeviceClass(), */
 DeviceClass GuhCore::findDeviceClass(const DeviceClassId &deviceClassId) const
@@ -344,16 +371,16 @@ Rule GuhCore::findRule(const RuleId &ruleId)
 
 /*! Calls the metheod RuleEngine::addRule(\a id, \a name, \a eventDescriptorList, \a stateEvaluator \a actionList, \a exitActionList, \a enabled).
  *  \sa RuleEngine::addRule(), */
-RuleEngine::RuleError GuhCore::addRule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actionList, const QList<RuleAction> &exitActionList, bool enabled)
+RuleEngine::RuleError GuhCore::addRule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actionList, const QList<RuleAction> &exitActionList, bool enabled, bool executable)
 {
-    return m_ruleEngine->addRule(id, name, eventDescriptorList, stateEvaluator, actionList, exitActionList, enabled);
+    return m_ruleEngine->addRule(id, name, eventDescriptorList, stateEvaluator, actionList, exitActionList, enabled, executable);
 }
 
 /*! Calls the metheod RuleEngine::editRule(\a id, \a name, \a eventDescriptorList, \a stateEvaluator \a actionList, \a exitActionList, \a enabled).
  *  \sa RuleEngine::editRule(), */
-RuleEngine::RuleError GuhCore::editRule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actionList, const QList<RuleAction> &exitActionList, bool enabled)
+RuleEngine::RuleError GuhCore::editRule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actionList, const QList<RuleAction> &exitActionList, bool enabled, bool executable)
 {
-    return m_ruleEngine->editRule(id, name, eventDescriptorList, stateEvaluator, actionList, exitActionList, enabled);
+    return m_ruleEngine->editRule(id, name, eventDescriptorList, stateEvaluator, actionList, exitActionList, enabled, executable);
 }
 
 /*! Calls the metheod RuleEngine::removeRule(\a id).
@@ -386,6 +413,16 @@ RuleEngine::RuleError GuhCore::enableRule(const RuleId &ruleId)
 RuleEngine::RuleError GuhCore::disableRule(const RuleId &ruleId)
 {
     return m_ruleEngine->disableRule(ruleId);
+}
+
+RuleEngine::RuleError GuhCore::executeRuleActions(const RuleId &ruleId)
+{
+    return m_ruleEngine->executeActions(ruleId);
+}
+
+RuleEngine::RuleError GuhCore::executeRuleExitActions(const RuleId &ruleId)
+{
+    return m_ruleEngine->executeExitActions(ruleId);
 }
 
 /*! Returns a pointer to the \l{DeviceManager} instance owned by GuhCore.*/
@@ -491,30 +528,7 @@ void GuhCore::gotEvent(const Event &event)
         actions.append(ruleAction);
     }
 
-    // Now execute all the associated actions
-    foreach (const RuleAction &ruleAction, actions) {
-        Action action = ruleAction.toAction();
-        qCDebug(dcRuleEngine) << "executing action" << ruleAction.actionTypeId();
-        DeviceManager::DeviceError status = executeAction(action);
-        switch(status) {
-        case DeviceManager::DeviceErrorNoError:
-            break;
-        case DeviceManager::DeviceErrorSetupFailed:
-            qCWarning(dcRuleEngine) << "Error executing action. Device setup failed.";
-            break;
-        case DeviceManager::DeviceErrorAsync:
-            qCDebug(dcRuleEngine) << "Executing asynchronous action.";
-            break;
-        case DeviceManager::DeviceErrorInvalidParameter:
-            qCWarning(dcRuleEngine) << "Error executing action. Invalid action parameter.";
-            break;
-        default:
-            qCWarning(dcRuleEngine) << "Error executing action:" << status;
-        }
-
-        if (status != DeviceManager::DeviceErrorAsync)
-            m_logger->logAction(action, status == DeviceManager::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
-    }
+    executeRuleActions(actions);
 }
 
 /*! Return the instance of the log engine */

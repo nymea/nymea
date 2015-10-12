@@ -49,7 +49,10 @@ public:
         RuleErrorInvalidRuleFormat,
         RuleErrorMissingParameter,
         RuleErrorInvalidRuleActionParameter,
-        RuleErrorTypesNotMatching
+        RuleErrorTypesNotMatching,
+        RuleErrorNotExecutable,
+        RuleErrorContainsEventBasesAction,
+        RuleErrorNoExitActions
     };
 
     enum RemovePolicy {
@@ -62,9 +65,8 @@ public:
     QList<Rule> evaluateEvent(const Event &event);
 
     RuleError addRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const QList<RuleAction> &actions, bool enabled = true);
-    RuleError addRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions, bool enabled = true, bool fromEdit = false);
-    RuleError editRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions, bool enabled = true);
-
+    RuleError addRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions, bool enabled = true, bool executable = true, bool fromEdit = false);
+    RuleError editRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions, bool enabled = true, bool executable = true);
 
     QList<Rule> rules() const;
     QList<RuleId> ruleIds() const;
@@ -73,6 +75,9 @@ public:
 
     RuleError enableRule(const RuleId &ruleId);
     RuleError disableRule(const RuleId &ruleId);
+
+    RuleError executeActions(const RuleId &ruleId);
+    RuleError executeExitActions(const RuleId &ruleId);
 
     Rule findRule(const RuleId &ruleId);
     QList<RuleId> findRules(const DeviceId &deviceId);

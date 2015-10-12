@@ -57,7 +57,9 @@ public:
 
     enum LoggingEventType {
         LoggingEventTypeTrigger,
-        LoggingEventTypeActiveChange
+        LoggingEventTypeActiveChange,
+        LoggingEventTypeActionsExecuted,
+        LoggingEventTypeExitActionsExecuted
     };
 };
 

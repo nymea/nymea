@@ -1,4 +1,4 @@
-30
+31
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -322,6 +322,7 @@
                 "o:eventDescriptorList": [
                     "$ref:EventDescriptor"
                 ],
+                "o:executable": "Bool",
                 "o:exitActions": [
                     "$ref:RuleAction"
                 ],
@@ -353,6 +354,7 @@
                 "o:eventDescriptorList": [
                     "$ref:EventDescriptor"
                 ],
+                "o:executable": "Bool",
                 "o:exitActions": [
                     "$ref:RuleAction"
                 ],
@@ -366,6 +368,24 @@
         },
         "Rules.EnableRule": {
             "description": "Enabled a rule that has previously been disabled.If successfull, the notification \"Rule.RuleConfigurationChanged\" will be emitted.",
+            "params": {
+                "ruleId": "Uuid"
+            },
+            "returns": {
+                "ruleError": "$ref:RuleError"
+            }
+        },
+        "Rules.ExecuteActions": {
+            "description": "Execute the action list of the rule with the given ruleId.",
+            "params": {
+                "ruleId": "Uuid"
+            },
+            "returns": {
+                "ruleError": "$ref:RuleError"
+            }
+        },
+        "Rules.ExecuteExitActions": {
+            "description": "Execute the exit action list of the rule with the given ruleId.",
             "params": {
                 "ruleId": "Uuid"
             },
@@ -638,7 +658,9 @@
         ],
         "LoggingEventType": [
             "LoggingEventTypeTrigger",
-            "LoggingEventTypeActiveChange"
+            "LoggingEventTypeActiveChange",
+            "LoggingEventTypeActionsExecuted",
+            "LoggingEventTypeExitActionsExecuted"
         ],
         "LoggingLevel": [
             "LoggingLevelInfo",
@@ -693,6 +715,7 @@
             "eventDescriptors": [
                 "$ref:EventDescriptor"
             ],
+            "executable": "Bool",
             "exitActions": [
                 "$ref:RuleAction"
             ],
@@ -716,6 +739,7 @@
         "RuleDescription": {
             "active": "Bool",
             "enabled": "Bool",
+            "executable": "Bool",
             "id": "Uuid",
             "name": "String"
         },
@@ -730,7 +754,10 @@
             "RuleErrorInvalidRuleFormat",
             "RuleErrorMissingParameter",
             "RuleErrorInvalidRuleActionParameter",
-            "RuleErrorTypesNotMatching"
+            "RuleErrorTypesNotMatching",
+            "RuleErrorNotExecutable",
+            "RuleErrorContainsEventBasesAction",
+            "RuleErrorNoExitActions"
         ],
         "SetupMethod": [
             "SetupMethodJustAdd",

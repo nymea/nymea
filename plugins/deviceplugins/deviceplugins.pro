@@ -22,6 +22,7 @@ SUBDIRS += elro         \
     kodi                \
     elgato              \
     awattar             \
+    netatmo             \
 
 boblight {
     SUBDIRS += boblight

@@ -1,0 +1,218 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *                                                                         *
+ *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *                                                                         *
+ *  This file is part of guh.                                              *
+ *                                                                         *
+ *  Guh is free software: you can redistribute it and/or modify            *
+ *  it under the terms of the GNU General Public License as published by   *
+ *  the Free Software Foundation, version 2 of the License.                *
+ *                                                                         *
+ *  Guh is distributed in the hope that it will be useful,                 *
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of         *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          *
+ *  GNU General Public License for more details.                           *
+ *                                                                         *
+ *  You should have received a copy of the GNU General Public License      *
+ *  along with guh. If not, see <http://www.gnu.org/licenses/>.            *
+ *                                                                         *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+/*!
+    \page netatmo.html
+    \title netatmo
+
+    \ingroup plugins
+    \ingroup network
+
+    This plugin allows to receive data from you netatmo weather station.
+
+    \chapter Plugin properties
+    Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}
+    and \l{Vendor}{Vendors} of this \l{DevicePlugin}.
+
+    Each \l{DeviceClass} has a list of \l{ParamType}{paramTypes}, \l{ActionType}{actionTypes}, \l{StateType}{stateTypes}
+    and \l{EventType}{eventTypes}. The \l{DeviceClass::CreateMethod}{createMethods} parameter describes how the \l{Device}
+    will be created in the system. A device can have more than one \l{DeviceClass::CreateMethod}{CreateMethod}.
+    The \l{DeviceClass::SetupMethod}{setupMethod} describes the setup method of the \l{Device}.
+    The detailed implementation of each \l{DeviceClass} can be found in the source code.
+
+    \note If a \l{StateType} has the parameter \tt{"writable": {...}}, an \l{ActionType} with the same uuid and \l{ParamType}{ParamTypes}
+    will be created automatically.
+
+    \quotefile plugins/deviceplugins/netatmo/devicepluginnetatmo.json
+*/
+
+#include "devicepluginnetatmo.h"
+#include "plugin/device.h"
+#include "plugininfo.h"
+
+#include <QUrlQuery>
+#include <QJsonDocument>
+
+DevicePluginNetatmo::DevicePluginNetatmo()
+{
+}
+
+DeviceManager::HardwareResources DevicePluginNetatmo::requiredHardware() const
+{
+    return DeviceManager::HardwareResourceNetworkManager | DeviceManager::HardwareResourceTimer;
+}
+
+DeviceManager::DeviceSetupStatus DevicePluginNetatmo::setupDevice(Device *device)
+{
+    if (device->deviceClassId() == connectionDeviceClassId) {
+        qCDebug(dcNetatmo) << "Setup netatmo connection";
+
+        OAuth2 *authentication = new OAuth2("561c015d49c75f0d1cce6e13", "GuvKkdtu7JQlPD47qTTepRR9hQ0CUPAj4Tae3Ohcq", this);
+        authentication->setUrl(QUrl("https://api.netatmo.net/oauth2/token"));
+        authentication->setUsername(device->paramValue("username").toString());
+        authentication->setPassword(device->paramValue("password").toString());
+        authentication->setScope("read_station read_thermostat write_thermostat");
+
+        m_authentications.insert(authentication, device);
+        m_asyncSetups.append(device);
+        connect(authentication, &OAuth2::authenticationChanged, this, &DevicePluginNetatmo::onAuthenticationChanged);
+
+        authentication->startAuthentication();
+        return DeviceManager::DeviceSetupStatusAsync;
+
+    } else if (device->deviceClassId() == indoorDeviceClassId) {
+        qCDebug(dcNetatmo) << "Setup netatmo indoor base station" << device->params();
+        NetatmoBaseStation *indoor = new NetatmoBaseStation(device->paramValue("name").toString(),
+                                                            device->paramValue("mac address").toString(),
+                                                            device->paramValue("connection id").toString(), this);
+
+        connect(indoor, &NetatmoBaseStation::statesChanged, this, &DevicePluginNetatmo::onIndoorStatesChanged);
+
+        return DeviceManager::DeviceSetupStatusSuccess;
+    }
+
+    return DeviceManager::DeviceSetupStatusFailure;
+}
+
+void DevicePluginNetatmo::deviceRemoved(Device *device)
+{
+    OAuth2 * authentication = m_authentications.key(device);
+    m_authentications.remove(authentication);
+    authentication->deleteLater();
+}
+
+void DevicePluginNetatmo::networkManagerReplyReady(QNetworkReply *reply)
+{
+    int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+
+    // update values request
+    if (m_refreshRequest.keys().contains(reply)) {
+        Device *device = m_refreshRequest.take(reply);
+
+        // check HTTP status code
+        if (status != 200) {
+            qCWarning(dcNetatmo) << "Device list reply HTTP error:" << status << reply->errorString();
+            emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusFailure);
+            reply->deleteLater();
+            return;
+        }
+
+        // check JSON file
+        QJsonParseError error;
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(reply->readAll(), &error);
+        if (error.error != QJsonParseError::NoError) {
+            qCWarning(dcNetatmo) << "Device list reply JSON error:" << error.errorString();
+            emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusFailure);
+            reply->deleteLater();
+            return;
+        }
+
+        qCDebug(dcNetatmo) << jsonDoc.toJson();
+        processRefreshData(jsonDoc.toVariant().toMap(), device->id().toString());
+    }
+
+    reply->deleteLater();
+}
+
+void DevicePluginNetatmo::guhTimer()
+{
+    foreach (Device *device, myDevices()) {
+        if (device->deviceClassId() == connectionDeviceClassId) {
+            OAuth2 *authentication = m_authentications.key(device);
+            // TODO: check if authenticated
+            refreshData(device, authentication->token());
+        }
+    }
+}
+
+void DevicePluginNetatmo::refreshData(Device *device, const QString &token)
+{
+    QUrlQuery query;
+    query.addQueryItem("access_token", token);
+
+    QUrl url("https://api.netatmo.com/api/devicelist");
+    url.setQuery(query);
+
+    QNetworkReply *reply = networkManagerGet(QNetworkRequest(url));
+    m_refreshRequest.insert(reply, device);
+}
+
+void DevicePluginNetatmo::processRefreshData(const QVariantMap &data, const QString &connectionId)
+{
+    if (data.contains("body")) {
+        if (data.value("body").toMap().contains("devices")) {
+            QVariantList deviceList = data.value("body").toMap().value("devices").toList();
+            //QVariantList modulesList = data.value("body").toMap().value("modules").toList();
+
+            // check devices
+            foreach (QVariant deviceVariant, deviceList) {
+                QVariantMap deviceMap = deviceVariant.toMap();
+                // we support currently only NAMain devices
+                if (deviceMap.value("type").toString() == "NAMain") {
+                    NetatmoBaseStation *indoor = findIndoorDevice(deviceMap.value("_id").toString());
+                    // check if we have to create the device (auto)
+                    if (!indoor) {
+                        DeviceDescriptor descriptor(indoorDeviceClassId, "Indoor Station", deviceMap.value("station_name").toString());
+                        ParamList params;
+                        params.append(Param("name", deviceMap.value("station_name").toString()));
+                        params.append(Param("mac address", deviceMap.value("_id").toString()));
+                        params.append(Param("connection id", connectionId));
+                        descriptor.setParams(params);
+                        emit autoDevicesAppeared(indoorDeviceClassId, QList<DeviceDescriptor>() << descriptor);
+                    } else {
+                        indoor->updateStates(deviceMap);
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+NetatmoBaseStation *DevicePluginNetatmo::findIndoorDevice(const QString &macAddress)
+{
+    foreach (NetatmoBaseStation *bs, m_indoorDevices.keys()) {
+        if (bs->macAddress() == macAddress) {
+            return bs;
+        }
+    }
+    return 0;
+}
+
+void DevicePluginNetatmo::onAuthenticationChanged()
+{
+    OAuth2 *authentication = static_cast<OAuth2 *>(sender());
+    Device *device = m_authentications.value(authentication);
+
+    // check if this is was a setup athentication
+    if (m_asyncSetups.contains(device)) {
+        m_asyncSetups.removeAll(device);
+        if (authentication->authenticated()) {
+            emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusSuccess);
+            refreshData(device, authentication->token());
+        } else {
+            emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusFailure);
+            m_authentications.remove(authentication);
+            authentication->deleteLater();
+        }
+    }
+}
+
+

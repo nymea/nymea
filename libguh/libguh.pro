@@ -17,11 +17,13 @@ contains(DEFINES, BLUETOOTH_LE) {
                bluetooth/bluetoothlowenergydevice.h \
 }
 
-SOURCES += plugin/device.cpp \
+SOURCES += devicemanager.cpp \
+           loggingcategories.cpp \
+           guhsettings.cpp \
+           plugin/device.cpp \
            plugin/deviceclass.cpp \
            plugin/deviceplugin.cpp \
            plugin/devicedescriptor.cpp \
-           devicemanager.cpp \
            hardware/gpio.cpp \
            hardware/gpiomonitor.cpp \
            hardware/radio433/radio433.cpp \
@@ -33,6 +35,7 @@ SOURCES += plugin/device.cpp \
            network/upnpdiscovery/upnpdevicedescriptor.cpp \
            network/upnpdiscovery/upnpdiscoveryrequest.cpp \
            network/networkmanager.cpp \
+           network/oauth2.cpp \
            types/action.cpp \
            types/actiontype.cpp \
            types/state.cpp \
@@ -47,14 +50,15 @@ SOURCES += plugin/device.cpp \
            types/ruleaction.cpp \
            types/ruleactionparam.cpp \
            types/statedescriptor.cpp \
-           loggingcategories.cpp \
-           guhsettings.cpp \
 
-HEADERS += plugin/device.h \
+HEADERS += devicemanager.h \
+           typeutils.h \
+           loggingcategories.h \
+           guhsettings.h \
+           plugin/device.h \
            plugin/deviceclass.h \
            plugin/deviceplugin.h \
            plugin/devicedescriptor.h \
-           devicemanager.h \
            hardware/gpio.h \
            hardware/gpiomonitor.h \
            hardware/radio433/radio433.h \
@@ -66,6 +70,7 @@ HEADERS += plugin/device.h \
            network/upnpdiscovery/upnpdevicedescriptor.h \
            network/upnpdiscovery/upnpdiscoveryrequest.h \
            network/networkmanager.h \
+           network/oauth2.h \
            types/action.h \
            types/actiontype.h \
            types/state.h \
@@ -80,9 +85,6 @@ HEADERS += plugin/device.h \
            types/ruleaction.h \
            types/ruleactionparam.h \
            types/statedescriptor.h \
-           typeutils.h \
-           loggingcategories.h \
-           guhsettings.h \
 
 
 # install files for libguh-dev

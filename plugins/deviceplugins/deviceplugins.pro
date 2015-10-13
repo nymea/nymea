@@ -20,6 +20,7 @@ SUBDIRS += elro         \
     kodi                \
     elgato              \
     awattar             \
+    netatmo             \
 
 
 

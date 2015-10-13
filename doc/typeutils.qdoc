@@ -257,12 +257,16 @@
             \li 36
             \li The value of the \l{Param} has unit \tt {[\%]} \unicode{0x2192} percentage.
         \row
-            \li Types::UnitEuro
+            \li Types::UnitPartsPerMillion
             \li 37
+            \li The value of the \l{Param} has unit \tt {[ppm]} \unicode{0x2192} parts per million.
+        \row
+            \li Types::UnitEuro
+            \li 38
             \li The value of the \l{Param} has unit \tt {[€]} \unicode{0x2192} euro.
         \row
             \li Types::UnitDollar
-            \li 38
+            \li 39
             \li The value of the \l{Param} has unit \tt {[\$]} \unicode{0x2192} dollar.
     \endtable
 

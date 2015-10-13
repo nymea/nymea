@@ -18,23 +18,50 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef LOGGINGCATEGORYS_H
-#define LOGGINGCATEGORYS_H
+#ifndef DEVICEPLUGINNETATMO_H
+#define DEVICEPLUGINNETATMO_H
 
-#include <QLoggingCategory>
+#include <QHash>
+#include <QDebug>
+#include <QTimer>
 
-// Core / libguh
-Q_DECLARE_LOGGING_CATEGORY(dcApplication)
-Q_DECLARE_LOGGING_CATEGORY(dcDeviceManager)
-Q_DECLARE_LOGGING_CATEGORY(dcRuleEngine)
-Q_DECLARE_LOGGING_CATEGORY(dcHardware)
-Q_DECLARE_LOGGING_CATEGORY(dcConnection)
-Q_DECLARE_LOGGING_CATEGORY(dcLogEngine)
-Q_DECLARE_LOGGING_CATEGORY(dcTcpServer)
-Q_DECLARE_LOGGING_CATEGORY(dcWebServer)
-Q_DECLARE_LOGGING_CATEGORY(dcWebSocketServer)
-Q_DECLARE_LOGGING_CATEGORY(dcJsonRpc)
-Q_DECLARE_LOGGING_CATEGORY(dcRest)
-Q_DECLARE_LOGGING_CATEGORY(dcOAuth2)
+#include "plugin/deviceplugin.h"
+#include "network/oauth2.h"
+#include "netatmobasestation.h"
 
-#endif // LOGGINGCATEGORYS_H
+class DevicePluginNetatmo : public DevicePlugin
+{
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "guru.guh.DevicePlugin" FILE "devicepluginnetatmo.json")
+    Q_INTERFACES(DevicePlugin)
+
+public:
+    explicit DevicePluginNetatmo();
+
+    DeviceManager::HardwareResources requiredHardware() const override;
+    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
+    void deviceRemoved(Device *device) override;
+    void networkManagerReplyReady(QNetworkReply *reply) override;
+
+    void guhTimer() override;
+
+private:
+    QList<Device *> m_asyncSetups;
+
+    QHash<OAuth2 *, Device *> m_authentications;
+    QHash<NetatmoBaseStation *, Device *> m_indoorDevices;
+
+    QHash<QNetworkReply *, Device *> m_refreshRequest;
+
+    void refreshData(Device *device, const QString &token);
+    void processRefreshData(const QVariantMap &data, const QString &connectionId);
+
+    NetatmoBaseStation *findIndoorDevice(const QString &macAddress);
+
+private slots:
+    void onAuthenticationChanged();
+    void onIndoorStatesChanged();
+
+};
+
+#endif // DEVICEPLUGINNETATMO_H

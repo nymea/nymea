@@ -1,0 +1,141 @@
+{
+    "name": "Netatmo",
+    "idName": "Netatmo",
+    "id": "3af70774-4b43-46fe-96a4-22108d4efb1b",
+    "vendors": [
+        {
+            "name": "Netatmo",
+            "idName": "netatmo",
+            "id": "31828f6f-c63d-4d44-b2b1-d0f70b3ce933",
+            "deviceClasses": [
+                {
+                    "deviceClassId": "728d5a67-27a3-400e-b83c-2765f5196f69",
+                    "name": "Netatmo Connection",
+                    "idName": "connection",
+                    "createMethods": ["user"],
+                    "paramTypes": [
+                        {
+                            "name": "username",
+                            "type": "QString",
+                            "inputType": "TextLine"
+                        },
+                        {
+                            "name": "password",
+                            "type": "QString",
+                            "inputType": "Password"
+                        }
+                    ],
+                    "stateType": [
+                        {
+                            "id": "2f79bc1d-27ed-480a-b583-728363c83ea6",
+                            "idName": "available",
+                            "name": "available",
+                            "type": "bool",
+                            "defaultValue": false
+                        }
+                    ]
+                },
+                {
+                    "deviceClassId": "d79d373c-c992-4d75-bd01-a0f8ab346ac5",
+                    "name": "Indoor Station",
+                    "idName": "indoor",
+                    "createMethods": ["auto"],
+                    "paramTypes": [
+                        {
+                            "name": "name",
+                            "type": "QString",
+                            "inputType": "TextLine",
+                            "readOnly": true
+                        },
+                        {
+                            "name": "mac address",
+                            "type": "QString",
+                            "inputType": "TextLine",
+                            "readOnly": true
+                        },
+                        {
+                            "name": "connection id",
+                            "type": "QString",
+                            "inputType": "TextLine",
+                            "readOnly": true
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "50da9f6b-c350-401c-a72e-2e4036f3975d",
+                            "idName": "updateTime",
+                            "name": "last update",
+                            "unit": "UnixTime",
+                            "type": "int",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "3cb25538-e463-40ae-92f9-8f34f0c06b92",
+                            "idName": "temperature",
+                            "name": "temperature",
+                            "unit": "DegreeCelsius",
+                            "type": "double",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "ae8bb713-8805-4efd-89a1-bca44a1f1690",
+                            "idName": "temperatureMin",
+                            "name": "temperature minimum",
+                            "unit": "DegreeCelsius",
+                            "type": "double",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "dd30507e-037b-4c74-bcca-e04b94c7c5fe",
+                            "idName": "temperatureMax",
+                            "name": "temperature maximum",
+                            "unit": "DegreeCelsius",
+                            "type": "double",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "e2db5f01-196a-48d1-8874-6b8cbfe0d8c9",
+                            "idName": "humidity",
+                            "name": "humidity",
+                            "unit": "Percentage",
+                            "type": "int",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "03b0a7b7-987d-4d3b-b3f0-21d9f92ad326",
+                            "idName": "pressure",
+                            "name": "pressure",
+                            "unit": "MilliBar",
+                            "type": "double",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "906cea9d-1daf-4e9c-90b9-e40f43052a34",
+                            "idName": "noise",
+                            "name": "noise",
+                            "unit": "Dezibel",
+                            "type": "int",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "e5710bd1-79fa-4bd4-9052-8416aae909b9",
+                            "idName": "co2",
+                            "name": "co2",
+                            "unit": "PartsPerMillion",
+                            "type": "int",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "6ea906d4-5740-454d-a730-6fdb9fa0d624",
+                            "idName": "wifiStrength",
+                            "name": "wifi signal strength",
+                            "unit": "Percentage",
+                            "type": "int",
+                            "defaultValue": 0
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

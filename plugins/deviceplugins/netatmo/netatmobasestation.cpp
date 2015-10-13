@@ -18,23 +18,77 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef LOGGINGCATEGORYS_H
-#define LOGGINGCATEGORYS_H
+#include "netatmobasestation.h"
 
-#include <QLoggingCategory>
+NetatmoBaseStation::NetatmoBaseStation(const QString &name, const QString &macAddress, const QString &connectionId, QObject *parent) :
+    QObject(parent),
+    m_name(name),
+    m_macAddress(macAddress),
+    m_connectionId(connectionId)
+{
+}
 
-// Core / libguh
-Q_DECLARE_LOGGING_CATEGORY(dcApplication)
-Q_DECLARE_LOGGING_CATEGORY(dcDeviceManager)
-Q_DECLARE_LOGGING_CATEGORY(dcRuleEngine)
-Q_DECLARE_LOGGING_CATEGORY(dcHardware)
-Q_DECLARE_LOGGING_CATEGORY(dcConnection)
-Q_DECLARE_LOGGING_CATEGORY(dcLogEngine)
-Q_DECLARE_LOGGING_CATEGORY(dcTcpServer)
-Q_DECLARE_LOGGING_CATEGORY(dcWebServer)
-Q_DECLARE_LOGGING_CATEGORY(dcWebSocketServer)
-Q_DECLARE_LOGGING_CATEGORY(dcJsonRpc)
-Q_DECLARE_LOGGING_CATEGORY(dcRest)
-Q_DECLARE_LOGGING_CATEGORY(dcOAuth2)
+QString NetatmoBaseStation::name() const
+{
+    return m_name;
+}
 
-#endif // LOGGINGCATEGORYS_H
+QString NetatmoBaseStation::macAddress() const
+{
+    return m_macAddress;
+}
+
+QString NetatmoBaseStation::connectionId() const
+{
+    return m_connectionId;
+}
+
+int NetatmoBaseStation::lastUpdate() const
+{
+    return m_lastUpdate;
+}
+
+double NetatmoBaseStation::temperature() const
+{
+    return m_temperature;
+}
+
+double NetatmoBaseStation::minTemperature() const
+{
+    return m_minTemperature;
+}
+
+double NetatmoBaseStation::maxTemperature() const
+{
+    return m_maxTemperature;
+}
+
+double NetatmoBaseStation::pressure() const
+{
+    return m_pressure;
+}
+
+int NetatmoBaseStation::humidity() const
+{
+    return m_humidity;
+}
+
+int NetatmoBaseStation::noise() const
+{
+    return m_noise;
+}
+
+int NetatmoBaseStation::co2() const
+{
+    return m_co2;
+}
+
+int NetatmoBaseStation::wifiStrength() const
+{
+    return m_wifiStrength;
+}
+
+void NetatmoBaseStation::updateStates(const QVariantMap &data)
+{
+    Q_UNUSED(data)
+}

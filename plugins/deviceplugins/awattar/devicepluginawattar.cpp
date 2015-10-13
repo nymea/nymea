@@ -44,7 +44,7 @@
     \note If a \l{StateType} has the parameter \tt{"writable": {...}}, an \l{ActionType} with the same uuid and \l{ParamType}{ParamTypes}
     will be created automatically.
 
-    \quotefile plugins/deviceplugins/udpcommander/devicepluginawattar.json
+    \quotefile plugins/deviceplugins/awattar/devicepluginawattar.json
 */
 
 #include "devicepluginawattar.h"

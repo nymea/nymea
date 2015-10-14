@@ -18,11 +18,11 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "netatmobasestation.h"
+#include "netatmooutdoormodule.h"
 
 #include <QVariantMap>
 
-NetatmoBaseStation::NetatmoBaseStation(const QString &name, const QString &macAddress, const QString &connectionId, QObject *parent) :
+NetatmoOutdoorModule::NetatmoOutdoorModule(const QString &name, const QString &macAddress, const QString &connectionId, QObject *parent) :
     QObject(parent),
     m_name(name),
     m_macAddress(macAddress),
@@ -30,95 +30,96 @@ NetatmoBaseStation::NetatmoBaseStation(const QString &name, const QString &macAd
 {
 }
 
-QString NetatmoBaseStation::name() const
+QString NetatmoOutdoorModule::name() const
 {
     return m_name;
 }
 
-QString NetatmoBaseStation::macAddress() const
+QString NetatmoOutdoorModule::macAddress() const
 {
     return m_macAddress;
 }
 
-QString NetatmoBaseStation::connectionId() const
+QString NetatmoOutdoorModule::connectionId() const
 {
     return m_connectionId;
 }
 
-int NetatmoBaseStation::lastUpdate() const
+int NetatmoOutdoorModule::lastUpdate() const
 {
     return m_lastUpdate;
 }
 
-double NetatmoBaseStation::temperature() const
-{
-    return m_temperature;
-}
-
-double NetatmoBaseStation::minTemperature() const
-{
-    return m_minTemperature;
-}
-
-double NetatmoBaseStation::maxTemperature() const
-{
-    return m_maxTemperature;
-}
-
-double NetatmoBaseStation::pressure() const
-{
-    return m_pressure;
-}
-
-int NetatmoBaseStation::humidity() const
+int NetatmoOutdoorModule::humidity() const
 {
     return m_humidity;
 }
 
-int NetatmoBaseStation::noise() const
+double NetatmoOutdoorModule::temperature() const
 {
-    return m_noise;
+    return m_temperature;
 }
 
-int NetatmoBaseStation::co2() const
+double NetatmoOutdoorModule::minTemperature() const
 {
-    return m_co2;
+    return m_minTemperature;
 }
 
-int NetatmoBaseStation::wifiStrength() const
+double NetatmoOutdoorModule::maxTemperature() const
 {
-    return m_wifiStrength;
+    return m_maxTemperature;
 }
 
-void NetatmoBaseStation::updateStates(const QVariantMap &data)
+int NetatmoOutdoorModule::signalStrength() const
+{
+    return m_signalStrength;
+}
+
+int NetatmoOutdoorModule::battery() const
+{
+    return m_battery;
+}
+
+void NetatmoOutdoorModule::updateStates(const QVariantMap &data)
 {
     // check data timestamp
-    if (data.contains("last_status_store")) {
-        m_lastUpdate = data.value("last_status_store").toInt();
+    if (data.contains("last_message")) {
+        m_lastUpdate = data.value("last_message").toInt();
     }
 
     // update dashboard data
     if (data.contains("dashboard_data")) {
         QVariantMap measurments = data.value("dashboard_data").toMap();
-        m_pressure = measurments.value("AbsolutePressure").toDouble();
         m_humidity = measurments.value("Humidity").toInt();
-        m_noise = measurments.value("Noise").toInt();
         m_temperature = measurments.value("Temperature").toDouble();
         m_minTemperature = measurments.value("min_temp").toDouble();
         m_maxTemperature = measurments.value("max_temp").toDouble();
-        m_co2 = measurments.value("CO2").toInt();
     }
-    // update wifi signal strength
-    if (data.contains("wifi_status")) {
-        int wifiStrength = data.value("wifi_status").toInt();
-        if (wifiStrength <= 56) {
-            m_wifiStrength = 100;
-        } else if (wifiStrength >= 86) {
-            m_wifiStrength = 0;
+    // update battery strength
+    if (data.contains("battery_vp")) {
+        int battery = data.value("battery_vp").toInt();
+        if (battery >= 6000) {
+            m_battery = 100;
+        } else if (battery <= 3600) {
+            m_battery = 0;
         } else {
-            int delta = 30 - (wifiStrength - 56);
-            m_wifiStrength = qRound(100.0 * delta / 30.0);
+            int delta = battery - 3600;
+            m_battery = qRound(100.0 * delta / 2400);
+        }
+    }
+
+    // update signal strength
+    if (data.contains("rf_status")) {
+        int signalStrength = data.value("rf_status").toInt();
+        if (signalStrength <= 60) {
+            m_signalStrength = 100;
+        } else if (signalStrength >= 90) {
+            m_signalStrength = 0;
+        } else {
+            int delta = 30 - (signalStrength - 60);
+            m_signalStrength = qRound(100.0 * delta / 30.0);
         }
     }
     emit statesChanged();
+
 }

@@ -18,56 +18,51 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef DEVICEPLUGINNETATMO_H
-#define DEVICEPLUGINNETATMO_H
+#ifndef NETATMOOUTDOORMODULE_H
+#define NETATMOOUTDOORMODULE_H
 
-#include "plugin/deviceplugin.h"
-#include "network/oauth2.h"
-#include "netatmobasestation.h"
-#include "netatmooutdoormodule.h"
+#include <QObject>
 
-#include <QHash>
-#include <QTimer>
-
-class DevicePluginNetatmo : public DevicePlugin
+class NetatmoOutdoorModule : public QObject
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "guru.guh.DevicePlugin" FILE "devicepluginnetatmo.json")
-    Q_INTERFACES(DevicePlugin)
-
 public:
-    explicit DevicePluginNetatmo();
+    explicit NetatmoOutdoorModule(const QString &name, const QString &macAddress, const QString &connectionId, QObject *parent = 0);
 
-    DeviceManager::HardwareResources requiredHardware() const override;
-    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
-    void deviceRemoved(Device *device) override;
-    void networkManagerReplyReady(QNetworkReply *reply) override;
+    // Params
+    QString name() const;
+    QString macAddress() const;
+    QString connectionId() const;
 
-    void guhTimer() override;
+    // States
+    int lastUpdate() const;
+    int humidity() const;
+    double temperature() const;
+    double minTemperature() const;
+    double maxTemperature() const;
+    int signalStrength() const;
+    int battery() const;
 
-public slots:
-    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
+    void updateStates(const QVariantMap &data);
 
 private:
-    QList<Device *> m_asyncSetups;
+    // Params
+    QString m_name;
+    QString m_macAddress;
+    QString m_connectionId;
 
-    QHash<OAuth2 *, Device *> m_authentications;
-    QHash<NetatmoBaseStation *, Device *> m_indoorDevices;
-    QHash<NetatmoOutdoorModule *, Device *> m_outdoorDevices;
+    // States
+    int m_lastUpdate;
+    int m_humidity;
+    double m_temperature;
+    double m_minTemperature;
+    double m_maxTemperature;
+    int m_signalStrength;
+    int m_battery;
 
-    QHash<QNetworkReply *, Device *> m_refreshRequest;
-
-    void refreshData(Device *device, const QString &token);
-    void processRefreshData(const QVariantMap &data, const QString &connectionId);
-
-    Device *findIndoorDevice(const QString &macAddress);
-    Device *findOutdoorDevice(const QString &macAddress);
-
-private slots:
-    void onAuthenticationChanged();
-    void onIndoorStatesChanged();
-    void onOutdoorStatesChanged();
+signals:
+    void statesChanged();
 
 };
 
-#endif // DEVICEPLUGINNETATMO_H
+#endif // NETATMOOUTDOORMODULE_H

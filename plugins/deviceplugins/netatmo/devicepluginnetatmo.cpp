@@ -47,6 +47,7 @@
 #include "plugin/device.h"
 #include "plugininfo.h"
 
+#include <QDebug>
 #include <QUrlQuery>
 #include <QJsonDocument>
 
@@ -83,19 +84,31 @@ DeviceManager::DeviceSetupStatus DevicePluginNetatmo::setupDevice(Device *device
                                                             device->paramValue("mac address").toString(),
                                                             device->paramValue("connection id").toString(), this);
 
-        connect(indoor, &NetatmoBaseStation::statesChanged, this, &DevicePluginNetatmo::onIndoorStatesChanged);
+        m_indoorDevices.insert(indoor, device);
+        connect(indoor, SIGNAL(statesChanged()), this, SLOT(onIndoorStatesChanged()));
+
+        return DeviceManager::DeviceSetupStatusSuccess;
+    } else if (device->deviceClassId() == outdoorDeviceClassId) {
+        qCDebug(dcNetatmo) << "Setup netatmo outdoor module" << device->params();
+        NetatmoOutdoorModule *outdoor = new NetatmoOutdoorModule(device->paramValue("name").toString(),
+                                                            device->paramValue("mac address").toString(),
+                                                            device->paramValue("connection id").toString(), this);
+
+        m_outdoorDevices.insert(outdoor, device);
+        connect(outdoor, SIGNAL(statesChanged()), this, SLOT(onOutdoorStatesChanged()));
 
         return DeviceManager::DeviceSetupStatusSuccess;
     }
-
     return DeviceManager::DeviceSetupStatusFailure;
 }
 
 void DevicePluginNetatmo::deviceRemoved(Device *device)
 {
-    OAuth2 * authentication = m_authentications.key(device);
-    m_authentications.remove(authentication);
-    authentication->deleteLater();
+    if (device->deviceClassId() == connectionDeviceClassId) {
+        OAuth2 * authentication = m_authentications.key(device);
+        m_authentications.remove(authentication);
+        authentication->deleteLater();
+    }
 }
 
 void DevicePluginNetatmo::networkManagerReplyReady(QNetworkReply *reply)
@@ -137,9 +150,19 @@ void DevicePluginNetatmo::guhTimer()
         if (device->deviceClassId() == connectionDeviceClassId) {
             OAuth2 *authentication = m_authentications.key(device);
             // TODO: check if authenticated
-            refreshData(device, authentication->token());
+            if (authentication->authenticated()) {
+                refreshData(device, authentication->token());
+            }
         }
     }
+}
+
+DeviceManager::DeviceError DevicePluginNetatmo::executeAction(Device *device, const Action &action)
+{
+    Q_UNUSED(device)
+    Q_UNUSED(action)
+
+    return DeviceManager::DeviceErrorNoError;
 }
 
 void DevicePluginNetatmo::refreshData(Device *device, const QString &token)
@@ -157,18 +180,18 @@ void DevicePluginNetatmo::refreshData(Device *device, const QString &token)
 void DevicePluginNetatmo::processRefreshData(const QVariantMap &data, const QString &connectionId)
 {
     if (data.contains("body")) {
+
+        // check devices
         if (data.value("body").toMap().contains("devices")) {
             QVariantList deviceList = data.value("body").toMap().value("devices").toList();
-            //QVariantList modulesList = data.value("body").toMap().value("modules").toList();
-
             // check devices
             foreach (QVariant deviceVariant, deviceList) {
                 QVariantMap deviceMap = deviceVariant.toMap();
                 // we support currently only NAMain devices
                 if (deviceMap.value("type").toString() == "NAMain") {
-                    NetatmoBaseStation *indoor = findIndoorDevice(deviceMap.value("_id").toString());
+                    Device *indoorDevice = findIndoorDevice(deviceMap.value("_id").toString());
                     // check if we have to create the device (auto)
-                    if (!indoor) {
+                    if (!indoorDevice) {
                         DeviceDescriptor descriptor(indoorDeviceClassId, "Indoor Station", deviceMap.value("station_name").toString());
                         ParamList params;
                         params.append(Param("name", deviceMap.value("station_name").toString()));
@@ -177,7 +200,36 @@ void DevicePluginNetatmo::processRefreshData(const QVariantMap &data, const QStr
                         descriptor.setParams(params);
                         emit autoDevicesAppeared(indoorDeviceClassId, QList<DeviceDescriptor>() << descriptor);
                     } else {
-                        indoor->updateStates(deviceMap);
+                        if (m_indoorDevices.values().contains(indoorDevice)) {
+                            m_indoorDevices.key(indoorDevice)->updateStates(deviceMap);
+                        }
+                    }
+                }
+            }
+        }
+
+        // check modules
+        if (data.value("body").toMap().contains("modules")) {
+            QVariantList modulesList = data.value("body").toMap().value("modules").toList();
+            // check devices
+            foreach (QVariant moduleVariant, modulesList) {
+                QVariantMap moduleMap = moduleVariant.toMap();
+                // we support currently only NAModule1
+                if (moduleMap.value("type").toString() == "NAModule1") {
+                    Device *outdoorDevice = findOutdoorDevice(moduleMap.value("_id").toString());
+                    // check if we have to create the device (auto)
+                    if (!outdoorDevice) {
+                        DeviceDescriptor descriptor(outdoorDeviceClassId, "Outdoor Module", moduleMap.value("module_name").toString());
+                        ParamList params;
+                        params.append(Param("name", moduleMap.value("module_name").toString()));
+                        params.append(Param("mac address", moduleMap.value("_id").toString()));
+                        params.append(Param("connection id", connectionId));
+                        descriptor.setParams(params);
+                        emit autoDevicesAppeared(outdoorDeviceClassId, QList<DeviceDescriptor>() << descriptor);
+                    } else {
+                        if (m_outdoorDevices.values().contains(outdoorDevice)) {
+                            m_outdoorDevices.key(outdoorDevice)->updateStates(moduleMap);
+                        }
                     }
                 }
             }
@@ -185,12 +237,25 @@ void DevicePluginNetatmo::processRefreshData(const QVariantMap &data, const QStr
     }
 }
 
-
-NetatmoBaseStation *DevicePluginNetatmo::findIndoorDevice(const QString &macAddress)
+Device *DevicePluginNetatmo::findIndoorDevice(const QString &macAddress)
 {
-    foreach (NetatmoBaseStation *bs, m_indoorDevices.keys()) {
-        if (bs->macAddress() == macAddress) {
-            return bs;
+    foreach (Device *device, myDevices()) {
+        if (device->deviceClassId() == indoorDeviceClassId) {
+            if (device->paramValue("mac address").toString() == macAddress) {
+                return device;
+            }
+        }
+    }
+    return 0;
+}
+
+Device *DevicePluginNetatmo::findOutdoorDevice(const QString &macAddress)
+{
+    foreach (Device *device, myDevices()) {
+        if (device->deviceClassId() == outdoorDeviceClassId) {
+            if (device->paramValue("mac address").toString() == macAddress) {
+                return device;
+            }
         }
     }
     return 0;
@@ -213,6 +278,36 @@ void DevicePluginNetatmo::onAuthenticationChanged()
             authentication->deleteLater();
         }
     }
+}
+
+void DevicePluginNetatmo::onIndoorStatesChanged()
+{
+    NetatmoBaseStation *indoor = static_cast<NetatmoBaseStation *>(sender());
+    Device *device = m_indoorDevices.value(indoor);
+
+    device->setStateValue(updateTimeStateTypeId, indoor->lastUpdate());
+    device->setStateValue(temperatureStateTypeId, indoor->temperature());
+    device->setStateValue(temperatureMinStateTypeId, indoor->minTemperature());
+    device->setStateValue(temperatureMaxStateTypeId, indoor->maxTemperature());
+    device->setStateValue(pressureStateTypeId, indoor->pressure());
+    device->setStateValue(humidityStateTypeId, indoor->humidity());
+    device->setStateValue(co2StateTypeId, indoor->co2());
+    device->setStateValue(noiseStateTypeId, indoor->noise());
+    device->setStateValue(wifiStrengthStateTypeId, indoor->wifiStrength());
+}
+
+void DevicePluginNetatmo::onOutdoorStatesChanged()
+{
+    NetatmoOutdoorModule *outdoor = static_cast<NetatmoOutdoorModule *>(sender());
+    Device *device = m_outdoorDevices.value(outdoor);
+
+    device->setStateValue(updateTimeStateTypeId, outdoor->lastUpdate());
+    device->setStateValue(temperatureStateTypeId, outdoor->temperature());
+    device->setStateValue(temperatureMinStateTypeId, outdoor->minTemperature());
+    device->setStateValue(temperatureMaxStateTypeId, outdoor->maxTemperature());
+    device->setStateValue(humidityStateTypeId, outdoor->humidity());
+    device->setStateValue(signalStrengthStateTypeId, outdoor->signalStrength());
+    device->setStateValue(batteryStateTypeId, outdoor->battery());
 }
 
 

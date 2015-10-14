@@ -4,10 +4,12 @@ TARGET = $$qtLibraryTarget(guh_devicepluginnetatmo)
 
 SOURCES += \
     devicepluginnetatmo.cpp \
-    netatmobasestation.cpp
+    netatmobasestation.cpp \
+    netatmooutdoormodule.cpp
 
 HEADERS += \
     devicepluginnetatmo.h \
-    netatmobasestation.h
+    netatmobasestation.h \
+    netatmooutdoormodule.h
 
 

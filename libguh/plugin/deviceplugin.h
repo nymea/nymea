@@ -137,6 +137,7 @@ private:
 
     friend class DeviceManager;
 };
+
 Q_DECLARE_INTERFACE(DevicePlugin, "guru.guh.DevicePlugin")
 
-#endif
+#endif // DEVICEPLUGIN_H

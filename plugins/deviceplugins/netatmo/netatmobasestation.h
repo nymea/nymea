@@ -67,6 +67,7 @@ private:
 
 signals:
     void statesChanged();
+
 };
 
 #endif // NETATMOBASESTATION_H

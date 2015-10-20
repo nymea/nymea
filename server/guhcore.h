@@ -70,12 +70,13 @@ public:
     DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params);
     DeviceManager::DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId &newId);
     DeviceManager::DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &newId);
-    QList<Device*> configuredDevices() const;
+    QList<Device *> configuredDevices() const;
     Device *findConfiguredDevice(const DeviceId &deviceId) const;
-    QList<Device*> findConfiguredDevices(const DeviceClassId &deviceClassId) const;
+    QList<Device *> findConfiguredDevices(const DeviceClassId &deviceClassId) const;
     DeviceManager::DeviceError editDevice(const DeviceId &deviceId, const ParamList &params);
     DeviceManager::DeviceError editDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId);
-    DeviceManager::DeviceError removeConfiguredDevice(const DeviceId &deviceId, const QHash<RuleId, RuleEngine::RemovePolicy> &removePolicyList);
+    QPair<DeviceManager::DeviceError, QList<RuleId> >removeConfiguredDevice(const DeviceId &deviceId, const QHash<RuleId, RuleEngine::RemovePolicy> &removePolicyList);
+    DeviceManager::DeviceError removeConfiguredDevice(const DeviceId &deviceId, const RuleEngine::RemovePolicy &removePolicy);
 
     DeviceManager::DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId);
     DeviceManager::DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params);
@@ -119,7 +120,6 @@ signals:
     void ruleAdded(const Rule &rule);
     void ruleActiveChanged(const Rule &rule);
     void ruleConfigurationChanged(const Rule &rule);
-
 
 private:
     RuleEngine *ruleEngine() const;

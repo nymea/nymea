@@ -64,7 +64,7 @@ private:
     HttpReply *getDeviceStateValue(Device *device, const StateTypeId &stateTypeId) const;
 
     // Delete methods
-    HttpReply *removeDevice(Device *device) const;
+    HttpReply *removeDevice(Device *device, const QVariantMap &params) const;
 
     // Post methods
     HttpReply *executeAction(Device *device, const ActionTypeId &actionTypeId, const QByteArray &payload) const;

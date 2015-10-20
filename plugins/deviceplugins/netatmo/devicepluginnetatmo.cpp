@@ -82,8 +82,9 @@ DeviceManager::DeviceSetupStatus DevicePluginNetatmo::setupDevice(Device *device
         qCDebug(dcNetatmo) << "Setup netatmo indoor base station" << device->params();
         NetatmoBaseStation *indoor = new NetatmoBaseStation(device->paramValue("name").toString(),
                                                             device->paramValue("mac address").toString(),
-                                                            device->paramValue("connection id").toString(), this);
+                                                            device->paramValue("connection").toString(), this);
 
+        device->setParentId(DeviceId(indoor->connectionId()));
         m_indoorDevices.insert(indoor, device);
         connect(indoor, SIGNAL(statesChanged()), this, SLOT(onIndoorStatesChanged()));
 
@@ -91,9 +92,11 @@ DeviceManager::DeviceSetupStatus DevicePluginNetatmo::setupDevice(Device *device
     } else if (device->deviceClassId() == outdoorDeviceClassId) {
         qCDebug(dcNetatmo) << "Setup netatmo outdoor module" << device->params();
         NetatmoOutdoorModule *outdoor = new NetatmoOutdoorModule(device->paramValue("name").toString(),
-                                                            device->paramValue("mac address").toString(),
-                                                            device->paramValue("connection id").toString(), this);
+                                                                 device->paramValue("mac address").toString(),
+                                                                 device->paramValue("connection").toString(),
+                                                                 device->paramValue("base station").toString(),this);
 
+        device->setParentId(DeviceId(outdoor->connectionId()));
         m_outdoorDevices.insert(outdoor, device);
         connect(outdoor, SIGNAL(statesChanged()), this, SLOT(onOutdoorStatesChanged()));
 
@@ -108,6 +111,14 @@ void DevicePluginNetatmo::deviceRemoved(Device *device)
         OAuth2 * authentication = m_authentications.key(device);
         m_authentications.remove(authentication);
         authentication->deleteLater();
+    } else if (device->deviceClassId() == indoorDeviceClassId) {
+        NetatmoBaseStation *indoor = m_indoorDevices.key(device);
+        m_indoorDevices.remove(indoor);
+        indoor->deleteLater();
+    } else if (device->deviceClassId() == outdoorDeviceClassId) {
+        NetatmoOutdoorModule *outdoor = m_outdoorDevices.key(device);
+        m_outdoorDevices.remove(outdoor);
+        outdoor->deleteLater();
     }
 }
 
@@ -122,7 +133,7 @@ void DevicePluginNetatmo::networkManagerReplyReady(QNetworkReply *reply)
         // check HTTP status code
         if (status != 200) {
             qCWarning(dcNetatmo) << "Device list reply HTTP error:" << status << reply->errorString();
-            emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusFailure);
+            device->setStateValue(availableStateTypeId, false);
             reply->deleteLater();
             return;
         }
@@ -132,7 +143,6 @@ void DevicePluginNetatmo::networkManagerReplyReady(QNetworkReply *reply)
         QJsonDocument jsonDoc = QJsonDocument::fromJson(reply->readAll(), &error);
         if (error.error != QJsonParseError::NoError) {
             qCWarning(dcNetatmo) << "Device list reply JSON error:" << error.errorString();
-            emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusFailure);
             reply->deleteLater();
             return;
         }
@@ -146,13 +156,11 @@ void DevicePluginNetatmo::networkManagerReplyReady(QNetworkReply *reply)
 
 void DevicePluginNetatmo::guhTimer()
 {
-    foreach (Device *device, myDevices()) {
-        if (device->deviceClassId() == connectionDeviceClassId) {
-            OAuth2 *authentication = m_authentications.key(device);
-            // TODO: check if authenticated
-            if (authentication->authenticated()) {
-                refreshData(device, authentication->token());
-            }
+    foreach (OAuth2 *authentication, m_authentications.keys()) {
+        if (authentication->authenticated()) {
+            refreshData(m_authentications.value(authentication), authentication->token());
+        } else {
+            authentication->startAuthentication();
         }
     }
 }
@@ -196,7 +204,7 @@ void DevicePluginNetatmo::processRefreshData(const QVariantMap &data, const QStr
                         ParamList params;
                         params.append(Param("name", deviceMap.value("station_name").toString()));
                         params.append(Param("mac address", deviceMap.value("_id").toString()));
-                        params.append(Param("connection id", connectionId));
+                        params.append(Param("connection", connectionId));
                         descriptor.setParams(params);
                         emit autoDevicesAppeared(indoorDeviceClassId, QList<DeviceDescriptor>() << descriptor);
                     } else {
@@ -223,7 +231,8 @@ void DevicePluginNetatmo::processRefreshData(const QVariantMap &data, const QStr
                         ParamList params;
                         params.append(Param("name", moduleMap.value("module_name").toString()));
                         params.append(Param("mac address", moduleMap.value("_id").toString()));
-                        params.append(Param("connection id", connectionId));
+                        params.append(Param("connection", connectionId));
+                        params.append(Param("base station", moduleMap.value("main_device").toString()));
                         descriptor.setParams(params);
                         emit autoDevicesAppeared(outdoorDeviceClassId, QList<DeviceDescriptor>() << descriptor);
                     } else {
@@ -266,16 +275,20 @@ void DevicePluginNetatmo::onAuthenticationChanged()
     OAuth2 *authentication = static_cast<OAuth2 *>(sender());
     Device *device = m_authentications.value(authentication);
 
+    if (!device)
+        return;
+
+    // set the available state
+    device->setStateValue(availableStateTypeId, authentication->authenticated());
+
     // check if this is was a setup athentication
     if (m_asyncSetups.contains(device)) {
-        m_asyncSetups.removeAll(device);
         if (authentication->authenticated()) {
+            m_asyncSetups.removeAll(device);
             emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusSuccess);
             refreshData(device, authentication->token());
         } else {
             emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusFailure);
-            m_authentications.remove(authentication);
-            authentication->deleteLater();
         }
     }
 }

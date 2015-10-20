@@ -143,6 +143,7 @@ void OAuth2::setAuthenticated(const bool &authenticated)
     if (authenticated) {
         qCDebug(dcOAuth2) << "Authenticated successfully" << m_username;
     } else {
+        m_timer->stop();
         qCWarning(dcOAuth2) << "Authentication failed" << m_username;
     }
     m_authenticated = authenticated;

@@ -22,11 +22,12 @@
 
 #include <QVariantMap>
 
-NetatmoOutdoorModule::NetatmoOutdoorModule(const QString &name, const QString &macAddress, const QString &connectionId, QObject *parent) :
+NetatmoOutdoorModule::NetatmoOutdoorModule(const QString &name, const QString &macAddress, const QString &connectionId, const QString &baseStation, QObject *parent) :
     QObject(parent),
     m_name(name),
     m_macAddress(macAddress),
-    m_connectionId(connectionId)
+    m_connectionId(connectionId),
+    m_baseStation(baseStation)
 {
 }
 
@@ -43,6 +44,11 @@ QString NetatmoOutdoorModule::macAddress() const
 QString NetatmoOutdoorModule::connectionId() const
 {
     return m_connectionId;
+}
+
+QString NetatmoOutdoorModule::baseStation() const
+{
+    return m_baseStation;
 }
 
 int NetatmoOutdoorModule::lastUpdate() const

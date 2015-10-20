@@ -59,7 +59,7 @@
                             "readOnly": true
                         },
                         {
-                            "name": "connection id",
+                            "name": "connection",
                             "type": "QString",
                             "inputType": "TextLine",
                             "readOnly": true
@@ -158,8 +158,15 @@
                             "inputType": "TextLine",
                             "readOnly": true
                         },
+
                         {
-                            "name": "basestation id",
+                            "name": "connection",
+                            "type": "QString",
+                            "inputType": "TextLine",
+                            "readOnly": true
+                        },
+                        {
+                            "name": "base station",
                             "type": "QString",
                             "inputType": "TextLine",
                             "readOnly": true

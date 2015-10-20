@@ -760,6 +760,8 @@ Types::Unit DevicePlugin::unitStringToUnit(const QString &unitString) const
         return Types::UnitEuroPerMegaWattHour;
     } else if (unitString == "Percentage") {
         return Types::UnitPercentage;
+    } else if (unitString == "PartsPerMillion") {
+        return Types::UnitPartsPerMillion;
     } else if (unitString == "Euro") {
         return Types::UnitEuro;
     } else if (unitString == "Dollar") {

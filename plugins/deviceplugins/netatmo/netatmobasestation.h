@@ -18,23 +18,56 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef LOGGINGCATEGORYS_H
-#define LOGGINGCATEGORYS_H
+#ifndef NETATMOBASESTATION_H
+#define NETATMOBASESTATION_H
 
-#include <QLoggingCategory>
+#include <QObject>
+#include <QString>
 
-// Core / libguh
-Q_DECLARE_LOGGING_CATEGORY(dcApplication)
-Q_DECLARE_LOGGING_CATEGORY(dcDeviceManager)
-Q_DECLARE_LOGGING_CATEGORY(dcRuleEngine)
-Q_DECLARE_LOGGING_CATEGORY(dcHardware)
-Q_DECLARE_LOGGING_CATEGORY(dcConnection)
-Q_DECLARE_LOGGING_CATEGORY(dcLogEngine)
-Q_DECLARE_LOGGING_CATEGORY(dcTcpServer)
-Q_DECLARE_LOGGING_CATEGORY(dcWebServer)
-Q_DECLARE_LOGGING_CATEGORY(dcWebSocketServer)
-Q_DECLARE_LOGGING_CATEGORY(dcJsonRpc)
-Q_DECLARE_LOGGING_CATEGORY(dcRest)
-Q_DECLARE_LOGGING_CATEGORY(dcOAuth2)
+class NetatmoBaseStation : public QObject
+{
+    Q_OBJECT
+public:
+    explicit NetatmoBaseStation(const QString &name, const QString &macAddress, const QString &connectionId, QObject *parent = 0);
 
-#endif // LOGGINGCATEGORYS_H
+    // Params
+    QString name() const;
+    QString macAddress() const;
+    QString connectionId() const;
+
+    // States
+    int lastUpdate() const;
+    double temperature() const;
+    double minTemperature() const;
+    double maxTemperature() const;
+    double pressure() const;
+    int humidity() const;
+    int noise() const;
+    int co2() const;
+    int wifiStrength() const;
+
+    void updateStates(const QVariantMap &data);
+
+private:
+    // Params
+    QString m_name;
+    QString m_macAddress;
+    QString m_connectionId;
+
+    // States
+    int m_lastUpdate;
+    double m_temperature;
+    double m_minTemperature;
+    double m_maxTemperature;
+    double m_pressure;
+    int m_humidity;
+    int m_noise;
+    int m_co2;
+    int m_wifiStrength;
+
+signals:
+    void statesChanged();
+
+};
+
+#endif // NETATMOBASESTATION_H

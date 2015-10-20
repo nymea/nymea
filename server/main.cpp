@@ -61,14 +61,15 @@ int main(int argc, char *argv[])
     s_loggingFilters.insert("Warnings", true);
     s_loggingFilters.insert("DeviceManager", true);
     s_loggingFilters.insert("RuleEngine", true);
+    s_loggingFilters.insert("Hardware", false);
     s_loggingFilters.insert("Connection", true);
+    s_loggingFilters.insert("LogEngine", false);
     s_loggingFilters.insert("TcpServer", false);
     s_loggingFilters.insert("WebServer", true);
     s_loggingFilters.insert("WebSocketServer", false);
     s_loggingFilters.insert("JsonRpc", false);
     s_loggingFilters.insert("Rest", true);
-    s_loggingFilters.insert("Hardware", false);
-    s_loggingFilters.insert("LogEngine", false);
+    s_loggingFilters.insert("OAuth2", false);
 
     QHash<QString, bool> loggingFiltersPlugins;
     foreach (const QJsonObject &pluginMetadata, DeviceManager::pluginsMetadata()) {

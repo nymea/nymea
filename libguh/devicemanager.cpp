@@ -819,7 +819,10 @@ void DeviceManager::loadPlugins()
             }
             QPluginLoader loader(fi.absoluteFilePath());
 
-            DevicePlugin *pluginIface = qobject_cast<DevicePlugin*>(loader.instance());
+            DevicePlugin *pluginIface = qobject_cast<DevicePlugin *>(loader.instance());
+            if (!pluginIface)
+                qCWarning(dcDeviceManager) << "Could not load plugin interface of" << entry;
+
             if (verifyPluginMetadata(loader.metaData().value("MetaData").toObject()) && pluginIface) {
                 pluginIface->initPlugin(loader.metaData().value("MetaData").toObject(), this);
                 qCDebug(dcDeviceManager) << "*** Loaded plugin" << pluginIface->pluginName();
@@ -1229,7 +1232,7 @@ bool DeviceManager::verifyPluginMetadata(const QJsonObject &data)
     requiredFields << "name" << "id" << "vendors";
 
     foreach (const QString &field, requiredFields) {
-        if (!data.contains("name")) {
+        if (!data.contains(field)) {
             qCWarning(dcDeviceManager) << "Error loading plugin. Incomplete metadata. Missing field:" << field;
             qCWarning(dcDeviceManager) << data;
             return false;

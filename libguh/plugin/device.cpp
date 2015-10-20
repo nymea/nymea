@@ -154,7 +154,7 @@ bool Device::hasParam(const QString &paramName) const
     return false;
 }
 
-/*! Sets the \a states of this Device. It must match the \l{StateType} description in the associated \l{DeviceClass}. */
+DeviceId m_id;
 void Device::setStates(const QList<State> &states)
 {
     m_states = states;
@@ -209,6 +209,22 @@ State Device::state(const StateTypeId &stateTypeId) const
         }
     }
     return State(StateTypeId(), DeviceId());
+}
+
+/*! Returns the \l{DeviceId} of the parent Device from Device. If the parentId
+    is not set, this device is a parent device.
+*/
+DeviceId Device::parentId() const
+{
+    return m_parentId;
+}
+
+/*! Sets the \a parentId of this Device. If the parentId
+    is not set, this device is a parent device.
+*/
+void Device::setParentId(const DeviceId &parentId)
+{
+    m_parentId = parentId;
 }
 
 /*! Returns true, if setup of this Device is already completed. */

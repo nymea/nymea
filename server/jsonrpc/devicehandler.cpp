@@ -113,13 +113,13 @@ DeviceHandler::DeviceHandler(QObject *parent) :
 
     returns.clear(); // Reused params from above!
     setDescription("PairDevice", "Pair a device. "
-                   "Use this for DeviceClasses with a setupMethod different than SetupMethodJustAdd."
+                   "Use this for DeviceClasses with a setupMethod different than SetupMethodJustAdd. "
                    "Use deviceDescriptorId or deviceParams, depending on the createMethod of the device class. "
                    "CreateMethodJustAdd takes the parameters you want to have with that device. "
                    "CreateMethodDiscovery requires the use of a deviceDescriptorId. "
                    "If success is true, the return values will contain a pairingTransactionId, a displayMessage and "
                    "the setupMethod. Depending on the setupMethod you should either proceed with AddConfiguredDevice "
-                   " or PairDevice."
+                   "or PairDevice."
                    );
     setParams("PairDevice", params);
     returns.insert("deviceError", JsonTypes::deviceErrorRef());
@@ -181,9 +181,11 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     policy.insert("ruleId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     policy.insert("policy", JsonTypes::removePolicyRef());
     removePolicyList.append(policy);
+    params.insert("o:removePolicy", JsonTypes::removePolicyRef());
     params.insert("o:removePolicyList", removePolicyList);
     setParams("RemoveConfiguredDevice", params);
     returns.insert("deviceError", JsonTypes::deviceErrorRef());
+    returns.insert("o:ruleIds", QVariantList() << JsonTypes::basicTypeToString(JsonTypes::Uuid));
     setReturns("RemoveConfiguredDevice", returns);
 
     params.clear(); returns.clear();
@@ -459,7 +461,17 @@ JsonReply *DeviceHandler::EditDevice(const QVariantMap &params)
 
 JsonReply* DeviceHandler::RemoveConfiguredDevice(const QVariantMap &params)
 {
+    QVariantMap returns;
     DeviceId deviceId = DeviceId(params.value("deviceId").toString());
+
+    // global removePolicy has priority
+    if (params.contains("removePolicy")) {
+        RuleEngine::RemovePolicy removePolicy = params.value("removePolicy").toString() == "RemovePolicyCascade" ? RuleEngine::RemovePolicyCascade : RuleEngine::RemovePolicyUpdate;
+        DeviceManager::DeviceError status = GuhCore::instance()->removeConfiguredDevice(deviceId, removePolicy);
+        returns.insert("deviceError", JsonTypes::deviceErrorToString(status));
+        return createReply(returns);
+    }
+
     QHash<RuleId, RuleEngine::RemovePolicy> removePolicyList;
     foreach (const QVariant &variant, params.value("removePolicyList").toList()) {
         RuleId ruleId = RuleId(variant.toMap().value("ruleId").toString());
@@ -467,9 +479,17 @@ JsonReply* DeviceHandler::RemoveConfiguredDevice(const QVariantMap &params)
         removePolicyList.insert(ruleId, policy);
     }
 
-    QVariantMap returns;
-    DeviceManager::DeviceError status = GuhCore::instance()->removeConfiguredDevice(deviceId, removePolicyList);
-    returns.insert("deviceError", JsonTypes::deviceErrorToString(status));
+    QPair<DeviceManager::DeviceError, QList<RuleId> > status = GuhCore::instance()->removeConfiguredDevice(deviceId, removePolicyList);
+    returns.insert("deviceError", JsonTypes::deviceErrorToString(status.first));
+
+    if (!status.second.isEmpty()) {
+        QVariantList ruleIdList;
+        foreach (const RuleId &ruleId, status.second) {
+            ruleIdList.append(ruleId.toString());
+        }
+        returns.insert("ruleIds", ruleIdList);
+    }
+
     return createReply(returns);
 }
 
@@ -614,7 +634,6 @@ void DeviceHandler::deviceSetupFinished(Device *device, DeviceManager::DeviceErr
     }
     reply->setData(returns);
     reply->finished();
-
 }
 
 void DeviceHandler::deviceEditFinished(Device *device, DeviceManager::DeviceError status)

@@ -70,6 +70,7 @@ DeviceManager::DeviceError DevicePluginPhilipsHue::discoverDevices(const DeviceC
 {
     Q_UNUSED(deviceClassId)
     Q_UNUSED(params)
+
     upnpDiscover("libhue:idl");
     return DeviceManager::DeviceErrorAsync;
 }
@@ -149,10 +150,9 @@ DeviceManager::DeviceSetupStatus DevicePluginPhilipsHue::setupDevice(Device *dev
                                     device->paramValue("model id").toString(),
                                     DeviceId(device->paramValue("bridge").toString()),
                                     this);
-
             connect(hueLight, &HueLight::stateChanged, this, &DevicePluginPhilipsHue::lightStateChanged);
         }
-
+        device->setParentId(device->paramValue("bridge").toString());
         m_lights.insert(hueLight, device);
         setLightName(device, device->paramValue("name").toString());
     }
@@ -166,8 +166,6 @@ void DevicePluginPhilipsHue::deviceRemoved(Device *device)
         HueBridge *bridge = m_bridges.key(device);
         m_bridges.remove(bridge);
         bridge->deleteLater();
-
-        // TODO: remove lights from this bridge (over GuhCore)
     }
 
     if (device->deviceClassId() == hueLightDeviceClassId) {
@@ -305,7 +303,6 @@ void DevicePluginPhilipsHue::networkManagerReplyReady(QNetworkReply *reply)
             return;
         }
         processSetNameResponse(device, reply->readAll());
-
     }
 
     reply->deleteLater();

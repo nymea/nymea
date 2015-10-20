@@ -551,9 +551,10 @@ QList<RuleId> RuleEngine::findRules(const DeviceId &deviceId)
                 break;
             }
         }
-        if (!offending && rule.stateEvaluator().containsDevice(deviceId)) {
+
+        if (!offending && rule.stateEvaluator().containsDevice(deviceId))
             offending = true;
-        }
+
         if (!offending) {
             foreach (const RuleAction &action, rule.actions()) {
                 if (action.deviceId() == deviceId) {
@@ -562,9 +563,19 @@ QList<RuleId> RuleEngine::findRules(const DeviceId &deviceId)
                 }
             }
         }
-        if (offending) {
-            offendingRules.append(rule.id());
+
+        if (!offending) {
+            foreach (const RuleAction &action, rule.exitActions()) {
+                if (action.deviceId() == deviceId) {
+                    offending = true;
+                    break;
+                }
+            }
         }
+
+        if (offending)
+            offendingRules.append(rule.id());
+
     }
     return offendingRules;
 }
@@ -572,10 +583,12 @@ QList<RuleId> RuleEngine::findRules(const DeviceId &deviceId)
 /*! Removes a \l{Device} from a \l{Rule} with the given \a id and \a deviceId. */
 void RuleEngine::removeDeviceFromRule(const RuleId &id, const DeviceId &deviceId)
 {
-    if (!m_rules.contains(id)) {
+    if (!m_rules.contains(id))
         return;
-    }
+
     Rule rule = m_rules.value(id);
+
+    // remove device from eventDescriptors
     QList<EventDescriptor> eventDescriptors = rule.eventDescriptors();
     QList<int> removeIndexes;
     for (int i = 0; i < eventDescriptors.count(); i++) {
@@ -586,9 +599,12 @@ void RuleEngine::removeDeviceFromRule(const RuleId &id, const DeviceId &deviceId
     while (removeIndexes.count() > 0) {
         eventDescriptors.takeAt(removeIndexes.takeLast());
     }
+
+    // remove device from state evaluators
     StateEvaluator stateEvalatuator = rule.stateEvaluator();
     stateEvalatuator.removeDevice(deviceId);
 
+    // remove device from actions
     QList<RuleAction> actions = rule.actions();
     for (int i = 0; i < actions.count(); i++) {
         if (actions.at(i).deviceId() == deviceId) {
@@ -598,8 +614,30 @@ void RuleEngine::removeDeviceFromRule(const RuleId &id, const DeviceId &deviceId
     while (removeIndexes.count() > 0) {
         actions.takeAt(removeIndexes.takeLast());
     }
+
+    // remove device from exit actions
+    QList<RuleAction> exitActions = rule.exitActions();
+    for (int i = 0; i < exitActions.count(); i++) {
+        if (exitActions.at(i).deviceId() == deviceId) {
+            removeIndexes.append(i);
+        }
+    }
+    while (removeIndexes.count() > 0) {
+        exitActions.takeAt(removeIndexes.takeLast());
+    }
+
+    // remove the rule from settings
+    GuhSettings settings(GuhSettings::SettingsRoleRules);
+    settings.beginGroup(id.toString());
+    settings.remove("");
+    settings.endGroup();
+
     Rule newRule(id, rule.name(), eventDescriptors, stateEvalatuator, actions);
     m_rules[id] = newRule;
+
+    // save it
+    saveRule(newRule);
+    emit ruleConfigurationChanged(newRule);
 }
 
 bool RuleEngine::containsEvent(const Rule &rule, const Event &event)

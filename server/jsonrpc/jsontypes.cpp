@@ -199,6 +199,7 @@ void JsonTypes::init()
     s_device.insert("name", basicTypeToString(String));
     s_device.insert("params", QVariantList() << paramRef());
     s_device.insert("setupComplete", basicTypeToString(Bool));
+    s_device.insert("o:parentId", basicTypeToString(Uuid));
 
     // DeviceDescription
     s_deviceDescriptor.insert("id", basicTypeToString(Uuid));
@@ -561,6 +562,10 @@ QVariantMap JsonTypes::packDevice(Device *device)
     foreach (const Param &param, device->params()) {
         params.append(packParam(param));
     }
+
+    if (!device->parentId().isNull())
+        variant.insert("parentId", device->parentId());
+
     variant.insert("params", params);
     variant.insert("setupComplete", device->setupComplete());
     return variant;

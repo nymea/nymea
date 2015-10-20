@@ -155,10 +155,19 @@ HttpReply *DevicesResource::proccessDeleteRequest(const HttpRequest &request, co
         return createErrorReply(HttpReply::BadRequest);
 
     // DELETE /api/v1/devices/{deviceId}
-    if (urlTokens.count() == 4)
-        return removeDevice(m_device);
+    if (urlTokens.count() == 4) {
+        QVariantMap params;
+        if (request.urlQuery().hasQueryItem("params")) {
+            QString paramMapString = request.urlQuery().queryItemValue("params");
 
-    // TODO: /api/v1/devices/{deviceId}?ruleId={ruleId}&removePolicy={RemovePolicy}
+            QPair<bool, QVariant> verification = verifyPayload(paramMapString.toUtf8());
+            if (!verification.first)
+                return createErrorReply(HttpReply::BadRequest);
+
+            params = verification.second.toMap();
+        }
+        return removeDevice(m_device, params);
+    }
 
     return createErrorReply(HttpReply::NotImplemented);
 }
@@ -232,19 +241,8 @@ HttpReply *DevicesResource::getConfiguredDevices() const
 {
     qCDebug(dcRest) << "Get all configured devices";
     HttpReply *reply = createSuccessReply();
-    QVariantList devices = JsonTypes::packConfiguredDevices();
-
-    QVariantList finalDevices;
-    foreach (const QVariant &deviceVariant, devices) {
-        QVariantMap deviceMap = deviceVariant.toMap();
-        Device* device = GuhCore::instance()->findConfiguredDevice(DeviceId(deviceMap.value("id").toString()));
-        QVariantList deviceStates = JsonTypes::packDeviceStates(device);
-        deviceMap.insert("states", deviceStates);
-        finalDevices.append(deviceMap);
-    }
-
     reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
-    reply->setPayload(QJsonDocument::fromVariant(finalDevices).toJson());
+    reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packConfiguredDevices()).toJson());
     return reply;
 }
 
@@ -252,14 +250,8 @@ HttpReply *DevicesResource::getConfiguredDevice(Device *device) const
 {
     qCDebug(dcRest) << "Get configured device with id:" << device->id().toString();
     HttpReply *reply = createSuccessReply();
-    QVariantMap deviceMap = JsonTypes::packDevice(device);
-    QVariantList deviceStates = JsonTypes::packDeviceStates(device);
-    deviceMap.insert("states", deviceStates);
-
-    qCDebug(dcRest) << deviceMap;
-
     reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
-    reply->setPayload(QJsonDocument::fromVariant(deviceMap).toJson());
+    reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packDevice(device)).toJson());
     return reply;
 }
 
@@ -283,18 +275,49 @@ HttpReply *DevicesResource::getDeviceStateValue(Device *device, const StateTypeI
     return reply;
 }
 
-HttpReply *DevicesResource::removeDevice(Device *device) const
+HttpReply *DevicesResource::removeDevice(Device *device, const QVariantMap &params) const
 {
     qCDebug(dcRest) << "Remove device with id:" << device->id().toString();
-    DeviceManager::DeviceError result = GuhCore::instance()->removeConfiguredDevice(device->id(), QHash<RuleId, RuleEngine::RemovePolicy>());
+    qCDebug(dcRest) << QJsonDocument::fromVariant(params).toJson();
 
-    // TODO: /api/v1/devices/{deviceId}?ruleId={ruleId}&removePolicy={RemovePolicy}
+    // global removePolicy has priority
+    if (params.contains("removePolicy")) {
+        RuleEngine::RemovePolicy removePolicy = params.value("removePolicy").toString() == "RemovePolicyCascade" ? RuleEngine::RemovePolicyCascade : RuleEngine::RemovePolicyUpdate;
+        DeviceManager::DeviceError result = GuhCore::instance()->removeConfiguredDevice(device->id(), removePolicy);
+        return createDeviceErrorReply(HttpReply::Ok, result);
+    }
 
-    if (result == DeviceManager::DeviceErrorNoError) {
-        HttpReply *reply = createDeviceErrorReply(HttpReply::Ok, result);
+    QHash<RuleId, RuleEngine::RemovePolicy> removePolicyList;
+    foreach (const QVariant &variant, params.value("removePolicyList").toList()) {
+        RuleId ruleId = RuleId(variant.toMap().value("ruleId").toString());
+        RuleEngine::RemovePolicy policy = variant.toMap().value("policy").toString() == "RemovePolicyCascade" ? RuleEngine::RemovePolicyCascade : RuleEngine::RemovePolicyUpdate;
+        removePolicyList.insert(ruleId, policy);
+    }
+
+    QPair<DeviceManager::DeviceError, QList<RuleId> > status = GuhCore::instance()->removeConfiguredDevice(device->id(), removePolicyList);
+
+    // if there are offending rules
+    if (!status.second.isEmpty()) {
+        QVariantList ruleIdList;
+        QVariantMap returns;
+        returns.insert("deviceError", JsonTypes::deviceErrorToString(status.first));
+
+        foreach (const RuleId &ruleId, status.second) {
+            ruleIdList.append(ruleId.toString());
+        }
+        returns.insert("ruleIds", ruleIdList);
+
+        HttpReply *reply = createErrorReply(HttpReply::BadRequest);
+        reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
+        reply->setPayload(QJsonDocument::fromVariant(returns).toJson());
         return reply;
     }
-    return createDeviceErrorReply(HttpReply::BadRequest, result);
+
+    if (status.first == DeviceManager::DeviceErrorNoError)
+        return createDeviceErrorReply(HttpReply::Ok, status.first);
+
+    return createDeviceErrorReply(HttpReply::BadRequest, status.first);
+
 }
 
 HttpReply *DevicesResource::executeAction(Device *device, const ActionTypeId &actionTypeId, const QByteArray &payload) const

@@ -1,4 +1,4 @@
-31
+32
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -196,7 +196,7 @@
             }
         },
         "Devices.PairDevice": {
-            "description": "Pair a device. Use this for DeviceClasses with a setupMethod different than SetupMethodJustAdd.Use deviceDescriptorId or deviceParams, depending on the createMethod of the device class. CreateMethodJustAdd takes the parameters you want to have with that device. CreateMethodDiscovery requires the use of a deviceDescriptorId. If success is true, the return values will contain a pairingTransactionId, a displayMessage and the setupMethod. Depending on the setupMethod you should either proceed with AddConfiguredDevice  or PairDevice.",
+            "description": "Pair a device. Use this for DeviceClasses with a setupMethod different than SetupMethodJustAdd. Use deviceDescriptorId or deviceParams, depending on the createMethod of the device class. CreateMethodJustAdd takes the parameters you want to have with that device. CreateMethodDiscovery requires the use of a deviceDescriptorId. If success is true, the return values will contain a pairingTransactionId, a displayMessage and the setupMethod. Depending on the setupMethod you should either proceed with AddConfiguredDevice or PairDevice.",
             "params": {
                 "deviceClassId": "Uuid",
                 "o:deviceDescriptorId": "Uuid",
@@ -215,6 +215,7 @@
             "description": "Remove a device from the system.",
             "params": {
                 "deviceId": "Uuid",
+                "o:removePolicy": "$ref:RemovePolicy",
                 "o:removePolicyList": [
                     {
                         "policy": "$ref:RemovePolicy",
@@ -223,7 +224,10 @@
                 ]
             },
             "returns": {
-                "deviceError": "$ref:DeviceError"
+                "deviceError": "$ref:DeviceError",
+                "o:ruleIds": [
+                    "Uuid"
+                ]
             }
         },
         "Devices.SetPluginConfiguration": {
@@ -549,6 +553,7 @@
             "deviceClassId": "Uuid",
             "id": "Uuid",
             "name": "String",
+            "o:parentId": "Uuid",
             "params": [
                 "$ref:Param"
             ],
@@ -604,6 +609,8 @@
             "DeviceErrorAuthentificationFailure",
             "DeviceErrorAsync",
             "DeviceErrorDeviceInUse",
+            "DeviceErrorDeviceInRule",
+            "DeviceErrorDeviceIsChild",
             "DeviceErrorPairingTransactionIdNotFound",
             "DeviceErrorParameterNotWritable"
         ],

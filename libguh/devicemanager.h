@@ -82,6 +82,8 @@ public:
         DeviceErrorAuthentificationFailure,
         DeviceErrorAsync,
         DeviceErrorDeviceInUse,
+        DeviceErrorDeviceInRule,
+        DeviceErrorDeviceIsChild,
         DeviceErrorPairingTransactionIdNotFound,
         DeviceErrorParameterNotWritable
     };
@@ -119,7 +121,8 @@ public:
     DeviceError removeConfiguredDevice(const DeviceId &deviceId);
 
     Device* findConfiguredDevice(const DeviceId &id) const;
-    QList<Device*> findConfiguredDevices(const DeviceClassId &deviceClassId) const;
+    QList<Device *> findConfiguredDevices(const DeviceClassId &deviceClassId) const;
+    QList<Device *> findChildDevices(Device *device) const;
     DeviceClass findDeviceClass(const DeviceClassId &deviceClassId) const;
 
 signals:

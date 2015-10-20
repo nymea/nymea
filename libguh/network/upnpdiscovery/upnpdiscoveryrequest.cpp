@@ -45,7 +45,7 @@ void UpnpDiscoveryRequest::discover()
     m_upnpDiscovery->sendToMulticast(ssdpSearchMessage);
     qCDebug(dcHardware) << "--> UPnP discovery called.";
 
-    m_timer->start(3000);
+    m_timer->start(5000);
 }
 
 void UpnpDiscoveryRequest::addDeviceDescriptor(const UpnpDeviceDescriptor &deviceDescriptor)

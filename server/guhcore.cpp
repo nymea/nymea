@@ -184,6 +184,10 @@ QPair<DeviceManager::DeviceError, QList<RuleId> > GuhCore::removeConfiguredDevic
 {
     // Check if this is a child device
     Device *device = findConfiguredDevice(deviceId);
+
+    if (!device)
+        return QPair<DeviceManager::DeviceError, QList<RuleId> > (DeviceManager::DeviceErrorDeviceNotFound, QList<RuleId>());
+
     if (!device->parentId().isNull()) {
         qCWarning(dcDeviceManager) << "The device is a child of" << device->parentId().toString() << ". Please remove the parent device.";
         return QPair<DeviceManager::DeviceError, QList<RuleId> > (DeviceManager::DeviceErrorDeviceIsChild, QList<RuleId>());
@@ -268,6 +272,10 @@ DeviceManager::DeviceError GuhCore::removeConfiguredDevice(const DeviceId &devic
 {
     // Check if this is a child device
     Device *device = findConfiguredDevice(deviceId);
+
+    if (!device)
+        return DeviceManager::DeviceErrorDeviceNotFound;
+
     if (!device->parentId().isNull()) {
         qCWarning(dcDeviceManager) << "The device is a child of" << device->parentId().toString() << ". Please remove the parent device.";
         return DeviceManager::DeviceErrorDeviceIsChild;

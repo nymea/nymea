@@ -147,7 +147,7 @@ void DevicePluginNetatmo::networkManagerReplyReady(QNetworkReply *reply)
             return;
         }
 
-        qCDebug(dcNetatmo) << jsonDoc.toJson();
+        //qCDebug(dcNetatmo) << jsonDoc.toJson();
         processRefreshData(jsonDoc.toVariant().toMap(), device->id().toString());
     }
 

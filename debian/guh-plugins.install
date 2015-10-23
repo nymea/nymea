@@ -19,3 +19,5 @@ usr/lib/guh/plugins/libguh_deviceplugintune.so
 usr/lib/guh/plugins/libguh_devicepluginudpcommander.so
 usr/lib/guh/plugins/libguh_devicepluginkodi.so
 usr/lib/guh/plugins/libguh_devicepluginelgato.so
+usr/lib/guh/plugins/libguh_devicepluginawattar.so
+usr/lib/guh/plugins/libguh_devicepluginnetatmo.so

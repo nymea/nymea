@@ -1,7 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
  *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
- *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -19,49 +18,56 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef RULESHANDLER_H
-#define RULESHANDLER_H
+#ifndef NETATMOBASESTATION_H
+#define NETATMOBASESTATION_H
 
-#include "jsonhandler.h"
+#include <QObject>
+#include <QString>
 
-namespace guhserver {
-
-class RulesHandler : public JsonHandler
+class NetatmoBaseStation : public QObject
 {
     Q_OBJECT
 public:
-    explicit RulesHandler(QObject *parent = 0);
+    explicit NetatmoBaseStation(const QString &name, const QString &macAddress, const QString &connectionId, QObject *parent = 0);
 
-    QString name() const override;
+    // Params
+    QString name() const;
+    QString macAddress() const;
+    QString connectionId() const;
 
-    Q_INVOKABLE JsonReply *GetRules(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *GetRuleDetails(const QVariantMap &params);
+    // States
+    int lastUpdate() const;
+    double temperature() const;
+    double minTemperature() const;
+    double maxTemperature() const;
+    double pressure() const;
+    int humidity() const;
+    int noise() const;
+    int co2() const;
+    int wifiStrength() const;
 
-    Q_INVOKABLE JsonReply *AddRule(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *EditRule(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *RemoveRule(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *FindRules(const QVariantMap &params);
+    void updateStates(const QVariantMap &data);
 
-    Q_INVOKABLE JsonReply *EnableRule(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *DisableRule(const QVariantMap &params);
+private:
+    // Params
+    QString m_name;
+    QString m_macAddress;
+    QString m_connectionId;
 
-    Q_INVOKABLE JsonReply *ExecuteActions(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *ExecuteExitActions(const QVariantMap &params);
+    // States
+    int m_lastUpdate;
+    double m_temperature;
+    double m_minTemperature;
+    double m_maxTemperature;
+    double m_pressure;
+    int m_humidity;
+    int m_noise;
+    int m_co2;
+    int m_wifiStrength;
 
 signals:
-    void RuleRemoved(const QVariantMap &params);
-    void RuleAdded(const QVariantMap &params);
-    void RuleActiveChanged(const QVariantMap &params);
-    void RuleConfigurationChanged(const QVariantMap &params);
-
-private slots:
-    void ruleRemovedNotification(const RuleId &ruleId);
-    void ruleAddedNotification(const Rule &rule);
-    void ruleActiveChangedNotification(const Rule &rule);
-    void ruleConfigurationChangedNotification(const Rule &rule);
+    void statesChanged();
 
 };
 
-}
-
-#endif // RULESHANDLER_H
+#endif // NETATMOBASESTATION_H

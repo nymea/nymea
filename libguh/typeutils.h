@@ -113,7 +113,9 @@ public:
         UnitWatt,
         UnitKiloWatt,
         UnitKiloWattHour,
+        UnitEuroPerMegaWattHour,
         UnitPercentage,
+        UnitPartsPerMillion,
         UnitEuro,
         UnitDollar
     };

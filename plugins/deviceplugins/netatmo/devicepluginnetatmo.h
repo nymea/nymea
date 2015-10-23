@@ -1,7 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
  *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
- *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -19,49 +18,56 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef RULESHANDLER_H
-#define RULESHANDLER_H
+#ifndef DEVICEPLUGINNETATMO_H
+#define DEVICEPLUGINNETATMO_H
 
-#include "jsonhandler.h"
+#include "plugin/deviceplugin.h"
+#include "network/oauth2.h"
+#include "netatmobasestation.h"
+#include "netatmooutdoormodule.h"
 
-namespace guhserver {
+#include <QHash>
+#include <QTimer>
 
-class RulesHandler : public JsonHandler
+class DevicePluginNetatmo : public DevicePlugin
 {
     Q_OBJECT
+    Q_PLUGIN_METADATA(IID "guru.guh.DevicePlugin" FILE "devicepluginnetatmo.json")
+    Q_INTERFACES(DevicePlugin)
+
 public:
-    explicit RulesHandler(QObject *parent = 0);
+    explicit DevicePluginNetatmo();
 
-    QString name() const override;
+    DeviceManager::HardwareResources requiredHardware() const override;
+    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
+    void deviceRemoved(Device *device) override;
+    void networkManagerReplyReady(QNetworkReply *reply) override;
 
-    Q_INVOKABLE JsonReply *GetRules(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *GetRuleDetails(const QVariantMap &params);
+    void guhTimer() override;
 
-    Q_INVOKABLE JsonReply *AddRule(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *EditRule(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *RemoveRule(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *FindRules(const QVariantMap &params);
+public slots:
+    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
 
-    Q_INVOKABLE JsonReply *EnableRule(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *DisableRule(const QVariantMap &params);
+private:
+    QList<Device *> m_asyncSetups;
 
-    Q_INVOKABLE JsonReply *ExecuteActions(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *ExecuteExitActions(const QVariantMap &params);
+    QHash<OAuth2 *, Device *> m_authentications;
+    QHash<NetatmoBaseStation *, Device *> m_indoorDevices;
+    QHash<NetatmoOutdoorModule *, Device *> m_outdoorDevices;
 
-signals:
-    void RuleRemoved(const QVariantMap &params);
-    void RuleAdded(const QVariantMap &params);
-    void RuleActiveChanged(const QVariantMap &params);
-    void RuleConfigurationChanged(const QVariantMap &params);
+    QHash<QNetworkReply *, Device *> m_refreshRequest;
+
+    void refreshData(Device *device, const QString &token);
+    void processRefreshData(const QVariantMap &data, const QString &connectionId);
+
+    Device *findIndoorDevice(const QString &macAddress);
+    Device *findOutdoorDevice(const QString &macAddress);
 
 private slots:
-    void ruleRemovedNotification(const RuleId &ruleId);
-    void ruleAddedNotification(const Rule &rule);
-    void ruleActiveChangedNotification(const Rule &rule);
-    void ruleConfigurationChangedNotification(const Rule &rule);
+    void onAuthenticationChanged();
+    void onIndoorStatesChanged();
+    void onOutdoorStatesChanged();
 
 };
 
-}
-
-#endif // RULESHANDLER_H
+#endif // DEVICEPLUGINNETATMO_H

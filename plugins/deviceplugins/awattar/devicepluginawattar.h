@@ -1,7 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
  *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
- *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -19,49 +18,42 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef RULESHANDLER_H
-#define RULESHANDLER_H
+#ifndef DEVICEPLUGINAWATTAR_H
+#define DEVICEPLUGINAWATTAR_H
 
-#include "jsonhandler.h"
+#include "plugin/deviceplugin.h"
 
-namespace guhserver {
+#include <QHash>
+#include <QDebug>
+#include <QTimer>
 
-class RulesHandler : public JsonHandler
+class DevicePluginAwattar : public DevicePlugin
 {
     Q_OBJECT
+    Q_PLUGIN_METADATA(IID "guru.guh.DevicePlugin" FILE "devicepluginawattar.json")
+    Q_INTERFACES(DevicePlugin)
+
 public:
-    explicit RulesHandler(QObject *parent = 0);
+    explicit DevicePluginAwattar();
 
-    QString name() const override;
+    DeviceManager::HardwareResources requiredHardware() const override;
+    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
+    void deviceRemoved(Device *device) override;
+    void networkManagerReplyReady(QNetworkReply *reply) override;
 
-    Q_INVOKABLE JsonReply *GetRules(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *GetRuleDetails(const QVariantMap &params);
+private:
+    QTimer *m_timer;
+    QHash<QNetworkReply *, Device *> m_asyncSetup;
+    QHash<QNetworkReply *, Device *> m_update;
 
-    Q_INVOKABLE JsonReply *AddRule(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *EditRule(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *RemoveRule(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *FindRules(const QVariantMap &params);
+    void processData(Device *device, const QVariantMap &data, const bool &fromSetup = false);
 
-    Q_INVOKABLE JsonReply *EnableRule(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *DisableRule(const QVariantMap &params);
-
-    Q_INVOKABLE JsonReply *ExecuteActions(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *ExecuteExitActions(const QVariantMap &params);
-
-signals:
-    void RuleRemoved(const QVariantMap &params);
-    void RuleAdded(const QVariantMap &params);
-    void RuleActiveChanged(const QVariantMap &params);
-    void RuleConfigurationChanged(const QVariantMap &params);
+    QNetworkReply *requestData(const QString& token);
+    void updateDevice(Device *device);
 
 private slots:
-    void ruleRemovedNotification(const RuleId &ruleId);
-    void ruleAddedNotification(const Rule &rule);
-    void ruleActiveChangedNotification(const Rule &rule);
-    void ruleConfigurationChangedNotification(const Rule &rule);
+    void onTimeout();
 
 };
 
-}
-
-#endif // RULESHANDLER_H
+#endif // DEVICEPLUGINAWATTAR_H

@@ -180,11 +180,48 @@ QList<DeviceClass> GuhCore::supportedDevices(const VendorId &vendorId) const
 }
 
 /*! Removes a configured \l{Device} with the given \a deviceId and \a removePolicyList. */
-DeviceManager::DeviceError GuhCore::removeConfiguredDevice(const DeviceId &deviceId, const QHash<RuleId, RuleEngine::RemovePolicy> &removePolicyList)
+QPair<DeviceManager::DeviceError, QList<RuleId> > GuhCore::removeConfiguredDevice(const DeviceId &deviceId, const QHash<RuleId, RuleEngine::RemovePolicy> &removePolicyList)
 {
+    // Check if this is a child device
+    Device *device = findConfiguredDevice(deviceId);
+
+    if (!device)
+        return QPair<DeviceManager::DeviceError, QList<RuleId> > (DeviceManager::DeviceErrorDeviceNotFound, QList<RuleId>());
+
+    if (!device->parentId().isNull()) {
+        qCWarning(dcDeviceManager) << "The device is a child of" << device->parentId().toString() << ". Please remove the parent device.";
+        return QPair<DeviceManager::DeviceError, QList<RuleId> > (DeviceManager::DeviceErrorDeviceIsChild, QList<RuleId>());
+    }
+
+    // Check if this device has child devices
+    QList<Device *> devicesToRemove;
+    devicesToRemove.append(device);
+    QList<Device *> childDevices = m_deviceManager->findChildDevices(device);
+    if (!childDevices.isEmpty()) {
+        foreach (Device *child, childDevices) {
+            devicesToRemove.append(child);
+        }
+    }
+
+    // check devices
+    QList<RuleId> offendingRules;
+    qCDebug(dcDeviceManager) << "Devices to remove:";
+    foreach (Device *d, devicesToRemove) {
+        qCDebug(dcDeviceManager) << " -> " << d->name() << d->id().toString();
+
+        // Check if device is in a rule
+        foreach (const RuleId &ruleId, m_ruleEngine->findRules(d->id())) {
+            qCDebug(dcDeviceManager) << "      -> in rule:" << ruleId.toString();
+            if (!offendingRules.contains(ruleId)) {
+                offendingRules.append(ruleId);
+            }
+        }
+    }
+
+    // check each offending rule if there is a corresponding remove policy
     QHash<RuleId, RuleEngine::RemovePolicy> toBeChanged;
     QList<RuleId> unhandledRules;
-    foreach (const RuleId &ruleId, m_ruleEngine->findRules(deviceId)) {
+    foreach (const RuleId &ruleId, offendingRules) {
         bool found = false;
         foreach (const RuleId &policyRuleId, removePolicyList.keys()) {
             if (ruleId == policyRuleId) {
@@ -193,14 +230,14 @@ DeviceManager::DeviceError GuhCore::removeConfiguredDevice(const DeviceId &devic
                 break;
             }
         }
-        if (!found) {
+        if (!found)
             unhandledRules.append(ruleId);
-        }
+
     }
 
     if (!unhandledRules.isEmpty()) {
-        qCWarning(dcDeviceManager) << "There are unhandled rules which depend on this device.";
-        return DeviceManager::DeviceErrorDeviceInUse;
+        qCWarning(dcDeviceManager) << "There are unhandled rules which depend on this device:\n" << unhandledRules;
+        return QPair<DeviceManager::DeviceError, QList<RuleId> > (DeviceManager::DeviceErrorDeviceInRule, unhandledRules);
     }
 
     // Update the rules...
@@ -208,13 +245,91 @@ DeviceManager::DeviceError GuhCore::removeConfiguredDevice(const DeviceId &devic
         if (toBeChanged.value(ruleId) == RuleEngine::RemovePolicyCascade) {
             m_ruleEngine->removeRule(ruleId);
         } else if (toBeChanged.value(ruleId) == RuleEngine::RemovePolicyUpdate){
-            m_ruleEngine->removeDeviceFromRule(ruleId, deviceId);
+            foreach (Device *d, devicesToRemove) {
+                m_ruleEngine->removeDeviceFromRule(ruleId, d->id());
+            }
         }
     }
 
+    // remove the child devices
+    foreach (Device *d, childDevices) {
+        DeviceManager::DeviceError removeError = m_deviceManager->removeConfiguredDevice(d->id());
+        if (removeError == DeviceManager::DeviceErrorNoError) {
+            m_logger->removeDeviceLogs(d->id());
+        }
+    }
+
+    // delete the devices
     DeviceManager::DeviceError removeError = m_deviceManager->removeConfiguredDevice(deviceId);
-    if (removeError == DeviceManager::DeviceErrorNoError)
+    if (removeError == DeviceManager::DeviceErrorNoError) {
         m_logger->removeDeviceLogs(deviceId);
+    }
+
+    return QPair<DeviceManager::DeviceError, QList<RuleId> > (DeviceManager::DeviceErrorNoError, QList<RuleId>());
+}
+
+DeviceManager::DeviceError GuhCore::removeConfiguredDevice(const DeviceId &deviceId, const RuleEngine::RemovePolicy &removePolicy)
+{
+    // Check if this is a child device
+    Device *device = findConfiguredDevice(deviceId);
+
+    if (!device)
+        return DeviceManager::DeviceErrorDeviceNotFound;
+
+    if (!device->parentId().isNull()) {
+        qCWarning(dcDeviceManager) << "The device is a child of" << device->parentId().toString() << ". Please remove the parent device.";
+        return DeviceManager::DeviceErrorDeviceIsChild;
+    }
+
+    // Check if this device has child devices
+    QList<Device *> devicesToRemove;
+    devicesToRemove.append(device);
+    QList<Device *> childDevices = m_deviceManager->findChildDevices(device);
+    if (!childDevices.isEmpty()) {
+        foreach (Device *child, childDevices) {
+            devicesToRemove.append(child);
+        }
+    }
+
+    // check devices
+    QList<RuleId> offendingRules;
+    qCDebug(dcDeviceManager) << "Devices to remove:";
+    foreach (Device *d, devicesToRemove) {
+        qCDebug(dcDeviceManager) << " -> " << d->name() << d->id().toString();
+
+        // Check if device is in a rule
+        foreach (const RuleId &ruleId, m_ruleEngine->findRules(d->id())) {
+            qCDebug(dcDeviceManager) << "      -> in rule:" << ruleId.toString();
+            if (!offendingRules.contains(ruleId)) {
+                offendingRules.append(ruleId);
+            }
+        }
+    }
+
+    // apply removepolicy for foreach rule
+    foreach (const RuleId &ruleId, offendingRules) {
+        if (removePolicy == RuleEngine::RemovePolicyCascade) {
+            m_ruleEngine->removeRule(ruleId);
+        } else if (removePolicy == RuleEngine::RemovePolicyUpdate){
+            foreach (Device *d, devicesToRemove) {
+                m_ruleEngine->removeDeviceFromRule(ruleId, d->id());
+            }
+        }
+    }
+
+    // remove the child devices
+    foreach (Device *d, childDevices) {
+        DeviceManager::DeviceError removeError = m_deviceManager->removeConfiguredDevice(d->id());
+        if (removeError == DeviceManager::DeviceErrorNoError) {
+            m_logger->removeDeviceLogs(d->id());
+        }
+    }
+
+    // delete the devices
+    DeviceManager::DeviceError removeError = m_deviceManager->removeConfiguredDevice(deviceId);
+    if (removeError == DeviceManager::DeviceErrorNoError) {
+        m_logger->removeDeviceLogs(deviceId);
+    }
 
     return removeError;
 }
@@ -256,6 +371,33 @@ DeviceManager::DeviceError GuhCore::executeAction(const Action &action)
         m_logger->logAction(action, Logging::LoggingLevelAlert, ret);
     }
     return ret;
+}
+
+void GuhCore::executeRuleActions(const QList<RuleAction> ruleActions)
+{
+    foreach (const RuleAction &ruleAction, ruleActions) {
+        Action action = ruleAction.toAction();
+        qCDebug(dcRuleEngine) << "executing action" << ruleAction.actionTypeId() << action.params();
+        DeviceManager::DeviceError status = executeAction(action);
+        switch(status) {
+        case DeviceManager::DeviceErrorNoError:
+            break;
+        case DeviceManager::DeviceErrorSetupFailed:
+            qCWarning(dcRuleEngine) << "Error executing action. Device setup failed.";
+            break;
+        case DeviceManager::DeviceErrorAsync:
+            qCDebug(dcRuleEngine) << "Executing asynchronous action.";
+            break;
+        case DeviceManager::DeviceErrorInvalidParameter:
+            qCWarning(dcRuleEngine) << "Error executing action. Invalid action parameter.";
+            break;
+        default:
+            qCWarning(dcRuleEngine) << "Error executing action:" << status;
+        }
+
+        if (status != DeviceManager::DeviceErrorAsync)
+            m_logger->logAction(action, status == DeviceManager::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
+    }
 }
 
 /*! Calls the metheod DeviceManager::findDeviceClass(\a deviceClassId).
@@ -344,16 +486,16 @@ Rule GuhCore::findRule(const RuleId &ruleId)
 
 /*! Calls the metheod RuleEngine::addRule(\a id, \a name, \a eventDescriptorList, \a stateEvaluator \a actionList, \a exitActionList, \a enabled).
  *  \sa RuleEngine::addRule(), */
-RuleEngine::RuleError GuhCore::addRule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actionList, const QList<RuleAction> &exitActionList, bool enabled)
+RuleEngine::RuleError GuhCore::addRule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actionList, const QList<RuleAction> &exitActionList, bool enabled, bool executable)
 {
-    return m_ruleEngine->addRule(id, name, eventDescriptorList, stateEvaluator, actionList, exitActionList, enabled);
+    return m_ruleEngine->addRule(id, name, eventDescriptorList, stateEvaluator, actionList, exitActionList, enabled, executable);
 }
 
 /*! Calls the metheod RuleEngine::editRule(\a id, \a name, \a eventDescriptorList, \a stateEvaluator \a actionList, \a exitActionList, \a enabled).
  *  \sa RuleEngine::editRule(), */
-RuleEngine::RuleError GuhCore::editRule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actionList, const QList<RuleAction> &exitActionList, bool enabled)
+RuleEngine::RuleError GuhCore::editRule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actionList, const QList<RuleAction> &exitActionList, bool enabled, bool executable)
 {
-    return m_ruleEngine->editRule(id, name, eventDescriptorList, stateEvaluator, actionList, exitActionList, enabled);
+    return m_ruleEngine->editRule(id, name, eventDescriptorList, stateEvaluator, actionList, exitActionList, enabled, executable);
 }
 
 /*! Calls the metheod RuleEngine::removeRule(\a id).
@@ -386,6 +528,16 @@ RuleEngine::RuleError GuhCore::enableRule(const RuleId &ruleId)
 RuleEngine::RuleError GuhCore::disableRule(const RuleId &ruleId)
 {
     return m_ruleEngine->disableRule(ruleId);
+}
+
+RuleEngine::RuleError GuhCore::executeRuleActions(const RuleId &ruleId)
+{
+    return m_ruleEngine->executeActions(ruleId);
+}
+
+RuleEngine::RuleError GuhCore::executeRuleExitActions(const RuleId &ruleId)
+{
+    return m_ruleEngine->executeExitActions(ruleId);
 }
 
 /*! Returns a pointer to the \l{DeviceManager} instance owned by GuhCore.*/
@@ -491,30 +643,7 @@ void GuhCore::gotEvent(const Event &event)
         actions.append(ruleAction);
     }
 
-    // Now execute all the associated actions
-    foreach (const RuleAction &ruleAction, actions) {
-        Action action = ruleAction.toAction();
-        qCDebug(dcRuleEngine) << "executing action" << ruleAction.actionTypeId();
-        DeviceManager::DeviceError status = executeAction(action);
-        switch(status) {
-        case DeviceManager::DeviceErrorNoError:
-            break;
-        case DeviceManager::DeviceErrorSetupFailed:
-            qCWarning(dcRuleEngine) << "Error executing action. Device setup failed.";
-            break;
-        case DeviceManager::DeviceErrorAsync:
-            qCDebug(dcRuleEngine) << "Executing asynchronous action.";
-            break;
-        case DeviceManager::DeviceErrorInvalidParameter:
-            qCWarning(dcRuleEngine) << "Error executing action. Invalid action parameter.";
-            break;
-        default:
-            qCWarning(dcRuleEngine) << "Error executing action:" << status;
-        }
-
-        if (status != DeviceManager::DeviceErrorAsync)
-            m_logger->logAction(action, status == DeviceManager::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
-    }
+    executeRuleActions(actions);
 }
 
 /*! Return the instance of the log engine */

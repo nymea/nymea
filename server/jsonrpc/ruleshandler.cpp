@@ -71,6 +71,7 @@ RulesHandler::RulesHandler(QObject *parent) :
     params.insert("o:stateEvaluator", JsonTypes::stateEvaluatorRef());
     params.insert("o:exitActions", QVariantList() << JsonTypes::ruleActionRef());
     params.insert("o:enabled", JsonTypes::basicTypeToString(JsonTypes::Bool));
+    params.insert("o:executable", JsonTypes::basicTypeToString(JsonTypes::Bool));
     params.insert("name", JsonTypes::basicTypeToString(JsonTypes::String));
     QVariantList actions;
     actions.append(JsonTypes::ruleActionRef());
@@ -92,6 +93,7 @@ RulesHandler::RulesHandler(QObject *parent) :
     params.insert("o:stateEvaluator", JsonTypes::stateEvaluatorRef());
     params.insert("o:exitActions", QVariantList() << JsonTypes::ruleActionRef());
     params.insert("o:enabled", JsonTypes::basicTypeToString(JsonTypes::Bool));
+    params.insert("o:executable", JsonTypes::basicTypeToString(JsonTypes::Bool));
     actions.append(JsonTypes::ruleActionRef());
     params.insert("actions", actions);
     setParams("EditRule", params);
@@ -128,6 +130,20 @@ RulesHandler::RulesHandler(QObject *parent) :
     setParams("DisableRule", params);
     returns.insert("ruleError", JsonTypes::ruleErrorRef());
     setReturns("DisableRule", returns);
+
+    params.clear(); returns.clear();
+    setDescription("ExecuteActions", "Execute the action list of the rule with the given ruleId.");
+    params.insert("ruleId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    setParams("ExecuteActions", params);
+    returns.insert("ruleError", JsonTypes::ruleErrorRef());
+    setReturns("ExecuteActions", returns);
+
+    params.clear(); returns.clear();
+    setDescription("ExecuteExitActions", "Execute the exit action list of the rule with the given ruleId.");
+    params.insert("ruleId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    setParams("ExecuteExitActions", params);
+    returns.insert("ruleError", JsonTypes::ruleErrorRef());
+    setReturns("ExecuteExitActions", returns);
 
     // Notifications
     params.clear(); returns.clear();
@@ -227,9 +243,10 @@ JsonReply* RulesHandler::AddRule(const QVariantMap &params)
 
     QString name = params.value("name", QString()).toString();
     bool enabled = params.value("enabled", true).toBool();
+    bool executable = params.value("executable", true).toBool();
 
     RuleId newRuleId = RuleId::createRuleId();
-    RuleEngine::RuleError status = GuhCore::instance()->addRule(newRuleId, name, eventDescriptorList, stateEvaluator, actions, exitActions, enabled);
+    RuleEngine::RuleError status = GuhCore::instance()->addRule(newRuleId, name, eventDescriptorList, stateEvaluator, actions, exitActions, enabled, executable);
     QVariantMap returns;
     if (status ==  RuleEngine::RuleErrorNoError) {
         returns.insert("ruleId", newRuleId.toString());
@@ -281,9 +298,10 @@ JsonReply *RulesHandler::EditRule(const QVariantMap &params)
 
     QString name = params.value("name", QString()).toString();
     bool enabled = params.value("enabled", true).toBool();
+    bool executable = params.value("executable", true).toBool();
 
     RuleId ruleId = RuleId(params.value("ruleId").toString());
-    RuleEngine::RuleError status = GuhCore::instance()->editRule(ruleId, name, eventDescriptorList, stateEvaluator, actions, exitActions, enabled);
+    RuleEngine::RuleError status = GuhCore::instance()->editRule(ruleId, name, eventDescriptorList, stateEvaluator, actions, exitActions, enabled, executable);
     QVariantMap returns;
     if (status ==  RuleEngine::RuleErrorNoError) {
         returns.insert("rule", JsonTypes::packRule(GuhCore::instance()->findRule(ruleId)));
@@ -324,6 +342,24 @@ JsonReply *RulesHandler::EnableRule(const QVariantMap &params)
 JsonReply *RulesHandler::DisableRule(const QVariantMap &params)
 {
     return createReply(statusToReply(GuhCore::instance()->disableRule(RuleId(params.value("ruleId").toString()))));
+}
+
+JsonReply *RulesHandler::ExecuteActions(const QVariantMap &params)
+{
+    QVariantMap returns;
+    RuleId ruleId(params.value("ruleId").toString());
+    RuleEngine::RuleError status = GuhCore::instance()->executeRuleActions(ruleId);
+    returns.insert("ruleError", JsonTypes::ruleErrorToString(status));
+    return createReply(returns);
+}
+
+JsonReply *RulesHandler::ExecuteExitActions(const QVariantMap &params)
+{
+    QVariantMap returns;
+    RuleId ruleId(params.value("ruleId").toString());
+    RuleEngine::RuleError status = GuhCore::instance()->executeRuleExitActions(ruleId);
+    returns.insert("ruleError", JsonTypes::ruleErrorToString(status));
+    return createReply(returns);
 }
 
 void RulesHandler::ruleRemovedNotification(const RuleId &ruleId)

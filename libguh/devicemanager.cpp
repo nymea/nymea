@@ -742,6 +742,18 @@ QList<Device *> DeviceManager::findConfiguredDevices(const DeviceClassId &device
     return ret;
 }
 
+/*! Returns all child \l{Device}{Devices} of the given \a device. */
+QList<Device *> DeviceManager::findChildDevices(Device *device) const
+{
+    QList<Device *> ret;
+    foreach (Device *d, m_configuredDevices) {
+        if (d->parentId() == device->id()) {
+            ret.append(d);
+        }
+    }
+    return ret;
+}
+
 /*! For conveninece, this returns the \l{DeviceClass} with the id given by \a deviceClassId.
  *  Note: The returned \l{DeviceClass} may be invalid. */
 DeviceClass DeviceManager::findDeviceClass(const DeviceClassId &deviceClassId) const
@@ -807,7 +819,10 @@ void DeviceManager::loadPlugins()
             }
             QPluginLoader loader(fi.absoluteFilePath());
 
-            DevicePlugin *pluginIface = qobject_cast<DevicePlugin*>(loader.instance());
+            DevicePlugin *pluginIface = qobject_cast<DevicePlugin *>(loader.instance());
+            if (!pluginIface)
+                qCWarning(dcDeviceManager) << "Could not load plugin interface of" << entry;
+
             if (verifyPluginMetadata(loader.metaData().value("MetaData").toObject()) && pluginIface) {
                 pluginIface->initPlugin(loader.metaData().value("MetaData").toObject(), this);
                 qCDebug(dcDeviceManager) << "*** Loaded plugin" << pluginIface->pluginName();
@@ -873,6 +888,7 @@ void DeviceManager::loadConfiguredDevices()
         settings.beginGroup(idString);
         Device *device = new Device(PluginId(settings.value("pluginid").toString()), DeviceId(idString), DeviceClassId(settings.value("deviceClassId").toString()), this);
         device->setName(settings.value("devicename").toString());
+        device->setParentId(DeviceId(settings.value("parentid", QUuid()).toString()));
 
         ParamList params;
         settings.beginGroup("Params");
@@ -906,6 +922,9 @@ void DeviceManager::storeConfiguredDevices()
         settings.setValue("devicename", device->name());
         settings.setValue("deviceClassId", device->deviceClassId().toString());
         settings.setValue("pluginid", device->pluginId().toString());
+        if (!device->parentId().isNull())
+            settings.setValue("parentid", device->parentId().toString());
+
         settings.beginGroup("Params");
         foreach (const Param &param, device->params()) {
             settings.setValue(param.name(), param.value());
@@ -1213,7 +1232,7 @@ bool DeviceManager::verifyPluginMetadata(const QJsonObject &data)
     requiredFields << "name" << "id" << "vendors";
 
     foreach (const QString &field, requiredFields) {
-        if (!data.contains("name")) {
+        if (!data.contains(field)) {
             qCWarning(dcDeviceManager) << "Error loading plugin. Incomplete metadata. Missing field:" << field;
             qCWarning(dcDeviceManager) << data;
             return false;

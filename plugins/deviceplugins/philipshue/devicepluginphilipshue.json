@@ -14,7 +14,7 @@
                     "name": "Hue Bridge",
                     "createMethods": ["discovery"],
                     "setupMethod": "pushButton",
-                    "pairingInfo": "Please press within 30 seconds the button on the Hue Bridge before you continue",
+                    "pairingInfo": "Please press the button on the Hue Bridge within 30 seconds before you continue",
                     "paramTypes": [
                         {
                             "name": "name",

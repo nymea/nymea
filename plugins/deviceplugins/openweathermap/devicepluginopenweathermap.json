@@ -11,7 +11,7 @@
                 {
                     "deviceClassId": "985195aa-17ad-4530-88a4-cdd753d747d7",
                     "idName": "openweathermap",
-                    "name": "Weather from OpenWeatherMap",
+                    "name": "Weather",
                     "createMethods": ["discovery"],
                     "discoveryParamTypes": [
                         {
@@ -41,8 +41,8 @@
                     "actionTypes": [
                         {
                             "id": "cfbc6504-d86f-4856-8dfa-97b6fbb385e4",
-                            "idName": "updateWeather",
-                            "name": "update"
+                            "idName": "refreshWeather",
+                            "name": "refresh"
                         }
                     ],
                     "stateTypes": [

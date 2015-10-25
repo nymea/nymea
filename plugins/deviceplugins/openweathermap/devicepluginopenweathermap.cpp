@@ -25,14 +25,15 @@
     \ingroup plugins
     \ingroup services
 
-    This plugin alows you to get the current weather data from \l{http://www.openweathermap.org}.
-    The plugin offers two different search methods: if the user searches for a empty string,
-    the plugin makes an autodetction with the WAN ip and offers the user the found autodetectresult.
+    This plugin allows to get the current weather data from \l{http://www.openweathermap.org}{OpenWeatherMap}.
+    The weather data will be refreshed every 15 minutes automatically, but can also refreshed manually.
+    The plugin offers two different search methods for the location: if the user searches for a empty string,
+    the plugin makes an autodetction with the WAN ip and offers the user the found weather stations.
     The autodetection function uses the geolocation of your WAN ip and searches all available weather
     stations in a radius of 1.5 km. Otherwise the plugin returns the list of the found search results
     from the search string.
 
-    \underline{NOTE}: If you are using a VPN connection, the autodetection will show the results around of your VPN location.
+    \underline{NOTE}: If you are using a VPN connection, the autodetection will show the results around your VPN location.
 
     \chapter Plugin properties
     Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}
@@ -50,7 +51,6 @@
     \quotefile plugins/deviceplugins/openweathermap/devicepluginopenweathermap.json
 */
 
-
 #include "devicepluginopenweathermap.h"
 
 #include "plugin/device.h"
@@ -64,9 +64,18 @@
 #include <QUrlQuery>
 #include <QDateTime>
 
-
 DevicePluginOpenweathermap::DevicePluginOpenweathermap()
 {
+    // max 60 calls/minute
+    // max 50000 calls/day
+    m_apiKey = "c1b9d5584bb740804871583f6c62744f";
+
+    // update every 15 minutes
+    m_timer = new QTimer(this);
+    m_timer->setSingleShot(false);
+    m_timer->setInterval(900000);
+
+    connect(m_timer, SIGNAL(timeout()), this, SLOT(onTimeout()));
 }
 
 DeviceManager::DeviceError DevicePluginOpenweathermap::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
@@ -96,6 +105,9 @@ DeviceManager::DeviceSetupStatus DevicePluginOpenweathermap::setupDevice(Device 
     if (device->deviceClassId() != openweathermapDeviceClassId)
         return DeviceManager::DeviceSetupStatusFailure;
 
+    if (!m_timer->isActive())
+        m_timer->start();
+
     update(device);
 
     return DeviceManager::DeviceSetupStatusSuccess;
@@ -103,12 +115,12 @@ DeviceManager::DeviceSetupStatus DevicePluginOpenweathermap::setupDevice(Device 
 
 DeviceManager::HardwareResources DevicePluginOpenweathermap::requiredHardware() const
 {
-    return DeviceManager::HardwareResourceTimer | DeviceManager::HardwareResourceNetworkManager;
+    return DeviceManager::HardwareResourceNetworkManager;
 }
 
 DeviceManager::DeviceError DevicePluginOpenweathermap::executeAction(Device *device, const Action &action)
 {
-    if(action.actionTypeId() == updateWeatherActionTypeId){
+    if(action.actionTypeId() == refreshWeatherActionTypeId){
         update(device);
         return DeviceManager::DeviceErrorNoError;
     }
@@ -125,6 +137,9 @@ void DevicePluginOpenweathermap::deviceRemoved(Device *device)
             reply->deleteLater();
         }
     }
+
+    if (myDevices().isEmpty())
+        m_timer->stop();
 }
 
 void DevicePluginOpenweathermap::networkManagerReplyReady(QNetworkReply *reply)
@@ -155,26 +170,6 @@ void DevicePluginOpenweathermap::networkManagerReplyReady(QNetworkReply *reply)
     reply->deleteLater();
 }
 
-void DevicePluginOpenweathermap::guhTimer()
-{
-    update();
-}
-
-void DevicePluginOpenweathermap::update()
-{
-    foreach (Device *device, myDevices()) {
-        QUrl url("http://api.openweathermap.org/data/2.5/weather");
-        QUrlQuery query;
-        query.addQueryItem("id", device->paramValue("id").toString());
-        query.addQueryItem("mode", "json");
-        query.addQueryItem("units", "metric");
-        url.setQuery(query);
-
-        QNetworkReply *reply = networkManagerGet(QNetworkRequest(url));
-        m_weatherReplies.insert(reply, device);
-    }
-}
-
 void DevicePluginOpenweathermap::update(Device *device)
 {
     QUrl url("http://api.openweathermap.org/data/2.5/weather");
@@ -182,6 +177,7 @@ void DevicePluginOpenweathermap::update(Device *device)
     query.addQueryItem("id", device->paramValue("id").toString());
     query.addQueryItem("mode", "json");
     query.addQueryItem("units", "metric");
+    query.addQueryItem("appid", m_apiKey);
     url.setQuery(query);
 
     QNetworkReply *reply = networkManagerGet(QNetworkRequest(url));
@@ -202,6 +198,7 @@ void DevicePluginOpenweathermap::search(QString searchString)
     query.addQueryItem("type", "like");
     query.addQueryItem("mode", "json");
     query.addQueryItem("units", "metric");
+    query.addQueryItem("appid", m_apiKey);
     url.setQuery(query);
 
     QNetworkReply *reply = networkManagerGet(QNetworkRequest(url));
@@ -218,6 +215,7 @@ void DevicePluginOpenweathermap::searchGeoLocation(double lat, double lon)
     query.addQueryItem("type", "like");
     query.addQueryItem("mode", "json");
     query.addQueryItem("units", "metric");
+    query.addQueryItem("appid", m_apiKey);
     url.setQuery(query);
 
     QNetworkReply *reply = networkManagerGet(QNetworkRequest(url));
@@ -403,4 +401,10 @@ void DevicePluginOpenweathermap::processWeatherData(const QByteArray &data, Devi
     }
 }
 
+void DevicePluginOpenweathermap::onTimeout()
+{
+    foreach (Device *device, myDevices()) {
+        update(device);
+    }
+}
 

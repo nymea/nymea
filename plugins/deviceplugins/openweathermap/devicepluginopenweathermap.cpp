@@ -51,7 +51,6 @@
     \quotefile plugins/deviceplugins/openweathermap/devicepluginopenweathermap.json
 */
 
-
 #include "devicepluginopenweathermap.h"
 
 #include "plugin/device.h"

@@ -106,6 +106,9 @@ DeviceManager::DeviceSetupStatus DevicePluginOpenweathermap::setupDevice(Device 
     if (device->deviceClassId() != openweathermapDeviceClassId)
         return DeviceManager::DeviceSetupStatusFailure;
 
+    if (!m_timer->isActive())
+        m_timer->start();
+
     update(device);
 
     return DeviceManager::DeviceSetupStatusSuccess;
@@ -135,6 +138,9 @@ void DevicePluginOpenweathermap::deviceRemoved(Device *device)
             reply->deleteLater();
         }
     }
+
+    if (myDevices().isEmpty())
+        m_timer->stop();
 }
 
 void DevicePluginOpenweathermap::networkManagerReplyReady(QNetworkReply *reply)

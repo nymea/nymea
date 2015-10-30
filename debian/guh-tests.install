@@ -1,2 +1,3 @@
 usr/tests/* usr/lib/guh/tests
 usr/lib/guh/plugins/libguh_devicepluginmock.so
+ust/lib/libguh-core.so

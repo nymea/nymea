@@ -31,6 +31,7 @@
 #include <QJsonParseError>
 #include <QSignalSpy>
 #include <QtTest>
+#include <QDebug>
 #include <QMetaType>
 #include <QNetworkReply>
 
@@ -80,6 +81,11 @@ void GuhTestBase::initTestCase()
     QSignalSpy spy(GuhCore::instance()->deviceManager(), SIGNAL(loaded()));
     QVERIFY(spy.isValid());
     QVERIFY(spy.wait());
+
+    if (MockTcpServer::servers().isEmpty()) {
+        qWarning() << "no mock tcp server found";
+        exit(-1);
+    }
 
     m_mockTcpServer = MockTcpServer::servers().first();
     m_clientId = QUuid::createUuid();

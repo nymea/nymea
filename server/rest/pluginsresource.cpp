@@ -18,6 +18,23 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::PluginsResource
+    \brief This subclass of \l{RestResource} processes the REST requests for the \tt Plugins namespace.
+
+    \ingroup json
+    \inmodule core
+
+    This \l{RestResource} will be created in the \l{RestServer} and used to handle REST requests
+    for the \tt {Plugins} namespace of the API.
+
+    \code
+        http://localhost:3333/api/v1/plugins
+    \endcode
+
+    \sa DevicePlugin, RestResource, RestServer
+*/
+
 #include "pluginsresource.h"
 #include "httprequest.h"
 #include "loggingcategories.h"
@@ -27,17 +44,27 @@
 
 namespace guhserver {
 
+/*! Constructs a \l PluginsResource with the given \a parent. */
 PluginsResource::PluginsResource(QObject *parent) :
     RestResource(parent)
 {
 
 }
 
+/*! Returns the name of the \l{RestResource}. In this case \b plugins.
+
+    \sa RestResource::name()
+*/
 QString PluginsResource::name() const
 {
     return "plugins";
 }
 
+/*! This method will be used to process the given \a request and the given \a urlTokens. The request
+    has to be in this namespace. Returns the resulting \l HttpReply.
+
+    \sa HttpRequest, HttpReply, RestResource::proccessRequest()
+*/
 HttpReply *PluginsResource::proccessRequest(const HttpRequest &request, const QStringList &urlTokens)
 {
     // get the main resource
@@ -47,7 +74,7 @@ HttpReply *PluginsResource::proccessRequest(const HttpRequest &request, const QS
         m_pluginId = PluginId(urlTokens.at(3));
         if (m_pluginId.isNull()) {
             qCWarning(dcRest) << "Could not parse PluginId:" << urlTokens.at(3);
-            return createErrorReply(HttpReply::BadRequest);
+            return createDeviceErrorReply(HttpReply::BadRequest, DeviceManager::DeviceErrorPluginNotFound);
         }
     }
 
@@ -127,7 +154,7 @@ HttpReply *PluginsResource::getPlugin(const PluginId &pluginId) const
             return reply;
         }
     }
-    return createErrorReply(HttpReply::NotFound);
+    return createDeviceErrorReply(HttpReply::NotFound, DeviceManager::DeviceErrorPluginNotFound);
 }
 
 HttpReply *PluginsResource::getPluginConfiguration(const PluginId &pluginId) const
@@ -137,7 +164,7 @@ HttpReply *PluginsResource::getPluginConfiguration(const PluginId &pluginId) con
     DevicePlugin *plugin = 0;
     plugin = findPlugin(pluginId);
     if (!plugin)
-        return createErrorReply(HttpReply::NotFound);
+        return createDeviceErrorReply(HttpReply::NotFound, DeviceManager::DeviceErrorPluginNotFound);
 
     QVariantList configurationParamsList;
     foreach (const Param &param, plugin->configuration()) {
@@ -155,7 +182,7 @@ HttpReply *PluginsResource::setPluginConfiguration(const PluginId &pluginId, con
     DevicePlugin *plugin = 0;
     plugin = findPlugin(pluginId);
     if (!plugin)
-        return createErrorReply(HttpReply::NotFound);
+        return createDeviceErrorReply(HttpReply::NotFound, DeviceManager::DeviceErrorPluginNotFound);
 
     qCDebug(dcRest) << "Set configuration of plugin with id" << pluginId.toString();
 
@@ -169,9 +196,9 @@ HttpReply *PluginsResource::setPluginConfiguration(const PluginId &pluginId, con
     DeviceManager::DeviceError result = GuhCore::instance()->setPluginConfig(pluginId, pluginParams);
 
     if (result != DeviceManager::DeviceErrorNoError)
-        return createErrorReply(HttpReply::BadRequest);
+        return createDeviceErrorReply(HttpReply::BadRequest, result);
 
-    return createSuccessReply();
+    return createDeviceErrorReply(HttpReply::Ok, result);
 }
 
 DevicePlugin *PluginsResource::findPlugin(const PluginId &pluginId) const

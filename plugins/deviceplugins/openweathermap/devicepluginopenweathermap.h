@@ -23,6 +23,8 @@
 
 #include "plugin/deviceplugin.h"
 
+#include <QTimer>
+
 class DevicePluginOpenweathermap : public DevicePlugin
 {
     Q_OBJECT
@@ -40,7 +42,7 @@ public:
 
     void deviceRemoved(Device *device) override;
     void networkManagerReplyReady(QNetworkReply *reply) override;
-    void guhTimer() override;
+    //void guhTimer() override;
 
 private:
     QList<QNetworkReply *> m_autodetectionReplies;
@@ -55,7 +57,9 @@ private:
     double m_longitude;
     double m_latitude;
 
-    void update();
+    QTimer *m_timer;
+    QString m_apiKey;
+
     void update(Device *device);
     void searchAutodetect();
     void search(QString searchString);
@@ -68,6 +72,8 @@ private:
     void processSearchResults(const QList<QVariantMap> &cityList);
     void processWeatherData(const QByteArray &data, Device *device);
 
+private slots:
+    void onTimeout();
 
 };
 

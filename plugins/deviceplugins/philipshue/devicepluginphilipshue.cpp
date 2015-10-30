@@ -70,6 +70,7 @@ DeviceManager::DeviceError DevicePluginPhilipsHue::discoverDevices(const DeviceC
 {
     Q_UNUSED(deviceClassId)
     Q_UNUSED(params)
+
     upnpDiscover("libhue:idl");
     return DeviceManager::DeviceErrorAsync;
 }
@@ -80,13 +81,15 @@ DeviceManager::DeviceSetupStatus DevicePluginPhilipsHue::setupDevice(Device *dev
     if (device->deviceClassId() == hueBridgeDeviceClassId) {
         // unconfigured bridges (from pairing)
         foreach (HueBridge *b, m_unconfiguredBridges) {
-            if (b->apiKey() == device->paramValue("api key").toString()) {
-                m_unconfiguredBridges.removeOne(b);
+            if (b->hostAddress().toString() == device->paramValue("host address").toString()) {
+                m_unconfiguredBridges.removeAll(b);
 
                 // set data which was not known during discovery
                 device->setParamValue("name", b->name());
+                device->setParamValue("api key", b->apiKey());
                 device->setParamValue("zigbee channel", b->zigbeeChannel());
                 device->setParamValue("api version", b->apiVersion());
+                device->setParamValue("software version", b->softwareVersion());
                 device->setParamValue("mac address", b->macAddress());
                 device->setStateValue(bridgeReachableStateTypeId, true);
                 m_bridges.insert(b, device);
@@ -115,9 +118,10 @@ DeviceManager::DeviceSetupStatus DevicePluginPhilipsHue::setupDevice(Device *dev
         HueBridge *bridge = new HueBridge(device->paramValue("api key").toString(),
                                           QHostAddress(device->paramValue("host address").toString()));
 
-        bridge->setApiVersion(device->paramValue("api version").toString());
-        bridge->setMacAddress(device->paramValue("mac address").toString());
         bridge->setName(device->paramValue("name").toString());
+        bridge->setApiVersion(device->paramValue("api version").toString());
+        bridge->setSoftwareVersion(device->paramValue("software version").toString());
+        bridge->setMacAddress(device->paramValue("mac address").toString());
         bridge->setZigbeeChannel(device->paramValue("zigbee channel").toInt());
 
         m_bridges.insert(bridge, device);
@@ -146,10 +150,9 @@ DeviceManager::DeviceSetupStatus DevicePluginPhilipsHue::setupDevice(Device *dev
                                     device->paramValue("model id").toString(),
                                     DeviceId(device->paramValue("bridge").toString()),
                                     this);
-
             connect(hueLight, &HueLight::stateChanged, this, &DevicePluginPhilipsHue::lightStateChanged);
         }
-
+        device->setParentId(device->paramValue("bridge").toString());
         m_lights.insert(hueLight, device);
         setLightName(device, device->paramValue("name").toString());
     }
@@ -163,8 +166,6 @@ void DevicePluginPhilipsHue::deviceRemoved(Device *device)
         HueBridge *bridge = m_bridges.key(device);
         m_bridges.remove(bridge);
         bridge->deleteLater();
-
-        // TODO: remove lights from this bridge (over GuhCore)
     }
 
     if (device->deviceClassId() == hueLightDeviceClassId) {
@@ -183,9 +184,10 @@ void DevicePluginPhilipsHue::upnpDiscoveryFinished(const QList<UpnpDeviceDescrip
             ParamList params;
             params.append(Param("name", QString()));
             params.append(Param("host address", upnpDevice.hostAddress().toString()));
-            params.append(Param("api key", "guh-" + QUuid::createUuid().toString().remove(QRegExp("[\\{\\}]*")).remove(QRegExp("\\-[0-9a-f\\-]*"))));
+            params.append(Param("api key", QString()));
             params.append(Param("mac address", QString()));
             params.append(Param("api version", QString()));
+            params.append(Param("software version", QString()));
             params.append(Param("zigbee channel", -1));
             descriptor.setParams(params);
             deviceDescriptors.append(descriptor);
@@ -199,23 +201,20 @@ DeviceManager::DeviceSetupStatus DevicePluginPhilipsHue::confirmPairing(const Pa
 {
     Q_UNUSED(secret)
 
-    if (deviceClassId != hueBridgeDeviceClassId) {
+    if (deviceClassId != hueBridgeDeviceClassId)
         return DeviceManager::DeviceSetupStatusFailure;
-    }
 
-    PairingInfo pairingInfo;
-    pairingInfo.pairingTransactionId = pairingTransactionId;
-    pairingInfo.host = QHostAddress(params.paramValue("host address").toString());
-    pairingInfo.apiKey = params.paramValue("api key").toString();
+    PairingInfo *pairingInfo = new PairingInfo(this);
+    pairingInfo->setPairingTransactionId(pairingTransactionId);
+    pairingInfo->setHost(QHostAddress(params.paramValue("host address").toString()));
 
-    QVariantMap createUserParams;
-    createUserParams.insert("devicetype", "guh");
-    createUserParams.insert("username", pairingInfo.apiKey);
+    QVariantMap deviceTypeParam;
+    deviceTypeParam.insert("devicetype", "guh");
 
-    QJsonDocument jsonDoc = QJsonDocument::fromVariant(createUserParams);
+    QJsonDocument jsonDoc = QJsonDocument::fromVariant(deviceTypeParam);
 
-    QNetworkRequest request(QUrl("http://" + pairingInfo.host.toString() + "/api"));
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    QNetworkRequest request(QUrl("http://" + pairingInfo->host().toString() + "/api"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     QNetworkReply *reply = networkManagerPost(request, jsonDoc.toJson());
 
     m_pairingRequests.insert(reply, pairingInfo);
@@ -229,23 +228,25 @@ void DevicePluginPhilipsHue::networkManagerReplyReady(QNetworkReply *reply)
 
     // create user finished
     if (m_pairingRequests.keys().contains(reply)) {
-        PairingInfo pairingInfo = m_pairingRequests.take(reply);
+        PairingInfo *pairingInfo = m_pairingRequests.take(reply);
 
         // check HTTP status code
         if (status != 200) {
             qCWarning(dcPhilipsHue) << "Request error:" << status << reply->errorString();
+            pairingInfo->deleteLater();
             reply->deleteLater();
             return;
         }
         processPairingResponse(pairingInfo, reply->readAll());
 
     } else if (m_informationRequests.keys().contains(reply)) {
-        PairingInfo pairingInfo = m_informationRequests.take(reply);
+        PairingInfo *pairingInfo = m_informationRequests.take(reply);
 
         // check HTTP status code
         if (status != 200) {
             qCWarning(dcPhilipsHue) << "Request error:" << status << reply->errorString();
             reply->deleteLater();
+            pairingInfo->deleteLater();
             return;
         }
         processInformationResponse(pairingInfo, reply->readAll());
@@ -288,9 +289,9 @@ void DevicePluginPhilipsHue::networkManagerReplyReady(QNetworkReply *reply)
             reply->deleteLater();
             return;
         }
-
         QByteArray data = reply->readAll();
         processActionResponse(actionInfo.first, actionInfo.second, data);
+
     } else if (m_lightSetNameRequests.keys().contains(reply)) {
 
         Device *device = m_lightSetNameRequests.take(reply);
@@ -319,9 +320,8 @@ DeviceManager::DeviceError DevicePluginPhilipsHue::executeAction(Device *device,
     if (device->deviceClassId() == hueLightDeviceClassId) {
         HueLight *light = m_lights.key(device);
 
-        if (!light->reachable()) {
+        if (!light->reachable())
             return DeviceManager::DeviceErrorHardwareNotAvailable;
-        }
 
         if (action.actionTypeId() == huePowerActionTypeId) {
             QPair<QNetworkRequest, QByteArray> request = light->createSetPowerRequest(action.param("power").value().toBool());
@@ -379,7 +379,7 @@ void DevicePluginPhilipsHue::refreshLight(Device *device)
     HueLight *light = m_lights.key(device);
 
     QNetworkRequest request(QUrl("http://" + light->hostAddress().toString() + "/api/" + light->apiKey() + "/lights/" + QString::number(light->lightId())));
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     QNetworkReply *reply = networkManagerGet(request);
 
     m_lightRefreshRequests.insert(reply, device);
@@ -390,7 +390,7 @@ void DevicePluginPhilipsHue::refreshBridge(Device *device)
     HueBridge *bridge = m_bridges.key(device);
 
     QNetworkRequest request(QUrl("http://" + bridge->hostAddress().toString() + "/api/" + bridge->apiKey() + "/lights/"));
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     QNetworkReply *reply = networkManagerGet(request);
 
     m_bridgeRefreshRequests.insert(reply, device);
@@ -406,7 +406,7 @@ void DevicePluginPhilipsHue::setLightName(Device *device, QString name)
 
     QNetworkRequest request(QUrl("http://" + light->hostAddress().toString() + "/api/" + light->apiKey() +
                                  "/lights/" + QString::number(light->lightId())));
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
     QNetworkReply *reply = networkManagerPut(request,jsonDoc.toJson());
     m_lightSetNameRequests.insert(reply, device);
@@ -486,12 +486,12 @@ void DevicePluginPhilipsHue::processSetNameResponse(Device *device, const QByteA
 
     emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusSuccess);
 
-    if (device->deviceClassId() == hueLightDeviceClassId) {
+    if (device->deviceClassId() == hueLightDeviceClassId)
         refreshLight(device);
-    }
+
 }
 
-void DevicePluginPhilipsHue::processPairingResponse(const DevicePluginPhilipsHue::PairingInfo &pairingInfo, const QByteArray &data)
+void DevicePluginPhilipsHue::processPairingResponse(PairingInfo *pairingInfo, const QByteArray &data)
 {
     QJsonParseError error;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
@@ -499,34 +499,50 @@ void DevicePluginPhilipsHue::processPairingResponse(const DevicePluginPhilipsHue
     // check JSON error
     if (error.error != QJsonParseError::NoError) {
         qCWarning(dcPhilipsHue) << "Hue Bridge json error in response" << error.errorString();
-        emit pairingFinished(pairingInfo.pairingTransactionId, DeviceManager::DeviceSetupStatusFailure);
+        emit pairingFinished(pairingInfo->pairingTransactionId(), DeviceManager::DeviceSetupStatusFailure);
+        pairingInfo->deleteLater();
         return;
     }
 
     // check response error
     if (data.contains("error")) {
         qCWarning(dcPhilipsHue) << "Failed to pair Hue Bridge:" << jsonDoc.toVariant().toList().first().toMap().value("error").toMap().value("description").toString();
-        emit pairingFinished(pairingInfo.pairingTransactionId, DeviceManager::DeviceSetupStatusFailure);
+        emit pairingFinished(pairingInfo->pairingTransactionId(), DeviceManager::DeviceSetupStatusFailure);
+        pairingInfo->deleteLater();
+        return;
+    }
+
+    pairingInfo->setApiKey(jsonDoc.toVariant().toList().first().toMap().value("success").toMap().value("username").toString());
+
+    qCDebug(dcPhilipsHue) << "Got api key from bridge:" << pairingInfo->apiKey();
+
+    if (pairingInfo->apiKey().isEmpty()) {
+        qCWarning(dcPhilipsHue) << "Failed to pair Hue Bridge: did not get any username from the bridge";
+        emit pairingFinished(pairingInfo->pairingTransactionId(), DeviceManager::DeviceSetupStatusFailure);
+        pairingInfo->deleteLater();
         return;
     }
 
     // Paired successfully, check bridge/light information
-    QNetworkRequest request(QUrl("http://" + pairingInfo.host.toString() + "/api/" + pairingInfo.apiKey + ""));
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    QNetworkRequest request(QUrl("http://" + pairingInfo->host().toString() + "/api/" + pairingInfo->apiKey() + "/"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     QNetworkReply *reply = networkManagerGet(request);
 
     m_informationRequests.insert(reply, pairingInfo);
 }
 
-void DevicePluginPhilipsHue::processInformationResponse(const DevicePluginPhilipsHue::PairingInfo &pairingInfo, const QByteArray &data)
+void DevicePluginPhilipsHue::processInformationResponse(PairingInfo *pairingInfo, const QByteArray &data)
 {
     QJsonParseError error;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
 
+    qCDebug(dcPhilipsHue) << "Process information response" << pairingInfo->host().toString() << pairingInfo->apiKey();
+
     // check JSON error
     if (error.error != QJsonParseError::NoError) {
         qCWarning(dcPhilipsHue) << "Hue Bridge json error in response" << error.errorString();
-        emit pairingFinished(pairingInfo.pairingTransactionId, DeviceManager::DeviceSetupStatusFailure);
+        emit pairingFinished(pairingInfo->pairingTransactionId(), DeviceManager::DeviceSetupStatusFailure);
+        pairingInfo->deleteLater();
         return;
     }
 
@@ -535,14 +551,16 @@ void DevicePluginPhilipsHue::processInformationResponse(const DevicePluginPhilip
     // check response error
     if (response.contains("error")) {
         qCWarning(dcPhilipsHue) << "Failed to get information from Hue Bridge:" << response.value("error").toMap().value("description").toString();
-        emit pairingFinished(pairingInfo.pairingTransactionId, DeviceManager::DeviceSetupStatusFailure);
+        emit pairingFinished(pairingInfo->pairingTransactionId(), DeviceManager::DeviceSetupStatusFailure);
+        pairingInfo->deleteLater();
         return;
     }
 
     // create Bridge
-    HueBridge *bridge = new HueBridge(pairingInfo.apiKey, pairingInfo.host);
+    HueBridge *bridge = new HueBridge(pairingInfo->apiKey(), pairingInfo->host(), this);
 
     bridge->setApiVersion(response.value("config").toMap().value("apiversion").toString());
+    bridge->setSoftwareVersion(response.value("config").toMap().value("swversion").toString());
     bridge->setMacAddress(response.value("config").toMap().value("mac").toString());
     bridge->setName(response.value("config").toMap().value("name").toString());
     bridge->setZigbeeChannel(response.value("config").toMap().value("zigbeechannel").toInt());
@@ -556,7 +574,7 @@ void DevicePluginPhilipsHue::processInformationResponse(const DevicePluginPhilip
         HueLight *hueLight = new HueLight(lightId.toInt(),
                                           bridge->hostAddress(),
                                           lightMap.value("name").toString(),
-                                          pairingInfo.apiKey,
+                                          pairingInfo->apiKey(),
                                           lightMap.value("modelid").toString(),
                                           DeviceId(),
                                           this);
@@ -568,8 +586,8 @@ void DevicePluginPhilipsHue::processInformationResponse(const DevicePluginPhilip
 
         connect(hueLight, &HueLight::stateChanged, this, &DevicePluginPhilipsHue::lightStateChanged);
     }
-
-    emit pairingFinished(pairingInfo.pairingTransactionId, DeviceManager::DeviceSetupStatusSuccess);
+    emit pairingFinished(pairingInfo->pairingTransactionId(), DeviceManager::DeviceSetupStatusSuccess);
+    pairingInfo->deleteLater();
 }
 
 void DevicePluginPhilipsHue::processActionResponse(Device *device, const ActionId actionId, const QByteArray &data)

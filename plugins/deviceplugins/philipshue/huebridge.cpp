@@ -27,6 +27,7 @@ HueBridge::HueBridge(QString apiKey, QHostAddress hostAddress, QObject *parent) 
     m_name(QString()),
     m_macAddress(QString()),
     m_apiVersion(QString()),
+    m_softwareVersion(QString()),
     m_zigbeeChannel(-1)
 {
 
@@ -80,6 +81,16 @@ QString HueBridge::apiVersion() const
 void HueBridge::setApiVersion(const QString &apiVersion)
 {
     m_apiVersion = apiVersion;
+}
+
+QString HueBridge::softwareVersion() const
+{
+    return m_softwareVersion;
+}
+
+void HueBridge::setSoftwareVersion(const QString &softwareVersion)
+{
+    m_softwareVersion = softwareVersion;
 }
 
 int HueBridge::zigbeeChannel() const

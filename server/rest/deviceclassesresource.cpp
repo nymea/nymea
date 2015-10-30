@@ -18,6 +18,23 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::DeviceClassesResource
+    \brief This subclass of \l{RestResource} processes the REST requests for the \tt DeviceClasses namespace.
+
+    \ingroup json
+    \inmodule core
+
+    This \l{RestResource} will be created in the \l{RestServer} and used to handle REST requests
+    for the \tt {DeviceClasses} namespace of the API.
+
+    \code
+        http://localhost:3333/api/v1/deviceclasses
+    \endcode
+
+    \sa DeviceClass, RestResource, RestServer
+*/
+
 #include "deviceclassesresource.h"
 #include "httprequest.h"
 #include "guhcore.h"
@@ -26,17 +43,27 @@
 
 namespace guhserver {
 
+/*! Constructs a \l DeviceClassesResource with the given \a parent. */
 DeviceClassesResource::DeviceClassesResource(QObject *parent) :
     RestResource(parent)
 {
     connect(GuhCore::instance(), &GuhCore::devicesDiscovered, this, &DeviceClassesResource::devicesDiscovered, Qt::QueuedConnection);
 }
 
+/*! Returns the name of the \l{RestResource}. In this case \b deviceclasses.
+
+    \sa RestResource::name()
+*/
 QString DeviceClassesResource::name() const
 {
     return "deviceclasses";
 }
 
+/*! This method will be used to process the given \a request and the given \a urlTokens. The request
+    has to be in this namespace. Returns the resulting \l HttpReply.
+
+    \sa HttpRequest, HttpReply, RestResource::proccessRequest()
+*/
 HttpReply *DeviceClassesResource::proccessRequest(const HttpRequest &request, const QStringList &urlTokens)
 {
 
@@ -47,12 +74,12 @@ HttpReply *DeviceClassesResource::proccessRequest(const HttpRequest &request, co
         DeviceClassId deviceClassId = DeviceClassId(urlTokens.at(3));
         if (deviceClassId.isNull()) {
             qCWarning(dcRest) << "Could not parse DeviceClassId:" << urlTokens.at(3);
-            return createErrorReply(HttpReply::BadRequest);
+            return createDeviceErrorReply(HttpReply::BadRequest, DeviceManager::DeviceErrorDeviceClassNotFound);
         }
         m_deviceClass = GuhCore::instance()->findDeviceClass(deviceClassId);
         if (!m_deviceClass.isValid()) {
             qCWarning(dcRest) << "DeviceClassId" << deviceClassId.toString() << "not found";
-            return createErrorReply(HttpReply::NotFound);
+            return createDeviceErrorReply(HttpReply::NotFound, DeviceManager::DeviceErrorDeviceClassNotFound);
         }
     }
 
@@ -81,7 +108,7 @@ HttpReply *DeviceClassesResource::proccessGetRequest(const HttpRequest &request,
                 vendorId = VendorId(request.urlQuery().queryItemValue("vendorId"));
                 if (vendorId.isNull()) {
                     qCWarning(dcRest) << "Could not parse VendorId:" << request.urlQuery().queryItemValue("vendorId");
-                    return createErrorReply(HttpReply::BadRequest);
+                    return createDeviceErrorReply(HttpReply::BadRequest, DeviceManager::DeviceErrorVendorNotFound);
                 }
             }
         }
@@ -101,7 +128,7 @@ HttpReply *DeviceClassesResource::proccessGetRequest(const HttpRequest &request,
         ActionTypeId actionTypeId = ActionTypeId(urlTokens.at(5));
         if (actionTypeId.isNull()) {
             qCWarning(dcRest) << "Could not parse ActionTypeId:" << urlTokens.at(5);
-            return createErrorReply(HttpReply::BadRequest);
+            return createDeviceErrorReply(HttpReply::BadRequest, DeviceManager::DeviceErrorActionTypeNotFound);
         }
         return getActionType(actionTypeId);
     }
@@ -115,7 +142,7 @@ HttpReply *DeviceClassesResource::proccessGetRequest(const HttpRequest &request,
         StateTypeId stateTypeId = StateTypeId(urlTokens.at(5));
         if (stateTypeId.isNull()) {
             qCWarning(dcRest) << "Could not parse StateTypeId:" << urlTokens.at(5);
-            return createErrorReply(HttpReply::BadRequest);
+            return createDeviceErrorReply(HttpReply::BadRequest, DeviceManager::DeviceErrorStateTypeNotFound);
         }
         return getStateType(stateTypeId);
     }
@@ -129,7 +156,7 @@ HttpReply *DeviceClassesResource::proccessGetRequest(const HttpRequest &request,
         EventTypeId eventTypeId = EventTypeId(urlTokens.at(5));
         if (eventTypeId.isNull()) {
             qCWarning(dcRest) << "Could not parse EventTypeId:" << urlTokens.at(5);
-            return createErrorReply(HttpReply::BadRequest);
+            return createDeviceErrorReply(HttpReply::BadRequest, DeviceManager::DeviceErrorEventTypeNotFound);
         }
         return getEventType(eventTypeId);
     }
@@ -182,7 +209,7 @@ HttpReply *DeviceClassesResource::getActionType(const ActionTypeId &actionTypeId
             return reply;
         }
     }
-    return createErrorReply(HttpReply::NotFound);
+    return createDeviceErrorReply(HttpReply::NotFound, DeviceManager::DeviceErrorActionTypeNotFound);
 }
 
 HttpReply *DeviceClassesResource::getStateTypes()
@@ -206,7 +233,7 @@ HttpReply *DeviceClassesResource::getStateType(const StateTypeId &stateTypeId)
             return reply;
         }
     }
-    return createErrorReply(HttpReply::NotFound);
+    return createDeviceErrorReply(HttpReply::NotFound, DeviceManager::DeviceErrorStateTypeNotFound);
 }
 
 HttpReply *DeviceClassesResource::getEventTypes()
@@ -230,7 +257,7 @@ HttpReply *DeviceClassesResource::getEventType(const EventTypeId &eventTypeId)
             return reply;
         }
     }
-    return createErrorReply(HttpReply::NotFound);
+    return createDeviceErrorReply(HttpReply::NotFound, DeviceManager::DeviceErrorEventTypeNotFound);
 }
 
 HttpReply *DeviceClassesResource::getDiscoverdDevices(const ParamList &discoveryParams)
@@ -247,7 +274,7 @@ HttpReply *DeviceClassesResource::getDiscoverdDevices(const ParamList &discovery
     }
 
     if (status != DeviceManager::DeviceErrorNoError)
-        return createErrorReply(HttpReply::InternalServerError);
+        return createDeviceErrorReply(HttpReply::InternalServerError, status);
 
     return createSuccessReply();
 }

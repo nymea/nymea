@@ -111,6 +111,10 @@
     This signal is emitted when this async \l{HttpReply} is finished.
 */
 
+/*! \fn QDebug guhserver::operator<< (QDebug debug, const HttpReply &httpReply);
+    Writes the given \l{HttpReply} \a httpReply to the given \a debug. This method gets used just for debugging.
+*/
+
 #include "httpreply.h"
 
 #include <QDateTime>
@@ -140,7 +144,7 @@ HttpReply::HttpReply(QObject *parent) :
     setHeader(HttpHeaderType::CacheControlHeader, "no-cache");
     setHeader(HttpHeaderType::ConnectionHeader, "Keep-Alive");
     setRawHeader("Access-Control-Allow-Origin","*");
-    setRawHeader("Keep-Alive", "timeout=10, max=50");
+    setRawHeader("Keep-Alive", "timeout=12, max=50");
     packReply();
 }
 
@@ -164,11 +168,13 @@ HttpReply::HttpReply(const HttpReply::HttpStatusCode &statusCode, const HttpRepl
     setHeader(HttpHeaderType::CacheControlHeader, "no-cache");
     setHeader(HttpHeaderType::ConnectionHeader, "Keep-Alive");
     setRawHeader("Access-Control-Allow-Origin","*");
-    setRawHeader("Keep-Alive", "timeout=10, max=50");
+    setRawHeader("Keep-Alive", "timeout=12, max=50");
     packReply();
 }
 
-/*! Set the \l{HttpStatusCode} \a statusCode for this \l{HttpReply}. */
+/*! Set the \l{HttpStatusCode} of this \l{HttpReply} to the given \a statusCode.
+  \sa httpStatusCode()
+*/
 void HttpReply::setHttpStatusCode(const HttpReply::HttpStatusCode &statusCode)
 {
     m_statusCode = statusCode;
@@ -259,11 +265,17 @@ QByteArray HttpReply::rawHeader() const
     return m_rawHeader;
 }
 
+/*! Sets the \a close paramter of this \l{HttpReply}. If \a close is true,
+    the connection of the client will be closed after this reply was sent.
+*/
 void HttpReply::setCloseConnection(const bool &close)
 {
     m_closeConnection = close;
 }
 
+/*! Returns the connection close paramter of this \l{HttpReply}. If close is true, the connection
+    of the client will be closed after this reply was sent.
+*/
 bool HttpReply::closeConnection() const
 {
     return m_closeConnection;
@@ -387,10 +399,10 @@ QByteArray HttpReply::getHeaderType(const HttpReply::HttpHeaderType &headerType)
 /*! Starts the timer for an async \l{HttpReply}.
  *
  *  \sa finished()
-*/
+ */
 void HttpReply::startWait()
 {
-    m_timer->start(5000);
+    m_timer->start(10000);
 }
 
 void HttpReply::timeout()

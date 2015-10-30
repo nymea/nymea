@@ -18,6 +18,24 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::VendorsResource
+    \brief This subclass of \l{RestResource} processes the REST requests for the \tt Vendors namespace.
+
+    \ingroup json
+    \inmodule core
+
+    This \l{RestResource} will be created in the \l{RestServer} and used to handle REST requests
+    for the \tt {Vendors} namespace of the API.
+
+    \code
+        http://localhost:3333/api/v1/vendors
+    \endcode
+
+    \sa Vendor, RestResource, RestServer
+*/
+
+
 #include "vendorsresource.h"
 #include "httprequest.h"
 #include "loggingcategories.h"
@@ -27,16 +45,26 @@
 
 namespace guhserver {
 
+/*! Constructs a \l VendorsResource with the given \a parent. */
 VendorsResource::VendorsResource(QObject *parent) :
     RestResource(parent)
 {
 }
 
+/*! Returns the name of the \l{RestResource}. In this case \b vendors.
+
+    \sa RestResource::name()
+*/
 QString VendorsResource::name() const
 {
     return "vendors";
 }
 
+/*! This method will be used to process the given \a request and the given \a urlTokens. The request
+    has to be in this namespace. Returns the resulting \l HttpReply.
+
+    \sa HttpRequest, HttpReply, RestResource::proccessRequest()
+*/
 HttpReply *VendorsResource::proccessRequest(const HttpRequest &request, const QStringList &urlTokens)
 {
     // /api/v1/vendors/{vendorId}/
@@ -44,7 +72,7 @@ HttpReply *VendorsResource::proccessRequest(const HttpRequest &request, const QS
         m_vendorId = VendorId(urlTokens.at(3));
         if (m_vendorId.isNull()) {
             qCWarning(dcRest) << "Could not parse VendorId:" << urlTokens.at(3);
-            return createErrorReply(HttpReply::BadRequest);
+            return createDeviceErrorReply(HttpReply::BadRequest, DeviceManager::DeviceErrorVendorNotFound);
         }
     }
 
@@ -101,7 +129,7 @@ HttpReply *VendorsResource::getVendor(const VendorId &vendorId) const
             return reply;
         }
     }
-    return createErrorReply(HttpReply::NotFound);
+    return createDeviceErrorReply(HttpReply::NotFound, DeviceManager::DeviceErrorVendorNotFound);
 }
 
 }

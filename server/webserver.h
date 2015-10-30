@@ -27,6 +27,8 @@
 #include <QHash>
 #include <QDir>
 #include <QTimer>
+#include <QImage>
+#include <QBuffer>
 #include <QSslSocket>
 #include <QSslCertificate>
 #include <QSslConfiguration>
@@ -73,6 +75,9 @@ public:
     ~WebServer();
 
     void sendHttpReply(HttpReply *reply);
+    int port() const;
+    QList<QHostAddress> serverAddressList();
+
 
 private:
     QHash<QUuid, QSslSocket *> m_clientList;
@@ -88,6 +93,10 @@ private:
 
     bool verifyFile(QSslSocket *socket, const QString &fileName);
     QString fileName(const QString &query);
+
+    QByteArray createServerXmlDocument(QHostAddress address);
+    HttpReply *processIconRequest(const QString &fileName);
+    QHostAddress getServerAddress(QHostAddress clientAddress);
 
 protected:
     void incomingConnection(qintptr socketDescriptor) override;

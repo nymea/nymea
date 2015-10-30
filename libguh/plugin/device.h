@@ -32,7 +32,6 @@
 #include <QUuid>
 #include <QVariant>
 
-
 class Device: public QObject
 {
     Q_OBJECT
@@ -63,6 +62,9 @@ public:
 
     State state(const StateTypeId &stateTypeId) const;
 
+    DeviceId parentId() const;
+    void setParentId(const DeviceId &parentId);
+
     bool setupComplete() const;
 
 signals:
@@ -77,6 +79,7 @@ private:
 
 private:
     DeviceId m_id;
+    DeviceId m_parentId;
     DeviceClassId m_deviceClassId;
     PluginId m_pluginId;
     QString m_name;

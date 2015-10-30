@@ -33,6 +33,7 @@ class Logging
     Q_FLAGS(LoggingSources)
     Q_ENUMS(LoggingLevel)
     Q_ENUMS(LoggingEventType)
+
 public:
     enum LoggingError {
         LoggingErrorNoError,
@@ -56,7 +57,9 @@ public:
 
     enum LoggingEventType {
         LoggingEventTypeTrigger,
-        LoggingEventTypeActiveChange
+        LoggingEventTypeActiveChange,
+        LoggingEventTypeActionsExecuted,
+        LoggingEventTypeExitActionsExecuted
     };
 };
 

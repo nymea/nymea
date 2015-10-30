@@ -60,6 +60,7 @@
 #include "restresource.h"
 #include "httprequest.h"
 #include "loggingcategories.h"
+#include "devicemanager.h"
 #include "guhcore.h"
 
 #include <QJsonDocument>
@@ -86,6 +87,7 @@ HttpReply *RestResource::createSuccessReply()
     return reply;
 }
 
+/*! Returns the pointer to a new created \l{HttpReply} which represents a response to a CORS request. */
 HttpReply *RestResource::createCorsSuccessReply()
 {
     HttpReply *reply = RestResource::createSuccessReply();
@@ -102,6 +104,41 @@ HttpReply *RestResource::createErrorReply(const HttpReply::HttpStatusCode &statu
 {
     HttpReply *reply = new HttpReply(statusCode, HttpReply::TypeSync);
     reply->setPayload(QByteArray::number(reply->httpStatusCode()) + " " + reply->httpReasonPhrase());
+    return reply;
+}
+
+/*! Returns the pointer to a new created error \l{HttpReply} initialized with the given \a statusCode, \l{HttpReply::TypeSync} and the \a deviceError. */
+HttpReply *RestResource::createDeviceErrorReply(const HttpReply::HttpStatusCode &statusCode, const DeviceManager::DeviceError &deviceError)
+{
+    HttpReply *reply = new HttpReply(statusCode, HttpReply::TypeSync);
+    QVariantMap response;
+    response.insert("error", JsonTypes::deviceErrorToString(deviceError));
+    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
+    reply->setPayload(QJsonDocument::fromVariant(response).toJson());
+    return reply;
+}
+
+/*! Returns the pointer to a new created \l{HttpReply} with the given \a statusCode and \a ruleError. This method will
+ *  be used to create an error response for the \l{guhserver::RulesResource}{RulesResource}. The \a ruleError will be written in the payload of this reply.*/
+HttpReply *RestResource::createRuleErrorReply(const HttpReply::HttpStatusCode &statusCode, const RuleEngine::RuleError &ruleError)
+{
+    HttpReply *reply = new HttpReply(statusCode, HttpReply::TypeSync);
+    QVariantMap response;
+    response.insert("error", JsonTypes::ruleErrorToString(ruleError));
+    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
+    reply->setPayload(QJsonDocument::fromVariant(response).toJson());
+    return reply;
+}
+
+/*! Returns the pointer to a new created \l{HttpReply} with the given \a statusCode and \a loggingError. This method will
+ *  be used to create an error response for the \l{guhserver::LogsResource}{LogsResource}. The \a loggingError will be written in the payload of this reply.*/
+HttpReply *RestResource::createLoggingErrorReply(const HttpReply::HttpStatusCode &statusCode, const Logging::LoggingError &loggingError)
+{
+    HttpReply *reply = new HttpReply(statusCode, HttpReply::TypeSync);
+    QVariantMap response;
+    response.insert("error", JsonTypes::loggingErrorToString(loggingError));
+    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
+    reply->setPayload(QJsonDocument::fromVariant(response).toJson());
     return reply;
 }
 

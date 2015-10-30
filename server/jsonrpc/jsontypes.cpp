@@ -199,6 +199,7 @@ void JsonTypes::init()
     s_device.insert("name", basicTypeToString(String));
     s_device.insert("params", QVariantList() << paramRef());
     s_device.insert("setupComplete", basicTypeToString(Bool));
+    s_device.insert("o:parentId", basicTypeToString(Uuid));
 
     // DeviceDescription
     s_deviceDescriptor.insert("id", basicTypeToString(Uuid));
@@ -209,6 +210,7 @@ void JsonTypes::init()
     s_rule.insert("id", basicTypeToString(Uuid));
     s_rule.insert("name", basicTypeToString(String));
     s_rule.insert("enabled", basicTypeToString(Bool));
+    s_rule.insert("executable", basicTypeToString(Bool));
     s_rule.insert("active", basicTypeToString(Bool));
     s_rule.insert("eventDescriptors", QVariantList() << eventDescriptorRef());
     s_rule.insert("actions", QVariantList() << ruleActionRef());
@@ -220,6 +222,8 @@ void JsonTypes::init()
     s_ruleDescription.insert("name", basicTypeToString(String));
     s_ruleDescription.insert("enabled", basicTypeToString(Bool));
     s_ruleDescription.insert("active", basicTypeToString(Bool));
+    s_ruleDescription.insert("executable", basicTypeToString(Bool));
+
 
     // LogEntry
     s_logEntry.insert("timestamp", basicTypeToString(Int));
@@ -558,6 +562,10 @@ QVariantMap JsonTypes::packDevice(Device *device)
     foreach (const Param &param, device->params()) {
         params.append(packParam(param));
     }
+
+    if (!device->parentId().isNull())
+        variant.insert("parentId", device->parentId());
+
     variant.insert("params", params);
     variant.insert("setupComplete", device->setupComplete());
     return variant;
@@ -579,6 +587,8 @@ QVariantMap JsonTypes::packRule(const Rule &rule)
     ruleMap.insert("name", rule.name());
     ruleMap.insert("enabled", rule.enabled());
     ruleMap.insert("active", rule.active());
+    ruleMap.insert("executable", rule.executable());
+
     QVariantList eventDescriptorList;
     foreach (const EventDescriptor &eventDescriptor, rule.eventDescriptors()) {
         eventDescriptorList.append(JsonTypes::packEventDescriptor(eventDescriptor));
@@ -616,6 +626,7 @@ QVariantMap JsonTypes::packRuleDescription(const Rule &rule)
     ruleDescriptionMap.insert("name", rule.name());
     ruleDescriptionMap.insert("enabled", rule.enabled());
     ruleDescriptionMap.insert("active", rule.active());
+    ruleDescriptionMap.insert("executable", rule.executable());
     return ruleDescriptionMap;
 }
 

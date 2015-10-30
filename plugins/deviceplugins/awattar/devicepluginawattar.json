@@ -1,0 +1,50 @@
+{
+    "name": "aWATTar",
+    "idName": "Awattar",
+    "id": "9c261c33-d44e-461e-8ec1-68803cb73f12",
+    "vendors": [
+        {
+            "name": "aWATTar",
+            "idName": "awattar",
+            "id": "acd47238-bbbc-4eaf-b484-38c52cfa4866",
+            "deviceClasses": [
+                {
+                    "deviceClassId": "29cd8265-d8bb-4cf9-9080-bfc2cf9787bc",
+                    "name": "aWATTar",
+                    "createMethods": ["user"],
+                    "paramTypes": [
+                        {
+                            "name": "name",
+                            "type": "QString",
+                            "inputType": "TextLine",
+                            "defaultValue": "Energy price"
+                        },
+                        {
+                            "name": "token",
+                            "type": "QString",
+                            "inputType": "TextLine"
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "eab37309-3dd8-46a0-94d4-bd05b5bb0430",
+                            "idName": "currentMarketPrice",
+                            "name": "current market price",
+                            "type": "double",
+                            "unit": "EuroPerMegaWattHour",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "d5a8a176-aca0-45b1-b043-95c43750f383",
+                            "idName": "validUntil",
+                            "name": "valid until",
+                            "unit": "UnixTime",
+                            "type": "int",
+                            "defaultValue": 0
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

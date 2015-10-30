@@ -47,6 +47,9 @@ public:
     QString apiVersion() const;
     void setApiVersion(const QString &apiVersion);
 
+    QString softwareVersion() const;
+    void setSoftwareVersion(const QString &softwareVersion);
+
     int zigbeeChannel() const;
     void setZigbeeChannel(const int &zigbeeChannel);
 
@@ -59,6 +62,7 @@ private:
     QString m_name;
     QString m_macAddress;
     QString m_apiVersion;
+    QString m_softwareVersion;
     int m_zigbeeChannel;
 
     QList<HueLight *> m_lights;

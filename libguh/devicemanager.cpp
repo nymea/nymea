@@ -61,6 +61,8 @@
         No Error. Everything went fine.
     \value DeviceErrorPluginNotFound
         Couldn't find the Plugin for the given id.
+    \value DeviceErrorVendorNotFound
+        Couldn't find the Vendor for the given id.
     \value DeviceErrorDeviceNotFound
         Couldn't find a \l{Device} for the given id.
     \value DeviceErrorDeviceClassNotFound
@@ -600,6 +602,7 @@ DeviceManager::DeviceError DeviceManager::confirmPairing(const PairingTransactio
         switch (status) {
         case DeviceSetupStatusSuccess:
             m_pairingsDiscovery.remove(pairingTransactionId);
+            // TODO: setup the device if the pairing status can be fetched directly
             return DeviceErrorNoError;
         case DeviceSetupStatusFailure:
             m_pairingsDiscovery.remove(pairingTransactionId);
@@ -739,6 +742,18 @@ QList<Device *> DeviceManager::findConfiguredDevices(const DeviceClassId &device
     return ret;
 }
 
+/*! Returns all child \l{Device}{Devices} of the given \a device. */
+QList<Device *> DeviceManager::findChildDevices(Device *device) const
+{
+    QList<Device *> ret;
+    foreach (Device *d, m_configuredDevices) {
+        if (d->parentId() == device->id()) {
+            ret.append(d);
+        }
+    }
+    return ret;
+}
+
 /*! For conveninece, this returns the \l{DeviceClass} with the id given by \a deviceClassId.
  *  Note: The returned \l{DeviceClass} may be invalid. */
 DeviceClass DeviceManager::findDeviceClass(const DeviceClassId &deviceClassId) const
@@ -804,7 +819,10 @@ void DeviceManager::loadPlugins()
             }
             QPluginLoader loader(fi.absoluteFilePath());
 
-            DevicePlugin *pluginIface = qobject_cast<DevicePlugin*>(loader.instance());
+            DevicePlugin *pluginIface = qobject_cast<DevicePlugin *>(loader.instance());
+            if (!pluginIface)
+                qCWarning(dcDeviceManager) << "Could not load plugin interface of" << entry;
+
             if (verifyPluginMetadata(loader.metaData().value("MetaData").toObject()) && pluginIface) {
                 pluginIface->initPlugin(loader.metaData().value("MetaData").toObject(), this);
                 qCDebug(dcDeviceManager) << "*** Loaded plugin" << pluginIface->pluginName();
@@ -870,6 +888,7 @@ void DeviceManager::loadConfiguredDevices()
         settings.beginGroup(idString);
         Device *device = new Device(PluginId(settings.value("pluginid").toString()), DeviceId(idString), DeviceClassId(settings.value("deviceClassId").toString()), this);
         device->setName(settings.value("devicename").toString());
+        device->setParentId(DeviceId(settings.value("parentid", QUuid()).toString()));
 
         ParamList params;
         settings.beginGroup("Params");
@@ -903,6 +922,9 @@ void DeviceManager::storeConfiguredDevices()
         settings.setValue("devicename", device->name());
         settings.setValue("deviceClassId", device->deviceClassId().toString());
         settings.setValue("pluginid", device->pluginId().toString());
+        if (!device->parentId().isNull())
+            settings.setValue("parentid", device->parentId().toString());
+
         settings.beginGroup("Params");
         foreach (const Param &param, device->params()) {
             settings.setValue(param.name(), param.value());
@@ -977,6 +999,7 @@ void DeviceManager::slotDeviceSetupFinished(Device *device, DeviceManager::Devic
     // lets add it now.
     if (!m_configuredDevices.contains(device)) {
         m_configuredDevices.append(device);
+        emit deviceAdded(device);
         storeConfiguredDevices();
     }
 
@@ -1078,6 +1101,7 @@ void DeviceManager::slotPairingFinished(const PairingTransactionId &pairingTrans
     }
 
     m_configuredDevices.append(device);
+    emit deviceAdded(device);
     storeConfiguredDevices();
     emit deviceSetupFinished(device, DeviceError::DeviceErrorNoError);
     postSetupDevice(device);
@@ -1114,6 +1138,7 @@ void DeviceManager::autoDevicesAppeared(const DeviceClassId &deviceClassId, cons
             m_configuredDevices.append(device);
             storeConfiguredDevices();
             emit deviceSetupFinished(device, DeviceError::DeviceErrorNoError);
+            emit deviceAdded(device);
             postSetupDevice(device);
             break;
         }
@@ -1207,8 +1232,9 @@ bool DeviceManager::verifyPluginMetadata(const QJsonObject &data)
     requiredFields << "name" << "id" << "vendors";
 
     foreach (const QString &field, requiredFields) {
-        if (!data.contains("name")) {
+        if (!data.contains(field)) {
             qCWarning(dcDeviceManager) << "Error loading plugin. Incomplete metadata. Missing field:" << field;
+            qCWarning(dcDeviceManager) << data;
             return false;
         }
     }
@@ -1316,12 +1342,17 @@ DeviceManager::DeviceError DeviceManager::verifyParam(const ParamType &paramType
             return DeviceErrorInvalidParameter;
         }
 
-        if (paramType.maxValue().isValid() && param.value().convert(paramType.type()) > paramType.maxValue().convert(paramType.type())) {
+        if (!param.value().convert(paramType.type())) {
+            qCWarning(dcDeviceManager) << "Could not convert value of param" << param.name() << " to:" << QVariant::typeToName(paramType.type()) << " Got:" << param.value();
+            return DeviceErrorInvalidParameter;
+        }
+
+        if (paramType.maxValue().isValid() && param.value() > paramType.maxValue()) {
             qCWarning(dcDeviceManager) << "Value out of range for param" << param.name() << " Got:" << param.value() << " Max:" << paramType.maxValue();
             return DeviceErrorInvalidParameter;
         }
-        if (paramType.minValue().isValid() && param.value().convert(paramType.type()) < paramType.minValue().convert(paramType.type())) {
-            qCWarning(dcDeviceManager) << "Value out of range for param" << param.name() << " Got:" << param.value() << " Min:" << paramType.minValue().convert(paramType.type());
+        if (paramType.minValue().isValid() && param.value() < paramType.minValue()) {
+            qCWarning(dcDeviceManager) << "Value out of range for param" << param.name() << " Got:" << param.value() << " Min:" << paramType.minValue();
             return DeviceErrorInvalidParameter;
         }
         if (!paramType.allowedValues().isEmpty() && !paramType.allowedValues().contains(param.value())) {

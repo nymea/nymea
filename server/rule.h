@@ -51,6 +51,9 @@ public:
 
     bool active() const;
 
+    void setExecutable(const bool &executable);
+    bool executable() const;
+
 private:
     friend class RuleEngine;
     void setName(const QString &name);
@@ -66,6 +69,7 @@ private:
 
     bool m_enabled;
     bool m_active;
+    bool m_executable;
 };
 
 }

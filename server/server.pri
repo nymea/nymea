@@ -5,6 +5,7 @@ contains(DEFINES, WEBSOCKET){
     HEADERS += $$top_srcdir/server/websocketserver.h
 }
 
+RESOURCES += $$top_srcdir/icons.qrc
 
 SOURCES += $$top_srcdir/server/guhcore.cpp \
     $$top_srcdir/server/tcpserver.cpp \
@@ -36,6 +37,7 @@ SOURCES += $$top_srcdir/server/guhcore.cpp \
     $$top_srcdir/server/rest/logsresource.cpp \
     $$top_srcdir/server/rest/pluginsresource.cpp \
     $$top_srcdir/server/rest/rulesresource.cpp \
+
 
 HEADERS += $$top_srcdir/server/guhcore.h \
     $$top_srcdir/server/tcpserver.h \

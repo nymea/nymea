@@ -19,6 +19,19 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::StateHandler
+    \brief This subclass of \l{JsonHandler} processes the JSON requests for the \tt States namespace of the JSON-RPC API.
+
+    \ingroup json
+    \inmodule core
+
+    This \l{JsonHandler} will be created in the \l{JsonRPCServer} and used to handle JSON-RPC requests
+    for the \tt {States} namespace of the API.
+
+    \sa State, JsonHandler, JsonRPCServer
+*/
+
 #include "statehandler.h"
 #include "guhcore.h"
 #include "loggingcategories.h"

@@ -70,12 +70,13 @@ public:
     DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params);
     DeviceManager::DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId &newId);
     DeviceManager::DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &newId);
-    QList<Device*> configuredDevices() const;
+    QList<Device *> configuredDevices() const;
     Device *findConfiguredDevice(const DeviceId &deviceId) const;
-    QList<Device*> findConfiguredDevices(const DeviceClassId &deviceClassId) const;
+    QList<Device *> findConfiguredDevices(const DeviceClassId &deviceClassId) const;
     DeviceManager::DeviceError editDevice(const DeviceId &deviceId, const ParamList &params);
     DeviceManager::DeviceError editDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId);
-    DeviceManager::DeviceError removeConfiguredDevice(const DeviceId &deviceId, const QHash<RuleId, RuleEngine::RemovePolicy> &removePolicyList);
+    QPair<DeviceManager::DeviceError, QList<RuleId> >removeConfiguredDevice(const DeviceId &deviceId, const QHash<RuleId, RuleEngine::RemovePolicy> &removePolicyList);
+    DeviceManager::DeviceError removeConfiguredDevice(const DeviceId &deviceId, const RuleEngine::RemovePolicy &removePolicy);
 
     DeviceManager::DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId);
     DeviceManager::DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params);
@@ -83,15 +84,19 @@ public:
 
     DeviceManager::DeviceError executeAction(const Action &action);
 
+    void executeRuleActions(const QList<RuleAction> ruleActions);
+
     QList<Rule> rules() const;
     QList<RuleId> ruleIds() const;
     Rule findRule(const RuleId &ruleId);
-    RuleEngine::RuleError addRule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actionList, const QList<RuleAction> &exitActionList, bool enabled = true);
-    RuleEngine::RuleError editRule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actionList, const QList<RuleAction> &exitActionList, bool enabled = true);
+    RuleEngine::RuleError addRule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actionList, const QList<RuleAction> &exitActionList, bool enabled = true, bool executable = true);
+    RuleEngine::RuleError editRule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actionList, const QList<RuleAction> &exitActionList, bool enabled = true, bool executable = true);
     RuleEngine::RuleError removeRule(const RuleId &id);
     QList<RuleId> findRules(const DeviceId &deviceId);
     RuleEngine::RuleError enableRule(const RuleId &ruleId);
     RuleEngine::RuleError disableRule(const RuleId &ruleId);
+    RuleEngine::RuleError executeRuleActions(const RuleId &ruleId);
+    RuleEngine::RuleError executeRuleExitActions(const RuleId &ruleId);
 
     LogEngine* logEngine() const;
     JsonRPCServer *jsonRPCServer() const;
@@ -115,7 +120,6 @@ signals:
     void ruleAdded(const Rule &rule);
     void ruleActiveChanged(const Rule &rule);
     void ruleConfigurationChanged(const Rule &rule);
-
 
 private:
     RuleEngine *ruleEngine() const;

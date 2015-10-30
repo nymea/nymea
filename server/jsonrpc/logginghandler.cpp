@@ -1,4 +1,4 @@
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
  *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
  *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
@@ -18,6 +18,19 @@
  *  along with guh. If not, see <http://www.gnu.org/licenses/>.            *
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+/*!
+    \class guhserver::LoggingHandler
+    \brief This subclass of \l{JsonHandler} processes the JSON requests for the \tt Logging namespace of the JSON-RPC API.
+
+    \ingroup json
+    \inmodule core
+
+    This \l{JsonHandler} will be created in the \l{JsonRPCServer} and used to handle JSON-RPC requests
+    for the \tt {Logging} namespace of the API.
+
+    \sa LogEngine, JsonHandler, JsonRPCServer
+*/
 
 #include "logginghandler.h"
 #include "logging/logengine.h"

@@ -1,4 +1,3 @@
-
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
  *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
@@ -50,7 +49,7 @@
     \note For \tt HTTPS you need to have a certificate and configure it in the \tt SSL-configuration
     section of the \tt /etc/guh/guhd.conf file.
 
-    \sa WebSocketServer, TcpServer
+    \sa WebServerClient, WebSocketServer, TcpServer
 */
 
 /*! \fn void guhserver::WebServer::httpRequestReady(const QUuid &clientId, const HttpRequest &httpRequest);
@@ -79,6 +78,8 @@
 #include "rest/restresource.h"
 
 #include <QJsonDocument>
+#include <QNetworkInterface>
+#include <QXmlStreamWriter>
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QSslSocket>
@@ -118,6 +119,7 @@ WebServer::WebServer(const QSslConfiguration &sslConfiguration, QObject *parent)
     // check SSL
     if (m_useSsl && m_sslConfiguration.isNull())
         m_useSsl = false;
+
 }
 
 /*! Destructor of this \l{WebServer}. */
@@ -144,6 +146,28 @@ void WebServer::sendHttpReply(HttpReply *reply)
     reply->packReply();
     qCDebug(dcWebServer) << "respond" << reply->httpStatusCode() << reply->httpReasonPhrase();
     socket->write(reply->data());
+}
+
+
+/*! Returns the port on which the webserver is listening. */
+int WebServer::port() const
+{
+    return m_port;
+}
+
+/*! Returns the list of addresses on which the webserver is listening. */
+QList<QHostAddress> WebServer::serverAddressList()
+{
+    QList<QHostAddress> addresses;
+    foreach (const QNetworkInterface &interface,  QNetworkInterface::allInterfaces()) {
+        // listen only on IPv4
+        foreach (QNetworkAddressEntry entry, interface.addressEntries()) {
+            if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol) {
+                addresses.append(entry.ip());
+            }
+        }
+    }
+    return addresses;
 }
 
 bool WebServer::verifyFile(QSslSocket *socket, const QString &fileName)
@@ -193,6 +217,39 @@ QString WebServer::fileName(const QString &query)
     }
 
     return m_webinterfaceDir.path() + fileName;
+}
+
+HttpReply *WebServer::processIconRequest(const QString &fileName)
+{
+    if (!fileName.endsWith(".png"))
+        return RestResource::createErrorReply(HttpReply::NotFound);
+
+    QByteArray imageData;
+
+    QImage image(":" + fileName);
+    QBuffer buffer(&imageData);
+    buffer.open(QIODevice::WriteOnly);
+    image.save(&buffer, "png");
+
+    if (!imageData.isEmpty()) {
+        HttpReply *reply = RestResource::createSuccessReply();
+        reply->setHeader(HttpReply::ContentTypeHeader, "image/png");
+        reply->setPayload(imageData);
+        return reply;
+    }
+
+    return RestResource::createErrorReply(HttpReply::NotFound);
+}
+
+QHostAddress WebServer::getServerAddress(QHostAddress clientAddress)
+{
+    foreach (QHostAddress address, serverAddressList()) {
+        if (clientAddress.isInSubnet(QHostAddress::parseSubnet(address.toString() + "/24"))) {
+            qCDebug(dcWebServer) << "server for" << clientAddress.toString() << " ->" << address.toString();
+            return address;
+        }
+    }
+    return QHostAddress();
 }
 
 void WebServer::incomingConnection(qintptr socketDescriptor)
@@ -287,7 +344,7 @@ void WebServer::readClient()
 
     // check if the request is valid
     if (!request.isValid()) {
-        qCWarning(dcWebServer) << "Got invalid request.";
+        qCWarning(dcWebServer) << "Got invalid request:" << request.url().path();
         HttpReply *reply = RestResource::createErrorReply(HttpReply::BadRequest);
         reply->setClientId(clientId);
         sendHttpReply(reply);
@@ -296,8 +353,8 @@ void WebServer::readClient()
     }
 
     // check HTTP version
-    if (request.httpVersion() != "HTTP/1.1") {
-        qCWarning(dcWebServer) << "HTTP version is not supported.";
+    if (request.httpVersion() != "HTTP/1.1" && request.httpVersion() != "HTTP/1.0") {
+        qCWarning(dcWebServer) << "HTTP version is not supported." << request.httpVersion();
         HttpReply *reply = RestResource::createErrorReply(HttpReply::HttpVersionNotSupported);
         reply->setClientId(clientId);
         sendHttpReply(reply);
@@ -331,6 +388,29 @@ void WebServer::readClient()
         emit httpRequestReady(clientId, request);
         return;
     }
+
+    // check icon call
+    if (request.url().path().startsWith("/icons/") && request.method() == HttpRequest::Get) {
+        HttpReply *reply = processIconRequest(request.url().path());
+        reply->setClientId(clientId);
+        sendHttpReply(reply);
+        reply->deleteLater();
+        return;
+    }
+
+    // check server.xml call
+    if (request.url().path() == "/server.xml" && request.method() == HttpRequest::Get) {
+        qCDebug(dcWebServer) << "server XML request call";
+        HttpReply *reply = RestResource::createSuccessReply();
+        reply->setHeader(HttpReply::ContentTypeHeader, "text/xml");
+        QHostAddress serverAddress = getServerAddress(socket->peerAddress());
+        reply->setPayload(createServerXmlDocument(serverAddress));
+        reply->setClientId(clientId);
+        sendHttpReply(reply);
+        reply->deleteLater();
+        return;
+    }
+
 
     // request for a file...
     if (request.method() == HttpRequest::Get) {
@@ -443,17 +523,20 @@ void WebServer::onError(QAbstractSocket::SocketError error)
 /*! Returns true if this \l{WebServer} started successfully. */
 bool WebServer::startServer()
 {
-    if (!listen(QHostAddress::Any, m_port)) {
+    if (!listen(QHostAddress::AnyIPv4, m_port)) {
         qCWarning(dcConnection) << "Webserver could not listen on" << serverAddress().toString() << m_port;
         m_enabled = false;
         return false;
     }
 
-    if (m_useSsl) {
-        qCDebug(dcConnection) << "Started webserver on" << QString("https://%1:%2").arg(serverAddress().toString()).arg(m_port);
-    } else {
-        qCDebug(dcConnection) << "Started webserver on" << QString("http://%1:%2").arg(serverAddress().toString()).arg(m_port);
+    foreach (QHostAddress address, serverAddressList()) {
+        if (m_useSsl) {
+            qCDebug(dcConnection) << "Started webserver on" << QString("https://%1:%2").arg(address.toString()).arg(m_port);
+        } else {
+            qCDebug(dcConnection) << "Started webserver on" << QString("http://%1:%2").arg(address.toString()).arg(m_port);
+        }
     }
+
     m_enabled = true;
     return true;
 }
@@ -467,27 +550,197 @@ bool WebServer::stopServer()
     return true;
 }
 
+
+QByteArray WebServer::createServerXmlDocument(QHostAddress address)
+{
+    GuhSettings settings(GuhSettings::SettingsRoleDevices);
+    settings.beginGroup("guhd");
+    QByteArray uuid = settings.value("uuid", QVariant()).toByteArray();
+    if (uuid.isEmpty()) {
+        uuid = QUuid::createUuid().toByteArray().replace("{", "").replace("}","");
+        settings.setValue("uuid", uuid);
+    }
+    settings.endGroup();
+
+    GuhSettings globalSettings(GuhSettings::SettingsRoleGlobal);
+    globalSettings.beginGroup("WebSocketServer");
+    int websocketPort = globalSettings.value("port", 4444).toInt();
+    globalSettings.endGroup();
+
+
+    QByteArray data;
+    QXmlStreamWriter writer(&data);
+    writer.setAutoFormatting(true);
+    writer.writeStartDocument("1.0");
+    writer.writeStartElement("root");
+    writer.writeAttribute("xmlns", "urn:schemas-upnp-org:device-1-0");
+
+    writer.writeStartElement("specVersion");
+    writer.writeTextElement("major", "1");
+    writer.writeTextElement("minor", "1");
+    writer.writeEndElement(); // specVersion
+
+    if (m_useSsl) {
+        writer.writeTextElement("URLBase", "https://" + address.toString() + ":" + QString::number(m_port));
+    } else {
+        writer.writeTextElement("URLBase", "http://" + address.toString() + ":" + QString::number(m_port));
+    }
+
+    if (m_useSsl) {
+        writer.writeTextElement("websocketURL", "wss://" + address.toString() + ":" + QString::number(websocketPort));
+    } else {
+        writer.writeTextElement("websocketURL", "ws://" + address.toString() + ":" + QString::number(websocketPort));
+    }
+
+    writer.writeTextElement("presentationURL", "/");
+
+    writer.writeStartElement("device");
+    writer.writeTextElement("deviceType", "urn:schemas-upnp-org:device:Basic:1");
+    writer.writeTextElement("friendlyName", "guhd");
+    writer.writeTextElement("manufacturer", "guh");
+    writer.writeTextElement("manufacturerURL", "http://guh.guru");
+    writer.writeTextElement("modelDescription", "Home automation server");
+    writer.writeTextElement("modelName", "guhd");
+    writer.writeTextElement("modelNumber", GUH_VERSION_STRING);
+    writer.writeTextElement("modelURL", "http://guh.io"); // (optional)
+    writer.writeTextElement("UDN", "uuid:" + uuid);
+
+    writer.writeStartElement("iconList");
+
+    writer.writeStartElement("icon");
+    writer.writeTextElement("mimetype", "image/png");
+    writer.writeTextElement("width", "8");
+    writer.writeTextElement("height", "8");
+    writer.writeTextElement("depth", "8");
+    writer.writeTextElement("url", "/icons/guh-logo-8x8.png");
+    writer.writeEndElement(); // icon
+
+    writer.writeStartElement("icon");
+    writer.writeTextElement("mimetype", "image/png");
+    writer.writeTextElement("width", "16");
+    writer.writeTextElement("height", "16");
+    writer.writeTextElement("depth", "8");
+    writer.writeTextElement("url", "/icons/guh-logo-16x16.png");
+    writer.writeEndElement(); // icon
+
+    writer.writeStartElement("icon");
+    writer.writeTextElement("mimetype", "image/png");
+    writer.writeTextElement("width", "22");
+    writer.writeTextElement("height", "22");
+    writer.writeTextElement("depth", "8");
+    writer.writeTextElement("url", "/icons/guh-logo-22x22.png");
+    writer.writeEndElement(); // icon
+
+    writer.writeStartElement("icon");
+    writer.writeTextElement("mimetype", "image/png");
+    writer.writeTextElement("width", "32");
+    writer.writeTextElement("height", "32");
+    writer.writeTextElement("depth", "8");
+    writer.writeTextElement("url", "/icons/guh-logo-32x32.png");
+    writer.writeEndElement(); // icon
+
+    writer.writeStartElement("icon");
+    writer.writeTextElement("mimetype", "image/png");
+    writer.writeTextElement("width", "48");
+    writer.writeTextElement("height", "48");
+    writer.writeTextElement("depth", "8");
+    writer.writeTextElement("url", "/icons/guh-logo-48x48.png");
+    writer.writeEndElement(); // icon
+
+    writer.writeStartElement("icon");
+    writer.writeTextElement("mimetype", "image/png");
+    writer.writeTextElement("width", "64");
+    writer.writeTextElement("height", "64");
+    writer.writeTextElement("depth", "8");
+    writer.writeTextElement("url", "/icons/guh-logo-64x64.png");
+    writer.writeEndElement(); // icon
+
+    writer.writeStartElement("icon");
+    writer.writeTextElement("mimetype", "image/png");
+    writer.writeTextElement("width", "120");
+    writer.writeTextElement("height", "120");
+    writer.writeTextElement("depth", "8");
+    writer.writeTextElement("url", "/icons/guh-logo-120x120.png");
+    writer.writeEndElement(); // icon
+
+    writer.writeStartElement("icon");
+    writer.writeTextElement("mimetype", "image/png");
+    writer.writeTextElement("width", "128");
+    writer.writeTextElement("height", "128");
+    writer.writeTextElement("depth", "8");
+    writer.writeTextElement("url", "/icons/guh-logo-128x128.png");
+    writer.writeEndElement(); // icon
+
+    writer.writeStartElement("icon");
+    writer.writeTextElement("mimetype", "image/png");
+    writer.writeTextElement("width", "256");
+    writer.writeTextElement("height", "256");
+    writer.writeTextElement("depth", "8");
+    writer.writeTextElement("url", "/icons/guh-logo-256x256.png");
+    writer.writeEndElement(); // icon
+
+    writer.writeStartElement("icon");
+    writer.writeTextElement("mimetype", "image/png");
+    writer.writeTextElement("width", "512");
+    writer.writeTextElement("height", "512");
+    writer.writeTextElement("depth", "8");
+    writer.writeTextElement("url", "/icons/guh-logo-512x512.png");
+    writer.writeEndElement(); // icon
+
+    writer.writeEndElement(); // iconList
+
+    writer.writeEndElement(); // device
+    writer.writeEndElement(); // root
+    writer.writeEndDocument();
+    return data;
+}
+
+
+/*!
+    \class guhserver::WebServerClient
+    \brief This class represents a client the web server for guhd.
+
+    \ingroup server
+    \inmodule core
+
+    The \l{WebServerClient} represents a client for the guh \l{WebServer}. Each client can
+    have up to 50 connections and each connection will timeout after 12 seconds if the
+    connection will not be used.
+
+    If all connections of a \l{WebServerClient} are closed, the client will be removed from
+    system.
+
+    \sa WebServer
+*/
+
+/*! Constructs a \l{WebServerClient} with the given \a address and \a parent. */
 WebServerClient::WebServerClient(const QHostAddress &address, QObject *parent):
     QObject(parent),
     m_address(address)
 {
 }
 
+/*! Returns the address of this \l{WebServerClient}. */
 QHostAddress WebServerClient::address() const
 {
     return m_address;
 }
 
+/*! Returns the list of connections (sockets) of this \l{WebServerClient}. */
 QList<QSslSocket *> WebServerClient::connections()
 {
     return m_connections;
 }
 
+/*! Adds a new connection (\a socket) to this \l{WebServerClient}. A \l{WebServerClient}
+ *  can have up to 50 connecections. The connection will timout and closed if the client
+ *  does not use the connection for 12 seconds.
+ */
 void WebServerClient::addConnection(QSslSocket *socket)
 {
     QTimer *timer = new QTimer(this);
     timer->setSingleShot(true);
-    timer->setInterval(9500);
+    timer->setInterval(12000);
     connect(timer, &QTimer::timeout, this, &WebServerClient::onTimout);
 
     m_runningConnections.insert(timer, socket);
@@ -496,6 +749,7 @@ void WebServerClient::addConnection(QSslSocket *socket)
     timer->start();
 }
 
+/*! Removes a connection the given \a socket from the connection list of this \l{WebServerClient}. */
 void WebServerClient::removeConnection(QSslSocket *socket)
 {
     QTimer *timer = m_runningConnections.key(socket);
@@ -505,6 +759,9 @@ void WebServerClient::removeConnection(QSslSocket *socket)
     timer->deleteLater();
 }
 
+/*! Resets the connection timeout for the given \a socket. If the socket will not be used for 12 seconds the
+ *  connection will be closed.
+ */
 void WebServerClient::resetTimout(QSslSocket *socket)
 {
     QTimer *timer = 0;

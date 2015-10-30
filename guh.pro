@@ -16,7 +16,7 @@ doc.commands = cd $$top_srcdir/doc; qdoc config.qdocconf; cp images/logo.png htm
 licensecheck.commands = $$top_srcdir/tests/auto/checklicenseheaders.sh $$top_srcdir
 
 test.depends = licensecheck
-test.commands = LD_LIBRARY_PATH=$$top_builddir/libguh make check
+test.commands = LD_LIBRARY_PATH=$$top_builddir/libguh:$$top_builddir/tests/libguh-core make check
 
 QMAKE_EXTRA_TARGETS += licensecheck doc test
 

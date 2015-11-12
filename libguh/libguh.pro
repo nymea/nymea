@@ -16,6 +16,8 @@ contains(DEFINES, BLUETOOTH_LE) {
                bluetooth/bluetoothlowenergydevice.h \
 }
 
+include(coap/coap.pri)
+
 SOURCES += devicemanager.cpp \
            loggingcategories.cpp \
            guhsettings.cpp \

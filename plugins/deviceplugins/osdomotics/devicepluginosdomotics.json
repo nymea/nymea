@@ -1,0 +1,74 @@
+{
+    "name": "OSDomotics",
+    "idName": "Osdomotics",
+    "id": "78927596-e266-4a23-8634-7311b2c5fe32",
+    "vendors": [
+        {
+            "name": "OSDomotics",
+            "idName": "osdomotics",
+            "id": "e2912117-3b2f-4888-950e-6d259b699102",
+            "deviceClasses": [
+                {
+                    "deviceClassId": "57d1b080-36a0-46af-a676-78c6b78d08ae",
+                    "idName": "rplRouter",
+                    "name": "RPL Router",
+                    "createMethods": ["user"],
+                    "paramTypes": [
+                        {
+                            "name": "name",
+                            "type": "QString",
+                            "inputType": "TextLine",
+                            "defaultValue": "Merkur RPL Router"
+                        },
+                        {
+                            "name": "host",
+                            "type": "QString",
+                            "inputType": "IPv6Address"
+                        }
+                    ]
+                },
+                {
+                    "deviceClassId": "4454e05e-ac0a-4b10-b9dd-56a1475895d7",
+                    "idName": "merkurNode",
+                    "name": "Merkur Node",
+                    "createMethods": ["auto"],
+                    "paramTypes": [
+                        {
+                            "name": "name",
+                            "type": "QString",
+                            "inputType": "TextLine",
+                            "defaultValue": "Merkur Node"
+                        },
+                        {
+                            "name": "host",
+                            "type": "QString",
+                            "inputType": "IPv6Address",
+                            "readOnly": true
+                        },
+                        {
+                            "name": "router id",
+                            "type": "QString",
+                            "readOnly": true
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "06cf4e66-f102-4a8e-ae76-fac250a07753",
+                            "idName": "battery",
+                            "name": "battery voltage",
+                            "type": "double",
+                            "defaultValue": 0
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "a91db0e7-9d0f-4071-9a8f-2bda45ed4c9d",
+                            "idName": "toggleLed",
+                            "name": "toggle led"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

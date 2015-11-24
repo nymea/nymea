@@ -18,36 +18,125 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class CoapReply
+    \brief Represents a reply of a CoAP request.
+
+    \ingroup coap
+    \inmodule libguh
+
+    The CoapReply class contains the data and headers for a request sent with \l{Coap} client.
+
+    \note Please don't forget to delete the reply once it is finished.
+
+    \section2 Example
+
+    \code
+        Coap *coap = new Coap(this);
+        connect(coap, SIGNAL(replyFinished(CoapReply*)), this, SLOT(onReplyFinished(CoapReply*)));
+
+        CoapRequest request(QUrl("coap://example.com/"));
+
+        CoapReply *reply = coap->ping(request);
+    \endcode
+
+    \code
+        void MyClass::onReplyFinished(CoapReply *reply)
+        {
+            if (reply->error() != CoapReply::NoError) {
+              qWarning() << "Reply finished with error" << reply->errorString();
+            }
+
+            qDebug() << "Reply finished" << reply;
+            reply->deleteLater();
+        }
+    \endcode
+
+
+    \sa Coap, CoapRequest
+
+*/
+
+/*! \fn void CoapReply::timeout();
+    This signal is emitted when the reply took to long.
+*/
+
+/*! \fn void CoapReply::finished();
+    This signal is emitted when the reply is finished.
+*/
+
+/*! \fn void CoapReply::error(const Error &code);
+    This signal is emitted when an error occured.
+
+    \sa error(), errorString()
+*/
+
+/*! \enum CoapReply::Error
+
+    \value NoError
+        No error occured. Everything ok.
+    \value HostNotFoundError
+        The remote host name was not found (invalid hostname).
+    \value TimeoutError
+        The server did not respond after 4 retransmissions.
+    \value InvalidUrlSchemeError
+        The given URL does not have a valid scheme.
+    \value InvalidPduError
+        The package data unit (PDU) could not be parsed successfully.
+*/
+
+
 #include "coapreply.h"
 #include "coappdu.h"
 
 #include <QMetaEnum>
 
+/*! Returns the request for this CoapReply. */
 CoapRequest CoapReply::request() const
 {
     return m_request;
 }
 
+/*! Returns the payload of this CoapReply. The payload will be available once the CoapReply is finished.
+
+    \sa isFinished
+*/
 QByteArray CoapReply::payload() const
 {
     return m_payload;
 }
 
+/*! Returns true if the reply is finished.
+
+    \sa finished()
+*/
 bool CoapReply::isFinished() const
 {
     return m_isFinished;
 }
 
+/*! Returns true if the reply is running.
+
+    \sa finished()
+*/
 bool CoapReply::isRunning() const
 {
     return m_timer->isActive();
 }
 
+/*! Returns error code of the reply.
+
+    \sa errorString()
+*/
 CoapReply::Error CoapReply::error() const
 {
     return m_error;
 }
 
+/*! Returns error string of the reply.
+
+    \sa error()
+*/
 QString CoapReply::errorString() const
 {
     QString errorString;

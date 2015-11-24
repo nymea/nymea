@@ -1,0 +1,10 @@
+/*!
+    \page coap-overview.html
+    \title CoAP
+
+    In order to interact with a CoAP (Constrained Application Protocol) server guh provides following classes:    
+
+    \annotatedlist coap
+
+*/
+

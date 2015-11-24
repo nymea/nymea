@@ -18,6 +18,114 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class CoapPdu
+    \brief Represents a CoAP protocol data unit (PDU).
+
+    \ingroup coap
+    \inmodule libguh
+
+*/
+
+/*! \enum CoapPdu::MessageType
+
+    \value Confirmable
+    \value NonConfirmable
+    \value Acknowledgement
+    \value Reset
+
+*/
+
+/*! \enum CoapPdu::StatusCode
+
+    The CoAP status codes.
+
+    Methods: \l{https://tools.ietf.org/html/rfc7252#section-5.8}
+
+    Status codes: \l{https://tools.ietf.org/html/rfc7252#section-12.1.2}
+
+    \value Empty
+        0.00 Empty (i.e. response to ping request)
+    \value Get
+        The GET method
+    \value Post
+        The POST method
+    \value Put
+        The PUT method
+    \value Delete
+        The DELETE method
+    \value Created
+        2.01 Created
+    \value Deleted
+        2.02 Deleted
+    \value Valid
+        2.03 Valid
+    \value Changed
+        2.04 Changed
+    \value Content
+        2.05 Content
+    \value Continue
+        2.31 Continue (from \l{https://tools.ietf.org/html/draft-ietf-core-block-18}{Blockwise V18})
+    \value BadRequest
+        4.00 Bad Request
+    \value Unauthorized
+        4.01 Unauthorized
+    \value BadOption
+        4.02 Bad Option
+    \value Forbidden
+        4.03 Forbidden
+    \value NotFound
+        4.04 Not Found
+    \value MethodNotAllowed
+        4.05 Method Not Allowed
+    \value NotAcceptable
+        4.06 Not Acceptable
+    \value RequestEntityIncomplete
+        4.08 Request Entity Incomplete (from \l{https://tools.ietf.org/html/draft-ietf-core-block-18}{Blockwise V18})
+    \value PreconditionFailed
+        4.12 Precondition Failed
+    \value RequestEntityTooLarge
+        4.13 Request Entity Too Large (from \l{https://tools.ietf.org/html/draft-ietf-core-block-18}{Blockwise V18})
+    \value UnsupportedContentFormat
+        4.15 UnsupportedContentFormat
+    \value InternalServerError
+        5.00 Internal Server Error
+    \value NotImplemented
+        5.01 Not Implemented
+    \value BadGateway
+        5.02 Bad Gateway
+    \value ServiceUnavailabl
+        5.03 Service Unavailabl
+    \value GatewayTimeout
+        5.04 Gateway Timeout
+    \value ProxyingNotSupported
+        5.05 Proxying Not Supported
+
+*/
+
+/*! \enum CoapPdu::ContentType
+
+    The CoAP content types.
+
+    \value TextPlain
+    \value ApplicationLink
+    \value ApplicationXml
+    \value ApplicationOctet
+    \value ApplicationExi
+    \value ApplicationJson
+*/
+
+/*! \enum CoapPdu::Error
+
+    \value NoError
+    \value InvalidTokenError
+    \value InvalidPduSizeError
+    \value InvalidOptionDeltaError
+    \value InvalidOptionLengthError
+    \value UnknownOptionError
+};
+
+*/
 #include "coappdu.h"
 #include "coapoption.h"
 

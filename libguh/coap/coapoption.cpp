@@ -18,35 +18,92 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class CoapOption
+    \brief Represents the option of a Coap PDU.
+
+    \ingroup coap
+    \inmodule libguh
+
+    The CoapOption class provides an easy way to create / parse CoAP options of a CoAP PDU (Protocol Data Unit). An options
+    can be compared with a HTTP header.
+
+*/
+
+/*! \enum CoapOption::Option
+    Represents the known CoAP options according to \l{https://tools.ietf.org/html/rfc7252#section-3.1}{RFC7252}.
+
+    \value IfMatch
+
+    \value UriHost
+
+    \value ETag
+
+    \value IfNoneMatch
+
+    \value UriPort
+
+    \value LocationPath
+
+    \value UriPath
+
+    \value ContentFormat
+
+    \value MaxAge
+
+    \value UriQuery
+
+    \value Accept
+
+    \value LocationQuery
+
+    \value Block2
+
+    \value Block1
+
+    \value ProxyUri
+
+    \value ProxyScheme
+
+    \value Size1
+
+*/
+
 #include "coapoption.h"
 
 #include <QMetaEnum>
 
+/*! Constructs a \l{CoapOption} . */
 CoapOption::CoapOption()
 {
 }
 
+/*! Constructs a \l{CoapOption} with the given \a option and option \a data. */
 CoapOption::CoapOption(const CoapOption::Option &option, const QByteArray &data) :
     m_option(option),
     m_data(data)
 {
 }
 
+/*! Sets the option value of this CoapOption to the given \a option . */
 void CoapOption::setOption(const CoapOption::Option &option)
 {
     m_option = option;
 }
 
+/*! Returns the option value of this CoapOption. */
 CoapOption::Option CoapOption::option() const
 {
     return m_option;
 }
 
+/*! Sets the data of this CoapOption to the given \a data. */
 void CoapOption::setData(const QByteArray &data)
 {
     m_data = data;
 }
 
+/*! Returns the data of this CoapOption. */
 QByteArray CoapOption::data() const
 {
     return m_data;

@@ -17,8 +17,9 @@
                 \li \l{Types of libguh}
                 \li \l{Device Plugins}{The Device Plugin API}
                 \li \l{Hardware Resources}{Hardware resources available for plugins}
-                \li \l{GuhSettings}{Settings of guh}
+                \li \l{GuhSettings}{Settings API of guh}
                 \li \l{Type Utils}{Global types of guh (Type Utils)}
+                \li \l{CoAP}{The CoAP API}
             \endlist
         \li \l{Plugins}{The guh plugins}
             \list

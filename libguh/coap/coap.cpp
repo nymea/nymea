@@ -18,10 +18,55 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class Coap
+    \brief The client connection class to a CoAP server.
+
+    \ingroup coap
+    \inmodule libguh
+
+    The Coap class provides a signal solt based communication with a \l{https://tools.ietf.org/html/rfc7252}{CoAP (Constrained Application Protocol)}
+    server. The API of this class was inspired by the \l{http://doc.qt.io/qt-5/qnetworkaccessmanager.html}{QNetworkAccessManager} and was
+    written according to the \l{https://tools.ietf.org/html/rfc7252}{RFC7252}.
+    This class supports also blockwise transfere according to the \l{https://tools.ietf.org/html/draft-ietf-core-block-18}{IETF V18} specifications.
+
+    \sa CoapReply, CoapRequest
+
+    \section2 Example
+    \code
+        MyClass::MyClass(QObject *parent) :
+          QObject(parent)
+        {
+          Coap *coap = new Coap(this);
+          connect(coap, SIGNAL(replyFinished(CoapReply*)), this, SLOT(onReplyFinished(CoapReply*)));
+
+          CoapRequest request(QUrl("coap://coap.me/hello"));
+          coap->get(request);
+        }
+    \endcode
+
+    \code
+        void MyClass::onReplyFinished(CoapReply *reply)
+        {
+          if (reply->error() != CoapReply::NoError) {
+            qWarning() << "Reply finished with error" << reply->errorString();
+          }
+
+          qDebug() << "Reply finished" << reply;
+          reply->deleteLater();
+        }
+    \endcode
+*/
+
+/*! \fn void Coap::replyFinished(CoapReply *reply);
+    This signal is emitted when a \a reply is finished.
+*/
+
 #include "coap.h"
 #include "coappdu.h"
 #include "coapoption.h"
 
+/*! Constructs a coap access manager with the given \a parent and \a port. */
 Coap::Coap(QObject *parent, const quint16 &port) :
     QObject(parent),
     m_reply(0)
@@ -34,6 +79,8 @@ Coap::Coap(QObject *parent, const quint16 &port) :
     connect(m_socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
 }
 
+/*! Performs a ping request to the CoAP server specified in the given \a request.
+ *  Returns a \l{CoapReply} to match the response with the request. */
 CoapReply *Coap::ping(const CoapRequest &request)
 {
     CoapReply *reply = new CoapReply(request, this);
@@ -59,6 +106,8 @@ CoapReply *Coap::ping(const CoapRequest &request)
     return reply;
 }
 
+/*! Performs a GET request to the CoAP server specified in the given \a request.
+ *  Returns a \l{CoapReply} to match the response with the request. */
 CoapReply *Coap::get(const CoapRequest &request)
 {
     CoapReply *reply = new CoapReply(request, this);
@@ -84,6 +133,8 @@ CoapReply *Coap::get(const CoapRequest &request)
     return reply;
 }
 
+/*! Performs a PUT request to the CoAP server specified in the given \a request and \a data.
+ *  Returns a \l{CoapReply} to match the response with the request. */
 CoapReply *Coap::put(const CoapRequest &request, const QByteArray &data)
 {
     CoapReply *reply = new CoapReply(request, this);
@@ -110,6 +161,8 @@ CoapReply *Coap::put(const CoapRequest &request, const QByteArray &data)
     return reply;
 }
 
+/*! Performs a POST request to the CoAP server specified in the given \a request and \a data.
+ *  Returns a \l{CoapReply} to match the response with the request. */
 CoapReply *Coap::post(const CoapRequest &request, const QByteArray &data)
 {
     CoapReply *reply = new CoapReply(request, this);
@@ -136,6 +189,8 @@ CoapReply *Coap::post(const CoapRequest &request, const QByteArray &data)
     return reply;
 }
 
+/*! Performs a DELETE request to the CoAP server specified in the given \a request.
+ *  Returns a \l{CoapReply} to match the response with the request. */
 CoapReply *Coap::deleteResource(const CoapRequest &request)
 {
     CoapReply *reply = new CoapReply(request, this);

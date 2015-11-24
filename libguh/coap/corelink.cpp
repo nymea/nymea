@@ -18,6 +18,19 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class CoreLink
+    \brief Represents a link of a CoRE link format.
+
+    \ingroup coap
+    \inmodule libguh
+
+    This class represents a Constrained RESTful Environments (CoRE) Link format according to the
+    \l{http://tools.ietf.org/html/rfc6690}{RFC6690} specification.
+
+*/
+
+
 #include "corelink.h"
 
 #include <QMetaEnum>

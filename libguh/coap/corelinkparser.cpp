@@ -18,10 +18,34 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class CoreLinkParser
+    \brief Provides an easy way to parse a CoRE link list.
+
+    \ingroup coap
+    \inmodule libguh
+
+    \section2 Example
+
+    \code
+        if (reply->contentType == CoapPdu::ApplicationLink) {
+            CoreLinkParser parser(reply->payload());
+
+            foreach (const CoreLink &link, parser.links()) {
+                qDebug() << link;
+            }
+        }
+    \endcode
+
+    \sa CoreLink
+
+*/
+
 #include "corelinkparser.h"
 
 #include <QDebug>
 
+/*! Constructs a CoRE link parser. The given \a data should contain a CoRE link list. */
 CoreLinkParser::CoreLinkParser(const QByteArray &data, QObject *parent) :
     QObject(parent),
     m_data(data)
@@ -55,6 +79,7 @@ CoreLinkParser::CoreLinkParser(const QByteArray &data, QObject *parent) :
     }
 }
 
+/*! Returns the parsed list of \l{CoreLink}{CoreLinks}.*/
 QList<CoreLink> CoreLinkParser::links() const
 {
     return m_links;

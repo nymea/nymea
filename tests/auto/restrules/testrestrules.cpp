@@ -52,6 +52,8 @@ private slots:
     void addRemoveRules_data();
     void addRemoveRules();
 
+    void emptyRule();
+
     void editRules_data();
     void editRules();
 
@@ -391,6 +393,36 @@ void TestRestRules::addRemoveRules()
     QCOMPARE(statusCode, 200);
     reply->deleteLater();
 
+    nam->deleteLater();
+}
+
+void TestRestRules::emptyRule()
+{
+    // create add params for rule
+    QVariantMap params;
+    params.insert("name", QString());
+    params.insert("actions", QVariantList());
+
+    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
+    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
+
+    // Get rules and verify there is no rule added
+    QNetworkRequest request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/rules")));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
+    QNetworkReply *reply = nam->post(request, QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact));
+    clientSpy.wait();
+    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
+    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    QCOMPARE(statusCode, 400);
+    QByteArray data = reply->readAll();
+    reply->deleteLater();
+
+    QJsonParseError error;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
+    QCOMPARE(error.error, QJsonParseError::NoError);
+
+    QVERIFY2(jsonDoc.toVariant().toMap().contains("error"), "The error message is missing");
+    QVERIFY2(jsonDoc.toVariant().toMap().value("error").toString() == "RuleErrorMissingParameter", "Wrong RuleError.");
     nam->deleteLater();
 }
 

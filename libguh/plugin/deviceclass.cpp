@@ -134,6 +134,17 @@ void DeviceClass::setStateTypes(const QList<StateType> &stateTypes)
     }
 }
 
+/*! Returns true if this DeviceClass has a \l{StateType} with the given \a stateTypeId. */
+bool DeviceClass::hasStateType(const StateTypeId &stateTypeId)
+{
+    foreach (const StateType &stateType, m_stateTypes) {
+        if (stateType.id() == stateTypeId) {
+            return true;
+        }
+    }
+    return false;
+}
+
 /*! Returns the eventTypes of this DeviceClass. \{Device}{Devices} created
     from this \l{DeviceClass} must have their events matching to this template. */
 QList<EventType> DeviceClass::eventTypes() const
@@ -157,6 +168,17 @@ void DeviceClass::setEventTypes(const QList<EventType> &eventTypes)
     }
 }
 
+/*! Returns true if this DeviceClass has a \l{EventType} with the given \a eventTypeId. */
+bool DeviceClass::hasEventType(const EventTypeId &eventTypeId)
+{
+    foreach (const EventType &eventType, m_eventTypes) {
+        if (eventType.id() == eventTypeId) {
+            return true;
+        }
+    }
+    return false;
+}
+
 /*! Returns the actionTypes of this DeviceClass. \{Device}{Devices} created
     from this \l{DeviceClass} must have their actions matching to this template. */
 QList<ActionType> DeviceClass::actionTypes() const
@@ -169,6 +191,17 @@ QList<ActionType> DeviceClass::actionTypes() const
 void DeviceClass::setActionTypes(const QList<ActionType> &actionTypes)
 {
     m_actionTypes = actionTypes;
+}
+
+/*! Returns true if this DeviceClass has a \l{ActionType} with the given \a actionTypeId. */
+bool DeviceClass::hasActionType(const ActionTypeId &actionTypeId)
+{
+    foreach (const ActionType &actionType, m_actionTypes) {
+        if (actionType.id() == actionTypeId) {
+            return true;
+        }
+    }
+    return false;
 }
 
 /*! Returns the params description of this DeviceClass. \{Device}{Devices} created

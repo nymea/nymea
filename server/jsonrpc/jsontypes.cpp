@@ -405,7 +405,7 @@ QVariantMap JsonTypes::packStateType(const StateType &stateType)
     QVariantMap variantMap;
     variantMap.insert("id", stateType.id());
     variantMap.insert("name", stateType.name());
-    variantMap.insert("type", QVariant::typeToName(stateType.type()));
+    variantMap.insert("type", basicTypeToString(stateType.type()));
     variantMap.insert("defaultValue", stateType.defaultValue());
 
     if(stateType.unit() != Types::UnitNone) {
@@ -465,7 +465,7 @@ QVariantMap JsonTypes::packParamType(const ParamType &paramType)
 {
     QVariantMap variantMap;
     variantMap.insert("name", paramType.name());
-    variantMap.insert("type", QVariant::typeToName(paramType.type()));
+    variantMap.insert("type", basicTypeToString(paramType.type()));
     // optional
     if (paramType.defaultValue().isValid()) {
         variantMap.insert("defaultValue", paramType.defaultValue());
@@ -795,6 +795,36 @@ QVariantList JsonTypes::packPlugins()
         pluginsList.append(pluginMap);
     }
     return pluginsList;
+}
+
+QString JsonTypes::basicTypeToString(const QVariant::Type &type)
+{
+    switch (type) {
+    case QVariant::Uuid:
+        return "Uuid";
+        break;
+    case QVariant::String:
+        return "String";
+        break;
+    case QVariant::Int:
+        return "Int";
+        break;
+    case QVariant::UInt:
+        return "UInt";
+        break;
+    case QVariant::Double:
+        return "Double";
+        break;
+    case QVariant::Bool:
+        return "Bool";
+        break;
+    case QVariant::Color:
+        return "Color";
+        break;
+    default:
+        return QVariant::typeToName(type);
+        break;
+    }
 }
 
 Param JsonTypes::unpackParam(const QVariantMap &paramMap)
@@ -1275,25 +1305,25 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
 
 QPair<bool, QString> JsonTypes::validateBasicType(const QVariant &variant)
 {
-    if (variant.canConvert(QVariant::Uuid)) {
+    if (variant.canConvert(QVariant::Uuid) && QVariant(variant).convert(QVariant::Uuid)) {
         return report(true, "");
     }
-    if (variant.canConvert(QVariant::String)) {
+    if (variant.canConvert(QVariant::String) && QVariant(variant).convert(QVariant::String)) {
         return report(true, "");
     }
-    if (variant.canConvert(QVariant::Int)) {
+    if (variant.canConvert(QVariant::Int) && QVariant(variant).convert(QVariant::Int)) {
         return report(true, "");
     }
-    if (variant.canConvert(QVariant::UInt)){
+    if (variant.canConvert(QVariant::UInt) && QVariant(variant).convert(QVariant::UInt)){
         return report(true, "");
     }
-    if (variant.canConvert(QVariant::Double)) {
+    if (variant.canConvert(QVariant::Double) && QVariant(variant).convert(QVariant::Double)) {
         return report(true, "");
     }
-    if (variant.canConvert(QVariant::Bool)) {
+    if (variant.canConvert(QVariant::Bool && QVariant(variant).convert(QVariant::Bool))) {
         return report(true, "");
     }
-    if (variant.canConvert(QVariant::Color)) {
+    if (variant.canConvert(QVariant::Color) && QVariant(variant).convert(QVariant::Color)) {
         return report(true, "");
     }
     return report(false, QString("Error validating basic type %1.").arg(variant.toString()));
@@ -1392,6 +1422,11 @@ QPair<QList<RuleAction>, RuleEngine::RuleError> JsonTypes::verifyActions(const Q
 {
     QList<RuleAction> actions;
     QVariantList actionList = params.value("actions").toList();
+    if (actionList.isEmpty()) {
+        qCWarning(dcJsonRpc) << "Rule has no actions. This rule will do nothing.";
+        return QPair<QList<RuleAction>, RuleEngine::RuleError>(actions, RuleEngine::RuleErrorInvalidRuleFormat);
+    }
+
     qCDebug(dcJsonRpc) << "unpacking actions:" << actionList;
     foreach (const QVariant &actionVariant, actionList) {
         QVariantMap actionMap = actionVariant.toMap();

@@ -297,6 +297,7 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
         }
     }
 
+
     foreach (const RuleAction &action, actions) {
         Device *device = GuhCore::instance()->findConfiguredDevice(action.deviceId());
         if (!device) {
@@ -304,17 +305,24 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
             return RuleErrorDeviceNotFound;
         }
         DeviceClass deviceClass = GuhCore::instance()->findDeviceClass(device->deviceClassId());
-
-        bool actionTypeFound = false;
-        foreach (const ActionType &actionType, deviceClass.actionTypes()) {
-            if (actionType.id() == action.actionTypeId()) {
-                actionTypeFound = true;
-            }
-        }
-        if (!actionTypeFound) {
+        if (!deviceClass.hasActionType(action.actionTypeId())) {
             qCWarning(dcRuleEngine) << "Cannot create rule. Device " + device->name() + " has no action type:" << action.actionTypeId();
             return RuleErrorActionTypeNotFound;
         }
+
+        // if the action is eventbased, it is already checked
+        if (!action.isEventBased()) {
+            // verify action params
+            foreach (const ActionType &actionType, deviceClass.actionTypes()) {
+                if (actionType.id() == action.actionTypeId()) {
+                    ParamList finalParams = action.toAction().params();
+                    DeviceManager::DeviceError paramCheck = GuhCore::instance()->deviceManager()->verifyParams(actionType.paramTypes(), finalParams);
+                    if (paramCheck != DeviceManager::DeviceErrorNoError)
+                        return RuleErrorInvalidRuleActionParameter;
+                }
+            }
+        }
+
     }
     if (actions.count() > 0) {
         qCDebug(dcRuleEngine) << "actions" << actions.last().actionTypeId() << actions.last().ruleActionParams();
@@ -328,15 +336,19 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
         }
         DeviceClass deviceClass = GuhCore::instance()->findDeviceClass(device->deviceClassId());
 
-        bool actionTypeFound = false;
-        foreach (const ActionType &actionType, deviceClass.actionTypes()) {
-            if (actionType.id() == action.actionTypeId()) {
-                actionTypeFound = true;
-            }
-        }
-        if (!actionTypeFound) {
+        if (!deviceClass.hasActionType(action.actionTypeId())) {
             qCWarning(dcRuleEngine) << "Cannot create rule. Device " + device->name() + " has no action type:" << action.actionTypeId();
             return RuleErrorActionTypeNotFound;
+        }
+
+        // verify action params
+        foreach (const ActionType &actionType, deviceClass.actionTypes()) {
+            if (actionType.id() == action.actionTypeId()) {
+                ParamList finalParams = action.toAction().params();
+                DeviceManager::DeviceError paramCheck = GuhCore::instance()->deviceManager()->verifyParams(actionType.paramTypes(), finalParams);
+                if (paramCheck != DeviceManager::DeviceErrorNoError)
+                    return RuleErrorInvalidRuleActionParameter;
+            }
         }
     }
     if (exitActions.count() > 0) {

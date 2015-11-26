@@ -298,10 +298,17 @@ DeviceManager::DeviceError DeviceManager::setPluginConfig(const PluginId &plugin
     if (!plugin) {
         return DeviceErrorPluginNotFound;
     }
+
+    DeviceError verify = verifyParams(plugin->configurationDescription(), pluginConfig);
+    if (verify != DeviceErrorNoError) {
+        return verify;
+    }
+
     DeviceError result = plugin->setConfiguration(pluginConfig);
     if (result != DeviceErrorNoError) {
         return result;
     }
+
     GuhSettings settings(GuhSettings::SettingsRolePlugins);
     settings.beginGroup("PluginConfig");
     settings.beginGroup(plugin->pluginId().toString());

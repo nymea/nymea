@@ -300,7 +300,9 @@ DeviceManager::DeviceError DeviceManager::setPluginConfig(const PluginId &plugin
         return DeviceErrorPluginNotFound;
     }
 
-    DeviceError verify = verifyParams(plugin->configurationDescription(), pluginConfig);
+    ParamList params = pluginConfig;
+
+    DeviceError verify = verifyParams(plugin->configurationDescription(), params);
     if (verify != DeviceErrorNoError) {
         return verify;
     }

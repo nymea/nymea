@@ -64,12 +64,15 @@ public:
 
     QList<StateType> stateTypes() const;
     void setStateTypes(const QList<StateType> &stateTypes);
+    bool hasStateType(const StateTypeId &stateTypeId);
 
     QList<EventType> eventTypes() const;
     void setEventTypes(const QList<EventType> &eventTypes);
+    bool hasEventType(const EventTypeId &eventTypeId);
 
     QList<ActionType> actionTypes() const;
     void setActionTypes(const QList<ActionType> &actionTypes);
+    bool hasActionType(const ActionTypeId &actionTypeId);
 
     QList<ParamType> paramTypes() const;
     void setParamTypes(const QList<ParamType> &paramTypes);

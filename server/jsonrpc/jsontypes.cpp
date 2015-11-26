@@ -1392,6 +1392,11 @@ QPair<QList<RuleAction>, RuleEngine::RuleError> JsonTypes::verifyActions(const Q
 {
     QList<RuleAction> actions;
     QVariantList actionList = params.value("actions").toList();
+    if (actionList.isEmpty()) {
+        qCWarning(dcJsonRpc) << "Rule has no actions. This rule will do nothing.";
+        return QPair<QList<RuleAction>, RuleEngine::RuleError>(actions, RuleEngine::RuleErrorInvalidRuleFormat);
+    }
+
     qCDebug(dcJsonRpc) << "unpacking actions:" << actionList;
     foreach (const QVariant &actionVariant, actionList) {
         QVariantMap actionMap = actionVariant.toMap();

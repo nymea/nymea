@@ -49,6 +49,8 @@ private slots:
 
     void cleanup();
 
+    void emptyRule();
+
     void addRemoveRules_data();
     void addRemoveRules();
 
@@ -96,6 +98,15 @@ void TestRules::cleanupRules() {
 void TestRules::cleanup() {
     cleanupMockHistory();
     cleanupRules();
+}
+
+void TestRules::emptyRule()
+{
+    QVariantMap params;
+    params.insert("name", QString());
+    params.insert("actions", QVariantList());
+    QVariant response = injectAndWait("Rules.AddRule", params);
+    verifyRuleError(response, RuleEngine::RuleErrorMissingParameter);
 }
 
 void TestRules::verifyRuleExecuted(const ActionTypeId &actionTypeId)

@@ -1305,25 +1305,25 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
 
 QPair<bool, QString> JsonTypes::validateBasicType(const QVariant &variant)
 {
-    if (variant.canConvert(QVariant::Uuid)) {
+    if (variant.canConvert(QVariant::Uuid) && QVariant(variant).convert(QVariant::Uuid)) {
         return report(true, "");
     }
-    if (variant.canConvert(QVariant::String)) {
+    if (variant.canConvert(QVariant::String) && QVariant(variant).convert(QVariant::String)) {
         return report(true, "");
     }
-    if (variant.canConvert(QVariant::Int)) {
+    if (variant.canConvert(QVariant::Int) && QVariant(variant).convert(QVariant::Int)) {
         return report(true, "");
     }
-    if (variant.canConvert(QVariant::UInt)){
+    if (variant.canConvert(QVariant::UInt) && QVariant(variant).convert(QVariant::UInt)){
         return report(true, "");
     }
-    if (variant.canConvert(QVariant::Double)) {
+    if (variant.canConvert(QVariant::Double) && QVariant(variant).convert(QVariant::Double)) {
         return report(true, "");
     }
-    if (variant.canConvert(QVariant::Bool)) {
+    if (variant.canConvert(QVariant::Bool && QVariant(variant).convert(QVariant::Bool))) {
         return report(true, "");
     }
-    if (variant.canConvert(QVariant::Color)) {
+    if (variant.canConvert(QVariant::Color) && QVariant(variant).convert(QVariant::Color)) {
         return report(true, "");
     }
     return report(false, QString("Error validating basic type %1.").arg(variant.toString()));

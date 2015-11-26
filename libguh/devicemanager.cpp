@@ -766,6 +766,87 @@ DeviceClass DeviceManager::findDeviceClass(const DeviceClassId &deviceClassId) c
     return DeviceClass();
 }
 
+DeviceManager::DeviceError DeviceManager::verifyParams(const QList<ParamType> paramTypes, ParamList &params, bool requireAll)
+{
+    foreach (const Param &param, params) {
+        DeviceManager::DeviceError result = verifyParam(paramTypes, param);
+        if (result != DeviceErrorNoError) {
+            return result;
+        }
+    }
+    if (!requireAll) {
+        return DeviceErrorNoError;
+    }
+    foreach (const ParamType &paramType, paramTypes) {
+        bool found = false;
+        foreach (const Param &param, params) {
+            if (paramType.name() == param.name()) {
+                found = true;
+            }
+        }
+
+        // This paramType has a default value... lets fill in that one.
+        if (!paramType.defaultValue().isNull() && !found) {
+            found = true;
+            params.append(Param(paramType.name(), paramType.defaultValue()));
+        }
+
+        if (!found) {
+            qCWarning(dcDeviceManager) << "Missing parameter:" << paramType.name();
+            return DeviceErrorMissingParameter;
+        }
+    }
+    return DeviceErrorNoError;
+}
+
+DeviceManager::DeviceError DeviceManager::verifyParam(const QList<ParamType> paramTypes, const Param &param)
+{
+    foreach (const ParamType &paramType, paramTypes) {
+        if (paramType.name() == param.name()) {
+            return verifyParam(paramType, param);
+        }
+    }
+    qCWarning(dcDeviceManager) << "Invalid parameter" << param.name() << "in parameter list";
+    return DeviceErrorInvalidParameter;
+}
+
+DeviceManager::DeviceError DeviceManager::verifyParam(const ParamType &paramType, const Param &param)
+{
+    if (paramType.name() == param.name()) {
+
+        if (!param.value().canConvert(paramType.type())) {
+            qCWarning(dcDeviceManager) << "Wrong parameter type for param" << param.name() << " Got:" << param.value() << " Expected:" << QVariant::typeToName(paramType.type());
+            return DeviceErrorInvalidParameter;
+        }
+
+        if (!param.value().convert(paramType.type())) {
+            qCWarning(dcDeviceManager) << "Could not convert value of param" << param.name() << " to:" << QVariant::typeToName(paramType.type()) << " Got:" << param.value();
+            return DeviceErrorInvalidParameter;
+        }
+
+        if (paramType.maxValue().isValid() && param.value() > paramType.maxValue()) {
+            qCWarning(dcDeviceManager) << "Value out of range for param" << param.name() << " Got:" << param.value() << " Max:" << paramType.maxValue();
+            return DeviceErrorInvalidParameter;
+        }
+        if (paramType.minValue().isValid() && param.value() < paramType.minValue()) {
+            qCWarning(dcDeviceManager) << "Value out of range for param" << param.name() << " Got:" << param.value() << " Min:" << paramType.minValue();
+            return DeviceErrorInvalidParameter;
+        }
+        if (!paramType.allowedValues().isEmpty() && !paramType.allowedValues().contains(param.value())) {
+            QStringList allowedValues;
+            foreach (const QVariant &value, paramType.allowedValues()) {
+                allowedValues.append(value.toString());
+            }
+
+            qCWarning(dcDeviceManager) << "Value not in allowed values for param" << param.name() << " Got:" << param.value() << " Allowed:" << allowedValues.join(",");
+            return DeviceErrorInvalidParameter;
+        }
+        return DeviceErrorNoError;
+    }
+    qCWarning(dcDeviceManager) << "Parameter name" << param.name() << "does not match with ParamType name" << paramType.name();
+    return DeviceErrorInvalidParameter;
+}
+
 /*! Execute the given \l{Action}.
  *  This will find the \l{Device} \a action refers to the \l{Action}{deviceId()} and
  *  its \l{DevicePlugin}. Then will dispatch the execution to the \l{DevicePlugin}.*/
@@ -787,7 +868,6 @@ DeviceManager::DeviceError DeviceManager::executeAction(const Action &action)
                         return paramCheck;
                     }
                     finalAction.setParams(finalParams);
-
                     found = true;
                     continue;
                 }
@@ -1287,86 +1367,5 @@ void DeviceManager::postSetupDevice(Device *device)
     DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
 
     plugin->postSetupDevice(device);
-}
-
-DeviceManager::DeviceError DeviceManager::verifyParams(const QList<ParamType> paramTypes, ParamList &params, bool requireAll)
-{
-    foreach (const Param &param, params) {
-        DeviceManager::DeviceError result = verifyParam(paramTypes, param);
-        if (result != DeviceErrorNoError) {
-            return result;
-        }
-    }
-    if (!requireAll) {
-        return DeviceErrorNoError;
-    }
-    foreach (const ParamType &paramType, paramTypes) {
-        bool found = false;
-        foreach (const Param &param, params) {
-            if (paramType.name() == param.name()) {
-                found = true;
-            }
-        }
-
-        // This paramType has a default value... lets fill in that one.
-        if (!paramType.defaultValue().isNull() && !found) {
-            found = true;
-            params.append(Param(paramType.name(), paramType.defaultValue()));
-        }
-
-        if (!found) {
-            qCWarning(dcDeviceManager) << "Missing parameter:" << paramType.name();
-            return DeviceErrorMissingParameter;
-        }
-    }
-    return DeviceErrorNoError;
-}
-
-DeviceManager::DeviceError DeviceManager::verifyParam(const QList<ParamType> paramTypes, const Param &param)
-{
-    foreach (const ParamType &paramType, paramTypes) {
-        if (paramType.name() == param.name()) {
-            return verifyParam(paramType, param);
-        }
-    }
-    qCWarning(dcDeviceManager) << "Invalid parameter" << param.name() << "in parameter list";
-    return DeviceErrorInvalidParameter;
-}
-
-DeviceManager::DeviceError DeviceManager::verifyParam(const ParamType &paramType, const Param &param)
-{
-    if (paramType.name() == param.name()) {
-
-        if (!param.value().canConvert(paramType.type())) {
-            qCWarning(dcDeviceManager) << "Wrong parameter type for param" << param.name() << " Got:" << param.value() << " Expected:" << QVariant::typeToName(paramType.type());
-            return DeviceErrorInvalidParameter;
-        }
-
-        if (!param.value().convert(paramType.type())) {
-            qCWarning(dcDeviceManager) << "Could not convert value of param" << param.name() << " to:" << QVariant::typeToName(paramType.type()) << " Got:" << param.value();
-            return DeviceErrorInvalidParameter;
-        }
-
-        if (paramType.maxValue().isValid() && param.value() > paramType.maxValue()) {
-            qCWarning(dcDeviceManager) << "Value out of range for param" << param.name() << " Got:" << param.value() << " Max:" << paramType.maxValue();
-            return DeviceErrorInvalidParameter;
-        }
-        if (paramType.minValue().isValid() && param.value() < paramType.minValue()) {
-            qCWarning(dcDeviceManager) << "Value out of range for param" << param.name() << " Got:" << param.value() << " Min:" << paramType.minValue();
-            return DeviceErrorInvalidParameter;
-        }
-        if (!paramType.allowedValues().isEmpty() && !paramType.allowedValues().contains(param.value())) {
-            QStringList allowedValues;
-            foreach (const QVariant &value, paramType.allowedValues()) {
-                allowedValues.append(value.toString());
-            }
-
-            qCWarning(dcDeviceManager) << "Value not in allowed values for param" << param.name() << " Got:" << param.value() << " Allowed:" << allowedValues.join(",");
-            return DeviceErrorInvalidParameter;
-        }
-        return DeviceErrorNoError;
-    }
-    qCWarning(dcDeviceManager) << "Parameter name" << param.name() << "does not match with ParamType name" << paramType.name();
-    return DeviceErrorInvalidParameter;
 }
 

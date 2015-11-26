@@ -23,6 +23,7 @@ SUBDIRS += elro         \
     elgato              \
     awattar             \
     netatmo             \
+    osdomotics          \
 
 boblight {
     SUBDIRS += boblight

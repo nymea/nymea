@@ -135,7 +135,7 @@ public:
     DECLARE_OBJECT(ruleDescription, "RuleDescription")
     DECLARE_OBJECT(logEntry, "LogEntry")
 
-    // pack types
+    // pack types    
     static QVariantMap packEventType(const EventType &eventType);
     static QVariantMap packEvent(const Event &event);
     static QVariantMap packEventDescriptor(const EventDescriptor &event);
@@ -176,6 +176,7 @@ public:
     static QVariantList packEventTypes(const DeviceClass &deviceClass);
     static QVariantList packPlugins();
 
+    static QString basicTypeToString(const QVariant::Type &type);
 
     // unpack Types
     static Param unpackParam(const QVariantMap &paramMap);

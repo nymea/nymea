@@ -405,7 +405,7 @@ QVariantMap JsonTypes::packStateType(const StateType &stateType)
     QVariantMap variantMap;
     variantMap.insert("id", stateType.id());
     variantMap.insert("name", stateType.name());
-    variantMap.insert("type", QVariant::typeToName(stateType.type()));
+    variantMap.insert("type", basicTypeToString(stateType.type()));
     variantMap.insert("defaultValue", stateType.defaultValue());
 
     if(stateType.unit() != Types::UnitNone) {
@@ -465,7 +465,7 @@ QVariantMap JsonTypes::packParamType(const ParamType &paramType)
 {
     QVariantMap variantMap;
     variantMap.insert("name", paramType.name());
-    variantMap.insert("type", QVariant::typeToName(paramType.type()));
+    variantMap.insert("type", basicTypeToString(paramType.type()));
     // optional
     if (paramType.defaultValue().isValid()) {
         variantMap.insert("defaultValue", paramType.defaultValue());
@@ -795,6 +795,36 @@ QVariantList JsonTypes::packPlugins()
         pluginsList.append(pluginMap);
     }
     return pluginsList;
+}
+
+QString JsonTypes::basicTypeToString(const QVariant::Type &type)
+{
+    switch (type) {
+    case QVariant::Uuid:
+        return "Uuid";
+        break;
+    case QVariant::String:
+        return "String";
+        break;
+    case QVariant::Int:
+        return "Int";
+        break;
+    case QVariant::UInt:
+        return "UInt";
+        break;
+    case QVariant::Double:
+        return "Double";
+        break;
+    case QVariant::Bool:
+        return "Bool";
+        break;
+    case QVariant::Color:
+        return "Color";
+        break;
+    default:
+        return QVariant::typeToName(type);
+        break;
+    }
 }
 
 Param JsonTypes::unpackParam(const QVariantMap &paramMap)

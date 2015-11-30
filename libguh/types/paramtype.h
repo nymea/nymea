@@ -56,7 +56,7 @@ public:
     void setLimits(const QVariant &min, const QVariant &max);
 
     QList<QVariant> allowedValues() const;
-    void setAllowedValues(const QList<QVariant> allowedValues);
+    void setAllowedValues(const QList<QVariant> &allowedValues);
 
     bool readOnly() const;
     void setReadOnly(const bool &readOnly);

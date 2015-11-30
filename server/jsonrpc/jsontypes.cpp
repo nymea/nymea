@@ -130,6 +130,9 @@ void JsonTypes::init()
     s_stateType.insert("type", basicTypeRef());
     s_stateType.insert("defaultValue", basicTypeToString(Variant));
     s_stateType.insert("o:unit", unitRef());
+    s_stateType.insert("o:minValue", basicTypeToString(Variant));
+    s_stateType.insert("o:maxValue", basicTypeToString(Variant));
+    s_stateType.insert("o:possibleValues", QVariantList() << basicTypeToString(Variant));
 
     // State
     s_state.insert("stateTypeId", basicTypeToString(Uuid));

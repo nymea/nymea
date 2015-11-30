@@ -21,6 +21,7 @@ test.commands = LD_LIBRARY_PATH=$$top_builddir/libguh:$$top_builddir/tests/libgu
 QMAKE_EXTRA_TARGETS += licensecheck doc test
 
 # Inform about guh build
+message(============================================)
 message(Qt version: $$[QT_VERSION])
 message("Building guh version $${GUH_VERSION_STRING}")
 message("JSON-RPC API version $${JSON_PROTOCOL_VERSION}")
@@ -33,11 +34,11 @@ coverage {
 
 # Build tests
 !disabletesting {
-    message("Building guh tests enabled")
+    message("Building guh with tests")
     SUBDIRS += tests
     DEFINES += TESTING_ENABLED
 } else {
-    message("Building guh tests disabled")
+    message("Building guh without tests")
 }
 
 # Bluetooth LE support

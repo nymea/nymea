@@ -37,6 +37,7 @@
 extern DeviceClassId mockDeviceClassId;
 extern DeviceClassId mockDeviceAutoClassId;
 extern DeviceClassId mockPushButtonDeviceClassId;
+extern DeviceClassId mockDisplayPinDeviceClassId;
 extern DeviceClassId mockDeviceDiscoveryClassId;
 extern DeviceClassId mockDeviceAsyncSetupClassId;
 extern DeviceClassId mockDeviceBrokenClassId;

@@ -269,6 +269,80 @@
                             "name": "Timout action"
                         }
                     ]
+                },
+                {
+                    "deviceClassId": "296f1fd4-e893-46b2-8a42-50d1bceb8730",
+                    "idName": "mockDisplayPin",
+                    "name": "Mock Device (Display Pin)",
+                    "createMethods": ["discovery"],
+                    "setupMethod": "displayPin",
+                    "pairingInfo": "Please enter the secret which normaly will be displayed on the device. For the mockdevice the pin is 243681.",
+                    "discoveryParamTypes": [
+                        {
+                            "name": "resultCount",
+                            "type": "int",
+                            "defaultValue": 2,
+                            "allowedValues": [1, 2]
+                        }
+                    ],
+                    "paramTypes": [
+                        {
+                            "name": "name",
+                            "type": "QString",
+                            "inputType": "TextLine",
+                            "defaultValue": "Mock device",
+                            "readOnly": true
+                        },
+                        {
+                            "name": "pin",
+                            "type": "QString",
+                            "inputType": "TextLine",
+                            "defaultValue": "243681",
+                            "readOnly": true
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "20dc7c22-c50e-42db-837c-2bbced939f8e",
+                            "idName": "color",
+                            "name": "color",
+                            "type": "QColor",
+                            "defaultValue": "#000000",
+                            "writable": true
+                        },
+                        {
+                            "id": "72981c04-267a-4ba0-a59e-9921d2f3af9c",
+                            "idName": "percentage",
+                            "name": "percentage",
+                            "type": "int",
+                            "unit": "Percentage",
+                            "defaultValue": 0,
+                            "minValue": 0,
+                            "maxValue": 100,
+                            "writable": true
+                        },
+                        {
+                            "id": "05f63f9c-f61e-4dcf-ad55-3f13fde2765b",
+                            "idName": "allowedValues",
+                            "name": "allowed values",
+                            "type": "QString",
+                            "defaultValue": "String value 1",
+                            "possibleValues": [
+                                "String value 1",
+                                "String value 2",
+                                "String value 3",
+                                "String value 4"
+                            ],
+                            "writable": true
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "54646e7c-bc54-4895-81a2-590d72d120f9",
+                            "idName": "timeout",
+                            "name": "Timout action"
+                        }
+                    ]
                 }
             ]
         }

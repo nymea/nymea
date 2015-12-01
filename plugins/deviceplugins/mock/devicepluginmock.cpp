@@ -56,6 +56,11 @@ DeviceManager::DeviceError DevicePluginMock::discoverDevices(const DeviceClassId
         m_discoveredDeviceCount = params.paramValue("resultCount").toInt();
         QTimer::singleShot(1000, this, SLOT(emitPushButtonDevicesDiscovered()));
         return DeviceManager::DeviceErrorAsync;
+    } else if (deviceClassId == mockDisplayPinDeviceClassId) {
+        qCDebug(dcMockDevice) << "starting mock display pin discovery:" << params;
+        m_discoveredDeviceCount = params.paramValue("resultCount").toInt();
+        QTimer::singleShot(1000, this, SLOT(emitDisplayPinDevicesDiscovered()));
+        return DeviceManager::DeviceErrorAsync;
     }
     return DeviceManager::DeviceErrorDeviceClassNotFound;
 }
@@ -94,7 +99,11 @@ DeviceManager::DeviceSetupStatus DevicePluginMock::setupDevice(Device *device)
     } else if (device->deviceClassId() == mockPushButtonDeviceClassId) {
         qCDebug(dcMockDevice) << "Setup PushButton Mock device" << device->params();
         return DeviceManager::DeviceSetupStatusSuccess;
+    } else if (device->deviceClassId() == mockDisplayPinDeviceClassId) {
+        qCDebug(dcMockDevice) << "Setup DisplayPin Mock device" << device->params();
+        return DeviceManager::DeviceSetupStatusSuccess;
     }
+
     return DeviceManager::DeviceSetupStatusFailure;
 }
 
@@ -133,18 +142,37 @@ DeviceManager::DeviceSetupStatus DevicePluginMock::confirmPairing(const PairingT
 
     qCDebug(dcMockDevice) << "Confirm pairing";
 
-    if (deviceClassId != mockPushButtonDeviceClassId) {
-        qCWarning(dcMockDevice) << "Invalid deviceclassId -> no pairing possible with this device";
-        return DeviceManager::DeviceSetupStatusFailure;
-    }
-    if (!m_pushbuttonPressed) {
-        qCDebug(dcMockDevice) << "PushButton not pressed yet!";
-        return DeviceManager::DeviceSetupStatusFailure;
+    if (deviceClassId == mockPushButtonDeviceClassId) {
+        if (!m_pushbuttonPressed) {
+            qCDebug(dcMockDevice) << "PushButton not pressed yet!";
+            return DeviceManager::DeviceSetupStatusFailure;
+        }
+
+        m_pairingId = pairingTransactionId;
+        QTimer::singleShot(1000, this, SLOT(onPushButtonPairingFinished()));
+        return DeviceManager::DeviceSetupStatusAsync;
+    } else if (deviceClassId == mockDisplayPinDeviceClassId) {
+        if (secret != "243681") {
+            qCWarning(dcMockDevice) << "Invalid pin:" << secret;
+            return DeviceManager::DeviceSetupStatusFailure;
+        }
+        m_pairingId = pairingTransactionId;
+        QTimer::singleShot(500, this, SLOT(onDisplayPinPairingFinished()));
+        return DeviceManager::DeviceSetupStatusAsync;
     }
 
-    m_pairingId = pairingTransactionId;
-    QTimer::singleShot(1000, this, SLOT(onPushButtonPairingFinished()));
-    return DeviceManager::DeviceSetupStatusAsync;
+    qCWarning(dcMockDevice) << "Invalid deviceclassId -> no pairing possible with this device";
+    return DeviceManager::DeviceSetupStatusFailure;
+}
+
+DeviceManager::DeviceError DevicePluginMock::displayPin(const PairingTransactionId &pairingTransactionId, const DeviceDescriptor &deviceDescriptor)
+{
+    Q_UNUSED(pairingTransactionId)
+    Q_UNUSED(deviceDescriptor)
+
+    qCDebug(dcMockDevice) << "Display pin!! The pin is 243681";
+
+    return DeviceManager::DeviceErrorNoError;
 }
 
 QList<ParamType> DevicePluginMock::configurationDescription() const
@@ -177,7 +205,7 @@ DeviceManager::DeviceError DevicePluginMock::executeAction(Device *device, const
 
         m_daemons.value(device)->actionExecuted(action.actionTypeId());
         return DeviceManager::DeviceErrorNoError;
-    } else if (device->deviceClassId() == mockPushButtonDeviceClassId) {
+    } else if (device->deviceClassId() == mockPushButtonDeviceClassId || device->deviceClassId() == mockDisplayPinDeviceClassId) {
         if (action.actionTypeId() == colorActionTypeId) {
             QString colorString = action.param("color").value().toString();
             QColor color(colorString);
@@ -259,7 +287,7 @@ void DevicePluginMock::emitPushButtonDevicesDiscovered()
     QList<DeviceDescriptor> deviceDescriptors;
 
     if (m_discoveredDeviceCount > 0) {
-        DeviceDescriptor d1(mockDeviceClassId, "Mock Device (Push Button)", "1");
+        DeviceDescriptor d1(mockPushButtonDeviceClassId, "Mock Device (Push Button)", "1");
         ParamList params;
         Param name("name", "PushButton Mock Device 1");
         params.append(name);
@@ -268,7 +296,7 @@ void DevicePluginMock::emitPushButtonDevicesDiscovered()
     }
 
     if (m_discoveredDeviceCount > 1) {
-        DeviceDescriptor d2(mockDeviceClassId, "Mock Device (Push Button)", "2");
+        DeviceDescriptor d2(mockPushButtonDeviceClassId, "Mock Device (Push Button)", "2");
         ParamList params;
         Param name("name", "PushButton Mock Device 2");
         params.append(name);
@@ -280,7 +308,31 @@ void DevicePluginMock::emitPushButtonDevicesDiscovered()
     m_pushbuttonPressed = false;
     QTimer::singleShot(3000, this, SLOT(onPushButtonPressed()));
     qDebug() << "Start PushButton timer (will be pressed in 3 second)";
+}
 
+void DevicePluginMock::emitDisplayPinDevicesDiscovered()
+{
+    QList<DeviceDescriptor> deviceDescriptors;
+
+    if (m_discoveredDeviceCount > 0) {
+        DeviceDescriptor d1(mockDisplayPinDeviceClassId, "Mock Device (Display Pin)", "1");
+        ParamList params;
+        Param name("name", "DisplayPin Mock Device 1");
+        params.append(name);
+        d1.setParams(params);
+        deviceDescriptors.append(d1);
+    }
+
+    if (m_discoveredDeviceCount > 1) {
+        DeviceDescriptor d2(mockDisplayPinDeviceClassId, "Mock Device (Display Pin)", "2");
+        ParamList params;
+        Param name("name", "DisplayPin Mock Device 2");
+        params.append(name);
+        d2.setParams(params);
+        deviceDescriptors.append(d2);
+    }
+
+    emit devicesDiscovered(mockDisplayPinDeviceClassId, deviceDescriptors);
 }
 
 void DevicePluginMock::onPushButtonPressed()
@@ -314,5 +366,11 @@ void DevicePluginMock::emitActionExecuted()
 void DevicePluginMock::onPushButtonPairingFinished()
 {
     qCDebug(dcMockDevice) << "Pairing PushButton Device finished";
+    emit pairingFinished(m_pairingId, DeviceManager::DeviceSetupStatusSuccess);
+}
+
+void DevicePluginMock::onDisplayPinPairingFinished()
+{
+    qCDebug(dcMockDevice) << "Pairing DisplayPin Device finished";
     emit pairingFinished(m_pairingId, DeviceManager::DeviceSetupStatusSuccess);
 }

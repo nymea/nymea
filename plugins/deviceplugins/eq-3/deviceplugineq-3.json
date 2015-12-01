@@ -212,7 +212,7 @@
                             "type": "double",
                             "unit": "DegreeCelsius",
                             "defaultValue": 0,
-                            "writable": {}
+                            "writable": true
 
                         },
                         {
@@ -375,7 +375,7 @@
                             "unit": "DegreeCelsius",
                             "type": "double",
                             "defaultValue": 0,
-                            "writable": {}
+                            "writable": true
                         },
                         {
                             "id": "576da571-9a65-478f-96bf-19256c8b9ece",

@@ -47,7 +47,6 @@ StateEvaluator::StateEvaluator(const StateDescriptor &stateDescriptor):
     m_stateDescriptor(stateDescriptor),
     m_operatorType(Types::StateOperatorAnd)
 {
-
 }
 
 /*! Constructs a new StateEvaluator for the given \a childEvaluators and \a stateOperator. */
@@ -136,9 +135,9 @@ bool StateEvaluator::evaluate() const
 /*! Returns true if this \l StateEvaluator has a \l Device in it with the given \a deviceId. */
 bool StateEvaluator::containsDevice(const DeviceId &deviceId) const
 {
-    if (m_stateDescriptor.deviceId() == deviceId) {
+    if (m_stateDescriptor.deviceId() == deviceId)
         return true;
-    }
+
     foreach (const StateEvaluator &childEvaluator, m_childEvaluators) {
         if (childEvaluator.containsDevice(deviceId)) {
             return true;
@@ -150,9 +149,9 @@ bool StateEvaluator::containsDevice(const DeviceId &deviceId) const
 /*! Removes a \l Device with the given \a deviceId from this \l StateEvaluator. */
 void StateEvaluator::removeDevice(const DeviceId &deviceId)
 {
-    if (m_stateDescriptor.deviceId() == deviceId) {
+    if (m_stateDescriptor.deviceId() == deviceId)
         m_stateDescriptor = StateDescriptor();
-    }
+
     for (int i = 0; i < m_childEvaluators.count(); i++) {
         m_childEvaluators[i].removeDevice(deviceId);
     }
@@ -205,6 +204,76 @@ StateEvaluator StateEvaluator::loadFromSettings(GuhSettings &settings, const QSt
     settings.endGroup();
     settings.endGroup();
     return ret;
+}
+
+/*! Returns true, if all child evaluators are valid, the devices exist and all descriptors are in allowed paramerters.*/
+bool StateEvaluator::isValid() const
+{
+    if (m_stateDescriptor.isValid()) {
+        Device *device = GuhCore::instance()->findConfiguredDevice(m_stateDescriptor.deviceId());
+        if (!device) {
+            qCWarning(dcRuleEngine) << "State evaluator device does not exist!";
+            return false;
+        }
+
+        if (!device->hasState(m_stateDescriptor.stateTypeId())) {
+            qCWarning(dcRuleEngine) << "State evaluator device found, but it does not appear to have such a state!";
+            return false;
+        }
+
+        DeviceClass deviceClass = GuhCore::instance()->findDeviceClass(device->deviceClassId());
+        foreach (const StateType &stateType, deviceClass.stateTypes()) {
+            if (stateType.id() == m_stateDescriptor.stateTypeId()) {
+
+                if (!m_stateDescriptor.stateValue().canConvert(stateType.type())) {
+                    qCWarning(dcRuleEngine) << "Wrong state value for state descriptor" << m_stateDescriptor.stateTypeId() << " Got:" << m_stateDescriptor.stateValue() << " Expected:" << QVariant::typeToName(stateType.type());
+                    return false;
+                }
+
+                if (!m_stateDescriptor.stateValue().convert(stateType.type())) {
+                    qCWarning(dcRuleEngine) << "Could not convert value of state descriptor" << m_stateDescriptor.stateTypeId() << " to:" << QVariant::typeToName(stateType.type()) << " Got:" << m_stateDescriptor.stateValue();
+                    return false;
+                }
+
+                if (stateType.maxValue().isValid() && m_stateDescriptor.stateValue() > stateType.maxValue()) {
+                    qCWarning(dcRuleEngine) << "Value out of range for state descriptor" << m_stateDescriptor.stateTypeId() << " Got:" << m_stateDescriptor.stateValue() << " Max:" << stateType.maxValue();
+                    return false;
+                }
+
+                if (stateType.minValue().isValid() && m_stateDescriptor.stateValue() < stateType.minValue()) {
+                    qCWarning(dcRuleEngine) << "Value out of range for state descriptor" << m_stateDescriptor.stateTypeId() << " Got:" << m_stateDescriptor.stateValue() << " Min:" << stateType.minValue();
+                    return false;
+                }
+
+                if (!stateType.possibleValues().isEmpty() && !stateType.possibleValues().contains(m_stateDescriptor.stateValue())) {
+                    QStringList possibleValues;
+                    foreach (const QVariant &value, stateType.possibleValues()) {
+                        possibleValues.append(value.toString());
+                    }
+
+                    qCWarning(dcRuleEngine) << "Value not in possible values for state type" << m_stateDescriptor.stateTypeId() << " Got:" << m_stateDescriptor.stateValue() << " Possible values:" << possibleValues.join(", ");
+                    return false;
+                }
+            }
+        }
+
+    }
+
+    if (m_operatorType == Types::StateOperatorOr) {
+        foreach (const StateEvaluator &stateEvaluator, m_childEvaluators) {
+            if (stateEvaluator.isValid()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    foreach (const StateEvaluator &stateEvaluator, m_childEvaluators) {
+        if (!stateEvaluator.isValid()) {
+            return false;
+        }
+    }
+    return true;
 }
 
 }

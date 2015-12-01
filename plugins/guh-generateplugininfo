@@ -104,14 +104,15 @@ def extractStateTypes(deviceClassMap):
                     print("duplicated variable name \"%s\" for StateTypeId %s -> skipping") % (variableName, stateType["id"])
                 # create ActionTypeId if the state is writable
                 if 'writable' in stateType:
-                    vName = "%sActionTypeId" % (stateType["idName"]) 
-                    if not vName in variableNames:
-                        variableNames.append(vName)
-                        print("define ActionTypeId %s for writable StateType %s = %s" % (vName, variableName, stateType["id"]))
-                        writePluginInfo("ActionTypeId %s = ActionTypeId(\"%s\");" % (vName, stateType["id"]))
-                        createExternDefinition("ActionTypeId", vName)
-                    else:
-                        print("duplicated variable name \"%s\" for ActionTypeId %s -> skipping") % (variableName, stateType["id"])
+                    if stateType['writable']:
+                        vName = "%sActionTypeId" % (stateType["idName"]) 
+                        if not vName in variableNames:
+                            variableNames.append(vName)
+                            print("define ActionTypeId %s for writable StateType %s = %s" % (vName, variableName, stateType["id"]))
+                            writePluginInfo("ActionTypeId %s = ActionTypeId(\"%s\");" % (vName, stateType["id"]))
+                            createExternDefinition("ActionTypeId", vName)
+                        else:
+                            print("duplicated variable name \"%s\" for ActionTypeId %s -> skipping") % (variableName, stateType["id"])
             except:
                 pass
     except:

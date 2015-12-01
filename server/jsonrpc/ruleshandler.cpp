@@ -222,6 +222,11 @@ JsonReply* RulesHandler::AddRule(const QVariantMap &params)
     // Check and unpack stateEvaluator
     qCDebug(dcJsonRpc) << "unpacking stateEvaluator:" << params.value("stateEvaluator").toMap();
     StateEvaluator stateEvaluator = JsonTypes::unpackStateEvaluator(params.value("stateEvaluator").toMap());
+    if (!stateEvaluator.isValid()) {
+        QVariantMap returns;
+        returns.insert("ruleError", JsonTypes::ruleErrorToString(RuleEngine::RuleErrorInvalidStateEvaluatorValue));
+        return createReply(returns);
+    }
 
     // Check and unpack actions
     QPair<QList<RuleAction>, RuleEngine::RuleError> actionsVerification = JsonTypes::verifyActions(params, eventDescriptorList);
@@ -277,6 +282,11 @@ JsonReply *RulesHandler::EditRule(const QVariantMap &params)
     // Check and unpack stateEvaluator
     qCDebug(dcJsonRpc) << "unpacking stateEvaluator:" << params.value("stateEvaluator").toMap();
     StateEvaluator stateEvaluator = JsonTypes::unpackStateEvaluator(params.value("stateEvaluator").toMap());
+    if (!stateEvaluator.isValid()) {
+        QVariantMap returns;
+        returns.insert("ruleError", JsonTypes::ruleErrorToString(RuleEngine::RuleErrorInvalidStateEvaluatorValue));
+        return createReply(returns);
+    }
 
     // Check and unpack actions
     QPair<QList<RuleAction>, RuleEngine::RuleError> actionsVerification = JsonTypes::verifyActions(params, eventDescriptorList);

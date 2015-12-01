@@ -1,4 +1,4 @@
-33
+34
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -756,11 +756,13 @@
             "RuleErrorRuleNotFound",
             "RuleErrorDeviceNotFound",
             "RuleErrorEventTypeNotFound",
+            "RuleErrorStateTypeNotFound",
             "RuleErrorActionTypeNotFound",
             "RuleErrorInvalidParameter",
             "RuleErrorInvalidRuleFormat",
             "RuleErrorMissingParameter",
             "RuleErrorInvalidRuleActionParameter",
+            "RuleErrorInvalidStateEvaluatorValue",
             "RuleErrorTypesNotMatching",
             "RuleErrorNotExecutable",
             "RuleErrorContainsEventBasesAction",

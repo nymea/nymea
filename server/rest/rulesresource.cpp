@@ -259,6 +259,8 @@ HttpReply *RulesResource::addRule(const QByteArray &payload) const
     // Check and unpack stateEvaluator
     qCDebug(dcRest) << "unpacking stateEvaluator:" << params.value("stateEvaluator").toMap();
     StateEvaluator stateEvaluator = JsonTypes::unpackStateEvaluator(params.value("stateEvaluator").toMap());
+    if (!stateEvaluator.isValid())
+        return createRuleErrorReply(HttpReply::BadRequest, RuleEngine::RuleErrorInvalidStateEvaluatorValue);
 
     // Check and unpack actions
     QPair<QList<RuleAction>, RuleEngine::RuleError> actionsVerification = JsonTypes::verifyActions(params, eventDescriptorList);
@@ -362,6 +364,8 @@ HttpReply *RulesResource::editRule(const RuleId &ruleId, const QByteArray &paylo
     // Check and unpack stateEvaluator
     qCDebug(dcRest) << "unpacking stateEvaluator:" << params.value("stateEvaluator").toMap();
     StateEvaluator stateEvaluator = JsonTypes::unpackStateEvaluator(params.value("stateEvaluator").toMap());
+    if (!stateEvaluator.isValid())
+        return createRuleErrorReply(HttpReply::BadRequest, RuleEngine::RuleErrorInvalidStateEvaluatorValue);
 
     // Check and unpack actions
     QPair<QList<RuleAction>, RuleEngine::RuleError> actionsVerification = JsonTypes::verifyActions(params, eventDescriptorList);

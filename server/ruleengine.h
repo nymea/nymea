@@ -24,6 +24,7 @@
 
 #include "rule.h"
 #include "types/event.h"
+#include "plugin/deviceclass.h"
 #include "stateevaluator.h"
 
 #include <QObject>
@@ -44,11 +45,13 @@ public:
         RuleErrorRuleNotFound,
         RuleErrorDeviceNotFound,
         RuleErrorEventTypeNotFound,
+        RuleErrorStateTypeNotFound,
         RuleErrorActionTypeNotFound,
         RuleErrorInvalidParameter,
         RuleErrorInvalidRuleFormat,
         RuleErrorMissingParameter,
         RuleErrorInvalidRuleActionParameter,
+        RuleErrorInvalidStateEvaluatorValue,
         RuleErrorTypesNotMatching,
         RuleErrorNotExecutable,
         RuleErrorContainsEventBasesAction,

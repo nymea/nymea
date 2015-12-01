@@ -56,6 +56,8 @@
         Couldn't find a \l{Device} with the given id.
     \value RuleErrorEventTypeNotFound
         Couldn't find a \l{EventType} with the given id.
+    \value RuleErrorStateTypeNotFound
+        Couldn't find a \l{StateType} with the given id.
     \value RuleErrorActionTypeNotFound
         Couldn't find a \l{ActionType} with the given id.
     \value RuleErrorInvalidParameter
@@ -66,8 +68,17 @@
         One of the given \l{Param}{Params} is missing.
     \value RuleErrorInvalidRuleActionParameter
         One of the given \l{RuleActionParam}{RuleActionParams} is not valid.
+    \value RuleErrorInvalidStateEvaluatorValue
+        One of the given \l{StateEvaluator}{StateEvaluators} has an invalid \l{State} value.
     \value RuleErrorTypesNotMatching
         The types of the \l{RuleActionParam} and the corresponding \l{Event} \l{Param} do not match.
+    \value RuleErrorNotExecutable
+        This rule is not executable.
+    \value RuleErrorContainsEventBasesAction
+        This rule contains an \l{Action} which depends on an \l{Event} value. This \l{Rule} cannot execute
+        the \l{Action}{Actions} without the \l{Event} value.
+    \value RuleErrorNoExitActions
+        This rule does not have any ExitActions which means they cannot be executed.
 */
 
 /*! \enum guhserver::RuleEngine::RemovePolicy
@@ -263,8 +274,8 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
     return addRule(ruleId, name, eventDescriptorList, StateEvaluator(), actions, QList<RuleAction>(), enabled);
 }
 
-/*! Add a new \l{Rule} with the given \a ruleId, \a name, \a eventDescriptorList, \a stateEvaluator, the  list of \a actions the list of \a exitActions and the \a enabled value to the engine.
-    If \a fromEdit is true, the notification Rules.RuleAdded will not be emitted.
+/*! Add a new \l{Rule} with the given \a ruleId, \a name, \a eventDescriptorList, \a stateEvaluator, the  list of \a actions, the list of \a exitActions, the \a enabled and the \a executable value to the engine.
+    If \a fromEdit is true, the notification Rules. RuleAdded will not be emitted.
 */
 RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions, bool enabled, bool executable, bool fromEdit)
 {
@@ -366,7 +377,7 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
 }
 
 /*! Edit a \l{Rule} with the given \a ruleId, \a name, \a eventDescriptorList, \a stateEvaluator,
-    the  list of \a actions the list of \a exitActions and the \a enabled in the engine.
+    the  list of \a actions, the list of \a exitActions, the \a enabled and the \a executable in the engine.
 */
 RuleEngine::RuleError RuleEngine::editRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions, bool enabled, bool executable)
 {
@@ -483,6 +494,11 @@ RuleEngine::RuleError RuleEngine::disableRule(const RuleId &ruleId)
     return RuleErrorNoError;
 }
 
+/*! Executes the list of \l{Action}{Actions} of the rule with the given \a ruleId.
+    Returns the corresponding RuleEngine::RuleError to inform about the result.
+
+    \sa executeExitActions()
+*/
 RuleEngine::RuleError RuleEngine::executeActions(const RuleId &ruleId)
 {
     // check if rule exits
@@ -512,6 +528,11 @@ RuleEngine::RuleError RuleEngine::executeActions(const RuleId &ruleId)
     return RuleErrorNoError;
 }
 
+/*! Executes the list of \l{Action}{ExitActions} of the rule with the given \a ruleId.
+    Returns the corresponding RuleEngine::RuleError to inform about the result.
+
+    \sa executeActions()
+*/
 RuleEngine::RuleError RuleEngine::executeExitActions(const RuleId &ruleId)
 {
     // check if rule exits

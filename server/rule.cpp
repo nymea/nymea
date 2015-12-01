@@ -129,7 +129,7 @@ bool Rule::enabled() const {
 }
 
 /*! Set the \a enabled flag of this rule. In order to actually enable/disable the rule you still need to
- * update the \l{RulesEngine} */
+ * update the \l{RuleEngine} */
 void Rule::setEnabled(bool enabled)
 {
     m_enabled = enabled;

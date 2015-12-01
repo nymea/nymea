@@ -268,7 +268,6 @@ HttpReply *RulesResource::addRule(const QByteArray &payload) const
     if (actionsVerification.second != RuleEngine::RuleErrorNoError)
         return createRuleErrorReply(HttpReply::BadRequest, actionsVerification.second);
 
-
     // Check and unpack exitActions
     QPair<QList<RuleAction>, RuleEngine::RuleError> exitActionsVerification = JsonTypes::verifyExitActions(params);
     QList<RuleAction> exitActions = exitActionsVerification.first;

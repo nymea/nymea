@@ -64,6 +64,9 @@ private slots:
     void addPushButtonDevices_data();
     void addPushButtonDevices();
 
+    void addDisplayPinDevices_data();
+    void addDisplayPinDevices();
+
     void getActionTypes_data();
     void getActionTypes();
 
@@ -464,6 +467,69 @@ void TestDevices::addPushButtonDevices()
         response = injectAndWait("Devices.RemoveConfiguredDevice", params);
         verifyDeviceError(response);
     }
+}
+
+void TestDevices::addDisplayPinDevices_data()
+{
+    QTest::addColumn<DeviceClassId>("deviceClassId");
+    QTest::addColumn<DeviceManager::DeviceError>("error");
+    QTest::addColumn<QString>("secret");
+
+    QTest::newRow("Valid: Add DisplayPin device") << mockDisplayPinDeviceClassId << DeviceManager::DeviceErrorNoError << "243681";
+    QTest::newRow("Invalid: Add DisplayPin device (wrong pin)") << mockDisplayPinDeviceClassId << DeviceManager::DeviceErrorSetupFailed << "243682";
+}
+
+void TestDevices::addDisplayPinDevices()
+{
+    QFETCH(DeviceClassId, deviceClassId);
+    QFETCH(DeviceManager::DeviceError, error);
+    QFETCH(QString, secret);
+
+    // Discover device
+    QVariantList discoveryParams;
+    QVariantMap resultCountParam;
+    resultCountParam.insert("name", "resultCount");
+    resultCountParam.insert("value", 1);
+    discoveryParams.append(resultCountParam);
+
+    QVariantMap params;
+    params.insert("deviceClassId", deviceClassId);
+    params.insert("discoveryParams", discoveryParams);
+    QVariant response = injectAndWait("Devices.GetDiscoveredDevices", params);
+
+    verifyDeviceError(response, DeviceManager::DeviceErrorNoError);
+    QCOMPARE(response.toMap().value("params").toMap().value("deviceDescriptors").toList().count(), 1);
+
+    // Pair device
+    DeviceDescriptorId descriptorId = DeviceDescriptorId(response.toMap().value("params").toMap().value("deviceDescriptors").toList().first().toMap().value("id").toString());
+    params.clear();
+    params.insert("deviceClassId", deviceClassId);
+    params.insert("deviceDescriptorId", descriptorId.toString());
+    response = injectAndWait("Devices.PairDevice", params);
+
+    verifyDeviceError(response);
+
+    PairingTransactionId pairingTransactionId(response.toMap().value("params").toMap().value("pairingTransactionId").toString());
+    QString displayMessage = response.toMap().value("params").toMap().value("displayMessage").toString();
+
+    //qDebug() << "displayMessage" << displayMessage;
+
+    params.clear();
+    params.insert("pairingTransactionId", pairingTransactionId.toString());
+    params.insert("secret", secret);
+    response = injectAndWait("Devices.ConfirmPairing", params);
+
+    verifyDeviceError(response, error);
+
+    if (error == DeviceManager::DeviceErrorNoError) {
+        DeviceId deviceId(response.toMap().value("params").toMap().value("deviceId").toString());
+        params.clear();
+        params.insert("deviceId", deviceId.toString());
+        response = injectAndWait("Devices.RemoveConfiguredDevice", params);
+        verifyDeviceError(response);
+    }
+
+
 }
 
 void TestDevices::getActionTypes_data()

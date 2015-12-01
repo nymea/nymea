@@ -48,6 +48,7 @@ public:
     void startMonitoringAutoDevices() override;
 
     DeviceManager::DeviceSetupStatus confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret) override;
+    DeviceManager::DeviceError displayPin(const PairingTransactionId &pairingTransactionId, const DeviceDescriptor &deviceDescriptor) override;
 
     QList<ParamType> configurationDescription() const override;
 
@@ -59,11 +60,13 @@ private slots:
     void triggerEvent(const EventTypeId &id);
     void emitDevicesDiscovered();
     void emitPushButtonDevicesDiscovered();
+    void emitDisplayPinDevicesDiscovered();
     void emitDeviceSetupFinished();
     void emitActionExecuted();
 
     void onPushButtonPressed();
     void onPushButtonPairingFinished();
+    void onDisplayPinPairingFinished();
 
 private:
     QHash<Device*, HttpDaemon*> m_daemons;

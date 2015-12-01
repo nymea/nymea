@@ -54,6 +54,8 @@ public:
     void dumpToSettings(GuhSettings &settings, const QString &groupName) const;
     static StateEvaluator loadFromSettings(GuhSettings &settings, const QString &groupPrefix);
 
+    bool isValid() const;
+
 private:
     StateDescriptor m_stateDescriptor;
 

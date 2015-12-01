@@ -234,7 +234,7 @@
                             "name": "color",
                             "type": "QColor",
                             "defaultValue": "#000000",
-                            "writable": {}
+                            "writable": true
                         },
                         {
                             "id": "72981c04-267a-4ba0-a59e-9921d2f3af9c",
@@ -243,10 +243,9 @@
                             "type": "int",
                             "unit": "Percentage",
                             "defaultValue": 0,
-                            "writable": {
-                                "minValue": 0,
-                                "maxValue": 100
-                            }
+                            "minValue": 0,
+                            "maxValue": 100,
+                            "writable": true
                         },
                         {
                             "id": "05f63f9c-f61e-4dcf-ad55-3f13fde2765b",
@@ -254,14 +253,13 @@
                             "name": "allowed values",
                             "type": "QString",
                             "defaultValue": "String value 1",
-                            "writable": {
-                                "allowedValues": [
-                                    "String value 1",
-                                    "String value 2",
-                                    "String value 3",
-                                    "String value 4"
-                                ]
-                            }
+                            "possibleValues": [
+                                "String value 1",
+                                "String value 2",
+                                "String value 3",
+                                "String value 4"
+                            ],
+                            "writable": true
                         }
                     ],
                     "actionTypes": [

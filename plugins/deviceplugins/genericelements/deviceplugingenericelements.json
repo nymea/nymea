@@ -27,7 +27,7 @@
                             "name": "state",
                             "type": "bool",
                             "defaultValue": false,
-                            "writable": {}
+                            "writable": true
                         }
                     ]
                 },

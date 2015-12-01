@@ -104,7 +104,7 @@ RuleEngine::RuleEngine(QObject *parent) :
     QObject(parent)
 {
     GuhSettings settings(GuhSettings::SettingsRoleRules);
-    qCDebug(dcRuleEngine) << "laoding rules from" << settings.fileName();
+    qCDebug(dcRuleEngine) << "loading rules from" << settings.fileName();
     foreach (const QString &idString, settings.childGroups()) {
         settings.beginGroup(idString);
 
@@ -217,9 +217,8 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
     QList<Rule> rules;
     foreach (const RuleId &id, m_ruleIds) {
         Rule rule = m_rules.value(id);
-        if (!rule.enabled()) {
+        if (!rule.enabled())
             continue;
-        }
 
         if (rule.eventDescriptors().isEmpty()) {
             // This rule seems to have only states, check on state changed
@@ -269,9 +268,9 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
 */
 RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions, bool enabled, bool executable, bool fromEdit)
 {
-    if (ruleId.isNull()) {
+    if (ruleId.isNull())
         return RuleErrorInvalidRuleId;
-    }
+
     if (!findRule(ruleId).id().isNull()) {
         qCWarning(dcRuleEngine) << "Already have a rule with this id!";
         return RuleErrorInvalidRuleId;
@@ -298,6 +297,7 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
     }
 
 
+
     foreach (const RuleAction &action, actions) {
         Device *device = GuhCore::instance()->findConfiguredDevice(action.deviceId());
         if (!device) {
@@ -322,11 +322,10 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
                 }
             }
         }
+    }
 
-    }
-    if (actions.count() > 0) {
+    if (actions.count() > 0)
         qCDebug(dcRuleEngine) << "actions" << actions.last().actionTypeId() << actions.last().ruleActionParams();
-    }
 
     foreach (const RuleAction &action, exitActions) {
         Device *device = GuhCore::instance()->findConfiguredDevice(action.deviceId());
@@ -351,9 +350,9 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
             }
         }
     }
-    if (exitActions.count() > 0) {
+
+    if (exitActions.count() > 0)
         qCDebug(dcRuleEngine) << "exit actions" << exitActions.last().actionTypeId() << exitActions.last().ruleActionParams();
-    }
 
     Rule rule = Rule(ruleId, name, eventDescriptorList, stateEvaluator, actions, exitActions);
     rule.setEnabled(enabled);
@@ -475,6 +474,7 @@ RuleEngine::RuleError RuleEngine::disableRule(const RuleId &ruleId)
         qCWarning(dcRuleEngine) << "Rule not found. Can't disable it";
         return RuleErrorRuleNotFound;
     }
+
     Rule rule = m_rules.value(ruleId);
     rule.setEnabled(false);
     m_rules[ruleId] = rule;
@@ -537,7 +537,6 @@ RuleEngine::RuleError RuleEngine::executeExitActions(const RuleId &ruleId)
     GuhCore::instance()->executeRuleActions(rule.exitActions());
     return RuleErrorNoError;
 }
-
 
 /*! Returns the \l{Rule} with the given \a ruleId. If the \l{Rule} does not exist, it will return \l{Rule::Rule()} */
 Rule RuleEngine::findRule(const RuleId &ruleId)

@@ -1,4 +1,4 @@
-32
+34
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -756,11 +756,13 @@
             "RuleErrorRuleNotFound",
             "RuleErrorDeviceNotFound",
             "RuleErrorEventTypeNotFound",
+            "RuleErrorStateTypeNotFound",
             "RuleErrorActionTypeNotFound",
             "RuleErrorInvalidParameter",
             "RuleErrorInvalidRuleFormat",
             "RuleErrorMissingParameter",
             "RuleErrorInvalidRuleActionParameter",
+            "RuleErrorInvalidStateEvaluatorValue",
             "RuleErrorTypesNotMatching",
             "RuleErrorNotExecutable",
             "RuleErrorContainsEventBasesAction",
@@ -798,6 +800,11 @@
             "defaultValue": "Variant",
             "id": "Uuid",
             "name": "String",
+            "o:maxValue": "Variant",
+            "o:minValue": "Variant",
+            "o:possibleValues": [
+                "Variant"
+            ],
             "o:unit": "$ref:Unit",
             "type": "$ref:BasicType"
         },

@@ -251,25 +251,30 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 stateType.setType(t);
                 stateType.setUnit(unitStringToUnit(st.value("unit").toString()));
                 stateType.setDefaultValue(st.value("defaultValue").toVariant());
+                if (st.contains("minValue"))
+                    stateType.setMinValue(st.value("minValue").toVariant());
+
+                if (st.contains("maxValue"))
+                    stateType.setMaxValue(st.value("maxValue").toVariant());
+
+                if (st.contains("possibleValues")) {
+                    QVariantList possibleValues;
+                    foreach (const QJsonValue &possibleValueJson, st.value("possibleValues").toArray()) {
+                        possibleValues.append(possibleValueJson.toVariant());
+                    }
+                    stateType.setPossibleValues(possibleValues);
+                }
                 stateTypes.append(stateType);
 
                 // create ActionType if this StateType is writable
-                if (st.contains("writable")) {
-                    ActionType actionType(st.value("id").toString());
-                    actionType.setName("set " + st.value("name").toString());
+                if (st.contains("writable") && st.value("writable").toBool()) {
                     // Note: fields already checked in StateType
-                    ParamType paramType(st.value("name").toString(), t, st.value("defaultValue").toVariant());
-                    if (st.value("writable").toObject().contains("allowedValues")) {
-                        QVariantList allowedValues;
-                        foreach (const QJsonValue &allowedTypesJson, st.value("writable").toObject().value("allowedValues").toArray()) {
-                            allowedValues.append(allowedTypesJson.toVariant());
-                        }
-                        paramType.setAllowedValues(allowedValues);
-                    }
-                    paramType.setInputType(inputTypeStringToInputType(st.value("writable").toObject().value("inputType").toString()));
-                    paramType.setUnit(unitStringToUnit(st.value("unit").toString()));
-                    paramType.setLimits(st.value("writable").toObject().value("minValue").toVariant(),
-                                        st.value("writable").toObject().value("maxValue").toVariant());
+                    ActionType actionType(ActionTypeId(stateType.id().toString()));
+                    actionType.setName("set " + stateType.name());
+                    ParamType paramType(stateType.name(), t, stateType.defaultValue());
+                    paramType.setAllowedValues(stateType.possibleValues());
+                    paramType.setUnit(stateType.unit());
+                    paramType.setLimits(stateType.minValue(), stateType.maxValue());
                     actionType.setParamTypes(QList<ParamType>() << paramType);
                     actionTypes.append(actionType);
                 }

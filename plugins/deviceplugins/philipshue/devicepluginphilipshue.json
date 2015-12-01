@@ -116,7 +116,7 @@
                             "name": "power",
                             "type": "bool",
                             "defaultValue": false,
-                            "writable": {}
+                            "writable": true
                         },
                         {
                             "id": "c0f4206f-f219-4f06-93c4-4ca515a56f79",
@@ -125,10 +125,9 @@
                             "type": "int",
                             "unit": "Mired",
                             "defaultValue": 170,
-                            "writable": {
-                                "minValue": 153,
-                                "maxValue": 500
-                            }
+                            "minValue": 153,
+                            "maxValue": 500,
+                            "writable": true
                         },
                         {
                             "id": "d25423e7-b924-4b20-80b6-77eecc65d089",
@@ -136,7 +135,7 @@
                             "name": "color",
                             "type": "QColor",
                             "defaultValue": "#000000",
-                            "writable": {}
+                            "writable": true
 
                         },
                         {
@@ -146,10 +145,10 @@
                             "type": "int",
                             "unit": "Percentage",
                             "defaultValue": 0,
-                            "writable": {
-                                "minValue": 0,
-                                "maxValue": 100
-                            }
+                            "minValue": 0,
+                            "maxValue": 100,
+                            "writable": true
+
                         },
                         {
                             "id": "0b7cdd8d-4db8-4183-abe2-f3c01d1c9afc",
@@ -157,13 +156,11 @@
                             "name": "effect",
                             "type": "QString",
                             "defaultValue": "none",
-                            "writable": {
-                                "allowedValues": [
-                                    "none",
-                                    "color loop"
-                                ]
-                            }
-
+                            "possibleValues": [
+                                "none",
+                                "color loop"
+                            ],
+                            "writable": true
                         }
                     ],
                     "actionTypes": [

@@ -36,6 +36,10 @@
  *  hardcode it into the plugin. */
 StateType::StateType(const StateTypeId &id):
     m_id(id),
+    m_defaultValue(QVariant()),
+    m_minValue(QVariant()),
+    m_maxValue(QVariant()),
+    m_possibleValues(QVariantList()),
     m_unit(Types::UnitNone)
 {
 
@@ -81,6 +85,45 @@ QVariant StateType::defaultValue() const
 void StateType::setDefaultValue(const QVariant &defaultValue)
 {
     m_defaultValue = defaultValue;
+}
+
+/*! Returns the minimum value of this StateType. If this value is not set, the QVariant will be invalid. */
+QVariant StateType::minValue() const
+{
+    return m_minValue;
+}
+
+/*! Set the minimum value of this StateType to \a minValue. If this value is not set,
+ *  there is now lower limit. */
+void StateType::setMinValue(const QVariant &minValue)
+{
+    m_minValue = minValue;
+}
+
+/*! Returns the maximum value of this StateType. If this value is not set, the QVariant will be invalid. */
+QVariant StateType::maxValue() const
+{
+    return m_maxValue;
+}
+
+/*! Set the maximum value of this StateType to \a maxValue. If this value is not set,
+ *  there is now upper limit. */
+void StateType::setMaxValue(const QVariant &maxValue)
+{
+    m_maxValue = maxValue;
+}
+
+/*! Returns the list of possible values of this StateType. If the list is empty or invalid the \l{State} value can take every value. */
+QVariantList StateType::possibleValues() const
+{
+    return m_possibleValues;
+}
+
+
+/*! Set the list of possible values of this StateType to \a possibleValues. */
+void StateType::setPossibleValues(const QVariantList &possibleValues)
+{
+    m_possibleValues = possibleValues;
 }
 
 /*! Returns the unit of this StateType. */

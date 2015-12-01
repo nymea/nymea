@@ -1,3 +1,11 @@
+guh (0.7.0) wily; urgency=medium
+
+  * Add CoAP
+  * Add OAuth2
+  * Parent/child device relation
+
+ -- Simon Stürz <simon.stuerz@guh.guru>  Mon, 30 Nov 2015 11:29:03 +0100
+
 guh (0.6.0) vivid; urgency=medium
 
   * Add websocket server

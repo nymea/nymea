@@ -130,6 +130,9 @@ void JsonTypes::init()
     s_stateType.insert("type", basicTypeRef());
     s_stateType.insert("defaultValue", basicTypeToString(Variant));
     s_stateType.insert("o:unit", unitRef());
+    s_stateType.insert("o:minValue", basicTypeToString(Variant));
+    s_stateType.insert("o:maxValue", basicTypeToString(Variant));
+    s_stateType.insert("o:possibleValues", QVariantList() << basicTypeToString(Variant));
 
     // State
     s_state.insert("stateTypeId", basicTypeToString(Uuid));
@@ -223,7 +226,6 @@ void JsonTypes::init()
     s_ruleDescription.insert("enabled", basicTypeToString(Bool));
     s_ruleDescription.insert("active", basicTypeToString(Bool));
     s_ruleDescription.insert("executable", basicTypeToString(Bool));
-
 
     // LogEntry
     s_logEntry.insert("timestamp", basicTypeToString(Int));
@@ -408,9 +410,17 @@ QVariantMap JsonTypes::packStateType(const StateType &stateType)
     variantMap.insert("type", basicTypeToString(stateType.type()));
     variantMap.insert("defaultValue", stateType.defaultValue());
 
-    if(stateType.unit() != Types::UnitNone) {
+    if (stateType.maxValue().isValid())
+        variantMap.insert("maxValue", stateType.maxValue());
+
+    if (stateType.minValue().isValid())
+        variantMap.insert("minValue", stateType.minValue());
+
+    if (!stateType.possibleValues().isEmpty())
+        variantMap.insert("possibleValues", stateType.possibleValues());
+
+    if(stateType.unit() != Types::UnitNone)
         variantMap.insert("unit", s_unit.at(stateType.unit()));
-    }
 
     return variantMap;
 }
@@ -848,9 +858,8 @@ ParamList JsonTypes::unpackParams(const QVariantList &paramList)
 
 RuleActionParam JsonTypes::unpackRuleActionParam(const QVariantMap &ruleActionParamMap)
 {
-    if (ruleActionParamMap.keys().count() == 0) {
+    if (ruleActionParamMap.keys().count() == 0)
         return RuleActionParam();
-    }
 
     QString name = ruleActionParamMap.value("name").toString();
     QVariant value = ruleActionParamMap.value("value");

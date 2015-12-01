@@ -41,7 +41,7 @@
                             "name": "power",
                             "type": "bool",
                             "defaultValue": false,
-                            "writable": {}
+                            "writable": true
 
                         },
                         {

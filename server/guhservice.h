@@ -37,6 +37,7 @@ public:
 
 protected:
     void start();
+    void stop();
 };
 
 }

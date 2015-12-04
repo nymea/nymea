@@ -1,11 +1,11 @@
 /var/log/guhd.log {
-        weekly
-        rotate 5
-        size 200M
+        daily
+        dateext
+        rotate 7
+        size 10M
         compress
         delaycompress
         missingok
         notifempty
         create 644 root root
 }
-

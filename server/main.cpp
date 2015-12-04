@@ -60,26 +60,26 @@ void consoleLogHandler(QtMsgType type, const QMessageLogContext& context, const 
     QString timeString = QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz");
     switch (type) {
     case QtDebugMsg:
-        messageString = QString("I %1 | %2: %3").arg(timeString).arg(context.category).arg(message);
-        fprintf(stdout, "I | %s: %s\n", context.category, message.toUtf8().data());
+        messageString = QString(" I %1 | %2: %3").arg(timeString).arg(context.category).arg(message);
+        fprintf(stdout, " I | %s: %s\n", context.category, message.toUtf8().data());
         break;
     case QtWarningMsg:
-        messageString = QString("W %1 | %2: %3").arg(timeString).arg(context.category).arg(message);
-        fprintf(stdout, "W | %s: %s\n", context.category, message.toUtf8().data());
+        messageString = QString(" W %1 | %2: %3").arg(timeString).arg(context.category).arg(message);
+        fprintf(stdout, " W | %s: %s\n", context.category, message.toUtf8().data());
         break;
     case QtCriticalMsg:
-        messageString = QString("C %1 | %2: %3").arg(timeString).arg(context.category).arg(message);
-        fprintf(stdout, "C | %s: %s\n", context.category, message.toUtf8().data());
+        messageString = QString(" C %1 | %2: %3").arg(timeString).arg(context.category).arg(message);
+        fprintf(stdout, " C | %s: %s\n", context.category, message.toUtf8().data());
         break;
     case QtFatalMsg:
-        messageString = QString("F %1 | %2: %3").arg(timeString).arg(context.category).arg(message);
-        fprintf(stdout, "F | %s: %s\n", context.category, message.toUtf8().data());
+        messageString = QString(" F %1 | %2: %3").arg(timeString).arg(context.category).arg(message);
+        fprintf(stdout, " F | %s: %s\n", context.category, message.toUtf8().data());
         break;
     }
 
     QFile logFile(GuhSettings::consoleLogPath());
     if (!logFile.open(QIODevice::WriteOnly | QIODevice::Append)) {
-        fprintf(stdout, "W | Application: Could not open logfile.\n");
+        fprintf(stdout, " W | Application: Could not open logfile.\n");
         return;
     }
     QTextStream textStream(&logFile);

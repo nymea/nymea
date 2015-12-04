@@ -1,0 +1,14 @@
+[Unit]
+Description=guhd - IoT server
+Documentation=https://github.com/guh/guh/wiki
+After=network.target syslog.target
+
+[Service]
+ExecStart=/usr/bin/guhd --print-all
+StandardOutput=journal
+StandardError=journal
+Restart=on-failure
+Type=forking
+
+[Install]
+WantedBy=multi-user.target

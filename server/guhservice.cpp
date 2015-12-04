@@ -31,7 +31,6 @@
     \sa QtService
 */
 
-
 #include <unistd.h>
 #include "guhservice.h"
 #include "loggingcategories.h"
@@ -40,16 +39,15 @@ namespace guhserver {
 
 /*! Constructs the forked guhd application with the given argument count \a argc and argument vector \a argv. */
 GuhService::GuhService(int argc, char **argv):
-    QtService<QCoreApplication>(argc, argv, "guh daemon")
+    QtService<QCoreApplication>(argc, argv, "guh - IoT server")
 {
-    qDebug() << "guhd started as daemon.";
     application()->setOrganizationName("guh");
     application()->setApplicationName("guhd");
     application()->setApplicationVersion(GUH_VERSION_STRING);
     close(STDIN_FILENO);
     close(STDOUT_FILENO);
     close(STDERR_FILENO);
-    setServiceDescription("guh daemon");
+    setServiceDescription("guh - IoT server");
     setServiceFlags(QtServiceBase::CanBeSuspended);
 }
 
@@ -61,7 +59,17 @@ GuhService::~GuhService()
 /*! Starts the forked guhd application. */
 void GuhService::start()
 {
+    qCDebug(dcApplication) << "=====================================";
+    qCDebug(dcApplication) << "guhd" << GUH_VERSION_STRING << "started as daemon.";
+    qCDebug(dcApplication) << "=====================================";
     GuhCore::instance()->setRunningMode(GuhCore::RunningModeService);
+}
+
+void GuhService::stop()
+{
+    qCDebug(dcApplication) << "=====================================";
+    qCDebug(dcApplication) << "Shutting down guh daemon";
+    qCDebug(dcApplication) << "=====================================";
 }
 
 }

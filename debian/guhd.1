@@ -1,16 +1,17 @@
 .\" Manpage for guhd.
 .\" Contact simon.stuerz@guh.guru to correct errors or typos.
-.TH man 1 "August 2015" "1.2" "guhd man page"
+.TH man 1 "December 2015" "1.3" "guhd man page"
 .SH NAME
-guhd \- Server for home automation systems
+guhd \- An open source IoT (Internet of Things) server
 .SH SYNOPSIS
 .B guhd
 [\fIOPTION\fR]
 .SH DESCRIPTION
-guh (/[guːh]/) is an open source home automation server, which allows to
-control a lot of different devices from many different manufacturers. 
-With the powerful rule engine you are able to connect any device available in
-the system and create individual scenes and behaviors for your home.
+guh (/[guːh]/) is an open source IoT (Internet of Things) server, 
+which allows to control a lot of different devices from many different 
+manufacturers. With the powerful rule engine you are able to connect any 
+device available in the system and create individual scenes and behaviors 
+for your environment.
 .SH OPTIONS
 .TP 
 \fB\-h\fR, \fB\-\-help\fR
@@ -29,7 +30,7 @@ categories will be printed unless they are explicitly muted with "NoWarnings".
 .RS
 .TP
 \fBMain\ debug\ categories:\fR
-.IP \fIApplication\fR\ (default\ enabled) 
+.IP \fIApplication\fR\ (default\ enabled)
 Print the debug messages from the core application.
 .IP \fIConnection\fR\ (default\ enabled)
 Print the debug messages from the TCP connections in guh.
@@ -37,11 +38,13 @@ Print the debug messages from the TCP connections in guh.
 Print the debug messages from the device manager.
 .IP \fIHardware\fR\ (default\ disabled)
 Print the debug messages from hardware resources in guh.
-.IP \fIJsonRpc\fR\ (default\ disabled)
+.IP \fIJsonRpc\fR\ (default\ enabled)
 Print the debug messages from JSON-RPC API.
 .IP \fILogEngine\fR\ (default\ disabled)
 Print the debug messages from logging engine.
-.IP \fIRest\fR\ (default\ disbaled)
+.IP \fIOAuth2\fR\ (default\ disabled)
+Print the debug messages of the OAuth2 resource.
+.IP \fIRest\fR\ (default\ enabled)
 Print the debug messages from REST API.
 .IP \fIRuleEngine\fR\ (default\ enabled)
 Print the debug messages from the rule engine.
@@ -66,8 +69,8 @@ $ guhd -n -d Hardware
 .TP
 To start guhd in the foreground, disable debug messages from the DeviceManager 
 and enable debug messages for JsonRpc and LogEngine:
-.IP 
-$ guhd -n -d NoDeviceManager JsonRpc LogEngine
+.IP
+$ guhd -n -d NoDeviceManager -d JsonRpc -d LogEngine
 .SH FILES
 .TP
 The settings of the guh server can be found in \fI/etc/guh/guhd.conf\fR

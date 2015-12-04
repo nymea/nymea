@@ -161,7 +161,7 @@ QString GuhSettings::logPath()
     if (organisationName == "guh-test") {
         logPath = "/tmp/" + organisationName + "/guhd-test.sqlite";
     } else if (GuhSettings::isRoot()) {
-        logPath = "/var/log/guh/guhd.sqlite";
+        logPath = "/var/log/guhd.sqlite";
     } else {
         logPath = QDir::homePath() + "/.config/" + organisationName + "/guhd.sqlite";
     }
@@ -178,7 +178,7 @@ QString GuhSettings::consoleLogPath()
     if (organisationName == "guh-test") {
         consoleLogPath = "/tmp/" + organisationName + "/guhd-test.logs";
     } else if (GuhSettings::isRoot()) {
-        consoleLogPath = "/var/log/guh/guhd.log";
+        consoleLogPath = "/var/log/guhd.log";
     } else {
         consoleLogPath = QDir::homePath() + "/.config/" + organisationName + "/guhd.log";
     }

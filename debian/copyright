@@ -1,7 +1,7 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Author: Michael Zanetti <michael_zanetti@gmx.net>
         Simon Stürz <stuerz.simon@gmail.com>
-Download: http://www.github.com/guh
+Download: http://www.github.com/guh/guh
 
 License: GPL-2+
  On Debian systems, the complete text of the GNU General

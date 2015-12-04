@@ -557,8 +557,6 @@ RuleEngine *GuhCore::ruleEngine() const
 GuhCore::GuhCore(QObject *parent) :
     QObject(parent)
 {
-    qCDebug(dcApplication) << "guh version:" << GUH_VERSION_STRING << "starting up.";
-
     m_logger = new LogEngine(this);
 
     qCDebug(dcApplication) << "Creating Device Manager";
@@ -568,6 +566,7 @@ GuhCore::GuhCore(QObject *parent) :
     m_ruleEngine = new RuleEngine(this);
 
 
+    qCDebug(dcApplication) << "Creating Server Manager";
     m_serverManager = new ServerManager(this);
 
     connect(m_deviceManager, &DeviceManager::eventTriggered, this, &GuhCore::gotEvent);

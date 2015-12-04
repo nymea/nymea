@@ -107,8 +107,8 @@ int main(int argc, char *argv[])
     s_loggingFilters.insert("LogEngine", false);
     s_loggingFilters.insert("TcpServer", false);
     s_loggingFilters.insert("WebServer", true);
-    s_loggingFilters.insert("WebSocketServer", false);
-    s_loggingFilters.insert("JsonRpc", false);
+    s_loggingFilters.insert("WebSocketServer", true);
+    s_loggingFilters.insert("JsonRpc", true);
     s_loggingFilters.insert("Rest", true);
     s_loggingFilters.insert("OAuth2", false);
 
@@ -120,8 +120,11 @@ int main(int argc, char *argv[])
     QCommandLineParser parser;
     parser.addHelpOption();
     parser.addVersionOption();
-    QString applicationDescription = QString("\nguh ( /[guːh]/ ) is an open source home automation server, which allows to\n"
-                                             "control a lot of different devices from many different manufacturers.\n\n"
+    QString applicationDescription = QString("\nguh ( /[guːh]/ ) is an open source IoT (Internet of Things) server, \n"
+                                             "which allows to control a lot of different devices from many different. \n"
+                                             "manufacturers. With the powerful rule engine you are able to connect any \n"
+                                             "device available in the system and create individual scenes and behaviors \n"
+                                             "for your environment.\n\n"
                                              "guhd %1 (C) 2014-2015 guh\n"
                                              "Released under the GNU GENERAL PUBLIC LICENSE Version 2.\n\n"
                                              "API version: %2\n").arg(GUH_VERSION_STRING).arg(JSON_PROTOCOL_VERSION);
@@ -147,7 +150,9 @@ int main(int argc, char *argv[])
         debugDescription += "\n- " + filterName + " (" + (s_loggingFilters.value(filterName) ? "yes" : "no") + ")";
     }
 
-    QCommandLineOption debugOption(QStringList() << "d" << "debug", debugDescription, "[No]DebugCategory");
+    QCommandLineOption allOption(QStringList() << "p" << "print-all", "Enables all debug categories. This parameter overrides all debug category parameters.");
+    parser.addOption(allOption);
+    QCommandLineOption debugOption(QStringList() << "d" << "debug-category", debugDescription, "[No]DebugCategory");
     parser.addOption(debugOption);
 
     parser.process(application);
@@ -158,14 +163,20 @@ int main(int argc, char *argv[])
     }
 
     // check debug area
-    foreach (QString debugArea, parser.values(debugOption)) {
-        bool enable = !debugArea.startsWith("No");
-        debugArea.remove(QRegExp("^No"));
-        if (s_loggingFilters.contains(debugArea)) {
-            s_loggingFilters[debugArea] = enable;
-        } else {
-            qCWarning(dcApplication) << "No such debug category:" << debugArea;
+    if (!parser.isSet(allOption)) {
+        foreach (QString debugArea, parser.values(debugOption)) {
+            bool enable = !debugArea.startsWith("No");
+            debugArea.remove(QRegExp("^No"));
+            if (s_loggingFilters.contains(debugArea)) {
+                s_loggingFilters[debugArea] = enable;
+            } else {
+                qCWarning(dcApplication) << "No such debug category:" << debugArea;
+            }
         }
+    } else {
+        foreach (const QString &debugArea, s_loggingFilters.keys())
+            s_loggingFilters[debugArea] = true;
+
     }
     QLoggingCategory::installFilter(loggingCategoryFilter);
 
@@ -174,9 +185,13 @@ int main(int argc, char *argv[])
         // inform about userid
         int userId = getuid();
         if (userId != 0) {
-            qCDebug(dcApplication) << "guhd started with user ID" << userId;
+            qCDebug(dcApplication) << "=====================================";
+            qCDebug(dcApplication) << "guhd" << GUH_VERSION_STRING << "started with user ID" << userId;
+            qCDebug(dcApplication) << "=====================================";
         } else {
-            qCDebug(dcApplication) << "guhd started as root.";
+            qCDebug(dcApplication) << "=====================================";
+            qCDebug(dcApplication) << "guhd" << GUH_VERSION_STRING << "started as root.";
+            qCDebug(dcApplication) << "=====================================";
         }
 
         // create core instance

@@ -45,6 +45,7 @@ public:
 
     static bool isRoot();
     static QString logPath();
+    static QString consoleLogPath();
 
     // forwarded QSettings methods
     QStringList	allKeys() const;

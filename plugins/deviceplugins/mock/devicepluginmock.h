@@ -43,6 +43,7 @@ public:
     DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
 
     DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
+    void postSetupDevice(Device *device) override;
     void deviceRemoved(Device *device) override;
 
     void startMonitoringAutoDevices() override;
@@ -67,6 +68,7 @@ private slots:
     void onPushButtonPressed();
     void onPushButtonPairingFinished();
     void onDisplayPinPairingFinished();
+    void onChildDeviceDiscovered(const DeviceId &parentId);
 
 private:
     QHash<Device*, HttpDaemon*> m_daemons;

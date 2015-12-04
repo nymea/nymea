@@ -343,6 +343,59 @@
                             "name": "Timout action"
                         }
                     ]
+                },
+                {
+                    "deviceClassId": "a71fbde9-9a38-4bf8-beab-c8aade2608ba",
+                    "idName": "mockParent",
+                    "name": "Mock Device (Parent)",
+                    "createMethods": ["user"],
+                    "paramTypes": [
+                        {
+                            "name": "name",
+                            "type": "QString",
+                            "inputType": "TextLine",
+                            "defaultValue": "Parent Mock Device"
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "d24ede5f-4064-4898-bb84-cfb533b1fbc0",
+                            "idName": "boolValue",
+                            "name": "bool value",
+                            "type": "bool",
+                            "defaultValue": false,
+                            "writable": true
+                        }
+                    ]
+                },
+                {
+                    "deviceClassId": "40893c9f-bc47-40c1-8bf7-b390c7c1b4fc",
+                    "idName": "mockChild",
+                    "name": "Mock Device (Child)",
+                    "createMethods": ["auto"],
+                    "paramTypes": [
+                        {
+                            "name": "name",
+                            "type": "QString",
+                            "inputType": "TextLine",
+                            "defaultValue": "Child Mock Device"
+                        },
+                        {
+                            "name": "parent uuid",
+                            "type": "QUuid",
+                            "readOnly": true
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "d24ede5f-4064-4898-bb84-cfb533b1fbc0",
+                            "idName": "boolValue",
+                            "name": "bool value",
+                            "type": "bool",
+                            "defaultValue": false,
+                            "writable": true
+                        }
+                    ]
                 }
             ]
         }

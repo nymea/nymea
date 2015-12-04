@@ -97,14 +97,28 @@ DeviceManager::DeviceSetupStatus DevicePluginMock::setupDevice(Device *device)
         }
         return DeviceManager::DeviceSetupStatusSuccess;
     } else if (device->deviceClassId() == mockPushButtonDeviceClassId) {
-        qCDebug(dcMockDevice) << "Setup PushButton Mock device" << device->params();
+        qCDebug(dcMockDevice) << "Setup PushButton mock device" << device->params();
         return DeviceManager::DeviceSetupStatusSuccess;
     } else if (device->deviceClassId() == mockDisplayPinDeviceClassId) {
-        qCDebug(dcMockDevice) << "Setup DisplayPin Mock device" << device->params();
+        qCDebug(dcMockDevice) << "Setup DisplayPin mock device" << device->params();
+        return DeviceManager::DeviceSetupStatusSuccess;
+    } else if (device->deviceClassId() == mockParentDeviceClassId) {
+        qCDebug(dcMockDevice) << "Setup Parent mock device" << device->params();
+        return DeviceManager::DeviceSetupStatusSuccess;
+    } else if (device->deviceClassId() == mockChildDeviceClassId) {
+        qCDebug(dcMockDevice) << "Setup Child mock device" << device->params();
+        device->setParentId(DeviceId(device->params().paramValue("parent uuid").toString()));
         return DeviceManager::DeviceSetupStatusSuccess;
     }
 
     return DeviceManager::DeviceSetupStatusFailure;
+}
+
+void DevicePluginMock::postSetupDevice(Device *device)
+{
+    if (device->deviceClassId() == mockParentDeviceClassId) {
+        onChildDeviceDiscovered(device->id());
+    }
 }
 
 void DevicePluginMock::deviceRemoved(Device *device)
@@ -223,6 +237,12 @@ DeviceManager::DeviceError DevicePluginMock::executeAction(Device *device, const
             return DeviceManager::DeviceErrorNoError;
         } else if (action.actionTypeId() == timeoutActionTypeId) {
             return DeviceManager::DeviceErrorAsync;
+        }
+        return DeviceManager::DeviceErrorActionTypeNotFound;
+    } else if (device->deviceClassId() == mockParentDeviceClassId || device->deviceClassId() == mockChildDeviceClassId) {
+        if (action.actionTypeId() == boolValueActionTypeId) {
+            device->setStateValue(boolValueStateTypeId, action.param("bool value").value().toBool());
+            return DeviceManager::DeviceErrorNoError;
         }
         return DeviceManager::DeviceErrorActionTypeNotFound;
     }
@@ -373,4 +393,16 @@ void DevicePluginMock::onDisplayPinPairingFinished()
 {
     qCDebug(dcMockDevice) << "Pairing DisplayPin Device finished";
     emit pairingFinished(m_pairingId, DeviceManager::DeviceSetupStatusSuccess);
+}
+
+void DevicePluginMock::onChildDeviceDiscovered(const DeviceId &parentId)
+{
+    qCDebug(dcMockDevice) << "Child device discovered for parent" << parentId.toString();
+    DeviceDescriptor mockDescriptor(mockChildDeviceClassId, "Child Mock Device (Auto created)");
+    ParamList params;
+    params.append(Param("name", "Child"));
+    params.append(Param("parent uuid", parentId));
+    mockDescriptor.setParams(params);
+
+    emit autoDevicesAppeared(mockChildDeviceClassId, QList<DeviceDescriptor>() << mockDescriptor);
 }

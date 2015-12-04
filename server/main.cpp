@@ -25,13 +25,18 @@
 #include <QCommandLineOption>
 #include <QMessageLogger>
 #include <QStringList>
+#include <QTextStream>
+#include <QDateTime>
 #include <QtPlugin>
+#include <QtDebug>
+#include <QFile>
 
+#include "stdio.h"
 #include "unistd.h"
 #include "guhcore.h"
 #include "guhservice.h"
+#include "guhsettings.h"
 #include "loggingcategories.h"
-
 
 QHash<QString, bool> s_loggingFilters;
 
@@ -49,8 +54,44 @@ void loggingCategoryFilter(QLoggingCategory *category)
     }
 }
 
+void consoleLogHandler(QtMsgType type, const QMessageLogContext& context, const QString& message)
+{
+    QString messageString;
+    QString timeString = QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz");
+    switch (type) {
+    case QtDebugMsg:
+        messageString = QString("I %1 | %2: %3").arg(timeString).arg(context.category).arg(message);
+        fprintf(stdout, "I | %s: %s\n", context.category, message.toUtf8().data());
+        break;
+    case QtWarningMsg:
+        messageString = QString("W %1 | %2: %3").arg(timeString).arg(context.category).arg(message);
+        fprintf(stdout, "W | %s: %s\n", context.category, message.toUtf8().data());
+        break;
+    case QtCriticalMsg:
+        messageString = QString("C %1 | %2: %3").arg(timeString).arg(context.category).arg(message);
+        fprintf(stdout, "C | %s: %s\n", context.category, message.toUtf8().data());
+        break;
+    case QtFatalMsg:
+        messageString = QString("F %1 | %2: %3").arg(timeString).arg(context.category).arg(message);
+        fprintf(stdout, "F | %s: %s\n", context.category, message.toUtf8().data());
+        break;
+    }
+
+    QFile logFile(GuhSettings::consoleLogPath());
+    if (!logFile.open(QIODevice::WriteOnly | QIODevice::Append)) {
+        fprintf(stdout, "W | Application: Could not open logfile.\n");
+        return;
+    }
+    QTextStream textStream(&logFile);
+    textStream << messageString << endl;
+    logFile.close();
+}
+
+
 int main(int argc, char *argv[])
 {
+    qInstallMessageHandler(consoleLogHandler);
+
     QCoreApplication application(argc, argv);
     application.setOrganizationName("guh");
     application.setApplicationName("guhd");
@@ -80,10 +121,10 @@ int main(int argc, char *argv[])
     parser.addHelpOption();
     parser.addVersionOption();
     QString applicationDescription = QString("\nguh ( /[guːh]/ ) is an open source home automation server, which allows to\n"
-                                  "control a lot of different devices from many different manufacturers.\n\n"
-                                  "guhd %1 (C) 2014-2015 guh\n"
-                                  "Released under the GNU GENERAL PUBLIC LICENSE Version 2.\n\n"
-                                  "API version: %2\n").arg(GUH_VERSION_STRING).arg(JSON_PROTOCOL_VERSION);
+                                             "control a lot of different devices from many different manufacturers.\n\n"
+                                             "guhd %1 (C) 2014-2015 guh\n"
+                                             "Released under the GNU GENERAL PUBLIC LICENSE Version 2.\n\n"
+                                             "API version: %2\n").arg(GUH_VERSION_STRING).arg(JSON_PROTOCOL_VERSION);
 
     parser.setApplicationDescription(applicationDescription);
 
@@ -133,7 +174,7 @@ int main(int argc, char *argv[])
         // inform about userid
         int userId = getuid();
         if (userId != 0) {
-            qCDebug(dcApplication) << "guhd started as user with ID" << userId;
+            qCDebug(dcApplication) << "guhd started with user ID" << userId;
         } else {
             qCDebug(dcApplication) << "guhd started as root.";
         }

@@ -159,14 +159,31 @@ QString GuhSettings::logPath()
     QString organisationName = QCoreApplication::instance()->organizationName();
 
     if (organisationName == "guh-test") {
-        logPath = "/tmp/" + organisationName + "/guhd-test.logs";
+        logPath = "/tmp/" + organisationName + "/guhd-test.sqlite";
     } else if (GuhSettings::isRoot()) {
-        logPath = "/var/log/guhd.log";
+        logPath = "/var/log/guh/guhd.sqlite";
     } else {
-        logPath = QDir::homePath() + "/.config/" + organisationName + "/guhd.log";
+        logPath = QDir::homePath() + "/.config/" + organisationName + "/guhd.sqlite";
     }
 
     return logPath;
+}
+
+/*! Returns the path where the log file (console log) will be stored. */
+QString GuhSettings::consoleLogPath()
+{
+    QString consoleLogPath;
+    QString organisationName = QCoreApplication::instance()->organizationName();
+
+    if (organisationName == "guh-test") {
+        consoleLogPath = "/tmp/" + organisationName + "/guhd-test.logs";
+    } else if (GuhSettings::isRoot()) {
+        consoleLogPath = "/var/log/guh/guhd.log";
+    } else {
+        consoleLogPath = QDir::homePath() + "/.config/" + organisationName + "/guhd.log";
+    }
+
+    return consoleLogPath;
 }
 
 /*! Return a list of all settings keys.*/

@@ -149,18 +149,18 @@ DeviceManager::DeviceSetupStatus DevicePluginDateTime::setupDevice(Device *devic
 {
     // check timezone
     if(!m_timeZone.isValid()){
-        qCWarning(dcDateTime) << "invalid time zone.";
+        qCWarning(dcDateTime) << "Invalid time zone.";
         return DeviceManager::DeviceSetupStatusFailure;
     }
 
     // date
     if (device->deviceClassId() == todayDeviceClassId) {
         if (m_todayDevice != 0) {
-            qCWarning(dcDateTime) << "there is already a date device or not deleted correctly! this should never happen!!";
+            qCWarning(dcDateTime) << "There is already a date device or not deleted correctly! this should never happen!!";
             return DeviceManager::DeviceSetupStatusFailure;
         }
         m_todayDevice = device;
-        qCDebug(dcDateTime) << "create today device: current time" << m_currentDateTime.currentDateTime().toString();
+        qCDebug(dcDateTime) << "Create today device: current time" << m_currentDateTime.currentDateTime().toString();
     }
 
     // alarm
@@ -199,7 +199,7 @@ DeviceManager::DeviceSetupStatus DevicePluginDateTime::setupDevice(Device *devic
         connect(countdown, &Countdown::countdownTimeout, this, &DevicePluginDateTime::onCountdownTimeout);
         connect(countdown, &Countdown::runningStateChanged, this, &DevicePluginDateTime::onCountdownRunningChanged);
 
-        qCDebug(dcDateTime) << "setup countdown" << countdown->name() << countdown->time().toString();
+        qCDebug(dcDateTime) << "Setup countdown" << countdown->name() << countdown->time().toString();
         m_countdowns.insert(device, countdown);
     }
 
@@ -311,7 +311,7 @@ void DevicePluginDateTime::searchGeoLocation()
     QNetworkRequest request;
     request.setUrl(QUrl("http://ip-api.com/json"));
 
-    qCDebug(dcDateTime) << "request geo location.";
+    qCDebug(dcDateTime) << "Requesting geo location.";
 
     QNetworkReply *reply = networkManagerGet(request);
     m_locationReplies.append(reply);
@@ -403,12 +403,12 @@ void DevicePluginDateTime::processTimesData(const QByteArray &data)
     m_dusk = QDateTime(QDate::currentDate(), QTime::fromString(duskString, "h:m:s AP"), Qt::UTC).toTimeZone(m_timeZone);
 
     // calculate the times in each alarm
-    qCDebug(dcDateTime) << " dawn     :" << m_dawn.toString();
-    qCDebug(dcDateTime) << " sunrise  :" << m_sunrise.toString();
-    qCDebug(dcDateTime) << " noon     :" << m_noon.toString();
-    qCDebug(dcDateTime) << " sunset   :" << m_sunset.toString();
-    qCDebug(dcDateTime) << " dusk     :" << m_dusk.toString();
-    qCDebug(dcDateTime) << "---------------------------------------------";
+    //    qCDebug(dcDateTime) << " dawn     :" << m_dawn.toString();
+    //    qCDebug(dcDateTime) << " sunrise  :" << m_sunrise.toString();
+    //    qCDebug(dcDateTime) << " noon     :" << m_noon.toString();
+    //    qCDebug(dcDateTime) << " sunset   :" << m_sunset.toString();
+    //    qCDebug(dcDateTime) << " dusk     :" << m_dusk.toString();
+    //    qCDebug(dcDateTime) << "---------------------------------------------";
 
     updateTimes();
 }
@@ -460,7 +460,7 @@ void DevicePluginDateTime::onSecondChanged()
 
 void DevicePluginDateTime::onMinuteChanged(const QDateTime &dateTime)
 {
-    qCDebug(dcDateTime) << "minute changed" << dateTime.toString();
+    //qCDebug(dcDateTime) << "minute changed" << dateTime.toString();
 
     // validate alerts
     foreach (Alarm *alarm, m_alarms.values()) {
@@ -470,7 +470,8 @@ void DevicePluginDateTime::onMinuteChanged(const QDateTime &dateTime)
 
 void DevicePluginDateTime::onHourChanged(const QDateTime &dateTime)
 {
-    qCDebug(dcDateTime) << "hour changed" <<  dateTime.toString();
+    Q_UNUSED(dateTime)
+    //qCDebug(dcDateTime) << "hour changed" <<  dateTime.toString();
     // check every hour in case we are offline in the wrong moment
     searchGeoLocation();
 }

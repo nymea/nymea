@@ -49,7 +49,7 @@ void KodiJsonHandler::sendData(const QString &method, const QVariantMap &params,
 
 void KodiJsonHandler::processNotification(const QString &method, const QVariantMap &params)
 {
-    qCDebug(dcKodi) << "got notification" << method;
+    //qCDebug(dcKodi) << "got notification" << method;
 
     if (method == "Application.OnVolumeChanged") {
         QVariantMap data = params.value("data").toMap();
@@ -66,7 +66,7 @@ void KodiJsonHandler::processNotification(const QString &method, const QVariantM
 void KodiJsonHandler::processActionResponse(const KodiReply &reply, const QVariantMap &response)
 {
     if (response.contains("error")) {
-        qCDebug(dcKodi) << QJsonDocument::fromVariant(response).toJson();
+        //qCDebug(dcKodi) << QJsonDocument::fromVariant(response).toJson();
         qCWarning(dcKodi) << "got error response for action"  << reply.method() << ":" << response.value("error").toMap().value("message").toString();
         emit actionExecuted(reply.actionId(), false);
     } else {
@@ -77,12 +77,12 @@ void KodiJsonHandler::processActionResponse(const KodiReply &reply, const QVaria
 void KodiJsonHandler::processRequestResponse(const KodiReply &reply, const QVariantMap &response)
 {
     if (response.contains("error")) {
-        qCDebug(dcKodi) << QJsonDocument::fromVariant(response).toJson();
+        //qCDebug(dcKodi) << QJsonDocument::fromVariant(response).toJson();
         qCWarning(dcKodi) << "got error response for request " << reply.method() << ":" << response.value("error").toMap().value("message").toString();
     }
 
     if (reply.method() == "Application.GetProperties") {
-        qCDebug(dcKodi) << "got update response" << reply.method();
+        //qCDebug(dcKodi) << "got update response" << reply.method();
         emit updateDataReceived(response.value("result").toMap());
     }
 

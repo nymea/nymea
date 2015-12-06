@@ -19,6 +19,7 @@
 #ifdef BLUETOOTH_LE
 
 #include "aveabulb.h"
+#include "extern-plugininfo.h"
 
 AveaBulb::AveaBulb(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType, QObject *parent) :
     BluetoothLowEnergyDevice(deviceInfo, addressType, parent),
@@ -46,12 +47,12 @@ bool AveaBulb::isAvailable()
 void AveaBulb::serviceScanFinished()
 {
     if (!controller()->services().contains(m_colorSeviceUuid)) {
-        qWarning() << "ERROR: Color service not found for device" << name() << address().toString();
+        qCWarning(dcElgato) << "ERROR: Color service not found for device" << name() << address().toString();
         return;
     }
 
     if (m_colorService || m_imageService) {
-        qWarning() << "ERROR: Attention! bad implementation of service handling!!";
+        qCWarning(dcElgato) << "ERROR: Attention! bad implementation of service handling!!";
         return;
     }
 
@@ -59,7 +60,7 @@ void AveaBulb::serviceScanFinished()
     m_colorService = controller()->createServiceObject(m_colorSeviceUuid, this);
 
     if (!m_colorService) {
-        qWarning() << "ERROR: could not create color service for device" << name() << address().toString();
+        qCWarning(dcElgato) << "ERROR: could not create color service for device" << name() << address().toString();
         return;
     }
 
@@ -73,7 +74,7 @@ void AveaBulb::serviceScanFinished()
     m_imageService = controller()->createServiceObject(m_imageSeviceUuid, this);
 
     if (!m_imageService) {
-        qWarning() << "ERROR: could not create color service for device" << name() << address().toString();
+        qCWarning(dcElgato) << "ERROR: could not create color service for device" << name() << address().toString();
         return;
     }
 
@@ -111,32 +112,32 @@ void AveaBulb::serviceStateChanged(const QLowEnergyService::ServiceState &state)
     switch (state) {
     case QLowEnergyService::DiscoveringServices:
         if (service->serviceUuid() == m_colorService->serviceUuid()) {
-            qDebug() << "start discovering color service...";
+            qCDebug(dcElgato) << "start discovering color service...";
         } else if (service->serviceUuid() == m_imageService->serviceUuid()) {
-            qDebug() << "start discovering image service...";
+            qCDebug(dcElgato) << "start discovering image service...";
         }
         break;
     case QLowEnergyService::ServiceDiscovered:
         // check which service is discovered
         if (service->serviceUuid() == m_colorService->serviceUuid()) {
-            qDebug() << "...color service discovered.";
+            qCDebug(dcElgato) << "...color service discovered.";
 
             m_colorCharacteristic = m_colorService->characteristic(m_colorCharacteristicUuid);
 
             if (!m_colorCharacteristic.isValid()) {
-                qWarning() << "ERROR: color characteristc not found for device " << name() << address().toString();
+                qCWarning(dcElgato) << "ERROR: color characteristc not found for device " << name() << address().toString();
                 return;
             }
 
             m_imageService->discoverDetails();
         }
         if (service->serviceUuid() == m_imageService->serviceUuid()) {
-            qDebug() << "...image service discovered.";
+            qCDebug(dcElgato) << "...image service discovered.";
 
             m_imageCharacteristic = m_imageService->characteristic(m_imageCharacteristicUuid);
 
             if (!m_imageCharacteristic.isValid()) {
-                qWarning() << "ERROR: image characteristc not found for device " << name() << address().toString();
+                qCWarning(dcElgato) << "ERROR: image characteristc not found for device " << name() << address().toString();
                 return;
             }
         }
@@ -153,19 +154,19 @@ void AveaBulb::serviceStateChanged(const QLowEnergyService::ServiceState &state)
 
 void AveaBulb::serviceCharacteristicChanged(const QLowEnergyCharacteristic &characteristic, const QByteArray &value)
 {
-    qDebug() << "service characteristic changed" << characteristic.name() << value.toHex();
+    qCDebug(dcElgato) << "service characteristic changed" << characteristic.name() << value.toHex();
 }
 
 void AveaBulb::confirmedCharacteristicWritten(const QLowEnergyCharacteristic &characteristic, const QByteArray &value)
 {
     if (characteristic.handle() == m_colorCharacteristic.handle()) {
-        //qDebug() << "color char written successfully" << value.toHex();
+        //qCDebug(dcElgato) << "color char written successfully" << value.toHex();
         if (m_actions.contains(value.toHex())) {
             ActionId actionId = m_actions.take(value.toHex());
             emit actionExecutionFinished(actionId, true);
         }
     } else if (characteristic.handle() == m_imageCharacteristic.handle()) {
-        //qDebug() << "image char written successfully" << value.toHex();
+        //qCDebug(dcElgato) << "image char written successfully" << value.toHex();
         if (m_actions.contains(value.toHex())) {
             ActionId actionId = m_actions.take(value.toHex());
             emit actionExecutionFinished(actionId, true);
@@ -174,7 +175,7 @@ void AveaBulb::confirmedCharacteristicWritten(const QLowEnergyCharacteristic &ch
     if (characteristic.uuid() == m_currentRequest.characteristic().uuid()) {
         if (m_commandQueue.isEmpty()) {
             m_queueRunning = false;
-            //qDebug() << "queue finished";
+            //qCDebug(dcElgato) << "queue finished";
         }
         sendNextCommand();
     }
@@ -182,7 +183,7 @@ void AveaBulb::confirmedCharacteristicWritten(const QLowEnergyCharacteristic &ch
 
 void AveaBulb::confirmedDescriptorWritten(const QLowEnergyDescriptor &descriptor, const QByteArray &value)
 {
-    qDebug() << "descriptor:" << descriptor.name() << "value:" << value.toHex() << "written successfully";
+    qCDebug(dcElgato) << "descriptor:" << descriptor.name() << "value:" << value.toHex() << "written successfully";
 }
 
 void AveaBulb::serviceError(const QLowEnergyService::ServiceError &error)
@@ -205,7 +206,7 @@ void AveaBulb::serviceError(const QLowEnergyService::ServiceError &error)
         break;
     }
 
-    qWarning() << "ERROR: color service of " << name() << address().toString() << ":" << errorString;
+    qCWarning(dcElgato) << "ERROR: color service of " << name() << address().toString() << ":" << errorString;
 }
 
 void AveaBulb::enqueueCommand(QLowEnergyService *service, const QLowEnergyCharacteristic &characteristic, const QByteArray &value)
@@ -224,7 +225,7 @@ void AveaBulb::sendNextCommand()
     if (m_commandQueue.isEmpty())
         return;
 
-    //qDebug() << "send next command";
+    //qCDebug(dcElgato) << "send next command";
     m_queueRunning = true;
     m_currentRequest = m_commandQueue.dequeue();
 

@@ -300,7 +300,7 @@ HttpReply *DevicesResource::removeDevice(Device *device, const QVariantMap &para
     if (!status.second.isEmpty()) {
         QVariantList ruleIdList;
         QVariantMap returns;
-        returns.insert("deviceError", JsonTypes::deviceErrorToString(status.first));
+        returns.insert("error", JsonTypes::deviceErrorToString(status.first));
 
         foreach (const RuleId &ruleId, status.second) {
             ruleIdList.append(ruleId.toString());

@@ -1,16 +1,17 @@
 .\" Manpage for guhd.
 .\" Contact simon.stuerz@guh.guru to correct errors or typos.
-.TH man 1 "August 2015" "1.2" "guhd man page"
+.TH man 1 "December 2015" "1.3" "guhd man page"
 .SH NAME
-guhd \- Server for home automation systems
+guhd \- An open source IoT (Internet of Things) server
 .SH SYNOPSIS
 .B guhd
 [\fIOPTION\fR]
 .SH DESCRIPTION
-guh (/[guːh]/) is an open source home automation server, which allows to
-control a lot of different devices from many different manufacturers. 
-With the powerful rule engine you are able to connect any device available in
-the system and create individual scenes and behaviors for your home.
+guh (/[guːh]/) is an open source IoT (Internet of Things) server, 
+which allows to control a lot of different devices from many different 
+manufacturers. With the powerful rule engine you are able to connect any 
+device available in the system and create individual scenes and behaviors 
+for your environment.
 .SH OPTIONS
 .TP 
 \fB\-h\fR, \fB\-\-help\fR
@@ -22,6 +23,10 @@ Displays version information.
 \fB\-n\fR, \fB\-\-no\-daemon\fR
 Run guhd in the foreground, not as daemon.
 .TP
+\fB\-p\fR, \fB\-\-print\-all\fR
+Enables all debug categories. This parameter overrides all debug 
+category parameters.
+.TP
 \fB\-d\fR, \fB\-\-debug\fR, \fB\<[No\]DebugCategory>\fR
 Debug categories to enable. In order to disable a category which is enabled by 
 default, you can add \"No\" to the category. Warnings from all 
@@ -29,7 +34,7 @@ categories will be printed unless they are explicitly muted with "NoWarnings".
 .RS
 .TP
 \fBMain\ debug\ categories:\fR
-.IP \fIApplication\fR\ (default\ enabled) 
+.IP \fIApplication\fR\ (default\ enabled)
 Print the debug messages from the core application.
 .IP \fIConnection\fR\ (default\ enabled)
 Print the debug messages from the TCP connections in guh.
@@ -37,11 +42,13 @@ Print the debug messages from the TCP connections in guh.
 Print the debug messages from the device manager.
 .IP \fIHardware\fR\ (default\ disabled)
 Print the debug messages from hardware resources in guh.
-.IP \fIJsonRpc\fR\ (default\ disabled)
+.IP \fIJsonRpc\fR\ (default\ enabled)
 Print the debug messages from JSON-RPC API.
 .IP \fILogEngine\fR\ (default\ disabled)
 Print the debug messages from logging engine.
-.IP \fIRest\fR\ (default\ disbaled)
+.IP \fIOAuth2\fR\ (default\ disabled)
+Print the debug messages of the OAuth2 resource.
+.IP \fIRest\fR\ (default\ enabled)
 Print the debug messages from REST API.
 .IP \fIRuleEngine\fR\ (default\ enabled)
 Print the debug messages from the rule engine.
@@ -66,11 +73,24 @@ $ guhd -n -d Hardware
 .TP
 To start guhd in the foreground, disable debug messages from the DeviceManager 
 and enable debug messages for JsonRpc and LogEngine:
-.IP 
-$ guhd -n -d NoDeviceManager JsonRpc LogEngine
+.IP
+$ guhd -n -d NoDeviceManager -d JsonRpc -d LogEngine
 .SH FILES
-.TP
-The settings of the guh server can be found in \fI/etc/guh/guhd.conf\fR
+The server config file: \fI/etc/guh/guhd.conf\fR
+.br
+The devices config file: \fI/etc/guh/devices.conf\fR
+.br
+The rules config file: \fI/etc/guh/rules.conf\fR
+.br
+The plugins config file: \fI/etc/guh/plugins.conf\fR
+.br
+The log file: \fI/var/log/guhd.log\fR
+.br
+The logging database: \fI/var/log/guhd.sqlite\fR
+.br
+The systemd unit file: \fI/etc/systemd/system/guhd.service\fR
+.br
+The plugins directory: \fI/usr/lib/guh/plugins/\fR
 .SH SEE ALSO
 Full developer documentation at: <http://dev.guh.guru>
 .br
@@ -78,7 +98,7 @@ Wiki on github: <https://github.com/guh/guh/wiki>
 .SH "REPORTING BUGS"
 Issue tracker on github: <https://github.com/guh/guh/issues>
 .br
-How to report bugs can: <https://github.com/guh/guh/wiki/Reporting-bugs>
+How to report bugs: <https://github.com/guh/guh/wiki/Reporting-bugs>
 .SH AUTHOR
 Written by Simon Stürz and Michael Zanetti
 .SH COPYRIGHT

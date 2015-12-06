@@ -304,7 +304,7 @@ QString TvDevice::printXmlData(const QByteArray &data)
 
 void TvDevice::eventOccured(const QByteArray &data)
 {
-    qCDebug(dcLgSmartTv) << "event handler data received" << printXmlData(data);
+    qCDebug(dcLgSmartTv) << "Event handler data received" << printXmlData(data);
 
     // if we got a channel changed event...
     if(data.contains("ChannelChanged")) {
@@ -317,7 +317,7 @@ void TvDevice::eventOccured(const QByteArray &data)
     // if the tv suspends, it will send a byebye message, which means
     // the pairing will be closed.
     if(data.contains("api type=\"pairing\"") && data.contains("byebye")) {
-        qCDebug(dcLgSmartTv) << "ended pairing (host)";
+        qCDebug(dcLgSmartTv) << "Ended pairing (host)";
         setPaired(false);
         setReachable(false);
         return;

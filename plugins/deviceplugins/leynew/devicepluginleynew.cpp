@@ -175,10 +175,10 @@ DeviceManager::DeviceError DevicePluginLeynew::executeAction(Device *device, con
     // =======================================
     // send data to hardware resource
     if(transmitData(delay, rawData, repetitions)){
-        qCDebug(dcLeynew) << "transmitted" << pluginName() << device->name() << action.id();
+        qCDebug(dcLeynew) << "Transmitted" << pluginName() << device->name() << action.id();
         return DeviceManager::DeviceErrorNoError;
     }else{
-        qCWarning(dcLeynew) << "could not transmitt" << pluginName() << device->name() << action.id();
+        qCWarning(dcLeynew) << "Could not transmitt" << pluginName() << device->name() << action.id();
         return DeviceManager::DeviceErrorHardwareNotAvailable;
     }
 }

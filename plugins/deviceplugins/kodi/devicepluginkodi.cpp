@@ -117,7 +117,7 @@ void DevicePluginKodi::deviceRemoved(Device *device)
 {
     Kodi *kodi = m_kodis.key(device);
     m_kodis.remove(kodi);
-    qCDebug(dcKodi) << "delete " << device->paramValue("name");
+    qCDebug(dcKodi) << "Delete " << device->paramValue("name");
     kodi->deleteLater();
 }
 
@@ -139,7 +139,7 @@ DeviceManager::DeviceError DevicePluginKodi::discoverDevices(const DeviceClassId
 {
     Q_UNUSED(params)
     Q_UNUSED(deviceClassId)
-    qCDebug(dcKodi) << "start UPnP search";
+    qCDebug(dcKodi) << "Start UPnP search";
     upnpDiscover();
     return DeviceManager::DeviceErrorAsync;
 }

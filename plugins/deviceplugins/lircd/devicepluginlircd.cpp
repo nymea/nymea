@@ -63,7 +63,7 @@ DevicePluginLircd::DevicePluginLircd()
 {
     m_lircClient = new LircClient(this);
 
-    m_lircClient->connect();
+    //m_lircClient->connect();
     connect(m_lircClient, &LircClient::buttonPressed, this, &DevicePluginLircd::buttonPressed);
 }
 

@@ -552,7 +552,7 @@ void DevicePluginPhilipsHue::processInformationResponse(PairingInfo *pairingInfo
     QJsonParseError error;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
 
-    qCDebug(dcPhilipsHue) << "Process information response" << pairingInfo->host().toString() << pairingInfo->apiKey();
+    //qCDebug(dcPhilipsHue) << "Process information response" << pairingInfo->host().toString() << pairingInfo->apiKey();
 
     // check JSON error
     if (error.error != QJsonParseError::NoError) {

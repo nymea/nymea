@@ -70,7 +70,7 @@ DeviceManager::HardwareResources DevicePluginWakeOnLan::requiredHardware() const
 DeviceManager::DeviceError DevicePluginWakeOnLan::executeAction(Device *device, const Action &action)
 {
     if(action.actionTypeId() == wolActionTypeId){
-        qCDebug(dcWakeOnLan) << "wake up" << device->name();
+        qCDebug(dcWakeOnLan) << "Wake up" << device->name();
         wakeup(device->paramValue("mac").toString());
     }
     return DeviceManager::DeviceErrorNoError;
@@ -83,7 +83,7 @@ void DevicePluginWakeOnLan::wakeup(QString mac)
     for(int i = 0; i < 16; ++i) {
         packet.append(QByteArray::fromHex(mac.remove(':').toLocal8Bit()));
     }
-    qCDebug(dcWakeOnLan) << "created magic packet:" << packet.toHex();
+    qCDebug(dcWakeOnLan) << "Created magic packet:" << packet.toHex();
     QUdpSocket udpSocket;
     udpSocket.writeDatagram(packet.data(), packet.size(), QHostAddress::Broadcast, 9);
 }

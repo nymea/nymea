@@ -104,6 +104,7 @@ DeviceManager::DeviceError DevicePluginLgSmartTv::discoverDevices(const DeviceCl
     if(deviceClassId != lgSmartTvDeviceClassId){
         return DeviceManager::DeviceErrorDeviceClassNotFound;
     }
+    qCDebug(dcLgSmartTv) << "Start discovering";
     upnpDiscover("udap:rootservice","UDAP/2.0");
     return DeviceManager::DeviceErrorAsync;
 }
@@ -152,7 +153,7 @@ void DevicePluginLgSmartTv::deviceRemoved(Device *device)
     }
 
     TvDevice *tvDevice= m_tvList.key(device);
-    qCDebug(dcLgSmartTv) << "remove device" << device->paramValue("name").toString();
+    qCDebug(dcLgSmartTv) << "Remove device" << device->paramValue("name").toString();
     unpairTvDevice(device);
     m_tvList.remove(tvDevice);
     delete tvDevice;
@@ -182,7 +183,7 @@ DeviceManager::DeviceError DevicePluginLgSmartTv::executeAction(Device *device, 
     TvDevice * tvDevice = m_tvList.key(device);
 
     if (!tvDevice->reachable()) {
-        qCWarning(dcLgSmartTv) << "not reachable";
+        qCWarning(dcLgSmartTv) << "Device not reachable";
         return DeviceManager::DeviceErrorHardwareNotAvailable;
     }
 
@@ -324,11 +325,11 @@ void DevicePluginLgSmartTv::networkManagerReplyReady(QNetworkReply *reply)
         Device *device = m_asyncSetup.take(reply);
         TvDevice *tv = m_tvList.key(device);
         if(status != 200) {
-            qCWarning(dcLgSmartTv) << "pair TV request error:" << status << reply->errorString();
+            qCWarning(dcLgSmartTv) << "Pair TV request error:" << status << reply->errorString();
             tv->setPaired(false);
             emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusFailure);
         } else {
-            qCDebug(dcLgSmartTv) << "paired TV successfully.";
+            qCDebug(dcLgSmartTv) << "Paired TV successfully.";
             tv->setPaired(true);
             refreshTv(device);
             emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusSuccess);
@@ -336,16 +337,16 @@ void DevicePluginLgSmartTv::networkManagerReplyReady(QNetworkReply *reply)
     } else if (m_deleteTv.contains(reply)) {
         m_deleteTv.removeAll(reply);
         if(status != 200) {
-            qCWarning(dcLgSmartTv) << "end pairing TV (device deleted) request error:" << status << reply->errorString();
+            qCWarning(dcLgSmartTv) << "Rnd pairing TV (device deleted) request error:" << status << reply->errorString();
         } else {
-            qCDebug(dcLgSmartTv) << "end pairing TV (device deleted) successfully.";
+            qCDebug(dcLgSmartTv) << "End pairing TV (device deleted) successfully.";
         }
     } else if (m_volumeInfoRequests.keys().contains(reply)) {
         Device *device = m_volumeInfoRequests.take(reply);
         TvDevice *tv = m_tvList.key(device);
         if(status != 200) {
             tv->setReachable(false);
-            qCWarning(dcLgSmartTv) << "volume information request error:" << status << reply->errorString();
+            qCWarning(dcLgSmartTv) << "Volume information request error:" << status << reply->errorString();
         } else {
             tv->setReachable(true);
             tv->onVolumeInformationUpdate(reply->readAll());
@@ -355,7 +356,7 @@ void DevicePluginLgSmartTv::networkManagerReplyReady(QNetworkReply *reply)
         TvDevice *tv = m_tvList.key(device);
         if(status != 200) {
             tv->setReachable(false);
-            qCWarning(dcLgSmartTv) << "channel information request error:" << status << reply->errorString();
+            qCWarning(dcLgSmartTv) << "Channel information request error:" << status << reply->errorString();
         } else {
             tv->setReachable(true);
             tv->onChannelInformationUpdate(reply->readAll());
@@ -364,7 +365,7 @@ void DevicePluginLgSmartTv::networkManagerReplyReady(QNetworkReply *reply)
         ActionId actionId = m_asyncActions.value(reply);
         if(status != 200) {
             emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorHardwareNotAvailable);
-            qCWarning(dcLgSmartTv) << "action request error:" << status << reply->errorString();
+            qCWarning(dcLgSmartTv) << "Action request error:" << status << reply->errorString();
         } else {
             emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorNoError);
         }

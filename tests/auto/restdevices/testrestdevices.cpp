@@ -184,8 +184,8 @@ void TestRestDevices::addConfiguredDevice()
 
     // Get all devices
     QNetworkRequest request;
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     request.setUrl(QUrl("http://localhost:3333/api/v1/devices"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
     QByteArray payload = QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact);
     qDebug() << "sending" << payload;
@@ -212,6 +212,7 @@ void TestRestDevices::addConfiguredDevice()
         QVERIFY2(!deviceId.isNull(),"invalid device id for removing");
 
         request.setUrl(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
+        request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
         clientSpy.clear();
         reply = nam->deleteResource(request);
         clientSpy.wait();
@@ -262,6 +263,7 @@ void TestRestDevices::addPushButtonDevices()
 
     clientSpy.clear();
     QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     QNetworkReply *reply = nam->get(request);
     clientSpy.wait();
     QCOMPARE(clientSpy.count(), 1);
@@ -285,6 +287,7 @@ void TestRestDevices::addPushButtonDevices()
     params.insert("deviceDescriptorId", deviceDescriptoId);
 
     QNetworkRequest pairRequest(QUrl("http://localhost:3333/api/v1/devices/pair"));
+    pairRequest.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     clientSpy.clear();
     reply = nam->post(pairRequest, QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact));
     clientSpy.wait();
@@ -311,6 +314,7 @@ void TestRestDevices::addPushButtonDevices()
     params.insert("pairingTransactionId", pairingTransactionId.toString());
 
     QNetworkRequest confirmPairingRequest(QUrl("http://localhost:3333/api/v1/devices/confirmpairing"));
+    confirmPairingRequest.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     clientSpy.clear();
     reply = nam->post(confirmPairingRequest, QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact));
     clientSpy.wait();
@@ -327,6 +331,7 @@ void TestRestDevices::addPushButtonDevices()
         DeviceId deviceId(jsonDoc.toVariant().toMap().value("id").toString());
         // delete it
         request.setUrl(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
+        request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
         clientSpy.clear();
         reply = nam->deleteResource(request);
         clientSpy.wait();
@@ -377,6 +382,7 @@ void TestRestDevices::addDisplayPinDevices()
 
     clientSpy.clear();
     QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     QNetworkReply *reply = nam->get(request);
     clientSpy.wait();
     QCOMPARE(clientSpy.count(), 1);
@@ -400,6 +406,7 @@ void TestRestDevices::addDisplayPinDevices()
     params.insert("deviceDescriptorId", deviceDescriptoId);
 
     QNetworkRequest pairRequest(QUrl("http://localhost:3333/api/v1/devices/pair"));
+    pairRequest.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     clientSpy.clear();
     reply = nam->post(pairRequest, QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact));
     clientSpy.wait();
@@ -423,6 +430,7 @@ void TestRestDevices::addDisplayPinDevices()
     params.insert("secret", secret);
 
     QNetworkRequest confirmPairingRequest(QUrl("http://localhost:3333/api/v1/devices/confirmpairing"));
+    confirmPairingRequest.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     clientSpy.clear();
     reply = nam->post(confirmPairingRequest, QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact));
     clientSpy.wait();
@@ -439,6 +447,7 @@ void TestRestDevices::addDisplayPinDevices()
         DeviceId deviceId(jsonDoc.toVariant().toMap().value("id").toString());
         // delete it
         request.setUrl(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
+        request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
         clientSpy.clear();
         reply = nam->deleteResource(request);
         clientSpy.wait();
@@ -491,6 +500,7 @@ void TestRestDevices::executeAction()
     payloadMap.insert("params", actionParams);
 
     QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/devices/%1/execute/%2").arg(deviceId.toString()).arg(actionTypeId.toString())));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     spy.clear();
     QNetworkReply *reply = nam.post(request, QJsonDocument::fromVariant(payloadMap).toJson(QJsonDocument::Compact));
     spy.wait();
@@ -503,6 +513,7 @@ void TestRestDevices::executeAction()
     // Fetch action execution history from mock device
     spy.clear();
     request = QNetworkRequest(QUrl(QString("http://localhost:%1/actionhistory").arg(m_mockDevice1Port)));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -512,6 +523,7 @@ void TestRestDevices::executeAction()
     // cleanup for the next run
     spy.clear();
     request.setUrl(QUrl(QString("http://localhost:%1/clearactionhistory").arg(m_mockDevice1Port)));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -519,6 +531,7 @@ void TestRestDevices::executeAction()
 
     spy.clear();
     request.setUrl(QUrl(QString("http://localhost:%1/actionhistory").arg(m_mockDevice1Port)));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -552,6 +565,7 @@ void TestRestDevices::getStateValue()
     QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
 
     QNetworkRequest request;
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
 
     if (!stateTypeId.isNull()) {
         request.setUrl(QUrl(QString("http://localhost:3333/api/v1/devices/%1/states/%2").arg(deviceId.toString()).arg(stateTypeId.toString())));
@@ -651,6 +665,7 @@ void TestRestDevices::editDevices()
     QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
 
     QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/devices")));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
 
     QNetworkReply *reply = nam->post(request, QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact));
     clientSpy.wait();
@@ -674,6 +689,7 @@ void TestRestDevices::editDevices()
     editParams.insert("deviceParams", newDeviceParams);
 
     request.setUrl(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     clientSpy.clear();
     reply = nam->put(request, QJsonDocument::fromVariant(editParams).toJson(QJsonDocument::Compact));
     clientSpy.wait();
@@ -684,8 +700,8 @@ void TestRestDevices::editDevices()
 
     // if the edit should have been successfull
     if (expectedStatusCode == 200) {
-
         request.setUrl(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
+        request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
         clientSpy.clear();
         reply = nam->get(request);
         clientSpy.wait();
@@ -702,6 +718,7 @@ void TestRestDevices::editDevices()
 
     // delete it
     request.setUrl(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     clientSpy.clear();
     reply = nam->deleteResource(request);
     clientSpy.wait();
@@ -752,6 +769,7 @@ void TestRestDevices::editByDiscovery()
 
     clientSpy.clear();
     QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     QNetworkReply *reply = nam->get(request);
     clientSpy.wait();
     QCOMPARE(clientSpy.count(), 1);
@@ -769,6 +787,7 @@ void TestRestDevices::editByDiscovery()
 
     // add Discovered Device 1 port 55555
     request.setUrl(QUrl("http://localhost:3333/api/v1/devices"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     DeviceDescriptorId descriptorId1;
     foreach (const QVariant &descriptor, foundDevices) {
         // find the device with port 55555
@@ -810,6 +829,7 @@ void TestRestDevices::editByDiscovery()
     query2.addQueryItem("params", QJsonDocument::fromVariant(discoveryParams).toJson(QJsonDocument::Compact));
     url.setQuery(query2);
     request = QNetworkRequest(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     reply = nam->get(request);
     clientSpy.wait();
     QCOMPARE(clientSpy.count(), 1);
@@ -842,6 +862,7 @@ void TestRestDevices::editByDiscovery()
     params.insert("deviceDescriptorId", descriptorId2);
 
     request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
 
     clientSpy.clear();
     payload = QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact);

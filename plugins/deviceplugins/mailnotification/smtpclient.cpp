@@ -294,7 +294,7 @@ void SmtpClient::setRecipient(const QString &rcpt)
 
 void SmtpClient::socketError(QAbstractSocket::SocketError error)
 {
-    qCWarning(dcMailNotification) << "ERROR: mail socket -> " << error << m_socket->errorString();
+    qCWarning(dcMailNotification) << "Mail socket -> " << error << m_socket->errorString();
 }
 
 void SmtpClient::send(const QString &data)

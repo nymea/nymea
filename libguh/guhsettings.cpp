@@ -176,7 +176,7 @@ QString GuhSettings::consoleLogPath()
     QString organisationName = QCoreApplication::instance()->organizationName();
 
     if (organisationName == "guh-test") {
-        consoleLogPath = "/tmp/" + organisationName + "/guhd-test.logs";
+        consoleLogPath = "/tmp/" + organisationName + "/guhd-test.log";
     } else if (GuhSettings::isRoot()) {
         consoleLogPath = "/var/log/guhd.log";
     } else {

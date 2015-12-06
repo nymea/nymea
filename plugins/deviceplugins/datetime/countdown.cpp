@@ -89,7 +89,7 @@ QTime Countdown::currentTime() const
 void Countdown::onTimeout()
 {
     m_currentTime = m_currentTime.addSecs(-1);
-    qCDebug(dcDateTime) << name() << m_currentTime.toString();
+    //qCDebug(dcDateTime) << name() << m_currentTime.toString();
     if (m_currentTime == QTime(0,0)) {
         qCDebug(dcDateTime) << name() << "countdown timeout.";
         if (m_repeating) {

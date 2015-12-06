@@ -110,7 +110,7 @@ void DevicePluginEQ3::startMonitoringAutoDevices()
 
 DeviceManager::DeviceSetupStatus DevicePluginEQ3::setupDevice(Device *device)
 {
-    qCDebug(dcEQ3) << "setupDevice" << device->params();
+    qCDebug(dcEQ3) << "Setup device" << device->params();
 
     if(device->deviceClassId() == cubeDeviceClassId){
         foreach (MaxCube *cube, m_cubes.keys()) {
@@ -344,8 +344,6 @@ void DevicePluginEQ3::wallThermostatDataUpdated()
                 device->setStateValue(deviceModeStringStateTypeId, wallThermostat->deviceModeString());
                 device->setStateValue(desiredTemperatureStateTypeId, wallThermostat->setpointTemperature());
                 device->setStateValue(currentTemperatureStateTypeId, wallThermostat->currentTemperature());
-
-
             }
         }
     }

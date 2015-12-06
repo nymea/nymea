@@ -258,6 +258,7 @@ void TestRestDeviceClasses::discoverDevices()
     }
 
     QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     QNetworkReply *reply = nam->get(request);
     clientSpy.wait();
     QCOMPARE(clientSpy.count(), 1);
@@ -276,25 +277,25 @@ void TestRestDeviceClasses::discoverDevices()
     QVariantList foundDevices = jsonDoc.toVariant().toList();
     QCOMPARE(foundDevices.count(), resultCount);
 
-    qDebug() << jsonDoc.toJson();
+    //qDebug() << jsonDoc.toJson();
 
     // ADD the discovered device
     request.setUrl(QUrl("http://localhost:3333/api/v1/devices"));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     DeviceDescriptorId descriptorId = DeviceDescriptorId(foundDevices.first().toMap().value("id").toString());
-    qDebug() << descriptorId;
+    //qDebug() << descriptorId;
     params.clear();
     params.insert("deviceClassId", deviceClassId);
     params.insert("deviceDescriptorId", descriptorId.toString());
 
     clientSpy.clear();
     QByteArray payload = QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact);
-    qDebug() << payload;
+    //qDebug() << payload;
     reply = nam->post(request, payload);
     clientSpy.wait();
     QCOMPARE(clientSpy.count(), 1);
     data = reply->readAll();
-    qDebug() << data;
+    //qDebug() << data;
 
     statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     QCOMPARE(statusCode, expectedStatusCode);
@@ -309,7 +310,7 @@ void TestRestDeviceClasses::discoverDevices()
     // REMOVE added device
 
     request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
-    qDebug() << request.url().toString();
+    //qDebug() << request.url().toString();
     clientSpy.clear();
     reply = nam->deleteResource(request);
     clientSpy.wait();

@@ -66,7 +66,7 @@ DeviceManager::DeviceSetupStatus DevicePluginOsdomotics::setupDevice(Device *dev
 {
 
     if (device->deviceClassId() == rplRouterDeviceClassId) {
-        qCDebug(dcOsdomotics) << "setup RPL router" << device->paramValue("host").toString();
+        qCDebug(dcOsdomotics) << "Setup RPL router" << device->paramValue("host").toString();
         QHostAddress address(device->paramValue("host").toString());
 
         if (address.isNull()) {
@@ -83,7 +83,7 @@ DeviceManager::DeviceSetupStatus DevicePluginOsdomotics::setupDevice(Device *dev
 
         return DeviceManager::DeviceSetupStatusAsync;
     } else if (device->deviceClassId() == merkurNodeDeviceClassId) {
-        qCDebug(dcOsdomotics) << "setup Merkur node" << device->paramValue("host").toString();
+        qCDebug(dcOsdomotics) << "Setup Merkur node" << device->paramValue("host").toString();
         device->setParentId(DeviceId(device->paramValue("router id").toString()));
         return DeviceManager::DeviceSetupStatusSuccess;
     }
@@ -215,7 +215,7 @@ void DevicePluginOsdomotics::parseNodes(Device *device, const QByteArray &data)
     url.setHost(nodeAddress.toString());
     url.setPath("/.well-known/core");
 
-    qCDebug(dcOsdomotics) << "discover node on" << url.toString();
+    qCDebug(dcOsdomotics) << "Discover node on" << url.toString();
 
     CoapReply *reply = m_coap->get(CoapRequest(url));
     if (reply->isFinished()) {

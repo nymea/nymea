@@ -21,10 +21,11 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # restart the guh daemon after update if it's running
-service guhd status > /dev/null 2>&1
+systemctl daemon-reload
+systemctl status guhd > /dev/null 2>&1
 if [ $? -eq 0 ]; then
         #echo -n "Restart guh daemon..."
-        service guhd restart
+        systemctl restart guhd
         if [ $? -eq 0 ]; then
                 echo "Successfully restarted guh daemon."
         else

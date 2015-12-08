@@ -52,63 +52,30 @@ private slots:
 
 void TestRestPlugins::getPlugins()
 {
-    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
-    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
-
     // Get all plugins
-    QNetworkRequest request;
-    request.setUrl(QUrl("http://localhost:3333/api/v1/plugins"));
-    QNetworkReply *reply = nam->get(request);
-    clientSpy.wait();
-    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
+    QVariant response = getAndWait(QNetworkRequest(QUrl("http://localhost:3333/api/v1/plugins")));
+    QVariantList pluginList = response.toList();
+    QVERIFY2(pluginList.count() > 0, "Not enought plugins.");
 
-    QByteArray data = reply->readAll();
-    reply->deleteLater();
-
-    QJsonParseError error;
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
-    QCOMPARE(error.error, QJsonParseError::NoError);
-    QVariantList pluginList = jsonDoc.toVariant().toList();
-    QVERIFY2(pluginList.count() >= 1, "there should be at least one plugin.");
-
-    // Get each of thouse devices individualy
+    // Get each of thouse plugins individualy
     foreach (const QVariant &plugin, pluginList) {
         QVariantMap pluginMap = plugin.toMap();
-        QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/plugins/%1").arg(pluginMap.value("id").toString())));
-        request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
-        clientSpy.clear();
-        QNetworkReply *reply = nam->get(request);
-        clientSpy.wait();
-        QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
-        jsonDoc = QJsonDocument::fromJson(reply->readAll(), &error);
-        QCOMPARE(error.error, QJsonParseError::NoError);
-
-        reply->deleteLater();
+        if (!VendorId(pluginMap.value("id").toString()).isNull()) {
+            QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/plugins/%1").arg(pluginMap.value("id").toString())));
+            response = getAndWait(request);
+            QVERIFY2(!response.isNull(), "Could not get plugin");
+        }
     }
-    nam->deleteLater();
 }
 
 void TestRestPlugins::getPluginConfiguration()
 {
-    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
-    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
+    // Get plugin config
+    QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/plugins/%1/configuration").arg(mockPluginId.toString())));
+    QVariant response = getAndWait(request);
 
-    // Get all plugins
-    QNetworkRequest request;
-    request.setUrl(QUrl(QString("http://localhost:3333/api/v1/plugins/%1/configuration").arg(mockPluginId.toString())));
-    QNetworkReply *reply = nam->get(request);
-    clientSpy.wait();
-    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
-
-    QByteArray data = reply->readAll();
-    reply->deleteLater();
-
-    QJsonParseError error;
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
-    QCOMPARE(error.error, QJsonParseError::NoError);
-
-//    QVariantList configurations = jsonDoc.toVariant().toList();
-//    QVERIFY2(configurations.count() == 2, "there should be 2 configurations");
+    QVariantList configurations = response.toList();
+    QVERIFY2(configurations.count() == 2, "there should be 2 configurations");
 }
 
 //void TestRestPlugins::setPluginConfiguration_data()

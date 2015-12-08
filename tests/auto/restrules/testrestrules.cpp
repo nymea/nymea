@@ -899,43 +899,19 @@ void TestRestRules::enableDisableRule()
 
 void TestRestRules::getRules()
 {
-    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
-    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
-
     // Get all rules
-    QNetworkRequest request;
-    request.setUrl(QUrl("http://localhost:3333/api/v1/rules"));
-    QNetworkReply *reply = nam->get(request);
-    clientSpy.wait();
-    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
-    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    QCOMPARE(statusCode, 200);
-    QByteArray data = reply->readAll();
-    reply->deleteLater();
-
-    QJsonParseError error;
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
-    QCOMPARE(error.error, QJsonParseError::NoError);
-    QVariantList rulesList = jsonDoc.toVariant().toList();
+    QVariant response = getAndWait(QNetworkRequest(QUrl("http://localhost:3333/api/v1/rules")));
+    QVariantList rulesList = response.toList();
     QVERIFY2(rulesList.count() == 0, "there should be at least one vendor.");
 
-    // Get each of thouse rules individualy
     foreach (const QVariant &rule, rulesList) {
         QVariantMap ruleMap = rule.toMap();
         QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/rules/%1").arg(ruleMap.value("id").toString())));
         request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
-        clientSpy.clear();
-        QNetworkReply *reply = nam->get(request);
-        clientSpy.wait();
-        QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
-        int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-        QCOMPARE(statusCode, 200);
-        jsonDoc = QJsonDocument::fromJson(reply->readAll(), &error);
-        QCOMPARE(error.error, QJsonParseError::NoError);
-        reply->deleteLater();
 
+        response = getAndWait(request);
+        QVERIFY2(!response.isNull(), "Could not get rule");
     }
-    nam->deleteLater();
 }
 
 

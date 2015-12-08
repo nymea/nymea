@@ -38,6 +38,8 @@ extern DeviceClassId mockDeviceClassId;
 extern DeviceClassId mockDeviceAutoClassId;
 extern DeviceClassId mockPushButtonDeviceClassId;
 extern DeviceClassId mockDisplayPinDeviceClassId;
+extern DeviceClassId mockParentDeviceClassId;
+extern DeviceClassId mockChildDeviceClassId;
 extern DeviceClassId mockDeviceDiscoveryClassId;
 extern DeviceClassId mockDeviceAsyncSetupClassId;
 extern DeviceClassId mockDeviceBrokenClassId;
@@ -69,6 +71,13 @@ protected slots:
 protected:
     QVariant injectAndWait(const QString &method, const QVariantMap &params = QVariantMap());
     QVariant checkNotification(const QSignalSpy &spy, const QString &notification);
+
+    QVariant getAndWait(const QNetworkRequest &request, const int &expectedStatus = 200);
+    QVariant deleteAndWait(const QNetworkRequest &request, const int &expectedStatus = 200);
+    QVariant postAndWait(const QNetworkRequest &request, const QVariant &params, const int &expectedStatus = 200);
+    QVariant putAndWait(const QNetworkRequest &request, const QVariant &params, const int &expectedStatus = 200);
+
+    void verifyReply(QNetworkReply *reply, const QByteArray &data, const int &expectedStatus);
 
     bool enableNotifications();
     bool disableNotifications();

@@ -58,30 +58,14 @@ private slots:
 
 };
 
-
-
 #include "testrestdeviceclasses.moc"
-
 
 void TestRestDeviceClasses::getSupportedDevices()
 {
-    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
-    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
-
-    // Get all devices
-    QNetworkRequest request;
-    request.setUrl(QUrl("http://localhost:3333/api/v1/deviceclasses"));
-    QNetworkReply *reply = nam->get(request);
-    clientSpy.wait();
-    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
-    QByteArray data = reply->readAll();
-    reply->deleteLater();
-
-    QJsonParseError error;
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
-    QCOMPARE(error.error, QJsonParseError::NoError);
-    QVariantList deviceClassesList = jsonDoc.toVariant().toList();
-    QVERIFY2(deviceClassesList.count() >= 1, "not enought deviceclasses.");
+    // Get all deviceclasses
+    QVariant response = getAndWait(QNetworkRequest(QUrl("http://localhost:3333/api/v1/deviceclasses")));
+    QVariantList deviceClassesList = response.toList();
+    QVERIFY2(deviceClassesList.count() > 0, "Not enought deviceclasses.");
 
     // Get each of thouse devices individualy
     foreach (const QVariant &deviceClass, deviceClassesList) {
@@ -89,15 +73,10 @@ void TestRestDeviceClasses::getSupportedDevices()
         QNetworkRequest request;
         request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
         request.setUrl(QUrl(QString("http://localhost:3333/api/v1/deviceclasses/%1").arg(deviceClassMap.value("id").toString())));
-        clientSpy.clear();
-        QNetworkReply *reply = nam->get(request);
-        clientSpy.wait();
-        QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
-        jsonDoc = QJsonDocument::fromJson(reply->readAll(), &error);
-        QCOMPARE(error.error, QJsonParseError::NoError);
-        reply->deleteLater();
+
+        response = getAndWait(request);
+        QVERIFY2(!response.isNull(), "Could not get device");
     }
-    nam->deleteLater();
 }
 
 void TestRestDeviceClasses::getActionTypes_data()
@@ -105,14 +84,15 @@ void TestRestDeviceClasses::getActionTypes_data()
     QTest::addColumn<DeviceClassId>("deviceClassId");
     QTest::addColumn<ActionTypeId>("actionTypeId");
     QTest::addColumn<int>("expectedStatusCode");
+    QTest::addColumn<DeviceManager::DeviceError>("error");
 
-    QTest::newRow("all ActionTypes") << mockDeviceClassId << ActionTypeId() << 200;
-    QTest::newRow("ActionType async") << mockDeviceClassId << mockActionIdAsync << 200;
-    QTest::newRow("ActionType no params") << mockDeviceClassId << mockActionIdNoParams << 200;
-    QTest::newRow("ActionType failing") << mockDeviceClassId << mockActionIdFailing << 200;
-    QTest::newRow("ActionType with params") << mockDeviceClassId << mockActionIdWithParams << 200;
-    QTest::newRow("invalid DeviceClassId") << DeviceClassId::createDeviceClassId() << mockActionIdNoParams << 404;
-    QTest::newRow("invalid ActionTypeId") << mockDeviceClassId << ActionTypeId::createActionTypeId() << 404;
+    QTest::newRow("all ActionTypes") << mockDeviceClassId << ActionTypeId() << 200 << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("ActionType async") << mockDeviceClassId << mockActionIdAsync << 200 << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("ActionType no params") << mockDeviceClassId << mockActionIdNoParams << 200 << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("ActionType failing") << mockDeviceClassId << mockActionIdFailing << 200 << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("ActionType with params") << mockDeviceClassId << mockActionIdWithParams << 200 << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("invalid DeviceClassId") << DeviceClassId::createDeviceClassId() << mockActionIdNoParams << 404 << DeviceManager::DeviceErrorDeviceClassNotFound;
+    QTest::newRow("invalid ActionTypeId") << mockDeviceClassId << ActionTypeId::createActionTypeId() << 404 << DeviceManager::DeviceErrorActionTypeNotFound;
 }
 
 void TestRestDeviceClasses::getActionTypes()
@@ -120,9 +100,7 @@ void TestRestDeviceClasses::getActionTypes()
     QFETCH(DeviceClassId, deviceClassId);
     QFETCH(ActionTypeId, actionTypeId);
     QFETCH(int, expectedStatusCode);
-
-    QNetworkAccessManager *nam = new QNetworkAccessManager();
-    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
+    QFETCH(DeviceManager::DeviceError, error);
 
     QNetworkRequest request;
     if (!actionTypeId.isNull()) {
@@ -132,12 +110,11 @@ void TestRestDeviceClasses::getActionTypes()
         request.setUrl(QUrl(QString("http://localhost:3333/api/v1/deviceclasses/%1/actiontypes").arg(deviceClassId.toString())));
     }
 
-    QNetworkReply *reply = nam->get(request);
-    clientSpy.wait();
-    QCOMPARE(clientSpy.count(), 1);
-    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    QCOMPARE(statusCode, expectedStatusCode);
-    reply->deleteLater();
+    QVariant response = getAndWait(request, expectedStatusCode);
+    QVERIFY2(!response.isNull(), "Could not read get action type response");
+    if (expectedStatusCode != 200)
+        QCOMPARE(JsonTypes::deviceErrorToString(error), response.toMap().value("error").toString());
+
 }
 
 void TestRestDeviceClasses::getStateTypes_data()
@@ -145,12 +122,13 @@ void TestRestDeviceClasses::getStateTypes_data()
     QTest::addColumn<DeviceClassId>("deviceClassId");
     QTest::addColumn<StateTypeId>("stateTypeId");
     QTest::addColumn<int>("expectedStatusCode");
+    QTest::addColumn<DeviceManager::DeviceError>("error");
 
-    QTest::newRow("all ActionTypes") << mockDeviceClassId << StateTypeId() << 200;
-    QTest::newRow("StateType bool") << mockDeviceClassId << mockBoolStateId << 200;
-    QTest::newRow("StateType int") << mockDeviceClassId << mockIntStateId << 200;
-    QTest::newRow("invalid DeviceClassId") << DeviceClassId::createDeviceClassId() << mockBoolStateId << 404;
-    QTest::newRow("invalid StateTypeId") << mockDeviceClassId << StateTypeId::createStateTypeId() << 404;
+    QTest::newRow("all ActionTypes") << mockDeviceClassId << StateTypeId() << 200 << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("StateType bool") << mockDeviceClassId << mockBoolStateId << 200 << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("StateType int") << mockDeviceClassId << mockIntStateId << 200 << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("invalid DeviceClassId") << DeviceClassId::createDeviceClassId() << mockBoolStateId << 404 << DeviceManager::DeviceErrorDeviceClassNotFound;
+    QTest::newRow("invalid StateTypeId") << mockDeviceClassId << StateTypeId::createStateTypeId() << 404 << DeviceManager::DeviceErrorStateTypeNotFound;
 }
 
 void TestRestDeviceClasses::getStateTypes()
@@ -158,9 +136,7 @@ void TestRestDeviceClasses::getStateTypes()
     QFETCH(DeviceClassId, deviceClassId);
     QFETCH(StateTypeId, stateTypeId);
     QFETCH(int, expectedStatusCode);
-
-    QNetworkAccessManager *nam = new QNetworkAccessManager();
-    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
+    QFETCH(DeviceManager::DeviceError, error);
 
     QNetworkRequest request;
     if (!stateTypeId.isNull()) {
@@ -170,12 +146,11 @@ void TestRestDeviceClasses::getStateTypes()
         request.setUrl(QUrl(QString("http://localhost:3333/api/v1/deviceclasses/%1/statetypes").arg(deviceClassId.toString())));
     }
 
-    QNetworkReply *reply = nam->get(request);
-    clientSpy.wait();
-    QCOMPARE(clientSpy.count(), 1);
-    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    QCOMPARE(statusCode, expectedStatusCode);
-    reply->deleteLater();
+    QVariant response = getAndWait(request, expectedStatusCode);
+    QVERIFY2(!response.isNull(), "Could not read get action type response");
+    if (expectedStatusCode != 200)
+        QCOMPARE(JsonTypes::deviceErrorToString(error), response.toMap().value("error").toString());
+
 }
 
 void TestRestDeviceClasses::getEventTypes_data()
@@ -183,12 +158,13 @@ void TestRestDeviceClasses::getEventTypes_data()
     QTest::addColumn<DeviceClassId>("deviceClassId");
     QTest::addColumn<EventTypeId>("eventTypeId");
     QTest::addColumn<int>("expectedStatusCode");
+    QTest::addColumn<DeviceManager::DeviceError>("error");
 
-    QTest::newRow("all ActionTypes") << mockDeviceClassId << EventTypeId() << 200;
-    QTest::newRow("EventType 1") << mockDeviceClassId << mockEvent1Id << 200;
-    QTest::newRow("EventType 2") << mockDeviceClassId << mockEvent2Id << 200;
-    QTest::newRow("invalid DeviceClassId") << DeviceClassId::createDeviceClassId() << mockEvent2Id << 404;
-    QTest::newRow("invalid EventTypeId") << mockDeviceClassId << EventTypeId::createEventTypeId() << 404;
+    QTest::newRow("all ActionTypes") << mockDeviceClassId << EventTypeId() << 200 << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("EventType 1") << mockDeviceClassId << mockEvent1Id << 200 << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("EventType 2") << mockDeviceClassId << mockEvent2Id << 200 << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("invalid DeviceClassId") << DeviceClassId::createDeviceClassId() << mockEvent2Id << 404 << DeviceManager::DeviceErrorDeviceClassNotFound;
+    QTest::newRow("invalid EventTypeId") << mockDeviceClassId << EventTypeId::createEventTypeId() << 404 << DeviceManager::DeviceErrorEventTypeNotFound;
 }
 
 void TestRestDeviceClasses::getEventTypes()
@@ -196,9 +172,7 @@ void TestRestDeviceClasses::getEventTypes()
     QFETCH(DeviceClassId, deviceClassId);
     QFETCH(EventTypeId, eventTypeId);
     QFETCH(int, expectedStatusCode);
-
-    QNetworkAccessManager *nam = new QNetworkAccessManager();
-    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
+    QFETCH(DeviceManager::DeviceError, error);
 
     QNetworkRequest request;
     if (!eventTypeId.isNull()) {
@@ -208,12 +182,11 @@ void TestRestDeviceClasses::getEventTypes()
         request.setUrl(QUrl(QString("http://localhost:3333/api/v1/deviceclasses/%1/eventtypes").arg(deviceClassId.toString())));
     }
 
-    QNetworkReply *reply = nam->get(request);
-    clientSpy.wait();
-    QCOMPARE(clientSpy.count(), 1);
-    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    QCOMPARE(statusCode, expectedStatusCode);
-    reply->deleteLater();
+    QVariant response = getAndWait(request, expectedStatusCode);
+    QVERIFY2(!response.isNull(), "Could not read get action type response");
+    if (expectedStatusCode != 200)
+        QCOMPARE(JsonTypes::deviceErrorToString(error), response.toMap().value("error").toString());
+
 }
 
 void TestRestDeviceClasses::discoverDevices_data()
@@ -222,6 +195,7 @@ void TestRestDeviceClasses::discoverDevices_data()
     QTest::addColumn<int>("resultCount");
     QTest::addColumn<QVariantList>("discoveryParams");
     QTest::addColumn<int>("expectedStatusCode");
+    QTest::addColumn<DeviceManager::DeviceError>("error");
 
     QVariantList discoveryParams;
     QVariantMap resultCountParam;
@@ -229,9 +203,9 @@ void TestRestDeviceClasses::discoverDevices_data()
     resultCountParam.insert("value", 1);
     discoveryParams.append(resultCountParam);
 
-    QTest::newRow("valid deviceClassId without params") << mockDeviceClassId << 2 << QVariantList() << 200;
-    QTest::newRow("valid deviceClassId with params") << mockDeviceClassId << 1 << discoveryParams << 200;
-    QTest::newRow("invalid deviceClassId") << DeviceClassId::createDeviceClassId() << 0 << QVariantList() << 404;
+    QTest::newRow("valid deviceClassId without params") << mockDeviceClassId << 2 << QVariantList() << 200 << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("valid deviceClassId with params") << mockDeviceClassId << 1 << discoveryParams << 200 << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("invalid deviceClassId") << DeviceClassId::createDeviceClassId() << 0 << QVariantList() << 404 << DeviceManager::DeviceErrorDeviceClassNotFound;
 }
 
 void TestRestDeviceClasses::discoverDevices()
@@ -240,85 +214,51 @@ void TestRestDeviceClasses::discoverDevices()
     QFETCH(int, resultCount);
     QFETCH(QVariantList, discoveryParams);
     QFETCH(int, expectedStatusCode);
+    QFETCH(DeviceManager::DeviceError, error);
 
     QVariantMap params;
     params.insert("deviceClassId", deviceClassId);
     params.insert("discoveryParams", discoveryParams);
 
-    QNetworkAccessManager *nam = new QNetworkAccessManager();
-    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
-
     // DISCOVER
     QUrl url(QString("http://localhost:3333/api/v1/deviceclasses/%1/discover").arg(deviceClassId.toString()));
-
     if (!discoveryParams.isEmpty()) {
         QUrlQuery query;
         query.addQueryItem("params", QJsonDocument::fromVariant(discoveryParams).toJson(QJsonDocument::Compact));
         url.setQuery(query);
     }
 
-    QNetworkRequest request(url);
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
-    QNetworkReply *reply = nam->get(request);
-    clientSpy.wait();
-    QCOMPARE(clientSpy.count(), 1);
-    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    QCOMPARE(statusCode, expectedStatusCode);
-    QByteArray data = reply->readAll();
-    reply->deleteLater();
+    QVariant response = getAndWait(QNetworkRequest(url), expectedStatusCode);
+    QVERIFY2(!response.isNull(), "Could not read response");
 
-    if (expectedStatusCode != 200)
+    if (expectedStatusCode != 200) {
+        QCOMPARE(JsonTypes::deviceErrorToString(error), response.toMap().value("error").toString());
         return;
+    }
 
     // check response
-    QJsonParseError error;
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
-    QCOMPARE(error.error, QJsonParseError::NoError);
-    QVariantList foundDevices = jsonDoc.toVariant().toList();
+    QVariantList foundDevices = response.toList();
     QCOMPARE(foundDevices.count(), resultCount);
 
-    //qDebug() << jsonDoc.toJson();
-
     // ADD the discovered device
-    request.setUrl(QUrl("http://localhost:3333/api/v1/devices"));
+    QNetworkRequest request(QUrl("http://localhost:3333/api/v1/devices"));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     DeviceDescriptorId descriptorId = DeviceDescriptorId(foundDevices.first().toMap().value("id").toString());
-    //qDebug() << descriptorId;
+
     params.clear();
     params.insert("deviceClassId", deviceClassId);
     params.insert("deviceDescriptorId", descriptorId.toString());
 
-    clientSpy.clear();
-    QByteArray payload = QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact);
-    //qDebug() << payload;
-    reply = nam->post(request, payload);
-    clientSpy.wait();
-    QCOMPARE(clientSpy.count(), 1);
-    data = reply->readAll();
-    //qDebug() << data;
+    response = postAndWait(request, params, expectedStatusCode);
+    QVERIFY2(!response.isNull(), "Could not read response");
 
-    statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    QCOMPARE(statusCode, expectedStatusCode);
-    jsonDoc = QJsonDocument::fromJson(data, &error);
-    QCOMPARE(error.error, QJsonParseError::NoError);
-    reply->deleteLater();
-
-    QVariantMap response = jsonDoc.toVariant().toMap();
-
-    DeviceId deviceId = DeviceId(response.value("id").toString());
+    DeviceId deviceId = DeviceId(response.toMap().value("id").toString());
     QVERIFY2(!deviceId.isNull(), "got invalid device id");
-    // REMOVE added device
 
-    request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
-    //qDebug() << request.url().toString();
-    clientSpy.clear();
-    reply = nam->deleteResource(request);
-    clientSpy.wait();
-    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
-    statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    reply->deleteLater();
-    QCOMPARE(statusCode, expectedStatusCode);
-    nam->deleteLater();
+    // REMOVE added device
+    request.setUrl(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
+    response = deleteAndWait(request);
+    QVERIFY2(!response.isNull(), "Could not delete device");
 }
 
 QTEST_MAIN(TestRestDeviceClasses)

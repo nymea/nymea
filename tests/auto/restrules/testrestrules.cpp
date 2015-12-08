@@ -48,6 +48,8 @@ private:
     void verifyRuleExecuted(const ActionTypeId &actionTypeId);
     void verifyRuleNotExecuted();
 
+    void triggerMockEvent();
+
 private slots:
     void addRemoveRules_data();
     void addRemoveRules();
@@ -137,6 +139,18 @@ void TestRestRules::verifyRuleNotExecuted()
     QByteArray actionHistory = reply->readAll();
     qDebug() << "have action history" << actionHistory;
     QVERIFY2(actionHistory.isEmpty(), "Action is triggered while it should not have been.");
+    reply->deleteLater();
+}
+
+void TestRestRules::triggerMockEvent()
+{
+    // trigger event in mock device
+    QNetworkAccessManager nam;
+    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QNetworkRequest request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1Id.toString())));
+    QNetworkReply *reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
     reply->deleteLater();
 }
 
@@ -806,92 +820,43 @@ void TestRestRules::enableDisableRule()
     actions.append(action);
     addRuleParams.insert("actions", actions);
 
-    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
-    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
-
     // ADD rule
     QNetworkRequest request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/rules")));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
-    QNetworkReply *reply = nam->post(request, QJsonDocument::fromVariant(addRuleParams).toJson(QJsonDocument::Compact));
-    clientSpy.wait();
-    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
-    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    QCOMPARE(statusCode, 200);
-    QByteArray data = reply->readAll();
-    reply->deleteLater();
 
-    QJsonParseError error;
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
-    QCOMPARE(error.error, QJsonParseError::NoError);
-
-    RuleId ruleId = RuleId(jsonDoc.toVariant().toMap().value("id").toString());
+    QVariant response = postAndWait(request, addRuleParams);
+    RuleId ruleId = RuleId(response.toMap().value("id").toString());
     QVERIFY(!ruleId.isNull());
 
     // ENABLE rule
-    clientSpy.clear();
     request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/rules/%1/enable").arg(ruleId.toString())));
-    reply = nam->post(request, QByteArray());
-    clientSpy.wait();
-    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
-    statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    QCOMPARE(statusCode, 200);
-    reply->deleteLater();
+    response = postAndWait(request, QVariant());
+    QVERIFY2(!response.isNull(), "Could not read response");
 
     // Trigger an event
-
-    // trigger event in mock device
-    clientSpy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1Id.toString())));
-    reply = nam->get(request);
-    clientSpy.wait();
-    QCOMPARE(clientSpy.count(), 1);
-    reply->deleteLater();
-
+    triggerMockEvent();
     verifyRuleExecuted(mockActionIdNoParams);
 
     cleanupMockHistory();
 
     // DISABLE the rule
-    clientSpy.clear();
     request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/rules/%1/disable").arg(ruleId.toString())));
-    reply = nam->post(request, QByteArray());
-    clientSpy.wait();
-    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
-    statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    QCOMPARE(statusCode, 200);
-    reply->deleteLater();
-
+    response = postAndWait(request, QVariant());
+    QVERIFY2(!response.isNull(), "Could not read response");
 
     // trigger event in mock device
-    clientSpy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1Id.toString())));
-    reply = nam->get(request);
-    clientSpy.wait();
-    QCOMPARE(clientSpy.count(), 1);
-    reply->deleteLater();
-
+    triggerMockEvent();
     verifyRuleNotExecuted();
 
     cleanupMockHistory();
 
     // ENABLE again
-    clientSpy.clear();
     request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/rules/%1/enable").arg(ruleId.toString())));
-    reply = nam->post(request, QByteArray());
-    clientSpy.wait();
-    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
-    statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    QCOMPARE(statusCode, 200);
-    reply->deleteLater();
+    response = postAndWait(request, QVariant());
+    QVERIFY2(!response.isNull(), "Could not read response");
 
     // trigger event in mock device
-    clientSpy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1Id.toString())));
-    reply = nam->get(request);
-    clientSpy.wait();
-    QCOMPARE(clientSpy.count(), 1);
-    reply->deleteLater();
-
+    triggerMockEvent();
     verifyRuleExecuted(mockActionIdNoParams);
 
     cleanupRules();
@@ -902,7 +867,7 @@ void TestRestRules::getRules()
     // Get all rules
     QVariant response = getAndWait(QNetworkRequest(QUrl("http://localhost:3333/api/v1/rules")));
     QVariantList rulesList = response.toList();
-    QVERIFY2(rulesList.count() == 0, "there should be at least one vendor.");
+    QVERIFY2(rulesList.count() == 0, "Not enought rules");
 
     foreach (const QVariant &rule, rulesList) {
         QVariantMap ruleMap = rule.toMap();

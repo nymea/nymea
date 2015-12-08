@@ -41,6 +41,8 @@ public:
 
     QList<LogEntry> logEntries(const LogFilter &filter = LogFilter()) const;
 
+    void clearDatabase();
+
 signals:
     void logEntryAdded(const LogEntry &logEntry);
     void logDatabaseUpdated();

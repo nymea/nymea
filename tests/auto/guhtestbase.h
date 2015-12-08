@@ -106,6 +106,10 @@ protected:
         verifyError(response, "deviceError", JsonTypes::deviceErrorToString(error));
     }
 
+    inline void verifyLoggingError(const QVariant &response, Logging::LoggingError error = Logging::LoggingErrorNoError) {
+        verifyError(response, "loggingError", JsonTypes::loggingErrorToString(error));
+    }
+
     inline void verifyParams(const QVariantList &requestList, const QVariantList &responseList, bool allRequired = true)
     {
         if (allRequired)
@@ -131,6 +135,7 @@ protected:
     }
 
     void restartServer();
+    void clearLoggingDatabase();
 
 protected:
     PluginId mockPluginId = PluginId("727a4a9a-c187-446f-aadf-f1b2220607d1");

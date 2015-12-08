@@ -16,5 +16,6 @@ SUBDIRS = versioning \
         restrules \
         websocketserver \
         coap \
+        logging \
 
 

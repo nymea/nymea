@@ -184,6 +184,20 @@ QList<LogEntry> LogEngine::logEntries(const LogFilter &filter) const
     return results;
 }
 
+/*! Removes all entries from the database. This method will be used for the tests. */
+void LogEngine::clearDatabase()
+{
+    qCWarning(dcLogEngine) << "Clear logging database.";
+
+    QSqlQuery query;
+    QString queryDeleteString = QString("DELETE FROM entries;");
+    if (!query.exec(queryDeleteString)) {
+        qCWarning(dcLogEngine) << "Could not clear logging database. Driver error:" << query.lastError().driverText() << "Database error:" << query.lastError().databaseText();
+    }
+
+    emit logDatabaseUpdated();
+}
+
 void LogEngine::logSystemEvent(bool active, Logging::LoggingLevel level)
 {
     LogEntry entry(level, Logging::LoggingSourceSystem);

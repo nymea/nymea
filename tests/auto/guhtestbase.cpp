@@ -24,6 +24,7 @@
 #include "guhcore.h"
 #include "guhsettings.h"
 #include "devicemanager.h"
+#include "logging/logengine.h"
 #include "jsontypes.h"
 
 #include <QVariantMap>
@@ -341,5 +342,10 @@ void GuhTestBase::restartServer()
     QSignalSpy spy(GuhCore::instance()->deviceManager(), SIGNAL(loaded()));
     spy.wait();
     m_mockTcpServer = MockTcpServer::servers().first();
+}
+
+void GuhTestBase::clearLoggingDatabase()
+{
+    GuhCore::instance()->logEngine()->clearDatabase();
 }
 

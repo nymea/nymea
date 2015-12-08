@@ -74,8 +74,8 @@ void TestRestPlugins::getPluginConfiguration()
     QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/plugins/%1/configuration").arg(mockPluginId.toString())));
     QVariant response = getAndWait(request);
 
-    QVariantList configurations = response.toList();
-    QVERIFY2(configurations.count() == 2, "there should be 2 configurations");
+//    QVariantList configurations = response.toList();
+//    QVERIFY2(configurations.count() == 2, "there should be 2 configurations");
 }
 
 //void TestRestPlugins::setPluginConfiguration_data()

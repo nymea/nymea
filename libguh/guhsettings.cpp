@@ -73,15 +73,12 @@ GuhSettings::GuhSettings(const SettingsRole &role, QObject *parent):
         if (settingsPrefix == "guh-test") {
             settingsFile = "/tmp/" + settingsPrefix + "/test-devices.conf";
             m_settings = new QSettings(settingsFile, QSettings::NativeFormat, this);
-            qDebug() << "Created test-devices settings" << m_settings->fileName();
         } else if (rootPrivilege) {
             settingsFile = "/etc/" + settingsPrefix + "/devices.conf";
             m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
-            qDebug() << "Created device settings" << m_settings->fileName();
         } else {
             settingsFile = QDir::homePath() + "/.config/" + settingsPrefix + "/devices.conf";
             m_settings = new QSettings(settingsFile, QSettings::NativeFormat, this);
-            qDebug() << "Created device settings" << m_settings->fileName();
         }
         break;
     case SettingsRoleRules:
@@ -89,15 +86,12 @@ GuhSettings::GuhSettings(const SettingsRole &role, QObject *parent):
         if (settingsPrefix == "guh-test") {
             settingsFile = "/tmp/" + settingsPrefix + "/test-rules.conf";
             m_settings = new QSettings(settingsFile, QSettings::NativeFormat, this);
-            qDebug() << "Created test-rules settings" << m_settings->fileName();
         } else if (rootPrivilege) {
             settingsFile = "/etc/" + settingsPrefix + "/rules.conf";
             m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
-            qDebug() << "Created rule settings" << m_settings->fileName();
         } else {
             settingsFile = QDir::homePath() + "/.config/" + settingsPrefix + "/rules.conf";
             m_settings = new QSettings(settingsFile, QSettings::NativeFormat, this);
-            qDebug() << "Created rule settings" << m_settings->fileName();
         }
         break;
     case SettingsRolePlugins:
@@ -105,22 +99,18 @@ GuhSettings::GuhSettings(const SettingsRole &role, QObject *parent):
         if (settingsPrefix == "guh-test") {
             settingsFile = "/tmp/" + settingsPrefix + "/test-plugins.conf";
             m_settings = new QSettings(settingsFile, QSettings::NativeFormat, this);
-            qDebug() << "Created test-plugins settings" << m_settings->fileName();
         } else if (rootPrivilege) {
             settingsFile = "/etc/" + settingsPrefix + "/plugins.conf";
             m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
-            qDebug() << "Created plugin settings" << m_settings->fileName();
         } else {
             settingsFile = QDir::homePath() + "/.config/" + settingsPrefix + "/plugins.conf";
             m_settings = new QSettings(settingsFile, QSettings::NativeFormat, this);
-            qDebug() << "Created plugin settings" << m_settings->fileName();
         }
         break;
     case SettingsRoleGlobal:
         // this file schould always be readable and should never be written
         settingsFile = "/etc/guh/guhd.conf";
         m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
-        qDebug() << "Created test guhd settings" << m_settings->fileName();
         break;
     default:
         break;

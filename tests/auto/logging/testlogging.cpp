@@ -43,10 +43,7 @@ private slots:
     void initLogs();
 
     void eventLogs();
-
-    void actionLog_data();
     void actionLog();
-
 
 };
 
@@ -60,10 +57,6 @@ void TestLogging::initLogs()
     QVariantList logEntries = response.toMap().value("params").toMap().value("logEntries").toList();
     qDebug() << "Got" << logEntries.count() << "logs";
     QVERIFY(logEntries.count() > 0);
-
-//    foreach (const QVariant &logEntryVariant, logEntries) {
-//        qDebug() << QJsonDocument::fromVariant(logEntryVariant).toJson();
-//    }
 
     clearLoggingDatabase();
 
@@ -94,14 +87,14 @@ void TestLogging::eventLogs()
     QNetworkReply *reply = nam.get(request);
 
     // Lets wait for the notification
-    clientSpy.wait(1000);
+    clientSpy.wait(200);
     QVariant notification = checkNotification(clientSpy, "Logging.LogEntryAdded");
     QVERIFY(!notification.isNull());
     reply->deleteLater();
 
     QVariantMap logEntry = notification.toMap().value("params").toMap().value("logEntry").toMap();
 
-    // Make sure the event contains all the stuff we expect
+    // Make sure the notification contains all the stuff we expect
     QCOMPARE(logEntry.value("typeId").toString(), mockEvent1Id.toString());
     QCOMPARE(logEntry.value("deviceId").toString(), device->id().toString());
     QCOMPARE(logEntry.value("eventType").toString(), JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeTrigger));
@@ -112,6 +105,8 @@ void TestLogging::eventLogs()
     QVariantMap params;
     params.insert("deviceIds", QVariantList() << device->id());
     params.insert("loggingSources", QVariantList() << JsonTypes::loggingSourceToString(Logging::LoggingSourceEvents));
+    params.insert("eventTypes", QVariantList() << JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeTrigger));
+    params.insert("typeIds", QVariantList() << mockEvent1Id);
 
     QVariant response = injectAndWait("Logging.GetLogEntries", params);
     verifyLoggingError(response);
@@ -121,13 +116,92 @@ void TestLogging::eventLogs()
 
 }
 
-void TestLogging::actionLog_data()
-{
-
-}
-
 void TestLogging::actionLog()
 {
+    QVariantList actionParams;
+    QVariantMap param1;
+    param1.insert("name", "mockActionParam1");
+    param1.insert("value", 7);
+    actionParams.append(param1);
+    QVariantMap param2;
+    param2.insert("name", "mockActionParam2");
+    param2.insert("value", true);
+    actionParams.append(param2);
+
+    QVariantMap params;
+    params.insert("actionTypeId", mockActionIdWithParams);
+    params.insert("deviceId", m_mockDeviceId);
+    params.insert("params", actionParams);
+
+    QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+
+    // EXECUTE with params
+    QVariant response = injectAndWait("Actions.ExecuteAction", params);
+    verifyDeviceError(response);
+
+    // Lets wait for the notification
+    clientSpy.wait(200);
+    QVariant notification = checkNotification(clientSpy, "Logging.LogEntryAdded");
+    QVERIFY(!notification.isNull());
+
+    QVariantMap logEntry = notification.toMap().value("params").toMap().value("logEntry").toMap();
+
+    qDebug() << logEntry;
+
+    // Make sure the notification contains all the stuff we expect
+    QCOMPARE(logEntry.value("typeId").toString(), mockActionIdWithParams.toString());
+    QCOMPARE(logEntry.value("deviceId").toString(), m_mockDeviceId.toString());
+    QCOMPARE(logEntry.value("eventType").toString(), JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeTrigger));
+    QCOMPARE(logEntry.value("source").toString(), JsonTypes::loggingSourceToString(Logging::LoggingSourceActions));
+    QCOMPARE(logEntry.value("loggingLevel").toString(), JsonTypes::loggingLevelToString(Logging::LoggingLevelInfo));
+
+    // EXECUTE without params
+    params.clear(); clientSpy.clear();
+    params.insert("actionTypeId", mockActionIdNoParams);
+    params.insert("deviceId", m_mockDeviceId);
+    response = injectAndWait("Actions.ExecuteAction", params);
+    verifyDeviceError(response);
+
+    clientSpy.wait(200);
+    notification = checkNotification(clientSpy, "Logging.LogEntryAdded");
+    QVERIFY(!notification.isNull());
+
+    // get this logentry with filter
+    params.clear();
+    params.insert("deviceIds", QVariantList() << m_mockDeviceId);
+    params.insert("loggingSources", QVariantList() << JsonTypes::loggingSourceToString(Logging::LoggingSourceActions));
+    params.insert("eventTypes", QVariantList() << JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeTrigger));
+    params.insert("values", QVariantList() << "7, true");
+
+    response = injectAndWait("Logging.GetLogEntries", params);
+    verifyLoggingError(response);
+
+    QVariantList logEntries = response.toMap().value("params").toMap().value("logEntries").toList();
+    QVERIFY(logEntries.count() == 1);
+
+    params.clear();
+    params.insert("deviceIds", QVariantList() << m_mockDeviceId);
+    params.insert("loggingSources", QVariantList() << JsonTypes::loggingSourceToString(Logging::LoggingSourceActions));
+    params.insert("eventTypes", QVariantList() << JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeTrigger));
+    params.insert("typeIds", QVariantList() << mockActionIdNoParams);
+
+    response = injectAndWait("Logging.GetLogEntries", params);
+    verifyLoggingError(response);
+
+    logEntries = response.toMap().value("params").toMap().value("logEntries").toList();
+    QVERIFY(logEntries.count() == 1);
+
+    params.clear();
+    params.insert("deviceIds", QVariantList() << m_mockDeviceId);
+    params.insert("loggingSources", QVariantList() << JsonTypes::loggingSourceToString(Logging::LoggingSourceActions));
+    params.insert("eventTypes", QVariantList() << JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeTrigger));
+    params.insert("typeIds", QVariantList() << mockActionIdNoParams << mockActionIdWithParams);
+
+    response = injectAndWait("Logging.GetLogEntries", params);
+    verifyLoggingError(response);
+
+    logEntries = response.toMap().value("params").toMap().value("logEntries").toList();
+    QVERIFY(logEntries.count() == 2);
 
 }
 

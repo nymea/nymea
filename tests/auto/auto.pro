@@ -15,5 +15,6 @@ SUBDIRS = versioning \
         restvendors \
         restrules \
         websocketserver \
+        coap \
 
 

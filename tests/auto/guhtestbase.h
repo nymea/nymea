@@ -23,6 +23,7 @@
 #define GUHTESTBASE_H
 
 #include "typeutils.h"
+#include "logging/logging.h"
 #include "mocktcpserver.h"
 #include "devicemanager.h"
 #include "ruleengine.h"

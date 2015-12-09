@@ -45,9 +45,9 @@ private slots:
     void eventLogs();
     void actionLog();
 
+    // this has to be the last test
+    void removeDevice();
 };
-
-
 
 void TestLogging::initLogs()
 {
@@ -114,6 +114,8 @@ void TestLogging::eventLogs()
     QVariantList logEntries = response.toMap().value("params").toMap().value("logEntries").toList();
     QVERIFY(logEntries.count() == 1);
 
+    // disable notifications
+    QCOMPARE(disableNotifications(), true);
 }
 
 void TestLogging::actionLog()
@@ -133,6 +135,9 @@ void TestLogging::actionLog()
     params.insert("deviceId", m_mockDeviceId);
     params.insert("params", actionParams);
 
+    // enable notifications
+    QCOMPARE(enableNotifications(), true);
+
     QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
     // EXECUTE with params
@@ -145,8 +150,6 @@ void TestLogging::actionLog()
     QVERIFY(!notification.isNull());
 
     QVariantMap logEntry = notification.toMap().value("params").toMap().value("logEntry").toMap();
-
-    qDebug() << logEntry;
 
     // Make sure the notification contains all the stuff we expect
     QCOMPARE(logEntry.value("typeId").toString(), mockActionIdWithParams.toString());
@@ -179,6 +182,41 @@ void TestLogging::actionLog()
     QVariantList logEntries = response.toMap().value("params").toMap().value("logEntries").toList();
     QVERIFY(logEntries.count() == 1);
 
+    // EXECUTE broken action
+    params.clear(); clientSpy.clear();
+    params.insert("actionTypeId", mockActionIdFailing);
+    params.insert("deviceId", m_mockDeviceId);
+    response = injectAndWait("Actions.ExecuteAction", params);
+    verifyDeviceError(response, DeviceManager::DeviceErrorSetupFailed);
+
+    clientSpy.wait(200);
+    notification = checkNotification(clientSpy, "Logging.LogEntryAdded");
+    QVERIFY(!notification.isNull());
+
+    logEntry = notification.toMap().value("params").toMap().value("logEntry").toMap();
+
+    // Make sure the notification contains all the stuff we expect
+    QCOMPARE(logEntry.value("typeId").toString(), mockActionIdFailing.toString());
+    QCOMPARE(logEntry.value("deviceId").toString(), m_mockDeviceId.toString());
+    QCOMPARE(logEntry.value("eventType").toString(), JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeTrigger));
+    QCOMPARE(logEntry.value("source").toString(), JsonTypes::loggingSourceToString(Logging::LoggingSourceActions));
+    QCOMPARE(logEntry.value("loggingLevel").toString(), JsonTypes::loggingLevelToString(Logging::LoggingLevelAlert));
+    QCOMPARE(logEntry.value("errorCode").toString(), JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorSetupFailed));
+
+    // get this logentry with filter
+    params.clear();
+    params.insert("deviceIds", QVariantList() << m_mockDeviceId);
+    params.insert("loggingSources", QVariantList() << JsonTypes::loggingSourceToString(Logging::LoggingSourceActions));
+    params.insert("eventTypes", QVariantList() << JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeTrigger));
+    params.insert("values", QVariantList() << "7, true");
+
+    response = injectAndWait("Logging.GetLogEntries", params);
+    verifyLoggingError(response);
+
+    logEntries = response.toMap().value("params").toMap().value("logEntries").toList();
+    QVERIFY(logEntries.count() == 1);
+
+    // check different filters
     params.clear();
     params.insert("deviceIds", QVariantList() << m_mockDeviceId);
     params.insert("loggingSources", QVariantList() << JsonTypes::loggingSourceToString(Logging::LoggingSourceActions));
@@ -195,14 +233,53 @@ void TestLogging::actionLog()
     params.insert("deviceIds", QVariantList() << m_mockDeviceId);
     params.insert("loggingSources", QVariantList() << JsonTypes::loggingSourceToString(Logging::LoggingSourceActions));
     params.insert("eventTypes", QVariantList() << JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeTrigger));
-    params.insert("typeIds", QVariantList() << mockActionIdNoParams << mockActionIdWithParams);
+    params.insert("typeIds", QVariantList() << mockActionIdNoParams << mockActionIdWithParams << mockActionIdFailing);
 
     response = injectAndWait("Logging.GetLogEntries", params);
     verifyLoggingError(response);
 
     logEntries = response.toMap().value("params").toMap().value("logEntries").toList();
-    QVERIFY(logEntries.count() == 2);
+    QVERIFY(logEntries.count() == 3);
 
+    // disable notifications
+    QCOMPARE(disableNotifications(), true);
+}
+
+void TestLogging::removeDevice()
+{
+    // enable notifications
+    QCOMPARE(enableNotifications(), true);
+
+    // get this logentry with filter
+    QVariantMap params;
+    params.insert("deviceIds", QVariantList() << m_mockDeviceId);
+    QVariant response = injectAndWait("Logging.GetLogEntries", params);
+    verifyLoggingError(response);
+    QVariantList logEntries = response.toMap().value("params").toMap().value("logEntries").toList();
+    QVERIFY(logEntries.count() > 0);
+
+    QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+
+    // Remove the device
+    params.clear();
+    params.insert("deviceId", m_mockDeviceId);
+    response = injectAndWait("Devices.RemoveConfiguredDevice", params);
+    verifyDeviceError(response);
+
+    clientSpy.wait(200);
+    QVariant notification = checkNotification(clientSpy, "Logging.LogDatabaseUpdated");
+    QVERIFY(!notification.isNull());
+
+    // verify that the logs from this device where removed from the db
+    params.clear();
+    params.insert("deviceIds", QVariantList() << m_mockDeviceId);
+    response = injectAndWait("Logging.GetLogEntries", params);
+    verifyLoggingError(response);
+    logEntries = response.toMap().value("params").toMap().value("logEntries").toList();
+    QCOMPARE(logEntries.count(), 0);
+
+    // disable notifications
+    QCOMPARE(disableNotifications(), true);
 }
 
 #include "testlogging.moc"

@@ -41,6 +41,10 @@ private:
 
 private slots:
     void initLogs();
+    void systemLogs();
+
+    void invalidFilter_data();
+    void invalidFilter();
 
     void eventLogs();
     void actionLog();
@@ -62,10 +66,75 @@ void TestLogging::initLogs()
 
     response = injectAndWait("Logging.GetLogEntries");
     verifyLoggingError(response);
-
     logEntries = response.toMap().value("params").toMap().value("logEntries").toList();
     QVERIFY(logEntries.count() == 0);
+
+    restartServer();
 }
+
+void TestLogging::systemLogs()
+{
+    // check the active system log at boot
+    QVariantMap params;
+    params.insert("loggingSources", QVariantList() << JsonTypes::loggingSourceToString(Logging::LoggingSourceSystem));
+    params.insert("eventTypes", QVariantList() << JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeActiveChange));
+
+    // there should be 2 logs, one for shutdown, one for startup (from server restart)
+    QVariant response = injectAndWait("Logging.GetLogEntries", params);
+    verifyLoggingError(response);
+    QVariantList logEntries = response.toMap().value("params").toMap().value("logEntries").toList();
+    QVERIFY(logEntries.count() == 2);
+
+    QVariantMap logEntryShutdown = logEntries.first().toMap();
+
+    QCOMPARE(logEntryShutdown.value("active").toBool(), false);
+    QCOMPARE(logEntryShutdown.value("eventType").toString(), JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeActiveChange));
+    QCOMPARE(logEntryShutdown.value("source").toString(), JsonTypes::loggingSourceToString(Logging::LoggingSourceSystem));
+    QCOMPARE(logEntryShutdown.value("loggingLevel").toString(), JsonTypes::loggingLevelToString(Logging::LoggingLevelInfo));
+
+    QVariantMap logEntryStartup = logEntries.last().toMap();
+
+    QCOMPARE(logEntryStartup.value("active").toBool(), true);
+    QCOMPARE(logEntryStartup.value("eventType").toString(), JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeActiveChange));
+    QCOMPARE(logEntryStartup.value("source").toString(), JsonTypes::loggingSourceToString(Logging::LoggingSourceSystem));
+    QCOMPARE(logEntryStartup.value("loggingLevel").toString(), JsonTypes::loggingLevelToString(Logging::LoggingLevelInfo));
+}
+
+void TestLogging::invalidFilter_data()
+{
+    QVariantMap invalidSourcesFilter;
+    invalidSourcesFilter.insert("loggingSources", QVariantList() << "bla");
+
+    QVariantMap invalidFilterValue;
+    invalidFilterValue.insert("loggingSource", QVariantList() << "bla");
+
+    QVariantMap invalidTypeIds;
+    invalidTypeIds.insert("typeId", QVariantList() << "bla" << "blub");
+
+    QVariantMap invalidEventTypes;
+    invalidEventTypes.insert("eventTypes", QVariantList() << JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeTrigger) << "blub");
+
+    QTest::addColumn<QVariantMap>("filter");
+
+    QTest::newRow("Invalid source") << invalidSourcesFilter;
+    QTest::newRow("Invalid filter value") << invalidFilterValue;
+    QTest::newRow("Invalid typeIds") << invalidTypeIds;
+    QTest::newRow("Invalid eventTypes") << invalidEventTypes;
+}
+
+void TestLogging::invalidFilter()
+{
+    QFETCH(QVariantMap, filter);
+    QVariant response = injectAndWait("Logging.GetLogEntries", filter);
+    QVERIFY(!response.isNull());
+    //qDebug() << QJsonDocument::fromVariant(response).toJson();
+
+    // verify json error
+    QVERIFY(response.toMap().value("status").toString() == "error");
+    qDebug() << response.toMap().value("error").toString();
+
+}
+
 
 void TestLogging::eventLogs()
 {

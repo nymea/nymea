@@ -59,6 +59,9 @@ private slots:
     void getFiles();
 
     void getServerDescription();
+
+    void getIcons_data();
+    void getIcons();
 };
 
 void TestWebserver::httpVersion()
@@ -168,8 +171,8 @@ void TestWebserver::checkAllowedMethodCall()
     QFETCH(QString, method);
     QFETCH(int, expectedStatusCode);
 
-    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
-    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
+    QNetworkAccessManager nam;
+    QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
 
     QNetworkRequest request;
     request.setUrl(QUrl("http://localhost:3333"));
@@ -178,25 +181,25 @@ void TestWebserver::checkAllowedMethodCall()
     clientSpy.clear();
 
     if (method == "GET") {
-        reply = nam->get(request);
+        reply = nam.get(request);
     } else if(method == "PUT") {
-        reply = nam->put(request, QByteArray("Hello guh!"));
+        reply = nam.put(request, QByteArray("Hello guh!"));
     } else if(method == "POST") {
-        reply = nam->post(request, QByteArray("Hello guh!"));
+        reply = nam.post(request, QByteArray("Hello guh!"));
     } else if(method == "DELETE") {
-        reply = nam->deleteResource(request);
+        reply = nam.deleteResource(request);
     } else if(method == "HEAD") {
-        reply = nam->head(request);
+        reply = nam.head(request);
     } else if(method == "CONNECT") {
-        reply = nam->sendCustomRequest(request, "CONNECT");
+        reply = nam.sendCustomRequest(request, "CONNECT");
     } else if(method == "OPTIONS") {
         QNetworkRequest req(QUrl("http://localhost:3333/api/v1/devices"));
-        reply = nam->sendCustomRequest(req, "OPTIONS");
+        reply = nam.sendCustomRequest(req, "OPTIONS");
     } else if(method == "TRACE") {
-        reply = nam->sendCustomRequest(request, "TRACE");
+        reply = nam.sendCustomRequest(request, "TRACE");
     } else {
         // just to make shore there will be a reply to delete
-        reply = nam->get(request);
+        reply = nam.get(request);
     }
 
     clientSpy.wait();
@@ -209,7 +212,6 @@ void TestWebserver::checkAllowedMethodCall()
     }
 
     reply->deleteLater();
-    nam->deleteLater();
 }
 
 void TestWebserver::badRequests_data()
@@ -294,12 +296,12 @@ void TestWebserver::getOptions()
 {
     QFETCH(QString, path);
 
-    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
-    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
+    QNetworkAccessManager nam;
+    QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
 
     QNetworkRequest request;
     request.setUrl(QUrl("http://localhost:3333" + path));
-    QNetworkReply *reply = nam->sendCustomRequest(request, "OPTIONS");
+    QNetworkReply *reply = nam.sendCustomRequest(request, "OPTIONS");
 
     clientSpy.wait();
     QCOMPARE(clientSpy.count(), 1);
@@ -310,7 +312,6 @@ void TestWebserver::getOptions()
     QCOMPARE(statusCode, 200);
 
     reply->deleteLater();
-    nam->deleteLater();
 }
 
 void TestWebserver::getFiles_data()
@@ -333,12 +334,12 @@ void TestWebserver::getFiles()
     QFETCH(QString, query);
     QFETCH(int, expectedStatusCode);
 
-    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
-    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
+    QNetworkAccessManager nam;
+    QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
 
     QNetworkRequest request;
     request.setUrl(QUrl("http://localhost:3333" + query));
-    QNetworkReply *reply = nam->get(request);
+    QNetworkReply *reply = nam.get(request);
 
     clientSpy.wait();
     QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
@@ -349,17 +350,16 @@ void TestWebserver::getFiles()
     QCOMPARE(statusCode, expectedStatusCode);
 
     reply->deleteLater();
-    nam->deleteLater();
 }
 
 void TestWebserver::getServerDescription()
 {
-    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
-    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
+    QNetworkAccessManager nam;
+    QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
 
     QNetworkRequest request;
     request.setUrl(QUrl("http://localhost:3333/server.xml"));
-    QNetworkReply *reply = nam->get(request);
+    QNetworkReply *reply = nam.get(request);
 
     clientSpy.wait();
     QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
@@ -369,7 +369,44 @@ void TestWebserver::getServerDescription()
     QVERIFY(xmlReader.parse(xmlSource));
 
     reply->deleteLater();
-    nam->deleteLater();
+}
+
+void TestWebserver::getIcons_data()
+{
+    QTest::addColumn<QString>("query");
+    QTest::addColumn<int>("iconSize");
+
+    QTest::newRow("get /icons/guh-logo-8x8.png") << "/icons/guh-logo-8x8.png" << 228;
+    QTest::newRow("get /icons/guh-logo-16x16.png") << "/icons/guh-logo-16x16.png" << 392;
+    QTest::newRow("get /icons/guh-logo-22x22.png") << "/icons/guh-logo-22x22.png" << 512;
+    QTest::newRow("get /icons/guh-logo-32x32.png") << "/icons/guh-logo-32x32.png" << 747;
+    QTest::newRow("get /icons/guh-logo-48x48.png") << "/icons/guh-logo-48x48.png" << 1282;
+    QTest::newRow("get /icons/guh-logo-64x64.png") << "/icons/guh-logo-64x64.png" << 1825;
+    QTest::newRow("get /icons/guh-logo-120x120.png") << "/icons/guh-logo-120x120.png" << 4090;
+    QTest::newRow("get /icons/guh-logo-128x128.png") << "/icons/guh-logo-128x128.png" << 4453;
+    QTest::newRow("get /icons/guh-logo-256x256.png") << "/icons/guh-logo-256x256.png" << 10763;
+    QTest::newRow("get /icons/guh-logo-512x512.png") << "/icons/guh-logo-512x512.png" << 24287;
+}
+
+void TestWebserver::getIcons()
+{
+    QFETCH(QString, query);
+    QFETCH(int, iconSize);
+
+    QNetworkAccessManager nam;
+    QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
+
+    QNetworkRequest request;
+    request.setUrl(QUrl("http://localhost:3333" + query));
+    QNetworkReply *reply = nam.get(request);
+
+    clientSpy.wait();
+    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
+    QByteArray iconData = reply->readAll();
+    QVERIFY(!iconData.isEmpty());
+    QCOMPARE(iconData.size(), iconSize);
+
+    reply->deleteLater();
 }
 
 #include "testwebserver.moc"

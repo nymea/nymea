@@ -80,6 +80,7 @@
 #include <QJsonDocument>
 #include <QNetworkInterface>
 #include <QXmlStreamWriter>
+#include <QCoreApplication>
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QSslSocket>
@@ -115,6 +116,11 @@ WebServer::WebServer(const QSslConfiguration &sslConfiguration, QObject *parent)
     qCDebug(dcWebServer) << "Publish webinterface folder" << m_webinterfaceDir.path();
     if (!m_webinterfaceDir.exists())
         qCWarning(dcWebServer) << "Web interface public folder" << m_webinterfaceDir.path() << "does not exist.";
+
+    if (QCoreApplication::instance()->organizationName() == "guh-test") {
+        m_webinterfaceDir = QDir(QCoreApplication::applicationDirPath());
+        qCWarning(dcWebServer) << "Using public folder" << m_webinterfaceDir.path();
+    }
 
     // check SSL
     if (m_useSsl && m_sslConfiguration.isNull())

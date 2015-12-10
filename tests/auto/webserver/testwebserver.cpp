@@ -33,6 +33,7 @@
 #include <QCoreApplication>
 #include <QMetaType>
 #include <QByteArray>
+#include <QXmlReader>
 
 using namespace guhserver;
 
@@ -57,8 +58,7 @@ private slots:
     void getFiles_data();
     void getFiles();
 
-    void upnpDiscovery();
-
+    void getServerDescription();
 };
 
 void TestWebserver::httpVersion()
@@ -99,7 +99,6 @@ void TestWebserver::httpVersion()
 
 void TestWebserver::multiPackageMessage()
 {
-
     QTcpSocket *socket = new QTcpSocket(this);
     socket->connectToHost(QHostAddress("127.0.0.1"), 3333);
     bool connected = socket->waitForConnected(1000);
@@ -208,6 +207,7 @@ void TestWebserver::checkAllowedMethodCall()
         QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), expectedStatusCode);
         QVERIFY2(reply->hasRawHeader("Allow"), "405 should contain the allowed methods header");
     }
+
     reply->deleteLater();
     nam->deleteLater();
 }
@@ -310,6 +310,7 @@ void TestWebserver::getOptions()
     QCOMPARE(statusCode, 200);
 
     reply->deleteLater();
+    nam->deleteLater();
 }
 
 void TestWebserver::getFiles_data()
@@ -318,6 +319,10 @@ void TestWebserver::getFiles_data()
     QTest::addColumn<int>("expectedStatusCode");
 
     QTest::newRow("get /etc/passwd") << "/etc/passwd" << 404;
+    QTest::newRow("get /blub/blub/blabla") << "/etc/passwd" << 404;
+    QTest::newRow("get /../../etc/passwd") << "/../../etc/passwd" << 404;
+    QTest::newRow("get /../../") << "/../../" << 403;
+    QTest::newRow("get /../") << "/../" << 403;
     QTest::newRow("get /etc/guh/guhd.conf") << "/etc/guh/guhd.conf" << 404;
     QTest::newRow("get /etc/sudoers") <<  "/etc/sudoers" << 404;
     QTest::newRow("get /root/.ssh/id_rsa.pub") <<  "/root/.ssh/id_rsa.pub" << 404;
@@ -344,40 +349,27 @@ void TestWebserver::getFiles()
     QCOMPARE(statusCode, expectedStatusCode);
 
     reply->deleteLater();
+    nam->deleteLater();
 }
 
-void TestWebserver::upnpDiscovery()
+void TestWebserver::getServerDescription()
 {
-    QUdpSocket *socket = new QUdpSocket(this);
-    socket->setSocketOption(QAbstractSocket::MulticastTtlOption,QVariant(1));
-    socket->setSocketOption(QAbstractSocket::MulticastLoopbackOption,QVariant(1));
+    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
+    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
 
-    QHostAddress host = QHostAddress("239.255.255.250");
+    QNetworkRequest request;
+    request.setUrl(QUrl("http://localhost:3333/server.xml"));
+    QNetworkReply *reply = nam->get(request);
 
-    QVERIFY(socket->bind(QHostAddress::AnyIPv4, 1900, QUdpSocket::ShareAddress));
-    QVERIFY(socket->joinMulticastGroup(host));
+    clientSpy.wait();
+    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
 
-    //QSignalSpy spy(socket, SIGNAL(readyRead()));
+    QXmlSimpleReader xmlReader; QXmlInputSource xmlSource;
+    xmlSource.setData(reply->readAll());
+    QVERIFY(xmlReader.parse(xmlSource));
 
-    QByteArray ssdpSearchMessage = QByteArray("M-SEARCH * HTTP/1.1\r\n"
-                                              "HOST:239.255.255.250:1900\r\n"
-                                              "MAN:\"ssdp:discover\"\r\n"
-                                              "MX:4\r\n"
-                                              "ST: ssdp:all\r\n\r\n");
-
-    socket->writeDatagram(ssdpSearchMessage, host, 1900);
-    socket->waitForBytesWritten();
-
-    socket->waitForReadyRead(2000);
-
-    qDebug() << socket->readAll();
-
-    //QVERIFY(spy.count() > 0);
-
-
-
-
-//    discovery->deleteLater();
+    reply->deleteLater();
+    nam->deleteLater();
 }
 
 #include "testwebserver.moc"

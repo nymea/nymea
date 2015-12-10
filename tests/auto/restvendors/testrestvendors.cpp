@@ -43,6 +43,11 @@ class TestRestVendors: public GuhTestBase
 
 private slots:
     void getVendors();
+    void invalidMethod();
+    void invalidPath();
+
+    void invalidVendor_data();
+    void invalidVendor();
 };
 
 void TestRestVendors::getVendors()
@@ -63,6 +68,66 @@ void TestRestVendors::getVendors()
     }
 }
 
+void TestRestVendors::invalidMethod()
+{
+    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
+    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
+
+    QNetworkRequest request;
+    request.setUrl(QUrl("http://localhost:3333/api/v1/vendors"));
+    QNetworkReply *reply = nam->post(request, QByteArray());
+
+    clientSpy.wait();
+    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
+
+    bool ok = false;
+    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(&ok);
+    QVERIFY2(ok, "Could not convert statuscode from response to int");
+    QCOMPARE(statusCode, 400);
+
+    reply->deleteLater();
+    nam->deleteLater();
+}
+
+void TestRestVendors::invalidPath()
+{
+    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
+    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
+
+    QNetworkRequest request;
+    request.setUrl(QUrl("http://localhost:3333/api/v1/vendors/" + QUuid::createUuid().toString() + "/" + QUuid::createUuid().toString()));
+    QNetworkReply *reply = nam->get(request);
+
+    clientSpy.wait();
+    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
+
+    bool ok = false;
+    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(&ok);
+    QVERIFY2(ok, "Could not convert statuscode from response to int");
+    QCOMPARE(statusCode, 501);
+
+    reply->deleteLater();
+    nam->deleteLater();
+}
+
+void TestRestVendors::invalidVendor_data()
+{
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<int>("expectedStatusCode");
+
+    QTest::newRow("invalid VendorId") << QUuid::createUuid().toString() << 404;
+    QTest::newRow("invalid VendorId format") << "uuid" << 400;
+}
+
+void TestRestVendors::invalidVendor()
+{
+    QFETCH(QString, path);
+    QFETCH(int, expectedStatusCode);
+
+    QNetworkRequest request(QUrl("http://localhost:3333/api/v1/vendors/" + path));
+    QVariant response = getAndWait(request, expectedStatusCode);
+    QCOMPARE(JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorVendorNotFound), response.toMap().value("error").toString());
+}
 
 #include "testrestvendors.moc"
 QTEST_MAIN(TestRestVendors)

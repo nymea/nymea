@@ -43,6 +43,11 @@ class TestRestPlugins: public GuhTestBase
 
 private slots:
     void getPlugins();
+    void invalidMethod();
+    void invalidPath();
+
+    void invalidPlugin_data();
+    void invalidPlugin();
 
     void getPluginConfiguration();
 
@@ -66,6 +71,67 @@ void TestRestPlugins::getPlugins()
             QVERIFY2(!response.isNull(), "Could not get plugin");
         }
     }
+}
+
+void TestRestPlugins::invalidMethod()
+{
+    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
+    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
+
+    QNetworkRequest request;
+    request.setUrl(QUrl("http://localhost:3333/api/v1/plugins"));
+    QNetworkReply *reply = nam->deleteResource(request);
+
+    clientSpy.wait();
+    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
+
+    bool ok = false;
+    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(&ok);
+    QVERIFY2(ok, "Could not convert statuscode from response to int");
+    QCOMPARE(statusCode, 400);
+
+    reply->deleteLater();
+    nam->deleteLater();
+}
+
+void TestRestPlugins::invalidPath()
+{
+    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
+    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
+
+    QNetworkRequest request;
+    request.setUrl(QUrl("http://localhost:3333/api/v1/plugins/" + QUuid::createUuid().toString() + "/" + QUuid::createUuid().toString()));
+    QNetworkReply *reply = nam->get(request);
+
+    clientSpy.wait();
+    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
+
+    bool ok = false;
+    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(&ok);
+    QVERIFY2(ok, "Could not convert statuscode from response to int");
+    QCOMPARE(statusCode, 501);
+
+    reply->deleteLater();
+    nam->deleteLater();
+}
+
+void TestRestPlugins::invalidPlugin_data()
+{
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<int>("expectedStatusCode");
+
+    QTest::newRow("invalid PluginId") << QUuid::createUuid().toString() << 404;
+    QTest::newRow("invalid PluginId format") << "uuid" << 400;
+}
+
+void TestRestPlugins::invalidPlugin()
+{
+    QFETCH(QString, path);
+    QFETCH(int, expectedStatusCode);
+
+    QNetworkRequest request(QUrl("http://localhost:3333/api/v1/vendors/" + path));
+    QVariant response = getAndWait(request, expectedStatusCode);
+    QCOMPARE(JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorVendorNotFound), response.toMap().value("error").toString());
 }
 
 void TestRestPlugins::getPluginConfiguration()

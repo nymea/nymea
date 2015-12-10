@@ -57,9 +57,7 @@ private slots:
     void getFiles_data();
     void getFiles();
 
-private:
-    // for debugging
-    void printResponse(QNetworkReply *reply);
+    void upnpDiscovery();
 
 };
 
@@ -204,8 +202,6 @@ void TestWebserver::checkAllowedMethodCall()
 
     clientSpy.wait();
 
-    printResponse(reply);
-
     QCOMPARE(clientSpy.count(), 1);
 
     if (expectedStatusCode == 405){
@@ -342,8 +338,6 @@ void TestWebserver::getFiles()
     clientSpy.wait();
     QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
 
-    printResponse(reply);
-
     bool ok = false;
     int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(&ok);
     QVERIFY2(ok, "Could not convert statuscode from response to int");
@@ -352,18 +346,38 @@ void TestWebserver::getFiles()
     reply->deleteLater();
 }
 
-void TestWebserver::printResponse(QNetworkReply *reply)
+void TestWebserver::upnpDiscovery()
 {
-    qDebug() << "-------------------------------";
-    qDebug() << "Response header:";
-    qDebug() << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() << reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString();
-    foreach (const  QNetworkReply::RawHeaderPair &headerPair, reply->rawHeaderPairs()) {
-        qDebug() << headerPair.first << ":" << headerPair.second;
-    }
-    qDebug() << "-------------------------------";
-    qDebug() << "Response payload";
-    qDebug() << reply->readAll();
-    qDebug() << "-------------------------------";
+    QUdpSocket *socket = new QUdpSocket(this);
+    socket->setSocketOption(QAbstractSocket::MulticastTtlOption,QVariant(1));
+    socket->setSocketOption(QAbstractSocket::MulticastLoopbackOption,QVariant(1));
+
+    QHostAddress host = QHostAddress("239.255.255.250");
+
+    QVERIFY(socket->bind(QHostAddress::AnyIPv4, 1900, QUdpSocket::ShareAddress));
+    QVERIFY(socket->joinMulticastGroup(host));
+
+    //QSignalSpy spy(socket, SIGNAL(readyRead()));
+
+    QByteArray ssdpSearchMessage = QByteArray("M-SEARCH * HTTP/1.1\r\n"
+                                              "HOST:239.255.255.250:1900\r\n"
+                                              "MAN:\"ssdp:discover\"\r\n"
+                                              "MX:4\r\n"
+                                              "ST: ssdp:all\r\n\r\n");
+
+    socket->writeDatagram(ssdpSearchMessage, host, 1900);
+    socket->waitForBytesWritten();
+
+    socket->waitForReadyRead(2000);
+
+    qDebug() << socket->readAll();
+
+    //QVERIFY(spy.count() > 0);
+
+
+
+
+//    discovery->deleteLater();
 }
 
 #include "testwebserver.moc"

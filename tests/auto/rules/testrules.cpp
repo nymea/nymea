@@ -48,8 +48,8 @@ private:
 private slots:
 
     void cleanup();
-
     void emptyRule();
+    void getInvalidRule();
 
     void addRemoveRules_data();
     void addRemoveRules();
@@ -110,6 +110,14 @@ void TestRules::emptyRule()
     params.insert("actions", QVariantList());
     QVariant response = injectAndWait("Rules.AddRule", params);
     verifyRuleError(response, RuleEngine::RuleErrorMissingParameter);
+}
+
+void TestRules::getInvalidRule()
+{
+    QVariantMap params;
+    params.insert("ruleId", QUuid::createUuid());
+    QVariant response = injectAndWait("Rules.GetRuleDetails", params);
+    verifyRuleError(response, RuleEngine::RuleErrorRuleNotFound);
 }
 
 void TestRules::verifyRuleExecuted(const ActionTypeId &actionTypeId)
@@ -721,7 +729,7 @@ void TestRules::editRules()
         QVERIFY2(exitActions == replyExitActions, "ExitActions don't match");
     }
 
-    // Remove th rule
+    // Remove the rule
     params.clear();
     params.insert("ruleId", ruleId);
     response = injectAndWait("Rules.RemoveRule", params);

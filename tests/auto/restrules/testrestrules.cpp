@@ -54,6 +54,8 @@ private:
 
 private slots:
     void getRules();
+    void invalidMethod();
+    void invalidPath();
 
     void checkOptionCall();
 
@@ -205,6 +207,46 @@ void TestRestRules::getRules()
         response = getAndWait(request);
         QVERIFY2(!response.isNull(), "Could not get rule");
     }
+}
+
+void TestRestRules::invalidMethod()
+{
+    QNetworkAccessManager nam;
+    QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
+
+    QNetworkRequest request;
+    request.setUrl(QUrl("http://localhost:3333/api/v1/rules"));
+    QNetworkReply *reply = nam.sendCustomRequest(request, "TRACE");
+
+    clientSpy.wait();
+    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
+
+    bool ok = false;
+    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(&ok);
+    QVERIFY2(ok, "Could not convert statuscode from response to int");
+    QCOMPARE(statusCode, 405);
+
+    reply->deleteLater();
+}
+
+void TestRestRules::invalidPath()
+{
+    QNetworkAccessManager nam;
+    QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
+
+    QNetworkRequest request;
+    request.setUrl(QUrl("http://localhost:3333/api/v1/rules/" + QUuid::createUuid().toString() + "/" + QUuid::createUuid().toString()));
+    QNetworkReply *reply = nam.get(request);
+
+    clientSpy.wait();
+    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
+
+    bool ok = false;
+    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(&ok);
+    QVERIFY2(ok, "Could not convert statuscode from response to int");
+    QCOMPARE(statusCode, 404);
+
+    reply->deleteLater();
 }
 
 void TestRestRules::checkOptionCall()

@@ -276,9 +276,10 @@ HttpReply *RulesResource::addRule(const QByteArray &payload) const
 
     QString name = params.value("name", QString()).toString();
     bool enabled = params.value("enabled", true).toBool();
+    bool executable = params.value("executable", true).toBool();
 
     RuleId newRuleId = RuleId::createRuleId();
-    RuleEngine::RuleError status = GuhCore::instance()->addRule(newRuleId, name, eventDescriptorList, stateEvaluator, actions, exitActions, enabled);
+    RuleEngine::RuleError status = GuhCore::instance()->addRule(newRuleId, name, eventDescriptorList, stateEvaluator, actions, exitActions, enabled, executable);
 
     if (status ==  RuleEngine::RuleErrorNoError) {
         QVariant returns = JsonTypes::packRule(GuhCore::instance()->findRule(newRuleId));

@@ -48,8 +48,8 @@ private slots:
 void TestStates::getStateTypes()
 {
     QVariantMap params;
-    params.insert("deviceId", m_mockDeviceId);
-    QVariant response = injectAndWait("Devices.GetStateValues", params);
+    params.insert("deviceClassId", mockDeviceClassId);
+    QVariant response = injectAndWait("Devices.GetStateTypes", params);
     verifyDeviceError(response);
 }
 

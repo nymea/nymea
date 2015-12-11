@@ -62,6 +62,8 @@ private slots:
     void executeRuleActions_data();
     void executeRuleActions();
 
+    void findRule();
+
     void removeInvalidRule();
 
     void loadStoreConfig();
@@ -846,6 +848,31 @@ void TestRules::executeRuleActions()
     removeParams.insert("ruleId", ruleId);
     response = injectAndWait("Rules.RemoveRule", removeParams);
     verifyRuleError(response);
+}
+
+void TestRules::findRule()
+{
+    // ADD rule
+    QVariantMap params = validIntStateBasedRule("Executeable", true, true).toMap();
+    QVariant response = injectAndWait("Rules.AddRule", params);
+    verifyRuleError(response);
+
+    RuleId ruleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
+    QVERIFY(!ruleId.isNull());
+
+    params.clear();
+    params.insert("deviceId", m_mockDeviceId);
+    response = injectAndWait("Rules.FindRules", params);
+
+    QCOMPARE(response.toMap().value("params").toMap().value("ruleIds").toList().count(), 1);
+    QCOMPARE(response.toMap().value("params").toMap().value("ruleIds").toList().first().toString(), ruleId.toString());
+
+    // REMOVE rule
+    QVariantMap removeParams;
+    removeParams.insert("ruleId", ruleId);
+    response = injectAndWait("Rules.RemoveRule", removeParams);
+    verifyRuleError(response);
+
 }
 
 void TestRules::removeInvalidRule()

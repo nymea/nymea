@@ -41,12 +41,15 @@ public:
 
     QList<LogEntry> logEntries(const LogFilter &filter = LogFilter()) const;
 
+    void clearDatabase();
+
 signals:
     void logEntryAdded(const LogEntry &logEntry);
     void logDatabaseUpdated();
 
 private:
     QSqlDatabase m_db;
+    int m_dbMaxSize;
 
     void initDB();
     void appendLogEntry(const LogEntry &entry);

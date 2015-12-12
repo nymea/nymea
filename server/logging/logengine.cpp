@@ -105,6 +105,7 @@
 #include "loggingcategories.h"
 #include "logging.h"
 
+#include <QCoreApplication>
 #include <QSqlDatabase>
 #include <QSqlDriver>
 #include <QSqlQuery>
@@ -114,7 +115,6 @@
 #include <QDateTime>
 
 #define DB_SCHEMA_VERSION 2
-#define DB_MAX_SIZE 8000
 
 namespace guhserver {
 
@@ -122,9 +122,14 @@ namespace guhserver {
 LogEngine::LogEngine(QObject *parent):
     QObject(parent)
 {
-
     m_db = QSqlDatabase::addDatabase("QSQLITE");
     m_db.setDatabaseName(GuhSettings::logPath());
+    m_dbMaxSize = 8000;
+
+    if (QCoreApplication::instance()->organizationName() == "guh-test") {
+        m_dbMaxSize = 20;
+        qCDebug(dcLogEngine) << "Set logging dab max size to" << m_dbMaxSize << "for testing.";
+    }
 
     qCDebug(dcLogEngine) << "Opening logging database" << m_db.databaseName();
 
@@ -182,6 +187,20 @@ QList<LogEntry> LogEngine::logEntries(const LogFilter &filter) const
     qCDebug(dcLogEngine) << "Fetched" << results.count() << "entries for db query:" << queryCall;
 
     return results;
+}
+
+/*! Removes all entries from the database. This method will be used for the tests. */
+void LogEngine::clearDatabase()
+{
+    qCWarning(dcLogEngine) << "Clear logging database.";
+
+    QSqlQuery query;
+    QString queryDeleteString = QString("DELETE FROM entries;");
+    if (!query.exec(queryDeleteString)) {
+        qCWarning(dcLogEngine) << "Could not clear logging database. Driver error:" << query.lastError().driverText() << "Database error:" << query.lastError().databaseText();
+    }
+
+    emit logDatabaseUpdated();
 }
 
 void LogEngine::logSystemEvent(bool active, Logging::LoggingLevel level)
@@ -283,6 +302,7 @@ void LogEngine::appendLogEntry(const LogEntry &entry)
     QSqlQuery query;
     if (!query.exec(queryString)) {
         qCWarning(dcLogEngine) << "Error writing log entry. Driver error:" << query.lastError().driverText() << "Database error:" << query.lastError().databaseText();
+        qCWarning(dcLogEngine) << entry;
         return;
     }
 
@@ -303,10 +323,10 @@ void LogEngine::checkDBSize()
         numRows = query.at() + 1;
     }
 
-    if (numRows >= DB_MAX_SIZE) {
-        // keep only the latest DB_MAX_SIZE entries
-        qCDebug(dcLogEngine) << "Deleting oldest entries and keep only the latest" << DB_MAX_SIZE << "entries.";
-        QString queryDeleteString = QString("DELETE FROM entries WHERE ROWID IN (SELECT ROWID FROM entries ORDER BY timestamp DESC LIMIT -1 OFFSET %1);").arg(QString::number(DB_MAX_SIZE));
+    if (numRows >= m_dbMaxSize) {
+        // keep only the latest m_dbMaxSize entries
+        qCDebug(dcLogEngine) << "Deleting oldest entries and keep only the latest" << m_dbMaxSize << "entries.";
+        QString queryDeleteString = QString("DELETE FROM entries WHERE ROWID IN (SELECT ROWID FROM entries ORDER BY timestamp DESC LIMIT -1 OFFSET %1);").arg(QString::number(m_dbMaxSize));
         if (!query.exec(queryDeleteString)) {
             qCWarning(dcLogEngine) << "Error deleting oldest log entries to keep size. Driver error:" << query.lastError().driverText() << "Database error:" << query.lastError().databaseText();
         } else {
@@ -378,7 +398,7 @@ void LogEngine::initDB()
             qCWarning(dcLogEngine) << "Error creating log table in database. Driver error:" << query.lastError().driverText() << "Database error:" << query.lastError().databaseText();
         }
     }
-    qCDebug(dcLogEngine) << "Initialized logging DB successfully.";
+    qCDebug(dcLogEngine) << "Initialized logging DB successfully. (maximum DB size:" << m_dbMaxSize << ")";
 }
 
 }

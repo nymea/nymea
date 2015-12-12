@@ -43,6 +43,11 @@ class TestRestPlugins: public GuhTestBase
 
 private slots:
     void getPlugins();
+    void invalidMethod();
+    void invalidPath();
+
+    void invalidPlugin_data();
+    void invalidPlugin();
 
     void getPluginConfiguration();
 
@@ -52,62 +57,90 @@ private slots:
 
 void TestRestPlugins::getPlugins()
 {
-    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
-    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
-
     // Get all plugins
-    QNetworkRequest request;
-    request.setUrl(QUrl("http://localhost:3333/api/v1/plugins"));
-    QNetworkReply *reply = nam->get(request);
-    clientSpy.wait();
-    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
+    QVariant response = getAndWait(QNetworkRequest(QUrl("http://localhost:3333/api/v1/plugins")));
+    QVariantList pluginList = response.toList();
+    QVERIFY2(pluginList.count() > 0, "Not enought plugins.");
 
-    QByteArray data = reply->readAll();
-    reply->deleteLater();
-
-    QJsonParseError error;
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
-    QCOMPARE(error.error, QJsonParseError::NoError);
-    QVariantList pluginList = jsonDoc.toVariant().toList();
-    QVERIFY2(pluginList.count() >= 1, "there should be at least one plugin.");
-
-    // Get each of thouse devices individualy
+    // Get each of thouse plugins individualy
     foreach (const QVariant &plugin, pluginList) {
         QVariantMap pluginMap = plugin.toMap();
-        QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/plugins/%1").arg(pluginMap.value("id").toString())));
-        request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
-        clientSpy.clear();
-        QNetworkReply *reply = nam->get(request);
-        clientSpy.wait();
-        QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
-        jsonDoc = QJsonDocument::fromJson(reply->readAll(), &error);
-        QCOMPARE(error.error, QJsonParseError::NoError);
-
-        reply->deleteLater();
+        if (!VendorId(pluginMap.value("id").toString()).isNull()) {
+            QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/plugins/%1").arg(pluginMap.value("id").toString())));
+            response = getAndWait(request);
+            QVERIFY2(!response.isNull(), "Could not get plugin");
+        }
     }
-    nam->deleteLater();
 }
 
-void TestRestPlugins::getPluginConfiguration()
+void TestRestPlugins::invalidMethod()
 {
     QNetworkAccessManager *nam = new QNetworkAccessManager(this);
     QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
 
-    // Get all plugins
     QNetworkRequest request;
-    request.setUrl(QUrl(QString("http://localhost:3333/api/v1/plugins/%1/configuration").arg(mockPluginId.toString())));
-    QNetworkReply *reply = nam->get(request);
+    request.setUrl(QUrl("http://localhost:3333/api/v1/plugins"));
+    QNetworkReply *reply = nam->deleteResource(request);
+
     clientSpy.wait();
     QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
 
-    QByteArray data = reply->readAll();
+    bool ok = false;
+    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(&ok);
+    QVERIFY2(ok, "Could not convert statuscode from response to int");
+    QCOMPARE(statusCode, 400);
+
     reply->deleteLater();
+    nam->deleteLater();
+}
 
-    QJsonParseError error;
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
-    QCOMPARE(error.error, QJsonParseError::NoError);
+void TestRestPlugins::invalidPath()
+{
+    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
+    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
 
-//    QVariantList configurations = jsonDoc.toVariant().toList();
+    QNetworkRequest request;
+    request.setUrl(QUrl("http://localhost:3333/api/v1/plugins/" + QUuid::createUuid().toString() + "/" + QUuid::createUuid().toString()));
+    QNetworkReply *reply = nam->get(request);
+
+    clientSpy.wait();
+    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
+
+    bool ok = false;
+    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(&ok);
+    QVERIFY2(ok, "Could not convert statuscode from response to int");
+    QCOMPARE(statusCode, 501);
+
+    reply->deleteLater();
+    nam->deleteLater();
+}
+
+void TestRestPlugins::invalidPlugin_data()
+{
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<int>("expectedStatusCode");
+
+    QTest::newRow("invalid PluginId") << QUuid::createUuid().toString() << 404;
+    QTest::newRow("invalid PluginId format") << "uuid" << 400;
+}
+
+void TestRestPlugins::invalidPlugin()
+{
+    QFETCH(QString, path);
+    QFETCH(int, expectedStatusCode);
+
+    QNetworkRequest request(QUrl("http://localhost:3333/api/v1/vendors/" + path));
+    QVariant response = getAndWait(request, expectedStatusCode);
+    QCOMPARE(JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorVendorNotFound), response.toMap().value("error").toString());
+}
+
+void TestRestPlugins::getPluginConfiguration()
+{
+    // Get plugin config
+    QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/plugins/%1/configuration").arg(mockPluginId.toString())));
+    QVariant response = getAndWait(request);
+
+//    QVariantList configurations = response.toList();
 //    QVERIFY2(configurations.count() == 2, "there should be 2 configurations");
 }
 

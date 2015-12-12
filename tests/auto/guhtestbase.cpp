@@ -24,6 +24,7 @@
 #include "guhcore.h"
 #include "guhsettings.h"
 #include "devicemanager.h"
+#include "logging/logengine.h"
 #include "jsontypes.h"
 
 #include <QVariantMap>
@@ -43,6 +44,8 @@ DeviceClassId mockDeviceClassId = DeviceClassId("753f0d32-0468-4d08-82ed-1964aab
 DeviceClassId mockDeviceAutoClassId = DeviceClassId("ab4257b3-7548-47ee-9bd4-7dc3004fd197");
 DeviceClassId mockPushButtonDeviceClassId = DeviceClassId("9e03144c-e436-4eea-82d9-ccb33ef778db");
 DeviceClassId mockDisplayPinDeviceClassId = DeviceClassId("296f1fd4-e893-46b2-8a42-50d1bceb8730");
+DeviceClassId mockParentDeviceClassId = DeviceClassId("a71fbde9-9a38-4bf8-beab-c8aade2608ba");
+DeviceClassId mockChildDeviceClassId = DeviceClassId("40893c9f-bc47-40c1-8bf7-b390c7c1b4fc");
 DeviceClassId mockDeviceDiscoveryClassId = DeviceClassId("1bbaf751-36b7-4d3d-b05a-58dab2a3be8c");
 DeviceClassId mockDeviceAsyncSetupClassId = DeviceClassId("c08a8b27-8200-413d-b96b-4cff78b864d9");
 DeviceClassId mockDeviceBrokenClassId = DeviceClassId("ba5fb404-c9ce-4db4-8cd4-f48c61c24b13");
@@ -174,6 +177,144 @@ QVariant GuhTestBase::checkNotification(const QSignalSpy &spy, const QString &no
     return QVariant();
 }
 
+QVariant GuhTestBase::getAndWait(const QNetworkRequest &request, const int &expectedStatus)
+{
+    QNetworkAccessManager nam;
+    QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
+
+    QNetworkReply *reply = nam.get(request);
+
+    clientSpy.wait();
+
+    if (clientSpy.count() != 1) {
+        qWarning() << "Got no response for get request";
+        reply->deleteLater();
+        return QVariant();
+    }
+
+    QByteArray data = reply->readAll();
+    verifyReply(reply, data, expectedStatus);
+
+    reply->deleteLater();
+
+    QJsonParseError error;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
+    if (error.error != QJsonParseError::NoError) {
+        qWarning() << "JSON parser error" << error.errorString();
+        return QVariant();
+    }
+
+    return jsonDoc.toVariant();
+}
+
+QVariant GuhTestBase::deleteAndWait(const QNetworkRequest &request, const int &expectedStatus)
+{
+    QNetworkAccessManager nam;
+    QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
+
+    QNetworkReply *reply = nam.deleteResource(request);
+
+    clientSpy.wait();
+
+    if (clientSpy.count() != 1) {
+        qWarning() << "Got no response for delete request";
+        reply->deleteLater();
+        return QVariant();
+    }
+
+    QByteArray data = reply->readAll();
+    verifyReply(reply, data, expectedStatus);
+
+    reply->deleteLater();
+
+    QJsonParseError error;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
+    if (error.error != QJsonParseError::NoError) {
+        qWarning() << "JSON parser error" << error.errorString();
+        return QVariant();
+    }
+
+    return jsonDoc.toVariant();
+}
+
+QVariant GuhTestBase::postAndWait(const QNetworkRequest &request, const QVariant &params, const int &expectedStatus)
+{
+    QNetworkAccessManager nam;
+    QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
+
+    QByteArray payload = QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact);
+
+    QNetworkReply *reply = nam.post(request, payload);
+
+    clientSpy.wait();
+
+    if (clientSpy.count() != 1) {
+        qWarning() << "Got no response for post request";
+        reply->deleteLater();
+        return QVariant();
+    }
+
+    QByteArray data = reply->readAll();
+    verifyReply(reply, data, expectedStatus);
+
+    reply->deleteLater();
+
+    QJsonParseError error;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
+    if (error.error != QJsonParseError::NoError) {
+        qWarning() << "JSON parser error" << error.errorString();
+        return QVariant();
+    }
+
+    return jsonDoc.toVariant();
+}
+
+
+QVariant GuhTestBase::putAndWait(const QNetworkRequest &request, const QVariant &params, const int &expectedStatus)
+{
+    QNetworkAccessManager nam;
+    QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
+
+    QByteArray payload = QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact);
+
+    QNetworkReply *reply = nam.put(request, payload);
+
+    clientSpy.wait();
+
+    if (clientSpy.count() != 1) {
+        qWarning() << "Got no response for put request";
+        reply->deleteLater();
+        return QVariant();
+    }
+
+    QByteArray data = reply->readAll();
+    verifyReply(reply, data, expectedStatus);
+
+    reply->deleteLater();
+
+    QJsonParseError error;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
+    if (error.error != QJsonParseError::NoError) {
+        qWarning() << "JSON parser error" << error.errorString();
+        return QVariant();
+    }
+
+    return jsonDoc.toVariant();
+}
+
+void GuhTestBase::verifyReply(QNetworkReply *reply, const QByteArray &data, const int &expectedStatus)
+{
+    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    QCOMPARE(statusCode, expectedStatus);
+
+    if (!data.isEmpty()) {
+        QJsonParseError error;
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
+        QCOMPARE(error.error, QJsonParseError::NoError);
+        Q_UNUSED(jsonDoc);
+    }
+}
+
 bool GuhTestBase::enableNotifications()
 {
     QVariantMap notificationParams;
@@ -203,5 +344,10 @@ void GuhTestBase::restartServer()
     QSignalSpy spy(GuhCore::instance()->deviceManager(), SIGNAL(loaded()));
     spy.wait();
     m_mockTcpServer = MockTcpServer::servers().first();
+}
+
+void GuhTestBase::clearLoggingDatabase()
+{
+    GuhCore::instance()->logEngine()->clearDatabase();
 }
 

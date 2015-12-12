@@ -42,11 +42,8 @@ public:
     // Valid for all LoggingSources
     QDateTime timestamp() const;
     Logging::LoggingLevel level() const;
-    QString levelString() const;
     Logging::LoggingSource source() const;
-    QString sourceString() const;
     Logging::LoggingEventType eventType() const;
-    QString eventTypeString() const;
 
     // Valid for LoggingSourceStates, LoggingSourceEvents, LoggingSourceActions, LoggingSourceRules
     QUuid typeId() const;

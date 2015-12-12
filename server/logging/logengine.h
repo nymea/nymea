@@ -49,6 +49,7 @@ signals:
 
 private:
     QSqlDatabase m_db;
+    int m_dbMaxSize;
 
     void initDB();
     void appendLogEntry(const LogEntry &entry);

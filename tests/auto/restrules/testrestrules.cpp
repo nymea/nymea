@@ -54,6 +54,7 @@ private:
 
 private slots:
     void getRules();
+    void findRule();
     void invalidMethod();
     void invalidPath();
 
@@ -207,6 +208,37 @@ void TestRestRules::getRules()
         response = getAndWait(request);
         QVERIFY2(!response.isNull(), "Could not get rule");
     }
+}
+
+void TestRestRules::findRule()
+{
+    QVariant params = validIntStateBasedRule("Find", true, true);
+    QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/rules")));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
+    QVariant response = postAndWait(request, params);
+
+    RuleId ruleId = RuleId(response.toMap().value("id").toString());
+    QVERIFY(!ruleId.isNull());
+
+    QUrl url(QString("http://localhost:3333/api/v1/rules/%1").arg(ruleId.toString()));
+    QUrlQuery query;
+    query.addQueryItem("deviceId", m_mockDeviceId.toString());
+    url.setQuery(query);
+    request.setUrl(QUrl(url));
+    response = getAndWait(request);
+    QVERIFY(!response.isNull());
+
+    // REMOVE rule
+    request.setUrl(QUrl(QString("http://localhost:3333/api/v1/rules/%1").arg(ruleId.toString())));
+    response = deleteAndWait(request);
+    QVERIFY(!response.isNull());
+    QCOMPARE(JsonTypes::ruleErrorToString(RuleEngine::RuleErrorNoError), response.toMap().value("error").toString());
+
+    // check if removed
+    request.setUrl(QUrl(QString("http://localhost:3333/api/v1/rules/%1").arg(ruleId.toString())));
+    response = getAndWait(request, 404);
+    QVERIFY(!response.isNull());
+
 }
 
 void TestRestRules::invalidMethod()

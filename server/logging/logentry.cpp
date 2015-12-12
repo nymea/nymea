@@ -76,39 +76,9 @@ Logging::LoggingLevel LogEntry::level() const
     return m_level;
 }
 
-QString LogEntry::levelString() const
-{
-    switch (m_level) {
-    case Logging::LoggingLevelAlert:
-        return "LoggingLevelAlert";
-    case Logging::LoggingLevelInfo:
-        return "LoggingLevelInfo";
-    default:
-        return "< Unknown >";
-    }
-}
-
 Logging::LoggingSource LogEntry::source() const
 {
     return m_source;
-}
-
-QString LogEntry::sourceString() const
-{
-    switch (m_source) {
-    case Logging::LoggingSourceActions:
-        return "LoggingSourceActions";
-    case Logging::LoggingSourceEvents:
-        return "LoggingSourceEvents";
-    case Logging::LoggingSourceRules:
-        return "LoggingSourceRules";
-    case Logging::LoggingSourceStates:
-        return "LoggingSourceStates";
-    case Logging::LoggingSourceSystem:
-        return "LoggingSourceSystem";
-    default:
-        return "< Unknown >";
-    }
 }
 
 QUuid LogEntry::typeId() const
@@ -145,18 +115,6 @@ Logging::LoggingEventType LogEntry::eventType() const
     return m_eventType;
 }
 
-QString LogEntry::eventTypeString() const
-{
-    switch (m_eventType) {
-    case Logging::LoggingEventTypeActiveChange:
-        return "LoggingEventTypeActiveChange";
-    case Logging::LoggingEventTypeTrigger:
-        return "LoggingEventTypeTrigger";
-    default:
-        return "< Unknown >";
-    }
-}
-
 bool LogEntry::active() const
 {
     return m_active;
@@ -179,9 +137,9 @@ QDebug operator<<(QDebug dbg, const LogEntry &entry)
     dbg.nospace() << " time stamp: " << entry.timestamp().toTime_t() << endl;
     dbg.nospace() << "   DeviceId: " << entry.deviceId().toString() << endl;
     dbg.nospace() << "    type id: " << entry.typeId().toString() << endl;
-    dbg.nospace() << "     source: " << entry.sourceString() << endl;
-    dbg.nospace() << "      level: " << entry.levelString() << endl;
-    dbg.nospace() << "  eventType: " << entry.eventTypeString() << endl;
+    dbg.nospace() << "     source: " << JsonTypes::loggingSourceToString(entry.source()) << endl;
+    dbg.nospace() << "      level: " << JsonTypes::loggingLevelToString(entry.level()) << endl;
+    dbg.nospace() << "  eventType: " << JsonTypes::loggingEventTypeToString(entry.eventType()) << endl;
     dbg.nospace() << " error code: " << entry.errorCode() << endl;
     dbg.nospace() << "     active: " << entry.active() << endl;
     dbg.nospace() << "      value: " << entry.value() << endl;

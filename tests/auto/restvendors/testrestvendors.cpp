@@ -70,12 +70,12 @@ void TestRestVendors::getVendors()
 
 void TestRestVendors::invalidMethod()
 {
-    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
-    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
+    QNetworkAccessManager nam;
+    QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
 
     QNetworkRequest request;
     request.setUrl(QUrl("http://localhost:3333/api/v1/vendors"));
-    QNetworkReply *reply = nam->post(request, QByteArray());
+    QNetworkReply *reply = nam.post(request, QByteArray());
 
     clientSpy.wait();
     QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
@@ -86,17 +86,16 @@ void TestRestVendors::invalidMethod()
     QCOMPARE(statusCode, 400);
 
     reply->deleteLater();
-    nam->deleteLater();
 }
 
 void TestRestVendors::invalidPath()
 {
-    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
-    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
+    QNetworkAccessManager nam;
+    QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
 
     QNetworkRequest request;
     request.setUrl(QUrl("http://localhost:3333/api/v1/vendors/" + QUuid::createUuid().toString() + "/" + QUuid::createUuid().toString()));
-    QNetworkReply *reply = nam->get(request);
+    QNetworkReply *reply = nam.get(request);
 
     clientSpy.wait();
     QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
@@ -107,7 +106,6 @@ void TestRestVendors::invalidPath()
     QCOMPARE(statusCode, 501);
 
     reply->deleteLater();
-    nam->deleteLater();
 }
 
 void TestRestVendors::invalidVendor_data()

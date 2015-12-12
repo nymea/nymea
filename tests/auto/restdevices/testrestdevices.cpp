@@ -487,21 +487,23 @@ void TestRestDevices::getStateValue_data()
     QVERIFY2(devices.count() > 0, "There needs to be at least one configured Mock Device for this test");
     Device *device = devices.first();
 
-    QTest::addColumn<DeviceId>("deviceId");
-    QTest::addColumn<StateTypeId>("stateTypeId");
+    QTest::addColumn<QString>("deviceId");
+    QTest::addColumn<QString>("stateTypeId");
     QTest::addColumn<int>("expectedStatusCode");
     QTest::addColumn<DeviceManager::DeviceError>("error");
 
-    QTest::newRow("existing state") << device->id() << mockIntStateId << 200 << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("all states") << device->id() << StateTypeId() << 200 << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("invalid device") << DeviceId::createDeviceId() << mockIntStateId << 404 << DeviceManager::DeviceErrorDeviceNotFound;
-    QTest::newRow("invalid statetype") << device->id() << StateTypeId::createStateTypeId() << 404 << DeviceManager::DeviceErrorStateTypeNotFound;
+    QTest::newRow("existing state") << device->id().toString() << mockIntStateId.toString() << 200 << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("all states") << device->id().toString() << QString() << 200 << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("invalid device") << DeviceId::createDeviceId().toString() << mockIntStateId.toString() << 404 << DeviceManager::DeviceErrorDeviceNotFound;
+    QTest::newRow("invalid device id format") << "uuid" << StateTypeId::createStateTypeId().toString() << 400 << DeviceManager::DeviceErrorDeviceNotFound;
+    QTest::newRow("invalid statetype") << device->id().toString() << StateTypeId::createStateTypeId().toString() << 404 << DeviceManager::DeviceErrorStateTypeNotFound;
+    QTest::newRow("invalid statetype format") << device->id().toString() << "uuid" << 400 << DeviceManager::DeviceErrorStateTypeNotFound;
 }
 
 void TestRestDevices::getStateValue()
 {
-    QFETCH(DeviceId, deviceId);
-    QFETCH(StateTypeId, stateTypeId);
+    QFETCH(QString, deviceId);
+    QFETCH(QString, stateTypeId);
     QFETCH(int, expectedStatusCode);
     QFETCH(DeviceManager::DeviceError, error);
 
@@ -509,10 +511,10 @@ void TestRestDevices::getStateValue()
     request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
 
     if (!stateTypeId.isNull()) {
-        request.setUrl(QUrl(QString("http://localhost:3333/api/v1/devices/%1/states/%2").arg(deviceId.toString()).arg(stateTypeId.toString())));
+        request.setUrl(QUrl(QString("http://localhost:3333/api/v1/devices/%1/states/%2").arg(deviceId).arg(stateTypeId)));
     } else {
         // Get all states
-        request.setUrl(QUrl(QString("http://localhost:3333/api/v1/devices/%1/states").arg(deviceId.toString())));
+        request.setUrl(QUrl(QString("http://localhost:3333/api/v1/devices/%1/states").arg(deviceId)));
     }
     QVariant response = getAndWait(request, expectedStatusCode);
     QVERIFY2(!response.isNull(), "Could not read get state value response");

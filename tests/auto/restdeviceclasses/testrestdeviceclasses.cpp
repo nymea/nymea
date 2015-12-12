@@ -44,6 +44,7 @@ class TestRestDeviceClasses: public GuhTestBase
 private slots:
     void getSupportedDevices();
 
+    void invalidMethod();
 
     void getActionTypes_data();
     void getActionTypes();
@@ -80,6 +81,7 @@ void TestRestDeviceClasses::getSupportedDevices()
         QVERIFY2(!response.isNull(), "Could not get device");
     }
 
+    // get with vendor filter
     QUrlQuery query;
     query.addQueryItem("vendorId", guhVendorId.toString());
     url.setQuery(query);
@@ -88,6 +90,33 @@ void TestRestDeviceClasses::getSupportedDevices()
     deviceClassesList = response.toList();
     QVERIFY2(deviceClassesList.count() > 0, "Not enought deviceclasses.");
 
+    // get with invalid vendor filter
+    query.clear();
+    query.addQueryItem("vendorId", "uuid");
+    url.setQuery(query);
+
+    response = getAndWait(QNetworkRequest(url), 400);
+    QCOMPARE(JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorVendorNotFound), response.toMap().value("error").toString());
+}
+
+void TestRestDeviceClasses::invalidMethod()
+{
+    QNetworkAccessManager nam;
+    QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
+
+    QNetworkRequest request;
+    request.setUrl(QUrl("http://localhost:3333/api/v1/deviceclasses/"));
+    QNetworkReply *reply = nam.post(request, QByteArray());
+
+    clientSpy.wait();
+    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
+
+    bool ok = false;
+    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(&ok);
+    QVERIFY2(ok, "Could not convert statuscode from response to int");
+    QCOMPARE(statusCode, 400);
+
+    reply->deleteLater();
 }
 
 void TestRestDeviceClasses::getActionTypes_data()

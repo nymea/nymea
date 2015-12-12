@@ -127,12 +127,10 @@ void TestLogging::invalidFilter()
     QFETCH(QVariantMap, filter);
     QVariant response = injectAndWait("Logging.GetLogEntries", filter);
     QVERIFY(!response.isNull());
-    //qDebug() << QJsonDocument::fromVariant(response).toJson();
 
     // verify json error
     QVERIFY(response.toMap().value("status").toString() == "error");
     qDebug() << response.toMap().value("error").toString();
-
 }
 
 
@@ -213,7 +211,7 @@ void TestLogging::actionLog()
     QVariant response = injectAndWait("Actions.ExecuteAction", params);
     verifyDeviceError(response);
 
-    // Lets wait for the notification
+    // Lets wait 3for the notification
     clientSpy.wait(200);
     QVariant notification = checkNotification(clientSpy, "Logging.LogEntryAdded");
     QVERIFY(!notification.isNull());
@@ -249,7 +247,7 @@ void TestLogging::actionLog()
     verifyLoggingError(response);
 
     QVariantList logEntries = response.toMap().value("params").toMap().value("logEntries").toList();
-    QVERIFY(logEntries.count() == 1);
+    QCOMPARE(logEntries.count(), 1);
 
     // EXECUTE broken action
     params.clear(); clientSpy.clear();
@@ -283,7 +281,7 @@ void TestLogging::actionLog()
     verifyLoggingError(response);
 
     logEntries = response.toMap().value("params").toMap().value("logEntries").toList();
-    QVERIFY(logEntries.count() == 1);
+    QCOMPARE(logEntries.count(), 1);
 
     // check different filters
     params.clear();
@@ -296,7 +294,7 @@ void TestLogging::actionLog()
     verifyLoggingError(response);
 
     logEntries = response.toMap().value("params").toMap().value("logEntries").toList();
-    QVERIFY(logEntries.count() == 1);
+    QCOMPARE(logEntries.count(), 1);
 
     params.clear();
     params.insert("deviceIds", QVariantList() << m_mockDeviceId);

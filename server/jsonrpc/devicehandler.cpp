@@ -607,7 +607,10 @@ void DeviceHandler::devicesDiscovered(const DeviceClassId &deviceClassId, const 
         return; // We didn't start this discovery... Ignore it.
     }
 
-    JsonReply *reply = m_discoverRequests.take(deviceClassId);
+    JsonReply *reply = 0;
+    reply = m_discoverRequests.take(deviceClassId);
+    if (!reply)
+        return;
 
     QVariantMap returns;
     returns.insert("deviceDescriptors", JsonTypes::packDeviceDescriptors(deviceDescriptors));

@@ -22,95 +22,9 @@
 #include "huelight.h"
 #include "extern-plugininfo.h"
 
-HueLight::HueLight(const int &lightId, const QHostAddress &hostAddress, const QString &name, const QString &apiKey, const QString &modelId, const DeviceId &bridgeId, QObject *parent) :
-    QObject(parent),
-    m_lightId(lightId),
-    m_hostAddress(hostAddress),
-    m_name(name),
-    m_apiKey(apiKey),
-    m_modelId(modelId),
-    m_bridgeId(bridgeId)
+HueLight::HueLight(QObject *parent) :
+    HueDevice(parent)
 {
-}
-
-int HueLight::lightId() const
-{
-    return m_lightId;
-}
-
-void HueLight::setLightId(const int &lightId)
-{
-    m_lightId = lightId;
-}
-
-DeviceId HueLight::bridgeId() const
-{
-    return m_bridgeId;
-}
-
-void HueLight::setBridgeId(const DeviceId &bridgeDeviceId)
-{
-    m_bridgeId = bridgeDeviceId;
-}
-
-QHostAddress HueLight::hostAddress() const
-{
-    return m_hostAddress;
-}
-
-void HueLight::setHostAddress(const QHostAddress hostAddress)
-{
-    m_hostAddress = hostAddress;
-}
-
-QString HueLight::name() const
-{
-    return m_name;
-}
-
-void HueLight::setName(const QString &name)
-{
-    m_name = name;
-}
-
-QString HueLight::apiKey() const
-{
-    return m_apiKey;
-}
-
-void HueLight::setApiKey(const QString &apiKey)
-{
-    m_apiKey = apiKey;
-}
-
-QString HueLight::modelId() const
-{
-    return m_modelId;
-}
-
-void HueLight::setModelId(const QString &modelId)
-{
-    m_modelId = modelId;
-}
-
-QString HueLight::type() const
-{
-    return m_type;
-}
-
-void HueLight::setType(const QString &type)
-{
-    m_type = type;
-}
-
-QString HueLight::softwareVersion() const
-{
-    return m_softwareVersion;
-}
-
-void HueLight::setSoftwareVersion(const QString &softwareVersion)
-{
-    m_softwareVersion = softwareVersion;
 }
 
 bool HueLight::power() const
@@ -121,16 +35,6 @@ bool HueLight::power() const
 void HueLight::setPower(const bool &power)
 {
     m_power = power;
-}
-
-bool HueLight::reachable() const
-{
-    return m_reachable;
-}
-
-void HueLight::setReachable(const bool &reachable)
-{
-    m_reachable = reachable;
 }
 
 quint8 HueLight::brightness() const
@@ -244,7 +148,8 @@ void HueLight::updateStates(const QVariantMap &statesMap)
     setReachable(statesMap.value("reachable").toBool());
     setSat(statesMap.value("sat").toInt());
     setHue(statesMap.value("hue").toInt());
-    setXy(QPointF(statesMap.value("xy").toList().first().toFloat(),statesMap.value("xy").toList().last().toFloat()));
+    if (!statesMap.value("xy").toList().isEmpty())
+        setXy(QPointF(statesMap.value("xy").toList().first().toFloat(), statesMap.value("xy").toList().last().toFloat()));
 
     emit stateChanged();
 }
@@ -255,38 +160,38 @@ void HueLight::processActionResponse(const QVariantList &responseList)
         QVariantMap result = resultVariant.toMap();
         if (result.contains("success")) {
             QVariantMap successMap = result.value("success").toMap();
-            if (successMap.contains("/lights/" + QString::number(m_lightId) + "/state/on")) {
-                m_power = successMap.value("/lights/" + QString::number(m_lightId) + "/state/on").toBool();
+            if (successMap.contains("/lights/" + QString::number(id()) + "/state/on")) {
+                m_power = successMap.value("/lights/" + QString::number(id()) + "/state/on").toBool();
             }
-            if (successMap.contains("/lights/" + QString::number(m_lightId) + "/state/hue")) {
-                m_hue = successMap.value("/lights/" + QString::number(m_lightId) + "/state/hue").toInt();
+            if (successMap.contains("/lights/" + QString::number(id()) + "/state/hue")) {
+                m_hue = successMap.value("/lights/" + QString::number(id()) + "/state/hue").toInt();
                 m_colorMode = ColorModeHS;
             }
-            if (successMap.contains("/lights/" + QString::number(m_lightId) + "/state/bri")) {
-                m_brightness = successMap.value("/lights/" + QString::number(m_lightId) + "/state/bri").toInt();
+            if (successMap.contains("/lights/" + QString::number(id()) + "/state/bri")) {
+                m_brightness = successMap.value("/lights/" + QString::number(id()) + "/state/bri").toInt();
             }
-            if (successMap.contains("/lights/" + QString::number(m_lightId) + "/state/sat")) {
-                m_sat = successMap.value("/lights/" + QString::number(m_lightId) + "/state/sat").toInt();
+            if (successMap.contains("/lights/" + QString::number(id()) + "/state/sat")) {
+                m_sat = successMap.value("/lights/" + QString::number(id()) + "/state/sat").toInt();
                 m_colorMode = ColorModeHS;
             }
-            if (successMap.contains("/lights/" + QString::number(m_lightId) + "/state/xy")) {
-                m_xy = successMap.value("/lights/" + QString::number(m_lightId) + "/state/xy").toPoint();
+            if (successMap.contains("/lights/" + QString::number(id()) + "/state/xy")) {
+                m_xy = successMap.value("/lights/" + QString::number(id()) + "/state/xy").toPoint();
                 m_colorMode = ColorModeXY;
             }
-            if (successMap.contains("/lights/" + QString::number(m_lightId) + "/state/ct")) {
-                m_ct = successMap.value("/lights/" + QString::number(m_lightId) + "/state/ct").toInt();
+            if (successMap.contains("/lights/" + QString::number(id()) + "/state/ct")) {
+                m_ct = successMap.value("/lights/" + QString::number(id()) + "/state/ct").toInt();
                 m_colorMode = ColorModeCT;
             }
-            if (successMap.contains("/lights/" + QString::number(m_lightId) + "/state/effect")) {
-                QString effect = successMap.value("/lights/" + QString::number(m_lightId) + "/state/effect").toString();
+            if (successMap.contains("/lights/" + QString::number(id()) + "/state/effect")) {
+                QString effect = successMap.value("/lights/" + QString::number(id()) + "/state/effect").toString();
                 if (effect == "none") {
                     setEffect("none");
                 } else if (effect == "colorloop") {
                     setEffect("color loop");
                 }
             }
-            if (successMap.contains("/lights/" + QString::number(m_lightId) + "/state/alert")) {
-                m_alert = successMap.value("/lights/" + QString::number(m_lightId) + "/state/alert").toString();
+            if (successMap.contains("/lights/" + QString::number(id()) + "/state/alert")) {
+                m_alert = successMap.value("/lights/" + QString::number(id()) + "/state/alert").toString();
             }
 
         }
@@ -302,8 +207,8 @@ QPair<QNetworkRequest, QByteArray> HueLight::createSetPowerRequest(const bool &p
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(requestMap);
 
     QNetworkRequest request(QUrl("http://" + hostAddress().toString() + "/api/" + apiKey() +
-                                 "/lights/" + QString::number(lightId()) + "/state"));
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+                                 "/lights/" + QString::number(id()) + "/state"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     return QPair<QNetworkRequest, QByteArray>(request, jsonDoc.toJson());
 }
 
@@ -317,8 +222,8 @@ QPair<QNetworkRequest, QByteArray> HueLight::createSetColorRequest(const QColor 
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(requestMap);
 
     QNetworkRequest request(QUrl("http://" + hostAddress().toString() + "/api/" + apiKey() +
-                                 "/lights/" + QString::number(lightId()) + "/state"));
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+                                 "/lights/" + QString::number(id()) + "/state"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     return QPair<QNetworkRequest, QByteArray>(request, jsonDoc.toJson());
 }
 
@@ -335,8 +240,8 @@ QPair<QNetworkRequest, QByteArray> HueLight::createSetBrightnessRequest(const in
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(requestMap);
 
     QNetworkRequest request(QUrl("http://" + hostAddress().toString() + "/api/" + apiKey() +
-                                 "/lights/" + QString::number(lightId()) + "/state"));
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+                                 "/lights/" + QString::number(id()) + "/state"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     return QPair<QNetworkRequest, QByteArray>(request, jsonDoc.toJson());
 }
 
@@ -352,8 +257,8 @@ QPair<QNetworkRequest, QByteArray> HueLight::createSetEffectRequest(const QStrin
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(requestMap);
 
     QNetworkRequest request(QUrl("http://" + hostAddress().toString() + "/api/" + apiKey() +
-                                 "/lights/" + QString::number(lightId()) + "/state"));
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+                                 "/lights/" + QString::number(id()) + "/state"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     return QPair<QNetworkRequest, QByteArray>(request, jsonDoc.toJson());
 }
 
@@ -366,8 +271,8 @@ QPair<QNetworkRequest, QByteArray> HueLight::createSetTemperatureRequest(const i
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(requestMap);
 
     QNetworkRequest request(QUrl("http://" + hostAddress().toString() + "/api/" + apiKey() +
-                                 "/lights/" + QString::number(lightId()) + "/state"));
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+                                 "/lights/" + QString::number(id()) + "/state"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     return QPair<QNetworkRequest, QByteArray>(request, jsonDoc.toJson());
 }
 
@@ -382,7 +287,7 @@ QPair<QNetworkRequest, QByteArray> HueLight::createFlashRequest(const QString &a
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(requestMap);
 
     QNetworkRequest request(QUrl("http://" + hostAddress().toString() + "/api/" + apiKey() +
-                                 "/lights/" + QString::number(lightId()) + "/state"));
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+                                 "/lights/" + QString::number(id()) + "/state"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     return QPair<QNetworkRequest, QByteArray>(request, jsonDoc.toJson());
 }

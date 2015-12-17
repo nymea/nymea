@@ -20,14 +20,8 @@
 
 #include "huebridge.h"
 
-HueBridge::HueBridge(QString apiKey, QHostAddress hostAddress, QObject *parent) :
+HueBridge::HueBridge(QObject *parent) :
     QObject(parent),
-    m_apiKey(apiKey),
-    m_hostAddress(hostAddress),
-    m_name(QString()),
-    m_macAddress(QString()),
-    m_apiVersion(QString()),
-    m_softwareVersion(QString()),
     m_zigbeeChannel(-1)
 {
 
@@ -41,6 +35,16 @@ QString HueBridge::name() const
 void HueBridge::setName(const QString &name)
 {
     m_name = name;
+}
+
+QString HueBridge::id() const
+{
+    return m_id;
+}
+
+void HueBridge::setId(const QString &id)
+{
+    m_id = id;
 }
 
 QString HueBridge::apiKey() const
@@ -111,4 +115,42 @@ QList<HueLight *> HueBridge::lights() const
 void HueBridge::addLight(HueLight *light)
 {
     m_lights.append(light);
+}
+
+QPair<QNetworkRequest, QByteArray> HueBridge::createDiscoverLightsRequest()
+{
+    QNetworkRequest request(QUrl("http://" + hostAddress().toString() + "/api/" + apiKey() + "/lights/"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    return QPair<QNetworkRequest, QByteArray>(request, QByteArray());
+}
+
+QPair<QNetworkRequest, QByteArray> HueBridge::createSearchLightsRequest()
+{
+    QNetworkRequest request(QUrl("http://" + hostAddress().toString() + "/api/" + apiKey() + "/lights/"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    return QPair<QNetworkRequest, QByteArray>(request, QByteArray());
+}
+
+QPair<QNetworkRequest, QByteArray> HueBridge::createSearchSensorsRequest()
+{
+    QNetworkRequest request(QUrl("http://" + hostAddress().toString() + "/api/" + apiKey() + "/sensors/"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    return QPair<QNetworkRequest, QByteArray>(request, QByteArray());
+}
+
+QPair<QNetworkRequest, QByteArray> HueBridge::createCheckUpdatesRequest()
+{
+    QVariantMap updateMap;
+    updateMap.insert("checkforupdate", true);
+
+    QVariantMap requestMap;
+    requestMap.insert("swupdate", updateMap);
+    requestMap.insert("portalservices", true);
+
+    QJsonDocument jsonDoc = QJsonDocument::fromVariant(requestMap);
+
+    QNetworkRequest request(QUrl("http://" + hostAddress().toString() + "/api/" + apiKey() + "/config"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    return QPair<QNetworkRequest, QByteArray>(request, jsonDoc.toJson());
 }

@@ -11,7 +11,7 @@
                 {
                     "deviceClassId": "642aa4c7-19aa-45ed-ba06-aa1ae6c9edf7",
                     "idName": "hueBridge",
-                    "name": "Hue Bridge",
+                    "name": "Hue gateway",
                     "createMethods": ["discovery"],
                     "setupMethod": "pushButton",
                     "pairingInfo": "Please press the button on the Hue Bridge within 30 seconds before you continue",
@@ -40,7 +40,7 @@
                             "readOnly": true
                         },
                         {
-                            "name": "api version",
+                            "name": "id",
                             "type" : "QString",
                             "readOnly": true
                         },
@@ -60,7 +60,47 @@
                             "id": "15794d26-fde8-4a61-8f83-d7830534975f",
                             "idName": "bridgeReachable",
                             "name": "reachable",
+                            "defaultValue": false,
                             "type": "bool"
+                        },
+                        {
+                            "id": "7a230e89-c4ce-4276-90e0-6a9ddb890603",
+                            "idName": "apiVersion",
+                            "name": "api version",
+                            "defaultValue": "-",
+                            "type": "QString"
+                        },
+                        {
+                            "id": "4c707b18-6604-4e6d-b6bc-4e27769c2adc",
+                            "idName": "softwareVersion",
+                            "name": "software version",
+                            "defaultValue": "-",
+                            "type": "QString"
+                        },
+                        {
+                            "id": "16a126f3-0cef-4931-bb2b-9e1b49bec7fc",
+                            "idName": "updateStatus",
+                            "name": "update status",
+                            "type": "QString",
+                            "defaultValue": "Up to date",
+                            "possibleValues": [
+                                "Up to date",
+                                "Downloading updates",
+                                "Updates ready to install",
+                                "Installing updates"
+                            ]
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "cca3f171-6318-44e7-a2ac-d841857c1c24",
+                            "idName": "searchNewDevices",
+                            "name": "search devices"
+                        },
+                        {
+                            "id": "07a85e91-d064-4bce-b017-13fd0c320c0b",
+                            "idName": "checkForUpdates",
+                            "name": "check updates"
                         }
                     ]
                 },
@@ -82,6 +122,16 @@
                         },
                         {
                             "name": "model id",
+                            "type" : "QString",
+                            "readOnly": true
+                        },
+                        {
+                            "name": "type",
+                            "type" : "QString",
+                            "readOnly": true
+                        },
+                        {
+                            "name": "uuid",
                             "type" : "QString",
                             "readOnly": true
                         },
@@ -108,6 +158,7 @@
                             "id": "19bb8d10-1b28-4ba3-99b7-a634138dcfde",
                             "idName": "hueReachable",
                             "name": "reachable",
+                            "defaultValue": false,
                             "type": "bool"
                         },
                         {
@@ -178,6 +229,193 @@
                                     ]
                                 }
                             ]
+                        }
+                    ]
+                },
+                {
+                    "deviceClassId": "4fa568ef-7a3a-422b-b0c0-206d37cb4eed",
+                    "idName": "hueWhiteLight",
+                    "name": "Hue White Light",
+                    "createMethods": ["auto"],
+                    "paramTypes": [
+                        {
+                            "name": "name",
+                            "type" : "QString",
+                            "inputType": "TextLine"
+                        },
+                        {
+                            "name": "bridge",
+                            "type" : "QString",
+                            "readOnly": true
+                        },
+                        {
+                            "name": "model id",
+                            "type" : "QString",
+                            "readOnly": true
+                        },
+                        {
+                            "name": "type",
+                            "type" : "QString",
+                            "readOnly": true
+                        },
+                        {
+                            "name": "uuid",
+                            "type" : "QString",
+                            "readOnly": true
+                        },
+                        {
+                            "name": "api key",
+                            "type" : "QString",
+                            "inputType": "TextLine",
+                            "readOnly": true
+                        },
+                        {
+                            "name": "host address",
+                            "type" : "QString",
+                            "inputType": "IPv4Address",
+                            "readOnly": true
+                        },
+                        {
+                            "name": "light id",
+                            "type" : "int",
+                            "readOnly": true
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "19bb8d10-1b28-4ba3-99b7-a634138dcfde",
+                            "idName": "hueReachable",
+                            "name": "reachable",
+                            "defaultValue": false,
+                            "type": "bool"
+                        },
+                        {
+                            "id": "90aaffe5-6a76-47d2-a14a-550f60390245",
+                            "idName": "huePower",
+                            "name": "power",
+                            "type": "bool",
+                            "defaultValue": false,
+                            "writable": true
+                        },
+                        {
+                            "id": "90e91f64-a208-468c-a5a2-7f47e08859e2",
+                            "idName": "hueBrightness",
+                            "name": "brightness",
+                            "type": "int",
+                            "unit": "Percentage",
+                            "defaultValue": 0,
+                            "minValue": 0,
+                            "maxValue": 100,
+                            "writable": true
+
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "d25dcfbc-d28c-4905-80e3-300ffb1248f5",
+                            "idName": "hueAlert",
+                            "name": "flash",
+                            "paramTypes": [
+                                {
+                                    "name": "alert",
+                                    "type": "QString",
+                                    "allowedValues": [
+                                        "flash once",
+                                        "flash 30 seconds"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "deviceClassId": "bb482d39-67ef-46dc-88e9-7b181d642b28",
+                    "idName": "hueRemote",
+                    "name": "Hue Remote",
+                    "createMethods": ["auto"],
+                    "paramTypes": [
+                        {
+                            "name": "name",
+                            "type" : "QString",
+                            "inputType": "TextLine"
+                        },
+                        {
+                            "name": "bridge",
+                            "type" : "QString",
+                            "readOnly": true
+                        },
+                        {
+                            "name": "model id",
+                            "type" : "QString",
+                            "readOnly": true
+                        },
+                        {
+                            "name": "type",
+                            "type" : "QString",
+                            "readOnly": true
+                        },
+                        {
+                            "name": "uuid",
+                            "type" : "QString",
+                            "readOnly": true
+                        },
+                        {
+                            "name": "api key",
+                            "type" : "QString",
+                            "inputType": "TextLine",
+                            "readOnly": true
+                        },
+                        {
+                            "name": "host address",
+                            "type" : "QString",
+                            "inputType": "IPv4Address",
+                            "readOnly": true
+                        },
+                        {
+                            "name": "sensor id",
+                            "type" : "int",
+                            "readOnly": true
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "19bb8d10-1b28-4ba3-99b7-a634138dcfde",
+                            "idName": "hueReachable",
+                            "name": "reachable",
+                            "defaultValue": false,
+                            "type": "bool"
+                        },
+                        {
+                            "id": "683e493a-9796-4d5e-b0e3-61cb178d5819",
+                            "idName": "battery",
+                            "name": "battery",
+                            "type": "int",
+                            "unit": "Percentage",
+                            "defaultValue": 0,
+                            "minValue": 0,
+                            "maxValue": 100
+                        }
+                    ],
+                    "eventTypes": [
+                        {
+                            "id": "de769db0-4c31-46cf-9760-dbc6f9209c26",
+                            "idName": "onButton",
+                            "name": "on"
+                        },
+                        {
+                            "id": "8e3d6a62-6a19-4e9a-a25b-e1da2e56ede9",
+                            "idName": "brightnessUpButton",
+                            "name": "brightness up"
+                        },
+                        {
+                            "id": "efd8b972-9a37-43f2-b9bc-f9dfe144a96d",
+                            "idName": "brightnessDownButton",
+                            "name": "brightness down"
+                        },
+                        {
+                            "id": "7c2a58f1-137c-4bf3-8f9e-453dff020487",
+                            "idName": "offButton",
+                            "name": "off"
                         }
                     ]
                 }

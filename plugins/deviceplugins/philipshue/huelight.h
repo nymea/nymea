@@ -31,9 +31,9 @@
 #include <QJsonDocument>
 
 #include "typeutils.h"
-#include "types/action.h"
+#include "huedevice.h"
 
-class HueLight : public QObject
+class HueLight : public HueDevice
 {
     Q_OBJECT
 public:
@@ -44,37 +44,10 @@ public:
         ColorModeCT
     };
 
-    explicit HueLight(const int &lightId, const QHostAddress &hostAddress, const QString &name, const QString &apiKey, const QString &modelId, const DeviceId &bridgeId, QObject *parent = 0);
-
-    int lightId() const;
-    void setLightId(const int &lightId);
-
-    DeviceId bridgeId() const;
-    void setBridgeId(const DeviceId &bridgeDeviceId);
-
-    QHostAddress hostAddress() const;
-    void setHostAddress(const QHostAddress hostAddress);
-
-    QString name() const;
-    void setName(const QString &name);
-
-    QString apiKey() const;
-    void setApiKey(const QString &apiKey);
-
-    QString modelId() const;
-    void setModelId(const QString &modelId);
-
-    QString type() const;
-    void setType(const QString &type);
-
-    QString softwareVersion() const;
-    void setSoftwareVersion(const QString &softwareVersion);
+    explicit HueLight(QObject *parent = 0);
 
     bool power() const;
     void setPower(const bool &power);
-
-    bool reachable() const;
-    void setReachable(const bool &reachable);
 
     quint8 brightness() const;
     void setBrigtness(const quint8 brightness);
@@ -115,17 +88,7 @@ public:
     QPair<QNetworkRequest, QByteArray> createFlashRequest(const QString &alert);
 
 private:
-    int m_lightId;
-    QHostAddress m_hostAddress;
-    QString m_name;
-    QString m_apiKey;
-    QString m_modelId;
-    DeviceId m_bridgeId;
-    QString m_type;
-    QString m_softwareVersion;
-
     bool m_power;
-    bool m_reachable;
 
     quint8 m_brightness;
     quint16 m_hue;

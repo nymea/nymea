@@ -18,64 +18,26 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HUEBRIDGE_H
-#define HUEBRIDGE_H
+#include "hueremote.h"
+#include "extern-plugininfo.h"
 
-#include <QObject>
-#include <QHostAddress>
-
-#include "huelight.h"
-
-class HueBridge : public QObject
+HueRemote::HueRemote(QObject *parent) :
+    HueDevice(parent)
 {
-    Q_OBJECT
-public:
-    explicit HueBridge(QObject *parent = 0);
+}
 
-    QString name() const;
-    void setName(const QString &name);
+int HueRemote::battery() const
+{
+    return m_battery;
+}
 
-    QString id() const;
-    void setId(const QString &id);
+void HueRemote::setBattery(const int &battery)
+{
+    m_battery = battery;
+}
 
-    QString apiKey() const;
-    void setApiKey(const QString &apiKey);
+void HueRemote::updateStates(const QVariantMap &statesMap)
+{
+    qCDebug(dcPhilipsHue) << statesMap;
+}
 
-    QHostAddress hostAddress() const;
-    void setHostAddress(const QHostAddress &hostAddress);
-
-    QString macAddress() const;
-    void setMacAddress(const QString &macAddress);
-
-    QString apiVersion() const;
-    void setApiVersion(const QString &apiVersion);
-
-    QString softwareVersion() const;
-    void setSoftwareVersion(const QString &softwareVersion);
-
-    int zigbeeChannel() const;
-    void setZigbeeChannel(const int &zigbeeChannel);
-
-    QList<HueLight *> lights() const;
-    void addLight(HueLight *light);
-
-    QPair<QNetworkRequest, QByteArray> createDiscoverLightsRequest();
-    QPair<QNetworkRequest, QByteArray> createSearchLightsRequest();
-    QPair<QNetworkRequest, QByteArray> createSearchSensorsRequest();
-    QPair<QNetworkRequest, QByteArray> createCheckUpdatesRequest();
-
-private:
-    QString m_id;
-    QString m_apiKey;
-    QHostAddress m_hostAddress;
-    QString m_name;
-    QString m_macAddress;
-    QString m_apiVersion;
-    QString m_softwareVersion;
-    int m_zigbeeChannel;
-
-    QList<HueLight *> m_lights;
-
-};
-
-#endif // HUEBRIDGE_H

@@ -18,64 +18,39 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HUEBRIDGE_H
-#define HUEBRIDGE_H
+#ifndef HUEREMOTE_H
+#define HUEREMOTE_H
 
 #include <QObject>
+#include <QDebug>
 #include <QHostAddress>
+#include <QNetworkRequest>
+#include <QJsonDocument>
 
-#include "huelight.h"
+#include "typeutils.h"
+#include "huedevice.h"
 
-class HueBridge : public QObject
+class HueRemote : public HueDevice
 {
     Q_OBJECT
 public:
-    explicit HueBridge(QObject *parent = 0);
+    explicit HueRemote(QObject *parent = 0);
 
-    QString name() const;
-    void setName(const QString &name);
+    int battery() const;
+    void setBattery(const int &battery);
 
-    QString id() const;
-    void setId(const QString &id);
-
-    QString apiKey() const;
-    void setApiKey(const QString &apiKey);
-
-    QHostAddress hostAddress() const;
-    void setHostAddress(const QHostAddress &hostAddress);
-
-    QString macAddress() const;
-    void setMacAddress(const QString &macAddress);
-
-    QString apiVersion() const;
-    void setApiVersion(const QString &apiVersion);
-
-    QString softwareVersion() const;
-    void setSoftwareVersion(const QString &softwareVersion);
-
-    int zigbeeChannel() const;
-    void setZigbeeChannel(const int &zigbeeChannel);
-
-    QList<HueLight *> lights() const;
-    void addLight(HueLight *light);
-
-    QPair<QNetworkRequest, QByteArray> createDiscoverLightsRequest();
-    QPair<QNetworkRequest, QByteArray> createSearchLightsRequest();
-    QPair<QNetworkRequest, QByteArray> createSearchSensorsRequest();
-    QPair<QNetworkRequest, QByteArray> createCheckUpdatesRequest();
+    void updateStates(const QVariantMap &statesMap);
 
 private:
-    QString m_id;
-    QString m_apiKey;
-    QHostAddress m_hostAddress;
-    QString m_name;
-    QString m_macAddress;
-    QString m_apiVersion;
-    QString m_softwareVersion;
-    int m_zigbeeChannel;
+    int m_battery;
 
-    QList<HueLight *> m_lights;
+signals:
+    void onPressed();
+    void brightnessUpPressed();
+    void brightnessDownPressed();
+    void offPressed();
 
+public slots:
 };
 
-#endif // HUEBRIDGE_H
+#endif // HUEREMOTE_H

@@ -36,12 +36,21 @@ void HueRemote::setBattery(const int &battery)
     m_battery = battery;
 }
 
-void HueRemote::updateStates(const QVariantMap &statesMap)
+void HueRemote::updateStates(const QVariantMap &statesMap, const QVariantMap &configMap)
 {
-    qCDebug(dcPhilipsHue) << statesMap;
-
-
+    setReachable(configMap.value("reachable", false).toBool());
+    setBattery(configMap.value("battery", 0).toInt());
 
     emit stateChanged();
+
+    QString lastUpdate = statesMap.value("lastupdated").toString();
+    if (m_lastUpdate != lastUpdate) {
+        m_lastUpdate = lastUpdate;
+
+        int buttonCode = statesMap.value("buttonevent").toInt();
+        qCDebug(dcPhilipsHue) << "button pressed" << buttonCode;
+
+        emit buttonPressed(buttonCode);
+    }
 }
 

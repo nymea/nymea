@@ -58,6 +58,7 @@ public slots:
 private slots:
     void lightStateChanged();
     void remoteStateChanged();
+    void onRemoteButtonEvent(const int &buttonCode);
     void onTimeout();
 
 private:
@@ -108,7 +109,7 @@ private:
     void processInformationResponse(PairingInfo *pairingInfo, const QByteArray &data);
     void processActionResponse(Device *device, const ActionId actionId, const QByteArray &data);
 
-    void onBridgeError(Device *device);
+    void bridgeReachableChanged(Device *device, const bool &reachable);
 
     bool bridgeAlreadyAdded(const QString &id);
     bool lightAlreadyAdded(const QString &uuid);

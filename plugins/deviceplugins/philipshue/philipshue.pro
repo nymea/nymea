@@ -10,7 +10,9 @@ SOURCES += \
     #light.cpp \
     huebridge.cpp \
     huelight.cpp \
-    pairinginfo.cpp
+    pairinginfo.cpp \
+    hueremote.cpp \
+    huedevice.cpp
 
 HEADERS += \
     devicepluginphilipshue.h \
@@ -19,7 +21,9 @@ HEADERS += \
     #lightinterface.h \
     huebridge.h \
     huelight.h \
-    pairinginfo.h
+    pairinginfo.h \
+    hueremote.h \
+    huedevice.h
 
 
 

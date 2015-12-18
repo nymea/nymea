@@ -18,64 +18,65 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HUEBRIDGE_H
-#define HUEBRIDGE_H
+#ifndef HUEDEVICE_H
+#define HUEDEVICE_H
 
 #include <QObject>
+#include <QDebug>
 #include <QHostAddress>
+#include <QNetworkRequest>
+#include <QJsonDocument>
 
-#include "huelight.h"
+#include "typeutils.h"
 
-class HueBridge : public QObject
+class HueDevice : public QObject
 {
     Q_OBJECT
 public:
-    explicit HueBridge(QObject *parent = 0);
+    explicit HueDevice(QObject *parent = 0);
+
+    int id() const;
+    void setId(const int &id);
 
     QString name() const;
     void setName(const QString &name);
 
-    QString id() const;
-    void setId(const QString &id);
+    DeviceId bridgeId() const;
+    void setBridgeId(const DeviceId &bridgeId);
+
+    QHostAddress hostAddress() const;
+    void setHostAddress(const QHostAddress hostAddress);
+
+    QString uuid();
+    void setUuid(const QString &uuid);
 
     QString apiKey() const;
     void setApiKey(const QString &apiKey);
 
-    QHostAddress hostAddress() const;
-    void setHostAddress(const QHostAddress &hostAddress);
+    QString modelId() const;
+    void setModelId(const QString &modelId);
 
-    QString macAddress() const;
-    void setMacAddress(const QString &macAddress);
-
-    QString apiVersion() const;
-    void setApiVersion(const QString &apiVersion);
+    QString type() const;
+    void setType(const QString &type);
 
     QString softwareVersion() const;
     void setSoftwareVersion(const QString &softwareVersion);
 
-    int zigbeeChannel() const;
-    void setZigbeeChannel(const int &zigbeeChannel);
-
-    QList<HueLight *> lights() const;
-    void addLight(HueLight *light);
-
-    QPair<QNetworkRequest, QByteArray> createDiscoverLightsRequest();
-    QPair<QNetworkRequest, QByteArray> createSearchLightsRequest();
-    QPair<QNetworkRequest, QByteArray> createSearchSensorsRequest();
-    QPair<QNetworkRequest, QByteArray> createCheckUpdatesRequest();
+    bool reachable() const;
+    void setReachable(const bool &reachable);
 
 private:
-    QString m_id;
-    QString m_apiKey;
-    QHostAddress m_hostAddress;
+    int m_id;
     QString m_name;
-    QString m_macAddress;
-    QString m_apiVersion;
+    QHostAddress m_hostAddress;
+    QString m_apiKey;
+    QString m_modelId;
+    QString m_uuid;
+    DeviceId m_bridgeId;
+    QString m_type;
     QString m_softwareVersion;
-    int m_zigbeeChannel;
 
-    QList<HueLight *> m_lights;
-
+    bool m_reachable;
 };
 
-#endif // HUEBRIDGE_H
+#endif // HUEDEVICE_H

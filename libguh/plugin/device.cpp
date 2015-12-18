@@ -191,7 +191,7 @@ void Device::setStateValue(const StateTypeId &stateTypeId, const QVariant &value
 
 
             // TODO: check min/max value + possible values
-            //       to prevent an invalid state type
+            //       to prevent an invalid state type from the plugin side
 
             State newState(stateTypeId, m_id);
             newState.setValue(value);
@@ -200,7 +200,7 @@ void Device::setStateValue(const StateTypeId &stateTypeId, const QVariant &value
             return;
         }
     }
-    qCWarning(dcDeviceManager) << "failed setting state for" << m_name;
+    qCWarning(dcDeviceManager) << "failed setting state for" << m_name << value;
 }
 
 /*! Returns the \l{State} with the given \a stateTypeId of this Device. */

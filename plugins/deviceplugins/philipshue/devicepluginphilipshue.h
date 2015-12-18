@@ -57,6 +57,7 @@ public slots:
 
 private slots:
     void lightStateChanged();
+    void remoteStateChanged();
     void onTimeout();
 
 private:

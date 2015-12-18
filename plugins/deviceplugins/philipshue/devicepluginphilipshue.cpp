@@ -279,7 +279,7 @@ void DevicePluginPhilipsHue::networkManagerReplyReady(QNetworkReply *reply)
         PairingInfo *pairingInfo = m_pairingRequests.take(reply);
 
         // check HTTP status code
-        if (status != 200) {
+        if (status != 200 || reply->error() != QNetworkReply::NoError) {
             qCWarning(dcPhilipsHue) << "Request error:" << status << reply->errorString();
             pairingInfo->deleteLater();
             reply->deleteLater();
@@ -291,7 +291,7 @@ void DevicePluginPhilipsHue::networkManagerReplyReady(QNetworkReply *reply)
         PairingInfo *pairingInfo = m_informationRequests.take(reply);
 
         // check HTTP status code
-        if (status != 200) {
+        if (status != 200 || reply->error() != QNetworkReply::NoError) {
             qCWarning(dcPhilipsHue) << "Request error:" << status << reply->errorString();
             reply->deleteLater();
             pairingInfo->deleteLater();
@@ -302,7 +302,7 @@ void DevicePluginPhilipsHue::networkManagerReplyReady(QNetworkReply *reply)
     } else if (m_discoveryRequests.contains(reply)) {
         m_discoveryRequests.removeAll(reply);
         // check HTTP status code
-        if (status != 200) {
+        if (status != 200 || reply->error() != QNetworkReply::NoError) {
             qCWarning(dcPhilipsHue) << "N-UPNP discovery error:" << status << reply->errorString();
             reply->deleteLater();
             return;
@@ -313,7 +313,7 @@ void DevicePluginPhilipsHue::networkManagerReplyReady(QNetworkReply *reply)
         Device *device = m_bridgeLightsDiscoveryRequests.take(reply);
 
         // check HTTP status code
-        if (status != 200) {
+        if (status != 200 || reply->error() != QNetworkReply::NoError) {
             qCWarning(dcPhilipsHue) << "Bridge light discovery error:" << status << reply->errorString();
             bridgeReachableChanged(device, false);
             reply->deleteLater();
@@ -325,7 +325,7 @@ void DevicePluginPhilipsHue::networkManagerReplyReady(QNetworkReply *reply)
         Device *device = m_bridgeSensorsDiscoveryRequests.take(reply);
 
         // check HTTP status code
-        if (status != 200) {
+        if (status != 200 || reply->error() != QNetworkReply::NoError) {
             qCWarning(dcPhilipsHue) << "Bridge sensor discovery error:" << status << reply->errorString();
             bridgeReachableChanged(device, false);
             reply->deleteLater();
@@ -337,7 +337,7 @@ void DevicePluginPhilipsHue::networkManagerReplyReady(QNetworkReply *reply)
         Device *device = m_bridgeSearchDevicesRequests.take(reply);
 
         // check HTTP status code
-        if (status != 200) {
+        if (status != 200 || reply->error() != QNetworkReply::NoError) {
             qCWarning(dcPhilipsHue) << "Bridge search new devices error:" << status << reply->errorString();
             bridgeReachableChanged(device, false);
             reply->deleteLater();
@@ -345,11 +345,25 @@ void DevicePluginPhilipsHue::networkManagerReplyReady(QNetworkReply *reply)
         }
         discoverBridgeDevices(m_bridges.key(device));
 
+    } else if (m_bridgeRefreshRequests.keys().contains(reply)) {
+        Device *device = m_bridgeRefreshRequests.take(reply);
+
+        // check HTTP status code
+        if (status != 200 || reply->error() != QNetworkReply::NoError) {
+            if (device->stateValue(bridgeReachableStateTypeId).toBool()) {
+                qCWarning(dcPhilipsHue) << "Refresh Hue Bridge request error:" << status << reply->errorString();
+                bridgeReachableChanged(device, false);
+            }
+            reply->deleteLater();
+            return;
+        }
+        processBridgeRefreshResponse(device, reply->readAll());
+
     } else if (m_lightRefreshRequests.keys().contains(reply)) {
         Device *device = m_lightRefreshRequests.take(reply);
 
         // check HTTP status code
-        if (status != 200) {
+        if (status != 200 || reply->error() != QNetworkReply::NoError) {
             qCWarning(dcPhilipsHue) << "Refresh Hue Light request error:" << status << reply->errorString();
             bridgeReachableChanged(device, false);
             reply->deleteLater();
@@ -361,7 +375,7 @@ void DevicePluginPhilipsHue::networkManagerReplyReady(QNetworkReply *reply)
         Device *device = m_lightsRefreshRequests.take(reply);
 
         // check HTTP status code
-        if (status != 200) {
+        if (status != 200 || reply->error() != QNetworkReply::NoError) {
             if (device->stateValue(bridgeReachableStateTypeId).toBool()) {
                 qCWarning(dcPhilipsHue) << "Refresh Hue lights request error:" << status << reply->errorString();
                 bridgeReachableChanged(device, false);
@@ -375,7 +389,7 @@ void DevicePluginPhilipsHue::networkManagerReplyReady(QNetworkReply *reply)
         Device *device = m_sensorsRefreshRequests.take(reply);
 
         // check HTTP status code
-        if (status != 200) {
+        if (status != 200 || reply->error() != QNetworkReply::NoError) {
             if (device->stateValue(bridgeReachableStateTypeId).toBool()) {
                 qCWarning(dcPhilipsHue) << "Refresh Hue sensors request error:" << status << reply->errorString();
                 bridgeReachableChanged(device, false);
@@ -385,25 +399,11 @@ void DevicePluginPhilipsHue::networkManagerReplyReady(QNetworkReply *reply)
         }
         processSensorsRefreshResponse(device, reply->readAll());
 
-    } else if (m_bridgeRefreshRequests.keys().contains(reply)) {
-        Device *device = m_bridgeRefreshRequests.take(reply);
-
-        // check HTTP status code
-        if (status != 200) {
-            if (device->stateValue(bridgeReachableStateTypeId).toBool()) {
-                qCWarning(dcPhilipsHue) << "Refresh Hue Bridge request error:" << status << reply->errorString();
-                bridgeReachableChanged(device, false);
-            }
-            reply->deleteLater();
-            return;
-        }
-        processBridgeRefreshResponse(device, reply->readAll());
-
     } else if (m_asyncActions.keys().contains(reply)) {
         QPair<Device *, ActionId> actionInfo = m_asyncActions.take(reply);
 
         // check HTTP status code
-        if (status != 200) {
+        if (status != 200 || reply->error() != QNetworkReply::NoError) {
             qCWarning(dcPhilipsHue) << "Execute Hue Light action request error:" << status << reply->errorString();
             bridgeReachableChanged(actionInfo.first, false);
             emit actionExecutionFinished(actionInfo.second, DeviceManager::DeviceErrorHardwareNotAvailable);
@@ -416,7 +416,7 @@ void DevicePluginPhilipsHue::networkManagerReplyReady(QNetworkReply *reply)
         Device *device = m_lightSetNameRequests.take(reply);
 
         // check HTTP status code
-        if (status != 200) {
+        if (status != 200 || reply->error() != QNetworkReply::NoError) {
             qCWarning(dcPhilipsHue) << "Set name of Hue Light request error:" << status << reply->errorString();
             bridgeReachableChanged(device, false);
             reply->deleteLater();
@@ -424,7 +424,6 @@ void DevicePluginPhilipsHue::networkManagerReplyReady(QNetworkReply *reply)
         }
         processSetNameResponse(device, reply->readAll());
     }
-
     reply->deleteLater();
 }
 
@@ -606,6 +605,15 @@ void DevicePluginPhilipsHue::refreshLight(Device *device)
 
 void DevicePluginPhilipsHue::refreshBridge(Device *device)
 {
+    if (!m_bridgeRefreshRequests.isEmpty()) {
+        QNetworkReply *reply = m_bridgeRefreshRequests.key(device);
+        reply->abort();
+        m_bridgeRefreshRequests.remove(reply);
+        reply->deleteLater();
+        bridgeReachableChanged(device, false);
+        return;
+    }
+
     HueBridge *bridge = m_bridges.key(device);
 
     QNetworkRequest request(QUrl("http://" + bridge->hostAddress().toString() + "/api/" + bridge->apiKey() + "/config"));
@@ -904,14 +912,9 @@ void DevicePluginPhilipsHue::processBridgeRefreshResponse(Device *device, const 
         break;
     }
 
-
-
     // do lights/sensor update right after successfull bridge update
     HueBridge *bridge = m_bridges.key(device);
     refreshLights(bridge);
-    if (!m_remotes.isEmpty())
-        refreshSensors(bridge);
-
 }
 
 void DevicePluginPhilipsHue::processLightsRefreshResponse(Device *device, const QByteArray &data)
@@ -942,11 +945,13 @@ void DevicePluginPhilipsHue::processLightsRefreshResponse(Device *device, const 
         // get the light of this bridge
         foreach (HueLight *light, m_lights.keys()) {
             if (light->id() == lightId.toInt() && light->bridgeId() == device->id()) {
-                //qCDebug(dcPhilipsHue) << "update light" << light->id() << light->name();
                 light->updateStates(lightMap.value("state").toMap());
             }
         }
     }
+
+    if (!m_remotes.isEmpty())
+        refreshSensors(m_bridges.key(device));
 }
 
 void DevicePluginPhilipsHue::processSensorsRefreshResponse(Device *device, const QByteArray &data)

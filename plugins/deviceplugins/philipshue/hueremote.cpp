@@ -39,5 +39,9 @@ void HueRemote::setBattery(const int &battery)
 void HueRemote::updateStates(const QVariantMap &statesMap)
 {
     qCDebug(dcPhilipsHue) << statesMap;
+
+
+
+    emit stateChanged();
 }
 

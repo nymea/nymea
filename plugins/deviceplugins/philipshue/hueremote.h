@@ -45,6 +45,7 @@ private:
     int m_battery;
 
 signals:
+    void stateChanged();
     void onPressed();
     void brightnessUpPressed();
     void brightnessDownPressed();

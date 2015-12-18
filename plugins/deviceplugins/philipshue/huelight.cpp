@@ -140,12 +140,13 @@ void HueLight::updateStates(const QVariantMap &statesMap)
         setEffect("color loop");
     }
 
+    setReachable(statesMap.value("reachable").toBool());
+
     // alert (none, select, lselect)
     setAlert(statesMap.value("alert").toString());
     setBrigtness(statesMap.value("bri").toInt());
     setCt(statesMap.value("ct").toInt());
     setPower(statesMap.value("on").toBool());
-    setReachable(statesMap.value("reachable").toBool());
     setSat(statesMap.value("sat").toInt());
     setHue(statesMap.value("hue").toInt());
     if (!statesMap.value("xy").toList().isEmpty())

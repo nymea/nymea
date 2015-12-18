@@ -34,24 +34,32 @@ class HueRemote : public HueDevice
 {
     Q_OBJECT
 public:
+    enum ButtonCode {
+        OnLongPressed = 1001,
+        OnPressed = 1002,
+        DimUpLongPressed = 2001,
+        DimUpPressed = 2002,
+        DimDownLongPressed = 3001,
+        DimDownPressed = 3002,
+        OffLongPressed = 4001,
+        OffPressed = 4002
+    };
+
     explicit HueRemote(QObject *parent = 0);
 
     int battery() const;
     void setBattery(const int &battery);
 
-    void updateStates(const QVariantMap &statesMap);
+    void updateStates(const QVariantMap &statesMap, const QVariantMap &configMap);
 
 private:
     int m_battery;
+    QString m_lastUpdate;
 
 signals:
     void stateChanged();
-    void onPressed();
-    void brightnessUpPressed();
-    void brightnessDownPressed();
-    void offPressed();
+    void buttonPressed(const int &buttonCode);
 
-public slots:
 };
 
 #endif // HUEREMOTE_H

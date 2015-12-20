@@ -14,7 +14,7 @@ Standards-Version: 3.9.5
 Package: guh
 Architecture: any
 Section: misc
-Depends: guh (= ${binary:Version}),
+Depends: guhd (= ${binary:Version}),
   guh-plugins (= ${binary:Version}),
 Description: An open source IoT server - meta package
   guh is an open source IoT (Internet of Things) server, 
@@ -47,7 +47,8 @@ Package: guh-dbg
 Priority: extra
 Architecture: any
 Section: debug
-Depends: guh (= ${binary:Version}), ${misc:Depends}
+Depends: guh (= ${binary:Version}), 
+  ${misc:Depends}
 Description: An open source IoT server - debug symbols
   guh is an open source IoT (Internet of Things) server,
   which allows to control a lot of different devices from many different
@@ -71,7 +72,7 @@ Architecture: any
 Depends: guh (= ${binary:Version}),
   ${shlibs:Depends},
   ${misc:Depends}
-Description: Tests for the guh package
+Description: Tests and mock plugin for the guh package
   guh is an open source IoT (Internet of Things) server,
   which allows to control a lot of different devices from many different
   manufacturers. With the powerful rule engine you are able to connect any

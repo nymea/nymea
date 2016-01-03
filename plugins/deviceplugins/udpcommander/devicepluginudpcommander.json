@@ -11,6 +11,10 @@
                 {
                     "deviceClassId": "6ecd5a8d-595a-4520-85e3-dcc9679edf66",
                     "name": "UDP Commander",
+                    "basicTags": [
+                        "Service",
+                        "Sensor"
+                    ],
                     "createMethods": ["user"],
                     "paramTypes": [
                         {

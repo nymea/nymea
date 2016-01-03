@@ -12,6 +12,10 @@
                     "idName": "application",
                     "name": "Application launcher",
                     "createMethods": ["user"],
+                    "basicTags": [
+                        "Service",
+                        "Actuator"
+                    ],
                     "paramTypes": [
                         {
                             "name": "name",
@@ -50,6 +54,10 @@
                     "deviceClassId": "96044325-a6fb-47c9-9117-f29c3b327978",
                     "idName": "script",
                     "name": "Bashscript launcher",
+                    "basicTags": [
+                        "Service",
+                        "Actuator"
+                    ],
                     "createMethods": ["user"],
                     "paramTypes": [
                         {

@@ -12,6 +12,11 @@
                     "deviceClassId": "6b1f8f37-7eb4-46c4-9f15-a6eb4904999c",
                     "idName": "rfController",
                     "name": "RF Controller (LN-CON-RF20B)",
+                    "basicTags": [
+                        "Device",
+                        "Actuator",
+                        "Lighting"
+                    ],
                     "createMethods": ["user"],
                     "paramTypes": [
                         {

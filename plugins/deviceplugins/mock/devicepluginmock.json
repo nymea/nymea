@@ -12,6 +12,11 @@
                     "deviceClassId": "753f0d32-0468-4d08-82ed-1964aab03298",
                     "idName": "mock",
                     "name": "Mock Device",
+                    "basicTags": [
+                        "Device",
+                        "Actuator",
+                        "Gateway"
+                    ],
                     "createMethods": ["user", "discovery"],
                     "discoveryParamTypes": [
                         {
@@ -115,6 +120,11 @@
                     "deviceClassId": "ab4257b3-7548-47ee-9bd4-7dc3004fd197",
                     "idName": "mockDeviceAuto",
                     "name": "Mock Device (Auto created)",
+                    "basicTags": [
+                        "Device",
+                        "Actuator",
+                        "Gateway"
+                    ],
                     "createMethods": ["auto"],
                     "paramTypes": [
                         {
@@ -207,6 +217,11 @@
                     "deviceClassId": "9e03144c-e436-4eea-82d9-ccb33ef778db",
                     "idName": "mockPushButton",
                     "name": "Mock Device (Push Button)",
+                    "basicTags": [
+                        "Device",
+                        "Actuator",
+                        "Gateway"
+                    ],
                     "createMethods": ["discovery"],
                     "setupMethod": "pushButton",
                     "pairingInfo": "Wait 3 second before you continue, the push button will be pressed automatically.",
@@ -274,6 +289,11 @@
                     "deviceClassId": "296f1fd4-e893-46b2-8a42-50d1bceb8730",
                     "idName": "mockDisplayPin",
                     "name": "Mock Device (Display Pin)",
+                    "basicTags": [
+                        "Device",
+                        "Actuator",
+                        "Gateway"
+                    ],
                     "createMethods": ["discovery"],
                     "setupMethod": "displayPin",
                     "pairingInfo": "Please enter the secret which normaly will be displayed on the device. For the mockdevice the pin is 243681.",
@@ -348,6 +368,11 @@
                     "deviceClassId": "a71fbde9-9a38-4bf8-beab-c8aade2608ba",
                     "idName": "mockParent",
                     "name": "Mock Device (Parent)",
+                    "basicTags": [
+                        "Device",
+                        "Actuator",
+                        "Gateway"
+                    ],
                     "createMethods": ["user"],
                     "paramTypes": [
                         {
@@ -373,6 +398,10 @@
                     "idName": "mockChild",
                     "name": "Mock Device (Child)",
                     "createMethods": ["auto"],
+                    "basicTags": [
+                        "Device",
+                        "Actuator"
+                    ],
                     "paramTypes": [
                         {
                             "name": "name",

@@ -13,6 +13,10 @@
                     "idName": "mood",
                     "name": "Mood",
                     "createMethods": ["user"],
+                    "basicTags": [
+                        "Service",
+                        "Actuator"
+                    ],
                     "paramTypes": [
                         {
                             "name": "name",
@@ -74,6 +78,11 @@
                     "deviceClassId": "3a928446-923a-4777-b653-1f71324888c7",
                     "idName": "tune",
                     "name": "Tune",
+                    "basicTags": [
+                        "Device",
+                        "Gateway",
+                        "Lighting"
+                    ],
                     "createMethods": ["auto"],
                     "paramTypes": [
                         {

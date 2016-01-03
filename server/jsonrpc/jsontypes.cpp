@@ -38,6 +38,7 @@ bool JsonTypes::s_initialized = false;
 QString JsonTypes::s_lastError;
 
 QVariantList JsonTypes::s_basicType;
+QVariantList JsonTypes::s_basicTag;
 QVariantList JsonTypes::s_stateOperator;
 QVariantList JsonTypes::s_valueOperator;
 QVariantList JsonTypes::s_inputType;
@@ -79,6 +80,7 @@ void JsonTypes::init()
 {
     // BasicTypes
     s_basicType = enumToStrings(JsonTypes::staticMetaObject, "BasicType");
+    s_basicTag = enumToStrings(DeviceClass::staticMetaObject, "BasicTag");
     s_stateOperator = enumToStrings(Types::staticMetaObject, "StateOperator");
     s_valueOperator = enumToStrings(Types::staticMetaObject, "ValueOperator");
     s_inputType = enumToStrings(Types::staticMetaObject, "InputType");
@@ -188,6 +190,7 @@ void JsonTypes::init()
     s_deviceClass.insert("id", basicTypeToString(Uuid));
     s_deviceClass.insert("vendorId", basicTypeToString(Uuid));
     s_deviceClass.insert("name", basicTypeToString(String));
+    s_deviceClass.insert("basicTags", QVariantList() << basicTagRef());
     s_deviceClass.insert("stateTypes", QVariantList() << stateTypeRef());
     s_deviceClass.insert("eventTypes", QVariantList() << eventTypeRef());
     s_deviceClass.insert("actionTypes", QVariantList() << actionTypeRef());
@@ -263,6 +266,7 @@ QVariantMap JsonTypes::allTypes()
 {
     QVariantMap allTypes;
     allTypes.insert("BasicType", basicType());
+    allTypes.insert("BasicTag", basicTag());
     allTypes.insert("ParamType", paramTypeDescription());
     allTypes.insert("InputType", inputType());
     allTypes.insert("Unit", unit());
@@ -516,6 +520,11 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass)
     variant.insert("name", deviceClass.name());
     variant.insert("id", deviceClass.id());
     variant.insert("vendorId", deviceClass.vendorId());
+
+    QVariantList basicTags;
+    foreach (const DeviceClass::BasicTag &basicTag, deviceClass.basicTags()) {
+        basicTags.append(s_basicTag.at(basicTag));
+    }
     QVariantList stateTypes;
     foreach (const StateType &stateType, deviceClass.stateTypes()) {
         stateTypes.append(packStateType(stateType));
@@ -537,6 +546,7 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass)
         discoveryParamTypes.append(packParamType(paramType));
     }
 
+    variant.insert("basicTags", basicTags);
     variant.insert("paramTypes", paramTypes);
     variant.insert("discoveryParamTypes", discoveryParamTypes);
     variant.insert("stateTypes", stateTypes);
@@ -1276,6 +1286,12 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                 QPair<bool, QString> result = validateEnum(s_unit, variant);
                 if (!result.first) {
                     qCWarning(dcJsonRpc) << QString("value %1 not allowed in %2").arg(variant.toString()).arg(unitRef());
+                    return result;
+                }
+            } else if (refName == basicTagRef()) {
+                QPair<bool, QString> result = validateEnum(s_basicTag, variant);
+                if (!result.first) {
+                    qCWarning(dcJsonRpc) << QString("value %1 not allowed in %2").arg(variant.toString()).arg(basicTagRef());
                     return result;
                 }
             } else {

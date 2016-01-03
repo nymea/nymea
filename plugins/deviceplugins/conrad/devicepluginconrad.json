@@ -11,6 +11,11 @@
                 {
                     "deviceClassId": "2bb14180-aa5d-4999-992d-e6d464cff486",
                     "name": "Shutter (RSM900R)",
+                    "basicTags": [
+                        "Device",
+                        "Actuator",
+                        "Shading"
+                    ],
                     "idName": "conradShutter",
                     "createMethods": ["user"],
                     "paramTypes": [

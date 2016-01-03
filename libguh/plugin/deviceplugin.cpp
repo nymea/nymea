@@ -234,6 +234,12 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
             deviceClass.setPairingInfo(jo.value("pairingInfo").toString());
             deviceClass.setParamTypes(parseParamTypes(jo.value("paramTypes").toArray()));
 
+            QList<DeviceClass::BasicTag> basicTags;
+            foreach (const QJsonValue &basicTagJson, jo.value("basicTags").toArray()) {
+                basicTags.append(basicTagStringToBasicTag(basicTagJson.toString()));
+            }
+            deviceClass.setBasicTags(basicTags);
+
             QList<ActionType> actionTypes;
             QList<StateType> stateTypes;
             foreach (const QJsonValue &stateTypesJson, jo.value("stateTypes").toArray()) {
@@ -426,10 +432,13 @@ QList<ParamType> DevicePlugin::parseParamTypes(const QJsonArray &array) const
                    .arg(pt.value("type").toString())
                    .arg(pt.value("name").toString()).toLatin1().data());
         ParamType paramType(pt.value("name").toString(), t, pt.value("defaultValue").toVariant());
+
+        // set allowed values
         QVariantList allowedValues;
         foreach (const QJsonValue &allowedTypesJson, pt.value("allowedValues").toArray()) {
             allowedValues.append(allowedTypesJson.toVariant());
         }
+
         // set the input type if there is any
         if (pt.contains("inputType")) {
             paramType.setInputType(inputTypeStringToInputType(pt.value("inputType").toString()));
@@ -501,18 +510,18 @@ DeviceManager::DeviceError DevicePlugin::setConfigValue(const QString &paramName
         if (paramType.name() == paramName) {
             if (!value.canConvert(paramType.type())) {
                 qCWarning(dcDeviceManager) << QString("Wrong parameter type for param %1. Got %2. Expected %3.")
-                              .arg(paramName).arg(value.toString()).arg(QVariant::typeToName(paramType.type()));
+                                              .arg(paramName).arg(value.toString()).arg(QVariant::typeToName(paramType.type()));
                 return DeviceManager::DeviceErrorInvalidParameter;
             }
 
             if (paramType.maxValue().isValid() && value > paramType.maxValue()) {
                 qCWarning(dcDeviceManager) << QString("Value out of range for param %1. Got %2. Max: %3.")
-                              .arg(paramName).arg(value.toString()).arg(paramType.maxValue().toString());
+                                              .arg(paramName).arg(value.toString()).arg(paramType.maxValue().toString());
                 return DeviceManager::DeviceErrorInvalidParameter;
             }
             if (paramType.minValue().isValid() && value < paramType.minValue()) {
                 qCWarning(dcDeviceManager) << QString("Value out of range for param %1. Got: %2. Min: %3.")
-                              .arg(paramName).arg(value.toString()).arg(paramType.minValue().toString());
+                                              .arg(paramName).arg(value.toString()).arg(paramType.minValue().toString());
                 return DeviceManager::DeviceErrorInvalidParameter;
             }
             found = true;
@@ -763,6 +772,8 @@ Types::Unit DevicePlugin::unitStringToUnit(const QString &unitString) const
         return Types::UnitKiloWattHour;
     } else if (unitString == "EuroPerMegaWattHour") {
         return Types::UnitEuroPerMegaWattHour;
+    } else if (unitString == "EuroCentPerKiloWattHour") {
+        return Types::UnitEuroCentPerKiloWattHour;
     } else if (unitString == "Percentage") {
         return Types::UnitPercentage;
     } else if (unitString == "PartsPerMillion") {
@@ -799,4 +810,49 @@ Types::InputType DevicePlugin::inputTypeStringToInputType(const QString &inputTy
         return Types::InputTypeMacAddress;
     }
     return Types::InputTypeNone;
+}
+
+DeviceClass::BasicTag DevicePlugin::basicTagStringToBasicTag(const QString &basicTag) const
+{
+    if (basicTag == "Device") {
+        return DeviceClass::BasicTagDevice;
+    } else if (basicTag == "Service") {
+        return DeviceClass::BasicTagService;
+    } else if (basicTag == "Actuator") {
+        return DeviceClass::BasicTagActuator;
+    } else if (basicTag == "Sensor") {
+        return DeviceClass::BasicTagSensor;
+    } else if (basicTag == "Lighting") {
+        return DeviceClass::BasicTagLighting;
+    } else if (basicTag == "Energy") {
+        return DeviceClass::BasicTagEnergy;
+    } else if (basicTag == "Multimedia") {
+        return DeviceClass::BasicTagMultimedia;
+    } else if (basicTag == "Weather") {
+        return DeviceClass::BasicTagWeather;
+    } else if (basicTag == "Gateway") {
+        return DeviceClass::BasicTagGateway;
+    } else if (basicTag == "Heating") {
+        return DeviceClass::BasicTagHeating;
+    } else if (basicTag == "Cooling") {
+        return DeviceClass::BasicTagCooling;
+    } else if (basicTag == "Notification") {
+        return DeviceClass::BasicTagNotification;
+    } else if (basicTag == "Security") {
+        return DeviceClass::BasicTagSecurity;
+    } else if (basicTag == "Time") {
+        return DeviceClass::BasicTagTime;
+    } else if (basicTag == "Shading") {
+        return DeviceClass::BasicTagShading;
+    } else if (basicTag == "Appliance") {
+        return DeviceClass::BasicTagAppliance;
+    } else if (basicTag == "Camera") {
+        return DeviceClass::BasicTagCamera;
+    } else if (basicTag == "Lock") {
+        return DeviceClass::BasicTagLock;
+    } else {
+        qCWarning(dcDeviceManager) << "Could not parse basicTag:" << basicTag << "in plugin" << this->pluginName();
+    }
+
+    return DeviceClass::BasicTagDevice;
 }

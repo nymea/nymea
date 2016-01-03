@@ -80,7 +80,7 @@ void JsonTypes::init()
 {
     // BasicTypes
     s_basicType = enumToStrings(JsonTypes::staticMetaObject, "BasicType");
-    s_basicTag = enumToStrings(Types::staticMetaObject, "BasicTag");
+    s_basicTag = enumToStrings(DeviceClass::staticMetaObject, "BasicTag");
     s_stateOperator = enumToStrings(Types::staticMetaObject, "StateOperator");
     s_valueOperator = enumToStrings(Types::staticMetaObject, "ValueOperator");
     s_inputType = enumToStrings(Types::staticMetaObject, "InputType");
@@ -522,7 +522,7 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass)
     variant.insert("vendorId", deviceClass.vendorId());
 
     QVariantList basicTags;
-    foreach (const Types::BasicTag &basicTag, deviceClass.basicTags()) {
+    foreach (const DeviceClass::BasicTag &basicTag, deviceClass.basicTags()) {
         basicTags.append(s_basicTag.at(basicTag));
     }
     QVariantList stateTypes;

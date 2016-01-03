@@ -12,6 +12,11 @@
                     "deviceClassId": "1d41b5a8-74ff-4a12-b365-c7bbe610848f",
                     "idName": "lgSmartTv",
                     "name": "LG Smart Tv",
+                    "basicTags": [
+                        "Device",
+                        "Multimedia",
+                        "Actuator"
+                    ],
                     "createMethods": ["discovery"],
                     "setupMethod": "displayPin",
                     "pairingInfo": "Please enter the pairing key displayed on the Tv.",

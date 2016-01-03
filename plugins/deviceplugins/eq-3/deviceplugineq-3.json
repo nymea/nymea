@@ -12,6 +12,12 @@
                     "deviceClassId": "1e892268-8bd7-442c-a001-bd4e2e6b2949",
                     "idName": "cube",
                     "name": "Max! Cube LAN Gateway",
+                    "basicTags": [
+                        "Device",
+                        "Gateway",
+                        "Heating",
+                        "Energy"
+                    ],
                     "createMethods": ["discovery"],
                     "paramTypes": [
                         {
@@ -54,6 +60,12 @@
                     "deviceClassId": "ffbfec5d-06e8-4082-b62b-92cc5c3e8c4e",
                     "idName": "wallThermostate",
                     "name": "Max! Wall Thermostat",
+                    "basicTags": [
+                        "Device",
+                        "Heating",
+                        "Energy",
+                        "Sensor"
+                    ],
                     "createMethods": ["auto"],
                     "paramTypes": [
                         {
@@ -229,6 +241,12 @@
                     "deviceClassId": "f80d9481-4827-45ee-a013-b97b22412d92",
                     "idName": "radiatorThermostate",
                     "name": "Max! Radiator Thermostat",
+                    "basicTags": [
+                        "Device",
+                        "Heating",
+                        "Energy",
+                        "Actuator"
+                    ],
                     "createMethods": ["auto"],
                     "paramTypes": [
                         {

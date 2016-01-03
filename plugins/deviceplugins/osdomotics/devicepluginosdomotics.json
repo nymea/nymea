@@ -12,6 +12,10 @@
                     "deviceClassId": "57d1b080-36a0-46af-a676-78c6b78d08ae",
                     "idName": "rplRouter",
                     "name": "RPL Router",
+                    "basicTags": [
+                        "Device",
+                        "Gateway"
+                    ],
                     "createMethods": ["user"],
                     "paramTypes": [
                         {
@@ -31,6 +35,10 @@
                     "deviceClassId": "4454e05e-ac0a-4b10-b9dd-56a1475895d7",
                     "idName": "merkurNode",
                     "name": "Merkur Node",
+                    "basicTags": [
+                        "Device",
+                        "Actuator"
+                    ],
                     "createMethods": ["auto"],
                     "paramTypes": [
                         {

@@ -12,6 +12,11 @@
                     "deviceClassId": "5c2bc4cd-ba6c-4052-b6cd-1db83323ea22",
                     "idName": "irReceiver",
                     "name": "IR receiver",
+                    "basicTags": [
+                        "Service",
+                        "Actuator",
+                        "Multimedia"
+                    ],
                     "createMethods": ["user"],
                     "paramTypes": [
                         {

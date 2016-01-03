@@ -131,6 +131,7 @@ private:
 
     Types::Unit unitStringToUnit(const QString &unitString) const;
     Types::InputType inputTypeStringToInputType(const QString &inputType) const;
+    Types::BasicTag basicTagStringToBasicTag(const QString &basicTag) const;
 
     DeviceManager *m_deviceManager;
 

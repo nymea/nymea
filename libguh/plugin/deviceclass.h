@@ -62,6 +62,9 @@ public:
     QString name() const;
     void setName(const QString &name);
 
+    QList<Types::BasicTag> basicTags() const;
+    void setBasicTags(const QList<Types::BasicTag> &basicTags);
+
     QList<StateType> stateTypes() const;
     void setStateTypes(const QList<StateType> &stateTypes);
     bool hasStateType(const StateTypeId &stateTypeId);
@@ -82,6 +85,7 @@ public:
 
     CreateMethods createMethods() const;
     void setCreateMethods(CreateMethods createMethods);
+
     SetupMethod setupMethod() const;
     void setSetupMethod(SetupMethod setupMethod);
 
@@ -95,6 +99,7 @@ private:
     VendorId m_vendorId;
     PluginId m_pluginId;
     QString m_name;
+    QList<Types::BasicTag> m_basicTags;
     QList<StateType> m_stateTypes;
     QList<EventType> m_eventTypes;
     QList<EventType> m_allEventTypes;

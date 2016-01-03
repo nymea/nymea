@@ -58,10 +58,11 @@ DECLARE_TYPE_ID(PairingTransaction)
 class Types
 {
     Q_GADGET
+    Q_ENUMS(InputType)
+    Q_ENUMS(BasicTag)
+    Q_ENUMS(Unit)
     Q_ENUMS(StateOperator)
     Q_ENUMS(ValueOperator)
-    Q_ENUMS(InputType)
-    Q_ENUMS(Unit)
 
 public:
     enum InputType {
@@ -75,6 +76,27 @@ public:
         InputTypeIPv6Address,
         InputTypeUrl,
         InputTypeMacAddress
+    };
+
+    enum BasicTag {
+        BasicTagService,
+        BasicTagDevice,
+        BasicTagSensor,
+        BasicTagActuator,
+        BasicTagLighting,
+        BasicTagEnergy,
+        BasicTagMultimedia,
+        BasicTagWeather,
+        BasicTagGateway,
+        BasicTagHeating,
+        BasicTagCooling,
+        BasicTagNotification,
+        BasicTagSecurity,
+        BasicTagTime,
+        BasicTagShading,
+        BasicTagAppliance,
+        BasicTagCamera,
+        BasicTagLock
     };
 
     enum Unit {
@@ -114,6 +136,7 @@ public:
         UnitKiloWatt,
         UnitKiloWattHour,
         UnitEuroPerMegaWattHour,
+        UnitEuroCentPerKiloWattHour,
         UnitPercentage,
         UnitPartsPerMillion,
         UnitEuro,
@@ -137,9 +160,10 @@ public:
     Types(QObject *parent = 0);
 };
 
-Q_DECLARE_METATYPE(Types::ValueOperator)
-Q_DECLARE_METATYPE(Types::StateOperator)
 Q_DECLARE_METATYPE(Types::InputType)
 Q_DECLARE_METATYPE(Types::Unit)
+Q_DECLARE_METATYPE(Types::BasicTag)
+Q_DECLARE_METATYPE(Types::ValueOperator)
+Q_DECLARE_METATYPE(Types::StateOperator)
 
 #endif // TYPEUTILS_H

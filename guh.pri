@@ -11,8 +11,8 @@ DEFINES += GUH_VERSION_STRING=\\\"$${GUH_VERSION_STRING}\\\" \
 
 QT+= network
 
-QMAKE_CXXFLAGS += -Werror
-CONFIG += c++11
+QMAKE_CXXFLAGS += -Werror -std=c++11
+QMAKE_LFLAGS += -std=c++11
 
 # Check for Bluetoot LE support (Qt >= 5.4)
 equals(QT_MAJOR_VERSION, 5):greaterThan(QT_MINOR_VERSION, 3) {

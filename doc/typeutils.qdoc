@@ -52,7 +52,6 @@
             \li The \tt >= operator to compare two \a values of a \l{Param}.
     \endtable
 
-
     \chapter Types::InputType
     \table
         \header
@@ -101,6 +100,87 @@
             \li The \l{ParamType} indicates that a MAC hardware address is requested as \l{Types::InputType}{InputType}.
     \endtable
 
+
+    \chapter Types::BasicTag
+    A \l{DeviceClass} can have multiple \l{Types::BasicTag}{BasicTags} which describe the basic category of the DeviceClass. A \l{DeviceClass} should be at least a \tt Service or a \tt Device, never both. 
+    \table
+        \header
+            \li Constant
+            \li Value
+            \li Description
+        \row
+            \li Types::BasicTagService
+            \li 0
+            \li The \l{DeviceClass} describes a service. 
+        \row
+            \li Types::BasicTagDevice
+            \li 1
+            \li The \l{DeviceClass} describes a real device. 
+        \row
+            \li Types::BasicTagSensor
+            \li 2
+            \li The \l{DeviceClass} describes a sensor. Any device which can measure or detect something is a sensor.
+         \row
+            \li Types::BasicTagActuator
+            \li 3
+            \li The \l{DeviceClass} describes an actuator. Any device which can do something is an actuator.
+          \row
+            \li Types::BasicTagLighting
+            \li 4
+            \li The \l{DeviceClass} describes a lighting device.
+          \row
+            \li Types::BasicTagEnergy
+            \li 5
+            \li The \l{DeviceClass} describes an energy device.
+          \row
+            \li Types::BasicTagMultimedia
+            \li 6
+            \li The \l{DeviceClass} describes a multimedia device.
+          \row
+            \li Types::BasicTagWeather
+            \li 7
+            \li The \l{DeviceClass} describes a weather service/device.
+          \row
+            \li Types::BasicTagGateway
+            \li 8
+            \li The \l{DeviceClass} describes a gateway device.
+          \row
+            \li Types::BasicTagHeating
+            \li 9
+            \li The \l{DeviceClass} describes a heating device.
+          \row
+            \li Types::BasicTagCooling
+            \li 10
+            \li The \l{DeviceClass} describes a cooling device.
+          \row
+            \li Types::BasicTagNotification
+            \li 11
+            \li The \l{DeviceClass} describes a notification device/service.
+          \row
+            \li Types::BasicTagSecurity
+            \li 12
+            \li The \l{DeviceClass} describes a security device/service.
+          \row
+            \li Types::BasicTagTime
+            \li 13
+            \li The \l{DeviceClass} describes a time device/service.
+          \row
+            \li Types::BasicTagShading
+            \li 14
+            \li The \l{DeviceClass} describes a shading device.
+          \row
+            \li Types::BasicTagAppliance
+            \li 15
+            \li The \l{DeviceClass} describes an appliance.
+          \row
+            \li Types::BasicTagCamera
+            \li 16
+            \li The \l{DeviceClass} describes a camera device.
+          \row
+            \li Types::BasicTagLock
+            \li 17
+            \li The \l{DeviceClass} describes a lock device.
+    \endtable
 
     \chapter Types::Unit
     \table

@@ -111,13 +111,19 @@ void DeviceClass::setName(const QString &name)
     m_name = name;
 }
 
-/*! Returns the list of basicTags of this DeviceClass. */
+/*! Returns the list of basicTags of this DeviceClass.
+
+    \sa Types::BasicTag
+*/
 QList<Types::BasicTag> DeviceClass::basicTags() const
 {
     return m_basicTags;
 }
 
-/*! Set the list of \a basicTags of this DeviceClass. */
+/*! Set the list of \a basicTags of this DeviceClass.
+
+    \sa Types::BasicTag
+*/
 void DeviceClass::setBasicTags(const QList<Types::BasicTag> &basicTags)
 {
     m_basicTags = basicTags;

@@ -37,6 +37,8 @@ class DeviceClass
     Q_GADGET
     Q_ENUMS(CreateMethod)
     Q_ENUMS(SetupMethod)
+    Q_ENUMS(BasicTag)
+
 public:
     enum CreateMethod {
         CreateMethodUser = 0x01,
@@ -52,6 +54,28 @@ public:
         SetupMethodPushButton
     };
 
+    enum BasicTag {
+        BasicTagService,
+        BasicTagDevice,
+        BasicTagSensor,
+        BasicTagActuator,
+        BasicTagLighting,
+        BasicTagEnergy,
+        BasicTagMultimedia,
+        BasicTagWeather,
+        BasicTagGateway,
+        BasicTagHeating,
+        BasicTagCooling,
+        BasicTagNotification,
+        BasicTagSecurity,
+        BasicTagTime,
+        BasicTagShading,
+        BasicTagAppliance,
+        BasicTagCamera,
+        BasicTagLock
+    };
+
+
     DeviceClass(const PluginId &pluginId = PluginId(), const VendorId &vendorId = VendorId(), const DeviceClassId &id = DeviceClassId());
 
     DeviceClassId id() const;
@@ -62,8 +86,8 @@ public:
     QString name() const;
     void setName(const QString &name);
 
-    QList<Types::BasicTag> basicTags() const;
-    void setBasicTags(const QList<Types::BasicTag> &basicTags);
+    QList<BasicTag> basicTags() const;
+    void setBasicTags(const QList<BasicTag> &basicTags);
 
     QList<StateType> stateTypes() const;
     void setStateTypes(const QList<StateType> &stateTypes);
@@ -99,7 +123,7 @@ private:
     VendorId m_vendorId;
     PluginId m_pluginId;
     QString m_name;
-    QList<Types::BasicTag> m_basicTags;
+    QList<BasicTag> m_basicTags;
     QList<StateType> m_stateTypes;
     QList<EventType> m_eventTypes;
     QList<EventType> m_allEventTypes;

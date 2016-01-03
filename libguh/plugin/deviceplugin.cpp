@@ -234,7 +234,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
             deviceClass.setPairingInfo(jo.value("pairingInfo").toString());
             deviceClass.setParamTypes(parseParamTypes(jo.value("paramTypes").toArray()));
 
-            QList<Types::BasicTag> basicTags;
+            QList<DeviceClass::BasicTag> basicTags;
             foreach (const QJsonValue &basicTagJson, jo.value("basicTags").toArray()) {
                 basicTags.append(basicTagStringToBasicTag(basicTagJson.toString()));
             }
@@ -812,47 +812,47 @@ Types::InputType DevicePlugin::inputTypeStringToInputType(const QString &inputTy
     return Types::InputTypeNone;
 }
 
-Types::BasicTag DevicePlugin::basicTagStringToBasicTag(const QString &basicTag) const
+DeviceClass::BasicTag DevicePlugin::basicTagStringToBasicTag(const QString &basicTag) const
 {
     if (basicTag == "Device") {
-        return Types::BasicTagDevice;
+        return DeviceClass::BasicTagDevice;
     } else if (basicTag == "Service") {
-        return Types::BasicTagService;
+        return DeviceClass::BasicTagService;
     } else if (basicTag == "Actuator") {
-        return Types::BasicTagActuator;
+        return DeviceClass::BasicTagActuator;
     } else if (basicTag == "Sensor") {
-        return Types::BasicTagSensor;
+        return DeviceClass::BasicTagSensor;
     } else if (basicTag == "Lighting") {
-        return Types::BasicTagLighting;
+        return DeviceClass::BasicTagLighting;
     } else if (basicTag == "Energy") {
-        return Types::BasicTagEnergy;
+        return DeviceClass::BasicTagEnergy;
     } else if (basicTag == "Multimedia") {
-        return Types::BasicTagMultimedia;
+        return DeviceClass::BasicTagMultimedia;
     } else if (basicTag == "Weather") {
-        return Types::BasicTagWeather;
+        return DeviceClass::BasicTagWeather;
     } else if (basicTag == "Gateway") {
-        return Types::BasicTagGateway;
+        return DeviceClass::BasicTagGateway;
     } else if (basicTag == "Heating") {
-        return Types::BasicTagHeating;
+        return DeviceClass::BasicTagHeating;
     } else if (basicTag == "Cooling") {
-        return Types::BasicTagCooling;
+        return DeviceClass::BasicTagCooling;
     } else if (basicTag == "Notification") {
-        return Types::BasicTagNotification;
+        return DeviceClass::BasicTagNotification;
     } else if (basicTag == "Security") {
-        return Types::BasicTagSecurity;
+        return DeviceClass::BasicTagSecurity;
     } else if (basicTag == "Time") {
-        return Types::BasicTagTime;
+        return DeviceClass::BasicTagTime;
     } else if (basicTag == "Shading") {
-        return Types::BasicTagShading;
+        return DeviceClass::BasicTagShading;
     } else if (basicTag == "Appliance") {
-        return Types::BasicTagAppliance;
+        return DeviceClass::BasicTagAppliance;
     } else if (basicTag == "Camera") {
-        return Types::BasicTagCamera;
+        return DeviceClass::BasicTagCamera;
     } else if (basicTag == "Lock") {
-        return Types::BasicTagLock;
+        return DeviceClass::BasicTagLock;
     } else {
         qCWarning(dcDeviceManager) << "Could not parse basicTag:" << basicTag << "in plugin" << this->pluginName();
     }
 
-    return Types::BasicTagDevice;
+    return DeviceClass::BasicTagDevice;
 }

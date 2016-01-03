@@ -100,7 +100,7 @@ public:
     static QVariantMap allTypes();
 
     DECLARE_TYPE(basicType, "BasicType", JsonTypes, BasicType)
-    DECLARE_TYPE(basicTag, "BasicTag", Types, BasicTag)
+    DECLARE_TYPE(basicTag, "BasicTag", DeviceClass, BasicTag)
     DECLARE_TYPE(stateOperator, "StateOperator", Types, StateOperator)
     DECLARE_TYPE(valueOperator, "ValueOperator", Types, ValueOperator)
     DECLARE_TYPE(inputType, "InputType", Types, InputType)

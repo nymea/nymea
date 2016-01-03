@@ -12,6 +12,11 @@
                     "deviceClassId": "753f0d32-0468-4d08-82ed-1964aab03298",
                     "idName": "mock",
                     "name": "Mock Device",
+                    "basicTags": [
+                        "Device",
+                        "Actuator",
+                        "Gateway"
+                    ],
                     "createMethods": ["user", "discovery"],
                     "discoveryParamTypes": [
                         {

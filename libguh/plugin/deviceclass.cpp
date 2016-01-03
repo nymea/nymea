@@ -111,6 +111,18 @@ void DeviceClass::setName(const QString &name)
     m_name = name;
 }
 
+/*! Returns the list of basicTags of this DeviceClass. */
+QList<Types::BasicTag> DeviceClass::basicTags() const
+{
+    return m_basicTags;
+}
+
+/*! Set the list of \a basicTags of this DeviceClass. */
+void DeviceClass::setBasicTags(const QList<Types::BasicTag> &basicTags)
+{
+    m_basicTags = basicTags;
+}
+
 /*! Returns the statesTypes of this DeviceClass. \{Device}{Devices} created
     from this \l{DeviceClass} must have their states matching to this template. */
 QList<StateType> DeviceClass::stateTypes() const

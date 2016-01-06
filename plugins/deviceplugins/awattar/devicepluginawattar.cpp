@@ -179,7 +179,7 @@ void DevicePluginAwattar::networkManagerReplyReady(QNetworkReply *reply)
 void DevicePluginAwattar::guhTimer()
 {
     foreach (Device *device, myDevices()) {
-        qCDebug(dcAwattar) << "Update device" << device->id().toString();
+        //qCDebug(dcAwattar) << "Update device" << device->id().toString();
         updateDevice(device);
     }
 }
@@ -210,24 +210,33 @@ void DevicePluginAwattar::processPriceData(Device *device, const QVariantMap &da
         QVariantMap elementMap = element.toMap();
         QDateTime startTime = QDateTime::fromMSecsSinceEpoch((qint64)elementMap.value("start_timestamp").toLongLong());
         QDateTime endTime = QDateTime::fromMSecsSinceEpoch((qint64)elementMap.value("end_timestamp").toLongLong());
-        currentPrice = elementMap.value("marketprice").toDouble();
+        double price = elementMap.value("marketprice").toDouble();
 
         // check interval [-12h < x < + 12h]
-        if ((startTime >= currentTime.addSecs(-(3600 * 12)) && endTime <= currentTime ) ||
+        if ((startTime >= currentTime.addSecs(-3600 * 12) && endTime <= currentTime ) ||
                 (endTime <= currentTime.addSecs(3600 * 12) && startTime >= currentTime )) {
-            //qCDebug(dcAwattar) << "    - " << startTime.toString() << " - " << endTime.toString() << " : " << currentPrice;
-            sum += currentPrice;
+            sum += price;
             count++;
 
-            if (currentPrice > maxPrice)
-                maxPrice = currentPrice;
+            if (price > maxPrice)
+                maxPrice = price;
 
-            if (currentPrice < minPrice)
-                minPrice = currentPrice;
+            if (price < minPrice)
+                minPrice = price;
         }
 
         if (currentTime  >= startTime && currentTime <= endTime) {
-            qCDebug(dcAwattar) << startTime.toString() << " -> " << endTime.toString();
+            currentPrice = price;
+            sum += price;
+            count++;
+
+            if (price > maxPrice)
+                maxPrice = price;
+
+            if (price < minPrice)
+                minPrice = price;
+
+            //qCDebug(dcAwattar) << startTime.toString() << " -> " << endTime.toString();
             device->setStateValue(currentMarketPriceStateTypeId, currentPrice);
             device->setStateValue(validUntilStateTypeId, endTime.toLocalTime().toTime_t());
         }
@@ -235,17 +244,18 @@ void DevicePluginAwattar::processPriceData(Device *device, const QVariantMap &da
 
     // calculate averagePrice and mean deviation
     averagePrice = sum / count;
+
     if (currentPrice <= averagePrice) {
         deviation = -1 * qRound(100 + (-100 * (currentPrice - minPrice) / (averagePrice - minPrice)));
     } else {
         deviation = qRound(-100 * (averagePrice - currentPrice) / (maxPrice - averagePrice));
     }
 
-    qCDebug(dcAwattar) << "    price    :" << currentPrice << "Eur/MWh";
-    qCDebug(dcAwattar) << "    average  :" << averagePrice << "Eur/MWh";
-    qCDebug(dcAwattar) << "    deviation:" << deviation << "%";
-    qCDebug(dcAwattar) << "    min      :" << minPrice << "Eur/MWh";
-    qCDebug(dcAwattar) << "    max      :" << maxPrice << "Eur/MWh";
+//    qCDebug(dcAwattar) << "    price    :" << currentPrice << "Eur/MWh";
+//    qCDebug(dcAwattar) << "    average  :" << averagePrice << "Eur/MWh";
+//    qCDebug(dcAwattar) << "    deviation:" << deviation << "%";
+//    qCDebug(dcAwattar) << "    min      :" << minPrice << "Eur/MWh";
+//    qCDebug(dcAwattar) << "    max      :" << maxPrice << "Eur/MWh";
 
     device->setStateValue(averagePriceStateTypeId, averagePrice);
     device->setStateValue(lowestPriceStateTypeId, minPrice);
@@ -279,7 +289,7 @@ void DevicePluginAwattar::processUserData(Device *device, const QVariantMap &dat
             }
 
             //qCDebug(dcAwattar) << startTime.toString() << " -> " << endTime.toString();
-            qCDebug(dcAwattar) << "sg-mode:" << sgMode;
+            //qCDebug(dcAwattar) << "sg-mode:" << sgMode;
 
             switch (sgMode) {
             case 1:

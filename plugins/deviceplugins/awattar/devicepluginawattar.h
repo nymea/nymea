@@ -41,14 +41,19 @@ public:
     void deviceRemoved(Device *device) override;
     void networkManagerReplyReady(QNetworkReply *reply) override;
 
+    void guhTimer() override;
+
 private:
-    QTimer *m_timer;
     QHash<QNetworkReply *, Device *> m_asyncSetup;
-    QHash<QNetworkReply *, Device *> m_update;
+    QHash<QNetworkReply *, Device *> m_updatePrice;
+    QHash<QNetworkReply *, Device *> m_updateUserData;
 
-    void processData(Device *device, const QVariantMap &data, const bool &fromSetup = false);
+    void processPriceData(Device *device, const QVariantMap &data, const bool &fromSetup = false);
+    void processUserData(Device *device, const QVariantMap &data);
 
-    QNetworkReply *requestData(const QString& token);
+    QNetworkReply *requestPriceData(const QString& token);
+    QNetworkReply *requestUserData(const QString& token, const QString &userId);
+
     void updateDevice(Device *device);
 
 private slots:

@@ -23,7 +23,12 @@
                             "name": "name",
                             "type": "QString",
                             "inputType": "TextLine",
-                            "defaultValue": "Energy price"
+                            "defaultValue": "Heating system"
+                        },
+                        {
+                            "name": "user id",
+                            "type": "QString",
+                            "inputType": "TextLine"
                         },
                         {
                             "name": "token",
@@ -41,12 +46,57 @@
                             "defaultValue": 0
                         },
                         {
+                            "id": "38b86cee-9588-4269-a585-128907929dc2",
+                            "idName": "meanDeviation",
+                            "name": "deviation",
+                            "type": "double",
+                            "unit": "Percentage",
+                            "defaultValue": 0
+                        },
+                        {
                             "id": "d5a8a176-aca0-45b1-b043-95c43750f383",
                             "idName": "validUntil",
                             "name": "valid until",
                             "unit": "UnixTime",
                             "type": "int",
                             "defaultValue": 0
+                        },
+                        {
+                            "id": "55d6d7a8-446f-48ae-8014-1225810d03ee",
+                            "idName": "averagePrice",
+                            "name": "average market price [± 12 h]",
+                            "type": "double",
+                            "unit": "EuroPerMegaWattHour",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "e7af5bdc-48d7-4e96-b877-331da4dcfae5",
+                            "idName": "lowestPrice",
+                            "name": "lowest market price [± 12 h]",
+                            "type": "double",
+                            "unit": "EuroPerMegaWattHour",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "0c171c42-b070-453e-8a63-df9aebfa8533",
+                            "idName": "highestPrice",
+                            "name": " highest market price [± 12 h]",
+                            "type": "double",
+                            "unit": "EuroPerMegaWattHour",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "b83d3533-aeae-4a9b-95d8-28466bf6c0cf",
+                            "idName": "sgMode",
+                            "name": "sg mode",
+                            "type": "QString",
+                            "possibleValues": [
+                                "1 - Off",
+                                "2 - Normal",
+                                "3 - High Temperature",
+                                "4 - On"
+                            ],
+                            "defaultValue": "1 - Off"
                         }
                     ]
                 }

@@ -74,11 +74,21 @@
 
 DevicePluginAwattar::DevicePluginAwattar()
 {
+
 }
 
 DeviceManager::HardwareResources DevicePluginAwattar::requiredHardware() const
 {
     return DeviceManager::HardwareResourceNetworkManager | DeviceManager::HardwareResourceTimer;
+}
+
+QList<ParamType> DevicePluginAwattar::configurationDescription() const
+{
+    QList<ParamType> params;
+    ParamType mockParam1("RPL Router address", QVariant::String, "");
+    params.append(mockParam1);
+
+    return params;
 }
 
 DeviceManager::DeviceSetupStatus DevicePluginAwattar::setupDevice(Device *device)
@@ -260,8 +270,7 @@ void DevicePluginAwattar::processPriceData(Device *device, const QVariantMap &da
     device->setStateValue(averagePriceStateTypeId, averagePrice);
     device->setStateValue(lowestPriceStateTypeId, minPrice);
     device->setStateValue(highestPriceStateTypeId, maxPrice);
-    device->setStateValue(meanDeviationStateTypeId, deviation);
-
+    device->setStateValue(averageDeviationStateTypeId, deviation);
 
     if (fromSetup)
         emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusSuccess);
@@ -280,16 +289,12 @@ void DevicePluginAwattar::processUserData(Device *device, const QVariantMap &dat
 
         // check if we are in the current interval
         if (currentTime >= startTime && currentTime <= endTime) {
-            //qCDebug(dcAwattar) << QJsonDocument::fromVariant(elementMap).toJson();
             int sgMode = 0;
             if (elementMap.contains("data")) {
                 if (elementMap.value("data").toMap().contains("sg-mode")) {
                     sgMode = elementMap.value("data").toMap().value("sg-mode").toInt();
                 }
             }
-
-            //qCDebug(dcAwattar) << startTime.toString() << " -> " << endTime.toString();
-            //qCDebug(dcAwattar) << "sg-mode:" << sgMode;
 
             switch (sgMode) {
             case 1:

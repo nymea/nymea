@@ -47,8 +47,8 @@
                         },
                         {
                             "id": "38b86cee-9588-4269-a585-128907929dc2",
-                            "idName": "meanDeviation",
-                            "name": "deviation",
+                            "idName": "averageDeviation",
+                            "name": "average deviation",
                             "type": "double",
                             "unit": "Percentage",
                             "defaultValue": 0
@@ -80,7 +80,7 @@
                         {
                             "id": "0c171c42-b070-453e-8a63-df9aebfa8533",
                             "idName": "highestPrice",
-                            "name": " highest market price [± 12 h]",
+                            "name": "highest market price [± 12 h]",
                             "type": "double",
                             "unit": "EuroPerMegaWattHour",
                             "defaultValue": 0

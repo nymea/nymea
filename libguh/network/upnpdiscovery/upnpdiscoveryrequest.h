@@ -23,13 +23,15 @@
 
 #include <QObject>
 #include <QDebug>
+
 #include "upnpdiscovery.h"
 #include "upnpdevicedescriptor.h"
+#include "libguh.h"
 #include "typeutils.h"
 
 class UpnpDiscovery;
 
-class UpnpDiscoveryRequest : public QObject
+class LIBGUH_EXPORT UpnpDiscoveryRequest : public QObject
 {
     Q_OBJECT
 public:

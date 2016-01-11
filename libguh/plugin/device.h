@@ -23,6 +23,7 @@
 #define DEVICE_H
 
 #include "typeutils.h"
+#include "libguh.h"
 
 #include "plugin/deviceclass.h"
 #include "types/state.h"
@@ -32,7 +33,7 @@
 #include <QUuid>
 #include <QVariant>
 
-class Device: public QObject
+class LIBGUH_EXPORT Device: public QObject
 {
     Q_OBJECT
 

@@ -22,10 +22,12 @@
 #ifndef PARAM_H
 #define PARAM_H
 
+#include "libguh.h"
+
 #include <QString>
 #include <QVariant>
 
-class Param
+class LIBGUH_EXPORT Param
 {
 public:
     Param(const QString &name = QString(), const QVariant &value = QVariant());
@@ -46,7 +48,7 @@ private:
 Q_DECLARE_METATYPE(Param)
 QDebug operator<<(QDebug dbg, const Param &param);
 
-class ParamList: public QList<Param>
+class LIBGUH_EXPORT ParamList: public QList<Param>
 {
 public:
     bool hasParam(const QString &paramName) const;

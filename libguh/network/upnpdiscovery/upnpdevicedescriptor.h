@@ -25,9 +25,11 @@
 #include <QHostAddress>
 #include <QUrl>
 
+#include "libguh.h"
+
 // reference: http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf
 
-class UpnpDeviceDescriptor
+class LIBGUH_EXPORT UpnpDeviceDescriptor
 {
 public:
     explicit UpnpDeviceDescriptor();

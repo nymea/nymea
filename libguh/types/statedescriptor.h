@@ -22,6 +22,7 @@
 #ifndef STATEDESCRIPTOR_H
 #define STATEDESCRIPTOR_H
 
+#include "libguh.h"
 #include "typeutils.h"
 #include "paramdescriptor.h"
 #include "state.h"
@@ -31,7 +32,7 @@
 #include <QVariantList>
 #include <QDebug>
 
-class StateDescriptor
+class LIBGUH_EXPORT StateDescriptor
 {
 public:
     StateDescriptor();
@@ -55,6 +56,7 @@ private:
     QVariant m_stateValue;
     Types::ValueOperator m_operatorType;
 };
+
 QDebug operator<<(QDebug dbg, const StateDescriptor &eventDescriptor);
 QDebug operator<<(QDebug dbg, const QList<StateDescriptor> &eventDescriptors);
 

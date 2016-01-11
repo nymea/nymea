@@ -23,11 +23,12 @@
 
 #include <QObject>
 
+#include "libguh.h"
 #include "corelink.h"
 
 // Constrained RESTful Environments (CoRE) Link Format  : http://tools.ietf.org/html/rfc6690
 
-class CoreLinkParser : public QObject
+class LIBGUH_EXPORT CoreLinkParser : public QObject
 {
     Q_OBJECT
 public:

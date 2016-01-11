@@ -22,10 +22,11 @@
 #ifndef RULEACTION_H
 #define RULEACTION_H
 
+#include "libguh.h"
 #include "action.h"
 #include "ruleactionparam.h"
 
-class RuleAction
+class LIBGUH_EXPORT RuleAction
 {
 public:
     explicit RuleAction(const ActionTypeId &actionTypeId = ActionTypeId(), const DeviceId &deviceId = DeviceId());

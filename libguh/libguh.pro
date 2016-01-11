@@ -6,6 +6,8 @@ TEMPLATE = lib
 QT += network
 DEFINES += LIBGUH_LIBRARY
 
+QMAKE_LFLAGS += -fPIC
+
 target.path = /usr/lib
 INSTALLS += target
 

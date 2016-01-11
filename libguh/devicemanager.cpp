@@ -218,7 +218,7 @@ DeviceManager::DeviceManager(QObject *parent) :
     connect(m_upnpDiscovery, &UpnpDiscovery::upnpNotify, this, &DeviceManager::upnpNotifyReceived);
 
     // Bluetooth LE
-#ifdef BLUETOOTH_LE
+    #ifdef BLUETOOTH_LE
     m_bluetoothScanner = new BluetoothScanner(this);
     if (!m_bluetoothScanner->isAvailable()) {
         delete m_bluetoothScanner;
@@ -226,7 +226,7 @@ DeviceManager::DeviceManager(QObject *parent) :
     } else {
         connect(m_bluetoothScanner, &BluetoothScanner::bluetoothDiscoveryFinished, this, &DeviceManager::bluetoothDiscoveryFinished);
     }
-#endif
+    #endif
 
     // Give hardware a chance to start up before loading plugins etc.
     QMetaObject::invokeMethod(this, "loadPlugins", Qt::QueuedConnection);
@@ -977,7 +977,6 @@ void DeviceManager::loadPlugins()
                 connect(pluginIface, &DevicePlugin::actionExecutionFinished, this, &DeviceManager::actionExecutionFinished);
                 connect(pluginIface, &DevicePlugin::pairingFinished, this, &DeviceManager::slotPairingFinished);
                 connect(pluginIface, &DevicePlugin::autoDevicesAppeared, this, &DeviceManager::autoDevicesAppeared);
-                qCDebug(dcDeviceManager) << "* Finished loading plugin" << pluginIface->pluginName() << pluginIface->pluginId();
             }
         }
     }

@@ -24,9 +24,11 @@
 #include <QObject>
 #include <QVariant>
 
+#include "libguh.h"
+
 class QSettings;
 
-class GuhSettings : public QObject
+class LIBGUH_EXPORT GuhSettings : public QObject
 {
     Q_OBJECT
 public:

@@ -25,7 +25,9 @@
 #include <QBluetoothServiceInfo>
 #include <QLowEnergyController>
 
-class BluetoothLowEnergyDevice : public QObject
+#include "libguh.h"
+
+class LIBGUH_EXPORT BluetoothLowEnergyDevice : public QObject
 {
     Q_OBJECT
 public:

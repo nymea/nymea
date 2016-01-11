@@ -4,6 +4,7 @@ TARGET = guh
 TEMPLATE = lib
 
 QT += network
+DEFINES += LIBGUH_LIBRARY
 
 target.path = /usr/lib
 INSTALLS += target
@@ -100,6 +101,7 @@ HEADERS += devicemanager.h \
            types/ruleaction.h \
            types/ruleactionparam.h \
            types/statedescriptor.h \
+    libguh.h
 
 # install plugininfo python script for libguh-dev
 generateplugininfo.files = $$top_srcdir/plugins/guh-generateplugininfo

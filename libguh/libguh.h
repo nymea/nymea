@@ -1,8 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  This file is part of guh.                                              *
+ *  Copyright (C) 2016 Simon Stuerz <simon.stuerz@guh.guru>                *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  This file is part of guh.                                              *
  *                                                                         *
  *  Guh is free software: you can redistribute it and/or modify            *
  *  it under the terms of the GNU General Public License as published by   *
@@ -18,55 +18,16 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef RADIO433TRASMITTER_H
-#define RADIO433TRASMITTER_H
+#ifndef LIBGUH
+#define LIBGUH
 
-#include <QObject>
-#include <QThread>
-#include <QMutex>
-#include <QQueue>
-#include <QDebug>
+#include <QtCore/QtGlobal>
 
-#include "libguh.h"
-#include "../gpio.h"
+#if defined(LIBGUH_LIBRARY)
+#    define LIBGUH_EXPORT Q_DECL_EXPORT
+#else
+#    define LIBGUH_EXPORT Q_DECL_IMPORT
+#endif
 
+#endif // LIBGUH
 
-class LIBGUH_EXPORT Radio433Trasmitter : public QThread
-{
-    Q_OBJECT
-public:
-    explicit Radio433Trasmitter(QObject *parent = 0, int gpio = 22);
-    ~Radio433Trasmitter();
-
-    bool startTransmitter();
-    bool available();
-
-    void sendData(int delay, QList<int> rawData, int repetitions);
-
-protected:
-    void run();
-
-private:
-    int m_gpioPin;
-    Gpio *m_gpio;
-
-    QMutex m_mutex;
-    bool m_enabled;
-
-    QMutex m_allowSendingMutex;
-    bool m_allowSending;
-
-    QMutex m_queueMutex;
-    QQueue<QList<int> > m_rawDataQueue;
-
-    bool m_available;
-
-    bool setUpGpio();
-
-signals:
-
-public slots:
-    void allowSending(bool sending);
-
-};
-#endif // RADIO433TRASMITTER_H

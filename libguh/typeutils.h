@@ -25,6 +25,8 @@
 #include <QMetaType>
 #include <QUuid>
 
+#include "libguh.h"
+
 #define DECLARE_TYPE_ID(type) class type##Id: public QUuid \
 { \
 public: \
@@ -37,7 +39,6 @@ public: \
     } \
 }; \
 Q_DECLARE_METATYPE(type##Id);
-
 
 DECLARE_TYPE_ID(Vendor)
 DECLARE_TYPE_ID(DeviceClass)
@@ -55,7 +56,7 @@ DECLARE_TYPE_ID(Rule)
 
 DECLARE_TYPE_ID(PairingTransaction)
 
-class Types
+class LIBGUH_EXPORT Types
 {
     Q_GADGET
     Q_ENUMS(InputType)

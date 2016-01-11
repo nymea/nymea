@@ -22,11 +22,12 @@
 #ifndef STATETYPE_H
 #define STATETYPE_H
 
+#include "libguh.h"
 #include "typeutils.h"
 
 #include <QVariant>
 
-class StateType
+class LIBGUH_EXPORT StateType
 {
 public:
     StateType(const StateTypeId &id);

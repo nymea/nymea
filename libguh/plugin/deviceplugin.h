@@ -25,7 +25,9 @@
 #include "devicemanager.h"
 #include "deviceclass.h"
 
+#include "libguh.h"
 #include "typeutils.h"
+
 #include "types/event.h"
 #include "types/action.h"
 #include "types/vendor.h"
@@ -41,7 +43,7 @@
 class DeviceManager;
 class Device;
 
-class DevicePlugin: public QObject
+class LIBGUH_EXPORT DevicePlugin: public QObject
 {
     Q_OBJECT
 public:

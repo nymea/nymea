@@ -29,9 +29,10 @@
 #include <QBluetoothLocalDevice>
 #include <QBluetoothDeviceDiscoveryAgent>
 
+#include "libguh.h"
 #include "typeutils.h"
 
-class BluetoothScanner : public QObject
+class LIBGUH_EXPORT BluetoothScanner : public QObject
 {
     Q_OBJECT
 public:

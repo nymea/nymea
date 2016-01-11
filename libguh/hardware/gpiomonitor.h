@@ -28,9 +28,10 @@
 #include <poll.h>
 #include <errno.h>
 
+#include "libguh.h"
 #include "hardware/gpio.h"
 
-class GpioMonitor : public QThread
+class LIBGUH_EXPORT GpioMonitor : public QThread
 {
     Q_OBJECT
 public:

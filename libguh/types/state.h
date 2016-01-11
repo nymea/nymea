@@ -22,12 +22,13 @@
 #ifndef STATE_H
 #define STATE_H
 
+#include "libguh.h"
 #include "typeutils.h"
 
 #include <QVariant>
 #include <QDebug>
 
-class State
+class LIBGUH_EXPORT State
 {
 public:
     State(const StateTypeId &stateTypeId, const DeviceId &deviceId);

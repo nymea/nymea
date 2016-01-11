@@ -22,6 +22,8 @@
 #ifndef DEVICEMANAGER_H
 #define DEVICEMANAGER_H
 
+#include "libguh.h"
+
 #include "plugin/deviceclass.h"
 #include "plugin/device.h"
 #include "plugin/devicedescriptor.h"
@@ -45,10 +47,11 @@ class DevicePlugin;
 class Radio433;
 class UpnpDiscovery;
 
-class DeviceManager : public QObject
+class LIBGUH_EXPORT DeviceManager : public QObject
 {
     Q_OBJECT
     Q_ENUMS(DeviceError)
+
 public:
     enum HardwareResource {
         HardwareResourceNone = 0x00,
@@ -204,6 +207,7 @@ private:
 
     friend class DevicePlugin;
 };
+
 Q_DECLARE_OPERATORS_FOR_FLAGS(DeviceManager::HardwareResources)
 Q_DECLARE_METATYPE(DeviceManager::DeviceError)
 

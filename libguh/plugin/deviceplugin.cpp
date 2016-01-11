@@ -81,20 +81,6 @@
  */
 
 /*!
- \fn void DevicePlugin::executeAction(Device *device, const Action &action)
- This will be called to actually execute actions on the hardware. The \{Device} and
- the \{Action} are contained in the \a device and \a action parameters.
- Return the appropriate \l{DeviceManager::DeviceError}{DeviceError}.
-
- It is possible to execute actions asynchronously. You never should do anything blocking for
- a long time (e.g. wait on a network reply from the internet) but instead return
- DeviceManager::DeviceErrorAsync and continue processing in an async manner. Once
- you have the reply ready, emit actionExecutionFinished() with the appropriate parameters.
-
- \sa actionExecutionFinished()
-*/
-
-/*!
   \fn void DevicePlugin::devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &devices);
   This signal is emitted when the discovery of a \a deviceClassId of this DevicePlugin is finished. The \a devices parameter describes the
   list of \l{DeviceDescriptor}{DeviceDescriptors} of all discovered \l{Device}{Devices}.
@@ -182,7 +168,7 @@ QString DevicePlugin::pluginName() const
  *  same uuid and don't change it or configurations can't be matched any more. */
 PluginId DevicePlugin::pluginId() const
 {
-    return m_metaData.value("id").toString();
+    return PluginId(m_metaData.value("id").toString());
 }
 
 /*! Returns the list of \l{Vendor}{Vendors} supported by this DevicePlugin. */
@@ -405,6 +391,24 @@ DeviceManager::DeviceSetupStatus DevicePlugin::confirmPairing(const PairingTrans
     return DeviceManager::DeviceSetupStatusFailure;
 }
 
+/*! This will be called to actually execute actions on the hardware. The \{Device} and
+ * the \{Action} are contained in the \a device and \a action parameters.
+ * Return the appropriate \l{DeviceManager::DeviceError}{DeviceError}.
+ *
+ * It is possible to execute actions asynchronously. You never should do anything blocking for
+ * a long time (e.g. wait on a network reply from the internet) but instead return
+ * DeviceManager::DeviceErrorAsync and continue processing in an async manner. Once
+ * you have the reply ready, emit actionExecutionFinished() with the appropriate parameters.
+ *
+ * \sa actionExecutionFinished()
+*/
+DeviceManager::DeviceError DevicePlugin::executeAction(Device *device, const Action &action)
+{
+    Q_UNUSED(device)
+    Q_UNUSED(action)
+    return DeviceManager::DeviceErrorNoError;
+}
+
 /*! Returns the configuration description of this DevicePlugin as a list of \l{ParamType}{ParamTypes}. */
 QList<ParamType> DevicePlugin::configurationDescription() const
 {
@@ -487,13 +491,11 @@ QVariant DevicePlugin::configValue(const QString &paramName) const
     return QVariant();
 }
 
-/*!
- Will be called by the DeviceManager to set a plugin's \a configuration.
- */
+/*! Will be called by the DeviceManager to set a plugin's \a configuration. */
 DeviceManager::DeviceError DevicePlugin::setConfiguration(const ParamList &configuration)
 {
     foreach (const Param &param, configuration) {
-        qCDebug(dcDeviceManager) << "setting config" << param;
+        qCDebug(dcDeviceManager) << "* setting config" << param;
         DeviceManager::DeviceError result = setConfigValue(param.name(), param.value());
         if (result != DeviceManager::DeviceErrorNoError) {
             return result;
@@ -625,7 +627,7 @@ QNetworkReply *DevicePlugin::networkManagerGet(const QNetworkRequest &request)
     if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
         return deviceManager()->m_networkManager->get(pluginId(), request);
     } else {
-        qCWarning(dcDeviceManager) << "network manager resource missing for plugin " << pluginName();
+        qCWarning(dcDeviceManager) << "Network manager hardware resource not set for plugin" << pluginName();
     }
     return nullptr;
 }
@@ -642,7 +644,7 @@ QNetworkReply *DevicePlugin::networkManagerPost(const QNetworkRequest &request, 
     if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
         return deviceManager()->m_networkManager->post(pluginId(), request, data);
     } else {
-        qCWarning(dcDeviceManager) << "network manager resource missing for plugin " << pluginName();
+        qCWarning(dcDeviceManager) << "Network manager hardware resource not set for plugin" << pluginName();
     }
     return nullptr;
 }
@@ -658,7 +660,7 @@ QNetworkReply *DevicePlugin::networkManagerPut(const QNetworkRequest &request, c
     if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
         return deviceManager()->m_networkManager->put(pluginId(), request, data);
     } else {
-        qCWarning(dcDeviceManager) << "network manager resource missing for plugin " << pluginName();
+        qCWarning(dcDeviceManager) << "Network manager hardware resource not set for plugin" << pluginName();
     }
     return nullptr;
 }

@@ -69,6 +69,8 @@ public:
     virtual DeviceManager::DeviceError displayPin(const PairingTransactionId &pairingTransactionId, const DeviceDescriptor &deviceDescriptor);
     virtual DeviceManager::DeviceSetupStatus confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret);
 
+    virtual DeviceManager::DeviceError executeAction(Device *device, const Action &action);
+
     // Hardware input
     virtual void radioData(const QList<int> &rawData) {Q_UNUSED(rawData)}
     virtual void guhTimer() {}
@@ -88,11 +90,6 @@ public:
     QVariant configValue(const QString &paramName) const;
     DeviceManager::DeviceError setConfigValue(const QString &paramName, const QVariant &value);
 
-public slots:
-    virtual DeviceManager::DeviceError executeAction(Device *device, const Action &action) {
-        Q_UNUSED(device) Q_UNUSED(action)
-        return DeviceManager::DeviceErrorNoError;
-    }
 
 signals:
     void emitEvent(const Event &event);

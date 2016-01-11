@@ -24,9 +24,11 @@
 
 #include <QVariant>
 #include <QDebug>
+
+#include "libguh.h"
 #include "typeutils.h"
 
-class ParamType
+class LIBGUH_EXPORT ParamType
 {
 public:    
     ParamType(const QString &name, const QVariant::Type type, const QVariant &defaultValue = QVariant());

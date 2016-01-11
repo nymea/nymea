@@ -10,6 +10,7 @@ DEFINES += GUH_VERSION_STRING=\\\"$${GUH_VERSION_STRING}\\\" \
            REST_API_VERSION=\\\"$${REST_API_VERSION}\\\"
 
 QT+= network
+CONFIG += c++11
 
 QMAKE_CXXFLAGS += -Werror -std=c++11
 QMAKE_LFLAGS += -std=c++11

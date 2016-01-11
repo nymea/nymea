@@ -26,7 +26,9 @@
 #include <QHostAddress>
 #include <QTimer>
 
-class Radio433BrennenstuhlGateway : public QObject
+#include "libguh.h"
+
+class LIBGUH_EXPORT Radio433BrennenstuhlGateway : public QObject
 {
     Q_OBJECT
 public:

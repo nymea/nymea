@@ -22,10 +22,12 @@
 #ifndef PARAMDESCRIPTOR_H
 #define PARAMDESCRIPTOR_H
 
+#include "libguh.h"
+
 #include "param.h"
 #include "typeutils.h"
 
-class ParamDescriptor : public Param
+class LIBGUH_EXPORT ParamDescriptor : public Param
 {
 public:
     ParamDescriptor(const QString &name, const QVariant &value = QVariant());

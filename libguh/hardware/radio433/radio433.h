@@ -28,9 +28,10 @@
 #include "radio433transmitter.h"
 #endif
 
+#include "libguh.h"
 #include "radio433brennenstuhlgateway.h"
 
-class Radio433 : public QObject
+class LIBGUH_EXPORT Radio433 : public QObject
 {
     Q_OBJECT
 public:

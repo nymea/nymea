@@ -23,9 +23,10 @@
 
 #include <QThread>
 
+#include "libguh.h"
 #include "../gpio.h"
 
-class Radio433Receiver : public QThread
+class LIBGUH_EXPORT Radio433Receiver : public QThread
 {
     Q_OBJECT
 public:

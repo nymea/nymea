@@ -27,6 +27,8 @@
 #include <QMutexLocker>
 #include <QDir>
 
+#include "libguh.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -73,7 +75,7 @@
  **********************************
  */
 
-class Gpio : public QObject
+class LIBGUH_EXPORT Gpio : public QObject
 {
     Q_OBJECT
 public:

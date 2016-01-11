@@ -22,12 +22,13 @@
 #ifndef ACTIONTYPE_H
 #define ACTIONTYPE_H
 
+#include "libguh.h"
 #include "typeutils.h"
 #include "paramtype.h"
 
 #include <QVariantList>
 
-class ActionType
+class LIBGUH_EXPORT ActionType
 {
 public:
     ActionType(const ActionTypeId &id);

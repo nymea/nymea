@@ -143,7 +143,7 @@ signals:
     void deviceSetupFinished(Device *device, DeviceError status);
     void deviceEditFinished(Device *device, DeviceError status);
     void pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceError status, const DeviceId &deviceId = DeviceId());
-    void actionExecutionFinished(const ActionId &actionId, DeviceError status);
+    void actionExecutionFinished(const ActionId &actionId, DeviceManager::DeviceError status);
 
 public slots:
     DeviceError executeAction(const Action &action);

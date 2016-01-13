@@ -295,21 +295,18 @@ DevicePlugin *DeviceManager::plugin(const PluginId &id) const
 DeviceManager::DeviceError DeviceManager::setPluginConfig(const PluginId &pluginId, const ParamList &pluginConfig)
 {
     DevicePlugin *plugin = m_devicePlugins.value(pluginId);
-    if (!plugin) {
+    if (!plugin)
         return DeviceErrorPluginNotFound;
-    }
 
     ParamList params = pluginConfig;
 
     DeviceError verify = verifyParams(plugin->configurationDescription(), params);
-    if (verify != DeviceErrorNoError) {
+    if (verify != DeviceErrorNoError)
         return verify;
-    }
 
     DeviceError result = plugin->setConfiguration(pluginConfig);
-    if (result != DeviceErrorNoError) {
+    if (result != DeviceErrorNoError)
         return result;
-    }
 
     GuhSettings settings(GuhSettings::SettingsRolePlugins);
     settings.beginGroup("PluginConfig");
@@ -836,10 +833,12 @@ DeviceManager::DeviceError DeviceManager::verifyParam(const ParamType &paramType
             qCWarning(dcDeviceManager) << "Value out of range for param" << param.name() << " Got:" << param.value() << " Max:" << paramType.maxValue();
             return DeviceErrorInvalidParameter;
         }
+
         if (paramType.minValue().isValid() && param.value() < paramType.minValue()) {
             qCWarning(dcDeviceManager) << "Value out of range for param" << param.name() << " Got:" << param.value() << " Min:" << paramType.minValue();
             return DeviceErrorInvalidParameter;
         }
+
         if (!paramType.allowedValues().isEmpty() && !paramType.allowedValues().contains(param.value())) {
             QStringList allowedValues;
             foreach (const QVariant &value, paramType.allowedValues()) {
@@ -851,6 +850,7 @@ DeviceManager::DeviceError DeviceManager::verifyParam(const ParamType &paramType
         }
         return DeviceErrorNoError;
     }
+
     qCWarning(dcDeviceManager) << "Parameter name" << param.name() << "does not match with ParamType name" << paramType.name();
     return DeviceErrorInvalidParameter;
 }

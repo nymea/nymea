@@ -84,7 +84,7 @@ public:
     #endif
 
     // Configuration
-    virtual QList<ParamType> configurationDescription() const;
+    QList<ParamType> configurationDescription() const;
     DeviceManager::DeviceError setConfiguration(const ParamList &configuration);
     ParamList configuration() const;
     QVariant configValue(const QString &paramName) const;
@@ -131,6 +131,7 @@ private:
 
     DeviceManager *m_deviceManager;
 
+    QList<ParamType> m_configurationDescription;
     ParamList m_config;
 
     QJsonObject m_metaData;

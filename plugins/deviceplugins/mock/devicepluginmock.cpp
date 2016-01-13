@@ -189,19 +189,6 @@ DeviceManager::DeviceError DevicePluginMock::displayPin(const PairingTransaction
     return DeviceManager::DeviceErrorNoError;
 }
 
-QList<ParamType> DevicePluginMock::configurationDescription() const
-{
-    QList<ParamType> params;
-    ParamType mockParam1("configParamInt", QVariant::Int, 42);
-    mockParam1.setLimits(1, 50);
-    params.append(mockParam1);
-
-    ParamType mockParam2("configParamBool", QVariant::Bool, true);
-    params.append(mockParam2);
-
-    return params;
-}
-
 DeviceManager::DeviceError DevicePluginMock::executeAction(Device *device, const Action &action)
 {
     if (device->deviceClassId() == mockDeviceClassId || device->deviceClassId() == mockDeviceAutoDeviceClassId) {

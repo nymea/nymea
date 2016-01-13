@@ -51,8 +51,6 @@ public:
     DeviceManager::DeviceSetupStatus confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret) override;
     DeviceManager::DeviceError displayPin(const PairingTransactionId &pairingTransactionId, const DeviceDescriptor &deviceDescriptor) override;
 
-    QList<ParamType> configurationDescription() const override;
-
 public slots:
     DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
 

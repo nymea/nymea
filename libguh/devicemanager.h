@@ -61,8 +61,8 @@ public:
         HardwareResourceRadio868 = 0x02,
         HardwareResourceTimer = 0x04,
         HardwareResourceNetworkManager = 0x08,
-        HardwareResourceUpnpDisovery = 0x16,
-        HardwareResourceBluetoothLE = 0x32
+        HardwareResourceUpnpDisovery = 0x10,
+        HardwareResourceBluetoothLE = 0x20
     };
     Q_DECLARE_FLAGS(HardwareResources, HardwareResource)
 

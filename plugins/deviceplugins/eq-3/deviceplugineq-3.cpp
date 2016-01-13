@@ -87,12 +87,6 @@ DeviceManager::HardwareResources DevicePluginEQ3::requiredHardware() const
     return DeviceManager::HardwareResourceTimer;
 }
 
-QList<ParamType> DevicePluginEQ3::configurationDescription() const
-{
-    QList<ParamType> params;
-    return params;
-}
-
 DeviceManager::DeviceError DevicePluginEQ3::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
 {
     Q_UNUSED(params)

@@ -2,6 +2,20 @@
     "name": "Mock Devices",
     "idName": "MockDevice",
     "id": "727a4a9a-c187-446f-aadf-f1b2220607d1",
+    "paramTypes": [
+        {
+            "name": "configParamInt",
+            "type": "int",
+            "defaultValue": 42,
+            "minValue": 1,
+            "maxValue": 50
+        },
+        {
+            "name": "configParamBool",
+            "type": "bool",
+            "defaultValue": true
+        }
+    ],
     "vendors": [
         {
             "name": "guh",

@@ -27,6 +27,7 @@
 #include <QHostAddress>
 #include <QQueue>
 
+#include "libguh.h"
 #include "coaprequest.h"
 #include "coapreply.h"
 
@@ -38,7 +39,7 @@
  * Observing Resources in CoAP                         : https://tools.ietf.org/html/rfc7641
  */
 
-class Coap : public QObject
+class LIBGUH_EXPORT Coap : public QObject
 {
     Q_OBJECT
 

@@ -21,6 +21,7 @@
 #ifndef NETWORKMANAGER_H
 #define NETWORKMANAGER_H
 
+#include "libguh.h"
 #include "typeutils.h"
 
 #include <QObject>
@@ -30,9 +31,7 @@
 #include <QDebug>
 #include <QUrl>
 
-
-
-class NetworkManager : public QObject
+class LIBGUH_EXPORT NetworkManager : public QObject
 {
     Q_OBJECT
 public:

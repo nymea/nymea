@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2016 Simon Stuerz <simon.stuerz@guh.guru>                *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -18,51 +18,16 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef BLUETOOTHLOWENERGYDEVICE_H
-#define BLUETOOTHLOWENERGYDEVICE_H
+#ifndef LIBGUH
+#define LIBGUH
 
-#include <QObject>
-#include <QBluetoothDeviceInfo>
-#include <QBluetoothAddress>
-#include <QBluetoothServiceInfo>
-#include <QLowEnergyController>
+#include <QtCore/QtGlobal>
 
-#include "libguh.h"
+#if defined(LIBGUH_LIBRARY)
+#    define LIBGUH_EXPORT Q_DECL_EXPORT
+#else
+#    define LIBGUH_EXPORT Q_DECL_IMPORT
+#endif
 
-class LIBGUH_EXPORT BluetoothLowEnergyDevice : public QObject
-{
-    Q_OBJECT
-public:
-    explicit BluetoothLowEnergyDevice(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType = QLowEnergyController::PublicAddress, QObject *parent = 0);
+#endif // LIBGUH
 
-    QString name() const;
-    QBluetoothAddress address() const;
-
-    void connectDevice();
-    void reconnectDevice();
-    void disconnectDevice();
-
-    bool isConnected() const;
-    bool isDiscovered() const;
-
-protected:
-    QLowEnergyController *controller() const;
-
-private:
-    QBluetoothDeviceInfo m_deviceInfo;
-    QLowEnergyController *m_controller;
-
-    bool m_connected;
-    bool m_discovered;
-
-signals:
-    void connectionStatusChanged();
-    void servicesDiscoveryFinished();
-
-private slots:
-    void connected();
-    void disconnected();
-    void deviceError(const QLowEnergyController::Error &error);
-};
-
-#endif // BLUETOOTHLOWENERGYDEVICE_H

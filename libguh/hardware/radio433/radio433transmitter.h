@@ -27,10 +27,11 @@
 #include <QQueue>
 #include <QDebug>
 
+#include "libguh.h"
 #include "../gpio.h"
 
 
-class Radio433Trasmitter : public QThread
+class LIBGUH_EXPORT Radio433Trasmitter : public QThread
 {
     Q_OBJECT
 public:

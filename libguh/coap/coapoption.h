@@ -25,7 +25,9 @@
 #include <QObject>
 #include <QByteArray>
 
-class CoapOption
+#include "libguh.h"
+
+class LIBGUH_EXPORT CoapOption
 {
     Q_GADGET
     Q_ENUMS(Option)

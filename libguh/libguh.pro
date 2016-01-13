@@ -4,6 +4,9 @@ TARGET = guh
 TEMPLATE = lib
 
 QT += network
+DEFINES += LIBGUH_LIBRARY
+
+QMAKE_LFLAGS += -fPIC
 
 target.path = /usr/lib
 INSTALLS += target
@@ -60,6 +63,7 @@ SOURCES += devicemanager.cpp \
            types/statedescriptor.cpp \
 
 HEADERS += devicemanager.h \
+           libguh.h \
            typeutils.h \
            loggingcategories.h \
            guhsettings.h \

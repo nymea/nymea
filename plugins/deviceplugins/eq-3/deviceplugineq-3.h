@@ -39,8 +39,6 @@ public:
     explicit DevicePluginEQ3();
 
     DeviceManager::HardwareResources requiredHardware() const override;
-
-    QList<ParamType> configurationDescription() const override;
     DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
 
     void startMonitoringAutoDevices() override;

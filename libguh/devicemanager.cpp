@@ -203,13 +203,6 @@ DeviceManager::DeviceManager(QObject *parent) :
     m_pluginTimer.setInterval(10000);
     connect(&m_pluginTimer, &QTimer::timeout, this, &DeviceManager::timerEvent);
 
-    // Give hardware a chance to start up before loading plugins etc.
-    QMetaObject::invokeMethod(this, "loadPlugins", Qt::QueuedConnection);
-    QMetaObject::invokeMethod(this, "loadConfiguredDevices", Qt::QueuedConnection);
-    QMetaObject::invokeMethod(this, "startMonitoringAutoDevices", Qt::QueuedConnection);
-    // Make sure this is always emitted after plugins and devices are loaded
-    QMetaObject::invokeMethod(this, "loaded", Qt::QueuedConnection);
-
     m_radio433 = new Radio433(this);
     connect(m_radio433, &Radio433::dataReceived, this, &DeviceManager::radio433SignalReceived);
     m_radio433->enable();
@@ -234,6 +227,13 @@ DeviceManager::DeviceManager(QObject *parent) :
         connect(m_bluetoothScanner, &BluetoothScanner::bluetoothDiscoveryFinished, this, &DeviceManager::bluetoothDiscoveryFinished);
     }
     #endif
+
+    // Give hardware a chance to start up before loading plugins etc.
+    QMetaObject::invokeMethod(this, "loadPlugins", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, "loadConfiguredDevices", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, "startMonitoringAutoDevices", Qt::QueuedConnection);
+    // Make sure this is always emitted after plugins and devices are loaded
+    QMetaObject::invokeMethod(this, "loaded", Qt::QueuedConnection);
 }
 
 /*! Destructor of the DeviceManager. Each loaded \l{DevicePlugin} will be deleted. */
@@ -296,21 +296,18 @@ DevicePlugin *DeviceManager::plugin(const PluginId &id) const
 DeviceManager::DeviceError DeviceManager::setPluginConfig(const PluginId &pluginId, const ParamList &pluginConfig)
 {
     DevicePlugin *plugin = m_devicePlugins.value(pluginId);
-    if (!plugin) {
+    if (!plugin)
         return DeviceErrorPluginNotFound;
-    }
 
     ParamList params = pluginConfig;
 
     DeviceError verify = verifyParams(plugin->configurationDescription(), params);
-    if (verify != DeviceErrorNoError) {
+    if (verify != DeviceErrorNoError)
         return verify;
-    }
 
     DeviceError result = plugin->setConfiguration(pluginConfig);
-    if (result != DeviceErrorNoError) {
+    if (result != DeviceErrorNoError)
         return result;
-    }
 
     GuhSettings settings(GuhSettings::SettingsRolePlugins);
     settings.beginGroup("PluginConfig");
@@ -837,10 +834,12 @@ DeviceManager::DeviceError DeviceManager::verifyParam(const ParamType &paramType
             qCWarning(dcDeviceManager) << "Value out of range for param" << param.name() << " Got:" << param.value() << " Max:" << paramType.maxValue();
             return DeviceErrorInvalidParameter;
         }
+
         if (paramType.minValue().isValid() && param.value() < paramType.minValue()) {
             qCWarning(dcDeviceManager) << "Value out of range for param" << param.name() << " Got:" << param.value() << " Min:" << paramType.minValue();
             return DeviceErrorInvalidParameter;
         }
+
         if (!paramType.allowedValues().isEmpty() && !paramType.allowedValues().contains(param.value())) {
             QStringList allowedValues;
             foreach (const QVariant &value, paramType.allowedValues()) {
@@ -852,6 +851,7 @@ DeviceManager::DeviceError DeviceManager::verifyParam(const ParamType &paramType
         }
         return DeviceErrorNoError;
     }
+
     qCWarning(dcDeviceManager) << "Parameter name" << param.name() << "does not match with ParamType name" << paramType.name();
     return DeviceErrorInvalidParameter;
 }
@@ -906,19 +906,28 @@ void DeviceManager::loadPlugins()
             if (!fi.exists()) {
                 continue;
             }
-            QPluginLoader loader(fi.absoluteFilePath());
+
+            QPluginLoader loader;
+            loader.setFileName(fi.absoluteFilePath());
+            loader.setLoadHints(QLibrary::ResolveAllSymbolsHint);
+
+            if (!loader.load()) {
+                qCWarning(dcDeviceManager) << "Could not load plugin data of" << entry;
+                continue;
+            }
 
             DevicePlugin *pluginIface = qobject_cast<DevicePlugin *>(loader.instance());
-            if (!pluginIface)
-                qCWarning(dcDeviceManager) << "Could not load plugin interface of" << entry;
+            if (!pluginIface) {
+                qCWarning(dcDeviceManager) << "Could not get plugin instance of" << entry;
+                continue;
+            }
 
-            if (verifyPluginMetadata(loader.metaData().value("MetaData").toObject()) && pluginIface) {
+            if (verifyPluginMetadata(loader.metaData().value("MetaData").toObject())) {
                 pluginIface->initPlugin(loader.metaData().value("MetaData").toObject(), this);
-                qCDebug(dcDeviceManager) << "*** Loaded plugin" << pluginIface->pluginName();
+                qCDebug(dcDeviceManager) << "**** Loaded plugin" << pluginIface->pluginName();
                 foreach (const Vendor &vendor, pluginIface->supportedVendors()) {
                     qCDebug(dcDeviceManager) << "* Loaded vendor:" << vendor.name();
                     if (m_supportedVendors.contains(vendor.id())) {
-                        //qCWarning(dcDeviceManager) << "! Duplicate vendor. Ignoring vendor" << vendor.name();
                         continue;
                     }
                     m_supportedVendors.insert(vendor.id(), vendor);
@@ -933,6 +942,7 @@ void DeviceManager::loadPlugins()
                     m_supportedDevices.insert(deviceClass.id(), deviceClass);
                     qCDebug(dcDeviceManager) << "* Loaded device class:" << deviceClass.name();
                 }
+
                 GuhSettings settings(GuhSettings::SettingsRolePlugins);
                 settings.beginGroup("PluginConfig");
                 ParamList params;
@@ -951,12 +961,16 @@ void DeviceManager::loadPlugins()
                     }
                 }
                 settings.endGroup();
-                DeviceError status = pluginIface->setConfiguration(params);
-                if (status != DeviceErrorNoError) {
-                    qCWarning(dcDeviceManager) << "Error setting params to plugin. Broken configuration?";
+
+                if (params.count() > 0) {
+                    DeviceError status = pluginIface->setConfiguration(params);
+                    if (status != DeviceErrorNoError) {
+                        qCWarning(dcDeviceManager) << "Error setting params to plugin. Broken configuration?";
+                    }
                 }
 
                 m_devicePlugins.insert(pluginIface->pluginId(), pluginIface);
+
                 connect(pluginIface, &DevicePlugin::emitEvent, this, &DeviceManager::eventTriggered);
                 connect(pluginIface, &DevicePlugin::devicesDiscovered, this, &DeviceManager::slotDevicesDiscovered);
                 connect(pluginIface, &DevicePlugin::deviceSetupFinished, this, &DeviceManager::slotDeviceSetupFinished);

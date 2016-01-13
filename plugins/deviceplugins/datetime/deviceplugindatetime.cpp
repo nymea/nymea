@@ -117,7 +117,7 @@ DevicePluginDateTime::DevicePluginDateTime() :
     m_timer = new QTimer(this);
     m_timer->setInterval(1000);
 
-    m_timeZone = QTimeZone(configValue("timezone").toByteArray());
+    m_timeZone = QTimeZone(QTimeZone::systemTimeZoneId());
     m_currentDateTime = QDateTime(QDate::currentDate(), QTime::currentTime(), m_timeZone);
 
     connect(m_timer, &QTimer::timeout, this, &DevicePluginDateTime::onSecondChanged);
@@ -129,20 +129,20 @@ DeviceManager::HardwareResources DevicePluginDateTime::requiredHardware() const
     return DeviceManager::HardwareResourceNetworkManager;
 }
 
-QList<ParamType> DevicePluginDateTime::configurationDescription() const
-{
-    QList<ParamType> params;
-    ParamType timezoneParamType("timezone", QVariant::String, "Europe/Vienna");
+//QList<ParamType> DevicePluginDateTime::configurationDescription() const
+//{
+//    QList<ParamType> params;
+//    ParamType timezoneParamType("timezone", QVariant::String, "Europe/Vienna");
 
-    QList<QVariant> allowedValues;
-    foreach (QByteArray timeZone, QTimeZone::availableTimeZoneIds()) {
-        allowedValues.append(timeZone);
-    }
-    timezoneParamType.setAllowedValues(allowedValues);
+//    QList<QVariant> allowedValues;
+//    foreach (QByteArray timeZone, QTimeZone::availableTimeZoneIds()) {
+//        allowedValues.append(timeZone);
+//    }
+//    timezoneParamType.setAllowedValues(allowedValues);
 
-    params.append(timezoneParamType);
-    return params;
-}
+//    params.append(timezoneParamType);
+//    return params;
+//}
 
 DeviceManager::DeviceSetupStatus DevicePluginDateTime::setupDevice(Device *device)
 {

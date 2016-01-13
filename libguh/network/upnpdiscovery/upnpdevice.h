@@ -23,9 +23,10 @@
 
 #include <QObject>
 
+#include "libguh.h"
 #include "upnpdevicedescriptor.h"
 
-class UpnpDevice : public QObject
+class LIBGUH_EXPORT UpnpDevice : public QObject
 {
     Q_OBJECT
 public:

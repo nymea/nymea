@@ -32,13 +32,14 @@
 #include "upnpdiscoveryrequest.h"
 #include "upnpdevicedescriptor.h"
 #include "devicemanager.h"
+#include "libguh.h"
 
 // Discovering UPnP devices reference: http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf
 // guh basic device reference: http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
 
 class UpnpDiscoveryRequest;
 
-class UpnpDiscovery : public QUdpSocket
+class LIBGUH_EXPORT UpnpDiscovery : public QUdpSocket
 {
     Q_OBJECT
 public:

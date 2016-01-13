@@ -37,10 +37,8 @@ public:
     explicit DevicePluginAwattar();
 
     DeviceManager::HardwareResources requiredHardware() const override;
-    QList<ParamType> configurationDescription() const override;
-
-
     DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
+
     void deviceRemoved(Device *device) override;
     void networkManagerReplyReady(QNetworkReply *reply) override;
 

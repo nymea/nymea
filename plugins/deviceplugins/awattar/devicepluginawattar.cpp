@@ -82,19 +82,10 @@ DeviceManager::HardwareResources DevicePluginAwattar::requiredHardware() const
     return DeviceManager::HardwareResourceNetworkManager | DeviceManager::HardwareResourceTimer;
 }
 
-QList<ParamType> DevicePluginAwattar::configurationDescription() const
-{
-    QList<ParamType> params;
-    ParamType mockParam1("RPL Router address", QVariant::String, "");
-    params.append(mockParam1);
-
-    return params;
-}
-
 DeviceManager::DeviceSetupStatus DevicePluginAwattar::setupDevice(Device *device)
 {
     QString token = device->paramValue("token").toString();
-    qCDebug(dcAwattar) << "Setup device with token" << token;
+    qCDebug(dcAwattar) << "Setup device" << device->params();
 
     QNetworkReply *reply = requestPriceData(token);
     m_asyncSetup.insert(reply, device);

@@ -93,6 +93,23 @@ DeviceManager::DeviceSetupStatus DevicePluginAwattar::setupDevice(Device *device
     return DeviceManager::DeviceSetupStatusAsync;
 }
 
+void DevicePluginAwattar::startMonitoringAutoDevices()
+{
+    QHostAddress rplAddress = QHostAddress(configuration().paramValue("RPL address").toString());
+
+    if (rplAddress.isNull()) {
+        qCWarning(dcAwattar) << "Invalid RPL address" << configuration().paramValue("RPL address").toString();
+        return;
+    }
+
+    qCDebug(dcAwattar) << "Search heat pump" << rplAddress.toString();
+
+    QNetworkRequest request(QUrl(QString("http://[%1]").arg(rplAddress.toString())));
+    QNetworkReply *reply = networkManagerGet(request);
+
+    m_searchPumpReplies.append(reply);
+}
+
 void DevicePluginAwattar::deviceRemoved(Device *device)
 {
     Q_UNUSED(device)
@@ -173,7 +190,20 @@ void DevicePluginAwattar::networkManagerReplyReady(QNetworkReply *reply)
         }
 
         processUserData(device, jsonDoc.toVariant().toMap());
+    } else if (m_searchPumpReplies.contains(reply)) {
+
+        m_searchPumpReplies.removeAll(reply);
+
+        // check HTTP status code
+        if (status != 200) {
+            qCWarning(dcAwattar) << "Search pump reply HTTP error:" << status << reply->errorString();
+            reply->deleteLater();
+            return;
+        }
+
+        processPumpSearchData(reply->readAll());
     }
+
     reply->deleteLater();
 }
 
@@ -183,6 +213,21 @@ void DevicePluginAwattar::guhTimer()
         //qCDebug(dcAwattar) << "Update device" << device->id().toString();
         updateDevice(device);
     }
+}
+
+DeviceManager::DeviceError DevicePluginAwattar::executeAction(Device *device, const Action &action)
+{
+    Q_UNUSED(device)
+
+    if (action.actionTypeId() == ledPowerActionTypeId) {
+        foreach (HeatPump *pump, m_heatPumps) {
+            if (!pump->reachable())
+                return DeviceManager::DeviceErrorHardwareNotAvailable;
+
+            pump->setLed(action.param("led power").value().toBool());
+        }
+    }
+    return DeviceManager::DeviceErrorNoError;
 }
 
 void DevicePluginAwattar::processPriceData(Device *device, const QVariantMap &data, const bool &fromSetup)
@@ -304,7 +349,38 @@ void DevicePluginAwattar::processUserData(Device *device, const QVariantMap &dat
                 break;
             }
 
-            // todo: send sg mode to 6LoWPAN node
+            foreach (HeatPump *pump, m_heatPumps) {
+                pump->setSgMode(sgMode);
+            }
+        }
+    }
+}
+
+void DevicePluginAwattar::processPumpSearchData(const QByteArray &data)
+{
+    //qCDebug(dcAwattar) << "Search result:" << endl << data;
+
+    QList<QByteArray> lines = data.split('\n');
+    foreach (const QByteArray &line, lines) {
+        if (line.isEmpty())
+            continue;
+
+        // remove the '/128' from the address
+        QHostAddress pumpAddress(QString(data.left(line.length() - 4)));
+        if (!pumpAddress.isNull()) {
+            qCDebug(dcAwattar) << "Found heat pump at" << pumpAddress.toString();
+
+            // check if we already created this heat pump
+            if (heatPumpExists(pumpAddress))
+                continue;
+
+            HeatPump *pump = new HeatPump(pumpAddress, this);
+            connect(pump, SIGNAL(reachableChanged()), this, SLOT(onHeatPumpReachableChanged()));
+
+            m_heatPumps.append(pump);
+
+        } else {
+            qCWarning(dcAwattar) << "Could not read pump address" << line;
         }
     }
 }
@@ -334,4 +410,23 @@ void DevicePluginAwattar::updateDevice(Device *device)
 {
     QNetworkReply *priceReply = requestPriceData(device->paramValue("token").toString());
     m_updatePrice.insert(priceReply, device);
+}
+
+bool DevicePluginAwattar::heatPumpExists(const QHostAddress &pumpAddress)
+{
+    foreach (HeatPump *pump, m_heatPumps) {
+        if (pump->address() == pumpAddress) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void DevicePluginAwattar::onHeatPumpReachableChanged()
+{
+    HeatPump *pump = static_cast<HeatPump *>(sender());
+
+    foreach (Device *device, myDevices()) {
+        device->setStateValue(reachableStateTypeId, pump->reachable());
+    }
 }

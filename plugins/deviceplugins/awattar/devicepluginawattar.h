@@ -22,6 +22,7 @@
 #define DEVICEPLUGINAWATTAR_H
 
 #include "plugin/deviceplugin.h"
+#include "heatpump.h"
 
 #include <QHash>
 #include <QDebug>
@@ -39,26 +40,35 @@ public:
     DeviceManager::HardwareResources requiredHardware() const override;
     DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
 
+    void startMonitoringAutoDevices() override;
+
     void deviceRemoved(Device *device) override;
     void networkManagerReplyReady(QNetworkReply *reply) override;
 
     void guhTimer() override;
 
+    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
+
 private:
     QHash<QNetworkReply *, Device *> m_asyncSetup;
     QHash<QNetworkReply *, Device *> m_updatePrice;
     QHash<QNetworkReply *, Device *> m_updateUserData;
+    QList<QNetworkReply *> m_searchPumpReplies;
+
+    QList<HeatPump *> m_heatPumps;
 
     void processPriceData(Device *device, const QVariantMap &data, const bool &fromSetup = false);
     void processUserData(Device *device, const QVariantMap &data);
+    void processPumpSearchData(const QByteArray &data);
 
     QNetworkReply *requestPriceData(const QString& token);
     QNetworkReply *requestUserData(const QString& token, const QString &userId);
 
     void updateDevice(Device *device);
+    bool heatPumpExists(const QHostAddress &pumpAddress);
 
 private slots:
-    void onTimeout();
+    void onHeatPumpReachableChanged();
 
 };
 

@@ -2,6 +2,14 @@
     "name": "aWATTar",
     "idName": "Awattar",
     "id": "9c261c33-d44e-461e-8ec1-68803cb73f12",
+    "paramTypes": [
+        {
+            "name": "RPL address",
+            "type": "QString",
+            "inputType": "TextLine",
+            "defaultValue": "fdaa:e9b8:d03a::ff:fe00:1"
+        }
+    ],
     "vendors": [
         {
             "name": "aWATTar",
@@ -86,6 +94,13 @@
                             "defaultValue": 0
                         },
                         {
+                            "id": "1c9d139a-6618-4a39-bc83-37f80942017d",
+                            "idName": "reachable",
+                            "name": "pump reachable",
+                            "type": "bool",
+                            "defaultValue": false
+                        },
+                        {
                             "id": "b83d3533-aeae-4a9b-95d8-28466bf6c0cf",
                             "idName": "sgMode",
                             "name": "sg mode",
@@ -97,6 +112,19 @@
                                 "4 - On"
                             ],
                             "defaultValue": "1 - Off"
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "5be2f57f-a22d-4766-856a-a31481bcf6d6",
+                            "idName": "ledPower",
+                            "name": "led power",
+                            "paramTypes": [
+                                {
+                                    "name": "power",
+                                    "type": "bool"
+                                }
+                            ]
                         }
                     ]
                 }

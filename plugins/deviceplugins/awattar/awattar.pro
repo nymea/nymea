@@ -3,9 +3,11 @@ include(../../plugins.pri)
 TARGET = $$qtLibraryTarget(guh_devicepluginawattar)
 
 SOURCES += \
-    devicepluginawattar.cpp
+    devicepluginawattar.cpp \
+    heatpump.cpp
 
 HEADERS += \
-    devicepluginawattar.h
+    devicepluginawattar.h \
+    heatpump.h
 
 

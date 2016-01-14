@@ -38,11 +38,11 @@
 #include "guhsettings.h"
 #include "loggingcategories.h"
 
-QHash<QString, bool> s_loggingFilters;
+static QHash<QString, bool> s_loggingFilters;
 
 using namespace guhserver;
 
-void loggingCategoryFilter(QLoggingCategory *category)
+static void loggingCategoryFilter(QLoggingCategory *category)
 {
     if (s_loggingFilters.contains(category->categoryName())) {
         bool debugEnabled = s_loggingFilters.value(category->categoryName());
@@ -54,7 +54,7 @@ void loggingCategoryFilter(QLoggingCategory *category)
     }
 }
 
-void consoleLogHandler(QtMsgType type, const QMessageLogContext& context, const QString& message)
+static void consoleLogHandler(QtMsgType type, const QMessageLogContext& context, const QString& message)
 {
     QString messageString;
     QString timeString = QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz");

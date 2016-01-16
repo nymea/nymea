@@ -27,7 +27,7 @@ HeatPump::HeatPump(QHostAddress address, QObject *parent) :
     QObject(parent),
     m_address(address),
     m_reachable(false),
-    m_sgMode(1)
+    m_sgMode(0)
 {
     m_coap = new Coap(this);
 
@@ -54,12 +54,18 @@ bool HeatPump::reachable() const
 
 void HeatPump::setSgMode(const int &sgMode)
 {
+    if (m_sgMode != sgMode) {
+        m_sgMode = sgMode;
+        qCDebug(dcAwattar) << "Setting sg-mode to" << sgMode;
+    }
+
     QUrl url;
     url.setScheme("coap");
     url.setHost(m_address.toString());
     url.setPath("/a/sg_mode");
 
-    m_sgModeReplies.append(m_coap->post(CoapRequest(url), QByteArray::number(sgMode)));
+    QByteArray payload = QString("mode=%1").arg(QString::number(sgMode)).toUtf8();
+    m_sgModeReplies.append(m_coap->post(CoapRequest(url), payload));
 }
 
 void HeatPump::setLed(const bool &power)
@@ -70,9 +76,9 @@ void HeatPump::setLed(const bool &power)
     url.setPath("/a/led");
 
     if (power) {
-        m_ledReplies.append(m_coap->post(CoapRequest(url), "mode=on"));
+        m_ledReplies.append(m_coap->post(CoapRequest(url), "mode=1"));
     } else {
-        m_ledReplies.append(m_coap->post(CoapRequest(url), "mode=off"));
+        m_ledReplies.append(m_coap->post(CoapRequest(url), "mode=0"));
     }
 }
 
@@ -94,6 +100,11 @@ void HeatPump::onReplyFinished(CoapReply *reply)
             return;
         }
 
+        if (reply->statusCode() != CoapPdu::Content) {
+            qCWarning(dcAwattar()) << "Resource discovery:" << reply;
+            return;
+        }
+
         qCDebug(dcAwattar) << "Discovered successfully the resources";
         CoreLinkParser parser(reply->payload());
         foreach (const CoreLink &link, parser.links()) {
@@ -112,6 +123,11 @@ void HeatPump::onReplyFinished(CoapReply *reply)
             return;
         }
 
+        if (reply->statusCode() != CoapPdu::Content) {
+            qCWarning(dcAwattar()) << "Set sg-mode:" << reply;
+            return;
+        }
+
         if (!reachable())
             qCDebug(dcAwattar) << "Set sg-mode successfully.";
 
@@ -127,6 +143,11 @@ void HeatPump::onReplyFinished(CoapReply *reply)
             return;
         }
 
+        if (reply->statusCode() != CoapPdu::Content) {
+            qCWarning(dcAwattar()) << "Set LED:" << reply;
+            return;
+        }
+
         qCDebug(dcAwattar) << "Set led power successfully.";
 
     } else {
@@ -135,6 +156,11 @@ void HeatPump::onReplyFinished(CoapReply *reply)
             qCWarning(dcAwattar()) << "CoAP reply error" << reply->errorString();
             setReachable(false);
             reply->deleteLater();
+            return;
+        }
+
+        if (reply->statusCode() != CoapPdu::Content) {
+            qCWarning(dcAwattar()) << reply;
             return;
         }
 

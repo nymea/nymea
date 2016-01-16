@@ -84,6 +84,10 @@ DeviceManager::HardwareResources DevicePluginAwattar::requiredHardware() const
 
 DeviceManager::DeviceSetupStatus DevicePluginAwattar::setupDevice(Device *device)
 {
+    if (!myDevices().isEmpty()) {
+        qCWarning(dcAwattar) << "Only one aWATTar device can be configured.";
+    }
+
     QString token = device->paramValue("token").toString();
     qCDebug(dcAwattar) << "Setup device" << device->params();
 
@@ -95,24 +99,17 @@ DeviceManager::DeviceSetupStatus DevicePluginAwattar::setupDevice(Device *device
 
 void DevicePluginAwattar::startMonitoringAutoDevices()
 {
-    QHostAddress rplAddress = QHostAddress(configuration().paramValue("RPL address").toString());
-
-    if (rplAddress.isNull()) {
-        qCWarning(dcAwattar) << "Invalid RPL address" << configuration().paramValue("RPL address").toString();
-        return;
-    }
-
-    qCDebug(dcAwattar) << "Search heat pump" << rplAddress.toString();
-
-    QNetworkRequest request(QUrl(QString("http://[%1]").arg(rplAddress.toString())));
-    QNetworkReply *reply = networkManagerGet(request);
-
-    m_searchPumpReplies.append(reply);
+    searchHeatPumps();
 }
 
 void DevicePluginAwattar::deviceRemoved(Device *device)
 {
     Q_UNUSED(device)
+
+    foreach (HeatPump *pump, m_heatPumps) {
+        qCDebug(dcAwattar) << "Delete pump" << pump->address().toString();
+        pump->deleteLater();
+    }
 }
 
 void DevicePluginAwattar::networkManagerReplyReady(QNetworkReply *reply)
@@ -143,7 +140,7 @@ void DevicePluginAwattar::networkManagerReplyReady(QNetworkReply *reply)
 
         processPriceData(device, jsonDoc.toVariant().toMap(), true);
 
-        QNetworkReply *userReply = requestUserData(device->paramValue("token").toString(), device->paramValue("user id").toString());
+        QNetworkReply *userReply = requestUserData(device->paramValue("token").toString(), device->paramValue("user uuid").toString());
         m_updateUserData.insert(userReply, device);
 
     } else if (m_updatePrice.keys().contains(reply)) {
@@ -167,7 +164,7 @@ void DevicePluginAwattar::networkManagerReplyReady(QNetworkReply *reply)
 
         processPriceData(device, jsonDoc.toVariant().toMap());
 
-        QNetworkReply *userReply = requestUserData(device->paramValue("token").toString(), device->paramValue("user id").toString());
+        QNetworkReply *userReply = requestUserData(device->paramValue("token").toString(), device->paramValue("user uuid").toString());
         m_updateUserData.insert(userReply, device);
 
     } else if (m_updateUserData.keys().contains(reply)) {
@@ -190,6 +187,7 @@ void DevicePluginAwattar::networkManagerReplyReady(QNetworkReply *reply)
         }
 
         processUserData(device, jsonDoc.toVariant().toMap());
+
     } else if (m_searchPumpReplies.contains(reply)) {
 
         m_searchPumpReplies.removeAll(reply);
@@ -211,6 +209,7 @@ void DevicePluginAwattar::guhTimer()
 {
     foreach (Device *device, myDevices()) {
         //qCDebug(dcAwattar) << "Update device" << device->id().toString();
+        searchHeatPumps();
         updateDevice(device);
     }
 }
@@ -226,7 +225,16 @@ DeviceManager::DeviceError DevicePluginAwattar::executeAction(Device *device, co
 
             pump->setLed(action.param("led power").value().toBool());
         }
+    } else if (action.actionTypeId() == sgModeActionTypeId) {
+        foreach (HeatPump *pump, m_heatPumps) {
+            if (!pump->reachable())
+                return DeviceManager::DeviceErrorHardwareNotAvailable;
+
+            pump->setSgMode(action.param("sg-mode").value().toInt());
+        }
     }
+
+
     return DeviceManager::DeviceErrorNoError;
 }
 
@@ -346,7 +354,8 @@ void DevicePluginAwattar::processUserData(Device *device, const QVariantMap &dat
                 device->setStateValue(sgModeStateTypeId, "4 - On");
                 break;
             default:
-                break;
+                device->setStateValue(sgModeStateTypeId, "0 - Invalid");
+                continue;
             }
 
             foreach (HeatPump *pump, m_heatPumps) {
@@ -368,11 +377,12 @@ void DevicePluginAwattar::processPumpSearchData(const QByteArray &data)
         // remove the '/128' from the address
         QHostAddress pumpAddress(QString(data.left(line.length() - 4)));
         if (!pumpAddress.isNull()) {
-            qCDebug(dcAwattar) << "Found heat pump at" << pumpAddress.toString();
 
             // check if we already created this heat pump
             if (heatPumpExists(pumpAddress))
                 continue;
+
+            qCDebug(dcAwattar) << "Found heat pump at" << pumpAddress.toString();
 
             HeatPump *pump = new HeatPump(pumpAddress, this);
             connect(pump, SIGNAL(reachableChanged()), this, SLOT(onHeatPumpReachableChanged()));
@@ -410,6 +420,23 @@ void DevicePluginAwattar::updateDevice(Device *device)
 {
     QNetworkReply *priceReply = requestPriceData(device->paramValue("token").toString());
     m_updatePrice.insert(priceReply, device);
+}
+
+void DevicePluginAwattar::searchHeatPumps()
+{
+    QHostAddress rplAddress = QHostAddress(configuration().paramValue("RPL address").toString());
+
+    if (rplAddress.isNull()) {
+        qCWarning(dcAwattar) << "Invalid RPL address" << configuration().paramValue("RPL address").toString();
+        return;
+    }
+
+    //qCDebug(dcAwattar) << "Search heat pump" << rplAddress.toString();
+
+    QNetworkRequest request(QUrl(QString("http://[%1]").arg(rplAddress.toString())));
+    QNetworkReply *reply = networkManagerGet(request);
+
+    m_searchPumpReplies.append(reply);
 }
 
 bool DevicePluginAwattar::heatPumpExists(const QHostAddress &pumpAddress)

@@ -65,7 +65,9 @@ private:
     QNetworkReply *requestUserData(const QString& token, const QString &userId);
 
     void updateDevice(Device *device);
+    void searchHeatPumps();
     bool heatPumpExists(const QHostAddress &pumpAddress);
+
 
 private slots:
     void onHeatPumpReachableChanged();

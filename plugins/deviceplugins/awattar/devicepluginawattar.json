@@ -34,7 +34,7 @@
                             "defaultValue": "Heating system"
                         },
                         {
-                            "name": "user id",
+                            "name": "user uuid",
                             "type": "QString",
                             "inputType": "TextLine"
                         },
@@ -103,26 +103,44 @@
                         {
                             "id": "b83d3533-aeae-4a9b-95d8-28466bf6c0cf",
                             "idName": "sgMode",
-                            "name": "sg mode",
+                            "name": "sg-mode",
                             "type": "QString",
                             "possibleValues": [
+                                "0 - Invalid",
                                 "1 - Off",
                                 "2 - Normal",
                                 "3 - High Temperature",
                                 "4 - On"
                             ],
-                            "defaultValue": "1 - Off"
+                            "defaultValue": "0 - Invalid"
                         }
                     ],
                     "actionTypes": [
                         {
                             "id": "5be2f57f-a22d-4766-856a-a31481bcf6d6",
                             "idName": "ledPower",
-                            "name": "led power",
+                            "name": "set led power",
                             "paramTypes": [
                                 {
                                     "name": "power",
                                     "type": "bool"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "03af6639-a815-4291-abbb-26fc81cdf740",
+                            "idName": "sgMode",
+                            "name": "set sg-mode",
+                            "paramTypes": [
+                                {
+                                    "name": "sg-mode",
+                                    "type": "QString",
+                                    "allowedValues": [
+                                        "1",
+                                        "2",
+                                        "3",
+                                        "4"
+                                    ]
                                 }
                             ]
                         }

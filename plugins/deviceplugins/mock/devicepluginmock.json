@@ -439,6 +439,71 @@
                             "writable": true
                         }
                     ]
+                },
+                {
+                    "deviceClassId": "515ffdf1-55e5-498d-9abc-4e2fe768f3a9",
+                    "idName": "mockInputType",
+                    "name": "Mock Device (InputTypes)",
+                    "basicTags": [
+                        "Device"
+                    ],
+                    "createMethods": ["user"],
+                    "paramTypes": [
+                        {
+                            "name": "Text line",
+                            "type": "QString",
+                            "inputType": "TextLine",
+                            "defaultValue": "This is a text line"
+                        },
+                        {
+                            "name": "Text area",
+                            "type": "QString",
+                            "inputType": "TextArea",
+                            "defaultValue": "This is a text area"
+                        },
+                        {
+                            "name": "Password text",
+                            "type": "QString",
+                            "inputType": "Password",
+                            "defaultValue": "secret"
+                        },
+                        {
+                            "name": "Search text",
+                            "type": "QString",
+                            "inputType": "Search",
+                            "defaultValue": "Search text..."
+                        },
+                        {
+                            "name": "Mail address",
+                            "type": "QString",
+                            "inputType": "Mail",
+                            "defaultValue": "name@example.com"
+                        },
+                        {
+                            "name": "IPv4 address",
+                            "type": "QString",
+                            "inputType": "IPv4Address",
+                            "defaultValue": "127.0.0.1"
+                        },
+                        {
+                            "name": "IPv6 address",
+                            "type": "QString",
+                            "inputType": "IPv6Address",
+                            "defaultValue": "::1"
+                        },
+                        {
+                            "name": "URL",
+                            "type": "QString",
+                            "inputType": "Url",
+                            "defaultValue": "http://guh.guru"
+                        },
+                        {
+                            "name": "Mac address",
+                            "type": "QString",
+                            "inputType": "MacAddress",
+                            "defaultValue": "11:22:33:aa:bb:cc"
+                        }
+                    ]
                 }
             ]
         }

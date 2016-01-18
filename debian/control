@@ -113,6 +113,9 @@ Depends: libguh1 (= ${binary:Version}),
   guhd (= ${binary:Version}),
   ${shlibs:Depends},
   ${misc:Depends}
+Recommends:
+  nmap,
+  wakeonlan
 Description: Plugins for guh IoT server
   guh is an open source IoT (Internet of Things) server,
   which allows to control a lot of different devices from many different

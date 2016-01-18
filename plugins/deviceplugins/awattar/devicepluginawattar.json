@@ -2,6 +2,14 @@
     "name": "aWATTar",
     "idName": "Awattar",
     "id": "9c261c33-d44e-461e-8ec1-68803cb73f12",
+    "paramTypes": [
+        {
+            "name": "RPL address",
+            "type": "QString",
+            "inputType": "TextLine",
+            "defaultValue": "fdaa:e9b8:d03a::ff:fe00:1"
+        }
+    ],
     "vendors": [
         {
             "name": "aWATTar",
@@ -23,7 +31,12 @@
                             "name": "name",
                             "type": "QString",
                             "inputType": "TextLine",
-                            "defaultValue": "Energy price"
+                            "defaultValue": "Heating system"
+                        },
+                        {
+                            "name": "user uuid",
+                            "type": "QString",
+                            "inputType": "TextLine"
                         },
                         {
                             "name": "token",
@@ -37,7 +50,15 @@
                             "idName": "currentMarketPrice",
                             "name": "current market price",
                             "type": "double",
-                            "unit": "EuroPerMegaWattHour",
+                            "unit": "UnitEuroCentPerKiloWattHour",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "38b86cee-9588-4269-a585-128907929dc2",
+                            "idName": "averageDeviation",
+                            "name": "average deviation",
+                            "type": "double",
+                            "unit": "Percentage",
                             "defaultValue": 0
                         },
                         {
@@ -47,6 +68,82 @@
                             "unit": "UnixTime",
                             "type": "int",
                             "defaultValue": 0
+                        },
+                        {
+                            "id": "55d6d7a8-446f-48ae-8014-1225810d03ee",
+                            "idName": "averagePrice",
+                            "name": "average market price [± 12 h]",
+                            "type": "double",
+                            "unit": "UnitEuroCentPerKiloWattHour",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "e7af5bdc-48d7-4e96-b877-331da4dcfae5",
+                            "idName": "lowestPrice",
+                            "name": "lowest market price [± 12 h]",
+                            "type": "double",
+                            "unit": "UnitEuroCentPerKiloWattHour",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "0c171c42-b070-453e-8a63-df9aebfa8533",
+                            "idName": "highestPrice",
+                            "name": "highest market price [± 12 h]",
+                            "type": "double",
+                            "unit": "UnitEuroCentPerKiloWattHour",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "1c9d139a-6618-4a39-bc83-37f80942017d",
+                            "idName": "reachable",
+                            "name": "pump reachable",
+                            "type": "bool",
+                            "defaultValue": false
+                        },
+                        {
+                            "id": "b83d3533-aeae-4a9b-95d8-28466bf6c0cf",
+                            "idName": "sgMode",
+                            "name": "sg-mode",
+                            "type": "QString",
+                            "possibleValues": [
+                                "0 - Invalid",
+                                "1 - Off",
+                                "2 - Normal",
+                                "3 - High Temperature",
+                                "4 - On"
+                            ],
+                            "defaultValue": "0 - Invalid"
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "5be2f57f-a22d-4766-856a-a31481bcf6d6",
+                            "idName": "ledPower",
+                            "name": "set led power",
+                            "paramTypes": [
+                                {
+                                    "name": "power",
+                                    "type": "bool"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "03af6639-a815-4291-abbb-26fc81cdf740",
+                            "idName": "sgMode",
+                            "name": "set sg-mode",
+                            "paramTypes": [
+                                {
+                                    "name": "sg-mode",
+                                    "type": "QString",
+                                    "defaultValue": "1",
+                                    "allowedValues": [
+                                        "1",
+                                        "2",
+                                        "3",
+                                        "4"
+                                    ]
+                                }
+                            ]
                         }
                     ]
                 }

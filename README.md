@@ -18,10 +18,9 @@ In order to getting started with *guh* and find information you can take a look 
 
 ## Donate
 --------------------------------------------
-Since guh is free and open source, we are grateful for any help!
+We are grateful for any help!
 
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=SNATFFJGNRUZ6)
-
 
 ## License
 --------------------------------------------

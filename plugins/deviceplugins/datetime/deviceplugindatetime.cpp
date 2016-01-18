@@ -79,7 +79,6 @@
     \chapter Countdown
     The countdown plugin allowes you to define a countown which triggers an \l{Event} on timeout.
 
-
     \chapter Plugin properties
     Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}
     and \l{Vendor}{Vendors} of this \l{DevicePlugin}.

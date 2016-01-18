@@ -109,6 +109,9 @@ DeviceManager::DeviceSetupStatus DevicePluginMock::setupDevice(Device *device)
         qCDebug(dcMockDevice) << "Setup Child mock device" << device->params();
         device->setParentId(DeviceId(device->params().paramValue("parent uuid").toString()));
         return DeviceManager::DeviceSetupStatusSuccess;
+    } else if (device->deviceClassId() == mockInputTypeDeviceClassId) {
+        qCDebug(dcMockDevice) << "Setup InputType mock device" << device->params();
+        return DeviceManager::DeviceSetupStatusSuccess;
     }
 
     return DeviceManager::DeviceSetupStatusFailure;

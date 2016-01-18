@@ -291,7 +291,7 @@ void DevicePluginAwattar::processPriceData(Device *device, const QVariantMap &da
                 minPrice = price;
 
             //qCDebug(dcAwattar) << startTime.toString() << " -> " << endTime.toString();
-            device->setStateValue(currentMarketPriceStateTypeId, currentPrice);
+            device->setStateValue(currentMarketPriceStateTypeId, currentPrice / 10.0);
             device->setStateValue(validUntilStateTypeId, endTime.toLocalTime().toTime_t());
         }
     }
@@ -311,9 +311,9 @@ void DevicePluginAwattar::processPriceData(Device *device, const QVariantMap &da
 //    qCDebug(dcAwattar) << "    min      :" << minPrice << "Eur/MWh";
 //    qCDebug(dcAwattar) << "    max      :" << maxPrice << "Eur/MWh";
 
-    device->setStateValue(averagePriceStateTypeId, averagePrice);
-    device->setStateValue(lowestPriceStateTypeId, minPrice);
-    device->setStateValue(highestPriceStateTypeId, maxPrice);
+    device->setStateValue(averagePriceStateTypeId, averagePrice / 10.0);
+    device->setStateValue(lowestPriceStateTypeId, minPrice / 10.0);
+    device->setStateValue(highestPriceStateTypeId, maxPrice / 10.0);
     device->setStateValue(averageDeviationStateTypeId, deviation);
 
     if (fromSetup)

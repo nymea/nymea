@@ -76,9 +76,9 @@ void HeatPump::setLed(const bool &power)
     url.setPath("/a/led");
 
     if (power) {
-        m_ledReplies.append(m_coap->post(CoapRequest(url), "mode=1"));
+        m_ledReplies.append(m_coap->post(CoapRequest(url), QString("mode=1").toUtf8()));
     } else {
-        m_ledReplies.append(m_coap->post(CoapRequest(url), "mode=0"));
+        m_ledReplies.append(m_coap->post(CoapRequest(url), QString("mode=0").toUtf8()));
     }
 }
 

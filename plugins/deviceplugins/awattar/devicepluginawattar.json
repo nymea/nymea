@@ -50,7 +50,7 @@
                             "idName": "currentMarketPrice",
                             "name": "current market price",
                             "type": "double",
-                            "unit": "EuroPerMegaWattHour",
+                            "unit": "UnitEuroCentPerKiloWattHour",
                             "defaultValue": 0
                         },
                         {
@@ -74,7 +74,7 @@
                             "idName": "averagePrice",
                             "name": "average market price [± 12 h]",
                             "type": "double",
-                            "unit": "EuroPerMegaWattHour",
+                            "unit": "UnitEuroCentPerKiloWattHour",
                             "defaultValue": 0
                         },
                         {
@@ -82,7 +82,7 @@
                             "idName": "lowestPrice",
                             "name": "lowest market price [± 12 h]",
                             "type": "double",
-                            "unit": "EuroPerMegaWattHour",
+                            "unit": "UnitEuroCentPerKiloWattHour",
                             "defaultValue": 0
                         },
                         {
@@ -90,7 +90,7 @@
                             "idName": "highestPrice",
                             "name": "highest market price [± 12 h]",
                             "type": "double",
-                            "unit": "EuroPerMegaWattHour",
+                            "unit": "UnitEuroCentPerKiloWattHour",
                             "defaultValue": 0
                         },
                         {
@@ -135,6 +135,7 @@
                                 {
                                     "name": "sg-mode",
                                     "type": "QString",
+                                    "defaultValue": "1",
                                     "allowedValues": [
                                         "1",
                                         "2",

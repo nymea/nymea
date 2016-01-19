@@ -1,7 +1,7 @@
 [Unit]
 Description=guhd - IoT server
 Documentation=https://github.com/guh/guh/wiki
-After=network.target syslog.target
+After=ifup-wait-all-auto.service syslog.target
 
 [Service]
 ExecStart=/usr/bin/guhd --print-all

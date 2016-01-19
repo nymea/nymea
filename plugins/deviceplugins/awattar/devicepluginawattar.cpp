@@ -234,7 +234,6 @@ DeviceManager::DeviceError DevicePluginAwattar::executeAction(Device *device, co
         }
     }
 
-
     return DeviceManager::DeviceErrorNoError;
 }
 

@@ -602,10 +602,10 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
 
     writer.writeStartElement("device");
     writer.writeTextElement("deviceType", "urn:schemas-upnp-org:device:Basic:1");
-    writer.writeTextElement("friendlyName", "guhd");
-    writer.writeTextElement("manufacturer", "guh");
-    writer.writeTextElement("manufacturerURL", "http://guh.guru");
-    writer.writeTextElement("modelDescription", "Home automation server");
+    writer.writeTextElement("friendlyName", "guhIO");
+    writer.writeTextElement("manufacturer", "guh GmbH");
+    writer.writeTextElement("manufacturerURL", "http://guh.io");
+    writer.writeTextElement("modelDescription", "IoT server");
     writer.writeTextElement("modelName", "guhd");
     writer.writeTextElement("modelNumber", GUH_VERSION_STRING);
     writer.writeTextElement("modelURL", "http://guh.io"); // (optional)

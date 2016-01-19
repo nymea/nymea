@@ -217,23 +217,23 @@ void DevicePluginAwattar::guhTimer()
 DeviceManager::DeviceError DevicePluginAwattar::executeAction(Device *device, const Action &action)
 {
     Q_UNUSED(device)
+    Q_UNUSED(action)
 
-    if (action.actionTypeId() == ledPowerActionTypeId) {
-        foreach (HeatPump *pump, m_heatPumps) {
-            if (!pump->reachable())
-                return DeviceManager::DeviceErrorHardwareNotAvailable;
+//    if (action.actionTypeId() == ledPowerActionTypeId) {
+//        foreach (HeatPump *pump, m_heatPumps) {
+//            if (!pump->reachable())
+//                return DeviceManager::DeviceErrorHardwareNotAvailable;
 
-            pump->setLed(action.param("led power").value().toBool());
-        }
-    } else if (action.actionTypeId() == sgModeActionTypeId) {
-        foreach (HeatPump *pump, m_heatPumps) {
-            if (!pump->reachable())
-                return DeviceManager::DeviceErrorHardwareNotAvailable;
+//            pump->setLed(action.param("led power").value().toBool());
+//        }
+//    } else if (action.actionTypeId() == sgModeActionTypeId) {
+//        foreach (HeatPump *pump, m_heatPumps) {
+//            if (!pump->reachable())
+//                return DeviceManager::DeviceErrorHardwareNotAvailable;
 
-            pump->setSgMode(action.param("sg-mode").value().toInt());
-        }
-    }
-
+//            pump->setSgMode(action.param("sg-mode").value().toInt());
+//        }
+//    }
 
     return DeviceManager::DeviceErrorNoError;
 }

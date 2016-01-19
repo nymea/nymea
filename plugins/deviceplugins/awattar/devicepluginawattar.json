@@ -50,7 +50,7 @@
                             "idName": "currentMarketPrice",
                             "name": "current market price",
                             "type": "double",
-                            "unit": "UnitEuroCentPerKiloWattHour",
+                            "unit": "EuroCentPerKiloWattHour",
                             "defaultValue": 0
                         },
                         {
@@ -74,7 +74,7 @@
                             "idName": "averagePrice",
                             "name": "average market price [± 12 h]",
                             "type": "double",
-                            "unit": "UnitEuroCentPerKiloWattHour",
+                            "unit": "EuroCentPerKiloWattHour",
                             "defaultValue": 0
                         },
                         {
@@ -82,7 +82,7 @@
                             "idName": "lowestPrice",
                             "name": "lowest market price [± 12 h]",
                             "type": "double",
-                            "unit": "UnitEuroCentPerKiloWattHour",
+                            "unit": "EuroCentPerKiloWattHour",
                             "defaultValue": 0
                         },
                         {
@@ -90,7 +90,7 @@
                             "idName": "highestPrice",
                             "name": "highest market price [± 12 h]",
                             "type": "double",
-                            "unit": "UnitEuroCentPerKiloWattHour",
+                            "unit": "EuroCentPerKiloWattHour",
                             "defaultValue": 0
                         },
                         {
@@ -113,37 +113,6 @@
                                 "4 - On"
                             ],
                             "defaultValue": "0 - Invalid"
-                        }
-                    ],
-                    "actionTypes": [
-                        {
-                            "id": "5be2f57f-a22d-4766-856a-a31481bcf6d6",
-                            "idName": "ledPower",
-                            "name": "set led power",
-                            "paramTypes": [
-                                {
-                                    "name": "power",
-                                    "type": "bool"
-                                }
-                            ]
-                        },
-                        {
-                            "id": "03af6639-a815-4291-abbb-26fc81cdf740",
-                            "idName": "sgMode",
-                            "name": "set sg-mode",
-                            "paramTypes": [
-                                {
-                                    "name": "sg-mode",
-                                    "type": "QString",
-                                    "defaultValue": "1",
-                                    "allowedValues": [
-                                        "1",
-                                        "2",
-                                        "3",
-                                        "4"
-                                    ]
-                                }
-                            ]
                         }
                     ]
                 }

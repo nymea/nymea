@@ -107,15 +107,6 @@ DeviceManager::DeviceSetupStatus DevicePluginAwattar::setupDevice(Device *device
     return DeviceManager::DeviceSetupStatusAsync;
 }
 
-void DevicePluginAwattar::postSetupDevice(Device *device)
-{
-    if (device != m_device)
-        return;
-
-    searchHeatPumps();
-    updateData();
-}
-
 void DevicePluginAwattar::deviceRemoved(Device *device)
 {
     Q_UNUSED(device)
@@ -139,7 +130,6 @@ void DevicePluginAwattar::networkManagerReplyReady(QNetworkReply *reply)
         // check HTTP status code
         if (status != 200) {
             qCWarning(dcAwattar) << "Setup reply HTTP error:" << status << reply->errorString();
-
             if (m_setupRetry == 3) {
                 emit deviceSetupFinished(m_device, DeviceManager::DeviceSetupStatusFailure);
                 m_setupRetry = 0;
@@ -166,7 +156,13 @@ void DevicePluginAwattar::networkManagerReplyReady(QNetworkReply *reply)
             return;
         }
 
+        Q_UNUSED(jsonDoc)
+
         emit deviceSetupFinished(m_device, DeviceManager::DeviceSetupStatusSuccess);
+
+        // get data
+        searchHeatPumps();
+        updateData();
 
     } else if (m_updatePrice.contains(reply)) {
 
@@ -234,6 +230,9 @@ void DevicePluginAwattar::networkManagerReplyReady(QNetworkReply *reply)
 
 void DevicePluginAwattar::guhTimer()
 {
+    if (!m_device)
+        return;
+
     updateData();
     searchHeatPumps();
 }
@@ -378,7 +377,7 @@ void DevicePluginAwattar::processPumpSearchData(const QByteArray &data)
     }
 }
 
-QNetworkReply *DevicePluginAwattar::requestPriceData(const QString &token)
+QNetworkReply *DevicePluginAwattar::    requestPriceData(const QString &token)
 {
     QByteArray data = QString(token + ":").toUtf8().toBase64();
     QString header = "Basic " + data;
@@ -403,7 +402,6 @@ void DevicePluginAwattar::updateData()
 {
     m_updatePrice.append(requestPriceData(m_token));
 }
-
 
 void DevicePluginAwattar::searchHeatPumps()
 {

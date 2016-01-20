@@ -21,7 +21,7 @@ SUBDIRS += elro         \
     elgato              \
     awattar             \
     netatmo             \
-    osdomotics          \
+    #osdomotics          \
 
 
 

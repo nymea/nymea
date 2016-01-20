@@ -29,8 +29,6 @@
     In order to use this plugin you need to enter the access token from your energy provider. You can find more
     information about you accesstoken \l{https://www.awattar.com/api-unser-datenfeed}{here}.
 
-    The pricing data will be updated every hour.
-
     \chapter Available data
 
     In following chart you can see an example of the market prices from -12 hours to + 12 hours from the current
@@ -46,7 +44,15 @@
 
     \image awattar-graph.png
 
+    \chapter Heat pump
+
     Information about the smart grid modes can be found \l{https://www.waermepumpe.de/sg-ready/}{here}.
+
+    In order to interact with the heat pump (SG-ready), this plugin creates a CoAP connection to the server running on the
+    6LoWPAN bridge. The server IPv6 can be configured in the plugin configuration. Once the connection is established, the
+    plugin searches for 6LoWPAN neighbors in the network.
+
+    \note Currently there should be only one heat pump in the 6LoWPAN network!
 
     \chapter Plugin properties
     Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}

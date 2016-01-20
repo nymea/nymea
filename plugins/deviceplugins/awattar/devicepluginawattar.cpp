@@ -118,7 +118,7 @@ void DevicePluginAwattar::postSetupDevice(Device *device)
 
 void DevicePluginAwattar::startMonitoringAutoDevices()
 {
-    searchHeatPumps();
+    //searchHeatPumps();
 }
 
 void DevicePluginAwattar::deviceRemoved(Device *device)

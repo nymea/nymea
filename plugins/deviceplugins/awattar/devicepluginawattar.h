@@ -40,23 +40,19 @@ public:
     DeviceManager::HardwareResources requiredHardware() const override;
     DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
 
-    void postSetupDevice(Device *device) override;
-
-    void startMonitoringAutoDevices() override;
-
     void deviceRemoved(Device *device) override;
     void networkManagerReplyReady(QNetworkReply *reply) override;
 
     void guhTimer() override;
 
 private:
+    Device *m_device;
+    QList<HeatPump *> m_heatPumps;
+
     QList<QNetworkReply *> m_asyncSetup;
     QList<QNetworkReply *> m_searchPumpReplies;
     QList<QNetworkReply *> m_updatePrice;
     QList<QNetworkReply *> m_updateUserData;
-
-    Device *m_device;
-    QList<HeatPump *> m_heatPumps;
 
     QString m_token;
     QString m_userUuid;
@@ -72,7 +68,6 @@ private:
     void updateData();
     void searchHeatPumps();
     bool heatPumpExists(const QHostAddress &pumpAddress);
-
 
 private slots:
     void connectionTest();

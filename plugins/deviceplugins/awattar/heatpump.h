@@ -37,8 +37,8 @@ public:
 
     QHostAddress address() const;
     bool reachable() const;
-
     void setSgMode(const int &sgMode);
+
     void setLed(const bool &power);
 
 private:

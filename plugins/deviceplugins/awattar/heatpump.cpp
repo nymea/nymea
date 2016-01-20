@@ -101,7 +101,8 @@ void HeatPump::onReplyFinished(CoapReply *reply)
         }
 
         if (reply->statusCode() != CoapPdu::Content) {
-            qCWarning(dcAwattar()) << "Resource discovery:" << reply;
+            qCWarning(dcAwattar()) << "Resource discovery status code:" << reply;
+            reply->deleteLater();
             return;
         }
 
@@ -124,7 +125,8 @@ void HeatPump::onReplyFinished(CoapReply *reply)
         }
 
         if (reply->statusCode() != CoapPdu::Content) {
-            qCWarning(dcAwattar()) << "Set sg-mode:" << reply;
+            qCWarning(dcAwattar()) << "Set sg-mode status code error:" << reply;
+            reply->deleteLater();
             return;
         }
 
@@ -144,7 +146,8 @@ void HeatPump::onReplyFinished(CoapReply *reply)
         }
 
         if (reply->statusCode() != CoapPdu::Content) {
-            qCWarning(dcAwattar()) << "Set LED:" << reply;
+            qCWarning(dcAwattar()) << "Set LED status code error:" << reply;
+            reply->deleteLater();
             return;
         }
 
@@ -160,7 +163,8 @@ void HeatPump::onReplyFinished(CoapReply *reply)
         }
 
         if (reply->statusCode() != CoapPdu::Content) {
-            qCWarning(dcAwattar()) << reply;
+            qCWarning(dcAwattar()) << "Unknown reply" << reply;
+            reply->deleteLater();
             return;
         }
 

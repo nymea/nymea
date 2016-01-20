@@ -40,6 +40,8 @@ public:
     DeviceManager::HardwareResources requiredHardware() const override;
     DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
 
+    void postSetupDevice(Device *device) override;
+
     void startMonitoringAutoDevices() override;
 
     void deviceRemoved(Device *device) override;
@@ -47,29 +49,33 @@ public:
 
     void guhTimer() override;
 
-    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
-
 private:
-    QHash<QNetworkReply *, Device *> m_asyncSetup;
-    QHash<QNetworkReply *, Device *> m_updatePrice;
-    QHash<QNetworkReply *, Device *> m_updateUserData;
+    QList<QNetworkReply *> m_asyncSetup;
     QList<QNetworkReply *> m_searchPumpReplies;
+    QList<QNetworkReply *> m_updatePrice;
+    QList<QNetworkReply *> m_updateUserData;
 
+    Device *m_device;
     QList<HeatPump *> m_heatPumps;
 
-    void processPriceData(Device *device, const QVariantMap &data, const bool &fromSetup = false);
-    void processUserData(Device *device, const QVariantMap &data);
+    QString m_token;
+    QString m_userUuid;
+    int m_setupRetry;
+
+    void processPriceData(const QVariantMap &data);
+    void processUserData(const QVariantMap &data);
     void processPumpSearchData(const QByteArray &data);
 
     QNetworkReply *requestPriceData(const QString& token);
     QNetworkReply *requestUserData(const QString& token, const QString &userId);
 
-    void updateDevice(Device *device);
+    void updateData();
     void searchHeatPumps();
     bool heatPumpExists(const QHostAddress &pumpAddress);
 
 
 private slots:
+    void connectionTest();
     void onHeatPumpReachableChanged();
 
 };

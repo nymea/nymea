@@ -62,14 +62,7 @@ void GuhService::start()
     qCDebug(dcApplication) << "=====================================";
     qCDebug(dcApplication) << "guhd" << GUH_VERSION_STRING << "started as daemon.";
     qCDebug(dcApplication) << "=====================================";
-    GuhCore::instance()->setRunningMode(GuhCore::RunningModeService);
-}
-
-void GuhService::stop()
-{
-    qCDebug(dcApplication) << "=====================================";
-    qCDebug(dcApplication) << "Shutting down guh daemon";
-    qCDebug(dcApplication) << "=====================================";
+    GuhCore::instance();
 }
 
 }

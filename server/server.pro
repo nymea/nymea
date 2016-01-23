@@ -16,7 +16,8 @@ include(server.pri)
 include(qtservice/qtservice.pri)
 
 SOURCES += main.cpp \
-    guhservice.cpp
+    guhservice.cpp \
+    guhapplication.cpp
 
 boblight {
     xcompile {
@@ -28,4 +29,5 @@ boblight {
 }
 
 HEADERS += \
-    guhservice.h
+    guhservice.h \
+    guhapplication.h

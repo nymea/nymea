@@ -36,6 +36,7 @@
 #include "guhcore.h"
 #include "guhservice.h"
 #include "guhsettings.h"
+#include "guhapplication.h"
 #include "loggingcategories.h"
 
 static QHash<QString, bool> s_loggingFilters;
@@ -87,12 +88,11 @@ static void consoleLogHandler(QtMsgType type, const QMessageLogContext& context,
     logFile.close();
 }
 
-
 int main(int argc, char *argv[])
 {
     qInstallMessageHandler(consoleLogHandler);
 
-    QCoreApplication application(argc, argv);
+    GuhApplication application(argc, argv);
     application.setOrganizationName("guh");
     application.setApplicationName("guhd");
     application.setApplicationVersion(GUH_VERSION_STRING);
@@ -121,13 +121,13 @@ int main(int argc, char *argv[])
     parser.addHelpOption();
     parser.addVersionOption();
     QString applicationDescription = QString("\nguh ( /[guːh]/ ) is an open source IoT (Internet of Things) server, \n"
-                                             "which allows to control a lot of different devices from many different. \n"
+                                             "which allows to control a lot of different devices from many different \n"
                                              "manufacturers. With the powerful rule engine you are able to connect any \n"
                                              "device available in the system and create individual scenes and behaviors \n"
                                              "for your environment.\n\n"
-                                             "guhd %1 (C) 2014-2015 guh\n"
+                                             "guhd %1 %2 2014-2016 guh GmbH\n"
                                              "Released under the GNU GENERAL PUBLIC LICENSE Version 2.\n\n"
-                                             "API version: %2\n").arg(GUH_VERSION_STRING).arg(JSON_PROTOCOL_VERSION);
+                                             "API version: %3\n").arg(GUH_VERSION_STRING).arg(QChar(0xA9)).arg(JSON_PROTOCOL_VERSION);
 
     parser.setApplicationDescription(applicationDescription);
 
@@ -142,6 +142,7 @@ int main(int argc, char *argv[])
     foreach (const QString &filterName, sortedFilterList) {
         debugDescription += "\n- " + filterName + " (" + (s_loggingFilters.value(filterName) ? "yes" : "no") + ")";
     }
+
     // create sorted plugin loggingFiler list
     QStringList sortedPluginList = QStringList(loggingFiltersPlugins.keys());
     sortedPluginList.sort();
@@ -195,7 +196,7 @@ int main(int argc, char *argv[])
         }
 
         // create core instance
-        GuhCore::instance()->setRunningMode(GuhCore::RunningModeApplication);
+        GuhCore::instance();
         return application.exec();
     }
 

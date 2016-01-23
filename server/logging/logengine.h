@@ -38,6 +38,7 @@ class LogEngine: public QObject
     Q_OBJECT
 public:
     LogEngine(QObject *parent = 0);
+    ~LogEngine();
 
     QList<LogEntry> logEntries(const LogFilter &filter = LogFilter()) const;
 

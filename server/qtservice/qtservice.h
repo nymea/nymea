@@ -168,7 +168,6 @@ public:
     ~QtService()
     {
     }
-
 protected:
     Application *application() const
     { return app; }

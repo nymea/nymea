@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2016 Simon Stuerz <simon.stuerz@guh.guru>                *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -18,27 +18,20 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef GUHSERVICE_H
-#define GUHSERVICE_H
+#ifndef GUHAPPLICATION_H
+#define GUHAPPLICATION_H
 
+#include <QObject>
+#include <QSocketNotifier>
 #include <QCoreApplication>
-#include "qtservice/qtservice.h"
-
-#include "guhcore.h"
 
 namespace guhserver {
 
-class GuhService : public QtService<QCoreApplication>
+class GuhApplication : public QCoreApplication
 {
-
 public:
-    explicit GuhService(int argc, char **argv);
-    ~GuhService();
-
-protected:
-    void start();
+    GuhApplication(int &argc, char **argv);
 };
 
 }
-
-#endif // GUHSERVICE_H
+#endif // GUHAPPLICATION_H

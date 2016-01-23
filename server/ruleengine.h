@@ -64,6 +64,7 @@ public:
     };
 
     explicit RuleEngine(QObject *parent = 0);
+    ~RuleEngine();
 
     QList<Rule> evaluateEvent(const Event &event);
 

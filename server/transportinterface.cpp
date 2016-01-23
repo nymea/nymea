@@ -167,5 +167,4 @@ void TransportInterface::validateMessage(const QUuid &clientId, const QByteArray
     emit dataAvailable(clientId, targetNamespace, method, message);
 }
 
-
 }

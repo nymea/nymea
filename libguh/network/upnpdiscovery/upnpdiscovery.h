@@ -44,6 +44,8 @@ class LIBGUH_EXPORT UpnpDiscovery : public QUdpSocket
     Q_OBJECT
 public:
     explicit UpnpDiscovery(QObject *parent = 0);
+    ~UpnpDiscovery();
+
     bool discoverDevices(const QString &searchTarget = "ssdp:all", const QString &userAgent = "", const PluginId &pluginId = PluginId());
     void sendToMulticast(const QByteArray &data);
 
@@ -61,8 +63,6 @@ private:
     void requestDeviceInformation(const QNetworkRequest &networkRequest, const UpnpDeviceDescriptor &upnpDeviceDescriptor);
     void respondToSearchRequest(QHostAddress host, int port);
 
-protected:
-
 signals:
     void discoveryFinished(const QList<UpnpDeviceDescriptor> &deviceDescriptorList, const PluginId & pluginId);
     void upnpNotify(const QByteArray &notifyMessage);
@@ -72,6 +72,8 @@ private slots:
     void readData();
     void replyFinished(QNetworkReply *reply);
     void notificationTimeout();
+    void sendByeByeMessage();
+    void sendAliveMessage();
     void discoverTimeout();
 };
 

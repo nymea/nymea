@@ -145,6 +145,12 @@ LogEngine::LogEngine(QObject *parent):
     initDB();
 }
 
+LogEngine::~LogEngine()
+{
+    qCDebug(dcApplication) << "Shutting down \"Log Engine\"";
+    m_db.close();
+}
+
 /*! Returns the list of \l{LogEntry}{LogEntries} of the database matching the given \a filter.
 
   \sa LogEntry, LogFilter

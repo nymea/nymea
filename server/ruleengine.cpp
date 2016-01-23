@@ -213,6 +213,11 @@ RuleEngine::RuleEngine(QObject *parent) :
     }
 }
 
+RuleEngine::~RuleEngine()
+{
+    qCDebug(dcApplication) << "Shutting down \"Rule Engine\"";
+}
+
 /*! Ask the Engine to evaluate all the rules for the given \a event.
     This will search all the \l{Rule}{Rules} triggered by the given \a event
     and evaluate their states in the system. It will return a

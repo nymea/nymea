@@ -92,6 +92,16 @@ UpnpDiscovery::UpnpDiscovery(QObject *parent) :
     m_notificationTimer->start();
 
     qCDebug(dcDeviceManager) << "--> UPnP discovery created successfully.";
+    sendAliveMessage();
+    sendAliveMessage();
+}
+
+UpnpDiscovery::~UpnpDiscovery()
+{
+    qCDebug(dcApplication) << "Shutting down \"UPnP Server\"";
+    sendByeByeMessage();
+    waitForBytesWritten();
+    close();
 }
 
 /*! Returns false, if the \l{UpnpDiscovery} resource is not available. Returns true, if a device with
@@ -152,12 +162,12 @@ void UpnpDiscovery::respondToSearchRequest(QHostAddress host, int port)
 
                     // http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
                     QByteArray rootdeviceResponseMessage = QByteArray("HTTP/1.1 200 OK\r\n"
-                                                                      "Cache-Control: max-age=1900\r\n"
+                                                                      "CACHE-CONTROL: max-age=1900\r\n"
                                                                       "DATE: " + QDateTime::currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8() + " GMT\r\n"
                                                                       "EXT:\r\n"
                                                                       "CONTENT-LENGTH:0\r\n"
-                                                                      "Location: " + locationString.toUtf8() + "\r\n"
-                                                                      "Server: guh/" + QByteArray(GUH_VERSION_STRING) + " UPnP/1.1 \r\n"
+                                                                      "LOCATION: " + locationString.toUtf8() + "\r\n"
+                                                                      "SERVER: guh/" + QByteArray(GUH_VERSION_STRING) + " UPnP/1.1 \r\n"
                                                                       "ST:upnp:rootdevice\r\n"
                                                                       "USN:uuid:" + uuid + "::urn:schemas-upnp-org:device:Basic:1\r\n"
                                                                       "\r\n");
@@ -173,7 +183,6 @@ void UpnpDiscovery::respondToSearchRequest(QHostAddress host, int port)
 /*! This method will be called to send the SSDP message \a data to the UPnP multicast.*/
 void UpnpDiscovery::sendToMulticast(const QByteArray &data)
 {
-    //qCDebug(dcHardware) << "sending to multicast\n" << data;
     writeDatagram(data, m_host, m_port);
 }
 
@@ -310,6 +319,11 @@ void UpnpDiscovery::replyFinished(QNetworkReply *reply)
 
 void UpnpDiscovery::notificationTimeout()
 {
+    sendAliveMessage();
+}
+
+void UpnpDiscovery::sendByeByeMessage()
+{
     GuhSettings settings(GuhSettings::SettingsRoleDevices);
     settings.beginGroup("guhd");
     QByteArray uuid = settings.value("uuid", QVariant()).toByteArray();
@@ -337,17 +351,62 @@ void UpnpDiscovery::notificationTimeout()
                 }
 
                 // http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
-                QByteArray rootdeviceResponseMessage = QByteArray("NOTIFY * HTTP/1.1\r\n"
+                QByteArray byebyeMessage = QByteArray("NOTIFY * HTTP/1.1\r\n"
                                                                   "HOST:239.255.255.250:1900\r\n"
-                                                                  "Cache-Control: max-age=1900\r\n"
-                                                                  "Location: " + locationString.toUtf8() + "\r\n"
+                                                                  "CACHE-CONTROL: max-age=1900\r\n"
+                                                                  "LOCATION: " + locationString.toUtf8() + "\r\n"
+                                                                  "NT:urn:schemas-upnp-org:device:Basic:1\r\n"
+                                                                  "USN:uuid:" + uuid + "::urn:schemas-upnp-org:device:Basic:1\r\n"
+                                                                  "NTS: ssdp:byebye\r\n"
+                                                                  "SERVER: guh/" + QByteArray(GUH_VERSION_STRING) + " UPnP/1.1 \r\n"
+                                                                  "\r\n");
+
+                sendToMulticast(byebyeMessage);
+            }
+        }
+    }
+}
+
+void UpnpDiscovery::sendAliveMessage()
+{
+    GuhSettings settings(GuhSettings::SettingsRoleDevices);
+    settings.beginGroup("guhd");
+    QByteArray uuid = settings.value("uuid", QVariant()).toByteArray();
+    if (uuid.isEmpty()) {
+        uuid = QUuid::createUuid().toByteArray().replace("{", "").replace("}","");
+        settings.setValue("uuid", uuid);
+    }
+    settings.endGroup();
+
+    GuhSettings globalSettings(GuhSettings::SettingsRoleGlobal);
+    globalSettings.beginGroup("WebServer");
+    int port = settings.value("port", 3333).toInt();
+    bool useSsl = settings.value("https", false).toBool();
+    globalSettings.endGroup();
+
+    foreach (const QNetworkInterface &interface,  QNetworkInterface::allInterfaces()) {
+        // listen only on IPv4
+        foreach (QNetworkAddressEntry entry, interface.addressEntries()) {
+            if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol) {
+                QString locationString;
+                if (useSsl) {
+                    locationString = "https://" + entry.ip().toString() + ":" + QString::number(port) + "/server.xml";
+                } else {
+                    locationString = "http://" + entry.ip().toString() + ":" + QString::number(port) + "/server.xml";
+                }
+
+                // http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
+                QByteArray aliveMessage = QByteArray("NOTIFY * HTTP/1.1\r\n"
+                                                                  "HOST:239.255.255.250:1900\r\n"
+                                                                  "CACHE-CONTROL: max-age=1900\r\n"
+                                                                  "LOCATION: " + locationString.toUtf8() + "\r\n"
                                                                   "NT:urn:schemas-upnp-org:device:Basic:1\r\n"
                                                                   "USN:uuid:" + uuid + "::urn:schemas-upnp-org:device:Basic:1\r\n"
                                                                   "NTS: ssdp:alive\r\n"
                                                                   "SERVER: guh/" + QByteArray(GUH_VERSION_STRING) + " UPnP/1.1 \r\n"
                                                                   "\r\n");
 
-                sendToMulticast(rootdeviceResponseMessage);
+                sendToMulticast(aliveMessage);
             }
         }
     }

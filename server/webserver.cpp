@@ -131,6 +131,7 @@ WebServer::WebServer(const QSslConfiguration &sslConfiguration, QObject *parent)
 /*! Destructor of this \l{WebServer}. */
 WebServer::~WebServer()
 {
+    qCDebug(dcApplication) << "Shutting down \"Webserver\"";
     this->close();
 }
 

@@ -147,7 +147,7 @@ LogEngine::LogEngine(QObject *parent):
 
 LogEngine::~LogEngine()
 {
-    qCDebug(dcApplication) << "Shutting down log engine";
+    qCDebug(dcApplication) << "Shutting down \"Log Engine\"";
     m_db.close();
 }
 

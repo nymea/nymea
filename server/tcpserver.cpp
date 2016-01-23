@@ -87,7 +87,7 @@ TcpServer::TcpServer(QObject *parent) :
 /*! Destructor of this \l{TcpServer}. */
 TcpServer::~TcpServer()
 {
-    qCDebug(dcApplication) << "Shutting down TCP server";
+    qCDebug(dcApplication) << "Shutting down \"TCP Server\"";
     stopServer();
 }
 

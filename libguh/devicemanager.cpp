@@ -238,7 +238,7 @@ DeviceManager::DeviceManager(QObject *parent) :
 /*! Destructor of the DeviceManager. Each loaded \l{DevicePlugin} will be deleted. */
 DeviceManager::~DeviceManager()
 {
-    qCDebug(dcApplication) << "Shutting down device manager";
+    qCDebug(dcApplication) << "Shutting down \"Device Manager\"";
     foreach (DevicePlugin *plugin, m_devicePlugins) {
         delete plugin;
     }

@@ -47,6 +47,7 @@ SOURCES += devicemanager.cpp \
            coap/coappdublock.cpp \
            coap/corelinkparser.cpp \
            coap/corelink.cpp \
+           coap/coapobserveresource.cpp \
            types/action.cpp \
            types/actiontype.cpp \
            types/state.cpp \
@@ -91,6 +92,7 @@ HEADERS += devicemanager.h \
            coap/coappdublock.h \
            coap/corelinkparser.h \
            coap/corelink.h \
+           coap/coapobserveresource.h \
            types/action.h \
            types/actiontype.h \
            types/state.h \

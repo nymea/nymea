@@ -41,6 +41,8 @@
 
     \value IfNoneMatch
 
+    \value Observe
+        \l{https://tools.ietf.org/html/rfc7641}
     \value UriPort
 
     \value LocationPath
@@ -58,8 +60,10 @@
     \value LocationQuery
 
     \value Block2
+        \l{https://tools.ietf.org/html/draft-ietf-core-block-18}
 
     \value Block1
+        \l{https://tools.ietf.org/html/draft-ietf-core-block-18}
 
     \value ProxyUri
 
@@ -73,19 +77,21 @@
 
 #include <QMetaEnum>
 
-/*! Constructs a \l{CoapOption} . */
+/*! Constructs a CoapOption. */
 CoapOption::CoapOption()
 {
+
 }
 
-/*! Constructs a \l{CoapOption} with the given \a option and option \a data. */
+/*! Constructs a CoapOption with the given \a option and option \a data. */
 CoapOption::CoapOption(const CoapOption::Option &option, const QByteArray &data) :
     m_option(option),
     m_data(data)
 {
+
 }
 
-/*! Sets the option value of this CoapOption to the given \a option . */
+/*! Sets the \l{CoapOption::Option} of this CoapOption to the given \a option. */
 void CoapOption::setOption(const CoapOption::Option &option)
 {
     m_option = option;
@@ -111,6 +117,10 @@ QByteArray CoapOption::data() const
 
 #include "coappdu.h"
 
+/*! Writes the data of the given \a coapOption to \a dbg.
+
+    \sa CoapOption
+*/
 QDebug operator<<(QDebug debug, const CoapOption &coapOption)
 {
     const QMetaObject &metaObject = CoapOption::staticMetaObject;
@@ -147,7 +157,10 @@ QDebug operator<<(QDebug debug, const CoapOption &coapOption)
         debug.nospace() << "CoapOption(" << optionEnum.valueToKey(coapOption.option()) << "): " << coapOption.data().toHex() << " Block #" << block.blockNumber() << ", More flag = " << block.moreFlag() << ", SZX:" << block.blockSize() << endl;
         break;
     }
-
+    case CoapOption::Observe: {
+        debug.nospace() << "CoapOption(" << optionEnum.valueToKey(coapOption.option()) << "): " << coapOption.data().toHex().toInt(0, 16) << endl;
+        break;
+    }
     default:
         QString optionName = optionEnum.valueToKey(coapOption.option());
         if (optionName.isNull()) {

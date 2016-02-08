@@ -151,7 +151,6 @@ public:
 
     void clear();
     bool isValid() const;
-    bool isNull() const;
 
     QByteArray pack() const;
 

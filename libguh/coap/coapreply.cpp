@@ -66,7 +66,7 @@
 */
 
 /*! \fn void CoapReply::error(const Error &code);
-    This signal is emitted when an error occured.
+    This signal is emitted when an error occured. The given \a code represents the \l{CoapReply::Error}.
 
     \sa error(), errorString()
 */
@@ -91,13 +91,13 @@
 
 #include <QMetaEnum>
 
-/*! Returns the request for this CoapReply. */
+/*! Returns the request for this \l{CoapReply}. */
 CoapRequest CoapReply::request() const
 {
     return m_request;
 }
 
-/*! Returns the payload of this CoapReply. The payload will be available once the CoapReply is finished.
+/*! Returns the payload of this \l{CoapReply}. The payload will be available once the \l{CoapReply} is finished.
 
     \sa isFinished
 */
@@ -106,7 +106,7 @@ QByteArray CoapReply::payload() const
     return m_payload;
 }
 
-/*! Returns true if the reply is finished.
+/*! Returns true if the \l{CoapReply} is finished.
 
     \sa finished()
 */
@@ -115,7 +115,7 @@ bool CoapReply::isFinished() const
     return m_isFinished;
 }
 
-/*! Returns true if the reply is running.
+/*! Returns true if the \l{CoapReply} is running.
 
     \sa finished()
 */
@@ -124,7 +124,7 @@ bool CoapReply::isRunning() const
     return m_timer->isActive();
 }
 
-/*! Returns error code of the reply.
+/*! Returns error \l{CoapReply::Error} of the \l{CoapReply}.
 
     \sa errorString()
 */
@@ -133,7 +133,7 @@ CoapReply::Error CoapReply::error() const
     return m_error;
 }
 
-/*! Returns error string of the reply.
+/*! Returns error string of the \l{CoapReply}.
 
     \sa error()
 */
@@ -161,16 +161,19 @@ QString CoapReply::errorString() const
     return errorString;
 }
 
+/*! Returns the \l{CoapPdu::ContentType} of this \l{CoapReply}. */
 CoapPdu::ContentType CoapReply::contentType() const
 {
     return m_contentType;
 }
 
+/*! Returns the \l{CoapPdu::MessageType} of this \l{CoapReply}. */
 CoapPdu::MessageType CoapReply::messageType() const
 {
     return m_messageType;
 }
 
+/*! Returns the \l{CoapPdu::StatusCode} of this \l{CoapReply}. */
 CoapPdu::StatusCode CoapReply::statusCode() const
 {
     return m_statusCode;
@@ -217,6 +220,26 @@ QByteArray CoapReply::messageToken() const
 void CoapReply::setMessageToken(const QByteArray &messageToken)
 {
     m_messageToken = messageToken;
+}
+
+bool CoapReply::observation() const
+{
+    return m_observation;
+}
+
+void CoapReply::setObservation(const bool &observation)
+{
+    m_observation = observation;
+}
+
+bool CoapReply::observationEnable() const
+{
+    return m_observationEnable;
+}
+
+void CoapReply::setObservationEnable(const bool &observationEnable)
+{
+    m_observationEnable = observationEnable;
 }
 
 void CoapReply::setFinished()
@@ -308,6 +331,10 @@ void CoapReply::setRequestData(const QByteArray &requestData)
     m_requestData = requestData;
 }
 
+/*! Writes the data of the given \a reply to \a dbg.
+
+    \sa CoapReply
+*/
 QDebug operator<<(QDebug debug, CoapReply *reply)
 {
     const QMetaObject &metaObject = CoapPdu::staticMetaObject;

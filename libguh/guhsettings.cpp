@@ -190,7 +190,7 @@ QString GuhSettings::logPath()
 {
     QString logPath;
 #ifdef SNAPPY
-    logPath = qgetenv("SNAP_APP_DATA_PATH") + "/guhd.log";
+    logPath = qgetenv("SNAP_APP_DATA_PATH") + "/guhd.sqlite";
 #else
     QString organisationName = QCoreApplication::instance()->organizationName();
 
@@ -210,6 +210,9 @@ QString GuhSettings::logPath()
 QString GuhSettings::consoleLogPath()
 {
     QString consoleLogPath;
+#ifdef SNAPPY
+    consoleLogPath = qgetenv("SNAP_APP_DATA_PATH") + "/guhd.log";
+#else
     QString organisationName = QCoreApplication::instance()->organizationName();
 
     if (organisationName == "guh-test") {
@@ -219,6 +222,7 @@ QString GuhSettings::consoleLogPath()
     } else {
         consoleLogPath = QDir::homePath() + "/.config/" + organisationName + "/guhd.log";
     }
+#endif // SNAPPY
 
     return consoleLogPath;
 }

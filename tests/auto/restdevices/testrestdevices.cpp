@@ -50,6 +50,11 @@ private slots:
     void addPushButtonDevices_data();
     void addPushButtonDevices();
 
+    void addDisplayPinDevices_data();
+    void addDisplayPinDevices();
+
+    void parentChildDevices();
+
     void executeAction_data();
     void executeAction();
 
@@ -62,53 +67,23 @@ private slots:
     void editByDiscovery_data();
     void editByDiscovery();
 
-private:
-    // for debugging
-    void printResponse(QNetworkReply *reply, const QByteArray &data);
-
 };
 
 void TestRestDevices::getConfiguredDevices()
 {
-    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
-    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
-
     // Get all devices
-    QNetworkRequest request;
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
-    request.setUrl(QUrl("http://localhost:3333/api/v1/devices"));
-    QNetworkReply *reply;
-
-    reply = nam->get(request);
-    clientSpy.wait();
-    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
-
-    QByteArray data = reply->readAll();
-    reply->deleteLater();
-
-    QJsonParseError error;
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
-    QCOMPARE(error.error, QJsonParseError::NoError);
-    QVariantList deviceList = jsonDoc.toVariant().toList();
+    QVariant response = getAndWait(QNetworkRequest(QUrl("http://localhost:3333/api/v1/devices")));
+    QVERIFY2(!response.isNull(), "Could not get device");
+    QVariantList deviceList = response.toList();
     QVERIFY2(deviceList.count() >= 2, "not enought devices.");
 
     // Get each of thouse devices individualy
     foreach (const QVariant &device, deviceList) {
         QVariantMap deviceMap = device.toMap();
-        QNetworkRequest request;
-        request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
-        request.setUrl(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceMap.value("id").toString())));
-        clientSpy.clear();
-        QNetworkReply *reply = nam->get(request);
-        clientSpy.wait();
-        QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
-
-        jsonDoc = QJsonDocument::fromJson(reply->readAll(), &error);
-        QCOMPARE(error.error, QJsonParseError::NoError);
-
-        reply->deleteLater();
+        QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceMap.value("id").toString())));
+        response = getAndWait(request);
+        QVERIFY2(!response.isNull(), "Could not get device");
     }
-    nam->deleteLater();
 }
 
 void TestRestDevices::addConfiguredDevice_data()
@@ -176,48 +151,21 @@ void TestRestDevices::addConfiguredDevice()
     params.insert("deviceClassId", deviceClassId);
     params.insert("deviceParams", deviceParams);
 
-    QNetworkAccessManager *nam = new QNetworkAccessManager();
-    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
-
-    // Get all devices
-    QNetworkRequest request;
+    QNetworkRequest request(QUrl("http://localhost:3333/api/v1/devices"));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    request.setUrl(QUrl("http://localhost:3333/api/v1/devices"));
 
-    QByteArray payload = QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact);
-    qDebug() << "sending" << payload;
-
-    QNetworkReply *reply = nam->post(request, payload);
-    clientSpy.wait();
-    QCOMPARE(clientSpy.count(), 1);
-
-    QByteArray data = reply->readAll();
-
-    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    QCOMPARE(statusCode, expectedStatusCode);
-
-    reply->deleteLater();
+    QVariant response = postAndWait(request, params, expectedStatusCode);
+    QVERIFY2(!response.isNull(), "Could not add device");
 
     if (expectedStatusCode == 200) {
         // remove added device
-        QJsonParseError error;
-        QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
-        QCOMPARE(error.error, QJsonParseError::NoError);
-        QVariantMap response = jsonDoc.toVariant().toMap();
+        DeviceId deviceId = DeviceId(response.toMap().value("id").toString());
+        QVERIFY2(!deviceId.isNull(), "invalid device id for removing");
 
-        DeviceId deviceId = DeviceId(response.value("id").toString());
-        QVERIFY2(!deviceId.isNull(),"invalid device id for removing");
-
-        request.setUrl(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
-        clientSpy.clear();
-        reply = nam->deleteResource(request);
-        clientSpy.wait();
-        QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
-        statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-        reply->deleteLater();
-        QCOMPARE(statusCode, 200);
+        QNetworkRequest  deleteRequest(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
+        response = deleteAndWait(deleteRequest);
+        QVERIFY2(!response.isNull(), "Could not delete device");
     }
-    nam->deleteLater();
 }
 
 void TestRestDevices::addPushButtonDevices_data()
@@ -248,30 +196,14 @@ void TestRestDevices::addPushButtonDevices()
     params.insert("deviceClassId", deviceClassId);
     params.insert("discoveryParams", discoveryParams);
 
-    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
-    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
-
+    // create URL
     QUrl url(QString("http://localhost:3333/api/v1/deviceclasses/%1/discover").arg(deviceClassId.toString()));
-
     QUrlQuery query;
     query.addQueryItem("params", QJsonDocument::fromVariant(discoveryParams).toJson(QJsonDocument::Compact));
     url.setQuery(query);
 
-    clientSpy.clear();
-    QNetworkRequest request(url);
-    QNetworkReply *reply = nam->get(request);
-    clientSpy.wait();
-    QCOMPARE(clientSpy.count(), 1);
-    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    QCOMPARE(statusCode, 200);
-    QByteArray data = reply->readAll();
-    reply->deleteLater();
-
-    // check response
-    QJsonParseError error;
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
-    QCOMPARE(error.error, QJsonParseError::NoError);
-    QVariantList foundDevices = jsonDoc.toVariant().toList();
+    QVariant response = getAndWait(QNetworkRequest(url));
+    QVariantList foundDevices = response.toList();
     QCOMPARE(foundDevices.count(), 1);
 
     DeviceDescriptorId deviceDescriptoId(foundDevices.first().toMap().value("id").toString());
@@ -282,21 +214,13 @@ void TestRestDevices::addPushButtonDevices()
     params.insert("deviceDescriptorId", deviceDescriptoId);
 
     QNetworkRequest pairRequest(QUrl("http://localhost:3333/api/v1/devices/pair"));
-    clientSpy.clear();
-    reply = nam->post(pairRequest, QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact));
-    clientSpy.wait();
-    QCOMPARE(clientSpy.count(), 1);
-    statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    QCOMPARE(statusCode, 200);
-    data = reply->readAll();
-    reply->deleteLater();
+    pairRequest.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
 
+    response = postAndWait(pairRequest, params);
+    QVERIFY2(!response.isNull(), "Could not pair device");
 
-    // check response
-    jsonDoc = QJsonDocument::fromJson(data, &error);
-    QCOMPARE(error.error, QJsonParseError::NoError);
-    PairingTransactionId pairingTransactionId(jsonDoc.toVariant().toMap().value("pairingTransactionId").toString());
-    QString displayMessage = jsonDoc.toVariant().toMap().value("displayMessage").toString();
+    PairingTransactionId pairingTransactionId(response.toMap().value("pairingTransactionId").toString());
+    QString displayMessage = response.toMap().value("displayMessage").toString();
 
     qDebug() << "displayMessage" << displayMessage;
 
@@ -308,31 +232,172 @@ void TestRestDevices::addPushButtonDevices()
     params.insert("pairingTransactionId", pairingTransactionId.toString());
 
     QNetworkRequest confirmPairingRequest(QUrl("http://localhost:3333/api/v1/devices/confirmpairing"));
-    clientSpy.clear();
-    reply = nam->post(confirmPairingRequest, QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact));
-    clientSpy.wait();
-    QCOMPARE(clientSpy.count(), 1);
-    statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    QCOMPARE(statusCode, expectedStatusCode);
-    data = reply->readAll();
-    reply->deleteLater();
+    confirmPairingRequest.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
+
+    response = postAndWait(confirmPairingRequest, params, expectedStatusCode);
+    QVERIFY2(!response.isNull(), "Could not confirm pairing device");
 
     if (expectedStatusCode == 200) {
-        jsonDoc = QJsonDocument::fromJson(data, &error);
-        QCOMPARE(error.error, QJsonParseError::NoError);
+        // remove added device
+        DeviceId deviceId = DeviceId(response.toMap().value("id").toString());
+        QVERIFY2(!deviceId.isNull(), "invalid device id for removing");
 
-        DeviceId deviceId(jsonDoc.toVariant().toMap().value("id").toString());
-        // delete it
-        request.setUrl(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
-        clientSpy.clear();
-        reply = nam->deleteResource(request);
-        clientSpy.wait();
-        QCOMPARE(clientSpy.count(), 1);
-        statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-        reply->deleteLater();
-        QCOMPARE(statusCode, 200);
+        QNetworkRequest  deleteRequest(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
+        response = deleteAndWait(deleteRequest);
+        QVERIFY2(!response.isNull(), "Could not delete device");
     }
-    nam->deleteLater();
+}
+
+void TestRestDevices::addDisplayPinDevices_data()
+{
+    QTest::addColumn<DeviceClassId>("deviceClassId");
+    QTest::addColumn<int>("expectedStatusCode");
+    QTest::addColumn<QString>("secret");
+
+    QTest::newRow("Valid: Add DisplayPin device") << mockDisplayPinDeviceClassId << 200 << "243681";
+    QTest::newRow("Invalid: Add DisplayPin device (wrong pin)") << mockDisplayPinDeviceClassId << 500 << "243682";
+}
+
+void TestRestDevices::addDisplayPinDevices()
+{
+    QFETCH(DeviceClassId, deviceClassId);
+    QFETCH(int, expectedStatusCode);
+    QFETCH(QString, secret);
+
+    // Discover device
+    QVariantList discoveryParams;
+    QVariantMap resultCountParam;
+    resultCountParam.insert("name", "resultCount");
+    resultCountParam.insert("value", 1);
+    discoveryParams.append(resultCountParam);
+
+    // Discover
+    QVariantMap params;
+    params.insert("deviceClassId", deviceClassId);
+    params.insert("discoveryParams", discoveryParams);
+
+    // create URL
+    QUrl url(QString("http://localhost:3333/api/v1/deviceclasses/%1/discover").arg(deviceClassId.toString()));
+    QUrlQuery query;
+    query.addQueryItem("params", QJsonDocument::fromVariant(discoveryParams).toJson(QJsonDocument::Compact));
+    url.setQuery(query);
+
+    QVariant response = getAndWait(QNetworkRequest(url));
+    QVariantList foundDevices = response.toList();
+    QCOMPARE(foundDevices.count(), 1);
+
+    DeviceDescriptorId deviceDescriptoId(foundDevices.first().toMap().value("id").toString());
+
+    // Pair
+    params.clear();
+    params.insert("deviceClassId", deviceClassId.toString());
+    params.insert("deviceDescriptorId", deviceDescriptoId);
+
+    QNetworkRequest pairRequest(QUrl("http://localhost:3333/api/v1/devices/pair"));
+    pairRequest.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
+
+    response = postAndWait(pairRequest, params);
+    QVERIFY2(!response.isNull(), "Could not pair device");
+
+    PairingTransactionId pairingTransactionId(response.toMap().value("pairingTransactionId").toString());
+    QString displayMessage = response.toMap().value("displayMessage").toString();
+
+    qDebug() << "displayMessage" << displayMessage;
+
+    // Confirm pairing
+    params.clear();
+    params.insert("pairingTransactionId", pairingTransactionId.toString());
+    params.insert("secret", secret);
+
+    QNetworkRequest confirmPairingRequest(QUrl("http://localhost:3333/api/v1/devices/confirmpairing"));
+    confirmPairingRequest.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
+
+    response = postAndWait(confirmPairingRequest, params, expectedStatusCode);
+    QVERIFY2(!response.isNull(), "Could not confirm pairing device");
+
+    if (expectedStatusCode == 200) {
+        // remove added device
+        DeviceId deviceId = DeviceId(response.toMap().value("id").toString());
+        QVERIFY2(!deviceId.isNull(), "invalid device id for removing");
+
+        QNetworkRequest  deleteRequest(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
+        response = deleteAndWait(deleteRequest);
+        QVERIFY2(!response.isNull(), "Could not delete device");
+    }
+}
+
+void TestRestDevices::parentChildDevices()
+{
+    // Add parent device
+    QVariantMap params;
+    params.insert("deviceClassId", mockParentDeviceClassId);
+    QVariantMap nameParam;
+    nameParam.insert("name", "name");
+    nameParam.insert("value", "Test edit mockdevice");
+    params.insert("deviceParams", QVariantList() << nameParam);
+
+    QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/devices")));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
+    QVariant response = postAndWait(request, params);
+    QVERIFY2(!response.isNull(), "Could not read add device response");
+
+    DeviceId parentDeviceId = DeviceId(response.toMap().value("id").toString());
+    QVERIFY2(parentDeviceId != DeviceId(), "DeviceId not returned");
+
+    // find child device
+    response = getAndWait(QNetworkRequest(QUrl("http://localhost:3333/api/v1/devices")));
+    QVariantList deviceList = response.toList();
+    DeviceId childDeviceId;
+    foreach (const QVariant deviceVariant, deviceList) {
+        QVariantMap deviceMap = deviceVariant.toMap();
+        if (deviceMap.value("deviceClassId").toString() == mockChildDeviceClassId.toString()) {
+            if (deviceMap.value("parentId") == parentDeviceId.toString()) {
+                childDeviceId = DeviceId(deviceMap.value("id").toString());
+            }
+        }
+    }
+    QVERIFY2(!childDeviceId.isNull(), "Could not find child device");
+
+    // try to remove child device
+    QNetworkRequest deleteRequest(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(childDeviceId.toString())));
+    response = deleteAndWait(deleteRequest, 400);
+    QVERIFY2(!response.isNull(), "Could not delete device");
+    QCOMPARE(JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorDeviceIsChild), response.toMap().value("error").toString());
+
+    // check if the child device is still there
+    response = getAndWait(QNetworkRequest(QUrl("http://localhost:3333/api/v1/devices")));
+    deviceList = response.toList();
+    bool found = false;
+    foreach (const QVariant deviceVariant, deviceList) {
+        QVariantMap deviceMap = deviceVariant.toMap();
+        if (deviceMap.value("deviceClassId").toString() == mockChildDeviceClassId.toString()) {
+            if (deviceMap.value("id") == childDeviceId.toString()) {
+                found = true;
+                break;
+            }
+        }
+    }
+    QVERIFY2(found, "Could not find child device.");
+
+    // remove the parent device
+    deleteRequest.setUrl(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(parentDeviceId.toString())));
+    response = deleteAndWait(deleteRequest);
+    QVERIFY2(!response.isNull(), "Could not delete device");
+
+    // check if the child device is still there
+    response = getAndWait(QNetworkRequest(QUrl("http://localhost:3333/api/v1/devices")));
+    deviceList = response.toList();
+    found = false;
+    foreach (const QVariant deviceVariant, deviceList) {
+        QVariantMap deviceMap = deviceVariant.toMap();
+        if (deviceMap.value("deviceClassId").toString() == mockChildDeviceClassId.toString()) {
+            if (deviceMap.value("id") == childDeviceId.toString()) {
+                found = true;
+                break;
+            }
+        }
+    }
+    QVERIFY2(!found, "Could not find child device.");
 }
 
 void TestRestDevices::executeAction_data()
@@ -341,6 +406,7 @@ void TestRestDevices::executeAction_data()
     QTest::addColumn<ActionTypeId>("actionTypeId");
     QTest::addColumn<QVariantList>("actionParams");
     QTest::addColumn<int>("expectedStatusCode");
+    QTest::addColumn<DeviceManager::DeviceError>("error");
 
     QVariantList params;
     QVariantMap param1;
@@ -352,13 +418,13 @@ void TestRestDevices::executeAction_data()
     param2.insert("value", true);
     params.append(param2);
 
-    QTest::newRow("valid action") << m_mockDeviceId << mockActionIdWithParams << params << 200;
-    QTest::newRow("invalid deviceId") << DeviceId::createDeviceId() << mockActionIdWithParams << params << 404;
-    QTest::newRow("invalid actionTypeId") << m_mockDeviceId << ActionTypeId::createActionTypeId() << params << 404;
-    QTest::newRow("missing params") << m_mockDeviceId << mockActionIdWithParams << QVariantList() << 500;
-    QTest::newRow("async action") << m_mockDeviceId << mockActionIdAsync << QVariantList() << 200;
-    QTest::newRow("broken action") << m_mockDeviceId << mockActionIdFailing << QVariantList() << 500;
-    QTest::newRow("async broken action") << m_mockDeviceId << mockActionIdAsyncFailing << QVariantList() << 500;
+    QTest::newRow("valid action") << m_mockDeviceId << mockActionIdWithParams << params << 200 << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("invalid deviceId") << DeviceId::createDeviceId() << mockActionIdWithParams << params << 404 << DeviceManager::DeviceErrorDeviceNotFound;
+    QTest::newRow("invalid actionTypeId") << m_mockDeviceId << ActionTypeId::createActionTypeId() << params << 404 << DeviceManager::DeviceErrorActionTypeNotFound;
+    QTest::newRow("missing params") << m_mockDeviceId << mockActionIdWithParams << QVariantList() << 500 << DeviceManager::DeviceErrorMissingParameter;
+    QTest::newRow("async action") << m_mockDeviceId << mockActionIdAsync << QVariantList() << 200 << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("broken action") << m_mockDeviceId << mockActionIdFailing << QVariantList() << 500 << DeviceManager::DeviceErrorSetupFailed;
+    QTest::newRow("async broken action") << m_mockDeviceId << mockActionIdAsyncFailing << QVariantList() << 500 << DeviceManager::DeviceErrorSetupFailed;
 }
 
 void TestRestDevices::executeAction()
@@ -367,32 +433,35 @@ void TestRestDevices::executeAction()
     QFETCH(ActionTypeId, actionTypeId);
     QFETCH(QVariantList, actionParams);
     QFETCH(int, expectedStatusCode);
+    QFETCH(DeviceManager::DeviceError, error);
 
     // execute action
+    QVariantMap params;
+    params.insert("params", actionParams);
+
+    QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/devices/%1/execute/%2").arg(deviceId.toString()).arg(actionTypeId.toString())));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
+    QVariant response = postAndWait(request, params, expectedStatusCode);
+    QVERIFY2(!response.isNull(), "Could not read execute action response");
+    QCOMPARE(JsonTypes::deviceErrorToString(error), response.toMap().value("error").toString());
+
+    // Fetch action execution history from mock device
     QNetworkAccessManager nam;
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
 
-    QVariantMap payloadMap;
-    payloadMap.insert("params", actionParams);
-
-    QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/devices/%1/execute/%2").arg(deviceId.toString()).arg(actionTypeId.toString())));
-    spy.clear();
-    QNetworkReply *reply = nam.post(request, QJsonDocument::fromVariant(payloadMap).toJson(QJsonDocument::Compact));
+    request.setUrl(QUrl(QString("http://localhost:%1/actionhistory").arg(m_mockDevice1Port)));
+    QNetworkReply *reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
-
-    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    QCOMPARE(statusCode, expectedStatusCode);
     reply->deleteLater();
-
-    // Fetch action execution history from mock device
-    spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/actionhistory").arg(m_mockDevice1Port)));
-    reply = nam.get(request);
-    spy.wait();
-    QCOMPARE(spy.count(), 1);
     QByteArray data = reply->readAll();
-    reply->deleteLater();
+
+    if (error == DeviceManager::DeviceErrorNoError) {
+        QVERIFY2(actionTypeId == ActionTypeId(data), QString("ActionTypeId mismatch. Got %1, Expected: %2")
+                 .arg(ActionTypeId(data).toString()).arg(actionTypeId.toString()).toLatin1().data());
+    } else {
+        QVERIFY2(data.length() == 0, QString("Data is %1, should be empty.").arg(QString(data)).toLatin1().data());
+    }
 
     // cleanup for the next run
     spy.clear();
@@ -409,6 +478,7 @@ void TestRestDevices::executeAction()
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
     data = reply->readAll();
+    qDebug() << "cleared data:" << data;
 }
 
 void TestRestDevices::getStateValue_data()
@@ -417,43 +487,40 @@ void TestRestDevices::getStateValue_data()
     QVERIFY2(devices.count() > 0, "There needs to be at least one configured Mock Device for this test");
     Device *device = devices.first();
 
-    QTest::addColumn<DeviceId>("deviceId");
-    QTest::addColumn<StateTypeId>("stateTypeId");
+    QTest::addColumn<QString>("deviceId");
+    QTest::addColumn<QString>("stateTypeId");
     QTest::addColumn<int>("expectedStatusCode");
+    QTest::addColumn<DeviceManager::DeviceError>("error");
 
-    QTest::newRow("existing state") << device->id() << mockIntStateId << 200;
-    QTest::newRow("all states") << device->id() << StateTypeId() << 200;
-    QTest::newRow("invalid device") << DeviceId::createDeviceId() << mockIntStateId << 404;
-    QTest::newRow("invalid statetype") << device->id() << StateTypeId::createStateTypeId() << 404;
+    QTest::newRow("existing state") << device->id().toString() << mockIntStateId.toString() << 200 << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("all states") << device->id().toString() << QString() << 200 << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("invalid device") << DeviceId::createDeviceId().toString() << mockIntStateId.toString() << 404 << DeviceManager::DeviceErrorDeviceNotFound;
+    QTest::newRow("invalid device id format") << "uuid" << StateTypeId::createStateTypeId().toString() << 400 << DeviceManager::DeviceErrorDeviceNotFound;
+    QTest::newRow("invalid statetype") << device->id().toString() << StateTypeId::createStateTypeId().toString() << 404 << DeviceManager::DeviceErrorStateTypeNotFound;
+    QTest::newRow("invalid statetype format") << device->id().toString() << "uuid" << 400 << DeviceManager::DeviceErrorStateTypeNotFound;
 }
 
 void TestRestDevices::getStateValue()
 {
-    QFETCH(DeviceId, deviceId);
-    QFETCH(StateTypeId, stateTypeId);
+    QFETCH(QString, deviceId);
+    QFETCH(QString, stateTypeId);
     QFETCH(int, expectedStatusCode);
-
-    QNetworkAccessManager *nam = new QNetworkAccessManager();
-    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
+    QFETCH(DeviceManager::DeviceError, error);
 
     QNetworkRequest request;
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
 
     if (!stateTypeId.isNull()) {
-        request.setUrl(QUrl(QString("http://localhost:3333/api/v1/devices/%1/states/%2").arg(deviceId.toString()).arg(stateTypeId.toString())));
+        request.setUrl(QUrl(QString("http://localhost:3333/api/v1/devices/%1/states/%2").arg(deviceId).arg(stateTypeId)));
     } else {
         // Get all states
-        request.setUrl(QUrl(QString("http://localhost:3333/api/v1/devices/%1/states").arg(deviceId.toString())));
+        request.setUrl(QUrl(QString("http://localhost:3333/api/v1/devices/%1/states").arg(deviceId)));
     }
-    qDebug() << request.url();
+    QVariant response = getAndWait(request, expectedStatusCode);
+    QVERIFY2(!response.isNull(), "Could not read get state value response");
+    if (expectedStatusCode != 200)
+        QCOMPARE(JsonTypes::deviceErrorToString(error), response.toMap().value("error").toString());
 
-    QNetworkReply *reply = nam->get(request);
-    clientSpy.wait();
-    QCOMPARE(clientSpy.count(), 1);
-
-    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    QCOMPARE(statusCode, expectedStatusCode);
-    reply->deleteLater();
-    nam->deleteLater();
 }
 
 void TestRestDevices::editDevices_data()
@@ -495,12 +562,13 @@ void TestRestDevices::editDevices_data()
     QTest::addColumn<bool>("broken");
     QTest::addColumn<QVariantList>("newDeviceParams");
     QTest::addColumn<int>("expectedStatusCode");
+    QTest::addColumn<DeviceManager::DeviceError>("error");
 
-    QTest::newRow("valid - change async param") << false << asyncChangeDeviceParams << 200;
-    QTest::newRow("valid - change httpport param") << false <<  httpportChangeDeviceParams << 200;
-    QTest::newRow("valid - change httpport and async param") << false << asyncAndPortChangeDeviceParams << 200;
-    QTest::newRow("invalid - change name param (not writable)") << false << nameChangedDeviceParams << 500;
-    QTest::newRow("invalid - change all params (except broken)") << false << changeAllWritableDeviceParams << 500;
+    QTest::newRow("valid - change async param") << false << asyncChangeDeviceParams << 200 << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("valid - change httpport param") << false <<  httpportChangeDeviceParams << 200 << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("valid - change httpport and async param") << false << asyncAndPortChangeDeviceParams << 200 << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("invalid - change name param (not writable)") << false << nameChangedDeviceParams << 500 << DeviceManager::DeviceErrorParameterNotWritable;
+    QTest::newRow("invalid - change all params (except broken)") << false << changeAllWritableDeviceParams << 500 << DeviceManager::DeviceErrorParameterNotWritable;
 }
 
 void TestRestDevices::editDevices()
@@ -508,6 +576,7 @@ void TestRestDevices::editDevices()
     QFETCH(bool, broken);
     QFETCH(QVariantList, newDeviceParams);
     QFETCH(int, expectedStatusCode);
+    QFETCH(DeviceManager::DeviceError, error);
 
     // add device
     QVariantMap params;
@@ -531,27 +600,15 @@ void TestRestDevices::editDevices()
     deviceParams.append(httpportParam);
     params.insert("deviceParams", deviceParams);
 
-    // add a mockdevice
-    QNetworkAccessManager *nam = new QNetworkAccessManager();
-    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
-
+    // ADD a mockdevice
     QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/devices")));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
 
-    QNetworkReply *reply = nam->post(request, QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact));
-    clientSpy.wait();
-    QCOMPARE(clientSpy.count(), 1);
+    QVariant response = postAndWait(request, params);
+    QVERIFY2(!response.isNull(), "Could not read add device response");
 
-    QByteArray data = reply->readAll();
-    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    reply->deleteLater();
-
-    QCOMPARE(statusCode, 200);
-
-    QVariantMap responseMap = QJsonDocument::fromJson(data).toVariant().toMap();
-    DeviceId deviceId = DeviceId(responseMap.value("id").toString());
-    qDebug() << deviceId.toString();
+    DeviceId deviceId = DeviceId(response.toMap().value("id").toString());
     QVERIFY2(deviceId != DeviceId(), "DeviceId not returned");
-
 
     // now EDIT the added device
     QVariantMap editParams;
@@ -559,42 +616,26 @@ void TestRestDevices::editDevices()
     editParams.insert("deviceParams", newDeviceParams);
 
     request.setUrl(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
-    clientSpy.clear();
-    reply = nam->put(request, QJsonDocument::fromVariant(editParams).toJson(QJsonDocument::Compact));
-    clientSpy.wait();
-    QCOMPARE(clientSpy.count(), 1);
-    statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    QCOMPARE(statusCode, expectedStatusCode);
-    reply->deleteLater();
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
+
+    response = putAndWait(request, editParams, expectedStatusCode);
+    QVERIFY2(!response.isNull(), "Could not read edit device response");
 
     // if the edit should have been successfull
     if (expectedStatusCode == 200) {
-
         request.setUrl(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
-        clientSpy.clear();
-        reply = nam->get(request);
-        clientSpy.wait();
-        QCOMPARE(clientSpy.count(), 1);
-        statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-
-        QVariantMap deviceMap = QJsonDocument::fromJson(reply->readAll()).toVariant().toMap();
-
+        request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
+        response = getAndWait(request);
+        QVariantMap deviceMap = response.toMap();
         verifyParams(newDeviceParams, deviceMap.value("params").toList(), false);
-
-        QCOMPARE(statusCode, 200);
-        reply->deleteLater();
+    } else {
+        QCOMPARE(JsonTypes::deviceErrorToString(error), response.toMap().value("error").toString());
     }
 
     // delete it
     request.setUrl(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
-    clientSpy.clear();
-    reply = nam->deleteResource(request);
-    clientSpy.wait();
-    QCOMPARE(clientSpy.count(), 1);
-    statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    reply->deleteLater();
-    QCOMPARE(statusCode, 200);
-    nam->deleteLater();
+    response = deleteAndWait(request);
+    QVERIFY2(!response.isNull(), "Could not delete device");
 }
 
 void TestRestDevices::editByDiscovery_data()
@@ -624,9 +665,6 @@ void TestRestDevices::editByDiscovery()
     params.insert("deviceClassId", deviceClassId);
     params.insert("discoveryParams", discoveryParams);
 
-    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
-    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
-
     QUrl url(QString("http://localhost:3333/api/v1/deviceclasses/%1/discover").arg(deviceClassId.toString()));
 
     if (!discoveryParams.isEmpty()) {
@@ -635,25 +673,13 @@ void TestRestDevices::editByDiscovery()
         url.setQuery(query);
     }
 
-    clientSpy.clear();
     QNetworkRequest request(url);
-    QNetworkReply *reply = nam->get(request);
-    clientSpy.wait();
-    QCOMPARE(clientSpy.count(), 1);
-    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    QCOMPARE(statusCode, expectedStatusCode);
-    QByteArray data = reply->readAll();
-    reply->deleteLater();
-
-    // check response
-    QJsonParseError error;
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
-    QCOMPARE(error.error, QJsonParseError::NoError);
-    QVariantList foundDevices = jsonDoc.toVariant().toList();
+    QVariantList foundDevices = getAndWait(request).toList();
     QCOMPARE(foundDevices.count(), resultCount);
 
     // add Discovered Device 1 port 55555
     request.setUrl(QUrl("http://localhost:3333/api/v1/devices"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     DeviceDescriptorId descriptorId1;
     foreach (const QVariant &descriptor, foundDevices) {
         // find the device with port 55555
@@ -667,45 +693,25 @@ void TestRestDevices::editByDiscovery()
     params.insert("deviceClassId", deviceClassId);
     params.insert("deviceDescriptorId", descriptorId1.toString());
 
-    clientSpy.clear();
-    QByteArray payload = QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact);
-    reply = nam->post(request, payload);
-    clientSpy.wait();
-    QCOMPARE(clientSpy.count(), 1);
-    statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    QCOMPARE(statusCode, expectedStatusCode);
-    data = reply->readAll();
-    reply->deleteLater();
-    jsonDoc = QJsonDocument::fromJson(data, &error);
-    QCOMPARE(error.error, QJsonParseError::NoError);
-    QVariantMap response = jsonDoc.toVariant().toMap();
+    QVariant response = postAndWait(request, params, expectedStatusCode);
+    QVERIFY2(!response.isNull(), "Could not delete device");
 
-    DeviceId deviceId = DeviceId(response.value("id").toString());
+    DeviceId deviceId = DeviceId(response.toMap().value("id").toString());
     QVERIFY(!deviceId.isNull());
-
 
     // and now rediscover, and edit the first device with the second
     params.clear();
     params.insert("deviceClassId", deviceClassId);
     params.insert("discoveryParams", discoveryParams);
 
-    clientSpy.clear();
     url = QUrl(QString("http://localhost:3333/api/v1/deviceclasses/%1/discover").arg(deviceClassId.toString()));
     QUrlQuery query2;
     query2.addQueryItem("params", QJsonDocument::fromVariant(discoveryParams).toJson(QJsonDocument::Compact));
     url.setQuery(query2);
-    request = QNetworkRequest(url);
-    reply = nam->get(request);
-    clientSpy.wait();
-    QCOMPARE(clientSpy.count(), 1);
-    statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    QCOMPARE(statusCode, expectedStatusCode);
-    data = reply->readAll();
-    reply->deleteLater();
-    // check response
-    jsonDoc = QJsonDocument::fromJson(data, &error);
-    QCOMPARE(error.error, QJsonParseError::NoError);
-    foundDevices = jsonDoc.toVariant().toList();
+
+    response = getAndWait(QNetworkRequest(url), expectedStatusCode);
+
+    foundDevices = response.toList();
     QCOMPARE(foundDevices.count(), resultCount);
 
     // get the second device
@@ -727,39 +733,15 @@ void TestRestDevices::editByDiscovery()
     params.insert("deviceDescriptorId", descriptorId2);
 
     request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
 
-    clientSpy.clear();
-    payload = QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact);
-    reply = nam->put(request, payload);
-    clientSpy.wait();
-    QCOMPARE(clientSpy.count(), 1);
-    statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    QCOMPARE(statusCode, expectedStatusCode);
-    reply->deleteLater();
+    response = putAndWait(request, params, expectedStatusCode);
+    QVERIFY2(!response.isNull(), "Could not delete device");
 
     // remove added device
-    request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
-    clientSpy.clear();
-    reply = nam->deleteResource(request);
-    clientSpy.wait();
-    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
-    statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    reply->deleteLater();
-    QCOMPARE(statusCode, expectedStatusCode);
-    nam->deleteLater();
-}
-
-void TestRestDevices::printResponse(QNetworkReply *reply, const QByteArray &data)
-{
-    qDebug() << "-------------------------------";
-    qDebug() << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() << reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString();
-    foreach (const  QNetworkReply::RawHeaderPair &headerPair, reply->rawHeaderPairs()) {
-        qDebug() << headerPair.first << ":" << headerPair.second;
-    }
-    qDebug() << "-------------------------------";
-    qDebug() << data;
-    qDebug() << "-------------------------------";
-
+    request.setUrl(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
+    response = deleteAndWait(request);
+    QVERIFY2(!response.isNull(), "Could not delete device");
 }
 
 #include "testrestdevices.moc"

@@ -341,7 +341,7 @@ void DevicePluginOpenweathermap::processWeatherData(const QByteArray &data, Devi
     QJsonParseError error;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
 
-    qCDebug(dcOpenWeatherMap) << jsonDoc.toJson();
+    //qCDebug(dcOpenWeatherMap) << jsonDoc.toJson();
 
     if (error.error != QJsonParseError::NoError) {
         qCWarning(dcOpenWeatherMap) << "failed to parse weather data for device " << device->name() << ": " << data << ":" << error.errorString();

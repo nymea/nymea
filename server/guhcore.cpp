@@ -29,13 +29,6 @@
     instantiate, set up and connect all the other components.
 */
 
-/*! \enum guhserver::GuhCore::RunningMode
-    \value RunningModeApplication
-        Guh runns as application.
-    \value RunningModeService
-        Guh is started as service (daemon).
-*/
-
 /*! \fn void guhserver::GuhCore::eventTriggered(const Event &event);
     This signal is emitted when an \a event happend.
 */
@@ -129,26 +122,15 @@ GuhCore *GuhCore::instance()
 GuhCore::~GuhCore()
 {
     m_logger->logSystemEvent(false);
-    qCDebug(dcApplication) << "Shutting down. Bye.";
 }
 
 /*! Destroyes the \l{GuhCore} instance. */
 void GuhCore::destroy()
 {
-    delete s_instance;
+    if (s_instance)
+        delete s_instance;
+
     s_instance = 0;
-}
-
-/*! Returns the runningMode of this instance. */
-GuhCore::RunningMode GuhCore::runningMode() const
-{
-    return m_runningMode;
-}
-
-/*! Set the \a runningMode of this instance. */
-void GuhCore::setRunningMode(const RunningMode &runningMode)
-{
-    m_runningMode = runningMode;
 }
 
 /*! Calls the metheod DeviceManager::plugins().
@@ -557,8 +539,7 @@ RuleEngine *GuhCore::ruleEngine() const
 GuhCore::GuhCore(QObject *parent) :
     QObject(parent)
 {
-    qCDebug(dcApplication) << "guh version:" << GUH_VERSION_STRING << "starting up.";
-
+    qCDebug(dcApplication) << "Creating Log Engine";
     m_logger = new LogEngine(this);
 
     qCDebug(dcApplication) << "Creating Device Manager";
@@ -567,7 +548,7 @@ GuhCore::GuhCore(QObject *parent) :
     qCDebug(dcApplication) << "Creating Rule Engine";
     m_ruleEngine = new RuleEngine(this);
 
-
+    qCDebug(dcApplication) << "Creating Server Manager";
     m_serverManager = new ServerManager(this);
 
     connect(m_deviceManager, &DeviceManager::eventTriggered, this, &GuhCore::gotEvent);

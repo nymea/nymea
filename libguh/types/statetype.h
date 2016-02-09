@@ -22,11 +22,12 @@
 #ifndef STATETYPE_H
 #define STATETYPE_H
 
+#include "libguh.h"
 #include "typeutils.h"
 
 #include <QVariant>
 
-class StateType
+class LIBGUH_EXPORT StateType
 {
 public:
     StateType(const StateTypeId &id);
@@ -42,6 +43,15 @@ public:
     QVariant defaultValue() const;
     void setDefaultValue(const QVariant &defaultValue);
 
+    QVariant minValue() const;
+    void setMinValue(const QVariant &minValue);
+
+    QVariant maxValue() const;
+    void setMaxValue(const QVariant &maxValue);
+
+    QVariantList possibleValues() const;
+    void setPossibleValues(const QVariantList &possibleValues);
+
     Types::Unit unit() const;
     void setUnit(const Types::Unit &unit);
 
@@ -50,6 +60,9 @@ private:
     QString m_name;
     QVariant::Type m_type;
     QVariant m_defaultValue;
+    QVariant m_minValue;
+    QVariant m_maxValue;
+    QVariantList m_possibleValues;
     Types::Unit m_unit;
 };
 

@@ -33,6 +33,7 @@
 #include <QCoreApplication>
 #include <QMetaType>
 #include <QByteArray>
+#include <QXmlReader>
 
 using namespace guhserver;
 
@@ -57,10 +58,10 @@ private slots:
     void getFiles_data();
     void getFiles();
 
-private:
-    // for debugging
-    void printResponse(QNetworkReply *reply);
+    void getServerDescription();
 
+    void getIcons_data();
+    void getIcons();
 };
 
 void TestWebserver::httpVersion()
@@ -101,7 +102,6 @@ void TestWebserver::httpVersion()
 
 void TestWebserver::multiPackageMessage()
 {
-
     QTcpSocket *socket = new QTcpSocket(this);
     socket->connectToHost(QHostAddress("127.0.0.1"), 3333);
     bool connected = socket->waitForConnected(1000);
@@ -171,8 +171,8 @@ void TestWebserver::checkAllowedMethodCall()
     QFETCH(QString, method);
     QFETCH(int, expectedStatusCode);
 
-    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
-    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
+    QNetworkAccessManager nam;
+    QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
 
     QNetworkRequest request;
     request.setUrl(QUrl("http://localhost:3333"));
@@ -181,30 +181,28 @@ void TestWebserver::checkAllowedMethodCall()
     clientSpy.clear();
 
     if (method == "GET") {
-        reply = nam->get(request);
+        reply = nam.get(request);
     } else if(method == "PUT") {
-        reply = nam->put(request, QByteArray("Hello guh!"));
+        reply = nam.put(request, QByteArray("Hello guh!"));
     } else if(method == "POST") {
-        reply = nam->post(request, QByteArray("Hello guh!"));
+        reply = nam.post(request, QByteArray("Hello guh!"));
     } else if(method == "DELETE") {
-        reply = nam->deleteResource(request);
+        reply = nam.deleteResource(request);
     } else if(method == "HEAD") {
-        reply = nam->head(request);
+        reply = nam.head(request);
     } else if(method == "CONNECT") {
-        reply = nam->sendCustomRequest(request, "CONNECT");
+        reply = nam.sendCustomRequest(request, "CONNECT");
     } else if(method == "OPTIONS") {
         QNetworkRequest req(QUrl("http://localhost:3333/api/v1/devices"));
-        reply = nam->sendCustomRequest(req, "OPTIONS");
+        reply = nam.sendCustomRequest(req, "OPTIONS");
     } else if(method == "TRACE") {
-        reply = nam->sendCustomRequest(request, "TRACE");
+        reply = nam.sendCustomRequest(request, "TRACE");
     } else {
         // just to make shore there will be a reply to delete
-        reply = nam->get(request);
+        reply = nam.get(request);
     }
 
     clientSpy.wait();
-
-    printResponse(reply);
 
     QCOMPARE(clientSpy.count(), 1);
 
@@ -212,8 +210,8 @@ void TestWebserver::checkAllowedMethodCall()
         QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), expectedStatusCode);
         QVERIFY2(reply->hasRawHeader("Allow"), "405 should contain the allowed methods header");
     }
+
     reply->deleteLater();
-    nam->deleteLater();
 }
 
 void TestWebserver::badRequests_data()
@@ -298,12 +296,12 @@ void TestWebserver::getOptions()
 {
     QFETCH(QString, path);
 
-    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
-    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
+    QNetworkAccessManager nam;
+    QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
 
     QNetworkRequest request;
     request.setUrl(QUrl("http://localhost:3333" + path));
-    QNetworkReply *reply = nam->sendCustomRequest(request, "OPTIONS");
+    QNetworkReply *reply = nam.sendCustomRequest(request, "OPTIONS");
 
     clientSpy.wait();
     QCOMPARE(clientSpy.count(), 1);
@@ -322,6 +320,10 @@ void TestWebserver::getFiles_data()
     QTest::addColumn<int>("expectedStatusCode");
 
     QTest::newRow("get /etc/passwd") << "/etc/passwd" << 404;
+    QTest::newRow("get /blub/blub/blabla") << "/etc/passwd" << 404;
+    QTest::newRow("get /../../etc/passwd") << "/../../etc/passwd" << 404;
+    QTest::newRow("get /../../") << "/../../" << 403;
+    QTest::newRow("get /../") << "/../" << 403;
     QTest::newRow("get /etc/guh/guhd.conf") << "/etc/guh/guhd.conf" << 404;
     QTest::newRow("get /etc/sudoers") <<  "/etc/sudoers" << 404;
     QTest::newRow("get /root/.ssh/id_rsa.pub") <<  "/root/.ssh/id_rsa.pub" << 404;
@@ -332,17 +334,15 @@ void TestWebserver::getFiles()
     QFETCH(QString, query);
     QFETCH(int, expectedStatusCode);
 
-    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
-    QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
+    QNetworkAccessManager nam;
+    QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
 
     QNetworkRequest request;
     request.setUrl(QUrl("http://localhost:3333" + query));
-    QNetworkReply *reply = nam->get(request);
+    QNetworkReply *reply = nam.get(request);
 
     clientSpy.wait();
     QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
-
-    printResponse(reply);
 
     bool ok = false;
     int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(&ok);
@@ -352,18 +352,61 @@ void TestWebserver::getFiles()
     reply->deleteLater();
 }
 
-void TestWebserver::printResponse(QNetworkReply *reply)
+void TestWebserver::getServerDescription()
 {
-    qDebug() << "-------------------------------";
-    qDebug() << "Response header:";
-    qDebug() << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() << reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString();
-    foreach (const  QNetworkReply::RawHeaderPair &headerPair, reply->rawHeaderPairs()) {
-        qDebug() << headerPair.first << ":" << headerPair.second;
-    }
-    qDebug() << "-------------------------------";
-    qDebug() << "Response payload";
-    qDebug() << reply->readAll();
-    qDebug() << "-------------------------------";
+    QNetworkAccessManager nam;
+    QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
+
+    QNetworkRequest request;
+    request.setUrl(QUrl("http://localhost:3333/server.xml"));
+    QNetworkReply *reply = nam.get(request);
+
+    clientSpy.wait();
+    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
+
+    QXmlSimpleReader xmlReader; QXmlInputSource xmlSource;
+    xmlSource.setData(reply->readAll());
+    QVERIFY(xmlReader.parse(xmlSource));
+
+    reply->deleteLater();
+}
+
+void TestWebserver::getIcons_data()
+{
+    QTest::addColumn<QString>("query");
+    QTest::addColumn<int>("iconSize");
+
+    QTest::newRow("get /icons/guh-logo-8x8.png") << "/icons/guh-logo-8x8.png" << 228;
+    QTest::newRow("get /icons/guh-logo-16x16.png") << "/icons/guh-logo-16x16.png" << 392;
+    QTest::newRow("get /icons/guh-logo-22x22.png") << "/icons/guh-logo-22x22.png" << 512;
+    QTest::newRow("get /icons/guh-logo-32x32.png") << "/icons/guh-logo-32x32.png" << 747;
+    QTest::newRow("get /icons/guh-logo-48x48.png") << "/icons/guh-logo-48x48.png" << 1282;
+    QTest::newRow("get /icons/guh-logo-64x64.png") << "/icons/guh-logo-64x64.png" << 1825;
+    QTest::newRow("get /icons/guh-logo-120x120.png") << "/icons/guh-logo-120x120.png" << 4090;
+    QTest::newRow("get /icons/guh-logo-128x128.png") << "/icons/guh-logo-128x128.png" << 4453;
+    QTest::newRow("get /icons/guh-logo-256x256.png") << "/icons/guh-logo-256x256.png" << 10763;
+    QTest::newRow("get /icons/guh-logo-512x512.png") << "/icons/guh-logo-512x512.png" << 24287;
+}
+
+void TestWebserver::getIcons()
+{
+    QFETCH(QString, query);
+    QFETCH(int, iconSize);
+
+    QNetworkAccessManager nam;
+    QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
+
+    QNetworkRequest request;
+    request.setUrl(QUrl("http://localhost:3333" + query));
+    QNetworkReply *reply = nam.get(request);
+
+    clientSpy.wait();
+    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
+    QByteArray iconData = reply->readAll();
+    QVERIFY(!iconData.isEmpty());
+    QCOMPARE(iconData.size(), iconSize);
+
+    reply->deleteLater();
 }
 
 #include "testwebserver.moc"

@@ -87,6 +87,8 @@ TcpServer::TcpServer(QObject *parent) :
 /*! Destructor of this \l{TcpServer}. */
 TcpServer::~TcpServer()
 {
+    qCDebug(dcApplication) << "Shutting down \"TCP Server\"";
+    stopServer();
 }
 
 /*! Sending \a data to a list of \a clients.*/
@@ -309,7 +311,6 @@ bool TcpServer::stopServer()
 {
     // Listen on all Networkinterfaces
     foreach (QTcpServer *s, m_serverList) {
-        qCDebug(dcConnection) << "Closing Tcp server on" << s->serverAddress().toString() << s->serverPort();
         QUuid uuid = m_serverList.key(s);
         s->close();
         m_serverList.take(uuid)->deleteLater();

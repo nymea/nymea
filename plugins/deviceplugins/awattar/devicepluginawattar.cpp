@@ -29,7 +29,30 @@
     In order to use this plugin you need to enter the access token from your energy provider. You can find more
     information about you accesstoken \l{https://www.awattar.com/api-unser-datenfeed}{here}.
 
-    The data will be updated every hour. The API allows a maximum of 100 calls per day.
+    \chapter Available data
+
+    In following chart you can see an example of the market prices from -12 hours to + 12 hours from the current
+    time (0).The green line describes the current market price, the red point line describes the average
+    price of this interval and the red line describes the deviation. If the deviation is positiv, the current
+    price is above the average, if the deviation is negative, the current price is below the average.
+
+    \list
+        \li -100 % \unicode{0x2192} current price equals lowest price in the interval [-12h < now < + 12h]
+        \li 0 %    \unicode{0x2192} current price equals average price in the interval  [-12h < now < + 12h]
+        \li +100 % \unicode{0x2192} current price equals highest price in the interval [-12h < now < + 12h]
+    \endlist
+
+    \image awattar-graph.png
+
+    \chapter Heat pump
+
+    Information about the smart grid modes can be found \l{https://www.waermepumpe.de/sg-ready/}{here}.
+
+    In order to interact with the heat pump (SG-ready), this plugin creates a CoAP connection to the server running on the
+    6LoWPAN bridge. The server IPv6 can be configured in the plugin configuration. Once the connection is established, the
+    plugin searches for 6LoWPAN neighbors in the network.
+
+    \note Currently there should be only one heat pump in the 6LoWPAN network!
 
     \chapter Plugin properties
     Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}
@@ -55,27 +78,31 @@
 #include <QJsonDocument>
 #include <QSslConfiguration>
 
-DevicePluginAwattar::DevicePluginAwattar()
+DevicePluginAwattar::DevicePluginAwattar() :
+    m_device(0),
+    m_setupRetry(0)
 {
-    m_timer = new QTimer(this);
-    m_timer->setSingleShot(false);
-    m_timer->setInterval(60000);
-
-    connect(m_timer, &QTimer::timeout, this, &DevicePluginAwattar::onTimeout);
 }
 
 DeviceManager::HardwareResources DevicePluginAwattar::requiredHardware() const
 {
-    return DeviceManager::HardwareResourceNetworkManager;
+    return DeviceManager::HardwareResourceNetworkManager | DeviceManager::HardwareResourceTimer;
 }
 
 DeviceManager::DeviceSetupStatus DevicePluginAwattar::setupDevice(Device *device)
 {
-    QString token = device->paramValue("token").toString();
-    qCDebug(dcAwattar) << "Setup device with token" << token;
+    if (!myDevices().isEmpty()) {
+        qCWarning(dcAwattar) << "Only one aWATTar device can be configured.";
+        return DeviceManager::DeviceSetupStatusFailure;
+    }
 
-    QNetworkReply *reply = requestData(token);
-    m_asyncSetup.insert(reply, device);
+    qCDebug(dcAwattar) << "Setup device" << device->params();
+
+    m_device = device;
+    m_token = device->paramValue("token").toString();
+    m_userUuid = device->paramValue("user uuid").toString();
+
+    connectionTest();
 
     return DeviceManager::DeviceSetupStatusAsync;
 }
@@ -84,25 +111,39 @@ void DevicePluginAwattar::deviceRemoved(Device *device)
 {
     Q_UNUSED(device)
 
-    if (myDevices().isEmpty()) {
-        m_timer->stop();
+    foreach (HeatPump *pump, m_heatPumps) {
+        qCDebug(dcAwattar) << "Delete pump" << pump->address().toString();
+        pump->deleteLater();
     }
+
+    m_device = 0;
 }
 
 void DevicePluginAwattar::networkManagerReplyReady(QNetworkReply *reply)
 {
     int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
-    // create user finished
-    if (m_asyncSetup.keys().contains(reply)) {
-        Device *device = m_asyncSetup.take(reply);
+    if (m_asyncSetup.contains(reply)) {
+
+        m_asyncSetup.removeAll(reply);
 
         // check HTTP status code
         if (status != 200) {
             qCWarning(dcAwattar) << "Setup reply HTTP error:" << status << reply->errorString();
-            emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusFailure);
-            reply->deleteLater();
-            return;
+            if (m_setupRetry == 3) {
+                emit deviceSetupFinished(m_device, DeviceManager::DeviceSetupStatusFailure);
+                m_setupRetry = 0;
+                reply->deleteLater();
+                return;
+            } else {
+                m_setupRetry++;
+                reply->deleteLater();
+
+                // retry in 1 sec
+                qCWarning(dcAwattar) << "Retry to connect" << m_setupRetry << "/ 3";
+                QTimer::singleShot(2000, this, SLOT(connectionTest()));
+                return;
+            }
         }
 
         // check JSON file
@@ -110,14 +151,22 @@ void DevicePluginAwattar::networkManagerReplyReady(QNetworkReply *reply)
         QJsonDocument jsonDoc = QJsonDocument::fromJson(reply->readAll(), &error);
         if (error.error != QJsonParseError::NoError) {
             qCWarning(dcAwattar) << "Setup reply JSON error:" << error.errorString();
-            emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusFailure);
+            emit deviceSetupFinished(m_device, DeviceManager::DeviceSetupStatusFailure);
             reply->deleteLater();
             return;
         }
 
-        processData(device, jsonDoc.toVariant().toMap(), true);
-    } else if (m_update.keys().contains(reply)) {
-        Device *device = m_update.take(reply);
+        Q_UNUSED(jsonDoc)
+
+        emit deviceSetupFinished(m_device, DeviceManager::DeviceSetupStatusSuccess);
+
+        // get data
+        searchHeatPumps();
+        updateData();
+
+    } else if (m_updatePrice.contains(reply)) {
+
+        m_updatePrice.removeAll(reply);
 
         // check HTTP status code
         if (status != 200) {
@@ -135,22 +184,128 @@ void DevicePluginAwattar::networkManagerReplyReady(QNetworkReply *reply)
             return;
         }
 
-        processData(device, jsonDoc.toVariant().toMap());
+        processPriceData(jsonDoc.toVariant().toMap());
+
+        // start user data update
+        m_updateUserData.append(requestUserData(m_token, m_userUuid));
+
+    } else if (m_updateUserData.contains(reply)) {
+
+        m_updateUserData.removeAll(reply);
+
+        // check HTTP status code
+        if (status != 200) {
+            qCWarning(dcAwattar) << "Update user data reply HTTP error:" << status << reply->errorString();
+            reply->deleteLater();
+            return;
+        }
+
+        // check JSON file
+        QJsonParseError error;
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(reply->readAll(), &error);
+        if (error.error != QJsonParseError::NoError) {
+            qCWarning(dcAwattar) << "Update user data reply JSON error:" << error.errorString();
+            reply->deleteLater();
+            return;
+        }
+
+        processUserData(jsonDoc.toVariant().toMap());
+
+    } else if (m_searchPumpReplies.contains(reply)) {
+
+        m_searchPumpReplies.removeAll(reply);
+
+        // check HTTP status code
+        if (status != 200) {
+            qCWarning(dcAwattar) << "Search pump reply HTTP error:" << status << reply->errorString();
+            reply->deleteLater();
+            return;
+        }
+
+        processPumpSearchData(reply->readAll());
     }
+
     reply->deleteLater();
 }
 
-void DevicePluginAwattar::processData(Device *device, const QVariantMap &data, const bool &fromSetup)
+void DevicePluginAwattar::guhTimer()
 {
-    if (!data.contains("data")) {
-        if (fromSetup) {
-            qCWarning(dcAwattar) << "Device setup failed." << device->id().toString() << "No data element received";
-            emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusFailure);
-            return;
-        }
-        qCWarning(dcAwattar) << "Update failed for device" << device->id().toString() << "No data element received";
+    if (!m_device)
         return;
+
+    updateData();
+    searchHeatPumps();
+}
+
+void DevicePluginAwattar::processPriceData(const QVariantMap &data)
+{
+    if (!m_device)
+        return;
+
+    QVariantList dataElements = data.value("data").toList();
+
+    QDateTime currentTime = QDateTime::currentDateTime();
+    double sum = 0;
+    double count = 0;
+    double averagePrice = 0;
+    double currentPrice = 0;
+    int deviation = 0;
+    double maxPrice = -1000;
+    double minPrice = 1000;
+    foreach (QVariant element, dataElements) {
+        QVariantMap elementMap = element.toMap();
+        QDateTime startTime = QDateTime::fromMSecsSinceEpoch((qint64)elementMap.value("start_timestamp").toLongLong());
+        QDateTime endTime = QDateTime::fromMSecsSinceEpoch((qint64)elementMap.value("end_timestamp").toLongLong());
+        double price = elementMap.value("marketprice").toDouble();
+
+        // check interval [-12h < x < + 12h]
+        if ((startTime >= currentTime.addSecs(-3600 * 12) && endTime <= currentTime ) ||
+                (endTime <= currentTime.addSecs(3600 * 12) && startTime >= currentTime )) {
+            sum += price;
+            count++;
+
+            if (price > maxPrice)
+                maxPrice = price;
+
+            if (price < minPrice)
+                minPrice = price;
+        }
+
+        if (currentTime  >= startTime && currentTime <= endTime) {
+            currentPrice = price;
+            sum += price;
+            count++;
+
+            if (price > maxPrice)
+                maxPrice = price;
+
+            if (price < minPrice)
+                minPrice = price;
+
+            m_device->setStateValue(currentMarketPriceStateTypeId, currentPrice / 10.0);
+            m_device->setStateValue(validUntilStateTypeId, endTime.toLocalTime().toTime_t());
+        }
     }
+
+    // calculate averagePrice and mean deviation
+    averagePrice = sum / count;
+
+    if (currentPrice <= averagePrice) {
+        deviation = -1 * qRound(100 + (-100 * (currentPrice - minPrice) / (averagePrice - minPrice)));
+    } else {
+        deviation = qRound(-100 * (averagePrice - currentPrice) / (maxPrice - averagePrice));
+    }
+
+    m_device->setStateValue(averagePriceStateTypeId, averagePrice / 10.0);
+    m_device->setStateValue(lowestPriceStateTypeId, minPrice / 10.0);
+    m_device->setStateValue(highestPriceStateTypeId, maxPrice / 10.0);
+    m_device->setStateValue(averageDeviationStateTypeId, deviation);
+}
+
+void DevicePluginAwattar::processUserData(const QVariantMap &data)
+{
+    if (!m_device)
+        return;
 
     QVariantList dataElements = data.value("data").toList();
 
@@ -159,24 +314,70 @@ void DevicePluginAwattar::processData(Device *device, const QVariantMap &data, c
         QVariantMap elementMap = element.toMap();
         QDateTime startTime = QDateTime::fromMSecsSinceEpoch((qint64)elementMap.value("start_timestamp").toLongLong());
         QDateTime endTime = QDateTime::fromMSecsSinceEpoch((qint64)elementMap.value("end_timestamp").toLongLong());
-        double marketPrice = elementMap.value("marketprice").toDouble();
-        if (currentTime  >= startTime && currentTime <= endTime) {
-            qCDebug(dcAwattar) << "---------------------------------------";
-            qCDebug(dcAwattar) << "start  :" << startTime.toString();
-            qCDebug(dcAwattar) << "end    :" << endTime.toString();
-            qCDebug(dcAwattar) << "price  :" << marketPrice << elementMap.value("unit").toString();
-            device->setStateValue(currentMarketPriceStateTypeId, marketPrice);
-            device->setStateValue(validUntilStateTypeId, endTime.toLocalTime().toTime_t());
-        }
-    }
 
-    if (fromSetup) {
-        m_timer->start();
-        emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusSuccess);
+        // check if we are in the current interval
+        if (currentTime >= startTime && currentTime <= endTime) {
+            int sgMode = 0;
+            if (elementMap.contains("data")) {
+                if (elementMap.value("data").toMap().contains("sg-mode")) {
+                    sgMode = elementMap.value("data").toMap().value("sg-mode").toInt();
+                }
+            }
+
+            switch (sgMode) {
+            case 1:
+                m_device->setStateValue(sgModeStateTypeId, "1 - Off");
+                break;
+            case 2:
+                m_device->setStateValue(sgModeStateTypeId, "2 - Normal");
+                break;
+            case 3:
+                m_device->setStateValue(sgModeStateTypeId, "3 - High Temperature");
+                break;
+            case 4:
+                m_device->setStateValue(sgModeStateTypeId, "4 - On");
+                break;
+            default:
+                m_device->setStateValue(sgModeStateTypeId, "0 - Invalid");
+                continue;
+            }
+
+            foreach (HeatPump *pump, m_heatPumps) {
+                pump->setSgMode(sgMode);
+            }
+        }
     }
 }
 
-QNetworkReply *DevicePluginAwattar::requestData(const QString &token)
+void DevicePluginAwattar::processPumpSearchData(const QByteArray &data)
+{
+    QList<QByteArray> lines = data.split('\n');
+    foreach (const QByteArray &line, lines) {
+        if (line.isEmpty())
+            continue;
+
+        // remove the '/128' from the address
+        QHostAddress pumpAddress(QString(data.left(line.length() - 4)));
+        if (!pumpAddress.isNull()) {
+
+            // check if we already created this heat pump
+            if (heatPumpExists(pumpAddress))
+                continue;
+
+            qCDebug(dcAwattar) << "Found heat pump at" << pumpAddress.toString();
+
+            HeatPump *pump = new HeatPump(pumpAddress, this);
+            connect(pump, SIGNAL(reachableChanged()), this, SLOT(onHeatPumpReachableChanged()));
+
+            m_heatPumps.append(pump);
+
+        } else {
+            qCWarning(dcAwattar) << "Could not read pump address" << line;
+        }
+    }
+}
+
+QNetworkReply *DevicePluginAwattar::    requestPriceData(const QString &token)
 {
     QByteArray data = QString(token + ":").toUtf8().toBase64();
     QString header = "Basic " + data;
@@ -186,20 +387,59 @@ QNetworkReply *DevicePluginAwattar::requestData(const QString &token)
     return networkManagerGet(request);
 }
 
-void DevicePluginAwattar::updateDevice(Device *device)
+QNetworkReply *DevicePluginAwattar::requestUserData(const QString &token, const QString &userId)
 {
-    QNetworkReply *reply = requestData(device->paramValue("token").toString());
-    m_update.insert(reply, device);
+    QByteArray data = QString(token + ":").toUtf8().toBase64();
+    QString header = "Basic " + data;
+
+    QNetworkRequest request(QUrl(QString("https://api.awattar.com/v1/devices/%1/actuators").arg(userId)));
+    request.setRawHeader("Authorization", header.toLocal8Bit());
+    request.setSslConfiguration(QSslConfiguration::defaultConfiguration());
+    return networkManagerGet(request);
 }
 
-void DevicePluginAwattar::onTimeout()
+void DevicePluginAwattar::updateData()
 {
-    // check every hour
-    if(QDateTime::currentDateTime().time().minute() == 0) {
-        foreach (Device *device, myDevices()) {
-            qCDebug(dcAwattar) << "Update device" << device->id().toString();
-            updateDevice(device);
+    m_updatePrice.append(requestPriceData(m_token));
+}
+
+void DevicePluginAwattar::searchHeatPumps()
+{
+    QHostAddress rplAddress = QHostAddress(configuration().paramValue("RPL address").toString());
+
+    if (rplAddress.isNull()) {
+        qCWarning(dcAwattar) << "Invalid RPL address" << configuration().paramValue("RPL address").toString();
+        return;
+    }
+
+    //qCDebug(dcAwattar) << "Search heat pump" << rplAddress.toString();
+
+    QNetworkRequest request(QUrl(QString("http://[%1]").arg(rplAddress.toString())));
+    QNetworkReply *reply = networkManagerGet(request);
+
+    m_searchPumpReplies.append(reply);
+}
+
+bool DevicePluginAwattar::heatPumpExists(const QHostAddress &pumpAddress)
+{
+    foreach (HeatPump *pump, m_heatPumps) {
+        if (pump->address() == pumpAddress) {
+            return true;
         }
     }
+    return false;
 }
 
+void DevicePluginAwattar::connectionTest()
+{
+    m_asyncSetup.append(requestUserData(m_token, m_userUuid));
+}
+
+void DevicePluginAwattar::onHeatPumpReachableChanged()
+{
+    HeatPump *pump = static_cast<HeatPump *>(sender());
+
+    foreach (Device *device, myDevices()) {
+        device->setStateValue(reachableStateTypeId, pump->reachable());
+    }
+}

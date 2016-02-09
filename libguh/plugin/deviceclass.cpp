@@ -60,6 +60,50 @@
         During the setup, a button has to be pushed in order to pair the \l{Device}.
 */
 
+/*! \enum DeviceClass::BasicTag
+
+    This enum type specifies the basic tags which describe the categories of the DeviceClass.
+    A DeviceClass can have multiple tags.
+
+    \value BasicTagService
+        The \l{DeviceClass} describes a service.
+    \value BasicTagDevice
+        The \l{DeviceClass} describes a real device.
+    \value BasicTagSensor
+        The \l{DeviceClass} describes a sensor. Any device which can measure or detect something is a sensor.
+    \value BasicTagActuator
+        The \l{DeviceClass} describes an actuator. Any device which can do something is an actuator.
+    \value BasicTagLighting
+        The \l{DeviceClass} describes a lighting device.
+    \value BasicTagEnergy
+        The \l{DeviceClass} describes an energy device.
+    \value BasicTagMultimedia
+        The \l{DeviceClass} describes a multimedia device/service.
+    \value BasicTagWeather
+        The \l{DeviceClass} describes a weather device/service.
+    \value BasicTagGateway
+        The \l{DeviceClass} describes a gateway device.
+    \value BasicTagHeating
+        The \l{DeviceClass} describes a heating device.
+    \value BasicTagCooling
+        The \l{DeviceClass} describes a cooling device.
+    \value BasicTagNotification
+        The \l{DeviceClass} describes a notification service.
+    \value BasicTagSecurity
+        The \l{DeviceClass} describes a security device/service.
+    \value BasicTagTime
+        The \l{DeviceClass} describes a time device/service.
+    \value BasicTagShading
+        The \l{DeviceClass} describes a shading device.
+    \value BasicTagAppliance
+        The \l{DeviceClass} describes an appliance.
+    \value BasicTagCamera
+        The \l{DeviceClass} describes a camera device.
+    \value BasicTagLock
+        The \l{DeviceClass} describes a lock device.
+
+*/
+
 #include "deviceclass.h"
 
 /*! Constructs a DeviceClass with the give \a pluginId ,\a vendorId and \a id .
@@ -111,6 +155,24 @@ void DeviceClass::setName(const QString &name)
     m_name = name;
 }
 
+/*! Returns the list of basicTags of this DeviceClass.
+
+    \sa DeviceClass::BasicTag
+*/
+QList<DeviceClass::BasicTag> DeviceClass::basicTags() const
+{
+    return m_basicTags;
+}
+
+/*! Set the list of \a basicTags of this DeviceClass.
+
+    \sa DeviceClass::BasicTag
+*/
+void DeviceClass::setBasicTags(const QList<DeviceClass::BasicTag> &basicTags)
+{
+    m_basicTags = basicTags;
+}
+
 /*! Returns the statesTypes of this DeviceClass. \{Device}{Devices} created
     from this \l{DeviceClass} must have their states matching to this template. */
 QList<StateType> DeviceClass::stateTypes() const
@@ -132,6 +194,17 @@ void DeviceClass::setStateTypes(const QList<StateType> &stateTypes)
         eventType.setParamTypes(QList<ParamType>() << paramType);
         m_allEventTypes.append(eventType);
     }
+}
+
+/*! Returns true if this DeviceClass has a \l{StateType} with the given \a stateTypeId. */
+bool DeviceClass::hasStateType(const StateTypeId &stateTypeId)
+{
+    foreach (const StateType &stateType, m_stateTypes) {
+        if (stateType.id() == stateTypeId) {
+            return true;
+        }
+    }
+    return false;
 }
 
 /*! Returns the eventTypes of this DeviceClass. \{Device}{Devices} created
@@ -157,6 +230,17 @@ void DeviceClass::setEventTypes(const QList<EventType> &eventTypes)
     }
 }
 
+/*! Returns true if this DeviceClass has a \l{EventType} with the given \a eventTypeId. */
+bool DeviceClass::hasEventType(const EventTypeId &eventTypeId)
+{
+    foreach (const EventType &eventType, m_eventTypes) {
+        if (eventType.id() == eventTypeId) {
+            return true;
+        }
+    }
+    return false;
+}
+
 /*! Returns the actionTypes of this DeviceClass. \{Device}{Devices} created
     from this \l{DeviceClass} must have their actions matching to this template. */
 QList<ActionType> DeviceClass::actionTypes() const
@@ -169,6 +253,17 @@ QList<ActionType> DeviceClass::actionTypes() const
 void DeviceClass::setActionTypes(const QList<ActionType> &actionTypes)
 {
     m_actionTypes = actionTypes;
+}
+
+/*! Returns true if this DeviceClass has a \l{ActionType} with the given \a actionTypeId. */
+bool DeviceClass::hasActionType(const ActionTypeId &actionTypeId)
+{
+    foreach (const ActionType &actionType, m_actionTypes) {
+        if (actionType.id() == actionTypeId) {
+            return true;
+        }
+    }
+    return false;
 }
 
 /*! Returns the params description of this DeviceClass. \{Device}{Devices} created

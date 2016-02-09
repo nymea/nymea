@@ -38,6 +38,7 @@ bool JsonTypes::s_initialized = false;
 QString JsonTypes::s_lastError;
 
 QVariantList JsonTypes::s_basicType;
+QVariantList JsonTypes::s_basicTag;
 QVariantList JsonTypes::s_stateOperator;
 QVariantList JsonTypes::s_valueOperator;
 QVariantList JsonTypes::s_inputType;
@@ -79,6 +80,7 @@ void JsonTypes::init()
 {
     // BasicTypes
     s_basicType = enumToStrings(JsonTypes::staticMetaObject, "BasicType");
+    s_basicTag = enumToStrings(DeviceClass::staticMetaObject, "BasicTag");
     s_stateOperator = enumToStrings(Types::staticMetaObject, "StateOperator");
     s_valueOperator = enumToStrings(Types::staticMetaObject, "ValueOperator");
     s_inputType = enumToStrings(Types::staticMetaObject, "InputType");
@@ -130,6 +132,9 @@ void JsonTypes::init()
     s_stateType.insert("type", basicTypeRef());
     s_stateType.insert("defaultValue", basicTypeToString(Variant));
     s_stateType.insert("o:unit", unitRef());
+    s_stateType.insert("o:minValue", basicTypeToString(Variant));
+    s_stateType.insert("o:maxValue", basicTypeToString(Variant));
+    s_stateType.insert("o:possibleValues", QVariantList() << basicTypeToString(Variant));
 
     // State
     s_state.insert("stateTypeId", basicTypeToString(Uuid));
@@ -185,6 +190,7 @@ void JsonTypes::init()
     s_deviceClass.insert("id", basicTypeToString(Uuid));
     s_deviceClass.insert("vendorId", basicTypeToString(Uuid));
     s_deviceClass.insert("name", basicTypeToString(String));
+    s_deviceClass.insert("basicTags", QVariantList() << basicTagRef());
     s_deviceClass.insert("stateTypes", QVariantList() << stateTypeRef());
     s_deviceClass.insert("eventTypes", QVariantList() << eventTypeRef());
     s_deviceClass.insert("actionTypes", QVariantList() << actionTypeRef());
@@ -224,7 +230,6 @@ void JsonTypes::init()
     s_ruleDescription.insert("active", basicTypeToString(Bool));
     s_ruleDescription.insert("executable", basicTypeToString(Bool));
 
-
     // LogEntry
     s_logEntry.insert("timestamp", basicTypeToString(Int));
     s_logEntry.insert("loggingLevel", loggingLevelRef());
@@ -261,6 +266,7 @@ QVariantMap JsonTypes::allTypes()
 {
     QVariantMap allTypes;
     allTypes.insert("BasicType", basicType());
+    allTypes.insert("BasicTag", basicTag());
     allTypes.insert("ParamType", paramTypeDescription());
     allTypes.insert("InputType", inputType());
     allTypes.insert("Unit", unit());
@@ -405,12 +411,20 @@ QVariantMap JsonTypes::packStateType(const StateType &stateType)
     QVariantMap variantMap;
     variantMap.insert("id", stateType.id());
     variantMap.insert("name", stateType.name());
-    variantMap.insert("type", QVariant::typeToName(stateType.type()));
+    variantMap.insert("type", basicTypeToString(stateType.type()));
     variantMap.insert("defaultValue", stateType.defaultValue());
 
-    if(stateType.unit() != Types::UnitNone) {
+    if (stateType.maxValue().isValid())
+        variantMap.insert("maxValue", stateType.maxValue());
+
+    if (stateType.minValue().isValid())
+        variantMap.insert("minValue", stateType.minValue());
+
+    if (!stateType.possibleValues().isEmpty())
+        variantMap.insert("possibleValues", stateType.possibleValues());
+
+    if(stateType.unit() != Types::UnitNone)
         variantMap.insert("unit", s_unit.at(stateType.unit()));
-    }
 
     return variantMap;
 }
@@ -465,7 +479,7 @@ QVariantMap JsonTypes::packParamType(const ParamType &paramType)
 {
     QVariantMap variantMap;
     variantMap.insert("name", paramType.name());
-    variantMap.insert("type", QVariant::typeToName(paramType.type()));
+    variantMap.insert("type", basicTypeToString(paramType.type()));
     // optional
     if (paramType.defaultValue().isValid()) {
         variantMap.insert("defaultValue", paramType.defaultValue());
@@ -506,6 +520,11 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass)
     variant.insert("name", deviceClass.name());
     variant.insert("id", deviceClass.id());
     variant.insert("vendorId", deviceClass.vendorId());
+
+    QVariantList basicTags;
+    foreach (const DeviceClass::BasicTag &basicTag, deviceClass.basicTags()) {
+        basicTags.append(s_basicTag.at(basicTag));
+    }
     QVariantList stateTypes;
     foreach (const StateType &stateType, deviceClass.stateTypes()) {
         stateTypes.append(packStateType(stateType));
@@ -527,6 +546,7 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass)
         discoveryParamTypes.append(packParamType(paramType));
     }
 
+    variant.insert("basicTags", basicTags);
     variant.insert("paramTypes", paramTypes);
     variant.insert("discoveryParamTypes", discoveryParamTypes);
     variant.insert("stateTypes", stateTypes);
@@ -797,6 +817,36 @@ QVariantList JsonTypes::packPlugins()
     return pluginsList;
 }
 
+QString JsonTypes::basicTypeToString(const QVariant::Type &type)
+{
+    switch (type) {
+    case QVariant::Uuid:
+        return "Uuid";
+        break;
+    case QVariant::String:
+        return "String";
+        break;
+    case QVariant::Int:
+        return "Int";
+        break;
+    case QVariant::UInt:
+        return "UInt";
+        break;
+    case QVariant::Double:
+        return "Double";
+        break;
+    case QVariant::Bool:
+        return "Bool";
+        break;
+    case QVariant::Color:
+        return "Color";
+        break;
+    default:
+        return QVariant::typeToName(type);
+        break;
+    }
+}
+
 Param JsonTypes::unpackParam(const QVariantMap &paramMap)
 {
     if (paramMap.keys().count() == 0) {
@@ -818,9 +868,8 @@ ParamList JsonTypes::unpackParams(const QVariantList &paramList)
 
 RuleActionParam JsonTypes::unpackRuleActionParam(const QVariantMap &ruleActionParamMap)
 {
-    if (ruleActionParamMap.keys().count() == 0) {
+    if (ruleActionParamMap.keys().count() == 0)
         return RuleActionParam();
-    }
 
     QString name = ruleActionParamMap.value("name").toString();
     QVariant value = ruleActionParamMap.value("value");
@@ -1239,6 +1288,12 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                     qCWarning(dcJsonRpc) << QString("value %1 not allowed in %2").arg(variant.toString()).arg(unitRef());
                     return result;
                 }
+            } else if (refName == basicTagRef()) {
+                QPair<bool, QString> result = validateEnum(s_basicTag, variant);
+                if (!result.first) {
+                    qCWarning(dcJsonRpc) << QString("value %1 not allowed in %2").arg(variant.toString()).arg(basicTagRef());
+                    return result;
+                }
             } else {
                 Q_ASSERT_X(false, "JsonTypes", QString("Unhandled ref: %1").arg(refName).toLatin1().data());
                 return report(false, QString("Unhandled ref %1. Server implementation incomplete.").arg(refName));
@@ -1275,25 +1330,25 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
 
 QPair<bool, QString> JsonTypes::validateBasicType(const QVariant &variant)
 {
-    if (variant.canConvert(QVariant::Uuid)) {
+    if (variant.canConvert(QVariant::Uuid) && QVariant(variant).convert(QVariant::Uuid)) {
         return report(true, "");
     }
-    if (variant.canConvert(QVariant::String)) {
+    if (variant.canConvert(QVariant::String) && QVariant(variant).convert(QVariant::String)) {
         return report(true, "");
     }
-    if (variant.canConvert(QVariant::Int)) {
+    if (variant.canConvert(QVariant::Int) && QVariant(variant).convert(QVariant::Int)) {
         return report(true, "");
     }
-    if (variant.canConvert(QVariant::UInt)){
+    if (variant.canConvert(QVariant::UInt) && QVariant(variant).convert(QVariant::UInt)){
         return report(true, "");
     }
-    if (variant.canConvert(QVariant::Double)) {
+    if (variant.canConvert(QVariant::Double) && QVariant(variant).convert(QVariant::Double)) {
         return report(true, "");
     }
-    if (variant.canConvert(QVariant::Bool)) {
+    if (variant.canConvert(QVariant::Bool && QVariant(variant).convert(QVariant::Bool))) {
         return report(true, "");
     }
-    if (variant.canConvert(QVariant::Color)) {
+    if (variant.canConvert(QVariant::Color) && QVariant(variant).convert(QVariant::Color)) {
         return report(true, "");
     }
     return report(false, QString("Error validating basic type %1.").arg(variant.toString()));
@@ -1392,6 +1447,11 @@ QPair<QList<RuleAction>, RuleEngine::RuleError> JsonTypes::verifyActions(const Q
 {
     QList<RuleAction> actions;
     QVariantList actionList = params.value("actions").toList();
+    if (actionList.isEmpty()) {
+        qCWarning(dcJsonRpc) << "Rule has no actions. This rule will do nothing.";
+        return QPair<QList<RuleAction>, RuleEngine::RuleError>(actions, RuleEngine::RuleErrorInvalidRuleFormat);
+    }
+
     qCDebug(dcJsonRpc) << "unpacking actions:" << actionList;
     foreach (const QVariant &actionVariant, actionList) {
         QVariantMap actionMap = actionVariant.toMap();

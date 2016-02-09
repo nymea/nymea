@@ -25,7 +25,9 @@
 #include "devicemanager.h"
 #include "deviceclass.h"
 
+#include "libguh.h"
 #include "typeutils.h"
+
 #include "types/event.h"
 #include "types/action.h"
 #include "types/vendor.h"
@@ -41,7 +43,7 @@
 class DeviceManager;
 class Device;
 
-class DevicePlugin: public QObject
+class LIBGUH_EXPORT DevicePlugin: public QObject
 {
     Q_OBJECT
 public:
@@ -67,6 +69,8 @@ public:
     virtual DeviceManager::DeviceError displayPin(const PairingTransactionId &pairingTransactionId, const DeviceDescriptor &deviceDescriptor);
     virtual DeviceManager::DeviceSetupStatus confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret);
 
+    virtual DeviceManager::DeviceError executeAction(Device *device, const Action &action);
+
     // Hardware input
     virtual void radioData(const QList<int> &rawData) {Q_UNUSED(rawData)}
     virtual void guhTimer() {}
@@ -80,17 +84,12 @@ public:
     #endif
 
     // Configuration
-    virtual QList<ParamType> configurationDescription() const;
+    QList<ParamType> configurationDescription() const;
     DeviceManager::DeviceError setConfiguration(const ParamList &configuration);
     ParamList configuration() const;
     QVariant configValue(const QString &paramName) const;
     DeviceManager::DeviceError setConfigValue(const QString &paramName, const QVariant &value);
 
-public slots:
-    virtual DeviceManager::DeviceError executeAction(Device *device, const Action &action) {
-        Q_UNUSED(device) Q_UNUSED(action)
-        return DeviceManager::DeviceErrorNoError;
-    }
 
 signals:
     void emitEvent(const Event &event);
@@ -131,9 +130,11 @@ private:
 
     Types::Unit unitStringToUnit(const QString &unitString) const;
     Types::InputType inputTypeStringToInputType(const QString &inputType) const;
+    DeviceClass::BasicTag basicTagStringToBasicTag(const QString &basicTag) const;
 
     DeviceManager *m_deviceManager;
 
+    QList<ParamType> m_configurationDescription;
     ParamList m_config;
 
     QJsonObject m_metaData;

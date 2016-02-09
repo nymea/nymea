@@ -607,7 +607,10 @@ void DeviceHandler::devicesDiscovered(const DeviceClassId &deviceClassId, const 
         return; // We didn't start this discovery... Ignore it.
     }
 
-    JsonReply *reply = m_discoverRequests.take(deviceClassId);
+    JsonReply *reply = 0;
+    reply = m_discoverRequests.take(deviceClassId);
+    if (!reply)
+        return;
 
     QVariantMap returns;
     returns.insert("deviceDescriptors", JsonTypes::packDeviceDescriptors(deviceDescriptors));
@@ -619,7 +622,7 @@ void DeviceHandler::devicesDiscovered(const DeviceClassId &deviceClassId, const 
 
 void DeviceHandler::deviceSetupFinished(Device *device, DeviceManager::DeviceError status)
 {
-    qCDebug(dcJsonRpc) << "got a device setup finished";
+    qCDebug(dcJsonRpc) << "Got a device setup finished" << device->name() << device->id();
     if (!m_asynDeviceAdditions.contains(device->id())) {
         return; // Not the device we're waiting for...
     }

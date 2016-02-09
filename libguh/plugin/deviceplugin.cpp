@@ -81,20 +81,6 @@
  */
 
 /*!
- \fn void DevicePlugin::executeAction(Device *device, const Action &action)
- This will be called to actually execute actions on the hardware. The \{Device} and
- the \{Action} are contained in the \a device and \a action parameters.
- Return the appropriate \l{DeviceManager::DeviceError}{DeviceError}.
-
- It is possible to execute actions asynchronously. You never should do anything blocking for
- a long time (e.g. wait on a network reply from the internet) but instead return
- DeviceManager::DeviceErrorAsync and continue processing in an async manner. Once
- you have the reply ready, emit actionExecutionFinished() with the appropriate parameters.
-
- \sa actionExecutionFinished()
-*/
-
-/*!
   \fn void DevicePlugin::devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &devices);
   This signal is emitted when the discovery of a \a deviceClassId of this DevicePlugin is finished. The \a devices parameter describes the
   list of \l{DeviceDescriptor}{DeviceDescriptors} of all discovered \l{Device}{Devices}.
@@ -151,6 +137,7 @@
 #include "loggingcategories.h"
 
 #include "devicemanager.h"
+#include "guhsettings.h"
 #include "hardware/radio433/radio433.h"
 #include "network/upnpdiscovery/upnpdiscovery.h"
 
@@ -182,7 +169,7 @@ QString DevicePlugin::pluginName() const
  *  same uuid and don't change it or configurations can't be matched any more. */
 PluginId DevicePlugin::pluginId() const
 {
-    return m_metaData.value("id").toString();
+    return PluginId(m_metaData.value("id").toString());
 }
 
 /*! Returns the list of \l{Vendor}{Vendors} supported by this DevicePlugin. */
@@ -234,6 +221,12 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
             deviceClass.setPairingInfo(jo.value("pairingInfo").toString());
             deviceClass.setParamTypes(parseParamTypes(jo.value("paramTypes").toArray()));
 
+            QList<DeviceClass::BasicTag> basicTags;
+            foreach (const QJsonValue &basicTagJson, jo.value("basicTags").toArray()) {
+                basicTags.append(basicTagStringToBasicTag(basicTagJson.toString()));
+            }
+            deviceClass.setBasicTags(basicTags);
+
             QList<ActionType> actionTypes;
             QList<StateType> stateTypes;
             foreach (const QJsonValue &stateTypesJson, jo.value("stateTypes").toArray()) {
@@ -251,25 +244,30 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 stateType.setType(t);
                 stateType.setUnit(unitStringToUnit(st.value("unit").toString()));
                 stateType.setDefaultValue(st.value("defaultValue").toVariant());
+                if (st.contains("minValue"))
+                    stateType.setMinValue(st.value("minValue").toVariant());
+
+                if (st.contains("maxValue"))
+                    stateType.setMaxValue(st.value("maxValue").toVariant());
+
+                if (st.contains("possibleValues")) {
+                    QVariantList possibleValues;
+                    foreach (const QJsonValue &possibleValueJson, st.value("possibleValues").toArray()) {
+                        possibleValues.append(possibleValueJson.toVariant());
+                    }
+                    stateType.setPossibleValues(possibleValues);
+                }
                 stateTypes.append(stateType);
 
                 // create ActionType if this StateType is writable
-                if (st.contains("writable")) {
-                    ActionType actionType(st.value("id").toString());
-                    actionType.setName("set " + st.value("name").toString());
+                if (st.contains("writable") && st.value("writable").toBool()) {
                     // Note: fields already checked in StateType
-                    ParamType paramType(st.value("name").toString(), t, st.value("defaultValue").toVariant());
-                    if (st.value("writable").toObject().contains("allowedValues")) {
-                        QVariantList allowedValues;
-                        foreach (const QJsonValue &allowedTypesJson, st.value("writable").toObject().value("allowedValues").toArray()) {
-                            allowedValues.append(allowedTypesJson.toVariant());
-                        }
-                        paramType.setAllowedValues(allowedValues);
-                    }
-                    paramType.setInputType(inputTypeStringToInputType(st.value("writable").toObject().value("inputType").toString()));
-                    paramType.setUnit(unitStringToUnit(st.value("unit").toString()));
-                    paramType.setLimits(st.value("writable").toObject().value("minValue").toVariant(),
-                                        st.value("writable").toObject().value("maxValue").toVariant());
+                    ActionType actionType(ActionTypeId(stateType.id().toString()));
+                    actionType.setName("set " + stateType.name());
+                    ParamType paramType(stateType.name(), t, stateType.defaultValue());
+                    paramType.setAllowedValues(stateType.possibleValues());
+                    paramType.setUnit(stateType.unit());
+                    paramType.setLimits(stateType.minValue(), stateType.maxValue());
                     actionType.setParamTypes(QList<ParamType>() << paramType);
                     actionTypes.append(actionType);
                 }
@@ -394,10 +392,28 @@ DeviceManager::DeviceSetupStatus DevicePlugin::confirmPairing(const PairingTrans
     return DeviceManager::DeviceSetupStatusFailure;
 }
 
+/*! This will be called to actually execute actions on the hardware. The \{Device} and
+ * the \{Action} are contained in the \a device and \a action parameters.
+ * Return the appropriate \l{DeviceManager::DeviceError}{DeviceError}.
+ *
+ * It is possible to execute actions asynchronously. You never should do anything blocking for
+ * a long time (e.g. wait on a network reply from the internet) but instead return
+ * DeviceManager::DeviceErrorAsync and continue processing in an async manner. Once
+ * you have the reply ready, emit actionExecutionFinished() with the appropriate parameters.
+ *
+ * \sa actionExecutionFinished()
+*/
+DeviceManager::DeviceError DevicePlugin::executeAction(Device *device, const Action &action)
+{
+    Q_UNUSED(device)
+    Q_UNUSED(action)
+    return DeviceManager::DeviceErrorNoError;
+}
+
 /*! Returns the configuration description of this DevicePlugin as a list of \l{ParamType}{ParamTypes}. */
 QList<ParamType> DevicePlugin::configurationDescription() const
 {
-    return QList<ParamType>();
+    return m_configurationDescription;
 }
 
 /*! This will be called when the DeviceManager initializes the plugin and set up the things behind the scenes.
@@ -405,6 +421,11 @@ QList<ParamType> DevicePlugin::configurationDescription() const
 void DevicePlugin::initPlugin(const QJsonObject &metaData, DeviceManager *deviceManager)
 {
     m_metaData = metaData;
+
+    // parse plugin configuration params
+    if (m_metaData.contains("paramTypes"))
+        m_configurationDescription = parseParamTypes(m_metaData.value("paramTypes").toArray());
+
     m_deviceManager = deviceManager;
     init();
 }
@@ -421,10 +442,13 @@ QList<ParamType> DevicePlugin::parseParamTypes(const QJsonArray &array) const
                    .arg(pt.value("type").toString())
                    .arg(pt.value("name").toString()).toLatin1().data());
         ParamType paramType(pt.value("name").toString(), t, pt.value("defaultValue").toVariant());
+
+        // set allowed values
         QVariantList allowedValues;
         foreach (const QJsonValue &allowedTypesJson, pt.value("allowedValues").toArray()) {
             allowedValues.append(allowedTypesJson.toVariant());
         }
+
         // set the input type if there is any
         if (pt.contains("inputType")) {
             paramType.setInputType(inputTypeStringToInputType(pt.value("inputType").toString()));
@@ -473,13 +497,11 @@ QVariant DevicePlugin::configValue(const QString &paramName) const
     return QVariant();
 }
 
-/*!
- Will be called by the DeviceManager to set a plugin's \a configuration.
- */
+/*! Will be called by the DeviceManager to set a plugin's \a configuration. */
 DeviceManager::DeviceError DevicePlugin::setConfiguration(const ParamList &configuration)
 {
     foreach (const Param &param, configuration) {
-        qCDebug(dcDeviceManager) << "setting config" << param;
+        qCDebug(dcDeviceManager) << "* set plugin configuration" << param;
         DeviceManager::DeviceError result = setConfigValue(param.name(), param.value());
         if (result != DeviceManager::DeviceErrorNoError) {
             return result;
@@ -488,46 +510,33 @@ DeviceManager::DeviceError DevicePlugin::setConfiguration(const ParamList &confi
     return DeviceManager::DeviceErrorNoError;
 }
 
-/*! Will be called by the DeviceManager to set a plugin's \l{Param} with the given \a paramName and \a value. */
+/*! Can be called in the DevicePlugin to set a plugin's \l{Param} with the given \a paramName and \a value. */
 DeviceManager::DeviceError DevicePlugin::setConfigValue(const QString &paramName, const QVariant &value)
 {
+
     bool found = false;
     foreach (const ParamType &paramType, configurationDescription()) {
         if (paramType.name() == paramName) {
-            if (!value.canConvert(paramType.type())) {
-                qCWarning(dcDeviceManager) << QString("Wrong parameter type for param %1. Got %2. Expected %3.")
-                              .arg(paramName).arg(value.toString()).arg(QVariant::typeToName(paramType.type()));
-                return DeviceManager::DeviceErrorInvalidParameter;
-            }
-
-            if (paramType.maxValue().isValid() && value > paramType.maxValue()) {
-                qCWarning(dcDeviceManager) << QString("Value out of range for param %1. Got %2. Max: %3.")
-                              .arg(paramName).arg(value.toString()).arg(paramType.maxValue().toString());
-                return DeviceManager::DeviceErrorInvalidParameter;
-            }
-            if (paramType.minValue().isValid() && value < paramType.minValue()) {
-                qCWarning(dcDeviceManager) << QString("Value out of range for param %1. Got: %2. Min: %3.")
-                              .arg(paramName).arg(value.toString()).arg(paramType.minValue().toString());
-                return DeviceManager::DeviceErrorInvalidParameter;
-            }
             found = true;
+            DeviceManager::DeviceError result = deviceManager()->verifyParam(paramType, Param(paramName, value));
+            if (result != DeviceManager::DeviceErrorNoError)
+                return result;
+
             break;
         }
     }
+
     if (!found) {
-        qCWarning(dcDeviceManager) << QString("Invalid parameter %1.").arg(paramName);
+        qCWarning(dcDeviceManager) << QString("Could not find plugin parameter with the name %1.").arg(paramName);
         return DeviceManager::DeviceErrorInvalidParameter;
     }
-    for (int i = 0; i < m_config.count(); i++) {
-        if (m_config.at(i).name() == paramName) {
-            m_config[i].setValue(value);
-            emit configValueChanged(paramName, value);
-            return DeviceManager::DeviceErrorNoError;
-        }
+
+    if (m_config.hasParam(paramName)) {
+        m_config.setParamValue(paramName, value);
+    } else {
+        Param newParam(paramName, value);
+        m_config.append(newParam);
     }
-    // Still here? need to create the param
-    Param newParam(paramName, value);
-    m_config.append(newParam);
     emit configValueChanged(paramName, value);
     return DeviceManager::DeviceErrorNoError;
 }
@@ -611,7 +620,7 @@ QNetworkReply *DevicePlugin::networkManagerGet(const QNetworkRequest &request)
     if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
         return deviceManager()->m_networkManager->get(pluginId(), request);
     } else {
-        qCWarning(dcDeviceManager) << "network manager resource missing for plugin " << pluginName();
+        qCWarning(dcDeviceManager) << "Network manager hardware resource not set for plugin" << pluginName();
     }
     return nullptr;
 }
@@ -628,7 +637,7 @@ QNetworkReply *DevicePlugin::networkManagerPost(const QNetworkRequest &request, 
     if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
         return deviceManager()->m_networkManager->post(pluginId(), request, data);
     } else {
-        qCWarning(dcDeviceManager) << "network manager resource missing for plugin " << pluginName();
+        qCWarning(dcDeviceManager) << "Network manager hardware resource not set for plugin" << pluginName();
     }
     return nullptr;
 }
@@ -644,7 +653,7 @@ QNetworkReply *DevicePlugin::networkManagerPut(const QNetworkRequest &request, c
     if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
         return deviceManager()->m_networkManager->put(pluginId(), request, data);
     } else {
-        qCWarning(dcDeviceManager) << "network manager resource missing for plugin " << pluginName();
+        qCWarning(dcDeviceManager) << "Network manager hardware resource not set for plugin" << pluginName();
     }
     return nullptr;
 }
@@ -758,6 +767,8 @@ Types::Unit DevicePlugin::unitStringToUnit(const QString &unitString) const
         return Types::UnitKiloWattHour;
     } else if (unitString == "EuroPerMegaWattHour") {
         return Types::UnitEuroPerMegaWattHour;
+    } else if (unitString == "EuroCentPerKiloWattHour") {
+        return Types::UnitEuroCentPerKiloWattHour;
     } else if (unitString == "Percentage") {
         return Types::UnitPercentage;
     } else if (unitString == "PartsPerMillion") {
@@ -794,4 +805,49 @@ Types::InputType DevicePlugin::inputTypeStringToInputType(const QString &inputTy
         return Types::InputTypeMacAddress;
     }
     return Types::InputTypeNone;
+}
+
+DeviceClass::BasicTag DevicePlugin::basicTagStringToBasicTag(const QString &basicTag) const
+{
+    if (basicTag == "Device") {
+        return DeviceClass::BasicTagDevice;
+    } else if (basicTag == "Service") {
+        return DeviceClass::BasicTagService;
+    } else if (basicTag == "Actuator") {
+        return DeviceClass::BasicTagActuator;
+    } else if (basicTag == "Sensor") {
+        return DeviceClass::BasicTagSensor;
+    } else if (basicTag == "Lighting") {
+        return DeviceClass::BasicTagLighting;
+    } else if (basicTag == "Energy") {
+        return DeviceClass::BasicTagEnergy;
+    } else if (basicTag == "Multimedia") {
+        return DeviceClass::BasicTagMultimedia;
+    } else if (basicTag == "Weather") {
+        return DeviceClass::BasicTagWeather;
+    } else if (basicTag == "Gateway") {
+        return DeviceClass::BasicTagGateway;
+    } else if (basicTag == "Heating") {
+        return DeviceClass::BasicTagHeating;
+    } else if (basicTag == "Cooling") {
+        return DeviceClass::BasicTagCooling;
+    } else if (basicTag == "Notification") {
+        return DeviceClass::BasicTagNotification;
+    } else if (basicTag == "Security") {
+        return DeviceClass::BasicTagSecurity;
+    } else if (basicTag == "Time") {
+        return DeviceClass::BasicTagTime;
+    } else if (basicTag == "Shading") {
+        return DeviceClass::BasicTagShading;
+    } else if (basicTag == "Appliance") {
+        return DeviceClass::BasicTagAppliance;
+    } else if (basicTag == "Camera") {
+        return DeviceClass::BasicTagCamera;
+    } else if (basicTag == "Lock") {
+        return DeviceClass::BasicTagLock;
+    } else {
+        qCWarning(dcDeviceManager) << "Could not parse basicTag:" << basicTag << "in plugin" << this->pluginName();
+    }
+
+    return DeviceClass::BasicTagDevice;
 }

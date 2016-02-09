@@ -150,6 +150,9 @@
                             "name": "The name of the device class",
                             "idName": "deviceClassName",
                             "deviceClassId": "uuid",
+                            "basicTags": [
+                                    "BasicTag"
+                            ],
                             "createMethods": [
                                     "CreateMethod"
                             ],
@@ -177,6 +180,14 @@
         \li - \underline{\e name:} The visible name of the \l{DeviceClass} \unicode{0x2192} \l{DeviceClass::name()}
         \li - \underline{\e idName:} This parameter will be used to define the DeviceClassId variable named <idName>DeviceClassId in the plugininfo.h, so it can be used in the code.
         \li - \underline{\e deviceClassesId:} The actual uuid (\l{DeviceClassId}) of the \l{DeviceClass} \unicode{0x2192} \l{DeviceClass::id()}.
+        \li - \underline{\e basicTags:} A list of \l{DeviceClass::BasicTag}{BasicTags} for this device \unicode{0x2192} \l{DeviceClass::basicTags()}. A \l{DeviceClass} can have multiple \l{DeviceClass::BasicTag}{BasicTags} which describe the basic category of the DeviceClass. A \l{DeviceClass} should be eighter a Service or a Device, never both. See enum \l{DeviceClass::BasicTag} for more information. The expected value for the \e basicTags parameters matches the enum name like this:
+
+        \tt {DeviceClass::BasicTagService} \unicode{0x2192} \tt {"basicTags": [ "Service" ]}
+
+        \tt {DeviceClass::BasicTagLighting} \unicode{0x2192} \tt {"basicTags": [ "Lighting" ]}
+
+        \tt ...  
+
         \li - \underline{\e createMethods:} A list of possible \l{DeviceClass::CreateMethod}{CreateMethods} for this device \unicode{0x2192} \l{DeviceClass::createMethods()}. Some devices can be created in different ways. Possible values are:
         \list
             \li \e user \unicode{0x2192} \l{DeviceClass::CreateMethodUser}
@@ -267,11 +278,14 @@ A \l{StateType} has following parameters:
                     "id": "uuid",
                     "idName": "stateName",
                     "type": "DataType",
-                    "unit": "The unit of the state value",
+                    "unit": "The unit of the state value.",
                     "defaultValue": "The state will be initialized with this value."
-                    "writable": {
-                        ...
-                    }
+                    "minValue": "Numeric minimum value for this state.",
+                    "maxValue": "Numeric maximum value for this state.",
+                    "possibleValues": [
+                        "value"
+                    ],
+                    "writable": true
                 }
             ]
         }
@@ -284,7 +298,7 @@ A \l{StateType} has following parameters:
         \li - \underline{\e type:} The data type of this state \unicode{0x2192} \l{StateType::type()}.  
         \li - \underline{\e unit:} With this parameter you can specify the unit of the state value i.e. \unicode{0x00B0}C \unicode{0x2192} DegreeCelsius.
         \li - \underline{\e defaultValue:} The state will be initialized with this value.
-        \li - \underline{\e writable:} If you define the \e writable object an \l{ActionType} will be created to set the \l{State} value.  The created \l{ActionType} has the same uuid (\l{ActionTypeId}) like the \l{StateType} uuid and will be named "set <stateName>". Since a \l{ParamType} has some properties which are not in the \l{StateType} definition like \e allowedValues or \e minValue / \e maxValue, you can specify them in the \e writable Object.
+        \li - \underline{\e writable:} If you define the "\e writable : true" value an \l{ActionType} will be created to set the \l{State} value. The created \l{ActionType} has the same uuid (\l{ActionTypeId}) like the \l{StateType} uuid and will be named "set <stateName>". The \l{ParamType} of the created \l{ActionType} will have the same values in the \e allowedValues list as the \l{StateType} in the \e possibleValues list. Also the \e minValue / \e maxValue will be taken over from the \l{StateType}.
 
 
 If a \l{StateType} has the property \e writable the \l{DeviceManager} will create automatically an \l{ActionType} for this state, which will also have exactly one \l{Param} with the same properties like the \l{StateType}. The created \l{ActionType} has the same uuid (\l{ActionTypeId}) like the \l{StateType} uuid and will be named "set <stateName>".
@@ -300,12 +314,11 @@ This mechanism was created to ensure that the \l{EventType} and \l{ActionType} w
                 "id": "9bc84381-785f-46bf-94c8-6e35116f50d3",
                 "idName": "volume",
                 "name": "volume",
-                "unit": "Percentage",
+                "unit": "UnitPercentage",
                 "type": "int",
-                "writable": {
-                    "minValue": 0,
-                    "maxValue": 100
-                }
+                "minValue": 0,
+                "maxValue": 100,
+                "writable": true
             }
         \endcode
         
@@ -316,10 +329,10 @@ This mechanism was created to ensure that the \l{EventType} and \l{ActionType} w
                 "name": "set volume",
                 "paramTypes": [
                     {
-                        "maxValue": 100,
-                        "minValue": 0,
                         "name": "volume",
                         "type": "int",
+                        "maxValue": 100,
+                        "minValue": 0,
                         "unit": "UnitPercentage"
                     }
                 ]
@@ -333,11 +346,8 @@ This mechanism was created to ensure that the \l{EventType} and \l{ActionType} w
                 "name": "volume changed",
                 "paramTypes": [
                     {
-                        "maxValue": 100,
-                        "minValue": 0,
                         "name": "volume",
-                        "type": "int",
-                        "unit": "UnitPercentage"
+                        "type": "int"
                     }
                 ]
             } 

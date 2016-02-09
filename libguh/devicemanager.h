@@ -22,6 +22,8 @@
 #ifndef DEVICEMANAGER_H
 #define DEVICEMANAGER_H
 
+#include "libguh.h"
+
 #include "plugin/deviceclass.h"
 #include "plugin/device.h"
 #include "plugin/devicedescriptor.h"
@@ -47,10 +49,11 @@ class DevicePlugin;
 class Radio433;
 class UpnpDiscovery;
 
-class DeviceManager : public QObject
+class LIBGUH_EXPORT DeviceManager : public QObject
 {
     Q_OBJECT
     Q_ENUMS(DeviceError)
+
 public:
     enum HardwareResource {
         HardwareResourceNone = 0x00,
@@ -58,8 +61,8 @@ public:
         HardwareResourceRadio868 = 0x02,
         HardwareResourceTimer = 0x04,
         HardwareResourceNetworkManager = 0x08,
-        HardwareResourceUpnpDisovery = 0x16,
-        HardwareResourceBluetoothLE = 0x32
+        HardwareResourceUpnpDisovery = 0x10,
+        HardwareResourceBluetoothLE = 0x20
     };
     Q_DECLARE_FLAGS(HardwareResources, HardwareResource)
 
@@ -127,6 +130,10 @@ public:
     QList<Device *> findChildDevices(Device *device) const;
     DeviceClass findDeviceClass(const DeviceClassId &deviceClassId) const;
 
+    DeviceError verifyParams(const QList<ParamType> paramTypes, ParamList &params, bool requireAll = true);
+    DeviceError verifyParam(const QList<ParamType> paramTypes, const Param &param);
+    DeviceError verifyParam(const ParamType &paramType, const Param &param);
+
 signals:
     void loaded();
     void eventTriggered(const Event &event);
@@ -138,7 +145,7 @@ signals:
     void deviceSetupFinished(Device *device, DeviceError status);
     void deviceEditFinished(Device *device, DeviceError status);
     void pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceError status, const DeviceId &deviceId = DeviceId());
-    void actionExecutionFinished(const ActionId &actionId, DeviceError status);
+    void actionExecutionFinished(const ActionId &actionId, DeviceManager::DeviceError status);
 
 public slots:
     DeviceError executeAction(const Action &action);
@@ -174,9 +181,6 @@ private:
     DeviceError addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId id = DeviceId::createDeviceId());
     DeviceSetupStatus setupDevice(Device *device);
     void postSetupDevice(Device *device);
-    DeviceError verifyParams(const QList<ParamType> paramTypes, ParamList &params, bool requireAll = true);
-    DeviceError verifyParam(const QList<ParamType> paramTypes, const Param &param);
-    DeviceError verifyParam(const ParamType &paramType, const Param &param);
 
 private:
     QHash<VendorId, Vendor> m_supportedVendors;
@@ -207,6 +211,7 @@ private:
 
     friend class DevicePlugin;
 };
+
 Q_DECLARE_OPERATORS_FOR_FLAGS(DeviceManager::HardwareResources)
 Q_DECLARE_METATYPE(DeviceManager::DeviceError)
 

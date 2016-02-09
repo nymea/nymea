@@ -45,15 +45,24 @@ private:
     void verifyRuleExecuted(const ActionTypeId &actionTypeId);
     void verifyRuleNotExecuted();
 
+    QVariant validIntStateBasedRule(const QString &name, const bool &executable, const bool &enabled);
+
 private slots:
 
     void cleanup();
+    void emptyRule();
+    void getInvalidRule();
 
     void addRemoveRules_data();
     void addRemoveRules();
 
     void editRules_data();
     void editRules();
+
+    void executeRuleActions_data();
+    void executeRuleActions();
+
+    void findRule();
 
     void removeInvalidRule();
 
@@ -72,6 +81,9 @@ private slots:
     void enableDisableRule();
 
     void testEventBasedAction();
+
+    void testRuleActionParams_data();
+    void testRuleActionParams();
 };
 
 void TestRules::cleanupMockHistory() {
@@ -96,6 +108,23 @@ void TestRules::cleanupRules() {
 void TestRules::cleanup() {
     cleanupMockHistory();
     cleanupRules();
+}
+
+void TestRules::emptyRule()
+{
+    QVariantMap params;
+    params.insert("name", QString());
+    params.insert("actions", QVariantList());
+    QVariant response = injectAndWait("Rules.AddRule", params);
+    verifyRuleError(response, RuleEngine::RuleErrorMissingParameter);
+}
+
+void TestRules::getInvalidRule()
+{
+    QVariantMap params;
+    params.insert("ruleId", QUuid::createUuid());
+    QVariant response = injectAndWait("Rules.GetRuleDetails", params);
+    verifyRuleError(response, RuleEngine::RuleErrorRuleNotFound);
 }
 
 void TestRules::verifyRuleExecuted(const ActionTypeId &actionTypeId)
@@ -131,6 +160,54 @@ void TestRules::verifyRuleNotExecuted()
 
 }
 
+
+QVariant TestRules::validIntStateBasedRule(const QString &name, const bool &executable, const bool &enabled)
+{
+    QVariantMap params;
+
+    // StateDescriptor
+    QVariantMap stateDescriptor;
+    stateDescriptor.insert("stateTypeId", mockIntStateId);
+    stateDescriptor.insert("deviceId", m_mockDeviceId);
+    stateDescriptor.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorLess));
+    stateDescriptor.insert("value", 25);
+
+    // StateEvaluator
+    QVariantMap stateEvaluator;
+    stateEvaluator.insert("stateDescriptor", stateDescriptor);
+    stateEvaluator.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+
+    // RuleAction
+    QVariantMap action;
+    action.insert("actionTypeId", mockActionIdWithParams);
+    QVariantList actionParams;
+    QVariantMap param1;
+    param1.insert("name", "mockActionParam1");
+    param1.insert("value", 5);
+    actionParams.append(param1);
+    QVariantMap param2;
+    param2.insert("name", "mockActionParam2");
+    param2.insert("value", true);
+    actionParams.append(param2);
+    action.insert("deviceId", m_mockDeviceId);
+    action.insert("ruleActionParams", actionParams);
+
+    // RuleExitAction
+    QVariantMap exitAction;
+    exitAction.insert("actionTypeId", mockActionIdNoParams);
+    exitAction.insert("deviceId", m_mockDeviceId);
+    exitAction.insert("ruleActionParams", QVariantList());
+
+    params.insert("name", name);
+    params.insert("enabled", enabled);
+    params.insert("executable", executable);
+    params.insert("stateEvaluator", stateEvaluator);
+    params.insert("actions", QVariantList() << action);
+    params.insert("exitActions", QVariantList() << exitAction);
+
+    return params;
+}
+
 void TestRules::addRemoveRules_data()
 {
     // RuleAction
@@ -138,6 +215,11 @@ void TestRules::addRemoveRules_data()
     validActionNoParams.insert("actionTypeId", mockActionIdNoParams);
     validActionNoParams.insert("deviceId", m_mockDeviceId);
     validActionNoParams.insert("ruleActionParams", QVariantList());
+
+    QVariantMap validActionWithParams;
+    validActionWithParams.insert("actionTypeId", mockActionIdNoParams);
+    validActionWithParams.insert("deviceId", m_mockDeviceId);
+    validActionWithParams.insert("ruleActionParams", QVariantList());
 
     QVariantMap invalidAction;
     invalidAction.insert("actionTypeId", ActionTypeId());
@@ -698,7 +780,7 @@ void TestRules::editRules()
         QVERIFY2(exitActions == replyExitActions, "ExitActions don't match");
     }
 
-    // Remove th rule
+    // Remove the rule
     params.clear();
     params.insert("ruleId", ruleId);
     response = injectAndWait("Rules.RemoveRule", params);
@@ -708,6 +790,89 @@ void TestRules::editRules()
     response = injectAndWait("Rules.GetRules");
     QVariantList rules = response.toMap().value("params").toMap().value("rules").toList();
     QVERIFY2(rules.count() == 0, "There should be no rules.");
+}
+
+void TestRules::executeRuleActions_data()
+{
+    QTest::addColumn<QVariantMap>("params");
+    QTest::addColumn<RuleEngine::RuleError>("ruleError");
+
+    QTest::newRow("executable rule, enabled") << validIntStateBasedRule("Executeable", true, true).toMap() << RuleEngine::RuleErrorNoError;
+    QTest::newRow("executable rule, disabled") << validIntStateBasedRule("Executeable", true, false).toMap() << RuleEngine::RuleErrorNoError;
+    QTest::newRow("not executable rule, enabled") << validIntStateBasedRule("Not Executable", false, true).toMap() << RuleEngine::RuleErrorNotExecutable;
+    QTest::newRow("not executable rule, disabled") << validIntStateBasedRule("Not Executable", false, false).toMap() << RuleEngine::RuleErrorNotExecutable;
+}
+
+void TestRules::executeRuleActions()
+{
+    QFETCH(QVariantMap, params);
+    QFETCH(RuleEngine::RuleError, ruleError);
+
+    // ADD rule
+    QVariant response = injectAndWait("Rules.AddRule", params);
+    verifyRuleError(response);
+
+    RuleId ruleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
+    QVERIFY(!ruleId.isNull());
+
+    cleanupMockHistory();
+
+    // EXECUTE actions
+    QVariantMap executeParams;
+    executeParams.insert("ruleId", ruleId.toString());
+    response = injectAndWait("Rules.ExecuteActions", executeParams);
+    verifyRuleError(response, ruleError);
+
+    if (ruleError == RuleEngine::RuleErrorNoError) {
+        verifyRuleExecuted(mockActionIdWithParams);
+    } else {
+        verifyRuleNotExecuted();
+    }
+
+    cleanupMockHistory();
+
+    // EXECUTE exit actions
+    response = injectAndWait("Rules.ExecuteExitActions", executeParams);
+    verifyRuleError(response, ruleError);
+
+    if (ruleError == RuleEngine::RuleErrorNoError) {
+        verifyRuleExecuted(mockActionIdNoParams);
+    } else {
+        verifyRuleNotExecuted();
+    }
+
+    cleanupMockHistory();
+
+    // REMOVE rule
+    QVariantMap removeParams;
+    removeParams.insert("ruleId", ruleId);
+    response = injectAndWait("Rules.RemoveRule", removeParams);
+    verifyRuleError(response);
+}
+
+void TestRules::findRule()
+{
+    // ADD rule
+    QVariantMap params = validIntStateBasedRule("Executeable", true, true).toMap();
+    QVariant response = injectAndWait("Rules.AddRule", params);
+    verifyRuleError(response);
+
+    RuleId ruleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
+    QVERIFY(!ruleId.isNull());
+
+    params.clear();
+    params.insert("deviceId", m_mockDeviceId);
+    response = injectAndWait("Rules.FindRules", params);
+
+    QCOMPARE(response.toMap().value("params").toMap().value("ruleIds").toList().count(), 1);
+    QCOMPARE(response.toMap().value("params").toMap().value("ruleIds").toList().first().toString(), ruleId.toString());
+
+    // REMOVE rule
+    QVariantMap removeParams;
+    removeParams.insert("ruleId", ruleId);
+    response = injectAndWait("Rules.RemoveRule", removeParams);
+    verifyRuleError(response);
+
 }
 
 void TestRules::removeInvalidRule()
@@ -1362,6 +1527,70 @@ void TestRules::testEventBasedAction()
 
     verifyRuleExecuted(mockActionIdWithParams);
     // TODO: check if this action was realy executed with the int state value 42
+}
+
+void TestRules::testRuleActionParams_data()
+{
+    QVariantMap action;
+    QVariantList ruleActionParams;
+    QVariantMap param1;
+    param1.insert("name", "mockActionParam1");
+    param1.insert("value", 4);
+    QVariantMap param2;
+    param2.insert("name", "mockActionParam2");
+    param2.insert("value", true);
+    ruleActionParams.append(param1);
+    ruleActionParams.append(param2);
+    action.insert("actionTypeId", mockActionIdWithParams);
+    action.insert("deviceId", m_mockDeviceId);
+    action.insert("ruleActionParams", ruleActionParams);
+
+    QVariantMap invalidAction1;
+    invalidAction1.insert("actionTypeId", mockActionIdWithParams);
+    invalidAction1.insert("deviceId", m_mockDeviceId);
+    invalidAction1.insert("ruleActionParams", QVariantList() << param2);
+
+    QVariantMap invalidAction2;
+    invalidAction2.insert("actionTypeId", mockActionIdWithParams);
+    invalidAction2.insert("deviceId", m_mockDeviceId);
+    invalidAction2.insert("ruleActionParams", QVariantList() << param1);
+
+
+    QTest::addColumn<QVariantMap>("action");
+    QTest::addColumn<QVariantMap>("exitAction");
+    QTest::addColumn<RuleEngine::RuleError>("error");
+
+    QTest::newRow("valid action params") << action << QVariantMap() << RuleEngine::RuleErrorNoError;
+    QTest::newRow("valid action and exit action params") << action << action << RuleEngine::RuleErrorNoError;
+    QTest::newRow("invalid action params1") << invalidAction1 << QVariantMap() << RuleEngine::RuleErrorInvalidRuleActionParameter;
+    QTest::newRow("invalid action params2") << invalidAction2 << QVariantMap() << RuleEngine::RuleErrorInvalidRuleActionParameter;
+    QTest::newRow("valid action and invalid exit action params1") << action << invalidAction1 << RuleEngine::RuleErrorInvalidRuleActionParameter;
+    QTest::newRow("valid action and invalid exit action params2") << action << invalidAction2 << RuleEngine::RuleErrorInvalidRuleActionParameter;
+
+}
+
+void TestRules::testRuleActionParams()
+{
+
+    QFETCH(QVariantMap, action);
+    QFETCH(QVariantMap, exitAction);
+    QFETCH(RuleEngine::RuleError, error);
+
+
+    // Add a rule
+    QVariantMap addRuleParams;
+    addRuleParams.insert("name", "TestRule");
+    addRuleParams.insert("enabled", true);
+    if (!action.isEmpty())
+        addRuleParams.insert("actions", QVariantList() << action);
+    if (!exitAction.isEmpty())
+        addRuleParams.insert("exitActions", QVariantList() << exitAction);
+
+    QVariant response = injectAndWait("Rules.AddRule", addRuleParams);
+    verifyRuleError(response, error);
+
+
+
 }
 
 #include "testrules.moc"

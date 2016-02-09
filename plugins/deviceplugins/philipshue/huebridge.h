@@ -30,10 +30,13 @@ class HueBridge : public QObject
 {
     Q_OBJECT
 public:
-    explicit HueBridge(QString apiKey, QHostAddress hostAddress, QObject *parent = 0);
+    explicit HueBridge(QObject *parent = 0);
 
     QString name() const;
     void setName(const QString &name);
+
+    QString id() const;
+    void setId(const QString &id);
 
     QString apiKey() const;
     void setApiKey(const QString &apiKey);
@@ -56,7 +59,13 @@ public:
     QList<HueLight *> lights() const;
     void addLight(HueLight *light);
 
+    QPair<QNetworkRequest, QByteArray> createDiscoverLightsRequest();
+    QPair<QNetworkRequest, QByteArray> createSearchLightsRequest();
+    QPair<QNetworkRequest, QByteArray> createSearchSensorsRequest();
+    QPair<QNetworkRequest, QByteArray> createCheckUpdatesRequest();
+
 private:
+    QString m_id;
     QString m_apiKey;
     QHostAddress m_hostAddress;
     QString m_name;

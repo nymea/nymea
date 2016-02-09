@@ -18,8 +18,6 @@
             \li The logical OR \tt | operator for two \l{State}{States}
     \endtable
         
-
-
     \chapter Types::ValueOperator
     \table
         \header
@@ -100,7 +98,6 @@
             \li 9
             \li The \l{ParamType} indicates that a MAC hardware address is requested as \l{Types::InputType}{InputType}.
     \endtable
-
 
     \chapter Types::Unit
     \table

@@ -152,10 +152,10 @@ DeviceManager::DeviceError DevicePluginElro::executeAction(Device *device, const
 
     // send data to hardware resource
     if (transmitData(delay, rawData)) {
-        qCDebug(dcElro) << "transmitted" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
+        qCDebug(dcElro) << "Transmitted" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
         return DeviceManager::DeviceErrorNoError;
     } else {
-        qCWarning(dcElro) << "could not transmitt" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
+        qCWarning(dcElro) << "Could not transmitt" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
         return DeviceManager::DeviceErrorHardwareNotAvailable;
     }
 }
@@ -207,7 +207,7 @@ void DevicePluginElro::radioData(const QList<int> &rawData)
         return;
     }
 
-    qCDebug(dcElro) << "ELRO understands this protocol: " << binCode;
+    qCDebug(dcElro) << "Understands this protocol: " << binCode;
 
     if (binCode.left(20) == "00000100000000000001") {
         if (binCode.right(4) == "0100") {
@@ -257,5 +257,5 @@ void DevicePluginElro::radioData(const QList<int> &rawData)
         return;
     }
 
-    qCDebug(dcElro) << "Elro:" << group << buttonCode << power;
+    qCDebug(dcElro) << group << buttonCode << power;
 }

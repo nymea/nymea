@@ -22,6 +22,7 @@
 #ifndef DEVICECLASS_H
 #define DEVICECLASS_H
 
+#include "libguh.h"
 #include "typeutils.h"
 #include "types/vendor.h"
 #include "types/eventtype.h"
@@ -32,11 +33,13 @@
 #include <QList>
 #include <QUuid>
 
-class DeviceClass
+class LIBGUH_EXPORT DeviceClass
 {
     Q_GADGET
     Q_ENUMS(CreateMethod)
     Q_ENUMS(SetupMethod)
+    Q_ENUMS(BasicTag)
+
 public:
     enum CreateMethod {
         CreateMethodUser = 0x01,
@@ -52,6 +55,28 @@ public:
         SetupMethodPushButton
     };
 
+    enum BasicTag {
+        BasicTagService,
+        BasicTagDevice,
+        BasicTagSensor,
+        BasicTagActuator,
+        BasicTagLighting,
+        BasicTagEnergy,
+        BasicTagMultimedia,
+        BasicTagWeather,
+        BasicTagGateway,
+        BasicTagHeating,
+        BasicTagCooling,
+        BasicTagNotification,
+        BasicTagSecurity,
+        BasicTagTime,
+        BasicTagShading,
+        BasicTagAppliance,
+        BasicTagCamera,
+        BasicTagLock
+    };
+
+
     DeviceClass(const PluginId &pluginId = PluginId(), const VendorId &vendorId = VendorId(), const DeviceClassId &id = DeviceClassId());
 
     DeviceClassId id() const;
@@ -62,14 +87,20 @@ public:
     QString name() const;
     void setName(const QString &name);
 
+    QList<BasicTag> basicTags() const;
+    void setBasicTags(const QList<BasicTag> &basicTags);
+
     QList<StateType> stateTypes() const;
     void setStateTypes(const QList<StateType> &stateTypes);
+    bool hasStateType(const StateTypeId &stateTypeId);
 
     QList<EventType> eventTypes() const;
     void setEventTypes(const QList<EventType> &eventTypes);
+    bool hasEventType(const EventTypeId &eventTypeId);
 
     QList<ActionType> actionTypes() const;
     void setActionTypes(const QList<ActionType> &actionTypes);
+    bool hasActionType(const ActionTypeId &actionTypeId);
 
     QList<ParamType> paramTypes() const;
     void setParamTypes(const QList<ParamType> &paramTypes);
@@ -79,6 +110,7 @@ public:
 
     CreateMethods createMethods() const;
     void setCreateMethods(CreateMethods createMethods);
+
     SetupMethod setupMethod() const;
     void setSetupMethod(SetupMethod setupMethod);
 
@@ -92,6 +124,7 @@ private:
     VendorId m_vendorId;
     PluginId m_pluginId;
     QString m_name;
+    QList<BasicTag> m_basicTags;
     QList<StateType> m_stateTypes;
     QList<EventType> m_eventTypes;
     QList<EventType> m_allEventTypes;

@@ -27,8 +27,10 @@
 #include <QHostAddress>
 #include <QQueue>
 
+#include "libguh.h"
 #include "coaprequest.h"
 #include "coapreply.h"
+#include "coapobserveresource.h"
 
 /* Information about CoAP
  *
@@ -36,9 +38,10 @@
  * Blockwise transfers in CoAP                         : https://tools.ietf.org/html/draft-ietf-core-block-18
  * Constrained RESTful Environments (CoRE) Link Format : http://tools.ietf.org/html/rfc6690
  * Observing Resources in CoAP                         : https://tools.ietf.org/html/rfc7641
+ *
  */
 
-class Coap : public QObject
+class LIBGUH_EXPORT Coap : public QObject
 {
     Q_OBJECT
 
@@ -51,28 +54,36 @@ public:
     CoapReply *post(const CoapRequest &request, const QByteArray &data = QByteArray());
     CoapReply *deleteResource(const CoapRequest &request);
 
+    // Notifications for observable resources
+    CoapReply *enableResourceNotifications(const CoapRequest &request);
+    CoapReply *disableNotifications(const CoapRequest &request);
+
 private:
     QUdpSocket *m_socket;
 
     CoapReply *m_reply;
     QHash<int, CoapReply *> m_runningHostLookups;
+    QHash<QByteArray, CoapObserveResource> m_observeResources;
 
     QQueue<CoapReply *> m_replyQueue;
 
     void lookupHost();
     void sendRequest(CoapReply *reply, const bool &lookedUp = false);
     void sendData(const QHostAddress &hostAddress, const quint16 &port, const QByteArray &data);
-    void sendCoapPdu(const QHostAddress &hostAddress, const quint16 &port, const CoapPdu &pdu);
+    void sendCoapPdu(const QHostAddress &address, const quint16 &port, const CoapPdu &pdu);
 
-    void processResponse(const CoapPdu &pdu);
+    void processResponse(const CoapPdu &pdu, const QHostAddress &address, const quint16 &port);
     void processIdBasedResponse(CoapReply *reply, const CoapPdu &pdu);
     void processTokenBasedResponse(CoapReply *reply, const CoapPdu &pdu);
+
+    void processNotification(const CoapPdu &pdu, const QHostAddress &address, const quint16 &port);
 
     void processBlock1Response(CoapReply *reply, const CoapPdu &pdu);
     void processBlock2Response(CoapReply *reply, const CoapPdu &pdu);
 
 signals:
     void replyFinished(CoapReply *reply);
+    void notificationReceived(const CoapObserveResource &resource, const int &notificationNumber, const QByteArray &payload);
 
 private slots:
     void hostLookupFinished(const QHostInfo &hostInfo);
@@ -80,5 +91,6 @@ private slots:
     void onReplyTimeout();
     void onReplyFinished();
 };
+
 
 #endif // COAP_H

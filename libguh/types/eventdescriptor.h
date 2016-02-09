@@ -22,6 +22,7 @@
 #ifndef EVENTDESCRIPTOR_H
 #define EVENTDESCRIPTOR_H
 
+#include "libguh.h"
 #include "typeutils.h"
 #include "paramdescriptor.h"
 #include "event.h"
@@ -30,7 +31,7 @@
 #include <QVariantList>
 #include <QDebug>
 
-class EventDescriptor
+class LIBGUH_EXPORT EventDescriptor
 {
 public:
     EventDescriptor(const EventTypeId &eventTypeId, const DeviceId &deviceId, const QList<ParamDescriptor> &paramDescriptors = QList<ParamDescriptor>());
@@ -51,6 +52,7 @@ private:
     DeviceId m_deviceId;
     QList<ParamDescriptor> m_paramDescriptors;
 };
+
 QDebug operator<<(QDebug dbg, const EventDescriptor &eventDescriptor);
 QDebug operator<<(QDebug dbg, const QList<EventDescriptor> &eventDescriptors);
 

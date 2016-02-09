@@ -147,7 +147,7 @@ QList<QVariant> ParamType::allowedValues() const
 }
 
 /*! Sets the list of the allowed values of this ParamType to the given List of \a allowedValues. */
-void ParamType::setAllowedValues(const QList<QVariant> allowedValues)
+void ParamType::setAllowedValues(const QList<QVariant> &allowedValues)
 {
     m_allowedValues = allowedValues;
 }

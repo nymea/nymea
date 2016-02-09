@@ -79,7 +79,6 @@
     \chapter Countdown
     The countdown plugin allowes you to define a countown which triggers an \l{Event} on timeout.
 
-
     \chapter Plugin properties
     Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}
     and \l{Vendor}{Vendors} of this \l{DevicePlugin}.
@@ -118,7 +117,7 @@ DevicePluginDateTime::DevicePluginDateTime() :
     m_timer = new QTimer(this);
     m_timer->setInterval(1000);
 
-    m_timeZone = QTimeZone(configValue("timezone").toByteArray());
+    m_timeZone = QTimeZone(QTimeZone::systemTimeZoneId());
     m_currentDateTime = QDateTime(QDate::currentDate(), QTime::currentTime(), m_timeZone);
 
     connect(m_timer, &QTimer::timeout, this, &DevicePluginDateTime::onSecondChanged);
@@ -130,37 +129,37 @@ DeviceManager::HardwareResources DevicePluginDateTime::requiredHardware() const
     return DeviceManager::HardwareResourceNetworkManager;
 }
 
-QList<ParamType> DevicePluginDateTime::configurationDescription() const
-{
-    QList<ParamType> params;
-    ParamType timezoneParamType("timezone", QVariant::String, "Europe/Vienna");
+//QList<ParamType> DevicePluginDateTime::configurationDescription() const
+//{
+//    QList<ParamType> params;
+//    ParamType timezoneParamType("timezone", QVariant::String, "Europe/Vienna");
 
-    QList<QVariant> allowedValues;
-    foreach (QByteArray timeZone, QTimeZone::availableTimeZoneIds()) {
-        allowedValues.append(timeZone);
-    }
-    timezoneParamType.setAllowedValues(allowedValues);
+//    QList<QVariant> allowedValues;
+//    foreach (QByteArray timeZone, QTimeZone::availableTimeZoneIds()) {
+//        allowedValues.append(timeZone);
+//    }
+//    timezoneParamType.setAllowedValues(allowedValues);
 
-    params.append(timezoneParamType);
-    return params;
-}
+//    params.append(timezoneParamType);
+//    return params;
+//}
 
 DeviceManager::DeviceSetupStatus DevicePluginDateTime::setupDevice(Device *device)
 {
     // check timezone
     if(!m_timeZone.isValid()){
-        qCWarning(dcDateTime) << "invalid time zone.";
+        qCWarning(dcDateTime) << "Invalid time zone.";
         return DeviceManager::DeviceSetupStatusFailure;
     }
 
     // date
     if (device->deviceClassId() == todayDeviceClassId) {
         if (m_todayDevice != 0) {
-            qCWarning(dcDateTime) << "there is already a date device or not deleted correctly! this should never happen!!";
+            qCWarning(dcDateTime) << "There is already a date device or not deleted correctly! this should never happen!!";
             return DeviceManager::DeviceSetupStatusFailure;
         }
         m_todayDevice = device;
-        qCDebug(dcDateTime) << "create today device: current time" << m_currentDateTime.currentDateTime().toString();
+        qCDebug(dcDateTime) << "Create today device: current time" << m_currentDateTime.currentDateTime().toString();
     }
 
     // alarm
@@ -199,7 +198,7 @@ DeviceManager::DeviceSetupStatus DevicePluginDateTime::setupDevice(Device *devic
         connect(countdown, &Countdown::countdownTimeout, this, &DevicePluginDateTime::onCountdownTimeout);
         connect(countdown, &Countdown::runningStateChanged, this, &DevicePluginDateTime::onCountdownRunningChanged);
 
-        qCDebug(dcDateTime) << "setup countdown" << countdown->name() << countdown->time().toString();
+        qCDebug(dcDateTime) << "Setup countdown" << countdown->name() << countdown->time().toString();
         m_countdowns.insert(device, countdown);
     }
 
@@ -311,7 +310,7 @@ void DevicePluginDateTime::searchGeoLocation()
     QNetworkRequest request;
     request.setUrl(QUrl("http://ip-api.com/json"));
 
-    qCDebug(dcDateTime) << "request geo location.";
+    qCDebug(dcDateTime) << "Requesting geo location.";
 
     QNetworkReply *reply = networkManagerGet(request);
     m_locationReplies.append(reply);
@@ -403,12 +402,12 @@ void DevicePluginDateTime::processTimesData(const QByteArray &data)
     m_dusk = QDateTime(QDate::currentDate(), QTime::fromString(duskString, "h:m:s AP"), Qt::UTC).toTimeZone(m_timeZone);
 
     // calculate the times in each alarm
-    qCDebug(dcDateTime) << " dawn     :" << m_dawn.toString();
-    qCDebug(dcDateTime) << " sunrise  :" << m_sunrise.toString();
-    qCDebug(dcDateTime) << " noon     :" << m_noon.toString();
-    qCDebug(dcDateTime) << " sunset   :" << m_sunset.toString();
-    qCDebug(dcDateTime) << " dusk     :" << m_dusk.toString();
-    qCDebug(dcDateTime) << "---------------------------------------------";
+    //    qCDebug(dcDateTime) << " dawn     :" << m_dawn.toString();
+    //    qCDebug(dcDateTime) << " sunrise  :" << m_sunrise.toString();
+    //    qCDebug(dcDateTime) << " noon     :" << m_noon.toString();
+    //    qCDebug(dcDateTime) << " sunset   :" << m_sunset.toString();
+    //    qCDebug(dcDateTime) << " dusk     :" << m_dusk.toString();
+    //    qCDebug(dcDateTime) << "---------------------------------------------";
 
     updateTimes();
 }
@@ -460,7 +459,7 @@ void DevicePluginDateTime::onSecondChanged()
 
 void DevicePluginDateTime::onMinuteChanged(const QDateTime &dateTime)
 {
-    qCDebug(dcDateTime) << "minute changed" << dateTime.toString();
+    //qCDebug(dcDateTime) << "minute changed" << dateTime.toString();
 
     // validate alerts
     foreach (Alarm *alarm, m_alarms.values()) {
@@ -470,7 +469,8 @@ void DevicePluginDateTime::onMinuteChanged(const QDateTime &dateTime)
 
 void DevicePluginDateTime::onHourChanged(const QDateTime &dateTime)
 {
-    qCDebug(dcDateTime) << "hour changed" <<  dateTime.toString();
+    Q_UNUSED(dateTime)
+    //qCDebug(dcDateTime) << "hour changed" <<  dateTime.toString();
     // check every hour in case we are offline in the wrong moment
     searchGeoLocation();
 }

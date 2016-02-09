@@ -24,9 +24,11 @@
 
 #include <QVariant>
 #include <QDebug>
+
+#include "libguh.h"
 #include "typeutils.h"
 
-class ParamType
+class LIBGUH_EXPORT ParamType
 {
 public:    
     ParamType(const QString &name, const QVariant::Type type, const QVariant &defaultValue = QVariant());
@@ -56,7 +58,7 @@ public:
     void setLimits(const QVariant &min, const QVariant &max);
 
     QList<QVariant> allowedValues() const;
-    void setAllowedValues(const QList<QVariant> allowedValues);
+    void setAllowedValues(const QList<QVariant> &allowedValues);
 
     bool readOnly() const;
     void setReadOnly(const bool &readOnly);

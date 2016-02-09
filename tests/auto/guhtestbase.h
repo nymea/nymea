@@ -23,6 +23,7 @@
 #define GUHTESTBASE_H
 
 #include "typeutils.h"
+#include "logging/logging.h"
 #include "mocktcpserver.h"
 #include "devicemanager.h"
 #include "ruleengine.h"
@@ -37,6 +38,9 @@
 extern DeviceClassId mockDeviceClassId;
 extern DeviceClassId mockDeviceAutoClassId;
 extern DeviceClassId mockPushButtonDeviceClassId;
+extern DeviceClassId mockDisplayPinDeviceClassId;
+extern DeviceClassId mockParentDeviceClassId;
+extern DeviceClassId mockChildDeviceClassId;
 extern DeviceClassId mockDeviceDiscoveryClassId;
 extern DeviceClassId mockDeviceAsyncSetupClassId;
 extern DeviceClassId mockDeviceBrokenClassId;
@@ -69,6 +73,13 @@ protected:
     QVariant injectAndWait(const QString &method, const QVariantMap &params = QVariantMap());
     QVariant checkNotification(const QSignalSpy &spy, const QString &notification);
 
+    QVariant getAndWait(const QNetworkRequest &request, const int &expectedStatus = 200);
+    QVariant deleteAndWait(const QNetworkRequest &request, const int &expectedStatus = 200);
+    QVariant postAndWait(const QNetworkRequest &request, const QVariant &params, const int &expectedStatus = 200);
+    QVariant putAndWait(const QNetworkRequest &request, const QVariant &params, const int &expectedStatus = 200);
+
+    void verifyReply(QNetworkReply *reply, const QByteArray &data, const int &expectedStatus);
+
     bool enableNotifications();
     bool disableNotifications();
 
@@ -96,6 +107,10 @@ protected:
         verifyError(response, "deviceError", JsonTypes::deviceErrorToString(error));
     }
 
+    inline void verifyLoggingError(const QVariant &response, Logging::LoggingError error = Logging::LoggingErrorNoError) {
+        verifyError(response, "loggingError", JsonTypes::loggingErrorToString(error));
+    }
+
     inline void verifyParams(const QVariantList &requestList, const QVariantList &responseList, bool allRequired = true)
     {
         if (allRequired)
@@ -121,6 +136,7 @@ protected:
     }
 
     void restartServer();
+    void clearLoggingDatabase();
 
 protected:
     PluginId mockPluginId = PluginId("727a4a9a-c187-446f-aadf-f1b2220607d1");

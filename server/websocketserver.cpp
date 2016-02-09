@@ -85,6 +85,8 @@ WebSocketServer::WebSocketServer(const QSslConfiguration &sslConfiguration, QObj
 /*! Destructor of this \l{WebSocketServer}. */
 WebSocketServer::~WebSocketServer()
 {
+    qCDebug(dcApplication) << "Shutting down \"Websocket server\"";
+    stopServer();
 }
 
 /*! Send the given \a data map to the client with the given \a clientId.
@@ -216,11 +218,10 @@ bool WebSocketServer::startServer()
  */
 bool WebSocketServer::stopServer()
 {
-    qCDebug(dcConnection) << "Stopping websocket server";
     m_server->close();
     delete m_server;
     m_server = 0;
-    return false;
+    return true;
 }
 
 }

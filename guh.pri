@@ -2,7 +2,7 @@
 GUH_VERSION_STRING=$$system('dpkg-parsechangelog | sed -n -e "s/^Version: //p"')
 
 # define protocol versions
-JSON_PROTOCOL_VERSION=32
+JSON_PROTOCOL_VERSION=35
 REST_API_VERSION=1
 
 DEFINES += GUH_VERSION_STRING=\\\"$${GUH_VERSION_STRING}\\\" \
@@ -11,8 +11,8 @@ DEFINES += GUH_VERSION_STRING=\\\"$${GUH_VERSION_STRING}\\\" \
 
 QT+= network
 
-QMAKE_CXXFLAGS += -Werror
-CONFIG += c++11
+QMAKE_CXXFLAGS += -Werror -std=c++11
+QMAKE_LFLAGS += -std=c++11
 
 !snappy {
     # Check for Bluetoot LE support (Qt >= 5.4)

@@ -11,6 +11,9 @@
     \chapter Hardware Resources
     \annotatedlist hardware
 
+    \chapter CoAP
+    \annotatedlist coap
+
 */
 
 

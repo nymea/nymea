@@ -80,6 +80,7 @@
 #include <QJsonDocument>
 #include <QNetworkInterface>
 #include <QXmlStreamWriter>
+#include <QCoreApplication>
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QSslSocket>
@@ -120,6 +121,11 @@ WebServer::WebServer(const QSslConfiguration &sslConfiguration, QObject *parent)
     if (!m_webinterfaceDir.exists())
         qCWarning(dcWebServer) << "Web interface public folder" << m_webinterfaceDir.path() << "does not exist.";
 
+    if (QCoreApplication::instance()->organizationName() == "guh-test") {
+        m_webinterfaceDir = QDir(QCoreApplication::applicationDirPath());
+        qCWarning(dcWebServer) << "Using public folder" << m_webinterfaceDir.path();
+    }
+
     // check SSL
     if (m_useSsl && m_sslConfiguration.isNull())
         m_useSsl = false;
@@ -129,6 +135,7 @@ WebServer::WebServer(const QSslConfiguration &sslConfiguration, QObject *parent)
 /*! Destructor of this \l{WebServer}. */
 WebServer::~WebServer()
 {
+    qCDebug(dcApplication) << "Shutting down \"Webserver\"";
     this->close();
 }
 
@@ -600,10 +607,10 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
 
     writer.writeStartElement("device");
     writer.writeTextElement("deviceType", "urn:schemas-upnp-org:device:Basic:1");
-    writer.writeTextElement("friendlyName", "guhd");
-    writer.writeTextElement("manufacturer", "guh");
-    writer.writeTextElement("manufacturerURL", "http://guh.guru");
-    writer.writeTextElement("modelDescription", "Home automation server");
+    writer.writeTextElement("friendlyName", "guhIO");
+    writer.writeTextElement("manufacturer", "guh GmbH");
+    writer.writeTextElement("manufacturerURL", "http://guh.io");
+    writer.writeTextElement("modelDescription", "IoT server");
     writer.writeTextElement("modelName", "guhd");
     writer.writeTextElement("modelNumber", GUH_VERSION_STRING);
     writer.writeTextElement("modelURL", "http://guh.io"); // (optional)

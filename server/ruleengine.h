@@ -24,6 +24,7 @@
 
 #include "rule.h"
 #include "types/event.h"
+#include "plugin/deviceclass.h"
 #include "stateevaluator.h"
 
 #include <QObject>
@@ -44,11 +45,13 @@ public:
         RuleErrorRuleNotFound,
         RuleErrorDeviceNotFound,
         RuleErrorEventTypeNotFound,
+        RuleErrorStateTypeNotFound,
         RuleErrorActionTypeNotFound,
         RuleErrorInvalidParameter,
         RuleErrorInvalidRuleFormat,
         RuleErrorMissingParameter,
         RuleErrorInvalidRuleActionParameter,
+        RuleErrorInvalidStateEvaluatorValue,
         RuleErrorTypesNotMatching,
         RuleErrorNotExecutable,
         RuleErrorContainsEventBasesAction,
@@ -61,6 +64,7 @@ public:
     };
 
     explicit RuleEngine(QObject *parent = 0);
+    ~RuleEngine();
 
     QList<Rule> evaluateEvent(const Event &event);
 

@@ -34,7 +34,7 @@ void TvEventHandler::incomingConnection(qintptr socket)
 {
     QTcpSocket* tcpSocket = new QTcpSocket(this);
     tcpSocket->setSocketDescriptor(socket);
-    qCDebug(dcLgSmartTv) << "event handler -> incoming connection" << tcpSocket->peerAddress().toString() << tcpSocket->peerName();
+    qCDebug(dcLgSmartTv) << "Event handler -> incoming connection" << tcpSocket->peerAddress().toString() << tcpSocket->peerName();
 
     connect(tcpSocket, &QTcpSocket::readyRead, this, &TvEventHandler::readClient);
     connect(tcpSocket, &QTcpSocket::disconnected, this, &TvEventHandler::onDisconnected);
@@ -48,7 +48,7 @@ void TvEventHandler::readClient()
     if(socket->peerAddress() != m_host){
         socket->close();
         socket->deleteLater();
-        qCWarning(dcLgSmartTv) << "event handler -> rejecting connection from " << socket->peerAddress().toString();
+        qCWarning(dcLgSmartTv) << "Event handler -> rejecting connection from " << socket->peerAddress().toString();
         return;
     }
 

@@ -43,13 +43,13 @@ public:
     DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
 
     DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
+    void postSetupDevice(Device *device) override;
     void deviceRemoved(Device *device) override;
 
     void startMonitoringAutoDevices() override;
 
     DeviceManager::DeviceSetupStatus confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret) override;
-
-    QList<ParamType> configurationDescription() const override;
+    DeviceManager::DeviceError displayPin(const PairingTransactionId &pairingTransactionId, const DeviceDescriptor &deviceDescriptor) override;
 
 public slots:
     DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
@@ -59,11 +59,14 @@ private slots:
     void triggerEvent(const EventTypeId &id);
     void emitDevicesDiscovered();
     void emitPushButtonDevicesDiscovered();
+    void emitDisplayPinDevicesDiscovered();
     void emitDeviceSetupFinished();
     void emitActionExecuted();
 
     void onPushButtonPressed();
     void onPushButtonPairingFinished();
+    void onDisplayPinPairingFinished();
+    void onChildDeviceDiscovered(const DeviceId &parentId);
 
 private:
     QHash<Device*, HttpDaemon*> m_daemons;

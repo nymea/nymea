@@ -25,19 +25,25 @@
 #include <QCommandLineOption>
 #include <QMessageLogger>
 #include <QStringList>
+#include <QTextStream>
+#include <QDateTime>
 #include <QtPlugin>
+#include <QtDebug>
+#include <QFile>
 
+#include "stdio.h"
 #include "unistd.h"
 #include "guhcore.h"
 #include "guhservice.h"
+#include "guhsettings.h"
+#include "guhapplication.h"
 #include "loggingcategories.h"
 
-
-QHash<QString, bool> s_loggingFilters;
+static QHash<QString, bool> s_loggingFilters;
 
 using namespace guhserver;
 
-void loggingCategoryFilter(QLoggingCategory *category)
+static void loggingCategoryFilter(QLoggingCategory *category)
 {
     if (s_loggingFilters.contains(category->categoryName())) {
         bool debugEnabled = s_loggingFilters.value(category->categoryName());
@@ -49,9 +55,44 @@ void loggingCategoryFilter(QLoggingCategory *category)
     }
 }
 
+static void consoleLogHandler(QtMsgType type, const QMessageLogContext& context, const QString& message)
+{
+    QString messageString;
+    QString timeString = QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz");
+    switch (type) {
+    case QtDebugMsg:
+        messageString = QString(" I %1 | %2: %3").arg(timeString).arg(context.category).arg(message);
+        fprintf(stdout, " I | %s: %s\n", context.category, message.toUtf8().data());
+        break;
+    case QtWarningMsg:
+        messageString = QString(" W %1 | %2: %3").arg(timeString).arg(context.category).arg(message);
+        fprintf(stdout, " W | %s: %s\n", context.category, message.toUtf8().data());
+        break;
+    case QtCriticalMsg:
+        messageString = QString(" C %1 | %2: %3").arg(timeString).arg(context.category).arg(message);
+        fprintf(stdout, " C | %s: %s\n", context.category, message.toUtf8().data());
+        break;
+    case QtFatalMsg:
+        messageString = QString(" F %1 | %2: %3").arg(timeString).arg(context.category).arg(message);
+        fprintf(stdout, " F | %s: %s\n", context.category, message.toUtf8().data());
+        break;
+    }
+
+    QFile logFile(GuhSettings::consoleLogPath());
+    if (!logFile.open(QIODevice::WriteOnly | QIODevice::Append)) {
+        fprintf(stdout, " W | Application: Could not open logfile.\n");
+        return;
+    }
+    QTextStream textStream(&logFile);
+    textStream << messageString << endl;
+    logFile.close();
+}
+
 int main(int argc, char *argv[])
 {
-    QCoreApplication application(argc, argv);
+    qInstallMessageHandler(consoleLogHandler);
+
+    GuhApplication application(argc, argv);
     application.setOrganizationName("guh");
     application.setApplicationName("guhd");
     application.setApplicationVersion(GUH_VERSION_STRING);
@@ -66,8 +107,8 @@ int main(int argc, char *argv[])
     s_loggingFilters.insert("LogEngine", false);
     s_loggingFilters.insert("TcpServer", false);
     s_loggingFilters.insert("WebServer", true);
-    s_loggingFilters.insert("WebSocketServer", false);
-    s_loggingFilters.insert("JsonRpc", false);
+    s_loggingFilters.insert("WebSocketServer", true);
+    s_loggingFilters.insert("JsonRpc", true);
     s_loggingFilters.insert("Rest", true);
     s_loggingFilters.insert("OAuth2", false);
 
@@ -79,11 +120,14 @@ int main(int argc, char *argv[])
     QCommandLineParser parser;
     parser.addHelpOption();
     parser.addVersionOption();
-    QString applicationDescription = QString("\nguh ( /[guːh]/ ) is an open source home automation server, which allows to\n"
-                                             "control a lot of different devices from many different manufacturers.\n\n"
-                                             "guhd %1 (C) 2014-2015 guh\n"
+    QString applicationDescription = QString("\nguh ( /[guːh]/ ) is an open source IoT (Internet of Things) server, \n"
+                                             "which allows to control a lot of different devices from many different \n"
+                                             "manufacturers. With the powerful rule engine you are able to connect any \n"
+                                             "device available in the system and create individual scenes and behaviors \n"
+                                             "for your environment.\n\n"
+                                             "guhd %1 %2 2014-2016 guh GmbH\n"
                                              "Released under the GNU GENERAL PUBLIC LICENSE Version 2.\n\n"
-                                             "API version: %2\n").arg(GUH_VERSION_STRING).arg(JSON_PROTOCOL_VERSION);
+                                             "API version: %3\n").arg(GUH_VERSION_STRING).arg(QChar(0xA9)).arg(JSON_PROTOCOL_VERSION);
 
     parser.setApplicationDescription(applicationDescription);
 
@@ -98,6 +142,7 @@ int main(int argc, char *argv[])
     foreach (const QString &filterName, sortedFilterList) {
         debugDescription += "\n- " + filterName + " (" + (s_loggingFilters.value(filterName) ? "yes" : "no") + ")";
     }
+
     // create sorted plugin loggingFiler list
     QStringList sortedPluginList = QStringList(loggingFiltersPlugins.keys());
     sortedPluginList.sort();
@@ -106,7 +151,9 @@ int main(int argc, char *argv[])
         debugDescription += "\n- " + filterName + " (" + (s_loggingFilters.value(filterName) ? "yes" : "no") + ")";
     }
 
-    QCommandLineOption debugOption(QStringList() << "d" << "debug", debugDescription, "[No]DebugCategory");
+    QCommandLineOption allOption(QStringList() << "p" << "print-all", "Enables all debug categories. This parameter overrides all debug category parameters.");
+    parser.addOption(allOption);
+    QCommandLineOption debugOption(QStringList() << "d" << "debug-category", debugDescription, "[No]DebugCategory");
     parser.addOption(debugOption);
 
     parser.process(application);
@@ -117,14 +164,20 @@ int main(int argc, char *argv[])
     }
 
     // check debug area
-    foreach (QString debugArea, parser.values(debugOption)) {
-        bool enable = !debugArea.startsWith("No");
-        debugArea.remove(QRegExp("^No"));
-        if (s_loggingFilters.contains(debugArea)) {
-            s_loggingFilters[debugArea] = enable;
-        } else {
-            qCWarning(dcApplication) << "No such debug category:" << debugArea;
+    if (!parser.isSet(allOption)) {
+        foreach (QString debugArea, parser.values(debugOption)) {
+            bool enable = !debugArea.startsWith("No");
+            debugArea.remove(QRegExp("^No"));
+            if (s_loggingFilters.contains(debugArea)) {
+                s_loggingFilters[debugArea] = enable;
+            } else {
+                qCWarning(dcApplication) << "No such debug category:" << debugArea;
+            }
         }
+    } else {
+        foreach (const QString &debugArea, s_loggingFilters.keys())
+            s_loggingFilters[debugArea] = true;
+
     }
     QLoggingCategory::installFilter(loggingCategoryFilter);
 
@@ -133,9 +186,13 @@ int main(int argc, char *argv[])
         // inform about userid
         int userId = getuid();
         if (userId != 0) {
-            qCDebug(dcApplication) << "guhd started as user with ID" << userId;
+            qCDebug(dcApplication) << "=====================================";
+            qCDebug(dcApplication) << "guhd" << GUH_VERSION_STRING << "started with user ID" << userId;
+            qCDebug(dcApplication) << "=====================================";
         } else {
-            qCDebug(dcApplication) << "guhd started as root.";
+            qCDebug(dcApplication) << "=====================================";
+            qCDebug(dcApplication) << "guhd" << GUH_VERSION_STRING << "started as root.";
+            qCDebug(dcApplication) << "=====================================";
         }
 
 #ifdef SNAPPY
@@ -146,7 +203,7 @@ int main(int argc, char *argv[])
         qCDebug(dcApplication) << "Snappy app  data:" << qgetenv("SNAP_APP_DATA_PATH");
 #endif
         // create core instance
-        GuhCore::instance()->setRunningMode(GuhCore::RunningModeApplication);
+        GuhCore::instance();
         return application.exec();
     }
 

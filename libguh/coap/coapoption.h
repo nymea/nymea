@@ -25,7 +25,9 @@
 #include <QObject>
 #include <QByteArray>
 
-class CoapOption
+#include "libguh.h"
+
+class LIBGUH_EXPORT CoapOption
 {
     Q_GADGET
     Q_ENUMS(Option)
@@ -37,6 +39,7 @@ public:
         UriHost       = 3,
         ETag          = 4,
         IfNoneMatch   = 5,
+        Observe       = 6, // (Observe) https://tools.ietf.org/html/rfc7641
         UriPort       = 7,
         LocationPath  = 8,
         UriPath       = 11,
@@ -45,7 +48,7 @@ public:
         UriQuery      = 15,
         Accept        = 17,
         LocationQuery = 20,
-        Block2        = 23, // (Block)
+        Block2        = 23, // (Block) https://tools.ietf.org/html/draft-ietf-core-block-18
         Block1        = 27, // (Block)
         ProxyUri      = 35,
         ProxyScheme   = 39,

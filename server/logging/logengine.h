@@ -38,8 +38,11 @@ class LogEngine: public QObject
     Q_OBJECT
 public:
     LogEngine(QObject *parent = 0);
+    ~LogEngine();
 
     QList<LogEntry> logEntries(const LogFilter &filter = LogFilter()) const;
+
+    void clearDatabase();
 
 signals:
     void logEntryAdded(const LogEntry &logEntry);
@@ -47,6 +50,7 @@ signals:
 
 private:
     QSqlDatabase m_db;
+    int m_dbMaxSize;
 
     void initDB();
     void appendLogEntry(const LogEntry &entry);

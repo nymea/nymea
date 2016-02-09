@@ -26,10 +26,10 @@
     \ingroup network
 
     This plugin allows you to connect guh to a 6LoWPAN network by adding a Mercury Board from OSDomotics
-    as a RPL router to your devices \l{OSDomotics Tutorial}{http://osdwiki.open-entry.com/doku.php/de:tutorials:contiki:merkur_board_rpl_usb_router}.
+    as a RPL router to your devices \l{http://osdwiki.open-entry.com/doku.php/de:tutorials:contiki:merkur_board_rpl_usb_router}{OSDomotics Tutorial- RPL Router}.
     All nodes in the 6LoWPAN network of the added RPL router will appear automatically in the system.
 
-    \note Currently the plugin recognizes only one node. That node has to be flashed like the Node in this \l{OSDomotics tutorial}{http://osdwiki.open-entry.com/doku.php/de:tutorials:contiki:use_example_firmware}.
+    \note Currently the plugin recognizes only one node. That node has to be flashed like the Node in this \l{http://osdwiki.open-entry.com/doku.php/de:tutorials:contiki:use_example_firmware}{OSDomotics Tutorial - Firmware}.
 
     \chapter Plugin properties
     Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}
@@ -66,7 +66,7 @@ DeviceManager::DeviceSetupStatus DevicePluginOsdomotics::setupDevice(Device *dev
 {
 
     if (device->deviceClassId() == rplRouterDeviceClassId) {
-        qCDebug(dcOsdomotics) << "setup RPL router" << device->paramValue("host").toString();
+        qCDebug(dcOsdomotics) << "Setup RPL router" << device->paramValue("host").toString();
         QHostAddress address(device->paramValue("host").toString());
 
         if (address.isNull()) {
@@ -83,7 +83,7 @@ DeviceManager::DeviceSetupStatus DevicePluginOsdomotics::setupDevice(Device *dev
 
         return DeviceManager::DeviceSetupStatusAsync;
     } else if (device->deviceClassId() == merkurNodeDeviceClassId) {
-        qCDebug(dcOsdomotics) << "setup Merkur node" << device->paramValue("host").toString();
+        qCDebug(dcOsdomotics) << "Setup Merkur node" << device->paramValue("host").toString();
         device->setParentId(DeviceId(device->paramValue("router id").toString()));
         return DeviceManager::DeviceSetupStatusSuccess;
     }
@@ -215,7 +215,7 @@ void DevicePluginOsdomotics::parseNodes(Device *device, const QByteArray &data)
     url.setHost(nodeAddress.toString());
     url.setPath("/.well-known/core");
 
-    qCDebug(dcOsdomotics) << "discover node on" << url.toString();
+    qCDebug(dcOsdomotics) << "Discover node on" << url.toString();
 
     CoapReply *reply = m_coap->get(CoapRequest(url));
     if (reply->isFinished()) {

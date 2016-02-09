@@ -1,4 +1,4 @@
-32
+35
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -533,6 +533,26 @@
                 "$ref:ParamType"
             ]
         },
+        "BasicTag": [
+            "BasicTagService",
+            "BasicTagDevice",
+            "BasicTagSensor",
+            "BasicTagActuator",
+            "BasicTagLighting",
+            "BasicTagEnergy",
+            "BasicTagMultimedia",
+            "BasicTagWeather",
+            "BasicTagGateway",
+            "BasicTagHeating",
+            "BasicTagCooling",
+            "BasicTagNotification",
+            "BasicTagSecurity",
+            "BasicTagTime",
+            "BasicTagShading",
+            "BasicTagAppliance",
+            "BasicTagCamera",
+            "BasicTagLock"
+        ],
         "BasicType": [
             "Uuid",
             "String",
@@ -562,6 +582,9 @@
         "DeviceClass": {
             "actionTypes": [
                 "$ref:ActionType"
+            ],
+            "basicTags": [
+                "$ref:BasicTag"
             ],
             "createMethods": [
                 "$ref:CreateMethod"
@@ -756,11 +779,13 @@
             "RuleErrorRuleNotFound",
             "RuleErrorDeviceNotFound",
             "RuleErrorEventTypeNotFound",
+            "RuleErrorStateTypeNotFound",
             "RuleErrorActionTypeNotFound",
             "RuleErrorInvalidParameter",
             "RuleErrorInvalidRuleFormat",
             "RuleErrorMissingParameter",
             "RuleErrorInvalidRuleActionParameter",
+            "RuleErrorInvalidStateEvaluatorValue",
             "RuleErrorTypesNotMatching",
             "RuleErrorNotExecutable",
             "RuleErrorContainsEventBasesAction",
@@ -798,6 +823,11 @@
             "defaultValue": "Variant",
             "id": "Uuid",
             "name": "String",
+            "o:maxValue": "Variant",
+            "o:minValue": "Variant",
+            "o:possibleValues": [
+                "Variant"
+            ],
             "o:unit": "$ref:Unit",
             "type": "$ref:BasicType"
         },
@@ -838,6 +868,7 @@
             "UnitKiloWatt",
             "UnitKiloWattHour",
             "UnitEuroPerMegaWattHour",
+            "UnitEuroCentPerKiloWattHour",
             "UnitPercentage",
             "UnitPartsPerMillion",
             "UnitEuro",

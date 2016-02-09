@@ -126,10 +126,10 @@ DeviceManager::DeviceError DevicePluginConrad::executeAction(Device *device, con
     // =======================================
     // send data to driver
     if(transmitData(delay, rawData, repetitions)){
-        qCDebug(dcConrad) << "transmitted successfully" << pluginName() << device->name() << action.actionTypeId();
+        qCDebug(dcConrad) << "Transmitted successfully" << device->name() << action.actionTypeId();
         return DeviceManager::DeviceErrorNoError;
     }else{
-        qCWarning(dcConrad) << "could not transmitt" << pluginName() << device->name() << action.actionTypeId();
+        qCWarning(dcConrad) << "Could not transmitt" << pluginName() << device->name() << action.actionTypeId();
         return DeviceManager::DeviceErrorHardwareNotAvailable;
     }
 }
@@ -184,5 +184,5 @@ void DevicePluginConrad::radioData(const QList<int> &rawData)
         return;
     }
 
-    qCDebug(dcConrad) << "Conrad: " << binCode.left(binCode.length() - 24) << "  ID = " << binCode.right(24);
+    qCDebug(dcConrad) << binCode.left(binCode.length() - 24) << "  ID = " << binCode.right(24);
 }

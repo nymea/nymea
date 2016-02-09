@@ -24,9 +24,10 @@
 #include <QObject>
 #include <QDebug>
 
+#include "libguh.h"
 #include "coappdu.h"
 
-class CoreLink
+class LIBGUH_EXPORT CoreLink
 {
 public:
     CoreLink();

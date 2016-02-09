@@ -83,6 +83,7 @@ class JsonTypes
     Q_GADGET
     Q_ENUMS(BasicType)
     Q_ENUMS(JsonError)
+
 public:
     enum BasicType {
         Uuid,
@@ -99,6 +100,7 @@ public:
     static QVariantMap allTypes();
 
     DECLARE_TYPE(basicType, "BasicType", JsonTypes, BasicType)
+    DECLARE_TYPE(basicTag, "BasicTag", DeviceClass, BasicTag)
     DECLARE_TYPE(stateOperator, "StateOperator", Types, StateOperator)
     DECLARE_TYPE(valueOperator, "ValueOperator", Types, ValueOperator)
     DECLARE_TYPE(inputType, "InputType", Types, InputType)
@@ -112,6 +114,7 @@ public:
     DECLARE_TYPE(loggingSource, "LoggingSource", Logging, LoggingSource)
     DECLARE_TYPE(loggingLevel, "LoggingLevel", Logging, LoggingLevel)
     DECLARE_TYPE(loggingEventType, "LoggingEventType", Logging, LoggingEventType)
+
     DECLARE_OBJECT(paramType, "ParamType")
     DECLARE_OBJECT(param, "Param")
     DECLARE_OBJECT(paramDescriptor, "ParamDescriptor")
@@ -135,7 +138,7 @@ public:
     DECLARE_OBJECT(ruleDescription, "RuleDescription")
     DECLARE_OBJECT(logEntry, "LogEntry")
 
-    // pack types
+    // pack types    
     static QVariantMap packEventType(const EventType &eventType);
     static QVariantMap packEvent(const Event &event);
     static QVariantMap packEventDescriptor(const EventDescriptor &event);
@@ -176,6 +179,7 @@ public:
     static QVariantList packEventTypes(const DeviceClass &deviceClass);
     static QVariantList packPlugins();
 
+    static QString basicTypeToString(const QVariant::Type &type);
 
     // unpack Types
     static Param unpackParam(const QVariantMap &paramMap);

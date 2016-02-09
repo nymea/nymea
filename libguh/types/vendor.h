@@ -22,11 +22,12 @@
 #ifndef VENDOR_H
 #define VENDOR_H
 
+#include "libguh.h"
 #include "typeutils.h"
 
 #include <QString>
 
-class Vendor
+class LIBGUH_EXPORT Vendor
 {
 public:
     Vendor(const VendorId &id, const QString &name = QString());

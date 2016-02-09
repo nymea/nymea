@@ -2,6 +2,20 @@
     "name": "Mock Devices",
     "idName": "MockDevice",
     "id": "727a4a9a-c187-446f-aadf-f1b2220607d1",
+    "paramTypes": [
+        {
+            "name": "configParamInt",
+            "type": "int",
+            "defaultValue": 42,
+            "minValue": 1,
+            "maxValue": 50
+        },
+        {
+            "name": "configParamBool",
+            "type": "bool",
+            "defaultValue": true
+        }
+    ],
     "vendors": [
         {
             "name": "guh",
@@ -12,6 +26,11 @@
                     "deviceClassId": "753f0d32-0468-4d08-82ed-1964aab03298",
                     "idName": "mock",
                     "name": "Mock Device",
+                    "basicTags": [
+                        "Device",
+                        "Actuator",
+                        "Gateway"
+                    ],
                     "createMethods": ["user", "discovery"],
                     "discoveryParamTypes": [
                         {
@@ -115,6 +134,11 @@
                     "deviceClassId": "ab4257b3-7548-47ee-9bd4-7dc3004fd197",
                     "idName": "mockDeviceAuto",
                     "name": "Mock Device (Auto created)",
+                    "basicTags": [
+                        "Device",
+                        "Actuator",
+                        "Gateway"
+                    ],
                     "createMethods": ["auto"],
                     "paramTypes": [
                         {
@@ -207,6 +231,11 @@
                     "deviceClassId": "9e03144c-e436-4eea-82d9-ccb33ef778db",
                     "idName": "mockPushButton",
                     "name": "Mock Device (Push Button)",
+                    "basicTags": [
+                        "Device",
+                        "Actuator",
+                        "Gateway"
+                    ],
                     "createMethods": ["discovery"],
                     "setupMethod": "pushButton",
                     "pairingInfo": "Wait 3 second before you continue, the push button will be pressed automatically.",
@@ -234,7 +263,7 @@
                             "name": "color",
                             "type": "QColor",
                             "defaultValue": "#000000",
-                            "writable": {}
+                            "writable": true
                         },
                         {
                             "id": "72981c04-267a-4ba0-a59e-9921d2f3af9c",
@@ -243,10 +272,9 @@
                             "type": "int",
                             "unit": "Percentage",
                             "defaultValue": 0,
-                            "writable": {
-                                "minValue": 0,
-                                "maxValue": 100
-                            }
+                            "minValue": 0,
+                            "maxValue": 100,
+                            "writable": true
                         },
                         {
                             "id": "05f63f9c-f61e-4dcf-ad55-3f13fde2765b",
@@ -254,14 +282,13 @@
                             "name": "allowed values",
                             "type": "QString",
                             "defaultValue": "String value 1",
-                            "writable": {
-                                "allowedValues": [
-                                    "String value 1",
-                                    "String value 2",
-                                    "String value 3",
-                                    "String value 4"
-                                ]
-                            }
+                            "possibleValues": [
+                                "String value 1",
+                                "String value 2",
+                                "String value 3",
+                                "String value 4"
+                            ],
+                            "writable": true
                         }
                     ],
                     "actionTypes": [
@@ -269,6 +296,212 @@
                             "id": "54646e7c-bc54-4895-81a2-590d72d120f9",
                             "idName": "timeout",
                             "name": "Timout action"
+                        }
+                    ]
+                },
+                {
+                    "deviceClassId": "296f1fd4-e893-46b2-8a42-50d1bceb8730",
+                    "idName": "mockDisplayPin",
+                    "name": "Mock Device (Display Pin)",
+                    "basicTags": [
+                        "Device",
+                        "Actuator",
+                        "Gateway"
+                    ],
+                    "createMethods": ["discovery"],
+                    "setupMethod": "displayPin",
+                    "pairingInfo": "Please enter the secret which normaly will be displayed on the device. For the mockdevice the pin is 243681.",
+                    "discoveryParamTypes": [
+                        {
+                            "name": "resultCount",
+                            "type": "int",
+                            "defaultValue": 2,
+                            "allowedValues": [1, 2]
+                        }
+                    ],
+                    "paramTypes": [
+                        {
+                            "name": "name",
+                            "type": "QString",
+                            "inputType": "TextLine",
+                            "defaultValue": "Mock device",
+                            "readOnly": true
+                        },
+                        {
+                            "name": "pin",
+                            "type": "QString",
+                            "inputType": "TextLine",
+                            "defaultValue": "243681",
+                            "readOnly": true
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "20dc7c22-c50e-42db-837c-2bbced939f8e",
+                            "idName": "color",
+                            "name": "color",
+                            "type": "QColor",
+                            "defaultValue": "#000000",
+                            "writable": true
+                        },
+                        {
+                            "id": "72981c04-267a-4ba0-a59e-9921d2f3af9c",
+                            "idName": "percentage",
+                            "name": "percentage",
+                            "type": "int",
+                            "unit": "Percentage",
+                            "defaultValue": 0,
+                            "minValue": 0,
+                            "maxValue": 100,
+                            "writable": true
+                        },
+                        {
+                            "id": "05f63f9c-f61e-4dcf-ad55-3f13fde2765b",
+                            "idName": "allowedValues",
+                            "name": "allowed values",
+                            "type": "QString",
+                            "defaultValue": "String value 1",
+                            "possibleValues": [
+                                "String value 1",
+                                "String value 2",
+                                "String value 3",
+                                "String value 4"
+                            ],
+                            "writable": true
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "54646e7c-bc54-4895-81a2-590d72d120f9",
+                            "idName": "timeout",
+                            "name": "Timout action"
+                        }
+                    ]
+                },
+                {
+                    "deviceClassId": "a71fbde9-9a38-4bf8-beab-c8aade2608ba",
+                    "idName": "mockParent",
+                    "name": "Mock Device (Parent)",
+                    "basicTags": [
+                        "Device",
+                        "Actuator",
+                        "Gateway"
+                    ],
+                    "createMethods": ["user"],
+                    "paramTypes": [
+                        {
+                            "name": "name",
+                            "type": "QString",
+                            "inputType": "TextLine",
+                            "defaultValue": "Parent Mock Device"
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "d24ede5f-4064-4898-bb84-cfb533b1fbc0",
+                            "idName": "boolValue",
+                            "name": "bool value",
+                            "type": "bool",
+                            "defaultValue": false,
+                            "writable": true
+                        }
+                    ]
+                },
+                {
+                    "deviceClassId": "40893c9f-bc47-40c1-8bf7-b390c7c1b4fc",
+                    "idName": "mockChild",
+                    "name": "Mock Device (Child)",
+                    "createMethods": ["auto"],
+                    "basicTags": [
+                        "Device",
+                        "Actuator"
+                    ],
+                    "paramTypes": [
+                        {
+                            "name": "name",
+                            "type": "QString",
+                            "inputType": "TextLine",
+                            "defaultValue": "Child Mock Device"
+                        },
+                        {
+                            "name": "parent uuid",
+                            "type": "QUuid",
+                            "readOnly": true
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "d24ede5f-4064-4898-bb84-cfb533b1fbc0",
+                            "idName": "boolValue",
+                            "name": "bool value",
+                            "type": "bool",
+                            "defaultValue": false,
+                            "writable": true
+                        }
+                    ]
+                },
+                {
+                    "deviceClassId": "515ffdf1-55e5-498d-9abc-4e2fe768f3a9",
+                    "idName": "mockInputType",
+                    "name": "Mock Device (InputTypes)",
+                    "basicTags": [
+                        "Device"
+                    ],
+                    "createMethods": ["user"],
+                    "paramTypes": [
+                        {
+                            "name": "Text line",
+                            "type": "QString",
+                            "inputType": "TextLine",
+                            "defaultValue": "This is a text line"
+                        },
+                        {
+                            "name": "Text area",
+                            "type": "QString",
+                            "inputType": "TextArea",
+                            "defaultValue": "This is a text area"
+                        },
+                        {
+                            "name": "Password text",
+                            "type": "QString",
+                            "inputType": "Password",
+                            "defaultValue": "secret"
+                        },
+                        {
+                            "name": "Search text",
+                            "type": "QString",
+                            "inputType": "Search",
+                            "defaultValue": "Search text..."
+                        },
+                        {
+                            "name": "Mail address",
+                            "type": "QString",
+                            "inputType": "Mail",
+                            "defaultValue": "name@example.com"
+                        },
+                        {
+                            "name": "IPv4 address",
+                            "type": "QString",
+                            "inputType": "IPv4Address",
+                            "defaultValue": "127.0.0.1"
+                        },
+                        {
+                            "name": "IPv6 address",
+                            "type": "QString",
+                            "inputType": "IPv6Address",
+                            "defaultValue": "::1"
+                        },
+                        {
+                            "name": "URL",
+                            "type": "QString",
+                            "inputType": "Url",
+                            "defaultValue": "http://guh.guru"
+                        },
+                        {
+                            "name": "Mac address",
+                            "type": "QString",
+                            "inputType": "MacAddress",
+                            "defaultValue": "11:22:33:aa:bb:cc"
                         }
                     ]
                 }

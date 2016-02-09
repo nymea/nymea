@@ -13,6 +13,10 @@
                     "idName": "mood",
                     "name": "Mood",
                     "createMethods": ["user"],
+                    "basicTags": [
+                        "Service",
+                        "Actuator"
+                    ],
                     "paramTypes": [
                         {
                             "name": "name",
@@ -55,7 +59,7 @@
                             "name": "active",
                             "type": "bool",
                             "defaultValue": false,
-                            "writable": {}
+                            "writable": true
                         },
                         {
                             "id": "cb8a89c2-dc12-4965-b047-57896058b421",
@@ -64,10 +68,9 @@
                             "type": "int",
                             "unit": "Percentage",
                             "defaultValue": 0,
-                            "writable": {
-                                "minValue": 0,
-                                "maxValue": 100
-                            }
+                            "minValue": 0,
+                            "maxValue": 100,
+                            "writable": true
                         }
                     ]
                 },
@@ -75,6 +78,11 @@
                     "deviceClassId": "3a928446-923a-4777-b653-1f71324888c7",
                     "idName": "tune",
                     "name": "Tune",
+                    "basicTags": [
+                        "Device",
+                        "Gateway",
+                        "Lighting"
+                    ],
                     "createMethods": ["auto"],
                     "paramTypes": [
                         {
@@ -124,7 +132,7 @@
                             "name": "power",
                             "type": "bool",
                             "defaultValue": 0,
-                            "writable": {}
+                            "writable": true
                         },
                         {
                             "id": "677cd9ec-c264-47ee-9d2e-d3662237792c",
@@ -133,10 +141,9 @@
                             "type": "int",
                             "unit": "Percentage",
                             "defaultValue": 0,
-                            "writable": {
-                                "minValue": 0,
-                                "maxValue": 100
-                            }
+                            "minValue": 0,
+                            "maxValue": 100,
+                            "writable": true
                         }
                     ]
                 }

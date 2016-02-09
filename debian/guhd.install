@@ -1,3 +1,4 @@
 usr/bin/guhd
-data/init/* /etc/init.d
 data/config/guhd.conf /etc/guh/
+data/systemd/guhd.service /etc/systemd/system/
+data/logrotate/guhd /etc/logrotate.d/

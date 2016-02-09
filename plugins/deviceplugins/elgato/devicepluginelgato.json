@@ -11,6 +11,11 @@
                     "deviceClassId": "164f9602-90ee-4693-bda3-9cafae37603e",
                     "idName": "avea",
                     "name": "Avea",
+                    "basicTags": [
+                        "Device",
+                        "Actuator",
+                        "Lighting"
+                    ],
                     "createMethods": ["discovery"],
                     "paramTypes": [
                         {

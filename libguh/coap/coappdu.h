@@ -27,6 +27,8 @@
 #include "coapoption.h"
 #include "coappdublock.h"
 
+#include "libguh.h"
+
 // PDU = Protocol Data Unit
 
 /*         0                   1                   2                   3
@@ -42,7 +44,7 @@
  *      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  */
 
-class CoapPdu : public QObject
+class LIBGUH_EXPORT CoapPdu : public QObject
 {
     Q_OBJECT
     Q_ENUMS(MessageType)
@@ -149,7 +151,6 @@ public:
 
     void clear();
     bool isValid() const;
-    bool isNull() const;
 
     QByteArray pack() const;
 

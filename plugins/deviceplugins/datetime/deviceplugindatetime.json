@@ -12,6 +12,11 @@
                     "deviceClassId": "fbf665fb-9aca-423f-a5f2-924e50ebe6ca",
                     "idName": "today",
                     "name": "Today",
+                    "basicTags": [
+                        "Service",
+                        "Sensor",
+                        "Time"
+                    ],
                     "createMethods": ["auto"],
                     "paramTypes": [
                         {
@@ -143,6 +148,11 @@
                     "deviceClassId": "3f3c7ecc-9915-4e4e-95a1-e11f4f9d174d",
                     "idName": "alarm",
                     "name": "Alarm",
+                    "basicTags": [
+                        "Service",
+                        "Actuator",
+                        "Time"
+                    ],
                     "createMethods": ["user"],
                     "paramTypes": [
                         {
@@ -235,6 +245,11 @@
                     "deviceClassId": "805c8948-e663-4ba6-aa67-df7446ed7098",
                     "idName": "countdown",
                     "name": "Countdown",
+                    "basicTags": [
+                        "Service",
+                        "Actuator",
+                        "Time"
+                    ],
                     "createMethods": ["user"],
                     "paramTypes": [
                         {

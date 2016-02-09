@@ -61,6 +61,9 @@ public:
         LoggingEventTypeActionsExecuted,
         LoggingEventTypeExitActionsExecuted
     };
+
+    Logging(QObject *parent = 0);
+
 };
 
 }

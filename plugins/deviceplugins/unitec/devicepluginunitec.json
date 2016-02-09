@@ -11,6 +11,10 @@
                 {
                     "deviceClassId": "8468a15d-ecc0-43b6-98ca-e1e4ac9e2df3",
                     "name": "Unitec switch (48111)",
+                    "basicTags": [
+                        "Device",
+                        "Actuator"
+                    ],
                     "idName": "switch",
                     "createMethods": ["user"],
                     "paramTypes": [

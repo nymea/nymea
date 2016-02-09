@@ -39,10 +39,20 @@ class TestStates: public GuhTestBase
     Q_OBJECT
 
 private slots:
+    void getStateTypes();
+
     void getStateValue_data();
     void getStateValue();
-
 };
+
+void TestStates::getStateTypes()
+{
+    QVariantMap params;
+    params.insert("deviceClassId", mockDeviceClassId);
+    QVariant response = injectAndWait("Devices.GetStateTypes", params);
+    QVERIFY(!response.isNull());
+    //verifyDeviceError(response);
+}
 
 void TestStates::getStateValue_data()
 {

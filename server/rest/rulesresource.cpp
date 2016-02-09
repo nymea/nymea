@@ -259,13 +259,14 @@ HttpReply *RulesResource::addRule(const QByteArray &payload) const
     // Check and unpack stateEvaluator
     qCDebug(dcRest) << "unpacking stateEvaluator:" << params.value("stateEvaluator").toMap();
     StateEvaluator stateEvaluator = JsonTypes::unpackStateEvaluator(params.value("stateEvaluator").toMap());
+    if (!stateEvaluator.isValid())
+        return createRuleErrorReply(HttpReply::BadRequest, RuleEngine::RuleErrorInvalidStateEvaluatorValue);
 
     // Check and unpack actions
     QPair<QList<RuleAction>, RuleEngine::RuleError> actionsVerification = JsonTypes::verifyActions(params, eventDescriptorList);
     QList<RuleAction> actions = actionsVerification.first;
     if (actionsVerification.second != RuleEngine::RuleErrorNoError)
         return createRuleErrorReply(HttpReply::BadRequest, actionsVerification.second);
-
 
     // Check and unpack exitActions
     QPair<QList<RuleAction>, RuleEngine::RuleError> exitActionsVerification = JsonTypes::verifyExitActions(params);
@@ -275,9 +276,10 @@ HttpReply *RulesResource::addRule(const QByteArray &payload) const
 
     QString name = params.value("name", QString()).toString();
     bool enabled = params.value("enabled", true).toBool();
+    bool executable = params.value("executable", true).toBool();
 
     RuleId newRuleId = RuleId::createRuleId();
-    RuleEngine::RuleError status = GuhCore::instance()->addRule(newRuleId, name, eventDescriptorList, stateEvaluator, actions, exitActions, enabled);
+    RuleEngine::RuleError status = GuhCore::instance()->addRule(newRuleId, name, eventDescriptorList, stateEvaluator, actions, exitActions, enabled, executable);
 
     if (status ==  RuleEngine::RuleErrorNoError) {
         QVariant returns = JsonTypes::packRule(GuhCore::instance()->findRule(newRuleId));
@@ -362,6 +364,8 @@ HttpReply *RulesResource::editRule(const RuleId &ruleId, const QByteArray &paylo
     // Check and unpack stateEvaluator
     qCDebug(dcRest) << "unpacking stateEvaluator:" << params.value("stateEvaluator").toMap();
     StateEvaluator stateEvaluator = JsonTypes::unpackStateEvaluator(params.value("stateEvaluator").toMap());
+    if (!stateEvaluator.isValid())
+        return createRuleErrorReply(HttpReply::BadRequest, RuleEngine::RuleErrorInvalidStateEvaluatorValue);
 
     // Check and unpack actions
     QPair<QList<RuleAction>, RuleEngine::RuleError> actionsVerification = JsonTypes::verifyActions(params, eventDescriptorList);

@@ -99,7 +99,6 @@ void TestWebSocketServer::pingTest()
     socket->deleteLater();
 }
 
-
 void TestWebSocketServer::testBasicCall_data()
 {
     QTest::addColumn<QByteArray>("data");
@@ -142,7 +141,6 @@ void TestWebSocketServer::introspect()
 
 QVariant TestWebSocketServer::injectSocketAndWait(const QString &method, const QVariantMap &params)
 {
-
     QVariantMap call;
     call.insert("id", m_socketCommandId);
     call.insert("method", method);

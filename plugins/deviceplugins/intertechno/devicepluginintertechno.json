@@ -12,6 +12,10 @@
                     "deviceClassId": "324219e8-7c53-41b5-b314-c2900cd15252",
                     "name": "Intertechno switch",
                     "createMethods": ["user"],
+                    "basicTags": [
+                        "Device",
+                        "Actuator"
+                    ],
                     "paramTypes": [
                         {
                             "name": "name",

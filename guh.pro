@@ -119,7 +119,7 @@ contains(DEFINES, SNAPPY){
                    /usr/lib/arm-linux-gnueabihf/libdl.so \
                    /usr/lib/arm-linux-gnueabihf/librt.so \
                    /usr/lib/arm-linux-gnueabihf/libm.so
-    qtlibs.path = /usr/lib/
+    qtlibs.path = $$INSTALLDIR/usr/lib/
 
     # install guhd.conf
     guhdconf.files = data/config/guhd.conf

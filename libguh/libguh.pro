@@ -8,13 +8,7 @@ DEFINES += LIBGUH_LIBRARY
 
 QMAKE_LFLAGS += -fPIC
 
-# define installation path
-isEmpty(PREFIX) {
-    INSTALLDIR = /usr/lib/
-} else {
-    INSTALLDIR = $$PREFIX/usr/lib/
-}
-target.path = $$INSTALLDIR
+target.path = /usr/lib
 INSTALLS += target
 
 contains(DEFINES, BLUETOOTH_LE) {
@@ -113,33 +107,20 @@ HEADERS += devicemanager.h \
            types/ruleactionparam.h \
            types/statedescriptor.h \
 
-# install files for libguh-dev
-!snappy {
-    # install guh-generateplugininfo precompiler
-    isEmpty(PREFIX) {
-        INSTALLDIR = /usr/bin
-    } else {
-        INSTALLDIR = $$PREFIX/usr/bin
-    }
-    generateplugininfo.files = $$top_srcdir/plugins/guh-generateplugininfo
-    generateplugininfo.path = $$INSTALLDIR
+# install plugininfo python script for libguh-dev
+generateplugininfo.files = $$top_srcdir/plugins/guh-generateplugininfo
+generateplugininfo.path = /usr/bin
 
-    INSTALLS += generateplugininfo
+INSTALLS +=  generateplugininfo
 
-    # install header file with relative subdirectory
-    isEmpty(PREFIX) {
-        INSTALLDIR = /usr/include
-    } else {
-        INSTALLDIR = $$PREFIX/usr/include
-    }
-
-    for(header, HEADERS) {
-        path = $$INSTALLDIR/guh/$${dirname(header)}
-        eval(headers_$${path}.files += $${header})
-        eval(headers_$${path}.path = $${path})
-        eval(INSTALLS *= headers_$${path})
-    }
+# install header file with relative subdirectory
+for(header, HEADERS) {
+    path = /usr/include/guh/$${dirname(header)}
+    eval(headers_$${path}.files += $${header})
+    eval(headers_$${path}.path = $${path})
+    eval(INSTALLS *= headers_$${path})
 }
+
 
 
 

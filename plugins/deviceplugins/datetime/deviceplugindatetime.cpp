@@ -121,28 +121,12 @@ DevicePluginDateTime::DevicePluginDateTime() :
     m_currentDateTime = QDateTime(QDate::currentDate(), QTime::currentTime(), m_timeZone);
 
     connect(m_timer, &QTimer::timeout, this, &DevicePluginDateTime::onSecondChanged);
-    connect(this, &DevicePluginDateTime::configValueChanged, this, &DevicePluginDateTime::onConfigValueChanged);
 }
 
 DeviceManager::HardwareResources DevicePluginDateTime::requiredHardware() const
 {
     return DeviceManager::HardwareResourceNetworkManager;
 }
-
-//QList<ParamType> DevicePluginDateTime::configurationDescription() const
-//{
-//    QList<ParamType> params;
-//    ParamType timezoneParamType("timezone", QVariant::String, "Europe/Vienna");
-
-//    QList<QVariant> allowedValues;
-//    foreach (QByteArray timeZone, QTimeZone::availableTimeZoneIds()) {
-//        allowedValues.append(timeZone);
-//    }
-//    timezoneParamType.setAllowedValues(allowedValues);
-
-//    params.append(timezoneParamType);
-//    return params;
-//}
 
 DeviceManager::DeviceSetupStatus DevicePluginDateTime::setupDevice(Device *device)
 {
@@ -332,14 +316,14 @@ void DevicePluginDateTime::processGeoLocationData(const QByteArray &data)
         qCWarning(dcDateTime) << "failed to request geo location:" << response.value("status");
     }
 
-    // check timezone
-    QString timeZone = response.value("timezone").toString();
-    if (QString(m_timeZone.id()) != timeZone) {
-        qCWarning(dcDateTime) << "error: configured timezone does not match the discovered timezone";
-        qCWarning(dcDateTime) << "    configured:" << m_timeZone.id();
-        qCWarning(dcDateTime) << "    discovered:" << timeZone;
-        return;
-    }
+//    // check timezone
+//    QString timeZone = response.value("timezone").toString();
+//    if (QString(m_timeZone.id()) != timeZone) {
+//        qCWarning(dcDateTime) << "error: configured timezone does not match the discovered timezone";
+//        qCWarning(dcDateTime) << "    configured:" << m_timeZone.id();
+//        qCWarning(dcDateTime) << "    discovered:" << timeZone;
+//        return;
+//    }
 
     qCDebug(dcDateTime) << "---------------------------------------------";
     qCDebug(dcDateTime) << "autodetected location for" << response.value("query").toString();

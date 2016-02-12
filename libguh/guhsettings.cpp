@@ -50,6 +50,7 @@
 
 #include "guhsettings.h"
 #include "unistd.h"
+#include "loggingcategories.h"
 
 #include <QSettings>
 #include <QCoreApplication>
@@ -61,6 +62,37 @@ GuhSettings::GuhSettings(const SettingsRole &role, QObject *parent):
     QObject(parent),
     m_role(role)
 {
+
+#ifdef SNAPPY
+    QString settingsFilePath = qgetenv("SNAP_APP_DATA_PATH");
+    QString settingsFile;
+    switch (role) {
+    case SettingsRoleNone:
+        break;
+    case SettingsRoleDevices:
+        settingsFile = settingsFilePath + "/devices.conf";
+        m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
+        //qCDebug(dcApplication) << "Created device settings" << m_settings->fileName();
+        break;
+    case SettingsRoleRules:
+        settingsFile = settingsFilePath + "/rules.conf";
+        m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
+        //qCDebug(dcApplication) << "Created rule settings" << m_settings->fileName();
+        break;
+    case SettingsRolePlugins:
+        settingsFile = settingsFilePath + "/plugins.conf";
+        m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
+        //qCDebug(dcApplication) << "Created plugin settings" << m_settings->fileName();
+        break;
+    case SettingsRoleGlobal:
+        settingsFile = settingsFilePath + "/guhd.conf";
+        m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
+        //qCDebug(dcApplication) << "Created guhd settings" << m_settings->fileName();
+        break;
+    default:
+        break;
+    }
+#else
     QString settingsFile;
     QString settingsPrefix = QCoreApplication::instance()->organizationName();
     bool rootPrivilege = isRoot();
@@ -115,6 +147,7 @@ GuhSettings::GuhSettings(const SettingsRole &role, QObject *parent):
     default:
         break;
     }
+#endif // SNAPPY
 }
 
 /*! Destructor of the GuhSettings.*/
@@ -146,6 +179,9 @@ bool GuhSettings::isRoot()
 QString GuhSettings::logPath()
 {
     QString logPath;
+#ifdef SNAPPY
+    logPath = qgetenv("SNAP_APP_DATA_PATH") + "/guhd.sqlite";
+#else
     QString organisationName = QCoreApplication::instance()->organizationName();
 
     if (organisationName == "guh-test") {
@@ -155,6 +191,7 @@ QString GuhSettings::logPath()
     } else {
         logPath = QDir::homePath() + "/.config/" + organisationName + "/guhd.sqlite";
     }
+#endif // SNAPPY
 
     return logPath;
 }
@@ -163,6 +200,9 @@ QString GuhSettings::logPath()
 QString GuhSettings::consoleLogPath()
 {
     QString consoleLogPath;
+#ifdef SNAPPY
+    consoleLogPath = qgetenv("SNAP_APP_DATA_PATH") + "/guhd.log";
+#else
     QString organisationName = QCoreApplication::instance()->organizationName();
 
     if (organisationName == "guh-test") {
@@ -172,6 +212,7 @@ QString GuhSettings::consoleLogPath()
     } else {
         consoleLogPath = QDir::homePath() + "/.config/" + organisationName + "/guhd.log";
     }
+#endif // SNAPPY
 
     return consoleLogPath;
 }
@@ -246,7 +287,7 @@ void GuhSettings::remove(const QString &key)
 /*! Sets the \a value of setting \a key to value. If the \a key already exists, the previous value is overwritten. */
 void GuhSettings::setValue(const QString &key, const QVariant &value)
 {
-    //Q_ASSERT_X(m_role != GuhSettings::SettingsRoleGlobal, "GuhSettings", "Bad settings usage. The global settings file should be read only.");
+    Q_ASSERT_X(m_role != GuhSettings::SettingsRoleGlobal, "GuhSettings", "Bad settings usage. The global settings file should be read only.");
     m_settings->setValue(key, value);
 }
 

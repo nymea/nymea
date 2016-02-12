@@ -122,6 +122,8 @@ namespace guhserver {
 LogEngine::LogEngine(QObject *parent):
     QObject(parent)
 {
+    qCDebug(dcLogEngine) << "Using log file" << GuhSettings::logPath();
+
     m_db = QSqlDatabase::addDatabase("QSQLITE");
     m_db.setDatabaseName(GuhSettings::logPath());
     m_dbMaxSize = 8000;
@@ -131,16 +133,18 @@ LogEngine::LogEngine(QObject *parent):
         qCDebug(dcLogEngine) << "Set logging dab max size to" << m_dbMaxSize << "for testing.";
     }
 
-    qCDebug(dcLogEngine) << "Opening logging database" << m_db.databaseName();
 
     if (!m_db.isValid()) {
         qCWarning(dcLogEngine) << "Database not valid:" << m_db.lastError().driverText() << m_db.lastError().databaseText();
         return;
     }
+
     if (!m_db.open()) {
         qCWarning(dcLogEngine) << "Error opening log database:" << m_db.lastError().driverText() << m_db.lastError().databaseText();
         return;
     }
+
+    qCDebug(dcLogEngine) << "Opening logging database" << m_db.databaseName();
 
     initDB();
 }
@@ -347,10 +351,11 @@ void LogEngine::initDB()
     m_db.open();
 
     QSqlQuery query;
-
     if (!m_db.tables().contains("metadata")) {
+        qCDebug(dcLogEngine) << "Creating database table...";
         query.exec("CREATE TABLE metadata (key varchar(10), data varchar(40));");
         query.exec(QString("INSERT INTO metadata (key, data) VALUES('version', '%1');").arg(DB_SCHEMA_VERSION));
+        qCDebug(dcLogEngine) << "Database table created";
     }
 
     query.exec("SELECT data FROM metadata WHERE key = 'version';");

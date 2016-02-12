@@ -14,10 +14,12 @@ QT+= network
 QMAKE_CXXFLAGS += -Werror -std=c++11
 QMAKE_LFLAGS += -std=c++11
 
-# Check for Bluetoot LE support (Qt >= 5.4)
-equals(QT_MAJOR_VERSION, 5):greaterThan(QT_MINOR_VERSION, 3) {
-    QT += bluetooth
-    DEFINES += BLUETOOTH_LE
+!snappy {
+    # Check for Bluetoot LE support (Qt >= 5.4)
+    equals(QT_MAJOR_VERSION, 5):greaterThan(QT_MINOR_VERSION, 3) {
+        QT += bluetooth
+        DEFINES += BLUETOOTH_LE
+    }
 }
 
 # Enable coverage option    
@@ -30,6 +32,10 @@ coverage {
 # Enable Radio 433 MHz for GPIO's
 enable433gpio {
     DEFINES += GPIO433
+}
+
+snappy {
+    DEFINES += SNAPPY
 }
 
 # check websocket support (Qt >= 5.3)

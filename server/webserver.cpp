@@ -112,6 +112,10 @@ WebServer::WebServer(const QSslConfiguration &sslConfiguration, QObject *parent)
     m_webinterfaceDir = QDir(settings.value("publicFolder", "/usr/share/guh-webinterface/public/").toString());
     settings.endGroup();
 
+#ifdef SNAPPY
+    m_webinterfaceDir = QDir(qgetenv("SNAP_APP_PATH") + "/public/");
+#endif
+
     // check public directory
     qCDebug(dcWebServer) << "Publish webinterface folder" << m_webinterfaceDir.path();
     if (!m_webinterfaceDir.exists())

@@ -1,0 +1,5 @@
+#!/bin/sh
+
+export QT_PLUGIN_PATH=$SNAP_APP_PATH/usr/lib/qt5/plugins
+export LD_LIBRARY_PATH=$SNAP_APP_PATH/usr/lib:$LD_LIBRARY_PATH
+$SNAP_APP_PATH/usr/bin/guhd -n -p

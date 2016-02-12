@@ -320,7 +320,7 @@ void DevicePluginOpenweathermap::processGeoSearchResponse(QByteArray data)
 
 void DevicePluginOpenweathermap::processSearchResults(const QList<QVariantMap> &cityList)
 {
-    QList<DeviceDescriptor> retList;
+    QList<DeviceDescriptor>  retList;
     foreach (QVariantMap elemant, cityList) {
         DeviceDescriptor descriptor(openweathermapDeviceClassId, elemant.value("name").toString(), elemant.value("country").toString());
         ParamList params;

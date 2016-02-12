@@ -195,13 +195,6 @@ int main(int argc, char *argv[])
             qCDebug(dcApplication) << "=====================================";
         }
 
-#ifdef SNAPPY
-        qCDebug(dcApplication) << "Snappy name     :" << qgetenv("SNAP_FULLNAME");
-        qCDebug(dcApplication) << "Snappy version  :" << qgetenv("SNAP_VERSION");
-        qCDebug(dcApplication) << "Snappy directory:" << qgetenv("SNAP_APP_PATH");
-        qCDebug(dcApplication) << "Snappy user data:" << qgetenv("SNAP_APP_USER_DATA_PATH");
-        qCDebug(dcApplication) << "Snappy app  data:" << qgetenv("SNAP_APP_DATA_PATH");
-#endif
         // create core instance
         GuhCore::instance();
         return application.exec();

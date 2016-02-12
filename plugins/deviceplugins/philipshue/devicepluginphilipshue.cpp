@@ -76,7 +76,6 @@ DeviceManager::DeviceError DevicePluginPhilipsHue::discoverDevices(const DeviceC
     Q_UNUSED(deviceClassId)
     Q_UNUSED(params)
 
-    qCDebug(dcPhilipsHue) << "Start discovering Hue Bridges...";
     upnpDiscover("libhue:idl");
     return DeviceManager::DeviceErrorAsync;
 }
@@ -240,7 +239,6 @@ void DevicePluginPhilipsHue::upnpDiscoveryFinished(const QList<UpnpDeviceDescrip
             params.append(Param("zigbee channel", -1));
             descriptor.setParams(params);
             deviceDescriptors.append(descriptor);
-            qCDebug(dcPhilipsHue) << "Found Hue bridge on" << upnpDevice.hostAddress().toString();
         }
     }
 
@@ -672,8 +670,6 @@ void DevicePluginPhilipsHue::setLightName(Device *device, const QString &name)
 {
     HueLight *light = m_lights.key(device);
 
-    qCDebug(dcPhilipsHue) << "Set hue light name" << name;
-
     QVariantMap requestMap;
     requestMap.insert("name", name);
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(requestMap);
@@ -879,8 +875,6 @@ void DevicePluginPhilipsHue::processBridgeRefreshResponse(Device *device, const 
     QJsonParseError error;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
 
-    qCDebug(dcPhilipsHue) << "Process hue bridge response";
-
     // check JSON error
     if (error.error != QJsonParseError::NoError) {
         qCWarning(dcPhilipsHue) << "Hue Bridge json error in response" << error.errorString();
@@ -995,8 +989,6 @@ void DevicePluginPhilipsHue::processSetNameResponse(Device *device, const QByteA
     QJsonParseError error;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
 
-    qCDebug(dcPhilipsHue) << "Process set name response";
-
     // check JSON error
     if (error.error != QJsonParseError::NoError) {
         qCWarning(dcPhilipsHue) << "Hue Bridge json error in response" << error.errorString();
@@ -1026,8 +1018,6 @@ void DevicePluginPhilipsHue::processPairingResponse(PairingInfo *pairingInfo, co
 {
     QJsonParseError error;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
-
-    qCDebug(dcPhilipsHue) << "Process pairing response";
 
     // check JSON error
     if (error.error != QJsonParseError::NoError) {

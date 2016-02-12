@@ -5,13 +5,7 @@ TEMPLATE = app
 
 INCLUDEPATH += ../libguh jsonrpc
 
-isEmpty(PREFIX) {
-    INSTALLDIR = /usr/bin
-} else {
-    INSTALLDIR = $$PREFIX/usr/bin/
-}
-
-target.path = $$INSTALLDIR
+target.path = /usr/bin
 INSTALLS += target
 
 QT += sql xml

@@ -5,15 +5,12 @@
    The guh server provides two different API's:
     \list
         \li \l{JSON-RPC API}{JSON-RPC}
-        \li \l{https://github.com/guh/guh/wiki/REST-Api-documentation}{REST}
+        \li \l{https://github.com/guh/guh/wiki/REST-API}{REST}
     \endlist
     
-
     The \l{https://github.com/guh/guh/wiki/REST-Api-documentation}{REST API} is accessable on the \l{guhserver::WebServer}{WebServer}. The JSON-RPC API can be accessed from the \l {guhserver::TcpServer}{TcpServer} and the \l {guhserver::WebSocketServer}{WebSocketServer} interface. The command line interface \b {\tt guh-cli} communicates with the \l {guhserver::TcpServer}{TcpServer} and \l {JSON-RPC API}. The \b {\tt guh-webinterface} uses the \l{guhserver::WebServer}{WebServer} with the \l{https://github.com/guh/guh/wiki/REST-Api-documentation}{REST-API} and catches notifications from the \l {guhserver::WebSocketServer}{WebSocketServer}.
 
     \image api-overview.png
-
-
 
 */
 

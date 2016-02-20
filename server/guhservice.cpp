@@ -31,9 +31,15 @@
     \sa QtService
 */
 
-#include <unistd.h>
+#include "unistd.h"
+#include "stdio.h"
+
+#include <QDir>
+
 #include "guhservice.h"
+#include "guhsettings.h"
 #include "loggingcategories.h"
+
 
 namespace guhserver {
 
@@ -59,6 +65,11 @@ GuhService::~GuhService()
 /*! Starts the forked guhd application. */
 void GuhService::start()
 {
+    // check if config directory for logfile exists
+    if (!QDir().mkpath(GuhSettings::settingsPath())) {
+        fprintf(stdout, "Could not create guh settings directory %s", qPrintable(GuhSettings::settingsPath()));
+        exit(EXIT_FAILURE);
+    }
     qCDebug(dcApplication) << "=====================================";
     qCDebug(dcApplication) << "guhd" << GUH_VERSION_STRING << "started as daemon.";
     qCDebug(dcApplication) << "=====================================";

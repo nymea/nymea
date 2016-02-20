@@ -191,7 +191,6 @@ int main(int argc, char *argv[])
                 fprintf(stdout, "Could not create guh settings directory %s", qPrintable(GuhSettings::settingsPath()));
                 exit(EXIT_FAILURE);
             }
-
             qCDebug(dcApplication) << "=====================================";
             qCDebug(dcApplication) << "guhd" << GUH_VERSION_STRING << "started with user ID" << userId;
             qCDebug(dcApplication) << "=====================================";

@@ -169,6 +169,22 @@ QString GuhSettings::logPath()
     return logPath;
 }
 
+QString GuhSettings::settingsPath()
+{
+    QString path;
+    QString organisationName = QCoreApplication::instance()->organizationName();
+
+    if (organisationName == "guh-test") {
+        path = "/tmp/" + organisationName;
+    } else if (GuhSettings::isRoot()) {
+        path = "/etc/guh/";
+    } else {
+        path = QDir::homePath() + "/.config/" + organisationName;
+    }
+
+    return path;
+}
+
 /*! Returns the path where the log file (console log) will be stored. */
 QString GuhSettings::consoleLogPath()
 {

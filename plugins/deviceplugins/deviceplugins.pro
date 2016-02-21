@@ -15,7 +15,7 @@ SUBDIRS += elro         \
     commandlauncher     \
     unitec              \
     leynew              \
-    tune                \
+    #tune                \
     udpcommander        \
     kodi                \
     elgato              \

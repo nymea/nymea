@@ -15,7 +15,6 @@ usr/lib/guh/plugins/libguh_deviceplugingenericelements.so
 usr/lib/guh/plugins/libguh_deviceplugincommandlauncher.so
 usr/lib/guh/plugins/libguh_devicepluginunitec.so
 usr/lib/guh/plugins/libguh_devicepluginleynew.so
-usr/lib/guh/plugins/libguh_deviceplugintune.so
 usr/lib/guh/plugins/libguh_devicepluginudpcommander.so
 usr/lib/guh/plugins/libguh_devicepluginkodi.so
 usr/lib/guh/plugins/libguh_devicepluginelgato.so

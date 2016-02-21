@@ -17,14 +17,10 @@ SUBDIRS += elro         \
     commandlauncher     \
     unitec              \
     leynew              \
-    tune                \
+    #tune                \
     udpcommander        \
     kodi                \
     elgato              \
     awattar             \
     netatmo             \
     #osdomotics          \
-
-boblight {
-    SUBDIRS += boblight
-}

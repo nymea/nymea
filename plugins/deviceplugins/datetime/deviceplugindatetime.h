@@ -92,7 +92,6 @@ private slots:
 
     void updateTimes();
 
-    void onConfigValueChanged(const QString &paramName, const QVariant &value);
     void validateTimeTypes(const QDateTime &dateTime);
 
 };

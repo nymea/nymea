@@ -186,6 +186,11 @@ int main(int argc, char *argv[])
         // inform about userid
         int userId = getuid();
         if (userId != 0) {
+            // check if config directory for logfile exists
+            if (!QDir().mkpath(GuhSettings::settingsPath())) {
+                fprintf(stdout, "Could not create guh settings directory %s", qPrintable(GuhSettings::settingsPath()));
+                exit(EXIT_FAILURE);
+            }
             qCDebug(dcApplication) << "=====================================";
             qCDebug(dcApplication) << "guhd" << GUH_VERSION_STRING << "started with user ID" << userId;
             qCDebug(dcApplication) << "=====================================";

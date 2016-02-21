@@ -36,12 +36,19 @@ class DevicePluginWifiDetector : public DevicePlugin
 public:
     explicit DevicePluginWifiDetector();
 
+    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
+    DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
     DeviceManager::HardwareResources requiredHardware() const override;
 
     void guhTimer() override;
 
+private:
+    QList<QProcess *> m_discoveryProcesses;
+    QList<DeviceDescriptor> m_deviceDescriptors;
+
 private slots:
     void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    void discoveryProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
 };
 
 #endif // DEVICEPLUGINWIFIDETECTOR_H

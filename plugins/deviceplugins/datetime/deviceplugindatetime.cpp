@@ -107,7 +107,7 @@
 DevicePluginDateTime::DevicePluginDateTime() :
     m_timer(0),
     m_todayDevice(0),
-    m_timeZone(QTimeZone("Europe/Vienna")),
+    m_timeZone(QTimeZone(QTimeZone::systemTimeZoneId())),
     m_dusk(QDateTime()),
     m_sunrise(QDateTime()),
     m_noon(QDateTime()),
@@ -117,32 +117,15 @@ DevicePluginDateTime::DevicePluginDateTime() :
     m_timer = new QTimer(this);
     m_timer->setInterval(1000);
 
-    m_timeZone = QTimeZone(QTimeZone::systemTimeZoneId());
     m_currentDateTime = QDateTime(QDate::currentDate(), QTime::currentTime(), m_timeZone);
 
     connect(m_timer, &QTimer::timeout, this, &DevicePluginDateTime::onSecondChanged);
-    connect(this, &DevicePluginDateTime::configValueChanged, this, &DevicePluginDateTime::onConfigValueChanged);
 }
 
 DeviceManager::HardwareResources DevicePluginDateTime::requiredHardware() const
 {
     return DeviceManager::HardwareResourceNetworkManager;
 }
-
-//QList<ParamType> DevicePluginDateTime::configurationDescription() const
-//{
-//    QList<ParamType> params;
-//    ParamType timezoneParamType("timezone", QVariant::String, "Europe/Vienna");
-
-//    QList<QVariant> allowedValues;
-//    foreach (QByteArray timeZone, QTimeZone::availableTimeZoneIds()) {
-//        allowedValues.append(timeZone);
-//    }
-//    timezoneParamType.setAllowedValues(allowedValues);
-
-//    params.append(timezoneParamType);
-//    return params;
-//}
 
 DeviceManager::DeviceSetupStatus DevicePluginDateTime::setupDevice(Device *device)
 {
@@ -271,14 +254,14 @@ void DevicePluginDateTime::networkManagerReplyReady(QNetworkReply *reply)
     if (m_locationReplies.contains(reply)) {
         m_locationReplies.removeAll(reply);
         if (status != 200) {
-            qCWarning(dcDateTime) << "http error status for location request:" << status << reply->error();
+            qCWarning(dcDateTime) << "Http error status for location request:" << status << reply->error();
         } else {
             processGeoLocationData(reply->readAll());
         }
     } else if (m_timeReplies.contains(reply)) {
         m_timeReplies.removeAll(reply);
         if (status != 200) {
-            qCWarning(dcDateTime) << "http error status for time request:" << status << reply->error();
+            qCWarning(dcDateTime) << "Http error status for time request:" << status << reply->error();
         } else {
             processTimesData(reply->readAll());
         }
@@ -294,9 +277,9 @@ void DevicePluginDateTime::startMonitoringAutoDevices()
         }
     }
 
-    DeviceDescriptor dateDescriptor(todayDeviceClassId, QString("Date"), QString(m_timeZone.id()));
+    DeviceDescriptor dateDescriptor(todayDeviceClassId, "Date", "Time");
     ParamList params;
-    params.append(Param("name", m_timeZone.id()));
+    params.append(Param("name", "Time"));
     dateDescriptor.setParams(params);
 
     emit autoDevicesAppeared(todayDeviceClassId, QList<DeviceDescriptor>() << dateDescriptor);
@@ -334,12 +317,10 @@ void DevicePluginDateTime::processGeoLocationData(const QByteArray &data)
 
     // check timezone
     QString timeZone = response.value("timezone").toString();
-    if (QString(m_timeZone.id()) != timeZone) {
-        qCWarning(dcDateTime) << "error: configured timezone does not match the discovered timezone";
-        qCWarning(dcDateTime) << "    configured:" << m_timeZone.id();
-        qCWarning(dcDateTime) << "    discovered:" << timeZone;
-        return;
-    }
+
+    m_todayDevice->setStateValue(timeZoneStateTypeId, timeZone);
+    m_todayDevice->setStateValue(cityStateTypeId, response.value("city").toString());
+    m_todayDevice->setStateValue(countryStateTypeId, response.value("country").toString());
 
     qCDebug(dcDateTime) << "---------------------------------------------";
     qCDebug(dcDateTime) << "autodetected location for" << response.value("query").toString();
@@ -537,21 +518,6 @@ void DevicePluginDateTime::updateTimes()
     }
 }
 
-void DevicePluginDateTime::onConfigValueChanged(const QString &paramName, const QVariant &value)
-{
-    Q_UNUSED(paramName)
-
-    QTimeZone newZone = QTimeZone(value.toByteArray());
-    if (newZone.isValid()) {
-        m_timeZone = newZone;
-        QDateTime zoneTime = QDateTime(QDate::currentDate(), QTime::currentTime(), m_timeZone);
-        qCDebug(dcDateTime) << "        time zone:" << value.toString();
-        qCDebug(dcDateTime) << "     current time:" << zoneTime.currentDateTime().toString();
-        qCDebug(dcDateTime) << "-----------------------------";
-    } else {
-        qCWarning(dcDateTime) << "could not set new timezone" << value.toString() << ". keeping old time zone:" << m_timeZone;
-    }
-}
 
 void DevicePluginDateTime::validateTimeTypes(const QDateTime &dateTime)
 {

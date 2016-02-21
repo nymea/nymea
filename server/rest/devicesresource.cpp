@@ -499,6 +499,11 @@ void DevicesResource::actionExecuted(const ActionId &actionId, DeviceManager::De
     QVariantMap response;
     response.insert("error", JsonTypes::deviceErrorToString(status));
 
+    if (m_asyncActionExecutions.value(actionId).isNull()) {
+        qCWarning(dcRest) << "Async reply for execute action does not exist any more (timeout).";
+        return;
+    }
+
     HttpReply *reply = m_asyncActionExecutions.take(actionId);
     reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     if (status == DeviceManager::DeviceErrorNoError) {
@@ -523,6 +528,11 @@ void DevicesResource::deviceSetupFinished(Device *device, DeviceManager::DeviceE
 
     QVariantMap response;
     response.insert("error", JsonTypes::deviceErrorToString(status));
+
+    if (m_asyncDeviceAdditions.value(device->id()).isNull()) {
+        qCWarning(dcRest) << "Async reply for device setup does not exist any more (timeout).";
+        return;
+    }
 
     HttpReply *reply = m_asyncDeviceAdditions.take(device->id());
     reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
@@ -550,6 +560,11 @@ void DevicesResource::deviceEditFinished(Device *device, DeviceManager::DeviceEr
     QVariantMap response;
     response.insert("error", JsonTypes::deviceErrorToString(status));
 
+    if (m_asyncEditDevice.value(device).isNull()) {
+        qCWarning(dcRest) << "Async reply for device edit does not exist any more (timeout).";
+        return;
+    }
+
     HttpReply *reply = m_asyncEditDevice.take(device);
     reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     if (status == DeviceManager::DeviceErrorNoError) {
@@ -573,6 +588,11 @@ void DevicesResource::pairingFinished(const PairingTransactionId &pairingTransac
     QVariantMap response;
     response.insert("error", JsonTypes::deviceErrorToString(status));
 
+    if (m_asyncPairingRequests.value(pairingTransactionId).isNull()) {
+        qCWarning(dcRest) << "Async reply for device pairing does not exist any more.";
+        return;
+    }
+
     HttpReply *reply = m_asyncPairingRequests.take(pairingTransactionId);
     if (status != DeviceManager::DeviceErrorNoError) {
         qCDebug(dcRest) << "Pairing device finished with error.";
@@ -582,6 +602,7 @@ void DevicesResource::pairingFinished(const PairingTransactionId &pairingTransac
         reply->finished();
         return;
     }
+
     qCDebug(dcRest) << "Pairing device finished successfully";
 
     // Add device to async device addtions

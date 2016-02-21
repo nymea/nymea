@@ -43,10 +43,10 @@ public:
     HttpReply *proccessRequest(const HttpRequest &request, const QStringList &urlTokens) override;
 
 private:
-    mutable QHash<ActionId, HttpReply *> m_asyncActionExecutions;
-    mutable QHash<DeviceId, HttpReply *> m_asyncDeviceAdditions;
-    mutable QHash<Device *, HttpReply *> m_asyncEditDevice;
-    mutable QHash<PairingTransactionId, HttpReply *> m_asyncPairingRequests;
+    mutable QHash<ActionId, QPointer<HttpReply> > m_asyncActionExecutions;
+    mutable QHash<DeviceId, QPointer<HttpReply> > m_asyncDeviceAdditions;
+    mutable QHash<Device *, QPointer<HttpReply> > m_asyncEditDevice;
+    mutable QHash<PairingTransactionId, QPointer<HttpReply> > m_asyncPairingRequests;
 
     Device *m_device;
 

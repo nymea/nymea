@@ -138,6 +138,13 @@ void RestServer::processHttpRequest(const QUuid &clientId, const HttpRequest &re
 void RestServer::asyncReplyFinished()
 {
     HttpReply *reply = qobject_cast<HttpReply*>(sender());
+
+    if (!m_asyncReplies.values().contains(reply)) {
+        qCWarning(dcWebServer) << "Reply for async request does no longer exist";
+        reply->deleteLater();
+        return;
+    }
+
     QUuid clientId = m_asyncReplies.key(reply);
     m_asyncReplies.remove(clientId);
 

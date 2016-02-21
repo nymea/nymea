@@ -286,6 +286,11 @@ void DeviceClassesResource::devicesDiscovered(const DeviceClassId &deviceClassId
 
     qCDebug(dcRest) << "Discovery finished. Found" << deviceDescriptors.count() << "devices.";
 
+    if (m_discoverRequests.value(deviceClassId).isNull()) {
+        qCWarning(dcRest) << "Async reply for discovery does not exist any more (timeout).";
+        return;
+    }
+
     HttpReply *reply = m_discoverRequests.take(deviceClassId);
     reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packDeviceDescriptors(deviceDescriptors)).toJson());

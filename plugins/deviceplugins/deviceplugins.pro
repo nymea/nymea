@@ -24,7 +24,3 @@ SUBDIRS += elro         \
     awattar             \
     netatmo             \
     #osdomotics          \
-
-boblight {
-    SUBDIRS += boblight
-}

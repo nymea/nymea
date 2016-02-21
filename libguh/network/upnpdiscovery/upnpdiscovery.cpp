@@ -46,7 +46,6 @@
  \sa DevicePlugin::upnpNotifyReceived()
  */
 
-
 #include "upnpdiscovery.h"
 #include "loggingcategories.h"
 #include "guhsettings.h"
@@ -112,6 +111,8 @@ bool UpnpDiscovery::discoverDevices(const QString &searchTarget, const QString &
         qCWarning(dcHardware) << "UPnP not bound to port 1900";
         return false;
     }
+
+    qCDebug(dcHardware) << "UPnP: discover" << searchTarget << userAgent;
 
     // create a new request
     UpnpDiscoveryRequest *request = new UpnpDiscoveryRequest(this, pluginId, searchTarget, userAgent);
@@ -204,14 +205,12 @@ void UpnpDiscovery::readData()
         readDatagram(data.data(), data.size(), &hostAddress, &port);
     }
 
-    if (data.contains("M-SEARCH")) {
-        //qCDebug(dcHardware) << "--------------------------------------";
-        //qCDebug(dcHardware) << QString("UPnP data: %1:%2 \n").arg(hostAddress.toString()).arg(QString::number(port)) <<  data;
+    if (data.contains("M-SEARCH") && !QNetworkInterface::allAddresses().contains(hostAddress)) {
         respondToSearchRequest(hostAddress, port);
         return;
     }
 
-    if (data.contains("NOTIFY")) {
+    if (data.contains("NOTIFY") && !QNetworkInterface::allAddresses().contains(hostAddress)) {
         emit upnpNotify(data);
         return;
     }
@@ -225,7 +224,7 @@ void UpnpDiscovery::readData()
             QString value = line.mid(separatorIndex+1).trimmed();
 
             // get location
-            if (key.contains("LOCATION")) {
+            if (key.contains("LOCATION") || key.contains("location") || key.contains("Location")) {
                 location = QUrl(value);
             }
         }

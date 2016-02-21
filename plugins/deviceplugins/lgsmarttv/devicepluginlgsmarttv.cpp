@@ -129,6 +129,8 @@ void DevicePluginLgSmartTv::upnpDiscoveryFinished(const QList<UpnpDeviceDescript
 {
     QList<DeviceDescriptor> deviceDescriptors;
     foreach (UpnpDeviceDescriptor upnpDeviceDescriptor, upnpDeviceDescriptorList) {
+        if (!upnpDeviceDescriptor.friendlyName().contains("LG") || !upnpDeviceDescriptor.deviceType().contains("TV"))
+            continue;
         qCDebug(dcLgSmartTv) << upnpDeviceDescriptor;
         DeviceDescriptor descriptor(lgSmartTvDeviceClassId, "Lg Smart Tv", upnpDeviceDescriptor.modelName());
         ParamList params;

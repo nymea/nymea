@@ -28,7 +28,7 @@
 
     This plugin allows to find and monitor network devices in your local network by using the MAC address.
 
-    \underline{NOTE}: the application \c nmap has to be installed.
+    \underline{NOTE}: the application \c nmap has to be installed and guh has to run as root.
 
     \chapter Plugin properties
     Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}
@@ -129,7 +129,6 @@ void DevicePluginWifiDetector::processFinished(int exitCode, QProcess::ExitStatu
         if (result.startsWith("MAC Address:")) {
             QStringList lineParts = result.split(' ');
             if (lineParts.count() > 3) {
-                //qCDebug(dcWifiDetector) << result.remove("/n");
                 foundDevices << lineParts.at(2).toLower();
             }
         }
@@ -137,10 +136,8 @@ void DevicePluginWifiDetector::processFinished(int exitCode, QProcess::ExitStatu
 
     // check states
     foreach (Device *device, myDevices()) {
-        bool wasFound = foundDevices.contains(device->paramValue("mac address").toString().toLower());
-        if (device->stateValue(inRangeStateTypeId).toBool() != wasFound) {
-            device->setStateValue(inRangeStateTypeId, wasFound);
-        }
+        bool found = foundDevices.contains(device->paramValue("mac address").toString().toLower());
+        device->setStateValue(inRangeStateTypeId, found);
     }
     process->deleteLater();
 }
@@ -151,12 +148,10 @@ void DevicePluginWifiDetector::discoveryProcessFinished(int exitCode, QProcess::
 
     qCDebug(dcWifiDetector) << "Discovery finished";
 
-    if (m_discoveryProcesses.contains(process)) {
-        m_discoveryProcesses.removeAll(process);
-    } else {
+    if (!m_discoveryProcesses.contains(process))
         return;
-    }
 
+    m_discoveryProcesses.removeAll(process);
     if (exitCode != 0 || exitStatus != QProcess::NormalExit) {
         qCWarning(dcWifiDetector) << "Network scan error:" << process->readAllStandardError();
         process->deleteLater();
@@ -168,19 +163,20 @@ void DevicePluginWifiDetector::discoveryProcessFinished(int exitCode, QProcess::
         if (result.startsWith("MAC Address:")) {
             QStringList lineParts = result.split(' ');
             if (lineParts.count() > 4) {
-                qCDebug(dcWifiDetector) << "-----------------------------------";
                 QString macAddress = lineParts.at(2).toLower();
                 int index = result.indexOf(lineParts.at(2));
-                QString name = result.right(result.length() - index - macAddress.length() - 1);
-                qCDebug(dcWifiDetector) << "Address  :" << macAddress;
-                qCDebug(dcWifiDetector) << "Interface:" << name.remove(QRegExp("\\(|\\)"));
-                m_deviceDescriptors.append(DeviceDescriptor(wifiDeviceClassId, macAddress, name.remove(QRegExp("\\(|\\)"))));
+                QString name = result.right(result.length() - index - macAddress.length() - 1).remove(QRegExp("\\(|\\)"));
+                qCDebug(dcWifiDetector) << "Found" << name << macAddress.toLower();
+                DeviceDescriptor descriptor(wifiDeviceClassId, name, macAddress);
+                ParamList params;
+                params.append(Param("name", name));
+                params.append(Param("mac address", macAddress));
+                descriptor.setParams(params);
+                m_deviceDescriptors.append(descriptor);
             }
         }
     }
 
-    if (m_discoveryProcesses.isEmpty()) {
+    if (m_discoveryProcesses.isEmpty())
         emit devicesDiscovered(wifiDeviceClassId, m_deviceDescriptors);
-    }
-
 }

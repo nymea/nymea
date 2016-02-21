@@ -22,13 +22,3 @@ SUBDIRS += elro         \
     awattar             \
     netatmo             \
     #osdomotics          \
-
-
-
-boblight {
-    SUBDIRS += boblight
-}
-
-contains(DEFINES, BLUETOOTH_LE) {
-    SUBDIRS += elgato
-}

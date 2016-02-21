@@ -119,7 +119,13 @@ DeviceManager::DeviceSetupStatus DevicePluginMock::setupDevice(Device *device)
 
 void DevicePluginMock::postSetupDevice(Device *device)
 {
+    qCDebug(dcMockDevice) << "Postsetup mockdevice" << device->name();
     if (device->deviceClassId() == mockParentDeviceClassId) {
+        foreach (Device *d, myDevices()) {
+            if (d->deviceClassId() == mockChildDeviceClassId && d->parentId() == device->id()) {
+                return;
+            }
+        }
         onChildDeviceDiscovered(device->id());
     }
 }

@@ -25,7 +25,7 @@
                         {
                             "name": "command",
                             "type": "QString",
-                            "inputType": "Url"
+                            "inputType": "TextLine"
                         }
                     ],
                     "stateTypes": [

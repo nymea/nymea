@@ -67,6 +67,8 @@ DeviceManager::HardwareResources DevicePluginWifiDetector::requiredHardware() co
 
 void DevicePluginWifiDetector::guhTimer()
 {
+
+
     QProcess *p = new QProcess(this);
     connect(p, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(processFinished(int,QProcess::ExitStatus)));
     p->start(QStringLiteral("sudo"), QStringList() << "nmap" << "-sP" << "10.10.10.0/24");
@@ -75,7 +77,6 @@ void DevicePluginWifiDetector::guhTimer()
 void DevicePluginWifiDetector::processFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
     QProcess *p = static_cast<QProcess*>(sender());
-    p->deleteLater();
 
     if (exitCode != 0 || exitStatus != QProcess::NormalExit) {
         qCWarning(dcWifiDetector) << "error performing network scan:" << p->readAllStandardError();
@@ -84,6 +85,7 @@ void DevicePluginWifiDetector::processFinished(int exitCode, QProcess::ExitStatu
 
     QList<Device*> watchedDevices = deviceManager()->findConfiguredDevices(supportedDevices().first().id());
     if (watchedDevices.isEmpty()) {
+        p->deleteLater();
         return;
     }
 
@@ -106,4 +108,5 @@ void DevicePluginWifiDetector::processFinished(int exitCode, QProcess::ExitStatu
             device->setStateValue(inRangeStateTypeId, wasFound);
         }
     }
+    p->deleteLater();
 }

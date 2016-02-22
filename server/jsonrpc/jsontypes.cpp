@@ -204,6 +204,10 @@ void JsonTypes::init()
     s_device.insert("deviceClassId", basicTypeToString(Uuid));
     s_device.insert("name", basicTypeToString(String));
     s_device.insert("params", QVariantList() << paramRef());
+    QVariantMap stateValues;
+    stateValues.insert("stateTypeId", basicTypeToString(Uuid));
+    stateValues.insert("value", basicTypeToString(Variant));
+    s_device.insert("states", QVariantList() << stateValues);
     s_device.insert("setupComplete", basicTypeToString(Bool));
     s_device.insert("o:parentId", basicTypeToString(Uuid));
 
@@ -587,6 +591,7 @@ QVariantMap JsonTypes::packDevice(Device *device)
         variant.insert("parentId", device->parentId());
 
     variant.insert("params", params);
+    variant.insert("states", packDeviceStates(device));
     variant.insert("setupComplete", device->setupComplete());
     return variant;
 }
@@ -1196,6 +1201,12 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                 QPair<bool, QString> result = validateMap(s_ruleDescription, variant.toMap());
                 if (!result.first) {
                     qCWarning(dcJsonRpc) << "ruleDescription type not matching";
+                    return result;
+                }
+            } else if (refName == stateRef()) {
+                QPair<bool, QString> result = validateMap(s_state, variant.toMap());
+                if (!result.first) {
+                    qCWarning(dcJsonRpc) << "state not matching";
                     return result;
                 }
             } else if (refName == eventDescriptorRef()) {

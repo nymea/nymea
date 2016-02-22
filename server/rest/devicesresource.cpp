@@ -139,7 +139,7 @@ HttpReply *DevicesResource::proccessGetRequest(const HttpRequest &request, const
 
         if (!m_device->hasState(stateTypeId)){
             qCWarning(dcRest) << "This device has no StateTypeId:" << urlTokens.at(5);
-            return createDeviceErrorReply(HttpReply::NotFound, DeviceManager::DeviceErrorStateTypeNotFound);
+             return createDeviceErrorReply(HttpReply::NotFound, DeviceManager::DeviceErrorStateTypeNotFound);
         }
         return getDeviceStateValue(m_device, stateTypeId);
     }

@@ -189,6 +189,7 @@ void JsonTypes::init()
     // DeviceClass
     s_deviceClass.insert("id", basicTypeToString(Uuid));
     s_deviceClass.insert("vendorId", basicTypeToString(Uuid));
+    s_deviceClass.insert("pluginId", basicTypeToString(Uuid));
     s_deviceClass.insert("name", basicTypeToString(String));
     s_deviceClass.insert("basicTags", QVariantList() << basicTagRef());
     s_deviceClass.insert("stateTypes", QVariantList() << stateTypeRef());
@@ -204,6 +205,10 @@ void JsonTypes::init()
     s_device.insert("deviceClassId", basicTypeToString(Uuid));
     s_device.insert("name", basicTypeToString(String));
     s_device.insert("params", QVariantList() << paramRef());
+    QVariantMap stateValues;
+    stateValues.insert("stateTypeId", basicTypeToString(Uuid));
+    stateValues.insert("value", basicTypeToString(Variant));
+    s_device.insert("states", QVariantList() << stateValues);
     s_device.insert("setupComplete", basicTypeToString(Bool));
     s_device.insert("o:parentId", basicTypeToString(Uuid));
 
@@ -520,6 +525,7 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass)
     variant.insert("name", deviceClass.name());
     variant.insert("id", deviceClass.id());
     variant.insert("vendorId", deviceClass.vendorId());
+    variant.insert("pluginId", deviceClass.pluginId());
 
     QVariantList basicTags;
     foreach (const DeviceClass::BasicTag &basicTag, deviceClass.basicTags()) {
@@ -587,6 +593,7 @@ QVariantMap JsonTypes::packDevice(Device *device)
         variant.insert("parentId", device->parentId());
 
     variant.insert("params", params);
+    variant.insert("states", packDeviceStates(device));
     variant.insert("setupComplete", device->setupComplete());
     return variant;
 }
@@ -1196,6 +1203,12 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                 QPair<bool, QString> result = validateMap(s_ruleDescription, variant.toMap());
                 if (!result.first) {
                     qCWarning(dcJsonRpc) << "ruleDescription type not matching";
+                    return result;
+                }
+            } else if (refName == stateRef()) {
+                QPair<bool, QString> result = validateMap(s_state, variant.toMap());
+                if (!result.first) {
+                    qCWarning(dcJsonRpc) << "state not matching";
                     return result;
                 }
             } else if (refName == eventDescriptorRef()) {

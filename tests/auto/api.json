@@ -1,4 +1,4 @@
-35
+36
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -577,7 +577,13 @@
             "params": [
                 "$ref:Param"
             ],
-            "setupComplete": "Bool"
+            "setupComplete": "Bool",
+            "states": [
+                {
+                    "stateTypeId": "Uuid",
+                    "value": "Variant"
+                }
+            ]
         },
         "DeviceClass": {
             "actionTypes": [
@@ -600,6 +606,7 @@
             "paramTypes": [
                 "$ref:ParamType"
             ],
+            "pluginId": "Uuid",
             "setupMethod": "$ref:SetupMethod",
             "stateTypes": [
                 "$ref:StateType"

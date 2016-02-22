@@ -2,7 +2,7 @@
 GUH_VERSION_STRING=$$system('dpkg-parsechangelog | sed -n -e "s/^Version: //p"')
 
 # define protocol versions
-JSON_PROTOCOL_VERSION=35
+JSON_PROTOCOL_VERSION=36
 REST_API_VERSION=1
 
 DEFINES += GUH_VERSION_STRING=\\\"$${GUH_VERSION_STRING}\\\" \

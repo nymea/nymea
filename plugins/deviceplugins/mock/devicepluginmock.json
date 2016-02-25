@@ -289,6 +289,24 @@
                                 "String value 4"
                             ],
                             "writable": true
+                        },
+                        {
+                            "id": "53cd7c55-49b7-441b-b970-9048f20f0e2c",
+                            "idName": "double",
+                            "name": "double value",
+                            "type": "double",
+                            "defaultValue": 0.0,
+                            "minValue": -100.0,
+                            "maxValue": 100.0,
+                            "writable": true
+                        },
+                        {
+                            "id": "e680f7a4-b39e-46da-be41-fa3170fe3768",
+                            "idName": "bool",
+                            "name": "bool value",
+                            "type": "bool",
+                            "defaultValue": false,
+                            "writable": true
                         }
                     ],
                     "actionTypes": [
@@ -367,6 +385,24 @@
                                 "String value 3",
                                 "String value 4"
                             ],
+                            "writable": true
+                        },
+                        {
+                            "id": "53cd7c55-49b7-441b-b970-9048f20f0e2c",
+                            "idName": "double",
+                            "name": "double value",
+                            "type": "double",
+                            "defaultValue": 0.0,
+                            "minValue": -100.0,
+                            "maxValue": 100.0,
+                            "writable": true
+                        },
+                        {
+                            "id": "e680f7a4-b39e-46da-be41-fa3170fe3768",
+                            "idName": "bool",
+                            "name": "bool value",
+                            "type": "bool",
+                            "defaultValue": false,
                             "writable": true
                         }
                     ],

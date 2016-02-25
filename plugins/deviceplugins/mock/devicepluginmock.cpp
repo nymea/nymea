@@ -231,6 +231,12 @@ DeviceManager::DeviceError DevicePluginMock::executeAction(Device *device, const
         } else if (action.actionTypeId() == allowedValuesActionTypeId) {
             device->setStateValue(allowedValuesStateTypeId, action.param("allowed values").value().toString());
             return DeviceManager::DeviceErrorNoError;
+        } else if (action.actionTypeId() == doubleActionTypeId) {
+            device->setStateValue(doubleStateTypeId, action.param("double value").value().toDouble());
+            return DeviceManager::DeviceErrorNoError;
+        } else if (action.actionTypeId() == boolActionTypeId) {
+            device->setStateValue(boolStateTypeId, action.param("bool value").value().toBool());
+            return DeviceManager::DeviceErrorNoError;
         } else if (action.actionTypeId() == timeoutActionTypeId) {
             return DeviceManager::DeviceErrorAsync;
         }

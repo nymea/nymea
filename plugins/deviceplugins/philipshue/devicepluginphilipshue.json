@@ -106,6 +106,11 @@
                             "id": "07a85e91-d064-4bce-b017-13fd0c320c0b",
                             "idName": "checkForUpdates",
                             "name": "check updates"
+                        },
+                        {
+                            "id": "6dfbc7c0-7372-42f6-82ba-e777cb32dc4c",
+                            "idName": "upgrade",
+                            "name": "Upgrade bridge"
                         }
                     ]
                 },

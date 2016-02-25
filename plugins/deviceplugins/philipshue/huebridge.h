@@ -63,6 +63,7 @@ public:
     QPair<QNetworkRequest, QByteArray> createSearchLightsRequest();
     QPair<QNetworkRequest, QByteArray> createSearchSensorsRequest();
     QPair<QNetworkRequest, QByteArray> createCheckUpdatesRequest();
+    QPair<QNetworkRequest, QByteArray> createUpgradeRequest();
 
 private:
     QString m_id;

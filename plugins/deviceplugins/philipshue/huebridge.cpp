@@ -144,8 +144,24 @@ QPair<QNetworkRequest, QByteArray> HueBridge::createCheckUpdatesRequest()
     updateMap.insert("checkforupdate", true);
 
     QVariantMap requestMap;
-    requestMap.insert("swupdate", updateMap);
     requestMap.insert("portalservices", true);
+    requestMap.insert("swupdate", updateMap);
+
+    QJsonDocument jsonDoc = QJsonDocument::fromVariant(requestMap);
+
+    QNetworkRequest request(QUrl("http://" + hostAddress().toString() + "/api/" + apiKey() + "/config"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    return QPair<QNetworkRequest, QByteArray>(request, jsonDoc.toJson());
+}
+
+QPair<QNetworkRequest, QByteArray> HueBridge::createUpgradeRequest()
+{
+    QVariantMap updateMap;
+    updateMap.insert("updatestate", 3);
+
+    QVariantMap requestMap;
+    requestMap.insert("swupdate", updateMap);
 
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(requestMap);
 

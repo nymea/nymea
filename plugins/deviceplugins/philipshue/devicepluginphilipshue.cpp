@@ -507,6 +507,10 @@ DeviceManager::DeviceError DevicePluginPhilipsHue::executeAction(Device *device,
             QPair<QNetworkRequest, QByteArray> request = bridge->createCheckUpdatesRequest();
             m_asyncActions.insert(networkManagerPut(request.first, request.second),QPair<Device *, ActionId>(device, action.id()));
             return DeviceManager::DeviceErrorAsync;
+        } else if (action.actionTypeId() == upgradeActionTypeId) {
+            QPair<QNetworkRequest, QByteArray> request = bridge->createUpgradeRequest();
+            m_asyncActions.insert(networkManagerPut(request.first, request.second),QPair<Device *, ActionId>(device, action.id()));
+            return DeviceManager::DeviceErrorAsync;
         }
         return DeviceManager::DeviceErrorActionTypeNotFound;
     }
@@ -1113,18 +1117,18 @@ void DevicePluginPhilipsHue::processActionResponse(Device *device, const ActionI
     // check JSON error
     if (error.error != QJsonParseError::NoError) {
         qCWarning(dcPhilipsHue) << "Hue Bridge json error in response" << error.errorString();
-        emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorHardwareNotAvailable);
+        emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorHardwareFailure);
         return;
     }
 
     // check response error
     if (data.contains("error")) {
         if (!jsonDoc.toVariant().toList().isEmpty()) {
-            qCWarning(dcPhilipsHue) << "Failed to execute Hue action:" << jsonDoc.toVariant().toList().first().toMap().value("error").toMap().value("description").toString();
+            qCWarning(dcPhilipsHue) << "Failed to execute Hue action:" << jsonDoc.toJson(); //jsonDoc.toVariant().toList().first().toMap().value("error").toMap().value("description").toString();
         } else {
             qCWarning(dcPhilipsHue) << "Failed to execute Hue action: Invalid error message format";
         }
-        emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorHardwareNotAvailable);
+        emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorHardwareFailure);
         return;
     }
 

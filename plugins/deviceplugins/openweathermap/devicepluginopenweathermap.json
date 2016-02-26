@@ -12,6 +12,7 @@
                     "deviceClassId": "985195aa-17ad-4530-88a4-cdd753d747d7",
                     "idName": "openweathermap",
                     "name": "Weather",
+                    "deviceIcon": "Weather",
                     "basicTags": [
                         "Service",
                         "Weather",

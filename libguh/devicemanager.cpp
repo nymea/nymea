@@ -26,7 +26,7 @@
     \ingroup devices
     \inmodule libguh
 
-    The DeviceManager holds all information about supported and configured Devices in the system.
+    The DeviceManager hold  s all information about supported and configured Devices in the system.
 
     It is also responsible for loading Plugins and managing common hardware resources between
     \l{DevicePlugin}{device plugins}.

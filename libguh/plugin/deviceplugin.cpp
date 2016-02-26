@@ -183,7 +183,9 @@ QList<Vendor> DevicePlugin::supportedVendors() const
     return vendors;
 }
 
-/*!  Return a list of \l{DeviceClass}{DeviceClasses} describing all the devices supported by this plugin. */
+/*! Return a list of \l{DeviceClass}{DeviceClasses} describing all the devices supported by this plugin.
+    If a DeviceClass has an invalid parameter it will be ignored.
+*/
 QList<DeviceClass> DevicePlugin::supportedDevices() const
 {
     QList<DeviceClass> deviceClasses;
@@ -200,12 +202,16 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                     createMethods |= DeviceClass::CreateMethodDiscovery;
                 } else if (createMethodValue.toString() == "auto") {
                     createMethods |= DeviceClass::CreateMethodAuto;
+                } else if (createMethodValue.toString() == "user") {
+                    createMethods |= DeviceClass::CreateMethodUser;
                 } else {
+                    qCWarning(dcDeviceManager) << "Unknown createMehtod" << createMethodValue.toString() <<
+                                                  "in deviceClass " << deviceClass.name() << ". Falling back to CreateMethodUser.";
                     createMethods |= DeviceClass::CreateMethodUser;
                 }
             }
             deviceClass.setCreateMethods(createMethods);
-
+            deviceClass.setDeviceIcon(loadAndVerifyDeviceIcon(jo.value("deviceIcon").toString()));
             deviceClass.setDiscoveryParamTypes(parseParamTypes(jo.value("discoveryParamTypes").toArray()));
 
             QString setupMethod = jo.value("setupMethod").toString();
@@ -215,7 +221,9 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 deviceClass.setSetupMethod(DeviceClass::SetupMethodDisplayPin);
             } else if (setupMethod == "enterPin") {
                 deviceClass.setSetupMethod(DeviceClass::SetupMethodEnterPin);
-            } else {
+            } else if (setupMethod == "justAdd") {
+                qCWarning(dcDeviceManager) << "Unknown setupMehtod" << setupMethod <<
+                                              "in deviceClass " << deviceClass.name() << ". Falling back to SetupMethodJustAdd.";
                 deviceClass.setSetupMethod(DeviceClass::SetupMethodJustAdd);
             }
             deviceClass.setPairingInfo(jo.value("pairingInfo").toString());
@@ -223,7 +231,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
 
             QList<DeviceClass::BasicTag> basicTags;
             foreach (const QJsonValue &basicTagJson, jo.value("basicTags").toArray()) {
-                basicTags.append(basicTagStringToBasicTag(basicTagJson.toString()));
+                basicTags.append(loadAndVerifyBasicTag(basicTagJson.toString()));
             }
             deviceClass.setBasicTags(basicTags);
 
@@ -242,7 +250,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 StateType stateType(st.value("id").toString());
                 stateType.setName(st.value("name").toString());
                 stateType.setType(t);
-                stateType.setUnit(unitStringToUnit(st.value("unit").toString()));
+                stateType.setUnit(loadAndVerifyUnit(st.value("unit").toString()));
                 stateType.setDefaultValue(st.value("defaultValue").toVariant());
                 if (st.contains("minValue"))
                     stateType.setMinValue(st.value("minValue").toVariant());
@@ -256,6 +264,13 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                         possibleValues.append(possibleValueJson.toVariant());
                     }
                     stateType.setPossibleValues(possibleValues);
+
+                    // inform the plugin developer about the error in the plugin json file
+                    Q_ASSERT_X(stateType.possibleValues().contains(stateType.defaultValue()),
+                               QString("\"%1\" plugin").arg(pluginName()).toLatin1().data(),
+                               QString("The given default value \"%1\" is not in the possible values of the stateType \"%2\".")
+                               .arg(stateType.defaultValue().toString()).arg(stateType.name()).toLatin1().data());
+
                 }
                 stateTypes.append(stateType);
 
@@ -307,9 +322,9 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
             }
             deviceClass.setEventTypes(eventTypes);
 
-            if (!broken) {
+            if (!broken)
                 deviceClasses.append(deviceClass);
-            }
+
         }
     }
     return deviceClasses;
@@ -451,12 +466,12 @@ QList<ParamType> DevicePlugin::parseParamTypes(const QJsonArray &array) const
 
         // set the input type if there is any
         if (pt.contains("inputType")) {
-            paramType.setInputType(inputTypeStringToInputType(pt.value("inputType").toString()));
+            paramType.setInputType(loadAndVerifyInputType(pt.value("inputType").toString()));
         }
 
         // set the unit if there is any
         if (pt.contains("unit")) {
-            paramType.setUnit(unitStringToUnit(pt.value("unit").toString()));
+            paramType.setUnit(loadAndVerifyUnit(pt.value("unit").toString()));
         }
 
         // set readOnly if given (default false)
@@ -693,161 +708,96 @@ QStringList DevicePlugin::verifyFields(const QStringList &fields, const QJsonObj
     return ret;
 }
 
-Types::Unit DevicePlugin::unitStringToUnit(const QString &unitString) const
+Types::Unit DevicePlugin::loadAndVerifyUnit(const QString &unitString) const
 {
-    if (unitString == QString()) {
+    if (unitString.isEmpty())
         return Types::UnitNone;
-    } else if (unitString == "Seconds") {
-        return Types::UnitSeconds;
-    } else if (unitString == "Minutes") {
-        return Types::UnitMinutes;
-    } else if (unitString == "Hours") {
-        return Types::UnitHours;
-    } else if (unitString == "UnixTime") {
-        return Types::UnitUnixTime;
-    } else if (unitString == "MeterPerSecond") {
-        return Types::UnitMeterPerSecond;
-    } else if (unitString == "KiloMeterPerHour") {
-        return Types::UnitKiloMeterPerHour;
-    } else if (unitString == "Degree") {
-        return Types::UnitDegree;
-    } else if (unitString == "Radiant") {
-        return Types::UnitRadiant;
-    } else if (unitString == "DegreeCelsius") {
-        return Types::UnitDegreeCelsius;
-    } else if (unitString == "DegreeKelvin") {
-        return Types::UnitDegreeKelvin;
-    } else if (unitString == "Mired") {
-        return Types::UnitMired;
-    } else if (unitString == "MilliBar") {
-        return Types::UnitMilliBar;
-    } else if (unitString == "Bar") {
-        return Types::UnitBar;
-    } else if (unitString == "Pascal") {
-        return Types::UnitPascal;
-    } else if (unitString == "HectoPascal") {
-        return Types::UnitHectoPascal;
-    } else if (unitString == "Atmosphere") {
-        return Types::UnitAtmosphere;
-    } else if (unitString == "Lumen") {
-        return Types::UnitLumen;
-    } else if (unitString == "Lux") {
-        return Types::UnitLux;
-    } else if (unitString == "Candela") {
-        return Types::UnitCandela;
-    } else if (unitString == "MilliMeter") {
-        return Types::UnitMilliMeter;
-    } else if (unitString == "CentiMeter") {
-        return Types::UnitCentiMeter;
-    } else if (unitString == "Meter") {
-        return Types::UnitMeter;
-    } else if (unitString == "KiloMeter") {
-        return Types::UnitKiloMeter;
-    } else if (unitString == "Gram") {
-        return Types::UnitGram;
-    } else if (unitString == "KiloGram") {
-        return Types::UnitKiloGram;
-    } else if (unitString == "Dezibel") {
-        return Types::UnitDezibel;
-    } else if (unitString == "KiloByte") {
-        return Types::UnitKiloByte;
-    } else if (unitString == "MegaByte") {
-        return Types::UnitMegaByte;
-    } else if (unitString == "GigaByte") {
-        return Types::UnitGigaByte;
-    } else if (unitString == "TeraByte") {
-        return Types::UnitTeraByte;
-    } else if (unitString == "MilliWatt") {
-        return Types::UnitMilliWatt;
-    } else if (unitString == "Watt") {
-        return Types::UnitWatt;
-    } else if (unitString == "KiloWatt") {
-        return Types::UnitKiloWatt;
-    } else if (unitString == "KiloWattHour") {
-        return Types::UnitKiloWattHour;
-    } else if (unitString == "EuroPerMegaWattHour") {
-        return Types::UnitEuroPerMegaWattHour;
-    } else if (unitString == "EuroCentPerKiloWattHour") {
-        return Types::UnitEuroCentPerKiloWattHour;
-    } else if (unitString == "Percentage") {
-        return Types::UnitPercentage;
-    } else if (unitString == "PartsPerMillion") {
-        return Types::UnitPartsPerMillion;
-    } else if (unitString == "Euro") {
-        return Types::UnitEuro;
-    } else if (unitString == "Dollar") {
-        return Types::UnitDollar;
-    } else {
-        qCWarning(dcDeviceManager) << "Could not parse unit:" << unitString << "in plugin" << this->pluginName();
+
+    QMetaObject metaObject = Types::staticMetaObject;
+    int enumIndex = metaObject.indexOfEnumerator(QString("Unit").toLatin1().data());
+    QMetaEnum metaEnum = metaObject.enumerator(enumIndex);
+
+    int enumValue = -1;
+    for (int i = 0; i < metaEnum.keyCount(); i++) {
+        if (QString(metaEnum.valueToKey(metaEnum.value(i))) == QString("Unit" + unitString)) {
+            enumValue = metaEnum.value(i);
+            break;
+        }
     }
-    return Types::UnitNone;
+
+    // inform the plugin developer about the error in the plugin json file
+    Q_ASSERT_X(enumValue != -1,
+               QString("\"%1\" plugin").arg(pluginName()).toLatin1().data(),
+               QString("Invalid unit type \"%1\" in json file.").arg(unitString).toLatin1().data());
+
+    return (Types::Unit)enumValue;
 }
 
-Types::InputType DevicePlugin::inputTypeStringToInputType(const QString &inputType) const
+Types::InputType DevicePlugin::loadAndVerifyInputType(const QString &inputType) const
 {
-    if (inputType == "TextLine") {
-        return Types::InputTypeTextLine;
-    } else if (inputType == "TextArea") {
-        return Types::InputTypeTextArea;
-    } else if (inputType == "Password") {
-        return Types::InputTypePassword;
-    } else if (inputType == "Search") {
-        return Types::InputTypeSearch;
-    } else if (inputType == "Mail") {
-        return Types::InputTypeMail;
-    } else if (inputType == "IPv4Address") {
-        return Types::InputTypeIPv4Address;
-    } else if (inputType == "IPv6Address") {
-        return Types::InputTypeIPv6Address;
-    } else if (inputType == "Url") {
-        return Types::InputTypeUrl;
-    } else if (inputType == "MacAddress") {
-        return Types::InputTypeMacAddress;
+    QMetaObject metaObject = Types::staticMetaObject;
+    int enumIndex = metaObject.indexOfEnumerator(QString("InputType").toLatin1().data());
+    QMetaEnum metaEnum = metaObject.enumerator(enumIndex);
+
+    int enumValue = -1;
+    for (int i = 0; i < metaEnum.keyCount(); i++) {
+        if (QString(metaEnum.valueToKey(metaEnum.value(i))) == QString("InputType" + inputType)) {
+            enumValue = metaEnum.value(i);
+            break;
+        }
     }
-    return Types::InputTypeNone;
+
+    // inform the plugin developer about the error in the plugin json file
+    Q_ASSERT_X(enumValue != -1,
+               QString("\"%1\" plugin").arg(pluginName()).toLatin1().data(),
+               QString("Invalid inputType \"%1\" in json file.").arg(inputType).toLatin1().data());
+
+    return (Types::InputType)enumValue;
 }
 
-DeviceClass::BasicTag DevicePlugin::basicTagStringToBasicTag(const QString &basicTag) const
+DeviceClass::BasicTag DevicePlugin::loadAndVerifyBasicTag(const QString &basicTag) const
 {
-    if (basicTag == "Device") {
-        return DeviceClass::BasicTagDevice;
-    } else if (basicTag == "Service") {
-        return DeviceClass::BasicTagService;
-    } else if (basicTag == "Actuator") {
-        return DeviceClass::BasicTagActuator;
-    } else if (basicTag == "Sensor") {
-        return DeviceClass::BasicTagSensor;
-    } else if (basicTag == "Lighting") {
-        return DeviceClass::BasicTagLighting;
-    } else if (basicTag == "Energy") {
-        return DeviceClass::BasicTagEnergy;
-    } else if (basicTag == "Multimedia") {
-        return DeviceClass::BasicTagMultimedia;
-    } else if (basicTag == "Weather") {
-        return DeviceClass::BasicTagWeather;
-    } else if (basicTag == "Gateway") {
-        return DeviceClass::BasicTagGateway;
-    } else if (basicTag == "Heating") {
-        return DeviceClass::BasicTagHeating;
-    } else if (basicTag == "Cooling") {
-        return DeviceClass::BasicTagCooling;
-    } else if (basicTag == "Notification") {
-        return DeviceClass::BasicTagNotification;
-    } else if (basicTag == "Security") {
-        return DeviceClass::BasicTagSecurity;
-    } else if (basicTag == "Time") {
-        return DeviceClass::BasicTagTime;
-    } else if (basicTag == "Shading") {
-        return DeviceClass::BasicTagShading;
-    } else if (basicTag == "Appliance") {
-        return DeviceClass::BasicTagAppliance;
-    } else if (basicTag == "Camera") {
-        return DeviceClass::BasicTagCamera;
-    } else if (basicTag == "Lock") {
-        return DeviceClass::BasicTagLock;
-    } else {
-        qCWarning(dcDeviceManager) << "Could not parse basicTag:" << basicTag << "in plugin" << this->pluginName();
+    QMetaObject metaObject = DeviceClass::staticMetaObject;
+    int enumIndex = metaObject.indexOfEnumerator(QString("BasicTag").toLatin1().data());
+    QMetaEnum metaEnum = metaObject.enumerator(enumIndex);
+
+    int enumValue = -1;
+    for (int i = 0; i < metaEnum.keyCount(); i++) {
+        if (QString(metaEnum.valueToKey(metaEnum.value(i))) == QString("BasicTag" + basicTag)) {
+            enumValue = metaEnum.value(i);
+            break;
+        }
     }
 
-    return DeviceClass::BasicTagDevice;
+    // inform the plugin developer about the error in the plugin json file
+    Q_ASSERT_X(enumValue != -1,
+               QString("\"%1\" plugin").arg(pluginName()).toLatin1().data(),
+               QString("Invalid basicTag type \"%1\" in json file.").arg(basicTag).toLatin1().data());
+
+    return (DeviceClass::BasicTag)enumValue;
+}
+
+DeviceClass::DeviceIcon DevicePlugin::loadAndVerifyDeviceIcon(const QString &deviceIcon) const
+{
+    if (deviceIcon.isEmpty())
+        return DeviceClass::DeviceIconNone;
+
+    QMetaObject metaObject = DeviceClass::staticMetaObject;
+    int enumIndex = metaObject.indexOfEnumerator(QString("DeviceIcon").toLatin1().data());
+    QMetaEnum metaEnum = metaObject.enumerator(enumIndex);
+
+    int enumValue = -1;
+    for (int i = 0; i < metaEnum.keyCount(); i++) {
+        if (QString(metaEnum.valueToKey(metaEnum.value(i))) == QString("DeviceIcon" + deviceIcon)) {
+            enumValue = metaEnum.value(i);
+            break;
+        }
+    }
+
+    // inform the plugin developer about the error in the plugin json file
+    Q_ASSERT_X(enumValue != -1,
+               QString("\"%1\" plugin").arg(pluginName()).toLatin1().data(),
+               QString("Invalid icon type \"%1\" in json file.").arg(deviceIcon).toLatin1().data());
+
+    return (DeviceClass::DeviceIcon)enumValue;
 }

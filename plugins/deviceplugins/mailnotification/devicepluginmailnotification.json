@@ -12,6 +12,7 @@
                     "deviceClassId": "f4844c97-7ca6-4349-904e-ff9749a9fe74",
                     "idName": "customMail",
                     "name": "Custom mail",
+                    "deviceIcon": "Mail",
                     "basicTags": [
                         "Service",
                         "Notification"
@@ -90,6 +91,7 @@
                     "deviceClassId": "3869884a-1592-4b8f-84a7-994be18ff555",
                     "idName": "googleMail",
                     "name": "Google mail",
+                    "deviceIcon": "Mail",
                     "basicTags": [
                         "Service",
                         "Notification"
@@ -143,6 +145,7 @@
                     "deviceClassId": "59409e8f-0c83-414f-abd5-bbbf2758acba",
                     "idName": "yahooMail",
                     "name": "Yahoo mail",
+                    "deviceIcon": "Mail",
                     "basicTags": [
                         "Service",
                         "Notification"

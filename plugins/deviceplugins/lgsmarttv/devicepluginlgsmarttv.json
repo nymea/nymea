@@ -12,6 +12,7 @@
                     "deviceClassId": "1d41b5a8-74ff-4a12-b365-c7bbe610848f",
                     "idName": "lgSmartTv",
                     "name": "LG Smart Tv",
+                    "deviceIcon": "Tv",
                     "basicTags": [
                         "Device",
                         "Multimedia",

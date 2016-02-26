@@ -120,6 +120,7 @@
     \value DeviceIconDesk
     \value DeviceIconHifi
     \value DeviceIconPower
+    \value DeviceIconEnergy
     \value DeviceIconRadio
     \value DeviceIconSmartPhone
     \value DeviceIconSocket
@@ -138,6 +139,11 @@
     \value DeviceIconSwitch
     \value DeviceIconMotionDetectors
     \value DeviceIconWeather
+    \value DeviceIconTime
+    \value DeviceIconLightBulb
+    \value DeviceIconGateway
+    \value DeviceIconMail
+    \value DeviceIconNetwork
     \value DeviceIconCloud
 */
 
@@ -152,6 +158,7 @@ DeviceClass::DeviceClass(const PluginId &pluginId, const VendorId &vendorId, con
     m_id(id),
     m_vendorId(vendorId),
     m_pluginId(pluginId),
+    m_deviceIcon(DeviceIconPower),
     m_createMethods(CreateMethodUser),
     m_setupMethod(SetupMethodJustAdd)
 {

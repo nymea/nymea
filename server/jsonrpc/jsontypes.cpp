@@ -81,13 +81,13 @@ void JsonTypes::init()
 {
     // BasicTypes
     s_basicType = enumToStrings(JsonTypes::staticMetaObject, "BasicType");
-    s_basicTag = enumToStrings(DeviceClass::staticMetaObject, "BasicTag");
     s_stateOperator = enumToStrings(Types::staticMetaObject, "StateOperator");
     s_valueOperator = enumToStrings(Types::staticMetaObject, "ValueOperator");
     s_inputType = enumToStrings(Types::staticMetaObject, "InputType");
     s_unit = enumToStrings(Types::staticMetaObject, "Unit");
     s_createMethod = enumToStrings(DeviceClass::staticMetaObject, "CreateMethod");
     s_setupMethod = enumToStrings(DeviceClass::staticMetaObject, "SetupMethod");
+    s_basicTag = enumToStrings(DeviceClass::staticMetaObject, "BasicTag");
     s_deviceIcon = enumToStrings(DeviceClass::staticMetaObject, "DeviceIcon");
     s_removePolicy = enumToStrings(RuleEngine::staticMetaObject, "RemovePolicy");
     s_deviceError = enumToStrings(DeviceManager::staticMetaObject, "DeviceError");
@@ -193,6 +193,7 @@ void JsonTypes::init()
     s_deviceClass.insert("vendorId", basicTypeToString(Uuid));
     s_deviceClass.insert("pluginId", basicTypeToString(Uuid));
     s_deviceClass.insert("name", basicTypeToString(String));
+    s_deviceClass.insert("deviceIcon", deviceIconRef());
     s_deviceClass.insert("basicTags", QVariantList() << basicTagRef());
     s_deviceClass.insert("stateTypes", QVariantList() << stateTypeRef());
     s_deviceClass.insert("eventTypes", QVariantList() << eventTypeRef());
@@ -529,6 +530,7 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass)
     variant.insert("id", deviceClass.id());
     variant.insert("vendorId", deviceClass.vendorId());
     variant.insert("pluginId", deviceClass.pluginId());
+    variant.insert("deviceIcon", s_deviceIcon.at(deviceClass.deviceIcon()));
 
     QVariantList basicTags;
     foreach (const DeviceClass::BasicTag &basicTag, deviceClass.basicTags()) {

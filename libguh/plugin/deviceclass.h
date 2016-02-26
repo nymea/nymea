@@ -39,6 +39,7 @@ class LIBGUH_EXPORT DeviceClass
     Q_ENUMS(CreateMethod)
     Q_ENUMS(SetupMethod)
     Q_ENUMS(BasicTag)
+    Q_ENUMS(DeviceIcon)
 
 public:
     enum CreateMethod {
@@ -76,6 +77,35 @@ public:
         BasicTagLock
     };
 
+    enum DeviceIcon {
+        DeviceIconBed,
+        DeviceIconBlinds,
+        DeviceIconCeilingLamp,
+        DeviceIconCouch,
+        DeviceIconDeskLamp,
+        DeviceIconDesk,
+        DeviceIconHifi,
+        DeviceIconPower,
+        DeviceIconRadio,
+        DeviceIconSmartPhone,
+        DeviceIconSocket,
+        DeviceIconStandardLamp,
+        DeviceIconSun,
+        DeviceIconTablet,
+        DeviceIconThermometer,
+        DeviceIconTune,
+        DeviceIconTv,
+        DeviceIconBattery,
+        DeviceIconDishwasher,
+        DeviceIconWashingMachine,
+        DeviceIconLaundryDryer,
+        DeviceIconIrHeater,
+        DeviceIconRadiator,
+        DeviceIconSwitch,
+        DeviceIconMotionDetectors,
+        DeviceIconWeather,
+        DeviceIconCloud
+    };
 
     DeviceClass(const PluginId &pluginId = PluginId(), const VendorId &vendorId = VendorId(), const DeviceClassId &id = DeviceClassId());
 
@@ -86,6 +116,9 @@ public:
 
     QString name() const;
     void setName(const QString &name);
+
+    DeviceIcon deviceIcon() const;
+    void setDeviceIcon(const DeviceIcon &deviceIcon);
 
     QList<BasicTag> basicTags() const;
     void setBasicTags(const QList<BasicTag> &basicTags);
@@ -124,6 +157,7 @@ private:
     VendorId m_vendorId;
     PluginId m_pluginId;
     QString m_name;
+    DeviceIcon m_deviceIcon;
     QList<BasicTag> m_basicTags;
     QList<StateType> m_stateTypes;
     QList<EventType> m_eventTypes;

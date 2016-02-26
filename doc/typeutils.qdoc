@@ -1,7 +1,7 @@
 /*!
     \page typeutils.h
     \title Type Utils
-   
+
     \chapter Types::StateOperator
     \table
         \header
@@ -17,7 +17,7 @@
             \li 1
             \li The logical OR \tt | operator for two \l{State}{States}
     \endtable
-        
+
     \chapter Types::ValueOperator
     \table
         \header
@@ -27,11 +27,11 @@
         \row
             \li Types::ValueOperatorEquals
             \li 0
-            \li The \tt = operator to compare two \a values of a \l{Param}. 
+            \li The \tt = operator to compare two \a values of a \l{Param}.
         \row
             \li Types::ValueOperatorNotEquals
             \li 1
-            \li The \tt != operator to compare two \a values of a \l{Param}. 
+            \li The \tt != operator to compare two \a values of a \l{Param}.
         \row
             \li Types::ValueOperatorLess
             \li 2
@@ -265,6 +265,38 @@
             \li Types::UnitDollar
             \li 39
             \li The value of the \l{Param} has unit \tt {[\$]} \unicode{0x2192} dollar.
+        \row
+            \li Types::UnitHerz
+            \li 40
+            \li The value of the \l{Param} has unit \tt {[Hz]} \unicode{0x2192} herz.
+        \row
+            \li Types::UnitAmpere
+            \li 41
+            \li The value of the \l{Param} has unit \tt {[A]} \unicode{0x2192} ampere.
+        \row
+            \li Types::UnitMilliAmpere
+            \li 42
+            \li The value of the \l{Param} has unit \tt {[mA]} \unicode{0x2192} milli ampere.
+        \row
+            \li Types::UnitVolt
+            \li 43
+            \li The value of the \l{Param} has unit \tt {[V]} \unicode{0x2192} volt.
+        \row
+            \li Types::UnitMilliVolt
+            \li 44
+            \li The value of the \l{Param} has unit \tt {[mV]} \unicode{0x2192} milli volt.
+        \row
+            \li Types::UnitVoltAmpere
+            \li 45
+            \li The value of the \l{Param} has unit \tt {[VA]} \unicode{0x2192} volt ampere.
+        \row
+            \li Types::UnitVoltAmpereReactive
+            \li 46
+            \li The value of the \l{Param} has unit \tt {[var]} \unicode{0x2192} volt-ampere reactive.
+        \row
+            \li Types::UnitAmpereHour
+            \li 47
+            \li The value of the \l{Param} has unit \tt {[Ah]} \unicode{0x2192} ampere hour.
     \endtable
 
     \chapter UUID Types
@@ -274,37 +306,39 @@
 
     \section2 VendorId
     This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{Vendor}.
-    \section2 DeviceClassId    
+
+    \section2 DeviceClassId
     This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{DeviceClass}.
+
     \section2 DeviceId
-   This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{Device}.
+    This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{Device}.
 
     \section2 DeviceDescriptorId
-   This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{DeviceDescriptor}.
+    This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{DeviceDescriptor}.
 
     \section2 EventTypeId
-   This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{EventType}.
+    This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{EventType}.
 
     \section2 EventId
-   This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{Event}.
+    This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{Event}.
 
     \section2 StateTypeId
-   This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{StateType}.
+    This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{StateType}.
 
     \section2 StateId
-   This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{State}.    
+    This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{State}.
 
     \section2 ActionTypeId
-   This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{ActionType}.
+    This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{ActionType}.
 
     \section2 ActionId
-   This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{Action} and \l{RuleAction}.
+    This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{Action} and \l{RuleAction}.
 
     \section2 RuleId
-   This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{guhserver::Rule}.
+    This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{guhserver::Rule}.
 
     \section2 PairingTransactionId
-   This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a pairing transaction.
+    This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a pairing transaction.
 
 */
 

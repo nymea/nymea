@@ -78,6 +78,7 @@ public:
     };
 
     enum DeviceIcon {
+        DeviceIconNone,
         DeviceIconBed,
         DeviceIconBlinds,
         DeviceIconCeilingLamp,
@@ -86,6 +87,7 @@ public:
         DeviceIconDesk,
         DeviceIconHifi,
         DeviceIconPower,
+        DeviceIconEnergy,
         DeviceIconRadio,
         DeviceIconSmartPhone,
         DeviceIconSocket,
@@ -104,6 +106,11 @@ public:
         DeviceIconSwitch,
         DeviceIconMotionDetectors,
         DeviceIconWeather,
+        DeviceIconTime,
+        DeviceIconLightBulb,
+        DeviceIconGateway,
+        DeviceIconMail,
+        DeviceIconNetwork,
         DeviceIconCloud
     };
 

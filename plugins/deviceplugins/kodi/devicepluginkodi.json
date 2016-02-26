@@ -12,6 +12,7 @@
                     "deviceClassId": "d09953e3-c5bd-415b-973b-0d0bf2be3f69",
                     "idName": "kodi",
                     "name": "Kodi",
+                    "deviceIcon": "Tv",
                     "basicTags": [
                         "Service",
                         "Multimedia",

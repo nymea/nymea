@@ -107,6 +107,7 @@ public:
     DECLARE_TYPE(unit, "Unit", Types, Unit)
     DECLARE_TYPE(createMethod, "CreateMethod", DeviceClass, CreateMethod)
     DECLARE_TYPE(setupMethod, "SetupMethod", DeviceClass, SetupMethod)
+    DECLARE_TYPE(deviceIcon, "DeviceIcon", DeviceClass, DeviceIcon)
     DECLARE_TYPE(deviceError, "DeviceError", DeviceManager, DeviceError)
     DECLARE_TYPE(removePolicy, "RemovePolicy", RuleEngine, RemovePolicy)
     DECLARE_TYPE(ruleError, "RuleError", RuleEngine, RuleError)

@@ -12,6 +12,7 @@
                     "deviceClassId": "bd216356-f1ec-4324-9785-6982d2174e17",
                     "name": "WiFi Device",
                     "idName": "wifi",
+                    "deviceIcon": "Network",
                     "basicTags": [
                         "Device",
                         "Sensor"

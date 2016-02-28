@@ -12,6 +12,7 @@
                     "deviceClassId": "69d97d3b-a8e6-42f3-afc0-ca8a53eb7cce",
                     "idName": "wemoSwitch",
                     "name": "WeMo Switch",
+                    "deviceIcon": "Socket",
                     "basicTags": [
                         "Device",
                         "Actuator"

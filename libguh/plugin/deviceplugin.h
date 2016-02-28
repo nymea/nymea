@@ -38,7 +38,9 @@
 #endif
 
 #include <QObject>
+#include <QMetaEnum>
 #include <QJsonObject>
+#include <QMetaObject>
 
 class DeviceManager;
 class Device;
@@ -90,7 +92,6 @@ public:
     QVariant configValue(const QString &paramName) const;
     DeviceManager::DeviceError setConfigValue(const QString &paramName, const QVariant &value);
 
-
 signals:
     void emitEvent(const Event &event);
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors);
@@ -128,9 +129,11 @@ private:
 
     QStringList verifyFields(const QStringList &fields, const QJsonObject &value) const;
 
-    Types::Unit unitStringToUnit(const QString &unitString) const;
-    Types::InputType inputTypeStringToInputType(const QString &inputType) const;
-    DeviceClass::BasicTag basicTagStringToBasicTag(const QString &basicTag) const;
+    // load and verify enum values
+    Types::Unit loadAndVerifyUnit(const QString &unitString) const;
+    Types::InputType loadAndVerifyInputType(const QString &inputType) const;
+    DeviceClass::BasicTag loadAndVerifyBasicTag(const QString &basicTag) const;
+    DeviceClass::DeviceIcon loadAndVerifyDeviceIcon(const QString &deviceIcon) const;
 
     DeviceManager *m_deviceManager;
 

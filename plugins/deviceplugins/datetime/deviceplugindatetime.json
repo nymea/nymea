@@ -12,6 +12,7 @@
                     "deviceClassId": "fbf665fb-9aca-423f-a5f2-924e50ebe6ca",
                     "idName": "today",
                     "name": "Today",
+                    "deviceIcon": "Time",
                     "basicTags": [
                         "Service",
                         "Time"
@@ -174,6 +175,7 @@
                     "deviceClassId": "3f3c7ecc-9915-4e4e-95a1-e11f4f9d174d",
                     "idName": "alarm",
                     "name": "Alarm",
+                    "deviceIcon": "Time",
                     "basicTags": [
                         "Service",
                         "Actuator",
@@ -271,6 +273,7 @@
                     "deviceClassId": "805c8948-e663-4ba6-aa67-df7446ed7098",
                     "idName": "countdown",
                     "name": "Countdown",
+                    "deviceIcon": "Time",
                     "basicTags": [
                         "Service",
                         "Actuator",

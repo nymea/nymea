@@ -12,6 +12,7 @@
                     "deviceClassId": "728d5a67-27a3-400e-b83c-2765f5196f69",
                     "idName": "connection",
                     "name": "Netatmo Connection",
+                    "deviceIcon": "Network",
                     "basicTags": [
                         "Service",
                         "Gateway",
@@ -49,6 +50,7 @@
                     "deviceClassId": "1c809049-04f2-4710-99f5-6ed379a2934f",
                     "idName": "indoor",
                     "name": "Indoor Station",
+                    "deviceIcon": "Thermometer",
                     "basicTags": [
                         "Device",
                         "Weather",
@@ -154,6 +156,7 @@
                     "deviceClassId": "6cc01d62-7317-4ec4-8ac4-a4cab762c179",
                     "idName": "outdoor",
                     "name": "Outdoor Station",
+                    "deviceIcon": "Thermometer",
                     "basicTags": [
                         "Device",
                         "Weather",

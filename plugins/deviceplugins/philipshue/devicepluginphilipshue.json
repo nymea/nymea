@@ -12,6 +12,7 @@
                     "deviceClassId": "642aa4c7-19aa-45ed-ba06-aa1ae6c9edf7",
                     "idName": "hueBridge",
                     "name": "Hue gateway",
+                    "deviceIcon": "Gateway",
                     "basicTags": [
                         "Device",
                         "Gateway",
@@ -118,6 +119,7 @@
                     "deviceClassId": "0edba26c-96ab-44fb-a6a2-c0574d19630e",
                     "idName": "hueLight",
                     "name": "Hue Light",
+                    "deviceIcon": "LightBulb",
                     "basicTags": [
                         "Device",
                         "Lighting",
@@ -251,6 +253,7 @@
                     "deviceClassId": "4fa568ef-7a3a-422b-b0c0-206d37cb4eed",
                     "idName": "hueWhiteLight",
                     "name": "Hue White Light",
+                    "deviceIcon": "LightBulb",
                     "basicTags": [
                         "Device",
                         "Actuator",
@@ -352,6 +355,7 @@
                     "deviceClassId": "bb482d39-67ef-46dc-88e9-7b181d642b28",
                     "idName": "hueRemote",
                     "name": "Hue Remote",
+                    "deviceIcon": "Switch",
                     "basicTags": [
                         "Device",
                         "Sensor"

@@ -75,7 +75,7 @@ HttpReply *RulesResource::proccessRequest(const HttpRequest &request, const QStr
             return createRuleErrorReply(HttpReply::BadRequest, RuleEngine::RuleErrorRuleNotFound);
         }
 
-        if (GuhCore::instance()->findRule(m_ruleId).id().isNull())
+        if (GuhCore::instance()->ruleEngine()->findRule(m_ruleId).id().isNull())
             return createRuleErrorReply(HttpReply::NotFound, RuleEngine::RuleErrorRuleNotFound);
 
     }
@@ -197,10 +197,10 @@ HttpReply *RulesResource::getRules(const DeviceId &deviceId) const
         reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packRuleDescriptions()).toJson());
     } else {
         qCDebug(dcRest) << "Get rule descriptions which contain the device with id" << deviceId.toString();
-        QList<RuleId> ruleIdsList = GuhCore::instance()->findRules(deviceId);
+        QList<RuleId> ruleIdsList = GuhCore::instance()->ruleEngine()->findRules(deviceId);
         QList<Rule> ruleList;
         foreach (const RuleId &ruleId, ruleIdsList) {
-            Rule rule = GuhCore::instance()->findRule(ruleId);
+            Rule rule = GuhCore::instance()->ruleEngine()->findRule(ruleId);
             if (!rule.id().isNull())
                 ruleList.append(rule);
         }
@@ -212,7 +212,7 @@ HttpReply *RulesResource::getRules(const DeviceId &deviceId) const
 
 HttpReply *RulesResource::getRuleDetails(const RuleId &ruleId) const
 {
-    Rule rule = GuhCore::instance()->findRule(ruleId);
+    Rule rule = GuhCore::instance()->ruleEngine()->findRule(ruleId);
     if (rule.id().isNull())
         return createRuleErrorReply(HttpReply::NotFound, RuleEngine::RuleErrorRuleNotFound);
 
@@ -279,10 +279,10 @@ HttpReply *RulesResource::addRule(const QByteArray &payload) const
     bool executable = params.value("executable", true).toBool();
 
     RuleId newRuleId = RuleId::createRuleId();
-    RuleEngine::RuleError status = GuhCore::instance()->addRule(newRuleId, name, eventDescriptorList, stateEvaluator, actions, exitActions, enabled, executable);
+    RuleEngine::RuleError status = GuhCore::instance()->ruleEngine()->addRule(newRuleId, name, eventDescriptorList, stateEvaluator, actions, exitActions, enabled, executable);
 
     if (status ==  RuleEngine::RuleErrorNoError) {
-        QVariant returns = JsonTypes::packRule(GuhCore::instance()->findRule(newRuleId));
+        QVariant returns = JsonTypes::packRule(GuhCore::instance()->ruleEngine()->findRule(newRuleId));
         HttpReply *reply = createSuccessReply();
         reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
         reply->setPayload(QJsonDocument::fromVariant(returns).toJson());
@@ -296,7 +296,7 @@ HttpReply *RulesResource::enableRule(const RuleId &ruleId) const
 {
     qCDebug(dcRest) << "Enable rule with id" << ruleId.toString();
 
-    RuleEngine::RuleError status = GuhCore::instance()->enableRule(ruleId);
+    RuleEngine::RuleError status = GuhCore::instance()->ruleEngine()->enableRule(ruleId);
 
     if (status != RuleEngine::RuleErrorNoError)
         return createRuleErrorReply(HttpReply::InternalServerError, status);
@@ -308,7 +308,7 @@ HttpReply *RulesResource::disableRule(const RuleId &ruleId) const
 {
     qCDebug(dcRest) << "Disable rule with id" << ruleId.toString();
 
-    RuleEngine::RuleError status = GuhCore::instance()->disableRule(ruleId);
+    RuleEngine::RuleError status = GuhCore::instance()->ruleEngine()->disableRule(ruleId);
 
     if (status != RuleEngine::RuleErrorNoError)
         return createRuleErrorReply(HttpReply::InternalServerError, status);
@@ -320,7 +320,7 @@ HttpReply *RulesResource::executeActions(const RuleId &ruleId) const
 {
     qCDebug(dcRest) << "Execute actions of rule with id" << ruleId.toString();
 
-    RuleEngine::RuleError status = GuhCore::instance()->executeRuleActions(ruleId);
+    RuleEngine::RuleError status = GuhCore::instance()->ruleEngine()->executeActions(ruleId);
 
     if (status != RuleEngine::RuleErrorNoError)
         return createRuleErrorReply(HttpReply::InternalServerError, status);
@@ -332,7 +332,7 @@ HttpReply *RulesResource::executeExitActions(const RuleId &ruleId) const
 {
     qCDebug(dcRest) << "Execute exit actions of rule with id" << ruleId.toString();
 
-    RuleEngine::RuleError status = GuhCore::instance()->executeRuleExitActions(ruleId);
+    RuleEngine::RuleError status = GuhCore::instance()->ruleEngine()->executeExitActions(ruleId);
 
     if (status != RuleEngine::RuleErrorNoError)
         return createRuleErrorReply(HttpReply::InternalServerError, status);
@@ -382,7 +382,7 @@ HttpReply *RulesResource::editRule(const RuleId &ruleId, const QByteArray &paylo
     QString name = params.value("name", QString()).toString();
     bool enabled = params.value("enabled", true).toBool();
 
-    RuleEngine::RuleError status = GuhCore::instance()->editRule(ruleId, name, eventDescriptorList, stateEvaluator, actions, exitActions, enabled);
+    RuleEngine::RuleError status = GuhCore::instance()->ruleEngine()->editRule(ruleId, name, eventDescriptorList, stateEvaluator, actions, exitActions, enabled);
 
     if (status ==  RuleEngine::RuleErrorNoError) {
         qCDebug(dcRest) << "Edit rule successfully finished";

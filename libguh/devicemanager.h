@@ -114,8 +114,8 @@ public:
     DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params);
 
     QList<Device*> configuredDevices() const;
-    DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId id = DeviceId::createDeviceId());
-    DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &id = DeviceId::createDeviceId());
+    DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId id = DeviceId::createDeviceId());
+    DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &id = DeviceId::createDeviceId());
 
     DeviceError editDevice(const DeviceId &deviceId, const ParamList &params, bool fromDiscovery = false);
     DeviceError editDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId);
@@ -178,7 +178,7 @@ private slots:
 
 private:
     bool verifyPluginMetadata(const QJsonObject &data);
-    DeviceError addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId id = DeviceId::createDeviceId());
+    DeviceError addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId id = DeviceId::createDeviceId());
     DeviceSetupStatus setupDevice(Device *device);
     void postSetupDevice(Device *device);
 

@@ -147,7 +147,7 @@ HttpReply *PluginsResource::getPlugin(const PluginId &pluginId) const
 {
     qCDebug(dcRest) << "Get plugin with id" << pluginId;
     HttpReply *reply = createSuccessReply();
-    foreach (DevicePlugin *plugin, GuhCore::instance()->plugins()) {
+    foreach (DevicePlugin *plugin, GuhCore::instance()->deviceManager()->plugins()) {
         if (plugin->pluginId() == pluginId) {
             reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
             reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packPlugin(plugin)).toJson());
@@ -193,7 +193,7 @@ HttpReply *PluginsResource::setPluginConfiguration(const PluginId &pluginId, con
     QVariantList configuration = verification.second.toList();
     ParamList pluginParams = JsonTypes::unpackParams(configuration);
     qCDebug(dcRest) << pluginParams;
-    DeviceManager::DeviceError result = GuhCore::instance()->setPluginConfig(pluginId, pluginParams);
+    DeviceManager::DeviceError result = GuhCore::instance()->deviceManager()->setPluginConfig(pluginId, pluginParams);
 
     if (result != DeviceManager::DeviceErrorNoError)
         return createDeviceErrorReply(HttpReply::BadRequest, result);
@@ -203,7 +203,7 @@ HttpReply *PluginsResource::setPluginConfiguration(const PluginId &pluginId, con
 
 DevicePlugin *PluginsResource::findPlugin(const PluginId &pluginId) const
 {
-    foreach (DevicePlugin *plugin, GuhCore::instance()->plugins()) {
+    foreach (DevicePlugin *plugin, GuhCore::instance()->deviceManager()->plugins()) {
         if (plugin->pluginId() == pluginId) {
             return plugin;
         }

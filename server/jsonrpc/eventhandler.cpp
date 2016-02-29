@@ -77,7 +77,7 @@ JsonReply* EventHandler::GetEventType(const QVariantMap &params) const
 {
     qCDebug(dcJsonRpc) << "asked for event type" << params;
     EventTypeId eventTypeId(params.value("eventTypeId").toString());
-    foreach (const DeviceClass &deviceClass, GuhCore::instance()->supportedDevices()) {
+    foreach (const DeviceClass &deviceClass, GuhCore::instance()->deviceManager()->supportedDevices()) {
         foreach (const EventType &eventType, deviceClass.eventTypes()) {
             if (eventType.id() == eventTypeId) {
                 QVariantMap data = statusToReply(DeviceManager::DeviceErrorNoError);

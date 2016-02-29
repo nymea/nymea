@@ -50,7 +50,7 @@ private slots:
 
 void TestEvents::triggerEvent()
 {
-    QList<Device*> devices = GuhCore::instance()->findConfiguredDevices(mockDeviceClassId);
+    QList<Device*> devices = GuhCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId);
     QVERIFY2(devices.count() > 0, "There needs to be at least one configured Mock Device for this test");
     Device *device = devices.first();
 
@@ -77,7 +77,7 @@ void TestEvents::triggerEvent()
 
 void TestEvents::triggerStateChangeEvent()
 {
-    QList<Device*> devices = GuhCore::instance()->findConfiguredDevices(mockDeviceClassId);
+    QList<Device*> devices = GuhCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId);
     QVERIFY2(devices.count() > 0, "There needs to be at least one configured Mock Device for this test");
     Device *device = devices.first();
 

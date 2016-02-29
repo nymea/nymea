@@ -295,7 +295,7 @@
                         {
                             "id": "54646e7c-bc54-4895-81a2-590d72d120f9",
                             "idName": "timeout",
-                            "name": "Timout action"
+                            "name": "Timeout action"
                         }
                     ]
                 },
@@ -386,7 +386,7 @@
                         {
                             "id": "54646e7c-bc54-4895-81a2-590d72d120f9",
                             "idName": "timeout",
-                            "name": "Timout action"
+                            "name": "Timeout action"
                         }
                     ]
                 },

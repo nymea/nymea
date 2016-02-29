@@ -96,10 +96,10 @@ DeviceHandler::DeviceHandler(QObject *parent) :
 
     params.clear(); returns.clear();
     setDescription("AddConfiguredDevice", "Add a configured device with a setupMethod of SetupMethodJustAdd. "
-                   "For devices with a setupMethod different than SetupMethodJustAdd, use PairDevice. "
-                   "Use deviceDescriptorId or deviceParams, depending on the createMethod of the device class. "
-                   "CreateMethodJustAdd takes the parameters you want to have with that device. "
-                   "CreateMethodDiscovery requires the use of a deviceDescriptorId."
+                                          "For devices with a setupMethod different than SetupMethodJustAdd, use PairDevice. "
+                                          "Use deviceDescriptorId or deviceParams, depending on the createMethod of the device class. "
+                                          "CreateMethodJustAdd takes the parameters you want to have with that device. "
+                                          "CreateMethodDiscovery requires the use of a deviceDescriptorId."
                    );
     params.insert("deviceClassId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     params.insert("name", JsonTypes::basicTypeToString(JsonTypes::String));
@@ -114,13 +114,13 @@ DeviceHandler::DeviceHandler(QObject *parent) :
 
     returns.clear(); // Reused params from above!
     setDescription("PairDevice", "Pair a device. "
-                   "Use this for DeviceClasses with a setupMethod different than SetupMethodJustAdd. "
-                   "Use deviceDescriptorId or deviceParams, depending on the createMethod of the device class. "
-                   "CreateMethodJustAdd takes the parameters you want to have with that device. "
-                   "CreateMethodDiscovery requires the use of a deviceDescriptorId. "
-                   "If success is true, the return values will contain a pairingTransactionId, a displayMessage and "
-                   "the setupMethod. Depending on the setupMethod you should either proceed with AddConfiguredDevice "
-                   "or PairDevice."
+                                 "Use this for DeviceClasses with a setupMethod different than SetupMethodJustAdd. "
+                                 "Use deviceDescriptorId or deviceParams, depending on the createMethod of the device class. "
+                                 "CreateMethodJustAdd takes the parameters you want to have with that device. "
+                                 "CreateMethodDiscovery requires the use of a deviceDescriptorId. "
+                                 "If success is true, the return values will contain a pairingTransactionId, a displayMessage and "
+                                 "the setupMethod. Depending on the setupMethod you should either proceed with AddConfiguredDevice "
+                                 "or PairDevice."
                    );
     setParams("PairDevice", params);
     returns.insert("deviceError", JsonTypes::deviceErrorRef());
@@ -161,10 +161,10 @@ DeviceHandler::DeviceHandler(QObject *parent) :
 
     params.clear(); returns.clear();
     setDescription("ReconfigureDevice", "Edit the parameter configuration of the device. The device params will be set to the "
-                   "passed parameters and the setup device will be called. If the device is discoverable, "
-                   "you can perform a GetDiscoveredDevices before calling this method and pass "
-                   "the new DeviceDescriptor (rediscover). If a parameter is not writable, you will find a "
-                   "'readOnly': true in the ParamType. By default, every Param is writable.");
+                                        "passed parameters and the setup device will be called. If the device is discoverable, "
+                                        "you can perform a GetDiscoveredDevices before calling this method and pass "
+                                        "the new DeviceDescriptor (rediscover). Only writable parameters can be changed. By default, "
+                                        "every Param is writable.");
     params.insert("deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     params.insert("o:deviceDescriptorId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     QVariantList newDeviceParams;
@@ -173,6 +173,15 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     setParams("ReconfigureDevice", params);
     returns.insert("deviceError", JsonTypes::deviceErrorRef());
     setReturns("ReconfigureDevice", returns);
+
+    params.clear(); returns.clear();
+    setDescription("EditDevice", "Edit the name of a device. This method does not change the "
+                                 "configuration of the device.");
+    params.insert("deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    params.insert("name", JsonTypes::basicTypeToString(JsonTypes::String));
+    setParams("EditDevice", params);
+    returns.insert("deviceError", JsonTypes::deviceErrorRef());
+    setReturns("EditDevice", returns);
 
     params.clear(); returns.clear();
     setDescription("RemoveConfiguredDevice", "Remove a device from the system.");
@@ -257,14 +266,14 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     setParams("DeviceAdded", params);
 
     params.clear(); returns.clear();
-    setDescription("DeviceParamsChanged", "Emitted whenever the params of a Device changed (by editing or rediscovering).");
+    setDescription("DeviceChanged", "Emitted whenever the params or name of a Device changed (by EditDevice or ReconfigureDevice).");
     params.insert("device", JsonTypes::deviceRef());
-    setParams("DeviceParamsChanged", params);
+    setParams("DeviceChanged", params);
 
     connect(GuhCore::instance(), &GuhCore::deviceStateChanged, this, &DeviceHandler::deviceStateChanged);
     connect(GuhCore::instance(), &GuhCore::deviceRemoved, this, &DeviceHandler::deviceRemovedNotification);
     connect(GuhCore::instance(), &GuhCore::deviceAdded, this, &DeviceHandler::deviceAddedNotification);
-    connect(GuhCore::instance(), &GuhCore::deviceParamsChanged, this, &DeviceHandler::deviceParamsChangedNotification);
+    connect(GuhCore::instance(), &GuhCore::deviceChanged, this, &DeviceHandler::deviceChangedNotification);
     connect(GuhCore::instance(), &GuhCore::devicesDiscovered, this, &DeviceHandler::devicesDiscovered, Qt::QueuedConnection);
     connect(GuhCore::instance(), &GuhCore::deviceSetupFinished, this, &DeviceHandler::deviceSetupFinished);
     connect(GuhCore::instance(), &GuhCore::deviceReconfigurationFinished, this, &DeviceHandler::deviceReconfigurationFinished);
@@ -461,6 +470,20 @@ JsonReply *DeviceHandler::ReconfigureDevice(const QVariantMap &params)
     return createReply(returns);
 }
 
+JsonReply *DeviceHandler::EditDevice(const QVariantMap &params)
+{
+    DeviceId deviceId = DeviceId(params.value("deviceId").toString());
+    QString name = params.value("name").toString();
+
+    qCDebug(dcJsonRpc()) << "Edit device" << deviceId << name;
+
+    DeviceManager::DeviceError status = GuhCore::instance()->deviceManager()->editDevice(deviceId, name);
+
+    QVariantMap returns;
+    returns.insert("deviceError", JsonTypes::deviceErrorToString(status));
+    return createReply(returns);
+}
+
 JsonReply* DeviceHandler::RemoveConfiguredDevice(const QVariantMap &params)
 {
     QVariantMap returns;
@@ -595,12 +618,12 @@ void DeviceHandler::deviceAddedNotification(Device *device)
     emit DeviceAdded(params);
 }
 
-void DeviceHandler::deviceParamsChangedNotification(Device *device)
+void DeviceHandler::deviceChangedNotification(Device *device)
 {
     QVariantMap params;
     params.insert("device", JsonTypes::packDevice(device));
 
-    emit DeviceParamsChanged(params);
+    emit DeviceChanged(params);
 }
 
 void DeviceHandler::devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors)

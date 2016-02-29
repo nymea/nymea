@@ -57,6 +57,8 @@ public:
 
     Q_INVOKABLE JsonReply* ReconfigureDevice(const QVariantMap &params);
 
+    Q_INVOKABLE JsonReply* EditDevice(const QVariantMap &params);
+
     Q_INVOKABLE JsonReply* RemoveConfiguredDevice(const QVariantMap &params);
 
     Q_INVOKABLE JsonReply* GetEventTypes(const QVariantMap &params) const;
@@ -73,7 +75,7 @@ signals:
     void StateChanged(const QVariantMap &params);
     void DeviceRemoved(const QVariantMap &params);
     void DeviceAdded(const QVariantMap &params);
-    void DeviceParamsChanged(const QVariantMap &params);
+    void DeviceChanged(const QVariantMap &params);
 
 private slots:
     void deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
@@ -82,7 +84,7 @@ private slots:
 
     void deviceAddedNotification(Device *device);
 
-    void deviceParamsChangedNotification(Device *device);
+    void deviceChangedNotification(Device *device);
 
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
 

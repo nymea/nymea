@@ -215,15 +215,25 @@ void TestJSONRPC::stateChangeEmitsNotifications()
     clientSpy.wait();
 
     // Make sure the notification contains all the stuff we expect
-    QVariant stateChangedVariant = checkNotification(clientSpy, "Devices.StateChanged");
-    QVERIFY2(!stateChangedVariant.isNull(), "Did not get Devices.StateChanged notification.");
-    QCOMPARE(stateChangedVariant.toMap().value("params").toMap().value("stateTypeId").toUuid(), stateTypeId);
-    QCOMPARE(stateChangedVariant.toMap().value("params").toMap().value("value").toInt(), newVal);
+    QVariantList stateChangedVariants = checkNotifications(clientSpy, "Devices.StateChanged");
+    QVERIFY2(!stateChangedVariants.isEmpty(), "Did not get Devices.StateChanged notification.");
+
+    qDebug() << "got" << stateChangedVariants.count() << "Devices.StateChanged notifications";
+
+    bool found = false;
+    foreach (const QVariant &stateChangedVariant, stateChangedVariants) {
+        if (stateChangedVariant.toMap().value("params").toMap().value("stateTypeId").toUuid() == stateTypeId)
+        {
+            QCOMPARE(stateChangedVariant.toMap().value("params").toMap().value("value").toInt(), newVal);
+            found = true;
+            break;
+        }
+    }
+    QCOMPARE(found, true);
 
     // Make sure the notification contains all the stuff we expect
     QVariant loggEntryAddedVariant = checkNotification(clientSpy, "Logging.LogEntryAdded");
     QVERIFY2(!loggEntryAddedVariant.isNull(), "Did not get Logging.LogEntryAdded notification.");
-    QCOMPARE(loggEntryAddedVariant.toMap().value("params").toMap().value("logEntry").toMap().value("typeId").toUuid(), stateTypeId);
 
     // Make sure the notification contains all the stuff we expect
     QVariant eventTriggeredVariant = checkNotification(clientSpy, "Events.EventTriggered");

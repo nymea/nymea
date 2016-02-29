@@ -216,15 +216,18 @@ void TestJSONRPC::stateChangeEmitsNotifications()
 
     // Make sure the notification contains all the stuff we expect
     QVariant stateChangedVariant = checkNotification(clientSpy, "Devices.StateChanged");
+    QVERIFY2(!stateChangedVariant.isNull(), "Did not get Devices.StateChanged notification.");
     QCOMPARE(stateChangedVariant.toMap().value("params").toMap().value("stateTypeId").toUuid(), stateTypeId);
     QCOMPARE(stateChangedVariant.toMap().value("params").toMap().value("value").toInt(), newVal);
 
     // Make sure the notification contains all the stuff we expect
     QVariant loggEntryAddedVariant = checkNotification(clientSpy, "Logging.LogEntryAdded");
+    QVERIFY2(!loggEntryAddedVariant.isNull(), "Did not get Logging.LogEntryAdded notification.");
     QCOMPARE(loggEntryAddedVariant.toMap().value("params").toMap().value("logEntry").toMap().value("typeId").toUuid(), stateTypeId);
 
     // Make sure the notification contains all the stuff we expect
     QVariant eventTriggeredVariant = checkNotification(clientSpy, "Events.EventTriggered");
+    QVERIFY2(!eventTriggeredVariant.isNull(), "Did not get Events.EventTriggered notification.");
     QCOMPARE(eventTriggeredVariant.toMap().value("params").toMap().value("event").toMap().value("eventTypeId").toUuid(), stateTypeId);
     QCOMPARE(eventTriggeredVariant.toMap().value("params").toMap().value("event").toMap().value("params").toList().first().toMap().value("value").toInt(), newVal);
 
@@ -239,7 +242,7 @@ void TestJSONRPC::stateChangeEmitsNotifications()
     reply->deleteLater();
 
     // Lets wait a max of 100ms for the notification
-    clientSpy.wait();
+    clientSpy.wait(100);
     // but make sure it doesn't come
     QCOMPARE(clientSpy.count(), 0);
 

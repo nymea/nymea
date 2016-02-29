@@ -133,39 +133,11 @@ void GuhCore::destroy()
     s_instance = 0;
 }
 
-/*! Calls the metheod DeviceManager::plugins().
- *  \sa DeviceManager::plugins(), */
-QList<DevicePlugin *> GuhCore::plugins() const
-{
-    return m_deviceManager->plugins();
-}
-
-/*! Calls the metheod DeviceManager::setPluginConfig(\a pluginId, \a params).
- *  \sa DeviceManager::setPluginConfig(), */
-DeviceManager::DeviceError GuhCore::setPluginConfig(const PluginId &pluginId, const ParamList &params)
-{
-    return m_deviceManager->setPluginConfig(pluginId, params);
-}
-
-/*! Calls the metheod DeviceManager::supportedVendors().
- *  \sa DeviceManager::supportedVendors(), */
-QList<Vendor> GuhCore::supportedVendors() const
-{
-    return m_deviceManager->supportedVendors();
-}
-
-/*! Calls the metheod DeviceManager::supportedDevices(\a vendorId).
- *  \sa DeviceManager::supportedDevices(), */
-QList<DeviceClass> GuhCore::supportedDevices(const VendorId &vendorId) const
-{
-    return m_deviceManager->supportedDevices(vendorId);
-}
-
 /*! Removes a configured \l{Device} with the given \a deviceId and \a removePolicyList. */
 QPair<DeviceManager::DeviceError, QList<RuleId> > GuhCore::removeConfiguredDevice(const DeviceId &deviceId, const QHash<RuleId, RuleEngine::RemovePolicy> &removePolicyList)
 {
     // Check if this is a child device
-    Device *device = findConfiguredDevice(deviceId);
+    Device *device = m_deviceManager->findConfiguredDevice(deviceId);
 
     if (!device)
         return QPair<DeviceManager::DeviceError, QList<RuleId> > (DeviceManager::DeviceErrorDeviceNotFound, QList<RuleId>());
@@ -253,7 +225,7 @@ QPair<DeviceManager::DeviceError, QList<RuleId> > GuhCore::removeConfiguredDevic
 DeviceManager::DeviceError GuhCore::removeConfiguredDevice(const DeviceId &deviceId, const RuleEngine::RemovePolicy &removePolicy)
 {
     // Check if this is a child device
-    Device *device = findConfiguredDevice(deviceId);
+    Device *device = m_deviceManager->findConfiguredDevice(deviceId);
 
     if (!device)
         return DeviceManager::DeviceErrorDeviceNotFound;
@@ -316,30 +288,6 @@ DeviceManager::DeviceError GuhCore::removeConfiguredDevice(const DeviceId &devic
     return removeError;
 }
 
-/*! Calls the metheod DeviceManager::pairDevice(\a pairingTransactionId, \a deviceClassId, \a deviceDescriptorId).
- *  Returns \l{DeviceManager::DeviceError}{DeviceError} to inform about the result.
- *  \sa DeviceManager::pairDevice(), */
-DeviceManager::DeviceError GuhCore::pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId)
-{
-    return m_deviceManager->pairDevice(pairingTransactionId, deviceClassId, deviceDescriptorId);
-}
-
-/*! Calls the metheod DeviceManager::pairDevice(\a pairingTransactionId, \a deviceClassId, \a params).
- *  Returns \l{DeviceManager::DeviceError}{DeviceError} to inform about the result.
- *  \sa DeviceManager::pairDevice(), */
-DeviceManager::DeviceError GuhCore::pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params)
-{
-    return m_deviceManager->pairDevice(pairingTransactionId, deviceClassId, params);
-}
-
-/*! Calls the metheod DeviceManager::confirmPairing(\a pairingTransactionId, \a secret).
- *  Returns \l{DeviceManager::DeviceError}{DeviceError} to inform about the result.
- *  \sa DeviceManager::confirmPairing(), */
-DeviceManager::DeviceError GuhCore::confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &secret)
-{
-    return m_deviceManager->confirmPairing(pairingTransactionId, secret);
-}
-
 /*! Calls the metheod DeviceManager::executeAction(\a action).
  *  \sa DeviceManager::executeAction(), */
 DeviceManager::DeviceError GuhCore::executeAction(const Action &action)
@@ -382,104 +330,6 @@ void GuhCore::executeRuleActions(const QList<RuleAction> ruleActions)
     }
 }
 
-/*! Calls the metheod DeviceManager::findDeviceClass(\a deviceClassId).
- *  \sa DeviceManager::findDeviceClass(), */
-DeviceClass GuhCore::findDeviceClass(const DeviceClassId &deviceClassId) const
-{
-    return m_deviceManager->findDeviceClass(deviceClassId);
-}
-
-/*! Calls the metheod DeviceManager::discoverDevices(\a deviceClassId, \a params).
- *  \sa DeviceManager::discoverDevices(), */
-DeviceManager::DeviceError GuhCore::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
-{
-    return m_deviceManager->discoverDevices(deviceClassId, params);
-}
-
-/*! Calls the metheod DeviceManager::addConfiguredDevice(\a deviceClassId, \a params, \a newId).
- *  \sa DeviceManager::addConfiguredDevice(), */
-DeviceManager::DeviceError GuhCore::addConfiguredDevice(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId &newId)
-{
-    return m_deviceManager->addConfiguredDevice(deviceClassId, params, newId);
-}
-
-/*! Calls the metheod DeviceManager::addConfiguredDevice(\a deviceClassId, \a deviceDescriptorId, \a newId).
- *  \sa DeviceManager::addConfiguredDevice(), */
-DeviceManager::DeviceError GuhCore::addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &newId)
-{
-    return m_deviceManager->addConfiguredDevice(deviceClassId, deviceDescriptorId, newId);
-}
-
-/*! Calls the metheod DeviceManager::configuredDevices().
- *  \sa DeviceManager::configuredDevices(), */
-QList<Device *> GuhCore::configuredDevices() const
-{
-    return m_deviceManager->configuredDevices();
-}
-
-/*! Calls the metheod DeviceManager::findConfiguredDevice(\a deviceId).
- *  \sa DeviceManager::findConfiguredDevice(), */
-Device *GuhCore::findConfiguredDevice(const DeviceId &deviceId) const
-{
-    return m_deviceManager->findConfiguredDevice(deviceId);
-}
-
-/*! Calls the metheod DeviceManager::findConfiguredDevice(\a deviceClassId).
- *  \sa DeviceManager::findConfiguredDevice(), */
-QList<Device *> GuhCore::findConfiguredDevices(const DeviceClassId &deviceClassId) const
-{
-    return m_deviceManager->findConfiguredDevices(deviceClassId);
-}
-
-/*! Calls the metheod DeviceManager::editDevice(\a deviceId, \a params).
- *  \sa DeviceManager::editDevice(), */
-DeviceManager::DeviceError GuhCore::editDevice(const DeviceId &deviceId, const ParamList &params)
-{
-    return m_deviceManager->editDevice(deviceId, params);
-}
-
-/*! Calls the metheod DeviceManager::editDevice(\a deviceId, \a deviceDescriptorId).
- *  \sa DeviceManager::editDevice(), */
-DeviceManager::DeviceError GuhCore::editDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId)
-{
-    return m_deviceManager->editDevice(deviceId, deviceDescriptorId);
-}
-
-/*! Calls the metheod RuleEngine::rules().
- *  \sa RuleEngine::rules(), */
-QList<Rule> GuhCore::rules() const
-{
-    return m_ruleEngine->rules();
-}
-
-/*! Calls the metheod RuleEngine::ruleIds().
- *  \sa RuleEngine::ruleIds(), */
-QList<RuleId> GuhCore::ruleIds() const
-{
-    return m_ruleEngine->ruleIds();
-}
-
-/*! Calls the metheod RuleEngine::findRule(\a ruleId).
- *  \sa RuleEngine::findRule(), */
-Rule GuhCore::findRule(const RuleId &ruleId)
-{
-    return m_ruleEngine->findRule(ruleId);
-}
-
-/*! Calls the metheod RuleEngine::addRule(\a id, \a name, \a eventDescriptorList, \a stateEvaluator \a actionList, \a exitActionList, \a enabled).
- *  \sa RuleEngine::addRule(), */
-RuleEngine::RuleError GuhCore::addRule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actionList, const QList<RuleAction> &exitActionList, bool enabled, bool executable)
-{
-    return m_ruleEngine->addRule(id, name, eventDescriptorList, stateEvaluator, actionList, exitActionList, enabled, executable);
-}
-
-/*! Calls the metheod RuleEngine::editRule(\a id, \a name, \a eventDescriptorList, \a stateEvaluator \a actionList, \a exitActionList, \a enabled).
- *  \sa RuleEngine::editRule(), */
-RuleEngine::RuleError GuhCore::editRule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actionList, const QList<RuleAction> &exitActionList, bool enabled, bool executable)
-{
-    return m_ruleEngine->editRule(id, name, eventDescriptorList, stateEvaluator, actionList, exitActionList, enabled, executable);
-}
-
 /*! Calls the metheod RuleEngine::removeRule(\a id).
  *  \sa RuleEngine, */
 RuleEngine::RuleError GuhCore::removeRule(const RuleId &id)
@@ -489,37 +339,6 @@ RuleEngine::RuleError GuhCore::removeRule(const RuleId &id)
         m_logger->removeRuleLogs(id);
 
     return removeError;
-}
-
-/*! Calls the metheod RuleEngine::findRules(\a deviceId).
- *  \sa RuleEngine, */
-QList<RuleId> GuhCore::findRules(const DeviceId &deviceId)
-{
-    return m_ruleEngine->findRules(deviceId);
-}
-
-/*! Calls the metheod RuleEngine::enableRule(\a ruleId).
- *  \sa RuleEngine::enableRule(), */
-RuleEngine::RuleError GuhCore::enableRule(const RuleId &ruleId)
-{
-    return m_ruleEngine->enableRule(ruleId);
-}
-
-/*! Calls the metheod RuleEngine::disableRule(\a ruleId).
- *  \sa RuleEngine::disableRule(), */
-RuleEngine::RuleError GuhCore::disableRule(const RuleId &ruleId)
-{
-    return m_ruleEngine->disableRule(ruleId);
-}
-
-RuleEngine::RuleError GuhCore::executeRuleActions(const RuleId &ruleId)
-{
-    return m_ruleEngine->executeActions(ruleId);
-}
-
-RuleEngine::RuleError GuhCore::executeRuleExitActions(const RuleId &ruleId)
-{
-    return m_ruleEngine->executeExitActions(ruleId);
 }
 
 /*! Returns a pointer to the \l{DeviceManager} instance owned by GuhCore.*/

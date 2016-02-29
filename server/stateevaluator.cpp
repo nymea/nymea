@@ -100,7 +100,7 @@ void StateEvaluator::setOperatorType(Types::StateOperator operatorType)
 bool StateEvaluator::evaluate() const
 {
     if (m_stateDescriptor.isValid()) {
-        Device *device = GuhCore::instance()->findConfiguredDevice(m_stateDescriptor.deviceId());
+        Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(m_stateDescriptor.deviceId());
         if (!device) {
             qCWarning(dcRuleEngine) << "Device not existing!";
             return false;
@@ -210,7 +210,7 @@ StateEvaluator StateEvaluator::loadFromSettings(GuhSettings &settings, const QSt
 bool StateEvaluator::isValid() const
 {
     if (m_stateDescriptor.isValid()) {
-        Device *device = GuhCore::instance()->findConfiguredDevice(m_stateDescriptor.deviceId());
+        Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(m_stateDescriptor.deviceId());
         if (!device) {
             qCWarning(dcRuleEngine) << "State evaluator device does not exist!";
             return false;
@@ -221,7 +221,7 @@ bool StateEvaluator::isValid() const
             return false;
         }
 
-        DeviceClass deviceClass = GuhCore::instance()->findDeviceClass(device->deviceClassId());
+        DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
         foreach (const StateType &stateType, deviceClass.stateTypes()) {
             if (stateType.id() == m_stateDescriptor.stateTypeId()) {
 

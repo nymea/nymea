@@ -374,14 +374,14 @@ DeviceManager::DeviceError DeviceManager::discoverDevices(const DeviceClassId &d
  *  Optionally you can supply an id yourself if you must keep track of the added device. If you don't supply it, a new one will
  *  be generated. Only devices with \l{DeviceClass}{CreateMethodUser} can be created using this method.
  *  Returns \l{DeviceError} to inform about the result. */
-DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId id)
+DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId id)
 {
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
     if (!deviceClass.isValid()) {
         return DeviceErrorDeviceClassNotFound;
     }
     if (deviceClass.createMethods().testFlag(DeviceClass::CreateMethodUser)) {
-        return addConfiguredDeviceInternal(deviceClassId, params, id);
+        return addConfiguredDeviceInternal(deviceClassId, name, params, id);
     }
     return DeviceErrorCreationMethodNotSupported;
 }
@@ -390,7 +390,7 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassI
  *  can be created using this method. The \a deviceClassId must refer to an existing \l{DeviceClass} and the \a deviceDescriptorId must refer to an existing DeviceDescriptorId
  *  from the discovery.
  *  Returns \l{DeviceError} to inform about the result. */
-DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &deviceId)
+DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &deviceId)
 {
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
     if (!deviceClass.isValid()) {
@@ -405,7 +405,7 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassI
         return DeviceErrorDeviceDescriptorNotFound;
     }
 
-    return addConfiguredDeviceInternal(deviceClassId, descriptor.params(), deviceId);
+    return addConfiguredDeviceInternal(deviceClassId, name, descriptor.params(), deviceId);
 }
 
 
@@ -620,9 +620,9 @@ DeviceManager::DeviceError DeviceManager::confirmPairing(const PairingTransactio
     return DeviceErrorPairingTransactionIdNotFound;
 }
 
-/*! This method will only be used from the DeviceManager in order to add a \l{Device} with the given \a deviceClassId, \a params and \ id.
+/*! This method will only be used from the DeviceManager in order to add a \l{Device} with the given \a deviceClassId, \a name, \a params and \ id.
  *  Returns \l{DeviceError} to inform about the result. */
-DeviceManager::DeviceError DeviceManager::addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId id)
+DeviceManager::DeviceError DeviceManager::addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId id)
 {
     ParamList effectiveParams = params;
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
@@ -651,7 +651,11 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDeviceInternal(const Devi
     }
 
     Device *device = new Device(plugin->pluginId(), id, deviceClassId, this);
-    device->setName(deviceClass.name());
+    if (name.isEmpty()) {
+        device->setName(deviceClass.name());
+    } else {
+        device->setName(name);
+    }
     device->setParams(effectiveParams);
 
     DeviceSetupStatus status = setupDevice(device);

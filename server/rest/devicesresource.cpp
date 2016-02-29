@@ -461,7 +461,7 @@ HttpReply *DevicesResource::confirmPairDevice(const QByteArray &payload) const
 
 HttpReply *DevicesResource::reconfigureDevice(Device *device, const QByteArray &payload) const
 {
-    qCDebug(dcRest) << "Edit device" << device->id();
+    qCDebug(dcRest) << "Reconfigure device" << device->id();
     QPair<bool, QVariant> verification = RestResource::verifyPayload(payload);
     if (!verification.first)
         return createErrorReply(HttpReply::BadRequest);
@@ -472,16 +472,16 @@ HttpReply *DevicesResource::reconfigureDevice(Device *device, const QByteArray &
     DeviceManager::DeviceError status;
     DeviceDescriptorId deviceDescriptorId(params.value("deviceDescriptorId").toString());
     if (deviceDescriptorId.isNull()) {
-        qCDebug(dcRest) << "Edit device with params:" << deviceParams;
+        qCDebug(dcRest) << "Reconfigure device with params:" << deviceParams;
         status = GuhCore::instance()->deviceManager()->reconfigureDevice(device->id(), deviceParams);
     } else {
-        qCDebug(dcRest) << "Edit device using the discovered device with descriptorId:" << deviceDescriptorId.toString();
+        qCDebug(dcRest) << "Reconfigure device using the new discovered device with descriptorId:" << deviceDescriptorId.toString();
         status = GuhCore::instance()->deviceManager()->reconfigureDevice(device->id(), deviceDescriptorId);
     }
 
     if (status == DeviceManager::DeviceErrorAsync) {
         HttpReply *reply = createAsyncReply();
-        qCDebug(dcRest) << "Device edit async reply";
+        qCDebug(dcRest) << "Device reconfiguration async reply";
         m_asyncReconfigureDevice.insert(device, reply);
         return reply;
     }
@@ -562,18 +562,18 @@ void DevicesResource::deviceReconfigurationFinished(Device *device, DeviceManage
     response.insert("error", JsonTypes::deviceErrorToString(status));
 
     if (m_asyncReconfigureDevice.value(device).isNull()) {
-        qCWarning(dcRest) << "Async reply for device edit does not exist any more (timeout).";
+        qCWarning(dcRest) << "Async reply for device reconfiguration does not exist any more (timeout).";
         return;
     }
 
     HttpReply *reply = m_asyncReconfigureDevice.take(device);
     reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     if (status == DeviceManager::DeviceErrorNoError) {
-        qCDebug(dcRest) << "Device edit finished successfully";
+        qCDebug(dcRest) << "Device reconfiguration finished successfully";
         reply->setHttpStatusCode(HttpReply::Ok);
         reply->setPayload(QJsonDocument::fromVariant(response).toJson());
     } else {
-        qCDebug(dcRest) << "Device edit finished with error" << status;
+        qCDebug(dcRest) << "Device reconfiguration finished with error" << status;
         reply->setHttpStatusCode(HttpReply::InternalServerError);
         reply->setPayload(QJsonDocument::fromVariant(response).toJson());
     }

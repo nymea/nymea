@@ -46,7 +46,7 @@
     This signal is emitted when a \a device was added to the system.
 */
 
-/*! \fn void guhserver::GuhCore::deviceParamsChanged(Device *device);
+/*! \fn void guhserver::GuhCore::deviceChanged(Device *device);
     This signal is emitted when the \l{ParamList}{Params} of a \a device have been changed.
 */
 
@@ -373,7 +373,7 @@ GuhCore::GuhCore(QObject *parent) :
     connect(m_deviceManager, &DeviceManager::eventTriggered, this, &GuhCore::gotEvent);
     connect(m_deviceManager, &DeviceManager::deviceStateChanged, this, &GuhCore::deviceStateChanged);
     connect(m_deviceManager, &DeviceManager::deviceAdded, this, &GuhCore::deviceAdded);
-    connect(m_deviceManager, &DeviceManager::deviceParamsChanged, this, &GuhCore::deviceParamsChanged);
+    connect(m_deviceManager, &DeviceManager::deviceChanged, this, &GuhCore::deviceChanged);
     connect(m_deviceManager, &DeviceManager::deviceRemoved, this, &GuhCore::deviceRemoved);
     connect(m_deviceManager, &DeviceManager::actionExecutionFinished, this, &GuhCore::actionExecutionFinished);
     connect(m_deviceManager, &DeviceManager::devicesDiscovered, this, &GuhCore::devicesDiscovered);

@@ -139,7 +139,7 @@
     create the Devices.DeviceAdded notification.
 */
 
-/*! \fn void DeviceManager::deviceParamsChanged(Device *device);
+/*! \fn void DeviceManager::deviceChanged(Device *device);
     This signal is emitted when a \a \device  was changed in the system (by edit or rediscover). This signal will
     create the Devices.DeviceParamsChanged notification.
 */
@@ -469,7 +469,7 @@ DeviceManager::DeviceError DeviceManager::reconfigureDevice(const DeviceId &devi
         qCWarning(dcDeviceManager) << "Device edit failed. Not saving changes of device paramters. Device setup incomplete.";
         return DeviceErrorSetupFailed;
     case DeviceSetupStatusAsync:
-        m_asyncDeviceEdit.append(device);
+        m_asyncDeviceReconfiguration.append(device);
         return DeviceErrorAsync;
     case DeviceSetupStatusSuccess:
         qCDebug(dcDeviceManager) << "Device edit complete.";
@@ -479,7 +479,7 @@ DeviceManager::DeviceError DeviceManager::reconfigureDevice(const DeviceId &devi
     storeConfiguredDevices();
     postSetupDevice(device);
     device->setupCompleted();
-    emit deviceParamsChanged(device);
+    emit deviceChanged(device);
 
     return DeviceErrorNoError;
 }
@@ -512,6 +512,19 @@ DeviceManager::DeviceError DeviceManager::reconfigureDevice(const DeviceId &devi
     }
 
     return reconfigureDevice(deviceId, descriptor.params(), true);
+}
+
+DeviceManager::DeviceError DeviceManager::editDevice(const DeviceId &deviceId, const QString &name)
+{
+    Device *device = findConfiguredDevice(deviceId);
+    if (!device)
+        return DeviceErrorDeviceNotFound;
+
+    device->setName(name);
+    storeConfiguredDevices();
+    emit deviceChanged(device);
+
+    return DeviceErrorNoError;
 }
 
 /*! Initiates a pairing with a \l{DeviceClass}{Device} with the given \a pairingTransactionId, \a deviceClassId and \a params.
@@ -1081,15 +1094,15 @@ void DeviceManager::slotDeviceSetupFinished(Device *device, DeviceManager::Devic
 
     if (status == DeviceSetupStatusFailure) {
         if (m_configuredDevices.contains(device)) {
-            if (m_asyncDeviceEdit.contains(device)) {
-                m_asyncDeviceEdit.removeAll(device);
+            if (m_asyncDeviceReconfiguration.contains(device)) {
+                m_asyncDeviceReconfiguration.removeAll(device);
                 qCWarning(dcDeviceManager) << QString("Error in device setup after edit params. Device %1 (%2) would not be functional.").arg(device->name()).arg(device->id().toString());
 
                 storeConfiguredDevices();
 
                 // TODO: recover old params.??
 
-                emit deviceParamsChanged(device);
+                emit deviceChanged(device);
                 emit deviceReconfigurationFinished(device, DeviceError::DeviceErrorSetupFailed);
             }
             qCWarning(dcDeviceManager) << QString("Error in device setup. Device %1 (%2) will not be functional.").arg(device->name()).arg(device->id().toString());
@@ -1123,11 +1136,11 @@ void DeviceManager::slotDeviceSetupFinished(Device *device, DeviceManager::Devic
     }
 
     // if this is a async device edit result
-    if (m_asyncDeviceEdit.contains(device)) {
-        m_asyncDeviceEdit.removeAll(device);
+    if (m_asyncDeviceReconfiguration.contains(device)) {
+        m_asyncDeviceReconfiguration.removeAll(device);
         storeConfiguredDevices();
         device->setupCompleted();
-        emit deviceParamsChanged(device);
+        emit deviceChanged(device);
         emit deviceReconfigurationFinished(device, DeviceManager::DeviceErrorNoError);
         return;
     }

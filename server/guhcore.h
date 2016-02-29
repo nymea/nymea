@@ -74,7 +74,7 @@ signals:
     void deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
     void deviceRemoved(const DeviceId &deviceId);
     void deviceAdded(Device *device);
-    void deviceParamsChanged(Device *device);
+    void deviceChanged(Device *device);
     void actionExecuted(const ActionId &id, DeviceManager::DeviceError status);
 
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);

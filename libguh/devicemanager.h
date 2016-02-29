@@ -119,7 +119,9 @@ public:
 
     DeviceError reconfigureDevice(const DeviceId &deviceId, const ParamList &params, bool fromDiscovery = false);
     DeviceError reconfigureDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId);
-    
+
+    DeviceError editDevice(const DeviceId &deviceId, const QString &name);
+
     DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params);
     DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId);
     DeviceError confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &secret = QString());
@@ -140,7 +142,7 @@ signals:
     void deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
     void deviceRemoved(const DeviceId &deviceId);
     void deviceAdded(Device *device);
-    void deviceParamsChanged(Device *device);
+    void deviceChanged(Device *device);
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &devices);
     void deviceSetupFinished(Device *device, DeviceError status);
     void deviceReconfigurationFinished(Device *device, DeviceError status);

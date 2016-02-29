@@ -160,7 +160,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     setReturns("GetDiscoveredDevices", returns);
 
     params.clear(); returns.clear();
-    setDescription("EditDevice", "Edit the parameters of a device. The device params will be set to the "
+    setDescription("ReconfigureDevice", "Edit the parameter configuration of the device. The device params will be set to the "
                    "passed parameters and the setup device will be called. If the device is discoverable, "
                    "you can perform a GetDiscoveredDevices before calling this method and pass "
                    "the new DeviceDescriptor (rediscover). If a parameter is not writable, you will find a "
@@ -170,9 +170,9 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     QVariantList newDeviceParams;
     newDeviceParams.append(JsonTypes::paramRef());
     params.insert("o:deviceParams", newDeviceParams);
-    setParams("EditDevice", params);
+    setParams("ReconfigureDevice", params);
     returns.insert("deviceError", JsonTypes::deviceErrorRef());
-    setReturns("EditDevice", returns);
+    setReturns("ReconfigureDevice", returns);
 
     params.clear(); returns.clear();
     setDescription("RemoveConfiguredDevice", "Remove a device from the system.");
@@ -267,7 +267,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     connect(GuhCore::instance(), &GuhCore::deviceParamsChanged, this, &DeviceHandler::deviceParamsChangedNotification);
     connect(GuhCore::instance(), &GuhCore::devicesDiscovered, this, &DeviceHandler::devicesDiscovered, Qt::QueuedConnection);
     connect(GuhCore::instance(), &GuhCore::deviceSetupFinished, this, &DeviceHandler::deviceSetupFinished);
-    connect(GuhCore::instance(), &GuhCore::deviceEditFinished, this, &DeviceHandler::deviceEditFinished);
+    connect(GuhCore::instance(), &GuhCore::deviceReconfigurationFinished, this, &DeviceHandler::deviceReconfigurationFinished);
     connect(GuhCore::instance(), &GuhCore::pairingFinished, this, &DeviceHandler::pairingFinished);
 }
 
@@ -436,7 +436,7 @@ JsonReply* DeviceHandler::GetConfiguredDevices(const QVariantMap &params) const
     return createReply(returns);
 }
 
-JsonReply *DeviceHandler::EditDevice(const QVariantMap &params)
+JsonReply *DeviceHandler::ReconfigureDevice(const QVariantMap &params)
 {
     Q_UNUSED(params);
     DeviceId deviceId = DeviceId(params.value("deviceId").toString());
@@ -445,13 +445,13 @@ JsonReply *DeviceHandler::EditDevice(const QVariantMap &params)
     DeviceManager::DeviceError status;
     DeviceDescriptorId deviceDescriptorId(params.value("deviceDescriptorId").toString());
     if (deviceDescriptorId.isNull()) {
-        status = GuhCore::instance()->deviceManager()->editDevice(deviceId, deviceParams);
+        status = GuhCore::instance()->deviceManager()->reconfigureDevice(deviceId, deviceParams);
     } else {
-        status = GuhCore::instance()->deviceManager()->editDevice(deviceId, deviceDescriptorId);
+        status = GuhCore::instance()->deviceManager()->reconfigureDevice(deviceId, deviceDescriptorId);
     }
 
     if (status == DeviceManager::DeviceErrorAsync) {
-        JsonReply *asyncReply = createAsyncReply("EditDevice");
+        JsonReply *asyncReply = createAsyncReply("ReconfigureDevice");
         m_asynDeviceEditAdditions.insert(deviceId, asyncReply);
         return asyncReply;
     }
@@ -641,9 +641,9 @@ void DeviceHandler::deviceSetupFinished(Device *device, DeviceManager::DeviceErr
     reply->finished();
 }
 
-void DeviceHandler::deviceEditFinished(Device *device, DeviceManager::DeviceError status)
+void DeviceHandler::deviceReconfigurationFinished(Device *device, DeviceManager::DeviceError status)
 {
-    qCDebug(dcJsonRpc) << "got async edit finished";
+    qCDebug(dcJsonRpc) << "Got async device reconfiguration finished";
     if (!m_asynDeviceEditAdditions.contains(device->id())) {
         return;
     }
@@ -657,7 +657,7 @@ void DeviceHandler::deviceEditFinished(Device *device, DeviceManager::DeviceErro
 
 void DeviceHandler::pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceError status, const DeviceId &deviceId)
 {
-    qCDebug(dcJsonRpc) << "got pairing finished";
+    qCDebug(dcJsonRpc) << "Got pairing finished";
     JsonReply *reply = m_asyncPairingRequests.take(pairingTransactionId);
     if (!reply) {
         return;

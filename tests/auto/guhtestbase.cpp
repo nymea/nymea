@@ -97,6 +97,7 @@ void GuhTestBase::initTestCase()
     // Lets add one instance of the mockdevice
     QVariantMap params;
     params.insert("deviceClassId", "{753f0d32-0468-4d08-82ed-1964aab03298}");
+    params.insert("name", "Test Mock Device");
 
     QVariantList deviceParams;
     QVariantMap httpPortParam;

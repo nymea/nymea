@@ -61,8 +61,8 @@ private slots:
     void getStateValue_data();
     void getStateValue();
 
-    void editDevices_data();
-    void editDevices();
+    void reconfigureDevices_data();
+    void reconfigureDevices();
 
     void editByDiscovery_data();
     void editByDiscovery();
@@ -92,9 +92,6 @@ void TestRestDevices::addConfiguredDevice_data()
     QTest::addColumn<QVariantList>("deviceParams");
     QTest::addColumn<int>("expectedStatusCode");
 
-    QVariantMap nameParam;
-    nameParam.insert("name", "name");
-    nameParam.insert("value", "Test Mockdevice");
     QVariantMap httpportParam;
     httpportParam.insert("name", "httpport");
     httpportParam.insert("value", m_mockDevice1Port - 1);
@@ -113,18 +110,18 @@ void TestRestDevices::addConfiguredDevice_data()
 
     QVariantList deviceParams;
 
-    deviceParams.clear(); deviceParams << nameParam << httpportParam << notAsyncParam << notBrokenParam;
+    deviceParams.clear(); deviceParams << httpportParam << notAsyncParam << notBrokenParam;
     QTest::newRow("User, JustAdd") << mockDeviceClassId << deviceParams << 200;
 
-    deviceParams.clear(); deviceParams << nameParam << httpportParam << asyncParam << notBrokenParam;
+    deviceParams.clear(); deviceParams << httpportParam << asyncParam << notBrokenParam;
     QTest::newRow("User, JustAdd, Async") << mockDeviceClassId << deviceParams << 200;
 
     QTest::newRow("Invalid DeviceClassId") << DeviceClassId::createDeviceClassId() << deviceParams << 500;
 
-    deviceParams.clear(); deviceParams << nameParam << httpportParam << brokenParam;
+    deviceParams.clear(); deviceParams << httpportParam << brokenParam;
     QTest::newRow("Setup failure") << mockDeviceClassId << deviceParams << 500;
 
-    deviceParams.clear(); deviceParams << nameParam << httpportParam << asyncParam << brokenParam;
+    deviceParams.clear(); deviceParams << httpportParam << asyncParam << brokenParam;
     QTest::newRow("Setup failure, Async") << mockDeviceClassId << deviceParams << 500;
 
     QVariantList invalidDeviceParams;
@@ -149,6 +146,7 @@ void TestRestDevices::addConfiguredDevice()
 
     QVariantMap params;
     params.insert("deviceClassId", deviceClassId);
+    params.insert("name", "Mock device");
     params.insert("deviceParams", deviceParams);
 
     QNetworkRequest request(QUrl("http://localhost:3333/api/v1/devices"));
@@ -211,6 +209,7 @@ void TestRestDevices::addPushButtonDevices()
     // Pair
     params.clear();
     params.insert("deviceClassId", deviceClassId.toString());
+    params.insert("name", "Push button mock device");
     params.insert("deviceDescriptorId", deviceDescriptoId);
 
     QNetworkRequest pairRequest(QUrl("http://localhost:3333/api/v1/devices/pair"));
@@ -291,6 +290,7 @@ void TestRestDevices::addDisplayPinDevices()
     // Pair
     params.clear();
     params.insert("deviceClassId", deviceClassId.toString());
+    params.insert("name", "Display pin mock device");
     params.insert("deviceDescriptorId", deviceDescriptoId);
 
     QNetworkRequest pairRequest(QUrl("http://localhost:3333/api/v1/devices/pair"));
@@ -331,10 +331,6 @@ void TestRestDevices::parentChildDevices()
     // Add parent device
     QVariantMap params;
     params.insert("deviceClassId", mockParentDeviceClassId);
-    QVariantMap nameParam;
-    nameParam.insert("name", "name");
-    nameParam.insert("value", "Test edit mockdevice");
-    params.insert("deviceParams", QVariantList() << nameParam);
 
     QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/devices")));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
@@ -523,7 +519,7 @@ void TestRestDevices::getStateValue()
 
 }
 
-void TestRestDevices::editDevices_data()
+void TestRestDevices::reconfigureDevices_data()
 {
     QVariantList asyncChangeDeviceParams;
     QVariantMap asyncParamDifferent;
@@ -534,7 +530,7 @@ void TestRestDevices::editDevices_data()
     QVariantList httpportChangeDeviceParams;
     QVariantMap httpportParamDifferent;
     httpportParamDifferent.insert("name", "httpport");
-    httpportParamDifferent.insert("value", 8895); // if change -> change also newPort in editDevices()
+    httpportParamDifferent.insert("value", 8895); // if change -> change also newPort in reconfigureDevices()
     httpportChangeDeviceParams.append(httpportParamDifferent);
 
     QVariantList brokenChangedDeviceParams;
@@ -543,35 +539,26 @@ void TestRestDevices::editDevices_data()
     brokenParamDifferent.insert("value", true);
     brokenChangedDeviceParams.append(brokenParamDifferent);
 
-    QVariantList nameChangedDeviceParams;
-    QVariantMap nameParam;
-    nameParam.insert("name", "name");
-    nameParam.insert("value", "Awesome Mockdevice");
-    nameChangedDeviceParams.append(nameParam);
-
     QVariantList asyncAndPortChangeDeviceParams;
     asyncAndPortChangeDeviceParams.append(asyncParamDifferent);
     asyncAndPortChangeDeviceParams.append(httpportParamDifferent);
 
     QVariantList changeAllWritableDeviceParams;
-    changeAllWritableDeviceParams.append(nameParam);
     changeAllWritableDeviceParams.append(asyncParamDifferent);
     changeAllWritableDeviceParams.append(httpportParamDifferent);
-
 
     QTest::addColumn<bool>("broken");
     QTest::addColumn<QVariantList>("newDeviceParams");
     QTest::addColumn<int>("expectedStatusCode");
     QTest::addColumn<DeviceManager::DeviceError>("error");
 
-    QTest::newRow("valid - change async param") << false << asyncChangeDeviceParams << 200 << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("invalid - change async param") << false << asyncChangeDeviceParams << 500 << DeviceManager::DeviceErrorParameterNotWritable;
     QTest::newRow("valid - change httpport param") << false <<  httpportChangeDeviceParams << 200 << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("valid - change httpport and async param") << false << asyncAndPortChangeDeviceParams << 200 << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("invalid - change name param (not writable)") << false << nameChangedDeviceParams << 500 << DeviceManager::DeviceErrorParameterNotWritable;
+    QTest::newRow("valid - change httpport and async param") << false << asyncAndPortChangeDeviceParams << 500 << DeviceManager::DeviceErrorParameterNotWritable;
     QTest::newRow("invalid - change all params (except broken)") << false << changeAllWritableDeviceParams << 500 << DeviceManager::DeviceErrorParameterNotWritable;
 }
 
-void TestRestDevices::editDevices()
+void TestRestDevices::reconfigureDevices()
 {
     QFETCH(bool, broken);
     QFETCH(QVariantList, newDeviceParams);
@@ -581,11 +568,8 @@ void TestRestDevices::editDevices()
     // add device
     QVariantMap params;
     params.insert("deviceClassId", mockDeviceClassId);
+    params.insert("name", "Edit mock device");
     QVariantList deviceParams;
-    QVariantMap nameParam;
-    nameParam.insert("name", "name");
-    nameParam.insert("value", "Test edit mockdevice");
-    deviceParams.append(nameParam);
     QVariantMap asyncParam;
     asyncParam.insert("name", "async");
     asyncParam.insert("value", false);
@@ -691,6 +675,7 @@ void TestRestDevices::editByDiscovery()
     }
     params.clear();
     params.insert("deviceClassId", deviceClassId);
+    params.insert("name", "Discovered mock device");
     params.insert("deviceDescriptorId", descriptorId1.toString());
 
     QVariant response = postAndWait(request, params, expectedStatusCode);

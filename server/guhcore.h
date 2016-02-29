@@ -79,7 +79,7 @@ signals:
 
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
     void deviceSetupFinished(Device *device, DeviceManager::DeviceError status);
-    void deviceEditFinished(Device *device, DeviceManager::DeviceError status);
+    void deviceReconfigurationFinished(Device *device, DeviceManager::DeviceError status);
     void pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceError status, const DeviceId &deviceId);
 
     void ruleRemoved(const RuleId &ruleId);

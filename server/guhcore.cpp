@@ -66,7 +66,7 @@
     \l{DeviceManager::DeviceError}{DeviceError} that occurred.
 */
 
-/*! \fn void guhserver::GuhCore::deviceEditFinished(Device *device, DeviceManager::DeviceError status);
+/*! \fn void guhserver::GuhCore::deviceReconfigurationFinished(Device *device, DeviceManager::DeviceError status);
     This signal is emitted when the edit request of a \a device is finished. The \a status of the edit request will be
     described as \l{DeviceManager::DeviceError}{DeviceError}.
 */
@@ -378,7 +378,7 @@ GuhCore::GuhCore(QObject *parent) :
     connect(m_deviceManager, &DeviceManager::actionExecutionFinished, this, &GuhCore::actionExecutionFinished);
     connect(m_deviceManager, &DeviceManager::devicesDiscovered, this, &GuhCore::devicesDiscovered);
     connect(m_deviceManager, &DeviceManager::deviceSetupFinished, this, &GuhCore::deviceSetupFinished);
-    connect(m_deviceManager, &DeviceManager::deviceEditFinished, this, &GuhCore::deviceEditFinished);
+    connect(m_deviceManager, &DeviceManager::deviceReconfigurationFinished, this, &GuhCore::deviceReconfigurationFinished);
     connect(m_deviceManager, &DeviceManager::pairingFinished, this, &GuhCore::pairingFinished);
 
     connect(m_ruleEngine, &RuleEngine::ruleAdded, this, &GuhCore::ruleAdded);

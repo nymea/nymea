@@ -177,6 +177,27 @@ QVariant GuhTestBase::checkNotification(const QSignalSpy &spy, const QString &no
     return QVariant();
 }
 
+QVariantList GuhTestBase::checkNotifications(const QSignalSpy &spy, const QString &notification)
+{
+    qDebug() << "Got" << spy.count() << "notifications while waiting for" << notification;
+    QVariantList notificationList;
+    for (int i = 0; i < spy.count(); i++) {
+        // Make sure the response it a valid JSON string
+        QJsonParseError error;
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(spy.at(i).last().toByteArray(), &error);
+        if (error.error != QJsonParseError::NoError) {
+            qWarning() << "JSON parser error" << error.errorString();
+            return notificationList;
+        }
+
+        QVariantMap response = jsonDoc.toVariant().toMap();
+        if (response.value("notification").toString() == notification) {
+            notificationList.append(jsonDoc.toVariant());
+        }
+    }
+    return notificationList;
+}
+
 QVariant GuhTestBase::getAndWait(const QNetworkRequest &request, const int &expectedStatus)
 {
     QNetworkAccessManager nam;
@@ -323,6 +344,7 @@ bool GuhTestBase::enableNotifications()
     if (response.toMap().value("params").toMap().value("enabled").toBool() != true) {
         return false;
     }
+    qDebug() << "Notifications enabled.";
     return true;
 }
 
@@ -334,6 +356,7 @@ bool GuhTestBase::disableNotifications()
     if (response.toMap().value("params").toMap().value("enabled").toBool() != false) {
         return false;
     }
+    qDebug() << "Notifications disabled.";
     return true;
 }
 

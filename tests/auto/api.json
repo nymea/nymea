@@ -1,4 +1,4 @@
-36
+37
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -595,6 +595,7 @@
             "createMethods": [
                 "$ref:CreateMethod"
             ],
+            "deviceIcon": "$ref:DeviceIcon",
             "discoveryParamTypes": [
                 "$ref:ParamType"
             ],
@@ -643,6 +644,42 @@
             "DeviceErrorDeviceIsChild",
             "DeviceErrorPairingTransactionIdNotFound",
             "DeviceErrorParameterNotWritable"
+        ],
+        "DeviceIcon": [
+            "DeviceIconNone",
+            "DeviceIconBed",
+            "DeviceIconBlinds",
+            "DeviceIconCeilingLamp",
+            "DeviceIconCouch",
+            "DeviceIconDeskLamp",
+            "DeviceIconDesk",
+            "DeviceIconHifi",
+            "DeviceIconPower",
+            "DeviceIconEnergy",
+            "DeviceIconRadio",
+            "DeviceIconSmartPhone",
+            "DeviceIconSocket",
+            "DeviceIconStandardLamp",
+            "DeviceIconSun",
+            "DeviceIconTablet",
+            "DeviceIconThermometer",
+            "DeviceIconTune",
+            "DeviceIconTv",
+            "DeviceIconBattery",
+            "DeviceIconDishwasher",
+            "DeviceIconWashingMachine",
+            "DeviceIconLaundryDryer",
+            "DeviceIconIrHeater",
+            "DeviceIconRadiator",
+            "DeviceIconSwitch",
+            "DeviceIconMotionDetectors",
+            "DeviceIconWeather",
+            "DeviceIconTime",
+            "DeviceIconLightBulb",
+            "DeviceIconGateway",
+            "DeviceIconMail",
+            "DeviceIconNetwork",
+            "DeviceIconCloud"
         ],
         "Event": {
             "deviceId": "Uuid",
@@ -879,7 +916,15 @@
             "UnitPercentage",
             "UnitPartsPerMillion",
             "UnitEuro",
-            "UnitDollar"
+            "UnitDollar",
+            "UnitHerz",
+            "UnitAmpere",
+            "UnitMilliAmpere",
+            "UnitVolt",
+            "UnitMilliVolt",
+            "UnitVoltAmpere",
+            "UnitVoltAmpereReactive",
+            "UnitAmpereHour"
         ],
         "ValueOperator": [
             "ValueOperatorEquals",

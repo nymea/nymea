@@ -104,6 +104,50 @@
 
 */
 
+/*! \enum DeviceClass::DeviceIcon
+
+    This enum type specifies the default device icon of the DeviceClass.
+    Each client should have an icon set containing this list of icon types.
+    If a client want's to offer special icons for a special DeviceClass or device type,
+    he can bring it's own icon for a special DeviceClassId. If there is no special icon
+    defined, he can fallback to the default icon.
+
+    \value DeviceIconBed
+    \value DeviceIconBlinds
+    \value DeviceIconCeilingLamp
+    \value DeviceIconCouch
+    \value DeviceIconDeskLamp
+    \value DeviceIconDesk
+    \value DeviceIconHifi
+    \value DeviceIconPower
+    \value DeviceIconEnergy
+    \value DeviceIconRadio
+    \value DeviceIconSmartPhone
+    \value DeviceIconSocket
+    \value DeviceIconStandardLamp
+    \value DeviceIconSun
+    \value DeviceIconTablet
+    \value DeviceIconThermometer
+    \value DeviceIconTune
+    \value DeviceIconTv
+    \value DeviceIconBattery
+    \value DeviceIconDishwasher
+    \value DeviceIconWashingMachine
+    \value DeviceIconLaundryDryer
+    \value DeviceIconIrHeater
+    \value DeviceIconRadiator
+    \value DeviceIconSwitch
+    \value DeviceIconMotionDetectors
+    \value DeviceIconWeather
+    \value DeviceIconTime
+    \value DeviceIconLightBulb
+    \value DeviceIconGateway
+    \value DeviceIconMail
+    \value DeviceIconNetwork
+    \value DeviceIconCloud
+*/
+
+
 #include "deviceclass.h"
 
 /*! Constructs a DeviceClass with the give \a pluginId ,\a vendorId and \a id .
@@ -114,6 +158,7 @@ DeviceClass::DeviceClass(const PluginId &pluginId, const VendorId &vendorId, con
     m_id(id),
     m_vendorId(vendorId),
     m_pluginId(pluginId),
+    m_deviceIcon(DeviceIconPower),
     m_createMethods(CreateMethodUser),
     m_setupMethod(SetupMethodJustAdd)
 {
@@ -153,6 +198,21 @@ QString DeviceClass::name() const
 void DeviceClass::setName(const QString &name)
 {
     m_name = name;
+}
+
+/*! Returns the default \l{DeviceIcon} of this \l{DeviceClass}'s. */
+DeviceClass::DeviceIcon DeviceClass::deviceIcon() const
+{
+    return m_deviceIcon;
+}
+
+/*! Set the \a deviceIcon of this DeviceClass.
+
+    \sa DeviceClass::DeviceIcon
+*/
+void DeviceClass::setDeviceIcon(const DeviceClass::DeviceIcon &deviceIcon)
+{
+    m_deviceIcon = deviceIcon;
 }
 
 /*! Returns the list of basicTags of this DeviceClass.

@@ -26,6 +26,7 @@
                     "deviceClassId": "753f0d32-0468-4d08-82ed-1964aab03298",
                     "idName": "mock",
                     "name": "Mock Device",
+                    "deviceIcon": "Tune",
                     "basicTags": [
                         "Device",
                         "Actuator",
@@ -140,6 +141,7 @@
                         "Gateway"
                     ],
                     "createMethods": ["auto"],
+                    "deviceIcon": "Tune",
                     "paramTypes": [
                         {
                             "name": "name",
@@ -238,6 +240,7 @@
                     ],
                     "createMethods": ["discovery"],
                     "setupMethod": "pushButton",
+                    "deviceIcon": "Tune",
                     "pairingInfo": "Wait 3 second before you continue, the push button will be pressed automatically.",
                     "discoveryParamTypes": [
                         {
@@ -281,7 +284,7 @@
                             "idName": "allowedValues",
                             "name": "allowed values",
                             "type": "QString",
-                            "defaultValue": "String value 1",
+                            "defaultValue": "String value 2",
                             "possibleValues": [
                                 "String value 1",
                                 "String value 2",
@@ -321,6 +324,7 @@
                     "deviceClassId": "296f1fd4-e893-46b2-8a42-50d1bceb8730",
                     "idName": "mockDisplayPin",
                     "name": "Mock Device (Display Pin)",
+                    "deviceIcon": "Tune",
                     "basicTags": [
                         "Device",
                         "Actuator",
@@ -418,6 +422,7 @@
                     "deviceClassId": "a71fbde9-9a38-4bf8-beab-c8aade2608ba",
                     "idName": "mockParent",
                     "name": "Mock Device (Parent)",
+                    "deviceIcon": "Tune",
                     "basicTags": [
                         "Device",
                         "Actuator",
@@ -480,6 +485,7 @@
                     "deviceClassId": "515ffdf1-55e5-498d-9abc-4e2fe768f3a9",
                     "idName": "mockInputType",
                     "name": "Mock Device (InputTypes)",
+                    "deviceIcon": "Tune",
                     "basicTags": [
                         "Device"
                     ],

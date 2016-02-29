@@ -72,6 +72,7 @@ protected slots:
 protected:
     QVariant injectAndWait(const QString &method, const QVariantMap &params = QVariantMap());
     QVariant checkNotification(const QSignalSpy &spy, const QString &notification);
+    QVariantList checkNotifications(const QSignalSpy &spy, const QString &notification);
 
     QVariant getAndWait(const QNetworkRequest &request, const int &expectedStatus = 200);
     QVariant deleteAndWait(const QNetworkRequest &request, const int &expectedStatus = 200);

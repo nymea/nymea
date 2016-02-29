@@ -20,6 +20,7 @@
                     "deviceClassId": "29cd8265-d8bb-4cf9-9080-bfc2cf9787bc",
                     "name": "aWATTar",
                     "createMethods": ["user"],
+                    "deviceIcon": "Energy",
                     "basicTags": [
                         "Service",
                         "Actuator",

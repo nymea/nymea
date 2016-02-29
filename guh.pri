@@ -20,11 +20,13 @@ equals(QT_MAJOR_VERSION, 5):greaterThan(QT_MINOR_VERSION, 3) {
     DEFINES += BLUETOOTH_LE
 }
 
+top_srcdir=$$PWD
+top_builddir=$$shadowed($$PWD)
+
 # Enable coverage option    
 coverage {
     OBJECTS_DIR =
     MOC_DIR =
-    TOP_SRC_DIR = $$PWD
 
     LIBS += -lgcov
     QMAKE_CXXFLAGS += --coverage
@@ -47,25 +49,25 @@ coverage {
 
     generate-coverage-html.commands = \
         "@echo Collecting coverage data"; \
-        "lcov --directory $${TOP_SRC_DIR} --capture --output-file coverage.info --no-checksum --compat-libtool"; \
+        "lcov --directory $${top_srcdir} --capture --output-file coverage.info --no-checksum --compat-libtool"; \
         "lcov --extract coverage.info \"*/server/*.cpp\" --extract coverage.info \"*/libguh/*.cpp\" -o coverage.info"; \
         "lcov --remove coverage.info \"moc_*.cpp\" --remove coverage.info \"*/test/*\" -o coverage.info"; \
-        "LANG=C genhtml --prefix $${TOP_SRC_DIR} --output-directory coverage-html --title \"Code Coverage\" --legend --show-details coverage.info"
+        "LANG=C genhtml --prefix $${top_srcdir} --output-directory coverage-html --title \"Code Coverage\" --legend --show-details coverage.info"
 
     clean-coverage-html.depends = clean-gcda
     clean-coverage-html.commands = \
-        "lcov --directory $${TOP_SRC_DIR} -z"; \
+        "lcov --directory $${top_srcdir} -z"; \
         "rm -rf coverage.info coverage-html"
 
     coverage-gcovr.depends = clean-gcda check generate-coverage-gcovr
 
     generate-coverage-gcovr.commands = \
         "@echo Generating coverage GCOVR report"; \
-        "gcovr -x -r $${TOP_SRC_DIR} -o $${TOP_SRC_DIR}/coverage.xml -e \".*/moc_.*\" -e \"tests/.*\" -e \".*\\.h\""
+        "gcovr -x -r $${top_srcdir} -o $${top_srcdir}/coverage.xml -e \".*/moc_.*\" -e \"tests/.*\" -e \".*\\.h\""
 
     clean-coverage-gcovr.depends = clean-gcda
     clean-coverage-gcovr.commands = \
-        "rm -rf $${TOP_SRC_DIR}/coverage.xml"
+        "rm -rf $${top_srcdir}/coverage.xml"
 
     QMAKE_CLEAN += *.gcda *.gcno coverage.info coverage.xml
 }
@@ -81,5 +83,3 @@ equals(QT_MAJOR_VERSION, 5):greaterThan(QT_MINOR_VERSION, 2) {
     DEFINES += WEBSOCKET
 }
 
-top_srcdir=$$PWD
-top_builddir=$$shadowed($$PWD)

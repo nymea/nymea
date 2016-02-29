@@ -144,7 +144,7 @@
     create the Devices.DeviceParamsChanged notification.
 */
 
-/*! \fn void DeviceManager::deviceEditFinished(Device *device, DeviceError status);
+/*! \fn void DeviceManager::deviceReconfigurationFinished(Device *device, DeviceError status);
     This signal is emitted when the edit process of a \a device is finished.  The \a status parameter describes the
     \l{DeviceManager::DeviceError}{DeviceError} that occurred.
 */
@@ -414,7 +414,7 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassI
  *  from a discovery or if the user set them. If it came from discovery not writable parameters (readOnly) will be changed too.
  *
  *  Returns \l{DeviceError} to inform about the result. */
-DeviceManager::DeviceError DeviceManager::editDevice(const DeviceId &deviceId, const ParamList &params, bool fromDiscovery)
+DeviceManager::DeviceError DeviceManager::reconfigureDevice(const DeviceId &deviceId, const ParamList &params, bool fromDiscovery)
 {
     Device *device = findConfiguredDevice(deviceId);
     if (!device) {
@@ -490,7 +490,7 @@ DeviceManager::DeviceError DeviceManager::editDevice(const DeviceId &deviceId, c
  *  This method allows to rediscover a device and update it's \l{Param}{Params}.
  *
  *  Returns \l{DeviceError} to inform about the result. */
-DeviceManager::DeviceError DeviceManager::editDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId)
+DeviceManager::DeviceError DeviceManager::reconfigureDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId)
 {
     Device *device = findConfiguredDevice(deviceId);
     if (!device) {
@@ -510,7 +510,7 @@ DeviceManager::DeviceError DeviceManager::editDevice(const DeviceId &deviceId, c
         return DeviceErrorDeviceDescriptorNotFound;
     }
 
-    return editDevice(deviceId, descriptor.params(), true);
+    return reconfigureDevice(deviceId, descriptor.params(), true);
 }
 
 /*! Initiates a pairing with a \l{DeviceClass}{Device} with the given \a pairingTransactionId, \a deviceClassId and \a params.
@@ -1095,7 +1095,7 @@ void DeviceManager::slotDeviceSetupFinished(Device *device, DeviceManager::Devic
                 // TODO: recover old params.??
 
                 emit deviceParamsChanged(device);
-                emit deviceEditFinished(device, DeviceError::DeviceErrorSetupFailed);
+                emit deviceReconfigurationFinished(device, DeviceError::DeviceErrorSetupFailed);
             }
             qCWarning(dcDeviceManager) << QString("Error in device setup. Device %1 (%2) will not be functional.").arg(device->name()).arg(device->id().toString());
             emit deviceSetupFinished(device, DeviceError::DeviceErrorSetupFailed);
@@ -1133,7 +1133,7 @@ void DeviceManager::slotDeviceSetupFinished(Device *device, DeviceManager::Devic
         storeConfiguredDevices();
         device->setupCompleted();
         emit deviceParamsChanged(device);
-        emit deviceEditFinished(device, DeviceManager::DeviceErrorNoError);
+        emit deviceReconfigurationFinished(device, DeviceManager::DeviceErrorNoError);
         return;
     }
 

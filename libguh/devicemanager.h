@@ -115,8 +115,8 @@ public:
     DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId id = DeviceId::createDeviceId());
     DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &id = DeviceId::createDeviceId());
 
-    DeviceError editDevice(const DeviceId &deviceId, const ParamList &params, bool fromDiscovery = false);
-    DeviceError editDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId);
+    DeviceError reconfigureDevice(const DeviceId &deviceId, const ParamList &params, bool fromDiscovery = false);
+    DeviceError reconfigureDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId);
     
     DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params);
     DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId);
@@ -141,7 +141,7 @@ signals:
     void deviceParamsChanged(Device *device);
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &devices);
     void deviceSetupFinished(Device *device, DeviceError status);
-    void deviceEditFinished(Device *device, DeviceError status);
+    void deviceReconfigurationFinished(Device *device, DeviceError status);
     void pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceError status, const DeviceId &deviceId = DeviceId());
     void actionExecutionFinished(const ActionId &actionId, DeviceManager::DeviceError status);
 
@@ -201,7 +201,7 @@ private:
     QHash<QUuid, QPair<DeviceClassId, ParamList> > m_pairingsJustAdd;
     QHash<QUuid, QPair<DeviceClassId, DeviceDescriptorId> > m_pairingsDiscovery;
 
-    QList<Device *> m_asyncDeviceEdit;
+    QList<Device *> m_asyncDeviceReconfiguration;
 
     QList<DevicePlugin *> m_discoveringPlugins;
 

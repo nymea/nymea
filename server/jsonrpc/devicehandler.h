@@ -55,7 +55,7 @@ public:
 
     Q_INVOKABLE JsonReply* GetConfiguredDevices(const QVariantMap &params) const;
 
-    Q_INVOKABLE JsonReply* EditDevice(const QVariantMap &params);
+    Q_INVOKABLE JsonReply* ReconfigureDevice(const QVariantMap &params);
 
     Q_INVOKABLE JsonReply* RemoveConfiguredDevice(const QVariantMap &params);
 
@@ -88,7 +88,7 @@ private slots:
 
     void deviceSetupFinished(Device *device, DeviceManager::DeviceError status);
 
-    void deviceEditFinished(Device *device, DeviceManager::DeviceError status);
+    void deviceReconfigurationFinished(Device *device, DeviceManager::DeviceError status);
 
     void pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceError status, const DeviceId &deviceId);
 

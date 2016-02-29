@@ -43,20 +43,14 @@
                     ],
                     "paramTypes": [
                         {
-                            "name": "name",
-                            "type": "QString",
-                            "inputType": "TextLine",
-                            "defaultValue": "Mock device",
-                            "readOnly": true
-                        },
-                        {
                             "name": "httpport",
                             "type": "int"
                         },
                         {
                             "name": "async",
                             "type": "bool",
-                            "defaultValue": false
+                            "defaultValue": false,
+                            "readOnly": true
                         },
                         {
                             "name": "broken",
@@ -144,20 +138,14 @@
                     "deviceIcon": "Tune",
                     "paramTypes": [
                         {
-                            "name": "name",
-                            "type": "QString",
-                            "inputType": "TextLine",
-                            "defaultValue": "Mock device",
-                            "readOnly": true
-                        },
-                        {
                             "name": "httpport",
                             "type": "int"
                         },
                         {
                             "name": "async",
                             "type": "bool",
-                            "defaultValue": false
+                            "defaultValue": false,
+                            "readOnly": true
                         },
                         {
                             "name": "broken",
@@ -250,15 +238,6 @@
                             "allowedValues": [1, 2]
                         }
                     ],
-                    "paramTypes": [
-                        {
-                            "name": "name",
-                            "type": "QString",
-                            "inputType": "TextLine",
-                            "defaultValue": "Mock device",
-                            "readOnly": true
-                        }
-                    ],
                     "stateTypes": [
                         {
                             "id": "20dc7c22-c50e-42db-837c-2bbced939f8e",
@@ -343,13 +322,6 @@
                     ],
                     "paramTypes": [
                         {
-                            "name": "name",
-                            "type": "QString",
-                            "inputType": "TextLine",
-                            "defaultValue": "Mock device",
-                            "readOnly": true
-                        },
-                        {
                             "name": "pin",
                             "type": "QString",
                             "inputType": "TextLine",
@@ -429,14 +401,6 @@
                         "Gateway"
                     ],
                     "createMethods": ["user"],
-                    "paramTypes": [
-                        {
-                            "name": "name",
-                            "type": "QString",
-                            "inputType": "TextLine",
-                            "defaultValue": "Parent Mock Device"
-                        }
-                    ],
                     "stateTypes": [
                         {
                             "id": "d24ede5f-4064-4898-bb84-cfb533b1fbc0",
@@ -458,12 +422,6 @@
                         "Actuator"
                     ],
                     "paramTypes": [
-                        {
-                            "name": "name",
-                            "type": "QString",
-                            "inputType": "TextLine",
-                            "defaultValue": "Child Mock Device"
-                        },
                         {
                             "name": "parent uuid",
                             "type": "QUuid",

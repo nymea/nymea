@@ -84,6 +84,10 @@ private slots:
     void getStateValues_data();
     void getStateValues();
 
+    void editDevices_data();
+    void editDevices();
+
+
     void reconfigureDevices_data();
     void reconfigureDevices();
 
@@ -735,6 +739,62 @@ void TestDevices::getStateValues()
         QVariantList values = response.toMap().value("params").toMap().value("values").toList();
         QCOMPARE(values.count(), 2); // Mock device has two states...
     }
+}
+
+void TestDevices::editDevices_data()
+{
+    QTest::addColumn<QString>("name");
+
+    QTest::newRow("change name") << "New device name";
+    QTest::newRow("change name") << "Blub device";
+}
+
+void TestDevices::editDevices()
+{
+    QFETCH(QString, name);
+
+    QString originalName = "Test device";
+
+    // add device
+    QVariantMap params;
+    params.insert("deviceClassId", mockParentDeviceClassId);
+    params.insert("name", originalName);
+    QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
+    verifyDeviceError(response);
+    DeviceId deviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
+
+    // edit device
+    params.clear();
+    params.insert("deviceId", deviceId);
+    params.insert("name", name);
+
+    response = injectAndWait("Devices.EditDevice", params);
+    verifyDeviceError(response);
+
+    QString newName;
+    response = injectAndWait("Devices.GetConfiguredDevices");
+    devices = response.toMap().value("params").toMap().value("devices").toList();
+    foreach (const QVariant &deviceVariant, devices) {
+        QVariantMap device = deviceVariant.toMap();
+        if (DeviceId(device.value("deviceId").toString()) == m_mockDeviceId) {
+            qDebug() << device.value("name").toString();
+            newName = device.value("name").toString();
+        }
+    }
+    QCOMPARE(newName, name);
+
+    restartServer();
+
+    response = injectAndWait("Devices.GetConfiguredDevices");
+    devices = response.toMap().value("params").toMap().value("devices").toList();
+    foreach (const QVariant &deviceVariant, devices) {
+        QVariantMap device = deviceVariant.toMap();
+        if (DeviceId(device.value("deviceId").toString()) == m_mockDeviceId) {
+            newName = device.value("name").toString();
+        }
+    }
+    QCOMPARE(newName, name);
+
 }
 
 void TestDevices::reconfigureDevices_data()

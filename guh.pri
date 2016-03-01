@@ -20,10 +20,7 @@ equals(QT_MAJOR_VERSION, 5):greaterThan(QT_MINOR_VERSION, 3) {
     DEFINES += BLUETOOTH_LE
 }
 
-top_srcdir=$$PWD
-top_builddir=$$shadowed($$PWD)
-
-# Enable coverage option    
+# Enable coverage option
 coverage {
     OBJECTS_DIR =
     MOC_DIR =

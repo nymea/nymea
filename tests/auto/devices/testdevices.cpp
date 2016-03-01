@@ -746,7 +746,8 @@ void TestDevices::editDevices_data()
     QTest::addColumn<QString>("name");
 
     QTest::newRow("change name") << "New device name";
-    QTest::newRow("change name") << "Blub device";
+    QTest::newRow("change name") << "Foo device";
+    QTest::newRow("change name") << "Bar device";
 }
 
 void TestDevices::editDevices()
@@ -771,13 +772,14 @@ void TestDevices::editDevices()
     response = injectAndWait("Devices.EditDevice", params);
     verifyDeviceError(response);
 
+    // verify changed
     QString newName;
     response = injectAndWait("Devices.GetConfiguredDevices");
-    devices = response.toMap().value("params").toMap().value("devices").toList();
+    QVariantList devices = response.toMap().value("params").toMap().value("devices").toList();
+
     foreach (const QVariant &deviceVariant, devices) {
         QVariantMap device = deviceVariant.toMap();
-        if (DeviceId(device.value("deviceId").toString()) == m_mockDeviceId) {
-            qDebug() << device.value("name").toString();
+        if (DeviceId(device.value("id").toString()) == deviceId) {
             newName = device.value("name").toString();
         }
     }
@@ -785,16 +787,22 @@ void TestDevices::editDevices()
 
     restartServer();
 
+    // check if the changed name is still there after loading
     response = injectAndWait("Devices.GetConfiguredDevices");
     devices = response.toMap().value("params").toMap().value("devices").toList();
     foreach (const QVariant &deviceVariant, devices) {
         QVariantMap device = deviceVariant.toMap();
-        if (DeviceId(device.value("deviceId").toString()) == m_mockDeviceId) {
+        if (DeviceId(device.value("id").toString()) == deviceId) {
             newName = device.value("name").toString();
+            break;
         }
     }
     QCOMPARE(newName, name);
 
+    params.clear();
+    params.insert("deviceId", deviceId.toString());
+    response = injectAndWait("Devices.RemoveConfiguredDevice", params);
+    verifyDeviceError(response);
 }
 
 void TestDevices::reconfigureDevices_data()

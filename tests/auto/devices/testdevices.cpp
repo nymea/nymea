@@ -87,7 +87,6 @@ private slots:
     void editDevices_data();
     void editDevices();
 
-
     void reconfigureDevices_data();
     void reconfigureDevices();
 
@@ -757,9 +756,16 @@ void TestDevices::editDevices()
     QString originalName = "Test device";
 
     // add device
+    QVariantList deviceParams;
+    QVariantMap httpportParam;
+    httpportParam.insert("name", "httpport");
+    httpportParam.insert("value", 8888);
+    deviceParams.append(httpportParam);
+
     QVariantMap params;
-    params.insert("deviceClassId", mockParentDeviceClassId);
+    params.insert("deviceClassId", mockDeviceClassId);
     params.insert("name", originalName);
+    params.insert("deviceParams", deviceParams);
     QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
     verifyDeviceError(response);
     DeviceId deviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());

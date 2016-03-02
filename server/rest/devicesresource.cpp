@@ -202,7 +202,7 @@ HttpReply *DevicesResource::proccessPostRequest(const HttpRequest &request, cons
 
     // POST /api/v1/devices/{deviceId}
     if (urlTokens.count() == 4)
-        return createErrorReply(HttpReply::BadRequest);
+        return editDevice(request.payload());
 
     // POST /api/v1/devices/{deviceId}/execute/{actionTypeId}
     if (urlTokens.count() >= 6 && urlTokens.at(4) == "execute") {
@@ -391,6 +391,22 @@ HttpReply *DevicesResource::addConfiguredDevice(const QByteArray &payload) const
     reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     reply->setPayload(QJsonDocument::fromVariant(result).toJson());
     return reply;
+}
+
+HttpReply *DevicesResource::editDevice(const QByteArray &payload) const
+{
+    QPair<bool, QVariant> verification = RestResource::verifyPayload(payload);
+    if (!verification.first)
+        return createErrorReply(HttpReply::BadRequest);
+
+    QVariantMap params = verification.second.toMap();
+    QString name = params.value("name").toString();
+    DeviceManager::DeviceError status = GuhCore::instance()->deviceManager()->editDevice(m_device->id(), name);
+
+    if (status != DeviceManager::DeviceErrorNoError)
+        return createDeviceErrorReply(HttpReply::BadRequest, status);
+
+    return createDeviceErrorReply(HttpReply::Ok, status);
 }
 
 HttpReply *DevicesResource::pairDevice(const QByteArray &payload) const

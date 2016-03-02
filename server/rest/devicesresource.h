@@ -69,6 +69,7 @@ private:
     // Post methods
     HttpReply *executeAction(Device *device, const ActionTypeId &actionTypeId, const QByteArray &payload) const;
     HttpReply *addConfiguredDevice(const QByteArray &payload) const;
+    HttpReply *editDevice(const QByteArray &payload) const;
     HttpReply *pairDevice(const QByteArray &payload) const;
     HttpReply *confirmPairDevice(const QByteArray &payload) const;
 

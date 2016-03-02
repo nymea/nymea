@@ -61,11 +61,14 @@ private slots:
     void getStateValue_data();
     void getStateValue();
 
+    void editDevices_data();
+    void editDevices();
+
     void reconfigureDevices_data();
     void reconfigureDevices();
 
-    void editByDiscovery_data();
-    void editByDiscovery();
+    void reconfigureByDiscovery_data();
+    void reconfigureByDiscovery();
 
 };
 
@@ -519,6 +522,63 @@ void TestRestDevices::getStateValue()
 
 }
 
+void TestRestDevices::editDevices_data()
+{
+    QTest::addColumn<QString>("name");
+
+    QTest::newRow("change name") << "New device name";
+    QTest::newRow("change name") << "Foo device";
+    QTest::newRow("change name") << "Bar device";
+}
+
+void TestRestDevices::editDevices()
+{
+    QFETCH(QString, name);
+    QString originalName = "Test device";
+
+    QVariantList deviceParams;
+    QVariantMap httpportParam;
+    httpportParam.insert("name", "httpport");
+    httpportParam.insert("value", m_mockDevice1Port - 2);
+    deviceParams.append(httpportParam);
+
+    QVariantMap params;
+    params.insert("deviceClassId", mockDeviceClassId.toString());
+    params.insert("name", originalName);
+    params.insert("deviceParams", deviceParams);
+
+    QNetworkRequest addRequest(QUrl("http://localhost:3333/api/v1/devices"));
+    addRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    QVariant response = postAndWait(addRequest, params);
+    DeviceId deviceId = DeviceId(response.toMap().value("id").toString());
+    QVERIFY2(!deviceId.isNull(), "invalid device id");
+
+    // edit device
+    params.clear();
+    params.insert("name", name);
+
+    QNetworkRequest deviceRequest(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
+    deviceRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    response = postAndWait(deviceRequest, params);
+    QVERIFY2(response.toMap().value("error").toString() == JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorNoError), "Could not edit device name");
+
+    // check device name
+    response = getAndWait(deviceRequest);
+    QCOMPARE(response.toMap().value("name").toString(), name);
+
+    restartServer();
+
+    response = getAndWait(deviceRequest);
+    QCOMPARE(response.toMap().value("name").toString(), name);
+
+
+    // Remove the device
+    response = deleteAndWait(deviceRequest);
+    QVERIFY2(response.toMap().value("error").toString() == JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorNoError), "Could not remove device");
+}
+
 void TestRestDevices::reconfigureDevices_data()
 {
     QVariantList asyncChangeDeviceParams;
@@ -594,7 +654,7 @@ void TestRestDevices::reconfigureDevices()
     DeviceId deviceId = DeviceId(response.toMap().value("id").toString());
     QVERIFY2(deviceId != DeviceId(), "DeviceId not returned");
 
-    // now EDIT the added device
+    // now RECONFIGURE the added device
     QVariantMap editParams;
     editParams.insert("deviceId", deviceId);
     editParams.insert("deviceParams", newDeviceParams);
@@ -605,7 +665,7 @@ void TestRestDevices::reconfigureDevices()
     response = putAndWait(request, editParams, expectedStatusCode);
     QVERIFY2(!response.isNull(), "Could not read edit device response");
 
-    // if the edit should have been successfull
+    // if the reconfigure should have been successfull
     if (expectedStatusCode == 200) {
         request.setUrl(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
         request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
@@ -622,7 +682,7 @@ void TestRestDevices::reconfigureDevices()
     QVERIFY2(!response.isNull(), "Could not delete device");
 }
 
-void TestRestDevices::editByDiscovery_data()
+void TestRestDevices::reconfigureByDiscovery_data()
 {
     QTest::addColumn<DeviceClassId>("deviceClassId");
     QTest::addColumn<int>("resultCount");
@@ -638,7 +698,7 @@ void TestRestDevices::editByDiscovery_data()
     QTest::newRow("discover 2 devices with params") << mockDeviceClassId << 2 << discoveryParams << 200;
 }
 
-void TestRestDevices::editByDiscovery()
+void TestRestDevices::reconfigureByDiscovery()
 {
     QFETCH(DeviceClassId, deviceClassId);
     QFETCH(int, resultCount);
@@ -711,7 +771,7 @@ void TestRestDevices::editByDiscovery()
     QVERIFY(!descriptorId2.isNull());
     qDebug() << "edit device 1 (55555) with descriptor 2 (55556) " << descriptorId2;
 
-    // EDIT
+    // RECONFIGURE
     response.clear();
     params.clear();
     params.insert("deviceId", deviceId.toString());

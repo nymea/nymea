@@ -52,7 +52,7 @@ coverage {
         "lcov --directory $${top_srcdir} --capture --output-file coverage.info --no-checksum --compat-libtool"; \
         "lcov --extract coverage.info \"*/server/*.cpp\" --extract coverage.info \"*/libguh/*.cpp\" -o coverage.info"; \
         "lcov --remove coverage.info \"moc_*.cpp\" --remove coverage.info \"*/test/*\" -o coverage.info"; \
-        "LANG=C genhtml --prefix $${top_srcdir} --output-directory coverage-html --title \"Code Coverage\" --legend --show-details coverage.info"
+        "LANG=C genhtml --prefix $${top_srcdir} --output-directory coverage-html --title \"guh coverage\" --legend --show-details coverage.info"
 
     clean-coverage-html.depends = clean-gcda
     clean-coverage-html.commands = \

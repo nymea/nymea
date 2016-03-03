@@ -226,7 +226,7 @@ RuleEngine::~RuleEngine()
 */
 QList<Rule> RuleEngine::evaluateEvent(const Event &event)
 {
-    Device *device = GuhCore::instance()->findConfiguredDevice(event.deviceId());
+    Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(event.deviceId());
 
     qCDebug(dcRuleEngine) << "got event:" << event << device->name() << event.eventTypeId();
 
@@ -293,12 +293,12 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
     }
 
     foreach (const EventDescriptor &eventDescriptor, eventDescriptorList) {
-        Device *device = GuhCore::instance()->findConfiguredDevice(eventDescriptor.deviceId());
+        Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(eventDescriptor.deviceId());
         if (!device) {
             qCWarning(dcRuleEngine) << "Cannot create rule. No configured device for eventTypeId" << eventDescriptor.eventTypeId();
             return RuleErrorDeviceNotFound;
         }
-        DeviceClass deviceClass = GuhCore::instance()->findDeviceClass(device->deviceClassId());
+        DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
 
         bool eventTypeFound = false;
         foreach (const EventType &eventType, deviceClass.eventTypes()) {
@@ -315,12 +315,12 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
 
 
     foreach (const RuleAction &action, actions) {
-        Device *device = GuhCore::instance()->findConfiguredDevice(action.deviceId());
+        Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(action.deviceId());
         if (!device) {
             qCWarning(dcRuleEngine) << "Cannot create rule. No configured device for actionTypeId" << action.actionTypeId();
             return RuleErrorDeviceNotFound;
         }
-        DeviceClass deviceClass = GuhCore::instance()->findDeviceClass(device->deviceClassId());
+        DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
         if (!deviceClass.hasActionType(action.actionTypeId())) {
             qCWarning(dcRuleEngine) << "Cannot create rule. Device " + device->name() + " has no action type:" << action.actionTypeId();
             return RuleErrorActionTypeNotFound;
@@ -344,12 +344,12 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
         qCDebug(dcRuleEngine) << "actions" << actions.last().actionTypeId() << actions.last().ruleActionParams();
 
     foreach (const RuleAction &action, exitActions) {
-        Device *device = GuhCore::instance()->findConfiguredDevice(action.deviceId());
+        Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(action.deviceId());
         if (!device) {
             qCWarning(dcRuleEngine) << "Cannot create rule. No configured device for actionTypeId" << action.actionTypeId();
             return RuleErrorDeviceNotFound;
         }
-        DeviceClass deviceClass = GuhCore::instance()->findDeviceClass(device->deviceClassId());
+        DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
 
         if (!deviceClass.hasActionType(action.actionTypeId())) {
             qCWarning(dcRuleEngine) << "Cannot create rule. Device " + device->name() + " has no action type:" << action.actionTypeId();

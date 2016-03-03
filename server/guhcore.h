@@ -45,66 +45,41 @@ class LogEngine;
 class GuhCore : public QObject
 {
     Q_OBJECT
+    friend class GuhTestBase;
+
 public:
     static GuhCore* instance();
     ~GuhCore();
 
     void destroy();
 
-    QList<DevicePlugin *> plugins() const;
-    DeviceManager::DeviceError setPluginConfig(const PluginId &pluginId, const ParamList &params);
-
     // Device handling
-    QList<Vendor> supportedVendors() const;
-    QList<DeviceClass> supportedDevices(const VendorId &vendorId = VendorId()) const;
-    DeviceClass findDeviceClass(const DeviceClassId &deviceClassId) const;
-    DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params);
-    DeviceManager::DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId &newId);
-    DeviceManager::DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &newId);
-    QList<Device *> configuredDevices() const;
-    Device *findConfiguredDevice(const DeviceId &deviceId) const;
-    QList<Device *> findConfiguredDevices(const DeviceClassId &deviceClassId) const;
-    DeviceManager::DeviceError editDevice(const DeviceId &deviceId, const ParamList &params);
-    DeviceManager::DeviceError editDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId);
     QPair<DeviceManager::DeviceError, QList<RuleId> >removeConfiguredDevice(const DeviceId &deviceId, const QHash<RuleId, RuleEngine::RemovePolicy> &removePolicyList);
     DeviceManager::DeviceError removeConfiguredDevice(const DeviceId &deviceId, const RuleEngine::RemovePolicy &removePolicy);
-
-    DeviceManager::DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId);
-    DeviceManager::DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params);
-    DeviceManager::DeviceError confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &secret = QString());
 
     DeviceManager::DeviceError executeAction(const Action &action);
 
     void executeRuleActions(const QList<RuleAction> ruleActions);
 
-    QList<Rule> rules() const;
-    QList<RuleId> ruleIds() const;
-    Rule findRule(const RuleId &ruleId);
-    RuleEngine::RuleError addRule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actionList, const QList<RuleAction> &exitActionList, bool enabled = true, bool executable = true);
-    RuleEngine::RuleError editRule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actionList, const QList<RuleAction> &exitActionList, bool enabled = true, bool executable = true);
     RuleEngine::RuleError removeRule(const RuleId &id);
-    QList<RuleId> findRules(const DeviceId &deviceId);
-    RuleEngine::RuleError enableRule(const RuleId &ruleId);
-    RuleEngine::RuleError disableRule(const RuleId &ruleId);
-    RuleEngine::RuleError executeRuleActions(const RuleId &ruleId);
-    RuleEngine::RuleError executeRuleExitActions(const RuleId &ruleId);
 
     LogEngine* logEngine() const;
     JsonRPCServer *jsonRPCServer() const;
     RestServer *restServer() const;
     DeviceManager *deviceManager() const;
+    RuleEngine *ruleEngine() const;
 
 signals:
     void eventTriggered(const Event &event);
     void deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
     void deviceRemoved(const DeviceId &deviceId);
     void deviceAdded(Device *device);
-    void deviceParamsChanged(Device *device);
+    void deviceChanged(Device *device);
     void actionExecuted(const ActionId &id, DeviceManager::DeviceError status);
 
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
     void deviceSetupFinished(Device *device, DeviceManager::DeviceError status);
-    void deviceEditFinished(Device *device, DeviceManager::DeviceError status);
+    void deviceReconfigurationFinished(Device *device, DeviceManager::DeviceError status);
     void pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceError status, const DeviceId &deviceId);
 
     void ruleRemoved(const RuleId &ruleId);
@@ -113,8 +88,6 @@ signals:
     void ruleConfigurationChanged(const Rule &rule);
 
 private:
-    RuleEngine *ruleEngine() const;
-
     explicit GuhCore(QObject *parent = 0);
     static GuhCore *s_instance;
 
@@ -130,7 +103,6 @@ private slots:
     void gotEvent(const Event &event);
     void actionExecutionFinished(const ActionId &id, DeviceManager::DeviceError status);
 
-    friend class GuhTestBase;
 };
 
 }

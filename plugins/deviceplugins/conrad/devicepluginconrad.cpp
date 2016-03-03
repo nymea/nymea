@@ -66,10 +66,8 @@ DeviceManager::HardwareResources DevicePluginConrad::requiredHardware() const
 
 DeviceManager::DeviceSetupStatus DevicePluginConrad::setupDevice(Device *device)
 {
-    if (device->deviceClassId() == conradShutterDeviceClassId) {
-        device->setName(device->paramValue("name").toString() + " (Conrad shutter RSM900R)");
+    if (device->deviceClassId() == conradShutterDeviceClassId)
         return DeviceManager::DeviceSetupStatusSuccess;
-    }
 
     return DeviceManager::DeviceSetupStatusFailure;
 }

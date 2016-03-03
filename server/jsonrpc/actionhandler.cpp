@@ -95,7 +95,7 @@ JsonReply *ActionHandler::GetActionType(const QVariantMap &params) const
 {
     qCDebug(dcJsonRpc) << "asked for action type" << params;
     ActionTypeId actionTypeId(params.value("actionTypeId").toString());
-    foreach (const DeviceClass &deviceClass, GuhCore::instance()->supportedDevices()) {
+    foreach (const DeviceClass &deviceClass, GuhCore::instance()->deviceManager()->supportedDevices()) {
         foreach (const ActionType &actionType, deviceClass.actionTypes()) {
             if (actionType.id() == actionTypeId) {
                 QVariantMap data = statusToReply(DeviceManager::DeviceErrorNoError);

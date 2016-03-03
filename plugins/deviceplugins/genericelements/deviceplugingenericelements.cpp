@@ -75,17 +75,14 @@ DeviceManager::DeviceSetupStatus DevicePluginGenericElements::setupDevice(Device
 {
     // Toggle Button
     if (device->deviceClassId() == toggleButtonDeviceClassId) {
-        device->setName(device->paramValue("name").toString() +" (Toggle Button)");
         return DeviceManager::DeviceSetupStatusSuccess;
     }
     // Button
     if (device->deviceClassId() == buttonDeviceClassId) {
-        device->setName(device->paramValue("name").toString() +" (Button)");
         return DeviceManager::DeviceSetupStatusSuccess;
     }
     // ON/OFF Button
     if (device->deviceClassId() == onOffButtonDeviceClassId) {
-        device->setName(device->paramValue("name").toString() +" (ON/OFF Button)");
         return DeviceManager::DeviceSetupStatusSuccess;
     }
     return DeviceManager::DeviceSetupStatusFailure;

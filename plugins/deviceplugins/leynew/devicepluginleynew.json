@@ -21,11 +21,6 @@
                     "createMethods": ["user"],
                     "paramTypes": [
                         {
-                            "name": "name",
-                            "type": "QString",
-                            "inputType": "TextLine"
-                        },
-                        {
                             "name": "id",
                             "type": "QString",
                             "inputType": "TextLine",

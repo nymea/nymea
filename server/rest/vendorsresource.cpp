@@ -110,7 +110,7 @@ HttpReply *VendorsResource::getVendors() const
     HttpReply *reply = createSuccessReply();
 
     QVariantList vendorsList;
-    foreach (const Vendor &vendor, GuhCore::instance()->supportedVendors()) {
+    foreach (const Vendor &vendor, GuhCore::instance()->deviceManager()->supportedVendors()) {
         vendorsList.append(JsonTypes::packVendor(vendor));
     }
     reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
@@ -121,7 +121,7 @@ HttpReply *VendorsResource::getVendors() const
 HttpReply *VendorsResource::getVendor(const VendorId &vendorId) const
 {
     qCDebug(dcRest) << "Get vendor with id" << vendorId;
-    foreach (const Vendor &vendor, GuhCore::instance()->supportedVendors()) {
+    foreach (const Vendor &vendor, GuhCore::instance()->deviceManager()->supportedVendors()) {
         if (vendor.id() == vendorId) {
             HttpReply *reply = createSuccessReply();
             reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");

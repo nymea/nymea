@@ -63,9 +63,8 @@ DeviceManager::HardwareResources DevicePluginElro::requiredHardware() const
 DeviceManager::DeviceError DevicePluginElro::executeAction(Device *device, const Action &action)
 {   
 
-    if (action.actionTypeId() != powerActionTypeId) {
+    if (action.actionTypeId() != powerActionTypeId)
         return DeviceManager::DeviceErrorActionTypeNotFound;
-    }
 
     QList<int> rawData;
     QByteArray binCode;

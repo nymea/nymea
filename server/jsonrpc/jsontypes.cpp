@@ -728,7 +728,7 @@ QVariantList JsonTypes::packCreateMethods(DeviceClass::CreateMethods createMetho
 QVariantList JsonTypes::packSupportedVendors()
 {
     QVariantList supportedVendors;
-    foreach (const Vendor &vendor, GuhCore::instance()->supportedVendors()) {
+    foreach (const Vendor &vendor, GuhCore::instance()->deviceManager()->supportedVendors()) {
         supportedVendors.append(packVendor(vendor));
     }
     return supportedVendors;
@@ -737,7 +737,7 @@ QVariantList JsonTypes::packSupportedVendors()
 QVariantList JsonTypes::packSupportedDevices(const VendorId &vendorId)
 {
     QVariantList supportedDeviceList;
-    foreach (const DeviceClass &deviceClass, GuhCore::instance()->supportedDevices(vendorId)) {
+    foreach (const DeviceClass &deviceClass, GuhCore::instance()->deviceManager()->supportedDevices(vendorId)) {
         supportedDeviceList.append(packDeviceClass(deviceClass));
     }
     return supportedDeviceList;
@@ -746,7 +746,7 @@ QVariantList JsonTypes::packSupportedDevices(const VendorId &vendorId)
 QVariantList JsonTypes::packConfiguredDevices()
 {
     QVariantList configuredDeviceList;
-    foreach (Device *device, GuhCore::instance()->configuredDevices()) {
+    foreach (Device *device, GuhCore::instance()->deviceManager()->configuredDevices()) {
         configuredDeviceList.append(packDevice(device));
     }
     return configuredDeviceList;
@@ -754,7 +754,7 @@ QVariantList JsonTypes::packConfiguredDevices()
 
 QVariantList JsonTypes::packDeviceStates(Device *device)
 {
-    DeviceClass deviceClass = GuhCore::instance()->findDeviceClass(device->deviceClassId());
+    DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
     QVariantList stateValues;
     foreach (const StateType &stateType, deviceClass.stateTypes()) {
         QVariantMap stateValue;
@@ -777,7 +777,7 @@ QVariantList JsonTypes::packDeviceDescriptors(const QList<DeviceDescriptor> devi
 QVariantList JsonTypes::packRuleDescriptions()
 {
     QVariantList rulesList;
-    foreach (const Rule &rule, GuhCore::instance()->rules()) {
+    foreach (const Rule &rule, GuhCore::instance()->ruleEngine()->rules()) {
         rulesList.append(JsonTypes::packRuleDescription(rule));
     }
     return rulesList;
@@ -822,7 +822,7 @@ QVariantList JsonTypes::packEventTypes(const DeviceClass &deviceClass)
 QVariantList JsonTypes::packPlugins()
 {
     QVariantList pluginsList;
-    foreach (DevicePlugin *plugin, GuhCore::instance()->plugins()) {
+    foreach (DevicePlugin *plugin, GuhCore::instance()->deviceManager()->plugins()) {
         QVariantMap pluginMap = packPlugin(plugin);
         pluginsList.append(pluginMap);
     }
@@ -1380,7 +1380,7 @@ QPair<bool, QString> JsonTypes::validateBasicType(const QVariant &variant)
 
 QVariant::Type JsonTypes::getActionParamType(const ActionTypeId &actionTypeId, const QString &paramName)
 {
-    foreach (const DeviceClass &deviceClass, GuhCore::instance()->supportedDevices()) {
+    foreach (const DeviceClass &deviceClass, GuhCore::instance()->deviceManager()->supportedDevices()) {
         foreach (const ActionType &actionType, deviceClass.actionTypes()) {
             if (actionType.id() == actionTypeId) {
                 foreach (const ParamType &paramType, actionType.paramTypes()) {
@@ -1396,7 +1396,7 @@ QVariant::Type JsonTypes::getActionParamType(const ActionTypeId &actionTypeId, c
 
 QVariant::Type JsonTypes::getEventParamType(const EventTypeId &eventTypeId, const QString &paramName)
 {
-    foreach (const DeviceClass &deviceClass, GuhCore::instance()->supportedDevices()) {
+    foreach (const DeviceClass &deviceClass, GuhCore::instance()->deviceManager()->supportedDevices()) {
         foreach (const EventType &eventType, deviceClass.eventTypes()) {
             if (eventType.id() == eventTypeId) {
                 foreach (const ParamType &paramType, eventType.paramTypes()) {

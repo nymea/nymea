@@ -1,4 +1,4 @@
-37
+38
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -34,6 +34,7 @@
             "description": "Add a configured device with a setupMethod of SetupMethodJustAdd. For devices with a setupMethod different than SetupMethodJustAdd, use PairDevice. Use deviceDescriptorId or deviceParams, depending on the createMethod of the device class. CreateMethodJustAdd takes the parameters you want to have with that device. CreateMethodDiscovery requires the use of a deviceDescriptorId.",
             "params": {
                 "deviceClassId": "Uuid",
+                "name": "String",
                 "o:deviceDescriptorId": "Uuid",
                 "o:deviceParams": [
                     "$ref:Param"
@@ -56,13 +57,10 @@
             }
         },
         "Devices.EditDevice": {
-            "description": "Edit the parameters of a device. The device params will be set to the passed parameters and the setup device will be called. If the device is discoverable, you can perform a GetDiscoveredDevices before calling this method and pass the new DeviceDescriptor (rediscover). If a parameter is not writable, you will find a 'readOnly': true in the ParamType. By default, every Param is writable.",
+            "description": "Edit the name of a device. This method does not change the configuration of the device.",
             "params": {
                 "deviceId": "Uuid",
-                "o:deviceDescriptorId": "Uuid",
-                "o:deviceParams": [
-                    "$ref:Param"
-                ]
+                "name": "String"
             },
             "returns": {
                 "deviceError": "$ref:DeviceError"
@@ -199,6 +197,7 @@
             "description": "Pair a device. Use this for DeviceClasses with a setupMethod different than SetupMethodJustAdd. Use deviceDescriptorId or deviceParams, depending on the createMethod of the device class. CreateMethodJustAdd takes the parameters you want to have with that device. CreateMethodDiscovery requires the use of a deviceDescriptorId. If success is true, the return values will contain a pairingTransactionId, a displayMessage and the setupMethod. Depending on the setupMethod you should either proceed with AddConfiguredDevice or PairDevice.",
             "params": {
                 "deviceClassId": "Uuid",
+                "name": "String",
                 "o:deviceDescriptorId": "Uuid",
                 "o:deviceParams": [
                     "$ref:Param"
@@ -209,6 +208,19 @@
                 "o:displayMessage": "String",
                 "o:pairingTransactionId": "Uuid",
                 "o:setupMethod": "$ref:SetupMethod"
+            }
+        },
+        "Devices.ReconfigureDevice": {
+            "description": "Edit the parameter configuration of the device. The device params will be set to the passed parameters and the setup device will be called. If the device is discoverable, you can perform a GetDiscoveredDevices before calling this method and pass the new DeviceDescriptor (rediscover). Only writable parameters can be changed. By default, every Param is writable.",
+            "params": {
+                "deviceId": "Uuid",
+                "o:deviceDescriptorId": "Uuid",
+                "o:deviceParams": [
+                    "$ref:Param"
+                ]
+            },
+            "returns": {
+                "deviceError": "$ref:DeviceError"
             }
         },
         "Devices.RemoveConfiguredDevice": {
@@ -455,8 +467,8 @@
                 "device": "$ref:Device"
             }
         },
-        "Devices.DeviceParamsChanged": {
-            "description": "Emitted whenever the params of a Device changed (by editing or rediscovering).",
+        "Devices.DeviceChanged": {
+            "description": "Emitted whenever the params or name of a Device changed (by EditDevice or ReconfigureDevice).",
             "params": {
                 "device": "$ref:Device"
             }

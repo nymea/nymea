@@ -191,7 +191,7 @@ JsonReply* RulesHandler::GetRules(const QVariantMap &params)
 JsonReply *RulesHandler::GetRuleDetails(const QVariantMap &params)
 {
     RuleId ruleId = RuleId(params.value("ruleId").toString());
-    Rule rule = GuhCore::instance()->findRule(ruleId);
+    Rule rule = GuhCore::instance()->ruleEngine()->findRule(ruleId);
     if (rule.id().isNull()) {
         return createReply(statusToReply(RuleEngine::RuleErrorRuleNotFound));
     }
@@ -251,7 +251,7 @@ JsonReply* RulesHandler::AddRule(const QVariantMap &params)
     bool executable = params.value("executable", true).toBool();
 
     RuleId newRuleId = RuleId::createRuleId();
-    RuleEngine::RuleError status = GuhCore::instance()->addRule(newRuleId, name, eventDescriptorList, stateEvaluator, actions, exitActions, enabled, executable);
+    RuleEngine::RuleError status = GuhCore::instance()->ruleEngine()->addRule(newRuleId, name, eventDescriptorList, stateEvaluator, actions, exitActions, enabled, executable);
     QVariantMap returns;
     if (status ==  RuleEngine::RuleErrorNoError) {
         returns.insert("ruleId", newRuleId.toString());
@@ -311,10 +311,10 @@ JsonReply *RulesHandler::EditRule(const QVariantMap &params)
     bool executable = params.value("executable", true).toBool();
 
     RuleId ruleId = RuleId(params.value("ruleId").toString());
-    RuleEngine::RuleError status = GuhCore::instance()->editRule(ruleId, name, eventDescriptorList, stateEvaluator, actions, exitActions, enabled, executable);
+    RuleEngine::RuleError status = GuhCore::instance()->ruleEngine()->editRule(ruleId, name, eventDescriptorList, stateEvaluator, actions, exitActions, enabled, executable);
     QVariantMap returns;
     if (status ==  RuleEngine::RuleErrorNoError) {
-        returns.insert("rule", JsonTypes::packRule(GuhCore::instance()->findRule(ruleId)));
+        returns.insert("rule", JsonTypes::packRule(GuhCore::instance()->ruleEngine()->findRule(ruleId)));
     }
     returns.insert("ruleError", JsonTypes::ruleErrorToString(status));
     return createReply(returns);
@@ -332,7 +332,7 @@ JsonReply* RulesHandler::RemoveRule(const QVariantMap &params)
 JsonReply *RulesHandler::FindRules(const QVariantMap &params)
 {
     DeviceId deviceId = DeviceId(params.value("deviceId").toString());
-    QList<RuleId> rules = GuhCore::instance()->findRules(deviceId);
+    QList<RuleId> rules = GuhCore::instance()->ruleEngine()->findRules(deviceId);
 
     QVariantList rulesList;
     foreach (const RuleId &ruleId, rules) {
@@ -346,19 +346,19 @@ JsonReply *RulesHandler::FindRules(const QVariantMap &params)
 
 JsonReply *RulesHandler::EnableRule(const QVariantMap &params)
 {
-    return createReply(statusToReply(GuhCore::instance()->enableRule(RuleId(params.value("ruleId").toString()))));
+    return createReply(statusToReply(GuhCore::instance()->ruleEngine()->enableRule(RuleId(params.value("ruleId").toString()))));
 }
 
 JsonReply *RulesHandler::DisableRule(const QVariantMap &params)
 {
-    return createReply(statusToReply(GuhCore::instance()->disableRule(RuleId(params.value("ruleId").toString()))));
+    return createReply(statusToReply(GuhCore::instance()->ruleEngine()->disableRule(RuleId(params.value("ruleId").toString()))));
 }
 
 JsonReply *RulesHandler::ExecuteActions(const QVariantMap &params)
 {
     QVariantMap returns;
     RuleId ruleId(params.value("ruleId").toString());
-    RuleEngine::RuleError status = GuhCore::instance()->executeRuleActions(ruleId);
+    RuleEngine::RuleError status = GuhCore::instance()->ruleEngine()->executeActions(ruleId);
     returns.insert("ruleError", JsonTypes::ruleErrorToString(status));
     return createReply(returns);
 }
@@ -367,7 +367,7 @@ JsonReply *RulesHandler::ExecuteExitActions(const QVariantMap &params)
 {
     QVariantMap returns;
     RuleId ruleId(params.value("ruleId").toString());
-    RuleEngine::RuleError status = GuhCore::instance()->executeRuleExitActions(ruleId);
+    RuleEngine::RuleError status = GuhCore::instance()->ruleEngine()->executeExitActions(ruleId);
     returns.insert("ruleError", JsonTypes::ruleErrorToString(status));
     return createReply(returns);
 }

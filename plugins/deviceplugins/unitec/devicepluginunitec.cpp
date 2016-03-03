@@ -79,7 +79,6 @@ DeviceManager::DeviceSetupStatus DevicePluginUnitec::setupDevice(Device *device)
         }
     }
 
-    device->setName("Unitec switch 48111 (" + device->paramValue("Channel").toString() + ")");
     return DeviceManager::DeviceSetupStatusSuccess;
 }
 

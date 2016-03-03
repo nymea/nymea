@@ -18,13 +18,7 @@
                         "Time"
                     ],
                     "createMethods": ["auto"],
-                    "paramTypes": [
-                        {
-                            "name": "name",
-                            "type": "QString",
-                            "inputType": "TextLine"
-                        }
-                    ],
+                    "paramTypes": [ ],
                     "stateTypes": [
                         {
                             "id": "ab16997c-be29-438e-b588-2507d723d264",
@@ -184,11 +178,6 @@
                     "createMethods": ["user"],
                     "paramTypes": [
                         {
-                            "name": "name",
-                            "type": "QString",
-                            "inputType": "TextLine"
-                        },
-                        {
                             "name": "monday",
                             "type": "bool",
                             "defaultValue": false
@@ -281,11 +270,6 @@
                     ],
                     "createMethods": ["user"],
                     "paramTypes": [
-                        {
-                            "name": "name",
-                            "type": "QString",
-                            "inputType": "TextLine"
-                        },
                         {
                             "name": "seconds",
                             "type": "int",

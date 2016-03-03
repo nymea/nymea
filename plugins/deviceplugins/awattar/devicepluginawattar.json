@@ -29,12 +29,6 @@
                     ],
                     "paramTypes": [
                         {
-                            "name": "name",
-                            "type": "QString",
-                            "inputType": "TextLine",
-                            "defaultValue": "Heating system"
-                        },
-                        {
                             "name": "user uuid",
                             "type": "QString",
                             "inputType": "TextLine"
@@ -42,7 +36,7 @@
                         {
                             "name": "token",
                             "type": "QString",
-                            "inputType": "TextLine"
+                            "inputType": "Password"
                         }
                     ],
                     "stateTypes": [

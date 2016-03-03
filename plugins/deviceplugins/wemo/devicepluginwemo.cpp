@@ -81,8 +81,6 @@ DeviceManager::DeviceSetupStatus DevicePluginWemo::setupDevice(Device *device)
         return DeviceManager::DeviceSetupStatusFailure;
     }
 
-    device->setName("WeMo Switch (" + device->paramValue("serial number").toString() + ")");
-
     refresh(device);
     return DeviceManager::DeviceSetupStatusSuccess;
 }

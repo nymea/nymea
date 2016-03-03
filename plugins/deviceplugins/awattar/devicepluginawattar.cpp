@@ -96,7 +96,7 @@ DeviceManager::DeviceSetupStatus DevicePluginAwattar::setupDevice(Device *device
         return DeviceManager::DeviceSetupStatusFailure;
     }
 
-    qCDebug(dcAwattar) << "Setup device" << device->params();
+    qCDebug(dcAwattar) << "Setup device" << device->name() << device->params();
 
     m_device = device;
     m_token = device->paramValue("token").toString();

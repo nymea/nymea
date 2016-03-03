@@ -85,7 +85,6 @@ DeviceManager::DeviceSetupStatus DevicePluginMailNotification::setupDevice(Devic
 {
     // Google mail
     if(device->deviceClassId() == googleMailDeviceClassId) {
-        device->setName("Google Mail (" + device->paramValue("user").toString() + ")");
         SmtpClient *smtpClient = new SmtpClient(this);
         smtpClient->setHost("smtp.gmail.com");
         smtpClient->setPort(465);
@@ -107,7 +106,6 @@ DeviceManager::DeviceSetupStatus DevicePluginMailNotification::setupDevice(Devic
     }
     // Yahoo mail
     if(device->deviceClassId() == yahooMailDeviceClassId) {
-        device->setName("Yahoo Mail (" + device->paramValue("user").toString() + ")");
         SmtpClient *smtpClient = new SmtpClient(this);
         smtpClient->setHost("smtp.mail.yahoo.com");
         smtpClient->setPort(465);
@@ -129,7 +127,6 @@ DeviceManager::DeviceSetupStatus DevicePluginMailNotification::setupDevice(Devic
     }
     // Custom mail
     if(device->deviceClassId() == customMailDeviceClassId) {
-        device->setName("Custom Mail (" + device->paramValue("sender mail").toString() + ")");
         SmtpClient *smtpClient = new SmtpClient(this);
         smtpClient->setHost(device->paramValue("SMTP server").toString());
         smtpClient->setPort(device->paramValue("port").toInt());

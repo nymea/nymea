@@ -370,10 +370,10 @@ HttpReply *DevicesResource::addConfiguredDevice(const QByteArray &payload) const
 
     DeviceManager::DeviceError status;
     if (deviceDescriptorId.isNull()) {
-        qCDebug(dcRest) << "Adding device with " << deviceParams;
+        qCDebug(dcRest) << "Adding device" << deviceName << "with" << deviceParams;
         status = GuhCore::instance()->deviceManager()->addConfiguredDevice(deviceClassId, deviceName, deviceParams, newDeviceId);
     } else {
-        qCDebug(dcRest) << "Adding discovered device with DeviceDescriptorId" << deviceDescriptorId.toString();
+        qCDebug(dcRest) << "Adding discovered device" << deviceName << "with DeviceDescriptorId" << deviceDescriptorId.toString();
         status = GuhCore::instance()->deviceManager()->addConfiguredDevice(deviceClassId, deviceName, deviceDescriptorId, newDeviceId);
     }
     if (status == DeviceManager::DeviceErrorAsync) {
@@ -425,16 +425,18 @@ HttpReply *DevicesResource::pairDevice(const QByteArray &payload) const
         return createDeviceErrorReply(HttpReply::BadRequest, DeviceManager::DeviceErrorDeviceClassNotFound);
     }
 
-    qCDebug(dcRest) << "Pair device with deviceClassId" << deviceClassId.toString();
+    QString deviceName = params.value("name").toString();
+
+    qCDebug(dcRest) << "Pair device" << deviceName << "with deviceClassId" << deviceClassId.toString();
 
     DeviceManager::DeviceError status;
     PairingTransactionId pairingTransactionId = PairingTransactionId::createPairingTransactionId();
     if (params.contains("deviceDescriptorId")) {
         DeviceDescriptorId deviceDescriptorId(params.value("deviceDescriptorId").toString());
-        status = GuhCore::instance()->deviceManager()->pairDevice(pairingTransactionId, deviceClassId, deviceDescriptorId);
+        status = GuhCore::instance()->deviceManager()->pairDevice(pairingTransactionId, deviceClassId, deviceName, deviceDescriptorId);
     } else {
         ParamList deviceParams = JsonTypes::unpackParams(params.value("deviceParams").toList());
-        status = GuhCore::instance()->deviceManager()->pairDevice(pairingTransactionId, deviceClassId, deviceParams);
+        status = GuhCore::instance()->deviceManager()->pairDevice(pairingTransactionId, deviceClassId, deviceName, deviceParams);
     }
 
     if (status != DeviceManager::DeviceErrorNoError)

@@ -44,6 +44,7 @@
 
 class Device;
 class DevicePlugin;
+class DevicePairingInfo;
 class Radio433;
 class UpnpDiscovery;
 
@@ -51,6 +52,8 @@ class LIBGUH_EXPORT DeviceManager : public QObject
 {
     Q_OBJECT
     Q_ENUMS(DeviceError)
+
+    friend class DevicePlugin;
 
 public:
     enum HardwareResource {
@@ -120,9 +123,10 @@ public:
 
     DeviceError editDevice(const DeviceId &deviceId, const QString &name);
 
-    DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params);
-    DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId);
+    DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const QString &name, const ParamList &params);
+    DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId);
     DeviceError confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &secret = QString());
+
     DeviceError removeConfiguredDevice(const DeviceId &deviceId);
 
     Device* findConfiguredDevice(const DeviceId &id) const;
@@ -200,14 +204,11 @@ private:
     BluetoothScanner *m_bluetoothScanner;
     #endif
 
-    QHash<QUuid, QPair<DeviceClassId, ParamList> > m_pairingsJustAdd;
-    QHash<QUuid, QPair<DeviceClassId, DeviceDescriptorId> > m_pairingsDiscovery;
+    QHash<QUuid, DevicePairingInfo> m_pairingsJustAdd;
+    QHash<QUuid, DevicePairingInfo> m_pairingsDiscovery;
 
     QList<Device *> m_asyncDeviceReconfiguration;
-
     QList<DevicePlugin *> m_discoveringPlugins;
-
-    friend class DevicePlugin;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(DeviceManager::HardwareResources)

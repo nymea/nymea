@@ -18,11 +18,6 @@
                     ],
                     "paramTypes": [
                         {
-                            "name": "name",
-                            "type": "QString",
-                            "inputType": "TextLine"
-                        },
-                        {
                             "name": "command",
                             "type": "QString",
                             "inputType": "TextLine"
@@ -60,11 +55,6 @@
                     ],
                     "createMethods": ["user"],
                     "paramTypes": [
-                        {
-                            "name": "name",
-                            "type": "QString",
-                            "inputType": "TextLine"
-                        },
                         {
                             "name": "script",
                             "type": "QString",

@@ -1,7 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
- *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *  Copyright (C) 2016 Simon Stuerz <simon.stuerz@guh.guru>                *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -19,44 +18,46 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef DEVICEDESCRIPTION_H
-#define DEVICEDESCRIPTION_H
+#include "devicepairinginfo.h"
 
-#include "libguh.h"
-#include "typeutils.h"
-#include "types/param.h"
-
-#include <QVariantMap>
-
-class LIBGUH_EXPORT DeviceDescriptor
+DevicePairingInfo::DevicePairingInfo()
 {
-public:
-    DeviceDescriptor();
-    DeviceDescriptor(const DeviceClassId &deviceClassId, const QString &title = QString(), const QString &description = QString());
-    DeviceDescriptor(const DeviceDescriptorId &id, const DeviceClassId &deviceClassId, const QString &title = QString(), const QString &description = QString());
 
-    bool isValid() const;
+}
 
-    DeviceDescriptorId id() const;
-    DeviceClassId deviceClassId() const;
+DevicePairingInfo::DevicePairingInfo(const DeviceClassId &deviceClassId, const QString &deviceName, const ParamList &params) :
+    m_deviceClassId(deviceClassId),
+    m_deviceName(deviceName),
+    m_params(params)
+{
 
-    QString title() const;
-    void setTitle(const QString &title);
+}
 
-    QString description() const;
-    void setDescription(const QString &description);
+DevicePairingInfo::DevicePairingInfo(const DeviceClassId &deviceClassId, const QString &deviceName, const DeviceDescriptorId &deviceDescriptorId) :
+    m_deviceClassId(deviceClassId),
+    m_deviceName(deviceName),
+    m_deviceDescriptorId(deviceDescriptorId)
+{
 
-    ParamList params() const;
-    void setParams(const ParamList &params);
+}
 
-private:
-    DeviceDescriptorId m_id;
-    DeviceClassId m_deviceClassId;
-    QString m_title;
-    QString m_description;
-    ParamList m_params;
-};
+DeviceClassId DevicePairingInfo::deviceClassId() const
+{
+    return m_deviceClassId;
+}
 
-Q_DECLARE_METATYPE(DeviceDescriptor)
+QString DevicePairingInfo::deviceName() const
+{
+    return m_deviceName;
+}
 
-#endif // DEVICEDESCRIPTION_H
+ParamList DevicePairingInfo::params() const
+{
+    return m_params;
+}
+
+DeviceDescriptorId DevicePairingInfo::deviceDescriptorId() const
+{
+    return m_deviceDescriptorId;
+}
+

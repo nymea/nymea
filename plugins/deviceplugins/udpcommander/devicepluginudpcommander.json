@@ -19,11 +19,6 @@
                     "createMethods": ["user"],
                     "paramTypes": [
                         {
-                            "name": "name",
-                            "type": "QString",
-                            "inputType": "TextLine"
-                        },
-                        {
                             "name": "port",
                             "type": "int"
                         },

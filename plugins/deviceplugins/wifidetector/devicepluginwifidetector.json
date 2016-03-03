@@ -20,11 +20,6 @@
                     "createMethods": ["user", "discovery"],
                     "paramTypes": [
                         {
-                            "name": "name",
-                            "type": "QString",
-                            "inputType": "TextLine"
-                        },
-                        {
                             "name": "mac address",
                             "type": "QString",
                             "inputType": "MacAddress"

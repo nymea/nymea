@@ -26,6 +26,7 @@ SOURCES += devicemanager.cpp \
            plugin/deviceclass.cpp \
            plugin/deviceplugin.cpp \
            plugin/devicedescriptor.cpp \
+           plugin/devicepairinginfo.cpp \
            hardware/gpio.cpp \
            hardware/gpiomonitor.cpp \
            hardware/radio433/radio433.cpp \
@@ -71,6 +72,7 @@ HEADERS += devicemanager.h \
            plugin/deviceclass.h \
            plugin/deviceplugin.h \
            plugin/devicedescriptor.h \
+           plugin/devicepairinginfo.h \
            hardware/gpio.h \
            hardware/gpiomonitor.h \
            hardware/radio433/radio433.h \

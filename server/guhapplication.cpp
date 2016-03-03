@@ -22,13 +22,78 @@
 #include "loggingcategories.h"
 #include "guhcore.h"
 
-#include "unistd.h"
-#include "signal.h"
+#include <execinfo.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <cxxabi.h>
 
 namespace guhserver {
 
-static void catchUnixSignals(const std::vector<int>& quitSignals, const std::vector<int>& ignoreSignals = std::vector<int>()) {
+static void printBacktrace()
+{
+    void* trace[20];
 
+    int traceLength = backtrace(trace, sizeof(trace) / sizeof(void*));
+    if (traceLength == 0)
+        return;
+
+    char** symbolList = backtrace_symbols(trace, traceLength);
+    size_t funktionNameSize = 256;
+    char* functionName = (char*)malloc(funktionNameSize);
+    for (int i = 1; i < traceLength; i++) {
+        QString address = QString().sprintf("%p", trace[i]);
+        QString fileName = QString(symbolList[i]);
+        int fileIndex = fileName.indexOf("(");
+        QString lineCommand = QString("addr2line %1 -e %2").arg(address).arg(fileName.left(fileIndex));
+
+        // Read stdout from addr2line
+        char buffer[1024];
+        FILE *lineFile = popen(lineCommand.toLatin1().data(), "r");
+        QString line(fgets(buffer, sizeof(buffer), lineFile));
+        pclose(lineFile);
+
+        char *begin_name = 0, *begin_offset = 0, *end_offset = 0;
+        // find parentheses and +address offset surrounding the mangled name:
+        // ./module(function+0x15c) [0x8048a6d]
+        for (char *p = symbolList[i]; *p; ++p) {
+            if (*p == '(')
+                begin_name = p;
+            else if (*p == '+')
+                begin_offset = p;
+            else if (*p == ')' && begin_offset) {
+                end_offset = p;
+                break;
+            }
+        }
+
+        qCCritical(dcApplication) << QString("[%1] %2").arg(i).arg(symbolList[i]);
+
+        if (begin_name && begin_offset && end_offset && begin_name < begin_offset) {
+            int status;
+            *begin_name++ = '\0';
+            *begin_offset++ = '\0';
+            *end_offset = '\0';
+            char* ret = abi::__cxa_demangle(begin_name, functionName, &funktionNameSize, &status);
+            if (status == 0) {
+                functionName = ret;
+                qCritical(dcApplication) << QString("    %1").arg(QString().sprintf("%s+%s", functionName, begin_offset));
+            } else {
+                qCCritical(dcApplication) << QString("    %1").arg(QString().sprintf("%s()+%s", begin_name, begin_offset));
+            }
+        }
+        qCCritical(dcApplication) << QString("    %1").arg(line.remove("\n"));
+
+    }
+    free(functionName);
+    free(symbolList);
+}
+
+static void catchUnixSignals(const std::vector<int>& quitSignals, const std::vector<int>& ignoreSignals = std::vector<int>())
+{
     auto handler = [](int sig) ->void {
         switch (sig) {
         case SIGQUIT:
@@ -43,6 +108,11 @@ static void catchUnixSignals(const std::vector<int>& quitSignals, const std::vec
         case SIGHUP:
             qCDebug(dcApplication) << "Cought SIGHUP quit signal...";
             break;
+        case SIGSEGV: {
+            qCCritical(dcApplication) << "Cought SIGSEGV signal. Segmentation fault!";
+            printBacktrace();
+            exit(1);
+        }
         default:
             break;
         }
@@ -64,10 +134,12 @@ static void catchUnixSignals(const std::vector<int>& quitSignals, const std::vec
 }
 
 
+
+
 GuhApplication::GuhApplication(int &argc, char **argv) :
     QCoreApplication(argc, argv)
 {
-    catchUnixSignals({SIGQUIT, SIGINT, SIGTERM, SIGHUP});
+    catchUnixSignals({SIGQUIT, SIGINT, SIGTERM, SIGHUP, SIGSEGV});
 }
 
 }

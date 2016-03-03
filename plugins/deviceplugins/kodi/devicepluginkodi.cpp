@@ -117,7 +117,7 @@ void DevicePluginKodi::deviceRemoved(Device *device)
 {
     Kodi *kodi = m_kodis.key(device);
     m_kodis.remove(kodi);
-    qCDebug(dcKodi) << "Delete " << device->paramValue("name");
+    qCDebug(dcKodi) << "Delete " << device->name();
     kodi->deleteLater();
 }
 

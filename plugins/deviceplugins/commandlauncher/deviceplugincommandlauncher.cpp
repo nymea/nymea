@@ -115,10 +115,8 @@ DevicePluginCommandLauncher::DevicePluginCommandLauncher()
 DeviceManager::DeviceSetupStatus DevicePluginCommandLauncher::setupDevice(Device *device)
 {
     // Application
-    if(device->deviceClassId() == applicationDeviceClassId){
-        device->setName("Application launcher (" + device->paramValue("name").toString() + ")");
+    if(device->deviceClassId() == applicationDeviceClassId)
         return DeviceManager::DeviceSetupStatusSuccess;
-    }
 
     // Script
     if(device->deviceClassId() == scriptDeviceClassId){
@@ -138,7 +136,6 @@ DeviceManager::DeviceSetupStatus DevicePluginCommandLauncher::setupDevice(Device
             return DeviceManager::DeviceSetupStatusFailure;
         }
 
-        device->setName("Bashscript launcher (" + device->paramValue("name").toString() + ")");
         return DeviceManager::DeviceSetupStatusSuccess;
     }
     return DeviceManager::DeviceSetupStatusFailure;

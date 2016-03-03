@@ -119,7 +119,7 @@ void DevicePluginLgSmartTv::deviceRemoved(Device *device)
     }
 
     TvDevice *tvDevice= m_tvList.key(device);
-    qCDebug(dcLgSmartTv) << "Remove device" << device->paramValue("name").toString();
+    qCDebug(dcLgSmartTv) << "Remove device" << device->name();
     unpairTvDevice(device);
     m_tvList.remove(tvDevice);
     delete tvDevice;

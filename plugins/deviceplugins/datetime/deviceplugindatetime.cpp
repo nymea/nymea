@@ -148,7 +148,7 @@ DeviceManager::DeviceSetupStatus DevicePluginDateTime::setupDevice(Device *devic
     // alarm
     if (device->deviceClassId() == alarmDeviceClassId) {
         Alarm *alarm = new Alarm(this);
-        alarm->setName(device->paramValue("name").toString());
+        alarm->setName(device->name());
         alarm->setMonday(device->paramValue("monday").toBool());
         alarm->setTuesday(device->paramValue("tuesday").toBool());
         alarm->setWednesday(device->paramValue("wednesday").toBool());
@@ -172,7 +172,7 @@ DeviceManager::DeviceSetupStatus DevicePluginDateTime::setupDevice(Device *devic
     }
 
     if (device->deviceClassId() == countdownDeviceClassId) {
-        Countdown *countdown = new Countdown(device->paramValue("name").toString(),
+        Countdown *countdown = new Countdown(device->name(),
                                              QTime(device->paramValue("hours").toInt(),
                                                    device->paramValue("minutes").toInt(),
                                                    device->paramValue("seconds").toInt()),
@@ -278,10 +278,6 @@ void DevicePluginDateTime::startMonitoringAutoDevices()
     }
 
     DeviceDescriptor dateDescriptor(todayDeviceClassId, "Date", "Time");
-    ParamList params;
-    params.append(Param("name", "Time"));
-    dateDescriptor.setParams(params);
-
     emit autoDevicesAppeared(todayDeviceClassId, QList<DeviceDescriptor>() << dateDescriptor);
 }
 

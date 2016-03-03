@@ -63,7 +63,7 @@ DevicePluginWifiDetector::DevicePluginWifiDetector()
 
 DeviceManager::DeviceSetupStatus DevicePluginWifiDetector::setupDevice(Device *device)
 {
-    qCDebug(dcWifiDetector) << "Setup" << device->params();
+    qCDebug(dcWifiDetector) << "Setup" << device->name() << device->params();
     return DeviceManager::DeviceSetupStatusSuccess;
 }
 
@@ -169,7 +169,6 @@ void DevicePluginWifiDetector::discoveryProcessFinished(int exitCode, QProcess::
                 qCDebug(dcWifiDetector) << "Found" << name << macAddress.toLower();
                 DeviceDescriptor descriptor(wifiDeviceClassId, name, macAddress);
                 ParamList params;
-                params.append(Param("name", name));
                 params.append(Param("mac address", macAddress));
                 descriptor.setParams(params);
                 m_deviceDescriptors.append(descriptor);

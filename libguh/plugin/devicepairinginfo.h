@@ -1,7 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
- *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *  Copyright (C) 2016 Simon Stuerz <simon.stuerz@guh.guru>                *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -19,44 +18,33 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef DEVICEDESCRIPTION_H
-#define DEVICEDESCRIPTION_H
+#ifndef DEVICEPAIRINGINFO_H
+#define DEVICEPAIRINGINFO_H
 
 #include "libguh.h"
 #include "typeutils.h"
 #include "types/param.h"
 
-#include <QVariantMap>
-
-class LIBGUH_EXPORT DeviceDescriptor
+class LIBGUH_EXPORT DevicePairingInfo
 {
 public:
-    DeviceDescriptor();
-    DeviceDescriptor(const DeviceClassId &deviceClassId, const QString &title = QString(), const QString &description = QString());
-    DeviceDescriptor(const DeviceDescriptorId &id, const DeviceClassId &deviceClassId, const QString &title = QString(), const QString &description = QString());
+    DevicePairingInfo();
+    DevicePairingInfo(const DeviceClassId &deviceClassId, const QString &deviceName, const ParamList &params);
+    DevicePairingInfo(const DeviceClassId &deviceClassId, const QString &deviceName, const DeviceDescriptorId &deviceDescriptorId);
 
-    bool isValid() const;
-
-    DeviceDescriptorId id() const;
     DeviceClassId deviceClassId() const;
 
-    QString title() const;
-    void setTitle(const QString &title);
-
-    QString description() const;
-    void setDescription(const QString &description);
+    QString deviceName() const;
 
     ParamList params() const;
-    void setParams(const ParamList &params);
+
+    DeviceDescriptorId deviceDescriptorId() const;
 
 private:
-    DeviceDescriptorId m_id;
     DeviceClassId m_deviceClassId;
-    QString m_title;
-    QString m_description;
+    QString m_deviceName;
     ParamList m_params;
+    DeviceDescriptorId m_deviceDescriptorId;
 };
 
-Q_DECLARE_METATYPE(DeviceDescriptor)
-
-#endif // DEVICEDESCRIPTION_H
+#endif // DEVICEPAIRINGINFO_H

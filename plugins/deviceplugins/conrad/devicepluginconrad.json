@@ -19,13 +19,7 @@
                         "Shading"
                     ],
                     "createMethods": ["user"],
-                    "paramTypes": [
-                        {
-                            "name": "name",
-                            "type": "QString",
-                            "inputType": "TextLine"
-                        }
-                    ],
+                    "paramTypes": [ ],
                     "actionTypes": [
                         {
                             "id": "e015419c-9df9-4bf5-a439-f1f32aedd1db",

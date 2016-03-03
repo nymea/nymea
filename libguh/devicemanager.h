@@ -46,6 +46,7 @@
 
 class Device;
 class DevicePlugin;
+class DevicePairingInfo;
 class Radio433;
 class UpnpDiscovery;
 
@@ -53,6 +54,8 @@ class LIBGUH_EXPORT DeviceManager : public QObject
 {
     Q_OBJECT
     Q_ENUMS(DeviceError)
+
+    friend class DevicePlugin;
 
 public:
     enum HardwareResource {
@@ -114,15 +117,18 @@ public:
     DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params);
 
     QList<Device*> configuredDevices() const;
-    DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId id = DeviceId::createDeviceId());
-    DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &id = DeviceId::createDeviceId());
+    DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId id = DeviceId::createDeviceId());
+    DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &id = DeviceId::createDeviceId());
 
-    DeviceError editDevice(const DeviceId &deviceId, const ParamList &params, bool fromDiscovery = false);
-    DeviceError editDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId);
-    
-    DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params);
-    DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const DeviceDescriptorId &deviceDescriptorId);
+    DeviceError reconfigureDevice(const DeviceId &deviceId, const ParamList &params, bool fromDiscovery = false);
+    DeviceError reconfigureDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId);
+
+    DeviceError editDevice(const DeviceId &deviceId, const QString &name);
+
+    DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const QString &name, const ParamList &params);
+    DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId);
     DeviceError confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &secret = QString());
+
     DeviceError removeConfiguredDevice(const DeviceId &deviceId);
 
     Device* findConfiguredDevice(const DeviceId &id) const;
@@ -140,10 +146,10 @@ signals:
     void deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
     void deviceRemoved(const DeviceId &deviceId);
     void deviceAdded(Device *device);
-    void deviceParamsChanged(Device *device);
+    void deviceChanged(Device *device);
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &devices);
     void deviceSetupFinished(Device *device, DeviceError status);
-    void deviceEditFinished(Device *device, DeviceError status);
+    void deviceReconfigurationFinished(Device *device, DeviceError status);
     void pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceError status, const DeviceId &deviceId = DeviceId());
     void actionExecutionFinished(const ActionId &actionId, DeviceManager::DeviceError status);
 
@@ -178,7 +184,7 @@ private slots:
 
 private:
     bool verifyPluginMetadata(const QJsonObject &data);
-    DeviceError addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const ParamList &params, const DeviceId id = DeviceId::createDeviceId());
+    DeviceError addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId id = DeviceId::createDeviceId());
     DeviceSetupStatus setupDevice(Device *device);
     void postSetupDevice(Device *device);
 
@@ -202,14 +208,11 @@ private:
     BluetoothScanner *m_bluetoothScanner;
     #endif
 
-    QHash<QUuid, QPair<DeviceClassId, ParamList> > m_pairingsJustAdd;
-    QHash<QUuid, QPair<DeviceClassId, DeviceDescriptorId> > m_pairingsDiscovery;
+    QHash<QUuid, DevicePairingInfo> m_pairingsJustAdd;
+    QHash<QUuid, DevicePairingInfo> m_pairingsDiscovery;
 
-    QList<Device *> m_asyncDeviceEdit;
-
+    QList<Device *> m_asyncDeviceReconfiguration;
     QList<DevicePlugin *> m_discoveringPlugins;
-
-    friend class DevicePlugin;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(DeviceManager::HardwareResources)

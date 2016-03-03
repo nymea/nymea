@@ -56,7 +56,7 @@ private slots:
 
     void ruleActiveChangedNotifications();
 
-    void deviceParamsChangedNotifications();
+    void deviceChangedNotifications();
 
 private:
     QStringList extractRefs(const QVariant &variant);
@@ -283,6 +283,7 @@ void TestJSONRPC::deviceAddedRemovedNotifications()
 
     QVariantMap params; clientSpy.clear();
     params.insert("deviceClassId", mockDeviceClassId);
+    params.insert("name", "Mock device");
     params.insert("deviceParams", deviceParams);
     QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
     clientSpy.wait();
@@ -472,7 +473,7 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     QCOMPARE(notificationVariant.toMap().value("params").toMap().value("ruleId").toString(), ruleId.toString());
 }
 
-void TestJSONRPC::deviceParamsChangedNotifications()
+void TestJSONRPC::deviceChangedNotifications()
 {
     // enable notificartions
     QVariantMap params;
@@ -493,6 +494,7 @@ void TestJSONRPC::deviceParamsChangedNotifications()
 
     params.clear(); response.clear(); clientSpy.clear();
     params.insert("deviceClassId", mockDeviceClassId);
+    params.insert("name", "Mock");
     params.insert("deviceParams", deviceParams);
     response = injectAndWait("Devices.AddConfiguredDevice", params);
     DeviceId deviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
@@ -510,7 +512,7 @@ void TestJSONRPC::deviceParamsChangedNotifications()
     }
 
     // EDIT
-    // now edit the device and check the deviceParamsChanged notification
+    // now edit the device and check the deviceChanged notification
     QVariantList newDeviceParams;
     QVariantMap newHttpportParam;
     newHttpportParam.insert("name", "httpport");
@@ -520,13 +522,13 @@ void TestJSONRPC::deviceParamsChangedNotifications()
     params.clear(); response.clear(); clientSpy.clear();
     params.insert("deviceId", deviceId);
     params.insert("deviceParams", newDeviceParams);
-    response = injectAndWait("Devices.EditDevice", params);
+    response = injectAndWait("Devices.ReconfigureDevice", params);
     clientSpy.wait();
     verifyDeviceError(response);
-    QVariantMap editDeviceNotificationMap = checkNotification(clientSpy, "Devices.DeviceParamsChanged").toMap().value("params").toMap().value("device").toMap();
-    QCOMPARE(editDeviceNotificationMap.value("deviceClassId").toString(), mockDeviceClassId.toString());
-    QCOMPARE(editDeviceNotificationMap.value("id").toString(), deviceId.toString());
-    foreach (const QVariant &param, editDeviceNotificationMap.value("params").toList()) {
+    QVariantMap reconfigureDeviceNotificationMap = checkNotification(clientSpy, "Devices.DeviceChanged").toMap().value("params").toMap().value("device").toMap();
+    QCOMPARE(reconfigureDeviceNotificationMap.value("deviceClassId").toString(), mockDeviceClassId.toString());
+    QCOMPARE(reconfigureDeviceNotificationMap.value("id").toString(), deviceId.toString());
+    foreach (const QVariant &param, reconfigureDeviceNotificationMap.value("params").toList()) {
         if (param.toMap().value("name").toString() == "httpport") {
             QCOMPARE(param.toMap().value("value").toInt(), newHttpportParam.value("value").toInt());
         }

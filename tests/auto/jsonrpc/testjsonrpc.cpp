@@ -206,39 +206,49 @@ void TestJSONRPC::stateChangeEmitsNotifications()
     QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
     // trigger state change in mock device
-    int newVal = 1111;
+    int newVal = 38;
     QUuid stateTypeId("80baec19-54de-4948-ac46-31eabfaceb83");
     QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(stateTypeId.toString()).arg(newVal)));
     QNetworkReply *reply = nam.get(request);
     reply->deleteLater();
 
-    clientSpy.wait();
+    clientSpy.wait(2000);
 
     // Make sure the notification contains all the stuff we expect
-    QVariant stateChangedVariants = checkNotification(clientSpy, "Devices.StateChanged");
-    QVERIFY2(!stateChangedVariants.isNull(), "Did not get Devices.StateChanged notification.");
+    QVariantList stateChangedVariants = checkNotifications(clientSpy, "Devices.StateChanged");
+    QVERIFY2(!stateChangedVariants.isEmpty(), "Did not get Devices.StateChanged notification.");
+    qDebug() << "got" << stateChangedVariants.count() << "Devices.StateChanged notifications";
 
-    //    qDebug() << "got" << stateChangedVariants.count() << "Devices.StateChanged notifications";
+    bool found = false;
+    foreach (const QVariant &stateChangedVariant, stateChangedVariants) {
+        if (stateChangedVariant.toMap().value("params").toMap().value("stateTypeId").toUuid() == stateTypeId) {
+            found = true;
+            QCOMPARE(stateChangedVariant.toMap().value("params").toMap().value("value").toInt(), newVal);
+            break;
+        }
+    }
+    QVERIFY2(found, "Could not find the correct Devices.StateChanged notification");
 
-    //    bool found = false;
-    //    foreach (const QVariant &stateChangedVariant, stateChangedVariants) {
-    //        if (stateChangedVariant.toMap().value("params").toMap().value("stateTypeId").toUuid() == stateTypeId) {
-    //            QCOMPARE(stateChangedVariant.toMap().value("params").toMap().value("value").toInt(), newVal);
-    //            found = true;
-    //            break;
-    //        }
-    //    }
-    //    QCOMPARE(found, true);
+    // Make sure the logg notification contains all the stuff we expect
+    QVariantList loggEntryAddedVariant = checkNotifications(clientSpy, "Logging.LogEntryAdded");
+    QVERIFY2(!loggEntryAddedVariant.isEmpty(), "Did not get Logging.LogEntryAdded notification.");
+    qDebug() << "got" << loggEntryAddedVariant.count() << "Logging.LogEntryAdded notifications";
+
 
     // Make sure the notification contains all the stuff we expect
-    QVariant loggEntryAddedVariant = checkNotification(clientSpy, "Logging.LogEntryAdded");
-    QVERIFY2(!loggEntryAddedVariant.isNull(), "Did not get Logging.LogEntryAdded notification.");
+    QVariantList eventTriggeredVariants = checkNotifications(clientSpy, "Events.EventTriggered");
+    QVERIFY2(!eventTriggeredVariants.isEmpty(), "Did not get Events.EventTriggered notification.");
+    qDebug() << "got" << eventTriggeredVariants.count() << "Events.EventTriggered notifications";
 
-    // Make sure the notification contains all the stuff we expect
-    QVariant eventTriggeredVariant = checkNotification(clientSpy, "Events.EventTriggered");
-    QVERIFY2(!eventTriggeredVariant.isNull(), "Did not get Events.EventTriggered notification.");
-    //QCOMPARE(eventTriggeredVariant.toMap().value("params").toMap().value("event").toMap().value("eventTypeId").toUuid(), stateTypeId);
-    //QCOMPARE(eventTriggeredVariant.toMap().value("params").toMap().value("event").toMap().value("params").toList().first().toMap().value("value").toInt(), newVal);
+    found = false;
+    foreach (const QVariant &eventTriggeredVariant, eventTriggeredVariants) {
+        if (eventTriggeredVariant.toMap().value("params").toMap().value("event").toMap().value("eventTypeId").toUuid() == stateTypeId) {
+            found = true;
+            QCOMPARE(eventTriggeredVariant.toMap().value("params").toMap().value("event").toMap().value("params").toList().first().toMap().value("value").toInt(), newVal);
+            break;
+        }
+    }
+    QVERIFY2(found, "Could not find the correct Devices.StateChanged notification");
 
     // Now turn off notifications
     QCOMPARE(disableNotifications(), true);
@@ -250,8 +260,8 @@ void TestJSONRPC::stateChangeEmitsNotifications()
     reply = nam.get(request);
     reply->deleteLater();
 
-    // Lets wait a max of 100ms for the notification
-    clientSpy.wait();
+    // Lets wait a max of 500ms for notifications
+    clientSpy.wait(500);
     // but make sure it doesn't come
     QCOMPARE(clientSpy.count(), 0);
 
@@ -285,7 +295,7 @@ void TestJSONRPC::deviceAddedRemovedNotifications()
     params.insert("name", "Mock device");
     params.insert("deviceParams", deviceParams);
     QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
-    clientSpy.wait();
+    clientSpy.wait(2000);
     verifyDeviceError(response);
     QVariantMap notificationDeviceMap = checkNotification(clientSpy, "Devices.DeviceAdded").toMap().value("params").toMap().value("device").toMap();
 
@@ -305,7 +315,7 @@ void TestJSONRPC::deviceAddedRemovedNotifications()
     params.clear(); response.clear(); clientSpy.clear();
     params.insert("deviceId", deviceId);
     response = injectAndWait("Devices.RemoveConfiguredDevice", params);
-    clientSpy.wait();
+    clientSpy.wait(2000);
     verifyDeviceError(response);
     checkNotification(clientSpy, "Devices.DeviceRemoved");
 
@@ -350,7 +360,7 @@ void TestJSONRPC::ruleAddedRemovedNotifications()
     params.insert("stateEvaluator", stateEvaluator);
 
     QVariant response = injectAndWait("Rules.AddRule", params);
-    clientSpy.wait();
+    clientSpy.wait(2000);
     QVariantMap notificationRuleMap = checkNotification(clientSpy, "Rules.RuleAdded").toMap().value("params").toMap().value("rule").toMap();
     verifyRuleError(response);
 
@@ -365,12 +375,11 @@ void TestJSONRPC::ruleAddedRemovedNotifications()
     QCOMPARE(notificationRuleMap.value("eventDescriptors").toList(), QVariantList() << eventDescriptor);
     QCOMPARE(notificationRuleMap.value("exitActions").toList(), QVariantList());
 
-
     // now remove the rule and check the RuleRemoved notification
     params.clear(); response.clear(); clientSpy.clear();
     params.insert("ruleId", ruleId);
     response = injectAndWait("Rules.RemoveRule", params);
-    clientSpy.wait();
+    clientSpy.wait(2000);
     checkNotification(clientSpy, "Devices.DeviceRemoved");
     verifyRuleError(response);
 
@@ -510,8 +519,8 @@ void TestJSONRPC::deviceChangedNotifications()
         }
     }
 
-    // EDIT
-    // now edit the device and check the deviceChanged notification
+    // RECONFIGURE
+    // now reconfigure the device and check the deviceChanged notification
     QVariantList newDeviceParams;
     QVariantMap newHttpportParam;
     newHttpportParam.insert("name", "httpport");
@@ -522,7 +531,7 @@ void TestJSONRPC::deviceChangedNotifications()
     params.insert("deviceId", deviceId);
     params.insert("deviceParams", newDeviceParams);
     response = injectAndWait("Devices.ReconfigureDevice", params);
-    clientSpy.wait();
+    clientSpy.wait(2000);
     verifyDeviceError(response);
     QVariantMap reconfigureDeviceNotificationMap = checkNotification(clientSpy, "Devices.DeviceChanged").toMap().value("params").toMap().value("device").toMap();
     QCOMPARE(reconfigureDeviceNotificationMap.value("deviceClassId").toString(), mockDeviceClassId.toString());
@@ -532,6 +541,19 @@ void TestJSONRPC::deviceChangedNotifications()
             QCOMPARE(param.toMap().value("value").toInt(), newHttpportParam.value("value").toInt());
         }
     }
+
+    // EDIT device name
+    QString deviceName = "Test device 1234";
+    params.clear(); response.clear(); clientSpy.clear();
+    params.insert("deviceId", deviceId);
+    params.insert("name", deviceName);
+    response = injectAndWait("Devices.EditDevice", params);
+    clientSpy.wait(2000);
+    verifyDeviceError(response);
+    QVariantMap editDeviceNotificationMap = checkNotification(clientSpy, "Devices.DeviceChanged").toMap().value("params").toMap().value("device").toMap();
+    QCOMPARE(editDeviceNotificationMap.value("deviceClassId").toString(), mockDeviceClassId.toString());
+    QCOMPARE(editDeviceNotificationMap.value("id").toString(), deviceId.toString());
+    QCOMPARE(editDeviceNotificationMap.value("name").toString(), deviceName);
 
     // REMOVE
     // now remove the device and check the device removed notification

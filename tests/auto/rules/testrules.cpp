@@ -91,7 +91,7 @@ void TestRules::cleanupMockHistory() {
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
     QNetworkRequest request(QUrl(QString("http://localhost:%1/clearactionhistory").arg(m_mockDevice1Port).arg(mockEvent1Id.toString())));
     QNetworkReply *reply = nam.get(request);
-    spy.wait(500);
+    spy.wait(1000);
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
 }
@@ -134,7 +134,7 @@ void TestRules::verifyRuleExecuted(const ActionTypeId &actionTypeId)
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
     QNetworkRequest request(QUrl(QString("http://localhost:%1/actionhistory").arg(m_mockDevice1Port)));
     QNetworkReply *reply = nam.get(request);
-    spy.wait(500);
+    spy.wait(1000);
     QCOMPARE(spy.count(), 1);
 
     QByteArray actionHistory = reply->readAll();
@@ -823,6 +823,9 @@ void TestRules::executeRuleActions()
     response = injectAndWait("Rules.ExecuteActions", executeParams);
     verifyRuleError(response, ruleError);
 
+    // give the ruleeingine time to execute the actions
+    QTest::qWait(1000);
+
     if (ruleError == RuleEngine::RuleErrorNoError) {
         verifyRuleExecuted(mockActionIdWithParams);
     } else {
@@ -834,6 +837,9 @@ void TestRules::executeRuleActions()
     // EXECUTE exit actions
     response = injectAndWait("Rules.ExecuteExitActions", executeParams);
     verifyRuleError(response, ruleError);
+
+    // give the ruleeingine time to execute the actions
+    QTest::qWait(1000);
 
     if (ruleError == RuleEngine::RuleErrorNoError) {
         verifyRuleExecuted(mockActionIdNoParams);

@@ -818,6 +818,7 @@ void TestRules::executeRuleActions()
     cleanupMockHistory();
 
     // EXECUTE actions
+    qDebug() << "Execute rule actions";
     QVariantMap executeParams;
     executeParams.insert("ruleId", ruleId.toString());
     response = injectAndWait("Rules.ExecuteActions", executeParams);
@@ -835,6 +836,7 @@ void TestRules::executeRuleActions()
     cleanupMockHistory();
 
     // EXECUTE exit actions
+    qDebug() << "Execute rule exit actions";
     response = injectAndWait("Rules.ExecuteExitActions", executeParams);
     verifyRuleError(response, ruleError);
 

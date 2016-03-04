@@ -824,7 +824,7 @@ void TestRules::executeRuleActions()
     verifyRuleError(response, ruleError);
 
     // give the ruleeingine time to execute the actions
-    QTest::qWait(1000);
+    QTest::qWait(2000);
 
     if (ruleError == RuleEngine::RuleErrorNoError) {
         verifyRuleExecuted(mockActionIdWithParams);
@@ -839,7 +839,7 @@ void TestRules::executeRuleActions()
     verifyRuleError(response, ruleError);
 
     // give the ruleeingine time to execute the actions
-    QTest::qWait(1000);
+    QTest::qWait(2000);
 
     if (ruleError == RuleEngine::RuleErrorNoError) {
         verifyRuleExecuted(mockActionIdNoParams);

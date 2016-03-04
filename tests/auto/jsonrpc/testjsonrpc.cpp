@@ -511,7 +511,6 @@ void TestJSONRPC::stateChangeEmitsNotifications()
     // Make sure the notification contains all the stuff we expect
     QVariantList stateChangedVariants = checkNotifications(clientSpy, "Devices.StateChanged");
     QVERIFY2(!stateChangedVariants.isEmpty(), "Did not get Devices.StateChanged notification.");
-
     qDebug() << "got" << stateChangedVariants.count() << "Devices.StateChanged notifications";
     foreach (const QVariant &stateChangedVariant, stateChangedVariants) {
         if (stateChangedVariant.toMap().value("params").toMap().value("stateTypeId").toUuid() == stateTypeId) {
@@ -525,15 +524,13 @@ void TestJSONRPC::stateChangeEmitsNotifications()
 
     QVERIFY2(found, "Could not find the correct Devices.StateChanged notification");
 
+
     // Make sure the logg notification contains all the stuff we expect
     QVariantList loggEntryAddedVariants = checkNotifications(clientSpy, "Logging.LogEntryAdded");
     QVERIFY2(!loggEntryAddedVariants.isEmpty(), "Did not get Logging.LogEntryAdded notification.");
     qDebug() << "got" << loggEntryAddedVariants.count() << "Logging.LogEntryAdded notifications";
-
     found = false;
-    qDebug() << "got" << loggEntryAddedVariants.count() << "Logging.LogEntryAdded";
     foreach (const QVariant &loggEntryAddedVariant, loggEntryAddedVariants) {
-        qDebug() << QJsonDocument::fromVariant(loggEntryAddedVariant).toJson();
         if (loggEntryAddedVariant.toMap().value("params").toMap().value("logEntry").toMap().value("typeId").toUuid() == stateTypeId) {
             found = true;
             QCOMPARE(loggEntryAddedVariant.toMap().value("params").toMap().value("logEntry").toMap().value("source").toString(), QString("LoggingSourceStates"));
@@ -550,11 +547,9 @@ void TestJSONRPC::stateChangeEmitsNotifications()
     // Make sure the notification contains all the stuff we expect
     QVariantList eventTriggeredVariants = checkNotifications(clientSpy, "Events.EventTriggered");
     QVERIFY2(!eventTriggeredVariants.isEmpty(), "Did not get Events.EventTriggered notification.");
-
     found = false;
     qDebug() << "got" << eventTriggeredVariants.count() << "Events.EventTriggered notifications";
     foreach (const QVariant &eventTriggeredVariant, eventTriggeredVariants) {
-        qDebug() << QJsonDocument::fromVariant(eventTriggeredVariant).toJson();
         if (eventTriggeredVariant.toMap().value("params").toMap().value("event").toMap().value("eventTypeId").toUuid() == stateTypeId) {
             found = true;
             QCOMPARE(eventTriggeredVariant.toMap().value("params").toMap().value("event").toMap().value("params").toList().first().toMap().value("value").toInt(), newVal);

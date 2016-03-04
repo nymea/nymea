@@ -89,7 +89,7 @@ private slots:
 void TestRules::cleanupMockHistory() {
     QNetworkAccessManager nam;
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/clearactionhistory").arg(m_mockDevice1Port).arg(mockEvent1Id.toString())));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/clearactionhistory").arg(QString::number(m_mockDevice1Port))));
     QNetworkReply *reply = nam.get(request);
     spy.wait(1000);
     QCOMPARE(spy.count(), 1);
@@ -132,7 +132,7 @@ void TestRules::verifyRuleExecuted(const ActionTypeId &actionTypeId)
     // Verify rule got executed
     QNetworkAccessManager nam;
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/actionhistory").arg(m_mockDevice1Port)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/actionhistory").arg(QString::number(m_mockDevice1Port))));
     QNetworkReply *reply = nam.get(request);
     spy.wait(1000);
     QCOMPARE(spy.count(), 1);
@@ -148,7 +148,7 @@ void TestRules::verifyRuleNotExecuted()
 {
     QNetworkAccessManager nam;
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/actionhistory").arg(m_mockDevice1Port)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/actionhistory").arg(QString::number(m_mockDevice1Port))));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -971,7 +971,6 @@ void TestRules::loadStoreConfig()
     validActionEventBasedParam2.insert("name", "mockActionParam2");
     validActionEventBasedParam2.insert("value", false);
     validActionEventBased.insert("ruleActionParams", QVariantList() << validActionEventBasedParam1 << validActionEventBasedParam2);
-
 
     QVariantList validEventDescriptors3;
     QVariantMap validEventDescriptor3;

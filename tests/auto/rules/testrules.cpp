@@ -89,9 +89,9 @@ private slots:
 void TestRules::cleanupMockHistory() {
     QNetworkAccessManager nam;
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/clearactionhistory").arg(m_mockDevice1Port).arg(mockEvent1Id.toString())));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/clearactionhistory").arg(QString::number(m_mockDevice1Port))));
     QNetworkReply *reply = nam.get(request);
-    spy.wait(500);
+    spy.wait(1000);
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
 }
@@ -132,9 +132,9 @@ void TestRules::verifyRuleExecuted(const ActionTypeId &actionTypeId)
     // Verify rule got executed
     QNetworkAccessManager nam;
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/actionhistory").arg(m_mockDevice1Port)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/actionhistory").arg(QString::number(m_mockDevice1Port))));
     QNetworkReply *reply = nam.get(request);
-    spy.wait(500);
+    spy.wait(1000);
     QCOMPARE(spy.count(), 1);
 
     QByteArray actionHistory = reply->readAll();
@@ -148,7 +148,7 @@ void TestRules::verifyRuleNotExecuted()
 {
     QNetworkAccessManager nam;
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/actionhistory").arg(m_mockDevice1Port)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/actionhistory").arg(QString::number(m_mockDevice1Port))));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -823,6 +823,9 @@ void TestRules::executeRuleActions()
     response = injectAndWait("Rules.ExecuteActions", executeParams);
     verifyRuleError(response, ruleError);
 
+    // give the ruleeingine time to execute the actions
+    QTest::qWait(2000);
+
     if (ruleError == RuleEngine::RuleErrorNoError) {
         verifyRuleExecuted(mockActionIdWithParams);
     } else {
@@ -834,6 +837,9 @@ void TestRules::executeRuleActions()
     // EXECUTE exit actions
     response = injectAndWait("Rules.ExecuteExitActions", executeParams);
     verifyRuleError(response, ruleError);
+
+    // give the ruleeingine time to execute the actions
+    QTest::qWait(2000);
 
     if (ruleError == RuleEngine::RuleErrorNoError) {
         verifyRuleExecuted(mockActionIdNoParams);
@@ -918,7 +924,6 @@ void TestRules::loadStoreConfig()
     stateEvaluator2.insert("stateDescriptor", stateDescriptor2);
     stateEvaluator2.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
 
-
     QVariantMap stateDescriptor3;
     stateDescriptor3.insert("deviceId", m_mockDeviceId);
     stateDescriptor3.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
@@ -966,7 +971,6 @@ void TestRules::loadStoreConfig()
     validActionEventBasedParam2.insert("name", "mockActionParam2");
     validActionEventBasedParam2.insert("value", false);
     validActionEventBased.insert("ruleActionParams", QVariantList() << validActionEventBasedParam1 << validActionEventBasedParam2);
-
 
     QVariantList validEventDescriptors3;
     QVariantMap validEventDescriptor3;

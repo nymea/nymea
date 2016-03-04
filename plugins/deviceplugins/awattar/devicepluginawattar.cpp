@@ -343,7 +343,8 @@ void DevicePluginAwattar::processUserData(const QVariantMap &data)
             }
 
             foreach (HeatPump *pump, m_heatPumps) {
-                pump->setSgMode(sgMode);
+                if (pump->reachable())
+                    pump->setSgMode(sgMode);
             }
         }
     }
@@ -377,7 +378,7 @@ void DevicePluginAwattar::processPumpSearchData(const QByteArray &data)
     }
 }
 
-QNetworkReply *DevicePluginAwattar::    requestPriceData(const QString &token)
+QNetworkReply *DevicePluginAwattar::requestPriceData(const QString &token)
 {
     QByteArray data = QString(token + ":").toUtf8().toBase64();
     QString header = "Basic " + data;

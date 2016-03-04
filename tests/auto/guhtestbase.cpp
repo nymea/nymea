@@ -78,6 +78,8 @@ void GuhTestBase::initTestCase()
     rulesSettings.clear();
     GuhSettings deviceSettings(GuhSettings::SettingsRoleDevices);
     deviceSettings.clear();
+    GuhSettings pluginSettings(GuhSettings::SettingsRolePlugins);
+    pluginSettings.clear();
 
     GuhCore::instance();
 
@@ -160,7 +162,7 @@ QVariant GuhTestBase::injectAndWait(const QString &method, const QVariantMap &pa
 
 QVariant GuhTestBase::checkNotification(const QSignalSpy &spy, const QString &notification)
 {
-    qDebug() << "Got" << spy.count() << "notifications while waiting for" << notification;
+    //qDebug() << "Got" << spy.count() << "notifications while waiting for" << notification;
     for (int i = 0; i < spy.count(); i++) {
         // Make sure the response it a valid JSON string
         QJsonParseError error;
@@ -180,7 +182,7 @@ QVariant GuhTestBase::checkNotification(const QSignalSpy &spy, const QString &no
 
 QVariantList GuhTestBase::checkNotifications(const QSignalSpy &spy, const QString &notification)
 {
-    qDebug() << "Got" << spy.count() << "notifications while waiting for" << notification;
+    //qDebug() << "Got" << spy.count() << "notifications while waiting for" << notification;
     QVariantList notificationList;
     for (int i = 0; i < spy.count(); i++) {
         // Make sure the response it a valid JSON string

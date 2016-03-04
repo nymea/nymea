@@ -282,7 +282,6 @@ void TestWebserver::getOptions_data()
     QTest::addColumn<QString>("path");
 
     QTest::newRow("get OPTIONS /api/v1/devices") << "/api/v1/devices";
-    QTest::newRow("get OPTIONS /api/v1/devices/{id}") << "/api/v1/devices/" + m_mockDeviceId.toString();
     QTest::newRow("get OPTIONS /api/v1/devices/pair") << "/api/v1/devices/pair";
     QTest::newRow("get OPTIONS /api/v1/devices/confirmpairing") << "/api/v1/devices/confirmpairing";
     QTest::newRow("get OPTIONS /api/v1/rules") << "/api/v1/rules";

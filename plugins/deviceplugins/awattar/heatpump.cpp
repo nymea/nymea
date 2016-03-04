@@ -39,7 +39,13 @@ HeatPump::HeatPump(QHostAddress address, QObject *parent) :
     url.setPath("/.well-known/core");
 
     qCDebug(dcAwattar) << "Discover pump resources on" << url.toString();
-    m_discoverReplies.append(m_coap->get(CoapRequest(url)));
+    CoapReply *reply = m_coap->get(CoapRequest(url));
+    if (reply->error() != CoapReply::NoError) {
+        qCWarning(dcAwattar()) << "Could not discover pump resources" << reply->errorString();
+        reply->deleteLater();
+        return;
+    }
+    m_discoverReplies.append(reply);
 }
 
 QHostAddress HeatPump::address() const
@@ -65,7 +71,15 @@ void HeatPump::setSgMode(const int &sgMode)
     url.setPath("/a/sg_mode");
 
     QByteArray payload = QString("mode=%1").arg(QString::number(sgMode)).toUtf8();
-    m_sgModeReplies.append(m_coap->post(CoapRequest(url), payload));
+
+    CoapReply *reply = m_coap->post(CoapRequest(url), payload);
+    if (reply->error() != CoapReply::NoError) {
+        qCWarning(dcAwattar()) << "Could not set sg mode" << reply->errorString();
+        reply->deleteLater();
+        return;
+    }
+
+    m_sgModeReplies.append(reply);
 }
 
 void HeatPump::setLed(const bool &power)
@@ -75,11 +89,20 @@ void HeatPump::setLed(const bool &power)
     url.setHost(m_address.toString());
     url.setPath("/a/led");
 
+    QByteArray data;
     if (power) {
-        m_ledReplies.append(m_coap->post(CoapRequest(url), QString("mode=1").toUtf8()));
+        data = QString("mode=1").toUtf8();
     } else {
-        m_ledReplies.append(m_coap->post(CoapRequest(url), QString("mode=0").toUtf8()));
+        data = QString("mode=0").toUtf8();
     }
+
+    CoapReply *reply = m_coap->post(CoapRequest(url), data);
+    if (reply->error() != CoapReply::NoError) {
+        qCWarning(dcAwattar()) << "Could not set led" << reply->errorString();
+        reply->deleteLater();
+        return;
+    }
+    m_ledReplies.append(reply);
 }
 
 void HeatPump::setReachable(const bool &reachable)

@@ -343,7 +343,8 @@ void DevicePluginAwattar::processUserData(const QVariantMap &data)
             }
 
             foreach (HeatPump *pump, m_heatPumps) {
-                pump->setSgMode(sgMode);
+                if (pump->reachable())
+                    pump->setSgMode(sgMode);
             }
         }
     }

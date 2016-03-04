@@ -924,7 +924,6 @@ void TestRules::loadStoreConfig()
     stateEvaluator2.insert("stateDescriptor", stateDescriptor2);
     stateEvaluator2.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
 
-
     QVariantMap stateDescriptor3;
     stateDescriptor3.insert("deviceId", m_mockDeviceId);
     stateDescriptor3.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));

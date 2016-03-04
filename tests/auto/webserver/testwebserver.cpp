@@ -204,7 +204,7 @@ void TestWebserver::checkAllowedMethodCall()
 
     clientSpy.wait();
 
-    QCOMPARE(clientSpy.count() > 0, "expected response");
+    QVERIFY2(clientSpy.count() > 0, "expected response");
 
     if (expectedStatusCode == 405){
         QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), expectedStatusCode);

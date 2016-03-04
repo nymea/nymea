@@ -70,8 +70,7 @@ static void printBacktrace()
             }
         }
 
-        qCCritical(dcApplication) << QString("[%1] %2").arg(i).arg(symbolList[i]);
-
+        QString functionString;
         if (begin_name && begin_offset && end_offset && begin_name < begin_offset) {
             int status;
             *begin_name++ = '\0';
@@ -80,14 +79,29 @@ static void printBacktrace()
             char* ret = abi::__cxa_demangle(begin_name, functionName, &funktionNameSize, &status);
             if (status == 0) {
                 functionName = ret;
-                qCritical(dcApplication) << QString("    %1").arg(QString().sprintf("%s+%s", functionName, begin_offset));
+                functionString = QString("    %1").arg(QString().sprintf("%s+%s", functionName, begin_offset));
             } else {
-                qCCritical(dcApplication) << QString("    %1").arg(QString().sprintf("%s()+%s", begin_name, begin_offset));
+                functionString = QString("    %1").arg(QString().sprintf("%s()+%s", begin_name, begin_offset));
             }
         }
+
+#if (QT_VERSION < QT_VERSION_CHECK(5, 2, 0))
+        // qCCritical was introduced int Qt 5.2.0
+        qCWarning(dcApplication) << QString("[%1] %2").arg(i).arg(symbolList[i]);
+        if (!functionString.isEmpty())
+            qCWarning(dcApplication) << functionString;
+
+        qCWarning(dcApplication) << QString("    %1").arg(line.remove("\n"));
+#else
+        qCCritical(dcApplication) << QString("[%1] %2").arg(i).arg(symbolList[i]);
+        if (!functionString.isEmpty())
+            qCCritical(dcApplication) << functionString;
+
         qCCritical(dcApplication) << QString("    %1").arg(line.remove("\n"));
+#endif // QT_VERSION
 
     }
+
     free(functionName);
     free(symbolList);
 }
@@ -109,7 +123,7 @@ static void catchUnixSignals(const std::vector<int>& quitSignals, const std::vec
             qCDebug(dcApplication) << "Cought SIGHUP quit signal...";
             break;
         case SIGSEGV: {
-            qCCritical(dcApplication) << "Cought SIGSEGV signal. Segmentation fault!";
+            qCDebug(dcApplication) << "Cought SIGSEGV signal. Segmentation fault!";
             printBacktrace();
             exit(1);
         }

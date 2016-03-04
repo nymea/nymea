@@ -63,6 +63,7 @@ void HttpDaemon::incomingConnection(qintptr socket)
 
 void HttpDaemon::actionExecuted(const ActionTypeId &actionTypeId)
 {
+    qCDebug(dcMockDevice) << "Log actions executed" << actionTypeId.toString();
     m_actionList.append(qMakePair<ActionTypeId, QDateTime>(actionTypeId, QDateTime::currentDateTime()));
 }
 
@@ -81,19 +82,24 @@ void HttpDaemon::readClient()
         QUrl url("http://foo.bar" + tokens[1]);
         QUrlQuery query(url);
         if (url.path() == "/setstate") {
+            qCDebug(dcMockDevice) << "Set state value" << query.queryItems().first().second;
             emit setState(StateTypeId(query.queryItems().first().first), QVariant(query.queryItems().first().second));
         } else if (url.path() == "/generateevent") {
             emit triggerEvent(EventTypeId(query.queryItemValue("eventtypeid")));
         } else if (url.path() == "/actionhistory") {
+            qCDebug(dcMockDevice) << "Get action history called";
+
             QTextStream os(socket);
             os.setAutoDetectUnicode(true);
             os << generateHeader();
             for (int i = 0; i < m_actionList.count(); ++i) {
                 os << m_actionList.at(i).first.toString() << '\n';
+                qCDebug(dcMockDevice) << "    " << m_actionList.at(i).first.toString();
             }
             socket->close();
             return;
         } else if (url.path() == "/clearactionhistory") {
+            qCDebug(dcMockDevice) << "Clear action history";
             m_actionList.clear();
         }
         if (tokens[0] == "GET") {

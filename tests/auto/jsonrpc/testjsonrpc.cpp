@@ -213,7 +213,9 @@ void TestJSONRPC::stateChangeEmitsNotifications()
     QNetworkReply *reply = nam.get(request);
     reply->deleteLater();
 
-    clientSpy.wait();
+    qDebug() << "Waiting for notifications";
+
+    clientSpy.wait(8000);
 
     // Make sure the notification contains all the stuff we expect
     QVariantList stateChangedVariants = checkNotifications(clientSpy, "Devices.StateChanged");
@@ -221,13 +223,15 @@ void TestJSONRPC::stateChangeEmitsNotifications()
 
     qDebug() << "got" << stateChangedVariants.count() << "Devices.StateChanged notifications";
     foreach (const QVariant &stateChangedVariant, stateChangedVariants) {
-        qDebug() << QJsonDocument::fromVariant(stateChangedVariant).toJson();
         if (stateChangedVariant.toMap().value("params").toMap().value("stateTypeId").toUuid() == stateTypeId) {
             found = true;
             QCOMPARE(stateChangedVariant.toMap().value("params").toMap().value("value").toInt(), newVal);
             break;
         }
     }
+    if (!found)
+        qDebug() << QJsonDocument::fromVariant(stateChangedVariants).toJson();
+
     QVERIFY2(found, "Could not find the correct Devices.StateChanged notification");
 
     // Make sure the logg notification contains all the stuff we expect
@@ -246,9 +250,10 @@ void TestJSONRPC::stateChangeEmitsNotifications()
             break;
         }
     }
-    QVERIFY2(found, "Could not find the correct Events.EventTriggered notification");
+    if (!found)
+        qDebug() << QJsonDocument::fromVariant(loggEntryAddedVariants).toJson();
 
-
+    QVERIFY2(found, "Could not find the corresponding Logging.LogEntryAdded notification");
 
 
     // Make sure the notification contains all the stuff we expect
@@ -265,7 +270,10 @@ void TestJSONRPC::stateChangeEmitsNotifications()
             break;
         }
     }
-    QVERIFY2(found, "Could not find the correct Events.EventTriggered notification");
+    if (!found)
+        qDebug() << QJsonDocument::fromVariant(eventTriggeredVariants).toJson();
+
+    QVERIFY2(found, "Could not find the corresponding Events.EventTriggered notification");
 
     // Now turn off notifications
     QCOMPARE(disableNotifications(), true);

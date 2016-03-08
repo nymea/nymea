@@ -41,13 +41,17 @@ private:
 
 private slots:
     void initLogs();
+
     void systemLogs();
 
     void invalidFilter_data();
     void invalidFilter();
 
     void eventLogs();
+
     void actionLog();
+
+    void deviceLogs();
 
     // this has to be the last test
     void removeDevice();
@@ -348,6 +352,42 @@ void TestLogging::actionLog()
 
     // disable notifications
     QCOMPARE(disableNotifications(), true);
+}
+
+void TestLogging::deviceLogs()
+{
+    QVariantMap params;
+    params.insert("deviceClassId", mockParentDeviceClassId);
+    params.insert("name", "Parent device");
+
+    QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
+    verifyDeviceError(response);
+
+    DeviceId deviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
+    QVERIFY(!deviceId.isNull());
+
+    // get this logentry with filter
+    params.clear();
+    params.insert("deviceIds", QVariantList() << m_mockDeviceId << deviceId);
+    params.insert("loggingSources", QVariantList() << JsonTypes::loggingSourceToString(Logging::LoggingSourceActions)
+                  << JsonTypes::loggingSourceToString(Logging::LoggingSourceEvents)
+                  << JsonTypes::loggingSourceToString(Logging::LoggingSourceStates));
+    params.insert("loggingLevels", QVariantList() << JsonTypes::loggingLevelToString(Logging::LoggingLevelInfo)
+                  << JsonTypes::loggingLevelToString(Logging::LoggingLevelAlert));
+    params.insert("values", QVariantList() << "7, true" << "9, false");
+
+    QVariantMap timeFilter;
+    timeFilter.insert("startDate", QDateTime::currentDateTime().toTime_t() - 5);
+    timeFilter.insert("endDate", QDateTime::currentDateTime().toTime_t());
+
+    QVariantMap timeFilter2;
+    timeFilter2.insert("endDate)", QDateTime::currentDateTime().toTime_t() - 20);
+
+    params.insert("timeFilters", QVariantList() << timeFilter << timeFilter2);
+
+    response = injectAndWait("Logging.GetLogEntries", params);
+    verifyLoggingError(response);
+
 }
 
 void TestLogging::removeDevice()

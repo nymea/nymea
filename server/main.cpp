@@ -60,6 +60,12 @@ static void consoleLogHandler(QtMsgType type, const QMessageLogContext& context,
     QString messageString;
     QString timeString = QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz");
     switch (type) {
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 5, 0))
+    case QtInfoMsg:
+        messageString = QString(" I %1 | %2: %3").arg(timeString).arg(context.category).arg(message);
+        fprintf(stdout, " I | %s: %s\n", context.category, message.toUtf8().data());
+        break;
+#endif
     case QtDebugMsg:
         messageString = QString(" I %1 | %2: %3").arg(timeString).arg(context.category).arg(message);
         fprintf(stdout, " I | %s: %s\n", context.category, message.toUtf8().data());

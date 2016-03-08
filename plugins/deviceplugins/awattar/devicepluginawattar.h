@@ -45,6 +45,8 @@ public:
 
     void guhTimer() override;
 
+    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
+
 private:
     Device *m_device;
     QList<HeatPump *> m_heatPumps;
@@ -58,6 +60,9 @@ private:
     QString m_userUuid;
     int m_setupRetry;
 
+    int m_autoSgMode;
+    int m_manualSgMode;
+
     void processPriceData(const QVariantMap &data);
     void processUserData(const QVariantMap &data);
     void processPumpSearchData(const QByteArray &data);
@@ -67,6 +72,9 @@ private:
 
     void updateData();
     void searchHeatPumps();
+
+    void setSgMode(const int &sgMode);
+
     bool heatPumpExists(const QHostAddress &pumpAddress);
 
 private slots:

@@ -52,7 +52,7 @@
                             "id": "38b86cee-9588-4269-a585-128907929dc2",
                             "idName": "averageDeviation",
                             "name": "average deviation",
-                            "type": "double",
+                            "type": "int",
                             "unit": "Percentage",
                             "defaultValue": 0
                         },
@@ -108,6 +108,38 @@
                                 "4 - On"
                             ],
                             "defaultValue": "0 - Invalid"
+                        },
+                        {
+                            "id": "4c303bcd-152d-45ad-874d-d57fc87a26bb",
+                            "idName": "sgSyncMode",
+                            "name": "sync mode",
+                            "type": "QString",
+                            "possibleValues": [
+                                "auto",
+                                "manual"
+                            ],
+                            "defaultValue": "auto",
+                            "writable": true
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "dd82f6c7-5e92-48ca-b0bc-bdc55d3e1482",
+                            "idName": "setSgMode",
+                            "name": "set sg-mode",
+                            "paramTypes": [
+                                {
+                                    "name": "sg-mode",
+                                    "type": "QString",
+                                    "allowedValues": [
+                                        "1 - Off",
+                                        "2 - Normal",
+                                        "3 - High Temperature",
+                                        "4 - On"
+                                    ],
+                                    "defaultValue": "2 - Normal"
+                                }
+                            ]
                         }
                     ]
                 }

@@ -237,6 +237,45 @@ void DevicePluginAwattar::guhTimer()
     searchHeatPumps();
 }
 
+DeviceManager::DeviceError DevicePluginAwattar::executeAction(Device *device, const Action &action)
+{
+    if (!m_device || m_device != device)
+        return DeviceManager::DeviceErrorHardwareNotAvailable;
+
+    if (action.actionTypeId() == sgSyncModeActionTypeId) {
+        qCDebug(dcAwattar) << "Set sg sync mode to" << action.param("sync mode").value();
+        device->setStateValue(sgSyncModeStateTypeId, action.param("sync mode").value());
+        if (action.param("sync mode").value() == "auto")
+            setSgMode(m_autoSgMode);
+
+        return DeviceManager::DeviceErrorNoError;
+    } else if (action.actionTypeId() == setSgModeActionTypeId) {
+        if (!device->stateValue(reachableStateTypeId).toBool()) {
+            qCWarning(dcAwattar) << "Could not set SG mode. The pump is not reachable";
+            return DeviceManager::DeviceErrorHardwareNotAvailable;
+        }
+
+        device->setStateValue(sgSyncModeStateTypeId, "manual");
+        QString sgModeString = action.param("sg-mode").value().toString();
+        qCDebug(dcAwattar) << "Set manual SG mode to:" << sgModeString;
+
+        if(sgModeString == "1 - Off") {
+            m_manualSgMode = 1;
+        } else if (sgModeString == "2 - Normal") {
+            m_manualSgMode = 2;
+        } else if (sgModeString == "3 - High Temperature") {
+            m_manualSgMode = 3;
+        } else if (sgModeString == "4 - On") {
+            m_manualSgMode = 4;
+        }
+
+        setSgMode(m_manualSgMode);
+        return DeviceManager::DeviceErrorNoError;
+    }
+
+    return DeviceManager::DeviceErrorActionTypeNotFound;
+}
+
 void DevicePluginAwattar::processPriceData(const QVariantMap &data)
 {
     if (!m_device)
@@ -324,27 +363,13 @@ void DevicePluginAwattar::processUserData(const QVariantMap &data)
                 }
             }
 
-            switch (sgMode) {
-            case 1:
-                m_device->setStateValue(sgModeStateTypeId, "1 - Off");
-                break;
-            case 2:
-                m_device->setStateValue(sgModeStateTypeId, "2 - Normal");
-                break;
-            case 3:
-                m_device->setStateValue(sgModeStateTypeId, "3 - High Temperature");
-                break;
-            case 4:
-                m_device->setStateValue(sgModeStateTypeId, "4 - On");
-                break;
-            default:
-                m_device->setStateValue(sgModeStateTypeId, "0 - Invalid");
-                continue;
-            }
+            m_autoSgMode = sgMode;
 
-            foreach (HeatPump *pump, m_heatPumps) {
-                if (pump->reachable())
-                    pump->setSgMode(sgMode);
+            // sync the sg mode to each pump available
+            if (m_device->stateValue(sgSyncModeStateTypeId).toString() == "auto") {
+                setSgMode(m_autoSgMode);
+            } else {
+                setSgMode(m_manualSgMode);
             }
         }
     }
@@ -413,12 +438,37 @@ void DevicePluginAwattar::searchHeatPumps()
         return;
     }
 
-    //qCDebug(dcAwattar) << "Search heat pump" << rplAddress.toString();
-
     QNetworkRequest request(QUrl(QString("http://[%1]").arg(rplAddress.toString())));
     QNetworkReply *reply = networkManagerGet(request);
 
     m_searchPumpReplies.append(reply);
+}
+
+void DevicePluginAwattar::setSgMode(const int &sgMode)
+{
+    switch (sgMode) {
+    case 1:
+        m_device->setStateValue(sgModeStateTypeId, "1 - Off");
+        break;
+    case 2:
+        m_device->setStateValue(sgModeStateTypeId, "2 - Normal");
+        break;
+    case 3:
+        m_device->setStateValue(sgModeStateTypeId, "3 - High Temperature");
+        break;
+    case 4:
+        m_device->setStateValue(sgModeStateTypeId, "4 - On");
+        break;
+    default:
+        m_device->setStateValue(sgModeStateTypeId, "0 - Invalid");
+        return;
+    }
+
+    foreach (HeatPump *pump, m_heatPumps) {
+        if (pump->reachable()) {
+            pump->setSgMode(sgMode);
+        }
+    }
 }
 
 bool DevicePluginAwattar::heatPumpExists(const QHostAddress &pumpAddress)
@@ -439,8 +489,19 @@ void DevicePluginAwattar::connectionTest()
 void DevicePluginAwattar::onHeatPumpReachableChanged()
 {
     HeatPump *pump = static_cast<HeatPump *>(sender());
+    qCDebug(dcAwattar) << "Heatpump" << pump->address().toString() << " -> reachable" << pump->reachable();
+
+    // if there is still one pump reachable, lets keep the state true
+    // if no pump can be reached, the state will be set to false
+    bool reachable = false;
+    foreach (HeatPump *heatPump, m_heatPumps) {
+        if (heatPump->reachable()){
+            reachable = true;
+            break;
+        }
+    }
 
     foreach (Device *device, myDevices()) {
-        device->setStateValue(reachableStateTypeId, pump->reachable());
+        device->setStateValue(reachableStateTypeId, reachable);
     }
 }

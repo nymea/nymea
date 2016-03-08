@@ -59,7 +59,7 @@ bool HeatPump::reachable() const
 }
 
 void HeatPump::setSgMode(const int &sgMode)
-{
+{    
     if (m_sgMode != sgMode) {
         m_sgMode = sgMode;
         qCDebug(dcAwattar) << "Setting sg-mode to" << sgMode;

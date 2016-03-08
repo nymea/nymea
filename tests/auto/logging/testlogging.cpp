@@ -381,7 +381,7 @@ void TestLogging::deviceLogs()
     timeFilter.insert("endDate", QDateTime::currentDateTime().toTime_t());
 
     QVariantMap timeFilter2;
-    timeFilter2.insert("endDate)", QDateTime::currentDateTime().toTime_t() - 20);
+    timeFilter2.insert("endDate", QDateTime::currentDateTime().toTime_t() - 20);
 
     params.insert("timeFilters", QVariantList() << timeFilter << timeFilter2);
 

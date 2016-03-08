@@ -41,12 +41,16 @@ private:
 
 private slots:
     void initLogs();
+
     void systemLogs();
 
     void invalidFilter_data();
     void invalidFilter();
 
+    void invalidFilterJson();
+
     void eventLogs();
+
     void actionLog();
 
     // this has to be the last test
@@ -142,6 +146,16 @@ void TestRestLogging::invalidFilter()
     // TODO: validate filter for REST api
 }
 
+void TestRestLogging::invalidFilterJson()
+{
+    QUrl url("http://localhost:3333/api/v1/logs");
+    QUrlQuery query;
+    query.addQueryItem("filter", "blabla:!!");
+    url.setQuery(query);
+
+    getAndWait(QNetworkRequest(url), 400);
+
+}
 
 void TestRestLogging::eventLogs()
 {

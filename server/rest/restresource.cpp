@@ -164,7 +164,7 @@ QPair<bool, QVariant> RestResource::verifyPayload(const QByteArray &payload)
 
         if(error.error != QJsonParseError::NoError) {
             qCWarning(dcRest) << "Failed to parse JSON payload" << payload << ":" << error.errorString();
-            return QPair<bool, QVariant>(true, QVariant());
+            return QPair<bool, QVariant>(false, QVariant());
         }
 
         data = jsonDoc.toVariant();

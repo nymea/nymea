@@ -58,7 +58,7 @@
 /*! \fn void guhserver::GuhCore::devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
     This signal is emitted when the discovery of a \a deviceClassId is finished. The \a deviceDescriptors parameter describes the
     list of \l{DeviceDescriptor}{DeviceDescriptors} of all discovered \l{Device}{Devices}.
-    \sa discoverDevices()
+    \sa DeviceManager::discoverDevices()
 */
 
 /*! \fn void guhserver::GuhCore::deviceSetupFinished(Device *device, DeviceManager::DeviceError status);
@@ -222,6 +222,8 @@ QPair<DeviceManager::DeviceError, QList<RuleId> > GuhCore::removeConfiguredDevic
     return QPair<DeviceManager::DeviceError, QList<RuleId> > (DeviceManager::DeviceErrorNoError, QList<RuleId>());
 }
 
+
+/*! Removes a configured \l{Device} with the given \a deviceId and \a removePolicy. */
 DeviceManager::DeviceError GuhCore::removeConfiguredDevice(const DeviceId &deviceId, const RuleEngine::RemovePolicy &removePolicy)
 {
     // Check if this is a child device
@@ -303,6 +305,7 @@ DeviceManager::DeviceError GuhCore::executeAction(const Action &action)
     return ret;
 }
 
+/*! Execute the given \a ruleActions. */
 void GuhCore::executeRuleActions(const QList<RuleAction> ruleActions)
 {
     foreach (const RuleAction &ruleAction, ruleActions) {

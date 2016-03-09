@@ -169,6 +169,7 @@ QString GuhSettings::logPath()
     return logPath;
 }
 
+/*! Returns the path to the folder where the GuhSettings will be saved. */
 QString GuhSettings::settingsPath()
 {
     QString path;

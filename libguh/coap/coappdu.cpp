@@ -123,9 +123,31 @@
     \value InvalidOptionDeltaError
     \value InvalidOptionLengthError
     \value UnknownOptionError
-};
-
 */
+
+
+/*! \fn void CoapPdu::getStatusCodeString(const StatusCode &statusCode);
+    Returns the human readable status code for the given \a statusCode.
+*/
+
+/*! \fn void CoapPdu::setContentType(const ContentType &contentType);
+    Sets the content type of this \l{CoapPdu} to the given \a contentType.
+
+    \sa CoapPdu::ContentType
+*/
+
+/*! \fn void CoapPdu::setMessageType(const MessageType &messageType);
+    Sets the message type of this \l{CoapPdu} to the given \a messageType.
+
+    \sa CoapPdu::MessageType
+*/
+
+/*! \fn void CoapPdu::setStatusCode(const StatusCode &statusCode);
+    Sets the message type of this \l{CoapPdu} to the given \a statusCode.
+
+    \sa CoapPdu::StatusCode
+*/
+
 #include "coappdu.h"
 #include "coapoption.h"
 

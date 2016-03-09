@@ -43,6 +43,7 @@
 
 namespace guhserver {
 
+/*! Constructs a new \l ActionHandler with the given \a parent. */
 ActionHandler::ActionHandler(QObject *parent) :
     JsonHandler(parent)
 {
@@ -66,6 +67,7 @@ ActionHandler::ActionHandler(QObject *parent) :
     connect(GuhCore::instance(), &GuhCore::actionExecuted, this, &ActionHandler::actionExecuted);
 }
 
+/*! Returns the name of the \l{ActionHandler}. In this case \b Actions.*/
 QString ActionHandler::name() const
 {
     return "Actions";

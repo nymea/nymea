@@ -43,6 +43,7 @@
 
 namespace guhserver {
 
+/*! Constructs a \l{LogEntry} with the given \a timestamp, \a level, \a source and \a errorCode.*/
 LogEntry::LogEntry(QDateTime timestamp, Logging::LoggingLevel level, Logging::LoggingSource source, int errorCode):
     m_timestamp(timestamp),
     m_level(level),
@@ -54,82 +55,98 @@ LogEntry::LogEntry(QDateTime timestamp, Logging::LoggingLevel level, Logging::Lo
 
 }
 
+/*! Constructs a \l{LogEntry} with the given \a level, \a source and \a errorCode.*/
 LogEntry::LogEntry(Logging::LoggingLevel level, Logging::LoggingSource source, int errorCode):
     LogEntry(QDateTime::currentDateTime(), level, source, errorCode)
 {
 
 }
 
+/*! Constructs a \l{LogEntry} with the given \a source.*/
 LogEntry::LogEntry(Logging::LoggingSource source):
     LogEntry(Logging::LoggingLevelInfo, source)
 {
 
 }
 
+/*! Returns the timestamp of this \l{LogEntry}. */
 QDateTime LogEntry::timestamp() const
 {
     return m_timestamp;
 }
 
+/*! Returns the level of this \l{LogEntry}. */
 Logging::LoggingLevel LogEntry::level() const
 {
     return m_level;
 }
 
+/*! Returns the source of this \l{LogEntry}. */
 Logging::LoggingSource LogEntry::source() const
 {
     return m_source;
 }
 
+/*! Returns the type ID of this \l{LogEntry}. */
 QUuid LogEntry::typeId() const
 {
     return m_typeId;
 }
 
+/*! Sets the \a typeId of this \l{LogEntry}. */
 void LogEntry::setTypeId(const QUuid &typeId) {
     m_typeId = typeId;
 }
 
+/*! Returns the deviceId of this \l{LogEntry}. */
 DeviceId LogEntry::deviceId() const
 {
     return m_deviceId;
 }
 
+/*! Sets the \a deviceId of this \l{LogEntry}. */
 void LogEntry::setDeviceId(const DeviceId &deviceId)
 {
     m_deviceId = deviceId;
 }
 
+/*! Returns the value of this \l{LogEntry}. */
 QString LogEntry::value() const
 {
     return m_value;
 }
 
+/*! Sets the \a value of this \l{LogEntry}. */
 void LogEntry::setValue(const QString &value)
 {
     m_value = value;
 }
 
+/*! Returns the event type of this \l{LogEntry}. */
 Logging::LoggingEventType LogEntry::eventType() const
 {
     return m_eventType;
 }
 
+/*! Returns true if this \l{LogEntry} is a system active type. */
 bool LogEntry::active() const
 {
     return m_active;
 }
 
+/*! Sets this \l{LogEntry} to \a active. */
 void LogEntry::setActive(bool active)
 {
     m_eventType = Logging::LoggingEventTypeActiveChange;
     m_active = active;
 }
 
+/*! Returns the error code of this \l{LogEntry}. */
 int LogEntry::errorCode() const
 {
     return m_errorCode;
 }
+
 
 QDebug operator<<(QDebug dbg, const LogEntry &entry)
 {

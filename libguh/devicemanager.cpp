@@ -99,6 +99,10 @@
         Couldn't find the PairingTransactionId for the given id.
     \value DeviceErrorAuthentificationFailure
         The device could not authentificate with something.
+    \value DeviceErrorDeviceIsChild
+        The device is a child device and can not be deleted directly.
+    \value DeviceErrorDeviceInRule
+        The device is in a rule and can not be deleted withou \l{guhserver::RuleEngine::RemovePolicy}.
     \value DeviceErrorParameterNotWritable
         One of the given device params is not writable.
 */
@@ -369,7 +373,7 @@ DeviceManager::DeviceError DeviceManager::discoverDevices(const DeviceClassId &d
     return ret;
 }
 
-/*! Add a new configured device for the given \l{DeviceClass}, the given parameters and \a id.
+/*! Add a new configured device for the given \l{DeviceClass}, the given parameters, \a name and \a id.
  *  \a deviceClassId must refer to an existing \{DeviceClass} and \a params must match the parameter description in the \l{DeviceClass}.
  *  Optionally you can supply an id yourself if you must keep track of the added device. If you don't supply it, a new one will
  *  be generated. Only devices with \l{DeviceClass}{CreateMethodUser} can be created using this method.
@@ -388,7 +392,7 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassI
 
 /*! Add a new configured device for the given \l{DeviceClass} the given DeviceDescriptorId and \a deviceId. Only devices with \l{DeviceClass}{CreateMethodDiscovery}
  *  can be created using this method. The \a deviceClassId must refer to an existing \l{DeviceClass} and the \a deviceDescriptorId must refer to an existing DeviceDescriptorId
- *  from the discovery.
+ *  from the discovery. The \a name parameter should contain the device name.
  *  Returns \l{DeviceError} to inform about the result. */
 DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &deviceId)
 {
@@ -513,6 +517,9 @@ DeviceManager::DeviceError DeviceManager::reconfigureDevice(const DeviceId &devi
     return reconfigureDevice(deviceId, descriptor.params(), true);
 }
 
+/*! Edit the \a name of the \l{Device} with the given \a deviceId.
+    Returns \l{DeviceManager::DeviceError}{DeviceError} to inform about the result.
+*/
 DeviceManager::DeviceError DeviceManager::editDevice(const DeviceId &deviceId, const QString &name)
 {
     Device *device = findConfiguredDevice(deviceId);
@@ -526,7 +533,7 @@ DeviceManager::DeviceError DeviceManager::editDevice(const DeviceId &deviceId, c
     return DeviceErrorNoError;
 }
 
-/*! Initiates a pairing with a \l{DeviceClass}{Device} with the given \a pairingTransactionId, \a deviceClassId and \a params.
+/*! Initiates a pairing with a \l{DeviceClass}{Device} with the given \a pairingTransactionId, \a deviceClassId, \a name and \a params.
  *  Returns \l{DeviceManager::DeviceError}{DeviceError} to inform about the result. */
 DeviceManager::DeviceError DeviceManager::pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const QString &name, const ParamList &params)
 {
@@ -557,7 +564,7 @@ DeviceManager::DeviceError DeviceManager::pairDevice(const PairingTransactionId 
     return DeviceErrorNoError;
 }
 
-/*! Initiates a pairing with a \l{DeviceClass}{Device} with the given \a pairingTransactionId, \a deviceClassId and \a deviceDescriptorId.
+/*! Initiates a pairing with a \l{DeviceClass}{Device} with the given \a pairingTransactionId, \a deviceClassId, \a name and \a deviceDescriptorId.
  *  Returns \l{DeviceManager::DeviceError}{DeviceError} to inform about the result. */
 DeviceManager::DeviceError DeviceManager::pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId)
 {
@@ -788,6 +795,8 @@ DeviceClass DeviceManager::findDeviceClass(const DeviceClassId &deviceClassId) c
     return DeviceClass();
 }
 
+/*! Verify if the given \a params matche the given \a paramTypes. Ith \a requireAll
+ *  is true, all \l{ParamList}{Params} has to be valid. Returns \l{DeviceError} to inform about the result.*/
 DeviceManager::DeviceError DeviceManager::verifyParams(const QList<ParamType> paramTypes, ParamList &params, bool requireAll)
 {
     foreach (const Param &param, params) {
@@ -821,6 +830,7 @@ DeviceManager::DeviceError DeviceManager::verifyParams(const QList<ParamType> pa
     return DeviceErrorNoError;
 }
 
+/*! Verify if the given \a param matches one of the given \a paramTypes. Returns \l{DeviceError} to inform about the result.*/
 DeviceManager::DeviceError DeviceManager::verifyParam(const QList<ParamType> paramTypes, const Param &param)
 {
     foreach (const ParamType &paramType, paramTypes) {
@@ -832,6 +842,7 @@ DeviceManager::DeviceError DeviceManager::verifyParam(const QList<ParamType> par
     return DeviceErrorInvalidParameter;
 }
 
+/*! Verify if the given \a param matches the given \a paramType. Returns \l{DeviceError} to inform about the result.*/
 DeviceManager::DeviceError DeviceManager::verifyParam(const ParamType &paramType, const Param &param)
 {
     if (paramType.name() == param.name()) {

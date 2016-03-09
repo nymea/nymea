@@ -153,7 +153,7 @@ bool Device::hasParam(const QString &paramName) const
     return false;
 }
 
-DeviceId m_id;
+/*! Set the \l{State}{States} of this \l{Device} to the given \a states.*/
 void Device::setStates(const QList<State> &states)
 {
     m_states = states;

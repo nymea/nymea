@@ -33,6 +33,26 @@
 */
 
 
+/*! \fn void guhserver::DeviceHandler::StateChanged(const QVariantMap &params);
+    This signal is emitted to the API notifications when a \l{State} has changed.
+    The \a params contain the map for the notification.
+*/
+
+/*! \fn void guhserver::DeviceHandler::DeviceRemoved(const QVariantMap &params);
+    This signal is emitted to the API notifications when a \l{Device} has been removed.
+    The \a params contain the map for the notification.
+*/
+
+/*! \fn void guhserver::DeviceHandler::DeviceAdded(const QVariantMap &params);
+    This signal is emitted to the API notifications when a \l{Device} has been added.
+    The \a params contain the map for the notification.
+*/
+
+/*! \fn void guhserver::DeviceHandler::DeviceChanged(const QVariantMap &params);
+    This signal is emitted to the API notifications when a \l{Device} has been changed or reconfigured.
+    The \a params contain the map for the notification.
+*/
+
 #include "devicehandler.h"
 #include "guhcore.h"
 #include "devicemanager.h"
@@ -45,6 +65,7 @@
 
 namespace guhserver {
 
+/*! Constructs a new \l DeviceHandler with the given \a parent. */
 DeviceHandler::DeviceHandler(QObject *parent) :
     JsonHandler(parent)
 {
@@ -280,6 +301,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     connect(GuhCore::instance(), &GuhCore::pairingFinished, this, &DeviceHandler::pairingFinished);
 }
 
+/*! Returns the name of the \l{DeviceHandler}. In this case \b Devices.*/
 QString DeviceHandler::name() const
 {
     return "Devices";

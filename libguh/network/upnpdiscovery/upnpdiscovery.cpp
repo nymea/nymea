@@ -95,6 +95,7 @@ UpnpDiscovery::UpnpDiscovery(QObject *parent) :
     sendAliveMessage();
 }
 
+/*! Destruct this \l{UpnpDiscovery} object. */
 UpnpDiscovery::~UpnpDiscovery()
 {
     qCDebug(dcApplication) << "Shutting down \"UPnP Server\"";

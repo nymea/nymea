@@ -19,6 +19,33 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::JsonTypes
+    \brief This class represents the types for the JSON-RPC API.
+
+    \ingroup json
+    \inmodule core
+
+    This class represents all JSON-RPC API types and allowes to transform Json
+    objects into c++ objects and vers visa.
+
+*/
+
+/*! \enum guhserver::JsonTypes::BasicType
+
+    This enum type specifies the basic types of a JSON RPC API.
+
+    \value Uuid
+    \value String
+    \value Int
+    \value Uint
+    \value Double
+    \value Bool
+    \value Variant
+    \value Color
+    \value Object
+*/
+
 #include "jsontypes.h"
 
 #include "plugin/device.h"
@@ -270,6 +297,7 @@ QVariantList JsonTypes::enumToStrings(const QMetaObject &metaObject, const QStri
     return enumStrings;
 }
 
+/*! Returns a map containing all API types. */
 QVariantMap JsonTypes::allTypes()
 {
     QVariantMap allTypes;
@@ -315,6 +343,7 @@ QVariantMap JsonTypes::allTypes()
     return allTypes;
 }
 
+/*! Returns a variant map of the given \a eventType. */
 QVariantMap JsonTypes::packEventType(const EventType &eventType)
 {
     QVariantMap variant;
@@ -328,6 +357,7 @@ QVariantMap JsonTypes::packEventType(const EventType &eventType)
     return variant;
 }
 
+/*! Returns a variant map of the given \a event. */
 QVariantMap JsonTypes::packEvent(const Event &event)
 {
     QVariantMap variant;
@@ -341,6 +371,7 @@ QVariantMap JsonTypes::packEvent(const Event &event)
     return variant;
 }
 
+/*! Returns a variant map of the given \a eventDescriptor. */
 QVariantMap JsonTypes::packEventDescriptor(const EventDescriptor &eventDescriptor)
 {
     QVariantMap variant;
@@ -354,6 +385,7 @@ QVariantMap JsonTypes::packEventDescriptor(const EventDescriptor &eventDescripto
     return variant;
 }
 
+/*! Returns a variant map of the given \a actionType. */
 QVariantMap JsonTypes::packActionType(const ActionType &actionType)
 {
     QVariantMap variantMap;
@@ -367,6 +399,7 @@ QVariantMap JsonTypes::packActionType(const ActionType &actionType)
     return variantMap;
 }
 
+/*! Returns a variant map of the given \a action. */
 QVariantMap JsonTypes::packAction(const Action &action)
 {
     QVariantMap variant;
@@ -380,6 +413,7 @@ QVariantMap JsonTypes::packAction(const Action &action)
     return variant;
 }
 
+/*! Returns a variant map of the given \a ruleAction. */
 QVariantMap JsonTypes::packRuleAction(const RuleAction &ruleAction)
 {
     QVariantMap variant;
@@ -393,6 +427,7 @@ QVariantMap JsonTypes::packRuleAction(const RuleAction &ruleAction)
     return variant;
 }
 
+/*! Returns a variant map of the given \a ruleActionParam. */
 QVariantMap JsonTypes::packRuleActionParam(const RuleActionParam &ruleActionParam)
 {
     QVariantMap variantMap;
@@ -407,6 +442,7 @@ QVariantMap JsonTypes::packRuleActionParam(const RuleActionParam &ruleActionPara
     return variantMap;
 }
 
+/*! Returns a variant map of the given \a state. */
 QVariantMap JsonTypes::packState(const State &state)
 {
     QVariantMap stateMap;
@@ -415,6 +451,7 @@ QVariantMap JsonTypes::packState(const State &state)
     return stateMap;
 }
 
+/*! Returns a variant map of the given \a stateType. */
 QVariantMap JsonTypes::packStateType(const StateType &stateType)
 {
     QVariantMap variantMap;
@@ -438,6 +475,7 @@ QVariantMap JsonTypes::packStateType(const StateType &stateType)
     return variantMap;
 }
 
+/*! Returns a variant map of the given \a stateDescriptor. */
 QVariantMap JsonTypes::packStateDescriptor(const StateDescriptor &stateDescriptor)
 {
     QVariantMap variantMap;
@@ -448,6 +486,7 @@ QVariantMap JsonTypes::packStateDescriptor(const StateDescriptor &stateDescripto
     return variantMap;
 }
 
+/*! Returns a variant map of the given \a stateEvaluator. */
 QVariantMap JsonTypes::packStateEvaluator(const StateEvaluator &stateEvaluator)
 {
     QVariantMap variantMap;
@@ -467,6 +506,7 @@ QVariantMap JsonTypes::packStateEvaluator(const StateEvaluator &stateEvaluator)
     return variantMap;
 }
 
+/*! Returns a variant map of the given \a param. */
 QVariantMap JsonTypes::packParam(const Param &param)
 {
     QVariantMap variantMap;
@@ -475,6 +515,7 @@ QVariantMap JsonTypes::packParam(const Param &param)
     return variantMap;
 }
 
+/*! Returns a variant map of the given \a paramDescriptor. */
 QVariantMap JsonTypes::packParamDescriptor(const ParamDescriptor &paramDescriptor)
 {
     QVariantMap variantMap;
@@ -484,6 +525,7 @@ QVariantMap JsonTypes::packParamDescriptor(const ParamDescriptor &paramDescripto
     return variantMap;
 }
 
+/*! Returns a variant map of the given \a paramType. */
 QVariantMap JsonTypes::packParamType(const ParamType &paramType)
 {
     QVariantMap variantMap;
@@ -515,6 +557,7 @@ QVariantMap JsonTypes::packParamType(const ParamType &paramType)
     return variantMap;
 }
 
+/*! Returns a variant map of the given \a vendor. */
 QVariantMap JsonTypes::packVendor(const Vendor &vendor)
 {
     QVariantMap variantMap;
@@ -523,6 +566,7 @@ QVariantMap JsonTypes::packVendor(const Vendor &vendor)
     return variantMap;
 }
 
+/*! Returns a variant map of the given \a deviceClass. */
 QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass)
 {
     QVariantMap variant;
@@ -568,6 +612,7 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass)
     return variant;
 }
 
+/*! Returns a variant map of the given \a plugin. */
 QVariantMap JsonTypes::packPlugin(DevicePlugin *plugin)
 {
     QVariantMap pluginMap;
@@ -583,6 +628,7 @@ QVariantMap JsonTypes::packPlugin(DevicePlugin *plugin)
     return pluginMap;
 }
 
+/*! Returns a variant map of the given \a device. */
 QVariantMap JsonTypes::packDevice(Device *device)
 {
     QVariantMap variant;
@@ -603,6 +649,7 @@ QVariantMap JsonTypes::packDevice(Device *device)
     return variant;
 }
 
+/*! Returns a variant map of the given \a descriptor. */
 QVariantMap JsonTypes::packDeviceDescriptor(const DeviceDescriptor &descriptor)
 {
     QVariantMap variant;
@@ -612,6 +659,7 @@ QVariantMap JsonTypes::packDeviceDescriptor(const DeviceDescriptor &descriptor)
     return variant;
 }
 
+/*! Returns a variant map of the given \a rule. */
 QVariantMap JsonTypes::packRule(const Rule &rule)
 {
     QVariantMap ruleMap;
@@ -642,6 +690,7 @@ QVariantMap JsonTypes::packRule(const Rule &rule)
     return ruleMap;
 }
 
+/*! Returns a variant map of the given \a rules. */
 QVariantList JsonTypes::packRules(const QList<Rule> rules)
 {
     QVariantList rulesList;
@@ -651,6 +700,7 @@ QVariantList JsonTypes::packRules(const QList<Rule> rules)
     return rulesList;
 }
 
+/*! Returns a variant map of the given \a rule. */
 QVariantMap JsonTypes::packRuleDescription(const Rule &rule)
 {
     QVariantMap ruleDescriptionMap;
@@ -662,6 +712,7 @@ QVariantMap JsonTypes::packRuleDescription(const Rule &rule)
     return ruleDescriptionMap;
 }
 
+/*! Returns a variant map of the given \a logEntry. */
 QVariantMap JsonTypes::packLogEntry(const LogEntry &logEntry)
 {
     QVariantMap logEntryMap;
@@ -710,6 +761,7 @@ QVariantMap JsonTypes::packLogEntry(const LogEntry &logEntry)
     return logEntryMap;
 }
 
+/*! Returns a variant list of the given \a createMethods. */
 QVariantList JsonTypes::packCreateMethods(DeviceClass::CreateMethods createMethods)
 {
     QVariantList ret;
@@ -725,6 +777,7 @@ QVariantList JsonTypes::packCreateMethods(DeviceClass::CreateMethods createMetho
     return ret;
 }
 
+/*! Returns a variant list of the supported vendors. */
 QVariantList JsonTypes::packSupportedVendors()
 {
     QVariantList supportedVendors;
@@ -734,6 +787,7 @@ QVariantList JsonTypes::packSupportedVendors()
     return supportedVendors;
 }
 
+/*! Returns a variant list of the supported devices with the given \a vendorId. */
 QVariantList JsonTypes::packSupportedDevices(const VendorId &vendorId)
 {
     QVariantList supportedDeviceList;
@@ -743,6 +797,7 @@ QVariantList JsonTypes::packSupportedDevices(const VendorId &vendorId)
     return supportedDeviceList;
 }
 
+/*! Returns a variant list of configured devices. */
 QVariantList JsonTypes::packConfiguredDevices()
 {
     QVariantList configuredDeviceList;
@@ -752,6 +807,7 @@ QVariantList JsonTypes::packConfiguredDevices()
     return configuredDeviceList;
 }
 
+/*! Returns a variant list of States from the given \a device. */
 QVariantList JsonTypes::packDeviceStates(Device *device)
 {
     DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
@@ -765,6 +821,7 @@ QVariantList JsonTypes::packDeviceStates(Device *device)
     return stateValues;
 }
 
+/*! Returns a variant list of the given \a deviceDescriptors. */
 QVariantList JsonTypes::packDeviceDescriptors(const QList<DeviceDescriptor> deviceDescriptors)
 {
     QVariantList deviceDescriptorList;
@@ -774,6 +831,7 @@ QVariantList JsonTypes::packDeviceDescriptors(const QList<DeviceDescriptor> devi
     return deviceDescriptorList;
 }
 
+/*! Returns a variant list containing all rule descriptions. */
 QVariantList JsonTypes::packRuleDescriptions()
 {
     QVariantList rulesList;
@@ -783,6 +841,7 @@ QVariantList JsonTypes::packRuleDescriptions()
     return rulesList;
 }
 
+/*! Returns a variant list of the given \a rules. */
 QVariantList JsonTypes::packRuleDescriptions(const QList<Rule> &rules)
 {
     QVariantList rulesList;
@@ -792,6 +851,7 @@ QVariantList JsonTypes::packRuleDescriptions(const QList<Rule> &rules)
     return rulesList;
 }
 
+/*! Returns a variant list of action types for the given \a deviceClass. */
 QVariantList JsonTypes::packActionTypes(const DeviceClass &deviceClass)
 {
     QVariantList actionTypes;
@@ -801,6 +861,7 @@ QVariantList JsonTypes::packActionTypes(const DeviceClass &deviceClass)
     return actionTypes;
 }
 
+/*! Returns a variant list of state types for the given \a deviceClass. */
 QVariantList JsonTypes::packStateTypes(const DeviceClass &deviceClass)
 {
     QVariantList stateTypes;
@@ -810,6 +871,7 @@ QVariantList JsonTypes::packStateTypes(const DeviceClass &deviceClass)
     return stateTypes;
 }
 
+/*! Returns a variant list of event types for the given \a deviceClass. */
 QVariantList JsonTypes::packEventTypes(const DeviceClass &deviceClass)
 {
     QVariantList eventTypes;
@@ -819,6 +881,7 @@ QVariantList JsonTypes::packEventTypes(const DeviceClass &deviceClass)
     return eventTypes;
 }
 
+/*! Returns a variant list containing all plugins. */
 QVariantList JsonTypes::packPlugins()
 {
     QVariantList pluginsList;
@@ -829,6 +892,7 @@ QVariantList JsonTypes::packPlugins()
     return pluginsList;
 }
 
+/*! Returns the type string for the given \a type. */
 QString JsonTypes::basicTypeToString(const QVariant::Type &type)
 {
     switch (type) {
@@ -859,6 +923,7 @@ QString JsonTypes::basicTypeToString(const QVariant::Type &type)
     }
 }
 
+/*! Returns a \l{Param} created from the given \a paramMap. */
 Param JsonTypes::unpackParam(const QVariantMap &paramMap)
 {
     if (paramMap.keys().count() == 0) {
@@ -869,6 +934,7 @@ Param JsonTypes::unpackParam(const QVariantMap &paramMap)
     return Param(name, value);
 }
 
+/*! Returns a \l{ParamList} created from the given \a paramList. */
 ParamList JsonTypes::unpackParams(const QVariantList &paramList)
 {
     ParamList params;
@@ -878,6 +944,7 @@ ParamList JsonTypes::unpackParams(const QVariantList &paramList)
     return params;
 }
 
+/*! Returns a \l{RuleActionParam} created from the given \a ruleActionParamMap. */
 RuleActionParam JsonTypes::unpackRuleActionParam(const QVariantMap &ruleActionParamMap)
 {
     if (ruleActionParamMap.keys().count() == 0)
@@ -890,6 +957,7 @@ RuleActionParam JsonTypes::unpackRuleActionParam(const QVariantMap &ruleActionPa
     return RuleActionParam(name, value, eventTypeId, eventParamName);
 }
 
+/*! Returns a \l{RuleActionParamList} created from the given \a ruleActionParamList. */
 RuleActionParamList JsonTypes::unpackRuleActionParams(const QVariantList &ruleActionParamList)
 {
     RuleActionParamList ruleActionParams;
@@ -899,6 +967,7 @@ RuleActionParamList JsonTypes::unpackRuleActionParams(const QVariantList &ruleAc
     return ruleActionParams;
 }
 
+/*! Returns a \l{ParamDescriptor} created from the given \a paramMap. */
 ParamDescriptor JsonTypes::unpackParamDescriptor(const QVariantMap &paramMap)
 {
     ParamDescriptor param(paramMap.value("name").toString(), paramMap.value("value"));
@@ -911,6 +980,7 @@ ParamDescriptor JsonTypes::unpackParamDescriptor(const QVariantMap &paramMap)
     return param;
 }
 
+/*! Returns a list of \l{ParamDescriptor} created from the given \a paramList. */
 QList<ParamDescriptor> JsonTypes::unpackParamDescriptors(const QVariantList &paramList)
 {
     QList<ParamDescriptor> params;
@@ -920,6 +990,7 @@ QList<ParamDescriptor> JsonTypes::unpackParamDescriptors(const QVariantList &par
     return params;
 }
 
+/*! Returns a \l{EventDescriptor} created from the given \a eventDescriptorMap. */
 EventDescriptor JsonTypes::unpackEventDescriptor(const QVariantMap &eventDescriptorMap)
 {
     EventTypeId eventTypeId(eventDescriptorMap.value("eventTypeId").toString());
@@ -929,6 +1000,7 @@ EventDescriptor JsonTypes::unpackEventDescriptor(const QVariantMap &eventDescrip
     return eventDescriptor;
 }
 
+/*! Returns a \l{StateEvaluator} created from the given \a stateEvaluatorMap. */
 StateEvaluator JsonTypes::unpackStateEvaluator(const QVariantMap &stateEvaluatorMap)
 {
     StateEvaluator ret(unpackStateDescriptor(stateEvaluatorMap.value("stateDescriptor").toMap()));
@@ -943,6 +1015,7 @@ StateEvaluator JsonTypes::unpackStateEvaluator(const QVariantMap &stateEvaluator
     return ret;
 }
 
+/*! Returns a \l{StateDescriptor} created from the given \a stateDescriptorMap. */
 StateDescriptor JsonTypes::unpackStateDescriptor(const QVariantMap &stateDescriptorMap)
 {
     StateTypeId stateTypeId(stateDescriptorMap.value("stateTypeId").toString());
@@ -953,6 +1026,7 @@ StateDescriptor JsonTypes::unpackStateDescriptor(const QVariantMap &stateDescrip
     return stateDescriptor;
 }
 
+/*! Returns a \l{LogFilter} created from the given \a logFilterMap. */
 LogFilter JsonTypes::unpackLogFilter(const QVariantMap &logFilterMap)
 {
     LogFilter filter;
@@ -1011,6 +1085,8 @@ LogFilter JsonTypes::unpackLogFilter(const QVariantMap &logFilterMap)
     return filter;
 }
 
+/*! Compairs the given \a map with the given \a templateMap. Returns the error string and false if
+    the params are not valid. */
 QPair<bool, QString> JsonTypes::validateMap(const QVariantMap &templateMap, const QVariantMap &map)
 {
     s_lastError.clear();
@@ -1049,6 +1125,8 @@ QPair<bool, QString> JsonTypes::validateMap(const QVariantMap &templateMap, cons
     return report(true, "");
 }
 
+/*! Compairs the given \a value with the given \a templateValue. Returns the error string and false if
+    the params are not valid. */
 QPair<bool, QString> JsonTypes::validateProperty(const QVariant &templateValue, const QVariant &value)
 {
     QString strippedTemplateValue = templateValue.toString();
@@ -1077,6 +1155,8 @@ QPair<bool, QString> JsonTypes::validateProperty(const QVariant &templateValue, 
     return report(false, errorString);
 }
 
+/*! Compairs the given \a list with the given \a templateList. Returns the error string and false if
+    the params are not valid. */
 QPair<bool, QString> JsonTypes::validateList(const QVariantList &templateList, const QVariantList &list)
 {
     Q_ASSERT(templateList.count() == 1);
@@ -1093,6 +1173,8 @@ QPair<bool, QString> JsonTypes::validateList(const QVariantList &templateList, c
     return report(true, "");
 }
 
+/*! Compairs the given \a variant with the given \a templateVariant. Returns the error string and false if
+    the params are not valid. */
 QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant, const QVariant &variant)
 {
     switch(templateVariant.type()) {
@@ -1352,6 +1434,8 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
     return report(true, "");
 }
 
+/*! Verify the given \a variant with the possible \l{BasicType}. Returns the error string and false if
+    the params are not valid. */
 QPair<bool, QString> JsonTypes::validateBasicType(const QVariant &variant)
 {
     if (variant.canConvert(QVariant::Uuid) && QVariant(variant).convert(QVariant::Uuid)) {
@@ -1378,6 +1462,7 @@ QPair<bool, QString> JsonTypes::validateBasicType(const QVariant &variant)
     return report(false, QString("Error validating basic type %1.").arg(variant.toString()));
 }
 
+/*! Returns the type of the \l{Param} with the given \a paramName of the \l{ActionType} with the given \a actionTypeId. */
 QVariant::Type JsonTypes::getActionParamType(const ActionTypeId &actionTypeId, const QString &paramName)
 {
     foreach (const DeviceClass &deviceClass, GuhCore::instance()->deviceManager()->supportedDevices()) {
@@ -1394,6 +1479,7 @@ QVariant::Type JsonTypes::getActionParamType(const ActionTypeId &actionTypeId, c
     return QVariant::Invalid;
 }
 
+/*! Returns the type of the \l{Param} with the given \a paramName of the \l{EventType} with the given \a eventTypeId. */
 QVariant::Type JsonTypes::getEventParamType(const EventTypeId &eventTypeId, const QString &paramName)
 {
     foreach (const DeviceClass &deviceClass, GuhCore::instance()->deviceManager()->supportedDevices()) {
@@ -1411,6 +1497,7 @@ QVariant::Type JsonTypes::getEventParamType(const EventTypeId &eventTypeId, cons
     return QVariant::Invalid;
 }
 
+/*! Returns true if the given \a eventTypeId is in the given \a eventDescriptors.*/
 bool JsonTypes::checkEventDescriptors(const QList<EventDescriptor> eventDescriptors, const EventTypeId &eventTypeId)
 {
     foreach (const EventDescriptor eventDescriptor, eventDescriptors) {
@@ -1421,6 +1508,7 @@ bool JsonTypes::checkEventDescriptors(const QList<EventDescriptor> eventDescript
     return false;
 }
 
+/*! Verifies if the given \a params contain a valid rule. Returns \l{RuleEngine::RuleError} to inform about the result.*/
 RuleEngine::RuleError JsonTypes::verifyRuleConsistency(const QVariantMap &params)
 {
     // check if there are an eventDescriptor and an eventDescriptorList
@@ -1448,6 +1536,7 @@ RuleEngine::RuleError JsonTypes::verifyRuleConsistency(const QVariantMap &params
     return RuleEngine::RuleErrorNoError;
 }
 
+/*! Verifies if the given \a params contain a valid rule. Returns \l{RuleEngine::RuleError} to inform about the result.*/
 QPair<QList<EventDescriptor>, RuleEngine::RuleError> JsonTypes::verifyEventDescriptors(const QVariantMap &params)
 {
     // Check and unpack eventDescriptors
@@ -1467,6 +1556,7 @@ QPair<QList<EventDescriptor>, RuleEngine::RuleError> JsonTypes::verifyEventDescr
     return QPair<QList<EventDescriptor>, RuleEngine::RuleError>(eventDescriptorList, RuleEngine::RuleErrorNoError);
 }
 
+/*! Verifies if the given \a eventDescriptorList corresponds to an action in the given \a params. Returns \l{RuleEngine::RuleError} and \l{RuleAction} list to inform about the result.*/
 QPair<QList<RuleAction>, RuleEngine::RuleError> JsonTypes::verifyActions(const QVariantMap &params, const QList<EventDescriptor> &eventDescriptorList)
 {
     QList<RuleAction> actions;
@@ -1524,6 +1614,7 @@ QPair<QList<RuleAction>, RuleEngine::RuleError> JsonTypes::verifyActions(const Q
     return QPair<QList<RuleAction>, RuleEngine::RuleError>(actions, RuleEngine::RuleErrorNoError);
 }
 
+/*! Verifies if exit actions of the rule in the given \a params. Returns \l{RuleEngine::RuleError} and \l{RuleAction} list to inform about the result. */
 QPair<QList<RuleAction>, RuleEngine::RuleError> JsonTypes::verifyExitActions(const QVariantMap &params)
 {
     QList<RuleAction> exitActions;
@@ -1545,6 +1636,8 @@ QPair<QList<RuleAction>, RuleEngine::RuleError> JsonTypes::verifyExitActions(con
     return QPair<QList<RuleAction>, RuleEngine::RuleError>(exitActions, RuleEngine::RuleErrorNoError);
 }
 
+/*! Compairs the given \a value with the given \a enumDescription. Returns the error string and false if
+    the enum does not contain the given \a value. */
 QPair<bool, QString> JsonTypes::validateEnum(const QVariantList &enumDescription, const QVariant &value)
 {
     QStringList enumStrings;

@@ -320,7 +320,7 @@ void TestDevices::storedDevices()
     deviceParams.append(brokenParam);
     QVariantMap httpportParam;
     httpportParam.insert("name", "httpport");
-    httpportParam.insert("value", 8888);
+    httpportParam.insert("value", 8889);
     deviceParams.append(httpportParam);
     params.insert("deviceParams", deviceParams);
 
@@ -759,7 +759,7 @@ void TestDevices::editDevices()
     QVariantList deviceParams;
     QVariantMap httpportParam;
     httpportParam.insert("name", "httpport");
-    httpportParam.insert("value", 8888);
+    httpportParam.insert("value", 8889);
     deviceParams.append(httpportParam);
 
     QVariantMap params;

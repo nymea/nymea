@@ -174,21 +174,41 @@ void TestRestLogging::eventLogs()
     int port = device->paramValue("httpport").toInt();
     QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(port).arg(mockEvent1Id.toString())));
     QNetworkReply *reply = nam.get(request);
+    clientSpy.wait();
 
     // Lets wait for the notification
-    clientSpy.wait(200);
-    QVariant notification = checkNotification(clientSpy, "Logging.LogEntryAdded");
-    QVERIFY(!notification.isNull());
+    QVariantList loggEntryAddedVariants = checkNotifications(clientSpy, "Logging.LogEntryAdded");
+    QVERIFY2(!loggEntryAddedVariants.isEmpty(), "Did not get Logging.LogEntryAdded notification.");
+    qDebug() << "got" << loggEntryAddedVariants.count() << "Logging.LogEntryAdded notifications";
     reply->deleteLater();
 
-    QVariantMap logEntry = notification.toMap().value("params").toMap().value("logEntry").toMap();
 
-    // Make sure the notification contains all the stuff we expect
-    QCOMPARE(logEntry.value("typeId").toString(), mockEvent1Id.toString());
-    QCOMPARE(logEntry.value("deviceId").toString(), device->id().toString());
-    QCOMPARE(logEntry.value("eventType").toString(), JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeTrigger));
-    QCOMPARE(logEntry.value("source").toString(), JsonTypes::loggingSourceToString(Logging::LoggingSourceEvents));
-    QCOMPARE(logEntry.value("loggingLevel").toString(), JsonTypes::loggingLevelToString(Logging::LoggingLevelInfo));
+    bool found = false;
+    qDebug() << "got" << loggEntryAddedVariants.count() << "Logging.LogEntryAdded";
+    foreach (const QVariant &loggEntryAddedVariant, loggEntryAddedVariants) {
+        QVariantMap logEntry = loggEntryAddedVariant.toMap().value("params").toMap().value("logEntry").toMap();
+        if (logEntry.value("deviceId").toString() == device->id().toString()) {
+            found = true;
+            // Make sure the notification contains all the stuff we expect
+            QCOMPARE(logEntry.value("typeId").toString(), mockEvent1Id.toString());
+            QCOMPARE(logEntry.value("eventType").toString(), JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeTrigger));
+            QCOMPARE(logEntry.value("source").toString(), JsonTypes::loggingSourceToString(Logging::LoggingSourceEvents));
+            QCOMPARE(logEntry.value("loggingLevel").toString(), JsonTypes::loggingLevelToString(Logging::LoggingLevelInfo));
+            break;
+        }
+    }
+    if (!found)
+        qDebug() << QJsonDocument::fromVariant(loggEntryAddedVariants).toJson();
+
+    QVERIFY2(found, "Could not find the corresponding Logging.LogEntryAdded notification");
+
+
+//    // Make sure the notification contains all the stuff we expect
+//    QCOMPARE(logEntry.value("typeId").toString(), mockEvent1Id.toString());
+//    QCOMPARE(logEntry.value("deviceId").toString(), device->id().toString());
+//    QCOMPARE(logEntry.value("eventType").toString(), JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeTrigger));
+//    QCOMPARE(logEntry.value("source").toString(), JsonTypes::loggingSourceToString(Logging::LoggingSourceEvents));
+//    QCOMPARE(logEntry.value("loggingLevel").toString(), JsonTypes::loggingLevelToString(Logging::LoggingLevelInfo));
 
     // get this logentry with filter
     QVariantMap params;

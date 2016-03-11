@@ -202,14 +202,6 @@ void TestRestLogging::eventLogs()
 
     QVERIFY2(found, "Could not find the corresponding Logging.LogEntryAdded notification");
 
-
-//    // Make sure the notification contains all the stuff we expect
-//    QCOMPARE(logEntry.value("typeId").toString(), mockEvent1Id.toString());
-//    QCOMPARE(logEntry.value("deviceId").toString(), device->id().toString());
-//    QCOMPARE(logEntry.value("eventType").toString(), JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeTrigger));
-//    QCOMPARE(logEntry.value("source").toString(), JsonTypes::loggingSourceToString(Logging::LoggingSourceEvents));
-//    QCOMPARE(logEntry.value("loggingLevel").toString(), JsonTypes::loggingLevelToString(Logging::LoggingLevelInfo));
-
     // get this logentry with filter
     QVariantMap params;
     params.insert("deviceIds", QVariantList() << device->id());

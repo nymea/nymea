@@ -82,6 +82,8 @@ private slots:
 
     void testEventBasedAction();
 
+    void removePolicy();
+
     void testRuleActionParams_data();
     void testRuleActionParams();
 };
@@ -1476,7 +1478,6 @@ void TestRules::enableDisableRule()
     response = injectAndWait("Rules.DisableRule", disableParams);
     verifyRuleError(response);
 
-
     // trigger event in mock device
     spy.clear();
     request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1Id.toString())));
@@ -1560,6 +1561,44 @@ void TestRules::testEventBasedAction()
 
     verifyRuleExecuted(mockActionIdWithParams);
     // TODO: check if this action was realy executed with the int state value 42
+}
+
+void TestRules::removePolicy()
+{
+    // ADD parent device
+    QVariantMap params;
+    params.insert("deviceClassId", mockParentDeviceClassId);
+    params.insert("name", "Parent device");
+
+    QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
+    verifyDeviceError(response);
+
+    DeviceId parentDeviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
+    QVERIFY(!parentDeviceId.isNull());
+
+    // find child device
+    response = injectAndWait("Devices.GetConfiguredDevices");
+
+    QVariantList devices = response.toMap().value("params").toMap().value("devices").toList();
+
+    DeviceId childDeviceId;
+    foreach (const QVariant deviceVariant, devices) {
+        QVariantMap deviceMap = deviceVariant.toMap();
+
+        if (deviceMap.value("deviceClassId").toString() == mockChildDeviceClassId.toString()) {
+            if (deviceMap.value("parentId") == parentDeviceId.toString()) {
+                //qDebug() << QJsonDocument::fromVariant(deviceVariant).toJson();
+                childDeviceId = DeviceId(deviceMap.value("id").toString());
+            }
+        }
+    }
+    QVERIFY2(!childDeviceId.isNull(), "Could not find child device");
+
+    // Add rule with child device
+
+
+
+
 }
 
 void TestRules::testRuleActionParams_data()

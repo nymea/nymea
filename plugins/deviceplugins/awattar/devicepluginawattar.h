@@ -27,6 +27,7 @@
 #include <QHash>
 #include <QDebug>
 #include <QTimer>
+#include <QPointer>
 
 class DevicePluginAwattar : public DevicePlugin
 {
@@ -39,33 +40,27 @@ public:
 
     DeviceManager::HardwareResources requiredHardware() const override;
     DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
-
+    void postSetupDevice(Device *device) override;
     void deviceRemoved(Device *device) override;
     void networkManagerReplyReady(QNetworkReply *reply) override;
 
     void guhTimer() override;
-
     DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
 
 private:
-    Device *m_device;
-    QList<HeatPump *> m_heatPumps;
+    QPointer<Device> m_device;
+    QList<QPointer<HeatPump> > m_heatPumps;
 
-    QList<QNetworkReply *> m_asyncSetup;
-    QList<QNetworkReply *> m_searchPumpReplies;
-    QList<QNetworkReply *> m_updatePrice;
-    QList<QNetworkReply *> m_updateUserData;
+    QList<QPointer<QNetworkReply> > m_searchPumpReplies;
+    QList<QPointer<QNetworkReply> > m_updatePrice;
+    QList<QPointer<QNetworkReply> > m_updateUserData;
 
     QString m_token;
     QString m_userUuid;
-    int m_setupRetry;
 
     int m_autoSgMode;
     int m_manualSgMode;
 
-    void processPriceData(const QVariantMap &data);
-    void processUserData(const QVariantMap &data);
-    void processPumpSearchData(const QByteArray &data);
 
     QNetworkReply *requestPriceData(const QString& token);
     QNetworkReply *requestUserData(const QString& token, const QString &userId);
@@ -73,12 +68,15 @@ private:
     void updateData();
     void searchHeatPumps();
 
-    void setSgMode(const int &sgMode);
+    void processPriceData(const QVariantMap &data);
+    void processUserData(const QVariantMap &data);
+    void processPumpSearchData(const QByteArray &data);
 
+    void setSgMode(const int &sgMode);
+    void setOnlineStatus(const bool &online);
     bool heatPumpExists(const QHostAddress &pumpAddress);
 
 private slots:
-    void connectionTest();
     void onHeatPumpReachableChanged();
 
 };

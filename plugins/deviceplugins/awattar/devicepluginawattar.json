@@ -89,6 +89,13 @@
                             "defaultValue": 0
                         },
                         {
+                            "id": "470b9b88-17f3-42e3-9250-cc181984eafe",
+                            "idName": "online",
+                            "name": "online",
+                            "type": "bool",
+                            "defaultValue": false
+                        },
+                        {
                             "id": "1c9d139a-6618-4a39-bc83-37f80942017d",
                             "idName": "reachable",
                             "name": "pump reachable",

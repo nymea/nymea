@@ -59,10 +59,10 @@ bool HeatPump::reachable() const
 
 void HeatPump::setSgMode(const int &sgMode)
 {    
+    // Note: always try to set sg-mode, to make sure the pump is still reachable (like a ping)
     if (m_sgMode != sgMode) {
         m_sgMode = sgMode;
         qCDebug(dcAwattar) << "Setting sg-mode to" << sgMode;
-        // Note: always try to set sg-mode, to make sure the pump is still reachable (like a ping)
     }
 
     QUrl url;
@@ -70,7 +70,7 @@ void HeatPump::setSgMode(const int &sgMode)
     url.setHost(m_address.toString());
     url.setPath("/a/sg_mode");
 
-    QByteArray payload = QString("mode=%1").arg(QString::number(sgMode)).toUtf8();
+    QByteArray payload = QString("mode=%1").arg(QString::number(m_sgMode)).toUtf8();
 
     CoapReply *reply = m_coap->post(CoapRequest(url), payload);
     if (reply->error() != CoapReply::NoError) {

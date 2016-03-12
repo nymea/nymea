@@ -96,9 +96,14 @@ DeviceManager::DeviceSetupStatus DevicePluginAwattar::setupDevice(Device *device
 
     qCDebug(dcAwattar) << "Setup device" << device->name() << device->params();
 
-    m_device = device;
     m_token = device->paramValue("token").toString();
     m_userUuid = device->paramValue("user uuid").toString();
+    m_device = device;
+
+    if (m_token.isEmpty() || m_userUuid.isEmpty()) {
+        qCWarning(dcAwattar) << "Missing token oder user uuid.";
+        return DeviceManager::DeviceSetupStatusFailure;
+    }
 
     return DeviceManager::DeviceSetupStatusSuccess;
 }
@@ -106,7 +111,8 @@ DeviceManager::DeviceSetupStatus DevicePluginAwattar::setupDevice(Device *device
 void DevicePluginAwattar::postSetupDevice(Device *device)
 {
     Q_UNUSED(device)
-    guhTimer();
+    updateData();
+    searchHeatPumps();
 }
 
 void DevicePluginAwattar::deviceRemoved(Device *device)

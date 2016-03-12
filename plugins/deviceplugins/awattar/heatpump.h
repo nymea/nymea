@@ -39,8 +39,6 @@ public:
     bool reachable() const;
     void setSgMode(const int &sgMode);
 
-    void setLed(const bool &power);
-
 private:
     QHostAddress m_address;
     bool m_reachable;
@@ -50,7 +48,6 @@ private:
 
     QList<CoapReply *> m_discoverReplies;
     QList<CoapReply *> m_sgModeReplies;
-    QList<CoapReply *> m_ledReplies;
 
     void setReachable(const bool &reachable);
 

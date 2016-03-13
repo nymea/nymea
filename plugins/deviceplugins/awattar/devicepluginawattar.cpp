@@ -399,7 +399,7 @@ void DevicePluginAwattar::processPumpSearchData(const QByteArray &data)
 
         qCDebug(dcAwattar) << "New heat pump found at" << pumpAddress.toString();
         QPointer<HeatPump> pump = new HeatPump(pumpAddress, this);
-        connect(pump, &HeatPump::reachableChanged, this, &DevicePluginAwattar::onHeatPumpReachableChanged);
+        connect(pump.data(), SIGNAL(reachableChanged()), this, SLOT(onHeatPumpReachableChanged()));
         m_heatPumps.append(pump);
     }
 }

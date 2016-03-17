@@ -30,7 +30,6 @@ HeatPump::HeatPump(QHostAddress address, QObject *parent) :
     m_sgMode(0)
 {
     m_coap = new Coap(this);
-
     connect(m_coap, SIGNAL(replyFinished(CoapReply*)), this, SLOT(onReplyFinished(CoapReply*)));
 
     QUrl url;
@@ -60,6 +59,7 @@ bool HeatPump::reachable() const
 
 void HeatPump::setSgMode(const int &sgMode)
 {    
+    // Note: always try to set sg-mode, to make sure the pump is still reachable (like a ping)
     if (m_sgMode != sgMode) {
         m_sgMode = sgMode;
         qCDebug(dcAwattar) << "Setting sg-mode to" << sgMode;
@@ -70,11 +70,12 @@ void HeatPump::setSgMode(const int &sgMode)
     url.setHost(m_address.toString());
     url.setPath("/a/sg_mode");
 
-    QByteArray payload = QString("mode=%1").arg(QString::number(sgMode)).toUtf8();
+    QByteArray payload = QString("mode=%1").arg(QString::number(m_sgMode)).toUtf8();
 
     CoapReply *reply = m_coap->post(CoapRequest(url), payload);
     if (reply->error() != CoapReply::NoError) {
         qCWarning(dcAwattar()) << "Could not set sg mode" << reply->errorString();
+        setReachable(false);
         reply->deleteLater();
         return;
     }
@@ -82,33 +83,12 @@ void HeatPump::setSgMode(const int &sgMode)
     m_sgModeReplies.append(reply);
 }
 
-void HeatPump::setLed(const bool &power)
-{
-    QUrl url;
-    url.setScheme("coap");
-    url.setHost(m_address.toString());
-    url.setPath("/a/led");
-
-    QByteArray data;
-    if (power) {
-        data = QString("mode=1").toUtf8();
-    } else {
-        data = QString("mode=0").toUtf8();
-    }
-
-    CoapReply *reply = m_coap->post(CoapRequest(url), data);
-    if (reply->error() != CoapReply::NoError) {
-        qCWarning(dcAwattar()) << "Could not set led" << reply->errorString();
-        reply->deleteLater();
-        return;
-    }
-    m_ledReplies.append(reply);
-}
-
 void HeatPump::setReachable(const bool &reachable)
 {
-    m_reachable = reachable;
-    emit reachableChanged();
+    if (m_reachable != reachable) {
+        m_reachable = reachable;
+        emit reachableChanged();
+    }
 }
 
 void HeatPump::onReplyFinished(CoapReply *reply)
@@ -125,6 +105,7 @@ void HeatPump::onReplyFinished(CoapReply *reply)
 
         if (reply->statusCode() != CoapPdu::Content) {
             qCWarning(dcAwattar()) << "Resource discovery status code:" << reply;
+            setReachable(false);
             reply->deleteLater();
             return;
         }
@@ -149,6 +130,7 @@ void HeatPump::onReplyFinished(CoapReply *reply)
 
         if (reply->statusCode() != CoapPdu::Content) {
             qCWarning(dcAwattar()) << "Set sg-mode status code error:" << reply;
+            setReachable(false);
             reply->deleteLater();
             return;
         }
@@ -156,42 +138,6 @@ void HeatPump::onReplyFinished(CoapReply *reply)
         if (!reachable())
             qCDebug(dcAwattar) << "Set sg-mode successfully.";
 
-    } else if (m_ledReplies.contains(reply)) {
-        m_ledReplies.removeAll(reply);
-
-        if (reply->error() != CoapReply::NoError) {
-            if (reachable())
-                qCWarning(dcAwattar()) << "CoAP set led power reply error" << reply->errorString();
-
-            setReachable(false);
-            reply->deleteLater();
-            return;
-        }
-
-        if (reply->statusCode() != CoapPdu::Content) {
-            qCWarning(dcAwattar()) << "Set LED status code error:" << reply;
-            reply->deleteLater();
-            return;
-        }
-
-        qCDebug(dcAwattar) << "Set led power successfully.";
-
-    } else {
-        // unhandled reply
-        if (reply->error() != CoapReply::NoError) {
-            qCWarning(dcAwattar()) << "CoAP reply error" << reply->errorString();
-            setReachable(false);
-            reply->deleteLater();
-            return;
-        }
-
-        if (reply->statusCode() != CoapPdu::Content) {
-            qCWarning(dcAwattar()) << "Unknown reply" << reply;
-            reply->deleteLater();
-            return;
-        }
-
-        qCDebug(dcAwattar) << reply;
     }
 
     // the reply had no error until now, so make sure the resource is reachable

@@ -78,9 +78,7 @@
 #include <QJsonDocument>
 #include <QSslConfiguration>
 
-DevicePluginAwattar::DevicePluginAwattar() :
-    m_device(0),
-    m_setupRetry(0)
+DevicePluginAwattar::DevicePluginAwattar()
 {
 }
 
@@ -98,24 +96,30 @@ DeviceManager::DeviceSetupStatus DevicePluginAwattar::setupDevice(Device *device
 
     qCDebug(dcAwattar) << "Setup device" << device->name() << device->params();
 
-    m_device = device;
     m_token = device->paramValue("token").toString();
     m_userUuid = device->paramValue("user uuid").toString();
+    m_device = device;
 
-    connectionTest();
+    if (m_token.isEmpty() || m_userUuid.isEmpty()) {
+        qCWarning(dcAwattar) << "Missing token oder user uuid.";
+        return DeviceManager::DeviceSetupStatusFailure;
+    }
 
-    return DeviceManager::DeviceSetupStatusAsync;
+    return DeviceManager::DeviceSetupStatusSuccess;
+}
+
+void DevicePluginAwattar::postSetupDevice(Device *device)
+{
+    Q_UNUSED(device)
+    updateData();
+    searchHeatPumps();
 }
 
 void DevicePluginAwattar::deviceRemoved(Device *device)
 {
     Q_UNUSED(device)
-
-    foreach (HeatPump *pump, m_heatPumps) {
-        qCDebug(dcAwattar) << "Delete pump" << pump->address().toString();
-        pump->deleteLater();
-    }
-
+    qDeleteAll(m_heatPumps);
+    m_heatPumps.clear();
     m_device = 0;
 }
 
@@ -123,54 +127,13 @@ void DevicePluginAwattar::networkManagerReplyReady(QNetworkReply *reply)
 {
     int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
-    if (m_asyncSetup.contains(reply)) {
-
-        m_asyncSetup.removeAll(reply);
-
-        // check HTTP status code
-        if (status != 200) {
-            qCWarning(dcAwattar) << "Setup reply HTTP error:" << status << reply->errorString();
-            if (m_setupRetry == 3) {
-                emit deviceSetupFinished(m_device, DeviceManager::DeviceSetupStatusFailure);
-                m_setupRetry = 0;
-                reply->deleteLater();
-                return;
-            } else {
-                m_setupRetry++;
-                reply->deleteLater();
-
-                // retry in 1 sec
-                qCWarning(dcAwattar) << "Retry to connect" << m_setupRetry << "/ 3";
-                QTimer::singleShot(2000, this, SLOT(connectionTest()));
-                return;
-            }
-        }
-
-        // check JSON file
-        QJsonParseError error;
-        QJsonDocument jsonDoc = QJsonDocument::fromJson(reply->readAll(), &error);
-        if (error.error != QJsonParseError::NoError) {
-            qCWarning(dcAwattar) << "Setup reply JSON error:" << error.errorString();
-            emit deviceSetupFinished(m_device, DeviceManager::DeviceSetupStatusFailure);
-            reply->deleteLater();
-            return;
-        }
-
-        Q_UNUSED(jsonDoc)
-
-        emit deviceSetupFinished(m_device, DeviceManager::DeviceSetupStatusSuccess);
-
-        // get data
-        searchHeatPumps();
-        updateData();
-
-    } else if (m_updatePrice.contains(reply)) {
-
+    if (m_updatePrice.contains(reply)) {
         m_updatePrice.removeAll(reply);
 
         // check HTTP status code
         if (status != 200) {
             qCWarning(dcAwattar) << "Update reply HTTP error:" << status << reply->errorString();
+            setOnlineStatus(false);
             reply->deleteLater();
             return;
         }
@@ -180,6 +143,7 @@ void DevicePluginAwattar::networkManagerReplyReady(QNetworkReply *reply)
         QJsonDocument jsonDoc = QJsonDocument::fromJson(reply->readAll(), &error);
         if (error.error != QJsonParseError::NoError) {
             qCWarning(dcAwattar) << "Update reply JSON error:" << error.errorString();
+            setOnlineStatus(false);
             reply->deleteLater();
             return;
         }
@@ -190,12 +154,12 @@ void DevicePluginAwattar::networkManagerReplyReady(QNetworkReply *reply)
         m_updateUserData.append(requestUserData(m_token, m_userUuid));
 
     } else if (m_updateUserData.contains(reply)) {
-
         m_updateUserData.removeAll(reply);
 
         // check HTTP status code
         if (status != 200) {
             qCWarning(dcAwattar) << "Update user data reply HTTP error:" << status << reply->errorString();
+            setOnlineStatus(false);
             reply->deleteLater();
             return;
         }
@@ -205,14 +169,15 @@ void DevicePluginAwattar::networkManagerReplyReady(QNetworkReply *reply)
         QJsonDocument jsonDoc = QJsonDocument::fromJson(reply->readAll(), &error);
         if (error.error != QJsonParseError::NoError) {
             qCWarning(dcAwattar) << "Update user data reply JSON error:" << error.errorString();
+            setOnlineStatus(false);
             reply->deleteLater();
             return;
         }
 
+        setOnlineStatus(true);
         processUserData(jsonDoc.toVariant().toMap());
 
     } else if (m_searchPumpReplies.contains(reply)) {
-
         m_searchPumpReplies.removeAll(reply);
 
         // check HTTP status code
@@ -230,7 +195,7 @@ void DevicePluginAwattar::networkManagerReplyReady(QNetworkReply *reply)
 
 void DevicePluginAwattar::guhTimer()
 {
-    if (!m_device)
+    if (m_device.isNull())
         return;
 
     updateData();
@@ -239,7 +204,7 @@ void DevicePluginAwattar::guhTimer()
 
 DeviceManager::DeviceError DevicePluginAwattar::executeAction(Device *device, const Action &action)
 {
-    if (!m_device || m_device != device)
+    if (m_device.isNull() || m_device != device)
         return DeviceManager::DeviceErrorHardwareNotAvailable;
 
     if (action.actionTypeId() == sgSyncModeActionTypeId) {
@@ -276,9 +241,50 @@ DeviceManager::DeviceError DevicePluginAwattar::executeAction(Device *device, co
     return DeviceManager::DeviceErrorActionTypeNotFound;
 }
 
+QNetworkReply *DevicePluginAwattar::requestPriceData(const QString &token)
+{
+    QByteArray data = QString(token + ":").toUtf8().toBase64();
+    QString header = "Basic " + data;
+    QNetworkRequest request(QUrl("https://api.awattar.com/v1/marketdata"));
+    request.setRawHeader("Authorization", header.toLocal8Bit());
+    request.setSslConfiguration(QSslConfiguration::defaultConfiguration());
+    return networkManagerGet(request);
+}
+
+QNetworkReply *DevicePluginAwattar::requestUserData(const QString &token, const QString &userId)
+{
+    QByteArray data = QString(token + ":").toUtf8().toBase64();
+    QString header = "Basic " + data;
+
+    QNetworkRequest request(QUrl(QString("https://api.awattar.com/v1/devices/%1/actuators").arg(userId)));
+    request.setRawHeader("Authorization", header.toLocal8Bit());
+    request.setSslConfiguration(QSslConfiguration::defaultConfiguration());
+    return networkManagerGet(request);
+}
+
+void DevicePluginAwattar::updateData()
+{
+    m_updatePrice.append(requestPriceData(m_token));
+}
+
+void DevicePluginAwattar::searchHeatPumps()
+{
+    QHostAddress rplAddress = QHostAddress(configuration().paramValue("RPL address").toString());
+
+    if (rplAddress.isNull()) {
+        qCWarning(dcAwattar) << "Invalid RPL address" << configuration().paramValue("RPL address").toString();
+        return;
+    }
+
+    QNetworkRequest request(QUrl(QString("http://[%1]").arg(rplAddress.toString())));
+    QNetworkReply *reply = networkManagerGet(request);
+
+    m_searchPumpReplies.append(reply);
+}
+
 void DevicePluginAwattar::processPriceData(const QVariantMap &data)
 {
-    if (!m_device)
+    if (m_device.isNull())
         return;
 
     QVariantList dataElements = data.value("data").toList();
@@ -343,7 +349,7 @@ void DevicePluginAwattar::processPriceData(const QVariantMap &data)
 
 void DevicePluginAwattar::processUserData(const QVariantMap &data)
 {
-    if (!m_device)
+    if (m_device.isNull())
         return;
 
     QVariantList dataElements = data.value("data").toList();
@@ -384,68 +390,25 @@ void DevicePluginAwattar::processPumpSearchData(const QByteArray &data)
 
         // remove the '/128' from the address
         QHostAddress pumpAddress(QString(data.left(line.length() - 4)));
-        if (!pumpAddress.isNull()) {
+        if (pumpAddress.isNull())
+            continue;
 
-            // check if we already created this heat pump
-            if (heatPumpExists(pumpAddress))
-                continue;
+        // check if we already created this heat pump
+        if (heatPumpExists(pumpAddress))
+            continue;
 
-            qCDebug(dcAwattar) << "Found heat pump at" << pumpAddress.toString();
-
-            HeatPump *pump = new HeatPump(pumpAddress, this);
-            connect(pump, SIGNAL(reachableChanged()), this, SLOT(onHeatPumpReachableChanged()));
-
-            m_heatPumps.append(pump);
-
-        } else {
-            qCWarning(dcAwattar) << "Could not read pump address" << line;
-        }
+        qCDebug(dcAwattar) << "New heat pump found at" << pumpAddress.toString();
+        QPointer<HeatPump> pump = new HeatPump(pumpAddress, this);
+        connect(pump.data(), SIGNAL(reachableChanged()), this, SLOT(onHeatPumpReachableChanged()));
+        m_heatPumps.append(pump);
     }
-}
-
-QNetworkReply *DevicePluginAwattar::requestPriceData(const QString &token)
-{
-    QByteArray data = QString(token + ":").toUtf8().toBase64();
-    QString header = "Basic " + data;
-    QNetworkRequest request(QUrl("https://api.awattar.com/v1/marketdata"));
-    request.setRawHeader("Authorization", header.toLocal8Bit());
-    request.setSslConfiguration(QSslConfiguration::defaultConfiguration());
-    return networkManagerGet(request);
-}
-
-QNetworkReply *DevicePluginAwattar::requestUserData(const QString &token, const QString &userId)
-{
-    QByteArray data = QString(token + ":").toUtf8().toBase64();
-    QString header = "Basic " + data;
-
-    QNetworkRequest request(QUrl(QString("https://api.awattar.com/v1/devices/%1/actuators").arg(userId)));
-    request.setRawHeader("Authorization", header.toLocal8Bit());
-    request.setSslConfiguration(QSslConfiguration::defaultConfiguration());
-    return networkManagerGet(request);
-}
-
-void DevicePluginAwattar::updateData()
-{
-    m_updatePrice.append(requestPriceData(m_token));
-}
-
-void DevicePluginAwattar::searchHeatPumps()
-{
-    QHostAddress rplAddress = QHostAddress(configuration().paramValue("RPL address").toString());
-
-    if (rplAddress.isNull()) {
-        qCWarning(dcAwattar) << "Invalid RPL address" << configuration().paramValue("RPL address").toString();
-        return;
-    }
-
-    QNetworkRequest request(QUrl(QString("http://[%1]").arg(rplAddress.toString())));
-    QNetworkReply *reply = networkManagerGet(request);
-
-    m_searchPumpReplies.append(reply);
 }
 
 void DevicePluginAwattar::setSgMode(const int &sgMode)
 {
+    if (m_device.isNull())
+        return;
+
     switch (sgMode) {
     case 1:
         m_device->setStateValue(sgModeStateTypeId, "1 - Off");
@@ -464,26 +427,33 @@ void DevicePluginAwattar::setSgMode(const int &sgMode)
         return;
     }
 
-    foreach (HeatPump *pump, m_heatPumps) {
-        if (pump->reachable()) {
-            pump->setSgMode(sgMode);
-        }
+    foreach (QPointer<HeatPump> pump, m_heatPumps) {
+        if (pump.isNull())
+            continue;
+
+        pump->setSgMode(sgMode);
     }
+}
+
+void DevicePluginAwattar::setOnlineStatus(const bool &online)
+{
+    if (m_device.isNull())
+        return;
+
+    m_device->setStateValue(onlineStateTypeId, online);
 }
 
 bool DevicePluginAwattar::heatPumpExists(const QHostAddress &pumpAddress)
 {
-    foreach (HeatPump *pump, m_heatPumps) {
+    foreach (QPointer<HeatPump> pump, m_heatPumps) {
+        if (pump.isNull())
+            continue;
+
         if (pump->address() == pumpAddress) {
             return true;
         }
     }
     return false;
-}
-
-void DevicePluginAwattar::connectionTest()
-{
-    m_asyncSetup.append(requestUserData(m_token, m_userUuid));
 }
 
 void DevicePluginAwattar::onHeatPumpReachableChanged()
@@ -501,7 +471,7 @@ void DevicePluginAwattar::onHeatPumpReachableChanged()
         }
     }
 
-    foreach (Device *device, myDevices()) {
-        device->setStateValue(reachableStateTypeId, reachable);
-    }
+    if (m_device)
+        m_device->setStateValue(reachableStateTypeId, reachable);
+
 }

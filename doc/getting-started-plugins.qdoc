@@ -3,6 +3,8 @@
     \title Getting Started
     \brief Understanding the basic concept of guh plugins
 
+    \b{\unicode{0x2192} \underline{\l{https://www.youtube.com/watch?v=B8oqItKCcgU}{Video for this tutorial}}}
+
     Plugins in guh are used to exand the functionalitys and capabilitys of the guh server. A plugin is basically a shared library, which will be loaded dynamically from the guh server during the start up process. Each plugin has a \e name, a \e uuid and a list of supported \e vendors which will be visible in the system once the plugin is loaded. Each of thouse \l{Vendor}{Vendors} contains a list of supported \l{DeviceClass}{DeviceClasses}. A \l{DeviceClass} describes how the supported \l{Device} looks like, how it will be created (\l{DeviceClass::CreateMethod}{CreateMethod}), how the setup (\l{DeviceClass::SetupMethod}{SetupMethod}) looks like and what you can do with the \l{Device}.
 
     \section1 Devices
@@ -20,11 +22,9 @@
     \section1 Hardware resources
     The \e libguh provides a list of \l{Hardware Resources}{HardwareResources}, which can be used in every plugin. When sou start writing a plugin, you need to know which resource you will need. Each resource provides it's own interface for a \l{DevicePlugin}. In the plugin you don't have to take care about the resource. 
     
-        
     \section1 Getting started with a plugin
     In order to show how a plugin ist structured here is an example of the most minimalistic device plugin possible for the guh system.
     
-
     For an easier start we provide a set of plugin templates which can be used for your own plugin and to have a basic for the tutorials described in this documentation. You can get the templates with following command:
 
     \code
@@ -76,7 +76,6 @@
     The \b SOURCES and \b HEADERS variables define the \tt .cpp and \tt .h files of your plugin like in any other Qt project. 
 
 
-
     \section3 plugins.pri
     The \tt plugins.pri file contains all relevant definitions and configuration to build a plugin. Each plugin must contain this file and \underline{should not} be changed. In this file the precompiler \b guh-generateplugininfo will be called.
     \code
@@ -85,8 +84,8 @@
 
         QT += network
 
-        QMAKE_CXXFLAGS += -Werror
-        CONFIG += c++11
+        QMAKE_CXXFLAGS += -Werror -std=c++11
+        QMAKE_LFLAGS += -std=c++11
 
         INCLUDEPATH += /usr/include/guh
         LIBS += -lguh
@@ -105,11 +104,11 @@
     \endcode
     
 
-    If you need an extra Qt module i.e. \tt serialport please add it in the \tt <pluginName>.pro file an not in the \tt plugin.pri:    
+    If you need an extra Qt module i.e. \tt serialport please add it in the \tt <pluginName>.pro file an \underline{not} in the \tt plugin.pri:
+    \note Please make sure you have installed the corresponding development libs i.e. \b{\tt{sudo apt-get install libqt5serialport5-dev}}
     \code 
         QT += serialport 
     \endcode
-
 
     \section3 devicepluginminimal.json
     The properties of a plugin will be definend with in the \tt JSON file containing all needed information for guh to load it. The name convention fot the json file is:
@@ -118,7 +117,7 @@
 
     This file must have a clear, definend structure and looking like this:
 
-    \note For more details about the structure, values and Objects please take a look at the \l{The Plugin JSON File} documentation.
+    \note For more details about the structure, values and objects please take a look at the \l{The Plugin JSON File} documentation.
 
     \code
         {
@@ -136,6 +135,9 @@
                             "idName": "minimal",
                             "name": "Minimal device",
                             "createMethods": ["user"],
+                            "basicTags": [
+                                "Device"
+                            ],
                             "paramTypes": [
                                 {
                                     "name": "name",
@@ -212,6 +214,6 @@
         }
     \endcode
     
-    You can start with \l{Tutorial 1 - The "Minimal" plugin}.
+    Now you can start with \l{Tutorial 1 - The "Minimal" plugin}.
 
 */

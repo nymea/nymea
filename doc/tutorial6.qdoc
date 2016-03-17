@@ -4,7 +4,20 @@
     \brief The plugin shows you how to use the CoAP lib
     \ingroup tutorials
     
+    \section1 Topics
+    This tutorial will show you how to:
+    \list
+        \li \unicode{0x25B6} Allow only one \l{Device}
+        \li \unicode{0x25B6} Implement the \l{DevicePlugin::deviceRemoved()}{deviceRemoved()} method
+        \li \unicode{0x25B6} Use plugin configurations
+        \li \unicode{0x25B6} Use the \l{Coap}{CoAP} library
+    \endlist
 
+    This tutorial shows you how to write a \l{Coap}{CoAP} plugin and how the plugin configuration work. The plugin it self has no practical purpose but shows some concepts of CoAP and plugin development.
+
+    \section1 Plugin structure
+
+    networkinfo.pro
 
 */ 
 

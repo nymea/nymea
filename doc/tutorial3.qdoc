@@ -7,9 +7,15 @@
 
     In the third tutorial we use the project from \l{Tutorial 2 - The "Buttons" plugin}{Tutorial 2} and add a new button type to the existing plugin.
     
-    This device will show you how to implement \l{State}{States} and how \l{Param}{Params} will be used in \l{Action}{Actions} and \l{Event}{Events}.
+    \section1 Topics
+    This tutorial will show you how to:
+    \list
+        \li \unicode{0x25B6} Implement a \l{State}
+        \li \unicode{0x25B6} Use \l{Param}{Params} in an \l{Event}
+        \li \unicode{0x25B6} Use \l{Param}{Params} in an \l{Action}
+    \endlist
 
-    Our new "Power Button" will be able to execute an \l Action and set the \l State of the \l Device  \tt true or \tt false .
+    Our new "Power Button" will be able to execute an \l Action and set the \l State of the \l Device \tt true or \tt false .
 
     \section1 Add a new DeviceClass
 

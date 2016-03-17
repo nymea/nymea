@@ -4,6 +4,12 @@
     \brief The plugin shows you how to use the NetworkManager and how asynchronous actions work
     \ingroup tutorials
     
+    \section1 Topics
+    This tutorial will show you how to:
+    \list
+        \li \unicode{0x25B6} Use hardware resource \l{NetworkManager}
+    \endlist
+
 
     In the tutorial we make a plugin with the name \b {"Network Info"}. This plugin will use the \l{NetworkManager} hardware resource to fetch the location and WAN ip of your internet connection from \l{http://ip-api.com/json}. It will have an \l Action called \e "update" which will refresh the \l{State}{States} of the \l{Device}.
 

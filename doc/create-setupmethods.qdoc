@@ -9,7 +9,7 @@
     The \l{DeviceClass::SetupMethod}{SetupMethod} describes how the device will be set up. A \l{Device} can have multiple \l{DeviceClass::CreateMethods}{CreateMethods}, but only one \l{DeviceClass::SetupMethod}{SetupMethod}.
 
     \list
-        \li - \l{DeviceClass::CreateMethods}{CreateMethods}
+        \li \l{DeviceClass::CreateMethods}{CreateMethods}
         \list
             \li \e user \unicode{0x2192} \l{DeviceClass::CreateMethodUser}
             \li \e discovery \unicode{0x2192} \l{DeviceClass::CreateMethodDiscovery}
@@ -168,15 +168,15 @@
         \endlist
         \li \b Pairing
         \list
-            \li \b 4. | The user should see now the pin on the display and the pairing info. The method \l{DevicePlugin::confirmPairing()} will be called once he entered the pin. Here can be verified if the pin is authorized by the device and if the pairing succeeded.
-            \li \b 5. | Returns the \l{DeviceManager::DeviceSetupStatus} to inform about the result (sync or async).
-            \li \b 6. | Once the pairing has been verified (check if the button has been pushed) the plugin can emit the signal \l{DevicePlugin::pairingFinished()} to inform the \l{DeviceManager} about the result.
+            \li \b 6. | The user should see now the pin on the display and the pairing info. The method \l{DevicePlugin::confirmPairing()} will be called once he entered the pin. Here can be verified if the pin is authorized by the device and if the pairing succeeded.
+            \li \b 7. | Returns the \l{DeviceManager::DeviceSetupStatus} to inform about the result (sync or async).
+            \li \b 8. | Once the pairing has been verified (check if the button has been pushed) the plugin can emit the signal \l{DevicePlugin::pairingFinished()} to inform the \l{DeviceManager} about the result.
         \endlist
         \li \b Setup
         \list
-            \li \b 7. | The plugin will be set up with the params (i.e. containing a \tt pin param) of the paired \l{Device}.
-            \li \b 8. | If something goes wrong during the setup return \l{DeviceManager::DeviceSetupStatusFailure}, otherwise \l{DeviceManager::DeviceSetupStatusSuccess}.
-            \li \b 9. | If the device setup succeded and the device is in the system, the \l{DeviceManager} will call the \l{DevicePlugin::postSetupDevice()}{postSetupDevice()} method.
+            \li \b 9. | The plugin will be set up with the params (i.e. containing a \tt pin param) of the paired \l{Device}.
+            \li \b 10. | If something goes wrong during the setup return \l{DeviceManager::DeviceSetupStatusFailure}, otherwise \l{DeviceManager::DeviceSetupStatusSuccess}.
+            \li \b 11. | If the device setup succeded and the device is in the system, the \l{DeviceManager} will call the \l{DevicePlugin::postSetupDevice()}{postSetupDevice()} method.
         \endlist
     \endlist
 */

@@ -3,7 +3,13 @@
     \title Tutorial 4 - The alternative "Power Button"
     \brief This device demonstrates how a writable state works.
     \ingroup tutorials
-  
+
+    \section1 Topics
+    This tutorial will show you how to:
+    \list
+        \li \unicode{0x25B6} Implement a writable \l{State} (which can be manipulated by an \l{Action})
+    \endlist
+
     In the fourth tutorial you will see how a \e writable \l State works. We use the \l DeviceClass \b {"Power Button"} from the previouse \l{Tutorial 3 - The "Power Button" device}{Tutorial 3} for that and create a new one called \b {"Alternative Power Button"}. It does exactly the same like the \b {"Power Button"} except it will be created in a different way for a good reason.
 
     \section1 Add a new DeviceClass
@@ -42,7 +48,7 @@
 
     As you can see, there is only one \tt bool \l State which has the property \e {"writable"}. This property indicates, that this \l State is writable and we need an \l Action for doing that. You can find more details about this property in \l {The StateType definition} documentation.
 
-    We learnend in the previouse tutorial that a \l State will allways generate an \l Event when he changes his \e {value}. This \l Event has the same UUID as the \l State which generated the \l Event. The same thing happens with the \l Action if you make a \l State writable. The devicemanager defines a new \l ActionType which has the same UUID as the \l State which will be changed with the \l Action.
+    We learnend in the previouse tutorial that a \l State will allways generate an \l Event when he changes his \e {value}. This \l Event has the same UUID as the \l State which generated the \l Event. The same thing happens with the \l Action if you make a \l State writable. The device manager defines a new \l ActionType which has the same UUID as the \l State which will be changed with the \l Action.
 
     \tt {\l{StateTypeId} == \l{EventTypeId} == \l{ActionTypeId}}    
     

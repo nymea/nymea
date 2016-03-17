@@ -4,7 +4,12 @@
     \brief This tutorial shows you how to open, edit, build and load the first plugin.
     \ingroup tutorials
 
-    This first tutorial shows you how to open, edit, build and load the first plugin.
+    \section1 Topics
+    This first tutorial shows you how to:
+    \list
+        \li \unicode{0x25B6} Open and edit the project
+        \li \unicode{0x25B6} Build and load the first plugin.
+    \endlist
 
     \section1 Open the project
     Assuming you already have downloaded the \l{https://github.com/guh/plugin-templates}{plugin-templates} you can open the \tt {plugin-templates \unicode{0x2192} minimal \unicode{0x2192} minimal.pro} file with the Qt Creator.

@@ -38,7 +38,6 @@
                     \list
                         \li Allow only one \l{Device}
                         \li Implement the \l{DevicePlugin::deviceRemoved()}{deviceRemoved()} method
-                        \li Use \l{DevicePlugin}{Plugin} configurations
                         \li Use the \l{Coap}{CoAP} library
                     \endlist
             \endlist

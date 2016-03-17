@@ -34,7 +34,7 @@
     The guh daemon provides two API's:
     \list
         \li \l{JSON-RPC API}{JSON-RPC}
-        \li \l{https://github.com/guh/guh/wiki/REST-Api-documentation}{REST}
+        \li \l{https://github.com/guh/guh/wiki/REST-API}{REST}
     \endlist
 
     \section1 Write your own plugin

@@ -34,4 +34,6 @@ exampledirs = ..
 sourcedirs = ..
 sources.fileextensions = "*.cpp *.qdoc"
 
+Cpp.ignoredirectives = DECLARE_TYPE \
+                       DECLARE_OBJECT
 

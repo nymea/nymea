@@ -3,6 +3,8 @@
     \title Set up the build environment
     \brief This tutorial shows you how to set up the build environment for developing guh.
   
+    \b{\unicode{0x2192} \underline{\l{https://www.youtube.com/watch?v=7a_k0C1Ib1A}{Video for this tutorial}}}
+
     Assuming you are working on an Ubuntu system here are the steps how to set up the build environment. Basically you can choose your prefered SDK but all tutorials are based on the Qt Creator and we recommand to use that one. You can also use the Ubuntu SDK, which is basically a modified Qt Creator. 
     
     \note Please take care that you are using the Qt version from the system for building. The guh server will allways be built with the official Qt version for the appropriate system version. The plugin \underline{must} have the same version like the guh server.    

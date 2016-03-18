@@ -24,6 +24,7 @@
     \brief Describes a certain \l{State}.
 
     \ingroup guh-types
+    \ingroup rules
     \inmodule libguh
 
     An StateDescriptor describes a \l{State} in order to match it with a \l{guhserver::Rule}.

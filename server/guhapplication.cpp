@@ -18,6 +18,21 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::GuhApplication
+    \brief Application class of the guh server.
+
+    \ingroup core
+    \inmodule server
+
+    The \l{GuhApplication} is a subclass of the \{http://doc.qt.io/qt-5/qcoreapplication.html}{QCoreApplication}
+    and is responsable to catch system signals like SIGQUIT, SIGINT, SIGTERM, SIGHUP, SIGSEGV. This class
+    will provide a backtrace on a segmentation fault (SIGSEGV).
+
+
+    \sa GuhService
+*/
+
 #include "guhapplication.h"
 #include "loggingcategories.h"
 #include "guhcore.h"
@@ -150,6 +165,7 @@ static void catchUnixSignals(const std::vector<int>& quitSignals, const std::vec
 
 
 
+/*! Constructs a GuhApplication with the given argument count \a argc and argument vector \a argv. */
 GuhApplication::GuhApplication(int &argc, char **argv) :
     QCoreApplication(argc, argv)
 {

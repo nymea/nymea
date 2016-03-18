@@ -6,13 +6,40 @@
         \li \l{Set up the build environment}
         \li \l{Getting started}
         \li \l{The plugin JSON File}
+        \li \l{CreateMethods and SetupMethods}
         \li \l{Tutorials}
             \list
                 \li \l{Tutorial 1 - The "Minimal" plugin}
+                    \list
+                        \li Open and edit the project
+                        \li Build and load the first plugin.
+                    \endlist
                 \li \l{Tutorial 2 - The "Buttons" plugin}
+                    \list
+                        \li Start with a new \l{DevicePlugin}{Plugin}
+                        \li Implement an \l{Action}
+                        \li Implement an \l{Event}
+                    \endlist
                 \li \l{Tutorial 3 - The "Power Button" device}
+                    \list
+                        \li Implement a \l{State}
+                        \li Use \l{Param}{Params} in an \l{Event}
+                        \li Use \l{Param}{Params} in an \l{Action}
+                    \endlist
                 \li \l{Tutorial 4 - The alternative "Power Button"}
+                    \list
+                        \li Implement a writable \l{State} (which can be manipulated by an \l{Action})
+                    \endlist
                 \li \l{Tutorial 5 - The "Network Info" plugin}
+                    \list
+                        \li Use hardware resource \l{NetworkManager}
+                    \endlist
+                \li \l{Tutorial 6 - The "CoAP Client" plugin}
+                    \list
+                        \li Allow only one \l{Device}
+                        \li Implement the \l{DevicePlugin::deviceRemoved()}{deviceRemoved()} method
+                        \li Use the \l{Coap}{CoAP} library
+                    \endlist
             \endlist
     \endlist
 */

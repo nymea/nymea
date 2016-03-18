@@ -24,6 +24,7 @@
     \brief Holds the parameters for a \l{RuleAction}.
 
     \ingroup guh-types
+    \ingroup rules
     \inmodule libguh
 
     A RuleActionParam allows rules to take over an \l{Event} parameter into a rule

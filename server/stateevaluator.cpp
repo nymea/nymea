@@ -256,7 +256,6 @@ bool StateEvaluator::isValid() const
                 }
             }
         }
-
     }
 
     if (m_operatorType == Types::StateOperatorOr) {

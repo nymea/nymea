@@ -1,12 +1,3 @@
-/ *!
-    \legalese
-
-    Copyright 2015 Simon Stürz <simon.stuerz@guh.guru>.
-    
-    Guh is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2 of the License. Guh is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with guh. If not, see \l{http://www.gnu.org/licenses/}.
-    \endlegalese
-* /
-
 /*!
     \page plugin-json.html
     \title The plugin JSON File
@@ -29,7 +20,6 @@
     \endlist
 
     The \tt plugininfo.h has to be included in the main plugin \tt cpp file (\tt{deviceplugin<\b pluginName>.cpp}). The \tt extern-plugininfo.h can be included in other classes/files of the plugin to get the extern definitions of the ID's and the logging category. 
-
 
 
     \section1 Basic structure
@@ -59,39 +49,38 @@
         }
     \endcode 
     
-    \warning For each new Object which has an \e "uuid" value, you need to generate a new UUID. The easyest way to do this is using the command \tt uuidgen:
+    \warning For each new object which has an \e "uuid" value, you need to generate a new UUID. The easyest way to do this is using the command \tt uuidgen:
 
     \code
-    $ sudo apt-get install uuid-runtime
+        $ sudo apt-get install uuid-runtime
     \endcode
 
     \code
-    $ uuidgen
-    cd938452-213d-432f-ae7a-3ef3c474fe99
+        $ uuidgen
+        cd938452-213d-432f-ae7a-3ef3c474fe99
     \endcode
-
-
 
 
     \section1 Writing the plugin JSON file 
 
     \section2 The Plugin definition
-    The parameters of the first Object (\e name, \e idName, \e id and \e vendors) describe the properties of the plugin it self. 
+    The parameters of the first object (\e name, \e idName, \e id and \e vendors) describe the properties of the plugin it self.
     
     \code
-    {
-        "name": "Name of the plugin",
-        "idName": "PluginName",
-        "id": "uuid",
-        "vendors": [
-            {
+        {
+            "name": "Name of the plugin",
+            "idName": "PluginName",
+            "id": "uuid",
+            "paramTypes": [
                 ...
-            }
-        ]
-    }
+            ],
+            "vendors": [
+                {
+                    ...
+                }
+            ]
+        }
     \endcode
-
-    \note All parameters \underline{must} be definend! 
 
     \list
         \li - \underline{\e name:} The visible name of the plugin \unicode{0x2192} \l{DevicePlugin::pluginName()}
@@ -99,11 +88,12 @@
 
         \code
             qCdebug(dcExample) << "Hello world!"; 
-            qCWarning(dcExample) << "Warning the world!"; 
+            qCWarning(dcExample) << "Warning the world!";
         \endcode
         
         Please start allways with a capital letter i.e. \tt {"idName": "Example"}. The logging category allowes you to categorise the debug output. It can be configured with the \tt -d argument of guhd (see \tt {$ man guhd}).
-        \li - \underline{\e id:} The actual uuid (\l{PluginId}) of the plugin \unicode{0x2192} \l{DevicePlugin::pluginId()}   
+        \li - \underline{\e id:} The actual uuid (\l{PluginId}) of the plugin \unicode{0x2192} \l{DevicePlugin::pluginId()}
+        \li - \underline{\e paramTypes:} Optionl: A list of \l{ParamType}{ParamTypes} which define the paramters of this plugin \unicode{0x2192} \l{DevicePlugin::configuration()} (see section "\l{The ParamType definition}").
         \li - \underline{\e vendors:} The list of \l{Vendor}{Vendors} objects (see section "\l{The Vendor definition}");
     \endlist
 
@@ -151,10 +141,10 @@
                             "idName": "deviceClassName",
                             "deviceClassId": "uuid",
                             "basicTags": [
-                                    "BasicTag"
+                                "BasicTag"
                             ],
                             "createMethods": [
-                                    "CreateMethod"
+                                "CreateMethod"
                             ],
                             "setupMethod": "SetupMethod",
                             "pairingInfo": "Information how to pair the device.",
@@ -201,6 +191,7 @@
             \li \e enterPin \unicode{0x2192} \l{DeviceClass::SetupMethodEnterPin}
             \li \e pushButton \unicode{0x2192} \l{DeviceClass::SetupMethodPushButton}
         \endlist
+        \note For more information please take a look at \l{CreateMethods and SetupMethods} documentation.
         \li - \underline{\e pairingInfo:} The \l{DeviceClass::pairingInfo()}{pairingInfo} will inform the user how to pair the device \unicode{0x2192} \l{DeviceClass::setupMethod()}. This parameter will only be used for \l{DeviceClass::SetupMethodDisplayPin}{DisplayPin} and \l{DeviceClass::SetupMethodEnterPin}{EnterPin} and \l{DeviceClass::SetupMethodPushButton}{PushButton}. Example: "Please press the button on the device before continue."
         \li - \underline{\e discoveryParamTypes:} A list of \l{ParamType}{ParamTypes} which will be needed for discovering a device \unicode{0x2192} \l{DeviceClass::discoveryParamTypes()}. This parameter will only be used for devices with the \l{DeviceClass::CreateMethodDiscovery}{CreateMethodDiscovery} (see section "\l{The ParamType definition}").
         \li - \underline{\e paramTypes:} A list of \l{ParamType}{ParamTypes} which define the paramters of a device \unicode{0x2192} \l{DeviceClass::paramTypes()} (see section "\l{The ParamType definition}").
@@ -296,7 +287,8 @@ A \l{StateType} has following parameters:
         \li - \underline{\e idName:} This parameter will be used to define the StateTypeId variable named <idName>StateTypeId in the plugininfo.h, so it can be used in the code.
         \li - \underline{\e id:} The actual uuid (\l{StateTypeId}) of the \l{StateType} \unicode{0x2192} \l{StateType::id()}.
         \li - \underline{\e type:} The data type of this state \unicode{0x2192} \l{StateType::type()}.  
-        \li - \underline{\e unit:} With this parameter you can specify the unit of the state value i.e. \unicode{0x00B0}C \unicode{0x2192} DegreeCelsius.
+        \li - \underline{\e unit:} With this parameter you can specify the unit of the state value i.e. \unicode{0x00B0}C \unicode{0x2192} DegreeCelsius (\l{Types::Unit}).
+        \li - \underline{\e possibleValues:} Gives you the possibility to define a list of possible values which this state can have. This allowes a user to create a rule based on a state and define only values which are possible. This is typically used for strings i.e. ["Loading", "Installing", "Removing"].
         \li - \underline{\e defaultValue:} The state will be initialized with this value.
         \li - \underline{\e writable:} If you define the "\e writable : true" value an \l{ActionType} will be created to set the \l{State} value. The created \l{ActionType} has the same uuid (\l{ActionTypeId}) like the \l{StateType} uuid and will be named "set <stateName>". The \l{ParamType} of the created \l{ActionType} will have the same values in the \e allowedValues list as the \l{StateType} in the \e possibleValues list. Also the \e minValue / \e maxValue will be taken over from the \l{StateType}.
 
@@ -314,7 +306,7 @@ This mechanism was created to ensure that the \l{EventType} and \l{ActionType} w
                 "id": "9bc84381-785f-46bf-94c8-6e35116f50d3",
                 "idName": "volume",
                 "name": "volume",
-                "unit": "UnitPercentage",
+                "unit": "Percentage",
                 "type": "int",
                 "minValue": 0,
                 "maxValue": 100,
@@ -333,7 +325,7 @@ This mechanism was created to ensure that the \l{EventType} and \l{ActionType} w
                         "type": "int",
                         "maxValue": 100,
                         "minValue": 0,
-                        "unit": "UnitPercentage"
+                        "unit": "Percentage"
                     }
                 ]
             }

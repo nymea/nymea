@@ -3,6 +3,7 @@
     \title Tutorial 1 - The "Minimal" plugin
     \brief This tutorial shows you how to open, edit, build and load the first plugin.
     \ingroup tutorials
+    \contentspage {Tutorials}
 
     \section1 Topics
     This first tutorial shows you how to:
@@ -141,5 +142,4 @@
     \endlist
     
     Now you can take a look at \l{Tutorial 2 - The "Buttons" plugin}.
-
 */

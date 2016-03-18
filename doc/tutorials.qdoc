@@ -1,7 +1,10 @@
 /*!
     \page tutorials.html
     \title Tutorials
-    
+    \contentspage {Tutorials}
+    \nextpage {Tutorial 1 - The "Minimal" plugin}
+    \previouspage {Write your own plugin}
+
     In order to getting started with your own \l DevicePlugin it is recommanded to walk trough following tutorials to understand how the mechanism works:      
 
      \annotatedlist tutorials

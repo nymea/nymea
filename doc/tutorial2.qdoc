@@ -458,7 +458,7 @@
         \li Start guh-cli and add the a new \b {"Simple Button"} devcice. Give an appropriate name like \b {Test button}.
         \li Use guh-cli to execute the \b {press the button} action: 
 
-            \tt "Devices" \unicode{0x2192} \tt "Execute an action" \unicode{0x2192} \tt {"Your device name (Simple Button)"} \unicode{0x2192} \tt {press the button}
+            \tt "Devices" \unicode{0x2192} \tt {"Execute an action"} \unicode{0x2192} \tt {"Your device name (Simple Button)"} \unicode{0x2192} \tt {press the button}
 
     \endlist
     

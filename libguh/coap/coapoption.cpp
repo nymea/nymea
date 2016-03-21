@@ -34,31 +34,20 @@
     Represents the known CoAP options according to \l{https://tools.ietf.org/html/rfc7252#section-3.1}{RFC7252}.
 
     \value IfMatch
-
     \value UriHost
-
     \value ETag
-
     \value IfNoneMatch
-
     \value Observe
         \l{https://tools.ietf.org/html/rfc7641}
+
     \value UriPort
-
     \value LocationPath
-
     \value UriPath
-
     \value ContentFormat
-
     \value MaxAge
-
     \value UriQuery
-
     \value Accept
-
     \value LocationQuery
-
     \value Block2
         \l{https://tools.ietf.org/html/draft-ietf-core-block-18}
 
@@ -66,24 +55,33 @@
         \l{https://tools.ietf.org/html/draft-ietf-core-block-18}
 
     \value ProxyUri
-
     \value ProxyScheme
-
     \value Size1
 
 */
+
+/*! \fn CoapOption::CoapOption();
+    Constructs a \l{CoapOption}.
+*/
+
+/*! \fn CoapOption::CoapOption(const Option &option, const QByteArray &data);
+    Constructs a \l{CoapOption} with the given \a option and option \a data.
+*/
+
+/*! \fn void CoapOption::setOption(const Option &option);
+    Sets the \l{CoapOption::Option} of this CoapOption to the given \a option.
+*/
+
 
 #include "coapoption.h"
 
 #include <QMetaEnum>
 
-/*! Constructs a CoapOption. */
 CoapOption::CoapOption()
 {
 
 }
 
-/*! Constructs a CoapOption with the given \a option and option \a data. */
 CoapOption::CoapOption(const CoapOption::Option &option, const QByteArray &data) :
     m_option(option),
     m_data(data)
@@ -91,7 +89,6 @@ CoapOption::CoapOption(const CoapOption::Option &option, const QByteArray &data)
 
 }
 
-/*! Sets the \l{CoapOption::Option} of this CoapOption to the given \a option. */
 void CoapOption::setOption(const CoapOption::Option &option)
 {
     m_option = option;

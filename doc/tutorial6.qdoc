@@ -1,0 +1,434 @@
+/*!
+    \page tutorial6.html
+    \title Tutorial 6 - The "CoAP Client" plugin
+    \brief The plugin shows you how to use the CoAP lib
+    \ingroup tutorials
+    
+    \section1 Topics
+    This tutorial will show you how to:
+    \list
+        \li \unicode{0x25B6} Allow only one \l{Device}
+        \li \unicode{0x25B6} Implement the \l{DevicePlugin::deviceRemoved()}{deviceRemoved()} method
+        \li \unicode{0x25B6} Use the \l{Coap}{CoAP} library
+    \endlist
+
+    This tutorial shows you how to write a \l{Coap}{CoAP} plugin and how the plugin configuration work. The plugin it self has no practical purpose but shows some concepts of CoAP and plugin development.
+
+    \section1 The plugin source code
+
+    \section2 networkinfo.pro
+
+    \code
+        include(plugins.pri)
+
+        TARGET = guh_deviceplugincoapclient
+
+        message(============================================)
+        message("Qt version: $$[QT_VERSION]")
+        message("Building $$deviceplugin$${TARGET}.so")
+
+        SOURCES += \
+            deviceplugincoapclient.cpp \
+
+        HEADERS += \
+            deviceplugincoapclient.h \
+
+    \endcode
+
+    \section2 devicepluginnetworkinfo.json
+
+    \code
+        {
+            "name": "Coap Client",
+            "idName": "CoapClient",
+            "id": "9ecadcbb-8699-41c2-a2e3-fd51a1faf1a1",
+            "paramTypes": [
+                {
+                    "name": "url",
+                    "type": "QString",
+                    "inputType": "TextLine",
+                    "defaultValue": "coap://vs0.inf.ethz.ch:5683"
+                }
+            ],
+            "vendors": [
+                {
+                    "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6",
+                    "name": "guh",
+                    "idName": "guh",
+                    "deviceClasses": [
+                        {
+                            "deviceClassId": "69dcccbd-a66a-4c5b-8921-2fb86c4c4299",
+                            "idName": "info",
+                            "name": "Coap Client",
+                            "createMethods": ["user"],
+                            "basicTags": [
+                                "Service",
+                                "Sensor",
+                                "Actuator"
+                            ],
+                            "stateTypes": [
+                                {
+                                    "id": "b8433a82-cf83-424f-b4a2-3f6507405d6c",
+                                    "idName": "notifications",
+                                    "name": "notification",
+                                    "type": "bool",
+                                    "defaultValue": false,
+                                    "writable": true
+                                }
+                            ],
+                            "actionTypes": [
+                                {
+                                    "id": "9aa31838-b62f-43b3-bdcd-8165840b5edf",
+                                    "name": "upload message",
+                                    "idName": "upload",
+                                    "paramTypes": [
+                                        {
+                                            "name": "message",
+                                            "type": "QString",
+                                            "defaultValue": "Hallo world!"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "eventTypes": [
+                                {
+                                    "name": "time changed",
+                                    "idName": "time",
+                                    "id": "44513802-138e-42f8-86a6-9edd4df77535",
+                                    "paramTypes": [
+                                        {
+                                            "name": "time",
+                                            "type": "QString"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    \endcode
+
+    \section2 devicepluginnetworkinfo.h
+
+    \code
+        #ifndef DEVICEPLUGINCOAPCLIENT_H
+        #define DEVICEPLUGINCOAPCLIENT_H
+
+        #include "devicemanager.h"
+        #include "plugin/deviceplugin.h"
+        #include "coap/coap.h"
+
+        #include <QHash>
+        #include <QNetworkReply>
+
+        class DevicePluginCoapClient : public DevicePlugin
+        {
+            Q_OBJECT
+
+            Q_PLUGIN_METADATA(IID "guru.guh.DevicePlugin" FILE "deviceplugincoapclient.json")
+            Q_INTERFACES(DevicePlugin)
+
+        public:
+            explicit DevicePluginCoapClient();
+
+            DeviceManager::HardwareResources requiredHardware() const override;
+            DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
+            void deviceRemoved(Device *device) override;
+
+            DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
+
+        private:
+            QPointer<Device> m_device;
+            QPointer<Coap> m_coap;
+
+            // Replies from coap
+            QHash<CoapReply *, Device *> m_discoverReplies;
+            QHash<CoapReply *, Device *> m_notificationEnableReplies;
+            QHash<CoapReply *, Device *> m_notificationDisableReplies;
+            QList<CoapReply *> m_uploadReplies;
+
+            QHash< CoapReply *, ActionId> m_asyncActions;
+
+        private slots:
+            void onReplyFinished(CoapReply *reply);
+            void onNotificationReceived(const CoapObserveResource &resource, const int &notificationNumber, const QByteArray &payload);
+
+        };
+
+        #endif // DEVICEPLUGINNETWORKINFO_H
+    \endcode
+
+    \section2 devicepluginnetworkinfo.cpp
+
+    \code
+        #include "deviceplugincoapclient.h"
+        #include "plugininfo.h"
+
+        #include <QJsonDocument>
+
+        #include "coap/corelinkparser.h"
+
+        // Note: You can find the documentation for this code here -> http://dev.guh.guru/write-plugins.html
+
+        // The constructor of this device plugin.
+        DevicePluginCoapClient::DevicePluginCoapClient()
+        {
+        }
+
+        DeviceManager::HardwareResources DevicePluginCoapClient::requiredHardware() const
+        {
+            return DeviceManager::HardwareResourceNone;
+        }
+
+        DeviceManager::DeviceSetupStatus DevicePluginCoapClient::setupDevice(Device *device)
+        {
+            // Check if we already have a coap client device
+            if (!myDevices().isEmpty()) {
+                qCWarning(dcCoapClient) << "There is already a configured coap client device";
+                return DeviceManager::DeviceSetupStatusFailure;
+            }
+
+            qCDebug(dcCoapClient) << "Setting up a new device:" << device->name() << device->params();
+
+            // Verify the given URL
+            QUrl url(device->paramValue("url").toString());
+            if (url.scheme() != "coap") {
+                qCWarning(dcCoapClient) << "Invalid URL scheme" << url.scheme() << " != " << "coap";
+                return DeviceManager::DeviceSetupStatusFailure;
+            }
+
+            m_device = device;
+
+            // Create new CoAP client if there isn't one yet
+            if (m_coap.isNull()) {
+                m_coap = new Coap(this);
+                connect(m_coap, &Coap::replyFinished, this, &DevicePluginCoapClient::onReplyFinished);
+                connect(m_coap, &Coap::notificationReceived, this, &DevicePluginCoapClient::onNotificationReceived);
+            }
+
+            // Discover the CoAP server
+            url.setPath("/.well-known/core");
+            CoapReply *reply = m_coap->get(CoapRequest(url));
+
+            // Check imediatly if the there occured any error
+            if (reply->error() != CoapReply::NoError) {
+                qCWarning(dcCoapClient) << "Could not discover CoAP server:" << reply->errorString();
+                reply->deleteLater();
+                m_coap->deleteLater();
+                return DeviceManager::DeviceSetupStatusFailure;
+            }
+
+            // Store the reply and device until we get our asynchronous response
+            m_discoverReplies.insert(reply, device);
+
+            // Tell the DeviceManager that the setup result will be communicated later
+            return DeviceManager::DeviceSetupStatusAsync;
+        }
+
+        void DevicePluginCoapClient::deviceRemoved(Device *device)
+        {
+            // Prevent the unused variable warning
+            Q_UNUSED(device)
+
+            // Delete the CoAP socket if not longer needed
+            m_coap->deleteLater();
+        }
+
+        // This method will be called whenever a client or the rule engine wants to execute an action for the given device.
+        DeviceManager::DeviceError DevicePluginCoapClient::executeAction(Device *device, const Action &action)
+        {
+            qCDebug(dcCoapClient) << "Execute action" << action.id() << action.params();
+
+            // check if the requested action is our "upload" action ...
+            if (action.actionTypeId() == notificationsActionTypeId) {
+
+                // observe resource (enable notifications)
+                QUrl url(device->paramValue("url").toString());
+                url.setPath(url.path().append("/obs"));
+
+                if (action.param("notification").value().toBool()) {
+                    qCDebug(dcCoapClient) << "Enable notification on resource" << url.toString();
+                    CoapReply *reply = m_coap->enableResourceNotifications(CoapRequest(url));
+                    m_asyncActions.insert(reply, action.id());
+                    m_notificationEnableReplies.insert(reply, device);
+                } else {
+                    qCDebug(dcCoapClient) << "Disable notification on resource" << url.toString();
+                    CoapReply *reply = m_coap->disableNotifications(CoapRequest(url));
+                    m_asyncActions.insert(reply, action.id());
+                    m_notificationDisableReplies.insert(reply, device);
+                }
+
+                // Tell the DeviceManager that this is an async action and the
+                // result of the execution will be emitted later.
+                return DeviceManager::DeviceErrorAsync;
+
+            } else if (action.actionTypeId() == uploadActionTypeId) {
+
+                // Define the URL for uploading the message (POST)
+                QUrl url(device->paramValue("url").toString());
+                url.setPath(url.path().append("/test"));
+
+                // Upload the message (POST)
+                CoapReply *reply = m_coap->post(CoapRequest(url), action.param("message").value().toString().toUtf8());
+                m_uploadReplies.append(reply);
+                m_asyncActions.insert(reply, action.id());
+
+                // Tell the DeviceManager that this is an async action and the
+                // result of the execution will be emitted later.
+                return DeviceManager::DeviceErrorAsync;
+            }
+
+            // ...otherwise the ActionType does not exist
+            return DeviceManager::DeviceErrorActionTypeNotFound;
+        }
+
+        // This slot will be called whenever a reply from the CoAP socket has finished
+        void DevicePluginCoapClient::onReplyFinished(CoapReply *reply)
+        {
+            // Now check which reply this was by checking in which Hash it can be found
+            if (m_discoverReplies.keys().contains(reply)) {
+                Device *device = m_discoverReplies.take(reply);
+
+                // Verify there where no reply errors (transport layer)
+                if (reply->error() != CoapReply::NoError) {
+                    qCWarning(dcCoapClient) << "CoAP resource discovery reply error" << reply->errorString();
+                    reply->deleteLater();
+                    // Something went wrong during the discovery. Finish the setup with error.
+                    emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusFailure);
+                    return;
+                }
+
+                // Verify we have the right status code (server response)
+                if (reply->statusCode() != CoapPdu::Content) {
+                    qCWarning(dcCoapClient) << "CoAP discovery status code:" << reply;
+                    reply->deleteLater();
+                    // Something went wrong during the discovery. Finish the setup with error.
+                    emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusFailure);
+                    return;
+                }
+
+                qCDebug(dcCoapClient) << "Discovered successfully the resources";
+
+                // Print the CoRE links we got from the server resource discovery
+                CoreLinkParser parser(reply->payload());
+                foreach (const CoreLink &link, parser.links()) {
+                    qCDebug(dcCoapClient) << link << endl;
+                }
+
+                // Tell the device manager that the device setup finished successfully
+                emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusSuccess);
+
+            } else if (m_notificationEnableReplies.keys().contains(reply)) {
+                Device *device = m_notificationEnableReplies.take(reply);
+                ActionId actionId = m_asyncActions.take(reply);
+
+                // Verify there where no reply errors (transport layer)
+                if (reply->error() != CoapReply::NoError) {
+                    qCWarning(dcCoapClient) << "CoAP enable observe resource reply error" << reply->errorString();
+                    // Something went wrong. Tell the devicemanager that the action finished with error.
+                    emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorHardwareFailure);
+                    reply->deleteLater();
+                    return;
+                }
+
+                // Verify we have the right status code (server response)
+                if (reply->statusCode() != CoapPdu::Content) {
+                    qCWarning(dcCoapClient) << "CoAP enable observe status code:" << reply;
+                    // Something went wrong. Tell the devicemanager that the action finished with error.
+                    emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorHardwareFailure);
+                    reply->deleteLater();
+                    return;
+                }
+
+                qCDebug(dcCoapClient) << "Enabled successfully notifications" << reply;
+
+                // Set the corresping state
+                device->setStateValue(notificationsStateTypeId, true);
+
+                // Tell the device manager that the action execution finished successfully
+                emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorNoError);
+
+            } else if (m_notificationDisableReplies.keys().contains(reply)) {
+                Device *device = m_notificationDisableReplies.take(reply);
+                ActionId actionId = m_asyncActions.take(reply);
+
+                // Verify there where no reply errors (transport layer)
+                if (reply->error() != CoapReply::NoError) {
+                    qCWarning(dcCoapClient) << "CoAP disable observe resource reply error" << reply->errorString();
+                    // Something went wrong. Tell the devicemanager that the action finished with error.
+                    emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorHardwareFailure);
+                    reply->deleteLater();
+                    return;
+                }
+
+                // Verify we have the right status code (server response)
+                if (reply->statusCode() != CoapPdu::Content) {
+                    qCWarning(dcCoapClient) << "CoAP disable observe status code:" << reply;
+                    // Something went wrong. Tell the devicemanager that the action finished with error.
+                    emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorHardwareFailure);
+                    reply->deleteLater();
+                    return;
+                }
+
+                qCDebug(dcCoapClient) << "Disabled successfully notifications" << reply;
+
+                // Set the corresping state
+                device->setStateValue(notificationsStateTypeId, false);
+
+                // Tell the device manager that the action execution finished successfully
+                emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorNoError);
+
+            } else if (m_uploadReplies.contains(reply)) {
+                ActionId actionId = m_asyncActions.take(reply);
+
+                // Verify there where no reply errors (transport layer)
+                if (reply->error() != CoapReply::NoError) {
+                    qCWarning(dcCoapClient) << "CoAP upload reply error" << reply->errorString();
+                    // Something went wrong. Tell the devicemanager that the action finished with error.
+                    emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorHardwareFailure);
+                    reply->deleteLater();
+                    return;
+                }
+
+                // Verify we have the right status code (server response)
+                if (reply->statusCode() != CoapPdu::Created) {
+                    qCWarning(dcCoapClient) << "CoAP upload status code:" << reply;
+                    // Something went wrong. Tell the devicemanager that the action finished with error.
+                    emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorHardwareFailure);
+                    reply->deleteLater();
+                    return;
+                }
+
+                qCDebug(dcCoapClient) << "Uploaded message successfully" << reply;
+
+                // Tell the device manager that the action execution finished successfully
+                emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorNoError);
+
+            }
+
+            // Always make sure the reply will be deleted
+            reply->deleteLater();
+        }
+
+        // This method will be called if the CoAP socket received a notification from an observed resource
+        void DevicePluginCoapClient::onNotificationReceived(const CoapObserveResource &resource, const int &notificationNumber, const QByteArray &payload)
+        {
+            qCDebug(dcCoapClient) << "Got notification from observed resource" << notificationNumber << resource.url().path() << endl << payload;
+
+            // Create the params for the event
+            ParamList paramList;
+            paramList.append(Param("time", payload));
+
+            // Tell the device manager we got an event
+            emitEvent(Event(timeEventTypeId, m_device->id(), paramList));
+        }
+    \endcode
+
+    \section1 Test the plugin
+
+
+*/ 
+
+

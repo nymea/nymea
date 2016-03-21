@@ -119,6 +119,7 @@ void DevicePluginAwattar::deviceRemoved(Device *device)
 {
     Q_UNUSED(device)
     qDeleteAll(m_heatPumps);
+    m_heatPumps.clear();
     m_device = 0;
 }
 
@@ -393,20 +394,21 @@ void DevicePluginAwattar::processPumpSearchData(const QByteArray &data)
             continue;
 
         // check if we already created this heat pump
-        if (heatPumpExists(pumpAddress)) {
-            qCWarning(dcAwattar) << "Could not read pump address" << line;
+        if (heatPumpExists(pumpAddress))
             continue;
-        }
 
         qCDebug(dcAwattar) << "New heat pump found at" << pumpAddress.toString();
         QPointer<HeatPump> pump = new HeatPump(pumpAddress, this);
-        connect(pump, &HeatPump::reachableChanged, this, &DevicePluginAwattar::onHeatPumpReachableChanged);
+        connect(pump.data(), SIGNAL(reachableChanged()), this, SLOT(onHeatPumpReachableChanged()));
         m_heatPumps.append(pump);
     }
 }
 
 void DevicePluginAwattar::setSgMode(const int &sgMode)
 {
+    if (m_device.isNull())
+        return;
+
     switch (sgMode) {
     case 1:
         m_device->setStateValue(sgModeStateTypeId, "1 - Off");
@@ -425,7 +427,10 @@ void DevicePluginAwattar::setSgMode(const int &sgMode)
         return;
     }
 
-    foreach (HeatPump *pump, m_heatPumps) {
+    foreach (QPointer<HeatPump> pump, m_heatPumps) {
+        if (pump.isNull())
+            continue;
+
         pump->setSgMode(sgMode);
     }
 }

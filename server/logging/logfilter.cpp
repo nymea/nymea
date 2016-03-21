@@ -36,11 +36,13 @@
 
 namespace guhserver {
 
+/*! Constructs a new \l{LogFilter}.*/
 LogFilter::LogFilter()
 {
 
 }
 
+/*! Returns the database query string for this \l{LogFilter}.*/
 QString LogFilter::queryString() const
 {
     if (isEmpty()) {
@@ -83,6 +85,7 @@ QString LogFilter::queryString() const
     return query;
 }
 
+/*! Add a new time filter with the given \a startDate and \a endDate. */
 void LogFilter::addTimeFilter(const QDateTime &startDate, const QDateTime &endDate)
 {
     QPair<QDateTime, QDateTime> timeFilter(startDate, endDate);
@@ -90,77 +93,91 @@ void LogFilter::addTimeFilter(const QDateTime &startDate, const QDateTime &endDa
         m_timeFilters.append(timeFilter);
 }
 
+/*! Returns the list of time filters from this \l{LogFilter}. */
 QList<QPair<QDateTime, QDateTime> > LogFilter::timeFilters() const
 {
     return m_timeFilters;
 }
 
+/*! Add a new \a source to this \l{LogFilter}. */
 void LogFilter::addLoggingSource(const Logging::LoggingSource &source)
 {
     if (!m_sources.contains(source))
         m_sources.append(source);
 }
 
+/*! Returns the list of logging sources from this \l{LogFilter}. */
 QList<Logging::LoggingSource> LogFilter::loggingSources() const
 {
     return m_sources;
 }
 
+/*! Add a new \a level to this \l{LogFilter}. */
 void LogFilter::addLoggingLevel(const Logging::LoggingLevel &level)
 {
     if (!m_levels.contains(level))
         m_levels.append(level);
 }
 
+/*! Returns the list of logging levels from this \l{LogFilter}. */
 QList<Logging::LoggingLevel> LogFilter::loggingLevels() const
 {
     return m_levels;
 }
 
+/*! Add a new \a eventType to this \l{LogFilter}. */
 void LogFilter::addLoggingEventType(const Logging::LoggingEventType &eventType)
 {
     if (!m_eventTypes.contains(eventType))
         m_eventTypes.append(eventType);
 }
 
+/*! Returns the list of event types from this \l{LogFilter}. */
 QList<Logging::LoggingEventType> LogFilter::loggingEventTypes() const
 {
     return m_eventTypes;
 }
 
+/*! Add a new \a typeId to this \l{LogFilter}. */
 void LogFilter::addTypeId(const QUuid &typeId)
 {
     if (!m_typeIds.contains(typeId))
         m_typeIds.append(typeId);
 }
 
+/*! Returns the list of type id's from this \l{LogFilter}. */
 QList<QUuid> LogFilter::typeIds() const
 {
     return m_typeIds;
 }
 
+/*! Add a new \a deviceId to this \l{LogFilter}. */
 void LogFilter::addDeviceId(const DeviceId &deviceId)
 {
     if (!m_deviceIds.contains(deviceId))
         m_deviceIds.append(deviceId);
 }
 
+/*! Returns the list of device id's from this \l{LogFilter}. */
 QList<DeviceId> LogFilter::deviceIds() const
 {
     return m_deviceIds;
 }
 
+/*! Add a new \a value to this \l{LogFilter}. */
 void LogFilter::addValue(const QString &value)
 {
     if (!m_values.contains(value))
         m_values.append(value);
 }
 
+/*! Returns the list of values from this \l{LogFilter}. */
 QList<QString> LogFilter::values() const
 {
     return m_values;
 }
 
+/*! Returns true if this \l{LogFilter} is empty. */
 bool LogFilter::isEmpty() const
 {
     return m_timeFilters.isEmpty() &&

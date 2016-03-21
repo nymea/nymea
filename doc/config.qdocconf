@@ -5,8 +5,8 @@ description = Gear up your Home!
 
 dita.metadata.default.author      = Simon Stürz
 dita.metadata.default.permissions = all
-dita.metadata.default.publisher   = guh
-dita.metadata.default.copyryear = 2015
+dita.metadata.default.publisher   = guh GmbH
+dita.metadata.default.copyryear = 2016
 dita.metadata.default.copyrholder = Simon Stürz
 dita.metadata.default.audience = programmer
 
@@ -34,4 +34,6 @@ exampledirs = ..
 sourcedirs = ..
 sources.fileextensions = "*.cpp *.qdoc"
 
+Cpp.ignoredirectives = DECLARE_TYPE \
+                       DECLARE_OBJECT
 

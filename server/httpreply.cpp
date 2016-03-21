@@ -111,9 +111,23 @@
     This signal is emitted when this async \l{HttpReply} is finished.
 */
 
+/*! \fn guhserver::HttpReply::HttpReply(QObject *parent);
+    Construct an empty \l{HttpReply} with the given \a parent.
+*/
+
+/*! \fn guhserver::HttpReply::HttpReply(const HttpStatusCode &statusCode, const Type &type, QObject *parent);
+    Construct a \l{HttpReply} with the given \a statusCode, \a type and \a parent.
+*/
+
+/*! \fn void guhserver::HttpReply::setHttpStatusCode(const HttpStatusCode &statusCode);
+    Set the \l{HttpStatusCode} of this \l{HttpReply} to the given \a statusCode.
+*/
+
 /*! \fn QDebug guhserver::operator<< (QDebug debug, const HttpReply &httpReply);
     Writes the given \l{HttpReply} \a httpReply to the given \a debug. This method gets used just for debugging.
 */
+
+
 
 #include "httpreply.h"
 
@@ -123,7 +137,6 @@
 
 namespace guhserver {
 
-/*! Construct an empty \l{HttpReply} with the given \a parent. */
 HttpReply::HttpReply(QObject *parent) :
     QObject(parent),
     m_statusCode(HttpReply::Ok),
@@ -148,7 +161,6 @@ HttpReply::HttpReply(QObject *parent) :
     packReply();
 }
 
-/*! Construct a \l{HttpReply} with the given \a statusCode, \a type and \a parent. */
 HttpReply::HttpReply(const HttpReply::HttpStatusCode &statusCode, const HttpReply::Type &type, QObject *parent):
     QObject(parent),
     m_statusCode(statusCode),
@@ -172,9 +184,6 @@ HttpReply::HttpReply(const HttpReply::HttpStatusCode &statusCode, const HttpRepl
     packReply();
 }
 
-/*! Set the \l{HttpStatusCode} of this \l{HttpReply} to the given \a statusCode.
-  \sa httpStatusCode()
-*/
 void HttpReply::setHttpStatusCode(const HttpReply::HttpStatusCode &statusCode)
 {
     m_statusCode = statusCode;

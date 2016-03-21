@@ -24,7 +24,7 @@ HTML.postpostheader = \
 HTML.footer = \
     "<div class=\"footer\">\n" \
     "    <p>\n" \
-    "      <acronym title=\"Copyright\">&copy;</acronym> 2013-2015 guh. All rights reserved.  <a href=\"license.html\">License</a>" \
+    "      <acronym title=\"Copyright\">&copy;</acronym> 2013-2016 guh GmbH. All rights reserved.  <a href=\"license.html\">License</a>" \
     "    </p>\n" \
     "</div>\n" \
 

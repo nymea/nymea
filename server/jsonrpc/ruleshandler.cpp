@@ -32,6 +32,26 @@
     \sa RuleEngine, JsonHandler, JsonRPCServer
 */
 
+/*! \fn void guhserver::RulesHandler::RuleRemoved(const QVariantMap &params);
+    This signal is emitted to the API notifications when a \l{Rule} was removed.
+    The \a params contain the map for the notification.
+*/
+
+/*! \fn void guhserver::RulesHandler::RuleAdded(const QVariantMap &params);
+    This signal is emitted to the API notifications when a \l{Rule} was added.
+    The \a params contain the map for the notification.
+*/
+
+/*! \fn void guhserver::RulesHandler::RuleActiveChanged(const QVariantMap &params);
+    This signal is emitted to the API notifications when a \l{Rule} has changed the active status.
+    The \a params contain the map for the notification.
+*/
+
+/*! \fn void guhserver::RulesHandler::RuleConfigurationChanged(const QVariantMap &params);
+    This signal is emitted to the API notifications when a \l{Rule} has changed the configuration.
+    The \a params contain the map for the notification.
+*/
+
 #include "ruleshandler.h"
 #include "guhcore.h"
 #include "ruleengine.h"
@@ -41,6 +61,7 @@
 
 namespace guhserver {
 
+/*! Constructs a new \l{RulesHandler} with the given \a parent. */
 RulesHandler::RulesHandler(QObject *parent) :
     JsonHandler(parent)
 {
@@ -173,6 +194,7 @@ RulesHandler::RulesHandler(QObject *parent) :
     connect(GuhCore::instance(), &GuhCore::ruleConfigurationChanged, this, &RulesHandler::ruleConfigurationChangedNotification);
 }
 
+/*! Returns the name of the \l{RulesHandler}. In this case \b Rules.*/
 QString RulesHandler::name() const
 {
     return "Rules";

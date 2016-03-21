@@ -7,9 +7,15 @@
 
     In the second tutorial we make our own first plugin with the name \b {"Buttons"}. We will use this name for the naming concentions of the filenames. 
     
-    This plugin will show you how to implement \l{Action}{Actions}.
+    \section1 Topics
+    This tutorial will show you how to:
+    \list
+        \li \unicode{0x25B6} Start with a new \l{DevicePlugin}{Plugin}
+        \li \unicode{0x25B6} Implement an \l{Action}
+        \li \unicode{0x25B6} Implement an \l{Event}
+    \endlist
 
-    In order to get started with our new \b {"Button"} plugin we use the \b {"Minimal"} plugin as template and start from there. Make a copy of the minimal folder and name the new folder \b buttons-diy. In this case \b{buttons-diy} because the folder \b buttons already exits from the \tt plugin-template repository.
+    In order to getting started with the new \b {"Button"} plugin we use the \b {"Minimal"} plugin as template and start from there. Make a copy of the minimal folder and name the new folder \b buttons-diy. In this case \b{buttons-diy} because the folder \b buttons already exits from the \tt plugin-template repository.
     
     \section1 Create the basic structure
     \code
@@ -452,7 +458,7 @@
         \li Start guh-cli and add the a new \b {"Simple Button"} devcice. Give an appropriate name like \b {Test button}.
         \li Use guh-cli to execute the \b {press the button} action: 
 
-            \tt "Devices" \unicode{0x2192} \tt "Execute an action" \unicode{0x2192} \tt {"Your device name (Simple Button)"} \unicode{0x2192} \tt {press the button}
+            \tt "Devices" \unicode{0x2192} \tt {"Execute an action"} \unicode{0x2192} \tt {"Your device name (Simple Button)"} \unicode{0x2192} \tt {press the button}
 
     \endlist
     

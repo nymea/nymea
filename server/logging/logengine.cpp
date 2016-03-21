@@ -56,6 +56,10 @@
     \sa LogEngine, LogEntry, LogFilter
 */
 
+/*! \fn guhserver::Logging::Logging(QObject *parent)
+    Constructs the \l{Logging} object with the given \a parent.
+*/
+
 /*! \enum guhserver::Logging::LoggingError
     Represents the possible errors from the \l{LogEngine}.
 
@@ -73,7 +77,12 @@
     \value LoggingEventTypeTrigger
         This event type describes an \l{Event} which has triggered.
     \value LoggingEventTypeActiveChange
-        This event type describes an \l{Rule} which has changed its active status.
+        This event type describes a \l{Rule} which has changed its active status.
+    \value LoggingEventTypeActionsExecuted
+        This event type describes the actions execution of a \l{Rule}.
+    \value LoggingEventTypeExitActionsExecuted
+        This event type describes the  exit actions execution of a \l{Rule}.
+
 */
 
 /*! \enum guhserver::Logging::LoggingLevel
@@ -145,6 +154,7 @@ LogEngine::LogEngine(QObject *parent):
     initDB();
 }
 
+/*! Destructs the \l{LogEngine}. */
 LogEngine::~LogEngine()
 {
     qCDebug(dcApplication) << "Shutting down \"Log Engine\"";

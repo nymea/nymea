@@ -112,6 +112,7 @@
     he can bring it's own icon for a special DeviceClassId. If there is no special icon
     defined, he can fallback to the default icon.
 
+    \value DeviceIconNone
     \value DeviceIconBed
     \value DeviceIconBlinds
     \value DeviceIconCeilingLamp
@@ -147,6 +148,13 @@
     \value DeviceIconCloud
 */
 
+/*! \fn void DeviceClass::setBasicTags(const QList<BasicTag> &basicTags);
+    Set the list of \a basicTags of this DeviceClass.
+*/
+
+/*! \fn void DeviceClass::setDeviceIcon(const DeviceIcon &deviceIcon);
+    Set the \a deviceIcon of this DeviceClass.
+*/
 
 #include "deviceclass.h"
 

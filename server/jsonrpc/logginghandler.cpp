@@ -32,6 +32,16 @@
     \sa LogEngine, JsonHandler, JsonRPCServer
 */
 
+/*! \fn void guhserver::LoggingHandler::LogEntryAdded(const QVariantMap &params);
+    This signal is emitted to the API notifications when a \l{LogEntry} was added to the database.
+    The \a params contain the map for the notification.
+*/
+
+/*! \fn void guhserver::LoggingHandler::LogDatabaseUpdated(const QVariantMap &params);
+    This signal is emitted to the API notifications when the logging aatabase has been updated (i.e. \l{Device} or \l{Rule} removed).
+    The \a params contain the map for the notification.
+*/
+
 #include "logginghandler.h"
 #include "logging/logengine.h"
 #include "logging/logfilter.h"
@@ -40,6 +50,7 @@
 
 namespace guhserver {
 
+/*! Constructs a new \l LoggingHandler with the given \a parent. */
 LoggingHandler::LoggingHandler(QObject *parent) :
     JsonHandler(parent)
 {
@@ -84,6 +95,7 @@ LoggingHandler::LoggingHandler(QObject *parent) :
     connect(GuhCore::instance()->logEngine(), &LogEngine::logDatabaseUpdated, this, &LoggingHandler::logDatabaseUpdated);
 }
 
+/*! Returns the name of the \l{LoggingHandler}. In this case \b Logging.*/
 QString LoggingHandler::name() const
 {
     return "Logging";

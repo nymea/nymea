@@ -304,7 +304,7 @@ void Coap::sendRequest(CoapReply *reply, const bool &lookedUp)
     if (reply->observation() && reply->requestMethod() == CoapPdu::Get) {
         if (reply->observationEnable()) {
             // Option number 6
-            pdu.addOption(CoapOption::Observe, QByteArray::number(0));
+            pdu.addOption(CoapOption::Observe, 0);
             m_observeResources.insert(pdu.token(), CoapObserveResource(reply->request().url(), pdu.token()));
         } else {
             // if disable, we should use the sam token as the notifications

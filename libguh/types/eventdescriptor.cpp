@@ -24,6 +24,7 @@
     \brief Describes a certain \l{Event}.
 
     \ingroup guh-types
+    \ingroup rules
     \inmodule libguh
 
     An EventDescriptor describes an \l{Event} in order to match it with a \l{guhserver::Rule}.

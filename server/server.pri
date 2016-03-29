@@ -37,6 +37,10 @@ SOURCES += $$top_srcdir/server/guhcore.cpp \
     $$top_srcdir/server/rest/logsresource.cpp \
     $$top_srcdir/server/rest/pluginsresource.cpp \
     $$top_srcdir/server/rest/rulesresource.cpp \
+    $$top_srcdir/server/time/timedescriptor.cpp \
+    $$top_srcdir/server/time/calendaritem.cpp \
+    $$top_srcdir/server/time/repeatingoption.cpp \
+    $$top_srcdir/server/time/timeeventitem.cpp \
 
 
 HEADERS += $$top_srcdir/server/guhcore.h \
@@ -70,5 +74,9 @@ HEADERS += $$top_srcdir/server/guhcore.h \
     $$top_srcdir/server/rest/logsresource.h \
     $$top_srcdir/server/rest/pluginsresource.h \
     $$top_srcdir/server/rest/rulesresource.h \
+    $$top_srcdir/server/time/timedescriptor.h \
+    $$top_srcdir/server/time/calendaritem.h \
+    $$top_srcdir/server/time/repeatingoption.h \
+    $$top_srcdir/server/time/timeeventitem.h \
 
 

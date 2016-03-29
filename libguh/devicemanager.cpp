@@ -918,6 +918,11 @@ DeviceManager::DeviceError DeviceManager::executeAction(const Action &action)
     return DeviceErrorDeviceNotFound;
 }
 
+void DeviceManager::timeTick()
+{
+
+}
+
 void DeviceManager::loadPlugins()
 {
     foreach (const QString &path, pluginSearchDirs()) {

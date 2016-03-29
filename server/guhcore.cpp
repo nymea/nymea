@@ -361,6 +361,12 @@ RuleEngine *GuhCore::ruleEngine() const
 GuhCore::GuhCore(QObject *parent) :
     QObject(parent)
 {
+    qCDebug(dcApplication) << "Creating centralized timer";
+    m_guhTimer = new QTimer(this);
+    m_guhTimer->setInterval(1000);
+    m_guhTimer->setSingleShot(false);
+    m_currentDateTime = QDateTime::currentDateTime();
+
     qCDebug(dcApplication) << "Creating Log Engine";
     m_logger = new LogEngine(this);
 
@@ -388,7 +394,10 @@ GuhCore::GuhCore(QObject *parent) :
     connect(m_ruleEngine, &RuleEngine::ruleRemoved, this, &GuhCore::ruleRemoved);
     connect(m_ruleEngine, &RuleEngine::ruleConfigurationChanged, this, &GuhCore::ruleConfigurationChanged);
 
+    connect(m_guhTimer, &QTimer::timeout, this, &GuhCore::guhTimeout);
+
     m_logger->logSystemEvent(true);
+    m_guhTimer->start();
 }
 
 /*! Connected to the DeviceManager's emitEvent signal. Events received in
@@ -447,6 +456,19 @@ void GuhCore::gotEvent(const Event &event)
     }
 
     executeRuleActions(actions);
+}
+
+void GuhCore::guhTimeout()
+{
+    m_deviceManager->timeTick();
+
+    // Minute based time -> only evaluate time based rules if the minute changed
+    if (m_currentDateTime.time().minute() != QDateTime::currentDateTime().time().minute()) {
+        qCDebug(dcApplication) << "Guh time changed" << QDateTime::currentDateTime().time().toString("hh:mm:ss");
+        m_currentDateTime = QDateTime::currentDateTime();
+
+    }
+
 }
 
 /*! Return the instance of the log engine */

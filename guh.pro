@@ -33,12 +33,12 @@ coverage {
 }
 
 # Build tests
-!disabletesting {
+disabletesting {
+    message("Building guh without tests")
+} else {
     message("Building guh with tests")
     SUBDIRS += tests
     DEFINES += TESTING_ENABLED
-} else {
-    message("Building guh without tests")
 }
 
 # Bluetooth LE support

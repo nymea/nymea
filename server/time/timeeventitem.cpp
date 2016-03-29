@@ -27,4 +27,39 @@ TimeEventItem::TimeEventItem()
 
 }
 
+QDateTime TimeEventItem::dateTime() const
+{
+    return m_dateTimer;
+}
+
+void TimeEventItem::setDateTimer(const int &timeStamp)
+{
+    m_dateTimer = QDateTime::fromTime_t(timeStamp);
+}
+
+QTime TimeEventItem::time() const
+{
+    return m_time;
+}
+
+void TimeEventItem::setTimer(const QTime &time)
+{
+    m_time = time;
+}
+
+RepeatingOption TimeEventItem::repatingOption() const
+{
+    return m_repeatingOption;
+}
+
+void TimeEventItem::setRepeatingOption(const RepeatingOption &repeatingOption)
+{
+    m_repeatingOption = repeatingOption;
+}
+
+bool TimeEventItem::isValid() const
+{
+    return !m_dateTimer.isNull() || !m_time.isNull();
+}
+
 }

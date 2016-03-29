@@ -21,6 +21,9 @@
 #ifndef TIMEDESCRIPTOR_H
 #define TIMEDESCRIPTOR_H
 
+#include "timeeventitem.h"
+#include "calendaritem.h"
+
 namespace guhserver {
 
 class TimeDescriptor
@@ -28,6 +31,17 @@ class TimeDescriptor
 public:
     explicit TimeDescriptor();
 
+    QList<TimeEventItem> timeEventItems() const;
+    void setTimeEventItems(const QList<TimeEventItem> &timeEventItems);
+
+    QList<CalendarItem> calendarItems() const;
+    void setCalendarItems(const QList<CalendarItem> &calendarItems);
+
+    bool isValid() const;
+
+private:
+    QList<TimeEventItem> m_timeEventItems;
+    QList<CalendarItem> m_calendarItems;
 };
 
 }

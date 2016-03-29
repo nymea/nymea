@@ -22,9 +22,15 @@
 
 namespace guhserver {
 
-CalendarItem::CalendarItem(const QTime startTime, const QTime duration) :
+CalendarItem::CalendarItem()
+{
+
+}
+
+CalendarItem::CalendarItem(const QTime &startTime, const QTime &duration, const RepeatingOption &repeatingOption) :
     m_startTime(startTime),
-    m_duration(duration)
+    m_duration(duration),
+    m_repeatingOption(repeatingOption)
 {
 
 }
@@ -37,6 +43,20 @@ QTime CalendarItem::startTime() const
 QTime CalendarItem::duration() const
 {
     return m_duration;
+}
+
+bool CalendarItem::isValid() const
+{
+    return !m_startTime.isNull() && !m_duration.isNull();
+}
+
+bool CalendarItem::evaluate(const QDateTime &dateTime) const
+{
+    Q_UNUSED(dateTime)
+
+    // TODO: evaluate the calendar item, return true if the current time matches the calendar item, otherwise false
+
+    return false;
 }
 
 }

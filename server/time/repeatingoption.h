@@ -21,6 +21,7 @@
 #ifndef REPEATINGOPTION_H
 #define REPEATINGOPTION_H
 
+#include <QList>
 #include <QMetaType>
 
 namespace guhserver {
@@ -40,9 +41,20 @@ public:
     };
 
     RepeatingOption();
+    RepeatingOption(const RepeatingMode &mode, const QList<int> &weekDays = QList<int>(), const QList<int> &monthDays = QList<int>());
 
+    RepeatingMode mode() const;
 
+    QList<int> weekDays() const;
+    QList<int> monthDays() const;
 
+    bool isEmtpy() const;
+
+private:
+    RepeatingMode m_mode;
+
+    QList<int> m_weekDays;
+    QList<int> m_monthDays;
 
 };
 

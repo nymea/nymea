@@ -21,12 +21,35 @@
 #ifndef TIMEEVENTITEM_H
 #define TIMEEVENTITEM_H
 
+#include <QDateTime>
+
+#include "repeatingoption.h"
+
 namespace guhserver {
 
 class TimeEventItem
 {
 public:
     TimeEventItem();
+
+    QDateTime dateTime() const;
+    void setDateTimer(const int &timeStamp);
+
+    QTime time() const;
+    void setTimer(const QTime &time);
+
+    RepeatingOption repatingOption() const;
+    void setRepeatingOption(const RepeatingOption &repeatingOption);
+
+    // TODO spectioalDayTime
+
+    bool isValid() const;
+
+private:
+    QDateTime m_dateTimer;
+    QTime m_time;
+
+    RepeatingOption m_repeatingOption;
 
 };
 

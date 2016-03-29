@@ -22,9 +22,38 @@
 
 namespace guhserver {
 
-RepeatingOption::RepeatingOption()
+RepeatingOption::RepeatingOption() :
+    m_mode(RepeatingModeNone)
 {
 
+}
+
+RepeatingOption::RepeatingOption(const RepeatingMode &mode, const QList<int> &weekDays, const QList<int> &monthDays) :
+    m_mode(mode),
+    m_weekDays(weekDays),
+    m_monthDays(monthDays)
+{
+
+}
+
+RepeatingOption::RepeatingMode RepeatingOption::mode() const
+{
+    return m_mode;
+}
+
+QList<int> RepeatingOption::weekDays() const
+{
+    return m_weekDays;
+}
+
+QList<int> RepeatingOption::monthDays() const
+{
+    return m_monthDays;
+}
+
+bool RepeatingOption::isEmtpy() const
+{
+    return m_mode == RepeatingModeNone && m_weekDays.isEmpty() && m_monthDays.isEmpty();
 }
 
 }

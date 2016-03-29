@@ -462,10 +462,14 @@ void GuhCore::guhTimeout()
 {
     m_deviceManager->timeTick();
 
+    // TODO: evaluate special times
+
     // Minute based time -> only evaluate time based rules if the minute changed
     if (m_currentDateTime.time().minute() != QDateTime::currentDateTime().time().minute()) {
         qCDebug(dcApplication) << "Guh time changed" << QDateTime::currentDateTime().time().toString("hh:mm:ss");
         m_currentDateTime = QDateTime::currentDateTime();
+
+        // TODO: evaluate timeDescriptor based rules
 
     }
 

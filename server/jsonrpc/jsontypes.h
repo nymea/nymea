@@ -99,6 +99,7 @@ public:
         Bool,
         Variant,
         Color,
+        Time,
         Object
     };
 

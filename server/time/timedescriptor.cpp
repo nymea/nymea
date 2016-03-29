@@ -27,4 +27,29 @@ TimeDescriptor::TimeDescriptor()
 
 }
 
+QList<TimeEventItem> TimeDescriptor::timeEventItems() const
+{
+    return m_timeEventItems;
+}
+
+void TimeDescriptor::setTimeEventItems(const QList<TimeEventItem> &timeEventItems)
+{
+    m_timeEventItems = timeEventItems;
+}
+
+QList<CalendarItem> TimeDescriptor::calendarItems() const
+{
+    return m_calendarItems;
+}
+
+void TimeDescriptor::setCalendarItems(const QList<CalendarItem> &calendarItems)
+{
+    m_calendarItems = calendarItems;
+}
+
+bool TimeDescriptor::isValid() const
+{
+    return !m_timeEventItems.isEmpty() || !m_calendarItems.isEmpty();
+}
+
 }

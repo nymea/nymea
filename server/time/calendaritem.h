@@ -23,20 +23,30 @@
 
 #include <QTime>
 
+#include "repeatingoption.h"
+
 namespace guhserver {
 
 class CalendarItem
 {
 public:
-    CalendarItem(const QTime startTime, const QTime duration);
+    CalendarItem();
+    CalendarItem(const QTime &startTime, const QTime &duration, const RepeatingOption &repeatingOption);
 
     QTime startTime() const;
     QTime duration() const;
+
+    RepeatingOption repeatingOption() const;
+
+    bool isValid() const;
+
+    bool evaluate(const QDateTime &dateTime) const;
 
 private:
     QTime m_startTime;
     QTime m_duration;
 
+    RepeatingOption m_repeatingOption;
 };
 
 }

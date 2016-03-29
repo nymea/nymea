@@ -283,6 +283,8 @@ void JsonTypes::init()
     s_logEntry.insert("o:eventType", loggingEventTypeRef());
     s_logEntry.insert("o:errorCode", basicTypeToString(String));
 
+
+
     s_initialized = true;
 }
 
@@ -930,6 +932,9 @@ QString JsonTypes::basicTypeToString(const QVariant::Type &type)
     case QVariant::Color:
         return "Color";
         break;
+    case QVariant::Time:
+        return "Time";
+        break;
     default:
         return QVariant::typeToName(type);
         break;
@@ -1470,6 +1475,9 @@ QPair<bool, QString> JsonTypes::validateBasicType(const QVariant &variant)
         return report(true, "");
     }
     if (variant.canConvert(QVariant::Color) && QVariant(variant).convert(QVariant::Color)) {
+        return report(true, "");
+    }
+    if (variant.canConvert(QVariant::Time) && QVariant(variant).convert(QVariant::Time)) {
         return report(true, "");
     }
     return report(false, QString("Error validating basic type %1.").arg(variant.toString()));

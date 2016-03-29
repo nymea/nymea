@@ -18,6 +18,17 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::RepeatingOption
+    \brief Describes a clendar item for a time based \l{guhserver::Rule}{Rule}.
+
+    \ingroup rules
+    \inmodule core
+
+    \sa Rule, TimeDescriptor
+*/
+
+
 #include "repeatingoption.h"
 
 namespace guhserver {

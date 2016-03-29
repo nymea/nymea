@@ -18,15 +18,28 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::CalendarItem
+    \brief Describes a clendar item for a time based \l{guhserver::Rule}{Rule}.
+
+    \ingroup rules
+    \inmodule core
+
+    \sa Rule, TimeDescriptor
+*/
+
 #include "calendaritem.h"
 
 namespace guhserver {
 
+
+/*! Construct a invalid \l{CalendarItem}.*/
 CalendarItem::CalendarItem()
 {
 
 }
 
+/*! Construct a \l{CalendarItem} with the given \a startTime, \a duration and \a repeatingOption.*/
 CalendarItem::CalendarItem(const QTime &startTime, const QTime &duration, const RepeatingOption &repeatingOption) :
     m_startTime(startTime),
     m_duration(duration),
@@ -35,21 +48,31 @@ CalendarItem::CalendarItem(const QTime &startTime, const QTime &duration, const 
 
 }
 
+/*! Returns the start time of this \l{CalendarItem}.*/
 QTime CalendarItem::startTime() const
 {
     return m_startTime;
 }
 
+/*! Returns the duratiorn of this \l{CalendarItem}.*/
 QTime CalendarItem::duration() const
 {
     return m_duration;
 }
 
+/*! Returns the \l{RepeatingOption} of this \l{CalendarItem}.*/
+RepeatingOption CalendarItem::repeatingOption() const
+{
+    return m_repeatingOption;
+}
+
+/*! Returns true if this \l{CalendarItem} is valid. A \l{CalendarItem} is valid if the start time and the duration are set.*/
 bool CalendarItem::isValid() const
 {
     return !m_startTime.isNull() && !m_duration.isNull();
 }
 
+/*! Returns true, if the given \a dateTime matches this \l{CalendarItem}.*/
 bool CalendarItem::evaluate(const QDateTime &dateTime) const
 {
     Q_UNUSED(dateTime)

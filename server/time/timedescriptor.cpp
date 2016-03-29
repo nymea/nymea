@@ -18,35 +18,56 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+
+/*!
+    \class guhserver::TimeDescriptor
+    \brief Describes the time elements of a time based \l{guhserver::Rule}{Rule}.
+
+    \ingroup rules
+    \inmodule core
+
+    A time based rule can be described with a \l{TimeDescriptor}. The \l{TimeDescriptor}
+    can have either a list of \l{TimeEventItem}{TimeEventItems} or a list of \l{CalendarItem}{CalendarItems},
+    never both.
+
+    \sa Rule, TimeEventItem, CalendarItem
+*/
+
 #include "timedescriptor.h"
 
 namespace guhserver {
 
+/*! Constructs an invalid \l{TimeDescriptor}.*/
 TimeDescriptor::TimeDescriptor()
 {
 
 }
 
+/*! Returns the list of \l{TimeEventItem}{TimeEventItems} of this \l{TimeDescriptor}.*/
 QList<TimeEventItem> TimeDescriptor::timeEventItems() const
 {
     return m_timeEventItems;
 }
 
+/*! Set the list of \l{TimeEventItem}{TimeEventItems} of this \l{TimeDescriptor} to the given \a timeEventItems.*/
 void TimeDescriptor::setTimeEventItems(const QList<TimeEventItem> &timeEventItems)
 {
     m_timeEventItems = timeEventItems;
 }
 
+/*! Returns the list of \l{CalendarItem}{CalendarItems} of this \l{TimeDescriptor}.*/
 QList<CalendarItem> TimeDescriptor::calendarItems() const
 {
     return m_calendarItems;
 }
 
+/*! Set the list of \l{CalendarItem}{CalendarItems} of this \l{TimeDescriptor} to the given \a calendarItems.*/
 void TimeDescriptor::setCalendarItems(const QList<CalendarItem> &calendarItems)
 {
     m_calendarItems = calendarItems;
 }
 
+/*! Returns true if either the calendarItems list is not empty or the timeEventItems list.*/
 bool TimeDescriptor::isValid() const
 {
     return !m_timeEventItems.isEmpty() || !m_calendarItems.isEmpty();

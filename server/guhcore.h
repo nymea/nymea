@@ -33,7 +33,7 @@
 #include "servermanager.h"
 
 #include <QObject>
-#include <QDebug>
+#include <QDateTime>
 
 class Device;
 
@@ -99,8 +99,13 @@ private:
 
     QHash<ActionId, Action> m_pendingActions;
 
+    QTimer *m_guhTimer;
+    QDateTime m_currentDateTime;
+
+
 private slots:
     void gotEvent(const Event &event);
+    void guhTimeout();
     void actionExecutionFinished(const ActionId &id, DeviceManager::DeviceError status);
 
 };

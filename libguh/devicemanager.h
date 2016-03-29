@@ -153,6 +153,7 @@ signals:
 
 public slots:
     DeviceError executeAction(const Action &action);
+    void timeTick();
 
 private slots:
     void loadPlugins();

@@ -39,6 +39,11 @@
 #include "logging/logentry.h"
 #include "logging/logfilter.h"
 
+#include "time/calendaritem.h"
+#include "time/repeatingoption.h"
+#include "time/timedescriptor.h"
+#include "time/timeeventitem.h"
+
 #include <QObject>
 
 #include <QVariantMap>
@@ -115,6 +120,7 @@ public:
     DECLARE_TYPE(loggingSource, "LoggingSource", Logging, LoggingSource)
     DECLARE_TYPE(loggingLevel, "LoggingLevel", Logging, LoggingLevel)
     DECLARE_TYPE(loggingEventType, "LoggingEventType", Logging, LoggingEventType)
+    DECLARE_TYPE(repeatingMode, "RepeatingMode", RepeatingOption, RepeatingMode)
 
     DECLARE_OBJECT(paramType, "ParamType")
     DECLARE_OBJECT(param, "Param")
@@ -138,8 +144,12 @@ public:
     DECLARE_OBJECT(rule, "Rule")
     DECLARE_OBJECT(ruleDescription, "RuleDescription")
     DECLARE_OBJECT(logEntry, "LogEntry")
+    DECLARE_OBJECT(timeDescriptor, "TimeDescriptor")
+    DECLARE_OBJECT(calendarItem, "CalendarItem")
+    DECLARE_OBJECT(timeEventItem, "TimeEventItem")
+    DECLARE_OBJECT(repeatingOption, "RepeatingOption")
 
-    // pack types    
+    // pack types
     static QVariantMap packEventType(const EventType &eventType);
     static QVariantMap packEvent(const Event &event);
     static QVariantMap packEventDescriptor(const EventDescriptor &event);

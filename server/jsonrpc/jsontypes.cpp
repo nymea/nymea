@@ -80,6 +80,7 @@ QVariantList JsonTypes::s_loggingError;
 QVariantList JsonTypes::s_loggingSource;
 QVariantList JsonTypes::s_loggingLevel;
 QVariantList JsonTypes::s_loggingEventType;
+QVariantList JsonTypes::s_repeatingMode;
 
 QVariantMap JsonTypes::s_paramType;
 QVariantMap JsonTypes::s_param;
@@ -103,6 +104,11 @@ QVariantMap JsonTypes::s_deviceDescriptor;
 QVariantMap JsonTypes::s_rule;
 QVariantMap JsonTypes::s_ruleDescription;
 QVariantMap JsonTypes::s_logEntry;
+QVariantMap JsonTypes::s_timeDescriptor;
+QVariantMap JsonTypes::s_calendarItem;
+QVariantMap JsonTypes::s_timeEventItem;
+QVariantMap JsonTypes::s_repeatingOption;
+
 
 void JsonTypes::init()
 {
@@ -123,6 +129,7 @@ void JsonTypes::init()
     s_loggingSource = enumToStrings(Logging::staticMetaObject, "LoggingSource");
     s_loggingLevel = enumToStrings(Logging::staticMetaObject, "LoggingLevel");
     s_loggingEventType = enumToStrings(Logging::staticMetaObject, "LoggingEventType");
+    s_repeatingMode = enumToStrings(RepeatingOption::staticMetaObject, "RepeatingMode");
 
     // ParamType
     s_paramType.insert("name", basicTypeToString(String));
@@ -140,7 +147,7 @@ void JsonTypes::init()
     s_param.insert("value", basicTypeRef());
 
     // RuleAction
-    s_ruleAction.insert("actionTypeId", basicTypeToString(Uuid));
+    s_ruleAction.insert(" actionTypeId", basicTypeToString(Uuid));
     s_ruleAction.insert("deviceId", basicTypeToString(Uuid));
     s_ruleAction.insert("o:ruleActionParams", QVariantList() << ruleActionParamRef());
 
@@ -318,6 +325,7 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("LoggingLevel", loggingLevel());
     allTypes.insert("LoggingSource", loggingSource());
     allTypes.insert("LoggingEventType", loggingEventType());
+    allTypes.insert("RepeatingMode", repeatingMode());
 
     allTypes.insert("StateType", stateTypeDescription());
     allTypes.insert("StateDescriptor", stateDescriptorDescription());
@@ -340,6 +348,11 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("Rule", ruleDescription());
     allTypes.insert("RuleDescription", ruleDescriptionDescription());
     allTypes.insert("LogEntry", logEntryDescription());
+    allTypes.insert("TimeDescriptor", timeDescriptorDescription());
+    allTypes.insert("CalendarItem", calendarItemDescription());
+    allTypes.insert("TimeEventItem", timeEventItemDescription());
+    allTypes.insert("RepeatingOption", repeatingOptionDescription());
+
     return allTypes;
 }
 

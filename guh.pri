@@ -14,13 +14,16 @@ QT+= network
 QMAKE_CXXFLAGS += -Werror -std=c++11 -g
 QMAKE_LFLAGS += -std=c++11
 
+top_srcdir=$$PWD
+top_builddir=$$shadowed($$PWD)
+
 # Check for Bluetoot LE support (Qt >= 5.4)
 equals(QT_MAJOR_VERSION, 5):greaterThan(QT_MINOR_VERSION, 3) {
     QT += bluetooth
     DEFINES += BLUETOOTH_LE
 }
 
-# Enable coverage option
+# Enable coverage option    
 coverage {
     OBJECTS_DIR =
     MOC_DIR =

@@ -33,10 +33,10 @@ public:
     TimeEventItem();
 
     QDateTime dateTime() const;
-    void setDateTimer(const int &timeStamp);
+    void setDateTime(const int &timeStamp);
 
     QTime time() const;
-    void setTimer(const QTime &time);
+    void setTime(const QTime &time);
 
     RepeatingOption repatingOption() const;
     void setRepeatingOption(const RepeatingOption &repeatingOption);
@@ -44,6 +44,8 @@ public:
     // TODO spectioalDayTime
 
     bool isValid() const;
+
+    bool evaluate(const QDateTime &dateTime) const;
 
 private:
     QDateTime m_dateTimer;

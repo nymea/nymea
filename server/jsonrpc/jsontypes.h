@@ -171,12 +171,17 @@ public:
     static QVariantMap packDevice(Device *device);
     static QVariantMap packDeviceDescriptor(const DeviceDescriptor &descriptor);
     static QVariantMap packRule(const Rule &rule);
-    static QVariantList packRules(const QList<Rule> rules);
     static QVariantMap packRuleDescription(const Rule &rule);
     static QVariantMap packLogEntry(const LogEntry &logEntry);
-    static QVariantList packCreateMethods(DeviceClass::CreateMethods createMethods);
+    static QVariantMap packRepeatingOption(const RepeatingOption &option);
+    static QVariantMap packCalendarItem(const CalendarItem &calendarItem);
+    static QVariantMap packTimeEventItem(const TimeEventItem &timeEventItem);
+    static QVariantMap packTimeDescriptor(const TimeDescriptor &timeDescriptor);
+
 
     // pack resources
+    static QVariantList packRules(const QList<Rule> rules);
+    static QVariantList packCreateMethods(DeviceClass::CreateMethods createMethods);
     static QVariantList packSupportedVendors();
     static QVariantList packSupportedDevices(const VendorId &vendorId);
     static QVariantList packConfiguredDevices();
@@ -204,6 +209,10 @@ public:
     static StateEvaluator unpackStateEvaluator(const QVariantMap &stateEvaluatorMap);
     static StateDescriptor unpackStateDescriptor(const QVariantMap &stateDescriptorMap);
     static LogFilter unpackLogFilter(const QVariantMap &logFilterMap);
+    static RepeatingOption unpackRepeatingOption(const QVariantMap &repeatingOptionMap);
+    static CalendarItem unpackCalendarItem(const QVariantMap &calendarItemMap);
+    static TimeEventItem unpackTimeEventItem(const QVariantMap &timeEventItemMap);
+    static TimeDescriptor unpackTimeDescriptor(const QVariantMap &timeDescriptorMap);
 
     // validate
     static QPair<bool, QString> validateMap(const QVariantMap &templateMap, const QVariantMap &map);

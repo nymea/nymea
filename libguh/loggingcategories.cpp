@@ -22,6 +22,7 @@
 
 Q_LOGGING_CATEGORY(dcApplication, "Application")
 Q_LOGGING_CATEGORY(dcDeviceManager, "DeviceManager")
+Q_LOGGING_CATEGORY(dcTimeManager, "TimeManager")
 Q_LOGGING_CATEGORY(dcRuleEngine, "RuleEngine")
 Q_LOGGING_CATEGORY(dcHardware, "Hardware")
 Q_LOGGING_CATEGORY(dcConnection, "Connection")

@@ -70,7 +70,24 @@ void TimeDescriptor::setCalendarItems(const QList<CalendarItem> &calendarItems)
 /*! Returns true if either the calendarItems list is not empty or the timeEventItems list.*/
 bool TimeDescriptor::isValid() const
 {
-    return !m_timeEventItems.isEmpty() || !m_calendarItems.isEmpty();
+    return !m_timeEventItems.isEmpty() && !m_calendarItems.isEmpty();
+}
+
+/*! Returns true if the calendarItems list and the timeEventItems list is empty.*/
+bool TimeDescriptor::isEmpty() const
+{
+    return m_calendarItems.isEmpty() && m_timeEventItems.isEmpty();
+}
+
+/*! Returns true if this \l{TimeDescriptor} is valid for the given \a dateTime. A \l{TimeDescriptor} is
+    valid if the \l{TimeEventItem}{TimeEventItems} or \l{CalendarItem}{CalendarItems} match
+    the given \a dateTime.
+*/
+bool TimeDescriptor::evaluate(const QDateTime &dateTime) const
+{
+    Q_UNUSED(dateTime)
+
+    return false;
 }
 
 }

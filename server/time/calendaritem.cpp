@@ -32,54 +32,183 @@
 
 namespace guhserver {
 
-
-/*! Construct a invalid \l{CalendarItem}.*/
-CalendarItem::CalendarItem()
+/*! Construct a invalid \l{CalendarItem}. */
+CalendarItem::CalendarItem():
+    m_duration(0)
 {
 
 }
 
-/*! Construct a \l{CalendarItem} with the given \a startTime, \a duration and \a repeatingOption.*/
-CalendarItem::CalendarItem(const QTime &startTime, const QTime &duration, const RepeatingOption &repeatingOption) :
-    m_startTime(startTime),
-    m_duration(duration),
-    m_repeatingOption(repeatingOption)
+/*! Returns the date time of this \l{CalendarItem}. */
+QDateTime CalendarItem::dateTime() const
 {
-
+    return m_dateTime;
 }
 
-/*! Returns the start time of this \l{CalendarItem}.*/
+/*! Sets the \a dateTime of this \l{CalendarItem}. */
+void CalendarItem::setDateTime(const QDateTime &dateTime)
+{
+    m_dateTime = dateTime;
+}
+
+/*! Returns the start time of this \l{CalendarItem}. */
 QTime CalendarItem::startTime() const
 {
     return m_startTime;
 }
 
-/*! Returns the duratiorn of this \l{CalendarItem}.*/
-QTime CalendarItem::duration() const
+/*! Sets the \a startTime of this \l{CalendarItem}. */
+void CalendarItem::setStartTime(const QTime &startTime)
+{
+    m_startTime = startTime;
+}
+
+/*! Returns the duratiorn of this \l{CalendarItem}. */
+uint CalendarItem::duration() const
 {
     return m_duration;
 }
 
-/*! Returns the \l{RepeatingOption} of this \l{CalendarItem}.*/
+/*! Sets the \a duration of this \l{CalendarItem}. */
+void CalendarItem::setDuration(const uint &duration)
+{
+    m_duration = duration;
+}
+
+/*! Returns the \l{RepeatingOption} of this \l{CalendarItem}. */
 RepeatingOption CalendarItem::repeatingOption() const
 {
     return m_repeatingOption;
 }
 
-/*! Returns true if this \l{CalendarItem} is valid. A \l{CalendarItem} is valid if the start time and the duration are set.*/
-bool CalendarItem::isValid() const
+/*! Sets the \a repeatingOption of this \l{CalendarItem}. */
+void CalendarItem::setRepeatingOption(const RepeatingOption &repeatingOption)
 {
-    return !m_startTime.isNull() && !m_duration.isNull();
+    m_repeatingOption = repeatingOption;
 }
 
-/*! Returns true, if the given \a dateTime matches this \l{CalendarItem}.*/
+/*! Returns true if this \l{CalendarItem} is valid. A \l{CalendarItem} is invalid
+    if start time and datetime are set or if the duration is 0.
+*/
+bool CalendarItem::isValid() const
+{
+    return (!m_startTime.isNull() != !m_dateTime.isNull()) && m_duration > 0;
+}
+
+/*! Returns true, if the given \a dateTime matches this \l{CalendarItem}. */
 bool CalendarItem::evaluate(const QDateTime &dateTime) const
 {
-    Q_UNUSED(dateTime)
+    if (!isValid())
+        return false;
 
-    // TODO: evaluate the calendar item, return true if the current time matches the calendar item, otherwise false
+    if (!repeatingOption().isValid())
+        return false;
+
+    switch (repeatingOption().mode()) {
+    case RepeatingOption::RepeatingModeNone:
+        // If there is no repeating option, we assume it is meant daily.
+        return evaluateDaily(dateTime);
+    case RepeatingOption::RepeatingModeHourly:
+        return evaluateHourly(dateTime);
+    case RepeatingOption::RepeatingModeDaily:
+        return evaluateDaily(dateTime);
+    case RepeatingOption::RepeatingModeWeekly:
+        return evaluateWeekly(dateTime);
+    case RepeatingOption::RepeatingModeMonthly:
+        return evaluateMonthly(dateTime);
+    default:
+        return false;
+    }
+
+}
+
+bool CalendarItem::evaluateHourly(const QDateTime &dateTime) const
+{
+    // check if
+    if (startTime().isNull()) {
+
+    }
+    QDateTime startDateTime = QDateTime(dateTime.date(), QTime(dateTime.time().hour(), startTime().minute()));
+    QDateTime endDateTime = startDateTime.addSecs(duration() * 60);
+
+    bool timeValid = dateTime >= startDateTime && dateTime < endDateTime;
+    bool weekdayValid = repeatingOption().evaluateWeekDay(dateTime);
+    bool monthdayValid = repeatingOption().evaluateMonthDay(dateTime);
+
+    return timeValid && weekdayValid && monthdayValid;
+}
+
+bool CalendarItem::evaluateDaily(const QDateTime &dateTime) const
+{
+    // If the duration is longer than a day, this calendar item is always true
+    // 1 day has 1440 minutes
+    if (duration() >= 1440)
+        return true;
+
+    QDateTime startDateTime = QDateTime(dateTime.date(), startTime());
+    QDateTime endDateTime = startDateTime.addSecs(duration() * 60);
+
+    bool timeValid = false;
+
+    if (startDateTime.date() == endDateTime.date()) {
+        timeValid = dateTime >= startDateTime && dateTime < endDateTime;
+    } else {
+        // If the time duration changes the date,
+        // check only if the time is smaler than the overlapping time
+        timeValid = dateTime.time() < endDateTime.time();
+    }
+
+    return timeValid;
+}
+
+bool CalendarItem::evaluateWeekly(const QDateTime &dateTime) const
+{
+    // If the duration is longer than a week, this calendar item is always true
+    // 1 week has 10080 minutes
+    if (duration() >= 10080)
+        return true;
+
+    // get the first day of this week with the correct start time
+    QDateTime weekStartDateTime = dateTime.addDays(-dateTime.date().dayOfWeek());
+    weekStartDateTime.setTime(m_startTime);
+
+    // Check each week day in the list
+    foreach (const int &weekDay, repeatingOption().weekDays()) {
+        QDateTime startDateTime = weekStartDateTime.addDays(weekDay -1);
+        QDateTime endDateTime = startDateTime.addSecs(duration() * 60);
+
+        bool overlapping = false;
+
+        // Check if this calendar item overlaps a week
+        if (startDateTime.date().weekNumber() != endDateTime.date().weekNumber())
+            overlapping = true;
+
+        if (overlapping) {
+            // Jump one week into the past
+            QDateTime startPreviouseDateTime = startDateTime.addDays(-7);
+            QDateTime endPreviouseDateTime = startPreviouseDateTime.addSecs(duration() * 60);
+
+            if (dateTime >= startPreviouseDateTime && dateTime < endPreviouseDateTime)
+                // return true if the current time is between start
+                // and end of this calendar item from the previouse week
+                return true;
+
+        } else if (dateTime >= startDateTime && dateTime < endDateTime) {
+            // return true if the current time is between start
+            // and end of this calendar item
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool CalendarItem::evaluateMonthly(const QDateTime &dateTime) const
+{
+    Q_UNUSED(dateTime)
 
     return false;
 }
 
 }
+

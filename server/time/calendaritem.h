@@ -31,22 +31,34 @@ class CalendarItem
 {
 public:
     CalendarItem();
-    CalendarItem(const QTime &startTime, const QTime &duration, const RepeatingOption &repeatingOption);
+
+    QDateTime dateTime() const;
+    void setDateTime(const QDateTime &dateTime);
 
     QTime startTime() const;
-    QTime duration() const;
+    void setStartTime(const QTime &startTime);
+
+    uint duration() const;
+    void setDuration(const uint &duration);
 
     RepeatingOption repeatingOption() const;
+    void setRepeatingOption(const RepeatingOption &repeatingOption);
 
     bool isValid() const;
-
     bool evaluate(const QDateTime &dateTime) const;
 
 private:
+    QDateTime m_dateTime;
     QTime m_startTime;
-    QTime m_duration;
+    QTime m_endTime;
+    uint m_duration;
 
     RepeatingOption m_repeatingOption;
+
+    bool evaluateHourly(const QDateTime &dateTime) const;
+    bool evaluateDaily(const QDateTime &dateTime) const;
+    bool evaluateWeekly(const QDateTime &dateTime) const;
+    bool evaluateMonthly(const QDateTime &dateTime) const;
 };
 
 }

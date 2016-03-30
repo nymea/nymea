@@ -24,6 +24,8 @@
 #include <QList>
 #include <QMetaType>
 
+class QDateTime;
+
 namespace guhserver {
 
 class RepeatingOption
@@ -48,7 +50,12 @@ public:
     QList<int> weekDays() const;
     QList<int> monthDays() const;
 
+    void clear();
     bool isEmtpy() const;
+    bool isValid() const;
+
+    bool evaluateWeekDay(const QDateTime &dateTime) const;
+    bool evaluateMonthDay(const QDateTime &dateTime) const;
 
 private:
     RepeatingMode m_mode;

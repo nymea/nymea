@@ -32,7 +32,7 @@ QDateTime TimeEventItem::dateTime() const
     return m_dateTimer;
 }
 
-void TimeEventItem::setDateTimer(const int &timeStamp)
+void TimeEventItem::setDateTime(const int &timeStamp)
 {
     m_dateTimer = QDateTime::fromTime_t(timeStamp);
 }
@@ -42,7 +42,7 @@ QTime TimeEventItem::time() const
     return m_time;
 }
 
-void TimeEventItem::setTimer(const QTime &time)
+void TimeEventItem::setTime(const QTime &time)
 {
     m_time = time;
 }
@@ -60,6 +60,15 @@ void TimeEventItem::setRepeatingOption(const RepeatingOption &repeatingOption)
 bool TimeEventItem::isValid() const
 {
     return !m_dateTimer.isNull() || !m_time.isNull();
+}
+
+bool TimeEventItem::evaluate(const QDateTime &dateTime) const
+{
+    Q_UNUSED(dateTime)
+
+    // TODO: evaluate the calendar item, return true if the current time matches the calendar item, otherwise false
+
+    return false;
 }
 
 }

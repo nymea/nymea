@@ -38,10 +38,14 @@ public:
     void setCalendarItems(const QList<CalendarItem> &calendarItems);
 
     bool isValid() const;
+    bool isEmpty() const;
+
+    bool evaluate(const QDateTime &dateTime) const;
 
 private:
     QList<TimeEventItem> m_timeEventItems;
     QList<CalendarItem> m_calendarItems;
+
 };
 
 }

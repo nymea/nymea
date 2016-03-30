@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2016 Simon Stuerz <simon.stuerz@guh.guru>                *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -18,18 +18,45 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "loggingcategories.h"
+#ifndef TIMEMANAGER_H
+#define TIMEMANAGER_H
 
-Q_LOGGING_CATEGORY(dcApplication, "Application")
-Q_LOGGING_CATEGORY(dcDeviceManager, "DeviceManager")
-Q_LOGGING_CATEGORY(dcTimeManager, "TimeManager")
-Q_LOGGING_CATEGORY(dcRuleEngine, "RuleEngine")
-Q_LOGGING_CATEGORY(dcHardware, "Hardware")
-Q_LOGGING_CATEGORY(dcConnection, "Connection")
-Q_LOGGING_CATEGORY(dcLogEngine, "LogEngine")
-Q_LOGGING_CATEGORY(dcTcpServer, "TcpServer")
-Q_LOGGING_CATEGORY(dcWebServer, "WebServer")
-Q_LOGGING_CATEGORY(dcWebSocketServer, "WebSocketServer")
-Q_LOGGING_CATEGORY(dcJsonRpc, "JsonRpc")
-Q_LOGGING_CATEGORY(dcRest, "Rest")
-Q_LOGGING_CATEGORY(dcOAuth2, "OAuth2")
+#include <QTimer>
+#include <QObject>
+#include <QDateTime>
+#include <QTimeZone>
+
+namespace guhserver {
+
+class TimeManager : public QObject
+{
+    Q_OBJECT
+public:
+    explicit TimeManager(const QByteArray &timeZone, QObject *parent = 0);
+
+    QByteArray timeZone() const;
+    void setTimeZone(const QByteArray &timeZone = QTimeZone::systemTimeZoneId());
+
+    QDateTime currentDateTime() const;
+    QTime currentTime() const;
+    QDate currentDate() const;
+
+private:
+    QTimeZone m_timeZone;
+    QDateTime m_dateTime;
+    QTimer *m_guhTimer;
+
+signals:
+    void tick();
+    void dateChanged(const QDate &currentDate);
+    void timeChanged(const QTime &currentTime);
+
+
+private slots:
+    void guhTimeout();
+
+};
+
+}
+
+#endif // TIMEMANAGER_H

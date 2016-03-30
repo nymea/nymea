@@ -43,6 +43,7 @@
     \value Bool
     \value Variant
     \value Color
+    \value Time
     \value Object
 */
 
@@ -283,7 +284,25 @@ void JsonTypes::init()
     s_logEntry.insert("o:eventType", loggingEventTypeRef());
     s_logEntry.insert("o:errorCode", basicTypeToString(String));
 
+    // TimeDescriptor
+    s_timeDescriptor.insert("o:calendarItems", QVariantList() << calendarItemRef());
+    s_timeDescriptor.insert("o:timeEventItems", QVariantList() << timeEventItemRef());
 
+    // CalendarItem
+    s_calendarItem.insert("o:datetime", basicTypeToString(QVariant::UInt));
+    s_calendarItem.insert("o:startTime", basicTypeToString(QVariant::Time));
+    s_calendarItem.insert("duration", basicTypeToString(QVariant::UInt));
+    s_calendarItem.insert("o:repeating", repeatingOptionRef());
+
+    // TimeEventItem
+    s_timeEventItem.insert("o:datetime", basicTypeToString(QVariant::UInt));
+    s_timeEventItem.insert("o:time", basicTypeToString(QVariant::Time));
+    s_timeEventItem.insert("o:repeating", repeatingOptionRef());
+
+    // RepeatingOption
+    s_repeatingOption.insert("mode", repeatingModeRef());
+    s_repeatingOption.insert("o:weekDays", QVariantList() << basicTypeToString(Int));
+    s_repeatingOption.insert("o:monthDays", QVariantList() << basicTypeToString(Int));
 
     s_initialized = true;
 }
@@ -792,6 +811,71 @@ QVariantList JsonTypes::packCreateMethods(DeviceClass::CreateMethods createMetho
     return ret;
 }
 
+/*! Returns a variant map of the given \a option. */
+QVariantMap JsonTypes::packRepeatingOption(const RepeatingOption &option)
+{
+    QVariantMap optionVariant;
+    optionVariant.insert("mode", s_repeatingMode.at(option.mode()));
+    if (!option.weekDays().isEmpty())
+        optionVariant.insert("weekDays", QVariant::fromValue< QList<int> >(option.weekDays()));
+
+    if (!option.monthDays().isEmpty())
+        optionVariant.insert("monthDays", QVariant::fromValue< QList<int> >(option.monthDays()));
+
+    return optionVariant;
+}
+
+/*! Returns a variant map of the given \a calendarItem. */
+QVariantMap JsonTypes::packCalendarItem(const CalendarItem &calendarItem)
+{
+    QVariantMap calendarItemVariant;
+    calendarItemVariant.insert("duration", calendarItem.duration());
+
+    if (!calendarItem.startTime().isNull())
+        calendarItemVariant.insert("startTime", calendarItem.startTime().toString("hh:mm"));
+
+    if (!calendarItem.dateTime().isNull())
+        calendarItemVariant.insert("datetime", calendarItem.dateTime().toTime_t());
+
+    if (!calendarItem.repeatingOption().isEmtpy())
+        calendarItemVariant.insert("repeating", packRepeatingOption(calendarItem.repeatingOption()));
+
+    return calendarItemVariant;
+}
+
+QVariantMap JsonTypes::packTimeEventItem(const TimeEventItem &timeEventItem)
+{
+    QVariantMap timeEventItemVariant;
+
+    if (!timeEventItem.dateTime().isNull())
+        timeEventItemVariant.insert("datetime", timeEventItem.dateTime().toTime_t());
+
+    if (!timeEventItem.time().isNull())
+        timeEventItemVariant.insert("time", timeEventItem.time().toString("hh:mm"));
+
+    if (!timeEventItem.repatingOption().isEmtpy())
+        timeEventItemVariant.insert("repeating", packRepeatingOption(timeEventItem.repatingOption()));
+
+    return timeEventItemVariant;
+}
+
+/*! Returns a variant map of the given \a timeDescriptor. */
+QVariantMap JsonTypes::packTimeDescriptor(const TimeDescriptor &timeDescriptor)
+{
+    QVariantMap timeDescriptorVariant;
+
+    if (!timeDescriptor.calendarItems().isEmpty()) {
+        QVariantList calendarItems;
+        foreach (const CalendarItem &calendarItem, timeDescriptor.calendarItems()) {
+            calendarItems.append(packCalendarItem(calendarItem));
+        }
+    }
+
+    // TODO: TimeEventItems
+
+    return timeDescriptorVariant;
+}
+
 /*! Returns a variant list of the supported vendors. */
 QVariantList JsonTypes::packSupportedVendors()
 {
@@ -1101,6 +1185,76 @@ LogFilter JsonTypes::unpackLogFilter(const QVariantMap &logFilterMap)
     }
 
     return filter;
+}
+
+/*! Returns a \l{RepeatingOption} created from the given \a repeatingOptionMap. */
+RepeatingOption JsonTypes::unpackRepeatingOption(const QVariantMap &repeatingOptionMap)
+{
+    RepeatingOption::RepeatingMode mode = (RepeatingOption::RepeatingMode)s_repeatingMode.indexOf(repeatingOptionMap.value("mode").toString());
+
+    QList<int> weekDays;
+    if (repeatingOptionMap.contains("weekDays")) {
+        foreach (const QVariant weekDayVariant, repeatingOptionMap.value("weekDays").toList()) {
+            weekDays.append(weekDayVariant.toInt());
+        }
+    }
+
+    QList<int> monthDays;
+    if (repeatingOptionMap.contains("monthDays")) {
+        foreach (const QVariant monthDayVariant, repeatingOptionMap.value("monthDays").toList()) {
+            monthDays.append(monthDayVariant.toInt());
+        }
+    }
+
+    return RepeatingOption(mode, weekDays, monthDays);
+}
+
+/*! Returns a \l{CalendarItem} created from the given \a calendarItemMap. */
+CalendarItem JsonTypes::unpackCalendarItem(const QVariantMap &calendarItemMap)
+{
+    CalendarItem calendarItem;
+
+    if (calendarItemMap.contains("datetime"))
+        calendarItem.setDateTime(QDateTime::fromTime_t(calendarItemMap.value("datetime").toUInt()));
+
+    if (calendarItemMap.contains("startTime"))
+        calendarItem.setStartTime(calendarItemMap.value("startTime").toTime());
+
+    if (calendarItemMap.contains("repeating"))
+        calendarItem.setRepeatingOption(unpackRepeatingOption(calendarItemMap.value("repeating").toMap()));
+
+    return calendarItem;
+}
+
+TimeEventItem JsonTypes::unpackTimeEventItem(const QVariantMap &timeEventItemMap)
+{
+    TimeEventItem timeEventItem;
+
+    if (timeEventItemMap.contains("datetime"))
+        timeEventItem.setDateTime(timeEventItemMap.value("datetime").toUInt());
+
+    if (timeEventItemMap.contains("time"))
+        timeEventItem.setTime(timeEventItemMap.value("time").toTime());
+
+    if (timeEventItemMap.contains("repeating"))
+        timeEventItem.setRepeatingOption(unpackRepeatingOption(timeEventItemMap.value("repeating").toMap()));
+
+    return timeEventItem;
+}
+
+TimeDescriptor JsonTypes::unpackTimeDescriptor(const QVariantMap &timeDescriptorMap)
+{
+    TimeDescriptor timeDescriptor;
+
+    if (timeDescriptorMap.contains("calendarItems")) {
+        QList<CalendarItem> calendarItems;
+        foreach (const QVariant &calendarItemValiant, timeDescriptorMap.value("calendarItems").toList()) {
+            calendarItems.append(unpackCalendarItem(calendarItemValiant.toMap()));
+        }
+        timeDescriptor.setCalendarItems(calendarItems);
+    }
+
+    return timeDescriptor;
 }
 
 /*! Compairs the given \a map with the given \a templateMap. Returns the error string and false if

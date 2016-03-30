@@ -917,7 +917,7 @@ DeviceManager::DeviceError DeviceManager::executeAction(const Action &action)
     return DeviceErrorDeviceNotFound;
 }
 
-/*! Centralized time tick for the GuhTimer resource. Ticks every second.*/
+/*! Centralized time tick for the GuhTimer resource. Ticks every second. */
 void DeviceManager::timeTick()
 {
 

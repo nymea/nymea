@@ -18,50 +18,72 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::TimeEventItem
+    \brief Describes a time event of a time based \l{guhserver::Rule}{Rule}.
+
+    \ingroup rules
+    \inmodule core
+
+
+    \sa Rule, TimeDescriptor, CalendarItem
+*/
+
 #include "timeeventitem.h"
 
 namespace guhserver {
 
+/*! Constructs an invalid \l{TimeEventItem}. */
 TimeEventItem::TimeEventItem()
 {
 
 }
 
+/*! Returns the dateTime of this \l{TimeEventItem}. */
 QDateTime TimeEventItem::dateTime() const
 {
     return m_dateTimer;
 }
 
+/*! Sets the dateTime of this \l{TimeEventItem} to the given \a timeStamp. */
 void TimeEventItem::setDateTime(const int &timeStamp)
 {
     m_dateTimer = QDateTime::fromTime_t(timeStamp);
 }
 
+/*! Returns the time of this \l{TimeEventItem}. */
 QTime TimeEventItem::time() const
 {
     return m_time;
 }
 
+/*! Sets the \a time of this \l{TimeEventItem}. */
 void TimeEventItem::setTime(const QTime &time)
 {
     m_time = time;
 }
 
+/*! Returns the \l{RepeatingOption} of this \l{TimeEventItem}. */
 RepeatingOption TimeEventItem::repatingOption() const
 {
     return m_repeatingOption;
 }
 
+/*! Sets the \a repeatingOption of this \l{TimeEventItem}. */
 void TimeEventItem::setRepeatingOption(const RepeatingOption &repeatingOption)
 {
     m_repeatingOption = repeatingOption;
 }
 
+/*! Returns true if this \l{TimeEventItem} is valid. A \l{TimeEventItem} is valid
+    if either the \l{time()} or the \l{dateTime()} is set.
+*/
 bool TimeEventItem::isValid() const
 {
-    return !m_dateTimer.isNull() || !m_time.isNull();
+    return (!m_dateTimer.isNull() != !m_time.isNull());
 }
 
+/*! Returns true, if the given \a dateTime matches this \l{TimeEventItem}. */
 bool TimeEventItem::evaluate(const QDateTime &dateTime) const
 {
     Q_UNUSED(dateTime)

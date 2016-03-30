@@ -18,11 +18,33 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::TimeManager
+    \brief Describes the centralized time manager of guh.
+
+    \ingroup rules
+    \inmodule core
+
+*/
+
+/*! \fn void guhserver::TimeManager::tick()
+    Represents the central time tick. Will be emitted every second.
+*/
+
+/*! \fn void guhserver::TimeManager::dateChanged(const QDate &currentDate);
+    Will be emitted when the \a currentDate has changed.
+*/
+
+/*! \fn void guhserver::TimeManager::timeChanged(const QTime &currentTime);
+    Will be emitted when the \a currentTime has changed.
+*/
+
 #include "timemanager.h"
 #include "loggingcategories.h"
 
 namespace guhserver {
 
+/*! Constructs a new \l{TimeManager} with the given \a timeZone and \a parent. */
 TimeManager::TimeManager(const QByteArray &timeZone, QObject *parent) :
     QObject(parent)
 {
@@ -42,11 +64,13 @@ TimeManager::TimeManager(const QByteArray &timeZone, QObject *parent) :
     m_guhTimer->start();
 }
 
+/*! Returns the time zone of this \l{TimeManager}. */
 QByteArray TimeManager::timeZone() const
 {
     return m_timeZone.id();
 }
 
+/*! Sets the \a timeZone of this \l{TimeManager}. */
 void TimeManager::setTimeZone(const QByteArray &timeZone)
 {
     if (!QTimeZone(timeZone).isValid()) {
@@ -59,16 +83,19 @@ void TimeManager::setTimeZone(const QByteArray &timeZone)
     }
 }
 
+/*! Returns the current dateTime of this \l{TimeManager}. */
 QDateTime TimeManager::currentDateTime() const
 {
     return QDateTime::currentDateTimeUtc().toTimeZone(m_timeZone);
 }
 
+/*! Returns the current time of this \l{TimeManager}. */
 QTime TimeManager::currentTime() const
 {
     return QDateTime::currentDateTimeUtc().toTimeZone(m_timeZone).time();
 }
 
+/*! Returns the current date of this \l{TimeManager}. */
 QDate TimeManager::currentDate() const
 {
     return QDateTime::currentDateTimeUtc().toTimeZone(m_timeZone).date();

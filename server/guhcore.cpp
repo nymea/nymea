@@ -356,6 +356,7 @@ RuleEngine *GuhCore::ruleEngine() const
     return m_ruleEngine;
 }
 
+/*! Returns a pointer to the \l{TimeManager} instance owned by GuhCore.*/
 TimeManager *GuhCore::timeManager() const
 {
     return m_timeManager;

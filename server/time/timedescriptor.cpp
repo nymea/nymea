@@ -18,7 +18,6 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-
 /*!
     \class guhserver::TimeDescriptor
     \brief Describes the time elements of a time based \l{guhserver::Rule}{Rule}.

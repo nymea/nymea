@@ -843,6 +843,7 @@ QVariantMap JsonTypes::packCalendarItem(const CalendarItem &calendarItem)
     return calendarItemVariant;
 }
 
+/*! Returns a variant map of the given \a timeEventItem. */
 QVariantMap JsonTypes::packTimeEventItem(const TimeEventItem &timeEventItem)
 {
     QVariantMap timeEventItemVariant;
@@ -1226,6 +1227,7 @@ CalendarItem JsonTypes::unpackCalendarItem(const QVariantMap &calendarItemMap)
     return calendarItem;
 }
 
+/*! Returns a \l{TimeEventItem} created from the given \a timeEventItemMap. */
 TimeEventItem JsonTypes::unpackTimeEventItem(const QVariantMap &timeEventItemMap)
 {
     TimeEventItem timeEventItem;
@@ -1242,6 +1244,7 @@ TimeEventItem JsonTypes::unpackTimeEventItem(const QVariantMap &timeEventItemMap
     return timeEventItem;
 }
 
+/*! Returns a \l{TimeDescriptor} created from the given \a timeDescriptorMap. */
 TimeDescriptor JsonTypes::unpackTimeDescriptor(const QVariantMap &timeDescriptorMap)
 {
     TimeDescriptor timeDescriptor;

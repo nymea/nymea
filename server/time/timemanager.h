@@ -51,7 +51,6 @@ signals:
     void dateChanged(const QDate &currentDate);
     void timeChanged(const QTime &currentTime);
 
-
 private slots:
     void guhTimeout();
 

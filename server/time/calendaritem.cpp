@@ -198,7 +198,6 @@ bool CalendarItem::evaluateWeekly(const QDateTime &dateTime) const
                 // and end of this calendar item from the previouse week
                 return true;
 
-
         } else if (dateTime >= startDateTime && dateTime < endDateTime) {
             // Return true if the current time is between start
             // and end of this calendar item

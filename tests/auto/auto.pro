@@ -18,4 +18,5 @@ SUBDIRS = versioning \
         coap \
         logging \
         restlogging \
+        timemanager \
 

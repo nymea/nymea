@@ -24,7 +24,6 @@
 
     \ingroup rules
     \inmodule core
-
 */
 
 /*! \fn void guhserver::TimeManager::tick()
@@ -70,12 +69,12 @@ QByteArray TimeManager::timeZone() const
     return m_timeZone.id();
 }
 
-/*! Sets the \a timeZone of this \l{TimeManager}. */
+/*! Sets the \a timeZone of this \l{TimeManager}. Allowed values according to the \l{http://www.iana.org/time-zones}{IANA database}. */
 void TimeManager::setTimeZone(const QByteArray &timeZone)
 {
     if (!QTimeZone(timeZone).isValid()) {
         qCWarning(dcTimeManager()) << "Invalid time zone" << timeZone;
-        qCWarning(dcTimeManager()) << "Using default system timezone" << QTimeZone::systemTimeZoneId();
+        qCWarning(dcTimeManager()) << "Using system time zone" << QTimeZone::systemTimeZoneId();
         m_timeZone = QTimeZone(QTimeZone::systemTimeZoneId());
     } else {
         qCDebug(dcTimeManager()) << "Set time zone" << timeZone;
@@ -107,7 +106,6 @@ void TimeManager::guhTimeout()
     emit tick();
 
     QDateTime currentDateTime = QDateTime::currentDateTimeUtc();
-    //qCDebug(dcTimeManager) << "Time changed" << currentDateTime.toTimeZone(m_timeZone).time().toString("hh:mm:ss");
 
     // Minute based guh time
     if (m_dateTime.time().minute() != currentDateTime.toTimeZone(m_timeZone).time().minute()) {

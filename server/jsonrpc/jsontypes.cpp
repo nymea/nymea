@@ -1608,6 +1608,12 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                     qCWarning(dcJsonRpc) << "RepeatingOption not matching";
                     return result;
                 }
+            } else if (refName == timeEventItemRef()) {
+                QPair<bool, QString> result = validateMap(timeEventItemDescription(), variant.toMap());
+                if (!result.first) {
+                    qCWarning(dcJsonRpc) << "TimeEventItem not matching";
+                    return result;
+                }
             } else if (refName == basicTypeRef()) {
                 QPair<bool, QString> result = validateBasicType(variant);
                 if (!result.first) {

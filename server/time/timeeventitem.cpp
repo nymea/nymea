@@ -42,13 +42,13 @@ TimeEventItem::TimeEventItem()
 /*! Returns the dateTime of this \l{TimeEventItem}. */
 QDateTime TimeEventItem::dateTime() const
 {
-    return m_dateTimer;
+    return m_dateTime;
 }
 
 /*! Sets the dateTime of this \l{TimeEventItem} to the given \a timeStamp. */
 void TimeEventItem::setDateTime(const int &timeStamp)
 {
-    m_dateTimer = QDateTime::fromTime_t(timeStamp);
+    m_dateTime = QDateTime::fromTime_t(timeStamp);
 }
 
 /*! Returns the time of this \l{TimeEventItem}. */
@@ -80,7 +80,11 @@ void TimeEventItem::setRepeatingOption(const RepeatingOption &repeatingOption)
 */
 bool TimeEventItem::isValid() const
 {
-    return (!m_dateTimer.isNull() != !m_time.isNull());
+    // A dateTime AND a repeating option would not make sense
+    if (m_dateTime.isValid() && !repeatingOption().isEmtpy())
+        return false;
+
+    return (!m_dateTime.isNull() != !m_time.isNull());
 }
 
 /*! Returns true, if the given \a dateTime matches this \l{TimeEventItem}. */

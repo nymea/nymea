@@ -117,14 +117,6 @@ QList<int> RepeatingOption::monthDays() const
     return m_monthDays;
 }
 
-/*! Clears this RepeatingOption */
-void RepeatingOption::clear()
-{
-    m_mode = RepeatingModeNone;
-    m_weekDays.clear();
-    m_monthDays.clear();
-}
-
 /*! Returns true if this \l{RepeatingOption} is empty. */
 bool RepeatingOption::isEmtpy() const
 {
@@ -150,6 +142,7 @@ bool RepeatingOption::isValid() const
         }
     }
 
+    // Validate the lists
     switch (m_mode) {
     case RepeatingModeNone:
         return m_weekDays.isEmpty() && m_monthDays.isEmpty();

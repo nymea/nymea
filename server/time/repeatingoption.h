@@ -50,7 +50,6 @@ public:
     QList<int> weekDays() const;
     QList<int> monthDays() const;
 
-    void clear();
     bool isEmtpy() const;
     bool isValid() const;
 

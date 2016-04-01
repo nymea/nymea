@@ -92,6 +92,10 @@ void CalendarItem::setRepeatingOption(const RepeatingOption &repeatingOption)
 */
 bool CalendarItem::isValid() const
 {
+    // certain DateTime AND repeating option would not make sense
+    if (m_dateTime.isValid() && !repeatingOption().isEmtpy())
+        return false;
+
     return (!m_startTime.isValid() != !m_dateTime.isValid()) && m_duration > 0;
 }
 

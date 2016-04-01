@@ -45,6 +45,7 @@ private slots:
 
 private:
     QVariantMap createCalendarItem(const QString &time = "00:00", const uint &duration = 0, const QVariantMap &repeatingOption = QVariantMap()) const;
+    QVariantMap createCalendarItem(const int &dateTime, const uint &duration = 0, const QVariantMap &repeatingOption = QVariantMap()) const;
     QVariantMap createTimeDescriptorCalendar(const QVariantMap calendarItem) const;
     QVariantMap createTimeDescriptorCalendar(const QVariantList calendarItems) const;
 
@@ -93,6 +94,12 @@ void TestTimeManager::addTimeDescriptor_data()
     QVariantMap repeatingOptionDaily;
     repeatingOptionDaily.insert("mode", "RepeatingModeDaily");
 
+    QVariantMap repeatingOptionNone;
+    repeatingOptionNone.insert("mode", "RepeatingModeNone");
+
+    QVariantMap repeatingOptionHourly;
+    repeatingOptionHourly.insert("mode", "RepeatingModeHourly");
+
     QVariantMap repeatingOptionWeeklyMultiple;
     repeatingOptionWeeklyMultiple.insert("mode", "RepeatingModeWeekly");
     repeatingOptionWeeklyMultiple.insert("weekDays", QVariantList() << 2 << 4 << 5);
@@ -131,17 +138,19 @@ void TestTimeManager::addTimeDescriptor_data()
     calendarItems.append(createCalendarItem("08:00", 5, repeatingOptionDaily));
     calendarItems.append(createCalendarItem("09:00", 5, repeatingOptionWeeklyMultiple));
 
-    // Invalid timeDescriptor
-
     QTest::addColumn<QVariantMap>("timeDescriptor");
     QTest::addColumn<RuleEngine::RuleError>("error");
 
-
     QTest::newRow("valid: single calendarItem") << createTimeDescriptorCalendar(createCalendarItem("08:00", 5)) << RuleEngine::RuleErrorNoError;
+    QTest::newRow("valid: single calendarItem dateTime") << createTimeDescriptorCalendar(createCalendarItem(QDateTime::currentDateTime().toTime_t(), 5)) << RuleEngine::RuleErrorNoError;
     QTest::newRow("valid: single calendarItem - daily") << createTimeDescriptorCalendar(createCalendarItem("08:00", 5, repeatingOptionDaily)) << RuleEngine::RuleErrorNoError;
+    QTest::newRow("valid: calendarItem - none") << createTimeDescriptorCalendar(createCalendarItem("09:00", 30, repeatingOptionNone)) << RuleEngine::RuleErrorNoError;
+    QTest::newRow("valid: calendarItem - hourly") << createTimeDescriptorCalendar(createCalendarItem("09:00", 30, repeatingOptionHourly)) << RuleEngine::RuleErrorNoError;
     QTest::newRow("valid: calendarItems - weekly - multiple days") << createTimeDescriptorCalendar(calendarItems) << RuleEngine::RuleErrorNoError;
     QTest::newRow("valid: calendarItem - monthly - multiple days") << createTimeDescriptorCalendar(createCalendarItem("23:00", 5, repeatingOptionMonthlyMultiple)) << RuleEngine::RuleErrorNoError;
 
+    QTest::newRow("invalid: calendarItem empty") << createTimeDescriptorCalendar(createCalendarItem()) << RuleEngine::RuleErrorInvalidCalendarItem;
+    QTest::newRow("invalid: calendarItem - dateTime + repeatingOption") << createTimeDescriptorCalendar(createCalendarItem(QDateTime::currentDateTime().toTime_t(), 5, repeatingOptionDaily)) << RuleEngine::RuleErrorInvalidCalendarItem;
     QTest::newRow("invalid: calendarItem invalid time") << createTimeDescriptorCalendar(createCalendarItem("35:80", 5)) << RuleEngine::RuleErrorInvalidCalendarItem;
     QTest::newRow("invalid: calendarItem invalid duration") << createTimeDescriptorCalendar(createCalendarItem("12:00", 0)) << RuleEngine::RuleErrorInvalidCalendarItem;
     QTest::newRow("invalid: calendarItem - monthly - weekDays") << createTimeDescriptorCalendar(createCalendarItem("13:13", 5, repeatingOptionInvalidMonthly)) << RuleEngine::RuleErrorInvalidRepeatingOption;
@@ -187,6 +196,17 @@ QVariantMap TestTimeManager::createCalendarItem(const QString &time, const uint 
 {
     QVariantMap calendarItem;
     calendarItem.insert("startTime", time);
+    calendarItem.insert("duration", duration);
+    if (!repeatingOption.isEmpty())
+        calendarItem.insert("repeating", repeatingOption);
+
+    return calendarItem;
+}
+
+QVariantMap TestTimeManager::createCalendarItem(const int &dateTime, const uint &duration, const QVariantMap &repeatingOption) const
+{
+    QVariantMap calendarItem;
+    calendarItem.insert("datetime", dateTime);
     calendarItem.insert("duration", duration);
     if (!repeatingOption.isEmpty())
         calendarItem.insert("repeating", repeatingOption);

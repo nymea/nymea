@@ -39,7 +39,7 @@
 
 namespace guhserver {
 
-/*! Constructs an empty, invalid rule. */
+/*! Constructs an empty, invalid \l{Rule}. */
 Rule::Rule():
     m_id(RuleId()),
     m_name(QString()),
@@ -55,12 +55,13 @@ Rule::Rule():
 
 }
 
-/*! Returns the id of this Rule. */
+/*! Returns the id of this \l{Rule}. */
 RuleId Rule::id() const
 {
     return m_id;
 }
 
+/*! Sets the \a ruleId of this \l{Rule}. */
 void Rule::setId(const RuleId &ruleId)
 {
     m_id = ruleId;
@@ -72,6 +73,7 @@ QString Rule::name() const
     return m_name;
 }
 
+/*! Sets the \a name of this \l{Rule}. */
 void Rule::setName(const QString &name)
 {
     m_name = name;
@@ -89,6 +91,7 @@ TimeDescriptor Rule::timeDescriptor() const
     return m_timeDescriptor;
 }
 
+/*! Sets the \a timeDescriptor of this \l{Rule}. */
 void Rule::setTimeDescriptor(const TimeDescriptor &timeDescriptor)
 {
     m_timeDescriptor = timeDescriptor;
@@ -100,6 +103,7 @@ StateEvaluator Rule::stateEvaluator() const
     return m_stateEvaluator;
 }
 
+/*! Sets the \a stateEvaluator of this \l{Rule}. */
 void Rule::setStateEvaluator(const StateEvaluator &stateEvaluator)
 {
     m_stateEvaluator = stateEvaluator;
@@ -111,6 +115,7 @@ QList<EventDescriptor> Rule::eventDescriptors() const
     return m_eventDescriptors;
 }
 
+/*! Sets the \a eventDescriptors of this \l{Rule}. */
 void Rule::setEventDescriptors(const QList<EventDescriptor> &eventDescriptors)
 {
     m_eventDescriptors = eventDescriptors;
@@ -122,6 +127,7 @@ QList<RuleAction> Rule::actions() const
     return m_actions;
 }
 
+/*! Sets the \a actions of this \l{Rule}. */
 void Rule::setActions(const QList<RuleAction> actions)
 {
     m_actions = actions;
@@ -133,6 +139,7 @@ QList<RuleAction> Rule::exitActions() const
     return m_exitActions;
 }
 
+/*! Sets the \a exitActions of this \l{Rule}. */
 void Rule::setExitActions(const QList<RuleAction> exitActions)
 {
     m_exitActions = exitActions;
@@ -162,11 +169,13 @@ void Rule::setExecutable(const bool &executable)
     m_executable = executable;
 }
 
+/*! Returns true if this \l{Rule} is valid. A \l{Rule} with a valid \l{id()} is valid. */
 bool Rule::isValid() const
 {
     return !m_id.isNull();
 }
 
+/*! Returns true if this \l{Rule} is consistent. */
 bool Rule::isConsistent() const
 {
     // check if this rules is based on any event and contains exit actions
@@ -183,7 +192,6 @@ bool Rule::isConsistent() const
 
     return true;
 }
-
 
 void Rule::setActive(const bool &active)
 {

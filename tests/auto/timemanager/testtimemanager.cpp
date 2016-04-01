@@ -25,10 +25,13 @@
 #include "devicemanager.h"
 #include "mocktcpserver.h"
 
-#include <QTimeZone>
-#include <QDateTime>
 #include <QtTest/QtTest>
 #include <QCoreApplication>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QTimeZone>
+#include <QDateTime>
 
 using namespace guhserver;
 
@@ -43,7 +46,14 @@ private slots:
     void addTimeDescriptor_data();
     void addTimeDescriptor();
 
+    void testCalendarItemHourly();
+
 private:
+    void verifyRuleExecuted(const ActionTypeId &actionTypeId);
+    void verifyRuleNotExecuted();
+
+    void cleanupMockHistory();
+
     QVariantMap createTimeEventItem(const QString &time = QString(), const QVariantMap &repeatingOption = QVariantMap()) const;
     QVariantMap createTimeEventItem(const int &dateTime, const QVariantMap &repeatingOption = QVariantMap()) const;
     QVariantMap createTimeDescriptorTimeEvent(const QVariantMap &timeEventItem) const;
@@ -53,7 +63,6 @@ private:
     QVariantMap createCalendarItem(const int &dateTime, const uint &duration = 0, const QVariantMap &repeatingOption = QVariantMap()) const;
     QVariantMap createTimeDescriptorCalendar(const QVariantMap &calendarItem) const;
     QVariantMap createTimeDescriptorCalendar(const QVariantList &calendarItems) const;
-
 };
 
 void TestTimeManager::changeTimeZone_data()
@@ -114,6 +123,10 @@ void TestTimeManager::addTimeDescriptor_data()
     repeatingOptionMonthlyMultiple.insert("monthDays", QVariantList() << 20 << 14 << 5);
 
     // invalid RepeatingOptions
+    QVariantMap repeatingOptionInvalidNone;
+    repeatingOptionInvalidNone.insert("mode", "RepeatingModeNone");
+    repeatingOptionInvalidNone.insert("monthDays", QVariantList() << 13 << 12 << 27);
+
     QVariantMap repeatingOptionInvalidWeekly;
     repeatingOptionInvalidWeekly.insert("mode", "RepeatingModeWeekly");
     repeatingOptionInvalidWeekly.insert("monthDays", QVariantList() << 12 << 2 << 7);
@@ -168,6 +181,7 @@ void TestTimeManager::addTimeDescriptor_data()
     QTest::newRow("valid: timeEventItem - monthly - multiple days") << createTimeDescriptorTimeEvent(createTimeEventItem("23:00", repeatingOptionMonthlyMultiple)) << RuleEngine::RuleErrorNoError;
 
     QTest::newRow("invalid: calendarItem empty") << createTimeDescriptorCalendar(createCalendarItem()) << RuleEngine::RuleErrorInvalidCalendarItem;
+    QTest::newRow("invalid: calendarItem none") << createTimeDescriptorCalendar(createCalendarItem("00:12", 12, repeatingOptionInvalidNone)) << RuleEngine::RuleErrorInvalidRepeatingOption;
     QTest::newRow("invalid: calendarItem - dateTime + repeatingOption") << createTimeDescriptorCalendar(createCalendarItem(QDateTime::currentDateTime().toTime_t(), 5, repeatingOptionDaily)) << RuleEngine::RuleErrorInvalidCalendarItem;
     QTest::newRow("invalid: calendarItem invalid time") << createTimeDescriptorCalendar(createCalendarItem("35:80", 5)) << RuleEngine::RuleErrorInvalidCalendarItem;
     QTest::newRow("invalid: calendarItem invalid duration") << createTimeDescriptorCalendar(createCalendarItem("12:00", 0)) << RuleEngine::RuleErrorInvalidCalendarItem;
@@ -179,6 +193,7 @@ void TestTimeManager::addTimeDescriptor_data()
     QTest::newRow("invalid: calendarItem - invalid monthdays  (to big)") << createTimeDescriptorCalendar(createCalendarItem("13:13", 5, repeatingOptionInvalidMonthDays2)) << RuleEngine::RuleErrorInvalidRepeatingOption;
 
     QTest::newRow("invalid: timeEventItem empty") << createTimeDescriptorTimeEvent(createTimeEventItem()) << RuleEngine::RuleErrorInvalidTimeEventItem;
+    QTest::newRow("invalid: timeEventItem none") << createTimeDescriptorTimeEvent(createTimeEventItem("00:12", repeatingOptionInvalidNone)) << RuleEngine::RuleErrorInvalidRepeatingOption;
     QTest::newRow("invalid: timeEventItem - dateTime + repeatingOption") << createTimeDescriptorTimeEvent(createTimeEventItem(QDateTime::currentDateTime().toTime_t(), repeatingOptionDaily)) << RuleEngine::RuleErrorInvalidTimeEventItem;
     QTest::newRow("invalid: timeEventItem invalid time") << createTimeDescriptorTimeEvent(createTimeEventItem("35:80")) << RuleEngine::RuleErrorInvalidTimeEventItem;
     QTest::newRow("invalid: timeEventItem - monthly - weekDays") << createTimeDescriptorTimeEvent(createTimeEventItem("13:13", repeatingOptionInvalidMonthly)) << RuleEngine::RuleErrorInvalidRepeatingOption;
@@ -211,11 +226,120 @@ void TestTimeManager::addTimeDescriptor()
 
     // Print rule
     RuleId newRuleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
-    QVariantMap params;
-    params.insert("ruleId", newRuleId);
-    response = injectAndWait("Rules.GetRuleDetails", params);
-    QVariantMap rule = response.toMap().value("params").toMap().value("rule").toMap();
-    qDebug() << QJsonDocument::fromVariant(rule).toJson();
+
+    // REMOVE rule
+    QVariantMap removeParams;
+    removeParams.insert("ruleId", newRuleId);
+    response = injectAndWait("Rules.RemoveRule", removeParams);
+    verifyRuleError(response);
+}
+
+void TestTimeManager::testCalendarItemHourly()
+{
+    GuhCore::instance()->timeManager()->stopTimer();
+    qDebug() << GuhCore::instance()->timeManager()->currentDate().toString();
+    qDebug() << GuhCore::instance()->timeManager()->currentTime().toString();
+    qDebug() << GuhCore::instance()->timeManager()->currentDateTime().toString();
+
+    QVariantMap ruleMap; QVariantMap action; QVariantMap exitAction; QVariantMap repeatingOptionHourly;
+    repeatingOptionHourly.insert("mode", "RepeatingModeHourly");
+    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("deviceId", m_mockDeviceId);
+    action.insert("ruleActionParams", QVariantList());
+    exitAction.insert("actionTypeId", mockActionIdWithParams);
+    QVariantList actionParams;
+    QVariantMap param1;
+    param1.insert("name", "mockActionParam1");
+    param1.insert("value", 5);
+    actionParams.append(param1);
+    QVariantMap param2;
+    param2.insert("name", "mockActionParam2");
+    param2.insert("value", true);
+    actionParams.append(param2);
+    exitAction.insert("deviceId", m_mockDeviceId);
+    exitAction.insert("ruleActionParams", actionParams);
+    ruleMap.insert("name", "Time based hourly calendar rule");
+    ruleMap.insert("timeDescriptor", createTimeDescriptorCalendar(createCalendarItem("08:05", 5)));
+    ruleMap.insert("actions", QVariantList() << action);
+    ruleMap.insert("exitActions", QVariantList() << exitAction);
+
+    QVariant response = injectAndWait("Rules.AddRule", ruleMap);
+    verifyRuleError(response);
+    RuleId ruleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
+
+    QDateTime currentDateTime = GuhCore::instance()->timeManager()->currentDateTime();
+
+    // check the next 24 hours
+    QDateTime future = QDateTime(currentDateTime.date(), QTime(8, 4));
+    for (int i = 0; i < 24; i++) {
+        // inactive
+        GuhCore::instance()->timeManager()->setTime(future);
+        verifyRuleNotExecuted();
+        // active
+        GuhCore::instance()->timeManager()->setTime(QDateTime(currentDateTime.date(), QTime(future.time().hour(), 5)));
+        verifyRuleExecuted(mockActionIdNoParams);
+        cleanupMockHistory();
+        // active unchanged
+        GuhCore::instance()->timeManager()->setTime(QDateTime(currentDateTime.date(), QTime(future.time().hour(), 7)));
+        verifyRuleNotExecuted();
+        // inactive
+        GuhCore::instance()->timeManager()->setTime(QDateTime(currentDateTime.date(), QTime(future.time().hour(), 10)));
+        verifyRuleExecuted(mockActionIdWithParams);
+        cleanupMockHistory();
+        // inactive unchanged
+        GuhCore::instance()->timeManager()->setTime(QDateTime(currentDateTime.date(), QTime(future.time().hour(), 11)));
+        verifyRuleNotExecuted();
+
+        // One hour "Back to the future"
+        future = future.addSecs(60*60);
+    }
+
+    // REMOVE rule
+    QVariantMap removeParams;
+    removeParams.insert("ruleId", ruleId);
+    response = injectAndWait("Rules.RemoveRule", removeParams);
+    verifyRuleError(response);
+}
+
+void TestTimeManager::verifyRuleExecuted(const ActionTypeId &actionTypeId)
+{
+    // Verify rule got executed
+    QNetworkAccessManager nam;
+    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/actionhistory").arg(QString::number(m_mockDevice1Port))));
+    QNetworkReply *reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+
+    QByteArray actionHistory = reply->readAll();
+    qDebug() << "have action history" << actionHistory;
+    QVERIFY2(actionTypeId == ActionTypeId(actionHistory), "Action not triggered");
+    reply->deleteLater();
+}
+
+void TestTimeManager::verifyRuleNotExecuted()
+{
+    QNetworkAccessManager nam;
+    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/actionhistory").arg(QString::number(m_mockDevice1Port))));
+    QNetworkReply *reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+
+    QByteArray actionHistory = reply->readAll();
+    qDebug() << "have action history" << actionHistory;
+    QVERIFY2(actionHistory.isEmpty(), "Action is triggered while it should not have been.");
+    reply->deleteLater();
+}
+
+void TestTimeManager::cleanupMockHistory() {
+    QNetworkAccessManager nam;
+    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/clearactionhistory").arg(QString::number(m_mockDevice1Port))));
+    QNetworkReply *reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
 }
 
 QVariantMap TestTimeManager::createTimeEventItem(const QString &time, const QVariantMap &repeatingOption) const

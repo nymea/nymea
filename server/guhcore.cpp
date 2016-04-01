@@ -397,8 +397,7 @@ GuhCore::GuhCore(QObject *parent) :
     connect(m_ruleEngine, &RuleEngine::ruleRemoved, this, &GuhCore::ruleRemoved);
     connect(m_ruleEngine, &RuleEngine::ruleConfigurationChanged, this, &GuhCore::ruleConfigurationChanged);
 
-    connect(m_timeManager, &TimeManager::timeChanged, this, &GuhCore::onTimeChanged);
-    connect(m_timeManager, &TimeManager::dateChanged, this, &GuhCore::onDateChanged);
+    connect(m_timeManager, &TimeManager::dateTimeChanged, this, &GuhCore::onDateTimeChanged);
     connect(m_timeManager, &TimeManager::tick, m_deviceManager, &DeviceManager::timeTick);
 
     m_logger->logSystemEvent(true);
@@ -462,14 +461,30 @@ void GuhCore::gotEvent(const Event &event)
     executeRuleActions(actions);
 }
 
-void GuhCore::onTimeChanged(const QTime &currentTime)
+void GuhCore::onDateTimeChanged(const QDateTime &dateTime)
 {
-    qCDebug(dcTimeManager) << currentTime.toString("hh:mm");
-}
+    qCDebug(dcTimeManager) << dateTime.toString("dd.MM.yyyy hh:mm");
 
-void GuhCore::onDateChanged(const QDate &currentDate)
-{
-    qCDebug(dcTimeManager) << currentDate.toString("dd.MM.yyyy");
+    QList<RuleAction> actions;
+    foreach (const Rule &rule, m_ruleEngine->evaluateTime(dateTime)) {
+        // TimeEvent based
+        if (!rule.timeDescriptor().timeEventItems().isEmpty()) {
+            m_logger->logRuleTriggered(rule);
+            foreach (const RuleAction &action, rule.actions()) {
+                actions.append(action);
+            }
+        } else {
+            // Calendar based rule
+            m_logger->logRuleActiveChanged(rule);
+            emit ruleActiveChanged(rule);
+            if (rule.active()) {
+                actions.append(rule.actions());
+            } else {
+                actions.append(rule.exitActions());
+            }
+        }
+    }
+    executeRuleActions(actions);
 }
 
 /*! Return the instance of the log engine */

@@ -1067,6 +1067,7 @@ ParamList JsonTypes::unpackParams(const QVariantList &paramList)
     return params;
 }
 
+/*! Returns a \l{Rule} created from the given \a ruleMap. */
 Rule JsonTypes::unpackRule(const QVariantMap &ruleMap)
 {
     // The rule id will only be valid if unpacking for edit
@@ -1121,6 +1122,7 @@ Rule JsonTypes::unpackRule(const QVariantMap &ruleMap)
     return rule;
 }
 
+/*! Returns a \l{RuleAction} created from the given \a ruleActionMap. */
 RuleAction JsonTypes::unpackRuleAction(const QVariantMap &ruleActionMap)
 {
     RuleAction action(ActionTypeId(ruleActionMap.value("actionTypeId").toString()), DeviceId(ruleActionMap.value("deviceId").toString()));

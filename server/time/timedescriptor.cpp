@@ -69,7 +69,7 @@ void TimeDescriptor::setCalendarItems(const QList<CalendarItem> &calendarItems)
 /*! Returns true if either the calendarItems list is not empty or the timeEventItems list.*/
 bool TimeDescriptor::isValid() const
 {
-    return !m_timeEventItems.isEmpty() && !m_calendarItems.isEmpty();
+    return !m_timeEventItems.isEmpty() != !m_calendarItems.isEmpty();
 }
 
 /*! Returns true if the calendarItems list and the timeEventItems list is empty.*/
@@ -84,7 +84,23 @@ bool TimeDescriptor::isEmpty() const
 */
 bool TimeDescriptor::evaluate(const QDateTime &dateTime) const
 {
-    Q_UNUSED(dateTime)
+    // If there are calendarItems (always OR connected)
+    if (!m_calendarItems.isEmpty()) {
+        foreach (const CalendarItem &calendarItem, m_calendarItems) {
+            if (calendarItem.evaluate(dateTime)) {
+                return true;
+            }
+        }
+    }
+
+    // If there are timeEventItems (always OR connected)
+    if (!m_timeEventItems.isEmpty()) {
+        foreach (const TimeEventItem &timeEventItem, m_timeEventItems) {
+            if (timeEventItem.evaluate(dateTime)) {
+                return true;
+            }
+        }
+    }
 
     return false;
 }

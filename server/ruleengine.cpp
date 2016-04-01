@@ -74,6 +74,14 @@
         The types of the \l{RuleActionParam} and the corresponding \l{Event} \l{Param} do not match.
     \value RuleErrorNotExecutable
         This rule is not executable.
+    \value RuleErrorInvalidRepeatingOption
+        One of the given \l{RepeatingOption}{RepeatingOption} is not valid.
+    \value RuleErrorInvalidCalendarItem
+        One of the given \l{CalendarItem}{CalendarItems} is not valid.
+    \value RuleErrorInvalidTimeDescriptor
+        One of the given \l{TimeDescriptor}{TimeDescriptors} is not valid.
+    \value RuleErrorInvalidTimeEventItem
+        One of the given \l{TimeEventItem}{TimeEventItems} is not valid.
     \value RuleErrorContainsEventBasesAction
         This rule contains an \l{Action} which depends on an \l{Event} value. This \l{Rule} cannot execute
         the \l{Action}{Actions} without the \l{Event} value.
@@ -238,7 +246,7 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
     qCDebug(dcRuleEngine) << "got event:" << event << device->name() << event.eventTypeId();
 
     QList<Rule> rules;
-    foreach (const RuleId &id, m_ruleIds) {
+    foreach (const RuleId &id, ruleIds()) {
         Rule rule = m_rules.value(id);
         if (!rule.enabled())
             continue;
@@ -278,14 +286,65 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
     return rules;
 }
 
+/*! Ask the Engine to evaluate all the rules for the given \a dateTime.
+    This will search all the \l{Rule}{Rules} triggered by the given \a dateTime
+    and evaluate their \l{CalendarItem}{CalendarItems} and \l{TimeEventItem}{TimeEventItems}.
+    It will return a list of all \l{Rule}{Rules} that are triggered or change its active state.
+*/
 QList<Rule> RuleEngine::evaluateTime(const QDateTime &dateTime)
 {
-    Q_UNUSED(dateTime)
     QList<Rule> rules;
+
+    foreach (const Rule &r, m_rules.values()) {
+        Rule rule = m_rules.value(r.id());
+        if (!rule.enabled())
+            continue;
+
+        // check if this rule is time based
+        if (!rule.timeDescriptor().isEmpty()) {
+
+            // check if this rule is based on calendarItems
+            if (!rule.timeDescriptor().calendarItems().isEmpty()) {
+                qCDebug(dcRuleEngine()) << "Evaluate CalendarItem against" << dateTime.toString("dd:MM:yyyy hh:mm") << "for rule" << rule.id().toString();
+                bool active = rule.timeDescriptor().evaluate(dateTime);
+                if (active) {
+                    if (m_activeRules.contains(rule.id())) {
+                        qCDebug(dcRuleEngine) << "Rule" << rule.id().toString() << "still active.";
+                    } else {
+                        qCDebug(dcRuleEngine) << "Rule" << rule.id().toString() << "active.";
+                        rule.setActive(true);
+                        m_rules[rule.id()] = rule;
+                        m_activeRules.append(rule.id());
+                        rules.append(rule);
+                    }
+                } else {
+                    if (m_activeRules.contains(rule.id())) {
+                        qCDebug(dcRuleEngine) << "Rule" << rule.id().toString() << "inactive.";
+                        rule.setActive(false);
+                        m_rules[rule.id()] = rule;
+                        m_activeRules.removeAll(rule.id());
+                        rules.append(rule);
+                    }
+                }
+            }
+
+            // check if this rule is based on timeEventItems
+            if (!rule.timeDescriptor().timeEventItems().isEmpty()) {
+                bool valid = rule.timeDescriptor().evaluate(dateTime);
+                qCDebug(dcRuleEngine()) << "Result:" << (valid ? "valid" : "invalid");
+                if (valid) {
+                    rules.append(rule);
+                }
+            }
+        }
+    }
 
     return rules;
 }
 
+/*! Add the given \a rule to the system. If the rule will be added
+    from an edit request, the parameter \a fromEdit will be true.
+*/
 RuleEngine::RuleError RuleEngine::addRule(const Rule &rule, bool fromEdit)
 {
     if (rule.id().isNull())
@@ -333,7 +392,7 @@ RuleEngine::RuleError RuleEngine::addRule(const Rule &rule, bool fromEdit)
     // Check time descriptor
     if (!rule.timeDescriptor().isEmpty()) {
 
-        if (rule.timeDescriptor().isValid()) {
+        if (!rule.timeDescriptor().isValid()) {
             qCDebug(dcRuleEngine()) << "Cannot create rule. Got invalid timeDescriptor.";
             return RuleErrorInvalidTimeDescriptor;
         }
@@ -484,6 +543,9 @@ RuleEngine::RuleError RuleEngine::addRule(const Rule &rule, bool fromEdit)
     return RuleErrorNoError;
 }
 
+/*! Edit the given \a rule in the system. The rule with the \l{RuleId} from the given \a rule
+    will be removed from the system and readded with the new parameters in the given \a rule.
+*/
 RuleEngine::RuleError RuleEngine::editRule(const Rule &rule)
 {
     if (rule.id().isNull())

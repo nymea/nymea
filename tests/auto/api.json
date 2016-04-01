@@ -1,4 +1,4 @@
-38
+39
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -334,15 +334,15 @@
                 ],
                 "name": "String",
                 "o:enabled": "Bool",
-                "o:eventDescriptor": "$ref:EventDescriptor",
-                "o:eventDescriptorList": [
+                "o:eventDescriptors": [
                     "$ref:EventDescriptor"
                 ],
                 "o:executable": "Bool",
                 "o:exitActions": [
                     "$ref:RuleAction"
                 ],
-                "o:stateEvaluator": "$ref:StateEvaluator"
+                "o:stateEvaluator": "$ref:StateEvaluator",
+                "o:timeDescriptor": "$ref:TimeDescriptor"
             },
             "returns": {
                 "o:ruleId": "Uuid",
@@ -366,8 +366,7 @@
                 ],
                 "name": "String",
                 "o:enabled": "Bool",
-                "o:eventDescriptor": "$ref:EventDescriptor",
-                "o:eventDescriptorList": [
+                "o:eventDescriptors": [
                     "$ref:EventDescriptor"
                 ],
                 "o:executable": "Bool",
@@ -375,6 +374,7 @@
                     "$ref:RuleAction"
                 ],
                 "o:stateEvaluator": "$ref:StateEvaluator",
+                "o:timeDescriptor": "$ref:TimeDescriptor",
                 "ruleId": "Uuid"
             },
             "returns": {
@@ -574,8 +574,15 @@
             "Bool",
             "Variant",
             "Color",
+            "Time",
             "Object"
         ],
+        "CalendarItem": {
+            "duration": "UInt",
+            "o:datetime": "UInt",
+            "o:repeating": "$ref:RepeatingOption",
+            "o:startTime": "Time"
+        },
         "CreateMethod": [
             "CreateMethodUser",
             "CreateMethodAuto",
@@ -792,6 +799,22 @@
             "RemovePolicyCascade",
             "RemovePolicyUpdate"
         ],
+        "RepeatingMode": [
+            "RepeatingModeNone",
+            "RepeatingModeHourly",
+            "RepeatingModeDaily",
+            "RepeatingModeWeekly",
+            "RepeatingModeMonthly"
+        ],
+        "RepeatingOption": {
+            "mode": "$ref:RepeatingMode",
+            "o:monthDays": [
+                "Int"
+            ],
+            "o:weekDays": [
+                "Int"
+            ]
+        },
         "Rule": {
             "actions": [
                 "$ref:RuleAction"
@@ -807,7 +830,8 @@
             ],
             "id": "Uuid",
             "name": "String",
-            "stateEvaluator": "$ref:StateEvaluator"
+            "stateEvaluator": "$ref:StateEvaluator",
+            "timeDescriptor": "$ref:TimeDescriptor"
         },
         "RuleAction": {
             "actionTypeId": "Uuid",
@@ -844,6 +868,10 @@
             "RuleErrorInvalidStateEvaluatorValue",
             "RuleErrorTypesNotMatching",
             "RuleErrorNotExecutable",
+            "RuleErrorInvalidTimeDescriptor",
+            "RuleErrorInvalidRepeatingOption",
+            "RuleErrorInvalidCalendarItem",
+            "RuleErrorInvalidTimeEventItem",
             "RuleErrorContainsEventBasesAction",
             "RuleErrorNoExitActions"
         ],
@@ -886,6 +914,19 @@
             ],
             "o:unit": "$ref:Unit",
             "type": "$ref:BasicType"
+        },
+        "TimeDescriptor": {
+            "o:calendarItems": [
+                "$ref:CalendarItem"
+            ],
+            "o:timeEventItems": [
+                "$ref:TimeEventItem"
+            ]
+        },
+        "TimeEventItem": {
+            "o:datetime": "UInt",
+            "o:repeating": "$ref:RepeatingOption",
+            "o:time": "Time"
         },
         "Unit": [
             "UnitNone",

@@ -271,7 +271,7 @@ void TestTimeManager::testCalendarItemHourly()
 
     // check the next 24 hours
     QDateTime future = QDateTime(currentDateTime.date(), QTime(8, 4));
-    for (int i = 0; i < 24; i++) {
+    //for (int i = 0; i < 24; i++) {
         // inactive
         GuhCore::instance()->timeManager()->setTime(future);
         verifyRuleNotExecuted();
@@ -292,7 +292,7 @@ void TestTimeManager::testCalendarItemHourly()
 
         // One hour "Back to the future"
         future = future.addSecs(60*60);
-    }
+    //}
 
     // REMOVE rule
     QVariantMap removeParams;

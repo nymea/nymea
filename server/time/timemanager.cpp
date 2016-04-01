@@ -100,6 +100,14 @@ QDate TimeManager::currentDate() const
     return QDateTime::currentDateTimeUtc().toTimeZone(m_timeZone).date();
 }
 
+#ifdef TESTING_ENABLED
+void TimeManager::stopTimer()
+{
+    // Stop clock (used for testing)
+    m_guhTimer->stop();
+}
+#endif
+
 void TimeManager::guhTimeout()
 {
     // tick for deviceManager

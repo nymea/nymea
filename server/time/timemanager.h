@@ -41,6 +41,10 @@ public:
     QTime currentTime() const;
     QDate currentDate() const;
 
+#ifdef TESTING_ENABLED
+    void stopTimer();
+#endif
+
 private:
     QTimeZone m_timeZone;
     QDateTime m_dateTime;

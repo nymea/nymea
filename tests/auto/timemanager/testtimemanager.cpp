@@ -40,10 +40,10 @@ private slots:
     void changeTimeZone_data();
     void changeTimeZone();
 
+    void addTimeDescriptor_data();
+    void addTimeDescriptor();
+
 };
-
-
-
 
 void TestTimeManager::changeTimeZone_data()
 {

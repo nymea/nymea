@@ -201,6 +201,8 @@ public:
     // unpack Types
     static Param unpackParam(const QVariantMap &paramMap);
     static ParamList unpackParams(const QVariantList &paramList);
+    static Rule unpackRule(const QVariantMap &ruleMap);
+    static RuleAction unpackRuleAction(const QVariantMap &ruleActionMap);
     static RuleActionParam unpackRuleActionParam(const QVariantMap &ruleActionParamMap);
     static RuleActionParamList unpackRuleActionParams(const QVariantList &ruleActionParamList);
     static ParamDescriptor unpackParamDescriptor(const QVariantMap &paramDescriptorMap);
@@ -221,15 +223,6 @@ public:
     static QPair<bool, QString> validateVariant(const QVariant &templateVariant, const QVariant &variant);
     static QPair<bool, QString> validateEnum(const QVariantList &enumList, const QVariant &value);
     static QPair<bool, QString> validateBasicType(const QVariant &variant);
-
-    // rule validation helper methods
-    static bool checkEventDescriptors(const QList<EventDescriptor> eventDescriptors, const EventTypeId &eventTypeId);
-    static QVariant::Type getActionParamType(const ActionTypeId &actionTypeId, const QString &paramName);
-    static QVariant::Type getEventParamType(const EventTypeId &eventTypeId, const QString &paramName);
-    static RuleEngine::RuleError verifyRuleConsistency(const QVariantMap &params);
-    static QPair<QList<EventDescriptor>, RuleEngine::RuleError> verifyEventDescriptors(const QVariantMap &params);
-    static QPair<QList<RuleAction>, RuleEngine::RuleError> verifyActions(const QVariantMap &params, const QList<EventDescriptor> &eventDescriptorList);
-    static QPair<QList<RuleAction>, RuleEngine::RuleError> verifyExitActions(const QVariantMap &params);
 
 private:
     static bool s_initialized;

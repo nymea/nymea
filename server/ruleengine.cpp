@@ -205,7 +205,13 @@ RuleEngine::RuleEngine(QObject *parent) :
         }
         settings.endGroup();
 
-        Rule rule = Rule(RuleId(idString), name, eventDescriptorList, stateEvaluator, actions, exitActions);
+        Rule rule;
+        rule.setId(RuleId(idString));
+        rule.setName(name);
+        rule.setEventDescriptors(eventDescriptorList);
+        rule.setStateEvaluator(stateEvaluator);
+        rule.setActions(actions);
+        rule.setExitActions(exitActions);
         rule.setEnabled(enabled);
         rule.setExecutable(executable);
         appendRule(rule);
@@ -272,35 +278,40 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
     return rules;
 }
 
-/*! Add a new \l{Rule} with the given \a ruleId , \a name, \a eventDescriptorList, \a actions and \a enabled value to the engine.
-    For convenience, this creates a Rule without any \l{State} comparison.
-*/
-RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const QList<RuleAction> &actions, bool enabled)
+QList<Rule> RuleEngine::evaluateTime(const QDateTime &dateTime)
 {
-    return addRule(ruleId, name, eventDescriptorList, StateEvaluator(), actions, QList<RuleAction>(), enabled);
+    Q_UNUSED(dateTime)
+    QList<Rule> rules;
+
+    return rules;
 }
 
-/*! Add a new \l{Rule} with the given \a ruleId, \a name, \a eventDescriptorList, \a stateEvaluator, the  list of \a actions, the list of \a exitActions, the \a enabled and the \a executable value to the engine.
-    If \a fromEdit is true, the notification Rules. RuleAdded will not be emitted.
-*/
-RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions, bool enabled, bool executable, bool fromEdit)
+RuleEngine::RuleError RuleEngine::addRule(const Rule &rule, bool fromEdit)
 {
-    if (ruleId.isNull())
+    if (rule.id().isNull())
         return RuleErrorInvalidRuleId;
 
-    if (!findRule(ruleId).id().isNull()) {
-        qCWarning(dcRuleEngine) << "Already have a rule with this id!";
+    if (!findRule(rule.id()).id().isNull()) {
+        qCWarning(dcRuleEngine) << "Already have a rule with this id.";
         return RuleErrorInvalidRuleId;
     }
 
-    foreach (const EventDescriptor &eventDescriptor, eventDescriptorList) {
+    if (!rule.isConsistent()) {
+        qCWarning(dcRuleEngine) << "Rule inconsistent.";
+        return RuleErrorInvalidRuleFormat;
+    }
+
+    // Check IDs in each EventDescriptor
+    foreach (const EventDescriptor &eventDescriptor, rule.eventDescriptors()) {
+        // check deviceId
         Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(eventDescriptor.deviceId());
         if (!device) {
             qCWarning(dcRuleEngine) << "Cannot create rule. No configured device for eventTypeId" << eventDescriptor.eventTypeId();
             return RuleErrorDeviceNotFound;
         }
-        DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
 
+        // Check eventTypeId for this deivce
+        DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
         bool eventTypeFound = false;
         foreach (const EventType &eventType, deviceClass.eventTypes()) {
             if (eventType.id() == eventDescriptor.eventTypeId()) {
@@ -313,45 +324,84 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
         }
     }
 
+    // Check state evaluator
+    if (!rule.stateEvaluator().isValid()) {
+        qCWarning(dcRuleEngine) << "Got an invalid StateEvaluator.";
+        return RuleErrorInvalidStateEvaluatorValue;
+    }
 
-
-    foreach (const RuleAction &action, actions) {
+    // Check actions
+    foreach (const RuleAction &action, rule.actions()) {
         Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(action.deviceId());
         if (!device) {
-            qCWarning(dcRuleEngine) << "Cannot create rule. No configured device for actionTypeId" << action.actionTypeId();
+            qCWarning(dcRuleEngine) << "Cannot create rule. No configured device for action with actionTypeId" << action.actionTypeId();
             return RuleErrorDeviceNotFound;
         }
+
         DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
         if (!deviceClass.hasActionType(action.actionTypeId())) {
             qCWarning(dcRuleEngine) << "Cannot create rule. Device " + device->name() + " has no action type:" << action.actionTypeId();
             return RuleErrorActionTypeNotFound;
         }
 
-        // if the action is eventbased, it is already checked
-        if (!action.isEventBased()) {
+        // check possible eventTypeIds in params
+        if (action.isEventBased()) {
+            foreach (const RuleActionParam &ruleActionParam, action.ruleActionParams()) {
+                if (ruleActionParam.eventTypeId() != EventTypeId()) {
+                    // We have an eventTypeId
+                    if (rule.eventDescriptors().isEmpty()) {
+                        qCWarning(dcRuleEngine) << "Cannot create rule. RuleAction" << action.actionTypeId() << "contains an eventTypeId, but there are no eventDescriptors.";
+                        return RuleErrorInvalidRuleActionParameter;
+                    }
+
+                    // now check if this eventType is in the eventDescriptorList of this rule
+                    if (!checkEventDescriptors(rule.eventDescriptors(), ruleActionParam.eventTypeId())) {
+                        qCWarning(dcRuleEngine) << "Cannot create rule. EventTypeId from RuleAction" << action.actionTypeId() << "not in eventDescriptors.";
+                        return RuleErrorInvalidRuleActionParameter;
+                    }
+
+                    // check if the param type of the event and the action match
+                    QVariant::Type eventParamType = getEventParamType(ruleActionParam.eventTypeId(), ruleActionParam.eventParamName());
+                    QVariant::Type actionParamType = getActionParamType(action.actionTypeId(), ruleActionParam.name());
+                    if (eventParamType != actionParamType) {
+                        qCWarning(dcRuleEngine) << "Cannot create rule. RuleActionParam" << ruleActionParam.name() << " and given event param " << ruleActionParam.eventParamName() << "have not the same type:";
+                        qCWarning(dcRuleEngine) << "        -> actionParamType:" << actionParamType;
+                        qCWarning(dcRuleEngine) << "        ->  eventParamType:" << eventParamType;
+                        return RuleErrorTypesNotMatching;
+                    }
+                }
+            }
+        } else {
             // verify action params
             foreach (const ActionType &actionType, deviceClass.actionTypes()) {
                 if (actionType.id() == action.actionTypeId()) {
                     ParamList finalParams = action.toAction().params();
                     DeviceManager::DeviceError paramCheck = GuhCore::instance()->deviceManager()->verifyParams(actionType.paramTypes(), finalParams);
-                    if (paramCheck != DeviceManager::DeviceErrorNoError)
+                    if (paramCheck != DeviceManager::DeviceErrorNoError) {
+                        qCWarning(dcRuleEngine) << "Cannot create rule. Got an invalid actionParam.";
                         return RuleErrorInvalidRuleActionParameter;
+                    }
                 }
+            }
+        }
+
+        foreach (const RuleActionParam &ruleActionParam, action.ruleActionParams()) {
+            if (!ruleActionParam.isValid()) {
+                qCWarning(dcRuleEngine) << "Cannot create rule. Got an actionParam with \"value\" AND \"eventTypeId\".";
+                return RuleEngine::RuleErrorInvalidRuleActionParameter;
             }
         }
     }
 
-    if (actions.count() > 0)
-        qCDebug(dcRuleEngine) << "actions" << actions.last().actionTypeId() << actions.last().ruleActionParams();
-
-    foreach (const RuleAction &action, exitActions) {
+    // Check exit actions
+    foreach (const RuleAction &action, rule.exitActions()) {
         Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(action.deviceId());
         if (!device) {
-            qCWarning(dcRuleEngine) << "Cannot create rule. No configured device for actionTypeId" << action.actionTypeId();
+            qCWarning(dcRuleEngine) << "Cannot create rule. No configured device for exit action with actionTypeId" << action.actionTypeId();
             return RuleErrorDeviceNotFound;
         }
-        DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
 
+        DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
         if (!deviceClass.hasActionType(action.actionTypeId())) {
             qCWarning(dcRuleEngine) << "Cannot create rule. Device " + device->name() + " has no action type:" << action.actionTypeId();
             return RuleErrorActionTypeNotFound;
@@ -362,60 +412,67 @@ RuleEngine::RuleError RuleEngine::addRule(const RuleId &ruleId, const QString &n
             if (actionType.id() == action.actionTypeId()) {
                 ParamList finalParams = action.toAction().params();
                 DeviceManager::DeviceError paramCheck = GuhCore::instance()->deviceManager()->verifyParams(actionType.paramTypes(), finalParams);
-                if (paramCheck != DeviceManager::DeviceErrorNoError)
+                if (paramCheck != DeviceManager::DeviceErrorNoError) {
+                    qCWarning(dcRuleEngine) << "Cannot create rule. Got an invalid exit actionParam.";
                     return RuleErrorInvalidRuleActionParameter;
+                }
+            }
+        }
+
+        // Exit action can never be event based.
+        if (action.isEventBased()) {
+            qCWarning(dcRuleEngine) << "Cannot create rule. Got exitAction with an actionParam containing an eventTypeId. ";
+            return RuleErrorInvalidRuleActionParameter;
+        }
+
+        foreach (const RuleActionParam &ruleActionParam, action.ruleActionParams()) {
+            if (!ruleActionParam.isValid()) {
+                qCWarning(dcRuleEngine) << "Cannot create rule. Got an actionParam with \"value\" AND \"eventTypeId\".";
+                return RuleEngine::RuleErrorInvalidRuleActionParameter;
             }
         }
     }
 
-    if (exitActions.count() > 0)
-        qCDebug(dcRuleEngine) << "exit actions" << exitActions.last().actionTypeId() << exitActions.last().ruleActionParams();
-
-    Rule rule = Rule(ruleId, name, eventDescriptorList, stateEvaluator, actions, exitActions);
-    rule.setEnabled(enabled);
-    rule.setExecutable(executable);
     appendRule(rule);
     saveRule(rule);
+
     if (!fromEdit)
         emit ruleAdded(rule);
 
     return RuleErrorNoError;
 }
 
-/*! Edit a \l{Rule} with the given \a ruleId, \a name, \a eventDescriptorList, \a stateEvaluator,
-    the  list of \a actions, the list of \a exitActions, the \a enabled and the \a executable in the engine.
-*/
-RuleEngine::RuleError RuleEngine::editRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions, bool enabled, bool executable)
+RuleEngine::RuleError RuleEngine::editRule(const Rule &rule)
 {
-    if (ruleId.isNull())
+    if (rule.id().isNull())
         return RuleErrorInvalidRuleId;
 
-
     // Store rule in case the add new rule fails
-    Rule rule = findRule(ruleId);
-
-    if (rule.id().isNull()) {
-        qCWarning(dcRuleEngine) << "Cannot edit rule. There is no rule with id:" << ruleId.toString();
+    Rule oldRule = findRule(rule.id());
+    if (oldRule.id().isNull()) {
+        qCWarning(dcRuleEngine) << "Cannot edit rule. There is no rule with id:" << rule.id().toString();
         return RuleErrorRuleNotFound;
     }
 
     // First remove old rule with this id
-    RuleError removeResult = removeRule(ruleId, true);
+    RuleError removeResult = removeRule(oldRule.id(), true);
     if (removeResult != RuleErrorNoError) {
+        qCWarning(dcRuleEngine) << "Cannot edit rule. Could not remove the old rule.";
         // no need to restore, rule is still in system
         return removeResult;
     }
 
-    // The rule is removed, now add it with the same id and new vonfiguration
-    RuleError addResult = addRule(ruleId, name, eventDescriptorList, stateEvaluator, actions, exitActions, enabled, executable, true);
+    // The rule is removed, now add the new one
+    RuleError addResult = addRule(rule);
     if (addResult != RuleErrorNoError) {
-        // restore rule
-        appendRule(rule);
+        qCWarning(dcRuleEngine) << "Cannot edit rule. Could not add the new rule. Restoring the old rule.";
+        // restore old rule
+        appendRule(oldRule);
         return addResult;
     }
 
-    emit ruleConfigurationChanged(m_rules.value(ruleId));
-
+    // Successfully changed the rule
+    emit ruleConfigurationChanged(rule);
     return RuleErrorNoError;
 }
 
@@ -449,6 +506,7 @@ RuleEngine::RuleError RuleEngine::removeRule(const RuleId &ruleId, bool fromEdit
 
     m_ruleIds.takeAt(index);
     m_rules.remove(ruleId);
+    m_activeRules.removeAll(ruleId);
 
     GuhSettings settings(GuhSettings::SettingsRoleRules);
     settings.beginGroup(ruleId.toString());
@@ -568,12 +626,10 @@ RuleEngine::RuleError RuleEngine::executeExitActions(const RuleId &ruleId)
 /*! Returns the \l{Rule} with the given \a ruleId. If the \l{Rule} does not exist, it will return \l{Rule::Rule()} */
 Rule RuleEngine::findRule(const RuleId &ruleId)
 {
-    foreach (const Rule &rule, m_rules) {
-        if (rule.id() == ruleId) {
-            return rule;
-        }
-    }
-    return Rule();
+    if (!m_rules.contains(ruleId))
+        return Rule();
+
+    return m_rules.value(ruleId);
 }
 
 /*! Returns a list of all \l{Rule}{Rules} loaded in this Engine, which contains a \l{Device} with the given \a deviceId. */
@@ -670,7 +726,12 @@ void RuleEngine::removeDeviceFromRule(const RuleId &id, const DeviceId &deviceId
     settings.remove("");
     settings.endGroup();
 
-    Rule newRule(id, rule.name(), eventDescriptors, stateEvalatuator, actions);
+    Rule newRule;
+    newRule.setId(id);
+    newRule.setName(rule.name());
+    newRule.setEventDescriptors(eventDescriptors);
+    newRule.setStateEvaluator(stateEvalatuator);
+    newRule.setActions(actions);
     m_rules[id] = newRule;
 
     // save it
@@ -700,6 +761,48 @@ bool RuleEngine::containsState(const StateEvaluator &stateEvaluator, const Event
     }
 
     return false;
+}
+
+bool RuleEngine::checkEventDescriptors(const QList<EventDescriptor> eventDescriptors, const EventTypeId &eventTypeId)
+{
+    foreach (const EventDescriptor eventDescriptor, eventDescriptors) {
+        if (eventDescriptor.eventTypeId() == eventTypeId) {
+            return true;
+        }
+    }
+    return false;
+}
+
+QVariant::Type RuleEngine::getActionParamType(const ActionTypeId &actionTypeId, const QString &paramName)
+{
+    foreach (const DeviceClass &deviceClass, GuhCore::instance()->deviceManager()->supportedDevices()) {
+        foreach (const ActionType &actionType, deviceClass.actionTypes()) {
+            if (actionType.id() == actionTypeId) {
+                foreach (const ParamType &paramType, actionType.paramTypes()) {
+                    if (paramType.name() == paramName) {
+                        return paramType.type();
+                    }
+                }
+            }
+        }
+    }
+    return QVariant::Invalid;
+}
+
+QVariant::Type RuleEngine::getEventParamType(const EventTypeId &eventTypeId, const QString &paramName)
+{
+    foreach (const DeviceClass &deviceClass, GuhCore::instance()->deviceManager()->supportedDevices()) {
+        foreach (const EventType &eventType, deviceClass.eventTypes()) {
+            if (eventType.id() == eventTypeId) {
+                foreach (const ParamType &paramType, eventType.paramTypes()) {
+                    if (paramType.name() == paramName) {
+                        return paramType.type();
+                    }
+                }
+            }
+        }
+    }
+    return QVariant::Invalid;
 }
 
 void RuleEngine::appendRule(const Rule &rule)

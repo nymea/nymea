@@ -26,6 +26,7 @@
 #include "types/ruleaction.h"
 #include "types/eventdescriptor.h"
 #include "stateevaluator.h"
+#include "time/timedescriptor.h"
 
 #include <QUuid>
 
@@ -35,35 +36,50 @@ class Rule
 {
 public:
     Rule();
-    Rule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions);
-    Rule(const RuleId &id, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions);
-    Rule(const RuleId &id, const QString &name, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions);
 
     RuleId id() const;
-    QList<EventDescriptor> eventDescriptors() const;
-    StateEvaluator stateEvaluator() const;
-    QList<RuleAction> actions() const;
-    QList<RuleAction> exitActions() const;
+    void setId(const RuleId &ruleId);
 
     QString name() const;
-    bool enabled() const;
-    void setEnabled(bool enabled);
+    void setName(const QString &name);
 
     bool active() const;
 
-    void setExecutable(const bool &executable);
+    TimeDescriptor timeDescriptor() const;
+    void setTimeDescriptor(const TimeDescriptor &timeDescriptor);
+
+    StateEvaluator stateEvaluator() const;
+    void setStateEvaluator(const StateEvaluator &stateEvaluator);
+
+    QList<EventDescriptor> eventDescriptors() const;
+    void setEventDescriptors(const QList<EventDescriptor> &eventDescriptors);
+
+    QList<RuleAction> actions() const;
+    void setActions(const QList<RuleAction> actions);
+
+    QList<RuleAction> exitActions() const;
+    void setExitActions(const QList<RuleAction> exitActions);
+
+    bool enabled() const;
+    void setEnabled(const bool &enabled);
+
     bool executable() const;
+    void setExecutable(const bool &executable);
+
+    // verification methods
+    bool isValid() const;
+    bool isConsistent() const;
 
 private:
     friend class RuleEngine;
-    void setName(const QString &name);
-    void setActive(bool active);
+    void setActive(const bool &active);
 
 private:
     RuleId m_id;
     QString m_name;
-    QList<EventDescriptor> m_eventDescriptors;
+    TimeDescriptor m_timeDescriptor;
     StateEvaluator m_stateEvaluator;
+    QList<EventDescriptor> m_eventDescriptors;
     QList<RuleAction> m_actions;
     QList<RuleAction> m_exitActions;
 

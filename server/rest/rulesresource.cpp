@@ -75,8 +75,10 @@ HttpReply *RulesResource::proccessRequest(const HttpRequest &request, const QStr
             return createRuleErrorReply(HttpReply::BadRequest, RuleEngine::RuleErrorRuleNotFound);
         }
 
-        if (GuhCore::instance()->ruleEngine()->findRule(m_ruleId).id().isNull())
+        if (!GuhCore::instance()->ruleEngine()->findRule(m_ruleId).isValid()) {
+            qCWarning(dcRest) << "Could not find rule with id" << m_ruleId.toString();
             return createRuleErrorReply(HttpReply::NotFound, RuleEngine::RuleErrorRuleNotFound);
+        }
 
     }
 
@@ -201,7 +203,7 @@ HttpReply *RulesResource::getRules(const DeviceId &deviceId) const
         QList<Rule> ruleList;
         foreach (const RuleId &ruleId, ruleIdsList) {
             Rule rule = GuhCore::instance()->ruleEngine()->findRule(ruleId);
-            if (!rule.id().isNull())
+            if (rule.isValid())
                 ruleList.append(rule);
         }
         reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
@@ -212,11 +214,11 @@ HttpReply *RulesResource::getRules(const DeviceId &deviceId) const
 
 HttpReply *RulesResource::getRuleDetails(const RuleId &ruleId) const
 {
-    Rule rule = GuhCore::instance()->ruleEngine()->findRule(ruleId);
-    if (rule.id().isNull())
-        return createRuleErrorReply(HttpReply::NotFound, RuleEngine::RuleErrorRuleNotFound);
-
     qCDebug(dcRest) << "Get rule details";
+
+    // Note: rule existence already checked
+    Rule rule = GuhCore::instance()->ruleEngine()->findRule(ruleId);
+
     HttpReply *reply = createSuccessReply();
     reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packRule(rule)).toJson());
@@ -228,7 +230,6 @@ HttpReply *RulesResource::removeRule(const RuleId &ruleId) const
     qCDebug(dcRest) << "Remove rule with id" << ruleId.toString();
 
     RuleEngine::RuleError status = GuhCore::instance()->removeRule(ruleId);
-
     if (status != RuleEngine::RuleErrorNoError)
         return createRuleErrorReply(HttpReply::InternalServerError, status);
 
@@ -244,45 +245,12 @@ HttpReply *RulesResource::addRule(const QByteArray &payload) const
         return createErrorReply(HttpReply::BadRequest);
 
     QVariantMap params = verification.second.toMap();
+    Rule rule = JsonTypes::unpackRule(params);
+    rule.setId(RuleId::createRuleId());
 
-    // check rule consistency
-    RuleEngine::RuleError ruleConsistencyError = JsonTypes::verifyRuleConsistency(params);
-    if (ruleConsistencyError !=  RuleEngine::RuleErrorNoError)
-        return createRuleErrorReply(HttpReply::BadRequest, ruleConsistencyError);
-
-    // Check and upack eventDescriptorList
-    QPair<QList<EventDescriptor>, RuleEngine::RuleError> eventDescriptorVerification = JsonTypes::verifyEventDescriptors(params);
-    QList<EventDescriptor> eventDescriptorList = eventDescriptorVerification.first;
-    if (eventDescriptorVerification.second != RuleEngine::RuleErrorNoError)
-        return createRuleErrorReply(HttpReply::BadRequest, eventDescriptorVerification.second);
-
-    // Check and unpack stateEvaluator
-    qCDebug(dcRest) << "unpacking stateEvaluator:" << params.value("stateEvaluator").toMap();
-    StateEvaluator stateEvaluator = JsonTypes::unpackStateEvaluator(params.value("stateEvaluator").toMap());
-    if (!stateEvaluator.isValid())
-        return createRuleErrorReply(HttpReply::BadRequest, RuleEngine::RuleErrorInvalidStateEvaluatorValue);
-
-    // Check and unpack actions
-    QPair<QList<RuleAction>, RuleEngine::RuleError> actionsVerification = JsonTypes::verifyActions(params, eventDescriptorList);
-    QList<RuleAction> actions = actionsVerification.first;
-    if (actionsVerification.second != RuleEngine::RuleErrorNoError)
-        return createRuleErrorReply(HttpReply::BadRequest, actionsVerification.second);
-
-    // Check and unpack exitActions
-    QPair<QList<RuleAction>, RuleEngine::RuleError> exitActionsVerification = JsonTypes::verifyExitActions(params);
-    QList<RuleAction> exitActions = exitActionsVerification.first;
-    if (exitActionsVerification.second != RuleEngine::RuleErrorNoError)
-        return createRuleErrorReply(HttpReply::BadRequest, exitActionsVerification.second);
-
-    QString name = params.value("name", QString()).toString();
-    bool enabled = params.value("enabled", true).toBool();
-    bool executable = params.value("executable", true).toBool();
-
-    RuleId newRuleId = RuleId::createRuleId();
-    RuleEngine::RuleError status = GuhCore::instance()->ruleEngine()->addRule(newRuleId, name, eventDescriptorList, stateEvaluator, actions, exitActions, enabled, executable);
-
+    RuleEngine::RuleError status = GuhCore::instance()->ruleEngine()->addRule(rule);
     if (status ==  RuleEngine::RuleErrorNoError) {
-        QVariant returns = JsonTypes::packRule(GuhCore::instance()->ruleEngine()->findRule(newRuleId));
+        QVariant returns = JsonTypes::packRule(GuhCore::instance()->ruleEngine()->findRule(rule.id()));
         HttpReply *reply = createSuccessReply();
         reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
         reply->setPayload(QJsonDocument::fromVariant(returns).toJson());
@@ -297,7 +265,6 @@ HttpReply *RulesResource::enableRule(const RuleId &ruleId) const
     qCDebug(dcRest) << "Enable rule with id" << ruleId.toString();
 
     RuleEngine::RuleError status = GuhCore::instance()->ruleEngine()->enableRule(ruleId);
-
     if (status != RuleEngine::RuleErrorNoError)
         return createRuleErrorReply(HttpReply::InternalServerError, status);
 
@@ -309,7 +276,6 @@ HttpReply *RulesResource::disableRule(const RuleId &ruleId) const
     qCDebug(dcRest) << "Disable rule with id" << ruleId.toString();
 
     RuleEngine::RuleError status = GuhCore::instance()->ruleEngine()->disableRule(ruleId);
-
     if (status != RuleEngine::RuleErrorNoError)
         return createRuleErrorReply(HttpReply::InternalServerError, status);
 
@@ -321,7 +287,6 @@ HttpReply *RulesResource::executeActions(const RuleId &ruleId) const
     qCDebug(dcRest) << "Execute actions of rule with id" << ruleId.toString();
 
     RuleEngine::RuleError status = GuhCore::instance()->ruleEngine()->executeActions(ruleId);
-
     if (status != RuleEngine::RuleErrorNoError)
         return createRuleErrorReply(HttpReply::InternalServerError, status);
 
@@ -333,7 +298,6 @@ HttpReply *RulesResource::executeExitActions(const RuleId &ruleId) const
     qCDebug(dcRest) << "Execute exit actions of rule with id" << ruleId.toString();
 
     RuleEngine::RuleError status = GuhCore::instance()->ruleEngine()->executeExitActions(ruleId);
-
     if (status != RuleEngine::RuleErrorNoError)
         return createRuleErrorReply(HttpReply::InternalServerError, status);
 
@@ -349,41 +313,9 @@ HttpReply *RulesResource::editRule(const RuleId &ruleId, const QByteArray &paylo
         return createErrorReply(HttpReply::BadRequest);
 
     QVariantMap params = verification.second.toMap();
+    Rule rule = JsonTypes::unpackRule(params);
 
-    // check rule consistency
-    RuleEngine::RuleError ruleConsistencyError = JsonTypes::verifyRuleConsistency(params);
-    if (ruleConsistencyError !=  RuleEngine::RuleErrorNoError)
-        return createRuleErrorReply(HttpReply::BadRequest, ruleConsistencyError);
-
-    // Check and upack eventDescriptorList
-    QPair<QList<EventDescriptor>, RuleEngine::RuleError> eventDescriptorVerification = JsonTypes::verifyEventDescriptors(params);
-    QList<EventDescriptor> eventDescriptorList = eventDescriptorVerification.first;
-    if (eventDescriptorVerification.second != RuleEngine::RuleErrorNoError)
-        return createRuleErrorReply(HttpReply::BadRequest, eventDescriptorVerification.second);
-
-    // Check and unpack stateEvaluator
-    qCDebug(dcRest) << "unpacking stateEvaluator:" << params.value("stateEvaluator").toMap();
-    StateEvaluator stateEvaluator = JsonTypes::unpackStateEvaluator(params.value("stateEvaluator").toMap());
-    if (!stateEvaluator.isValid())
-        return createRuleErrorReply(HttpReply::BadRequest, RuleEngine::RuleErrorInvalidStateEvaluatorValue);
-
-    // Check and unpack actions
-    QPair<QList<RuleAction>, RuleEngine::RuleError> actionsVerification = JsonTypes::verifyActions(params, eventDescriptorList);
-    QList<RuleAction> actions = actionsVerification.first;
-    if (actionsVerification.second != RuleEngine::RuleErrorNoError)
-        return createRuleErrorReply(HttpReply::BadRequest, actionsVerification.second);
-
-    // Check and unpack exitActions
-    QPair<QList<RuleAction>, RuleEngine::RuleError> exitActionsVerification = JsonTypes::verifyExitActions(params);
-    QList<RuleAction> exitActions = exitActionsVerification.first;
-    if (exitActionsVerification.second != RuleEngine::RuleErrorNoError)
-        return createRuleErrorReply(HttpReply::BadRequest, exitActionsVerification.second);
-
-    QString name = params.value("name", QString()).toString();
-    bool enabled = params.value("enabled", true).toBool();
-
-    RuleEngine::RuleError status = GuhCore::instance()->ruleEngine()->editRule(ruleId, name, eventDescriptorList, stateEvaluator, actions, exitActions, enabled);
-
+    RuleEngine::RuleError status = GuhCore::instance()->ruleEngine()->editRule(rule);
     if (status ==  RuleEngine::RuleErrorNoError) {
         qCDebug(dcRest) << "Edit rule successfully finished";
         return createRuleErrorReply(HttpReply::Ok, status);

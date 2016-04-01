@@ -38,7 +38,7 @@ public:
     QTime time() const;
     void setTime(const QTime &time);
 
-    RepeatingOption repatingOption() const;
+    RepeatingOption repeatingOption() const;
     void setRepeatingOption(const RepeatingOption &repeatingOption);
 
     // TODO spectioalDayTime

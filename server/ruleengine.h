@@ -54,6 +54,10 @@ public:
         RuleErrorInvalidStateEvaluatorValue,
         RuleErrorTypesNotMatching,
         RuleErrorNotExecutable,
+        RuleErrorInvalidTimeDescriptor,
+        RuleErrorInvalidRepeatingOption,
+        RuleErrorInvalidCalendarItem,
+        RuleErrorInvalidTimeEventItem,
         RuleErrorContainsEventBasesAction,
         RuleErrorNoExitActions
     };

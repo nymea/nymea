@@ -64,7 +64,7 @@ void TimeEventItem::setTime(const QTime &time)
 }
 
 /*! Returns the \l{RepeatingOption} of this \l{TimeEventItem}. */
-RepeatingOption TimeEventItem::repatingOption() const
+RepeatingOption TimeEventItem::repeatingOption() const
 {
     return m_repeatingOption;
 }

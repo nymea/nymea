@@ -326,9 +326,51 @@ RuleEngine::RuleError RuleEngine::addRule(const Rule &rule, bool fromEdit)
 
     // Check state evaluator
     if (!rule.stateEvaluator().isValid()) {
-        qCWarning(dcRuleEngine) << "Got an invalid StateEvaluator.";
+        qCWarning(dcRuleEngine) << "Cannot create rule. Got an invalid StateEvaluator.";
         return RuleErrorInvalidStateEvaluatorValue;
     }
+
+    // Check time descriptor
+    if (!rule.timeDescriptor().isEmpty()) {
+
+        if (rule.timeDescriptor().isValid()) {
+            qCDebug(dcRuleEngine()) << "Cannot create rule. Got invalid timeDescriptor.";
+            return RuleErrorInvalidTimeDescriptor;
+        }
+
+        // validate CalendarItems
+        if (!rule.timeDescriptor().calendarItems().isEmpty()) {
+            foreach (const CalendarItem &calendarItem, rule.timeDescriptor().calendarItems()) {
+                if (!calendarItem.isValid()) {
+                    qCDebug(dcRuleEngine()) << "Cannot create rule. Got invalid calendarItem.";
+                    return RuleErrorInvalidCalendarItem;
+                }
+
+                // validate RepeatingOptions
+                if (!calendarItem.repeatingOption().isEmtpy() && !calendarItem.repeatingOption().isValid()) {
+                    qCDebug(dcRuleEngine()) << "Cannot create rule. Got invalid repeatingOption in calendarItem.";
+                    return RuleErrorInvalidRepeatingOption;
+                }
+            }
+        }
+
+        // validate TimeEventItems
+        if (!rule.timeDescriptor().timeEventItems().isEmpty()) {
+            foreach (const TimeEventItem &timeEventItem, rule.timeDescriptor().timeEventItems()) {
+                if (!timeEventItem.isValid()) {
+                    qCDebug(dcRuleEngine()) << "Cannot create rule. Got invalid timeEventItem.";
+                    return RuleErrorInvalidTimeEventItem;
+                }
+
+                // validate RepeatingOptions
+                if (!timeEventItem.repeatingOption().isEmtpy() && !timeEventItem.repeatingOption().isValid()) {
+                    qCDebug(dcRuleEngine()) << "Cannot create rule. Got invalid repeatingOption in timeEventItem.";
+                    return RuleErrorInvalidRepeatingOption;
+                }
+            }
+        }
+    }
+
 
     // Check actions
     foreach (const RuleAction &action, rule.actions()) {

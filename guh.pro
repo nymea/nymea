@@ -51,7 +51,6 @@ disabletesting {
 } else {
     message("Building guh with tests")
     SUBDIRS += tests
-    DEFINES += TESTING_ENABLED
 }
 
 # Bluetooth LE support

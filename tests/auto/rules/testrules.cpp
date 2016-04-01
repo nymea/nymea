@@ -141,7 +141,6 @@ void TestRules::verifyRuleExecuted(const ActionTypeId &actionTypeId)
     qDebug() << "have action history" << actionHistory;
     QVERIFY2(actionTypeId == ActionTypeId(actionHistory), "Action not triggered");
     reply->deleteLater();
-
 }
 
 void TestRules::verifyRuleNotExecuted()
@@ -157,7 +156,6 @@ void TestRules::verifyRuleNotExecuted()
     qDebug() << "have action history" << actionHistory;
     QVERIFY2(actionHistory.isEmpty(), "Action is triggered while it should not have been.");
     reply->deleteLater();
-
 }
 
 

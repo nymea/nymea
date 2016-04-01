@@ -43,6 +43,7 @@ public:
 
 #ifdef TESTING_ENABLED
     void stopTimer();
+    void setTime(const QDateTime &dateTime);
 #endif
 
 private:
@@ -52,8 +53,7 @@ private:
 
 signals:
     void tick();
-    void dateChanged(const QDate &currentDate);
-    void timeChanged(const QTime &currentTime);
+    void dateTimeChanged(const QDateTime &dateTime);
 
 private slots:
     void guhTimeout();

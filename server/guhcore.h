@@ -103,8 +103,7 @@ private:
 
 private slots:
     void gotEvent(const Event &event);
-    void onTimeChanged(const QTime &currentTime);
-    void onDateChanged(const QDate &currentDate);
+    void onDateTimeChanged(const QDateTime &dateTime);
     void actionExecutionFinished(const ActionId &id, DeviceManager::DeviceError status);
 
 };

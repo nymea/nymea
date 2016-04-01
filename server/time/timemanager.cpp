@@ -30,12 +30,8 @@
     Represents the central time tick. Will be emitted every second.
 */
 
-/*! \fn void guhserver::TimeManager::dateChanged(const QDate &currentDate);
-    Will be emitted when the \a currentDate has changed.
-*/
-
-/*! \fn void guhserver::TimeManager::timeChanged(const QTime &currentTime);
-    Will be emitted when the \a currentTime has changed.
+/*! \fn void guhserver::TimeManager::dateTimeChanged(const QDateTime &dateTime);
+    Will be emitted when the \a dateTime has changed.
 */
 
 #include "timemanager.h"
@@ -106,6 +102,13 @@ void TimeManager::stopTimer()
     // Stop clock (used for testing)
     m_guhTimer->stop();
 }
+
+void TimeManager::setTime(const QDateTime &dateTime)
+{
+    // This method will only be called for testing
+    emit tick();
+    emit dateTimeChanged(dateTime.toTimeZone(m_timeZone));
+}
 #endif
 
 void TimeManager::guhTimeout()
@@ -113,17 +116,11 @@ void TimeManager::guhTimeout()
     // tick for deviceManager
     emit tick();
 
-    QDateTime currentDateTime = QDateTime::currentDateTimeUtc();
-
     // Minute based guh time
+    QDateTime currentDateTime = QDateTime::currentDateTimeUtc();
     if (m_dateTime.time().minute() != currentDateTime.toTimeZone(m_timeZone).time().minute()) {
         m_dateTime = currentDateTime;
-        emit timeChanged(m_dateTime.toTimeZone(m_timeZone).time());
-    }
-
-    // check if day changed
-    if (m_dateTime.date() != currentDateTime.toTimeZone(m_timeZone).date()) {
-        emit dateChanged(m_dateTime.toTimeZone(m_timeZone).date());
+        emit dateTimeChanged(m_dateTime.toTimeZone(m_timeZone));
     }
 }
 

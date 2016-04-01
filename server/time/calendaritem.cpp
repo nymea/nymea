@@ -29,6 +29,7 @@
 */
 
 #include "calendaritem.h"
+#include "loggingcategories.h"
 
 namespace guhserver {
 
@@ -102,19 +103,16 @@ bool CalendarItem::isValid() const
 /*! Returns true, if the given \a dateTime matches this \l{CalendarItem}. */
 bool CalendarItem::evaluate(const QDateTime &dateTime) const
 {
+    qCDebug(dcRuleEngine()) << "Evaluate CalendarItem";
+
     if (!isValid())
         return false;
 
     if (!repeatingOption().isValid())
         return false;
 
-    if (m_dateTime.isValid() && !repeatingOption().isEmtpy())
-        return false;
-
-    // Only check repeating option mode if this is not a timedate calendarItem,
-    // which can only be valid once and is not repeatable.
-    if (!m_dateTime.isValid()) {
-        switch (repeatingOption().mode()) {
+    if (m_startTime.isValid()) {
+        switch (m_repeatingOption.mode()) {
         case RepeatingOption::RepeatingModeNone:
             // If there is no repeating option, we assume it is meant daily.
             return evaluateDaily(dateTime);
@@ -137,8 +135,19 @@ bool CalendarItem::evaluate(const QDateTime &dateTime) const
 
 bool CalendarItem::evaluateHourly(const QDateTime &dateTime) const
 {
+    qCDebug(dcRuleEngine()) << "Evaluate CalendarItem Hourly";
+
+    // If the duration is longer than a hour, this calendar item is always true
+    // 1 hour has 60 minutes
+    if (duration() >= 60)
+        return true;
+
     QDateTime startDateTime = QDateTime(dateTime.date(), QTime(dateTime.time().hour(), startTime().minute()));
     QDateTime endDateTime = startDateTime.addSecs(duration() * 60);
+
+    qCDebug(dcRuleEngine()) << "current time" << dateTime.toString("hh:mm");
+    qCDebug(dcRuleEngine()) << "startTime" << startDateTime.toString("hh:mm");
+    qCDebug(dcRuleEngine()) << "endTime" << endDateTime.toString("hh:mm");
 
     bool timeValid = dateTime >= startDateTime && dateTime < endDateTime;
     bool weekdayValid = repeatingOption().evaluateWeekDay(dateTime);
@@ -149,6 +158,8 @@ bool CalendarItem::evaluateHourly(const QDateTime &dateTime) const
 
 bool CalendarItem::evaluateDaily(const QDateTime &dateTime) const
 {
+    qCDebug(dcRuleEngine()) << "Evaluate CalendarItem Hourly";
+
     // If the duration is longer than a day, this calendar item is always true
     // 1 day has 1440 minutes
     if (duration() >= 1440)

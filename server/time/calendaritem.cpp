@@ -135,8 +135,6 @@ bool CalendarItem::evaluate(const QDateTime &dateTime) const
 
 bool CalendarItem::evaluateHourly(const QDateTime &dateTime) const
 {
-    qCDebug(dcRuleEngine()) << "Evaluate CalendarItem Hourly";
-
     // If the duration is longer than a hour, this calendar item is always true
     // 1 hour has 60 minutes
     if (duration() >= 60)
@@ -144,10 +142,6 @@ bool CalendarItem::evaluateHourly(const QDateTime &dateTime) const
 
     QDateTime startDateTime = QDateTime(dateTime.date(), QTime(dateTime.time().hour(), startTime().minute()));
     QDateTime endDateTime = startDateTime.addSecs(duration() * 60);
-
-    qCDebug(dcRuleEngine()) << "current time" << dateTime.toString("hh:mm");
-    qCDebug(dcRuleEngine()) << "startTime" << startDateTime.toString("hh:mm");
-    qCDebug(dcRuleEngine()) << "endTime" << endDateTime.toString("hh:mm");
 
     bool timeValid = dateTime >= startDateTime && dateTime < endDateTime;
     bool weekdayValid = repeatingOption().evaluateWeekDay(dateTime);
@@ -158,27 +152,23 @@ bool CalendarItem::evaluateHourly(const QDateTime &dateTime) const
 
 bool CalendarItem::evaluateDaily(const QDateTime &dateTime) const
 {
-    qCDebug(dcRuleEngine()) << "Evaluate CalendarItem Hourly";
-
     // If the duration is longer than a day, this calendar item is always true
     // 1 day has 1440 minutes
     if (duration() >= 1440)
         return true;
 
+    // get todays startTime
     QDateTime startDateTime = QDateTime(dateTime.date(), startTime());
     QDateTime endDateTime = startDateTime.addSecs(duration() * 60);
 
-    bool timeValid = false;
+    // get todays startTime
+    QDateTime startDateTimeYesterday = QDateTime(dateTime.date().addDays(-1), startTime());
+    QDateTime endDateTimeYesterday = startDateTimeYesterday.addSecs(duration() * 60);
 
-    if (startDateTime.date() == endDateTime.date()) {
-        timeValid = dateTime >= startDateTime && dateTime < endDateTime;
-    } else {
-        // If the time duration changes the date,
-        // check only if the time is smaler than the overlapping time
-        timeValid = dateTime.time() < endDateTime.time();
-    }
+    bool todayValid = dateTime >= startDateTime && dateTime < endDateTime;
+    bool yesterdayValid = dateTime >= startDateTimeYesterday && dateTime < endDateTimeYesterday;
 
-    return timeValid;
+    return todayValid || yesterdayValid;
 }
 
 bool CalendarItem::evaluateWeekly(const QDateTime &dateTime) const

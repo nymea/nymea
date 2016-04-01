@@ -48,7 +48,7 @@ public:
     bool evaluate(const QDateTime &dateTime) const;
 
 private:
-    QDateTime m_dateTimer;
+    QDateTime m_dateTime;
     QTime m_time;
 
     RepeatingOption m_repeatingOption;

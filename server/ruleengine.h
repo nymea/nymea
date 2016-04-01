@@ -67,10 +67,14 @@ public:
     ~RuleEngine();
 
     QList<Rule> evaluateEvent(const Event &event);
+    QList<Rule> evaluateTime(const QDateTime &dateTime);
 
-    RuleError addRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const QList<RuleAction> &actions, bool enabled = true);
-    RuleError addRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions, bool enabled = true, bool executable = true, bool fromEdit = false);
-    RuleError editRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions, bool enabled = true, bool executable = true);
+    RuleError addRule(const Rule &rule, bool fromEdit = false);
+//    RuleError addRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const QList<RuleAction> &actions, bool enabled = true);
+//    RuleError addRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions, bool enabled = true, bool executable = true, bool fromEdit = false);
+
+    RuleError editRule(const Rule &rule);
+//    RuleError editRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions, bool enabled = true, bool executable = true);
 
     QList<Rule> rules() const;
     QList<RuleId> ruleIds() const;
@@ -96,6 +100,10 @@ signals:
 private:
     bool containsEvent(const Rule &rule, const Event &event);
     bool containsState(const StateEvaluator &stateEvaluator, const Event &stateChangeEvent);
+
+    bool checkEventDescriptors(const QList<EventDescriptor> eventDescriptors, const EventTypeId &eventTypeId);
+    QVariant::Type getActionParamType(const ActionTypeId &actionTypeId, const QString &paramName);
+    QVariant::Type getEventParamType(const EventTypeId &eventTypeId, const QString &paramName);
 
     void appendRule(const Rule &rule);
     void saveRule(const Rule &rule);

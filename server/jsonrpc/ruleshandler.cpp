@@ -87,36 +87,33 @@ RulesHandler::RulesHandler(QObject *parent) :
     setDescription("AddRule", "Add a rule. You can describe rules by one or many EventDesciptors and a StateEvaluator. Note that only "
                    "one of either eventDescriptor or eventDescriptorList may be passed at a time. A rule can be created but left disabled, "
                    "meaning it won't actually be executed until set to enabled. If not given, enabled defaults to true.");
-    params.insert("o:eventDescriptor", JsonTypes::eventDescriptorRef());
-    params.insert("o:eventDescriptorList", QVariantList() << JsonTypes::eventDescriptorRef());
+    params.insert("name", JsonTypes::basicTypeToString(JsonTypes::String));
+    params.insert("actions", QVariantList() << JsonTypes::ruleActionRef());
+    params.insert("o:timeDescriptor", JsonTypes::timeDescriptorRef());
     params.insert("o:stateEvaluator", JsonTypes::stateEvaluatorRef());
+    params.insert("o:eventDescriptors", QVariantList() << JsonTypes::eventDescriptorRef());
     params.insert("o:exitActions", QVariantList() << JsonTypes::ruleActionRef());
     params.insert("o:enabled", JsonTypes::basicTypeToString(JsonTypes::Bool));
     params.insert("o:executable", JsonTypes::basicTypeToString(JsonTypes::Bool));
-    params.insert("name", JsonTypes::basicTypeToString(JsonTypes::String));
-    QVariantList actions;
-    actions.append(JsonTypes::ruleActionRef());
-    params.insert("actions", actions);
     setParams("AddRule", params);
     returns.insert("ruleError", JsonTypes::ruleErrorRef());
     returns.insert("o:ruleId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     setReturns("AddRule", returns);
 
-    params.clear(); returns.clear(); actions.clear();
+    params.clear(); returns.clear();
     setDescription("EditRule", "Edit the parameters of a rule. The configuration of the rule with the given ruleId "
                    "will be replaced with the new given configuration. In ordert to enable or disable a Rule, please use the "
                    "methods \"Rules.EnableRule\" and \"Rules.DisableRule\". If successfull, the notification \"Rule.RuleConfigurationChanged\" "
                    "will be emitted.");
     params.insert("ruleId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     params.insert("name", JsonTypes::basicTypeToString(JsonTypes::String));
-    params.insert("o:eventDescriptor", JsonTypes::eventDescriptorRef());
-    params.insert("o:eventDescriptorList", QVariantList() << JsonTypes::eventDescriptorRef());
+    params.insert("actions", QVariantList() << JsonTypes::ruleActionRef());
+    params.insert("o:timeDescriptor", JsonTypes::timeDescriptorRef());
     params.insert("o:stateEvaluator", JsonTypes::stateEvaluatorRef());
+    params.insert("o:eventDescriptors", QVariantList() << JsonTypes::eventDescriptorRef());
     params.insert("o:exitActions", QVariantList() << JsonTypes::ruleActionRef());
     params.insert("o:enabled", JsonTypes::basicTypeToString(JsonTypes::Bool));
     params.insert("o:executable", JsonTypes::basicTypeToString(JsonTypes::Bool));
-    actions.append(JsonTypes::ruleActionRef());
-    params.insert("actions", actions);
     setParams("EditRule", params);
     returns.insert("ruleError", JsonTypes::ruleErrorRef());
     returns.insert("o:rule", JsonTypes::ruleRef());
@@ -224,59 +221,13 @@ JsonReply *RulesHandler::GetRuleDetails(const QVariantMap &params)
 
 JsonReply* RulesHandler::AddRule(const QVariantMap &params)
 {
-    // check rule consistency
-    RuleEngine::RuleError ruleConsistencyError = JsonTypes::verifyRuleConsistency(params);
-    if (ruleConsistencyError !=  RuleEngine::RuleErrorNoError) {
-        QVariantMap returns;
-        returns.insert("ruleError", JsonTypes::ruleErrorToString(ruleConsistencyError));
-        return createReply(returns);
-    }
+    Rule rule = JsonTypes::unpackRule(params);
+    rule.setId(RuleId::createRuleId());
 
-    // Check and upack eventDescriptorList
-    QPair<QList<EventDescriptor>, RuleEngine::RuleError> eventDescriptorVerification = JsonTypes::verifyEventDescriptors(params);
-    QList<EventDescriptor> eventDescriptorList = eventDescriptorVerification.first;
-    if (eventDescriptorVerification.second != RuleEngine::RuleErrorNoError) {
-        QVariantMap returns;
-        returns.insert("ruleError", JsonTypes::ruleErrorToString(eventDescriptorVerification.second));
-        return createReply(returns);
-    }
-
-    // Check and unpack stateEvaluator
-    qCDebug(dcJsonRpc) << "unpacking stateEvaluator:" << params.value("stateEvaluator").toMap();
-    StateEvaluator stateEvaluator = JsonTypes::unpackStateEvaluator(params.value("stateEvaluator").toMap());
-    if (!stateEvaluator.isValid()) {
-        QVariantMap returns;
-        returns.insert("ruleError", JsonTypes::ruleErrorToString(RuleEngine::RuleErrorInvalidStateEvaluatorValue));
-        return createReply(returns);
-    }
-
-    // Check and unpack actions
-    QPair<QList<RuleAction>, RuleEngine::RuleError> actionsVerification = JsonTypes::verifyActions(params, eventDescriptorList);
-    QList<RuleAction> actions = actionsVerification.first;
-    if (actionsVerification.second != RuleEngine::RuleErrorNoError) {
-        QVariantMap returns;
-        returns.insert("ruleError", JsonTypes::ruleErrorToString(actionsVerification.second));
-        return createReply(returns);
-    }
-
-    // Check and unpack exitActions
-    QPair<QList<RuleAction>, RuleEngine::RuleError> exitActionsVerification = JsonTypes::verifyExitActions(params);
-    QList<RuleAction> exitActions = exitActionsVerification.first;
-    if (exitActionsVerification.second != RuleEngine::RuleErrorNoError) {
-        QVariantMap returns;
-        returns.insert("ruleError", JsonTypes::ruleErrorToString(exitActionsVerification.second));
-        return createReply(returns);
-    }
-
-    QString name = params.value("name", QString()).toString();
-    bool enabled = params.value("enabled", true).toBool();
-    bool executable = params.value("executable", true).toBool();
-
-    RuleId newRuleId = RuleId::createRuleId();
-    RuleEngine::RuleError status = GuhCore::instance()->ruleEngine()->addRule(newRuleId, name, eventDescriptorList, stateEvaluator, actions, exitActions, enabled, executable);
+    RuleEngine::RuleError status = GuhCore::instance()->ruleEngine()->addRule(rule);
     QVariantMap returns;
     if (status ==  RuleEngine::RuleErrorNoError) {
-        returns.insert("ruleId", newRuleId.toString());
+        returns.insert("ruleId", rule.id().toString());
     }
     returns.insert("ruleError", JsonTypes::ruleErrorToString(status));
     return createReply(returns);
@@ -284,59 +235,11 @@ JsonReply* RulesHandler::AddRule(const QVariantMap &params)
 
 JsonReply *RulesHandler::EditRule(const QVariantMap &params)
 {
-    // check rule consistency
-    RuleEngine::RuleError ruleConsistencyError = JsonTypes::verifyRuleConsistency(params);
-    if (ruleConsistencyError !=  RuleEngine::RuleErrorNoError) {
-        QVariantMap returns;
-        returns.insert("ruleError", JsonTypes::ruleErrorToString(ruleConsistencyError));
-        return createReply(returns);
-    }
-
-    // Check and upack eventDescriptorList
-    QPair<QList<EventDescriptor>, RuleEngine::RuleError> eventDescriptorVerification = JsonTypes::verifyEventDescriptors(params);
-    QList<EventDescriptor> eventDescriptorList = eventDescriptorVerification.first;
-    if (eventDescriptorVerification.second != RuleEngine::RuleErrorNoError) {
-        QVariantMap returns;
-        returns.insert("ruleError", JsonTypes::ruleErrorToString(eventDescriptorVerification.second));
-        return createReply(returns);
-    }
-
-    // Check and unpack stateEvaluator
-    qCDebug(dcJsonRpc) << "unpacking stateEvaluator:" << params.value("stateEvaluator").toMap();
-    StateEvaluator stateEvaluator = JsonTypes::unpackStateEvaluator(params.value("stateEvaluator").toMap());
-    if (!stateEvaluator.isValid()) {
-        QVariantMap returns;
-        returns.insert("ruleError", JsonTypes::ruleErrorToString(RuleEngine::RuleErrorInvalidStateEvaluatorValue));
-        return createReply(returns);
-    }
-
-    // Check and unpack actions
-    QPair<QList<RuleAction>, RuleEngine::RuleError> actionsVerification = JsonTypes::verifyActions(params, eventDescriptorList);
-    QList<RuleAction> actions = actionsVerification.first;
-    if (actionsVerification.second != RuleEngine::RuleErrorNoError) {
-        QVariantMap returns;
-        returns.insert("ruleError", JsonTypes::ruleErrorToString(actionsVerification.second));
-        return createReply(returns);
-    }
-
-    // Check and unpack exitActions
-    QPair<QList<RuleAction>, RuleEngine::RuleError> exitActionsVerification = JsonTypes::verifyExitActions(params);
-    QList<RuleAction> exitActions = exitActionsVerification.first;
-    if (exitActionsVerification.second != RuleEngine::RuleErrorNoError) {
-        QVariantMap returns;
-        returns.insert("ruleError", JsonTypes::ruleErrorToString(exitActionsVerification.second));
-        return createReply(returns);
-    }
-
-    QString name = params.value("name", QString()).toString();
-    bool enabled = params.value("enabled", true).toBool();
-    bool executable = params.value("executable", true).toBool();
-
-    RuleId ruleId = RuleId(params.value("ruleId").toString());
-    RuleEngine::RuleError status = GuhCore::instance()->ruleEngine()->editRule(ruleId, name, eventDescriptorList, stateEvaluator, actions, exitActions, enabled, executable);
+    Rule rule = JsonTypes::unpackRule(params);
+    RuleEngine::RuleError status = GuhCore::instance()->ruleEngine()->editRule(rule);
     QVariantMap returns;
     if (status ==  RuleEngine::RuleErrorNoError) {
-        returns.insert("rule", JsonTypes::packRule(GuhCore::instance()->ruleEngine()->findRule(ruleId)));
+        returns.insert("rule", JsonTypes::packRule(GuhCore::instance()->ruleEngine()->findRule(rule.id())));
     }
     returns.insert("ruleError", JsonTypes::ruleErrorToString(status));
     return createReply(returns);

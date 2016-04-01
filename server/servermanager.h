@@ -50,9 +50,7 @@ private:
     QSslKey m_certificateKey;
     QSslCertificate m_certificate;
 
-
     bool loadCertificate(const QString &certificateKeyFileName, const QString &certificateFileName);
-
 };
 
 }

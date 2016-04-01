@@ -816,9 +816,15 @@ void TestRules::executeRuleActions()
     cleanupMockHistory();
     QTest::qWait(200);
 
+    // EEXCUTE action invalid ruleId
+    QVariantMap executeParams;
+    executeParams.insert("ruleId", QUuid::createUuid().toString());
+    response = injectAndWait("Rules.ExecuteActions", executeParams);
+    verifyRuleError(response, RuleEngine::RuleErrorRuleNotFound);
+
     // EXECUTE actions
     qDebug() << "Execute rule actions";
-    QVariantMap executeParams;
+    executeParams.clear();
     executeParams.insert("ruleId", ruleId.toString());
     response = injectAndWait("Rules.ExecuteActions", executeParams);
     verifyRuleError(response, ruleError);
@@ -835,8 +841,16 @@ void TestRules::executeRuleActions()
     cleanupMockHistory();
     QTest::qWait(200);
 
+    // EXECUTE exit actions invalid ruleId
+    executeParams.clear();
+    executeParams.insert("ruleId", QUuid::createUuid().toString());
+    response = injectAndWait("Rules.ExecuteExitActions", executeParams);
+    verifyRuleError(response, RuleEngine::RuleErrorRuleNotFound);
+
     // EXECUTE exit actions
     qDebug() << "Execute rule exit actions";
+    executeParams.clear();
+    executeParams.insert("ruleId", ruleId.toString());
     response = injectAndWait("Rules.ExecuteExitActions", executeParams);
     verifyRuleError(response, ruleError);
 
@@ -1450,8 +1464,14 @@ void TestRules::enableDisableRule()
 
     cleanupMockHistory();
 
-    // Now disable the rule
+    // Now DISABLE the rule invalid ruleId
     QVariantMap disableParams;
+    disableParams.insert("ruleId", QUuid::createUuid().toString());
+    response = injectAndWait("Rules.DisableRule", disableParams);
+    verifyRuleError(response, RuleEngine::RuleErrorRuleNotFound);
+
+    // Now DISABLE the rule
+    disableParams.clear();
     disableParams.insert("ruleId", id.toString());
     response = injectAndWait("Rules.DisableRule", disableParams);
     verifyRuleError(response);
@@ -1469,10 +1489,17 @@ void TestRules::enableDisableRule()
 
     cleanupMockHistory();
 
-    // Now enable the rule again
-    response = injectAndWait("Rules.EnableRule", disableParams);
-    verifyRuleError(response);
+    // Now ENABLE the rule again invald ruleId
+    QVariantMap enableParams;
+    enableParams.insert("ruleId", QUuid::createUuid().toString());
+    response = injectAndWait("Rules.EnableRule", enableParams);
+    verifyRuleError(response, RuleEngine::RuleErrorRuleNotFound);
 
+    // Now ENABLE the rule again
+    enableParams.clear();
+    enableParams.insert("ruleId", id.toString());
+    response = injectAndWait("Rules.EnableRule", enableParams);
+    verifyRuleError(response);
 
     // trigger event in mock device
     spy.clear();

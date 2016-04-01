@@ -77,6 +77,7 @@
 */
 
 #include "repeatingoption.h"
+#include "loggingcategories.h"
 
 #include <QDateTime>
 
@@ -133,6 +134,22 @@ bool RepeatingOption::isEmtpy() const
 /*! Returns true if this \l{RepeatingOption} is valid. */
 bool RepeatingOption::isValid() const
 {
+    // Validate weekdays range
+    foreach (const uint &weekDay, m_weekDays) {
+        if (weekDay <= 0 || weekDay > 7) {
+            qCWarning(dcRuleEngine()) << "Invalid week day value:" << weekDay << ". Value out of range [1,7].";
+            return false;
+        }
+    }
+
+    // Validate monthdays range
+    foreach (const uint &monthDay, m_monthDays) {
+        if (monthDay <= 0 || monthDay > 31) {
+            qCWarning(dcRuleEngine()) << "Invalid month day value:" << monthDay << ". Value out of range [1,31].";
+            return false;
+        }
+    }
+
     switch (m_mode) {
     case RepeatingModeNone:
         return m_weekDays.isEmpty() && m_monthDays.isEmpty();

@@ -532,7 +532,10 @@ QVariantMap JsonTypes::packStateEvaluator(const StateEvaluator &stateEvaluator)
     foreach (const StateEvaluator &childEvaluator, stateEvaluator.childEvaluators()) {
         childEvaluators.append(packStateEvaluator(childEvaluator));
     }
-    variantMap.insert("operator", stateOperator().at(stateEvaluator.operatorType()));
+
+    if (!childEvaluators.isEmpty() || stateEvaluator.stateDescriptor().isValid())
+        variantMap.insert("operator", stateOperator().at(stateEvaluator.operatorType()));
+
     if (childEvaluators.count() > 0) {
         variantMap.insert("childEvaluators", childEvaluators);
     }
@@ -817,12 +820,21 @@ QVariantMap JsonTypes::packRepeatingOption(const RepeatingOption &option)
 {
     QVariantMap optionVariant;
     optionVariant.insert("mode", s_repeatingMode.at(option.mode()));
-    if (!option.weekDays().isEmpty())
-        optionVariant.insert("weekDays", QVariant::fromValue< QList<int> >(option.weekDays()));
+    if (!option.weekDays().isEmpty()) {
+        QVariantList weekDaysVariantList;
+        foreach (const int& weekDay, option.weekDays()) {
+            weekDaysVariantList.append(QVariant(weekDay));
+        }
+        optionVariant.insert("weekDays", weekDaysVariantList);
+    }
 
-    if (!option.monthDays().isEmpty())
-        optionVariant.insert("monthDays", QVariant::fromValue< QList<int> >(option.monthDays()));
-
+    if (!option.monthDays().isEmpty()) {
+        QVariantList monthDaysVariantList;
+        foreach (const int& monthDay, option.monthDays()) {
+            monthDaysVariantList.append(QVariant(monthDay));
+        }
+        optionVariant.insert("monthDays", monthDaysVariantList);
+    }
     return optionVariant;
 }
 
@@ -855,8 +867,8 @@ QVariantMap JsonTypes::packTimeEventItem(const TimeEventItem &timeEventItem)
     if (!timeEventItem.time().isNull())
         timeEventItemVariant.insert("time", timeEventItem.time().toString("hh:mm"));
 
-    if (!timeEventItem.repatingOption().isEmtpy())
-        timeEventItemVariant.insert("repeating", packRepeatingOption(timeEventItem.repatingOption()));
+    if (!timeEventItem.repeatingOption().isEmtpy())
+        timeEventItemVariant.insert("repeating", packRepeatingOption(timeEventItem.repeatingOption()));
 
     return timeEventItemVariant;
 }
@@ -874,8 +886,13 @@ QVariantMap JsonTypes::packTimeDescriptor(const TimeDescriptor &timeDescriptor)
         timeDescriptorVariant.insert("calendarItems", calendarItems);
     }
 
-
-    // TODO: TimeEventItems
+    if (!timeDescriptor.timeEventItems().isEmpty()) {
+        QVariantList timeEventItems;
+        foreach (const TimeEventItem &timeEventItem, timeDescriptor.timeEventItems()) {
+            timeEventItems.append(packTimeEventItem(timeEventItem));
+        }
+        timeDescriptorVariant.insert("timeEventItems", timeEventItems);
+    }
 
     return timeDescriptorVariant;
 }
@@ -1279,12 +1296,13 @@ RepeatingOption JsonTypes::unpackRepeatingOption(const QVariantMap &repeatingOpt
 CalendarItem JsonTypes::unpackCalendarItem(const QVariantMap &calendarItemMap)
 {
     CalendarItem calendarItem;
+    calendarItem.setDuration(calendarItemMap.value("duration").toUInt());
 
     if (calendarItemMap.contains("datetime"))
         calendarItem.setDateTime(QDateTime::fromTime_t(calendarItemMap.value("datetime").toUInt()));
 
     if (calendarItemMap.contains("startTime"))
-        calendarItem.setStartTime(calendarItemMap.value("startTime").toTime());
+        calendarItem.setStartTime(QTime::fromString(calendarItemMap.value("startTime").toString(), "hh:mm"));
 
     if (calendarItemMap.contains("repeating"))
         calendarItem.setRepeatingOption(unpackRepeatingOption(calendarItemMap.value("repeating").toMap()));
@@ -1320,6 +1338,14 @@ TimeDescriptor JsonTypes::unpackTimeDescriptor(const QVariantMap &timeDescriptor
             calendarItems.append(unpackCalendarItem(calendarItemValiant.toMap()));
         }
         timeDescriptor.setCalendarItems(calendarItems);
+    }
+
+    if (timeDescriptorMap.contains("timeEventItems")) {
+        QList<TimeEventItem> timeEventItems;
+        foreach (const QVariant &timeEventItemValiant, timeDescriptorMap.value("timeEventItems").toList()) {
+            timeEventItems.append(unpackTimeEventItem(timeEventItemValiant.toMap()));
+        }
+        timeDescriptor.setTimeEventItems(timeEventItems);
     }
 
     return timeDescriptor;
@@ -1374,21 +1400,29 @@ QPair<bool, QString> JsonTypes::validateProperty(const QVariant &templateValue, 
     if (strippedTemplateValue == JsonTypes::basicTypeToString(JsonTypes::Variant)) {
         return report(true, "");
     }
-    if (strippedTemplateValue == JsonTypes::basicTypeToString(JsonTypes::Uuid)) {
+    if (strippedTemplateValue == JsonTypes::basicTypeToString(QVariant::Uuid)) {
         QString errorString = QString("Param %1 is not a uuid.").arg(value.toString());
         return report(value.canConvert(QVariant::Uuid), errorString);
     }
-    if (strippedTemplateValue == JsonTypes::basicTypeToString(JsonTypes::String)) {
+    if (strippedTemplateValue == JsonTypes::basicTypeToString(QVariant::String)) {
         QString errorString = QString("Param %1 is not a string.").arg(value.toString());
         return report(value.canConvert(QVariant::String), errorString);
     }
-    if (strippedTemplateValue == JsonTypes::basicTypeToString(JsonTypes::Bool)) {
+    if (strippedTemplateValue == JsonTypes::basicTypeToString(QVariant::Bool)) {
         QString errorString = QString("Param %1 is not a bool.").arg(value.toString());
         return report(value.canConvert(QVariant::Bool), errorString);
     }
-    if (strippedTemplateValue == JsonTypes::basicTypeToString(JsonTypes::Int)) {
+    if (strippedTemplateValue == JsonTypes::basicTypeToString(QVariant::Int)) {
         QString errorString = QString("Param %1 is not a int.").arg(value.toString());
         return report(value.canConvert(QVariant::Int), errorString);
+    }
+    if (strippedTemplateValue == JsonTypes::basicTypeToString(QVariant::UInt)) {
+        QString errorString = QString("Param %1 is not a uint.").arg(value.toString());
+        return report(value.canConvert(QVariant::UInt), errorString);
+    }
+    if (strippedTemplateValue == JsonTypes::basicTypeToString(QVariant::Time)) {
+        QString errorString = QString("Param %1 is not a time (hh:mm).").arg(value.toString());
+        return report(value.canConvert(QVariant::Time), errorString);
     }
     qCWarning(dcJsonRpc) << QString("Unhandled property type: %1 (expected: %2)").arg(value.toString()).arg(strippedTemplateValue);
     QString errorString = QString("Unhandled property type: %1 (expected: %2)").arg(value.toString()).arg(strippedTemplateValue);

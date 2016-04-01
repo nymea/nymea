@@ -131,6 +131,7 @@ void TestTimeManager::addTimeDescriptor_data()
     calendarItems.append(createCalendarItem("08:00", 5, repeatingOptionDaily));
     calendarItems.append(createCalendarItem("09:00", 5, repeatingOptionWeeklyMultiple));
 
+    // Invalid timeDescriptor
 
     QTest::addColumn<QVariantMap>("timeDescriptor");
     QTest::addColumn<RuleEngine::RuleError>("error");
@@ -141,6 +142,8 @@ void TestTimeManager::addTimeDescriptor_data()
     QTest::newRow("valid: calendarItems - weekly - multiple days") << createTimeDescriptorCalendar(calendarItems) << RuleEngine::RuleErrorNoError;
     QTest::newRow("valid: calendarItem - monthly - multiple days") << createTimeDescriptorCalendar(createCalendarItem("23:00", 5, repeatingOptionMonthlyMultiple)) << RuleEngine::RuleErrorNoError;
 
+    QTest::newRow("invalid: calendarItem invalid time") << createTimeDescriptorCalendar(createCalendarItem("35:80", 5)) << RuleEngine::RuleErrorInvalidCalendarItem;
+    QTest::newRow("invalid: calendarItem invalid duration") << createTimeDescriptorCalendar(createCalendarItem("12:00", 0)) << RuleEngine::RuleErrorInvalidCalendarItem;
     QTest::newRow("invalid: calendarItem - monthly - weekDays") << createTimeDescriptorCalendar(createCalendarItem("13:13", 5, repeatingOptionInvalidMonthly)) << RuleEngine::RuleErrorInvalidRepeatingOption;
     QTest::newRow("invalid: calendarItem - weekly - monthDays") << createTimeDescriptorCalendar(createCalendarItem("15:30", 20, repeatingOptionInvalidWeekly)) << RuleEngine::RuleErrorInvalidRepeatingOption;
     QTest::newRow("invalid: calendarItem - invalid weekdays  (negative)") << createTimeDescriptorCalendar(createCalendarItem("13:13", 5, repeatingOptionInvalidWeekDays)) << RuleEngine::RuleErrorInvalidRepeatingOption;

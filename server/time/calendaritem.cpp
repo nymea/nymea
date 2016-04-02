@@ -103,8 +103,6 @@ bool CalendarItem::isValid() const
 /*! Returns true, if the given \a dateTime matches this \l{CalendarItem}. */
 bool CalendarItem::evaluate(const QDateTime &dateTime) const
 {
-    qCDebug(dcRuleEngine()) << "Evaluate CalendarItem";
-
     if (!isValid())
         return false;
 
@@ -184,7 +182,7 @@ bool CalendarItem::evaluateWeekly(const QDateTime &dateTime) const
 
     // Check each week day in the list
     foreach (const int &weekDay, repeatingOption().weekDays()) {
-        QDateTime startDateTime = weekStartDateTime.addDays(weekDay -1);
+        QDateTime startDateTime = weekStartDateTime.addDays(weekDay);
         QDateTime endDateTime = startDateTime.addSecs(duration() * 60);
 
         bool overlapping = false;

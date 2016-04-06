@@ -45,6 +45,14 @@ coverage {
     message("Building coverage.")
 }
 
+# Build tests
+!disabletesting {
+    message("Building guh with tests")
+    SUBDIRS += tests
+} else {
+    message("Building guh without tests")
+}
+
 # Bluetooth LE support
 contains(DEFINES, BLUETOOTH_LE) {
     message("Bluetooth LE enabled.")

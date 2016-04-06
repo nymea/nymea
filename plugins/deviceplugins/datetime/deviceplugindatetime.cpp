@@ -225,7 +225,7 @@ void DevicePluginDateTime::deviceRemoved(Device *device)
         countdown->deleteLater();
     }
 
-    startMonitoringAutoDevices();
+    //startMonitoringAutoDevices();
 }
 
 DeviceManager::DeviceError DevicePluginDateTime::executeAction(Device *device, const Action &action)
@@ -271,14 +271,14 @@ void DevicePluginDateTime::networkManagerReplyReady(QNetworkReply *reply)
 
 void DevicePluginDateTime::startMonitoringAutoDevices()
 {
-    foreach (Device *device, myDevices()) {
-        if (device->deviceClassId() == todayDeviceClassId) {
-            return; // We already have the date device... do nothing.
-        }
-    }
+//    foreach (Device *device, myDevices()) {
+//        if (device->deviceClassId() == todayDeviceClassId) {
+//            return; // We already have the date device... do nothing.
+//        }
+//    }
 
-    DeviceDescriptor dateDescriptor(todayDeviceClassId, "Date", "Time");
-    emit autoDevicesAppeared(todayDeviceClassId, QList<DeviceDescriptor>() << dateDescriptor);
+//    DeviceDescriptor dateDescriptor(todayDeviceClassId, "Date", "Time");
+//    emit autoDevicesAppeared(todayDeviceClassId, QList<DeviceDescriptor>() << dateDescriptor);
 }
 
 void DevicePluginDateTime::searchGeoLocation()

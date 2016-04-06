@@ -36,7 +36,6 @@ coverage {
 !disabletesting {
     message("Building guh with tests")
     SUBDIRS += tests
-    DEFINES += TESTING_ENABLED
 } else {
     message("Building guh without tests")
 }

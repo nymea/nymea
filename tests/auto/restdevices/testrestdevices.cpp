@@ -156,6 +156,8 @@ void TestRestDevices::addConfiguredDevice()
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
     QVariant response = postAndWait(request, params, expectedStatusCode);
+    qDebug() << QJsonDocument::fromVariant(response).toJson();
+
     QVERIFY2(!response.isNull(), "Could not add device");
 
     if (expectedStatusCode == 200) {
@@ -360,7 +362,7 @@ void TestRestDevices::parentChildDevices()
     // try to remove child device
     QNetworkRequest deleteRequest(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(childDeviceId.toString())));
     response = deleteAndWait(deleteRequest, 400);
-    QVERIFY2(!response.isNull(), "Could not delete device");
+    //QVERIFY2(!response.isNull(), "Could not delete device");
     QCOMPARE(JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorDeviceIsChild), response.toMap().value("error").toString());
 
     // check if the child device is still there

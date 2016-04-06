@@ -208,9 +208,11 @@ QVariant GuhTestBase::getAndWait(const QNetworkRequest &request, const int &expe
 
     QNetworkReply *reply = nam.get(request);
 
-    clientSpy.wait();
+    if (clientSpy.count() == 0) {
+        clientSpy.wait();
+    }
 
-    if (clientSpy.count() != 1) {
+    if (clientSpy.count() == 0) {
         qWarning() << "Got no response for get request";
         reply->deleteLater();
         return QVariant();
@@ -238,9 +240,11 @@ QVariant GuhTestBase::deleteAndWait(const QNetworkRequest &request, const int &e
 
     QNetworkReply *reply = nam.deleteResource(request);
 
-    clientSpy.wait();
+    if (clientSpy.count() == 0) {
+        clientSpy.wait();
+    }
 
-    if (clientSpy.count() != 1) {
+    if (clientSpy.count() == 0) {
         qWarning() << "Got no response for delete request";
         reply->deleteLater();
         return QVariant();
@@ -270,13 +274,17 @@ QVariant GuhTestBase::postAndWait(const QNetworkRequest &request, const QVariant
 
     QNetworkReply *reply = nam.post(request, payload);
 
-    clientSpy.wait();
+    if (clientSpy.count() == 0) {
+        clientSpy.wait();
+    }
 
-    if (clientSpy.count() != 1) {
+    if (clientSpy.count() == 0) {
         qWarning() << "Got no response for post request";
         reply->deleteLater();
         return QVariant();
     }
+
+
 
     QByteArray data = reply->readAll();
     verifyReply(reply, data, expectedStatus);
@@ -303,9 +311,11 @@ QVariant GuhTestBase::putAndWait(const QNetworkRequest &request, const QVariant 
 
     QNetworkReply *reply = nam.put(request, payload);
 
-    clientSpy.wait();
+    if (clientSpy.count() == 0) {
+        clientSpy.wait();
+    }
 
-    if (clientSpy.count() != 1) {
+    if (clientSpy.count() == 0) {
         qWarning() << "Got no response for put request";
         reply->deleteLater();
         return QVariant();

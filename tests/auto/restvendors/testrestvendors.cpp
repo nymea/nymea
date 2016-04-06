@@ -78,7 +78,7 @@ void TestRestVendors::invalidMethod()
     QNetworkReply *reply = nam.post(request, QByteArray());
 
     clientSpy.wait();
-    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
+    QVERIFY2(clientSpy.count() != 0, "expected at least 1 response from webserver");
 
     bool ok = false;
     int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(&ok);
@@ -98,7 +98,7 @@ void TestRestVendors::invalidPath()
     QNetworkReply *reply = nam.get(request);
 
     clientSpy.wait();
-    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
+    QVERIFY2(clientSpy.count() != 0, "expected at least 1 response from webserver");
 
     bool ok = false;
     int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(&ok);

@@ -209,6 +209,26 @@ QStringList GuhSettings::allKeys() const
     return m_settings->allKeys();
 }
 
+void GuhSettings::beginWriteArray(const QString &prefix)
+{
+    m_settings->beginWriteArray(prefix);
+}
+
+void GuhSettings::setArrayIndex(int i)
+{
+    m_settings->setArrayIndex(i);
+}
+
+int GuhSettings::beginReadArray(const QString &prefix)
+{
+    return m_settings->beginReadArray(prefix);
+}
+
+void GuhSettings::endArray()
+{
+    m_settings->endArray();
+}
+
 /*! Begins a new group with the given \a prefix.*/
 void GuhSettings::beginGroup(const QString &prefix)
 {

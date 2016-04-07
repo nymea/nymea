@@ -52,6 +52,11 @@ public:
 
     // forwarded QSettings methods
     QStringList	allKeys() const;
+    void beginWriteArray(const QString &prefix);
+    void setArrayIndex(int i);
+    int beginReadArray(const QString &prefix);
+
+    void endArray();
     void beginGroup(const QString &prefix);
     QStringList	childGroups() const;
     QStringList	childKeys() const;

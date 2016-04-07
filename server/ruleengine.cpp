@@ -99,13 +99,15 @@
 
 
 #include "ruleengine.h"
-#include "loggingcategories.h"
-#include "types/paramdescriptor.h"
-#include "types/eventdescriptor.h"
-#include "guhsettings.h"
-
 #include "guhcore.h"
+#include "loggingcategories.h"
+#include "time/calendaritem.h"
+#include "time/repeatingoption.h"
+#include "time/timeeventitem.h"
 
+#include "types/eventdescriptor.h"
+#include "types/paramdescriptor.h"
+#include "guhsettings.h"
 #include "devicemanager.h"
 #include "plugin/device.h"
 
@@ -133,9 +135,93 @@ RuleEngine::RuleEngine(QObject *parent) :
 
         qCDebug(dcRuleEngine) << "load rule" << name << idString;
 
+        // Load timeDescriptor
+        TimeDescriptor timeDescriptor;
+        QList<CalendarItem> calendarItems;
+        QList<TimeEventItem> timeEventItems;
+
+        settings.beginGroup("timeDescriptor");
+
+        settings.beginGroup("calendarItems");
+        foreach (const QString &childGroup, settings.childGroups()) {
+            settings.beginGroup(childGroup);
+
+            CalendarItem calendarItem;
+            calendarItem.setDateTime(QDateTime::fromTime_t(settings.value("dateTime", 0).toUInt()));
+            calendarItem.setStartTime(QTime::fromString(settings.value("startTime").toString()));
+            calendarItem.setDuration(settings.value("duration", 0).toUInt());
+
+            QList<int> weekDays;
+            QList<int> monthDays;
+            RepeatingOption::RepeatingMode mode = (RepeatingOption::RepeatingMode)settings.value("mode", 0).toInt();
+
+            // Load weekDays
+            int weekDaysCount = settings.beginReadArray("weekDays");
+            for (int i = 0; i < weekDaysCount; ++i) {
+                settings.setArrayIndex(i);
+                weekDays.append(settings.value("weekDay", 0).toInt());
+            }
+            settings.endArray();
+
+            // Load weekDays
+            int monthDaysCount = settings.beginReadArray("monthDays");
+            for (int i = 0; i < monthDaysCount; ++i) {
+                settings.setArrayIndex(i);
+                monthDays.append(settings.value("monthDay", 0).toInt());
+            }
+            settings.endArray();
+
+            settings.endGroup();
+
+            calendarItem.setRepeatingOption(RepeatingOption(mode, weekDays, monthDays));
+            calendarItems.append(calendarItem);
+        }
+        settings.endGroup();
+
+        timeDescriptor.setCalendarItems(calendarItems);
+
+        settings.beginGroup("timeEventItems");
+        foreach (const QString &childGroup, settings.childGroups()) {
+            settings.beginGroup(childGroup);
+
+            TimeEventItem timeEventItem;
+            timeEventItem.setDateTime(settings.value("dateTime", 0).toUInt());
+            timeEventItem.setTime(QTime::fromString(settings.value("time").toString()));
+
+            QList<int> weekDays;
+            QList<int> monthDays;
+            RepeatingOption::RepeatingMode mode = (RepeatingOption::RepeatingMode)settings.value("mode", 0).toInt();
+
+            // Load weekDays
+            int weekDaysCount = settings.beginReadArray("weekDays");
+            for (int i = 0; i < weekDaysCount; ++i) {
+                settings.setArrayIndex(i);
+                weekDays.append(settings.value("weekDay", 0).toInt());
+            }
+            settings.endArray();
+
+            // Load weekDays
+            int monthDaysCount = settings.beginReadArray("monthDays");
+            for (int i = 0; i < monthDaysCount; ++i) {
+                settings.setArrayIndex(i);
+                monthDays.append(settings.value("monthDay", 0).toInt());
+            }
+            settings.endArray();
+
+            settings.endGroup();
+
+            timeEventItem.setRepeatingOption(RepeatingOption(mode, weekDays, monthDays));
+            timeEventItems.append(timeEventItem);
+        }
+        settings.endGroup();
+
+        settings.endGroup();
+
+        timeDescriptor.setTimeEventItems(timeEventItems);
+
+        // Load events
         QList<EventDescriptor> eventDescriptorList;
         settings.beginGroup("events");
-
         foreach (QString eventGroupName, settings.childGroups()) {
             if (eventGroupName.startsWith("EventDescriptor-")) {
                 settings.beginGroup(eventGroupName);
@@ -160,8 +246,12 @@ RuleEngine::RuleEngine(QObject *parent) :
         }
         settings.endGroup();
 
+        settings.endGroup();
+
+        // Load stateEvaluator
         StateEvaluator stateEvaluator = StateEvaluator::loadFromSettings(settings, "stateEvaluator");
-        
+
+        // Load actions
         QList<RuleAction> actions;
         settings.beginGroup("ruleActions");
         foreach (const QString &actionNumber, settings.childGroups()) {
@@ -190,6 +280,7 @@ RuleEngine::RuleEngine(QObject *parent) :
         }
         settings.endGroup();
 
+        // Load exit actions
         QList<RuleAction> exitActions;
         settings.beginGroup("ruleExitActions");
         foreach (const QString &actionNumber, settings.childGroups()) {
@@ -216,6 +307,7 @@ RuleEngine::RuleEngine(QObject *parent) :
         Rule rule;
         rule.setId(RuleId(idString));
         rule.setName(name);
+        rule.setTimeDescriptor(timeDescriptor);
         rule.setEventDescriptors(eventDescriptorList);
         rule.setStateEvaluator(stateEvaluator);
         rule.setActions(actions);
@@ -917,12 +1009,75 @@ void RuleEngine::appendRule(const Rule &rule)
 
 void RuleEngine::saveRule(const Rule &rule)
 {
-    // Save Events / EventDescriptors
     GuhSettings settings(GuhSettings::SettingsRoleRules);
     settings.beginGroup(rule.id().toString());
     settings.setValue("name", rule.name());
     settings.setValue("enabled", rule.enabled());
     settings.setValue("executable", rule.executable());
+
+    // Save timeDescriptor
+    settings.beginGroup("timeDescriptor");
+    if (!rule.timeDescriptor().isEmpty()) {
+        settings.beginGroup("calendarItems");
+        for (int i = 0; i < rule.timeDescriptor().calendarItems().count(); i++) {
+            const CalendarItem &calendarItem = rule.timeDescriptor().calendarItems().at(i);
+            settings.beginGroup("CalendarItem-" + QString::number(i));
+            settings.setValue("dateTime", calendarItem.dateTime().toTime_t());
+            settings.setValue("startTime", calendarItem.startTime().toString("hh:mm"));
+            settings.setValue("duration", calendarItem.duration());
+            settings.setValue("mode", calendarItem.repeatingOption().mode());
+
+            // Save weekDays
+            settings.beginWriteArray("weekDays");
+            for (int i = 0; i < calendarItem.repeatingOption().weekDays().count(); ++i) {
+                settings.setArrayIndex(i);
+                settings.setValue("weekDay", calendarItem.repeatingOption().weekDays().at(i));
+            }
+            settings.endArray();
+
+            // Save monthDays
+            settings.beginWriteArray("monthDays");
+            for (int i = 0; i < calendarItem.repeatingOption().monthDays().count(); ++i) {
+                settings.setArrayIndex(i);
+                settings.setValue("monthDay", calendarItem.repeatingOption().monthDays().at(i));
+            }
+            settings.endArray();
+
+            settings.endGroup();
+        }
+        settings.endGroup();
+
+        settings.beginGroup("timeEventItems");
+        for (int i = 0; i < rule.timeDescriptor().timeEventItems().count(); i++) {
+            const TimeEventItem &timeEventItem = rule.timeDescriptor().timeEventItems().at(i);
+            settings.beginGroup("TimeEventItem-" + QString::number(i));
+            settings.setValue("dateTime", timeEventItem.dateTime().toTime_t());
+            settings.setValue("time", timeEventItem.time().toString("hh:mm"));
+            settings.setValue("mode", timeEventItem.repeatingOption().mode());
+
+            // Save weekDays
+            settings.beginWriteArray("weekDays");
+            for (int i = 0; i < timeEventItem.repeatingOption().weekDays().count(); ++i) {
+                settings.setArrayIndex(i);
+                settings.setValue("weekDay", timeEventItem.repeatingOption().weekDays().at(i));
+            }
+            settings.endArray();
+
+            // Save monthDays
+            settings.beginWriteArray("monthDays");
+            for (int i = 0; i < timeEventItem.repeatingOption().monthDays().count(); ++i) {
+                settings.setArrayIndex(i);
+                settings.setValue("monthDay", timeEventItem.repeatingOption().monthDays().at(i));
+            }
+            settings.endArray();
+
+            settings.endGroup();
+        }
+        settings.endGroup();
+    }
+    settings.endGroup();
+
+    // Save Events / EventDescriptors
     settings.beginGroup("events");
     for (int i = 0; i < rule.eventDescriptors().count(); i++) {
         const EventDescriptor &eventDescriptor = rule.eventDescriptors().at(i);

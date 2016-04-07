@@ -1320,7 +1320,7 @@ void TestTimeManager::testEventItemYearly()
 
     // Create the rule map
     ruleMap.insert("name", "Time based hourly calendar rule");
-    ruleMap.insert("timeDescriptor", createTimeDescriptorTimeEvent(createTimeEventItem(dateTime.toTime_t())));
+    ruleMap.insert("timeDescriptor", createTimeDescriptorTimeEvent(createTimeEventItem(dateTime.toTime_t(), repeatingOptionYearly)));
     ruleMap.insert("actions", QVariantList() << action);
 
     // Add the rule

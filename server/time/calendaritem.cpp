@@ -211,10 +211,17 @@ bool CalendarItem::evaluateMonthly(const QDateTime &dateTime) const
     // Get the first day of this month with the correct start time
     QDateTime monthStartDateTime = QDateTime(QDate(dateTime.date().year(), dateTime.date().month(), 1), m_startTime);
 
-    // Check each week day in the list
+    // Check each month day in the list
     foreach (const int &monthDay, repeatingOption().monthDays()) {
         QDateTime startDateTime = monthStartDateTime.addDays(monthDay - 1);
         QDateTime endDateTime = startDateTime.addSecs(duration() * 60);
+
+        // Check if this calendar item starts in the future...
+        if (startDateTime > dateTime) {
+            //...go one month back
+            startDateTime = startDateTime.addMonths(-1);
+            endDateTime =  startDateTime.addSecs(duration() * 60);
+        }
 
         // Check if dateTime already matches for this month
         if (dateTime >= startDateTime && dateTime < endDateTime)

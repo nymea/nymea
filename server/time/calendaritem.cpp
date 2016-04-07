@@ -95,7 +95,7 @@ bool CalendarItem::isValid() const
 {
     // If dateTime AND a repeating option definend...
     if (m_dateTime.isValid() && !repeatingOption().isEmtpy())
-        // ...only yearly repeating mode is allowed
+        // ...only repeating mode yearly is allowed for dateTime
         if (repeatingOption().mode() != RepeatingOption::RepeatingModeYearly)
             return false;
 
@@ -123,10 +123,11 @@ bool CalendarItem::evaluate(const QDateTime &dateTime) const
         default:
             return false;
         }
+    } else if (m_repeatingOption.mode() == RepeatingOption::RepeatingModeYearly) {
+        return evaluateYearly(dateTime);
     } else {
         return dateTime >= m_dateTime && dateTime < m_dateTime.addSecs(duration() * 60);
     }
-    return false;
 }
 
 bool CalendarItem::evaluateHourly(const QDateTime &dateTime) const
@@ -192,10 +193,10 @@ bool CalendarItem::evaluateWeekly(const QDateTime &dateTime) const
         // Check if this calendar item overlaps a week...
         if (startDateTime.date().weekNumber() != endDateTime.date().weekNumber()) {
             // ...jump one week back in to the past
-            QDateTime startDateTimePreviouseWeek = startDateTime.addDays(-7);
-            QDateTime endDateTimePreviouseWeek = startDateTimePreviouseWeek.addSecs(duration() * 60);
+            QDateTime startDateTimePreviousWeek = startDateTime.addDays(-7);
+            QDateTime endDateTimePreviousWeek = startDateTimePreviousWeek.addSecs(duration() * 60);
 
-            if (dateTime >= startDateTimePreviouseWeek && dateTime < endDateTimePreviouseWeek)
+            if (dateTime >= startDateTimePreviousWeek && dateTime < endDateTimePreviousWeek)
                 // Return true if the current time is between start
                 // and end of this calendar item from the previouse week
                 return true;
@@ -229,17 +230,17 @@ bool CalendarItem::evaluateMonthly(const QDateTime &dateTime) const
             // and end of this calendar item
             return true;
 
-        // Check if this calendar item overlaps a month...
-        if (startDateTime.date().month() != endDateTime.date().month()) {
-            // ...jump one month back in to the past
-            QDateTime startDateTimePreviouseMonth = startDateTime.addMonths(-1);
-            QDateTime endDateTimePreviouseMonth = startDateTimePreviouseMonth.addSecs(duration() * 60);
+//        // Check if this calendar item overlaps a month...
+//        if (startDateTime.date().month() != endDateTime.date().month()) {
+//            // ...jump one month back in to the past
+//            QDateTime startDateTimePreviousMonth = startDateTime.addMonths(-1);
+//            QDateTime endDateTimePreviousMonth = startDateTimePreviousMonth.addSecs(duration() * 60);
 
-            if (dateTime >= startDateTimePreviouseMonth && dateTime < endDateTimePreviouseMonth)
-                // Return true if the current time is between start
-                // and end of this calendar item from the previouse month
-                return true;
-        }
+//            if (dateTime >= startDateTimePreviousMonth && dateTime < endDateTimePreviousMonth)
+//                // Return true if the current time is between start
+//                // and end of this calendar item from the previouse month
+//                return true;
+//        }
     }
 
     return false;
@@ -247,7 +248,25 @@ bool CalendarItem::evaluateMonthly(const QDateTime &dateTime) const
 
 bool CalendarItem::evaluateYearly(const QDateTime &dateTime) const
 {
-    Q_UNUSED(dateTime)
+    // check for this year
+    QDateTime startDateTimeThisYear = QDateTime(QDate(dateTime.date().year(), m_dateTime.date().month(), m_dateTime.date().day()), m_dateTime.time());
+    QDateTime endDateTimeThisYear = startDateTimeThisYear.addSecs(duration() * 60);
+
+    // check if we are in the interval of this year
+    if (dateTime >= startDateTimeThisYear && dateTime < endDateTimeThisYear)
+        return true;
+
+    // check if this calendaritem overlaps a year
+    if (startDateTimeThisYear.date().year() != endDateTimeThisYear.date().year()) {
+        // go one year in to the past
+       QDateTime startDateTimePreviousYear = startDateTimeThisYear.addYears(-1);
+       QDateTime endDateTimePreviousYear = startDateTimePreviousYear.addSecs(duration() * 60);
+
+       // check if we are in the interval of the previous year
+       if (dateTime >= startDateTimePreviousYear && dateTime < endDateTimePreviousYear)
+           return true;
+
+    }
 
     return false;
 }

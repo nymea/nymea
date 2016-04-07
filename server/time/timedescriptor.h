@@ -23,6 +23,7 @@
 
 #include "timeeventitem.h"
 #include "calendaritem.h"
+#include "guhsettings.h"
 
 namespace guhserver {
 
@@ -41,6 +42,10 @@ public:
     bool isEmpty() const;
 
     bool evaluate(const QDateTime &dateTime) const;
+
+//    void dumpToSettings(GuhSettings &settings, const QString &groupName) const;
+//    static TimeDescriptor loadFromSettings(GuhSettings &settings, const QString &groupPrefix);
+
 
 private:
     QList<TimeEventItem> m_timeEventItems;

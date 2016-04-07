@@ -74,11 +74,7 @@ public:
     QList<Rule> evaluateTime(const QDateTime &dateTime);
 
     RuleError addRule(const Rule &rule, bool fromEdit = false);
-//    RuleError addRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const QList<RuleAction> &actions, bool enabled = true);
-//    RuleError addRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions, bool enabled = true, bool executable = true, bool fromEdit = false);
-
     RuleError editRule(const Rule &rule);
-//    RuleError editRule(const RuleId &ruleId, const QString &name, const QList<EventDescriptor> &eventDescriptorList, const StateEvaluator &stateEvaluator, const QList<RuleAction> &actions, const QList<RuleAction> &exitActions, bool enabled = true, bool executable = true);
 
     QList<Rule> rules() const;
     QList<RuleId> ruleIds() const;

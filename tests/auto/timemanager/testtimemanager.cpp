@@ -49,9 +49,6 @@ private slots:
     void testCalendarDateTime_data();
     void testCalendarDateTime();
 
-    void testCalendarYearlyDateTime_data();
-    void testCalendarYearlyDateTime();
-
     void testCalendarItemHourly_data();
     void testCalendarItemHourly();
 
@@ -63,6 +60,14 @@ private slots:
 
     void testCalendarItemMonthly_data();
     void testCalendarItemMonthly();
+
+    void testCalendarYearlyDateTime_data();
+    void testCalendarYearlyDateTime();
+
+    void testEventItemDateTime_data();
+    void testEventItemDateTime();
+
+
 
 private:
     void initTimeManager();
@@ -196,6 +201,7 @@ void TestTimeManager::addTimeDescriptor_data()
 
     QTest::newRow("valid: timeEventItem") << createTimeDescriptorTimeEvent(createTimeEventItem("08:00")) << RuleEngine::RuleErrorNoError;
     QTest::newRow("valid: timeEventItem dateTime") << createTimeDescriptorTimeEvent(createTimeEventItem(QDateTime::currentDateTime().toTime_t())) << RuleEngine::RuleErrorNoError;
+    QTest::newRow("valid: timeEventItem dateTime - yearly") << createTimeDescriptorTimeEvent(createTimeEventItem(QDateTime::currentDateTime().toTime_t(), repeatingOptionYearly)) << RuleEngine::RuleErrorNoError;
     QTest::newRow("valid: timeEventItem - daily") << createTimeDescriptorTimeEvent(createTimeEventItem("08:00", repeatingOptionDaily)) << RuleEngine::RuleErrorNoError;
     QTest::newRow("valid: timeEventItem - none") << createTimeDescriptorTimeEvent(createTimeEventItem("09:00", repeatingOptionNone)) << RuleEngine::RuleErrorNoError;
     QTest::newRow("valid: timeEventItem - hourly") << createTimeDescriptorTimeEvent(createTimeEventItem("09:00", repeatingOptionHourly)) << RuleEngine::RuleErrorNoError;
@@ -204,7 +210,7 @@ void TestTimeManager::addTimeDescriptor_data()
 
     QTest::newRow("invalid: calendarItem empty") << createTimeDescriptorCalendar(createCalendarItem()) << RuleEngine::RuleErrorInvalidCalendarItem;
     QTest::newRow("invalid: calendarItem none") << createTimeDescriptorCalendar(createCalendarItem("00:12", 12, repeatingOptionInvalidNone)) << RuleEngine::RuleErrorInvalidRepeatingOption;
-    QTest::newRow("invalid: calendarItem dateTime + daily") << createTimeDescriptorCalendar(createCalendarItem(QDateTime::currentDateTime().toTime_t(), 5, repeatingOptionDaily)) << RuleEngine::RuleErrorInvalidCalendarItem;
+    QTest::newRow("invalid: calendarItem dateTime - daily") << createTimeDescriptorCalendar(createCalendarItem(QDateTime::currentDateTime().toTime_t(), 5, repeatingOptionDaily)) << RuleEngine::RuleErrorInvalidCalendarItem;
     QTest::newRow("invalid: calendarItem invalid time") << createTimeDescriptorCalendar(createCalendarItem("35:80", 5)) << RuleEngine::RuleErrorInvalidCalendarItem;
     QTest::newRow("invalid: calendarItem invalid duration") << createTimeDescriptorCalendar(createCalendarItem("12:00", 0)) << RuleEngine::RuleErrorInvalidCalendarItem;
     QTest::newRow("invalid: calendarItem - monthly - weekDays") << createTimeDescriptorCalendar(createCalendarItem("13:13", 5, repeatingOptionInvalidMonthly)) << RuleEngine::RuleErrorInvalidRepeatingOption;
@@ -310,114 +316,6 @@ void TestTimeManager::testCalendarDateTime()
     RuleId ruleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
 
     QDateTime oneMinuteBeforeEvent = dateTime.addSecs(-60);
-
-    GuhCore::instance()->timeManager()->setTime(oneMinuteBeforeEvent);
-    verifyRuleNotExecuted();
-    // active
-    GuhCore::instance()->timeManager()->setTime(dateTime);
-    verifyRuleExecuted(mockActionIdNoParams);
-    cleanupMockHistory();
-    // active unchanged
-    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(duration * 30));
-    verifyRuleNotExecuted();
-    // inactive
-    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(duration * 60));
-    verifyRuleExecuted(mockActionIdWithParams);
-    cleanupMockHistory();
-    // inactive unchanged
-    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs((duration + 1) * 60));
-    verifyRuleNotExecuted();
-
-    cleanupMockHistory();
-
-    // REMOVE rule
-    QVariantMap removeParams;
-    removeParams.insert("ruleId", ruleId);
-    response = injectAndWait("Rules.RemoveRule", removeParams);
-    verifyRuleError(response);
-}
-
-void TestTimeManager::testCalendarYearlyDateTime_data()
-{
-    QTest::addColumn<QDateTime>("dateTime");
-    QTest::addColumn<int>("duration");
-
-    QTest::newRow("dateTime - yearly - christmas") << QDateTime::fromString(QString("24.12.%1 20:00").arg(QDateTime::currentDateTime().date().year() + 1), "dd.MM.yyyy hh:mm") << 60;
-    QTest::newRow("dateTime - yearly - new year") << QDateTime::fromString(QString("31.12.%1 23:00").arg(QDateTime::currentDateTime().date().year() + 1), "dd.MM.yyyy hh:mm") << 120;
-    QTest::newRow("dateTime - yearly - valentines day") << QDateTime::fromString("14.02.2017 08:00", "dd.MM.yyyy hh:mm") << 120;
-}
-
-void TestTimeManager::testCalendarYearlyDateTime()
-{
-    QFETCH(QDateTime, dateTime);
-    QFETCH(int, duration);
-
-    initTimeManager();
-
-    // Action (without params)
-    QVariantMap ruleMap; QVariantMap action; QVariantMap exitAction;
-    action.insert("actionTypeId", mockActionIdNoParams);
-    action.insert("deviceId", m_mockDeviceId);
-    action.insert("ruleActionParams", QVariantList());
-
-    // Exit action (with params)
-    QVariantList actionParams;
-    QVariantMap param1;
-    param1.insert("name", "mockActionParam1");
-    param1.insert("value", 12);
-    actionParams.append(param1);
-    QVariantMap param2;
-    param2.insert("name", "mockActionParam2");
-    param2.insert("value", true);
-    actionParams.append(param2);
-    exitAction.insert("actionTypeId", mockActionIdWithParams);
-    exitAction.insert("deviceId", m_mockDeviceId);
-    exitAction.insert("ruleActionParams", actionParams);
-
-    // RepeatingOption
-    QVariantMap repeatingOption;
-    repeatingOption.insert("mode", "RepeatingModeYearly");
-
-    // CalendarItem
-    QVariantMap calendarItem;
-    calendarItem.insert("datetime", QVariant(dateTime.toTime_t()));
-    calendarItem.insert("duration", QVariant(duration));
-    calendarItem.insert("repeating", repeatingOption);
-
-    // Create the rule map
-    ruleMap.insert("name", "Time based yearly calendar rule");
-    ruleMap.insert("timeDescriptor", createTimeDescriptorCalendar(calendarItem));
-    ruleMap.insert("actions", QVariantList() << action);
-    ruleMap.insert("exitActions", QVariantList() << exitAction);
-
-    // Add the rule
-    QVariant response = injectAndWait("Rules.AddRule", ruleMap);
-    verifyRuleError(response);
-    RuleId ruleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
-
-    QDateTime oneMinuteBeforeEvent = dateTime.addSecs(-60);
-
-    GuhCore::instance()->timeManager()->setTime(oneMinuteBeforeEvent);
-    verifyRuleNotExecuted();
-    // active
-    GuhCore::instance()->timeManager()->setTime(dateTime);
-    verifyRuleExecuted(mockActionIdNoParams);
-    cleanupMockHistory();
-    // active unchanged
-    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(duration * 30));
-    verifyRuleNotExecuted();
-    // inactive
-    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(duration * 60));
-    verifyRuleExecuted(mockActionIdWithParams);
-    cleanupMockHistory();
-    // inactive unchanged
-    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs((duration + 1) * 60));
-    verifyRuleNotExecuted();
-
-
-    // One year "Back to the future"
-    oneMinuteBeforeEvent = oneMinuteBeforeEvent.addYears(1);
-    dateTime = dateTime.addYears(1);
 
     GuhCore::instance()->timeManager()->setTime(oneMinuteBeforeEvent);
     verifyRuleNotExecuted();
@@ -730,17 +628,7 @@ void TestTimeManager::testCalendarItemWeekly()
                     future = future.addDays(1);
                 } else {
                     // should not trigger today
-                    // inactive
-                    GuhCore::instance()->timeManager()->setTime(future);
-                    verifyRuleNotExecuted();
-                    // inactive
                     GuhCore::instance()->timeManager()->setTime(future.addSecs(6* 60));
-                    verifyRuleNotExecuted();
-                    // inactive
-                    GuhCore::instance()->timeManager()->setTime(future.addSecs(11 * 60));
-                    verifyRuleNotExecuted();
-                    // inactive
-                    GuhCore::instance()->timeManager()->setTime(future.addSecs(12 * 60));
                     verifyRuleNotExecuted();
 
                     // One day "Back to the future"
@@ -918,6 +806,167 @@ void TestTimeManager::testCalendarItemMonthly()
         GuhCore::instance()->timeManager()->setTime(startDate.addDays(3).addSecs(60));
         verifyRuleExecuted(mockActionIdWithParams);
     }
+
+    cleanupMockHistory();
+
+    // REMOVE rule
+    QVariantMap removeParams;
+    removeParams.insert("ruleId", ruleId);
+    response = injectAndWait("Rules.RemoveRule", removeParams);
+    verifyRuleError(response);
+}
+
+void TestTimeManager::testCalendarYearlyDateTime_data()
+{
+    QTest::addColumn<QDateTime>("dateTime");
+    QTest::addColumn<int>("duration");
+
+    QTest::newRow("dateTime - yearly - christmas") << QDateTime::fromString(QString("24.12.%1 20:00").arg(QDateTime::currentDateTime().date().year() + 1), "dd.MM.yyyy hh:mm") << 60;
+    QTest::newRow("dateTime - yearly - new year") << QDateTime::fromString(QString("31.12.%1 23:00").arg(QDateTime::currentDateTime().date().year() + 1), "dd.MM.yyyy hh:mm") << 120;
+    QTest::newRow("dateTime - yearly - valentines day") << QDateTime::fromString("14.02.2017 08:00", "dd.MM.yyyy hh:mm") << 120;
+}
+
+void TestTimeManager::testCalendarYearlyDateTime()
+{
+    QFETCH(QDateTime, dateTime);
+    QFETCH(int, duration);
+
+    initTimeManager();
+
+    // Action (without params)
+    QVariantMap ruleMap; QVariantMap action; QVariantMap exitAction;
+    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("deviceId", m_mockDeviceId);
+    action.insert("ruleActionParams", QVariantList());
+
+    // Exit action (with params)
+    QVariantList actionParams;
+    QVariantMap param1;
+    param1.insert("name", "mockActionParam1");
+    param1.insert("value", 12);
+    actionParams.append(param1);
+    QVariantMap param2;
+    param2.insert("name", "mockActionParam2");
+    param2.insert("value", true);
+    actionParams.append(param2);
+    exitAction.insert("actionTypeId", mockActionIdWithParams);
+    exitAction.insert("deviceId", m_mockDeviceId);
+    exitAction.insert("ruleActionParams", actionParams);
+
+    // RepeatingOption
+    QVariantMap repeatingOption;
+    repeatingOption.insert("mode", "RepeatingModeYearly");
+
+    // CalendarItem
+    QVariantMap calendarItem;
+    calendarItem.insert("datetime", QVariant(dateTime.toTime_t()));
+    calendarItem.insert("duration", QVariant(duration));
+    calendarItem.insert("repeating", repeatingOption);
+
+    // Create the rule map
+    ruleMap.insert("name", "Time based yearly calendar rule");
+    ruleMap.insert("timeDescriptor", createTimeDescriptorCalendar(calendarItem));
+    ruleMap.insert("actions", QVariantList() << action);
+    ruleMap.insert("exitActions", QVariantList() << exitAction);
+
+    // Add the rule
+    QVariant response = injectAndWait("Rules.AddRule", ruleMap);
+    verifyRuleError(response);
+    RuleId ruleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
+
+    QDateTime oneMinuteBeforeEvent = dateTime.addSecs(-60);
+
+    GuhCore::instance()->timeManager()->setTime(oneMinuteBeforeEvent);
+    verifyRuleNotExecuted();
+    // active
+    GuhCore::instance()->timeManager()->setTime(dateTime);
+    verifyRuleExecuted(mockActionIdNoParams);
+    cleanupMockHistory();
+    // active unchanged
+    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(duration * 30));
+    verifyRuleNotExecuted();
+    // inactive
+    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(duration * 60));
+    verifyRuleExecuted(mockActionIdWithParams);
+    cleanupMockHistory();
+    // inactive unchanged
+    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs((duration + 1) * 60));
+    verifyRuleNotExecuted();
+
+
+    // One year "Back to the future"
+    oneMinuteBeforeEvent = oneMinuteBeforeEvent.addYears(1);
+    dateTime = dateTime.addYears(1);
+
+    GuhCore::instance()->timeManager()->setTime(oneMinuteBeforeEvent);
+    verifyRuleNotExecuted();
+    // active
+    GuhCore::instance()->timeManager()->setTime(dateTime);
+    verifyRuleExecuted(mockActionIdNoParams);
+    cleanupMockHistory();
+    // active unchanged
+    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(duration * 30));
+    verifyRuleNotExecuted();
+    // inactive
+    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(duration * 60));
+    verifyRuleExecuted(mockActionIdWithParams);
+    cleanupMockHistory();
+    // inactive unchanged
+    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs((duration + 1) * 60));
+    verifyRuleNotExecuted();
+
+    cleanupMockHistory();
+
+    // REMOVE rule
+    QVariantMap removeParams;
+    removeParams.insert("ruleId", ruleId);
+    response = injectAndWait("Rules.RemoveRule", removeParams);
+    verifyRuleError(response);
+}
+
+void TestTimeManager::testEventItemDateTime_data()
+{
+    QTest::addColumn<QDateTime>("dateTime");
+
+    QTest::newRow("dateTime - christmas") << QDateTime::fromString("24.12.2016 20:00", "dd.MM.yyyy hh:mm");
+    QTest::newRow("dateTime - new year") << QDateTime::fromString("31.12.2016 00:00", "dd.MM.yyyy hh:mm");
+    QTest::newRow("dateTime - valentines day") << QDateTime::fromString("14.02.2016 08:00", "dd.MM.yyyy hh:mm");
+}
+
+void TestTimeManager::testEventItemDateTime()
+{
+    QFETCH(QDateTime, dateTime);
+
+    initTimeManager();
+
+    // Action (without params)
+    QVariantMap ruleMap; QVariantMap action;
+    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("deviceId", m_mockDeviceId);
+    action.insert("ruleActionParams", QVariantList());
+
+    // Create the rule map
+    ruleMap.insert("name", "Time based hourly calendar rule");
+    ruleMap.insert("timeDescriptor", createTimeDescriptorTimeEvent(createTimeEventItem(dateTime.toTime_t())));
+    ruleMap.insert("actions", QVariantList() << action);
+
+    // Add the rule
+    QVariant response = injectAndWait("Rules.AddRule", ruleMap);
+    verifyRuleError(response);
+    RuleId ruleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
+
+    QDateTime oneMinuteBeforeEvent = dateTime.addSecs(-60);
+
+    // not triggering
+    GuhCore::instance()->timeManager()->setTime(oneMinuteBeforeEvent);
+    verifyRuleNotExecuted();
+    // trigger
+    GuhCore::instance()->timeManager()->setTime(dateTime);
+    verifyRuleExecuted(mockActionIdNoParams);
+    cleanupMockHistory();
+    // not triggering
+    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(60));
+    verifyRuleNotExecuted();
 
     cleanupMockHistory();
 

@@ -24,6 +24,7 @@
 #include "guhcore.h"
 #include "guhsettings.h"
 #include "devicemanager.h"
+#include "loggingcategories.h"
 #include "logging/logengine.h"
 #include "jsontypes.h"
 
@@ -60,6 +61,20 @@ ActionTypeId mockActionIdAsync = ActionTypeId("fbae06d3-7666-483e-a39e-ec50fe890
 ActionTypeId mockActionIdFailing = ActionTypeId("df3cf33d-26d5-4577-9132-9823bd33fad0");
 ActionTypeId mockActionIdAsyncFailing = ActionTypeId("bfe89a1d-3497-4121-8318-e77c37537219");
 
+static QHash<QString, bool> s_loggingFilters;
+
+static void loggingCategoryFilter(QLoggingCategory *category)
+{
+    if (s_loggingFilters.contains(category->categoryName())) {
+        bool debugEnabled = s_loggingFilters.value(category->categoryName());
+        category->setEnabled(QtDebugMsg, debugEnabled);
+        category->setEnabled(QtWarningMsg, debugEnabled || s_loggingFilters.value("Warnings"));
+    } else {
+        category->setEnabled(QtDebugMsg, true);
+        category->setEnabled(QtWarningMsg, true);
+    }
+}
+
 GuhTestBase::GuhTestBase(QObject *parent) :
     QObject(parent),
     m_commandId(0)
@@ -80,6 +95,39 @@ void GuhTestBase::initTestCase()
     deviceSettings.clear();
     GuhSettings pluginSettings(GuhSettings::SettingsRolePlugins);
     pluginSettings.clear();
+
+    // debug categories
+    // logging filers for core and libguh
+    s_loggingFilters.insert("Application", true);
+    s_loggingFilters.insert("Warnings", true);
+    s_loggingFilters.insert("DeviceManager", true);
+    s_loggingFilters.insert("RuleEngine", true);
+    s_loggingFilters.insert("Hardware", false);
+    s_loggingFilters.insert("Connection", false);
+    s_loggingFilters.insert("LogEngine", false);
+    s_loggingFilters.insert("TcpServer", false);
+    s_loggingFilters.insert("WebServer", false);
+    s_loggingFilters.insert("WebSocketServer", false);
+    s_loggingFilters.insert("JsonRpc", false);
+    s_loggingFilters.insert("Rest", false);
+    s_loggingFilters.insert("OAuth2", false);
+    s_loggingFilters.insert("TimeManager", true);
+
+    QHash<QString, bool> loggingFiltersPlugins;
+    foreach (const QJsonObject &pluginMetadata, DeviceManager::pluginsMetadata()) {
+        loggingFiltersPlugins.insert(pluginMetadata.value("idName").toString(), false);
+    }
+
+    // add plugin metadata to the static hash
+    foreach (const QString &category, loggingFiltersPlugins.keys()) {
+        if (category == "MockDevice") {
+            s_loggingFilters.insert(category, true);
+        } else {
+            s_loggingFilters.insert(category, false);
+        }
+    }
+
+    QLoggingCategory::installFilter(loggingCategoryFilter);
 
     GuhCore::instance();
 

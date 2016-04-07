@@ -19,10 +19,10 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <QCoreApplication>
-#include <QCommandLineParser>
-#include <QLoggingCategory>
 #include <QCommandLineOption>
+#include <QCommandLineParser>
+#include <QCoreApplication>
+#include <QLoggingCategory>
 #include <QMessageLogger>
 #include <QStringList>
 #include <QTextStream>
@@ -112,10 +112,10 @@ int main(int argc, char *argv[])
     s_loggingFilters.insert("Connection", true);
     s_loggingFilters.insert("LogEngine", false);
     s_loggingFilters.insert("TcpServer", false);
-    s_loggingFilters.insert("WebServer", true);
-    s_loggingFilters.insert("WebSocketServer", true);
-    s_loggingFilters.insert("JsonRpc", true);
-    s_loggingFilters.insert("Rest", true);
+    s_loggingFilters.insert("WebServer", false);
+    s_loggingFilters.insert("WebSocketServer", false);
+    s_loggingFilters.insert("JsonRpc", false);
+    s_loggingFilters.insert("Rest", false);
     s_loggingFilters.insert("OAuth2", false);
     s_loggingFilters.insert("TimeManager", false);
 

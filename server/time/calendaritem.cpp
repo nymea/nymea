@@ -93,9 +93,11 @@ void CalendarItem::setRepeatingOption(const RepeatingOption &repeatingOption)
 */
 bool CalendarItem::isValid() const
 {
-    // A dateTime AND a repeating option would not make sense
+    // If dateTime AND a repeating option definend...
     if (m_dateTime.isValid() && !repeatingOption().isEmtpy())
-        return false;
+        // ...only yearly repeating mode is allowed
+        if (repeatingOption().mode() != RepeatingOption::RepeatingModeYearly)
+            return false;
 
     return (!m_startTime.isValid() != !m_dateTime.isValid()) && m_duration > 0;
 }
@@ -103,12 +105,6 @@ bool CalendarItem::isValid() const
 /*! Returns true, if the given \a dateTime matches this \l{CalendarItem}. */
 bool CalendarItem::evaluate(const QDateTime &dateTime) const
 {
-    if (!isValid())
-        return false;
-
-    if (!repeatingOption().isValid())
-        return false;
-
     if (m_startTime.isValid()) {
         switch (m_repeatingOption.mode()) {
         case RepeatingOption::RepeatingModeNone:
@@ -122,6 +118,8 @@ bool CalendarItem::evaluate(const QDateTime &dateTime) const
             return evaluateWeekly(dateTime);
         case RepeatingOption::RepeatingModeMonthly:
             return evaluateMonthly(dateTime);
+        case RepeatingOption::RepeatingModeYearly:
+            return evaluateYearly(dateTime);
         default:
             return false;
         }
@@ -185,16 +183,14 @@ bool CalendarItem::evaluateWeekly(const QDateTime &dateTime) const
         QDateTime startDateTime = weekStartDateTime.addDays(weekDay);
         QDateTime endDateTime = startDateTime.addSecs(duration() * 60);
 
+        // Check if already matches for this week
+        if (dateTime >= startDateTime && dateTime < endDateTime)
+            // Return true if the current time is between start
+            // and end of this calendar item
+            return true;
+
         // Check if this calendar item overlaps a week
-        bool overlapping = startDateTime.date().weekNumber() != endDateTime.date().weekNumber();
-
-        if (overlapping) {
-            // Check if already matches for this week
-            if (dateTime >= startDateTime && dateTime < endDateTime)
-                // Return true if the current time is between start
-                // and end of this calendar item
-                return true;
-
+        if (startDateTime.date().weekNumber() != endDateTime.date().weekNumber()) {
             // Jump one week into the past
             QDateTime startDateTimePreviouseWeek = startDateTime.addDays(-7);
             QDateTime endDateTimePreviouseWeek = startDateTimePreviouseWeek.addSecs(duration() * 60);
@@ -204,10 +200,6 @@ bool CalendarItem::evaluateWeekly(const QDateTime &dateTime) const
                 // and end of this calendar item from the previouse week
                 return true;
 
-        } else if (dateTime >= startDateTime && dateTime < endDateTime) {
-            // Return true if the current time is between start
-            // and end of this calendar item
-            return true;
         }
     }
 
@@ -215,6 +207,13 @@ bool CalendarItem::evaluateWeekly(const QDateTime &dateTime) const
 }
 
 bool CalendarItem::evaluateMonthly(const QDateTime &dateTime) const
+{
+    Q_UNUSED(dateTime)
+
+    return false;
+}
+
+bool CalendarItem::evaluateYearly(const QDateTime &dateTime) const
 {
     Q_UNUSED(dateTime)
 

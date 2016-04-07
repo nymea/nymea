@@ -64,15 +64,17 @@
     \value RepeatingModeNone
         There is no special repeating mode. The \l{RuleEngine} will assume a daily repeating.
     \value RepeatingModeHourly
-        The time item should be repeated hourly.
+        The time item should be repeated hourly. The \l{monthDays()} and \l{weekDays()} list has to be empty.
     \value RepeatingModeDaily
-        The time item should be repeated daily.
+        The time item should be repeated daily. The \l{monthDays()} and \l{weekDays()} list has to be empty.
     \value RepeatingModeWeekly
         The time item should be repeated weekly. A week starts at Monday. This mode needs a list of \l{weekDays()}.
-        The \l{monthDays()} list will be ignored.
+        The \l{monthDays()} list has to empty.
     \value RepeatingModeMonthly
-        The time item should be repeated monthly. This mode needs a list of \l{monthDays()}.
-        The \l{monthDays()} list will be ignored.
+        The time item should be repeated every month. This mode needs a list of \l{monthDays()}.
+        The \l{monthDays()} list has to be empty.
+    \value RepeatingModeYearly
+        The time item should be repeated every year. The \l{monthDays()} and \l{weekDays()} list has to be empty.
 
 */
 
@@ -154,9 +156,11 @@ bool RepeatingOption::isValid() const
         return !m_weekDays.isEmpty() && m_monthDays.isEmpty();
     case RepeatingModeMonthly:
         return m_weekDays.isEmpty() && !m_monthDays.isEmpty();
+    case RepeatingModeYearly:
+        return m_weekDays.isEmpty() && m_monthDays.isEmpty();
+    default:
+        return false;
     }
-
-    return false;
 }
 
 /*! Returns true if the week day of the given \a dateTime matches this \l{RepeatingOption}. */

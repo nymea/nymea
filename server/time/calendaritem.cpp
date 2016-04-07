@@ -106,6 +106,7 @@ bool CalendarItem::isValid() const
 bool CalendarItem::evaluate(const QDateTime &dateTime) const
 {
     if (m_startTime.isValid()) {
+
         switch (m_repeatingOption.mode()) {
         case RepeatingOption::RepeatingModeNone:
             // If there is no repeating option, we assume it is meant daily.
@@ -120,14 +121,13 @@ bool CalendarItem::evaluate(const QDateTime &dateTime) const
             return evaluateMonthly(dateTime);
         case RepeatingOption::RepeatingModeYearly:
             return evaluateYearly(dateTime);
-        default:
-            return false;
         }
-    } else if (m_repeatingOption.mode() == RepeatingOption::RepeatingModeYearly) {
-        return evaluateYearly(dateTime);
-    } else {
-        return dateTime >= m_dateTime && dateTime < m_dateTime.addSecs(duration() * 60);
+
     }
+    if (m_repeatingOption.mode() == RepeatingOption::RepeatingModeYearly)
+        return evaluateYearly(dateTime);
+
+    return dateTime >= m_dateTime && dateTime < m_dateTime.addSecs(duration() * 60);
 }
 
 bool CalendarItem::evaluateHourly(const QDateTime &dateTime) const
@@ -230,17 +230,6 @@ bool CalendarItem::evaluateMonthly(const QDateTime &dateTime) const
             // and end of this calendar item
             return true;
 
-//        // Check if this calendar item overlaps a month...
-//        if (startDateTime.date().month() != endDateTime.date().month()) {
-//            // ...jump one month back in to the past
-//            QDateTime startDateTimePreviousMonth = startDateTime.addMonths(-1);
-//            QDateTime endDateTimePreviousMonth = startDateTimePreviousMonth.addSecs(duration() * 60);
-
-//            if (dateTime >= startDateTimePreviousMonth && dateTime < endDateTimePreviousMonth)
-//                // Return true if the current time is between start
-//                // and end of this calendar item from the previouse month
-//                return true;
-//        }
     }
 
     return false;

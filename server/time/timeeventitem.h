@@ -52,7 +52,6 @@ private:
     QTime m_time;
 
     RepeatingOption m_repeatingOption;
-
 };
 
 }

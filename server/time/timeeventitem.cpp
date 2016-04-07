@@ -80,9 +80,11 @@ void TimeEventItem::setRepeatingOption(const RepeatingOption &repeatingOption)
 */
 bool TimeEventItem::isValid() const
 {
-    // A dateTime AND a repeating option would not make sense
+    // If dateTime AND a repeating option definend...
     if (m_dateTime.isValid() && !repeatingOption().isEmtpy())
-        return false;
+        // ...only repeating mode yearly is allowed for dateTime
+        if (repeatingOption().mode() != RepeatingOption::RepeatingModeYearly)
+            return false;
 
     return (!m_dateTime.isNull() != !m_time.isNull());
 }
@@ -90,11 +92,33 @@ bool TimeEventItem::isValid() const
 /*! Returns true, if the given \a dateTime matches this \l{TimeEventItem}. */
 bool TimeEventItem::evaluate(const QDateTime &dateTime) const
 {
-    Q_UNUSED(dateTime)
+    // Check time matches
+    if (m_time.isValid()) {
+        switch (m_repeatingOption.mode()) {
+        case RepeatingOption::RepeatingModeNone:
+            // If there is no repeating option, we assume it is meant daily.
+            return m_time == dateTime.time();;
+        case RepeatingOption::RepeatingModeHourly:
+            return m_time.minute() == dateTime.time().minute();
+        case RepeatingOption::RepeatingModeDaily:
+            return m_time == dateTime.time();;
+        case RepeatingOption::RepeatingModeWeekly:
+            return m_repeatingOption.evaluateWeekDay(dateTime) && m_time == dateTime.time();
+        case RepeatingOption::RepeatingModeMonthly:
+            return m_repeatingOption.evaluateMonthDay(dateTime) && m_time == dateTime.time();
+        case RepeatingOption::RepeatingModeYearly:
+            return false;
+        }
+    }
 
-    // TODO: evaluate the calendar item, return true if the current time matches the calendar item, otherwise false
+    // Check dateTime and yearly repeating
+    if (m_repeatingOption.mode() == RepeatingOption::RepeatingModeYearly)
+        return m_dateTime.date().month() == dateTime.date().month() &&
+                m_dateTime.date().day() == dateTime.date().day() &&
+                m_dateTime.time() == dateTime.time();
 
-    return false;
+    // Check dateTime matches
+    return dateTime == m_dateTime;
 }
 
 }

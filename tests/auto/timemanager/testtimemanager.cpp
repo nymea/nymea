@@ -46,6 +46,9 @@ private slots:
     void addTimeDescriptor_data();
     void addTimeDescriptor();
 
+    void testCalendarDateTime_data();
+    void testCalendarDateTime();
+
     void testCalendarItemHourly_data();
     void testCalendarItemHourly();
 
@@ -243,6 +246,94 @@ void TestTimeManager::addTimeDescriptor()
     verifyRuleError(response);
 }
 
+void TestTimeManager::testCalendarDateTime_data()
+{
+    QTest::addColumn<QDateTime>("dateTime");
+    QTest::addColumn<int>("duration");
+
+    QTest::newRow("dateTime - chrismas") << QDateTime::fromString("24.12.2017 20:00", "dd.MM.yyyy hh:mm") << 60;
+    QTest::newRow("dateTime - new year") << QDateTime::fromString("31.12.2017 23:00", "dd.MM.yyyy hh:mm") << 120;
+    QTest::newRow("dateTime - valentines day") << QDateTime::fromString("14.02.2017 08:00", "dd.MM.yyyy hh:mm") << 120;
+}
+
+void TestTimeManager::testCalendarDateTime()
+{
+
+    QFETCH(QDateTime, dateTime);
+    QFETCH(int, duration);
+
+    initTimeManager();
+
+    // Action (without params)
+    QVariantMap ruleMap; QVariantMap action; QVariantMap exitAction;
+    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("deviceId", m_mockDeviceId);
+    action.insert("ruleActionParams", QVariantList());
+
+    // Exit action (with params)
+    QVariantList actionParams;
+    QVariantMap param1;
+    param1.insert("name", "mockActionParam1");
+    param1.insert("value", 12);
+    actionParams.append(param1);
+    QVariantMap param2;
+    param2.insert("name", "mockActionParam2");
+    param2.insert("value", true);
+    actionParams.append(param2);
+    exitAction.insert("actionTypeId", mockActionIdWithParams);
+    exitAction.insert("deviceId", m_mockDeviceId);
+    exitAction.insert("ruleActionParams", actionParams);
+
+    // CalendarItem
+    QVariantMap calendarItem;
+    calendarItem.insert("datetime", QVariant(dateTime.toTime_t()));
+    calendarItem.insert("duration", QVariant(duration));
+
+    // Create the rule map
+    ruleMap.insert("name", "Time based hourly calendar rule");
+    ruleMap.insert("timeDescriptor", createTimeDescriptorCalendar(calendarItem));
+    ruleMap.insert("actions", QVariantList() << action);
+    ruleMap.insert("exitActions", QVariantList() << exitAction);
+
+    // Add the rule
+    QVariant response = injectAndWait("Rules.AddRule", ruleMap);
+    verifyRuleError(response);
+    RuleId ruleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
+
+    QVariantMap params;
+    params.insert("ruleId", ruleId);
+    response = injectAndWait("Rules.GetRuleDetails", params);
+
+    qDebug() << QJsonDocument::fromVariant(response.toMap().value("params").toMap()).toJson();
+
+    QDateTime oneMinuteBeforeEvent = dateTime.addSecs(-60);
+
+    GuhCore::instance()->timeManager()->setTime(oneMinuteBeforeEvent);
+    verifyRuleNotExecuted();
+    // active
+    GuhCore::instance()->timeManager()->setTime(dateTime);
+    verifyRuleExecuted(mockActionIdNoParams);
+    cleanupMockHistory();
+    // active unchanged
+    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(duration * 30));
+    verifyRuleNotExecuted();
+    // inactive
+    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(duration * 60));
+    verifyRuleExecuted(mockActionIdWithParams);
+    cleanupMockHistory();
+    // inactive unchanged
+    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs((duration + 1) * 60));
+    verifyRuleNotExecuted();
+
+    cleanupMockHistory();
+
+    // REMOVE rule
+    QVariantMap removeParams;
+    removeParams.insert("ruleId", ruleId);
+    response = injectAndWait("Rules.RemoveRule", removeParams);
+    verifyRuleError(response);
+}
+
 void TestTimeManager::testCalendarItemHourly_data()
 {
     QTest::addColumn<int>("duration");
@@ -254,7 +345,6 @@ void TestTimeManager::testCalendarItemHourly_data()
 void TestTimeManager::testCalendarItemHourly()
 {
     QFETCH(int, duration);
-
 
     initTimeManager();
 
@@ -594,8 +684,6 @@ void TestTimeManager::testCalendarItemWeekly()
             // inactive
             GuhCore::instance()->timeManager()->setTime(startDate.addDays(2).addSecs(60));
             verifyRuleExecuted(mockActionIdWithParams);
-
-
         }
     }
 

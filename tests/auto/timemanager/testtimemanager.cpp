@@ -46,6 +46,7 @@ private slots:
     void addTimeDescriptor_data();
     void addTimeDescriptor();
 
+    void testCalendarItemHourly_data();
     void testCalendarItemHourly();
 
     void testCalendarItemDaily_data();
@@ -242,8 +243,19 @@ void TestTimeManager::addTimeDescriptor()
     verifyRuleError(response);
 }
 
+void TestTimeManager::testCalendarItemHourly_data()
+{
+    QTest::addColumn<int>("duration");
+
+    QTest::newRow("hourly - for 5 minutes") << 5;
+    QTest::newRow("hourly - for 60 minutes") << 60;
+}
+
 void TestTimeManager::testCalendarItemHourly()
 {
+    QFETCH(int, duration);
+
+
     initTimeManager();
 
     QVariantMap ruleMap; QVariantMap action; QVariantMap exitAction; QVariantMap repeatingOptionHourly;
@@ -264,7 +276,7 @@ void TestTimeManager::testCalendarItemHourly()
     exitAction.insert("deviceId", m_mockDeviceId);
     exitAction.insert("ruleActionParams", actionParams);
     ruleMap.insert("name", "Time based hourly calendar rule");
-    ruleMap.insert("timeDescriptor", createTimeDescriptorCalendar(createCalendarItem("08:05", 5, repeatingOptionHourly)));
+    ruleMap.insert("timeDescriptor", createTimeDescriptorCalendar(createCalendarItem("08:05", duration, repeatingOptionHourly)));
     ruleMap.insert("actions", QVariantList() << action);
     ruleMap.insert("exitActions", QVariantList() << exitAction);
 
@@ -278,30 +290,42 @@ void TestTimeManager::testCalendarItemHourly()
 
     QDateTime currentDateTime = GuhCore::instance()->timeManager()->currentDateTime();
 
-    // check the next 24 hours
     QDateTime future = QDateTime(currentDateTime.date(), QTime(8, 4));
-    for (int i = 0; i < 24; i+=3) {
-        // inactive
-        GuhCore::instance()->timeManager()->setTime(future);
-        verifyRuleNotExecuted();
-        // active
-        GuhCore::instance()->timeManager()->setTime(QDateTime(currentDateTime.date(), QTime(future.time().hour(), 5)));
-        verifyRuleExecuted(mockActionIdNoParams);
-        cleanupMockHistory();
-        // active unchanged
-        GuhCore::instance()->timeManager()->setTime(QDateTime(currentDateTime.date(), QTime(future.time().hour(), 7)));
-        verifyRuleNotExecuted();
-        // inactive
-        GuhCore::instance()->timeManager()->setTime(QDateTime(currentDateTime.date(), QTime(future.time().hour(), 10)));
-        verifyRuleExecuted(mockActionIdWithParams);
-        cleanupMockHistory();
-        // inactive unchanged
-        GuhCore::instance()->timeManager()->setTime(QDateTime(currentDateTime.date(), QTime(future.time().hour(), 11)));
-        verifyRuleNotExecuted();
 
-        // One hour "Back to the future"
-        future = future.addSecs(3*60*60);
+    // Check if should be enabled always
+    if (duration == 60) {
+        qDebug() << "Enabled always";
+        GuhCore::instance()->timeManager()->setTime(future);
+        // Should be active since adding
+        verifyRuleExecuted(mockActionIdNoParams);
+    } else {
+        // check the next 24 hours in 4h steps
+        for (int i = 0; i < 24; i+=4) {
+            // inactive
+            GuhCore::instance()->timeManager()->setTime(future);
+            verifyRuleNotExecuted();
+            // active
+            GuhCore::instance()->timeManager()->setTime(QDateTime(currentDateTime.date(), QTime(future.time().hour(), 5)));
+            verifyRuleExecuted(mockActionIdNoParams);
+            cleanupMockHistory();
+            // active unchanged
+            GuhCore::instance()->timeManager()->setTime(QDateTime(currentDateTime.date(), QTime(future.time().hour(), 7)));
+            verifyRuleNotExecuted();
+            // inactive
+            GuhCore::instance()->timeManager()->setTime(QDateTime(currentDateTime.date(), QTime(future.time().hour(), 10)));
+            verifyRuleExecuted(mockActionIdWithParams);
+            cleanupMockHistory();
+            // inactive unchanged
+            GuhCore::instance()->timeManager()->setTime(QDateTime(currentDateTime.date(), QTime(future.time().hour(), 11)));
+            verifyRuleNotExecuted();
+
+            // One hour "Back to the future"
+            future = future.addSecs(3*60*60);
+        }
+
     }
+
+    cleanupMockHistory();
 
     // REMOVE rule
     QVariantMap removeParams;
@@ -320,7 +344,8 @@ void TestTimeManager::testCalendarItemDaily_data()
     QTest::addColumn<int>("duration");
 
     QTest::newRow("daily") << createTimeDescriptorCalendar(createCalendarItem("06:55", 10, repeatingOptionDaily)) << "06:55" << 10;
-    QTest::newRow("daily jump date") << createTimeDescriptorCalendar(createCalendarItem("23:55", 10, repeatingOptionDaily)) << "23:55" << 10;
+    QTest::newRow("daily - jump date") << createTimeDescriptorCalendar(createCalendarItem("23:55", 10, repeatingOptionDaily)) << "23:55" << 10;
+    QTest::newRow("daily - always") << createTimeDescriptorCalendar(createCalendarItem("08:00", 1440)) << "08:00" << 1440;
 }
 
 void TestTimeManager::testCalendarItemDaily()
@@ -366,28 +391,38 @@ void TestTimeManager::testCalendarItemDaily()
     // start with one minute before starttime today
     QDateTime future = QDateTime(currentDateTime.date(), QTime::fromString(time, "hh:mm").addSecs(-60));
 
-    // check the next 7 days
-    for (int i = 0; i < 7; i++) {
-        // inactive
+    // if always true
+    if (time == "08:00") {
+        qDebug() << "Enabled always";
         GuhCore::instance()->timeManager()->setTime(future);
-        verifyRuleNotExecuted();
-        // active
-        GuhCore::instance()->timeManager()->setTime(future.addSecs(60));
+        // Should be active since adding
         verifyRuleExecuted(mockActionIdNoParams);
-        cleanupMockHistory();
-        // active unchanged
-        GuhCore::instance()->timeManager()->setTime(future.addSecs(6* 60));
-        verifyRuleNotExecuted();
-        // inactive
-        GuhCore::instance()->timeManager()->setTime(future.addSecs(11 * 60));
-        verifyRuleExecuted(mockActionIdWithParams);
-        cleanupMockHistory();
-        // inactive unchanged
-        GuhCore::instance()->timeManager()->setTime(future.addSecs(12 * 60));
-        verifyRuleNotExecuted();
-        // One day "Back to the future"
-        future = future.addDays(1);
+    } else {
+        // check the next 7 days
+        for (int i = 0; i < 7; i++) {
+            // inactive
+            GuhCore::instance()->timeManager()->setTime(future);
+            verifyRuleNotExecuted();
+            // active
+            GuhCore::instance()->timeManager()->setTime(future.addSecs(60));
+            verifyRuleExecuted(mockActionIdNoParams);
+            cleanupMockHistory();
+            // active unchanged
+            GuhCore::instance()->timeManager()->setTime(future.addSecs(6* 60));
+            verifyRuleNotExecuted();
+            // inactive
+            GuhCore::instance()->timeManager()->setTime(future.addSecs(11 * 60));
+            verifyRuleExecuted(mockActionIdWithParams);
+            cleanupMockHistory();
+            // inactive unchanged
+            GuhCore::instance()->timeManager()->setTime(future.addSecs(12 * 60));
+            verifyRuleNotExecuted();
+            // One day "Back to the future"
+            future = future.addDays(1);
+        }
     }
+    cleanupMockHistory();
+
     // REMOVE rule
     QVariantMap removeParams;
     removeParams.insert("ruleId", ruleId);
@@ -403,14 +438,16 @@ void TestTimeManager::testCalendarItemWeekly_data()
 
     QVariantMap repeatingOptionWeeklyOverlapping;
     repeatingOptionWeeklyOverlapping.insert("mode", "RepeatingModeWeekly");
-    repeatingOptionWeeklyOverlapping.insert("weekDays", QVariantList() << 2 << 4 << 7);
+    repeatingOptionWeeklyOverlapping.insert("weekDays", QVariantList() << 6);
 
     QTest::addColumn<QVariantMap>("timeDescriptor");
     QTest::addColumn<QVariantMap>("repeatingOption");
     QTest::addColumn<QString>("time");
+    QTest::addColumn<bool>("overlapping");
 
-    QTest::newRow("weekly") << createTimeDescriptorCalendar(createCalendarItem("06:55", 10, repeatingOptionWeekly)) << repeatingOptionWeekly << "06:55";
-    //QTest::newRow("weekly overlapping") << createTimeDescriptorCalendar(createCalendarItem("23:55", 10, repeatingOptionWeeklyOverlapping)) << repeatingOptionWeeklyOverlapping << "23:55";
+    QTest::newRow("weekly") << createTimeDescriptorCalendar(createCalendarItem("06:55", 10, repeatingOptionWeekly)) << repeatingOptionWeekly << "06:55" << false;
+    QTest::newRow("weekly - always") << createTimeDescriptorCalendar(createCalendarItem("06:55", 10080)) << QVariantMap() << "06:55" << false;
+    QTest::newRow("weekly - overlapping") << createTimeDescriptorCalendar(createCalendarItem("08:00", 2880, repeatingOptionWeeklyOverlapping)) << repeatingOptionWeeklyOverlapping << "08:00" << true;
 }
 
 void TestTimeManager::testCalendarItemWeekly()
@@ -418,14 +455,17 @@ void TestTimeManager::testCalendarItemWeekly()
     QFETCH(QVariantMap, timeDescriptor);
     QFETCH(QVariantMap, repeatingOption);
     QFETCH(QString, time);
+    QFETCH(bool, overlapping);
 
     initTimeManager();
 
+    // Action (without params)
     QVariantMap ruleMap; QVariantMap action; QVariantMap exitAction;
     action.insert("actionTypeId", mockActionIdNoParams);
     action.insert("deviceId", m_mockDeviceId);
     action.insert("ruleActionParams", QVariantList());
-    exitAction.insert("actionTypeId", mockActionIdWithParams);
+
+    // Exit action (with params)
     QVariantList actionParams;
     QVariantMap param1;
     param1.insert("name", "mockActionParam1");
@@ -435,13 +475,17 @@ void TestTimeManager::testCalendarItemWeekly()
     param2.insert("name", "mockActionParam2");
     param2.insert("value", true);
     actionParams.append(param2);
+    exitAction.insert("actionTypeId", mockActionIdWithParams);
     exitAction.insert("deviceId", m_mockDeviceId);
     exitAction.insert("ruleActionParams", actionParams);
+
+    // Create the rule map
     ruleMap.insert("name", "Time based hourly calendar rule");
     ruleMap.insert("timeDescriptor", timeDescriptor);
     ruleMap.insert("actions", QVariantList() << action);
     ruleMap.insert("exitActions", QVariantList() << exitAction);
 
+    // Add the rule
     QVariant response = injectAndWait("Rules.AddRule", ruleMap);
     verifyRuleError(response);
     RuleId ruleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
@@ -463,52 +507,99 @@ void TestTimeManager::testCalendarItemWeekly()
         weekDays.append(variant.toInt());
     }
 
-    // check the next 7 days
-    for (int i = 0; i < 7; i++) {
-        // inactive
+    // the whole week active (always)
+    if (repeatingOption.isEmpty()) {
+        qDebug() << "Enabled always";
         GuhCore::instance()->timeManager()->setTime(future);
-        verifyRuleNotExecuted();
+        // Should be active since adding
+        verifyRuleExecuted(mockActionIdNoParams);
+    } else {
+        if (!overlapping) {
+            // check the next 7 days (because not overlapping the week)
+            for (int i = 0; i < 7; i++) {
 
-        // Check if today is a weekday
-        qDebug() << "Day of week:" << future.date().dayOfWeek();
-        if (weekDays.contains(future.date().dayOfWeek())) {
-            // should trigger today
+                // inactive
+                GuhCore::instance()->timeManager()->setTime(future);
+                verifyRuleNotExecuted();
+
+                // Check if today is a weekday
+                qDebug() << "Day of week:" << future.date().dayOfWeek();
+                if (weekDays.contains(future.date().dayOfWeek())) {
+                    // should trigger today
+                    // active
+                    GuhCore::instance()->timeManager()->setTime(future.addSecs(60));
+                    verifyRuleExecuted(mockActionIdNoParams);
+                    cleanupMockHistory();
+                    // active unchanged
+                    GuhCore::instance()->timeManager()->setTime(future.addSecs(6* 60));
+                    verifyRuleNotExecuted();
+                    // inactive
+                    GuhCore::instance()->timeManager()->setTime(future.addSecs(11 * 60));
+                    verifyRuleExecuted(mockActionIdWithParams);
+                    cleanupMockHistory();
+                    // inactive unchanged
+                    GuhCore::instance()->timeManager()->setTime(future.addSecs(12 * 60));
+                    verifyRuleNotExecuted();
+
+                    // One day "Back to the future"
+                    future = future.addDays(1);
+                } else {
+                    // should not trigger today
+                    // inactive
+                    GuhCore::instance()->timeManager()->setTime(future);
+                    verifyRuleNotExecuted();
+                    // inactive
+                    GuhCore::instance()->timeManager()->setTime(future.addSecs(6* 60));
+                    verifyRuleNotExecuted();
+                    // inactive
+                    GuhCore::instance()->timeManager()->setTime(future.addSecs(11 * 60));
+                    verifyRuleNotExecuted();
+                    // inactive
+                    GuhCore::instance()->timeManager()->setTime(future.addSecs(12 * 60));
+                    verifyRuleNotExecuted();
+
+                    // One day "Back to the future"
+                    future = future.addDays(1);
+                }
+            }
+        } else {
+            // Overlapping the week
+            int weekDay = weekDays.first();
+            qDebug() << "weekday to start" << weekDay;
+
+            // go to the next start day (saturday)
+            QDateTime startDate = future;
+            while (startDate.date().dayOfWeek() < 6) {
+                startDate = startDate.addDays(1);
+                qDebug() << startDate.toString();
+            }
+
+            // inactive
+            GuhCore::instance()->timeManager()->setTime(startDate);
+            verifyRuleNotExecuted();
+
             // active
-            GuhCore::instance()->timeManager()->setTime(future.addSecs(60));
+            GuhCore::instance()->timeManager()->setTime(startDate.addSecs(60));
             verifyRuleExecuted(mockActionIdNoParams);
             cleanupMockHistory();
-            // active unchanged
-            GuhCore::instance()->timeManager()->setTime(future.addSecs(6* 60));
+
+            // still active
+            GuhCore::instance()->timeManager()->setTime(startDate.addDays(1));
             verifyRuleNotExecuted();
+
+            // still active
+            GuhCore::instance()->timeManager()->setTime(startDate.addDays(2));
+            verifyRuleNotExecuted();
+
             // inactive
-            GuhCore::instance()->timeManager()->setTime(future.addSecs(11 * 60));
+            GuhCore::instance()->timeManager()->setTime(startDate.addDays(2).addSecs(60));
             verifyRuleExecuted(mockActionIdWithParams);
-            cleanupMockHistory();
-            // inactive unchanged
-            GuhCore::instance()->timeManager()->setTime(future.addSecs(12 * 60));
-            verifyRuleNotExecuted();
 
-            // One day "Back to the future"
-            future = future.addDays(1);
-        } else {
-            // should not trigger today
-            // inactive
-            GuhCore::instance()->timeManager()->setTime(future);
-            verifyRuleNotExecuted();
-            // inactive
-            GuhCore::instance()->timeManager()->setTime(future.addSecs(6* 60));
-            verifyRuleNotExecuted();
-            // inactive
-            GuhCore::instance()->timeManager()->setTime(future.addSecs(11 * 60));
-            verifyRuleNotExecuted();
-            // inactive
-            GuhCore::instance()->timeManager()->setTime(future.addSecs(12 * 60));
-            verifyRuleNotExecuted();
 
-            // One day "Back to the future"
-            future = future.addDays(1);
         }
     }
+
+    cleanupMockHistory();
 
     // REMOVE rule
     QVariantMap removeParams;

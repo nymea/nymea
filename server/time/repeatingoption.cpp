@@ -154,9 +154,9 @@ bool RepeatingOption::isValid() const
         return !m_weekDays.isEmpty() && m_monthDays.isEmpty();
     case RepeatingModeMonthly:
         return m_weekDays.isEmpty() && !m_monthDays.isEmpty();
-    default:
-        return false;
     }
+
+    return false;
 }
 
 /*! Returns true if the week day of the given \a dateTime matches this \l{RepeatingOption}. */

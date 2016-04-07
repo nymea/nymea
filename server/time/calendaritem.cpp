@@ -185,18 +185,21 @@ bool CalendarItem::evaluateWeekly(const QDateTime &dateTime) const
         QDateTime startDateTime = weekStartDateTime.addDays(weekDay);
         QDateTime endDateTime = startDateTime.addSecs(duration() * 60);
 
-        bool overlapping = false;
-
         // Check if this calendar item overlaps a week
-        if (startDateTime.date().weekNumber() != endDateTime.date().weekNumber())
-            overlapping = true;
+        bool overlapping = startDateTime.date().weekNumber() != endDateTime.date().weekNumber();
 
         if (overlapping) {
-            // Jump one week into the past
-            QDateTime startPreviouseDateTime = startDateTime.addDays(-7);
-            QDateTime endPreviouseDateTime = startPreviouseDateTime.addSecs(duration() * 60);
+            // Check if already matches for this week
+            if (dateTime >= startDateTime && dateTime < endDateTime)
+                // Return true if the current time is between start
+                // and end of this calendar item
+                return true;
 
-            if (dateTime >= startPreviouseDateTime && dateTime < endPreviouseDateTime)
+            // Jump one week into the past
+            QDateTime startDateTimePreviouseWeek = startDateTime.addDays(-7);
+            QDateTime endDateTimePreviouseWeek = startDateTimePreviouseWeek.addSecs(duration() * 60);
+
+            if (dateTime >= startDateTimePreviouseWeek && dateTime < endDateTimePreviouseWeek)
                 // Return true if the current time is between start
                 // and end of this calendar item from the previouse week
                 return true;

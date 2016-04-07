@@ -39,7 +39,8 @@ public:
         RepeatingModeHourly,
         RepeatingModeDaily,
         RepeatingModeWeekly,
-        RepeatingModeMonthly
+        RepeatingModeMonthly,
+        RepeatingModeYearly
     };
 
     RepeatingOption();

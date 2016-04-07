@@ -59,6 +59,7 @@ private:
     bool evaluateDaily(const QDateTime &dateTime) const;
     bool evaluateWeekly(const QDateTime &dateTime) const;
     bool evaluateMonthly(const QDateTime &dateTime) const;
+    bool evaluateYearly(const QDateTime &dateTime) const;
 
 };
 

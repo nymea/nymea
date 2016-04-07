@@ -804,7 +804,8 @@
             "RepeatingModeHourly",
             "RepeatingModeDaily",
             "RepeatingModeWeekly",
-            "RepeatingModeMonthly"
+            "RepeatingModeMonthly",
+            "RepeatingModeYearly"
         ],
         "RepeatingOption": {
             "mode": "$ref:RepeatingMode",

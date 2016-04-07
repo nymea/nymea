@@ -183,15 +183,15 @@ bool CalendarItem::evaluateWeekly(const QDateTime &dateTime) const
         QDateTime startDateTime = weekStartDateTime.addDays(weekDay);
         QDateTime endDateTime = startDateTime.addSecs(duration() * 60);
 
-        // Check if already matches for this week
+        // Check if dateTime matches for this week
         if (dateTime >= startDateTime && dateTime < endDateTime)
             // Return true if the current time is between start
             // and end of this calendar item
             return true;
 
-        // Check if this calendar item overlaps a week
+        // Check if this calendar item overlaps a week...
         if (startDateTime.date().weekNumber() != endDateTime.date().weekNumber()) {
-            // Jump one week into the past
+            // ...jump one week back in to the past
             QDateTime startDateTimePreviouseWeek = startDateTime.addDays(-7);
             QDateTime endDateTimePreviouseWeek = startDateTimePreviouseWeek.addSecs(duration() * 60);
 
@@ -208,7 +208,32 @@ bool CalendarItem::evaluateWeekly(const QDateTime &dateTime) const
 
 bool CalendarItem::evaluateMonthly(const QDateTime &dateTime) const
 {
-    Q_UNUSED(dateTime)
+    // Get the first day of this month with the correct start time
+    QDateTime monthStartDateTime = QDateTime(QDate(dateTime.date().year(), dateTime.date().month(), 1), m_startTime);
+
+    // Check each week day in the list
+    foreach (const int &monthDay, repeatingOption().monthDays()) {
+        QDateTime startDateTime = monthStartDateTime.addDays(monthDay - 1);
+        QDateTime endDateTime = startDateTime.addSecs(duration() * 60);
+
+        // Check if dateTime already matches for this month
+        if (dateTime >= startDateTime && dateTime < endDateTime)
+            // Return true if the current time is between start
+            // and end of this calendar item
+            return true;
+
+        // Check if this calendar item overlaps a month...
+        if (startDateTime.date().month() != endDateTime.date().month()) {
+            // ...jump one month back in to the past
+            QDateTime startDateTimePreviouseMonth = startDateTime.addMonths(-1);
+            QDateTime endDateTimePreviouseMonth = startDateTimePreviouseMonth.addSecs(duration() * 60);
+
+            if (dateTime >= startDateTimePreviouseMonth && dateTime < endDateTimePreviouseMonth)
+                // Return true if the current time is between start
+                // and end of this calendar item from the previouse month
+                return true;
+        }
+    }
 
     return false;
 }

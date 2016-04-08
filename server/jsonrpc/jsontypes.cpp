@@ -517,7 +517,7 @@ QVariantMap JsonTypes::packStateDescriptor(const StateDescriptor &stateDescripto
     variantMap.insert("stateTypeId", stateDescriptor.stateTypeId().toString());
     variantMap.insert("deviceId", stateDescriptor.deviceId().toString());
     variantMap.insert("value", stateDescriptor.stateValue());
-    variantMap.insert("operator", valueOperator().at(stateDescriptor.operatorType()));
+    variantMap.insert("operator", s_valueOperator.at(stateDescriptor.operatorType()));
     return variantMap;
 }
 
@@ -534,7 +534,7 @@ QVariantMap JsonTypes::packStateEvaluator(const StateEvaluator &stateEvaluator)
     }
 
     if (!childEvaluators.isEmpty() || stateEvaluator.stateDescriptor().isValid())
-        variantMap.insert("operator", stateOperator().at(stateEvaluator.operatorType()));
+        variantMap.insert("operator", s_stateOperator.at(stateEvaluator.operatorType()));
 
     if (childEvaluators.count() > 0) {
         variantMap.insert("childEvaluators", childEvaluators);
@@ -712,6 +712,7 @@ QVariantMap JsonTypes::packRule(const Rule &rule)
         eventDescriptorList.append(JsonTypes::packEventDescriptor(eventDescriptor));
     }
     ruleMap.insert("eventDescriptors", eventDescriptorList);
+    ruleMap.insert("stateEvaluator", JsonTypes::packStateEvaluator(rule.stateEvaluator()));
 
     QVariantList actionList;
     foreach (const RuleAction &action, rule.actions()) {
@@ -724,7 +725,6 @@ QVariantMap JsonTypes::packRule(const Rule &rule)
         exitActionList.append(JsonTypes::packRuleAction(action));
     }
     ruleMap.insert("exitActions", exitActionList);
-    ruleMap.insert("stateEvaluator", JsonTypes::packStateEvaluator(rule.stateEvaluator()));
     return ruleMap;
 }
 

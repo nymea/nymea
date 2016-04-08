@@ -1073,11 +1073,13 @@ void TestRules::loadStoreConfig()
         QVERIFY2(found, "missing eventdescriptor");
     }
 
+    qDebug() << endl << rule1;
+
     QVERIFY2(rule1.value("name").toString() == "TestRule", "Loaded wrong name for rule");
     QVariantMap replyStateEvaluator= rule1.value("stateEvaluator").toMap();
     QVariantList replyChildEvaluators = replyStateEvaluator.value("childEvaluators").toList();
-    QVERIFY2(replyStateEvaluator.value("operator") == "StateOperatorAnd", "There should be the AND operator.");
     QVERIFY2(replyChildEvaluators.count() == 2, "There shoud be exactly 2 childEvaluators");
+    QVERIFY2(replyStateEvaluator.value("operator") == "StateOperatorAnd", "There should be the AND operator.");
 
     foreach (const QVariant &childEvaluator, replyChildEvaluators) {
         QVERIFY2(childEvaluator.toMap().contains("stateDescriptor"), "StateDescriptor missing in StateEvaluator");

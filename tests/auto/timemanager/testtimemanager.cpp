@@ -218,18 +218,22 @@ void TestTimeManager::loadSaveTimeDescriptor()
     response = injectAndWait("Rules.GetRuleDetails", params);
     verifyRuleError(response);
 
-    QVariantMap timeDescriptorMap = response.toMap().value("params").toMap().value("rule").toMap().value("timeDescriptor").toMap();
-    qDebug() << QJsonDocument::fromVariant(timeDescriptorMap).toJson();
-
     // Restart the server
     restartServer();
 
     // Get the loaded rule
+
+
     response = injectAndWait("Rules.GetRuleDetails", params);
     verifyRuleError(response);
 
+    QVariantMap timeDescriptorMap = response.toMap().value("params").toMap().value("rule").toMap().value("timeDescriptor").toMap();
+    //qDebug() << QJsonDocument::fromVariant(timeDescriptorMap).toJson();
+
     QVariantMap timeDescriptorMapLoaded = response.toMap().value("params").toMap().value("rule").toMap().value("timeDescriptor").toMap();
-    qDebug() << QJsonDocument::fromVariant(timeDescriptorMapLoaded).toJson();
+    //qDebug() << QJsonDocument::fromVariant(timeDescriptorMapLoaded).toJson();
+
+    qDebug() << endl << timeDescriptorMap << endl << endl << timeDescriptorMapLoaded;
 
     QCOMPARE(timeDescriptorMap, timeDescriptorMapLoaded);
 

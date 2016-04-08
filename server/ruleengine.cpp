@@ -246,7 +246,6 @@ RuleEngine::RuleEngine(QObject *parent) :
         }
         settings.endGroup();
 
-        settings.endGroup();
 
         // Load stateEvaluator
         StateEvaluator stateEvaluator = StateEvaluator::loadFromSettings(settings, "stateEvaluator");
@@ -1020,10 +1019,15 @@ void RuleEngine::saveRule(const Rule &rule)
     if (!rule.timeDescriptor().isEmpty()) {
         settings.beginGroup("calendarItems");
         for (int i = 0; i < rule.timeDescriptor().calendarItems().count(); i++) {
-            const CalendarItem &calendarItem = rule.timeDescriptor().calendarItems().at(i);
             settings.beginGroup("CalendarItem-" + QString::number(i));
-            settings.setValue("dateTime", calendarItem.dateTime().toTime_t());
-            settings.setValue("startTime", calendarItem.startTime().toString("hh:mm"));
+
+            const CalendarItem &calendarItem = rule.timeDescriptor().calendarItems().at(i);
+            if (calendarItem.dateTime().isValid())
+                settings.setValue("dateTime", calendarItem.dateTime().toTime_t());
+
+            if (calendarItem.startTime().isValid())
+                settings.setValue("startTime", calendarItem.startTime().toString("hh:mm"));
+
             settings.setValue("duration", calendarItem.duration());
             settings.setValue("mode", calendarItem.repeatingOption().mode());
 
@@ -1049,10 +1053,15 @@ void RuleEngine::saveRule(const Rule &rule)
 
         settings.beginGroup("timeEventItems");
         for (int i = 0; i < rule.timeDescriptor().timeEventItems().count(); i++) {
-            const TimeEventItem &timeEventItem = rule.timeDescriptor().timeEventItems().at(i);
             settings.beginGroup("TimeEventItem-" + QString::number(i));
-            settings.setValue("dateTime", timeEventItem.dateTime().toTime_t());
-            settings.setValue("time", timeEventItem.time().toString("hh:mm"));
+            const TimeEventItem &timeEventItem = rule.timeDescriptor().timeEventItems().at(i);
+
+            if (timeEventItem.dateTime().isValid())
+                settings.setValue("dateTime", timeEventItem.dateTime().toTime_t());
+
+            if (timeEventItem.time().isValid())
+                settings.setValue("time", timeEventItem.time().toString("hh:mm"));
+
             settings.setValue("mode", timeEventItem.repeatingOption().mode());
 
             // Save weekDays

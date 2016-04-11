@@ -121,7 +121,7 @@ GuhCore *GuhCore::instance()
 /*! Destructor of the \l{GuhCore}. */
 GuhCore::~GuhCore()
 {
-    m_logger->logSystemEvent(false);
+    m_logger->logSystemEvent(m_timeManager->currentDateTime(), false);
 }
 
 /*! Destroyes the \l{GuhCore} instance. */
@@ -400,7 +400,7 @@ GuhCore::GuhCore(QObject *parent) :
     connect(m_timeManager, &TimeManager::dateTimeChanged, this, &GuhCore::onDateTimeChanged);
     connect(m_timeManager, &TimeManager::tick, m_deviceManager, &DeviceManager::timeTick);
 
-    m_logger->logSystemEvent(true);
+    m_logger->logSystemEvent(m_timeManager->currentDateTime(), true);
 }
 
 /*! Connected to the DeviceManager's emitEvent signal. Events received in

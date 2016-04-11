@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2015-2016 Simon Stuerz <simon.stuerz@guh.guru>           *
  *                                                                         *
  *  This file is part of QtCoap.                                           *
  *                                                                         *
@@ -28,7 +28,8 @@
     The Coap class provides a signal solt based communication with a \l{https://tools.ietf.org/html/rfc7252}{CoAP (Constrained Application Protocol)}
     server. The API of this class was inspired by the \l{http://doc.qt.io/qt-5/qnetworkaccessmanager.html}{QNetworkAccessManager} and was
     written according to the \l{https://tools.ietf.org/html/rfc7252}{RFC7252}.
-    This class supports also blockwise transfere according to the \l{https://tools.ietf.org/html/draft-ietf-core-block-18}{IETF V18} specifications.
+    This class supports also blockwise transfere according to the \l{https://tools.ietf.org/html/draft-ietf-core-block-18}{IETF V18} specifications and
+    observing resources according to the \l{https://tools.ietf.org/html/rfc7641}{RFC7641}.
 
     \sa CoapReply, CoapRequest
 
@@ -50,6 +51,8 @@
         {
           if (reply->error() != CoapReply::NoError) {
             qWarning() << "Reply finished with error" << reply->errorString();
+            reply->deleteLater();
+            return;
           }
 
           qDebug() << "Reply finished" << reply;
@@ -71,6 +74,8 @@
 #include "coappdu.h"
 #include "coapoption.h"
 
+Q_LOGGING_CATEGORY(dcCoap, "Coap")
+
 /*! Constructs a coap access manager with the given \a parent and \a port. */
 Coap::Coap(QObject *parent, const quint16 &port) :
     QObject(parent),
@@ -79,7 +84,7 @@ Coap::Coap(QObject *parent, const quint16 &port) :
     m_socket = new QUdpSocket(this);
 
     if (!m_socket->bind(QHostAddress::Any, port))
-        qWarning() << "Could not bind to port" << port << m_socket->errorString();
+        qCWarning(dcCoap) << "Could not bind to port" << port << m_socket->errorString();
 
     connect(m_socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
 }
@@ -134,7 +139,6 @@ CoapReply *Coap::get(const CoapRequest &request)
     } else {
         m_replyQueue.enqueue(reply);
     }
-
     return reply;
 }
 
@@ -211,7 +215,7 @@ CoapReply *Coap::deleteResource(const CoapRequest &request)
     }
 
     // check if there is a request running
-    if (m_reply == 0) {
+    if (m_reply.isNull()) {
         m_reply = reply;
         lookupHost();
     } else {
@@ -241,7 +245,7 @@ CoapReply *Coap::enableResourceNotifications(const CoapRequest &request)
     }
 
     // check if there is a request running
-    if (m_reply == 0) {
+    if (m_reply.isNull()) {
         m_reply = reply;
         lookupHost();
     } else {
@@ -359,6 +363,8 @@ void Coap::sendRequest(CoapReply *reply, const bool &lookedUp)
     reply->m_lockedUp = lookedUp;
     reply->m_timer->start();
 
+    qCDebug(dcCoap) << "--->" << pdu;
+
     // send the data
     if (reply->request().messageType() == CoapPdu::NonConfirmable) {
         sendData(reply->hostAddress(), reply->port(), pduData);
@@ -375,17 +381,16 @@ void Coap::sendData(const QHostAddress &hostAddress, const quint16 &port, const 
 
 void Coap::sendCoapPdu(const QHostAddress &hostAddress, const quint16 &port, const CoapPdu &pdu)
 {
-    qDebug() << "--->" << pdu;
     m_socket->writeDatagram(pdu.pack(), hostAddress, port);
 }
 
 void Coap::processResponse(const CoapPdu &pdu, const QHostAddress &address, const quint16 &port)
 {
-    // if we are waiting for a response
+    // if we are waiting for a reply response
     if (m_reply) {
-        qDebug() << "<---" << QString("%1:%2").arg(address.toString()).arg(QString::number(port)) << pdu;
+        qCDebug(dcCoap) << "<---" << QString("%1:%2").arg(address.toString()).arg(QString::number(port)) << pdu;
         if (!pdu.isValid()) {
-            qWarning() << "Got invalid PDU";
+            qCWarning(dcCoap) << "Got invalid PDU";
             m_reply->setError(CoapReply::InvalidPduError);
             m_reply->setFinished();
             return;
@@ -403,19 +408,25 @@ void Coap::processResponse(const CoapPdu &pdu, const QHostAddress &address, cons
             return;
         }
     }
-    // check if this is a notification from a known observed resource
+
+
+    if (m_observerReply) {
+        processBlock2Notification(m_observerReply, pdu);
+        return;
+    }
+
+    // check if this is a notification
     if (m_observeResources.keys().contains(pdu.token())) {
         processNotification(pdu, address, port);
         return;
     }
 
-    qWarning() << "Got message without request or registered observe resource.";
+    qCDebug(dcCoap) << "Got message without request or registered observe resource." << endl << "<---" << pdu;
     CoapPdu responsePdu;
     responsePdu.setMessageType(CoapPdu::Reset);
     responsePdu.setMessageId(pdu.messageId());
     responsePdu.setToken(pdu.token());
     sendCoapPdu(address, port, responsePdu);
-
 }
 
 void Coap::processIdBasedResponse(CoapReply *reply, const CoapPdu &pdu)
@@ -423,7 +434,7 @@ void Coap::processIdBasedResponse(CoapReply *reply, const CoapPdu &pdu)
     // check if this is an empty ACK response (which indicates a separated response)
     if (pdu.statusCode() == CoapPdu::Empty && pdu.messageType() == CoapPdu::Acknowledgement) {
         reply->m_timer->stop();
-        qDebug() << "Got empty ACK. Data will be sent separated.";
+        qCDebug(dcCoap) << "Got empty ACK. Data will be sent separated.";
         return;
     }
 
@@ -463,12 +474,95 @@ void Coap::processTokenBasedResponse(CoapReply *reply, const CoapPdu &pdu)
 
 void Coap::processNotification(const CoapPdu &pdu, const QHostAddress &address, const quint16 &port)
 {
+    CoapObserveResource resource = m_observeResources.value(pdu.token());
+    qCDebug(dcCoap) << "<--- Notification" << endl << pdu;
+
+    // check if it is a blockwise notification
+    if (pdu.hasOption(CoapOption::Block2)) {
+        if (!m_observeReplyResource.values().contains(resource)) {
+
+            qCDebug(dcCoap) << "Got first part of blocked notification";
+
+            // First part of the blocked notification
+            // respond with ACK
+            CoapPdu responsePdu;
+            responsePdu.setMessageType(CoapPdu::Acknowledgement);
+            responsePdu.setStatusCode(CoapPdu::Empty);
+            responsePdu.setMessageId(pdu.messageId());
+            responsePdu.setToken(pdu.token());
+
+            qCDebug(dcCoap) << "---> Notification" << endl << responsePdu;
+            sendCoapPdu(address, port, responsePdu);
+
+            // create reply for blockwise transfere
+            if (!m_observerReply.isNull()) {
+                m_observeBlockwise.remove(m_observerReply);
+                m_observerReply->deleteLater();
+            }
+
+            m_observerReply = new CoapReply(CoapRequest(resource.url()), this);
+            m_observerReply->setRequestMethod(CoapPdu::Get);
+            m_observerReply->appendPayloadData(pdu.payload());
+
+            // Lets store the observation number
+            int notificationNumber = 0;
+            foreach (const CoapOption &option, pdu.options()) {
+                if (option.option() == CoapOption::Observe) {
+                    notificationNumber = option.data().toHex().toInt(0, 16);
+                }
+            }
+
+            m_observeReplyResource.insert(m_observerReply, resource);
+            m_observeBlockwise.insert(m_observerReply, notificationNumber);
+
+            connect(m_observerReply, &CoapReply::timeout, this, &Coap::onReplyTimeout);
+            connect(m_observerReply, &CoapReply::finished, this, &Coap::onReplyFinished);
+
+            CoapPdu pdu;
+            pdu.setMessageType(m_observerReply->request().messageType());
+            pdu.setStatusCode(m_observerReply->requestMethod());
+            pdu.createMessageId();
+            pdu.createToken();
+
+            // Add the options in correct order
+            // Option number 3
+            pdu.addOption(CoapOption::UriHost, m_observerReply->request().url().host().toUtf8());
+
+            QStringList urlTokens = m_observerReply->request().url().path().split("/");
+            urlTokens.removeAll(QString());
+
+            // Option number 11
+            foreach (const QString &token, urlTokens)
+                pdu.addOption(CoapOption::UriPath, token.toUtf8());
+
+            // Option number 15
+            if (m_observerReply->request().url().hasQuery())
+                pdu.addOption(CoapOption::UriQuery, m_observerReply->request().url().query().toUtf8());
+
+            // Option number 23
+            pdu.addOption(CoapOption::Block2, CoapPduBlock::createBlock(1, 2, true));
+
+            QByteArray pduData = pdu.pack();
+            m_observerReply->setRequestData(pduData);
+            m_observerReply->setHostAddress(address);
+            m_observerReply->setPort(port);
+            m_observerReply->m_timer->start();
+
+            qCDebug(dcCoap) << "---> Notification" << endl << pdu;
+            sendData(address, port, pduData);
+
+            return;
+        }
+    }
+
     // respond with ACK
     CoapPdu responsePdu;
     responsePdu.setMessageType(CoapPdu::Acknowledgement);
     responsePdu.setStatusCode(CoapPdu::Empty);
     responsePdu.setMessageId(pdu.messageId());
     responsePdu.setToken(pdu.token());
+
+    qCDebug(dcCoap) << "---> Notification" << endl << responsePdu;
     sendCoapPdu(address, port, responsePdu);
 
     int notificationNumber = 0;
@@ -478,13 +572,12 @@ void Coap::processNotification(const CoapPdu &pdu, const QHostAddress &address, 
         }
     }
 
-    CoapObserveResource resource = m_observeResources.value(pdu.token());
     emit notificationReceived(resource, notificationNumber, pdu.payload());
 }
 
 void Coap::processBlock1Response(CoapReply *reply, const CoapPdu &pdu)
 {
-    qDebug() << "sent successfully block #" << pdu.block().blockNumber();
+    qCDebug(dcCoap) << "Sent successfully block #" << pdu.block().blockNumber();
 
     // create next block
     int index = (pdu.block().blockNumber() * 64) + 64;
@@ -542,7 +635,7 @@ void Coap::processBlock1Response(CoapReply *reply, const CoapPdu &pdu)
 
     reply->setMessageId(nextBlockRequest.messageId());
 
-    qDebug() << "--->" << nextBlockRequest;
+    qCDebug(dcCoap) << "--->" << nextBlockRequest;
     sendData(reply->hostAddress(), reply->port(), pduData);
 }
 
@@ -594,7 +687,80 @@ void Coap::processBlock2Response(CoapReply *reply, const CoapPdu &pdu)
 
     reply->setMessageId(nextBlockRequest.messageId());
 
-    qDebug() << "--->" << nextBlockRequest;
+    qCDebug(dcCoap) << "--->" << nextBlockRequest;
+    sendData(reply->hostAddress(), reply->port(), pduData);
+}
+
+void Coap::processBlock2Notification(CoapReply *reply, const CoapPdu &pdu)
+{
+    if (!m_observeReplyResource.contains(reply)) {
+        qCWarning(dcCoap) << "Could not find observation resource for" << reply;
+        return;
+    }
+
+    CoapObserveResource resource = m_observeReplyResource.value(reply);
+
+    // respond Block2
+    // check if this was the last block
+    if (!pdu.block().moreFlag()) {
+        // respond with ACK
+        CoapPdu responsePdu;
+        responsePdu.setMessageType(CoapPdu::Acknowledgement);
+        responsePdu.setStatusCode(CoapPdu::Empty);
+        responsePdu.setMessageId(pdu.messageId());
+        responsePdu.setToken(pdu.token());
+
+        qCDebug(dcCoap) << "---> Notification" << endl << responsePdu;
+        sendCoapPdu(reply->hostAddress(), reply->port(), responsePdu);
+
+        reply->appendPayloadData(pdu.payload());
+
+        emit notificationReceived(resource, m_observeBlockwise.take(reply), reply->payload());
+        m_observeReplyResource.remove(m_observerReply);
+        m_observerReply->deleteLater();
+        m_observerReply.clear();
+        return;
+    }
+
+    reply->appendPayloadData(pdu.payload());
+
+    CoapPdu nextBlockRequest;
+    nextBlockRequest.setContentType(reply->request().contentType());
+    nextBlockRequest.setMessageType(reply->request().messageType());
+    nextBlockRequest.setStatusCode(reply->requestMethod());
+    nextBlockRequest.setMessageId(pdu.messageId() + 1);
+    nextBlockRequest.setToken(pdu.token());
+
+    // Add the options in correct order
+    // Option number 3
+    if (reply->m_lockedUp)
+        nextBlockRequest.addOption(CoapOption::UriHost, reply->request().url().host().toUtf8());
+
+    // Option number 7
+    if (reply->port() != 5683)
+        nextBlockRequest.addOption(CoapOption::UriPort, QByteArray::number(reply->request().url().port()));
+
+    QStringList urlTokens = reply->request().url().path().split("/");
+    urlTokens.removeAll(QString());
+
+    // Option number 11
+    foreach (const QString &token, urlTokens)
+        nextBlockRequest.addOption(CoapOption::UriPath, token.toUtf8());
+
+    // Option number 15
+    if (reply->request().url().hasQuery())
+        nextBlockRequest.addOption(CoapOption::UriQuery, reply->request().url().query().toUtf8());
+
+    // Option number 23
+    nextBlockRequest.addOption(CoapOption::Block2, CoapPduBlock::createBlock(pdu.block().blockNumber() + 1, 2, false));
+
+    QByteArray pduData = nextBlockRequest.pack();
+    reply->setRequestData(pduData);
+    reply->m_timer->start();
+
+    reply->setMessageId(nextBlockRequest.messageId());
+
+    qCDebug(dcCoap) << "---> Notification" << endl << nextBlockRequest;
     sendData(reply->hostAddress(), reply->port(), pduData);
 }
 
@@ -604,7 +770,7 @@ void Coap::hostLookupFinished(const QHostInfo &hostInfo)
     reply->setPort(reply->request().url().port(5683));
 
     if (hostInfo.error() != QHostInfo::NoError) {
-        qDebug() << "Host lookup for" << reply->request().url().host() << "failed:" << hostInfo.errorString();
+        qCDebug(dcCoap) << "Host lookup for" << reply->request().url().host() << "failed:" << hostInfo.errorString();
         reply->setError(CoapReply::HostNotFoundError);
         reply->setFinished();
         return;
@@ -615,7 +781,7 @@ void Coap::hostLookupFinished(const QHostInfo &hostInfo)
 
     // check if the url had to be looked up
     if (reply->request().url().host() != hostAddress.toString()) {
-        qDebug() << reply->request().url().host() << " -> " << hostAddress.toString();
+        qCDebug(dcCoap) << reply->request().url().host() << " -> " << hostAddress.toString();
         sendRequest(reply, true);
     } else {
         sendRequest(reply);
@@ -641,7 +807,7 @@ void Coap::onReplyTimeout()
 {
     CoapReply *reply = qobject_cast<CoapReply *>(sender());
     if (reply->m_retransmissions < 5) {
-        qDebug() << QString("Reply timeout: resending message %1/4").arg(reply->m_retransmissions);
+        qCDebug(dcCoap) << QString("Reply timeout: resending message %1/4").arg(reply->m_retransmissions);
     }
     reply->resend();
     m_socket->writeDatagram(reply->requestData(), reply->hostAddress(), reply->port());
@@ -651,12 +817,20 @@ void Coap::onReplyFinished()
 {
     CoapReply *reply = qobject_cast<CoapReply *>(sender());
 
+    if (reply == m_observerReply) {
+        m_observeReplyResource.remove(m_observerReply);
+        m_observerReply->deleteLater();
+        m_observerReply.clear();
+        qCWarning(dcCoap) << "Notification reply finished wirh error" << reply->errorString();
+        return;
+    }
+
     if (reply != m_reply)
-        qWarning() << "This should never happen!! Please report a bug if you get this message!";
+        qCWarning(dcCoap) << "This should never happen!! Please report a bug if you get this message!";
 
     emit replyFinished(reply);
+    m_reply.clear();
 
-    m_reply = 0;
     // check if there is a request in the queue
     if (!m_replyQueue.isEmpty()) {
         m_reply = m_replyQueue.dequeue();

@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2015-2016 Simon Stuerz <simon.stuerz@guh.guru>           *
  *                                                                         *
  *  This file is part of QtCoap.                                           *
  *                                                                         *
@@ -23,9 +23,7 @@
 
 #include <QByteArray>
 
-#include "libguh.h"
-
-class LIBGUH_EXPORT CoapPduBlock
+class CoapPduBlock
 {
 public:
     CoapPduBlock();

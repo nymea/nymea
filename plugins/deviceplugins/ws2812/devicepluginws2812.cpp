@@ -19,6 +19,24 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \page ws2812.html
+    \title ws2812
+    \brief Plugin to controll ws2812 LEDs based on 6LoWPAN networking.
+
+    \ingroup plugins
+    \ingroup guh-plugins-merkur
+
+    The plugin for the \l{http://cdn.sparkfun.com/datasheets/Components/LED/WS2812.pdf}{ws2812} led module. This plugin allowes to control a ws2812 module over a 6LoWPAN network.
+
+    \chapter Plugin properties
+    Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}
+    and \l{Vendor}{Vendors} of this \l{DevicePlugin}.
+
+    For more details how to read this JSON file please check out the documentation for \l{The plugin JSON File}.
+
+    \quotefile plugins/deviceplugins/ws2812/devicepluginws2812.json
+*/
 
 #include "devicepluginws2812.h"
 #include "plugin/device.h"

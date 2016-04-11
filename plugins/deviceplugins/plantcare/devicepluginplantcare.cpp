@@ -19,6 +19,24 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \page plantcare.html
+    \title Plantcare
+    \brief Plugin for the guh Plantcare example based on 6LoWPAN networking.
+
+    \ingroup plugins
+    \ingroup guh-plugins-merkur
+
+    This allowes to controll the guh plantcare demo for 6LoWPAN networks.
+
+    \chapter Plugin properties
+    Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}
+    and \l{Vendor}{Vendors} of this \l{DevicePlugin}.
+
+    For more details how to read this JSON file please check out the documentation for \l{The plugin JSON File}.
+
+    \quotefile plugins/deviceplugins/plantcare/devicepluginplantcare.json
+*/
 
 #include "devicepluginplantcare.h"
 #include "plugin/device.h"

@@ -22,9 +22,10 @@
 /*!
     \page conrad.html
     \title Conrad
+    \brief Plugin for Conrad 433 MHz devices.
 
     \ingroup plugins
-    \ingroup rf433
+    \ingroup guh-plugins
 
     This plugin allows to controll RF 433 MHz actors an receive remote signals from \l{http://www.conrad.at}{Conrad}
     devices.
@@ -33,14 +34,7 @@
     Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}
     and \l{Vendor}{Vendors} of this \l{DevicePlugin}.
 
-    Each \l{DeviceClass} has a list of \l{ParamType}{paramTypes}, \l{ActionType}{actionTypes}, \l{StateType}{stateTypes}
-    and \l{EventType}{eventTypes}. The \l{DeviceClass::CreateMethod}{createMethods} parameter describes how the \l{Device}
-    will be created in the system. A device can have more than one \l{DeviceClass::CreateMethod}{CreateMethod}.
-    The \l{DeviceClass::SetupMethod}{setupMethod} describes the setup method of the \l{Device}.
-    The detailed implementation of each \l{DeviceClass} can be found in the source code.
-
-    \note If a \l{StateType} has the parameter \tt{"writable": {...}}, an \l{ActionType} with the same uuid and \l{ParamType}{ParamTypes}
-    will be created automatically.
+    For more details how to read this JSON file please check out the documentation for \l{The plugin JSON File}.
 
     \quotefile plugins/deviceplugins/conrad/devicepluginconrad.json
 */

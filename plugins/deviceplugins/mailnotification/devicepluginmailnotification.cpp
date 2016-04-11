@@ -21,9 +21,10 @@
 /*!
     \page mailnotification.html
     \title Mail Notification
+    \brief Plugin which allowes to get mail notification from guh.
 
     \ingroup plugins
-    \ingroup services
+    \ingroup guh-plugins
 
     The mail notification plugin allows you to send a mail notification from a mail
     account by performing an \l{Action}.
@@ -32,32 +33,26 @@
     This will be changed soon...
 
     \chapter Supported services
-                \section2 Google Mail
-                With the Google Mail Notification you can send a mail with your gmail address to a recipient. The
-                username is your mail address (e.g. "chuck.norris@gmail.com"). The recipient will receive the notification
-                from your gmail account.
 
-                \section2 Yahoo Mail
-                The Yahoo Mail Notification you can send a mail with your yahoo address to a recipient. The username
-                is your mail address (e.g. "chuck.norris@yahoo.com"). The recipient will receive the notification
-                from your yahoo account.
+        \section2 Google Mail
+        With the Google Mail Notification you can send a mail with your gmail address to a recipient. The
+        username is your mail address (e.g. "chuck.norris@gmail.com"). The recipient will receive the notification
+        from your gmail account.
 
-                \section2 Custom Mail
-                With the Custom Mail Notification you can set up a custom SMTP connection. The supported authentification
-                methods are ["PLAIN", "LOGIN"], the supported encryption methods are ["NONE", "SSL", "TLS"].
+        \section2 Yahoo Mail
+        The Yahoo Mail Notification you can send a mail with your yahoo address to a recipient. The username
+        is your mail address (e.g. "chuck.norris@yahoo.com"). The recipient will receive the notification
+        from your yahoo account.
+
+        \section2 Custom Mail
+        With the Custom Mail Notification you can set up a custom SMTP connection. The supported authentification
+        methods are ["PLAIN", "LOGIN"], the supported encryption methods are ["NONE", "SSL", "TLS"].
 
     \chapter Plugin properties
     Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}
     and \l{Vendor}{Vendors} of this \l{DevicePlugin}.
 
-    Each \l{DeviceClass} has a list of \l{ParamType}{paramTypes}, \l{ActionType}{actionTypes}, \l{StateType}{stateTypes}
-    and \l{EventType}{eventTypes}. The \l{DeviceClass::CreateMethod}{createMethods} parameter describes how the \l{Device}
-    will be created in the system. A device can have more than one \l{DeviceClass::CreateMethod}{CreateMethod}.
-    The \l{DeviceClass::SetupMethod}{setupMethod} describes the setup method of the \l{Device}.
-    The detailed implementation of each \l{DeviceClass} can be found in the source code.
-
-    \note If a \l{StateType} has the parameter \tt{"writable": {...}}, an \l{ActionType} with the same uuid and \l{ParamType}{ParamTypes}
-    will be created automatically.
+    For more details how to read this JSON file please check out the documentation for \l{The plugin JSON File}.
 
     \quotefile plugins/deviceplugins/mailnotification/devicepluginmailnotification.json
 */

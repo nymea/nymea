@@ -19,6 +19,25 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \page mockdevices.html
+    \title Mock devices
+    \brief Devices for the guh test base.
+
+    \ingroup plugins
+    \ingroup guh-tests
+
+    The mock devices are used for testing.
+
+    \chapter Plugin properties
+    Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}
+    and \l{Vendor}{Vendors} of this \l{DevicePlugin}.
+
+    For more details how to read this JSON file please check out the documentation for \l{The plugin JSON File}.
+
+    \quotefile plugins/deviceplugins/mailnotification/devicepluginmailnotification.json
+*/
+
 #include "devicepluginmock.h"
 #include "httpdaemon.h"
 

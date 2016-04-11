@@ -24,7 +24,7 @@
     \brief Common elements to test the rule engine.
 
     \ingroup plugins
-    \ingroup guh-plugins
+    \ingroup guh-tests
 
     The generic elements plugin allows you create virtual buttons, which can be connected with a rule. This gives you
     the possibility to execute multiple \l{Action}{Actions} with one signal. Without a rule this generic elements are

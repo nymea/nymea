@@ -59,7 +59,7 @@ private:
 private:
     // Only GuhCore is allowed to log events.
     friend class GuhCore;
-    void logSystemEvent(bool active, Logging::LoggingLevel level = Logging::LoggingLevelInfo);
+    void logSystemEvent(const QDateTime &dateTime, bool active, Logging::LoggingLevel level = Logging::LoggingLevelInfo);
     void logEvent(const Event &event);
     void logAction(const Action &action, Logging::LoggingLevel level = Logging::LoggingLevelInfo, int errorCode = 0);
     void logRuleTriggered(const Rule &rule);

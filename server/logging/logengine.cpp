@@ -133,7 +133,7 @@ LogEngine::LogEngine(QObject *parent):
 {
     m_db = QSqlDatabase::addDatabase("QSQLITE");
     m_db.setDatabaseName(GuhSettings::logPath());
-    m_dbMaxSize = 8000;
+    m_dbMaxSize = 20000;
 
     if (QCoreApplication::instance()->organizationName() == "guh-test") {
         m_dbMaxSize = 20;
@@ -219,9 +219,9 @@ void LogEngine::clearDatabase()
     emit logDatabaseUpdated();
 }
 
-void LogEngine::logSystemEvent(bool active, Logging::LoggingLevel level)
+void LogEngine::logSystemEvent(const QDateTime &dateTime, bool active, Logging::LoggingLevel level)
 {
-    LogEntry entry(level, Logging::LoggingSourceSystem);
+    LogEntry entry(dateTime, level, Logging::LoggingSourceSystem);
     entry.setActive(active);
     appendLogEntry(entry);
 }

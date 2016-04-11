@@ -1,6 +1,7 @@
 usr/tests/* usr/lib/guh/tests
-usr/lib/guh/plugins/libguh_devicepluginmock.so
 usr/lib/libguh-core.so
 usr/lib/libguh-core.so.1
 usr/lib/libguh-core.so.1.0
 usr/lib/libguh-core.so.1.0.0
+usr/lib/guh/plugins/libguh_devicepluginmock.so
+usr/lib/guh/plugins/libguh_deviceplugingenericelements.so

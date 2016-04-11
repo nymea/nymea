@@ -1,0 +1,85 @@
+{
+    "name": "Order Button",
+    "idName": "OrderButton",
+    "id": "939a6557-649d-43de-990b-3484f972ad86",
+    "paramTypes": [
+        {
+            "name": "RPL address",
+            "type": "QString",
+            "inputType": "TextLine",
+            "defaultValue": "fdaa:e9b8:d03a::ff:fe00:1"
+        }
+    ],
+    "vendors": [
+        {
+            "name": "guh",
+            "idName": "guh",
+            "id": "76df1ad2-c179-4842-94ea-2da6e4796339",
+            "deviceClasses": [
+                {
+                    "deviceClassId": "af4df281-2b3b-490f-8352-2b99ff23fc15",
+                    "name": "OrderButton",
+                    "idName": "orderbutton",
+                    "createMethods": ["discovery"],
+                    "basicTags": [
+                        "Device",
+                        "Gateway"
+                    ],
+                    "paramTypes": [
+                        {
+                            "name": "host",
+                            "type": "QString",
+                            "inputType": "TextLine"
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "a4d83813-10f3-4830-be2e-60d4815906c4",
+                            "idName": "battery",
+                            "name": "battery voltage",
+                            "type": "double",
+                            "unit": "Volt",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "2df871fc-1888-4b04-8f02-f17b26642534",
+                            "idName": "count",
+                            "name": "count",
+                            "type": "int",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "783e74ee-ffd6-4dd7-ade5-3a961452cf15",
+                            "idName": "reachable",
+                            "name": "reachable",
+                            "type": "bool",
+                            "defaultValue": false
+                        },
+                        {
+                            "id": "b184ccc8-e7d9-4e94-8683-07f81484bbda",
+                            "idName": "led",
+                            "name": "led",
+                            "type": "bool",
+                            "defaultValue": false,
+                            "writable": true
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "b8e5da6c-501c-493e-8b0f-8ef09efb9057",
+                            "idName": "reset",
+                            "name": "reset"
+                        }
+                    ],
+                    "eventTypes": [
+                        {
+                            "id": "2077a9ad-7f4b-4dd4-ae1c-7ecbe0a92dc0",
+                            "idName": "button",
+                            "name": "button"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

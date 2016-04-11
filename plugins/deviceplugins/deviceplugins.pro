@@ -24,3 +24,4 @@ SUBDIRS += elro         \
     plantcare           \
     osdomotics          \
     ws2812              \
+    orderbutton         \

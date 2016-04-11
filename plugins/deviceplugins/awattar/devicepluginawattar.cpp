@@ -23,7 +23,7 @@
     \title aWATTar
 
     \ingroup plugins
-    \ingroup network
+    \ingroup guh-plugins
 
     This plugin allows to receive the current energy market price from the \l{https://www.awattar.com/}{aWATTar GmbH}.
     In order to use this plugin you need to enter the access token from your energy provider. You can find more

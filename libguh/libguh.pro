@@ -1,5 +1,4 @@
 include(../guh.pri)
-include(coap/coap.pri)
 
 TARGET = guh
 TEMPLATE = lib
@@ -40,6 +39,15 @@ SOURCES += devicemanager.cpp \
            network/upnpdiscovery/upnpdiscoveryrequest.cpp \
            network/networkmanager.cpp \
            network/oauth2.cpp \
+           coap/coap.cpp \
+           coap/coappdu.cpp \
+           coap/coapoption.cpp \
+           coap/coaprequest.cpp \
+           coap/coapreply.cpp \
+           coap/coappdublock.cpp \
+           coap/corelinkparser.cpp \
+           coap/corelink.cpp \
+           coap/coapobserveresource.cpp \
            types/action.cpp \
            types/actiontype.cpp \
            types/state.cpp \
@@ -54,6 +62,7 @@ SOURCES += devicemanager.cpp \
            types/ruleaction.cpp \
            types/ruleactionparam.cpp \
            types/statedescriptor.cpp \
+
 
 HEADERS += devicemanager.h \
            libguh.h \
@@ -77,6 +86,15 @@ HEADERS += devicemanager.h \
            network/upnpdiscovery/upnpdiscoveryrequest.h \
            network/networkmanager.h \
            network/oauth2.h \
+           coap/coap.h \
+           coap/coappdu.h \
+           coap/coapoption.h \
+           coap/coaprequest.h \
+           coap/coapreply.h \
+           coap/coappdublock.h \
+           coap/corelinkparser.h \
+           coap/corelink.h \
+           coap/coapobserveresource.h \
            types/action.h \
            types/actiontype.h \
            types/state.h \
@@ -91,6 +109,7 @@ HEADERS += devicemanager.h \
            types/ruleaction.h \
            types/ruleactionparam.h \
            types/statedescriptor.h \
+
 
 # install plugininfo python script for libguh-dev
 generateplugininfo.files = $$top_srcdir/plugins/guh-generateplugininfo

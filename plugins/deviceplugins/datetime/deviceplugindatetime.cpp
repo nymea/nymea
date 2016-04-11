@@ -23,7 +23,7 @@
     \title Time
 
     \ingroup plugins
-    \ingroup services
+    \ingroup guh-plugins
 
     The time plugin allows you create rules based on the time, day, month, year, weekday or on weekend.
 

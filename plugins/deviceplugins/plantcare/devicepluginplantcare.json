@@ -57,14 +57,11 @@
                             "defaultValue": false
                         },
                         {
-                            "id": "21b51fc9-1bfd-4970-a50d-e697a58df1bf",
-                            "idName": "brightness",
-                            "name": "brightness",
-                            "unit": "Percentage",
-                            "type": "int",
-                            "minValue": 0,
-                            "maxValue": 100,
-                            "defaultValue": 0,
+                            "id": "819aca98-25e5-4733-81e0-5921478b3e89",
+                            "idName": "ledPower",
+                            "name": "led power",
+                            "type": "bool",
+                            "defaultValue": false,
                             "writable": true
                         },
                         {

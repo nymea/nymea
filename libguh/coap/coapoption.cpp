@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2015-2016 Simon Stuerz <simon.stuerz@guh.guru>           *
  *                                                                         *
  *  This file is part of QtCoap.                                           *
  *                                                                         *
@@ -20,12 +20,12 @@
 
 /*!
     \class CoapOption
-    \brief Represents the option of a Coap PDU.
+    \brief Represents the option of a \l{CoapPdu}.
 
     \ingroup coap
     \inmodule libguh
 
-    The CoapOption class provides an easy way to create / parse CoAP options of a CoAP PDU (Protocol Data Unit). An options
+    The CoapOption class provides an easy way to create / parse CoAP options of a \l{CoapPdu} (Protocol Data Unit). An options
     can be compared with a HTTP header.
 
 */

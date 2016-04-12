@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2015-2016 Simon Stuerz <simon.stuerz@guh.guru>           *
  *                                                                         *
  *  This file is part of QtCoap.                                           *
  *                                                                         *
@@ -24,14 +24,12 @@
 #include <QUrl>
 #include <QHostAddress>
 
-#include "libguh.h"
-
 #include "coappdu.h"
 #include "coapoption.h"
 
 //class Coap;
 
-class LIBGUH_EXPORT CoapRequest
+class CoapRequest
 {
 //    friend class Coap;
 public:

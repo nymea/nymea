@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2015-2016 Simon Stuerz <simon.stuerz@guh.guru>           *
  *                                                                         *
  *  This file is part of QtCoap.                                           *
  *                                                                         *
@@ -23,12 +23,11 @@
 
 #include <QObject>
 
-#include "libguh.h"
 #include "corelink.h"
 
 // Constrained RESTful Environments (CoRE) Link Format  : http://tools.ietf.org/html/rfc6690
 
-class LIBGUH_EXPORT CoreLinkParser : public QObject
+class CoreLinkParser : public QObject
 {
     Q_OBJECT
 public:

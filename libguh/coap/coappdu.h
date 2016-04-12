@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2015-2016 Simon Stuerz <simon.stuerz@guh.guru>           *
  *                                                                         *
  *  This file is part of QtCoap.                                           *
  *                                                                         *
@@ -27,8 +27,6 @@
 #include "coapoption.h"
 #include "coappdublock.h"
 
-#include "libguh.h"
-
 // PDU = Protocol Data Unit
 
 /*         0                   1                   2                   3
@@ -44,7 +42,7 @@
  *      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  */
 
-class LIBGUH_EXPORT CoapPdu : public QObject
+class CoapPdu : public QObject
 {
     Q_OBJECT
     Q_ENUMS(MessageType)
@@ -151,6 +149,7 @@ public:
 
     void clear();
     bool isValid() const;
+    bool isNull() const;
 
     QByteArray pack() const;
 

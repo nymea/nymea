@@ -174,9 +174,9 @@ DeviceManager::DeviceError DevicePluginOrderButton::executeAction(Device *device
         QUrl url;
         url.setScheme("coap");
         url.setHost(device->paramValue("host").toString());
-        url.setPath("/a/reset");
+        url.setPath("/s/count");
 
-        CoapReply *reply = m_coap->post(CoapRequest(url));
+        CoapReply *reply = m_coap->post(CoapRequest(url), QByteArray("count=0"));
         if (reply->isFinished() && reply->error() != CoapReply::NoError) {
             qCWarning(dcOrderButton) << "CoAP reply finished with error" << reply->errorString();
             setReachable(device, false);

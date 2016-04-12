@@ -189,15 +189,15 @@ DeviceManager::DeviceError DevicePluginPlantCare::executeAction(Device *device, 
         m_asyncActions.insert(action.id(), device);
         return DeviceManager::DeviceErrorAsync;
 
-    } else if(action.actionTypeId() == brightnessActionTypeId) {
-        int light = qRound(action.param("brightness").value().toInt() * 255.0 / 100.0);
+    } else if(action.actionTypeId() == ledPowerActionTypeId) {
+        int power = action.param("led power").value().toInt();
 
         QUrl url;
         url.setScheme("coap");
         url.setHost(device->paramValue("host").toString());
         url.setPath("/a/light");
 
-        QByteArray payload = QString("pwm=%1").arg(QString::number(light)).toUtf8();
+        QByteArray payload = QString("pwm=%1").arg(QString::number(power)).toUtf8();
         qCDebug(dcPlantCare()) << "Sending" << payload << url.path();
         CoapReply *reply = m_coap->post(CoapRequest(url), payload);
         if (reply->isFinished() && reply->error() != CoapReply::NoError) {
@@ -207,7 +207,7 @@ DeviceManager::DeviceError DevicePluginPlantCare::executeAction(Device *device, 
             return DeviceManager::DeviceErrorHardwareFailure;
         }
 
-        m_setBrightness.insert(reply, action);
+        m_setLedPower.insert(reply, action);
         m_asyncActions.insert(action.id(), device);
         return DeviceManager::DeviceErrorAsync;
 
@@ -451,8 +451,13 @@ void DevicePluginPlantCare::coapReplyFinished(CoapReply *reply)
             qCDebug(dcPlantCare()) << "Updated pump value:" << reply->payload();
             device->setStateValue(waterPumpStateTypeId, QVariant(reply->payload().toInt()).toBool());
         } else if (urlPath == "/a/light") {
-            qCDebug(dcPlantCare()) << "Updated brightness value:" << reply->payload();
-            device->setStateValue(brightnessStateTypeId, qRound(reply->payload().toInt() * 100.0 / 255.0));
+            qCDebug(dcPlantCare()) << "Updated led power value:" << reply->payload();
+            int powerValue = reply->payload().toInt();
+            if (powerValue > 0) {
+                device->setStateValue(ledPowerStateTypeId, false);
+            } else {
+                device->setStateValue(ledPowerStateTypeId, true);
+            }
         }
 
     } else if (m_toggleLightRequests.contains(reply)) {
@@ -478,13 +483,13 @@ void DevicePluginPlantCare::coapReplyFinished(CoapReply *reply)
         // Tell the user about the action execution result
         emit actionExecutionFinished(action.id(), DeviceManager::DeviceErrorNoError);
 
-    } else if (m_setBrightness.contains(reply)) {
-        Action action = m_setBrightness.take(reply);
+    } else if (m_setLedPower.contains(reply)) {
+        Action action = m_setLedPower.take(reply);
         Device *device = m_asyncActions.take(action.id());
 
         // check CoAP reply error
         if (reply->error() != CoapReply::NoError) {
-            qCWarning(dcPlantCare) << "CoAP set brightness reply finished with error" << reply->errorString();
+            qCWarning(dcPlantCare) << "CoAP set led power reply finished with error" << reply->errorString();
             setReachable(device, false);
             reply->deleteLater();
             emit actionExecutionFinished(action.id(), DeviceManager::DeviceErrorHardwareFailure);
@@ -493,14 +498,14 @@ void DevicePluginPlantCare::coapReplyFinished(CoapReply *reply)
 
         // Check CoAP status code
         if (reply->statusCode() != CoapPdu::Content) {
-            qCWarning(dcPlantCare) << "Set brightness status code error:" << reply;
+            qCWarning(dcPlantCare) << "Set led power status code error:" << reply;
             reply->deleteLater();
             emit actionExecutionFinished(action.id(), DeviceManager::DeviceErrorHardwareFailure);
             return;
         }
 
         // Update the state here, so we don't have to wait for the notification
-        device->setStateValue(brightnessStateTypeId, action.param("brightness").value().toInt());
+        device->setStateValue(ledPowerStateTypeId, action.param("led power").value().toBool());
         // Tell the user about the action execution result
         emit actionExecutionFinished(action.id(), DeviceManager::DeviceErrorNoError);
 
@@ -574,6 +579,11 @@ void DevicePluginPlantCare::onNotificationReceived(const CoapObserveResource &re
     } else if (resource.url().path() == "/a/pump") {
         device->setStateValue(waterPumpStateTypeId, QVariant(payload.toInt()).toBool());
     } else if (resource.url().path() == "/a/light") {
-        device->setStateValue(brightnessStateTypeId, qRound(payload.toInt() * 100.0 / 255.0));
+        int powerValue = QVariant(payload).toInt();
+        if (powerValue > 0) {
+            device->setStateValue(ledPowerStateTypeId, false);
+        } else {
+            device->setStateValue(ledPowerStateTypeId, true);
+        }
     }
 }

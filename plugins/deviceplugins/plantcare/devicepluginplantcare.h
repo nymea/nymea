@@ -61,7 +61,7 @@ private:
     QHash<ActionId, Device *> m_asyncActions;
 
     QHash<CoapReply *, Action> m_toggleLightRequests;
-    QHash<CoapReply *, Action> m_setBrightness;
+    QHash<CoapReply *, Action> m_setLedPower;
     QHash<CoapReply *, Action> m_setPumpPower;
 
     void pingDevice(Device *device);

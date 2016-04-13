@@ -1,0 +1,106 @@
+{
+    "name": "Smart Dollhouse",
+    "idName": "Dollhouse",
+    "id": "ee62716c-64b5-4ec5-a877-9a8d9c1042cb",
+    "vendors": [
+        {
+            "name": "guh",
+            "idName": "guh",
+            "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6",
+            "deviceClasses": [
+                {
+                    "name": "Dollhouse Connection",
+                    "idName": "connection",
+                    "deviceClassId": "44e12a1c-9711-4780-9913-53bb38264e1e",
+                    "createMethods": ["user"],
+                    "basicTags": [
+                        "Device",
+                        "Gateway"
+                    ],
+                    "paramTypes": [
+                        {
+                            "name": "name",
+                            "type": "QString",
+                            "defaultValue": "Dollhouse Connection"
+                        },
+                        {
+                            "name": "RPL address",
+                            "type": "QString",
+                            "inputType": "TextLine",
+                            "defaultValue": "fdaa:e9b8:d03a::ff:fe00:1"
+                        }
+                    ]
+                },
+                {
+                    "name": "Dollhouse Light",
+                    "idName": "light",
+                    "deviceClassId": "b4dd5f10-36d4-4232-867a-6d3b04a08bad",
+                    "createMethods": ["auto"],
+                    "basicTags": [
+                        "Device",
+                        "Lighting"
+                    ],
+                    "paramTypes": [
+                        {
+                            "name": "name",
+                            "type": "QString",
+                            "defaultValue": "Dollhouse Light"
+                        },
+                        {
+                            "name": "address",
+                            "type": "QString"
+                        },
+                        {
+                            "name": "light id",
+                            "type": "int",
+                            "defaultValue": 0,
+                            "readOnly": true
+                        },
+                        {
+                            "name": "connection uuid",
+                            "type": "QString",
+                            "inputType": "TextLine",
+                            "readOnly": true
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "e4885a73-9fe1-48ca-b773-aeb93f34cd54",
+                            "idName": "color",
+                            "name": "color",
+                            "type": "QColor",
+                            "defaultValue": "#fff30a",
+                            "writable": true
+                        },
+                        {
+                            "id": "e78c9136-c10a-45c9-b6bc-2d937f09cdec",
+                            "idName": "brightness",
+                            "name": "brightness",
+                            "type": "int",
+                            "unit": "Percentage",
+                            "minValue": 0,
+                            "maxValue": 100,
+                            "defaultValue": 100,
+                            "writable": true
+                        },
+                        {
+                            "id": "f6ac30a0-77b8-4f1f-8c44-4c2e6d542663",
+                            "idName": "power",
+                            "name": "power",
+                            "type": "bool",
+                            "defaultValue": false,
+                            "writable": true
+                        },
+                        {
+                            "id": "93c539b4-50d8-431e-8be4-5ebba89452b7",
+                            "idName": "reachable",
+                            "name": "reachable",
+                            "type": "bool",
+                            "defaultValue": false
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

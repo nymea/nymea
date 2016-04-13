@@ -21,9 +21,10 @@
 /*!
     \page wakeonlan.html
     \title Wake On Lan
+    \brief Plugin for wake up devices in the LAN (wol).
 
     \ingroup plugins
-    \ingroup network
+    \ingroup guh-plugins
 
     Wake-on-LAN (WOL) is an Ethernet computer networking standard that allows a computer
     to be turned on or awakened by a network message. This plugin allows you to send a
@@ -35,14 +36,7 @@
     Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}
     and \l{Vendor}{Vendors} of this \l{DevicePlugin}.
 
-    Each \l{DeviceClass} has a list of \l{ParamType}{paramTypes}, \l{ActionType}{actionTypes}, \l{StateType}{stateTypes}
-    and \l{EventType}{eventTypes}. The \l{DeviceClass::CreateMethod}{createMethods} parameter describes how the \l{Device}
-    will be created in the system. A device can have more than one \l{DeviceClass::CreateMethod}{CreateMethod}.
-    The \l{DeviceClass::SetupMethod}{setupMethod} describes the setup method of the \l{Device}.
-    The detailed implementation of each \l{DeviceClass} can be found in the source code.
-
-    \note If a \l{StateType} has the parameter \tt{"writable": {...}}, an \l{ActionType} with the same uuid and \l{ParamType}{ParamTypes}
-    will be created automatically.
+    For more details how to read this JSON file please check out the documentation for \l{The plugin JSON File}.
 
     \quotefile plugins/deviceplugins/wakeonlan/devicepluginwakeonlan.json
 */

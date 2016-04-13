@@ -118,6 +118,7 @@ int main(int argc, char *argv[])
     s_loggingFilters.insert("Rest", false);
     s_loggingFilters.insert("OAuth2", false);
     s_loggingFilters.insert("TimeManager", false);
+    s_loggingFilters.insert("Coap", false);
 
     QHash<QString, bool> loggingFiltersPlugins;
     foreach (const QJsonObject &pluginMetadata, DeviceManager::pluginsMetadata()) {

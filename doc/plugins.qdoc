@@ -2,19 +2,16 @@
     \page plugins.html
     \title Plugins
     
-    Here you can find the current list of supported plugins.    
+    Here you can find the current list of supported plugins sorted by the corresponding package.    
 
-    \section2 RF 433 MHz Plugins
-    \annotatedlist rf433
+    \section2 The default \tt{guh-plugins} package:
+    \annotatedlist guh-plugins
     
-    \section2 Services
-    \annotatedlist services
+    \section2 The \tt{guh-plugins-merkur} package:
+    \annotatedlist guh-plugins-merkur
 
-    \section2 Network Plugins
-    \annotatedlist network
-
-    \section1 Bluetooth Plugins
-    \annotatedlist bluetooth
+    \section2 The \tt{guh-tests} plugins:
+    \annotatedlist guh-tests
 
 */
 

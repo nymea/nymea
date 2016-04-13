@@ -1,0 +1,101 @@
+{
+    "name": "WS2812",
+    "idName": "Ws2812",
+    "id": "60b68c75-3261-4bf1-8912-798d2d3bbd3b",
+    "paramTypes": [
+        {
+            "name": "RPL address",
+            "type": "QString",
+            "inputType": "TextLine",
+            "defaultValue": "fdaa:e9b8:d03a::ff:fe00:1"
+        }
+    ],
+    "vendors": [
+        {
+            "name": "guh",
+            "idName": "guh",
+            "id": "419435fa-58bf-4ba0-b6f5-156ce081bb68",
+            "deviceClasses": [
+                {
+                    "deviceClassId": "3242db46-5c6f-42d6-9001-753150763385",
+                    "name": "WS2812",
+                    "idName": "ws2812",
+                    "createMethods": ["discovery"],
+                    "basicTags": [
+                        "Device",
+                        "Gateway"
+                    ],
+                    "paramTypes": [
+                        {
+                            "name": "host",
+                            "type": "QString",
+                            "inputType": "TextLine"
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "c9f6042f-1193-4075-94b1-37b29641ec24",
+                            "idName": "battery",
+                            "name": "battery voltage",
+                            "type": "double",
+                            "unit": "Volt",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "08091cde-983d-42f7-bdd7-d89c312ccbed",
+                            "idName": "reachable",
+                            "name": "reachable",
+                            "type": "bool",
+                            "defaultValue": false
+                        },
+                        {
+                            "id": "8a73c60a-1da9-4228-8dba-2ffccc6531a6",
+                            "idName": "effectColor",
+                            "name": "color",
+                            "type": "QColor",
+                            "defaultValue": "#000000",
+                            "writable": true
+
+                        },
+                        {
+                            "id": "ac372b72-c2ae-4f0f-9fca-bd7cf654603a",
+                            "idName": "maxPix",
+                            "name": "leds",
+                            "type": "int",
+                            "unit": "None",
+                            "defaultValue": 0,
+                            "minValue": 0,
+                            "maxValue": 240,
+                            "writable": true
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "f4fe5d31-1edb-4944-9ddb-c89e7da8bee7",
+                            "idName": "effectMode",
+                            "name": "set effect mode",
+                            "paramTypes": [
+                                {
+                                    "name": "effect",
+                                    "type": "QString",
+                                    "allowedValues": [
+                                        "Off",
+                                        "Color On",
+                                        "Color Wave",
+                                        "Color Fade",
+                                        "Color Flash",
+                                        "Rainbow Wave",
+                                        "Rainbow Flash",
+                                        "Knight Rider",
+                                        "Fire"
+                                    ],
+                                    "defaultValue": "Off"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -64,6 +64,7 @@ SOURCES += devicemanager.cpp \
            types/ruleactionparam.cpp \
            types/statedescriptor.cpp \
 
+
 HEADERS += devicemanager.h \
            libguh.h \
            typeutils.h \
@@ -109,6 +110,7 @@ HEADERS += devicemanager.h \
            types/ruleaction.h \
            types/ruleactionparam.h \
            types/statedescriptor.h \
+
 
 # install plugininfo python script for libguh-dev
 generateplugininfo.files = $$top_srcdir/plugins/guh-generateplugininfo

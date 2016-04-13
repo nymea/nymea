@@ -25,7 +25,7 @@
 #include <QHash>
 #include <QUrl>
 
-class CoapObserveResource
+class LIBGUH_EXPORT CoapObserveResource
 {
 
 public:

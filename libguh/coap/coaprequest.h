@@ -24,12 +24,11 @@
 #include <QUrl>
 #include <QHostAddress>
 
+#include "libguh.h"
 #include "coappdu.h"
 #include "coapoption.h"
 
-//class Coap;
-
-class CoapRequest
+class LIBGUH_EXPORT CoapRequest
 {
 //    friend class Coap;
 public:

@@ -159,7 +159,7 @@ void CoapTests::hello()
 
     QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply*)));
     CoapReply *reply = m_coap->get(request);
-    qDebug() << reply->isRunning() << reply->requestData() << reply->errorString();
+    qDebug() << reply->isRunning() << reply->errorString();
     spy.wait();
 
     QVERIFY2(spy.count() > 0, "Did not get a response.");

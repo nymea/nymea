@@ -24,12 +24,11 @@
 #include <QUrl>
 #include <QHostAddress>
 
+#include "libguh.h"
 #include "coappdu.h"
 #include "coapoption.h"
 
-//class Coap;
-
-class CoapRequest
+class LIBGUH_EXPORT CoapRequest
 {
 //    friend class Coap;
 public:
@@ -49,9 +48,6 @@ private:
     CoapPdu::ContentType m_contentType;
     CoapPdu::MessageType m_messageType;
     CoapPdu::StatusCode m_statusCode;
-
-    void setStatusCode(const CoapPdu::StatusCode &statusCode);
-    CoapPdu::StatusCode statusCode();
 
 };
 

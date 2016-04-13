@@ -13,57 +13,13 @@ INSTALLS += target
 
 # check Bluetooth LE support
 contains(DEFINES, BLUETOOTH_LE) {
+    HEADERS += bluetooth/bluetoothscanner.h \
+               bluetooth/bluetoothlowenergydevice.h \
+
     SOURCES += bluetooth/bluetoothscanner.cpp \
                bluetooth/bluetoothlowenergydevice.cpp \
 
-    HEADERS += bluetooth/bluetoothscanner.h \
-               bluetooth/bluetoothlowenergydevice.h \
 }
-
-SOURCES += devicemanager.cpp \
-           loggingcategories.cpp \
-           guhsettings.cpp \
-           plugin/device.cpp \
-           plugin/deviceclass.cpp \
-           plugin/deviceplugin.cpp \
-           plugin/devicedescriptor.cpp \
-           plugin/devicepairinginfo.cpp \
-           hardware/gpio.cpp \
-           hardware/gpiomonitor.cpp \
-           hardware/radio433/radio433.cpp \
-           hardware/radio433/radio433transmitter.cpp \
-           hardware/radio433/radio433receiver.cpp \
-           hardware/radio433/radio433brennenstuhlgateway.cpp \
-           network/upnpdiscovery/upnpdiscovery.cpp \
-           network/upnpdiscovery/upnpdevice.cpp \
-           network/upnpdiscovery/upnpdevicedescriptor.cpp \
-           network/upnpdiscovery/upnpdiscoveryrequest.cpp \
-           network/networkmanager.cpp \
-           network/oauth2.cpp \
-           coap/coap.cpp \
-           coap/coappdu.cpp \
-           coap/coapoption.cpp \
-           coap/coaprequest.cpp \
-           coap/coapreply.cpp \
-           coap/coappdublock.cpp \
-           coap/corelinkparser.cpp \
-           coap/corelink.cpp \
-           coap/coapobserveresource.cpp \
-           types/action.cpp \
-           types/actiontype.cpp \
-           types/state.cpp \
-           types/statetype.cpp \
-           types/eventtype.cpp \
-           types/event.cpp \
-           types/eventdescriptor.cpp \
-           types/vendor.cpp \
-           types/paramtype.cpp \
-           types/param.cpp \
-           types/paramdescriptor.cpp \
-           types/ruleaction.cpp \
-           types/ruleactionparam.cpp \
-           types/statedescriptor.cpp \
-
 
 HEADERS += devicemanager.h \
            libguh.h \
@@ -110,6 +66,51 @@ HEADERS += devicemanager.h \
            types/ruleaction.h \
            types/ruleactionparam.h \
            types/statedescriptor.h \
+
+
+SOURCES += devicemanager.cpp \
+           loggingcategories.cpp \
+           guhsettings.cpp \
+           plugin/device.cpp \
+           plugin/deviceclass.cpp \
+           plugin/deviceplugin.cpp \
+           plugin/devicedescriptor.cpp \
+           plugin/devicepairinginfo.cpp \
+           hardware/gpio.cpp \
+           hardware/gpiomonitor.cpp \
+           hardware/radio433/radio433.cpp \
+           hardware/radio433/radio433transmitter.cpp \
+           hardware/radio433/radio433receiver.cpp \
+           hardware/radio433/radio433brennenstuhlgateway.cpp \
+           network/upnpdiscovery/upnpdiscovery.cpp \
+           network/upnpdiscovery/upnpdevice.cpp \
+           network/upnpdiscovery/upnpdevicedescriptor.cpp \
+           network/upnpdiscovery/upnpdiscoveryrequest.cpp \
+           network/networkmanager.cpp \
+           network/oauth2.cpp \
+           coap/coap.cpp \
+           coap/coappdu.cpp \
+           coap/coapoption.cpp \
+           coap/coaprequest.cpp \
+           coap/coapreply.cpp \
+           coap/coappdublock.cpp \
+           coap/corelinkparser.cpp \
+           coap/corelink.cpp \
+           coap/coapobserveresource.cpp \
+           types/action.cpp \
+           types/actiontype.cpp \
+           types/state.cpp \
+           types/statetype.cpp \
+           types/eventtype.cpp \
+           types/event.cpp \
+           types/eventdescriptor.cpp \
+           types/vendor.cpp \
+           types/paramtype.cpp \
+           types/param.cpp \
+           types/paramdescriptor.cpp \
+           types/ruleaction.cpp \
+           types/ruleactionparam.cpp \
+           types/statedescriptor.cpp \
 
 
 # install plugininfo python script for libguh-dev

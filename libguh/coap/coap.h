@@ -29,6 +29,7 @@
 #include <QPointer>
 #include <QQueue>
 
+#include "libguh.h"
 #include "coaprequest.h"
 #include "coapreply.h"
 #include "coapobserveresource.h"
@@ -44,9 +45,10 @@
 
 Q_DECLARE_LOGGING_CATEGORY(dcCoap)
 
-class Coap : public QObject
+class LIBGUH_EXPORT Coap : public QObject
 {
     Q_OBJECT
+
 public:
     Coap(QObject *parent = 0, const quint16 &port = 5683);
 
@@ -66,7 +68,6 @@ private:
 
     QPointer<CoapReply> m_reply;
     QQueue<CoapReply *> m_replyQueue;
-
 
     QHash<int, CoapReply *> m_runningHostLookups;
 
@@ -93,7 +94,6 @@ private:
 
     void processBlock2Notification(CoapReply *reply, const CoapPdu &pdu);
 
-
 signals:
     void replyFinished(CoapReply *reply);
     void notificationReceived(const CoapObserveResource &resource, const int &notificationNumber, const QByteArray &payload);
@@ -103,6 +103,7 @@ private slots:
     void onReadyRead();
     void onReplyTimeout();
     void onReplyFinished();
+
 };
 
 #endif // COAP_H

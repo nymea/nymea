@@ -24,6 +24,7 @@
 #include <QDebug>
 #include <QObject>
 
+#include "libguh.h"
 #include "coapoption.h"
 #include "coappdublock.h"
 
@@ -42,7 +43,7 @@
  *      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  */
 
-class CoapPdu : public QObject
+class LIBGUH_EXPORT CoapPdu : public QObject
 {
     Q_OBJECT
     Q_ENUMS(MessageType)
@@ -149,7 +150,6 @@ public:
 
     void clear();
     bool isValid() const;
-    bool isNull() const;
 
     QByteArray pack() const;
 

@@ -49,9 +49,6 @@ private:
     CoapPdu::MessageType m_messageType;
     CoapPdu::StatusCode m_statusCode;
 
-    void setStatusCode(const CoapPdu::StatusCode &statusCode);
-    CoapPdu::StatusCode statusCode();
-
 };
 
 #endif // COAPREQUEST_H

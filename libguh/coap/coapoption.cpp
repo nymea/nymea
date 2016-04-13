@@ -82,13 +82,6 @@ CoapOption::CoapOption()
 
 }
 
-CoapOption::CoapOption(const CoapOption::Option &option, const QByteArray &data) :
-    m_option(option),
-    m_data(data)
-{
-
-}
-
 void CoapOption::setOption(const CoapOption::Option &option)
 {
     m_option = option;

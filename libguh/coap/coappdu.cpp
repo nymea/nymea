@@ -356,7 +356,11 @@ void CoapPdu::addOption(const CoapOption::Option &option, const QByteArray &data
             break;
         }
     }
-    m_options.insert(index + 1, CoapOption(option, data));
+
+    CoapOption o;
+    o.setOption(option);
+    o.setData(data);
+    m_options.insert(index + 1, o);
 }
 
 /*! Returns the block of this \l{CoapPdu}. */

@@ -56,7 +56,6 @@ public:
     };
 
     CoapOption();
-    CoapOption(const Option &option, const QByteArray &data);
 
     void setOption(const Option &option);
     Option option() const;

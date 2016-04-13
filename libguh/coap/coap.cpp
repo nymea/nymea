@@ -515,8 +515,8 @@ void Coap::processNotification(const CoapPdu &pdu, const QHostAddress &address, 
             m_observeReplyResource.insert(m_observerReply, resource);
             m_observeBlockwise.insert(m_observerReply, notificationNumber);
 
-            connect(m_observerReply, &CoapReply::timeout, this, &Coap::onReplyTimeout);
-            connect(m_observerReply, &CoapReply::finished, this, &Coap::onReplyFinished);
+            connect(m_observerReply.data(), &CoapReply::timeout, this, &Coap::onReplyTimeout);
+            connect(m_observerReply.data(), &CoapReply::finished, this, &Coap::onReplyFinished);
 
             CoapPdu pdu;
             pdu.setMessageType(m_observerReply->request().messageType());

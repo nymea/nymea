@@ -25,9 +25,10 @@
 #include <QHash>
 #include <QUrl>
 
-class CoapObserveResource
-{
+#include "libguh.h"
 
+class LIBGUH_EXPORT CoapObserveResource
+{
 public:
     CoapObserveResource();
     CoapObserveResource(const QUrl &url, const QByteArray &token);

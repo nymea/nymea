@@ -75,16 +75,3 @@ CoapPdu::MessageType CoapRequest::messageType() const
 {
     return m_messageType;
 }
-
-void CoapRequest::setStatusCode(const CoapPdu::StatusCode &statusCode)
-{
-    m_statusCode = statusCode;
-}
-
-CoapPdu::StatusCode CoapRequest::statusCode()
-{
-    return m_statusCode;
-}
-
-
-

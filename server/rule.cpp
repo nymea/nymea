@@ -184,6 +184,12 @@ bool Rule::isConsistent() const
         return false;
     }
 
+    // check if this rules is based on any time events and contains exit actions
+    if (!timeDescriptor().timeEventItems().isEmpty() && !exitActions().isEmpty()) {
+        qCWarning(dcRuleEngine) << "Rule not consistent. The exitActions will never be executed if the rule contains an timeEvents.";
+        return false;
+    }
+
     // check if there are any actions
     if (actions().isEmpty()) {
         qCWarning(dcRuleEngine) << "Rule not consistent. A rule without actions has no effect.";

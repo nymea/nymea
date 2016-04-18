@@ -131,12 +131,10 @@ void TestTimeManager::changeTimeZone()
 
 
     QDateTime currentDateTime = GuhCore::instance()->timeManager()->currentDateTime();
-    qDebug() << currentDateTime.toString();
 
     GuhCore::instance()->timeManager()->setTimeZone(timeZoneId);
 
     QDateTime newDateTime = GuhCore::instance()->timeManager()->currentDateTime();
-    qDebug() << newDateTime.toString();
 
     int offsetOriginal = currentTimeZone.offsetFromUtc(currentDateTime);
     int offsetNew = newTimeZone.offsetFromUtc(newDateTime);
@@ -228,15 +226,9 @@ void TestTimeManager::loadSaveTimeDescriptor()
     verifyRuleError(response);
 
     QVariantMap timeDescriptorMap = response.toMap().value("params").toMap().value("rule").toMap().value("timeDescriptor").toMap();
-    //qDebug() << QJsonDocument::fromVariant(timeDescriptorMap).toJson();
-
     QVariantMap timeDescriptorMapLoaded = response.toMap().value("params").toMap().value("rule").toMap().value("timeDescriptor").toMap();
-    //qDebug() << QJsonDocument::fromVariant(timeDescriptorMapLoaded).toJson();
-
-    qDebug() << endl << timeDescriptorMap << endl << endl << timeDescriptorMapLoaded;
 
     QCOMPARE(timeDescriptorMap, timeDescriptorMapLoaded);
-
 }
 
 void TestTimeManager::addTimeDescriptor_data()
@@ -505,7 +497,6 @@ void TestTimeManager::testCalendarItemHourly()
 
     // Check if should be enabled always
     if (duration == 60) {
-        qDebug() << "Enabled always";
         GuhCore::instance()->timeManager()->setTime(future);
         // Should be active since adding
         verifyRuleExecuted(mockActionIdNoParams);
@@ -1529,7 +1520,6 @@ void TestTimeManager::initTimeManager()
     GuhCore::instance()->timeManager()->stopTimer();
     qDebug() << GuhCore::instance()->timeManager()->currentTime().toString();
     qDebug() << GuhCore::instance()->timeManager()->currentDate().toString();
-    qDebug() << GuhCore::instance()->timeManager()->currentDateTime().toString();
 }
 
 void TestTimeManager::verifyRuleExecuted(const ActionTypeId &actionTypeId)

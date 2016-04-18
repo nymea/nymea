@@ -334,7 +334,7 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
 {
     Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(event.deviceId());
 
-    qCDebug(dcRuleEngine) << "got event:" << event << device->name() << event.eventTypeId();
+    qCDebug(dcRuleEngine) << "Got event:" << event << device->name() << event.eventTypeId();
 
     QList<Rule> rules;
     foreach (const RuleId &id, ruleIds()) {
@@ -346,9 +346,7 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
             // This rule seems to have only states, check on state changed
             if (containsState(rule.stateEvaluator(), event)) {
                 if (rule.stateEvaluator().evaluate()) {
-                    if (m_activeRules.contains(rule.id())) {
-                        qCDebug(dcRuleEngine) << "Rule" << rule.id() << "still in active state.";
-                    } else {
+                    if (!m_activeRules.contains(rule.id())) {
                         qCDebug(dcRuleEngine) << "Rule" << rule.id() << "entered active state.";
                         rule.setActive(true);
                         m_rules[rule.id()] = rule;
@@ -396,12 +394,10 @@ QList<Rule> RuleEngine::evaluateTime(const QDateTime &dateTime)
 
             // check if this rule is based on calendarItems
             if (!rule.timeDescriptor().calendarItems().isEmpty()) {
-                qCDebug(dcRuleEngine()) << "Evaluate CalendarItem against" << dateTime.toString("dd:MM:yyyy hh:mm") << "for rule" << rule.id().toString();
+                //qCDebug(dcRuleEngine()) << "Evaluate CalendarItem against" << dateTime.toString("dd:MM:yyyy hh:mm") << "for rule" << rule.id().toString();
                 bool active = rule.timeDescriptor().evaluate(dateTime);
                 if (active) {
-                    if (m_activeRules.contains(rule.id())) {
-                        qCDebug(dcRuleEngine) << "Rule" << rule.id().toString() << "still active.";
-                    } else {
+                    if (!m_activeRules.contains(rule.id())) {
                         qCDebug(dcRuleEngine) << "Rule" << rule.id().toString() << "active.";
                         rule.setActive(true);
                         m_rules[rule.id()] = rule;
@@ -422,7 +418,6 @@ QList<Rule> RuleEngine::evaluateTime(const QDateTime &dateTime)
             // check if this rule is based on timeEventItems
             if (!rule.timeDescriptor().timeEventItems().isEmpty()) {
                 bool valid = rule.timeDescriptor().evaluate(dateTime);
-                qCDebug(dcRuleEngine()) << "Result:" << (valid ? "valid" : "invalid");
                 if (valid) {
                     rules.append(rule);
                 }

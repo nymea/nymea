@@ -1,3 +1,10 @@
+guh (0.7.1) wily; urgency=medium
+
+  * Add Timemanager
+  * Add Time based rules
+
+ -- Simon Stürz <simon.stuerz@guh.guru>  Mon, 18 Apr 2016 13:43:01 +0200
+
 guh (0.7.0) wily; urgency=medium
 
   * Add CoAP

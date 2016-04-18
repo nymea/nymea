@@ -186,25 +186,25 @@ void TestTimeManager::loadSaveTimeDescriptor()
     action.insert("deviceId", m_mockDeviceId);
     action.insert("ruleActionParams", QVariantList());
 
-    // Exit action (with params)
-    QVariantList actionParams;
-    QVariantMap param1;
-    param1.insert("name", "mockActionParam1");
-    param1.insert("value", 12);
-    actionParams.append(param1);
-    QVariantMap param2;
-    param2.insert("name", "mockActionParam2");
-    param2.insert("value", true);
-    actionParams.append(param2);
-    exitAction.insert("actionTypeId", mockActionIdWithParams);
-    exitAction.insert("deviceId", m_mockDeviceId);
-    exitAction.insert("ruleActionParams", actionParams);
+//    // Exit action (with params)
+//    QVariantList actionParams;
+//    QVariantMap param1;
+//    param1.insert("name", "mockActionParam1");
+//    param1.insert("value", 12);
+//    actionParams.append(param1);
+//    QVariantMap param2;
+//    param2.insert("name", "mockActionParam2");
+//    param2.insert("value", true);
+//    actionParams.append(param2);
+//    exitAction.insert("actionTypeId", mockActionIdWithParams);
+//    exitAction.insert("deviceId", m_mockDeviceId);
+//    exitAction.insert("ruleActionParams", actionParams);
 
     // Create the rule map
     ruleMap.insert("name", "Time based weekly calendar rule");
     ruleMap.insert("timeDescriptor", timeDescriptor);
     ruleMap.insert("actions", QVariantList() << action);
-    ruleMap.insert("exitActions", QVariantList() << exitAction);
+    //ruleMap.insert("exitActions", QVariantList() << exitAction);
 
     // Add the rule
     QVariant response = injectAndWait("Rules.AddRule", ruleMap);

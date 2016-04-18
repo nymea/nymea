@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2016 Simon Stuerz <simon.stuerz@guh.guru>                *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -18,27 +18,53 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef LOGGINGCATEGORYS_H
-#define LOGGINGCATEGORYS_H
+#ifndef REPEATINGOPTION_H
+#define REPEATINGOPTION_H
 
-#include <QLoggingCategory>
+#include <QList>
+#include <QMetaType>
 
-// Include dcCoap
-#include "coap/coap.h"
+class QDateTime;
 
-// Core / libguh
-Q_DECLARE_LOGGING_CATEGORY(dcApplication)
-Q_DECLARE_LOGGING_CATEGORY(dcDeviceManager)
-Q_DECLARE_LOGGING_CATEGORY(dcTimeManager)
-Q_DECLARE_LOGGING_CATEGORY(dcRuleEngine)
-Q_DECLARE_LOGGING_CATEGORY(dcHardware)
-Q_DECLARE_LOGGING_CATEGORY(dcConnection)
-Q_DECLARE_LOGGING_CATEGORY(dcLogEngine)
-Q_DECLARE_LOGGING_CATEGORY(dcTcpServer)
-Q_DECLARE_LOGGING_CATEGORY(dcWebServer)
-Q_DECLARE_LOGGING_CATEGORY(dcWebSocketServer)
-Q_DECLARE_LOGGING_CATEGORY(dcJsonRpc)
-Q_DECLARE_LOGGING_CATEGORY(dcRest)
-Q_DECLARE_LOGGING_CATEGORY(dcOAuth2)
+namespace guhserver {
 
-#endif // LOGGINGCATEGORYS_H
+class RepeatingOption
+{
+    Q_GADGET
+    Q_ENUMS(RepeatingMode)
+
+public:
+    enum RepeatingMode {
+        RepeatingModeNone,
+        RepeatingModeHourly,
+        RepeatingModeDaily,
+        RepeatingModeWeekly,
+        RepeatingModeMonthly,
+        RepeatingModeYearly
+    };
+
+    RepeatingOption();
+    RepeatingOption(const RepeatingMode &mode, const QList<int> &weekDays = QList<int>(), const QList<int> &monthDays = QList<int>());
+
+    RepeatingMode mode() const;
+
+    QList<int> weekDays() const;
+    QList<int> monthDays() const;
+
+    bool isEmtpy() const;
+    bool isValid() const;
+
+    bool evaluateWeekDay(const QDateTime &dateTime) const;
+    bool evaluateMonthDay(const QDateTime &dateTime) const;
+
+private:
+    RepeatingMode m_mode;
+
+    QList<int> m_weekDays;
+    QList<int> m_monthDays;
+
+};
+
+}
+
+#endif // REPEATINGOPTION_H

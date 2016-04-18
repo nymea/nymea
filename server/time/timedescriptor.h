@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2016 Simon Stuerz <simon.stuerz@guh.guru>                *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -18,27 +18,41 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef LOGGINGCATEGORYS_H
-#define LOGGINGCATEGORYS_H
+#ifndef TIMEDESCRIPTOR_H
+#define TIMEDESCRIPTOR_H
 
-#include <QLoggingCategory>
+#include "timeeventitem.h"
+#include "calendaritem.h"
+#include "guhsettings.h"
 
-// Include dcCoap
-#include "coap/coap.h"
+namespace guhserver {
 
-// Core / libguh
-Q_DECLARE_LOGGING_CATEGORY(dcApplication)
-Q_DECLARE_LOGGING_CATEGORY(dcDeviceManager)
-Q_DECLARE_LOGGING_CATEGORY(dcTimeManager)
-Q_DECLARE_LOGGING_CATEGORY(dcRuleEngine)
-Q_DECLARE_LOGGING_CATEGORY(dcHardware)
-Q_DECLARE_LOGGING_CATEGORY(dcConnection)
-Q_DECLARE_LOGGING_CATEGORY(dcLogEngine)
-Q_DECLARE_LOGGING_CATEGORY(dcTcpServer)
-Q_DECLARE_LOGGING_CATEGORY(dcWebServer)
-Q_DECLARE_LOGGING_CATEGORY(dcWebSocketServer)
-Q_DECLARE_LOGGING_CATEGORY(dcJsonRpc)
-Q_DECLARE_LOGGING_CATEGORY(dcRest)
-Q_DECLARE_LOGGING_CATEGORY(dcOAuth2)
+class TimeDescriptor
+{
+public:
+    explicit TimeDescriptor();
 
-#endif // LOGGINGCATEGORYS_H
+    QList<TimeEventItem> timeEventItems() const;
+    void setTimeEventItems(const QList<TimeEventItem> &timeEventItems);
+
+    QList<CalendarItem> calendarItems() const;
+    void setCalendarItems(const QList<CalendarItem> &calendarItems);
+
+    bool isValid() const;
+    bool isEmpty() const;
+
+    bool evaluate(const QDateTime &dateTime) const;
+
+//    void dumpToSettings(GuhSettings &settings, const QString &groupName) const;
+//    static TimeDescriptor loadFromSettings(GuhSettings &settings, const QString &groupPrefix);
+
+
+private:
+    QList<TimeEventItem> m_timeEventItems;
+    QList<CalendarItem> m_calendarItems;
+
+};
+
+}
+
+#endif // TIMEDESCRIPTOR_H

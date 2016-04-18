@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2016 Simon Stuerz <simon.stuerz@guh.guru>                *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -18,27 +18,42 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef LOGGINGCATEGORYS_H
-#define LOGGINGCATEGORYS_H
+#ifndef TIMEEVENTITEM_H
+#define TIMEEVENTITEM_H
 
-#include <QLoggingCategory>
+#include <QDateTime>
 
-// Include dcCoap
-#include "coap/coap.h"
+#include "repeatingoption.h"
 
-// Core / libguh
-Q_DECLARE_LOGGING_CATEGORY(dcApplication)
-Q_DECLARE_LOGGING_CATEGORY(dcDeviceManager)
-Q_DECLARE_LOGGING_CATEGORY(dcTimeManager)
-Q_DECLARE_LOGGING_CATEGORY(dcRuleEngine)
-Q_DECLARE_LOGGING_CATEGORY(dcHardware)
-Q_DECLARE_LOGGING_CATEGORY(dcConnection)
-Q_DECLARE_LOGGING_CATEGORY(dcLogEngine)
-Q_DECLARE_LOGGING_CATEGORY(dcTcpServer)
-Q_DECLARE_LOGGING_CATEGORY(dcWebServer)
-Q_DECLARE_LOGGING_CATEGORY(dcWebSocketServer)
-Q_DECLARE_LOGGING_CATEGORY(dcJsonRpc)
-Q_DECLARE_LOGGING_CATEGORY(dcRest)
-Q_DECLARE_LOGGING_CATEGORY(dcOAuth2)
+namespace guhserver {
 
-#endif // LOGGINGCATEGORYS_H
+class TimeEventItem
+{
+public:
+    TimeEventItem();
+
+    QDateTime dateTime() const;
+    void setDateTime(const int &timeStamp);
+
+    QTime time() const;
+    void setTime(const QTime &time);
+
+    RepeatingOption repeatingOption() const;
+    void setRepeatingOption(const RepeatingOption &repeatingOption);
+
+    // TODO spectioalDayTime
+
+    bool isValid() const;
+
+    bool evaluate(const QDateTime &dateTime) const;
+
+private:
+    QDateTime m_dateTime;
+    QTime m_time;
+
+    RepeatingOption m_repeatingOption;
+};
+
+}
+
+#endif // TIMEEVENTITEM_H

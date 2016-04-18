@@ -32,8 +32,9 @@
 #include "ruleengine.h"
 #include "servermanager.h"
 
+#include "time/timemanager.h"
+
 #include <QObject>
-#include <QDebug>
 
 class Device;
 
@@ -68,6 +69,7 @@ public:
     RestServer *restServer() const;
     DeviceManager *deviceManager() const;
     RuleEngine *ruleEngine() const;
+    TimeManager *timeManager() const;
 
 signals:
     void eventTriggered(const Event &event);
@@ -94,13 +96,14 @@ private:
     ServerManager *m_serverManager;
     DeviceManager *m_deviceManager;
     RuleEngine *m_ruleEngine;
-
     LogEngine *m_logger;
+    TimeManager *m_timeManager;
 
     QHash<ActionId, Action> m_pendingActions;
 
 private slots:
     void gotEvent(const Event &event);
+    void onDateTimeChanged(const QDateTime &dateTime);
     void actionExecutionFinished(const ActionId &id, DeviceManager::DeviceError status);
 
 };

@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2016 Simon Stuerz <simon.stuerz@guh.guru>                *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -18,27 +18,51 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef LOGGINGCATEGORYS_H
-#define LOGGINGCATEGORYS_H
+#ifndef CALENDARITEM_H
+#define CALENDARITEM_H
 
-#include <QLoggingCategory>
+#include <QTime>
 
-// Include dcCoap
-#include "coap/coap.h"
+#include "repeatingoption.h"
 
-// Core / libguh
-Q_DECLARE_LOGGING_CATEGORY(dcApplication)
-Q_DECLARE_LOGGING_CATEGORY(dcDeviceManager)
-Q_DECLARE_LOGGING_CATEGORY(dcTimeManager)
-Q_DECLARE_LOGGING_CATEGORY(dcRuleEngine)
-Q_DECLARE_LOGGING_CATEGORY(dcHardware)
-Q_DECLARE_LOGGING_CATEGORY(dcConnection)
-Q_DECLARE_LOGGING_CATEGORY(dcLogEngine)
-Q_DECLARE_LOGGING_CATEGORY(dcTcpServer)
-Q_DECLARE_LOGGING_CATEGORY(dcWebServer)
-Q_DECLARE_LOGGING_CATEGORY(dcWebSocketServer)
-Q_DECLARE_LOGGING_CATEGORY(dcJsonRpc)
-Q_DECLARE_LOGGING_CATEGORY(dcRest)
-Q_DECLARE_LOGGING_CATEGORY(dcOAuth2)
+namespace guhserver {
 
-#endif // LOGGINGCATEGORYS_H
+class CalendarItem
+{
+public:
+    CalendarItem();
+
+    QDateTime dateTime() const;
+    void setDateTime(const QDateTime &dateTime);
+
+    QTime startTime() const;
+    void setStartTime(const QTime &startTime);
+
+    uint duration() const;
+    void setDuration(const uint &duration);
+
+    RepeatingOption repeatingOption() const;
+    void setRepeatingOption(const RepeatingOption &repeatingOption);
+
+    bool isValid() const;
+    bool evaluate(const QDateTime &dateTime) const;
+
+private:
+    QDateTime m_dateTime;
+    QTime m_startTime;
+    QTime m_endTime;
+    uint m_duration;
+
+    RepeatingOption m_repeatingOption;
+
+    bool evaluateHourly(const QDateTime &dateTime) const;
+    bool evaluateDaily(const QDateTime &dateTime) const;
+    bool evaluateWeekly(const QDateTime &dateTime) const;
+    bool evaluateMonthly(const QDateTime &dateTime) const;
+    bool evaluateYearly(const QDateTime &dateTime) const;
+
+};
+
+}
+
+#endif // CALENDARITEM_H

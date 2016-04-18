@@ -278,7 +278,7 @@ void TestJSONRPC::ruleAddedRemovedNotifications()
     QVariantMap params;
     params.insert("name", "Test Rule notifications");
     params.insert("actions", QVariantList() << actionNoParams);
-    params.insert("eventDescriptor", eventDescriptor);
+    params.insert("eventDescriptors", QVariantList() << eventDescriptor);
     params.insert("stateEvaluator", stateEvaluator);
 
     QVariant response = injectAndWait("Rules.AddRule", params);

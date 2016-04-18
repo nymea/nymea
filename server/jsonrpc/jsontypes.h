@@ -39,6 +39,11 @@
 #include "logging/logentry.h"
 #include "logging/logfilter.h"
 
+#include "time/calendaritem.h"
+#include "time/repeatingoption.h"
+#include "time/timedescriptor.h"
+#include "time/timeeventitem.h"
+
 #include <QObject>
 
 #include <QVariantMap>
@@ -94,6 +99,7 @@ public:
         Bool,
         Variant,
         Color,
+        Time,
         Object
     };
 
@@ -115,6 +121,7 @@ public:
     DECLARE_TYPE(loggingSource, "LoggingSource", Logging, LoggingSource)
     DECLARE_TYPE(loggingLevel, "LoggingLevel", Logging, LoggingLevel)
     DECLARE_TYPE(loggingEventType, "LoggingEventType", Logging, LoggingEventType)
+    DECLARE_TYPE(repeatingMode, "RepeatingMode", RepeatingOption, RepeatingMode)
 
     DECLARE_OBJECT(paramType, "ParamType")
     DECLARE_OBJECT(param, "Param")
@@ -138,8 +145,12 @@ public:
     DECLARE_OBJECT(rule, "Rule")
     DECLARE_OBJECT(ruleDescription, "RuleDescription")
     DECLARE_OBJECT(logEntry, "LogEntry")
+    DECLARE_OBJECT(timeDescriptor, "TimeDescriptor")
+    DECLARE_OBJECT(calendarItem, "CalendarItem")
+    DECLARE_OBJECT(timeEventItem, "TimeEventItem")
+    DECLARE_OBJECT(repeatingOption, "RepeatingOption")
 
-    // pack types    
+    // pack types
     static QVariantMap packEventType(const EventType &eventType);
     static QVariantMap packEvent(const Event &event);
     static QVariantMap packEventDescriptor(const EventDescriptor &event);
@@ -160,12 +171,17 @@ public:
     static QVariantMap packDevice(Device *device);
     static QVariantMap packDeviceDescriptor(const DeviceDescriptor &descriptor);
     static QVariantMap packRule(const Rule &rule);
-    static QVariantList packRules(const QList<Rule> rules);
     static QVariantMap packRuleDescription(const Rule &rule);
     static QVariantMap packLogEntry(const LogEntry &logEntry);
-    static QVariantList packCreateMethods(DeviceClass::CreateMethods createMethods);
+    static QVariantMap packRepeatingOption(const RepeatingOption &option);
+    static QVariantMap packCalendarItem(const CalendarItem &calendarItem);
+    static QVariantMap packTimeEventItem(const TimeEventItem &timeEventItem);
+    static QVariantMap packTimeDescriptor(const TimeDescriptor &timeDescriptor);
+
 
     // pack resources
+    static QVariantList packRules(const QList<Rule> rules);
+    static QVariantList packCreateMethods(DeviceClass::CreateMethods createMethods);
     static QVariantList packSupportedVendors();
     static QVariantList packSupportedDevices(const VendorId &vendorId);
     static QVariantList packConfiguredDevices();
@@ -185,6 +201,8 @@ public:
     // unpack Types
     static Param unpackParam(const QVariantMap &paramMap);
     static ParamList unpackParams(const QVariantList &paramList);
+    static Rule unpackRule(const QVariantMap &ruleMap);
+    static RuleAction unpackRuleAction(const QVariantMap &ruleActionMap);
     static RuleActionParam unpackRuleActionParam(const QVariantMap &ruleActionParamMap);
     static RuleActionParamList unpackRuleActionParams(const QVariantList &ruleActionParamList);
     static ParamDescriptor unpackParamDescriptor(const QVariantMap &paramDescriptorMap);
@@ -193,6 +211,10 @@ public:
     static StateEvaluator unpackStateEvaluator(const QVariantMap &stateEvaluatorMap);
     static StateDescriptor unpackStateDescriptor(const QVariantMap &stateDescriptorMap);
     static LogFilter unpackLogFilter(const QVariantMap &logFilterMap);
+    static RepeatingOption unpackRepeatingOption(const QVariantMap &repeatingOptionMap);
+    static CalendarItem unpackCalendarItem(const QVariantMap &calendarItemMap);
+    static TimeEventItem unpackTimeEventItem(const QVariantMap &timeEventItemMap);
+    static TimeDescriptor unpackTimeDescriptor(const QVariantMap &timeDescriptorMap);
 
     // validate
     static QPair<bool, QString> validateMap(const QVariantMap &templateMap, const QVariantMap &map);
@@ -201,15 +223,6 @@ public:
     static QPair<bool, QString> validateVariant(const QVariant &templateVariant, const QVariant &variant);
     static QPair<bool, QString> validateEnum(const QVariantList &enumList, const QVariant &value);
     static QPair<bool, QString> validateBasicType(const QVariant &variant);
-
-    // rule validation helper methods
-    static bool checkEventDescriptors(const QList<EventDescriptor> eventDescriptors, const EventTypeId &eventTypeId);
-    static QVariant::Type getActionParamType(const ActionTypeId &actionTypeId, const QString &paramName);
-    static QVariant::Type getEventParamType(const EventTypeId &eventTypeId, const QString &paramName);
-    static RuleEngine::RuleError verifyRuleConsistency(const QVariantMap &params);
-    static QPair<QList<EventDescriptor>, RuleEngine::RuleError> verifyEventDescriptors(const QVariantMap &params);
-    static QPair<QList<RuleAction>, RuleEngine::RuleError> verifyActions(const QVariantMap &params, const QList<EventDescriptor> &eventDescriptorList);
-    static QPair<QList<RuleAction>, RuleEngine::RuleError> verifyExitActions(const QVariantMap &params);
 
 private:
     static bool s_initialized;

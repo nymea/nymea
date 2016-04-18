@@ -63,7 +63,6 @@ void HttpDaemon::incomingConnection(qintptr socket)
 
 void HttpDaemon::actionExecuted(const ActionTypeId &actionTypeId)
 {
-    qCDebug(dcMockDevice) << "Log actions executed" << actionTypeId.toString();
     m_actionList.append(qMakePair<ActionTypeId, QDateTime>(actionTypeId, QDateTime::currentDateTime()));
 }
 
@@ -119,8 +118,6 @@ void HttpDaemon::discardClient()
 {
     QTcpSocket* socket = (QTcpSocket*)sender();
     socket->deleteLater();
-
-    qCDebug(dcMockDevice) << "Connection closed";
 }
 
 QString HttpDaemon::generateHeader()

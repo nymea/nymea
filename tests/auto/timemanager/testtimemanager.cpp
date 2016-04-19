@@ -212,6 +212,12 @@ void TestTimeManager::loadSaveTimeDescriptor()
     QVariantMap timeDescriptorMapLoaded = response.toMap().value("params").toMap().value("rule").toMap().value("timeDescriptor").toMap();
 
     QCOMPARE(timeDescriptorMap, timeDescriptorMapLoaded);
+
+    // REMOVE rule
+    QVariantMap removeParams;
+    removeParams.insert("ruleId", ruleId);
+    response = injectAndWait("Rules.RemoveRule", removeParams);
+    verifyRuleError(response);
 }
 
 void TestTimeManager::addTimeDescriptor_data()
@@ -500,8 +506,6 @@ void TestTimeManager::testCalendarItemHourly()
             GuhCore::instance()->timeManager()->setTime(QDateTime(currentDateTime.date(), QTime(future.time().hour(), 10)));
             verifyRuleExecuted(mockActionIdWithParams);
             cleanupMockHistory();
-            cleanupMockHistory();
-
             // inactive unchanged
             GuhCore::instance()->timeManager()->setTime(QDateTime(currentDateTime.date(), QTime(future.time().hour(), 11)));
             verifyRuleNotExecuted();
@@ -970,12 +974,14 @@ void TestTimeManager::testCalendarYearlyDateTime()
     GuhCore::instance()->timeManager()->setTime(dateTime);
     verifyRuleExecuted(mockActionIdNoParams);
     cleanupMockHistory();
+    cleanupMockHistory();
     // active unchanged
     GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(duration * 30));
     verifyRuleNotExecuted();
     // inactive
     GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(duration * 60));
     verifyRuleExecuted(mockActionIdWithParams);
+    cleanupMockHistory();
     cleanupMockHistory();
     // inactive unchanged
     GuhCore::instance()->timeManager()->setTime(dateTime.addSecs((duration + 1) * 60));
@@ -992,6 +998,7 @@ void TestTimeManager::testCalendarYearlyDateTime()
     GuhCore::instance()->timeManager()->setTime(dateTime);
     verifyRuleExecuted(mockActionIdNoParams);
     cleanupMockHistory();
+    cleanupMockHistory();
     // active unchanged
     GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(duration * 30));
     verifyRuleNotExecuted();
@@ -999,6 +1006,7 @@ void TestTimeManager::testCalendarYearlyDateTime()
     GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(duration * 60));
     verifyRuleExecuted(mockActionIdWithParams);
     cleanupMockHistory();
+
     // inactive unchanged
     GuhCore::instance()->timeManager()->setTime(dateTime.addSecs((duration + 1) * 60));
     verifyRuleNotExecuted();
@@ -1503,6 +1511,7 @@ void TestTimeManager::testEnableDisableTimeRule()
 
 void TestTimeManager::initTimeManager()
 {
+    cleanupMockHistory();
     GuhCore::instance()->timeManager()->stopTimer();
     qDebug() << GuhCore::instance()->timeManager()->currentTime().toString();
     qDebug() << GuhCore::instance()->timeManager()->currentDate().toString();

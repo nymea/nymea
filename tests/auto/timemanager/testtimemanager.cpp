@@ -500,12 +500,14 @@ void TestTimeManager::testCalendarItemHourly()
             GuhCore::instance()->timeManager()->setTime(QDateTime(currentDateTime.date(), QTime(future.time().hour(), 10)));
             verifyRuleExecuted(mockActionIdWithParams);
             cleanupMockHistory();
+            cleanupMockHistory();
+
             // inactive unchanged
             GuhCore::instance()->timeManager()->setTime(QDateTime(currentDateTime.date(), QTime(future.time().hour(), 11)));
             verifyRuleNotExecuted();
 
-            // One hour "Back to the future"
-            future = future.addSecs(3*60*60);
+            // 'i' hours "Back to the future"
+            future = future.addSecs(i*60*60);
         }
     }
 

@@ -38,6 +38,7 @@
     \quotefile plugins/deviceplugins/ws2812/devicepluginws2812.json
 */
 
+
 #include "devicepluginws2812.h"
 #include "plugin/device.h"
 #include "plugininfo.h"
@@ -199,7 +200,60 @@ DeviceManager::DeviceError DevicePluginWs2812::executeAction(Device *device, con
         return DeviceManager::DeviceErrorAsync;
 
 
-    } else if(action.actionTypeId() == maxPixActionTypeId) {
+    } else if(action.actionTypeId() == speedActionTypeId) {
+
+        QUrl url;
+        url.setScheme("coap");
+        url.setHost(device->paramValue("host").toString());
+        url.setPath("/a/speed");
+
+        int speed = action.param("speed").value().toInt();
+
+        qCDebug(dcWs2812) << "Set Speed:" << speed;
+
+        QByteArray message = QString("bpm=%1").arg(QString::number(speed)).toUtf8();
+        qCDebug(dcWs2812) << "Sending" << url.toString() << message;
+
+        CoapReply *reply = m_coap->post(CoapRequest(url), message);
+        if (reply->isFinished() && reply->error() != CoapReply::NoError) {
+            qCWarning(dcWs2812) << "CoAP reply finished with error" << reply->errorString();
+            setReachable(device, false);
+            reply->deleteLater();
+            return DeviceManager::DeviceErrorHardwareFailure;
+        }
+        m_setSpeed.insert(reply, action);
+        m_asyncActions.insert(action.id(), device);
+        return DeviceManager::DeviceErrorAsync;
+
+
+    }else if(action.actionTypeId() == brightnessActionTypeId) {
+
+        QUrl url;
+        url.setScheme("coap");
+        url.setHost(device->paramValue("host").toString());
+        url.setPath("/a/brightness");
+
+
+        int brightness = action.param("brightness").value().toInt();
+
+        qCDebug(dcWs2812) << "Set brightness:" << brightness;
+
+        QByteArray message = QString("percent=%1").arg(QString::number(brightness)).toUtf8();
+        qCDebug(dcWs2812) << "Sending" << url.toString() << message;
+
+        CoapReply *reply = m_coap->post(CoapRequest(url), message);
+        if (reply->isFinished() && reply->error() != CoapReply::NoError) {
+            qCWarning(dcWs2812) << "CoAP reply finished with error" << reply->errorString();
+            setReachable(device, false);
+            reply->deleteLater();
+            return DeviceManager::DeviceErrorHardwareFailure;
+        }
+        m_setBrightness.insert(reply, action);
+        m_asyncActions.insert(action.id(), device);
+        return DeviceManager::DeviceErrorAsync;
+
+
+    }else if(action.actionTypeId() == maxPixActionTypeId) {
 
         QUrl url;
         url.setScheme("coap");
@@ -232,13 +286,11 @@ DeviceManager::DeviceError DevicePluginWs2812::executeAction(Device *device, con
         return DeviceManager::DeviceErrorAsync;
 
 
-    } else if(action.actionTypeId() == effectModeActionTypeId) {
-
-        //int effectmode = createSetColorRequest(action.param("color").value().value<QColor>());
+    }else if(action.actionTypeId() == effectModeActionTypeId) {
 
         int effectmode = 0;
 
-        QString effectModeString = action.param("effect").value().toString();
+        QString effectModeString = action.param("effect mode").value().toString();
 
 
         QUrl url;
@@ -246,20 +298,10 @@ DeviceManager::DeviceError DevicePluginWs2812::executeAction(Device *device, con
         url.setHost(device->paramValue("host").toString());
         url.setPath("/a/effect");
 
-
-        /*"Off",
-        "Color On",
-        "Color Wave",
-        "Color Fade",
-        "Color Flash",
-        "Rainbow Wave",
-        "Rainbow Flash",
-        "Knight Rider",
-        "Fire"
-        */
-
         qCDebug(dcWs2812) << "Set effect mode to:" << effectModeString;
 
+
+        //TODO switch to enum
         if(effectModeString == "Off") {
             effectmode = 0;
         } else if (effectModeString == "Color On") {
@@ -278,6 +320,8 @@ DeviceManager::DeviceError DevicePluginWs2812::executeAction(Device *device, con
             effectmode = 7;
         }else if (effectModeString == "Fire") {
             effectmode = 8;
+        }else if (effectModeString == "Tricolore") {
+            effectmode = 9;
         }
 
         QByteArray payload = QString("mode=%1").arg(QString::number(effectmode)).toUtf8();
@@ -295,10 +339,43 @@ DeviceManager::DeviceError DevicePluginWs2812::executeAction(Device *device, con
         m_asyncActions.insert(action.id(), device);
         return DeviceManager::DeviceErrorAsync;
 
+    }else if(action.actionTypeId() == tcolor1ActionTypeId || action.actionTypeId() == tcolor2ActionTypeId || action.actionTypeId() == tcolor3ActionTypeId) {
+
+        QUrl url;
+        url.setScheme("coap");
+        url.setHost(device->paramValue("host").toString());
+        url.setPath("/a/tcolor");
+
+
+        /*
+         *          TODO
+         *          Current Implementation is just a temporary workaround
+         *
+         *
+         */
+
+        if(action.actionTypeId() == tcolor1ActionTypeId){
+            tColor1 = action.param("tricolore color 1").value().value<QColor>().toRgb();
+        } else if(action.actionTypeId() == tcolor2ActionTypeId){
+            tColor2 = action.param("tricolore color 2").value().value<QColor>().toRgb();
+        } else if(action.actionTypeId() == tcolor3ActionTypeId){
+            tColor3 = action.param("tricolore color 3").value().value<QColor>().toRgb();
+        }
+
+        QByteArray message = "color=" + tColor1.name().remove("#").toUtf8() + tColor2.name().remove("#").toUtf8() + tColor3.name().remove("#").toUtf8();
+        qCDebug(dcWs2812) << "Sending" << url.toString() << message;
+
+        CoapReply *reply = m_coap->post(CoapRequest(url), message);
+        if (reply->isFinished() && reply->error() != CoapReply::NoError) {
+            qCWarning(dcWs2812) << "CoAP reply finished with error" << reply->errorString();
+            setReachable(device, false);
+            reply->deleteLater();
+            return DeviceManager::DeviceErrorHardwareFailure;
+        }
+        m_setTColor.insert(reply, action);
+        m_asyncActions.insert(action.id(), device);
+        return DeviceManager::DeviceErrorAsync;
     }
-
-
-
 
     return DeviceManager::DeviceErrorActionTypeNotFound;
 }
@@ -344,7 +421,23 @@ void DevicePluginWs2812::updateColor(Device *device)
         reply->deleteLater();
         return;
     }
+    m_updateReplies.insert(reply, device);
+}
 
+void DevicePluginWs2812::updateTricolore(Device *device)
+{
+    qCDebug(dcWs2812) << "Update" << device->name() << "tricolore value";
+    QUrl url;
+    url.setScheme("coap");
+    url.setHost(device->paramValue("host").toString());
+    url.setPath("/a/tcolor");
+    CoapReply *reply = m_coap->get(CoapRequest(url));
+    if (reply->isFinished() && reply->error() != CoapReply::NoError) {
+        qCWarning(dcWs2812) << "CoAP reply finished with error" << reply->errorString();
+        setReachable(device, false);
+        reply->deleteLater();
+        return;
+    }
     m_updateReplies.insert(reply, device);
 }
 
@@ -404,9 +497,17 @@ void DevicePluginWs2812::enableNotifications(Device *device)
     url.setPath("/a/color");
     m_enableNotification.insert(m_coap->enableResourceNotifications(CoapRequest(url)), device);
 
+    url.setPath("/a/speed");
+    m_enableNotification.insert(m_coap->enableResourceNotifications(CoapRequest(url)), device);
+
+    url.setPath("/a/brightness");
+    m_enableNotification.insert(m_coap->enableResourceNotifications(CoapRequest(url)), device);
+
     url.setPath("/a/effect");
     m_enableNotification.insert(m_coap->enableResourceNotifications(CoapRequest(url)), device);
 
+    url.setPath("/a/tcolor");
+    m_enableNotification.insert(m_coap->enableResourceNotifications(CoapRequest(url)), device);
 }
 
 void DevicePluginWs2812::setReachable(Device *device, const bool &reachable)
@@ -423,6 +524,7 @@ void DevicePluginWs2812::setReachable(Device *device, const bool &reachable)
             updateColor(device);
             updateEffect(device);
             updateMaxPix(device);
+            updateTricolore(device);
 
             // Make sure the notifications are enabled
             enableNotifications(device);
@@ -495,11 +597,59 @@ void DevicePluginWs2812::coapReplyFinished(CoapReply *reply)
             device->setStateValue(batteryStateTypeId, reply->payload().toDouble());
         } else if (urlPath == "/a/color") {
             qCDebug(dcWs2812()) << "Updated color value:" << reply->payload();
-            device->setStateValue(effectColorStateTypeId, reply->payload());
-        } else if (urlPath == "/p/maxpix") {
-            qCDebug(dcWs2812()) << "Updated max pix value:" << reply->payload();
-            device->setStateValue(maxPixStateTypeId, reply->payload());
+            device->setStateValue(effectColorStateTypeId, QVariant::fromValue(reply->payload()));
+        } else if (urlPath == "/a/effect") {
+
+            qCDebug(dcWs2812()) << "Updated effect value:" << reply->payload();
+            int effectmode  =  reply->payload().toInt();
+            QString effectModeString;
+
+            switch (effectmode) {
+               case 0:
+                    effectModeString == "Off";
+                    break;
+                case 1:
+                     effectModeString == "Color On";
+                     break;
+                case 2:
+                     effectModeString == "Color Wave";
+                     break;
+                case 3:
+                     effectModeString == "Color Fade";
+                     break;
+                case 4:
+                     effectModeString == "Color Flash";
+                     break;
+                case 5:
+                     effectModeString == "Rainbow Wave";
+                     break;
+                case 6:
+                     effectModeString == "Rainbow Flash";
+                     break;
+                case 7:
+                     effectModeString == "Knight Rider";
+                     break;
+                case 8:
+                     effectModeString == "Fire";
+                     break;
+                case 9:
+                     effectModeString == "Tricolore";
+                     break;
+                default:
+                    effectModeString == "Off";
+            }
+            device->setStateValue(effectModeStateTypeId, effectModeString);
+        }else if (urlPath == "/a/brightness") {
+            qCDebug(dcWs2812()) << "Updated brightness value:" << reply->payload().toInt();
+            device->setStateValue(brightnessStateTypeId, reply->payload().toInt());
+        }else if (urlPath == "/a/speed") {
+            qCDebug(dcWs2812()) << "Updated speed value:" << reply->payload().toInt();
+            device->setStateValue(speedStateTypeId, reply->payload().toInt());
+        }else if (urlPath == "/p/maxpix") {
+            qCDebug(dcWs2812()) << "Updated max pix value:" << reply->payload().toInt();
+            device->setStateValue(maxPixStateTypeId, reply->payload().toInt());
         }
+
 
     } else if (m_setEffect.contains(reply)) {
         Action action = m_setEffect.take(reply);
@@ -524,8 +674,38 @@ void DevicePluginWs2812::coapReplyFinished(CoapReply *reply)
         // Tell the user about the action execution result
         emit actionExecutionFinished(action.id(), DeviceManager::DeviceErrorNoError);
 
-    } else if (m_setColor.contains(reply)) {
+    }else if (m_setColor.contains(reply)) {
         Action action = m_setColor.take(reply);
+        Device *device = m_asyncActions.take(action.id());
+
+        // check CoAP reply error
+        if (reply->error() != CoapReply::NoError) {
+            qCWarning(dcWs2812) << "CoAP set color reply finished with error" << reply->errorString();
+            setReachable(device, false);
+            reply->deleteLater();
+            emit actionExecutionFinished(action.id(), DeviceManager::DeviceErrorHardwareFailure);
+            return;
+        }
+
+        // Check CoAP status code
+        if (reply->statusCode() != CoapPdu::Content) {
+            qCWarning(dcWs2812) << "Set color status code error:" << reply;
+            reply->deleteLater();
+            emit actionExecutionFinished(action.id(), DeviceManager::DeviceErrorHardwareFailure);
+            return;
+        }
+        QString tcolor = action.param("color").value().toByteArray();
+
+        // Update the state here, so we don't have to wait for the notification
+        device->setStateValue(tcolor1StateTypeId, tcolor.left(6));
+        device->setStateValue(tcolor2StateTypeId, tcolor.mid(6,6));
+        device->setStateValue(tcolor3StateTypeId, tcolor.right(6));
+
+        // Tell the user about the action execution result
+        emit actionExecutionFinished(action.id(), DeviceManager::DeviceErrorNoError);
+
+    } else if (m_setTColor.contains(reply)) {
+        Action action = m_setTColor.take(reply);
         Device *device = m_asyncActions.take(action.id());
 
         // check CoAP reply error
@@ -550,7 +730,59 @@ void DevicePluginWs2812::coapReplyFinished(CoapReply *reply)
         // Tell the user about the action execution result
         emit actionExecutionFinished(action.id(), DeviceManager::DeviceErrorNoError);
 
-    }  else if (m_setPix.contains(reply)) {
+    }  else if (m_setBrightness.contains(reply)) {
+        Action action = m_setBrightness.take(reply);
+        Device *device = m_asyncActions.take(action.id());
+
+        // check CoAP reply error
+        if (reply->error() != CoapReply::NoError) {
+            qCWarning(dcWs2812) << "CoAP set brightness reply finished with error" << reply->errorString();
+            setReachable(device, false);
+            reply->deleteLater();
+            emit actionExecutionFinished(action.id(), DeviceManager::DeviceErrorHardwareFailure);
+            return;
+        }
+
+        // Check CoAP status code
+        if (reply->statusCode() != CoapPdu::Content) {
+            qCWarning(dcWs2812) << "Set brightness code error:" << reply;
+            reply->deleteLater();
+            emit actionExecutionFinished(action.id(), DeviceManager::DeviceErrorHardwareFailure);
+            return;
+        }
+
+        // Update the state here, so we don't have to wait for the notification
+        device->setStateValue(brightnessStateTypeId, action.param("brightness").value().toInt());
+        // Tell the user about the action execution result
+        emit actionExecutionFinished(action.id(), DeviceManager::DeviceErrorNoError);
+
+    }else if (m_setSpeed.contains(reply)) {
+        Action action = m_setSpeed.take(reply);
+        Device *device = m_asyncActions.take(action.id());
+
+        // check CoAP reply error
+        if (reply->error() != CoapReply::NoError) {
+            qCWarning(dcWs2812) << "CoAP set speed reply finished with error" << reply->errorString();
+            setReachable(device, false);
+            reply->deleteLater();
+            emit actionExecutionFinished(action.id(), DeviceManager::DeviceErrorHardwareFailure);
+            return;
+        }
+
+        // Check CoAP status code
+        if (reply->statusCode() != CoapPdu::Content) {
+            qCWarning(dcWs2812) << "Set speed code error:" << reply;
+            reply->deleteLater();
+            emit actionExecutionFinished(action.id(), DeviceManager::DeviceErrorHardwareFailure);
+            return;
+        }
+
+        // Update the state here, so we don't have to wait for the notification
+        device->setStateValue(speedStateTypeId, action.param("speed").value().toInt());
+        // Tell the user about the action execution result
+        emit actionExecutionFinished(action.id(), DeviceManager::DeviceErrorNoError);
+
+    }else if (m_setPix.contains(reply)) {
         Action action = m_setPix.take(reply);
         Device *device = m_asyncActions.take(action.id());
 
@@ -615,7 +847,52 @@ void DevicePluginWs2812::onNotificationReceived(const CoapObserveResource &resou
     if (resource.url().path() == "/s/battery") {
         device->setStateValue(batteryStateTypeId, payload.toDouble());
     }else if (resource.url().path() == "/a/color") {
-        device->setStateValue(effectColorStateTypeId, QColor(QString(payload)).toRgb());
+        device->setStateValue(effectColorStateTypeId, QVariant::fromValue(payload));
+    }else if (resource.url().path() == "/a/effect") {
+        int effectmode  =  payload.toInt();
+        QString effectModeString;
+
+        switch (effectmode) {
+           case 0:
+                effectModeString == "Off";
+                break;
+            case 1:
+                 effectModeString == "Color On";
+                 break;
+            case 2:
+                 effectModeString == "Color Wave";
+                 break;
+            case 3:
+                 effectModeString == "Color Fade";
+                 break;
+            case 4:
+                 effectModeString == "Color Flash";
+                 break;
+            case 5:
+                 effectModeString == "Rainbow Wave";
+                 break;
+            case 6:
+                 effectModeString == "Rainbow Flash";
+                 break;
+            case 7:
+                 effectModeString == "Knight Rider";
+                 break;
+            case 8:
+                 effectModeString == "Fire";
+                 break;
+            case 9:
+                 effectModeString == "Tricolore";
+                 break;
+            default:
+                effectModeString == "Off";
+        }
+
+
+        device->setStateValue(effectModeStateTypeId, effectModeString);
+    }else if (resource.url().path() == "/a/brightness") {
+        device->setStateValue(effectColorStateTypeId, payload.toInt());
+    }else if (resource.url().path() == "/a/speed") {
+        device->setStateValue(effectColorStateTypeId, payload.toInt());
     }else if (resource.url().path() == "/p/maxpix") {
         device->setStateValue(maxPixStateTypeId, payload.toInt());
     }

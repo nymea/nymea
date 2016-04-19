@@ -26,6 +26,7 @@
 #include "types/action.h"
 #include "coap/coap.h"
 
+#include <QColor>
 #include <QHash>
 
 class DevicePluginWs2812 : public DevicePlugin
@@ -49,6 +50,7 @@ public:
     DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
 
 private:
+
     QPointer<Coap> m_coap;
     QHash<QNetworkReply *, DeviceClassId> m_asyncNodeScans;
     QHash<CoapReply *, Device *> m_enableNotification;
@@ -63,6 +65,9 @@ private:
     QHash<CoapReply *, Action> m_setColor;
     QHash<CoapReply *, Action> m_setEffect;
     QHash<CoapReply *, Action> m_setPix;
+    QHash<CoapReply *, Action> m_setBrightness;
+    QHash<CoapReply *, Action> m_setSpeed;
+    QHash<CoapReply *, Action> m_setTColor;
 
     void pingDevice(Device *device);
 
@@ -70,6 +75,7 @@ private:
     void updateColor(Device *device);
     void updateEffect(Device *device);
     void updateMaxPix(Device *device);
+    void updateTricolore(Device *device);
 
     void enableNotifications(Device *device);
 
@@ -77,6 +83,10 @@ private:
 
     bool deviceAlreadyAdded(const QHostAddress &address);
     Device *findDevice(const QHostAddress &address);
+
+    QColor tColor1;
+    QColor tColor2;
+    QColor tColor3;
 
 private slots:
     void coapReplyFinished(CoapReply *reply);

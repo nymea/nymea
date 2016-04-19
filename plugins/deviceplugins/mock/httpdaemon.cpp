@@ -101,15 +101,15 @@ void HttpDaemon::readClient()
             qCDebug(dcMockDevice) << "Clear action history";
             m_actionList.clear();
         }
+
         if (tokens[0] == "GET") {
             QTextStream os(socket);
             os.setAutoDetectUnicode(true);
             os << generateWebPage();
             socket->close();
 
-            if (socket->state() == QTcpSocket::UnconnectedState) {
+            if (socket->state() == QTcpSocket::UnconnectedState)
                 delete socket;
-            }
         }
     }
 }

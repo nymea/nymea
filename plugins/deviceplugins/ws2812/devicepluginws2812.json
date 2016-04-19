@@ -14,10 +14,10 @@
         {
             "name": "guh",
             "idName": "guh",
-            "id": "419435fa-58bf-4ba0-b6f5-156ce081bb68",
+            "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6",
             "deviceClasses": [
                 {
-                    "deviceClassId": "3242db46-5c6f-42d6-9001-753150763385",
+                    "deviceClassId": "3142db46-5c6f-42d6-9001-753150763385",
                     "name": "WS2812",
                     "idName": "ws2812",
                     "createMethods": ["discovery"],
@@ -58,40 +58,82 @@
 
                         },
                         {
+                            "id": "01da8dbc-1ac8-4d18-bc17-fc4b4c591693",
+                            "idName": "brightness",
+                            "name": "brightness",
+                            "type": "int",
+                            "unit": "Percentage",
+                            "defaultValue": 0,
+                            "minValue": 0,
+                            "maxValue": 100,
+                            "writable": true
+                        },
+                        {
                             "id": "ac372b72-c2ae-4f0f-9fca-bd7cf654603a",
                             "idName": "maxPix",
                             "name": "leds",
                             "type": "int",
-                            "unit": "None",
-                            "defaultValue": 0,
+                            "defaultValue": 240,
                             "minValue": 0,
                             "maxValue": 240,
                             "writable": true
-                        }
-                    ],
-                    "actionTypes": [
+                        },
+                        {
+                            "id": "e53ae524-ca10-49c5-b530-e414779ecc1d",
+                            "idName": "speed",
+                            "name": "speed",
+                            "type": "int",
+                            "defaultValue": 60,
+                            "minValue": 60,
+                            "maxValue": 240,
+                            "writable": true
+                        },
                         {
                             "id": "f4fe5d31-1edb-4944-9ddb-c89e7da8bee7",
                             "idName": "effectMode",
-                            "name": "set effect mode",
-                            "paramTypes": [
-                                {
-                                    "name": "effect",
-                                    "type": "QString",
-                                    "allowedValues": [
-                                        "Off",
-                                        "Color On",
-                                        "Color Wave",
-                                        "Color Fade",
-                                        "Color Flash",
-                                        "Rainbow Wave",
-                                        "Rainbow Flash",
-                                        "Knight Rider",
-                                        "Fire"
-                                    ],
-                                    "defaultValue": "Off"
-                                }
-                            ]
+                            "name": "effect mode",
+                            "type": "QString",
+                            "writable": true,
+                            "possibleValues": [
+                                "Off",
+                                "Color On",
+                                "Color Wave",
+                                "Color Fade",
+                                "Color Flash",
+                                "Rainbow Wave",
+                                "Rainbow Flash",
+                                "Knight Rider",
+                                "Fire",
+                                "Tricolore"
+                            ],
+                            "defaultValue": "Off"
+                        },
+                        {
+                            "id": "8fe2e42a-7b9d-4c76-ae77-355759c81350",
+                            "name": "tricolore color 1",
+                            "idName": "tcolor1",
+                            "type": "QColor",
+                            "defaultValue": "#000000",
+                            "writable": true
+
+                        },
+                        {
+                            "id": "dd4ad65b-007a-4eae-8ce0-b76d6cbf093e",
+                            "name": "tricolore color 2",
+                            "idName": "tcolor2",
+                            "type": "QColor",
+                            "defaultValue": "#000000",
+                            "writable": true
+
+                        },
+                        {
+                            "id": "97c83be0-7ba7-4758-b52b-d997a80bfbe5",
+                            "name": "tricolore color 3",
+                            "idName": "tcolor3",
+                            "type": "QColor",
+                            "defaultValue": "#000000",
+                            "writable": true
+
                         }
                     ]
                 }

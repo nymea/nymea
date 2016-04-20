@@ -22,6 +22,7 @@
 #include "guhcore.h"
 #include "devicemanager.h"
 #include "mocktcpserver.h"
+#include "rest/restresource.h"
 #include "webserver.h"
 
 #include <QtTest/QtTest>
@@ -42,6 +43,8 @@ class TestWebserver: public GuhTestBase
     Q_OBJECT
 
 private slots:
+    void coverageCalls();
+
     void httpVersion();
 
     void multiPackageMessage();
@@ -63,6 +66,15 @@ private slots:
     void getIcons_data();
     void getIcons();
 };
+
+void TestWebserver::coverageCalls()
+{
+    HttpReply *reply = new HttpReply(this);
+    qDebug() << reply << reply->payload();
+    qDebug() << reply->rawHeaderList();
+    qDebug() << reply->rawHeader() << reply->isEmpty();
+    reply->clear();
+}
 
 void TestWebserver::httpVersion()
 {

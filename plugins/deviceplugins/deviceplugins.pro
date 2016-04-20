@@ -17,10 +17,13 @@ SUBDIRS += elro         \
     commandlauncher     \
     unitec              \
     leynew              \
-    #tune                \
     udpcommander        \
     kodi                \
     elgato              \
     awattar             \
     netatmo             \
-    #osdomotics          \
+    dollhouse           \
+    plantcare           \
+    osdomotics          \
+    ws2812              \
+    orderbutton         \

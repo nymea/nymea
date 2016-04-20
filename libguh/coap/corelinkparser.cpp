@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2015-2016 Simon Stuerz <simon.stuerz@guh.guru>           *
  *                                                                         *
  *  This file is part of QtCoap.                                           *
  *                                                                         *
@@ -52,12 +52,9 @@ CoreLinkParser::CoreLinkParser(const QByteArray &data, QObject *parent) :
 {
     QList<QByteArray> linkList = data.split(',');
     foreach (const QByteArray &linkLine, linkList) {
-        qDebug() << "-------------------------------------";
-        qDebug() << linkLine;
         QList<QByteArray> valueList = linkLine.split(';');
         CoreLink link;
         foreach (const QByteArray &value, valueList) {
-            qDebug() << value;
             if (value.startsWith("<")) {
                 link.setPath(QString(value.mid(1, value.length() - 2)));
             } else if (value.startsWith("rt=")) {
@@ -74,7 +71,6 @@ CoreLinkParser::CoreLinkParser(const QByteArray &data, QObject *parent) :
                 link.setObservable(true);
             }
         }
-        qDebug() << endl << link;
         m_links.append(link);
     }
 }
@@ -84,5 +80,3 @@ QList<CoreLink> CoreLinkParser::links() const
 {
     return m_links;
 }
-
-

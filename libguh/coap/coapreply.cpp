@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2015-2016 Simon Stuerz <simon.stuerz@guh.guru>           *
  *                                                                         *
  *  This file is part of QtCoap.                                           *
  *                                                                         *
@@ -45,13 +45,14 @@
         {
             if (reply->error() != CoapReply::NoError) {
               qWarning() << "Reply finished with error" << reply->errorString();
+              reply->deleteLater();
+              return;
             }
 
             qDebug() << "Reply finished" << reply;
             reply->deleteLater();
         }
     \endcode
-
 
     \sa Coap, CoapRequest
 

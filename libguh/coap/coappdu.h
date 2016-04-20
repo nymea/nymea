@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2015-2016 Simon Stuerz <simon.stuerz@guh.guru>           *
  *                                                                         *
  *  This file is part of QtCoap.                                           *
  *                                                                         *
@@ -24,10 +24,9 @@
 #include <QDebug>
 #include <QObject>
 
+#include "libguh.h"
 #include "coapoption.h"
 #include "coappdublock.h"
-
-#include "libguh.h"
 
 // PDU = Protocol Data Unit
 

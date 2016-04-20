@@ -219,9 +219,9 @@ void LogEngine::clearDatabase()
     emit logDatabaseUpdated();
 }
 
-void LogEngine::logSystemEvent(bool active, Logging::LoggingLevel level)
+void LogEngine::logSystemEvent(const QDateTime &dateTime, bool active, Logging::LoggingLevel level)
 {
-    LogEntry entry(level, Logging::LoggingSourceSystem);
+    LogEntry entry(dateTime, level, Logging::LoggingSourceSystem);
     entry.setActive(active);
     qCDebug(dcLogEngine) << entry;
     appendLogEntry(entry);

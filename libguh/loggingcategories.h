@@ -23,9 +23,13 @@
 
 #include <QLoggingCategory>
 
+// Include dcCoap
+#include "coap/coap.h"
+
 // Core / libguh
 Q_DECLARE_LOGGING_CATEGORY(dcApplication)
 Q_DECLARE_LOGGING_CATEGORY(dcDeviceManager)
+Q_DECLARE_LOGGING_CATEGORY(dcTimeManager)
 Q_DECLARE_LOGGING_CATEGORY(dcRuleEngine)
 Q_DECLARE_LOGGING_CATEGORY(dcHardware)
 Q_DECLARE_LOGGING_CATEGORY(dcConnection)

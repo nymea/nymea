@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2015-2016 Simon Stuerz <simon.stuerz@guh.guru>           *
  *                                                                         *
  *  This file is part of QtCoap.                                           *
  *                                                                         *
@@ -75,16 +75,3 @@ CoapPdu::MessageType CoapRequest::messageType() const
 {
     return m_messageType;
 }
-
-void CoapRequest::setStatusCode(const CoapPdu::StatusCode &statusCode)
-{
-    m_statusCode = statusCode;
-}
-
-CoapPdu::StatusCode CoapRequest::statusCode()
-{
-    return m_statusCode;
-}
-
-
-

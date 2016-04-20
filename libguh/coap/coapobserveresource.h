@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2015-2016 Simon Stuerz <simon.stuerz@guh.guru>           *
  *                                                                         *
  *  This file is part of QtCoap.                                           *
  *                                                                         *
@@ -22,13 +22,13 @@
 #define COAPOBSERVERESOURCE_H
 
 #include <QObject>
+#include <QHash>
 #include <QUrl>
 
 #include "libguh.h"
 
 class LIBGUH_EXPORT CoapObserveResource
 {
-
 public:
     CoapObserveResource();
     CoapObserveResource(const QUrl &url, const QByteArray &token);
@@ -42,5 +42,16 @@ private:
     QByteArray m_token;
 
 };
+
+inline bool operator==(const CoapObserveResource &r1, const CoapObserveResource &r2)
+{
+    return r1.url() == r2.url() && r1.token() == r2.token();
+}
+
+inline uint qHash(const CoapObserveResource &key, uint seed)
+{
+    return qHash(key.url().toString(), seed);
+}
+
 
 #endif // COAPOBSERVERESOURCE_H

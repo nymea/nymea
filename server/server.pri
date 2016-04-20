@@ -1,42 +1,13 @@
-
+# check websocket support
 contains(DEFINES, WEBSOCKET){
     QT += websockets
-    SOURCES += $$top_srcdir/server/websocketserver.cpp
     HEADERS += $$top_srcdir/server/websocketserver.h
+    SOURCES += $$top_srcdir/server/websocketserver.cpp
 }
 
-RESOURCES += $$top_srcdir/icons.qrc
 
-SOURCES += $$top_srcdir/server/guhcore.cpp \
-    $$top_srcdir/server/tcpserver.cpp \
-    $$top_srcdir/server/ruleengine.cpp \
-    $$top_srcdir/server/rule.cpp \
-    $$top_srcdir/server/jsonrpc/jsonrpcserver.cpp \
-    $$top_srcdir/server/jsonrpc/jsonhandler.cpp \
-    $$top_srcdir/server/jsonrpc/devicehandler.cpp \
-    $$top_srcdir/server/jsonrpc/jsontypes.cpp \
-    $$top_srcdir/server/jsonrpc/ruleshandler.cpp \
-    $$top_srcdir/server/jsonrpc/actionhandler.cpp \
-    $$top_srcdir/server/jsonrpc/eventhandler.cpp \
-    $$top_srcdir/server/jsonrpc/statehandler.cpp \
-    $$top_srcdir/server/jsonrpc/logginghandler.cpp \
-    $$top_srcdir/server/stateevaluator.cpp \
-    $$top_srcdir/server/logging/logengine.cpp \
-    $$top_srcdir/server/logging/logfilter.cpp \
-    $$top_srcdir/server/logging/logentry.cpp \
-    $$top_srcdir/server/webserver.cpp \
-    $$top_srcdir/server/transportinterface.cpp \
-    $$top_srcdir/server/servermanager.cpp \
-    $$top_srcdir/server/httprequest.cpp \
-    $$top_srcdir/server/httpreply.cpp \
-    $$top_srcdir/server/rest/restserver.cpp \
-    $$top_srcdir/server/rest/restresource.cpp \
-    $$top_srcdir/server/rest/devicesresource.cpp \
-    $$top_srcdir/server/rest/deviceclassesresource.cpp \
-    $$top_srcdir/server/rest/vendorsresource.cpp \
-    $$top_srcdir/server/rest/logsresource.cpp \
-    $$top_srcdir/server/rest/pluginsresource.cpp \
-    $$top_srcdir/server/rest/rulesresource.cpp \
+# icons for the webserver
+RESOURCES += $$top_srcdir/icons.qrc
 
 
 HEADERS += $$top_srcdir/server/guhcore.h \
@@ -70,5 +41,45 @@ HEADERS += $$top_srcdir/server/guhcore.h \
     $$top_srcdir/server/rest/logsresource.h \
     $$top_srcdir/server/rest/pluginsresource.h \
     $$top_srcdir/server/rest/rulesresource.h \
+    $$top_srcdir/server/time/timedescriptor.h \
+    $$top_srcdir/server/time/calendaritem.h \
+    $$top_srcdir/server/time/repeatingoption.h \
+    $$top_srcdir/server/time/timeeventitem.h \
+    $$top_srcdir/server/time/timemanager.h
 
 
+SOURCES += $$top_srcdir/server/guhcore.cpp \
+    $$top_srcdir/server/tcpserver.cpp \
+    $$top_srcdir/server/ruleengine.cpp \
+    $$top_srcdir/server/rule.cpp \
+    $$top_srcdir/server/jsonrpc/jsonrpcserver.cpp \
+    $$top_srcdir/server/jsonrpc/jsonhandler.cpp \
+    $$top_srcdir/server/jsonrpc/devicehandler.cpp \
+    $$top_srcdir/server/jsonrpc/jsontypes.cpp \
+    $$top_srcdir/server/jsonrpc/ruleshandler.cpp \
+    $$top_srcdir/server/jsonrpc/actionhandler.cpp \
+    $$top_srcdir/server/jsonrpc/eventhandler.cpp \
+    $$top_srcdir/server/jsonrpc/statehandler.cpp \
+    $$top_srcdir/server/jsonrpc/logginghandler.cpp \
+    $$top_srcdir/server/stateevaluator.cpp \
+    $$top_srcdir/server/logging/logengine.cpp \
+    $$top_srcdir/server/logging/logfilter.cpp \
+    $$top_srcdir/server/logging/logentry.cpp \
+    $$top_srcdir/server/webserver.cpp \
+    $$top_srcdir/server/transportinterface.cpp \
+    $$top_srcdir/server/servermanager.cpp \
+    $$top_srcdir/server/httprequest.cpp \
+    $$top_srcdir/server/httpreply.cpp \
+    $$top_srcdir/server/rest/restserver.cpp \
+    $$top_srcdir/server/rest/restresource.cpp \
+    $$top_srcdir/server/rest/devicesresource.cpp \
+    $$top_srcdir/server/rest/deviceclassesresource.cpp \
+    $$top_srcdir/server/rest/vendorsresource.cpp \
+    $$top_srcdir/server/rest/logsresource.cpp \
+    $$top_srcdir/server/rest/pluginsresource.cpp \
+    $$top_srcdir/server/rest/rulesresource.cpp \
+    $$top_srcdir/server/time/timedescriptor.cpp \
+    $$top_srcdir/server/time/calendaritem.cpp \
+    $$top_srcdir/server/time/repeatingoption.cpp \
+    $$top_srcdir/server/time/timeeventitem.cpp \
+    $$top_srcdir/server/time/timemanager.cpp

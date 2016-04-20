@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2015-2016 Simon Stuerz <simon.stuerz@guh.guru>           *
  *                                                                         *
  *  This file is part of QtCoap.                                           *
  *                                                                         *
@@ -25,11 +25,8 @@
 #include <QHostAddress>
 
 #include "libguh.h"
-
 #include "coappdu.h"
 #include "coapoption.h"
-
-//class Coap;
 
 class LIBGUH_EXPORT CoapRequest
 {
@@ -51,9 +48,6 @@ private:
     CoapPdu::ContentType m_contentType;
     CoapPdu::MessageType m_messageType;
     CoapPdu::StatusCode m_statusCode;
-
-    void setStatusCode(const CoapPdu::StatusCode &statusCode);
-    CoapPdu::StatusCode statusCode();
 
 };
 

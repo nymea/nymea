@@ -37,6 +37,7 @@
 */
 
 #include "logentry.h"
+#include "guhcore.h"
 #include "jsonrpc/jsontypes.h"
 
 #include <QDebug>
@@ -57,7 +58,7 @@ LogEntry::LogEntry(QDateTime timestamp, Logging::LoggingLevel level, Logging::Lo
 
 /*! Constructs a \l{LogEntry} with the given \a level, \a source and \a errorCode.*/
 LogEntry::LogEntry(Logging::LoggingLevel level, Logging::LoggingSource source, int errorCode):
-    LogEntry(QDateTime::currentDateTime(), level, source, errorCode)
+    LogEntry(GuhCore::instance()->timeManager()->currentDateTime(), level, source, errorCode)
 {
 
 }

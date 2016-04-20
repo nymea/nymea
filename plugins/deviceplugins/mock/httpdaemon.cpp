@@ -63,7 +63,6 @@ void HttpDaemon::incomingConnection(qintptr socket)
 
 void HttpDaemon::actionExecuted(const ActionTypeId &actionTypeId)
 {
-    qCDebug(dcMockDevice) << "Log actions executed" << actionTypeId.toString();
     m_actionList.append(qMakePair<ActionTypeId, QDateTime>(actionTypeId, QDateTime::currentDateTime()));
 }
 
@@ -102,15 +101,15 @@ void HttpDaemon::readClient()
             qCDebug(dcMockDevice) << "Clear action history";
             m_actionList.clear();
         }
+
         if (tokens[0] == "GET") {
             QTextStream os(socket);
             os.setAutoDetectUnicode(true);
             os << generateWebPage();
             socket->close();
 
-            if (socket->state() == QTcpSocket::UnconnectedState) {
+            if (socket->state() == QTcpSocket::UnconnectedState)
                 delete socket;
-            }
         }
     }
 }
@@ -119,8 +118,6 @@ void HttpDaemon::discardClient()
 {
     QTcpSocket* socket = (QTcpSocket*)sender();
     socket->deleteLater();
-
-    qCDebug(dcMockDevice) << "Connection closed";
 }
 
 QString HttpDaemon::generateHeader()

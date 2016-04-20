@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2015-2016 Simon Stuerz <simon.stuerz@guh.guru>           *
  *                                                                         *
  *  This file is part of QtCoap.                                           *
  *                                                                         *
@@ -317,6 +317,7 @@ QList<CoapOption> CoapPdu::options() const
     return m_options;
 }
 
+
 /*! Adds the given \a option with the given \a data to this \l{CoapPdu}.
 
     \sa CoapOption
@@ -355,7 +356,11 @@ void CoapPdu::addOption(const CoapOption::Option &option, const QByteArray &data
             break;
         }
     }
-    m_options.insert(index + 1, CoapOption(option, data));
+
+    CoapOption o;
+    o.setOption(option);
+    o.setData(data);
+    m_options.insert(index + 1, o);
 }
 
 /*! Returns the block of this \l{CoapPdu}. */
@@ -492,7 +497,6 @@ void CoapPdu::unpack(const QByteArray &data)
     // create a CoapPDU
     if (data.length() < 4) {
         m_error = InvalidPduSizeError;
-        qWarning() << "pdu to small" << data.length();
     }
 
     quint8 *rawData = (quint8 *)data.data();
@@ -502,7 +506,6 @@ void CoapPdu::unpack(const QByteArray &data)
 
     if (tokenLength > 8) {
         m_error = InvalidTokenError;
-        qWarning() << "PDU token to long";
     }
 
     setToken(QByteArray((const char *)rawData + 4, tokenLength));

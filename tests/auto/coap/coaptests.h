@@ -80,6 +80,9 @@ private slots:
 
     void coreLinkParser();
 
+    void observeResource();
+    void observeLargeResource();
+
 };
 
 #endif // COAPTESTS_H

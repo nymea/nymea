@@ -238,7 +238,6 @@ void TestRestRules::findRule()
     request.setUrl(QUrl(QString("http://localhost:3333/api/v1/rules/%1").arg(ruleId.toString())));
     response = getAndWait(request, 404);
     QVERIFY(!response.isNull());
-
 }
 
 void TestRestRules::invalidMethod()

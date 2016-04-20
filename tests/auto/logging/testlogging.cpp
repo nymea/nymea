@@ -23,6 +23,7 @@
 #include "guhcore.h"
 #include "devicemanager.h"
 #include "guhsettings.h"
+#include "logging/logentry.h"
 #include "plugin/deviceplugin.h"
 
 #include <QDebug>
@@ -41,6 +42,8 @@ private:
 
 private slots:
     void initLogs();
+
+    void coverageCalls();
 
     void systemLogs();
 
@@ -74,6 +77,15 @@ void TestLogging::initLogs()
     QVERIFY(logEntries.count() == 0);
 
     restartServer();
+}
+
+void TestLogging::coverageCalls()
+{
+    LogEntry entry(QDateTime::currentDateTime(), Logging::LoggingLevelInfo, Logging::LoggingSourceSystem);
+    qDebug() << entry;
+
+    LogFilter filter;
+    qDebug() << filter.timeFilters();
 }
 
 void TestLogging::systemLogs()

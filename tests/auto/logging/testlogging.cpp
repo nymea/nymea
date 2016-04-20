@@ -85,7 +85,7 @@ void TestLogging::coverageCalls()
     qDebug() << entry;
 
     LogFilter filter;
-    qDebug() << filter.timeFilters();
+    qDebug() << filter.queryString() << filter.timeFilters();
 }
 
 void TestLogging::systemLogs()

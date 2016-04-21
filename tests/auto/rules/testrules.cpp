@@ -42,6 +42,9 @@ private:
     void cleanupMockHistory();
     void cleanupRules();
 
+    QVariantMap createEventDescriptor(const DeviceId &deviceId, const EventTypeId &eventTypeId);
+    QVariantMap createActionWithParams(const DeviceId &deviceId);
+
     void verifyRuleExecuted(const ActionTypeId &actionTypeId);
     void verifyRuleNotExecuted();
 
@@ -82,7 +85,8 @@ private slots:
 
     void testEventBasedAction();
 
-    void removePolicy();
+    void removePolicyUpdate();
+    void removePolicyCascade();
 
     void testRuleActionParams_data();
     void testRuleActionParams();
@@ -107,26 +111,30 @@ void TestRules::cleanupRules() {
     }
 }
 
-void TestRules::cleanup() {
-    cleanupMockHistory();
-    cleanupRules();
+QVariantMap TestRules::createEventDescriptor(const DeviceId &deviceId, const EventTypeId &eventTypeId)
+{
+    QVariantMap eventDescriptor;
+    eventDescriptor.insert("eventTypeId", eventTypeId);
+    eventDescriptor.insert("deviceId", deviceId);
+    return eventDescriptor;
 }
 
-void TestRules::emptyRule()
+QVariantMap TestRules::createActionWithParams(const DeviceId &deviceId)
 {
-    QVariantMap params;
-    params.insert("name", QString());
-    params.insert("actions", QVariantList());
-    QVariant response = injectAndWait("Rules.AddRule", params);
-    verifyRuleError(response, RuleEngine::RuleErrorInvalidRuleFormat);
-}
-
-void TestRules::getInvalidRule()
-{
-    QVariantMap params;
-    params.insert("ruleId", QUuid::createUuid());
-    QVariant response = injectAndWait("Rules.GetRuleDetails", params);
-    verifyRuleError(response, RuleEngine::RuleErrorRuleNotFound);
+    QVariantMap action;
+    QVariantList ruleActionParams;
+    QVariantMap param1;
+    param1.insert("name", "mockActionParam1");
+    param1.insert("value", 4);
+    QVariantMap param2;
+    param2.insert("name", "mockActionParam2");
+    param2.insert("value", true);
+    ruleActionParams.append(param1);
+    ruleActionParams.append(param2);
+    action.insert("deviceId", deviceId);
+    action.insert("actionTypeId", mockActionIdWithParams);
+    action.insert("ruleActionParams", ruleActionParams);
+    return action;
 }
 
 void TestRules::verifyRuleExecuted(const ActionTypeId &actionTypeId)
@@ -160,6 +168,29 @@ void TestRules::verifyRuleNotExecuted()
     reply->deleteLater();
 }
 
+/***********************************************************************/
+
+void TestRules::cleanup() {
+    cleanupMockHistory();
+    cleanupRules();
+}
+
+void TestRules::emptyRule()
+{
+    QVariantMap params;
+    params.insert("name", QString());
+    params.insert("actions", QVariantList());
+    QVariant response = injectAndWait("Rules.AddRule", params);
+    verifyRuleError(response, RuleEngine::RuleErrorInvalidRuleFormat);
+}
+
+void TestRules::getInvalidRule()
+{
+    QVariantMap params;
+    params.insert("ruleId", QUuid::createUuid());
+    QVariant response = injectAndWait("Rules.GetRuleDetails", params);
+    verifyRuleError(response, RuleEngine::RuleErrorRuleNotFound);
+}
 
 QVariant TestRules::validIntStateBasedRule(const QString &name, const bool &executable, const bool &enabled)
 {
@@ -1563,7 +1594,7 @@ void TestRules::testEventBasedAction()
     // TODO: check if this action was realy executed with the int state value 42
 }
 
-void TestRules::removePolicy()
+void TestRules::removePolicyUpdate()
 {
     // ADD parent device
     QVariantMap params;
@@ -1595,12 +1626,128 @@ void TestRules::removePolicy()
     QVERIFY2(!childDeviceId.isNull(), "Could not find child device");
 
     // Add rule with child device
+    QVariantList eventDescriptors;
+    eventDescriptors.append(createEventDescriptor(childDeviceId, mockParentChildEventId));
+    eventDescriptors.append(createEventDescriptor(parentDeviceId, mockParentChildEventId));
+    eventDescriptors.append(createEventDescriptor(m_mockDeviceId, mockEvent1Id));
 
+    params.clear(); response.clear();
+    params.insert("name", "RemovePolicy");
+    params.insert("eventDescriptors", eventDescriptors);
+    params.insert("actions", QVariantList() << createActionWithParams(m_mockDeviceId));
 
+    response = injectAndWait("Rules.AddRule", params);
+    verifyRuleError(response);
+    RuleId ruleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
+    QVERIFY2(!ruleId.isNull(), "Could not get ruleId");
 
+    // Try to remove child device
+    params.clear(); response.clear();
+    params.insert("deviceId", childDeviceId);
+    response = injectAndWait("Devices.RemoveConfiguredDevice", params);
+    verifyDeviceError(response, DeviceManager::DeviceErrorDeviceIsChild);
 
+    // Try to remove child device
+    params.clear(); response.clear();
+    params.insert("deviceId", parentDeviceId);
+    response = injectAndWait("Devices.RemoveConfiguredDevice", params);
+    verifyDeviceError(response, DeviceManager::DeviceErrorDeviceInRule);
 
+    // Remove policy
+    params.clear(); response.clear();
+    params.insert("deviceId", parentDeviceId);
+    params.insert("removePolicy", "RemovePolicyUpdate");
+    response = injectAndWait("Devices.RemoveConfiguredDevice", params);
+    verifyDeviceError(response);
 
+    // get updated rule
+    params.clear();
+    params.insert("ruleId", ruleId);
+    response = injectAndWait("Rules.GetRuleDetails", params);
+    verifyRuleError(response);
+
+    QVariantMap rule = response.toMap().value("params").toMap().value("rule").toMap();
+    qDebug() << QJsonDocument::fromVariant(rule).toJson();
+    QVERIFY(rule.value("eventDescriptors").toList().count() == 1);
+
+    // REMOVE rule
+    QVariantMap removeParams;
+    removeParams.insert("ruleId", ruleId);
+    response = injectAndWait("Rules.RemoveRule", removeParams);
+    verifyRuleError(response);
+}
+
+void TestRules::removePolicyCascade()
+{
+    // ADD parent device
+    QVariantMap params;
+    params.insert("deviceClassId", mockParentDeviceClassId);
+    params.insert("name", "Parent device");
+
+    QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
+    verifyDeviceError(response);
+
+    DeviceId parentDeviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
+    QVERIFY(!parentDeviceId.isNull());
+
+    // find child device
+    response = injectAndWait("Devices.GetConfiguredDevices");
+
+    QVariantList devices = response.toMap().value("params").toMap().value("devices").toList();
+
+    DeviceId childDeviceId;
+    foreach (const QVariant deviceVariant, devices) {
+        QVariantMap deviceMap = deviceVariant.toMap();
+
+        if (deviceMap.value("deviceClassId").toString() == mockChildDeviceClassId.toString()) {
+            if (deviceMap.value("parentId") == parentDeviceId.toString()) {
+                //qDebug() << QJsonDocument::fromVariant(deviceVariant).toJson();
+                childDeviceId = DeviceId(deviceMap.value("id").toString());
+            }
+        }
+    }
+    QVERIFY2(!childDeviceId.isNull(), "Could not find child device");
+
+    // Add rule with child device
+    QVariantList eventDescriptors;
+    eventDescriptors.append(createEventDescriptor(childDeviceId, mockParentChildEventId));
+    eventDescriptors.append(createEventDescriptor(parentDeviceId, mockParentChildEventId));
+    eventDescriptors.append(createEventDescriptor(m_mockDeviceId, mockEvent1Id));
+
+    params.clear(); response.clear();
+    params.insert("name", "RemovePolicy");
+    params.insert("eventDescriptors", eventDescriptors);
+    params.insert("actions", QVariantList() << createActionWithParams(m_mockDeviceId));
+
+    response = injectAndWait("Rules.AddRule", params);
+    verifyRuleError(response);
+    RuleId ruleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
+    QVERIFY2(!ruleId.isNull(), "Could not get ruleId");
+
+    // Try to remove child device
+    params.clear(); response.clear();
+    params.insert("deviceId", childDeviceId);
+    response = injectAndWait("Devices.RemoveConfiguredDevice", params);
+    verifyDeviceError(response, DeviceManager::DeviceErrorDeviceIsChild);
+
+    // Try to remove child device
+    params.clear(); response.clear();
+    params.insert("deviceId", parentDeviceId);
+    response = injectAndWait("Devices.RemoveConfiguredDevice", params);
+    verifyDeviceError(response, DeviceManager::DeviceErrorDeviceInRule);
+
+    // Remove policy
+    params.clear(); response.clear();
+    params.insert("deviceId", parentDeviceId);
+    params.insert("removePolicy", "RemovePolicyCascade");
+    response = injectAndWait("Devices.RemoveConfiguredDevice", params);
+    verifyDeviceError(response);
+
+    // get updated rule
+    params.clear();
+    params.insert("ruleId", ruleId);
+    response = injectAndWait("Rules.GetRuleDetails", params);
+    verifyRuleError(response, RuleEngine::RuleErrorRuleNotFound);
 }
 
 void TestRules::testRuleActionParams_data()
@@ -1645,11 +1792,9 @@ void TestRules::testRuleActionParams_data()
 
 void TestRules::testRuleActionParams()
 {
-
     QFETCH(QVariantMap, action);
     QFETCH(QVariantMap, exitAction);
     QFETCH(RuleEngine::RuleError, error);
-
 
     // Add a rule
     QVariantMap addRuleParams;
@@ -1662,9 +1807,6 @@ void TestRules::testRuleActionParams()
 
     QVariant response = injectAndWait("Rules.AddRule", addRuleParams);
     verifyRuleError(response, error);
-
-
-
 }
 
 #include "testrules.moc"

@@ -89,6 +89,8 @@ void DevicePluginDenon::deviceRemoved(Device *device)
         qCWarning(dcDenon) << "Invalid connection pointer" << device->id().toString();
         return;
     }
+    m_device.clear();
+    m_denonConnection->disconnectDenon();
     m_denonConnection->deleteLater();
 }
 
@@ -161,6 +163,9 @@ DeviceManager::DeviceError DevicePluginDenon::executeAction(Device *device, cons
 
 void DevicePluginDenon::onConnectionChanged()
 {
+    if (!m_device)
+       return;
+
     // if the device is connected
     if (m_denonConnection->connected()) {
         // and from the first setup

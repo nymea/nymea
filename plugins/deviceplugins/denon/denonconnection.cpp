@@ -96,21 +96,7 @@ void DenonConnection::onError(QAbstractSocket::SocketError socketError)
 void DenonConnection::readData()
 {
     QByteArray data = m_socket->readAll();
-
-    QStringList commandList = QString(data).split("}{");
-    for(int i = 0; i < commandList.count(); ++i) {
-        QString command = commandList.at(i);
-        if(command.isEmpty()) {
-            continue;
-        }
-        if(i < commandList.count() - 1) {
-            command.append("}");
-        }
-        if(i > 0) {
-            command.prepend("{");
-        }
-        emit dataReady(command.toUtf8());
-    }
+    emit dataReady(QString(data).toUtf8());
 }
 
 void DenonConnection::setConnected(const bool &connected)

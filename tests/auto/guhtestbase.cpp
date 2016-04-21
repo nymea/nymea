@@ -61,6 +61,11 @@ ActionTypeId mockActionIdAsync = ActionTypeId("fbae06d3-7666-483e-a39e-ec50fe890
 ActionTypeId mockActionIdFailing = ActionTypeId("df3cf33d-26d5-4577-9132-9823bd33fad0");
 ActionTypeId mockActionIdAsyncFailing = ActionTypeId("bfe89a1d-3497-4121-8318-e77c37537219");
 
+// Parent device
+EventTypeId mockParentChildEventId = EventTypeId("d24ede5f-4064-4898-bb84-cfb533b1fbc0");
+ActionTypeId mockParentChildActionId = ActionTypeId("d24ede5f-4064-4898-bb84-cfb533b1fbc0");
+StateTypeId mockParentChildStateId = StateTypeId("d24ede5f-4064-4898-bb84-cfb533b1fbc0");
+
 static QHash<QString, bool> s_loggingFilters;
 
 static void loggingCategoryFilter(QLoggingCategory *category)

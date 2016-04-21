@@ -27,3 +27,4 @@ SUBDIRS += elro         \
     osdomotics          \
     ws2812              \
     orderbutton         \
+    denon               \

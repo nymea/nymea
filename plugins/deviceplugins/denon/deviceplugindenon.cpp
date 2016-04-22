@@ -60,13 +60,13 @@ DeviceManager::DeviceSetupStatus DevicePluginDenon::setupDevice(Device *device)
 
     // Check if we already have a denon device
     if (!myDevices().isEmpty()) {
-        qCWarning(dcDenon()) << "Could not add denon device. Only one denon device allowed.";
+        qCWarning(dcDenon) << "Could not add denon device. Only one denon device allowed.";
         return DeviceManager::DeviceSetupStatusFailure;
     }
 
     QHostAddress address(device->paramValue("ip").toString());
     if (address.isNull()) {
-        qCWarning(dcDenon()) << "Could not parse ip address" << device->paramValue("ip").toString();
+        qCWarning(dcDenon) << "Could not parse ip address" << device->paramValue("ip").toString();
         return DeviceManager::DeviceSetupStatusFailure;
     }
 
@@ -182,7 +182,7 @@ void DevicePluginDenon::onConnectionChanged()
 
 void DevicePluginDenon::onDataReceived(const QByteArray &data)
 {
-    qDebug(dcDenon) << "Data received" << data;
+    qCDebug(dcDenon) << "Data received" << data;
 
     // if there is no device, return
     if (m_device.isNull())
@@ -192,7 +192,7 @@ void DevicePluginDenon::onDataReceived(const QByteArray &data)
         int index = data.indexOf("MV");
         int vol = data.mid(index+2, 2).toInt();
 
-        qDebug(dcDenon) << "Update volume:" << vol;
+        qCDebug(dcDenon) << "Update volume:" << vol;
         m_device->setStateValue(volumeStateTypeId, vol);
     }
 
@@ -240,15 +240,15 @@ void DevicePluginDenon::onDataReceived(const QByteArray &data)
             cmd = "FVP";
         }
 
-        qDebug(dcDenon) << "Update channel:" << cmd;
+        qCDebug(dcDenon) << "Update channel:" << cmd;
         m_device->setStateValue(channelStateTypeId, cmd);
     }
 
     if (data.contains("PWON")) {
-        qDebug(dcDenon) << "Update power on";
+        qCDebug(dcDenon) << "Update power on";
         m_device->setStateValue(powerStateTypeId, true);
     } else if (data.contains("PWSTANDBY")) {
-        qDebug(dcDenon) << "Update power off";
+        qCDebug(dcDenon) << "Update power off";
         m_device->setStateValue(powerStateTypeId, false);
     }
 }

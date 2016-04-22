@@ -130,6 +130,7 @@
 
 
 #include "httpreply.h"
+#include "loggingcategories.h"
 
 #include <QDateTime>
 #include <QPair>
@@ -416,7 +417,7 @@ void HttpReply::startWait()
 
 void HttpReply::timeout()
 {
-    qDebug() << "Http reply timeout";
+    qCDebug(dcWebServer) << "Http reply timeout";
     m_timedOut = true;
     emit finished();
 }

@@ -335,7 +335,7 @@ void DevicePluginMock::emitPushButtonDevicesDiscovered()
 
     m_pushbuttonPressed = false;
     QTimer::singleShot(3000, this, SLOT(onPushButtonPressed()));
-    qDebug() << "Start PushButton timer (will be pressed in 3 second)";
+    qCDebug(dcMockDevice) << "Start PushButton timer (will be pressed in 3 second)";
 }
 
 void DevicePluginMock::emitDisplayPinDevicesDiscovered()

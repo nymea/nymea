@@ -388,7 +388,7 @@ DeviceManager::DeviceError DevicePlugin::displayPin(const PairingTransactionId &
     Q_UNUSED(pairingTransactionId)
     Q_UNUSED(deviceDescriptor)
 
-    qWarning() << "Plugin does not implement the display pin setup method.";
+    qCWarning(dcDeviceManager) << "Plugin does not implement the display pin setup method.";
 
     return DeviceManager::DeviceErrorNoError;
 }

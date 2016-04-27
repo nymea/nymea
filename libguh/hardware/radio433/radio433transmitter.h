@@ -28,7 +28,7 @@
 #include <QDebug>
 
 #include "libguh.h"
-#include "../gpio.h"
+#include "hardware/gpio.h"
 
 
 class LIBGUH_EXPORT Radio433Trasmitter : public QThread

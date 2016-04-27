@@ -21,41 +21,41 @@
 #ifndef GPIOMONITOR_H
 #define GPIOMONITOR_H
 
-#include <QThread>
+#include <QObject>
 #include <QDebug>
-#include <fcntl.h>
-#include <stdio.h>
-#include <poll.h>
-#include <errno.h>
+#include <QSocketNotifier>
+#include <QFile>
 
 #include "libguh.h"
-#include "hardware/gpio.h"
+#include "gpio.h"
 
-class LIBGUH_EXPORT GpioMonitor : public QThread
+class LIBGUH_EXPORT GpioMonitor : public QObject
 {
     Q_OBJECT
+
 public:
-    explicit GpioMonitor(QObject *parent = 0);
-    ~GpioMonitor();
+    explicit GpioMonitor(int gpio, QObject *parent = 0);
 
-    void enable();
+    bool enable(bool activeLow = false, Gpio::Edge edgeInterrupt = Gpio::EdgeBoth);
     void disable();
-    bool addGpio(Gpio *gpio, bool activeLow);
-    QList<Gpio*> gpioList();
 
+    bool isRunning() const;
+    bool value() const;
+
+    Gpio* gpio();
 
 private:
-    QMutex m_enabledMutex;
-    bool m_enabled;
-
-    QMutex m_gpioListMutex;
-    QList<Gpio*> m_gpioList;
-
-protected:
-    void run();
+    int m_gpioNumber;
+    Gpio *m_gpio;
+    QSocketNotifier *m_notifier;
+    QFile m_valueFile;
+    bool m_currentValue;
 
 signals:
-    void changed(const int &gpioPin, const int &value);
+    void valueChanged(const bool &value);
+
+private slots:
+    void readyReady(const int &ready);
 
 };
 

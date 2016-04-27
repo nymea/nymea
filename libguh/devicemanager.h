@@ -57,13 +57,12 @@ class LIBGUH_EXPORT DeviceManager : public QObject
 
 public:
     enum HardwareResource {
-        HardwareResourceNone = 0x00,
-        HardwareResourceRadio433 = 0x01,
-        HardwareResourceRadio868 = 0x02,
-        HardwareResourceTimer = 0x04,
-        HardwareResourceNetworkManager = 0x08,
-        HardwareResourceUpnpDisovery = 0x10,
-        HardwareResourceBluetoothLE = 0x20
+        HardwareResourceNone = 0,
+        HardwareResourceRadio433 = 1,
+        HardwareResourceTimer = 2,
+        HardwareResourceNetworkManager = 4,
+        HardwareResourceUpnpDisovery = 8,
+        HardwareResourceBluetoothLE = 16
     };
     Q_DECLARE_FLAGS(HardwareResources, HardwareResource)
 

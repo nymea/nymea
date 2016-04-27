@@ -34,7 +34,6 @@ HEADERS += devicemanager.h \
            hardware/gpiomonitor.h \
            hardware/radio433/radio433.h \
            hardware/radio433/radio433transmitter.h \
-           hardware/radio433/radio433receiver.h \
            hardware/radio433/radio433brennenstuhlgateway.h \
            network/upnpdiscovery/upnpdiscovery.h \
            network/upnpdiscovery/upnpdevice.h \
@@ -65,6 +64,7 @@ HEADERS += devicemanager.h \
            types/ruleaction.h \
            types/ruleactionparam.h \
            types/statedescriptor.h \
+    hardware/pwm.h
 
 
 SOURCES += devicemanager.cpp \
@@ -79,7 +79,6 @@ SOURCES += devicemanager.cpp \
            hardware/gpiomonitor.cpp \
            hardware/radio433/radio433.cpp \
            hardware/radio433/radio433transmitter.cpp \
-           hardware/radio433/radio433receiver.cpp \
            hardware/radio433/radio433brennenstuhlgateway.cpp \
            network/upnpdiscovery/upnpdiscovery.cpp \
            network/upnpdiscovery/upnpdevice.cpp \
@@ -110,6 +109,7 @@ SOURCES += devicemanager.cpp \
            types/ruleaction.cpp \
            types/ruleactionparam.cpp \
            types/statedescriptor.cpp \
+    hardware/pwm.cpp
 
 
 # install plugininfo python script for libguh-dev

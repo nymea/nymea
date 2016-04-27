@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.guru>                 *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -24,7 +24,6 @@
 #include <QObject>
 
 #ifdef GPIO433
-#include "radio433receiver.h"
 #include "radio433transmitter.h"
 #endif
 
@@ -43,14 +42,10 @@ public:
 
 private:
     #ifdef GPIO433
-    Radio433Receiver *m_receiver;
     Radio433Trasmitter *m_transmitter;
     #endif
 
     Radio433BrennenstuhlGateway *m_brennenstuhlTransmitter;
-
-signals:
-    void dataReceived(QList<int> rawData);
 
 private slots:
     void brennenstuhlAvailableChanged(const bool &available);

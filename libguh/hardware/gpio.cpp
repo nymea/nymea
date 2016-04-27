@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2015 -2016 Simon Stürz <simon.stuerz@guh.guru>           *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -37,32 +37,44 @@
   General Purpose Input/Output (a.k.a. GPIO) is a generic pin on a chip whose
   behavior (including whether it is an input or output pin) can be controlled
   through this class. An object of of the Gpio class represents a pin.
+*/
 
-  \chapter Example
+/*! \enum Gpio::Direction
 
-  Following example shows how to initialize and interact with a GPIO. The GPIO will be configured as an input,
-  set active high and the edge interrupt will be set to EDGE_BOTH.
+    This enum type specifies the dirction a \l{Gpio}.
 
-  \code
-    Gpio *gpio = new Gpio(this, 22);
-    if (!gpio->exportGpio() || !gpio->setDirection(INPUT) || !gpio->setEdgeInterrupt(EDGE_BOTH) || !gpio->setActiveLow(true)) {
-        return;
-    }
-    int value = gpio->getValue();
-    qDebug() << "value = " << value;
-  \endcode
+    \value DirectionInput
+        The \l{Gpio} is configured as \b input.
+    \value DirectionOutput
+        The \l{Gpio} is configured as \b output.
+    \value DirectionInvalid
+        The direction is not valid.
+*/
 
-  \chapter Raspberry Pi GPIOs
-  In following table is a list of all GPIO's of the Raspberry Pi Rev. 2.0:
+/*! \enum Gpio::Value
 
-  \image Raspberry_Pi_GPIO_Map.png "Raspberry Pi GPIO map"
+    This enum type specifies the value a \l{Gpio}.
 
-  Valid GPIO's for this class are those with a GPIO number (for example GPIO 22, which is on pin Nr. 15)
+    \value ValueLow
+        The \l{Gpio} is low.
+    \value ValueHigh
+        The \l{Gpio} is high.
+    \value ValueInvalid
+        The value is not valid.
+*/
 
-  \chapter Beaglebone Black GPIOs
-  In following table is a list of all GPIO's of the Beaglebone Black (\l{http://pix.cs.olemiss.edu/csci581/BBBlackGPIOMap.png}{Source}):
+/*! \enum Gpio::Edge
 
-  \image Beaglebone_Black_GPIO_Map.png "Beaglebone Black GPIO map"
+    This enum type specifies the edge interrupt type of a \l{Gpio}.
+
+    \value EdgeFalling
+        The \l{Gpio} reacts on falling edge interrupt.
+    \value EdgeRising
+        The \l{Gpio} reacts on rising edge interrupt.
+    \value EdgeBoth
+        The \l{Gpio} reacts on both, rising and falling edge interrupt.
+    \value EdgeNone
+        The \l{Gpio} does not react on interrupts.
 
 */
 
@@ -71,339 +83,299 @@
 
 #include <QDebug>
 
-/*! Constructs a \l{Gpio} object to represent a GPIO with the given \a gpio number and the \a parent. */
-Gpio::Gpio(QObject *parent, int gpio) :
-    QObject(parent),m_gpio(gpio)
+/*! Constructs a \l{Gpio} object to represent a GPIO with the given \a gpio number and \a parent. */
+Gpio::Gpio(int gpio, QObject *parent) :
+    QObject(parent),
+    m_gpio(gpio)
 {
+    m_gpioDirectory = QDir(QString("/sys/class/gpio/gpio%1/").arg(QString::number(m_gpio)));
 }
 
-/*! Destroys the Gpio object and unexports the GPIO. */
+/*! Destroys and unexports the \l{Gpio}. */
 Gpio::~Gpio()
 {
     unexportGpio();
 }
 
-/*! Returns true if this GPIO could be exported in the system file "/sys/class/gpio/export". */
+/*! Returns true if the directory \tt {/sys/class/gpio} does exist. */
+bool Gpio::isAvailable()
+{
+    return QDir("/sys/class/gpio").exists();
+}
+
+/*! Returns true if this  \l{Gpio} could be exported in the system file \tt {/sys/class/gpio/export}. */
 bool Gpio::exportGpio()
 {
-    unexportGpio();
-
-    char buf[64];
-
-    int fd = open("/sys/class/gpio/export", O_WRONLY);
-    if (fd < 0) {
-        //qCWarning(dcHardware) << "could not open /sys/class/gpio/export";
+    QFile exportFile("/sys/class/gpio/export");
+    if (!exportFile.open(QIODevice::WriteOnly)) {
+        qCWarning(dcHardware()) << "Could not export GPIO" << m_gpio;
         return false;
     }
 
-    ssize_t len = snprintf(buf, sizeof(buf), "%d", m_gpio);
-    if(write(fd, buf, len) != len){
-        qCWarning(dcHardware) << "could not write to gpio (export)";
-        close(fd);
-        return false;
-    }
-    close(fd);
+    QTextStream out(&exportFile);
+    out << m_gpio;
+    exportFile.close();
     return true;
 }
 
-/*! Returns true if this GPIO could be unexported in the system file "/sys/class/gpio/unexport". */
+/*! Returns true if this \l{Gpio} could be unexported in the system file \tt {/sys/class/gpio/unexport}. */
 bool Gpio::unexportGpio()
 {
-    char buf[64];
-
-    int fd = open("/sys/class/gpio/unexport", O_WRONLY);
-    if (fd < 0) {
-        //qCWarning(dcHardware) << "could not open /sys/class/gpio/unexport";
+    QFile unexportFile("/sys/class/gpio/unexport");
+    if (!unexportFile.open(QIODevice::WriteOnly)) {
+        qCWarning(dcHardware()) << "Could not unexport GPIO" << m_gpio;
         return false;
     }
 
-    ssize_t len = snprintf(buf, sizeof(buf), "%d", m_gpio);
-    if(write(fd, buf, len) != len){
-        //qCWarning(dcHardware) << "could not write to gpio (unexport)";
-        close(fd);
-        return false;
-    }
-    close(fd);
+    QTextStream out(&unexportFile);
+    out << m_gpio;
+    unexportFile.close();
     return true;
 }
 
-/*! Returns true if the file of this GPIO could be opend.*/
-int Gpio::openGpio()
+/*! Returns true if the \a direction of this GPIO could be set. */
+bool Gpio::setDirection(Gpio::Direction direction)
 {
-    char buf[64];
-
-    snprintf(buf, sizeof(buf), "/sys/class/gpio/gpio%d/value", m_gpio);
-
-    int fd = open(buf, O_RDONLY | O_NONBLOCK );
-    if (fd < 0) {
-        qCWarning(dcHardware) << "could not open /sys/class/gpio" << m_gpio << "/direction";
-        return fd;
-    }
-    return fd;
-}
-
-/*! Returns true if the direction \a dir of this GPIO could be set correctly.
- *
- * Possible directions are:
- *
- * \table
- * \header
- *      \li {2,1} Pin directions
- * \row
- *      \li 0
- *      \li INPUT
- * \row
- *      \li 1
- *      \li OUTPUT
- * \endtable
- */
-bool Gpio::setDirection(int dir)
-{
-    char buf[64];
-    snprintf(buf, sizeof(buf), "/sys/class/gpio/gpio%d/direction", m_gpio);
-
-    int fd = open(buf, O_WRONLY);
-    if (fd < 0) {
-        qCWarning(dcHardware) << "could not open /sys/class/gpio" << m_gpio << "/direction";
+    QFile directionFile(m_gpioDirectory.path() + "/direction");
+    if (!directionFile.open(QIODevice::WriteOnly)) {
+        qCWarning(dcHardware()) << "Could not open GPIO" << m_gpio << "direction file.";
         return false;
     }
-    if(dir == INPUT){
-        if(write(fd, "in", 3) != 3){
-            qCWarning(dcHardware) << "could not write to gpio (set INPUT)";
-            close(fd);
-            return false;
-        }
-        m_dir = INPUT;
-        close(fd);
-        return true;
+
+    QTextStream out(&directionFile);
+    switch (direction) {
+    case DirectionInput:
+        out << "in";
+        break;
+    case DirectionOutput:
+        out << "out";
+        break;
+    default:
+        directionFile.close();
+        return false;
     }
-    if(dir == OUTPUT){
-        if(write(fd, "out", 4) != 4){
-            qCWarning(dcHardware) << "could not write to gpio (set OUTPUT)";
-            close(fd);
-            return false;
-        }
-        m_dir = OUTPUT;
-        close(fd);
-        return true;
+
+    directionFile.close();
+    return true;
+}
+
+/*! Returns the direction of this \l{Gpio}. */
+Gpio::Direction Gpio::direction()
+{
+    QFile directionFile(m_gpioDirectory.path() + "/direction");
+    if (!directionFile.open(QIODevice::ReadOnly)) {
+        qCWarning(dcHardware()) << "Could not open GPIO" << m_gpio << "direction file.";
+        return Gpio::DirectionInvalid;
     }
-    close(fd);
+
+    QString direction;
+    QTextStream in(&directionFile);
+    in >> direction;
+    directionFile.close();
+
+    if (direction == "in") {
+        m_direction = DirectionInput;
+        return Gpio::DirectionInput;
+    } else if (direction == "out") {
+        m_direction = DirectionOutput;
+        return Gpio::DirectionOutput;
+    }
+
+    return Gpio::DirectionInvalid;
+}
+
+/*! Returns true if the digital \a value of this \l{Gpio} could be set correctly. */
+bool Gpio::setValue(Gpio::Value value)
+{
+    if (value == Gpio::ValueInvalid || m_direction == Gpio::DirectionInput)
+        return false;
+
+    QFile valueFile(m_gpioDirectory.path() + "/value");
+    if (!valueFile.open(QIODevice::WriteOnly)) {
+        qCWarning(dcHardware()) << "Could not open GPIO" << m_gpio << "value file.";
+        return false;
+    }
+
+    QTextStream out(&valueFile);
+    switch (value) {
+    case ValueLow:
+        out << "0";
+        break;
+    case ValueHigh:
+        out << "1";
+        break;
+    default:
+        valueFile.close();
+        return false;
+    }
+
+    valueFile.close();
+    return true;
+}
+
+/*! Returns the current digital value of this \l{Gpio}. */
+Gpio::Value Gpio::value()
+{
+    QFile valueFile(m_gpioDirectory.path() + "/value");
+    if (!valueFile.open(QIODevice::ReadOnly)) {
+        qCWarning(dcHardware()) << "Could not open GPIO" << m_gpio << "value file.";
+        return Gpio::ValueInvalid;
+    }
+
+    QString value;
+    QTextStream in(&valueFile);
+    in >> value;
+    valueFile.close();
+
+    if (value == "0") {
+        return Gpio::ValueLow;
+    } else if (value == "1") {
+        return Gpio::ValueHigh;
+    }
+
+    return Gpio::ValueInvalid;
+}
+
+/*! This method allows to invert the logic of this \l{Gpio}. Returns true, if the GPIO could be set \a activeLow. */
+bool Gpio::setActiveLow(bool activeLow)
+{
+    QFile activeLowFile(m_gpioDirectory.path() + "/active_low");
+    if (!activeLowFile.open(QIODevice::WriteOnly)) {
+        qCWarning(dcHardware()) << "Could not open GPIO" << m_gpio << "active_low file.";
+        return false;
+    }
+
+    QTextStream out(&activeLowFile);
+    if (activeLow) {
+        out << "0";
+    } else {
+        out << "1";
+    }
+
+    activeLowFile.close();
+    return true;
+}
+
+/*! Returns true if the logic of this \l{Gpio} is inverted (1 = low, 0 = high). */
+bool Gpio::activeLow()
+{
+    QFile activeLowFile(m_gpioDirectory.path() + "/active_low");
+    if (!activeLowFile.open(QIODevice::ReadOnly)) {
+        qCWarning(dcHardware()) << "Could not open GPIO" << m_gpio << "active_low file.";
+        return false;
+    }
+
+    QString value;
+    QTextStream in(&activeLowFile);
+    in >> value;
+    activeLowFile.close();
+
+    if (value == "0")
+        return true;
+
     return false;
-}
-
-/*! Returns the direction of this GPIO.
- * \sa setDirection()
- */
-int Gpio::getDirection()
-{
-    return m_dir;
-}
-
-/*! Returns true if the digital \a value of the GPIO could be set correctly.
- *
- * Possible \a value 's are:
- *
- * \table
- * \header
- *      \li {2,1} Pin value
- * \row
- *      \li 0
- *      \li LOW
- * \row
- *      \li 1
- *      \li HIGH
- * \endtable
- */
-bool Gpio::setValue(unsigned int value)
-{
-    // check if gpio is a output
-    if( m_dir == OUTPUT){
-        char buf[64];
-        snprintf(buf, sizeof(buf), "/sys/class/gpio/gpio%d/value", m_gpio);
-
-        int fd = open(buf, O_WRONLY);
-        if (fd < 0) {
-            qCWarning(dcHardware) << "could not open /sys/class/gpio" << m_gpio << "/value";
-            return false;
-        }
-
-        if(value == LOW){
-            if(write(fd, "0", 2) != 2){
-                qCWarning(dcHardware) << "could not write to gpio (set LOW)";
-                close(fd);
-                return false;
-            }
-            close(fd);
-            return true;
-        }
-        if(value == HIGH){
-            if(write(fd, "1", 2) != 2){
-                qCWarning(dcHardware) << "could not write to gpio (set HIGH)";
-                close(fd);
-                return false;
-            }
-            close(fd);
-            return true;
-        }
-        close(fd);
-        return false;
-    }else{
-        qCWarning(dcHardware) << "Gpio" << m_gpio << "is not an OUTPUT.";
-        return false;
-    }
-}
-
-/*! Returns the current digital value of the GPIO.
- *
- * Possible values are:
- *
- * \table
- * \header
- *      \li {2,1} Pin directions
- * \row
- *      \li 0
- *      \li LOW
- * \row
- *      \li 1
- *      \li HIGH
- * \endtable
- */
-int Gpio::getValue()
-{
-    char buf[64];
-
-    snprintf(buf, sizeof(buf), "/sys/class/gpio/gpio%d/value", m_gpio);
-
-    int fd = open(buf, O_RDONLY);
-    if (fd < 0) {
-        qCWarning(dcHardware) << "could not open /sys/class/gpio" << m_gpio << "/value";
-        return -1;
-    }
-    char ch;
-    int value = -1;
-    ssize_t len = read(fd, &ch, 1);
-    if(len != 1){
-        close(fd);
-        return -1;
-    }
-
-    if (ch != '0') {
-        value = 1;
-    }else{
-        value = 0;
-    }
-    close(fd);
-    return value;
 }
 
 /*! Returns true if the \a edge of this GPIO could be set correctly. The \a edge parameter specifies,
- *  when an interrupt occurs.
- *
- * Possible values are:
- *
- * \table
- * \header
- *      \li {2,1} Edge possibilitys
- * \row
- *      \li 0
- *      \li EDGE_FALLING
- * \row
- *      \li 1
- *      \li EDGE_RISING
- * \row
- *      \li 2
- *      \li EDGE_BOTH
- * \endtable
- */
-bool Gpio::setEdgeInterrupt(int edge)
+ *  when an interrupt occurs. */
+bool Gpio::setEdgeInterrupt(Gpio::Edge edge)
 {
-    char buf[64];
-    snprintf(buf, sizeof(buf), "/sys/class/gpio/gpio%d/edge", m_gpio);
-
-    int fd = open(buf, O_WRONLY);
-    if (fd < 0) {
-        qCWarning(dcHardware) << "could not open /sys/class/gpio" << m_gpio << "/edge";
+    if (m_direction == Gpio::DirectionOutput) {
+        qCWarning(dcHardware()) << "Could not set edge interrupt, GPIO is configured as an output.";
         return false;
     }
 
-    if(edge == EDGE_FALLING){
-        if(write(fd, "falling", 8) != 8){
-            qCWarning(dcHardware) << "could not write to gpio (set EDGE_FALLING)";
-            close(fd);
-            return false;
-        }
-        close(fd);
-        return true;
-    }
-    if(edge == EDGE_RISING){
-        if(write(fd, "rising", 7) != 7){
-            qCWarning(dcHardware) << "could not write to gpio (set EDGE_RISING)";
-            close(fd);
-            return false;
-        }
-        close(fd);
-        return true;
-    }
-    if(edge == EDGE_BOTH){
-        if(write(fd, "both", 5) != 5){
-            qCWarning(dcHardware) << "could not write to gpio (set EDGE_BOTH)";
-            close(fd);
-            return false;
-        }
-        close(fd);
-        return true;
-    }
-    close(fd);
-    return false;
-}
-
-/*! This method allows to invert the logic of this GPIO.
- *  Returns true, if the GPIO could be set \a activeLow.
- */
-bool Gpio::setActiveLow(bool activeLow)
-{
-    char buf[64];
-    snprintf(buf, sizeof(buf), "/sys/class/gpio/gpio%d/active_low", m_gpio);
-    int fd = open(buf, O_WRONLY);
-    if (fd < 0) {
-        qCWarning(dcHardware) << "could not open /sys/class/gpio" << m_gpio << "/active_low";
+    QFile edgeFile(m_gpioDirectory.path() + "/edge");
+    if (!edgeFile.open(QIODevice::WriteOnly)) {
+        qCWarning(dcHardware()) << "Could not open GPIO" << m_gpio << "edge file.";
         return false;
     }
 
-    if(activeLow){
-        if(write(fd, "0", 2) != 2){
-            qCWarning(dcHardware) << "could not write to gpio (set Active LOW)";
-            close(fd);
-            return false;
-        }
-        close(fd);
-        return true;
+    QTextStream out(&edgeFile);
+    switch (edge) {
+    case EdgeFalling:
+        out << "falling";
+        break;
+    case EdgeRising:
+        out << "rising";
+        break;
+    case EdgeBoth:
+        out << "both";
+        break;
+    case EdgeNone:
+        out << "none";
+        break;
+    default:
+        return false;
     }
-    if(!activeLow){
-        if(write(fd, "1", 2) != 2){
-            qCWarning(dcHardware) << "could not write to gpio (set Active HIGH)";
-            close(fd);
-            return false;
-        }
-        close(fd);
-        return true;
-    }
-    close(fd);
-    return false;
+
+    edgeFile.close();
+    return true;
 }
 
-/*! Returns the number of this GPIO.
- * \sa Gpio::Gpio()
- */
-int Gpio::gpioNumber()
+/*! Returns the edge interrupt of this \l{Gpio}. */
+Gpio::Edge Gpio::edgeInterrupt()
+{
+    QFile edgeFile(m_gpioDirectory.path() + "/edge");
+    if (!edgeFile.open(QIODevice::ReadOnly)) {
+        qCWarning(dcHardware()) << "Could not open GPIO" << m_gpio << "edge file.";
+        return Gpio::EdgeNone;
+    }
+
+    QString edge;
+    QTextStream in(&edgeFile);
+    in >> edge;
+    edgeFile.close();
+
+    if (edge.contains("falling")) {
+        return Gpio::EdgeFalling;
+    } else if (edge.contains("rising")) {
+        return Gpio::EdgeRising;
+    } else if (edge.contains("both")) {
+        return Gpio::EdgeBoth;
+    } else if (edge.contains("none")) {
+        return Gpio::EdgeNone;
+    }
+
+    return Gpio::EdgeNone;
+}
+
+/*! Returns the number of this \l{Gpio}. */
+int Gpio::gpioNumber() const
 {
     return m_gpio;
 }
 
-/*! Returns true if the directory /sys/class/gpio does exist.
- */
-bool Gpio::isAvailable()
+
+QDebug operator<<(QDebug d, Gpio *gpio)
 {
-    QDir gpioDirectory("/sys/class/gpio");
-    return gpioDirectory.exists();
+    d << "-----------------------------------";
+    d << "\n--> gpio" << gpio->gpioNumber() << ":";
+    d << "\n------------------";
+    if (gpio->direction() == Gpio::DirectionInput) {
+        d << "\n        direction: input";
+    } else if (gpio->direction() == Gpio::DirectionOutput) {
+        d << "\n        direction: output";
+    }
+    d << "\n            value:" << gpio->value();
+    d << "\n       active low:" << gpio->activeLow();
+
+    switch (gpio->edgeInterrupt()) {
+    case Gpio::EdgeFalling:
+        d << "\n   edge interrupt:" << "falling";
+        break;
+    case Gpio::EdgeRising:
+        d << "\n   edge interrupt:" << "rising";
+        break;
+    case Gpio::EdgeBoth:
+        d << "\n   edge interrupt:" << "both";
+        break;
+    case Gpio::EdgeNone:
+        d << "\n   edge interrupt:" << "none";
+        break;
+    default:
+        break;
+    }
+    d << "\n-----------------------------------\n";
+    return d;
 }

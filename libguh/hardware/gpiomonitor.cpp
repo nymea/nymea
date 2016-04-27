@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2015 -2016 Simon Stürz <simon.stuerz@guh.guru>           *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -19,246 +19,144 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-  \class GpioMonitor
-  \brief The GpioMonitor class allows to monitor GPIOs.
+    \class GpioMonitor
+    \brief The GpioMonitor class allows to monitor GPIOs.
 
-  \ingroup hardware
-  \inmodule libguh
+    \ingroup hardware
+    \inmodule libguh
 
-  An instance of this class creates a thread, which monitors each of the added GPIOs. The object
-  emits a signal if one of the added GPIOs changes its value. The GpioMonitor configures a GPIO as an
-  input, with the edge interrupt EDGE_BOTH (\l{Gpio::setEdgeInterrupt()}{setEdgeInterrupt}).
+    An instance of this class creates a thread, which monitors each of the added GPIOs. The object
+    emits a signal if one of the added GPIOs changes its value. The GpioMonitor configures a GPIO as an
+    input, with the edge interrupt EDGE_BOTH (\l{Gpio::setEdgeInterrupt()}{setEdgeInterrupt}).
 
-  \chapter Example
-  Following example shows how to use the GpioMonitor class for a button on the Raspberry Pi. There are two possibilitys
-  to connect a button. Following picture shows the schematics:
+    \chapter Example
+    Following example shows how to use the GpioMonitor class for a button on the Raspberry Pi. There are two possibilitys
+    to connect a button. Following picture shows the schematics:
 
-  \image Raspberry_Pi_Button_Example.png "Raspberry Pi button example"
+    \image Raspberry_Pi_Button_Example.png "Raspberry Pi button example"
 
-  Button A represents a clean solutin with a 10 k\unicode{0x2126} resistor (set up as activeLow = false).
-  Button B represents a "dirty" solution, were the 3.3V will be directly connected to the GPIO if the button is pressed (set activeLow = true).
+    Button A represents a clean solutin with a 10 k\unicode{0x2126} resistor (set up as activeLow = false).
+    Button B represents a "dirty" solution, were the 3.3V will be directly connected to the GPIO if the button is pressed (set activeLow = true).
 
-  Here is the code example for a button class:
+    Here is the code example for a button class:
+    \code
+          Button::Button(QObject *parent) :
+              QObject(parent)
+          {
+              m_button  = new GpioMonitor(110, this);
+              connect(m_button, &GpioMonitor::valueChanged, this, &Button::stateChanged);
+          }
 
-  \tt{guhbutton.h}
-  \code
-    #include <QObject>
-    #include <QDebug>
-    #include <QTimer>
+          bool Button::init()
+          {
+              return m_button->enable();
+          }
 
-    #include "hardware/gpiomonitor.h"
-
-    class GuhButton : public QObject
-    {
-        Q_OBJECT
-    public:
-        explicit GuhButton(QObject *parent = 0, int gpio = 4);
-        bool enable();
-        void disable();
-
-    private:
-        GpioMonitor *m_monitor;
-        int m_gpioPin;
-        Gpio *m_gpio;
-
-        bool m_buttonPressed;
-        QTimer *m_longpressedTimer;
-        QTimer *m_debounceTimer;
-
-    signals:
-        void buttonPressed();
-        void buttonReleased();
-        void buttonLongPressed();
-
-    private slots:
-        void gpioChanged(const int &gpioPin, const int &value);
-    };
-  \endcode
-
-  \tt{guhbutton.cpp}
-  \code
-    #include "guhbutton.h"
-
-    GuhButton::GuhButton(QObject *parent, int gpio) :
-        QObject(parent), m_gpioPin(gpio)
-    {
-        m_buttonPressed = false;
-    }
-
-    bool GuhButton::enable()
-    {
-        qDebug() << "setup button on GPIO " << m_gpioPin;
-        m_monitor = new GpioMonitor(this);
-
-        m_gpio = new Gpio(this, m_gpioPin);
-
-        if(!m_monitor->addGpio(m_gpio, false)){
-            return false;
-        }
-        connect(m_monitor, &GpioMonitor::changed, this, &GuhButton::gpioChanged);
-
-        // Timer to generate the long pressed signal
-        m_longpressedTimer = new QTimer(this);
-        m_longpressedTimer->setInterval(500);
-        m_longpressedTimer->setSingleShot(true);
-        connect(m_longpressedTimer, &QTimer::timeout, this, &GuhButton::buttonLongPressed);
-
-        // Timer to debounce the button
-        m_debounceTimer = new QTimer(this);
-        m_debounceTimer->setSingleShot(true);
-        m_debounceTimer->setInterval(50);
-
-        m_monitor->enable();
-        return true;
-    }
-
-    void GuhButton::disable()
-    {
-        m_monitor->disable();
-    }
-
-    void GuhButton::gpioChanged(const int &gpioPin, const int &value)
-    {
-        if (gpioPin == m_gpioPin){
-            if(m_debounceTimer->isActive()){
-                return;
-            }
-            // check button state
-            bool buttonState = !QVariant(value).toBool();
-            if (m_buttonPressed != buttonState) {
-                if (buttonState) {
-                    emit buttonPressed();
-                    m_longpressedTimer->start();
-                    m_debounceTimer->start();
-                } else {
-                    emit buttonReleased();
-                    m_longpressedTimer->stop();
-                }
-                m_buttonPressed = buttonState;
-            }
-        }
-    }
-  \endcode
+          void Button::stateChanged(const bool &value)
+          {
+              if (m_pressed != value) {
+                  m_pressed = value;
+                  if (value) {
+                      emit buttonPressed();
+                  } else {
+                      emit buttonReleased();
+                  }
+              }
+          }
+    \endcode
 */
 
-/*! \fn void GpioMonitor::changed(const int &gpioPin, const int &value);
- *  This signal will be emited, if one of the monitored \l{Gpio}{Gpios} changed his \a value. The \a gpioPin
- *  paramter describes which \l{Gpio} changed his \a value.
- *  \sa Gpio::gpioNumber()
- */
+/*! \fn void GpioMonitor::valueChanged(const bool &value);
+ *  This signal will be emited, if the monitored \l{Gpio}{Gpios} changed his \a value. */
 
 #include "gpiomonitor.h"
 #include "loggingcategories.h"
 
-/*! Constructs a \l{GpioMonitor} object with the given \a parent. */
-GpioMonitor::GpioMonitor(QObject *parent) :
-    QThread(parent)
+/*! Constructs a \l{GpioMonitor} object with the given \a gpio number and \a parent. */
+GpioMonitor::GpioMonitor(int gpio, QObject *parent) :
+    QObject(parent),
+    m_gpioNumber(gpio)
 {
+    m_valueFile.setFileName("/sys/class/gpio/gpio" + QString::number(m_gpioNumber) + "/value");
 }
 
-/*! Destructs the object of this \l{GpioMonitor}.*/
-GpioMonitor::~GpioMonitor()
+/*! Returns true if this \l{GpioMonitor} could be enabled successfully. With the \a activeLow parameter the values can be inverted.
+    With the \a edgeInterrupt parameter the interrupt type can be specified. */
+bool GpioMonitor::enable(bool activeLow, Gpio::Edge edgeInterrupt)
 {
-    foreach (Gpio* gpio, m_gpioList) {
-        gpio->unexportGpio();
-    }
-    quit();
-    wait();
-    deleteLater();
-}
+    if (!Gpio::isAvailable())
+        return false;
 
-/*! Starts the \l{GpioMonitor}. While the \l{GpioMonitor} is running there can not be added new \l{Gpio}{Gpios}.
- *  \sa disable(), */
-void GpioMonitor::enable()
-{
-    m_enabledMutex.lock();
-    m_enabled = true;
-    m_enabledMutex.unlock();
-    start();
-}
-
-/*! Stops the \l{GpioMonitor}. No changes on the \l{Gpio} will be recognized.*/
-void GpioMonitor::disable()
-{
-    m_enabledMutex.lock();
-    m_enabled = false;
-    m_enabledMutex.unlock();
-}
-
-/*! Adds the given \l{Gpio} \a gpio to the monitor. This function can only be called if the monitor is not running.
- *  The given \a gpio will be configured as \a activeLow.
- *  Return true if the gpio could be added and set up correctly.
- *  \sa Gpio::setActiveLow(), */
-bool GpioMonitor::addGpio(Gpio *gpio, bool activeLow)
-{
-    if (!gpio->exportGpio() || !gpio->setDirection(INPUT) || !gpio->setEdgeInterrupt(EDGE_BOTH) || !gpio->setActiveLow(activeLow)) {
+    m_gpio = new Gpio(m_gpioNumber, this);
+    if (!m_gpio->exportGpio() ||
+            !m_gpio->setDirection(Gpio::DirectionInput) ||
+            !m_gpio->setActiveLow(activeLow) ||
+            !m_gpio->setEdgeInterrupt(edgeInterrupt)) {
+        qDebug() << "ERROR: while initializing GPIO" << m_gpio->gpioNumber();
         return false;
     }
-    m_gpioListMutex.lock();
-    m_gpioList.append(gpio);
-    m_gpioListMutex.unlock();
+
+    if (!m_valueFile.open(QFile::ReadOnly)) {
+        qWarning() << "ERROR: could not open value file for gpio monitor" << m_gpio->gpioNumber();
+        return false;
+    }
+
+    m_notifier = new QSocketNotifier(m_valueFile.handle(), QSocketNotifier::Exception);
+    connect(m_notifier, &QSocketNotifier::activated, this, &GpioMonitor::readyReady);
+
+    m_notifier->setEnabled(true);
     return true;
 }
 
-/*! Returns the list of \l{Gpio}{Gpios} which currently are monitored.
- *  \sa addGpio(),  */
-QList<Gpio *> GpioMonitor::gpioList()
+/*! Disables this \l{GpioMonitor}. */
+void GpioMonitor::disable()
 {
-    m_gpioListMutex.lock();
-    QList<Gpio*> gpioList = m_gpioList;
-    m_gpioListMutex.unlock();
-    return gpioList;
+    delete m_notifier;
+    delete m_gpio;
+
+    m_notifier = 0;
+    m_gpio = 0;
+
+    m_valueFile.close();
 }
 
-/*! This method represents the reimplementation of the virtual void QThread::run() method. This method will be called from
- *  QThread by calling the method void QThread::start(). Never call this method directly.
- *  \sa enable(), */
-void GpioMonitor::run()
+/*! Returns true if this \l{GpioMonitor} is running. */
+bool GpioMonitor::isRunning() const
 {
-    struct pollfd *fds;
-    char val;
-    int ret;
-    int retVal;
-
-    fds = (pollfd*) malloc(sizeof(pollfd) * m_gpioList.size());
-    m_gpioListMutex.lock();
-    for (int i = 0; i < m_gpioList.size(); i++) {
-        fds[i].fd = m_gpioList[i]->openGpio();
-        fds[i].events = POLLPRI | POLLERR;
+    if (!m_notifier) {
+        return false;
     }
-    m_gpioListMutex.unlock();
+    return m_notifier->isEnabled();
+}
 
-    bool enabled = true;
+/*! Returns the current value of this \l{GpioMonitor}. */
+bool GpioMonitor::value() const
+{
+    return m_currentValue;
+}
 
-    m_enabledMutex.lock();
-    m_enabled = true;
-    m_enabledMutex.unlock();
+/*! Returns the \l{Gpio} of this \l{GpioMonitor}. */
+Gpio *GpioMonitor::gpio()
+{
+    return m_gpio;
+}
 
-    while (enabled) {
-        m_gpioListMutex.lock();
-        ret = poll(fds, m_gpioList.size(), 2000);
+void GpioMonitor::readyReady(const int &ready)
+{
+    Q_UNUSED(ready)
 
-        if (ret > 0) {
-            for (int i=0; i < m_gpioList.size(); i++) {
-                if ((fds[i].revents & POLLPRI) || (fds[i].revents & POLLERR)) {
-                    lseek(fds[i].fd, 0, SEEK_SET);
-                    retVal = read(fds[i].fd, &val, 1);
+    m_valueFile.seek(0);
+    QByteArray data = m_valueFile.readAll();
 
-                    emit changed(m_gpioList[i]->gpioNumber(), m_gpioList[i]->getValue());
-
-                    if (retVal < 0) {
-                        qCWarning(dcHardware) << "GpioMonitor poll failed";
-                    }
-                }
-            }
-        } else if (ret < 0) {
-            qCWarning(dcHardware) << "poll failed: " << errno;
-        }
-        m_gpioListMutex.unlock();
-
-        m_enabledMutex.lock();
-        enabled = m_enabled;
-        m_enabledMutex.unlock();
+    bool value = false;
+    if (data[0] == '1') {
+        value = true;
+    } else if (data[0] == '0') {
+        value = false;
+    } else {
+        return;
     }
-    free(fds);
+
+    m_currentValue = value;
+    emit valueChanged(value);
 }

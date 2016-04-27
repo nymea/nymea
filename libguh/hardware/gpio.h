@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2015 -2016 Simon Stürz <simon.stuerz@guh.guru>           *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -22,86 +22,65 @@
 #define GPIO_H
 
 #include <QObject>
-#include <QThread>
-#include <QMutex>
-#include <QMutexLocker>
+#include <QDebug>
 #include <QDir>
+#include <QFile>
+#include <QTextStream>
 
 #include "libguh.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <poll.h>
-
-#define     INPUT   0
-#define     OUTPUT  1
-#define     LOW     0
-#define     HIGH    1
-
-#define     EDGE_FALLING    0
-#define     EDGE_RISING     1
-#define     EDGE_BOTH       2
-
-
-/**********************************
- *  Raspberry Pi Rev. 2.0 P1 Header         Raspberry Pi Rev. 2.0 P5 Header
- *   __________________________________      __________________________________
- *  |______________________|__________|     |______________________|__________|
- *  |   Name    |  PIN NR. | Function |     |   Name    |  PIN NR. | Function |
- *  |___________|__________|__________|     |___________|__________|__________|
- *  |  GPIO 2   |   3      |  SDA     |     |  GPIO 28  |   3      |  SDA     |
- *  |  GPIO 3   |   5      |  SCL     |     |  GPIO 29  |   4      |  SCL     |
- *  |  GPIO 4   |   7      |          |     |  GPIO 30  |   5      |          |
- *  |  GPIO 7   |   26     |  CE1     |     |  GPIO 31  |   6      |          |
- *  |  GPIO 8   |   24     |  CE0     |     |___________|__________|__________|
- *  |  GPIO 9   |   21     |  MISO    |
- *  |  GPIO 10  |   19     |  MOSI    |
- *  |  GPIO 11  |   23     |  SCLK    |
- *  |  GPIO 14  |   8      |  TXD     |
- *  |  GPIO 15  |   10     |  RXD     |
- *  |  GPIO 17  |   11     |          |
- *  |  GPIO 18  |   12     |  PCM_CLK |
- *  |  GPIO 22  |   15     |          |
- *  |  GPIO 23  |   16     |          |
- *  |  GPIO 24  |   18     |          |
- *  |  GPIO 25  |   22     |          |
- *  |  GPIO 27  |   13     |          |
- *  |___________|__________|__________|
- *
- **********************************
- */
 
 class LIBGUH_EXPORT Gpio : public QObject
 {
     Q_OBJECT
 public:
-    explicit Gpio(QObject *parent = 0, int gpio = 0);
+    enum Direction {
+        DirectionInput,
+        DirectionOutput,
+        DirectionInvalid
+    };
+
+    enum Value {
+        ValueLow = 0,
+        ValueHigh = 1,
+        ValueInvalid = -1
+    };
+
+    enum Edge {
+        EdgeFalling,
+        EdgeRising,
+        EdgeBoth,
+        EdgeNone
+    };
+
+    explicit Gpio(int gpio = 0, QObject *parent = 0);
     ~Gpio();
+
+    static bool isAvailable();
 
     bool exportGpio();
     bool unexportGpio();
 
-    int openGpio();
-    bool setDirection(int dir);
-    int getDirection();
+    bool setDirection(Gpio::Direction direction);
+    Gpio::Direction direction();
 
-    bool setValue(unsigned int value);
-    int getValue();
+    bool setValue(Gpio::Value value);
+    Gpio::Value value();
 
-    bool setEdgeInterrupt(int edge);
     bool setActiveLow(bool activeLow);
+    bool activeLow();
 
-    int gpioNumber();
-    bool isAvailable();
+    bool setEdgeInterrupt(Gpio::Edge edge);
+    Gpio::Edge edgeInterrupt();
+
+    int gpioNumber() const;
 
 private:
     int m_gpio;
-    int m_dir;
+    Gpio::Direction m_direction;
+    QDir m_gpioDirectory;
 
 };
+
+QDebug operator<< (QDebug d, Gpio *gpio);
 
 #endif // GPIO_H

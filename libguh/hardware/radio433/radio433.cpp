@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2015 -2016 Simon Stürz <simon.stuerz@guh.guru>           *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -25,7 +25,7 @@
   \ingroup hardware
   \inmodule libguh
 
-  This class handles all supported radio 433 MHz receiver and transmitter. Receiving data on the 433.92 MHz frequency
+  This class handles all supported radio 433 MHz transmitter. Receiving data on the 433.92 MHz frequency
   is only supported, if there are \l{Gpio}{GPIO's} available and a suitable receiver is connected to GPIO 27. Examples for receiver
   can be found \l{https://www.futurlec.com/Radio-433MHZ.shtml}{here}. The antenna has a very large impact on the quality
   of the signal and how well it is recognized. In many forums and blogs it is described that a 17, 3 mm piece of wire is enough.
@@ -42,16 +42,13 @@
 
   \note: Radio 433 on GPIO's is by default disabled. If you want to enable it, you need to compile the source with the qmake config \tt{CONFIG+=radio433gpio}
 
-
 */
 
-/*! \fn void Radio433::dataReceived(QList<int> rawData)
-    This signal is emitted when the receiver recognized a signal. The \a rawData parameter describes the signal.
-*/
 
 #include "radio433.h"
 #include "loggingcategories.h"
 #include "guhsettings.h"
+#include "hardware/gpio.h"
 
 #include <QFileInfo>
 
@@ -63,14 +60,10 @@ Radio433::Radio433(QObject *parent) :
     GuhSettings settings(GuhSettings::SettingsRoleGlobal);
     qCDebug(dcHardware) << "Loading GPIO settings from:" << settings.fileName();
     settings.beginGroup("GPIO");
-    int receiverGpioNumber = settings.value("rf433rx",27).toInt();
     int transmitterGpioNumber = settings.value("rf433tx",22).toInt();
     settings.endGroup();
 
-    m_receiver = new Radio433Receiver(this, receiverGpioNumber);
     m_transmitter = new Radio433Trasmitter(this, transmitterGpioNumber);
-    connect(m_receiver, &Radio433Receiver::readingChanged, this, &Radio433::readingChanged);
-    connect(m_receiver, &Radio433Receiver::dataReceived, this, &Radio433::dataReceived);
     #endif
 
     m_brennenstuhlTransmitter = new Radio433BrennenstuhlGateway(this);
@@ -81,7 +74,6 @@ Radio433::Radio433(QObject *parent) :
 Radio433::~Radio433()
 {
     #ifdef GPIO433
-    m_receiver->quit();
     m_transmitter->quit();
     #endif
 }
@@ -94,24 +86,19 @@ bool Radio433::enable()
 
     #ifdef GPIO433
     // check if GPIOs are available
-    QFileInfo gpioFile("/sys/class/gpio/export");
-    if (gpioFile.exists()) {
-//        bool receiverAvailable = m_receiver->startReceiver();
-//        if (!receiverAvailable) {
-//            //qCWarning(dcHardware) << "ERROR: radio 433 MHz receiver not available on GPIO's";
-//        }
+    if (Gpio::isAvailable()) {
 
-//        bool transmitterAvailable = m_transmitter->startTransmitter();
-//        if (!transmitterAvailable) {
-//            //qCWarning(dcHardware) << "ERROR: radio 433 MHz transmitter not available on GPIO's";
-//        }
+        bool transmitterAvailable = m_transmitter->startTransmitter();
+        if (!transmitterAvailable) {
+            //qCWarning(dcHardware) << "ERROR: radio 433 MHz transmitter not available on GPIO's";
+        }
 
-//        if (!receiverAvailable && !transmitterAvailable) {
-//            qCWarning(dcHardware) << "--> Radio 433 MHz GPIO's not available.";
-//            return false;
-//        }
+        if (!transmitterAvailable) {
+            qCWarning(dcHardware) << "--> Radio 433 MHz GPIO's not available.";
+            return false;
+        }
     }
-    qCDebug(dcDeviceManager) << "--> Radio 433 MHz GPIO's enabled.";
+    qCDebug(dcDeviceManager()) << "--> Radio 433 MHz GPIO's enabled.";
     #endif
 
     return true;
@@ -121,22 +108,15 @@ bool Radio433::enable()
 bool Radio433::disabel()
 {
     m_brennenstuhlTransmitter->disable();
-
-    #ifdef GPIO433
-    if (m_receiver->stopReceiver()) {
-        return true;
-    }
-    return false;
-    #endif
     return true;
 }
 
 void Radio433::brennenstuhlAvailableChanged(const bool &available)
 {
     if (available) {
-        qCDebug(dcDeviceManager) << "--> Radio 433 MHz Brennenstuhl LAN Gateway available.";
+        qCDebug(dcHardware()) << "--> Radio 433 MHz Brennenstuhl LAN Gateway available.";
     } else {
-        qCWarning(dcHardware) << "--> Radio 433 MHz Brennenstuhl LAN Gateway NOT available.";
+        qCWarning(dcHardware()) << "--> Radio 433 MHz Brennenstuhl LAN Gateway NOT available.";
     }
 }
 

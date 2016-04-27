@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.guru>                 *
  *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
  *                                                                         *
  *  This file is part of guh.                                              *
@@ -40,8 +40,6 @@
         No Resource required.
     \value HardwareResourceRadio433
         Refers to the 433 MHz radio.
-    \value HardwareResourceRadio868
-        Refers to the 868 MHz radio.
     \value HardwareResourceTimer
         Refers to the global timer managed by the \l{DeviceManager}. Plugins should not create their own timers,
         but rather request the global timer using the hardware resources.
@@ -207,7 +205,6 @@ DeviceManager::DeviceManager(QObject *parent) :
     connect(&m_pluginTimer, &QTimer::timeout, this, &DeviceManager::timerEvent);
 
     m_radio433 = new Radio433(this);
-    connect(m_radio433, &Radio433::dataReceived, this, &DeviceManager::radio433SignalReceived);
     m_radio433->enable();
     // TODO: error handling if no Radio433 detected (GPIO or network), disable radio433 plugins or something...
 

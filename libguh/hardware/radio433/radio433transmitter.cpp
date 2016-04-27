@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2015 -2016 Simon Stürz <simon.stuerz@guh.guru>           *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -52,17 +52,18 @@ void Radio433Trasmitter::run()
         rawData = m_rawDataQueue.dequeue();
         m_queueMutex.unlock();
 
-        m_gpio->setValue(LOW);
+        m_gpio->setValue(Gpio::ValueLow);
         int flag=1;
 
         foreach (int delay, rawData) {
             // 1 = High, 0 = Low
-            m_gpio->setValue(flag %2);
+            int value = flag %2;
+            m_gpio->setValue((Gpio::Value)value);
             flag++;
             usleep(delay);
         }
 
-        m_gpio->setValue(LOW);
+        m_gpio->setValue(Gpio::ValueLow);
     }
     m_queueMutex.unlock();
 }
@@ -76,9 +77,9 @@ void Radio433Trasmitter::allowSending(bool sending)
 
 bool Radio433Trasmitter::setUpGpio()
 {
-    m_gpio = new Gpio(this,m_gpioPin);
+    m_gpio = new Gpio(m_gpioPin, this);
 
-    if(!m_gpio->exportGpio() || !m_gpio->setDirection(OUTPUT) || !m_gpio->setValue(LOW)){
+    if(!m_gpio->exportGpio() || !m_gpio->setDirection(Gpio::DirectionOutput) || !m_gpio->setValue(Gpio::ValueLow)){
         m_available = false;
         return false;
     }

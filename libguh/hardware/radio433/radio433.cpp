@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.guru>                 *
+ *  Copyright (C) 2015 -2016 Simon Stürz <simon.stuerz@guh.guru>           *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -25,7 +25,7 @@
   \ingroup hardware
   \inmodule libguh
 
-  This class handles all supported radio 433 MHz receiver and transmitter. Receiving data on the 433.92 MHz frequency
+  This class handles all supported radio 433 MHz transmitter. Receiving data on the 433.92 MHz frequency
   is only supported, if there are \l{Gpio}{GPIO's} available and a suitable receiver is connected to GPIO 27. Examples for receiver
   can be found \l{https://www.futurlec.com/Radio-433MHZ.shtml}{here}. The antenna has a very large impact on the quality
   of the signal and how well it is recognized. In many forums and blogs it is described that a 17, 3 mm piece of wire is enough.

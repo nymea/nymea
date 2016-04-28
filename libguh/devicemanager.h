@@ -33,8 +33,8 @@
 #include "types/vendor.h"
 
 #include "network/networkmanager.h"
-#include "network/upnpdiscovery/upnpdiscovery.h"
-#include "network/upnpdiscovery/upnpdevicedescriptor.h"
+#include "network/upnp/upnpdiscovery.h"
+#include "network/upnp/upnpdevicedescriptor.h"
 
 #ifdef BLUETOOTH_LE
 #include "bluetooth/bluetoothscanner.h"

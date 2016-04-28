@@ -1,3 +1,9 @@
+guh (0.7.2) xenial; urgency=medium
+
+  * Add Avahi support
+
+ -- Simon Stürz <simon.stuerz@guh.guru>  Thu, 28 Apr 2016 14:56:17 +0200
+
 guh (0.7.1) wily; urgency=medium
 
   * Add Timemanager

@@ -139,7 +139,7 @@
 #include "devicemanager.h"
 #include "guhsettings.h"
 #include "hardware/radio433/radio433.h"
-#include "network/upnpdiscovery/upnpdiscovery.h"
+#include "network/upnp/upnpdiscovery.h"
 
 #include <QDebug>
 #include <QFileInfo>

@@ -83,7 +83,7 @@ Coap::Coap(QObject *parent, const quint16 &port) :
 {
     m_socket = new QUdpSocket(this);
 
-    if (!m_socket->bind(QHostAddress::Any, port))
+    if (!m_socket->bind(QHostAddress::Any, port, QAbstractSocket::ShareAddress))
         qCWarning(dcCoap) << "Could not bind to port" << port << m_socket->errorString();
 
     connect(m_socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));

@@ -127,12 +127,13 @@ WebServer::WebServer(const QSslConfiguration &sslConfiguration, QObject *parent)
         m_useSsl = false;
 
     // Create avahi service
+#ifndef TESTING_ENABLED
     m_avahiService = new ZConfService(this);
     connect(m_avahiService, SIGNAL(entryGroupEstablished()), this, SLOT(onEntryGroupEstablished()));
     connect(m_avahiService, SIGNAL(entryGroupFailure()), this, SLOT(onEntryGroupEstablished()));
     connect(m_avahiService, SIGNAL(entryGroupNameCollision()), this, SLOT(onEntryGroupEstablished()));
     m_avahiService->registerService("guhd", m_port);
-
+#endif
 }
 
 /*! Destructor of this \l{WebServer}. */

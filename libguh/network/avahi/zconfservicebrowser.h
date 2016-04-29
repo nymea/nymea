@@ -41,10 +41,10 @@ public:
     AvahiServiceEntry serviceEntry(QString name);
 
 signals:
-    void serviceEntryAdded(QString);
-    void serviceEntryRemoved(QString);
+    void serviceEntryAdded(const QString &name);
+    void serviceEntryRemoved(const QString &name);
 
-protected slots:
+private slots:
     void createServiceBrowser();
 
 protected:

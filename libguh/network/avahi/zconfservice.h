@@ -37,11 +37,6 @@ public:
     bool isValid() const;
     QString errorString() const;
 
-signals:
-    void entryGroupEstablished();
-    void entryGroupNameCollision();
-    void entryGroupFailure();
-
 public slots:
     void registerService(QString name, in_port_t port, QString type = "_http._tcp");
     void resetService();
@@ -51,6 +46,12 @@ protected:
 
 private:
     Q_DECLARE_PRIVATE(ZConfService)
+
+signals:
+    void entryGroupEstablished();
+    void entryGroupNameCollision();
+    void entryGroupFailure();
+
 };
 
 #endif // ZCONFSERVICE_H

@@ -73,13 +73,30 @@ public:
 /*!
     \class ZConfService
 
+    \ingroup hardware
+    \inmodule libguh
+
     \brief This class provides Avahi Zeroconf service registration. It can be
     used by server applications to announce a service on the local area network.
 
     Typical use involves creating an instance of ZConfService and calling
     registerService() with a service name and port number.
- */
+*/
 
+
+/*! \fn void ZConfService::entryGroupEstablished();
+    This signal will be emited when the service entry could be established successfully.
+*/
+
+/*! \fn void ZConfService::entryGroupNameCollision();
+    This signal will be emited when the service entry name collided with an other service.
+*/
+
+/*! \fn void ZConfService::entryGroupFailure();
+    This signal will be emited when the service entry could not be established successfully.
+*/
+
+/*! Constructs a \l{ZConfService} with the given \a parent.*/
 ZConfService::ZConfService(QObject *parent)
     : QObject(parent),
       d_ptr(new ZConfServicePrivate)
@@ -88,9 +105,7 @@ ZConfService::ZConfService(QObject *parent)
     d_ptr->client->run();
 }
 
-/*!
-    Destroys the object and releases all resources associated with it.
- */
+/*! Destroys the object and releases all resources associated with it. */
 ZConfService::~ZConfService()
 {
     if (d_ptr->group)
@@ -98,18 +113,13 @@ ZConfService::~ZConfService()
     delete d_ptr;
 }
 
-/*!
-    Returns true if the service group was added and commited without error.
- */
+/*!  Returns true if the service group was added and commited without error. */
 bool ZConfService::isValid() const
 {
     return (d_ptr->group && !d_ptr->error);
 }
 
-/*!
-    Returns a human readable error string with details of the last error that
-    occured.
- */
+/*! Returns a human readable error string with details of the last error that occured. */
 QString ZConfService::errorString() const
 {
     if (!d_ptr->client->client)
@@ -118,9 +128,8 @@ QString ZConfService::errorString() const
 }
 
 /*!
-    Registers a Zeroconf service on the LAN. If no service type is specified,
-    "_http._tcp" is assumed. Needless to say, the server should be available
-    and listen on the specified port.
+    Registers a Zeroconf service with the given \a name and \a port on the LAN. If no service \a type is specified,
+    "_http._tcp" is assumed.
  */
 void ZConfService::registerService(QString name, in_port_t port, QString type)
 {

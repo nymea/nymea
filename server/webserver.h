@@ -34,6 +34,8 @@
 #include <QSslConfiguration>
 #include <QSslKey>
 
+#include "network/avahi/zconfservice.h"
+
 // Note: Hypertext Transfer Protocol (HTTP/1.1) from the Internet Engineering Task Force (IETF):
 //       https://tools.ietf.org/html/rfc7231
 
@@ -84,6 +86,8 @@ private:
     QList<WebServerClient *> m_webServerClients;
     QHash<QSslSocket *, HttpRequest> m_incompleteRequests;
 
+    ZConfService *m_avahiService;
+
     QSslConfiguration m_sslConfiguration;
     bool m_useSsl;
 
@@ -111,6 +115,12 @@ private slots:
     void onDisconnected();
     void onEncrypted();
     void onError(QAbstractSocket::SocketError error);
+
+    // avahi service
+    void onEntryGroupEstablished();
+    void onEntryGroupFailure();
+    void onEntryGroupNameCollision();
+
 
 public slots:
     bool startServer();

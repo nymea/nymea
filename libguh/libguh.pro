@@ -74,6 +74,7 @@ HEADERS += devicemanager.h \
            types/ruleaction.h \
            types/ruleactionparam.h \
            types/statedescriptor.h \
+    network/avahi/guhavahibrowser.h
 
 
 SOURCES += devicemanager.cpp \
@@ -124,6 +125,7 @@ SOURCES += devicemanager.cpp \
            types/ruleaction.cpp \
            types/ruleactionparam.cpp \
            types/statedescriptor.cpp \
+    network/avahi/guhavahibrowser.cpp
 
 
 # install plugininfo python script for libguh-dev

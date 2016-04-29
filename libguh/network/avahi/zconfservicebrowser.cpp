@@ -138,7 +138,6 @@ public:
                 //                    }
                 //                }
 
-
                 AvahiServiceEntry entry = AvahiServiceEntry(name, QHostAddress(QString(a)), QString(domain), QString(host_name), (quint16)port, p, txtList, flags);
 
                 serviceBrowser->d_ptr->entries.insert(name, entry);
@@ -160,6 +159,9 @@ public:
 /*!
     \class ZConfServiceBrowser
 
+    \ingroup hardware
+    \inmodule libguh
+
     \brief AvahiServiceBrowser wrapper that lets you browse for services
     available on the local network. This class can be used to handle Zeroconf
     service discovery in a Qt-based client application.
@@ -170,12 +172,17 @@ public:
     ZConfServiceBrowser will emit serviceEntryAdded() when a new service is
     discovered and serviceEntryRemoved() when a service is removed from the
     network.
- */
+*/
 
-/*!
-    Creates a Zeroconf service browser. Call browse() to start browsing for
-    services.
- */
+/*! \fn void ZConfServiceBrowser::serviceEntryAdded(const QString &name);
+    This signal will be emited when a new service entry with the given \a name was added in the network.
+*/
+
+/*! \fn void ZConfServiceBrowser::serviceEntryRemoved(const QString &name);
+    This signal will be emited when a new service entry with the given \a name was removed from the network.
+*/
+
+/*! Creates a Zeroconf service browser with the given \a parent. Call browse() to start browsing for services. */
 ZConfServiceBrowser::ZConfServiceBrowser(QObject *parent)
     : QObject(parent),
       d_ptr(new ZConfServiceBrowserPrivate(new ZConfServiceClient(this)))
@@ -183,9 +190,7 @@ ZConfServiceBrowser::ZConfServiceBrowser(QObject *parent)
     connect(d_ptr->client, SIGNAL(clientRunning()), this, SLOT(createServiceBrowser()));
 }
 
-/*!
-    Destroys the browser object and releases all resources associated with it.
- */
+/*! Destroys the browser object and releases all resources associated with it. */
 ZConfServiceBrowser::~ZConfServiceBrowser()
 {
     if (d_ptr->browser)
@@ -194,7 +199,7 @@ ZConfServiceBrowser::~ZConfServiceBrowser()
 }
 
 /*!
-    Browses for Zeroconf services on the LAN. This is a non-blocking call.
+    Browses for Zeroconf services of the given \a serviceType on the LAN. This is a non-blocking call.
     ZConfServiceBrowser will emit serviceEntryAdded() when a new service is
     discovered and serviceEntryRemoved() when a service is removed from the
     network.
@@ -208,7 +213,7 @@ void ZConfServiceBrowser::browse(QString serviceType)
 
 /*!
     Returns a ZConfServiceEntry struct with detailed information about the
-    Zeroconf service associated with the name.
+    Zeroconf service associated with the \a name.
  */
 AvahiServiceEntry ZConfServiceBrowser::serviceEntry(QString name)
 {

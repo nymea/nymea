@@ -38,7 +38,6 @@ public:
     QString hostName() const;
     quint16 port() const;
     QAbstractSocket::NetworkLayerProtocol protocol() const;
-    AvahiLookupResultFlags flags() const;
     QStringList txt() const;
 
     bool isValid() const;

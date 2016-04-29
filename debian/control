@@ -32,6 +32,7 @@ Depends: libqt5network5,
   libqt5sql5,
   libqt5xml5,
   logrotate,
+  avahi-daemon,
   libguh1 (= ${binary:Version}),
   ${shlibs:Depends},
   ${misc:Depends}

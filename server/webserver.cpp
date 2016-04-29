@@ -126,6 +126,13 @@ WebServer::WebServer(const QSslConfiguration &sslConfiguration, QObject *parent)
     if (m_useSsl && m_sslConfiguration.isNull())
         m_useSsl = false;
 
+    // Create avahi service
+    m_avahiService = new ZConfService(this);
+    connect(m_avahiService, SIGNAL(entryGroupEstablished()), this, SLOT(onEntryGroupEstablished()));
+    connect(m_avahiService, SIGNAL(entryGroupFailure()), this, SLOT(onEntryGroupEstablished()));
+    connect(m_avahiService, SIGNAL(entryGroupNameCollision()), this, SLOT(onEntryGroupEstablished()));
+    m_avahiService->registerService("guhd", m_port);
+
 }
 
 /*! Destructor of this \l{WebServer}. */
@@ -133,6 +140,8 @@ WebServer::~WebServer()
 {
     qCDebug(dcApplication) << "Shutting down \"Webserver\"";
     this->close();
+    qCDebug(dcApplication) << "Shutting down \"Avahi Service\"";
+    m_avahiService->resetService();
 }
 
 /*! Send the given \a reply map to the corresponding client.
@@ -154,7 +163,6 @@ void WebServer::sendHttpReply(HttpReply *reply)
     qCDebug(dcWebServer) << "respond" << reply->httpStatusCode() << reply->httpReasonPhrase();
     socket->write(reply->data());
 }
-
 
 /*! Returns the port on which the webserver is listening. */
 int WebServer::port() const
@@ -525,6 +533,21 @@ void WebServer::onError(QAbstractSocket::SocketError error)
     Q_UNUSED(error)
     QSslSocket* socket = static_cast<QSslSocket *>(sender());
     qCWarning(dcConnection) << QString("Client socket error %1:%2 ->").arg(socket->peerAddress().toString()).arg(socket->peerPort()) << socket->errorString();
+}
+
+void WebServer::onEntryGroupEstablished()
+{
+    qCDebug(dcWebServer()) << "Avahi webserver service established successfully.";
+}
+
+void WebServer::onEntryGroupFailure()
+{
+    qCWarning(dcWebServer()) << "Avahi webserver service establishment failed.";
+}
+
+void WebServer::onEntryGroupNameCollision()
+{
+    qCWarning(dcWebServer()) << "Avahi webserver service establishment failed. Name collision.";
 }
 
 /*! Returns true if this \l{WebServer} started successfully. */

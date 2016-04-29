@@ -53,6 +53,7 @@ public:
             switch (event) {
             case AVAHI_BROWSER_FAILURE:
                 qDebug() << ("Avahi browser error: " % QString(avahi_strerror(avahi_client_errno(serviceBrowser->d_ptr->client->client))));
+                emit serviceBrowser->serviceBrowsingFinished();
                 break;
             case AVAHI_BROWSER_NEW:
                 qDebug() << ("New service '" % QString(name) % "' of type " % QString(type) % " in domain " % QString(domain) % ".");
@@ -76,14 +77,13 @@ public:
             case AVAHI_BROWSER_REMOVE:
                 serviceBrowser->d_ptr->entries.remove(name);
                 emit serviceBrowser->serviceEntryRemoved(name);
-                qDebug() << "Service '" % QString(name) % "' removed from the network.";
                 break;
             case AVAHI_BROWSER_ALL_FOR_NOW:
+                emit serviceBrowser->serviceBrowsingFinished();
+                break;
             case AVAHI_BROWSER_CACHE_EXHAUSTED:
-                qDebug() << (AVAHI_BROWSER_ALL_FOR_NOW == event
-                             ? "AVAHI_BROWSER_ALL_FOR_NOW"
-                             : "AVAHI_BROWSER_CACHE_EXHAUSTED");
-            } // end switch
+                break;
+            }
         }
     }
 

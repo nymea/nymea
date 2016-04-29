@@ -43,6 +43,7 @@ public:
 signals:
     void serviceEntryAdded(const QString &name);
     void serviceEntryRemoved(const QString &name);
+    void serviceBrowsingFinished();
 
 private slots:
     void createServiceBrowser();

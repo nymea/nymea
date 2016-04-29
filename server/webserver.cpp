@@ -97,6 +97,7 @@ namespace guhserver {
  */
 WebServer::WebServer(const QSslConfiguration &sslConfiguration, QObject *parent) :
     QTcpServer(parent),
+    m_avahiService(NULL),
     m_sslConfiguration(sslConfiguration),
     m_useSsl(false),
     m_enabled(false)
@@ -142,7 +143,8 @@ WebServer::~WebServer()
     qCDebug(dcApplication) << "Shutting down \"Webserver\"";
     this->close();
     qCDebug(dcApplication) << "Shutting down \"Avahi Service\"";
-    m_avahiService->resetService();
+    if (m_avahiService)
+        m_avahiService->resetService();
 }
 
 /*! Send the given \a reply map to the corresponding client.

@@ -36,9 +36,20 @@ void GuhAvahiBrowser::browseService(const QString &serviceType)
     m_browser->browse(serviceType);
 }
 
+void GuhAvahiBrowser::onSeviceAdded(const QString &name)
+{
+    qCDebug(dcHardware()) << QString("Avahi: +%1").arg(name);
+    m_serviceEntries.append(m_browser->serviceEntry(name));
+}
+
+void GuhAvahiBrowser::onSeviceRemoved(const QString &name)
+{
+    qCDebug(dcHardware()) << QString("Avahi: -%1").arg(name);
+}
+
 void GuhAvahiBrowser::onSeviceBrowsingFinished()
 {
-
+    qCDebug(dcHardware()) << "Avahi: discovery finished.";
     emit avahiBrowseFinished(m_serviceEntries);
 }
 

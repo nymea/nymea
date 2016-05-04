@@ -129,11 +129,9 @@ WebServer::WebServer(const QSslConfiguration &sslConfiguration, QObject *parent)
 
     // Create avahi service
 #ifndef TESTING_ENABLED
-    m_avahiService = new ZConfService(this);
-    connect(m_avahiService, SIGNAL(entryGroupEstablished()), this, SLOT(onEntryGroupEstablished()));
-    connect(m_avahiService, SIGNAL(entryGroupFailure()), this, SLOT(onEntryGroupEstablished()));
-    connect(m_avahiService, SIGNAL(entryGroupNameCollision()), this, SLOT(onEntryGroupEstablished()));
-    m_avahiService->registerService("guhd", m_port);
+    m_avahiService = new QtAvahiService(this);
+    connect(m_avahiService, &QtAvahiService::serviceStateChanged, this, &WebServer::onAvahiServiceStateChanged);
+    m_avahiService->registerService("guhIO", m_port);
 #endif
 }
 
@@ -142,9 +140,6 @@ WebServer::~WebServer()
 {
     qCDebug(dcApplication) << "Shutting down \"Webserver\"";
     this->close();
-    qCDebug(dcApplication) << "Shutting down \"Avahi Service\"";
-    if (m_avahiService)
-        m_avahiService->resetService();
 }
 
 /*! Send the given \a reply map to the corresponding client.
@@ -538,19 +533,11 @@ void WebServer::onError(QAbstractSocket::SocketError error)
     qCWarning(dcConnection) << QString("Client socket error %1:%2 ->").arg(socket->peerAddress().toString()).arg(socket->peerPort()) << socket->errorString();
 }
 
-void WebServer::onEntryGroupEstablished()
+void WebServer::onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceState &state)
 {
-    qCDebug(dcWebServer()) << "Avahi webserver service established successfully.";
-}
-
-void WebServer::onEntryGroupFailure()
-{
-    qCWarning(dcWebServer()) << "Avahi webserver service establishment failed.";
-}
-
-void WebServer::onEntryGroupNameCollision()
-{
-    qCWarning(dcWebServer()) << "Avahi webserver service establishment failed. Name collision.";
+    if (state == QtAvahiService::QtAvahiServiceStateEstablished) {
+        qCDebug(dcAvahi()) << "Service" << m_avahiService->name() << "established successfully";
+    }
 }
 
 /*! Returns true if this \l{WebServer} started successfully. */

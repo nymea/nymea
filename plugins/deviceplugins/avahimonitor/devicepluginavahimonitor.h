@@ -1,6 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.guru>                 *
+ *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.guru>                 *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -18,33 +19,30 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef GUHAVAHIBROWSER_H
-#define GUHAVAHIBROWSER_H
+#ifndef DEVICEPLUGINAVAHIMONITOR_H
+#define DEVICEPLUGINAVAHIMONITOR_H
 
-#include <QObject>
+#include "plugin/deviceplugin.h"
 
-#include "zconfservicebrowser.h"
+#include <QProcess>
 
-class GuhAvahiBrowser : public QObject
+class DevicePluginAvahiMonitor : public DevicePlugin
 {
     Q_OBJECT
+
+    Q_PLUGIN_METADATA(IID "guru.guh.DevicePlugin" FILE "devicepluginavahimonitor.json")
+    Q_INTERFACES(DevicePlugin)
+
 public:
-    explicit GuhAvahiBrowser(QObject *parent = 0);
+    explicit DevicePluginAvahiMonitor();
 
-    void browseService(const QString &serviceType);
-
-private:
-    ZConfServiceBrowser *m_browser;
-    QList<AvahiServiceEntry> m_serviceEntries;
-
-signals:
-    void avahiBrowseFinished(const QList<AvahiServiceEntry> &serviceEntries);
+    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
+    DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
+    DeviceManager::HardwareResources requiredHardware() const override;
 
 private slots:
-    void onSeviceAdded(const QString &name);
-    void onSeviceRemoved(const QString &name);
-    void onSeviceBrowsingFinished();
-
+    void onServiceEntryAdded(const AvahiServiceEntry &serviceEntry);
+    void onServiceEntryRemoved(const AvahiServiceEntry &serviceEntry);
 };
 
-#endif // GUHAVAHIBROWSER_H
+#endif // DEVICEPLUGINAVAHIMONITOR_H

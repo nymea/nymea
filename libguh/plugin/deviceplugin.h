@@ -76,14 +76,15 @@ public:
     // Hardware input
     virtual void radioData(const QList<int> &rawData) {Q_UNUSED(rawData)}
     virtual void guhTimer() {}
-    virtual void upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &upnpDeviceDescriptorList) {Q_UNUSED(upnpDeviceDescriptorList)}
+    virtual void upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &upnpDeviceDescriptorList) { Q_UNUSED(upnpDeviceDescriptorList) }
     virtual void upnpNotifyReceived(const QByteArray &notifyData) {Q_UNUSED(notifyData)}
 
     virtual void networkManagerReplyReady(QNetworkReply *reply) {Q_UNUSED(reply)}
 
     #ifdef BLUETOOTH_LE
-    virtual void bluetoothDiscoveryFinished(const QList<QBluetoothDeviceInfo> &deviceInfos) {Q_UNUSED(deviceInfos)}
+    virtual void bluetoothDiscoveryFinished(const QList<QBluetoothDeviceInfo> &deviceInfos) { Q_UNUSED(deviceInfos) }
     #endif
+
 
     // Configuration
     QList<ParamType> configurationDescription() const;
@@ -111,6 +112,9 @@ protected:
 
     // UPnP dicovery
     void upnpDiscover(QString searchTarget = "ssdp:all", QString userAgent = QString());
+
+    // Avahi browse services
+    QtAvahiServiceBrowser *avahiServiceBrowser() const;
 
     // Bluetooth LE discovery
     #ifdef BLUETOOTH_LE

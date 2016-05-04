@@ -18,58 +18,51 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef AVAHISERVICEENTRY_H
-#define AVAHISERVICEENTRY_H
+#ifndef QTAVAHISERVICE_H
+#define QTAVAHISERVICE_H
 
 #include <QObject>
-#include <QString>
-#include <QHostAddress>
-#include <QAbstractSocket>
-#include <avahi-client/publish.h>
 
 #include "libguh.h"
 
-class LIBGUH_EXPORT AvahiServiceEntry
-{
-public:
-    AvahiServiceEntry();
-    AvahiServiceEntry(QString name, QString serviceType, QHostAddress hostAddress, QString domain, QString hostName, quint16 port, QAbstractSocket::NetworkLayerProtocol protocol, QStringList txt, AvahiLookupResultFlags flags);
+class QtAvahiServicePrivate;
 
+class LIBGUH_EXPORT QtAvahiService : public QObject
+{
+    Q_OBJECT
+    Q_ENUMS(QtAvahiServiceState)
+
+public:
+    enum QtAvahiServiceState {
+        QtAvahiServiceStateUncomitted,
+        QtAvahiServiceStateRegistering,
+        QtAvahiServiceStateEstablished,
+        QtAvahiServiceStateCollision,
+        QtAvahiServiceStateFailure
+    };
+
+    explicit QtAvahiService(QObject *parent = 0);
+    ~QtAvahiService();
+
+    quint16 port() const;
     QString name() const;
     QString serviceType() const;
-    QHostAddress hostAddress() const;
-    QString domain() const;
-    QString hostName() const;
-    quint16 port() const;
-    QAbstractSocket::NetworkLayerProtocol protocol() const;
-    AvahiLookupResultFlags flags() const;
-    QStringList txt() const;
+
+    bool registerService(QString name, quint16 port, QString type = "_http._tcp");
+    void resetService();
 
     bool isValid() const;
+    QString errorString() const;
 
-    bool isChached() const;
-    bool isWideArea() const;
-    bool isMulticast() const;
-    bool isLocal() const;
-    bool isOurOwn() const;
+signals:
+    void serviceStateChanged(const QtAvahiServiceState &state);
 
-    bool operator ==(const AvahiServiceEntry &other) const;
-    bool operator !=(const AvahiServiceEntry &other) const;
+protected:
+    QtAvahiServicePrivate *d_ptr;
 
 private:
-    QString m_name;
-    QString m_serviceType;
-    QHostAddress m_hostAddress;
-    QString m_domain;
-    QString m_hostName;
-    quint16 m_port;
-    QAbstractSocket::NetworkLayerProtocol m_protocol;
-    QStringList m_txt;
-    AvahiLookupResultFlags m_flags;
+    Q_DECLARE_PRIVATE(QtAvahiService)
 
 };
 
-QDebug operator <<(QDebug dbg, const AvahiServiceEntry &entry);
-Q_DECLARE_METATYPE(AvahiServiceEntry)
-
-#endif // AVAHISERVICEENTRY_H
+#endif // QTAVAHISERVICE_H

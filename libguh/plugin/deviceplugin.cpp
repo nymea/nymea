@@ -681,7 +681,15 @@ void DevicePlugin::upnpDiscover(QString searchTarget, QString userAgent)
 {
     if(requiredHardware().testFlag(DeviceManager::HardwareResourceUpnpDisovery)){
         deviceManager()->m_upnpDiscovery->discoverDevices(searchTarget, userAgent, pluginId());
+    } else {
+        qCWarning(dcDeviceManager) << "UPnP discovery resource not set for plugin" << pluginName();
     }
+}
+
+/*! Returns the pointer to the central \l{QtAvahiService}{service} browser. */
+QtAvahiServiceBrowser *DevicePlugin::avahiServiceBrowser() const
+{
+    return deviceManager()->m_avahiBrowser;
 }
 
 #ifdef BLUETOOTH_LE
@@ -689,6 +697,8 @@ bool DevicePlugin::discoverBluetooth()
 {
     if(requiredHardware().testFlag(DeviceManager::HardwareResourceBluetoothLE)){
         return deviceManager()->m_bluetoothScanner->discover(pluginId());
+    } else {
+        qCWarning(dcDeviceManager) << "Bluetooth LE resource not set for plugin" << pluginName();
     }
     return false;
 }

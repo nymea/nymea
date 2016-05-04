@@ -1,8 +1,6 @@
 /***
   This file is part of avahi.
 
-  Modified: (C) 2016 Simon Stürz <stuerz.simon@gmail.com>
-
   avahi is free software; you can redistribute it and/or modify it
   under the terms of the GNU Lesser General Public License as
   published by the Free Software Foundation; either version 2.1 of the
@@ -17,6 +15,8 @@
   License along with avahi; if not, write to the Free Software
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
   USA.
+
+  Modified: (C) 2016 Simon Stürz <stuerz.simon@gmail.com>
 
 ***/
 

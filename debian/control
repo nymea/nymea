@@ -142,3 +142,17 @@ Description: Plugins for guh IoT server - 6LoWPAN Merkur boards
   for your environment. This package contains plugins for the 6LoWPAN Merkur
   board.
 
+Package: guh-plugins-maker
+Section: libs
+Architecture: any
+Depends: libguh1 (= ${binary:Version}),
+  guhd (= ${binary:Version}),
+  ${shlibs:Depends},
+  ${misc:Depends}
+Description: Plugins for guh IoT server - for maker, tinker and hackers
+  guh is an open source IoT (Internet of Things) server,
+  which allows to control a lot of different devices from many different
+  manufacturers. With the powerful rule engine you are able to connect any
+  device available in the system and create individual scenes and behaviors
+  for your environment. This package contains plugins for the 6LoWPAN Merkur
+  board.

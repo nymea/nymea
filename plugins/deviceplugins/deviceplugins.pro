@@ -28,3 +28,5 @@ SUBDIRS += elro         \
     ws2812              \
     orderbutton         \
     denon               \
+    avahimonitor        \
+

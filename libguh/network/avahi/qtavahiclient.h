@@ -18,58 +18,48 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef AVAHISERVICEENTRY_H
-#define AVAHISERVICEENTRY_H
+#ifndef QTAVAHICLIENT_H
+#define QTAVAHICLIENT_H
 
 #include <QObject>
-#include <QString>
-#include <QHostAddress>
-#include <QAbstractSocket>
-#include <avahi-client/publish.h>
+#include <avahi-client/client.h>
 
 #include "libguh.h"
 
-class LIBGUH_EXPORT AvahiServiceEntry
+class LIBGUH_EXPORT QtAvahiClient : public QObject
 {
+    Q_OBJECT
+    Q_ENUMS(QtAvahiClientState)
+
 public:
-    AvahiServiceEntry();
-    AvahiServiceEntry(QString name, QString serviceType, QHostAddress hostAddress, QString domain, QString hostName, quint16 port, QAbstractSocket::NetworkLayerProtocol protocol, QStringList txt, AvahiLookupResultFlags flags);
+    enum QtAvahiClientState {
+        QtAvahiClientStateRunning,
+        QtAvahiClientStateFailure,
+        QtAvahiClientStateCollision,
+        QtAvahiClientStateRegistering,
+        QtAvahiClientStateConnecting
+    };
 
-    QString name() const;
-    QString serviceType() const;
-    QHostAddress hostAddress() const;
-    QString domain() const;
-    QString hostName() const;
-    quint16 port() const;
-    QAbstractSocket::NetworkLayerProtocol protocol() const;
-    AvahiLookupResultFlags flags() const;
-    QStringList txt() const;
-
-    bool isValid() const;
-
-    bool isChached() const;
-    bool isWideArea() const;
-    bool isMulticast() const;
-    bool isLocal() const;
-    bool isOurOwn() const;
-
-    bool operator ==(const AvahiServiceEntry &other) const;
-    bool operator !=(const AvahiServiceEntry &other) const;
+    explicit QtAvahiClient(QObject *parent = 0);
+    ~QtAvahiClient();
 
 private:
-    QString m_name;
-    QString m_serviceType;
-    QHostAddress m_hostAddress;
-    QString m_domain;
-    QString m_hostName;
-    quint16 m_port;
-    QAbstractSocket::NetworkLayerProtocol m_protocol;
-    QStringList m_txt;
-    AvahiLookupResultFlags m_flags;
+    friend class QtAvahiService;
+    friend class QtAvahiServiceBrowser;
+    friend class QtAvahiServiceBrowserPrivate;
+
+    const AvahiPoll *poll;
+    AvahiClient *client;
+    int error;
+
+    void start();
+    QString errorString() const;
+
+    static void callback(AvahiClient *client, AvahiClientState state, void *userdata);
+
+signals:
+    void clientStateChanged(const QtAvahiClientState &state);
 
 };
 
-QDebug operator <<(QDebug dbg, const AvahiServiceEntry &entry);
-Q_DECLARE_METATYPE(AvahiServiceEntry)
-
-#endif // AVAHISERVICEENTRY_H
+#endif // QTAVAHICLIENT_H

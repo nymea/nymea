@@ -48,9 +48,11 @@ HEADERS += devicemanager.h \
            network/oauth2.h \
            network/avahi/qt-watch.h \
            network/avahi/avahiserviceentry.h \
-           network/avahi/zconfservicebrowser.h \
-           network/avahi/zconfserviceclient.h \
-           network/avahi/zconfservice.h \
+           network/avahi/qtavahiclient.h \
+           network/avahi/qtavahiservice.h \
+           network/avahi/qtavahiservice_p.h \
+           network/avahi/qtavahiservicebrowser.h \
+           network/avahi/qtavahiservicebrowser_p.h \
            coap/coap.h \
            coap/coappdu.h \
            coap/coapoption.h \
@@ -74,8 +76,6 @@ HEADERS += devicemanager.h \
            types/ruleaction.h \
            types/ruleactionparam.h \
            types/statedescriptor.h \
-    network/avahi/guhavahibrowser.h
-
 
 SOURCES += devicemanager.cpp \
            loggingcategories.cpp \
@@ -99,9 +99,11 @@ SOURCES += devicemanager.cpp \
            network/oauth2.cpp \
            network/avahi/qt-watch.cpp \
            network/avahi/avahiserviceentry.cpp \
-           network/avahi/zconfservicebrowser.cpp \
-           network/avahi/zconfserviceclient.cpp \
-           network/avahi/zconfservice.cpp \
+           network/avahi/qtavahiclient.cpp \
+           network/avahi/qtavahiservice.cpp \
+           network/avahi/qtavahiservice_p.cpp \
+           network/avahi/qtavahiservicebrowser.cpp \
+           network/avahi/qtavahiservicebrowser_p.cpp \
            coap/coap.cpp \
            coap/coappdu.cpp \
            coap/coapoption.cpp \
@@ -125,8 +127,6 @@ SOURCES += devicemanager.cpp \
            types/ruleaction.cpp \
            types/ruleactionparam.cpp \
            types/statedescriptor.cpp \
-    network/avahi/guhavahibrowser.cpp
-
 
 # install plugininfo python script for libguh-dev
 generateplugininfo.files = $$top_srcdir/plugins/guh-generateplugininfo

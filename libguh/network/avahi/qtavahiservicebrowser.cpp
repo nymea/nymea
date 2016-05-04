@@ -18,12 +18,29 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class QtAvahiServiceBrowser
+    \brief Allowes to browse avahi services in the local network.
+
+    \ingroup hardware
+    \inmodule libguh
+*/
+
+/*! \fn void QtAvahiServiceBrowser::serviceEntryAdded(const AvahiServiceEntry &entry);
+    This signal will be emitted when a new \a entry was added to the current entry list.
+*/
+
+/*! \fn void QtAvahiServiceBrowser::serviceEntryRemoved(const AvahiServiceEntry &entry);
+    This signal will be emitted when a new \a entry was removed from the current entry list.
+*/
+
 #include "qtavahiservicebrowser.h"
 #include "qtavahiservicebrowser_p.h"
 #include "loggingcategories.h"
 
 #include <avahi-common/error.h>
 
+/*! Constructs a new \l{QtAvahiServiceBrowser} with the given \a parent. */
 QtAvahiServiceBrowser::QtAvahiServiceBrowser(QObject *parent) :
     QObject(parent),
     d_ptr(new QtAvahiServiceBrowserPrivate(new QtAvahiClient))
@@ -31,6 +48,7 @@ QtAvahiServiceBrowser::QtAvahiServiceBrowser(QObject *parent) :
     connect(d_ptr->client, &QtAvahiClient::clientStateChanged, this, &QtAvahiServiceBrowser::onClientStateChanged);
 }
 
+/*! Destructs this \l{QtAvahiServiceBrowser}. */
 QtAvahiServiceBrowser::~QtAvahiServiceBrowser()
 {
     // Delete each service browser
@@ -48,11 +66,13 @@ QtAvahiServiceBrowser::~QtAvahiServiceBrowser()
     delete d_ptr;
 }
 
+/*! Enables this \l{QtAvahiServiceBrowser} and starts the service browsing. */
 void QtAvahiServiceBrowser::enable()
 {
     d_ptr->client->start();
 }
 
+/*! Returns the current \l{AvahiServiceEntry} list of this \l{QtAvahiServiceBrowser}. */
 QList<AvahiServiceEntry> QtAvahiServiceBrowser::serviceEntries() const
 {
     return m_serviceEntries;

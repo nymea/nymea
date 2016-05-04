@@ -46,6 +46,7 @@
 /*! \fn void QtAvahiService::serviceStateChanged(const QtAvahiServiceState &state);
     This signal will be emitted when the \a state of this \l{QtAvahiService} has changed.
 */
+
 #include "qtavahiservice.h"
 #include "qtavahiservice_p.h"
 

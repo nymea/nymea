@@ -20,16 +20,12 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \page wifidetector.html
-    \title WiFi Detector
-    \brief Plugin to monitor devices in the local network.
+    \page avahimonitor.html
+    \title Avahi Monitor
+    \brief Plugin to monitor zeroconf devices in the local network.
 
     \ingroup plugins
-    \ingroup guh-plugins
-
-    This plugin allows to find and monitor network devices in your local network by using the MAC address.
-
-    \underline{NOTE}: the application \c nmap has to be installed and guh has to run as root.
+    \ingroup guh-plugins-maker
 
     \chapter Plugin properties
     Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}
@@ -37,7 +33,7 @@
 
     For more details how to read this JSON file please check out the documentation for \l{The plugin JSON File}.
 
-    \quotefile plugins/deviceplugins/wifidetector/devicepluginwifidetector.json
+    \quotefile plugins/deviceplugins/avahimonitor/devicepluginavahimonitor.json
 */
 
 
@@ -53,14 +49,18 @@
 
 DevicePluginAvahiMonitor::DevicePluginAvahiMonitor()
 {
+
+}
+
+void DevicePluginAvahiMonitor::init()
+{
+    connect(avahiServiceBrowser(), SIGNAL(serviceEntryAdded(AvahiServiceEntry)), this, SLOT(onServiceEntryAdded(AvahiServiceEntry)));
+    connect(avahiServiceBrowser(), SIGNAL(serviceEntryRemoved(AvahiServiceEntry)), this, SLOT(onServiceEntryRemoved(AvahiServiceEntry)));
 }
 
 DeviceManager::DeviceSetupStatus DevicePluginAvahiMonitor::setupDevice(Device *device)
 {
     qCDebug(dcAvahiMonitor()) << "Setup" << device->name() << device->params();
-
-    connect(avahiServiceBrowser(), SIGNAL(serviceEntryAdded(AvahiServiceEntry)), this, SLOT(onServiceEntryAdded(AvahiServiceEntry)));
-    connect(avahiServiceBrowser(), SIGNAL(serviceEntryRemoved(AvahiServiceEntry)), this, SLOT(onServiceEntryRemoved(AvahiServiceEntry)));
 
     return DeviceManager::DeviceSetupStatusSuccess;
 }
@@ -75,6 +75,10 @@ DeviceManager::DeviceError DevicePluginAvahiMonitor::discoverDevices(const Devic
     QList<DeviceDescriptor> deviceDescriptors;
     foreach (const AvahiServiceEntry &service, avahiServiceBrowser()->serviceEntries()) {
         DeviceDescriptor deviceDescriptor(avahiDeviceClassId, service.name(), service.hostAddress().toString());
+        ParamList params;
+        params.append(Param("service name", service.name()));
+        params.append(Param("host name", service.hostName()));
+        deviceDescriptor.setParams(params);
         deviceDescriptors.append(deviceDescriptor);
     }
 
@@ -90,10 +94,18 @@ DeviceManager::HardwareResources DevicePluginAvahiMonitor::requiredHardware() co
 
 void DevicePluginAvahiMonitor::onServiceEntryAdded(const AvahiServiceEntry &serviceEntry)
 {
-    Q_UNUSED(serviceEntry)
+    foreach (Device *device, myDevices()) {
+        if (device->paramValue("service name").toString() == serviceEntry.name()) {
+            device->setStateValue(onlineStateTypeId, true);
+        }
+    }
 }
 
 void DevicePluginAvahiMonitor::onServiceEntryRemoved(const AvahiServiceEntry &serviceEntry)
 {
-    Q_UNUSED(serviceEntry)
+    foreach (Device *device, myDevices()) {
+        if (device->paramValue("service name").toString() == serviceEntry.name()) {
+            device->setStateValue(onlineStateTypeId, false);
+        }
+    }
 }

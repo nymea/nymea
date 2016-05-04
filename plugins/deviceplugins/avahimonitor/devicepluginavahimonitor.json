@@ -20,9 +20,23 @@
                     "createMethods": ["discovery"],
                     "paramTypes": [
                         {
-                            "name": "name",
+                            "name": "service name",
                             "type": "QString",
                             "inputType": "TextLine"
+                        },
+                        {
+                            "name": "host name",
+                            "type": "QString",
+                            "inputType": "TextLine"
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "b5616fd3-da12-4613-9576-6516b2267180",
+                            "name": "online",
+                            "idName": "online",
+                            "type": "bool",
+                            "defaultValue": false
                         }
                     ]
                 }

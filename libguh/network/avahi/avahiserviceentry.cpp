@@ -38,7 +38,7 @@ AvahiServiceEntry::AvahiServiceEntry() :
 }
 
 
-/*! Constructs a new \l{AvahiServiceEntry} with the given \a name, \a hostAddress, \a domain, \a hostName, \a port, \a protocol, \a txt and \a flags.*/
+/*! Constructs a new \l{AvahiServiceEntry} with the given \a name, \a serviceType, \a hostAddress, \a domain, \a hostName, \a port, \a protocol, \a txt and \a flags.*/
 AvahiServiceEntry::AvahiServiceEntry(QString name, QString serviceType, QHostAddress hostAddress, QString domain, QString hostName, quint16 port, QAbstractSocket::NetworkLayerProtocol protocol, QStringList txt, AvahiLookupResultFlags flags) :
     m_name(name),
     m_serviceType(serviceType),

@@ -10,7 +10,10 @@
     \section2 The \tt{guh-plugins-merkur} package:
     \annotatedlist guh-plugins-merkur
 
-    \section2 The \tt{guh-tests} plugins:
+    \section2 The \tt{guh-plugins-maker} package:
+    \annotatedlist guh-plugins-maker
+
+    \section2 The \tt{guh-tests} package plugins:
     \annotatedlist guh-tests
 
 */

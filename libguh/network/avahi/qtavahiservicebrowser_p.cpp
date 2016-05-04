@@ -187,7 +187,7 @@ QStringList QtAvahiServiceBrowserPrivate::converTxtList(AvahiStringList *txt)
 
 QAbstractSocket::NetworkLayerProtocol QtAvahiServiceBrowserPrivate::converProtocol(const AvahiProtocol &protocol)
 {
-    QAbstractSocket::NetworkLayerProtocol networkProtocol;
+    QAbstractSocket::NetworkLayerProtocol networkProtocol = QAbstractSocket::UnknownNetworkLayerProtocol;
 
     switch (protocol) {
     case AVAHI_PROTO_INET:

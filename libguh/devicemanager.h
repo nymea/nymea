@@ -35,6 +35,7 @@
 #include "network/networkmanager.h"
 #include "network/upnp/upnpdiscovery.h"
 #include "network/upnp/upnpdevicedescriptor.h"
+#include "network/avahi/qtavahiservicebrowser.h"
 
 #ifdef BLUETOOTH_LE
 #include "bluetooth/bluetoothscanner.h"
@@ -201,6 +202,8 @@ private:
     QTimer m_pluginTimer;
     QList<DevicePlugin *> m_pluginTimerUsers;
     NetworkManager *m_networkManager;
+    UpnpDiscovery* m_upnpDiscovery;
+    QtAvahiServiceBrowser *m_avahiBrowser;
 
     #ifdef BLUETOOTH_LE
     BluetoothScanner *m_bluetoothScanner;

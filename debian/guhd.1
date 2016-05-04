@@ -1,6 +1,6 @@
 .\" Manpage for guhd.
 .\" Contact simon.stuerz@guh.guru to correct errors or typos.
-.TH man 1 "January 2016" "1.4" "guhd man page"
+.TH man 1 "May 2016" "1.5" "guhd man page"
 .SH NAME
 guhd \- An open source IoT (Internet of Things) server
 .SH SYNOPSIS
@@ -36,19 +36,21 @@ categories will be printed unless they are explicitly muted with "NoWarnings".
 \fBMain\ debug\ categories:\fR
 .IP \fIApplication\fR\ (default\ enabled)
 Print the debug messages from the core application.
+.IP \fIAvahi\fR\ (default\ disabled)
+Print the debug messages from the avahi resource.
 .IP \fIConnection\fR\ (default\ enabled)
 Print the debug messages from the TCP connections in guh.
 .IP \fIDeviceManager\fR\ (default\ enabled)
 Print the debug messages from the device manager.
 .IP \fIHardware\fR\ (default\ disabled)
 Print the debug messages from hardware resources in guh.
-.IP \fIJsonRpc\fR\ (default\ enabled)
+.IP \fIJsonRpc\fR\ (default\ disabled)
 Print the debug messages from JSON-RPC API.
 .IP \fILogEngine\fR\ (default\ disabled)
 Print the debug messages from logging engine.
 .IP \fIOAuth2\fR\ (default\ disabled)
 Print the debug messages of the OAuth2 resource.
-.IP \fIRest\fR\ (default\ enabled)
+.IP \fIRest\fR\ (default\ disabled)
 Print the debug messages from REST API.
 .IP \fIRuleEngine\fR\ (default\ enabled)
 Print the debug messages from the rule engine.
@@ -56,9 +58,9 @@ Print the debug messages from the rule engine.
 Print the debug messages from the TCP server.
 .IP \fIWarning\fR\ (default\ enabled)
 Print warnings.
-.IP \fIWebServer\fR\ (default\ enabled)
+.IP \fIWebServer\fR\ (default\ disabled)
 Print the debug messages from the web server.
-.IP \fIWebSocketServer\fR\ (default\ enabled)
+.IP \fIWebSocketServer\fR\ (default\ disabled)
 Print the debug messages from the websocket server.
 .TP
 \fBDebug\ categories\ for\ plugins:\fR

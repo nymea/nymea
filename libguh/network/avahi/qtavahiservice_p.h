@@ -18,58 +18,35 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef AVAHISERVICEENTRY_H
-#define AVAHISERVICEENTRY_H
+#ifndef QTAVAHISERVICEPRIVATE_P
+#define QTAVAHISERVICEPRIVATE_P
 
 #include <QObject>
 #include <QString>
-#include <QHostAddress>
-#include <QAbstractSocket>
-#include <avahi-client/publish.h>
+
+#include "qtavahiservice.h"
+#include "qtavahiclient.h"
 
 #include "libguh.h"
 
-class LIBGUH_EXPORT AvahiServiceEntry
+#include <avahi-client/publish.h>
+#include <avahi-common/error.h>
+#include <avahi-common/alternative.h>
+
+class LIBGUH_EXPORT QtAvahiServicePrivate
 {
 public:
-    AvahiServiceEntry();
-    AvahiServiceEntry(QString name, QString serviceType, QHostAddress hostAddress, QString domain, QString hostName, quint16 port, QAbstractSocket::NetworkLayerProtocol protocol, QStringList txt, AvahiLookupResultFlags flags);
+    QtAvahiServicePrivate();
 
-    QString name() const;
-    QString serviceType() const;
-    QHostAddress hostAddress() const;
-    QString domain() const;
-    QString hostName() const;
-    quint16 port() const;
-    QAbstractSocket::NetworkLayerProtocol protocol() const;
-    AvahiLookupResultFlags flags() const;
-    QStringList txt() const;
+    static void callback(AvahiEntryGroup *group, AvahiEntryGroupState state, void *userdata);
 
-    bool isValid() const;
-
-    bool isChached() const;
-    bool isWideArea() const;
-    bool isMulticast() const;
-    bool isLocal() const;
-    bool isOurOwn() const;
-
-    bool operator ==(const AvahiServiceEntry &other) const;
-    bool operator !=(const AvahiServiceEntry &other) const;
-
-private:
-    QString m_name;
-    QString m_serviceType;
-    QHostAddress m_hostAddress;
-    QString m_domain;
-    QString m_hostName;
-    quint16 m_port;
-    QAbstractSocket::NetworkLayerProtocol m_protocol;
-    QStringList m_txt;
-    AvahiLookupResultFlags m_flags;
-
+    QtAvahiClient *client;
+    AvahiEntryGroup *group;
+    QString name;
+    quint16 port;
+    QString type;
+    int error;
 };
 
-QDebug operator <<(QDebug dbg, const AvahiServiceEntry &entry);
-Q_DECLARE_METATYPE(AvahiServiceEntry)
+#endif // QTAVAHISERVICEPRIVATE_P
 
-#endif // AVAHISERVICEENTRY_H

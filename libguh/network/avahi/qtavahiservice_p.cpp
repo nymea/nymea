@@ -18,38 +18,39 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "guhavahibrowser.h"
-#include "loggingcategories.h"
+#include "qtavahiservice_p.h"
 
-GuhAvahiBrowser::GuhAvahiBrowser(QObject *parent) : QObject(parent)
+QtAvahiServicePrivate::QtAvahiServicePrivate() :
+    client(0),
+    group(0),
+    error(0)
 {
-    m_browser = new ZConfServiceBrowser(this);
 
-    connect(m_browser, &ZConfServiceBrowser::serviceEntryAdded, this, &GuhAvahiBrowser::onSeviceAdded);
-    connect(m_browser, &ZConfServiceBrowser::serviceEntryRemoved, this, &GuhAvahiBrowser::onSeviceRemoved);
-    connect(m_browser, &ZConfServiceBrowser::serviceBrowsingFinished, this, &GuhAvahiBrowser::onSeviceBrowsingFinished);
 }
 
-void GuhAvahiBrowser::browseService(const QString &serviceType)
+void QtAvahiServicePrivate::callback(AvahiEntryGroup *group, AvahiEntryGroupState state, void *userdata)
 {
-    m_serviceEntries.clear();
-    m_browser->browse(serviceType);
-}
+    Q_UNUSED(group);
+    QtAvahiService *service = static_cast<QtAvahiService *>(userdata);
+    if (!service)
+        return;
 
-void GuhAvahiBrowser::onSeviceAdded(const QString &name)
-{
-    qCDebug(dcHardware()) << QString("Avahi: +%1").arg(name);
-    m_serviceEntries.append(m_browser->serviceEntry(name));
-}
-
-void GuhAvahiBrowser::onSeviceRemoved(const QString &name)
-{
-    qCDebug(dcHardware()) << QString("Avahi: -%1").arg(name);
-}
-
-void GuhAvahiBrowser::onSeviceBrowsingFinished()
-{
-    qCDebug(dcHardware()) << "Avahi: discovery finished.";
-    emit avahiBrowseFinished(m_serviceEntries);
+    switch (state) {
+    case AVAHI_ENTRY_GROUP_UNCOMMITED:
+        emit service->serviceStateChanged(QtAvahiService::QtAvahiServiceStateUncomitted);
+        break;
+    case AVAHI_ENTRY_GROUP_REGISTERING:
+        emit service->serviceStateChanged(QtAvahiService::QtAvahiServiceStateRegistering);
+        break;
+    case AVAHI_ENTRY_GROUP_ESTABLISHED:
+        emit service->serviceStateChanged(QtAvahiService::QtAvahiServiceStateEstablished);
+        break;
+    case AVAHI_ENTRY_GROUP_COLLISION:
+        emit service->serviceStateChanged(QtAvahiService::QtAvahiServiceStateCollision);
+        break;
+    case AVAHI_ENTRY_GROUP_FAILURE:
+        emit service->serviceStateChanged(QtAvahiService::QtAvahiServiceStateFailure);
+        break;
+    }
 }
 

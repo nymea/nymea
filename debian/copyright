@@ -17,12 +17,6 @@ Copyright: (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>
                2014 Simon Stürz <stuerz.simon@gmail.com>
 License: GPL-2+
 
-Files: libguh/avahi/zconf*
-Copyright: (c) 2012 Johannes Hilden
-               2016 Simon Stürz <stuerz.simon@gmail.com>
-License: LGPL-2.1
-
-
 Files: libguh/avahi/qt-watch*
 Copyright: (c) avahi
                2016 Simon Stürz <stuerz.simon@gmail.com>

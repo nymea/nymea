@@ -18,58 +18,45 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef AVAHISERVICEENTRY_H
-#define AVAHISERVICEENTRY_H
+#ifndef QTAVAHISERVICEBROWSER_H
+#define QTAVAHISERVICEBROWSER_H
 
 #include <QObject>
-#include <QString>
-#include <QHostAddress>
-#include <QAbstractSocket>
-#include <avahi-client/publish.h>
+#include <avahi-client/lookup.h>
 
 #include "libguh.h"
+#include "qtavahiclient.h"
+#include "avahiserviceentry.h"
 
-class LIBGUH_EXPORT AvahiServiceEntry
+class QtAvahiServiceBrowserPrivate;
+
+class LIBGUH_EXPORT QtAvahiServiceBrowser : public QObject
 {
+    Q_OBJECT
 public:
-    AvahiServiceEntry();
-    AvahiServiceEntry(QString name, QString serviceType, QHostAddress hostAddress, QString domain, QString hostName, quint16 port, QAbstractSocket::NetworkLayerProtocol protocol, QStringList txt, AvahiLookupResultFlags flags);
+    explicit QtAvahiServiceBrowser(QObject *parent = 0);
+    ~QtAvahiServiceBrowser();
 
-    QString name() const;
-    QString serviceType() const;
-    QHostAddress hostAddress() const;
-    QString domain() const;
-    QString hostName() const;
-    quint16 port() const;
-    QAbstractSocket::NetworkLayerProtocol protocol() const;
-    AvahiLookupResultFlags flags() const;
-    QStringList txt() const;
+    void enable();
 
-    bool isValid() const;
+    QList<AvahiServiceEntry> serviceEntries() const;
 
-    bool isChached() const;
-    bool isWideArea() const;
-    bool isMulticast() const;
-    bool isLocal() const;
-    bool isOurOwn() const;
+signals:
+    void serviceEntryAdded(const AvahiServiceEntry &entry);
+    void serviceEntryRemoved(const AvahiServiceEntry &entry);
 
-    bool operator ==(const AvahiServiceEntry &other) const;
-    bool operator !=(const AvahiServiceEntry &other) const;
+private slots:
+    void onClientStateChanged(const QtAvahiClient::QtAvahiClientState &state);
 
 private:
-    QString m_name;
-    QString m_serviceType;
-    QHostAddress m_hostAddress;
-    QString m_domain;
-    QString m_hostName;
-    quint16 m_port;
-    QAbstractSocket::NetworkLayerProtocol m_protocol;
-    QStringList m_txt;
-    AvahiLookupResultFlags m_flags;
+    QtAvahiServiceBrowserPrivate *d_ptr;
 
+    QList<AvahiServiceEntry> m_serviceEntries;
+    QStringList m_serviceTypes;
+
+    void createServiceBrowser(const char* serviceType);
+
+    Q_DECLARE_PRIVATE(QtAvahiServiceBrowser)
 };
 
-QDebug operator <<(QDebug dbg, const AvahiServiceEntry &entry);
-Q_DECLARE_METATYPE(AvahiServiceEntry)
-
-#endif // AVAHISERVICEENTRY_H
+#endif // QTAVAHISERVICEBROWSER_H

@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.guru>                 *
+ *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.guru>                 *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -18,19 +18,39 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "loggingcategories.h"
+#include "qtavahiservice_p.h"
 
-Q_LOGGING_CATEGORY(dcApplication, "Application")
-Q_LOGGING_CATEGORY(dcDeviceManager, "DeviceManager")
-Q_LOGGING_CATEGORY(dcTimeManager, "TimeManager")
-Q_LOGGING_CATEGORY(dcRuleEngine, "RuleEngine")
-Q_LOGGING_CATEGORY(dcHardware, "Hardware")
-Q_LOGGING_CATEGORY(dcConnection, "Connection")
-Q_LOGGING_CATEGORY(dcLogEngine, "LogEngine")
-Q_LOGGING_CATEGORY(dcTcpServer, "TcpServer")
-Q_LOGGING_CATEGORY(dcWebServer, "WebServer")
-Q_LOGGING_CATEGORY(dcWebSocketServer, "WebSocketServer")
-Q_LOGGING_CATEGORY(dcJsonRpc, "JsonRpc")
-Q_LOGGING_CATEGORY(dcRest, "Rest")
-Q_LOGGING_CATEGORY(dcOAuth2, "OAuth2")
-Q_LOGGING_CATEGORY(dcAvahi, "Avahi")
+QtAvahiServicePrivate::QtAvahiServicePrivate() :
+    client(0),
+    group(0),
+    error(0)
+{
+
+}
+
+void QtAvahiServicePrivate::callback(AvahiEntryGroup *group, AvahiEntryGroupState state, void *userdata)
+{
+    Q_UNUSED(group);
+    QtAvahiService *service = static_cast<QtAvahiService *>(userdata);
+    if (!service)
+        return;
+
+    switch (state) {
+    case AVAHI_ENTRY_GROUP_UNCOMMITED:
+        emit service->serviceStateChanged(QtAvahiService::QtAvahiServiceStateUncomitted);
+        break;
+    case AVAHI_ENTRY_GROUP_REGISTERING:
+        emit service->serviceStateChanged(QtAvahiService::QtAvahiServiceStateRegistering);
+        break;
+    case AVAHI_ENTRY_GROUP_ESTABLISHED:
+        emit service->serviceStateChanged(QtAvahiService::QtAvahiServiceStateEstablished);
+        break;
+    case AVAHI_ENTRY_GROUP_COLLISION:
+        emit service->serviceStateChanged(QtAvahiService::QtAvahiServiceStateCollision);
+        break;
+    case AVAHI_ENTRY_GROUP_FAILURE:
+        emit service->serviceStateChanged(QtAvahiService::QtAvahiServiceStateFailure);
+        break;
+    }
+}
+

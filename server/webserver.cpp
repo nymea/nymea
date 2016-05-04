@@ -97,6 +97,7 @@ namespace guhserver {
  */
 WebServer::WebServer(const QSslConfiguration &sslConfiguration, QObject *parent) :
     QTcpServer(parent),
+    m_avahiService(NULL),
     m_sslConfiguration(sslConfiguration),
     m_useSsl(false),
     m_enabled(false)
@@ -126,6 +127,12 @@ WebServer::WebServer(const QSslConfiguration &sslConfiguration, QObject *parent)
     if (m_useSsl && m_sslConfiguration.isNull())
         m_useSsl = false;
 
+    // Create avahi service
+#ifndef TESTING_ENABLED
+    m_avahiService = new QtAvahiService(this);
+    connect(m_avahiService, &QtAvahiService::serviceStateChanged, this, &WebServer::onAvahiServiceStateChanged);
+    m_avahiService->registerService("guhIO", m_port);
+#endif
 }
 
 /*! Destructor of this \l{WebServer}. */
@@ -154,7 +161,6 @@ void WebServer::sendHttpReply(HttpReply *reply)
     qCDebug(dcWebServer) << "respond" << reply->httpStatusCode() << reply->httpReasonPhrase();
     socket->write(reply->data());
 }
-
 
 /*! Returns the port on which the webserver is listening. */
 int WebServer::port() const
@@ -525,6 +531,13 @@ void WebServer::onError(QAbstractSocket::SocketError error)
     Q_UNUSED(error)
     QSslSocket* socket = static_cast<QSslSocket *>(sender());
     qCWarning(dcConnection) << QString("Client socket error %1:%2 ->").arg(socket->peerAddress().toString()).arg(socket->peerPort()) << socket->errorString();
+}
+
+void WebServer::onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceState &state)
+{
+    if (state == QtAvahiService::QtAvahiServiceStateEstablished) {
+        qCDebug(dcAvahi()) << "Service" << m_avahiService->name() << "established successfully";
+    }
 }
 
 /*! Returns true if this \l{WebServer} started successfully. */

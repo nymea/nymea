@@ -206,7 +206,6 @@ DeviceManager::DeviceManager(QObject *parent) :
 
     m_radio433 = new Radio433(this);
     m_radio433->enable();
-    // TODO: error handling if no Radio433 detected (GPIO or network), disable radio433 plugins or something...
 
     // Network manager
     m_networkManager = new NetworkManager(this);
@@ -216,6 +215,10 @@ DeviceManager::DeviceManager(QObject *parent) :
     m_upnpDiscovery = new UpnpDiscovery(this);
     connect(m_upnpDiscovery, &UpnpDiscovery::discoveryFinished, this, &DeviceManager::upnpDiscoveryFinished);
     connect(m_upnpDiscovery, &UpnpDiscovery::upnpNotify, this, &DeviceManager::upnpNotifyReceived);
+
+    // Avahi Browser
+    m_avahiBrowser = new QtAvahiServiceBrowser(this);
+    m_avahiBrowser->enable();
 
     // Bluetooth LE
     #ifdef BLUETOOTH_LE
@@ -588,7 +591,7 @@ DeviceManager::DeviceError DeviceManager::pairDevice(const PairingTransactionId 
 
         DevicePlugin *plugin = m_devicePlugins.value(m_supportedDevices.value(deviceClassId).pluginId());
         if (!plugin) {
-            qWarning() << "Can't find a plugin for this device class";
+            qCWarning(dcDeviceManager()) << "Can't find a plugin for this device class";
             return DeviceErrorPluginNotFound;
         }
 
@@ -1002,7 +1005,7 @@ void DeviceManager::loadPlugins()
                 m_devicePlugins.insert(pluginIface->pluginId(), pluginIface);
 
                 connect(pluginIface, &DevicePlugin::emitEvent, this, &DeviceManager::eventTriggered);
-                connect(pluginIface, &DevicePlugin::devicesDiscovered, this, &DeviceManager::slotDevicesDiscovered);
+                connect(pluginIface, &DevicePlugin::devicesDiscovered, this, &DeviceManager::slotDevicesDiscovered, Qt::QueuedConnection);
                 connect(pluginIface, &DevicePlugin::deviceSetupFinished, this, &DeviceManager::slotDeviceSetupFinished);
                 connect(pluginIface, &DevicePlugin::actionExecutionFinished, this, &DeviceManager::actionExecutionFinished);
                 connect(pluginIface, &DevicePlugin::pairingFinished, this, &DeviceManager::slotPairingFinished);
@@ -1327,6 +1330,7 @@ void DeviceManager::replyReady(const PluginId &pluginId, QNetworkReply *reply)
         }
     }
 }
+
 void DeviceManager::upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &deviceDescriptorList, const PluginId &pluginId)
 {
     foreach (DevicePlugin *devicePlugin, m_devicePlugins) {

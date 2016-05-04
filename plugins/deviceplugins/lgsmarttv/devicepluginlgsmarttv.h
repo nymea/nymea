@@ -23,7 +23,7 @@
 
 #include "plugin/deviceplugin.h"
 #include "tvdevice.h"
-#include "network/upnpdiscovery/upnpdevicedescriptor.h"
+#include "network/upnp/upnpdevicedescriptor.h"
 
 class DevicePluginLgSmartTv : public DevicePlugin
 {

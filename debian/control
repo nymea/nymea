@@ -8,7 +8,9 @@ Build-Depends: debhelper (>= 9.0.0),
   python,
   qt5-default,
   qtbase5-dev,
-  qtconnectivity5-dev
+  qtconnectivity5-dev,
+  libavahi-client-dev,
+  libavahi-common-dev
 Standards-Version: 3.9.5
 
 Package: guh
@@ -30,6 +32,7 @@ Depends: libqt5network5,
   libqt5sql5,
   libqt5xml5,
   logrotate,
+  avahi-daemon,
   libguh1 (= ${binary:Version}),
   ${shlibs:Depends},
   ${misc:Depends}
@@ -84,7 +87,9 @@ Section: libs
 Architecture: any
 Depends: ${shlibs:Depends},
   ${misc:Depends},
-  libqt5bluetooth5
+  libqt5bluetooth5,
+  libavahi-client3,
+  libavahi-common3
 Description: An open source IoT server - core library
   guh is an open source IoT (Internet of Things) server,
   which allows to control a lot of different devices from many different
@@ -137,3 +142,17 @@ Description: Plugins for guh IoT server - 6LoWPAN Merkur boards
   for your environment. This package contains plugins for the 6LoWPAN Merkur
   board.
 
+Package: guh-plugins-maker
+Section: libs
+Architecture: any
+Depends: libguh1 (= ${binary:Version}),
+  guhd (= ${binary:Version}),
+  ${shlibs:Depends},
+  ${misc:Depends}
+Description: Plugins for guh IoT server - for maker, tinker and hackers
+  guh is an open source IoT (Internet of Things) server,
+  which allows to control a lot of different devices from many different
+  manufacturers. With the powerful rule engine you are able to connect any
+  device available in the system and create individual scenes and behaviors
+  for your environment. This package contains plugins for the 6LoWPAN Merkur
+  board.

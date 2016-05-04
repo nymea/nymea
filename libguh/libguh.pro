@@ -11,6 +11,9 @@ QMAKE_LFLAGS += -fPIC
 target.path = /usr/lib
 INSTALLS += target
 
+# Avahi libs
+LIBS += -lavahi-common -lavahi-client
+
 # check Bluetooth LE support
 contains(DEFINES, BLUETOOTH_LE) {
     HEADERS += bluetooth/bluetoothscanner.h \
@@ -33,15 +36,23 @@ HEADERS += devicemanager.h \
            plugin/devicepairinginfo.h \
            hardware/gpio.h \
            hardware/gpiomonitor.h \
+           hardware/pwm.h \
            hardware/radio433/radio433.h \
            hardware/radio433/radio433transmitter.h \
            hardware/radio433/radio433brennenstuhlgateway.h \
-           network/upnpdiscovery/upnpdiscovery.h \
-           network/upnpdiscovery/upnpdevice.h \
-           network/upnpdiscovery/upnpdevicedescriptor.h \
-           network/upnpdiscovery/upnpdiscoveryrequest.h \
+           network/upnp/upnpdiscovery.h \
+           network/upnp/upnpdevice.h \
+           network/upnp/upnpdevicedescriptor.h \
+           network/upnp/upnpdiscoveryrequest.h \
            network/networkmanager.h \
            network/oauth2.h \
+           network/avahi/qt-watch.h \
+           network/avahi/avahiserviceentry.h \
+           network/avahi/qtavahiclient.h \
+           network/avahi/qtavahiservice.h \
+           network/avahi/qtavahiservice_p.h \
+           network/avahi/qtavahiservicebrowser.h \
+           network/avahi/qtavahiservicebrowser_p.h \
            coap/coap.h \
            coap/coappdu.h \
            coap/coapoption.h \
@@ -65,8 +76,6 @@ HEADERS += devicemanager.h \
            types/ruleaction.h \
            types/ruleactionparam.h \
            types/statedescriptor.h \
-    hardware/pwm.h
-
 
 SOURCES += devicemanager.cpp \
            loggingcategories.cpp \
@@ -78,15 +87,23 @@ SOURCES += devicemanager.cpp \
            plugin/devicepairinginfo.cpp \
            hardware/gpio.cpp \
            hardware/gpiomonitor.cpp \
+           hardware/pwm.cpp \
            hardware/radio433/radio433.cpp \
            hardware/radio433/radio433transmitter.cpp \
            hardware/radio433/radio433brennenstuhlgateway.cpp \
-           network/upnpdiscovery/upnpdiscovery.cpp \
-           network/upnpdiscovery/upnpdevice.cpp \
-           network/upnpdiscovery/upnpdevicedescriptor.cpp \
-           network/upnpdiscovery/upnpdiscoveryrequest.cpp \
+           network/upnp/upnpdiscovery.cpp \
+           network/upnp/upnpdevice.cpp \
+           network/upnp/upnpdevicedescriptor.cpp \
+           network/upnp/upnpdiscoveryrequest.cpp \
            network/networkmanager.cpp \
            network/oauth2.cpp \
+           network/avahi/qt-watch.cpp \
+           network/avahi/avahiserviceentry.cpp \
+           network/avahi/qtavahiclient.cpp \
+           network/avahi/qtavahiservice.cpp \
+           network/avahi/qtavahiservice_p.cpp \
+           network/avahi/qtavahiservicebrowser.cpp \
+           network/avahi/qtavahiservicebrowser_p.cpp \
            coap/coap.cpp \
            coap/coappdu.cpp \
            coap/coapoption.cpp \
@@ -110,8 +127,6 @@ SOURCES += devicemanager.cpp \
            types/ruleaction.cpp \
            types/ruleactionparam.cpp \
            types/statedescriptor.cpp \
-    hardware/pwm.cpp
-
 
 # install plugininfo python script for libguh-dev
 generateplugininfo.files = $$top_srcdir/plugins/guh-generateplugininfo

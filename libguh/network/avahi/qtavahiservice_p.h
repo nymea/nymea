@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.guru>                 *
+ *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.guru>                 *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -18,19 +18,35 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "loggingcategories.h"
+#ifndef QTAVAHISERVICEPRIVATE_P
+#define QTAVAHISERVICEPRIVATE_P
 
-Q_LOGGING_CATEGORY(dcApplication, "Application")
-Q_LOGGING_CATEGORY(dcDeviceManager, "DeviceManager")
-Q_LOGGING_CATEGORY(dcTimeManager, "TimeManager")
-Q_LOGGING_CATEGORY(dcRuleEngine, "RuleEngine")
-Q_LOGGING_CATEGORY(dcHardware, "Hardware")
-Q_LOGGING_CATEGORY(dcConnection, "Connection")
-Q_LOGGING_CATEGORY(dcLogEngine, "LogEngine")
-Q_LOGGING_CATEGORY(dcTcpServer, "TcpServer")
-Q_LOGGING_CATEGORY(dcWebServer, "WebServer")
-Q_LOGGING_CATEGORY(dcWebSocketServer, "WebSocketServer")
-Q_LOGGING_CATEGORY(dcJsonRpc, "JsonRpc")
-Q_LOGGING_CATEGORY(dcRest, "Rest")
-Q_LOGGING_CATEGORY(dcOAuth2, "OAuth2")
-Q_LOGGING_CATEGORY(dcAvahi, "Avahi")
+#include <QObject>
+#include <QString>
+
+#include "qtavahiservice.h"
+#include "qtavahiclient.h"
+
+#include "libguh.h"
+
+#include <avahi-client/publish.h>
+#include <avahi-common/error.h>
+#include <avahi-common/alternative.h>
+
+class LIBGUH_EXPORT QtAvahiServicePrivate
+{
+public:
+    QtAvahiServicePrivate();
+
+    static void callback(AvahiEntryGroup *group, AvahiEntryGroupState state, void *userdata);
+
+    QtAvahiClient *client;
+    AvahiEntryGroup *group;
+    QString name;
+    quint16 port;
+    QString type;
+    int error;
+};
+
+#endif // QTAVAHISERVICEPRIVATE_P
+

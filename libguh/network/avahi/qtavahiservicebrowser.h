@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.guru>                 *
+ *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.guru>                 *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -18,19 +18,45 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "loggingcategories.h"
+#ifndef QTAVAHISERVICEBROWSER_H
+#define QTAVAHISERVICEBROWSER_H
 
-Q_LOGGING_CATEGORY(dcApplication, "Application")
-Q_LOGGING_CATEGORY(dcDeviceManager, "DeviceManager")
-Q_LOGGING_CATEGORY(dcTimeManager, "TimeManager")
-Q_LOGGING_CATEGORY(dcRuleEngine, "RuleEngine")
-Q_LOGGING_CATEGORY(dcHardware, "Hardware")
-Q_LOGGING_CATEGORY(dcConnection, "Connection")
-Q_LOGGING_CATEGORY(dcLogEngine, "LogEngine")
-Q_LOGGING_CATEGORY(dcTcpServer, "TcpServer")
-Q_LOGGING_CATEGORY(dcWebServer, "WebServer")
-Q_LOGGING_CATEGORY(dcWebSocketServer, "WebSocketServer")
-Q_LOGGING_CATEGORY(dcJsonRpc, "JsonRpc")
-Q_LOGGING_CATEGORY(dcRest, "Rest")
-Q_LOGGING_CATEGORY(dcOAuth2, "OAuth2")
-Q_LOGGING_CATEGORY(dcAvahi, "Avahi")
+#include <QObject>
+#include <avahi-client/lookup.h>
+
+#include "libguh.h"
+#include "qtavahiclient.h"
+#include "avahiserviceentry.h"
+
+class QtAvahiServiceBrowserPrivate;
+
+class LIBGUH_EXPORT QtAvahiServiceBrowser : public QObject
+{
+    Q_OBJECT
+public:
+    explicit QtAvahiServiceBrowser(QObject *parent = 0);
+    ~QtAvahiServiceBrowser();
+
+    void enable();
+
+    QList<AvahiServiceEntry> serviceEntries() const;
+
+signals:
+    void serviceEntryAdded(const AvahiServiceEntry &entry);
+    void serviceEntryRemoved(const AvahiServiceEntry &entry);
+
+private slots:
+    void onClientStateChanged(const QtAvahiClient::QtAvahiClientState &state);
+
+private:
+    QtAvahiServiceBrowserPrivate *d_ptr;
+
+    QList<AvahiServiceEntry> m_serviceEntries;
+    QStringList m_serviceTypes;
+
+    void createServiceBrowser(const char* serviceType);
+
+    Q_DECLARE_PRIVATE(QtAvahiServiceBrowser)
+};
+
+#endif // QTAVAHISERVICEBROWSER_H

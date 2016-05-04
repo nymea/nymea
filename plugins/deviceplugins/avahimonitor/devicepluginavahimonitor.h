@@ -1,6 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
  *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.guru>                 *
+ *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -18,19 +19,32 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "loggingcategories.h"
+#ifndef DEVICEPLUGINAVAHIMONITOR_H
+#define DEVICEPLUGINAVAHIMONITOR_H
 
-Q_LOGGING_CATEGORY(dcApplication, "Application")
-Q_LOGGING_CATEGORY(dcDeviceManager, "DeviceManager")
-Q_LOGGING_CATEGORY(dcTimeManager, "TimeManager")
-Q_LOGGING_CATEGORY(dcRuleEngine, "RuleEngine")
-Q_LOGGING_CATEGORY(dcHardware, "Hardware")
-Q_LOGGING_CATEGORY(dcConnection, "Connection")
-Q_LOGGING_CATEGORY(dcLogEngine, "LogEngine")
-Q_LOGGING_CATEGORY(dcTcpServer, "TcpServer")
-Q_LOGGING_CATEGORY(dcWebServer, "WebServer")
-Q_LOGGING_CATEGORY(dcWebSocketServer, "WebSocketServer")
-Q_LOGGING_CATEGORY(dcJsonRpc, "JsonRpc")
-Q_LOGGING_CATEGORY(dcRest, "Rest")
-Q_LOGGING_CATEGORY(dcOAuth2, "OAuth2")
-Q_LOGGING_CATEGORY(dcAvahi, "Avahi")
+#include "plugin/deviceplugin.h"
+
+#include <QProcess>
+
+class DevicePluginAvahiMonitor : public DevicePlugin
+{
+    Q_OBJECT
+
+    Q_PLUGIN_METADATA(IID "guru.guh.DevicePlugin" FILE "devicepluginavahimonitor.json")
+    Q_INTERFACES(DevicePlugin)
+
+public:
+    explicit DevicePluginAvahiMonitor();
+
+    void init() override;
+
+    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
+    DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
+    DeviceManager::HardwareResources requiredHardware() const override;
+
+private slots:
+    void onServiceEntryAdded(const AvahiServiceEntry &serviceEntry);
+    void onServiceEntryRemoved(const AvahiServiceEntry &serviceEntry);
+};
+
+#endif // DEVICEPLUGINAVAHIMONITOR_H

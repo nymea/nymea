@@ -36,6 +36,8 @@ class DevicePluginAvahiMonitor : public DevicePlugin
 public:
     explicit DevicePluginAvahiMonitor();
 
+    void init() override;
+
     DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
     DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
     DeviceManager::HardwareResources requiredHardware() const override;

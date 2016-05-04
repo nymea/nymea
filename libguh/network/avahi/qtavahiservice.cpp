@@ -18,9 +18,38 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class QtAvahiService
+    \brief Allowes to publish an avahi service to the network.
+
+    \inmodule libguh
+*/
+
+/*! \enum QtAvahiService::QtAvahiServiceState
+
+    This enum type specifies the state of a \l{QtAvahiService}.
+
+    \value QtAvahiServiceStateUncomitted
+        The group has not yet been commited, the user must still call avahi_entry_group_commit().
+    \value QtAvahiServiceStateRegistering
+        The entries of the group are currently being registered.
+    \value QtAvahiServiceStateEstablished
+        The entries have successfully been established.
+    \value QtAvahiServiceStateCollision
+        A name collision for one of the entries in the group has been detected, the entries have been withdrawn.
+    \value QtAvahiServiceStateFailure
+        Some kind of failure happened, the entries have been withdrawn.
+
+*/
+
+
+/*! \fn void QtAvahiService::serviceStateChanged(const QtAvahiServiceState &state);
+    This signal will be emitted when the \a state of this \l{QtAvahiService} has changed.
+*/
 #include "qtavahiservice.h"
 #include "qtavahiservice_p.h"
 
+/*! Constructs a new \l{QtAvahiService} with the given \a parent. */
 QtAvahiService::QtAvahiService(QObject *parent) :
     QObject(parent),
     d_ptr(new QtAvahiServicePrivate)
@@ -29,6 +58,7 @@ QtAvahiService::QtAvahiService(QObject *parent) :
     d_ptr->client->start();
 }
 
+/*! Destructs this \l{QtAvahiService}. */
 QtAvahiService::~QtAvahiService()
 {
     if (d_ptr->group)
@@ -37,22 +67,26 @@ QtAvahiService::~QtAvahiService()
     delete d_ptr;
 }
 
+/*! Returns the port of this \l{QtAvahiService}. */
 quint16 QtAvahiService::port() const
 {
     return d_ptr->port;
 }
 
+/*! Returns the name of this \l{QtAvahiService}. */
 QString QtAvahiService::name() const
 {
     return d_ptr->name;
 }
 
+/*! Returns the service type of this \l{QtAvahiService}. */
 QString QtAvahiService::serviceType() const
 {
     return d_ptr->type;
 }
 
-bool QtAvahiService::registerService(QString name, quint16 port, QString type)
+/*! Returns true if a new avahi service to the network with the given \a name, \a port and \a serviceType can be registered. */
+bool QtAvahiService::registerService(QString name, quint16 port, QString serviceType)
 {
     // check if the client is running
     if (!d_ptr->client->client || AVAHI_CLIENT_S_RUNNING != avahi_client_get_state(d_ptr->client->client))
@@ -60,7 +94,7 @@ bool QtAvahiService::registerService(QString name, quint16 port, QString type)
 
     d_ptr->name = name;
     d_ptr->port = port;
-    d_ptr->type = type;
+    d_ptr->type = serviceType;
 
     // if the group is not set yet, create it
     if (!d_ptr->group)
@@ -93,16 +127,22 @@ bool QtAvahiService::registerService(QString name, quint16 port, QString type)
     return true;
 }
 
+/*! Remove this service from the local network. This \l{QtAvahiService} can be reused to register a new avahi service.
+
+    \sa registerService()
+*/
 void QtAvahiService::resetService()
 {
     avahi_entry_group_reset(d_ptr->group);
 }
 
+/*!  Returns true if the service group was added and commited to the network without errors. */
 bool QtAvahiService::isValid() const
 {
     return (d_ptr->group && !d_ptr->error);
 }
 
+/*! Returns the error string of this \l{QtAvahiService}. */
 QString QtAvahiService::errorString() const
 {
     if (!d_ptr->client->client)

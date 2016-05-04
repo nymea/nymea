@@ -48,7 +48,7 @@ public:
     QString name() const;
     QString serviceType() const;
 
-    bool registerService(QString name, quint16 port, QString type = "_http._tcp");
+    bool registerService(QString name, quint16 port, QString serviceType = "_http._tcp");
     void resetService();
 
     bool isValid() const;

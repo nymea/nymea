@@ -103,7 +103,9 @@ Architecture: any
 Depends: libguh1 (= ${binary:Version}),
   ${shlibs:Depends},
   ${misc:Depends},
-  python
+  python,
+  libavahi-client-dev,
+  libavahi-common-dev
 Description: An open source IoT server - development files
   guh is an open source IoT (Internet of Things) server,
   which allows to control a lot of different devices from many different

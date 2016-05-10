@@ -33,12 +33,17 @@
 
     \section1 Write your own plugin
     Here you can find some tutorials for developing and working with guh:
-        \list
+    \list
         \li \l{Set up the build environment}
         \li \l{Getting started}
         \li \l{The plugin JSON File}
         \li \l{CreateMethods and SetupMethods}
         \li \l{Tutorials}
+    \endlist
+
+    \section1 Client developers
+    \list
+        \li \l{Paramtypes and the coresponding UI elements}
     \endlist
 
     \section1 Quicklinks

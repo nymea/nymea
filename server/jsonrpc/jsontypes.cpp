@@ -1026,7 +1026,7 @@ QString JsonTypes::basicTypeToString(const QVariant::Type &type)
         return "Int";
         break;
     case QVariant::UInt:
-        return "UInt";
+        return "Uint";
         break;
     case QVariant::Double:
         return "Double";

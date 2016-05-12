@@ -160,7 +160,8 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     setReturns("ConfirmPairing", returns);
 
     params.clear(); returns.clear();
-    setDescription("GetConfiguredDevices", "Returns a list of configured devices.");
+    setDescription("GetConfiguredDevices", "Returns a list of configured devices, optionally filtered by deviceId.");
+    params.insert("o:deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     setParams("GetConfiguredDevices", params);
     QVariantList devices;
     devices.append(JsonTypes::deviceRef());
@@ -458,11 +459,20 @@ JsonReply *DeviceHandler::ConfirmPairing(const QVariantMap &params)
 
 JsonReply* DeviceHandler::GetConfiguredDevices(const QVariantMap &params) const
 {
-    Q_UNUSED(params)
     QVariantMap returns;
     QVariantList configuredDeviceList;
-    foreach (Device *device, GuhCore::instance()->deviceManager()->configuredDevices()) {
-        configuredDeviceList.append(JsonTypes::packDevice(device));
+    if (params.contains("deviceId")) {
+        Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(DeviceId(params.value("deviceId").toString()));
+        if (!device) {
+            returns.insert("deviceError", JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorDeviceNotFound));
+            return createReply(returns);
+        } else {
+            configuredDeviceList.append(JsonTypes::packDevice(device));
+        }
+    } else {
+        foreach (Device *device, GuhCore::instance()->deviceManager()->configuredDevices()) {
+            configuredDeviceList.append(JsonTypes::packDevice(device));
+        }
     }
     returns.insert("devices", configuredDeviceList);
     return createReply(returns);

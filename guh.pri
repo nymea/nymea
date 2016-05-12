@@ -13,6 +13,7 @@ QT+= network
 
 QMAKE_CXXFLAGS += -Werror -std=c++11 -g
 QMAKE_LFLAGS += -std=c++11
+QMAKE_CXX = ccache g++
 
 top_srcdir=$$PWD
 top_builddir=$$shadowed($$PWD)

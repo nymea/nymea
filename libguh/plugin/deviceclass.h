@@ -125,6 +125,15 @@ public:
     QString name() const;
     void setName(const QString &name);
 
+    StateTypeId criticalStateTypeId() const;
+    void setCriticalStateTypeId(const StateTypeId &criticalStateTypeId);
+
+    StateTypeId primaryStateTypeId() const;
+    void setPrimaryStateTypeId(const StateTypeId &primaryStateTypeId);
+
+    ActionTypeId primaryActionTypeId() const;
+    void setPrimaryActionTypeId(const ActionTypeId &primaryActionTypeId);
+
     DeviceIcon deviceIcon() const;
     void setDeviceIcon(const DeviceIcon &deviceIcon);
 
@@ -165,6 +174,9 @@ private:
     VendorId m_vendorId;
     PluginId m_pluginId;
     QString m_name;
+    StateTypeId m_criticalStateTypeId;
+    StateTypeId m_primaryStateTypeId;
+    ActionTypeId m_primaryActionTypeId;
     DeviceIcon m_deviceIcon;
     QList<BasicTag> m_basicTags;
     QList<StateType> m_stateTypes;

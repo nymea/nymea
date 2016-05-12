@@ -119,7 +119,6 @@ QVariantList StateType::possibleValues() const
     return m_possibleValues;
 }
 
-
 /*! Set the list of possible values of this StateType to \a possibleValues. */
 void StateType::setPossibleValues(const QVariantList &possibleValues)
 {

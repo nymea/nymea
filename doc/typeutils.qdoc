@@ -214,88 +214,92 @@
             \li 26
             \li The value of the \l{Param} has unit \tt {[db]} \unicode{0x2192} dezibel.
         \row
-            \li Types::UnitKiloByte
+            \li Types::UnitBpm
             \li 27
+            \li The value of the \l{Param} has unit \tt {[db]} \unicode{0x2192} dezibel.
+        \row
+            \li Types::UnitKiloByte
+            \li 28
             \li The value of the \l{Param} has unit \tt {[kB]} \unicode{0x2192} kilo byte.
         \row
             \li Types::UnitMegaByte
-            \li 28
+            \li 29
             \li The value of the \l{Param} has unit \tt {[MB]} \unicode{0x2192} mega byte.
         \row
             \li Types::UnitGigaByte
-            \li 29
+            \li 30
             \li The value of the \l{Param} has unit \tt {[GB]} \unicode{0x2192} giga byte.
         \row
             \li Types::UnitTeraByte
-            \li 30
+            \li 31
             \li The value of the \l{Param} has unit \tt {[TB]} \unicode{0x2192} tera byte.
         \row
             \li Types::UnitMilliWatt
-            \li 31
+            \li 32
             \li The value of the \l{Param} has unit \tt {[mW]} \unicode{0x2192} milli watt.
         \row
             \li Types::UnitWatt
-            \li 32
+            \li 33
             \li The value of the \l{Param} has unit \tt {[W]} \unicode{0x2192} watt.
         \row
             \li Types::UnitKiloWatt
-            \li 33
+            \li 34
             \li The value of the \l{Param} has unit \tt {[kW]} \unicode{0x2192} kilo watt.
         \row
             \li Types::UnitKiloWattHour
-            \li 34
+            \li 35
             \li The value of the \l{Param} has unit \tt {[kWh]} \unicode{0x2192} kilo watt hour.
         \row
             \li Types::UnitEuroPerMegaWattHour
-            \li 35
+            \li 36
             \li The value of the \l{Param} has unit \tt {[€/MWh]} \unicode{0x2192} euro per mega watt hour.
         \row
             \li Types::UnitPercentage
-            \li 36
+            \li 37
             \li The value of the \l{Param} has unit \tt {[\%]} \unicode{0x2192} percentage.
         \row
             \li Types::UnitPartsPerMillion
-            \li 37
+            \li 38
             \li The value of the \l{Param} has unit \tt {[ppm]} \unicode{0x2192} parts per million.
         \row
             \li Types::UnitEuro
-            \li 38
+            \li 39
             \li The value of the \l{Param} has unit \tt {[€]} \unicode{0x2192} euro.
         \row
             \li Types::UnitDollar
-            \li 39
+            \li 40
             \li The value of the \l{Param} has unit \tt {[\$]} \unicode{0x2192} dollar.
         \row
             \li Types::UnitHerz
-            \li 40
+            \li 41
             \li The value of the \l{Param} has unit \tt {[Hz]} \unicode{0x2192} herz.
         \row
             \li Types::UnitAmpere
-            \li 41
+            \li 42
             \li The value of the \l{Param} has unit \tt {[A]} \unicode{0x2192} ampere.
         \row
             \li Types::UnitMilliAmpere
-            \li 42
+            \li 43
             \li The value of the \l{Param} has unit \tt {[mA]} \unicode{0x2192} milli ampere.
         \row
             \li Types::UnitVolt
-            \li 43
+            \li 44
             \li The value of the \l{Param} has unit \tt {[V]} \unicode{0x2192} volt.
         \row
             \li Types::UnitMilliVolt
-            \li 44
+            \li 45
             \li The value of the \l{Param} has unit \tt {[mV]} \unicode{0x2192} milli volt.
         \row
             \li Types::UnitVoltAmpere
-            \li 45
+            \li 46
             \li The value of the \l{Param} has unit \tt {[VA]} \unicode{0x2192} volt ampere.
         \row
             \li Types::UnitVoltAmpereReactive
-            \li 46
+            \li 47
             \li The value of the \l{Param} has unit \tt {[var]} \unicode{0x2192} volt-ampere reactive.
         \row
             \li Types::UnitAmpereHour
-            \li 47
+            \li 48
             \li The value of the \l{Param} has unit \tt {[Ah]} \unicode{0x2192} ampere hour.
     \endtable
 

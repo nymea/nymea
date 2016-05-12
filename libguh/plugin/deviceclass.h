@@ -40,6 +40,7 @@ class LIBGUH_EXPORT DeviceClass
     Q_ENUMS(SetupMethod)
     Q_ENUMS(BasicTag)
     Q_ENUMS(DeviceIcon)
+    Q_FLAGS(CreateMethods)
 
 public:
     enum CreateMethod {
@@ -176,5 +177,7 @@ private:
     SetupMethod m_setupMethod;
     QString m_pairingInfo;
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(DeviceClass::CreateMethods)
 
 #endif

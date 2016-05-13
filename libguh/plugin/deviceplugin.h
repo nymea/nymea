@@ -41,6 +41,7 @@
 #include <QMetaEnum>
 #include <QJsonObject>
 #include <QMetaObject>
+#include <QPair>
 
 class DeviceManager;
 class Device;
@@ -126,7 +127,7 @@ protected:
 private:
     void initPlugin(const QJsonObject &metaData, DeviceManager *deviceManager);
 
-    QList<ParamType> parseParamTypes(const QJsonArray &array) const;
+    QPair<bool, QList<ParamType> > parseParamTypes(const QJsonArray &array) const;
 
     QStringList verifyFields(const QStringList &fields, const QJsonObject &value) const;
 

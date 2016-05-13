@@ -13,6 +13,7 @@
                     "idName": "AVRX1000",
                     "name": "AVR X1000",
                     "createMethods": ["user"],
+                    "criticalStateTypeId": "4d1790bf-28c6-4c1f-8892-ba1a0ef140f5",
                     "deviceIcon": "Hifi",
                     "basicTags": [
                         "Device",
@@ -22,6 +23,7 @@
                         {
                             "name": "ip",
                             "type" : "QString",
+                            "index": 0,
                             "inputType": "IPv4Address"
                         }
                     ],
@@ -30,6 +32,7 @@
                             "id": "4d1790bf-28c6-4c1f-8892-ba1a0ef140f5",
                             "idName": "connected",
                             "name": "connected",
+                            "index": 0,
                             "type": "bool"
                         },
                         {
@@ -37,6 +40,7 @@
                             "id": "1cdb6b54-6831-4900-95b2-c78f64497701",
                             "idName": "power",
                             "type": "bool",
+                            "index": 1,
                             "defaultValue": false,
                             "writable": true
                         },
@@ -44,6 +48,7 @@
                             "name": "volume",
                             "id": "773636b9-304d-463a-8755-fc7488dc0ff3",
                             "idName": "volume",
+                            "index": 2,
                             "type": "int",
                             "unit": "Dezibel",
                             "defaultValue": 0,
@@ -55,6 +60,7 @@
                             "name": "channel",
                             "id": "f29ffa2c-31d6-4d88-b160-a38288c82ce1",
                             "idName": "channel",
+                            "index": 3,
                             "type": "QString",
                             "writable": true,
                             "possibleValues": [

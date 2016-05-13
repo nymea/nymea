@@ -19,19 +19,23 @@
                         "Actuator"
                     ],
                     "createMethods": ["user", "discovery"],
+                    "criticalStateTypeId": "09dfbd40-c97c-4a20-9ecd-f80e389a4864",
                     "paramTypes": [
                         {
                             "name": "name",
                             "type": "QString",
+                            "index": 0,
                             "inputType": "TextLine"
                         },
                         {
                             "name": "ip",
                             "type" : "QString",
+                            "index": 1,
                             "inputType": "IPv4Address"
                         },
                         {
                             "name": "port",
+                            "index": 2,
                             "type" : "int"
                         }
                     ],
@@ -40,12 +44,14 @@
                             "id": "09dfbd40-c97c-4a20-9ecd-f80e389a4864",
                             "idName": "connected",
                             "name": "connected",
+                            "index": 0,
                             "type": "bool"
                         },
                         {
                             "id": "bc98cdb0-4d0e-48ca-afc7-922e49bb7813",
                             "idName": "mute",
                             "name": "mute",
+                            "index": 1,
                             "type": "bool",
                             "writable": true
                         },
@@ -55,6 +61,7 @@
                             "name": "volume",
                             "unit": "Percentage",
                             "type": "int",
+                            "index": 2,
                             "minValue": 0,
                             "maxValue": 100,
                             "writable": true
@@ -64,16 +71,19 @@
                         {
                             "id": "2535a1eb-7643-4874-98f6-b027fdff6311",
                             "idName": "onPlayerPlay",
+                            "index": 0,
                             "name": "player play"
                         },
                         {
                             "id": "99498b1c-e9c0-480a-9e91-662ee79ba976",
                             "idName": "onPlayerPause",
+                            "index": 1,
                             "name": "player pause"
                         },
                         {
                             "id": "a02ce255-3abb-435d-a92e-7f99c952ecb2",
                             "idName": "onPlayerStop",
+                            "index": 2,
                             "name": "player stop"
                         }
                     ],
@@ -82,15 +92,18 @@
                             "id": "dc0aa3b5-4eae-4e58-a4ac-d4c124da53f1",
                             "idName": "showNotification",
                             "name": "show notification",
+                            "index": 0,
                             "paramTypes": [
                                 {
                                     "name": "message",
                                     "type": "QString",
+                                    "index": 0,
                                     "inputType": "TextLine"
                                 },
                                 {
                                     "name": "type",
                                     "type": "QString",
+                                    "index": 1,
                                     "defaultValue": "info",
                                     "allowedValues": [
                                         "info",
@@ -104,10 +117,12 @@
                             "id": "28060803-aa85-44a4-9dec-ee669dfb629f",
                             "idName": "pressButton",
                             "name": "press button",
+                            "index": 1,
                             "paramTypes": [
                                 {
                                     "name": "button",
                                     "type": "QString",
+                                    "index": 0,
                                     "allowedValues": [
                                         "left",
                                         "right",
@@ -147,10 +162,12 @@
                             "id": "8d51cd64-ecef-44f8-85b0-697bef252ce5",
                             "idName": "system",
                             "name": "system",
+                            "index": 2,
                             "paramTypes": [
                                 {
                                     "name": "command",
                                     "type": "QString",
+                                    "index": 0,
                                     "defaultValue": "shutdown",
                                     "allowedValues": [
                                         "hibernate",
@@ -165,10 +182,12 @@
                             "id": "59f7ad10-16eb-40b7-a88b-c8393ae8e413",
                             "idName": "videoLibrary",
                             "name": "video library",
+                            "index": 3,
                             "paramTypes": [
                                 {
                                     "name": "command",
                                     "type": "QString",
+                                    "index": 0,
                                     "defaultValue": "scan",
                                     "allowedValues": [
                                         "scan",
@@ -181,10 +200,12 @@
                             "id": "3d5120eb-1007-46c3-b76e-d9d4b105b9f2",
                             "idName": "audioLibrary",
                             "name": "audio library",
+                            "index": 4,
                             "paramTypes": [
                                 {
                                     "name": "command",
                                     "type": "QString",
+                                    "index": 0,
                                     "defaultValue": "scan",
                                     "allowedValues": [
                                         "scan",

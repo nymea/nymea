@@ -13,6 +13,7 @@
                     "idName": "cube",
                     "name": "Max! Cube LAN Gateway",
                     "deviceIcon": "Gateway",
+                    "criticalStateTypeId": "d0a9a369-cf8c-47c4-a12e-f2d076bf12fd",
                     "basicTags": [
                         "Device",
                         "Gateway",
@@ -24,20 +25,24 @@
                         {
                             "name": "host address",
                             "type": "QString",
-                            "inputType": "IPv4Address"
+                            "inputType": "IPv4Address",
+                            "index": 0
                         },
                         {
                             "name": "port",
-                            "type": "int"
+                            "type": "int",
+                            "index": 1
                         },
                         {
                             "name": "serial number",
                             "type": "QString",
-                            "inputType": "TextLine"
+                            "inputType": "TextLine",
+                            "index": 2
                         },
                         {
                             "name": "firmware version",
-                            "type": "int"
+                            "type": "int",
+                            "index": 3
                         }
                     ],
                     "stateTypes": [
@@ -45,6 +50,7 @@
                             "id": "d0a9a369-cf8c-47c4-a12e-f2d076bf12fd",
                             "idName": "connection",
                             "name": "connected",
+                            "index": 0,
                             "type": "bool",
                             "defaultValue": false
                         },
@@ -52,6 +58,7 @@
                             "id": "2c2367da-c229-40ed-9d47-a6e73cd6dc3b",
                             "idName": "portalEnabled",
                             "name": "portal enabled",
+                            "index": 1,
                             "type": "bool",
                             "defaultValue": false
                         }
@@ -62,6 +69,7 @@
                     "idName": "wallThermostate",
                     "name": "Max! Wall Thermostat",
                     "deviceIcon": "Thermometer",
+                    "primaryStateTypeId": "852e7708-db1d-42d1-96e4-19c13598262c",
                     "basicTags": [
                         "Device",
                         "Heating",
@@ -72,54 +80,65 @@
                     "paramTypes": [
                         {
                             "name": "serial number",
-                            "type": "QString"
+                            "type": "QString",
+                            "index": 0
                         },
                         {
                             "name": "name",
-                            "type": "QString"
+                            "type": "QString",
+                            "index": 1
                         },
                         {
                             "name": "parent cube",
-                            "type": "QString"
+                            "type": "QString",
+                            "index": 2
                         },
                         {
                             "name": "rf address",
-                            "type": "QString"
+                            "type": "QString",
+                            "index": 3
                         },
                         {
                             "name": "room id",
-                            "type": "int"
+                            "type": "int",
+                            "index": 4
                         },
                         {
                             "name": "room name",
-                            "type": "QString"
+                            "type": "QString",
+                            "index": 5
                         }
                     ],
                     "actionTypes": [
                         {
                             "id": "162b4b3d-9923-4f2c-a755-b50c8a06a6f0",
                             "idName": "setAutoMode",
-                            "name": "set auto mode"
+                            "name": "set auto mode",
+                            "index": 0
                         },
                         {
                             "id": "8e604437-9f5b-4c17-b5b0-e2db6007af5b",
                             "idName": "setManualMode",
-                            "name": "set manual mode"
+                            "name": "set manual mode",
+                            "index": 1
                         },
                         {
                             "id": "27a981e8-ec23-4ba8-921e-33b911a7dd89",
                             "idName": "setEcoMode",
-                            "name": "set eco mode"
+                            "name": "set eco mode",
+                            "index": 2
                         },
                         {
                             "id": "184fb112-7a03-4560-8634-0257c969c26e",
                             "idName": "displayCurrentTemp",
                             "name": "display current temperature",
+                            "index": 3,
                             "paramTypes": [
                                 {
                                     "name": "display",
                                     "type": "bool",
-                                    "defaultValue": true
+                                    "defaultValue": true,
+                                    "index": 0
                                 }
                             ]
                         }
@@ -130,6 +149,7 @@
                             "idName": "comfortTemp",
                             "name": "comfort temperature",
                             "type": "double",
+                            "index": 0,
                             "unit": "DegreeCelsius",
                             "defaultValue": 0
                         },
@@ -138,6 +158,7 @@
                             "idName": "ecoTemp",
                             "name": "eco temperature",
                             "type": "double",
+                            "index": 1,
                             "unit": "DegreeCelsius",
                             "defaultValue": 0
                         },
@@ -146,6 +167,7 @@
                             "idName": "maxSetpointTemp",
                             "name": "max setpoint",
                             "type": "double",
+                            "index": 2,
                             "unit": "DegreeCelsius",
                             "defaultValue": 0
                         },
@@ -154,6 +176,7 @@
                             "idName": "minSetpointTemp",
                             "name": "min setpoint",
                             "type": "double",
+                            "index": 3,
                             "unit": "DegreeCelsius",
                             "defaultValue": 0
                         },
@@ -162,6 +185,7 @@
                             "idName": "errorOccurred",
                             "name": "error occurred",
                             "type": "bool",
+                            "index": 4,
                             "defaultValue": false
                         },
                         {
@@ -169,6 +193,7 @@
                             "idName": "initialized",
                             "name": "initialized",
                             "type": "bool",
+                            "index": 5,
                             "defaultValue": false
                         },
                         {
@@ -176,6 +201,7 @@
                             "idName": "batteryLow",
                             "name": "battery low",
                             "type": "bool",
+                            "index": 6,
                             "defaultValue": false
                         },
                         {
@@ -183,6 +209,7 @@
                             "idName": "linkStatusOK",
                             "name": "link status ok",
                             "type": "bool",
+                            "index": 7,
                             "defaultValue": false
                         },
                         {
@@ -190,6 +217,7 @@
                             "idName": "panelLocked",
                             "name": "panel locked",
                             "type": "bool",
+                            "index": 8,
                             "defaultValue": false
                         },
                         {
@@ -197,6 +225,7 @@
                             "idName": "gatewayKnown",
                             "name": "gateway known",
                             "type": "bool",
+                            "index": 9,
                             "defaultValue": false
                         },
                         {
@@ -204,6 +233,7 @@
                             "idName": "dtsActive",
                             "name": "dts active",
                             "type": "bool",
+                            "index": 10,
                             "defaultValue": false
                         },
                         {
@@ -211,12 +241,14 @@
                             "idName": "deviceMode",
                             "name": "device mode",
                             "type": "int",
+                            "index": 11,
                             "defaultValue": -1
                         },
                         {
                             "id": "ff5194e3-5641-4ac2-92c7-48c431b4a2eb",
                             "idName": "deviceModeString",
                             "name": "device mode string",
+                            "index": 12,
                             "type": "QString"
                         },
                         {
@@ -225,6 +257,7 @@
                             "name": "desired temperature",
                             "type": "double",
                             "unit": "DegreeCelsius",
+                            "index": 13,
                             "defaultValue": 0,
                             "writable": true
 
@@ -234,6 +267,7 @@
                             "idName": "currentTemperature",
                             "name": "current temp",
                             "unit": "DegreeCelsius",
+                            "index": 14,
                             "type": "double",
                             "defaultValue": 0
                         }
@@ -254,44 +288,53 @@
                     "paramTypes": [
                         {
                             "name": "serial number",
-                            "type": "QString"
+                            "type": "QString",
+                            "index": 0
                         },
                         {
                             "name": "name",
-                            "type": "QString"
+                            "type": "QString",
+                            "index": 1
                         },
                         {
                             "name": "parent cube",
-                            "type": "QString"
+                            "type": "QString",
+                            "index": 2
                         },
                         {
                             "name": "rf address",
-                            "type": "QString"
+                            "type": "QString",
+                            "index": 3
                         },
                         {
                             "name": "room id",
-                            "type": "int"
+                            "type": "int",
+                            "index": 4
                         },
                         {
                             "name": "room name",
-                            "type": "QString"
+                            "type": "QString",
+                            "index": 5
                         }
                     ],
                     "actionTypes": [
                         {
                             "id": "162b4b3d-9923-4f2c-a755-b50c8a06a6f0",
                             "idName": "setAutoMode",
-                            "name": "set auto mode"
+                            "name": "set auto mode",
+                            "index": 0
                         },
                         {
                             "id": "8e604437-9f5b-4c17-b5b0-e2db6007af5b",
                             "idName": "setManualMode",
-                            "name": "set manual mode"
+                            "name": "set manual mode",
+                            "index": 1
                         },
                         {
                             "id": "27a981e8-ec23-4ba8-921e-33b911a7dd89",
                             "idName": "setEcoMode",
-                            "name": "set eco mode"
+                            "name": "set eco mode",
+                            "index": 2
                         }
                     ],
                     "stateTypes": [
@@ -301,7 +344,8 @@
                             "name": "comfort temperature",
                             "unit": "DegreeCelsius",
                             "type": "double",
-                            "defaultValue": 0
+                            "defaultValue": 0,
+                            "index": 0
                         },
                         {
                             "id": "24dfd20d-bc8d-48e4-8162-b20ae0465c41",
@@ -309,7 +353,8 @@
                             "name": "eco temperature",
                             "unit": "DegreeCelsius",
                             "type": "double",
-                            "defaultValue": 0
+                            "defaultValue": 0,
+                            "index": 1
                         },
                         {
                             "id": "a8536ddf-a6e4-41c2-89c1-e7102608f5f6",
@@ -317,7 +362,8 @@
                             "name": "max setpoint",
                             "unit": "DegreeCelsius",
                             "type": "double",
-                            "defaultValue": 0
+                            "defaultValue": 0,
+                            "index": 2
                         },
                         {
                             "id": "ceb0ad05-37ad-4b79-a4d9-540c34a7e3e4",
@@ -325,69 +371,79 @@
                             "name": "min setpoint",
                             "unit": "DegreeCelsius",
                             "type": "double",
-                            "defaultValue": 0
+                            "defaultValue": 0,
+                            "index": 3
                         },
                         {
                             "id": "9880247b-cf9a-453c-b0c3-d910eba8a253",
                             "idName": "errorOccurred",
                             "name": "error occured",
                             "type": "bool",
-                            "defaultValue": false
+                            "defaultValue": false,
+                            "index": 4
                         },
                         {
                             "id": "a9e29f03-063e-4686-8aac-2f6d8f8a4937",
                             "idName": "initialized",
                             "name": "initialized",
                             "type": "bool",
-                            "defaultValue": false
+                            "defaultValue": false,
+                            "index": 5
                         },
                         {
                             "id": "53b89f32-8894-4290-92a0-6a470c6b69ab",
                             "idName": "batteryLow",
                             "name": "battery low",
                             "type": "bool",
-                            "defaultValue": false
+                            "defaultValue": false,
+                            "index": 6
                         },
                         {
                             "id": "aff38be8-7ea6-4fd8-b0fa-e987ab05c719",
                             "idName": "batteryLow",
                             "name": "link status ok",
                             "type": "bool",
-                            "defaultValue": false
+                            "defaultValue": false,
+                            "index": 7
                         },
                         {
                             "id": "979df197-09a1-46f9-9217-9d323b1062bd",
                             "idName": "panelLocked",
                             "name": "panel locked",
                             "type": "bool",
-                            "defaultValue": false
+                            "defaultValue": false,
+                            "index": 8
                         },
                         {
                             "id": "1d6bd962-5c31-47ad-80a4-dda87bff98f5",
                             "idName": "gatewayKnown",
                             "name": "gateway known",
                             "type": "bool",
-                            "defaultValue": false
+                            "defaultValue": false,
+                            "index": 9
                         },
                         {
                             "id": "1b402ba6-a8ae-45b1-8acf-2b0a89f71889",
                             "idName": "dtsActive",
                             "name": "dts active",
                             "type": "bool",
-                            "defaultValue": false
+                            "defaultValue": false,
+                            "index": 10
                         },
                         {
                             "id": "639360f0-bb65-43e6-b227-50ae0ac39d6c",
                             "idName": "deviceMode",
                             "name": "device mode",
                             "type": "int",
-                            "defaultValue": -1
+                            "defaultValue": -1,
+                            "index": 11
                         },
                         {
                             "id": "ff5194e3-5641-4ac2-92c7-48c431b4a2eb",
                             "idName": "deviceModeString",
                             "name": "device mode string",
-                            "type": "QString"
+                            "type": "QString",
+                            "index": 12
                         },
                         {
                             "id": "579aa8c6-8814-491b-9e7c-b98108c323d1",
@@ -396,7 +452,8 @@
                             "unit": "DegreeCelsius",
                             "type": "double",
                             "defaultValue": 0,
-                            "writable": true
+                            "writable": true,
+                            "index": 13
                         },
                         {
                             "id": "576da571-9a65-478f-96bf-19256c8b9ece",
@@ -404,7 +461,8 @@
                             "name": "offset temperature",
                             "unit": "DegreeCelsius",
                             "type": "double",
-                            "defaultValue": 0
+                            "defaultValue": 0,
+                            "index": 14
                         },
                         {
                             "id": "81c6c74a-b0cd-4daa-9eb9-f1cd68f328af",
@@ -412,14 +470,16 @@
                             "name": "window open duration",
                             "unit": "Minutes",
                             "type": "int",
-                            "defaultValue": 0
+                            "defaultValue": 0,
+                            "index": 15
                         },
                         {
                             "id": "7c41fa64-b1a1-48d2-9d03-67aa16cd83ad",
                             "idName": "boostValveValue",
                             "name": "boost valve value",
                             "type": "int",
-                            "defaultValue": 0
+                            "defaultValue": 0,
+                            "index": 16
                         },
                         {
                             "id": "e75c1398-9ad7-466c-b3b9-b03bbb686a30",
@@ -427,28 +487,32 @@
                             "name": "boost duration",
                             "unit": "Seconds",
                             "type": "int",
-                            "defaultValue": 0
+                            "defaultValue": 0,
+                            "index": 17
                         },
                         {
                             "id": "bd6f5947-d4b4-444b-81c8-77eec46957e4",
                             "idName": "discalcWeekDay",
                             "name": "discalc weekday",
                             "type": "QString",
-                            "defaultValue": ""
+                            "defaultValue": "",
+                            "index": 18
                         },
                         {
                             "id": "e78235ee-affc-41e3-a463-9f0512b4a6c3",
                             "idName": "discalcTime",
                             "name": "discalc time",
                             "type": "QString",
-                            "defaultValue": ""
+                            "defaultValue": "",
+                            "index": 19
                         },
                         {
                             "id": "e367fa3a-b30f-49bd-af3f-cff92360ad32",
                             "idName": "valveMaximumSettings",
                             "name": "valve maximum setting",
                             "type": "double",
-                            "defaultValue": 0
+                            "defaultValue": 0,
+                            "index": 20
                         },
                         {
                             "id": "ffaff87b-b741-4db8-9875-3380af4f1885",
@@ -456,7 +520,8 @@
                             "name": "valve offset",
                             "unit": "Percentage",
                             "type": "int",
-                            "defaultValue": 0
+                            "defaultValue": 0,
+                            "index": 21
                         },
                         {
                             "id": "72956000-0203-4c32-a6b6-3bb7e46c03ca",
@@ -464,7 +529,8 @@
                             "name": "valve position",
                             "unit": "Percentage",
                             "type": "int",
-                            "defaultValue": 0
+                            "defaultValue": 0,
+                            "index": 22
                         }
                     ]
                 }

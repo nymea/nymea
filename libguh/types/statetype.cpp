@@ -36,6 +36,7 @@
  *  hardcode it into the plugin. */
 StateType::StateType(const StateTypeId &id):
     m_id(id),
+    m_index(0),
     m_defaultValue(QVariant()),
     m_minValue(QVariant()),
     m_maxValue(QVariant()),
@@ -61,6 +62,19 @@ QString StateType::name() const
 void StateType::setName(const QString &name)
 {
     m_name = name;
+}
+
+/*! Returns the index of this \l{StateType}. The index of an \l{StateType} indicates the order in the \l{DeviceClass}.
+ *  This guarantees that a \l{Device} will look always the same (\l{State} order). */
+int StateType::index() const
+{
+    return m_index;
+}
+
+/*! Set the \a index of this \l{StateType}. */
+void StateType::setIndex(const int &index)
+{
+    m_index = index;
 }
 
 /*! Returns the Type of the StateType (e.g. QVariant::Real). */

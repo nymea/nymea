@@ -31,44 +31,60 @@
     by the plugin.
 
     All Actions must have valid a ActionType in order to be useful.
+
     \sa Action
 */
 
 #include "actiontype.h"
 
-/*! Constructs an ActionType with the given \a id. */
+/*! Constructs an \l{ActionType} with the given \a id. */
 ActionType::ActionType(const ActionTypeId &id):
-    m_id(id)
+    m_id(id),
+    m_index(0)
 {
+
 }
 
-/*! Returns the id of this ActionType. */
+/*! Returns the id of this \l{ActionType}. */
 ActionTypeId ActionType::id() const
 {
     return m_id;
 }
 
-/*! Returns the name of this ActionType. */
+/*! Returns the name of this \l{ActionType}. */
 QString ActionType::name() const
 {
     return m_name;
 }
 
-/*! Set the \a name for this Action. This will be visible to the user. */
+/*! Set the \a name for this \l{ActionType}. This will be visible to the user. */
 void ActionType::setName(const QString &name)
 {
     m_name = name;
 }
 
-/*! Returns the parameter description of this ActionType. \l{Action}{Actions} created
- *  from this ActionType must have their parameters matching to this template. */
+/*! Returns the index of this \l{ActionType}. The index of an \l{ActionType} indicates the order in the \l{DeviceClass}.
+ *  This guarantees that a \l{Device} will look always the same (\l{Action} order). */
+int ActionType::index() const
+{
+    return m_index;
+}
+
+/*! Set the \a index of this \l{ActionType}. */
+void ActionType::setIndex(const int &index)
+{
+    m_index = index;
+}
+
+/*! Returns the parameter description of this \l{ActionType}. \l{Action}{Actions} created
+ *  from this \l{ActionType} must have their parameters matching to this template. */
 QList<ParamType> ActionType::paramTypes() const
 {
     return m_paramTypes;
 }
 
-/*! Set the parameter description of this ActionType. \l{Action}{Actions} created
- *  from this ActionType must have their \a paramTypes matching to this template. */
+/*! Set the parameter description of this \l{ActionType}. \l{Action}{Actions} created
+ *  from this \l{ActionType} must have their \a paramTypes matching to this template. */
 void ActionType::setParamTypes(const QList<ParamType> &paramTypes)
 {
     m_paramTypes = paramTypes;

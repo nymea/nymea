@@ -38,15 +38,18 @@ public:
     QString name() const;
     void setName(const QString &name);
 
+    int index() const;
+    void setIndex(const int &index);
+
     QList<ParamType> paramTypes() const;
     void setParamTypes(const QList<ParamType> &paramTypes);
 
 private:
     EventTypeId m_id;
     QString m_name;
+    int m_index;
 
     QList<ParamType> m_paramTypes;
-
 };
 
 #endif // TRIGGERTYPE_H

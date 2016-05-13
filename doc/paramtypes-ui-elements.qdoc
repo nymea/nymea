@@ -6,11 +6,11 @@
     The images used for this examples were created with the Ubuntu SDK and are ment as an example, not as a directive.
 
     Depending on where a \l{ParamType} will be read there are different methods how to present them to the user.
-    If you have an \l{Action}, you can check out the \i Actions list to get a feeling how an \l{ActionType} can
+    If you have an \l{Action}, you can check out the \e Actions list to get a feeling how an \l{ActionType} can
     be interpreted.
 
     If a user has to fill out a list of \l{Params}{Param} for a \l{Device} setup or configuration, some examples can be found
-    in the \i Params list.
+    in the \e Params list.
 
     \chapter Actions
     \section2 Without params

@@ -18,46 +18,57 @@
                     ],
                     "idName": "elroSocket",
                     "createMethods": ["user"],
+                    "primaryActionTypeId": "31c9758e-6567-4f89-85bb-29e1a7c55d44",
                     "paramTypes": [
                         {
                             "name": "channel 1",
-                            "type": "bool"
+                            "type": "bool",
+                            "index": 0
                         },
                         {
                             "name": "channel 2",
-                            "type": "bool"
+                            "type": "bool",
+                            "index": 1
                         },
                         {
                             "name": "channel 3",
-                            "type": "bool"
+                            "type": "bool",
+                            "index": 3
                         },
                         {
                             "name": "channel 4",
-                            "type": "bool"
+                            "type": "bool",
+                            "index": 4
                         },
                         {
                             "name": "channel 5",
-                            "type": "bool"
+                            "type": "bool",
+                            "index": 5
                         },
                         {
                             "name": "A",
-                            "type": "bool"
+                            "type": "bool",
+                            "index": 6
                         },
                         {
                             "name": "B",
-                            "type": "bool"
+                            "type": "bool",
+                            "index": 7
                         },
                         {
                             "name": "C",
-                            "type": "bool"
+                            "type": "bool",
+                            "index": 8
                         },
                         {
                             "name": "D",
-                            "type": "bool"
+                            "type": "bool",
+                            "index": 9
                         },
                         {
                             "name": "E",
-                            "type": "bool"
+                            "type": "bool",
+                            "index": 10
                         }
                     ],
                     "actionTypes": [
@@ -65,10 +76,12 @@
                             "id": "31c9758e-6567-4f89-85bb-29e1a7c55d44",
                             "idName": "power",
                             "name": "set power",
+                            "index": 0,
                             "paramTypes": [
                                 {
                                     "name": "power",
-                                    "type": "bool"
+                                    "type": "bool",
+                                    "index": 0
                                 }
                             ]
                         }

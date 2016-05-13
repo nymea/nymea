@@ -37,6 +37,9 @@ public:
     QString name() const;
     void setName(const QString &name);
 
+    int index() const;
+    void setIndex(const int &index);
+
     QVariant::Type type() const;
     void setType(const QVariant::Type &type);
 
@@ -58,6 +61,7 @@ public:
 private:
     StateTypeId m_id;
     QString m_name;
+    int m_index;
     QVariant::Type m_type;
     QVariant m_defaultValue;
     QVariant m_minValue;

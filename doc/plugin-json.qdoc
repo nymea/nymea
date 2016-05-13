@@ -140,6 +140,7 @@
                             "name": "The name of the device class",
                             "idName": "deviceClassName",
                             "deviceClassId": "uuid",
+                            "deviceIcon": "Icon",
                             "basicTags": [
                                 "BasicTag"
                             ],
@@ -148,6 +149,9 @@
                             ],
                             "setupMethod": "SetupMethod",
                             "pairingInfo": "Information how to pair the device.",
+                            "criticalStateTypeId": "uuid",
+                            "primaryStateTypeId": "uuid",
+                            "primaryActionTypeId": "uuid",
                             "discoveryParamTypes": [
                             ],
                             "paramTypes": [
@@ -178,6 +182,14 @@
 
         \tt ...  
 
+        \li - \underline{\e deviceIcon:} Defines the icon for this \l{DeviceClass}. See enum \l{DeviceClass::DeviceIcon} for more information. The expected value for the \e deviceIcon parameters matches the enum name like this:
+
+        \tt {DeviceClass::DeviceIconBed} \unicode{0x2192} \tt {"deviceIcon": "Bed" }
+
+        \tt {DeviceClass::DeviceIconPower} \unicode{0x2192} \tt {"deviceIcon": "Power" }
+
+        \tt ...
+
         \li - \underline{\e createMethods:} A list of possible \l{DeviceClass::CreateMethod}{CreateMethods} for this device \unicode{0x2192} \l{DeviceClass::createMethods()}. Some devices can be created in different ways. Possible values are:
         \list
             \li \e user \unicode{0x2192} \l{DeviceClass::CreateMethodUser}
@@ -193,6 +205,9 @@
         \endlist
         \note For more information please take a look at \l{CreateMethods and SetupMethods} documentation.
         \li - \underline{\e pairingInfo:} The \l{DeviceClass::pairingInfo()}{pairingInfo} will inform the user how to pair the device \unicode{0x2192} \l{DeviceClass::setupMethod()}. This parameter will only be used for \l{DeviceClass::SetupMethodDisplayPin}{DisplayPin} and \l{DeviceClass::SetupMethodEnterPin}{EnterPin} and \l{DeviceClass::SetupMethodPushButton}{PushButton}. Example: "Please press the button on the device before continue."
+        \li - \underline{\e criticalStateTypeId:} Optional: Define which \l{StateType} is critical for this \l{Device}. The given \l{StateTypeId} sould refer to a \tt{bool} \l{State} which enables / disables the whole \l{Device} i.e. \e{"connected"}, \e{"available"} or \e{"reachable"}. This allowes a client developer to disable the device until this \l{State} becomes true.
+        \li - \underline{\e primaryStateTypeId:} Optional: Define which \l{StateType} is the primary \l{State} for this \l{Device}. This allowes a client developer to place the primary \l{State} value in the device overview.
+        \li - \underline{\e primaryActionTypeId:} Optional: Define which \l{ActionType} is the primary \l{Action} for this \l{Device}. This allowes a client developer to place the primary \l{Action} element in the device overview.
         \li - \underline{\e discoveryParamTypes:} A list of \l{ParamType}{ParamTypes} which will be needed for discovering a device \unicode{0x2192} \l{DeviceClass::discoveryParamTypes()}. This parameter will only be used for devices with the \l{DeviceClass::CreateMethodDiscovery}{CreateMethodDiscovery} (see section "\l{The ParamType definition}").
         \li - \underline{\e paramTypes:} A list of \l{ParamType}{ParamTypes} which define the paramters of a device \unicode{0x2192} \l{DeviceClass::paramTypes()} (see section "\l{The ParamType definition}").
         \li - \underline{\e stateTypes:} A list of \l{StateType}{StateTypes} of the device \unicode{0x2192} \l{DeviceClass::stateTypes()} (see section "\l{The StateType definition}").
@@ -211,6 +226,7 @@
                 {
                     "name": "name of the param",
                     "type": "DataType",
+                    "index": "int",
                     "inputType": "InputType",
                     "defaultValue": "The default value which will be used if the param is not given."
                     "unit": "The unit of the parameter",
@@ -219,8 +235,7 @@
                     "allowedValues": [
                         "value"
                     ],
-                    "readOnly": "bool"
-                    
+                    "readOnly": "bool"   
                 }
             ]
         }
@@ -229,6 +244,7 @@
     \list
         \li - \underline{\e name:} The visible name of the \l{ParamType} \unicode{0x2192} \l{ParamType::name()}.
         \li - \underline{\e type:} The data type of this paramter \unicode{0x2192} \l{ParamType::type()}.  
+        \li - \underline{\e index:} The order index of the \l{ParamType} \unicode{0x2192} \l{ParamType::index()}. This index will be used for sorting the \l{Param}{Params} of a \l{Device}/\l{Action}/\l{Event} to make sure the types looks the same on all clients. Please make sure all \l{ParamType}{ParamTypes} together will create a list from \tt 0 to \tt x.
         \li - \underline{\e inputType:} A paramter for clients to know which kind of \l{Types::InputType}{InputType} this. See enum \l{Types::InputType} for more information. The expected value for the \e inputType parameter matches the enum name like this:
 
         \tt {Types::InputTypeTextArea} \unicode{0x2192} \tt {"inputType": "TextArea"}
@@ -357,6 +373,7 @@ This mechanism was created to ensure that the \l{EventType} and \l{ActionType} w
                     "name": "name of the action",
                     "idName": "actionName",
                     "id": "uuid",
+                    "index": "int",
                     "paramTypes": [
                         ...
                     ]
@@ -368,7 +385,8 @@ This mechanism was created to ensure that the \l{EventType} and \l{ActionType} w
     \list
         \li - \underline{\e name:} The visible name of the \l{ActionType} \unicode{0x2192} \l{ActionType::name()}.
         \li - \underline{\e idName:} This parameter will be used to define the ActionTypeId variable named <idName>ActionTypeId in the plugininfo.h, so it can be used in the code.
-        \li - \underline{\e id:} The actual uuid (\l{ActionTypeId}) of the \l{ActionType} \unicode{0x2192} \l{ActionType::id()}.  
+        \li - \underline{\e id:} The actual uuid (\l{ActionTypeId}) of the \l{ActionType} \unicode{0x2192} \l{ActionType::id()}.
+        \li - \underline{\e index:} The order index of the \l{ActionType} \unicode{0x2192} \l{ActionType::index()}. This index will be used for sorting the \l{Action}{Actions} of a \l{Device} to make sure the \l{Device} looks the same on all clients. Please make sure all \l{ActionType}{ActionTypes} together will create a list from \tt 0 to \tt x.
         \li - \underline{\e paramTypes:} A list of \l{ParamType}{ParamTypes} (see section "\l{The ParamType definition}") for this \l{ActionType}. This parameter is optional. You can also create an \l{ActionType} which has no \l{ParamType}{ParamTypes}.
     \endlist
 
@@ -383,6 +401,7 @@ This mechanism was created to ensure that the \l{EventType} and \l{ActionType} w
                     "name": "name of the event",
                     "idName": "eventName",
                     "id": "uuid",
+                    "index": "int",
                     "paramTypes": [
                         ...
                     ]
@@ -395,6 +414,7 @@ This mechanism was created to ensure that the \l{EventType} and \l{ActionType} w
         \li - \underline{\e name:} The visible name of the \l{EventType} \unicode{0x2192} \l{EventType::name()}.
         \li - \underline{\e idName:} This parameter will be used to define the EventTypeId variable named <idName>EventTypeId in the plugininfo.h, so it can be used in the code.
         \li - \underline{\e id:} The actual uuid (\l{EventTypeId}) of the \l{EventType} \unicode{0x2192} \l{EventType::id()}.  
+        \li - \underline{\e index:} The order index of the \l{EventType} \unicode{0x2192} \l{EventType::index()}. This index will be used for sorting the \l{Event}{Events} of a \l{Device} to make sure the \l{Device} looks the same on all clients. Please make sure all \l{EventType}{EventTypes} together will create a list from \tt 0 to \tt x.
         \li - \underline{\e paramTypes:} A list of \l{ParamType}{ParamTypes} (see section "\l{The ParamType definition}") for this \l{EventType}. This parameter is optional. You can also create an \l{EventType} which has no \l{ParamType}{ParamTypes}.
     \endlist
 

@@ -21,11 +21,13 @@
                         {
                             "name": "name",
                             "type": "QString",
+                            "index": 0,
                             "defaultValue": "Dollhouse Connection"
                         },
                         {
                             "name": "RPL address",
                             "type": "QString",
+                            "index": 1,
                             "inputType": "TextLine",
                             "defaultValue": "fdaa:e9b8:d03a::ff:fe00:1"
                         }
@@ -36,6 +38,7 @@
                     "idName": "light",
                     "deviceClassId": "b4dd5f10-36d4-4232-867a-6d3b04a08bad",
                     "createMethods": ["auto"],
+                    "criticalStateTypeId": "93c539b4-50d8-431e-8be4-5ebba89452b7",
                     "basicTags": [
                         "Device",
                         "Lighting"
@@ -44,21 +47,25 @@
                         {
                             "name": "name",
                             "type": "QString",
+                            "index": 0,
                             "defaultValue": "Dollhouse Light"
                         },
                         {
                             "name": "address",
-                            "type": "QString"
+                            "type": "QString",
+                            "index": 1
                         },
                         {
                             "name": "light id",
                             "type": "int",
+                            "index": 2,
                             "defaultValue": 0,
                             "readOnly": true
                         },
                         {
                             "name": "connection uuid",
                             "type": "QString",
+                            "index": 3,
                             "inputType": "TextLine",
                             "readOnly": true
                         }
@@ -68,6 +75,7 @@
                             "id": "e4885a73-9fe1-48ca-b773-aeb93f34cd54",
                             "idName": "color",
                             "name": "color",
+                            "index": 0,
                             "type": "QColor",
                             "defaultValue": "#fff30a",
                             "writable": true
@@ -76,6 +84,7 @@
                             "id": "e78c9136-c10a-45c9-b6bc-2d937f09cdec",
                             "idName": "brightness",
                             "name": "brightness",
+                            "index": 1,
                             "type": "int",
                             "unit": "Percentage",
                             "minValue": 0,
@@ -87,6 +96,7 @@
                             "id": "f6ac30a0-77b8-4f1f-8c44-4c2e6d542663",
                             "idName": "power",
                             "name": "power",
+                            "index": 2,
                             "type": "bool",
                             "defaultValue": false,
                             "writable": true
@@ -95,6 +105,7 @@
                             "id": "93c539b4-50d8-431e-8be4-5ebba89452b7",
                             "idName": "reachable",
                             "name": "reachable",
+                            "index": 3,
                             "type": "bool",
                             "defaultValue": false
                         }

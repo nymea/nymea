@@ -33,8 +33,10 @@
 
 /*! Constructs a EventType object with the given \a id. */
 EventType::EventType(const EventTypeId &id):
-    m_id(id)
+    m_id(id),
+    m_index(0)
 {
+
 }
 
 /*! Returns the id. */
@@ -53,6 +55,19 @@ QString EventType::name() const
 void EventType::setName(const QString &name)
 {
     m_name = name;
+}
+
+/*! Returns the index of this \l{EventType}. The index of an \l{EventType} indicates the order in the \l{DeviceClass}.
+ *  This guarantees that a \l{Device} will look always the same (\l{Event} order). */
+int EventType::index() const
+{
+    return m_index;
+}
+
+/*! Set the \a index of this \l{EventType}. */
+void EventType::setIndex(const int &index)
+{
+    m_index = index;
 }
 
 /*! Holds a List describing possible parameters for a \l{Event} of this EventType.

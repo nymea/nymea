@@ -1,4 +1,4 @@
-40
+41
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -23,6 +23,7 @@
                 "deviceError": "$ref:DeviceError",
                 "o:actionType": {
                     "id": "Uuid",
+                    "index": "Int",
                     "name": "Uuid",
                     "paramTypes": [
                         "$ref:ParamType"
@@ -78,8 +79,9 @@
             }
         },
         "Devices.GetConfiguredDevices": {
-            "description": "Returns a list of configured devices.",
+            "description": "Returns a list of configured devices, optionally filtered by deviceId.",
             "params": {
+                "o:deviceId": "Uuid"
             },
             "returns": {
                 "devices": [
@@ -540,6 +542,7 @@
         },
         "ActionType": {
             "id": "Uuid",
+            "index": "Int",
             "name": "Uuid",
             "paramTypes": [
                 "$ref:ParamType"
@@ -578,8 +581,8 @@
             "Object"
         ],
         "CalendarItem": {
-            "duration": "UInt",
-            "o:datetime": "UInt",
+            "duration": "Uint",
+            "o:datetime": "Uint",
             "o:repeating": "$ref:RepeatingOption",
             "o:startTime": "Time"
         },
@@ -623,6 +626,9 @@
             ],
             "id": "Uuid",
             "name": "String",
+            "o:criticalStateTypeId": "Uuid",
+            "o:primaryActionTypeId": "Uuid",
+            "o:primaryStateTypeId": "Uuid",
             "paramTypes": [
                 "$ref:ParamType"
             ],
@@ -716,6 +722,7 @@
         },
         "EventType": {
             "id": "Uuid",
+            "index": "Int",
             "name": "String",
             "paramTypes": [
                 "$ref:ParamType"
@@ -776,6 +783,7 @@
             "value": "$ref:BasicType"
         },
         "ParamType": {
+            "index": "Int",
             "name": "String",
             "o:allowedValues": [
                 "Variant"
@@ -907,6 +915,7 @@
         "StateType": {
             "defaultValue": "Variant",
             "id": "Uuid",
+            "index": "Int",
             "name": "String",
             "o:maxValue": "Variant",
             "o:minValue": "Variant",
@@ -925,7 +934,7 @@
             ]
         },
         "TimeEventItem": {
-            "o:datetime": "UInt",
+            "o:datetime": "Uint",
             "o:repeating": "$ref:RepeatingOption",
             "o:time": "Time"
         },
@@ -957,6 +966,7 @@
             "UnitGram",
             "UnitKiloGram",
             "UnitDezibel",
+            "UnitBpm",
             "UnitKiloByte",
             "UnitMegaByte",
             "UnitGigaByte",

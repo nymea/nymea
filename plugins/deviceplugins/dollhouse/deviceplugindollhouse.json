@@ -39,6 +39,7 @@
                     "deviceClassId": "b4dd5f10-36d4-4232-867a-6d3b04a08bad",
                     "createMethods": ["auto"],
                     "criticalStateTypeId": "93c539b4-50d8-431e-8be4-5ebba89452b7",
+                    "primaryActionTypeId": "f6ac30a0-77b8-4f1f-8c44-4c2e6d542663",
                     "basicTags": [
                         "Device",
                         "Lighting"

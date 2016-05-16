@@ -14,6 +14,7 @@
                     "name": "AVR X1000",
                     "createMethods": ["user"],
                     "criticalStateTypeId": "4d1790bf-28c6-4c1f-8892-ba1a0ef140f5",
+                    "primaryActionTypeId": "1cdb6b54-6831-4900-95b2-c78f64497701",
                     "deviceIcon": "Hifi",
                     "basicTags": [
                         "Device",

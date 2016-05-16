@@ -17,6 +17,7 @@
                         "Device",
                         "Sensor"
                     ],
+                    "primaryStateTypeId": "cb43e1b5-4f61-4538-bfa2-c33055c542cf",
                     "createMethods": ["user", "discovery"],
                     "paramTypes": [
                         {

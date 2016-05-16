@@ -13,6 +13,7 @@
                     "name": "Application launcher",
                     "createMethods": ["user"],
                     "primaryActionTypeId": "cf52b41d-3108-423c-8907-ca5b4d97cac5",
+                    "primaryStateTypeId": "28d7e933-ff05-4f4c-95a0-482689543de5",
                     "basicTags": [
                         "Service",
                         "Actuator"

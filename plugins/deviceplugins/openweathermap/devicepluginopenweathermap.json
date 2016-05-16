@@ -20,6 +20,7 @@
                     ],
                     "createMethods": ["discovery"],
                     "primaryStateTypeId": "6013402f-b5b1-46b3-8490-f0c20d62fe61",
+                    "primaryActionTypeId": "cfbc6504-d86f-4856-8dfa-97b6fbb385e4",
                     "discoveryParamTypes": [
                         {
                             "name": "location",

@@ -25,7 +25,8 @@
     \brief Plugin to monitor devices in the local network.
 
     \ingroup plugins
-    \ingroup guh-plugins
+    \ingroup guh-plugins-maker
+
 
     This plugin allows to find and monitor network devices in your local network by using the MAC address.
 

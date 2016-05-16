@@ -26,6 +26,7 @@
                         "Device",
                         "Gateway"
                     ],
+                    "criticalStateTypeId": "08091cde-983d-42f7-bdd7-d89c312ccbed",
                     "paramTypes": [
                         {
                             "name": "host",
@@ -145,7 +146,6 @@
                             "type": "QColor",
                             "defaultValue": "#000000",
                             "writable": true
-
                         }
                     ]
                 }

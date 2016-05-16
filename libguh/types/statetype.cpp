@@ -41,7 +41,8 @@ StateType::StateType(const StateTypeId &id):
     m_minValue(QVariant()),
     m_maxValue(QVariant()),
     m_possibleValues(QVariantList()),
-    m_unit(Types::UnitNone)
+    m_unit(Types::UnitNone),
+    m_ruleRelevant(true)
 {
 
 }
@@ -149,4 +150,16 @@ Types::Unit StateType::unit() const
 void StateType::setUnit(const Types::Unit &unit)
 {
     m_unit = unit;
+}
+
+/*! Returns true if this StateType is relevant for the rule from a user perspective. */
+bool StateType::ruleRelevant() const
+{
+    return m_ruleRelevant;
+}
+
+/*! Sets this StateType relevant for the rule from a user perspective to \a ruleRelevant. */
+void StateType::setRuleRelevant(const bool &ruleRelevant)
+{
+    m_ruleRelevant = ruleRelevant;
 }

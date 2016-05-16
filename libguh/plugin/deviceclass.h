@@ -182,7 +182,6 @@ private:
     QList<BasicTag> m_basicTags;
     QList<StateType> m_stateTypes;
     QList<EventType> m_eventTypes;
-    QList<EventType> m_allEventTypes;
     QList<ActionType> m_actionTypes;
     QList<ParamType> m_paramTypes;
     QList<ParamType> m_discoveryParamTypes;

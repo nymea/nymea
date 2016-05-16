@@ -257,9 +257,11 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
             }
             deviceClass.setBasicTags(basicTags);
 
-            // State Types
             QList<ActionType> actionTypes;
             QList<StateType> stateTypes;
+            QList<EventType> eventTypes;
+
+            // StateTypes
             foreach (const QJsonValue &stateTypesJson, jo.value("stateTypes").toArray()) {
                 QJsonObject st = stateTypesJson.toObject();
                 QStringList missingFields = verifyFields(QStringList() << "type" << "id" << "name" << "index" << "defaultValue", st);
@@ -288,6 +290,9 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 if (st.contains("maxValue"))
                     stateType.setMaxValue(st.value("maxValue").toVariant());
 
+                if (st.contains("ruleRelevant"))
+                    stateType.setRuleRelevant(st.value("ruleRelevant").toBool());
+
                 if (st.contains("possibleValues")) {
                     QVariantList possibleValues;
                     foreach (const QJsonValue &possibleValueJson, st.value("possibleValues").toArray()) {
@@ -303,6 +308,17 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                     }
                 }
                 stateTypes.append(stateType);
+
+                // Events for state changed
+                EventType eventType(EventTypeId(stateType.id().toString()));
+                if (st.contains("eventRuleRelevant"))
+                    eventType.setRuleRelevant(st.value("eventRuleRelevant").toBool());
+
+                eventType.setName(QString("%1 changed").arg(stateType.name()));
+                ParamType paramType("value", stateType.type());
+                eventType.setParamTypes(QList<ParamType>() << paramType);
+                eventType.setIndex(stateType.index());
+                eventTypes.append(eventType);
 
                 // ActionTypes for writeable StateTypes
                 if (st.contains("writable") && st.value("writable").toBool()) {
@@ -346,7 +362,6 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
             deviceClass.setActionTypes(actionTypes);
 
             // EventTypes
-            QList<EventType> eventTypes;
             foreach (const QJsonValue &eventTypesJson, jo.value("eventTypes").toArray()) {
                 QJsonObject et = eventTypesJson.toObject();
                 QStringList missingFields = verifyFields(QStringList() << "id" << "name" << "index", et);
@@ -359,6 +374,8 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 EventType eventType(et.value("id").toString());
                 eventType.setName(et.value("name").toString());
                 eventType.setIndex(et.value("index").toInt());
+                if (et.contains("ruleRelevant"))
+                    eventType.setRuleRelevant(et.value("ruleRelevant").toBool());
 
                 QPair<bool, QList<ParamType> > paramVerification = parseParamTypes(et.value("paramTypes").toArray());
                 if (!paramVerification.first) {
@@ -367,7 +384,6 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 } else {
                     eventType.setParamTypes(paramVerification.second);
                 }
-
                 eventTypes.append(eventType);
             }
             deviceClass.setEventTypes(eventTypes);

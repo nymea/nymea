@@ -20,11 +20,13 @@
                     "paramTypes": [
                         {
                             "name": "port",
+                            "index": 0,
                             "type": "int"
                         },
                         {
                             "name": "command",
                             "type": "QString",
+                            "index": 1,
                             "inputType": "TextLine"
                         }
                     ],
@@ -32,6 +34,7 @@
                         {
                             "id": "5fecbba3-ffbb-456b-872c-a2f571c681cb",
                             "idName": "commandReceived",
+                            "index": 0,
                             "name": "command received"
                         }
                     ]

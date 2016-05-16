@@ -21,12 +21,14 @@
                         {
                             "name": "name",
                             "type": "QString",
+                            "index": 0,
                             "inputType": "TextLine",
                             "defaultValue": "Merkur RPL Router"
                         },
                         {
                             "name": "host",
                             "type": "QString",
+                            "index": 1,
                             "inputType": "IPv6Address"
                         }
                     ]
@@ -44,18 +46,21 @@
                         {
                             "name": "name",
                             "type": "QString",
+                            "index": 0,
                             "inputType": "TextLine",
                             "defaultValue": "Merkur Node"
                         },
                         {
                             "name": "host",
                             "type": "QString",
+                            "index": 1,
                             "inputType": "IPv6Address",
                             "readOnly": true
                         },
                         {
                             "name": "router id",
                             "type": "QString",
+                            "index": 2,
                             "readOnly": true
                         }
                     ],
@@ -65,6 +70,7 @@
                             "idName": "battery",
                             "name": "battery voltage",
                             "type": "double",
+                            "index": 0,
                             "defaultValue": 0
                         }
                     ],
@@ -72,6 +78,7 @@
                         {
                             "id": "a91db0e7-9d0f-4071-9a8f-2bda45ed4c9d",
                             "idName": "toggleLed",
+                            "index": 0,
                             "name": "toggle led"
                         }
                     ]

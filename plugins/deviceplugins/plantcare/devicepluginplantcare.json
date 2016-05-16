@@ -6,6 +6,7 @@
         {
             "name": "RPL address",
             "type": "QString",
+            "index": 0,
             "inputType": "TextLine",
             "defaultValue": "fdaa:e9b8:d03a::ff:fe00:1"
         }
@@ -29,6 +30,7 @@
                         {
                             "name": "host",
                             "type": "QString",
+                            "index": 0,
                             "inputType": "TextLine"
                         }
                     ],
@@ -37,6 +39,7 @@
                             "id": "2b4b5123-14b7-4aa1-9c83-27cef333395d",
                             "idName": "battery",
                             "name": "battery voltage",
+                            "index": 0,
                             "type": "double",
                             "unit": "Volt",
                             "defaultValue": 0
@@ -45,6 +48,7 @@
                             "id": "8a7efda1-b6b7-41c8-ad07-4d892a532d1c",
                             "idName": "moisture",
                             "name": "moisture",
+                            "index": 1,
                             "type": "int",
                             "unit": "Percentage",
                             "defaultValue": 0
@@ -53,6 +57,7 @@
                             "id": "26deeba1-487a-4dee-940a-a3bd48344f33",
                             "idName": "water",
                             "name": "water empty",
+                            "index": 2,
                             "type": "bool",
                             "defaultValue": false
                         },
@@ -60,6 +65,7 @@
                             "id": "819aca98-25e5-4733-81e0-5921478b3e89",
                             "idName": "ledPower",
                             "name": "led power",
+                            "index": 3,
                             "type": "bool",
                             "defaultValue": false,
                             "writable": true
@@ -68,6 +74,7 @@
                             "id": "6c65ae32-18ce-400f-afd6-47fb5b805ccd",
                             "idName": "waterPump",
                             "name": "water pump power",
+                            "index": 4,
                             "type": "bool",
                             "defaultValue": false,
                             "writable": true
@@ -76,6 +83,7 @@
                             "id": "8384e07b-8b91-492a-b6c8-e72b325ba0b4",
                             "idName": "reachable",
                             "name": "reachable",
+                            "index": 5,
                             "type": "bool",
                             "defaultValue": false
                         }
@@ -84,6 +92,7 @@
                         {
                             "id": "9afbcc80-1c97-4c18-bc08-5209d6297f2e",
                             "idName": "toggleLed",
+                            "index": 0,
                             "name": "toggle led"
                         }
                     ]

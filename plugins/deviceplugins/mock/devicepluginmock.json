@@ -6,6 +6,7 @@
         {
             "name": "configParamInt",
             "type": "int",
+            "index": 0,
             "defaultValue": 42,
             "minValue": 1,
             "maxValue": 50
@@ -13,6 +14,7 @@
         {
             "name": "configParamBool",
             "type": "bool",
+            "index": 1,
             "defaultValue": true
         }
     ],
@@ -33,10 +35,13 @@
                         "Gateway"
                     ],
                     "createMethods": ["user", "discovery"],
+                    "primaryActionTypeId": "defd3ed6-1a0d-400b-8879-a0202cf39935",
+                    "primaryStateTypeId": "80baec19-54de-4948-ac46-31eabfaceb83",
                     "discoveryParamTypes": [
                         {
                             "name": "resultCount",
                             "type": "int",
+                            "index": 0,
                             "defaultValue": 2,
                             "allowedValues": [1, 2]
                         }
@@ -44,16 +49,19 @@
                     "paramTypes": [
                         {
                             "name": "httpport",
+                            "index": 0,
                             "type": "int"
                         },
                         {
                             "name": "async",
                             "type": "bool",
+                            "index": 1,
                             "defaultValue": false,
                             "readOnly": true
                         },
                         {
                             "name": "broken",
+                            "index": 2,
                             "type": "bool",
                             "defaultValue": false
                         }
@@ -62,12 +70,14 @@
                         {
                             "id": "80baec19-54de-4948-ac46-31eabfaceb83",
                             "name": "Dummy int state",
+                            "index": 0,
                             "defaultValue": 10,
                             "type": "int"
                         },
                         {
                             "id": "9dd6a97c-dfd1-43dc-acbd-367932742310",
                             "name": "Dummy bool state",
+                            "index": 1,
                             "defaultValue": false,
                             "type": "bool"
                         }
@@ -75,15 +85,18 @@
                     "eventTypes": [
                         {
                             "id": "45bf3752-0fc6-46b9-89fd-ffd878b5b22b",
+                            "index": 0,
                             "name": "Mock Event 1"
                         },
                         {
                             "id": "863d5920-b1cf-4eb9-88bd-8f7b8583b1cf",
                             "name": "Mock Event 2",
+                            "index": 1,
                             "paramTypes": [
                                 {
                                     "name": "mockParamInt",
                                     "type": "int",
+                                    "index": 0,
                                     "defaultValue": 10
                                 }
                             ]
@@ -93,34 +106,41 @@
                         {
                             "id": "dea0f4e1-65e3-4981-8eaa-2701c53a9185",
                             "name": "Mock Action 1 (with params)",
+                            "index": 0,
                             "paramTypes": [
                                 {
                                     "name": "mockActionParam1",
+                                    "index": 0,
                                     "type": "int"
                                 },
                                 {
                                     "name": "mockActionParam2",
+                                    "index": 1,
                                     "type": "bool"
                                 }
                             ]
                         },
                         {
                             "id": "defd3ed6-1a0d-400b-8879-a0202cf39935",
+                            "index": 1,
                             "name": "Mock Action 2 (without params)"
                         },
                         {
                             "id": "fbae06d3-7666-483e-a39e-ec50fe89054e",
                             "idName": "mockAsync",
+                            "index": 2,
                             "name": "Mock Action 3 (async)"
                         },
                         {
                             "id": "df3cf33d-26d5-4577-9132-9823bd33fad0",
                             "idName": "mockFailing",
+                            "index": 3,
                             "name": "Mock Action 4 (broken)"
                         },
                         {
                             "id": "bfe89a1d-3497-4121-8318-e77c37537219",
                             "idName": "mockAsyncFailing",
+                            "index": 4,
                             "name": "Mock Action 5 (async, broken)"
                         }
                     ]
@@ -135,21 +155,26 @@
                         "Gateway"
                     ],
                     "createMethods": ["auto"],
+                    "primaryActionTypeId": "defd3ed6-1a0d-400b-8879-a0202cf39935",
+                    "primaryStateTypeId": "80baec19-54de-4948-ac46-31eabfaceb83",
                     "deviceIcon": "Tune",
                     "paramTypes": [
                         {
                             "name": "httpport",
+                            "index": 0,
                             "type": "int"
                         },
                         {
                             "name": "async",
                             "type": "bool",
+                            "index": 1,
                             "defaultValue": false,
                             "readOnly": true
                         },
                         {
                             "name": "broken",
                             "type": "bool",
+                            "index": 2,
                             "defaultValue": false
                         }
                     ],
@@ -157,12 +182,14 @@
                         {
                             "id": "80baec19-54de-4948-ac46-31eabfaceb83",
                             "name": "Dummy int state",
+                            "index": 0,
                             "defaultValue": 10,
                             "type": "int"
                         },
                         {
                             "id": "9dd6a97c-dfd1-43dc-acbd-367932742310",
                             "name": "Dummy bool state",
+                            "index": 1,
                             "defaultValue": false,
                             "type": "bool"
                         }
@@ -170,15 +197,18 @@
                     "eventTypes": [
                         {
                             "id": "45bf3752-0fc6-46b9-89fd-ffd878b5b22b",
+                            "index": 0,
                             "name": "Mock Event 1"
                         },
                         {
                             "id": "863d5920-b1cf-4eb9-88bd-8f7b8583b1cf",
                             "name": "Mock Event 2",
+                            "index": 1,
                             "paramTypes": [
                                 {
                                     "name": "mockParamInt",
                                     "type": "int",
+                                    "index": 0,
                                     "defaultValue": 10
                                 }
                             ]
@@ -188,31 +218,38 @@
                         {
                             "id": "dea0f4e1-65e3-4981-8eaa-2701c53a9185",
                             "name": "Mock Action 1 (with params)",
+                            "index": 0,
                             "paramTypes": [
                                 {
                                     "name": "mockActionParam1",
+                                    "index": 0,
                                     "type": "int"
                                 },
                                 {
                                     "name": "mockActionParam2",
+                                    "index": 1,
                                     "type": "bool"
                                 }
                             ]
                         },
                         {
                             "id": "defd3ed6-1a0d-400b-8879-a0202cf39935",
+                            "index": 1,
                             "name": "Mock Action 2 (without params)"
                         },
                         {
                             "id": "fbae06d3-7666-483e-a39e-ec50fe89054e",
+                            "index": 2,
                             "name": "Mock Action 3 (async)"
                         },
                         {
                             "id": "df3cf33d-26d5-4577-9132-9823bd33fad0",
+                            "index": 3,
                             "name": "Mock Action 4 (broken)"
                         },
                         {
                             "id": "bfe89a1d-3497-4121-8318-e77c37537219",
+                            "index": 4,
                             "name": "Mock Action 5 (async, broken)"
                         }
                     ]
@@ -234,6 +271,7 @@
                         {
                             "name": "resultCount",
                             "type": "int",
+                            "index": 0,
                             "defaultValue": 2,
                             "allowedValues": [1, 2]
                         }
@@ -243,6 +281,7 @@
                             "id": "20dc7c22-c50e-42db-837c-2bbced939f8e",
                             "idName": "color",
                             "name": "color",
+                            "index": 0,
                             "type": "QColor",
                             "defaultValue": "#000000",
                             "writable": true
@@ -251,6 +290,7 @@
                             "id": "72981c04-267a-4ba0-a59e-9921d2f3af9c",
                             "idName": "percentage",
                             "name": "percentage",
+                            "index": 1,
                             "type": "int",
                             "unit": "Percentage",
                             "defaultValue": 0,
@@ -262,6 +302,7 @@
                             "id": "05f63f9c-f61e-4dcf-ad55-3f13fde2765b",
                             "idName": "allowedValues",
                             "name": "allowed values",
+                            "index": 2,
                             "type": "QString",
                             "defaultValue": "String value 2",
                             "possibleValues": [
@@ -276,6 +317,7 @@
                             "id": "53cd7c55-49b7-441b-b970-9048f20f0e2c",
                             "idName": "double",
                             "name": "double value",
+                            "index": 3,
                             "type": "double",
                             "defaultValue": 0.0,
                             "minValue": -100.0,
@@ -286,6 +328,7 @@
                             "id": "e680f7a4-b39e-46da-be41-fa3170fe3768",
                             "idName": "bool",
                             "name": "bool value",
+                            "index": 4,
                             "type": "bool",
                             "defaultValue": false,
                             "writable": true
@@ -295,6 +338,7 @@
                         {
                             "id": "54646e7c-bc54-4895-81a2-590d72d120f9",
                             "idName": "timeout",
+                            "index": 0,
                             "name": "Timeout action"
                         }
                     ]
@@ -316,6 +360,7 @@
                         {
                             "name": "resultCount",
                             "type": "int",
+                            "index": 0,
                             "defaultValue": 2,
                             "allowedValues": [1, 2]
                         }
@@ -324,6 +369,7 @@
                         {
                             "name": "pin",
                             "type": "QString",
+                            "index": 0,
                             "inputType": "TextLine",
                             "defaultValue": "243681",
                             "readOnly": true
@@ -334,6 +380,7 @@
                             "id": "20dc7c22-c50e-42db-837c-2bbced939f8e",
                             "idName": "color",
                             "name": "color",
+                            "index": 0,
                             "type": "QColor",
                             "defaultValue": "#000000",
                             "writable": true
@@ -343,6 +390,7 @@
                             "idName": "percentage",
                             "name": "percentage",
                             "type": "int",
+                            "index": 1,
                             "unit": "Percentage",
                             "defaultValue": 0,
                             "minValue": 0,
@@ -354,6 +402,7 @@
                             "idName": "allowedValues",
                             "name": "allowed values",
                             "type": "QString",
+                            "index": 2,
                             "defaultValue": "String value 1",
                             "possibleValues": [
                                 "String value 1",
@@ -368,6 +417,7 @@
                             "idName": "double",
                             "name": "double value",
                             "type": "double",
+                            "index": 3,
                             "defaultValue": 0.0,
                             "minValue": -100.0,
                             "maxValue": 100.0,
@@ -377,6 +427,7 @@
                             "id": "e680f7a4-b39e-46da-be41-fa3170fe3768",
                             "idName": "bool",
                             "name": "bool value",
+                            "index": 4,
                             "type": "bool",
                             "defaultValue": false,
                             "writable": true
@@ -386,6 +437,7 @@
                         {
                             "id": "54646e7c-bc54-4895-81a2-590d72d120f9",
                             "idName": "timeout",
+                            "index": 0,
                             "name": "Timeout action"
                         }
                     ]
@@ -406,6 +458,7 @@
                             "id": "d24ede5f-4064-4898-bb84-cfb533b1fbc0",
                             "idName": "boolValue",
                             "name": "bool value",
+                            "index": 0,
                             "type": "bool",
                             "defaultValue": false,
                             "writable": true
@@ -425,6 +478,7 @@
                         {
                             "name": "parent uuid",
                             "type": "QUuid",
+                            "index": 0,
                             "readOnly": true
                         }
                     ],
@@ -433,6 +487,7 @@
                             "id": "d24ede5f-4064-4898-bb84-cfb533b1fbc0",
                             "idName": "boolValue",
                             "name": "bool value",
+                            "index": 0,
                             "type": "bool",
                             "defaultValue": false,
                             "writable": true
@@ -452,54 +507,63 @@
                         {
                             "name": "Text line",
                             "type": "QString",
+                            "index": 0,
                             "inputType": "TextLine",
                             "defaultValue": "This is a text line"
                         },
                         {
                             "name": "Text area",
                             "type": "QString",
+                            "index": 1,
                             "inputType": "TextArea",
                             "defaultValue": "This is a text area"
                         },
                         {
                             "name": "Password text",
                             "type": "QString",
+                            "index": 2,
                             "inputType": "Password",
                             "defaultValue": "secret"
                         },
                         {
                             "name": "Search text",
                             "type": "QString",
+                            "index": 3,
                             "inputType": "Search",
                             "defaultValue": "Search text..."
                         },
                         {
                             "name": "Mail address",
                             "type": "QString",
+                            "index": 4,
                             "inputType": "Mail",
                             "defaultValue": "name@example.com"
                         },
                         {
                             "name": "IPv4 address",
                             "type": "QString",
+                            "index": 5,
                             "inputType": "IPv4Address",
                             "defaultValue": "127.0.0.1"
                         },
                         {
                             "name": "IPv6 address",
                             "type": "QString",
+                            "index": 6,
                             "inputType": "IPv6Address",
                             "defaultValue": "::1"
                         },
                         {
                             "name": "URL",
                             "type": "QString",
+                            "index": 7,
                             "inputType": "Url",
                             "defaultValue": "http://guh.guru"
                         },
                         {
                             "name": "Mac address",
                             "type": "QString",
+                            "index": 8,
                             "inputType": "MacAddress",
                             "defaultValue": "11:22:33:aa:bb:cc"
                         }

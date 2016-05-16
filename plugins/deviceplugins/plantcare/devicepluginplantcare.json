@@ -26,6 +26,7 @@
                         "Device",
                         "Gateway"
                     ],
+                    "criticalStateTypeId": "8384e07b-8b91-492a-b6c8-e72b325ba0b4",
                     "paramTypes": [
                         {
                             "name": "host",

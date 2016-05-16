@@ -19,6 +19,7 @@
                         "Lighting"
                     ],
                     "createMethods": ["discovery"],
+                    "criticalStateTypeId": "15794d26-fde8-4a61-8f83-d7830534975f",
                     "setupMethod": "pushButton",
                     "pairingInfo": "Please press the button on the Hue Bridge within 30 seconds before you continue",
                     "paramTypes": [
@@ -139,6 +140,8 @@
                         "Lighting",
                         "Actuator"
                     ],
+                    "criticalStateTypeId": "19bb8d10-1b28-4ba3-99b7-a634138dcfde",
+                    "primaryActionTypeId": "90aaffe5-6a76-47d2-a14a-550f60390245",
                     "createMethods": ["auto"],
                     "paramTypes": [
                         {
@@ -289,6 +292,8 @@
                         "Actuator",
                         "Lighting"
                     ],
+                    "criticalStateTypeId": "19bb8d10-1b28-4ba3-99b7-a634138dcfde",
+                    "primaryActionTypeId": "90aaffe5-6a76-47d2-a14a-550f60390245",
                     "createMethods": ["auto"],
                     "paramTypes": [
                         {
@@ -403,6 +408,7 @@
                         "Device",
                         "Sensor"
                     ],
+                    "criticalStateTypeId": "19bb8d10-1b28-4ba3-99b7-a634138dcfde",
                     "createMethods": ["auto"],
                     "paramTypes": [
                         {

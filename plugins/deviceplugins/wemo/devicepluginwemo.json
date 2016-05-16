@@ -17,6 +17,8 @@
                         "Device",
                         "Actuator"
                     ],
+                    "criticalStateTypeId": "ec2f5b49-585c-4455-a233-b7aa4c608dbc",
+                    "primaryActionTypeId": "7166c4f6-f68c-4188-8f7c-2205d72a5a6d",
                     "createMethods": ["discovery"],
                     "paramTypes": [
                         {

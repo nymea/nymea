@@ -18,6 +18,7 @@
                     ],
                     "idName": "switch",
                     "createMethods": ["user"],
+                    "primaryActionTypeId": "3ca1ebc2-bb8e-4429-9664-a7bc4569e73b",
                     "paramTypes": [
                         {
                             "name": "channel",

@@ -24,7 +24,7 @@
     \brief Plugin for catching UDP commands from the network.
 
     \ingroup plugins
-    \ingroup guh-plugins
+    \ingroup guh-plugins-maker
 
     This plugin allows to receive UDP packages over a certain UDP port and generates an \l{Event} if the message content matches
     the \l{Param} command.

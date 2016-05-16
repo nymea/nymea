@@ -373,6 +373,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
             deviceClass.setEventTypes(eventTypes);
 
             // Note: keep this after the actionType / stateType / eventType parsing
+
             if (jo.contains("criticalStateTypeId")) {
                 StateTypeId criticalStateTypeId = StateTypeId(jo.value("criticalStateTypeId").toString());
                 if (!deviceClass.hasStateType(criticalStateTypeId)) {
@@ -849,7 +850,7 @@ QPair<bool, Types::Unit> DevicePlugin::loadAndVerifyUnit(const QString &unitStri
 
     // inform the plugin developer about the error in the plugin json file
     if (enumValue == -1) {
-        qCWarning(dcDeviceManager()) << QString("\"%1\" plugin").arg(pluginName()).toLatin1().data() << QString("Invalid unit type \"%1\" in json file.").arg(unitString).toLatin1().data();
+        qCWarning(dcDeviceManager()) << QString("\"%1\" plugin:").arg(pluginName()).toLatin1().data() << QString("Invalid unit type \"%1\" in json file.").arg(unitString).toLatin1().data();
         return QPair<bool, Types::Unit>(false, Types::UnitNone);
     }
 
@@ -875,7 +876,7 @@ QPair<bool, Types::InputType> DevicePlugin::loadAndVerifyInputType(const QString
 
     // inform the plugin developer about the error in the plugin json file
     if (enumValue == -1) {
-        qCWarning(dcDeviceManager()) << QString("\"%1\" plugin").arg(pluginName()).toLatin1().data() << QString("Invalid inputType \"%1\" in json file.").arg(inputType).toLatin1().data();
+        qCWarning(dcDeviceManager()) << QString("\"%1\" plugin:").arg(pluginName()).toLatin1().data() << QString("Invalid inputType \"%1\" in json file.").arg(inputType).toLatin1().data();
         return QPair<bool, Types::InputType>(false, Types::InputTypeNone);
     }
 
@@ -901,7 +902,7 @@ QPair<bool, DeviceClass::BasicTag> DevicePlugin::loadAndVerifyBasicTag(const QSt
 
     // inform the plugin developer about the error in the plugin json file
     if (enumValue == -1) {
-        qCWarning(dcDeviceManager()) << QString("\"%1\" plugin").arg(pluginName()).toLatin1().data() << QString("Invalid basicTag \"%1\" in json file.").arg(basicTag).toLatin1().data();
+        qCWarning(dcDeviceManager()) << QString("\"%1\" plugin:").arg(pluginName()).toLatin1().data() << QString("Invalid basicTag \"%1\" in json file.").arg(basicTag).toLatin1().data();
         return QPair<bool, DeviceClass::BasicTag>(false, DeviceClass::BasicTagDevice);
     }
 
@@ -927,7 +928,7 @@ QPair<bool, DeviceClass::DeviceIcon> DevicePlugin::loadAndVerifyDeviceIcon(const
 
     // inform the plugin developer about the error in the plugin json file
     if (enumValue == -1) {
-        qCWarning(dcDeviceManager()) << QString("\"%1\" plugin").arg(pluginName()).toLatin1().data() << QString("Invalid deviceIcon \"%1\" in json file.").arg(deviceIcon).toLatin1().data();
+        qCWarning(dcDeviceManager()) << QString("\"%1\" plugin:").arg(pluginName()).toLatin1().data() << QString("Invalid deviceIcon \"%1\" in json file.").arg(deviceIcon).toLatin1().data();
         return QPair<bool, DeviceClass::DeviceIcon>(false, DeviceClass::DeviceIconNone);
     }
 

@@ -26,6 +26,8 @@
                             "name": "timezone",
                             "index": 0,
                             "type": "QString",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "defaultValue": "-"
                         },
                         {
@@ -34,6 +36,8 @@
                             "name": "city",
                             "index": 1,
                             "type": "QString",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "defaultValue": "-"
                         },
                         {
@@ -42,6 +46,8 @@
                             "name": "country",
                             "index": 2,
                             "type": "QString",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "defaultValue": "-"
                         },
                         {
@@ -51,6 +57,7 @@
                             "index": 3,
                             "type": "int",
                             "defaultValue": 1,
+                            "eventRuleRelevant": false,
                             "minValue": 1,
                             "maxValue": 31
                         },
@@ -61,6 +68,7 @@
                             "index": 4,
                             "type": "int",
                             "defaultValue": 1,
+                            "eventRuleRelevant": false,
                             "minValue": 1,
                             "maxValue": 12
                         },
@@ -69,6 +77,8 @@
                             "idName": "monthName",
                             "name": "month name",
                             "index": 5,
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "type": "QString",
                             "defaultValue": "-"
                         },
@@ -77,6 +87,7 @@
                             "idName": "year",
                             "name": "year",
                             "index": 6,
+                            "eventRuleRelevant": false,
                             "type": "int",
                             "defaultValue": "1970"
                         },
@@ -86,6 +97,7 @@
                             "name": "weekday",
                             "type": "int",
                             "index": 7,
+                            "eventRuleRelevant": false,
                             "defaultValue": 1,
                             "minValue": 1,
                             "maxValue": 7
@@ -94,6 +106,8 @@
                             "id": "f627d052-cee6-4727-b9c6-0e935d41e04a",
                             "idName": "weekdayName",
                             "name": "weekday name",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "index": 8,
                             "type": "QString",
                             "defaultValue": "-"
@@ -104,6 +118,7 @@
                             "name": "weekend",
                             "index": 9,
                             "type": "bool",
+                            "eventRuleRelevant": false,
                             "defaultValue": false
                         },
                         {
@@ -113,6 +128,7 @@
                             "index": 10,
                             "unit": "UnixTime",
                             "type": "int",
+                            "eventRuleRelevant": false,
                             "defaultValue": 0
                         },
                         {
@@ -122,6 +138,7 @@
                             "index": 11,
                             "unit": "UnixTime",
                             "type": "int",
+                            "eventRuleRelevant": false,
                             "defaultValue": 0
                         },
                         {
@@ -131,6 +148,7 @@
                             "index": 12,
                             "unit": "UnixTime",
                             "type": "int",
+                            "eventRuleRelevant": false,
                             "defaultValue": 0
                         },
                         {
@@ -140,6 +158,7 @@
                             "index": 13,
                             "unit": "UnixTime",
                             "type": "int",
+                            "eventRuleRelevant": false,
                             "defaultValue": 0
                         },
                         {
@@ -149,6 +168,7 @@
                             "index": 14,
                             "unit": "UnixTime",
                             "type": "int",
+                            "eventRuleRelevant": false,
                             "defaultValue": 0
                         }
                     ],

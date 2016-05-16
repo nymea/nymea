@@ -34,7 +34,8 @@
 /*! Constructs a EventType object with the given \a id. */
 EventType::EventType(const EventTypeId &id):
     m_id(id),
-    m_index(0)
+    m_index(0),
+    m_ruleRelevant(true)
 {
 
 }
@@ -82,4 +83,16 @@ QList<ParamType> EventType::paramTypes() const
 void EventType::setParamTypes(const QList<ParamType> &paramTypes)
 {
     m_paramTypes = paramTypes;
+}
+
+/*! Returns true if this EventType is relevant for the rule from a user perspective. */
+bool EventType::ruleRelevant() const
+{
+    return m_ruleRelevant;
+}
+
+/*! Sets this EventType relevant for the rule from a user perspective to \a ruleRelevant. */
+void EventType::setRuleRelevant(const bool &ruleRelevant)
+{
+    m_ruleRelevant = ruleRelevant;
 }

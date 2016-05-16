@@ -58,6 +58,9 @@ public:
     Types::Unit unit() const;
     void setUnit(const Types::Unit &unit);
 
+    bool ruleRelevant() const;
+    void setRuleRelevant(const bool &ruleRelevant);
+
 private:
     StateTypeId m_id;
     QString m_name;
@@ -68,6 +71,7 @@ private:
     QVariant m_maxValue;
     QVariantList m_possibleValues;
     Types::Unit m_unit;
+    bool m_ruleRelevant;
 };
 
 #endif // STATETYPE_H

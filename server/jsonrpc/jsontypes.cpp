@@ -171,6 +171,7 @@ void JsonTypes::init()
     s_stateType.insert("index", basicTypeToString(Int));
     s_stateType.insert("defaultValue", basicTypeToString(Variant));
     s_stateType.insert("o:unit", unitRef());
+    s_stateType.insert("o:ruleRelevant", basicTypeToString(Bool));
     s_stateType.insert("o:minValue", basicTypeToString(Variant));
     s_stateType.insert("o:maxValue", basicTypeToString(Variant));
     s_stateType.insert("o:possibleValues", QVariantList() << basicTypeToString(Variant));
@@ -196,6 +197,7 @@ void JsonTypes::init()
     s_eventType.insert("name", basicTypeToString(String));
     s_eventType.insert("index", basicTypeToString(Int));
     s_eventType.insert("paramTypes", QVariantList() << paramTypeRef());
+    s_eventType.insert("o:ruleRelevant", basicTypeToString(Bool));
 
     // Event
     s_event.insert("eventTypeId", basicTypeToString(Uuid));
@@ -392,6 +394,9 @@ QVariantMap JsonTypes::packEventType(const EventType &eventType)
     variant.insert("id", eventType.id());
     variant.insert("name", eventType.name());
     variant.insert("index", eventType.index());
+    if (!eventType.ruleRelevant())
+        variant.insert("ruleRelevant", false);
+
     QVariantList paramTypes;
     foreach (const ParamType &paramType, eventType.paramTypes()) {
         paramTypes.append(packParamType(paramType));
@@ -504,6 +509,9 @@ QVariantMap JsonTypes::packStateType(const StateType &stateType)
     variantMap.insert("index", stateType.index());
     variantMap.insert("type", basicTypeToString(stateType.type()));
     variantMap.insert("defaultValue", stateType.defaultValue());
+
+    if (!stateType.ruleRelevant())
+        variantMap.insert("ruleRelevant", false);
 
     if (stateType.maxValue().isValid())
         variantMap.insert("maxValue", stateType.maxValue());

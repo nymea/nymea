@@ -44,12 +44,15 @@ public:
     QList<ParamType> paramTypes() const;
     void setParamTypes(const QList<ParamType> &paramTypes);
 
+    bool ruleRelevant() const;
+    void setRuleRelevant(const bool &ruleRelevant);
+
 private:
     EventTypeId m_id;
     QString m_name;
     int m_index;
-
     QList<ParamType> m_paramTypes;
+    bool m_ruleRelevant;
 };
 
 #endif // TRIGGERTYPE_H

@@ -289,6 +289,8 @@ QList<StateType> DeviceClass::stateTypes() const
     return m_stateTypes;
 }
 
+/*! Returns the \l{StateType} with the given \a stateTypeId of this \l{DeviceClass}.
+ * If there is no matching \l{StateType}, an invalid \l{StateType} will be returned.*/
 StateType DeviceClass::getStateType(const StateTypeId &stateTypeId)
 {
     foreach (const StateType &stateType, m_stateTypes) {
@@ -303,15 +305,6 @@ StateType DeviceClass::getStateType(const StateTypeId &stateTypeId)
 void DeviceClass::setStateTypes(const QList<StateType> &stateTypes)
 {
     m_stateTypes = stateTypes;
-
-    m_allEventTypes = m_eventTypes;
-    foreach (const StateType &stateType, m_stateTypes) {
-        EventType eventType(EventTypeId(stateType.id().toString()));
-        eventType.setName(QString("%1 changed").arg(stateType.name()));
-        ParamType paramType("value", stateType.type());
-        eventType.setParamTypes(QList<ParamType>() << paramType);
-        m_allEventTypes.append(eventType);
-    }
 }
 
 /*! Returns true if this DeviceClass has a \l{StateType} with the given \a stateTypeId. */
@@ -329,7 +322,7 @@ bool DeviceClass::hasStateType(const StateTypeId &stateTypeId)
     from this \l{DeviceClass} must have their events matching to this template. */
 QList<EventType> DeviceClass::eventTypes() const
 {
-    return m_allEventTypes;
+    return m_eventTypes;
 }
 
 /*! Set the \a eventTypes of this DeviceClass. \{Device}{Devices} created
@@ -337,15 +330,6 @@ QList<EventType> DeviceClass::eventTypes() const
 void DeviceClass::setEventTypes(const QList<EventType> &eventTypes)
 {
     m_eventTypes = eventTypes;
-
-    m_allEventTypes = m_eventTypes;
-    foreach (const StateType &stateType, m_stateTypes) {
-        EventType eventType(EventTypeId(stateType.id().toString()));
-        eventType.setName(QString("%1 changed").arg(stateType.name()));
-        ParamType paramType("value", stateType.type());
-        eventType.setParamTypes(QList<ParamType>() << paramType);
-        m_allEventTypes.append(eventType);
-    }
 }
 
 /*! Returns true if this DeviceClass has a \l{EventType} with the given \a eventTypeId. */

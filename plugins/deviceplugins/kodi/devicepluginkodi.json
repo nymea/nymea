@@ -45,6 +45,7 @@
                             "idName": "connected",
                             "name": "connected",
                             "index": 0,
+                            "defaultValue": false,
                             "type": "bool"
                         },
                         {
@@ -53,6 +54,7 @@
                             "name": "mute",
                             "index": 1,
                             "type": "bool",
+                            "defaultValue": true,
                             "writable": true
                         },
                         {
@@ -64,6 +66,7 @@
                             "index": 2,
                             "minValue": 0,
                             "maxValue": 100,
+                            "defaultValue": 50,
                             "writable": true
                         }
                     ],

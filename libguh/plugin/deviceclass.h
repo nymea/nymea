@@ -141,6 +141,7 @@ public:
     void setBasicTags(const QList<BasicTag> &basicTags);
 
     QList<StateType> stateTypes() const;
+    StateType getStateType(const StateTypeId &stateTypeId);
     void setStateTypes(const QList<StateType> &stateTypes);
     bool hasStateType(const StateTypeId &stateTypeId);
 

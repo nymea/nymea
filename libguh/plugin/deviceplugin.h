@@ -132,10 +132,10 @@ private:
     QStringList verifyFields(const QStringList &fields, const QJsonObject &value) const;
 
     // load and verify enum values
-    Types::Unit loadAndVerifyUnit(const QString &unitString) const;
-    Types::InputType loadAndVerifyInputType(const QString &inputType) const;
-    DeviceClass::BasicTag loadAndVerifyBasicTag(const QString &basicTag) const;
-    DeviceClass::DeviceIcon loadAndVerifyDeviceIcon(const QString &deviceIcon) const;
+    QPair<bool, Types::Unit> loadAndVerifyUnit(const QString &unitString) const;
+    QPair<bool, Types::InputType> loadAndVerifyInputType(const QString &inputType) const;
+    QPair<bool, DeviceClass::BasicTag> loadAndVerifyBasicTag(const QString &basicTag) const;
+    QPair<bool, DeviceClass::DeviceIcon> loadAndVerifyDeviceIcon(const QString &deviceIcon) const;
 
     DeviceManager *m_deviceManager;
 

@@ -200,23 +200,23 @@ void JsonTypes::init()
     // Event
     s_event.insert("eventTypeId", basicTypeToString(Uuid));
     s_event.insert("deviceId", basicTypeToString(Uuid));
-    s_event.insert("params", QVariantList() << paramRef());
+    s_event.insert("o:params", QVariantList() << paramRef());
 
     // EventDescriptor
     s_eventDescriptor.insert("eventTypeId", basicTypeToString(Uuid));
     s_eventDescriptor.insert("deviceId", basicTypeToString(Uuid));
-    s_eventDescriptor.insert("paramDescriptors", QVariantList() << paramDescriptorRef());
+    s_eventDescriptor.insert("o:paramDescriptors", QVariantList() << paramDescriptorRef());
 
     // ActionType
     s_actionType.insert("id", basicTypeToString(Uuid));
     s_actionType.insert("name", basicTypeToString(Uuid));
     s_actionType.insert("index", basicTypeToString(Int));
-    s_actionType.insert("o:paramTypes", QVariantList() << paramTypeRef());
+    s_actionType.insert("paramTypes", QVariantList() << paramTypeRef());
 
     // Action
     s_action.insert("actionTypeId", basicTypeToString(Uuid));
     s_action.insert("deviceId", basicTypeToString(Uuid));
-    s_action.insert("params", QVariantList() << paramRef());
+    s_action.insert("o:params", QVariantList() << paramRef());
 
     // Pugin
     s_plugin.insert("id", basicTypeToString(Uuid));

@@ -257,13 +257,14 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
             }
             deviceClass.setBasicTags(basicTags);
 
+            // State Types
             QList<ActionType> actionTypes;
             QList<StateType> stateTypes;
             foreach (const QJsonValue &stateTypesJson, jo.value("stateTypes").toArray()) {
                 QJsonObject st = stateTypesJson.toObject();
-                QStringList missingFields = verifyFields(QStringList() << "type" << "id" << "name" << "index", st);
+                QStringList missingFields = verifyFields(QStringList() << "type" << "id" << "name" << "index" << "defaultValue", st);
                 if (!missingFields.isEmpty()) {
-                    qCWarning(dcDeviceManager) << "Skipping device class" << deviceClass.name() << "because of missing" << missingFields.join(", ") << "in stateTypes";
+                    qCWarning(dcDeviceManager) << "Skipping device class" << deviceClass.name() << "because of missing" << missingFields.join(", ") << "in stateType" << st;
                     broken = true;
                     break;
                 }
@@ -276,6 +277,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 QPair<bool, Types::Unit> unitVerification = loadAndVerifyUnit(st.value("unit").toString());
                 if (!unitVerification.first) {
                     broken = true;
+                    break;
                 } else {
                     stateType.setUnit(unitVerification.second);
                 }
@@ -293,16 +295,16 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                     }
                     stateType.setPossibleValues(possibleValues);
 
-                    // inform the plugin developer about the error in the plugin json file
-                    Q_ASSERT_X(stateType.possibleValues().contains(stateType.defaultValue()),
-                               QString("\"%1\" plugin").arg(pluginName()).toLatin1().data(),
-                               QString("The given default value \"%1\" is not in the possible values of the stateType \"%2\".")
-                               .arg(stateType.defaultValue().toString()).arg(stateType.name()).toLatin1().data());
-
+                    if (!stateType.possibleValues().contains(stateType.defaultValue())) {
+                        qCWarning(dcDeviceManager()) << QString("\"%1\" plugin:").arg(pluginName()).toLatin1().data() << QString("The given default value \"%1\" is not in the possible values of the stateType \"%2\".")
+                                                        .arg(stateType.defaultValue().toString()).arg(stateType.name()).toLatin1().data();
+                        broken = true;
+                        break;
+                    }
                 }
                 stateTypes.append(stateType);
 
-                // create ActionType if this StateType is writable
+                // ActionTypes for writeable StateTypes
                 if (st.contains("writable") && st.value("writable").toBool()) {
                     // Note: fields already checked in StateType
                     ActionType actionType(ActionTypeId(stateType.id().toString()));
@@ -318,6 +320,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
             }
             deviceClass.setStateTypes(stateTypes);
 
+            // ActionTypes
             foreach (const QJsonValue &actionTypesJson, jo.value("actionTypes").toArray()) {
                 QJsonObject at = actionTypesJson.toObject();
                 QStringList missingFields = verifyFields(QStringList() << "id" << "name" << "index", at);
@@ -333,6 +336,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 QPair<bool, QList<ParamType> > paramVerification = parseParamTypes(at.value("paramTypes").toArray());
                 if (!paramVerification.first) {
                     broken = true;
+                    break;
                 } else {
                     actionType.setParamTypes(paramVerification.second);
                 }
@@ -341,6 +345,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
             }
             deviceClass.setActionTypes(actionTypes);
 
+            // EventTypes
             QList<EventType> eventTypes;
             foreach (const QJsonValue &eventTypesJson, jo.value("eventTypes").toArray()) {
                 QJsonObject et = eventTypesJson.toObject();
@@ -358,6 +363,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 QPair<bool, QList<ParamType> > paramVerification = parseParamTypes(et.value("paramTypes").toArray());
                 if (!paramVerification.first) {
                     broken = true;
+                    break;
                 } else {
                     eventType.setParamTypes(paramVerification.second);
                 }
@@ -366,11 +372,15 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
             }
             deviceClass.setEventTypes(eventTypes);
 
-            // Note: do this after the actionType / stateType / eventType parsing
+            // Note: keep this after the actionType / stateType / eventType parsing
             if (jo.contains("criticalStateTypeId")) {
                 StateTypeId criticalStateTypeId = StateTypeId(jo.value("criticalStateTypeId").toString());
                 if (!deviceClass.hasStateType(criticalStateTypeId)) {
                     qCWarning(dcDeviceManager) << "Skipping device class" << deviceClass.name() << ": the definend critical stateTypeId" << criticalStateTypeId.toString() << "does not match any StateType of this DeviceClass.";
+                    broken = true;
+                } else if (deviceClass.getStateType(criticalStateTypeId).type() != QVariant::Bool) {
+                    // Make sure the critical stateType is a bool state
+                    qCWarning(dcDeviceManager) << "Skipping device class" << deviceClass.name() << ": the definend critical stateTypeId" << criticalStateTypeId.toString() << "is not a bool StateType.";
                     broken = true;
                 } else {
                     deviceClass.setCriticalStateTypeId(criticalStateTypeId);
@@ -397,9 +407,11 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 }
             }
 
-            if (!broken)
+            if (!broken) {
                 deviceClasses.append(deviceClass);
-
+            } else {
+                qCWarning(dcDeviceManager()) << "Skipping device class" << deviceClass.name();
+            }
         }
     }
     return deviceClasses;

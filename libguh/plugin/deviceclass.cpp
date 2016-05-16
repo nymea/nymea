@@ -289,6 +289,15 @@ QList<StateType> DeviceClass::stateTypes() const
     return m_stateTypes;
 }
 
+StateType DeviceClass::getStateType(const StateTypeId &stateTypeId)
+{
+    foreach (const StateType &stateType, m_stateTypes) {
+        if (stateType.id() == stateTypeId)
+            return stateType;
+    }
+    return StateType(StateTypeId());
+}
+
 /*! Set the \a stateTypes of this DeviceClass. \{Device}{Devices} created
     from this \l{DeviceClass} must have their states matching to this template. */
 void DeviceClass::setStateTypes(const QList<StateType> &stateTypes)

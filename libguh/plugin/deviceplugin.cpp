@@ -211,7 +211,13 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 }
             }
             deviceClass.setCreateMethods(createMethods);
-            deviceClass.setDeviceIcon(loadAndVerifyDeviceIcon(jo.value("deviceIcon").toString()));
+            QPair<bool, DeviceClass::DeviceIcon> deviceIconVerification = loadAndVerifyDeviceIcon(jo.value("deviceIcon").toString());
+            if (!deviceIconVerification.first) {
+                broken = true;
+            } else {
+                deviceClass.setDeviceIcon(deviceIconVerification.second);
+            }
+
             QPair<bool, QList<ParamType> > discoveryParamVerification = parseParamTypes(jo.value("discoveryParamTypes").toArray());
             if (!discoveryParamVerification.first) {
                 broken = true;
@@ -241,7 +247,13 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
 
             QList<DeviceClass::BasicTag> basicTags;
             foreach (const QJsonValue &basicTagJson, jo.value("basicTags").toArray()) {
-                basicTags.append(loadAndVerifyBasicTag(basicTagJson.toString()));
+                QPair<bool, DeviceClass::BasicTag> basicTagVerification = loadAndVerifyBasicTag(basicTagJson.toString());
+                if (!basicTagVerification.first) {
+                    broken = true;
+                    break;
+                } else {
+                    basicTags.append(basicTagVerification.second);
+                }
             }
             deviceClass.setBasicTags(basicTags);
 
@@ -261,7 +273,12 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 stateType.setName(st.value("name").toString());
                 stateType.setIndex(st.value("index").toInt());
                 stateType.setType(t);
-                stateType.setUnit(loadAndVerifyUnit(st.value("unit").toString()));
+                QPair<bool, Types::Unit> unitVerification = loadAndVerifyUnit(st.value("unit").toString());
+                if (!unitVerification.first) {
+                    broken = true;
+                } else {
+                    stateType.setUnit(unitVerification.second);
+                }
                 stateType.setDefaultValue(st.value("defaultValue").toVariant());
                 if (st.contains("minValue"))
                     stateType.setMinValue(st.value("minValue").toVariant());
@@ -540,12 +557,24 @@ QPair<bool, QList<ParamType> > DevicePlugin::parseParamTypes(const QJsonArray &a
 
         // set the input type if there is any
         if (pt.contains("inputType")) {
-            paramType.setInputType(loadAndVerifyInputType(pt.value("inputType").toString()));
+            QPair<bool, Types::InputType> inputTypeVerification = loadAndVerifyInputType(pt.value("inputType").toString());
+            if (!inputTypeVerification.first) {
+                qCWarning(dcDeviceManager()) << pluginName() << QString("Invalid inputType for paramType") << pt;
+                return QPair<bool, QList<ParamType> >(false, QList<ParamType>());
+            } else {
+                paramType.setInputType(inputTypeVerification.second);
+            }
         }
 
         // set the unit if there is any
         if (pt.contains("unit")) {
-            paramType.setUnit(loadAndVerifyUnit(pt.value("unit").toString()));
+            QPair<bool, Types::Unit> unitVerification = loadAndVerifyUnit(pt.value("unit").toString());
+            if (!unitVerification.first) {
+                qCWarning(dcDeviceManager()) << pluginName() << QString("Invalid unit type for paramType") << pt;
+                return QPair<bool, QList<ParamType> >(false, QList<ParamType>());
+            } else {
+                paramType.setUnit(unitVerification.second);
+            }
         }
 
         // set readOnly if given (default false)
@@ -603,7 +632,6 @@ DeviceManager::DeviceError DevicePlugin::setConfiguration(const ParamList &confi
 /*! Can be called in the DevicePlugin to set a plugin's \l{Param} with the given \a paramName and \a value. */
 DeviceManager::DeviceError DevicePlugin::setConfigValue(const QString &paramName, const QVariant &value)
 {
-
     bool found = false;
     foreach (const ParamType &paramType, configurationDescription()) {
         if (paramType.name() == paramName) {
@@ -790,10 +818,10 @@ QStringList DevicePlugin::verifyFields(const QStringList &fields, const QJsonObj
     return ret;
 }
 
-Types::Unit DevicePlugin::loadAndVerifyUnit(const QString &unitString) const
+QPair<bool, Types::Unit> DevicePlugin::loadAndVerifyUnit(const QString &unitString) const
 {
     if (unitString.isEmpty())
-        return Types::UnitNone;
+        return QPair<bool, Types::Unit>(true, Types::UnitNone);
 
     QMetaObject metaObject = Types::staticMetaObject;
     int enumIndex = metaObject.indexOfEnumerator(QString("Unit").toLatin1().data());
@@ -808,15 +836,19 @@ Types::Unit DevicePlugin::loadAndVerifyUnit(const QString &unitString) const
     }
 
     // inform the plugin developer about the error in the plugin json file
-    Q_ASSERT_X(enumValue != -1,
-               QString("\"%1\" plugin").arg(pluginName()).toLatin1().data(),
-               QString("Invalid unit type \"%1\" in json file.").arg(unitString).toLatin1().data());
+    if (enumValue == -1) {
+        qCWarning(dcDeviceManager()) << QString("\"%1\" plugin").arg(pluginName()).toLatin1().data() << QString("Invalid unit type \"%1\" in json file.").arg(unitString).toLatin1().data();
+        return QPair<bool, Types::Unit>(false, Types::UnitNone);
+    }
 
-    return (Types::Unit)enumValue;
+    return QPair<bool, Types::Unit>(true, (Types::Unit)enumValue);
 }
 
-Types::InputType DevicePlugin::loadAndVerifyInputType(const QString &inputType) const
+QPair<bool, Types::InputType> DevicePlugin::loadAndVerifyInputType(const QString &inputType) const
 {
+    if (inputType.isEmpty())
+        return QPair<bool, Types::InputType>(true, Types::InputTypeNone);
+
     QMetaObject metaObject = Types::staticMetaObject;
     int enumIndex = metaObject.indexOfEnumerator(QString("InputType").toLatin1().data());
     QMetaEnum metaEnum = metaObject.enumerator(enumIndex);
@@ -830,15 +862,19 @@ Types::InputType DevicePlugin::loadAndVerifyInputType(const QString &inputType) 
     }
 
     // inform the plugin developer about the error in the plugin json file
-    Q_ASSERT_X(enumValue != -1,
-               QString("\"%1\" plugin").arg(pluginName()).toLatin1().data(),
-               QString("Invalid inputType \"%1\" in json file.").arg(inputType).toLatin1().data());
+    if (enumValue == -1) {
+        qCWarning(dcDeviceManager()) << QString("\"%1\" plugin").arg(pluginName()).toLatin1().data() << QString("Invalid inputType \"%1\" in json file.").arg(inputType).toLatin1().data();
+        return QPair<bool, Types::InputType>(false, Types::InputTypeNone);
+    }
 
-    return (Types::InputType)enumValue;
+    return QPair<bool, Types::InputType>(true, (Types::InputType)enumValue);
 }
 
-DeviceClass::BasicTag DevicePlugin::loadAndVerifyBasicTag(const QString &basicTag) const
+QPair<bool, DeviceClass::BasicTag> DevicePlugin::loadAndVerifyBasicTag(const QString &basicTag) const
 {
+    if (basicTag.isEmpty())
+        return QPair<bool, DeviceClass::BasicTag>(true, DeviceClass::BasicTagDevice);
+
     QMetaObject metaObject = DeviceClass::staticMetaObject;
     int enumIndex = metaObject.indexOfEnumerator(QString("BasicTag").toLatin1().data());
     QMetaEnum metaEnum = metaObject.enumerator(enumIndex);
@@ -852,17 +888,18 @@ DeviceClass::BasicTag DevicePlugin::loadAndVerifyBasicTag(const QString &basicTa
     }
 
     // inform the plugin developer about the error in the plugin json file
-    Q_ASSERT_X(enumValue != -1,
-               QString("\"%1\" plugin").arg(pluginName()).toLatin1().data(),
-               QString("Invalid basicTag type \"%1\" in json file.").arg(basicTag).toLatin1().data());
+    if (enumValue == -1) {
+        qCWarning(dcDeviceManager()) << QString("\"%1\" plugin").arg(pluginName()).toLatin1().data() << QString("Invalid basicTag \"%1\" in json file.").arg(basicTag).toLatin1().data();
+        return QPair<bool, DeviceClass::BasicTag>(false, DeviceClass::BasicTagDevice);
+    }
 
-    return (DeviceClass::BasicTag)enumValue;
+    return QPair<bool, DeviceClass::BasicTag>(true, (DeviceClass::BasicTag)enumValue);
 }
 
-DeviceClass::DeviceIcon DevicePlugin::loadAndVerifyDeviceIcon(const QString &deviceIcon) const
+QPair<bool, DeviceClass::DeviceIcon> DevicePlugin::loadAndVerifyDeviceIcon(const QString &deviceIcon) const
 {
     if (deviceIcon.isEmpty())
-        return DeviceClass::DeviceIconNone;
+        return QPair<bool, DeviceClass::DeviceIcon>(true, DeviceClass::DeviceIconNone);
 
     QMetaObject metaObject = DeviceClass::staticMetaObject;
     int enumIndex = metaObject.indexOfEnumerator(QString("DeviceIcon").toLatin1().data());
@@ -877,9 +914,10 @@ DeviceClass::DeviceIcon DevicePlugin::loadAndVerifyDeviceIcon(const QString &dev
     }
 
     // inform the plugin developer about the error in the plugin json file
-    Q_ASSERT_X(enumValue != -1,
-               QString("\"%1\" plugin").arg(pluginName()).toLatin1().data(),
-               QString("Invalid icon type \"%1\" in json file.").arg(deviceIcon).toLatin1().data());
+    if (enumValue == -1) {
+        qCWarning(dcDeviceManager()) << QString("\"%1\" plugin").arg(pluginName()).toLatin1().data() << QString("Invalid deviceIcon \"%1\" in json file.").arg(deviceIcon).toLatin1().data();
+        return QPair<bool, DeviceClass::DeviceIcon>(false, DeviceClass::DeviceIconNone);
+    }
 
-    return (DeviceClass::DeviceIcon)enumValue;
+    return QPair<bool, DeviceClass::DeviceIcon>(true, (DeviceClass::DeviceIcon)enumValue);
 }

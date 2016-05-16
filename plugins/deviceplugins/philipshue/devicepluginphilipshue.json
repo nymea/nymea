@@ -25,39 +25,46 @@
                         {
                             "name": "name",
                             "type" : "QString",
+                            "index": 0,
                             "inputType": "TextLine"
                         },
                         {
                             "name": "api key",
                             "type" : "QString",
+                            "index": 1,
                             "inputType": "TextLine",
                             "readOnly": true
                         },
                         {
                             "name": "host address",
                             "type" : "QString",
+                            "index": 2,
                             "inputType": "IPv4Address",
                             "readOnly": true
                         },
                         {
                             "name": "mac address",
                             "type" : "QString",
+                            "index": 3,
                             "inputType": "MacAddress",
                             "readOnly": true
                         },
                         {
                             "name": "id",
                             "type" : "QString",
+                            "index": 4,
                             "readOnly": true
                         },
                         {
                             "name": "software version",
                             "type" : "QString",
+                            "index": 5,
                             "readOnly": true
                         },
                         {
                             "name": "zigbee channel",
                             "type" : "int",
+                            "index": 6,
                             "readOnly": true
                         }
                     ],
@@ -66,6 +73,7 @@
                             "id": "15794d26-fde8-4a61-8f83-d7830534975f",
                             "idName": "bridgeReachable",
                             "name": "reachable",
+                            "index": 0,
                             "defaultValue": false,
                             "type": "bool"
                         },
@@ -73,6 +81,7 @@
                             "id": "7a230e89-c4ce-4276-90e0-6a9ddb890603",
                             "idName": "apiVersion",
                             "name": "api version",
+                            "index": 1,
                             "defaultValue": "-",
                             "type": "QString"
                         },
@@ -80,6 +89,7 @@
                             "id": "4c707b18-6604-4e6d-b6bc-4e27769c2adc",
                             "idName": "softwareVersion",
                             "name": "software version",
+                            "index": 2,
                             "defaultValue": "-",
                             "type": "QString"
                         },
@@ -87,6 +97,7 @@
                             "id": "16a126f3-0cef-4931-bb2b-9e1b49bec7fc",
                             "idName": "updateStatus",
                             "name": "update status",
+                            "index": 3,
                             "type": "QString",
                             "defaultValue": "Up to date",
                             "possibleValues": [
@@ -101,16 +112,19 @@
                         {
                             "id": "cca3f171-6318-44e7-a2ac-d841857c1c24",
                             "idName": "searchNewDevices",
+                            "index": 0,
                             "name": "search devices"
                         },
                         {
                             "id": "07a85e91-d064-4bce-b017-13fd0c320c0b",
                             "idName": "checkForUpdates",
+                            "index": 1,
                             "name": "check updates"
                         },
                         {
                             "id": "6dfbc7c0-7372-42f6-82ba-e777cb32dc4c",
                             "idName": "upgrade",
+                            "index": 2,
                             "name": "Upgrade bridge"
                         }
                     ]
@@ -130,43 +144,51 @@
                         {
                             "name": "name",
                             "type" : "QString",
+                            "index": 0,
                             "inputType": "TextLine"
                         },
                         {
                             "name": "bridge",
                             "type" : "QString",
+                            "index": 1,
                             "readOnly": true
                         },
                         {
                             "name": "model id",
                             "type" : "QString",
+                            "index": 2,
                             "readOnly": true
                         },
                         {
                             "name": "type",
                             "type" : "QString",
+                            "index": 3,
                             "readOnly": true
                         },
                         {
                             "name": "uuid",
                             "type" : "QString",
+                            "index": 4,
                             "readOnly": true
                         },
                         {
                             "name": "api key",
                             "type" : "QString",
                             "inputType": "TextLine",
+                            "index": 5,
                             "readOnly": true
                         },
                         {
                             "name": "host address",
                             "type" : "QString",
                             "inputType": "IPv4Address",
+                            "index": 6,
                             "readOnly": true
                         },
                         {
                             "name": "light id",
                             "type" : "int",
+                            "index": 7,
                             "readOnly": true
                         }
                     ],
@@ -175,6 +197,7 @@
                             "id": "19bb8d10-1b28-4ba3-99b7-a634138dcfde",
                             "idName": "hueReachable",
                             "name": "reachable",
+                            "index": 0,
                             "defaultValue": false,
                             "type": "bool"
                         },
@@ -182,6 +205,7 @@
                             "id": "90aaffe5-6a76-47d2-a14a-550f60390245",
                             "idName": "huePower",
                             "name": "power",
+                            "index": 1,
                             "type": "bool",
                             "defaultValue": false,
                             "writable": true
@@ -191,6 +215,7 @@
                             "idName": "hueTemperature",
                             "name": "color temperature",
                             "type": "int",
+                            "index": 2,
                             "unit": "Mired",
                             "defaultValue": 170,
                             "minValue": 153,
@@ -201,6 +226,7 @@
                             "id": "d25423e7-b924-4b20-80b6-77eecc65d089",
                             "idName": "hueColor",
                             "name": "color",
+                            "index": 3,
                             "type": "QColor",
                             "defaultValue": "#000000",
                             "writable": true
@@ -211,6 +237,7 @@
                             "idName": "hueBrightness",
                             "name": "brightness",
                             "type": "int",
+                            "index": 4,
                             "unit": "Percentage",
                             "defaultValue": 0,
                             "minValue": 0,
@@ -222,6 +249,7 @@
                             "id": "0b7cdd8d-4db8-4183-abe2-f3c01d1c9afc",
                             "idName": "hueEffect",
                             "name": "effect",
+                            "index": 5,
                             "type": "QString",
                             "defaultValue": "none",
                             "possibleValues": [
@@ -236,10 +264,12 @@
                             "id": "d25dcfbc-d28c-4905-80e3-300ffb1248f5",
                             "idName": "hueAlert",
                             "name": "flash",
+                            "index": 0,
                             "paramTypes": [
                                 {
                                     "name": "alert",
                                     "type": "QString",
+                                    "index": 0,
                                     "allowedValues": [
                                         "flash once",
                                         "flash 30 seconds"
@@ -264,43 +294,51 @@
                         {
                             "name": "name",
                             "type" : "QString",
+                            "index": 0,
                             "inputType": "TextLine"
                         },
                         {
                             "name": "bridge",
                             "type" : "QString",
+                            "index": 1,
                             "readOnly": true
                         },
                         {
                             "name": "model id",
                             "type" : "QString",
+                            "index": 2,
                             "readOnly": true
                         },
                         {
                             "name": "type",
                             "type" : "QString",
+                            "index": 3,
                             "readOnly": true
                         },
                         {
                             "name": "uuid",
                             "type" : "QString",
+                            "index": 4,
                             "readOnly": true
                         },
                         {
                             "name": "api key",
                             "type" : "QString",
+                            "index": 5,
                             "inputType": "TextLine",
                             "readOnly": true
                         },
                         {
                             "name": "host address",
                             "type" : "QString",
+                            "index": 6,
                             "inputType": "IPv4Address",
                             "readOnly": true
                         },
                         {
                             "name": "light id",
                             "type" : "int",
+                            "index": 7,
                             "readOnly": true
                         }
                     ],
@@ -309,6 +347,7 @@
                             "id": "19bb8d10-1b28-4ba3-99b7-a634138dcfde",
                             "idName": "hueReachable",
                             "name": "reachable",
+                            "index": 0,
                             "defaultValue": false,
                             "type": "bool"
                         },
@@ -316,6 +355,7 @@
                             "id": "90aaffe5-6a76-47d2-a14a-550f60390245",
                             "idName": "huePower",
                             "name": "power",
+                            "index": 1,
                             "type": "bool",
                             "defaultValue": false,
                             "writable": true
@@ -324,6 +364,7 @@
                             "id": "90e91f64-a208-468c-a5a2-7f47e08859e2",
                             "idName": "hueBrightness",
                             "name": "brightness",
+                            "index": 2,
                             "type": "int",
                             "unit": "Percentage",
                             "defaultValue": 0,
@@ -338,10 +379,12 @@
                             "id": "d25dcfbc-d28c-4905-80e3-300ffb1248f5",
                             "idName": "hueAlert",
                             "name": "flash",
+                            "index": 0,
                             "paramTypes": [
                                 {
                                     "name": "alert",
                                     "type": "QString",
+                                    "index": 0,
                                     "allowedValues": [
                                         "flash once",
                                         "flash 30 seconds"
@@ -365,43 +408,51 @@
                         {
                             "name": "name",
                             "type" : "QString",
+                            "index": 0,
                             "inputType": "TextLine"
                         },
                         {
                             "name": "bridge",
                             "type" : "QString",
+                            "index": 1,
                             "readOnly": true
                         },
                         {
                             "name": "model id",
                             "type" : "QString",
+                            "index": 2,
                             "readOnly": true
                         },
                         {
                             "name": "type",
                             "type" : "QString",
+                            "index": 3,
                             "readOnly": true
                         },
                         {
                             "name": "uuid",
                             "type" : "QString",
+                            "index": 4,
                             "readOnly": true
                         },
                         {
                             "name": "api key",
                             "type" : "QString",
+                            "index": 5,
                             "inputType": "TextLine",
                             "readOnly": true
                         },
                         {
                             "name": "host address",
                             "type" : "QString",
+                            "index": 6,
                             "inputType": "IPv4Address",
                             "readOnly": true
                         },
                         {
                             "name": "sensor id",
                             "type" : "int",
+                            "index": 7,
                             "readOnly": true
                         }
                     ],
@@ -410,6 +461,7 @@
                             "id": "19bb8d10-1b28-4ba3-99b7-a634138dcfde",
                             "idName": "hueReachable",
                             "name": "reachable",
+                            "index": 0,
                             "defaultValue": false,
                             "type": "bool"
                         },
@@ -418,6 +470,7 @@
                             "idName": "battery",
                             "name": "battery",
                             "type": "int",
+                            "index": 1,
                             "unit": "Percentage",
                             "defaultValue": 0,
                             "minValue": 0,
@@ -428,41 +481,49 @@
                         {
                             "id": "de769db0-4c31-46cf-9760-dbc6f9209c26",
                             "idName": "onPressed",
+                            "index": 0,
                             "name": "on pressed"
                         },
                         {
                             "id": "6c5e596b-7c15-40bb-af9d-c778a6b0f30e",
                             "idName": "onLongPressed",
+                            "index": 1,
                             "name": "on long pressed"
                         },
                         {
                             "id": "8e3d6a62-6a19-4e9a-a25b-e1da2e56ede9",
                             "idName": "dimUpPressed",
+                            "index": 2,
                             "name": "dim up pressed"
                         },
                         {
                             "id": "53d3c9af-3e25-4116-b22b-38d897bc20aa",
                             "idName": "dimUpLongPressed",
+                            "index": 3,
                             "name": "dim up long pressed"
                         },
                         {
                             "id": "efd8b972-9a37-43f2-b9bc-f9dfe144a96d",
                             "idName": "dimDownPressed",
+                            "index": 4,
                             "name": "dim down pressed"
                         },
                         {
                             "id": "1986d4c6-4c9f-4e43-ba70-0ff06c6f177b",
                             "idName": "dimDownLongPressed",
+                            "index": 5,
                             "name": "dim down long pressed"
                         },
                         {
                             "id": "7c2a58f1-137c-4bf3-8f9e-453dff020487",
                             "idName": "offPressed",
+                            "index": 6,
                             "name": "off pressed"
                         },
                         {
                             "id": "d69306eb-ea52-4841-9e26-89c69e9cf6fc",
                             "idName": "offLongPressed",
+                            "index": 7,
                             "name": "off long pressed"
                         }
                     ]

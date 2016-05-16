@@ -22,42 +22,50 @@
                         {
                             "name": "sender mail",
                             "type": "QString",
+                            "index": 0,
                             "inputType": "Mail"
                         },
                         {
                             "name": "user",
                             "type": "QString",
+                            "index": 1,
                             "inputType": "TextLine"
                         },
                         {
                             "name": "password",
                             "type": "QString",
+                            "index": 2,
                             "inputType": "Password"
                         },
                         {
                             "name": "recipient",
                             "type": "QString",
+                            "index": 3,
                             "inputType": "Mail"
                         },
                         {
                             "name": "SMTP server",
                             "type": "QString",
+                            "index": 4,
                             "inputType": "Url"
                         },
                         {
                             "name": "port",
                             "type": "int",
+                            "index": 5,
                             "defaultValue": "465"
                         },
                         {
                             "name": "authentification",
                             "type": "QString",
+                            "index": 6,
                             "defaultValue": "LOGIN",
                             "allowedValues": ["PLAIN", "LOGIN"]
                         },
                         {
                             "name": "encryption",
                             "type": "QString",
+                            "index": 7,
                             "allowedValues": ["NONE","SSL","TLS"]
                         }
                     ],
@@ -65,15 +73,18 @@
                         {
                             "id": "054613b0-3666-4dad-9252-e0ebca187edc",
                             "name": "send mail",
+                            "index": 0,
                             "paramTypes": [
                                 {
                                     "name": "subject",
                                     "type": "QString",
+                                    "index": 0,
                                     "inputType": "TextLine"
                                 },
                                 {
                                     "name": "body",
                                     "type": "QString",
+                                    "index": 1,
                                     "inputType": "TextArea"
                                 }
                             ]
@@ -101,16 +112,19 @@
                         {
                             "name": "user",
                             "type": "QString",
+                            "index": 0,
                             "inputType": "Mail"
                         },
                         {
                             "name": "password",
                             "type": "QString",
+                            "index": 1,
                             "inputType": "Password"
                         },
                         {
                             "name": "recipient",
                             "type": "QString",
+                            "index": 2,
                             "inputType": "Mail"
                         }
                     ],
@@ -118,16 +132,19 @@
                         {
                             "id": "054613b0-3666-4dad-9252-e0ebca187edc",
                             "idName": "sendMail",
+                            "index": 0,
                             "name": "send mail",
                             "paramTypes": [
                                 {
                                     "name": "subject",
                                     "type": "QString",
+                                    "index": 0,
                                     "inputType": "TextLine"
                                 },
                                 {
                                     "name": "body",
                                     "type": "QString",
+                                    "index": 1,
                                     "inputType": "TextArea"
                                 }
                             ]
@@ -155,16 +172,19 @@
                         {
                             "name": "user",
                             "type": "QString",
+                            "index": 0,
                             "inputType": "Mail"
                         },
                         {
                             "name": "password",
                             "type": "QString",
+                            "index": 1,
                             "inputType": "Password"
                         },
                         {
                             "name": "recipient",
                             "type": "QString",
+                            "index": 2,
                             "inputType": "Mail"
                         }
                     ],
@@ -172,15 +192,18 @@
                         {
                             "id": "054613b0-3666-4dad-9252-e0ebca187edc",
                             "name": "send mail",
+                            "index": 0,
                             "paramTypes": [
                                 {
                                     "name": "subject",
                                     "type": "QString",
+                                    "index": 0,
                                     "inputType": "TextLine"
                                 },
                                 {
                                     "name": "body",
                                     "type": "QString",
+                                    "index": 1,
                                     "inputType": "TextArea"
                                 }
                             ]

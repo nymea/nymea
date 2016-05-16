@@ -41,7 +41,8 @@
                             "paramTypes": [
                                 {
                                     "name": "power",
-                                    "type": "bool"
+                                    "type": "bool",
+                                    "index": 0
                                 }
                             ]
                         }

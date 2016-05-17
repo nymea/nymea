@@ -21,7 +21,6 @@
 
     The \tt plugininfo.h has to be included in the main plugin \tt cpp file (\tt{deviceplugin<\b pluginName>.cpp}). The \tt extern-plugininfo.h can be included in other classes/files of the plugin to get the extern definitions of the ID's and the logging category. 
 
-
     \section1 Basic structure
 
     The name convention fot the plugin json file is:

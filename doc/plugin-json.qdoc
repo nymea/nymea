@@ -253,7 +253,7 @@
         \tt ...        
 
 
-        \li - \underline{\e defaultValue:} Sets the default value of the \{ParamType}. If a parameter will not be set by the user, the parameter will be set to this value \unicode{0x2192} \l{ParamType::defaultValue()}.
+        \li - \underline{\e defaultValue:} Sets the default value of the \l{ParamType}. If a parameter will not be set by the user, the parameter will be set to this value \unicode{0x2192} \l{ParamType::defaultValue()}.
         \li - \underline{\e unit:} With this parameter you can specify the \l{Types::Unit}{Unit} of the parameter i.e. \unicode{0x00B0}C \unicode{0x2192} DegreeCelsius. See enum \l{Types::Unit} for more information. The expected value for the \e unit parameter matches the enum name like this:
             
         \tt {Types::UnitDegreeCelsius} \unicode{0x2192} \tt {"unit": "DegreeCelsius"}

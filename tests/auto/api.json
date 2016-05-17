@@ -724,6 +724,7 @@
             "id": "Uuid",
             "index": "Int",
             "name": "String",
+            "o:graphRelevant": "Bool",
             "o:ruleRelevant": "Bool",
             "paramTypes": [
                 "$ref:ParamType"
@@ -918,6 +919,7 @@
             "id": "Uuid",
             "index": "Int",
             "name": "String",
+            "o:graphRelevant": "Bool",
             "o:maxValue": "Variant",
             "o:minValue": "Variant",
             "o:possibleValues": [

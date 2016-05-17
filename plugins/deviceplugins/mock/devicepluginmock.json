@@ -72,6 +72,7 @@
                             "name": "Dummy int state",
                             "index": 0,
                             "defaultValue": 10,
+                            "graphRelevant": true,
                             "type": "int"
                         },
                         {
@@ -86,7 +87,8 @@
                         {
                             "id": "45bf3752-0fc6-46b9-89fd-ffd878b5b22b",
                             "index": 0,
-                            "name": "Mock Event 1"
+                            "name": "Mock Event 1",
+                            "graphRelevant": true
                         },
                         {
                             "id": "863d5920-b1cf-4eb9-88bd-8f7b8583b1cf",

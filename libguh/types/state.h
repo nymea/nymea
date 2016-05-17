@@ -38,7 +38,6 @@ public:
     StateTypeId stateTypeId() const;
     DeviceId deviceId() const;
 
-    //QStringList stateNames() const;
     QVariant value() const;
     void setValue(const QVariant &value);
 
@@ -51,6 +50,5 @@ private:
 
 QDebug operator<<(QDebug dbg, const State &event);
 QDebug operator<<(QDebug dbg, const QList<State> &events);
-
 
 #endif // STATE_H

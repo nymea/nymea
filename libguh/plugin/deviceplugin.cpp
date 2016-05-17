@@ -293,6 +293,9 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 if (st.contains("ruleRelevant"))
                     stateType.setRuleRelevant(st.value("ruleRelevant").toBool());
 
+                if (st.contains("graphRelevant"))
+                    stateType.setGraphRelevant(st.value("graphRelevant").toBool());
+
                 if (st.contains("possibleValues")) {
                     QVariantList possibleValues;
                     foreach (const QJsonValue &possibleValueJson, st.value("possibleValues").toArray()) {
@@ -376,6 +379,9 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 eventType.setIndex(et.value("index").toInt());
                 if (et.contains("ruleRelevant"))
                     eventType.setRuleRelevant(et.value("ruleRelevant").toBool());
+
+                if (et.contains("graphRelevant"))
+                    eventType.setGraphRelevant(et.value("graphRelevant").toBool());
 
                 QPair<bool, QList<ParamType> > paramVerification = parseParamTypes(et.value("paramTypes").toArray());
                 if (!paramVerification.first) {

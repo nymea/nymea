@@ -654,11 +654,11 @@ void TestDevices::getEventTypes()
     params.insert("deviceClassId", deviceClassId);
     QVariant response = injectAndWait("Devices.GetEventTypes", params);
 
+    qDebug() << response;
+
     QVariantList eventTypes = response.toMap().value("params").toMap().value("eventTypes").toList();
     QCOMPARE(eventTypes.count(), resultCount);
-    if (resultCount > 0) {
-        QCOMPARE(eventTypes.first().toMap().value("id").toString(), mockEvent1Id.toString());
-    }
+
 }
 
 void TestDevices::getStateTypes_data()

@@ -35,7 +35,8 @@
 EventType::EventType(const EventTypeId &id):
     m_id(id),
     m_index(0),
-    m_ruleRelevant(true)
+    m_ruleRelevant(true),
+    m_graphRelevant(false)
 {
 
 }
@@ -95,4 +96,16 @@ bool EventType::ruleRelevant() const
 void EventType::setRuleRelevant(const bool &ruleRelevant)
 {
     m_ruleRelevant = ruleRelevant;
+}
+
+/*! Returns true if this EventType is interesting to visualize the logs in a graph/chart from a user perspective. */
+bool EventType::graphRelevant() const
+{
+    return m_graphRelevant;
+}
+
+/*! Sets this EventType \a graphRelevant to inform the client application if this \l{EventType} is interesting to visualize the logs in a graph/chart. */
+void EventType::setGraphRelevant(const bool &graphRelevant)
+{
+    m_graphRelevant = graphRelevant;
 }

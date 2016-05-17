@@ -61,6 +61,9 @@ public:
     bool ruleRelevant() const;
     void setRuleRelevant(const bool &ruleRelevant);
 
+    bool graphRelevant() const;
+    void setGraphRelevant(const bool &graphRelevant);
+
 private:
     StateTypeId m_id;
     QString m_name;
@@ -72,6 +75,8 @@ private:
     QVariantList m_possibleValues;
     Types::Unit m_unit;
     bool m_ruleRelevant;
+    bool m_graphRelevant;
+
 };
 
 #endif // STATETYPE_H

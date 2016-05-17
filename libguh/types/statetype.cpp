@@ -42,7 +42,8 @@ StateType::StateType(const StateTypeId &id):
     m_maxValue(QVariant()),
     m_possibleValues(QVariantList()),
     m_unit(Types::UnitNone),
-    m_ruleRelevant(true)
+    m_ruleRelevant(true),
+    m_graphRelevant(false)
 {
 
 }
@@ -162,4 +163,16 @@ bool StateType::ruleRelevant() const
 void StateType::setRuleRelevant(const bool &ruleRelevant)
 {
     m_ruleRelevant = ruleRelevant;
+}
+
+/*! Returns true if this StateType is interesting to visualize the logs in a graph/chart from a user perspective. */
+bool StateType::graphRelevant() const
+{
+    return m_graphRelevant;
+}
+
+/*! Sets this StateType \a graphRelevant to inform the client application if this \l{StateType} is interesting to visualize the logs in a graph/chart. */
+void StateType::setGraphRelevant(const bool &graphRelevant)
+{
+    m_graphRelevant = graphRelevant;
 }

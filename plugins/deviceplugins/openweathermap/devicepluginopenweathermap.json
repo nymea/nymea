@@ -65,6 +65,8 @@
                             "name": "last update",
                             "index": 0,
                             "unit": "UnixTime",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "type": "int",
                             "defaultValue": 0
                         },
@@ -74,6 +76,7 @@
                             "name": "temperature",
                             "index": 1,
                             "unit": "DegreeCelsius",
+                            "graphRelevant": true,
                             "type": "double",
                             "defaultValue": 0
                         },
@@ -108,6 +111,7 @@
                             "id": "4a42eea9-00eb-440b-915e-dbe42180f83b",
                             "idName": "pressure",
                             "name": "pressure",
+                            "graphRelevant": true,
                             "index": 5,
                             "unit": "HectoPascal",
                             "type": "double",
@@ -119,6 +123,7 @@
                             "name": "wind speed",
                             "index": 6,
                             "unit": "MeterPerSecond",
+                            "graphRelevant": true,
                             "type": "double",
                             "defaultValue": 0
                         },
@@ -136,6 +141,7 @@
                             "idName": "cloudiness",
                             "name": "cloudiness",
                             "unit": "Percentage",
+                            "graphRelevant": true,
                             "index": 8,
                             "type": "int",
                             "defaultValue": 0
@@ -146,6 +152,7 @@
                             "name": "visibility",
                             "index": 9,
                             "unit": "Meter",
+                            "graphRelevant": true,
                             "type": "int",
                             "defaultValue": 0
                         },

@@ -223,7 +223,6 @@ void LogEngine::logSystemEvent(const QDateTime &dateTime, bool active, Logging::
 {
     LogEntry entry(dateTime, level, Logging::LoggingSourceSystem);
     entry.setActive(active);
-    qCDebug(dcLogEngine) << entry;
     appendLogEntry(entry);
 }
 

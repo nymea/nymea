@@ -94,6 +94,8 @@
                             "index": 0,
                             "unit": "UnixTime",
                             "type": "int",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "defaultValue": 0
                         },
                         {
@@ -102,6 +104,7 @@
                             "name": "temperature",
                             "index": 1,
                             "unit": "DegreeCelsius",
+                            "graphRelevant": true,
                             "type": "double",
                             "defaultValue": 0
                         },
@@ -128,6 +131,7 @@
                             "idName": "humidity",
                             "name": "humidity",
                             "index": 4,
+                            "graphRelevant": true,
                             "unit": "Percentage",
                             "type": "int",
                             "defaultValue": 0
@@ -138,6 +142,7 @@
                             "name": "pressure",
                             "index": 5,
                             "unit": "MilliBar",
+                            "graphRelevant": true,
                             "type": "double",
                             "defaultValue": 0
                         },
@@ -146,6 +151,7 @@
                             "idName": "noise",
                             "name": "noise",
                             "index": 6,
+                            "graphRelevant": true,
                             "unit": "Dezibel",
                             "type": "int",
                             "defaultValue": 0
@@ -155,6 +161,7 @@
                             "idName": "co2",
                             "name": "co2",
                             "index": 7,
+                            "graphRelevant": true,
                             "unit": "PartsPerMillion",
                             "type": "int",
                             "defaultValue": 0
@@ -164,6 +171,8 @@
                             "idName": "wifiStrength",
                             "name": "wifi signal strength",
                             "index": 8,
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "unit": "Percentage",
                             "type": "int",
                             "defaultValue": 0
@@ -220,6 +229,8 @@
                             "name": "last update",
                             "index": 0,
                             "unit": "UnixTime",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "type": "int",
                             "defaultValue": 0
                         },
@@ -227,6 +238,7 @@
                             "id": "3cb25538-e463-40ae-92f9-8f34f0c06b92",
                             "idName": "temperature",
                             "name": "temperature",
+                            "graphRelevant": true,
                             "index": 1,
                             "unit": "DegreeCelsius",
                             "type": "double",
@@ -254,6 +266,7 @@
                             "id": "e2db5f01-196a-48d1-8874-6b8cbfe0d8c9",
                             "idName": "humidity",
                             "name": "humidity",
+                            "graphRelevant": true,
                             "index": 4,
                             "unit": "Percentage",
                             "type": "int",
@@ -265,6 +278,8 @@
                             "name": "signal strength",
                             "index": 5,
                             "unit": "Percentage",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "type": "int",
                             "defaultValue": 0
                         },

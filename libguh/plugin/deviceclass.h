@@ -112,7 +112,9 @@ public:
         DeviceIconGateway,
         DeviceIconMail,
         DeviceIconNetwork,
-        DeviceIconCloud
+        DeviceIconCloud,
+        DeviceIconGarage,
+        DeviceIconRollerShutter
     };
 
     DeviceClass(const PluginId &pluginId = PluginId(), const VendorId &vendorId = VendorId(), const DeviceClassId &id = DeviceClassId());

@@ -51,7 +51,12 @@
                             "minimumValue": 0,
                             "maximumValue": 100,
                             "defaultValue": 100,
-                            "writable": true
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
+                            "writable": {
+                                "minValue": 0,
+                                "maxValue": 100
+                            }
                         },
                         {
                             "id": "2073b44b-2f99-4abf-8d9f-6b33be8e1763",
@@ -62,7 +67,12 @@
                             "minimumValue": 0,
                             "maximumValue": 100,
                             "defaultValue": 100,
-                            "writable": true
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
+                            "writable": {
+                                "minValue": 0,
+                                "maxValue": 100
+                            }
                         }
                     ],
                     "actionTypes": [

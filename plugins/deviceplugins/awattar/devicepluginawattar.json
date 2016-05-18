@@ -52,6 +52,7 @@
                             "type": "double",
                             "index": 0,
                             "unit": "EuroCentPerKiloWattHour",
+                            "graphRelevant": true,
                             "defaultValue": 0
                         },
                         {
@@ -61,6 +62,7 @@
                             "index": 1,
                             "type": "int",
                             "unit": "Percentage",
+                            "graphRelevant": true,
                             "defaultValue": 0
                         },
                         {
@@ -70,6 +72,8 @@
                             "index": 2,
                             "unit": "UnixTime",
                             "type": "int",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "defaultValue": 0
                         },
                         {
@@ -79,6 +83,7 @@
                             "index": 3,
                             "type": "double",
                             "unit": "EuroCentPerKiloWattHour",
+                            "graphRelevant": true,
                             "defaultValue": 0
                         },
                         {
@@ -88,6 +93,8 @@
                             "index": 4,
                             "type": "double",
                             "unit": "EuroCentPerKiloWattHour",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "defaultValue": 0
                         },
                         {
@@ -97,6 +104,8 @@
                             "index": 5,
                             "type": "double",
                             "unit": "EuroCentPerKiloWattHour",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "defaultValue": 0
                         },
                         {
@@ -136,6 +145,8 @@
                             "name": "sync mode",
                             "index": 9,
                             "type": "QString",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "possibleValues": [
                                 "auto",
                                 "manual"

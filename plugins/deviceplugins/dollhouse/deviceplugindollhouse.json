@@ -79,6 +79,8 @@
                             "index": 0,
                             "type": "QColor",
                             "defaultValue": "#fff30a",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "writable": true
                         },
                         {
@@ -91,6 +93,8 @@
                             "minValue": 0,
                             "maxValue": 100,
                             "defaultValue": 100,
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "writable": true
                         },
                         {

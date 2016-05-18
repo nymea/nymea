@@ -60,6 +60,8 @@
                             "name": "portal enabled",
                             "index": 1,
                             "type": "bool",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "defaultValue": false
                         }
                     ]
@@ -160,6 +162,8 @@
                             "type": "double",
                             "index": 1,
                             "unit": "DegreeCelsius",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "defaultValue": 0
                         },
                         {
@@ -169,6 +173,8 @@
                             "type": "double",
                             "index": 2,
                             "unit": "DegreeCelsius",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "defaultValue": 0
                         },
                         {
@@ -178,6 +184,8 @@
                             "type": "double",
                             "index": 3,
                             "unit": "DegreeCelsius",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "defaultValue": 0
                         },
                         {
@@ -218,6 +226,8 @@
                             "name": "panel locked",
                             "type": "bool",
                             "index": 8,
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "defaultValue": false
                         },
                         {
@@ -226,6 +236,8 @@
                             "name": "gateway known",
                             "type": "bool",
                             "index": 9,
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "defaultValue": false
                         },
                         {
@@ -234,6 +246,8 @@
                             "name": "dts active",
                             "type": "bool",
                             "index": 10,
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "defaultValue": false
                         },
                         {
@@ -362,6 +376,8 @@
                             "name": "max setpoint",
                             "unit": "DegreeCelsius",
                             "type": "double",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "defaultValue": 0,
                             "index": 2
                         },
@@ -371,6 +387,8 @@
                             "name": "min setpoint",
                             "unit": "DegreeCelsius",
                             "type": "double",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "defaultValue": 0,
                             "index": 3
                         },
@@ -400,7 +418,7 @@
                         },
                         {
                             "id": "aff38be8-7ea6-4fd8-b0fa-e987ab05c719",
-                            "idName": "batteryLow",
+                            "idName": "linkStatusOk",
                             "name": "link status ok",
                             "type": "bool",
                             "defaultValue": false,
@@ -411,6 +429,8 @@
                             "idName": "panelLocked",
                             "name": "panel locked",
                             "type": "bool",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "defaultValue": false,
                             "index": 8
                         },
@@ -419,6 +439,8 @@
                             "idName": "gatewayKnown",
                             "name": "gateway known",
                             "type": "bool",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "defaultValue": false,
                             "index": 9
                         },
@@ -427,6 +449,8 @@
                             "idName": "dtsActive",
                             "name": "dts active",
                             "type": "bool",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "defaultValue": false,
                             "index": 10
                         },
@@ -487,6 +511,8 @@
                             "name": "boost duration",
                             "unit": "Seconds",
                             "type": "int",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "defaultValue": 0,
                             "index": 17
                         },
@@ -496,6 +522,8 @@
                             "name": "discalc weekday",
                             "type": "QString",
                             "defaultValue": "",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "index": 18
                         },
                         {

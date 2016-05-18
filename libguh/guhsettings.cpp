@@ -293,7 +293,6 @@ void GuhSettings::remove(const QString &key)
 /*! Sets the \a value of setting \a key to value. If the \a key already exists, the previous value is overwritten. */
 void GuhSettings::setValue(const QString &key, const QVariant &value)
 {
-    //Q_ASSERT_X(m_role != GuhSettings::SettingsRoleGlobal, "GuhSettings", "Bad settings usage. The global settings file should be read only.");
     m_settings->setValue(key, value);
 }
 

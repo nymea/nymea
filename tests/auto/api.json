@@ -704,7 +704,9 @@
             "DeviceIconGateway",
             "DeviceIconMail",
             "DeviceIconNetwork",
-            "DeviceIconCloud"
+            "DeviceIconCloud",
+            "DeviceIconGarage",
+            "DeviceIconRollerShutter"
         ],
         "Event": {
             "deviceId": "Uuid",

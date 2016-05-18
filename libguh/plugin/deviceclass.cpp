@@ -146,6 +146,8 @@
     \value DeviceIconMail
     \value DeviceIconNetwork
     \value DeviceIconCloud
+    \value DeviceIconGarage,
+    \value DeviceIconRollerShutter
 */
 
 /*! \fn void DeviceClass::setBasicTags(const QList<BasicTag> &basicTags);
@@ -161,15 +163,19 @@
 /*! Constructs a DeviceClass with the give \a pluginId ,\a vendorId and \a id .
     When implementing a plugin, create a DeviceClass for each device you support.
     Generate a new uuid (e.g. uuidgen) and hardode it into the plugin. The id
-    should never change or it will appear as a new DeviceClass in the system.*/
+    should never change or it will appear as a new DeviceClass in the system. */
 DeviceClass::DeviceClass(const PluginId &pluginId, const VendorId &vendorId, const DeviceClassId &id):
     m_id(id),
     m_vendorId(vendorId),
     m_pluginId(pluginId),
+    m_criticalStateTypeId(StateTypeId()),
+    m_primaryStateTypeId(StateTypeId()),
+    m_primaryActionTypeId(ActionTypeId()),
     m_deviceIcon(DeviceIconPower),
     m_createMethods(CreateMethodUser),
     m_setupMethod(SetupMethodJustAdd)
 {
+
 }
 
 /*! Returns the id of this \l{DeviceClass}. */
@@ -190,31 +196,68 @@ PluginId DeviceClass::pluginId() const
     return m_pluginId;
 }
 
-/*! Returns true if this \l{DeviceClass}'s id, vendorId and pluginId are valid uuids. */
+/*! Returns true if this \l{DeviceClass} id, vendorId and pluginId are valid uuids. */
 bool DeviceClass::isValid() const
 {
     return !m_id.isNull() && !m_vendorId.isNull() && !m_pluginId.isNull();
 }
 
-/*! Returns the name of this \l{DeviceClass}'s. This is visible to the user. */
+/*! Returns the name of this \l{DeviceClass}. This is visible to the user. */
 QString DeviceClass::name() const
 {
     return m_name;
 }
 
-/*! Set the \a name of this DeviceClass's. This is visible to the user. */
+/*! Set the \a name of this \l{DeviceClass}. This is visible to the user. */
 void DeviceClass::setName(const QString &name)
 {
     m_name = name;
 }
 
-/*! Returns the default \l{DeviceIcon} of this \l{DeviceClass}'s. */
+/*! Returns the critical \l{StateTypeId} of this \l{DeviceClass}.
+ * A critical \l{State} describes the state which disables the whole device (i.e. connected, available or reachable). */
+StateTypeId DeviceClass::criticalStateTypeId() const
+{
+    return m_criticalStateTypeId;
+}
+
+/*! Set the \a criticalStateTypeId of this \l{DeviceClass}. */
+void DeviceClass::setCriticalStateTypeId(const StateTypeId &criticalStateTypeId)
+{
+    m_criticalStateTypeId = criticalStateTypeId;
+}
+
+/*! Returns the primary \l{StateTypeId} of this \l{DeviceClass}. */
+StateTypeId DeviceClass::primaryStateTypeId() const
+{
+    return m_primaryStateTypeId;
+}
+
+/*! Set the \a primaryStateTypeId of this \l{DeviceClass}. */
+void DeviceClass::setPrimaryStateTypeId(const StateTypeId &primaryStateTypeId)
+{
+    m_primaryStateTypeId = primaryStateTypeId;
+}
+
+/*! Returns the primary \l{ActionTypeId} of this \l{DeviceClass}. */
+ActionTypeId DeviceClass::primaryActionTypeId() const
+{
+    return m_primaryActionTypeId;
+}
+
+/*! Set the \a primaryActionTypeId of this \l{DeviceClass}. */
+void DeviceClass::setPrimaryActionTypeId(const ActionTypeId &primaryActionTypeId)
+{
+    m_primaryActionTypeId = primaryActionTypeId;
+}
+
+/*! Returns the default \l{DeviceIcon} of this \l{DeviceClass}. */
 DeviceClass::DeviceIcon DeviceClass::deviceIcon() const
 {
     return m_deviceIcon;
 }
 
-/*! Set the \a deviceIcon of this DeviceClass.
+/*! Set the \a deviceIcon of this \l{DeviceClass}.
 
     \sa DeviceClass::DeviceIcon
 */
@@ -248,20 +291,22 @@ QList<StateType> DeviceClass::stateTypes() const
     return m_stateTypes;
 }
 
+/*! Returns the \l{StateType} with the given \a stateTypeId of this \l{DeviceClass}.
+ * If there is no matching \l{StateType}, an invalid \l{StateType} will be returned.*/
+StateType DeviceClass::getStateType(const StateTypeId &stateTypeId)
+{
+    foreach (const StateType &stateType, m_stateTypes) {
+        if (stateType.id() == stateTypeId)
+            return stateType;
+    }
+    return StateType(StateTypeId());
+}
+
 /*! Set the \a stateTypes of this DeviceClass. \{Device}{Devices} created
     from this \l{DeviceClass} must have their states matching to this template. */
 void DeviceClass::setStateTypes(const QList<StateType> &stateTypes)
 {
     m_stateTypes = stateTypes;
-
-    m_allEventTypes = m_eventTypes;
-    foreach (const StateType &stateType, m_stateTypes) {
-        EventType eventType(EventTypeId(stateType.id().toString()));
-        eventType.setName(QString("%1 changed").arg(stateType.name()));
-        ParamType paramType("value", stateType.type());
-        eventType.setParamTypes(QList<ParamType>() << paramType);
-        m_allEventTypes.append(eventType);
-    }
 }
 
 /*! Returns true if this DeviceClass has a \l{StateType} with the given \a stateTypeId. */
@@ -279,7 +324,7 @@ bool DeviceClass::hasStateType(const StateTypeId &stateTypeId)
     from this \l{DeviceClass} must have their events matching to this template. */
 QList<EventType> DeviceClass::eventTypes() const
 {
-    return m_allEventTypes;
+    return m_eventTypes;
 }
 
 /*! Set the \a eventTypes of this DeviceClass. \{Device}{Devices} created
@@ -287,15 +332,6 @@ QList<EventType> DeviceClass::eventTypes() const
 void DeviceClass::setEventTypes(const QList<EventType> &eventTypes)
 {
     m_eventTypes = eventTypes;
-
-    m_allEventTypes = m_eventTypes;
-    foreach (const StateType &stateType, m_stateTypes) {
-        EventType eventType(EventTypeId(stateType.id().toString()));
-        eventType.setName(QString("%1 changed").arg(stateType.name()));
-        ParamType paramType("value", stateType.type());
-        eventType.setParamTypes(QList<ParamType>() << paramType);
-        m_allEventTypes.append(eventType);
-    }
 }
 
 /*! Returns true if this DeviceClass has a \l{EventType} with the given \a eventTypeId. */

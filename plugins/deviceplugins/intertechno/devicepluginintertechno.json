@@ -13,6 +13,7 @@
                     "name": "Intertechno switch",
                     "createMethods": ["user"],
                     "deviceIcon": "Switch",
+                    "primaryActionTypeId": "df19fb51-c3cd-4b95-8d88-ebbb535f4789",
                     "basicTags": [
                         "Device",
                         "Actuator"
@@ -21,11 +22,13 @@
                         {
                             "name": "family code",
                             "type": "QString",
+                            "index": 0,
                             "allowedValues": ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P"]
                         },
                         {
                             "name": "button code",
                             "type": "int",
+                            "index": 1,
                             "minValue": 1,
                             "maxValue": 16
                         }
@@ -34,10 +37,12 @@
                         {
                             "id": "df19fb51-c3cd-4b95-8d88-ebbb535f4789",
                             "name": "set power",
+                            "index": 0,
                             "paramTypes": [
                                 {
                                     "name": "power",
-                                    "type": "bool"
+                                    "type": "bool",
+                                    "index": 0
                                 }
                             ]
                         }

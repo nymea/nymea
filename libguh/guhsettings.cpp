@@ -199,21 +199,26 @@ QStringList GuhSettings::allKeys() const
     return m_settings->allKeys();
 }
 
+/*! Adds \a prefix to the current group and starts writing an array of size size. If size is -1 (the default),
+ * it is automatically determined based on the indexes of the entries written. */
 void GuhSettings::beginWriteArray(const QString &prefix)
 {
     m_settings->beginWriteArray(prefix);
 }
 
+/*! Sets the current array index to \a i. */
 void GuhSettings::setArrayIndex(int i)
 {
     m_settings->setArrayIndex(i);
 }
 
+/*! Adds \a prefix to the current group and starts reading from an array. Returns the size of the array.*/
 int GuhSettings::beginReadArray(const QString &prefix)
 {
     return m_settings->beginReadArray(prefix);
 }
 
+/*! End an array. */
 void GuhSettings::endArray()
 {
     m_settings->endArray();

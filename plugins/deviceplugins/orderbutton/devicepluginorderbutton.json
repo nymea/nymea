@@ -6,6 +6,7 @@
         {
             "name": "RPL address",
             "type": "QString",
+            "index": 0,
             "inputType": "TextLine",
             "defaultValue": "fdaa:e9b8:d03a::ff:fe00:1"
         }
@@ -25,10 +26,12 @@
                         "Device",
                         "Gateway"
                     ],
+                    "criticalStateTypeId": "783e74ee-ffd6-4dd7-ade5-3a961452cf15",
                     "paramTypes": [
                         {
                             "name": "host",
                             "type": "QString",
+                            "index": 0,
                             "inputType": "TextLine"
                         }
                     ],
@@ -37,6 +40,7 @@
                             "id": "a4d83813-10f3-4830-be2e-60d4815906c4",
                             "idName": "battery",
                             "name": "battery voltage",
+                            "index": 0,
                             "type": "double",
                             "unit": "Volt",
                             "defaultValue": 0
@@ -44,6 +48,7 @@
                         {
                             "id": "2df871fc-1888-4b04-8f02-f17b26642534",
                             "idName": "count",
+                            "index": 1,
                             "name": "count",
                             "type": "int",
                             "defaultValue": 0
@@ -51,6 +56,7 @@
                         {
                             "id": "783e74ee-ffd6-4dd7-ade5-3a961452cf15",
                             "idName": "reachable",
+                            "index": 2,
                             "name": "reachable",
                             "type": "bool",
                             "defaultValue": false
@@ -59,6 +65,7 @@
                             "id": "b184ccc8-e7d9-4e94-8683-07f81484bbda",
                             "idName": "led",
                             "name": "led",
+                            "index": 3,
                             "type": "bool",
                             "defaultValue": false,
                             "writable": true
@@ -68,6 +75,7 @@
                         {
                             "id": "b8e5da6c-501c-493e-8b0f-8ef09efb9057",
                             "idName": "reset",
+                            "index": 0,
                             "name": "reset"
                         }
                     ],
@@ -75,6 +83,7 @@
                         {
                             "id": "2077a9ad-7f4b-4dd4-ae1c-7ecbe0a92dc0",
                             "idName": "button",
+                            "index": 0,
                             "name": "button"
                         }
                     ]

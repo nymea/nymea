@@ -25,7 +25,7 @@
     \brief Plugin for the LIRC infrared daemon.
 
     \ingroup plugins
-    \ingroup guh-plugins
+    \ingroup guh-plugins-maker
 
     This plugin allows to interact with \l{http://www.lirc.org/}{LIRC} daemon and controll commonly used remote controls.
     If lircd (LIRC daemon) is configured on your system, guh will connect to the lirc daemon and all configured remote

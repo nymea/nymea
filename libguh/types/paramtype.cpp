@@ -35,12 +35,14 @@
 /*! Constructs a ParamType object with the given \a name, \a type and \a defaultValue. */
 ParamType::ParamType(const QString &name, const QVariant::Type type, const QVariant &defaultValue):
     m_name(name),
+    m_index(0),
     m_type(type),
     m_defaultValue(defaultValue),
     m_inputType(Types::InputTypeNone),
     m_unit(Types::UnitNone),
     m_readOnly(false)
 {
+
 }
 
 /*! Returns the name of this ParamType. */
@@ -53,6 +55,18 @@ QString ParamType::name() const
 void ParamType::setName(const QString &name)
 {
     m_name = name;
+}
+
+/*! Returns the index of this \l{ParamType}. The index of an \l{ParamType} indicates the order in the corresponding Type. */
+int ParamType::index() const
+{
+    return m_index;
+}
+
+/*! Set the \a index of this \l{ParamType}. */
+void ParamType::setIndex(const int &index)
+{
+    m_index = index;
 }
 
 /*! Returns the type of this ParamType. */

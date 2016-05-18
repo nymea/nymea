@@ -40,6 +40,7 @@ class LIBGUH_EXPORT DeviceClass
     Q_ENUMS(SetupMethod)
     Q_ENUMS(BasicTag)
     Q_ENUMS(DeviceIcon)
+    Q_FLAGS(CreateMethods)
 
 public:
     enum CreateMethod {
@@ -111,7 +112,9 @@ public:
         DeviceIconGateway,
         DeviceIconMail,
         DeviceIconNetwork,
-        DeviceIconCloud
+        DeviceIconCloud,
+        DeviceIconGarage,
+        DeviceIconRollerShutter
     };
 
     DeviceClass(const PluginId &pluginId = PluginId(), const VendorId &vendorId = VendorId(), const DeviceClassId &id = DeviceClassId());
@@ -124,6 +127,15 @@ public:
     QString name() const;
     void setName(const QString &name);
 
+    StateTypeId criticalStateTypeId() const;
+    void setCriticalStateTypeId(const StateTypeId &criticalStateTypeId);
+
+    StateTypeId primaryStateTypeId() const;
+    void setPrimaryStateTypeId(const StateTypeId &primaryStateTypeId);
+
+    ActionTypeId primaryActionTypeId() const;
+    void setPrimaryActionTypeId(const ActionTypeId &primaryActionTypeId);
+
     DeviceIcon deviceIcon() const;
     void setDeviceIcon(const DeviceIcon &deviceIcon);
 
@@ -131,6 +143,7 @@ public:
     void setBasicTags(const QList<BasicTag> &basicTags);
 
     QList<StateType> stateTypes() const;
+    StateType getStateType(const StateTypeId &stateTypeId);
     void setStateTypes(const QList<StateType> &stateTypes);
     bool hasStateType(const StateTypeId &stateTypeId);
 
@@ -164,11 +177,13 @@ private:
     VendorId m_vendorId;
     PluginId m_pluginId;
     QString m_name;
+    StateTypeId m_criticalStateTypeId;
+    StateTypeId m_primaryStateTypeId;
+    ActionTypeId m_primaryActionTypeId;
     DeviceIcon m_deviceIcon;
     QList<BasicTag> m_basicTags;
     QList<StateType> m_stateTypes;
     QList<EventType> m_eventTypes;
-    QList<EventType> m_allEventTypes;
     QList<ActionType> m_actionTypes;
     QList<ParamType> m_paramTypes;
     QList<ParamType> m_discoveryParamTypes;
@@ -176,5 +191,7 @@ private:
     SetupMethod m_setupMethod;
     QString m_pairingInfo;
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(DeviceClass::CreateMethods)
 
 #endif

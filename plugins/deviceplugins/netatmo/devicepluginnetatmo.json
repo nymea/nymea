@@ -12,6 +12,7 @@
                     "deviceClassId": "728d5a67-27a3-400e-b83c-2765f5196f69",
                     "idName": "connection",
                     "name": "Netatmo Connection",
+                    "critcalStateTypeId": "2f79bc1d-27ed-480a-b583-728363c83ea6",
                     "deviceIcon": "Network",
                     "basicTags": [
                         "Service",
@@ -23,16 +24,19 @@
                         {
                             "name": "name",
                             "type": "QString",
+                            "index": 0,
                             "inputType": "TextLine"
                         },
                         {
                             "name": "username",
                             "type": "QString",
+                            "index": 1,
                             "inputType": "TextLine"
                         },
                         {
                             "name": "password",
                             "type": "QString",
+                            "index": 2,
                             "inputType": "Password"
                         }
                     ],
@@ -41,6 +45,7 @@
                             "id": "2f79bc1d-27ed-480a-b583-728363c83ea6",
                             "idName": "available",
                             "name": "available",
+                            "index": 0,
                             "type": "bool",
                             "defaultValue": false
                         }
@@ -56,23 +61,27 @@
                         "Weather",
                         "Sensor"
                     ],
+                    "primaryStateTypeId": "3cb25538-e463-40ae-92f9-8f34f0c06b92",
                     "createMethods": ["auto"],
                     "paramTypes": [
                         {
                             "name": "name",
                             "type": "QString",
                             "inputType": "TextLine",
+                            "index": 0,
                             "readOnly": true
                         },
                         {
                             "name": "mac address",
                             "type": "QString",
+                            "index": 1,
                             "inputType": "TextLine",
                             "readOnly": true
                         },
                         {
                             "name": "connection",
                             "type": "QString",
+                            "index": 2,
                             "inputType": "TextLine",
                             "readOnly": true
                         }
@@ -82,15 +91,20 @@
                             "id": "50da9f6b-c350-401c-a72e-2e4036f3975d",
                             "idName": "updateTime",
                             "name": "last update",
+                            "index": 0,
                             "unit": "UnixTime",
                             "type": "int",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "defaultValue": 0
                         },
                         {
                             "id": "3cb25538-e463-40ae-92f9-8f34f0c06b92",
                             "idName": "temperature",
                             "name": "temperature",
+                            "index": 1,
                             "unit": "DegreeCelsius",
+                            "graphRelevant": true,
                             "type": "double",
                             "defaultValue": 0
                         },
@@ -98,6 +112,7 @@
                             "id": "ae8bb713-8805-4efd-89a1-bca44a1f1690",
                             "idName": "temperatureMin",
                             "name": "temperature minimum",
+                            "index": 2,
                             "unit": "DegreeCelsius",
                             "type": "double",
                             "defaultValue": 0
@@ -106,6 +121,7 @@
                             "id": "dd30507e-037b-4c74-bcca-e04b94c7c5fe",
                             "idName": "temperatureMax",
                             "name": "temperature maximum",
+                            "index": 3,
                             "unit": "DegreeCelsius",
                             "type": "double",
                             "defaultValue": 0
@@ -114,6 +130,8 @@
                             "id": "e2db5f01-196a-48d1-8874-6b8cbfe0d8c9",
                             "idName": "humidity",
                             "name": "humidity",
+                            "index": 4,
+                            "graphRelevant": true,
                             "unit": "Percentage",
                             "type": "int",
                             "defaultValue": 0
@@ -122,7 +140,9 @@
                             "id": "03b0a7b7-987d-4d3b-b3f0-21d9f92ad326",
                             "idName": "pressure",
                             "name": "pressure",
+                            "index": 5,
                             "unit": "MilliBar",
+                            "graphRelevant": true,
                             "type": "double",
                             "defaultValue": 0
                         },
@@ -130,6 +150,8 @@
                             "id": "906cea9d-1daf-4e9c-90b9-e40f43052a34",
                             "idName": "noise",
                             "name": "noise",
+                            "index": 6,
+                            "graphRelevant": true,
                             "unit": "Dezibel",
                             "type": "int",
                             "defaultValue": 0
@@ -138,6 +160,8 @@
                             "id": "e5710bd1-79fa-4bd4-9052-8416aae909b9",
                             "idName": "co2",
                             "name": "co2",
+                            "index": 7,
+                            "graphRelevant": true,
                             "unit": "PartsPerMillion",
                             "type": "int",
                             "defaultValue": 0
@@ -146,6 +170,9 @@
                             "id": "6ea906d4-5740-454d-a730-6fdb9fa0d624",
                             "idName": "wifiStrength",
                             "name": "wifi signal strength",
+                            "index": 8,
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "unit": "Percentage",
                             "type": "int",
                             "defaultValue": 0
@@ -162,17 +189,20 @@
                         "Weather",
                         "Sensor"
                     ],
+                    "primaryStateTypeId": "3cb25538-e463-40ae-92f9-8f34f0c06b92",
                     "createMethods": ["auto"],
                     "paramTypes": [
                         {
                             "name": "name",
                             "type": "QString",
+                            "index": 0,
                             "inputType": "TextLine",
                             "readOnly": true
                         },
                         {
                             "name": "mac address",
                             "type": "QString",
+                            "index": 1,
                             "inputType": "TextLine",
                             "readOnly": true
                         },
@@ -180,12 +210,14 @@
                         {
                             "name": "connection",
                             "type": "QString",
+                            "index": 2,
                             "inputType": "TextLine",
                             "readOnly": true
                         },
                         {
                             "name": "base station",
                             "type": "QString",
+                            "index": 3,
                             "inputType": "TextLine",
                             "readOnly": true
                         }
@@ -195,7 +227,10 @@
                             "id": "50da9f6b-c350-401c-a72e-2e4036f3975d",
                             "idName": "updateTime",
                             "name": "last update",
+                            "index": 0,
                             "unit": "UnixTime",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "type": "int",
                             "defaultValue": 0
                         },
@@ -203,6 +238,8 @@
                             "id": "3cb25538-e463-40ae-92f9-8f34f0c06b92",
                             "idName": "temperature",
                             "name": "temperature",
+                            "graphRelevant": true,
+                            "index": 1,
                             "unit": "DegreeCelsius",
                             "type": "double",
                             "defaultValue": 0
@@ -211,6 +248,7 @@
                             "id": "ae8bb713-8805-4efd-89a1-bca44a1f1690",
                             "idName": "temperatureMin",
                             "name": "temperature minimum",
+                            "index": 2,
                             "unit": "DegreeCelsius",
                             "type": "double",
                             "defaultValue": 0
@@ -219,6 +257,7 @@
                             "id": "dd30507e-037b-4c74-bcca-e04b94c7c5fe",
                             "idName": "temperatureMax",
                             "name": "temperature maximum",
+                            "index": 3,
                             "unit": "DegreeCelsius",
                             "type": "double",
                             "defaultValue": 0
@@ -227,6 +266,8 @@
                             "id": "e2db5f01-196a-48d1-8874-6b8cbfe0d8c9",
                             "idName": "humidity",
                             "name": "humidity",
+                            "graphRelevant": true,
+                            "index": 4,
                             "unit": "Percentage",
                             "type": "int",
                             "defaultValue": 0
@@ -235,7 +276,10 @@
                             "id": "0faa3d08-9004-46fb-a5aa-a59b75e454cc",
                             "idName": "signalStrength",
                             "name": "signal strength",
+                            "index": 5,
                             "unit": "Percentage",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "type": "int",
                             "defaultValue": 0
                         },
@@ -243,6 +287,7 @@
                             "id": "15d8fae1-ba47-42e1-994d-530e8017c965",
                             "idName": "battery",
                             "name": "battery",
+                            "index": 6,
                             "unit": "Percentage",
                             "type": "int",
                             "defaultValue": 0

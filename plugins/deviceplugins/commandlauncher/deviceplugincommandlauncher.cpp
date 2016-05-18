@@ -25,7 +25,7 @@
     \brief Plugin for system commands.
 
     \ingroup plugins
-    \ingroup guh-plugins
+    \ingroup guh-plugins-maker
 
     The application and script launcher plugin allows you to execute bash commands and start bash scripts.
 

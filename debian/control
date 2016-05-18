@@ -9,6 +9,8 @@ Build-Depends: debhelper (>= 9.0.0),
   qt5-default,
   qtbase5-dev,
   qtconnectivity5-dev,
+  libqt5websockets5-dev,
+  libqt5bluetooth5,
   libavahi-client-dev,
   libavahi-common-dev
 Standards-Version: 3.9.5
@@ -31,14 +33,13 @@ Depends: libqt5network5,
   libqt5gui5,
   libqt5sql5,
   libqt5xml5,
+  libqt5websockets5,
+  libqt5bluetooth5,
   logrotate,
   avahi-daemon,
   libguh1 (= ${binary:Version}),
   ${shlibs:Depends},
   ${misc:Depends}
-Recommends:
-  libqt5websockets5,
-  libqt5bluetooth5
 Description: An open source IoT server - daemon
   guh is an open source IoT (Internet of Things) server,
   which allows to control a lot of different devices from many different

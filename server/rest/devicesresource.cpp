@@ -317,7 +317,6 @@ HttpReply *DevicesResource::removeDevice(Device *device, const QVariantMap &para
         return createDeviceErrorReply(HttpReply::Ok, status.first);
 
     return createDeviceErrorReply(HttpReply::BadRequest, status.first);
-
 }
 
 HttpReply *DevicesResource::executeAction(Device *device, const ActionTypeId &actionTypeId, const QByteArray &payload) const

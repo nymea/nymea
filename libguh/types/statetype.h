@@ -37,6 +37,9 @@ public:
     QString name() const;
     void setName(const QString &name);
 
+    int index() const;
+    void setIndex(const int &index);
+
     QVariant::Type type() const;
     void setType(const QVariant::Type &type);
 
@@ -55,15 +58,25 @@ public:
     Types::Unit unit() const;
     void setUnit(const Types::Unit &unit);
 
+    bool ruleRelevant() const;
+    void setRuleRelevant(const bool &ruleRelevant);
+
+    bool graphRelevant() const;
+    void setGraphRelevant(const bool &graphRelevant);
+
 private:
     StateTypeId m_id;
     QString m_name;
+    int m_index;
     QVariant::Type m_type;
     QVariant m_defaultValue;
     QVariant m_minValue;
     QVariant m_maxValue;
     QVariantList m_possibleValues;
     Types::Unit m_unit;
+    bool m_ruleRelevant;
+    bool m_graphRelevant;
+
 };
 
 #endif // STATETYPE_H

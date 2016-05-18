@@ -24,38 +24,51 @@
                             "id": "ab16997c-be29-438e-b588-2507d723d264",
                             "idName": "timeZone",
                             "name": "timezone",
+                            "index": 0,
                             "type": "QString",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "defaultValue": "-"
                         },
                         {
                             "id": "65d2a5ff-bcab-43a8-b043-f88cf01586f4",
                             "idName": "city",
                             "name": "city",
+                            "index": 1,
                             "type": "QString",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "defaultValue": "-"
                         },
                         {
                             "id": "a534bd8b-6826-4d71-b9f9-df1433964b94",
                             "idName": "country",
                             "name": "country",
+                            "index": 2,
                             "type": "QString",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "defaultValue": "-"
                         },
                         {
                             "id": "eb5231ea-6a1b-4d7e-a95f-d49e7b25122e",
-                            "name": "day",
                             "idName": "day",
+                            "name": "day",
+                            "index": 3,
                             "type": "int",
                             "defaultValue": 1,
+                            "eventRuleRelevant": false,
                             "minValue": 1,
                             "maxValue": 31
                         },
                         {
                             "id": "fcd8ec96-4488-438a-8b30-58bfe2a7fae2",
-                            "name": "month",
                             "idName": "month",
+                            "name": "month",
+                            "index": 4,
                             "type": "int",
                             "defaultValue": 1,
+                            "eventRuleRelevant": false,
                             "minValue": 1,
                             "maxValue": 12
                         },
@@ -63,6 +76,9 @@
                             "id": "a37acc9c-5cfb-4687-adce-e56beb32586f",
                             "idName": "monthName",
                             "name": "month name",
+                            "index": 5,
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "type": "QString",
                             "defaultValue": "-"
                         },
@@ -70,6 +86,8 @@
                             "id": "79d4ae9b-ea27-4346-8229-1d90f1ddfc9d",
                             "idName": "year",
                             "name": "year",
+                            "index": 6,
+                            "eventRuleRelevant": false,
                             "type": "int",
                             "defaultValue": "1970"
                         },
@@ -78,6 +96,8 @@
                             "idName": "weekday",
                             "name": "weekday",
                             "type": "int",
+                            "index": 7,
+                            "eventRuleRelevant": false,
                             "defaultValue": 1,
                             "minValue": 1,
                             "maxValue": 7
@@ -86,6 +106,9 @@
                             "id": "f627d052-cee6-4727-b9c6-0e935d41e04a",
                             "idName": "weekdayName",
                             "name": "weekday name",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
+                            "index": 8,
                             "type": "QString",
                             "defaultValue": "-"
                         },
@@ -93,47 +116,59 @@
                             "id": "4de5b57b-bb1a-4d66-9ce3-22bb280b075d",
                             "idName": "weekend",
                             "name": "weekend",
+                            "index": 9,
                             "type": "bool",
+                            "eventRuleRelevant": false,
                             "defaultValue": false
                         },
                         {
                             "id": "44a99419-fbcd-4d8e-9441-897848b8f77c",
                             "idName": "dusk",
                             "name": "dusk",
+                            "index": 10,
                             "unit": "UnixTime",
                             "type": "int",
+                            "eventRuleRelevant": false,
                             "defaultValue": 0
                         },
                         {
                             "id": "3a08824d-285b-412e-a515-9664b491a85c",
                             "idName": "sunrise",
                             "name": "sunrise",
+                            "index": 11,
                             "unit": "UnixTime",
                             "type": "int",
+                            "eventRuleRelevant": false,
                             "defaultValue": 0
                         },
                         {
                             "id": "d92be29a-929c-4240-91a0-30153850f838",
                             "idName": "noon",
                             "name": "sun noon",
+                            "index": 12,
                             "unit": "UnixTime",
                             "type": "int",
+                            "eventRuleRelevant": false,
                             "defaultValue": 0
                         },
                         {
                             "id": "a5779b11-0499-4a6d-a7bd-8143dcc546b4",
                             "idName": "dawn",
                             "name": "dawn",
+                            "index": 13,
                             "unit": "UnixTime",
                             "type": "int",
+                            "eventRuleRelevant": false,
                             "defaultValue": 0
                         },
                         {
                             "id": "377f04a7-df58-42ad-a234-e9e23bdc2f85",
                             "idName": "sunset",
                             "name": "sunset",
+                            "index": 14,
                             "unit": "UnixTime",
                             "type": "int",
+                            "eventRuleRelevant": false,
                             "defaultValue": 0
                         }
                     ],
@@ -141,27 +176,32 @@
                         {
                             "id": "792885f3-f505-42db-8c74-3d0460b575a1",
                             "idName": "dusk",
-                            "name": "dusk"
+                            "name": "dusk",
+                            "index": 0
                         },
                         {
                             "id": "726acb30-928b-43da-a790-977a821c979e",
                             "idName": "sunrise",
-                            "name": "sunrise"
+                            "name": "sunrise",
+                            "index": 1
                         },
                         {
                             "id": "97ae8dd8-640c-4f9b-8773-aa7abb1d32fa",
                             "idName": "noon",
-                            "name": "noon"
+                            "name": "noon",
+                            "index": 2
                         },
                         {
                             "id": "5e3657b0-a459-4837-a632-0b20de4b7349",
                             "idName": "dawn",
-                            "name": "dawn"
+                            "name": "dawn",
+                            "index": 3
                         },
                         {
                             "id": "f40d6e0f-fda2-475e-a6ae-c3fee03138b9",
                             "idName": "sunset",
-                            "name": "sunset"
+                            "name": "sunset",
+                            "index": 4
                         }
                     ]
                 },
@@ -180,48 +220,58 @@
                         {
                             "name": "monday",
                             "type": "bool",
-                            "defaultValue": false
+                            "defaultValue": false,
+                            "index": 0
                         },
                         {
                             "name": "tuesday",
                             "type": "bool",
-                            "defaultValue": false
+                            "defaultValue": false,
+                            "index": 1
                         },
                         {
                             "name": "wednesday",
                             "type": "bool",
-                            "defaultValue": false
+                            "defaultValue": false,
+                            "index": 2
                         },
                         {
                             "name": "thursday",
                             "type": "bool",
-                            "defaultValue": false
+                            "defaultValue": false,
+                            "index": 3
                         },
                         {
                             "name": "friday",
                             "type": "bool",
-                            "defaultValue": false
+                            "defaultValue": false,
+                            "index": 4
                         },
                         {
                             "name": "saturday",
                             "type": "bool",
-                            "defaultValue": false
+                            "defaultValue": false,
+                            "index": 5
                         },
                         {
                             "name": "sunday",
                             "type": "bool",
-                            "defaultValue": false
+                            "defaultValue": false,
+                            "index": 6
                         },
                         {
                             "name": "minutes",
+                            "index": 7,
                             "type": "int",
                             "unit": "Minutes",
                             "minValue": 0,
                             "maxValue": 60,
                             "defaultValue": 0
+
                         },
                         {
                             "name": "hours",
+                            "index": 8,
                             "type": "int",
                             "minValue": 0,
                             "maxValue": 24,
@@ -231,6 +281,7 @@
                         {
                             "name": "time type",
                             "type": "QString",
+                            "index": 9,
                             "allowedValues": [
                                 "time",
                                 "dusk",
@@ -243,6 +294,7 @@
                         },
                         {
                             "name": "offset",
+                            "index": 10,
                             "type": "int",
                             "minValue": -120,
                             "maxValue": 120,
@@ -254,6 +306,7 @@
                         {
                             "id": "5ec9a4af-d5ea-4f68-ab32-f7a3fcd75ccc",
                             "idName": "alarm",
+                            "index": 0,
                             "name": "alarm"
                         }
                     ]
@@ -268,10 +321,12 @@
                         "Actuator",
                         "Time"
                     ],
+                    "primaryActionTypeId": "436e9923-6eff-444e-bde7-a61228a4d748",
                     "createMethods": ["user"],
                     "paramTypes": [
                         {
                             "name": "seconds",
+                            "index": 0,
                             "type": "int",
                             "unit": "Seconds",
                             "minValue": 0,
@@ -280,6 +335,7 @@
                         },
                         {
                             "name": "minutes",
+                            "index": 1,
                             "type": "int",
                             "unit": "Minutes",
                             "minValue": 0,
@@ -288,6 +344,7 @@
                         },
                         {
                             "name": "hours",
+                            "index": 2,
                             "type": "int",
                             "unit": "Hours",
                             "minValue": 0,
@@ -296,6 +353,7 @@
                         },
                         {
                             "name": "repeating",
+                            "index": 3,
                             "type": "bool",
                             "defaultValue": false
                         }
@@ -304,7 +362,8 @@
                         {
                             "id": "1db11351-ad67-448e-a784-216741a06a58",
                             "idName": "timeout",
-                            "name": "timeout"
+                            "name": "timeout",
+                            "index": 0
                         }
                     ],
                     "stateTypes": [
@@ -312,6 +371,7 @@
                             "id": "b21ccd53-1ebd-41a0-a2a3-662874e79837",
                             "idName": "running",
                             "name": "running",
+                            "index": 0,
                             "type": "bool",
                             "defaultValue": false
                         }
@@ -320,17 +380,20 @@
                         {
                             "id": "436e9923-6eff-444e-bde7-a61228a4d748",
                             "idName": "start",
-                            "name": "start"
+                            "name": "start",
+                            "index": 0
                         },
                         {
                             "id": "bf4d1def-4159-4254-a76d-fd31aaa84e2d",
                             "idName": "stop",
-                            "name": "stop"
+                            "name": "stop",
+                            "index": 1
                         },
                         {
                             "id": "14aad613-b972-411f-93c9-f00bfd254285",
                             "idName": "restart",
-                            "name": "restart"
+                            "name": "restart",
+                            "index": 2
                         }
                     ]
                 }

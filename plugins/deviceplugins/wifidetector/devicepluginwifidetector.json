@@ -17,11 +17,13 @@
                         "Device",
                         "Sensor"
                     ],
+                    "primaryStateTypeId": "cb43e1b5-4f61-4538-bfa2-c33055c542cf",
                     "createMethods": ["user", "discovery"],
                     "paramTypes": [
                         {
                             "name": "mac address",
                             "type": "QString",
+                            "index": 0,
                             "inputType": "MacAddress"
                         }
                     ],
@@ -30,6 +32,7 @@
                             "id": "cb43e1b5-4f61-4538-bfa2-c33055c542cf",
                             "idName": "inRange",
                             "name": "in Range",
+                            "index": 0,
                             "type": "bool",
                             "defaultValue": false
                         }

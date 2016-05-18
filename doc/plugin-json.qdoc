@@ -21,7 +21,6 @@
 
     The \tt plugininfo.h has to be included in the main plugin \tt cpp file (\tt{deviceplugin<\b pluginName>.cpp}). The \tt extern-plugininfo.h can be included in other classes/files of the plugin to get the extern definitions of the ID's and the logging category. 
 
-
     \section1 Basic structure
 
     The name convention fot the plugin json file is:
@@ -140,6 +139,7 @@
                             "name": "The name of the device class",
                             "idName": "deviceClassName",
                             "deviceClassId": "uuid",
+                            "deviceIcon": "Icon",
                             "basicTags": [
                                 "BasicTag"
                             ],
@@ -148,6 +148,9 @@
                             ],
                             "setupMethod": "SetupMethod",
                             "pairingInfo": "Information how to pair the device.",
+                            "criticalStateTypeId": "uuid",
+                            "primaryStateTypeId": "uuid",
+                            "primaryActionTypeId": "uuid",
                             "discoveryParamTypes": [
                             ],
                             "paramTypes": [
@@ -178,6 +181,14 @@
 
         \tt ...  
 
+        \li - \underline{\e deviceIcon:} Defines the icon for this \l{DeviceClass}. See enum \l{DeviceClass::DeviceIcon} for more information. The expected value for the \e deviceIcon parameters matches the enum name like this:
+
+        \tt {DeviceClass::DeviceIconBed} \unicode{0x2192} \tt {"deviceIcon": "Bed" }
+
+        \tt {DeviceClass::DeviceIconPower} \unicode{0x2192} \tt {"deviceIcon": "Power" }
+
+        \tt ...
+
         \li - \underline{\e createMethods:} A list of possible \l{DeviceClass::CreateMethod}{CreateMethods} for this device \unicode{0x2192} \l{DeviceClass::createMethods()}. Some devices can be created in different ways. Possible values are:
         \list
             \li \e user \unicode{0x2192} \l{DeviceClass::CreateMethodUser}
@@ -192,12 +203,15 @@
             \li \e pushButton \unicode{0x2192} \l{DeviceClass::SetupMethodPushButton}
         \endlist
         \note For more information please take a look at \l{CreateMethods and SetupMethods} documentation.
-        \li - \underline{\e pairingInfo:} The \l{DeviceClass::pairingInfo()}{pairingInfo} will inform the user how to pair the device \unicode{0x2192} \l{DeviceClass::setupMethod()}. This parameter will only be used for \l{DeviceClass::SetupMethodDisplayPin}{DisplayPin} and \l{DeviceClass::SetupMethodEnterPin}{EnterPin} and \l{DeviceClass::SetupMethodPushButton}{PushButton}. Example: "Please press the button on the device before continue."
-        \li - \underline{\e discoveryParamTypes:} A list of \l{ParamType}{ParamTypes} which will be needed for discovering a device \unicode{0x2192} \l{DeviceClass::discoveryParamTypes()}. This parameter will only be used for devices with the \l{DeviceClass::CreateMethodDiscovery}{CreateMethodDiscovery} (see section "\l{The ParamType definition}").
+        \li - \underline{\e pairingInfo:} Optional: The \l{DeviceClass::pairingInfo()}{pairingInfo} will inform the user how to pair the device \unicode{0x2192} \l{DeviceClass::setupMethod()}. This parameter will only be used for \l{DeviceClass::SetupMethodDisplayPin}{DisplayPin} and \l{DeviceClass::SetupMethodEnterPin}{EnterPin} and \l{DeviceClass::SetupMethodPushButton}{PushButton}. Example: "Please press the button on the device before continue."
+        \li - \underline{\e criticalStateTypeId:} Optional: Define which \l{StateType} is critical for this \l{Device}. The given \l{StateTypeId} has to be a \tt{bool} \l{State} which enables / disables the whole \l{Device} i.e. \e{"connected"}, \e{"available"} or \e{"reachable"}. This allowes a client application to disable the device until this \l{State} becomes true.
+        \li - \underline{\e primaryStateTypeId:} Optional: Define which \l{StateType} is the primary \l{State} for this \l{Device}. This allowes a client developer to place the primary \l{State} value in the device overview.
+        \li - \underline{\e primaryActionTypeId:} Optional: Define which \l{ActionType} is the primary \l{Action} for this \l{Device}. This allowes a client developer to place the primary \l{Action} element in the device overview.
+        \li - \underline{\e discoveryParamTypes:} Optional: A list of \l{ParamType}{ParamTypes} which will be needed for discovering a device \unicode{0x2192} \l{DeviceClass::discoveryParamTypes()}. This parameter will only be used for devices with the \l{DeviceClass::CreateMethodDiscovery}{CreateMethodDiscovery} (see section "\l{The ParamType definition}").
         \li - \underline{\e paramTypes:} A list of \l{ParamType}{ParamTypes} which define the paramters of a device \unicode{0x2192} \l{DeviceClass::paramTypes()} (see section "\l{The ParamType definition}").
-        \li - \underline{\e stateTypes:} A list of \l{StateType}{StateTypes} of the device \unicode{0x2192} \l{DeviceClass::stateTypes()} (see section "\l{The StateType definition}").
-        \li - \underline{\e actionTypes:} A list of \l{ActionType}{ActionTypes} of the device \unicode{0x2192} \l{DeviceClass::actionTypes()} (see section "\l{The ActionType definition}").
-        \li - \underline{\e eventTypes:} A list of \l{EventType}{EventTypes} of the device \unicode{0x2192} \l{DeviceClass::eventTypes()} (see section "\l{The EventType definition}").
+        \li - \underline{\e stateTypes:} Optional: A list of \l{StateType}{StateTypes} of the device \unicode{0x2192} \l{DeviceClass::stateTypes()} (see section "\l{The StateType definition}").
+        \li - \underline{\e actionTypes:} Optional: A list of \l{ActionType}{ActionTypes} of the device \unicode{0x2192} \l{DeviceClass::actionTypes()} (see section "\l{The ActionType definition}").
+        \li - \underline{\e eventTypes:} Optional: A list of \l{EventType}{EventTypes} of the device \unicode{0x2192} \l{DeviceClass::eventTypes()} (see section "\l{The EventType definition}").
     \endlist
 
 
@@ -211,6 +225,7 @@
                 {
                     "name": "name of the param",
                     "type": "DataType",
+                    "index": "int",
                     "inputType": "InputType",
                     "defaultValue": "The default value which will be used if the param is not given."
                     "unit": "The unit of the parameter",
@@ -219,8 +234,7 @@
                     "allowedValues": [
                         "value"
                     ],
-                    "readOnly": "bool"
-                    
+                    "readOnly": "bool"   
                 }
             ]
         }
@@ -229,6 +243,7 @@
     \list
         \li - \underline{\e name:} The visible name of the \l{ParamType} \unicode{0x2192} \l{ParamType::name()}.
         \li - \underline{\e type:} The data type of this paramter \unicode{0x2192} \l{ParamType::type()}.  
+        \li - \underline{\e index:} The order index of the \l{ParamType} \unicode{0x2192} \l{ParamType::index()}. This index will be used for sorting the \l{Param}{Params} of a \l{Device}/\l{Action}/\l{Event} to make sure the types looks the same on all clients. Please make sure all \l{ParamType}{ParamTypes} together will create a list from \tt 0 to \tt x.
         \li - \underline{\e inputType:} A paramter for clients to know which kind of \l{Types::InputType}{InputType} this. See enum \l{Types::InputType} for more information. The expected value for the \e inputType parameter matches the enum name like this:
 
         \tt {Types::InputTypeTextArea} \unicode{0x2192} \tt {"inputType": "TextArea"}
@@ -238,7 +253,7 @@
         \tt ...        
 
 
-        \li - \underline{\e defaultValue:} Sets the default value of the \{ParamType}. If a parameter will not be set by the user, the parameter will be set to this value \unicode{0x2192} \l{ParamType::defaultValue()}.
+        \li - \underline{\e defaultValue:} Sets the default value of the \l{ParamType}. If a parameter will not be set by the user, the parameter will be set to this value \unicode{0x2192} \l{ParamType::defaultValue()}.
         \li - \underline{\e unit:} With this parameter you can specify the \l{Types::Unit}{Unit} of the parameter i.e. \unicode{0x00B0}C \unicode{0x2192} DegreeCelsius. See enum \l{Types::Unit} for more information. The expected value for the \e unit parameter matches the enum name like this:
             
         \tt {Types::UnitDegreeCelsius} \unicode{0x2192} \tt {"unit": "DegreeCelsius"}
@@ -268,7 +283,11 @@ A \l{StateType} has following parameters:
                     "name": "name of the state",
                     "id": "uuid",
                     "idName": "stateName",
+                    "index": "int",
                     "type": "DataType",
+                    "ruleRelevant": "bool",
+                    "eventRuleRelevant": "bool",
+                    "graphRelevant": "bool",
                     "unit": "The unit of the state value.",
                     "defaultValue": "The state will be initialized with this value."
                     "minValue": "Numeric minimum value for this state.",
@@ -286,11 +305,15 @@ A \l{StateType} has following parameters:
         \li - \underline{\e name:} The visible name of the \l{ParamType} \unicode{0x2192} \l{ParamType::name()}.
         \li - \underline{\e idName:} This parameter will be used to define the StateTypeId variable named <idName>StateTypeId in the plugininfo.h, so it can be used in the code.
         \li - \underline{\e id:} The actual uuid (\l{StateTypeId}) of the \l{StateType} \unicode{0x2192} \l{StateType::id()}.
+        \li - \underline{\e index:} The order index of the \l{StateType} \unicode{0x2192} \l{StateType::index()}. This index will be used for sorting the \l{State}{States} of a \l{Device} to make sure the types looks the same on all clients. Please make sure all \l{StateType}{StateTypes} together will create a list from \tt 0 to \tt x.
         \li - \underline{\e type:} The data type of this state \unicode{0x2192} \l{StateType::type()}.  
-        \li - \underline{\e unit:} With this parameter you can specify the unit of the state value i.e. \unicode{0x00B0}C \unicode{0x2192} DegreeCelsius (\l{Types::Unit}).
-        \li - \underline{\e possibleValues:} Gives you the possibility to define a list of possible values which this state can have. This allowes a user to create a rule based on a state and define only values which are possible. This is typically used for strings i.e. ["Loading", "Installing", "Removing"].
+        \li - \underline{\e ruleRelevant:} Optional: Since not all \l{State}{States} make sense for the user in a rule, with this flag can be specidied if this state should be visible in the rule engine for the user or not. This flag has no effect to the ruleengine mechanism and is only ment to filter out not interesting \l{State}{States}. By default, every state is rule relevant.
+        \li - \underline{\e graphRelevant:} Optional: This flag indicates that this \l{State} is interesting to be shown in a graph/chart. By default every state is \underline not \tt {graphRelevant}. The corresponding EventType will not be graphRelevant, because the graph will be generated from the \l{State} logs.
+        \li - \underline{\e eventRuleRelevant:} The same thing as \e {ruleRelevat}, but this flag is for the \l{EventType}, which will be generated for this \l{StateType}.   
+        \li - \underline{\e unit:} Optional: With this parameter you can specify the unit of the state value i.e. \unicode{0x00B0}C \unicode{0x2192} DegreeCelsius (\l{Types::Unit}).
         \li - \underline{\e defaultValue:} The state will be initialized with this value.
-        \li - \underline{\e writable:} If you define the "\e writable : true" value an \l{ActionType} will be created to set the \l{State} value. The created \l{ActionType} has the same uuid (\l{ActionTypeId}) like the \l{StateType} uuid and will be named "set <stateName>". The \l{ParamType} of the created \l{ActionType} will have the same values in the \e allowedValues list as the \l{StateType} in the \e possibleValues list. Also the \e minValue / \e maxValue will be taken over from the \l{StateType}.
+        \li - \underline{\e possibleValues:} Optional: Gives you the possibility to define a list of possible values which this state can have. This allowes a user to create a rule based on a state and define only values which are possible. This is typically used for strings i.e. ["Loading", "Installing", "Removing"].
+        \li - \underline{\e writable:} Optional: If you define the "\e writable : true" value an \l{ActionType} will be created to set the \l{State} value. The created \l{ActionType} has the same uuid (\l{ActionTypeId}) like the \l{StateType} uuid and will be named "set <stateName>". The \l{ParamType} of the created \l{ActionType} will have the same values in the \e allowedValues list as the \l{StateType} in the \e possibleValues list. Also the \e minValue / \e maxValue will be taken over from the \l{StateType}.
 
 
 If a \l{StateType} has the property \e writable the \l{DeviceManager} will create automatically an \l{ActionType} for this state, which will also have exactly one \l{Param} with the same properties like the \l{StateType}. The created \l{ActionType} has the same uuid (\l{ActionTypeId}) like the \l{StateType} uuid and will be named "set <stateName>".
@@ -307,6 +330,7 @@ This mechanism was created to ensure that the \l{EventType} and \l{ActionType} w
                 "idName": "volume",
                 "name": "volume",
                 "unit": "Percentage",
+                "index": "0",
                 "type": "int",
                 "minValue": 0,
                 "maxValue": 100,
@@ -323,6 +347,7 @@ This mechanism was created to ensure that the \l{EventType} and \l{ActionType} w
                     {
                         "name": "volume",
                         "type": "int",
+                        "index": 0,
                         "maxValue": 100,
                         "minValue": 0,
                         "unit": "Percentage"
@@ -336,9 +361,11 @@ This mechanism was created to ensure that the \l{EventType} and \l{ActionType} w
             {
                 "id": "{9dfe5d78-4c3f-497c-bab1-bb9fdf7e93a9}",
                 "name": "volume changed",
+                "index": 0,
                 "paramTypes": [
                     {
                         "name": "volume",
+                        "index": 0,
                         "type": "int"
                     }
                 ]
@@ -357,6 +384,7 @@ This mechanism was created to ensure that the \l{EventType} and \l{ActionType} w
                     "name": "name of the action",
                     "idName": "actionName",
                     "id": "uuid",
+                    "index": "int",
                     "paramTypes": [
                         ...
                     ]
@@ -368,8 +396,9 @@ This mechanism was created to ensure that the \l{EventType} and \l{ActionType} w
     \list
         \li - \underline{\e name:} The visible name of the \l{ActionType} \unicode{0x2192} \l{ActionType::name()}.
         \li - \underline{\e idName:} This parameter will be used to define the ActionTypeId variable named <idName>ActionTypeId in the plugininfo.h, so it can be used in the code.
-        \li - \underline{\e id:} The actual uuid (\l{ActionTypeId}) of the \l{ActionType} \unicode{0x2192} \l{ActionType::id()}.  
-        \li - \underline{\e paramTypes:} A list of \l{ParamType}{ParamTypes} (see section "\l{The ParamType definition}") for this \l{ActionType}. This parameter is optional. You can also create an \l{ActionType} which has no \l{ParamType}{ParamTypes}.
+        \li - \underline{\e id:} The actual uuid (\l{ActionTypeId}) of the \l{ActionType} \unicode{0x2192} \l{ActionType::id()}.
+        \li - \underline{\e index:} The order index of the \l{ActionType} \unicode{0x2192} \l{ActionType::index()}. This index will be used for sorting the \l{Action}{Actions} of a \l{Device} to make sure the \l{Device} looks the same on all clients. Please make sure all \l{ActionType}{ActionTypes} together will create a list from \tt 0 to \tt x.
+        \li - \underline{\e paramTypes:} Optional: A list of \l{ParamType}{ParamTypes} (see section "\l{The ParamType definition}") for this \l{ActionType}. This parameter is optional. You can also create an \l{ActionType} which has no \l{ParamType}{ParamTypes}.
     \endlist
 
     \section2 The EventType definition
@@ -383,6 +412,9 @@ This mechanism was created to ensure that the \l{EventType} and \l{ActionType} w
                     "name": "name of the event",
                     "idName": "eventName",
                     "id": "uuid",
+                    "index": "int",
+                    "ruleRelevant": "bool",
+                    "graphRelevant": "bool",
                     "paramTypes": [
                         ...
                     ]
@@ -394,8 +426,11 @@ This mechanism was created to ensure that the \l{EventType} and \l{ActionType} w
     \list
         \li - \underline{\e name:} The visible name of the \l{EventType} \unicode{0x2192} \l{EventType::name()}.
         \li - \underline{\e idName:} This parameter will be used to define the EventTypeId variable named <idName>EventTypeId in the plugininfo.h, so it can be used in the code.
-        \li - \underline{\e id:} The actual uuid (\l{EventTypeId}) of the \l{EventType} \unicode{0x2192} \l{EventType::id()}.  
-        \li - \underline{\e paramTypes:} A list of \l{ParamType}{ParamTypes} (see section "\l{The ParamType definition}") for this \l{EventType}. This parameter is optional. You can also create an \l{EventType} which has no \l{ParamType}{ParamTypes}.
+        \li - \underline{\e id:} The actual uuid (\l{EventTypeId}) of the \l{EventType} \unicode{0x2192} \l{EventType::id()}.
+        \li - \underline{\e index:} The order index of the \l{EventType} \unicode{0x2192} \l{EventType::index()}. This index will be used for sorting the \l{Event}{Events} of a \l{Device} to make sure the \l{Device} looks the same on all clients. Please make sure all \l{EventType}{EventTypes} together will create a list from \tt 0 to \tt x.
+        \li - \underline{\e ruleRelevant:} Optional: Since not all \l{Event}{Events} make sense for the user in a rule, with this flag can be specidied if this event should be visible in the rule engine for the user or not. This flag has no effect to the ruleengine mechanism and is only ment to filter out not interesting \l{Event}{Events}. By default, every event is rule relevant.
+        \li - \underline{\e graphRelevant:} Optional: This flag indicates that this \l{Event} is interesting to be shown in a graph/chart. By default all \l{Event} are \underline not \tt {graphRelevant}.
+        \li - \underline{\e paramTypes:} Optional: A list of \l{ParamType}{ParamTypes} (see section "\l{The ParamType definition}") for this \l{EventType}. This parameter is optional. You can also create an \l{EventType} which has no \l{ParamType}{ParamTypes}.
     \endlist
 
 */

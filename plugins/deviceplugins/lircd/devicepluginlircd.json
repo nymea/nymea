@@ -22,6 +22,7 @@
                         {
                             "name": "remoteName",
                             "type": "QString",
+                            "index": 0,
                             "inputType": "TextLine"
                         }
                     ],
@@ -29,14 +30,17 @@
                         {
                             "id": "8711471a-fa0e-410b-b174-dfc3d2aeffb1",
                             "idName": "buttonPressed",
+                            "index": 0,
                             "name": "button pressed",
                             "paramTypes": [
                                 {
                                     "name": "button",
+                                    "index": 0,
                                     "type": "QString"
                                 },
                                 {
                                     "name": "repeat",
+                                    "index": 1,
                                     "type": "int"
                                 }
                             ]

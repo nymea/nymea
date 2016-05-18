@@ -13,6 +13,7 @@
                     "name": "Avahi Monitor",
                     "idName": "avahi",
                     "deviceIcon": "Network",
+                    "primaryStateTypeId": "b5616fd3-da12-4613-9576-6516b2267180",
                     "basicTags": [
                         "Device",
                         "Sensor"
@@ -22,11 +23,13 @@
                         {
                             "name": "service name",
                             "type": "QString",
+                            "index": 0,
                             "inputType": "TextLine"
                         },
                         {
                             "name": "host name",
                             "type": "QString",
+                            "index": 1,
                             "inputType": "TextLine"
                         }
                     ],
@@ -36,6 +39,7 @@
                             "name": "online",
                             "idName": "online",
                             "type": "bool",
+                            "index": 0,
                             "defaultValue": false
                         }
                     ]

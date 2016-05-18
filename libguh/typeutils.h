@@ -106,6 +106,7 @@ public:
         UnitGram,
         UnitKiloGram,
         UnitDezibel,
+        UnitBpm,
         UnitKiloByte,
         UnitMegaByte,
         UnitGigaByte,

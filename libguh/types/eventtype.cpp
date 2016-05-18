@@ -33,8 +33,12 @@
 
 /*! Constructs a EventType object with the given \a id. */
 EventType::EventType(const EventTypeId &id):
-    m_id(id)
+    m_id(id),
+    m_index(0),
+    m_ruleRelevant(true),
+    m_graphRelevant(false)
 {
+
 }
 
 /*! Returns the id. */
@@ -55,6 +59,19 @@ void EventType::setName(const QString &name)
     m_name = name;
 }
 
+/*! Returns the index of this \l{EventType}. The index of an \l{EventType} indicates the order in the \l{DeviceClass}.
+ *  This guarantees that a \l{Device} will look always the same (\l{Event} order). */
+int EventType::index() const
+{
+    return m_index;
+}
+
+/*! Set the \a index of this \l{EventType}. */
+void EventType::setIndex(const int &index)
+{
+    m_index = index;
+}
+
 /*! Holds a List describing possible parameters for a \l{Event} of this EventType.
  *  e.g. QList(ParamType("temperature", QVariant::Real)). */
 QList<ParamType> EventType::paramTypes() const
@@ -67,4 +84,28 @@ QList<ParamType> EventType::paramTypes() const
 void EventType::setParamTypes(const QList<ParamType> &paramTypes)
 {
     m_paramTypes = paramTypes;
+}
+
+/*! Returns true if this EventType is relevant for the rule from a user perspective. */
+bool EventType::ruleRelevant() const
+{
+    return m_ruleRelevant;
+}
+
+/*! Sets this EventType relevant for the rule from a user perspective to \a ruleRelevant. */
+void EventType::setRuleRelevant(const bool &ruleRelevant)
+{
+    m_ruleRelevant = ruleRelevant;
+}
+
+/*! Returns true if this EventType is interesting to visualize the logs in a graph/chart from a user perspective. */
+bool EventType::graphRelevant() const
+{
+    return m_graphRelevant;
+}
+
+/*! Sets this EventType \a graphRelevant to inform the client application if this \l{EventType} is interesting to visualize the logs in a graph/chart. */
+void EventType::setGraphRelevant(const bool &graphRelevant)
+{
+    m_graphRelevant = graphRelevant;
 }

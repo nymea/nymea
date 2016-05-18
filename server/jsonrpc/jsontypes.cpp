@@ -135,6 +135,7 @@ void JsonTypes::init()
     // ParamType
     s_paramType.insert("name", basicTypeToString(String));
     s_paramType.insert("type", basicTypeRef());
+    s_paramType.insert("index", basicTypeToString(Int));
     s_paramType.insert("o:defaultValue", basicTypeToString(Variant));
     s_paramType.insert("o:minValue", basicTypeToString(Variant));
     s_paramType.insert("o:maxValue", basicTypeToString(Variant));
@@ -167,8 +168,11 @@ void JsonTypes::init()
     s_stateType.insert("id", basicTypeToString(Uuid));
     s_stateType.insert("name", basicTypeToString(String));
     s_stateType.insert("type", basicTypeRef());
+    s_stateType.insert("index", basicTypeToString(Int));
     s_stateType.insert("defaultValue", basicTypeToString(Variant));
     s_stateType.insert("o:unit", unitRef());
+    s_stateType.insert("o:ruleRelevant", basicTypeToString(Bool));
+    s_stateType.insert("o:graphRelevant", basicTypeToString(Bool));
     s_stateType.insert("o:minValue", basicTypeToString(Variant));
     s_stateType.insert("o:maxValue", basicTypeToString(Variant));
     s_stateType.insert("o:possibleValues", QVariantList() << basicTypeToString(Variant));
@@ -192,7 +196,10 @@ void JsonTypes::init()
     // EventType
     s_eventType.insert("id", basicTypeToString(Uuid));
     s_eventType.insert("name", basicTypeToString(String));
+    s_eventType.insert("index", basicTypeToString(Int));
     s_eventType.insert("paramTypes", QVariantList() << paramTypeRef());
+    s_eventType.insert("o:ruleRelevant", basicTypeToString(Bool));
+    s_eventType.insert("o:graphRelevant", basicTypeToString(Bool));
 
     // Event
     s_event.insert("eventTypeId", basicTypeToString(Uuid));
@@ -207,6 +214,7 @@ void JsonTypes::init()
     // ActionType
     s_actionType.insert("id", basicTypeToString(Uuid));
     s_actionType.insert("name", basicTypeToString(Uuid));
+    s_actionType.insert("index", basicTypeToString(Int));
     s_actionType.insert("paramTypes", QVariantList() << paramTypeRef());
 
     // Action
@@ -230,13 +238,16 @@ void JsonTypes::init()
     s_deviceClass.insert("name", basicTypeToString(String));
     s_deviceClass.insert("deviceIcon", deviceIconRef());
     s_deviceClass.insert("basicTags", QVariantList() << basicTagRef());
+    s_deviceClass.insert("setupMethod", setupMethodRef());
+    s_deviceClass.insert("createMethods", QVariantList() << createMethodRef());
+    s_deviceClass.insert("o:criticalStateTypeId", basicTypeToString(Uuid));
+    s_deviceClass.insert("o:primaryStateTypeId", basicTypeToString(Uuid));
+    s_deviceClass.insert("o:primaryActionTypeId", basicTypeToString(Uuid));
     s_deviceClass.insert("stateTypes", QVariantList() << stateTypeRef());
     s_deviceClass.insert("eventTypes", QVariantList() << eventTypeRef());
     s_deviceClass.insert("actionTypes", QVariantList() << actionTypeRef());
     s_deviceClass.insert("paramTypes", QVariantList() << paramTypeRef());
     s_deviceClass.insert("discoveryParamTypes", QVariantList() << paramTypeRef());
-    s_deviceClass.insert("setupMethod", setupMethodRef());
-    s_deviceClass.insert("createMethods", QVariantList() << createMethodRef());
 
     // Device
     s_device.insert("id", basicTypeToString(Uuid));
@@ -384,6 +395,13 @@ QVariantMap JsonTypes::packEventType(const EventType &eventType)
     QVariantMap variant;
     variant.insert("id", eventType.id());
     variant.insert("name", eventType.name());
+    variant.insert("index", eventType.index());
+    if (!eventType.ruleRelevant())
+        variant.insert("ruleRelevant", false);
+
+    if (eventType.graphRelevant())
+        variant.insert("graphRelevant", true);
+
     QVariantList paramTypes;
     foreach (const ParamType &paramType, eventType.paramTypes()) {
         paramTypes.append(packParamType(paramType));
@@ -426,6 +444,7 @@ QVariantMap JsonTypes::packActionType(const ActionType &actionType)
     QVariantMap variantMap;
     variantMap.insert("id", actionType.id());
     variantMap.insert("name", actionType.name());
+    variantMap.insert("index", actionType.index());
     QVariantList paramTypes;
     foreach (const ParamType &paramType, actionType.paramTypes()) {
         paramTypes.append(packParamType(paramType));
@@ -492,8 +511,15 @@ QVariantMap JsonTypes::packStateType(const StateType &stateType)
     QVariantMap variantMap;
     variantMap.insert("id", stateType.id());
     variantMap.insert("name", stateType.name());
+    variantMap.insert("index", stateType.index());
     variantMap.insert("type", basicTypeToString(stateType.type()));
     variantMap.insert("defaultValue", stateType.defaultValue());
+
+    if (!stateType.ruleRelevant())
+        variantMap.insert("ruleRelevant", false);
+
+    if (stateType.graphRelevant())
+        variantMap.insert("graphRelevant", true);
 
     if (stateType.maxValue().isValid())
         variantMap.insert("maxValue", stateType.maxValue());
@@ -568,7 +594,9 @@ QVariantMap JsonTypes::packParamType(const ParamType &paramType)
     QVariantMap variantMap;
     variantMap.insert("name", paramType.name());
     variantMap.insert("type", basicTypeToString(paramType.type()));
-    // optional
+    variantMap.insert("index", paramType.index());
+
+    // Optional values
     if (paramType.defaultValue().isValid()) {
         variantMap.insert("defaultValue", paramType.defaultValue());
     }
@@ -587,7 +615,6 @@ QVariantMap JsonTypes::packParamType(const ParamType &paramType)
     if (paramType.unit() != Types::UnitNone) {
         variantMap.insert("unit", s_unit.at(paramType.unit()));
     }
-    // only add if this param is NOT writable
     if (paramType.readOnly()) {
         variantMap.insert("readOnly", paramType.readOnly());
     }
@@ -637,6 +664,15 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass)
     foreach (const ParamType &paramType, deviceClass.discoveryParamTypes()) {
         discoveryParamTypes.append(packParamType(paramType));
     }
+
+    if (!deviceClass.criticalStateTypeId().isNull())
+        variant.insert("criticalStateTypeId", deviceClass.criticalStateTypeId());
+
+    if (!deviceClass.primaryStateTypeId().isNull())
+        variant.insert("primaryStateTypeId", deviceClass.primaryStateTypeId());
+
+    if (!deviceClass.primaryActionTypeId().isNull())
+        variant.insert("primaryActionTypeId", deviceClass.primaryActionTypeId());
 
     variant.insert("basicTags", basicTags);
     variant.insert("paramTypes", paramTypes);
@@ -1026,7 +1062,7 @@ QString JsonTypes::basicTypeToString(const QVariant::Type &type)
         return "Int";
         break;
     case QVariant::UInt:
-        return "UInt";
+        return "Uint";
         break;
     case QVariant::Double:
         return "Double";

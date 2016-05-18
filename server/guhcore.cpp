@@ -463,8 +463,6 @@ void GuhCore::gotEvent(const Event &event)
 
 void GuhCore::onDateTimeChanged(const QDateTime &dateTime)
 {
-    qCDebug(dcTimeManager) << dateTime.toString("dd.MM.yyyy hh:mm");
-
     QList<RuleAction> actions;
     foreach (const Rule &rule, m_ruleEngine->evaluateTime(dateTime)) {
         // TimeEvent based

@@ -18,10 +18,12 @@
                     ],
                     "idName": "switch",
                     "createMethods": ["user"],
+                    "primaryActionTypeId": "3ca1ebc2-bb8e-4429-9664-a7bc4569e73b",
                     "paramTypes": [
                         {
                             "name": "channel",
                             "type": "QString",
+                            "index": 0,
                             "allowedValues": ["A", "B", "C", "D"]
                         }
                     ],
@@ -30,10 +32,12 @@
                             "id": "3ca1ebc2-bb8e-4429-9664-a7bc4569e73b",
                             "idName": "power",
                             "name": "set power",
+                            "index": 0,
                             "paramTypes": [
                                 {
                                     "name": "power",
-                                    "type": "bool"
+                                    "type": "bool",
+                                    "index": 0
                                 }
                             ]
                         }

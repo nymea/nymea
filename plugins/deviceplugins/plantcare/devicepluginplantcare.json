@@ -51,6 +51,7 @@
                             "name": "moisture",
                             "index": 1,
                             "type": "int",
+                            "graphRelevant": true,
                             "unit": "Percentage",
                             "defaultValue": 0
                         },

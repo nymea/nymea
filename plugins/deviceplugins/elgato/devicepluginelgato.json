@@ -49,6 +49,8 @@
                             "index": 1,
                             "type": "int",
                             "defaultValue": 100,
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "writable": {
                                 "minValue": 0,
                                 "maxValue": 100
@@ -61,6 +63,8 @@
                             "index": 2,
                             "type": "int",
                             "defaultValue": 100,
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "writable": {
                                 "minValue": 0,
                                 "maxValue": 100

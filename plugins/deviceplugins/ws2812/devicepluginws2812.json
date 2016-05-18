@@ -59,6 +59,8 @@
                             "name": "color",
                             "index": 2,
                             "type": "QColor",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "defaultValue": "#000000",
                             "writable": true
 
@@ -72,6 +74,8 @@
                             "unit": "Percentage",
                             "defaultValue": 0,
                             "minValue": 0,
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "maxValue": 100,
                             "writable": true
                         },
@@ -84,6 +88,8 @@
                             "defaultValue": 240,
                             "minValue": 0,
                             "maxValue": 240,
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "writable": true
                         },
                         {
@@ -95,6 +101,8 @@
                             "defaultValue": 60,
                             "minValue": 60,
                             "maxValue": 240,
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "writable": true
                         },
                         {
@@ -104,6 +112,8 @@
                             "index": 5,
                             "type": "QString",
                             "writable": true,
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "possibleValues": [
                                 "Off",
                                 "Color On",
@@ -124,6 +134,8 @@
                             "idName": "tcolor1",
                             "index": 6,
                             "type": "QColor",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "defaultValue": "#000000",
                             "writable": true
 
@@ -134,6 +146,8 @@
                             "idName": "tcolor2",
                             "index": 7,
                             "type": "QColor",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "defaultValue": "#000000",
                             "writable": true
 
@@ -144,6 +158,8 @@
                             "idName": "tcolor3",
                             "index": 8,
                             "type": "QColor",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "defaultValue": "#000000",
                             "writable": true
                         }

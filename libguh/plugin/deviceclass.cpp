@@ -146,6 +146,8 @@
     \value DeviceIconMail
     \value DeviceIconNetwork
     \value DeviceIconCloud
+    \value DeviceIconGarage,
+    \value DeviceIconRollerShutter
 */
 
 /*! \fn void DeviceClass::setBasicTags(const QList<BasicTag> &basicTags);

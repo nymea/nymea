@@ -82,6 +82,8 @@
                             "name": "volume level",
                             "index": 2,
                             "type": "int",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "unit": "Percentage",
                             "defaultValue": 0
                         },
@@ -130,6 +132,8 @@
                             "idName": "tvInputSourceIndex",
                             "name": "input source index",
                             "index": 8,
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "type": "int",
                             "defaultValue": 0
                         },
@@ -138,6 +142,8 @@
                             "idName": "tvInputSourceLabelName",
                             "name": "input source label",
                             "index": 9,
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "type": "QString",
                             "defaultValue": "-"
                         }

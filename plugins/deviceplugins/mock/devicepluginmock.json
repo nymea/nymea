@@ -385,6 +385,8 @@
                             "index": 0,
                             "type": "QColor",
                             "defaultValue": "#000000",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "writable": true
                         },
                         {
@@ -395,6 +397,7 @@
                             "index": 1,
                             "unit": "Percentage",
                             "defaultValue": 0,
+                            "ruleRelevant": false,
                             "minValue": 0,
                             "maxValue": 100,
                             "writable": true

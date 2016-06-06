@@ -32,6 +32,7 @@
 #include "ruleengine.h"
 #include "servermanager.h"
 
+#include "cloud/cloudconnection.h"
 #include "time/timemanager.h"
 
 #include <QObject>
@@ -70,6 +71,7 @@ public:
     DeviceManager *deviceManager() const;
     RuleEngine *ruleEngine() const;
     TimeManager *timeManager() const;
+    CloudConnection *cloudConnection() const;
 
 signals:
     void eventTriggered(const Event &event);
@@ -98,6 +100,7 @@ private:
     RuleEngine *m_ruleEngine;
     LogEngine *m_logger;
     TimeManager *m_timeManager;
+    CloudConnection *m_cloudConnection;
 
     QHash<ActionId, Action> m_pendingActions;
 

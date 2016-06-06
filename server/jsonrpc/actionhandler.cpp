@@ -39,8 +39,6 @@
 #include "types/action.h"
 #include "loggingcategories.h"
 
-#include <QDebug>
-
 namespace guhserver {
 
 /*! Constructs a new \l ActionHandler with the given \a parent. */
@@ -75,7 +73,6 @@ QString ActionHandler::name() const
 
 JsonReply* ActionHandler::ExecuteAction(const QVariantMap &params)
 {
-
     DeviceId deviceId(params.value("deviceId").toString());
     ActionTypeId actionTypeId(params.value("actionTypeId").toString());
     ParamList actionParams = JsonTypes::unpackParams(params.value("params").toList());

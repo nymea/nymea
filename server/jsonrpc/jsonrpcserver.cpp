@@ -54,15 +54,13 @@
 #include "eventhandler.h"
 #include "logginghandler.h"
 #include "statehandler.h"
+#include "websocketserver.h"
+#include "cloudhandler.h"
 
 #ifndef TESTING_ENABLED
 #include "tcpserver.h"
 #else
 #include "mocktcpserver.h"
-#endif
-
-#ifdef WEBSOCKET
-#include "websocketserver.h"
 #endif
 
 #include <QJsonDocument>
@@ -79,9 +77,7 @@ JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject 
     #else
     m_tcpServer(new TcpServer(this)),
     #endif
-    #ifdef WEBSOCKET
     m_websocketServer(new WebSocketServer(sslConfiguration, this)),
-    #endif
     m_notificationId(0)
 {
     // First, define our own JSONRPC methods
@@ -117,16 +113,12 @@ JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject 
 
     m_interfaces.append(m_tcpServer);
 
-#ifdef WEBSOCKET
     connect(m_websocketServer, SIGNAL(clientConnected(const QUuid &)), this, SLOT(clientConnected(const QUuid &)));
     connect(m_websocketServer, SIGNAL(clientDisconnected(const QUuid &)), this, SLOT(clientDisconnected(const QUuid &)));
     connect(m_websocketServer, SIGNAL(dataAvailable(QUuid, QString, QString, QVariantMap)), this, SLOT(processData(QUuid, QString, QString, QVariantMap)));
 
     m_websocketServer->startServer();
     m_interfaces.append(m_websocketServer);
-#else
-    Q_UNUSED(sslConfiguration)
-#endif
 
     QMetaObject::invokeMethod(this, "setup", Qt::QueuedConnection);
 }
@@ -192,6 +184,7 @@ void JsonRPCServer::setup()
     registerHandler(new EventHandler(this));
     registerHandler(new LoggingHandler(this));
     registerHandler(new StateHandler(this));
+    registerHandler(new CloudHandler(this));
 }
 
 void JsonRPCServer::processData(const QUuid &clientId, const QString &targetNamespace, const QString &method, const QVariantMap &message)

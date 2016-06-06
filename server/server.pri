@@ -1,14 +1,5 @@
-# check websocket support
-contains(DEFINES, WEBSOCKET){
-    QT += websockets
-    HEADERS += $$top_srcdir/server/websocketserver.h
-    SOURCES += $$top_srcdir/server/websocketserver.cpp
-}
-
-
 # icons for the webserver
 RESOURCES += $$top_srcdir/icons.qrc
-
 
 HEADERS += $$top_srcdir/server/guhcore.h \
     $$top_srcdir/server/tcpserver.h \
@@ -23,6 +14,7 @@ HEADERS += $$top_srcdir/server/guhcore.h \
     $$top_srcdir/server/jsonrpc/eventhandler.h \
     $$top_srcdir/server/jsonrpc/statehandler.h \
     $$top_srcdir/server/jsonrpc/logginghandler.h \
+    $$top_srcdir/server/jsonrpc/cloudhandler.h \
     $$top_srcdir/server/stateevaluator.h \
     $$top_srcdir/server/logging/logging.h \
     $$top_srcdir/server/logging/logengine.h \
@@ -32,6 +24,7 @@ HEADERS += $$top_srcdir/server/guhcore.h \
     $$top_srcdir/server/transportinterface.h \
     $$top_srcdir/server/servermanager.h \
     $$top_srcdir/server/httprequest.h \
+    $$top_srcdir/server/websocketserver.h \
     $$top_srcdir/server/httpreply.h \
     $$top_srcdir/server/rest/restserver.h \
     $$top_srcdir/server/rest/restresource.h \
@@ -45,7 +38,9 @@ HEADERS += $$top_srcdir/server/guhcore.h \
     $$top_srcdir/server/time/calendaritem.h \
     $$top_srcdir/server/time/repeatingoption.h \
     $$top_srcdir/server/time/timeeventitem.h \
-    $$top_srcdir/server/time/timemanager.h
+    $$top_srcdir/server/time/timemanager.h \
+    $$top_srcdir/server/cloud/cloudconnection.h \
+    $$top_srcdir/server/cloud/cloudauthenticator.h \
 
 
 SOURCES += $$top_srcdir/server/guhcore.cpp \
@@ -61,6 +56,7 @@ SOURCES += $$top_srcdir/server/guhcore.cpp \
     $$top_srcdir/server/jsonrpc/eventhandler.cpp \
     $$top_srcdir/server/jsonrpc/statehandler.cpp \
     $$top_srcdir/server/jsonrpc/logginghandler.cpp \
+    $$top_srcdir/server/jsonrpc/cloudhandler.cpp \
     $$top_srcdir/server/stateevaluator.cpp \
     $$top_srcdir/server/logging/logengine.cpp \
     $$top_srcdir/server/logging/logfilter.cpp \
@@ -69,6 +65,7 @@ SOURCES += $$top_srcdir/server/guhcore.cpp \
     $$top_srcdir/server/transportinterface.cpp \
     $$top_srcdir/server/servermanager.cpp \
     $$top_srcdir/server/httprequest.cpp \
+    $$top_srcdir/server/websocketserver.cpp \
     $$top_srcdir/server/httpreply.cpp \
     $$top_srcdir/server/rest/restserver.cpp \
     $$top_srcdir/server/rest/restresource.cpp \
@@ -82,4 +79,6 @@ SOURCES += $$top_srcdir/server/guhcore.cpp \
     $$top_srcdir/server/time/calendaritem.cpp \
     $$top_srcdir/server/time/repeatingoption.cpp \
     $$top_srcdir/server/time/timeeventitem.cpp \
-    $$top_srcdir/server/time/timemanager.cpp
+    $$top_srcdir/server/time/timemanager.cpp \
+    $$top_srcdir/server/cloud/cloudconnection.cpp \
+    $$top_srcdir/server/cloud/cloudauthenticator.cpp \

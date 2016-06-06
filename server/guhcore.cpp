@@ -362,6 +362,11 @@ TimeManager *GuhCore::timeManager() const
     return m_timeManager;
 }
 
+CloudConnection *GuhCore::cloudConnection() const
+{
+    return m_cloudConnection;
+}
+
 /*! Constructs GuhCore with the given \a parent. This is private.
     Use \l{GuhCore::instance()} to access the single instance.*/
 GuhCore::GuhCore(QObject *parent) :
@@ -372,6 +377,9 @@ GuhCore::GuhCore(QObject *parent) :
 
     qCDebug(dcApplication) << "Creating Log Engine";
     m_logger = new LogEngine(this);
+
+    qCDebug(dcApplication) << "Creating Cloud Connection";
+    m_cloudConnection = new CloudConnection(this);
 
     qCDebug(dcApplication) << "Creating Device Manager";
     m_deviceManager = new DeviceManager(this);

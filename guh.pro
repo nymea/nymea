@@ -47,13 +47,6 @@ contains(DEFINES, BLUETOOTH_LE) {
     message("Bluetooth LE disabled (Qt $${QT_VERSION} < 5.4.0).")
 }
 
-# Websocket support
-contains(DEFINES, WEBSOCKET){
-    message("Building guh with websocket.")
-} else {
-    message("Building guh without websocket.")
-}
-
 # GPIO RF 433 MHz support
 contains(DEFINES, GPIO433){
     message("Radio 433 for GPIO's enabled")

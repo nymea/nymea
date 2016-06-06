@@ -8,7 +8,7 @@ INCLUDEPATH += ../libguh jsonrpc
 target.path = /usr/bin
 INSTALLS += target
 
-QT += sql xml
+QT += sql xml websockets
 
 LIBS += -L$$top_builddir/libguh/ -lguh
 

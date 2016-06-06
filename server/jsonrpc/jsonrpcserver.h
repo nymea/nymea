@@ -43,9 +43,7 @@ class MockTcpServer;
 
 namespace guhserver {
 
-#ifdef WEBSOCKET
 class WebSocketServer;
-#endif
 
 #ifndef TESTING_ENABLED
 class TcpServer;
@@ -84,10 +82,7 @@ private:
     TcpServer *m_tcpServer;
 #endif
 
-#ifdef WEBSOCKET
     WebSocketServer *m_websocketServer;
-#endif
-
     QList<TransportInterface *> m_interfaces;
     QHash<QString, JsonHandler *> m_handlers;
     QHash<JsonReply *, TransportInterface *> m_asyncReplies;

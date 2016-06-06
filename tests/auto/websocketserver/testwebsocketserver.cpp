@@ -31,9 +31,7 @@
 #include <QSignalSpy>
 #include <QJsonDocument>
 
-#ifdef WEBSOCKET
 #include <QWebSocket>
-#endif
 
 using namespace guhserver;
 
@@ -42,7 +40,6 @@ class TestWebSocketServer: public GuhTestBase
     Q_OBJECT
 
 private slots:
-#ifdef WEBSOCKET
     void testHandshake();
 
     void pingTest();
@@ -57,11 +54,8 @@ private:
 
     QVariant injectSocketAndWait(const QString &method, const QVariantMap &params = QVariantMap());
     QVariant injectSocketData(const QByteArray &data);
-
-#endif
 };
 
-#ifdef WEBSOCKET
 
 void TestWebSocketServer::testHandshake()
 {
@@ -215,8 +209,6 @@ QVariant TestWebSocketServer::injectSocketData(const QByteArray &data)
     m_socketCommandId++;
     return QVariant();
 }
-
-#endif
 
 #include "testwebsocketserver.moc"
 QTEST_MAIN(TestWebSocketServer)

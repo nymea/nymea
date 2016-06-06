@@ -103,7 +103,6 @@ void TransportInterface::sendResponse(const QUuid &clientId, int commandId, cons
     sendData(clientId, response);
 }
 
-
 /*! Send a JSON error response to the client with the given \a clientId,
  * \a commandId and \a error to the inerted \l{TransportInterface}.
  */

@@ -22,6 +22,7 @@
 #define CLOUDCONNECTION_H
 
 #include <QUrl>
+#include <QUuid>
 #include <QObject>
 #include <QWebSocket>
 
@@ -59,7 +60,7 @@ private:
     QWebSocket *m_connection;
     CloudAuthenticator *m_authenticator;
     CloudConnectionError m_error;
-
+    QUuid m_guhUuid;
     QUrl m_proxyUrl;
     QUrl m_keystoneUrl;
 

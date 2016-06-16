@@ -362,9 +362,9 @@ TimeManager *GuhCore::timeManager() const
     return m_timeManager;
 }
 
-CloudConnection *GuhCore::cloudConnection() const
+CloudManager *GuhCore::cloudManager() const
 {
-    return m_cloudConnection;
+    return m_cloudManager;
 }
 
 /*! Constructs GuhCore with the given \a parent. This is private.
@@ -378,8 +378,8 @@ GuhCore::GuhCore(QObject *parent) :
     qCDebug(dcApplication) << "Creating Log Engine";
     m_logger = new LogEngine(this);
 
-    qCDebug(dcApplication) << "Creating Cloud Connection";
-    m_cloudConnection = new CloudConnection(this);
+    qCDebug(dcApplication) << "Creating Cloud Manager";
+    m_cloudManager = new CloudManager(this);
 
     qCDebug(dcApplication) << "Creating Device Manager";
     m_deviceManager = new DeviceManager(this);
@@ -389,6 +389,9 @@ GuhCore::GuhCore(QObject *parent) :
 
     qCDebug(dcApplication) << "Creating Server Manager";
     m_serverManager = new ServerManager(this);
+
+    // Register cloud connection transport interface
+    m_serverManager->jsonServer()->registerTransportInterface(m_cloudManager);
 
     connect(m_deviceManager, &DeviceManager::eventTriggered, this, &GuhCore::gotEvent);
     connect(m_deviceManager, &DeviceManager::deviceStateChanged, this, &GuhCore::deviceStateChanged);

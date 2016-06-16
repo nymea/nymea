@@ -57,14 +57,12 @@ public:
     QString clientSecret() const;
     void setClientSecret(const QString clientSecret);
 
-    QString scope() const;
-    void setScope(const QString &scope);
-
+    // Read only
     QString token() const;
-
     bool authenticated() const;
 
-    void startAuthentication();
+    bool startAuthentication();
+    void stopAuthentication();
 
 private:
     QNetworkAccessManager *m_networkManager;
@@ -78,7 +76,6 @@ private:
     QString m_password;
     QString m_clientId;
     QString m_clientSecret;
-    QString m_scope;
 
     QString m_token;
     QString m_refreshToken;
@@ -87,6 +84,10 @@ private:
 
     void setAuthenticated(const bool &authenticated);
     void setToken(const QString &token);
+
+    void setRefreshToken(const QString &refreshToken);
+    QString loadRefreshToken() const;
+    QString loadUserName() const;
 
 private slots:
     void replyFinished(QNetworkReply *reply);

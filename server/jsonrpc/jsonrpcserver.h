@@ -63,6 +63,8 @@ public:
 
     QHash<QString, JsonHandler*> handlers() const;
 
+    void registerTransportInterface(TransportInterface *interface);
+
 private slots:
     void setup();
 
@@ -83,6 +85,7 @@ private:
 #endif
 
     WebSocketServer *m_websocketServer;
+
     QList<TransportInterface *> m_interfaces;
     QHash<QString, JsonHandler *> m_handlers;
     QHash<JsonReply *, TransportInterface *> m_asyncReplies;

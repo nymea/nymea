@@ -83,6 +83,7 @@ static void consoleLogHandler(QtMsgType type, const QMessageLogContext& context,
         fprintf(stdout, " F | %s: %s\n", context.category, message.toUtf8().data());
         break;
     }
+    fflush(stdout);
 
     QFile logFile(GuhSettings::consoleLogPath());
     if (!logFile.open(QIODevice::WriteOnly | QIODevice::Append)) {

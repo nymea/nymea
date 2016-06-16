@@ -105,20 +105,8 @@ JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject 
     returns.insert("enabled", JsonTypes::basicTypeToString(JsonTypes::Bool));
     setReturns("SetNotificationStatus", returns);
 
-    // Now set up the logic
-    connect(m_tcpServer, SIGNAL(clientConnected(const QUuid &)), this, SLOT(clientConnected(const QUuid &)));
-    connect(m_tcpServer, SIGNAL(clientDisconnected(const QUuid &)), this, SLOT(clientDisconnected(const QUuid &)));
-    connect(m_tcpServer, SIGNAL(dataAvailable(QUuid, QString, QString, QVariantMap)), this, SLOT(processData(QUuid, QString, QString, QVariantMap)));
-    m_tcpServer->startServer();
-
-    m_interfaces.append(m_tcpServer);
-
-    connect(m_websocketServer, SIGNAL(clientConnected(const QUuid &)), this, SLOT(clientConnected(const QUuid &)));
-    connect(m_websocketServer, SIGNAL(clientDisconnected(const QUuid &)), this, SLOT(clientDisconnected(const QUuid &)));
-    connect(m_websocketServer, SIGNAL(dataAvailable(QUuid, QString, QString, QVariantMap)), this, SLOT(processData(QUuid, QString, QString, QVariantMap)));
-
-    m_websocketServer->startServer();
-    m_interfaces.append(m_websocketServer);
+    registerTransportInterface(m_tcpServer);
+    registerTransportInterface(m_websocketServer);
 
     QMetaObject::invokeMethod(this, "setup", Qt::QueuedConnection);
 }
@@ -173,6 +161,16 @@ JsonReply* JsonRPCServer::SetNotificationStatus(const QVariantMap &params)
 QHash<QString, JsonHandler *> JsonRPCServer::handlers() const
 {
     return m_handlers;
+}
+
+void JsonRPCServer::registerTransportInterface(TransportInterface *interface)
+{
+    // Now set up the logic
+    connect(interface, SIGNAL(clientConnected(const QUuid &)), this, SLOT(clientConnected(const QUuid &)));
+    connect(interface, SIGNAL(clientDisconnected(const QUuid &)), this, SLOT(clientDisconnected(const QUuid &)));
+    connect(interface, SIGNAL(dataAvailable(QUuid, QString, QString, QVariantMap)), this, SLOT(processData(QUuid, QString, QString, QVariantMap)));
+    interface->startServer();
+    m_interfaces.append(interface);
 }
 
 void JsonRPCServer::setup()

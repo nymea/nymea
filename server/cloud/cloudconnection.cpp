@@ -29,22 +29,15 @@ namespace guhserver {
 CloudConnection::CloudConnection(QObject *parent) :
     QObject(parent),
     m_error(CloudConnectionErrorNoError),
-    m_enabled(false),
     m_connected(false),
-    m_active(false),
     m_authenticated(false)
 {
     m_proxyUrl = QUrl("ws://127.0.0.1:1212");
     m_keystoneUrl = QUrl("http://localhost:8000/oauth2/token");
 
-    GuhSettings settings(GuhSettings::SettingsRoleDevices);
-    settings.beginGroup("guhd");
-    m_guhUuid = settings.value("uuid", QVariant()).toUuid();
-    if (m_guhUuid.isNull()) {
-        m_guhUuid = QUuid::createUuid().toString();
-        settings.setValue("uuid", m_guhUuid);
-    }
-    settings.endGroup();
+    m_reconnectionTimer = new QTimer(this);
+    m_reconnectionTimer->setSingleShot(false);
+    connect(m_reconnectionTimer, &QTimer::timeout, this, &CloudConnection::reconnectionTimeout);
 
     m_connection = new QWebSocket("guhd", QWebSocketProtocol::Version13, this);
     connect(m_connection, SIGNAL(connected()), this, SLOT(onConnected()));
@@ -56,15 +49,26 @@ CloudConnection::CloudConnection(QObject *parent) :
     m_authenticator->setUrl(m_keystoneUrl);
 
     connect(m_authenticator, &CloudAuthenticator::authenticationChanged, this, &CloudConnection::onAuthenticationChanged);
-
-    connectToCloud("simon.stuerz@guh.guru", "wshslwshsl");
 }
 
-void CloudConnection::connectToCloud(const QString &username, const QString &password)
+void CloudConnection::connectToCloud()
 {
-    m_authenticator->setUsername(username);
-    m_authenticator->setPassword(password);
+    if (m_connection->state() == QAbstractSocket::ConnectedState) {
+        disconnectFromCloud();
+    }
+
     m_authenticator->startAuthentication();
+}
+
+void CloudConnection::disconnectFromCloud()
+{
+    m_authenticator->stopAuthentication();
+    m_connection->close(QWebSocketProtocol::CloseCodeNormal, "Disconnecting");
+}
+
+CloudAuthenticator *CloudConnection::authenticator() const
+{
+    return m_authenticator;
 }
 
 CloudConnection::CloudConnectionError CloudConnection::error() const
@@ -72,29 +76,9 @@ CloudConnection::CloudConnectionError CloudConnection::error() const
     return m_error;
 }
 
-void CloudConnection::enable()
-{
-    m_enabled = true;
-}
-
-void CloudConnection::disable()
-{
-    m_enabled = false;
-}
-
-bool CloudConnection::enabled() const
-{
-    return m_enabled;
-}
-
 bool CloudConnection::connected() const
 {
     return m_connected;
-}
-
-bool CloudConnection::active() const
-{
-    return m_active;
 }
 
 bool CloudConnection::authenticated() const
@@ -102,22 +86,15 @@ bool CloudConnection::authenticated() const
     return m_authenticated;
 }
 
-void CloudConnection::setEnabled(const bool &enabled)
+void CloudConnection::sendData(const QByteArray &data)
 {
-    m_enabled = enabled;
-    emit enabledChanged();
+    m_connection->sendTextMessage(data);
 }
 
 void CloudConnection::setConnected(const bool &connected)
 {
     m_connected = connected;
     emit connectedChanged();
-}
-
-void CloudConnection::setActive(const bool &active)
-{
-    m_active = active;
-    emit activeChanged();
 }
 
 void CloudConnection::setAuthenticated(const bool &authenticated)
@@ -128,7 +105,6 @@ void CloudConnection::setAuthenticated(const bool &authenticated)
 
 void CloudConnection::onAuthenticationChanged()
 {
-    qCDebug(dcCloud()) << "Authentication changed" << m_authenticator->authenticated();
     setAuthenticated(m_authenticator->authenticated());
 
     if (m_authenticated) {
@@ -143,42 +119,49 @@ void CloudConnection::onConnected()
 {
     qCDebug(dcCloud()) << "Connected to cloud proxy server" << m_proxyUrl.toString();
     setConnected(true);
-
-    QVariantMap introspectMap;
-    introspectMap.insert("id", 0);
-    introspectMap.insert("method", "Interface.Introspect");
-    m_connection->sendTextMessage(QJsonDocument::fromVariant(introspectMap).toJson());
-
-    QVariantMap authenticationMap;
-    authenticationMap.insert("id", 1);
-    authenticationMap.insert("method", "Authentication.Authenticate");
-
-    QVariantMap params;
-    // TODO: use server name
-    params.insert("name", "guhIO");
-    params.insert("id", m_guhUuid);
-    params.insert("token", m_authenticator->token());
-    params.insert("type", "ConnectionTypeServer");
-
-    authenticationMap.insert("params", params);
-
-    m_connection->sendTextMessage(QJsonDocument::fromVariant(authenticationMap).toJson());
+    m_reconnectionTimer->stop();
 }
 
 void CloudConnection::onDisconnected()
 {
-    qCDebug(dcCloud()) << "Disconnected from cloud:" << m_connection->closeReason();
+    if (!m_reconnectionTimer->isActive())
+        qCDebug(dcCloud()) << "Disconnected from cloud:" << m_connection->closeReason();
+
     setConnected(false);
+    m_reconnectionTimer->start(10000);
 }
 
 void CloudConnection::onError(const QAbstractSocket::SocketError &error)
 {
-    qCWarning(dcCloud()) << "Websocket error:" << error << m_connection->errorString();
+    if (!m_reconnectionTimer->isActive())
+        qCWarning(dcCloud()) << "Websocket error:" << error << m_connection->errorString();
+    m_reconnectionTimer->start(10000);
 }
 
 void CloudConnection::onTextMessageReceived(const QString &message)
 {
-    qCDebug(dcCloud()) << "Cloud message -> " << qUtf8Printable(message.toUtf8());
+    //qCDebug(dcCloud()) << "Cloud message -> " << qUtf8Printable(message.toUtf8());
+
+    QJsonParseError error;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(message.toUtf8(), &error);
+    if (error.error != QJsonParseError::NoError) {
+        qCWarning(dcCloud()) << "Could not parse json data from guh" << qUtf8Printable(message.toUtf8()) << error.errorString();
+        return;
+    }
+
+    emit dataReceived(jsonDoc.toVariant().toMap());
 }
+
+void CloudConnection::reconnectionTimeout()
+{
+    if (m_authenticated) {
+        m_connection->open(m_proxyUrl);
+    } else {
+        m_reconnectionTimer->stop();
+        m_error = CloudConnectionErrorAuthenticationFailed;
+    }
+
+}
+
 
 }

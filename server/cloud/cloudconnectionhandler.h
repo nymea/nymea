@@ -18,50 +18,37 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef CLOUDINTERFACE_H
-#define CLOUDINTERFACE_H
+#ifndef CLOUDCONNECTIONHANDLER_H
+#define CLOUDCONNECTIONHANDLER_H
 
-#include <QHash>
-#include <QUuid>
 #include <QObject>
-#include <QVariantMap>
 
-#include "cloudjsonreply.h"
-#include "cloudconnectionhandler.h"
-#include "cloudauthenticationhandler.h"
+#include "cloudjsonhandler.h"
 
 namespace guhserver {
 
-class CloudInterface : public QObject
+class CloudConnectionHandler : public CloudJsonHandler
 {
     Q_OBJECT
 public:
-    explicit CloudInterface(QObject *parent = 0);
+    explicit CloudConnectionHandler(QObject *parent = 0);
 
-    Q_INVOKABLE void authenticateConnection(const QString &token);
-    Q_INVOKABLE void getTunnels();
-    Q_INVOKABLE void sendApiData(const QUuid &tunnelId, const QVariantMap &data);
+    QString nameSpace() const;
 
-private:
-    int m_id;
-    QUuid m_guhUuid;
+    // API methods
+    Q_INVOKABLE void processGetConnections(const QVariantMap &params);
+    Q_INVOKABLE void processGetTunnels(const QVariantMap &params);
+    Q_INVOKABLE void processSendData(const QVariantMap &params);
 
-    QHash<QString, CloudJsonHandler *> m_handlers;
-    QHash<int, CloudJsonReply *> m_replies;
-
-    CloudJsonReply *createReply(QString nameSpace, QString method, QVariantMap params = QVariantMap());
-
-    CloudAuthenticationHandler *m_authenticationHandler;
-    CloudConnectionHandler *m_connectionHandler;
-
-signals:
-    void responseReceived(const int &commandId, const QVariantMap &response);
-
-public slots:
-    void dataReceived(const QVariantMap &data);
+    // API notifications
+    Q_INVOKABLE void processConnectionAdded(const QVariantMap &params);
+    Q_INVOKABLE void processConnectionRemoved(const QVariantMap &params);
+    Q_INVOKABLE void processTunnelAdded(const QVariantMap &params);
+    Q_INVOKABLE void processTunnelRemoved(const QVariantMap &params);
+    Q_INVOKABLE void processDataReceived(const QVariantMap &params);
 
 };
 
 }
 
-#endif // CLOUDINTERFACE_H
+#endif // CLOUDCONNECTIONHANDLER_H

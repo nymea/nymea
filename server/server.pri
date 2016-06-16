@@ -41,8 +41,12 @@ HEADERS += $$top_srcdir/server/guhcore.h \
     $$top_srcdir/server/time/timemanager.h \
     $$top_srcdir/server/cloud/cloudconnection.h \
     $$top_srcdir/server/cloud/cloudauthenticator.h \
-    $$PWD/cloud/cloudinterface.h \
-    $$PWD/cloud/cloudclient.h
+    $$top_srcdir/server/cloud/cloudinterface.h \
+    $$top_srcdir/server/cloud/cloudjsonreply.h \
+    $$top_srcdir/server/cloud/cloudauthenticationhandler.h \
+    $$top_srcdir/server/cloud/cloudconnectionhandler.h \
+    $$top_srcdir/server/cloud/cloudjsonhandler.h \
+    $$top_srcdir/server/cloud/cloudmanager.h \
 
 
 SOURCES += $$top_srcdir/server/guhcore.cpp \
@@ -84,5 +88,9 @@ SOURCES += $$top_srcdir/server/guhcore.cpp \
     $$top_srcdir/server/time/timemanager.cpp \
     $$top_srcdir/server/cloud/cloudconnection.cpp \
     $$top_srcdir/server/cloud/cloudauthenticator.cpp \
-    $$PWD/cloud/cloudinterface.cpp \
-    $$PWD/cloud/cloudclient.cpp
+    $$top_srcdir/server/cloud/cloudinterface.cpp \
+    $$top_srcdir/server/cloud/cloudjsonreply.cpp \
+    $$top_srcdir/server/cloud/cloudauthenticationhandler.cpp \
+    $$top_srcdir/server/cloud/cloudconnectionhandler.cpp \
+    $$top_srcdir/server/cloud/cloudjsonhandler.cpp \
+    $$top_srcdir/server/cloud/cloudmanager.cpp \

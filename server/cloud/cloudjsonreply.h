@@ -18,50 +18,34 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef CLOUDINTERFACE_H
-#define CLOUDINTERFACE_H
+#ifndef CLOUDJSONREPLY_H
+#define CLOUDJSONREPLY_H
 
-#include <QHash>
-#include <QUuid>
 #include <QObject>
 #include <QVariantMap>
 
-#include "cloudjsonreply.h"
-#include "cloudconnectionhandler.h"
-#include "cloudauthenticationhandler.h"
-
 namespace guhserver {
 
-class CloudInterface : public QObject
+class CloudJsonReply : public QObject
 {
     Q_OBJECT
-public:
-    explicit CloudInterface(QObject *parent = 0);
 
-    Q_INVOKABLE void authenticateConnection(const QString &token);
-    Q_INVOKABLE void getTunnels();
-    Q_INVOKABLE void sendApiData(const QUuid &tunnelId, const QVariantMap &data);
+public:
+    explicit CloudJsonReply(int commandId, QString nameSpace, QString method, QVariantMap params = QVariantMap(), QObject *parent = 0);
+    int commandId() const;
+    QString nameSpace() const;
+    QString method() const;
+    QVariantMap params() const;
+    QVariantMap requestMap();
 
 private:
-    int m_id;
-    QUuid m_guhUuid;
-
-    QHash<QString, CloudJsonHandler *> m_handlers;
-    QHash<int, CloudJsonReply *> m_replies;
-
-    CloudJsonReply *createReply(QString nameSpace, QString method, QVariantMap params = QVariantMap());
-
-    CloudAuthenticationHandler *m_authenticationHandler;
-    CloudConnectionHandler *m_connectionHandler;
-
-signals:
-    void responseReceived(const int &commandId, const QVariantMap &response);
-
-public slots:
-    void dataReceived(const QVariantMap &data);
+    int m_commandId;
+    QString m_nameSpace;
+    QString m_method;
+    QVariantMap m_params;
 
 };
 
 }
 
-#endif // CLOUDINTERFACE_H
+#endif // CLOUDJSONREPLY_H

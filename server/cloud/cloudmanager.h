@@ -18,82 +18,85 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef CLOUDCONNECTION_H
-#define CLOUDCONNECTION_H
+#ifndef CLOUDMANAGER_H
+#define CLOUDMANAGER_H
 
-#include <QUrl>
-#include <QUuid>
 #include <QObject>
-#include <QTimer>
-#include <QWebSocket>
 
+
+#include "transportinterface.h"
+#include "cloudinterface.h"
 #include "cloudauthenticator.h"
+#include "cloudconnection.h"
 
 namespace guhserver {
 
-class CloudConnection : public QObject
+class CloudManager : public TransportInterface
 {
     Q_OBJECT
-    Q_ENUMS(CloudConnectionError)
-
 public:
-    enum CloudConnectionError {
-        CloudConnectionErrorNoError,
-        CloudConnectionErrorAuthenticationFailed,
-        CloudConnectionErrorCloudServerNotReachable
-    };
+    friend class CloudInterface;
+    friend class CloudConnectionHandler;
+    friend class CloudAuthenticationHandler;
 
-    explicit CloudConnection(QObject *parent = 0);
+    explicit CloudManager(QObject *parent = 0);
+    ~CloudManager();
 
-    void connectToCloud();
-    void disconnectFromCloud();
+    void connectToCloud(const QString &username, const QString &password) ;
 
-    CloudAuthenticator *authenticator() const;
+    void sendData(const QUuid &clientId, const QVariantMap &data) override;
+    void sendData(const QList<QUuid> &clients, const QVariantMap &data) override;
 
-    CloudConnectionError error() const;
-    void enable();
-    void disable();
-
+    bool enabled() const;
     bool connected() const;
+    bool connectionAuthenticated() const;
+    bool active() const;
     bool authenticated() const;
 
-    void sendData(const QByteArray &data);
-    void sendRequest(const QVariantMap &request);
+public slots:
+    bool startServer() override;
+    bool stopServer() override;
 
 private:
-    QWebSocket *m_connection;
-    CloudAuthenticator *m_authenticator;
-    CloudConnectionError m_error;
+    CloudConnection *m_cloudConnection;
+    CloudInterface *m_interface;
 
-    QTimer *m_reconnectionTimer;
+    QList<QUuid> m_clients;
 
-    QUrl m_proxyUrl;
-    QUrl m_keystoneUrl;
+    QHash<int, CloudJsonReply *> m_replies;
 
-    bool m_connected;
+    QHash<QUuid, QUuid> m_tunnelClients;
+
+    QUuid m_connectionId;
+    bool m_enabled;
+    bool m_active;
     bool m_authenticated;
 
-    void setConnected(const bool &connected);
-    void setAuthenticated(const bool &authenticated);
+protected:
+    void sendCloudData(const QVariantMap &data);
+
+    void onConnectionAuthentificationFinished(const bool &status, const QUuid &connectionId);
+    void onTunnelAdded(const QUuid &tunnelId, const QUuid &serverId, const QUuid &clientId);
+    void onTunnelRemoved(const QUuid &tunnelId);
+    void onCloudDataReceived(const QUuid &tunnelId, const QVariantMap &data);
 
 signals:
-    void dataReceived(const QVariantMap &data);
     void enabledChanged();
     void connectedChanged();
     void activeChanged();
     void authenticatedChanged();
 
-private slots:
-    void onAuthenticationChanged();
-    void onConnected();
-    void onDisconnected();
-    void onError(const QAbstractSocket::SocketError &error);
-    void onTextMessageReceived(const QString &message);
+    // Transport interface signals
+    void clientConnected(const QUuid &clientId);
+    void clientDisconnected(const QUuid &clientId);
+    void dataAvailable(const QUuid &clientId, const QString &targetNamespace, const QString &method, const QVariantMap &message);
 
-    void reconnectionTimeout();
+private slots:
+    void onConnectedChanged();
+    void onAuthenticatedChanged();
 
 };
 
 }
 
-#endif // CLOUDCONNECTION_H
+#endif // CLOUDMANAGER_H

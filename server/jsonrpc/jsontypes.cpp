@@ -1748,6 +1748,12 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                     qCWarning(dcJsonRpc) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(repeatingModeRef());
                     return result;
                 }
+            } else if (refName == removePolicyRef()) {
+                QPair<bool, QString> result = validateEnum(s_removePolicy, variant);
+                if (!result.first) {
+                    qCWarning(dcJsonRpc) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(removePolicyRef());
+                    return result;
+                }
             } else {
                 Q_ASSERT_X(false, "JsonTypes", QString("Unhandled ref: %1").arg(refName).toLatin1().data());
                 return report(false, QString("Unhandled ref %1. Server implementation incomplete.").arg(refName));

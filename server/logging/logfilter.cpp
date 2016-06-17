@@ -52,32 +52,32 @@ QString LogFilter::queryString() const
     QString query;
     query.append(createDateString());
 
-    if (!query.isEmpty() && !m_sources.isEmpty()) {
+    if (!query.isEmpty() && !loggingSources().isEmpty()) {
         query.append("AND ");
     }
     query.append(createSourcesString());
 
-    if (!query.isEmpty() && !m_levels.isEmpty()) {
+    if (!query.isEmpty() && !loggingLevels().isEmpty()) {
         query.append("AND ");
     }
     query.append(createLevelsString());
 
-    if (!query.isEmpty() && !m_eventTypes.isEmpty()) {
+    if (!query.isEmpty() && !loggingEventTypes().isEmpty()) {
         query.append("AND ");
     }
     query.append(createEventTypesString());
 
-    if (!query.isEmpty() && !m_typeIds.isEmpty()) {
+    if (!query.isEmpty() && !typeIds().isEmpty()) {
         query.append("AND ");
     }
     query.append(createTypeIdsString());
 
-    if (!query.isEmpty() && !m_deviceIds.isEmpty()) {
+    if (!query.isEmpty() && !deviceIds().isEmpty()) {
         query.append("AND ");
     }
     query.append(createDeviceIdString());
 
-    if (!query.isEmpty() && !m_values.isEmpty()) {
+    if (!query.isEmpty() && !values().isEmpty()) {
         query.append("AND ");
     }
     query.append(createValuesString());

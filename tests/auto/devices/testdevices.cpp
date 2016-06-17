@@ -78,6 +78,9 @@ private slots:
     void getStateTypes_data();
     void getStateTypes();
 
+    void getStateType_data();
+    void getStateType();
+
     void getStateValue_data();
     void getStateValue();
 
@@ -684,6 +687,37 @@ void TestDevices::getStateTypes()
     if (resultCount > 0) {
         QCOMPARE(stateTypes.first().toMap().value("id").toString(), mockIntStateId.toString());
     }
+}
+
+void TestDevices::getStateType_data()
+{
+    QTest::addColumn<StateTypeId>("stateTypeId");
+    QTest::addColumn<DeviceManager::DeviceError>("error");
+
+    QTest::newRow("valid int state") << mockIntStateId << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("valid bool state") << mockBoolStateId << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("invalid stateTypeId") << StateTypeId::createStateTypeId() << DeviceManager::DeviceErrorStateTypeNotFound;
+}
+
+void TestDevices::getStateType()
+{
+    QFETCH(StateTypeId, stateTypeId);
+    QFETCH(DeviceManager::DeviceError, error);
+
+    QVariantMap params;
+    params.insert("stateTypeId", stateTypeId);
+    QVariant response = injectAndWait("States.GetStateType", params);
+    verifyDeviceError(response, error);
+
+    if (error != DeviceManager::DeviceErrorNoError)
+        return;
+
+    QVariantMap stateType = response.toMap().value("params").toMap().value("stateType").toMap();
+
+    qDebug() << QJsonDocument::fromVariant(stateType).toJson();
+
+    QVERIFY2(!stateType.isEmpty(), "Got no stateType");
+    QCOMPARE(stateType.value("id").toString(), stateTypeId.toString());
 }
 
 void TestDevices::getStateValue_data()

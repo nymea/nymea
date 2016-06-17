@@ -45,6 +45,11 @@ coverage {
     message("Building coverage.")
 }
 
+# Build using ccache
+ccache {
+    message("Using ccache.")
+}
+
 # Build tests
 disabletesting {
     message("Building guh without tests")

@@ -140,8 +140,6 @@ void CloudConnection::onError(const QAbstractSocket::SocketError &error)
 
 void CloudConnection::onTextMessageReceived(const QString &message)
 {
-    //qCDebug(dcCloud()) << "Cloud message -> " << qUtf8Printable(message.toUtf8());
-
     QJsonParseError error;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(message.toUtf8(), &error);
     if (error.error != QJsonParseError::NoError) {

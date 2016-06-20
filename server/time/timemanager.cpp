@@ -35,6 +35,7 @@
 */
 
 #include "timemanager.h"
+#include "guhcore.h"
 #include "loggingcategories.h"
 
 namespace guhserver {
@@ -122,6 +123,20 @@ void TimeManager::guhTimeout()
         m_dateTime = currentDateTime;
         emit dateTimeChanged(m_dateTime.toTimeZone(m_timeZone));
     }
+}
+
+void TimeManager::onTimeZoneChanged()
+{
+    QByteArray timeZone = GuhCore::instance()->configuration()->timeZone();
+    if (!QTimeZone(timeZone).isValid()) {
+        qCWarning(dcTimeManager()) << "Invalid time zone" << timeZone;
+        qCWarning(dcTimeManager()) << "Using system time zone" << QTimeZone::systemTimeZoneId();
+        m_timeZone = QTimeZone(QTimeZone::systemTimeZoneId());
+    } else {
+        qCDebug(dcTimeManager()) << "Set time zone" << timeZone;
+        m_timeZone = QTimeZone(timeZone);
+    }
+
 }
 
 }

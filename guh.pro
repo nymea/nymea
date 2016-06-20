@@ -32,6 +32,11 @@ coverage {
     message("Building coverage.")
 }
 
+# Build using ccache
+ccache {
+    message("Using ccache.")
+}
+
 # Build tests
 disabletesting {
     message("Building guh without tests")
@@ -45,13 +50,6 @@ contains(DEFINES, BLUETOOTH_LE) {
     message("Bluetooth LE enabled.")
 } else {
     message("Bluetooth LE disabled (Qt $${QT_VERSION} < 5.4.0).")
-}
-
-# Websocket support
-contains(DEFINES, WEBSOCKET){
-    message("Building guh with websocket.")
-} else {
-    message("Building guh without websocket.")
 }
 
 # GPIO RF 433 MHz support

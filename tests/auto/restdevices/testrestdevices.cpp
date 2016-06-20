@@ -570,11 +570,6 @@ void TestRestDevices::editDevices()
     response = getAndWait(deviceRequest);
     QCOMPARE(response.toMap().value("name").toString(), name);
 
-    restartServer();
-
-    response = getAndWait(deviceRequest);
-    QCOMPARE(response.toMap().value("name").toString(), name);
-
     // Remove the device
     response = deleteAndWait(deviceRequest);
     QVERIFY2(response.toMap().value("error").toString() == JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorNoError), "Could not remove device");

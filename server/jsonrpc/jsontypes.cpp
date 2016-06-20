@@ -82,6 +82,7 @@ QVariantList JsonTypes::s_loggingSource;
 QVariantList JsonTypes::s_loggingLevel;
 QVariantList JsonTypes::s_loggingEventType;
 QVariantList JsonTypes::s_repeatingMode;
+QVariantList JsonTypes::s_cloudError;
 
 QVariantMap JsonTypes::s_paramType;
 QVariantMap JsonTypes::s_param;
@@ -110,7 +111,6 @@ QVariantMap JsonTypes::s_calendarItem;
 QVariantMap JsonTypes::s_timeEventItem;
 QVariantMap JsonTypes::s_repeatingOption;
 
-
 void JsonTypes::init()
 {
     // BasicTypes
@@ -131,6 +131,7 @@ void JsonTypes::init()
     s_loggingLevel = enumToStrings(Logging::staticMetaObject, "LoggingLevel");
     s_loggingEventType = enumToStrings(Logging::staticMetaObject, "LoggingEventType");
     s_repeatingMode = enumToStrings(RepeatingOption::staticMetaObject, "RepeatingMode");
+    s_cloudError = enumToStrings(Cloud::staticMetaObject, "CloudError");
 
     // ParamType
     s_paramType.insert("name", basicTypeToString(String));
@@ -359,6 +360,7 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("LoggingSource", loggingSource());
     allTypes.insert("LoggingEventType", loggingEventType());
     allTypes.insert("RepeatingMode", repeatingMode());
+    allTypes.insert("CloudError", cloudError());
 
     allTypes.insert("StateType", stateTypeDescription());
     allTypes.insert("StateDescriptor", stateDescriptorDescription());
@@ -1748,6 +1750,12 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                     qCWarning(dcJsonRpc) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(repeatingModeRef());
                     return result;
                 }
+            } else if (refName == cloudErrorRef()) {
+                QPair<bool, QString> result = validateEnum(s_cloudError, variant);
+                if (!result.first) {
+                    qCWarning(dcJsonRpc) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(cloudErrorRef());
+                    return result;
+                }
             } else if (refName == removePolicyRef()) {
                 QPair<bool, QString> result = validateEnum(s_removePolicy, variant);
                 if (!result.first) {
@@ -1758,7 +1766,6 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                 Q_ASSERT_X(false, "JsonTypes", QString("Unhandled ref: %1").arg(refName).toLatin1().data());
                 return report(false, QString("Unhandled ref %1. Server implementation incomplete.").arg(refName));
             }
-
         } else {
             QPair<bool, QString> result = JsonTypes::validateProperty(templateVariant, variant);
             if (!result.first) {

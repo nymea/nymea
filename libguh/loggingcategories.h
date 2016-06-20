@@ -22,6 +22,7 @@
 #define LOGGINGCATEGORYS_H
 
 #include <QLoggingCategory>
+#include <QDebug>
 
 // Include dcCoap
 #include "coap/coap.h"
@@ -41,5 +42,6 @@ Q_DECLARE_LOGGING_CATEGORY(dcJsonRpc)
 Q_DECLARE_LOGGING_CATEGORY(dcRest)
 Q_DECLARE_LOGGING_CATEGORY(dcOAuth2)
 Q_DECLARE_LOGGING_CATEGORY(dcAvahi)
+Q_DECLARE_LOGGING_CATEGORY(dcCloud)
 
 #endif // LOGGINGCATEGORYS_H

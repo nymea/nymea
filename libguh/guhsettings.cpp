@@ -108,9 +108,17 @@ GuhSettings::GuhSettings(const SettingsRole &role, QObject *parent):
         }
         break;
     case SettingsRoleGlobal:
-        // this file schould always be readable and should never be written
-        settingsFile = "/etc/guh/guhd.conf";
-        m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
+        // check if we are running a test
+        if (settingsPrefix == "guh-test") {
+            settingsFile = "/tmp/" + settingsPrefix + "/test-guhd.conf";
+            m_settings = new QSettings(settingsFile, QSettings::NativeFormat, this);
+        } else if (rootPrivilege) {
+            settingsFile = "/etc/" + settingsPrefix + "/guhd.conf";
+            m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
+        } else {
+            settingsFile = QDir::homePath() + "/.config/" + settingsPrefix + "/guhd.conf";
+            m_settings = new QSettings(settingsFile, QSettings::NativeFormat, this);
+        }
         break;
     default:
         break;
@@ -288,7 +296,6 @@ void GuhSettings::remove(const QString &key)
 /*! Sets the \a value of setting \a key to value. If the \a key already exists, the previous value is overwritten. */
 void GuhSettings::setValue(const QString &key, const QVariant &value)
 {
-    //Q_ASSERT_X(m_role != GuhSettings::SettingsRoleGlobal, "GuhSettings", "Bad settings usage. The global settings file should be read only.");
     m_settings->setValue(key, value);
 }
 

@@ -44,6 +44,9 @@
 #include "time/timedescriptor.h"
 #include "time/timeeventitem.h"
 
+#include "cloud/cloud.h"
+#include "cloud/cloudconnection.h"
+
 #include <QObject>
 
 #include <QVariantMap>
@@ -122,6 +125,7 @@ public:
     DECLARE_TYPE(loggingLevel, "LoggingLevel", Logging, LoggingLevel)
     DECLARE_TYPE(loggingEventType, "LoggingEventType", Logging, LoggingEventType)
     DECLARE_TYPE(repeatingMode, "RepeatingMode", RepeatingOption, RepeatingMode)
+    DECLARE_TYPE(cloudError, "CloudError", Cloud, CloudError)
 
     DECLARE_OBJECT(paramType, "ParamType")
     DECLARE_OBJECT(param, "Param")
@@ -177,7 +181,6 @@ public:
     static QVariantMap packCalendarItem(const CalendarItem &calendarItem);
     static QVariantMap packTimeEventItem(const TimeEventItem &timeEventItem);
     static QVariantMap packTimeDescriptor(const TimeDescriptor &timeDescriptor);
-
 
     // pack resources
     static QVariantList packRules(const QList<Rule> rules);

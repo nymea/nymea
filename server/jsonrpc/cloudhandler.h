@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.guru>                 *
+ *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.guru>                 *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -18,20 +18,43 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "loggingcategories.h"
+#ifndef CLOUDHANDLER_H
+#define CLOUDHANDLER_H
 
-Q_LOGGING_CATEGORY(dcApplication, "Application")
-Q_LOGGING_CATEGORY(dcDeviceManager, "DeviceManager")
-Q_LOGGING_CATEGORY(dcTimeManager, "TimeManager")
-Q_LOGGING_CATEGORY(dcRuleEngine, "RuleEngine")
-Q_LOGGING_CATEGORY(dcHardware, "Hardware")
-Q_LOGGING_CATEGORY(dcConnection, "Connection")
-Q_LOGGING_CATEGORY(dcLogEngine, "LogEngine")
-Q_LOGGING_CATEGORY(dcTcpServer, "TcpServer")
-Q_LOGGING_CATEGORY(dcWebServer, "WebServer")
-Q_LOGGING_CATEGORY(dcWebSocketServer, "WebSocketServer")
-Q_LOGGING_CATEGORY(dcJsonRpc, "JsonRpc")
-Q_LOGGING_CATEGORY(dcRest, "Rest")
-Q_LOGGING_CATEGORY(dcOAuth2, "OAuth2")
-Q_LOGGING_CATEGORY(dcAvahi, "Avahi")
-Q_LOGGING_CATEGORY(dcCloud, "Cloud")
+#include <QObject>
+
+#include "guhcore.h"
+#include "jsonhandler.h"
+#include "loggingcategories.h"
+#include "cloud/cloud.h"
+
+namespace guhserver {
+
+class CloudHandler : public JsonHandler
+{
+    Q_OBJECT
+public:
+    CloudHandler(QObject *parent = 0);
+
+    QString name() const;
+
+    Q_INVOKABLE JsonReply* Authenticate(const QVariantMap &params);
+    Q_INVOKABLE JsonReply* GetConnectionStatus(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply* Enable(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply* Disable(const QVariantMap &params) const;
+
+private:
+    QList<JsonReply *> m_asyncAuthenticationReplies;
+
+signals:
+    void ConnectionStatusChanged(const QVariantMap &params);
+
+private slots:
+    void onConnectionStatusChanged();
+    void onAuthenticationRequestFinished(const Cloud::CloudError &error);
+
+};
+
+}
+
+#endif // CLOUDHANDLER_H

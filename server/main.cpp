@@ -83,6 +83,7 @@ static void consoleLogHandler(QtMsgType type, const QMessageLogContext& context,
         fprintf(stdout, " F | %s: %s\n", context.category, message.toUtf8().data());
         break;
     }
+    fflush(stdout);
 
     QFile logFile(GuhSettings::consoleLogPath());
     if (!logFile.open(QIODevice::WriteOnly | QIODevice::Append)) {
@@ -120,6 +121,7 @@ int main(int argc, char *argv[])
     s_loggingFilters.insert("TimeManager", false);
     s_loggingFilters.insert("Coap", false);
     s_loggingFilters.insert("Avahi", false);
+    s_loggingFilters.insert("Cloud", true);
 
     QHash<QString, bool> loggingFiltersPlugins;
     foreach (const QJsonObject &pluginMetadata, DeviceManager::pluginsMetadata()) {

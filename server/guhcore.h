@@ -28,10 +28,12 @@
 #include "plugin/deviceclass.h"
 #include "plugin/devicedescriptor.h"
 
+#include "guhconfiguration.h"
 #include "devicemanager.h"
 #include "ruleengine.h"
 #include "servermanager.h"
 
+#include "cloud/cloudmanager.h"
 #include "time/timemanager.h"
 
 #include <QObject>
@@ -64,12 +66,14 @@ public:
 
     RuleEngine::RuleError removeRule(const RuleId &id);
 
+    GuhConfiguration *configuration() const;
     LogEngine* logEngine() const;
     JsonRPCServer *jsonRPCServer() const;
     RestServer *restServer() const;
     DeviceManager *deviceManager() const;
     RuleEngine *ruleEngine() const;
     TimeManager *timeManager() const;
+    CloudManager *cloudManager() const;
 
 signals:
     void eventTriggered(const Event &event);
@@ -93,11 +97,13 @@ private:
     explicit GuhCore(QObject *parent = 0);
     static GuhCore *s_instance;
 
+    GuhConfiguration *m_configuration;
     ServerManager *m_serverManager;
     DeviceManager *m_deviceManager;
     RuleEngine *m_ruleEngine;
     LogEngine *m_logger;
     TimeManager *m_timeManager;
+    CloudManager *m_cloudManager;
 
     QHash<ActionId, Action> m_pendingActions;
 

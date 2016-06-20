@@ -43,9 +43,7 @@ class MockTcpServer;
 
 namespace guhserver {
 
-#ifdef WEBSOCKET
 class WebSocketServer;
-#endif
 
 #ifndef TESTING_ENABLED
 class TcpServer;
@@ -64,6 +62,8 @@ public:
     Q_INVOKABLE JsonReply* SetNotificationStatus(const QVariantMap &params);
 
     QHash<QString, JsonHandler*> handlers() const;
+
+    void registerTransportInterface(TransportInterface *interface);
 
 private slots:
     void setup();
@@ -84,9 +84,7 @@ private:
     TcpServer *m_tcpServer;
 #endif
 
-#ifdef WEBSOCKET
     WebSocketServer *m_websocketServer;
-#endif
 
     QList<TransportInterface *> m_interfaces;
     QHash<QString, JsonHandler *> m_handlers;

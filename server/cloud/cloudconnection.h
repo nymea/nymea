@@ -18,51 +18,68 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef TIMEMANAGER_H
-#define TIMEMANAGER_H
+#ifndef CLOUDCONNECTION_H
+#define CLOUDCONNECTION_H
 
-#include <QTimer>
+#include <QUrl>
+#include <QUuid>
 #include <QObject>
-#include <QDateTime>
-#include <QTimeZone>
+#include <QTimer>
+#include <QWebSocket>
+
+#include "cloud.h"
+#include "cloudauthenticator.h"
 
 namespace guhserver {
 
-class TimeManager : public QObject
+class CloudConnection : public QObject
 {
     Q_OBJECT
 public:
-    explicit TimeManager(const QByteArray &timeZone, QObject *parent = 0);
+    explicit CloudConnection(const QUrl &authenticationServer, const QUrl &proxyServer, QObject *parent = 0);
 
-    QByteArray timeZone() const;
-    void setTimeZone(const QByteArray &timeZone = QTimeZone::systemTimeZoneId());
+    bool connectToCloud();
+    void disconnectFromCloud();
 
-    QDateTime currentDateTime() const;
-    QTime currentTime() const;
-    QDate currentDate() const;
+    void sendData(const QByteArray &data);
 
-#ifdef TESTING_ENABLED
-    void stopTimer();
-    void setTime(const QDateTime &dateTime);
-#endif
+    CloudAuthenticator *authenticator() const;
+
+    bool connected() const;
+    Cloud::CloudError error() const;
 
 private:
-    QTimeZone m_timeZone;
-    QDateTime m_dateTime;
-    QTimer *m_guhTimer;
+    QWebSocket *m_connection;
+    CloudAuthenticator *m_authenticator;
+
+    QTimer *m_reconnectionTimer;
+
+    QUrl m_authenticationServerUrl;
+    QUrl m_proxyServerUrl;
+
+    bool m_connected;
+    Cloud::CloudError m_error;
+
+    void setConnected(const bool &connected);
 
 signals:
-    void tick();
-    void dateTimeChanged(const QDateTime &dateTime);
+    void dataReceived(const QVariantMap &data);
+    void enabledChanged();
+    void connectedChanged();
+    void activeChanged();
+    void authenticatedChanged();
 
 private slots:
-    void guhTimeout();
+    void onAuthenticationChanged();
+    void onConnected();
+    void onDisconnected();
+    void onTextMessageReceived(const QString &message);
+    void onError(const QAbstractSocket::SocketError &error);
 
-public slots:
-    void onTimeZoneChanged();
+    void reconnectionTimeout();
 
 };
 
 }
 
-#endif // TIMEMANAGER_H
+#endif // CLOUDCONNECTION_H

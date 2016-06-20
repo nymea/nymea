@@ -1,4 +1,4 @@
-41
+42
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -29,6 +29,43 @@
                         "$ref:ParamType"
                     ]
                 }
+            }
+        },
+        "Cloud.Authenticate": {
+            "description": "Connect and authenticate the cloud connection with the given username and password.",
+            "params": {
+                "password": "String",
+                "username": "String"
+            },
+            "returns": {
+                "cloudError": "$ref:CloudError"
+            }
+        },
+        "Cloud.Disable": {
+            "description": "Disable the cloud connection.",
+            "params": {
+            },
+            "returns": {
+                "cloudError": "$ref:CloudError"
+            }
+        },
+        "Cloud.Enable": {
+            "description": "Enable the cloud connection.",
+            "params": {
+            },
+            "returns": {
+                "cloudError": "$ref:CloudError"
+            }
+        },
+        "Cloud.GetConnectionStatus": {
+            "description": "Get the current status of the cloud connection.",
+            "params": {
+            },
+            "returns": {
+                "active": "Bool",
+                "authenticated": "Bool",
+                "connected": "Bool",
+                "enabled": "Bool"
             }
         },
         "Devices.AddConfiguredDevice": {
@@ -463,6 +500,15 @@
         }
     },
     "notifications": {
+        "Cloud.ConnectionStatusChanged": {
+            "description": "Emitted whenever the status of the cloud connection changed. The cloud connection is active if a cloud client is talking with the server.",
+            "params": {
+                "active": "Bool",
+                "authenticated": "Bool",
+                "connected": "Bool",
+                "enabled": "Bool"
+            }
+        },
         "Devices.DeviceAdded": {
             "description": "Emitted whenever a Device was added.",
             "params": {
@@ -586,6 +632,14 @@
             "o:repeating": "$ref:RepeatingOption",
             "o:startTime": "Time"
         },
+        "CloudError": [
+            "CloudErrorNoError",
+            "CloudErrorAuthenticationFailed",
+            "CloudErrorCloudConnectionDisabled",
+            "CloudErrorIdentityServerNotReachable",
+            "CloudErrorProxyServerNotReachable",
+            "CloudErrorLoginCredentialsMissing"
+        ],
         "CreateMethod": [
             "CreateMethodUser",
             "CreateMethodAuto",

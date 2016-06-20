@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.guru>                 *
+ *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.guru>                 *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -18,20 +18,49 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "loggingcategories.h"
+#include "cloudjsonreply.h"
 
-Q_LOGGING_CATEGORY(dcApplication, "Application")
-Q_LOGGING_CATEGORY(dcDeviceManager, "DeviceManager")
-Q_LOGGING_CATEGORY(dcTimeManager, "TimeManager")
-Q_LOGGING_CATEGORY(dcRuleEngine, "RuleEngine")
-Q_LOGGING_CATEGORY(dcHardware, "Hardware")
-Q_LOGGING_CATEGORY(dcConnection, "Connection")
-Q_LOGGING_CATEGORY(dcLogEngine, "LogEngine")
-Q_LOGGING_CATEGORY(dcTcpServer, "TcpServer")
-Q_LOGGING_CATEGORY(dcWebServer, "WebServer")
-Q_LOGGING_CATEGORY(dcWebSocketServer, "WebSocketServer")
-Q_LOGGING_CATEGORY(dcJsonRpc, "JsonRpc")
-Q_LOGGING_CATEGORY(dcRest, "Rest")
-Q_LOGGING_CATEGORY(dcOAuth2, "OAuth2")
-Q_LOGGING_CATEGORY(dcAvahi, "Avahi")
-Q_LOGGING_CATEGORY(dcCloud, "Cloud")
+namespace guhserver {
+
+CloudJsonReply::CloudJsonReply(int commandId, QString nameSpace, QString method, QVariantMap params, QObject *parent) :
+    QObject(parent),
+    m_commandId(commandId),
+    m_nameSpace(nameSpace),
+    m_method(method),
+    m_params(params)
+{
+
+}
+
+int CloudJsonReply::commandId() const
+{
+    return m_commandId;
+}
+
+QString CloudJsonReply::nameSpace() const
+{
+    return m_nameSpace;
+}
+
+QString CloudJsonReply::method() const
+{
+    return m_method;
+}
+
+QVariantMap CloudJsonReply::params() const
+{
+    return m_params;
+}
+
+QVariantMap CloudJsonReply::requestMap()
+{
+    QVariantMap request;
+    request.insert("id", m_commandId);
+    request.insert("method", m_nameSpace + "." + m_method);
+    if (!m_params.isEmpty())
+        request.insert("params", m_params);
+
+    return request;
+}
+
+}

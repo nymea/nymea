@@ -35,8 +35,15 @@ public:
 
     QString nameSpace() const;
 
-    // API methods
-    Q_INVOKABLE void processAuthenticate(const QVariantMap &params);
+public:
+    enum CloudError {
+        CloudErrorNoError,
+        CloudErrorAuthenticationFailed,
+        CloudErrorCloudConnectionDisabled,
+        CloudErrorIdentyServerNotReachable,
+        CloudErrorProxyServerNotReachable,
+        CloudErrorLoginCredentialsMissing
+    };
 
 };
 

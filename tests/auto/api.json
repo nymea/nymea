@@ -586,6 +586,14 @@
             "o:repeating": "$ref:RepeatingOption",
             "o:startTime": "Time"
         },
+        "CloudError": [
+            "CloudErrorNoError",
+            "CloudErrorAuthenticationFailed",
+            "CloudErrorCloudConnectionDisabled",
+            "CloudErrorIdentyServerNotReachable",
+            "CloudErrorProxyServerNotReachable",
+            "CloudErrorLoginCredentialsMissing"
+        ],
         "CreateMethod": [
             "CreateMethodUser",
             "CreateMethodAuto",

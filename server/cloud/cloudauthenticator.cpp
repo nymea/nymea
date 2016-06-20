@@ -209,6 +209,14 @@ void CloudAuthenticator::replyFinished(QNetworkReply *reply)
         QByteArray data = reply->readAll();
         m_tokenRequests.removeAll(reply);
 
+        if (reply->error() != QNetworkReply::NoError) {
+            qCWarning(dcCloud()) << "Authenticator: Request token reply error:" << status << reply->errorString();
+            m_error = Cloud::CloudErrorIdentityServerNotReachable;
+            setAuthenticated(false);
+            reply->deleteLater();
+            return;
+        }
+
         // check HTTP status code
         if (status != 200) {
             qCWarning(dcCloud()) << "Authenticator: Request token reply HTTP error:" << status << reply->errorString();
@@ -249,6 +257,14 @@ void CloudAuthenticator::replyFinished(QNetworkReply *reply)
 
         QByteArray data = reply->readAll();
         m_refreshTokenRequests.removeAll(reply);
+
+        if (reply->error() != QNetworkReply::NoError) {
+            qCWarning(dcCloud()) << "Authenticator: Request token reply error:" << status << reply->errorString();
+            m_error = Cloud::CloudErrorIdentityServerNotReachable;
+            setAuthenticated(false);
+            reply->deleteLater();
+            return;
+        }
 
         // check HTTP status code
         if (status != 200) {

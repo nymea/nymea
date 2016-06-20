@@ -40,7 +40,7 @@ public:
         CloudErrorNoError,
         CloudErrorAuthenticationFailed,
         CloudErrorCloudConnectionDisabled,
-        CloudErrorIdentyServerNotReachable,
+        CloudErrorIdentityServerNotReachable,
         CloudErrorProxyServerNotReachable,
         CloudErrorLoginCredentialsMissing
     };

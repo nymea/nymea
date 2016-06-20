@@ -26,6 +26,7 @@
 #include "guhcore.h"
 #include "jsonhandler.h"
 #include "loggingcategories.h"
+#include "cloud/cloud.h"
 
 namespace guhserver {
 
@@ -37,14 +38,20 @@ public:
 
     QString name() const;
 
-    Q_INVOKABLE JsonReply* Authenticate(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply* Authenticate(const QVariantMap &params);
     Q_INVOKABLE JsonReply* GetConnectionStatus(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply* Enable(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply* Disable(const QVariantMap &params) const;
+
+private:
+    QList<JsonReply *> m_asyncAuthenticationReplies;
 
 signals:
     void ConnectionStatusChanged(const QVariantMap &params);
 
 private slots:
     void onConnectionStatusChanged();
+    void onAuthenticationRequestFinished(const Cloud::CloudError &error);
 
 };
 

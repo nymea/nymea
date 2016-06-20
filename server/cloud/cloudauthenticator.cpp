@@ -30,7 +30,8 @@ CloudAuthenticator::CloudAuthenticator(QString clientId, QString clientSecret, Q
     QObject(parent),
     m_clientId(clientId),
     m_clientSecret(clientSecret),
-    m_authenticated(false)
+    m_authenticated(false),
+    m_error(Cloud::CloudErrorNoError)
 {
     m_refreshToken = loadRefreshToken();
     m_username = loadUserName();
@@ -71,10 +72,6 @@ QString CloudAuthenticator::username() const
 
 void CloudAuthenticator::setUsername(const QString &username)
 {
-    GuhSettings settings(GuhSettings::SettingsRoleDevices);
-    settings.beginGroup("Cloud");
-    settings.setValue("userName", username);
-    settings.endGroup();
     m_username = username;
 }
 
@@ -120,10 +117,13 @@ bool CloudAuthenticator::authenticated() const
 
 bool CloudAuthenticator::startAuthentication()
 {
-    qCDebug(dcCloud()) << "Authenticator: Start authentication" << m_username;
+    qCDebug(dcCloud()) << "Authenticator: Start authenticating" << m_username;
 
     // Check if we have username and password
     if(!m_username.isEmpty() && !m_password.isEmpty()) {
+        m_refreshToken.clear();
+        stopAuthentication();
+
         QUrlQuery query;
         query.addQueryItem("grant_type", "password");
         query.addQueryItem("username", m_username);
@@ -139,19 +139,28 @@ bool CloudAuthenticator::startAuthentication()
         m_tokenRequests.append(m_networkManager->post(request, m_query.toString().toUtf8()));
         return true;
     } else if (!m_refreshToken.isEmpty()) {
-        // Use the refreshtoken if there is any
+        // Use the refreshtoken if there is one
         refreshTimeout();
         return true;
     }
 
     qCWarning(dcCloud()) << "Authenticator: Cannot start authentication. There is no refresh token, username or password around.";
     stopAuthentication();
+    m_error = Cloud::CloudErrorLoginCredentialsMissing;
     return false;
 }
 
 void CloudAuthenticator::stopAuthentication()
 {
+    qCDebug(dcCloud()) << "Authenticator: stop authentication";
     m_timer->stop();
+    m_authenticated = false;
+    emit authenticationChanged();
+}
+
+Cloud::CloudError CloudAuthenticator::error() const
+{
+    return m_error;
 }
 
 void CloudAuthenticator::setAuthenticated(const bool &authenticated)
@@ -209,10 +218,19 @@ void CloudAuthenticator::replyFinished(QNetworkReply *reply)
         QByteArray data = reply->readAll();
         m_tokenRequests.removeAll(reply);
 
+        if (reply->error() != QNetworkReply::NoError) {
+            qCWarning(dcCloud()) << "Authenticator: Request token reply error:" << status << reply->errorString();
+            m_error = Cloud::CloudErrorIdentyServerNotReachable;
+            setAuthenticated(false);
+            reply->deleteLater();
+            return;
+        }
+
         // check HTTP status code
         if (status != 200) {
             qCWarning(dcCloud()) << "Authenticator: Request token reply HTTP error:" << status << reply->errorString();
             qCWarning(dcCloud()) << data;
+            m_error = Cloud::CloudErrorAuthenticationFailed;
             setAuthenticated(false);
             reply->deleteLater();
             return;
@@ -223,6 +241,7 @@ void CloudAuthenticator::replyFinished(QNetworkReply *reply)
         QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
         if (error.error != QJsonParseError::NoError) {
             qCWarning(dcCloud()) << "Authenticator: Request token reply JSON error:" << error.errorString();
+            m_error = Cloud::CloudErrorAuthenticationFailed;
             setAuthenticated(false);
             reply->deleteLater();
             return;
@@ -230,13 +249,21 @@ void CloudAuthenticator::replyFinished(QNetworkReply *reply)
 
         if (!jsonDoc.toVariant().toMap().contains("access_token")) {
             qCWarning(dcCloud()) << "Authenticator: Could not get access token" << jsonDoc.toJson();
+            m_error = Cloud::CloudErrorAuthenticationFailed;
             setAuthenticated(false);
             reply->deleteLater();
             return;
         }
 
+        m_error = Cloud::CloudErrorNoError;
         setToken(jsonDoc.toVariant().toMap().value("access_token").toString());
         setAuthenticated(true);
+
+        // Save the username
+        GuhSettings settings(GuhSettings::SettingsRoleDevices);
+        settings.beginGroup("Cloud");
+        settings.setValue("userName", m_username);
+        settings.endGroup();
 
         if (jsonDoc.toVariant().toMap().contains("expires_in") && jsonDoc.toVariant().toMap().contains("refresh_token")) {
             int expireTime = jsonDoc.toVariant().toMap().value("expires_in").toInt();
@@ -250,9 +277,18 @@ void CloudAuthenticator::replyFinished(QNetworkReply *reply)
         QByteArray data = reply->readAll();
         m_refreshTokenRequests.removeAll(reply);
 
+        if (reply->error() != QNetworkReply::NoError) {
+            qCWarning(dcCloud()) << "Authenticator: Request token reply error:" << status << reply->errorString();
+            m_error = Cloud::CloudErrorIdentyServerNotReachable;
+            setAuthenticated(false);
+            reply->deleteLater();
+            return;
+        }
+
         // check HTTP status code
         if (status != 200) {
             qCWarning(dcCloud()) << "Authenticator: Refresh token reply HTTP error:" << status << reply->errorString();
+            m_error = Cloud::CloudErrorAuthenticationFailed;
             setAuthenticated(false);
             reply->deleteLater();
             return;
@@ -263,6 +299,7 @@ void CloudAuthenticator::replyFinished(QNetworkReply *reply)
         QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
         if (error.error != QJsonParseError::NoError) {
             qCWarning(dcCloud()) << "Authenticator: Refresh token reply JSON error:" << error.errorString();
+            m_error = Cloud::CloudErrorAuthenticationFailed;
             setAuthenticated(false);
             reply->deleteLater();
             return;
@@ -270,11 +307,13 @@ void CloudAuthenticator::replyFinished(QNetworkReply *reply)
 
         if (!jsonDoc.toVariant().toMap().contains("access_token")) {
             qCWarning(dcCloud()) << "Authenticator: Could not get access token after refresh" << jsonDoc.toJson();
+            m_error = Cloud::CloudErrorAuthenticationFailed;
             setAuthenticated(false);
             reply->deleteLater();
             return;
         }
 
+        m_error = Cloud::CloudErrorNoError;
         setToken(jsonDoc.toVariant().toMap().value("access_token").toString());
         qCDebug(dcCloud()) << "Authenticator: Token refreshed successfully";
 

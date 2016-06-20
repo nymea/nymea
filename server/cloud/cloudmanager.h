@@ -23,23 +23,24 @@
 
 #include <QObject>
 
-
-#include "transportinterface.h"
+#include "cloud.h"
 #include "cloudinterface.h"
-#include "cloudauthenticator.h"
 #include "cloudconnection.h"
+#include "transportinterface.h"
+#include "cloudauthenticator.h"
 
 namespace guhserver {
 
 class CloudManager : public TransportInterface
 {
     Q_OBJECT
+
 public:
     friend class CloudInterface;
     friend class CloudConnectionHandler;
     friend class CloudAuthenticationHandler;
 
-    explicit CloudManager(QObject *parent = 0);
+    explicit CloudManager(const bool &enabled, const QUrl &authenticationServerUrl, const QUrl &proxyServerUrl, QObject *parent = 0);
     ~CloudManager();
 
     void connectToCloud(const QString &username, const QString &password) ;
@@ -49,7 +50,6 @@ public:
 
     bool enabled() const;
     bool connected() const;
-    bool connectionAuthenticated() const;
     bool active() const;
     bool authenticated() const;
 
@@ -57,20 +57,29 @@ public slots:
     bool startServer() override;
     bool stopServer() override;
 
+    void onCloudEnabledChanged();
+    void onAuthenticationServerUrlChanged();
+    void onProxyServerUrlChanged();
+
 private:
     CloudConnection *m_cloudConnection;
     CloudInterface *m_interface;
 
-    QList<QUuid> m_clients;
+    QHash<QUuid, QUuid> m_tunnelClients; // clientId | tunnelId
 
     QHash<int, CloudJsonReply *> m_replies;
 
-    QHash<QUuid, QUuid> m_tunnelClients;
-
     QUuid m_connectionId;
+
     bool m_enabled;
     bool m_active;
     bool m_authenticated;
+
+    bool m_runningAuthentication;
+
+    void setEnabled(const bool &enabled);
+    void setActive(const bool &active);
+    void setAuthenticated(const bool &authenticated);
 
 protected:
     void sendCloudData(const QVariantMap &data);
@@ -86,6 +95,8 @@ signals:
     void activeChanged();
     void authenticatedChanged();
 
+    void authenticationFinished(const Cloud::CloudError &error);
+
     // Transport interface signals
     void clientConnected(const QUuid &clientId);
     void clientDisconnected(const QUuid &clientId);
@@ -94,6 +105,8 @@ signals:
 private slots:
     void onConnectedChanged();
     void onAuthenticatedChanged();
+
+    //void authenticationProcessFinished(const bool &success, const CloudConnection::CloudConnectionError error);
 
 };
 

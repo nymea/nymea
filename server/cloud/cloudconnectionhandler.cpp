@@ -60,12 +60,14 @@ void CloudConnectionHandler::processSendData(const QVariantMap &params)
 
 void CloudConnectionHandler::processConnectionAdded(const QVariantMap &params)
 {
-    Q_UNUSED(params)
+    QString name = params.value("connection").toMap().value("name").toString();
+    QUuid connectionId = params.value("connection").toMap().value("id").toUuid();
+    qCDebug(dcCloud()) << "Authorized cloud connection added" << name << connectionId.toString();
 }
 
 void CloudConnectionHandler::processConnectionRemoved(const QVariantMap &params)
 {
-    Q_UNUSED(params)
+    qCDebug(dcCloud()) << "A cloud user connection has been removed" << params.value("connectionId").toString();
 }
 
 void CloudConnectionHandler::processTunnelAdded(const QVariantMap &params)

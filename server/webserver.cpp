@@ -73,6 +73,7 @@
 #include "webserver.h"
 #include "loggingcategories.h"
 #include "guhsettings.h"
+#include "guhcore.h"
 #include "httpreply.h"
 #include "httprequest.h"
 #include "rest/restresource.h"
@@ -573,20 +574,8 @@ bool WebServer::stopServer()
 
 QByteArray WebServer::createServerXmlDocument(QHostAddress address)
 {
-    GuhSettings settings(GuhSettings::SettingsRoleDevices);
-    settings.beginGroup("guhd");
-    QByteArray uuid = settings.value("uuid", QVariant()).toByteArray();
-    if (uuid.isEmpty()) {
-        uuid = QUuid::createUuid().toByteArray().replace("{", "").replace("}","");
-        settings.setValue("uuid", uuid);
-    }
-    settings.endGroup();
-
-    GuhSettings globalSettings(GuhSettings::SettingsRoleGlobal);
-    globalSettings.beginGroup("WebSocketServer");
-    int websocketPort = globalSettings.value("port", 4444).toInt();
-    globalSettings.endGroup();
-
+    QByteArray uuid = GuhCore::instance()->configuration()->serverUuid().toByteArray();
+    uint websocketPort = GuhCore::instance()->configuration()->websocketPort();
 
     QByteArray data;
     QXmlStreamWriter writer(&data);
@@ -616,7 +605,7 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
 
     writer.writeStartElement("device");
     writer.writeTextElement("deviceType", "urn:schemas-upnp-org:device:Basic:1");
-    writer.writeTextElement("friendlyName", "guhIO");
+    writer.writeTextElement("friendlyName", GuhCore::instance()->configuration()->serverName());
     writer.writeTextElement("manufacturer", "guh GmbH");
     writer.writeTextElement("manufacturerURL", "http://guh.io");
     writer.writeTextElement("modelDescription", "IoT server");

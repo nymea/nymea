@@ -23,6 +23,7 @@
 
 #include <QObject>
 
+#include "cloud.h"
 #include "cloudjsonhandler.h"
 
 namespace guhserver {

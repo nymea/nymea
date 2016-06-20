@@ -55,6 +55,11 @@ extern EventTypeId mockEvent2Id;
 extern StateTypeId mockIntStateId;
 extern StateTypeId mockBoolStateId;
 
+// Parent / Child device
+extern EventTypeId mockParentChildEventId;
+extern ActionTypeId mockParentChildActionId;
+extern StateTypeId mockParentChildStateId;
+
 using namespace guhserver;
 
 class MockTcpServer;

@@ -28,6 +28,7 @@
 #include "plugin/deviceclass.h"
 #include "plugin/devicedescriptor.h"
 
+#include "guhconfiguration.h"
 #include "devicemanager.h"
 #include "ruleengine.h"
 #include "servermanager.h"
@@ -65,6 +66,7 @@ public:
 
     RuleEngine::RuleError removeRule(const RuleId &id);
 
+    GuhConfiguration *configuration() const;
     LogEngine* logEngine() const;
     JsonRPCServer *jsonRPCServer() const;
     RestServer *restServer() const;
@@ -95,6 +97,7 @@ private:
     explicit GuhCore(QObject *parent = 0);
     static GuhCore *s_instance;
 
+    GuhConfiguration *m_configuration;
     ServerManager *m_serverManager;
     DeviceManager *m_deviceManager;
     RuleEngine *m_ruleEngine;

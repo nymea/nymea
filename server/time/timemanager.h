@@ -58,6 +58,9 @@ signals:
 private slots:
     void guhTimeout();
 
+public slots:
+    void onTimeZoneChanged();
+
 };
 
 }

@@ -165,7 +165,6 @@ QHash<QString, JsonHandler *> JsonRPCServer::handlers() const
 
 void JsonRPCServer::registerTransportInterface(TransportInterface *interface)
 {
-    // Now set up the logic
     connect(interface, SIGNAL(clientConnected(const QUuid &)), this, SLOT(clientConnected(const QUuid &)));
     connect(interface, SIGNAL(clientDisconnected(const QUuid &)), this, SLOT(clientDisconnected(const QUuid &)));
     connect(interface, SIGNAL(dataAvailable(QUuid, QString, QString, QVariantMap)), this, SLOT(processData(QUuid, QString, QString, QVariantMap)));

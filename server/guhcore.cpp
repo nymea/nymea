@@ -344,6 +344,11 @@ RuleEngine::RuleError GuhCore::removeRule(const RuleId &id)
     return removeError;
 }
 
+GuhConfiguration *GuhCore::configuration() const
+{
+    return m_configuration;
+}
+
 /*! Returns a pointer to the \l{DeviceManager} instance owned by GuhCore.*/
 DeviceManager *GuhCore::deviceManager() const
 {
@@ -372,14 +377,19 @@ CloudManager *GuhCore::cloudManager() const
 GuhCore::GuhCore(QObject *parent) :
     QObject(parent)
 {
+    qCDebug(dcApplication()) << "Loading guh configurations";
+    m_configuration = new GuhConfiguration(this);
+
     qCDebug(dcApplication()) << "Creating Time Manager";
-    m_timeManager = new TimeManager(QTimeZone::systemTimeZoneId(), this);
+    m_timeManager = new TimeManager(m_configuration->timeZone(), this);
 
     qCDebug(dcApplication) << "Creating Log Engine";
     m_logger = new LogEngine(this);
 
     qCDebug(dcApplication) << "Creating Cloud Manager";
-    m_cloudManager = new CloudManager(this);
+    m_cloudManager = new CloudManager(m_configuration->cloudEnabled(),
+                                      m_configuration->cloudAuthenticationServer(),
+                                      m_configuration->cloudProxyServer(), this);
 
     qCDebug(dcApplication) << "Creating Device Manager";
     m_deviceManager = new DeviceManager(this);
@@ -392,6 +402,14 @@ GuhCore::GuhCore(QObject *parent) :
 
     // Register cloud connection transport interface
     m_serverManager->jsonServer()->registerTransportInterface(m_cloudManager);
+
+    // Connect the configuration changes
+    connect(m_configuration, &GuhConfiguration::timeZoneChanged, m_timeManager, &TimeManager::onTimeZoneChanged);
+    connect(m_configuration, &GuhConfiguration::cloudEnabledChanged, m_cloudManager, &CloudManager::onCloudEnabledChanged);
+    connect(m_configuration, &GuhConfiguration::cloudProxyServerChanged, m_cloudManager, &CloudManager::onProxyServerUrlChanged);
+    connect(m_configuration, &GuhConfiguration::cloudAuthenticationServerChanged, m_cloudManager, &CloudManager::onAuthenticationServerUrlChanged);
+
+    // TODO: connect all the configuration stuff
 
     connect(m_deviceManager, &DeviceManager::eventTriggered, this, &GuhCore::gotEvent);
     connect(m_deviceManager, &DeviceManager::deviceStateChanged, this, &GuhCore::deviceStateChanged);

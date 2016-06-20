@@ -32,7 +32,7 @@ CloudHandler::CloudHandler(QObject *parent) :
     params.insert("username", JsonTypes::basicTypeToString(JsonTypes::String));
     params.insert("password", JsonTypes::basicTypeToString(JsonTypes::String));
     setParams("Authenticate", params);
-    returns.insert("cloudConnectionError", JsonTypes::cloudConnectionErrorRef());
+    returns.insert("cloudError", JsonTypes::cloudErrorRef());
     setReturns("Authenticate", returns);
 
     params.clear(); returns.clear();
@@ -44,9 +44,21 @@ CloudHandler::CloudHandler(QObject *parent) :
     returns.insert("authenticated", JsonTypes::basicTypeToString(JsonTypes::Bool));
     setReturns("GetConnectionStatus", returns);
 
+    params.clear(); returns.clear();
+    setDescription("Enable", "Enable the cloud connection.");
+    setParams("Enable", params);
+    returns.insert("cloudError", JsonTypes::cloudErrorRef());
+    setReturns("Enable", returns);
+
+    params.clear(); returns.clear();
+    setDescription("Disable", "Disable the cloud connection.");
+    setParams("Disable", params);
+    returns.insert("cloudError", JsonTypes::cloudErrorRef());
+    setReturns("Disable", returns);
+
     // Notification
     params.clear(); returns.clear();
-    setDescription("ConnectionStatusChanged", "Emitted whenever the status of the cloud connection changed.");
+    setDescription("ConnectionStatusChanged", "Emitted whenever the status of the cloud connection changed. The cloud connection is active if a cloud client is talking with the server.");
     params.insert("enabled", JsonTypes::basicTypeToString(JsonTypes::Bool));
     params.insert("connected", JsonTypes::basicTypeToString(JsonTypes::Bool));
     params.insert("active", JsonTypes::basicTypeToString(JsonTypes::Bool));
@@ -57,6 +69,8 @@ CloudHandler::CloudHandler(QObject *parent) :
     connect(GuhCore::instance()->cloudManager(), SIGNAL(connectedChanged()), this, SLOT(onConnectionStatusChanged()));
     connect(GuhCore::instance()->cloudManager(), SIGNAL(activeChanged()), this, SLOT(onConnectionStatusChanged()));
     connect(GuhCore::instance()->cloudManager(), SIGNAL(authenticatedChanged()), this, SLOT(onConnectionStatusChanged()));
+
+    connect(GuhCore::instance()->cloudManager(), SIGNAL(authenticationFinished(Cloud::CloudError)), this, SLOT(onAuthenticationRequestFinished(Cloud::CloudError)));
 }
 
 QString CloudHandler::name() const
@@ -64,19 +78,21 @@ QString CloudHandler::name() const
     return "Cloud";
 }
 
-JsonReply *CloudHandler::Authenticate(const QVariantMap &params) const
+JsonReply *CloudHandler::Authenticate(const QVariantMap &params)
 {
-    Q_UNUSED(params)
-
     QString username = params.value("username").toString();
     QString password = params.value("password").toString();
     qCDebug(dcJsonRpc()) << "Authenticate cloud connection for user" << username;
 
-    GuhCore::instance()->cloudManager()->connectToCloud(username, password);
+    if (!GuhCore::instance()->cloudManager()->enabled()) {
+        qCWarning(dcCloud()) << "Could not start authentication: cloud connection is disabled";
+        return createReply(statusToReply(Cloud::CloudErrorCloudConnectionDisabled));
+    }
 
-    QVariantMap returns;
-    returns.insert("cloudConnectionError", JsonTypes::cloudConnectionErrorToString(CloudConnection::CloudConnectionErrorNoError));
-    return createReply(returns);
+    JsonReply *reply = createAsyncReply("Authenticate");
+    m_asyncAuthenticationReplies.append(reply);
+    GuhCore::instance()->cloudManager()->connectToCloud(username, password);
+    return reply;
 }
 
 JsonReply *CloudHandler::GetConnectionStatus(const QVariantMap &params) const
@@ -91,6 +107,20 @@ JsonReply *CloudHandler::GetConnectionStatus(const QVariantMap &params) const
     return createReply(returns);
 }
 
+JsonReply *CloudHandler::Enable(const QVariantMap &params) const
+{
+    Q_UNUSED(params)
+    GuhCore::instance()->configuration()->setCloudEnabled(true);
+    return createReply(statusToReply(Cloud::CloudErrorNoError));
+}
+
+JsonReply *CloudHandler::Disable(const QVariantMap &params) const
+{
+    Q_UNUSED(params)
+    GuhCore::instance()->configuration()->setCloudEnabled(false);
+    return createReply(statusToReply(Cloud::CloudErrorNoError));
+}
+
 void CloudHandler::onConnectionStatusChanged()
 {
     QVariantMap params;
@@ -100,6 +130,18 @@ void CloudHandler::onConnectionStatusChanged()
     params.insert("authenticated", GuhCore::instance()->cloudManager()->authenticated());
 
     emit ConnectionStatusChanged(params);
+}
+
+void CloudHandler::onAuthenticationRequestFinished(const Cloud::CloudError &error)
+{
+    if (m_asyncAuthenticationReplies.isEmpty())
+        return;
+
+    foreach (JsonReply *reply, m_asyncAuthenticationReplies) {
+        m_asyncAuthenticationReplies.removeOne(reply);
+        reply->setData(statusToReply(error));
+        reply->finished();
+    }
 }
 
 }

@@ -29,6 +29,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 
+#include "cloud.h"
 #include "loggingcategories.h"
 
 namespace guhserver {
@@ -64,6 +65,8 @@ public:
     bool startAuthentication();
     void stopAuthentication();
 
+    Cloud::CloudError error() const;
+
 private:
     QNetworkAccessManager *m_networkManager;
     QTimer *m_timer;
@@ -81,6 +84,7 @@ private:
     QString m_refreshToken;
 
     bool m_authenticated;
+    Cloud::CloudError m_error;
 
     void setAuthenticated(const bool &authenticated);
     void setToken(const QString &token);

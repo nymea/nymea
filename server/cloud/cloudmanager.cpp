@@ -27,12 +27,14 @@
 
 namespace guhserver {
 
-CloudManager::CloudManager(QObject *parent) :
+CloudManager::CloudManager(const bool &enabled, const QUrl &authenticationServerUrl, const QUrl &proxyServerUrl, QObject *parent) :
     TransportInterface(parent),
-    m_enabled(true),
-    m_authenticated(false)
+    m_enabled(enabled),
+    m_active(false),
+    m_authenticated(false),
+    m_runningAuthentication(false)
 {
-    m_cloudConnection = new CloudConnection(this);
+    m_cloudConnection = new CloudConnection(authenticationServerUrl, proxyServerUrl, this);
     connect(m_cloudConnection, &CloudConnection::authenticatedChanged, this, &CloudManager::onAuthenticatedChanged);
     connect(m_cloudConnection, &CloudConnection::connectedChanged, this, &CloudManager::onConnectedChanged);
 
@@ -51,11 +53,20 @@ void CloudManager::connectToCloud(const QString &username, const QString &passwo
     m_cloudConnection->authenticator()->setUsername(username);
     m_cloudConnection->authenticator()->setPassword(password);
 
-    m_cloudConnection->connectToCloud();
+    if (!m_cloudConnection->connectToCloud()) {
+        m_runningAuthentication = false;
+        emit authenticationFinished(m_cloudConnection->error());
+        return;
+    }
+
+    m_runningAuthentication = true;
 }
 
 void CloudManager::sendData(const QUuid &clientId, const QVariantMap &data)
 {
+    if (m_tunnelClients.value(clientId).isNull())
+        return;
+
     // Used from the JsonRpcServer
     m_interface->sendApiData(m_tunnelClients.value(clientId), data);
 }
@@ -90,7 +101,9 @@ bool CloudManager::authenticated() const
 
 bool CloudManager::startServer()
 {    
-    m_cloudConnection->connectToCloud();
+    if (m_enabled && !m_cloudConnection->connected())
+        m_cloudConnection->connectToCloud();
+
     return true;
 }
 
@@ -100,6 +113,47 @@ bool CloudManager::stopServer()
     return true;
 }
 
+void CloudManager::onCloudEnabledChanged()
+{
+    if (GuhCore::instance()->configuration()->cloudEnabled()) {
+        qCDebug(dcCloud()) << "Enabled.";
+        setEnabled(true);
+        startServer();
+    } else {
+        qCDebug(dcCloud()) << "Disabled.";
+        setEnabled(false);
+        stopServer();
+    }
+}
+
+void CloudManager::onAuthenticationServerUrlChanged()
+{
+    //TODO: set URL in connection/authenticator
+}
+
+void CloudManager::onProxyServerUrlChanged()
+{
+    //TODO: set URL in connection and reconnect
+}
+
+void CloudManager::setEnabled(const bool &enabled)
+{
+    m_enabled = enabled;
+    emit enabledChanged();
+}
+
+void CloudManager::setActive(const bool &active)
+{
+    m_active = active;
+    emit activeChanged();
+}
+
+void CloudManager::setAuthenticated(const bool &authenticated)
+{
+    m_authenticated = authenticated;
+    emit authenticatedChanged();
+}
+
 void CloudManager::sendCloudData(const QVariantMap &data)
 {
     m_cloudConnection->sendData(QJsonDocument::fromVariant(data).toJson());
@@ -107,19 +161,25 @@ void CloudManager::sendCloudData(const QVariantMap &data)
 
 void CloudManager::onConnectionAuthentificationFinished(const bool &authenticated, const QUuid &connectionId)
 {
-    qCDebug(dcCloud()) << "Cloud connection authenticated" << authenticated;
     if (authenticated) {
-        m_authenticated = true;
+        qCDebug(dcCloud()) << "Connection authenticated";
+        setAuthenticated(true);
         m_connectionId = connectionId;
         qCDebug(dcCloud()) << "Connection ID:" << connectionId.toString();
-        emit authenticatedChanged();
 
-        // Get tunnel connections
-        m_interface->getTunnels();
+        if (m_runningAuthentication) {
+            m_runningAuthentication = false;
+            emit authenticationFinished(Cloud::CloudErrorNoError);
+        }
 
     } else {
-        m_authenticated = false;
-        authenticatedChanged();
+        qCWarning(dcCloud()) << "Connection not authorized.";
+        setAuthenticated(false);
+
+        if (m_runningAuthentication) {
+            m_runningAuthentication = false;
+            emit authenticationFinished(m_cloudConnection->error());
+        }
     }
 }
 
@@ -129,6 +189,7 @@ void CloudManager::onTunnelAdded(const QUuid &tunnelId, const QUuid &serverId, c
         qCDebug(dcCloud()) << "New tunnel connection from" << clientId.toString();
         m_tunnelClients.insert(clientId, tunnelId);
         emit clientConnected(clientId);
+        setActive(true);
     }
 }
 
@@ -136,8 +197,12 @@ void CloudManager::onTunnelRemoved(const QUuid &tunnelId)
 {
     if (m_tunnelClients.values().contains(tunnelId)) {
         QUuid clientId = m_tunnelClients.key(tunnelId);
+        qCDebug(dcCloud()) << "Tunnel connection from" << clientId.toString() << "removed.";
         m_tunnelClients.remove(clientId);
         emit clientDisconnected(clientId);
+        if (m_tunnelClients.isEmpty()) {
+            setActive(false);
+        }
     }
 }
 
@@ -168,6 +233,7 @@ void CloudManager::onCloudDataReceived(const QUuid &tunnelId, const QVariantMap 
             sendErrorResponse(clientId, commandId, "No such namespace");
             return;
         }
+
         if (!handler->hasMethod(method)) {
             sendErrorResponse(clientId, commandId, "No such method");
             return;
@@ -182,15 +248,45 @@ void CloudManager::onConnectedChanged()
     // Start authentication if connected
     if (m_cloudConnection->connected()) {
         m_interface->authenticateConnection(m_cloudConnection->authenticator()->token());
-        emit connectedChanged();
+    } else {
+        // Reset information
+        setAuthenticated(false);
+        setActive(false);
+        m_connectionId = QUuid();
+
+        if (m_runningAuthentication) {
+            m_runningAuthentication = false;
+            emit authenticationFinished(m_cloudConnection->error());
+        }
+
+        // Clean up all tunnels
+        foreach (const QUuid &clientId, m_tunnelClients.keys()) {
+            emit clientDisconnected(clientId);
+        }
+        m_tunnelClients.clear();
+
+        // Delete all replies
+        qDeleteAll(m_replies.values());
+        m_replies.clear();
     }
+
+    emit connectedChanged();
 }
 
 void CloudManager::onAuthenticatedChanged()
 {
-    if (!m_cloudConnection->authenticator()->authenticated()) {
-        m_authenticated = false;
-        emit authenticatedChanged();
+    if (m_cloudConnection->authenticator()->authenticated()) {
+        if (m_runningAuthentication) {
+            m_runningAuthentication = false;
+            emit authenticationFinished(Cloud::CloudErrorNoError);
+        }
+        setAuthenticated(true);
+    } else {
+        if (m_runningAuthentication) {
+            m_runningAuthentication = false;
+            emit authenticationFinished(m_cloudConnection->error());
+        }
+        setAuthenticated(false);
     }
 }
 

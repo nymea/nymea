@@ -44,6 +44,7 @@
 #include "time/timedescriptor.h"
 #include "time/timeeventitem.h"
 
+#include "cloud/cloud.h"
 #include "cloud/cloudconnection.h"
 
 #include <QObject>
@@ -124,7 +125,7 @@ public:
     DECLARE_TYPE(loggingLevel, "LoggingLevel", Logging, LoggingLevel)
     DECLARE_TYPE(loggingEventType, "LoggingEventType", Logging, LoggingEventType)
     DECLARE_TYPE(repeatingMode, "RepeatingMode", RepeatingOption, RepeatingMode)
-    DECLARE_TYPE(cloudConnectionError, "CloudConnectionError", CloudConnection, CloudConnectionError)
+    DECLARE_TYPE(cloudError, "CloudError", Cloud, CloudError)
 
     DECLARE_OBJECT(paramType, "ParamType")
     DECLARE_OBJECT(param, "Param")

@@ -18,51 +18,32 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef CLOUDINTERFACE_H
-#define CLOUDINTERFACE_H
+#ifndef CLOUD_H
+#define CLOUD_H
 
-#include <QHash>
-#include <QUuid>
 #include <QObject>
-#include <QVariantMap>
-
-#include "cloud.h"
-#include "cloudjsonreply.h"
-#include "cloudconnectionhandler.h"
-#include "cloudauthenticationhandler.h"
 
 namespace guhserver {
 
-class CloudInterface : public QObject
-{
-    Q_OBJECT
+class Cloud {
+
+    Q_GADGET
+    Q_ENUMS(CloudError)
+
 public:
-    explicit CloudInterface(QObject *parent = 0);
-
-    Q_INVOKABLE void authenticateConnection(const QString &token);
-    Q_INVOKABLE void getTunnels();
-    Q_INVOKABLE void sendApiData(const QUuid &tunnelId, const QVariantMap &data);
-
-private:
-    int m_id;
-    QUuid m_guhUuid;
-
-    QHash<QString, CloudJsonHandler *> m_handlers;
-    QHash<int, CloudJsonReply *> m_replies;
-
-    CloudJsonReply *createReply(QString nameSpace, QString method, QVariantMap params = QVariantMap());
-
-    CloudAuthenticationHandler *m_authenticationHandler;
-    CloudConnectionHandler *m_connectionHandler;
-
-signals:
-    void responseReceived(const int &commandId, const QVariantMap &response);
-
-public slots:
-    void dataReceived(const QVariantMap &data);
+    enum CloudError {
+        CloudErrorNoError,
+        CloudErrorAuthenticationFailed,
+        CloudErrorCloudConnectionDisabled,
+        CloudErrorIdentyServerNotReachable,
+        CloudErrorAuthenticationServerNotReachable,
+        CloudErrorProxyServerNotReachable,
+        CloudErrorLoginCredentialsMissing
+    };
 
 };
 
 }
 
-#endif // CLOUDINTERFACE_H
+#endif // CLOUD_H
+

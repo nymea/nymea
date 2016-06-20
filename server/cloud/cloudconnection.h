@@ -27,6 +27,7 @@
 #include <QTimer>
 #include <QWebSocket>
 
+#include "cloud.h"
 #include "cloudauthenticator.h"
 
 namespace guhserver {
@@ -34,47 +35,32 @@ namespace guhserver {
 class CloudConnection : public QObject
 {
     Q_OBJECT
-    Q_ENUMS(CloudConnectionError)
-
 public:
-    enum CloudConnectionError {
-        CloudConnectionErrorNoError,
-        CloudConnectionErrorAuthenticationFailed,
-        CloudConnectionErrorCloudServerNotReachable
-    };
+    explicit CloudConnection(const QUrl &authenticationServer, const QUrl &proxyServer, QObject *parent = 0);
 
-    explicit CloudConnection(QObject *parent = 0);
-
-    void connectToCloud();
+    bool connectToCloud();
     void disconnectFromCloud();
+
+    void sendData(const QByteArray &data);
 
     CloudAuthenticator *authenticator() const;
 
-    CloudConnectionError error() const;
-    void enable();
-    void disable();
-
     bool connected() const;
-    bool authenticated() const;
-
-    void sendData(const QByteArray &data);
-    void sendRequest(const QVariantMap &request);
+    Cloud::CloudError error() const;
 
 private:
     QWebSocket *m_connection;
     CloudAuthenticator *m_authenticator;
-    CloudConnectionError m_error;
 
     QTimer *m_reconnectionTimer;
 
-    QUrl m_proxyUrl;
-    QUrl m_keystoneUrl;
+    QUrl m_authenticationServerUrl;
+    QUrl m_proxyServerUrl;
 
     bool m_connected;
-    bool m_authenticated;
+    Cloud::CloudError m_error;
 
     void setConnected(const bool &connected);
-    void setAuthenticated(const bool &authenticated);
 
 signals:
     void dataReceived(const QVariantMap &data);
@@ -87,8 +73,8 @@ private slots:
     void onAuthenticationChanged();
     void onConnected();
     void onDisconnected();
-    void onError(const QAbstractSocket::SocketError &error);
     void onTextMessageReceived(const QString &message);
+    void onError(const QAbstractSocket::SocketError &error);
 
     void reconnectionTimeout();
 

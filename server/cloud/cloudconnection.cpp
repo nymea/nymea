@@ -26,15 +26,13 @@
 
 namespace guhserver {
 
-CloudConnection::CloudConnection(QObject *parent) :
+CloudConnection::CloudConnection(const QUrl &authenticationServer, const QUrl &proxyServer, QObject *parent) :
     QObject(parent),
-    m_error(CloudConnectionErrorNoError),
+    m_authenticationServerUrl(authenticationServer),
+    m_proxyServerUrl(proxyServer),
     m_connected(false),
-    m_authenticated(false)
+    m_error(Cloud::CloudErrorNoError)
 {
-    m_proxyUrl = QUrl("ws://127.0.0.1:1212");
-    m_keystoneUrl = QUrl("http://localhost:8000/oauth2/token");
-
     m_reconnectionTimer = new QTimer(this);
     m_reconnectionTimer->setSingleShot(false);
     connect(m_reconnectionTimer, &QTimer::timeout, this, &CloudConnection::reconnectionTimeout);
@@ -46,44 +44,23 @@ CloudConnection::CloudConnection(QObject *parent) :
     connect(m_connection, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onError(QAbstractSocket::SocketError)));
 
     m_authenticator = new CloudAuthenticator("0631d42ba0464e4ebd4b78b15c53f532", "b7919ebf3bcf48239f348e764744079b", this);
-    m_authenticator->setUrl(m_keystoneUrl);
+    m_authenticator->setUrl(m_authenticationServerUrl);
 
     connect(m_authenticator, &CloudAuthenticator::authenticationChanged, this, &CloudConnection::onAuthenticationChanged);
 }
 
-void CloudConnection::connectToCloud()
+bool CloudConnection::connectToCloud()
 {
-    if (m_connection->state() == QAbstractSocket::ConnectedState) {
+    if (m_connected)
         disconnectFromCloud();
-    }
 
-    m_authenticator->startAuthentication();
+    return m_authenticator->startAuthentication();
 }
 
 void CloudConnection::disconnectFromCloud()
 {
     m_authenticator->stopAuthentication();
-    m_connection->close(QWebSocketProtocol::CloseCodeNormal, "Disconnecting");
-}
-
-CloudAuthenticator *CloudConnection::authenticator() const
-{
-    return m_authenticator;
-}
-
-CloudConnection::CloudConnectionError CloudConnection::error() const
-{
-    return m_error;
-}
-
-bool CloudConnection::connected() const
-{
-    return m_connected;
-}
-
-bool CloudConnection::authenticated() const
-{
-    return m_authenticated;
+    m_connection->close(QWebSocketProtocol::CloseCodeNormal, "Cloud connection disabled.");
 }
 
 void CloudConnection::sendData(const QByteArray &data)
@@ -91,33 +68,45 @@ void CloudConnection::sendData(const QByteArray &data)
     m_connection->sendTextMessage(data);
 }
 
-void CloudConnection::setConnected(const bool &connected)
+CloudAuthenticator *CloudConnection::authenticator() const
 {
-    m_connected = connected;
-    emit connectedChanged();
+    return m_authenticator;
 }
 
-void CloudConnection::setAuthenticated(const bool &authenticated)
+bool CloudConnection::connected() const
 {
-    m_authenticated = authenticated;
-    emit authenticatedChanged();
+    return m_connected;
+}
+
+Cloud::CloudError CloudConnection::error() const
+{
+    return m_error;
+}
+
+void CloudConnection::setConnected(const bool &connected)
+{
+    if (m_connected != connected) {
+        m_connected = connected;
+        emit connectedChanged();
+    }
 }
 
 void CloudConnection::onAuthenticationChanged()
 {
-    setAuthenticated(m_authenticator->authenticated());
-
-    if (m_authenticated) {
-        qCDebug(dcCloud()) << "Connecting to" << m_proxyUrl.toString();
-        m_connection->open(m_proxyUrl);
+    if (authenticator()->authenticated()) {
+        qCDebug(dcCloud()) << "Connecting to" << m_proxyServerUrl.toString();
+        m_error = Cloud::CloudErrorNoError;
+        m_connection->open(m_proxyServerUrl);
     } else {
-        m_error = CloudConnectionErrorAuthenticationFailed;
+        qCWarning(dcCloud()) << "Could not authenticate";
+        m_error = m_authenticator->error();
     }
 }
 
 void CloudConnection::onConnected()
 {
-    qCDebug(dcCloud()) << "Connected to cloud proxy server" << m_proxyUrl.toString();
+    qCDebug(dcCloud()) << "Connected to cloud proxy server" << m_proxyServerUrl.toString();
+    m_error = Cloud::CloudErrorNoError;
     setConnected(true);
     m_reconnectionTimer->stop();
 }
@@ -127,14 +116,8 @@ void CloudConnection::onDisconnected()
     if (!m_reconnectionTimer->isActive())
         qCDebug(dcCloud()) << "Disconnected from cloud:" << m_connection->closeReason();
 
+    m_error = Cloud::CloudErrorProxyServerNotReachable;
     setConnected(false);
-    m_reconnectionTimer->start(10000);
-}
-
-void CloudConnection::onError(const QAbstractSocket::SocketError &error)
-{
-    if (!m_reconnectionTimer->isActive())
-        qCWarning(dcCloud()) << "Websocket error:" << error << m_connection->errorString();
     m_reconnectionTimer->start(10000);
 }
 
@@ -150,16 +133,23 @@ void CloudConnection::onTextMessageReceived(const QString &message)
     emit dataReceived(jsonDoc.toVariant().toMap());
 }
 
+void CloudConnection::onError(const QAbstractSocket::SocketError &error)
+{
+    if (!m_reconnectionTimer->isActive())
+        qCWarning(dcCloud()) << "Websocket error:" << error << m_connection->errorString();
+
+    m_error = Cloud::CloudErrorProxyServerNotReachable;
+    m_reconnectionTimer->start(10000);
+}
+
 void CloudConnection::reconnectionTimeout()
 {
-    if (m_authenticated) {
-        m_connection->open(m_proxyUrl);
+    if (authenticator()->authenticated()) {
+        m_connection->open(m_proxyServerUrl);
     } else {
         m_reconnectionTimer->stop();
-        m_error = CloudConnectionErrorAuthenticationFailed;
     }
 
 }
-
 
 }

@@ -28,15 +28,6 @@ namespace guhserver {
 CloudInterface::CloudInterface(QObject *parent) :
     QObject(parent)
 {
-    GuhSettings settings(GuhSettings::SettingsRoleDevices);
-    settings.beginGroup("guhd");
-    m_guhUuid = settings.value("uuid", QVariant()).toUuid();
-    if (m_guhUuid.isNull()) {
-        m_guhUuid = QUuid::createUuid().toString();
-        settings.setValue("uuid", m_guhUuid);
-    }
-    settings.endGroup();
-
     m_authenticationHandler = new CloudAuthenticationHandler(this);
     m_connectionHandler = new CloudConnectionHandler(this);
 
@@ -50,8 +41,8 @@ void CloudInterface::authenticateConnection(const QString &token)
 
     QVariantMap params;
     // TODO: use server/station name
-    params.insert("name", "guhIO");
-    params.insert("id", m_guhUuid);
+    params.insert("name", GuhCore::instance()->configuration()->serverName());
+    params.insert("id", GuhCore::instance()->configuration()->serverUuid());
     params.insert("token", token);
     params.insert("type", "ConnectionTypeServer");
 
@@ -69,8 +60,6 @@ void CloudInterface::getTunnels()
 
 void CloudInterface::sendApiData(const QUuid &tunnelId, const QVariantMap &data)
 {
-    //qCDebug(dcCloud()) << "Send API data" << tunnelId.toString() << data;
-
     QVariantMap params;
     params.insert("tunnelId", tunnelId.toString());
     params.insert("data", data);

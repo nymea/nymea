@@ -165,7 +165,7 @@ void CloudManager::onConnectionAuthentificationFinished(const bool &authenticate
         qCDebug(dcCloud()) << "Connection authenticated";
         setAuthenticated(true);
         m_connectionId = connectionId;
-        qCDebug(dcCloud()) << "Connection ID:" << connectionId.toString();
+        qCDebug(dcCloud()) << "Connection id:" << connectionId.toString();
 
         if (m_runningAuthentication) {
             m_runningAuthentication = false;

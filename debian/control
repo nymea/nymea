@@ -105,6 +105,8 @@ Depends: libguh1 (= ${binary:Version}),
   ${shlibs:Depends},
   ${misc:Depends},
   python,
+  qtconnectivity5-dev,
+  libqt5websockets5-dev,
   libavahi-client-dev,
   libavahi-common-dev
 Description: An open source IoT server - development files

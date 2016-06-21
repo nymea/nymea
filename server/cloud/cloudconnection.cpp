@@ -126,7 +126,7 @@ void CloudConnection::onTextMessageReceived(const QString &message)
     QJsonParseError error;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(message.toUtf8(), &error);
     if (error.error != QJsonParseError::NoError) {
-        qCWarning(dcCloud()) << "Could not parse json data from guh" << qUtf8Printable(message.toUtf8()) << error.errorString();
+        qCWarning(dcCloud()) << "Could not parse json data from guh" << message.toUtf8() << error.errorString();
         return;
     }
 

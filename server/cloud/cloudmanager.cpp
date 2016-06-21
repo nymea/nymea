@@ -111,8 +111,7 @@ void CloudManager::onConnectionAuthentificationFinished(const bool &authenticate
     if (authenticated) {
         m_authenticated = true;
         m_connectionId = connectionId;
-        qCDebug(dcCloud()) << "Connection ID:" << connectionId.toString();
-        emit authenticatedChanged();
+        qCDebug(dcCloud()) << "Connection id:" << connectionId.toString();
 
         // Get tunnel connections
         m_interface->getTunnels();

@@ -1,6 +1,8 @@
-include(plugins.pri)
+include(../../plugins.pri)
 
 TARGET = $$qtLibraryTarget(guh_devicepluginpushbullet)
+
+QT += network
 
 message(============================================)
 message(Qt version: $$[QT_VERSION])

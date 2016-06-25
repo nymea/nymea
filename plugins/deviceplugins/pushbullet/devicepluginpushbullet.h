@@ -24,17 +24,13 @@ public:
     DevicePluginPushbullet();
     DeviceManager::HardwareResources requiredHardware() const override;
 	DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
-	void deviceRemoved(Device *device) override;
+    void networkManagerReplyReady(QNetworkReply *reply) override;
 
 public slots:
 	DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
 
 private:
-    QNetworkAccessManager *m_manager;
     void sendNotification(Device* device, ParamList params);
-
-private slots:
-	void replyFinished(QNetworkReply *reply);
 };
 
 #endif // DEVICEPLUGINPUSHBULLET_H

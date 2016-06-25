@@ -42,7 +42,7 @@
                                     "name": "body",
                                     "type": "QString",
                                     "index": 1,
-                                    "inputType": "TextLine",
+                                    "inputType": "TextArea",
                                     "defaultValue": ""
                                 }
                             ]

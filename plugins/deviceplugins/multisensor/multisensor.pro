@@ -8,6 +8,8 @@ message("Building $$deviceplugin$${TARGET}.so")
 
 SOURCES += \
     devicepluginmultisensor.cpp \
+    sensortag.cpp
 
 HEADERS += \
     devicepluginmultisensor.h \
+    sensortag.h

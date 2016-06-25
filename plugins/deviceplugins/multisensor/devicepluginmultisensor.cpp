@@ -18,10 +18,32 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \page multisensor.html
+    \title MultiSensor
+    \brief Plugin for TI SensorTag.
+
+    \ingroup plugins
+    \ingroup guh-plugins
+
+    This plugin allows finding and controlling the Bluetooth Low Energy SensorTag from Texas Instruments.
+
+    \chapter Plugin properties
+    Following JSON file contains the definition and the description of all available
+\l{DeviceClass}{DeviceClasses}
+    and \l{Vendor}{Vendors} of this \l{DevicePlugin}.
+
+    For more details on how to read this JSON file please check out the documentation fo
+r \l{The plugin JSON File}.
+
+    \quotefile plugins/deviceplugins/multisensor/devicepluginmultisensor.json
+*/
+
+
 #include "devicepluginmultisensor.h"
 #include "plugininfo.h"
-
-// Note: You can find the documentation for this code here -> http://dev.guh.guru/write-plugins.html
+#include "devicemanager.h"
+#include "bluetooth/bluetoothlowenergydevice.h"
 
 /* The constructor of this device plugin. */
 DevicePluginMultiSensor::DevicePluginMultiSensor()
@@ -31,16 +53,42 @@ DevicePluginMultiSensor::DevicePluginMultiSensor()
 
 /* This method will be called from the devicemanager to get
  * information about this plugin which device resource will be needed.
- *
- * For multiple resources use the OR operator:
- * Example:
- *
- * return DeviceManager::HardwareResourceTimer | DeviceManager::HardwareResourceNetworkManager;
- *
  */
 DeviceManager::HardwareResources DevicePluginMultiSensor::requiredHardware() const
 {
-    return DeviceManager::HardwareResourceNone;
+    return DeviceManager::HardwareResourceBluetoothLE;
+}
+
+DeviceManager::DeviceError DevicePluginMultiSensor::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
+{
+    Q_UNUSED(params)
+
+    if (deviceClassId != sensortagDeviceClassId)
+        return DeviceManager::DeviceErrorDeviceClassNotFound;
+
+    if (!discoverBluetooth())
+        return DeviceManager::DeviceErrorHardwareNotAvailable;
+
+    return DeviceManager::DeviceErrorAsync;
+}
+
+void DevicePluginMultiSensor::bluetoothDiscoveryFinished(const QList<QBluetoothDeviceInfo> &deviceInfos)
+{
+    QList<DeviceDescriptor> deviceDescriptors;
+    foreach (QBluetoothDeviceInfo deviceInfo, deviceInfos) {
+        if (deviceInfo.name().contains("SensorTag")) {
+            if (!verifyExistingDevices(deviceInfo)) {
+                DeviceDescriptor descriptor(sensortagDeviceClassId, "SensorTag", deviceInfo.address().toString());
+                ParamList params;
+                params.append(Param("name", deviceInfo.name()));
+                params.append(Param("mac address", deviceInfo.address().toString()));
+                descriptor.setParams(params);
+                deviceDescriptors.append(descriptor);
+            }
+        }
+    }
+
+    emit devicesDiscovered(sensortagDeviceClassId, deviceDescriptors);
 }
 
 /* This method will be called from the devicemanager while he
@@ -49,11 +97,44 @@ DeviceManager::HardwareResources DevicePluginMultiSensor::requiredHardware() con
  */
 DeviceManager::DeviceSetupStatus DevicePluginMultiSensor::setupDevice(Device *device)
 {
-    Q_UNUSED(device)
-    qCDebug(dcMultiSensor) << "Hello world! Setting up a new device:" << device->name();
-    qCDebug(dcMultiSensor) << "The new device has the DeviceId" << device->id().toString();
-    qCDebug(dcMultiSensor) << device->params();
+    qCDebug(dcMultiSensor) << "Setting up MultiSensor" << device->name() << device->params();
 
-    return DeviceManager::DeviceSetupStatusSuccess;
+    if (device->deviceClassId() == sensortagDeviceClassId) {
+        QBluetoothAddress address = QBluetoothAddress(device->paramValue("mac address").toString());
+        QString name = device->paramValue("name").toString();
+        QBluetoothDeviceInfo deviceInfo = QBluetoothDeviceInfo(address, name, 0);
+
+        QPointer<SensorTag> tag = new SensorTag(deviceInfo, QLowEnergyController::PublicAddress, device);
+        m_tags.append(tag);
+
+        tag->connectDevice();
+
+        return DeviceManager::DeviceSetupStatusSuccess;
+    }
+    return DeviceManager::DeviceSetupStatusFailure;
 }
+
+
+void DevicePluginMultiSensor::deviceRemoved(Device *device)
+{
+    auto pos = std::find_if(
+                m_tags.begin(), m_tags.end(),
+                [device](QPointer<SensorTag> tag) { return tag->parent() == device; });
+    if (pos == m_tags.end())
+        return;
+
+    m_tags.erase(pos);
+}
+
+bool DevicePluginMultiSensor::verifyExistingDevices(const QBluetoothDeviceInfo &deviceInfo)
+{
+    foreach (Device *device, myDevices()) {
+        if (device->paramValue("mac address").toString() == deviceInfo.address().toString())
+            return true;
+    }
+
+    return false;
+}
+
+
 

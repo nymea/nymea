@@ -1,18 +1,18 @@
 {
     "name": "MultiSensor",
     "idName": "MultiSensor",
-    "id": "00966551-7c26-44e0-ba32-9f224b948fc5",
+    "id": "23bf0d8d-df7d-4bee-80ee-f015c5a7f52e",
     "vendors": [
         {
-            "name": "Minimal vendor",
-            "idName": "minimal",
-            "id": "3897e82e-7c48-4591-9a2f-0f56c55a96a4",
+            "name": "Texas Instruments",
+            "idName": "texas",
+            "id": "2edf543e-dc2c-4693-bb0c-e76c0d305fad",
             "deviceClasses": [
                 {
-                    "name": "Minimal device",
-                    "idName": "minimal",
-                    "deviceClassId": "7014e5f1-5b04-407a-a819-bbebd11fa372",
-                    "createMethods": ["user"],
+                    "name": "SensorTag",
+                    "idName": "sensortag",
+                    "deviceClassId": "158a06b6-b27f-4951-957e-6f1e3b44f604",
+                    "createMethods": ["discovery"],
                     "basicTags": [
                         "Device"
                     ],
@@ -20,8 +20,14 @@
                         {
                             "name": "name",
                             "type": "QString",
-                            "defaultValue": "Minimal device default name",
+                            "inputType": "TextLine",
                             "index" : 0
+                        },
+                        {
+                            "name": "mac address",
+                            "type": "QString",
+                            "index": 1,
+                            "inputType": "MacAddress"
                         }
                     ]
                 }

@@ -26,6 +26,7 @@
 #include "plugin/deviceplugin.h"
 #include "devicemanager.h"
 #include "bluetooth/bluetoothlowenergydevice.h"
+#include "sensortag.h"
 
 class DevicePluginMultiSensor : public DevicePlugin
 {
@@ -34,16 +35,18 @@ class DevicePluginMultiSensor : public DevicePlugin
     Q_INTERFACES(DevicePlugin)
 
 public:
-    DevicePluginMultiSensor();
+    explicit DevicePluginMultiSensor();
 
-    //DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
-    //void bluetoothDiscoveryFinished(const QList<QBluetoothDeviceInfo> &deviceInfos);
     DeviceManager::HardwareResources requiredHardware() const override;
+    DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
+    void bluetoothDiscoveryFinished(const QList<QBluetoothDeviceInfo> &deviceInfos);
     DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
-    //void deviceRemoved(Device *device) override;
+    void deviceRemoved(Device *device) override;
 
 private:
-    //bool verifyExistingDevices(const QBluetoothDeviceInfo &deviceInfo);
+    bool verifyExistingDevices(const QBluetoothDeviceInfo &deviceInfo);
+
+    QList<QPointer<SensorTag>> m_tags;
 };
 
 #endif // BLUETOOTH_LE

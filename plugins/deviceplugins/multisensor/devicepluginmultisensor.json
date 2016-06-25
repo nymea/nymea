@@ -1,0 +1,31 @@
+{
+    "name": "MultiSensor",
+    "idName": "MultiSensor",
+    "id": "00966551-7c26-44e0-ba32-9f224b948fc5",
+    "vendors": [
+        {
+            "name": "Minimal vendor",
+            "idName": "minimal",
+            "id": "3897e82e-7c48-4591-9a2f-0f56c55a96a4",
+            "deviceClasses": [
+                {
+                    "name": "Minimal device",
+                    "idName": "minimal",
+                    "deviceClassId": "7014e5f1-5b04-407a-a819-bbebd11fa372",
+                    "createMethods": ["user"],
+                    "basicTags": [
+                        "Device"
+                    ],
+                    "paramTypes": [
+                        {
+                            "name": "name",
+                            "type": "QString",
+                            "defaultValue": "Minimal device default name",
+                            "index" : 0
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

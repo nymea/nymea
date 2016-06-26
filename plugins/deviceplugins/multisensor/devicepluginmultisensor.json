@@ -14,7 +14,8 @@
                     "deviceClassId": "158a06b6-b27f-4951-957e-6f1e3b44f604",
                     "createMethods": ["discovery"],
                     "basicTags": [
-                        "Device"
+                        "Device",
+                        "Sensor"
                     ],
                     "paramTypes": [
                         {
@@ -28,6 +29,17 @@
                             "type": "QString",
                             "index": 1,
                             "inputType": "MacAddress"
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "c664e9ec-a045-49ba-add1-1642ceba7c4f",
+                            "idName": "temperature",
+                            "name": "IR temperature",
+                            "index": 0,
+                            "type": "double",
+                            "unit": "DegreeCelsius",
+                            "defaultValue": 0
                         }
                     ]
                 }

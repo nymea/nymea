@@ -39,11 +39,10 @@ r \l{The plugin JSON File}.
     \quotefile plugins/deviceplugins/multisensor/devicepluginmultisensor.json
 */
 
-
-#include "devicepluginmultisensor.h"
 #include "plugininfo.h"
 #include "devicemanager.h"
 #include "bluetooth/bluetoothlowenergydevice.h"
+#include "devicepluginmultisensor.h"
 
 /* The constructor of this device plugin. */
 DevicePluginMultiSensor::DevicePluginMultiSensor()
@@ -104,8 +103,9 @@ DeviceManager::DeviceSetupStatus DevicePluginMultiSensor::setupDevice(Device *de
         QString name = device->paramValue("name").toString();
         QBluetoothDeviceInfo deviceInfo = QBluetoothDeviceInfo(address, name, 0);
 
-        QPointer<SensorTag> tag = new SensorTag(deviceInfo, QLowEnergyController::PublicAddress, device);
-        m_tags.append(tag);
+        QPointer<SensorTag> tag = new SensorTag(deviceInfo, QLowEnergyController::PublicAddress, this);
+        connect(tag, &SensorTag::valueChanged, this, &DevicePluginMultiSensor::updateValue);
+        m_tags.insert(tag, device);
 
         tag->connectDevice();
 
@@ -117,13 +117,13 @@ DeviceManager::DeviceSetupStatus DevicePluginMultiSensor::setupDevice(Device *de
 
 void DevicePluginMultiSensor::deviceRemoved(Device *device)
 {
-    auto pos = std::find_if(
-                m_tags.begin(), m_tags.end(),
-                [device](QPointer<SensorTag> tag) { return tag->parent() == device; });
-    if (pos == m_tags.end())
+    if (!m_tags.values().contains(device))
         return;
 
-    m_tags.erase(pos);
+    auto tag= m_tags.key(device);
+
+    m_tags.take(tag);
+    delete tag;
 }
 
 bool DevicePluginMultiSensor::verifyExistingDevices(const QBluetoothDeviceInfo &deviceInfo)
@@ -136,5 +136,14 @@ bool DevicePluginMultiSensor::verifyExistingDevices(const QBluetoothDeviceInfo &
     return false;
 }
 
+void DevicePluginMultiSensor::updateValue(double value)
+{
+    QPointer<SensorTag> tag = qobject_cast<SensorTag *>(sender());
+    QPointer<Device> device = m_tags.value(tag);
+    qCDebug(dcMultiSensor()) << "Updated temperature value:" << value;
+    device->setStateValue(temperatureStateTypeId, value);
+}
 
-
+template <typename T> uint qHash(const QPointer<T> &key, uint seed) {
+    return qHash(key.data(), seed);
+}

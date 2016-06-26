@@ -23,6 +23,8 @@
 
 #ifdef BLUETOOTH_LE
 
+#include <QPointer>
+#include <QHash>
 #include "plugin/deviceplugin.h"
 #include "devicemanager.h"
 #include "bluetooth/bluetoothlowenergydevice.h"
@@ -39,14 +41,17 @@ public:
 
     DeviceManager::HardwareResources requiredHardware() const override;
     DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
-    void bluetoothDiscoveryFinished(const QList<QBluetoothDeviceInfo> &deviceInfos);
+    void bluetoothDiscoveryFinished(const QList<QBluetoothDeviceInfo> &deviceInfos) override;
     DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
     void deviceRemoved(Device *device) override;
 
 private:
     bool verifyExistingDevices(const QBluetoothDeviceInfo &deviceInfo);
 
-    QList<QPointer<SensorTag>> m_tags;
+    QHash<QPointer<SensorTag>,QPointer<Device>> m_tags;
+
+private slots:
+    void updateValue(double value);
 };
 
 #endif // BLUETOOTH_LE

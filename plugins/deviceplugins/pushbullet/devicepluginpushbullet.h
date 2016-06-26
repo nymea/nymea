@@ -44,7 +44,8 @@ public slots:
 	DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
 
 private:
-    void sendNotification(Device* device, ParamList params);
+    QHash<QNetworkReply *, ActionId> m_asyncActions;
+    QNetworkReply* sendNotification(Device* device, ParamList params);
 };
 
 #endif // DEVICEPLUGINPUSHBULLET_H

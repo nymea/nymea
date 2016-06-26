@@ -36,10 +36,19 @@ DeviceManager::DeviceSetupStatus DevicePluginPushbullet::setupDevice(Device *dev
 
 void DevicePluginPushbullet::networkManagerReplyReady(QNetworkReply *reply)
 {
-    if (reply->error()) {
-        qCWarning(dcPushbullet) << "Pushbullet reply error: " << reply->errorString();
-        reply->deleteLater();
-        return;
+    if (m_asyncActions.keys().contains(reply)) {
+        ActionId actionId = m_asyncActions.value(reply);
+        if (reply->error()) {
+            qCWarning(dcPushbullet) << "Pushbullet reply error: " << reply->errorString();
+            emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorInvalidParameter);
+            reply->deleteLater();
+            return;
+        }
+        if (reply->readAll().contains("error")) {
+            emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorHardwareFailure);
+        } else {
+            emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorNoError);
+        }
     }
     reply->deleteLater();
 }
@@ -47,15 +56,16 @@ void DevicePluginPushbullet::networkManagerReplyReady(QNetworkReply *reply)
 DeviceManager::DeviceError DevicePluginPushbullet::executeAction(Device *device, const Action &action) {
     if (device->deviceClassId() == pushNotificationDeviceClassId) {
         if (action.actionTypeId() == notifyActionTypeId) {
-            sendNotification(device, action.params());
-            return DeviceManager::DeviceErrorNoError;
+            QNetworkReply* reply = sendNotification(device, action.params());
+            m_asyncActions.insert(reply, action.id());
+            return DeviceManager::DeviceErrorAsync;
         }
         return DeviceManager::DeviceErrorActionTypeNotFound;
     }
     return DeviceManager::DeviceErrorDeviceClassNotFound;
 }
 
-void DevicePluginPushbullet::sendNotification(Device* device, ParamList params) {
+QNetworkReply* DevicePluginPushbullet::sendNotification(Device* device, ParamList params) {
     QUrlQuery urlParams;
     urlParams.addQueryItem("body", params.paramValue("body").toByteArray());
     urlParams.addQueryItem("title", params.paramValue("title").toByteArray());
@@ -63,5 +73,5 @@ void DevicePluginPushbullet::sendNotification(Device* device, ParamList params) 
     QNetworkRequest request(QUrl("https://api.pushbullet.com/v2/pushes"));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
     request.setRawHeader(QByteArray("Access-Token"), device->paramValue("accessToken").toByteArray());
-    networkManagerPost(request, urlParams.toString(QUrl::FullyEncoded).toUtf8());
+    return networkManagerPost(request, urlParams.toString(QUrl::FullyEncoded).toUtf8());
 }

@@ -123,7 +123,6 @@ void DevicePluginMultiSensor::deviceRemoved(Device *device)
     auto tag= m_tags.key(device);
 
     m_tags.take(tag);
-    //delete tag;
 }
 
 bool DevicePluginMultiSensor::verifyExistingDevices(const QBluetoothDeviceInfo &deviceInfo)
@@ -136,7 +135,7 @@ bool DevicePluginMultiSensor::verifyExistingDevices(const QBluetoothDeviceInfo &
     return false;
 }
 
-void DevicePluginMultiSensor::updateValue(double value)
+void DevicePluginMultiSensor::updateValue(StateTypeId state, double value)
 {
     QPointer<SensorTag> senderTag{qobject_cast<SensorTag *>(sender())};
     auto tags = m_tags.keys();
@@ -144,10 +143,5 @@ void DevicePluginMultiSensor::updateValue(double value)
                             [senderTag](auto tag){ return tag.data() == senderTag.data(); });
     auto device = m_tags.value(*pos);
     qCDebug(dcMultiSensor()) << "Updated temperature value:" << value;
-    device->setStateValue(temperatureStateTypeId, value);
+    device->setStateValue(state, value);
 }
-/*
-template <typename T> uint qHash(const QPointer<T> &key, uint seed) {
-    return qHash(key.data(), seed);
-}
-*/

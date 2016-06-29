@@ -34,11 +34,38 @@
                     "stateTypes": [
                         {
                             "id": "c664e9ec-a045-49ba-add1-1642ceba7c4f",
-                            "idName": "temperature",
+                            "idName": "IRtemperature",
                             "name": "IR temperature",
                             "index": 0,
                             "type": "double",
                             "unit": "DegreeCelsius",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "e83a50ff-96c9-4b6d-889f-f4238353e794",
+                            "idName": "humidity",
+                            "name": "humidity",
+                            "index": 0,
+                            "type": "double",
+                            "unit": "Percentage",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "8359ada9-df1c-4e60-bb87-9e21d05ee2e2",
+                            "idName": "temperature",
+                            "name": "temperature",
+                            "index": 0,
+                            "type": "double",
+                            "unit": "DegreeCelsius",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "645633ad-77d4-45b2-8be8-d6ca7a12eb7a",
+                            "idName": "pressure",
+                            "name": "pressure",
+                            "index": 0,
+                            "type": "double",
+                            "unit": "HectoPascal",
                             "defaultValue": 0
                         }
                     ]

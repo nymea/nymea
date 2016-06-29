@@ -51,7 +51,7 @@ private:
     QHash<QSharedPointer<SensorTag>,QPointer<Device>> m_tags;
 
 private slots:
-    void updateValue(double value);
+    void updateValue(StateTypeId state, double value);
 };
 
 #endif // BLUETOOTH_LE

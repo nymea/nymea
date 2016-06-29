@@ -48,7 +48,7 @@ public:
 private:
     bool verifyExistingDevices(const QBluetoothDeviceInfo &deviceInfo);
 
-    QHash<QPointer<SensorTag>,QPointer<Device>> m_tags;
+    QHash<QSharedPointer<SensorTag>,QPointer<Device>> m_tags;
 
 private slots:
     void updateValue(double value);

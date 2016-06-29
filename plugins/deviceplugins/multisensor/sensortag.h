@@ -3,7 +3,8 @@
 
 #ifdef BLUETOOTH_LE
 
-#include <QPointer>
+#include <QHash>
+#include <QSharedPointer>
 #include <QLowEnergyService>
 #include "bluetooth/bluetoothlowenergydevice.h"
 
@@ -17,11 +18,13 @@ signals:
     void valueChanged(double value);
 
 private:
-    QBluetoothUuid m_temperatureServiceUuid;
-    QPointer<QLowEnergyService> m_temperatureService;
+    //QBluetoothUuid m_temperatureServiceUuid;
+    //QPointer<QLowEnergyService> m_temperatureService;
+    //QPointer<QLowEnergyService> m_temperatureService2;
+    QHash<QBluetoothUuid, QSharedPointer<QLowEnergyService>> m_services{{QBluetoothUuid(QUuid("f000aa20-0451-4000-b000-000000000000")), QSharedPointer<QLowEnergyService>()}};
 
-    QBluetoothUuid m_temperatureCharacteristicUuid;
-    QLowEnergyCharacteristic m_temperatureCharacteristic;
+    //QBluetoothUuid m_temperatureCharacteristicUuid;
+    //QLowEnergyCharacteristic m_temperatureCharacteristic;
 
     //QHash<QByteArray, ActionId> m_actions;
 

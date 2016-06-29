@@ -74,7 +74,7 @@ DeviceManager::DeviceError DevicePluginMultiSensor::discoverDevices(const Device
 void DevicePluginMultiSensor::bluetoothDiscoveryFinished(const QList<QBluetoothDeviceInfo> &deviceInfos)
 {
     QList<DeviceDescriptor> deviceDescriptors;
-    foreach (QBluetoothDeviceInfo deviceInfo, deviceInfos) {
+    foreach (auto deviceInfo, deviceInfos) {
         if (deviceInfo.name().contains("SensorTag")) {
             if (!verifyExistingDevices(deviceInfo)) {
                 DeviceDescriptor descriptor(sensortagDeviceClassId, "SensorTag", deviceInfo.address().toString());
@@ -99,12 +99,12 @@ DeviceManager::DeviceSetupStatus DevicePluginMultiSensor::setupDevice(Device *de
     qCDebug(dcMultiSensor) << "Setting up MultiSensor" << device->name() << device->params();
 
     if (device->deviceClassId() == sensortagDeviceClassId) {
-        QBluetoothAddress address = QBluetoothAddress(device->paramValue("mac address").toString());
-        QString name = device->paramValue("name").toString();
-        QBluetoothDeviceInfo deviceInfo = QBluetoothDeviceInfo(address, name, 0);
+        auto address = QBluetoothAddress(device->paramValue("mac address").toString());
+        auto name = device->paramValue("name").toString();
+        auto deviceInfo = QBluetoothDeviceInfo(address, name, 0);
 
-        QPointer<SensorTag> tag = new SensorTag(deviceInfo, QLowEnergyController::PublicAddress, this);
-        connect(tag, &SensorTag::valueChanged, this, &DevicePluginMultiSensor::updateValue);
+        QSharedPointer<SensorTag> tag{new SensorTag(deviceInfo, QLowEnergyController::PublicAddress, this)};
+        connect(tag.data(), &SensorTag::valueChanged, this, &DevicePluginMultiSensor::updateValue);
         m_tags.insert(tag, device);
 
         tag->connectDevice();
@@ -123,7 +123,7 @@ void DevicePluginMultiSensor::deviceRemoved(Device *device)
     auto tag= m_tags.key(device);
 
     m_tags.take(tag);
-    delete tag;
+    //delete tag;
 }
 
 bool DevicePluginMultiSensor::verifyExistingDevices(const QBluetoothDeviceInfo &deviceInfo)
@@ -138,12 +138,16 @@ bool DevicePluginMultiSensor::verifyExistingDevices(const QBluetoothDeviceInfo &
 
 void DevicePluginMultiSensor::updateValue(double value)
 {
-    QPointer<SensorTag> tag = qobject_cast<SensorTag *>(sender());
-    QPointer<Device> device = m_tags.value(tag);
+    QPointer<SensorTag> tag{qobject_cast<SensorTag *>(sender())};
+    auto tags = m_tags.keys();
+    auto pos = std::find_if(tags.begin(), tags.end(),
+                            [tag](auto it){ return it.data() == tag.data(); });
+    auto device = m_tags.value(*pos);
     qCDebug(dcMultiSensor()) << "Updated temperature value:" << value;
     device->setStateValue(temperatureStateTypeId, value);
 }
-
+/*
 template <typename T> uint qHash(const QPointer<T> &key, uint seed) {
     return qHash(key.data(), seed);
 }
+*/

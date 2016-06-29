@@ -21,7 +21,10 @@ private:
     //QBluetoothUuid m_temperatureServiceUuid;
     //QPointer<QLowEnergyService> m_temperatureService;
     //QPointer<QLowEnergyService> m_temperatureService2;
-    QHash<QBluetoothUuid, QSharedPointer<QLowEnergyService>> m_services{{QBluetoothUuid(QUuid("f000aa20-0451-4000-b000-000000000000")), QSharedPointer<QLowEnergyService>()}};
+    QHash<QBluetoothUuid, QSharedPointer<QLowEnergyService>> m_services{
+        {QBluetoothUuid(QUuid("f000aa20-0451-4000-b000-000000000000")), QSharedPointer<QLowEnergyService>()},
+        {QBluetoothUuid(QUuid("f000aa30-0451-4000-b000-000000000000")), QSharedPointer<QLowEnergyService>()}
+    };
 
     //QBluetoothUuid m_temperatureCharacteristicUuid;
     //QLowEnergyCharacteristic m_temperatureCharacteristic;

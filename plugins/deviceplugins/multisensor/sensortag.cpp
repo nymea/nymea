@@ -125,17 +125,20 @@ void SensorTag::onServiceStateChanged(const QLowEnergyService::ServiceState &sta
         if (m_services.contains(service->serviceUuid())) {
             qCDebug(dcMultiSensor) << "...temperature service discovered.";
 
-            QLowEnergyCharacteristic config = service->characteristic(
-                        QBluetoothUuid(QUuid("f000aa22-0451-4000-b000-000000000000")));
+            auto configId = service->serviceUuid();
+            configId.data1 += 2;
+            auto sensorConfig = service->characteristic(configId);
 
-            if (!config.isValid()) {
+            if (!sensorConfig.isValid()) {
                 qCWarning(dcMultiSensor) << "ERROR: temperature characteristc not found for device " << name() << address().toString();
                 return;
             }
 
-            service->writeCharacteristic(config, QByteArray::fromHex("01"));
+            service->writeCharacteristic(sensorConfig, QByteArray::fromHex("01"));
 
-            QLowEnergyCharacteristic sensorCharacteristic = service->characteristic(QBluetoothUuid(QUuid("f000aa21-0451-4000-b000-000000000000")));
+            auto dataId = service->serviceUuid();
+            dataId.data1 += 1;
+            auto sensorCharacteristic = service->characteristic(dataId);
 
             if (!sensorCharacteristic.isValid()) {
                 qCWarning(dcMultiSensor) << "ERROR: temperature characteristc not found for device " << name() << address().toString();
@@ -145,7 +148,7 @@ void SensorTag::onServiceStateChanged(const QLowEnergyService::ServiceState &sta
             //service->setProperty()
             //m_temperatureCharacteristic.
 
-            const QLowEnergyDescriptor notificationDescriptor = sensorCharacteristic.descriptor(
+            const auto notificationDescriptor = sensorCharacteristic.descriptor(
                         QBluetoothUuid::ClientCharacteristicConfiguration);
 
             if (notificationDescriptor.isValid()) {

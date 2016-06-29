@@ -138,10 +138,10 @@ bool DevicePluginMultiSensor::verifyExistingDevices(const QBluetoothDeviceInfo &
 
 void DevicePluginMultiSensor::updateValue(double value)
 {
-    QPointer<SensorTag> tag{qobject_cast<SensorTag *>(sender())};
+    QPointer<SensorTag> senderTag{qobject_cast<SensorTag *>(sender())};
     auto tags = m_tags.keys();
     auto pos = std::find_if(tags.begin(), tags.end(),
-                            [tag](auto it){ return it.data() == tag.data(); });
+                            [senderTag](auto tag){ return tag.data() == senderTag.data(); });
     auto device = m_tags.value(*pos);
     qCDebug(dcMultiSensor()) << "Updated temperature value:" << value;
     device->setStateValue(temperatureStateTypeId, value);

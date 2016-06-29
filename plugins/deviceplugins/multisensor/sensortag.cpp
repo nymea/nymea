@@ -2,6 +2,7 @@
 
 #include <QPointer>
 #include <QLowEnergyService>
+#include <QtMath>
 #include "extern-plugininfo.h"
 #include "sensortag.h"
 
@@ -40,6 +41,7 @@ void SensorTag::setupServices()
 
         connect(service.data(), SIGNAL(stateChanged(QLowEnergyService::ServiceState)), this, SLOT(onServiceStateChanged(QLowEnergyService::ServiceState)));
         connect(service.data(), SIGNAL(characteristicChanged(QLowEnergyCharacteristic, QByteArray)), this, SLOT(onServiceCharacteristicChanged(QLowEnergyCharacteristic, QByteArray)));
+        connect(service.data(), SIGNAL(characteristicRead(QLowEnergyCharacteristic, QByteArray)), this, SLOT(onServiceCharacteristicChanged(QLowEnergyCharacteristic, QByteArray)));
         //connect(m_temperatureService, SIGNAL(characteristicWritten(QLowEnergyCharacteristic, QByteArray)), this, SLOT(confirmedCharacteristicWritten(QLowEnergyCharacteristic, QByteArray)));
         //connect(m_temperatureService, SIGNAL(descriptorWritten(QLowEnergyDescriptor, QByteArray)), this, SLOT(confirmedDescriptorWritten(QLowEnergyDescriptor, QByteArray)));
         connect(service.data(), SIGNAL(error(QLowEnergyService::ServiceError)), this, SLOT(onServiceError(QLowEnergyService::ServiceError)));
@@ -80,7 +82,7 @@ void SensorTag::onServiceStateChanged(const QLowEnergyService::ServiceState &sta
             auto sensorConfig = service->characteristic(configId);
 
             if (!sensorConfig.isValid()) {
-                qCWarning(dcMultiSensor) << "ERROR: characteristc not found for device " << name() << address().toString();
+                qCWarning(dcMultiSensor) << "ERROR: characteristic not found for device " << name() << address().toString();
                 return;
             }
 
@@ -102,6 +104,13 @@ void SensorTag::onServiceStateChanged(const QLowEnergyService::ServiceState &sta
                 service->writeDescriptor(notificationDescriptor, QByteArray::fromHex("0100"));
                 qCDebug(dcMultiSensor) << "Measuring";
             }
+
+            if (service->serviceUuid().data1 == 0xf000aa40) {
+                service->writeCharacteristic(sensorConfig, QByteArray::fromHex("02"));
+                auto calibId  = service->serviceUuid();
+                calibId.data1 += 3;
+                service->readCharacteristic(service->characteristic(calibId));
+            }
         }
         break;
     default:
@@ -114,18 +123,72 @@ void SensorTag::onServiceCharacteristicChanged(const QLowEnergyCharacteristic &c
     qCDebug(dcMultiSensor) << "service characteristic changed" << characteristic.uuid().toString() << value.toHex();
 
     switch (characteristic.uuid().data1) {
+    case 0xf000aa01: {
+        const quint16 *data = reinterpret_cast<const quint16 *>(value.constData());
+        qint16 rawTamb = data[0];
+        emit valueChanged(temperatureStateTypeId, (double)rawTamb/128);
+
+        double Vobj2 = (double)data[1];
+        Vobj2 *= 0.00000015625;
+        double Tdie2 = ((double)rawTamb/128) + 273.15;
+        const double S0 = 6.4E-14;            // Calibration factor
+        const double a1 = 1.75E-3;
+        const double a2 = -1.678E-5;
+        const double b0 = -2.94E-5;
+        const double b1 = -5.7E-7;
+        const double b2 = 4.63E-9;
+        const double c2 = 13.4;
+        const double Tref = 298.15;
+        double S = S0*(1+a1*(Tdie2 - Tref)+a2*qPow((Tdie2 - Tref),2));
+        double Vos = b0 + b1*(Tdie2 - Tref) + b2*qPow((Tdie2 - Tref),2);
+        double fObj = (Vobj2 - Vos) + c2*qPow((Vobj2 - Vos),2);
+        double tObj = qPow(qPow(Tdie2,4) + (fObj/S),.25);
+        tObj = (tObj - 273.15);
+        emit valueChanged(IRtemperatureStateTypeId, tObj);
+        break;
+    }
     case 0xf000aa21: {
         const quint16 *data = reinterpret_cast<const quint16 *>(value.constData());
-        quint16 rawH = *data;
+        quint16 rawH = data[1];
         rawH &= ~0x0003;
         emit valueChanged(humidityStateTypeId, -6.0 + 125.0/65536 * (double)rawH);
         break;
     }
     case 0xf000aa41: {
+        if (m_c.empty())
+            break;
         const quint16 *data = reinterpret_cast<const quint16 *>(value.constData());
-        quint16 rawH = *data;
-        rawH &= ~0x0003;
-        emit valueChanged(pressureStateTypeId, -6.0 + 125.0/65536 * (double)rawH);
+        quint16 Pr = data[1];
+        qint16 Tr = data[0];
+        // Sensitivity
+        qint64 s = (qint64)m_c[2];
+        qint64 val = (qint64)m_c[3] * Tr;
+        s += (val >> 17);
+        val = (qint64)m_c2[0] * Tr * Tr;
+        s += (val >> 34);
+        // Offset
+        qint64 o = (qint64)m_c2[1] << 14;
+        val = (qint64)m_c2[2] * Tr;
+        o += (val >> 3);
+        val = (qint64)m_c2[3] * Tr * Tr;
+        o += (val >> 19);
+        // Pressure (Pa)
+        qint64 pres = ((qint64)(s * Pr) + o) >> 14;
+        emit valueChanged(pressureStateTypeId, (double)pres/100);
+        break;
+    }
+    case 0xf000aa43: {
+        const quint16 *data = reinterpret_cast<const quint16 *>(value.constData());
+        m_c.resize(4);
+        m_c2.resize(4);
+        m_c[0] = data[0];
+        m_c[1] = data[1];
+        m_c[2] = data[2];
+        m_c[3] = data[3];
+        m_c2[0] = data[4];
+        m_c2[1] = data[5];
+        m_c2[2] = data[6];
+        m_c2[3] = data[7];
         break;
     }
     default:

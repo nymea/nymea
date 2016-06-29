@@ -142,6 +142,6 @@ void DevicePluginMultiSensor::updateValue(StateTypeId state, double value)
     auto pos = std::find_if(tags.begin(), tags.end(),
                             [senderTag](auto tag){ return tag.data() == senderTag.data(); });
     auto device = m_tags.value(*pos);
-    qCDebug(dcMultiSensor()) << "Updated temperature value:" << value;
+    qCDebug(dcMultiSensor()) << "Updated value:" << value;
     device->setStateValue(state, value);
 }

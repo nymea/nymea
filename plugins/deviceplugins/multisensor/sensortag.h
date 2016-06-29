@@ -20,6 +20,7 @@ signals:
 
 private:
     QHash<QBluetoothUuid, QSharedPointer<QLowEnergyService>> m_services{
+        {QBluetoothUuid(QUuid("f000aa00-0451-4000-b000-000000000000")), QSharedPointer<QLowEnergyService>()},
         {QBluetoothUuid(QUuid("f000aa20-0451-4000-b000-000000000000")), QSharedPointer<QLowEnergyService>()},
         {QBluetoothUuid(QUuid("f000aa40-0451-4000-b000-000000000000")), QSharedPointer<QLowEnergyService>()}
     };
@@ -29,6 +30,9 @@ private:
     //QQueue<CommandRequest> m_commandQueue;
     //CommandRequest m_currentRequest;
     //bool m_queueRunning;
+
+    QVector<quint16> m_c;
+    QVector<qint16> m_c2;
 
 private slots:
     void setupServices();

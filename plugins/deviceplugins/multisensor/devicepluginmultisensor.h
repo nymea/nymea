@@ -1,6 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
  *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2016 nicc                                                *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *

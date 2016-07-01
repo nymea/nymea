@@ -39,12 +39,13 @@ void SensorTag::setupServices()
 
         m_services.insert(id, service);
 
-        connect(service.data(), SIGNAL(stateChanged(QLowEnergyService::ServiceState)), this, SLOT(onServiceStateChanged(QLowEnergyService::ServiceState)));
-        connect(service.data(), SIGNAL(characteristicChanged(QLowEnergyCharacteristic, QByteArray)), this, SLOT(onServiceCharacteristicChanged(QLowEnergyCharacteristic, QByteArray)));
-        connect(service.data(), SIGNAL(characteristicRead(QLowEnergyCharacteristic, QByteArray)), this, SLOT(onServiceCharacteristicChanged(QLowEnergyCharacteristic, QByteArray)));
+        connect(service.data(), &QLowEnergyService::stateChanged, this, &SensorTag::onServiceStateChanged);
+        connect(service.data(), &QLowEnergyService::characteristicChanged, this, &SensorTag::onServiceCharacteristicChanged);
+        connect(service.data(), &QLowEnergyService::characteristicRead, this, &SensorTag::onServiceCharacteristicChanged);
         //connect(m_temperatureService, SIGNAL(characteristicWritten(QLowEnergyCharacteristic, QByteArray)), this, SLOT(confirmedCharacteristicWritten(QLowEnergyCharacteristic, QByteArray)));
         //connect(m_temperatureService, SIGNAL(descriptorWritten(QLowEnergyDescriptor, QByteArray)), this, SLOT(confirmedDescriptorWritten(QLowEnergyDescriptor, QByteArray)));
         connect(service.data(), SIGNAL(error(QLowEnergyService::ServiceError)), this, SLOT(onServiceError(QLowEnergyService::ServiceError)));
+
 
         service->discoverDetails();
     }
@@ -55,8 +56,8 @@ void SensorTag::onConnectionStatusChanged()
     if (!isConnected()) {
         // delete the services, they need to be recreated and
         // rediscovered once the device will be reconnected
-        foreach (auto id, m_services.keys())
-            m_services[id].clear();
+        foreach (auto service, m_services)
+            service.clear();
 
         //m_commandQueue.clear();
 

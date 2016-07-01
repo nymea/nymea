@@ -1,6 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
  *  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                *
+ *  Copyright (C) 2016 nicc                                                *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -137,11 +138,8 @@ bool DevicePluginMultiSensor::verifyExistingDevices(const QBluetoothDeviceInfo &
 
 void DevicePluginMultiSensor::updateValue(StateTypeId state, double value)
 {
-    QPointer<SensorTag> senderTag{qobject_cast<SensorTag *>(sender())};
-    auto tags = m_tags.keys();
-    auto pos = std::find_if(tags.begin(), tags.end(),
-                            [senderTag](auto tag){ return tag.data() == senderTag.data(); });
-    auto device = m_tags.value(*pos);
+    QSharedPointer<SensorTag> senderTag{qobject_cast<SensorTag *>(sender()), [](SensorTag *){}};
+    auto device = m_tags.value(senderTag);
     qCDebug(dcMultiSensor()) << "Updated value:" << value;
     device->setStateValue(state, value);
 }

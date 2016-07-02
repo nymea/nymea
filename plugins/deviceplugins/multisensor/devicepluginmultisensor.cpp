@@ -123,7 +123,7 @@ void DevicePluginMultiSensor::deviceRemoved(Device *device)
 
     auto tag= m_tags.key(device);
 
-    m_tags.take(tag);
+    m_tags.remove(tag);
 }
 
 bool DevicePluginMultiSensor::verifyExistingDevices(const QBluetoothDeviceInfo &deviceInfo)

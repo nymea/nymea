@@ -37,7 +37,7 @@ public:
     explicit SensorTag(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType, QObject *parent = 0);
 
 signals:
-    void valueChanged(StateTypeId state, double value);
+    void valueChanged(StateTypeId state, QVariant value);
     void event(EventTypeId event);
 
 private:

@@ -52,7 +52,7 @@ private:
     QHash<QSharedPointer<SensorTag>,QPointer<Device>> m_tags;
 
 private slots:
-    void updateValue(StateTypeId state, double value);
+    void updateValue(StateTypeId state, QVariant value);
     void sendEvent(EventTypeId event);
 };
 

@@ -137,7 +137,7 @@ bool DevicePluginMultiSensor::verifyExistingDevices(const QBluetoothDeviceInfo &
     return false;
 }
 
-void DevicePluginMultiSensor::updateValue(StateTypeId state, double value)
+void DevicePluginMultiSensor::updateValue(StateTypeId state, QVariant value)
 {
     QSharedPointer<SensorTag> senderTag{qobject_cast<SensorTag *>(sender()), [](SensorTag *){}};
     auto device = m_tags.value(senderTag);

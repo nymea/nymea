@@ -83,7 +83,7 @@ void SensorTag::onConnectionStatusChanged()
         //m_commandQueue.clear();
 
         //m_isAvailable = false;
-        //emit availableChanged();
+        emit valueChanged(availableStateTypeId, false);
     }
 }
 
@@ -137,6 +137,10 @@ void SensorTag::onServiceStateChanged(const QLowEnergyService::ServiceState &sta
                 service->readCharacteristic(service->characteristic(calibId));
             }
         }
+
+        if (std::all_of(m_services.begin(), m_services.end(),
+                        [](QSharedPointer<QLowEnergyService> service){ return service->state() == QLowEnergyService::ServiceDiscovered; }))
+            emit valueChanged(availableStateTypeId, true);
         break;
     default:
         break;
@@ -219,9 +223,9 @@ void SensorTag::onServiceCharacteristicChanged(const QLowEnergyCharacteristic &c
     case 0xffe1: {
         const quint8 *data = reinterpret_cast<const quint8 *>(value.constData());
         if (*data & 1)
-            emit event(rightKeyEventTypeId);
-        if (*data & 2)
             emit event(leftKeyEventTypeId);
+        if (*data & 2)
+            emit event(rightKeyEventTypeId);
         break;
     }
     default:

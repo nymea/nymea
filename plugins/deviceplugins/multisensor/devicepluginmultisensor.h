@@ -53,6 +53,7 @@ private:
 
 private slots:
     void updateValue(StateTypeId state, double value);
+    void sendEvent(EventTypeId event);
 };
 
 #endif // BLUETOOTH_LE

@@ -99,17 +99,6 @@ void SensorTag::onServiceStateChanged(const QLowEnergyService::ServiceState &sta
         if (m_services.contains(service->serviceUuid())) {
             qCDebug(dcMultiSensor) << "... service discovered.";
 
-            auto configId = service->serviceUuid();
-            configId.data1 += 2;
-            auto sensorConfig = service->characteristic(configId);
-
-            if (!sensorConfig.isValid()) {
-                qCWarning(dcMultiSensor) << "ERROR: characteristic not found for device " << name() << address().toString();
-                return;
-            }
-
-            service->writeCharacteristic(sensorConfig, QByteArray::fromHex("01"));
-
             auto dataId = service->serviceUuid();
             dataId.data1 += 1;
             auto sensorCharacteristic = service->characteristic(dataId);
@@ -126,6 +115,20 @@ void SensorTag::onServiceStateChanged(const QLowEnergyService::ServiceState &sta
                 service->writeDescriptor(notificationDescriptor, QByteArray::fromHex("0100"));
                 qCDebug(dcMultiSensor) << "Measuring";
             }
+
+            if (service->serviceUuid().data1 == 0xffe0)
+                break;
+
+            auto configId = service->serviceUuid();
+            configId.data1 += 2;
+            auto sensorConfig = service->characteristic(configId);
+
+            if (!sensorConfig.isValid()) {
+                qCWarning(dcMultiSensor) << "ERROR: characteristic not found for device " << name() << address().toString();
+                return;
+            }
+
+            service->writeCharacteristic(sensorConfig, QByteArray::fromHex("01"));
 
             if (service->serviceUuid().data1 == 0xf000aa40) {
                 service->writeCharacteristic(sensorConfig, QByteArray::fromHex("02"));
@@ -211,6 +214,14 @@ void SensorTag::onServiceCharacteristicChanged(const QLowEnergyCharacteristic &c
         m_c2[1] = data[5];
         m_c2[2] = data[6];
         m_c2[3] = data[7];
+        break;
+    }
+    case 0xffe1: {
+        const quint8 *data = reinterpret_cast<const quint8 *>(value.constData());
+        if (*data & 1)
+            emit event(rightKeyEventTypeId);
+        if (*data & 2)
+            emit event(leftKeyEventTypeId);
         break;
     }
     default:

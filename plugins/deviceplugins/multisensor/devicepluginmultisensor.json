@@ -68,6 +68,20 @@
                             "unit": "HectoPascal",
                             "defaultValue": 0
                         }
+                    ],
+                    "eventTypes": [
+                        {
+                            "id": "61478490-bed0-4fed-9d58-f13c35b4f220",
+                            "idName": "leftKey",
+                            "index": 0,
+                            "name": "left key pressed"
+                        },
+                        {
+                            "id": "b7e927db-af28-4fdc-8eb7-edb02258ff5a",
+                            "idName": "rightKey",
+                            "index": 1,
+                            "name": "right key pressed"
+                        }
                     ]
                 }
             ]

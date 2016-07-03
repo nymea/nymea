@@ -106,6 +106,7 @@ DeviceManager::DeviceSetupStatus DevicePluginMultiSensor::setupDevice(Device *de
 
         QSharedPointer<SensorTag> tag{new SensorTag(deviceInfo, QLowEnergyController::PublicAddress, this)};
         connect(tag.data(), &SensorTag::valueChanged, this, &DevicePluginMultiSensor::updateValue);
+        connect(tag.data(), &SensorTag::event, this, &DevicePluginMultiSensor::sendEvent);
         m_tags.insert(tag, device);
 
         tag->connectDevice();
@@ -142,4 +143,13 @@ void DevicePluginMultiSensor::updateValue(StateTypeId state, double value)
     auto device = m_tags.value(senderTag);
     qCDebug(dcMultiSensor()) << "Updated value:" << value;
     device->setStateValue(state, value);
+}
+
+void DevicePluginMultiSensor::sendEvent(EventTypeId event)
+{
+    QSharedPointer<SensorTag> senderTag{qobject_cast<SensorTag *>(sender()), [](SensorTag *){}};
+    auto device = m_tags.value(senderTag);
+    qCDebug(dcMultiSensor()) << "Event";
+    Event event2(event, device->id());
+    emit emitEvent(event2);
 }

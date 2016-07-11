@@ -104,11 +104,14 @@ WebServer::WebServer(const QHostAddress &host, const uint &port, const QString &
     m_useSsl(false),
     m_enabled(false)
 {
-    // Create avahi service
+    if (QCoreApplication::instance()->organizationName() == "guh-test") {
+        m_webinterfaceDir = QDir(QCoreApplication::applicationDirPath());
+        qCWarning(dcWebServer) << "Using public folder" << m_webinterfaceDir.path();
+    }
+
 #ifndef TESTING_ENABLED
     m_avahiService = new QtAvahiService(this);
     connect(m_avahiService, &QtAvahiService::serviceStateChanged, this, &WebServer::onAvahiServiceStateChanged);
-    m_avahiService->registerService("guhIO", m_port);
 #endif
 }
 
@@ -513,7 +516,7 @@ void WebServer::onError(QAbstractSocket::SocketError error)
 void WebServer::onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceState &state)
 {
     if (state == QtAvahiService::QtAvahiServiceStateEstablished) {
-        qCDebug(dcAvahi()) << "Service" << m_avahiService->name() << "established successfully";
+        qCDebug(dcAvahi()) << "Service" << m_avahiService->name() << m_avahiService->serviceType() << "established successfully";
     }
 }
 
@@ -556,6 +559,10 @@ bool WebServer::startServer()
         }
     }
 
+#ifndef TESTING_ENABLED
+    m_avahiService->registerService("guhIO", m_port);
+#endif
+
     m_enabled = true;
     return true;
 }
@@ -563,6 +570,11 @@ bool WebServer::startServer()
 /*! Returns true if this \l{WebServer} stopped successfully. */
 bool WebServer::stopServer()
 {
+#ifndef TESTING_ENABLED
+    if (m_avahiService)
+        m_avahiService->resetService();
+#endif
+
     foreach (QSslSocket *client, m_clientList.values())
         client->close();
 

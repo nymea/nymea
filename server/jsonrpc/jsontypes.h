@@ -27,6 +27,7 @@
 #include "rule.h"
 #include "devicemanager.h"
 #include "ruleengine.h"
+#include "guhconfiguration.h"
 
 #include "types/event.h"
 #include "types/action.h"
@@ -126,6 +127,7 @@ public:
     DECLARE_TYPE(loggingEventType, "LoggingEventType", Logging, LoggingEventType)
     DECLARE_TYPE(repeatingMode, "RepeatingMode", RepeatingOption, RepeatingMode)
     DECLARE_TYPE(cloudError, "CloudError", Cloud, CloudError)
+    DECLARE_TYPE(configurationError, "ConfigurationError", GuhConfiguration, ConfigurationError)
 
     DECLARE_OBJECT(paramType, "ParamType")
     DECLARE_OBJECT(param, "Param")
@@ -190,6 +192,11 @@ public:
     static QVariantList packConfiguredDevices();
     static QVariantList packDeviceStates(Device *device);
     static QVariantList packDeviceDescriptors(const QList<DeviceDescriptor> deviceDescriptors);
+
+    static QVariantMap packBasicConfiguration();
+    static QVariantMap packTcpServerConfiguration();
+    static QVariantMap packWebServerConfiguration();
+    static QVariantMap packWebSocketServerConfiguration();
 
     static QVariantList packRuleDescriptions();
     static QVariantList packRuleDescriptions(const QList<Rule> &rules);

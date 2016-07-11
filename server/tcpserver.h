@@ -37,7 +37,7 @@ class TcpServer : public TransportInterface
 {
     Q_OBJECT
 public:
-    explicit TcpServer(QObject *parent = 0);
+    explicit TcpServer(const QHostAddress &host, const uint &port, QObject *parent = 0);
     ~TcpServer();
 
     void sendData(const QUuid &clientId, const QVariantMap &data) override;
@@ -46,24 +46,20 @@ public:
 private:
     QTimer *m_timer;
 
-    QHash<QUuid, QTcpServer*> m_serverList;
-    QHash<QUuid, QTcpSocket*> m_clientList;
+    QTcpServer * m_server;
+    QHash<QUuid, QTcpSocket *> m_clientList;
 
-    uint m_port;
-    QList<QNetworkInterface> m_networkInterfaces;
-    QStringList m_ipVersions;
-
-    void reloadNetworkInterfaces();
-
+    QHostAddress m_host;
+    qint16 m_port;
 
 private slots:
     void onClientConnected();
     void onClientDisconnected();
     void readPackage();
     void onError(QAbstractSocket::SocketError error);
-    void onTimeout();
 
 public slots:
+    bool reconfigureServer(const QHostAddress &address, const uint &port);
     bool startServer() override;
     bool stopServer() override;
 };

@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.guru>                 *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -18,48 +18,45 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef MOCKTCPSERVER_H
-#define MOCKTCPSERVER_H
+#ifndef CONFIGURATIONHANDLER_H
+#define CONFIGURATIONHANDLER_H
 
 #include <QObject>
-#include <QNetworkInterface>
-#include <QDebug>
 
-#include "transportinterface.h"
+#include "jsonhandler.h"
 
-using namespace guhserver;
+namespace guhserver {
 
-class JsonRPCServer;
-
-class MockTcpServer : public TransportInterface
+class ConfigurationHandler : public JsonHandler
 {
     Q_OBJECT
+
 public:
-    explicit MockTcpServer(QObject *parent = 0);
-    ~MockTcpServer();
+    ConfigurationHandler(QObject *parent = 0);
+    QString name() const;
 
-    void sendData(const QUuid &clientId, const QVariantMap &data) override;
-    void sendData(const QList<QUuid> &clients, const QVariantMap &data) override;
+    Q_INVOKABLE JsonReply* GetConfigurations(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply* GetTimeZones(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply* SetServerName(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply* SetTimeZone(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply* SetTcpServerConfiguration(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *SetWebServerConfiguration(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply* SetWebSocketServerConfiguration(const QVariantMap &params) const;
 
-/************** Used for testing **************************/
-    static QList<MockTcpServer*> servers();
-    void injectData(const QUuid &clientId, const QByteArray &data);
 signals:
-    void outgoingData(const QUuid &clientId, const QByteArray &data);
-/************** Used for testing **************************/
+    void BasicConfigurationChanged(const QVariantMap &params);
+    void TcpServerConfigurationChanged(const QVariantMap &params);
+    void WebServerConfigurationChanged(const QVariantMap &params);
+    void WebSocketServerConfigurationChanged(const QVariantMap &params);
 
-public:
-    void sendResponse(const QUuid &clientId, int commandId, const QVariantMap &params = QVariantMap());
-    void sendErrorResponse(const QUuid &clientId, int commandId, const QString &error);
+private slots:
+    void onBasicConfigurationChanged();
+    void onTcpServerConfigurationChanged();
+    void onWebServerConfigurationChanged();
+    void onWebSocketServerConfigurationChanged();
 
-public slots:
-    bool reconfigureServer(const QHostAddress &address, const uint &port);
-    bool startServer() override;
-    bool stopServer() override;
-
-private:
-    static QList<MockTcpServer*> s_allServers;
 };
 
-#endif // TCPSERVER_H
+}
 
+#endif // CONFIGURATIONHANDLER_H

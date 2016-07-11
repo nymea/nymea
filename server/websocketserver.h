@@ -28,6 +28,7 @@
 #include <QWebSocket>
 #include <QWebSocketServer>
 
+#include "network/avahi/qtavahiservice.h"
 #include "transportinterface.h"
 
 // Note: WebSocket Protocol from the Internet Engineering Task Force (IETF) -> RFC6455 V13:
@@ -41,7 +42,7 @@ class WebSocketServer : public TransportInterface
 {
     Q_OBJECT
 public:
-    explicit WebSocketServer(const QSslConfiguration &sslConfiguration = QSslConfiguration(), QObject *parent = 0);
+    explicit WebSocketServer(const QHostAddress &address, const uint &port, const bool &sslEnabled, QObject *parent = 0);
     ~WebSocketServer();
 
     void sendData(const QUuid &clientId, const QVariantMap &data) override;
@@ -51,11 +52,15 @@ private:
     QWebSocketServer *m_server;
     QHash<QUuid, QWebSocket *> m_clientList;
 
+    QtAvahiService *m_avahiService;
+
+    QHostAddress m_host;
+    qint16 m_port;
+
     QSslConfiguration m_sslConfiguration;
     bool m_useSsl;
 
     bool m_enabled;
-    qint16 m_port;
 
 private slots:
     void onClientConnected();
@@ -66,7 +71,10 @@ private slots:
     void onServerError(QAbstractSocket::SocketError error);
     void onPing(quint64 elapsedTime, const QByteArray & payload);
 
+    void onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceState &state);
+
 public slots:
+    bool reconfigureServer(const QHostAddress &address, const uint &port);
     bool startServer() override;
     bool stopServer() override;
 };

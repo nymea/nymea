@@ -124,6 +124,13 @@ void MockTcpServer::sendErrorResponse(const QUuid &clientId, int commandId, cons
     sendData(clientId, errorResponse);
 }
 
+bool MockTcpServer::reconfigureServer(const QHostAddress &address, const uint &port)
+{
+    Q_UNUSED(address)
+    Q_UNUSED(port)
+    return true;
+}
+
 bool MockTcpServer::startServer()
 {
     return true;

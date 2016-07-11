@@ -21,6 +21,7 @@
 #ifndef GUHCONFIGURATION_H
 #define GUHCONFIGURATION_H
 
+#include <QHostAddress>
 #include <QObject>
 #include <QUuid>
 #include <QUrl>
@@ -30,7 +31,18 @@ namespace guhserver {
 class GuhConfiguration : public QObject
 {
     Q_OBJECT
+    Q_ENUMS(ConfigurationError)
+
 public:
+    enum ConfigurationError {
+        ConfigurationErrorNoError,
+        ConfigurationErrorInvalidTimeZone,
+        ConfigurationErrorInvalidStationName,
+        ConfigurationErrorInvalidPort,
+        ConfigurationErrorInvalidHostAddress,
+        ConfigurationErrorInvalidCertificate
+    };
+
     explicit GuhConfiguration(QObject *parent = 0);
 
     // Global settings
@@ -44,15 +56,19 @@ public:
 
     // TCP server
     uint tcpServerPort() const;
-    void setTcpServerPort(const uint &port);
+    QHostAddress tcpServerAddress() const;
+    void setTcpServerConfiguration(const uint &port, const QHostAddress &address);
 
     // Webserver
-    uint webserverPort() const;
-    void setWebserverPort(const uint &port);
+    uint webServerPort() const;
+    QHostAddress webServerAddress() const;
+    QString webServerPublicFolder() const;
+    void setWebServerConfiguration(const uint &port, const QHostAddress &address);
 
     // Websocket
-    uint websocketPort() const;
-    void setWebsocketPort(const uint &port);
+    uint webSocketPort() const;
+    QHostAddress webSocketAddress() const;
+    void setWebSocketConfiguration(const uint &port, const QHostAddress &address);
 
     // SSL configuration
     bool sslEnabled() const;
@@ -77,9 +93,15 @@ private:
     QString m_serverName;
     QByteArray m_timeZone;
 
+    QHostAddress m_tcpServerAddress;
     uint m_tcpServerPort;
-    uint m_webserverPort;
-    uint m_websocketPort;
+
+    QHostAddress m_webServerAddress;
+    uint m_webServerPort;
+    QString m_webServerPublicFolder;
+
+    QHostAddress m_webSocketAddress;
+    uint m_webSocketPort;
 
     bool m_sslEnabled;
     QString m_sslCertificate;
@@ -93,9 +115,9 @@ signals:
     void serverNameChanged();
     void timeZoneChanged();
 
-    void tcpServerPortChanged();
-    void webserverPortChanged();
-    void websocketPortChanged();
+    void tcpServerConfigurationChanged();
+    void webServerConfigurationChanged();
+    void webSocketServerConfigurationChanged();
 
     void sslEnabledChanged();
     void sslCertificateChanged();

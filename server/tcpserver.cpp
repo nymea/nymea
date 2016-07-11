@@ -48,40 +48,16 @@ namespace guhserver {
  *
  *  \sa ServerManager
  */
-TcpServer::TcpServer(QObject *parent) :
-    TransportInterface(parent)
+TcpServer::TcpServer(const QHostAddress &host, const uint &port, QObject *parent) :
+    TransportInterface(parent),
+    m_server(NULL),
+    m_host(host),
+    m_port(port)
 {       
-    // Timer for scanning network interfaces ever 5 seconds
-    // Note: QNetworkConfigurationManager does not work on embedded platforms
-    m_timer = new QTimer(this);
-    m_timer->setSingleShot(false);
-    m_timer->setInterval(5000);
-    connect (m_timer, &QTimer::timeout, this, &TcpServer::onTimeout);
-
-    // load JSON-RPC server settings
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
-    qCDebug(dcTcpServer) << "Loading Tcp server settings from" << settings.fileName();
-    settings.beginGroup("JSONRPC");
-
-    // load port
-    // 2222 Official free according to https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers
-    m_port = settings.value("port", 2222).toUInt();
-
-    // load interfaces
-    QStringList interfaceList = settings.value("interfaces", QStringList("all")).toStringList();
-    if (interfaceList.contains("all")) {
-        m_networkInterfaces = QNetworkInterface::allInterfaces();
-    } else {
-        foreach (const QNetworkInterface &interface, QNetworkInterface::allInterfaces()) {
-            if (interfaceList.contains(interface.name())) {
-                m_networkInterfaces.append(interface);
-            }
-        }
-    }
-
-    // load IP versions (IPv4, IPv6 or any)
-    m_ipVersions = settings.value("ip", QStringList("any")).toStringList();
-    settings.endGroup();
+#ifndef TESTING_ENABLED
+    m_avahiService = new QtAvahiService(this);
+    connect(m_avahiService, &QtAvahiService::serviceStateChanged, this, &TcpServer::onAvahiServiceStateChanged);
+#endif
 }
 
 /*! Destructor of this \l{TcpServer}. */
@@ -109,27 +85,6 @@ void TcpServer::sendData(const QUuid &clientId, const QVariantMap &data)
     }
 }
 
-void TcpServer::reloadNetworkInterfaces()
-{
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
-    settings.beginGroup("JSONRPC");
-
-    // reload network interfaces
-    m_networkInterfaces.clear();
-
-    QStringList interfaceList = settings.value("interfaces", QStringList("all")).toStringList();
-    if (interfaceList.contains("all")) {
-        m_networkInterfaces = QNetworkInterface::allInterfaces();
-    } else {
-        foreach (const QNetworkInterface &interface, QNetworkInterface::allInterfaces()) {
-            if (interfaceList.contains(interface.name())) {
-                m_networkInterfaces.append(interface);
-            }
-        }
-    }
-    settings.endGroup();
-}
-
 void TcpServer::onClientConnected()
 {
     // got a new client connected
@@ -151,11 +106,11 @@ void TcpServer::onClientConnected()
 void TcpServer::readPackage()
 {
     QTcpSocket *client = qobject_cast<QTcpSocket*>(sender());
-    qCDebug(dcTcpServer) << "data comming from" << client->peerAddress().toString();
+    qCDebug(dcTcpServer) << "Data comming from" << client->peerAddress().toString();
     QByteArray message;
     while (client->canReadLine()) {
         QByteArray dataLine = client->readLine();
-        qCDebug(dcTcpServer) << "line in:" << dataLine;
+        qCDebug(dcTcpServer) << "Line in:" << dataLine;
         message.append(dataLine);
         if (dataLine.endsWith('\n')) {
             validateMessage(m_clientList.key(client), message);
@@ -166,7 +121,10 @@ void TcpServer::readPackage()
 
 void TcpServer::onClientDisconnected()
 {
-    QTcpSocket *client = qobject_cast<QTcpSocket*>(sender());
+    QPointer<QTcpSocket> client = qobject_cast<QTcpSocket *>(sender());
+    if (client.isNull())
+        return;
+
     qCDebug(dcConnection) << "Tcp server: client disconnected:" << client->peerAddress().toString();
     QUuid clientId = m_clientList.key(client);
     m_clientList.take(clientId)->deleteLater();
@@ -175,85 +133,42 @@ void TcpServer::onClientDisconnected()
 void TcpServer::onError(QAbstractSocket::SocketError error)
 {
     QTcpServer *server = qobject_cast<QTcpServer *>(sender());
-    QUuid uuid = m_serverList.key(server);
-    qCWarning(dcTcpServer) << "Tcp server" << server->serverAddress().toString() << "error:" << error << server->errorString();
-    qCWarning(dcTcpServer) << "shutting down Tcp server" << server->serverAddress().toString();
-
-    server->close();
-    m_serverList.take(uuid)->deleteLater();
+    qCWarning(dcTcpServer) << server->serverAddress().toString() << "error:" << error << server->errorString();
+    stopServer();
 }
 
-void TcpServer::onTimeout()
+void TcpServer::onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceState &state)
 {
-    bool ipV4 = m_ipVersions.contains("IPv4");
-    bool ipV6 = m_ipVersions.contains("IPv6");
-    if (m_ipVersions.contains("any")) {
-        ipV4 = ipV6 = true;
+    if (state == QtAvahiService::QtAvahiServiceStateEstablished) {
+        qCDebug(dcAvahi()) << "Service" << m_avahiService->name() << m_avahiService->serviceType() << "established successfully";
     }
+}
 
-    reloadNetworkInterfaces();
 
-    // get all available host addresses
-    QList<QHostAddress> allAddresses;
-    foreach (const QNetworkInterface &interface, m_networkInterfaces) {
-        QList<QNetworkAddressEntry> addresseEntries = interface.addressEntries();
+bool TcpServer::reconfigureServer(const QHostAddress &address, const uint &port)
+{
+    if (m_host == address && m_port == (qint16)port && m_server->isListening())
+        return true;
 
-        foreach (QNetworkAddressEntry entry, addresseEntries) {
-            if (ipV4 && entry.ip().protocol() == QAbstractSocket::IPv4Protocol) {
-                allAddresses.append(entry.ip());
-            }
-            if (ipV6 && entry.ip().protocol() == QAbstractSocket::IPv6Protocol) {
-                allAddresses.append(entry.ip());
-            }
-        }
+    stopServer();
+
+    QTcpServer *server = new QTcpServer(this);
+    if(!server->listen(address, port)) {
+        qCWarning(dcConnection) << "Tcp server error: can not listen on" << address.toString() << port;
+        delete server;
+        // Restart the server with the old configuration
+        qCDebug(dcTcpServer()) << "Restart server with old configuration.";
+        startServer();
+        return false;
     }
+    // Remove the test server..
+    server->close();
+    delete server;
 
-    // check if a new server should be created
-    QList<QHostAddress> serversToCreate;
-    QList<QTcpServer *> serversToDelete;
-
-    foreach (const QHostAddress &address, allAddresses) {
-        // check if there is a server for this host address
-        bool found = false;
-        foreach (QTcpServer *s, m_serverList) {
-            if (s->serverAddress() == address) {
-                found = true;
-                break;
-            }
-        }
-        if (!found)
-            serversToCreate.append(address);
-    }
-
-    // delete every server which has no longer an interface
-    foreach (QTcpServer *s, m_serverList) {
-        if (!allAddresses.contains(s->serverAddress())) {
-            qCDebug(dcConnection) << "Closing Tcp server on" << s->serverAddress().toString() << s->serverPort();
-            QUuid uuid = m_serverList.key(s);
-            s->close();
-            m_serverList.take(uuid)->deleteLater();
-        }
-
-    }
-
-    foreach(const QHostAddress &address, serversToCreate){
-        QTcpServer *server = new QTcpServer(this);
-        if(server->listen(address, m_port)) {
-            qCDebug(dcConnection) << "Started TCP server on" << address.toString() << m_port;
-            connect(server, &QTcpServer::newConnection, this, &TcpServer::onClientConnected);
-            m_serverList.insert(QUuid::createUuid(), server);
-        } else {
-            qCWarning(dcConnection) << "Tcp server error: can not listen on" << address.toString() << m_port;
-            delete server;
-        }
-    }
-
-    if (!serversToCreate.isEmpty() || !serversToDelete.isEmpty()) {
-        qCDebug(dcConnection) << "Current server list:";
-        foreach (QTcpServer *s, m_serverList) {
-            qCDebug(dcConnection) << "  - Tcp server on" << s->serverAddress().toString() << s->serverPort();
-        }
-    }
+    // Start server with new configuration
+    m_host = address;
+    m_port = port;
+    return startServer();
 }
 
 /*! Returns true if this \l{TcpServer} started successfully.
@@ -262,44 +177,20 @@ void TcpServer::onTimeout()
  */
 bool TcpServer::startServer()
 {
-    bool ipV4 = m_ipVersions.contains("IPv4");
-    bool ipV6 = m_ipVersions.contains("IPv6");
-    if (m_ipVersions.contains("any")) {
-        ipV4 = ipV6 = true;
-    }
-
-    foreach (const QNetworkInterface &interface, m_networkInterfaces) {
-        QList<QNetworkAddressEntry> addresseEntries = interface.addressEntries();
-        QList<QHostAddress> addresses;
-
-        foreach (QNetworkAddressEntry entry, addresseEntries) {
-            if (ipV4 && entry.ip().protocol() == QAbstractSocket::IPv4Protocol) {
-                addresses.append(entry.ip());
-            }
-            if (ipV6 && entry.ip().protocol() == QAbstractSocket::IPv6Protocol) {
-                addresses.append(entry.ip());
-            }
-        }
-
-        // create a tcp server for each address found for the corresponding settings
-        foreach(const QHostAddress &address, addresses){
-            QTcpServer *server = new QTcpServer(this);
-            if(server->listen(address, m_port)) {
-                qCDebug(dcConnection) << "Started Tcp server on" << server->serverAddress().toString() << server->serverPort();
-                connect(server, SIGNAL(newConnection()), SLOT(onClientConnected()));
-                m_serverList.insert(QUuid::createUuid(), server);
-            } else {
-                qCWarning(dcConnection) << "Tcp server error: can not listen on" << interface.name() << address.toString() << m_port;
-                delete server;
-            }
-        }
-    }
-
-    m_timer->start();
-
-    if (m_serverList.empty())
+    m_server = new QTcpServer(this);
+    if(!m_server->listen(m_host, m_port)) {
+        qCWarning(dcConnection) << "Tcp server error: can not listen on" << m_host.toString() << m_port;
+        delete m_server;
+        m_server = NULL;
         return false;
+    }
 
+#ifndef TESTING_ENABLED
+    m_avahiService->registerService("guhIO", m_port, "_jsonrpc._tcp");
+#endif
+
+    qCDebug(dcConnection) << "Started Tcp server on" << m_server->serverAddress().toString() << m_server->serverPort();
+    connect(m_server, SIGNAL(newConnection()), SLOT(onClientConnected()));
     return true;
 }
 
@@ -309,16 +200,17 @@ bool TcpServer::startServer()
  */
 bool TcpServer::stopServer()
 {
-    // Listen on all Networkinterfaces
-    foreach (QTcpServer *s, m_serverList) {
-        QUuid uuid = m_serverList.key(s);
-        s->close();
-        m_serverList.take(uuid)->deleteLater();
-    }
+#ifndef TESTING_ENABLED
+    if (m_avahiService)
+        m_avahiService->resetService();
+#endif
 
-    if (!m_serverList.empty())
-        return false;
+    if (!m_server)
+        return true;
 
+    m_server->close();
+    m_server->deleteLater();
+    m_server = NULL;
     return true;
 }
 

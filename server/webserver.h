@@ -72,7 +72,7 @@ class WebServer : public QTcpServer
 {
     Q_OBJECT
 public:
-    explicit WebServer(const QSslConfiguration &sslConfiguration = QSslConfiguration(), QObject *parent = 0);
+    explicit WebServer(const QHostAddress &host, const uint &port, const QString &publicFolder, QObject *parent = 0);
     ~WebServer();
 
     void sendHttpReply(HttpReply *reply);
@@ -87,12 +87,14 @@ private:
 
     QtAvahiService *m_avahiService;
 
+    QHostAddress m_host;
+    qint16 m_port;
+    QDir m_webinterfaceDir;
+
     QSslConfiguration m_sslConfiguration;
     bool m_useSsl;
 
     bool m_enabled;
-    qint16 m_port;
-    QDir m_webinterfaceDir;
 
     bool verifyFile(QSslSocket *socket, const QString &fileName);
     QString fileName(const QString &query);
@@ -117,8 +119,8 @@ private slots:
 
     void onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceState &state);
 
-
 public slots:
+    bool reconfigureServer(const QHostAddress &address, const uint &port);
     bool startServer();
     bool stopServer();
 

@@ -47,16 +47,22 @@ namespace guhserver {
 
 /*! Constructs a \l{RestServer} with the given \a sslConfiguration and \a parent. */
 RestServer::RestServer(const QSslConfiguration &sslConfiguration, QObject *parent) :
-    QObject(parent)
+    QObject(parent),
+    m_webserver(0)
 {
-    m_webserver = new WebServer(sslConfiguration, this);
+    Q_UNUSED(sslConfiguration)
+
+    QMetaObject::invokeMethod(this, "setup", Qt::QueuedConnection);
+}
+
+void RestServer::registerWebserver(WebServer *webServer)
+{
+    m_webserver = webServer;
     connect(m_webserver, &WebServer::clientConnected, this, &RestServer::clientConnected);
     connect(m_webserver, &WebServer::clientDisconnected, this, &RestServer::clientDisconnected);
     connect(m_webserver, &WebServer::httpRequestReady, this, &RestServer::processHttpRequest);
 
     m_webserver->startServer();
-
-    QMetaObject::invokeMethod(this, "setup", Qt::QueuedConnection);
 }
 
 void RestServer::setup()

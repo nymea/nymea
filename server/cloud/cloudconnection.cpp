@@ -98,9 +98,9 @@ void CloudConnection::onAuthenticationChanged()
         m_error = Cloud::CloudErrorNoError;
         m_connection->open(m_proxyServerUrl);
     } else {
-        qCWarning(dcCloud()) << "Could not authenticate";
         m_error = m_authenticator->error();
     }
+    emit authenticatedChanged();
 }
 
 void CloudConnection::onConnected()

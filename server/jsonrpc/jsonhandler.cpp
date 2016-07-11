@@ -212,6 +212,14 @@ QVariantMap JsonHandler::statusToReply(Cloud::CloudError status) const
     return returns;
 }
 
+/*! Returns the formated error map for the given \a status. */
+QVariantMap JsonHandler::statusToReply(GuhConfiguration::ConfigurationError status) const
+{
+    QVariantMap returns;
+    returns.insert("configurationError", JsonTypes::configurationErrorToString(status));
+    return returns;
+}
+
 
 /*!
     \class guhserver::JsonReply

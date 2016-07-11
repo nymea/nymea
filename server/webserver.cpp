@@ -96,43 +96,23 @@ namespace guhserver {
  *
  *  \sa ServerManager
  */
-WebServer::WebServer(const QSslConfiguration &sslConfiguration, QObject *parent) :
+WebServer::WebServer(const QHostAddress &host, const uint &port, const QString &publicFolder, QObject *parent) :
     QTcpServer(parent),
     m_avahiService(NULL),
-    m_sslConfiguration(sslConfiguration),
+    m_host(host),
+    m_port(port),
+    m_webinterfaceDir(publicFolder),
     m_useSsl(false),
     m_enabled(false)
 {
-    // load webserver settings
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
-    qCDebug(dcWebSocketServer) << "Loading web socket server settings from" << settings.fileName();
-
-    settings.beginGroup("WebServer");
-    // 3333 Official free according to https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers
-    m_port = settings.value("port", 3333).toInt();
-    m_useSsl = settings.value("https", false).toBool();
-    m_webinterfaceDir = QDir(settings.value("publicFolder", "/usr/share/guh-webinterface/public/").toString());
-    settings.endGroup();
-
-    // check public directory
-    qCDebug(dcWebServer) << "Publish webinterface folder" << m_webinterfaceDir.path();
-    if (!m_webinterfaceDir.exists())
-        qCWarning(dcWebServer) << "Web interface public folder" << m_webinterfaceDir.path() << "does not exist.";
-
     if (QCoreApplication::instance()->organizationName() == "guh-test") {
         m_webinterfaceDir = QDir(QCoreApplication::applicationDirPath());
         qCWarning(dcWebServer) << "Using public folder" << m_webinterfaceDir.path();
     }
 
-    // check SSL
-    if (m_useSsl && m_sslConfiguration.isNull())
-        m_useSsl = false;
-
-    // Create avahi service
 #ifndef TESTING_ENABLED
     m_avahiService = new QtAvahiService(this);
     connect(m_avahiService, &QtAvahiService::serviceStateChanged, this, &WebServer::onAvahiServiceStateChanged);
-    m_avahiService->registerService("guhIO", m_port);
 #endif
 }
 
@@ -537,14 +517,36 @@ void WebServer::onError(QAbstractSocket::SocketError error)
 void WebServer::onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceState &state)
 {
     if (state == QtAvahiService::QtAvahiServiceStateEstablished) {
-        qCDebug(dcAvahi()) << "Service" << m_avahiService->name() << "established successfully";
+        qCDebug(dcAvahi()) << "Service" << m_avahiService->name() << m_avahiService->serviceType() << "established successfully";
     }
+}
+
+bool WebServer::reconfigureServer(const QHostAddress &address, const uint &port)
+{
+    if (m_host == address && m_port == (qint16)port && isListening())
+        return true;
+
+    stopServer();
+
+    if (!listen(address, port)) {
+        qCWarning(dcConnection()) << "Webserver could not listen on" << serverAddress().toString() << m_port;
+        qCDebug(dcWebServer()) << "Restart server with old configuration.";
+        startServer();
+        return false;
+    }
+
+    close();
+    m_host = address;
+    m_port = port;
+    startServer();
+
+    return true;
 }
 
 /*! Returns true if this \l{WebServer} started successfully. */
 bool WebServer::startServer()
 {
-    if (!listen(QHostAddress::AnyIPv4, m_port)) {
+    if (!listen(m_host, m_port)) {
         qCWarning(dcConnection) << "Webserver could not listen on" << serverAddress().toString() << m_port;
         m_enabled = false;
         return false;
@@ -558,6 +560,10 @@ bool WebServer::startServer()
         }
     }
 
+#ifndef TESTING_ENABLED
+    m_avahiService->registerService("guhIO", m_port);
+#endif
+
     m_enabled = true;
     return true;
 }
@@ -565,6 +571,14 @@ bool WebServer::startServer()
 /*! Returns true if this \l{WebServer} stopped successfully. */
 bool WebServer::stopServer()
 {
+#ifndef TESTING_ENABLED
+    if (m_avahiService)
+        m_avahiService->resetService();
+#endif
+
+    foreach (QSslSocket *client, m_clientList.values())
+        client->close();
+
     close();
     m_enabled = false;
     qCDebug(dcConnection) << "Webserver closed.";
@@ -575,7 +589,7 @@ bool WebServer::stopServer()
 QByteArray WebServer::createServerXmlDocument(QHostAddress address)
 {
     QByteArray uuid = GuhCore::instance()->configuration()->serverUuid().toByteArray();
-    uint websocketPort = GuhCore::instance()->configuration()->websocketPort();
+    uint websocketPort = GuhCore::instance()->configuration()->webSocketPort();
 
     QByteArray data;
     QXmlStreamWriter writer(&data);

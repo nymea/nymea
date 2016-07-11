@@ -56,12 +56,7 @@
 #include "statehandler.h"
 #include "websocketserver.h"
 #include "cloudhandler.h"
-
-#ifndef TESTING_ENABLED
-#include "tcpserver.h"
-#else
-#include "mocktcpserver.h"
-#endif
+#include "configurationhandler.h"
 
 #include <QJsonDocument>
 #include <QStringList>
@@ -72,14 +67,9 @@ namespace guhserver {
 /*! Constructs a \l{JsonRPCServer} with the given \a sslConfiguration and \a parent. */
 JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject *parent):
     JsonHandler(parent),
-    #ifdef TESTING_ENABLED
-    m_tcpServer(new MockTcpServer(this)),
-    #else
-    m_tcpServer(new TcpServer(this)),
-    #endif
-    m_websocketServer(new WebSocketServer(sslConfiguration, this)),
     m_notificationId(0)
 {
+    Q_UNUSED(sslConfiguration)
     // First, define our own JSONRPC methods
     QVariantMap returns;
     QVariantMap params;
@@ -104,9 +94,6 @@ JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject 
     setParams("SetNotificationStatus", params);
     returns.insert("enabled", JsonTypes::basicTypeToString(JsonTypes::Bool));
     setReturns("SetNotificationStatus", returns);
-
-    registerTransportInterface(m_tcpServer);
-    registerTransportInterface(m_websocketServer);
 
     QMetaObject::invokeMethod(this, "setup", Qt::QueuedConnection);
 }
@@ -182,6 +169,7 @@ void JsonRPCServer::setup()
     registerHandler(new LoggingHandler(this));
     registerHandler(new StateHandler(this));
     registerHandler(new CloudHandler(this));
+    registerHandler(new ConfigurationHandler(this));
 }
 
 void JsonRPCServer::processData(const QUuid &clientId, const QString &targetNamespace, const QString &method, const QVariantMap &message)

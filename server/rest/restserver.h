@@ -45,6 +45,8 @@ class RestServer : public QObject
 public:
     explicit RestServer(const QSslConfiguration &sslConfiguration = QSslConfiguration(), QObject *parent = 0);
 
+    void registerWebserver(WebServer *webServer);
+
 private:
     WebServer *m_webserver;
     QList<QUuid> m_clientList;

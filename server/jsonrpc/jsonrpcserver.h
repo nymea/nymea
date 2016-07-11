@@ -36,18 +36,7 @@
 class Device;
 class QSslConfiguration;
 
-
-#ifdef TESTING_ENABLED
-class MockTcpServer;
-#endif
-
 namespace guhserver {
-
-class WebSocketServer;
-
-#ifndef TESTING_ENABLED
-class TcpServer;
-#endif
 
 class JsonRPCServer: public JsonHandler
 {
@@ -78,14 +67,6 @@ private slots:
     void asyncReplyFinished();
 
 private:
-#ifdef TESTING_ENABLED
-    MockTcpServer *m_tcpServer;
-#else
-    TcpServer *m_tcpServer;
-#endif
-
-    WebSocketServer *m_websocketServer;
-
     QList<TransportInterface *> m_interfaces;
     QHash<QString, JsonHandler *> m_handlers;
     QHash<JsonReply *, TransportInterface *> m_asyncReplies;

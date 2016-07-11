@@ -35,11 +35,13 @@ public:
     explicit TimeManager(const QByteArray &timeZone, QObject *parent = 0);
 
     QByteArray timeZone() const;
-    void setTimeZone(const QByteArray &timeZone = QTimeZone::systemTimeZoneId());
+    bool setTimeZone(const QByteArray &timeZone = QTimeZone::systemTimeZoneId());
 
     QDateTime currentDateTime() const;
     QTime currentTime() const;
     QDate currentDate() const;
+
+    QList<QByteArray> availableTimeZones() const;
 
 #ifdef TESTING_ENABLED
     void stopTimer();
@@ -57,9 +59,6 @@ signals:
 
 private slots:
     void guhTimeout();
-
-public slots:
-    void onTimeZoneChanged();
 
 };
 

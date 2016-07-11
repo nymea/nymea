@@ -1,4 +1,4 @@
-41
+43
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -29,6 +29,129 @@
                         "$ref:ParamType"
                     ]
                 }
+            }
+        },
+        "Cloud.Authenticate": {
+            "description": "Connect and authenticate the cloud connection with the given username and password.",
+            "params": {
+                "password": "String",
+                "username": "String"
+            },
+            "returns": {
+                "cloudError": "$ref:CloudError"
+            }
+        },
+        "Cloud.Disable": {
+            "description": "Disable the cloud connection.",
+            "params": {
+            },
+            "returns": {
+                "cloudError": "$ref:CloudError"
+            }
+        },
+        "Cloud.Enable": {
+            "description": "Enable the cloud connection.",
+            "params": {
+            },
+            "returns": {
+                "cloudError": "$ref:CloudError"
+            }
+        },
+        "Cloud.GetConnectionStatus": {
+            "description": "Get the current status of the cloud connection.",
+            "params": {
+            },
+            "returns": {
+                "active": "Bool",
+                "authenticated": "Bool",
+                "connected": "Bool",
+                "enabled": "Bool"
+            }
+        },
+        "Configuration.GetConfigurations": {
+            "description": "Get all configuration parameters of the server.",
+            "params": {
+            },
+            "returns": {
+                "basicConfiguration": {
+                    "serverName": "String",
+                    "serverTime": "Uint",
+                    "serverUuid": "Uuid",
+                    "timeZone": "String"
+                },
+                "sslConfiguration": {
+                    "enabled": "Bool"
+                },
+                "tcpServerConfiguration": {
+                    "host": "String",
+                    "port": "Uint"
+                },
+                "webServerConfiguration": {
+                    "host": "String",
+                    "port": "Uint"
+                },
+                "webSocketServerConfiguration": {
+                    "host": "String",
+                    "port": "Uint"
+                }
+            }
+        },
+        "Configuration.GetTimeZones": {
+            "description": "Get the list of available timezones.",
+            "params": {
+            },
+            "returns": {
+                "timeZones": [
+                    "String"
+                ]
+            }
+        },
+        "Configuration.SetServerName": {
+            "description": "Set the name of the server. Default is guhIO.",
+            "params": {
+                "serverName": "String"
+            },
+            "returns": {
+                "configurationError": "$ref:ConfigurationError"
+            }
+        },
+        "Configuration.SetTcpServerConfiguration": {
+            "description": "Configure the TCP interface of the server. Note: if you are using the TCP server for this call you will loose the connection.",
+            "params": {
+                "host": "String",
+                "port": "Uint"
+            },
+            "returns": {
+                "configurationError": "$ref:ConfigurationError"
+            }
+        },
+        "Configuration.SetTimeZone": {
+            "description": "Set the time zone of the server. See also: \"GetTimeZones\"",
+            "params": {
+                "timeZone": "String"
+            },
+            "returns": {
+                "configurationError": "$ref:ConfigurationError"
+            }
+        },
+        "Configuration.SetWebServerConfiguration": {
+            "description": "Configure the web server of the server.",
+            "params": {
+                "host": "String",
+                "port": "Uint"
+            },
+            "returns": {
+                "configurationError": "$ref:ConfigurationError"
+            }
+        },
+        "Configuration.SetWebSocketServerConfiguration": {
+            "description": "Configure the web socket interface of the server. Note: if you are using the web socket server for this call you will loose the connection.",
+            "params": {
+                "host": "String",
+                "port": "Uint"
+            },
+            "returns": {
+                "configurationError": "$ref:ConfigurationError"
             }
         },
         "Devices.AddConfiguredDevice": {
@@ -463,6 +586,34 @@
         }
     },
     "notifications": {
+<<<<<<< HEAD
+=======
+        "Cloud.ConnectionStatusChanged": {
+            "description": "Emitted whenever the status of the cloud connection changed. The cloud connection is active if a cloud client is talking with the server.",
+            "params": {
+                "active": "Bool",
+                "authenticated": "Bool",
+                "connected": "Bool",
+                "enabled": "Bool"
+            }
+        },
+        "Configuration.BasicConfigurationChanged": {
+            "description": "Emitted whenever the basic configuration of this server changes.",
+            "params": {
+                "serverName": "String",
+                "serverTime": "Uint",
+                "serverUuid": "Uuid",
+                "timeZone": "String"
+            }
+        },
+        "Configuration.TcpServerConfigurationChanged": {
+            "description": "Emitted whenever the TCP server configuration changes.",
+            "params": {
+                "host": "String",
+                "port": "Uint"
+            }
+        },
+>>>>>>> bump api and guhd version
         "Devices.DeviceAdded": {
             "description": "Emitted whenever a Device was added.",
             "params": {
@@ -593,6 +744,14 @@
             "CloudErrorIdentityServerNotReachable",
             "CloudErrorProxyServerNotReachable",
             "CloudErrorLoginCredentialsMissing"
+        ],
+        "ConfigurationError": [
+            "ConfigurationErrorNoError",
+            "ConfigurationErrorInvalidTimeZone",
+            "ConfigurationErrorInvalidStationName",
+            "ConfigurationErrorInvalidPort",
+            "ConfigurationErrorInvalidHostAddress",
+            "ConfigurationErrorInvalidCertificate"
         ],
         "CreateMethod": [
             "CreateMethodUser",

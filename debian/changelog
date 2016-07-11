@@ -1,3 +1,16 @@
+guh (0.7.5) xenial; urgency=medium
+
+  * Configuration API and server settings
+
+ -- Simon Stürz <simon.stuerz@guh.guru>  Thu, 11 Jul 2016 23:15:13 +0200
+
+guh (0.7.4) xenial; urgency=medium
+
+  * Add cloud connection
+  * Add guhd configuration 
+
+ -- Simon Stürz <simon.stuerz@guh.guru>  Thu, 17 Jun 2016 18:35:02 +0200
+
 guh (0.7.3) xenial; urgency=medium
 
   * Add plugin property recommendations for client applications

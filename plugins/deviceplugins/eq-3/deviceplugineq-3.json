@@ -468,6 +468,7 @@
                             "idName": "deviceModeString",
                             "name": "device mode string",
                             "type": "QString",
+                            "defaultValue": "-",
                             "index": 12
                         },
                         {

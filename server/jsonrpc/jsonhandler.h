@@ -111,6 +111,8 @@ protected:
     QVariantMap statusToReply(DeviceManager::DeviceError status) const;
     QVariantMap statusToReply(RuleEngine::RuleError status) const;
     QVariantMap statusToReply(Logging::LoggingError status) const;
+    QVariantMap statusToReply(Cloud::CloudError status) const;
+    QVariantMap statusToReply(GuhConfiguration::ConfigurationError status) const;
 
 private:
     QHash<QString, QString> m_descriptions;

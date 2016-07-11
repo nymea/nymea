@@ -111,8 +111,9 @@ void CloudConnection::onAuthenticationChanged()
         qCDebug(dcCloud()) << "Connecting to" << m_proxyUrl.toString();
         m_connection->open(m_proxyUrl);
     } else {
-        m_error = CloudConnectionErrorAuthenticationFailed;
+        m_error = m_authenticator->error();
     }
+    emit authenticatedChanged();
 }
 
 void CloudConnection::onConnected()

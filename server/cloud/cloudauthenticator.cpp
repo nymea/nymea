@@ -156,10 +156,9 @@ void CloudAuthenticator::stopAuthentication()
 
 void CloudAuthenticator::setAuthenticated(const bool &authenticated)
 {
-    if (!authenticated) {
+    if (!authenticated)
         m_timer->stop();
-        qCWarning(dcCloud()) << "Authenticator: Authentication failed" << m_username;
-    }
+
     m_authenticated = authenticated;
     emit authenticationChanged();
 }

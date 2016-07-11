@@ -104,7 +104,6 @@
 #include "devicemanager.h"
 #include "plugin/device.h"
 
-
 namespace guhserver {
 
 GuhCore* GuhCore::s_instance = 0;
@@ -362,16 +361,47 @@ TimeManager *GuhCore::timeManager() const
     return m_timeManager;
 }
 
+WebServer *GuhCore::webServer() const
+{
+    return m_webServer;
+}
+
+/*! Returns a pointer to the \l{WebSocketServer} instance owned by GuhCore.*/
+WebSocketServer *GuhCore::webSocketServer() const
+{
+    return m_webSocketServer;
+}
+
 CloudManager *GuhCore::cloudManager() const
 {
     return m_cloudManager;
 }
+
+ServerManager *GuhCore::serverManager() const
+{
+    return m_serverManager;
+}
+
+#ifdef TESTING_ENABLED
+MockTcpServer *GuhCore::tcpServer() const
+{
+    return m_tcpServer;
+}
+#else
+TcpServer *GuhCore::tcpServer() const
+{
+    return m_tcpServer;
+}
+#endif
 
 /*! Constructs GuhCore with the given \a parent. This is private.
     Use \l{GuhCore::instance()} to access the single instance.*/
 GuhCore::GuhCore(QObject *parent) :
     QObject(parent)
 {
+    qCDebug(dcApplication()) << "Loading guh configurations" << GuhSettings(GuhSettings::SettingsRoleGlobal).fileName();
+    m_configuration = new GuhConfiguration(this);
+
     qCDebug(dcApplication()) << "Creating Time Manager";
     m_timeManager = new TimeManager(QTimeZone::systemTimeZoneId(), this);
 
@@ -379,7 +409,7 @@ GuhCore::GuhCore(QObject *parent) :
     m_logger = new LogEngine(this);
 
     qCDebug(dcApplication) << "Creating Cloud Manager";
-    m_cloudManager = new CloudManager(this);
+    m_cloudManager = new CloudManager(m_configuration->cloudEnabled(), m_configuration->cloudAuthenticationServer(), m_configuration->cloudProxyServer(), this);
 
     qCDebug(dcApplication) << "Creating Device Manager";
     m_deviceManager = new DeviceManager(this);
@@ -390,8 +420,26 @@ GuhCore::GuhCore(QObject *parent) :
     qCDebug(dcApplication) << "Creating Server Manager";
     m_serverManager = new ServerManager(this);
 
-    // Register cloud connection transport interface
+#ifdef TESTING_ENABLED
+    m_tcpServer = new MockTcpServer(this);
+#else
+    m_tcpServer = new TcpServer(m_configuration->tcpServerAddress(), m_configuration->tcpServerPort(), this);
+#endif
+
+    m_webSocketServer = new WebSocketServer(m_configuration->webSocketAddress(), m_configuration->webSocketPort(), m_configuration->sslEnabled(), this);
+
+    // Register transport interface in the JSON RPC server
+    m_serverManager->jsonServer()->registerTransportInterface(m_tcpServer);
+    m_serverManager->jsonServer()->registerTransportInterface(m_webSocketServer);
     m_serverManager->jsonServer()->registerTransportInterface(m_cloudManager);
+
+    m_webServer = new WebServer(m_configuration->webServerAddress(), m_configuration->webServerPort(), m_configuration->webServerPublicFolder(), this);
+    m_serverManager->restServer()->registerWebserver(m_webServer);
+
+    // Connect the configuration changes
+    connect(m_configuration, &GuhConfiguration::cloudEnabledChanged, m_cloudManager, &CloudManager::onCloudEnabledChanged);
+    connect(m_configuration, &GuhConfiguration::cloudProxyServerChanged, m_cloudManager, &CloudManager::onProxyServerUrlChanged);
+    connect(m_configuration, &GuhConfiguration::cloudAuthenticationServerChanged, m_cloudManager, &CloudManager::onAuthenticationServerUrlChanged);
 
     connect(m_deviceManager, &DeviceManager::eventTriggered, this, &GuhCore::gotEvent);
     connect(m_deviceManager, &DeviceManager::deviceStateChanged, this, &GuhCore::deviceStateChanged);

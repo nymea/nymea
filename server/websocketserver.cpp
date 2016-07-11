@@ -60,26 +60,15 @@ namespace guhserver {
  *
  *  \sa ServerManager
  */
-WebSocketServer::WebSocketServer(const QSslConfiguration &sslConfiguration, QObject *parent) :
+WebSocketServer::WebSocketServer(const QHostAddress &address, const uint &port, const bool &sslEnabled, QObject *parent) :
     TransportInterface(parent),
     m_server(0),
-    m_sslConfiguration(sslConfiguration),
-    m_useSsl(false),
+    m_host(address),
+    m_port(port),
+    m_useSsl(sslEnabled),
     m_enabled(false)
 {
-    // load webserver settings
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
-    qCDebug(dcWebServer) << "Loading webserver settings from" << settings.fileName();
 
-    settings.beginGroup("WebSocketServer");
-    // 4444 Official free according to https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers
-    m_port = settings.value("port", 4444).toInt();
-    m_useSsl = settings.value("https", false).toBool();
-    settings.endGroup();
-
-    // check SSL
-    if (m_useSsl && m_sslConfiguration.isNull())
-        m_useSsl = false;
 }
 
 /*! Destructor of this \l{WebSocketServer}. */
@@ -179,17 +168,44 @@ void WebSocketServer::onPing(quint64 elapsedTime, const QByteArray &payload)
     qCDebug(dcWebSocketServer) << "ping response" << client->peerAddress() << elapsedTime << payload;
 }
 
+bool WebSocketServer::reconfigureServer(const QHostAddress &address, const uint &port)
+{
+    if (m_host == address && m_port == (qint16)port && m_server->isListening())
+        return true;
+
+    stopServer();
+    QWebSocketServer *server;
+    if (m_useSsl) {
+        server = new QWebSocketServer("guh", QWebSocketServer::SecureMode, this);
+        server->setSslConfiguration(m_sslConfiguration);
+    } else {
+        server = new QWebSocketServer("guh", QWebSocketServer::NonSecureMode, this);
+    }
+
+    if(!server->listen(address, port)) {
+        qCWarning(dcConnection) << "Websocket server error: can not listen on" << address.toString() << port;
+        delete server;
+        // Restart the server with the old configuration
+        qCDebug(dcWebSocketServer()) << "Restart server with old configuration.";
+        startServer();
+        return false;
+    }
+    // Remove the test server..
+    server->close();
+    delete server;
+
+    // Start server with new configuration
+    m_host = address;
+    m_port = port;
+    return startServer();
+}
+
 /*! Returns true if this \l{WebSocketServer} started successfully.
  *
  * \sa TransportInterface::startServer()
  */
 bool WebSocketServer::startServer()
 {
-    if (m_server) {
-        qCWarning(dcConnection) << "There is allready a websocket server instance. This should never happen!!! Please report this bug!";
-        return false;
-    }
-
     if (m_useSsl) {
         m_server = new QWebSocketServer("guh", QWebSocketServer::SecureMode, this);
         m_server->setSslConfiguration(m_sslConfiguration);
@@ -199,7 +215,7 @@ bool WebSocketServer::startServer()
     connect (m_server, &QWebSocketServer::newConnection, this, &WebSocketServer::onClientConnected);
     connect (m_server, &QWebSocketServer::acceptError, this, &WebSocketServer::onServerError);
 
-    if (!m_server->listen(QHostAddress::Any, m_port)) {
+    if (!m_server->listen(m_host, m_port)) {
         qCWarning(dcConnection) << "Websocket server" << m_server->serverName() << QString("could not listen on %1:%2").arg(m_server->serverAddress().toString()).arg(m_port);
         return false;
     }
@@ -218,6 +234,10 @@ bool WebSocketServer::startServer()
  */
 bool WebSocketServer::stopServer()
 {
+    foreach (QWebSocket *client, m_clientList.values()) {
+        client->close(QWebSocketProtocol::CloseCodeNormal, "Stop server");
+    }
+
     m_server->close();
     delete m_server;
     m_server = 0;

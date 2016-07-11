@@ -31,9 +31,16 @@
 #include "devicemanager.h"
 #include "ruleengine.h"
 #include "servermanager.h"
+#include "websocketserver.h"
 
 #include "cloud/cloudmanager.h"
 #include "time/timemanager.h"
+
+#ifndef TESTING_ENABLED
+#include "tcpserver.h"
+#else
+#include "mocktcpserver.h"
+#endif
 
 #include <QObject>
 
@@ -71,7 +78,17 @@ public:
     DeviceManager *deviceManager() const;
     RuleEngine *ruleEngine() const;
     TimeManager *timeManager() const;
+    WebServer *webServer() const;
+    WebSocketServer *webSocketServer() const;
     CloudManager *cloudManager() const;
+    ServerManager *serverManager() const;
+
+
+#ifdef TESTING_ENABLED
+    MockTcpServer *tcpServer() const;
+#else
+    TcpServer *tcpServer() const;
+#endif
 
 signals:
     void eventTriggered(const Event &event);
@@ -100,6 +117,13 @@ private:
     RuleEngine *m_ruleEngine;
     LogEngine *m_logger;
     TimeManager *m_timeManager;
+#ifdef TESTING_ENABLED
+    MockTcpServer *m_tcpServer;
+#else
+    TcpServer *m_tcpServer;
+#endif
+    WebSocketServer *m_webSocketServer;
+    WebServer *m_webServer;
     CloudManager *m_cloudManager;
 
     QHash<ActionId, Action> m_pendingActions;

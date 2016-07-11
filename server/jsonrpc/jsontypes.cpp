@@ -82,7 +82,8 @@ QVariantList JsonTypes::s_loggingSource;
 QVariantList JsonTypes::s_loggingLevel;
 QVariantList JsonTypes::s_loggingEventType;
 QVariantList JsonTypes::s_repeatingMode;
-QVariantList JsonTypes::s_cloudConnectionError;
+QVariantList JsonTypes::s_cloudError;
+QVariantList JsonTypes::s_configurationError;
 
 QVariantMap JsonTypes::s_paramType;
 QVariantMap JsonTypes::s_param;
@@ -131,7 +132,8 @@ void JsonTypes::init()
     s_loggingLevel = enumToStrings(Logging::staticMetaObject, "LoggingLevel");
     s_loggingEventType = enumToStrings(Logging::staticMetaObject, "LoggingEventType");
     s_repeatingMode = enumToStrings(RepeatingOption::staticMetaObject, "RepeatingMode");
-    s_cloudConnectionError = enumToStrings(CloudConnection::staticMetaObject, "CloudConnectionError");
+    s_cloudError = enumToStrings(Cloud::staticMetaObject, "CloudError");
+    s_configurationError = enumToStrings(GuhConfiguration::staticMetaObject, "ConfigurationError");
 
     // ParamType
     s_paramType.insert("name", basicTypeToString(String));
@@ -360,7 +362,8 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("LoggingSource", loggingSource());
     allTypes.insert("LoggingEventType", loggingEventType());
     allTypes.insert("RepeatingMode", repeatingMode());
-    allTypes.insert("CloudConnectionError", cloudConnectionError());
+    allTypes.insert("CloudError", cloudError());
+    allTypes.insert("ConfigurationError", configurationError());
 
     allTypes.insert("StateType", stateTypeDescription());
     allTypes.insert("StateDescriptor", stateDescriptorDescription());
@@ -987,6 +990,40 @@ QVariantList JsonTypes::packDeviceDescriptors(const QList<DeviceDescriptor> devi
         deviceDescriptorList.append(JsonTypes::packDeviceDescriptor(deviceDescriptor));
     }
     return deviceDescriptorList;
+}
+
+QVariantMap JsonTypes::packBasicConfiguration()
+{
+    QVariantMap basicConfiguration;
+    basicConfiguration.insert("serverName", GuhCore::instance()->configuration()->serverName());
+    basicConfiguration.insert("serverUuid", GuhCore::instance()->configuration()->serverUuid());
+    basicConfiguration.insert("serverTime", GuhCore::instance()->timeManager()->currentDateTime().toTime_t());
+    basicConfiguration.insert("timeZone", QString::fromUtf8(GuhCore::instance()->timeManager()->timeZone()));
+    return basicConfiguration;
+}
+
+QVariantMap JsonTypes::packTcpServerConfiguration()
+{
+    QVariantMap tcpServerConfiguration;
+    tcpServerConfiguration.insert("host", GuhCore::instance()->configuration()->tcpServerAddress().toString());
+    tcpServerConfiguration.insert("port", GuhCore::instance()->configuration()->tcpServerPort());
+    return tcpServerConfiguration;
+}
+
+QVariantMap JsonTypes::packWebServerConfiguration()
+{
+    QVariantMap webServerConfiguration;
+    webServerConfiguration.insert("host", GuhCore::instance()->configuration()->webServerAddress().toString());
+    webServerConfiguration.insert("port", GuhCore::instance()->configuration()->webServerPort());
+    return webServerConfiguration;
+}
+
+QVariantMap JsonTypes::packWebSocketServerConfiguration()
+{
+    QVariantMap webSocketServerConfiguration;
+    webSocketServerConfiguration.insert("host", GuhCore::instance()->configuration()->webSocketAddress().toString());
+    webSocketServerConfiguration.insert("port", GuhCore::instance()->configuration()->webSocketPort());
+    return webSocketServerConfiguration;
 }
 
 /*! Returns a variant list containing all rule descriptions. */
@@ -1754,6 +1791,12 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                 QPair<bool, QString> result = validateEnum(s_cloudConnectionError, variant);
                 if (!result.first) {
                     qCWarning(dcJsonRpc) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(cloudConnectionErrorRef());
+                    return result;
+                }
+            } else if (refName == configurationErrorRef()) {
+                QPair<bool, QString> result = validateEnum(s_configurationError, variant);
+                if (!result.first) {
+                    qCWarning(dcJsonRpc) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(configurationErrorRef());
                     return result;
                 }
             } else {

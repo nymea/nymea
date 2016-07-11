@@ -68,7 +68,10 @@ WebSocketServer::WebSocketServer(const QHostAddress &address, const uint &port, 
     m_useSsl(sslEnabled),
     m_enabled(false)
 {
-
+#ifndef TESTING_ENABLED
+    m_avahiService = new QtAvahiService(this);
+    connect(m_avahiService, &QtAvahiService::serviceStateChanged, this, &WebSocketServer::onAvahiServiceStateChanged);
+#endif
 }
 
 /*! Destructor of this \l{WebSocketServer}. */
@@ -168,6 +171,13 @@ void WebSocketServer::onPing(quint64 elapsedTime, const QByteArray &payload)
     qCDebug(dcWebSocketServer) << "ping response" << client->peerAddress() << elapsedTime << payload;
 }
 
+void WebSocketServer::onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceState &state)
+{
+    if (state == QtAvahiService::QtAvahiServiceStateEstablished) {
+        qCDebug(dcAvahi()) << "Service" << m_avahiService->name() << m_avahiService->serviceType() << "established successfully";
+    }
+}
+
 bool WebSocketServer::reconfigureServer(const QHostAddress &address, const uint &port)
 {
     if (m_host == address && m_port == (qint16)port && m_server->isListening())
@@ -225,6 +235,11 @@ bool WebSocketServer::startServer()
     } else {
         qCDebug(dcConnection) << "Started websocket server" << m_server->serverName() << QString("on wss://%1:%2").arg(m_server->serverAddress().toString()).arg(m_port);
     }
+
+#ifndef TESTING_ENABLED
+    m_avahiService->registerService("guhIO", m_port, "_ws._tcp");
+#endif
+
     return true;
 }
 
@@ -234,6 +249,11 @@ bool WebSocketServer::startServer()
  */
 bool WebSocketServer::stopServer()
 {
+#ifndef TESTING_ENABLED
+    if (m_avahiService)
+        m_avahiService->resetService();
+#endif
+
     foreach (QWebSocket *client, m_clientList.values()) {
         client->close(QWebSocketProtocol::CloseCodeNormal, "Stop server");
     }

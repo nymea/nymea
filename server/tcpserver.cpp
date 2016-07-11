@@ -54,7 +54,10 @@ TcpServer::TcpServer(const QHostAddress &host, const uint &port, QObject *parent
     m_host(host),
     m_port(port)
 {       
-
+#ifndef TESTING_ENABLED
+    m_avahiService = new QtAvahiService(this);
+    connect(m_avahiService, &QtAvahiService::serviceStateChanged, this, &TcpServer::onAvahiServiceStateChanged);
+#endif
 }
 
 /*! Destructor of this \l{TcpServer}. */
@@ -134,6 +137,13 @@ void TcpServer::onError(QAbstractSocket::SocketError error)
     stopServer();
 }
 
+void TcpServer::onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceState &state)
+{
+    if (state == QtAvahiService::QtAvahiServiceStateEstablished) {
+        qCDebug(dcAvahi()) << "Service" << m_avahiService->name() << m_avahiService->serviceType() << "established successfully";
+    }
+}
+
 
 bool TcpServer::reconfigureServer(const QHostAddress &address, const uint &port)
 {
@@ -175,6 +185,10 @@ bool TcpServer::startServer()
         return false;
     }
 
+#ifndef TESTING_ENABLED
+    m_avahiService->registerService("guhIO", m_port, "_jsonrpc._tcp");
+#endif
+
     qCDebug(dcConnection) << "Started Tcp server on" << m_server->serverAddress().toString() << m_server->serverPort();
     connect(m_server, SIGNAL(newConnection()), SLOT(onClientConnected()));
     return true;
@@ -186,6 +200,11 @@ bool TcpServer::startServer()
  */
 bool TcpServer::stopServer()
 {
+#ifndef TESTING_ENABLED
+    if (m_avahiService)
+        m_avahiService->resetService();
+#endif
+
     if (!m_server)
         return true;
 

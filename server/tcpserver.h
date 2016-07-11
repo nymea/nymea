@@ -30,6 +30,7 @@
 #include <QTimer>
 
 #include "transportinterface.h"
+#include "network/avahi/qtavahiservice.h"
 
 namespace guhserver {
 
@@ -46,6 +47,8 @@ public:
 private:
     QTimer *m_timer;
 
+    QtAvahiService *m_avahiService;
+
     QTcpServer * m_server;
     QHash<QUuid, QTcpSocket *> m_clientList;
 
@@ -57,6 +60,8 @@ private slots:
     void onClientDisconnected();
     void readPackage();
     void onError(QAbstractSocket::SocketError error);
+
+    void onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceState &state);
 
 public slots:
     bool reconfigureServer(const QHostAddress &address, const uint &port);

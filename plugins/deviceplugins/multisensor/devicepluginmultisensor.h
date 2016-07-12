@@ -50,10 +50,6 @@ private:
     bool verifyExistingDevices(const QBluetoothDeviceInfo &deviceInfo);
 
     QHash<QSharedPointer<SensorTag>,QPointer<Device>> m_tags;
-
-private slots:
-    void updateValue(StateTypeId state, QVariant value);
-    void sendEvent(EventTypeId event);
 };
 
 #endif // BLUETOOTH_LE

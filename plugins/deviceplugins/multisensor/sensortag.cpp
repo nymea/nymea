@@ -105,7 +105,7 @@ void SensorTag::onServiceStateChanged(const QLowEnergyService::ServiceState &sta
 
             if (!sensorCharacteristic.isValid()) {
                 qCWarning(dcMultiSensor) << "ERROR: characteristic not found for device " << name() << address().toString();
-                return;
+                break;
             }
 
             const auto notificationDescriptor = sensorCharacteristic.descriptor(
@@ -125,7 +125,7 @@ void SensorTag::onServiceStateChanged(const QLowEnergyService::ServiceState &sta
 
             if (!sensorConfig.isValid()) {
                 qCWarning(dcMultiSensor) << "ERROR: characteristic not found for device " << name() << address().toString();
-                return;
+                break;
             }
 
             service->writeCharacteristic(sensorConfig, QByteArray::fromHex("01"));
@@ -137,14 +137,14 @@ void SensorTag::onServiceStateChanged(const QLowEnergyService::ServiceState &sta
                 service->readCharacteristic(service->characteristic(calibId));
             }
         }
-
-        if (std::all_of(m_services.begin(), m_services.end(),
-                        [](QSharedPointer<QLowEnergyService> service){ return service->state() == QLowEnergyService::ServiceDiscovered; }))
-            emit valueChanged(availableStateTypeId, true);
         break;
     default:
         break;
     }
+
+    if (std::all_of(m_services.begin(), m_services.end(),
+                    [](QSharedPointer<QLowEnergyService> service){ return service && service->state() == QLowEnergyService::ServiceDiscovered; }))
+        emit valueChanged(availableStateTypeId, true);
 }
 
 void SensorTag::onServiceCharacteristicChanged(const QLowEnergyCharacteristic &characteristic, const QByteArray &value)

@@ -105,8 +105,10 @@ DeviceManager::DeviceSetupStatus DevicePluginMultiSensor::setupDevice(Device *de
         auto deviceInfo = QBluetoothDeviceInfo(address, name, 0);
 
         QSharedPointer<SensorTag> tag{new SensorTag(deviceInfo, QLowEnergyController::PublicAddress, this)};
-        connect(tag.data(), &SensorTag::valueChanged, this, &DevicePluginMultiSensor::updateValue);
-        connect(tag.data(), &SensorTag::event, this, &DevicePluginMultiSensor::sendEvent);
+        connect(tag.data(), &SensorTag::valueChanged, this,
+                [device, this](StateTypeId state, QVariant value) { device->setStateValue(state, value); });
+        connect(tag.data(), &SensorTag::event, this,
+                [device, this](EventTypeId event) { emit emitEvent(Event(event, device->id())); });
         m_tags.insert(tag, device);
 
         tag->connectDevice();
@@ -135,21 +137,4 @@ bool DevicePluginMultiSensor::verifyExistingDevices(const QBluetoothDeviceInfo &
     }
 
     return false;
-}
-
-void DevicePluginMultiSensor::updateValue(StateTypeId state, QVariant value)
-{
-    QSharedPointer<SensorTag> senderTag{qobject_cast<SensorTag *>(sender()), [](SensorTag *){}};
-    auto device = m_tags.value(senderTag);
-    qCDebug(dcMultiSensor()) << "Updated value:" << value;
-    device->setStateValue(state, value);
-}
-
-void DevicePluginMultiSensor::sendEvent(EventTypeId event)
-{
-    QSharedPointer<SensorTag> senderTag{qobject_cast<SensorTag *>(sender()), [](SensorTag *){}};
-    auto device = m_tags.value(senderTag);
-    qCDebug(dcMultiSensor()) << "Event";
-    Event event2(event, device->id());
-    emit emitEvent(event2);
 }

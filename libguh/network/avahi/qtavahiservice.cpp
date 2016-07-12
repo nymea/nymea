@@ -86,8 +86,8 @@ QString QtAvahiService::serviceType() const
     return d_ptr->type;
 }
 
-/*! Returns true if a new avahi service to the network with the given \a name, \a port and \a serviceType can be registered. */
-bool QtAvahiService::registerService(QString name, quint16 port, QString serviceType)
+/*! Returns true if a new avahi service to the network with the given \a name, \a port \a serviceType and \a txt can be registered. */
+bool QtAvahiService::registerService(const QString &name, const quint16 &port, const QString &serviceType, const QHash<QString, QString> &txt)
 {
     // check if the client is running
     if (!d_ptr->client->client || AVAHI_CLIENT_S_RUNNING != avahi_client_get_state(d_ptr->client->client))
@@ -104,16 +104,16 @@ bool QtAvahiService::registerService(QString name, quint16 port, QString service
     // if the group is empty
     if (avahi_entry_group_is_empty(d_ptr->group)) {
         // add the service
-        d_ptr->error = avahi_entry_group_add_service(d_ptr->group,
-                                                     AVAHI_IF_UNSPEC,
-                                                     AVAHI_PROTO_UNSPEC,
-                                                     (AvahiPublishFlags) 0,
-                                                     d_ptr->name.toLatin1().data(),
-                                                     d_ptr->type.toLatin1().data(),
-                                                     0,
-                                                     0,
-                                                     (uint16_t)d_ptr->port,
-                                                     NULL);
+        d_ptr->error = avahi_entry_group_add_service_strlst(d_ptr->group,
+                                                            AVAHI_IF_UNSPEC,
+                                                            AVAHI_PROTO_UNSPEC,
+                                                            (AvahiPublishFlags) 0,
+                                                            d_ptr->name.toLatin1().data(),
+                                                            d_ptr->type.toLatin1().data(),
+                                                            0,
+                                                            0,
+                                                            (uint16_t)d_ptr->port,
+                                                            QtAvahiServicePrivate::createTxtList(txt));
 
         // verify if the group has to be comitted
         if (!d_ptr->error)
@@ -134,6 +134,9 @@ bool QtAvahiService::registerService(QString name, quint16 port, QString service
 */
 void QtAvahiService::resetService()
 {
+    if (!d_ptr->group)
+        return;
+
     avahi_entry_group_reset(d_ptr->group);
 }
 

@@ -155,7 +155,9 @@ void JsonRPCServer::registerTransportInterface(TransportInterface *interface)
     connect(interface, SIGNAL(clientConnected(const QUuid &)), this, SLOT(clientConnected(const QUuid &)));
     connect(interface, SIGNAL(clientDisconnected(const QUuid &)), this, SLOT(clientDisconnected(const QUuid &)));
     connect(interface, SIGNAL(dataAvailable(QUuid, QString, QString, QVariantMap)), this, SLOT(processData(QUuid, QString, QString, QVariantMap)));
-    interface->startServer();
+
+    QMetaObject::invokeMethod(interface, "startServer", Qt::QueuedConnection);
+
     m_interfaces.append(interface);
 }
 

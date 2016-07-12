@@ -112,6 +112,18 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     params.insert("port", JsonTypes::basicTypeToString(JsonTypes::Uint));
     setParams("TcpServerConfigurationChanged", params);
 
+    params.clear(); returns.clear();
+    setDescription("WebServerConfigurationChanged", "Emitted whenever the web server configuration changes.");
+    params.insert("host", JsonTypes::basicTypeToString(JsonTypes::String));
+    params.insert("port", JsonTypes::basicTypeToString(JsonTypes::Uint));
+    setParams("WebServerConfigurationChanged", params);
+
+    params.clear(); returns.clear();
+    setDescription("WebSocketServerConfigurationChanged", "Emitted whenever the web socket server configuration changes.");
+    params.insert("host", JsonTypes::basicTypeToString(JsonTypes::String));
+    params.insert("port", JsonTypes::basicTypeToString(JsonTypes::Uint));
+    setParams("WebSocketServerConfigurationChanged", params);
+
     connect(GuhCore::instance()->configuration(), &GuhConfiguration::timeZoneChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
     connect(GuhCore::instance()->configuration(), &GuhConfiguration::serverNameChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
     connect(GuhCore::instance()->configuration(), &GuhConfiguration::tcpServerConfigurationChanged, this, &ConfigurationHandler::onTcpServerConfigurationChanged);

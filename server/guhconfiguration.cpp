@@ -90,7 +90,6 @@ GuhConfiguration::GuhConfiguration(QObject *parent) :
     qCDebug(dcApplication()) << "Configuration: Cloud connection" << (m_cloudEnabled ? "enabled" : "disabled");
     qCDebug(dcApplication()) << "Configuration: Cloud authentication server" << m_cloudAuthenticationServer.toString();
     qCDebug(dcApplication()) << "Configuration: Cloud proxy server" << m_cloudProxyServer.toString();
-
 }
 
 QUuid GuhConfiguration::serverUuid() const

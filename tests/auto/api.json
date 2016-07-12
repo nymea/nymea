@@ -1,4 +1,4 @@
-43
+44
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -606,6 +606,20 @@
         },
         "Configuration.TcpServerConfigurationChanged": {
             "description": "Emitted whenever the TCP server configuration changes.",
+            "params": {
+                "host": "String",
+                "port": "Uint"
+            }
+        },
+        "Configuration.WebServerConfigurationChanged": {
+            "description": "Emitted whenever the web server configuration changes.",
+            "params": {
+                "host": "String",
+                "port": "Uint"
+            }
+        },
+        "Configuration.WebSocketServerConfigurationChanged": {
+            "description": "Emitted whenever the web socket server configuration changes.",
             "params": {
                 "host": "String",
                 "port": "Uint"

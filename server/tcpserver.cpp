@@ -186,7 +186,14 @@ bool TcpServer::startServer()
     }
 
 #ifndef TESTING_ENABLED
-    m_avahiService->registerService("guhIO", m_port, "_jsonrpc._tcp");
+    // Note: reversed order
+    QHash<QString, QString> txt;
+    txt.insert("jsonrpcVersion", JSON_PROTOCOL_VERSION);
+    txt.insert("serverVersion", GUH_VERSION_STRING);
+    txt.insert("manufacturer", "guh GmbH");
+    txt.insert("uuid", GuhCore::instance()->configuration()->serverUuid().toString());
+    txt.insert("name", GuhCore::instance()->configuration()->serverName());
+    m_avahiService->registerService("guhIO", m_port, "_jsonrpc._tcp", txt);
 #endif
 
     qCDebug(dcConnection) << "Started Tcp server on" << m_server->serverAddress().toString() << m_server->serverPort();

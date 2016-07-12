@@ -70,10 +70,8 @@ ServerManager::ServerManager(QObject *parent) :
         }
     }
 
-    qCDebug(dcApplication) << "Starting JSON RPC Server";
     m_jsonServer = new JsonRPCServer(m_sslConfiguration, this);
 
-    qCDebug(dcApplication) << "Starting REST Server";
     m_restServer = new RestServer(m_sslConfiguration, this);
 }
 

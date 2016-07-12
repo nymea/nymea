@@ -20,6 +20,9 @@
 
 #include "qtavahiservice_p.h"
 
+#include <QString>
+#include <QHash>
+
 QtAvahiServicePrivate::QtAvahiServicePrivate() :
     client(0),
     group(0),
@@ -52,5 +55,20 @@ void QtAvahiServicePrivate::callback(AvahiEntryGroup *group, AvahiEntryGroupStat
         emit service->serviceStateChanged(QtAvahiService::QtAvahiServiceStateFailure);
         break;
     }
+}
+
+AvahiStringList *QtAvahiServicePrivate::createTxtList(const QHash<QString, QString> &txt)
+{
+    AvahiStringList *list = NULL;
+    if (txt.isEmpty())
+        return list;
+
+    const QStringList keys = txt.keys();
+    list = avahi_string_list_new((keys.first() + '=' + txt[keys.first()]).toLatin1().constData(), nullptr);
+    for (const QString &key : keys.mid(1)) {
+        list = avahi_string_list_add_pair(list, key.toLatin1().constData(), txt[key].toLatin1().constData());
+    }
+
+    return list;
 }
 

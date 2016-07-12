@@ -22,6 +22,7 @@
 
 #include <QString>
 #include <QHash>
+#include <QStringList>
 
 QtAvahiServicePrivate::QtAvahiServicePrivate() :
     client(0),

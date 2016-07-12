@@ -46,6 +46,9 @@ public:
     quint16 port;
     QString type;
     int error;
+
+    static AvahiStringList *createTxtList(const QHash<QString, QString> &txt);
+
 };
 
 #endif // QTAVAHISERVICEPRIVATE_P

@@ -18,6 +18,8 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include <math.h>
+
 #include "coappdublock.h"
 
 CoapPduBlock::CoapPduBlock()

@@ -1,4 +1,4 @@
-43
+44
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -586,8 +586,6 @@
         }
     },
     "notifications": {
-<<<<<<< HEAD
-=======
         "Cloud.ConnectionStatusChanged": {
             "description": "Emitted whenever the status of the cloud connection changed. The cloud connection is active if a cloud client is talking with the server.",
             "params": {
@@ -613,7 +611,20 @@
                 "port": "Uint"
             }
         },
->>>>>>> bump api and guhd version
+        "Configuration.WebServerConfigurationChanged": {
+            "description": "Emitted whenever the web server configuration changes.",
+            "params": {
+                "host": "String",
+                "port": "Uint"
+            }
+        },
+        "Configuration.WebSocketServerConfigurationChanged": {
+            "description": "Emitted whenever the web socket server configuration changes.",
+            "params": {
+                "host": "String",
+                "port": "Uint"
+            }
+        },
         "Devices.DeviceAdded": {
             "description": "Emitted whenever a Device was added.",
             "params": {

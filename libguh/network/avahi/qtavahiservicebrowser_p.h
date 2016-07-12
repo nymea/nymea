@@ -68,8 +68,8 @@ public:
                         void *userdata);
 
     // Convert members
-    static QStringList converTxtList(AvahiStringList *txt);
-    static QAbstractSocket::NetworkLayerProtocol converProtocol(const AvahiProtocol &protocol);
+    static QStringList convertTxtList(AvahiStringList *txt);
+    static QAbstractSocket::NetworkLayerProtocol convertProtocol(const AvahiProtocol &protocol);
 
     QtAvahiClient *client;
     AvahiServiceTypeBrowser *serviceTypeBrowser;

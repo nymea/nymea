@@ -47,8 +47,9 @@
     \sa WebServer, TcpServer, TransportInterface
 */
 
-#include "websocketserver.h"
 #include "guhsettings.h"
+#include "guhcore.h"
+#include "websocketserver.h"
 #include "loggingcategories.h"
 
 #include <QJsonDocument>
@@ -180,10 +181,14 @@ void WebSocketServer::onAvahiServiceStateChanged(const QtAvahiService::QtAvahiSe
 
 bool WebSocketServer::reconfigureServer(const QHostAddress &address, const uint &port)
 {
-    if (m_host == address && m_port == (qint16)port && m_server->isListening())
+    if (m_host == address && m_port == (qint16)port && m_server->isListening()) {
+        qCDebug(dcWebSocketServer()) << "Configuration unchanged. Not restarting the server.";
         return true;
+    }
 
     stopServer();
+    qCDebug(dcWebSocketServer()) << "Stopped server for reconfiguration.";
+
     QWebSocketServer *server;
     if (m_useSsl) {
         server = new QWebSocketServer("guh", QWebSocketServer::SecureMode, this);
@@ -207,6 +212,7 @@ bool WebSocketServer::reconfigureServer(const QHostAddress &address, const uint 
     // Start server with new configuration
     m_host = address;
     m_port = port;
+    qCDebug(dcWebSocketServer()) << "Restart server with new configuration.";
     return startServer();
 }
 
@@ -237,7 +243,15 @@ bool WebSocketServer::startServer()
     }
 
 #ifndef TESTING_ENABLED
-    m_avahiService->registerService("guhIO", m_port, "_ws._tcp");
+    // Note: reversed order
+    QHash<QString, QString> txt;
+    txt.insert("sslEnabled", GuhCore::instance()->configuration()->sslEnabled() ? "true" : "false");
+    txt.insert("jsonrpcVersion", JSON_PROTOCOL_VERSION);
+    txt.insert("serverVersion", GUH_VERSION_STRING);
+    txt.insert("manufacturer", "guh GmbH");
+    txt.insert("uuid", GuhCore::instance()->configuration()->serverUuid().toString());
+    txt.insert("name", GuhCore::instance()->configuration()->serverName());
+    m_avahiService->registerService("guhIO", m_port, "_ws._tcp", txt);
 #endif
 
     return true;

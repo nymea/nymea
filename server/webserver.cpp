@@ -560,7 +560,15 @@ bool WebServer::startServer()
     }
 
 #ifndef TESTING_ENABLED
-    m_avahiService->registerService("guhIO", m_port);
+    // Note: reversed order
+    QHash<QString, QString> txt;
+    txt.insert("sslEnabled", GuhCore::instance()->configuration()->sslEnabled() ? "true" : "false");
+    txt.insert("jsonrpcVersion", JSON_PROTOCOL_VERSION);
+    txt.insert("serverVersion", GUH_VERSION_STRING);
+    txt.insert("manufacturer", "guh GmbH");
+    txt.insert("uuid", GuhCore::instance()->configuration()->serverUuid().toString());
+    txt.insert("name", GuhCore::instance()->configuration()->serverName());
+    m_avahiService->registerService("guhIO", m_port, "_http._tcp", txt);
 #endif
 
     m_enabled = true;

@@ -62,7 +62,7 @@ void RestServer::registerWebserver(WebServer *webServer)
     connect(m_webserver, &WebServer::clientDisconnected, this, &RestServer::clientDisconnected);
     connect(m_webserver, &WebServer::httpRequestReady, this, &RestServer::processHttpRequest);
 
-    m_webserver->startServer();
+    QMetaObject::invokeMethod(m_webserver, "startServer", Qt::QueuedConnection);
 }
 
 void RestServer::setup()

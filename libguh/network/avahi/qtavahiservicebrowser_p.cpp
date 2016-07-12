@@ -97,7 +97,7 @@ void QtAvahiServiceBrowserPrivate::callbackServiceBrowser(AvahiServiceBrowser *b
         // Remove the service
         foreach (const AvahiServiceEntry &entry, serviceBrowser->m_serviceEntries) {
             // Check not only the name, but also the protocol
-            if (entry.name() == name && entry.protocol() == QtAvahiServiceBrowserPrivate::converProtocol(protocol)) {
+            if (entry.name() == name && entry.protocol() == QtAvahiServiceBrowserPrivate::convertProtocol(protocol)) {
                 serviceBrowser->m_serviceEntries.removeAll(entry);
                 emit serviceBrowser->serviceEntryRemoved(entry);
             }
@@ -146,8 +146,8 @@ void QtAvahiServiceBrowserPrivate::callbackServiceResolver(AvahiServiceResolver 
         avahi_address_snprint(a, sizeof(a), address);
 
         // convert protocol
-        QAbstractSocket::NetworkLayerProtocol networkProtocol = QtAvahiServiceBrowserPrivate::converProtocol(protocol);
-        QStringList txtList = QtAvahiServiceBrowserPrivate::converTxtList(txt);
+        QAbstractSocket::NetworkLayerProtocol networkProtocol = QtAvahiServiceBrowserPrivate::convertProtocol(protocol);
+        QStringList txtList = QtAvahiServiceBrowserPrivate::convertTxtList(txt);
 
         // create the new resolved service entry
         AvahiServiceEntry entry = AvahiServiceEntry(name,
@@ -168,7 +168,7 @@ void QtAvahiServiceBrowserPrivate::callbackServiceResolver(AvahiServiceResolver 
 
 }
 
-QStringList QtAvahiServiceBrowserPrivate::converTxtList(AvahiStringList *txt)
+QStringList QtAvahiServiceBrowserPrivate::convertTxtList(AvahiStringList *txt)
 {
     if (!txt)
         return QStringList();
@@ -185,7 +185,7 @@ QStringList QtAvahiServiceBrowserPrivate::converTxtList(AvahiStringList *txt)
     return txtList;
 }
 
-QAbstractSocket::NetworkLayerProtocol QtAvahiServiceBrowserPrivate::converProtocol(const AvahiProtocol &protocol)
+QAbstractSocket::NetworkLayerProtocol QtAvahiServiceBrowserPrivate::convertProtocol(const AvahiProtocol &protocol)
 {
     QAbstractSocket::NetworkLayerProtocol networkProtocol = QAbstractSocket::UnknownNetworkLayerProtocol;
 

@@ -21,6 +21,8 @@
 #ifndef QTAVAHISERVICE_H
 #define QTAVAHISERVICE_H
 
+#include <QHash>
+#include <QString>
 #include <QObject>
 
 #include "libguh.h"
@@ -48,7 +50,7 @@ public:
     QString name() const;
     QString serviceType() const;
 
-    bool registerService(QString name, quint16 port, QString serviceType = "_http._tcp");
+    bool registerService(const QString &name, const quint16 &port, const QString &serviceType = "_http._tcp", const QHash<QString, QString> &txt = QHash<QString, QString>());
     void resetService();
 
     bool isValid() const;

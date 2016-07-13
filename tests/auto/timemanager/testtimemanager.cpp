@@ -531,7 +531,6 @@ void TestTimeManager::testCalendarItemDaily_data()
     QTest::addColumn<QString>("time");
     QTest::addColumn<int>("duration");
 
-    QTest::newRow("daily - always") << createTimeDescriptorCalendar(createCalendarItem("08:00", 1440)) << "08:00" << 1440;
     QTest::newRow("daily") << createTimeDescriptorCalendar(createCalendarItem("06:55", 10, repeatingOptionDaily)) << "06:55" << 10;
     QTest::newRow("daily - jump date") << createTimeDescriptorCalendar(createCalendarItem("23:55", 10, repeatingOptionDaily)) << "23:55" << 10;
 }

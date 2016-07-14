@@ -99,7 +99,6 @@
 #include "loggingcategories.h"
 #include "jsonrpcserver.h"
 #include "ruleengine.h"
-#include "logging/logengine.h"
 
 #include "devicemanager.h"
 #include "plugin/device.h"
@@ -327,8 +326,8 @@ void GuhCore::executeRuleActions(const QList<RuleAction> ruleActions)
             qCWarning(dcRuleEngine) << "Error executing action:" << status;
         }
 
-        if (status != DeviceManager::DeviceErrorAsync)
-            m_logger->logAction(action, status == DeviceManager::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
+//        if (status != DeviceManager::DeviceErrorAsync)
+//            m_logger->logAction(action, status == DeviceManager::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
     }
 }
 
@@ -337,7 +336,7 @@ void GuhCore::executeRuleActions(const QList<RuleAction> ruleActions)
 RuleEngine::RuleError GuhCore::removeRule(const RuleId &id)
 {
     RuleEngine::RuleError removeError = m_ruleEngine->removeRule(id);
-    if (removeError != RuleEngine::RuleErrorNoError)
+    if (removeError == RuleEngine::RuleErrorNoError)
         m_logger->removeRuleLogs(id);
 
     return removeError;

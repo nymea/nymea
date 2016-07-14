@@ -43,7 +43,9 @@ public:
     QDateTime timestamp() const;
     Logging::LoggingLevel level() const;
     Logging::LoggingSource source() const;
+
     Logging::LoggingEventType eventType() const;
+    void setEventType(const Logging::LoggingEventType &eventType);
 
     // Valid for LoggingSourceStates, LoggingSourceEvents, LoggingSourceActions, LoggingSourceRules
     QUuid typeId() const;
@@ -69,7 +71,7 @@ private:
     Logging::LoggingLevel m_level;
     Logging::LoggingSource m_source;
 
-    // RuleSource specifiv properties.
+    // RuleSource specific properties.
     // FIXME: If it turns out we need many more of those, we should subclass LogEntry with specific ones.
     QUuid m_typeId;
     DeviceId m_deviceId;
@@ -78,6 +80,7 @@ private:
     bool m_active;
     int m_errorCode;
 };
+
 QDebug operator<<(QDebug dbg, const LogEntry &entry);
 
 }

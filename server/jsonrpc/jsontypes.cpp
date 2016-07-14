@@ -804,6 +804,10 @@ QVariantMap JsonTypes::packLogEntry(const LogEntry &logEntry)
         logEntryMap.insert("active", logEntry.active());
     }
 
+    if (logEntry.eventType() == Logging::LoggingEventTypeEnabledChange) {
+        logEntryMap.insert("active", logEntry.active());
+    }
+
     if (logEntry.level() == Logging::LoggingLevelAlert) {
         switch (logEntry.source()) {
         case Logging::LoggingSourceRules:

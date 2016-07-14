@@ -163,8 +163,6 @@ static void catchUnixSignals(const std::vector<int>& quitSignals, const std::vec
 }
 
 
-
-
 /*! Constructs a GuhApplication with the given argument count \a argc and argument vector \a argv. */
 GuhApplication::GuhApplication(int &argc, char **argv) :
     QCoreApplication(argc, argv)

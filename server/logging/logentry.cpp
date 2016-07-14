@@ -129,6 +129,12 @@ Logging::LoggingEventType LogEntry::eventType() const
     return m_eventType;
 }
 
+/*! Sets the \a eventType of this \l{LogEntry}. */
+void LogEntry::setEventType(const Logging::LoggingEventType &eventType)
+{
+    m_eventType = eventType;
+}
+
 /*! Returns true if this \l{LogEntry} is a system active type. */
 bool LogEntry::active() const
 {
@@ -138,7 +144,6 @@ bool LogEntry::active() const
 /*! Sets this \l{LogEntry} to \a active. */
 void LogEntry::setActive(bool active)
 {
-    m_eventType = Logging::LoggingEventTypeActiveChange;
     m_active = active;
 }
 
@@ -151,7 +156,7 @@ int LogEntry::errorCode() const
 
 QDebug operator<<(QDebug dbg, const LogEntry &entry)
 {
-    dbg.nospace() << "LogEntry (count:" << entry.timestamp().toString() << endl;
+    dbg.nospace() << "LogEntry (" << entry.timestamp().toString() << ")" << endl;
     dbg.nospace() << " time stamp: " << entry.timestamp().toTime_t() << endl;
     dbg.nospace() << "   DeviceId: " << entry.deviceId().toString() << endl;
     dbg.nospace() << "    type id: " << entry.typeId().toString() << endl;

@@ -1,4 +1,4 @@
-44
+45
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -941,6 +941,7 @@
         "LoggingEventType": [
             "LoggingEventTypeTrigger",
             "LoggingEventTypeActiveChange",
+            "LoggingEventTypeEnabledChange",
             "LoggingEventTypeActionsExecuted",
             "LoggingEventTypeExitActionsExecuted"
         ],

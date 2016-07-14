@@ -28,6 +28,7 @@
 #include "plugin/deviceclass.h"
 #include "plugin/devicedescriptor.h"
 
+#include "logging/logengine.h"
 #include "guhconfiguration.h"
 #include "devicemanager.h"
 #include "ruleengine.h"

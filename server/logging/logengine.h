@@ -57,13 +57,18 @@ private:
     void checkDBSize();
 
 private:
-    // Only GuhCore is allowed to log events.
+    // Only GuhCore and ruleEngine are allowed to log events.
     friend class GuhCore;
+    friend class RuleEngine;
+
     void logSystemEvent(const QDateTime &dateTime, bool active, Logging::LoggingLevel level = Logging::LoggingLevelInfo);
     void logEvent(const Event &event);
     void logAction(const Action &action, Logging::LoggingLevel level = Logging::LoggingLevelInfo, int errorCode = 0);
     void logRuleTriggered(const Rule &rule);
     void logRuleActiveChanged(const Rule &rule);
+    void logRuleEnabledChanged(const Rule &rule, const bool &enabled);
+    void logRuleActionsExecuted(const Rule &rule);
+    void logRuleExitActionsExecuted(const Rule &rule);
     void removeDeviceLogs(const DeviceId &deviceId);
     void removeRuleLogs(const RuleId &ruleId);
 

@@ -194,10 +194,10 @@ QList<LogEntry> LogEngine::logEntries(const LogFilter &filter) const
         entry.setTypeId(query.value("typeId").toUuid());
         entry.setDeviceId(DeviceId(query.value("deviceId").toString()));
         entry.setValue(query.value("value").toString());
-        if ((Logging::LoggingEventType)query.value("loggingEventType").toInt() == Logging::LoggingEventTypeActiveChange) {
-            entry.setActive(query.value("active").toBool());
-        }
-        //qCDebug(dcLogEngine) << entry;
+        entry.setEventType((Logging::LoggingEventType)query.value("loggingEventType").toInt());
+        entry.setActive(query.value("active").toBool());
+        entry.setActive(query.value("active").toBool());
+        qCDebug(dcLogEngine) << entry;
         results.append(entry);
     }
     qCDebug(dcLogEngine) << "Fetched" << results.count() << "entries for db query:" << queryCall;
@@ -222,6 +222,7 @@ void LogEngine::clearDatabase()
 void LogEngine::logSystemEvent(const QDateTime &dateTime, bool active, Logging::LoggingLevel level)
 {
     LogEntry entry(dateTime, level, Logging::LoggingSourceSystem);
+    entry.setEventType(Logging::LoggingEventTypeActiveChange);
     entry.setActive(active);
     appendLogEntry(entry);
 }
@@ -263,6 +264,7 @@ void LogEngine::logRuleTriggered(const Rule &rule)
 {
     LogEntry entry(Logging::LoggingSourceRules);
     entry.setTypeId(rule.id());
+    entry.setEventType(Logging::LoggingEventTypeTrigger);
     appendLogEntry(entry);
 }
 
@@ -271,6 +273,32 @@ void LogEngine::logRuleActiveChanged(const Rule &rule)
     LogEntry entry(Logging::LoggingSourceRules);
     entry.setTypeId(rule.id());
     entry.setActive(rule.active());
+    entry.setEventType(Logging::LoggingEventTypeActiveChange);
+    appendLogEntry(entry);
+}
+
+void LogEngine::logRuleEnabledChanged(const Rule &rule, const bool &enabled)
+{
+    LogEntry entry(Logging::LoggingSourceRules);
+    entry.setTypeId(rule.id());
+    entry.setEventType(Logging::LoggingEventTypeEnabledChange);
+    entry.setActive(enabled);
+    appendLogEntry(entry);
+}
+
+void LogEngine::logRuleActionsExecuted(const Rule &rule)
+{
+    LogEntry entry(Logging::LoggingSourceRules);
+    entry.setTypeId(rule.id());
+    entry.setEventType(Logging::LoggingEventTypeActionsExecuted);
+    appendLogEntry(entry);
+}
+
+void LogEngine::logRuleExitActionsExecuted(const Rule &rule)
+{
+    LogEntry entry(Logging::LoggingSourceRules);
+    entry.setTypeId(rule.id());
+    entry.setEventType(Logging::LoggingEventTypeExitActionsExecuted);
     appendLogEntry(entry);
 }
 
@@ -303,6 +331,8 @@ void LogEngine::removeRuleLogs(const RuleId &ruleId)
 void LogEngine::appendLogEntry(const LogEntry &entry)
 {
     checkDBSize();
+
+    qCDebug(dcLogEngine()) << "Add log" << entry;
 
     QString queryString = QString("INSERT INTO entries (timestamp, loggingEventType, loggingLevel, sourceType, typeId, deviceId, value, active, errorCode) values ('%1', '%2', '%3', '%4', '%5', '%6', '%7', '%8', '%9');")
             .arg(entry.timestamp().toTime_t())
@@ -410,11 +440,15 @@ void LogEngine::initDB()
                    "FOREIGN KEY(sourceType) REFERENCES sourceTypes(id),"
                    "FOREIGN KEY(loggingEventType) REFERENCES loggingEventTypes(id)"
                    ");");
-        if (query.lastError().isValid()) {
+
+        if (query.lastError().isValid())
             qCWarning(dcLogEngine) << "Error creating log table in database. Driver error:" << query.lastError().driverText() << "Database error:" << query.lastError().databaseText();
-        }
+
+
     }
+
     qCDebug(dcLogEngine) << "Initialized logging DB successfully. (maximum DB size:" << m_dbMaxSize << ")";
+
 }
 
 }

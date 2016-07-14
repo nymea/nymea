@@ -196,8 +196,6 @@ QList<LogEntry> LogEngine::logEntries(const LogFilter &filter) const
         entry.setValue(query.value("value").toString());
         entry.setEventType((Logging::LoggingEventType)query.value("loggingEventType").toInt());
         entry.setActive(query.value("active").toBool());
-        entry.setActive(query.value("active").toBool());
-        qCDebug(dcLogEngine) << entry;
         results.append(entry);
     }
     qCDebug(dcLogEngine) << "Fetched" << results.count() << "entries for db query:" << queryCall;
@@ -331,9 +329,6 @@ void LogEngine::removeRuleLogs(const RuleId &ruleId)
 void LogEngine::appendLogEntry(const LogEntry &entry)
 {
     checkDBSize();
-
-    qCDebug(dcLogEngine()) << "Add log" << entry;
-
     QString queryString = QString("INSERT INTO entries (timestamp, loggingEventType, loggingLevel, sourceType, typeId, deviceId, value, active, errorCode) values ('%1', '%2', '%3', '%4', '%5', '%6', '%7', '%8', '%9');")
             .arg(entry.timestamp().toTime_t())
             .arg(entry.eventType())
@@ -448,7 +443,6 @@ void LogEngine::initDB()
     }
 
     qCDebug(dcLogEngine) << "Initialized logging DB successfully. (maximum DB size:" << m_dbMaxSize << ")";
-
 }
 
 }

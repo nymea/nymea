@@ -857,14 +857,46 @@ DeviceManager::DeviceError DeviceManager::verifyParam(const ParamType &paramType
             return DeviceErrorInvalidParameter;
         }
 
-        if (paramType.maxValue().isValid() && param.value() > paramType.maxValue()) {
-            qCWarning(dcDeviceManager) << "Value out of range for param" << param.name() << " Got:" << param.value() << " Max:" << paramType.maxValue();
-            return DeviceErrorInvalidParameter;
-        }
+        if (paramType.type() == QVariant::Int) {
+            if (paramType.maxValue().isValid() && param.value().toInt() > paramType.maxValue().toInt()) {
+                qCWarning(dcDeviceManager) << "Value out of range for param" << param.name() << " Got:" << param.value() << " Max:" << paramType.maxValue();
+                return DeviceErrorInvalidParameter;
+            }
 
-        if (paramType.minValue().isValid() && param.value() < paramType.minValue()) {
-            qCWarning(dcDeviceManager) << "Value out of range for param" << param.name() << " Got:" << param.value() << " Min:" << paramType.minValue();
-            return DeviceErrorInvalidParameter;
+            if (paramType.minValue().isValid() && param.value().toInt() < paramType.minValue().toInt()) {
+                qCWarning(dcDeviceManager) << "Value out of range for param" << param.name() << " Got:" << param.value() << " Min:" << paramType.minValue();
+                return DeviceErrorInvalidParameter;
+            }
+        } else if (paramType.type() == QVariant::UInt) {
+            if (paramType.maxValue().isValid() && param.value().toUInt() > paramType.maxValue().toUInt()) {
+                qCWarning(dcDeviceManager) << "Value out of range for param" << param.name() << " Got:" << param.value() << " Max:" << paramType.maxValue();
+                return DeviceErrorInvalidParameter;
+            }
+
+            if (paramType.minValue().isValid() && param.value().toUInt() < paramType.minValue().toUInt()) {
+                qCWarning(dcDeviceManager) << "Value out of range for param" << param.name() << " Got:" << param.value() << " Min:" << paramType.minValue();
+                return DeviceErrorInvalidParameter;
+            }
+        } else if (paramType.type() == QVariant::Double) {
+            if (paramType.maxValue().isValid() && param.value().toDouble() > paramType.maxValue().toDouble()) {
+                qCWarning(dcDeviceManager) << "Value out of range for param" << param.name() << " Got:" << param.value() << " Max:" << paramType.maxValue();
+                return DeviceErrorInvalidParameter;
+            }
+
+            if (paramType.minValue().isValid() && param.value().toDouble() < paramType.minValue().toDouble()) {
+                qCWarning(dcDeviceManager) << "Value out of range for param" << param.name() << " Got:" << param.value() << " Min:" << paramType.minValue();
+                return DeviceErrorInvalidParameter;
+            }
+        } else {
+            if (paramType.maxValue().isValid() && param.value() > paramType.maxValue()) {
+                qCWarning(dcDeviceManager) << "Value out of range for param" << param.name() << " Got:" << param.value() << " Max:" << paramType.maxValue();
+                return DeviceErrorInvalidParameter;
+            }
+
+            if (paramType.minValue().isValid() && param.value() < paramType.minValue()) {
+                qCWarning(dcDeviceManager) << "Value out of range for param" << param.name() << " Got:" << param.value() << " Min:" << paramType.minValue();
+                return DeviceErrorInvalidParameter;
+            }
         }
 
         if (!paramType.allowedValues().isEmpty() && !paramType.allowedValues().contains(param.value())) {

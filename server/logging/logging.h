@@ -58,12 +58,12 @@ public:
     enum LoggingEventType {
         LoggingEventTypeTrigger,
         LoggingEventTypeActiveChange,
+        LoggingEventTypeEnabledChange,
         LoggingEventTypeActionsExecuted,
         LoggingEventTypeExitActionsExecuted
     };
 
     Logging(QObject *parent = 0);
-
 };
 
 }

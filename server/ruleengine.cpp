@@ -719,12 +719,17 @@ RuleEngine::RuleError RuleEngine::enableRule(const RuleId &ruleId)
         qCWarning(dcRuleEngine) << "Rule not found. Can't enable it";
         return RuleErrorRuleNotFound;
     }
+
     Rule rule = m_rules.value(ruleId);
+    if (rule.enabled())
+        return RuleErrorNoError;
+
     rule.setEnabled(true);
     m_rules[ruleId] = rule;
-
     saveRule(rule);
     emit ruleConfigurationChanged(rule);
+
+    GuhCore::instance()->logEngine()->logRuleEnabledChanged(rule, true);
 
     return RuleErrorNoError;
 }
@@ -741,10 +746,16 @@ RuleEngine::RuleError RuleEngine::disableRule(const RuleId &ruleId)
     }
 
     Rule rule = m_rules.value(ruleId);
+    if (!rule.enabled())
+        return RuleErrorNoError;
+
     rule.setEnabled(false);
     m_rules[ruleId] = rule;
     saveRule(rule);
     emit ruleConfigurationChanged(rule);
+
+    GuhCore::instance()->logEngine()->logRuleEnabledChanged(rule, false);
+
     return RuleErrorNoError;
 }
 
@@ -778,6 +789,7 @@ RuleEngine::RuleError RuleEngine::executeActions(const RuleId &ruleId)
     }
 
     qCDebug(dcRuleEngine) << "Executing rule actions of rule" << rule.name() << rule.id();
+    GuhCore::instance()->logEngine()->logRuleActionsExecuted(rule);
     GuhCore::instance()->executeRuleActions(rule.actions());
     return RuleErrorNoError;
 }
@@ -809,6 +821,7 @@ RuleEngine::RuleError RuleEngine::executeExitActions(const RuleId &ruleId)
     }
 
     qCDebug(dcRuleEngine) << "Executing rule exit actions of rule" << rule.name() << rule.id();
+    GuhCore::instance()->logEngine()->logRuleExitActionsExecuted(rule);
     GuhCore::instance()->executeRuleActions(rule.exitActions());
     return RuleErrorNoError;
 }

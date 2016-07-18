@@ -27,4 +27,5 @@ SUBDIRS += elro         \
     orderbutton         \
     denon               \
     avahimonitor        \
+    senic               \
 

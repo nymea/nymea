@@ -26,7 +26,6 @@
     \ingroup plugins
     \ingroup guh-plugins
 
-
     \chapter Plugin properties
     Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}
     and \l{Vendor}{Vendors} of this \l{DevicePlugin}.
@@ -72,6 +71,8 @@ DeviceManager::DeviceSetupStatus DevicePluginSenic::setupDevice(Device *device)
     connect(nuimo, &Nuimo::batteryValueChaged, this, &DevicePluginSenic::onBatteryValueChanged);
     connect(nuimo, &Nuimo::buttonPressed, this, &DevicePluginSenic::onButtonPressed);
     connect(nuimo, &Nuimo::buttonReleased, this, &DevicePluginSenic::onButtonReleased);
+    connect(nuimo, &Nuimo::swipeDetected, this, &DevicePluginSenic::onSwipeDetected);
+    connect(nuimo, &Nuimo::rotationValueChanged, this, &DevicePluginSenic::onRotationValueChanged);
 
     m_nuimos.insert(nuimo, device);
 
@@ -103,10 +104,18 @@ DeviceManager::DeviceError DevicePluginSenic::executeAction(Device *device, cons
     }
 
     if (action.actionTypeId() == showLogoActionTypeId) {
-        nuimo->showGuhLogo();
+
+        if (action.param("logo").value().toString() == "Guh")
+            nuimo->showGuhLogo();
+
+        if (action.param("logo").value().toString() == "Arrow up")
+            nuimo->showArrowUp();
+
+        if (action.param("logo").value().toString() == "Arrow down")
+            nuimo->showArrowDown();
+
         return DeviceManager::DeviceErrorNoError;
     }
-
 
     return DeviceManager::DeviceErrorActionTypeNotFound;
 }
@@ -174,6 +183,36 @@ void DevicePluginSenic::onButtonPressed()
 void DevicePluginSenic::onButtonReleased()
 {
     // TODO: user timer for detekt long pressed (if needed)
+}
+
+void DevicePluginSenic::onSwipeDetected(const Nuimo::SwipeDirection &direction)
+{
+    Nuimo *nuimo = static_cast<Nuimo *>(sender());
+    Device *device = m_nuimos.value(nuimo);
+
+    switch (direction) {
+    case Nuimo::SwipeDirectionLeft:
+        emitEvent(Event(swipeLeftEventTypeId, device->id()));
+        break;
+    case Nuimo::SwipeDirectionRight:
+        emitEvent(Event(swipeRightEventTypeId, device->id()));
+        break;
+    case Nuimo::SwipeDirectionUp:
+        emitEvent(Event(swipeUpEventTypeId, device->id()));
+        break;
+    case Nuimo::SwipeDirectionDown:
+        emitEvent(Event(swipeDownEventTypeId, device->id()));
+        break;
+    default:
+        break;
+    }
+}
+
+void DevicePluginSenic::onRotationValueChanged(const uint &value)
+{
+    Nuimo *nuimo = static_cast<Nuimo *>(sender());
+    Device *device = m_nuimos.value(nuimo);
+    device->setStateValue(rotationStateTypeId, value);
 }
 
 

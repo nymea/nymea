@@ -24,6 +24,7 @@
 #include "extern-plugininfo.h"
 
 #include <QBitArray>
+#include  <QtEndian>
 
 Nuimo::Nuimo(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType, QObject *parent) :
     BluetoothLowEnergyDevice(deviceInfo, addressType, parent),
@@ -45,35 +46,49 @@ bool Nuimo::isAvailable()
 void Nuimo::showGuhLogo()
 {
     QByteArray matrix(
-            "         "
-            " *       "
-            " **   ** "
-            "  ****   "
-            "   **   "
-            "   *     "
-            "  *      "
-            " *      "
-            "         ");
+                "         "
+                "  *      "
+                " **      "
+                " *** **  "
+                "  *****  "
+                "   **    "
+                "   **    "
+                "    *    "
+                "         ");
 
-    QBitArray bits;
-    bits.resize(81);
-    for (int i = 0; i < matrix.size(); i++) {
-        if (matrix.at(i) != ' ') {
-            bits[i] = true;
-        }
-    }
+    showMatrix(matrix, 10);
+}
 
-    QByteArray bytes;
-    bytes.resize(bits.count() / 8+1);
-    bytes.fill(0);
-    // Convert from QBitArray to QByteArray
-    for(int b = 0; b < bits.count(); ++b)
-        bytes[b / 8] = (bytes.at(b / 8) | ((bits[b] ? 1 : 0) << (b % 8)));
+void Nuimo::showArrowUp()
+{
+    QByteArray matrix(
+                "    *    "
+                "   ***   "
+                "  * * *  "
+                " *  *  * "
+                "*   *   *"
+                "    *    "
+                "    *    "
+                "    *    "
+                "    *    ");
 
-    bytes.append(QByteArray::fromHex("FF"));
-    bytes.append(QByteArray::fromHex("AA"));
+    showMatrix(matrix, 3);
+}
 
-    m_ledMatrixService->writeCharacteristic(m_ledMatrixCharacteristic, bytes);
+void Nuimo::showArrowDown()
+{
+    QByteArray matrix(
+                "    *    "
+                "    *    "
+                "    *    "
+                "    *    "
+                "*   *   *"
+                " *  *  * "
+                "  * * *  "
+                "   ***   "
+                "    *    ");
+
+    showMatrix(matrix, 3);
 }
 
 void Nuimo::registerService(QLowEnergyService *service)
@@ -85,6 +100,29 @@ void Nuimo::registerService(QLowEnergyService *service)
     connect(service, SIGNAL(error(QLowEnergyService::ServiceError)), this, SLOT(serviceError(QLowEnergyService::ServiceError)));
 
     service->discoverDetails();
+}
+
+void Nuimo::showMatrix(const QByteArray &matrix, const int &seconds)
+{
+    QBitArray bits;
+    bits.resize(81);
+    for (int i = 0; i < matrix.size(); i++) {
+        if (matrix.at(i) != ' ') {
+            bits[i] = true;
+        }
+    }
+
+    QByteArray bytes;
+    bytes.resize(bits.count() / 8 + 1);
+    bytes.fill(0);
+    // Convert from QBitArray to QByteArray
+    for(int b = 0; b < bits.count(); ++b)
+        bytes[b / 8] = (bytes.at(b / 8) | ((bits[b] ? 1 : 0) << (b % 8)));
+
+    bytes.append(QByteArray::fromHex("FF"));
+    quint8 time = quint8(seconds * 10);
+    bytes.append((char)time);
+    m_ledMatrixService->writeCharacteristic(m_ledMatrixCharacteristic, bytes);
 }
 
 
@@ -192,18 +230,18 @@ void Nuimo::serviceStateChanged(const QLowEnergyService::ServiceState &state)
 
     switch (state) {
     case QLowEnergyService::DiscoveringServices:
-        if (service == m_batteryService) {
+        if (service == m_batteryService)
             qCDebug(dcSenic()) << "Start discovering battery service...";
-        }
-        if (service == m_deviceInfoService) {
+
+        if (service == m_deviceInfoService)
             qCDebug(dcSenic()) << "Start discovering device information service...";
-        }
-        if (service == m_inputService) {
+
+        if (service == m_inputService)
             qCDebug(dcSenic()) << "Start discovering input service...";
-        }
-        if (service == m_inputService) {
+
+        if (service == m_ledMatrixService)
             qCDebug(dcSenic()) << "Start discovering led matrix service...";
-        }
+
         break;
     case QLowEnergyService::ServiceDiscovered:
 
@@ -243,19 +281,43 @@ void Nuimo::serviceStateChanged(const QLowEnergyService::ServiceState &state)
         // Input
         if (service == m_inputService) {
             qCDebug(dcSenic()) << "Input service discovered";
+
+            // Button
             m_inputButtonCharacteristic = m_inputService->characteristic(QBluetoothUuid(QUuid("F29B1529-CB19-40F3-BE5C-7241ECB82FD2")));
             if (!m_inputButtonCharacteristic.isValid()) {
-                qCWarning(dcSenic()) << "Button characteristc not found for device " << name() << address().toString();
+                qCWarning(dcSenic()) << "Button characteristc not valid for device " << name() << address().toString();
+                return;
+            }
+            foreach (const QLowEnergyDescriptor &descriptor, m_inputButtonCharacteristic.descriptors()) {
+                qCDebug(dcSenic()) << descriptor.name() << descriptor.uuid().toString();
+                m_inputService->writeDescriptor(descriptor, QByteArray::fromHex("0100"));
+            }
+
+            // Swipe
+            m_inputSwipeCharacteristic = m_inputService->characteristic(QBluetoothUuid(QUuid("F29B1527-CB19-40F3-BE5C-7241ECB82FD2")));
+            if (!m_inputSwipeCharacteristic.isValid()) {
+                qCWarning(dcSenic()) << "Swipe characteristc not valid for device " << name() << address().toString();
+                return;
+            }
+            foreach (const QLowEnergyDescriptor &descriptor, m_inputSwipeCharacteristic.descriptors()) {
+                qCDebug(dcSenic()) << descriptor.name() << descriptor.uuid().toString();
+                m_inputService->writeDescriptor(descriptor, QByteArray::fromHex("0100"));
+            }
+
+            // Swipe
+            m_inputRotationCharacteristic = m_inputService->characteristic(QBluetoothUuid(QUuid("F29B1528-CB19-40F3-BE5C-7241ECB82FD2")));
+            if (!m_inputRotationCharacteristic.isValid()) {
+                qCWarning(dcSenic()) << "Rotation characteristc not valid for device " << name() << address().toString();
                 return;
             }
 
-            foreach (const QLowEnergyDescriptor &descriptor, m_inputButtonCharacteristic.descriptors()) {
+            foreach (const QLowEnergyDescriptor &descriptor, m_inputRotationCharacteristic.descriptors()) {
                 qCDebug(dcSenic()) << descriptor.name() << descriptor.uuid().toString();
                 m_inputService->writeDescriptor(descriptor, QByteArray::fromHex("0100"));
             }
         }
 
-        // Input
+        // Led Matrix
         if (service == m_ledMatrixService) {
             qCDebug(dcSenic()) << "Led matrix service discovered";
             m_ledMatrixCharacteristic = m_ledMatrixService->characteristic(QBluetoothUuid(QUuid("F29B1524-CB19-40F3-BE5C-7241ECB82FD1")));
@@ -292,6 +354,47 @@ void Nuimo::serviceCharacteristicChanged(const QLowEnergyCharacteristic &charact
         }
         return;
     }
+
+    if (characteristic.uuid() == m_inputSwipeCharacteristic.uuid()) {
+        quint8 swipe = (quint8)value.toHex().toUInt(0, 16);
+        switch (swipe) {
+        case 0:
+            qCDebug(dcSenic()) << "Swipe: Left";
+            emit swipeDetected(SwipeDirectionLeft);
+            break;
+        case 1:
+            qCDebug(dcSenic()) << "Swipe: Right";
+            emit swipeDetected(SwipeDirectionRight);
+            break;
+        case 2:
+            qCDebug(dcSenic()) << "Swipe: Up";
+            emit swipeDetected(SwipeDirectionUp);
+            break;
+        case 3:
+            qCDebug(dcSenic()) << "Swipe: Down";
+            emit swipeDetected(SwipeDirectionDown);
+            break;
+        default:
+            break;
+        }
+        return;
+    }
+
+    if (characteristic.uuid() == m_inputRotationCharacteristic.uuid()) {
+        qint16 intValue = qFromLittleEndian<quint16>((uchar *)value.constData());
+        qCDebug(dcSenic()) << "Rotation" << value.toHex() << intValue;
+        int finalValue = m_rotationValue + qRound(intValue / 10.0);
+        if (finalValue <= 0) {
+            m_rotationValue = 0;
+        } else if (finalValue >= 100) {
+            m_rotationValue = 100;
+        } else {
+            m_rotationValue = finalValue;
+        }
+        emit rotationValueChanged(m_rotationValue);
+        return;
+    }
+
 
     qCDebug(dcSenic()) << "Service characteristic changed" << characteristic.name() << value.toHex();
 }

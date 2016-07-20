@@ -55,6 +55,8 @@ private slots:
     void onBatteryValueChanged(const uint &percentage);
     void onButtonPressed();
     void onButtonReleased();
+    void onSwipeDetected(const Nuimo::SwipeDirection &direction);
+    void onRotationValueChanged(const uint &value);
 
 };
 

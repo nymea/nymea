@@ -33,11 +33,20 @@ class Nuimo : public BluetoothLowEnergyDevice
 {
     Q_OBJECT
 public:
+    enum SwipeDirection {
+        SwipeDirectionLeft,
+        SwipeDirectionRight,
+        SwipeDirectionUp,
+        SwipeDirectionDown
+    };
+
     explicit Nuimo(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType, QObject *parent = 0);
 
     bool isAvailable();
 
     void showGuhLogo();
+    void showArrowUp();
+    void showArrowDown();
 
 private:
     QLowEnergyService *m_deviceInfoService;
@@ -47,18 +56,24 @@ private:
 
     QLowEnergyCharacteristic m_deviceInfoCharacteristic;
     QLowEnergyCharacteristic m_batteryCharacteristic;
-    QLowEnergyCharacteristic m_inputButtonCharacteristic;
     QLowEnergyCharacteristic m_ledMatrixCharacteristic;
+    QLowEnergyCharacteristic m_inputButtonCharacteristic;
+    QLowEnergyCharacteristic m_inputSwipeCharacteristic;
+    QLowEnergyCharacteristic m_inputRotationCharacteristic;
 
     bool m_isAvailable;
+    uint m_rotationValue;
 
     void registerService(QLowEnergyService *service);
+    void showMatrix(const QByteArray &matrix, const int &seconds);
 
 signals:
     void availableChanged();
     void buttonPressed();
     void buttonReleased();
     void batteryValueChaged(const uint &percentage);
+    void swipeDetected(const SwipeDirection &direction);
+    void rotationValueChanged(const uint &value);
 
 private slots:
     void serviceScanFinished();

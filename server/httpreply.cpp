@@ -131,6 +131,7 @@
 
 #include "httpreply.h"
 #include "loggingcategories.h"
+#include "guhcore.h"
 
 #include <QDateTime>
 #include <QPair>
@@ -154,7 +155,7 @@ HttpReply::HttpReply(QObject *parent) :
     // set known headers
     setHeader(HttpReply::ContentTypeHeader, "text/plain; charset=\"utf-8\";");
     setHeader(HttpHeaderType::ServerHeader, "guh/" + QByteArray(GUH_VERSION_STRING));
-    setHeader(HttpHeaderType::DateHeader, QDateTime::currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8() + " GMT");
+    setHeader(HttpHeaderType::DateHeader, GuhCore::instance()->timeManager()->currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8());
     setHeader(HttpHeaderType::CacheControlHeader, "no-cache");
     setHeader(HttpHeaderType::ConnectionHeader, "Keep-Alive");
     setRawHeader("Access-Control-Allow-Origin","*");
@@ -177,7 +178,7 @@ HttpReply::HttpReply(const HttpReply::HttpStatusCode &statusCode, const HttpRepl
     // set known / default headers
     setHeader(HttpReply::ContentTypeHeader, "text/plain; charset=\"utf-8\";");
     setHeader(HttpHeaderType::ServerHeader, "guh/" + QByteArray(GUH_VERSION_STRING));
-    setHeader(HttpHeaderType::DateHeader, QDateTime::currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8() + " GMT");
+    setHeader(HttpHeaderType::DateHeader, GuhCore::instance()->timeManager()->currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8());
     setHeader(HttpHeaderType::CacheControlHeader, "no-cache");
     setHeader(HttpHeaderType::ConnectionHeader, "Keep-Alive");
     setRawHeader("Access-Control-Allow-Origin","*");

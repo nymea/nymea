@@ -86,6 +86,7 @@ public:
     CloudManager *cloudManager() const;
     ServerManager *serverManager() const;
 
+    static QStringList getAvailableLanguages();
 
 #ifdef TESTING_ENABLED
     MockTcpServer *tcpServer() const;

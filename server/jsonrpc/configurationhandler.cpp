@@ -34,6 +34,12 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     setReturns("GetTimeZones", returns);
 
     params.clear(); returns.clear();
+    setDescription("GetAvailableLanguages", "Returns a list of locale codes available for the server. i.e. en_US, de_AT");
+    setParams("GetAvailableLanguages", params);
+    returns.insert("languages", QVariantList() << JsonTypes::basicTypeToString(JsonTypes::String));
+    setReturns("GetAvailableLanguages", returns);
+
+    params.clear(); returns.clear();
     setDescription("GetConfigurations", "Get all configuration parameters of the server.");
     setParams("GetConfigurations", params);
     QVariantMap basicConfiguration;
@@ -41,6 +47,7 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     basicConfiguration.insert("serverUuid", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     basicConfiguration.insert("serverTime", JsonTypes::basicTypeToString(JsonTypes::Uint));
     basicConfiguration.insert("timeZone", JsonTypes::basicTypeToString(JsonTypes::String));
+    basicConfiguration.insert("language", JsonTypes::basicTypeToString(JsonTypes::String));
     returns.insert("basicConfiguration", basicConfiguration);
     QVariantMap tcpServerConfiguration;
     tcpServerConfiguration.insert("host", JsonTypes::basicTypeToString(JsonTypes::String));
@@ -72,6 +79,13 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     setParams("SetTimeZone", params);
     returns.insert("configurationError", JsonTypes::configurationErrorRef());
     setReturns("SetTimeZone", returns);
+
+    params.clear(); returns.clear();
+    setDescription("SetLanguage", "Sets the server language to the given language. See also: \"GetAvailableLanguages\"");
+    params.insert("language",  JsonTypes::basicTypeToString(JsonTypes::String));
+    setParams("SetLanguage", params);
+    returns.insert("configurationError", JsonTypes::configurationErrorRef());
+    setReturns("SetLanguage", returns);
 
     params.clear(); returns.clear();
     setDescription("SetTcpServerConfiguration", "Configure the TCP interface of the server. Note: if you are using the TCP server for this call you will loose the connection.");
@@ -124,8 +138,9 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     params.insert("port", JsonTypes::basicTypeToString(JsonTypes::Uint));
     setParams("WebSocketServerConfigurationChanged", params);
 
-    connect(GuhCore::instance()->configuration(), &GuhConfiguration::timeZoneChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
     connect(GuhCore::instance()->configuration(), &GuhConfiguration::serverNameChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
+    connect(GuhCore::instance()->configuration(), &GuhConfiguration::timeZoneChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
+    connect(GuhCore::instance()->configuration(), &GuhConfiguration::localeChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
     connect(GuhCore::instance()->configuration(), &GuhConfiguration::tcpServerConfigurationChanged, this, &ConfigurationHandler::onTcpServerConfigurationChanged);
     connect(GuhCore::instance()->configuration(), &GuhConfiguration::webServerConfigurationChanged, this, &ConfigurationHandler::onWebServerConfigurationChanged);
     connect(GuhCore::instance()->configuration(), &GuhConfiguration::webSocketServerConfigurationChanged, this, &ConfigurationHandler::onWebSocketServerConfigurationChanged);
@@ -163,6 +178,18 @@ JsonReply *ConfigurationHandler::GetTimeZones(const QVariantMap &params) const
     return createReply(returns);
 }
 
+JsonReply *ConfigurationHandler::GetAvailableLanguages(const QVariantMap &params) const
+{
+    Q_UNUSED(params)
+    QVariantList languages;
+    foreach (const QString &language, GuhCore::getAvailableLanguages()) {
+        languages.append(language);
+    }
+    QVariantMap returns;
+    returns.insert("languages", languages);
+    return createReply(returns);
+}
+
 JsonReply *ConfigurationHandler::SetServerName(const QVariantMap &params) const
 {
     QString serverName = params.value("serverName").toString();
@@ -179,6 +206,16 @@ JsonReply *ConfigurationHandler::SetTimeZone(const QVariantMap &params) const
         return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidTimeZone));
 
     GuhCore::instance()->configuration()->setTimeZone(timeZone);
+    return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
+}
+
+JsonReply *ConfigurationHandler::SetLanguage(const QVariantMap &params) const
+{
+    qCDebug(dcJsonRpc()) << "Setting language to" << params.value("language").toString();
+    QLocale locale(params.value("language").toString());
+
+    GuhCore::instance()->configuration()->setLocale(locale);
+
     return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
 }
 

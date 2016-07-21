@@ -5,7 +5,7 @@ CONFIG += plugin
 
 QT += network
 
-# check Bluetooth LE support
+# Check Bluetooth LE support
 contains(DEFINES, BLUETOOTH_LE) {
     QT += bluetooth
 }

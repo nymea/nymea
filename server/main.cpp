@@ -145,7 +145,7 @@ int main(int argc, char *argv[])
     QCommandLineOption foregroundOption(QStringList() << "n" << "no-daemon", QCoreApplication::translate("main", "Run guhd in the foreground, not as daemon."));
     parser.addOption(foregroundOption);
 
-    QString debugDescription = QString("Debug categories to enable. Prefix with \"No\" to disable. Warnings from all categories will be printed unless explicitly muted with \"NoWarnings\". \n\nCategories are:");
+    QString debugDescription = QCoreApplication::translate("main", "Debug categories to enable. Prefix with \"No\" to disable. Warnings from all categories will be printed unless explicitly muted with \"NoWarnings\". \n\nCategories are:");
 
     // create sorted loggingFiler list
     QStringList sortedFilterList = QStringList(s_loggingFilters.keys());

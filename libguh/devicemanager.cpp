@@ -194,8 +194,9 @@
 
 /*! Constructs the DeviceManager with the given \a parent. There should only be one DeviceManager in the system created by \l{guhserver::GuhCore}.
  *  Use \c guhserver::GuhCore::instance()->deviceManager() instead to access the DeviceManager. */
-DeviceManager::DeviceManager(QObject *parent) :
+DeviceManager::DeviceManager(const QLocale &locale, QObject *parent) :
     QObject(parent),
+    m_locale(locale),
     m_radio433(0)
 {
     qRegisterMetaType<DeviceClassId>();
@@ -986,6 +987,9 @@ void DeviceManager::loadPlugins()
                 qCWarning(dcDeviceManager) << "Could not get plugin instance of" << entry;
                 continue;
             }
+
+            pluginIface->setLocale(m_locale);
+            qApp->installTranslator(pluginIface->translator());
 
             if (verifyPluginMetadata(loader.metaData().value("MetaData").toObject())) {
                 pluginIface->initPlugin(loader.metaData().value("MetaData").toObject(), this);

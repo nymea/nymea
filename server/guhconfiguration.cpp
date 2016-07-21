@@ -35,6 +35,7 @@ GuhConfiguration::GuhConfiguration(QObject *parent) :
     settings.beginGroup("guhd");
     m_serverName = settings.value("name", "guhIO").toString();
     m_timeZone = settings.value("timeZone", QTimeZone::systemTimeZoneId()).toByteArray();
+    m_locale = QLocale(settings.value("language", "en_US").toString());
     m_serverUuid = settings.value("uuid", QUuid()).toUuid();
     if (m_serverUuid.isNull()) {
         m_serverUuid = QUuid::createUuid();
@@ -45,6 +46,7 @@ GuhConfiguration::GuhConfiguration(QObject *parent) :
     qCDebug(dcApplication()) << "Configuration: Server name:" << m_serverName;
     qCDebug(dcApplication()) << "Configuration: Server uuid:" << m_serverUuid.toString();
     qCDebug(dcApplication()) << "Configuration: Server time zone:" << QString::fromUtf8(m_timeZone);
+    qCDebug(dcApplication()) << "Configuration: Server locale:" << m_locale.name() << m_locale.nativeLanguageName();
 
     // TcpServer
     settings.beginGroup("TcpServer");
@@ -131,6 +133,24 @@ void GuhConfiguration::setTimeZone(const QByteArray &timeZone)
 
     m_timeZone = timeZone;
     emit timeZoneChanged();
+}
+
+QLocale GuhConfiguration::locale() const
+{
+    return m_locale;
+}
+
+void GuhConfiguration::setLocale(const QLocale &locale)
+{
+    qCDebug(dcApplication()) << "Configuration: set locale:" << locale.name() << locale.nativeCountryName() << locale.nativeLanguageName();
+
+    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    settings.beginGroup("guhd");
+    settings.setValue("language", locale.name());
+    settings.endGroup();
+
+    m_locale = locale;
+    emit localeChanged();
 }
 
 uint GuhConfiguration::tcpServerPort() const

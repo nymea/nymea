@@ -1003,6 +1003,7 @@ QVariantMap JsonTypes::packBasicConfiguration()
     basicConfiguration.insert("serverUuid", GuhCore::instance()->configuration()->serverUuid());
     basicConfiguration.insert("serverTime", GuhCore::instance()->timeManager()->currentDateTime().toTime_t());
     basicConfiguration.insert("timeZone", QString::fromUtf8(GuhCore::instance()->timeManager()->timeZone()));
+    basicConfiguration.insert("language", GuhCore::instance()->configuration()->locale().name());
     return basicConfiguration;
 }
 

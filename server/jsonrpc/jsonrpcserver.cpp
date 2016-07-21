@@ -268,8 +268,11 @@ void JsonRPCServer::clientConnected(const QUuid &clientId)
 
     QVariantMap handshake;
     handshake.insert("id", 0);
-    handshake.insert("server", "guh JSONRPC interface");
+    handshake.insert("server", "guhIO");
+    handshake.insert("name", GuhCore::instance()->configuration()->serverName());
     handshake.insert("version", GUH_VERSION_STRING);
+    handshake.insert("uuid", GuhCore::instance()->configuration()->serverUuid().toString());
+    handshake.insert("language", GuhCore::instance()->configuration()->locale().name());
     handshake.insert("protocol version", JSON_PROTOCOL_VERSION);
     interface->sendData(clientId, handshake);
 }

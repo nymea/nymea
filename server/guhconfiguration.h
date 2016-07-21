@@ -23,6 +23,7 @@
 
 #include <QHostAddress>
 #include <QObject>
+#include <QLocale>
 #include <QUuid>
 #include <QUrl>
 
@@ -53,6 +54,9 @@ public:
 
     QByteArray timeZone() const;
     void setTimeZone(const QByteArray &timeZone);
+
+    QLocale locale() const;
+    void setLocale(const QLocale &locale);
 
     // TCP server
     uint tcpServerPort() const;
@@ -92,6 +96,7 @@ private:
     QUuid m_serverUuid;
     QString m_serverName;
     QByteArray m_timeZone;
+    QLocale m_locale;
 
     QHostAddress m_tcpServerAddress;
     uint m_tcpServerPort;
@@ -114,6 +119,7 @@ private:
 signals:
     void serverNameChanged();
     void timeZoneChanged();
+    void localeChanged();
 
     void tcpServerConfigurationChanged();
     void webServerConfigurationChanged();

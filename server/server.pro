@@ -12,6 +12,13 @@ QT += sql xml websockets
 
 LIBS += -L$$top_builddir/libguh/ -lguh
 
+# Translations
+TRANSLATIONS *= $$top_srcdir/translations/guhd_en_US.ts \
+                $$top_srcdir/translations/guhd_de_DE.ts
+
+include(../translations.pri)
+
+# Server files
 include(server.pri)
 include(qtservice/qtservice.pri)
 

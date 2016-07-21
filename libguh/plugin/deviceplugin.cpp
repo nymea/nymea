@@ -148,7 +148,8 @@
 
 /*! DevicePlugin constructor. DevicePlugins will be instantiated by the DeviceManager, its \a parent. */
 DevicePlugin::DevicePlugin(QObject *parent):
-    QObject(parent)
+    QObject(parent),
+    m_translator(new QTranslator(this))
 {
 }
 
@@ -438,6 +439,16 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
         }
     }
     return deviceClasses;
+}
+
+QTranslator *DevicePlugin::translator()
+{
+    return m_translator;
+}
+
+void DevicePlugin::setLocale(const QLocale &locale)
+{
+    m_translator->load(locale, pluginName(), "_", GuhSettings::translationsPath(), ".qm");
 }
 
 /*! Override this if your plugin supports Device with DeviceClass::CreationMethodAuto.

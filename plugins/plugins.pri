@@ -5,7 +5,12 @@ CONFIG += plugin
 
 QT += network
 
-INCLUDEPATH += ../../../libguh
+# Check Bluetooth LE support
+contains(DEFINES, BLUETOOTH_LE) {
+    QT += bluetooth
+}
+
+INCLUDEPATH += $$top_srcdir/libguh
 LIBS += -L../../../libguh -lguh
 
 infofile.output = plugininfo.h

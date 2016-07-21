@@ -48,6 +48,7 @@ public:
     static bool isRoot();
     static QString logPath();
     static QString settingsPath();
+    static QString translationsPath();
     static QString consoleLogPath();
 
     // forwarded QSettings methods

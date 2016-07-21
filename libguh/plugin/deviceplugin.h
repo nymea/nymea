@@ -41,6 +41,7 @@
 #include <QMetaEnum>
 #include <QJsonObject>
 #include <QMetaObject>
+#include <QTranslator>
 #include <QPair>
 
 class DeviceManager;
@@ -59,6 +60,9 @@ public:
     PluginId pluginId() const;
     QList<Vendor> supportedVendors() const;
     QList<DeviceClass> supportedDevices() const;
+
+    QTranslator *translator();
+    void setLocale(const QLocale &locale);
 
     virtual DeviceManager::HardwareResources requiredHardware() const = 0;
 
@@ -137,6 +141,7 @@ private:
     QPair<bool, DeviceClass::BasicTag> loadAndVerifyBasicTag(const QString &basicTag) const;
     QPair<bool, DeviceClass::DeviceIcon> loadAndVerifyDeviceIcon(const QString &deviceIcon) const;
 
+    QTranslator *m_translator;
     DeviceManager *m_deviceManager;
 
     QList<ParamType> m_configurationDescription;

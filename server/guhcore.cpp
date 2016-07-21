@@ -381,6 +381,12 @@ ServerManager *GuhCore::serverManager() const
     return m_serverManager;
 }
 
+QStringList GuhCore::getAvailableLanguages()
+{
+    // TODO: parse available translation files
+    return QStringList() << "en_US" << "de_DE";
+}
+
 BluetoothServer *GuhCore::bluetoothServer() const
 {
     return m_bluetoothServer;
@@ -416,7 +422,7 @@ GuhCore::GuhCore(QObject *parent) :
     m_cloudManager = new CloudManager(m_configuration->cloudEnabled(), m_configuration->cloudAuthenticationServer(), m_configuration->cloudProxyServer(), this);
 
     qCDebug(dcApplication) << "Creating Device Manager";
-    m_deviceManager = new DeviceManager(this);
+    m_deviceManager = new DeviceManager(m_configuration->locale(), this);
 
     qCDebug(dcApplication) << "Creating Rule Engine";
     m_ruleEngine = new RuleEngine(this);

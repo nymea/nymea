@@ -37,8 +37,10 @@ public:
 
     Q_INVOKABLE JsonReply *GetConfigurations(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *GetTimeZones(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *GetAvailableLanguages(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *SetServerName(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *SetTimeZone(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *SetLanguage(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *SetTcpServerConfiguration(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *SetWebServerConfiguration(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *SetWebSocketServerConfiguration(const QVariantMap &params) const;

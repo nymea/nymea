@@ -87,6 +87,7 @@ public:
     ServerManager *serverManager() const;
     BluetoothServer *bluetoothServer() const;
 
+    static QStringList getAvailableLanguages();
 
 #ifdef TESTING_ENABLED
     MockTcpServer *tcpServer() const;

@@ -211,7 +211,7 @@ DeviceManager::DeviceError DevicePluginMock::displayPin(const PairingTransaction
     Q_UNUSED(pairingTransactionId)
     Q_UNUSED(deviceDescriptor)
 
-    qCDebug(dcMockDevice) << "Display pin!! The pin is 243681";
+    qCDebug(dcMockDevice) << QString(tr("Display pin!! The pin is 243681"));
 
     return DeviceManager::DeviceErrorNoError;
 }

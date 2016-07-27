@@ -68,12 +68,23 @@
                 "enabled": "Bool"
             }
         },
+        "Configuration.GetAvailableLanguages": {
+            "description": "Returns a list of locale codes available for the server. i.e. en_US, de_AT",
+            "params": {
+            },
+            "returns": {
+                "languages": [
+                    "String"
+                ]
+            }
+        },
         "Configuration.GetConfigurations": {
             "description": "Get all configuration parameters of the server.",
             "params": {
             },
             "returns": {
                 "basicConfiguration": {
+                    "language": "String",
                     "serverName": "String",
                     "serverTime": "Uint",
                     "serverUuid": "Uuid",
@@ -104,6 +115,15 @@
                 "timeZones": [
                     "String"
                 ]
+            }
+        },
+        "Configuration.SetLanguage": {
+            "description": "Sets the server language to the given language. See also: \"GetAvailableLanguages\"",
+            "params": {
+                "language": "String"
+            },
+            "returns": {
+                "configurationError": "$ref:ConfigurationError"
             }
         },
         "Configuration.SetServerName": {

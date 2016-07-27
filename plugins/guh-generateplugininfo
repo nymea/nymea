@@ -245,7 +245,7 @@ writePluginInfo("PluginId pluginId = PluginId(\"%s\");" % pluginMap['id'])
 extractVendors(pluginMap)
 
 writePluginInfo("")
-writePluginInfo("// Loging category")
+writePluginInfo("// Logging category")
 
 if 'idName' in pluginMap:
     writePluginInfo('Q_DECLARE_LOGGING_CATEGORY(dc%s)' % pluginMap['idName'])

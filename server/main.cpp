@@ -24,11 +24,13 @@
 #include <QCoreApplication>
 #include <QLoggingCategory>
 #include <QMessageLogger>
+#include <QTranslator>
 #include <QStringList>
 #include <QTextStream>
 #include <QDateTime>
 #include <QtPlugin>
 #include <QtDebug>
+#include <QString>
 #include <QFile>
 
 #include "stdio.h"
@@ -131,14 +133,15 @@ int main(int argc, char *argv[])
     QCommandLineParser parser;
     parser.addHelpOption();
     parser.addVersionOption();
-    QString applicationDescription = QString("\nguh ( /[guːh]/ ) is an open source IoT (Internet of Things) server, \n"
+    QString applicationDescription = QCoreApplication::translate("main", "\nguh ( /[guːh]/ ) is an open source IoT (Internet of Things) server, \n"
                                              "which allows to control a lot of different devices from many different \n"
                                              "manufacturers. With the powerful rule engine you are able to connect any \n"
                                              "device available in the system and create individual scenes and behaviors \n"
-                                             "for your environment.\n\n"
-                                             "guhd %1 %2 2014-2016 guh GmbH\n"
-                                             "Released under the GNU GENERAL PUBLIC LICENSE Version 2.\n\n"
-                                             "API version: %3\n").arg(GUH_VERSION_STRING).arg(QChar(0xA9)).arg(JSON_PROTOCOL_VERSION);
+                                             "for your environment.\n\n");
+
+    applicationDescription.append(QString("guhd %1 %2 2014-2016 guh GmbH\n"
+                                          "Released under the GNU GENERAL PUBLIC LICENSE Version 2.\n\n"
+                                          "API version: %3\n").arg(GUH_VERSION_STRING).arg(QChar(0xA9)).arg(JSON_PROTOCOL_VERSION));
 
     parser.setApplicationDescription(applicationDescription);
 
@@ -162,7 +165,7 @@ int main(int argc, char *argv[])
         debugDescription += "\n- " + filterName + " (" + (s_loggingFilters.value(filterName) ? "yes" : "no") + ")";
     }
 
-    QCommandLineOption allOption(QStringList() << "p" << "print-all", "Enables all debug categories. This parameter overrides all debug category parameters.");
+    QCommandLineOption allOption(QStringList() << "p" << "print-all", QCoreApplication::translate("main", "Enables all debug categories. This parameter overrides all debug category parameters."));
     parser.addOption(allOption);
     QCommandLineOption debugOption(QStringList() << "d" << "debug-category", debugDescription, "[No]DebugCategory");
     parser.addOption(debugOption);
@@ -182,7 +185,7 @@ int main(int argc, char *argv[])
             if (s_loggingFilters.contains(debugArea)) {
                 s_loggingFilters[debugArea] = enable;
             } else {
-                qCWarning(dcApplication) << "No such debug category:" << debugArea;
+                qCWarning(dcApplication) << QCoreApplication::translate("main", "No such debug category:") << debugArea;
             }
         }
     } else {

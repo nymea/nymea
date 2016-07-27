@@ -79,7 +79,7 @@
                         {
                             "id": "55d6d7a8-446f-48ae-8014-1225810d03ee",
                             "idName": "averagePrice",
-                            "name": "average market price [± 12 h]",
+                            "name": "average market price [+/- 12 h]",
                             "index": 3,
                             "type": "double",
                             "unit": "EuroCentPerKiloWattHour",
@@ -89,7 +89,7 @@
                         {
                             "id": "e7af5bdc-48d7-4e96-b877-331da4dcfae5",
                             "idName": "lowestPrice",
-                            "name": "lowest market price [± 12 h]",
+                            "name": "lowest market price [+/- 12 h]",
                             "index": 4,
                             "type": "double",
                             "unit": "EuroCentPerKiloWattHour",
@@ -100,7 +100,7 @@
                         {
                             "id": "0c171c42-b070-453e-8a63-df9aebfa8533",
                             "idName": "highestPrice",
-                            "name": "highest market price [± 12 h]",
+                            "name": "highest market price [+/- 12 h]",
                             "index": 5,
                             "type": "double",
                             "unit": "EuroCentPerKiloWattHour",

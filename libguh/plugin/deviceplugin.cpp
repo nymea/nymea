@@ -448,7 +448,7 @@ QTranslator *DevicePlugin::translator()
 
 void DevicePlugin::setLocale(const QLocale &locale)
 {
-    m_translator->load(locale, pluginName(), "_", GuhSettings::translationsPath(), ".qm");
+    m_translator->load(locale, "mock", "_", GuhSettings::translationsPath(), ".qm");
 }
 
 /*! Override this if your plugin supports Device with DeviceClass::CreationMethodAuto.

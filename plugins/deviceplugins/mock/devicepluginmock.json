@@ -1,7 +1,6 @@
 {
     "name": "Mock Devices",
     "idName": "MockDevice",
-    "translationPrefix": "mock",
     "id": "727a4a9a-c187-446f-aadf-f1b2220607d1",
     "paramTypes": [
         {

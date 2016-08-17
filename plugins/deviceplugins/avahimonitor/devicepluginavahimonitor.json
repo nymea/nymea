@@ -21,12 +21,16 @@
                     "createMethods": ["discovery"],
                     "paramTypes": [
                         {
+                            "id": "3cbc94c5-6925-4003-9201-ef0d370266c1",
+                            "idName": "service",
                             "name": "service name",
                             "type": "QString",
                             "index": 0,
                             "inputType": "TextLine"
                         },
                         {
+                            "id": "2fdcf581-b767-4ecb-a425-b06a46f9ce8d",
+                            "idName": "hostName",
                             "name": "host name",
                             "type": "QString",
                             "index": 1,

@@ -20,6 +20,8 @@
                     ],
                     "paramTypes": [
                         {
+                            "id": "79e54f91-2771-459a-9cb0-1d37759d2e33",
+                            "idName": "command",
                             "name": "command",
                             "type": "QString",
                             "index": 0,
@@ -63,6 +65,8 @@
                     "primaryActionTypeId": "cf52b41d-3108-423c-8907-ca5b4d97cac5",
                     "paramTypes": [
                         {
+                            "id": "391cf4af-ccb4-4ec0-9711-00c1b53a3c4c",
+                            "idName": "script",
                             "name": "script",
                             "type": "QString",
                             "index": 0,

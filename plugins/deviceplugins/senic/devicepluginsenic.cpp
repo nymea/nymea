@@ -62,8 +62,8 @@ DeviceManager::DeviceError DevicePluginSenic::discoverDevices(const DeviceClassI
 
 DeviceManager::DeviceSetupStatus DevicePluginSenic::setupDevice(Device *device)
 {
-    QString name = device->paramValue("name").toString();
-    QBluetoothAddress address = QBluetoothAddress(device->paramValue("mac address").toString());
+    QString name = device->paramValue(nameParamTypeId).toString();
+    QBluetoothAddress address = QBluetoothAddress(device->paramValue(macParamTypeId).toString());
     QBluetoothDeviceInfo deviceInfo = QBluetoothDeviceInfo(address, name, 0);
 
     Nuimo *nuimo = new Nuimo(deviceInfo, QLowEnergyController::RandomAddress, this);
@@ -105,13 +105,13 @@ DeviceManager::DeviceError DevicePluginSenic::executeAction(Device *device, cons
 
     if (action.actionTypeId() == showLogoActionTypeId) {
 
-        if (action.param("logo").value().toString() == "Guh")
+        if (action.param(logoParamTypeId).value().toString() == "Guh")
             nuimo->showGuhLogo();
 
-        if (action.param("logo").value().toString() == "Arrow up")
+        if (action.param(logoParamTypeId).value().toString() == "Arrow up")
             nuimo->showArrowUp();
 
-        if (action.param("logo").value().toString() == "Arrow down")
+        if (action.param(logoParamTypeId).value().toString() == "Arrow down")
             nuimo->showArrowDown();
 
         return DeviceManager::DeviceErrorNoError;
@@ -128,8 +128,8 @@ void DevicePluginSenic::bluetoothDiscoveryFinished(const QList<QBluetoothDeviceI
             if (!verifyExistingDevices(deviceInfo)) {
                 DeviceDescriptor descriptor(nuimoDeviceClassId, "Nuimo", deviceInfo.address().toString());
                 ParamList params;
-                params.append(Param("name", deviceInfo.name()));
-                params.append(Param("mac address", deviceInfo.address().toString()));
+                params.append(Param(nameParamTypeId, deviceInfo.name()));
+                params.append(Param(macParamTypeId, deviceInfo.address().toString()));
                 descriptor.setParams(params);
                 deviceDescriptors.append(descriptor);
             }
@@ -152,7 +152,7 @@ void DevicePluginSenic::deviceRemoved(Device *device)
 bool DevicePluginSenic::verifyExistingDevices(const QBluetoothDeviceInfo &deviceInfo)
 {
     foreach (Device *device, myDevices()) {
-        if (device->paramValue("mac address").toString() == deviceInfo.address().toString())
+        if (device->paramValue(macParamTypeId).toString() == deviceInfo.address().toString())
             return true;
     }
 

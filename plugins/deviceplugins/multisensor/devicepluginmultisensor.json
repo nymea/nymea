@@ -20,12 +20,16 @@
                     ],
                     "paramTypes": [
                         {
+                            "id": "bdb9d684-2f98-45f5-889c-f184c1e73dc7",
+                            "idName": "name",
                             "name": "name",
                             "type": "QString",
                             "inputType": "TextLine",
                             "index" : 0
                         },
                         {
+                            "id": "d51ed68e-c84a-4136-a5b5-be2f95fd5a0f",
+                            "idName": "mac",
                             "name": "mac address",
                             "type": "QString",
                             "index": 1,

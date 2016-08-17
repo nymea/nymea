@@ -20,6 +20,8 @@
                     "createMethods": ["user"],
                     "paramTypes": [
                         {
+                            "id": "e2ba04ac-9fe1-4f9d-8152-024c27030cde",
+                            "idName": "mac",
                             "name": "mac",
                             "type": "QString",
                             "index": 0,

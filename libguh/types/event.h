@@ -46,7 +46,7 @@ public:
 
     ParamList params() const;
     void setParams(const ParamList &params);
-    Param param(const QString &paramName) const;
+    Param param(const ParamTypeId &paramTypeId) const;
 
     bool operator ==(const Event &other) const;
 

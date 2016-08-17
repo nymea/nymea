@@ -22,23 +22,31 @@
                     "createMethods": ["discovery"],
                     "paramTypes": [
                         {
+                            "id": "50d2236d-b73a-4d7b-ac8a-34c6566e6543",
+                            "idName": "name",
                             "name": "name",
                             "type": "QString",
                             "index": 0,
                             "inputType": "TextLine"
                         },
                         {
+                            "id": "84ed399c-edb0-40da-8e2f-86eefc5790eb",
+                            "idName": "host",
                             "name": "host address",
                             "type": "QString",
                             "index": 1,
                             "inputType": "IPv4Address"
                         },
                         {
+                            "id": "2d30eb6b-08cf-4d34-aeb5-fb441bb2291a",
+                            "idName": "port",
                             "name": "port",
                             "index": 2,
                             "type": "int"
                         },
                         {
+                            "id": "93e1a45a-b8b9-48a7-869e-ad07550a1951",
+                            "idName": "serial",
                             "name": "serial number",
                             "type": "QString",
                             "index": 3,

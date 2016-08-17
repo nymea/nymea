@@ -22,6 +22,8 @@
                     "createMethods": ["user"],
                     "paramTypes": [
                         {
+                            "id": "09e28309-693c-4c89-9ad8-58b643794e85",
+                            "idName": "id",
                             "name": "id",
                             "type": "QString",
                             "index": 0,

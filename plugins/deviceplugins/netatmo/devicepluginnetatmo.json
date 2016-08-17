@@ -22,18 +22,24 @@
                     "createMethods": ["user"],
                     "paramTypes": [
                         {
+                            "id": "a97d256c-e159-4aa0-bc71-6bd7cd0688b3",
+                            "idName": "name",
                             "name": "name",
                             "type": "QString",
                             "index": 0,
                             "inputType": "TextLine"
                         },
                         {
+                            "id": "763c2c10-dee5-41c8-9f7e-ded741945e73",
+                            "idName": "username",
                             "name": "username",
                             "type": "QString",
                             "index": 1,
                             "inputType": "TextLine"
                         },
                         {
+                            "id": "c0d892d6-f359-4782-9d7d-8f74a3b53e3e",
+                            "idName": "password",
                             "name": "password",
                             "type": "QString",
                             "index": 2,
@@ -65,13 +71,16 @@
                     "createMethods": ["auto"],
                     "paramTypes": [
                         {
+                            "id": "a97d256c-e159-4aa0-bc71-6bd7cd0688b3",
+                            "idName": "name",
                             "name": "name",
                             "type": "QString",
-                            "inputType": "TextLine",
                             "index": 0,
-                            "readOnly": true
+                            "inputType": "TextLine"
                         },
                         {
+                            "id": "157d470a-e579-4d0e-b879-6b5bfa8e34ae",
+                            "idName": "mac",
                             "name": "mac address",
                             "type": "QString",
                             "index": 1,
@@ -79,6 +88,8 @@
                             "readOnly": true
                         },
                         {
+                            "id": "c15e5dea-10f2-4c96-afab-649872f43d5c",
+                            "idName": "connection",
                             "name": "connection",
                             "type": "QString",
                             "index": 2,
@@ -193,21 +204,25 @@
                     "createMethods": ["auto"],
                     "paramTypes": [
                         {
+                            "id": "a97d256c-e159-4aa0-bc71-6bd7cd0688b3",
+                            "idName": "name",
                             "name": "name",
                             "type": "QString",
                             "index": 0,
-                            "inputType": "TextLine",
-                            "readOnly": true
+                            "inputType": "TextLine"
                         },
                         {
+                            "id": "157d470a-e579-4d0e-b879-6b5bfa8e34ae",
+                            "idName": "mac",
                             "name": "mac address",
                             "type": "QString",
                             "index": 1,
                             "inputType": "TextLine",
                             "readOnly": true
                         },
-
                         {
+                            "id": "c15e5dea-10f2-4c96-afab-649872f43d5c",
+                            "idName": "connection",
                             "name": "connection",
                             "type": "QString",
                             "index": 2,
@@ -215,6 +230,8 @@
                             "readOnly": true
                         },
                         {
+                            "id": "d7a0ec46-760c-4fdc-9753-fe10c86fe1b9",
+                            "idName": "baseStation",
                             "name": "base station",
                             "type": "QString",
                             "index": 3,

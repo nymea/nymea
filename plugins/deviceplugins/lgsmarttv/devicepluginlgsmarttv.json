@@ -24,35 +24,47 @@
                     "pairingInfo": "Please enter the pairing key displayed on the Tv.",
                     "paramTypes": [
                         {
+                            "id": "797a1915-cb85-400a-9c1a-db09c73b54d5",
+                            "idName": "name",
                             "name": "name",
                             "type": "QString",
                             "index": 0,
                             "inputType": "TextLine"
                         },
                         {
+                            "id": "0deec372-b955-49d2-9906-fc1a603dd637",
+                            "idName": "model",
                             "name": "model",
                             "type": "QString",
                             "index": 1,
                             "inputType": "TextLine"
                         },
                         {
+                            "id": "0af152bb-8844-44d8-afee-d08bb0e28558",
+                            "idName": "uuid",
                             "name": "uuid",
                             "type": "QString",
                             "index": 2,
                             "inputType": "TextLine"
                         },
                         {
+                            "id": "9710c07c-0725-4099-bf73-2513efbc0872",
+                            "idName": "hostAddress",
                             "name": "host address",
                             "type": "QString",
                             "index": 3,
                             "inputType": "IPv4Address"
                         },
                         {
+                            "id": "442abce0-16f9-4628-9534-e98e7f1c0a51",
+                            "idName": "port",
                             "name": "port",
                             "index": 4,
                             "type": "int"
                         },
                         {
+                            "id": "60a455e2-0668-4f11-a789-43c85e5a4bc5",
+                            "idName": "key",
                             "name": "key",
                             "type": "QString",
                             "index": 5,

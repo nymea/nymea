@@ -578,7 +578,7 @@ QVariantMap JsonTypes::packStateEvaluator(const StateEvaluator &stateEvaluator)
 QVariantMap JsonTypes::packParam(const Param &param)
 {
     QVariantMap variantMap;
-    variantMap.insert("name", param.name());
+    variantMap.insert("paramTypeId", param.paramTypeId().toString());
     variantMap.insert("value", param.value());
     return variantMap;
 }
@@ -587,7 +587,7 @@ QVariantMap JsonTypes::packParam(const Param &param)
 QVariantMap JsonTypes::packParamDescriptor(const ParamDescriptor &paramDescriptor)
 {
     QVariantMap variantMap;
-    variantMap.insert("name", paramDescriptor.name());
+    variantMap.insert("paramTypeId", paramDescriptor.paramTypeId());
     variantMap.insert("value", paramDescriptor.value());
     variantMap.insert("operator", s_valueOperator.at(paramDescriptor.operatorType()));
     return variantMap;
@@ -597,6 +597,7 @@ QVariantMap JsonTypes::packParamDescriptor(const ParamDescriptor &paramDescripto
 QVariantMap JsonTypes::packParamType(const ParamType &paramType)
 {
     QVariantMap variantMap;
+    variantMap.insert("id", paramType.id());
     variantMap.insert("name", paramType.name());
     variantMap.insert("type", basicTypeToString(paramType.type()));
     variantMap.insert("index", paramType.index());

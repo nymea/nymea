@@ -321,7 +321,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                     eventType.setRuleRelevant(st.value("eventRuleRelevant").toBool());
 
                 eventType.setName(QString("%1 changed").arg(stateType.name()));
-                ParamType paramType("value", stateType.type());
+                ParamType paramType(ParamTypeId(stateType.id().toString()),stateType.id().toString(), stateType.type());
                 eventType.setParamTypes(QList<ParamType>() << paramType);
                 eventType.setIndex(stateType.index());
                 eventTypes.append(eventType);
@@ -332,7 +332,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                     ActionType actionType(ActionTypeId(stateType.id().toString()));
                     actionType.setName("set " + stateType.name());
                     actionType.setIndex(stateType.index());
-                    ParamType paramType(stateType.name(), t, stateType.defaultValue());
+                    ParamType paramType(ParamTypeId(stateType.id().toString()), stateType.name(), t, stateType.defaultValue());
                     paramType.setAllowedValues(stateType.possibleValues());
                     paramType.setUnit(stateType.unit());
                     paramType.setLimits(stateType.minValue(), stateType.maxValue());
@@ -607,7 +607,7 @@ QPair<bool, QList<ParamType> > DevicePlugin::parseParamTypes(const QJsonArray &a
             return QPair<bool, QList<ParamType> >(false, QList<ParamType>());
         }
 
-        ParamType paramType(pt.value("name").toString(), t, pt.value("defaultValue").toVariant());
+        ParamType paramType(ParamTypeId(pt.value("id").toString()), pt.value("name").toString(), t, pt.value("defaultValue").toVariant());
         paramType.setIndex(pt.value("index").toInt());
 
         // set allowed values
@@ -665,12 +665,12 @@ ParamList DevicePlugin::configuration() const
  at the time when your plugin is loaded, but will be set soon after. Listen to
  configurationValueChanged() to know when something changes.
  When implementing a new plugin, specify in configurationDescription() what you want to see here.
- Returns the config value of a \l{Param} with the given \a paramName of this DevicePlugin.
+ Returns the config value of a \l{Param} with the given \a paramTypeId of this DevicePlugin.
  */
-QVariant DevicePlugin::configValue(const QString &paramName) const
+QVariant DevicePlugin::configValue(const ParamTypeId &paramTypeId) const
 {
     foreach (const Param &param, m_config) {
-        if (param.name() == paramName) {
+        if (param.paramTypeId() == paramTypeId) {
             return param.value();
         }
     }
@@ -682,7 +682,7 @@ DeviceManager::DeviceError DevicePlugin::setConfiguration(const ParamList &confi
 {
     foreach (const Param &param, configuration) {
         qCDebug(dcDeviceManager) << "* set plugin configuration" << param;
-        DeviceManager::DeviceError result = setConfigValue(param.name(), param.value());
+        DeviceManager::DeviceError result = setConfigValue(param.paramTypeId(), param.value());
         if (result != DeviceManager::DeviceErrorNoError) {
             return result;
         }
@@ -690,14 +690,14 @@ DeviceManager::DeviceError DevicePlugin::setConfiguration(const ParamList &confi
     return DeviceManager::DeviceErrorNoError;
 }
 
-/*! Can be called in the DevicePlugin to set a plugin's \l{Param} with the given \a paramName and \a value. */
-DeviceManager::DeviceError DevicePlugin::setConfigValue(const QString &paramName, const QVariant &value)
+/*! Can be called in the DevicePlugin to set a plugin's \l{Param} with the given \a paramTypeId and \a value. */
+DeviceManager::DeviceError DevicePlugin::setConfigValue(const ParamTypeId &paramTypeId, const QVariant &value)
 {
     bool found = false;
     foreach (const ParamType &paramType, configurationDescription()) {
-        if (paramType.name() == paramName) {
+        if (paramType.id() == paramTypeId) {
             found = true;
-            DeviceManager::DeviceError result = deviceManager()->verifyParam(paramType, Param(paramName, value));
+            DeviceManager::DeviceError result = deviceManager()->verifyParam(paramType, Param(paramTypeId, value));
             if (result != DeviceManager::DeviceErrorNoError)
                 return result;
 
@@ -706,17 +706,17 @@ DeviceManager::DeviceError DevicePlugin::setConfigValue(const QString &paramName
     }
 
     if (!found) {
-        qCWarning(dcDeviceManager) << QString("Could not find plugin parameter with the name %1.").arg(paramName);
+        qCWarning(dcDeviceManager) << QString("Could not find plugin parameter with the id %1.").arg(paramTypeId.toString());
         return DeviceManager::DeviceErrorInvalidParameter;
     }
 
-    if (m_config.hasParam(paramName)) {
-        m_config.setParamValue(paramName, value);
+    if (m_config.hasParam(paramTypeId)) {
+        m_config.setParamValue(paramTypeId, value);
     } else {
-        Param newParam(paramName, value);
+        Param newParam(paramTypeId, value);
         m_config.append(newParam);
     }
-    emit configValueChanged(paramName, value);
+    emit configValueChanged(paramTypeId, value);
     return DeviceManager::DeviceErrorNoError;
 }
 
@@ -756,7 +756,7 @@ Device *DevicePlugin::findDeviceByParams(const ParamList &params) const
     foreach (Device *device, myDevices()) {
         bool matching = true;
         foreach (const Param &param, params) {
-            if (device->paramValue(param.name()) != param.value()) {
+            if (device->paramValue(param.paramTypeId()) != param.value()) {
                 matching = false;
             }
         }

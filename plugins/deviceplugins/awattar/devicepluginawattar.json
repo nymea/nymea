@@ -4,6 +4,8 @@
     "id": "9c261c33-d44e-461e-8ec1-68803cb73f12",
     "paramTypes": [
         {
+            "id": "cf13eebf-f188-447a-afcb-bbd330983060",
+            "idName": "rpl",
             "name": "RPL address",
             "type": "QString",
             "index": 0,
@@ -32,12 +34,16 @@
                     ],
                     "paramTypes": [
                         {
+                            "id": "cbbf6f0a-6a91-4844-83f5-60eadb46099b",
+                            "idName": "userUuid",
                             "name": "user uuid",
                             "type": "QString",
                             "index": 0,
                             "inputType": "TextLine"
                         },
                         {
+                            "id": "7ab323d0-f3b5-4baa-9ff9-4843b4dd9811",
+                            "idName": "token",
                             "name": "token",
                             "type": "QString",
                             "index": 1,
@@ -163,6 +169,8 @@
                             "index": 0,
                             "paramTypes": [
                                 {
+                                    "id": "c7b13a33-1c05-457c-a087-20ecc1b8ca01",
+                                    "idName": "sgMode",
                                     "name": "sg-mode",
                                     "type": "QString",
                                     "index": 0,

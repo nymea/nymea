@@ -41,7 +41,7 @@ public:
 
     QList<ParamDescriptor> paramDescriptors() const;
     void setParamDescriptors(const QList<ParamDescriptor> &paramDescriptors);
-    ParamDescriptor paramDescriptor(const QString &paramDescriptorName) const;
+    ParamDescriptor paramDescriptor(const ParamTypeId &paramTypeId) const;
 
     bool operator ==(const EventDescriptor &other) const;
 

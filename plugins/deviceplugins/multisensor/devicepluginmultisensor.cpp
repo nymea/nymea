@@ -80,8 +80,8 @@ void DevicePluginMultiSensor::bluetoothDiscoveryFinished(const QList<QBluetoothD
             if (!verifyExistingDevices(deviceInfo)) {
                 DeviceDescriptor descriptor(sensortagDeviceClassId, "SensorTag", deviceInfo.address().toString());
                 ParamList params;
-                params.append(Param("name", deviceInfo.name()));
-                params.append(Param("mac address", deviceInfo.address().toString()));
+                params.append(Param(nameParamTypeId, deviceInfo.name()));
+                params.append(Param(macParamTypeId, deviceInfo.address().toString()));
                 descriptor.setParams(params);
                 deviceDescriptors.append(descriptor);
             }
@@ -100,8 +100,8 @@ DeviceManager::DeviceSetupStatus DevicePluginMultiSensor::setupDevice(Device *de
     qCDebug(dcMultiSensor) << "Setting up MultiSensor" << device->name() << device->params();
 
     if (device->deviceClassId() == sensortagDeviceClassId) {
-        auto address = QBluetoothAddress(device->paramValue("mac address").toString());
-        auto name = device->paramValue("name").toString();
+        auto address = QBluetoothAddress(device->paramValue(macParamTypeId).toString());
+        auto name = device->paramValue(nameParamTypeId).toString();
         auto deviceInfo = QBluetoothDeviceInfo(address, name, 0);
 
         QSharedPointer<SensorTag> tag{new SensorTag(deviceInfo, QLowEnergyController::PublicAddress, this)};
@@ -132,7 +132,7 @@ void DevicePluginMultiSensor::deviceRemoved(Device *device)
 bool DevicePluginMultiSensor::verifyExistingDevices(const QBluetoothDeviceInfo &deviceInfo)
 {
     foreach (Device *device, myDevices()) {
-        if (device->paramValue("mac address").toString() == deviceInfo.address().toString())
+        if (device->paramValue(macParamTypeId).toString() == deviceInfo.address().toString())
             return true;
     }
 

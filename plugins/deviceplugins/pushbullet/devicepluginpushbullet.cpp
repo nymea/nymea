@@ -67,11 +67,12 @@ DeviceManager::DeviceError DevicePluginPushbullet::executeAction(Device *device,
 
 QNetworkReply* DevicePluginPushbullet::sendNotification(Device* device, ParamList params) {
     QUrlQuery urlParams;
-    urlParams.addQueryItem("body", params.paramValue("body").toByteArray());
-    urlParams.addQueryItem("title", params.paramValue("title").toByteArray());
+    urlParams.addQueryItem("body", params.paramValue(bodyParamTypeId).toByteArray());
+    urlParams.addQueryItem("title", params.paramValue(titleParamTypeId).toByteArray());
     urlParams.addQueryItem("type", "note");
+
     QNetworkRequest request(QUrl("https://api.pushbullet.com/v2/pushes"));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-    request.setRawHeader(QByteArray("Access-Token"), device->paramValue("accessToken").toByteArray());
+    request.setRawHeader(QByteArray("Access-Token"), device->paramValue(tokenParamTypeId).toByteArray());
     return networkManagerPost(request, urlParams.toString(QUrl::FullyEncoded).toUtf8());
 }

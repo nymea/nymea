@@ -218,48 +218,64 @@
                     "createMethods": ["user"],
                     "paramTypes": [
                         {
+                            "id": "b36f1f62-60d7-49dd-926d-836c03563efa",
+                            "idName": "monday",
                             "name": "monday",
                             "type": "bool",
                             "defaultValue": false,
                             "index": 0
                         },
                         {
+                            "id": "6bcbecd9-d3b8-4a63-9a41-e3ee3f4c3bab",
+                            "idName": "tuesday",
                             "name": "tuesday",
                             "type": "bool",
                             "defaultValue": false,
                             "index": 1
                         },
                         {
+                            "id": "66bf302c-a7de-41cd-9e12-415276b82e65",
+                            "idName": "wednesday",
                             "name": "wednesday",
                             "type": "bool",
                             "defaultValue": false,
                             "index": 2
                         },
                         {
+                            "id": "97aa24dc-a741-48db-ad13-7ba14ab71ea1",
+                            "idName": "thursday",
                             "name": "thursday",
                             "type": "bool",
                             "defaultValue": false,
                             "index": 3
                         },
                         {
+                            "id": "8d99b490-9b59-4812-a18d-d43c1259d1b0",
+                            "idName": "friday",
                             "name": "friday",
                             "type": "bool",
                             "defaultValue": false,
                             "index": 4
                         },
                         {
+                            "id": "59cc3316-8de7-4602-9ee2-71559f7b665a",
+                            "idName": "saturday",
                             "name": "saturday",
                             "type": "bool",
                             "defaultValue": false,
                             "index": 5
                         },
                         {
+                            "id": "2d519d8f-4bda-4d30-801f-48fe6c10c540",
+                            "idName": "sunday",
                             "name": "sunday",
                             "type": "bool",
                             "defaultValue": false,
                             "index": 6
                         },
                         {
+                            "id": "3e38649d-f415-400f-bec2-81f374cad1cb",
+                            "idName": "minutes",
                             "name": "minutes",
                             "index": 7,
                             "type": "int",
@@ -270,6 +286,8 @@
 
                         },
                         {
+                            "id": "85c1d50d-509b-4a6a-840f-fc8fdbf46a52",
+                            "idName": "hours",
                             "name": "hours",
                             "index": 8,
                             "type": "int",
@@ -279,6 +297,8 @@
                             "defaultValue": 12
                         },
                         {
+                            "id": "5c285d83-284b-4ab2-bff8-d9a0ebbecbe4",
+                            "idName": "timeType",
                             "name": "time type",
                             "type": "QString",
                             "index": 9,
@@ -293,6 +313,8 @@
                             "defaultValue": "time"
                         },
                         {
+                            "id": "b37ec6bb-9f37-4520-ae34-d788ac2d5056",
+                            "idName": "offset",
                             "name": "offset",
                             "index": 10,
                             "type": "int",
@@ -325,6 +347,8 @@
                     "createMethods": ["user"],
                     "paramTypes": [
                         {
+                            "id": "7c1d33d8-bcc3-4890-a4be-2c753d9c14be",
+                            "idName": "seconds",
                             "name": "seconds",
                             "index": 0,
                             "type": "int",
@@ -334,6 +358,8 @@
                             "defaultValue": 0
                         },
                         {
+                            "id": "733e4174-dc42-4bf1-9a1d-65e785c2e580",
+                            "idName": "minutes",
                             "name": "minutes",
                             "index": 1,
                             "type": "int",
@@ -343,6 +369,8 @@
                             "defaultValue": 0
                         },
                         {
+                            "id": "0a54fe54-45a7-4fc5-a8d2-f9b6a92033de",
+                            "idName": "hours",
                             "name": "hours",
                             "index": 2,
                             "type": "int",
@@ -352,6 +380,8 @@
                             "defaultValue": 0
                         },
                         {
+                            "id": "7b0c11cd-64c5-4cfc-9860-aa9ce7b7b3b5",
+                            "idName": "repeating",
                             "name": "repeating",
                             "index": 3,
                             "type": "bool",

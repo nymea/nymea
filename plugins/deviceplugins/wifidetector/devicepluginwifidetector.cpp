@@ -131,7 +131,7 @@ void DevicePluginWifiDetector::processFinished(int exitCode, QProcess::ExitStatu
 
     // check states
     foreach (Device *device, myDevices()) {
-        bool found = foundDevices.contains(device->paramValue("mac address").toString().toLower());
+        bool found = foundDevices.contains(device->paramValue(macParamTypeId).toString().toLower());
         device->setStateValue(inRangeStateTypeId, found);
     }
     process->deleteLater();
@@ -164,7 +164,7 @@ void DevicePluginWifiDetector::discoveryProcessFinished(int exitCode, QProcess::
                 qCDebug(dcWifiDetector) << "Found" << name << macAddress.toLower();
                 DeviceDescriptor descriptor(wifiDeviceClassId, name, macAddress);
                 ParamList params;
-                params.append(Param("mac address", macAddress));
+                params.append(Param(macParamTypeId, macAddress));
                 descriptor.setParams(params);
                 m_deviceDescriptors.append(descriptor);
             }

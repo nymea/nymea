@@ -216,6 +216,7 @@ def createTranslationFiles():
         path, fileName = os.path.split(translationFile)
         translationOutput = (path + "/" + pluginMap['id'] + '-' + os.path.splitext(fileName)[0] + '.qm')
         print(" --> Translation update %s" % translationFile)
+        print(subprocess.check_output(['mkdir', '-p', path])) 
         print(subprocess.check_output(['lupdate', '-recursive', '-no-obsolete', sourceDir, (args.builddir + "/" + args.output), '-ts', translationFile]))
         print(" --> Translation release %s" % translationOutput)
         print(subprocess.check_output(['lrelease', translationFile, '-qm', translationOutput]))

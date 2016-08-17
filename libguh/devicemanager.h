@@ -109,6 +109,8 @@ public:
     static QStringList pluginSearchDirs();
     static QList<QJsonObject> pluginsMetadata();
 
+    void setLocale(const QLocale &locale);
+
     QList<DevicePlugin*> plugins() const;
     DevicePlugin* plugin(const PluginId &id) const;
     DeviceError setPluginConfig(const PluginId &pluginId, const ParamList &pluginConfig);

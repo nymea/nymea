@@ -456,6 +456,8 @@ GuhCore::GuhCore(QObject *parent) :
     connect(m_configuration, &GuhConfiguration::cloudProxyServerChanged, m_cloudManager, &CloudManager::onProxyServerUrlChanged);
     connect(m_configuration, &GuhConfiguration::cloudAuthenticationServerChanged, m_cloudManager, &CloudManager::onAuthenticationServerUrlChanged);
 
+    connect(m_configuration, &GuhConfiguration::localeChanged, this, &GuhCore::onLocaleChanged);
+
     connect(m_deviceManager, &DeviceManager::eventTriggered, this, &GuhCore::gotEvent);
     connect(m_deviceManager, &DeviceManager::deviceStateChanged, this, &GuhCore::deviceStateChanged);
     connect(m_deviceManager, &DeviceManager::deviceAdded, this, &GuhCore::deviceAdded);
@@ -557,6 +559,11 @@ void GuhCore::onDateTimeChanged(const QDateTime &dateTime)
         }
     }
     executeRuleActions(actions);
+}
+
+void GuhCore::onLocaleChanged()
+{
+    m_deviceManager->setLocale(m_configuration->locale());
 }
 
 /*! Return the instance of the log engine */

@@ -138,6 +138,7 @@ private:
 private slots:
     void gotEvent(const Event &event);
     void onDateTimeChanged(const QDateTime &dateTime);
+    void onLocaleChanged();
     void actionExecutionFinished(const ActionId &id, DeviceManager::DeviceError status);
 
 };

@@ -282,6 +282,16 @@ QList<QJsonObject> DeviceManager::pluginsMetadata()
     return pluginList;
 }
 
+void DeviceManager::setLocale(const QLocale &locale)
+{
+    m_locale = locale;
+    foreach (DevicePlugin *plugin, m_devicePlugins.values()) {
+        if (!plugin->setLocale(m_locale))
+            qCWarning(dcDeviceManager()) << "Could not load translation" << m_locale.name() << "for plugin" << plugin->pluginName();
+
+    }
+}
+
 /*! Returns all the \l{DevicePlugin}{DevicePlugins} loaded in the system. */
 QList<DevicePlugin *> DeviceManager::plugins() const
 {
@@ -988,11 +998,6 @@ void DeviceManager::loadPlugins()
                 continue;
             }
 
-            if (!pluginIface->setLocale(m_locale))
-                qCWarning(dcDeviceManager()) << "Could not load translation" << m_locale.name() << "for plugin" << pluginIface->pluginName();
-
-            qApp->installTranslator(pluginIface->translator());
-
             if (!verifyPluginMetadata(loader.metaData().value("MetaData").toObject()))
                 continue;
 
@@ -1015,6 +1020,11 @@ void DeviceManager::loadPlugins()
                 m_supportedDevices.insert(deviceClass.id(), deviceClass);
                 qCDebug(dcDeviceManager) << "* Loaded device class:" << deviceClass.name();
             }
+
+            if (!pluginIface->setLocale(m_locale))
+                qCWarning(dcDeviceManager()) << "Could not load translation" << m_locale.name() << "for plugin" << pluginIface->pluginName();
+
+            qApp->installTranslator(pluginIface->translator());
 
             GuhSettings settings(GuhSettings::SettingsRolePlugins);
             settings.beginGroup("PluginConfig");

@@ -29,4 +29,5 @@ SUBDIRS += elro         \
     orderbutton         \
     denon               \
     avahimonitor        \
+    pushbullet          \
 

@@ -130,6 +130,11 @@ int main(int argc, char *argv[])
         loggingFiltersPlugins.insert(pluginMetadata.value("idName").toString(), false);
     }
 
+    // Translator for the server application
+    QTranslator translator;
+    translator.load(QLocale::system(), application.applicationName(), "_", GuhSettings::translationsPath(), ".qm");
+    qApp->installTranslator(&translator);
+
     QCommandLineParser parser;
     parser.addHelpOption();
     parser.addVersionOption();

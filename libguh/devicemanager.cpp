@@ -286,9 +286,9 @@ void DeviceManager::setLocale(const QLocale &locale)
 {
     m_locale = locale;
     foreach (DevicePlugin *plugin, m_devicePlugins.values()) {
-        if (!plugin->setLocale(m_locale))
-            qCWarning(dcDeviceManager()) << "Could not load translation" << m_locale.name() << "for plugin" << plugin->pluginName();
-
+        QCoreApplication::removeTranslator(plugin->translator());
+        plugin->setLocale(m_locale);
+        QCoreApplication::installTranslator(plugin->translator());
     }
 }
 

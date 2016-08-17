@@ -132,7 +132,11 @@ int main(int argc, char *argv[])
 
     // Translator for the server application
     QTranslator translator;
-    translator.load(QLocale::system(), application.applicationName(), "_", GuhSettings::translationsPath(), ".qm");
+    // check if there are local translations
+    if (!translator.load(QLocale::system(), application.applicationName(), "-", QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath(), ".qm"))
+        if (!translator.load(QLocale::system(), application.applicationName(), "-", GuhSettings::translationsPath(), ".qm"))
+            qWarning(dcApplication()) << "Could not find guhd translations for" << QLocale::system();
+
     qApp->installTranslator(&translator);
 
     QCommandLineParser parser;

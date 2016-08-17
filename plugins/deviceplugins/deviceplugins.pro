@@ -31,4 +31,5 @@ SUBDIRS += elro         \
     avahimonitor        \
     pushbullet          \
     senic               \
+    multisensor         \
 

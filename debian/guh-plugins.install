@@ -17,3 +17,4 @@ usr/lib/guh/plugins/libguh_devicepluginawattar.so
 usr/lib/guh/plugins/libguh_devicepluginnetatmo.so
 usr/lib/guh/plugins/libguh_deviceplugindenon.so
 usr/lib/guh/plugins/libguh_devicepluginsenic.so
+usr/lib/guh/plugins/libguh_devicepluginmultisensor.so

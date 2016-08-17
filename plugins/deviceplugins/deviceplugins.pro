@@ -29,5 +29,7 @@ SUBDIRS += elro         \
     orderbutton         \
     denon               \
     avahimonitor        \
+    pushbullet          \
     senic               \
+    multisensor         \
 

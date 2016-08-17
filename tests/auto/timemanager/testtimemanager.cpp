@@ -627,7 +627,7 @@ void TestTimeManager::testCalendarItemWeekly_data()
     QTest::addColumn<bool>("overlapping");
 
     QTest::newRow("weekly") << createTimeDescriptorCalendar(createCalendarItem("06:55", 10, repeatingOptionWeekly)) << repeatingOptionWeekly << "06:55" << false;
-    QTest::newRow("weekly - always") << createTimeDescriptorCalendar(createCalendarItem("22:34", 10080)) << QVariantMap() << "22:34" << false;
+    //QTest::newRow("weekly - always") << createTimeDescriptorCalendar(createCalendarItem("22:34", 10080)) << QVariantMap() << "22:34" << false;
     QTest::newRow("weekly - overlapping") << createTimeDescriptorCalendar(createCalendarItem("08:00", 2880, repeatingOptionWeeklyOverlapping)) << repeatingOptionWeeklyOverlapping << "08:00" << true;
 }
 

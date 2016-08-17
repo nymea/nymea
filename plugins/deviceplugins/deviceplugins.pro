@@ -30,4 +30,5 @@ SUBDIRS += elro         \
     denon               \
     avahimonitor        \
     pushbullet          \
+    senic               \
 

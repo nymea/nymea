@@ -30,15 +30,15 @@
     This plugin allows finding and controlling the Bluetooth Low Energy SensorTag from Texas Instruments.
 
     \chapter Plugin properties
-    Following JSON file contains the definition and the description of all available
-\l{DeviceClass}{DeviceClasses}
+    Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}
     and \l{Vendor}{Vendors} of this \l{DevicePlugin}.
 
-    For more details on how to read this JSON file please check out the documentation fo
-r \l{The plugin JSON File}.
+    For more details on how to read this JSON file please check out the documentation for \l{The plugin JSON File}.
 
     \quotefile plugins/deviceplugins/multisensor/devicepluginmultisensor.json
 */
+
+#ifdef BLUETOOTH_LE
 
 #include "plugininfo.h"
 #include "devicemanager.h"
@@ -138,3 +138,5 @@ bool DevicePluginMultiSensor::verifyExistingDevices(const QBluetoothDeviceInfo &
 
     return false;
 }
+
+#endif // BLUETOOTH_LE

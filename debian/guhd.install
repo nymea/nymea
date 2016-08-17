@@ -1,3 +1,4 @@
 usr/bin/guhd
 data/systemd/guhd.service /etc/systemd/system/
 data/logrotate/guhd /etc/logrotate.d/
+translations/*.qm /usr/share/guh/translations

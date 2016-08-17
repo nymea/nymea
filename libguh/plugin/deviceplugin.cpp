@@ -196,7 +196,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
         foreach (const QJsonValue &deviceClassJson, vendorJson.toObject().value("deviceClasses").toArray()) {
             QJsonObject jo = deviceClassJson.toObject();
             DeviceClass deviceClass(pluginId(), vendorId, jo.value("deviceClassId").toString());
-            deviceClass.setName(jo.value("name").toString());
+            deviceClass.setName(translateValue(m_metaData.value("idName").toString(), jo.value("name").toString()));
             DeviceClass::CreateMethods createMethods;
             foreach (const QJsonValue &createMethodValue, jo.value("createMethods").toArray()) {
                 if (createMethodValue.toString() == "discovery") {
@@ -238,7 +238,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                                               "in deviceClass " << deviceClass.name() << ". Falling back to SetupMethodJustAdd.";
                 deviceClass.setSetupMethod(DeviceClass::SetupMethodJustAdd);
             }
-            deviceClass.setPairingInfo(jo.value("pairingInfo").toString());
+            deviceClass.setPairingInfo(translateValue(m_metaData.value("idName").toString(), jo.value("pairingInfo").toString()));
             QPair<bool, QList<ParamType> > paramTypesVerification = parseParamTypes(jo.value("paramTypes").toArray());
             if (!paramTypesVerification.first) {
                 broken = true;
@@ -446,9 +446,9 @@ QTranslator *DevicePlugin::translator()
     return m_translator;
 }
 
-void DevicePlugin::setLocale(const QLocale &locale)
+bool DevicePlugin::setLocale(const QLocale &locale)
 {
-    m_translator->load(locale, "mock", "_", GuhSettings::translationsPath(), ".qm");
+    return m_translator->load(locale, "mock", "_", GuhSettings::translationsPath(), ".qm");
 }
 
 /*! Override this if your plugin supports Device with DeviceClass::CreationMethodAuto.
@@ -862,6 +862,15 @@ QStringList DevicePlugin::verifyFields(const QStringList &fields, const QJsonObj
         }
     }
     return ret;
+}
+
+QString DevicePlugin::translateValue(const QString &context, const QString &string) const
+{
+    QString translation = m_translator->translate(context.toUtf8().constData(), string.toUtf8().constData());
+    if (translation.isEmpty())
+        translation = string;
+
+    return translation;
 }
 
 QPair<bool, Types::Unit> DevicePlugin::loadAndVerifyUnit(const QString &unitString) const

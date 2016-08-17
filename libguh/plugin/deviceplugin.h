@@ -62,7 +62,7 @@ public:
     QList<DeviceClass> supportedDevices() const;
 
     QTranslator *translator();
-    void setLocale(const QLocale &locale);
+    bool setLocale(const QLocale &locale);
 
     virtual DeviceManager::HardwareResources requiredHardware() const = 0;
 
@@ -134,6 +134,8 @@ private:
     QPair<bool, QList<ParamType> > parseParamTypes(const QJsonArray &array) const;
 
     QStringList verifyFields(const QStringList &fields, const QJsonObject &value) const;
+
+    QString translateValue(const QString &context, const QString &string) const;
 
     // load and verify enum values
     QPair<bool, Types::Unit> loadAndVerifyUnit(const QString &unitString) const;

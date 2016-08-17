@@ -1,5 +1,3 @@
-usr/share/guh/translations/*.qm
-
 usr/lib/guh/plugins/libguh_devicepluginconrad.so
 usr/lib/guh/plugins/libguh_devicepluginelro.so
 usr/lib/guh/plugins/libguh_deviceplugineq3.so

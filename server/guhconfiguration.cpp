@@ -23,6 +23,7 @@
 #include "guhsettings.h"
 
 #include <QTimeZone>
+#include <QCoreApplication>
 
 namespace guhserver {
 
@@ -50,7 +51,11 @@ GuhConfiguration::GuhConfiguration(QObject *parent) :
 
     // TcpServer
     settings.beginGroup("TcpServer");
+#ifdef TESTING_ENABLED
+    m_tcpServerAddress = QHostAddress("127.0.0.1");
+#else
     m_tcpServerAddress = QHostAddress(settings.value("address", "0.0.0.0").toString());
+#endif
     m_tcpServerPort = settings.value("port", 2222).toUInt();
     settings.endGroup();
 
@@ -58,16 +63,25 @@ GuhConfiguration::GuhConfiguration(QObject *parent) :
 
     // Webserver
     settings.beginGroup("WebServer");
+#ifdef TESTING_ENABLED
+    m_webServerAddress = QHostAddress("127.0.0.1");
+    m_webServerPublicFolder = qApp->applicationDirPath();
+#else
     m_webServerAddress = QHostAddress(settings.value("address", "0.0.0.0").toString());
-    m_webServerPort = settings.value("port", 3333).toUInt();
     m_webServerPublicFolder = settings.value("publicFolder", "/usr/share/guh-webinterface/public/").toString();
+#endif
+    m_webServerPort = settings.value("port", 3333).toUInt();
     settings.endGroup();
 
     qCDebug(dcApplication()) << "Configuration: Webserver:" << QString("%1:%2 on %3").arg(m_webServerAddress.toString()).arg(m_webServerPort).arg(m_webServerPublicFolder);
 
     // Websocket server
     settings.beginGroup("WebSocketServer");
+#ifdef TESTING_ENABLED
+    m_webSocketAddress = QHostAddress("127.0.0.1");
+#else
     m_webSocketAddress = QHostAddress(settings.value("address", "0.0.0.0").toString());
+#endif
     m_webSocketPort = settings.value("port", 4444).toUInt();
     settings.endGroup();
 

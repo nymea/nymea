@@ -18,7 +18,7 @@ Standards-Version: 3.9.5
 
 Package: guh
 Architecture: any
-Section: misc
+Section: metapackages
 Depends: guhd (= ${binary:Version}),
   guh-plugins (= ${binary:Version}),
 Description: An open source IoT server - meta package
@@ -30,6 +30,7 @@ Description: An open source IoT server - meta package
 
 Package: guhd
 Architecture: any
+Section: net
 Depends: libqt5network5,
   libqt5gui5,
   libqt5sql5,
@@ -38,6 +39,7 @@ Depends: libqt5network5,
   libqt5bluetooth5,
   logrotate,
   avahi-daemon,
+  guh-translations (= ${binary:Version}),
   libguh1 (= ${binary:Version}),
   ${shlibs:Depends},
   ${misc:Depends}
@@ -72,12 +74,25 @@ Description: Documentation for the guh package (on-site) - documentation
   powerful rule engine you are able to connect any device available in
   the system and create individual scenes and behaviors for your home.
 
+Package: guh-translations
+Section: translations
+Architecture: all
+Depends: guh (= ${binary:Version}),
+  ${misc:Depends}
+Recommends: guh (= ${binary:Version})
+Description: Documentation for the guh package (on-site) - documentation
+  guh is an open source home automation server, which allows to control
+  a lot of different devices from many different manufacturers. With the
+  powerful rule engine you are able to connect any device available in
+  the system and create individual scenes and behaviors for your home.
+
 Package: guh-tests
+Section: misc
 Architecture: any
 Depends: guh (= ${binary:Version}),
   ${shlibs:Depends},
   ${misc:Depends}
-Description: Tests and mock plugin for the guh package
+Description: Translation files for guh - translations
   guh is an open source IoT (Internet of Things) server,
   which allows to control a lot of different devices from many different
   manufacturers. With the powerful rule engine you are able to connect any

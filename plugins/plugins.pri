@@ -23,7 +23,7 @@ infofile.commands = $$top_srcdir/plugins/guh-generateplugininfo -j ${QMAKE_FILE_
                                                                 -o ${QMAKE_FILE_OUT} \
                                                                 -b $$OUT_PWD \
                                                                 -t $$TRANSLATIONS; \
-                    rsync -a "$$OUT_PWD"/translations/*.qm $$top_builddir/plugins/translations/;
+                    rsync -a "$$OUT_PWD"/translations/*.qm $$top_builddir/translations/;
 
 QMAKE_EXTRA_COMPILERS += infofile
 PRE_TARGETDEPS += compiler_infofile_make_all

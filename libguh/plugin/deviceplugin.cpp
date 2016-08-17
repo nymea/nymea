@@ -451,7 +451,7 @@ QTranslator *DevicePlugin::translator()
 bool DevicePlugin::setLocale(const QLocale &locale)
 {
     // check if there are local translations
-    if (m_translator->load(locale, m_metaData.value("id").toString(), "-", QDir(QCoreApplication::applicationDirPath() + "../../plugins/translations/").absolutePath(), ".qm")) {
+    if (m_translator->load(locale, m_metaData.value("id").toString(), "-", QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath(), ".qm")) {
         qCDebug(dcDeviceManager()) << "* Load translation" << locale.name() << "for" << pluginName() << "from" << QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath();
         return true;
     }
@@ -462,6 +462,7 @@ bool DevicePlugin::setLocale(const QLocale &locale)
         return true;
     }
 
+    qCWarning(dcDeviceManager()) << "* Could not load translation" << locale.name() << "for plugin" << pluginName();
     return false;
 }
 

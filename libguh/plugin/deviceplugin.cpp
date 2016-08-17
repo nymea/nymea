@@ -144,6 +144,8 @@
 #include <QDebug>
 #include <QFileInfo>
 #include <QFile>
+#include <QDir>
+#include <QCoreApplication>
 #include <QJsonArray>
 
 /*! DevicePlugin constructor. DevicePlugins will be instantiated by the DeviceManager, its \a parent. */
@@ -448,7 +450,19 @@ QTranslator *DevicePlugin::translator()
 
 bool DevicePlugin::setLocale(const QLocale &locale)
 {
-    return m_translator->load(locale, "mock", "_", GuhSettings::translationsPath(), ".qm");
+    // check if there are local translations
+    if (m_translator->load(locale, m_metaData.value("id").toString(), "-", QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath(), ".qm")) {
+        qCDebug(dcDeviceManager()) << "* Load translation" << locale.name() << "for" << pluginName() << "from" << QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath();
+        return true;
+    }
+
+    // otherwise use the system translations
+    if (m_translator->load(locale, m_metaData.value("id").toString(), "-", GuhSettings::translationsPath(), ".qm")) {
+        qCDebug(dcDeviceManager()) << "* Load translation" << locale.name() << "for" << pluginName() << "from" <<  GuhSettings::translationsPath();
+        return true;
+    }
+
+    return false;
 }
 
 /*! Override this if your plugin supports Device with DeviceClass::CreationMethodAuto.

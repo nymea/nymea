@@ -22,7 +22,8 @@ infofile.input = JSONFILES
 infofile.commands = $$top_srcdir/plugins/guh-generateplugininfo -j ${QMAKE_FILE_NAME} \
                                                                 -o ${QMAKE_FILE_OUT} \
                                                                 -b $$OUT_PWD \
-                                                                -t $$TRANSLATIONS
+                                                                -t $$TRANSLATIONS; \
+                    rsync -a "$$OUT_PWD"/translations/*.qm $$top_builddir/translations/;
 
 QMAKE_EXTRA_COMPILERS += infofile
 

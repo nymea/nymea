@@ -1,5 +1,5 @@
-TRANSLATIONS = translations/mock_en_US.ts \
-               translations/mock_de_DE.ts
+TRANSLATIONS = translations/en_US.ts \
+               translations/de_DE.ts
 
 # Note: include after the TRANSLATIONS definition
 include(../../plugins.pri)

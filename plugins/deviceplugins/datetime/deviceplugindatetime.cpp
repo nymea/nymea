@@ -143,17 +143,17 @@ DeviceManager::DeviceSetupStatus DevicePluginDateTime::setupDevice(Device *devic
     if (device->deviceClassId() == alarmDeviceClassId) {
         Alarm *alarm = new Alarm(this);
         alarm->setName(device->name());
-        alarm->setMonday(device->paramValue("monday").toBool());
-        alarm->setTuesday(device->paramValue("tuesday").toBool());
-        alarm->setWednesday(device->paramValue("wednesday").toBool());
-        alarm->setThursday(device->paramValue("thursday").toBool());
-        alarm->setFriday(device->paramValue("friday").toBool());
-        alarm->setSaturday(device->paramValue("saturday").toBool());
-        alarm->setSunday(device->paramValue("sunday").toBool());
-        alarm->setMinutes(device->paramValue("minutes").toInt());
-        alarm->setHours(device->paramValue("hours").toInt());
-        alarm->setTimeType(device->paramValue("time type").toString());
-        alarm->setOffset(device->paramValue("offset").toInt());
+        alarm->setMonday(device->paramValue(mondayParamTypeId).toBool());
+        alarm->setTuesday(device->paramValue(tuesdayParamTypeId).toBool());
+        alarm->setWednesday(device->paramValue(wednesdayParamTypeId).toBool());
+        alarm->setThursday(device->paramValue(thursdayParamTypeId).toBool());
+        alarm->setFriday(device->paramValue(fridayParamTypeId).toBool());
+        alarm->setSaturday(device->paramValue(saturdayParamTypeId).toBool());
+        alarm->setSunday(device->paramValue(sundayParamTypeId).toBool());
+        alarm->setMinutes(device->paramValue(minutesParamTypeId).toInt());
+        alarm->setHours(device->paramValue(hoursParamTypeId).toInt());
+        alarm->setTimeType(device->paramValue(timeTypeParamTypeId).toString());
+        alarm->setOffset(device->paramValue(offsetParamTypeId).toInt());
         alarm->setDusk(m_dusk);
         alarm->setSunrise(m_sunrise);
         alarm->setNoon(m_noon);
@@ -167,10 +167,10 @@ DeviceManager::DeviceSetupStatus DevicePluginDateTime::setupDevice(Device *devic
 
     if (device->deviceClassId() == countdownDeviceClassId) {
         Countdown *countdown = new Countdown(device->name(),
-                                             QTime(device->paramValue("hours").toInt(),
-                                                   device->paramValue("minutes").toInt(),
-                                                   device->paramValue("seconds").toInt()),
-                                             device->paramValue("repeating").toBool());
+                                             QTime(device->paramValue(hoursParamTypeId).toInt(),
+                                                   device->paramValue(minutesParamTypeId).toInt(),
+                                                   device->paramValue(secondsParamTypeId).toInt()),
+                                             device->paramValue(repeatingParamTypeId).toBool());
 
         connect(countdown, &Countdown::countdownTimeout, this, &DevicePluginDateTime::onCountdownTimeout);
         connect(countdown, &Countdown::runningStateChanged, this, &DevicePluginDateTime::onCountdownRunningChanged);

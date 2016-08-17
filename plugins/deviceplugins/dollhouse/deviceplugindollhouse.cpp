@@ -67,7 +67,7 @@ DeviceManager::DeviceSetupStatus DevicePluginDollHouse::setupDevice(Device *devi
             }
         }
 
-        int lookupId = QHostInfo::lookupHost(device->paramValue("RPL address").toString(), this, SLOT(hostLockupFinished(QHostInfo)));
+        int lookupId = QHostInfo::lookupHost(device->paramValue(rplParamTypeId).toString(), this, SLOT(hostLockupFinished(QHostInfo)));
         m_asyncSetup.insert(lookupId, device);
 
         return DeviceManager::DeviceSetupStatusAsync;
@@ -75,10 +75,10 @@ DeviceManager::DeviceSetupStatus DevicePluginDollHouse::setupDevice(Device *devi
     } else if (device->deviceClassId() == lightDeviceClassId) {
 
         DollhouseLight *light = new DollhouseLight(this);
-        light->setName(device->paramValue("name").toString());
-        light->setHostAddress(device->paramValue("address").toString());
-        light->setConnectionUuid(device->paramValue("connection uuid").toString());
-        light->setLightId(device->paramValue("light id").toInt());
+        light->setName(device->paramValue(nameParamTypeId).toString());
+        light->setHostAddress(device->paramValue(addressParamTypeId).toString());
+        light->setConnectionUuid(device->paramValue(connectionUuidParamTypeId).toString());
+        light->setLightId(device->paramValue(lightIdParamTypeId).toInt());
 
         device->setParentId(DeviceId(light->connectionUuid()));
 
@@ -135,12 +135,12 @@ DeviceManager::DeviceError DevicePluginDollHouse::executeAction(Device *device, 
 
         QUrl url;
         url.setScheme("coap");
-        url.setHost(device->paramValue("address").toString());
+        url.setHost(device->paramValue(addressParamTypeId).toString());
         url.setPath("/a/ws2812");
         url.setQuery(query);
 
         if (action.actionTypeId() == colorActionTypeId) {
-            QColor color = action.param("color").value().value<QColor>().toHsv();
+            QColor color = action.param(colorActionParamTypeId).value().value<QColor>().toHsv();
             QColor newColor = QColor::fromHsv(color.hue(), color.saturation(), 100 * light->brightness() / 255.0);
             QByteArray message = "color=" + newColor.toRgb().name().remove("#").toUtf8();
 
@@ -155,7 +155,7 @@ DeviceManager::DeviceError DevicePluginDollHouse::executeAction(Device *device, 
         } else if (action.actionTypeId() == powerActionTypeId) {
 
             QByteArray message;
-            if (action.param("power").value().toBool()) {
+            if (action.param(powerActionParamTypeId).value().toBool()) {
                 QColor color = light->color().toHsv();
                 QColor newColor = QColor::fromHsv(color.hue(), color.saturation(), 100 * light->brightness() / 255.0);
                 message = "color=" + newColor.toRgb().name().remove("#").toUtf8();
@@ -172,7 +172,7 @@ DeviceManager::DeviceError DevicePluginDollHouse::executeAction(Device *device, 
             return DeviceManager::DeviceErrorAsync;
         } else if (action.actionTypeId() == brightnessActionTypeId) {
 
-            int brightness = action.param("brightness").value().toInt();
+            int brightness = action.param(brightnessActionParamTypeId).value().toInt();
 
             QColor color = light->color().toHsv();
             QColor newColor = QColor::fromHsv(color.hue(), color.saturation(), 100 * brightness / 255.0);
@@ -216,7 +216,7 @@ void DevicePluginDollHouse::scanNodes(Device *device)
 {
     QUrl url;
     url.setScheme("http");
-    url.setHost(device->paramValue("RPL address").toString());
+    url.setHost(device->paramValue(rplParamTypeId).toString());
 
     QNetworkReply *reply = networkManagerGet(QNetworkRequest(url));
     m_asyncNodeScan.insert(reply, device);
@@ -259,28 +259,28 @@ void DevicePluginDollHouse::parseNode(Device *device, const QByteArray &data)
         for (int i = 0; i < 5; i++) {
             DeviceDescriptor descriptor(lightDeviceClassId, "Light", QString::number(i));
             ParamList params;
-            params.append(Param("address", m_houseAddress.toString()));
-            params.append(Param("light id", i));
-            params.append(Param("connection uuid", device->id()));
+            params.append(Param(addressParamTypeId, m_houseAddress.toString()));
+            params.append(Param(lightIdParamTypeId, i));
+            params.append(Param(connectionUuidParamTypeId, device->id()));
 
             switch (i) {
             case 0:
-                params.append(Param("name", "Living room"));
+                params.append(Param(nameParamTypeId, "Living room"));
                 break;
             case 1:
-                params.append(Param("name", "Kitchen"));
+                params.append(Param(nameParamTypeId, "Kitchen"));
                 break;
             case 2:
-                params.append(Param("name", "Under the bed"));
+                params.append(Param(nameParamTypeId, "Under the bed"));
                 break;
             case 3:
-                params.append(Param("name", "Bedroom"));
+                params.append(Param(nameParamTypeId, "Bedroom"));
                 break;
             case 4:
-                params.append(Param("name", "Dining room"));
+                params.append(Param(nameParamTypeId, "Dining room"));
                 break;
             default:
-                params.append(Param("name", QString("Light %1").arg(QString::number(i))));
+                params.append(Param(nameParamTypeId, QString("Light %1").arg(QString::number(i))));
                 break;
             }
 
@@ -363,7 +363,7 @@ void DevicePluginDollHouse::coapReplyFinished(CoapReply *reply)
 
         // Set the states
         if (action.actionTypeId() == powerActionTypeId) {
-            bool power = action.param("power").value().toBool();
+            bool power = action.param(powerActionParamTypeId).value().toBool();
             light->setPower(power);
             m_lights.key(light)->setStateValue(powerStateTypeId, power);
 
@@ -373,7 +373,7 @@ void DevicePluginDollHouse::coapReplyFinished(CoapReply *reply)
                 m_lights.key(light)->setStateValue(powerStateTypeId, true);
             }
 
-            QColor color = action.param("color").value().value<QColor>();
+            QColor color = action.param(colorActionParamTypeId).value().value<QColor>();
             light->setColor(color);
             m_lights.key(light)->setStateValue(colorStateTypeId, color);
 
@@ -383,7 +383,7 @@ void DevicePluginDollHouse::coapReplyFinished(CoapReply *reply)
                 m_lights.key(light)->setStateValue(powerStateTypeId, true);
             }
 
-            int brightness = action.param("brightness").value().toInt();
+            int brightness = action.param(brightnessActionParamTypeId).value().toInt();
             light->setBrightness(brightness);
             m_lights.key(light)->setStateValue(brightnessStateTypeId, brightness);
         }

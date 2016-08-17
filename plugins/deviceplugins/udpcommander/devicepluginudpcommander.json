@@ -19,11 +19,15 @@
                     "createMethods": ["user"],
                     "paramTypes": [
                         {
+                            "id": "1843adcb-e377-44d1-8d70-ab4f9eeb32ec",
+                            "idName": "port",
                             "name": "port",
                             "index": 0,
                             "type": "int"
                         },
                         {
+                            "id": "d0f29961-1624-4b91-a0e8-9b1cc86c44c7",
+                            "idName": "command",
                             "name": "command",
                             "type": "QString",
                             "index": 1,

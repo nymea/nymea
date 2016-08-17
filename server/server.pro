@@ -20,7 +20,7 @@ TRANSLATIONS *= $$top_srcdir/translations/guhd_en_US.ts \
 lrelease.input = TRANSLATIONS
 lrelease.CONFIG += no_link
 lrelease.output = $$top_srcdir/${QMAKE_FILE_BASE}.qm
-lrelease.commands = $$[QT_INSTALL_BINS]/lupdate -no-obsolete $$_FILE_; \
+lrelease.commands = $$[QT_INSTALL_BINS]/lupdate -recursive -no-obsolete $$_FILE_; \
                     $$[QT_INSTALL_BINS]/lrelease ${QMAKE_FILE_IN} -qm ${QMAKE_FILE_PATH}/${QMAKE_FILE_BASE}.qm; \
                     rsync -a $$top_srcdir/translations/*.qm $$top_builddir/translations/;
 

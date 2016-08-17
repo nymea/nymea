@@ -23,23 +23,31 @@
                     "createMethods": ["discovery"],
                     "paramTypes": [
                         {
+                            "id": "b30c14db-5b2a-4366-87e3-13d0d38b1905",
+                            "idName": "host",
                             "name": "host address",
                             "type": "QString",
                             "inputType": "IPv4Address",
                             "index": 0
                         },
                         {
+                            "id": "a4c92442-dc47-463f-8e24-15b5b593adec",
+                            "idName": "port",
                             "name": "port",
                             "type": "int",
                             "index": 1
                         },
                         {
+                            "id": "67dc1a45-7369-422a-b677-881271f29d6c",
+                            "idName": "serial",
                             "name": "serial number",
                             "type": "QString",
                             "inputType": "TextLine",
                             "index": 2
                         },
                         {
+                            "id": "8d629061-8d4b-49f1-ab47-b82fdde3036c",
+                            "idName": "firmware",
                             "name": "firmware version",
                             "type": "int",
                             "index": 3
@@ -81,31 +89,44 @@
                     "createMethods": ["auto"],
                     "paramTypes": [
                         {
+                            "id": "67dc1a45-7369-422a-b677-881271f29d6c",
+                            "idName": "serial",
                             "name": "serial number",
                             "type": "QString",
+                            "inputType": "TextLine",
                             "index": 0
                         },
                         {
+                            "id": "8d32b228-8618-483f-bcc3-2d62868d6912",
+                            "idName": "name",
                             "name": "name",
                             "type": "QString",
                             "index": 1
                         },
                         {
+                            "id": "801be701-ea53-4cb2-a933-823f330e7837",
+                            "idName": "parent",
                             "name": "parent cube",
                             "type": "QString",
                             "index": 2
                         },
                         {
+                            "id": "6ba358c1-0c31-4ea4-93fd-544f030582a7",
+                            "idName": "rf",
                             "name": "rf address",
                             "type": "QString",
                             "index": 3
                         },
                         {
+                            "id": "e3bb28dc-5311-4325-805a-e1e3a1495016",
+                            "idName": "room",
                             "name": "room id",
                             "type": "int",
                             "index": 4
                         },
                         {
+                            "id": "14ea2e10-4545-47ff-8955-8172913f1039",
+                            "idName": "roomName",
                             "name": "room name",
                             "type": "QString",
                             "index": 5
@@ -137,6 +158,8 @@
                             "index": 3,
                             "paramTypes": [
                                 {
+                                    "id": "894dbb8e-73b5-4e89-8b93-d7afda239dcb",
+                                    "idName": "display",
                                     "name": "display",
                                     "type": "bool",
                                     "defaultValue": true,
@@ -275,7 +298,6 @@
                             "index": 13,
                             "defaultValue": 0,
                             "writable": true
-
                         },
                         {
                             "id": "852e7708-db1d-42d1-96e4-19c13598262c",
@@ -302,31 +324,44 @@
                     "createMethods": ["auto"],
                     "paramTypes": [
                         {
+                            "id": "67dc1a45-7369-422a-b677-881271f29d6c",
+                            "idName": "serial",
                             "name": "serial number",
                             "type": "QString",
+                            "inputType": "TextLine",
                             "index": 0
                         },
                         {
+                            "id": "8d32b228-8618-483f-bcc3-2d62868d6912",
+                            "idName": "name",
                             "name": "name",
                             "type": "QString",
                             "index": 1
                         },
                         {
+                            "id": "801be701-ea53-4cb2-a933-823f330e7837",
+                            "idName": "parent",
                             "name": "parent cube",
                             "type": "QString",
                             "index": 2
                         },
                         {
+                            "id": "6ba358c1-0c31-4ea4-93fd-544f030582a7",
+                            "idName": "rf",
                             "name": "rf address",
                             "type": "QString",
                             "index": 3
                         },
                         {
+                            "id": "e3bb28dc-5311-4325-805a-e1e3a1495016",
+                            "idName": "room",
                             "name": "room id",
                             "type": "int",
                             "index": 4
                         },
                         {
+                            "id": "14ea2e10-4545-47ff-8955-8172913f1039",
+                            "idName": "roomName",
                             "name": "room name",
                             "type": "QString",
                             "index": 5

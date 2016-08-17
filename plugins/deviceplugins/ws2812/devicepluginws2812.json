@@ -4,6 +4,8 @@
     "id": "60b68c75-3261-4bf1-8912-798d2d3bbd3b",
     "paramTypes": [
         {
+            "id": "0a2898cb-ca36-4c6e-8418-993c1d9df434",
+            "idName": "rpl",
             "name": "RPL address",
             "type": "QString",
             "index": 0,
@@ -29,6 +31,8 @@
                     "criticalStateTypeId": "08091cde-983d-42f7-bdd7-d89c312ccbed",
                     "paramTypes": [
                         {
+                            "id": "ccf1f6b1-54c4-46c1-b978-6abcf3fad882",
+                            "idName": "host",
                             "name": "host",
                             "type": "QString",
                             "index": 0,

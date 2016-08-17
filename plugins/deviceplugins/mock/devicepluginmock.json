@@ -4,6 +4,8 @@
     "id": "727a4a9a-c187-446f-aadf-f1b2220607d1",
     "paramTypes": [
         {
+            "id": "e1f72121-a426-45e2-b475-8262b5cdf103",
+            "idName": "configParamInt",
             "name": "configParamInt",
             "type": "int",
             "index": 0,
@@ -12,6 +14,8 @@
             "maxValue": 50
         },
         {
+            "id": "c75723b6-ea4f-4982-9751-6c5e39c88145",
+            "idName": "configParamBool",
             "name": "configParamBool",
             "type": "bool",
             "index": 1,
@@ -39,6 +43,8 @@
                     "primaryStateTypeId": "80baec19-54de-4948-ac46-31eabfaceb83",
                     "discoveryParamTypes": [
                         {
+                            "id": "d222adb4-2f9c-4c3f-8655-76400d0fb6ce",
+                            "idName": "resultCount",
                             "name": "resultCount",
                             "type": "int",
                             "index": 0,
@@ -48,11 +54,15 @@
                     ],
                     "paramTypes": [
                         {
+                            "id": "d4f06047-125e-4479-9810-b54c189917f5",
+                            "idName": "httpport",
                             "name": "httpport",
                             "index": 0,
                             "type": "int"
                         },
                         {
+                            "id": "f2977061-4dd0-4ef5-85aa-3b7134743be3",
+                            "idName": "async",
                             "name": "async",
                             "type": "bool",
                             "index": 1,
@@ -60,6 +70,8 @@
                             "readOnly": true
                         },
                         {
+                            "id": "ae8f8901-f2c1-42a5-8111-6d2fc8e4c1e4",
+                            "idName": "broken",
                             "name": "broken",
                             "index": 2,
                             "type": "bool",
@@ -96,6 +108,8 @@
                             "index": 1,
                             "paramTypes": [
                                 {
+                                    "id": "0550e16d-60b9-4ba5-83f4-4d3cee656121",
+                                    "idName": "mockParamInt",
                                     "name": "mockParamInt",
                                     "type": "int",
                                     "index": 0,
@@ -111,11 +125,15 @@
                             "index": 0,
                             "paramTypes": [
                                 {
+                                    "id": "a2d3a256-a551-4712-a65b-ecd5a436a1cb",
+                                    "idName": "mockActionParam1",
                                     "name": "mockActionParam1",
                                     "index": 0,
                                     "type": "int"
                                 },
                                 {
+                                    "id": "304a4899-18be-4e3b-94f4-d03be52f3233",
+                                    "idName": "mockActionParam2",
                                     "name": "mockActionParam2",
                                     "index": 1,
                                     "type": "bool"
@@ -162,11 +180,15 @@
                     "deviceIcon": "Tune",
                     "paramTypes": [
                         {
+                            "id": "d4f06047-125e-4479-9810-b54c189917f5",
+                            "idName": "httpport",
                             "name": "httpport",
                             "index": 0,
                             "type": "int"
                         },
                         {
+                            "id": "f2977061-4dd0-4ef5-85aa-3b7134743be3",
+                            "idName": "async",
                             "name": "async",
                             "type": "bool",
                             "index": 1,
@@ -174,9 +196,11 @@
                             "readOnly": true
                         },
                         {
+                            "id": "ae8f8901-f2c1-42a5-8111-6d2fc8e4c1e4",
+                            "idName": "broken",
                             "name": "broken",
-                            "type": "bool",
                             "index": 2,
+                            "type": "bool",
                             "defaultValue": false
                         }
                     ],
@@ -208,6 +232,8 @@
                             "index": 1,
                             "paramTypes": [
                                 {
+                                    "id": "0550e16d-60b9-4ba5-83f4-4d3cee656121",
+                                    "idName": "mockParamInt",
                                     "name": "mockParamInt",
                                     "type": "int",
                                     "index": 0,
@@ -223,11 +249,15 @@
                             "index": 0,
                             "paramTypes": [
                                 {
+                                    "id": "a2d3a256-a551-4712-a65b-ecd5a436a1cb",
+                                    "idName": "mockActionParam1",
                                     "name": "mockActionParam1",
                                     "index": 0,
                                     "type": "int"
                                 },
                                 {
+                                    "id": "304a4899-18be-4e3b-94f4-d03be52f3233",
+                                    "idName": "mockActionParam2",
                                     "name": "mockActionParam2",
                                     "index": 1,
                                     "type": "bool"
@@ -369,6 +399,8 @@
                     ],
                     "paramTypes": [
                         {
+                            "id": "da820e07-22dc-4173-9c07-2f49a4e265f9",
+                            "idName": "pin",
                             "name": "pin",
                             "type": "QString",
                             "index": 0,
@@ -481,6 +513,8 @@
                     ],
                     "paramTypes": [
                         {
+                            "id": "104b5288-404e-42d3-bf38-e40682e75681",
+                            "idName": "parentUuid",
                             "name": "parent uuid",
                             "type": "QUuid",
                             "index": 0,
@@ -510,6 +544,8 @@
                     "createMethods": ["user"],
                     "paramTypes": [
                         {
+                            "id": "e6acf0c7-4b8e-4296-ac62-855d20deb816",
+                            "idName": "textLine",
                             "name": "Text line",
                             "type": "QString",
                             "index": 0,
@@ -517,6 +553,8 @@
                             "defaultValue": "This is a text line"
                         },
                         {
+                            "id": "716f0994-bc01-42b0-b64d-59236f7320d2",
+                            "idName": "textArea",
                             "name": "Text area",
                             "type": "QString",
                             "index": 1,
@@ -524,6 +562,8 @@
                             "defaultValue": "This is a text area"
                         },
                         {
+                            "id": "e5c0d14b-c9f1-4aca-a56e-85bfa6977150",
+                            "idName": "password",
                             "name": "Password text",
                             "type": "QString",
                             "index": 2,
@@ -531,6 +571,8 @@
                             "defaultValue": "secret"
                         },
                         {
+                            "id": "22add8c9-ee4f-43ad-8931-58e999313ac3",
+                            "idName": "search",
                             "name": "Search text",
                             "type": "QString",
                             "index": 3,
@@ -538,6 +580,8 @@
                             "defaultValue": "Search text..."
                         },
                         {
+                            "id": "a8494faf-3a0f-4cf3-84b7-4b39148a838d",
+                            "idName": "mail",
                             "name": "Mail address",
                             "type": "QString",
                             "index": 4,
@@ -545,6 +589,8 @@
                             "defaultValue": "name@example.com"
                         },
                         {
+                            "id": "9e5f86a0-4bb3-4892-bff8-3fc4032af6e2",
+                            "idName": "ip4",
                             "name": "IPv4 address",
                             "type": "QString",
                             "index": 5,
@@ -552,6 +598,8 @@
                             "defaultValue": "127.0.0.1"
                         },
                         {
+                            "id": "43bf3832-dd48-4090-a836-656e8b60216e",
+                            "idName": "ip6",
                             "name": "IPv6 address",
                             "type": "QString",
                             "index": 6,
@@ -559,6 +607,8 @@
                             "defaultValue": "::1"
                         },
                         {
+                            "id": "fa67229f-fcef-496f-b671-59a4b48f3ab5",
+                            "idName": "url",
                             "name": "URL",
                             "type": "QString",
                             "index": 7,
@@ -566,6 +616,8 @@
                             "defaultValue": "http://guh.guru"
                         },
                         {
+                            "id": "e93db587-7919-48f3-8c88-1651de63c765",
+                            "idName": "mac",
                             "name": "Mac address",
                             "type": "QString",
                             "index": 8,

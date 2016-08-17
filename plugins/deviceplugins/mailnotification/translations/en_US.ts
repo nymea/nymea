@@ -4,43 +4,43 @@
 <context>
     <name>MailNotification</name>
     <message>
-        <location filename="../../../../../build-guh-Desktop-Debug/plugins/deviceplugins/mailnotification/plugininfo.h" line="32"/>
+        <location filename="../../../../../build-guh-Desktop-Debug/plugins/deviceplugins/mailnotification/plugininfo.h" line="45"/>
         <source>guh</source>
         <extracomment>The name of the vendor (2062d64d-3232-433c-88bc-0d33c0ba2ba6)</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../../../build-guh-Desktop-Debug/plugins/deviceplugins/mailnotification/plugininfo.h" line="35"/>
+        <location filename="../../../../../build-guh-Desktop-Debug/plugins/deviceplugins/mailnotification/plugininfo.h" line="48"/>
         <source>Custom mail</source>
         <extracomment>The name of the deviceClass</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../../../build-guh-Desktop-Debug/plugins/deviceplugins/mailnotification/plugininfo.h" line="38"/>
+        <location filename="../../../../../build-guh-Desktop-Debug/plugins/deviceplugins/mailnotification/plugininfo.h" line="51"/>
         <source>Google</source>
         <extracomment>The name of the vendor (d02399c5-8e79-40be-8cf6-e00b55bbfe7c)</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../../../build-guh-Desktop-Debug/plugins/deviceplugins/mailnotification/plugininfo.h" line="41"/>
+        <location filename="../../../../../build-guh-Desktop-Debug/plugins/deviceplugins/mailnotification/plugininfo.h" line="54"/>
         <source>Google mail</source>
         <extracomment>The name of the deviceClass</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../../../build-guh-Desktop-Debug/plugins/deviceplugins/mailnotification/plugininfo.h" line="44"/>
+        <location filename="../../../../../build-guh-Desktop-Debug/plugins/deviceplugins/mailnotification/plugininfo.h" line="57"/>
         <source>send mail</source>
         <extracomment>The name of the ActionType 054613b0-3666-4dad-9252-e0ebca187edc of deviceClass Google mail</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../../../build-guh-Desktop-Debug/plugins/deviceplugins/mailnotification/plugininfo.h" line="47"/>
+        <location filename="../../../../../build-guh-Desktop-Debug/plugins/deviceplugins/mailnotification/plugininfo.h" line="60"/>
         <source>Yahoo</source>
         <extracomment>The name of the vendor (5eb3e1e9-25a7-4740-806e-5cfc836e4bf5)</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../../../build-guh-Desktop-Debug/plugins/deviceplugins/mailnotification/plugininfo.h" line="50"/>
+        <location filename="../../../../../build-guh-Desktop-Debug/plugins/deviceplugins/mailnotification/plugininfo.h" line="63"/>
         <source>Yahoo mail</source>
         <extracomment>The name of the deviceClass</extracomment>
         <translation type="unfinished"></translation>

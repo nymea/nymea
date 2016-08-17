@@ -21,12 +21,16 @@
                     "createMethods": ["discovery"],
                     "paramTypes": [
                         {
+                            "id": "d7a5d96f-33dc-4dc3-a171-b1e89a5e1a4b",
+                            "idName": "name",
                             "name": "name",
                             "type": "QString",
                             "index": 0,
                             "inputType": "TextLine"
                         },
                         {
+                            "id": "20932e39-00fd-40e3-8f39-850ba149844e",
+                            "idName": "macAddress",
                             "name": "mac address",
                             "type": "QString",
                             "index": 1,
@@ -101,6 +105,8 @@
                             "name": "set color",
                             "paramTypes": [
                                 {
+                                    "id": "f5f02666-576d-4dee-afa3-f38e1b24f469",
+                                    "idName": "color",
                                     "name": "color",
                                     "type": "QString",
                                     "index": 0,
@@ -123,6 +129,8 @@
                             "name": "set mood",
                             "paramTypes": [
                                 {
+                                    "id": "c5d42d41-f25c-4d15-aed1-b67071847246",
+                                    "idName": "mood",
                                     "name": "mood",
                                     "type": "QString",
                                     "index": 0,

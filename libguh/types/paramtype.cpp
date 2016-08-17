@@ -32,8 +32,9 @@
 
 #include "paramtype.h"
 
-/*! Constructs a ParamType object with the given \a name, \a type and \a defaultValue. */
-ParamType::ParamType(const QString &name, const QVariant::Type type, const QVariant &defaultValue):
+/*! Constructs a ParamType object with the given \a id, \a name, \a type and \a defaultValue. */
+ParamType::ParamType(const ParamTypeId &id, const QString &name, const QVariant::Type type, const QVariant &defaultValue):
+    m_id(id),
     m_name(name),
     m_index(0),
     m_type(type),
@@ -43,6 +44,12 @@ ParamType::ParamType(const QString &name, const QVariant::Type type, const QVari
     m_readOnly(false)
 {
 
+}
+
+/*! Returns the \l{ParamTypeId} of this ParamType. */
+ParamTypeId ParamType::id() const
+{
+    return m_id;
 }
 
 /*! Returns the name of this ParamType. */
@@ -181,7 +188,8 @@ void ParamType::setReadOnly(const bool &readOnly)
 /*! Writes the name, type defaultValue, min value, max value and readOnly of the given \a paramType to \a dbg. */
 QDebug operator<<(QDebug dbg, const ParamType &paramType)
 {
-    dbg.nospace() << "ParamType(Name: " << paramType.name()
+    dbg.nospace() << "ParamType(Id" << paramType.id()
+                  << "  Name: " << paramType.name()
                   << ", Type:" << QVariant::typeToName(paramType.type())
                   << ", Default:" << paramType.defaultValue()
                   << ", Min:" << paramType.minValue()

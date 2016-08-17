@@ -61,8 +61,8 @@ DeviceManager::DeviceSetupStatus DevicePluginUnitec::setupDevice(Device *device)
     }
 
     foreach (Device* d, myDevices()) {
-        if (d->paramValue("Channel").toString() == device->paramValue("Channel").toString()) {
-            qCWarning(dcUnitec) << "Unitec switch with channel " << device->paramValue("Channel").toString() << "already added.";
+        if (d->paramValue(channelParamTypeId).toString() == device->paramValue(channelParamTypeId).toString()) {
+            qCWarning(dcUnitec) << "Unitec switch with channel " << device->paramValue(channelParamTypeId).toString() << "already added.";
             return DeviceManager::DeviceSetupStatusFailure;
         }
     }
@@ -92,11 +92,23 @@ DeviceManager::DeviceError DevicePluginUnitec::executeAction(Device *device, con
         binCode.append("001");
     }
 
-    // power state
-    if (action.param("power").value().toBool() == true) {
-        binCode.append("11");
-    } else {
-        binCode.append("01");
+    // Bin codes for buttons
+    if (device->paramValue(channelParamTypeId).toString() == "A" && action.param(powerParamTypeId).value().toBool() == true) {
+        binCode.append("111011000100111010111111");
+    } else if (device->paramValue(channelParamTypeId).toString() == "A" && action.param(powerParamTypeId).value().toBool() == false) {
+        binCode.append("111001100110100001011111");
+    } else if (device->paramValue(channelParamTypeId).toString() == "B" && action.param(powerParamTypeId).value().toBool() == true) {
+        binCode.append("111011000100111010111011");
+    } else if (device->paramValue(channelParamTypeId).toString() == "B" && action.param(powerParamTypeId).value().toBool() == false) {
+        binCode.append("111000111001100111101011");
+    } else if (device->paramValue(channelParamTypeId).toString() == "C" && action.param(powerParamTypeId).value().toBool() == true) {
+        binCode.append("111000000011011111000011");
+    } else if (device->paramValue(channelParamTypeId).toString() == "C" && action.param(powerParamTypeId).value().toBool() == false) {
+        binCode.append("111001100110100001010011");
+    } else if (device->paramValue(channelParamTypeId).toString() == "D" && action.param(powerParamTypeId).value().toBool() == true) {
+        binCode.append("111001100110100001011101");
+    } else if (device->paramValue(channelParamTypeId).toString() == "D" && action.param(powerParamTypeId).value().toBool() == false) {
+        binCode.append("111000000011011111001101");
     }
 
 
@@ -121,10 +133,10 @@ DeviceManager::DeviceError DevicePluginUnitec::executeAction(Device *device, con
     // =======================================
     // send data to hardware resource
     if(transmitData(delay, rawData)){
-        qCDebug(dcUnitec) << "transmitted" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
+        qCDebug(dcUnitec) << "transmitted" << pluginName() << device->name() << "power: " << action.param(powerParamTypeId).value().toBool();
         return DeviceManager::DeviceErrorNoError;
     }else{
-        qCWarning(dcUnitec) << "could not transmitt" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
+        qCWarning(dcUnitec) << "could not transmitt" << pluginName() << device->name() << "power: " << action.param(powerParamTypeId).value().toBool();
         return DeviceManager::DeviceErrorHardwareNotAvailable;
     }
 }

@@ -21,6 +21,8 @@
                     "primaryActionTypeId": "3ca1ebc2-bb8e-4429-9664-a7bc4569e73b",
                     "paramTypes": [
                         {
+                            "id": "2cb59323-bc01-477c-ac0d-312b25c53463",
+                            "idName": "channel",
                             "name": "channel",
                             "type": "QString",
                             "index": 0,
@@ -35,6 +37,8 @@
                             "index": 0,
                             "paramTypes": [
                                 {
+                                    "id": "c101c199-314d-420f-a302-0ae29c599047",
+                                    "idName": "power",
                                     "name": "power",
                                     "type": "bool",
                                     "index": 0

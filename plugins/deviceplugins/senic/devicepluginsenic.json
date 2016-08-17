@@ -19,12 +19,16 @@
                     "createMethods": ["discovery"],
                     "paramTypes": [
                         {
+                            "id": "db67d1e6-26fa-44ed-ad55-c6aef45ea2ea",
+                            "idName": "name",
                             "name": "name",
                             "type": "QString",
                             "index": 0,
                             "inputType": "TextLine"
                         },
                         {
+                            "id": "71553f6a-2ed4-4896-bb7b-52e7dca948b2",
+                            "idName": "mac",
                             "name": "mac address",
                             "type": "QString",
                             "index": 1,
@@ -83,6 +87,8 @@
                             "name": "Show logo",
                             "paramTypes": [
                                 {
+                                    "id": "a8f72c37-9cb5-4885-a7e4-b2b396f8e4cd",
+                                    "idName": "logo",
                                     "name": "logo",
                                     "type": "QString",
                                     "index": 0,

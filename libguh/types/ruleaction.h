@@ -44,7 +44,7 @@ public:
 
     RuleActionParamList ruleActionParams() const;
     void setRuleActionParams(const RuleActionParamList &ruleActionParams);
-    RuleActionParam ruleActionParam(const QString &ruleActionParamName) const;
+    RuleActionParam ruleActionParam(const ParamTypeId &ruleActionParamTypeId) const;
 
     void operator=(const RuleAction &other);
 

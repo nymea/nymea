@@ -23,6 +23,8 @@
                     "primaryActionTypeId": "cfbc6504-d86f-4856-8dfa-97b6fbb385e4",
                     "discoveryParamTypes": [
                         {
+                            "id": "f370b076-a783-4b46-85b2-6f4a9dba55d8",
+                            "idName": "location",
                             "name": "location",
                             "type": "QString",
                             "index": 0,
@@ -32,18 +34,24 @@
                     ],
                     "paramTypes": [
                         {
+                            "id": "394d3983-49d4-47f7-888b-243f3f5e9972",
+                            "idName": "name",
                             "name": "name",
                             "type": "QString",
                             "index": 0,
                             "inputType": "TextLine"
                         },
                         {
+                            "id": "f0cd96bb-ddd1-4484-8353-8b6633fa101d",
+                            "idName": "country",
                             "name": "country",
                             "type": "QString",
                             "index": 1,
                             "inputType": "TextLine"
                         },
                         {
+                            "id": "286342e1-b299-4f67-9d8f-2ed9e8844466",
+                            "idName": "id",
                             "name": "id",
                             "type": "QString",
                             "index": 2,

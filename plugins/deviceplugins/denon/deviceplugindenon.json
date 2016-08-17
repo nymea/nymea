@@ -22,6 +22,8 @@
                     ],
                     "paramTypes": [
                         {
+                            "id": "a54b98b4-b78f-41dd-a257-14425c6cf9ab",
+                            "idName": "ip",
                             "name": "ip",
                             "type" : "QString",
                             "index": 0,

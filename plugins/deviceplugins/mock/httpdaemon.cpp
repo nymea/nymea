@@ -37,7 +37,7 @@
 HttpDaemon::HttpDaemon(Device *device, DevicePlugin *parent):
     QTcpServer(parent), disabled(false), m_plugin(parent), m_device(device)
 {
-    listen(QHostAddress::Any, device->paramValue("httpport").toInt());
+    listen(QHostAddress::Any, device->paramValue(httpportParamTypeId).toInt());
 }
 
 HttpDaemon::~HttpDaemon()
@@ -142,7 +142,7 @@ QString HttpDaemon::generateWebPage()
                 "<h2>Device Information</h2>"
         "Name: %1<br>"
         "ID: %2<br>"
-        "DeviceClass ID: %3<br>").arg(m_device->paramValue("name").toString()).arg(m_device->id().toString()).arg(deviceClass.id().toString());
+        "DeviceClass ID: %3<br>").arg(m_device->name()).arg(m_device->id().toString()).arg(deviceClass.id().toString());
 
     body.append("<hr>");
     body.append("<h2>States</h2>");

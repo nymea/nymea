@@ -422,8 +422,8 @@ DeviceManager::DeviceError DevicePluginElgato::discoverDevices(const DeviceClass
 DeviceManager::DeviceSetupStatus DevicePluginElgato::setupDevice(Device *device)
 {
     if (device->deviceClassId() == aveaDeviceClassId) {
-        QBluetoothAddress address = QBluetoothAddress(device->paramValue("mac address").toString());
-        QString name = device->paramValue("name").toString();
+        QBluetoothAddress address = QBluetoothAddress(device->paramValue(macAddressParamTypeId).toString());
+        QString name = device->paramValue(nameParamTypeId).toString();
         QBluetoothDeviceInfo deviceInfo = QBluetoothDeviceInfo(address, name, 0);
 
         AveaBulb *avea = new AveaBulb(deviceInfo, QLowEnergyController::PublicAddress, this);
@@ -469,61 +469,61 @@ DeviceManager::DeviceError DevicePluginElgato::executeAction(Device *device, con
             bulb->actionPowerOff(action.id());
             return DeviceManager::DeviceErrorAsync;
         } else if (action.actionTypeId() == colorActionTypeId) {
-            if (action.param("color").value().toString() == "green") {
+            if (action.param(colorParamTypeId).value().toString() == "green") {
                 bulb->setGreen(action.id());
                 return DeviceManager::DeviceErrorAsync;
             }
-            if (action.param("color").value().toString() == "blue") {
+            if (action.param(colorParamTypeId).value().toString() == "blue") {
                 bulb->setBlue(action.id());
                 return DeviceManager::DeviceErrorAsync;
             }
-            if (action.param("color").value().toString() == "red") {
+            if (action.param(colorParamTypeId).value().toString() == "red") {
                 bulb->setRed(action.id());
                 return DeviceManager::DeviceErrorAsync;
             }
-            if (action.param("color").value().toString() == "yellow") {
+            if (action.param(colorParamTypeId).value().toString() == "yellow") {
                 bulb->setYellow(action.id());
                 return DeviceManager::DeviceErrorAsync;
             }
-            if (action.param("color").value().toString() == "orange") {
+            if (action.param(colorParamTypeId).value().toString() == "orange") {
                 bulb->setOrange(action.id());
                 return DeviceManager::DeviceErrorAsync;
             }
-            if (action.param("color").value().toString() == "purple") {
+            if (action.param(colorParamTypeId).value().toString() == "purple") {
                 bulb->setPurple(action.id());
                 return DeviceManager::DeviceErrorAsync;
             }
-            if (action.param("color").value().toString() == "white") {
+            if (action.param(colorParamTypeId).value().toString() == "white") {
                 bulb->setWhite(action.id());
                 return DeviceManager::DeviceErrorAsync;
             }
             return DeviceManager::DeviceErrorInvalidParameter;
         } else if (action.actionTypeId() == moodActionTypeId) {
-            if (action.param("mood").value().toString() == "calm provence") {
+            if (action.param(moodParamTypeId).value().toString() == "calm provence") {
                 bulb->setCalmProvence(action.id());
                 return DeviceManager::DeviceErrorAsync;
             }
-            if (action.param("mood").value().toString() == "cozy flames") {
+            if (action.param(moodParamTypeId).value().toString() == "cozy flames") {
                 bulb->setCozyFlames(action.id());
                 return DeviceManager::DeviceErrorAsync;
             }
-            if (action.param("mood").value().toString() == "cherry blossom") {
+            if (action.param(moodParamTypeId).value().toString() == "cherry blossom") {
                 bulb->setCherryBlossom(action.id());
                 return DeviceManager::DeviceErrorAsync;
             }
-            if (action.param("mood").value().toString() == "mountain breeze") {
+            if (action.param(moodParamTypeId).value().toString() == "mountain breeze") {
                 bulb->setMountainBreeze(action.id());
                 return DeviceManager::DeviceErrorAsync;
             }
-            if (action.param("mood").value().toString() == "northern glow") {
+            if (action.param(moodParamTypeId).value().toString() == "northern glow") {
                 bulb->setNorthernGlow(action.id());
                 return DeviceManager::DeviceErrorAsync;
             }
-            if (action.param("mood").value().toString() == "fairy woods") {
+            if (action.param(moodParamTypeId).value().toString() == "fairy woods") {
                 bulb->setFairyWoods(action.id());
                 return DeviceManager::DeviceErrorAsync;
             }
-            if (action.param("mood").value().toString() == "magic hour") {
+            if (action.param(moodParamTypeId).value().toString() == "magic hour") {
                 bulb->setMagicHour(action.id());
                 return DeviceManager::DeviceErrorAsync;
             }
@@ -542,8 +542,8 @@ void DevicePluginElgato::bluetoothDiscoveryFinished(const QList<QBluetoothDevice
             if (!verifyExistingDevices(deviceInfo)) {
                 DeviceDescriptor descriptor(aveaDeviceClassId, "Avea", deviceInfo.address().toString());
                 ParamList params;
-                params.append(Param("name", deviceInfo.name()));
-                params.append(Param("mac address", deviceInfo.address().toString()));
+                params.append(Param(nameParamTypeId, deviceInfo.name()));
+                params.append(Param(macAddressParamTypeId, deviceInfo.address().toString()));
                 descriptor.setParams(params);
                 deviceDescriptors.append(descriptor);
             }
@@ -567,7 +567,7 @@ void DevicePluginElgato::deviceRemoved(Device *device)
 bool DevicePluginElgato::verifyExistingDevices(const QBluetoothDeviceInfo &deviceInfo)
 {
     foreach (Device *device, myDevices()) {
-        if (device->paramValue("mac address").toString() == deviceInfo.address().toString())
+        if (device->paramValue(macAddressParamTypeId).toString() == deviceInfo.address().toString())
             return true;
     }
 

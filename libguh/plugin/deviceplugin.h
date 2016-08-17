@@ -95,8 +95,8 @@ public:
     QList<ParamType> configurationDescription() const;
     DeviceManager::DeviceError setConfiguration(const ParamList &configuration);
     ParamList configuration() const;
-    QVariant configValue(const QString &paramName) const;
-    DeviceManager::DeviceError setConfigValue(const QString &paramName, const QVariant &value);
+    QVariant configValue(const ParamTypeId &paramTypeId) const;
+    DeviceManager::DeviceError setConfigValue(const ParamTypeId &paramTypeId, const QVariant &value);
 
 signals:
     void emitEvent(const Event &event);
@@ -104,7 +104,7 @@ signals:
     void deviceSetupFinished(Device *device, DeviceManager::DeviceSetupStatus status);
     void pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceSetupStatus status);
     void actionExecutionFinished(const ActionId &id, DeviceManager::DeviceError status);
-    void configValueChanged(const QString &paramName, const QVariant &value);
+    void configValueChanged(const ParamTypeId &paramTypeId, const QVariant &value);
     void autoDevicesAppeared(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors);
 
 protected:

@@ -112,11 +112,11 @@ void Device::setParams(const ParamList &params)
     m_params = params;
 }
 
-/*! Returns the value of the \l{Param} of this Device with the given \a paramName. */
-QVariant Device::paramValue(const QString &paramName) const
+/*! Returns the value of the \l{Param} of this Device with the given \a paramTypeId. */
+QVariant Device::paramValue(const ParamTypeId &paramTypeId) const
 {
     foreach (const Param &param, m_params) {
-        if (param.name() == paramName) {
+        if (param.paramTypeId() == paramTypeId) {
             return param.value();
         }
     }
@@ -124,11 +124,11 @@ QVariant Device::paramValue(const QString &paramName) const
 }
 
 /*! Sets the \a value of the \l{Param} with the given \a paramName. */
-void Device::setParamValue(const QString &paramName, const QVariant &value)
+void Device::setParamValue(const ParamTypeId &paramTypeId, const QVariant &value)
 {
     ParamList params;
     foreach (Param param, m_params) {
-        if (param.name() == paramName) {
+        if (param.paramTypeId() == paramTypeId) {
             param.setValue(value);
         }
         params.append(param);
@@ -143,14 +143,9 @@ QList<State> Device::states() const
 }
 
 /*! Returns true, a \l{Param} with the given \a paramName exists for this Device. */
-bool Device::hasParam(const QString &paramName) const
+bool Device::hasParam(const ParamTypeId &paramTypeId) const
 {
-    foreach (const Param &param, m_params) {
-        if (param.name() == paramName) {
-            return true;
-        }
-    }
-    return false;
+    return m_params.hasParam(paramTypeId);
 }
 
 /*! Set the \l{State}{States} of this \l{Device} to the given \a states.*/
@@ -200,7 +195,7 @@ void Device::setStateValue(const StateTypeId &stateTypeId, const QVariant &value
             return;
         }
     }
-    qCWarning(dcDeviceManager) << "failed setting state for" << m_name << value;
+    qCWarning(dcDeviceManager) << "Failed setting state for" << m_name << value;
 }
 
 /*! Returns the \l{State} with the given \a stateTypeId of this Device. */

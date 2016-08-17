@@ -21,6 +21,8 @@
                     "createMethods": ["user", "discovery"],
                     "paramTypes": [
                         {
+                            "id": "44337c69-6101-4366-9913-ca9332da6b5c",
+                            "idName": "mac",
                             "name": "mac address",
                             "type": "QString",
                             "index": 0,

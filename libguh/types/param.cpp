@@ -34,22 +34,16 @@
 #include <QDebug>
 
 /*! Constructs a Param with the given \a name and \a value of the paramter. */
-Param::Param(const QString &name, const QVariant &value):
-    m_name (name),
+Param::Param(const ParamTypeId &paramTypeId, const QVariant &value):
+    m_paramTypeId(paramTypeId),
     m_value(value)
 {
 }
 
-/*! Returns the name of this Param. */
-QString Param::name() const
+/*! Returns the paramTypeId of this Param. */
+ParamTypeId Param::paramTypeId() const
 {
-    return m_name;
-}
-
-/*! Sets the \a name of this Param. */
-void Param::setName(const QString &name)
-{
-    m_name = name;
+    return m_paramTypeId;
 }
 
 /*! Returns the value of this Param. */
@@ -67,14 +61,13 @@ void Param::setValue(const QVariant &value)
 /*! A Param is valid if name and and value are set. Returns true if valid, false if not. */
 bool Param::isValid() const
 {
-    return !m_name.isEmpty() && m_value.isValid();
+    return !m_paramTypeId.isNull() && m_value.isValid();
 }
 
 /*! Writes the name and value of the given \a param to \a dbg. */
 QDebug operator<<(QDebug dbg, const Param &param)
 {
-    dbg.nospace() << "Param(Name: " << param.name() << ", Value:" << param.value() << ")";
-
+    dbg.nospace() << "Param(Id: " << param.paramTypeId().toString() << ", Value:" << param.value() << ")";
     return dbg.space();
 }
 
@@ -99,22 +92,17 @@ QDebug operator<<(QDebug dbg, const ParamList &params)
     \sa Param,
 */
 
-/*! Returns true if this Param contains a Param with the given \a paramName. */
-bool ParamList::hasParam(const QString &paramName) const
+/*! Returns true if this ParamList contains a Param with the given \a paramTypeId. */
+bool ParamList::hasParam(const ParamTypeId &paramTypeId) const
 {
-    foreach (const Param &param, *this) {
-        if (param.name() == paramName) {
-            return true;
-        }
-    }
-    return false;
+    return m_ids.contains(paramTypeId);
 }
 
 /*! Returns the value of the Param with the given \a paramName. */
-QVariant ParamList::paramValue(const QString &paramName) const
+QVariant ParamList::paramValue(const ParamTypeId &paramTypeId) const
 {
     foreach (const Param &param, *this) {
-        if (param.name() == paramName) {
+        if (param.paramTypeId() == paramTypeId) {
             return param.value();
         }
     }
@@ -122,10 +110,10 @@ QVariant ParamList::paramValue(const QString &paramName) const
 }
 
 /*! Sets the value of a Param with the given \a paramName to the given \a value. */
-void ParamList::setParamValue(const QString &paramName, const QVariant &value)
+void ParamList::setParamValue(const ParamTypeId &paramTypeId, const QVariant &value)
 {
     for (int i = 0; i < count(); i++) {
-        if (this->operator [](i).name()  == paramName) {
+        if (this->operator [](i).paramTypeId()  == paramTypeId) {
             this->operator [](i).setValue(value);
             return;
         }
@@ -136,5 +124,6 @@ void ParamList::setParamValue(const QString &paramName, const QVariant &value)
 ParamList ParamList::operator<<(const Param &param)
 {
     this->append(param);
+    m_ids.append(param.paramTypeId());
     return *this;
 }

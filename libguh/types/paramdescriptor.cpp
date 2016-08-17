@@ -36,8 +36,8 @@
 
 /*! Constructs an ParamDescriptor describing an \l{Param} with the given \a name and \a value.
  *  The ValueOperator is by default ValueOperatorEquals. */
-ParamDescriptor::ParamDescriptor(const QString &name, const QVariant &value):
-    Param(name, value),
+ParamDescriptor::ParamDescriptor(const ParamTypeId &paramTypeId, const QVariant &value):
+    Param(paramTypeId, value),
     m_operatorType(Types::ValueOperatorEquals)
 {
 }

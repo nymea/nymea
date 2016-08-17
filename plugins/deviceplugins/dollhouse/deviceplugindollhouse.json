@@ -19,12 +19,8 @@
                     ],
                     "paramTypes": [
                         {
-                            "name": "name",
-                            "type": "QString",
-                            "index": 0,
-                            "defaultValue": "Dollhouse Connection"
-                        },
-                        {
+                            "id": "2015e286-4268-4a12-912f-7d70bf2d0bab",
+                            "idName": "rpl",
                             "name": "RPL address",
                             "type": "QString",
                             "index": 1,
@@ -46,17 +42,23 @@
                     ],
                     "paramTypes": [
                         {
+                            "id": "49d3ae89-d76d-4e4c-b1ad-67f5c8f96e52",
+                            "idName": "name",
                             "name": "name",
                             "type": "QString",
                             "index": 0,
                             "defaultValue": "Dollhouse Light"
                         },
                         {
+                            "id": "37d5d2fa-dea2-4007-99b1-a1300025c709",
+                            "idName": "address",
                             "name": "address",
                             "type": "QString",
                             "index": 1
                         },
                         {
+                            "id": "c843c179-ab02-4aa8-a228-fdc8d9558f1d",
+                            "idName": "lightId",
                             "name": "light id",
                             "type": "int",
                             "index": 2,
@@ -64,6 +66,8 @@
                             "readOnly": true
                         },
                         {
+                            "id": "2bf1d5d5-1f40-4dca-9acd-2909016e4a2b",
+                            "idName": "connectionUuid",
                             "name": "connection uuid",
                             "type": "QString",
                             "index": 3,

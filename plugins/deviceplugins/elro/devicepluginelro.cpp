@@ -65,61 +65,61 @@ DeviceManager::DeviceError DevicePluginElro::executeAction(Device *device, const
 
     // create the bincode
     // channels
-    if (device->paramValue("channel 1").toBool()) {
+    if (device->paramValue(chan1ParamTypeId).toBool()) {
         binCode.append("00");
     } else {
         binCode.append("01");
     }
-    if (device->paramValue("channel 2").toBool()) {
+    if (device->paramValue(chan2ParamTypeId).toBool()) {
         binCode.append("00");
     } else {
         binCode.append("01");
     }
-    if (device->paramValue("channel 3").toBool()) {
+    if (device->paramValue(chan3ParamTypeId).toBool()) {
         binCode.append("00");
     }else{
         binCode.append("01");
     }
-    if(device->paramValue("channel 4").toBool()){
+    if(device->paramValue(chan4ParamTypeId).toBool()){
         binCode.append("00");
     } else {
         binCode.append("01");
     }
-    if (device->paramValue("channel 5").toBool()) {
+    if (device->paramValue(chan5ParamTypeId).toBool()) {
         binCode.append("00");
     } else {
         binCode.append("01");
     }
 
     // Buttons
-    if (device->paramValue("A").toBool()) {
+    if (device->paramValue(aParamTypeId).toBool()) {
         binCode.append("00");
     } else {
         binCode.append("01");
     }
-    if (device->paramValue("B").toBool()) {
+    if (device->paramValue(bParamTypeId).toBool()) {
         binCode.append("00");
     } else {
         binCode.append("01");
     }
-    if (device->paramValue("C").toBool()) {
+    if (device->paramValue(cParamTypeId).toBool()) {
         binCode.append("00");
     } else {
         binCode.append("01");
     }
-    if (device->paramValue("D").toBool()) {
+    if (device->paramValue(dParamTypeId).toBool()) {
         binCode.append("00");
     } else {
         binCode.append("01");
     }
-    if (device->paramValue("E").toBool()) {
+    if (device->paramValue(eParamTypeId).toBool()) {
         binCode.append("00");
     } else {
         binCode.append("01");
     }
 
     // Power
-    if (action.param("power").value().toBool()) {
+    if (action.param(powerParamTypeId).value().toBool()) {
         binCode.append("0001");
     } else {
         binCode.append("0100");
@@ -145,10 +145,10 @@ DeviceManager::DeviceError DevicePluginElro::executeAction(Device *device, const
 
     // send data to hardware resource
     if (transmitData(delay, rawData)) {
-        qCDebug(dcElro) << "Transmitted" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
+        qCDebug(dcElro) << "Transmitted" << pluginName() << device->name() << "power: " << action.param(powerParamTypeId).value().toBool();
         return DeviceManager::DeviceErrorNoError;
     } else {
-        qCWarning(dcElro) << "Could not transmitt" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
+        qCWarning(dcElro) << "Could not transmitt" << pluginName() << device->name() << "power: " << action.param(powerParamTypeId).value().toBool();
         return DeviceManager::DeviceErrorHardwareNotAvailable;
     }
 }

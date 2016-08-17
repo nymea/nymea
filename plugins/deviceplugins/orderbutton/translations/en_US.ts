@@ -4,19 +4,19 @@
 <context>
     <name>OrderButton</name>
     <message>
-        <location filename="../../../../../build-guh-Desktop-Debug/plugins/deviceplugins/orderbutton/plugininfo.h" line="34"/>
+        <location filename="../../../../../build-guh-Desktop-Debug/plugins/deviceplugins/orderbutton/plugininfo.h" line="37"/>
         <source>guh</source>
         <extracomment>The name of the vendor (2062d64d-3232-433c-88bc-0d33c0ba2ba6)</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../../../build-guh-Desktop-Debug/plugins/deviceplugins/orderbutton/plugininfo.h" line="37"/>
+        <location filename="../../../../../build-guh-Desktop-Debug/plugins/deviceplugins/orderbutton/plugininfo.h" line="40"/>
         <source>OrderButton</source>
         <extracomment>The name of the deviceClass</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../../../build-guh-Desktop-Debug/plugins/deviceplugins/orderbutton/plugininfo.h" line="40"/>
+        <location filename="../../../../../build-guh-Desktop-Debug/plugins/deviceplugins/orderbutton/plugininfo.h" line="55"/>
         <source>reset</source>
         <extracomment>The name of the ActionType b8e5da6c-501c-493e-8b0f-8ef09efb9057 of deviceClass OrderButton</extracomment>
         <translation type="unfinished"></translation>
@@ -46,7 +46,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../../../build-guh-Desktop-Debug/plugins/deviceplugins/orderbutton/plugininfo.h" line="55"/>
+        <location filename="../../../../../build-guh-Desktop-Debug/plugins/deviceplugins/orderbutton/plugininfo.h" line="58"/>
         <source>button</source>
         <extracomment>The name of the EventType 2077a9ad-7f4b-4dd4-ae1c-7ecbe0a92dc0 of deviceClass OrderButton</extracomment>
         <translation type="unfinished"></translation>

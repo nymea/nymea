@@ -31,7 +31,9 @@
 class LIBGUH_EXPORT ParamType
 {
 public:    
-    ParamType(const QString &name, const QVariant::Type type, const QVariant &defaultValue = QVariant());
+    ParamType(const ParamTypeId &id, const QString &name, const QVariant::Type type, const QVariant &defaultValue = QVariant());
+
+    ParamTypeId id() const;
 
     QString name() const;
     void setName(const QString &name);
@@ -67,6 +69,7 @@ public:
     void setReadOnly(const bool &readOnly);
 
 private:
+    ParamTypeId m_id;
     QString m_name;
     int m_index;
     QVariant::Type m_type;

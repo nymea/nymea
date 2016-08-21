@@ -90,7 +90,7 @@ void Action::setParams(const ParamList &params)
     m_params = params;
 }
 
-/*! Returns the parameter of this Action with a cetrain \a paramName. */
+/*! Returns the parameter of this Action with a cetrain \a paramTypeId. */
 Param Action::param(const ParamTypeId &paramTypeId) const
 {
     foreach (const Param &param, m_params) {

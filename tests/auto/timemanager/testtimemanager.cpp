@@ -381,11 +381,11 @@ void TestTimeManager::testCalendarDateTime()
     // Exit action (with params)
     QVariantList actionParams;
     QVariantMap param1;
-    param1.insert("name", "mockActionParam1");
+    param1.insert("paramTypeId", mockActionParam1ParamTypeId);
     param1.insert("value", 12);
     actionParams.append(param1);
     QVariantMap param2;
-    param2.insert("name", "mockActionParam2");
+    param2.insert("paramTypeId", mockActionParam2ParamTypeId);
     param2.insert("value", true);
     actionParams.append(param2);
     exitAction.insert("actionTypeId", mockActionIdWithParams);
@@ -456,11 +456,11 @@ void TestTimeManager::testCalendarItemHourly()
     exitAction.insert("actionTypeId", mockActionIdWithParams);
     QVariantList actionParams;
     QVariantMap param1;
-    param1.insert("name", "mockActionParam1");
+    param1.insert("paramTypeId", mockActionParam1ParamTypeId);
     param1.insert("value", 7);
     actionParams.append(param1);
     QVariantMap param2;
-    param2.insert("name", "mockActionParam2");
+    param2.insert("paramTypeId", mockActionParam2ParamTypeId);
     param2.insert("value", true);
     actionParams.append(param2);
     exitAction.insert("deviceId", m_mockDeviceId);
@@ -549,11 +549,11 @@ void TestTimeManager::testCalendarItemDaily()
     exitAction.insert("actionTypeId", mockActionIdWithParams);
     QVariantList actionParams;
     QVariantMap param1;
-    param1.insert("name", "mockActionParam1");
+    param1.insert("paramTypeId", mockActionParam1ParamTypeId);
     param1.insert("value", 12);
     actionParams.append(param1);
     QVariantMap param2;
-    param2.insert("name", "mockActionParam2");
+    param2.insert("paramTypeId", mockActionParam2ParamTypeId);
     param2.insert("value", true);
     actionParams.append(param2);
     exitAction.insert("deviceId", m_mockDeviceId);
@@ -649,11 +649,11 @@ void TestTimeManager::testCalendarItemWeekly()
     // Exit action (with params)
     QVariantList actionParams;
     QVariantMap param1;
-    param1.insert("name", "mockActionParam1");
+    param1.insert("paramTypeId", mockActionParam1ParamTypeId);
     param1.insert("value", 12);
     actionParams.append(param1);
     QVariantMap param2;
-    param2.insert("name", "mockActionParam2");
+    param2.insert("paramTypeId", mockActionParam2ParamTypeId);
     param2.insert("value", true);
     actionParams.append(param2);
     exitAction.insert("actionTypeId", mockActionIdWithParams);
@@ -804,11 +804,11 @@ void TestTimeManager::testCalendarItemMonthly()
     // Exit action (with params)
     QVariantList actionParams;
     QVariantMap param1;
-    param1.insert("name", "mockActionParam1");
+    param1.insert("paramTypeId", mockActionParam1ParamTypeId);
     param1.insert("value", 12);
     actionParams.append(param1);
     QVariantMap param2;
-    param2.insert("name", "mockActionParam2");
+    param2.insert("paramTypeId", mockActionParam2ParamTypeId);
     param2.insert("value", true);
     actionParams.append(param2);
     exitAction.insert("actionTypeId", mockActionIdWithParams);
@@ -932,11 +932,11 @@ void TestTimeManager::testCalendarYearlyDateTime()
     // Exit action (with params)
     QVariantList actionParams;
     QVariantMap param1;
-    param1.insert("name", "mockActionParam1");
+    param1.insert("paramTypeId", mockActionParam1ParamTypeId);
     param1.insert("value", 12);
     actionParams.append(param1);
     QVariantMap param2;
-    param2.insert("name", "mockActionParam2");
+    param2.insert("paramTypeId", mockActionParam2ParamTypeId);
     param2.insert("value", true);
     actionParams.append(param2);
     exitAction.insert("actionTypeId", mockActionIdWithParams);

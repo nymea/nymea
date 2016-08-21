@@ -123,7 +123,7 @@ QVariant Device::paramValue(const ParamTypeId &paramTypeId) const
     return QVariant();
 }
 
-/*! Sets the \a value of the \l{Param} with the given \a paramName. */
+/*! Sets the \a value of the \l{Param} with the given \a paramTypeId. */
 void Device::setParamValue(const ParamTypeId &paramTypeId, const QVariant &value)
 {
     ParamList params;
@@ -142,7 +142,7 @@ QList<State> Device::states() const
     return m_states;
 }
 
-/*! Returns true, a \l{Param} with the given \a paramName exists for this Device. */
+/*! Returns true, a \l{Param} with the given \a paramTypeId exists for this Device. */
 bool Device::hasParam(const ParamTypeId &paramTypeId) const
 {
     return m_params.hasParam(paramTypeId);

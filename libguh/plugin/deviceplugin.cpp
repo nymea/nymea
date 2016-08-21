@@ -101,8 +101,8 @@
 */
 
 /*!
-  \fn void DevicePlugin::configValueChanged(const QString &paramName, const QVariant &value);
-  This signal is emitted when the \l{Param} with a certain \a paramName of a \l{Device} configuration changed the \a value.
+  \fn void DevicePlugin::configValueChanged(const ParamTypeId &paramTypeId, const QVariant &value);
+  This signal is emitted when the \l{Param} with a certain \a paramTypeId of a \l{Device} configuration changed the \a value.
 */
 
 /*!
@@ -443,11 +443,13 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
     return deviceClasses;
 }
 
+/*! Returns the translator of this \l{DevicePlugin}. */
 QTranslator *DevicePlugin::translator()
 {
     return m_translator;
 }
 
+/*! Returns true if the given \a locale could be set for this \l{DevicePlugin}. */
 bool DevicePlugin::setLocale(const QLocale &locale)
 {
     // check if there are local translations

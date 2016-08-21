@@ -115,7 +115,7 @@ void RuleAction::setRuleActionParams(const RuleActionParamList &ruleActionParams
     m_ruleActionParams = ruleActionParams;
 }
 
-/*! Returns the \l{RuleActionParam} of this RuleAction with the given \a ruleActionParamName.
+/*! Returns the \l{RuleActionParam} of this RuleAction with the given \a ruleActionParamTypeId.
  *  If there is no \l{RuleActionParam} with th given name an invalid \l{RuleActionParam} will be returnend.
  *  \sa RuleActionParam, */
 RuleActionParam RuleAction::ruleActionParam(const ParamTypeId &ruleActionParamTypeId) const

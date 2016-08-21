@@ -45,7 +45,7 @@ RuleActionParam::RuleActionParam(const Param &param) :
 {
 }
 
-/*! Constructs a \l{RuleActionParam} with the given \a name, \a value, \a eventTypeId and \a eventParamName.
+/*! Constructs a \l{RuleActionParam} with the given \a paramTypeId, \a value, \a eventTypeId and \a eventParamTypeId.
  *  \sa Param, Event, */
 RuleActionParam::RuleActionParam(const ParamTypeId &paramTypeId, const QVariant &value, const EventTypeId &eventTypeId, const ParamTypeId &eventParamTypeId) :
     m_paramTypeId(paramTypeId),
@@ -55,18 +55,19 @@ RuleActionParam::RuleActionParam(const ParamTypeId &paramTypeId, const QVariant 
 {
 }
 
+/*! Returns the \l ParamTypeId of this \l RuleActionParam. */
 ParamTypeId RuleActionParam::paramTypeId() const
 {
     return m_paramTypeId;
 }
 
-/*! Returns the name of the eventParam for this RuleActionParam. */
+/*! Returns the eventParamTypeId of this RuleActionParam. */
 ParamTypeId RuleActionParam::eventParamTypeId() const
 {
     return m_eventParamTypeId;
 }
 
-/*! Sets the \a eventParamName of this RuleActionParam. */
+/*! Sets the \a eventParamTypeId of this RuleActionParam. */
 void RuleActionParam::setEventParamTypeId(const ParamTypeId &eventParamTypeId)
 {
     m_eventParamTypeId = eventParamTypeId;
@@ -84,7 +85,7 @@ void RuleActionParam::setValue(const QVariant &value)
     m_value = value;
 }
 
-/*! Returns true if the name and value or the name, eventTypeId and eventParamName of this RuleActionParam are set.*/
+/*! Returns true if the \tt{(paramTypeId AND value) XOR (paramTypeId AND eventTypeId AND eventParamName)} of this RuleActionParam are set.*/
 bool RuleActionParam::isValid() const
 {
     bool validValue = (!m_paramTypeId.isNull() && m_value.isValid() && m_eventTypeId.isNull() && m_eventParamTypeId.isNull());
@@ -104,7 +105,7 @@ void RuleActionParam::setEventTypeId(const EventTypeId &eventTypeId)
     m_eventTypeId = eventTypeId;
 }
 
-/*! Writes the name, value, eventId and eventParamName of the given \a ruleActionParam to \a dbg. */
+/*! Writes the paramTypeId, value, eventId and eventParamTypeId of the given \a ruleActionParam to \a dbg. */
 QDebug operator<<(QDebug dbg, const RuleActionParam &ruleActionParam)
 {
     dbg.nospace() << "RuleActionParam(ParamTypeId: " << ruleActionParam.paramTypeId() << ", Value:" << ruleActionParam.value();
@@ -145,7 +146,7 @@ QVariant RuleActionParamList::paramValue(const ParamTypeId &ruleActionParamTypeI
     return QVariant();
 }
 
-/*! Sets the value of the \l{RuleActionParam} with the given \a ruleActionParamTypeId to the given \a value. */
+/*! Returns true if the \a value of the \l{RuleActionParam} with the given \a ruleActionParamTypeId could be set successfully. */
 bool RuleActionParamList::setParamValue(const ParamTypeId &ruleActionParamTypeId, const QVariant &value)
 {
     for (int i = 0; i < count(); i++) {

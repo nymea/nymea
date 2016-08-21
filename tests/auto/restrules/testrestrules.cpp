@@ -167,11 +167,11 @@ QVariant TestRestRules::validIntStateBasedRule(const QString &name, const bool &
     action.insert("actionTypeId", mockActionIdWithParams);
     QVariantList actionParams;
     QVariantMap param1;
-    param1.insert("name", "mockActionParam1");
+    param1.insert("paramTypeId", mockActionParam1ParamTypeId);
     param1.insert("value", 5);
     actionParams.append(param1);
     QVariantMap param2;
-    param2.insert("name", "mockActionParam2");
+    param2.insert("paramTypeId", mockActionParam2ParamTypeId);
     param2.insert("value", true);
     actionParams.append(param2);
     action.insert("deviceId", m_mockDeviceId);
@@ -368,7 +368,7 @@ void TestRestRules::addRemoveRules_data()
     validEventDescriptor2.insert("deviceId", m_mockDeviceId);
     QVariantList params;
     QVariantMap param1;
-    param1.insert("name", "mockParamInt");
+    param1.insert("paramTypeId", mockParamIntParamTypeId);
     param1.insert("value", 3);
     param1.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
     params.append(param1);
@@ -394,11 +394,11 @@ void TestRestRules::addRemoveRules_data()
     validActionEventBased.insert("actionTypeId", mockActionIdWithParams);
     validActionEventBased.insert("deviceId", m_mockDeviceId);
     QVariantMap validActionEventBasedParam1;
-    validActionEventBasedParam1.insert("name", "mockActionParam1");
+    validActionEventBasedParam1.insert("paramTypeId", mockActionParam1ParamTypeId);
     validActionEventBasedParam1.insert("eventTypeId", mockEvent2Id);
-    validActionEventBasedParam1.insert("eventParamName", "mockParamInt");
+    validActionEventBasedParam1.insert("eventParamTypeId", mockEvent2Id);
     QVariantMap validActionEventBasedParam2;
-    validActionEventBasedParam2.insert("name", "mockActionParam2");
+    validActionEventBasedParam2.insert("paramTypeId", mockActionParam2ParamTypeId);
     validActionEventBasedParam2.insert("value", false);
     validActionEventBased.insert("ruleActionParams", QVariantList() << validActionEventBasedParam1 << validActionEventBasedParam2);
 
@@ -412,11 +412,11 @@ void TestRestRules::addRemoveRules_data()
     invalidActionEventBased2.insert("actionTypeId", mockActionIdWithParams);
     invalidActionEventBased2.insert("deviceId", m_mockDeviceId);
     QVariantMap invalidActionEventBasedParam2;
-    invalidActionEventBasedParam2.insert("name", "mockActionParam1");
+    invalidActionEventBasedParam2.insert("paramTypeId", mockActionParam1ParamTypeId);
     invalidActionEventBasedParam2.insert("eventTypeId", mockEvent1Id);
-    invalidActionEventBasedParam2.insert("eventParamName", "value");
+    invalidActionEventBasedParam2.insert("eventParamTypeId", mockEvent1Id);
     QVariantMap invalidActionEventBasedParam3;
-    invalidActionEventBasedParam3.insert("name", "mockActionParam2");
+    invalidActionEventBasedParam3.insert("paramTypeId", mockActionParam2ParamTypeId);
     invalidActionEventBasedParam3.insert("value", 2);
     invalidActionEventBased2.insert("ruleActionParams", QVariantList() << invalidActionEventBasedParam2 << invalidActionEventBasedParam3);
 
@@ -424,9 +424,9 @@ void TestRestRules::addRemoveRules_data()
     invalidActionEventBased3.insert("actionTypeId", mockActionIdWithParams);
     invalidActionEventBased3.insert("deviceId", m_mockDeviceId);
     QVariantMap invalidActionEventBasedParam4;
-    invalidActionEventBasedParam4.insert("name", "mockActionParam1");
+    invalidActionEventBasedParam4.insert("paramTypeId", mockActionParam1ParamTypeId);
     invalidActionEventBasedParam4.insert("eventTypeId", mockEvent1Id);
-    invalidActionEventBasedParam4.insert("eventParamName", "mockParamInt");
+    invalidActionEventBasedParam4.insert("eventParamTypeId", mockEvent1Id);
     invalidActionEventBased3.insert("ruleActionParams", QVariantList() << invalidActionEventBasedParam4);
 
     QTest::addColumn<bool>("enabled");
@@ -580,7 +580,7 @@ void TestRestRules::editRules_data()
     stateDescriptor.insert("stateTypeId", mockIntStateId);
     stateDescriptor.insert("deviceId", m_mockDeviceId);
     stateDescriptor.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorLess));
-    stateDescriptor.insert("value", "20");
+    stateDescriptor.insert("value", 20);
 
     // StateEvaluator
     QVariantMap validStateEvaluator;
@@ -628,11 +628,11 @@ void TestRestRules::editRules_data()
     validActionEventBased.insert("actionTypeId", mockActionIdWithParams);
     validActionEventBased.insert("deviceId", m_mockDeviceId);
     QVariantMap validActionEventBasedParam1;
-    validActionEventBasedParam1.insert("name", "mockActionParam1");
+    validActionEventBasedParam1.insert("paramTypeId", mockActionParam1ParamTypeId);
     validActionEventBasedParam1.insert("eventTypeId", mockEvent2Id);
-    validActionEventBasedParam1.insert("eventParamName", "mockParamInt");
+    validActionEventBasedParam1.insert("eventParamTypeId", mockEvent2Id);
     QVariantMap validActionEventBasedParam2;
-    validActionEventBasedParam2.insert("name", "mockActionParam2");
+    validActionEventBasedParam2.insert("paramTypeId", mockActionParam2ParamTypeId);
     validActionEventBasedParam2.insert("value", false);
     validActionEventBased.insert("ruleActionParams", QVariantList() << validActionEventBasedParam1 << validActionEventBasedParam2);
 
@@ -646,11 +646,11 @@ void TestRestRules::editRules_data()
     invalidActionEventBased2.insert("actionTypeId", mockActionIdWithParams);
     invalidActionEventBased2.insert("deviceId", m_mockDeviceId);
     QVariantMap invalidActionEventBasedParam2;
-    invalidActionEventBasedParam2.insert("name", "mockActionParam1");
+    invalidActionEventBasedParam2.insert("paramTypeId", mockActionParam1ParamTypeId);
     invalidActionEventBasedParam2.insert("eventTypeId", mockEvent1Id);
-    invalidActionEventBasedParam2.insert("eventParamName", "value");
+    invalidActionEventBasedParam2.insert("eventParamTypeId", mockEvent1Id);
     QVariantMap invalidActionEventBasedParam3;
-    invalidActionEventBasedParam3.insert("name", "mockActionParam2");
+    invalidActionEventBasedParam3.insert("paramTypeId", mockActionParam2ParamTypeId);
     invalidActionEventBasedParam3.insert("value", 2);
     invalidActionEventBased2.insert("ruleActionParams", QVariantList() << invalidActionEventBasedParam2 << invalidActionEventBasedParam3);
 
@@ -658,9 +658,9 @@ void TestRestRules::editRules_data()
     invalidActionEventBased3.insert("actionTypeId", mockActionIdWithParams);
     invalidActionEventBased3.insert("deviceId", m_mockDeviceId);
     QVariantMap invalidActionEventBasedParam4;
-    invalidActionEventBasedParam4.insert("name", "mockActionParam1");
+    invalidActionEventBasedParam4.insert("paramTypeId", mockActionParam1ParamTypeId);
     invalidActionEventBasedParam4.insert("eventTypeId", mockEvent1Id);
-    invalidActionEventBasedParam4.insert("eventParamName", "mockParamInt");
+    invalidActionEventBasedParam4.insert("eventParamTypeId", mockEvent1Id);
     invalidActionEventBased3.insert("ruleActionParams", QVariantList() << invalidActionEventBasedParam4);
 
     QTest::addColumn<bool>("enabled");
@@ -717,7 +717,7 @@ void TestRestRules::editRules()
     eventDescriptor2.insert("deviceId", m_mockDeviceId);
     eventDescriptor2.insert("paramDescriptors", QVariantList());
     QVariantMap eventParam1;
-    eventParam1.insert("name", "mockParamInt");
+    eventParam1.insert("paramTypeId", mockParamIntParamTypeId);
     eventParam1.insert("value", 3);
     eventParam1.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
     eventParamDescriptors.append(eventParam1);
@@ -760,11 +760,11 @@ void TestRestRules::editRules()
     action2.insert("deviceId", m_mockDeviceId);
     QVariantList action2Params;
     QVariantMap action2Param1;
-    action2Param1.insert("name", "mockActionParam1");
+    action2Param1.insert("paramTypeId", mockActionParam1ParamTypeId);
     action2Param1.insert("value", 5);
     action2Params.append(action2Param1);
     QVariantMap action2Param2;
-    action2Param2.insert("name", "mockActionParam2");
+    action2Param2.insert("paramTypeId", mockActionParam2ParamTypeId);
     action2Param2.insert("value", true);
     action2Params.append(action2Param2);
     action2.insert("ruleActionParams", action2Params);
@@ -774,11 +774,11 @@ void TestRestRules::editRules()
     validActionEventBased.insert("actionTypeId", mockActionIdWithParams);
     validActionEventBased.insert("deviceId", m_mockDeviceId);
     QVariantMap validActionEventBasedParam1;
-    validActionEventBasedParam1.insert("name", "mockActionParam1");
+    validActionEventBasedParam1.insert("paramTypeId", mockActionParam1ParamTypeId);
     validActionEventBasedParam1.insert("eventTypeId", mockEvent2Id);
-    validActionEventBasedParam1.insert("eventParamName", "mockParamInt");
+    validActionEventBasedParam1.insert("eventParamTypeId", mockEvent2Id);
     QVariantMap validActionEventBasedParam2;
-    validActionEventBasedParam2.insert("name", "mockActionParam2");
+    validActionEventBasedParam2.insert("paramTypeId", mockActionParam2ParamTypeId);
     validActionEventBasedParam2.insert("value", false);
     validActionEventBased.insert("ruleActionParams", QVariantList() << validActionEventBasedParam1 << validActionEventBasedParam2);
 

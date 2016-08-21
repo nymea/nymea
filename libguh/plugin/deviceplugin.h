@@ -129,7 +129,8 @@ protected:
     QNetworkReply *networkManagerPut(const QNetworkRequest &request, const QByteArray &data);
 
 private:
-    void initPlugin(const QJsonObject &metaData, DeviceManager *deviceManager);
+    void setMetaData(const QJsonObject &metaData);
+    void initPlugin(DeviceManager *deviceManager);
 
     QPair<bool, QList<ParamType> > parseParamTypes(const QJsonArray &array) const;
 

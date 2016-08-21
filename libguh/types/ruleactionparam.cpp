@@ -41,30 +41,35 @@ RuleActionParam::RuleActionParam(const Param &param) :
     m_paramTypeId(param.paramTypeId()),
     m_value(param.value()),
     m_eventTypeId(EventTypeId()),
-    m_eventParamName(QString())
+    m_eventParamTypeId(ParamTypeId())
 {
 }
 
 /*! Constructs a \l{RuleActionParam} with the given \a name, \a value, \a eventTypeId and \a eventParamName.
  *  \sa Param, Event, */
-RuleActionParam::RuleActionParam(const ParamTypeId &paramTypeId, const QVariant &value, const EventTypeId &eventTypeId, const QString &eventParamName) :
+RuleActionParam::RuleActionParam(const ParamTypeId &paramTypeId, const QVariant &value, const EventTypeId &eventTypeId, const ParamTypeId &eventParamTypeId) :
     m_paramTypeId(paramTypeId),
     m_value(value),
     m_eventTypeId(eventTypeId),
-    m_eventParamName(eventParamName)
+    m_eventParamTypeId(eventParamTypeId)
 {
+}
+
+ParamTypeId RuleActionParam::paramTypeId() const
+{
+    return m_paramTypeId;
 }
 
 /*! Returns the name of the eventParam for this RuleActionParam. */
-QString RuleActionParam::eventParamName() const
+ParamTypeId RuleActionParam::eventParamTypeId() const
 {
-    return m_eventParamName;
+    return m_eventParamTypeId;
 }
 
 /*! Sets the \a eventParamName of this RuleActionParam. */
-void RuleActionParam::setEventParamName(const QString &eventParamName)
+void RuleActionParam::setEventParamTypeId(const ParamTypeId &eventParamTypeId)
 {
-    m_eventParamName = eventParamName;
+    m_eventParamTypeId = eventParamTypeId;
 }
 
 /*! Returns the value of this RuleActionParam. */
@@ -82,8 +87,8 @@ void RuleActionParam::setValue(const QVariant &value)
 /*! Returns true if the name and value or the name, eventTypeId and eventParamName of this RuleActionParam are set.*/
 bool RuleActionParam::isValid() const
 {
-    bool validValue = (!m_paramTypeId.isNull() && m_value.isValid() && m_eventTypeId.isNull() && m_eventParamName.isEmpty());
-    bool validEvent = (!m_paramTypeId.isNull() && m_eventTypeId.isNull() && !m_eventParamName.isEmpty() && !m_value.isValid());
+    bool validValue = (!m_paramTypeId.isNull() && m_value.isValid() && m_eventTypeId.isNull() && m_eventParamTypeId.isNull());
+    bool validEvent = (!m_paramTypeId.isNull() && !m_value.isValid() && !m_eventTypeId.isNull() && !m_eventParamTypeId.isNull());
     return validValue ^ validEvent;
 }
 
@@ -104,7 +109,7 @@ QDebug operator<<(QDebug dbg, const RuleActionParam &ruleActionParam)
 {
     dbg.nospace() << "RuleActionParam(ParamTypeId: " << ruleActionParam.paramTypeId() << ", Value:" << ruleActionParam.value();
     if (ruleActionParam.eventTypeId() != EventTypeId()) {
-       dbg.nospace() << ", EventTypeId:" << ruleActionParam.eventTypeId().toString() << ", EventParamName:" << ruleActionParam.eventParamName() << ")";
+       dbg.nospace() << ", EventTypeId:" << ruleActionParam.eventTypeId().toString() << ", EventParamTypeId:" << ruleActionParam.eventParamTypeId().toString() << ")";
     } else {
        dbg.nospace() << ")";
     }
@@ -136,18 +141,21 @@ QVariant RuleActionParamList::paramValue(const ParamTypeId &ruleActionParamTypeI
             return param.value();
         }
     }
+
     return QVariant();
 }
 
 /*! Sets the value of the \l{RuleActionParam} with the given \a ruleActionParamTypeId to the given \a value. */
-void RuleActionParamList::setParamValue(const ParamTypeId &ruleActionParamTypeId, const QVariant &value)
+bool RuleActionParamList::setParamValue(const ParamTypeId &ruleActionParamTypeId, const QVariant &value)
 {
     for (int i = 0; i < count(); i++) {
         if (this->operator [](i).paramTypeId()  == ruleActionParamTypeId) {
             this->operator [](i).setValue(value);
-            return;
+            return true;
         }
     }
+
+    return false;
 }
 
 /*! Appends the given \a ruleActionParam to a RuleActionParamList. */

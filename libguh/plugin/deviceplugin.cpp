@@ -321,7 +321,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                     eventType.setRuleRelevant(st.value("eventRuleRelevant").toBool());
 
                 eventType.setName(QString("%1 changed").arg(stateType.name()));
-                ParamType paramType(ParamTypeId(stateType.id().toString()),stateType.id().toString(), stateType.type());
+                ParamType paramType(ParamTypeId(stateType.id().toString()),stateType.name(), stateType.type());
                 eventType.setParamTypes(QList<ParamType>() << paramType);
                 eventType.setIndex(stateType.index());
                 eventTypes.append(eventType);
@@ -452,7 +452,7 @@ bool DevicePlugin::setLocale(const QLocale &locale)
 {
     // check if there are local translations
     if (m_translator->load(locale, m_metaData.value("id").toString(), "-", QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath(), ".qm")) {
-        qCDebug(dcDeviceManager()) << "* Load translation" << locale.name() << "for" << pluginName() << "from" << QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath();
+        qCDebug(dcDeviceManager()) << "* Load translation" << locale.name() << "for" << pluginName() << "from" << QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath() + "/" + m_metaData.value("id").toString() + "-" + locale.name() + ".qm";
         return true;
     }
 
@@ -569,19 +569,18 @@ QList<ParamType> DevicePlugin::configurationDescription() const
 
 /*! This will be called when the DeviceManager initializes the plugin and set up the things behind the scenes.
     When implementing a new plugin, use \l{DevicePlugin::init()} instead in order to do initialisation work. */
-void DevicePlugin::initPlugin(const QJsonObject &metaData, DeviceManager *deviceManager)
+void DevicePlugin::initPlugin(DeviceManager *deviceManager)
 {
-    m_metaData = metaData;
+    m_deviceManager = deviceManager;
 
     // parse plugin configuration params
     if (m_metaData.contains("paramTypes")) {
         QPair<bool, QList<ParamType> > paramVerification = parseParamTypes(m_metaData.value("paramTypes").toArray());
-        if (paramVerification.first) {
-            m_configurationDescription = paramVerification.second;
-        }
+        if (paramVerification.first)
+            m_configurationDescription << paramVerification.second;
+
     }
 
-    m_deviceManager = deviceManager;
     init();
 }
 
@@ -592,7 +591,7 @@ QPair<bool, QList<ParamType> > DevicePlugin::parseParamTypes(const QJsonArray &a
         QJsonObject pt = paramTypesJson.toObject();
 
         // Check fields
-        QStringList missingFields = verifyFields(QStringList() << "name" << "index" << "type", pt);
+        QStringList missingFields = verifyFields(QStringList() << "id" << "name" << "index" << "type", pt);
         if (!missingFields.isEmpty()) {
             qCWarning(dcDeviceManager) << pluginName() << "Error parsing ParamType: missing fields" << missingFields.join(", ") << endl << pt;
             return QPair<bool, QList<ParamType> >(false, QList<ParamType>());
@@ -639,9 +638,9 @@ QPair<bool, QList<ParamType> > DevicePlugin::parseParamTypes(const QJsonArray &a
         }
 
         // set readOnly if given (default false)
-        if (pt.contains("readOnly")) {
+        if (pt.contains("readOnly"))
             paramType.setReadOnly(pt.value("readOnly").toBool());
-        }
+
         paramType.setAllowedValues(allowedValues);
         paramType.setLimits(pt.value("minValue").toVariant(), pt.value("maxValue").toVariant());
         paramTypes.append(paramType);
@@ -669,23 +668,18 @@ ParamList DevicePlugin::configuration() const
  */
 QVariant DevicePlugin::configValue(const ParamTypeId &paramTypeId) const
 {
-    foreach (const Param &param, m_config) {
-        if (param.paramTypeId() == paramTypeId) {
-            return param.value();
-        }
-    }
-    return QVariant();
+    return m_config.paramValue(paramTypeId);
 }
 
 /*! Will be called by the DeviceManager to set a plugin's \a configuration. */
 DeviceManager::DeviceError DevicePlugin::setConfiguration(const ParamList &configuration)
 {
     foreach (const Param &param, configuration) {
-        qCDebug(dcDeviceManager) << "* set plugin configuration" << param;
+        qCDebug(dcDeviceManager) << "* Set plugin configuration" << param;
         DeviceManager::DeviceError result = setConfigValue(param.paramTypeId(), param.value());
-        if (result != DeviceManager::DeviceErrorNoError) {
+        if (result != DeviceManager::DeviceErrorNoError)
             return result;
-        }
+
     }
     return DeviceManager::DeviceErrorNoError;
 }
@@ -711,11 +705,14 @@ DeviceManager::DeviceError DevicePlugin::setConfigValue(const ParamTypeId &param
     }
 
     if (m_config.hasParam(paramTypeId)) {
-        m_config.setParamValue(paramTypeId, value);
+        if (!m_config.setParamValue(paramTypeId, value)) {
+            qCWarning(dcDeviceManager()) << "Could not set param value" << value << "for param with id" << paramTypeId.toString();
+            return DeviceManager::DeviceErrorInvalidParameter;
+        }
     } else {
-        Param newParam(paramTypeId, value);
-        m_config.append(newParam);
+        m_config.append(Param(paramTypeId, value));
     }
+
     emit configValueChanged(paramTypeId, value);
     return DeviceManager::DeviceErrorNoError;
 }
@@ -832,6 +829,11 @@ QNetworkReply *DevicePlugin::networkManagerPut(const QNetworkRequest &request, c
         qCWarning(dcDeviceManager) << "Network manager hardware resource not set for plugin" << pluginName();
     }
     return nullptr;
+}
+
+void DevicePlugin::setMetaData(const QJsonObject &metaData)
+{
+    m_metaData = metaData;
 }
 
 /*!

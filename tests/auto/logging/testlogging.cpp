@@ -165,7 +165,7 @@ void TestLogging::eventLogs()
     QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
     // trigger event in mock device
-    int port = device->paramValue("httpport").toInt();
+    int port = device->paramValue(httpportParamTypeId).toInt();
     QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(port).arg(mockEvent1Id.toString())));
     QNetworkReply *reply = nam.get(request);
 
@@ -218,11 +218,11 @@ void TestLogging::actionLog()
 {
     QVariantList actionParams;
     QVariantMap param1;
-    param1.insert("name", "mockActionParam1");
+    param1.insert("paramTypeId", mockActionParam1ParamTypeId);
     param1.insert("value", 7);
     actionParams.append(param1);
     QVariantMap param2;
-    param2.insert("name", "mockActionParam2");
+    param2.insert("paramTypeId", mockActionParam2ParamTypeId);
     param2.insert("value", true);
     actionParams.append(param2);
 

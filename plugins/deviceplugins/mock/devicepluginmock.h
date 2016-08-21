@@ -67,6 +67,7 @@ private slots:
     void onPushButtonPairingFinished();
     void onDisplayPinPairingFinished();
     void onChildDeviceDiscovered(const DeviceId &parentId);
+    void onPluginConfigChanged();
 
 private:
     QHash<Device*, HttpDaemon*> m_daemons;

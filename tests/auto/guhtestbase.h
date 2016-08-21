@@ -55,6 +55,34 @@ extern EventTypeId mockEvent2Id;
 extern StateTypeId mockIntStateId;
 extern StateTypeId mockBoolStateId;
 
+// ParamTypes from mock devices
+extern ParamTypeId configParamIntParamTypeId;
+extern ParamTypeId configParamBoolParamTypeId;
+extern ParamTypeId httpportParamTypeId;
+extern ParamTypeId asyncParamTypeId;
+extern ParamTypeId brokenParamTypeId;
+extern ParamTypeId resultCountParamTypeId;
+extern ParamTypeId mockActionParam1ParamTypeId;
+extern ParamTypeId mockActionParam2ParamTypeId;
+extern ParamTypeId mockParamIntParamTypeId;
+extern ParamTypeId colorActionParamTypeId;
+extern ParamTypeId percentageActionParamTypeId;
+extern ParamTypeId allowedValuesActionParamTypeId;
+extern ParamTypeId doubleActionParamTypeId;
+extern ParamTypeId boolActionParamTypeId;
+extern ParamTypeId pinParamTypeId;
+extern ParamTypeId boolValueActionParamTypeId;
+extern ParamTypeId parentUuidParamTypeId;
+extern ParamTypeId textLineParamTypeId;
+extern ParamTypeId textAreaParamTypeId;
+extern ParamTypeId passwordParamTypeId;
+extern ParamTypeId searchParamTypeId;
+extern ParamTypeId mailParamTypeId;
+extern ParamTypeId ip4ParamTypeId;
+extern ParamTypeId ip6ParamTypeId;
+extern ParamTypeId urlParamTypeId;
+extern ParamTypeId macParamTypeId;
+
 // Parent / Child device
 extern EventTypeId mockParentChildEventId;
 extern ActionTypeId mockParentChildActionId;
@@ -124,7 +152,7 @@ protected:
         foreach (const QVariant &requestParam, requestList) {
             bool found = false;
             foreach (const QVariant &responseParam, responseList) {
-                if (requestParam.toMap().value("name") == responseParam.toMap().value("name")){
+                if (requestParam.toMap().value("paramTypeId") == responseParam.toMap().value("paramTypeId")){
                     QCOMPARE(requestParam.toMap().value("value"), responseParam.toMap().value("value"));
                     found = true;
                     break;

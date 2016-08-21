@@ -52,6 +52,7 @@
 
 DevicePluginMock::DevicePluginMock()
 {
+
 }
 
 DevicePluginMock::~DevicePluginMock()
@@ -404,4 +405,9 @@ void DevicePluginMock::onChildDeviceDiscovered(const DeviceId &parentId)
     mockDescriptor.setParams(params);
 
     emit autoDevicesAppeared(mockChildDeviceClassId, QList<DeviceDescriptor>() << mockDescriptor);
+}
+
+void DevicePluginMock::onPluginConfigChanged()
+{
+
 }

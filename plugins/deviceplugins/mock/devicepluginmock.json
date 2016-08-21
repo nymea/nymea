@@ -301,6 +301,8 @@
                     "pairingInfo": "Wait 3 second before you continue, the push button will be pressed automatically.",
                     "discoveryParamTypes": [
                         {
+                            "id": "d222adb4-2f9c-4c3f-8655-76400d0fb6ce",
+                            "idName": "resultCount",
                             "name": "resultCount",
                             "type": "int",
                             "index": 0,
@@ -390,6 +392,8 @@
                     "pairingInfo": "Please enter the secret which normaly will be displayed on the device. For the mockdevice the pin is 243681.",
                     "discoveryParamTypes": [
                         {
+                            "id": "d222adb4-2f9c-4c3f-8655-76400d0fb6ce",
+                            "idName": "resultCount",
                             "name": "resultCount",
                             "type": "int",
                             "index": 0,

@@ -102,8 +102,8 @@ private:
     bool containsState(const StateEvaluator &stateEvaluator, const Event &stateChangeEvent);
 
     bool checkEventDescriptors(const QList<EventDescriptor> eventDescriptors, const EventTypeId &eventTypeId);
-    QVariant::Type getActionParamType(const ActionTypeId &actionTypeId, const QString &paramName);
-    QVariant::Type getEventParamType(const EventTypeId &eventTypeId, const QString &paramName);
+    QVariant::Type getActionParamType(const ActionTypeId &actionTypeId, const ParamTypeId &paramTypeId);
+    QVariant::Type getEventParamType(const EventTypeId &eventTypeId, const ParamTypeId &paramTypeId);
 
     void appendRule(const Rule &rule);
     void saveRule(const Rule &rule);

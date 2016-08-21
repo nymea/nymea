@@ -53,7 +53,7 @@ class LIBGUH_EXPORT ParamList: public QList<Param>
 public:
     bool hasParam(const ParamTypeId &paramTypeId) const;
     QVariant paramValue(const ParamTypeId &paramTypeId) const;
-    void setParamValue(const ParamTypeId &paramTypeId, const QVariant &value);
+    bool setParamValue(const ParamTypeId &paramTypeId, const QVariant &value);
     ParamList operator<<(const Param &param);
 
 private:

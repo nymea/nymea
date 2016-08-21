@@ -353,14 +353,9 @@ JsonReply* DeviceHandler::GetPlugins(const QVariantMap &params) const
 
 JsonReply *DeviceHandler::GetPluginConfiguration(const QVariantMap &params) const
 {
-    DevicePlugin *plugin = 0;
-    foreach (DevicePlugin *p, GuhCore::instance()->deviceManager()->plugins()) {
-        if (p->pluginId() == PluginId(params.value("pluginId").toString())) {
-            plugin = p;
-        }
-    }
-
     QVariantMap returns;
+
+    DevicePlugin *plugin = GuhCore::instance()->deviceManager()->plugin(PluginId(params.value("pluginId").toString()));
     if (!plugin) {
         returns.insert("deviceError", JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorPluginNotFound));
         return createReply(returns);

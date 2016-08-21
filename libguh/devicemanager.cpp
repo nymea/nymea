@@ -181,6 +181,7 @@
 
 #include "plugin/devicepairinginfo.h"
 #include "plugin/deviceplugin.h"
+#include "typeutils.h"
 #include "guhsettings.h"
 
 #include <QPluginLoader>
@@ -310,23 +311,24 @@ DevicePlugin *DeviceManager::plugin(const PluginId &id) const
 DeviceManager::DeviceError DeviceManager::setPluginConfig(const PluginId &pluginId, const ParamList &pluginConfig)
 {
     DevicePlugin *plugin = m_devicePlugins.value(pluginId);
-    if (!plugin)
+    if (!plugin) {
+        qCWarning(dcDeviceManager()) << "Could not set plugin configuration. There is no plugin with id" << pluginId.toString();
         return DeviceErrorPluginNotFound;
+    }
 
     ParamList params = pluginConfig;
-
     DeviceError verify = verifyParams(plugin->configurationDescription(), params);
     if (verify != DeviceErrorNoError)
         return verify;
 
-    DeviceError result = plugin->setConfiguration(pluginConfig);
+    DeviceError result = plugin->setConfiguration(params);
     if (result != DeviceErrorNoError)
         return result;
 
     GuhSettings settings(GuhSettings::SettingsRolePlugins);
     settings.beginGroup("PluginConfig");
     settings.beginGroup(plugin->pluginId().toString());
-    foreach (const Param &param, pluginConfig) {
+    foreach (const Param &param, params) {
         settings.setValue(param.paramTypeId().toString(), param.value());
     }
     settings.endGroup();
@@ -617,7 +619,7 @@ DeviceManager::DeviceError DeviceManager::pairDevice(const PairingTransactionId 
 DeviceManager::DeviceError DeviceManager::confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &secret)
 {
     if (m_pairingsJustAdd.contains(pairingTransactionId)) {
-        qCWarning(dcDeviceManager) << "this SetupMethod is not implemented yet";
+        qCWarning(dcDeviceManager) << "This SetupMethod is not implemented yet";
         m_pairingsJustAdd.remove(pairingTransactionId);
         return DeviceErrorSetupFailed;
     }
@@ -830,7 +832,7 @@ DeviceManager::DeviceError DeviceManager::verifyParams(const QList<ParamType> pa
         // This paramType has a default value... lets fill in that one.
         if (!paramType.defaultValue().isNull() && !found) {
             found = true;
-            params.append(Param(paramType.name(), paramType.defaultValue()));
+            params.append(Param(paramType.id(), paramType.defaultValue()));
         }
 
         if (!found) {
@@ -849,6 +851,7 @@ DeviceManager::DeviceError DeviceManager::verifyParam(const QList<ParamType> par
             return verifyParam(paramType, param);
         }
     }
+
     qCWarning(dcDeviceManager) << "Invalid parameter" << param.paramTypeId().toString() << "in parameter list";
     return DeviceErrorInvalidParameter;
 }
@@ -1002,13 +1005,19 @@ void DeviceManager::loadPlugins()
             if (!verifyPluginMetadata(loader.metaData().value("MetaData").toObject()))
                 continue;
 
-            pluginIface->initPlugin(loader.metaData().value("MetaData").toObject(), this);
+            pluginIface->setMetaData(loader.metaData().value("MetaData").toObject());
+
+            pluginIface->setLocale(m_locale);
+            qApp->installTranslator(pluginIface->translator());
+
+            pluginIface->initPlugin(this);
+
             qCDebug(dcDeviceManager) << "**** Loaded plugin" << pluginIface->pluginName();
             foreach (const Vendor &vendor, pluginIface->supportedVendors()) {
                 qCDebug(dcDeviceManager) << "* Loaded vendor:" << vendor.name();
-                if (m_supportedVendors.contains(vendor.id())) {
+                if (m_supportedVendors.contains(vendor.id()))
                     continue;
-                }
+
                 m_supportedVendors.insert(vendor.id(), vendor);
             }
 
@@ -1022,25 +1031,20 @@ void DeviceManager::loadPlugins()
                 qCDebug(dcDeviceManager) << "* Loaded device class:" << deviceClass.name();
             }
 
-            if (!pluginIface->setLocale(m_locale))
-                qCWarning(dcDeviceManager()) << "Could not load translation" << m_locale.name() << "for plugin" << pluginIface->pluginName();
-
-            qApp->installTranslator(pluginIface->translator());
-
             GuhSettings settings(GuhSettings::SettingsRolePlugins);
             settings.beginGroup("PluginConfig");
             ParamList params;
             if (settings.childGroups().contains(pluginIface->pluginId().toString())) {
                 settings.beginGroup(pluginIface->pluginId().toString());
-                foreach (const QString &paramName, settings.allKeys()) {
-                    Param param(paramName, settings.value(paramName));
+                foreach (const QString &paramTypeIdString, settings.allKeys()) {
+                    Param param(ParamTypeId(paramTypeIdString), settings.value(paramTypeIdString));
                     params.append(param);
                 }
                 settings.endGroup();
-            } else if (pluginIface->configurationDescription().count() > 0){
+            } else if (!pluginIface->configurationDescription().isEmpty()){
                 // plugin requires config but none stored. Init with defaults
                 foreach (const ParamType &paramType, pluginIface->configurationDescription()) {
-                    Param param(paramType.name(), paramType.defaultValue());
+                    Param param(paramType.id(), paramType.defaultValue());
                     params.append(param);
                 }
             }
@@ -1078,10 +1082,8 @@ void DeviceManager::loadConfiguredDevices()
 
         ParamList params;
         settings.beginGroup("Params");
-        foreach (QString paramNameString, settings.allKeys()) {
-            Param param(paramNameString);
-            param.setValue(settings.value(paramNameString));
-            params.append(param);
+        foreach (const QString &paramTypeIdString, settings.allKeys()) {
+            params.append(Param(ParamTypeId(paramTypeIdString), settings.value(paramTypeIdString)));
         }
         device->setParams(params);
         settings.endGroup();

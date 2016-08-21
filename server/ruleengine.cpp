@@ -232,7 +232,7 @@ RuleEngine::RuleEngine(QObject *parent) :
                 foreach (QString groupName, settings.childGroups()) {
                     if (groupName.startsWith("ParamDescriptor-")) {
                         settings.beginGroup(groupName);
-                        ParamDescriptor paramDescriptor(groupName.remove(QRegExp("^ParamDescriptor-")), settings.value("value"));
+                        ParamDescriptor paramDescriptor(ParamTypeId(groupName.remove(QRegExp("^ParamDescriptor-"))), settings.value("value"));
                         paramDescriptor.setOperatorType((Types::ValueOperator)settings.value("operator").toInt());
                         params.append(paramDescriptor);
                         settings.endGroup();
@@ -260,13 +260,13 @@ RuleEngine::RuleEngine(QObject *parent) :
                                            DeviceId(settings.value("deviceId").toString()));
 
             RuleActionParamList params;
-            foreach (QString paramNameString, settings.childGroups()) {
-                if (paramNameString.startsWith("RuleActionParam-")) {
-                    settings.beginGroup(paramNameString);
-                    RuleActionParam param(paramNameString.remove(QRegExp("^RuleActionParam-")),
+            foreach (QString paramTypeIdString, settings.childGroups()) {
+                if (paramTypeIdString.startsWith("RuleActionParam-")) {
+                    settings.beginGroup(paramTypeIdString);
+                    RuleActionParam param(ParamTypeId(paramTypeIdString.remove(QRegExp("^RuleActionParam-"))),
                                           settings.value("value",QVariant()),
                                           EventTypeId(settings.value("eventTypeId", EventTypeId()).toString()),
-                                          settings.value("eventParamName", QString()).toString());
+                                          settings.value("eventParamTypeId", ParamTypeId()).toString());
                     params.append(param);
                     settings.endGroup();
                 }
@@ -289,10 +289,11 @@ RuleEngine::RuleEngine(QObject *parent) :
                                            DeviceId(settings.value("deviceId").toString()));
 
             RuleActionParamList params;
-            foreach (QString paramNameString, settings.childGroups()) {
-                if (paramNameString.startsWith("RuleActionParam-")) {
-                    settings.beginGroup(paramNameString);
-                    RuleActionParam param(paramNameString.remove(QRegExp("^RuleActionParam-")), settings.value("value"));
+            foreach (QString paramTypeIdString, settings.childGroups()) {
+                if (paramTypeIdString.startsWith("RuleActionParam-")) {
+                    settings.beginGroup(paramTypeIdString);
+                    RuleActionParam param(ParamTypeId(paramTypeIdString.remove(QRegExp("^RuleActionParam-"))),
+                                          settings.value("value"));
                     params.append(param);
                     settings.endGroup();
                 }
@@ -548,10 +549,10 @@ RuleEngine::RuleError RuleEngine::addRule(const Rule &rule, bool fromEdit)
                     }
 
                     // check if the param type of the event and the action match
-                    QVariant::Type eventParamType = getEventParamType(ruleActionParam.eventTypeId(), ruleActionParam.eventParamName());
-                    QVariant::Type actionParamType = getActionParamType(action.actionTypeId(), ruleActionParam.name());
+                    QVariant::Type eventParamType = getEventParamType(ruleActionParam.eventTypeId(), ruleActionParam.eventParamTypeId());
+                    QVariant::Type actionParamType = getActionParamType(action.actionTypeId(), ruleActionParam.paramTypeId());
                     if (eventParamType != actionParamType) {
-                        qCWarning(dcRuleEngine) << "Cannot create rule. RuleActionParam" << ruleActionParam.name() << " and given event param " << ruleActionParam.eventParamName() << "have not the same type:";
+                        qCWarning(dcRuleEngine) << "Cannot create rule. RuleActionParam" << ruleActionParam.paramTypeId().toString() << " and given event param " << ruleActionParam.eventParamTypeId().toString() << "have not the same type:";
                         qCWarning(dcRuleEngine) << "        -> actionParamType:" << actionParamType;
                         qCWarning(dcRuleEngine) << "        ->  eventParamType:" << eventParamType;
                         return RuleErrorTypesNotMatching;
@@ -949,6 +950,7 @@ bool RuleEngine::containsEvent(const Rule &rule, const Event &event)
             return true;
         }
     }
+
     return false;
 }
 
@@ -973,38 +975,41 @@ bool RuleEngine::checkEventDescriptors(const QList<EventDescriptor> eventDescrip
             return true;
         }
     }
+
     return false;
 }
 
-QVariant::Type RuleEngine::getActionParamType(const ActionTypeId &actionTypeId, const QString &paramName)
+QVariant::Type RuleEngine::getActionParamType(const ActionTypeId &actionTypeId, const ParamTypeId &paramTypeId)
 {
     foreach (const DeviceClass &deviceClass, GuhCore::instance()->deviceManager()->supportedDevices()) {
         foreach (const ActionType &actionType, deviceClass.actionTypes()) {
             if (actionType.id() == actionTypeId) {
                 foreach (const ParamType &paramType, actionType.paramTypes()) {
-                    if (paramType.name() == paramName) {
+                    if (paramType.id() == paramTypeId) {
                         return paramType.type();
                     }
                 }
             }
         }
     }
+
     return QVariant::Invalid;
 }
 
-QVariant::Type RuleEngine::getEventParamType(const EventTypeId &eventTypeId, const QString &paramName)
+QVariant::Type RuleEngine::getEventParamType(const EventTypeId &eventTypeId, const ParamTypeId &paramTypeId)
 {
     foreach (const DeviceClass &deviceClass, GuhCore::instance()->deviceManager()->supportedDevices()) {
         foreach (const EventType &eventType, deviceClass.eventTypes()) {
             if (eventType.id() == eventTypeId) {
                 foreach (const ParamType &paramType, eventType.paramTypes()) {
-                    if (paramType.name() == paramName) {
+                    if (paramType.id() == paramTypeId) {
                         return paramType.type();
                     }
                 }
             }
         }
     }
+
     return QVariant::Invalid;
 }
 
@@ -1103,7 +1108,7 @@ void RuleEngine::saveRule(const Rule &rule)
         settings.setValue("eventTypeId", eventDescriptor.eventTypeId().toString());
 
         foreach (const ParamDescriptor &paramDescriptor, eventDescriptor.paramDescriptors()) {
-            settings.beginGroup("ParamDescriptor-" + paramDescriptor.name());
+            settings.beginGroup("ParamDescriptor-" + paramDescriptor.paramTypeId().toString());
             settings.setValue("value", paramDescriptor.value());
             settings.setValue("operator", paramDescriptor.operatorType());
             settings.endGroup();
@@ -1123,11 +1128,11 @@ void RuleEngine::saveRule(const Rule &rule)
         settings.setValue("deviceId", action.deviceId().toString());
         settings.setValue("actionTypeId", action.actionTypeId().toString());
         foreach (const RuleActionParam &param, action.ruleActionParams()) {
-            settings.beginGroup("RuleActionParam-" + param.name());
+            settings.beginGroup("RuleActionParam-" + param.paramTypeId().toString());
             settings.setValue("value", param.value());
             if (param.eventTypeId() != EventTypeId()) {
                 settings.setValue("eventTypeId", param.eventTypeId().toString());
-                settings.setValue("eventParamName", param.eventParamName());
+                settings.setValue("eventParamTypeId", param.eventParamTypeId());
             }
             settings.endGroup();
         }
@@ -1144,7 +1149,7 @@ void RuleEngine::saveRule(const Rule &rule)
         settings.setValue("deviceId", action.deviceId().toString());
         settings.setValue("actionTypeId", action.actionTypeId().toString());
         foreach (const RuleActionParam &param, action.ruleActionParams()) {
-            settings.beginGroup("RuleActionParam-" + param.name());
+            settings.beginGroup("RuleActionParam-" + param.paramTypeId().toString());
             settings.setValue("value", param.value());
             settings.endGroup();
         }

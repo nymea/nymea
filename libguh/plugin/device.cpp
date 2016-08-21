@@ -131,7 +131,7 @@ void Device::setParamValue(const ParamTypeId &paramTypeId, const QVariant &value
         if (param.paramTypeId() == paramTypeId) {
             param.setValue(value);
         }
-        params.append(param);
+        params << param;
     }
     m_params = params;
 }

@@ -66,7 +66,7 @@ void EventDescriptor::setParamDescriptors(const QList<ParamDescriptor> &paramDes
     m_paramDescriptors = paramDescriptors;
 }
 
-/*! Set a parameters of this Event to \a paramDescriptorName. */
+/*! Returns the ParamDescriptor with the given \a paramTypeId, otherwise an invalid ParamDescriptor. */
 ParamDescriptor EventDescriptor::paramDescriptor(const ParamTypeId &paramTypeId) const
 {
     foreach (const ParamDescriptor &paramDescriptor, m_paramDescriptors) {

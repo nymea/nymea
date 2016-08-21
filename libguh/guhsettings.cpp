@@ -186,6 +186,7 @@ QString GuhSettings::settingsPath()
     return path;
 }
 
+/*! Returns the default system translation path \tt{/usr/share/guh/translations}. */
 QString GuhSettings::translationsPath()
 {
     return QString("/usr/share/guh/translations");

@@ -34,7 +34,7 @@
 
 #include "paramdescriptor.h"
 
-/*! Constructs an ParamDescriptor describing an \l{Param} with the given \a name and \a value.
+/*! Constructs an ParamDescriptor describing an \l{Param} with the given \a paramTypeId and \a value.
  *  The ValueOperator is by default ValueOperatorEquals. */
 ParamDescriptor::ParamDescriptor(const ParamTypeId &paramTypeId, const QVariant &value):
     Param(paramTypeId, value),

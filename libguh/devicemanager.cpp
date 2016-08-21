@@ -193,7 +193,7 @@
 #include <QStandardPaths>
 #include <QDir>
 
-/*! Constructs the DeviceManager with the given \a parent. There should only be one DeviceManager in the system created by \l{guhserver::GuhCore}.
+/*! Constructs the DeviceManager with the given \a locale and \a parent. There should only be one DeviceManager in the system created by \l{guhserver::GuhCore}.
  *  Use \c guhserver::GuhCore::instance()->deviceManager() instead to access the DeviceManager. */
 DeviceManager::DeviceManager(const QLocale &locale, QObject *parent) :
     QObject(parent),
@@ -283,6 +283,7 @@ QList<QJsonObject> DeviceManager::pluginsMetadata()
     return pluginList;
 }
 
+/*! Set the \a locale of all plugins and reload the translated strings. */
 void DeviceManager::setLocale(const QLocale &locale)
 {
     m_locale = locale;

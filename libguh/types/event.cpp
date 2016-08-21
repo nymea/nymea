@@ -98,7 +98,7 @@ void Event::setParams(const ParamList &params)
     m_params = params;
 }
 
-/*! Returns the parameter of this Event with a cetrain \a paramName. */
+/*! Returns the parameter of this Event with the given \a paramTypeId. */
 Param Event::param(const ParamTypeId &paramTypeId) const
 {
     foreach (const Param &param, m_params) {
@@ -137,7 +137,6 @@ bool Event::operator ==(const Event &other) const
 QDebug operator<<(QDebug dbg, const Event &event)
 {
     dbg.nospace() << "Event(EventTypeId: " << event.eventTypeId().toString() << ", DeviceId" << event.deviceId().toString() << ")";
-
     return dbg.space();
 }
 

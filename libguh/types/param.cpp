@@ -33,38 +33,38 @@
 
 #include <QDebug>
 
-/*! Constructs a Param with the given \a name and \a value of the paramter. */
+/*! Constructs a \l Param with the given \a paramTypeId and \a value of the paramter. */
 Param::Param(const ParamTypeId &paramTypeId, const QVariant &value):
     m_paramTypeId(paramTypeId),
     m_value(value)
 {
 }
 
-/*! Returns the paramTypeId of this Param. */
+/*! Returns the paramTypeId of this \l Param. */
 ParamTypeId Param::paramTypeId() const
 {
     return m_paramTypeId;
 }
 
-/*! Returns the value of this Param. */
+/*! Returns the value of this \l Param. */
 QVariant Param::value() const
 {
     return m_value;
 }
 
-/*! Sets the \a value of this Param. */
+/*! Sets the \a value of this \l Param. */
 void Param::setValue(const QVariant &value)
 {
     m_value = value;
 }
 
-/*! A Param is valid if name and and value are set. Returns true if valid, false if not. */
+/*! Returns true if paramTypeId() and and value() of this \l Param are set. */
 bool Param::isValid() const
 {
     return !m_paramTypeId.isNull() && m_value.isValid();
 }
 
-/*! Writes the name and value of the given \a param to \a dbg. */
+/*! Writes the paramTypeId and value of the given \a param to \a dbg. */
 QDebug operator<<(QDebug dbg, const Param &param)
 {
     dbg.nospace() << "Param(Id: " << param.paramTypeId().toString() << ", Value:" << param.value() << ")";
@@ -115,7 +115,7 @@ QVariant ParamList::paramValue(const ParamTypeId &paramTypeId) const
     return QVariant();
 }
 
-/*! Sets the value of a Param with the given \a paramTypeId to the given \a value. */
+/*! Returns true if the value of a Param with the given \a paramTypeId could be set to the given \a value. */
 bool ParamList::setParamValue(const ParamTypeId &paramTypeId, const QVariant &value)
 {
     for (int i = 0; i < count(); i++) {

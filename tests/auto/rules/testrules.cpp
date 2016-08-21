@@ -269,7 +269,7 @@ void TestRules::addRemoveRules_data()
     stateDescriptor.insert("stateTypeId", mockIntStateId);
     stateDescriptor.insert("deviceId", m_mockDeviceId);
     stateDescriptor.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorLess));
-    stateDescriptor.insert("value", "20");
+    stateDescriptor.insert("value", 20);
 
     // StateEvaluator
     QVariantMap validStateEvaluator;
@@ -512,7 +512,7 @@ void TestRules::editRules_data()
     stateDescriptor.insert("stateTypeId", mockIntStateId);
     stateDescriptor.insert("deviceId", m_mockDeviceId);
     stateDescriptor.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorLess));
-    stateDescriptor.insert("value", "20");
+    stateDescriptor.insert("value", 20);
 
     // StateEvaluator
     QVariantMap validStateEvaluator;

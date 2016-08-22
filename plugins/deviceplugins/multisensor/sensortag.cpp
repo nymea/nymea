@@ -62,11 +62,9 @@ void SensorTag::setupServices()
 
         connect(service.data(), &QLowEnergyService::stateChanged, this, &SensorTag::onServiceStateChanged);
         connect(service.data(), &QLowEnergyService::characteristicChanged, this, &SensorTag::onServiceCharacteristicChanged);
-        connect(service.data(), &QLowEnergyService::characteristicRead, this, &SensorTag::onServiceCharacteristicChanged);
         //connect(m_temperatureService, SIGNAL(characteristicWritten(QLowEnergyCharacteristic, QByteArray)), this, SLOT(confirmedCharacteristicWritten(QLowEnergyCharacteristic, QByteArray)));
         //connect(m_temperatureService, SIGNAL(descriptorWritten(QLowEnergyDescriptor, QByteArray)), this, SLOT(confirmedDescriptorWritten(QLowEnergyDescriptor, QByteArray)));
         connect(service.data(), SIGNAL(error(QLowEnergyService::ServiceError)), this, SLOT(onServiceError(QLowEnergyService::ServiceError)));
-
 
         service->discoverDetails();
     }
@@ -134,7 +132,6 @@ void SensorTag::onServiceStateChanged(const QLowEnergyService::ServiceState &sta
                 service->writeCharacteristic(sensorConfig, QByteArray::fromHex("02"));
                 auto calibId  = service->serviceUuid();
                 calibId.data1 += 3;
-                service->readCharacteristic(service->characteristic(calibId));
             }
         }
         break;

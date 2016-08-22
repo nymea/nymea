@@ -438,7 +438,7 @@ void TestTimeManager::testCalendarItemHourly_data()
 {
     QTest::addColumn<int>("duration");
 
-    QTest::newRow("hourly - for 60 minutes") << 60;
+    //QTest::newRow("hourly - for 60 minutes") << 60;
     QTest::newRow("hourly - for 5 minutes") << 5;
 }
 

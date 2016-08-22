@@ -12,7 +12,7 @@
     <message>
         <location filename="../../../../../build-guh-Desktop-Debug/plugins/deviceplugins/conrad/plugininfo.h" line="33"/>
         <source>Shutter (RSM900R)</source>
-        <extracomment>The name of the deviceClass</extracomment>
+        <extracomment>The name of the DeviceClass (2bb14180-aa5d-4999-992d-e6d464cff486)</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>

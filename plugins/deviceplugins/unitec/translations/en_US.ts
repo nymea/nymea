@@ -12,13 +12,25 @@
     <message>
         <location filename="../../../../../build-guh-Desktop-Debug/plugins/deviceplugins/unitec/plugininfo.h" line="33"/>
         <source>Unitec switch (48111)</source>
-        <extracomment>The name of the deviceClass</extracomment>
+        <extracomment>The name of the DeviceClass (8468a15d-ecc0-43b6-98ca-e1e4ac9e2df3)</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../../../../build-guh-Desktop-Debug/plugins/deviceplugins/unitec/plugininfo.h" line="36"/>
+        <source>channel</source>
+        <extracomment>The name of the paramType (2cb59323-bc01-477c-ac0d-312b25c53463)</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../../../../build-guh-Desktop-Debug/plugins/deviceplugins/unitec/plugininfo.h" line="39"/>
         <source>set power</source>
         <extracomment>The name of the ActionType 3ca1ebc2-bb8e-4429-9664-a7bc4569e73b of deviceClass Unitec switch (48111)</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../../../../build-guh-Desktop-Debug/plugins/deviceplugins/unitec/plugininfo.h" line="42"/>
+        <source>power</source>
+        <extracomment>The name of the paramType (c101c199-314d-420f-a302-0ae29c599047)</extracomment>
         <translation type="unfinished"></translation>
     </message>
 </context>

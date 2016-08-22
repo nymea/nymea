@@ -88,16 +88,17 @@ def extractPlugin(pluginMap):
         extractVendors(pluginMap['vendors'])
 
 def extractParamTypes(paramTypes):
-    for param in paramTypes:
+    for paramType in paramTypes:
         try:
-            variableName = '%sParamTypeId' % (param['idName'])
+            variableName = '%sParamTypeId' % (paramType['idName'])
             if not variableName in variableNames:
-                print('Define ParamTypeId %s = %s' % (variableName, param['id']))
                 variableNames.append(variableName)
-                writePluginInfo('ParamTypeId %s = ParamTypeId(\"%s\");' % (variableName, param['id']))
+                print('Define ParamTypeId %s = %s' % (variableName, paramType['id']))
+                writePluginInfo('ParamTypeId %s = ParamTypeId(\"%s\");' % (variableName, paramType['id']))
+                addTranslationString(paramType['name'], 'The name of the paramType (%s)' % paramType['id'])
                 createExternDefinition('ParamTypeId', variableName)
             else:
-                print('Duplicated variable name \"%s\" for ParamTypeId %s -> skipping') % (variableName, param['id'])
+                print('Duplicated variable name \"%s\" for ParamTypeId %s -> skipping') % (variableName, paramType['id'])
         except:
             pass
 
@@ -124,7 +125,6 @@ def extractDeviceClasses(deviceClasses):
     for deviceClass in deviceClasses:
         try:
             variableName = '%sDeviceClassId' % (deviceClass['idName'])
-            addTranslationString(deviceClass['name'], 'The name of the deviceClass')
             
             if 'pairingInfo' in deviceClass:
                 addTranslationString(deviceClass['pairingInfo'], 'The pairing info of deviceClass %s' % deviceClass['name'])
@@ -133,6 +133,7 @@ def extractDeviceClasses(deviceClasses):
                 variableNames.append(variableName)
                 print('Define DeviceClassId %s = %s' % (variableName, deviceClass['deviceClassId']))
                 writePluginInfo('DeviceClassId %s = DeviceClassId(\"%s\");' % (variableName, deviceClass['deviceClassId']))
+                addTranslationString(deviceClass['name'], 'The name of the DeviceClass (%s)' %(deviceClass['deviceClassId']))
                 createExternDefinition('DeviceClassId', variableName)
             else:
                 print('Duplicated variable name \"%s\" for DeviceClassId %s -> skipping') % (variableName, deviceClass['deviceClassId'])
@@ -159,8 +160,9 @@ def extractDeviceClasses(deviceClasses):
 def extractStateTypes(stateTypes, deviceClassName):
     for stateType in stateTypes:
         try:
+            # Define StateType
             variableName = '%sStateTypeId' % (stateType['idName'])
-            addTranslationString(stateType['name'], 'The name of the stateType (%s) of deviceClass %s' % (stateType['id'], deviceClassName))
+            addTranslationString(stateType['name'], 'The name of the stateType (%s) of DeviceClass %s' % (stateType['id'], deviceClassName))
             if not variableName in variableNames:
                 variableNames.append(variableName)
                 print('Define StateTypeId %s = %s' % (variableName, stateType['id']))
@@ -169,26 +171,41 @@ def extractStateTypes(stateTypes, deviceClassName):
             else:
                 print('Duplicated variable name \"%s\" for StateTypeId %s -> skipping') % (variableName, stateType['id'])
             
-            # create ActionTypeId if the state is writable
-            if 'writable' in stateType:
-                if stateType['writable']:
-                    vName = '%sActionTypeId' % (stateType['idName']) 
-                    if not vName in variableNames:
-                        variableNames.append(vName)
-                        print('Define ActionTypeId %s for writable StateType %s = %s' % (vName, variableName, stateType['id']))
-                        writePluginInfo('ActionTypeId %s = ActionTypeId(\"%s\");' % (vName, stateType['id']))
-                        createExternDefinition('ActionTypeId', vName)
-                    else:
-                        print('Duplicated variable name \"%s\" for ActionTypeId %s -> skipping') % (variableName, stateType['id'])
-
-                    vName = '%sActionParamTypeId' % (stateType['idName']) 
-                    if not vName in variableNames:
-                        variableNames.append(vName)
-                        print('Define ParamTypeId %s for autocreated ActionTypeId %s = %s' % (vName, variableName, stateType['id']))
-                        writePluginInfo('ParamTypeId %s = ParamTypeId(\"%s\");' % (vName, stateType['id']))
-                        createExternDefinition('ParamTypeId', vName)
-                    else:
-                        print('duplicated variable name \"%s\" for ParamTypeId %s -> skipping') % (variableName, stateType['id'])
+            # Create EventTypeId for this state
+            variableName = '%sEventTypeId' % (stateType['idName'])
+            if not variableName in variableNames:
+                # TODO parese event name
+                variableNames.append(variableName)
+                print('Define EventTypeId %s = %s' % (variableName, stateType['id']))
+                writePluginInfo('EventTypeId %s = EventTypeId(\"%s\");' % (variableName, stateType['id']))
+                createExternDefinition('EventTypeId', variableName)
+            else:
+                print('Duplicated variable name \"%s\" for EventTypeId %s -> skipping') % (variableName, stateType['id'])
+            
+            
+            # Create ActionTypeId if the state is writable
+            if 'writable' in stateType and stateType['writable']:
+                #ActionType
+                variableName = '%sActionTypeId' % (stateType['idName']) 
+                if not variableName in variableNames:
+                    variableNames.append(variableName)
+                    print('Define ActionTypeId for writable StateType %s = %s' % (variableName, stateType['id']))
+                    # TODO: parse action name
+                    writePluginInfo('ActionTypeId %s = ActionTypeId(\"%s\");' % (variableName, stateType['id']))
+                    createExternDefinition('ActionTypeId', variableName)
+                else:
+                    print('Duplicated variable name \"%s\" for ActionTypeId %s -> skipping') % (variableName, stateType['id'])
+                
+                #Action ParamType
+                variableName = '%sActionParamTypeId' % (stateType['idName']) 
+                if not variableName in variableNames:
+                    variableNames.append(variableName)
+                    print('Define ParamTypeId %s for autocreated ActionTypeId %s = %s' % (variableName, variableName, stateType['id']))
+                    writePluginInfo('ParamTypeId %s = ParamTypeId(\"%s\");' % (variableName, stateType['id']))
+                    createExternDefinition('ParamTypeId', variableName)
+                    addTranslationString(stateType['name'], 'The name of the ActionType ParamType of writable StateType (%s) of DeviceClass %s' % (stateType['id'], deviceClassName))
+                else:
+                    print('duplicated variable name \"%s\" for ParamTypeId %s -> skipping') % (variableName, stateType['id'])
         except:
             pass
 
@@ -198,10 +215,10 @@ def extractActionTypes(actionTypes, deviceClassName):
     for actionType in actionTypes:
         try:
             variableName = '%sActionTypeId' % (actionType['idName'])
-            addTranslationString(actionType['name'], 'The name of the ActionType %s of deviceClass %s' % (actionType['id'], deviceClassName))
 
             if not variableName in variableNames:
                 variableNames.append(variableName)
+                addTranslationString(actionType['name'], 'The name of the ActionType %s of deviceClass %s' % (actionType['id'], deviceClassName))
                 writePluginInfo('ActionTypeId %s = ActionTypeId(\"%s\");' % (variableName, actionType['id']))
                 createExternDefinition('ActionTypeId', variableName)
             else:
@@ -218,9 +235,10 @@ def extractEventTypes(eventTypes, deviceClassName):
     for eventType in eventTypes:
         try:
             variableName = '%sEventTypeId' % (eventType['idName'])
-            addTranslationString(eventType['name'], 'The name of the EventType %s of deviceClass %s' % (eventType['id'], deviceClassName))
+
             if not variableName in variableNames:
                 variableNames.append(variableName)
+                addTranslationString(eventType['name'], 'The name of the EventType %s of deviceClass %s' % (eventType['id'], deviceClassName))
                 writePluginInfo('EventTypeId %s = EventTypeId(\"%s\");' % (variableName, eventType['id']))
                 createExternDefinition('EventTypeId', variableName)                    
             else:
@@ -240,8 +258,15 @@ def createExternDefinition(type, name):
 
 
 def addTranslationString(string, comment):
-    translationStrings.append([string, comment])
-    #translationStrings.append([unicode(string, 'utf-8'), unicode(comment, 'utf-8')])
+    alreadyAdded = False
+    for translation in translationStrings:
+        if translation[0] == string:
+            alreadyAdded = true
+            translation[1] += '\n%s' % comment
+    
+    if not alreadyAdded:
+        translationStrings.append([string, comment])
+        
 
 def writeTranslationStrings():
     if len(args.translations) is 0:

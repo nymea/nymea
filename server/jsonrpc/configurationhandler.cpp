@@ -138,12 +138,18 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     params.insert("port", JsonTypes::basicTypeToString(JsonTypes::Uint));
     setParams("WebSocketServerConfigurationChanged", params);
 
+    params.clear(); returns.clear();
+    setDescription("LanguageChanged", "Emitted whenever the language of the server changed. The Plugins, Vendors and DeviceClasses have to be reloaded to get the translated data.");
+    params.insert("language", JsonTypes::basicTypeToString(JsonTypes::String));
+    setParams("LanguageChanged", params);
+
     connect(GuhCore::instance()->configuration(), &GuhConfiguration::serverNameChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
     connect(GuhCore::instance()->configuration(), &GuhConfiguration::timeZoneChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
     connect(GuhCore::instance()->configuration(), &GuhConfiguration::localeChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
     connect(GuhCore::instance()->configuration(), &GuhConfiguration::tcpServerConfigurationChanged, this, &ConfigurationHandler::onTcpServerConfigurationChanged);
     connect(GuhCore::instance()->configuration(), &GuhConfiguration::webServerConfigurationChanged, this, &ConfigurationHandler::onWebServerConfigurationChanged);
     connect(GuhCore::instance()->configuration(), &GuhConfiguration::webSocketServerConfigurationChanged, this, &ConfigurationHandler::onWebSocketServerConfigurationChanged);
+    connect(GuhCore::instance()->deviceManager(), &DeviceManager::languageUpdated, this, &ConfigurationHandler::onLanguageChanged);
 }
 
 QString ConfigurationHandler::name() const
@@ -313,6 +319,14 @@ void ConfigurationHandler::onWebSocketServerConfigurationChanged()
     qCDebug(dcJsonRpc()) << "Notification: web socket server configuration changed";
     params.insert("webSocketServerConfiguration", JsonTypes::packWebSocketServerConfiguration());
     emit WebSocketServerConfigurationChanged(params);
+}
+
+void ConfigurationHandler::onLanguageChanged()
+{
+    QVariantMap params;
+    qCDebug(dcJsonRpc()) << "Notification: language configuration changed";
+    params.insert("language", GuhCore::instance()->configuration()->locale().name());
+    emit LanguageChanged(params);
 }
 
 }

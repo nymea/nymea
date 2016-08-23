@@ -50,12 +50,14 @@ signals:
     void TcpServerConfigurationChanged(const QVariantMap &params);
     void WebServerConfigurationChanged(const QVariantMap &params);
     void WebSocketServerConfigurationChanged(const QVariantMap &params);
+    void LanguageChanged(const QVariantMap &params);
 
 private slots:
     void onBasicConfigurationChanged();
     void onTcpServerConfigurationChanged();
     void onWebServerConfigurationChanged();
     void onWebSocketServerConfigurationChanged();
+    void onLanguageChanged();
 
 };
 

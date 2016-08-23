@@ -9,7 +9,7 @@
             "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6",
             "deviceClasses": [
                 {
-                    "deviceClassId": "f4844c97-7ca6-4349-904e-ff9749a9fe74",
+                    "id": "f4844c97-7ca6-4349-904e-ff9749a9fe74",
                     "idName": "customMail",
                     "name": "Custom mail",
                     "deviceIcon": "Mail",
@@ -119,7 +119,7 @@
             "id": "d02399c5-8e79-40be-8cf6-e00b55bbfe7c",
             "deviceClasses": [
                 {
-                    "deviceClassId": "3869884a-1592-4b8f-84a7-994be18ff555",
+                    "id": "3869884a-1592-4b8f-84a7-994be18ff555",
                     "idName": "googleMail",
                     "name": "Google mail",
                     "deviceIcon": "Mail",
@@ -189,7 +189,7 @@
             "id": "5eb3e1e9-25a7-4740-806e-5cfc836e4bf5",
             "deviceClasses": [
                 {
-                    "deviceClassId": "59409e8f-0c83-414f-abd5-bbbf2758acba",
+                    "id": "59409e8f-0c83-414f-abd5-bbbf2758acba",
                     "idName": "yahooMail",
                     "name": "Yahoo mail",
                     "deviceIcon": "Mail",

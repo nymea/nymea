@@ -9,7 +9,7 @@
             "id": "b5e1896e-b7fa-4c19-ac2b-10bd489f8302",
             "deviceClasses": [
                 {
-                    "deviceClassId": "56029c6d-777b-4889-9e17-29f813d34da4",
+                    "id": "56029c6d-777b-4889-9e17-29f813d34da4",
                     "idName": "pushNotification",
                     "name": "Push Notification",
                     "createMethods": ["user"],

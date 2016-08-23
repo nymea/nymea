@@ -140,7 +140,7 @@ DeviceManager::DeviceError DevicePluginDollHouse::executeAction(Device *device, 
         url.setQuery(query);
 
         if (action.actionTypeId() == colorActionTypeId) {
-            QColor color = action.param(colorActionParamTypeId).value().value<QColor>().toHsv();
+            QColor color = action.param(colorStateParamTypeId).value().value<QColor>().toHsv();
             QColor newColor = QColor::fromHsv(color.hue(), color.saturation(), 100 * light->brightness() / 255.0);
             QByteArray message = "color=" + newColor.toRgb().name().remove("#").toUtf8();
 
@@ -155,7 +155,7 @@ DeviceManager::DeviceError DevicePluginDollHouse::executeAction(Device *device, 
         } else if (action.actionTypeId() == powerActionTypeId) {
 
             QByteArray message;
-            if (action.param(powerActionParamTypeId).value().toBool()) {
+            if (action.param(powerStateParamTypeId).value().toBool()) {
                 QColor color = light->color().toHsv();
                 QColor newColor = QColor::fromHsv(color.hue(), color.saturation(), 100 * light->brightness() / 255.0);
                 message = "color=" + newColor.toRgb().name().remove("#").toUtf8();
@@ -172,7 +172,7 @@ DeviceManager::DeviceError DevicePluginDollHouse::executeAction(Device *device, 
             return DeviceManager::DeviceErrorAsync;
         } else if (action.actionTypeId() == brightnessActionTypeId) {
 
-            int brightness = action.param(brightnessActionParamTypeId).value().toInt();
+            int brightness = action.param(brightnessStateParamTypeId).value().toInt();
 
             QColor color = light->color().toHsv();
             QColor newColor = QColor::fromHsv(color.hue(), color.saturation(), 100 * brightness / 255.0);
@@ -363,7 +363,7 @@ void DevicePluginDollHouse::coapReplyFinished(CoapReply *reply)
 
         // Set the states
         if (action.actionTypeId() == powerActionTypeId) {
-            bool power = action.param(powerActionParamTypeId).value().toBool();
+            bool power = action.param(powerStateParamTypeId).value().toBool();
             light->setPower(power);
             m_lights.key(light)->setStateValue(powerStateTypeId, power);
 
@@ -373,7 +373,7 @@ void DevicePluginDollHouse::coapReplyFinished(CoapReply *reply)
                 m_lights.key(light)->setStateValue(powerStateTypeId, true);
             }
 
-            QColor color = action.param(colorActionParamTypeId).value().value<QColor>();
+            QColor color = action.param(colorStateParamTypeId).value().value<QColor>();
             light->setColor(color);
             m_lights.key(light)->setStateValue(colorStateTypeId, color);
 
@@ -383,7 +383,7 @@ void DevicePluginDollHouse::coapReplyFinished(CoapReply *reply)
                 m_lights.key(light)->setStateValue(powerStateTypeId, true);
             }
 
-            int brightness = action.param(brightnessActionParamTypeId).value().toInt();
+            int brightness = action.param(brightnessStateParamTypeId).value().toInt();
             light->setBrightness(brightness);
             m_lights.key(light)->setStateValue(brightnessStateTypeId, brightness);
         }

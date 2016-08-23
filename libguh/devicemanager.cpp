@@ -293,6 +293,30 @@ void DeviceManager::setLocale(const QLocale &locale)
         plugin->setLocale(m_locale);
         QCoreApplication::installTranslator(plugin->translator());
     }
+
+    // Reload all plugin meta data
+
+    m_supportedVendors.clear();
+    m_supportedDevices.clear();
+
+    foreach (DevicePlugin *plugin, m_devicePlugins.values()) {
+
+        foreach (const Vendor &vendor, plugin->supportedVendors()) {
+            if (m_supportedVendors.contains(vendor.id()))
+                continue;
+
+            m_supportedVendors.insert(vendor.id(), vendor);
+        }
+
+        foreach (const DeviceClass &deviceClass, plugin->supportedDevices()) {
+            if (!m_supportedVendors.contains(deviceClass.vendorId())) {
+                qCWarning(dcDeviceManager) << "Vendor not found. Ignoring device. VendorId:" << deviceClass.vendorId() << "DeviceClass:" << deviceClass.name() << deviceClass.id();
+                continue;
+            }
+            m_supportedDevices.insert(deviceClass.id(), deviceClass);
+        }
+    }
+
 }
 
 /*! Returns all the \l{DevicePlugin}{DevicePlugins} loaded in the system. */

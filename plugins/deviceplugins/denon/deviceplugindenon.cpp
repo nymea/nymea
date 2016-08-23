@@ -121,9 +121,9 @@ DeviceManager::DeviceError DevicePluginDenon::executeAction(Device *device, cons
 
             // Print information that we are executing now the update action
             qCDebug(dcDenon) << "set power action" << action.id();
-            qCDebug(dcDenon) << "power: " << action.param(powerActionParamTypeId).value().Bool;
+            qCDebug(dcDenon) << "power: " << action.param(powerStateParamTypeId).value().Bool;
 
-            if (action.param(powerActionParamTypeId).value().toBool() == true){
+            if (action.param(powerStateParamTypeId).value().toBool() == true){
                 QByteArray cmd = "PWON\r";
                 qCDebug(dcDenon) << "Execute power: " << action.id() << cmd;
                 m_denonConnection->sendData(cmd);
@@ -137,7 +137,7 @@ DeviceManager::DeviceError DevicePluginDenon::executeAction(Device *device, cons
 
         } else if (action.actionTypeId() == volumeActionTypeId) {
 
-            QByteArray vol = action.param(volumeActionParamTypeId).value().toByteArray();
+            QByteArray vol = action.param(volumeStateParamTypeId).value().toByteArray();
             QByteArray cmd = "MV" + vol + "\r";
 
             qCDebug(dcDenon) << "Execute volume" << action.id() << cmd;
@@ -148,7 +148,7 @@ DeviceManager::DeviceError DevicePluginDenon::executeAction(Device *device, cons
         } else if (action.actionTypeId() == channelActionTypeId) {
 
             qCDebug(dcDenon) << "Execute update action" << action.id();
-            QByteArray channel = action.param(channelActionParamTypeId).value().toByteArray();
+            QByteArray channel = action.param(channelStateParamTypeId).value().toByteArray();
             QByteArray cmd = "SI" + channel + "\r";
 
             qCDebug(dcDenon) << "Change to channel:" << cmd;

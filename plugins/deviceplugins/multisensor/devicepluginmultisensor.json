@@ -11,7 +11,7 @@
                 {
                     "name": "SensorTag",
                     "idName": "sensortag",
-                    "deviceClassId": "158a06b6-b27f-4951-957e-6f1e3b44f604",
+                    "id": "158a06b6-b27f-4951-957e-6f1e3b44f604",
                     "createMethods": ["discovery"],
                     "criticalStateTypeId": "a9629b11-0f34-47f0-a0f0-f758a6aec2b4",
                     "basicTags": [
@@ -41,6 +41,7 @@
                             "id": "a9629b11-0f34-47f0-a0f0-f758a6aec2b4",
                             "idName": "available",
                             "name": "available",
+                            "eventTypeName": "available changed",
                             "index": 0,
                             "type": "bool",
                             "defaultValue": false
@@ -49,6 +50,7 @@
                             "id": "c664e9ec-a045-49ba-add1-1642ceba7c4f",
                             "idName": "IRtemperature",
                             "name": "IR temperature",
+                            "eventTypeName": "IR temperature changed",
                             "index": 1,
                             "type": "double",
                             "unit": "DegreeCelsius",
@@ -58,6 +60,7 @@
                             "id": "e83a50ff-96c9-4b6d-889f-f4238353e794",
                             "idName": "humidity",
                             "name": "humidity",
+                            "eventTypeName": "humidity changed",
                             "index": 2,
                             "type": "double",
                             "unit": "Percentage",
@@ -67,6 +70,7 @@
                             "id": "8359ada9-df1c-4e60-bb87-9e21d05ee2e2",
                             "idName": "temperature",
                             "name": "temperature",
+                            "eventTypeName": "temperature changed",
                             "index": 3,
                             "type": "double",
                             "unit": "DegreeCelsius",
@@ -76,6 +80,7 @@
                             "id": "645633ad-77d4-45b2-8be8-d6ca7a12eb7a",
                             "idName": "pressure",
                             "name": "pressure",
+                            "eventTypeName": "pressure changed",
                             "index": 4,
                             "type": "double",
                             "unit": "HectoPascal",

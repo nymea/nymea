@@ -162,7 +162,7 @@ DeviceManager::DeviceError DevicePluginEQ3::executeAction(Device *device, const 
                 int roomId = device->paramValue(roomParamTypeId).toInt();
 
                 if (action.actionTypeId() == desiredTemperatureActionTypeId){
-                    cube->setDeviceSetpointTemp(rfAddress, roomId, action.param(desiredTemperatureActionParamTypeId).value().toDouble(), action.id());
+                    cube->setDeviceSetpointTemp(rfAddress, roomId, action.param(desiredTemperatureStateParamTypeId).value().toDouble(), action.id());
                 } else if (action.actionTypeId() == setAutoModeActionTypeId){
                     cube->setDeviceAutoMode(rfAddress, roomId, action.id());
                 } else if (action.actionTypeId() == setManualModeActionTypeId){

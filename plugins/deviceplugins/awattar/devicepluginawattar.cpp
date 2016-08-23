@@ -202,9 +202,9 @@ DeviceManager::DeviceError DevicePluginAwattar::executeAction(Device *device, co
         return DeviceManager::DeviceErrorHardwareNotAvailable;
 
     if (action.actionTypeId() == sgSyncModeActionTypeId) {
-        qCDebug(dcAwattar) << "Set sg sync mode to" << action.param(sgSyncModeActionParamTypeId).value();
-        device->setStateValue(sgSyncModeStateTypeId, action.param(sgSyncModeActionParamTypeId).value());
-        if (action.param(sgSyncModeActionParamTypeId).value() == "auto")
+        qCDebug(dcAwattar) << "Set sg sync mode to" << action.param(sgSyncModeStateParamTypeId).value();
+        device->setStateValue(sgSyncModeStateTypeId, action.param(sgSyncModeStateParamTypeId).value());
+        if (action.param(sgSyncModeStateParamTypeId).value() == "auto")
             setSgMode(m_autoSgMode);
 
         return DeviceManager::DeviceErrorNoError;

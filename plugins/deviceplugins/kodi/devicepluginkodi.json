@@ -9,7 +9,7 @@
             "idName": "kodi",
             "deviceClasses": [
                 {
-                    "deviceClassId": "d09953e3-c5bd-415b-973b-0d0bf2be3f69",
+                    "id": "d09953e3-c5bd-415b-973b-0d0bf2be3f69",
                     "idName": "kodi",
                     "name": "Kodi",
                     "deviceIcon": "Tv",
@@ -50,6 +50,7 @@
                             "id": "09dfbd40-c97c-4a20-9ecd-f80e389a4864",
                             "idName": "connected",
                             "name": "connected",
+                            "eventTypeName": "connected changed",
                             "index": 0,
                             "defaultValue": false,
                             "type": "bool"
@@ -58,6 +59,8 @@
                             "id": "bc98cdb0-4d0e-48ca-afc7-922e49bb7813",
                             "idName": "mute",
                             "name": "mute",
+                            "eventTypeName": "mute changed",
+                            "actionTypeName": "Set mute",
                             "index": 1,
                             "type": "bool",
                             "defaultValue": true,
@@ -69,6 +72,8 @@
                             "id": "9dfe5d78-4c3f-497c-bab1-bb9fdf7e93a9",
                             "idName": "volume",
                             "name": "volume",
+                            "eventTypeName": "volume changed",
+                            "actionTypeName": "Set volume",
                             "unit": "Percentage",
                             "type": "int",
                             "index": 2,

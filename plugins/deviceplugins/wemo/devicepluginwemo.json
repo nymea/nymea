@@ -9,7 +9,7 @@
             "id": "b241f7f5-8153-4a72-b260-f62beadc2d19",
             "deviceClasses": [
                 {
-                    "deviceClassId": "69d97d3b-a8e6-42f3-afc0-ca8a53eb7cce",
+                    "id": "69d97d3b-a8e6-42f3-afc0-ca8a53eb7cce",
                     "idName": "wemoSwitch",
                     "name": "WeMo Switch",
                     "deviceIcon": "Socket",
@@ -58,6 +58,8 @@
                             "id": "7166c4f6-f68c-4188-8f7c-2205d72a5a6d",
                             "idName": "power",
                             "name": "power",
+                            "eventTypeName": "power changed",
+                            "actionTypeName": "Set power",
                             "index": 0,
                             "type": "bool",
                             "defaultValue": false,
@@ -66,6 +68,7 @@
                         {
                             "id": "ec2f5b49-585c-4455-a233-b7aa4c608dbc",
                             "idName": "reachable",
+                            "eventTypeName": "reachable changed",
                             "name": "reachable",
                             "index": 1,
                             "type": "bool",

@@ -435,27 +435,27 @@ DeviceManager::DeviceError DevicePluginPhilipsHue::executeAction(Device *device,
         }
 
         if (action.actionTypeId() == huePowerActionTypeId) {
-            QPair<QNetworkRequest, QByteArray> request = light->createSetPowerRequest(action.param(huePowerActionParamTypeId).value().toBool());
+            QPair<QNetworkRequest, QByteArray> request = light->createSetPowerRequest(action.param(huePowerStateParamTypeId).value().toBool());
             m_asyncActions.insert(networkManagerPut(request.first, request.second),QPair<Device *, ActionId>(device, action.id()));
             return DeviceManager::DeviceErrorAsync;
         } else if (action.actionTypeId() == hueColorActionTypeId) {
-            QPair<QNetworkRequest, QByteArray> request = light->createSetColorRequest(action.param(hueColorActionParamTypeId).value().value<QColor>());
+            QPair<QNetworkRequest, QByteArray> request = light->createSetColorRequest(action.param(hueColorStateParamTypeId).value().value<QColor>());
             m_asyncActions.insert(networkManagerPut(request.first, request.second),QPair<Device *, ActionId>(device, action.id()));
             return DeviceManager::DeviceErrorAsync;
         } else if (action.actionTypeId() == hueBrightnessActionTypeId) {
-            QPair<QNetworkRequest, QByteArray> request = light->createSetBrightnessRequest(percentageToBrightness(action.param(hueBrightnessActionParamTypeId).value().toInt()));
+            QPair<QNetworkRequest, QByteArray> request = light->createSetBrightnessRequest(percentageToBrightness(action.param(hueBrightnessStateParamTypeId).value().toInt()));
             m_asyncActions.insert(networkManagerPut(request.first, request.second),QPair<Device *, ActionId>(device, action.id()));
             return DeviceManager::DeviceErrorAsync;
         } else if (action.actionTypeId() == hueEffectActionTypeId) {
-            QPair<QNetworkRequest, QByteArray> request = light->createSetEffectRequest(action.param(hueEffectActionParamTypeId).value().toString());
+            QPair<QNetworkRequest, QByteArray> request = light->createSetEffectRequest(action.param(hueEffectStateParamTypeId).value().toString());
             m_asyncActions.insert(networkManagerPut(request.first, request.second),QPair<Device *, ActionId>(device, action.id()));
             return DeviceManager::DeviceErrorAsync;
         } else if (action.actionTypeId() == hueAlertActionTypeId) {
-            QPair<QNetworkRequest, QByteArray> request = light->createFlashRequest(action.param(hueEffectActionParamTypeId).value().toString());
+            QPair<QNetworkRequest, QByteArray> request = light->createFlashRequest(action.param(hueEffectStateParamTypeId).value().toString());
             m_asyncActions.insert(networkManagerPut(request.first, request.second),QPair<Device *, ActionId>(device, action.id()));
             return DeviceManager::DeviceErrorAsync;
         } else if (action.actionTypeId() == hueTemperatureActionTypeId) {
-            QPair<QNetworkRequest, QByteArray> request = light->createSetTemperatureRequest(action.param(hueColorActionParamTypeId).value().toInt());
+            QPair<QNetworkRequest, QByteArray> request = light->createSetTemperatureRequest(action.param(hueColorStateParamTypeId).value().toInt());
             m_asyncActions.insert(networkManagerPut(request.first, request.second),QPair<Device *, ActionId>(device, action.id()));
             return DeviceManager::DeviceErrorAsync;
         }
@@ -472,15 +472,15 @@ DeviceManager::DeviceError DevicePluginPhilipsHue::executeAction(Device *device,
         }
 
         if (action.actionTypeId() == huePowerActionTypeId) {
-            QPair<QNetworkRequest, QByteArray> request = light->createSetPowerRequest(action.param(huePowerActionParamTypeId).value().toBool());
+            QPair<QNetworkRequest, QByteArray> request = light->createSetPowerRequest(action.param(huePowerStateParamTypeId).value().toBool());
             m_asyncActions.insert(networkManagerPut(request.first, request.second),QPair<Device *, ActionId>(device, action.id()));
             return DeviceManager::DeviceErrorAsync;
         } else if (action.actionTypeId() == hueBrightnessActionTypeId) {
-            QPair<QNetworkRequest, QByteArray> request = light->createSetBrightnessRequest(percentageToBrightness(action.param(hueBrightnessActionParamTypeId).value().toInt()));
+            QPair<QNetworkRequest, QByteArray> request = light->createSetBrightnessRequest(percentageToBrightness(action.param(hueBrightnessStateParamTypeId).value().toInt()));
             m_asyncActions.insert(networkManagerPut(request.first, request.second),QPair<Device *, ActionId>(device, action.id()));
             return DeviceManager::DeviceErrorAsync;
         } else if (action.actionTypeId() == hueAlertActionTypeId) {
-            QPair<QNetworkRequest, QByteArray> request = light->createFlashRequest(action.param(hueEffectActionParamTypeId).value().toString());
+            QPair<QNetworkRequest, QByteArray> request = light->createFlashRequest(action.param(hueEffectStateParamTypeId).value().toString());
             m_asyncActions.insert(networkManagerPut(request.first, request.second),QPair<Device *, ActionId>(device, action.id()));
             return DeviceManager::DeviceErrorAsync;
         }

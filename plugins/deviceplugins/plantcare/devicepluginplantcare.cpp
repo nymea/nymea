@@ -190,7 +190,7 @@ DeviceManager::DeviceError DevicePluginPlantCare::executeAction(Device *device, 
         return DeviceManager::DeviceErrorAsync;
 
     } else if(action.actionTypeId() == ledPowerActionTypeId) {
-        int power = action.param(ledPowerActionParamTypeId).value().toInt();
+        int power = action.param(ledPowerStateParamTypeId).value().toInt();
 
         QUrl url;
         url.setScheme("coap");
@@ -212,7 +212,7 @@ DeviceManager::DeviceError DevicePluginPlantCare::executeAction(Device *device, 
         return DeviceManager::DeviceErrorAsync;
 
     } else if(action.actionTypeId() == waterPumpActionTypeId) {
-        bool pump = action.param(waterPumpActionParamTypeId).value().toBool();
+        bool pump = action.param(waterPumpStateParamTypeId).value().toBool();
 
         QUrl url;
         url.setScheme("coap");
@@ -505,7 +505,7 @@ void DevicePluginPlantCare::coapReplyFinished(CoapReply *reply)
         }
 
         // Update the state here, so we don't have to wait for the notification
-        device->setStateValue(ledPowerStateTypeId, action.param(ledPowerActionParamTypeId).value().toBool());
+        device->setStateValue(ledPowerStateTypeId, action.param(ledPowerStateParamTypeId).value().toBool());
         // Tell the user about the action execution result
         emit actionExecutionFinished(action.id(), DeviceManager::DeviceErrorNoError);
 
@@ -531,7 +531,7 @@ void DevicePluginPlantCare::coapReplyFinished(CoapReply *reply)
         }
 
         // Update the state here, so we don't have to wait for the notification
-        device->setStateValue(waterPumpStateTypeId, action.param(waterPumpActionParamTypeId).value().toBool());
+        device->setStateValue(waterPumpStateTypeId, action.param(waterPumpStateParamTypeId).value().toBool());
         // Tell the user about the action execution result
         emit actionExecutionFinished(action.id(), DeviceManager::DeviceErrorNoError);
 

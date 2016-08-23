@@ -317,6 +317,7 @@ void DeviceManager::setLocale(const QLocale &locale)
         }
     }
 
+    emit languageUpdated();
 }
 
 /*! Returns all the \l{DevicePlugin}{DevicePlugins} loaded in the system. */

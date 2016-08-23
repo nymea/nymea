@@ -29,7 +29,7 @@
             "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6",
             "deviceClasses": [
                 {
-                    "deviceClassId": "753f0d32-0468-4d08-82ed-1964aab03298",
+                    "id": "753f0d32-0468-4d08-82ed-1964aab03298",
                     "idName": "mock",
                     "name": "Mock Device",
                     "deviceIcon": "Tune",
@@ -56,7 +56,7 @@
                         {
                             "id": "d4f06047-125e-4479-9810-b54c189917f5",
                             "idName": "httpport",
-                            "name": "httpport",
+                            "name": "http port",
                             "index": 0,
                             "type": "int"
                         },
@@ -81,7 +81,9 @@
                     "stateTypes": [
                         {
                             "id": "80baec19-54de-4948-ac46-31eabfaceb83",
+                            "idName": "int",
                             "name": "Dummy int state",
+                            "eventTypeName": "Dummy int state changed",
                             "index": 0,
                             "defaultValue": 10,
                             "graphRelevant": true,
@@ -89,7 +91,9 @@
                         },
                         {
                             "id": "9dd6a97c-dfd1-43dc-acbd-367932742310",
+                            "idName": "bool",
                             "name": "Dummy bool state",
+                            "eventTypeName": "Dummy bool state changed",
                             "index": 1,
                             "defaultValue": false,
                             "type": "bool"
@@ -122,6 +126,7 @@
                         {
                             "id": "dea0f4e1-65e3-4981-8eaa-2701c53a9185",
                             "name": "Mock Action 1 (with params)",
+                            "idName": "withParams",
                             "index": 0,
                             "paramTypes": [
                                 {
@@ -142,6 +147,7 @@
                         },
                         {
                             "id": "defd3ed6-1a0d-400b-8879-a0202cf39935",
+                            "idName": "withoutParams",
                             "index": 1,
                             "name": "Mock Action 2 (without params)"
                         },
@@ -166,7 +172,7 @@
                     ]
                 },
                 {
-                    "deviceClassId": "ab4257b3-7548-47ee-9bd4-7dc3004fd197",
+                    "id": "ab4257b3-7548-47ee-9bd4-7dc3004fd197",
                     "idName": "mockDeviceAuto",
                     "name": "Mock Device (Auto created)",
                     "basicTags": [
@@ -182,7 +188,7 @@
                         {
                             "id": "d4f06047-125e-4479-9810-b54c189917f5",
                             "idName": "httpport",
-                            "name": "httpport",
+                            "name": "http port",
                             "index": 0,
                             "type": "int"
                         },
@@ -207,14 +213,19 @@
                     "stateTypes": [
                         {
                             "id": "80baec19-54de-4948-ac46-31eabfaceb83",
+                            "idName": "int",
                             "name": "Dummy int state",
+                            "eventTypeName": "Dummy int state changed",
                             "index": 0,
                             "defaultValue": 10,
+                            "graphRelevant": true,
                             "type": "int"
                         },
                         {
                             "id": "9dd6a97c-dfd1-43dc-acbd-367932742310",
+                            "idName": "bool",
                             "name": "Dummy bool state",
+                            "eventTypeName": "Dummy bool state changed",
                             "index": 1,
                             "defaultValue": false,
                             "type": "bool"
@@ -223,11 +234,13 @@
                     "eventTypes": [
                         {
                             "id": "45bf3752-0fc6-46b9-89fd-ffd878b5b22b",
+                            "idName": "event1",
                             "index": 0,
                             "name": "Mock Event 1"
                         },
                         {
                             "id": "863d5920-b1cf-4eb9-88bd-8f7b8583b1cf",
+                            "idName": "event2",
                             "name": "Mock Event 2",
                             "index": 1,
                             "paramTypes": [
@@ -246,6 +259,7 @@
                         {
                             "id": "dea0f4e1-65e3-4981-8eaa-2701c53a9185",
                             "name": "Mock Action 1 (with params)",
+                            "idName": "withParams",
                             "index": 0,
                             "paramTypes": [
                                 {
@@ -287,7 +301,7 @@
                     ]
                 },
                 {
-                    "deviceClassId": "9e03144c-e436-4eea-82d9-ccb33ef778db",
+                    "id": "9e03144c-e436-4eea-82d9-ccb33ef778db",
                     "idName": "mockPushButton",
                     "name": "Mock Device (Push Button)",
                     "basicTags": [
@@ -299,6 +313,7 @@
                     "setupMethod": "pushButton",
                     "deviceIcon": "Tune",
                     "pairingInfo": "Wait 3 second before you continue, the push button will be pressed automatically.",
+                    "paramTypes": [ ],
                     "discoveryParamTypes": [
                         {
                             "id": "d222adb4-2f9c-4c3f-8655-76400d0fb6ce",
@@ -315,19 +330,26 @@
                             "id": "20dc7c22-c50e-42db-837c-2bbced939f8e",
                             "idName": "color",
                             "name": "color",
+                            "eventTypeName": "color changed",
+                            "actionTypeName": "Set color",
                             "index": 0,
                             "type": "QColor",
                             "defaultValue": "#000000",
+                            "ruleRelevant": false,
+                            "eventRuleRelevant": false,
                             "writable": true
                         },
                         {
                             "id": "72981c04-267a-4ba0-a59e-9921d2f3af9c",
                             "idName": "percentage",
                             "name": "percentage",
-                            "index": 1,
+                            "eventTypeName": "percentage changed",
+                            "actionTypeName": "Set percentage",
                             "type": "int",
+                            "index": 1,
                             "unit": "Percentage",
                             "defaultValue": 0,
+                            "ruleRelevant": false,
                             "minValue": 0,
                             "maxValue": 100,
                             "writable": true
@@ -336,9 +358,11 @@
                             "id": "05f63f9c-f61e-4dcf-ad55-3f13fde2765b",
                             "idName": "allowedValues",
                             "name": "allowed values",
-                            "index": 2,
+                            "eventTypeName": "allowed values changed",
+                            "actionTypeName": "Set allowed values",
                             "type": "QString",
-                            "defaultValue": "String value 2",
+                            "index": 2,
+                            "defaultValue": "String value 1",
                             "possibleValues": [
                                 "String value 1",
                                 "String value 2",
@@ -351,8 +375,10 @@
                             "id": "53cd7c55-49b7-441b-b970-9048f20f0e2c",
                             "idName": "double",
                             "name": "double value",
-                            "index": 3,
+                            "eventTypeName": "double value changed",
+                            "actionTypeName": "Set double value",
                             "type": "double",
+                            "index": 3,
                             "defaultValue": 0.0,
                             "minValue": -100.0,
                             "maxValue": 100.0,
@@ -362,6 +388,8 @@
                             "id": "e680f7a4-b39e-46da-be41-fa3170fe3768",
                             "idName": "bool",
                             "name": "bool value",
+                            "eventTypeName": "bool value changed",
+                            "actionTypeName": "Set bool value",
                             "index": 4,
                             "type": "bool",
                             "defaultValue": false,
@@ -378,7 +406,7 @@
                     ]
                 },
                 {
-                    "deviceClassId": "296f1fd4-e893-46b2-8a42-50d1bceb8730",
+                    "id": "296f1fd4-e893-46b2-8a42-50d1bceb8730",
                     "idName": "mockDisplayPin",
                     "name": "Mock Device (Display Pin)",
                     "deviceIcon": "Tune",
@@ -418,6 +446,8 @@
                             "id": "20dc7c22-c50e-42db-837c-2bbced939f8e",
                             "idName": "color",
                             "name": "color",
+                            "eventTypeName": "color changed",
+                            "actionTypeName": "Set color",
                             "index": 0,
                             "type": "QColor",
                             "defaultValue": "#000000",
@@ -429,6 +459,8 @@
                             "id": "72981c04-267a-4ba0-a59e-9921d2f3af9c",
                             "idName": "percentage",
                             "name": "percentage",
+                            "eventTypeName": "percentage changed",
+                            "actionTypeName": "Set percentage",
                             "type": "int",
                             "index": 1,
                             "unit": "Percentage",
@@ -442,6 +474,8 @@
                             "id": "05f63f9c-f61e-4dcf-ad55-3f13fde2765b",
                             "idName": "allowedValues",
                             "name": "allowed values",
+                            "eventTypeName": "allowed values changed",
+                            "actionTypeName": "Set allowed values",
                             "type": "QString",
                             "index": 2,
                             "defaultValue": "String value 1",
@@ -457,6 +491,8 @@
                             "id": "53cd7c55-49b7-441b-b970-9048f20f0e2c",
                             "idName": "double",
                             "name": "double value",
+                            "eventTypeName": "double value changed",
+                            "actionTypeName": "Set double value",
                             "type": "double",
                             "index": 3,
                             "defaultValue": 0.0,
@@ -468,6 +504,8 @@
                             "id": "e680f7a4-b39e-46da-be41-fa3170fe3768",
                             "idName": "bool",
                             "name": "bool value",
+                            "eventTypeName": "bool value changed",
+                            "actionTypeName": "Set bool value",
                             "index": 4,
                             "type": "bool",
                             "defaultValue": false,
@@ -484,7 +522,7 @@
                     ]
                 },
                 {
-                    "deviceClassId": "a71fbde9-9a38-4bf8-beab-c8aade2608ba",
+                    "id": "a71fbde9-9a38-4bf8-beab-c8aade2608ba",
                     "idName": "mockParent",
                     "name": "Mock Device (Parent)",
                     "deviceIcon": "Tune",
@@ -494,11 +532,14 @@
                         "Gateway"
                     ],
                     "createMethods": ["user"],
+                    "paramTypes": [ ],
                     "stateTypes": [
                         {
                             "id": "d24ede5f-4064-4898-bb84-cfb533b1fbc0",
-                            "idName": "boolValue",
+                            "idName": "boolValueParent",
                             "name": "bool value",
+                            "eventTypeName": "bool value changed",
+                            "actionTypeName": "Set bool value",
                             "index": 0,
                             "type": "bool",
                             "defaultValue": false,
@@ -507,7 +548,7 @@
                     ]
                 },
                 {
-                    "deviceClassId": "40893c9f-bc47-40c1-8bf7-b390c7c1b4fc",
+                    "id": "40893c9f-bc47-40c1-8bf7-b390c7c1b4fc",
                     "idName": "mockChild",
                     "name": "Mock Device (Child)",
                     "createMethods": ["auto"],
@@ -528,8 +569,10 @@
                     "stateTypes": [
                         {
                             "id": "d24ede5f-4064-4898-bb84-cfb533b1fbc0",
-                            "idName": "boolValue",
+                            "idName": "boolValueParent",
                             "name": "bool value",
+                            "eventTypeName": "bool value changed",
+                            "actionTypeName": "Set bool value",
                             "index": 0,
                             "type": "bool",
                             "defaultValue": false,
@@ -538,7 +581,7 @@
                     ]
                 },
                 {
-                    "deviceClassId": "515ffdf1-55e5-498d-9abc-4e2fe768f3a9",
+                    "id": "515ffdf1-55e5-498d-9abc-4e2fe768f3a9",
                     "idName": "mockInputType",
                     "name": "Mock Device (InputTypes)",
                     "deviceIcon": "Tune",

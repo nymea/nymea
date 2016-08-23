@@ -20,8 +20,9 @@
             "id": "acd47238-bbbc-4eaf-b484-38c52cfa4866",
             "deviceClasses": [
                 {
-                    "deviceClassId": "29cd8265-d8bb-4cf9-9080-bfc2cf9787bc",
+                    "id": "29cd8265-d8bb-4cf9-9080-bfc2cf9787bc",
                     "name": "aWATTar",
+                    "idName": "awattar",
                     "createMethods": ["user"],
                     "deviceIcon": "Energy",
                     "primaryStateTypeId": "eab37309-3dd8-46a0-94d4-bd05b5bb0430",
@@ -55,6 +56,7 @@
                             "id": "eab37309-3dd8-46a0-94d4-bd05b5bb0430",
                             "idName": "currentMarketPrice",
                             "name": "current market price",
+                            "eventTypeName": "current market price changed",
                             "type": "double",
                             "index": 0,
                             "unit": "EuroCentPerKiloWattHour",
@@ -65,6 +67,7 @@
                             "id": "38b86cee-9588-4269-a585-128907929dc2",
                             "idName": "averageDeviation",
                             "name": "average deviation",
+                            "eventTypeName": "average deviation changed",
                             "index": 1,
                             "type": "int",
                             "unit": "Percentage",
@@ -75,6 +78,7 @@
                             "id": "d5a8a176-aca0-45b1-b043-95c43750f383",
                             "idName": "validUntil",
                             "name": "valid until",
+                            "eventTypeName": "valid until changed",
                             "index": 2,
                             "unit": "UnixTime",
                             "type": "int",
@@ -86,6 +90,7 @@
                             "id": "55d6d7a8-446f-48ae-8014-1225810d03ee",
                             "idName": "averagePrice",
                             "name": "average market price [+/- 12 h]",
+                            "eventTypeName": "average market price [+/- 12 h] changed",
                             "index": 3,
                             "type": "double",
                             "unit": "EuroCentPerKiloWattHour",
@@ -96,6 +101,7 @@
                             "id": "e7af5bdc-48d7-4e96-b877-331da4dcfae5",
                             "idName": "lowestPrice",
                             "name": "lowest market price [+/- 12 h]",
+                            "eventTypeName": "lowest market price [+/- 12 h] changed",
                             "index": 4,
                             "type": "double",
                             "unit": "EuroCentPerKiloWattHour",
@@ -107,6 +113,7 @@
                             "id": "0c171c42-b070-453e-8a63-df9aebfa8533",
                             "idName": "highestPrice",
                             "name": "highest market price [+/- 12 h]",
+                            "eventTypeName": "highest market price [+/- 12 h] changed",
                             "index": 5,
                             "type": "double",
                             "unit": "EuroCentPerKiloWattHour",
@@ -119,6 +126,7 @@
                             "idName": "online",
                             "index": 6,
                             "name": "online",
+                            "eventTypeName": "online changed",
                             "type": "bool",
                             "defaultValue": false
                         },
@@ -127,6 +135,7 @@
                             "idName": "reachable",
                             "index": 7,
                             "name": "pump reachable",
+                            "eventTypeName": "pump reachable changed",
                             "type": "bool",
                             "defaultValue": false
                         },
@@ -134,6 +143,7 @@
                             "id": "b83d3533-aeae-4a9b-95d8-28466bf6c0cf",
                             "idName": "sgMode",
                             "name": "sg-mode",
+                            "eventTypeName": "sg-mode changed",
                             "index": 8,
                             "type": "QString",
                             "possibleValues": [
@@ -149,6 +159,7 @@
                             "id": "4c303bcd-152d-45ad-874d-d57fc87a26bb",
                             "idName": "sgSyncMode",
                             "name": "sync mode",
+                            "eventTypeName": "sync mode changed",
                             "index": 9,
                             "type": "QString",
                             "ruleRelevant": false,
@@ -158,7 +169,8 @@
                                 "manual"
                             ],
                             "defaultValue": "auto",
-                            "writable": true
+                            "writable": true,
+                            "actionTypeName": "Set sync mode"
                         }
                     ],
                     "actionTypes": [

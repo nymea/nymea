@@ -9,7 +9,7 @@
             "id": "9a53049c-8828-4b87-b3f6-7bc7708196cd",
             "deviceClasses": [
                 {
-                    "deviceClassId": "5c2bc4cd-ba6c-4052-b6cd-1db83323ea22",
+                    "id": "5c2bc4cd-ba6c-4052-b6cd-1db83323ea22",
                     "idName": "irReceiver",
                     "name": "IR receiver",
                     "basicTags": [

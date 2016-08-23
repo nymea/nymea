@@ -5,10 +5,11 @@
     "vendors": [
         {
             "name": "Elgato",
+            "idName": "elgato",
             "id": "90a3091d-1053-4f77-8dc3-92e27bbcebe7",
             "deviceClasses": [
                 {
-                    "deviceClassId": "164f9602-90ee-4693-bda3-9cafae37603e",
+                    "id": "164f9602-90ee-4693-bda3-9cafae37603e",
                     "idName": "avea",
                     "name": "Avea",
                     "deviceIcon": "LightBulb",
@@ -42,6 +43,7 @@
                             "id": "6d5e792a-c786-40d2-ae35-a48ac6fafcbc",
                             "idName": "available",
                             "name": "available",
+                            "eventTypeName": "available changed",
                             "index": 0,
                             "type": "bool",
                             "defaultValue": false
@@ -50,22 +52,25 @@
                             "id": "c38181a0-e19b-423f-8b66-dedda94e89b5",
                             "idName": "brightness",
                             "name": "brightness",
+                            "eventTypeName": "brightness changed",
+                            "actionTypeName": "Set brightness",
                             "index": 1,
                             "type": "int",
                             "minimumValue": 0,
                             "maximumValue": 100,
                             "defaultValue": 100,
                             "ruleRelevant": false,
+                            "minValue": 0,
+                            "maxValue": 100,
                             "eventRuleRelevant": false,
-                            "writable": {
-                                "minValue": 0,
-                                "maxValue": 100
-                            }
+                            "writable": true
                         },
                         {
                             "id": "2073b44b-2f99-4abf-8d9f-6b33be8e1763",
                             "idName": "liveliness",
                             "name": "liveliness",
+                            "eventTypeName": "liveliness changed",
+                            "actionTypeName": "Set liveliness",
                             "index": 2,
                             "type": "int",
                             "minimumValue": 0,
@@ -73,10 +78,9 @@
                             "defaultValue": 100,
                             "ruleRelevant": false,
                             "eventRuleRelevant": false,
-                            "writable": {
-                                "minValue": 0,
-                                "maxValue": 100
-                            }
+                            "minValue": 0,
+                            "maxValue": 100,
+                            "writable": true
                         }
                     ],
                     "actionTypes": [

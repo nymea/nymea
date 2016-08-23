@@ -9,7 +9,7 @@
             "id": "e2912117-3b2f-4888-950e-6d259b699102",
             "deviceClasses": [
                 {
-                    "deviceClassId": "57d1b080-36a0-46af-a676-78c6b78d08ae",
+                    "id": "57d1b080-36a0-46af-a676-78c6b78d08ae",
                     "idName": "rplRouter",
                     "name": "RPL Router",
                     "basicTags": [
@@ -38,7 +38,7 @@
                     ]
                 },
                 {
-                    "deviceClassId": "4454e05e-ac0a-4b10-b9dd-56a1475895d7",
+                    "id": "4454e05e-ac0a-4b10-b9dd-56a1475895d7",
                     "idName": "merkurNode",
                     "name": "Merkur Node",
                     "basicTags": [
@@ -79,6 +79,7 @@
                             "id": "06cf4e66-f102-4a8e-ae76-fac250a07753",
                             "idName": "battery",
                             "name": "battery voltage",
+                            "eventTypeName": "battery voltage changed",
                             "type": "double",
                             "index": 0,
                             "defaultValue": 0

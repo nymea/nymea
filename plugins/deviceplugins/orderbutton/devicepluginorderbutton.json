@@ -20,7 +20,7 @@
             "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6",
             "deviceClasses": [
                 {
-                    "deviceClassId": "af4df281-2b3b-490f-8352-2b99ff23fc15",
+                    "id": "af4df281-2b3b-490f-8352-2b99ff23fc15",
                     "name": "OrderButton",
                     "idName": "orderbutton",
                     "createMethods": ["discovery"],
@@ -44,6 +44,7 @@
                             "id": "a4d83813-10f3-4830-be2e-60d4815906c4",
                             "idName": "battery",
                             "name": "battery voltage",
+                            "eventTypeName": "battery voltage changed",
                             "index": 0,
                             "type": "double",
                             "unit": "Volt",
@@ -54,12 +55,14 @@
                             "idName": "count",
                             "index": 1,
                             "name": "count",
+                            "eventTypeName": "count changed",
                             "type": "int",
                             "defaultValue": 0
                         },
                         {
                             "id": "783e74ee-ffd6-4dd7-ade5-3a961452cf15",
                             "idName": "reachable",
+                            "eventTypeName": "reachable changed",
                             "index": 2,
                             "name": "reachable",
                             "type": "bool",
@@ -69,6 +72,8 @@
                             "id": "b184ccc8-e7d9-4e94-8683-07f81484bbda",
                             "idName": "led",
                             "name": "led",
+                            "eventTypeName": "led changed",
+                            "actionTypeName": "Set led",
                             "index": 3,
                             "type": "bool",
                             "defaultValue": false,

@@ -5,10 +5,11 @@
     "vendors": [
         {
             "name": "guh",
+            "idName": "guh",
             "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6",
             "deviceClasses": [
                 {
-                    "deviceClassId": "0f39fe9e-51ea-4230-9646-2482c6234791",
+                    "id": "0f39fe9e-51ea-4230-9646-2482c6234791",
                     "idName": "application",
                     "name": "Application launcher",
                     "createMethods": ["user"],
@@ -33,6 +34,7 @@
                             "id": "28d7e933-ff05-4f4c-95a0-482689543de5",
                             "idName": "running",
                             "name": "running",
+                            "eventTypeName": "running changed",
                             "index": 0,
                             "type": "bool",
                             "defaultValue": false
@@ -54,7 +56,7 @@
                     ]
                 },
                 {
-                    "deviceClassId": "96044325-a6fb-47c9-9117-f29c3b327978",
+                    "id": "96044325-a6fb-47c9-9117-f29c3b327978",
                     "idName": "script",
                     "name": "Bashscript launcher",
                     "basicTags": [
@@ -78,6 +80,7 @@
                             "id": "28d7e933-ff05-4f4c-95a0-482689543de5",
                             "idName": "running",
                             "name": "running",
+                            "eventTypeName": "running changed",
                             "index": 0,
                             "type": "bool",
                             "defaultValue": false

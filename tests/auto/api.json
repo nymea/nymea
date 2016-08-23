@@ -624,6 +624,12 @@
                 "timeZone": "String"
             }
         },
+        "Configuration.LanguageChanged": {
+            "description": "Emitted whenever the language of the server changed. The Plugins, Vendors and DeviceClasses have to be reloaded to get the translated data.",
+            "params": {
+                "language": "String"
+            }
+        },
         "Configuration.TcpServerConfigurationChanged": {
             "description": "Emitted whenever the TCP server configuration changes.",
             "params": {

@@ -61,7 +61,7 @@
         <location filename="../../../../../build-guh-Desktop-Debug/plugins/deviceplugins/commandlauncher/plugininfo.h" line="59"/>
         <source>Bashscript launcher</source>
         <extracomment>The name of the DeviceClass (96044325-a6fb-47c9-9117-f29c3b327978)</extracomment>
-        <translation>Bash-Skrip Launcher</translation>
+        <translation>Bash-Skript Launcher</translation>
     </message>
 </context>
 </TS>

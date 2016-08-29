@@ -492,7 +492,9 @@ bool DevicePlugin::setLocale(const QLocale &locale)
         return true;
     }
 
-    qCWarning(dcDeviceManager()) << "* Could not load translation" << locale.name() << "for plugin" << pluginName();
+    if (locale.name() != "en_US")
+        qCWarning(dcDeviceManager()) << "* Could not load translation" << locale.name() << "for plugin" << pluginName();
+
     return false;
 }
 

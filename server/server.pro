@@ -13,8 +13,8 @@ QT += sql xml websockets
 LIBS += -L$$top_builddir/libguh/ -lguh
 
 # Translations
-TRANSLATIONS *= $$top_srcdir/translations/guhd_en_US.ts \
-                $$top_srcdir/translations/guhd_de_DE.ts
+TRANSLATIONS *= $$top_srcdir/translations/guhd-en_US.ts \
+                $$top_srcdir/translations/guhd-de_DE.ts
 
 # Update ts files and create translation qm files
 lrelease.input = TRANSLATIONS

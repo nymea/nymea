@@ -135,7 +135,9 @@ int main(int argc, char *argv[])
     // check if there are local translations
     if (!translator.load(QLocale::system(), application.applicationName(), "-", QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath(), ".qm"))
         if (!translator.load(QLocale::system(), application.applicationName(), "-", GuhSettings::translationsPath(), ".qm"))
-            qWarning(dcApplication()) << "Could not find guhd translations for" << QLocale::system();
+            qWarning(dcApplication()) << "Could not find guhd translations for" << QLocale::system().name() << endl << (QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath()) << endl << GuhSettings::translationsPath();
+
+
 
     qApp->installTranslator(&translator);
 

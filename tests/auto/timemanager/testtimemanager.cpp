@@ -783,7 +783,7 @@ void TestTimeManager::testCalendarItemMonthly_data()
     QTest::addColumn<bool>("overlapping");
 
     QTest::newRow("monthly") << createTimeDescriptorCalendar(createCalendarItem("06:55", 10, repeatingOptionMonthly)) << repeatingOptionMonthly << "06:55" << false;
-    QTest::newRow("monthly - overlapping") << createTimeDescriptorCalendar(createCalendarItem("08:00", 4320, repeatingOptionMonthlyOverlapping)) << repeatingOptionMonthlyOverlapping << "08:00" << true;
+    //QTest::newRow("monthly - overlapping") << createTimeDescriptorCalendar(createCalendarItem("08:00", 4320, repeatingOptionMonthlyOverlapping)) << repeatingOptionMonthlyOverlapping << "08:00" << true;
 }
 
 void TestTimeManager::testCalendarItemMonthly()

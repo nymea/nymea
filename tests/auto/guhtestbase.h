@@ -145,6 +145,10 @@ protected:
         verifyError(response, "loggingError", JsonTypes::loggingErrorToString(error));
     }
 
+    inline void verifyConfigurationError(const QVariant &response, GuhConfiguration::ConfigurationError error = GuhConfiguration::ConfigurationErrorNoError) {
+        verifyError(response, "configurationError", JsonTypes::configurationErrorToString(error));
+    }
+
     inline void verifyParams(const QVariantList &requestList, const QVariantList &responseList, bool allRequired = true)
     {
         if (allRequired)

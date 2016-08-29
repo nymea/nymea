@@ -40,8 +40,8 @@ class TestConfigurations: public GuhTestBase
 
 private slots:
     void getConfigurations();
-
     void testTimeZones();
+    void testServerName();
 
 
 };
@@ -63,14 +63,80 @@ void TestConfigurations::getConfigurations()
 
 void TestConfigurations::testTimeZones()
 {
-    QVariantMap configurations = injectAndWait("Configuration.GetConfigurations").toMap().value("params").toMap();
-    QString currentTimeZone = configurations.value("basicConfiguration").toMap().value("timeZone").toString();
-    QString currentTime = configurations.value("basicConfiguration").toMap().value("serverTime").toString();
-    qDebug() << currentTimeZone << QDateTime::fromTime_t(currentTime.toInt());
+    QVariantMap params; QVariant response; QVariantMap configurations;
+
     QVariantList timeZones = injectAndWait("Configuration.GetTimeZones").toMap().value("params").toMap().value("timeZones").toList();
     QVERIFY(timeZones.count() > 0);
     QVERIFY(timeZones.contains("America/Toronto"));
+    QVERIFY(timeZones.contains("Europe/Vienna"));
 
+    // Set current timezone (Europe/Vienna)
+    params.clear(); response.clear(); configurations.clear();
+    params.insert("timeZone", "Europe/Vienna");
+    response = injectAndWait("Configuration.SetTimeZone", params);
+    verifyConfigurationError(response);
+
+    // Get current timezone and time
+    params.clear(); response.clear(); configurations.clear();
+    configurations = injectAndWait("Configuration.GetConfigurations").toMap().value("params").toMap();
+    QString currentTimeZone = configurations.value("basicConfiguration").toMap().value("timeZone").toString();
+    int currentTime = configurations.value("basicConfiguration").toMap().value("serverTime").toInt();
+    qDebug() << currentTimeZone << QDateTime::fromTime_t(currentTime);
+
+    // Set new timezone
+    params.clear(); response.clear(); configurations.clear();
+    params.insert("timeZone", "Moon/Darkside");
+    response = injectAndWait("Configuration.SetTimeZone", params);
+    verifyConfigurationError(response, GuhConfiguration::ConfigurationErrorInvalidTimeZone);
+
+    // Set new timezone
+    params.clear(); response.clear(); configurations.clear();
+    params.insert("timeZone", "America/Toronto");
+    response = injectAndWait("Configuration.SetTimeZone", params);
+    verifyConfigurationError(response);
+
+    // Check new timezone
+    params.clear(); response.clear(); configurations.clear();
+    configurations = injectAndWait("Configuration.GetConfigurations").toMap().value("params").toMap();
+    QString newTimeZone = configurations.value("basicConfiguration").toMap().value("timeZone").toString();
+    int newTime = configurations.value("basicConfiguration").toMap().value("serverTime").toInt();
+    qDebug() << newTimeZone << QDateTime::fromTime_t(newTime);
+    QVERIFY(currentTimeZone != newTimeZone);
+
+    restartServer();
+
+    // Check loaded timezone
+    configurations = injectAndWait("Configuration.GetConfigurations").toMap().value("params").toMap();
+    QString reloadedTimeZone = configurations.value("basicConfiguration").toMap().value("timeZone").toString();
+    QVERIFY(newTimeZone == reloadedTimeZone);
+
+    params.clear(); response.clear();
+    params.insert("timeZone", "Europe/Vienna");
+    response = injectAndWait("Configuration.SetTimeZone", params);
+    verifyConfigurationError(response);
+}
+
+void TestConfigurations::testServerName()
+{
+    QVariantMap params; QVariant response; QVariantMap configurations;
+    configurations = injectAndWait("Configuration.GetConfigurations").toMap().value("params").toMap();
+    QString serverName = configurations.value("basicConfiguration").toMap().value("serverName").toString();
+    QString serverUuid = configurations.value("basicConfiguration").toMap().value("serverUuid").toString();
+    qDebug() << "Server name" << serverName << "(" << serverUuid << ")";
+
+    params.insert("serverName", "Test server");
+    response = injectAndWait("Configuration.SetServerName", params);
+    verifyConfigurationError(response);
+
+    configurations = injectAndWait("Configuration.GetConfigurations").toMap().value("params").toMap();
+    QString newServerName = configurations.value("basicConfiguration").toMap().value("serverName").toString();
+    QVERIFY(newServerName == "Test server");
+
+    restartServer();
+
+    configurations = injectAndWait("Configuration.GetConfigurations").toMap().value("params").toMap();
+    QString reloadedServerName = configurations.value("basicConfiguration").toMap().value("serverName").toString();
+    QVERIFY(newServerName == reloadedServerName);
 }
 
 #include "testconfigurations.moc"

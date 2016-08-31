@@ -5,6 +5,15 @@ HEADERS += $$top_srcdir/server/guhcore.h \
     $$top_srcdir/server/tcpserver.h \
     $$top_srcdir/server/ruleengine.h \
     $$top_srcdir/server/rule.h \
+    $$top_srcdir/server/stateevaluator.h \
+    $$top_srcdir/server/webserver.h \
+    $$top_srcdir/server/transportinterface.h \
+    $$top_srcdir/server/servermanager.h \
+    $$top_srcdir/server/httprequest.h \
+    $$top_srcdir/server/websocketserver.h \
+    $$top_srcdir/server/httpreply.h \
+    $$top_srcdir/server/guhconfiguration.h \
+    $$top_srcdir/server/bluetoothserver.h \
     $$top_srcdir/server/jsonrpc/jsonrpcserver.h \
     $$top_srcdir/server/jsonrpc/jsonhandler.h \
     $$top_srcdir/server/jsonrpc/devicehandler.h \
@@ -53,6 +62,15 @@ SOURCES += $$top_srcdir/server/guhcore.cpp \
     $$top_srcdir/server/tcpserver.cpp \
     $$top_srcdir/server/ruleengine.cpp \
     $$top_srcdir/server/rule.cpp \
+    $$top_srcdir/server/stateevaluator.cpp \
+    $$top_srcdir/server/webserver.cpp \
+    $$top_srcdir/server/transportinterface.cpp \
+    $$top_srcdir/server/servermanager.cpp \
+    $$top_srcdir/server/httprequest.cpp \
+    $$top_srcdir/server/websocketserver.cpp \
+    $$top_srcdir/server/httpreply.cpp \
+    $$top_srcdir/server/guhconfiguration.cpp \
+    $$top_srcdir/server/bluetoothserver.cpp \
     $$top_srcdir/server/jsonrpc/jsonrpcserver.cpp \
     $$top_srcdir/server/jsonrpc/jsonhandler.cpp \
     $$top_srcdir/server/jsonrpc/devicehandler.cpp \

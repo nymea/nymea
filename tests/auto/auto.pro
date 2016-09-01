@@ -17,5 +17,6 @@ SUBDIRS = versioning \
         websocketserver \
         logging \
         restlogging \
-        timemanager \
+        coap \
+        #timemanager \
 

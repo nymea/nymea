@@ -97,8 +97,8 @@ GuhConfiguration::GuhConfiguration(QObject *parent) :
     // Cloud
     settings.beginGroup("Cloud");
     m_cloudEnabled = settings.value("enabled", false).toBool();
-    m_cloudAuthenticationServer = settings.value("authenticationServer", QUrl("http://localhost:8000/oauth2/token")).toUrl();
-    m_cloudProxyServer = settings.value("proxyServer", QUrl("ws://127.0.0.1:1212")).toUrl();
+    m_cloudAuthenticationServer = settings.value("authenticationServer", QUrl("http://cloud.guh.io/oauth2/token")).toUrl();
+    m_cloudProxyServer = settings.value("proxyServer", QUrl("ws://proxy.guh.io:1212")).toUrl();
     settings.endGroup();
 
     qCDebug(dcApplication()) << "Configuration: Cloud connection" << (m_cloudEnabled ? "enabled" : "disabled");

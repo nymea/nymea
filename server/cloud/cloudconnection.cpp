@@ -43,7 +43,7 @@ CloudConnection::CloudConnection(const QUrl &authenticationServer, const QUrl &p
     connect(m_connection, SIGNAL(textMessageReceived(QString)), this, SLOT(onTextMessageReceived(QString)));
     connect(m_connection, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onError(QAbstractSocket::SocketError)));
 
-    m_authenticator = new CloudAuthenticator("0631d42ba0464e4ebd4b78b15c53f532", "b7919ebf3bcf48239f348e764744079b", this);
+    m_authenticator = new CloudAuthenticator("6ac82de6a2ba454394f9022b6a733885", "d63eece1b725419f80961a9b1c49f8d4", this);
     m_authenticator->setUrl(m_authenticationServerUrl);
 
     connect(m_authenticator, &CloudAuthenticator::authenticationChanged, this, &CloudConnection::onAuthenticationChanged);

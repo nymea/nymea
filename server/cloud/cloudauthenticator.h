@@ -92,6 +92,7 @@ private:
 private slots:
     void replyFinished(QNetworkReply *reply);
     void refreshTimeout();
+    void onSslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
 
 signals:
     void authenticationChanged();

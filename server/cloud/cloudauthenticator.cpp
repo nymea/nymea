@@ -36,7 +36,10 @@ CloudAuthenticator::CloudAuthenticator(QString clientId, QString clientSecret, Q
     m_username = loadUserName();
 
     m_networkManager = new QNetworkAccessManager(this);
+    m_networkManager->
+
     connect(m_networkManager, &QNetworkAccessManager::finished, this, &CloudAuthenticator::replyFinished);
+    connect(m_networkManager, &QNetworkAccessManager::sslErrors, this, &CloudAuthenticator::onSslErrors);
 
     m_timer = new QTimer(this);
     m_timer->setSingleShot(false);
@@ -136,8 +139,10 @@ bool CloudAuthenticator::startAuthentication()
         request.setRawHeader("Authorization", header.toLocal8Bit());
         request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
 
-        m_tokenRequests.append(m_networkManager->post(request, m_query.toString().toUtf8()));
+        QNetworkReply *reply = m_networkManager->post(request, m_query.toString().toUtf8());
+        m_tokenRequests.append(reply);
         return true;
+
     } else if (!m_refreshToken.isEmpty()) {
         // Use the refreshtoken if there is any
         refreshTimeout();
@@ -209,7 +214,7 @@ void CloudAuthenticator::replyFinished(QNetworkReply *reply)
         m_tokenRequests.removeAll(reply);
 
         if (reply->error() != QNetworkReply::NoError) {
-            qCWarning(dcCloud()) << "Authenticator: Request token reply error:" << status << reply->errorString();
+            qCWarning(dcCloud()) << "Authenticator: Request token reply error:" << status << reply->errorString();            
             m_error = Cloud::CloudErrorIdentityServerNotReachable;
             setAuthenticated(false);
             reply->deleteLater();
@@ -302,6 +307,7 @@ void CloudAuthenticator::replyFinished(QNetworkReply *reply)
 
         if (!authenticated())
             setAuthenticated(true);
+
     }
 
     reply->deleteLater();
@@ -320,7 +326,27 @@ void CloudAuthenticator::refreshTimeout()
     QString header = "Basic " + data;
     request.setRawHeader("Authorization", header.toLocal8Bit());
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-    m_refreshTokenRequests.append(m_networkManager->post(request, query.toString().toUtf8()));
+
+    QNetworkReply *reply = m_networkManager->post(request, query.toString().toUtf8());
+    m_refreshTokenRequests.append(reply);
+}
+
+void CloudAuthenticator::onSslErrors(QNetworkReply *reply, const QList<QSslError> &errors)
+{
+    reply->ignoreSslErrors();
+    //reply->ignoreSslErrors(QList<QSslError>() << QSslError(QSslError::SelfSignedCertificate) << QSslError(QSslError::CertificateUntrusted) << QSslError(QSslError::HostNameMismatch));
+
+    if (m_refreshTokenRequests.contains(reply)) {
+        qCWarning(dcCloud()) << "SSL errors occured for token refresh reply:";
+    } else if (m_tokenRequests.contains(reply)) {
+        qCWarning(dcCloud()) << "SSL errors occured for token reply:";
+    } else {
+        qCWarning(dcCloud()) << "SSL errors occured for unknown reply:";
+    }
+
+    foreach (const QSslError &error, errors) {
+        qCWarning(dcCloud()) << "    " << (int)error.error() << error.errorString();
+    }
 }
 
 }

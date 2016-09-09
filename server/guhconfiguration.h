@@ -111,6 +111,9 @@ private:
     QUrl m_cloudAuthenticationServer;
     QUrl m_cloudProxyServer;
 
+    void setServerUuid(const QUuid &uuid);
+    void setWebServerPublicFolder(const QString & path);
+
 signals:
     void serverNameChanged();
     void timeZoneChanged();

@@ -1,8 +1,14 @@
+guh (0.7.6) xenial; urgency=medium
+
+  * Add bluetooth server
+
+ -- Simon Stürz <simon.stuerz@guh.guru>  Mo, 11 Jul 2016 23:15:13 +0200
+
 guh (0.7.5) xenial; urgency=medium
 
   * Configuration API and server settings
 
- -- Simon Stürz <simon.stuerz@guh.guru>  Thu, 11 Jul 2016 23:15:13 +0200
+ -- Simon Stürz <simon.stuerz@guh.guru>  Mo, 11 Jul 2016 23:15:13 +0200
 
 guh (0.7.4) xenial; urgency=medium
 

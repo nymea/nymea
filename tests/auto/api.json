@@ -1,4 +1,4 @@
-45
+46
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -762,6 +762,7 @@
             "ConfigurationErrorInvalidStationName",
             "ConfigurationErrorInvalidPort",
             "ConfigurationErrorInvalidHostAddress",
+            "ConfigurationErrorBluetoothHardwareNotAvailable",
             "ConfigurationErrorInvalidCertificate"
         ],
         "CreateMethod": [

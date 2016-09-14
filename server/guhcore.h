@@ -34,6 +34,7 @@
 #include "ruleengine.h"
 #include "servermanager.h"
 #include "websocketserver.h"
+#include "bluetoothserver.h"
 
 #include "cloud/cloudmanager.h"
 #include "time/timemanager.h"
@@ -85,6 +86,7 @@ public:
     WebSocketServer *webSocketServer() const;
     CloudManager *cloudManager() const;
     ServerManager *serverManager() const;
+    BluetoothServer *bluetoothServer() const;
 
 
 #ifdef TESTING_ENABLED
@@ -128,6 +130,8 @@ private:
 #endif
     WebSocketServer *m_webSocketServer;
     WebServer *m_webServer;
+    BluetoothServer *m_bluetoothServer;
+
     CloudManager *m_cloudManager;
 
     QHash<ActionId, Action> m_pendingActions;

@@ -34,6 +34,7 @@ public:
     QString name() const override;
 
     Q_INVOKABLE JsonReply *GetEventType(const QVariantMap &params) const;
+
 signals:
     void EventTriggered(const QVariantMap &params);
 

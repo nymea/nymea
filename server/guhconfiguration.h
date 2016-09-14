@@ -40,6 +40,7 @@ public:
         ConfigurationErrorInvalidStationName,
         ConfigurationErrorInvalidPort,
         ConfigurationErrorInvalidHostAddress,
+        ConfigurationErrorBluetoothHardwareNotAvailable,
         ConfigurationErrorInvalidCertificate
     };
 
@@ -69,6 +70,10 @@ public:
     uint webSocketPort() const;
     QHostAddress webSocketAddress() const;
     void setWebSocketConfiguration(const uint &port, const QHostAddress &address);
+
+    // Bluetooth
+    bool bluetoothServerEnabled() const;
+    void setBluetoothServerEnabled(const bool &enabled);
 
     // SSL configuration
     bool sslEnabled() const;
@@ -103,6 +108,8 @@ private:
     QHostAddress m_webSocketAddress;
     uint m_webSocketPort;
 
+    bool m_bluetoothServerEnabled;
+
     bool m_sslEnabled;
     QString m_sslCertificate;
     QString m_sslCertificateKey;
@@ -121,6 +128,8 @@ signals:
     void tcpServerConfigurationChanged();
     void webServerConfigurationChanged();
     void webSocketServerConfigurationChanged();
+
+    void bluetoothServerEnabledChanged();
 
     void sslEnabledChanged();
     void sslCertificateChanged();

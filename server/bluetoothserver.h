@@ -1,7 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.guru>                 *
- *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.guru>                 *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -19,33 +18,46 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef LOGGINGHANDLER_H
-#define LOGGINGHANDLER_H
+#ifndef BLUETOOTHSERVER_H
+#define BLUETOOTHSERVER_H
 
-#include "jsonhandler.h"
-#include "logging/logentry.h"
+#include <QObject>
+#include <QBluetoothSocket>
+#include <QBluetoothServer>
+
+#include "transportinterface.h"
 
 namespace guhserver {
 
-class LoggingHandler : public JsonHandler
+class BluetoothServer : public TransportInterface
 {
     Q_OBJECT
 public:
-    explicit LoggingHandler(QObject *parent = 0);
-    QString name() const override;
+    explicit BluetoothServer(QObject *parent = 0);
+    ~BluetoothServer();
 
-    Q_INVOKABLE JsonReply *GetLogEntries(const QVariantMap &params) const;
+    static bool hardwareAvailable();
 
-signals:
-    void LogEntryAdded(const QVariantMap &params);
-    void LogDatabaseUpdated(const QVariantMap &params);
+    void sendData(const QUuid &clientId, const QVariantMap &data) override;
+    void sendData(const QList<QUuid> &clients, const QVariantMap &data) override;
+
+private:
+    QBluetoothServer *m_server;
+    QBluetoothServiceInfo m_serviceInfo;
+    QHash<QUuid, QBluetoothSocket *> m_clientList;
 
 private slots:
-    void logEntryAdded(const LogEntry &entry);
-    void logDatabaseUpdated();
+    void onClientConnected();
+    void onClientDisconnected();
+    void onError(QBluetoothSocket::SocketError error);
+    void readData();
+
+public slots:
+    bool startServer() override;
+    bool stopServer() override;
 
 };
 
 }
 
-#endif // LOGGINGHANDLER_H
+#endif // BLUETOOTHSERVER_H

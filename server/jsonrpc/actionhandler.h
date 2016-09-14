@@ -35,15 +35,14 @@ public:
 
     QString name() const;
 
-    Q_INVOKABLE JsonReply* ExecuteAction(const QVariantMap &params);
-
-    Q_INVOKABLE JsonReply* GetActionType(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *ExecuteAction(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *GetActionType(const QVariantMap &params) const;
 
 private slots:
     void actionExecuted(const ActionId &id, DeviceManager::DeviceError status);
 
 private:
-    QHash<ActionId, JsonReply*> m_asyncActionExecutions;
+    QHash<ActionId, JsonReply *> m_asyncActionExecutions;
 };
 
 }

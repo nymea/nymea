@@ -81,6 +81,11 @@ GuhConfiguration::GuhConfiguration(QObject *parent) :
     setWebSocketConfiguration(webSocketPort, webSocketAddress);
     settings.endGroup();
 
+    // Bluetooth server
+    settings.beginGroup("BluetoothServer");
+    setBluetoothServerEnabled(settings.value("enabled", false).toBool());
+    settings.endGroup();
+
     // SSL configuration
     settings.beginGroup("SSL");
     setSslEnabled(settings.value("enabled", false).toBool());
@@ -219,6 +224,24 @@ void GuhConfiguration::setWebSocketConfiguration(const uint &port, const QHostAd
     emit webSocketServerConfigurationChanged();
 }
 
+bool GuhConfiguration::bluetoothServerEnabled() const
+{
+    return m_bluetoothServerEnabled;
+}
+
+void GuhConfiguration::setBluetoothServerEnabled(const bool &enabled)
+{
+    qCDebug(dcApplication()) << "Configuration: Bluetooth server" << (enabled ? "enabled" : "disabled");
+
+    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    settings.beginGroup("BluetoothServer");
+    settings.setValue("enabled", enabled);
+    settings.endGroup();
+
+    m_bluetoothServerEnabled = enabled;
+    emit bluetoothServerEnabled();
+}
+
 bool GuhConfiguration::sslEnabled() const
 {
     return m_sslEnabled;
@@ -249,7 +272,7 @@ QString GuhConfiguration::sslCertificateKey() const
 
 void GuhConfiguration::setSslCertificate(const QString &sslCertificate, const QString &sslCertificateKey)
 {
-    qCDebug(dcApplication()) << "Configuration: SSL certificate:" << sslCertificate << endl << "SSL certificate key:" << sslCertificateKey;
+    qCDebug(dcApplication()) << "Configuration: SSL certificate:" << sslCertificate << "SSL certificate key:" << sslCertificateKey;
 
     GuhSettings settings(GuhSettings::SettingsRoleGlobal);
     settings.beginGroup("SSL");

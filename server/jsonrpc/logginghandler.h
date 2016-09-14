@@ -35,6 +35,7 @@ public:
     QString name() const override;
 
     Q_INVOKABLE JsonReply *GetLogEntries(const QVariantMap &params) const;
+
 signals:
     void LogEntryAdded(const QVariantMap &params);
     void LogDatabaseUpdated(const QVariantMap &params);

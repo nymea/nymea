@@ -150,14 +150,15 @@ QHash<QString, JsonHandler *> JsonRPCServer::handlers() const
     return m_handlers;
 }
 
-void JsonRPCServer::registerTransportInterface(TransportInterface *interface)
+void JsonRPCServer::registerTransportInterface(TransportInterface *interface, const bool &enabled)
 {
     // Now set up the logic
     connect(interface, SIGNAL(clientConnected(const QUuid &)), this, SLOT(clientConnected(const QUuid &)));
     connect(interface, SIGNAL(clientDisconnected(const QUuid &)), this, SLOT(clientDisconnected(const QUuid &)));
     connect(interface, SIGNAL(dataAvailable(QUuid, QString, QString, QVariantMap)), this, SLOT(processData(QUuid, QString, QString, QVariantMap)));
 
-    QMetaObject::invokeMethod(interface, "startServer", Qt::QueuedConnection);
+    if (enabled)
+        QMetaObject::invokeMethod(interface, "startServer", Qt::QueuedConnection);
 
     m_interfaces.append(interface);
 }

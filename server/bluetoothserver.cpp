@@ -18,6 +18,22 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::BluetoothServer
+    \brief This class represents the bluetooth server for guhd.
+
+    \ingroup server
+    \inmodule core
+
+    \inherits TransportInterface
+
+    The bluetooth server allowes clients to connect to the JSON-RPC API using an RFCOMM bluetooth connection. If the server is enabled, a client
+    can discover the services running on this host. The service for the JSON-RPC api is called \tt guhIO and has the uuid \tt 997936b5-d2cd-4c57-b41b-c6048320cd2b .
+
+    \sa TransportInterface
+*/
+
+
 #include "bluetoothserver.h"
 #include "loggingcategories.h"
 
@@ -26,7 +42,7 @@
 
 namespace guhserver {
 
-static const QLatin1String serviceUuid("81679f09-1404-4242-b685-a7f7e23df8cf");
+static const QBluetoothUuid serviceUuid(QUuid("997936b5-d2cd-4c57-b41b-c6048320cd2b"));
 
 BluetoothServer::BluetoothServer(QObject *parent) :
     TransportInterface(parent),
@@ -37,6 +53,9 @@ BluetoothServer::BluetoothServer(QObject *parent) :
 
 BluetoothServer::~BluetoothServer()
 {
+    if (m_server && m_server->isListening())
+        qCDebug(dcApplication) << "Shutting down \"Bluetooth server\"";
+
     stopServer();
 }
 
@@ -51,7 +70,7 @@ void BluetoothServer::sendData(const QUuid &clientId, const QVariantMap &data)
     QBluetoothSocket *client = 0;
     client = m_clientList.value(clientId);
     if (client)
-        client->write(QJsonDocument::fromVariant(data).toJson() + "\n");
+        client->write(QJsonDocument::fromVariant(data).toJson(QJsonDocument::Compact) + '\n');
 }
 
 void BluetoothServer::sendData(const QList<QUuid> &clients, const QVariantMap &data)
@@ -101,9 +120,15 @@ void BluetoothServer::readData()
     if (!client)
         return;
 
+    QByteArray message;
     while (client->canReadLine()) {
-        QByteArray line = client->readLine().trimmed();
-        qCDebug(dcConnection()) << "Bluetooth server: line in:" << QString::fromUtf8(line.constData(), line.length());
+        QByteArray dataLine = client->readLine();
+        message.append(dataLine);
+        if (dataLine.endsWith('\n')) {
+            qCDebug(dcConnection()) << "Bluetooth data received:" << message;
+            validateMessage(m_clientList.key(client), message);
+            message.clear();
+        }
     }
 }
 
@@ -115,9 +140,8 @@ bool BluetoothServer::startServer()
     // Check if Bluetooth is available on this device
     QBluetoothLocalDevice localDevice;
     if (localDevice.isValid()) {
-        // Turn Bluetooth on
+        qCDebug(dcConnection()) << "Bluetooth: using adapter" << localDevice.name() << localDevice.address().toString();
         localDevice.powerOn();
-        // Make it visible to others
         localDevice.setHostMode(QBluetoothLocalDevice::HostDiscoverable);
     } else {
         qCWarning(dcConnection()) << "Bluetooth server: could find any bluetooth hardware";
@@ -133,33 +157,41 @@ bool BluetoothServer::startServer()
 
     qCDebug(dcConnection) << "Started bluetooth server" << m_server->serverAddress().toString();
 
+    // Set service attributes
+    QBluetoothServiceInfo::Sequence browseSequence;
+    browseSequence << QVariant::fromValue(QBluetoothUuid(QBluetoothUuid::PublicBrowseGroup));
+    m_serviceInfo.setAttribute(QBluetoothServiceInfo::BrowseGroupList, browseSequence);
+
     QBluetoothServiceInfo::Sequence classId;
     classId << QVariant::fromValue(QBluetoothUuid(QBluetoothUuid::SerialPort));
     m_serviceInfo.setAttribute(QBluetoothServiceInfo::BluetoothProfileDescriptorList, classId);
-
-    classId.prepend(QVariant::fromValue(QBluetoothUuid(serviceUuid)));
+    classId.prepend(QVariant::fromValue(serviceUuid));
 
     m_serviceInfo.setAttribute(QBluetoothServiceInfo::ServiceClassIds, classId);
+
     m_serviceInfo.setAttribute(QBluetoothServiceInfo::BluetoothProfileDescriptorList,classId);
-    m_serviceInfo.setAttribute(QBluetoothServiceInfo::ServiceName, tr("guhIO JSON-RPC"));
-    m_serviceInfo.setAttribute(QBluetoothServiceInfo::ServiceDescription, tr("The JSON-RPC interface for guhIO."));
-    m_serviceInfo.setAttribute(QBluetoothServiceInfo::ServiceProvider, "guh.io");
-    m_serviceInfo.setServiceUuid(QBluetoothUuid(serviceUuid));
+    m_serviceInfo.setAttribute(QBluetoothServiceInfo::ServiceName, QVariant("guhIO"));
+    m_serviceInfo.setAttribute(QBluetoothServiceInfo::ServiceDescription, QVariant("The JSON-RPC interface for guhIO."));
+    m_serviceInfo.setAttribute(QBluetoothServiceInfo::ServiceProvider, QVariant("https://guh.io"));
 
-    QBluetoothServiceInfo::Sequence publicBrowse;
-    publicBrowse << QVariant::fromValue(QBluetoothUuid(QBluetoothUuid::PublicBrowseGroup));
-    m_serviceInfo.setAttribute(QBluetoothServiceInfo::BrowseGroupList, publicBrowse);
-
+    // Define protocol
     QBluetoothServiceInfo::Sequence protocolDescriptorList;
     QBluetoothServiceInfo::Sequence protocol;
-    protocol << QVariant::fromValue(QBluetoothUuid(QBluetoothUuid::L2cap));
-    protocolDescriptorList.append(QVariant::fromValue(protocol));
-    protocol.clear();
     protocol << QVariant::fromValue(QBluetoothUuid(QBluetoothUuid::Rfcomm))
              << QVariant::fromValue(quint8(m_server->serverPort()));
     protocolDescriptorList.append(QVariant::fromValue(protocol));
     m_serviceInfo.setAttribute(QBluetoothServiceInfo::ProtocolDescriptorList, protocolDescriptorList);
-    m_serviceInfo.registerService(localDevice.address());
+
+    // Set UUID
+    m_serviceInfo.setServiceUuid(serviceUuid);
+
+    // Register the service in the local device
+    if (!m_serviceInfo.registerService(localDevice.address())) {
+        qCWarning(dcConnection()) << "Bluetooth: Could not register service" << m_serviceInfo.serviceName() << serviceUuid.toString();
+        return false;
+    }
+
+    qCDebug(dcConnection()) << "Bluetooth: Registered successfully service" << m_serviceInfo.serviceName() << serviceUuid.toString();
     return true;
 }
 
@@ -169,10 +201,16 @@ bool BluetoothServer::stopServer()
         client->close();
     }
 
+    if (!m_server)
+        return true;
+
+    m_serviceInfo.unregisterService();
+
     m_server->close();
     m_server->deleteLater();
     m_server = 0;
     return true;
 }
+
 
 }

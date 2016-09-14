@@ -34,6 +34,7 @@ public:
     QString name() const override;
 
     Q_INVOKABLE JsonReply *GetStateType(const QVariantMap &params) const;
+
 };
 
 }

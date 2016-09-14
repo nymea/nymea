@@ -46,13 +46,13 @@ public:
 
     // JsonHandler API implementation
     QString name() const;
-    Q_INVOKABLE JsonReply* Introspect(const QVariantMap &params) const;
-    Q_INVOKABLE JsonReply* Version(const QVariantMap &params) const;
-    Q_INVOKABLE JsonReply* SetNotificationStatus(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *Introspect(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *Version(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *SetNotificationStatus(const QVariantMap &params);
 
-    QHash<QString, JsonHandler*> handlers() const;
+    QHash<QString, JsonHandler *> handlers() const;
 
-    void registerTransportInterface(TransportInterface *interface);
+    void registerTransportInterface(TransportInterface *interface, const bool &enabled = true);
 
 private slots:
     void setup();

@@ -96,7 +96,7 @@ GuhConfiguration::GuhConfiguration(QObject *parent) :
     settings.beginGroup("Cloud");
     setCloudEnabled(settings.value("enabled", false).toBool());
     setCloudAuthenticationServer(settings.value("authenticationServer", QUrl("https://cloud.guh.io/oauth2/token")).toUrl());
-    setCloudProxyServer(settings.value("proxyServer", QUrl("ws://proxy.guh.io:1212")).toUrl());
+    setCloudProxyServer(settings.value("proxyServer", QUrl("wss://proxy.guh.io/ws")).toUrl());
     settings.endGroup();
 }
 

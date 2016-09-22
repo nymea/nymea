@@ -50,7 +50,7 @@ void TestConfigurations::getConfigurations()
 {
     QVariant response = injectAndWait("Configuration.GetConfigurations");
     QVariantMap configurations = response.toMap().value("params").toMap();
-    qDebug() << qUtf8Printable(QJsonDocument::fromVariant(configurations).toJson());
+    qDebug() << QJsonDocument::fromVariant(configurations).toJson();
 
     QVERIFY(configurations.contains("basicConfiguration"));
     QVERIFY(!configurations.value("basicConfiguration").toMap().value("serverUuid").toUuid().isNull());

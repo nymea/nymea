@@ -136,6 +136,7 @@ void JsonTypes::init()
     s_configurationError = enumToStrings(GuhConfiguration::staticMetaObject, "ConfigurationError");
 
     // ParamType
+    s_paramType.insert("id", basicTypeToString(Uuid));
     s_paramType.insert("name", basicTypeToString(String));
     s_paramType.insert("type", basicTypeRef());
     s_paramType.insert("index", basicTypeToString(Int));
@@ -148,7 +149,7 @@ void JsonTypes::init()
     s_paramType.insert("o:readOnly", basicTypeToString(Bool));
 
     // Param
-    s_param.insert("name", basicTypeToString(String));
+    s_param.insert("paramTypeId", basicTypeToString(Uuid));
     s_param.insert("value", basicTypeRef());
 
     // RuleAction
@@ -157,13 +158,13 @@ void JsonTypes::init()
     s_ruleAction.insert("o:ruleActionParams", QVariantList() << ruleActionParamRef());
 
     // RuleActionParam
-    s_ruleActionParam.insert("name", basicTypeToString(String));
+    s_ruleActionParam.insert("paramTypeId", basicTypeToString(Uuid));
     s_ruleActionParam.insert("o:value", basicTypeRef());
     s_ruleActionParam.insert("o:eventTypeId", basicTypeToString(Uuid));
-    s_ruleActionParam.insert("o:eventParamName", basicTypeToString(String));
+    s_ruleActionParam.insert("o:eventParamTypeId", basicTypeToString(Uuid));
 
     // ParamDescriptor
-    s_paramDescriptor.insert("name", basicTypeToString(String));
+    s_paramDescriptor.insert("paramTypeId", basicTypeToString(Uuid));
     s_paramDescriptor.insert("value", basicTypeRef());
     s_paramDescriptor.insert("operator", valueOperatorRef());
 
@@ -228,7 +229,7 @@ void JsonTypes::init()
     // Pugin
     s_plugin.insert("id", basicTypeToString(Uuid));
     s_plugin.insert("name", basicTypeToString(String));
-    s_plugin.insert("params", QVariantList() << paramRef());
+    s_plugin.insert("paramTypes", QVariantList() << paramTypeRef());
 
     // Vendor
     s_vendor.insert("id", basicTypeToString(Uuid));
@@ -490,11 +491,11 @@ QVariantMap JsonTypes::packRuleAction(const RuleAction &ruleAction)
 QVariantMap JsonTypes::packRuleActionParam(const RuleActionParam &ruleActionParam)
 {
     QVariantMap variantMap;
-    variantMap.insert("name", ruleActionParam.name());
+    variantMap.insert("paramTypeId", ruleActionParam.paramTypeId().toString());
     // if this ruleaction param has a valid EventTypeId, there is no value
     if (ruleActionParam.eventTypeId() != EventTypeId()) {
         variantMap.insert("eventTypeId", ruleActionParam.eventTypeId());
-        variantMap.insert("eventParamName", ruleActionParam.eventParamName());
+        variantMap.insert("eventParamTypeId", ruleActionParam.eventParamTypeId().toString());
     } else {
         variantMap.insert("value", ruleActionParam.value());
     }
@@ -578,7 +579,7 @@ QVariantMap JsonTypes::packStateEvaluator(const StateEvaluator &stateEvaluator)
 QVariantMap JsonTypes::packParam(const Param &param)
 {
     QVariantMap variantMap;
-    variantMap.insert("name", param.name());
+    variantMap.insert("paramTypeId", param.paramTypeId().toString());
     variantMap.insert("value", param.value());
     return variantMap;
 }
@@ -587,7 +588,7 @@ QVariantMap JsonTypes::packParam(const Param &param)
 QVariantMap JsonTypes::packParamDescriptor(const ParamDescriptor &paramDescriptor)
 {
     QVariantMap variantMap;
-    variantMap.insert("name", paramDescriptor.name());
+    variantMap.insert("paramTypeId", paramDescriptor.paramTypeId().toString());
     variantMap.insert("value", paramDescriptor.value());
     variantMap.insert("operator", s_valueOperator.at(paramDescriptor.operatorType()));
     return variantMap;
@@ -597,6 +598,7 @@ QVariantMap JsonTypes::packParamDescriptor(const ParamDescriptor &paramDescripto
 QVariantMap JsonTypes::packParamType(const ParamType &paramType)
 {
     QVariantMap variantMap;
+    variantMap.insert("id", paramType.id().toString());
     variantMap.insert("name", paramType.name());
     variantMap.insert("type", basicTypeToString(paramType.type()));
     variantMap.insert("index", paramType.index());
@@ -640,9 +642,9 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass)
 {
     QVariantMap variant;
     variant.insert("name", deviceClass.name());
-    variant.insert("id", deviceClass.id());
-    variant.insert("vendorId", deviceClass.vendorId());
-    variant.insert("pluginId", deviceClass.pluginId());
+    variant.insert("id", deviceClass.id().toString());
+    variant.insert("vendorId", deviceClass.vendorId().toString());
+    variant.insert("pluginId", deviceClass.pluginId().toString());
     variant.insert("deviceIcon", s_deviceIcon.at(deviceClass.deviceIcon()));
 
     QVariantList basicTags;
@@ -701,8 +703,7 @@ QVariantMap JsonTypes::packPlugin(DevicePlugin *plugin)
     foreach (const ParamType &param, plugin->configurationDescription()) {
         params.append(packParamType(param));
     }
-    pluginMap.insert("params", params);
-
+    pluginMap.insert("paramTypes", params);
     return pluginMap;
 }
 
@@ -1003,6 +1004,7 @@ QVariantMap JsonTypes::packBasicConfiguration()
     basicConfiguration.insert("serverUuid", GuhCore::instance()->configuration()->serverUuid());
     basicConfiguration.insert("serverTime", GuhCore::instance()->timeManager()->currentDateTime().toTime_t());
     basicConfiguration.insert("timeZone", QString::fromUtf8(GuhCore::instance()->timeManager()->timeZone()));
+    basicConfiguration.insert("language", GuhCore::instance()->configuration()->locale().name());
     return basicConfiguration;
 }
 
@@ -1131,9 +1133,9 @@ Param JsonTypes::unpackParam(const QVariantMap &paramMap)
     if (paramMap.keys().count() == 0) {
         return Param();
     }
-    QString name = paramMap.value("name").toString();
+    ParamTypeId paramTypeId = paramMap.value("paramTypeId").toString();
     QVariant value = paramMap.value("value");
-    return Param(name, value);
+    return Param(paramTypeId, value);
 }
 
 /*! Returns a \l{ParamList} created from the given \a paramList. */
@@ -1216,11 +1218,11 @@ RuleActionParam JsonTypes::unpackRuleActionParam(const QVariantMap &ruleActionPa
     if (ruleActionParamMap.keys().count() == 0)
         return RuleActionParam();
 
-    QString name = ruleActionParamMap.value("name").toString();
+    ParamTypeId paramTypeId = ParamTypeId(ruleActionParamMap.value("paramTypeId").toString());
     QVariant value = ruleActionParamMap.value("value");
     EventTypeId eventTypeId = EventTypeId(ruleActionParamMap.value("eventTypeId").toString());
-    QString eventParamName = ruleActionParamMap.value("eventParamName").toString();
-    return RuleActionParam(name, value, eventTypeId, eventParamName);
+    ParamTypeId eventParamTypeId = ParamTypeId(ruleActionParamMap.value("eventParamTypeId").toString());
+    return RuleActionParam(paramTypeId, value, eventTypeId, eventParamTypeId);
 }
 
 /*! Returns a \l{RuleActionParamList} created from the given \a ruleActionParamList. */
@@ -1236,7 +1238,7 @@ RuleActionParamList JsonTypes::unpackRuleActionParams(const QVariantList &ruleAc
 /*! Returns a \l{ParamDescriptor} created from the given \a paramMap. */
 ParamDescriptor JsonTypes::unpackParamDescriptor(const QVariantMap &paramMap)
 {
-    ParamDescriptor param(paramMap.value("name").toString(), paramMap.value("value"));
+    ParamDescriptor param(ParamTypeId(paramMap.value("paramTypeId").toString()), paramMap.value("value"));
     QString operatorString = paramMap.value("operator").toString();
 
     QMetaObject metaObject = Types::staticMetaObject;

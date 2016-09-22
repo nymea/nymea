@@ -30,7 +30,7 @@
 class LIBGUH_EXPORT ParamDescriptor : public Param
 {
 public:
-    ParamDescriptor(const QString &name, const QVariant &value = QVariant());
+    ParamDescriptor(const ParamTypeId &paramTypeId, const QVariant &value = QVariant());
 
     Types::ValueOperator operatorType() const;
     void setOperatorType(Types::ValueOperator operatorType);

@@ -9,7 +9,7 @@
             "id": "986cf06f-3ef1-4271-b2a3-2cc277ebecb6",
             "deviceClasses": [
                 {
-                    "deviceClassId": "2bb14180-aa5d-4999-992d-e6d464cff486",
+                    "id": "2bb14180-aa5d-4999-992d-e6d464cff486",
                     "name": "Shutter (RSM900R)",
                     "idName": "conradShutter",
                     "deviceIcon": "Blinds",

@@ -48,11 +48,11 @@ public:
     void setName(const QString &name);
 
     ParamList params() const;
-    bool hasParam(const QString &paramName) const;
+    bool hasParam(const ParamTypeId &paramTypeId) const;
     void setParams(const ParamList &params);
 
-    QVariant paramValue(const QString &paramName) const;
-    void setParamValue(const QString &paramName, const QVariant &value);
+    QVariant paramValue(const ParamTypeId &paramTypeId) const;
+    void setParamValue(const ParamTypeId &paramName, const QVariant &value);
 
     QList<State> states() const;
     bool hasState(const StateTypeId &stateTypeId) const;

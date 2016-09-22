@@ -23,6 +23,7 @@
 #define PARAM_H
 
 #include "libguh.h"
+#include "typeutils.h"
 
 #include <QString>
 #include <QVariant>
@@ -30,10 +31,9 @@
 class LIBGUH_EXPORT Param
 {
 public:
-    Param(const QString &name = QString(), const QVariant &value = QVariant());
+    Param(const ParamTypeId &paramTypeId = ParamTypeId(), const QVariant &value = QVariant());
 
-    QString name() const;
-    void setName(const QString &name);
+    ParamTypeId paramTypeId() const;
 
     QVariant value() const;
     void setValue(const QVariant &value);
@@ -41,7 +41,7 @@ public:
     bool isValid() const;
 
 private:
-    QString m_name;
+    ParamTypeId m_paramTypeId;
     QVariant m_value;
 };
 
@@ -51,11 +51,16 @@ QDebug operator<<(QDebug dbg, const Param &param);
 class LIBGUH_EXPORT ParamList: public QList<Param>
 {
 public:
-    bool hasParam(const QString &paramName) const;
-    QVariant paramValue(const QString &paramName) const;
-    void setParamValue(const QString &paramName, const QVariant &value);
+    bool hasParam(const ParamTypeId &paramTypeId) const;
+    QVariant paramValue(const ParamTypeId &paramTypeId) const;
+    bool setParamValue(const ParamTypeId &paramTypeId, const QVariant &value);
     ParamList operator<<(const Param &param);
+
+private:
+    QList<ParamTypeId> m_ids;
+
 };
+
 QDebug operator<<(QDebug dbg, const ParamList &params);
 
 #endif // PARAM_H

@@ -90,8 +90,8 @@ DeviceManager::DeviceSetupStatus DevicePluginAwattar::setupDevice(Device *device
 
     qCDebug(dcAwattar) << "Setup device" << device->name() << device->params();
 
-    m_token = device->paramValue("token").toString();
-    m_userUuid = device->paramValue("user uuid").toString();
+    m_token = device->paramValue(tokenParamTypeId).toString();
+    m_userUuid = device->paramValue(userUuidParamTypeId).toString();
     m_device = device;
 
     if (m_token.isEmpty() || m_userUuid.isEmpty()) {
@@ -202,9 +202,9 @@ DeviceManager::DeviceError DevicePluginAwattar::executeAction(Device *device, co
         return DeviceManager::DeviceErrorHardwareNotAvailable;
 
     if (action.actionTypeId() == sgSyncModeActionTypeId) {
-        qCDebug(dcAwattar) << "Set sg sync mode to" << action.param("sync mode").value();
-        device->setStateValue(sgSyncModeStateTypeId, action.param("sync mode").value());
-        if (action.param("sync mode").value() == "auto")
+        qCDebug(dcAwattar) << "Set sg sync mode to" << action.param(sgSyncModeStateParamTypeId).value();
+        device->setStateValue(sgSyncModeStateTypeId, action.param(sgSyncModeStateParamTypeId).value());
+        if (action.param(sgSyncModeStateParamTypeId).value() == "auto")
             setSgMode(m_autoSgMode);
 
         return DeviceManager::DeviceErrorNoError;
@@ -215,7 +215,7 @@ DeviceManager::DeviceError DevicePluginAwattar::executeAction(Device *device, co
         }
 
         device->setStateValue(sgSyncModeStateTypeId, "manual");
-        QString sgModeString = action.param("sg-mode").value().toString();
+        QString sgModeString = action.param(sgModeParamTypeId).value().toString();
         qCDebug(dcAwattar) << "Set manual SG mode to:" << sgModeString;
 
         if(sgModeString == "1 - Off") {
@@ -263,10 +263,10 @@ void DevicePluginAwattar::updateData()
 
 void DevicePluginAwattar::searchHeatPumps()
 {
-    QHostAddress rplAddress = QHostAddress(configuration().paramValue("RPL address").toString());
+    QHostAddress rplAddress = QHostAddress(configuration().paramValue(rplParamTypeId).toString());
 
     if (rplAddress.isNull()) {
-        qCWarning(dcAwattar) << "Invalid RPL address" << configuration().paramValue("RPL address").toString();
+        qCWarning(dcAwattar) << "Invalid RPL address" << configuration().paramValue(rplParamTypeId).toString();
         return;
     }
 

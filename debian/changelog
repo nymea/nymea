@@ -1,5 +1,6 @@
 guh (0.7.6) xenial; urgency=medium
 
+  * Add translations
   * Add bluetooth server
 
  -- Simon Stürz <simon.stuerz@guh.guru>  Wed, 14 Sep 2016 15:43:22 +0200

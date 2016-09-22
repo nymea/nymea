@@ -141,6 +141,24 @@ void GuhConfiguration::setTimeZone(const QByteArray &timeZone)
     emit timeZoneChanged();
 }
 
+QLocale GuhConfiguration::locale() const
+{
+    return m_locale;
+}
+
+void GuhConfiguration::setLocale(const QLocale &locale)
+{
+    qCDebug(dcApplication()) << "Configuration: set locale:" << locale.name() << locale.nativeCountryName() << locale.nativeLanguageName();
+
+    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    settings.beginGroup("guhd");
+    settings.setValue("language", locale.name());
+    settings.endGroup();
+
+    m_locale = locale;
+    emit localeChanged();
+}
+
 uint GuhConfiguration::tcpServerPort() const
 {
     return m_tcpServerPort;

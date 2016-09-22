@@ -74,9 +74,9 @@ DeviceManager::DeviceSetupStatus DevicePluginUdpCommander::setupDevice(Device *d
 {
     // check port
     bool portOk = false;
-    int port = device->paramValue("port").toInt(&portOk);
+    int port = device->paramValue(portParamTypeId).toInt(&portOk);
     if (!portOk || port <= 0 || port > 65535) {
-        qCWarning(dcUdpCommander) << device->name() << ": invalid port:" << device->paramValue("port").toString() << ".";
+        qCWarning(dcUdpCommander) << device->name() << ": invalid port:" << device->paramValue(portParamTypeId).toString() << ".";
         return DeviceManager::DeviceSetupStatusFailure;
     }
 
@@ -117,8 +117,8 @@ void DevicePluginUdpCommander::readPendingDatagrams()
         socket->readDatagram(datagram.data(), datagram.size(), &sender, &senderPort);
     }
 
-    if (datagram == device->paramValue("command").toByteArray() ||
-            datagram == device->paramValue("command").toByteArray() + "\n") {
+    if (datagram == device->paramValue(commandParamTypeId).toByteArray() ||
+            datagram == device->paramValue(commandParamTypeId).toByteArray() + "\n") {
         qCDebug(dcUdpCommander) << device->name() << " got command from" << sender.toString() << senderPort;
         emit emitEvent(Event(commandReceivedEventTypeId, device->id()));
         socket->writeDatagram("OK\n", sender, senderPort);

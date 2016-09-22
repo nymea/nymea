@@ -1,3 +1,7 @@
+TRANSLATIONS = translations/en_US.ts \
+               translations/de_DE.ts
+
+# Note: include after the TRANSLATIONS definition
 include(../../plugins.pri)
 
 QT+= network
@@ -11,5 +15,3 @@ SOURCES += \
 HEADERS += \
     devicepluginmock.h \
     httpdaemon.h
-
-

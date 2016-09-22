@@ -9,8 +9,9 @@
             "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6",
             "deviceClasses": [
                 {
-                    "deviceClassId": "3c8f2447-dcd0-4882-8c09-99e579e4d24c",
+                    "id": "3c8f2447-dcd0-4882-8c09-99e579e4d24c",
                     "name": "Wake On Lan",
+                    "idName": "wol",
                     "deviceIcon": "Network",
                     "basicTags": [
                         "Device",
@@ -20,6 +21,8 @@
                     "createMethods": ["user"],
                     "paramTypes": [
                         {
+                            "id": "e2ba04ac-9fe1-4f9d-8152-024c27030cde",
+                            "idName": "mac",
                             "name": "mac",
                             "type": "QString",
                             "index": 0,

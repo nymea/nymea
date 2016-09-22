@@ -134,8 +134,8 @@ void QtAvahiServiceBrowserPrivate::callbackServiceResolver(AvahiServiceResolver 
     Q_UNUSED(type);
     Q_UNUSED(txt);
 
-    QtAvahiServiceBrowser *serviceBrowser = static_cast<QtAvahiServiceBrowser *>(userdata);
-    if (!serviceBrowser)
+    QPointer<QtAvahiServiceBrowser> serviceBrowser = static_cast<QtAvahiServiceBrowser *>(userdata);
+    if (serviceBrowser.isNull())
         return;
 
     switch (event) {

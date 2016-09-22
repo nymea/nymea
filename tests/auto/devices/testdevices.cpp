@@ -162,7 +162,7 @@ void TestDevices::setPluginConfig()
 
     QVariantList configuration;
     QVariantMap configParam;
-    configParam.insert("name", "configParamInt");
+    configParam.insert("paramTypeId", configParamIntParamTypeId);
     configParam.insert("value", value);
     configuration.append(configParam);
     params.insert("configuration", configuration);
@@ -174,8 +174,8 @@ void TestDevices::setPluginConfig()
         params.insert("pluginId", pluginId);
         response = injectAndWait("Devices.GetPluginConfiguration", params);
         verifyDeviceError(response);
-        qDebug() << "222" << response.toMap().value("params").toMap().value("configuration").toList().first();
-        QVERIFY2(response.toMap().value("params").toMap().value("configuration").toList().first().toMap().value("name") == "configParamInt", "Value not set correctly");
+        qDebug() << value << response.toMap().value("params").toMap().value("configuration").toList().first();
+        QVERIFY2(ParamTypeId(response.toMap().value("params").toMap().value("configuration").toList().first().toMap().value("paramTypeId").toString()) == configParamIntParamTypeId, "Value not set correctly");
         QVERIFY2(response.toMap().value("params").toMap().value("configuration").toList().first().toMap().value("value") == value, "Value not set correctly");
     }
 }
@@ -221,15 +221,6 @@ void TestDevices::getSupportedDevices()
     QVariantList supportedDevices = result.toMap().value("params").toMap().value("deviceClasses").toList();
     // Make sure there are the right amount of supported device classes with the name Mock Device
     QCOMPARE(supportedDevices.count() >= resultCount, true);
-    if (resultCount > 0) {
-        bool found = false;
-        foreach (const QVariant &listEntry, supportedDevices) {
-            if (listEntry.toMap().value("name").toString().startsWith("Mock Device")) {
-                found = true;
-            }
-        }
-        QVERIFY2(found, "Mock Device not found");
-    }
 }
 
 void TestDevices::addConfiguredDevice_data()
@@ -239,13 +230,13 @@ void TestDevices::addConfiguredDevice_data()
     QTest::addColumn<DeviceManager::DeviceError>("deviceError");
 
     QVariantMap httpportParam;
-    httpportParam.insert("name", "httpport");
+    httpportParam.insert("paramTypeId", httpportParamTypeId.toString());
     httpportParam.insert("value", m_mockDevice1Port - 1);
     QVariantMap asyncParam;
-    asyncParam.insert("name", "async");
+    asyncParam.insert("paramTypeId", asyncParamTypeId);
     asyncParam.insert("value", true);
     QVariantMap brokenParam;
-    brokenParam.insert("name", "broken");
+    brokenParam.insert("paramTypeId", brokenParamTypeId);
     brokenParam.insert("value", true);
 
     QVariantList deviceParams;
@@ -264,7 +255,7 @@ void TestDevices::addConfiguredDevice_data()
     QTest::newRow("User, JustAdd, missing params") << mockDeviceClassId << invalidDeviceParams << DeviceManager::DeviceErrorMissingParameter;
 
     QVariantMap fakeparam;
-    fakeparam.insert("name", "tropptth");
+    fakeparam.insert("paramTypeId", ParamTypeId::createParamTypeId());
     invalidDeviceParams.append(fakeparam);
     QTest::newRow("User, JustAdd, invalid param") << mockDeviceClassId << invalidDeviceParams << DeviceManager::DeviceErrorInvalidParameter;
 
@@ -314,15 +305,15 @@ void TestDevices::storedDevices()
     params.insert("name", "Test stored Device");
     QVariantList deviceParams;
     QVariantMap asyncParam;
-    asyncParam.insert("name", "async");
+    asyncParam.insert("paramTypeId", asyncParamTypeId);
     asyncParam.insert("value", false);
     deviceParams.append(asyncParam);
     QVariantMap brokenParam;
-    brokenParam.insert("name", "broken");
+    brokenParam.insert("paramTypeId", brokenParamTypeId);
     brokenParam.insert("value", false);
     deviceParams.append(brokenParam);
     QVariantMap httpportParam;
-    httpportParam.insert("name", "httpport");
+    httpportParam.insert("paramTypeId", httpportParamTypeId);
     httpportParam.insert("value", 8889);
     deviceParams.append(httpportParam);
     params.insert("deviceParams", deviceParams);
@@ -364,7 +355,7 @@ void TestDevices::discoverDevices_data()
 
     QVariantList discoveryParams;
     QVariantMap resultCountParam;
-    resultCountParam.insert("name", "resultCount");
+    resultCountParam.insert("paramTypeId", resultCountParamTypeId);
     resultCountParam.insert("value", 1);
     discoveryParams.append(resultCountParam);
 
@@ -429,7 +420,7 @@ void TestDevices::addPushButtonDevices()
     // Discover device
     QVariantList discoveryParams;
     QVariantMap resultCountParam;
-    resultCountParam.insert("name", "resultCount");
+    resultCountParam.insert("paramTypeId", resultCountParamTypeId);
     resultCountParam.insert("value", 1);
     discoveryParams.append(resultCountParam);
 
@@ -495,7 +486,7 @@ void TestDevices::addDisplayPinDevices()
     // Discover device
     QVariantList discoveryParams;
     QVariantMap resultCountParam;
-    resultCountParam.insert("name", "resultCount");
+    resultCountParam.insert("paramTypeId", resultCountParamTypeId);
     resultCountParam.insert("value", 1);
     discoveryParams.append(resultCountParam);
 
@@ -792,7 +783,7 @@ void TestDevices::editDevices()
     // add device
     QVariantList deviceParams;
     QVariantMap httpportParam;
-    httpportParam.insert("name", "httpport");
+    httpportParam.insert("paramTypeId", httpportParamTypeId);
     httpportParam.insert("value", 8889);
     deviceParams.append(httpportParam);
 
@@ -849,19 +840,19 @@ void TestDevices::reconfigureDevices_data()
 {
     QVariantList asyncChangeDeviceParams;
     QVariantMap asyncParamDifferent;
-    asyncParamDifferent.insert("name", "async");
+    asyncParamDifferent.insert("paramTypeId", asyncParamTypeId);
     asyncParamDifferent.insert("value", true);
     asyncChangeDeviceParams.append(asyncParamDifferent);
 
     QVariantList httpportChangeDeviceParams;
     QVariantMap httpportParamDifferent;
-    httpportParamDifferent.insert("name", "httpport");
+    httpportParamDifferent.insert("paramTypeId", httpportParamTypeId);
     httpportParamDifferent.insert("value", 8893); // if change -> change also newPort in reconfigureDevices()
     httpportChangeDeviceParams.append(httpportParamDifferent);
 
     QVariantList brokenChangedDeviceParams;
     QVariantMap brokenParamDifferent;
-    brokenParamDifferent.insert("name", "broken");
+    brokenParamDifferent.insert("paramTypeId", brokenParamTypeId);
     brokenParamDifferent.insert("value", true);
     brokenChangedDeviceParams.append(brokenParamDifferent);
 
@@ -896,15 +887,15 @@ void TestDevices::reconfigureDevices()
     params.insert("name", "Device to edit");
     QVariantList deviceParams;
     QVariantMap asyncParam;
-    asyncParam.insert("name", "async");
+    asyncParam.insert("paramTypeId", asyncParamTypeId);
     asyncParam.insert("value", false);
     deviceParams.append(asyncParam);
     QVariantMap brokenParam;
-    brokenParam.insert("name", "broken");
+    brokenParam.insert("paramTypeId", brokenParamTypeId);
     brokenParam.insert("value", broken);
     deviceParams.append(brokenParam);
     QVariantMap httpportParam;
-    httpportParam.insert("name", "httpport");
+    httpportParam.insert("paramTypeId", httpportParamTypeId);
     httpportParam.insert("value", 8892);
     deviceParams.append(httpportParam);
     params.insert("deviceParams", deviceParams);
@@ -1019,7 +1010,7 @@ void TestDevices::reconfigureByDiscovery_data()
 
     QVariantList discoveryParams;
     QVariantMap resultCountParam;
-    resultCountParam.insert("name", "resultCount");
+    resultCountParam.insert("paramTypeId", resultCountParamTypeId);
     resultCountParam.insert("value", 2);
     discoveryParams.append(resultCountParam);
 
@@ -1124,7 +1115,7 @@ void TestDevices::reconfigureByDiscovery()
 
     // Note: this shows that by discovery a not editable param (name) can be changed!
     foreach (QVariant param, deviceMap.value("params").toList()) {
-        if (param.toMap().value("name") == "httpport") {
+        if (param.toMap().value("paramTypeId") == httpportParamTypeId) {
             QCOMPARE(param.toMap().value("value").toInt(), 55556);
         }
     }

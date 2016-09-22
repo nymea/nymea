@@ -231,13 +231,17 @@ void LogEngine::logEvent(const Event &event)
     Logging::LoggingSource sourceType;
     if (event.isStateChangeEvent()) {
         sourceType = Logging::LoggingSourceStates;
-        valueList << event.param("value").value().toString();
+        // There should only be one param
+        if (!event.params().isEmpty())
+            valueList << event.params().first().value().toString();
+
     } else {
         sourceType = Logging::LoggingSourceEvents;
         foreach (const Param &param, event.params()) {
             valueList << param.value().toString();
         }
     }
+
     LogEntry entry(sourceType);
     entry.setTypeId(event.eventTypeId());
     entry.setDeviceId(event.deviceId());

@@ -81,14 +81,14 @@ DeviceManager::DeviceError DevicePluginLeynew::executeAction(Device *device, con
     // TODO: find out how the id will be calculated to bin code or make it discoverable
     // =======================================
     // bincode depending on the id
-    if (device->paramValue("id") == "0115"){
+    if (device->paramValue(idParamTypeId) == "0115"){
         binCode.append("001101000001");
-    } else if (device->paramValue("id") == "0014") {
+    } else if (device->paramValue(idParamTypeId) == "0014") {
         binCode.append("110000010101");
-    } else if (device->paramValue("id") == "0008") {
+    } else if (device->paramValue(idParamTypeId) == "0008") {
         binCode.append("111101010101");
     } else {
-        qCWarning(dcLeynew) << "Could not get id of device: invalid parameter" << device->paramValue("id");
+        qCWarning(dcLeynew) << "Could not get id of device: invalid parameter" << device->paramValue(idParamTypeId);
         return DeviceManager::DeviceErrorInvalidParameter;
     }
 

@@ -9,7 +9,7 @@
             "id": "e2912117-3b2f-4888-950e-6d259b699102",
             "deviceClasses": [
                 {
-                    "deviceClassId": "57d1b080-36a0-46af-a676-78c6b78d08ae",
+                    "id": "57d1b080-36a0-46af-a676-78c6b78d08ae",
                     "idName": "rplRouter",
                     "name": "RPL Router",
                     "basicTags": [
@@ -19,6 +19,8 @@
                     "createMethods": ["user"],
                     "paramTypes": [
                         {
+                            "id": "eec5810e-f885-46fd-b40a-1fa3f2794f0c",
+                            "idName": "rplName",
                             "name": "name",
                             "type": "QString",
                             "index": 0,
@@ -26,6 +28,8 @@
                             "defaultValue": "Merkur RPL Router"
                         },
                         {
+                            "id": "6b856757-e8de-4904-9f34-4c6aea73f8ca",
+                            "idName": "rplHost",
                             "name": "host",
                             "type": "QString",
                             "index": 1,
@@ -34,7 +38,7 @@
                     ]
                 },
                 {
-                    "deviceClassId": "4454e05e-ac0a-4b10-b9dd-56a1475895d7",
+                    "id": "4454e05e-ac0a-4b10-b9dd-56a1475895d7",
                     "idName": "merkurNode",
                     "name": "Merkur Node",
                     "basicTags": [
@@ -44,6 +48,8 @@
                     "createMethods": ["auto"],
                     "paramTypes": [
                         {
+                            "id": "bb2b5f67-6baf-4eb9-9c06-589702564bce",
+                            "idName": "name",
                             "name": "name",
                             "type": "QString",
                             "index": 0,
@@ -51,6 +57,8 @@
                             "defaultValue": "Merkur Node"
                         },
                         {
+                            "id": "f46b08c7-06e7-4c51-bb28-57e07d19275d",
+                            "idName": "host",
                             "name": "host",
                             "type": "QString",
                             "index": 1,
@@ -58,6 +66,8 @@
                             "readOnly": true
                         },
                         {
+                            "id": "c1e0c833-0138-42da-a5e1-bc5185c3a284",
+                            "idName": "router",
                             "name": "router id",
                             "type": "QString",
                             "index": 2,
@@ -69,6 +79,7 @@
                             "id": "06cf4e66-f102-4a8e-ae76-fac250a07753",
                             "idName": "battery",
                             "name": "battery voltage",
+                            "eventTypeName": "battery voltage changed",
                             "type": "double",
                             "index": 0,
                             "defaultValue": 0

@@ -75,25 +75,25 @@ DeviceManager::DeviceSetupStatus DevicePluginLgSmartTv::setupDevice(Device *devi
         return DeviceManager::DeviceSetupStatusFailure;
     }
 
-    TvDevice *tvDevice = new TvDevice(QHostAddress(device->paramValue("host address").toString()),
-                                      device->paramValue("port").toInt(), this);
-    tvDevice->setUuid(device->paramValue("uuid").toString());
+    TvDevice *tvDevice = new TvDevice(QHostAddress(device->paramValue(hostAddressParamTypeId).toString()),
+                                      device->paramValue(portParamTypeId).toInt(), this);
+    tvDevice->setUuid(device->paramValue(uuidParamTypeId).toString());
 
     // if the key is missing, this setup call comes from a pairing procedure
-    if (device->paramValue("key") == QString()) {
+    if (device->paramValue(keyParamTypeId) == QString()) {
         // check if we know the key from the pairing procedure
-        if (!m_tvKeys.contains(device->paramValue("uuid").toString())) {
+        if (!m_tvKeys.contains(device->paramValue(uuidParamTypeId).toString())) {
             qCWarning(dcLgSmartTv) << "could not find any pairing key";
             return DeviceManager::DeviceSetupStatusFailure;
         }
         // use the key from the pairing procedure
-        QString key = m_tvKeys.value(device->paramValue("uuid").toString());
+        QString key = m_tvKeys.value(device->paramValue(uuidParamTypeId).toString());
 
         tvDevice->setKey(key);
-        device->setParamValue("key", key);
+        device->setParamValue(keyParamTypeId, key);
     } else {
         // add the key for editing
-        if (!m_tvKeys.contains(device->paramValue("uuid").toString())) {
+        if (!m_tvKeys.contains(device->paramValue(uuidParamTypeId).toString())) {
             m_tvKeys.insert(tvDevice->uuid(), tvDevice->key());
         }
     }
@@ -128,12 +128,12 @@ void DevicePluginLgSmartTv::upnpDiscoveryFinished(const QList<UpnpDeviceDescript
         qCDebug(dcLgSmartTv) << upnpDeviceDescriptor;
         DeviceDescriptor descriptor(lgSmartTvDeviceClassId, "Lg Smart Tv", upnpDeviceDescriptor.modelName());
         ParamList params;
-        params.append(Param("name", upnpDeviceDescriptor.friendlyName()));
-        params.append(Param("uuid", upnpDeviceDescriptor.uuid()));
-        params.append(Param("model", upnpDeviceDescriptor.modelName()));
-        params.append(Param("host address", upnpDeviceDescriptor.hostAddress().toString()));
-        params.append(Param("port", upnpDeviceDescriptor.port()));
-        params.append(Param("key", QString()));
+        params.append(Param(nameParamTypeId, upnpDeviceDescriptor.friendlyName()));
+        params.append(Param(uuidParamTypeId, upnpDeviceDescriptor.uuid()));
+        params.append(Param(modelParamTypeId, upnpDeviceDescriptor.modelName()));
+        params.append(Param(hostAddressParamTypeId, upnpDeviceDescriptor.hostAddress().toString()));
+        params.append(Param(portParamTypeId, upnpDeviceDescriptor.port()));
+        params.append(Param(keyParamTypeId, QString()));
         descriptor.setParams(params);
         deviceDescriptors.append(descriptor);
     }
@@ -231,8 +231,8 @@ DeviceManager::DeviceError DevicePluginLgSmartTv::displayPin(const PairingTransa
 {
     Q_UNUSED(pairingTransactionId)
 
-    QHostAddress host = QHostAddress(deviceDescriptor.params().paramValue("host address").toString());
-    int port = deviceDescriptor.params().paramValue("port").toInt();
+    QHostAddress host = QHostAddress(deviceDescriptor.params().paramValue(hostAddressParamTypeId).toString());
+    int port = deviceDescriptor.params().paramValue(portParamTypeId).toInt();
     QPair<QNetworkRequest, QByteArray> request = TvDevice::createDisplayKeyRequest(host, port);
     QNetworkReply *reply = networkManagerPost(request.first, request.second);
 
@@ -244,13 +244,13 @@ DeviceManager::DeviceSetupStatus DevicePluginLgSmartTv::confirmPairing(const Pai
 {
     Q_UNUSED(deviceClassId)
 
-    QHostAddress host = QHostAddress(params.paramValue("host address").toString());
-    int port = params.paramValue("port").toInt();
+    QHostAddress host = QHostAddress(params.paramValue(hostAddressParamTypeId).toString());
+    int port = params.paramValue(portParamTypeId).toInt();
     QPair<QNetworkRequest, QByteArray> request = TvDevice::createPairingRequest(host, port, secret);
     QNetworkReply *reply = networkManagerPost(request.first, request.second);
 
     m_setupPairingTv.insert(reply, pairingTransactionId);
-    m_tvKeys.insert(params.paramValue("uuid").toString(), secret);
+    m_tvKeys.insert(params.paramValue(uuidParamTypeId).toString(), secret);
 
     return DeviceManager::DeviceSetupStatusAsync;
 }
@@ -349,9 +349,9 @@ void DevicePluginLgSmartTv::guhTimer()
 
 void DevicePluginLgSmartTv::pairTvDevice(Device *device, const bool &setup)
 {
-    QHostAddress host = QHostAddress(device->paramValue("host address").toString());
-    int port = device->paramValue("port").toInt();
-    QString key = device->paramValue("key").toString();
+    QHostAddress host = QHostAddress(device->paramValue(hostAddressParamTypeId).toString());
+    int port = device->paramValue(portParamTypeId).toInt();
+    QString key = device->paramValue(keyParamTypeId).toString();
     QPair<QNetworkRequest, QByteArray> request = TvDevice::createPairingRequest(host, port, key);
     QNetworkReply *reply = networkManagerPost(request.first, request.second);
     if (setup) {
@@ -363,8 +363,8 @@ void DevicePluginLgSmartTv::pairTvDevice(Device *device, const bool &setup)
 
 void DevicePluginLgSmartTv::unpairTvDevice(Device *device)
 {
-    QHostAddress host = QHostAddress(device->paramValue("host address").toString());
-    int port = device->paramValue("port").toInt();
+    QHostAddress host = QHostAddress(device->paramValue(hostAddressParamTypeId).toString());
+    int port = device->paramValue(portParamTypeId).toInt();
     QPair<QNetworkRequest, QByteArray> request = TvDevice::createEndPairingRequest(host, port);
     QNetworkReply *reply = networkManagerPost(request.first, request.second);
 

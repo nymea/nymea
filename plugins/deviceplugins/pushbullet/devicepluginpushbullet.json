@@ -9,7 +9,7 @@
             "id": "b5e1896e-b7fa-4c19-ac2b-10bd489f8302",
             "deviceClasses": [
                 {
-                    "deviceClassId": "56029c6d-777b-4889-9e17-29f813d34da4",
+                    "id": "56029c6d-777b-4889-9e17-29f813d34da4",
                     "idName": "pushNotification",
                     "name": "Push Notification",
                     "createMethods": ["user"],
@@ -19,7 +19,9 @@
                     ],
                     "paramTypes": [
                         {
-                            "name": "accessToken",
+                            "id": "1f37ce22-50b8-4183-8b74-557fdb2d3076",
+                            "idName": "token",
+                            "name": "access token",
                             "index": 0,
                             "type": "QString"
                         }
@@ -32,6 +34,8 @@
                             "index": 0,
                             "paramTypes": [
                                 {
+                                    "id": "ceed6e66-0dcb-4405-832d-e9091f882acc",
+                                    "idName": "title",
                                     "name": "title",
                                     "type": "QString",
                                     "index": 0,
@@ -39,6 +43,8 @@
                                     "defaultValue": ""
                                 },
                                 {
+                                    "id": "f72cc56c-4d0b-4b96-ab9b-ff3ca92b00e2",
+                                    "idName": "body",
                                     "name": "body",
                                     "type": "QString",
                                     "index": 1,

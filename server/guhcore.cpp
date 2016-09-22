@@ -386,6 +386,11 @@ ServerManager *GuhCore::serverManager() const
     return m_serverManager;
 }
 
+QStringList GuhCore::getAvailableLanguages()
+{
+    // TODO: parse available translation files
+    return QStringList() << "en_US" << "de_DE";
+}
 BluetoothServer *GuhCore::bluetoothServer() const
 {
     return m_bluetoothServer;
@@ -421,7 +426,7 @@ GuhCore::GuhCore(QObject *parent) :
     m_cloudManager = new CloudManager(m_configuration->cloudEnabled(), m_configuration->cloudAuthenticationServer(), m_configuration->cloudProxyServer(), this);
 
     qCDebug(dcApplication) << "Creating Device Manager";
-    m_deviceManager = new DeviceManager(this);
+    m_deviceManager = new DeviceManager(m_configuration->locale(), this);
 
     qCDebug(dcApplication) << "Creating Rule Engine";
     m_ruleEngine = new RuleEngine(this);
@@ -454,6 +459,8 @@ GuhCore::GuhCore(QObject *parent) :
     connect(m_configuration, &GuhConfiguration::cloudEnabledChanged, m_cloudManager, &CloudManager::onCloudEnabledChanged);
     connect(m_configuration, &GuhConfiguration::cloudProxyServerChanged, m_cloudManager, &CloudManager::onProxyServerUrlChanged);
     connect(m_configuration, &GuhConfiguration::cloudAuthenticationServerChanged, m_cloudManager, &CloudManager::onAuthenticationServerUrlChanged);
+
+    connect(m_configuration, &GuhConfiguration::localeChanged, this, &GuhCore::onLocaleChanged);
 
     connect(m_deviceManager, &DeviceManager::eventTriggered, this, &GuhCore::gotEvent);
     connect(m_deviceManager, &DeviceManager::deviceStateChanged, this, &GuhCore::deviceStateChanged);
@@ -556,6 +563,11 @@ void GuhCore::onDateTimeChanged(const QDateTime &dateTime)
         }
     }
     executeRuleActions(actions);
+}
+
+void GuhCore::onLocaleChanged()
+{
+    m_deviceManager->setLocale(m_configuration->locale());
 }
 
 /*! Return the instance of the log engine */

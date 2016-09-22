@@ -184,6 +184,12 @@ QString GuhSettings::settingsPath()
     return path;
 }
 
+/*! Returns the default system translation path \tt{/usr/share/guh/translations}. */
+QString GuhSettings::translationsPath()
+{
+    return QString("/usr/share/guh/translations");
+}
+
 /*! Returns the path where the log file (console log) will be stored. */
 QString GuhSettings::consoleLogPath()
 {

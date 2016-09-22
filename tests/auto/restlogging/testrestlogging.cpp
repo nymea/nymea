@@ -42,8 +42,6 @@ private:
 private slots:
     void initLogs();
 
-    void systemLogs();
-
     void invalidFilter_data();
     void invalidFilter();
 
@@ -73,39 +71,6 @@ void TestRestLogging::initLogs()
     qDebug() << "Got" << logEntries.count() << "logs";
     QVERIFY(logEntries.count() == 0);
 
-    restartServer();
-}
-
-void TestRestLogging::systemLogs()
-{
-    // check the active system log at boot
-    QVariantMap params;
-    params.insert("loggingSources", QVariantList() << JsonTypes::loggingSourceToString(Logging::LoggingSourceSystem));
-    params.insert("eventTypes", QVariantList() << JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeActiveChange));
-
-    QUrl url("http://localhost:3333/api/v1/logs");
-    QUrlQuery query;
-    query.addQueryItem("filter", QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact));
-    url.setQuery(query);
-
-    // there should be 2 logs, one for shutdown, one for startup (from server restart)
-    QVariant response = getAndWait(QNetworkRequest(url));
-    QVariantList logEntries = response.toList();
-    QVERIFY(logEntries.count() == 2);
-
-    QVariantMap logEntryShutdown = logEntries.first().toMap();
-
-    QCOMPARE(logEntryShutdown.value("active").toBool(), false);
-    QCOMPARE(logEntryShutdown.value("eventType").toString(), JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeActiveChange));
-    QCOMPARE(logEntryShutdown.value("source").toString(), JsonTypes::loggingSourceToString(Logging::LoggingSourceSystem));
-    QCOMPARE(logEntryShutdown.value("loggingLevel").toString(), JsonTypes::loggingLevelToString(Logging::LoggingLevelInfo));
-
-    QVariantMap logEntryStartup = logEntries.last().toMap();
-
-    QCOMPARE(logEntryStartup.value("active").toBool(), true);
-    QCOMPARE(logEntryStartup.value("eventType").toString(), JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeActiveChange));
-    QCOMPARE(logEntryStartup.value("source").toString(), JsonTypes::loggingSourceToString(Logging::LoggingSourceSystem));
-    QCOMPARE(logEntryStartup.value("loggingLevel").toString(), JsonTypes::loggingLevelToString(Logging::LoggingLevelInfo));
 }
 
 void TestRestLogging::invalidFilter_data()
@@ -154,7 +119,6 @@ void TestRestLogging::invalidFilterJson()
     url.setQuery(query);
 
     getAndWait(QNetworkRequest(url), 400);
-
 }
 
 void TestRestLogging::eventLogs()
@@ -171,7 +135,7 @@ void TestRestLogging::eventLogs()
     QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
     // trigger event in mock device
-    int port = device->paramValue("httpport").toInt();
+    int port = device->paramValue(httpportParamTypeId).toInt();
     QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(port).arg(mockEvent1Id.toString())));
     QNetworkReply *reply = nam.get(request);
     clientSpy.wait();
@@ -223,11 +187,11 @@ void TestRestLogging::actionLog()
 {
     QVariantList actionParams;
     QVariantMap param1;
-    param1.insert("name", "mockActionParam1");
+    param1.insert("paramTypeId", mockActionParam1ParamTypeId);
     param1.insert("value", 7);
     actionParams.append(param1);
     QVariantMap param2;
-    param2.insert("name", "mockActionParam2");
+    param2.insert("paramTypeId", mockActionParam2ParamTypeId);
     param2.insert("value", true);
     actionParams.append(param2);
 
@@ -374,7 +338,7 @@ void TestRestLogging::removeDevice()
     QUrl url("http://localhost:3333/api/v1/logs");
     response = getAndWait(QNetworkRequest(url));
     QVariantList logEntries = response.toList();
-    QVERIFY(logEntries.count() > 0);
+    QVERIFY2(!logEntries.count() != 0, "No log entries left");
 
     // verify that the logs from this device where removed from the db
     QVariantMap params;

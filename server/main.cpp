@@ -43,6 +43,10 @@
 
 static QHash<QString, bool> s_loggingFilters;
 
+static const char *const normal = "\033[0m";
+static const char *const warning = "\e[33m";
+static const char *const error = "\e[31m";
+
 using namespace guhserver;
 
 static void loggingCategoryFilter(QLoggingCategory *category)
@@ -74,15 +78,15 @@ static void consoleLogHandler(QtMsgType type, const QMessageLogContext& context,
         break;
     case QtWarningMsg:
         messageString = QString(" W %1 | %2: %3").arg(timeString).arg(context.category).arg(message);
-        fprintf(stdout, " W | %s: %s\n", context.category, message.toUtf8().data());
+        fprintf(stdout, "%s W | %s: %s%s\n", warning, context.category, message.toUtf8().data(), normal);
         break;
     case QtCriticalMsg:
         messageString = QString(" C %1 | %2: %3").arg(timeString).arg(context.category).arg(message);
-        fprintf(stdout, " C | %s: %s\n", context.category, message.toUtf8().data());
+        fprintf(stdout, "%s C | %s: %s%s\n", error, context.category, message.toUtf8().data(), normal);
         break;
     case QtFatalMsg:
         messageString = QString(" F %1 | %2: %3").arg(timeString).arg(context.category).arg(message);
-        fprintf(stdout, " F | %s: %s\n", context.category, message.toUtf8().data());
+        fprintf(stdout, "%s F | %s: %s%s\n", error, context.category, message.toUtf8().data(), normal);
         break;
     }
     fflush(stdout);
@@ -92,6 +96,7 @@ static void consoleLogHandler(QtMsgType type, const QMessageLogContext& context,
         fprintf(stdout, " W | Application: Could not open logfile.\n");
         return;
     }
+
     QTextStream textStream(&logFile);
     textStream << messageString << endl;
     logFile.close();
@@ -164,17 +169,17 @@ int main(int argc, char *argv[])
     // create sorted loggingFiler list
     QStringList sortedFilterList = QStringList(s_loggingFilters.keys());
     sortedFilterList.sort();
-    foreach (const QString &filterName, sortedFilterList) {
+    foreach (const QString &filterName, sortedFilterList)
         debugDescription += "\n- " + filterName + " (" + (s_loggingFilters.value(filterName) ? "yes" : "no") + ")";
-    }
+
 
     // create sorted plugin loggingFiler list
     QStringList sortedPluginList = QStringList(loggingFiltersPlugins.keys());
     sortedPluginList.sort();
     debugDescription += "\n\nPlugin categories:\n";
-    foreach (const QString &filterName, sortedPluginList) {
+    foreach (const QString &filterName, sortedPluginList)
         debugDescription += "\n- " + filterName + " (" + (s_loggingFilters.value(filterName) ? "yes" : "no") + ")";
-    }
+
 
     QCommandLineOption allOption(QStringList() << "p" << "print-all", QCoreApplication::translate("main", "Enables all debug categories. This parameter overrides all debug category parameters."));
     parser.addOption(allOption);
@@ -184,9 +189,8 @@ int main(int argc, char *argv[])
     parser.process(application);
 
     // add plugin metadata to the static hash
-    foreach (const QString &category, loggingFiltersPlugins.keys()) {
+    foreach (const QString &category, loggingFiltersPlugins.keys())
         s_loggingFilters.insert(category, false);
-    }
 
     // check debug area
     if (!parser.isSet(allOption)) {

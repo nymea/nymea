@@ -95,7 +95,7 @@ void CloudInterface::dataReceived(const QVariantMap &data)
 
     // check if this is a reply to a request
     if (!reply.isNull() && !data.contains("notification")) {
-        qCDebug(dcCloud()) << "JsonRpc: got response for" << QString("%1.%2").arg(reply->nameSpace(), reply->method());
+        //qCDebug(dcCloud()) << "JsonRpc: got response for" << QString("%1.%2").arg(reply->nameSpace(), reply->method());
         CloudJsonHandler *handler = m_handlers.value(reply->nameSpace());
 
         if (!QMetaObject::invokeMethod(handler, QString("process" + reply->method()).toLatin1().data(), Q_ARG(QVariantMap, params)))

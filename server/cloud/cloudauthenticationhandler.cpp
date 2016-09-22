@@ -41,13 +41,16 @@ QString CloudAuthenticationHandler::nameSpace() const
 void CloudAuthenticationHandler::processAuthenticate(const QVariantMap &params)
 {
     if (params.contains("authenticationError")) {
-        if (params.value("authenticationError").toString() == "AuthenticationErrorSuccess") {
-            if (params.contains("connectionId"))
+        if (params.value("authenticationError").toString() == "AuthenticationErrorNoError") {
+            if (params.contains("connectionId")) {
                 GuhCore::instance()->cloudManager()->onConnectionAuthentificationFinished(true, params.value("connectionId").toUuid());
-        } else {
-            GuhCore::instance()->cloudManager()->onConnectionAuthentificationFinished(false, QUuid());
+                return;
+            }
         }
+        qCWarning(dcCloud()) << "Authentication error:" << params.value("authenticationError").toString();
     }
+
+    GuhCore::instance()->cloudManager()->onConnectionAuthentificationFinished(false, QUuid());
 }
 
 }

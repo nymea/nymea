@@ -65,7 +65,7 @@ DeviceManager::DeviceError DevicePluginWakeOnLan::executeAction(Device *device, 
 {
     if(action.actionTypeId() == wolActionTypeId){
         qCDebug(dcWakeOnLan) << "Wake up" << device->name();
-        wakeup(device->paramValue("mac").toString());
+        wakeup(device->paramValue(macParamTypeId).toString());
     }
     return DeviceManager::DeviceErrorNoError;
 }

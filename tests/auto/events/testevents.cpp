@@ -60,7 +60,7 @@ void TestEvents::triggerEvent()
     QNetworkAccessManager nam;
 
     // trigger event in mock device
-    int port = device->paramValue("httpport").toInt();
+    int port = device->paramValue(httpportParamTypeId).toInt();
     QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(port).arg(mockEvent1Id.toString())));
     QNetworkReply *reply = nam.get(request);
     reply->deleteLater();
@@ -89,7 +89,7 @@ void TestEvents::triggerStateChangeEvent()
     QNetworkAccessManager nam;
 
     // trigger state changed event in mock device
-    int port = device->paramValue("httpport").toInt();
+    int port = device->paramValue(httpportParamTypeId).toInt();
     QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(port).arg(mockIntStateId.toString()).arg(11)));
     QNetworkReply *reply = nam.get(request);
     reply->deleteLater();
@@ -102,7 +102,7 @@ void TestEvents::triggerStateChangeEvent()
         if (event.deviceId() == device->id()) {
             // Make sure the event contains all the stuff we expect
             QCOMPARE(event.eventTypeId().toString(), mockIntStateId.toString());
-            QCOMPARE(event.param("value").value().toInt(), 11);
+            QCOMPARE(event.param(ParamTypeId(mockIntStateId.toString())).value().toInt(), 11);
         }
     }
 }
@@ -111,12 +111,13 @@ void TestEvents::params()
 {
     Event event;
     ParamList params;
-    Param p("foo", "bar");
+    ParamTypeId id = ParamTypeId::createParamTypeId();
+    Param p(id, "foo bar");
     params.append(p);
     event.setParams(params);
 
-    QVERIFY(event.param("foo").value().toString() == "bar");
-    QVERIFY(!event.param("baz").value().isValid());
+    QVERIFY(event.param(id).value().toString() == "foo bar");
+    QVERIFY(!event.param(ParamTypeId::createParamTypeId()).value().isValid());
 }
 
 void TestEvents::getEventType_data()

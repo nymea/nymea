@@ -61,8 +61,8 @@ DeviceManager::DeviceSetupStatus DevicePluginNetatmo::setupDevice(Device *device
 
         OAuth2 *authentication = new OAuth2("561c015d49c75f0d1cce6e13", "GuvKkdtu7JQlPD47qTTepRR9hQ0CUPAj4Tae3Ohcq", this);
         authentication->setUrl(QUrl("https://api.netatmo.net/oauth2/token"));
-        authentication->setUsername(device->paramValue("username").toString());
-        authentication->setPassword(device->paramValue("password").toString());
+        authentication->setUsername(device->paramValue(usernameParamTypeId).toString());
+        authentication->setPassword(device->paramValue(passwordParamTypeId).toString());
         authentication->setScope("read_station read_thermostat write_thermostat");
 
         m_authentications.insert(authentication, device);
@@ -74,9 +74,9 @@ DeviceManager::DeviceSetupStatus DevicePluginNetatmo::setupDevice(Device *device
 
     } else if (device->deviceClassId() == indoorDeviceClassId) {
         qCDebug(dcNetatmo) << "Setup netatmo indoor base station" << device->params();
-        NetatmoBaseStation *indoor = new NetatmoBaseStation(device->paramValue("name").toString(),
-                                                            device->paramValue("mac address").toString(),
-                                                            device->paramValue("connection").toString(), this);
+        NetatmoBaseStation *indoor = new NetatmoBaseStation(device->paramValue(nameParamTypeId).toString(),
+                                                            device->paramValue(macParamTypeId).toString(),
+                                                            device->paramValue(connectionParamTypeId).toString(), this);
 
         device->setParentId(DeviceId(indoor->connectionId()));
         m_indoorDevices.insert(indoor, device);
@@ -85,10 +85,10 @@ DeviceManager::DeviceSetupStatus DevicePluginNetatmo::setupDevice(Device *device
         return DeviceManager::DeviceSetupStatusSuccess;
     } else if (device->deviceClassId() == outdoorDeviceClassId) {
         qCDebug(dcNetatmo) << "Setup netatmo outdoor module" << device->params();
-        NetatmoOutdoorModule *outdoor = new NetatmoOutdoorModule(device->paramValue("name").toString(),
-                                                                 device->paramValue("mac address").toString(),
-                                                                 device->paramValue("connection").toString(),
-                                                                 device->paramValue("base station").toString(),this);
+        NetatmoOutdoorModule *outdoor = new NetatmoOutdoorModule(device->paramValue(nameParamTypeId).toString(),
+                                                                 device->paramValue(macParamTypeId).toString(),
+                                                                 device->paramValue(connectionParamTypeId).toString(),
+                                                                 device->paramValue(baseStationParamTypeId).toString(),this);
 
         device->setParentId(DeviceId(outdoor->connectionId()));
         m_outdoorDevices.insert(outdoor, device);
@@ -196,9 +196,9 @@ void DevicePluginNetatmo::processRefreshData(const QVariantMap &data, const QStr
                     if (!indoorDevice) {
                         DeviceDescriptor descriptor(indoorDeviceClassId, "Indoor Station", deviceMap.value("station_name").toString());
                         ParamList params;
-                        params.append(Param("name", deviceMap.value("station_name").toString()));
-                        params.append(Param("mac address", deviceMap.value("_id").toString()));
-                        params.append(Param("connection", connectionId));
+                        params.append(Param(nameParamTypeId, deviceMap.value("station_name").toString()));
+                        params.append(Param(macParamTypeId, deviceMap.value("_id").toString()));
+                        params.append(Param(connectionParamTypeId, connectionId));
                         descriptor.setParams(params);
                         emit autoDevicesAppeared(indoorDeviceClassId, QList<DeviceDescriptor>() << descriptor);
                     } else {
@@ -223,10 +223,10 @@ void DevicePluginNetatmo::processRefreshData(const QVariantMap &data, const QStr
                     if (!outdoorDevice) {
                         DeviceDescriptor descriptor(outdoorDeviceClassId, "Outdoor Module", moduleMap.value("module_name").toString());
                         ParamList params;
-                        params.append(Param("name", moduleMap.value("module_name").toString()));
-                        params.append(Param("mac address", moduleMap.value("_id").toString()));
-                        params.append(Param("connection", connectionId));
-                        params.append(Param("base station", moduleMap.value("main_device").toString()));
+                        params.append(Param(nameParamTypeId, moduleMap.value("module_name").toString()));
+                        params.append(Param(macParamTypeId, moduleMap.value("_id").toString()));
+                        params.append(Param(connectionParamTypeId, connectionId));
+                        params.append(Param(baseStationParamTypeId, moduleMap.value("main_device").toString()));
                         descriptor.setParams(params);
                         emit autoDevicesAppeared(outdoorDeviceClassId, QList<DeviceDescriptor>() << descriptor);
                     } else {
@@ -244,7 +244,7 @@ Device *DevicePluginNetatmo::findIndoorDevice(const QString &macAddress)
 {
     foreach (Device *device, myDevices()) {
         if (device->deviceClassId() == indoorDeviceClassId) {
-            if (device->paramValue("mac address").toString() == macAddress) {
+            if (device->paramValue(macParamTypeId).toString() == macAddress) {
                 return device;
             }
         }
@@ -256,7 +256,7 @@ Device *DevicePluginNetatmo::findOutdoorDevice(const QString &macAddress)
 {
     foreach (Device *device, myDevices()) {
         if (device->deviceClassId() == outdoorDeviceClassId) {
-            if (device->paramValue("mac address").toString() == macAddress) {
+            if (device->paramValue(macParamTypeId).toString() == macAddress) {
                 return device;
             }
         }

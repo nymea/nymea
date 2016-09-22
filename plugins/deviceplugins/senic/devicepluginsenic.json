@@ -5,10 +5,11 @@
     "vendors": [
         {
             "name": "Senic",
+            "idName": "senic",
             "id": "8e6cae9c-706b-49e5-ae86-da52a20dd336",
             "deviceClasses": [
                 {
-                    "deviceClassId": "315ece51-053e-49f9-831f-b09f9f27fb9f",
+                    "id": "315ece51-053e-49f9-831f-b09f9f27fb9f",
                     "idName": "nuimo",
                     "name": "Nuimo",
                     "deviceIcon": "Switch",
@@ -19,12 +20,16 @@
                     "createMethods": ["discovery"],
                     "paramTypes": [
                         {
+                            "id": "db67d1e6-26fa-44ed-ad55-c6aef45ea2ea",
+                            "idName": "name",
                             "name": "name",
                             "type": "QString",
                             "index": 0,
                             "inputType": "TextLine"
                         },
                         {
+                            "id": "71553f6a-2ed4-4896-bb7b-52e7dca948b2",
+                            "idName": "mac",
                             "name": "mac address",
                             "type": "QString",
                             "index": 1,
@@ -36,6 +41,7 @@
                             "id": "5286976a-f5dc-4662-872a-438ac5d491cb",
                             "idName": "available",
                             "name": "available",
+                            "eventTypeName": "available changed",
                             "index": 0,
                             "type": "bool",
                             "defaultValue": false
@@ -44,6 +50,7 @@
                             "id": "b5ee2465-7fa1-450b-8073-f115537d3409",
                             "idName": "battery",
                             "name": "battery",
+                            "eventTypeName": "battery changed",
                             "index": 1,
                             "type": "int",
                             "minValue": 0,
@@ -55,6 +62,7 @@
                             "id": "69a5f495-5452-434b-8fb8-b73d992c5446",
                             "idName": "rotation",
                             "name": "rotation",
+                            "eventTypeName": "rotation changed",
                             "index": 2,
                             "type": "int",
                             "minValue": 0,
@@ -83,6 +91,8 @@
                             "name": "Show logo",
                             "paramTypes": [
                                 {
+                                    "id": "a8f72c37-9cb5-4885-a7e4-b2b396f8e4cd",
+                                    "idName": "logo",
                                     "name": "logo",
                                     "type": "QString",
                                     "index": 0,

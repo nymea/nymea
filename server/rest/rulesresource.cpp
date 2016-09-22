@@ -321,7 +321,7 @@ HttpReply *RulesResource::editRule(const RuleId &ruleId, const QByteArray &paylo
         return createRuleErrorReply(HttpReply::Ok, status);
     }
 
-    qCWarning(dcRest) << "Edit rule finished with error" << status;
+    qCWarning(dcRest) << "Edit rule finished with error" << JsonTypes::ruleErrorToString(status);
     return createRuleErrorReply(HttpReply::BadRequest, status);
 }
 

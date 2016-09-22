@@ -9,7 +9,7 @@
             "id": "a9af9673-78db-4226-a16b-f34b304f7041",
             "deviceClasses": [
                 {
-                    "deviceClassId": "1d41b5a8-74ff-4a12-b365-c7bbe610848f",
+                    "id": "1d41b5a8-74ff-4a12-b365-c7bbe610848f",
                     "idName": "lgSmartTv",
                     "name": "LG Smart Tv",
                     "deviceIcon": "Tv",
@@ -24,35 +24,47 @@
                     "pairingInfo": "Please enter the pairing key displayed on the Tv.",
                     "paramTypes": [
                         {
+                            "id": "797a1915-cb85-400a-9c1a-db09c73b54d5",
+                            "idName": "name",
                             "name": "name",
                             "type": "QString",
                             "index": 0,
                             "inputType": "TextLine"
                         },
                         {
+                            "id": "0deec372-b955-49d2-9906-fc1a603dd637",
+                            "idName": "model",
                             "name": "model",
                             "type": "QString",
                             "index": 1,
                             "inputType": "TextLine"
                         },
                         {
+                            "id": "0af152bb-8844-44d8-afee-d08bb0e28558",
+                            "idName": "uuid",
                             "name": "uuid",
                             "type": "QString",
                             "index": 2,
                             "inputType": "TextLine"
                         },
                         {
+                            "id": "9710c07c-0725-4099-bf73-2513efbc0872",
+                            "idName": "hostAddress",
                             "name": "host address",
                             "type": "QString",
                             "index": 3,
                             "inputType": "IPv4Address"
                         },
                         {
+                            "id": "442abce0-16f9-4628-9534-e98e7f1c0a51",
+                            "idName": "port",
                             "name": "port",
                             "index": 4,
                             "type": "int"
                         },
                         {
+                            "id": "60a455e2-0668-4f11-a789-43c85e5a4bc5",
+                            "idName": "key",
                             "name": "key",
                             "type": "QString",
                             "index": 5,
@@ -64,6 +76,7 @@
                             "id": "b056c36b-df87-4177-8d5d-1e7c1e8cdc7a",
                             "idName": "reachable",
                             "name": "reachable",
+                            "eventTypeName": "reachable changed",
                             "index": 0,
                             "type": "bool",
                             "defaultValue": false
@@ -72,6 +85,7 @@
                             "id": "8ad3d77f-d340-495d-8c2a-5569a80e9d36",
                             "idName": "tv3DMode",
                             "name": "3D mode",
+                            "eventTypeName": "3D mode changed",
                             "index": 1,
                             "type": "bool",
                             "defaultValue": false
@@ -79,7 +93,8 @@
                         {
                             "id": "07d39a6e-7eab-42d0-851d-9f3bcd3bbb57",
                             "idName": "tvVolumeLevel",
-                            "name": "volume level",
+                            "name": "volume",
+                            "eventTypeName": "volume changed",
                             "index": 2,
                             "type": "int",
                             "ruleRelevant": false,
@@ -91,6 +106,7 @@
                             "id": "a6ac9061-3de7-403a-a646-790ca5d73764",
                             "idName": "tvMute",
                             "index": 3,
+                            "eventTypeName": "mute changed",
                             "name": "mute",
                             "type": "bool",
                             "defaultValue": false
@@ -99,6 +115,7 @@
                             "id": "84c86670-77c7-4fc6-9e23-abca066e76aa",
                             "idName": "tvChannelType",
                             "name": "tv channel type",
+                            "eventTypeName": "tc channel type changed",
                             "index": 4,
                             "type": "QString",
                             "defaultValue": "-"
@@ -108,6 +125,7 @@
                             "idName": "tvChannelName",
                             "index": 5,
                             "name": "channel name",
+                            "eventTypeName": "channel name changed",
                             "type": "QString",
                             "defaultValue": "-"
                         },
@@ -116,13 +134,15 @@
                             "idName": "tvChannelNumber",
                             "index": 6,
                             "name": "channel number",
+                            "eventTypeName": "channel number changed",
                             "type": "int",
                             "defaultValue": 0
                         },
                         {
                             "id": "3f53e52e-1ad7-40e7-8080-76908e720cac",
                             "idName": "tvProgramName",
-                            "name": "program name",
+                            "name": "program",
+                            "eventTypeName": "program changed",
                             "index": 7,
                             "type": "QString",
                             "defaultValue": "-"
@@ -131,6 +151,7 @@
                             "id": "e895017a-139f-410c-bfb2-4d008104e164",
                             "idName": "tvInputSourceIndex",
                             "name": "input source index",
+                            "eventTypeName": "input source index changed",
                             "index": 8,
                             "ruleRelevant": false,
                             "eventRuleRelevant": false,
@@ -140,7 +161,8 @@
                         {
                             "id": "58b734ec-2269-4c57-99e1-e1eeee401053",
                             "idName": "tvInputSourceLabelName",
-                            "name": "input source label",
+                            "name": "input source",
+                            "eventTypeName": "input source changed",
                             "index": 9,
                             "ruleRelevant": false,
                             "eventRuleRelevant": false,

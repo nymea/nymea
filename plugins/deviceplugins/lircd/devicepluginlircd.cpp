@@ -71,7 +71,7 @@ void DevicePluginLircd::buttonPressed(const QString &remoteName, const QString &
     Device *remote = nullptr;
     QList<Device*> configuredRemotes = deviceManager()->findConfiguredDevices(lircdDeviceClassId);
     foreach (Device *device, configuredRemotes) {
-        if (device->paramValue("remoteName").toString() == remoteName) {
+        if (device->paramValue(nameParamTypeId).toString() == remoteName) {
             remote = device;
             break;
         }
@@ -83,9 +83,9 @@ void DevicePluginLircd::buttonPressed(const QString &remoteName, const QString &
 
     qCDebug(dcLircd) << "found remote" << remoteName << supportedDevices().first().eventTypes().count();
     ParamList params;
-    Param buttonParam("button", buttonName);
+    Param buttonParam(buttonParamTypeId, buttonName);
     params.append(buttonParam);
-    Param repeatParam("repeat", repeat);
+    Param repeatParam(repeatParamTypeId, repeat);
     params.append(repeatParam);
     Event event(LircKeypressEventTypeId, remote->id(), params);
     emitEvent(event);

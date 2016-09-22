@@ -9,7 +9,7 @@
             "idName": "philips",
             "deviceClasses": [
                 {
-                    "deviceClassId": "642aa4c7-19aa-45ed-ba06-aa1ae6c9edf7",
+                    "id": "642aa4c7-19aa-45ed-ba06-aa1ae6c9edf7",
                     "idName": "hueBridge",
                     "name": "Hue gateway",
                     "deviceIcon": "Gateway",
@@ -24,12 +24,16 @@
                     "pairingInfo": "Please press the button on the Hue Bridge within 30 seconds before you continue",
                     "paramTypes": [
                         {
+                            "id": "275b76f2-0174-4f26-b3ec-5f108baf8bdd",
+                            "idName": "bridgeName",
                             "name": "name",
                             "type" : "QString",
                             "index": 0,
                             "inputType": "TextLine"
                         },
                         {
+                            "id": "8bf5776a-d5a6-4600-8b27-481f0d803a8f",
+                            "idName": "bridgeApi",
                             "name": "api key",
                             "type" : "QString",
                             "index": 1,
@@ -37,6 +41,8 @@
                             "readOnly": true
                         },
                         {
+                            "id": "1845975b-1184-4440-bc0d-73d53a9f683c",
+                            "idName": "bridgeHost",
                             "name": "host address",
                             "type" : "QString",
                             "index": 2,
@@ -44,6 +50,8 @@
                             "readOnly": true
                         },
                         {
+                            "id": "2c67203d-a308-45ec-9a08-fc4183c06ff8",
+                            "idName": "bridgeMac",
                             "name": "mac address",
                             "type" : "QString",
                             "index": 3,
@@ -51,18 +59,24 @@
                             "readOnly": true
                         },
                         {
+                            "id": "a496feb0-3b7b-46cb-a63a-e063447d6b1d",
+                            "idName": "bridgeId",
                             "name": "id",
                             "type" : "QString",
                             "index": 4,
                             "readOnly": true
                         },
                         {
+                            "id": "ea228c4d-975c-4b43-9445-7c9a907c29d6",
+                            "idName": "bridgeSoftware",
                             "name": "software version",
                             "type" : "QString",
                             "index": 5,
                             "readOnly": true
                         },
                         {
+                            "id": "53170394-956c-4511-b3a8-2c8a502ef1ed",
+                            "idName": "bridgeZigbeeChannel",
                             "name": "zigbee channel",
                             "type" : "int",
                             "index": 6,
@@ -74,6 +88,7 @@
                             "id": "15794d26-fde8-4a61-8f83-d7830534975f",
                             "idName": "bridgeReachable",
                             "name": "reachable",
+                            "eventTypeName": "reachable changed",
                             "index": 0,
                             "defaultValue": false,
                             "type": "bool"
@@ -82,6 +97,7 @@
                             "id": "7a230e89-c4ce-4276-90e0-6a9ddb890603",
                             "idName": "apiVersion",
                             "name": "api version",
+                            "eventTypeName": "api version changed",
                             "index": 1,
                             "ruleRelevant": false,
                             "eventRuleRelevant": false,
@@ -92,6 +108,7 @@
                             "id": "4c707b18-6604-4e6d-b6bc-4e27769c2adc",
                             "idName": "softwareVersion",
                             "name": "software version",
+                            "eventTypeName": "software version changed",
                             "ruleRelevant": false,
                             "eventRuleRelevant": false,
                             "index": 2,
@@ -102,6 +119,7 @@
                             "id": "16a126f3-0cef-4931-bb2b-9e1b49bec7fc",
                             "idName": "updateStatus",
                             "name": "update status",
+                            "eventTypeName": "update status changed",
                             "index": 3,
                             "ruleRelevant": false,
                             "type": "QString",
@@ -136,7 +154,7 @@
                     ]
                 },
                 {
-                    "deviceClassId": "0edba26c-96ab-44fb-a6a2-c0574d19630e",
+                    "id": "0edba26c-96ab-44fb-a6a2-c0574d19630e",
                     "idName": "hueLight",
                     "name": "Hue Light",
                     "deviceIcon": "LightBulb",
@@ -150,36 +168,48 @@
                     "createMethods": ["auto"],
                     "paramTypes": [
                         {
+                            "id": "0d71522c-08c0-4a66-bb5e-e31eb2dd41e5",
+                            "idName": "name",
                             "name": "name",
                             "type" : "QString",
                             "index": 0,
                             "inputType": "TextLine"
                         },
                         {
+                            "id": "33b01ab8-3811-4a06-ab3c-0a0ef2faa3ef",
+                            "idName": "bridge",
                             "name": "bridge",
                             "type" : "QString",
                             "index": 1,
                             "readOnly": true
                         },
                         {
+                            "id": "095a463b-f59e-46b1-989a-a71f9cbe3e30",
+                            "idName": "modelId",
                             "name": "model id",
                             "type" : "QString",
                             "index": 2,
                             "readOnly": true
                         },
                         {
+                            "id": "3f3467ef-4483-4eb9-bcae-84e628322f84",
+                            "idName": "type",
                             "name": "type",
                             "type" : "QString",
                             "index": 3,
                             "readOnly": true
                         },
                         {
+                            "id": "1a5129ca-006c-446c-9f2e-79b065de715f",
+                            "idName": "uuid",
                             "name": "uuid",
                             "type" : "QString",
                             "index": 4,
                             "readOnly": true
                         },
                         {
+                            "id": "99458d90-d171-4600-ba08-4818a4aaed68",
+                            "idName": "apiKey",
                             "name": "api key",
                             "type" : "QString",
                             "inputType": "TextLine",
@@ -187,6 +217,8 @@
                             "readOnly": true
                         },
                         {
+                            "id": "56d14f2f-1b20-4004-a333-87ac09fa54d2",
+                            "idName": "host",
                             "name": "host address",
                             "type" : "QString",
                             "inputType": "IPv4Address",
@@ -194,6 +226,8 @@
                             "readOnly": true
                         },
                         {
+                            "id": "491dc012-ccf2-4d3a-9f18-add98f7374af",
+                            "idName": "lightId",
                             "name": "light id",
                             "type" : "int",
                             "index": 7,
@@ -205,6 +239,7 @@
                             "id": "19bb8d10-1b28-4ba3-99b7-a634138dcfde",
                             "idName": "hueReachable",
                             "name": "reachable",
+                            "eventTypeName": "reachable changed",
                             "index": 0,
                             "defaultValue": false,
                             "type": "bool"
@@ -213,6 +248,8 @@
                             "id": "90aaffe5-6a76-47d2-a14a-550f60390245",
                             "idName": "huePower",
                             "name": "power",
+                            "eventTypeName": "power changed",
+                            "actionTypeName": "Set power",
                             "index": 1,
                             "type": "bool",
                             "defaultValue": false,
@@ -222,6 +259,8 @@
                             "id": "c0f4206f-f219-4f06-93c4-4ca515a56f79",
                             "idName": "hueTemperature",
                             "name": "color temperature",
+                            "eventTypeName": "color temperature changed",
+                            "actionTypeName": "Set color temperature",
                             "type": "int",
                             "index": 2,
                             "unit": "Mired",
@@ -236,6 +275,8 @@
                             "id": "d25423e7-b924-4b20-80b6-77eecc65d089",
                             "idName": "hueColor",
                             "name": "color",
+                            "eventTypeName": "color changed",
+                            "actionTypeName": "Set color",
                             "index": 3,
                             "type": "QColor",
                             "ruleRelevant": false,
@@ -248,6 +289,8 @@
                             "id": "90e91f64-a208-468c-a5a2-7f47e08859e2",
                             "idName": "hueBrightness",
                             "name": "brightness",
+                            "eventTypeName": "brightness changed",
+                            "actionTypeName": "Set brigtness",
                             "type": "int",
                             "index": 4,
                             "ruleRelevant": false,
@@ -263,6 +306,8 @@
                             "id": "0b7cdd8d-4db8-4183-abe2-f3c01d1c9afc",
                             "idName": "hueEffect",
                             "name": "effect",
+                            "eventTypeName": "effect changed",
+                            "actionTypeName": "Set effect",
                             "index": 5,
                             "ruleRelevant": false,
                             "eventRuleRelevant": false,
@@ -283,6 +328,8 @@
                             "index": 0,
                             "paramTypes": [
                                 {
+                                    "id": "8ace6f8c-b2c7-4d0d-a407-52a54ad0ab05",
+                                    "idName": "alert",
                                     "name": "alert",
                                     "type": "QString",
                                     "index": 0,
@@ -296,7 +343,7 @@
                     ]
                 },
                 {
-                    "deviceClassId": "4fa568ef-7a3a-422b-b0c0-206d37cb4eed",
+                    "id": "4fa568ef-7a3a-422b-b0c0-206d37cb4eed",
                     "idName": "hueWhiteLight",
                     "name": "Hue White Light",
                     "deviceIcon": "LightBulb",
@@ -310,50 +357,66 @@
                     "createMethods": ["auto"],
                     "paramTypes": [
                         {
+                            "id": "0d71522c-08c0-4a66-bb5e-e31eb2dd41e5",
+                            "idName": "name",
                             "name": "name",
                             "type" : "QString",
                             "index": 0,
                             "inputType": "TextLine"
                         },
                         {
+                            "id": "33b01ab8-3811-4a06-ab3c-0a0ef2faa3ef",
+                            "idName": "bridge",
                             "name": "bridge",
                             "type" : "QString",
                             "index": 1,
                             "readOnly": true
                         },
                         {
+                            "id": "095a463b-f59e-46b1-989a-a71f9cbe3e30",
+                            "idName": "modelId",
                             "name": "model id",
                             "type" : "QString",
                             "index": 2,
                             "readOnly": true
                         },
                         {
+                            "id": "3f3467ef-4483-4eb9-bcae-84e628322f84",
+                            "idName": "type",
                             "name": "type",
                             "type" : "QString",
                             "index": 3,
                             "readOnly": true
                         },
                         {
+                            "id": "1a5129ca-006c-446c-9f2e-79b065de715f",
+                            "idName": "uuid",
                             "name": "uuid",
                             "type" : "QString",
                             "index": 4,
                             "readOnly": true
                         },
                         {
+                            "id": "99458d90-d171-4600-ba08-4818a4aaed68",
+                            "idName": "apiKey",
                             "name": "api key",
                             "type" : "QString",
-                            "index": 5,
                             "inputType": "TextLine",
+                            "index": 5,
                             "readOnly": true
                         },
                         {
+                            "id": "56d14f2f-1b20-4004-a333-87ac09fa54d2",
+                            "idName": "host",
                             "name": "host address",
                             "type" : "QString",
-                            "index": 6,
                             "inputType": "IPv4Address",
+                            "index": 6,
                             "readOnly": true
                         },
                         {
+                            "id": "491dc012-ccf2-4d3a-9f18-add98f7374af",
+                            "idName": "lightId",
                             "name": "light id",
                             "type" : "int",
                             "index": 7,
@@ -365,6 +428,7 @@
                             "id": "19bb8d10-1b28-4ba3-99b7-a634138dcfde",
                             "idName": "hueReachable",
                             "name": "reachable",
+                            "eventTypeName": "reachable changed",
                             "index": 0,
                             "defaultValue": false,
                             "type": "bool"
@@ -373,6 +437,8 @@
                             "id": "90aaffe5-6a76-47d2-a14a-550f60390245",
                             "idName": "huePower",
                             "name": "power",
+                            "eventTypeName": "power changed",
+                            "actionTypeName": "Set power",
                             "index": 1,
                             "type": "bool",
                             "defaultValue": false,
@@ -382,6 +448,8 @@
                             "id": "90e91f64-a208-468c-a5a2-7f47e08859e2",
                             "idName": "hueBrightness",
                             "name": "brightness",
+                            "eventTypeName": "brightness changed",
+                            "actionTypeName": "Set brightness",
                             "index": 2,
                             "type": "int",
                             "ruleRelevant": false,
@@ -402,6 +470,8 @@
                             "index": 0,
                             "paramTypes": [
                                 {
+                                    "id": "8ace6f8c-b2c7-4d0d-a407-52a54ad0ab05",
+                                    "idName": "alert",
                                     "name": "alert",
                                     "type": "QString",
                                     "index": 0,
@@ -415,7 +485,7 @@
                     ]
                 },
                 {
-                    "deviceClassId": "bb482d39-67ef-46dc-88e9-7b181d642b28",
+                    "id": "bb482d39-67ef-46dc-88e9-7b181d642b28",
                     "idName": "hueRemote",
                     "name": "Hue Remote",
                     "deviceIcon": "Switch",
@@ -427,50 +497,66 @@
                     "createMethods": ["auto"],
                     "paramTypes": [
                         {
+                            "id": "0d71522c-08c0-4a66-bb5e-e31eb2dd41e5",
+                            "idName": "name",
                             "name": "name",
                             "type" : "QString",
                             "index": 0,
                             "inputType": "TextLine"
                         },
                         {
+                            "id": "33b01ab8-3811-4a06-ab3c-0a0ef2faa3ef",
+                            "idName": "bridge",
                             "name": "bridge",
                             "type" : "QString",
                             "index": 1,
                             "readOnly": true
                         },
                         {
+                            "id": "095a463b-f59e-46b1-989a-a71f9cbe3e30",
+                            "idName": "modelId",
                             "name": "model id",
                             "type" : "QString",
                             "index": 2,
                             "readOnly": true
                         },
                         {
+                            "id": "3f3467ef-4483-4eb9-bcae-84e628322f84",
+                            "idName": "type",
                             "name": "type",
                             "type" : "QString",
                             "index": 3,
                             "readOnly": true
                         },
                         {
+                            "id": "1a5129ca-006c-446c-9f2e-79b065de715f",
+                            "idName": "uuid",
                             "name": "uuid",
                             "type" : "QString",
                             "index": 4,
                             "readOnly": true
                         },
                         {
+                            "id": "99458d90-d171-4600-ba08-4818a4aaed68",
+                            "idName": "apiKey",
                             "name": "api key",
                             "type" : "QString",
-                            "index": 5,
                             "inputType": "TextLine",
+                            "index": 5,
                             "readOnly": true
                         },
                         {
+                            "id": "56d14f2f-1b20-4004-a333-87ac09fa54d2",
+                            "idName": "host",
                             "name": "host address",
                             "type" : "QString",
-                            "index": 6,
                             "inputType": "IPv4Address",
+                            "index": 6,
                             "readOnly": true
                         },
                         {
+                            "id": "2ddb571b-149f-4f08-a76a-78b7d3aa27e0",
+                            "idName": "sensorId",
                             "name": "sensor id",
                             "type" : "int",
                             "index": 7,
@@ -482,6 +568,7 @@
                             "id": "19bb8d10-1b28-4ba3-99b7-a634138dcfde",
                             "idName": "hueReachable",
                             "name": "reachable",
+                            "eventTypeName": "reachable changed",
                             "index": 0,
                             "defaultValue": false,
                             "type": "bool"
@@ -490,6 +577,8 @@
                             "id": "683e493a-9796-4d5e-b0e3-61cb178d5819",
                             "idName": "battery",
                             "name": "battery",
+                            "eventTypeName": "battery changed",
+                            "actionTypeName": "Set battery",
                             "type": "int",
                             "index": 1,
                             "unit": "Percentage",

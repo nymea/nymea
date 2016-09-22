@@ -245,11 +245,11 @@ void TestRestDeviceClasses::discoverDevices_data()
     QTest::addColumn<DeviceManager::DeviceError>("error");
 
     QVariantMap resultCountParam;
-    resultCountParam.insert("name", "resultCount");
+    resultCountParam.insert("paramTypeId", resultCountParamTypeId);
     resultCountParam.insert("value", 1);
 
     QVariantMap invalidResultCountParam;
-    invalidResultCountParam.insert("name", "resultCount");
+    invalidResultCountParam.insert("paramTypeId", resultCountParamTypeId);
     invalidResultCountParam.insert("value", 10);
 
     QVariantList discoveryParams;

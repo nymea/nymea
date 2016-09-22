@@ -9,7 +9,7 @@
             "idName": "kodi",
             "deviceClasses": [
                 {
-                    "deviceClassId": "d09953e3-c5bd-415b-973b-0d0bf2be3f69",
+                    "id": "d09953e3-c5bd-415b-973b-0d0bf2be3f69",
                     "idName": "kodi",
                     "name": "Kodi",
                     "deviceIcon": "Tv",
@@ -22,18 +22,24 @@
                     "criticalStateTypeId": "09dfbd40-c97c-4a20-9ecd-f80e389a4864",
                     "paramTypes": [
                         {
+                            "id": "a704beb1-b0b0-46fc-91fc-3aac01e1a364",
+                            "idName": "name",
                             "name": "name",
                             "type": "QString",
                             "index": 0,
                             "inputType": "TextLine"
                         },
                         {
+                            "id": "1a897065-57c6-49b3-bac9-1e5db27859e5",
+                            "idName": "ip",
                             "name": "ip",
                             "type" : "QString",
                             "index": 1,
                             "inputType": "IPv4Address"
                         },
                         {
+                            "id": "660fb4d7-9479-4c9d-a900-ce221d2b8ae4",
+                            "idName": "port",
                             "name": "port",
                             "index": 2,
                             "type" : "int"
@@ -44,6 +50,7 @@
                             "id": "09dfbd40-c97c-4a20-9ecd-f80e389a4864",
                             "idName": "connected",
                             "name": "connected",
+                            "eventTypeName": "connected changed",
                             "index": 0,
                             "defaultValue": false,
                             "type": "bool"
@@ -52,6 +59,8 @@
                             "id": "bc98cdb0-4d0e-48ca-afc7-922e49bb7813",
                             "idName": "mute",
                             "name": "mute",
+                            "eventTypeName": "mute changed",
+                            "actionTypeName": "Set mute",
                             "index": 1,
                             "type": "bool",
                             "defaultValue": true,
@@ -63,6 +72,8 @@
                             "id": "9dfe5d78-4c3f-497c-bab1-bb9fdf7e93a9",
                             "idName": "volume",
                             "name": "volume",
+                            "eventTypeName": "volume changed",
+                            "actionTypeName": "Set volume",
                             "unit": "Percentage",
                             "type": "int",
                             "index": 2,
@@ -102,12 +113,16 @@
                             "index": 0,
                             "paramTypes": [
                                 {
+                                    "id": "798f720a-cc4f-40e7-91d7-2ef5957ca7ad",
+                                    "idName": "message",
                                     "name": "message",
                                     "type": "QString",
                                     "index": 0,
                                     "inputType": "TextLine"
                                 },
                                 {
+                                    "id": "86df6a45-ee8a-4e1f-94e2-4081e14eb557",
+                                    "idName": "type",
                                     "name": "type",
                                     "type": "QString",
                                     "index": 1,
@@ -127,6 +142,8 @@
                             "index": 1,
                             "paramTypes": [
                                 {
+                                    "id": "93861dac-0c24-4a3b-903d-d1be44eae611",
+                                    "idName": "button",
                                     "name": "button",
                                     "type": "QString",
                                     "index": 0,
@@ -172,6 +189,8 @@
                             "index": 2,
                             "paramTypes": [
                                 {
+                                    "id": "8f3413fb-018e-40d6-903c-c8a915a6f498",
+                                    "idName": "systemCommand",
                                     "name": "command",
                                     "type": "QString",
                                     "index": 0,
@@ -192,6 +211,8 @@
                             "index": 3,
                             "paramTypes": [
                                 {
+                                    "id": "3219855b-e043-43aa-91ae-794b474379bf",
+                                    "idName": "videoCommand",
                                     "name": "command",
                                     "type": "QString",
                                     "index": 0,
@@ -210,6 +231,8 @@
                             "index": 4,
                             "paramTypes": [
                                 {
+                                    "id": "ba89d098-56d7-40a2-b499-c02499c1ec0c",
+                                    "idName": "audioCommand",
                                     "name": "command",
                                     "type": "QString",
                                     "index": 0,

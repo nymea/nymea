@@ -5,10 +5,11 @@
     "vendors": [
         {
             "name": "Elgato",
+            "idName": "elgato",
             "id": "90a3091d-1053-4f77-8dc3-92e27bbcebe7",
             "deviceClasses": [
                 {
-                    "deviceClassId": "164f9602-90ee-4693-bda3-9cafae37603e",
+                    "id": "164f9602-90ee-4693-bda3-9cafae37603e",
                     "idName": "avea",
                     "name": "Avea",
                     "deviceIcon": "LightBulb",
@@ -21,12 +22,16 @@
                     "createMethods": ["discovery"],
                     "paramTypes": [
                         {
+                            "id": "d7a5d96f-33dc-4dc3-a171-b1e89a5e1a4b",
+                            "idName": "name",
                             "name": "name",
                             "type": "QString",
                             "index": 0,
                             "inputType": "TextLine"
                         },
                         {
+                            "id": "20932e39-00fd-40e3-8f39-850ba149844e",
+                            "idName": "macAddress",
                             "name": "mac address",
                             "type": "QString",
                             "index": 1,
@@ -38,6 +43,7 @@
                             "id": "6d5e792a-c786-40d2-ae35-a48ac6fafcbc",
                             "idName": "available",
                             "name": "available",
+                            "eventTypeName": "available changed",
                             "index": 0,
                             "type": "bool",
                             "defaultValue": false
@@ -46,29 +52,31 @@
                             "id": "c38181a0-e19b-423f-8b66-dedda94e89b5",
                             "idName": "brightness",
                             "name": "brightness",
+                            "eventTypeName": "brightness changed",
+                            "actionTypeName": "Set brightness",
                             "index": 1,
                             "type": "int",
                             "defaultValue": 100,
                             "ruleRelevant": false,
+                            "minValue": 0,
+                            "maxValue": 100,
                             "eventRuleRelevant": false,
-                            "writable": {
-                                "minValue": 0,
-                                "maxValue": 100
-                            }
+                            "writable": true
                         },
                         {
                             "id": "2073b44b-2f99-4abf-8d9f-6b33be8e1763",
                             "idName": "liveliness",
                             "name": "liveliness",
+                            "eventTypeName": "liveliness changed",
+                            "actionTypeName": "Set liveliness",
                             "index": 2,
                             "type": "int",
                             "defaultValue": 100,
                             "ruleRelevant": false,
                             "eventRuleRelevant": false,
-                            "writable": {
-                                "minValue": 0,
-                                "maxValue": 100
-                            }
+                            "minValue": 0,
+                            "maxValue": 100,
+                            "writable": true
                         }
                     ],
                     "actionTypes": [
@@ -97,6 +105,8 @@
                             "name": "set color",
                             "paramTypes": [
                                 {
+                                    "id": "f5f02666-576d-4dee-afa3-f38e1b24f469",
+                                    "idName": "color",
                                     "name": "color",
                                     "type": "QString",
                                     "index": 0,
@@ -119,6 +129,8 @@
                             "name": "set mood",
                             "paramTypes": [
                                 {
+                                    "id": "c5d42d41-f25c-4d15-aed1-b67071847246",
+                                    "idName": "mood",
                                     "name": "mood",
                                     "type": "QString",
                                     "index": 0,

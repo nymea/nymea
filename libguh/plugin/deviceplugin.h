@@ -41,6 +41,7 @@
 #include <QMetaEnum>
 #include <QJsonObject>
 #include <QMetaObject>
+#include <QTranslator>
 #include <QPair>
 
 class DeviceManager;
@@ -59,6 +60,9 @@ public:
     PluginId pluginId() const;
     QList<Vendor> supportedVendors() const;
     QList<DeviceClass> supportedDevices() const;
+
+    QTranslator *translator();
+    bool setLocale(const QLocale &locale);
 
     virtual DeviceManager::HardwareResources requiredHardware() const = 0;
 
@@ -91,8 +95,8 @@ public:
     QList<ParamType> configurationDescription() const;
     DeviceManager::DeviceError setConfiguration(const ParamList &configuration);
     ParamList configuration() const;
-    QVariant configValue(const QString &paramName) const;
-    DeviceManager::DeviceError setConfigValue(const QString &paramName, const QVariant &value);
+    QVariant configValue(const ParamTypeId &paramTypeId) const;
+    DeviceManager::DeviceError setConfigValue(const ParamTypeId &paramTypeId, const QVariant &value);
 
 signals:
     void emitEvent(const Event &event);
@@ -100,7 +104,7 @@ signals:
     void deviceSetupFinished(Device *device, DeviceManager::DeviceSetupStatus status);
     void pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceSetupStatus status);
     void actionExecutionFinished(const ActionId &id, DeviceManager::DeviceError status);
-    void configValueChanged(const QString &paramName, const QVariant &value);
+    void configValueChanged(const ParamTypeId &paramTypeId, const QVariant &value);
     void autoDevicesAppeared(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors);
 
 protected:
@@ -128,11 +132,14 @@ protected:
     QNetworkReply *networkManagerPut(const QNetworkRequest &request, const QByteArray &data);
 
 private:
-    void initPlugin(const QJsonObject &metaData, DeviceManager *deviceManager);
+    void setMetaData(const QJsonObject &metaData);
+    void initPlugin(DeviceManager *deviceManager);
 
     QPair<bool, QList<ParamType> > parseParamTypes(const QJsonArray &array) const;
 
     QStringList verifyFields(const QStringList &fields, const QJsonObject &value) const;
+
+    QString translateValue(const QString &context, const QString &string) const;
 
     // load and verify enum values
     QPair<bool, Types::Unit> loadAndVerifyUnit(const QString &unitString) const;
@@ -140,6 +147,7 @@ private:
     QPair<bool, DeviceClass::BasicTag> loadAndVerifyBasicTag(const QString &basicTag) const;
     QPair<bool, DeviceClass::DeviceIcon> loadAndVerifyDeviceIcon(const QString &deviceIcon) const;
 
+    QTranslator *m_translator;
     DeviceManager *m_deviceManager;
 
     QList<ParamType> m_configurationDescription;

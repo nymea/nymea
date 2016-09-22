@@ -68,12 +68,23 @@
                 "enabled": "Bool"
             }
         },
+        "Configuration.GetAvailableLanguages": {
+            "description": "Returns a list of locale codes available for the server. i.e. en_US, de_AT",
+            "params": {
+            },
+            "returns": {
+                "languages": [
+                    "String"
+                ]
+            }
+        },
         "Configuration.GetConfigurations": {
             "description": "Get all configuration parameters of the server.",
             "params": {
             },
             "returns": {
                 "basicConfiguration": {
+                    "language": "String",
                     "serverName": "String",
                     "serverTime": "Uint",
                     "serverUuid": "Uuid",
@@ -104,6 +115,15 @@
                 "timeZones": [
                     "String"
                 ]
+            }
+        },
+        "Configuration.SetLanguage": {
+            "description": "Sets the server language to the given language. See also: \"GetAvailableLanguages\"",
+            "params": {
+                "language": "String"
+            },
+            "returns": {
+                "configurationError": "$ref:ConfigurationError"
             }
         },
         "Configuration.SetServerName": {
@@ -604,6 +624,12 @@
                 "timeZone": "String"
             }
         },
+        "Configuration.LanguageChanged": {
+            "description": "Emitted whenever the language of the server changed. The Plugins, Vendors and DeviceClasses have to be reloaded to get the translated data.",
+            "params": {
+                "language": "String"
+            }
+        },
         "Configuration.TcpServerConfigurationChanged": {
             "description": "Emitted whenever the TCP server configuration changes.",
             "params": {
@@ -958,15 +984,16 @@
             "LoggingSourceRules"
         ],
         "Param": {
-            "name": "String",
+            "paramTypeId": "Uuid",
             "value": "$ref:BasicType"
         },
         "ParamDescriptor": {
-            "name": "String",
             "operator": "$ref:ValueOperator",
+            "paramTypeId": "Uuid",
             "value": "$ref:BasicType"
         },
         "ParamType": {
+            "id": "Uuid",
             "index": "Int",
             "name": "String",
             "o:allowedValues": [
@@ -983,8 +1010,8 @@
         "Plugin": {
             "id": "Uuid",
             "name": "String",
-            "params": [
-                "$ref:Param"
+            "paramTypes": [
+                "$ref:ParamType"
             ]
         },
         "RemovePolicy": [
@@ -1034,10 +1061,10 @@
             ]
         },
         "RuleActionParam": {
-            "name": "String",
-            "o:eventParamName": "String",
+            "o:eventParamTypeId": "Uuid",
             "o:eventTypeId": "Uuid",
-            "o:value": "$ref:BasicType"
+            "o:value": "$ref:BasicType",
+            "paramTypeId": "Uuid"
         },
         "RuleDescription": {
             "active": "Bool",

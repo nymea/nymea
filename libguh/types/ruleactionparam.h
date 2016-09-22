@@ -33,14 +33,13 @@
 class LIBGUH_EXPORT RuleActionParam
 {
 public:
-    RuleActionParam(const Param &param);
-    RuleActionParam(const QString &name = QString(), const QVariant &value = QVariant(), const EventTypeId &eventTypeId = EventTypeId(), const QString &eventParamName = QString());
+    RuleActionParam(const Param &param = Param());
+    RuleActionParam(const ParamTypeId &paramTypeId, const QVariant &value = QVariant(), const EventTypeId &eventTypeId = EventTypeId(), const ParamTypeId &eventParamName = ParamTypeId());
 
-    QString name() const;
-    void setName(const QString &name);
+    ParamTypeId paramTypeId() const;
 
-    QString eventParamName() const;
-    void setEventParamName(const QString &eventParamName);
+    ParamTypeId eventParamTypeId() const;
+    void setEventParamTypeId(const ParamTypeId &eventParamTypeId);
 
     QVariant value() const;
     void setValue(const QVariant &value);
@@ -51,11 +50,10 @@ public:
     void setEventTypeId(const EventTypeId &eventTypeId);
 
 private:
-    QString m_name;
+    ParamTypeId m_paramTypeId;
     QVariant m_value;
     EventTypeId m_eventTypeId;
-    QString m_eventParamName;
-
+    ParamTypeId m_eventParamTypeId;
 };
 
 Q_DECLARE_METATYPE(RuleActionParam)
@@ -64,10 +62,13 @@ QDebug operator<<(QDebug dbg, const RuleActionParam &ruleActionParam);
 class LIBGUH_EXPORT RuleActionParamList: public QList<RuleActionParam>
 {
 public:
-    bool hasParam(const QString &ruleActionParamName) const;
-    QVariant paramValue(const QString &ruleActionParamName) const;
-    void setParamValue(const QString &ruleActionParamName, const QVariant &value);
+    bool hasParam(const ParamTypeId &ruleActionParamTypeId) const;
+    QVariant paramValue(const ParamTypeId &ruleActionParamName) const;
+    bool setParamValue(const ParamTypeId &ruleActionParamTypeId, const QVariant &value);
     RuleActionParamList operator<<(const RuleActionParam &ruleActionParam);
+
+private:
+    QList<ParamTypeId> m_ids;
 };
 QDebug operator<<(QDebug dbg, const RuleActionParamList &ruleActionParams);
 

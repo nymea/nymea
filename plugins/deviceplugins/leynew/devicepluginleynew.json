@@ -9,7 +9,7 @@
             "id": "83c649b4-49b0-4482-9334-d86a85bfbd2a",
             "deviceClasses": [
                 {
-                    "deviceClassId": "6b1f8f37-7eb4-46c4-9f15-a6eb4904999c",
+                    "id": "6b1f8f37-7eb4-46c4-9f15-a6eb4904999c",
                     "idName": "rfController",
                     "name": "RF Controller (LN-CON-RF20B)",
                     "deviceIcon": "LightBulb",
@@ -22,6 +22,8 @@
                     "createMethods": ["user"],
                     "paramTypes": [
                         {
+                            "id": "09e28309-693c-4c89-9ad8-58b643794e85",
+                            "idName": "id",
                             "name": "id",
                             "type": "QString",
                             "index": 0,

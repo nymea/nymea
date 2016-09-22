@@ -26,131 +26,242 @@
 import argparse
 import traceback
 import json
-import sys
+import os
+import subprocess 
 
-__version__="1.0.0"
+__version__='1.0.0'
 
-parser = argparse.ArgumentParser(description='The guh-generateplugininfo is a precompiler for building plugins. This precompiler will create a plugininfo.h containing the uuid definitions from the plugin json file.')
-parser.add_argument("input", help="The JSON input file with the plugin description")
-parser.add_argument("output", help="The plugininfo.h outputfile file with the uuid declarations")
-parser.add_argument('-v','--version', action='version', version=__version__)
+# Argument parser
+parser = argparse.ArgumentParser(description='The guh-generateplugininfo is a precompiler for building plugins. This precompiler will create a plugininfo.h containing the uuid definitions from the plugin json file and creates the translations for the plugin.')
+parser.add_argument('-j', '--jsonfile', help='The JSON input file name with the plugin description', metavar='jsonfile')
+parser.add_argument('-b', '--builddir', help='The path to the build directory of the plugin where the plugininfo.h file can be found.', metavar='buildpath')
+parser.add_argument('-o', '--output', help='The plugininfo.h outputFile with the uuid declarations', metavar='output')
+parser.add_argument('-t', '--translations', help='The translation files for the plugin.', nargs='*', type=str, metavar='*.ts')
+parser.add_argument('-v', '--version', action='version', version=__version__)
 args = parser.parse_args()
 
-inputFile = open(args.input, "r")
-outputfile = open(args.output, "w")
-outputfile2 = open("extern-" + args.output, "w")
+# Get the source directors
+sourceDir = os.path.dirname(os.path.abspath(args.jsonfile))
 
-print "%s -> %s" %(args.input, args.output)
+print 'Json file: %s' % args.jsonfile
+print 'Output: %s/%s' % (args.builddir, args.output)
+print 'Build directory: %s' % args.builddir
+print 'Source directory: %s' % sourceDir
+print 'Translations: %s' % args.translations
+
+# Tuple ('string to translate', 'comment for translater')
+translationStrings = []
 
 variableNames = []
 externDefinitions = []
 
+
+# Open files
+inputFile = open(args.jsonfile, 'r')
+outputFile = open(args.builddir + '/' + args.output, 'w')
+outputFileExtern = open(args.builddir + '/' + 'extern-' + args.output, 'w')
+
+# Read json file 
 try:
     pluginMap = json.loads(inputFile.read())
-except ValueError as e:
-    print " --> Error loading input file \"%s\"" % (sys.argv[1])
-    print "     %s" % (e)
+    inputFile.close()
+except ValueError as error:
+    print ' --> Error loading input file \"%s\"' % (args.input)
+    print '     %s' % (error)
+    inputFile.close()
     exit -1
 
+##################################################################################################################
+# Methods
 
 def writePluginInfo(line):
-    outputfile.write("%s\n" % line)
+    outputFile.write('%s\n' % line)
 
 
 def writeExternPluginInfo(line):
-    outputfile2.write("%s\n" % line)
+    outputFileExtern.write('%s\n' % line)
 
 
-def extractVendors(pluginMap):
-    for vendor in pluginMap['vendors']:
+def extractPlugin(pluginMap):
+    variableName = 'pluginId'
+    if not variableName in variableNames:
+        variableNames.append(variableName)
+        print('Define PluginId pluginId = %s' % (pluginMap['id']))
+        writePluginInfo('PluginId pluginId = PluginId(\"%s\");' % (pluginMap['id']))
+        addTranslationString(pluginMap['name'], 'The name of the plugin %s (%s)' % (pluginMap['name'], pluginMap['id']))
+        createExternDefinition('PluginId', variableName)
+        
+    if 'paramTypes' in pluginMap:
+        extractParamTypes(pluginMap['paramTypes'], pluginMap['name'])
+        
+    if 'vendors' in pluginMap:
+        extractVendors(pluginMap['vendors'])
+
+
+def extractParamTypes(paramTypes, contextName):
+    for paramType in paramTypes:
         try:
-            print("define VendorId %sVendorId = %s" % (pluginMap["idName"], vendor["id"]))
-            writePluginInfo("VendorId %sVendorId = VendorId(\"%s\");" % (vendor["idName"], vendor["id"]))
-            createExternDefinition("VendorId", "%sVendorId" % (vendor["idName"]))
-        except:
-            pass
-        extractDeviceClasses(vendor)
-
-
-def extractDeviceClasses(vendorMap):
-    for deviceClass in vendorMap["deviceClasses"]:
-        try:
-            variableName = "%sDeviceClassId" % (deviceClass["idName"]) 
+            variableName = '%sParamTypeId' % (paramType['idName'])
             if not variableName in variableNames:
                 variableNames.append(variableName)
-                print("define DeviceClassId %s = %s" % (variableName, deviceClass["deviceClassId"]))
-                writePluginInfo("DeviceClassId %s = DeviceClassId(\"%s\");" % (variableName, deviceClass["deviceClassId"]))
-                createExternDefinition("DeviceClassId", variableName)
+                print('Define ParamTypeId %s = %s' % (variableName, paramType['id']))
+                writePluginInfo('ParamTypeId %s = ParamTypeId(\"%s\");' % (variableName, paramType['id']))
+                addTranslationString(paramType['name'], 'The name of the paramType (%s) of %s' % (paramType['id'], contextName))
+                createExternDefinition('ParamTypeId', variableName)
             else:
-                print("duplicated variable name \"%s\" for DeviceClassId %s -> skipping") % (variableName, deviceClass["deviceClassId"])
+                print('Duplicated variable name \"%s\" for ParamTypeId %s -> skipping') % (variableName, paramType['id'])
         except:
             pass
-        extractActionTypes(deviceClass)
-        extractStateTypes(deviceClass)
-        extractEventTypes(deviceClass)
 
 
-def extractStateTypes(deviceClassMap):
-    try:
-        for stateType in deviceClassMap["stateTypes"]:
-            try:
-                variableName = "%sStateTypeId" % (stateType["idName"])
+def extractVendors(vendors):
+    for vendor in vendors:
+        try:
+            variableName = '%sVendorId' % (vendor['idName'])
+            if not variableName in variableNames:
+                variableNames.append(variableName)
+                print('Define VendorId %s = %s' % (variableName, vendor['id']))
+                writePluginInfo('VendorId %s = VendorId(\"%s\");' % (variableName, vendor['id']))
+                addTranslationString(vendor['name'], 'The name of the vendor (%s)' % vendor['id'])
+                createExternDefinition('VendorId', variableName)
+            else:
+                print('Duplicated variable name \"%s\" for VendorId %s -> skipping') % (variableName, param['id'])
+        except:
+            pass
+            
+        if 'deviceClasses' in vendor:
+            extractDeviceClasses(vendor['deviceClasses'])            
+
+
+def extractDeviceClasses(deviceClasses):
+    for deviceClass in deviceClasses:
+        try:
+            variableName = '%sDeviceClassId' % (deviceClass['idName'])
+            
+            if 'pairingInfo' in deviceClass:
+                addTranslationString(deviceClass['pairingInfo'], 'The pairing info of deviceClass %s' % deviceClass['name'])
+            
+            if not variableName in variableNames:
+                variableNames.append(variableName)
+                print('Define DeviceClassId %s = %s' % (variableName, deviceClass['id']))
+                writePluginInfo('DeviceClassId %s = DeviceClassId(\"%s\");' % (variableName, deviceClass['id']))
+                addTranslationString(deviceClass['name'], 'The name of the DeviceClass (%s)' %(deviceClass['id']))
+                createExternDefinition('DeviceClassId', variableName)
+            else:
+                print('Duplicated variable name \"%s\" for DeviceClassId %s -> skipping') % (variableName, deviceClass['deviceClassId'])
+                
+        except:
+            pass
+
+        if 'paramTypes' in deviceClass:
+            extractParamTypes(deviceClass['paramTypes'], deviceClass['name'])
+        
+        if 'discoveryParamTypes' in deviceClass:
+            extractParamTypes(deviceClass['discoveryParamTypes'], deviceClass['name'])
+
+        if 'stateTypes' in deviceClass:
+            extractStateTypes(deviceClass['stateTypes'], deviceClass['name'])
+            
+        if 'actionTypes' in deviceClass:
+            extractActionTypes(deviceClass['actionTypes'], deviceClass['name'])
+           
+        if 'eventTypes' in deviceClass:
+            extractEventTypes(deviceClass['eventTypes'], deviceClass['name'])
+
+
+def extractStateTypes(stateTypes, deviceClassName):
+    for stateType in stateTypes:
+        try:
+            # Define StateType
+            variableName = '%sStateTypeId' % (stateType['idName'])
+            #addTranslationString(stateType['name'], 'The name of the stateType (%s) of DeviceClass %s' % (stateType['id'], deviceClassName))
+            if not variableName in variableNames:
+                variableNames.append(variableName)
+                print('Define StateTypeId %s = %s' % (variableName, stateType['id']))
+                writePluginInfo('StateTypeId %s = StateTypeId(\"%s\");' % (variableName, stateType['id']))
+                createExternDefinition('StateTypeId', variableName)
+            else:
+                print('Duplicated variable name \"%s\" for StateTypeId %s -> skipping') % (variableName, stateType['id'])
+            
+            # Create EventTypeId for this state
+            variableName = '%sEventTypeId' % (stateType['idName'])
+            if not variableName in variableNames:
+                addTranslationString(stateType['eventTypeName'], 'The name of the autocreated EventType (%s)' % stateType['id'])
+                variableNames.append(variableName)
+                print('Define EventTypeId %s = %s' % (variableName, stateType['id']))
+                writePluginInfo('EventTypeId %s = EventTypeId(\"%s\");' % (variableName, stateType['id']))
+                createExternDefinition('EventTypeId', variableName)
+            else:
+                print('Duplicated variable name \"%s\" for autocreated EventTypeId %s -> skipping') % (variableName, stateType['id'])
+            
+            #ParamType for EventType/ActionType
+            variableName = '%sStateParamTypeId' % (stateType['idName']) 
+            if not variableName in variableNames:
+                variableNames.append(variableName)
+                print('Define ParamTypeId %s for StateType %s = %s' % (variableName, variableName, stateType['id']))
+                writePluginInfo('ParamTypeId %s = ParamTypeId(\"%s\");' % (variableName, stateType['id']))
+                createExternDefinition('ParamTypeId', variableName)
+                addTranslationString(stateType['name'], 'The name of the ParamType of StateType (%s) of DeviceClass %s' % (stateType['id'], deviceClassName))
+            else:
+                print('duplicated variable name \"%s\" for ParamTypeId %s -> skipping') % (variableName, stateType['id'])
+        
+            # Create ActionTypeId if the state is writable
+            if 'writable' in stateType and stateType['writable']:
+                variableName = '%sActionTypeId' % (stateType['idName']) 
                 if not variableName in variableNames:
                     variableNames.append(variableName)
-                    print("define StateTypeId %s = %s" % (variableName, stateType["id"]))
-                    writePluginInfo("StateTypeId %s = StateTypeId(\"%s\");" % (variableName, stateType["id"]))
-                    createExternDefinition("StateTypeId", variableName)
+                    print('Define ActionTypeId for writable StateType %s = %s' % (variableName, stateType['id']))
+                    addTranslationString(stateType['actionTypeName'], 'The name of the autocreated ActionType (%s)' % stateType['id'])
+                    writePluginInfo('ActionTypeId %s = ActionTypeId(\"%s\");' % (variableName, stateType['id']))
+                    createExternDefinition('ActionTypeId', variableName)
                 else:
-                    print("duplicated variable name \"%s\" for StateTypeId %s -> skipping") % (variableName, stateType["id"])
-                # create ActionTypeId if the state is writable
-                if 'writable' in stateType:
-                    if stateType['writable']:
-                        vName = "%sActionTypeId" % (stateType["idName"]) 
-                        if not vName in variableNames:
-                            variableNames.append(vName)
-                            print("define ActionTypeId %s for writable StateType %s = %s" % (vName, variableName, stateType["id"]))
-                            writePluginInfo("ActionTypeId %s = ActionTypeId(\"%s\");" % (vName, stateType["id"]))
-                            createExternDefinition("ActionTypeId", vName)
-                        else:
-                            print("duplicated variable name \"%s\" for ActionTypeId %s -> skipping") % (variableName, stateType["id"])
-            except:
-                pass
-    except:
-        pass
+                    print('Duplicated variable name \"%s\" for autocreated ActionTypeId %s -> skipping') % (variableName, stateType['id'])
+                
+        except:
+            pass
 
 
-def extractActionTypes(deviceClassMap):
-    try:
-        for actionType in deviceClassMap["actionTypes"]:
-            try:
-                variableName = "%sActionTypeId" % (actionType["idName"])
-                if not variableName in variableNames:
-                    variableNames.append(variableName)
-                    writePluginInfo("ActionTypeId %s = ActionTypeId(\"%s\");" % (variableName, actionType["id"]))
-                    createExternDefinition("ActionTypeId", variableName)
-                else:
-                    print("duplicated variable name \"%s\" for ActionTypeId %s -> skipping") % (variableName, actionType["id"])
-            except:
-                pass
-    except:
-        pass
+
+def extractActionTypes(actionTypes, deviceClassName):
+    for actionType in actionTypes:
+        try:
+            # Define ActionTypeId
+            variableName = '%sActionTypeId' % (actionType['idName'])
+            if not variableName in variableNames:
+                variableNames.append(variableName)
+                addTranslationString(actionType['name'], 'The name of the ActionType %s of deviceClass %s' % (actionType['id'], deviceClassName))
+                writePluginInfo('ActionTypeId %s = ActionTypeId(\"%s\");' % (variableName, actionType['id']))
+                createExternDefinition('ActionTypeId', variableName)
+            else:
+                print('Duplicated variable name \"%s\" for ActionTypeId %s -> skipping') % (variableName, actionType['id'])
+
+        except:
+            pass
+        
+        # Define paramTypes of this ActionType
+        if 'paramTypes' in actionType:
+            extractParamTypes(actionType['paramTypes'], deviceClassName)
 
 
-def extractEventTypes(deviceClassMap):
-    try:
-        for eventType in deviceClassMap["eventTypes"]:
-            try:
-                variableName = "%sEventTypeId" % (eventType["idName"])
-                if not variableName in variableNames:
-                    variableNames.append(variableName)
-                    writePluginInfo("EventTypeId %s = EventTypeId(\"%s\");" % (variableName, eventType["id"]))
-                    createExternDefinition("EventTypeId", variableName)                    
-                else:
-                    print("duplicated variable name \"%s\" for EventTypeId %s -> skipping") % (variableName, eventType["id"])
-            except:
-                pass
-    except:
-        pass
+def extractEventTypes(eventTypes, deviceClassName):
+    for eventType in eventTypes:
+        try:
+            # Define EventTypeId
+            variableName = '%sEventTypeId' % (eventType['idName'])
+            if not variableName in variableNames:
+                variableNames.append(variableName)
+                addTranslationString(eventType['name'], 'The name of the EventType %s of deviceClass %s' % (eventType['id'], deviceClassName))
+                writePluginInfo('EventTypeId %s = EventTypeId(\"%s\");' % (variableName, eventType['id']))
+                createExternDefinition('EventTypeId', variableName)                    
+            else:
+                print('Duplicated variable name \"%s\" for EventTypeId %s -> skipping') % (variableName, eventType['id'])
+        except:
+            pass
+
+        # Define paramTypes of this EventType
+        if 'paramTypes' in eventType:
+            extractParamTypes(eventType['paramTypes'], deviceClassName)
+
 
 def createExternDefinition(type, name):
     definition = {}
@@ -159,67 +270,120 @@ def createExternDefinition(type, name):
     externDefinitions.append(definition)
 
 
+def addTranslationString(string, comment):
+    translationStrings.append([string, comment])
+        
+
+def writeTranslationStrings():
+    if len(args.translations) is 0:
+        return
+
+    if len(translationStrings) is not 0:
+        writePluginInfo('// Translation strings')
+        writePluginInfo('const QString translations[] {')
+
+        for index, value in enumerate(translationStrings):
+            writePluginInfo('    //: %s' % value[1])
+            if index != len(translationStrings) - 1:
+                writePluginInfo('    QT_TRANSLATE_NOOP(\"%s\", \"%s\"), \n' % (pluginMap['idName'], value[0]))
+            else:
+                writePluginInfo('    QT_TRANSLATE_NOOP(\"%s\", \"%s\")' % (pluginMap['idName'], value[0]))
+
+        writePluginInfo('};')
+    
+
+def createTranslationFiles():
+    for translation in args.translations:
+        translationFile = (sourceDir + '/' + translation)
+        path, fileName = os.path.split(translationFile)
+        translationOutput = (path + '/' + pluginMap['id'] + '-' + os.path.splitext(fileName)[0] + '.qm')
+        print(' --> Translation update %s' % translationFile)
+        print(subprocess.check_output(['mkdir', '-p', path])) 
+        print(subprocess.check_output(['lupdate', '-recursive', '-no-obsolete', sourceDir, (args.builddir + '/' + args.output), '-ts', translationFile]))
+        print(' --> Translation release %s' % translationOutput)
+        print(subprocess.check_output(['lrelease', translationFile, '-qm', translationOutput]))
+        print(' --> Copy translation files to build dir %s' % args.builddir + '/translations/')
+        subprocess.check_output(['rsync', '-a', translationOutput, args.builddir + '/translations/'])
+
+
 ##################################################################################################################
 # write plugininfo.h
-print " --> generate plugininfo.h"
-print "PluginId for plugin \"%s\" = %s" %(pluginMap['name'], pluginMap['id'])
-    
-writePluginInfo("/* This file is generated by the guh build system. Any changes to this file will")
-writePluginInfo(" * be lost.")
-writePluginInfo(" *")
-writePluginInfo(" * If you want to change this file, edit the plugin's json file and add")
-writePluginInfo(" * idName tags where appropriate.")
-writePluginInfo(" */")
-writePluginInfo("")
-writePluginInfo("#ifndef PLUGININFO_H")
-writePluginInfo("#define PLUGININFO_H")
-writePluginInfo("#include \"typeutils.h\"")
-writePluginInfo("#include <QLoggingCategory>")
-writePluginInfo("")
-writePluginInfo("// Id definitions")
-writePluginInfo("PluginId pluginId = PluginId(\"%s\");" % pluginMap['id'])
 
-extractVendors(pluginMap)
-writePluginInfo("")
-writePluginInfo("// Loging category")
+print ' --> generate plugininfo.h for plugin \"%s\" = %s' % (pluginMap['name'], pluginMap['id'])
+    
+writePluginInfo('/* This file is generated by the guh build system. Any changes to this file will')
+writePluginInfo(' * be lost.')
+writePluginInfo(' *')
+writePluginInfo(' * If you want to change this file, edit the plugin\'s json file.')
+writePluginInfo(' */')
+writePluginInfo('')
+writePluginInfo('#ifndef PLUGININFO_H')
+writePluginInfo('#define PLUGININFO_H')
+writePluginInfo('')
+writePluginInfo('#include <QLoggingCategory>')
+writePluginInfo('#include <QObject>')
+writePluginInfo('')
+writePluginInfo('#include \"typeutils.h\"')
+writePluginInfo('')
+writePluginInfo('// Id definitions')
+
+extractPlugin(pluginMap)
+
+writePluginInfo('')
+writePluginInfo('// Logging category')
 
 if 'idName' in pluginMap:
-    writePluginInfo("Q_DECLARE_LOGGING_CATEGORY(dc%s)" % pluginMap['idName'])
-    writePluginInfo("Q_LOGGING_CATEGORY(dc%s, \"%s\")" % (pluginMap['idName'], pluginMap['idName']))
-    print "define logging category: \"dc%s\"" % pluginMap['idName']
+    writePluginInfo('Q_DECLARE_LOGGING_CATEGORY(dc%s)' % pluginMap['idName'])
+    writePluginInfo('Q_LOGGING_CATEGORY(dc%s, \"%s\")' % (pluginMap['idName'], pluginMap['idName']))
+    print 'define logging category: \'dc%s\'' % pluginMap['idName']
     
-writePluginInfo("")
-writePluginInfo("#endif // PLUGININFO_H")
-print " --> generated successfully \"%s\"" % sys.argv[2] 
+writePluginInfo('')
 
+# Write translation strings
+writeTranslationStrings()
+
+writePluginInfo('')
+writePluginInfo('#endif // PLUGININFO_H')
+outputFile.close()
+print ' --> generated successfully \"%s\"' % (args.output)
 
 ##################################################################################################################
-# write extern-plugininfo.h 
-print " --> generate extern-plugininfo.h"
-writeExternPluginInfo("/* This file is generated by the guh build system. Any changes to this file will")
-writeExternPluginInfo(" * be lost.")
-writeExternPluginInfo(" *")
-writeExternPluginInfo(" * If you want to change this file, edit the plugin's json file and add")
-writeExternPluginInfo(" * idName tags where appropriate.")
-writeExternPluginInfo(" */")
-writeExternPluginInfo("")
-writeExternPluginInfo("#ifndef EXTERNPLUGININFO_H")
-writeExternPluginInfo("#define EXTERNPLUGININFO_H")
-writeExternPluginInfo("#include \"typeutils.h\"")
-writeExternPluginInfo("#include <QLoggingCategory>")
-writeExternPluginInfo("")
-writeExternPluginInfo("// Id definitions")
+# Write extern-plugininfo.h 
+
+print ' --> generate extern-plugininfo.h for plugin \"%s\" = %s' % (pluginMap['name'], pluginMap['id'])
+
+writeExternPluginInfo('/* This file is generated by the guh build system. Any changes to this file will')
+writeExternPluginInfo(' * be lost.')
+writeExternPluginInfo(' *')
+writeExternPluginInfo(' * If you want to change this file, edit the plugin\'s json file and add')
+writeExternPluginInfo(' * idName tags where appropriate.')
+writeExternPluginInfo(' */')
+writeExternPluginInfo('')
+writeExternPluginInfo('#ifndef EXTERNPLUGININFO_H')
+writeExternPluginInfo('#define EXTERNPLUGININFO_H')
+writeExternPluginInfo('#include \"typeutils.h\"')
+writeExternPluginInfo('#include <QLoggingCategory>')
+writeExternPluginInfo('')
+writeExternPluginInfo('// Id definitions')
 
 for externDefinition in externDefinitions:
-    writeExternPluginInfo("extern %s %s;" % (externDefinition['type'], externDefinition['variable']))
+    writeExternPluginInfo('extern %s %s;' % (externDefinition['type'], externDefinition['variable']))
 
-writeExternPluginInfo("")
-writeExternPluginInfo("// Logging category definition")
+writeExternPluginInfo('')
+writeExternPluginInfo('// Logging category definition')
 
 if 'idName' in pluginMap:
-    writeExternPluginInfo("Q_DECLARE_LOGGING_CATEGORY(dc%s)" % pluginMap['idName'])
+    writeExternPluginInfo('Q_DECLARE_LOGGING_CATEGORY(dc%s)' % pluginMap['idName'])
     
-writeExternPluginInfo("")
-writeExternPluginInfo("#endif // EXTERNPLUGININFO_H")
+writeExternPluginInfo('')
+writeExternPluginInfo('#endif // EXTERNPLUGININFO_H')
+outputFileExtern.close()
+print ' --> generated successfully \'extern-%s\'' % (args.output)
 
-print " --> generated successfully \"extern-%s\"" % (sys.argv[2])
+##################################################################################################################
+# Translate
+if len(translationStrings) is not 0:
+    createTranslationFiles()
+
+
+

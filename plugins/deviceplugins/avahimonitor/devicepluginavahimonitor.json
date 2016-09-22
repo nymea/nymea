@@ -9,7 +9,7 @@
             "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6",
             "deviceClasses": [
                 {
-                    "deviceClassId": "97f0154d-6945-49b8-bd65-0a8cea0c6652",
+                    "id": "97f0154d-6945-49b8-bd65-0a8cea0c6652",
                     "name": "Avahi Monitor",
                     "idName": "avahi",
                     "deviceIcon": "Network",
@@ -21,12 +21,16 @@
                     "createMethods": ["discovery"],
                     "paramTypes": [
                         {
+                            "id": "3cbc94c5-6925-4003-9201-ef0d370266c1",
+                            "idName": "service",
                             "name": "service name",
                             "type": "QString",
                             "index": 0,
                             "inputType": "TextLine"
                         },
                         {
+                            "id": "2fdcf581-b767-4ecb-a425-b06a46f9ce8d",
+                            "idName": "hostName",
                             "name": "host name",
                             "type": "QString",
                             "index": 1,
@@ -40,7 +44,8 @@
                             "idName": "online",
                             "type": "bool",
                             "index": 0,
-                            "defaultValue": false
+                            "defaultValue": false,
+                            "eventTypeName": "online changed"
                         }
                     ]
                 }

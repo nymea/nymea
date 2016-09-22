@@ -208,7 +208,7 @@ void TestJSONRPC::deviceAddedRemovedNotifications()
     // add device and wait for notification
     QVariantList deviceParams;
     QVariantMap httpportParam;
-    httpportParam.insert("name", "httpport");
+    httpportParam.insert("paramTypeId", httpportParamTypeId);
     httpportParam.insert("value", 8765);
     deviceParams.append(httpportParam);
 
@@ -418,7 +418,7 @@ void TestJSONRPC::deviceChangedNotifications()
     // add device and wait for notification
     QVariantList deviceParams;
     QVariantMap httpportParam;
-    httpportParam.insert("name", "httpport");
+    httpportParam.insert("paramTypeId", httpportParamTypeId);
     httpportParam.insert("value", 23234);
     deviceParams.append(httpportParam);
 
@@ -445,7 +445,7 @@ void TestJSONRPC::deviceChangedNotifications()
     // now reconfigure the device and check the deviceChanged notification
     QVariantList newDeviceParams;
     QVariantMap newHttpportParam;
-    newHttpportParam.insert("name", "httpport");
+    newHttpportParam.insert("paramTypeId", httpportParamTypeId);
     newHttpportParam.insert("value", 45473);
     newDeviceParams.append(newHttpportParam);
 

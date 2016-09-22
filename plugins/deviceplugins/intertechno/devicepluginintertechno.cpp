@@ -61,7 +61,7 @@ DeviceManager::DeviceError DevicePluginIntertechno::executeAction(Device *device
     QList<int> rawData;
     QByteArray binCode;
 
-    QString familyCode = device->paramValue("family code").toString();
+    QString familyCode = device->paramValue(familyCodeParamTypeId).toString();
 
     // =======================================
     // generate bin from family code
@@ -99,7 +99,7 @@ DeviceManager::DeviceError DevicePluginIntertechno::executeAction(Device *device
         binCode.append("01010101");
     }
 
-    QString buttonCode = device->paramValue("button code").toString();
+    QString buttonCode = device->paramValue(buttonCodeParamTypeId).toString();
 
     // =======================================
     // generate bin from button code
@@ -147,7 +147,7 @@ DeviceManager::DeviceError DevicePluginIntertechno::executeAction(Device *device
 
     // =======================================
     // add power nibble
-    if (action.param("power").value().toBool()) {
+    if (action.param(powerParamTypeId).value().toBool()) {
         binCode.append("0101");
     } else {
         binCode.append("0100");
@@ -174,10 +174,10 @@ DeviceManager::DeviceError DevicePluginIntertechno::executeAction(Device *device
     // =======================================
     // send data to hardware resource
     if (transmitData(delay, rawData)) {
-        qCDebug(dcIntertechno) << "transmitted" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
+        qCDebug(dcIntertechno) << "transmitted" << pluginName() << device->name() << "power: " << action.param(powerParamTypeId).value().toBool();
         return DeviceManager::DeviceErrorNoError;
     } else {
-        qCWarning(dcIntertechno) << "could not transmitt" << pluginName() << device->name() << "power: " << action.param("power").value().toBool();
+        qCWarning(dcIntertechno) << "could not transmitt" << pluginName() << device->name() << "power: " << action.param(powerParamTypeId).value().toBool();
         return DeviceManager::DeviceErrorHardwareNotAvailable;
     }
 }

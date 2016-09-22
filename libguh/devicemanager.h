@@ -43,6 +43,7 @@
 
 #include <QObject>
 #include <QTimer>
+#include <QLocale>
 #include <QPluginLoader>
 
 class Device;
@@ -102,11 +103,13 @@ public:
         DeviceSetupStatusAsync
     };
 
-    explicit DeviceManager(QObject *parent = 0);
+    explicit DeviceManager(const QLocale &locale, QObject *parent = 0);
     ~DeviceManager();
 
     static QStringList pluginSearchDirs();
     static QList<QJsonObject> pluginsMetadata();
+
+    void setLocale(const QLocale &locale);
 
     QList<DevicePlugin*> plugins() const;
     DevicePlugin* plugin(const PluginId &id) const;
@@ -142,6 +145,7 @@ public:
 
 signals:
     void loaded();
+    void languageUpdated();
     void eventTriggered(const Event &event);
     void deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
     void deviceRemoved(const DeviceId &deviceId);
@@ -190,6 +194,7 @@ private:
     void postSetupDevice(Device *device);
 
 private:
+    QLocale m_locale;
     QHash<VendorId, Vendor> m_supportedVendors;
     QHash<VendorId, QList<DeviceClassId> > m_vendorDeviceMap;
     QHash<DeviceClassId, DeviceClass> m_supportedDevices;

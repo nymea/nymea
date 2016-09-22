@@ -101,8 +101,8 @@
 */
 
 /*!
-  \fn void DevicePlugin::configValueChanged(const QString &paramName, const QVariant &value);
-  This signal is emitted when the \l{Param} with a certain \a paramName of a \l{Device} configuration changed the \a value.
+  \fn void DevicePlugin::configValueChanged(const ParamTypeId &paramTypeId, const QVariant &value);
+  This signal is emitted when the \l{Param} with a certain \a paramTypeId of a \l{Device} configuration changed the \a value.
 */
 
 /*!
@@ -144,11 +144,14 @@
 #include <QDebug>
 #include <QFileInfo>
 #include <QFile>
+#include <QDir>
+#include <QCoreApplication>
 #include <QJsonArray>
 
 /*! DevicePlugin constructor. DevicePlugins will be instantiated by the DeviceManager, its \a parent. */
 DevicePlugin::DevicePlugin(QObject *parent):
-    QObject(parent)
+    QObject(parent),
+    m_translator(new QTranslator(this))
 {
 }
 
@@ -161,7 +164,7 @@ DevicePlugin::~DevicePlugin()
 /*! Returns the name of this DevicePlugin. */
 QString DevicePlugin::pluginName() const
 {
-    return m_metaData.value("name").toString();
+    return translateValue(m_metaData.value("idName").toString(), m_metaData.value("name").toString());
 }
 
 /*! Returns the id of this DevicePlugin.
@@ -177,7 +180,7 @@ QList<Vendor> DevicePlugin::supportedVendors() const
 {
     QList<Vendor> vendors;
     foreach (const QJsonValue &vendorJson, m_metaData.value("vendors").toArray()) {
-        Vendor vendor(vendorJson.toObject().value("id").toString(), vendorJson.toObject().value("name").toString());
+        Vendor vendor(vendorJson.toObject().value("id").toString(), translateValue(m_metaData.value("idName").toString(), vendorJson.toObject().value("name").toString()));
         vendors.append(vendor);
     }
     return vendors;
@@ -188,16 +191,37 @@ QList<Vendor> DevicePlugin::supportedVendors() const
 */
 QList<DeviceClass> DevicePlugin::supportedDevices() const
 {
+    QStringList missingFields = verifyFields(QStringList() << "id" << "idName" << "name" << "vendors", m_metaData);
+    if (!missingFields.isEmpty()) {
+        qCWarning(dcDeviceManager) << "Skipping plugin because of missing" << missingFields.join(", ") << m_metaData;
+        return QList<DeviceClass>();
+    }
+
     QList<DeviceClass> deviceClasses;
     foreach (const QJsonValue &vendorJson, m_metaData.value("vendors").toArray()) {
         bool broken = false;
-        VendorId vendorId = vendorJson.toObject().value("id").toString();
+        QJsonObject vendorObject = vendorJson.toObject();
+        QStringList missingFields = verifyFields(QStringList() << "id" << "idName" << "name", vendorObject);
+        if (!missingFields.isEmpty()) {
+            qCWarning(dcDeviceManager) << "Skipping vendor because of missing" << missingFields.join(", ") << vendorObject;
+            broken = true;
+            break;
+        }
+
+        VendorId vendorId = vendorObject.value("id").toString();
         foreach (const QJsonValue &deviceClassJson, vendorJson.toObject().value("deviceClasses").toArray()) {
-            QJsonObject jo = deviceClassJson.toObject();
-            DeviceClass deviceClass(pluginId(), vendorId, jo.value("deviceClassId").toString());
-            deviceClass.setName(jo.value("name").toString());
+            QJsonObject deviceClassObject = deviceClassJson.toObject();
+            QStringList missingFields = verifyFields(QStringList() << "id" << "idName" << "name" << "createMethods" << "paramTypes", deviceClassObject);
+            if (!missingFields.isEmpty()) {
+                qCWarning(dcDeviceManager) << "Skipping DeviceClass because of missing" << missingFields.join(", ") << deviceClassObject;
+                broken = true;
+                break;
+            }
+
+            DeviceClass deviceClass(pluginId(), vendorId, deviceClassObject.value("id").toString());
+            deviceClass.setName(translateValue(m_metaData.value("idName").toString(), deviceClassObject.value("name").toString()));
             DeviceClass::CreateMethods createMethods;
-            foreach (const QJsonValue &createMethodValue, jo.value("createMethods").toArray()) {
+            foreach (const QJsonValue &createMethodValue, deviceClassObject.value("createMethods").toArray()) {
                 if (createMethodValue.toString() == "discovery") {
                     createMethods |= DeviceClass::CreateMethodDiscovery;
                 } else if (createMethodValue.toString() == "auto") {
@@ -211,21 +235,21 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 }
             }
             deviceClass.setCreateMethods(createMethods);
-            QPair<bool, DeviceClass::DeviceIcon> deviceIconVerification = loadAndVerifyDeviceIcon(jo.value("deviceIcon").toString());
+            QPair<bool, DeviceClass::DeviceIcon> deviceIconVerification = loadAndVerifyDeviceIcon(deviceClassObject.value("deviceIcon").toString());
             if (!deviceIconVerification.first) {
                 broken = true;
             } else {
                 deviceClass.setDeviceIcon(deviceIconVerification.second);
             }
 
-            QPair<bool, QList<ParamType> > discoveryParamVerification = parseParamTypes(jo.value("discoveryParamTypes").toArray());
+            QPair<bool, QList<ParamType> > discoveryParamVerification = parseParamTypes(deviceClassObject.value("discoveryParamTypes").toArray());
             if (!discoveryParamVerification.first) {
                 broken = true;
             } else {
                 deviceClass.setDiscoveryParamTypes(discoveryParamVerification.second);
             }
 
-            QString setupMethod = jo.value("setupMethod").toString();
+            QString setupMethod = deviceClassObject.value("setupMethod").toString();
             if (setupMethod == "pushButton") {
                 deviceClass.setSetupMethod(DeviceClass::SetupMethodPushButton);
             } else if (setupMethod == "displayPin") {
@@ -237,8 +261,8 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                                               "in deviceClass " << deviceClass.name() << ". Falling back to SetupMethodJustAdd.";
                 deviceClass.setSetupMethod(DeviceClass::SetupMethodJustAdd);
             }
-            deviceClass.setPairingInfo(jo.value("pairingInfo").toString());
-            QPair<bool, QList<ParamType> > paramTypesVerification = parseParamTypes(jo.value("paramTypes").toArray());
+            deviceClass.setPairingInfo(translateValue(m_metaData.value("idName").toString(), deviceClassObject.value("pairingInfo").toString()));
+            QPair<bool, QList<ParamType> > paramTypesVerification = parseParamTypes(deviceClassObject.value("paramTypes").toArray());
             if (!paramTypesVerification.first) {
                 broken = true;
             } else {
@@ -246,7 +270,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
             }
 
             QList<DeviceClass::BasicTag> basicTags;
-            foreach (const QJsonValue &basicTagJson, jo.value("basicTags").toArray()) {
+            foreach (const QJsonValue &basicTagJson, deviceClassObject.value("basicTags").toArray()) {
                 QPair<bool, DeviceClass::BasicTag> basicTagVerification = loadAndVerifyBasicTag(basicTagJson.toString());
                 if (!basicTagVerification.first) {
                     broken = true;
@@ -262,9 +286,9 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
             QList<EventType> eventTypes;
 
             // StateTypes
-            foreach (const QJsonValue &stateTypesJson, jo.value("stateTypes").toArray()) {
+            foreach (const QJsonValue &stateTypesJson, deviceClassObject.value("stateTypes").toArray()) {
                 QJsonObject st = stateTypesJson.toObject();
-                QStringList missingFields = verifyFields(QStringList() << "type" << "id" << "name" << "index" << "defaultValue", st);
+                QStringList missingFields = verifyFields(QStringList() << "type" << "id" << "idName" << "name" << "index" << "defaultValue" << "eventTypeName", st);
                 if (!missingFields.isEmpty()) {
                     qCWarning(dcDeviceManager) << "Skipping device class" << deviceClass.name() << "because of missing" << missingFields.join(", ") << "in stateType" << st;
                     broken = true;
@@ -273,7 +297,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
 
                 QVariant::Type t = QVariant::nameToType(st.value("type").toString().toLatin1().data());
                 StateType stateType(st.value("id").toString());
-                stateType.setName(st.value("name").toString());
+                stateType.setName(translateValue(m_metaData.value("idName").toString(), st.value("name").toString()));
                 stateType.setIndex(st.value("index").toInt());
                 stateType.setType(t);
                 QPair<bool, Types::Unit> unitVerification = loadAndVerifyUnit(st.value("unit").toString());
@@ -317,8 +341,13 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 if (st.contains("eventRuleRelevant"))
                     eventType.setRuleRelevant(st.value("eventRuleRelevant").toBool());
 
-                eventType.setName(QString("%1 changed").arg(stateType.name()));
-                ParamType paramType("value", stateType.type());
+                eventType.setName(translateValue(m_metaData.value("idName").toString(), st.value("eventTypeName").toString()));
+                ParamType paramType(ParamTypeId(stateType.id().toString()), translateValue(m_metaData.value("idName").toString(), st.value("name").toString()), stateType.type());
+                paramType.setAllowedValues(stateType.possibleValues());
+                paramType.setDefaultValue(stateType.defaultValue());
+                paramType.setMinValue(stateType.minValue());
+                paramType.setMaxValue(stateType.maxValue());
+                paramType.setUnit(stateType.unit());
                 eventType.setParamTypes(QList<ParamType>() << paramType);
                 eventType.setIndex(stateType.index());
                 eventTypes.append(eventType);
@@ -326,13 +355,15 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 // ActionTypes for writeable StateTypes
                 if (st.contains("writable") && st.value("writable").toBool()) {
                     // Note: fields already checked in StateType
+                    if (!st.contains("actionTypeName")) {
+                        qCWarning(dcDeviceManager()) << "Missing field \"actionTypeName\" for writable StateType" << st;
+                        broken = true;
+                        break;
+                    }
+
                     ActionType actionType(ActionTypeId(stateType.id().toString()));
-                    actionType.setName("set " + stateType.name());
+                    actionType.setName(translateValue(m_metaData.value("idName").toString(), st.value("actionTypeName").toString()));
                     actionType.setIndex(stateType.index());
-                    ParamType paramType(stateType.name(), t, stateType.defaultValue());
-                    paramType.setAllowedValues(stateType.possibleValues());
-                    paramType.setUnit(stateType.unit());
-                    paramType.setLimits(stateType.minValue(), stateType.maxValue());
                     actionType.setParamTypes(QList<ParamType>() << paramType);
                     actionTypes.append(actionType);
                 }
@@ -340,7 +371,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
             deviceClass.setStateTypes(stateTypes);
 
             // ActionTypes
-            foreach (const QJsonValue &actionTypesJson, jo.value("actionTypes").toArray()) {
+            foreach (const QJsonValue &actionTypesJson, deviceClassObject.value("actionTypes").toArray()) {
                 QJsonObject at = actionTypesJson.toObject();
                 QStringList missingFields = verifyFields(QStringList() << "id" << "name" << "index", at);
                 if (!missingFields.isEmpty()) {
@@ -350,7 +381,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 }
 
                 ActionType actionType(at.value("id").toString());
-                actionType.setName(at.value("name").toString());
+                actionType.setName(translateValue(m_metaData.value("idName").toString(), at.value("name").toString()));
                 actionType.setIndex(at.value("index").toInt());
                 QPair<bool, QList<ParamType> > paramVerification = parseParamTypes(at.value("paramTypes").toArray());
                 if (!paramVerification.first) {
@@ -365,7 +396,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
             deviceClass.setActionTypes(actionTypes);
 
             // EventTypes
-            foreach (const QJsonValue &eventTypesJson, jo.value("eventTypes").toArray()) {
+            foreach (const QJsonValue &eventTypesJson, deviceClassObject.value("eventTypes").toArray()) {
                 QJsonObject et = eventTypesJson.toObject();
                 QStringList missingFields = verifyFields(QStringList() << "id" << "name" << "index", et);
                 if (!missingFields.isEmpty()) {
@@ -375,7 +406,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 }
 
                 EventType eventType(et.value("id").toString());
-                eventType.setName(et.value("name").toString());
+                eventType.setName(translateValue(m_metaData.value("idName").toString(), translateValue(m_metaData.value("idName").toString(), et.value("name").toString())));
                 eventType.setIndex(et.value("index").toInt());
                 if (et.contains("ruleRelevant"))
                     eventType.setRuleRelevant(et.value("ruleRelevant").toBool());
@@ -396,8 +427,8 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
 
             // Note: keep this after the actionType / stateType / eventType parsing
 
-            if (jo.contains("criticalStateTypeId")) {
-                StateTypeId criticalStateTypeId = StateTypeId(jo.value("criticalStateTypeId").toString());
+            if (deviceClassObject.contains("criticalStateTypeId")) {
+                StateTypeId criticalStateTypeId = StateTypeId(deviceClassObject.value("criticalStateTypeId").toString());
                 if (!deviceClass.hasStateType(criticalStateTypeId)) {
                     qCWarning(dcDeviceManager) << "Skipping device class" << deviceClass.name() << ": the definend critical stateTypeId" << criticalStateTypeId.toString() << "does not match any StateType of this DeviceClass.";
                     broken = true;
@@ -410,8 +441,8 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 }
             }
 
-            if (jo.contains("primaryStateTypeId")) {
-                StateTypeId primaryStateTypeId = StateTypeId(jo.value("primaryStateTypeId").toString());
+            if (deviceClassObject.contains("primaryStateTypeId")) {
+                StateTypeId primaryStateTypeId = StateTypeId(deviceClassObject.value("primaryStateTypeId").toString());
                 if (!deviceClass.hasStateType(primaryStateTypeId)) {
                     qCWarning(dcDeviceManager) << "Skipping device class" << deviceClass.name() << ": the definend primary stateTypeId" << primaryStateTypeId.toString() << "does not match any StateType of this DeviceClass.";
                     broken = true;
@@ -420,8 +451,8 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 }
             }
 
-            if (jo.contains("primaryActionTypeId")) {
-                ActionTypeId primaryActionTypeId = ActionTypeId(jo.value("primaryActionTypeId").toString());
+            if (deviceClassObject.contains("primaryActionTypeId")) {
+                ActionTypeId primaryActionTypeId = ActionTypeId(deviceClassObject.value("primaryActionTypeId").toString());
                 if (!deviceClass.hasActionType(primaryActionTypeId)) {
                     qCWarning(dcDeviceManager) << "Skipping device class" << deviceClass.name() << ": the definend primary actionTypeId" << primaryActionTypeId.toString() << "does not match any ActionType of this DeviceClass.";
                     broken = true;
@@ -438,6 +469,33 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
         }
     }
     return deviceClasses;
+}
+
+/*! Returns the translator of this \l{DevicePlugin}. */
+QTranslator *DevicePlugin::translator()
+{
+    return m_translator;
+}
+
+/*! Returns true if the given \a locale could be set for this \l{DevicePlugin}. */
+bool DevicePlugin::setLocale(const QLocale &locale)
+{
+    // check if there are local translations
+    if (m_translator->load(locale, m_metaData.value("id").toString(), "-", QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath(), ".qm")) {
+        qCDebug(dcDeviceManager()) << "* Load translation" << locale.name() << "for" << pluginName() << "from" << QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath() + "/" + m_metaData.value("id").toString() + "-" + locale.name() + ".qm";
+        return true;
+    }
+
+    // otherwise use the system translations
+    if (m_translator->load(locale, m_metaData.value("id").toString(), "-", GuhSettings::translationsPath(), ".qm")) {
+        qCDebug(dcDeviceManager()) << "* Load translation" << locale.name() << "for" << pluginName() << "from" <<  GuhSettings::translationsPath();
+        return true;
+    }
+
+    if (locale.name() != "en_US")
+        qCWarning(dcDeviceManager()) << "* Could not load translation" << locale.name() << "for plugin" << pluginName();
+
+    return false;
 }
 
 /*! Override this if your plugin supports Device with DeviceClass::CreationMethodAuto.
@@ -543,19 +601,18 @@ QList<ParamType> DevicePlugin::configurationDescription() const
 
 /*! This will be called when the DeviceManager initializes the plugin and set up the things behind the scenes.
     When implementing a new plugin, use \l{DevicePlugin::init()} instead in order to do initialisation work. */
-void DevicePlugin::initPlugin(const QJsonObject &metaData, DeviceManager *deviceManager)
+void DevicePlugin::initPlugin(DeviceManager *deviceManager)
 {
-    m_metaData = metaData;
+    m_deviceManager = deviceManager;
 
     // parse plugin configuration params
     if (m_metaData.contains("paramTypes")) {
         QPair<bool, QList<ParamType> > paramVerification = parseParamTypes(m_metaData.value("paramTypes").toArray());
-        if (paramVerification.first) {
-            m_configurationDescription = paramVerification.second;
-        }
+        if (paramVerification.first)
+            m_configurationDescription << paramVerification.second;
+
     }
 
-    m_deviceManager = deviceManager;
     init();
 }
 
@@ -566,7 +623,7 @@ QPair<bool, QList<ParamType> > DevicePlugin::parseParamTypes(const QJsonArray &a
         QJsonObject pt = paramTypesJson.toObject();
 
         // Check fields
-        QStringList missingFields = verifyFields(QStringList() << "name" << "index" << "type", pt);
+        QStringList missingFields = verifyFields(QStringList() << "id" << "name" << "idName" << "index" << "type", pt);
         if (!missingFields.isEmpty()) {
             qCWarning(dcDeviceManager) << pluginName() << "Error parsing ParamType: missing fields" << missingFields.join(", ") << endl << pt;
             return QPair<bool, QList<ParamType> >(false, QList<ParamType>());
@@ -581,16 +638,16 @@ QPair<bool, QList<ParamType> > DevicePlugin::parseParamTypes(const QJsonArray &a
             return QPair<bool, QList<ParamType> >(false, QList<ParamType>());
         }
 
-        ParamType paramType(pt.value("name").toString(), t, pt.value("defaultValue").toVariant());
+        ParamType paramType(ParamTypeId(pt.value("id").toString()), translateValue(m_metaData.value("idName").toString(), pt.value("name").toString()), t, pt.value("defaultValue").toVariant());
         paramType.setIndex(pt.value("index").toInt());
 
-        // set allowed values
+        // Set allowed values
         QVariantList allowedValues;
         foreach (const QJsonValue &allowedTypesJson, pt.value("allowedValues").toArray()) {
             allowedValues.append(allowedTypesJson.toVariant());
         }
 
-        // set the input type if there is any
+        // Set the input type if there is any
         if (pt.contains("inputType")) {
             QPair<bool, Types::InputType> inputTypeVerification = loadAndVerifyInputType(pt.value("inputType").toString());
             if (!inputTypeVerification.first) {
@@ -613,9 +670,9 @@ QPair<bool, QList<ParamType> > DevicePlugin::parseParamTypes(const QJsonArray &a
         }
 
         // set readOnly if given (default false)
-        if (pt.contains("readOnly")) {
+        if (pt.contains("readOnly"))
             paramType.setReadOnly(pt.value("readOnly").toBool());
-        }
+
         paramType.setAllowedValues(allowedValues);
         paramType.setLimits(pt.value("minValue").toVariant(), pt.value("maxValue").toVariant());
         paramTypes.append(paramType);
@@ -639,39 +696,34 @@ ParamList DevicePlugin::configuration() const
  at the time when your plugin is loaded, but will be set soon after. Listen to
  configurationValueChanged() to know when something changes.
  When implementing a new plugin, specify in configurationDescription() what you want to see here.
- Returns the config value of a \l{Param} with the given \a paramName of this DevicePlugin.
+ Returns the config value of a \l{Param} with the given \a paramTypeId of this DevicePlugin.
  */
-QVariant DevicePlugin::configValue(const QString &paramName) const
+QVariant DevicePlugin::configValue(const ParamTypeId &paramTypeId) const
 {
-    foreach (const Param &param, m_config) {
-        if (param.name() == paramName) {
-            return param.value();
-        }
-    }
-    return QVariant();
+    return m_config.paramValue(paramTypeId);
 }
 
 /*! Will be called by the DeviceManager to set a plugin's \a configuration. */
 DeviceManager::DeviceError DevicePlugin::setConfiguration(const ParamList &configuration)
 {
     foreach (const Param &param, configuration) {
-        qCDebug(dcDeviceManager) << "* set plugin configuration" << param;
-        DeviceManager::DeviceError result = setConfigValue(param.name(), param.value());
-        if (result != DeviceManager::DeviceErrorNoError) {
+        qCDebug(dcDeviceManager) << "* Set plugin configuration" << param;
+        DeviceManager::DeviceError result = setConfigValue(param.paramTypeId(), param.value());
+        if (result != DeviceManager::DeviceErrorNoError)
             return result;
-        }
+
     }
     return DeviceManager::DeviceErrorNoError;
 }
 
-/*! Can be called in the DevicePlugin to set a plugin's \l{Param} with the given \a paramName and \a value. */
-DeviceManager::DeviceError DevicePlugin::setConfigValue(const QString &paramName, const QVariant &value)
+/*! Can be called in the DevicePlugin to set a plugin's \l{Param} with the given \a paramTypeId and \a value. */
+DeviceManager::DeviceError DevicePlugin::setConfigValue(const ParamTypeId &paramTypeId, const QVariant &value)
 {
     bool found = false;
     foreach (const ParamType &paramType, configurationDescription()) {
-        if (paramType.name() == paramName) {
+        if (paramType.id() == paramTypeId) {
             found = true;
-            DeviceManager::DeviceError result = deviceManager()->verifyParam(paramType, Param(paramName, value));
+            DeviceManager::DeviceError result = deviceManager()->verifyParam(paramType, Param(paramTypeId, value));
             if (result != DeviceManager::DeviceErrorNoError)
                 return result;
 
@@ -680,17 +732,20 @@ DeviceManager::DeviceError DevicePlugin::setConfigValue(const QString &paramName
     }
 
     if (!found) {
-        qCWarning(dcDeviceManager) << QString("Could not find plugin parameter with the name %1.").arg(paramName);
+        qCWarning(dcDeviceManager) << QString("Could not find plugin parameter with the id %1.").arg(paramTypeId.toString());
         return DeviceManager::DeviceErrorInvalidParameter;
     }
 
-    if (m_config.hasParam(paramName)) {
-        m_config.setParamValue(paramName, value);
+    if (m_config.hasParam(paramTypeId)) {
+        if (!m_config.setParamValue(paramTypeId, value)) {
+            qCWarning(dcDeviceManager()) << "Could not set param value" << value << "for param with id" << paramTypeId.toString();
+            return DeviceManager::DeviceErrorInvalidParameter;
+        }
     } else {
-        Param newParam(paramName, value);
-        m_config.append(newParam);
+        m_config.append(Param(paramTypeId, value));
     }
-    emit configValueChanged(paramName, value);
+
+    emit configValueChanged(paramTypeId, value);
     return DeviceManager::DeviceErrorNoError;
 }
 
@@ -730,7 +785,7 @@ Device *DevicePlugin::findDeviceByParams(const ParamList &params) const
     foreach (Device *device, myDevices()) {
         bool matching = true;
         foreach (const Param &param, params) {
-            if (device->paramValue(param.name()) != param.value()) {
+            if (device->paramValue(param.paramTypeId()) != param.value()) {
                 matching = false;
             }
         }
@@ -808,6 +863,11 @@ QNetworkReply *DevicePlugin::networkManagerPut(const QNetworkRequest &request, c
     return nullptr;
 }
 
+void DevicePlugin::setMetaData(const QJsonObject &metaData)
+{
+    m_metaData = metaData;
+}
+
 /*!
  Starts a SSDP search for a certain \a searchTarget (ST). Certain UPnP devices need a special ST (i.e. "udap:rootservice"
  for LG Smart Tv's), otherwise they will not respond on the SSDP search. Each HTTP request to this device needs sometimes
@@ -851,6 +911,15 @@ QStringList DevicePlugin::verifyFields(const QStringList &fields, const QJsonObj
         }
     }
     return ret;
+}
+
+QString DevicePlugin::translateValue(const QString &context, const QString &string) const
+{
+    QString translation = m_translator->translate(context.toUtf8().constData(), string.toUtf8().constData());
+    if (translation.isEmpty())
+        translation = string;
+
+    return translation;
 }
 
 QPair<bool, Types::Unit> DevicePlugin::loadAndVerifyUnit(const QString &unitString) const

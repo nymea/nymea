@@ -61,6 +61,34 @@ ActionTypeId mockActionIdAsync = ActionTypeId("fbae06d3-7666-483e-a39e-ec50fe890
 ActionTypeId mockActionIdFailing = ActionTypeId("df3cf33d-26d5-4577-9132-9823bd33fad0");
 ActionTypeId mockActionIdAsyncFailing = ActionTypeId("bfe89a1d-3497-4121-8318-e77c37537219");
 
+ParamTypeId configParamIntParamTypeId = ParamTypeId("e1f72121-a426-45e2-b475-8262b5cdf103");
+ParamTypeId configParamBoolParamTypeId = ParamTypeId("c75723b6-ea4f-4982-9751-6c5e39c88145");
+ParamTypeId httpportParamTypeId = ParamTypeId("d4f06047-125e-4479-9810-b54c189917f5");
+ParamTypeId asyncParamTypeId = ParamTypeId("f2977061-4dd0-4ef5-85aa-3b7134743be3");
+ParamTypeId brokenParamTypeId = ParamTypeId("ae8f8901-f2c1-42a5-8111-6d2fc8e4c1e4");
+ParamTypeId resultCountParamTypeId = ParamTypeId("d222adb4-2f9c-4c3f-8655-76400d0fb6ce");
+ParamTypeId mockActionParam1ParamTypeId = ParamTypeId("a2d3a256-a551-4712-a65b-ecd5a436a1cb");
+ParamTypeId mockActionParam2ParamTypeId = ParamTypeId("304a4899-18be-4e3b-94f4-d03be52f3233");
+ParamTypeId mockParamIntParamTypeId = ParamTypeId("0550e16d-60b9-4ba5-83f4-4d3cee656121");
+ParamTypeId colorStateParamTypeId = ParamTypeId("20dc7c22-c50e-42db-837c-2bbced939f8e");
+ParamTypeId percentageStateParamTypeId = ParamTypeId("72981c04-267a-4ba0-a59e-9921d2f3af9c");
+ParamTypeId allowedValuesStateParamTypeId = ParamTypeId("05f63f9c-f61e-4dcf-ad55-3f13fde2765b");
+ParamTypeId doubleStateParamTypeId = ParamTypeId("53cd7c55-49b7-441b-b970-9048f20f0e2c");
+ParamTypeId boolStateParamTypeId = ParamTypeId("e680f7a4-b39e-46da-be41-fa3170fe3768");
+ParamTypeId pinParamTypeId = ParamTypeId("da820e07-22dc-4173-9c07-2f49a4e265f9");
+ParamTypeId boolValueStateParamTypeId = ParamTypeId("d24ede5f-4064-4898-bb84-cfb533b1fbc0");
+ParamTypeId parentUuidParamTypeId = ParamTypeId("104b5288-404e-42d3-bf38-e40682e75681");
+ParamTypeId textLineParamTypeId = ParamTypeId("e6acf0c7-4b8e-4296-ac62-855d20deb816");
+ParamTypeId textAreaParamTypeId = ParamTypeId("716f0994-bc01-42b0-b64d-59236f7320d2");
+ParamTypeId passwordParamTypeId = ParamTypeId("e5c0d14b-c9f1-4aca-a56e-85bfa6977150");
+ParamTypeId searchParamTypeId = ParamTypeId("22add8c9-ee4f-43ad-8931-58e999313ac3");
+ParamTypeId mailParamTypeId = ParamTypeId("a8494faf-3a0f-4cf3-84b7-4b39148a838d");
+ParamTypeId ip4ParamTypeId = ParamTypeId("9e5f86a0-4bb3-4892-bff8-3fc4032af6e2");
+ParamTypeId ip6ParamTypeId = ParamTypeId("43bf3832-dd48-4090-a836-656e8b60216e");
+ParamTypeId urlParamTypeId = ParamTypeId("fa67229f-fcef-496f-b671-59a4b48f3ab5");
+ParamTypeId macParamTypeId = ParamTypeId("e93db587-7919-48f3-8c88-1651de63c765");
+
+
 // Parent device
 EventTypeId mockParentChildEventId = EventTypeId("d24ede5f-4064-4898-bb84-cfb533b1fbc0");
 ActionTypeId mockParentChildActionId = ActionTypeId("d24ede5f-4064-4898-bb84-cfb533b1fbc0");
@@ -151,12 +179,12 @@ void GuhTestBase::initTestCase()
 
     // Lets add one instance of the mockdevice
     QVariantMap params;
-    params.insert("deviceClassId", "{753f0d32-0468-4d08-82ed-1964aab03298}");
     params.insert("name", "Test Mock Device");
+    params.insert("deviceClassId", "{753f0d32-0468-4d08-82ed-1964aab03298}");
 
     QVariantList deviceParams;
     QVariantMap httpPortParam;
-    httpPortParam.insert("name", "httpport");
+    httpPortParam.insert("paramTypeId", httpportParamTypeId.toString());
     httpPortParam.insert("value", m_mockDevice1Port);
     deviceParams.append(httpPortParam);
     params.insert("deviceParams", deviceParams);

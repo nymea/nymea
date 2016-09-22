@@ -5,10 +5,11 @@
     "vendors": [
         {
             "name": "guh",
+            "idName": "guh",
             "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6",
             "deviceClasses": [
                 {
-                    "deviceClassId": "0f39fe9e-51ea-4230-9646-2482c6234791",
+                    "id": "0f39fe9e-51ea-4230-9646-2482c6234791",
                     "idName": "application",
                     "name": "Application launcher",
                     "createMethods": ["user"],
@@ -20,6 +21,8 @@
                     ],
                     "paramTypes": [
                         {
+                            "id": "79e54f91-2771-459a-9cb0-1d37759d2e33",
+                            "idName": "command",
                             "name": "command",
                             "type": "QString",
                             "index": 0,
@@ -31,6 +34,7 @@
                             "id": "28d7e933-ff05-4f4c-95a0-482689543de5",
                             "idName": "running",
                             "name": "running",
+                            "eventTypeName": "running changed",
                             "index": 0,
                             "type": "bool",
                             "defaultValue": false
@@ -52,7 +56,7 @@
                     ]
                 },
                 {
-                    "deviceClassId": "96044325-a6fb-47c9-9117-f29c3b327978",
+                    "id": "96044325-a6fb-47c9-9117-f29c3b327978",
                     "idName": "script",
                     "name": "Bashscript launcher",
                     "basicTags": [
@@ -63,6 +67,8 @@
                     "primaryActionTypeId": "cf52b41d-3108-423c-8907-ca5b4d97cac5",
                     "paramTypes": [
                         {
+                            "id": "391cf4af-ccb4-4ec0-9711-00c1b53a3c4c",
+                            "idName": "script",
                             "name": "script",
                             "type": "QString",
                             "index": 0,
@@ -74,6 +80,7 @@
                             "id": "28d7e933-ff05-4f4c-95a0-482689543de5",
                             "idName": "running",
                             "name": "running",
+                            "eventTypeName": "running changed",
                             "index": 0,
                             "type": "bool",
                             "defaultValue": false

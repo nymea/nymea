@@ -311,6 +311,9 @@
     \section2 VendorId
     This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{Vendor}.
 
+    \section2 ParamTypeId
+    This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{ParamType}.
+
     \section2 DeviceClassId
     This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{DeviceClass}.
 

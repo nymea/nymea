@@ -90,15 +90,15 @@ void Action::setParams(const ParamList &params)
     m_params = params;
 }
 
-/*! Returns the parameter of this Action with a cetrain \a paramName. */
-Param Action::param(const QString &paramName) const
+/*! Returns the parameter of this Action with a cetrain \a paramTypeId. */
+Param Action::param(const ParamTypeId &paramTypeId) const
 {
     foreach (const Param &param, m_params) {
-        if (param.name() == paramName) {
+        if (param.paramTypeId() == paramTypeId) {
             return param;
         }
     }
-    return Param(QString());
+    return Param(ParamTypeId(), QString());
 }
 
 /*! Copy the data to an \l{Action} from an \a other action. */

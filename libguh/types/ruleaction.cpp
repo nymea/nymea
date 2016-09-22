@@ -83,10 +83,7 @@ Action RuleAction::toAction() const
     Action action(m_actionTypeId, m_deviceId);
     ParamList params;
     foreach (const RuleActionParam &ruleActionParam, m_ruleActionParams) {
-        Param param;
-        param.setName(ruleActionParam.name());
-        param.setValue(ruleActionParam.value());
-        params.append(param);
+        params.append(Param(ruleActionParam.paramTypeId(), ruleActionParam.value()));
     }
     action.setParams(params);
     return action;
@@ -118,13 +115,13 @@ void RuleAction::setRuleActionParams(const RuleActionParamList &ruleActionParams
     m_ruleActionParams = ruleActionParams;
 }
 
-/*! Returns the \l{RuleActionParam} of this RuleAction with the given \a ruleActionParamName.
+/*! Returns the \l{RuleActionParam} of this RuleAction with the given \a ruleActionParamTypeId.
  *  If there is no \l{RuleActionParam} with th given name an invalid \l{RuleActionParam} will be returnend.
  *  \sa RuleActionParam, */
-RuleActionParam RuleAction::ruleActionParam(const QString &ruleActionParamName) const
+RuleActionParam RuleAction::ruleActionParam(const ParamTypeId &ruleActionParamTypeId) const
 {
     foreach (const RuleActionParam &ruleActionParam, m_ruleActionParams) {
-        if (ruleActionParam.name() == ruleActionParamName) {
+        if (ruleActionParam.paramTypeId() == ruleActionParamTypeId) {
             return ruleActionParam;
         }
     }

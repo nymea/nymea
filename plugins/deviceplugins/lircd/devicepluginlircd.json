@@ -9,7 +9,7 @@
             "id": "9a53049c-8828-4b87-b3f6-7bc7708196cd",
             "deviceClasses": [
                 {
-                    "deviceClassId": "5c2bc4cd-ba6c-4052-b6cd-1db83323ea22",
+                    "id": "5c2bc4cd-ba6c-4052-b6cd-1db83323ea22",
                     "idName": "irReceiver",
                     "name": "IR receiver",
                     "basicTags": [
@@ -20,6 +20,8 @@
                     "createMethods": ["user"],
                     "paramTypes": [
                         {
+                            "id": "06704d73-66d1-486b-bc0b-0346534983a1",
+                            "idName": "name",
                             "name": "remoteName",
                             "type": "QString",
                             "index": 0,
@@ -34,11 +36,15 @@
                             "name": "button pressed",
                             "paramTypes": [
                                 {
+                                    "id": "a6344673-17f5-4a37-b59e-f342a2877909",
+                                    "idName": "button",
                                     "name": "button",
                                     "index": 0,
                                     "type": "QString"
                                 },
                                 {
+                                    "id": "a98d9348-1154-45c6-a163-c9f0477be626",
+                                    "idName": "repeat",
                                     "name": "repeat",
                                     "index": 1,
                                     "type": "int"

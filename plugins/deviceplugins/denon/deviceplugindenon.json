@@ -9,7 +9,7 @@
             "idName": "denon",
             "deviceClasses": [
                 {
-                    "deviceClassId": "1cd3d67e-aba0-450e-9e2a-483a1527aba6",
+                    "id": "1cd3d67e-aba0-450e-9e2a-483a1527aba6",
                     "idName": "AVRX1000",
                     "name": "AVR X1000",
                     "createMethods": ["user"],
@@ -22,6 +22,8 @@
                     ],
                     "paramTypes": [
                         {
+                            "id": "a54b98b4-b78f-41dd-a257-14425c6cf9ab",
+                            "idName": "ip",
                             "name": "ip",
                             "type" : "QString",
                             "index": 0,
@@ -33,6 +35,7 @@
                             "id": "4d1790bf-28c6-4c1f-8892-ba1a0ef140f5",
                             "idName": "connected",
                             "name": "connected",
+                            "eventTypeName": "connected changed",
                             "index": 0,
                             "defaultValue": false,
                             "type": "bool"
@@ -41,6 +44,8 @@
                             "name": "power",
                             "id": "1cdb6b54-6831-4900-95b2-c78f64497701",
                             "idName": "power",
+                            "eventTypeName": "power changed",
+                            "actionTypeName": "Set power",
                             "type": "bool",
                             "index": 1,
                             "defaultValue": false,
@@ -50,6 +55,8 @@
                             "name": "volume",
                             "id": "773636b9-304d-463a-8755-fc7488dc0ff3",
                             "idName": "volume",
+                            "eventTypeName": "volume changed",
+                            "actionTypeName": "Set volume",
                             "index": 2,
                             "type": "int",
                             "unit": "Dezibel",
@@ -62,6 +69,8 @@
                             "name": "channel",
                             "id": "f29ffa2c-31d6-4d88-b160-a38288c82ce1",
                             "idName": "channel",
+                            "eventTypeName": "channel changed",
+                            "actionTypeName": "Set channel",
                             "index": 3,
                             "type": "QString",
                             "writable": true,

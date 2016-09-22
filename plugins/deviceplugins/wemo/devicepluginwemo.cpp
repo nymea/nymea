@@ -86,16 +86,15 @@ DeviceManager::HardwareResources DevicePluginWemo::requiredHardware() const
 
 DeviceManager::DeviceError DevicePluginWemo::executeAction(Device *device, const Action &action)
 {
-    if (device->deviceClassId() != wemoSwitchDeviceClassId) {
+    if (device->deviceClassId() != wemoSwitchDeviceClassId)
         return DeviceManager::DeviceErrorDeviceClassNotFound;
-    }
 
     // Set power
     if (action.actionTypeId() == powerActionTypeId) {
         // Check if wemo device is reachable
         if (device->stateValue(reachableStateTypeId).toBool()) {
             // setPower returns false, if the curent powerState is allready the new powerState
-            if (setPower(device, action.param("power").value().toBool(), action.id())) {
+            if (setPower(device, action.param(powerStateParamTypeId).value().toBool(), action.id())) {
                 return DeviceManager::DeviceErrorAsync;
             } else {
                 return DeviceManager::DeviceErrorNoError;
@@ -173,10 +172,10 @@ void DevicePluginWemo::upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &
         if (upnpDeviceDescriptor.friendlyName() == "WeMo Switch") {
             DeviceDescriptor descriptor(wemoSwitchDeviceClassId, "WemoSwitch", upnpDeviceDescriptor.serialNumber());
             ParamList params;
-            params.append(Param("name", upnpDeviceDescriptor.friendlyName()));
-            params.append(Param("host address", upnpDeviceDescriptor.hostAddress().toString()));
-            params.append(Param("port", upnpDeviceDescriptor.port()));
-            params.append(Param("serial number", upnpDeviceDescriptor.serialNumber()));
+            params.append(Param(nameParamTypeId, upnpDeviceDescriptor.friendlyName()));
+            params.append(Param(hostParamTypeId, upnpDeviceDescriptor.hostAddress().toString()));
+            params.append(Param(portParamTypeId, upnpDeviceDescriptor.port()));
+            params.append(Param(serialParamTypeId, upnpDeviceDescriptor.serialNumber()));
             descriptor.setParams(params);
             deviceDescriptors.append(descriptor);
         }
@@ -195,7 +194,7 @@ void DevicePluginWemo::refresh(Device *device)
     QByteArray getBinarayStateMessage("<?xml version=\"1.0\" encoding=\"utf-8\"?><s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\"><s:Body><u:GetBinaryState xmlns:u=\"urn:Belkin:service:basicevent:1\"><BinaryState>1</BinaryState></u:GetBinaryState></s:Body></s:Envelope>");
 
     QNetworkRequest request;
-    request.setUrl(QUrl("http://" + device->paramValue("host address").toString() + ":" + device->paramValue("port").toString() + "/upnp/control/basicevent1"));
+    request.setUrl(QUrl("http://" + device->paramValue(hostParamTypeId).toString() + ":" + device->paramValue(portParamTypeId).toString() + "/upnp/control/basicevent1"));
     request.setHeader(QNetworkRequest::ContentTypeHeader,QVariant("text/xml; charset=\"utf-8\""));
     request.setHeader(QNetworkRequest::UserAgentHeader,QVariant("guh"));
     request.setRawHeader("SOAPACTION", "\"urn:Belkin:service:basicevent:1#GetBinaryState\"");
@@ -214,7 +213,7 @@ bool DevicePluginWemo::setPower(Device *device, const bool &power, const ActionI
     QByteArray setPowerMessage("<?xml version=\"1.0\" encoding=\"utf-8\"?><s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\"><s:Body><u:SetBinaryState xmlns:u=\"urn:Belkin:service:basicevent:1\"><BinaryState>" + QByteArray::number((int)power) + "</BinaryState></u:SetBinaryState></s:Body></s:Envelope>");
 
     QNetworkRequest request;
-    request.setUrl(QUrl("http://" + device->paramValue("host address").toString() + ":" + device->paramValue("port").toString() + "/upnp/control/basicevent1"));
+    request.setUrl(QUrl("http://" + device->paramValue(hostParamTypeId).toString() + ":" + device->paramValue(portParamTypeId).toString() + "/upnp/control/basicevent1"));
     request.setHeader(QNetworkRequest::ContentTypeHeader,QVariant("text/xml; charset=\"utf-8\""));
     request.setHeader(QNetworkRequest::UserAgentHeader,QVariant("guh"));
     request.setRawHeader("SOAPACTION", "\"urn:Belkin:service:basicevent:1#SetBinaryState\"");

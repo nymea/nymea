@@ -88,6 +88,7 @@ public:
     ServerManager *serverManager() const;
     BluetoothServer *bluetoothServer() const;
 
+    static QStringList getAvailableLanguages();
 
 #ifdef TESTING_ENABLED
     MockTcpServer *tcpServer() const;
@@ -139,6 +140,7 @@ private:
 private slots:
     void gotEvent(const Event &event);
     void onDateTimeChanged(const QDateTime &dateTime);
+    void onLocaleChanged();
     void actionExecutionFinished(const ActionId &id, DeviceManager::DeviceError status);
 
 };

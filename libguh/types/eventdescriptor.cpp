@@ -66,11 +66,11 @@ void EventDescriptor::setParamDescriptors(const QList<ParamDescriptor> &paramDes
     m_paramDescriptors = paramDescriptors;
 }
 
-/*! Set a parameters of this Event to \a paramDescriptorName. */
-ParamDescriptor EventDescriptor::paramDescriptor(const QString &paramDescriptorName) const
+/*! Returns the ParamDescriptor with the given \a paramTypeId, otherwise an invalid ParamDescriptor. */
+ParamDescriptor EventDescriptor::paramDescriptor(const ParamTypeId &paramTypeId) const
 {
     foreach (const ParamDescriptor &paramDescriptor, m_paramDescriptors) {
-        if (paramDescriptor.name() == paramDescriptorName) {
+        if (paramDescriptor.paramTypeId() == paramTypeId) {
             return paramDescriptor;
         }
     }
@@ -83,7 +83,7 @@ bool EventDescriptor::operator ==(const EventDescriptor &other) const
 {
     bool paramsMatch = true;
     foreach (const ParamDescriptor &otherParamDescriptor, other.paramDescriptors()) {
-        ParamDescriptor paramDescriptor = this->paramDescriptor(otherParamDescriptor.name());
+        ParamDescriptor paramDescriptor = this->paramDescriptor(otherParamDescriptor.paramTypeId());
         if (!paramDescriptor.isValid() || paramDescriptor.value() != otherParamDescriptor.value()) {
             paramsMatch = false;
             break;
@@ -106,32 +106,32 @@ bool EventDescriptor::operator ==(const Event &event) const
     foreach (const ParamDescriptor &paramDescriptor, m_paramDescriptors) {
         switch (paramDescriptor.operatorType()) {
         case Types::ValueOperatorEquals:
-            if (event.param(paramDescriptor.name()).value() != paramDescriptor.value()) {
+            if (event.param(paramDescriptor.paramTypeId()).value() != paramDescriptor.value()) {
                 return false;
             }
             break;
         case Types::ValueOperatorNotEquals:
-            if (event.param(paramDescriptor.name()).value() == paramDescriptor.value()) {
+            if (event.param(paramDescriptor.paramTypeId()).value() == paramDescriptor.value()) {
                 return false;
             }
             break;
         case Types::ValueOperatorGreater:
-            if (event.param(paramDescriptor.name()).value() <= paramDescriptor.value()) {
+            if (event.param(paramDescriptor.paramTypeId()).value() <= paramDescriptor.value()) {
                 return false;
             }
             break;
         case Types::ValueOperatorGreaterOrEqual:
-            if (event.param(paramDescriptor.name()).value() < paramDescriptor.value()) {
+            if (event.param(paramDescriptor.paramTypeId()).value() < paramDescriptor.value()) {
                 return false;
             }
             break;
         case Types::ValueOperatorLess:
-            if (event.param(paramDescriptor.name()).value() >= paramDescriptor.value()) {
+            if (event.param(paramDescriptor.paramTypeId()).value() >= paramDescriptor.value()) {
                 return false;
             }
             break;
         case Types::ValueOperatorLessOrEqual:
-            if (event.param(paramDescriptor.name()).value() < paramDescriptor.value()) {
+            if (event.param(paramDescriptor.paramTypeId()).value() < paramDescriptor.value()) {
                 return false;
             }
             break;

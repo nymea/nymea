@@ -42,8 +42,8 @@ public:
         TypeAsync
     };
 
-    static JsonReply* createReply(JsonHandler *handler, const QVariantMap &data);
-    static JsonReply* createAsyncReply(JsonHandler *handler, const QString &method);
+    static JsonReply *createReply(JsonHandler *handler, const QVariantMap &data);
+    static JsonReply *createAsyncReply(JsonHandler *handler, const QString &method);
 
     Type type() const;
     QVariantMap data() const;

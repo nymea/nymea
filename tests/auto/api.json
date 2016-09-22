@@ -788,6 +788,7 @@
             "ConfigurationErrorInvalidStationName",
             "ConfigurationErrorInvalidPort",
             "ConfigurationErrorInvalidHostAddress",
+            "ConfigurationErrorBluetoothHardwareNotAvailable",
             "ConfigurationErrorInvalidCertificate"
         ],
         "CreateMethod": [

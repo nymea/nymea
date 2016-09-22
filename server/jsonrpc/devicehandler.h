@@ -35,41 +35,26 @@ public:
 
     QString name() const override;
 
-    Q_INVOKABLE JsonReply* GetSupportedVendors(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *GetSupportedVendors(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *GetSupportedDevices(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *GetDiscoveredDevices(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *GetPlugins(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *GetPluginConfiguration(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *SetPluginConfiguration(const QVariantMap &params);
 
-    Q_INVOKABLE JsonReply* GetSupportedDevices(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *AddConfiguredDevice(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *PairDevice(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *ConfirmPairing(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *GetConfiguredDevices(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *ReconfigureDevice(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *EditDevice(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *RemoveConfiguredDevice(const QVariantMap &params);
 
-    Q_INVOKABLE JsonReply* GetDiscoveredDevices(const QVariantMap &params) const;
-
-    Q_INVOKABLE JsonReply* GetPlugins(const QVariantMap &params) const;
-
-    Q_INVOKABLE JsonReply* GetPluginConfiguration(const QVariantMap &params) const;
-
-    Q_INVOKABLE JsonReply* SetPluginConfiguration(const QVariantMap &params);
-
-    Q_INVOKABLE JsonReply* AddConfiguredDevice(const QVariantMap &params);
-
-    Q_INVOKABLE JsonReply* PairDevice(const QVariantMap &params);
-
-    Q_INVOKABLE JsonReply* ConfirmPairing(const QVariantMap &params);
-
-    Q_INVOKABLE JsonReply* GetConfiguredDevices(const QVariantMap &params) const;
-
-    Q_INVOKABLE JsonReply* ReconfigureDevice(const QVariantMap &params);
-
-    Q_INVOKABLE JsonReply* EditDevice(const QVariantMap &params);
-
-    Q_INVOKABLE JsonReply* RemoveConfiguredDevice(const QVariantMap &params);
-
-    Q_INVOKABLE JsonReply* GetEventTypes(const QVariantMap &params) const;
-
-    Q_INVOKABLE JsonReply* GetActionTypes(const QVariantMap &params) const;
-
-    Q_INVOKABLE JsonReply* GetStateTypes(const QVariantMap &params) const;
-
-    Q_INVOKABLE JsonReply* GetStateValue(const QVariantMap &params) const;
-
-    Q_INVOKABLE JsonReply* GetStateValues(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *GetEventTypes(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *GetActionTypes(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *GetStateTypes(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *GetStateValue(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *GetStateValues(const QVariantMap &params) const;
 
 signals:
     void StateChanged(const QVariantMap &params);

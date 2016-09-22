@@ -391,6 +391,10 @@ QStringList GuhCore::getAvailableLanguages()
     // TODO: parse available translation files
     return QStringList() << "en_US" << "de_DE";
 }
+BluetoothServer *GuhCore::bluetoothServer() const
+{
+    return m_bluetoothServer;
+}
 
 #ifdef TESTING_ENABLED
 MockTcpServer *GuhCore::tcpServer() const
@@ -438,13 +442,18 @@ GuhCore::GuhCore(QObject *parent) :
 
     m_webSocketServer = new WebSocketServer(m_configuration->webSocketAddress(), m_configuration->webSocketPort(), m_configuration->sslEnabled(), this);
 
+    m_bluetoothServer = new BluetoothServer(this);
+
     // Register transport interface in the JSON RPC server
     m_serverManager->jsonServer()->registerTransportInterface(m_tcpServer);
     m_serverManager->jsonServer()->registerTransportInterface(m_webSocketServer);
     m_serverManager->jsonServer()->registerTransportInterface(m_cloudManager);
+    m_serverManager->jsonServer()->registerTransportInterface(m_bluetoothServer, m_configuration->bluetoothServerEnabled());
 
+    // Webserver setup
     m_webServer = new WebServer(m_configuration->webServerAddress(), m_configuration->webServerPort(), m_configuration->webServerPublicFolder(), this);
     m_serverManager->restServer()->registerWebserver(m_webServer);
+
 
     // Connect the configuration changes
     connect(m_configuration, &GuhConfiguration::cloudEnabledChanged, m_cloudManager, &CloudManager::onCloudEnabledChanged);

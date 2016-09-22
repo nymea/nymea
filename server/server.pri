@@ -13,6 +13,7 @@ HEADERS += $$top_srcdir/server/guhcore.h \
     $$top_srcdir/server/websocketserver.h \
     $$top_srcdir/server/httpreply.h \
     $$top_srcdir/server/guhconfiguration.h \
+    $$top_srcdir/server/bluetoothserver.h \
     $$top_srcdir/server/jsonrpc/jsonrpcserver.h \
     $$top_srcdir/server/jsonrpc/jsonhandler.h \
     $$top_srcdir/server/jsonrpc/devicehandler.h \
@@ -64,6 +65,7 @@ SOURCES += $$top_srcdir/server/guhcore.cpp \
     $$top_srcdir/server/websocketserver.cpp \
     $$top_srcdir/server/httpreply.cpp \
     $$top_srcdir/server/guhconfiguration.cpp \
+    $$top_srcdir/server/bluetoothserver.cpp \
     $$top_srcdir/server/jsonrpc/jsonrpcserver.cpp \
     $$top_srcdir/server/jsonrpc/jsonhandler.cpp \
     $$top_srcdir/server/jsonrpc/devicehandler.cpp \

@@ -30,82 +30,74 @@ namespace guhserver {
 GuhConfiguration::GuhConfiguration(QObject *parent) :
     QObject(parent)
 {
+    // Load guhd settings
     GuhSettings settings(GuhSettings::SettingsRoleGlobal);
-
-    // guhd
     settings.beginGroup("guhd");
-    m_serverName = settings.value("name", "guhIO").toString();
-    m_timeZone = settings.value("timeZone", QTimeZone::systemTimeZoneId()).toByteArray();
-    m_locale = QLocale(settings.value("language", "en_US").toString());
-    m_serverUuid = settings.value("uuid", QUuid()).toUuid();
-    if (m_serverUuid.isNull()) {
-        m_serverUuid = QUuid::createUuid();
-        settings.setValue("uuid", m_serverUuid);
-    }
-    settings.endGroup();
+    setServerName(settings.value("name", "guhIO").toString());
+    QUuid serverUuid = settings.value("uuid", QUuid()).toUuid();
+    if (serverUuid.isNull())
+        serverUuid = QUuid::createUuid();
 
-    qCDebug(dcApplication()) << "Configuration: Server name:" << m_serverName;
-    qCDebug(dcApplication()) << "Configuration: Server uuid:" << m_serverUuid.toString();
-    qCDebug(dcApplication()) << "Configuration: Server time zone:" << QString::fromUtf8(m_timeZone);
-    qCDebug(dcApplication()) << "Configuration: Server locale:" << m_locale.name() << m_locale.nativeLanguageName();
+    setServerUuid(serverUuid);
+    setTimeZone(settings.value("timeZone", QTimeZone::systemTimeZoneId()).toByteArray());
+    settings.endGroup();
 
     // TcpServer
     settings.beginGroup("TcpServer");
-#ifdef TESTING_ENABLED
-    m_tcpServerAddress = QHostAddress("127.0.0.1");
-#else
-    m_tcpServerAddress = QHostAddress(settings.value("address", "0.0.0.0").toString());
+    // Defaults for tests
+    QHostAddress tcpServerAddress("127.0.0.1");
+    uint tcpServerPort = 2222;
+#ifndef TESTING_ENABLED
+    tcpServerAddress = QHostAddress(settings.value("address", "0.0.0.0").toString());
+    tcpServerPort = settings.value("port", 2222).toUInt();
 #endif
-    m_tcpServerPort = settings.value("port", 2222).toUInt();
+    setTcpServerConfiguration(tcpServerPort, tcpServerAddress);
     settings.endGroup();
-
-    qCDebug(dcApplication()) << "Configuration: TCP server:" << QString("%1:%2").arg(m_tcpServerAddress.toString()).arg(m_tcpServerPort);
 
     // Webserver
     settings.beginGroup("WebServer");
-#ifdef TESTING_ENABLED
-    m_webServerAddress = QHostAddress("127.0.0.1");
-    m_webServerPublicFolder = qApp->applicationDirPath();
-#else
-    m_webServerAddress = QHostAddress(settings.value("address", "0.0.0.0").toString());
-    m_webServerPublicFolder = settings.value("publicFolder", "/usr/share/guh-webinterface/public/").toString();
+    // Defaults for tests
+    QHostAddress webServerAddress("127.0.0.1");
+    QString webServerPublicFolder = qApp->applicationDirPath();
+    uint webServerPort = 3333;
+#ifndef TESTING_ENABLED
+    webServerAddress = QHostAddress(settings.value("address", "0.0.0.0").toString());
+    webServerPublicFolder = settings.value("publicFolder", "/usr/share/guh-webinterface/public/").toString();
+    webServerPort = settings.value("port", 3333).toUInt();
 #endif
-    m_webServerPort = settings.value("port", 3333).toUInt();
+    setWebServerConfiguration(webServerPort, webServerAddress);
+    setWebServerPublicFolder(webServerPublicFolder);
     settings.endGroup();
-
-    qCDebug(dcApplication()) << "Configuration: Webserver:" << QString("%1:%2 on %3").arg(m_webServerAddress.toString()).arg(m_webServerPort).arg(m_webServerPublicFolder);
 
     // Websocket server
     settings.beginGroup("WebSocketServer");
-#ifdef TESTING_ENABLED
-    m_webSocketAddress = QHostAddress("127.0.0.1");
-#else
-    m_webSocketAddress = QHostAddress(settings.value("address", "0.0.0.0").toString());
+    // Defaults for tests
+    QHostAddress webSocketAddress("127.0.0.1");
+    uint webSocketPort = 4444;
+#ifndef TESTING_ENABLED
+    webSocketAddress = QHostAddress(settings.value("address", "0.0.0.0").toString());
+    webSocketPort = settings.value("port", 4444).toUInt();
 #endif
-    m_webSocketPort = settings.value("port", 4444).toUInt();
+    setWebSocketConfiguration(webSocketPort, webSocketAddress);
     settings.endGroup();
 
-    qCDebug(dcApplication()) << "Configuration: Websocket server:" << QString("%1:%2").arg(m_webSocketAddress.toString()).arg(m_webSocketPort);
+    // Bluetooth server
+    settings.beginGroup("BluetoothServer");
+    setBluetoothServerEnabled(settings.value("enabled", false).toBool());
+    settings.endGroup();
 
     // SSL configuration
     settings.beginGroup("SSL");
-    m_sslEnabled = settings.value("enabled", false).toBool();
-    m_sslCertificate = settings.value("certificate", "/etc/ssl/certs/guhd-certificate.crt").toString();
-    m_sslCertificateKey = settings.value("certificate-key", "/etc/ssl/certs/guhd-certificate.key").toString();
+    setSslEnabled(settings.value("enabled", false).toBool());
+    setSslCertificate(settings.value("certificate", "/etc/ssl/certs/guhd-certificate.crt").toString(), settings.value("certificate-key", "/etc/ssl/certs/guhd-certificate.key").toString());
     settings.endGroup();
-
-    qCDebug(dcApplication()) << "Configuration: SSL" << (m_sslEnabled ? "enabled" : "disabled");
 
     // Cloud
     settings.beginGroup("Cloud");
-    m_cloudEnabled = settings.value("enabled", false).toBool();
-    m_cloudAuthenticationServer = settings.value("authenticationServer", QUrl("http://localhost:8000/oauth2/token")).toUrl();
-    m_cloudProxyServer = settings.value("proxyServer", QUrl("ws://127.0.0.1:1212")).toUrl();
+    setCloudEnabled(settings.value("enabled", false).toBool());
+    setCloudAuthenticationServer(settings.value("authenticationServer", QUrl("https://cloud.guh.io/oauth2/token")).toUrl());
+    setCloudProxyServer(settings.value("proxyServer", QUrl("ws://proxy.guh.io:1212")).toUrl());
     settings.endGroup();
-
-    qCDebug(dcApplication()) << "Configuration: Cloud connection" << (m_cloudEnabled ? "enabled" : "disabled");
-    qCDebug(dcApplication()) << "Configuration: Cloud authentication server" << m_cloudAuthenticationServer.toString();
-    qCDebug(dcApplication()) << "Configuration: Cloud proxy server" << m_cloudProxyServer.toString();
 }
 
 QUuid GuhConfiguration::serverUuid() const
@@ -120,7 +112,7 @@ QString GuhConfiguration::serverName() const
 
 void GuhConfiguration::setServerName(const QString &serverName)
 {
-    qCDebug(dcApplication()) << "Configuration: set server name:" << serverName;
+    qCDebug(dcApplication()) << "Configuration: Server name:" << serverName;
 
     GuhSettings settings(GuhSettings::SettingsRoleGlobal);
     settings.beginGroup("guhd");
@@ -138,7 +130,7 @@ QByteArray GuhConfiguration::timeZone() const
 
 void GuhConfiguration::setTimeZone(const QByteArray &timeZone)
 {
-    qCDebug(dcApplication()) << "Configuration: set time zone:" << QString::fromUtf8(timeZone);
+    qCDebug(dcApplication()) << "Configuration: Time zone:" << QString::fromUtf8(timeZone);
 
     GuhSettings settings(GuhSettings::SettingsRoleGlobal);
     settings.beginGroup("guhd");
@@ -179,7 +171,7 @@ QHostAddress GuhConfiguration::tcpServerAddress() const
 
 void GuhConfiguration::setTcpServerConfiguration(const uint &port, const QHostAddress &address)
 {
-    qCDebug(dcApplication()) << QString("Configuration: set TCP server %1:%2").arg(address.toString()).arg(port);
+    qCDebug(dcApplication()) << "Configuration: TCP server" << QString("%1:%2").arg(address.toString()).arg(port);
 
     GuhSettings settings(GuhSettings::SettingsRoleGlobal);
     settings.beginGroup("TcpServer");
@@ -210,7 +202,7 @@ QString GuhConfiguration::webServerPublicFolder() const
 
 void GuhConfiguration::setWebServerConfiguration(const uint &port, const QHostAddress &address)
 {
-    qCDebug(dcApplication()) << QString("Configuration: set web server %1:%2").arg(address.toString()).arg(port);
+    qCDebug(dcApplication()) << "Configuration: Web server" << QString("%1:%2").arg(address.toString()).arg(port);
 
     GuhSettings settings(GuhSettings::SettingsRoleGlobal);
     settings.beginGroup("WebServer");
@@ -236,7 +228,7 @@ QHostAddress GuhConfiguration::webSocketAddress() const
 
 void GuhConfiguration::setWebSocketConfiguration(const uint &port, const QHostAddress &address)
 {
-    qCDebug(dcApplication()) << QString("Configuration: set websocket server %1:%2").arg(address.toString()).arg(port);
+    qCDebug(dcApplication()) << "Configuration: Websocket server" << QString("%1:%2").arg(address.toString()).arg(port);
 
     GuhSettings settings(GuhSettings::SettingsRoleGlobal);
     settings.beginGroup("WebSocketServer");
@@ -248,6 +240,24 @@ void GuhConfiguration::setWebSocketConfiguration(const uint &port, const QHostAd
     m_webSocketPort = port;
 
     emit webSocketServerConfigurationChanged();
+}
+
+bool GuhConfiguration::bluetoothServerEnabled() const
+{
+    return m_bluetoothServerEnabled;
+}
+
+void GuhConfiguration::setBluetoothServerEnabled(const bool &enabled)
+{
+    qCDebug(dcApplication()) << "Configuration: Bluetooth server" << (enabled ? "enabled" : "disabled");
+
+    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    settings.beginGroup("BluetoothServer");
+    settings.setValue("enabled", enabled);
+    settings.endGroup();
+
+    m_bluetoothServerEnabled = enabled;
+    emit bluetoothServerEnabled();
 }
 
 bool GuhConfiguration::sslEnabled() const
@@ -280,7 +290,7 @@ QString GuhConfiguration::sslCertificateKey() const
 
 void GuhConfiguration::setSslCertificate(const QString &sslCertificate, const QString &sslCertificateKey)
 {
-    qCDebug(dcApplication()) << "Configuration: SSL certificate:" << sslCertificate << endl << "SSL certificate key:" << sslCertificateKey;
+    qCDebug(dcApplication()) << "Configuration: SSL certificate:" << sslCertificate << "SSL certificate key:" << sslCertificateKey;
 
     GuhSettings settings(GuhSettings::SettingsRoleGlobal);
     settings.beginGroup("SSL");
@@ -346,6 +356,30 @@ void GuhConfiguration::setCloudProxyServer(const QUrl &cloudProxyServer)
 
     m_cloudProxyServer = cloudProxyServer;
     emit cloudProxyServerChanged();
+}
+
+void GuhConfiguration::setServerUuid(const QUuid &uuid)
+{
+    qCDebug(dcApplication()) << "Configuration: Server uuid:" << uuid.toString();
+
+    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    settings.beginGroup("guhd");
+    settings.setValue("uuid", uuid);
+    settings.endGroup();
+
+    m_serverUuid = uuid;
+}
+
+void GuhConfiguration::setWebServerPublicFolder(const QString &path)
+{
+    qCDebug(dcApplication()) << "Configuration: Web Server public folder:" << path;
+
+    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    settings.beginGroup("WebServer");
+    settings.setValue("publicFolder", path);
+    settings.endGroup();
+
+    m_webServerPublicFolder = path;
 }
 
 }

@@ -79,10 +79,9 @@ Description: Documentation for the guh package (on-site) - documentation
 Package: guh-translations
 Section: translations
 Architecture: all
-Depends: guh (= ${binary:Version}),
-  ${misc:Depends}
+Depends: ${misc:Depends}
 Recommends: guh (= ${binary:Version})
-Description: Documentation for the guh package (on-site) - documentation
+Description: Translation files for guhd and plugins
   guh is an open source home automation server, which allows to control
   a lot of different devices from many different manufacturers. With the
   powerful rule engine you are able to connect any device available in

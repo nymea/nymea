@@ -2,7 +2,7 @@
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                         #
-#  Copyright (C) 2015 Simon Stuerz <simon.stuerz@guh.guru>                #
+#  Copyright (C) 2015-2016 Simon Stuerz <simon.stuerz@guh.guru>           #
 #                                                                         #
 #  This file is part of guh.                                              #
 #                                                                         #
@@ -20,11 +20,10 @@
 #                                                                         #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-# restart the guh daemon after update if it's running
+# Restart the guh daemon after update if it's running
 systemctl daemon-reload
 systemctl status guhd > /dev/null 2>&1
 if [ $? -eq 0 ]; then
-        #echo -n "Restart guh daemon..."
         systemctl restart guhd
         if [ $? -eq 0 ]; then
                 echo "Successfully restarted guh daemon."
@@ -32,6 +31,8 @@ if [ $? -eq 0 ]; then
                 echo "FAILED to restart guh daemon."
         fi
 fi
+
+#DEBHELPER#
 
 exit 0
 

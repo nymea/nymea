@@ -41,7 +41,7 @@ Depends: libqt5network5,
   libqt5bluetooth5,
   logrotate,
   avahi-daemon,
-  guh-translations (= ${binary:Version}),
+  guh-translations,
   libguh1 (= ${binary:Version}),
   ${shlibs:Depends},
   ${misc:Depends}

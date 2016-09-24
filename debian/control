@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Simon Stuerz <simon.stuerz@guh.guru>
 Build-Depends: debhelper (>= 9.0.0),
   dpkg-dev (>= 1.16.1~),
-  dpkg-buildflags,
+  hardening-wrapper,
   python,
   rsync,
   qt5-default,

@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Simon Stuerz <simon.stuerz@guh.guru>
 Build-Depends: debhelper (>= 9.0.0),
   dpkg-dev (>= 1.16.1~),
-  hardening-wrapper,
+  dpkg-buildflags,
   python,
   rsync,
   qt5-default,
@@ -16,12 +16,13 @@ Build-Depends: debhelper (>= 9.0.0),
   libqt5sql5-sqlite,
   libavahi-client-dev,
   libavahi-common-dev
-Standards-Version: 3.9.5
+Standards-Version: 3.9.7
 
 Package: guh
 Architecture: any
 Section: metapackages
-Depends: guhd (= ${binary:Version}),
+Depends: ${misc:Depends},
+  guhd (= ${binary:Version}),
   guh-plugins (= ${binary:Version}),
 Description: An open source IoT server - meta package
   guh is an open source IoT (Internet of Things) server, 
@@ -77,11 +78,11 @@ Description: Documentation for the guh package (on-site) - documentation
   the system and create individual scenes and behaviors for your home.
 
 Package: guh-translations
-Section: translations
+Section: misc
 Architecture: all
 Depends: ${misc:Depends}
 Recommends: guh (= ${binary:Version})
-Description: Translation files for guhd and plugins
+Description: Translation files for guhd and plugins - translations
   guh is an open source home automation server, which allows to control
   a lot of different devices from many different manufacturers. With the
   powerful rule engine you are able to connect any device available in
@@ -93,7 +94,7 @@ Architecture: any
 Depends: guh (= ${binary:Version}),
   ${shlibs:Depends},
   ${misc:Depends}
-Description: Translation files for guh - translations
+Description: Tests and mock plugin for the guh daemon - tests
   guh is an open source IoT (Internet of Things) server,
   which allows to control a lot of different devices from many different
   manufacturers. With the powerful rule engine you are able to connect any

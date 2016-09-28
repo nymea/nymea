@@ -151,6 +151,16 @@ void CloudConnection::onTextMessageReceived(const QString &message)
     emit dataReceived(jsonDoc.toVariant().toMap());
 }
 
+void CloudConnection::onError(const QAbstractSocket::SocketError &error)
+{
+    if (!m_reconnectionTimer->isActive())
+        qCWarning(dcCloud()) << "Websocket error:" << error << m_connection->errorString();
+
+    m_error = Cloud::CloudErrorProxyServerNotReachable;
+    m_reconnectionTimer->start(10000);
+    setConnected(false);
+}
+
 void CloudConnection::reconnectionTimeout()
 {
     if (m_authenticated) {
@@ -159,7 +169,6 @@ void CloudConnection::reconnectionTimeout()
         m_reconnectionTimer->stop();
         m_error = CloudConnectionErrorAuthenticationFailed;
     }
-
 }
 
 

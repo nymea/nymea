@@ -7,8 +7,10 @@ Build-Depends: debhelper (>= 9.0.0),
   hardening-wrapper,
   python,
   rsync,
-  qt5-default,
+  qtchooser,
+  qt5-qmake,
   qtbase5-dev,
+  qtbase5-dev-tools,
   qttools5-dev-tools,
   qtconnectivity5-dev,
   libqt5websockets5-dev,
@@ -25,7 +27,7 @@ Depends: ${misc:Depends},
   guhd (= ${binary:Version}),
   guh-plugins (= ${binary:Version}),
 Description:An open source IoT server - meta package
-  guh is an open source IoT (Internet of Things) server, 
+  The guh server is an open source IoT (Internet of Things) server, 
   which allows to control a lot of different devices from many different 
   manufacturers. With the powerful rule engine you are able to connect any 
   device available in the system and create individual scenes and behaviors 

@@ -201,6 +201,7 @@ void CloudManager::onTunnelRemoved(const QUuid &tunnelId)
         m_tunnelClients.remove(clientId);
         emit clientDisconnected(clientId);
         if (m_tunnelClients.isEmpty()) {
+            qCDebug(dcCloud()) << "Remote connection inactive.";
             setActive(false);
         }
     }
@@ -249,6 +250,7 @@ void CloudManager::onConnectedChanged()
     if (m_cloudConnection->connected()) {
         m_interface->authenticateConnection(m_cloudConnection->authenticator()->token());
     } else {
+        qCDebug(dcCloud()) << "Disconnected";
         // Reset information
         setAuthenticated(false);
         setActive(false);

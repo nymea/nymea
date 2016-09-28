@@ -37,11 +37,18 @@ CloudConnection::CloudConnection(const QUrl &authenticationServer, const QUrl &p
     m_reconnectionTimer->setSingleShot(false);
     connect(m_reconnectionTimer, &QTimer::timeout, this, &CloudConnection::reconnectionTimeout);
 
+    m_pingTimer = new QTimer(this);
+    m_pingTimer->setSingleShot(false);
+    m_pingTimer->setInterval(30000);
+    connect(m_pingTimer, &QTimer::timeout, this, &CloudConnection::onPingTimeout);
+
     m_connection = new QWebSocket("guhd", QWebSocketProtocol::Version13, this);
     connect(m_connection, SIGNAL(connected()), this, SLOT(onConnected()));
     connect(m_connection, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
     connect(m_connection, SIGNAL(textMessageReceived(QString)), this, SLOT(onTextMessageReceived(QString)));
     connect(m_connection, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onError(QAbstractSocket::SocketError)));
+    connect(m_connection, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(onStateChanged(QAbstractSocket::SocketState)));
+    connect(m_connection, SIGNAL(pong(quint64,QByteArray)), this, SLOT(onPong(quint64,QByteArray)));
 
     m_authenticator = new CloudAuthenticator("6ac82de6a2ba454394f9022b6a733885", "d63eece1b725419f80961a9b1c49f8d4", this);
     m_authenticator->setUrl(m_authenticationServerUrl);
@@ -108,6 +115,7 @@ void CloudConnection::onConnected()
     qCDebug(dcCloud()) << "Connected to cloud proxy server" << m_proxyServerUrl.toString();
     m_error = Cloud::CloudErrorNoError;
     setConnected(true);
+    m_pingTimer->start();
     m_reconnectionTimer->stop();
 }
 
@@ -118,6 +126,7 @@ void CloudConnection::onDisconnected()
 
     m_error = Cloud::CloudErrorProxyServerNotReachable;
     setConnected(false);
+    m_pingTimer->stop();
     m_reconnectionTimer->start(10000);
 }
 
@@ -138,8 +147,30 @@ void CloudConnection::onError(const QAbstractSocket::SocketError &error)
     if (!m_reconnectionTimer->isActive())
         qCWarning(dcCloud()) << "Websocket error:" << error << m_connection->errorString();
 
+    m_connection->close();
     m_error = Cloud::CloudErrorProxyServerNotReachable;
+    m_pingTimer->start();
     m_reconnectionTimer->start(10000);
+}
+
+void CloudConnection::onPingTimeout()
+{
+    if (!connected())
+        return;
+
+    m_connection->ping("Ping");
+}
+
+void CloudConnection::onPong(const quint64 elapsedTime, const QByteArray &payload)
+{
+    Q_UNUSED(elapsedTime);
+    Q_UNUSED(payload);
+    //qCDebug(dcCloud()) << payload << elapsedTime;
+}
+
+void CloudConnection::onStateChanged(const QAbstractSocket::SocketState &state)
+{
+    qCDebug(dcCloud()) << "Socket:" << state;
 }
 
 void CloudConnection::reconnectionTimeout()
@@ -149,7 +180,6 @@ void CloudConnection::reconnectionTimeout()
     } else {
         m_reconnectionTimer->stop();
     }
-
 }
 
 }

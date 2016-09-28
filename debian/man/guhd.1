@@ -7,11 +7,10 @@ guhd \- An open source IoT (Internet of Things) server
 .B guhd
 [\fIOPTION\fR]
 .SH DESCRIPTION
-guh (/[guːh]/) is an open source IoT (Internet of Things) server, 
-which allows to control a lot of different devices from many different 
-manufacturers. With the powerful rule engine you are able to connect any 
-device available in the system and create individual scenes and behaviors 
-for your environment.
+The guh (/[guːh]/) daemon is a plugin based IoT (Internet of Things) server. The
+server works like a translator for devices, things and services and
+allows them to interact. With the powerful rule engine you are able to connect any device available
+in the system and create individual scenes and behaviors for your environment.
 .SH OPTIONS
 .TP
 \fB\-h\fR, \fB\-\-help\fR
@@ -67,16 +66,15 @@ Print the debug messages from the websocket server.
 .TP
 \fBDebug\ categories\ for\ plugins:\fR
 Since guh loads the plugins dynamically, the list of supported
-plugin debug categories depends on your plugin installation. Please use 
+plugin debug categories depends on your plugin installation. Please use
 the \fB-h\fR command to see which categories are available for your system.
 .SH EXAMPLES
 .TP
 To start guhd in the foreground and read the debug messages from the Hardware:
-.IP 
+.IP
 $ guhd -n -d Hardware
 .TP
-To start guhd in the foreground, disable debug messages from the DeviceManager 
-and enable debug messages for JsonRpc and LogEngine:
+To start guhd in the foreground, disable debug messages from the DeviceManager and enable debug messages for JsonRpc and LogEngine:
 .IP
 $ guhd -n -d NoDeviceManager -d JsonRpc -d LogEngine
 .SH FILES

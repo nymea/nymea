@@ -11,8 +11,8 @@ DEFINES += GUH_VERSION_STRING=\\\"$${GUH_VERSION_STRING}\\\" \
 
 QT+= network websockets bluetooth
 
-QMAKE_CXXFLAGS += -Werror -std=c++11 -g
-QMAKE_LFLAGS += -std=c++11
+QMAKE_CXXFLAGS *= -Werror -std=c++11 -g
+QMAKE_LFLAGS *= -std=c++11
 
 top_srcdir=$$PWD
 top_builddir=$$shadowed($$PWD)
@@ -20,6 +20,13 @@ top_builddir=$$shadowed($$PWD)
 # Check if ccache is enabled
 ccache {
     QMAKE_CXX = ccache g++
+}
+
+debian {
+    QMAKE_CPPFLAGS *= $(shell dpkg-buildflags --get CPPFLAGS)
+    QMAKE_CFLAGS   *= $(shell dpkg-buildflags --get CFLAGS)
+    QMAKE_CXXFLAGS *= $(shell dpkg-buildflags --get CXXFLAGS)
+    QMAKE_LFLAGS   *= $(shell dpkg-buildflags --get LDFLAGS)
 }
 
 # Check for Bluetoot LE support (Qt >= 5.4)

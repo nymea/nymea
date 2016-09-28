@@ -1,7 +1,6 @@
 #!/usr/bin/make -f
 # -*- makefile -*-
 
-# Uncomment this to turn on verbose mode.
 export DH_VERBOSE=1
 export QT_QPA_PLATFORM=minimal
 
@@ -11,14 +10,14 @@ else
 	DEB_PARALLEL_JOBS += $(shell getconf _NPROCESSORS_ONLN)
 endif
 
-# enabeling hardening
-export DEB_BUILD_MAINT_OPTIONS = hardening=+all
-export DEB_BUILD_HARDENING=1
 DPKG_EXPORT_BUILDFLAGS = 1
 include /usr/share/dpkg/buildflags.mk
 
 %:
 	dh $@ --buildsystem=qmake --parallel
+
+override_dh_auto_configure:
+	qmake . CONFIG+=debian
 
 override_dh_auto_build:
 	make -j$(DEB_PARALLEL_JOBS)

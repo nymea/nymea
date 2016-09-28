@@ -53,6 +53,7 @@ private:
     CloudAuthenticator *m_authenticator;
 
     QTimer *m_reconnectionTimer;
+    QTimer *m_pingTimer;
 
     QUrl m_authenticationServerUrl;
     QUrl m_proxyServerUrl;
@@ -75,6 +76,9 @@ private slots:
     void onDisconnected();
     void onTextMessageReceived(const QString &message);
     void onError(const QAbstractSocket::SocketError &error);
+    void onStateChanged(const QAbstractSocket::SocketState &state);
+    void onPingTimeout();
+    void onPong(const quint64 elapsedTime, const QByteArray &payload);
 
     void reconnectionTimeout();
 

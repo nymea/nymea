@@ -14,6 +14,11 @@ QT+= network websockets bluetooth
 QMAKE_CXXFLAGS += -Werror -std=c++11 -g
 QMAKE_LFLAGS += -std=c++11
 
+QMAKE_CPPFLAGS *= $(shell dpkg-buildflags --get CPPFLAGS)
+QMAKE_CFLAGS   *= $(shell dpkg-buildflags --get CFLAGS)
+QMAKE_CXXFLAGS *= $(shell dpkg-buildflags --get CXXFLAGS)
+QMAKE_LFLAGS   *= $(shell dpkg-buildflags --get LDFLAGS)
+
 top_srcdir=$$PWD
 top_builddir=$$shadowed($$PWD)
 

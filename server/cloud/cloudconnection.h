@@ -66,6 +66,7 @@ private:
     CloudConnectionError m_error;
 
     QTimer *m_reconnectionTimer;
+    QTimer *m_pingTimer;
 
     QUrl m_proxyUrl;
     QUrl m_keystoneUrl;
@@ -88,7 +89,9 @@ private slots:
     void onConnected();
     void onDisconnected();
     void onError(const QAbstractSocket::SocketError &error);
-    void onTextMessageReceived(const QString &message);
+    void onStateChanged(const QAbstractSocket::SocketState &state);
+    void onPingTimeout();
+    void onPong(const quint64 elapsedTime, const QByteArray &payload);
 
     void reconnectionTimeout();
 

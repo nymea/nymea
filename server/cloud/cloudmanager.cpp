@@ -137,6 +137,10 @@ void CloudManager::onTunnelRemoved(const QUuid &tunnelId)
         QUuid clientId = m_tunnelClients.key(tunnelId);
         m_tunnelClients.remove(clientId);
         emit clientDisconnected(clientId);
+        if (m_tunnelClients.isEmpty()) {
+            qCDebug(dcCloud()) << "Remote connection inactive.";
+            setActive(false);
+        }
     }
 }
 
@@ -181,7 +185,27 @@ void CloudManager::onConnectedChanged()
     // Start authentication if connected
     if (m_cloudConnection->connected()) {
         m_interface->authenticateConnection(m_cloudConnection->authenticator()->token());
-        emit connectedChanged();
+    } else {
+        qCDebug(dcCloud()) << "Disconnected";
+        // Reset information
+        setAuthenticated(false);
+        setActive(false);
+        m_connectionId = QUuid();
+
+        if (m_runningAuthentication) {
+            m_runningAuthentication = false;
+            emit authenticationFinished(m_cloudConnection->error());
+        }
+
+        // Clean up all tunnels
+        foreach (const QUuid &clientId, m_tunnelClients.keys()) {
+            emit clientDisconnected(clientId);
+        }
+        m_tunnelClients.clear();
+
+        // Delete all replies
+        qDeleteAll(m_replies.values());
+        m_replies.clear();
     }
 }
 

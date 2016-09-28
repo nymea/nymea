@@ -30,7 +30,6 @@ Depends: guhd (= ${binary:Version}),
          guh-plugins (= ${binary:Version}),
          ${misc:Depends}
 Suggests: guh-doc
-Recommends: guh-dbg (= ${binary:Version})
 Description: An open source IoT server - meta package
  The guh daemon is a plugin based IoT (Internet of Things) server. The
  server works like a translator for devices, things and services and

@@ -2,184 +2,220 @@ Source: guh
 Section: utils
 Priority: optional
 Maintainer: Simon Stuerz <simon.stuerz@guh.io>
-Build-Depends: debhelper (>= 9.0.0),
-  dpkg-dev (>= 1.16.1~),
-  hardening-wrapper,
-  python,
-  rsync,
-  qtchooser,
-  qt5-qmake,
-  qtbase5-dev,
-  qtbase5-dev-tools,
-  qttools5-dev-tools,
-  qtconnectivity5-dev,
-  libqt5websockets5-dev,
-  libqt5bluetooth5,
-  libqt5sql5-sqlite,
-  libavahi-client-dev,
-  libavahi-common-dev
 Standards-Version: 3.9.7
+Homepage: https://guh.io
+Vcs-Git: https://github.com/guh/guh.git
+Build-Depends: debhelper (>= 9.0.0),
+               dpkg-dev (>= 1.16.1~),
+               hardening-wrapper,
+               python,
+               rsync,
+               qtchooser,
+               qt5-qmake,
+               qtbase5-dev,
+               qtbase5-dev-tools,
+               qttools5-dev-tools,
+               qtconnectivity5-dev,
+               libqt5websockets5-dev,
+               libqt5bluetooth5,
+               libqt5sql5-sqlite,
+               libavahi-client-dev,
+               libavahi-common-dev
+
 
 Package: guh
 Architecture: any
 Section: metapackages
-Depends: ${misc:Depends},
-  guhd (= ${binary:Version}),
-  guh-plugins (= ${binary:Version}),
-Description:An open source IoT server - meta package
-  The guh server is an open source IoT (Internet of Things) server, 
-  which allows to control a lot of different devices from many different 
-  manufacturers. With the powerful rule engine you are able to connect any 
-  device available in the system and create individual scenes and behaviors 
-  for your environment.
+Depends: guhd (= ${binary:Version}),
+         guh-plugins (= ${binary:Version}),
+         ${misc:Depends}
+Suggests: guh-doc
+Recommends: guh-dbg (= ${binary:Version})
+Description: An open source IoT server - meta package
+ The guh daemon is a plugin based IoT (Internet of Things) server. The
+ server works like a translator for devices, things and services and
+ allows them to interact.
+ With the powerful rule engine you are able to connect any device available 
+ in the system and create individual scenes and behaviors for your environment.
+ .
+ This package will install the server and the default plugins.
+
 
 Package: guhd
 Architecture: any
 Section: net
 Depends: libqt5network5,
-  libqt5gui5,
-  libqt5sql5,
-  libqt5xml5,
-  libqt5websockets5,
-  libqt5bluetooth5,
-  logrotate,
-  avahi-daemon,
-  guh-translations,
-  libguh1 (= ${binary:Version}),
-  ${shlibs:Depends},
-  ${misc:Depends}
-Description:An open source IoT server - daemon
-  guh is an open source IoT (Internet of Things) server,
-  which allows to control a lot of different devices from many different
-  manufacturers. With the powerful rule engine you are able to connect any
-  device available in the system and create individual scenes and behaviors
-  for your environment.
+         libqt5gui5,
+         libqt5sql5,
+         libqt5xml5,
+         libqt5websockets5,
+         libqt5bluetooth5,
+         logrotate,
+         avahi-daemon,
+         guh-translations,
+         libguh1 (= ${binary:Version}),
+         ${shlibs:Depends},
+         ${misc:Depends}
+Recommends: guh-webinterface, guh-cli
+Description: An open source IoT server - daemon
+ The guh daemon is a plugin based IoT (Internet of Things) server. The
+ server works like a translator for devices, things and services and
+ allows them to interact.
+ With the powerful rule engine you are able to connect any device available
+ in the system and create individual scenes and behaviors for your environment.
+ .
+ This package will install the daemon.
 
 Package: guh-dbg
 Priority: extra
 Architecture: any
 Section: debug
-Depends: guh (= ${binary:Version}), 
-  ${misc:Depends}
-Description:An open source IoT server - debug symbols
-  guh is an open source IoT (Internet of Things) server,
-  which allows to control a lot of different devices from many different
-  manufacturers. With the powerful rule engine you are able to connect any
-  device available in the system and create individual scenes and behaviors
-  for your environment.
+Depends: guh (= ${binary:Version}),
+         ${misc:Depends}
+Description: An open source IoT server - debug symbols
+ The guh daemon is a plugin based IoT (Internet of Things) server. The
+ server works like a translator for devices, things and services and
+ allows them to interact.
+ With the powerful rule engine you are able to connect any device available
+ in the system and create individual scenes and behaviors for your environment.
+ .
+ This package provides all debug symbols for guh.
+
 
 Package: guh-doc
 Section: doc
 Architecture: all
 Depends: ${misc:Depends}
-Recommends: guh (= ${binary:Version})
-Description:Documentation for the guh package (on-site) - documentation
-  guh is an open source home automation server, which allows to control
-  a lot of different devices from many different manufacturers. With the
-  powerful rule engine you are able to connect any device available in
-  the system and create individual scenes and behaviors for your home.
+Recommends: guh
+Description: Documentation for the guh package (on-site) - documentation
+ The guh daemon is a plugin based IoT (Internet of Things) server. The
+ server works like a translator for devices, things and services and
+ allows them to interact.
+ With the powerful rule engine you are able to connect any device available
+ in the system and create individual scenes and behaviors for your environment.
+ .
+ This package contains documentation for developing guh.
+
 
 Package: guh-translations
 Section: misc
 Architecture: all
 Depends: ${misc:Depends}
-Recommends: guh (= ${binary:Version})
+Recommends: guh
 Description: Translation files for guhd and plugins - translations
-  guh is an open source home automation server, which allows to control
-  a lot of different devices from many different manufacturers. With the
-  powerful rule engine you are able to connect any device available in
-  the system and create individual scenes and behaviors for your home.
+ The guh daemon is a plugin based IoT (Internet of Things) server. The
+ server works like a translator for devices, things and services and
+ allows them to interact.
+ With the powerful rule engine you are able to connect any device available
+ in the system and create individual scenes and behaviors for your environment.
+ .
+ This package provides the translation files for guhd and for the plugins.
+
 
 Package: guh-tests
 Section: misc
 Architecture: any
 Depends: guh (= ${binary:Version}),
-  ${shlibs:Depends},
-  ${misc:Depends}
+         ${shlibs:Depends},
+         ${misc:Depends}
 Description:Tests and mock plugin for the guh daemon - tests
-  guh is an open source IoT (Internet of Things) server,
-  which allows to control a lot of different devices from many different
-  manufacturers. With the powerful rule engine you are able to connect any
-  device available in the system and create individual scenes and behaviors
-  for your environment.
+ The guh daemon is a plugin based IoT (Internet of Things) server. The
+ server works like a translator for devices, things and services and
+ allows them to interact.
+ With the powerful rule engine you are able to connect any device available
+ in the system and create individual scenes and behaviors for your environment.
+ .
+ This package will install the mock-plugin and the corresponding tests.
+
 
 Package: libguh1
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends},
-  ${misc:Depends},
-  libqt5bluetooth5,
-  libavahi-client3,
-  libavahi-common3
+         ${misc:Depends},
+         libqt5bluetooth5,
+         libavahi-client3,
+         libavahi-common3
 Description: An open source IoT server - core library
-  guh is an open source IoT (Internet of Things) server,
-  which allows to control a lot of different devices from many different
-  manufacturers. With the powerful rule engine you are able to connect any
-  device available in the system and create individual scenes and behaviors
-  for your environment.
+ The guh daemon is a plugin based IoT (Internet of Things) server. The
+ server works like a translator for devices, things and services and
+ allows them to interact.
+ With the powerful rule engine you are able to connect any device available
+ in the system and create individual scenes and behaviors for your environment.
+ .
+ This package will install shared libraries for guh.
+
 
 Package: libguh1-dev
 Section: libdevel
 Architecture: any
 Depends: libguh1 (= ${binary:Version}),
-  ${shlibs:Depends},
-  ${misc:Depends},
-  python,
-  rsync,
-  qtconnectivity5-dev,
-  qttools5-dev-tools,
-  libqt5websockets5-dev,
-  libavahi-client-dev,
-  libavahi-common-dev
-Description:An open source IoT server - development files
-  guh is an open source IoT (Internet of Things) server,
-  which allows to control a lot of different devices from many different
-  manufacturers. With the powerful rule engine you are able to connect any
-  device available in the system and create individual scenes and behaviors
-  for your environment.
+         ${shlibs:Depends},
+         ${misc:Depends},
+         python,
+         rsync,
+         qtconnectivity5-dev,
+         qttools5-dev-tools,
+         libqt5websockets5-dev,
+         libavahi-client-dev,
+         libavahi-common-dev
+Description: An open source IoT server - development files
+ The guh daemon is a plugin based IoT (Internet of Things) server. The
+ server works like a translator for devices, things and services and
+ allows them to interact.
+ With the powerful rule engine you are able to connect any device available
+ in the system and create individual scenes and behaviors for your environment.
+ .
+ This package will install the development files and compilers for guh.
+
 
 Package: guh-plugins
 Section: libs
 Architecture: any
 Depends: libguh1 (= ${binary:Version}),
-  guhd (= ${binary:Version}),
-  ${shlibs:Depends},
-  ${misc:Depends}
-Recommends:
-  nmap
+         guhd (= ${binary:Version}),
+         ${shlibs:Depends},
+         ${misc:Depends}
+Recommends: nmap
 Description:Plugins for guh IoT server
-  guh is an open source IoT (Internet of Things) server,
-  which allows to control a lot of different devices from many different
-  manufacturers. With the powerful rule engine you are able to connect any
-  device available in the system and create individual scenes and behaviors
-  for your environment. This package contains the main plugins.
+ The guh daemon is a plugin based IoT (Internet of Things) server. The
+ server works like a translator for devices, things and services and
+ allows them to interact.
+ With the powerful rule engine you are able to connect any device available
+ in the system and create individual scenes and behaviors for your environment.
+ .
+ This package will install the default plugins for guh.
+
 
 Package: guh-plugins-merkur
 Section: libs
 Architecture: any
 Depends: libguh1 (= ${binary:Version}),
-  guhd (= ${binary:Version}),
-  ${shlibs:Depends},
-  ${misc:Depends}
+         guhd (= ${binary:Version}),
+         ${shlibs:Depends},
+         ${misc:Depends}
 Description: Plugins for guh IoT server - 6LoWPAN Merkur boards
-  guh is an open source IoT (Internet of Things) server,
-  which allows to control a lot of different devices from many different
-  manufacturers. With the powerful rule engine you are able to connect any
-  device available in the system and create individual scenes and behaviors
-  for your environment. This package contains plugins for the 6LoWPAN Merkur
-  board.
+ The guh daemon is a plugin based IoT (Internet of Things) server. The
+ server works like a translator for devices, things and services and
+ allows them to interact.
+ With the powerful rule engine you are able to connect any device available
+ in the system and create individual scenes and behaviors for your environment.
+ .
+ This package will install the 6LoWPAN Merkur board plugins for guh.
+
 
 Package: guh-plugins-maker
 Section: libs
 Architecture: any
 Depends: libguh1 (= ${binary:Version}),
-  guhd (= ${binary:Version}),
-  ${shlibs:Depends},
-  ${misc:Depends}
+         guhd (= ${binary:Version}),
+         ${shlibs:Depends},
+         ${misc:Depends}
 Description: Plugins for guh IoT server - for maker, tinker and hackers
-  guh is an open source IoT (Internet of Things) server,
-  which allows to control a lot of different devices from many different
-  manufacturers. With the powerful rule engine you are able to connect any
-  device available in the system and create individual scenes and behaviors
-  for your environment. This package contains plugins for the 6LoWPAN Merkur
-  board.
+ The guh daemon is a plugin based IoT (Internet of Things) server. The
+ server works like a translator for devices, things and services and
+ allows them to interact.
+ With the powerful rule engine you are able to connect any device available
+ in the system and create individual scenes and behaviors for your environment.
+ .
+ This package will install guh plugins for maker, tinker and hackers.

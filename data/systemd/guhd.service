@@ -1,7 +1,7 @@
 [Unit]
 Description=guhd - IoT server
 Documentation=https://github.com/guh/guh/wiki
-After=network.target syslog.target
+After=network.target
 Wants=network-online.target
 
 [Service]

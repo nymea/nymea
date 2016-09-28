@@ -1,7 +1,7 @@
 Source: guh
 Section: utils
 Priority: optional
-Maintainer: Simon Stuerz <simon.stuerz@guh.guru>
+Maintainer: Simon Stuerz <simon.stuerz@guh.io>
 Build-Depends: debhelper (>= 9.0.0),
   dpkg-dev (>= 1.16.1~),
   hardening-wrapper,
@@ -24,7 +24,7 @@ Section: metapackages
 Depends: ${misc:Depends},
   guhd (= ${binary:Version}),
   guh-plugins (= ${binary:Version}),
-Description: An open source IoT server - meta package
+Description:An open source IoT server - meta package
   guh is an open source IoT (Internet of Things) server, 
   which allows to control a lot of different devices from many different 
   manufacturers. With the powerful rule engine you are able to connect any 
@@ -46,7 +46,7 @@ Depends: libqt5network5,
   libguh1 (= ${binary:Version}),
   ${shlibs:Depends},
   ${misc:Depends}
-Description: An open source IoT server - daemon
+Description:An open source IoT server - daemon
   guh is an open source IoT (Internet of Things) server,
   which allows to control a lot of different devices from many different
   manufacturers. With the powerful rule engine you are able to connect any
@@ -59,7 +59,7 @@ Architecture: any
 Section: debug
 Depends: guh (= ${binary:Version}), 
   ${misc:Depends}
-Description: An open source IoT server - debug symbols
+Description:An open source IoT server - debug symbols
   guh is an open source IoT (Internet of Things) server,
   which allows to control a lot of different devices from many different
   manufacturers. With the powerful rule engine you are able to connect any
@@ -71,7 +71,7 @@ Section: doc
 Architecture: all
 Depends: ${misc:Depends}
 Recommends: guh (= ${binary:Version})
-Description: Documentation for the guh package (on-site) - documentation
+Description:Documentation for the guh package (on-site) - documentation
   guh is an open source home automation server, which allows to control
   a lot of different devices from many different manufacturers. With the
   powerful rule engine you are able to connect any device available in
@@ -94,7 +94,7 @@ Architecture: any
 Depends: guh (= ${binary:Version}),
   ${shlibs:Depends},
   ${misc:Depends}
-Description: Tests and mock plugin for the guh daemon - tests
+Description:Tests and mock plugin for the guh daemon - tests
   guh is an open source IoT (Internet of Things) server,
   which allows to control a lot of different devices from many different
   manufacturers. With the powerful rule engine you are able to connect any
@@ -129,7 +129,7 @@ Depends: libguh1 (= ${binary:Version}),
   libqt5websockets5-dev,
   libavahi-client-dev,
   libavahi-common-dev
-Description: An open source IoT server - development files
+Description:An open source IoT server - development files
   guh is an open source IoT (Internet of Things) server,
   which allows to control a lot of different devices from many different
   manufacturers. With the powerful rule engine you are able to connect any
@@ -145,7 +145,7 @@ Depends: libguh1 (= ${binary:Version}),
   ${misc:Depends}
 Recommends:
   nmap
-Description: Plugins for guh IoT server
+Description:Plugins for guh IoT server
   guh is an open source IoT (Internet of Things) server,
   which allows to control a lot of different devices from many different
   manufacturers. With the powerful rule engine you are able to connect any

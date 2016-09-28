@@ -14,10 +14,7 @@ DPKG_EXPORT_BUILDFLAGS = 1
 include /usr/share/dpkg/buildflags.mk
 
 %:
-	dh $@ --buildsystem=qmake --parallel
-
-override_dh_auto_configure:
-	qmake . CONFIG+=debian
+	dh $@ --buildsystem=qmake --parallel CONFIG+=debian
 
 override_dh_auto_build:
 	make -j$(DEB_PARALLEL_JOBS)

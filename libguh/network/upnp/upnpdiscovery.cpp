@@ -310,7 +310,7 @@ void UpnpDiscovery::replyFinished(QNetworkReply *reply)
         break;
     }
     default:
-        qCWarning(dcHardware) << "HTTP request error " << status;
+        qCWarning(dcHardware) << "HTTP request error" << reply->request().url().toString() << status;
         m_informationRequestList.remove(reply);
     }
 

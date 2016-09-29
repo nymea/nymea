@@ -55,7 +55,7 @@ DevicePluginPhilipsHue::DevicePluginPhilipsHue()
 {
     m_timer = new QTimer(this);
     m_timer->setSingleShot(false);
-    m_timer->setInterval(1500);
+    m_timer->setInterval(2000);
 
     connect(m_timer, SIGNAL(timeout()), this, SLOT(onTimeout()));
 }
@@ -131,6 +131,8 @@ DeviceManager::DeviceSetupStatus DevicePluginPhilipsHue::setupDevice(Device *dev
         connect(hueLight, &HueLight::stateChanged, this, &DevicePluginPhilipsHue::lightStateChanged);
         m_lights.insert(hueLight, device);
 
+        device->setName(hueLight->name());
+
         refreshLight(device);
         setLightName(device, device->paramValue(nameParamTypeId).toString());
 
@@ -154,6 +156,8 @@ DeviceManager::DeviceSetupStatus DevicePluginPhilipsHue::setupDevice(Device *dev
 
         connect(hueLight, &HueLight::stateChanged, this, &DevicePluginPhilipsHue::lightStateChanged);
 
+        device->setName(hueLight->name());
+
         m_lights.insert(hueLight, device);
         refreshLight(device);
 
@@ -175,6 +179,8 @@ DeviceManager::DeviceSetupStatus DevicePluginPhilipsHue::setupDevice(Device *dev
         hueRemote->setUuid(device->paramValue(uuidParamTypeId).toString());
         hueRemote->setBridgeId(DeviceId(device->paramValue(bridgeParamTypeId).toString()));
         device->setParentId(hueRemote->bridgeId());
+
+        device->setName(hueRemote->name());
 
         connect(hueRemote, &HueRemote::stateChanged, this, &DevicePluginPhilipsHue::remoteStateChanged);
         connect(hueRemote, &HueRemote::buttonPressed, this, &DevicePluginPhilipsHue::onRemoteButtonEvent);
@@ -751,9 +757,9 @@ void DevicePluginPhilipsHue::processBridgeLightDiscoveryResponse(Device *device,
             DeviceDescriptor descriptor(hueWhiteLightDeviceClassId, "Philips Hue White Light", lightMap.value("name").toString());
             ParamList params;
             params.append(Param(nameParamTypeId, lightMap.value("name").toString()));
-            params.append(Param(apiKeyParamTypeId, device->paramValue(apiKeyParamTypeId).toString()));
+            params.append(Param(apiKeyParamTypeId, device->paramValue(bridgeApiParamTypeId).toString()));
             params.append(Param(bridgeParamTypeId, device->id().toString()));
-            params.append(Param(hostParamTypeId, device->paramValue(hostParamTypeId).toString()));
+            params.append(Param(hostParamTypeId, device->paramValue(bridgeHostParamTypeId).toString()));
             params.append(Param(modelIdParamTypeId, model));
             params.append(Param(typeParamTypeId, lightMap.value("type").toString()));
             params.append(Param(uuidParamTypeId, uuid));
@@ -767,9 +773,9 @@ void DevicePluginPhilipsHue::processBridgeLightDiscoveryResponse(Device *device,
             DeviceDescriptor descriptor(hueLightDeviceClassId, "Philips Hue Light", lightMap.value("name").toString());
             ParamList params;
             params.append(Param(nameParamTypeId, lightMap.value("name").toString()));
-            params.append(Param(apiKeyParamTypeId, device->paramValue(apiKeyParamTypeId).toString()));
+            params.append(Param(apiKeyParamTypeId, device->paramValue(bridgeApiParamTypeId).toString()));
             params.append(Param(bridgeParamTypeId, device->id().toString()));
-            params.append(Param(hostParamTypeId, device->paramValue(hostParamTypeId).toString()));
+            params.append(Param(hostParamTypeId, device->paramValue(bridgeHostParamTypeId).toString()));
             params.append(Param(modelIdParamTypeId, model));
             params.append(Param(typeParamTypeId, lightMap.value("type").toString()));
             params.append(Param(uuidParamTypeId, uuid));
@@ -825,9 +831,9 @@ void DevicePluginPhilipsHue::processBridgeSensorDiscoveryResponse(Device *device
             DeviceDescriptor descriptor(hueRemoteDeviceClassId, "Philips Hue Remote", sensorMap.value("name").toString());
             ParamList params;
             params.append(Param(nameParamTypeId, sensorMap.value("name").toString()));
-            params.append(Param(apiKeyParamTypeId, device->paramValue(apiKeyParamTypeId).toString()));
+            params.append(Param(apiKeyParamTypeId, device->paramValue(bridgeApiParamTypeId).toString()));
             params.append(Param(bridgeParamTypeId, device->id().toString()));
-            params.append(Param(hostParamTypeId, device->paramValue(hostParamTypeId).toString()));
+            params.append(Param(hostParamTypeId, device->paramValue(bridgeHostParamTypeId).toString()));
             params.append(Param(modelIdParamTypeId, model));
             params.append(Param(typeParamTypeId, sensorMap.value("type").toString()));
             params.append(Param(uuidParamTypeId, uuid));

@@ -57,6 +57,7 @@
 #include "websocketserver.h"
 #include "cloudhandler.h"
 #include "configurationhandler.h"
+#include "networkmanagerhandler.h"
 
 #include <QJsonDocument>
 #include <QStringList>
@@ -174,6 +175,7 @@ void JsonRPCServer::setup()
     registerHandler(new StateHandler(this));
     registerHandler(new CloudHandler(this));
     registerHandler(new ConfigurationHandler(this));
+    registerHandler(new NetworkManagerHandler(this));
 }
 
 void JsonRPCServer::processData(const QUuid &clientId, const QString &targetNamespace, const QString &method, const QVariantMap &message)

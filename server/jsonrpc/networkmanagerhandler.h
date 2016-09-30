@@ -18,40 +18,31 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef NETWORKSETTINGS_H
-#define NETWORKSETTINGS_H
+#ifndef NETWORKMANAGERHANDLER_H
+#define NETWORKMANAGERHANDLER_H
 
 #include <QObject>
-#include <QDBusObjectPath>
-#include <QDBusConnection>
-#include <QDBusInterface>
-#include <QDBusArgument>
+
+#include "jsonhandler.h"
 
 namespace guhserver {
 
-class NetworkConnection;
-
-class NetworkSettings : public QObject
+class NetworkManagerHandler : public JsonHandler
 {
     Q_OBJECT
 public:
-    explicit NetworkSettings(QObject *parent = 0);
+    explicit NetworkManagerHandler(QObject *parent = 0);
 
-private:
-    QDBusInterface *m_settingsInterface;
-    QHash<QDBusObjectPath, NetworkConnection *> m_connections;
+    QString name() const;
 
-    void loadConnections();
+    Q_INVOKABLE JsonReply *GetWirelessAccessPoints(const QVariantMap &params);
 
 signals:
 
-private slots:
-    void connectionAdded(const QDBusObjectPath &objectPath);
-    void connectionRemoved(const QDBusObjectPath &objectPath);
-    void propertiesChanged(const QVariantMap &properties);
+public slots:
 
 };
 
 }
 
-#endif // NETWORKSETTINGS_H
+#endif // NETWORKMANAGERHANDLER_H

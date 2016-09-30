@@ -33,7 +33,7 @@
 #include "networkdevice.h"
 #include "networksettings.h"
 
-// Note: https://developer.gnome.org/NetworkManager/unstable/spec.html
+// Docs: https://developer.gnome.org/NetworkManager/unstable/spec.html
 
 namespace guhserver {
 
@@ -71,15 +71,19 @@ public:
 
     QList<NetworkDevice *> networkDevices() const;
 
+    WirelessNetworkManager *wirelessNetworkManager() const;
+
     // Properties
     QString version() const;
     NetworkManagerState state() const;
     NetworkManagerConnectivityState connectivityState() const;
 
+    // Networking
     bool networkingEnabled() const;
     bool enableNetworking();
     bool disableNetworking();
 
+    // Wireless Networking
     bool wirelessEnabled() const;
     bool enableWireless();
     bool disableWireless();
@@ -97,6 +101,8 @@ private:
     NetworkManagerConnectivityState m_connectivityState;
     bool m_networkingEnabled;
     bool m_wirelessEnabled;
+
+    void loadDevices();
 
     void setVersion(const QString &version);
     void setNetworkingEnabled(const bool &enabled);

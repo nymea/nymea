@@ -111,6 +111,7 @@ QVariantMap JsonTypes::s_timeDescriptor;
 QVariantMap JsonTypes::s_calendarItem;
 QVariantMap JsonTypes::s_timeEventItem;
 QVariantMap JsonTypes::s_repeatingOption;
+QVariantMap JsonTypes::s_wirelessAccessPoint;
 
 void JsonTypes::init()
 {
@@ -320,6 +321,11 @@ void JsonTypes::init()
     s_repeatingOption.insert("o:weekDays", QVariantList() << basicTypeToString(Int));
     s_repeatingOption.insert("o:monthDays", QVariantList() << basicTypeToString(Int));
 
+    s_wirelessAccessPoint.insert("ssid", basicTypeToString(QVariant::String));
+    s_wirelessAccessPoint.insert("macAddress", basicTypeToString(QVariant::String));
+    s_wirelessAccessPoint.insert("frequency", basicTypeToString(QVariant::Double));
+    s_wirelessAccessPoint.insert("signalStrength", basicTypeToString(QVariant::Int));
+
     s_initialized = true;
 }
 
@@ -391,6 +397,7 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("CalendarItem", calendarItemDescription());
     allTypes.insert("TimeEventItem", timeEventItemDescription());
     allTypes.insert("RepeatingOption", repeatingOptionDescription());
+    allTypes.insert("WirelessAccessPoint", wirelessAccessPointDescription());
 
     return allTypes;
 }
@@ -941,6 +948,18 @@ QVariantMap JsonTypes::packTimeDescriptor(const TimeDescriptor &timeDescriptor)
     }
 
     return timeDescriptorVariant;
+}
+
+/*! Returns a variant map of the given \a wirelessAccessPoint. */
+QVariantMap JsonTypes::packWirelessAccessPoint(WirelessAccessPoint *wirelessAccessPoint)
+{
+    QVariantMap wirelessAccessPointVariant;
+    wirelessAccessPointVariant.insert("ssid", wirelessAccessPoint->ssid());
+    wirelessAccessPointVariant.insert("macAddress", wirelessAccessPoint->macAddress());
+    wirelessAccessPointVariant.insert("frequency", wirelessAccessPoint->frequency());
+    wirelessAccessPointVariant.insert("signalStrength", wirelessAccessPoint->signalStrength());
+
+    return wirelessAccessPointVariant;
 }
 
 /*! Returns a variant list of the supported vendors. */
@@ -1503,6 +1522,10 @@ QPair<bool, QString> JsonTypes::validateProperty(const QVariant &templateValue, 
         QString errorString = QString("Param %1 is not a uint.").arg(value.toString());
         return report(value.canConvert(QVariant::UInt), errorString);
     }
+    if (strippedTemplateValue == JsonTypes::basicTypeToString(QVariant::Double)) {
+        QString errorString = QString("Param %1 is not a double.").arg(value.toString());
+        return report(value.canConvert(QVariant::Double), errorString);
+    }
     if (strippedTemplateValue == JsonTypes::basicTypeToString(QVariant::Time)) {
         QString errorString = QString("Param %1 is not a time (hh:mm).").arg(value.toString());
         return report(value.canConvert(QVariant::Time), errorString);
@@ -1695,6 +1718,12 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                 QPair<bool, QString> result = validateMap(timeEventItemDescription(), variant.toMap());
                 if (!result.first) {
                     qCWarning(dcJsonRpc) << "TimeEventItem not matching";
+                    return result;
+                }
+            } else if (refName == wirelessAccessPointRef()) {
+                QPair<bool, QString> result = validateMap(wirelessAccessPointDescription(), variant.toMap());
+                if (!result.first) {
+                    qCWarning(dcJsonRpc) << "WirelessAccessPoint not matching";
                     return result;
                 }
             } else if (refName == basicTypeRef()) {

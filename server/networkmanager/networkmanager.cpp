@@ -44,21 +44,7 @@ NetworkManager::NetworkManager(QObject *parent) :
     m_wirelessEnabled = m_networkManagerInterface->property("WirelessEnabled").toBool();
 
     qCDebug(dcNetworkManager()) << "Networkmanager version" << m_version;
-
-    // Get network devices
-    QDBusMessage query = m_networkManagerInterface->call("GetDevices");
-    if(query.type() != QDBusMessage::ReplyMessage) {
-        qCWarning(dcNetworkManager()) << query.errorName() << query.errorMessage();
-        return;
-    }
-
-    const QDBusArgument &argument = query.arguments().at(0).value<QDBusArgument>();
-    argument.beginArray();
-    while(!argument.atEnd()) {
-        QDBusObjectPath deviceObjectPath = qdbus_cast<QDBusObjectPath>(argument);
-        onDeviceAdded(deviceObjectPath);
-    }
-    argument.endArray();
+    loadDevices();
 
     // Connect signals
     QDBusConnection::systemBus().connect(serviceString, pathString, serviceString, "StateChanged", this, SLOT(onStateChanged(uint)));
@@ -66,6 +52,7 @@ NetworkManager::NetworkManager(QObject *parent) :
     QDBusConnection::systemBus().connect(serviceString, pathString, serviceString, "DeviceRemoved", this, SLOT(onDeviceRemoved(QDBusObjectPath)));
     QDBusConnection::systemBus().connect(serviceString, pathString, serviceString, "PropertiesChanged", this, SLOT(onPropertiesChanged(QVariantMap)));
 
+    // Create settings
     m_networkSettings = new NetworkSettings(this);
 
 }
@@ -106,6 +93,11 @@ QString NetworkManager::networkManagerConnectivityStateToString(const NetworkMan
 QList<NetworkDevice *> NetworkManager::networkDevices() const
 {
     return m_networkDevices.values();
+}
+
+WirelessNetworkManager *NetworkManager::wirelessNetworkManager() const
+{
+    return m_wirelessNetworkManager;
 }
 
 QString NetworkManager::version() const
@@ -172,6 +164,27 @@ bool NetworkManager::enableWireless()
         return true;
 
     return m_networkManagerInterface->setProperty("WirelessEnabled", true);
+}
+
+void NetworkManager::loadDevices()
+{
+    // Get network devices
+    QDBusMessage query = m_networkManagerInterface->call("GetDevices");
+    if(query.type() != QDBusMessage::ReplyMessage) {
+        qCWarning(dcNetworkManager()) << query.errorName() << query.errorMessage();
+        return;
+    }
+
+    if (query.arguments().isEmpty())
+        return;
+
+    const QDBusArgument &argument = query.arguments().at(0).value<QDBusArgument>();
+    argument.beginArray();
+    while(!argument.atEnd()) {
+        QDBusObjectPath deviceObjectPath = qdbus_cast<QDBusObjectPath>(argument);
+        onDeviceAdded(deviceObjectPath);
+    }
+    argument.endArray();
 }
 
 void NetworkManager::setVersion(const QString &version)

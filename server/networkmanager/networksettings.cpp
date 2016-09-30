@@ -21,28 +21,23 @@
 #include "networksettings.h"
 #include "dbus-interfaces.h"
 #include "loggingcategories.h"
+#include "networkconnection.h"
 
 namespace guhserver {
 
 NetworkSettings::NetworkSettings(QObject *parent) : QObject(parent)
 {
-    QDBusConnection systemBus = QDBusConnection::systemBus();
-    if (!systemBus.isConnected()) {
-        qCWarning(dcNetworkManager()) << "System DBus not connected";
-        return;
-    }
-
     m_settingsInterface = new QDBusInterface(serviceString, settingsPathString, settingsInterfaceString, QDBusConnection::systemBus(), this);
     if(!m_settingsInterface->isValid()) {
         qCWarning(dcNetworkManager()) << "Invalid DBus network settings interface";
         return;
     }
 
+    loadConnections();
+
     QDBusConnection::systemBus().connect(serviceString, settingsPathString, settingsInterfaceString, "NewConnection", this, SLOT(connectionAdded(QDBusObjectPath)));
     QDBusConnection::systemBus().connect(serviceString, settingsPathString, settingsInterfaceString, "ConnectionRemoved", this, SLOT(connectionRemoved(QDBusObjectPath)));
     QDBusConnection::systemBus().connect(serviceString, settingsPathString, settingsInterfaceString, "PropertiesChanged", this, SLOT(propertiesChanged(QVariantMap)));
-
-    loadConnections();
 
 }
 
@@ -54,6 +49,9 @@ void NetworkSettings::loadConnections()
         qCWarning(dcNetworkManager()) << query.errorName() << query.errorMessage();
         return;
     }
+
+    if (query.arguments().isEmpty())
+        return;
 
     const QDBusArgument &argument = query.arguments().at(0).value<QDBusArgument>();
     argument.beginArray();
@@ -67,7 +65,12 @@ void NetworkSettings::loadConnections()
 
 void NetworkSettings::connectionAdded(const QDBusObjectPath &objectPath)
 {
+
+    NetworkConnection *connection = new NetworkConnection(objectPath, this);
+    m_connections.insert(objectPath, connection);
+
     qCDebug(dcNetworkManager()) << "Settings: [+]" << objectPath.path();
+
 }
 
 void NetworkSettings::connectionRemoved(const QDBusObjectPath &objectPath)

@@ -48,6 +48,8 @@
 #include "cloud/cloud.h"
 #include "cloud/cloudconnection.h"
 
+#include "networkmanager/wirelessaccesspoint.h"
+
 #include <QObject>
 
 #include <QVariantMap>
@@ -155,6 +157,7 @@ public:
     DECLARE_OBJECT(calendarItem, "CalendarItem")
     DECLARE_OBJECT(timeEventItem, "TimeEventItem")
     DECLARE_OBJECT(repeatingOption, "RepeatingOption")
+    DECLARE_OBJECT(wirelessAccessPoint, "WirelessAccessPoint")
 
     // pack types
     static QVariantMap packEventType(const EventType &eventType);
@@ -183,6 +186,7 @@ public:
     static QVariantMap packCalendarItem(const CalendarItem &calendarItem);
     static QVariantMap packTimeEventItem(const TimeEventItem &timeEventItem);
     static QVariantMap packTimeDescriptor(const TimeDescriptor &timeDescriptor);
+    static QVariantMap packWirelessAccessPoint(WirelessAccessPoint *wirelessAccessPoint);
 
     // pack resources
     static QVariantList packRules(const QList<Rule> rules);

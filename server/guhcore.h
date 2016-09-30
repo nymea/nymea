@@ -88,6 +88,7 @@ public:
     CloudManager *cloudManager() const;
     ServerManager *serverManager() const;
     BluetoothServer *bluetoothServer() const;
+    NetworkManager *networkManager() const;
 
     static QStringList getAvailableLanguages();
 

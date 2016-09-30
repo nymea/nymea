@@ -377,24 +377,35 @@ WebSocketServer *GuhCore::webSocketServer() const
     return m_webSocketServer;
 }
 
+/*! Returns a pointer to the \l{CloudManager} instance owned by GuhCore. */
 CloudManager *GuhCore::cloudManager() const
 {
     return m_cloudManager;
 }
 
+/*! Returns a pointer to the \l{ServerManager} instance owned by GuhCore. */
 ServerManager *GuhCore::serverManager() const
 {
     return m_serverManager;
 }
 
+/*! Returns the list of available system languages. */
 QStringList GuhCore::getAvailableLanguages()
 {
     // TODO: parse available translation files
     return QStringList() << "en_US" << "de_DE";
 }
+
+/*! Returns a pointer to the \l{BluetoothServer} instance owned by GuhCore. */
 BluetoothServer *GuhCore::bluetoothServer() const
 {
     return m_bluetoothServer;
+}
+
+/*! Returns a pointer to the \l{NetworkManager} instance owned by GuhCore. */
+NetworkManager *GuhCore::networkManager() const
+{
+    return m_networkManager;
 }
 
 #ifdef TESTING_ENABLED

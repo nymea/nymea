@@ -18,40 +18,43 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef NETWORKSETTINGS_H
-#define NETWORKSETTINGS_H
+#include "networkmanagerhandler.h"
+#include "loggingcategories.h"
+#include "guhcore.h"
+#include "networkmanager/networkmanager.h"
 
-#include <QObject>
-#include <QDBusObjectPath>
-#include <QDBusConnection>
-#include <QDBusInterface>
-#include <QDBusArgument>
 
 namespace guhserver {
 
-class NetworkConnection;
-
-class NetworkSettings : public QObject
+NetworkManagerHandler::NetworkManagerHandler(QObject *parent) :
+    JsonHandler(parent)
 {
-    Q_OBJECT
-public:
-    explicit NetworkSettings(QObject *parent = 0);
+    QVariantMap params;
+    QVariantMap returns;
 
-private:
-    QDBusInterface *m_settingsInterface;
-    QHash<QDBusObjectPath, NetworkConnection *> m_connections;
-
-    void loadConnections();
-
-signals:
-
-private slots:
-    void connectionAdded(const QDBusObjectPath &objectPath);
-    void connectionRemoved(const QDBusObjectPath &objectPath);
-    void propertiesChanged(const QVariantMap &properties);
-
-};
-
+    params.clear(); returns.clear();
+    setDescription("GetWirelessAccessPoints", "Get the current list of wireless network access points.");
+    setParams("GetWirelessAccessPoints", params);
+    returns.insert("wirelessAccessPoints", QVariantList() << JsonTypes::wirelessAccessPointRef());
+    setReturns("GetWirelessAccessPoints", returns);
 }
 
-#endif // NETWORKSETTINGS_H
+QString NetworkManagerHandler::name() const
+{
+    return "NetworkManager";
+}
+
+JsonReply *NetworkManagerHandler::GetWirelessAccessPoints(const QVariantMap &params)
+{
+    Q_UNUSED(params);
+
+    QVariantList wirelessAccessPoints;
+    foreach (WirelessAccessPoint *wirelessAccessPoint, GuhCore::instance()->networkManager()->wirelessNetworkManager()->accessPoints())
+        wirelessAccessPoints.append(JsonTypes::packWirelessAccessPoint(wirelessAccessPoint));
+
+    QVariantMap returns;
+    returns.insert("wirelessAccessPoints", wirelessAccessPoints);
+    return createReply(returns);
+}
+
+}

@@ -25,6 +25,7 @@ HEADERS += $$top_srcdir/server/guhcore.h \
     $$top_srcdir/server/jsonrpc/logginghandler.h \
     $$top_srcdir/server/jsonrpc/cloudhandler.h \
     $$top_srcdir/server/jsonrpc/configurationhandler.h \
+    $$top_srcdir/server/jsonrpc/networkmanagerhandler.h \
     $$top_srcdir/server/logging/logging.h \
     $$top_srcdir/server/logging/logengine.h \
     $$top_srcdir/server/logging/logfilter.h \
@@ -84,6 +85,7 @@ SOURCES += $$top_srcdir/server/guhcore.cpp \
     $$top_srcdir/server/jsonrpc/logginghandler.cpp \
     $$top_srcdir/server/jsonrpc/cloudhandler.cpp \
     $$top_srcdir/server/jsonrpc/configurationhandler.cpp \
+    $$top_srcdir/server/jsonrpc/networkmanagerhandler.cpp \
     $$top_srcdir/server/logging/logengine.cpp \
     $$top_srcdir/server/logging/logfilter.cpp \
     $$top_srcdir/server/logging/logentry.cpp \

@@ -161,11 +161,14 @@ void WirelessNetworkManager::readAccessPoints()
         return;
     }
 
-    QDBusMessage query= wirelessInterface.call("GetAccessPoints");
+    QDBusMessage query = wirelessInterface.call("GetAccessPoints");
     if(query.type() != QDBusMessage::ReplyMessage) {
         qCWarning(dcNetworkManager()) << query.errorName() << query.errorMessage();
         return;
     }
+
+    if (query.arguments().isEmpty())
+        return;
 
     const QDBusArgument &argument = query.arguments().at(0).value<QDBusArgument>();
     argument.beginArray();

@@ -35,8 +35,8 @@ test.commands = LD_LIBRARY_PATH=$$top_builddir/libguh:$$top_builddir/tests/libgu
 QMAKE_EXTRA_TARGETS += licensecheck doc test
 
 # Inform about guh build
-message("--------------------------------------")
-message(Qt version: $$[QT_VERSION])
+message(============================================)
+message("Qt version:" $$[QT_VERSION])
 message("Building guh version $${GUH_VERSION_STRING}")
 message("JSON-RPC API version $${JSON_PROTOCOL_VERSION}")
 message("REST API version $${REST_API_VERSION}")

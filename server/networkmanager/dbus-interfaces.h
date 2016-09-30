@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.guru>                 *
+ *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.io>                   *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -18,21 +18,23 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "loggingcategories.h"
+#ifndef DBUSINTERFACES_H
+#define DBUSINTERFACES_H
 
-Q_LOGGING_CATEGORY(dcApplication, "Application")
-Q_LOGGING_CATEGORY(dcDeviceManager, "DeviceManager")
-Q_LOGGING_CATEGORY(dcTimeManager, "TimeManager")
-Q_LOGGING_CATEGORY(dcRuleEngine, "RuleEngine")
-Q_LOGGING_CATEGORY(dcHardware, "Hardware")
-Q_LOGGING_CATEGORY(dcConnection, "Connection")
-Q_LOGGING_CATEGORY(dcLogEngine, "LogEngine")
-Q_LOGGING_CATEGORY(dcTcpServer, "TcpServer")
-Q_LOGGING_CATEGORY(dcWebServer, "WebServer")
-Q_LOGGING_CATEGORY(dcWebSocketServer, "WebSocketServer")
-Q_LOGGING_CATEGORY(dcJsonRpc, "JsonRpc")
-Q_LOGGING_CATEGORY(dcRest, "Rest")
-Q_LOGGING_CATEGORY(dcOAuth2, "OAuth2")
-Q_LOGGING_CATEGORY(dcAvahi, "Avahi")
-Q_LOGGING_CATEGORY(dcCloud, "Cloud")
-Q_LOGGING_CATEGORY(dcNetworkManager, "NetworkManager")
+#include <QString>
+
+namespace guhserver {
+
+static const QString serviceString("org.freedesktop.NetworkManager");
+
+static const QString pathString("/org/freedesktop/NetworkManager");
+static const QString settingsPathString("/org/freedesktop/NetworkManager/Settings");
+
+static const QString deviceInterfaceString("org.freedesktop.NetworkManager.Device");
+static const QString wirelessInterfaceString("org.freedesktop.NetworkManager.Device.Wireless");
+static const QString accessPointInterfaceString("org.freedesktop.NetworkManager.AccessPoint");
+static const QString settingsInterfaceString("org.freedesktop.NetworkManager.Settings");
+
+}
+
+#endif // DBUSINTERFACES_H

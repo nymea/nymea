@@ -56,6 +56,14 @@ HEADERS += $$top_srcdir/server/guhcore.h \
     $$top_srcdir/server/cloud/cloudconnectionhandler.h \
     $$top_srcdir/server/cloud/cloudjsonhandler.h \
     $$top_srcdir/server/cloud/cloudmanager.h \
+    $$top_srcdir/server/cloud/cloud.h \
+    $$top_srcdir/server/networkmanager/dbus-interfaces.h \
+    $$top_srcdir/server/networkmanager/networkmanager.h \
+    $$top_srcdir/server/networkmanager/networkdevice.h \
+    $$top_srcdir/server/networkmanager/wirelessaccesspoint.h \
+    $$top_srcdir/server/networkmanager/wirelessnetworkmanager.h \
+    $$top_srcdir/server/networkmanager/networksettings.h \
+    $$top_srcdir/server/networkmanager/networkconnection.h \
 
 
 SOURCES += $$top_srcdir/server/guhcore.cpp \
@@ -112,3 +120,10 @@ SOURCES += $$top_srcdir/server/guhcore.cpp \
     $$top_srcdir/server/cloud/cloudconnectionhandler.cpp \
     $$top_srcdir/server/cloud/cloudjsonhandler.cpp \
     $$top_srcdir/server/cloud/cloudmanager.cpp \
+    $$top_srcdir/server/networkmanager/networkmanager.cpp \
+    $$top_srcdir/server/networkmanager/networkdevice.cpp \
+    $$top_srcdir/server/networkmanager/wirelessaccesspoint.cpp \
+    $$top_srcdir/server/networkmanager/wirelessnetworkmanager.cpp \
+    $$top_srcdir/server/networkmanager/networksettings.cpp \
+    $$top_srcdir/server/networkmanager/networkconnection.cpp \
+

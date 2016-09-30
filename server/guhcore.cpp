@@ -99,6 +99,7 @@
 #include "loggingcategories.h"
 #include "jsonrpcserver.h"
 #include "ruleengine.h"
+#include "networkmanager/networkmanager.h"
 
 #include "devicemanager.h"
 #include "plugin/device.h"
@@ -450,6 +451,7 @@ GuhCore::GuhCore(QObject *parent) :
     m_webServer = new WebServer(m_configuration->webServerAddress(), m_configuration->webServerPort(), m_configuration->webServerPublicFolder(), this);
     m_serverManager->restServer()->registerWebserver(m_webServer);
 
+    m_networkManager = new NetworkManager(this);
 
     // Connect the configuration changes
     connect(m_configuration, &GuhConfiguration::cloudEnabledChanged, m_cloudManager, &CloudManager::onCloudEnabledChanged);

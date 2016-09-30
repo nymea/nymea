@@ -44,7 +44,7 @@ HEADERS += devicemanager.h \
            network/upnp/upnpdevice.h \
            network/upnp/upnpdevicedescriptor.h \
            network/upnp/upnpdiscoveryrequest.h \
-           network/networkmanager.h \
+           network/networkaccessmanager.h \
            network/oauth2.h \
            network/avahi/qt-watch.h \
            network/avahi/avahiserviceentry.h \
@@ -95,7 +95,7 @@ SOURCES += devicemanager.cpp \
            network/upnp/upnpdevice.cpp \
            network/upnp/upnpdevicedescriptor.cpp \
            network/upnp/upnpdiscoveryrequest.cpp \
-           network/networkmanager.cpp \
+           network/networkaccessmanager.cpp \
            network/oauth2.cpp \
            network/avahi/qt-watch.cpp \
            network/avahi/avahiserviceentry.cpp \

@@ -129,6 +129,7 @@ int main(int argc, char *argv[])
     s_loggingFilters.insert("Coap", false);
     s_loggingFilters.insert("Avahi", false);
     s_loggingFilters.insert("Cloud", true);
+    s_loggingFilters.insert("NetworkManager", true);
 
     QHash<QString, bool> loggingFiltersPlugins;
     foreach (const QJsonObject &pluginMetadata, DeviceManager::pluginsMetadata()) {

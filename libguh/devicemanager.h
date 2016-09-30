@@ -32,7 +32,7 @@
 #include "types/action.h"
 #include "types/vendor.h"
 
-#include "network/networkmanager.h"
+#include "network/networkaccessmanager.h"
 #include "network/upnp/upnpdiscovery.h"
 #include "network/upnp/upnpdevicedescriptor.h"
 #include "network/avahi/qtavahiservicebrowser.h"
@@ -207,7 +207,7 @@ private:
     Radio433* m_radio433;
     QTimer m_pluginTimer;
     QList<DevicePlugin *> m_pluginTimerUsers;
-    NetworkManager *m_networkManager;
+    NetworkAccessManager *m_networkManager;
     UpnpDiscovery* m_upnpDiscovery;
     QtAvahiServiceBrowser *m_avahiBrowser;
 

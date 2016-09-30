@@ -4,7 +4,7 @@
 <context>
     <name>main</name>
     <message>
-        <location filename="../server/main.cpp" line="152"/>
+        <location filename="../server/main.cpp" line="153"/>
         <source>
 guh ( /[guːh]/ ) is an open source IoT (Internet of Things) server, 
 which allows to control a lot of different devices from many different 
@@ -23,12 +23,12 @@ for your environment.
 </translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="164"/>
+        <location filename="../server/main.cpp" line="165"/>
         <source>Run guhd in the foreground, not as daemon.</source>
         <translation>Run guhd in the foreground, not as daemon.</translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="167"/>
+        <location filename="../server/main.cpp" line="168"/>
         <source>Debug categories to enable. Prefix with &quot;No&quot; to disable. Warnings from all categories will be printed unless explicitly muted with &quot;NoWarnings&quot;. 
 
 Categories are:</source>
@@ -37,12 +37,12 @@ Categories are:</source>
 Categories are:</translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="184"/>
+        <location filename="../server/main.cpp" line="185"/>
         <source>Enables all debug categories. This parameter overrides all debug category parameters.</source>
         <translation>Enables all debug categories. This parameter overrides all debug category parameters.</translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="203"/>
+        <location filename="../server/main.cpp" line="204"/>
         <source>No such debug category:</source>
         <translation>No such debug category:</translation>
     </message>

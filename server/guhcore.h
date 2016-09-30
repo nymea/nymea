@@ -53,6 +53,7 @@ namespace guhserver {
 
 class JsonRPCServer;
 class LogEngine;
+class NetworkManager;
 
 class GuhCore : public QObject
 {
@@ -124,6 +125,9 @@ private:
     RuleEngine *m_ruleEngine;
     LogEngine *m_logger;
     TimeManager *m_timeManager;
+
+    NetworkManager *m_networkManager;
+
 #ifdef TESTING_ENABLED
     MockTcpServer *m_tcpServer;
 #else

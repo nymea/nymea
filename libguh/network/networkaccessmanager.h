@@ -18,8 +18,8 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef NETWORKMANAGER_H
-#define NETWORKMANAGER_H
+#ifndef NETWORKACCESSMANAGER_H
+#define NETWORKACCESSMANAGER_H
 
 #include "libguh.h"
 #include "typeutils.h"
@@ -31,11 +31,11 @@
 #include <QDebug>
 #include <QUrl>
 
-class LIBGUH_EXPORT NetworkManager : public QObject
+class LIBGUH_EXPORT NetworkAccessManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit NetworkManager(QObject *parent = 0);
+    explicit NetworkAccessManager(QObject *parent = 0);
 
     QNetworkReply *get(const PluginId &pluginId, const QNetworkRequest &request);
     QNetworkReply *post(const PluginId &pluginId, const QNetworkRequest &request, const QByteArray &data);
@@ -53,4 +53,4 @@ private slots:
 
 };
 
-#endif // NETWORKMANAGER_H
+#endif // NETWORKACCESSMANAGER_H

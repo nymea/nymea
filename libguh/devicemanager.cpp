@@ -210,8 +210,8 @@ DeviceManager::DeviceManager(const QLocale &locale, QObject *parent) :
     m_radio433->enable();
 
     // Network manager
-    m_networkManager = new NetworkManager(this);
-    connect(m_networkManager, &NetworkManager::replyReady, this, &DeviceManager::replyReady);
+    m_networkManager = new NetworkAccessManager(this);
+    connect(m_networkManager, &NetworkAccessManager::replyReady, this, &DeviceManager::replyReady);
 
     // UPnP discovery
     m_upnpDiscovery = new UpnpDiscovery(this);

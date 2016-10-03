@@ -21,7 +21,6 @@
 #include "networksettings.h"
 #include "dbus-interfaces.h"
 #include "loggingcategories.h"
-#include "networkconnection.h"
 
 namespace guhserver {
 
@@ -38,12 +37,24 @@ NetworkSettings::NetworkSettings(QObject *parent) : QObject(parent)
     QDBusConnection::systemBus().connect(serviceString, settingsPathString, settingsInterfaceString, "NewConnection", this, SLOT(connectionAdded(QDBusObjectPath)));
     QDBusConnection::systemBus().connect(serviceString, settingsPathString, settingsInterfaceString, "ConnectionRemoved", this, SLOT(connectionRemoved(QDBusObjectPath)));
     QDBusConnection::systemBus().connect(serviceString, settingsPathString, settingsInterfaceString, "PropertiesChanged", this, SLOT(propertiesChanged(QVariantMap)));
+}
 
+QDBusObjectPath NetworkSettings::addConnection(const ConnectionSettings &settings)
+{
+    QDBusMessage query = m_settingsInterface->call("AddConnection", QVariant::fromValue(settings));
+    if(query.type() != QDBusMessage::ReplyMessage) {
+        qCWarning(dcNetworkManager()) << query.errorName() << query.errorMessage();
+        return QDBusObjectPath();
+    }
+
+    if (query.arguments().isEmpty())
+        return QDBusObjectPath();
+
+    return query.arguments().at(0).value<QDBusObjectPath>();
 }
 
 void NetworkSettings::loadConnections()
 {
-    // Get
     QDBusMessage query = m_settingsInterface->call("ListConnections");
     if(query.type() != QDBusMessage::ReplyMessage) {
         qCWarning(dcNetworkManager()) << query.errorName() << query.errorMessage();
@@ -65,12 +76,10 @@ void NetworkSettings::loadConnections()
 
 void NetworkSettings::connectionAdded(const QDBusObjectPath &objectPath)
 {
-
     NetworkConnection *connection = new NetworkConnection(objectPath, this);
     m_connections.insert(objectPath, connection);
 
-    qCDebug(dcNetworkManager()) << "Settings: [+]" << objectPath.path();
-
+    qCDebug(dcNetworkManager()) << "Settings: [+]" << connection;
 }
 
 void NetworkSettings::connectionRemoved(const QDBusObjectPath &objectPath)

@@ -461,7 +461,11 @@ GuhCore::GuhCore(QObject *parent) :
     m_webServer = new WebServer(m_configuration->webServerAddress(), m_configuration->webServerPort(), m_configuration->webServerPublicFolder(), this);
     m_serverManager->restServer()->registerWebserver(m_webServer);
 
-    m_networkManager = new NetworkManager(this);
+    if (!NetworkManager::available()) {
+        m_networkManager = 0;
+    } else {
+        m_networkManager = new NetworkManager(this);
+    }
 
     // Connect the configuration changes
     connect(m_configuration, &GuhConfiguration::cloudEnabledChanged, m_cloudManager, &CloudManager::onCloudEnabledChanged);

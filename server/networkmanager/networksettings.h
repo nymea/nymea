@@ -27,6 +27,8 @@
 #include <QDBusInterface>
 #include <QDBusArgument>
 
+#include "networkconnection.h"
+
 namespace guhserver {
 
 class NetworkConnection;
@@ -36,6 +38,8 @@ class NetworkSettings : public QObject
     Q_OBJECT
 public:
     explicit NetworkSettings(QObject *parent = 0);
+
+    QDBusObjectPath addConnection(const ConnectionSettings &settings);
 
 private:
     QDBusInterface *m_settingsInterface;

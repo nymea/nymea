@@ -24,12 +24,13 @@
 #include "loggingcategories.h"
 
 #include <QMetaEnum>
+#include <QUuid>
 
 namespace guhserver {
 
-WirelessNetworkManager::WirelessNetworkManager(const QDBusObjectPath &devicePath, QObject *parent) :
+WirelessNetworkManager::WirelessNetworkManager(const QDBusObjectPath &objectPath, QObject *parent) :
     QObject(parent),
-    m_path(devicePath.path()),
+    m_objectPath(objectPath),
     m_connected(false),
     m_managed(false),
     m_state(DeviceStateUnknown),
@@ -41,15 +42,20 @@ WirelessNetworkManager::WirelessNetworkManager(const QDBusObjectPath &devicePath
         return;
     }
 
-    QDBusConnection::systemBus().connect(serviceString, m_path, wirelessInterfaceString, "AccessPointAdded", this, SLOT(accessPointAdded(QDBusObjectPath)));
-    QDBusConnection::systemBus().connect(serviceString, m_path, wirelessInterfaceString, "AccessPointRemoved", this, SLOT(accessPointRemoved(QDBusObjectPath)));
-    QDBusConnection::systemBus().connect(serviceString, m_path, deviceInterfaceString, "StateChanged", this, SLOT(deviceStateChanged(quint32,quint32,quint32)));
+    QDBusConnection::systemBus().connect(serviceString, m_objectPath.path(), wirelessInterfaceString, "AccessPointAdded", this, SLOT(accessPointAdded(QDBusObjectPath)));
+    QDBusConnection::systemBus().connect(serviceString, m_objectPath.path(), wirelessInterfaceString, "AccessPointRemoved", this, SLOT(accessPointRemoved(QDBusObjectPath)));
+    QDBusConnection::systemBus().connect(serviceString, m_objectPath.path(), deviceInterfaceString, "StateChanged", this, SLOT(deviceStateChanged(quint32,quint32,quint32)));
 
     readWirelessDeviceProperties();
 
     qCDebug(dcNetworkManager()) << this;
 
     readAccessPoints();
+}
+
+QDBusObjectPath WirelessNetworkManager::objectPath() const
+{
+    return m_objectPath;
 }
 
 QString WirelessNetworkManager::udi() const
@@ -105,7 +111,7 @@ void WirelessNetworkManager::scanWirelessNetworks()
         return;
     }
 
-    QDBusInterface wirelessInterface(serviceString, m_path, wirelessInterfaceString, systemBus);
+    QDBusInterface wirelessInterface(serviceString, m_objectPath.path(), wirelessInterfaceString, systemBus);
     if(!wirelessInterface.isValid()) {
         qCWarning(dcNetworkManager()) << "WirelessNetworkManager: Could not scan wireless networks: Invalid wireless dbus interface";
         return;
@@ -117,6 +123,7 @@ void WirelessNetworkManager::scanWirelessNetworks()
         return;
     }
 }
+
 
 QList<WirelessAccessPoint *> WirelessNetworkManager::accessPoints()
 {
@@ -155,7 +162,7 @@ QString WirelessNetworkManager::deviceStateReasonToString(const WirelessNetworkM
 
 void WirelessNetworkManager::readAccessPoints()
 {
-    QDBusInterface wirelessInterface(serviceString, m_path, wirelessInterfaceString, QDBusConnection::systemBus());
+    QDBusInterface wirelessInterface(serviceString, m_objectPath.path(), wirelessInterfaceString, QDBusConnection::systemBus());
     if(!wirelessInterface.isValid()) {
         qCWarning(dcNetworkManager()) << "WirelessNetworkManager: Could not read access points: Invalid wireless dbus interface";
         return;
@@ -181,13 +188,13 @@ void WirelessNetworkManager::readAccessPoints()
 
 void WirelessNetworkManager::readWirelessDeviceProperties()
 {
-    QDBusInterface wirelessInterface(serviceString, m_path, wirelessInterfaceString, QDBusConnection::systemBus());
+    QDBusInterface wirelessInterface(serviceString, m_objectPath.path(), wirelessInterfaceString, QDBusConnection::systemBus());
     if(!wirelessInterface.isValid()) {
         qCWarning(dcNetworkManager()) << "WirelessNetworkManager: Could not read access points: Invalid wireless dbus interface";
         return;
     }
 
-    QDBusInterface driverInterface(serviceString, m_path, deviceInterfaceString, QDBusConnection::systemBus());
+    QDBusInterface driverInterface(serviceString, m_objectPath.path(), deviceInterfaceString, QDBusConnection::systemBus());
     if(!driverInterface.isValid()) {
         qCWarning(dcNetworkManager()) << "WirelessNetworkManager: Could not read driver information: Invalid driver dbus interface";
         return;

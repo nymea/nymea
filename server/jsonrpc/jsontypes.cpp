@@ -84,6 +84,7 @@ QVariantList JsonTypes::s_loggingEventType;
 QVariantList JsonTypes::s_repeatingMode;
 QVariantList JsonTypes::s_cloudError;
 QVariantList JsonTypes::s_configurationError;
+QVariantList JsonTypes::s_networkManagerState;
 
 QVariantMap JsonTypes::s_paramType;
 QVariantMap JsonTypes::s_param;
@@ -112,10 +113,11 @@ QVariantMap JsonTypes::s_calendarItem;
 QVariantMap JsonTypes::s_timeEventItem;
 QVariantMap JsonTypes::s_repeatingOption;
 QVariantMap JsonTypes::s_wirelessAccessPoint;
+QVariantMap JsonTypes::s_networkDevice;
 
 void JsonTypes::init()
 {
-    // BasicTypes
+    // Enums
     s_basicType = enumToStrings(JsonTypes::staticMetaObject, "BasicType");
     s_stateOperator = enumToStrings(Types::staticMetaObject, "StateOperator");
     s_valueOperator = enumToStrings(Types::staticMetaObject, "ValueOperator");
@@ -135,6 +137,7 @@ void JsonTypes::init()
     s_repeatingMode = enumToStrings(RepeatingOption::staticMetaObject, "RepeatingMode");
     s_cloudError = enumToStrings(Cloud::staticMetaObject, "CloudError");
     s_configurationError = enumToStrings(GuhConfiguration::staticMetaObject, "ConfigurationError");
+    s_networkManagerState = enumToStrings(NetworkManager::staticMetaObject, "NetworkManagerState");
 
     // ParamType
     s_paramType.insert("id", basicTypeToString(Uuid));
@@ -321,10 +324,15 @@ void JsonTypes::init()
     s_repeatingOption.insert("o:weekDays", QVariantList() << basicTypeToString(Int));
     s_repeatingOption.insert("o:monthDays", QVariantList() << basicTypeToString(Int));
 
+    // WirelessAccessPoint
     s_wirelessAccessPoint.insert("ssid", basicTypeToString(QVariant::String));
     s_wirelessAccessPoint.insert("macAddress", basicTypeToString(QVariant::String));
     s_wirelessAccessPoint.insert("frequency", basicTypeToString(QVariant::Double));
     s_wirelessAccessPoint.insert("signalStrength", basicTypeToString(QVariant::Int));
+
+    // NetworkDevice
+    s_networkDevice.insert("name", basicTypeToString(QVariant::String));
+    s_networkDevice.insert("type", basicTypeToString(QVariant::String));
 
     s_initialized = true;
 }
@@ -371,6 +379,7 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("RepeatingMode", repeatingMode());
     allTypes.insert("CloudError", cloudError());
     allTypes.insert("ConfigurationError", configurationError());
+    allTypes.insert("NetworkManagerState", networkManagerState());
 
     allTypes.insert("StateType", stateTypeDescription());
     allTypes.insert("StateDescriptor", stateDescriptorDescription());
@@ -398,6 +407,7 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("TimeEventItem", timeEventItemDescription());
     allTypes.insert("RepeatingOption", repeatingOptionDescription());
     allTypes.insert("WirelessAccessPoint", wirelessAccessPointDescription());
+    allTypes.insert("NetworkDevice", networkDeviceDescription());
 
     return allTypes;
 }
@@ -960,6 +970,14 @@ QVariantMap JsonTypes::packWirelessAccessPoint(WirelessAccessPoint *wirelessAcce
     wirelessAccessPointVariant.insert("signalStrength", wirelessAccessPoint->signalStrength());
 
     return wirelessAccessPointVariant;
+}
+
+QVariantMap JsonTypes::packNetworkDevice(NetworkDevice *networkDevice)
+{
+    QVariantMap networkDeviceVariant;
+    networkDeviceVariant.insert("name", networkDevice->interface());
+    networkDeviceVariant.insert("type", NetworkDevice::deviceTypeToString(networkDevice->deviceType()));
+    return networkDeviceVariant;
 }
 
 /*! Returns a variant list of the supported vendors. */
@@ -1726,6 +1744,12 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                     qCWarning(dcJsonRpc) << "WirelessAccessPoint not matching";
                     return result;
                 }
+            } else if (refName == networkDeviceRef()) {
+                QPair<bool, QString> result = validateMap(networkDeviceDescription(), variant.toMap());
+                if (!result.first) {
+                    qCWarning(dcJsonRpc) << "NetworkDevice not matching";
+                    return result;
+                }
             } else if (refName == basicTypeRef()) {
                 QPair<bool, QString> result = validateBasicType(variant);
                 if (!result.first) {
@@ -1834,6 +1858,12 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                     qCWarning(dcJsonRpc) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(configurationErrorRef());
                     return result;
                 }
+            } else if (refName == networkManagerStateRef()) {
+                QPair<bool, QString> result = validateEnum(s_networkManagerState, variant);
+                if (!result.first) {
+                    qCWarning(dcJsonRpc) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(networkManagerStateRef());
+                    return result;
+                }
             } else {
                 Q_ASSERT_X(false, "JsonTypes", QString("Unhandled ref: %1").arg(refName).toLatin1().data());
                 return report(false, QString("Unhandled ref %1. Server implementation incomplete.").arg(refName));
@@ -1896,6 +1926,7 @@ QPair<bool, QString> JsonTypes::validateBasicType(const QVariant &variant)
     if (variant.canConvert(QVariant::Time) && QVariant(variant).convert(QVariant::Time)) {
         return report(true, "");
     }
+
     return report(false, QString("Error validating basic type %1.").arg(variant.toString()));
 }
 

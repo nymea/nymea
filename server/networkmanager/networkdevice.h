@@ -169,7 +169,6 @@ public:
     static QString deviceStateToString(const DeviceState &deviceState);
     static QString deviceStateReasonToString(const DeviceStateReason &deviceStateReason);
 
-
 private:
     QDBusObjectPath m_objectPath;
 

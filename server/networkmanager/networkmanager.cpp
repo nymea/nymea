@@ -21,13 +21,21 @@
 #include "networkmanager.h"
 #include "loggingcategories.h"
 
+#include "networkconnection.h"
+
 #include <QMetaEnum>
+#include <QUuid>
 
 namespace guhserver {
 
 NetworkManager::NetworkManager(QObject *parent) :
     QObject(parent),
-    m_wirelessNetworkManager(0)
+    m_networkManagerInterface(0),
+    m_wirelessNetworkManager(0),
+    m_state(NetworkManagerStateUnknown),
+    m_connectivityState(NetworkManagerConnectivityStateUnknown),
+    m_networkingEnabled(false),
+    m_wirelessEnabled(false)
 {
     // Create interface
     m_networkManagerInterface = new QDBusInterface(serviceString, pathString, serviceString, QDBusConnection::systemBus(), this);
@@ -113,6 +121,63 @@ NetworkManager::NetworkManagerState NetworkManager::state() const
 NetworkManager::NetworkManagerConnectivityState NetworkManager::connectivityState() const
 {
     return m_connectivityState;
+}
+
+NetworkManager::NetworkManagerError NetworkManager::connectWifi(const QString &ssid, const QString &password)
+{
+    // https://developer.gnome.org/NetworkManager/stable/ref-settings.html
+
+    QVariantMap connectionSettings;
+    connectionSettings.insert("autoconnect", true);
+    connectionSettings.insert("id", ssid +" (guhIO)");
+    connectionSettings.insert("type", "802-11-wireless");
+
+    QVariantMap wirelessSettings;
+    wirelessSettings.insert("ssid", ssid.toUtf8());
+    wirelessSettings.insert("security", "802-11-wireless-security");
+    wirelessSettings.insert("mode", "infrastructure");
+
+    QVariantMap wirelessSecuritySettings;
+    wirelessSecuritySettings.insert("auth-alg", "open");
+    wirelessSecuritySettings.insert("key-mgmt", "wpa-psk");
+    wirelessSecuritySettings.insert("psk", password);
+
+    QVariantMap ipv4Settings;
+    ipv4Settings.insert("method", "auto");
+
+    QVariantMap ipv6Settings;
+    ipv6Settings.insert("method", "auto");
+
+    // Build connection object
+    ConnectionSettings settings;
+    settings.insert("connection", connectionSettings);
+    settings.insert("802-11-wireless", wirelessSettings);
+    settings.insert("802-11-wireless-security", wirelessSecuritySettings);
+    settings.insert("ipv4", ipv4Settings);
+    settings.insert("ipv6", ipv6Settings);
+
+    // Get the access point object path
+    WirelessAccessPoint *accessPoint = m_wirelessNetworkManager->getAccessPoint(ssid);
+    if (!accessPoint) {
+        qCWarning(dcNetworkManager()) << "Could not find access point with ssid:" << ssid;
+        return NetworkManagerErrorAccessPointNotFound;
+    }
+
+    // Add connection
+    QDBusObjectPath connectionObjectPath = m_networkSettings->addConnection(settings);
+    if (connectionObjectPath.path().isEmpty())
+        return NetworkManagerErrorWirelessConnectionFailed;
+
+    // Activate connection
+    QDBusMessage query = m_networkManagerInterface->call("ActivateConnection", QVariant::fromValue(connectionObjectPath),
+                                                         QVariant::fromValue(m_wirelessNetworkManager->objectPath()),
+                                                         QVariant::fromValue(accessPoint->objectPath()));
+    if(query.type() != QDBusMessage::ReplyMessage) {
+        qCWarning(dcNetworkManager()) << query.errorName() << query.errorMessage();
+        return NetworkManagerErrorWirelessConnectionFailed;
+    }
+
+    return NetworkManagerErrorNoError;
 }
 
 bool NetworkManager::networkingEnabled() const

@@ -122,7 +122,9 @@ public:
         DeviceStateReasonParentManagedChanged = 62
     };
 
-    explicit WirelessNetworkManager(const QDBusObjectPath &devicePath, QObject *parent = 0);
+    explicit WirelessNetworkManager(const QDBusObjectPath &objectPath, QObject *parent = 0);
+
+    QDBusObjectPath objectPath() const;
 
     QString udi() const;
     QString macAddress() const;
@@ -145,7 +147,7 @@ public:
     static QString deviceStateReasonToString(const DeviceStateReason &stateReason);
 
 private:
-    QString m_path;
+    QDBusObjectPath m_objectPath;
 
     QString m_udi;
     QString m_macAddress;

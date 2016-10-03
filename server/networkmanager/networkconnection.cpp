@@ -48,17 +48,58 @@ NetworkConnection::NetworkConnection(const QDBusObjectPath &objectPath, QObject 
         return;
 
     const QDBusArgument &argument = query.arguments().at(0).value<QDBusArgument>();
-    ConnectionSettings settingsMap = qdbus_cast<ConnectionSettings>(argument);
-
-    foreach (const QString &category, settingsMap.keys())
-        if (category == "connection")
-            qCDebug(dcNetworkManager()) << "    --> " << category << qUtf8Printable(QJsonDocument::fromVariant(settingsMap.value(category)).toJson(QJsonDocument::Indented));
+    m_connectionSettings = qdbus_cast<ConnectionSettings>(argument);
 
 }
 
 QDBusObjectPath NetworkConnection::objectPath() const
 {
     return m_objectPath;
+}
+
+QString NetworkConnection::id() const
+{
+    return m_connectionSettings.value("connection").value("id").toString();
+}
+
+QString NetworkConnection::name() const
+{
+    return m_connectionSettings.value("connection").value("name").toString();
+}
+
+QString NetworkConnection::type() const
+{
+    return m_connectionSettings.value("connection").value("type").toString();
+}
+
+QUuid NetworkConnection::uuid() const
+{
+    return m_connectionSettings.value("connection").value("uuid").toUuid();
+}
+
+QString NetworkConnection::interfaceName() const
+{
+    return m_connectionSettings.value("connection").value("interface-name").toString();
+}
+
+bool NetworkConnection::autoconnect() const
+{
+    return m_connectionSettings.value("connection").value("autoconnect").toBool();
+}
+
+QDateTime NetworkConnection::timeStamp() const
+{
+    return QDateTime::fromTime_t(m_connectionSettings.value("connection").value("timestamp").toUInt());
+}
+
+QDebug operator<<(QDebug debug, NetworkConnection *networkConnection)
+{
+    debug.nospace() << "NetworkConnection(" << networkConnection->id() << ", ";
+    debug.nospace() << networkConnection->uuid().toString() << ", ";
+    debug.nospace() << networkConnection->interfaceName() << ", ";
+    debug.nospace() << networkConnection->type() << ", ";
+    debug.nospace() << networkConnection->timeStamp().toString("dd.MM.yyyy hh:mm") << ") ";
+    return debug;
 }
 
 }

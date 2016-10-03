@@ -21,8 +21,10 @@
 #ifndef NETWORKCONNECTION_H
 #define NETWORKCONNECTION_H
 
+#include <QUuid>
 #include <QDebug>
 #include <QObject>
+#include <QDateTime>
 #include <QDBusMetaType>
 #include <QDBusObjectPath>
 #include <QDBusConnection>
@@ -41,14 +43,28 @@ public:
 
     QDBusObjectPath objectPath() const;
 
+    ConnectionSettings connectionSettings() const;
+
+    QString id() const;
+    QString name() const;
+    QString type() const;
+    QUuid uuid() const;
+    QString interfaceName() const;
+    bool autoconnect() const;
+    QDateTime timeStamp() const;
+
 private:
     QDBusObjectPath m_objectPath;
+
+    ConnectionSettings m_connectionSettings;
 
 signals:
 
 public slots:
 
 };
+
+QDebug operator<<(QDebug debug, NetworkConnection *networkConnection);
 
 }
 

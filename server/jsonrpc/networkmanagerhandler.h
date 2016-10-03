@@ -35,7 +35,11 @@ public:
 
     QString name() const;
 
+    Q_INVOKABLE JsonReply *GetNetworkStatus(const QVariantMap &params);
     Q_INVOKABLE JsonReply *GetWirelessAccessPoints(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *GetNetworkDevices(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *ScanWifiNetworks(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *ConnectWifiNetwork(const QVariantMap &params);
 
 signals:
 

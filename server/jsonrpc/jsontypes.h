@@ -48,6 +48,8 @@
 #include "cloud/cloud.h"
 #include "cloud/cloudconnection.h"
 
+#include "networkmanager/networkmanager.h"
+#include "networkmanager/networkdevice.h"
 #include "networkmanager/wirelessaccesspoint.h"
 
 #include <QObject>
@@ -130,6 +132,7 @@ public:
     DECLARE_TYPE(repeatingMode, "RepeatingMode", RepeatingOption, RepeatingMode)
     DECLARE_TYPE(cloudError, "CloudError", Cloud, CloudError)
     DECLARE_TYPE(configurationError, "ConfigurationError", GuhConfiguration, ConfigurationError)
+    DECLARE_TYPE(networkManagerState, "NetworkManagerState", NetworkManager, NetworkManagerState)
 
     DECLARE_OBJECT(paramType, "ParamType")
     DECLARE_OBJECT(param, "Param")
@@ -158,6 +161,7 @@ public:
     DECLARE_OBJECT(timeEventItem, "TimeEventItem")
     DECLARE_OBJECT(repeatingOption, "RepeatingOption")
     DECLARE_OBJECT(wirelessAccessPoint, "WirelessAccessPoint")
+    DECLARE_OBJECT(networkDevice, "NetworkDevice")
 
     // pack types
     static QVariantMap packEventType(const EventType &eventType);
@@ -187,6 +191,7 @@ public:
     static QVariantMap packTimeEventItem(const TimeEventItem &timeEventItem);
     static QVariantMap packTimeDescriptor(const TimeDescriptor &timeDescriptor);
     static QVariantMap packWirelessAccessPoint(WirelessAccessPoint *wirelessAccessPoint);
+    static QVariantMap packNetworkDevice(NetworkDevice *networkDevice);
 
     // pack resources
     static QVariantList packRules(const QList<Rule> rules);

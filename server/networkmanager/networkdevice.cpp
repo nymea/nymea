@@ -33,7 +33,6 @@ NetworkDevice::NetworkDevice(const QDBusObjectPath &objectPath, QObject *parent)
     m_deviceState(DeviceStateUnknown),
     m_deviceStateReason(DeviceStateReasonUnknown)
 {
-
     QDBusConnection systemBus = QDBusConnection::systemBus();
     if (!systemBus.isConnected()) {
         qCWarning(dcNetworkManager()) << "NetworkDevice: System DBus not connected";

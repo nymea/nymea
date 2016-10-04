@@ -220,6 +220,14 @@ QVariantMap JsonHandler::statusToReply(GuhConfiguration::ConfigurationError stat
     return returns;
 }
 
+/*! Returns the formated error map for the given \a status. */
+QVariantMap JsonHandler::statusToReply(NetworkManager::NetworkManagerError status) const
+{
+    QVariantMap returns;
+    returns.insert("networkManagerError", JsonTypes::networkManagerErrorToString(status));
+    return returns;
+}
+
 
 /*!
     \class guhserver::JsonReply

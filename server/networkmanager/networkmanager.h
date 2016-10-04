@@ -66,6 +66,7 @@ public:
 
     enum NetworkManagerError {
         NetworkManagerErrorNoError,
+        NetworkManagerErrorUnknownError,
         NetworkManagerErrorWirelessNotAvailable,
         NetworkManagerErrorAccessPointNotFound,
         NetworkManagerErrorWirelessNetworkingDisabled,
@@ -77,14 +78,9 @@ public:
     explicit NetworkManager(QObject *parent = 0);
 
     static bool available();
-    static QString networkManagerStateToString(const NetworkManagerState &state);
-    static QString networkManagerConnectivityStateToString(const NetworkManagerConnectivityState &state);
 
     QList<NetworkDevice *> networkDevices() const;
-
     WirelessNetworkManager *wirelessNetworkManager() const;
-
-    QString stateToTranslatedString() const;
 
     // Properties
     QString version() const;
@@ -93,16 +89,13 @@ public:
 
     NetworkManagerError connectWifi(const QString &ssid, const QString &password);
 
-
     // Networking
     bool networkingEnabled() const;
-    bool enableNetworking();
-    bool disableNetworking();
+    bool enableNetworking(const bool &enabled);
 
     // Wireless Networking
     bool wirelessEnabled() const;
-    bool enableWireless();
-    bool disableWireless();
+    bool enableWireless(const bool &enabled);
 
 private:
     QDBusInterface *m_networkManagerInterface;
@@ -119,6 +112,9 @@ private:
     bool m_wirelessEnabled;
 
     void loadDevices();
+
+    static QString networkManagerStateToString(const NetworkManagerState &state);
+    static QString networkManagerConnectivityStateToString(const NetworkManagerConnectivityState &state);
 
     void setVersion(const QString &version);
     void setNetworkingEnabled(const bool &enabled);
@@ -141,5 +137,9 @@ private slots:
 };
 
 }
+
+using namespace guhserver;
+Q_DECLARE_METATYPE(NetworkManager::NetworkManagerState)
+Q_DECLARE_METATYPE(NetworkManager::NetworkManagerError)
 
 #endif // NETWORKMANAGER_H

@@ -206,8 +206,6 @@ void WirelessNetworkManager::readWirelessDeviceProperties()
     m_driver = driverInterface.property("Driver").toString();
     m_driverVersion = driverInterface.property("DriverVersion").toString();
 
-    qCDebug(dcNetworkManager()) << qdbus_cast<QDBusObjectPath>(driverInterface.property("ActiveConnection")).path();
-
     setManaged(driverInterface.property("Managed").toBool());
     setState(DeviceState(driverInterface.property("State").toUInt()));
 }

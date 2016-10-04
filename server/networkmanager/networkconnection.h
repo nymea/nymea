@@ -41,8 +41,9 @@ class NetworkConnection : public QObject
 public:
     explicit NetworkConnection(const QDBusObjectPath &objectPath, QObject *parent = 0);
 
-    QDBusObjectPath objectPath() const;
+    void deleteConnection();
 
+    QDBusObjectPath objectPath() const;
     ConnectionSettings connectionSettings() const;
 
     QString id() const;
@@ -55,6 +56,7 @@ public:
 
 private:
     QDBusObjectPath m_objectPath;
+    QDBusInterface *m_connectionInterface;
 
     ConnectionSettings m_connectionSettings;
 

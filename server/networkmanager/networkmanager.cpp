@@ -20,7 +20,6 @@
 
 #include "networkmanager.h"
 #include "loggingcategories.h"
-
 #include "networkconnection.h"
 
 #include <QMetaEnum>
@@ -45,13 +44,12 @@ NetworkManager::NetworkManager(QObject *parent) :
     }
 
     // Read properties
-    m_version = m_networkManagerInterface->property("Version").toString();
-    m_state = NetworkManagerState(m_networkManagerInterface->property("State").toUInt());
-    m_connectivityState = NetworkManagerConnectivityState(m_networkManagerInterface->property("Connectivity").toUInt());
-    m_networkingEnabled = m_networkManagerInterface->property("NetworkingEnabled").toBool();
-    m_wirelessEnabled = m_networkManagerInterface->property("WirelessEnabled").toBool();
+    setVersion(m_networkManagerInterface->property("Version").toString());
+    setState((NetworkManagerState)m_networkManagerInterface->property("State").toUInt());
+    setConnectivityState((NetworkManagerConnectivityState)m_networkManagerInterface->property("Connectivity").toUInt());
+    setNetworkingEnabled(m_networkManagerInterface->property("NetworkingEnabled").toBool());
+    setWirelessEnabled(m_networkManagerInterface->property("WirelessEnabled").toBool());
 
-    qCDebug(dcNetworkManager()) << "Networkmanager version" << m_version;
     loadDevices();
 
     // Connect signals
@@ -80,22 +78,6 @@ bool NetworkManager::available()
     }
 
     return true;
-}
-
-QString NetworkManager::networkManagerStateToString(const NetworkManager::NetworkManagerState &state)
-{
-    QMetaObject metaObject = NetworkManager::staticMetaObject;
-    int enumIndex = metaObject.indexOfEnumerator(QString("NetworkManagerState").toLatin1().data());
-    QMetaEnum metaEnum = metaObject.enumerator(enumIndex);
-    return QString(metaEnum.valueToKey(state)).remove("NetworkManagerState");
-}
-
-QString NetworkManager::networkManagerConnectivityStateToString(const NetworkManager::NetworkManagerConnectivityState &state)
-{
-    QMetaObject metaObject = NetworkManager::staticMetaObject;
-    int enumIndex = metaObject.indexOfEnumerator(QString("NetworkManagerConnectivityState").toLatin1().data());
-    QMetaEnum metaEnum = metaObject.enumerator(enumIndex);
-    return QString(metaEnum.valueToKey(state)).remove("NetworkManagerConnectivityState");
 }
 
 QList<NetworkDevice *> NetworkManager::networkDevices() const
@@ -185,25 +167,12 @@ bool NetworkManager::networkingEnabled() const
     return m_networkingEnabled;
 }
 
-bool NetworkManager::enableNetworking()
+bool NetworkManager::enableNetworking(const bool &enabled)
 {
-    if (m_networkingEnabled)
+    if (m_networkingEnabled == enabled)
         return true;
 
-    QDBusMessage query = m_networkManagerInterface->call("Enable", true);
-    if(query.type() != QDBusMessage::ReplyMessage) {
-        qCWarning(dcNetworkManager()) << query.errorName() << query.errorMessage();
-        return false;
-    }
-    return true;
-}
-
-bool NetworkManager::disableNetworking()
-{
-    if (!m_networkingEnabled)
-        return true;
-
-    QDBusMessage query = m_networkManagerInterface->call("Enable", false);
+    QDBusMessage query = m_networkManagerInterface->call("Enable", enabled);
     if(query.type() != QDBusMessage::ReplyMessage) {
         qCWarning(dcNetworkManager()) << query.errorName() << query.errorMessage();
         return false;
@@ -223,9 +192,9 @@ bool NetworkManager::wirelessEnabled() const
     return m_wirelessEnabled;
 }
 
-bool NetworkManager::enableWireless()
+bool NetworkManager::enableWireless(const bool &enabled)
 {
-    if (m_wirelessEnabled)
+    if (m_wirelessEnabled == enabled)
         return true;
 
     return m_networkManagerInterface->setProperty("WirelessEnabled", true);
@@ -250,6 +219,22 @@ void NetworkManager::loadDevices()
         onDeviceAdded(deviceObjectPath);
     }
     argument.endArray();
+}
+
+QString NetworkManager::networkManagerStateToString(const NetworkManager::NetworkManagerState &state)
+{
+    QMetaObject metaObject = NetworkManager::staticMetaObject;
+    int enumIndex = metaObject.indexOfEnumerator(QString("NetworkManagerState").toLatin1().data());
+    QMetaEnum metaEnum = metaObject.enumerator(enumIndex);
+    return QString(metaEnum.valueToKey(state)).remove("NetworkManagerState");
+}
+
+QString NetworkManager::networkManagerConnectivityStateToString(const NetworkManager::NetworkManagerConnectivityState &state)
+{
+    QMetaObject metaObject = NetworkManager::staticMetaObject;
+    int enumIndex = metaObject.indexOfEnumerator(QString("NetworkManagerConnectivityState").toLatin1().data());
+    QMetaEnum metaEnum = metaObject.enumerator(enumIndex);
+    return QString(metaEnum.valueToKey(state)).remove("NetworkManagerConnectivityState");
 }
 
 void NetworkManager::setVersion(const QString &version)
@@ -315,7 +300,7 @@ void NetworkManager::onPropertiesChanged(const QVariantMap &properties)
         setVersion(properties.value("Version").toString());
 
     if (properties.contains("State"))
-        setState(NetworkManagerState(properties.value("State").toUInt()));
+        setState((NetworkManagerState)properties.value("State").toUInt());
 
     if (properties.contains("Connectivity"))
         setConnectivityState(NetworkManagerConnectivityState(properties.value("Connectivity").toUInt()));

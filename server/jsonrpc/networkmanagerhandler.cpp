@@ -18,9 +18,10 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "networkmanagerhandler.h"
-#include "loggingcategories.h"
 #include "guhcore.h"
+#include "jsontypes.h"
+#include "loggingcategories.h"
+#include "networkmanagerhandler.h"
 #include "networkmanager/networkmanager.h"
 
 
@@ -33,29 +34,48 @@ NetworkManagerHandler::NetworkManagerHandler(QObject *parent) :
     QVariantMap returns;
 
     params.clear(); returns.clear();
-    setDescription("GetWirelessAccessPoints", "Get the current list of wireless network access points.");
-    setParams("GetWirelessAccessPoints", params);
-    returns.insert("wirelessAccessPoints", QVariantList() << JsonTypes::wirelessAccessPointRef());
-    returns.insert("o:networkError", QVariantList() << JsonTypes::wirelessAccessPointRef());
-    setReturns("GetWirelessAccessPoints", returns);
-
-    params.clear(); returns.clear();
     setDescription("GetNetworkStatus", "Get the current network manager status.");
     setParams("GetNetworkStatus", params);
-    returns.insert("networkingEnabled", JsonTypes::basicTypeToString(QVariant::Bool));
-    returns.insert("wirelessNetworkingEnabled", JsonTypes::basicTypeToString(QVariant::Bool));
-    returns.insert("state", JsonTypes::networkManagerStateRef());
+    QVariantMap status;
+    status.insert("networkingEnabled", JsonTypes::basicTypeToString(QVariant::Bool));
+    status.insert("wirelessNetworkingEnabled", JsonTypes::basicTypeToString(QVariant::Bool));
+    status.insert("state", JsonTypes::networkManagerStateRef());
+    returns.insert("o:status", status);
+    returns.insert("o:networkManagerError", JsonTypes::networkManagerErrorRef());
     setReturns("GetNetworkStatus", returns);
+
+    params.clear(); returns.clear();
+    setDescription("EnableNetworking", "Enable or disable networking in the NetworkManager.");
+    params.insert("enable", JsonTypes::basicTypeToString(QVariant::Bool));
+    setParams("EnableNetworking", params);
+    returns.insert("networkManagerError", JsonTypes::networkManagerErrorRef());
+    setReturns("EnableNetworking", returns);
+
+    params.clear(); returns.clear();
+    setDescription("EnableWirelessNetworking", "Enable or disable wireless networking in the NetworkManager.");
+    params.insert("enable", JsonTypes::basicTypeToString(QVariant::Bool));
+    setParams("EnableWirelessNetworking", params);
+    returns.insert("networkManagerError", JsonTypes::networkManagerErrorRef());
+    setReturns("EnableWirelessNetworking", returns);
+
+    params.clear(); returns.clear();
+    setDescription("GetWirelessAccessPoints", "Get the current list of wireless network access points.");
+    setParams("GetWirelessAccessPoints", params);
+    returns.insert("o:wirelessAccessPoints", QVariantList() << JsonTypes::wirelessAccessPointRef());
+    returns.insert("o:networkManagerError", JsonTypes::networkManagerErrorRef());
+    setReturns("GetWirelessAccessPoints", returns);
 
     params.clear(); returns.clear();
     setDescription("GetNetworkDevices", "Get the list of current network devices.");
     setParams("GetNetworkDevices", params);
-    returns.insert("networkDevices",  QVariantList() << JsonTypes::networkDeviceRef());
+    returns.insert("o:networkDevices",  QVariantList() << JsonTypes::networkDeviceRef());
+    returns.insert("o:networkManagerError", JsonTypes::networkManagerErrorRef());
     setReturns("GetNetworkDevices", returns);
 
     params.clear(); returns.clear();
     setDescription("ScanWifiNetworks", "Start a wifi scan for searching new networks.");
     setParams("ScanWifiNetworks", params);
+    returns.insert("networkManagerError", JsonTypes::networkManagerErrorRef());
     setReturns("ScanWifiNetworks", returns);
 
     params.clear(); returns.clear();
@@ -63,7 +83,7 @@ NetworkManagerHandler::NetworkManagerHandler(QObject *parent) :
     params.insert("ssid", JsonTypes::basicTypeToString(QVariant::String));
     params.insert("o:password", JsonTypes::basicTypeToString(QVariant::String));
     setParams("ConnectWifiNetwork", params);
-    //returns.insert("networkDevices",  QVariantList() << JsonTypes::networkDeviceRef());
+    returns.insert("networkManagerError", JsonTypes::networkManagerErrorRef());
     setReturns("ConnectWifiNetwork", returns);
 }
 
@@ -76,14 +96,43 @@ JsonReply *NetworkManagerHandler::GetNetworkStatus(const QVariantMap &params)
 {
     Q_UNUSED(params);
 
-    // TODO: check available
-    // TODO: returns (networkManager error)
+    // Check available
+    if (!GuhCore::instance()->networkManager()->available())
+        return createReply(statusToReply(NetworkManager::NetworkManagerErrorNetworkManagerNotAvailable));
 
-    QVariantMap returns;
-    returns.insert("networkingEnabled", GuhCore::instance()->networkManager()->networkingEnabled());
-    returns.insert("wirelessNetworkingEnabled", GuhCore::instance()->networkManager()->wirelessEnabled());
-    returns.insert("state", JsonTypes::networkManagerStateToString(GuhCore::instance()->networkManager()->state()));
+    // Pack network manager status
+    QVariantMap returns; QVariantMap status;
+    status.insert("networkingEnabled", GuhCore::instance()->networkManager()->networkingEnabled());
+    status.insert("wirelessNetworkingEnabled", GuhCore::instance()->networkManager()->wirelessEnabled());
+    status.insert("state", JsonTypes::networkManagerStateToString(GuhCore::instance()->networkManager()->state()));
+    returns.insert("status", status);
     return createReply(returns);
+}
+
+JsonReply *NetworkManagerHandler::EnableNetworking(const QVariantMap &params)
+{
+    if (!GuhCore::instance()->networkManager()->available())
+        return createReply(statusToReply(NetworkManager::NetworkManagerErrorNetworkManagerNotAvailable));
+
+    bool enable = params.value("enable").toBool();
+
+    if (!GuhCore::instance()->networkManager()->enableNetworking(enable))
+        return createReply(statusToReply(NetworkManager::NetworkManagerErrorUnknownError));
+
+    return createReply(statusToReply(NetworkManager::NetworkManagerErrorNoError));
+}
+
+JsonReply *NetworkManagerHandler::EnableWirelessNetworking(const QVariantMap &params)
+{
+    if (!GuhCore::instance()->networkManager()->available())
+        return createReply(statusToReply(NetworkManager::NetworkManagerErrorNetworkManagerNotAvailable));
+
+    bool enable = params.value("enable").toBool();
+
+    if (!GuhCore::instance()->networkManager()->enableWireless(enable))
+        return createReply(statusToReply(NetworkManager::NetworkManagerErrorUnknownError));
+
+    return createReply(statusToReply(NetworkManager::NetworkManagerErrorNoError));
 }
 
 JsonReply *NetworkManagerHandler::GetWirelessAccessPoints(const QVariantMap &params)

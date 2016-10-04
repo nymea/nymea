@@ -95,7 +95,6 @@ class JsonTypes
 {
     Q_GADGET
     Q_ENUMS(BasicType)
-    Q_ENUMS(JsonError)
 
 public:
     enum BasicType {
@@ -132,6 +131,7 @@ public:
     DECLARE_TYPE(repeatingMode, "RepeatingMode", RepeatingOption, RepeatingMode)
     DECLARE_TYPE(cloudError, "CloudError", Cloud, CloudError)
     DECLARE_TYPE(configurationError, "ConfigurationError", GuhConfiguration, ConfigurationError)
+    DECLARE_TYPE(networkManagerError, "NetworkManagerError", NetworkManager, NetworkManagerError)
     DECLARE_TYPE(networkManagerState, "NetworkManagerState", NetworkManager, NetworkManagerState)
 
     DECLARE_OBJECT(paramType, "ParamType")

@@ -77,7 +77,8 @@ public:
 
     explicit NetworkManager(QObject *parent = 0);
 
-    static bool available();
+    bool available();
+    bool wifiAvailable();
 
     QList<NetworkDevice *> networkDevices() const;
     WirelessNetworkManager *wirelessNetworkManager() const;
@@ -85,6 +86,7 @@ public:
     // Properties
     QString version() const;
     NetworkManagerState state() const;
+    QString stateString() const;
     NetworkManagerConnectivityState connectivityState() const;
 
     NetworkManagerError connectWifi(const QString &ssid, const QString &password);
@@ -103,6 +105,9 @@ private:
 
     NetworkSettings *m_networkSettings;
     WirelessNetworkManager *m_wirelessNetworkManager;
+
+    bool m_available;
+    bool m_wifiAvailable;
 
     QString m_version;
 

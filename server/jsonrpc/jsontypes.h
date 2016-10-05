@@ -81,7 +81,7 @@ namespace guhserver {
         return s_##typeName; \
     } \
     static QString typeName##ToString(className::enumName value) { \
-        QMetaObject metaObject = className::staticMetaObject; \
+        const QMetaObject &metaObject = className::staticMetaObject; \
         int enumIndex = metaObject.indexOfEnumerator(enumString); \
         QMetaEnum metaEnum = metaObject.enumerator(enumIndex); \
         return metaEnum.valueToKey(metaEnum.value(value)); \

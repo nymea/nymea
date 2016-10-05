@@ -327,8 +327,8 @@ void GuhCore::executeRuleActions(const QList<RuleAction> ruleActions)
             qCWarning(dcRuleEngine) << "Error executing action:" << status;
         }
 
-//        if (status != DeviceManager::DeviceErrorAsync)
-//            m_logger->logAction(action, status == DeviceManager::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
+        //        if (status != DeviceManager::DeviceErrorAsync)
+        //            m_logger->logAction(action, status == DeviceManager::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
     }
 }
 
@@ -466,11 +466,8 @@ GuhCore::GuhCore(QObject *parent) :
     m_webServer = new WebServer(m_configuration->webServerAddress(), m_configuration->webServerPort(), m_configuration->webServerPublicFolder(), this);
     m_serverManager->restServer()->registerWebserver(m_webServer);
 
-    if (!NetworkManager::available()) {
-        m_networkManager = 0;
-    } else {
-        m_networkManager = new NetworkManager(this);
-    }
+    // Create the NetworkManager
+    m_networkManager = new NetworkManager(this);
 
     // Connect the configuration changes
     connect(m_configuration, &GuhConfiguration::cloudEnabledChanged, m_cloudManager, &CloudManager::onCloudEnabledChanged);

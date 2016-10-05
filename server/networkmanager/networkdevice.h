@@ -36,90 +36,90 @@ class NetworkDevice : public QObject
 {
     Q_OBJECT
     Q_ENUMS(DeviceType)
-    Q_ENUMS(DeviceState)
-    Q_ENUMS(DeviceStateReason)
+    Q_ENUMS(NetworkDeviceState)
+    Q_ENUMS(NetworkDeviceStateReason)
 
 public:
-    enum DeviceState {
-        DeviceStateUnknown = 0,
-        DeviceStateUnmanaged = 10,
-        DeviceStateUnavailable = 20,
-        DeviceStateDisconnected = 30,
-        DeviceStatePrepare = 40,
-        DeviceStateConfig = 50,
-        DeviceStateNeedAuth = 60,
-        DeviceStateIpConfig = 70,
-        DeviceStateIpCheck = 80,
-        DeviceStateSecondaries = 90,
-        DeviceStateActivated = 100,
-        DeviceStateDeactivating = 110,
-        DeviceStateFailed = 120
+    enum NetworkDeviceState {
+        NetworkDeviceStateUnknown = 0,
+        NetworkDeviceStateUnmanaged = 10,
+        NetworkDeviceStateUnavailable = 20,
+        NetworkDeviceStateDisconnected = 30,
+        NetworkDeviceStatePrepare = 40,
+        NetworkDeviceStateConfig = 50,
+        NetworkDeviceStateNeedAuth = 60,
+        NetworkDeviceStateIpConfig = 70,
+        NetworkDeviceStateIpCheck = 80,
+        NetworkDeviceStateSecondaries = 90,
+        NetworkDeviceStateActivated = 100,
+        NetworkDeviceStateDeactivating = 110,
+        NetworkDeviceStateFailed = 120
     };
 
-    enum DeviceStateReason {
-        DeviceStateReasonNone = 0,
-        DeviceStateReasonUnknown = 1,
-        DeviceStateReasonNowManaged = 2,
-        DeviceStateReasonNowUnmanaged = 3,
-        DeviceStateReasonConfigFailed = 4,
-        DeviceStateReasonIpConfigUnavailable = 5,
-        DeviceStateReasonIpConfigExpired = 6,
-        DeviceStateReasonNoSecrets = 7,
-        DeviceStateReasonSupplicantDisconnected = 8,
-        DeviceStateReasonSupplicantConfigFailed = 9,
-        DeviceStateReasonSupplicantFailed = 10,
-        DeviceStateReasonSupplicantTimeout = 11,
-        DeviceStateReasonPppStartFailed = 12,
-        DeviceStateReasonPppDisconnected = 13,
-        DeviceStateReasonPppFailed = 14,
-        DeviceStateReasonDhcpStartFailed = 15,
-        DeviceStateReasonDhcpError = 16,
-        DeviceStateReasonDhcpFailed = 17,
-        DeviceStateReasonSharedStartFailed = 18,
-        DeviceStateReasonSharedFailed = 19,
-        DeviceStateReasonAutoIpStartFailed = 20,
-        DeviceStateReasonAutoIpError = 21,
-        DeviceStateReasonAutoIpFailed = 22,
-        DeviceStateReasonModemBusy = 23,
-        DeviceStateReasonModemNoDialTone = 24,
-        DeviceStateReasonModemNoCarrier = 25,
-        DeviceStateReasonModemDialTimeout = 26,
-        DeviceStateReasonModemDialFailed = 27,
-        DeviceStateReasonModemInitFailed = 28,
-        DeviceStateReasonGsmApnFailed = 29,
-        DeviceStateReasonGsmRegistrationNotSearching = 30,
-        DeviceStateReasonGsmRegistrationDenied = 31,
-        DeviceStateReasonGsmRegistrationTimeout = 32,
-        DeviceStateReasonGsmRegistrationFailed = 33,
-        DeviceStateReasonGsmPinCheckFailed = 34,
-        DeviceStateReasonFirmwareMissing = 35,
-        DeviceStateReasonRemoved = 36,
-        DeviceStateReasonSleeping = 37,
-        DeviceStateReasonConnectionRemoved = 38,
-        DeviceStateReasonUserRequest = 39,
-        DeviceStateReasonCarrier = 40,
-        DeviceStateReasonConnectionAssumed = 41,
-        DeviceStateReasonSupplicantAvailable = 42,
-        DeviceStateReasonModemNotFound = 43,
-        DeviceStateReasonBtFailed = 44,
-        DeviceStateReasonGsmSimNotInserted = 45,
-        DeviceStateReasonGsmSimPinRequired = 46,
-        DeviceStateReasonGsmSimPukRequired = 47,
-        DeviceStateReasonGsmSimWrong = 48,
-        DeviceStateReasonInfinibandMode = 49,
-        DeviceStateReasonDependencyFailed = 50,
-        DeviceStateReasonBR2684Failed = 51,
-        DeviceStateReasonModemManagerUnavailable = 52,
-        DeviceStateReasonSsidNotFound = 53,
-        DeviceStateReasonSecondaryConnectionFailed = 54,
-        DeviceStateReasonDcbFoecFailed = 55,
-        DeviceStateReasonTeamdControlFailed = 56,
-        DeviceStateReasonModemFailed = 57,
-        DeviceStateReasonModemAvailable = 58,
-        DeviceStateReasonSimPinIncorrect = 59,
-        DeviceStateReasonNewActivision = 60,
-        DeviceStateReasonParentChanged = 61,
-        DeviceStateReasonParentManagedChanged = 62
+    enum NetworkDeviceStateReason {
+        NetworkDeviceStateReasonNone = 0,
+        NetworkDeviceStateReasonUnknown = 1,
+        NetworkDeviceStateReasonNowManaged = 2,
+        NetworkDeviceStateReasonNowUnmanaged = 3,
+        NetworkDeviceStateReasonConfigFailed = 4,
+        NetworkDeviceStateReasonIpConfigUnavailable = 5,
+        NetworkDeviceStateReasonIpConfigExpired = 6,
+        NetworkDeviceStateReasonNoSecrets = 7,
+        NetworkDeviceStateReasonSupplicantDisconnected = 8,
+        NetworkDeviceStateReasonSupplicantConfigFailed = 9,
+        NetworkDeviceStateReasonSupplicantFailed = 10,
+        NetworkDeviceStateReasonSupplicantTimeout = 11,
+        NetworkDeviceStateReasonPppStartFailed = 12,
+        NetworkDeviceStateReasonPppDisconnected = 13,
+        NetworkDeviceStateReasonPppFailed = 14,
+        NetworkDeviceStateReasonDhcpStartFailed = 15,
+        NetworkDeviceStateReasonDhcpError = 16,
+        NetworkDeviceStateReasonDhcpFailed = 17,
+        NetworkDeviceStateReasonSharedStartFailed = 18,
+        NetworkDeviceStateReasonSharedFailed = 19,
+        NetworkDeviceStateReasonAutoIpStartFailed = 20,
+        NetworkDeviceStateReasonAutoIpError = 21,
+        NetworkDeviceStateReasonAutoIpFailed = 22,
+        NetworkDeviceStateReasonModemBusy = 23,
+        NetworkDeviceStateReasonModemNoDialTone = 24,
+        NetworkDeviceStateReasonModemNoCarrier = 25,
+        NetworkDeviceStateReasonModemDialTimeout = 26,
+        NetworkDeviceStateReasonModemDialFailed = 27,
+        NetworkDeviceStateReasonModemInitFailed = 28,
+        NetworkDeviceStateReasonGsmApnFailed = 29,
+        NetworkDeviceStateReasonGsmRegistrationNotSearching = 30,
+        NetworkDeviceStateReasonGsmRegistrationDenied = 31,
+        NetworkDeviceStateReasonGsmRegistrationTimeout = 32,
+        NetworkDeviceStateReasonGsmRegistrationFailed = 33,
+        NetworkDeviceStateReasonGsmPinCheckFailed = 34,
+        NetworkDeviceStateReasonFirmwareMissing = 35,
+        NetworkDeviceStateReasonRemoved = 36,
+        NetworkDeviceStateReasonSleeping = 37,
+        NetworkDeviceStateReasonConnectionRemoved = 38,
+        NetworkDeviceStateReasonUserRequest = 39,
+        NetworkDeviceStateReasonCarrier = 40,
+        NetworkDeviceStateReasonConnectionAssumed = 41,
+        NetworkDeviceStateReasonSupplicantAvailable = 42,
+        NetworkDeviceStateReasonModemNotFound = 43,
+        NetworkDeviceStateReasonBtFailed = 44,
+        NetworkDeviceStateReasonGsmSimNotInserted = 45,
+        NetworkDeviceStateReasonGsmSimPinRequired = 46,
+        NetworkDeviceStateReasonGsmSimPukRequired = 47,
+        NetworkDeviceStateReasonGsmSimWrong = 48,
+        NetworkDeviceStateReasonInfinibandMode = 49,
+        NetworkDeviceStateReasonDependencyFailed = 50,
+        NetworkDeviceStateReasonBR2684Failed = 51,
+        NetworkDeviceStateReasonModemManagerUnavailable = 52,
+        NetworkDeviceStateReasonSsidNotFound = 53,
+        NetworkDeviceStateReasonSecondaryConnectionFailed = 54,
+        NetworkDeviceStateReasonDcbFoecFailed = 55,
+        NetworkDeviceStateReasonTeamdControlFailed = 56,
+        NetworkDeviceStateReasonModemFailed = 57,
+        NetworkDeviceStateReasonModemAvailable = 58,
+        NetworkDeviceStateReasonSimPinIncorrect = 59,
+        NetworkDeviceStateReasonNewActivision = 60,
+        NetworkDeviceStateReasonParentChanged = 61,
+        NetworkDeviceStateReasonParentManagedChanged = 62
     };
 
     enum DeviceType {
@@ -157,8 +157,10 @@ public:
     QString physicalPortId() const;
     uint mtu() const;
     uint metered() const;
-    DeviceState deviceState() const;
-    DeviceStateReason deviceStateReason() const;
+
+    NetworkDeviceState deviceState() const;
+    QString deviceStateString() const;
+    NetworkDeviceStateReason deviceStateReason() const;
     DeviceType deviceType() const;
 
     QDBusObjectPath activeConnection() const;
@@ -166,9 +168,8 @@ public:
     QList<QDBusObjectPath> availableConnections() const;
 
     static QString deviceTypeToString(const DeviceType &deviceType);
-    static QString deviceStateToString(const DeviceState &deviceState);
-    static QString deviceStateReasonToString(const DeviceStateReason &deviceStateReason);
-
+    static QString deviceStateToString(const NetworkDeviceState &deviceState);
+    static QString deviceStateReasonToString(const NetworkDeviceStateReason &deviceStateReason);
 private:
     QDBusObjectPath m_objectPath;
 
@@ -182,8 +183,8 @@ private:
     QString m_physicalPortId;
     uint m_mtu;
     uint m_metered;
-    DeviceState m_deviceState;
-    DeviceStateReason m_deviceStateReason;
+    NetworkDeviceState m_deviceState;
+    NetworkDeviceStateReason m_deviceStateReason;
     DeviceType m_deviceType;
 
     QDBusObjectPath m_activeConnection;

@@ -43,10 +43,20 @@ public:
     Q_INVOKABLE JsonReply *ScanWifiNetworks(const QVariantMap &params);
     Q_INVOKABLE JsonReply *ConnectWifiNetwork(const QVariantMap &params);
 
+private:
+    QVariantMap packNetworkManagerStatus();
+
 signals:
+    void NetworkStatusChanged(const QVariantMap &params);
+    void NetworkDeviceChanged(const QVariantMap &params);
+    void NetworkDeviceAdded(const QVariantMap &params);
+    void NetworkDeviceRemoved(const QVariantMap &params);
 
-public slots:
-
+private slots:
+    void onNetworkManagerStatusChanged();
+    void onNetworkDeviceChanged(NetworkDevice *networkDevice);
+    void onNetworkDeviceAdded(NetworkDevice *networkDevice);
+    void onNetworkDeviceRemoved(NetworkDevice *networkDevice);
 };
 
 }

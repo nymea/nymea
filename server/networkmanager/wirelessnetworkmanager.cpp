@@ -33,8 +33,8 @@ WirelessNetworkManager::WirelessNetworkManager(const QDBusObjectPath &objectPath
     m_objectPath(objectPath),
     m_connected(false),
     m_managed(false),
-    m_state(DeviceStateUnknown),
-    m_stateReason(DeviceStateReasonUnknown)
+    m_state(NetworkDeviceStateUnknown),
+    m_stateReason(NetworkDeviceStateReasonUnknown)
 {
     QDBusConnection systemBus = QDBusConnection::systemBus();
     if (!systemBus.isConnected()) {
@@ -93,12 +93,12 @@ bool WirelessNetworkManager::managed() const
     return m_managed;
 }
 
-WirelessNetworkManager::DeviceState WirelessNetworkManager::state() const
+WirelessNetworkManager::NetworkDeviceState WirelessNetworkManager::state() const
 {
     return m_state;
 }
 
-WirelessNetworkManager::DeviceStateReason WirelessNetworkManager::stateReason() const
+WirelessNetworkManager::NetworkDeviceStateReason WirelessNetworkManager::stateReason() const
 {
     return m_stateReason;
 }
@@ -144,20 +144,20 @@ WirelessAccessPoint *WirelessNetworkManager::getAccessPoint(const QDBusObjectPat
     return m_accessPointsTable.value(objectPath);
 }
 
-QString WirelessNetworkManager::deviceStateToString(const WirelessNetworkManager::DeviceState &state)
+QString WirelessNetworkManager::deviceStateToString(const WirelessNetworkManager::NetworkDeviceState &state)
 {
     QMetaObject metaObject = WirelessNetworkManager::staticMetaObject;
-    int enumIndex = metaObject.indexOfEnumerator(QString("DeviceState").toLatin1().data());
+    int enumIndex = metaObject.indexOfEnumerator(QString("NetworkDeviceState").toLatin1().data());
     QMetaEnum metaEnum = metaObject.enumerator(enumIndex);
-    return QString(metaEnum.valueToKey(state)).remove("DeviceState");
+    return QString(metaEnum.valueToKey(state)).remove("NetworkDeviceState");
 }
 
-QString WirelessNetworkManager::deviceStateReasonToString(const WirelessNetworkManager::DeviceStateReason &stateReason)
+QString WirelessNetworkManager::deviceStateReasonToString(const WirelessNetworkManager::NetworkDeviceStateReason &stateReason)
 {
     QMetaObject metaObject = WirelessNetworkManager::staticMetaObject;
-    int enumIndex = metaObject.indexOfEnumerator(QString("DeviceStateReason").toLatin1().data());
+    int enumIndex = metaObject.indexOfEnumerator(QString("NetworkDeviceStateReason").toLatin1().data());
     QMetaEnum metaEnum = metaObject.enumerator(enumIndex);
-    return QString(metaEnum.valueToKey(stateReason)).remove("DeviceStateReason");
+    return QString(metaEnum.valueToKey(stateReason)).remove("NetworkDeviceStateReason");
 }
 
 void WirelessNetworkManager::readAccessPoints()
@@ -207,7 +207,7 @@ void WirelessNetworkManager::readWirelessDeviceProperties()
     m_driverVersion = driverInterface.property("DriverVersion").toString();
 
     setManaged(driverInterface.property("Managed").toBool());
-    setState(DeviceState(driverInterface.property("State").toUInt()));
+    setState(NetworkDeviceState(driverInterface.property("State").toUInt()));
 }
 
 void WirelessNetworkManager::setConnected(const bool &connected)
@@ -218,13 +218,13 @@ void WirelessNetworkManager::setConnected(const bool &connected)
     }
 }
 
-void WirelessNetworkManager::setState(const DeviceState &state)
+void WirelessNetworkManager::setState(const NetworkDeviceState &state)
 {
     m_state = state;
     emit stateChanged(m_state);
 
     switch (state) {
-    case DeviceStateActivated:
+    case NetworkDeviceStateActivated:
         setConnected(true);
         break;
     default:
@@ -233,7 +233,7 @@ void WirelessNetworkManager::setState(const DeviceState &state)
     }
 }
 
-void WirelessNetworkManager::setStateReason(const WirelessNetworkManager::DeviceStateReason &stateReason)
+void WirelessNetworkManager::setStateReason(const WirelessNetworkManager::NetworkDeviceStateReason &stateReason)
 {
     m_stateReason = stateReason;
 }
@@ -246,10 +246,10 @@ void WirelessNetworkManager::setManaged(const bool &managed)
 
 void WirelessNetworkManager::deviceStateChanged(uint newState, uint oldState, uint reason)
 {
-    qCDebug(dcNetworkManager()) << "WirelessManager: state changed" << deviceStateToString(DeviceState(oldState)) << "-->" << deviceStateToString(DeviceState(newState)) << ":" << deviceStateReasonToString(DeviceStateReason(reason));
+    qCDebug(dcNetworkManager()) << "WirelessManager: state changed" << deviceStateToString(NetworkDeviceState(oldState)) << "-->" << deviceStateToString(NetworkDeviceState(newState)) << ":" << deviceStateReasonToString(NetworkDeviceStateReason(reason));
 
-    setState(DeviceState(newState));
-    setStateReason(DeviceStateReason(reason));
+    setState(NetworkDeviceState(newState));
+    setStateReason(NetworkDeviceStateReason(reason));
 }
 
 void WirelessNetworkManager::accessPointAdded(const QDBusObjectPath &objectPath)

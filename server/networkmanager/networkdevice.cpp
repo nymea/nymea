@@ -54,6 +54,7 @@ NetworkDevice::NetworkDevice(const QDBusObjectPath &objectPath, QObject *parent)
     m_physicalPortId = networkDeviceInterface.property("PhysicalPortId").toString();
     m_mtu = networkDeviceInterface.property("Mtu").toUInt();
     m_metered = networkDeviceInterface.property("Metered").toUInt();
+    m_autoconnect = networkDeviceInterface.property("Autoconnect").toBool();
 
     m_deviceState = NetworkDeviceState(networkDeviceInterface.property("State").toUInt());
     m_deviceType = DeviceType(networkDeviceInterface.property("DeviceType").toUInt());
@@ -112,6 +113,11 @@ uint NetworkDevice::mtu() const
 uint NetworkDevice::metered() const
 {
     return m_metered;
+}
+
+bool NetworkDevice::autoconnect() const
+{
+    return m_autoconnect;
 }
 
 NetworkDevice::NetworkDeviceState NetworkDevice::deviceState() const
@@ -175,7 +181,9 @@ QString NetworkDevice::deviceStateReasonToString(const NetworkDevice::NetworkDev
 
 void NetworkDevice::onStateChanged(uint newState, uint oldState, uint reason)
 {
-    qCDebug(dcNetworkManager()) << m_interface << deviceStateToString(NetworkDeviceState(oldState)) << "-->" << deviceStateToString(NetworkDeviceState(newState)) << ":" << deviceStateReasonToString(NetworkDeviceStateReason(reason));
+    Q_UNUSED(oldState);
+
+    qCDebug(dcNetworkManager()) << m_interface << deviceStateToString(NetworkDeviceState(newState)) << ":" << deviceStateReasonToString(NetworkDeviceStateReason(reason));
 
     m_deviceState = NetworkDeviceState(newState);
     emit deviceStateChanged();
@@ -183,7 +191,7 @@ void NetworkDevice::onStateChanged(uint newState, uint oldState, uint reason)
 
 QDebug operator<<(QDebug debug, NetworkDevice *device)
 {
-    debug.nospace() << "NetworkDevice(" << device->interface() << " - " << NetworkDevice::deviceTypeToString(device->deviceType()) << ")";
+    debug.nospace() << "NetworkDevice(" << device->interface() << " - " << NetworkDevice::deviceTypeToString(device->deviceType()) << ", " << device->deviceStateString() << ")";
     return debug;
 }
 

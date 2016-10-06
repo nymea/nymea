@@ -157,9 +157,11 @@ public:
     QString physicalPortId() const;
     uint mtu() const;
     uint metered() const;
+    bool autoconnect() const;
 
     NetworkDeviceState deviceState() const;
     QString deviceStateString() const;
+
     NetworkDeviceStateReason deviceStateReason() const;
     DeviceType deviceType() const;
 
@@ -170,6 +172,7 @@ public:
     static QString deviceTypeToString(const DeviceType &deviceType);
     static QString deviceStateToString(const NetworkDeviceState &deviceState);
     static QString deviceStateReasonToString(const NetworkDeviceStateReason &deviceStateReason);
+
 private:
     QDBusObjectPath m_objectPath;
 
@@ -183,6 +186,7 @@ private:
     QString m_physicalPortId;
     uint m_mtu;
     uint m_metered;
+    bool m_autoconnect;
     NetworkDeviceState m_deviceState;
     NetworkDeviceStateReason m_deviceStateReason;
     DeviceType m_deviceType;

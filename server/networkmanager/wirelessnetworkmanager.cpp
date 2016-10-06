@@ -29,81 +29,7 @@
 namespace guhserver {
 
 WirelessNetworkManager::WirelessNetworkManager(const QDBusObjectPath &objectPath, QObject *parent) :
-    QObject(parent),
-    m_objectPath(objectPath),
-    m_connected(false),
-    m_managed(false),
-    m_state(NetworkDeviceStateUnknown),
-    m_stateReason(NetworkDeviceStateReasonUnknown)
-{
-    QDBusConnection systemBus = QDBusConnection::systemBus();
-    if (!systemBus.isConnected()) {
-        qCWarning(dcNetworkManager()) << "System DBus not connected";
-        return;
-    }
-
-    QDBusConnection::systemBus().connect(serviceString, m_objectPath.path(), wirelessInterfaceString, "AccessPointAdded", this, SLOT(accessPointAdded(QDBusObjectPath)));
-    QDBusConnection::systemBus().connect(serviceString, m_objectPath.path(), wirelessInterfaceString, "AccessPointRemoved", this, SLOT(accessPointRemoved(QDBusObjectPath)));
-    QDBusConnection::systemBus().connect(serviceString, m_objectPath.path(), deviceInterfaceString, "StateChanged", this, SLOT(deviceStateChanged(quint32,quint32,quint32)));
-
-    readWirelessDeviceProperties();
-
-    qCDebug(dcNetworkManager()) << this;
-
-    readAccessPoints();
-}
-
-QDBusObjectPath WirelessNetworkManager::objectPath() const
-{
-    return m_objectPath;
-}
-
-QString WirelessNetworkManager::udi() const
-{
-    return m_udi;
-}
-
-QString WirelessNetworkManager::macAddress() const
-{
-    return m_macAddress;
-}
-
-QString WirelessNetworkManager::interfaceName() const
-{
-    return m_interfaceName;
-}
-
-QString WirelessNetworkManager::driver() const
-{
-    return m_driver;
-}
-
-QString WirelessNetworkManager::driverVersion() const
-{
-    return m_driverVersion;
-}
-
-bool WirelessNetworkManager::connected() const
-{
-    return m_connected;
-}
-
-bool WirelessNetworkManager::managed() const
-{
-    return m_managed;
-}
-
-WirelessNetworkManager::NetworkDeviceState WirelessNetworkManager::state() const
-{
-    return m_state;
-}
-
-WirelessNetworkManager::NetworkDeviceStateReason WirelessNetworkManager::stateReason() const
-{
-    return m_stateReason;
-}
-
-void WirelessNetworkManager::scanWirelessNetworks()
+    NetworkDevice(objectPath, parent)
 {
     QDBusConnection systemBus = QDBusConnection::systemBus();
     if (!systemBus.isConnected()) {
@@ -111,19 +37,42 @@ void WirelessNetworkManager::scanWirelessNetworks()
         return;
     }
 
-    QDBusInterface wirelessInterface(serviceString, m_objectPath.path(), wirelessInterfaceString, systemBus);
-    if(!wirelessInterface.isValid()) {
-        qCWarning(dcNetworkManager()) << "WirelessNetworkManager: Could not scan wireless networks: Invalid wireless dbus interface";
+    m_wirelessInterface = new QDBusInterface(serviceString, this->objectPath().path(), wirelessInterfaceString, systemBus, this);
+    if(!m_wirelessInterface->isValid()) {
+        qCWarning(dcNetworkManager()) << "WirelessNetworkManager: Invalid wireless dbus interface";
         return;
     }
 
-    QDBusMessage query= wirelessInterface.call("RequestScan", QVariantMap());
+    QDBusConnection::systemBus().connect(serviceString, this->objectPath().path(), wirelessInterfaceString, "AccessPointAdded", this, SLOT(accessPointAdded(QDBusObjectPath)));
+    QDBusConnection::systemBus().connect(serviceString, this->objectPath().path(), wirelessInterfaceString, "AccessPointRemoved", this, SLOT(accessPointRemoved(QDBusObjectPath)));
+    QDBusConnection::systemBus().connect(serviceString, this->objectPath().path(), wirelessInterfaceString, "PropertiesChanged", this, SLOT(propertiesChanged(QVariantMap)));
+
+    m_macAddress = m_wirelessInterface->property("HwAddress").toString();
+    m_bitrate = m_wirelessInterface->property("Bitrate").toInt() / 1000;
+
+    qCDebug(dcNetworkManager()) << this;
+
+    readAccessPoints();
+}
+
+QString WirelessNetworkManager::macAddress() const
+{
+    return m_macAddress;
+}
+
+int WirelessNetworkManager::bitrate() const
+{
+    return m_bitrate;
+}
+
+void WirelessNetworkManager::scanWirelessNetworks()
+{
+    QDBusMessage query = m_wirelessInterface->call("RequestScan", QVariantMap());
     if(query.type() != QDBusMessage::ReplyMessage) {
         qCWarning(dcNetworkManager()) << "Scan error:" << query.errorName() << query.errorMessage();
         return;
     }
 }
-
 
 QList<WirelessAccessPoint *> WirelessNetworkManager::accessPoints()
 {
@@ -144,31 +93,9 @@ WirelessAccessPoint *WirelessNetworkManager::getAccessPoint(const QDBusObjectPat
     return m_accessPointsTable.value(objectPath);
 }
 
-QString WirelessNetworkManager::deviceStateToString(const WirelessNetworkManager::NetworkDeviceState &state)
-{
-    QMetaObject metaObject = WirelessNetworkManager::staticMetaObject;
-    int enumIndex = metaObject.indexOfEnumerator(QString("NetworkDeviceState").toLatin1().data());
-    QMetaEnum metaEnum = metaObject.enumerator(enumIndex);
-    return QString(metaEnum.valueToKey(state)).remove("NetworkDeviceState");
-}
-
-QString WirelessNetworkManager::deviceStateReasonToString(const WirelessNetworkManager::NetworkDeviceStateReason &stateReason)
-{
-    QMetaObject metaObject = WirelessNetworkManager::staticMetaObject;
-    int enumIndex = metaObject.indexOfEnumerator(QString("NetworkDeviceStateReason").toLatin1().data());
-    QMetaEnum metaEnum = metaObject.enumerator(enumIndex);
-    return QString(metaEnum.valueToKey(stateReason)).remove("NetworkDeviceStateReason");
-}
-
 void WirelessNetworkManager::readAccessPoints()
 {
-    QDBusInterface wirelessInterface(serviceString, m_objectPath.path(), wirelessInterfaceString, QDBusConnection::systemBus());
-    if(!wirelessInterface.isValid()) {
-        qCWarning(dcNetworkManager()) << "WirelessNetworkManager: Could not read access points: Invalid wireless dbus interface";
-        return;
-    }
-
-    QDBusMessage query = wirelessInterface.call("GetAccessPoints");
+    QDBusMessage query = m_wirelessInterface->call("GetAccessPoints");
     if(query.type() != QDBusMessage::ReplyMessage) {
         qCWarning(dcNetworkManager()) << query.errorName() << query.errorMessage();
         return;
@@ -186,72 +113,6 @@ void WirelessNetworkManager::readAccessPoints()
     argument.endArray();
 }
 
-void WirelessNetworkManager::readWirelessDeviceProperties()
-{
-    QDBusInterface wirelessInterface(serviceString, m_objectPath.path(), wirelessInterfaceString, QDBusConnection::systemBus());
-    if(!wirelessInterface.isValid()) {
-        qCWarning(dcNetworkManager()) << "WirelessNetworkManager: Could not read access points: Invalid wireless dbus interface";
-        return;
-    }
-
-    QDBusInterface driverInterface(serviceString, m_objectPath.path(), deviceInterfaceString, QDBusConnection::systemBus());
-    if(!driverInterface.isValid()) {
-        qCWarning(dcNetworkManager()) << "WirelessNetworkManager: Could not read driver information: Invalid driver dbus interface";
-        return;
-    }
-
-    m_udi = driverInterface.property("Udi").toString();
-    m_macAddress = wirelessInterface.property("HwAddress").toString();
-    m_interfaceName = driverInterface.property("Interface").toString();
-    m_driver = driverInterface.property("Driver").toString();
-    m_driverVersion = driverInterface.property("DriverVersion").toString();
-
-    setManaged(driverInterface.property("Managed").toBool());
-    setState(NetworkDeviceState(driverInterface.property("State").toUInt()));
-}
-
-void WirelessNetworkManager::setConnected(const bool &connected)
-{
-    if (m_connected != connected) {
-        m_connected = connected;
-        emit connectedChanged(m_connected);
-    }
-}
-
-void WirelessNetworkManager::setState(const NetworkDeviceState &state)
-{
-    m_state = state;
-    emit stateChanged(m_state);
-
-    switch (state) {
-    case NetworkDeviceStateActivated:
-        setConnected(true);
-        break;
-    default:
-        setConnected(false);
-        break;
-    }
-}
-
-void WirelessNetworkManager::setStateReason(const WirelessNetworkManager::NetworkDeviceStateReason &stateReason)
-{
-    m_stateReason = stateReason;
-}
-
-void WirelessNetworkManager::setManaged(const bool &managed)
-{
-    m_managed = managed;
-    emit managedChanged(m_managed);
-}
-
-void WirelessNetworkManager::deviceStateChanged(uint newState, uint oldState, uint reason)
-{
-    qCDebug(dcNetworkManager()) << "WirelessManager: state changed" << deviceStateToString(NetworkDeviceState(oldState)) << "-->" << deviceStateToString(NetworkDeviceState(newState)) << ":" << deviceStateReasonToString(NetworkDeviceStateReason(reason));
-
-    setState(NetworkDeviceState(newState));
-    setStateReason(NetworkDeviceStateReason(reason));
-}
-
 void WirelessNetworkManager::accessPointAdded(const QDBusObjectPath &objectPath)
 {
     QDBusInterface accessPointInterface(serviceString, objectPath.path(), accessPointInterfaceString, QDBusConnection::systemBus());
@@ -266,22 +127,20 @@ void WirelessNetworkManager::accessPointAdded(const QDBusObjectPath &objectPath)
     }
 
     WirelessAccessPoint *accessPoint = new WirelessAccessPoint(objectPath, this);
+    //qCDebug(dcNetworkManager()) << "WirelessNetworkManager: [+]" << accessPoint;
 
     // Add access point
-    qCDebug(dcNetworkManager()) << "WirelessNetworkManager: [+]" << accessPoint;
     m_accessPointsTable.insert(objectPath, accessPoint);
 }
 
 void WirelessNetworkManager::accessPointRemoved(const QDBusObjectPath &objectPath)
 {
-    if (!m_accessPointsTable.keys().contains(objectPath)) {
-        qCWarning(dcNetworkManager()) << "WirelessNetworkManager: Unknown access point removed" << objectPath.path();
+    if (!m_accessPointsTable.keys().contains(objectPath))
         return;
-    }
 
     // Remove access point
     WirelessAccessPoint *accessPoint = m_accessPointsTable.take(objectPath);
-    qCDebug(dcNetworkManager()) << "WirelessNetworkManager: [-]" << accessPoint;
+    //qCDebug(dcNetworkManager()) << "WirelessNetworkManager: [-]" << accessPoint;
     accessPoint->deleteLater();
 }
 
@@ -292,11 +151,10 @@ void WirelessNetworkManager::propertiesChanged(const QVariantMap &properties)
 
 QDebug operator<<(QDebug debug, WirelessNetworkManager *manager)
 {
-    debug.nospace() << "WirelessManager(" << manager->interfaceName() << ", ";
+    debug.nospace() << "WirelessDevice(" << manager->interface() << ", ";
     debug.nospace() << manager->macAddress() <<  ", ";
-    debug.nospace() << manager->udi() <<  ", ";
-    debug.nospace() << manager->driver() << ": " << manager->driverVersion() <<  ", ";
-    debug.nospace() << WirelessNetworkManager::deviceStateToString(manager->state()) <<  ") ";
+    debug.nospace() << manager->bitrate() <<  " [Mb/s], ";
+    debug.nospace() << manager->deviceStateString() <<  ") ";
     return debug;
 }
 

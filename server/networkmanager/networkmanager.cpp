@@ -119,7 +119,7 @@ NetworkManager::NetworkManagerError NetworkManager::connectWifi(const QString &s
 
     QVariantMap connectionSettings;
     connectionSettings.insert("autoconnect", true);
-    connectionSettings.insert("id", ssid +" (guhIO)");
+    connectionSettings.insert("id", ssid + " (guhIO)");
     connectionSettings.insert("type", "802-11-wireless");
 
     QVariantMap wirelessSettings;
@@ -247,6 +247,7 @@ QString NetworkManager::networkManagerConnectivityStateToString(const NetworkMan
 
 void NetworkManager::setVersion(const QString &version)
 {
+    qCDebug(dcNetworkManager()) << "Version:" << version;
     m_version = version;
     emit versionChanged();
 }

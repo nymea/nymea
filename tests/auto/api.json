@@ -1,4 +1,4 @@
-46
+47
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -471,6 +471,77 @@
                 ]
             }
         },
+        "NetworkManager.ConnectWifiNetwork": {
+            "description": "Connect to the wifi network with the given ssid and password.",
+            "params": {
+                "o:password": "String",
+                "ssid": "String"
+            },
+            "returns": {
+                "networkManagerError": "$ref:NetworkManagerError"
+            }
+        },
+        "NetworkManager.EnableNetworking": {
+            "description": "Enable or disable networking in the NetworkManager.",
+            "params": {
+                "enable": "Bool"
+            },
+            "returns": {
+                "networkManagerError": "$ref:NetworkManagerError"
+            }
+        },
+        "NetworkManager.EnableWirelessNetworking": {
+            "description": "Enable or disable wireless networking in the NetworkManager.",
+            "params": {
+                "enable": "Bool"
+            },
+            "returns": {
+                "networkManagerError": "$ref:NetworkManagerError"
+            }
+        },
+        "NetworkManager.GetNetworkDevices": {
+            "description": "Get the list of current network devices.",
+            "params": {
+            },
+            "returns": {
+                "networkManagerError": "$ref:NetworkManagerError",
+                "o:networkDevices": [
+                    "$ref:NetworkDevice"
+                ]
+            }
+        },
+        "NetworkManager.GetNetworkStatus": {
+            "description": "Get the current network manager status.",
+            "params": {
+            },
+            "returns": {
+                "networkManagerError": "$ref:NetworkManagerError",
+                "o:status": {
+                    "networkingEnabled": "Bool",
+                    "state": "$ref:NetworkManagerState",
+                    "wirelessNetworkingEnabled": "Bool"
+                }
+            }
+        },
+        "NetworkManager.GetWirelessAccessPoints": {
+            "description": "Get the current list of wireless network access points.",
+            "params": {
+            },
+            "returns": {
+                "networkManagerError": "$ref:NetworkManagerError",
+                "o:wirelessAccessPoints": [
+                    "$ref:WirelessAccessPoint"
+                ]
+            }
+        },
+        "NetworkManager.ScanWifiNetworks": {
+            "description": "Start a wifi scan for searching new networks.",
+            "params": {
+            },
+            "returns": {
+                "networkManagerError": "$ref:NetworkManagerError"
+            }
+        },
         "Rules.AddRule": {
             "description": "Add a rule. You can describe rules by one or many EventDesciptors and a StateEvaluator. Note that only one of either eventDescriptor or eventDescriptorList may be passed at a time. A rule can be created but left disabled, meaning it won't actually be executed until set to enabled. If not given, enabled defaults to true.",
             "params": {
@@ -692,6 +763,34 @@
             "description": "Emitted whenever an entry is appended to the logging system. ",
             "params": {
                 "logEntry": "$ref:LogEntry"
+            }
+        },
+        "NetworkManager.NetworkDeviceAdded": {
+            "description": "Emitted whenever a new NetworkDevice was added.",
+            "params": {
+                "networkDevice": "$ref:NetworkDevice"
+            }
+        },
+        "NetworkManager.NetworkDeviceChanged": {
+            "description": "Emitted whenever a NetworkDevice has changed.",
+            "params": {
+                "networkDevice": "$ref:NetworkDevice"
+            }
+        },
+        "NetworkManager.NetworkDeviceRemoved": {
+            "description": "Emitted whenever a NetworkDevice was removed.",
+            "params": {
+                "networkDevice": "$ref:NetworkDevice"
+            }
+        },
+        "NetworkManager.NetworkStatusChanged": {
+            "description": "Emitted whenever a status of a NetworkManager changes.",
+            "params": {
+                "status": {
+                    "networkingEnabled": "Bool",
+                    "state": "$ref:NetworkManagerState",
+                    "wirelessNetworkingEnabled": "Bool"
+                }
             }
         },
         "Rules.RuleActiveChanged": {
@@ -983,6 +1082,30 @@
             "LoggingSourceStates",
             "LoggingSourceRules"
         ],
+        "NetworkDevice": {
+            "name": "String",
+            "type": "String"
+        },
+        "NetworkManagerError": [
+            "NetworkManagerErrorNoError",
+            "NetworkManagerErrorUnknownError",
+            "NetworkManagerErrorWirelessNotAvailable",
+            "NetworkManagerErrorAccessPointNotFound",
+            "NetworkManagerErrorWirelessNetworkingDisabled",
+            "NetworkManagerErrorWirelessConnectionFailed",
+            "NetworkManagerErrorNetworkingDisabled",
+            "NetworkManagerErrorNetworkManagerNotAvailable"
+        ],
+        "NetworkManagerState": [
+            "NetworkManagerStateUnknown",
+            "NetworkManagerStateAsleep",
+            "NetworkManagerStateDisconnected",
+            "NetworkManagerStateDisconnecting",
+            "NetworkManagerStateConnecting",
+            "NetworkManagerStateConnectedLocal",
+            "NetworkManagerStateConnectedSite",
+            "NetworkManagerStateConnectedGlobal"
+        ],
         "Param": {
             "paramTypeId": "Uuid",
             "value": "$ref:BasicType"
@@ -1214,6 +1337,12 @@
         "Vendor": {
             "id": "Uuid",
             "name": "String"
+        },
+        "WirelessAccessPoint": {
+            "frequency": "Double",
+            "macAddress": "String",
+            "signalStrength": "Int",
+            "ssid": "String"
         }
     }
 }

@@ -86,6 +86,7 @@ QVariantList JsonTypes::s_cloudError;
 QVariantList JsonTypes::s_configurationError;
 QVariantList JsonTypes::s_networkManagerError;
 QVariantList JsonTypes::s_networkManagerState;
+QVariantList JsonTypes::s_networkDeviceState;
 
 QVariantMap JsonTypes::s_paramType;
 QVariantMap JsonTypes::s_param;
@@ -140,6 +141,7 @@ void JsonTypes::init()
     s_configurationError = enumToStrings(GuhConfiguration::staticMetaObject, "ConfigurationError");
     s_networkManagerError = enumToStrings(NetworkManager::staticMetaObject, "NetworkManagerError");
     s_networkManagerState = enumToStrings(NetworkManager::staticMetaObject, "NetworkManagerState");
+    s_networkDeviceState = enumToStrings(NetworkDevice::staticMetaObject, "NetworkDeviceState");
 
     // ParamType
     s_paramType.insert("id", basicTypeToString(Uuid));
@@ -1545,6 +1547,7 @@ QPair<bool, QString> JsonTypes::validateProperty(const QVariant &templateValue, 
         QString errorString = QString("Param %1 is not a time (hh:mm).").arg(value.toString());
         return report(value.canConvert(QVariant::Time), errorString);
     }
+
     qCWarning(dcJsonRpc) << QString("Unhandled property type: %1 (expected: %2)").arg(value.toString()).arg(strippedTemplateValue);
     QString errorString = QString("Unhandled property type: %1 (expected: %2)").arg(value.toString()).arg(strippedTemplateValue);
     return report(false, errorString);
@@ -1865,6 +1868,12 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                 QPair<bool, QString> result = validateEnum(s_networkManagerError, variant);
                 if (!result.first) {
                     qCWarning(dcJsonRpc) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(networkManagerErrorRef());
+                    return result;
+                }
+            } else if (refName == networkDeviceStateRef()) {
+                QPair<bool, QString> result = validateEnum(s_networkDeviceState, variant);
+                if (!result.first) {
+                    qCWarning(dcJsonRpc) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(networkDeviceStateRef());
                     return result;
                 }
             } else {

@@ -132,6 +132,7 @@ public:
     DECLARE_TYPE(configurationError, "ConfigurationError", GuhConfiguration, ConfigurationError)
     DECLARE_TYPE(networkManagerError, "NetworkManagerError", NetworkManager, NetworkManagerError)
     DECLARE_TYPE(networkManagerState, "NetworkManagerState", NetworkManager, NetworkManagerState)
+    DECLARE_TYPE(networkDeviceState, "NetworkDeviceState", NetworkDevice, NetworkDeviceState)
 
     DECLARE_OBJECT(paramType, "ParamType")
     DECLARE_OBJECT(param, "Param")

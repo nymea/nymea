@@ -32,17 +32,24 @@ CloudConnection::CloudConnection(QObject *parent) :
     m_connected(false),
     m_authenticated(false)
 {
-    m_proxyUrl = QUrl("ws://127.0.0.1:1212");
-    m_keystoneUrl = QUrl("http://localhost:8000/oauth2/token");
-
+    // If not connected, try to reconnect
     m_reconnectionTimer = new QTimer(this);
     m_reconnectionTimer->setSingleShot(false);
+    m_reconnectionTimer->setInterval(10000);
     connect(m_reconnectionTimer, &QTimer::timeout, this, &CloudConnection::reconnectionTimeout);
 
+    // Ping the server to make sure the connection is still alive
     m_pingTimer = new QTimer(this);
     m_pingTimer->setSingleShot(false);
     m_pingTimer->setInterval(30000);
     connect(m_pingTimer, &QTimer::timeout, this, &CloudConnection::onPingTimeout);
+
+    // Timer to check if ping response was received (if not, reconnect the socket)
+    m_pingResponseTimer = new QTimer(this);
+    m_pingResponseTimer->setSingleShot(true);
+    m_pingResponseTimer->setInterval(5000);
+    connect(m_pingResponseTimer, &QTimer::timeout, this, &CloudConnection::onPongTimeout);
+
 
     m_connection = new QWebSocket("guhd", QWebSocketProtocol::Version13, this);
     connect(m_connection, SIGNAL(connected()), this, SLOT(onConnected()));
@@ -138,7 +145,8 @@ void CloudConnection::onDisconnected()
 
     setConnected(false);
     m_pingTimer->stop();
-    m_reconnectionTimer->start(10000);
+    m_pingResponseTimer->stop();
+    m_reconnectionTimer->start();
 }
 
 void CloudConnection::onError(const QAbstractSocket::SocketError &error)
@@ -166,9 +174,10 @@ void CloudConnection::onError(const QAbstractSocket::SocketError &error)
         qCWarning(dcCloud()) << "Websocket error:" << error << m_connection->errorString();
 
     m_connection->close();
+    setConnected(false);
     m_error = Cloud::CloudErrorProxyServerNotReachable;
-    m_pingTimer->start();
-    m_reconnectionTimer->start(10000);
+    m_pingTimer->stop();
+    m_reconnectionTimer->start();
 }
 
 void CloudConnection::onPingTimeout()
@@ -177,13 +186,21 @@ void CloudConnection::onPingTimeout()
         return;
 
     m_connection->ping("Ping");
+    m_pingResponseTimer->start();
 }
 
 void CloudConnection::onPong(const quint64 elapsedTime, const QByteArray &payload)
 {
     Q_UNUSED(elapsedTime);
     Q_UNUSED(payload);
-    //qCDebug(dcCloud()) << payload << elapsedTime;
+    m_pingResponseTimer->stop();
+}
+
+void CloudConnection::onPongTimeout()
+{
+    qCWarning(dcCloud()) << "Pong timeout: did not get a ping response from the server (after 5s): reconnecting to the server...";
+    disconnectFromCloud();
+    connectToCloud();
 }
 
 void CloudConnection::onStateChanged(const QAbstractSocket::SocketState &state)
@@ -196,6 +213,7 @@ void CloudConnection::reconnectionTimeout()
     if (m_authenticated) {
         m_connection->open(m_proxyUrl);
     } else {
+        m_authenticator->startAuthentication();
         m_reconnectionTimer->stop();
         m_error = CloudConnectionErrorAuthenticationFailed;
     }

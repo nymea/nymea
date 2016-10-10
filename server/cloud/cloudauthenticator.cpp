@@ -333,8 +333,8 @@ void CloudAuthenticator::refreshTimeout()
 
 void CloudAuthenticator::onSslErrors(QNetworkReply *reply, const QList<QSslError> &errors)
 {
+    // Ignore SSL errors, but inform in the logs
     reply->ignoreSslErrors();
-    //reply->ignoreSslErrors(QList<QSslError>() << QSslError(QSslError::SelfSignedCertificate) << QSslError(QSslError::CertificateUntrusted) << QSslError(QSslError::HostNameMismatch));
 
     if (m_refreshTokenRequests.contains(reply)) {
         qCWarning(dcCloud()) << "SSL errors occured for token refresh reply:";

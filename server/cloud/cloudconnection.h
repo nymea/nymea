@@ -54,6 +54,7 @@ private:
 
     QTimer *m_reconnectionTimer;
     QTimer *m_pingTimer;
+    QTimer *m_pingResponseTimer;
 
     QUrl m_authenticationServerUrl;
     QUrl m_proxyServerUrl;
@@ -79,6 +80,7 @@ private slots:
     void onStateChanged(const QAbstractSocket::SocketState &state);
     void onPingTimeout();
     void onPong(const quint64 elapsedTime, const QByteArray &payload);
+    void onPongTimeout();
 
     void reconnectionTimeout();
 

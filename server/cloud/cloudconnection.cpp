@@ -50,7 +50,6 @@ CloudConnection::CloudConnection(QObject *parent) :
     m_pingResponseTimer->setInterval(5000);
     connect(m_pingResponseTimer, &QTimer::timeout, this, &CloudConnection::onPongTimeout);
 
-
     m_connection = new QWebSocket("guhd", QWebSocketProtocol::Version13, this);
     connect(m_connection, SIGNAL(connected()), this, SLOT(onConnected()));
     connect(m_connection, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
@@ -199,8 +198,12 @@ void CloudConnection::onPong(const quint64 elapsedTime, const QByteArray &payloa
 void CloudConnection::onPongTimeout()
 {
     qCWarning(dcCloud()) << "Pong timeout: did not get a ping response from the server (after 5s): reconnecting to the server...";
-    disconnectFromCloud();
-    connectToCloud();
+    m_connection->close(QWebSocketProtocol::CloseCodeAbnormalDisconnection, "Ping timeout");
+    if (authenticator()->authenticated()) {
+        m_connection->open(m_proxyServerUrl);
+    } else {
+        m_authenticator->startAuthentication();
+    }
 }
 
 void CloudConnection::onStateChanged(const QAbstractSocket::SocketState &state)

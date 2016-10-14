@@ -58,27 +58,38 @@ NetworkManagerHandler::NetworkManagerHandler(QObject *parent) :
     setReturns("EnableWirelessNetworking", returns);
 
     params.clear(); returns.clear();
-    setDescription("GetWirelessAccessPoints", "Get the current list of wireless network access points.");
+    setDescription("GetWirelessAccessPoints", "Get the current list of wireless network access points for the given interface. The interface has to be a WirelessNetworkDevice.");
+    params.insert("interface", JsonTypes::basicTypeToString(QVariant::String));
     setParams("GetWirelessAccessPoints", params);
     returns.insert("o:wirelessAccessPoints", QVariantList() << JsonTypes::wirelessAccessPointRef());
     returns.insert("networkManagerError", JsonTypes::networkManagerErrorRef());
     setReturns("GetWirelessAccessPoints", returns);
 
     params.clear(); returns.clear();
+    setDescription("DisconnectInterface", "Disconnect the given network interface. The interface will remain disconnected until the user connect it again.");
+    params.insert("interface", JsonTypes::basicTypeToString(QVariant::String));
+    setParams("DisconnectInterface", params);
+    returns.insert("networkManagerError", JsonTypes::networkManagerErrorRef());
+    setReturns("DisconnectInterface", returns);
+
+    params.clear(); returns.clear();
     setDescription("GetNetworkDevices", "Get the list of current network devices.");
     setParams("GetNetworkDevices", params);
-    returns.insert("o:networkDevices",  QVariantList() << JsonTypes::networkDeviceRef());
+    returns.insert("wiredNetworkDevices",  QVariantList() << JsonTypes::wiredNetworkDeviceRef());
+    returns.insert("wirelessNetworkDevices",  QVariantList() << JsonTypes::wirelessNetworkDeviceRef());
     returns.insert("networkManagerError", JsonTypes::networkManagerErrorRef());
     setReturns("GetNetworkDevices", returns);
 
     params.clear(); returns.clear();
     setDescription("ScanWifiNetworks", "Start a wifi scan for searching new networks.");
+    params.insert("interface", JsonTypes::basicTypeToString(QVariant::String));
     setParams("ScanWifiNetworks", params);
     returns.insert("networkManagerError", JsonTypes::networkManagerErrorRef());
     setReturns("ScanWifiNetworks", returns);
 
     params.clear(); returns.clear();
     setDescription("ConnectWifiNetwork", "Connect to the wifi network with the given ssid and password.");
+    params.insert("interface", JsonTypes::basicTypeToString(QVariant::String));
     params.insert("ssid", JsonTypes::basicTypeToString(QVariant::String));
     params.insert("o:password", JsonTypes::basicTypeToString(QVariant::String));
     setParams("ConnectWifiNetwork", params);
@@ -92,23 +103,47 @@ NetworkManagerHandler::NetworkManagerHandler(QObject *parent) :
     setParams("NetworkStatusChanged", params);
 
     params.clear(); returns.clear();
-    setDescription("NetworkDeviceChanged", "Emitted whenever a NetworkDevice has changed.");
-    params.insert("networkDevice", JsonTypes::networkDeviceRef());
-    setParams("NetworkDeviceChanged", params);
+    setDescription("WirelessNetworkDeviceAdded", "Emitted whenever a new WirelessNetworkDevice was added.");
+    params.insert("wirelessNetworkDevice", JsonTypes::wirelessNetworkDeviceRef());
+    setParams("WirelessNetworkDeviceAdded", params);
 
     params.clear(); returns.clear();
-    setDescription("NetworkDeviceAdded", "Emitted whenever a new NetworkDevice was added.");
-    params.insert("networkDevice", JsonTypes::networkDeviceRef());
-    setParams("NetworkDeviceAdded", params);
+    setDescription("WirelessNetworkDeviceRemoved", "Emitted whenever a WirelessNetworkDevice was removed.");
+    params.insert("interface", JsonTypes::basicTypeToString(QVariant::String));
+    setParams("WirelessNetworkDeviceRemoved", params);
 
     params.clear(); returns.clear();
-    setDescription("NetworkDeviceRemoved", "Emitted whenever a NetworkDevice was removed.");
-    params.insert("networkDevice", JsonTypes::networkDeviceRef());
-    setParams("NetworkDeviceRemoved", params);
+    setDescription("WirelessNetworkDeviceChanged", "Emitted whenever the given WirelessNetworkDevice has changed.");
+    params.insert("wirelessNetworkDevice", JsonTypes::wirelessNetworkDeviceRef());
+    setParams("WirelessNetworkDeviceChanged", params);
+
+    params.clear(); returns.clear();
+    setDescription("WiredNetworkDeviceAdded", "Emitted whenever a new WiredNetworkDevice was added.");
+    params.insert("wiredNetworkDevice", JsonTypes::wiredNetworkDeviceRef());
+    setParams("WiredNetworkDeviceAdded", params);
+
+    params.clear(); returns.clear();
+    setDescription("WiredNetworkDeviceRemoved", "Emitted whenever a WiredNetworkDevice was removed.");
+    params.insert("interface", JsonTypes::basicTypeToString(QVariant::String));
+    setParams("WiredNetworkDeviceRemoved", params);
+
+    params.clear(); returns.clear();
+    setDescription("WiredNetworkDeviceChanged", "Emitted whenever the given WiredNetworkDevice has changed.");
+    params.insert("wiredNetworkDevice", JsonTypes::wiredNetworkDeviceRef());
+    setParams("WiredNetworkDeviceChanged", params);
 
     connect(GuhCore::instance()->networkManager(), &NetworkManager::stateChanged, this, &NetworkManagerHandler::onNetworkManagerStatusChanged);
     connect(GuhCore::instance()->networkManager(), &NetworkManager::networkingEnabledChanged, this, &NetworkManagerHandler::onNetworkManagerStatusChanged);
     connect(GuhCore::instance()->networkManager(), &NetworkManager::wirelessEnabledChanged, this, &NetworkManagerHandler::onNetworkManagerStatusChanged);
+
+    connect(GuhCore::instance()->networkManager(), &NetworkManager::wirelessDeviceAdded, this, &NetworkManagerHandler::onWirelessNetworkDeviceAdded);
+    connect(GuhCore::instance()->networkManager(), &NetworkManager::wirelessDeviceRemoved, this, &NetworkManagerHandler::onWirelessNetworkDeviceRemoved);
+    connect(GuhCore::instance()->networkManager(), &NetworkManager::wirelessDeviceChanged, this, &NetworkManagerHandler::onWirelessNetworkDeviceChanged);
+
+    connect(GuhCore::instance()->networkManager(), &NetworkManager::wiredDeviceAdded, this, &NetworkManagerHandler::onWiredNetworkDeviceAdded);
+    connect(GuhCore::instance()->networkManager(), &NetworkManager::wiredDeviceRemoved, this, &NetworkManagerHandler::onWiredNetworkDeviceRemoved);
+    connect(GuhCore::instance()->networkManager(), &NetworkManager::wiredDeviceChanged, this, &NetworkManagerHandler::onWiredNetworkDeviceChanged);
+
 }
 
 QString NetworkManagerHandler::name() const
@@ -127,7 +162,7 @@ JsonReply *NetworkManagerHandler::GetNetworkStatus(const QVariantMap &params)
     // Pack network manager status
     QVariantMap returns;
     returns.insert("status", packNetworkManagerStatus());
-    returns.insert("networkManagerError", statusToReply(NetworkManager::NetworkManagerErrorNoError));
+    returns.insert("networkManagerError", JsonTypes::networkManagerErrorToString(NetworkManager::NetworkManagerErrorNoError));
     return createReply(returns);
 }
 
@@ -160,8 +195,6 @@ JsonReply *NetworkManagerHandler::EnableWirelessNetworking(const QVariantMap &pa
 
 JsonReply *NetworkManagerHandler::GetWirelessAccessPoints(const QVariantMap &params)
 {
-    Q_UNUSED(params);
-
     if (!GuhCore::instance()->networkManager()->available())
         return createReply(statusToReply(NetworkManager::NetworkManagerErrorNetworkManagerNotAvailable));
 
@@ -174,14 +207,26 @@ JsonReply *NetworkManagerHandler::GetWirelessAccessPoints(const QVariantMap &par
     if (!GuhCore::instance()->networkManager()->wirelessEnabled())
         return createReply(statusToReply(NetworkManager::NetworkManagerErrorWirelessNetworkingDisabled));
 
-    QVariantList wirelessAccessPoints;
-    foreach (WirelessAccessPoint *wirelessAccessPoint, GuhCore::instance()->networkManager()->wirelessNetworkManager()->accessPoints())
-        wirelessAccessPoints.append(JsonTypes::packWirelessAccessPoint(wirelessAccessPoint));
+    QString interface = params.value("interface").toString();
 
-    QVariantMap returns;
-    returns.insert("wirelessAccessPoints", wirelessAccessPoints);
-    returns.insert("networkManagerError", statusToReply(NetworkManager::NetworkManagerErrorNoError));
-    return createReply(returns);
+    if (!GuhCore::instance()->networkManager()->getNetworkDevice(interface))
+        return createReply(statusToReply(NetworkManager::NetworkManagerErrorNetworkInterfaceNotFound));
+
+    foreach (WirelessNetworkDevice *networkDevice, GuhCore::instance()->networkManager()->wirelessNetworkDevices()) {
+        if (networkDevice->interface() == interface) {
+            QVariantList wirelessAccessPoints;
+            foreach (WirelessAccessPoint *wirelessAccessPoint, networkDevice->accessPoints())
+                wirelessAccessPoints.append(JsonTypes::packWirelessAccessPoint(wirelessAccessPoint));
+
+            QVariantMap returns;
+            returns.insert("wirelessAccessPoints", wirelessAccessPoints);
+            returns.insert("networkManagerError", JsonTypes::networkManagerErrorToString(NetworkManager::NetworkManagerErrorNoError));
+            return createReply(returns);
+
+        }
+    }
+
+    return createReply(statusToReply(NetworkManager::NetworkManagerErrorInvalidNetworkDeviceType));
 }
 
 JsonReply *NetworkManagerHandler::GetNetworkDevices(const QVariantMap &params)
@@ -191,13 +236,18 @@ JsonReply *NetworkManagerHandler::GetNetworkDevices(const QVariantMap &params)
     if (!GuhCore::instance()->networkManager()->available())
         return createReply(statusToReply(NetworkManager::NetworkManagerErrorNetworkManagerNotAvailable));
 
-    QVariantList networkDevices;
-    foreach (NetworkDevice *networkDevice, GuhCore::instance()->networkManager()->networkDevices())
-        networkDevices.append(JsonTypes::packNetworkDevice(networkDevice));
+    QVariantList wirelessNetworkDevices;
+    foreach (WirelessNetworkDevice *networkDevice, GuhCore::instance()->networkManager()->wirelessNetworkDevices())
+        wirelessNetworkDevices.append(JsonTypes::packWirelessNetworkDevice(networkDevice));
+
+    QVariantList wiredNetworkDevices;
+    foreach (WiredNetworkDevice *networkDevice, GuhCore::instance()->networkManager()->wiredNetworkDevices())
+        wiredNetworkDevices.append(JsonTypes::packWiredNetworkDevice(networkDevice));
 
     QVariantMap returns;
-    returns.insert("networkDevices", networkDevices);
-    returns.insert("networkManagerError", statusToReply(NetworkManager::NetworkManagerErrorNoError));
+    returns.insert("wirelessNetworkDevices", wirelessNetworkDevices);
+    returns.insert("wiredNetworkDevices", wiredNetworkDevices);
+    returns.insert("networkManagerError", JsonTypes::networkManagerErrorToString(NetworkManager::NetworkManagerErrorNoError));
     return createReply(returns);
 }
 
@@ -218,8 +268,19 @@ JsonReply *NetworkManagerHandler::ScanWifiNetworks(const QVariantMap &params)
         return createReply(statusToReply(NetworkManager::NetworkManagerErrorWirelessNetworkingDisabled));
 
 
-    GuhCore::instance()->networkManager()->wirelessNetworkManager()->scanWirelessNetworks();
-    return createReply(statusToReply(NetworkManager::NetworkManagerErrorNoError));
+    QString interface = params.value("interface").toString();
+
+    if (!GuhCore::instance()->networkManager()->getNetworkDevice(interface))
+        return createReply(statusToReply(NetworkManager::NetworkManagerErrorNetworkInterfaceNotFound));
+
+    foreach (WirelessNetworkDevice *networkDevice, GuhCore::instance()->networkManager()->wirelessNetworkDevices()) {
+        if (networkDevice->interface() == interface) {
+            networkDevice->scanWirelessNetworks();
+            return createReply(statusToReply(NetworkManager::NetworkManagerErrorNoError));
+        }
+    }
+
+    return createReply(statusToReply(NetworkManager::NetworkManagerErrorInvalidNetworkDeviceType));
 }
 
 JsonReply *NetworkManagerHandler::ConnectWifiNetwork(const QVariantMap &params)
@@ -239,9 +300,23 @@ JsonReply *NetworkManagerHandler::ConnectWifiNetwork(const QVariantMap &params)
 
     QString ssid = params.value("ssid").toString();
     QString password = params.value("password").toString();
-    NetworkManager::NetworkManagerError error = GuhCore::instance()->networkManager()->connectWifi(ssid, password);
+    QString interface = params.value("interface").toString();
 
-    return createReply(statusToReply(error));
+    return createReply(statusToReply(GuhCore::instance()->networkManager()->connectWifi(interface, ssid, password)));
+}
+
+JsonReply *NetworkManagerHandler::DisconnectInterface(const QVariantMap &params)
+{
+    if (!GuhCore::instance()->networkManager()->available())
+        return createReply(statusToReply(NetworkManager::NetworkManagerErrorNetworkManagerNotAvailable));
+
+    QString interface = params.value("interface").toString();
+    NetworkDevice *networkDevice = GuhCore::instance()->networkManager()->getNetworkDevice(interface);
+    if (!networkDevice)
+        return createReply(statusToReply(NetworkManager::NetworkManagerErrorNetworkInterfaceNotFound));
+
+    networkDevice->disconnectDevice();
+    return createReply(statusToReply(NetworkManager::NetworkManagerErrorNoError));
 }
 
 QVariantMap NetworkManagerHandler::packNetworkManagerStatus()
@@ -258,19 +333,46 @@ void NetworkManagerHandler::onNetworkManagerStatusChanged()
     emit NetworkStatusChanged(packNetworkManagerStatus());
 }
 
-void NetworkManagerHandler::onNetworkDeviceChanged(NetworkDevice *networkDevice)
+void NetworkManagerHandler::onWirelessNetworkDeviceAdded(WirelessNetworkDevice *networkDevice)
 {
-    Q_UNUSED(networkDevice)
+    QVariantMap notification;
+    notification.insert("wirelessNetworkDevice", JsonTypes::packWirelessNetworkDevice(networkDevice));
+    emit WirelessNetworkDeviceAdded(notification);
 }
 
-void NetworkManagerHandler::onNetworkDeviceAdded(NetworkDevice *networkDevice)
+void NetworkManagerHandler::onWirelessNetworkDeviceRemoved(const QString &interface)
 {
-    Q_UNUSED(networkDevice)
+    QVariantMap notification;
+    notification.insert("interface", interface);
+    emit WirelessNetworkDeviceRemoved(notification);
 }
 
-void NetworkManagerHandler::onNetworkDeviceRemoved(NetworkDevice *networkDevice)
+void NetworkManagerHandler::onWirelessNetworkDeviceChanged(WirelessNetworkDevice *networkDevice)
 {
-    Q_UNUSED(networkDevice)
+    QVariantMap notification;
+    notification.insert("wirelessNetworkDevice", JsonTypes::packWirelessNetworkDevice(networkDevice));
+    emit WirelessNetworkDeviceChanged(notification);
+}
+
+void NetworkManagerHandler::onWiredNetworkDeviceAdded(WiredNetworkDevice *networkDevice)
+{
+    QVariantMap notification;
+    notification.insert("wiredNetworkDevice", JsonTypes::packWiredNetworkDevice(networkDevice));
+    emit WiredNetworkDeviceAdded(notification);
+}
+
+void NetworkManagerHandler::onWiredNetworkDeviceRemoved(const QString &interface)
+{
+    QVariantMap notification;
+    notification.insert("interface", interface);
+    emit WiredNetworkDeviceRemoved(notification);
+}
+
+void NetworkManagerHandler::onWiredNetworkDeviceChanged(WiredNetworkDevice *networkDevice)
+{
+    QVariantMap notification;
+    notification.insert("wiredNetworkDevice", JsonTypes::packWiredNetworkDevice(networkDevice));
+    emit WiredNetworkDeviceChanged(notification);
 }
 
 }

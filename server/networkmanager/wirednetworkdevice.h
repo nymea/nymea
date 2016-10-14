@@ -18,25 +18,44 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef DBUSINTERFACES_H
-#define DBUSINTERFACES_H
+#ifndef WIREDNETWORKDEVICE_H
+#define WIREDNETWORKDEVICE_H
 
-#include <QString>
+#include <QObject>
+#include <QDBusObjectPath>
+
+#include "networkdevice.h"
 
 namespace guhserver {
 
-static const QString serviceString("org.freedesktop.NetworkManager");
+class WiredNetworkDevice : public NetworkDevice
+{
+    Q_OBJECT
+public:
+    explicit WiredNetworkDevice(const QDBusObjectPath &objectPath, QObject *parent = 0);
 
-static const QString pathString("/org/freedesktop/NetworkManager");
-static const QString settingsPathString("/org/freedesktop/NetworkManager/Settings");
+    QString macAddress() const;
+    int bitRate() const;
+    bool pluggedIn() const;
 
-static const QString deviceInterfaceString("org.freedesktop.NetworkManager.Device");
-static const QString wirelessInterfaceString("org.freedesktop.NetworkManager.Device.Wireless");
-static const QString wiredInterfaceString("org.freedesktop.NetworkManager.Device.Wired");
-static const QString accessPointInterfaceString("org.freedesktop.NetworkManager.AccessPoint");
-static const QString settingsInterfaceString("org.freedesktop.NetworkManager.Settings");
-static const QString connectionsInterfaceString("org.freedesktop.NetworkManager.Settings.Connection");
+private:
+    QDBusInterface *m_wiredInterface;
+
+    QString m_macAddress;
+    int m_bitRate;
+    bool m_pluggedIn;
+
+    void setMacAddress(const QString &macAddress);
+    void setBitRate(const int &bitRate);
+    void setPluggedIn(const bool &pluggedIn);
+
+private slots:
+    void propertiesChanged(const QVariantMap &properties);
+
+};
+
+QDebug operator<<(QDebug debug, WiredNetworkDevice *networkDevice);
 
 }
 
-#endif // DBUSINTERFACES_H
+#endif // WIREDNETWORKDEVICE_H

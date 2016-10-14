@@ -44,6 +44,13 @@ CloudHandler::CloudHandler(QObject *parent) :
     returns.insert("authenticated", JsonTypes::basicTypeToString(JsonTypes::Bool));
     setReturns("GetConnectionStatus", returns);
 
+    params.clear(); returns.clear();
+    setDescription("Enable", "Enable or disable the cloud connection.");
+    params.insert("enable", JsonTypes::basicTypeToString(JsonTypes::Bool));
+    setParams("Enable", params);
+    returns.insert("cloudError", JsonTypes::cloudErrorRef());
+    setReturns("Enable", returns);
+
     // Notification
     params.clear(); returns.clear();
     setDescription("ConnectionStatusChanged", "Emitted whenever the status of the cloud connection changed.");
@@ -89,6 +96,13 @@ JsonReply *CloudHandler::GetConnectionStatus(const QVariantMap &params) const
     returns.insert("active", GuhCore::instance()->cloudManager()->active());
     returns.insert("authenticated", GuhCore::instance()->cloudManager()->authenticated());
     return createReply(returns);
+}
+
+JsonReply *CloudHandler::Enable(const QVariantMap &params) const
+{
+    bool enable = params.value("enable").toBool();
+    GuhCore::instance()->configuration()->setCloudEnabled(enable);
+    return createReply(statusToReply(Cloud::CloudErrorNoError));
 }
 
 void CloudHandler::onConnectionStatusChanged()

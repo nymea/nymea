@@ -34,34 +34,40 @@
 
 namespace guhserver {
 
-class WirelessNetworkManager : public NetworkDevice
+class WirelessNetworkDevice : public NetworkDevice
 {
     Q_OBJECT
 public:
 
-    explicit WirelessNetworkManager(const QDBusObjectPath &objectPath, QObject *parent = 0);
+    explicit WirelessNetworkDevice(const QDBusObjectPath &objectPath, QObject *parent = 0);
 
+    // Properties
     QString macAddress() const;
-    int bitrate() const;
+    int bitRate() const;
+    WirelessAccessPoint *activeAccessPoint();
 
-    void scanWirelessNetworks();
-
+    // Accesspoints
     QList<WirelessAccessPoint *> accessPoints();
     WirelessAccessPoint *getAccessPoint(const QString &ssid);
     WirelessAccessPoint *getAccessPoint(const QDBusObjectPath &objectPath);
 
+    // Methods
+    void scanWirelessNetworks();
+
 private:
     QDBusInterface *m_wirelessInterface;
+
     QString m_macAddress;
-    int m_bitrate;
+    int m_bitRate;
+    WirelessAccessPoint *m_activeAccessPoint;
 
     QHash<QDBusObjectPath, WirelessAccessPoint *> m_accessPointsTable;
 
     void readAccessPoints();
 
-    void setConnected(const bool &connected);
-    void setState(const NetworkDeviceState &state);
-    void setStateReason(const NetworkDeviceStateReason &stateReason);
+    void setMacAddress(const QString &macAddress);
+    void setBitrate(const int &bitRate);
+    void setActiveAccessPoint(const QDBusObjectPath &activeAccessPointObjectPath);
 
 private slots:
     void accessPointAdded(const QDBusObjectPath &objectPath);
@@ -69,11 +75,11 @@ private slots:
     void propertiesChanged(const QVariantMap &properties);
 
 signals:
-    void connectedChanged(const bool &connected);
+    void bitRateChanged(const bool &connected);
     void stateChanged(const NetworkDeviceState &state);
 };
 
-QDebug operator<<(QDebug debug, WirelessNetworkManager *manager);
+QDebug operator<<(QDebug debug, WirelessNetworkDevice *manager);
 
 }
 

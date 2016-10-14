@@ -40,7 +40,6 @@ public:
     Q_INVOKABLE JsonReply *Authenticate(const QVariantMap &params);
     Q_INVOKABLE JsonReply *GetConnectionStatus(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *Enable(const QVariantMap &params) const;
-    Q_INVOKABLE JsonReply *Disable(const QVariantMap &params) const;
 
 private:
     QList<JsonReply *> m_asyncAuthenticationReplies;

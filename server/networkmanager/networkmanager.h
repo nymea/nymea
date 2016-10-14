@@ -28,9 +28,9 @@
 #include <QDBusContext>
 #include <QDBusArgument>
 
-#include "wirelessnetworkmanager.h"
 #include "dbus-interfaces.h"
-#include "networkdevice.h"
+#include "wirednetworkdevice.h"
+#include "wirelessnetworkdevice.h"
 #include "networksettings.h"
 
 // Docs: https://developer.gnome.org/NetworkManager/unstable/spec.html
@@ -69,6 +69,8 @@ public:
         NetworkManagerErrorUnknownError,
         NetworkManagerErrorWirelessNotAvailable,
         NetworkManagerErrorAccessPointNotFound,
+        NetworkManagerErrorNetworkInterfaceNotFound,
+        NetworkManagerErrorInvalidNetworkDeviceType,
         NetworkManagerErrorWirelessNetworkingDisabled,
         NetworkManagerErrorWirelessConnectionFailed,
         NetworkManagerErrorNetworkingDisabled,
@@ -81,7 +83,10 @@ public:
     bool wifiAvailable();
 
     QList<NetworkDevice *> networkDevices() const;
-    WirelessNetworkManager *wirelessNetworkManager() const;
+    QList<WirelessNetworkDevice *> wirelessNetworkDevices() const;
+    QList<WiredNetworkDevice *> wiredNetworkDevices() const;
+
+    NetworkDevice *getNetworkDevice(const QString &interface);
 
     // Properties
     QString version() const;
@@ -89,7 +94,7 @@ public:
     QString stateString() const;
     NetworkManagerConnectivityState connectivityState() const;
 
-    NetworkManagerError connectWifi(const QString &ssid, const QString &password);
+    NetworkManagerError connectWifi(const QString &interface, const QString &ssid, const QString &password);
 
     // Networking
     bool networkingEnabled() const;
@@ -101,10 +106,12 @@ public:
 
 private:
     QDBusInterface *m_networkManagerInterface;
+
     QHash<QDBusObjectPath, NetworkDevice *> m_networkDevices;
+    QHash<QDBusObjectPath, WirelessNetworkDevice *> m_wirelessNetworkDevices;
+    QHash<QDBusObjectPath, WiredNetworkDevice *> m_wiredNetworkDevices;
 
     NetworkSettings *m_networkSettings;
-    WirelessNetworkManager *m_wirelessNetworkManager;
 
     bool m_available;
     bool m_wifiAvailable;
@@ -134,11 +141,21 @@ signals:
     void stateChanged();
     void connectivityStateChanged();
 
+    void wirelessDeviceAdded(WirelessNetworkDevice *wirelessDevice);
+    void wirelessDeviceRemoved(const QString &interface);
+    void wirelessDeviceChanged(WirelessNetworkDevice *wirelessDevice);
+
+    void wiredDeviceAdded(WiredNetworkDevice *wirelessDevice);
+    void wiredDeviceRemoved(const QString &interface);
+    void wiredDeviceChanged(WiredNetworkDevice *wirelessDevice);
+
 private slots:
     void onDeviceAdded(const QDBusObjectPath &deviceObjectPath);
     void onDeviceRemoved(const QDBusObjectPath &deviceObjectPath);
     void onPropertiesChanged(const QVariantMap &properties);
 
+    void onWirelessDeviceChanged();
+    void onWiredDeviceChanged();
 };
 
 }

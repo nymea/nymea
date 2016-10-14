@@ -30,7 +30,6 @@ namespace guhserver {
 NetworkManager::NetworkManager(QObject *parent) :
     QObject(parent),
     m_networkManagerInterface(0),
-    m_wirelessNetworkManager(0),
     m_available(false),
     m_wifiAvailable(false),
     m_state(NetworkManagerStateUnknown),
@@ -70,7 +69,6 @@ NetworkManager::NetworkManager(QObject *parent) :
 
     // Create settings
     m_networkSettings = new NetworkSettings(this);
-
 }
 
 bool NetworkManager::available()
@@ -88,9 +86,23 @@ QList<NetworkDevice *> NetworkManager::networkDevices() const
     return m_networkDevices.values();
 }
 
-WirelessNetworkManager *NetworkManager::wirelessNetworkManager() const
+QList<WirelessNetworkDevice *> NetworkManager::wirelessNetworkDevices() const
 {
-    return m_wirelessNetworkManager;
+    return m_wirelessNetworkDevices.values();
+}
+
+QList<WiredNetworkDevice *> NetworkManager::wiredNetworkDevices() const
+{
+    return m_wiredNetworkDevices.values();
+}
+
+NetworkDevice *NetworkManager::getNetworkDevice(const QString &interface)
+{
+    foreach (NetworkDevice *device, m_networkDevices.values()) {
+        if (device->interface() == interface)
+            return device;
+    }
+    return Q_NULLPTR;
 }
 
 QString NetworkManager::version() const
@@ -113,8 +125,27 @@ NetworkManager::NetworkManagerConnectivityState NetworkManager::connectivityStat
     return m_connectivityState;
 }
 
-NetworkManager::NetworkManagerError NetworkManager::connectWifi(const QString &ssid, const QString &password)
+NetworkManager::NetworkManagerError NetworkManager::connectWifi(const QString &interface, const QString &ssid, const QString &password)
 {
+    // Check interface
+    if (!getNetworkDevice(interface))
+        return NetworkManagerErrorNetworkInterfaceNotFound;
+
+    // Get wirelessNetworkDevice
+    WirelessNetworkDevice *wirelessNetworkDevice = 0;
+    foreach (WirelessNetworkDevice *networkDevice, wirelessNetworkDevices()) {
+        if (networkDevice->interface() == interface)
+            wirelessNetworkDevice = networkDevice;
+    }
+
+    if (!wirelessNetworkDevice)
+        return NetworkManagerErrorInvalidNetworkDeviceType;
+
+    // Get the access point object path
+    WirelessAccessPoint *accessPoint = wirelessNetworkDevice->getAccessPoint(ssid);
+    if (!accessPoint)
+        return NetworkManagerErrorAccessPointNotFound;
+
     // https://developer.gnome.org/NetworkManager/stable/ref-settings.html
 
     QVariantMap connectionSettings;
@@ -146,12 +177,7 @@ NetworkManager::NetworkManagerError NetworkManager::connectWifi(const QString &s
     settings.insert("ipv4", ipv4Settings);
     settings.insert("ipv6", ipv6Settings);
 
-    // Get the access point object path
-    WirelessAccessPoint *accessPoint = m_wirelessNetworkManager->getAccessPoint(ssid);
-    if (!accessPoint) {
-        qCWarning(dcNetworkManager()) << "Could not find access point with ssid:" << ssid;
-        return NetworkManagerErrorAccessPointNotFound;
-    }
+    // TODO: check if connection exists
 
     // Add connection
     QDBusObjectPath connectionObjectPath = m_networkSettings->addConnection(settings);
@@ -159,9 +185,7 @@ NetworkManager::NetworkManagerError NetworkManager::connectWifi(const QString &s
         return NetworkManagerErrorWirelessConnectionFailed;
 
     // Activate connection
-    QDBusMessage query = m_networkManagerInterface->call("ActivateConnection", QVariant::fromValue(connectionObjectPath),
-                                                         QVariant::fromValue(m_wirelessNetworkManager->objectPath()),
-                                                         QVariant::fromValue(accessPoint->objectPath()));
+    QDBusMessage query = m_networkManagerInterface->call("ActivateConnection", QVariant::fromValue(connectionObjectPath), QVariant::fromValue(wirelessNetworkDevice->objectPath()), QVariant::fromValue(accessPoint->objectPath()));
     if(query.type() != QDBusMessage::ReplyMessage) {
         qCWarning(dcNetworkManager()) << query.errorName() << query.errorMessage();
         return NetworkManagerErrorWirelessConnectionFailed;
@@ -280,15 +304,42 @@ void NetworkManager::onDeviceAdded(const QDBusObjectPath &deviceObjectPath)
         return;
     }
 
-    NetworkDevice *networkDevice = new NetworkDevice(deviceObjectPath, this);
-    qCDebug(dcNetworkManager()) << "[+]" << networkDevice;
-
-    if (!m_wirelessNetworkManager && networkDevice->deviceType() == NetworkDevice::DeviceTypeWifi) {
-        m_wifiAvailable = true;
-        m_wirelessNetworkManager = new WirelessNetworkManager(networkDevice->objectPath(), this);
+    // Get device Type
+    QDBusInterface networkDeviceInterface(serviceString, deviceObjectPath.path(), deviceInterfaceString, QDBusConnection::systemBus());
+    if(!networkDeviceInterface.isValid()) {
+        qCWarning(dcNetworkManager()) << "NetworkDevice: Invalid DBus device interface" << deviceObjectPath.path();
+        return;
     }
 
-    m_networkDevices.insert(deviceObjectPath, networkDevice);
+    // Create object
+    NetworkDevice::DeviceType deviceType = NetworkDevice::DeviceType(networkDeviceInterface.property("DeviceType").toUInt());
+    switch (deviceType) {
+    case NetworkDevice::DeviceTypeWifi: {
+        WirelessNetworkDevice *wirelessNetworkDevice = new WirelessNetworkDevice(deviceObjectPath, this);
+        qCDebug(dcNetworkManager()) << "[+]" << wirelessNetworkDevice;
+        m_wifiAvailable = true;
+        m_networkDevices.insert(deviceObjectPath, wirelessNetworkDevice);
+        m_wirelessNetworkDevices.insert(deviceObjectPath, wirelessNetworkDevice);
+        connect(wirelessNetworkDevice, &WirelessNetworkDevice::deviceChanged, this, &NetworkManager::onWirelessDeviceChanged);
+        emit wirelessDeviceAdded(wirelessNetworkDevice);
+        break;
+    }
+    case NetworkDevice::DeviceTypeEthernet: {
+        WiredNetworkDevice *wiredNetworkDevice = new WiredNetworkDevice(deviceObjectPath, this);
+        qCDebug(dcNetworkManager()) << "[+]" << wiredNetworkDevice;
+        m_networkDevices.insert(deviceObjectPath, wiredNetworkDevice);
+        m_wiredNetworkDevices.insert(deviceObjectPath, wiredNetworkDevice);
+
+        connect(wiredNetworkDevice, &WiredNetworkDevice::deviceChanged, this, &NetworkManager::onWiredDeviceChanged);
+        emit wiredDeviceAdded(wiredNetworkDevice);
+        break;
+    }
+    default:
+        NetworkDevice *networkDevice = new NetworkDevice(deviceObjectPath, this);
+        qCDebug(dcNetworkManager()) << "[+]" << networkDevice;
+        m_networkDevices.insert(deviceObjectPath, networkDevice);
+        break;
+    }
 }
 
 void NetworkManager::onDeviceRemoved(const QDBusObjectPath &deviceObjectPath)
@@ -299,14 +350,28 @@ void NetworkManager::onDeviceRemoved(const QDBusObjectPath &deviceObjectPath)
     }
 
     NetworkDevice *networkDevice = m_networkDevices.take(deviceObjectPath);
-    qCDebug(dcNetworkManager()) << "[-]" << networkDevice;
+
+    if (m_wiredNetworkDevices.contains(deviceObjectPath)) {
+        qCDebug(dcNetworkManager()) << "[-]" << m_wiredNetworkDevices.value(deviceObjectPath);
+        m_wiredNetworkDevices.remove(deviceObjectPath);
+        emit wiredDeviceRemoved(networkDevice->interface());
+    } else if (m_wirelessNetworkDevices.contains(deviceObjectPath)) {
+        qCDebug(dcNetworkManager()) << "[-]" << m_wirelessNetworkDevices.value(deviceObjectPath);
+        m_wirelessNetworkDevices.remove(deviceObjectPath);
+        emit wirelessDeviceRemoved(networkDevice->interface());
+    } else {
+        qCDebug(dcNetworkManager()) << "[-]" << networkDevice;
+    }
+
+    // Check if wireless is still available
+    if (m_wirelessNetworkDevices.isEmpty())
+        m_wifiAvailable = false;
+
     networkDevice->deleteLater();
 }
 
 void NetworkManager::onPropertiesChanged(const QVariantMap &properties)
 {
-    //qCDebug(dcNetworkManager()) << "Network manager properties changed" << properties;
-
     if (properties.contains("Version"))
         setVersion(properties.value("Version").toString());
 
@@ -322,6 +387,18 @@ void NetworkManager::onPropertiesChanged(const QVariantMap &properties)
     if (properties.contains("WirelessEnabled"))
         setWirelessEnabled(properties.value("WirelessEnabled").toBool());
 
+}
+
+void NetworkManager::onWirelessDeviceChanged()
+{
+    WirelessNetworkDevice *networkDevice = static_cast<WirelessNetworkDevice *>(sender());
+    emit wirelessDeviceChanged(networkDevice);
+}
+
+void NetworkManager::onWiredDeviceChanged()
+{
+    WiredNetworkDevice *networkDevice = static_cast<WiredNetworkDevice *>(sender());
+    emit wiredDeviceChanged(networkDevice);
 }
 
 }

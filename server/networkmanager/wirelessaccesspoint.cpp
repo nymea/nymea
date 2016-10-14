@@ -102,7 +102,6 @@ void WirelessAccessPoint::setSecurityFlags(const WirelessAccessPoint::ApSecurity
 
 void WirelessAccessPoint::onPropertiesChanged(const QVariantMap &properties)
 {
-    //qCDebug(dcNetworkManager()) << "AccessPoint" << ssid() << ": Properties changed" << properties;
     if (properties.contains("Strength"))
         setSignalStrength(properties.value("Strength").toUInt());
 

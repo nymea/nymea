@@ -41,17 +41,10 @@
                 "cloudError": "$ref:CloudError"
             }
         },
-        "Cloud.Disable": {
-            "description": "Disable the cloud connection.",
-            "params": {
-            },
-            "returns": {
-                "cloudError": "$ref:CloudError"
-            }
-        },
         "Cloud.Enable": {
-            "description": "Enable the cloud connection.",
+            "description": "Enable or disable the cloud connection.",
             "params": {
+                "enable": "Bool"
             },
             "returns": {
                 "cloudError": "$ref:CloudError"
@@ -474,8 +467,18 @@
         "NetworkManager.ConnectWifiNetwork": {
             "description": "Connect to the wifi network with the given ssid and password.",
             "params": {
+                "interface": "String",
                 "o:password": "String",
                 "ssid": "String"
+            },
+            "returns": {
+                "networkManagerError": "$ref:NetworkManagerError"
+            }
+        },
+        "NetworkManager.DisconnectInterface": {
+            "description": "Disconnect the given network interface. The interface will remain disconnected until the user connect it again.",
+            "params": {
+                "interface": "String"
             },
             "returns": {
                 "networkManagerError": "$ref:NetworkManagerError"
@@ -505,8 +508,11 @@
             },
             "returns": {
                 "networkManagerError": "$ref:NetworkManagerError",
-                "o:networkDevices": [
-                    "$ref:NetworkDevice"
+                "wiredNetworkDevices": [
+                    "$ref:WiredNetworkDevice"
+                ],
+                "wirelessNetworkDevices": [
+                    "$ref:WirelessNetworkDevice"
                 ]
             }
         },
@@ -524,8 +530,9 @@
             }
         },
         "NetworkManager.GetWirelessAccessPoints": {
-            "description": "Get the current list of wireless network access points.",
+            "description": "Get the current list of wireless network access points for the given interface. The interface has to be a WirelessNetworkDevice.",
             "params": {
+                "interface": "String"
             },
             "returns": {
                 "networkManagerError": "$ref:NetworkManagerError",
@@ -537,6 +544,7 @@
         "NetworkManager.ScanWifiNetworks": {
             "description": "Start a wifi scan for searching new networks.",
             "params": {
+                "interface": "String"
             },
             "returns": {
                 "networkManagerError": "$ref:NetworkManagerError"
@@ -765,24 +773,6 @@
                 "logEntry": "$ref:LogEntry"
             }
         },
-        "NetworkManager.NetworkDeviceAdded": {
-            "description": "Emitted whenever a new NetworkDevice was added.",
-            "params": {
-                "networkDevice": "$ref:NetworkDevice"
-            }
-        },
-        "NetworkManager.NetworkDeviceChanged": {
-            "description": "Emitted whenever a NetworkDevice has changed.",
-            "params": {
-                "networkDevice": "$ref:NetworkDevice"
-            }
-        },
-        "NetworkManager.NetworkDeviceRemoved": {
-            "description": "Emitted whenever a NetworkDevice was removed.",
-            "params": {
-                "networkDevice": "$ref:NetworkDevice"
-            }
-        },
         "NetworkManager.NetworkStatusChanged": {
             "description": "Emitted whenever a status of a NetworkManager changes.",
             "params": {
@@ -791,6 +781,42 @@
                     "state": "$ref:NetworkManagerState",
                     "wirelessNetworkingEnabled": "Bool"
                 }
+            }
+        },
+        "NetworkManager.WiredNetworkDeviceAdded": {
+            "description": "Emitted whenever a new WiredNetworkDevice was added.",
+            "params": {
+                "wiredNetworkDevice": "$ref:WiredNetworkDevice"
+            }
+        },
+        "NetworkManager.WiredNetworkDeviceChanged": {
+            "description": "Emitted whenever the given WiredNetworkDevice has changed.",
+            "params": {
+                "wiredNetworkDevice": "$ref:WiredNetworkDevice"
+            }
+        },
+        "NetworkManager.WiredNetworkDeviceRemoved": {
+            "description": "Emitted whenever a WiredNetworkDevice was removed.",
+            "params": {
+                "interface": "String"
+            }
+        },
+        "NetworkManager.WirelessNetworkDeviceAdded": {
+            "description": "Emitted whenever a new WirelessNetworkDevice was added.",
+            "params": {
+                "wirelessNetworkDevice": "$ref:WirelessNetworkDevice"
+            }
+        },
+        "NetworkManager.WirelessNetworkDeviceChanged": {
+            "description": "Emitted whenever the given WirelessNetworkDevice has changed.",
+            "params": {
+                "wirelessNetworkDevice": "$ref:WirelessNetworkDevice"
+            }
+        },
+        "NetworkManager.WirelessNetworkDeviceRemoved": {
+            "description": "Emitted whenever a WirelessNetworkDevice was removed.",
+            "params": {
+                "interface": "String"
             }
         },
         "Rules.RuleActiveChanged": {
@@ -1082,15 +1108,13 @@
             "LoggingSourceStates",
             "LoggingSourceRules"
         ],
-        "NetworkDevice": {
-            "name": "String",
-            "type": "String"
-        },
         "NetworkManagerError": [
             "NetworkManagerErrorNoError",
             "NetworkManagerErrorUnknownError",
             "NetworkManagerErrorWirelessNotAvailable",
             "NetworkManagerErrorAccessPointNotFound",
+            "NetworkManagerErrorNetworkInterfaceNotFound",
+            "NetworkManagerErrorInvalidNetworkDeviceType",
             "NetworkManagerErrorWirelessNetworkingDisabled",
             "NetworkManagerErrorWirelessConnectionFailed",
             "NetworkManagerErrorNetworkingDisabled",
@@ -1338,11 +1362,25 @@
             "id": "Uuid",
             "name": "String"
         },
+        "WiredNetworkDevice": {
+            "bitRate": "String",
+            "interface": "String",
+            "macAddress": "String",
+            "pluggedIn": "Bool",
+            "state": "$ref:NetworkDeviceState"
+        },
         "WirelessAccessPoint": {
             "frequency": "Double",
             "macAddress": "String",
             "signalStrength": "Int",
             "ssid": "String"
+        },
+        "WirelessNetworkDevice": {
+            "bitRate": "String",
+            "interface": "String",
+            "macAddress": "String",
+            "o:currentAccessPoint": "$ref:WirelessAccessPoint",
+            "state": "$ref:NetworkDeviceState"
         }
     }
 }

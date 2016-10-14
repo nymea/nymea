@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.guru>                 *
+ *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.io>                   *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -18,42 +18,44 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef CLOUDHANDLER_H
-#define CLOUDHANDLER_H
+#ifndef WIREDNETWORKDEVICE_H
+#define WIREDNETWORKDEVICE_H
 
 #include <QObject>
+#include <QDBusObjectPath>
 
-#include "guhcore.h"
-#include "jsonhandler.h"
-#include "loggingcategories.h"
-#include "cloud/cloud.h"
+#include "networkdevice.h"
 
 namespace guhserver {
 
-class CloudHandler : public JsonHandler
+class WiredNetworkDevice : public NetworkDevice
 {
     Q_OBJECT
 public:
-    CloudHandler(QObject *parent = 0);
+    explicit WiredNetworkDevice(const QDBusObjectPath &objectPath, QObject *parent = 0);
 
-    QString name() const;
-
-    Q_INVOKABLE JsonReply *Authenticate(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *GetConnectionStatus(const QVariantMap &params) const;
-    Q_INVOKABLE JsonReply *Enable(const QVariantMap &params) const;
+    QString macAddress() const;
+    int bitRate() const;
+    bool pluggedIn() const;
 
 private:
-    QList<JsonReply *> m_asyncAuthenticationReplies;
+    QDBusInterface *m_wiredInterface;
 
-signals:
-    void ConnectionStatusChanged(const QVariantMap &params);
+    QString m_macAddress;
+    int m_bitRate;
+    bool m_pluggedIn;
+
+    void setMacAddress(const QString &macAddress);
+    void setBitRate(const int &bitRate);
+    void setPluggedIn(const bool &pluggedIn);
 
 private slots:
-    void onConnectionStatusChanged();
-    void onAuthenticationRequestFinished(const Cloud::CloudError &error);
+    void propertiesChanged(const QVariantMap &properties);
 
 };
 
+QDebug operator<<(QDebug debug, WiredNetworkDevice *networkDevice);
+
 }
 
-#endif // CLOUDHANDLER_H
+#endif // WIREDNETWORKDEVICE_H

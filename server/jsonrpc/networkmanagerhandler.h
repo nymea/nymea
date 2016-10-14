@@ -42,21 +42,37 @@ public:
     Q_INVOKABLE JsonReply *GetNetworkDevices(const QVariantMap &params);
     Q_INVOKABLE JsonReply *ScanWifiNetworks(const QVariantMap &params);
     Q_INVOKABLE JsonReply *ConnectWifiNetwork(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *DisconnectInterface(const QVariantMap &params);
 
 private:
     QVariantMap packNetworkManagerStatus();
 
 signals:
+    // NetworkManager
     void NetworkStatusChanged(const QVariantMap &params);
-    void NetworkDeviceChanged(const QVariantMap &params);
-    void NetworkDeviceAdded(const QVariantMap &params);
-    void NetworkDeviceRemoved(const QVariantMap &params);
+
+    // NetworkDevices
+    void WiredNetworkDeviceAdded(const QVariantMap &params);
+    void WiredNetworkDeviceRemoved(const QVariantMap &params);
+    void WiredNetworkDeviceChanged(const QVariantMap &params);
+
+    void WirelessNetworkDeviceAdded(const QVariantMap &params);
+    void WirelessNetworkDeviceRemoved(const QVariantMap &params);
+    void WirelessNetworkDeviceChanged(const QVariantMap &params);
 
 private slots:
+    // NetworkManager
     void onNetworkManagerStatusChanged();
-    void onNetworkDeviceChanged(NetworkDevice *networkDevice);
-    void onNetworkDeviceAdded(NetworkDevice *networkDevice);
-    void onNetworkDeviceRemoved(NetworkDevice *networkDevice);
+
+    // NetworkDevices
+    void onWirelessNetworkDeviceAdded(WirelessNetworkDevice *networkDevice);
+    void onWirelessNetworkDeviceRemoved(const QString &interface);
+    void onWirelessNetworkDeviceChanged(WirelessNetworkDevice *networkDevice);
+
+    void onWiredNetworkDeviceAdded(WiredNetworkDevice *networkDevice);
+    void onWiredNetworkDeviceRemoved(const QString &interface);
+    void onWiredNetworkDeviceChanged(WiredNetworkDevice *networkDevice);
+
 };
 
 }

@@ -169,11 +169,15 @@ public:
     QDBusObjectPath ip4Config() const;
     QList<QDBusObjectPath> availableConnections() const;
 
+    // Method
+    void disconnectDevice();
+
     static QString deviceTypeToString(const DeviceType &deviceType);
     static QString deviceStateToString(const NetworkDeviceState &deviceState);
     static QString deviceStateReasonToString(const NetworkDeviceStateReason &deviceStateReason);
 
 private:
+    QDBusInterface *m_networkDeviceInterface;
     QDBusObjectPath m_objectPath;
 
     // Device properties
@@ -201,7 +205,7 @@ private slots:
     void onStateChanged(uint newState, uint oldState, uint reason);
 
 signals:
-    void deviceStateChanged();
+    void deviceChanged();
 
 };
 

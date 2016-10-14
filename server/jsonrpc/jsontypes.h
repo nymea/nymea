@@ -49,7 +49,8 @@
 #include "cloud/cloudconnection.h"
 
 #include "networkmanager/networkmanager.h"
-#include "networkmanager/networkdevice.h"
+#include "networkmanager/wirednetworkdevice.h"
+#include "networkmanager/wirelessnetworkdevice.h"
 #include "networkmanager/wirelessaccesspoint.h"
 
 #include <QObject>
@@ -162,7 +163,8 @@ public:
     DECLARE_OBJECT(timeEventItem, "TimeEventItem")
     DECLARE_OBJECT(repeatingOption, "RepeatingOption")
     DECLARE_OBJECT(wirelessAccessPoint, "WirelessAccessPoint")
-    DECLARE_OBJECT(networkDevice, "NetworkDevice")
+    DECLARE_OBJECT(wiredNetworkDevice, "WiredNetworkDevice")
+    DECLARE_OBJECT(wirelessNetworkDevice, "WirelessNetworkDevice")
 
     // pack types
     static QVariantMap packEventType(const EventType &eventType);
@@ -192,7 +194,8 @@ public:
     static QVariantMap packTimeEventItem(const TimeEventItem &timeEventItem);
     static QVariantMap packTimeDescriptor(const TimeDescriptor &timeDescriptor);
     static QVariantMap packWirelessAccessPoint(WirelessAccessPoint *wirelessAccessPoint);
-    static QVariantMap packNetworkDevice(NetworkDevice *networkDevice);
+    static QVariantMap packWiredNetworkDevice(WiredNetworkDevice *networkDevice);
+    static QVariantMap packWirelessNetworkDevice(WirelessNetworkDevice *networkDevice);
 
     // pack resources
     static QVariantList packRules(const QList<Rule> rules);

@@ -115,7 +115,8 @@ QVariantMap JsonTypes::s_calendarItem;
 QVariantMap JsonTypes::s_timeEventItem;
 QVariantMap JsonTypes::s_repeatingOption;
 QVariantMap JsonTypes::s_wirelessAccessPoint;
-QVariantMap JsonTypes::s_networkDevice;
+QVariantMap JsonTypes::s_wiredNetworkDevice;
+QVariantMap JsonTypes::s_wirelessNetworkDevice;
 
 void JsonTypes::init()
 {
@@ -334,9 +335,19 @@ void JsonTypes::init()
     s_wirelessAccessPoint.insert("frequency", basicTypeToString(QVariant::Double));
     s_wirelessAccessPoint.insert("signalStrength", basicTypeToString(QVariant::Int));
 
-    // NetworkDevice
-    s_networkDevice.insert("name", basicTypeToString(QVariant::String));
-    s_networkDevice.insert("type", basicTypeToString(QVariant::String));
+    // WiredNetworkDevice
+    s_wiredNetworkDevice.insert("interface", basicTypeToString(QVariant::String));
+    s_wiredNetworkDevice.insert("macAddress", basicTypeToString(QVariant::String));
+    s_wiredNetworkDevice.insert("state", networkDeviceStateRef());
+    s_wiredNetworkDevice.insert("bitRate", basicTypeToString(QVariant::String));
+    s_wiredNetworkDevice.insert("pluggedIn", basicTypeToString(QVariant::Bool));
+
+    // WirelessNetworkDevice
+    s_wirelessNetworkDevice.insert("interface", basicTypeToString(QVariant::String));
+    s_wirelessNetworkDevice.insert("macAddress", basicTypeToString(QVariant::String));
+    s_wirelessNetworkDevice.insert("state", networkDeviceStateRef());
+    s_wirelessNetworkDevice.insert("bitRate", basicTypeToString(QVariant::String));
+    s_wirelessNetworkDevice.insert("o:currentAccessPoint", wirelessAccessPointRef());
 
     s_initialized = true;
 }
@@ -412,7 +423,8 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("TimeEventItem", timeEventItemDescription());
     allTypes.insert("RepeatingOption", repeatingOptionDescription());
     allTypes.insert("WirelessAccessPoint", wirelessAccessPointDescription());
-    allTypes.insert("NetworkDevice", networkDeviceDescription());
+    allTypes.insert("WiredNetworkDevice", wiredNetworkDeviceDescription());
+    allTypes.insert("WirelessNetworkDevice", wirelessNetworkDeviceDescription());
 
     return allTypes;
 }
@@ -971,11 +983,29 @@ QVariantMap JsonTypes::packWirelessAccessPoint(WirelessAccessPoint *wirelessAcce
     return wirelessAccessPointVariant;
 }
 
-QVariantMap JsonTypes::packNetworkDevice(NetworkDevice *networkDevice)
+/*! Returns a variant map of the given \a networkDevice. */
+QVariantMap JsonTypes::packWiredNetworkDevice(WiredNetworkDevice *networkDevice)
 {
     QVariantMap networkDeviceVariant;
-    networkDeviceVariant.insert("name", networkDevice->interface());
-    networkDeviceVariant.insert("type", NetworkDevice::deviceTypeToString(networkDevice->deviceType()));
+    networkDeviceVariant.insert("interface", networkDevice->interface());
+    networkDeviceVariant.insert("macAddress", networkDevice->macAddress());
+    networkDeviceVariant.insert("state", networkDevice->deviceStateString());
+    networkDeviceVariant.insert("bitRate", QString("%1 [Mb/s]").arg(QString::number(networkDevice->bitRate())));
+    networkDeviceVariant.insert("pluggedIn", networkDevice->pluggedIn());
+    return networkDeviceVariant;
+}
+
+/*! Returns a variant map of the given \a networkDevice. */
+QVariantMap JsonTypes::packWirelessNetworkDevice(WirelessNetworkDevice *networkDevice)
+{
+    QVariantMap networkDeviceVariant;
+    networkDeviceVariant.insert("interface", networkDevice->interface());
+    networkDeviceVariant.insert("macAddress", networkDevice->macAddress());
+    networkDeviceVariant.insert("state", networkDevice->deviceStateString());
+    networkDeviceVariant.insert("bitRate", QString("%1 [Mb/s]").arg(QString::number(networkDevice->bitRate())));
+    if (networkDevice->activeAccessPoint())
+        networkDeviceVariant.insert("currentAccessPoint", JsonTypes::packWirelessAccessPoint(networkDevice->activeAccessPoint()));
+
     return networkDeviceVariant;
 }
 
@@ -1744,10 +1774,16 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                     qCWarning(dcJsonRpc) << "WirelessAccessPoint not matching";
                     return result;
                 }
-            } else if (refName == networkDeviceRef()) {
-                QPair<bool, QString> result = validateMap(networkDeviceDescription(), variant.toMap());
+            } else if (refName == wiredNetworkDeviceRef()) {
+                QPair<bool, QString> result = validateMap(wiredNetworkDeviceDescription(), variant.toMap());
                 if (!result.first) {
-                    qCWarning(dcJsonRpc) << "NetworkDevice not matching";
+                    qCWarning(dcJsonRpc) << "WiredNetworkDevice not matching";
+                    return result;
+                }
+            } else if (refName == wirelessNetworkDeviceRef()) {
+                QPair<bool, QString> result = validateMap(wirelessNetworkDeviceDescription(), variant.toMap());
+                if (!result.first) {
+                    qCWarning(dcJsonRpc) << "WirelessNetworkDevice not matching";
                     return result;
                 }
             } else if (refName == basicTypeRef()) {

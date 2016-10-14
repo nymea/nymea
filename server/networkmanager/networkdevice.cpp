@@ -39,30 +39,31 @@ NetworkDevice::NetworkDevice(const QDBusObjectPath &objectPath, QObject *parent)
         return;
     }
 
-    QDBusInterface networkDeviceInterface(serviceString, m_objectPath.path(), deviceInterfaceString, QDBusConnection::systemBus());
-    if(!networkDeviceInterface.isValid()) {
+    m_networkDeviceInterface = new QDBusInterface(serviceString, m_objectPath.path(), deviceInterfaceString, QDBusConnection::systemBus(), this);
+    if(!m_networkDeviceInterface->isValid()) {
         qCWarning(dcNetworkManager()) << "NetworkDevice: Invalid DBus device interface" << m_objectPath.path();
         return;
     }
 
-    m_udi = networkDeviceInterface.property("Udi").toString();
-    m_interface = networkDeviceInterface.property("Interface").toString();
-    m_ipInterface = networkDeviceInterface.property("IpInterface").toString();
-    m_driver = networkDeviceInterface.property("Driver").toString();
-    m_driverVersion = networkDeviceInterface.property("DriverVersion").toString();
-    m_firmwareVersion = networkDeviceInterface.property("FirmwareVersion").toString();
-    m_physicalPortId = networkDeviceInterface.property("PhysicalPortId").toString();
-    m_mtu = networkDeviceInterface.property("Mtu").toUInt();
-    m_metered = networkDeviceInterface.property("Metered").toUInt();
-    m_autoconnect = networkDeviceInterface.property("Autoconnect").toBool();
+    m_udi = m_networkDeviceInterface->property("Udi").toString();
+    m_interface = m_networkDeviceInterface->property("Interface").toString();
+    m_ipInterface = m_networkDeviceInterface->property("IpInterface").toString();
+    m_driver = m_networkDeviceInterface->property("Driver").toString();
+    m_driverVersion = m_networkDeviceInterface->property("DriverVersion").toString();
+    m_firmwareVersion = m_networkDeviceInterface->property("FirmwareVersion").toString();
+    m_physicalPortId = m_networkDeviceInterface->property("PhysicalPortId").toString();
+    m_mtu = m_networkDeviceInterface->property("Mtu").toUInt();
+    m_metered = m_networkDeviceInterface->property("Metered").toUInt();
+    m_autoconnect = m_networkDeviceInterface->property("Autoconnect").toBool();
 
-    m_deviceState = NetworkDeviceState(networkDeviceInterface.property("State").toUInt());
-    m_deviceType = DeviceType(networkDeviceInterface.property("DeviceType").toUInt());
+    m_deviceState = NetworkDeviceState(m_networkDeviceInterface->property("State").toUInt());
+    m_deviceType = DeviceType(m_networkDeviceInterface->property("DeviceType").toUInt());
 
-    m_activeConnection = qdbus_cast<QDBusObjectPath>(networkDeviceInterface.property("ActiveConnection"));
-    m_ip4Config = qdbus_cast<QDBusObjectPath>(networkDeviceInterface.property("Ip4Config"));
-    m_ip6Config = qdbus_cast<QDBusObjectPath>(networkDeviceInterface.property("Ip6Config"));
+    m_activeConnection = qdbus_cast<QDBusObjectPath>(m_networkDeviceInterface->property("ActiveConnection"));
+    m_ip4Config = qdbus_cast<QDBusObjectPath>(m_networkDeviceInterface->property("Ip4Config"));
+    m_ip6Config = qdbus_cast<QDBusObjectPath>(m_networkDeviceInterface->property("Ip6Config"));
 
+    QDBusConnection::systemBus().connect(serviceString, m_objectPath.path(), deviceInterfaceString, "StateChanged", this, SLOT(onStateChanged(uint,uint,uint)));
 }
 
 QDBusObjectPath NetworkDevice::objectPath() const
@@ -155,6 +156,14 @@ QList<QDBusObjectPath> NetworkDevice::availableConnections() const
     return m_availableConnections;
 }
 
+void NetworkDevice::disconnectDevice()
+{
+    QDBusMessage query = m_networkDeviceInterface->call("Disconnect");
+    if(query.type() != QDBusMessage::ReplyMessage)
+        qCWarning(dcNetworkManager()) << query.errorName() << query.errorMessage();
+
+}
+
 QString NetworkDevice::deviceTypeToString(const NetworkDevice::DeviceType &deviceType)
 {
     QMetaObject metaObject = NetworkDevice::staticMetaObject;
@@ -182,11 +191,9 @@ QString NetworkDevice::deviceStateReasonToString(const NetworkDevice::NetworkDev
 void NetworkDevice::onStateChanged(uint newState, uint oldState, uint reason)
 {
     Q_UNUSED(oldState);
-
-    qCDebug(dcNetworkManager()) << m_interface << deviceStateToString(NetworkDeviceState(newState)) << ":" << deviceStateReasonToString(NetworkDeviceStateReason(reason));
-
+    qCDebug(dcNetworkManager()) << m_interface << "--> State changed:" << deviceStateToString(NetworkDeviceState(newState)) << ":" << deviceStateReasonToString(NetworkDeviceStateReason(reason));
     m_deviceState = NetworkDeviceState(newState);
-    emit deviceStateChanged();
+    emit deviceChanged();
 }
 
 QDebug operator<<(QDebug debug, NetworkDevice *device)

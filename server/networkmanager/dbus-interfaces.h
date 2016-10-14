@@ -32,6 +32,7 @@ static const QString settingsPathString("/org/freedesktop/NetworkManager/Setting
 
 static const QString deviceInterfaceString("org.freedesktop.NetworkManager.Device");
 static const QString wirelessInterfaceString("org.freedesktop.NetworkManager.Device.Wireless");
+static const QString wiredInterfaceString("org.freedesktop.NetworkManager.Device.Wired");
 static const QString accessPointInterfaceString("org.freedesktop.NetworkManager.AccessPoint");
 static const QString settingsInterfaceString("org.freedesktop.NetworkManager.Settings");
 static const QString connectionsInterfaceString("org.freedesktop.NetworkManager.Settings.Connection");

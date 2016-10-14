@@ -18,7 +18,7 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "wirelessnetworkmanager.h"
+#include "wirelessnetworkdevice.h"
 
 #include "dbus-interfaces.h"
 #include "loggingcategories.h"
@@ -28,18 +28,19 @@
 
 namespace guhserver {
 
-WirelessNetworkManager::WirelessNetworkManager(const QDBusObjectPath &objectPath, QObject *parent) :
-    NetworkDevice(objectPath, parent)
+WirelessNetworkDevice::WirelessNetworkDevice(const QDBusObjectPath &objectPath, QObject *parent) :
+    NetworkDevice(objectPath, parent),
+    m_activeAccessPoint(Q_NULLPTR)
 {
     QDBusConnection systemBus = QDBusConnection::systemBus();
     if (!systemBus.isConnected()) {
-        qCWarning(dcNetworkManager()) << "WirelessNetworkManager: System DBus not connected";
+        qCWarning(dcNetworkManager()) << "WirelessNetworkDevice: System DBus not connected";
         return;
     }
 
     m_wirelessInterface = new QDBusInterface(serviceString, this->objectPath().path(), wirelessInterfaceString, systemBus, this);
-    if(!m_wirelessInterface->isValid()) {
-        qCWarning(dcNetworkManager()) << "WirelessNetworkManager: Invalid wireless dbus interface";
+    if (!m_wirelessInterface->isValid()) {
+        qCWarning(dcNetworkManager()) << "WirelessNetworkDevice: Invalid wireless dbus interface";
         return;
     }
 
@@ -47,39 +48,44 @@ WirelessNetworkManager::WirelessNetworkManager(const QDBusObjectPath &objectPath
     QDBusConnection::systemBus().connect(serviceString, this->objectPath().path(), wirelessInterfaceString, "AccessPointRemoved", this, SLOT(accessPointRemoved(QDBusObjectPath)));
     QDBusConnection::systemBus().connect(serviceString, this->objectPath().path(), wirelessInterfaceString, "PropertiesChanged", this, SLOT(propertiesChanged(QVariantMap)));
 
-    m_macAddress = m_wirelessInterface->property("HwAddress").toString();
-    m_bitrate = m_wirelessInterface->property("Bitrate").toInt() / 1000;
-
-    qCDebug(dcNetworkManager()) << this;
-
     readAccessPoints();
+
+    setMacAddress(m_wirelessInterface->property("HwAddress").toString());
+    setBitrate(m_wirelessInterface->property("Bitrate").toInt());
+    setActiveAccessPoint(qdbus_cast<QDBusObjectPath>(m_wirelessInterface->property("ActiveAccessPoint")));
 }
 
-QString WirelessNetworkManager::macAddress() const
+QString WirelessNetworkDevice::macAddress() const
 {
     return m_macAddress;
 }
 
-int WirelessNetworkManager::bitrate() const
+int WirelessNetworkDevice::bitRate() const
 {
-    return m_bitrate;
+    return m_bitRate;
 }
 
-void WirelessNetworkManager::scanWirelessNetworks()
+WirelessAccessPoint *WirelessNetworkDevice::activeAccessPoint()
 {
+    return m_activeAccessPoint;
+}
+
+void WirelessNetworkDevice::scanWirelessNetworks()
+{
+    qCDebug(dcNetworkManager()) << this << "Request scan";
     QDBusMessage query = m_wirelessInterface->call("RequestScan", QVariantMap());
-    if(query.type() != QDBusMessage::ReplyMessage) {
+    if (query.type() != QDBusMessage::ReplyMessage) {
         qCWarning(dcNetworkManager()) << "Scan error:" << query.errorName() << query.errorMessage();
         return;
     }
 }
 
-QList<WirelessAccessPoint *> WirelessNetworkManager::accessPoints()
+QList<WirelessAccessPoint *> WirelessNetworkDevice::accessPoints()
 {
     return m_accessPointsTable.values();
 }
 
-WirelessAccessPoint *WirelessNetworkManager::getAccessPoint(const QString &ssid)
+WirelessAccessPoint *WirelessNetworkDevice::getAccessPoint(const QString &ssid)
 {
     foreach (WirelessAccessPoint *accessPoint, m_accessPointsTable.values()) {
         if (accessPoint->ssid() == ssid)
@@ -88,12 +94,12 @@ WirelessAccessPoint *WirelessNetworkManager::getAccessPoint(const QString &ssid)
     return Q_NULLPTR;
 }
 
-WirelessAccessPoint *WirelessNetworkManager::getAccessPoint(const QDBusObjectPath &objectPath)
+WirelessAccessPoint *WirelessNetworkDevice::getAccessPoint(const QDBusObjectPath &objectPath)
 {
     return m_accessPointsTable.value(objectPath);
 }
 
-void WirelessNetworkManager::readAccessPoints()
+void WirelessNetworkDevice::readAccessPoints()
 {
     QDBusMessage query = m_wirelessInterface->call("GetAccessPoints");
     if(query.type() != QDBusMessage::ReplyMessage) {
@@ -106,54 +112,81 @@ void WirelessNetworkManager::readAccessPoints()
 
     const QDBusArgument &argument = query.arguments().at(0).value<QDBusArgument>();
     argument.beginArray();
-    while(!argument.atEnd()) {
+    while (!argument.atEnd()) {
         QDBusObjectPath accessPointObjectPath = qdbus_cast<QDBusObjectPath>(argument);
         accessPointAdded(accessPointObjectPath);
     }
     argument.endArray();
 }
 
-void WirelessNetworkManager::accessPointAdded(const QDBusObjectPath &objectPath)
+void WirelessNetworkDevice::setMacAddress(const QString &macAddress)
+{
+    m_macAddress = macAddress;
+}
+
+void WirelessNetworkDevice::setBitrate(const int &bitRate)
+{
+    m_bitRate = bitRate / 1000;
+}
+
+void WirelessNetworkDevice::setActiveAccessPoint(const QDBusObjectPath &activeAccessPointObjectPath)
+{
+    if (m_accessPointsTable.contains(activeAccessPointObjectPath)) {
+        m_activeAccessPoint = m_accessPointsTable.value(activeAccessPointObjectPath);
+    } else {
+        m_activeAccessPoint = Q_NULLPTR;
+    }
+}
+
+void WirelessNetworkDevice::accessPointAdded(const QDBusObjectPath &objectPath)
 {
     QDBusInterface accessPointInterface(serviceString, objectPath.path(), accessPointInterfaceString, QDBusConnection::systemBus());
-    if(!accessPointInterface.isValid()) {
-        qCWarning(dcNetworkManager()) << "WirelessNetworkManager: Invalid access point dbus interface";
+    if (!accessPointInterface.isValid()) {
+        qCWarning(dcNetworkManager()) << "WirelessNetworkDevice: Invalid access point dbus interface";
         return;
     }
 
     if (m_accessPointsTable.keys().contains(objectPath)) {
-        qCWarning(dcNetworkManager()) << "WirelessNetworkManager: Access point already added" << objectPath.path();
+        qCWarning(dcNetworkManager()) << "WirelessNetworkDevice: Access point already added" << objectPath.path();
         return;
     }
 
     WirelessAccessPoint *accessPoint = new WirelessAccessPoint(objectPath, this);
-    //qCDebug(dcNetworkManager()) << "WirelessNetworkManager: [+]" << accessPoint;
-
-    // Add access point
+    //qCDebug(dcNetworkManager()) << "WirelessNetworkDevice: [+]" << accessPoint;
     m_accessPointsTable.insert(objectPath, accessPoint);
 }
 
-void WirelessNetworkManager::accessPointRemoved(const QDBusObjectPath &objectPath)
+void WirelessNetworkDevice::accessPointRemoved(const QDBusObjectPath &objectPath)
 {
     if (!m_accessPointsTable.keys().contains(objectPath))
         return;
 
-    // Remove access point
     WirelessAccessPoint *accessPoint = m_accessPointsTable.take(objectPath);
-    //qCDebug(dcNetworkManager()) << "WirelessNetworkManager: [-]" << accessPoint;
+    if (accessPoint == m_activeAccessPoint)
+        m_activeAccessPoint = Q_NULLPTR;
+
+    //qCDebug(dcNetworkManager()) << "WirelessNetworkDevice: [-]" << accessPoint;
     accessPoint->deleteLater();
 }
 
-void WirelessNetworkManager::propertiesChanged(const QVariantMap &properties)
+void WirelessNetworkDevice::propertiesChanged(const QVariantMap &properties)
 {
-    qCDebug(dcNetworkManager()) << "WirelessNetworkManager: Property changed" << properties;
+    //qCDebug(dcNetworkManager()) << "WirelessNetworkDevice: Property changed" << properties;
+
+    if (properties.contains("Bitrate"))
+        setBitrate(properties.value("Bitrate").toInt());
+
+    if (properties.contains("ActiveAccessPoint"))
+        setActiveAccessPoint(qdbus_cast<QDBusObjectPath>(properties.value("ActiveAccessPoint")));
+
+    emit deviceChanged();
 }
 
-QDebug operator<<(QDebug debug, WirelessNetworkManager *manager)
+QDebug operator<<(QDebug debug, WirelessNetworkDevice *manager)
 {
-    debug.nospace() << "WirelessDevice(" << manager->interface() << ", ";
+    debug.nospace() << "WirelessNetworkDevice(" << manager->interface() << ", ";
     debug.nospace() << manager->macAddress() <<  ", ";
-    debug.nospace() << manager->bitrate() <<  " [Mb/s], ";
+    debug.nospace() << manager->bitRate() <<  " [Mb/s], ";
     debug.nospace() << manager->deviceStateString() <<  ") ";
     return debug;
 }

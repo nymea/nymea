@@ -126,15 +126,28 @@ void WirelessNetworkDevice::setMacAddress(const QString &macAddress)
 
 void WirelessNetworkDevice::setBitrate(const int &bitRate)
 {
-    m_bitRate = bitRate / 1000;
+    if (m_bitRate != bitRate / 1000) {
+        m_bitRate = bitRate / 1000;
+        emit deviceChanged();
+    }
 }
 
 void WirelessNetworkDevice::setActiveAccessPoint(const QDBusObjectPath &activeAccessPointObjectPath)
 {
-    if (m_accessPointsTable.contains(activeAccessPointObjectPath)) {
-        m_activeAccessPoint = m_accessPointsTable.value(activeAccessPointObjectPath);
-    } else {
-        m_activeAccessPoint = Q_NULLPTR;
+    if (m_activeAccessPointObjectPath != activeAccessPointObjectPath) {
+        m_activeAccessPointObjectPath = activeAccessPointObjectPath;
+        if (m_accessPointsTable.contains(m_activeAccessPointObjectPath)) {
+            if (m_activeAccessPoint)
+                disconnect(m_activeAccessPoint, &WirelessAccessPoint::signalStrengthChanged, this, &WirelessNetworkDevice::deviceChanged);
+
+            // Set new access point object
+            m_activeAccessPoint = m_accessPointsTable.value(activeAccessPointObjectPath);
+            // Update the device when the signalstrength changed
+            connect(m_activeAccessPoint, &WirelessAccessPoint::signalStrengthChanged, this, &WirelessNetworkDevice::deviceChanged);
+        } else {
+            m_activeAccessPoint = Q_NULLPTR;
+        }
+        emit deviceChanged();
     }
 }
 
@@ -178,8 +191,6 @@ void WirelessNetworkDevice::propertiesChanged(const QVariantMap &properties)
 
     if (properties.contains("ActiveAccessPoint"))
         setActiveAccessPoint(qdbus_cast<QDBusObjectPath>(properties.value("ActiveAccessPoint")));
-
-    emit deviceChanged();
 }
 
 QDebug operator<<(QDebug debug, WirelessNetworkDevice *manager)

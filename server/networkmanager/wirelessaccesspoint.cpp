@@ -26,7 +26,8 @@ namespace guhserver {
 
 WirelessAccessPoint::WirelessAccessPoint(const QDBusObjectPath &objectPath, QObject *parent) :
     QObject(parent),
-    m_objectPath(objectPath)
+    m_objectPath(objectPath),
+    m_securityFlags(0)
 {
     QDBusInterface accessPointInterface(serviceString, m_objectPath.path(), accessPointInterfaceString, QDBusConnection::systemBus());
     if(!accessPointInterface.isValid()) {
@@ -40,6 +41,7 @@ WirelessAccessPoint::WirelessAccessPoint(const QDBusObjectPath &objectPath, QObj
     setFrequency(accessPointInterface.property("Frequency").toDouble() / 1000);
     setSignalStrength(accessPointInterface.property("Strength").toUInt());
     setSecurityFlags(WirelessAccessPoint::ApSecurityModes(accessPointInterface.property("WpaFlags").toUInt()));
+    setIsProtected((bool)accessPointInterface.property("Flags").toUInt());
 
     QDBusConnection::systemBus().connect(serviceString, objectPath.path(), accessPointInterfaceString, "PropertiesChanged", this, SLOT(onPropertiesChanged(QVariantMap)));
 }
@@ -90,6 +92,16 @@ void WirelessAccessPoint::setSignalStrength(const int &signalStrength)
     emit signalStrengthChanged();
 }
 
+void WirelessAccessPoint::setIsProtected(const bool &isProtected)
+{
+    m_isProtected = isProtected;
+}
+
+bool WirelessAccessPoint::isProtected() const
+{
+    return m_isProtected;
+}
+
 WirelessAccessPoint::ApSecurityModes WirelessAccessPoint::securityFlags() const
 {
     return m_securityFlags;
@@ -109,7 +121,7 @@ void WirelessAccessPoint::onPropertiesChanged(const QVariantMap &properties)
 
 QDebug operator<<(QDebug debug, WirelessAccessPoint *accessPoint)
 {
-    return debug.nospace() << "AccessPoint(" << accessPoint->signalStrength() << "%, " <<  accessPoint->frequency()<< " GHz, " << accessPoint->ssid() << ")";
+    return debug.nospace() << "AccessPoint(" << accessPoint->signalStrength() << "%, " <<  accessPoint->frequency()<< " GHz, " << accessPoint->ssid() << ", " << (accessPoint->isProtected() ? "protected" : "open" ) << ")";
 }
 
 }

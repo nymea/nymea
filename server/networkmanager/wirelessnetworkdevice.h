@@ -60,6 +60,7 @@ private:
     QString m_macAddress;
     int m_bitRate;
     WirelessAccessPoint *m_activeAccessPoint;
+    QDBusObjectPath m_activeAccessPointObjectPath;
 
     QHash<QDBusObjectPath, WirelessAccessPoint *> m_accessPointsTable;
 

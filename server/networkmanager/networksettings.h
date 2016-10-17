@@ -40,6 +40,7 @@ public:
     explicit NetworkSettings(QObject *parent = 0);
 
     QDBusObjectPath addConnection(const ConnectionSettings &settings);
+    QList<NetworkConnection *> connections() const;
 
 private:
     QDBusInterface *m_settingsInterface;

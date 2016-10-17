@@ -334,6 +334,7 @@ void JsonTypes::init()
     s_wirelessAccessPoint.insert("macAddress", basicTypeToString(QVariant::String));
     s_wirelessAccessPoint.insert("frequency", basicTypeToString(QVariant::Double));
     s_wirelessAccessPoint.insert("signalStrength", basicTypeToString(QVariant::Int));
+    s_wirelessAccessPoint.insert("protected", basicTypeToString(QVariant::Bool));
 
     // WiredNetworkDevice
     s_wiredNetworkDevice.insert("interface", basicTypeToString(QVariant::String));
@@ -396,6 +397,7 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("ConfigurationError", configurationError());
     allTypes.insert("NetworkManagerError", networkManagerError());
     allTypes.insert("NetworkManagerState", networkManagerState());
+    allTypes.insert("NetworkDeviceState", networkDeviceState());
 
     allTypes.insert("StateType", stateTypeDescription());
     allTypes.insert("StateDescriptor", stateDescriptorDescription());
@@ -979,7 +981,7 @@ QVariantMap JsonTypes::packWirelessAccessPoint(WirelessAccessPoint *wirelessAcce
     wirelessAccessPointVariant.insert("macAddress", wirelessAccessPoint->macAddress());
     wirelessAccessPointVariant.insert("frequency", wirelessAccessPoint->frequency());
     wirelessAccessPointVariant.insert("signalStrength", wirelessAccessPoint->signalStrength());
-
+    wirelessAccessPointVariant.insert("protected", wirelessAccessPoint->isProtected());
     return wirelessAccessPointVariant;
 }
 

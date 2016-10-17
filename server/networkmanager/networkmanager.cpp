@@ -317,7 +317,7 @@ void NetworkManager::onDeviceAdded(const QDBusObjectPath &deviceObjectPath)
     }
 
     // Create object
-    NetworkDevice::NetworkDeviceType deviceType = NetworkDevice::NetworkDeviceType(networkDeviceInterface.property("NetworkDeviceType").toUInt());
+    NetworkDevice::NetworkDeviceType deviceType = NetworkDevice::NetworkDeviceType(networkDeviceInterface.property("DeviceType").toUInt());
     switch (deviceType) {
     case NetworkDevice::NetworkDeviceTypeWifi: {
         WirelessNetworkDevice *wirelessNetworkDevice = new WirelessNetworkDevice(deviceObjectPath, this);

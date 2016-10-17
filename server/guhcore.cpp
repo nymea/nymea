@@ -99,6 +99,7 @@
 #include "loggingcategories.h"
 #include "jsonrpcserver.h"
 #include "ruleengine.h"
+#include "networkmanager/networkmanager.h"
 
 #include "devicemanager.h"
 #include "plugin/device.h"
@@ -326,8 +327,8 @@ void GuhCore::executeRuleActions(const QList<RuleAction> ruleActions)
             qCWarning(dcRuleEngine) << "Error executing action:" << status;
         }
 
-//        if (status != DeviceManager::DeviceErrorAsync)
-//            m_logger->logAction(action, status == DeviceManager::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
+        //        if (status != DeviceManager::DeviceErrorAsync)
+        //            m_logger->logAction(action, status == DeviceManager::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
     }
 }
 
@@ -376,24 +377,35 @@ WebSocketServer *GuhCore::webSocketServer() const
     return m_webSocketServer;
 }
 
+/*! Returns a pointer to the \l{CloudManager} instance owned by GuhCore. */
 CloudManager *GuhCore::cloudManager() const
 {
     return m_cloudManager;
 }
 
+/*! Returns a pointer to the \l{ServerManager} instance owned by GuhCore. */
 ServerManager *GuhCore::serverManager() const
 {
     return m_serverManager;
 }
 
+/*! Returns the list of available system languages. */
 QStringList GuhCore::getAvailableLanguages()
 {
     // TODO: parse available translation files
     return QStringList() << "en_US" << "de_DE";
 }
+
+/*! Returns a pointer to the \l{BluetoothServer} instance owned by GuhCore. */
 BluetoothServer *GuhCore::bluetoothServer() const
 {
     return m_bluetoothServer;
+}
+
+/*! Returns a pointer to the \l{NetworkManager} instance owned by GuhCore. */
+NetworkManager *GuhCore::networkManager() const
+{
+    return m_networkManager;
 }
 
 #ifdef TESTING_ENABLED
@@ -454,6 +466,8 @@ GuhCore::GuhCore(QObject *parent) :
     m_webServer = new WebServer(m_configuration->webServerAddress(), m_configuration->webServerPort(), m_configuration->webServerPublicFolder(), this);
     m_serverManager->restServer()->registerWebserver(m_webServer);
 
+    // Create the NetworkManager
+    m_networkManager = new NetworkManager(this);
 
     // Connect the configuration changes
     connect(m_configuration, &GuhConfiguration::cloudEnabledChanged, m_cloudManager, &CloudManager::onCloudEnabledChanged);

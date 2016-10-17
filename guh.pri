@@ -2,14 +2,14 @@
 GUH_VERSION_STRING=$$system('dpkg-parsechangelog | sed -n -e "s/^Version: //p"')
 
 # define protocol versions
-JSON_PROTOCOL_VERSION=46
+JSON_PROTOCOL_VERSION=47
 REST_API_VERSION=1
 
 DEFINES += GUH_VERSION_STRING=\\\"$${GUH_VERSION_STRING}\\\" \
            JSON_PROTOCOL_VERSION=\\\"$${JSON_PROTOCOL_VERSION}\\\" \
            REST_API_VERSION=\\\"$${REST_API_VERSION}\\\"
 
-QT+= network websockets bluetooth
+QT *= network websockets bluetooth dbus
 
 QMAKE_CXXFLAGS *= -Werror -std=c++11 -g
 QMAKE_LFLAGS *= -std=c++11

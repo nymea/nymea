@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.guru>                 *
+ *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.guru>                 *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -18,42 +18,39 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef CLOUDHANDLER_H
-#define CLOUDHANDLER_H
+#ifndef NETWORKACCESSMANAGER_H
+#define NETWORKACCESSMANAGER_H
+
+#include "libguh.h"
+#include "typeutils.h"
 
 #include <QObject>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QDebug>
+#include <QUrl>
 
-#include "guhcore.h"
-#include "jsonhandler.h"
-#include "loggingcategories.h"
-#include "cloud/cloud.h"
-
-namespace guhserver {
-
-class CloudHandler : public JsonHandler
+class LIBGUH_EXPORT NetworkAccessManager : public QObject
 {
     Q_OBJECT
 public:
-    CloudHandler(QObject *parent = 0);
+    explicit NetworkAccessManager(QObject *parent = 0);
 
-    QString name() const;
-
-    Q_INVOKABLE JsonReply *Authenticate(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *GetConnectionStatus(const QVariantMap &params) const;
-    Q_INVOKABLE JsonReply *Enable(const QVariantMap &params) const;
+    QNetworkReply *get(const PluginId &pluginId, const QNetworkRequest &request);
+    QNetworkReply *post(const PluginId &pluginId, const QNetworkRequest &request, const QByteArray &data);
+    QNetworkReply *put(const PluginId &pluginId, const QNetworkRequest &request, const QByteArray &data);
 
 private:
-    QList<JsonReply *> m_asyncAuthenticationReplies;
+    QNetworkAccessManager *m_manager;
+    QHash<QNetworkReply *, PluginId> m_replies;
 
 signals:
-    void ConnectionStatusChanged(const QVariantMap &params);
+    void replyReady(const PluginId &pluginId, QNetworkReply *reply);
 
 private slots:
-    void onConnectionStatusChanged();
-    void onAuthenticationRequestFinished(const Cloud::CloudError &error);
+    void replyFinished(QNetworkReply *reply);
 
 };
 
-}
-
-#endif // CLOUDHANDLER_H
+#endif // NETWORKACCESSMANAGER_H

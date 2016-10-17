@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.guru>                 *
+ *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.io>                   *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -18,42 +18,45 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef CLOUDHANDLER_H
-#define CLOUDHANDLER_H
+#ifndef NETWORKSETTINGS_H
+#define NETWORKSETTINGS_H
 
 #include <QObject>
+#include <QDBusObjectPath>
+#include <QDBusConnection>
+#include <QDBusInterface>
+#include <QDBusArgument>
 
-#include "guhcore.h"
-#include "jsonhandler.h"
-#include "loggingcategories.h"
-#include "cloud/cloud.h"
+#include "networkconnection.h"
 
 namespace guhserver {
 
-class CloudHandler : public JsonHandler
+class NetworkConnection;
+
+class NetworkSettings : public QObject
 {
     Q_OBJECT
 public:
-    CloudHandler(QObject *parent = 0);
+    explicit NetworkSettings(QObject *parent = 0);
 
-    QString name() const;
-
-    Q_INVOKABLE JsonReply *Authenticate(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *GetConnectionStatus(const QVariantMap &params) const;
-    Q_INVOKABLE JsonReply *Enable(const QVariantMap &params) const;
+    QDBusObjectPath addConnection(const ConnectionSettings &settings);
+    QList<NetworkConnection *> connections() const;
 
 private:
-    QList<JsonReply *> m_asyncAuthenticationReplies;
+    QDBusInterface *m_settingsInterface;
+    QHash<QDBusObjectPath, NetworkConnection *> m_connections;
+
+    void loadConnections();
 
 signals:
-    void ConnectionStatusChanged(const QVariantMap &params);
 
 private slots:
-    void onConnectionStatusChanged();
-    void onAuthenticationRequestFinished(const Cloud::CloudError &error);
+    void connectionAdded(const QDBusObjectPath &objectPath);
+    void connectionRemoved(const QDBusObjectPath &objectPath);
+    void propertiesChanged(const QVariantMap &properties);
 
 };
 
 }
 
-#endif // CLOUDHANDLER_H
+#endif // NETWORKSETTINGS_H

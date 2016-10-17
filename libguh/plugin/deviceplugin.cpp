@@ -77,7 +77,7 @@
  \note Only if if the plugin has requested the \l{DeviceManager::HardwareResourceNetworkManager}
  resource using \l{DevicePlugin::requiredHardware()}, this slot will be called.
 
- \sa NetworkManager::replyReady()
+ \sa NetworkAccessManager::replyReady()
  */
 
 /*!
@@ -818,7 +818,7 @@ bool DevicePlugin::transmitData(int delay, QList<int> rawData, int repetitions)
  *
  * \note The plugin has to delete the QNetworkReply with the function deleteLater().
  *
- * \sa NetworkManager::get()
+ * \sa NetworkAccessManager::get()
  */
 QNetworkReply *DevicePlugin::networkManagerGet(const QNetworkRequest &request)
 {
@@ -835,7 +835,7 @@ QNetworkReply *DevicePlugin::networkManagerGet(const QNetworkRequest &request)
  *
  * \note The plugin has to delete the QNetworkReply with the function deleteLater().
  *
- * \sa NetworkManager::post()
+ * \sa NetworkAccessManager::post()
  */
 QNetworkReply *DevicePlugin::networkManagerPost(const QNetworkRequest &request, const QByteArray &data)
 {
@@ -851,7 +851,7 @@ QNetworkReply *DevicePlugin::networkManagerPost(const QNetworkRequest &request, 
  *
  * \note The plugin has to delete the QNetworkReply with the function deleteLater().
  *
- * \sa NetworkManager::put()
+ * \sa NetworkAccessManager::put()
  */
 QNetworkReply *DevicePlugin::networkManagerPut(const QNetworkRequest &request, const QByteArray &data)
 {

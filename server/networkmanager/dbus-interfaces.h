@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.guru>                 *
+ *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.io>                   *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -18,39 +18,25 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef NETWORKMANAGER_H
-#define NETWORKMANAGER_H
+#ifndef DBUSINTERFACES_H
+#define DBUSINTERFACES_H
 
-#include "libguh.h"
-#include "typeutils.h"
+#include <QString>
 
-#include <QObject>
-#include <QNetworkAccessManager>
-#include <QNetworkRequest>
-#include <QNetworkReply>
-#include <QDebug>
-#include <QUrl>
+namespace guhserver {
 
-class LIBGUH_EXPORT NetworkManager : public QObject
-{
-    Q_OBJECT
-public:
-    explicit NetworkManager(QObject *parent = 0);
+static const QString serviceString("org.freedesktop.NetworkManager");
 
-    QNetworkReply *get(const PluginId &pluginId, const QNetworkRequest &request);
-    QNetworkReply *post(const PluginId &pluginId, const QNetworkRequest &request, const QByteArray &data);
-    QNetworkReply *put(const PluginId &pluginId, const QNetworkRequest &request, const QByteArray &data);
+static const QString pathString("/org/freedesktop/NetworkManager");
+static const QString settingsPathString("/org/freedesktop/NetworkManager/Settings");
 
-private:
-    QNetworkAccessManager *m_manager;
-    QHash<QNetworkReply *, PluginId> m_replies;
+static const QString deviceInterfaceString("org.freedesktop.NetworkManager.Device");
+static const QString wirelessInterfaceString("org.freedesktop.NetworkManager.Device.Wireless");
+static const QString wiredInterfaceString("org.freedesktop.NetworkManager.Device.Wired");
+static const QString accessPointInterfaceString("org.freedesktop.NetworkManager.AccessPoint");
+static const QString settingsInterfaceString("org.freedesktop.NetworkManager.Settings");
+static const QString connectionsInterfaceString("org.freedesktop.NetworkManager.Settings.Connection");
 
-signals:
-    void replyReady(const PluginId &pluginId, QNetworkReply *reply);
+}
 
-private slots:
-    void replyFinished(QNetworkReply *reply);
-
-};
-
-#endif // NETWORKMANAGER_H
+#endif // DBUSINTERFACES_H

@@ -48,6 +48,12 @@
 #include "cloud/cloud.h"
 #include "cloud/cloudconnection.h"
 
+#include "networkmanager/networkmanager.h"
+#include "networkmanager/networkdevice.h"
+#include "networkmanager/wirednetworkdevice.h"
+#include "networkmanager/wirelessnetworkdevice.h"
+#include "networkmanager/wirelessaccesspoint.h"
+
 #include <QObject>
 
 #include <QVariantMap>
@@ -78,7 +84,7 @@ namespace guhserver {
         return s_##typeName; \
     } \
     static QString typeName##ToString(className::enumName value) { \
-        QMetaObject metaObject = className::staticMetaObject; \
+        const QMetaObject &metaObject = className::staticMetaObject; \
         int enumIndex = metaObject.indexOfEnumerator(enumString); \
         QMetaEnum metaEnum = metaObject.enumerator(enumIndex); \
         return metaEnum.valueToKey(metaEnum.value(value)); \
@@ -91,7 +97,6 @@ class JsonTypes
 {
     Q_GADGET
     Q_ENUMS(BasicType)
-    Q_ENUMS(JsonError)
 
 public:
     enum BasicType {
@@ -128,6 +133,9 @@ public:
     DECLARE_TYPE(repeatingMode, "RepeatingMode", RepeatingOption, RepeatingMode)
     DECLARE_TYPE(cloudError, "CloudError", Cloud, CloudError)
     DECLARE_TYPE(configurationError, "ConfigurationError", GuhConfiguration, ConfigurationError)
+    DECLARE_TYPE(networkManagerError, "NetworkManagerError", NetworkManager, NetworkManagerError)
+    DECLARE_TYPE(networkManagerState, "NetworkManagerState", NetworkManager, NetworkManagerState)
+    DECLARE_TYPE(networkDeviceState, "NetworkDeviceState", NetworkDevice, NetworkDeviceState)
 
     DECLARE_OBJECT(paramType, "ParamType")
     DECLARE_OBJECT(param, "Param")
@@ -155,6 +163,9 @@ public:
     DECLARE_OBJECT(calendarItem, "CalendarItem")
     DECLARE_OBJECT(timeEventItem, "TimeEventItem")
     DECLARE_OBJECT(repeatingOption, "RepeatingOption")
+    DECLARE_OBJECT(wirelessAccessPoint, "WirelessAccessPoint")
+    DECLARE_OBJECT(wiredNetworkDevice, "WiredNetworkDevice")
+    DECLARE_OBJECT(wirelessNetworkDevice, "WirelessNetworkDevice")
 
     // pack types
     static QVariantMap packEventType(const EventType &eventType);
@@ -183,6 +194,9 @@ public:
     static QVariantMap packCalendarItem(const CalendarItem &calendarItem);
     static QVariantMap packTimeEventItem(const TimeEventItem &timeEventItem);
     static QVariantMap packTimeDescriptor(const TimeDescriptor &timeDescriptor);
+    static QVariantMap packWirelessAccessPoint(WirelessAccessPoint *wirelessAccessPoint);
+    static QVariantMap packWiredNetworkDevice(WiredNetworkDevice *networkDevice);
+    static QVariantMap packWirelessNetworkDevice(WirelessNetworkDevice *networkDevice);
 
     // pack resources
     static QVariantList packRules(const QList<Rule> rules);

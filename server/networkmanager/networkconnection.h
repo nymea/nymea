@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.guru>                 *
+ *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.io>                   *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -18,42 +18,59 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef CLOUDHANDLER_H
-#define CLOUDHANDLER_H
+#ifndef NETWORKCONNECTION_H
+#define NETWORKCONNECTION_H
 
+#include <QUuid>
+#include <QDebug>
 #include <QObject>
-
-#include "guhcore.h"
-#include "jsonhandler.h"
-#include "loggingcategories.h"
-#include "cloud/cloud.h"
+#include <QDateTime>
+#include <QDBusMetaType>
+#include <QDBusObjectPath>
+#include <QDBusConnection>
+#include <QDBusInterface>
+#include <QDBusArgument>
 
 namespace guhserver {
 
-class CloudHandler : public JsonHandler
+typedef QMap<QString, QVariantMap> ConnectionSettings;
+
+class NetworkConnection : public QObject
 {
     Q_OBJECT
 public:
-    CloudHandler(QObject *parent = 0);
+    explicit NetworkConnection(const QDBusObjectPath &objectPath, QObject *parent = 0);
 
+    void deleteConnection();
+
+    QDBusObjectPath objectPath() const;
+    ConnectionSettings connectionSettings() const;
+
+    QString id() const;
     QString name() const;
-
-    Q_INVOKABLE JsonReply *Authenticate(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *GetConnectionStatus(const QVariantMap &params) const;
-    Q_INVOKABLE JsonReply *Enable(const QVariantMap &params) const;
+    QString type() const;
+    QUuid uuid() const;
+    QString interfaceName() const;
+    bool autoconnect() const;
+    QDateTime timeStamp() const;
 
 private:
-    QList<JsonReply *> m_asyncAuthenticationReplies;
+    QDBusObjectPath m_objectPath;
+    QDBusInterface *m_connectionInterface;
+
+    ConnectionSettings m_connectionSettings;
 
 signals:
-    void ConnectionStatusChanged(const QVariantMap &params);
 
-private slots:
-    void onConnectionStatusChanged();
-    void onAuthenticationRequestFinished(const Cloud::CloudError &error);
+public slots:
 
 };
 
+QDebug operator<<(QDebug debug, NetworkConnection *networkConnection);
+
 }
 
-#endif // CLOUDHANDLER_H
+Q_DECLARE_METATYPE(guhserver::ConnectionSettings)
+
+
+#endif // NETWORKCONNECTION_H

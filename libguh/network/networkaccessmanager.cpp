@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-  \class NetworkManager
+  \class NetworkAccessManager
   \brief Allows to send network requests and receive replies.
 
   \ingroup hardware
@@ -30,21 +30,21 @@
 */
 
 /*!
- * \fn NetworkManager::replyReady(const PluginId &pluginId, QNetworkReply *reply)
+ * \fn NetworkAccessManager::replyReady(const PluginId &pluginId, QNetworkReply *reply)
  * This signal will be emitted whenever a pending network \a reply for the plugin with the given \a pluginId is finished.
  *
  * \sa DevicePlugin::networkManagerReplyReady()
  */
 
-#include "networkmanager.h"
+#include "networkaccessmanager.h"
 #include "loggingcategories.h"
 
-/*! Construct the hardware resource NetworkManager with the given \a parent. */
-NetworkManager::NetworkManager(QObject *parent) :
+/*! Construct the hardware resource NetworkAccessManager with the given \a parent. */
+NetworkAccessManager::NetworkAccessManager(QObject *parent) :
     QObject(parent)
 {
     m_manager = new QNetworkAccessManager(this);
-    connect(m_manager, &QNetworkAccessManager::finished, this, &NetworkManager::replyFinished);
+    connect(m_manager, &QNetworkAccessManager::finished, this, &NetworkAccessManager::replyFinished);
 
     qCDebug(dcDeviceManager) << "--> Network manager created successfully.";
 }
@@ -58,7 +58,7 @@ NetworkManager::NetworkManager(QObject *parent) :
  *
  * \sa DevicePlugin::networkManagerGet()
  */
-QNetworkReply *NetworkManager::get(const PluginId &pluginId, const QNetworkRequest &request)
+QNetworkReply *NetworkAccessManager::get(const PluginId &pluginId, const QNetworkRequest &request)
 {
     QNetworkReply  *reply = m_manager->get(request);
     m_replies.insert(reply, pluginId);
@@ -73,7 +73,7 @@ QNetworkReply *NetworkManager::get(const PluginId &pluginId, const QNetworkReque
  *
  * \sa DevicePlugin::networkManagerPost()
  */
-QNetworkReply *NetworkManager::post(const PluginId &pluginId, const QNetworkRequest &request, const QByteArray &data)
+QNetworkReply *NetworkAccessManager::post(const PluginId &pluginId, const QNetworkRequest &request, const QByteArray &data)
 {
     QNetworkReply  *reply = m_manager->post(request, data);
     m_replies.insert(reply, pluginId);
@@ -87,14 +87,14 @@ QNetworkReply *NetworkManager::post(const PluginId &pluginId, const QNetworkRequ
  *
  * \sa DevicePlugin::networkManagerPut()
  */
-QNetworkReply *NetworkManager::put(const PluginId &pluginId, const QNetworkRequest &request, const QByteArray &data)
+QNetworkReply *NetworkAccessManager::put(const PluginId &pluginId, const QNetworkRequest &request, const QByteArray &data)
 {
     QNetworkReply  *reply = m_manager->put(request, data);
     m_replies.insert(reply, pluginId);
     return reply;
 }
 
-void NetworkManager::replyFinished(QNetworkReply *reply)
+void NetworkAccessManager::replyFinished(QNetworkReply *reply)
 {
     // NOTE: Each plugin has to delete his own replys with deleteLater()!!
     // NOTE: also the reply->error() has to be handled in each plugin!!

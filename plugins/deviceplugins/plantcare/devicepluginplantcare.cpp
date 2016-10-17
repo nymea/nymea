@@ -49,7 +49,7 @@ DevicePluginPlantCare::DevicePluginPlantCare()
 
 DeviceManager::HardwareResources DevicePluginPlantCare::requiredHardware() const
 {
-    // We need the NetworkManager for node discovery and the timer for ping requests
+    // We need the NetworkAccessManager for node discovery and the timer for ping requests
     return DeviceManager::HardwareResourceNetworkManager | DeviceManager::HardwareResourceTimer;
 }
 

@@ -35,7 +35,7 @@ namespace guhserver {
 class NetworkDevice : public QObject
 {
     Q_OBJECT
-    Q_ENUMS(DeviceType)
+    Q_ENUMS(NetworkDeviceType)
     Q_ENUMS(NetworkDeviceState)
     Q_ENUMS(NetworkDeviceStateReason)
 
@@ -122,26 +122,26 @@ public:
         NetworkDeviceStateReasonParentManagedChanged = 62
     };
 
-    enum DeviceType {
-        DeviceTypeUnknown = 0,
-        DeviceTypeEthernet = 1,
-        DeviceTypeWifi = 2,
-        DeviceTypeBluetooth = 5,
-        DeviceTypeOlpcMesh = 6,
-        DeviceTypeWiMax = 7,
-        DeviceTypeModem = 8,
-        DeviceTypeInfiniBand = 9,
-        DeviceTypeBond = 10,
-        DeviceTypeVLan = 11,
-        DeviceTypeAdsl = 12,
-        DeviceTypeBridge = 13,
-        DeviceTypeGeneric = 14,
-        DeviceTypeTeam = 15,
-        DeviceTypeTun = 16,
-        DeviceTypeIpTunnel = 17,
-        DeviceTypeMacVLan = 18,
-        DeviceTypeVXLan = 19,
-        DeviceTypeVEth = 20,
+    enum NetworkDeviceType {
+        NetworkDeviceTypeUnknown = 0,
+        NetworkDeviceTypeEthernet = 1,
+        NetworkDeviceTypeWifi = 2,
+        NetworkDeviceTypeBluetooth = 5,
+        NetworkDeviceTypeOlpcMesh = 6,
+        NetworkDeviceTypeWiMax = 7,
+        NetworkDeviceTypeModem = 8,
+        NetworkDeviceTypeInfiniBand = 9,
+        NetworkDeviceTypeBond = 10,
+        NetworkDeviceTypeVLan = 11,
+        NetworkDeviceTypeAdsl = 12,
+        NetworkDeviceTypeBridge = 13,
+        NetworkDeviceTypeGeneric = 14,
+        NetworkDeviceTypeTeam = 15,
+        NetworkDeviceTypeTun = 16,
+        NetworkDeviceTypeIpTunnel = 17,
+        NetworkDeviceTypeMacVLan = 18,
+        NetworkDeviceTypeVXLan = 19,
+        NetworkDeviceTypeVEth = 20,
     };
 
     explicit NetworkDevice(const QDBusObjectPath &objectPath, QObject *parent = 0);
@@ -163,7 +163,7 @@ public:
     QString deviceStateString() const;
 
     NetworkDeviceStateReason deviceStateReason() const;
-    DeviceType deviceType() const;
+    NetworkDeviceType deviceType() const;
 
     QDBusObjectPath activeConnection() const;
     QDBusObjectPath ip4Config() const;
@@ -172,7 +172,7 @@ public:
     // Method
     void disconnectDevice();
 
-    static QString deviceTypeToString(const DeviceType &deviceType);
+    static QString deviceTypeToString(const NetworkDeviceType &deviceType);
     static QString deviceStateToString(const NetworkDeviceState &deviceState);
     static QString deviceStateReasonToString(const NetworkDeviceStateReason &deviceStateReason);
 
@@ -193,7 +193,7 @@ private:
     bool m_autoconnect;
     NetworkDeviceState m_deviceState;
     NetworkDeviceStateReason m_deviceStateReason;
-    DeviceType m_deviceType;
+    NetworkDeviceType m_deviceType;
 
     QDBusObjectPath m_activeConnection;
     QDBusObjectPath m_ip4Config;
@@ -212,5 +212,10 @@ signals:
 QDebug operator<<(QDebug debug, NetworkDevice *device);
 
 }
+
+using namespace guhserver;
+Q_DECLARE_METATYPE(NetworkDevice::NetworkDeviceType)
+Q_DECLARE_METATYPE(NetworkDevice::NetworkDeviceState)
+Q_DECLARE_METATYPE(NetworkDevice::NetworkDeviceStateReason)
 
 #endif // NETWORKDEVICE_H

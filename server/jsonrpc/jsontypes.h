@@ -49,6 +49,7 @@
 #include "cloud/cloudconnection.h"
 
 #include "networkmanager/networkmanager.h"
+#include "networkmanager/networkdevice.h"
 #include "networkmanager/wirednetworkdevice.h"
 #include "networkmanager/wirelessnetworkdevice.h"
 #include "networkmanager/wirelessaccesspoint.h"

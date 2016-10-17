@@ -58,16 +58,10 @@ public:
     QDBusObjectPath objectPath() const;
 
     QString ssid() const;
-    void setSsid(const QString &ssid);
-
     QString macAddress() const;
-    void setMacAddress(const QString &macAddress);
-
     double frequency() const;
-    void setFrequency(const double &frequency);
-
     int signalStrength() const;
-    void setSignalStrength(const int &signalStrength);
+    bool isProtected() const;
 
     WirelessAccessPoint::ApSecurityModes securityFlags() const;
     void setSecurityFlags(const WirelessAccessPoint::ApSecurityModes &securityFlags);
@@ -78,7 +72,14 @@ private:
     QString m_macAddress;
     double m_frequency;
     int m_signalStrength;
+    bool m_isProtected;
     WirelessAccessPoint::ApSecurityModes m_securityFlags;
+
+    void setSsid(const QString &ssid);
+    void setMacAddress(const QString &macAddress);
+    void setFrequency(const double &frequency);
+    void setSignalStrength(const int &signalStrength);
+    void setIsProtected(const bool &isProtected);
 
 signals:
     void signalStrengthChanged();

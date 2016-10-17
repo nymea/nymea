@@ -57,7 +57,7 @@ NetworkDevice::NetworkDevice(const QDBusObjectPath &objectPath, QObject *parent)
     m_autoconnect = m_networkDeviceInterface->property("Autoconnect").toBool();
 
     m_deviceState = NetworkDeviceState(m_networkDeviceInterface->property("State").toUInt());
-    m_deviceType = DeviceType(m_networkDeviceInterface->property("DeviceType").toUInt());
+    m_deviceType = NetworkDeviceType(m_networkDeviceInterface->property("NetworkDeviceType").toUInt());
 
     m_activeConnection = qdbus_cast<QDBusObjectPath>(m_networkDeviceInterface->property("ActiveConnection"));
     m_ip4Config = qdbus_cast<QDBusObjectPath>(m_networkDeviceInterface->property("Ip4Config"));
@@ -136,7 +136,7 @@ NetworkDevice::NetworkDeviceStateReason NetworkDevice::deviceStateReason() const
     return m_deviceStateReason;
 }
 
-NetworkDevice::DeviceType NetworkDevice::deviceType() const
+NetworkDevice::NetworkDeviceType NetworkDevice::deviceType() const
 {
     return m_deviceType;
 }
@@ -164,12 +164,12 @@ void NetworkDevice::disconnectDevice()
 
 }
 
-QString NetworkDevice::deviceTypeToString(const NetworkDevice::DeviceType &deviceType)
+QString NetworkDevice::deviceTypeToString(const NetworkDevice::NetworkDeviceType &deviceType)
 {
     QMetaObject metaObject = NetworkDevice::staticMetaObject;
-    int enumIndex = metaObject.indexOfEnumerator(QString("DeviceType").toLatin1().data());
+    int enumIndex = metaObject.indexOfEnumerator(QString("NetworkDeviceType").toLatin1().data());
     QMetaEnum metaEnum = metaObject.enumerator(enumIndex);
-    return QString(metaEnum.valueToKey(deviceType)).remove("DeviceType");
+    return QString(metaEnum.valueToKey(deviceType)).remove("NetworkDeviceType");
 }
 
 QString NetworkDevice::deviceStateToString(const NetworkDevice::NetworkDeviceState &deviceState)
@@ -192,8 +192,10 @@ void NetworkDevice::onStateChanged(uint newState, uint oldState, uint reason)
 {
     Q_UNUSED(oldState);
     qCDebug(dcNetworkManager()) << m_interface << "--> State changed:" << deviceStateToString(NetworkDeviceState(newState)) << ":" << deviceStateReasonToString(NetworkDeviceStateReason(reason));
-    m_deviceState = NetworkDeviceState(newState);
-    emit deviceChanged();
+    if (m_deviceState != NetworkDeviceState(newState)) {
+        m_deviceState = NetworkDeviceState(newState);
+        emit deviceChanged();
+    }
 }
 
 QDebug operator<<(QDebug debug, NetworkDevice *device)

@@ -1108,6 +1108,21 @@
             "LoggingSourceStates",
             "LoggingSourceRules"
         ],
+        "NetworkDeviceState": [
+            "NetworkDeviceStateUnknown",
+            "NetworkDeviceStateUnmanaged",
+            "NetworkDeviceStateUnavailable",
+            "NetworkDeviceStateDisconnected",
+            "NetworkDeviceStatePrepare",
+            "NetworkDeviceStateConfig",
+            "NetworkDeviceStateNeedAuth",
+            "NetworkDeviceStateIpConfig",
+            "NetworkDeviceStateIpCheck",
+            "NetworkDeviceStateSecondaries",
+            "NetworkDeviceStateActivated",
+            "NetworkDeviceStateDeactivating",
+            "NetworkDeviceStateFailed"
+        ],
         "NetworkManagerError": [
             "NetworkManagerErrorNoError",
             "NetworkManagerErrorUnknownError",
@@ -1372,6 +1387,7 @@
         "WirelessAccessPoint": {
             "frequency": "Double",
             "macAddress": "String",
+            "protected": "Bool",
             "signalStrength": "Int",
             "ssid": "String"
         },

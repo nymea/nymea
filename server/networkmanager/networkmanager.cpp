@@ -155,8 +155,8 @@ NetworkManager::NetworkManagerError NetworkManager::connectWifi(const QString &i
 
     QVariantMap wirelessSettings;
     wirelessSettings.insert("ssid", ssid.toUtf8());
-    wirelessSettings.insert("security", "802-11-wireless-security");
     wirelessSettings.insert("mode", "infrastructure");
+    wirelessSettings.insert("security", "802-11-wireless-security");
 
     QVariantMap wirelessSecuritySettings;
     wirelessSecuritySettings.insert("auth-alg", "open");
@@ -173,11 +173,16 @@ NetworkManager::NetworkManagerError NetworkManager::connectWifi(const QString &i
     ConnectionSettings settings;
     settings.insert("connection", connectionSettings);
     settings.insert("802-11-wireless", wirelessSettings);
-    settings.insert("802-11-wireless-security", wirelessSecuritySettings);
     settings.insert("ipv4", ipv4Settings);
     settings.insert("ipv6", ipv6Settings);
+    settings.insert("802-11-wireless-security", wirelessSecuritySettings);
 
-    // TODO: check if connection exists
+    // Remove old configuration (if there is any)
+    foreach (NetworkConnection *connection, m_networkSettings->connections()) {
+        if (connection->id() == connectionSettings.value("id")) {
+            connection->deleteConnection();
+        }
+    }
 
     // Add connection
     QDBusObjectPath connectionObjectPath = m_networkSettings->addConnection(settings);
@@ -312,9 +317,9 @@ void NetworkManager::onDeviceAdded(const QDBusObjectPath &deviceObjectPath)
     }
 
     // Create object
-    NetworkDevice::DeviceType deviceType = NetworkDevice::DeviceType(networkDeviceInterface.property("DeviceType").toUInt());
+    NetworkDevice::NetworkDeviceType deviceType = NetworkDevice::NetworkDeviceType(networkDeviceInterface.property("NetworkDeviceType").toUInt());
     switch (deviceType) {
-    case NetworkDevice::DeviceTypeWifi: {
+    case NetworkDevice::NetworkDeviceTypeWifi: {
         WirelessNetworkDevice *wirelessNetworkDevice = new WirelessNetworkDevice(deviceObjectPath, this);
         qCDebug(dcNetworkManager()) << "[+]" << wirelessNetworkDevice;
         m_wifiAvailable = true;
@@ -324,7 +329,7 @@ void NetworkManager::onDeviceAdded(const QDBusObjectPath &deviceObjectPath)
         emit wirelessDeviceAdded(wirelessNetworkDevice);
         break;
     }
-    case NetworkDevice::DeviceTypeEthernet: {
+    case NetworkDevice::NetworkDeviceTypeEthernet: {
         WiredNetworkDevice *wiredNetworkDevice = new WiredNetworkDevice(deviceObjectPath, this);
         qCDebug(dcNetworkManager()) << "[+]" << wiredNetworkDevice;
         m_networkDevices.insert(deviceObjectPath, wiredNetworkDevice);

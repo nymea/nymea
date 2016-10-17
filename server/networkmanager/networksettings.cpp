@@ -53,6 +53,11 @@ QDBusObjectPath NetworkSettings::addConnection(const ConnectionSettings &setting
     return query.arguments().at(0).value<QDBusObjectPath>();
 }
 
+QList<NetworkConnection *> NetworkSettings::connections() const
+{
+    return m_connections.values();
+}
+
 void NetworkSettings::loadConnections()
 {
     QDBusMessage query = m_settingsInterface->call("ListConnections");
@@ -79,13 +84,14 @@ void NetworkSettings::connectionAdded(const QDBusObjectPath &objectPath)
     NetworkConnection *connection = new NetworkConnection(objectPath, this);
     m_connections.insert(objectPath, connection);
 
-    //qCDebug(dcNetworkManager()) << "Settings: [+]" << connection;
+    qCDebug(dcNetworkManager()) << "Settings: [+]" << connection;
 }
 
 void NetworkSettings::connectionRemoved(const QDBusObjectPath &objectPath)
 {
-    Q_UNUSED(objectPath);
-    //qCDebug(dcNetworkManager()) << "Settings: [-]" << objectPath.path();
+    NetworkConnection *connection = m_connections.take(objectPath);
+    qCDebug(dcNetworkManager()) << "Settings: [-]" << connection;
+    connection->deleteLater();
 }
 
 void NetworkSettings::propertiesChanged(const QVariantMap &properties)

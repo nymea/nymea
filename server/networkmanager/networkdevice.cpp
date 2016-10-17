@@ -57,7 +57,7 @@ NetworkDevice::NetworkDevice(const QDBusObjectPath &objectPath, QObject *parent)
     m_autoconnect = m_networkDeviceInterface->property("Autoconnect").toBool();
 
     m_deviceState = NetworkDeviceState(m_networkDeviceInterface->property("State").toUInt());
-    m_deviceType = NetworkDeviceType(m_networkDeviceInterface->property("NetworkDeviceType").toUInt());
+    m_deviceType = NetworkDeviceType(m_networkDeviceInterface->property("DeviceType").toUInt());
 
     m_activeConnection = qdbus_cast<QDBusObjectPath>(m_networkDeviceInterface->property("ActiveConnection"));
     m_ip4Config = qdbus_cast<QDBusObjectPath>(m_networkDeviceInterface->property("Ip4Config"));

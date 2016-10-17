@@ -58,7 +58,9 @@ Depends: libqt5network5,
          libguh1 (= ${binary:Version}),
          ${shlibs:Depends},
          ${misc:Depends}
-Recommends: guh-webinterface, guh-cli
+Recommends: guh-webinterface,
+            guh-cli, 
+            network-manager
 Description: An open source IoT server - daemon
  The guh daemon is a plugin based IoT (Internet of Things) server. The
  server works like a translator for devices, things and services and
@@ -120,7 +122,7 @@ Architecture: any
 Depends: guh (= ${binary:Version}),
          ${shlibs:Depends},
          ${misc:Depends}
-Description:Tests and mock plugin for the guh daemon - tests
+Description: Tests and mock plugin for the guh daemon - tests
  The guh daemon is a plugin based IoT (Internet of Things) server. The
  server works like a translator for devices, things and services and
  allows them to interact.

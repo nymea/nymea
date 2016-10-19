@@ -19,3 +19,4 @@ usr/lib/guh/plugins/libguh_deviceplugindenon.so
 usr/lib/guh/plugins/libguh_devicepluginsenic.so
 usr/lib/guh/plugins/libguh_devicepluginmultisensor.so
 usr/lib/guh/plugins/libguh_devicepluginpushbullet.so
+usr/lib/guh/plugins/libguh_devicepluginusbwde.so

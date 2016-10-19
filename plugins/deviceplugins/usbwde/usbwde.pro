@@ -7,7 +7,7 @@ message(Qt version: $$[QT_VERSION])
 message("Building $$deviceplugin$${TARGET}.so")
 
 SOURCES += \
-    devicepluginsubwde.cpp
+    devicepluginusbwde.cpp
 
 HEADERS += \
     devicepluginusbwde.h

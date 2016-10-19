@@ -18,8 +18,8 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef DEVICEPLUGINELV_H
-#define DEVICEPLUGINELV_H
+#ifndef DEVICEPLUGINUSBWDE_H
+#define DEVICEPLUGINUSBWDE_H
 
 #include "plugin/deviceplugin.h"
 #include "devicemanager.h"
@@ -52,4 +52,4 @@ private slots:
     void handleError(QSerialPort::SerialPortError error);
 };
 
-#endif // DEVICEPLUGINELV_H
+#endif // DEVICEPLUGINUSBWDE_H

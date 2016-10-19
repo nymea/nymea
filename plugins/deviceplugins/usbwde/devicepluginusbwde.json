@@ -1,0 +1,177 @@
+{
+    "name": "USB Wde",
+    "idName": "Elv",
+    "id": "b01bc368-d674-41ef-a368-6b6a76c96365",
+    "vendors": [
+        {
+            "name": "ELV",
+            "idName": "ELV",
+            "id": "55500c7c-9b09-4462-8d71-e5b4b42f6940",
+            "deviceClasses": [
+                {
+                    "deviceClassId": "20e1b650-41d1-41b7-891f-1e68130d1403",
+                    "idName": "wdeBridge",
+                    "name": "USB WDE",
+                    "basicTags": [
+                        "Gateway"
+                    ],
+                    "createMethods": ["user"],
+                    "paramTypes": [
+                        {
+                            "name": "name",
+                            "type": "QString",
+                            "inputType": "TextLine",
+                            "index": 0
+                        },
+                        {
+                            "name": "interface",
+                            "type": "QString",
+                            "inputType": "TextLine",
+                            "defaultValue": "/dev/ttyUSB0",
+                            "index": 1
+                        },
+                        {
+                            "name": "baudrate",
+                            "type": "int",
+                            "inputType": "TextLine",
+                            "defaultValue": "9600",
+                            "index": 2
+                        }
+                    ]
+                },
+                {
+                    "deviceClassId": "e3d839f5-f2a7-48fa-8675-389645413954",
+                    "idName": "temperatureSensor",
+                    "name": "Temperature sensor",
+                    "basicTags": [
+                        "Device",
+                        "Sensor"
+                    ],
+                    "createMethods": ["auto"],
+                    "paramTypes": [
+                        {
+                            "name": "name",
+                            "type": "QString",
+                            "inputType": "TextLine",
+                            "index": 0
+                        },
+                        {
+                            "name": "channel",
+                            "type": "int",
+                            "readonly": true,
+                            "inputType": "None",
+                            "index": 1
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "046e5ffe-7d75-4a8a-ac0a-9310814a800e",
+                            "idName": "lastUpdate",
+                            "name" :"lastUpdate",
+                            "type": "unsignedInt",
+                            "unit": "UnixTime",
+                            "defaultValue": 0,
+                            "index": 0
+                        },
+                        {
+                            "id": "0023a9c1-0d84-499d-88c4-c06b6d793e27",
+                            "idName": "temperature",
+                            "name": "temperature",
+                            "type": "double",
+                            "unit": "DegreeCelsius",
+                            "defaultValue": 0,
+                            "index": 1
+                        },
+                        {
+                            "id": "452400e8-89ac-4419-94a8-d6eeb97f694d",
+                            "idName": "humidity",
+                            "name": "humidity",
+                            "type": "int",
+                            "unit": "Percentage",
+                            "defaultValue": 0,
+                            "index": 2
+                        }
+                    ]
+                },
+                {
+                    "deviceClassId": "2ea29c16-44ad-4cf2-b08d-18c7c6826386",
+                    "idName": "windRainSensor",
+                    "name": "Wind/Rain sensor",
+                    "basicTags": [
+                        "Device",
+                        "Sensor"
+                    ],
+                    "createMethods": ["auto"],
+                    "paramTypes": [
+                        {
+                            "name": "name",
+                            "type": "QString",
+                            "inputType": "TextLine",
+                            "index": 0
+                        },
+                        {
+                            "name": "channel",
+                            "type": "int",
+                            "readonly": true,
+                            "inputType": "None",
+                            "index": 1
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "046e5ffe-7d75-4a8a-ac0a-9310814a800e",
+                            "idName": "lastUpdate",
+                            "name" :"lastUpdate",
+                            "type": "unsignedInt",
+                            "unit": "UnixTime",
+                            "defaultValue": 0,
+                            "index": 0
+                        },
+                        {
+                            "id": "0023a9c1-0d84-499d-88c4-c06b6d793e27",
+                            "idName": "temperature",
+                            "name": "temperature",
+                            "type": "double",
+                            "unit": "DegreeCelsius",
+                            "defaultValue": 0,
+                            "index": 1
+                        },
+                        {
+                            "id": "452400e8-89ac-4419-94a8-d6eeb97f694d",
+                            "idName": "humidity",
+                            "name": "humidity",
+                            "type": "int",
+                            "unit": "Percentage",
+                            "defaultValue": 0,
+                            "index": 2
+                        },
+                        {
+                            "id": "8e058c13-b5bf-4558-b24e-e3197ba7a9de",
+                            "idName": "windStrength",
+                            "name": "windStrength",
+                            "type": "double",
+                            "defaultValue": 0,
+                            "index": 3
+                        },
+                        {
+                            "id": "a6116ea9-1db9-4071-9daf-ae79aab62375",
+                            "idName": "rainStrength",
+                            "name": "rainStrength",
+                            "type": "double",
+                            "defaultValue": 0,
+                            "index": 4
+                        },
+                        {
+                            "id": "a9660178-926b-4f86-9593-67678b337039",
+                            "idName": "isRain",
+                            "name": "isRain",
+                            "type": "bool",
+                            "defaultValue": false,
+                            "index": 5
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,5 +1,5 @@
 {
-    "name": "USB Wde",
+    "name": "USB WDE",
     "idName": "UsbWde",
     "id": "b01bc368-d674-41ef-a368-6b6a76c96365",
     "vendors": [
@@ -9,7 +9,7 @@
             "id": "55500c7c-9b09-4462-8d71-e5b4b42f6940",
             "deviceClasses": [
                 {
-                    "deviceClassId": "20e1b650-41d1-41b7-891f-1e68130d1403",
+                    "id": "20e1b650-41d1-41b7-891f-1e68130d1403",
                     "idName": "wdeBridge",
                     "name": "USB WDE",
                     "basicTags": [
@@ -18,12 +18,16 @@
                     "createMethods": ["user"],
                     "paramTypes": [
                         {
+                            "id": "be6b6bd5-9495-45f0-93d7-80f74f633420",
+                            "idName": "name",
                             "name": "name",
                             "type": "QString",
                             "inputType": "TextLine",
                             "index": 0
                         },
                         {
+                            "id": "965fd538-8e8a-4a84-97d0-5f8fc9ea115e",
+                            "idName": "interface",
                             "name": "interface",
                             "type": "QString",
                             "inputType": "TextLine",
@@ -31,6 +35,8 @@
                             "index": 1
                         },
                         {
+                            "id": "b8239c85-8f09-40d5-9ab9-03b3bd0c8fcc",
+                            "idName": "baudrate",
                             "name": "baudrate",
                             "type": "int",
                             "inputType": "TextLine",
@@ -40,7 +46,7 @@
                     ]
                 },
                 {
-                    "deviceClassId": "e3d839f5-f2a7-48fa-8675-389645413954",
+                    "id": "e3d839f5-f2a7-48fa-8675-389645413954",
                     "idName": "temperatureSensor",
                     "name": "Temperature sensor",
                     "basicTags": [
@@ -50,12 +56,16 @@
                     "createMethods": ["auto"],
                     "paramTypes": [
                         {
+                            "id": "bc2baa99-85fe-4f69-b46f-6b32b33db084",
+                            "idName": "name",
                             "name": "name",
                             "type": "QString",
                             "inputType": "TextLine",
                             "index": 0
                         },
                         {
+                            "id": "fc611e60-d975-4d1f-9977-19d2b90c3838",
+                            "idName": "channel",
                             "name": "channel",
                             "type": "int",
                             "readonly": true,
@@ -94,7 +104,7 @@
                     ]
                 },
                 {
-                    "deviceClassId": "2ea29c16-44ad-4cf2-b08d-18c7c6826386",
+                    "id": "2ea29c16-44ad-4cf2-b08d-18c7c6826386",
                     "idName": "windRainSensor",
                     "name": "Wind/Rain sensor",
                     "basicTags": [
@@ -104,12 +114,16 @@
                     "createMethods": ["auto"],
                     "paramTypes": [
                         {
+                            "id": "bc2baa99-85fe-4f69-b46f-6b32b33db084",
+                            "idName": "name",
                             "name": "name",
                             "type": "QString",
                             "inputType": "TextLine",
                             "index": 0
                         },
                         {
+                            "id": "fc611e60-d975-4d1f-9977-19d2b90c3838",
+                            "idName": "channel",
                             "name": "channel",
                             "type": "int",
                             "readonly": true,

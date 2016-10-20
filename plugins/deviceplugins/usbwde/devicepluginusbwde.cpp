@@ -37,17 +37,17 @@ DeviceManager::DeviceSetupStatus DevicePluginUsbWde::setupDevice(Device *device)
 {
     if (device->deviceClassId() == wdeBridgeDeviceClassId) {
         QSerialPort* serialPort = new QSerialPort(this);
-        serialPort->setPortName(device->paramValue("interface").toString());
-        serialPort->setBaudRate(device->paramValue("baudrate").toInt());
+        serialPort->setPortName(device->paramValue(interfaceParamTypeId).toString());
+        serialPort->setBaudRate(device->paramValue(baudrateParamTypeId).toInt());
         if (!serialPort->open(QIODevice::ReadOnly)) {
-            qCWarning(dcUsbWde) << device->name() << "can't bind to interface" << device->paramValue("interface");
+            qCWarning(dcUsbWde) << device->name() << "can't bind to interface" << device->paramValue(interfaceParamTypeId);
             return DeviceManager::DeviceSetupStatusFailure;
         }
         m_serialPort = serialPort;
         connect(m_serialPort, SIGNAL(readyRead()), SLOT(handleReadyRead()));
         connect(m_serialPort, SIGNAL(error(QSerialPort::SerialPortError)), SLOT(handleError(QSerialPort::SerialPortError)));
     } else {
-        m_deviceList.insert(device->paramValue("channel").toInt(), device);
+        m_deviceList.insert(device->paramValue(channelParamTypeId).toInt(), device);
     }
     return DeviceManager::DeviceSetupStatusSuccess;
 }
@@ -57,7 +57,7 @@ void DevicePluginUsbWde::deviceRemoved(Device *device)
     if (device->deviceClassId() == wdeBridgeDeviceClassId) {
         m_serialPort->close();
     } else {
-        m_deviceList.remove(device->paramValue("channel").toInt());
+        m_deviceList.remove(device->paramValue(channelParamTypeId).toInt());
     }
 }
 
@@ -131,8 +131,8 @@ void DevicePluginUsbWde::createNewSensor(int channel)
     }
     DeviceDescriptor descriptor(createClassId, deviceName, deviceName);
     ParamList params;
-    params.append(Param("name", "Sensor " + QString::number(channel)));
-    params.append(Param("channel", channel));
+    params.append(Param(nameParamTypeId, "Sensor " + QString::number(channel)));
+    params.append(Param(channelParamTypeId, channel));
     descriptor.setParams(params);
     deviceDescriptors.append(descriptor);
     emit autoDevicesAppeared(createClassId, deviceDescriptors);

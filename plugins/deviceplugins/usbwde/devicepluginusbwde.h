@@ -23,11 +23,10 @@
 
 #include "plugin/deviceplugin.h"
 #include "devicemanager.h"
-#include "libguh.h"
 
 #include <QSerialPort>
 
-class LIBGUH_EXPORT DevicePluginUsbWde : public DevicePlugin
+class DevicePluginUsbWde : public DevicePlugin
 {
     Q_OBJECT
 
@@ -42,6 +41,7 @@ public:
     void guhTimer() override;
 
 private:
+    Device* m_bridgeDevice;
     QSerialPort *m_serialPort;
     QByteArray  m_readData;
     QHash<int, Device *> m_deviceList;

@@ -24,7 +24,8 @@
 #include "devicemanager.h"
 #include "plugininfo.h"
 
-DevicePluginUsbWde::DevicePluginUsbWde()
+DevicePluginUsbWde::DevicePluginUsbWde() :
+    m_bridgeDevice(0)
 {
 }
 
@@ -36,14 +37,18 @@ DeviceManager::HardwareResources DevicePluginUsbWde::requiredHardware() const
 DeviceManager::DeviceSetupStatus DevicePluginUsbWde::setupDevice(Device *device)
 {
     if (device->deviceClassId() == wdeBridgeDeviceClassId) {
-        QSerialPort* serialPort = new QSerialPort(this);
-        serialPort->setPortName(device->paramValue(interfaceParamTypeId).toString());
-        serialPort->setBaudRate(device->paramValue(baudrateParamTypeId).toInt());
-        if (!serialPort->open(QIODevice::ReadOnly)) {
+        if (!m_bridgeDevice != 0) {
+            qCWarning(dcUsbWde) << "Only one USB WDE device can be configured.";
+            return DeviceManager::DeviceSetupStatusFailure;
+        }
+        m_serialPort = new QSerialPort(this);
+        m_serialPort->setPortName(device->paramValue(interfaceParamTypeId).toString());
+        m_serialPort->setBaudRate(device->paramValue(baudrateParamTypeId).toInt());
+        if (!m_serialPort->open(QIODevice::ReadOnly)) {
             qCWarning(dcUsbWde) << device->name() << "can't bind to interface" << device->paramValue(interfaceParamTypeId);
             return DeviceManager::DeviceSetupStatusFailure;
         }
-        m_serialPort = serialPort;
+        m_bridgeDevice = device;
         connect(m_serialPort, SIGNAL(readyRead()), SLOT(handleReadyRead()));
         connect(m_serialPort, SIGNAL(error(QSerialPort::SerialPortError)), SLOT(handleError(QSerialPort::SerialPortError)));
     } else {

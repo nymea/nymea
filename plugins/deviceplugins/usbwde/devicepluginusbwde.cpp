@@ -61,6 +61,7 @@ void DevicePluginUsbWde::deviceRemoved(Device *device)
 {
     if (device->deviceClassId() == wdeBridgeDeviceClassId) {
         m_serialPort->close();
+        m_bridgeDevice = 0;
     } else {
         m_deviceList.remove(device->paramValue(channelParamTypeId).toInt());
     }

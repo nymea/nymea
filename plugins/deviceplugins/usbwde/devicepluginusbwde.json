@@ -77,11 +77,12 @@
                         {
                             "id": "046e5ffe-7d75-4a8a-ac0a-9310814a800e",
                             "idName": "lastUpdate",
-                            "name" :"lastUpdate",
+                            "name" :"last update",
                             "type": "unsignedInt",
                             "unit": "UnixTime",
                             "defaultValue": 0,
-                            "index": 0
+                            "index": 0,
+                            "eventTypeName": "last update changed"
                         },
                         {
                             "id": "0023a9c1-0d84-499d-88c4-c06b6d793e27",
@@ -90,7 +91,8 @@
                             "type": "double",
                             "unit": "DegreeCelsius",
                             "defaultValue": 0,
-                            "index": 1
+                            "index": 1,
+                            "eventTypeName": "temperature changed"
                         },
                         {
                             "id": "452400e8-89ac-4419-94a8-d6eeb97f694d",
@@ -99,7 +101,8 @@
                             "type": "int",
                             "unit": "Percentage",
                             "defaultValue": 0,
-                            "index": 2
+                            "index": 2,
+                            "eventTypeName": "humidity changed"
                         }
                     ]
                 },
@@ -135,11 +138,12 @@
                         {
                             "id": "046e5ffe-7d75-4a8a-ac0a-9310814a800e",
                             "idName": "lastUpdate",
-                            "name" :"lastUpdate",
+                            "name" :"last update",
                             "type": "unsignedInt",
                             "unit": "UnixTime",
                             "defaultValue": 0,
-                            "index": 0
+                            "index": 0,
+                            "eventTypeName": "last update changed"
                         },
                         {
                             "id": "0023a9c1-0d84-499d-88c4-c06b6d793e27",
@@ -148,7 +152,8 @@
                             "type": "double",
                             "unit": "DegreeCelsius",
                             "defaultValue": 0,
-                            "index": 1
+                            "index": 1,
+                            "eventTypeName": "temperature changed"
                         },
                         {
                             "id": "452400e8-89ac-4419-94a8-d6eeb97f694d",
@@ -157,31 +162,35 @@
                             "type": "int",
                             "unit": "Percentage",
                             "defaultValue": 0,
-                            "index": 2
+                            "index": 2,
+                            "eventTypeName": "humidity changed"
                         },
                         {
                             "id": "8e058c13-b5bf-4558-b24e-e3197ba7a9de",
                             "idName": "windStrength",
-                            "name": "windStrength",
+                            "name": "wind strength",
                             "type": "double",
                             "defaultValue": 0,
-                            "index": 3
+                            "index": 3,
+                            "eventTypeName": "wind strength changed"
                         },
                         {
                             "id": "a6116ea9-1db9-4071-9daf-ae79aab62375",
                             "idName": "rainStrength",
-                            "name": "rainStrength",
+                            "name": "rain strength",
                             "type": "double",
                             "defaultValue": 0,
-                            "index": 4
+                            "index": 4,
+                            "eventTypeName": "rain strength changed"
                         },
                         {
                             "id": "a9660178-926b-4f86-9593-67678b337039",
                             "idName": "isRain",
-                            "name": "isRain",
+                            "name": "is raining",
                             "type": "bool",
                             "defaultValue": false,
-                            "index": 5
+                            "index": 5,
+                            "eventTypeName": "is raining changed"
                         }
                     ]
                 }

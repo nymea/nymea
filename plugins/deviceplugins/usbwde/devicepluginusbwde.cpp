@@ -37,7 +37,7 @@ DeviceManager::HardwareResources DevicePluginUsbWde::requiredHardware() const
 DeviceManager::DeviceSetupStatus DevicePluginUsbWde::setupDevice(Device *device)
 {
     if (device->deviceClassId() == wdeBridgeDeviceClassId) {
-        if (!m_bridgeDevice != 0) {
+        if (m_bridgeDevice != 0) {
             qCWarning(dcUsbWde) << "Only one USB WDE device can be configured.";
             return DeviceManager::DeviceSetupStatusFailure;
         }

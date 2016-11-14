@@ -85,7 +85,6 @@ void DevicePluginUsbWde::guhTimer()
         // Handle data
         QList<QByteArray> parts = m_readData.split(';');
         QLocale german(QLocale::German);
-        bool ok;
         // Check if received string is valid (should start with $1 and ends with 0)
         if (parts.size() != 25 || !parts.at(0).contains("$1") || !parts.at(24).contains("0")) {
             m_readData.clear();

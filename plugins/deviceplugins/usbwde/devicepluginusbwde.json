@@ -170,6 +170,7 @@
                             "idName": "windStrength",
                             "name": "wind strength",
                             "type": "double",
+                            "unit": "KiloMeterPerHour",
                             "defaultValue": 0,
                             "index": 3,
                             "eventTypeName": "wind strength changed"

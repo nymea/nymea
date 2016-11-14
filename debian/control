@@ -180,7 +180,8 @@ Architecture: any
 Depends: libguh1 (= ${binary:Version}),
          guhd (= ${binary:Version}),
          ${shlibs:Depends},
-         ${misc:Depends}
+         ${misc:Depends},
+         libqt5serialport5
 Recommends: nmap
 Description:Plugins for guh IoT server
  The guh daemon is a plugin based IoT (Internet of Things) server. The

@@ -30,6 +30,7 @@ SUBDIRS += elro         \
     denon               \
     avahimonitor        \
     pushbullet          \
+    usbwde              \
     senic               \
     multisensor         \
 

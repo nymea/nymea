@@ -99,7 +99,7 @@ void DevicePluginUsbWde::guhTimer()
                     createNewSensor(i);
                 } else {
                     Device* device = m_deviceList.value(i);
-                    device->setStateValue(temperatureStateTypeId, german.toDouble(parts.at(2+i), &ok));
+                    device->setStateValue(temperatureStateTypeId, german.toDouble(parts.at(2+i)));
                     device->setStateValue(humidityStateTypeId, parts.at(2+i+8).toInt());
                     device->setStateValue(lastUpdateStateTypeId, QDateTime::currentDateTime().toTime_t());
                 }
@@ -112,10 +112,10 @@ void DevicePluginUsbWde::guhTimer()
                 createNewSensor(9);
             } else {
                 Device* device = m_deviceList.value(9);
-                device->setStateValue(temperatureStateTypeId, german.toDouble(parts.at(19), &ok));
+                device->setStateValue(temperatureStateTypeId, german.toDouble(parts.at(19)));
                 device->setStateValue(humidityStateTypeId, parts.at(20).toInt());
-                device->setStateValue(windStrengthStateTypeId, german.toDouble(parts.at(21), &ok));
-                device->setStateValue(rainStrengthStateTypeId, german.toDouble(parts.at(22), &ok));
+                device->setStateValue(windStrengthStateTypeId, german.toDouble(parts.at(21)));
+                device->setStateValue(rainStrengthStateTypeId, german.toDouble(parts.at(22)));
                 device->setStateValue(isRainStateTypeId, (parts.at(23) == "1"));
                 device->setStateValue(lastUpdateStateTypeId, QDateTime::currentDateTime().toTime_t());
             }

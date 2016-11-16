@@ -52,6 +52,11 @@ contains(DEFINES, BLUETOOTH_LE) {
     message("Bluetooth LE disabled (Qt $${QT_VERSION} < 5.4.0).")
 }
 
+# Ubuntu snappy
+contains(DEFINES, SNAPPY){
+    message("Building Ubuntu snappy package.")
+}
+
 # GPIO RF 433 MHz support
 contains(DEFINES, GPIO433){
     message("Radio 433 for GPIO's enabled")

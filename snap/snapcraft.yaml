@@ -1,0 +1,62 @@
+name: guhio
+version: 0.1.0
+summary: An open source IoT server
+description: The guh daemon is a plugin based IoT (Internet of Things) server. The server works like a translator for devices, things and services and allows them to interact. With the powerful rule engine you are able to connect any device available in the system and create individual scenes and behaviors for your environment.
+confinement: strict
+
+apps:
+  guhd:
+    command: qt5-launch guhd -n -p
+    plugs:
+      - network
+      - network-bind
+      - network-control
+      - network-manager
+      - network-observe
+      - serial-port
+      - bluetooth-control
+      - bluez
+
+  guh-cli:
+    command: guh-cli
+
+
+parts:
+  application:
+    plugin: qmake
+    source: ../
+    options: [ CONFIG+=ccache, CONFIG+=disabletesting, CONFIG+=snappy ]
+    qt-version: qt5
+    project-files: [ guh.pro ]
+    build-packages:
+      - python
+      - rsync
+      - qtchooser
+      - qt5-qmake
+      - qtbase5-dev
+      - qtbase5-dev-tools
+      - qttools5-dev-tools
+      - qtconnectivity5-dev
+      - libqt5websockets5-dev
+      - libqt5bluetooth5
+      - libqt5sql5-sqlite
+      - libavahi-client-dev
+      - libavahi-common-dev
+    stage-packages:
+      - libqt5network5
+      - libqt5gui5
+      - libqt5sql5
+      - libqt5xml5
+      - libqt5dbus5
+      - libqt5websockets5
+      - libqt5bluetooth5
+      - libqt5sql5-sqlite
+      - logrotate
+      - avahi-daemon
+    after: [qt5conf]
+
+parts:
+  guh-cli:
+    plugin: python2
+    source: https://github.com/guh/guh-cli
+    source-type: git

@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.guru>                 *
- *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.guru>                 *
+ *  Copyright (C) 2016 Michael Zanetti <michael_zanetti@gmx.net>           *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -19,22 +19,24 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef DEVICEPLUGINWIFIDETECTOR_H
-#define DEVICEPLUGINWIFIDETECTOR_H
+#ifndef DEVICEPLUGINNETWORKDETECTOR_H
+#define DEVICEPLUGINNETWORKDETECTOR_H
 
 #include "plugin/deviceplugin.h"
+#include "host.h"
 
 #include <QProcess>
+#include <QXmlStreamReader>
 
-class DevicePluginWifiDetector : public DevicePlugin
+class DevicePluginNetworkDetector : public DevicePlugin
 {
     Q_OBJECT
 
-    Q_PLUGIN_METADATA(IID "guru.guh.DevicePlugin" FILE "devicepluginwifidetector.json")
+    Q_PLUGIN_METADATA(IID "guru.guh.DevicePlugin" FILE "devicepluginnetworkdetector.json")
     Q_INTERFACES(DevicePlugin)
 
 public:
-    explicit DevicePluginWifiDetector();
+    explicit DevicePluginNetworkDetector();
 
     DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
     DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
@@ -43,12 +45,21 @@ public:
     void guhTimer() override;
 
 private:
-    QList<QProcess *> m_discoveryProcesses;
-    QList<DeviceDescriptor> m_deviceDescriptors;
+    QProcess * m_discoveryProcess;
+    QProcess * m_scanProcess;
+
+    QXmlStreamReader m_reader;
+
+    QStringList getDefaultTargets();
+    QProcess *startScanProcesses();
+
+    // Process parsing
+    QList<Host> parseProcessOutput(const QByteArray &processData);
+    Host parseHost();
 
 private slots:
     void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
-    void discoveryProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
+
 };
 
-#endif // DEVICEPLUGINWIFIDETECTOR_H
+#endif // DEVICEPLUGINNETWORKDETECTOR_H

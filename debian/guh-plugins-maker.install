@@ -1,5 +1,4 @@
 usr/lib/guh/plugins/libguh_devicepluginlircd.so
-usr/lib/guh/plugins/libguh_devicepluginwifidetector.so
 usr/lib/guh/plugins/libguh_deviceplugincommandlauncher.so
 usr/lib/guh/plugins/libguh_devicepluginudpcommander.so
 usr/lib/guh/plugins/libguh_devicepluginavahimonitor.so

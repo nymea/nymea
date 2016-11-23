@@ -1,6 +1,6 @@
 {
-    "name": "WiFi Detector",
-    "idName": "WifiDetector",
+    "name": "Network Detector",
+    "idName": "NetworkDetector",
     "id": "8e0f791e-b273-4267-8605-b7c2f55a68ab",
     "vendors": [
         {
@@ -10,8 +10,8 @@
             "deviceClasses": [
                 {
                     "id": "bd216356-f1ec-4324-9785-6982d2174e17",
-                    "name": "WiFi Device",
-                    "idName": "wifi",
+                    "name": "Network Device",
+                    "idName": "network",
                     "deviceIcon": "Network",
                     "basicTags": [
                         "Device",
@@ -22,19 +22,19 @@
                     "paramTypes": [
                         {
                             "id": "44337c69-6101-4366-9913-ca9332da6b5c",
-                            "idName": "mac",
-                            "name": "mac address",
+                            "idName": "hostname",
+                            "name": "host name",
                             "type": "QString",
                             "index": 0,
-                            "inputType": "MacAddress"
+                            "inputType": "TextLine"
                         }
                     ],
                     "stateTypes": [
                         {
                             "id": "cb43e1b5-4f61-4538-bfa2-c33055c542cf",
                             "idName": "inRange",
-                            "name": "in Range",
-                            "eventTypeName": "in range changed",
+                            "name": "Device in network",
+                            "eventTypeName": "Device in network changed",
                             "index": 0,
                             "type": "bool",
                             "defaultValue": false

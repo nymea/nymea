@@ -1,7 +1,7 @@
 TEMPLATE = subdirs
 SUBDIRS += elro         \
     intertechno         \
-    wifidetector        \
+    networkdetector     \
     conrad              \
     mock                \
     openweathermap      \

@@ -54,9 +54,28 @@
 
 DevicePluginNetworkDetector::DevicePluginNetworkDetector():
     m_discoveryProcess(0),
-    m_scanProcess(0)
+    m_scanProcess(0),
+    m_aboutToQuit(false)
 {
 
+}
+
+DevicePluginNetworkDetector::~DevicePluginNetworkDetector()
+{
+    // Stop running processes
+    m_aboutToQuit = true;
+
+    if (m_scanProcess && m_scanProcess->state() == QProcess::Running) {
+        qCDebug(dcNetworkDetector()) << "Kill running scan process";
+        m_scanProcess->kill();
+        m_scanProcess->waitForFinished(5000);
+    }
+
+    if (m_discoveryProcess && m_discoveryProcess->state() == QProcess::Running) {
+        qCDebug(dcNetworkDetector()) << "Kill running discovery process";
+        m_discoveryProcess->terminate();
+        m_discoveryProcess->waitForFinished(5000);
+    }
 }
 
 DeviceManager::DeviceSetupStatus DevicePluginNetworkDetector::setupDevice(Device *device)
@@ -182,6 +201,10 @@ Host DevicePluginNetworkDetector::parseHost()
 void DevicePluginNetworkDetector::processFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
     QProcess *process = static_cast<QProcess*>(sender());
+
+    // If the process was killed because guhd is shutting down...we dont't care any more about the result
+    if (m_aboutToQuit)
+        return;
 
     // Discovery
     if (process == m_discoveryProcess) {

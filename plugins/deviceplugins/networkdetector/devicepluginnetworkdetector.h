@@ -37,6 +37,7 @@ class DevicePluginNetworkDetector : public DevicePlugin
 
 public:
     explicit DevicePluginNetworkDetector();
+    ~DevicePluginNetworkDetector();
 
     DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
     DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
@@ -49,6 +50,8 @@ private:
     QProcess * m_scanProcess;
 
     QXmlStreamReader m_reader;
+
+    bool m_aboutToQuit;
 
     QStringList getDefaultTargets();
     QProcess *startScanProcesses();

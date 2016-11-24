@@ -202,6 +202,8 @@ void HueLight::processActionResponse(const QVariantList &responseList)
 
 QPair<QNetworkRequest, QByteArray> HueLight::createSetPowerRequest(const bool &power)
 {
+    qCDebug(dcPhilipsHue()) << "Create power request" << power;
+
     QVariantMap requestMap;
     requestMap.insert("on", power);
 
@@ -215,6 +217,8 @@ QPair<QNetworkRequest, QByteArray> HueLight::createSetPowerRequest(const bool &p
 
 QPair<QNetworkRequest, QByteArray> HueLight::createSetColorRequest(const QColor &color)
 {
+    qCDebug(dcPhilipsHue()) << "Create color request" << color.toRgb();
+
     QVariantMap requestMap;
     requestMap.insert("hue", color.hue() * 65535 / 360);
     requestMap.insert("sat", color.saturation());
@@ -230,6 +234,8 @@ QPair<QNetworkRequest, QByteArray> HueLight::createSetColorRequest(const QColor 
 
 QPair<QNetworkRequest, QByteArray> HueLight::createSetBrightnessRequest(const int &brightness)
 {
+    qCDebug(dcPhilipsHue()) << "Create brightness request" << brightness;
+
     QVariantMap requestMap;
     requestMap.insert("bri", brightness);
     if (brightness == 0) {
@@ -248,6 +254,8 @@ QPair<QNetworkRequest, QByteArray> HueLight::createSetBrightnessRequest(const in
 
 QPair<QNetworkRequest, QByteArray> HueLight::createSetEffectRequest(const QString &effect)
 {
+    qCDebug(dcPhilipsHue()) << "Create effect request" << effect;
+
     QVariantMap requestMap;
     if (effect == "none") {
         requestMap.insert("effect", "none");
@@ -265,6 +273,8 @@ QPair<QNetworkRequest, QByteArray> HueLight::createSetEffectRequest(const QStrin
 
 QPair<QNetworkRequest, QByteArray> HueLight::createSetTemperatureRequest(const int &colorTemp)
 {
+    qCDebug(dcPhilipsHue()) << "Create color temperature request" << colorTemp;
+
     QVariantMap requestMap;
     requestMap.insert("ct", colorTemp);
     requestMap.insert("on", true);
@@ -279,10 +289,12 @@ QPair<QNetworkRequest, QByteArray> HueLight::createSetTemperatureRequest(const i
 
 QPair<QNetworkRequest, QByteArray> HueLight::createFlashRequest(const QString &alert)
 {
+    qCDebug(dcPhilipsHue()) << "Create flash request" << alert;
+
     QVariantMap requestMap;
-    if (alert == "flash once") {
+    if (alert == "flash") {
         requestMap.insert("alert", "select");
-    } else if (alert == "flash 30 seconds") {
+    } else if (alert == "flash 15 [s]") {
         requestMap.insert("alert", "lselect");
     }
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(requestMap);

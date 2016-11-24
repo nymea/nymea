@@ -144,7 +144,10 @@ QPair<QNetworkRequest, QByteArray> HueBridge::createCheckUpdatesRequest()
     updateMap.insert("checkforupdate", true);
 
     QVariantMap requestMap;
-    requestMap.insert("portalservices", true);
+
+    // TODO: check if portalservice is true, cannot be done in one step
+    //requestMap.insert("portalservices", true);
+
     requestMap.insert("swupdate", updateMap);
 
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(requestMap);

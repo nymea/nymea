@@ -18,6 +18,92 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::NetworkManager
+    \brief Represents the dbus network-manager.
+
+    \ingroup networkmanager
+    \inmodule core
+*/
+
+/*! \fn void NetworkManager::versionChanged();
+    This signal will be emitted when the version of this \l{WiredNetworkDevice} has changed.
+*/
+
+/*! \fn void NetworkManager::networkingEnabledChanged();
+    This signal will be emitted when the networking of this \l{WiredNetworkDevice} has changed. \sa networkingEnabled()
+*/
+
+/*! \fn void NetworkManager::wirelessEnabledChanged();
+    This signal will be emitted when the wireless networking of this \l{WiredNetworkDevice} has changed. \sa wirelessEnabled()
+*/
+
+/*! \fn void NetworkManager::stateChanged();
+    This signal will be emitted when the state of this \l{WiredNetworkDevice} has changed. \sa NetworkManagerState
+*/
+
+/*! \fn void NetworkManager::connectivityStateChanged();
+    This signal will be emitted when the connectivity state of this \l{WiredNetworkDevice} has changed. \sa NetworkManagerConnectivityState
+*/
+
+/*! \fn void NetworkManager::wirelessDeviceAdded(WirelessNetworkDevice *wirelessDevice);
+    This signal will be emitted when a new \a wirelessDevice was added to this \l{NetworkManager}. \sa WirelessNetworkDevice
+*/
+
+/*! \fn void NetworkManager::wirelessDeviceRemoved(const QString &interface);
+    This signal will be emitted when the \l{WirelessNetworkDevice} with the given \a interface was removed from this \l{NetworkManager}. \sa WirelessNetworkDevice
+*/
+
+/*! \fn void NetworkManager::wirelessDeviceChanged(WirelessNetworkDevice *wirelessDevice);
+    This signal will be emitted when the given \a wirelessDevice has changed. \sa WirelessNetworkDevice
+*/
+
+/*! \fn void NetworkManager::wiredDeviceAdded(WiredNetworkDevice *wiredDevice);
+    This signal will be emitted when a new \a wiredDevice was added to this \l{NetworkManager}. \sa WiredNetworkDevice
+*/
+
+/*! \fn void NetworkManager::wiredDeviceRemoved(const QString &interface);
+    This signal will be emitted when the \l{WiredNetworkDevice} with the given \a interface was removed from this \l{NetworkManager}. \sa WiredNetworkDevice
+*/
+
+/*! \fn void NetworkManager::wiredDeviceChanged(WiredNetworkDevice *wiredDevice);
+    This signal will be emitted when the given \a wiredDevice has changed. \sa WiredNetworkDevice
+*/
+
+/*! \enum guhserver::NetworkManager::NetworkManagerState
+    \value NetworkManagerStateUnknown
+    \value NetworkManagerStateAsleep
+    \value NetworkManagerStateDisconnected
+    \value NetworkManagerStateDisconnecting
+    \value NetworkManagerStateConnecting
+    \value NetworkManagerStateConnectedLocal
+    \value NetworkManagerStateConnectedSite
+    \value NetworkManagerStateConnectedGlobal
+*/
+
+/*! \enum guhserver::NetworkManager::NetworkManagerConnectivityState
+    \value NetworkManagerConnectivityStateUnknown
+    \value NetworkManagerConnectivityStateNone
+    \value NetworkManagerConnectivityStatePortal
+    \value NetworkManagerConnectivityStateLimited
+    \value NetworkManagerConnectivityStateFull
+*/
+
+/*! \enum guhserver::NetworkManager::NetworkManagerError
+    \value NetworkManagerErrorNoError
+    \value NetworkManagerErrorUnknownError
+    \value NetworkManagerErrorWirelessNotAvailable
+    \value NetworkManagerErrorAccessPointNotFound
+    \value NetworkManagerErrorNetworkInterfaceNotFound
+    \value NetworkManagerErrorInvalidNetworkDeviceType
+    \value NetworkManagerErrorWirelessNetworkingDisabled
+    \value NetworkManagerErrorWirelessConnectionFailed
+    \value NetworkManagerErrorNetworkingDisabled
+    \value NetworkManagerErrorNetworkManagerNotAvailable
+*/
+
+
+
 #include "networkmanager.h"
 #include "loggingcategories.h"
 #include "networkconnection.h"
@@ -27,6 +113,7 @@
 
 namespace guhserver {
 
+/*! Constructs a new \l{NetworkManager} object with the given \a parent. */
 NetworkManager::NetworkManager(QObject *parent) :
     QObject(parent),
     m_networkManagerInterface(0),
@@ -71,31 +158,37 @@ NetworkManager::NetworkManager(QObject *parent) :
     m_networkSettings = new NetworkSettings(this);
 }
 
+/*! Returns true if the network-manager is available on this system. */
 bool NetworkManager::available()
 {
     return m_available;
 }
 
+/*! Returns true if wifi is available on this system. */
 bool NetworkManager::wifiAvailable()
 {
     return m_wifiAvailable;
 }
 
+/*! Returns the list of \l{NetworkDevice}{NetworkDevices} from this \l{NetworkManager}. */
 QList<NetworkDevice *> NetworkManager::networkDevices() const
 {
     return m_networkDevices.values();
 }
 
+/*! Returns the list of \l{WirelessNetworkDevice}{WirelessNetworkDevices} from this \l{NetworkManager}. */
 QList<WirelessNetworkDevice *> NetworkManager::wirelessNetworkDevices() const
 {
     return m_wirelessNetworkDevices.values();
 }
 
+/*! Returns the list of \l{WiredNetworkDevice}{WiredNetworkDevices} from this \l{NetworkManager}. */
 QList<WiredNetworkDevice *> NetworkManager::wiredNetworkDevices() const
 {
     return m_wiredNetworkDevices.values();
 }
 
+/*! Returns the \l{NetworkDevice} with the given \a interface from this \l{NetworkManager}. If there is no such \a interface returns Q_NULLPTR. */
 NetworkDevice *NetworkManager::getNetworkDevice(const QString &interface)
 {
     foreach (NetworkDevice *device, m_networkDevices.values()) {
@@ -105,26 +198,31 @@ NetworkDevice *NetworkManager::getNetworkDevice(const QString &interface)
     return Q_NULLPTR;
 }
 
+/*! Returns the version of the running \l{NetworkManager}. */
 QString NetworkManager::version() const
 {
     return m_version;
 }
 
+/*! Returns the state of this \l{NetworkManager}. \sa NetworkManagerState, */
 NetworkManager::NetworkManagerState NetworkManager::state() const
 {
     return m_state;
 }
 
+/*! Returns the human readable string of the current state of this \l{NetworkManager}. \sa NetworkManagerState, */
 QString NetworkManager::stateString() const
 {
     return networkManagerStateToString(m_state);
 }
 
+/*! Returns the current connectivity state of this \l{NetworkManager}. \sa NetworkManagerConnectivityState, */
 NetworkManager::NetworkManagerConnectivityState NetworkManager::connectivityState() const
 {
     return m_connectivityState;
 }
 
+/*! Connect the given \a interface to a wifi network with the given \a ssid and \a password. Returns the \l{NetworkManagerError} to inform about the result. \sa NetworkManagerError, */
 NetworkManager::NetworkManagerError NetworkManager::connectWifi(const QString &interface, const QString &ssid, const QString &password)
 {
     // Check interface
@@ -199,11 +297,13 @@ NetworkManager::NetworkManagerError NetworkManager::connectWifi(const QString &i
     return NetworkManagerErrorNoError;
 }
 
+/*! Returns true if the networking of this \l{NetworkManager} is enabled. */
 bool NetworkManager::networkingEnabled() const
 {
     return m_networkingEnabled;
 }
 
+/*! Returns true if the networking of this \l{NetworkManager} could be \a enabled. */
 bool NetworkManager::enableNetworking(const bool &enabled)
 {
     if (m_networkingEnabled == enabled)
@@ -217,6 +317,7 @@ bool NetworkManager::enableNetworking(const bool &enabled)
     return true;
 }
 
+/*! Sets the networking of this \l{NetworkManager} to \a enabled. */
 void NetworkManager::setNetworkingEnabled(const bool &enabled)
 {
     qCDebug(dcNetworkManager()) << "Networking" << (enabled ? "enabled" : "disabled");
@@ -224,11 +325,13 @@ void NetworkManager::setNetworkingEnabled(const bool &enabled)
     emit networkingEnabledChanged();
 }
 
+/*! Returns true if the wireless networking of this \l{NetworkManager} is enabled. */
 bool NetworkManager::wirelessEnabled() const
 {
     return m_wirelessEnabled;
 }
 
+/*! Returns true if the wireless networking of this \l{NetworkManager} could be set to \a enabled. */
 bool NetworkManager::enableWireless(const bool &enabled)
 {
     if (m_wirelessEnabled == enabled)

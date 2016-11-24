@@ -18,12 +18,41 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::WirelessAccessPoint
+    \brief Represents a wireless access point from a \l{WirelessNetworkDevice}.
+
+    \ingroup networkmanager
+    \inmodule core
+
+    \sa WirelessNetworkDevice
+*/
+
+/*! \enum guhserver::WirelessAccessPoint::ApSecurityMode
+    \value ApSecurityModeNone
+    \value ApSecurityModePairWep40
+    \value ApSecurityModePairWep104
+    \value ApSecurityModePairTkip
+    \value ApSecurityModePairCcmp
+    \value ApSecurityModeGroupWep40
+    \value ApSecurityModeGroupWep104
+    \value ApSecurityModeGroupTkip
+    \value ApSecurityModeGroupCcmp
+    \value ApSecurityModeKeyMgmtPsk
+    \value ApSecurityModeKeyMgmt8021X
+*/
+
+/*! \fn void WirelessAccessPoint::signalStrengthChanged();
+    This signal will be emitted when the signalStrength of this \l{WirelessAccessPoint} has changed.
+*/
+
 #include "wirelessaccesspoint.h"
 #include "loggingcategories.h"
 #include "dbus-interfaces.h"
 
 namespace guhserver {
 
+/*! Constructs a new \l{WirelessAccessPoint} with the given dbus \a objectPath and \a parent. */
 WirelessAccessPoint::WirelessAccessPoint(const QDBusObjectPath &objectPath, QObject *parent) :
     QObject(parent),
     m_objectPath(objectPath),
@@ -46,11 +75,13 @@ WirelessAccessPoint::WirelessAccessPoint(const QDBusObjectPath &objectPath, QObj
     QDBusConnection::systemBus().connect(serviceString, objectPath.path(), accessPointInterfaceString, "PropertiesChanged", this, SLOT(onPropertiesChanged(QVariantMap)));
 }
 
+/*! Returns the dbus object path of this \l{WirelessAccessPoint}. */
 QDBusObjectPath WirelessAccessPoint::objectPath() const
 {
     return m_objectPath;
 }
 
+/*! Returns the ssid of this \l{WirelessAccessPoint}. */
 QString WirelessAccessPoint::ssid() const
 {
     return m_ssid;
@@ -61,6 +92,7 @@ void WirelessAccessPoint::setSsid(const QString &ssid)
     m_ssid = ssid;
 }
 
+/*! Returns the mac address of this \l{WirelessAccessPoint}. */
 QString WirelessAccessPoint::macAddress() const
 {
     return m_macAddress;
@@ -71,6 +103,7 @@ void WirelessAccessPoint::setMacAddress(const QString &macAddress)
     m_macAddress = macAddress;
 }
 
+/*! Returns the frequency of this \l{WirelessAccessPoint}. (2.4 GHz or 5GHz) */
 double WirelessAccessPoint::frequency() const
 {
     return m_frequency;
@@ -81,6 +114,7 @@ void WirelessAccessPoint::setFrequency(const double &frequency)
     m_frequency = frequency;
 }
 
+/*! Returns the signal strength in percentage [0, 100] % of this \l{WirelessAccessPoint}. */
 int WirelessAccessPoint::signalStrength() const
 {
     return m_signalStrength;
@@ -97,11 +131,13 @@ void WirelessAccessPoint::setIsProtected(const bool &isProtected)
     m_isProtected = isProtected;
 }
 
+/*! Returns true if this \l{WirelessAccessPoint} is password protected. */
 bool WirelessAccessPoint::isProtected() const
 {
     return m_isProtected;
 }
 
+/*! Returns the security flags of this \l{WirelessAccessPoint}. \sa WirelessAccessPoint::ApSecurityModes */
 WirelessAccessPoint::ApSecurityModes WirelessAccessPoint::securityFlags() const
 {
     return m_securityFlags;

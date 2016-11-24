@@ -86,7 +86,7 @@ QString QtAvahiService::serviceType() const
     return d_ptr->type;
 }
 
-/*! Returns true if a new avahi service to the network with the given \a name, \a port \a serviceType and \a txt can be registered. */
+/*! Register a new \l{QtAvahiService} with the given \a name and \a port. The service type can be specified with the \a serviceType string. The \a txt records inform about additional information. Returns true if the service could be registered. */
 bool QtAvahiService::registerService(const QString &name, const quint16 &port, const QString &serviceType, const QHash<QString, QString> &txt)
 {
     // check if the client is running
@@ -128,10 +128,7 @@ bool QtAvahiService::registerService(const QString &name, const quint16 &port, c
     return true;
 }
 
-/*! Remove this service from the local network. This \l{QtAvahiService} can be reused to register a new avahi service.
-
-    \sa registerService()
-*/
+/*! Remove this service from the local network. This \l{QtAvahiService} can be reused to register a new avahi service. */
 void QtAvahiService::resetService()
 {
     if (!d_ptr->group)

@@ -57,7 +57,7 @@
 
 namespace guhserver {
 
-/*! Constructs a \l{WebSocketServer} with the given \a sslConfiguration and \a parent.
+/*! Constructs a \l{WebSocketServer} with the given \a address, \a port \a sslEnabled and \a parent.
  *
  *  \sa ServerManager
  */
@@ -179,6 +179,7 @@ void WebSocketServer::onAvahiServiceStateChanged(const QtAvahiService::QtAvahiSe
     }
 }
 
+/*! Returns true if this \l{WebSocketServer} could be reconfigured with the given \a address and \a port. */
 bool WebSocketServer::reconfigureServer(const QHostAddress &address, const uint &port)
 {
     if (m_host == address && m_port == (qint16)port && m_server->isListening()) {

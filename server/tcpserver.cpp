@@ -44,7 +44,7 @@
 
 namespace guhserver {
 
-/*! Constructs a \l{TcpServer} with the given \a parent.
+/*! Constructs a \l{TcpServer} with the given \a host, \a port and \a parent.
  *
  *  \sa ServerManager
  */
@@ -145,6 +145,7 @@ void TcpServer::onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceS
 }
 
 
+/*! Returns true if this \l{TcpServer} could be reconfigured with the given \a address and \a port. */
 bool TcpServer::reconfigureServer(const QHostAddress &address, const uint &port)
 {
     if (m_host == address && m_port == (qint16)port && m_server->isListening())

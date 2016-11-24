@@ -91,7 +91,7 @@
 
 namespace guhserver {
 
-/*! Constructs a \l{WebServer} with the given \a sslConfiguration and \a parent.
+/*! Constructs a \l{WebServer} with the given \a host, \a port, \a publicFolder and \a parent.
  *
  *  \sa ServerManager
  */
@@ -520,6 +520,7 @@ void WebServer::onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceS
     }
 }
 
+/*! Returns true if this \l{WebServer} could be reconfigured with the given \a address and \a port. */
 bool WebServer::reconfigureServer(const QHostAddress &address, const uint &port)
 {
     if (m_host == address && m_port == (qint16)port && isListening())

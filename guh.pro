@@ -10,7 +10,7 @@ tests.depends = libguh
 
 doc.depends = libguh server
 # Note: some how extraimages in qdocconf did not the trick
-doc.commands = cd $$top_srcdir/doc; qdoc config.qdocconf; cp images/logo.png html/images/; \
+doc.commands = cd $$top_srcdir/doc; qdoc config.qdocconf; cp images/* html/images/; \
                cp favicons/* html/; cp -r $$top_srcdir/doc/html $$top_builddir/
 
 licensecheck.commands = $$top_srcdir/tests/auto/checklicenseheaders.sh $$top_srcdir

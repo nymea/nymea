@@ -18,11 +18,24 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::WiredNetworkDevice
+    \brief Represents an ethernet device in the \l{NetworkManager}.
+
+    \ingroup networkmanager
+    \inmodule core
+*/
+
+/*! \fn void WiredNetworkDevice::propertiesChanged(const QVariantMap &properties);
+    This signal will be emitted when the \a properties of this \l{WiredNetworkDevice} have changed.
+*/
+
 #include "wirednetworkdevice.h"
 #include "loggingcategories.h"
 
 namespace guhserver {
 
+/*! Constructs a new \l{WiredNetworkDevice} with the given dbus \a objectPath and \a parent. */
 WiredNetworkDevice::WiredNetworkDevice(const QDBusObjectPath &objectPath, QObject *parent) :
     NetworkDevice(objectPath, parent)
 {
@@ -45,16 +58,19 @@ WiredNetworkDevice::WiredNetworkDevice(const QDBusObjectPath &objectPath, QObjec
     QDBusConnection::systemBus().connect(serviceString, this->objectPath().path(), wiredInterfaceString, "PropertiesChanged", this, SLOT(propertiesChanged(QVariantMap)));
 }
 
+/*! Returns the mac address of this \l{WiredNetworkDevice}. */
 QString WiredNetworkDevice::macAddress() const
 {
     return m_macAddress;
 }
 
+/*! Returns the current bit rate [Mb/s] of this \l{WiredNetworkDevice}. */
 int WiredNetworkDevice::bitRate() const
 {
     return m_bitRate;
 }
 
+/*! Returns true if this \l{WiredNetworkDevice} has a cable plugged in. */
 bool WiredNetworkDevice::pluggedIn() const
 {
     return m_pluggedIn;

@@ -18,6 +18,16 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::NetworkDevice
+    \brief Represents a generic network device the \l{NetworkManager}.
+
+    \ingroup networkmanager
+    \inmodule core
+
+    \sa WiredNetworkDevice, WirelessNetworkDevice
+*/
+
 #include "networkdevice.h"
 #include "loggingcategories.h"
 
@@ -25,6 +35,7 @@
 
 namespace guhserver {
 
+/*! Constructs a new \l{NetworkDevice} with the given dbus \a objectPath and \a parent. */
 NetworkDevice::NetworkDevice(const QDBusObjectPath &objectPath, QObject *parent) :
     QObject(parent),
     m_objectPath(objectPath),
@@ -66,96 +77,115 @@ NetworkDevice::NetworkDevice(const QDBusObjectPath &objectPath, QObject *parent)
     QDBusConnection::systemBus().connect(serviceString, m_objectPath.path(), deviceInterfaceString, "StateChanged", this, SLOT(onStateChanged(uint,uint,uint)));
 }
 
+/*! Returns the dbus object path of this \l{NetworkDevice}. */
 QDBusObjectPath NetworkDevice::objectPath() const
 {
     return m_objectPath;
 }
 
+/*! Returns the udi of this \l{NetworkDevice}. */
 QString NetworkDevice::udi() const
 {
     return m_udi;
 }
 
+/*! Returns the interface name of this \l{NetworkDevice}. */
 QString NetworkDevice::interface() const
 {
     return m_interface;
 }
 
+/*! Returns the ip interface of this \l{NetworkDevice}. */
 QString NetworkDevice::ipInterface() const
 {
     return m_ipInterface;
 }
 
+/*! Returns the used driver name for this \l{NetworkDevice}. */
 QString NetworkDevice::driver() const
 {
     return m_driver;
 }
 
+/*! Returns the version of the used driver for this \l{NetworkDevice}. */
 QString NetworkDevice::driverVersion() const
 {
     return m_driverVersion;
 }
 
+/*! Returns the firmware version of this \l{NetworkDevice}. */
 QString NetworkDevice::firmwareVersion() const
 {
     return m_firmwareVersion;
 }
 
+/*! Returns the physical port id of this \l{NetworkDevice}. */
 QString NetworkDevice::physicalPortId() const
 {
     return m_physicalPortId;
 }
 
+/*! Returns the mtu of this \l{NetworkDevice}. */
 uint NetworkDevice::mtu() const
 {
     return m_mtu;
 }
 
+/*! Returns the metered property of this \l{NetworkDevice}. */
 uint NetworkDevice::metered() const
 {
     return m_metered;
 }
 
+/*! Returns true if autoconnect is enabled for this \l{NetworkDevice}. */
 bool NetworkDevice::autoconnect() const
 {
     return m_autoconnect;
 }
 
+/*! Returns the device state of this \l{NetworkDevice}. \sa NetworkDeviceState, */
 NetworkDevice::NetworkDeviceState NetworkDevice::deviceState() const
 {
     return m_deviceState;
 }
 
+/*! Returns the human readable device state of this \l{NetworkDevice}. \sa NetworkDeviceState, */
 QString NetworkDevice::deviceStateString() const
 {
     return NetworkDevice::deviceStateToString(m_deviceState);
 }
 
+/*! Returns the reason for the current state of this \l{NetworkDevice}. \sa NetworkDeviceStateReason, */
 NetworkDevice::NetworkDeviceStateReason NetworkDevice::deviceStateReason() const
 {
     return m_deviceStateReason;
 }
 
+/*! Returns the device type of this \l{NetworkDevice}. \sa NetworkDeviceType, */
 NetworkDevice::NetworkDeviceType NetworkDevice::deviceType() const
 {
     return m_deviceType;
 }
 
+/*! Returns the dbus object path of the currently active connection of this \l{NetworkDevice}. */
 QDBusObjectPath NetworkDevice::activeConnection() const
 {
     return m_activeConnection;
 }
 
+/*! Returns the dbus object path from the IPv4 configuration of this \l{NetworkDevice}. */
 QDBusObjectPath NetworkDevice::ip4Config() const
 {
     return m_ip4Config;
 }
 
+/*! Returns the list of dbus object paths for the currently available connection of this \l{NetworkDevice}. */
 QList<QDBusObjectPath> NetworkDevice::availableConnections() const
 {
     return m_availableConnections;
 }
 
+/*! Disconnect the current connection from this \l{NetworkDevice}. */
 void NetworkDevice::disconnectDevice()
 {
     QDBusMessage query = m_networkDeviceInterface->call("Disconnect");
@@ -164,6 +194,7 @@ void NetworkDevice::disconnectDevice()
 
 }
 
+/*! Returns the human readable deviceType of this \l{NetworkDevice}. \sa NetworkDeviceType, */
 QString NetworkDevice::deviceTypeToString(const NetworkDevice::NetworkDeviceType &deviceType)
 {
     QMetaObject metaObject = NetworkDevice::staticMetaObject;
@@ -172,6 +203,7 @@ QString NetworkDevice::deviceTypeToString(const NetworkDevice::NetworkDeviceType
     return QString(metaEnum.valueToKey(deviceType)).remove("NetworkDeviceType");
 }
 
+/*! Returns the human readable device state of this \l{NetworkDevice}. \sa NetworkDeviceState, */
 QString NetworkDevice::deviceStateToString(const NetworkDevice::NetworkDeviceState &deviceState)
 {
     QMetaObject metaObject = NetworkDevice::staticMetaObject;
@@ -180,6 +212,7 @@ QString NetworkDevice::deviceStateToString(const NetworkDevice::NetworkDeviceSta
     return QString(metaEnum.valueToKey(deviceState));
 }
 
+/*! Returns the human readable device state reason of this \l{NetworkDevice}. \sa NetworkDeviceStateReason, */
 QString NetworkDevice::deviceStateReasonToString(const NetworkDevice::NetworkDeviceStateReason &deviceStateReason)
 {
     QMetaObject metaObject = NetworkDevice::staticMetaObject;

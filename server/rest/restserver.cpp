@@ -55,6 +55,11 @@ RestServer::RestServer(const QSslConfiguration &sslConfiguration, QObject *paren
     QMetaObject::invokeMethod(this, "setup", Qt::QueuedConnection);
 }
 
+/*! Register the given \a webServer in this \l{RestServer}.
+ *
+ * \sa WebServer
+ *
+ */
 void RestServer::registerWebserver(WebServer *webServer)
 {
     m_webserver = webServer;

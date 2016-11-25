@@ -80,7 +80,7 @@ signals:
     void stateChanged(const NetworkDeviceState &state);
 };
 
-QDebug operator<<(QDebug debug, WirelessNetworkDevice *manager);
+QDebug operator<<(QDebug debug, WirelessNetworkDevice *device);
 
 }
 

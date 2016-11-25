@@ -343,6 +343,7 @@ RuleEngine::RuleError GuhCore::removeRule(const RuleId &id)
     return removeError;
 }
 
+/*! Returns a pointer to the \l{GuhConfiguration} instance owned by GuhCore.*/
 GuhConfiguration *GuhCore::configuration() const
 {
     return m_configuration;
@@ -366,6 +367,7 @@ TimeManager *GuhCore::timeManager() const
     return m_timeManager;
 }
 
+/*! Returns a pointer to the \l{WebServer} instance owned by GuhCore.*/
 WebServer *GuhCore::webServer() const
 {
     return m_webServer;
@@ -414,6 +416,7 @@ MockTcpServer *GuhCore::tcpServer() const
     return m_tcpServer;
 }
 #else
+/*! Returns a pointer to the \l{TcpServer} instance owned by GuhCore. */
 TcpServer *GuhCore::tcpServer() const
 {
     return m_tcpServer;

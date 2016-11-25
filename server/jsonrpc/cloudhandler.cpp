@@ -18,10 +18,30 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::CloudHandler
+    \brief This subclass of \l{JsonHandler} processes the JSON requests for the \tt Cloud namespace.
+
+    \ingroup json
+    \inmodule core
+
+    This \l{JsonHandler} will be created in the \l{JsonRPCServer} and used to handle JSON-RPC requests
+    for the \tt {Cloud} namespace of the API.
+
+    \sa JsonHandler, JsonRPCServer
+*/
+
+/*! \fn void guhserver::CloudHandler::ConnectionStatusChanged(const QVariantMap &params);
+    This signal is emitted to the API notifications when the status of the \l{CloudManager} has changed.
+    The \a params contains the map for the notification.
+*/
+
+
 #include "cloudhandler.h"
 
 namespace guhserver {
 
+/*! Constructs a new \l CloudHandler with the given \a parent. */
 CloudHandler::CloudHandler(QObject *parent) :
     JsonHandler(parent)
 {
@@ -66,6 +86,7 @@ CloudHandler::CloudHandler(QObject *parent) :
     connect(GuhCore::instance()->cloudManager(), SIGNAL(authenticatedChanged()), this, SLOT(onConnectionStatusChanged()));
 }
 
+/*! Returns the name of the \l{CloudHandler}. In this case \b Cloud.*/
 QString CloudHandler::name() const
 {
     return "Cloud";

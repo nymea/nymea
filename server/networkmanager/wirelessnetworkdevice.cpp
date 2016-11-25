@@ -221,12 +221,13 @@ void WirelessNetworkDevice::propertiesChanged(const QVariantMap &properties)
         setActiveAccessPoint(qdbus_cast<QDBusObjectPath>(properties.value("ActiveAccessPoint")));
 }
 
-QDebug operator<<(QDebug debug, WirelessNetworkDevice *manager)
+/*! Writes the given \a device to the given to \a debug. \sa WirelessNetworkDevice, */
+QDebug operator<<(QDebug debug, WirelessNetworkDevice *device)
 {
-    debug.nospace() << "WirelessNetworkDevice(" << manager->interface() << ", ";
-    debug.nospace() << manager->macAddress() <<  ", ";
-    debug.nospace() << manager->bitRate() <<  " [Mb/s], ";
-    debug.nospace() << manager->deviceStateString() <<  ") ";
+    debug.nospace() << "WirelessNetworkDevice(" << device->interface() << ", ";
+    debug.nospace() << device->macAddress() <<  ", ";
+    debug.nospace() << device->bitRate() <<  " [Mb/s], ";
+    debug.nospace() << device->deviceStateString() <<  ") ";
     return debug;
 }
 

@@ -18,6 +18,55 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::NetworkManagerHandler
+    \brief This subclass of \l{JsonHandler} processes the JSON requests for the \tt NetworkManager namespace of the JSON-RPC API.
+
+    \ingroup json
+    \inmodule core
+
+    This \l{JsonHandler} will be created in the \l{JsonRPCServer} and used to handle JSON-RPC requests
+    for the \tt {NetworkManager} namespace of the API.
+
+    \sa NetworkManager, JsonHandler, JsonRPCServer
+*/
+
+/*! \fn void guhserver::NetworkManagerHandler::NetworkStatusChanged(const QVariantMap &params);
+    This signal is emitted to the API notifications when the state of the \l{NetworkManager} has changed.
+    The \a params contains the map for the notification.
+*/
+
+/*! \fn void guhserver::NetworkManagerHandler::WiredNetworkDeviceAdded(const QVariantMap &params);
+    This signal is emitted to the API notifications when a \l{WiredNetworkDevice} has been added to the \l{NetworkManager}.
+    The \a params contains the map for the notification.
+*/
+
+/*! \fn void guhserver::NetworkManagerHandler::WiredNetworkDeviceRemoved(const QVariantMap &params);
+    This signal is emitted to the API notifications when a \l{WiredNetworkDevice} has been removed from the \l{NetworkManager}.
+    The \a params contains the map for the notification.
+*/
+
+/*! \fn void guhserver::NetworkManagerHandler::WiredNetworkDeviceChanged(const QVariantMap &params);
+    This signal is emitted to the API notifications when a \l{WiredNetworkDevice} has changed in the \l{NetworkManager}.
+    The \a params contains the map for the notification.
+*/
+
+/*! \fn void guhserver::NetworkManagerHandler::WirelessNetworkDeviceAdded(const QVariantMap &params);
+    This signal is emitted to the API notifications when a \l{WirelessNetworkDevice} has been added to the \l{NetworkManager}.
+    The \a params contains the map for the notification.
+*/
+
+/*! \fn void guhserver::NetworkManagerHandler::WirelessNetworkDeviceRemoved(const QVariantMap &params);
+    This signal is emitted to the API notifications when a \l{WirelessNetworkDevice} has been removed from the \l{NetworkManager}.
+    The \a params contains the map for the notification.
+*/
+
+/*! \fn void guhserver::NetworkManagerHandler::WirelessNetworkDeviceChanged(const QVariantMap &params);
+    This signal is emitted to the API notifications when a \l{WirelessNetworkDevice} has changed in the \l{NetworkManager}.
+    The \a params contains the map for the notification.
+*/
+
+
 #include "guhcore.h"
 #include "jsontypes.h"
 #include "loggingcategories.h"
@@ -27,6 +76,7 @@
 
 namespace guhserver {
 
+/*! Constructs a new \l{NetworkManagerHandler} with the given \a parent. */
 NetworkManagerHandler::NetworkManagerHandler(QObject *parent) :
     JsonHandler(parent)
 {
@@ -143,9 +193,9 @@ NetworkManagerHandler::NetworkManagerHandler(QObject *parent) :
     connect(GuhCore::instance()->networkManager(), &NetworkManager::wiredDeviceAdded, this, &NetworkManagerHandler::onWiredNetworkDeviceAdded);
     connect(GuhCore::instance()->networkManager(), &NetworkManager::wiredDeviceRemoved, this, &NetworkManagerHandler::onWiredNetworkDeviceRemoved);
     connect(GuhCore::instance()->networkManager(), &NetworkManager::wiredDeviceChanged, this, &NetworkManagerHandler::onWiredNetworkDeviceChanged);
-
 }
 
+/*! Returns the name of the \l{NetworkManagerHandler}. In this case \b NetworkManager. */
 QString NetworkManagerHandler::name() const
 {
     return "NetworkManager";

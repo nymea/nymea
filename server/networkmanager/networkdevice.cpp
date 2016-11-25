@@ -28,6 +28,117 @@
     \sa WiredNetworkDevice, WirelessNetworkDevice
 */
 
+/*! \enum guhserver::NetworkDevice::NetworkDeviceState
+    \value NetworkDeviceStateUnknown
+    \value NetworkDeviceStateUnmanaged
+    \value NetworkDeviceStateUnavailable
+    \value NetworkDeviceStateDisconnected
+    \value NetworkDeviceStatePrepare
+    \value NetworkDeviceStateConfig
+    \value NetworkDeviceStateNeedAuth
+    \value NetworkDeviceStateIpConfig
+    \value NetworkDeviceStateIpCheck
+    \value NetworkDeviceStateSecondaries
+    \value NetworkDeviceStateActivated
+    \value NetworkDeviceStateDeactivating
+    \value NetworkDeviceStateFailed
+*/
+
+/*! \enum guhserver::NetworkDevice::NetworkDeviceStateReason
+    \value NetworkDeviceStateReasonNone
+    \value NetworkDeviceStateReasonUnknown
+    \value NetworkDeviceStateReasonNowManaged
+    \value NetworkDeviceStateReasonNowUnmanaged
+    \value NetworkDeviceStateReasonConfigFailed
+    \value NetworkDeviceStateReasonIpConfigUnavailable
+    \value NetworkDeviceStateReasonIpConfigExpired
+    \value NetworkDeviceStateReasonNoSecrets
+    \value NetworkDeviceStateReasonSupplicantDisconnected
+    \value NetworkDeviceStateReasonSupplicantConfigFailed
+    \value NetworkDeviceStateReasonSupplicantFailed
+    \value NetworkDeviceStateReasonSupplicantTimeout
+    \value NetworkDeviceStateReasonPppStartFailed
+    \value NetworkDeviceStateReasonPppDisconnected
+    \value NetworkDeviceStateReasonPppFailed
+    \value NetworkDeviceStateReasonDhcpStartFailed
+    \value NetworkDeviceStateReasonDhcpError
+    \value NetworkDeviceStateReasonDhcpFailed
+    \value NetworkDeviceStateReasonSharedStartFailed
+    \value NetworkDeviceStateReasonSharedFailed
+    \value NetworkDeviceStateReasonAutoIpStartFailed
+    \value NetworkDeviceStateReasonAutoIpError
+    \value NetworkDeviceStateReasonAutoIpFailed
+    \value NetworkDeviceStateReasonModemBusy
+    \value NetworkDeviceStateReasonModemNoDialTone
+    \value NetworkDeviceStateReasonModemNoCarrier
+    \value NetworkDeviceStateReasonModemDialTimeout
+    \value NetworkDeviceStateReasonModemDialFailed
+    \value NetworkDeviceStateReasonModemInitFailed
+    \value NetworkDeviceStateReasonGsmApnFailed
+    \value NetworkDeviceStateReasonGsmRegistrationNotSearching
+    \value NetworkDeviceStateReasonGsmRegistrationDenied
+    \value NetworkDeviceStateReasonGsmRegistrationTimeout
+    \value NetworkDeviceStateReasonGsmRegistrationFailed
+    \value NetworkDeviceStateReasonGsmPinCheckFailed
+    \value NetworkDeviceStateReasonFirmwareMissing
+    \value NetworkDeviceStateReasonRemoved
+    \value NetworkDeviceStateReasonSleeping
+    \value NetworkDeviceStateReasonConnectionRemoved
+    \value NetworkDeviceStateReasonUserRequest
+    \value NetworkDeviceStateReasonCarrier
+    \value NetworkDeviceStateReasonConnectionAssumed
+    \value NetworkDeviceStateReasonSupplicantAvailable
+    \value NetworkDeviceStateReasonModemNotFound
+    \value NetworkDeviceStateReasonBtFailed
+    \value NetworkDeviceStateReasonGsmSimNotInserted
+    \value NetworkDeviceStateReasonGsmSimPinRequired
+    \value NetworkDeviceStateReasonGsmSimPukRequired
+    \value NetworkDeviceStateReasonGsmSimWrong
+    \value NetworkDeviceStateReasonInfinibandMode
+    \value NetworkDeviceStateReasonDependencyFailed
+    \value NetworkDeviceStateReasonBR2684Failed
+    \value NetworkDeviceStateReasonModemManagerUnavailable
+    \value NetworkDeviceStateReasonSsidNotFound
+    \value NetworkDeviceStateReasonSecondaryConnectionFailed
+    \value NetworkDeviceStateReasonDcbFoecFailed
+    \value NetworkDeviceStateReasonTeamdControlFailed
+    \value NetworkDeviceStateReasonModemFailed
+    \value NetworkDeviceStateReasonModemAvailable
+    \value NetworkDeviceStateReasonSimPinIncorrect
+    \value NetworkDeviceStateReasonNewActivision
+    \value NetworkDeviceStateReasonParentChanged
+    \value NetworkDeviceStateReasonParentManagedChanged
+*/
+
+
+/*! \enum guhserver::NetworkDevice::NetworkDeviceType
+    \value NetworkDeviceTypeUnknown
+    \value NetworkDeviceTypeEthernet
+    \value NetworkDeviceTypeWifi
+    \value NetworkDeviceTypeBluetooth
+    \value NetworkDeviceTypeOlpcMesh
+    \value NetworkDeviceTypeWiMax
+    \value NetworkDeviceTypeModem
+    \value NetworkDeviceTypeInfiniBand
+    \value NetworkDeviceTypeBond
+    \value NetworkDeviceTypeVLan
+    \value NetworkDeviceTypeAdsl
+    \value NetworkDeviceTypeBridge
+    \value NetworkDeviceTypeGeneric
+    \value NetworkDeviceTypeTeam
+    \value NetworkDeviceTypeTun
+    \value NetworkDeviceTypeIpTunnel
+    \value NetworkDeviceTypeMacVLan
+    \value NetworkDeviceTypeVXLan
+    \value NetworkDeviceTypeVEth
+*/
+
+
+/*! \fn void NetworkDevice::deviceChanged();
+    This signal will be emitted when the properties of this \l{NetworkDevice} have changed.
+*/
+
+
 #include "networkdevice.h"
 #include "loggingcategories.h"
 
@@ -194,7 +305,7 @@ void NetworkDevice::disconnectDevice()
 
 }
 
-/*! Returns the human readable deviceType of this \l{NetworkDevice}. \sa NetworkDeviceType, */
+/*! Returns the human readable device type string of the given \a deviceType. \sa NetworkDeviceType, */
 QString NetworkDevice::deviceTypeToString(const NetworkDevice::NetworkDeviceType &deviceType)
 {
     QMetaObject metaObject = NetworkDevice::staticMetaObject;
@@ -203,7 +314,7 @@ QString NetworkDevice::deviceTypeToString(const NetworkDevice::NetworkDeviceType
     return QString(metaEnum.valueToKey(deviceType)).remove("NetworkDeviceType");
 }
 
-/*! Returns the human readable device state of this \l{NetworkDevice}. \sa NetworkDeviceState, */
+/*! Returns the human readable device state string of the given \a deviceState. \sa NetworkDeviceState, */
 QString NetworkDevice::deviceStateToString(const NetworkDevice::NetworkDeviceState &deviceState)
 {
     QMetaObject metaObject = NetworkDevice::staticMetaObject;
@@ -212,7 +323,7 @@ QString NetworkDevice::deviceStateToString(const NetworkDevice::NetworkDeviceSta
     return QString(metaEnum.valueToKey(deviceState));
 }
 
-/*! Returns the human readable device state reason of this \l{NetworkDevice}. \sa NetworkDeviceStateReason, */
+/*! Returns the human readable device state reason string of the given \a deviceStateReason. \sa NetworkDeviceStateReason, */
 QString NetworkDevice::deviceStateReasonToString(const NetworkDevice::NetworkDeviceStateReason &deviceStateReason)
 {
     QMetaObject metaObject = NetworkDevice::staticMetaObject;

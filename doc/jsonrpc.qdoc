@@ -54,6 +54,10 @@
     \endcode
     Now the connection is established and waits for commands.
 
+    \section1 Classes
+
+    \annotatedlist json
+
 
     \section1 Examples
 

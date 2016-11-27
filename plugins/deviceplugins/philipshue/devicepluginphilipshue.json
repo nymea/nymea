@@ -334,8 +334,8 @@
                                     "type": "QString",
                                     "index": 0,
                                     "allowedValues": [
-                                        "flash once",
-                                        "flash 30 seconds"
+                                        "flash",
+                                        "flash 15 [s]"
                                     ]
                                 }
                             ]
@@ -476,8 +476,8 @@
                                     "type": "QString",
                                     "index": 0,
                                     "allowedValues": [
-                                        "flash once",
-                                        "flash 30 seconds"
+                                        "flash",
+                                        "flash 15 [s]"
                                     ]
                                 }
                             ]

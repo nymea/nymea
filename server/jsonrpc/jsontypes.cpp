@@ -1065,6 +1065,7 @@ QVariantList JsonTypes::packDeviceDescriptors(const QList<DeviceDescriptor> devi
     return deviceDescriptorList;
 }
 
+/*! Returns a variant map with the current basic configuration of the server. */
 QVariantMap JsonTypes::packBasicConfiguration()
 {
     QVariantMap basicConfiguration;
@@ -1076,6 +1077,7 @@ QVariantMap JsonTypes::packBasicConfiguration()
     return basicConfiguration;
 }
 
+/*! Returns a variant map with the current tcp configuration of the server. */
 QVariantMap JsonTypes::packTcpServerConfiguration()
 {
     QVariantMap tcpServerConfiguration;
@@ -1084,6 +1086,7 @@ QVariantMap JsonTypes::packTcpServerConfiguration()
     return tcpServerConfiguration;
 }
 
+/*! Returns a variant map with the current web server configuration of the server. */
 QVariantMap JsonTypes::packWebServerConfiguration()
 {
     QVariantMap webServerConfiguration;
@@ -1092,6 +1095,7 @@ QVariantMap JsonTypes::packWebServerConfiguration()
     return webServerConfiguration;
 }
 
+/*! Returns a variant map with the current web socket server configuration of the server. */
 QVariantMap JsonTypes::packWebSocketServerConfiguration()
 {
     QVariantMap webSocketServerConfiguration;

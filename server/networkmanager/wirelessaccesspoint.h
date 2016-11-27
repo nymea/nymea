@@ -64,7 +64,6 @@ public:
     bool isProtected() const;
 
     WirelessAccessPoint::ApSecurityModes securityFlags() const;
-    void setSecurityFlags(const WirelessAccessPoint::ApSecurityModes &securityFlags);
 
 private:
     QDBusObjectPath m_objectPath;
@@ -80,6 +79,7 @@ private:
     void setFrequency(const double &frequency);
     void setSignalStrength(const int &signalStrength);
     void setIsProtected(const bool &isProtected);
+    void setSecurityFlags(const WirelessAccessPoint::ApSecurityModes &securityFlags);
 
 signals:
     void signalStrengthChanged();

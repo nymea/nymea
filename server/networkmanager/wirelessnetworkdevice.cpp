@@ -18,6 +18,26 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::WirelessNetworkDevice
+    \brief Represents a wireless device (adapter) in the networkmanager.
+
+    \ingroup networkmanager
+    \inmodule core
+*/
+
+/*! \fn void WirelessNetworkDevice::bitRateChanged(const bool &bitRate);
+    This signal will be emitted when the \a bitRate of this \l{WirelessNetworkDevice} has changed.
+*/
+
+
+/*! \fn void WirelessNetworkDevice::stateChanged(const NetworkDeviceState &state);
+    This signal will be emitted when the current \a state of this \l{WirelessNetworkDevice} has changed.
+
+    \sa NetworkDeviceState
+*/
+
+
 #include "wirelessnetworkdevice.h"
 
 #include "dbus-interfaces.h"
@@ -28,6 +48,7 @@
 
 namespace guhserver {
 
+/*! Constructs a new \l{WirelessNetworkDevice} with the given dbus \a objectPath and \a parent. */
 WirelessNetworkDevice::WirelessNetworkDevice(const QDBusObjectPath &objectPath, QObject *parent) :
     NetworkDevice(objectPath, parent),
     m_activeAccessPoint(Q_NULLPTR)
@@ -55,21 +76,25 @@ WirelessNetworkDevice::WirelessNetworkDevice(const QDBusObjectPath &objectPath, 
     setActiveAccessPoint(qdbus_cast<QDBusObjectPath>(m_wirelessInterface->property("ActiveAccessPoint")));
 }
 
+/*! Returns the mac address of this \l{WirelessNetworkDevice}. */
 QString WirelessNetworkDevice::macAddress() const
 {
     return m_macAddress;
 }
 
+/*! Returns the bit rate [Mb/s] of this \l{WirelessNetworkDevice}. */
 int WirelessNetworkDevice::bitRate() const
 {
     return m_bitRate;
 }
 
+/*! Returns the current active \l{WirelessAccessPoint} of this \l{WirelessNetworkDevice}. */
 WirelessAccessPoint *WirelessNetworkDevice::activeAccessPoint()
 {
     return m_activeAccessPoint;
 }
 
+/*! Perform a wireless network scan on this \l{WirelessNetworkDevice}. */
 void WirelessNetworkDevice::scanWirelessNetworks()
 {
     qCDebug(dcNetworkManager()) << this << "Request scan";
@@ -80,11 +105,13 @@ void WirelessNetworkDevice::scanWirelessNetworks()
     }
 }
 
+/*! Returns the list of all \l{WirelessAccessPoint}{WirelessAccessPoints} of this \l{WirelessNetworkDevice}. */
 QList<WirelessAccessPoint *> WirelessNetworkDevice::accessPoints()
 {
     return m_accessPointsTable.values();
 }
 
+/*! Returns the \l{WirelessAccessPoint} with the given \a ssid. If the \l{WirelessAccessPoint} could not be found, return Q_NULLPTR. */
 WirelessAccessPoint *WirelessNetworkDevice::getAccessPoint(const QString &ssid)
 {
     foreach (WirelessAccessPoint *accessPoint, m_accessPointsTable.values()) {
@@ -94,6 +121,7 @@ WirelessAccessPoint *WirelessNetworkDevice::getAccessPoint(const QString &ssid)
     return Q_NULLPTR;
 }
 
+/*! Returns the \l{WirelessAccessPoint} with the given \a objectPath. If the \l{WirelessAccessPoint} could not be found, return Q_NULLPTR. */
 WirelessAccessPoint *WirelessNetworkDevice::getAccessPoint(const QDBusObjectPath &objectPath)
 {
     return m_accessPointsTable.value(objectPath);
@@ -193,12 +221,13 @@ void WirelessNetworkDevice::propertiesChanged(const QVariantMap &properties)
         setActiveAccessPoint(qdbus_cast<QDBusObjectPath>(properties.value("ActiveAccessPoint")));
 }
 
-QDebug operator<<(QDebug debug, WirelessNetworkDevice *manager)
+/*! Writes the given \a device to the given to \a debug. \sa WirelessNetworkDevice, */
+QDebug operator<<(QDebug debug, WirelessNetworkDevice *device)
 {
-    debug.nospace() << "WirelessNetworkDevice(" << manager->interface() << ", ";
-    debug.nospace() << manager->macAddress() <<  ", ";
-    debug.nospace() << manager->bitRate() <<  " [Mb/s], ";
-    debug.nospace() << manager->deviceStateString() <<  ") ";
+    debug.nospace() << "WirelessNetworkDevice(" << device->interface() << ", ";
+    debug.nospace() << device->macAddress() <<  ", ";
+    debug.nospace() << device->bitRate() <<  " [Mb/s], ";
+    debug.nospace() << device->deviceStateString() <<  ") ";
     return debug;
 }
 

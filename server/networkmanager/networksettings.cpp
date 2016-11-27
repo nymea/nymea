@@ -18,12 +18,21 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::NetworkSettings
+    \brief Represents the network settings in the \l{NetworkManager}.
+
+    \ingroup networkmanager
+    \inmodule core
+*/
+
 #include "networksettings.h"
 #include "dbus-interfaces.h"
 #include "loggingcategories.h"
 
 namespace guhserver {
 
+/*! Constructs a new \l{NetworkSettings} object with the given \a parent. */
 NetworkSettings::NetworkSettings(QObject *parent) : QObject(parent)
 {
     m_settingsInterface = new QDBusInterface(serviceString, settingsPathString, settingsInterfaceString, QDBusConnection::systemBus(), this);
@@ -39,6 +48,7 @@ NetworkSettings::NetworkSettings(QObject *parent) : QObject(parent)
     QDBusConnection::systemBus().connect(serviceString, settingsPathString, settingsInterfaceString, "PropertiesChanged", this, SLOT(propertiesChanged(QVariantMap)));
 }
 
+/*! Add the given \a settings to this \l{NetworkSettings}. Returns the dbus object path from the new settings. */
 QDBusObjectPath NetworkSettings::addConnection(const ConnectionSettings &settings)
 {
     QDBusMessage query = m_settingsInterface->call("AddConnection", QVariant::fromValue(settings));
@@ -53,6 +63,7 @@ QDBusObjectPath NetworkSettings::addConnection(const ConnectionSettings &setting
     return query.arguments().at(0).value<QDBusObjectPath>();
 }
 
+/*! Returns the list of current \l{NetworkConnection}{NetworkConnections} from this \l{NetworkSettings}. */
 QList<NetworkConnection *> NetworkSettings::connections() const
 {
     return m_connections.values();

@@ -82,6 +82,7 @@
         This event type describes the actions execution of a \l{Rule}.
     \value LoggingEventTypeExitActionsExecuted
         This event type describes the  exit actions execution of a \l{Rule}.
+    \value LoggingEventTypeEnabledChange
 
 */
 
@@ -106,7 +107,7 @@
     \value LoggingSourceStates
         This \l{LogEntry} was created from an \l{State} which hase changed.
     \value LoggingSourceRules
-        This \l{LogEntry} was created from an \l{Rule} which hase changed the active state or triggered.
+        This \l{LogEntry} represents the enable/disable event from an \l{Rule}.
 */
 
 #include "guhsettings.h"

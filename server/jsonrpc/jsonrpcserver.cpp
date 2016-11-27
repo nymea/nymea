@@ -112,15 +112,15 @@ JsonReply* JsonRPCServer::Introspect(const QVariantMap &params) const
     QVariantMap data;
     data.insert("types", JsonTypes::allTypes());
     QVariantMap methods;
-    foreach (JsonHandler *handler, m_handlers) {
+    foreach (JsonHandler *handler, m_handlers)
         methods.unite(handler->introspect(QMetaMethod::Method));
-    }
+
     data.insert("methods", methods);
 
     QVariantMap signalsMap;
-    foreach (JsonHandler *handler, m_handlers) {
+    foreach (JsonHandler *handler, m_handlers)
         signalsMap.unite(handler->introspect(QMetaMethod::Signal));
-    }
+
     data.insert("notifications", signalsMap);
 
     return createReply(data);
@@ -151,6 +151,7 @@ QHash<QString, JsonHandler *> JsonRPCServer::handlers() const
     return m_handlers;
 }
 
+/*! Register a new \l{TransportInterface} to the JSON server. The \a enabled flag indivates if the given \a interface sould be enebeld on startup. */
 void JsonRPCServer::registerTransportInterface(TransportInterface *interface, const bool &enabled)
 {
     connect(interface, SIGNAL(clientConnected(const QUuid &)), this, SLOT(clientConnected(const QUuid &)));

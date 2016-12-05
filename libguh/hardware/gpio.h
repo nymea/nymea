@@ -55,6 +55,8 @@ public:
     explicit Gpio(int gpio = 0, QObject *parent = 0);
     ~Gpio();
 
+    QString gpioDirectory() const;
+
     static bool isAvailable();
 
     bool exportGpio();
@@ -81,6 +83,6 @@ private:
 
 };
 
-QDebug operator<< (QDebug d, Gpio *gpio);
+QDebug operator<< (QDebug debug, Gpio *gpio);
 
 #endif // GPIO_H

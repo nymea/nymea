@@ -97,23 +97,33 @@ Gpio::~Gpio()
     unexportGpio();
 }
 
+/*! Returns the directory \tt {/sys/class/gpio/gpio<number>} of this Gpio. */
+QString Gpio::gpioDirectory() const
+{
+    return m_gpioDirectory.path();
+}
+
 /*! Returns true if the directory \tt {/sys/class/gpio} does exist. */
 bool Gpio::isAvailable()
 {
     return QDir("/sys/class/gpio").exists();
 }
 
-/*! Returns true if this  \l{Gpio} could be exported in the system file \tt {/sys/class/gpio/export}. */
+/*! Returns true if this \l{Gpio} could be exported in the system file \tt {/sys/class/gpio/export}. If this Gpio is already exported, this function will return true. */
 bool Gpio::exportGpio()
 {
+    // Check if already exported
+    if (m_gpioDirectory.exists())
+        return true;
+
     QFile exportFile("/sys/class/gpio/export");
-    if (!exportFile.open(QIODevice::WriteOnly)) {
+    if (!exportFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
         qCWarning(dcHardware()) << "Could not export GPIO" << m_gpio;
         return false;
     }
 
     QTextStream out(&exportFile);
-    out << m_gpio;
+    out << m_gpio << "\n";
     exportFile.close();
     return true;
 }
@@ -122,13 +132,13 @@ bool Gpio::exportGpio()
 bool Gpio::unexportGpio()
 {
     QFile unexportFile("/sys/class/gpio/unexport");
-    if (!unexportFile.open(QIODevice::WriteOnly)) {
+    if (!unexportFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
         qCWarning(dcHardware()) << "Could not unexport GPIO" << m_gpio;
         return false;
     }
 
     QTextStream out(&unexportFile);
-    out << m_gpio;
+    out << m_gpio << "\n";
     unexportFile.close();
     return true;
 }
@@ -137,7 +147,7 @@ bool Gpio::unexportGpio()
 bool Gpio::setDirection(Gpio::Direction direction)
 {
     QFile directionFile(m_gpioDirectory.path() + "/direction");
-    if (!directionFile.open(QIODevice::WriteOnly)) {
+    if (!directionFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
         qCWarning(dcHardware()) << "Could not open GPIO" << m_gpio << "direction file.";
         return false;
     }
@@ -145,10 +155,10 @@ bool Gpio::setDirection(Gpio::Direction direction)
     QTextStream out(&directionFile);
     switch (direction) {
     case DirectionInput:
-        out << "in";
+        out << "in" << "\n";
         break;
     case DirectionOutput:
-        out << "out";
+        out << "out" << "\n";
         break;
     default:
         directionFile.close();
@@ -163,7 +173,7 @@ bool Gpio::setDirection(Gpio::Direction direction)
 Gpio::Direction Gpio::direction()
 {
     QFile directionFile(m_gpioDirectory.path() + "/direction");
-    if (!directionFile.open(QIODevice::ReadOnly)) {
+    if (!directionFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qCWarning(dcHardware()) << "Could not open GPIO" << m_gpio << "direction file.";
         return Gpio::DirectionInvalid;
     }
@@ -191,7 +201,7 @@ bool Gpio::setValue(Gpio::Value value)
         return false;
 
     QFile valueFile(m_gpioDirectory.path() + "/value");
-    if (!valueFile.open(QIODevice::WriteOnly)) {
+    if (!valueFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
         qCWarning(dcHardware()) << "Could not open GPIO" << m_gpio << "value file.";
         return false;
     }
@@ -199,10 +209,10 @@ bool Gpio::setValue(Gpio::Value value)
     QTextStream out(&valueFile);
     switch (value) {
     case ValueLow:
-        out << "0";
+        out << "0" << "\n";
         break;
     case ValueHigh:
-        out << "1";
+        out << "1" << "\n";
         break;
     default:
         valueFile.close();
@@ -217,7 +227,7 @@ bool Gpio::setValue(Gpio::Value value)
 Gpio::Value Gpio::value()
 {
     QFile valueFile(m_gpioDirectory.path() + "/value");
-    if (!valueFile.open(QIODevice::ReadOnly)) {
+    if (!valueFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qCWarning(dcHardware()) << "Could not open GPIO" << m_gpio << "value file.";
         return Gpio::ValueInvalid;
     }
@@ -240,16 +250,16 @@ Gpio::Value Gpio::value()
 bool Gpio::setActiveLow(bool activeLow)
 {
     QFile activeLowFile(m_gpioDirectory.path() + "/active_low");
-    if (!activeLowFile.open(QIODevice::WriteOnly)) {
+    if (!activeLowFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
         qCWarning(dcHardware()) << "Could not open GPIO" << m_gpio << "active_low file.";
         return false;
     }
 
     QTextStream out(&activeLowFile);
     if (activeLow) {
-        out << "0";
+        out << "0" << "\n";
     } else {
-        out << "1";
+        out << "1" << "\n";
     }
 
     activeLowFile.close();
@@ -260,7 +270,7 @@ bool Gpio::setActiveLow(bool activeLow)
 bool Gpio::activeLow()
 {
     QFile activeLowFile(m_gpioDirectory.path() + "/active_low");
-    if (!activeLowFile.open(QIODevice::ReadOnly)) {
+    if (!activeLowFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qCWarning(dcHardware()) << "Could not open GPIO" << m_gpio << "active_low file.";
         return false;
     }
@@ -286,7 +296,7 @@ bool Gpio::setEdgeInterrupt(Gpio::Edge edge)
     }
 
     QFile edgeFile(m_gpioDirectory.path() + "/edge");
-    if (!edgeFile.open(QIODevice::WriteOnly)) {
+    if (!edgeFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
         qCWarning(dcHardware()) << "Could not open GPIO" << m_gpio << "edge file.";
         return false;
     }
@@ -294,16 +304,16 @@ bool Gpio::setEdgeInterrupt(Gpio::Edge edge)
     QTextStream out(&edgeFile);
     switch (edge) {
     case EdgeFalling:
-        out << "falling";
+        out << "falling" << "\n";
         break;
     case EdgeRising:
-        out << "rising";
+        out << "rising" << "\n";
         break;
     case EdgeBoth:
-        out << "both";
+        out << "both" << "\n";
         break;
     case EdgeNone:
-        out << "none";
+        out << "none" << "\n";
         break;
     default:
         return false;
@@ -317,7 +327,7 @@ bool Gpio::setEdgeInterrupt(Gpio::Edge edge)
 Gpio::Edge Gpio::edgeInterrupt()
 {
     QFile edgeFile(m_gpioDirectory.path() + "/edge");
-    if (!edgeFile.open(QIODevice::ReadOnly)) {
+    if (!edgeFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qCWarning(dcHardware()) << "Could not open GPIO" << m_gpio << "edge file.";
         return Gpio::EdgeNone;
     }
@@ -347,35 +357,40 @@ int Gpio::gpioNumber() const
 }
 
 
-QDebug operator<<(QDebug d, Gpio *gpio)
+QDebug operator<<(QDebug debug, Gpio *gpio)
 {
-    d << "-----------------------------------";
-    d << "\n--> gpio" << gpio->gpioNumber() << ":";
-    d << "\n------------------";
+    debug.nospace() << "Gpio(" << gpio->gpioNumber() << ", ";
     if (gpio->direction() == Gpio::DirectionInput) {
-        d << "\n        direction: input";
+        debug.nospace() << "Input, ";
+        switch (gpio->edgeInterrupt()) {
+        case Gpio::EdgeFalling:
+            debug.nospace() << "Falling, ";
+            break;
+        case Gpio::EdgeRising:
+            debug.nospace() <<"Rising, ";
+            break;
+        case Gpio::EdgeBoth:
+            debug.nospace() << "Both, ";
+            break;
+        case Gpio::EdgeNone:
+            debug.nospace() << "None, ";
+            break;
+        default:
+            break;
+        }
     } else if (gpio->direction() == Gpio::DirectionOutput) {
-        d << "\n        direction: output";
+        debug.nospace() << "Output, ";
+    } else {
+        debug.nospace() << "Invalid, ";
     }
-    d << "\n            value:" << gpio->value();
-    d << "\n       active low:" << gpio->activeLow();
 
-    switch (gpio->edgeInterrupt()) {
-    case Gpio::EdgeFalling:
-        d << "\n   edge interrupt:" << "falling";
-        break;
-    case Gpio::EdgeRising:
-        d << "\n   edge interrupt:" << "rising";
-        break;
-    case Gpio::EdgeBoth:
-        d << "\n   edge interrupt:" << "both";
-        break;
-    case Gpio::EdgeNone:
-        d << "\n   edge interrupt:" << "none";
-        break;
-    default:
-        break;
+    if (gpio->value() == Gpio::ValueHigh) {
+        debug.nospace() << "Value: 1)";
+    } else if (gpio->value() == Gpio::ValueLow) {
+        debug.nospace() << "Value: 0)";
+    } else {
+        debug.nospace() << "Value: Invalid)";
     }
-    d << "\n-----------------------------------\n";
-    return d;
+
+    return debug;
 }

@@ -62,6 +62,31 @@ GuhSettings::GuhSettings(const SettingsRole &role, QObject *parent):
     m_role(role)
 {
     QString settingsFile;
+#ifdef SNAPPY
+    QString settingsFilePath = QString(qgetenv("SNAP_DATA"));
+    switch (role) {
+    case SettingsRoleNone:
+        break;
+    case SettingsRoleDevices:
+        settingsFile = settingsFilePath + "/devices.conf";
+        m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
+        break;
+    case SettingsRoleRules:
+        settingsFile = settingsFilePath + "/rules.conf";
+        m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
+        break;
+    case SettingsRolePlugins:
+        settingsFile = settingsFilePath + "/plugins.conf";
+        m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
+        break;
+    case SettingsRoleGlobal:
+        settingsFile = settingsFilePath + "/guhd.conf";
+        m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
+        break;
+    default:
+        break;
+    }
+#else
     QString settingsPrefix = QCoreApplication::instance()->organizationName();
     bool rootPrivilege = isRoot();
 
@@ -123,6 +148,9 @@ GuhSettings::GuhSettings(const SettingsRole &role, QObject *parent):
     default:
         break;
     }
+
+#endif // SNAPPY
+
 }
 
 /*! Destructor of the GuhSettings.*/
@@ -154,6 +182,9 @@ bool GuhSettings::isRoot()
 QString GuhSettings::logPath()
 {
     QString logPath;
+#ifdef SNAPPY
+    logPath = QString(qgetenv("SNAP_COMMON")) + "/guhd.sqlite";
+#else
     QString organisationName = QCoreApplication::instance()->organizationName();
 
     if (organisationName == "guh-test") {
@@ -164,6 +195,7 @@ QString GuhSettings::logPath()
         logPath = QDir::homePath() + "/.config/" + organisationName + "/guhd.sqlite";
     }
 
+#endif // SNAPPY
     return logPath;
 }
 
@@ -171,6 +203,9 @@ QString GuhSettings::logPath()
 QString GuhSettings::settingsPath()
 {
     QString path;
+#ifdef SNAPPY
+    path = QString(qgetenv("SNAP_DATA"));
+#else
     QString organisationName = QCoreApplication::instance()->organizationName();
 
     if (organisationName == "guh-test") {
@@ -180,20 +215,27 @@ QString GuhSettings::settingsPath()
     } else {
         path = QDir::homePath() + "/.config/" + organisationName;
     }
-
+#endif // SNAPPY
     return path;
 }
 
 /*! Returns the default system translation path \tt{/usr/share/guh/translations}. */
 QString GuhSettings::translationsPath()
 {
+#ifdef SNAPPY
+    return QString(qgetenv("SNAP_DATA"));
+#else
     return QString("/usr/share/guh/translations");
+#endif // SNAPPY
 }
 
 /*! Returns the path where the log file (console log) will be stored. */
 QString GuhSettings::consoleLogPath()
 {
     QString consoleLogPath;
+#ifdef SNAPPY
+    consoleLogPath = QString(qgetenv("SNAP_COMMON")) + "/guhd.log";
+#else
     QString organisationName = QCoreApplication::instance()->organizationName();
 
     if (organisationName == "guh-test") {
@@ -203,6 +245,7 @@ QString GuhSettings::consoleLogPath()
     } else {
         consoleLogPath = QDir::homePath() + "/.config/" + organisationName + "/guhd.log";
     }
+#endif // SNAPPY
 
     return consoleLogPath;
 }

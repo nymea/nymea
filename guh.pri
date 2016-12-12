@@ -86,6 +86,10 @@ coverage {
 # Ubuntu snappy
 snappy {
     DEFINES += SNAPPY
+#    # Install translation files
+#    translations.path = /usr/share/guh/translations
+#    translations.files = $${top_builddir}/translations/*.qm
+#    INSTALLS += translations
 }
 
 # Enable Radio 433 MHz for GPIO's

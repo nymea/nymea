@@ -67,12 +67,12 @@ contains(DEFINES, BLUETOOTH_LE) {
 }
 
 # Ubuntu snappy
-contains(DEFINES, SNAPPY){
+contains(DEFINES, SNAPPY) {
     message("Building Ubuntu snappy package.")
 }
 
 # GPIO RF 433 MHz support
-contains(DEFINES, GPIO433){
+contains(DEFINES, GPIO433) {
     message("Radio 433 for GPIO's enabled")
 } else {
     message("Radio 433 for GPIO's disabled")

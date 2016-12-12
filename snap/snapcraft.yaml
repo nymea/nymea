@@ -17,10 +17,6 @@ apps:
       - bluetooth-control
       - bluez
 
-  guh-cli:
-    command: guh-cli
-
-
 parts:
   application:
     plugin: qmake
@@ -55,8 +51,3 @@ parts:
       - avahi-daemon
     after: [qt5conf]
 
-parts:
-  guh-cli:
-    plugin: python2
-    source: https://github.com/guh/guh-cli
-    source-type: git

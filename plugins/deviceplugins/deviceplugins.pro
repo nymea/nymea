@@ -1,9 +1,9 @@
 TEMPLATE = subdirs
 SUBDIRS += elro         \
     intertechno         \
-    networkdetector     \
-    conrad              \
     mock                \
+    networkdetector        \
+    conrad              \
     openweathermap      \
     lircd               \
     wakeonlan           \

@@ -28,4 +28,5 @@ SUBDIRS += elro         \
     denon               \
     avahimonitor        \
     senic               \
+    gpio                \
 

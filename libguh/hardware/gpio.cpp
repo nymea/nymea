@@ -161,7 +161,7 @@ int Gpio::gpioNumber() const
 /*! Returns true if the directories \tt {/sys/class/gpio} and \tt {/sys/class/gpio/export} do exist. */
 bool Gpio::isAvailable()
 {
-    return QDir("/sys/class/gpio").exists() && QDir("/sys/class/gpio/export").exists();
+    return QFile("/sys/class/gpio/export").exists();
 }
 
 /*! Returns true if this \l{Gpio} could be exported in the system file \tt {/sys/class/gpio/export}. If this Gpio is already exported, this function will return true. */

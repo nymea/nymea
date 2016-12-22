@@ -3,6 +3,7 @@ version: 0.1.0
 summary: An open source IoT server
 description: The guh daemon is a plugin based IoT (Internet of Things) server. The server works like a translator for devices, things and services and allows them to interact. With the powerful rule engine you are able to connect any device available in the system and create individual scenes and behaviors for your environment.
 confinement: strict
+grade: devel
 
 apps:
   guhd:
@@ -15,10 +16,12 @@ apps:
       - network-observe
       - serial-port
       - bluetooth-control
+      - avahi-observe
       - bluez
+      - shutdown
 
 parts:
-  application:
+  guhd:
     plugin: qmake
     source: ../
     options: [ CONFIG+=ccache, CONFIG+=disabletesting, CONFIG+=snappy ]
@@ -50,4 +53,3 @@ parts:
       - logrotate
       - avahi-daemon
     after: [qt5conf]
-

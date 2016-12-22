@@ -33,4 +33,5 @@ SUBDIRS += elro         \
     usbwde              \
     senic               \
     multisensor         \
+    gpio                \
 

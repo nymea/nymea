@@ -36,7 +36,6 @@ class DevicePluginGpio : public DevicePlugin
 
 public:
     explicit DevicePluginGpio();
-    ~DevicePluginGpio();
 
     DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
     DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
@@ -48,12 +47,16 @@ public:
 
 private:
     QHash<Gpio *, Device *> m_gpioDevices;
-    QHash<int, Gpio *> m_raspberryPiGpios;
-
     QHash<GpioMonitor *, Device *> m_monitorDevices;
+
+    QHash<int, Gpio *> m_raspberryPiGpios;
     QHash<int, GpioMonitor *> m_raspberryPiGpioMoniors;
 
+    QHash<int, Gpio *> m_beagleboneBlackGpios;
+    QHash<int, GpioMonitor *> m_beagleboneBlackGpioMoniors;
+
     QList<GpioDescriptor> raspberryPiGpioDescriptors();
+    QList<GpioDescriptor> beagleboneBlackGpioDescriptors();
 
 private slots:
     void onGpioValueChanged(const bool &value);

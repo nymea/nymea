@@ -11,7 +11,7 @@
                 {
                     "id": "3885c520-e202-4435-88f6-3c35c362b2e6",
                     "name": "GPIO Switch",
-                    "idName": "gpioSwitch",
+                    "idName": "gpioSwitchRpi",
                     "deviceIcon": "Switch",
                     "basicTags": [
                         "Device",
@@ -61,7 +61,7 @@
                 {
                     "id": "6aff228b-0410-4ef9-9593-51e8639aacea",
                     "name": "GPIO Button",
-                    "idName": "gpioButton",
+                    "idName": "gpioButtonRpi",
                     "deviceIcon": "Power",
                     "basicTags": [
                         "Device",
@@ -114,9 +114,9 @@
             "id": "7835d14b-b455-49bd-9f31-72c6e8c3033d",
             "deviceClasses": [
                 {
-                    "id": "3885c520-e202-4435-88f6-3c35c362b2e6",
+                    "id": "75d54a59-f9b0-4bc4-a86c-6b1fc47e0663",
                     "name": "GPIO Switch",
-                    "idName": "gpioSwitch",
+                    "idName": "gpioSwitchBbb",
                     "deviceIcon": "Switch",
                     "basicTags": [
                         "Device",
@@ -164,9 +164,9 @@
                     ]
                 },
                 {
-                    "id": "6aff228b-0410-4ef9-9593-51e8639aacea",
+                    "id": "ffd2aa29-55cc-4824-ba95-c311784f7824",
                     "name": "GPIO Button",
-                    "idName": "gpioButton",
+                    "idName": "gpioButtonBbb",
                     "deviceIcon": "Power",
                     "basicTags": [
                         "Device",

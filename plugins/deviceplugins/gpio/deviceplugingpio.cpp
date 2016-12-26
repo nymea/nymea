@@ -66,7 +66,7 @@ DeviceManager::DeviceSetupStatus DevicePluginGpio::setupDevice(Device *device)
     }
 
     // GPIO Switch
-    if (device->deviceClassId() == gpioSwitchDeviceClassId) {
+    if (device->deviceClassId() == gpioSwitchRpiDeviceClassId || device->deviceClassId() == gpioSwitchBbbDeviceClassId) {
         // Create and configure gpio
         Gpio *gpio = new Gpio(device->paramValue(gpioParamTypeId).toInt(), this);
 
@@ -86,12 +86,19 @@ DeviceManager::DeviceSetupStatus DevicePluginGpio::setupDevice(Device *device)
         }
 
         m_gpioDevices.insert(gpio, device);
-        m_raspberryPiGpios.insert(gpio->gpioNumber(), gpio);
+
+        if (device->deviceClassId() == gpioSwitchRpiDeviceClassId)
+            m_raspberryPiGpios.insert(gpio->gpioNumber(), gpio);
+
+        if (device->deviceClassId() == gpioSwitchBbbDeviceClassId)
+            m_beagleboneBlackGpios.insert(gpio->gpioNumber(), gpio);
+
         return DeviceManager::DeviceSetupStatusSuccess;
     }
 
-    if (device->deviceClassId() == gpioSwitchDeviceClassId) {
+    if (device->deviceClassId() == gpioSwitchRpiDeviceClassId || device->deviceClassId() == gpioSwitchBbbDeviceClassId) {
         GpioMonitor *monior = new GpioMonitor(device->paramValue(gpioParamTypeId).toInt(), this);
+
         if (!monior->enable()) {
             qCWarning(dcGpioController()) << "Could not enable gpio monitor for device" << device->name();
             return DeviceManager::DeviceSetupStatusFailure;
@@ -100,7 +107,13 @@ DeviceManager::DeviceSetupStatus DevicePluginGpio::setupDevice(Device *device)
         connect(monior, &GpioMonitor::valueChanged, this, &DevicePluginGpio::onGpioValueChanged);
 
         m_monitorDevices.insert(monior, device);
-        m_raspberryPiGpioMoniors.insert(monior->gpio()->gpioNumber(), monior);
+
+        if (device->deviceClassId() == gpioSwitchRpiDeviceClassId)
+            m_raspberryPiGpioMoniors.insert(monior->gpio()->gpioNumber(), monior);
+
+        if (device->deviceClassId() == gpioSwitchBbbDeviceClassId)
+            m_beagleboneBlackGpioMoniors.insert(monior->gpio()->gpioNumber(), monior);
+
         return DeviceManager::DeviceSetupStatusSuccess;
     }
 
@@ -113,7 +126,7 @@ DeviceManager::DeviceError DevicePluginGpio::discoverDevices(const DeviceClassId
 
     // Check if GPIOs are available on this platform
     if (!Gpio::isAvailable()) {
-        qCWarning(dcGpioController()) << "There are ou GPIOs on this plattform";
+        qCWarning(dcGpioController()) << "There are no GPIOs on this plattform";
         return DeviceManager::DeviceErrorHardwareNotAvailable;
     }
 
@@ -153,6 +166,7 @@ DeviceManager::DeviceError DevicePluginGpio::discoverDevices(const DeviceClassId
         }
 
         emit devicesDiscovered(deviceClassId, deviceDescriptors);
+        return DeviceManager::DeviceErrorAsync;
     }
 
     if (deviceClass.vendorId() == beagleboneBlackVendorId) {
@@ -189,10 +203,10 @@ DeviceManager::DeviceError DevicePluginGpio::discoverDevices(const DeviceClassId
         }
 
         emit devicesDiscovered(deviceClassId, deviceDescriptors);
+        return DeviceManager::DeviceErrorAsync;
     }
 
-
-    return DeviceManager::DeviceErrorAsync;
+    return DeviceManager::DeviceErrorVendorNotFound;
 }
 
 DeviceManager::HardwareResources DevicePluginGpio::requiredHardware() const
@@ -241,9 +255,13 @@ DeviceManager::DeviceError DevicePluginGpio::executeAction(Device *device, const
     // Get the gpio
     const DeviceClass deviceClass = deviceManager()->findDeviceClass(device->deviceClassId());
     Gpio *gpio = Q_NULLPTR;
+
     // Find the gpio in the corresponding hash
     if (deviceClass.vendorId() == raspberryPiVendorId)
         gpio = m_raspberryPiGpios.value(device->paramValue(gpioParamTypeId).toInt());
+
+    if (deviceClass.vendorId() == beagleboneBlackVendorId)
+        gpio = m_beagleboneBlackGpios.value(device->paramValue(gpioParamTypeId).toInt());
 
     // Check if gpio was found
     if (!gpio) {
@@ -252,7 +270,7 @@ DeviceManager::DeviceError DevicePluginGpio::executeAction(Device *device, const
     }
 
     // GPIO Switch power action
-    if (device->deviceClassId() == gpioSwitchDeviceClassId && action.actionTypeId() == powerValueActionTypeId) {
+    if (action.actionTypeId() == powerValueActionTypeId) {
         bool success = false;
         if (action.param(powerValueStateParamTypeId).value().toBool()) {
             success = gpio->setValue(Gpio::ValueHigh);
@@ -276,14 +294,20 @@ DeviceManager::DeviceError DevicePluginGpio::executeAction(Device *device, const
 
 void DevicePluginGpio::postSetupDevice(Device *device)
 {
-    if (device->deviceClassId() == gpioSwitchDeviceClassId) {
+    if (device->deviceClassId() == gpioSwitchRpiDeviceClassId || device->deviceClassId() == gpioSwitchBbbDeviceClassId) {
         Gpio *gpio = m_gpioDevices.key(device);
+        if (!gpio)
+            return;
+
         gpio->setValue(Gpio::ValueLow);
         device->setStateValue(powerValueStateTypeId, false);
     }
 
-    if (device->deviceClassId() == gpioButtonDeviceClassId) {
+    if (device->deviceClassId() == gpioButtonRpiDeviceClassId || device->deviceClassId() == gpioButtonBbbDeviceClassId) {
         GpioMonitor *monitor = m_monitorDevices.key(device);
+        if (!monitor)
+            return;
+
         device->setStateValue(pressedStateTypeId, monitor->value());
     }
 }
@@ -325,72 +349,73 @@ QList<GpioDescriptor> DevicePluginGpio::beagleboneBlackGpioDescriptors()
 {
     // Note: https://www.mathworks.com/help/examples/beaglebone_product/beaglebone_black_gpio_pinmap.png
     QList<GpioDescriptor> gpioDescriptors;
+    gpioDescriptors << GpioDescriptor(2, 22, "P9");
+    gpioDescriptors << GpioDescriptor(3, 21, "P9");
+    gpioDescriptors << GpioDescriptor(4, 18, "P9 - I2C1_SDA");
+    gpioDescriptors << GpioDescriptor(5, 17, "P9 - I2C1_SCL");
+    gpioDescriptors << GpioDescriptor(7, 42, "P9");
+    gpioDescriptors << GpioDescriptor(12, 20, "P9 - I2C2_SDA");
+    gpioDescriptors << GpioDescriptor(13, 19, "P9 - I2C2_SCL");
+    gpioDescriptors << GpioDescriptor(14, 26, "P9");
+    gpioDescriptors << GpioDescriptor(15, 24, "P9");
+    gpioDescriptors << GpioDescriptor(20, 41, "P9");
     gpioDescriptors << GpioDescriptor(30, 11, "P9");
     gpioDescriptors << GpioDescriptor(31, 13, "P9");
     gpioDescriptors << GpioDescriptor(48, 15, "P9");
-    gpioDescriptors << GpioDescriptor(5, 17, "P9 - I2C1_SCL");
-    gpioDescriptors << GpioDescriptor(13, 19, "P9 - I2C2_SCL");
-    gpioDescriptors << GpioDescriptor(3, 21, "P9");
     gpioDescriptors << GpioDescriptor(49, 23, "P9");
-    gpioDescriptors << GpioDescriptor(117, 25, "P9");
-    gpioDescriptors << GpioDescriptor(121, 29, "P9");
-    gpioDescriptors << GpioDescriptor(120, 31, "P9");
-    gpioDescriptors << GpioDescriptor(20, 41, "P9");
-    gpioDescriptors << GpioDescriptor(60, 12, "P9");
     gpioDescriptors << GpioDescriptor(50, 14, "P9");
     gpioDescriptors << GpioDescriptor(51, 16, "P9");
-    gpioDescriptors << GpioDescriptor(4, 18, "P9 - I2C1_SDA");
-    gpioDescriptors << GpioDescriptor(12, 20, "P9 - I2C2_SDA");
-    gpioDescriptors << GpioDescriptor(2, 22, "P9");
-    gpioDescriptors << GpioDescriptor(15, 24, "P9");
-    gpioDescriptors << GpioDescriptor(14, 26, "P9");
-    gpioDescriptors << GpioDescriptor(123, 28, "P9");
+    gpioDescriptors << GpioDescriptor(60, 12, "P9");
+    gpioDescriptors << GpioDescriptor(117, 25, "P9");
+    gpioDescriptors << GpioDescriptor(120, 31, "P9");
+    gpioDescriptors << GpioDescriptor(121, 29, "P9");
     gpioDescriptors << GpioDescriptor(122, 30, "P9");
-    gpioDescriptors << GpioDescriptor(7, 42, "P9");
-    gpioDescriptors << GpioDescriptor(38, 3, "P8 - MMC1_DAT6");
-    gpioDescriptors << GpioDescriptor(34, 5, "P8 - MMC1_DAT2");
-    gpioDescriptors << GpioDescriptor(66, 7, "P8");
-    gpioDescriptors << GpioDescriptor(69, 9, "P8");
-    gpioDescriptors << GpioDescriptor(45, 11, "P8");
-    gpioDescriptors << GpioDescriptor(23, 13, "P8");
-    gpioDescriptors << GpioDescriptor(47, 15, "P8");
-    gpioDescriptors << GpioDescriptor(27, 17, "P8");
-    gpioDescriptors << GpioDescriptor(22, 19, "P8");
-    gpioDescriptors << GpioDescriptor(62, 21, "P8 - MMC1-CLK");
-    gpioDescriptors << GpioDescriptor(36, 23, "P8 - MMC1-DAT4");
-    gpioDescriptors << GpioDescriptor(32, 25, "P8 - MMC1-DAT0");
-    gpioDescriptors << GpioDescriptor(86, 27, "P8 - LCD_VSYNC");
-    gpioDescriptors << GpioDescriptor(87, 29, "P8 - LCD_HSYNC");
-    gpioDescriptors << GpioDescriptor(10, 31, "P8 - LCD_DATA14");
-    gpioDescriptors << GpioDescriptor(9, 33, "P8 - LCD_DATA13");
+    gpioDescriptors << GpioDescriptor(123, 28, "P9");
+
     gpioDescriptors << GpioDescriptor(8, 35, "P8 - LCD_DATA12");
-    gpioDescriptors << GpioDescriptor(78, 37, "P8 - LCD_DATA8");
-    gpioDescriptors << GpioDescriptor(76, 39, "P8 - LCD_DATA6");
-    gpioDescriptors << GpioDescriptor(74, 41, "P8 - LCD_DATA4");
-    gpioDescriptors << GpioDescriptor(72, 43, "P8 - LCD_DATA2");
-    gpioDescriptors << GpioDescriptor(70, 45, "P8 - LCD_DATA0");
-    gpioDescriptors << GpioDescriptor(39, 4, "P8 - MMC1_DAT7");
+    gpioDescriptors << GpioDescriptor(9, 33, "P8 - LCD_DATA13");
+    gpioDescriptors << GpioDescriptor(10, 31, "P8 - LCD_DATA14");
+    gpioDescriptors << GpioDescriptor(11, 32, "P8 - LCD_DATA15");
+    gpioDescriptors << GpioDescriptor(22, 19, "P8");
+    gpioDescriptors << GpioDescriptor(23, 13, "P8");
+    gpioDescriptors << GpioDescriptor(26, 14, "P8");
+    gpioDescriptors << GpioDescriptor(27, 17, "P8");
+    gpioDescriptors << GpioDescriptor(32, 25, "P8 - MMC1-DAT0");
+    gpioDescriptors << GpioDescriptor(33, 24, "P8 - MMC1_DAT1");
+    gpioDescriptors << GpioDescriptor(34, 5, "P8 - MMC1_DAT2");
     gpioDescriptors << GpioDescriptor(35, 6, "P8 - MMC1_DAT3");
+    gpioDescriptors << GpioDescriptor(36, 23, "P8 - MMC1-DAT4");
+    gpioDescriptors << GpioDescriptor(37, 22, "P8 - MMC1_DAT5");
+    gpioDescriptors << GpioDescriptor(38, 3, "P8 - MMC1_DAT6");
+    gpioDescriptors << GpioDescriptor(39, 4, "P8 - MMC1_DAT7");
+    gpioDescriptors << GpioDescriptor(44, 12, "P8");
+    gpioDescriptors << GpioDescriptor(45, 11, "P8");
+    gpioDescriptors << GpioDescriptor(46, 16, "P8");
+    gpioDescriptors << GpioDescriptor(47, 15, "P8");
+    gpioDescriptors << GpioDescriptor(61, 26, "P8");
+    gpioDescriptors << GpioDescriptor(62, 21, "P8 - MMC1-CLK");
+    gpioDescriptors << GpioDescriptor(63, 20, "P8 - MMC1_CMD");
+    gpioDescriptors << GpioDescriptor(65, 18, "P8");
+    gpioDescriptors << GpioDescriptor(66, 7, "P8");
     gpioDescriptors << GpioDescriptor(67, 8, "P8");
     gpioDescriptors << GpioDescriptor(68, 10, "P8");
-    gpioDescriptors << GpioDescriptor(44, 12, "P8");
-    gpioDescriptors << GpioDescriptor(26, 14, "P8");
-    gpioDescriptors << GpioDescriptor(46, 16, "P8");
-    gpioDescriptors << GpioDescriptor(65, 18, "P8");
-    gpioDescriptors << GpioDescriptor(63, 20, "P8 - MMC1_CMD");
-    gpioDescriptors << GpioDescriptor(37, 22, "P8 - MMC1_DAT5");
-    gpioDescriptors << GpioDescriptor(33, 24, "P8 - MMC1_DAT1");
-    gpioDescriptors << GpioDescriptor(61, 26, "P8");
+    gpioDescriptors << GpioDescriptor(69, 9, "P8");
+    gpioDescriptors << GpioDescriptor(70, 45, "P8 - LCD_DATA0");
+    gpioDescriptors << GpioDescriptor(71, 46, "P8 - LCD_DATA1");
+    gpioDescriptors << GpioDescriptor(72, 43, "P8 - LCD_DATA2");
+    gpioDescriptors << GpioDescriptor(73, 44, "P8 - LCD_DATA3");
+    gpioDescriptors << GpioDescriptor(74, 41, "P8 - LCD_DATA4");
+    gpioDescriptors << GpioDescriptor(75, 42, "P8 - LCD_DATA5");
+    gpioDescriptors << GpioDescriptor(76, 39, "P8 - LCD_DATA6");
+    gpioDescriptors << GpioDescriptor(77, 40, "P8 - LCD_DATA7");
+    gpioDescriptors << GpioDescriptor(78, 37, "P8 - LCD_DATA8");
+    gpioDescriptors << GpioDescriptor(79, 38, "P8 - LCD_DATA9");
+    gpioDescriptors << GpioDescriptor(80, 36, "P8 - LCD_DATA10");
+    gpioDescriptors << GpioDescriptor(81, 34, "P8 - LCD_DATA11");
+    gpioDescriptors << GpioDescriptor(86, 27, "P8 - LCD_VSYNC");
+    gpioDescriptors << GpioDescriptor(87, 29, "P8 - LCD_HSYNC");
     gpioDescriptors << GpioDescriptor(88, 28, "P8 - LCD_PCLK");
     gpioDescriptors << GpioDescriptor(89, 30, "P8 - LCD_AC_BIAS_E");
-    gpioDescriptors << GpioDescriptor(11, 32, "P8 - LCD_DATA15");
-    gpioDescriptors << GpioDescriptor(81, 34, "P8 - LCD_DATA11");
-    gpioDescriptors << GpioDescriptor(80, 36, "P8 - LCD_DATA10");
-    gpioDescriptors << GpioDescriptor(79, 38, "P8 - LCD_DATA9");
-    gpioDescriptors << GpioDescriptor(77, 40, "P8 - LCD_DATA7");
-    gpioDescriptors << GpioDescriptor(75, 42, "P8 - LCD_DATA5");
-    gpioDescriptors << GpioDescriptor(73, 44, "P8 - LCD_DATA3");
-    gpioDescriptors << GpioDescriptor(71, 46, "P8 - LCD_DATA1");
     return gpioDescriptors;
 }
 

@@ -96,7 +96,7 @@ DeviceManager::DeviceSetupStatus DevicePluginGpio::setupDevice(Device *device)
         return DeviceManager::DeviceSetupStatusSuccess;
     }
 
-    if (device->deviceClassId() == gpioSwitchRpiDeviceClassId || device->deviceClassId() == gpioSwitchBbbDeviceClassId) {
+    if (device->deviceClassId() == gpioButtonRpiDeviceClassId || device->deviceClassId() == gpioButtonBbbDeviceClassId) {
         GpioMonitor *monior = new GpioMonitor(device->paramValue(gpioParamTypeId).toInt(), this);
 
         if (!monior->enable()) {

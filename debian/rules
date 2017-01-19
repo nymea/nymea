@@ -21,10 +21,6 @@ $(PREPROCESS_FILES:.in=): %: %.in
 	sed 's,/@DEB_HOST_MULTIARCH@,$(DEB_HOST_MULTIARCH:%=/%),g' $< > $@
 
 
-debian/%.install: debian/%.install.in
-	sed 's/@DEB_HOST_MULTIARCH@/$(DEB_HOST_MULTIARCH)/g' $< > $@
-
-
 override_dh_auto_build:
 	make
 	make doc

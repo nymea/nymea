@@ -11,13 +11,14 @@ else
 endif
 
 DPKG_EXPORT_BUILDFLAGS = 1
-include /usr/share/dpkg/buildflags.mk
-
 DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 
+include /usr/share/dpkg/buildflags.mk
 
-debian/%.dirs: debian/%.dirs.in
-	sed 's/@DEB_HOST_MULTIARCH@/$(DEB_HOST_MULTIARCH)/g' $< > $@
+PREPROCESS_FILES := $(wildcard debian/*.in)
+
+$(PREPROCESS_FILES:.in=): %: %.in
+	sed 's,/@DEB_HOST_MULTIARCH@,$(DEB_HOST_MULTIARCH:%=/%),g' $< > $@
 
 
 debian/%.install: debian/%.install.in
@@ -33,7 +34,7 @@ override_dh_auto_test:
 	make test
 
 
-override_dh_install:
+override_dh_install: $(PREPROCESS_FILES:.in=)
 	dh_install --fail-missing
 	# installing the documentation as there is no extra install target
 	cp -a $(CURDIR)/doc/html $(CURDIR)/debian/guh-doc/usr/share/doc/guh/

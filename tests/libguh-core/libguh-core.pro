@@ -15,5 +15,5 @@ INCLUDEPATH += $$top_srcdir/server/ \
 
 LIBS += -L$$top_builddir/libguh/ -lguh
 
-target.path = /usr/lib
+target.path = /usr/lib/$$system('dpkg-architecture -q DEB_HOST_MULTIARCH')
 INSTALLS += target

@@ -11,6 +11,8 @@ else
 endif
 
 DPKG_EXPORT_BUILDFLAGS = 1
+DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+
 include /usr/share/dpkg/buildflags.mk
 
 %:

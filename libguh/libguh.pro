@@ -8,7 +8,7 @@ DEFINES += LIBGUH_LIBRARY
 
 QMAKE_LFLAGS += -fPIC
 
-target.path = /usr/lib
+target.path = /usr/lib/$$system('dpkg-architecture -q DEB_HOST_MULTIARCH')
 INSTALLS += target
 
 # Avahi libs

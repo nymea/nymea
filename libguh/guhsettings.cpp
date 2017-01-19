@@ -234,7 +234,7 @@ QString GuhSettings::consoleLogPath()
 {
     QString consoleLogPath;
 #ifdef SNAPPY
-    consoleLogPath = QString(qgetenv("SNAP_COMMON")) + "/guhd.log";
+    consoleLogPath = QString(qgetenv("SNAP_DATA")) + "/guhd.log";
 #else
     QString organisationName = QCoreApplication::instance()->organizationName();
 

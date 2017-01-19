@@ -2,12 +2,13 @@ name: guhio
 version: 0.1.0
 summary: An open source IoT server
 description: The guh daemon is a plugin based IoT (Internet of Things) server. The server works like a translator for devices, things and services and allows them to interact. With the powerful rule engine you are able to connect any device available in the system and create individual scenes and behaviors for your environment.
-confinement: strict
+confinement: devmode
 grade: devel
 
 apps:
   guhd:
     command: qt5-launch guhd -n -p
+    daemon: simple
     plugs:
       - network
       - network-bind
@@ -20,8 +21,15 @@ apps:
       - bluez
       - shutdown
 
+  guh-cli:
+    command: guh-cli
+    plugs: 
+      - network
+
+
 parts:
-  guhd:
+  # Building the whole guh project containig libguh and plugins
+  guh:
     plugin: qmake
     source: ../
     options: [ CONFIG+=ccache, CONFIG+=disabletesting, CONFIG+=snappy ]
@@ -29,6 +37,8 @@ parts:
     project-files: [ guh.pro ]
     build-packages:
       - python
+      - ccache
+      - dpkg-dev
       - rsync
       - qtchooser
       - qt5-qmake
@@ -52,4 +62,23 @@ parts:
       - libqt5sql5-sqlite
       - logrotate
       - avahi-daemon
-    after: [qt5conf]
+    after: [ guh-cli, guh-webinterface, qt5conf]
+    
+  guh-cli:
+    plugin: python
+    python-version: python2
+    source: https://github.com/guh/guh-cli.git
+    source-type: git
+    build-packages:
+      - python-dev
+      - python-pip
+      - python-setuptools
+    build-packages:
+      - python-setuptools
+
+  guh-webinterface:
+    plugin: dump
+    source: https://jenkins.guh.io/view/guh-webinterface/job/guh-webinterface-all/lastBuild/artifact/guh-webinterface.tar.gz
+    source-type: tar
+    organize:
+      '*': guh-webinterface/

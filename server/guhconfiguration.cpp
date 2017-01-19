@@ -65,6 +65,11 @@ GuhConfiguration::GuhConfiguration(QObject *parent) :
     webServerPublicFolder = settings.value("publicFolder", "/usr/share/guh-webinterface/public/").toString();
     webServerPort = settings.value("port", 3333).toUInt();
 #endif
+#ifdef SNAPPY
+    webServerAddress = QHostAddress(settings.value("address", "0.0.0.0").toString());
+    webServerPublicFolder = settings.value("publicFolder", QString(qgetenv("SNAP")) + "/guh-webinterface/").toString();
+    webServerPort = settings.value("port", 3333).toUInt();
+#endif
     setWebServerConfiguration(webServerPort, webServerAddress);
     setWebServerPublicFolder(webServerPublicFolder);
     settings.endGroup();

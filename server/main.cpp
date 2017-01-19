@@ -230,6 +230,16 @@ int main(int argc, char *argv[])
             qCDebug(dcApplication) << "=====================================";
         }
 
+#ifdef SNAPPY
+        // http://snapcraft.io/docs/reference/env
+        qCDebug(dcApplication) << "Snap name       :" << qgetenv("SNAP_NAME");
+        qCDebug(dcApplication) << "Snap version    :" << qgetenv("SNAP_VERSION");
+        qCDebug(dcApplication) << "Snap directory  :" << qgetenv("SNAP");
+        qCDebug(dcApplication) << "Snap app data   :" << qgetenv("SNAP_DATA");
+        qCDebug(dcApplication) << "Snap user data  :" << qgetenv("SNAP_USER_DATA");
+        qCDebug(dcApplication) << "Snap app common :" << qgetenv("SNAP_COMMON");
+#endif
+
         // create core instance
         GuhCore::instance();
         return application.exec();

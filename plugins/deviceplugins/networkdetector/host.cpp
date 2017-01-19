@@ -1,7 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.guru>                 *
- *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.guru>                 *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -19,36 +18,43 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef DEVICEPLUGINWIFIDETECTOR_H
-#define DEVICEPLUGINWIFIDETECTOR_H
+#include "host.h"
 
-#include "plugin/deviceplugin.h"
-
-#include <QProcess>
-
-class DevicePluginWifiDetector : public DevicePlugin
+Host::Host()
 {
-    Q_OBJECT
 
-    Q_PLUGIN_METADATA(IID "guru.guh.DevicePlugin" FILE "devicepluginwifidetector.json")
-    Q_INTERFACES(DevicePlugin)
+}
 
-public:
-    explicit DevicePluginWifiDetector();
+Host::Host(const QString &hostName, const QString &address, const bool &reachable):
+    m_hostName(hostName),
+    m_address(address),
+    m_reachable(reachable)
+{
 
-    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
-    DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
-    DeviceManager::HardwareResources requiredHardware() const override;
+}
 
-    void guhTimer() override;
+QString Host::hostName() const
+{
+    return m_hostName;
+}
 
-private:
-    QList<QProcess *> m_discoveryProcesses;
-    QList<DeviceDescriptor> m_deviceDescriptors;
+QString Host::adderss() const
+{
+    return m_address;
+}
 
-private slots:
-    void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
-    void discoveryProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
-};
+bool Host::reachable() const
+{
+    return m_reachable;
+}
 
-#endif // DEVICEPLUGINWIFIDETECTOR_H
+bool Host::isValid() const
+{
+    return !m_hostName.isEmpty() && !m_address.isEmpty();
+}
+
+QDebug operator<<(QDebug dbg, const Host &host)
+{
+    dbg.nospace() << "Host(" << host.hostName() << ", " << host.adderss() << ", " << (host.reachable() ? "up" : "down") << ")";
+    return dbg.space();
+}

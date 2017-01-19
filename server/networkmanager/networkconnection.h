@@ -60,10 +60,6 @@ private:
 
     ConnectionSettings m_connectionSettings;
 
-signals:
-
-public slots:
-
 };
 
 QDebug operator<<(QDebug debug, NetworkConnection *networkConnection);

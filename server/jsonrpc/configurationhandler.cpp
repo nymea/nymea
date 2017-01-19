@@ -18,11 +18,52 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::ConfigurationHandler
+    \brief This subclass of \l{JsonHandler} processes the JSON requests for the \tt Configuration namespace.
+
+    \ingroup json
+    \inmodule core
+
+    This \l{JsonHandler} will be created in the \l{JsonRPCServer} and used to handle JSON-RPC requests
+    for the \tt {Configuration} namespace of the API.
+
+    \sa JsonHandler, JsonRPCServer
+*/
+
+/*! \fn void guhserver::ConfigurationHandler::BasicConfigurationChanged(const QVariantMap &params);
+    This signal is emitted to the API notifications when the configurations of the server have been changed.
+    The \a params contains the map for the notification.
+*/
+
+/*! \fn void guhserver::ConfigurationHandler::TcpServerConfigurationChanged(const QVariantMap &params);
+    This signal is emitted to the API notifications when the configurations of the \l{TcpServer} have been changed.
+    The \a params contains the map for the notification.
+*/
+
+/*! \fn void guhserver::ConfigurationHandler::WebServerConfigurationChanged(const QVariantMap &params);
+    This signal is emitted to the API notifications when the configurations of the \l{WebServer} have been changed.
+    The \a params contains the map for the notification.
+*/
+
+/*! \fn void guhserver::ConfigurationHandler::WebSocketServerConfigurationChanged(const QVariantMap &params);
+    This signal is emitted to the API notifications when the configurations of the \l{WebSocketServer} have been changed.
+    The \a params contains the map for the notification.
+*/
+
+/*! \fn void guhserver::ConfigurationHandler::LanguageChanged(const QVariantMap &params);
+    This signal is emitted to the API notifications when the language of the system has changed.
+    The \a params contains the map for the notification.
+*/
+
+
+
 #include "configurationhandler.h"
 #include "guhcore.h"
 
 namespace guhserver {
 
+/*! Constructs a new \l ConfigurationHandler with the given \a parent. */
 ConfigurationHandler::ConfigurationHandler(QObject *parent):
     JsonHandler(parent)
 {
@@ -152,6 +193,7 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     connect(GuhCore::instance()->deviceManager(), &DeviceManager::languageUpdated, this, &ConfigurationHandler::onLanguageChanged);
 }
 
+/*! Returns the name of the \l{ConfigurationHandler}. In this case \b Configuration.*/
 QString ConfigurationHandler::name() const
 {
     return "Configuration";

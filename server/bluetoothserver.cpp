@@ -43,7 +43,7 @@
 namespace guhserver {
 
 static const QBluetoothUuid serviceUuid(QUuid("997936b5-d2cd-4c57-b41b-c6048320cd2b"));
-
+/*! Constructs a \l{BluetoothServer} with the given \a parent. */
 BluetoothServer::BluetoothServer(QObject *parent) :
     TransportInterface(parent),
     m_server(0)
@@ -51,6 +51,7 @@ BluetoothServer::BluetoothServer(QObject *parent) :
 
 }
 
+/*! Destructs this \l{BluetoothServer}. */
 BluetoothServer::~BluetoothServer()
 {
     if (m_server && m_server->isListening())
@@ -59,12 +60,14 @@ BluetoothServer::~BluetoothServer()
     stopServer();
 }
 
+/*! Returns true if a Bleutooth hardware is available. */
 bool BluetoothServer::hardwareAvailable()
 {
     QBluetoothLocalDevice localDevice;
     return localDevice.isValid();
 }
 
+/*! Send \a data to the client with the given \a clientId.*/
 void BluetoothServer::sendData(const QUuid &clientId, const QVariantMap &data)
 {
     QBluetoothSocket *client = 0;
@@ -73,6 +76,7 @@ void BluetoothServer::sendData(const QUuid &clientId, const QVariantMap &data)
         client->write(QJsonDocument::fromVariant(data).toJson(QJsonDocument::Compact) + '\n');
 }
 
+/*! Send the given \a data to the \a clients. */
 void BluetoothServer::sendData(const QList<QUuid> &clients, const QVariantMap &data)
 {
     foreach (const QUuid &client, clients)

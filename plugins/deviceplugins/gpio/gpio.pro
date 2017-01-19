@@ -4,12 +4,14 @@ TRANSLATIONS = translations/en_US.ts \
 # Note: include after the TRANSLATIONS definition
 include(../../plugins.pri)
 
-TARGET = $$qtLibraryTarget(guh_devicepluginwifidetector)
+TARGET = $$qtLibraryTarget(guh_deviceplugingpio)
 
 SOURCES += \
-    devicepluginwifidetector.cpp
+    deviceplugingpio.cpp \
+    gpiodescriptor.cpp
 
 HEADERS += \
-    devicepluginwifidetector.h
+    deviceplugingpio.h \
+    gpiodescriptor.h
 
 

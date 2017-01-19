@@ -145,9 +145,9 @@ signals:
     void wirelessDeviceRemoved(const QString &interface);
     void wirelessDeviceChanged(WirelessNetworkDevice *wirelessDevice);
 
-    void wiredDeviceAdded(WiredNetworkDevice *wirelessDevice);
+    void wiredDeviceAdded(WiredNetworkDevice *wiredDevice);
     void wiredDeviceRemoved(const QString &interface);
-    void wiredDeviceChanged(WiredNetworkDevice *wirelessDevice);
+    void wiredDeviceChanged(WiredNetworkDevice *wiredDevice);
 
 private slots:
     void onDeviceAdded(const QDBusObjectPath &deviceObjectPath);

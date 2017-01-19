@@ -160,8 +160,6 @@ void CloudConnection::onError(const QAbstractSocket::SocketError &error)
     m_connection->close();
     setConnected(false);
     m_error = Cloud::CloudErrorProxyServerNotReachable;
-    m_pingTimer->stop();
-    m_reconnectionTimer->start();
 }
 
 void CloudConnection::onPingTimeout()

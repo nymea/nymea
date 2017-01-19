@@ -102,6 +102,7 @@ QDate TimeManager::currentDate() const
     return QDateTime::currentDateTimeUtc().toTimeZone(m_timeZone).date();
 }
 
+/*! Returns a list of available time zones on this system. */
 QList<QByteArray> TimeManager::availableTimeZones() const
 {
     return QTimeZone::availableTimeZoneIds();

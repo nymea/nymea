@@ -76,11 +76,11 @@ private slots:
     void propertiesChanged(const QVariantMap &properties);
 
 signals:
-    void bitRateChanged(const bool &connected);
+    void bitRateChanged(const bool &bitRate);
     void stateChanged(const NetworkDeviceState &state);
 };
 
-QDebug operator<<(QDebug debug, WirelessNetworkDevice *manager);
+QDebug operator<<(QDebug debug, WirelessNetworkDevice *device);
 
 }
 

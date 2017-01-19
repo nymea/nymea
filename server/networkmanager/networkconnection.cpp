@@ -18,6 +18,16 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class guhserver::NetworkConnection
+    \brief Represents a saved network connection of the \l{NetworkManager}.
+
+    \ingroup networkmanager
+    \inmodule core
+
+    \sa NetworkSettings
+*/
+
 #include "networkconnection.h"
 #include "dbus-interfaces.h"
 #include "loggingcategories.h"
@@ -26,6 +36,7 @@
 
 namespace guhserver {
 
+/*! Constructs a new \l{NetworkConnection} with the given dbus \a objectPath and \a parent. */
 NetworkConnection::NetworkConnection(const QDBusObjectPath &objectPath, QObject *parent) :
     QObject(parent),
     m_objectPath(objectPath)
@@ -51,6 +62,7 @@ NetworkConnection::NetworkConnection(const QDBusObjectPath &objectPath, QObject 
     m_connectionSettings = qdbus_cast<ConnectionSettings>(argument);
 }
 
+/*! Delets this \l{NetworkConnection} in the \l{NetworkManager}. */
 void NetworkConnection::deleteConnection()
 {
     QDBusMessage query = m_connectionInterface->call("Delete");
@@ -59,41 +71,55 @@ void NetworkConnection::deleteConnection()
 
 }
 
+/*! Returns the dbus object path of this \l{NetworkConnection}. */
 QDBusObjectPath NetworkConnection::objectPath() const
 {
     return m_objectPath;
 }
 
+/*! Returns the connection settings of this \l{NetworkConnection}. */
+ConnectionSettings NetworkConnection::connectionSettings() const
+{
+    return m_connectionSettings;
+}
+
+/*! Returns the id of this \l{NetworkConnection}. */
 QString NetworkConnection::id() const
 {
     return m_connectionSettings.value("connection").value("id").toString();
 }
 
+/*! Returns the name of this \l{NetworkConnection}. */
 QString NetworkConnection::name() const
 {
     return m_connectionSettings.value("connection").value("name").toString();
 }
 
+/*! Returns the type of this \l{NetworkConnection}. */
 QString NetworkConnection::type() const
 {
     return m_connectionSettings.value("connection").value("type").toString();
 }
 
+/*! Returns the uuid of this \l{NetworkConnection}. */
 QUuid NetworkConnection::uuid() const
 {
     return m_connectionSettings.value("connection").value("uuid").toUuid();
 }
 
+/*! Returns the interface name of this \l{NetworkConnection}. */
 QString NetworkConnection::interfaceName() const
 {
     return m_connectionSettings.value("connection").value("interface-name").toString();
 }
 
+/*! Returns true if this \l{NetworkConnection} will autoconnect if available. */
 bool NetworkConnection::autoconnect() const
 {
     return m_connectionSettings.value("connection").value("autoconnect").toBool();
 }
 
+/*! Returns the timestamp of this \l{NetworkConnection} from the last connection. */
 QDateTime NetworkConnection::timeStamp() const
 {
     return QDateTime::fromTime_t(m_connectionSettings.value("connection").value("timestamp").toUInt());

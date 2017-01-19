@@ -52,8 +52,11 @@ public:
         EdgeNone
     };
 
-    explicit Gpio(int gpio = 0, QObject *parent = 0);
+    explicit Gpio(const int &gpio, QObject *parent = 0);
     ~Gpio();
+
+    QString gpioDirectory() const;
+    int gpioNumber() const;
 
     static bool isAvailable();
 
@@ -72,7 +75,6 @@ public:
     bool setEdgeInterrupt(Gpio::Edge edge);
     Gpio::Edge edgeInterrupt();
 
-    int gpioNumber() const;
 
 private:
     int m_gpio;
@@ -81,6 +83,6 @@ private:
 
 };
 
-QDebug operator<< (QDebug d, Gpio *gpio);
+QDebug operator<< (QDebug debug, Gpio *gpio);
 
 #endif // GPIO_H

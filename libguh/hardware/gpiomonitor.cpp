@@ -92,12 +92,12 @@ bool GpioMonitor::enable(bool activeLow, Gpio::Edge edgeInterrupt)
             !m_gpio->setDirection(Gpio::DirectionInput) ||
             !m_gpio->setActiveLow(activeLow) ||
             !m_gpio->setEdgeInterrupt(edgeInterrupt)) {
-        qDebug() << "ERROR: while initializing GPIO" << m_gpio->gpioNumber();
+        qCWarning(dcHardware()) << "GpioMonitor: Error while initializing GPIO" << m_gpio->gpioNumber();
         return false;
     }
 
     if (!m_valueFile.open(QFile::ReadOnly)) {
-        qWarning() << "ERROR: could not open value file for gpio monitor" << m_gpio->gpioNumber();
+        qWarning(dcHardware()) << "GpioMonitor: Could not open value file for gpio monitor" << m_gpio->gpioNumber();
         return false;
     }
 
@@ -123,9 +123,9 @@ void GpioMonitor::disable()
 /*! Returns true if this \l{GpioMonitor} is running. */
 bool GpioMonitor::isRunning() const
 {
-    if (!m_notifier) {
+    if (!m_notifier)
         return false;
-    }
+
     return m_notifier->isEnabled();
 }
 

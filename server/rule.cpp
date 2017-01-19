@@ -32,6 +32,7 @@
     \sa EventDescriptor, State, RuleAction
 */
 
+
 #include "rule.h"
 #include "loggingcategories.h"
 

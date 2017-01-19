@@ -37,7 +37,6 @@ CloudAuthenticator::CloudAuthenticator(QString clientId, QString clientSecret, Q
     m_username = loadUserName();
 
     m_networkManager = new QNetworkAccessManager(this);
-    m_networkManager->
 
     connect(m_networkManager, &QNetworkAccessManager::finished, this, &CloudAuthenticator::replyFinished);
     connect(m_networkManager, &QNetworkAccessManager::sslErrors, this, &CloudAuthenticator::onSslErrors);
@@ -327,8 +326,7 @@ void CloudAuthenticator::replyFinished(QNetworkReply *reply)
             m_timer->start((expireTime - 20) * 1000);
         }
 
-        if (!authenticated())
-            setAuthenticated(true);
+        setAuthenticated(true);
 
     }
 

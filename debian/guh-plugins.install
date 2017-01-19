@@ -1,4 +1,5 @@
 usr/lib/guh/plugins/libguh_devicepluginconrad.so
+usr/lib/guh/plugins/libguh_devicepluginnetworkdetector.so
 usr/lib/guh/plugins/libguh_devicepluginelro.so
 usr/lib/guh/plugins/libguh_deviceplugineq3.so
 usr/lib/guh/plugins/libguh_devicepluginintertechno.so
@@ -19,3 +20,4 @@ usr/lib/guh/plugins/libguh_deviceplugindenon.so
 usr/lib/guh/plugins/libguh_devicepluginsenic.so
 usr/lib/guh/plugins/libguh_devicepluginmultisensor.so
 usr/lib/guh/plugins/libguh_devicepluginpushbullet.so
+usr/lib/guh/plugins/libguh_devicepluginusbwde.so

@@ -28,6 +28,7 @@ Build-Depends: debhelper (>= 9.0.0),
 Package: guh
 Architecture: any
 Section: metapackages
+Multi-Arch: same
 Depends: guhd (= ${binary:Version}),
          guh-plugins (= ${binary:Version}),
          ${misc:Depends}
@@ -45,6 +46,7 @@ Description: An open source IoT server - meta package
 Package: guhd
 Architecture: any
 Section: net
+Multi-Arch: same
 Depends: libqt5network5,
          libqt5gui5,
          libqt5sql5,
@@ -75,6 +77,7 @@ Package: guh-dbg
 Priority: extra
 Architecture: any
 Section: debug
+Multi-Arch: same
 Depends: guh (= ${binary:Version}),
          ${misc:Depends}
 Description: An open source IoT server - debug symbols
@@ -120,6 +123,7 @@ Description: Translation files for guhd and plugins - translations
 Package: guh-tests
 Section: misc
 Architecture: any
+Multi-Arch: same
 Depends: guh (= ${binary:Version}),
          ${shlibs:Depends},
          ${misc:Depends}
@@ -136,6 +140,7 @@ Description: Tests and mock plugin for the guh daemon - tests
 Package: libguh1
 Section: libs
 Architecture: any
+Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
          libqt5bluetooth5,
@@ -154,6 +159,7 @@ Description: An open source IoT server - core library
 Package: libguh1-dev
 Section: libdevel
 Architecture: any
+Multi-Arch: same
 Depends: libguh1 (= ${binary:Version}),
          ${shlibs:Depends},
          ${misc:Depends},
@@ -177,6 +183,7 @@ Description: An open source IoT server - development files
 Package: guh-plugins
 Section: libs
 Architecture: any
+Multi-Arch: same
 Depends: libguh1 (= ${binary:Version}),
          guhd (= ${binary:Version}),
          nmap,
@@ -196,6 +203,7 @@ Description:Plugins for guh IoT server
 Package: guh-plugins-merkur
 Section: libs
 Architecture: any
+Multi-Arch: same
 Depends: libguh1 (= ${binary:Version}),
          guhd (= ${binary:Version}),
          ${shlibs:Depends},
@@ -213,6 +221,7 @@ Description: Plugins for guh IoT server - 6LoWPAN Merkur boards
 Package: guh-plugins-maker
 Section: libs
 Architecture: any
+Multi-Arch: same
 Depends: libguh1 (= ${binary:Version}),
          guhd (= ${binary:Version}),
          ${shlibs:Depends},

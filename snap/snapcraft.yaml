@@ -25,6 +25,7 @@ apps:
     command: guh-cli
     plugs: 
       - network
+      - network-bind
 
 
 parts:
@@ -47,8 +48,10 @@ parts:
       - qttools5-dev-tools
       - qtconnectivity5-dev
       - libqt5websockets5-dev
+      - libqt5serialport5-dev
       - libqt5bluetooth5
       - libqt5sql5-sqlite
+      - libqt5dbus5
       - libavahi-client-dev
       - libavahi-common-dev
     stage-packages:
@@ -60,8 +63,12 @@ parts:
       - libqt5websockets5
       - libqt5bluetooth5
       - libqt5sql5-sqlite
+      - libqt5serialport5
       - logrotate
+      - nmap
       - avahi-daemon
+      - libavahi-client3
+      - libavahi-common3
     after: [ guh-cli, guh-webinterface, qt5conf]
     
   guh-cli:

@@ -231,7 +231,7 @@ int main(int argc, char *argv[])
         }
 
 #ifdef SNAPPY
-        // http://snapcraft.io/docs/reference/env
+        // Note: http://snapcraft.io/docs/reference/env
         qCDebug(dcApplication) << "Snap name       :" << qgetenv("SNAP_NAME");
         qCDebug(dcApplication) << "Snap version    :" << qgetenv("SNAP_VERSION");
         qCDebug(dcApplication) << "Snap directory  :" << qgetenv("SNAP");

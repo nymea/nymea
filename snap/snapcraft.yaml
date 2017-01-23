@@ -69,13 +69,14 @@ parts:
       - avahi-daemon
       - libavahi-client3
       - libavahi-common3
-    after: [ guh-cli, guh-webinterface, qt5conf]
+    after: [ qt5conf ]
     
   guh-cli:
     plugin: python
     python-version: python2
     source: https://github.com/guh/guh-cli.git
     source-type: git
+    after: [ guh ]
     build-packages:
       - python-dev
       - python-pip
@@ -87,5 +88,6 @@ parts:
     plugin: dump
     source: https://jenkins.guh.io/view/guh-webinterface/job/guh-webinterface-all/lastBuild/artifact/guh-webinterface.tar.gz
     source-type: tar
+    after: [ guh-cli ]
     organize:
       '*': guh-webinterface/

@@ -33,6 +33,6 @@ translations.path = /usr/share/guh/translations
 translations.files = $$[QT_SOURCE_TREE]/translations/*.qm
 
 # Install plugin
-target.path = /usr/lib/$$system('dpkg-architecture -q DEB_HOST_MULTIARCH')/guh/plugins/
+target.path = $$GUH_PLUGINS_PATH
 INSTALLS += target translations
 

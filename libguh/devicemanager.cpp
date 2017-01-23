@@ -183,6 +183,7 @@
 #include "plugin/deviceplugin.h"
 #include "typeutils.h"
 #include "guhsettings.h"
+#include "unistd.h"
 
 #include <QPluginLoader>
 #include <QStaticPlugin>
@@ -258,6 +259,10 @@ QStringList DeviceManager::pluginSearchDirs()
     searchDirs << QCoreApplication::applicationDirPath() + "/../plugins/";
     searchDirs << QCoreApplication::applicationDirPath() + "/../plugins/deviceplugins";
     searchDirs << QCoreApplication::applicationDirPath() + "/../../../plugins/deviceplugins";
+    searchDirs << QString("%1").arg(GUH_PLUGINS_PATH);
+#ifdef SNAPPY
+    searchDirs << QString("%1%2").arg(QString::fromUtf8(qgetenv("SNAP"))).arg(GUH_PLUGINS_PATH);
+#endif
     return searchDirs;
 }
 

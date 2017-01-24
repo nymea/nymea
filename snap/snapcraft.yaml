@@ -29,6 +29,13 @@ apps:
 
 
 parts:
+  # Custom launcher to support also armhf
+  qt5-launch:
+    plugin: dump
+    source: .
+    organize:
+      qt5-launch: bin/
+
   # Building the whole guh project containig libguh and plugins
   guh:
     plugin: qmake
@@ -69,8 +76,9 @@ parts:
       - avahi-daemon
       - libavahi-client3
       - libavahi-common3
-    after: [ qt5conf ]
-    
+    after: [ qt5-launch ]
+  
+  # The guh command line interface
   guh-cli:
     plugin: python
     python-version: python2
@@ -81,9 +89,8 @@ parts:
       - python-dev
       - python-pip
       - python-setuptools
-    build-packages:
-      - python-setuptools
 
+  # The guh webinterface (static folder for the webserver)
   guh-webinterface:
     plugin: dump
     source: https://jenkins.guh.io/view/guh-webinterface/job/guh-webinterface-all/lastBuild/artifact/guh-webinterface.tar.gz

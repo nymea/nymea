@@ -1,0 +1,77 @@
+#!/bin/sh
+
+case "$SNAP_ARCH" in
+	"amd64") ARCH='x86_64-linux-gnu'
+	;;
+	"i386") ARCH='i386-linux-gnu'
+	;;
+	"armhf") ARCH='arm-linux-gnueabihf'
+	;;
+	*)
+		echo "Unsupported architecture for this app build"
+		exit 1
+	;;
+esac
+
+export LD_LIBRARY_PATH=$SNAP/usr/lib/$ARCH:$LD_LIBRARY_PATH
+
+# XKB config
+export XKB_CONFIG_ROOT=$SNAP/usr/share/X11/xkb
+
+# Qt Platform to Mir
+#export QTCHOOSER_NO_GLOBAL_DIR=1
+#export QT_SELECT=snappy-qt5
+
+# Qt Libs
+export LD_LIBRARY_PATH=$SNAP/usr/lib/$ARCH/qt5/libs:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$SNAP/usr/lib/$ARCH/pulseaudio:$LD_LIBRARY_PATH
+
+# Qt Modules
+export QT_PLUGIN_PATH=$SNAP/usr/lib/$ARCH/qt5/plugins
+export QML2_IMPORT_PATH=$QML2_IMPORT_PATH:$SNAP/usr/lib/$ARCH/qt5/qml
+export QML2_IMPORT_PATH=$QML2_IMPORT_PATH:$SNAP/lib/$ARCH
+
+# Mesa Libs
+#export LD_LIBRARY_PATH=$SNAP/usr/lib/$ARCH/mesa:$LD_LIBRARY_PATH
+#export LD_LIBRARY_PATH=$SNAP/usr/lib/$ARCH/mesa-egl:$LD_LIBRARY_PATH
+
+# XDG Config
+export XDG_CONFIG_DIRS=$SNAP/etc/xdg:$XDG_CONFIG_DIRS
+export XDG_CONFIG_DIRS=$SNAP/usr/xdg:$XDG_CONFIG_DIRS
+# Note: this doesn't seem to work, QML's LocalStorage either ignores
+# or fails to use $SNAP_USER_DATA if defined here
+export XDG_DATA_DIRS=$SNAP_USER_DATA:$XDG_DATA_DIRS
+export XDG_DATA_DIRS=$SNAP/usr/share:$XDG_DATA_DIRS
+
+# Not good, needed for fontconfig
+export XDG_DATA_HOME=$SNAP/usr/share
+
+# Font Config
+export FONTCONFIG_PATH=$SNAP/etc/fonts/config.d
+export FONTCONFIG_FILE=$SNAP/etc/fonts/fonts.conf
+
+# Tell libGL where to find the drivers
+#export LIBGL_DRIVERS_PATH=$SNAP/usr/lib/$ARCH/dri
+
+# Necessary for the SDK to find the translations directory
+export APP_DIR=$SNAP
+
+# Removes Qt warning: Could not find a location
+# of the system Compose files
+export QTCOMPOSE=$SNAP/usr/share/X11/locale
+
+# Use GTK styling for running under Unity 7
+# TODO: find out what needs to be done for Unity 8
+export QT_STYLE_OVERRIDE=gtk
+export DESKTOP_SESSION=ubuntu
+export XDG_SESSION_DESKTOP=ubuntu
+export XDG_CURRENT_DESKTOP=Unity
+export GTK2_MODULES=overlay-scrollbar
+export GTK_MODULES=gail:atk-bridge:unity-gtk-module
+export QT_QPA_PLATFORMTHEME=appmenu-qt5
+export GTK_PATH=$SNAP/usr/lib/$ARCH/gtk-2.0
+export GIO_MODULE_DIR=$SNAP/usr/lib/$ARCH/gio/modules
+
+cd $SNAP
+exec "$@"
+

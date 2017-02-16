@@ -1,8 +1,9 @@
 TEMPLATE = subdirs
-SUBDIRS += elro         \
-    intertechno         \
+SUBDIRS += \
     mock                \
-    networkdetector        \
+    elro                \
+    intertechno         \
+    networkdetector     \
     conrad              \
     openweathermap      \
     lircd               \
@@ -30,3 +31,6 @@ SUBDIRS += elro         \
     senic               \
     gpio                \
 
+disabletesting {
+    SUBDIRS -= mock
+}

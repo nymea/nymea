@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015-2016 Simon Stuerz <simon.stuerz@guh.guru>           *
+ *  Copyright (C) 2015-2016 Simon Stuerz <simon.stuerz@guh.io>             *
  *                                                                         *
  *  This file is part of QtCoap.                                           *
  *                                                                         *

@@ -1,20 +1,22 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.guru>                 *
+ *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.io>                   *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
- *  Guh is free software: you can redistribute it and/or modify            *
- *  it under the terms of the GNU General Public License as published by   *
- *  the Free Software Foundation, version 2 of the License.                *
+ *  This library is free software; you can redistribute it and/or          *
+ *  modify it under the terms of the GNU Lesser General Public             *
+ *  License as published by the Free Software Foundation; either           *
+ *  version 2.1 of the License, or (at your option) any later version.     *
  *                                                                         *
- *  Guh is distributed in the hope that it will be useful,                 *
+ *  This library is distributed in the hope that it will be useful,        *
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of         *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          *
- *  GNU General Public License for more details.                           *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU      *
+ *  Lesser General Public License for more details.                        *
  *                                                                         *
- *  You should have received a copy of the GNU General Public License      *
- *  along with guh. If not, see <http://www.gnu.org/licenses/>.            *
+ *  You should have received a copy of the GNU Lesser General Public       *
+ *  License along with this library; If not, see                           *
+ *  <http://www.gnu.org/licenses/>.                                        *
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
@@ -134,19 +136,14 @@ void UpnpDiscovery::requestDeviceInformation(const QNetworkRequest &networkReque
 
 void UpnpDiscovery::respondToSearchRequest(QHostAddress host, int port)
 {
-    GuhSettings settings(GuhSettings::SettingsRoleDevices);
-    settings.beginGroup("guhd");
-    QByteArray uuid = settings.value("uuid", QVariant()).toByteArray();
-    if (uuid.isEmpty()) {
-        uuid = QUuid::createUuid().toByteArray().replace("{", "").replace("}","");
-        settings.setValue("uuid", uuid);
-    }
-    settings.endGroup();
-
     GuhSettings globalSettings(GuhSettings::SettingsRoleGlobal);
+    globalSettings.beginGroup("guhd");
+    QByteArray uuid = globalSettings.value("uuid", QUuid()).toByteArray();
+    globalSettings.endGroup();
+
     globalSettings.beginGroup("WebServer");
-    int serverPort = settings.value("port", 3333).toInt();
-    bool useSsl = settings.value("https", false).toBool();
+    int serverPort = globalSettings.value("port", 3333).toInt();
+    bool useSsl = globalSettings.value("https", false).toBool();
     globalSettings.endGroup();
 
     foreach (const QNetworkInterface &interface,  QNetworkInterface::allInterfaces()) {
@@ -324,19 +321,14 @@ void UpnpDiscovery::notificationTimeout()
 
 void UpnpDiscovery::sendByeByeMessage()
 {
-    GuhSettings settings(GuhSettings::SettingsRoleDevices);
-    settings.beginGroup("guhd");
-    QByteArray uuid = settings.value("uuid", QVariant()).toByteArray();
-    if (uuid.isEmpty()) {
-        uuid = QUuid::createUuid().toByteArray().replace("{", "").replace("}","");
-        settings.setValue("uuid", uuid);
-    }
-    settings.endGroup();
-
     GuhSettings globalSettings(GuhSettings::SettingsRoleGlobal);
+    globalSettings.beginGroup("guhd");
+    QByteArray uuid = globalSettings.value("uuid", QUuid()).toByteArray();
+    globalSettings.endGroup();
+
     globalSettings.beginGroup("WebServer");
-    int port = settings.value("port", 3333).toInt();
-    bool useSsl = settings.value("https", false).toBool();
+    int port = globalSettings.value("port", 3333).toInt();
+    bool useSsl = globalSettings.value("https", false).toBool();
     globalSettings.endGroup();
 
     foreach (const QNetworkInterface &interface,  QNetworkInterface::allInterfaces()) {
@@ -369,19 +361,14 @@ void UpnpDiscovery::sendByeByeMessage()
 
 void UpnpDiscovery::sendAliveMessage()
 {
-    GuhSettings settings(GuhSettings::SettingsRoleDevices);
-    settings.beginGroup("guhd");
-    QByteArray uuid = settings.value("uuid", QVariant()).toByteArray();
-    if (uuid.isEmpty()) {
-        uuid = QUuid::createUuid().toByteArray().replace("{", "").replace("}","");
-        settings.setValue("uuid", uuid);
-    }
-    settings.endGroup();
-
     GuhSettings globalSettings(GuhSettings::SettingsRoleGlobal);
+    globalSettings.beginGroup("guhd");
+    QByteArray uuid = globalSettings.value("uuid", QUuid()).toByteArray();
+    globalSettings.endGroup();
+
     globalSettings.beginGroup("WebServer");
-    int port = settings.value("port", 3333).toInt();
-    bool useSsl = settings.value("https", false).toBool();
+    int port = globalSettings.value("port", 3333).toInt();
+    bool useSsl = globalSettings.value("https", false).toBool();
     globalSettings.endGroup();
 
     foreach (const QNetworkInterface &interface,  QNetworkInterface::allInterfaces()) {

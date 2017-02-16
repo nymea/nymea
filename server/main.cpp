@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.guru>                 *
+ *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.io>                   *
  *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
  *                                                                         *
  *  This file is part of guh.                                              *
@@ -156,7 +156,7 @@ int main(int argc, char *argv[])
                                              "device available in the system and create individual scenes and behaviors \n"
                                              "for your environment.\n\n");
 
-    applicationDescription.append(QString("guhd %1 %2 2014-2016 guh GmbH\n"
+    applicationDescription.append(QString("guhd %1 %2 2014-2017 guh GmbH\n"
                                           "Released under the GNU GENERAL PUBLIC LICENSE Version 2.\n\n"
                                           "API version: %3\n").arg(GUH_VERSION_STRING).arg(QChar(0xA9)).arg(JSON_PROTOCOL_VERSION));
 

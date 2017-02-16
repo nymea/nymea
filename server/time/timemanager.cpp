@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.guru>                 *
+ *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.io>                   *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -119,7 +119,7 @@ void TimeManager::setTime(const QDateTime &dateTime)
 {
     // This method will only be called for testing to set the guhIO intern time
     emit tick();
-    emit dateTimeChanged(dateTime.toTimeZone(m_timeZone));
+    emit dateTimeChanged(dateTime);
 }
 #endif
 
@@ -129,10 +129,10 @@ void TimeManager::guhTimeout()
     emit tick();
 
     // Minute based guh time
-    QDateTime currentDateTime = QDateTime::currentDateTimeUtc();
-    if (m_dateTime.time().minute() != currentDateTime.toTimeZone(m_timeZone).time().minute()) {
-        m_dateTime = currentDateTime;
-        emit dateTimeChanged(m_dateTime.toTimeZone(m_timeZone));
+    QDateTime utcDateTime = QDateTime::currentDateTimeUtc();
+    if (m_dateTime.time().minute() != utcDateTime.toTimeZone(m_timeZone).time().minute()) {
+        m_dateTime = utcDateTime;
+        emit dateTimeChanged(currentDateTime());
     }
 }
 

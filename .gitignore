@@ -1,4 +1,5 @@
 *.pro.user
+*.autosave
 builddir
 doc/html
 *api.json.new

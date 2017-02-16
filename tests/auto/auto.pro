@@ -18,4 +18,4 @@ SUBDIRS = versioning \
         restlogging \
         #coap \ # temporary removed until fixed
         configurations \
-        #timemanager \
+        timemanager \

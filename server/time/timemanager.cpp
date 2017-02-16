@@ -118,7 +118,7 @@ void TimeManager::setTime(const QDateTime &dateTime)
 {
     // This method will only be called for testing to set the guhIO intern time
     emit tick();
-    emit dateTimeChanged(dateTime.toTimeZone(m_timeZone));
+    emit dateTimeChanged(dateTime);
 }
 #endif
 

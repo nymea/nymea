@@ -1,7 +1,10 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Author: Michael Zanetti <michael_zanetti@gmx.net>
-        Simon Stürz <stuerz.simon@gmail.com>
+Upstream-Name: guhio
+Upstream-Contact: Simon Stürz <simon.stuerz@guh.io>
+Copyright: 2014-2017, guh GmbH
 Download: http://www.github.com/guh/guh
+Source: https://github.com/guh/guh.git
+
 
 License: GPL-2+
  On Debian systems, the complete text of the GNU General
@@ -11,19 +14,53 @@ License: LGPL-2.1
  On Debian systems, the complete text of the GNU General
  Public License can be found in `/usr/share/common-licenses/LGPL-2.1'.
 
-Files: *
-Copyright: (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>
-               2014 Simon Stürz <stuerz.simon@gmail.com>
+
+Files: server/*
 License: GPL-2+
+Copyright: 2014-2017, Simon Stürz <simon.stuerz@guh.io>
+           2014, Michael Zanetti <michael_zanetti@gmx.net>
+
+Files: tests/*
+License: GPL-2+
+Copyright: 2014-2017, Simon Stürz <simon.stuerz@guh.io>
+           2014, Michael Zanetti <michael_zanetti@gmx.net>
+
+Files: translations/*
+License: LGPL-2.1
+Copyright: 2016-2017, Simon Stürz <simon.stuerz@guh.io>
+
+Files: doc/*
+License: LGPL-2.1
+Copyright: 2015-2017, Simon Stürz <simon.stuerz@guh.io>
+           2014, Michael Zanetti <michael_zanetti@gmx.net>
 
 Files: debian/*
-Copyright: (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>
-               2014 Simon Stürz <stuerz.simon@gmail.com>
 License: GPL-2+
+Copyright: 2014-2017, Simon Stürz <simon.stuerz@guh.io>
+           2014, Michael Zanetti <michael_zanetti@gmx.net>
 
-Files: libguh/avahi/qt-watch*
-Copyright: (c) avahi
-               2016 Simon Stürz <stuerz.simon@gmail.com>
+Files: libguh/*
 License: LGPL-2.1
+Copyright: 2014-2017, Simon Stürz <simon.stuerz@guh.io>
+           2014, Michael Zanetti <michael_zanetti@gmx.net>
 
+Files: plugins/*
+License: LGPL-2.1
+Copyright: 2014-2017, Simon Stürz <simon.stuerz@guh.io>
+           2014, Michael Zanetti <michael_zanetti@gmx.net>
 
+Files: plugins/deviceplugins/denon/*
+       plugins/deviceplugins/orderbutton/*
+       plugins/deviceplugins/ws2812/*
+License: LGPL-2.1
+Copyright: 2016, Bernhard Trinnes <bernhard.trinnes@guh.io>
+
+Files: plugins/deviceplugins/plantcare/*
+License: LGPL-2.1
+Copyright: 2016-2017, Simon Stürz <simon.stuerz@guh.io>
+           2016, Bernhard Trinnes <bernhard.trinnes@guh.io>
+
+Files: plugins/deviceplugins/pushbullet/*
+       plugins/deviceplugins/usbwde/*
+License: LGPL-2.1
+Copyright: 2016, Alexander Lampret <alexander.lampret@gmail.com>

@@ -134,19 +134,14 @@ void UpnpDiscovery::requestDeviceInformation(const QNetworkRequest &networkReque
 
 void UpnpDiscovery::respondToSearchRequest(QHostAddress host, int port)
 {
-    GuhSettings settings(GuhSettings::SettingsRoleDevices);
-    settings.beginGroup("guhd");
-    QByteArray uuid = settings.value("uuid", QVariant()).toByteArray();
-    if (uuid.isEmpty()) {
-        uuid = QUuid::createUuid().toByteArray().replace("{", "").replace("}","");
-        settings.setValue("uuid", uuid);
-    }
-    settings.endGroup();
-
     GuhSettings globalSettings(GuhSettings::SettingsRoleGlobal);
+    globalSettings.beginGroup("guhd");
+    QByteArray uuid = globalSettings.value("uuid", QUuid()).toByteArray();
+    globalSettings.endGroup();
+
     globalSettings.beginGroup("WebServer");
-    int serverPort = settings.value("port", 3333).toInt();
-    bool useSsl = settings.value("https", false).toBool();
+    int serverPort = globalSettings.value("port", 3333).toInt();
+    bool useSsl = globalSettings.value("https", false).toBool();
     globalSettings.endGroup();
 
     foreach (const QNetworkInterface &interface,  QNetworkInterface::allInterfaces()) {
@@ -324,19 +319,14 @@ void UpnpDiscovery::notificationTimeout()
 
 void UpnpDiscovery::sendByeByeMessage()
 {
-    GuhSettings settings(GuhSettings::SettingsRoleDevices);
-    settings.beginGroup("guhd");
-    QByteArray uuid = settings.value("uuid", QVariant()).toByteArray();
-    if (uuid.isEmpty()) {
-        uuid = QUuid::createUuid().toByteArray().replace("{", "").replace("}","");
-        settings.setValue("uuid", uuid);
-    }
-    settings.endGroup();
-
     GuhSettings globalSettings(GuhSettings::SettingsRoleGlobal);
+    globalSettings.beginGroup("guhd");
+    QByteArray uuid = globalSettings.value("uuid", QUuid()).toByteArray();
+    globalSettings.endGroup();
+
     globalSettings.beginGroup("WebServer");
-    int port = settings.value("port", 3333).toInt();
-    bool useSsl = settings.value("https", false).toBool();
+    int port = globalSettings.value("port", 3333).toInt();
+    bool useSsl = globalSettings.value("https", false).toBool();
     globalSettings.endGroup();
 
     foreach (const QNetworkInterface &interface,  QNetworkInterface::allInterfaces()) {
@@ -369,19 +359,14 @@ void UpnpDiscovery::sendByeByeMessage()
 
 void UpnpDiscovery::sendAliveMessage()
 {
-    GuhSettings settings(GuhSettings::SettingsRoleDevices);
-    settings.beginGroup("guhd");
-    QByteArray uuid = settings.value("uuid", QVariant()).toByteArray();
-    if (uuid.isEmpty()) {
-        uuid = QUuid::createUuid().toByteArray().replace("{", "").replace("}","");
-        settings.setValue("uuid", uuid);
-    }
-    settings.endGroup();
-
     GuhSettings globalSettings(GuhSettings::SettingsRoleGlobal);
+    globalSettings.beginGroup("guhd");
+    QByteArray uuid = globalSettings.value("uuid", QUuid()).toByteArray();
+    globalSettings.endGroup();
+
     globalSettings.beginGroup("WebServer");
-    int port = settings.value("port", 3333).toInt();
-    bool useSsl = settings.value("https", false).toBool();
+    int port = globalSettings.value("port", 3333).toInt();
+    bool useSsl = globalSettings.value("https", false).toBool();
     globalSettings.endGroup();
 
     foreach (const QNetworkInterface &interface,  QNetworkInterface::allInterfaces()) {

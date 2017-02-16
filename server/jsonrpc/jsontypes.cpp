@@ -920,11 +920,11 @@ QVariantMap JsonTypes::packCalendarItem(const CalendarItem &calendarItem)
     QVariantMap calendarItemVariant;
     calendarItemVariant.insert("duration", calendarItem.duration());
 
+    if (!calendarItem.dateTime().isNull() && calendarItem.dateTime().toTime_t() != 0)
+        calendarItemVariant.insert("datetime", calendarItem.dateTime().toTime_t());
+
     if (!calendarItem.startTime().isNull())
         calendarItemVariant.insert("startTime", calendarItem.startTime().toString("hh:mm"));
-
-    if (!calendarItem.dateTime().isNull())
-        calendarItemVariant.insert("datetime", calendarItem.dateTime().toTime_t());
 
     if (!calendarItem.repeatingOption().isEmtpy())
         calendarItemVariant.insert("repeating", packRepeatingOption(calendarItem.repeatingOption()));
@@ -937,7 +937,7 @@ QVariantMap JsonTypes::packTimeEventItem(const TimeEventItem &timeEventItem)
 {
     QVariantMap timeEventItemVariant;
 
-    if (!timeEventItem.dateTime().isNull())
+    if (!timeEventItem.dateTime().isNull() && timeEventItem.dateTime().toTime_t() != 0)
         timeEventItemVariant.insert("datetime", timeEventItem.dateTime().toTime_t());
 
     if (!timeEventItem.time().isNull())

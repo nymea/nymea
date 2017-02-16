@@ -129,10 +129,10 @@ void TimeManager::guhTimeout()
     emit tick();
 
     // Minute based guh time
-    QDateTime currentDateTime = QDateTime::currentDateTimeUtc();
-    if (m_dateTime.time().minute() != currentDateTime.toTimeZone(m_timeZone).time().minute()) {
-        m_dateTime = currentDateTime;
-        emit dateTimeChanged(m_dateTime.toTimeZone(m_timeZone));
+    QDateTime utcDateTime = QDateTime::currentDateTimeUtc();
+    if (m_dateTime.time().minute() != utcDateTime.toTimeZone(m_timeZone).time().minute()) {
+        m_dateTime = utcDateTime;
+        emit dateTimeChanged(currentDateTime());
     }
 }
 

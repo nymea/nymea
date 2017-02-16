@@ -43,6 +43,14 @@ message("JSON-RPC API version $${JSON_PROTOCOL_VERSION}")
 message("REST API version $${REST_API_VERSION}")
 message("Plugin path $${GUH_PLUGINS_PATH}")
 
+# Check debug mode
+CONFIG(debug, debug|release) {
+    message("Debug build")
+} else {
+    message("Release build")
+}
+
+# Build coverage
 coverage {
     message("Building coverage.")
 }

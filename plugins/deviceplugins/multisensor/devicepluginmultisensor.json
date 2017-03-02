@@ -89,7 +89,7 @@
                         {
                             "id": "4be5ca26-0565-419d-b18b-2a5a385d2a3d",
                             "idName": "accelerationX",
-                            "name": "acceleration X",
+                            "name": "acceleration x",
                             "eventTypeName": "acceleration x changed",
                             "index": 5,
                             "type": "double",
@@ -99,7 +99,7 @@
                         {
                             "id": "1d70b822-06dd-4527-9760-6217415b35de",
                             "idName": "accelerationY",
-                            "name": "acceleration Y",
+                            "name": "acceleration y",
                             "eventTypeName": "acceleration y changed",
                             "index": 6,
                             "type": "double",
@@ -109,7 +109,7 @@
                         {
                             "id": "29fbb1a0-7fa4-4706-b71a-b7416143d982",
                             "idName": "accelerationZ",
-                            "name": "acceleration Z",
+                            "name": "acceleration z",
                             "eventTypeName": "acceleration z changed",
                             "index": 7,
                             "type": "double",

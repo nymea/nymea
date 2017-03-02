@@ -206,8 +206,8 @@ void SensorTag::onServiceCharacteristicChanged(const QLowEnergyCharacteristic &c
         if (m_c.empty())
             break;
         const quint16 *data = reinterpret_cast<const quint16 *>(value.constData());
-        quint16 Pr = data[1];
-        qint16 Tr = data[0];
+        quint16 Pr = data[0];
+        qint16 Tr = data[1];
         // Sensitivity
         qint64 s = (qint64)m_c[2];
         qint64 val = (qint64)m_c[3] * Tr;

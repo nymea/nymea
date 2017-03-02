@@ -85,6 +85,96 @@
                             "type": "double",
                             "unit": "HectoPascal",
                             "defaultValue": 0
+                        },
+                        {
+                            "id": "4be5ca26-0565-419d-b18b-2a5a385d2a3d",
+                            "idName": "accelerationX",
+                            "name": "acceleration x",
+                            "eventTypeName": "acceleration x changed",
+                            "index": 5,
+                            "type": "double",
+                            "unit": "None",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "1d70b822-06dd-4527-9760-6217415b35de",
+                            "idName": "accelerationY",
+                            "name": "acceleration y",
+                            "eventTypeName": "acceleration y changed",
+                            "index": 6,
+                            "type": "double",
+                            "unit": "None",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "29fbb1a0-7fa4-4706-b71a-b7416143d982",
+                            "idName": "accelerationZ",
+                            "name": "acceleration z",
+                            "eventTypeName": "acceleration z changed",
+                            "index": 7,
+                            "type": "double",
+                            "unit": "None",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "ca3975a3-0764-487b-aeca-654483dfcd3e",
+                            "idName": "magneticFieldX",
+                            "name": "magnetic field x",
+                            "eventTypeName": "magnetic field x changed",
+                            "index": 8,
+                            "type": "double",
+                            "unit": "None",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "ebaff453-f57f-4d46-8592-a9df9deaf754",
+                            "idName": "magneticFieldY",
+                            "name": "magnetic field y",
+                            "eventTypeName": "magnetic field y changed",
+                            "index": 9,
+                            "type": "double",
+                            "unit": "None",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "ec63ffd7-2e3b-43dc-95bd-c0ef752b35d0",
+                            "idName": "magneticFieldZ",
+                            "name": "magnetic field z",
+                            "eventTypeName": "magnetic field z changed",
+                            "index": 10,
+                            "type": "double",
+                            "unit": "None",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "3efb8974-9aa9-4cfa-a9be-d468dc9a2cec",
+                            "idName": "rotationX",
+                            "name": "rotation x",
+                            "eventTypeName": "rotation x changed",
+                            "index": 11,
+                            "type": "double",
+                            "unit": "None",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "021ee500-d010-4511-9a62-669592a5d1dd",
+                            "idName": "rotationY",
+                            "name": "rotation y",
+                            "eventTypeName": "rotation y changed",
+                            "index": 12,
+                            "type": "double",
+                            "unit": "None",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "b0a99886-b26c-4b30-a2fc-53fe74472f59",
+                            "idName": "rotationZ",
+                            "name": "rotation z",
+                            "eventTypeName": "rotation z changed",
+                            "index": 13,
+                            "type": "double",
+                            "unit": "None",
+                            "defaultValue": 0
                         }
                     ],
                     "eventTypes": [

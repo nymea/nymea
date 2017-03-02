@@ -43,8 +43,11 @@ signals:
 private:
     QHash<QBluetoothUuid, QSharedPointer<QLowEnergyService>> m_services{
         {QBluetoothUuid(QUuid("f000aa00-0451-4000-b000-000000000000")), QSharedPointer<QLowEnergyService>()},
+        {QBluetoothUuid(QUuid("f000aa10-0451-4000-b000-000000000000")), QSharedPointer<QLowEnergyService>()},
         {QBluetoothUuid(QUuid("f000aa20-0451-4000-b000-000000000000")), QSharedPointer<QLowEnergyService>()},
+        {QBluetoothUuid(QUuid("f000aa30-0451-4000-b000-000000000000")), QSharedPointer<QLowEnergyService>()},
         {QBluetoothUuid(QUuid("f000aa40-0451-4000-b000-000000000000")), QSharedPointer<QLowEnergyService>()},
+        {QBluetoothUuid(QUuid("f000aa50-0451-4000-b000-000000000000")), QSharedPointer<QLowEnergyService>()},
         {QBluetoothUuid(QUuid("0000ffe0-0000-1000-8000-00805f9b34fb")), QSharedPointer<QLowEnergyService>()}
     };
 

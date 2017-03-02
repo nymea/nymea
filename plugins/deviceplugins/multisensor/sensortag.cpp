@@ -129,7 +129,11 @@ void SensorTag::onServiceStateChanged(const QLowEnergyService::ServiceState &sta
                 break;
             }
 
-            service->writeCharacteristic(sensorConfig, QByteArray::fromHex("01"));
+            if (service->serviceUuid().data1 == 0xf000aa50) {
+                service->writeCharacteristic(sensorConfig, QByteArray::fromHex("07"));
+            } else {
+                service->writeCharacteristic(sensorConfig, QByteArray::fromHex("01"));
+            }
 
             if (service->serviceUuid().data1 == 0xf000aa40) {
                 service->writeCharacteristic(sensorConfig, QByteArray::fromHex("02"));
@@ -157,10 +161,10 @@ void SensorTag::onServiceCharacteristicChanged(const QLowEnergyCharacteristic &c
     switch (characteristic.uuid().data1) {
     case 0xf000aa01: {
         const quint16 *data = reinterpret_cast<const quint16 *>(value.constData());
-        qint16 rawTamb = data[0];
+        qint16 rawTamb = data[1];
         emit valueChanged(temperatureStateTypeId, (double)rawTamb/128);
 
-        double Vobj2 = (double)data[1];
+        double Vobj2 = (double)data[0];
         Vobj2 *= 0.00000015625;
         double Tdie2 = ((double)rawTamb/128) + 273.15;
         const double S0 = 6.4E-14;            // Calibration factor
@@ -179,12 +183,24 @@ void SensorTag::onServiceCharacteristicChanged(const QLowEnergyCharacteristic &c
         emit valueChanged(IRtemperatureStateTypeId, tObj);
         break;
     }
+    case 0xf000aa11: {
+        const qint8 *data = reinterpret_cast<const qint8 *>(value.constData());
+        emit valueChanged(accelerationXStateTypeId, (double)data[0] / 64);
+        emit valueChanged(accelerationYStateTypeId, (double)data[1] / 64);
+        emit valueChanged(accelerationZStateTypeId, (double)data[2] / 64);
+    }
     case 0xf000aa21: {
         const quint16 *data = reinterpret_cast<const quint16 *>(value.constData());
         quint16 rawH = data[1];
         rawH &= ~0x0003;
         emit valueChanged(humidityStateTypeId, -6.0 + 125.0/65536 * (double)rawH);
         break;
+    }
+    case 0xf000aa31: {
+        const qint16 *data = reinterpret_cast<const qint16 *>(value.constData());
+        emit valueChanged(magneticFieldXStateTypeId, (double)data[0] / 32.768);
+        emit valueChanged(magneticFieldYStateTypeId, (double)data[1] / 32.768);
+        emit valueChanged(magneticFieldZStateTypeId, (double)data[2] / 32.768);
     }
     case 0xf000aa41: {
         if (m_c.empty())
@@ -222,6 +238,12 @@ void SensorTag::onServiceCharacteristicChanged(const QLowEnergyCharacteristic &c
         m_c2[2] = data[6];
         m_c2[3] = data[7];
         break;
+    }
+    case 0xf000aa51: {
+        const qint16 *data = reinterpret_cast<const qint16 *>(value.constData());
+        emit valueChanged(rotationXStateTypeId, (double)data[0] / 131.072);
+        emit valueChanged(rotationYStateTypeId, (double)data[1] / 131.072);
+        emit valueChanged(rotationZStateTypeId, (double)data[2] / 131.072);
     }
     case 0xffe1: {
         const quint8 *data = reinterpret_cast<const quint8 *>(value.constData());

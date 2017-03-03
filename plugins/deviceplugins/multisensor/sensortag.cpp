@@ -162,6 +162,10 @@ void SensorTag::onServiceStateChanged(const QLowEnergyService::ServiceState &sta
         emit valueChanged(availableStateTypeId, true);
 }
 
+inline quint16 buildUINT16(quint8 loByte, quint8 hiByte) {
+    return ((quint16)(((loByte) & 0x00FF) + (((hiByte) & 0x00FF) << 8)));
+}
+
 void SensorTag::onServiceCharacteristicChanged(const QLowEnergyCharacteristic &characteristic, const QByteArray &value)
 {
     qCDebug(dcMultiSensor) << "service characteristic changed" << characteristic.uuid().toString() << value.toHex();
@@ -180,7 +184,7 @@ void SensorTag::onServiceCharacteristicChanged(const QLowEnergyCharacteristic &c
             emit valueChanged(temperatureStateTypeId, rolling_mean(dataSet1));
         }
 
-        double Vobj2 = (double)data[0];
+        qint16 Vobj2 = (double)data[0];
         Vobj2 *= 0.00000015625;
         double Tdie2 = ((double)rawTamb/128) + 273.15;
         const double S0 = 6.4E-14;            // Calibration factor
@@ -227,8 +231,8 @@ void SensorTag::onServiceCharacteristicChanged(const QLowEnergyCharacteristic &c
         if (m_c.empty())
             break;
         const quint16 *data = reinterpret_cast<const quint16 *>(value.constData());
-        quint16 Pr = data[0];
-        qint16 Tr = data[1];
+        quint16 Pr = data[1];
+        qint16 Tr = data[0];
         // Sensitivity
         qint64 s = (qint64)m_c[2];
         qint64 val = (qint64)m_c[3] * Tr;
@@ -250,17 +254,17 @@ void SensorTag::onServiceCharacteristicChanged(const QLowEnergyCharacteristic &c
         break;
     }
     case 0xf000aa43: {
-        const quint16 *data = reinterpret_cast<const quint16 *>(value.constData());
+        const quint8 *data = reinterpret_cast<const quint8 *>(value.constData());
         m_c.resize(4);
         m_c2.resize(4);
-        m_c[0] = data[0];
-        m_c[1] = data[1];
-        m_c[2] = data[2];
-        m_c[3] = data[3];
-        m_c2[0] = data[4];
-        m_c2[1] = data[5];
-        m_c2[2] = data[6];
-        m_c2[3] = data[7];
+        m_c[0] = buildUINT16(data[0],data[1]);
+        m_c[1] = buildUINT16(data[2],data[3]);
+        m_c[2] = buildUINT16(data[4],data[5]);
+        m_c[3] = buildUINT16(data[6],data[7]);
+        m_c2[0] = buildUINT16(data[8],data[9]);
+        m_c2[1] = buildUINT16(data[10],data[11]);
+        m_c2[2] = buildUINT16(data[12],data[13]);
+        m_c2[3] = buildUINT16(data[14],data[15]);
         break;
     }
     case 0xf000aa51: {

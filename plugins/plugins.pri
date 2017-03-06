@@ -14,19 +14,34 @@ INCLUDEPATH += $$top_srcdir/libguh
 LIBS += -L../../../libguh -lguh
 
 # Create plugininfo file
-infofile.output = plugininfo.h
-infofile.depends = $$top_srcdir/plugins/guh-generateplugininfo
-infofile.CONFIG = no_link
 JSONFILES = deviceplugin"$$TARGET".json
-infofile.input = JSONFILES
-infofile.commands = $$top_srcdir/plugins/guh-generateplugininfo -j ${QMAKE_FILE_NAME} \
-                                                                -o ${QMAKE_FILE_OUT} \
-                                                                -b $$OUT_PWD \
-                                                                -t $$TRANSLATIONS; \
-                    rsync -a "$$OUT_PWD"/translations/*.qm $$top_builddir/translations/;
+plugininfo.target = plugininfo.h
+plugininfo.output = plugininfo.h
+plugininfo.CONFIG = no_link
+plugininfo.input = JSONFILES
+plugininfo.commands = touch ${QMAKE_FILE_OUT}; $$top_srcdir/plugins/guh-generateplugininfo \
+                            --filetype i \
+                            --jsonfile ${QMAKE_FILE_NAME} \
+                            --output ${QMAKE_FILE_OUT} \
+                            --builddir $$OUT_PWD \
+                            --translations $$TRANSLATIONS; \
+                      rsync -a "$$OUT_PWD"/translations/*.qm $$top_builddir/translations/;
+PRE_TARGETDEPS +=
+QMAKE_EXTRA_COMPILERS +=
 
-QMAKE_EXTRA_COMPILERS += infofile
-PRE_TARGETDEPS += compiler_infofile_make_all
+externplugininfo.target = extern-plugininfo.h
+externplugininfo.output = extern-plugininfo.h
+externplugininfo.CONFIG = no_link
+externplugininfo.input = JSONFILES
+externplugininfo.commands = touch ${QMAKE_FILE_OUT}; $$top_srcdir/plugins/guh-generateplugininfo \
+                            --filetype e \
+                            --jsonfile ${QMAKE_FILE_NAME} \
+                            --output ${QMAKE_FILE_OUT} \
+                            --builddir $$OUT_PWD \
+                            --translations $$TRANSLATIONS;
+PRE_TARGETDEPS += compiler_plugininfo_make_all compiler_externplugininfo_make_all
+QMAKE_EXTRA_COMPILERS += plugininfo externplugininfo
+
 
 # Install translation files
 translations.path = /usr/share/guh/translations

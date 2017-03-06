@@ -256,7 +256,7 @@ DeviceManager::DeviceError DevicePluginMock::executeAction(Device *device, const
             device->setStateValue(doubleStateTypeId, action.param(doubleStateParamTypeId).value().toDouble());
             return DeviceManager::DeviceErrorNoError;
         } else if (action.actionTypeId() == boolActionTypeId) {
-            device->setStateValue(boolStateTypeId, action.param(boolStateParamTypeId).value().toBool());
+            device->setStateValue(boolValueStateTypeId, action.param(boolValueStateParamTypeId).value().toBool());
             return DeviceManager::DeviceErrorNoError;
         } else if (action.actionTypeId() == timeoutActionTypeId) {
             return DeviceManager::DeviceErrorAsync;

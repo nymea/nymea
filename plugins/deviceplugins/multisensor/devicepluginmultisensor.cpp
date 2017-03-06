@@ -47,15 +47,11 @@
 #include "bluetooth/bluetoothlowenergydevice.h"
 #include "devicepluginmultisensor.h"
 
-/* The constructor of this device plugin. */
 DevicePluginMultiSensor::DevicePluginMultiSensor()
 {
 
 }
 
-/* This method will be called from the devicemanager to get
- * information about this plugin which device resource will be needed.
- */
 DeviceManager::HardwareResources DevicePluginMultiSensor::requiredHardware() const
 {
     return DeviceManager::HardwareResourceBluetoothLE;
@@ -93,10 +89,6 @@ void DevicePluginMultiSensor::bluetoothDiscoveryFinished(const QList<QBluetoothD
     emit devicesDiscovered(sensortagDeviceClassId, deviceDescriptors);
 }
 
-/* This method will be called from the devicemanager while he
- * is setting up a new device. Here the developer has the chance to
- * perform the setup on the actual device and report the result.
- */
 DeviceManager::DeviceSetupStatus DevicePluginMultiSensor::setupDevice(Device *device)
 {
     qCDebug(dcMultiSensor) << "Setting up MultiSensor" << device->name() << device->params();
@@ -127,7 +119,6 @@ void DevicePluginMultiSensor::deviceRemoved(Device *device)
         return;
 
     auto tag= m_tags.key(device);
-
     m_tags.remove(tag);
 }
 

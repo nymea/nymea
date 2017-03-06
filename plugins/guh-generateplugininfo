@@ -42,12 +42,12 @@ def printInfo(info):
 
 #-----------------------------------------------------------------------------------------------------------------
 def printWarning(warning):
-    print("Warning:" + warning)
+    print('Warning: ' + warning)
 
 
 #-----------------------------------------------------------------------------------------------------------------
 def printError(error):
-    print('Error:' + error)
+    print('Error: ' + error)
 
 
 #-----------------------------------------------------------------------------------------------------------------
@@ -86,7 +86,7 @@ def extractParamTypes(paramTypes, contextName):
                 addTranslationString(paramType['name'], 'The name of the paramType (%s) of %s' % (paramType['id'], contextName))
                 createExternDefinition('ParamTypeId', variableName)
             else:
-                printWarning('Duplicated variable name \"%s\" for ParamTypeId %s -> skipping') % (variableName, paramType['id'])
+                printWarning('Duplicated variable name \"%s\" for ParamTypeId %s -> skipping' % (variableName, paramType['id']))
         except:
             pass
 
@@ -104,7 +104,7 @@ def extractVendors(vendors):
                 addTranslationString(vendor['name'], 'The name of the vendor (%s)' % vendor['id'])
                 createExternDefinition('VendorId', variableName)
             else:
-                printWarning('Duplicated variable name \"%s\" for VendorId %s -> skipping') % (variableName, param['id'])
+                printWarning('Duplicated variable name \"%s\" for VendorId %s -> skipping' % (variableName, param['id']))
         except:
             pass
 
@@ -129,7 +129,7 @@ def extractDeviceClasses(deviceClasses):
                 addTranslationString(deviceClass['name'], 'The name of the DeviceClass (%s)' %(deviceClass['id']))
                 createExternDefinition('DeviceClassId', variableName)
             else:
-                printWarning('Duplicated variable name \"%s\" for DeviceClassId %s -> skipping') % (variableName, deviceClass['deviceClassId'])
+                printWarning('Duplicated variable name \"%s\" for DeviceClassId %s -> skipping' % (variableName, deviceClass['deviceClassId']))
 
         except:
             pass
@@ -164,7 +164,7 @@ def extractStateTypes(stateTypes, deviceClassName):
                     writeToFile('StateTypeId %s = StateTypeId(\"%s\");' % (variableName, stateType['id']))
                 createExternDefinition('StateTypeId', variableName)
             else:
-                printWarning('Duplicated variable name \"%s\" for StateTypeId %s -> skipping') % (variableName, stateType['id'])
+                printWarning('Duplicated variable name \"%s\" for StateTypeId %s -> skipping' % (variableName, stateType['id']))
 
             # Create EventTypeId for this state
             variableName = '%sEventTypeId' % (stateType['idName'])
@@ -176,7 +176,7 @@ def extractStateTypes(stateTypes, deviceClassName):
                     writeToFile('EventTypeId %s = EventTypeId(\"%s\");' % (variableName, stateType['id']))
                 createExternDefinition('EventTypeId', variableName)
             else:
-                printWarning('Duplicated variable name \"%s\" for autocreated EventTypeId %s -> skipping') % (variableName, stateType['id'])
+                printWarning('Duplicated variable name \"%s\" for autocreated EventTypeId %s -> skipping' % (variableName, stateType['id']))
 
             #ParamType for EventType/ActionType
             variableName = '%sStateParamTypeId' % (stateType['idName'])
@@ -188,7 +188,7 @@ def extractStateTypes(stateTypes, deviceClassName):
                 createExternDefinition('ParamTypeId', variableName)
                 addTranslationString(stateType['name'], 'The name of the ParamType of StateType (%s) of DeviceClass %s' % (stateType['id'], deviceClassName))
             else:
-                printWarning('duplicated variable name \"%s\" for ParamTypeId %s -> skipping') % (variableName, stateType['id'])
+                printWarning('Duplicated variable name \"%s\" for ParamTypeId %s -> skipping' % (variableName, stateType['id']))
 
             # Create ActionTypeId if the state is writable
             if 'writable' in stateType and stateType['writable']:
@@ -201,7 +201,7 @@ def extractStateTypes(stateTypes, deviceClassName):
                         writeToFile('ActionTypeId %s = ActionTypeId(\"%s\");' % (variableName, stateType['id']))
                     createExternDefinition('ActionTypeId', variableName)
                 else:
-                    printWarning('Duplicated variable name \"%s\" for autocreated ActionTypeId %s -> skipping') % (variableName, stateType['id'])
+                    printWarning('Duplicated variable name \"%s\" for autocreated ActionTypeId %s -> skipping' % (variableName, stateType['id']))
 
         except:
             pass
@@ -220,7 +220,7 @@ def extractActionTypes(actionTypes, deviceClassName):
                     writeToFile('ActionTypeId %s = ActionTypeId(\"%s\");' % (variableName, actionType['id']))
                 createExternDefinition('ActionTypeId', variableName)
             else:
-                printWarning('Duplicated variable name \"%s\" for ActionTypeId %s -> skipping') % (variableName, actionType['id'])
+                printWarning('Duplicated variable name \"%s\" for ActionTypeId %s -> skipping' % (variableName, actionType['id']))
 
         except:
             pass
@@ -243,7 +243,7 @@ def extractEventTypes(eventTypes, deviceClassName):
                     writeToFile('EventTypeId %s = EventTypeId(\"%s\");' % (variableName, eventType['id']))
                 createExternDefinition('EventTypeId', variableName)
             else:
-                printWarning('Duplicated variable name \"%s\" for EventTypeId %s -> skipping') % (variableName, eventType['id'])
+                printWarning('Duplicated variable name \"%s\" for EventTypeId %s -> skipping' % (variableName, eventType['id']))
         except:
             pass
 
@@ -301,7 +301,7 @@ def createTranslationFiles():
 
 #-----------------------------------------------------------------------------------------------------------------
 def writePluginInfoFile():
-    printInfo(' --> generate plugininfo.h for plugin \"%s\" = %s' % (pluginMap['name'], pluginMap['id']))
+    print(' --> Generate plugininfo.h for plugin \"%s\" = %s' % (pluginMap['name'], pluginMap['id']))
 
     writeToFile('/* This file is generated by the guh build system. Any changes to this file will')
     writeToFile(' * be lost.')
@@ -335,7 +335,7 @@ def writePluginInfoFile():
     writeToFile('')
     writeToFile('#endif // PLUGININFO_H')
     outputFile.close()
-    printInfo(' --> generated successfully \"%s\"' % (args.output))
+    print(' --> Generated successfully \"%s\"' % (args.output))
 
     # Translate
     if len(translationStrings) is not 0:
@@ -344,7 +344,7 @@ def writePluginInfoFile():
 
 #-----------------------------------------------------------------------------------------------------------------
 def writeExternPluginInfoFile():
-    print(' --> generate extern-plugininfo.h for plugin \"%s\" = %s' % (pluginMap['name'], pluginMap['id']))
+    print(' --> Generate extern-plugininfo.h for plugin \"%s\" = %s' % (pluginMap['name'], pluginMap['id']))
     extractPlugin(pluginMap)
     writeToFile('/* This file is generated by the guh build system. Any changes to this file will')
     writeToFile(' * be lost.')
@@ -372,7 +372,7 @@ def writeExternPluginInfoFile():
     writeToFile('')
     writeToFile('#endif // EXTERNPLUGININFO_H')
     outputFile.close()
-    print(' --> generated successfully \'%s\'' % (args.output))
+    print(' --> Generated successfully \'%s\'' % (args.output))
 
 
 ##################################################################################################################

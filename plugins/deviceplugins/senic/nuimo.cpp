@@ -421,17 +421,27 @@ void Nuimo::serviceError(const QLowEnergyService::ServiceError &error)
     case QLowEnergyService::OperationError:
         errorString = "Operation error";
         break;
+    case QLowEnergyService::CharacteristicReadError:
+        errorString = "Characteristic read error";
+        break;
     case QLowEnergyService::CharacteristicWriteError:
         errorString = "Characteristic write error";
+        break;
+    case QLowEnergyService::DescriptorReadError:
+        errorString = "Descriptor read error";
         break;
     case QLowEnergyService::DescriptorWriteError:
         errorString = "Descriptor write error";
         break;
+    case QLowEnergyService::UnknownError:
+        errorString = "Unknown error";
+        break;
     default:
+        errorString = "Unknown error";
         break;
     }
 
-    qCWarning(dcSenic()) << "Service of " << name() << address().toString() << ":" << errorString;
+    qCWarning(dcSenic()) << "Service error of" << name() << address().toString() << ":" << errorString;
 }
 
 #endif // BLUETOOTH_LE

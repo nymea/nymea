@@ -23,15 +23,11 @@
 
 #ifdef BLUETOOTH_LE
 
-#include <boost/accumulators/statistics/count.hpp>
-#include <boost/accumulators/statistics/rolling_mean.hpp>
 #include <QPointer>
 #include <QLowEnergyService>
 #include <QtMath>
 #include "extern-plugininfo.h"
 #include "sensortag.h"
-
-using namespace boost::accumulators;
 
 SensorTag::SensorTag(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType, QObject *parent) :
     BluetoothLowEnergyDevice(deviceInfo, addressType, parent)
@@ -40,17 +36,25 @@ SensorTag::SensorTag(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyCon
     connect(this, SIGNAL(servicesDiscoveryFinished()), this, SLOT(setupServices()));
 }
 
+double SensorTag::calculateMeanValue(const QList<double> &list)
+{
+    double sum = 0;
+    foreach (const double &value, list)
+        sum += value;
+
+    return sum / list.count();
+}
+
 void SensorTag::setupServices()
 {
-    foreach(auto id, m_services.keys())
-    {
+    foreach (auto id, m_services.keys()) {
         if (!controller()->services().contains(id)) {
-            qCWarning(dcMultiSensor) << "ERROR: service not found for device" << name() << address().toString();
+            qCWarning(dcMultiSensor) << "Service not found for device" << name() << address().toString();
             return;
         }
 
-        if (m_services.value(id).service) {
-            qCWarning(dcMultiSensor) << "ERROR: Attention! bad implementation of service handling!!";
+        if (m_services.value(id)) {
+            qCWarning(dcMultiSensor) << "Attention! bad implementation of service handling!!";
             return;
         }
 
@@ -59,23 +63,19 @@ void SensorTag::setupServices()
         // service for temperature
         QSharedPointer<QLowEnergyService> service{controller()->createServiceObject(id, this)};
 
-        if (!service) {
-            qCWarning(dcMultiSensor) << "ERROR: could not create service for device" << name() << address().toString();
+        if (service.isNull()) {
+            qCWarning(dcMultiSensor) << "Could not create service for device" << name() << address().toString();
             return;
         }
 
-        ServiceData serviceData;
-        serviceData.service = service;
-        m_services.insert(id, serviceData);
+        m_services.insert(id, service);
 
+        connect(service.data(), SIGNAL(error(QLowEnergyService::ServiceError)), this, SLOT(onServiceError(QLowEnergyService::ServiceError)));
         connect(service.data(), &QLowEnergyService::stateChanged, this, &SensorTag::onServiceStateChanged);
         connect(service.data(), &QLowEnergyService::characteristicChanged, this, &SensorTag::onServiceCharacteristicChanged);
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 5, 0))
         connect(service.data(), &QLowEnergyService::characteristicRead, this, &SensorTag::onServiceCharacteristicChanged);
 #endif
-        //connect(m_temperatureService, SIGNAL(characteristicWritten(QLowEnergyCharacteristic, QByteArray)), this, SLOT(confirmedCharacteristicWritten(QLowEnergyCharacteristic, QByteArray)));
-        //connect(m_temperatureService, SIGNAL(descriptorWritten(QLowEnergyDescriptor, QByteArray)), this, SLOT(confirmedDescriptorWritten(QLowEnergyDescriptor, QByteArray)));
-        connect(service.data(), SIGNAL(error(QLowEnergyService::ServiceError)), this, SLOT(onServiceError(QLowEnergyService::ServiceError)));
 
         service->discoverDetails();
     }
@@ -86,13 +86,12 @@ void SensorTag::onConnectionStatusChanged()
     if (!isConnected()) {
         // delete the services, they need to be recreated and
         // rediscovered once the device will be reconnected
-        foreach (auto service, m_services)
-            service.service.clear();
+        foreach (QSharedPointer<QLowEnergyService> service, m_services)
+            service->deleteLater();
 
-        //m_commandQueue.clear();
-
-        //m_isAvailable = false;
-        emit valueChanged(availableStateTypeId, false);
+        emit valueChanged(connectedStateTypeId, false);
+    } else {
+        emit valueChanged(connectedStateTypeId, true);
     }
 }
 
@@ -102,7 +101,7 @@ void SensorTag::onServiceStateChanged(const QLowEnergyService::ServiceState &sta
 
     switch (state) {
     case QLowEnergyService::DiscoveringServices:
-        qCDebug(dcMultiSensor) << "start discovering service" << service->serviceUuid();
+        qCDebug(dcMultiSensor) << "Start discovering service" << service->serviceUuid();
         break;
     case QLowEnergyService::ServiceDiscovered:
         if (m_services.contains(service->serviceUuid())) {
@@ -113,7 +112,7 @@ void SensorTag::onServiceStateChanged(const QLowEnergyService::ServiceState &sta
             auto sensorCharacteristic = service->characteristic(dataId);
 
             if (!sensorCharacteristic.isValid()) {
-                qCWarning(dcMultiSensor) << "ERROR: characteristic not found for device " << name() << address().toString();
+                qCWarning(dcMultiSensor) << "Characteristic not found for device " << name() << address().toString();
                 break;
             }
 
@@ -133,7 +132,7 @@ void SensorTag::onServiceStateChanged(const QLowEnergyService::ServiceState &sta
             auto sensorConfig = service->characteristic(configId);
 
             if (!sensorConfig.isValid()) {
-                qCWarning(dcMultiSensor) << "ERROR: characteristic not found for device " << name() << address().toString();
+                qCWarning(dcMultiSensor) << "Characteristic not found for device " << name() << address().toString();
                 break;
             }
 
@@ -151,15 +150,14 @@ void SensorTag::onServiceStateChanged(const QLowEnergyService::ServiceState &sta
                 service->readCharacteristic(service->characteristic(calibId));
 #endif
             }
+
+            // TODO: initialize the states with the current value
+
         }
         break;
     default:
         break;
     }
-
-    if (std::all_of(m_services.begin(), m_services.end(),
-                    [](ServiceData service){ return service.service && service.service->state() == QLowEnergyService::ServiceDiscovered; }))
-        emit valueChanged(availableStateTypeId, true);
 }
 
 inline quint16 buildUINT16(quint8 loByte, quint8 hiByte) {
@@ -168,25 +166,23 @@ inline quint16 buildUINT16(quint8 loByte, quint8 hiByte) {
 
 void SensorTag::onServiceCharacteristicChanged(const QLowEnergyCharacteristic &characteristic, const QByteArray &value)
 {
-    qCDebug(dcMultiSensor) << "service characteristic changed" << characteristic.uuid().toString() << value.toHex();
+    qCDebug(dcMultiSensor) << "Service characteristic changed" << characteristic.uuid().toString() << value.toHex();
 
     auto id = characteristic.uuid();
     id.data1 -= 1;
-    auto &service = m_services[id];
-    auto &dataSet1 = service.dataSet1;
-    auto &dataSet2 = service.dataSet2;
     switch (characteristic.uuid().data1) {
     case 0xf000aa01: {
         const quint16 *data = reinterpret_cast<const quint16 *>(value.constData());
         qint16 rawTamb = data[1];
-        dataSet1((double)rawTamb/128);
-        if ((count(dataSet1) % 60) == 0) {
-            emit valueChanged(temperatureStateTypeId, rolling_mean(dataSet1));
+        m_temperatureValues.append((double)rawTamb / 128);
+        if (m_temperatureValues.count() % 60 == 0) {
+            emit valueChanged(temperatureStateTypeId, calculateMeanValue(m_temperatureValues));
+            m_temperatureValues.clear();
         }
 
         qint16 Vobj2 = (double)data[0];
         Vobj2 *= 0.00000015625;
-        double Tdie2 = ((double)rawTamb/128) + 273.15;
+        double Tdie2 = ((double)rawTamb / 128) + 273.15;
         const double S0 = 6.4E-14;            // Calibration factor
         const double a1 = 1.75E-3;
         const double a2 = -1.678E-5;
@@ -199,33 +195,41 @@ void SensorTag::onServiceCharacteristicChanged(const QLowEnergyCharacteristic &c
         double Vos = b0 + b1*(Tdie2 - Tref) + b2*qPow((Tdie2 - Tref),2);
         double fObj = (Vobj2 - Vos) + c2*qPow((Vobj2 - Vos),2);
         double tObj = qPow(qPow(Tdie2,4) + (fObj/S),.25);
-        dataSet2(tObj - 273.15);
-        if (count(dataSet2) % 60 == 0) {
-            emit valueChanged(IRtemperatureStateTypeId, rolling_mean(dataSet2));
+        m_irTemperatureValues.append(tObj - 273.15);
+        if (m_irTemperatureValues.count() % 60 == 0) {
+            emit valueChanged(IRtemperatureStateTypeId, calculateMeanValue(m_irTemperatureValues));
+            m_irTemperatureValues.clear();
         }
+
         break;
     }
     case 0xf000aa11: {
-        const qint8 *data = reinterpret_cast<const qint8 *>(value.constData());
-        emit valueChanged(accelerationXStateTypeId, (double)data[0] / 64);
-        emit valueChanged(accelerationYStateTypeId, (double)data[1] / 64);
-        emit valueChanged(accelerationZStateTypeId, (double)data[2] / 64);
+        // TODO: evaluate movement
+
+        //        const qint8 *data = reinterpret_cast<const qint8 *>(value.constData());
+        //        emit valueChanged(accelerationXStateTypeId, (double)data[0] / 64);
+        //        emit valueChanged(accelerationYStateTypeId, (double)data[1] / 64);
+        //        emit valueChanged(accelerationZStateTypeId, (double)data[2] / 64);
+        break;
     }
     case 0xf000aa21: {
         const quint16 *data = reinterpret_cast<const quint16 *>(value.constData());
         quint16 rawH = data[1];
         rawH &= ~0x0003;
-        dataSet1(-6.0 + 125.0/65536 * (double)rawH);
-        if (count(dataSet1) % 60 == 0) {
-            emit valueChanged(humidityStateTypeId, rolling_mean(dataSet1));
+        m_humidityValues.append(-6.0 + 125.0/65536 * (double)rawH);
+        if (m_humidityValues.count() % 60 == 0) {
+            emit valueChanged(humidityStateTypeId, calculateMeanValue(m_humidityValues));
+            m_humidityValues.clear();
         }
         break;
     }
     case 0xf000aa31: {
-        const qint16 *data = reinterpret_cast<const qint16 *>(value.constData());
-        emit valueChanged(magneticFieldXStateTypeId, (double)data[0] / 32.768);
-        emit valueChanged(magneticFieldYStateTypeId, (double)data[1] / 32.768);
-        emit valueChanged(magneticFieldZStateTypeId, (double)data[2] / 32.768);
+        // TODO: evaluate movement
+        //        const qint16 *data = reinterpret_cast<const qint16 *>(value.constData());
+        //        emit valueChanged(magneticFieldXStateTypeId, (double)data[0] / 32.768);
+        //        emit valueChanged(magneticFieldYStateTypeId, (double)data[1] / 32.768);
+        //        emit valueChanged(magneticFieldZStateTypeId, (double)data[2] / 32.768);
+        break;
     }
     case 0xf000aa41: {
         if (m_c.empty())
@@ -247,10 +251,12 @@ void SensorTag::onServiceCharacteristicChanged(const QLowEnergyCharacteristic &c
         o += (val >> 19);
         // Pressure (Pa)
         qint64 pres = ((qint64)(s * Pr) + o) >> 14;
-        dataSet1((double)pres/100);
-        if (count(dataSet1) % 60 == 0) {
-            emit valueChanged(pressureStateTypeId, rolling_mean(dataSet1));
+        m_pressureValues.append((double)pres/100);
+        if (m_pressureValues.count() % 60 == 0) {
+            emit valueChanged(pressureStateTypeId, calculateMeanValue(m_pressureValues));
+            m_pressureValues.clear();
         }
+
         break;
     }
     case 0xf000aa43: {
@@ -268,10 +274,12 @@ void SensorTag::onServiceCharacteristicChanged(const QLowEnergyCharacteristic &c
         break;
     }
     case 0xf000aa51: {
-        const qint16 *data = reinterpret_cast<const qint16 *>(value.constData());
-        emit valueChanged(rotationXStateTypeId, (double)data[0] / 131.072);
-        emit valueChanged(rotationYStateTypeId, (double)data[1] / 131.072);
-        emit valueChanged(rotationZStateTypeId, (double)data[2] / 131.072);
+        // TODO: evaluate movement
+        //        const qint16 *data = reinterpret_cast<const qint16 *>(value.constData());
+        //        emit valueChanged(rotationXStateTypeId, (double)data[0] / 131.072);
+        //        emit valueChanged(rotationYStateTypeId, (double)data[1] / 131.072);
+        //        emit valueChanged(rotationZStateTypeId, (double)data[2] / 131.072);
+        break;
     }
     case 0xffe1: {
         const quint8 *data = reinterpret_cast<const quint8 *>(value.constData());
@@ -296,17 +304,28 @@ void SensorTag::onServiceError(const QLowEnergyService::ServiceError &error)
     case QLowEnergyService::OperationError:
         errorString = "Operation error";
         break;
+    case QLowEnergyService::CharacteristicReadError:
+        errorString = "Characteristic read error";
+        break;
     case QLowEnergyService::CharacteristicWriteError:
         errorString = "Characteristic write error";
+        break;
+    case QLowEnergyService::DescriptorReadError:
+        errorString = "Descriptor read error";
         break;
     case QLowEnergyService::DescriptorWriteError:
         errorString = "Descriptor write error";
         break;
+    case QLowEnergyService::UnknownError:
+        errorString = "Unknown error";
+        break;
     default:
+        errorString = "Unknown error";
         break;
     }
 
-    qCWarning(dcMultiSensor) << "ERROR: service of " << name() << address().toString() << ":" << errorString;
+
+    qCWarning(dcMultiSensor) << "Service of " << name() << address().toString() << ":" << errorString;
 }
 
 #endif // BLUETOOTH_LE

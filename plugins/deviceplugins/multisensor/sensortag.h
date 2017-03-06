@@ -26,17 +26,13 @@
 
 #ifdef BLUETOOTH_LE
 
-#include <boost/accumulators/accumulators.hpp>
-#include <boost/accumulators/statistics/stats.hpp>
-#include <boost/accumulators/statistics/count.hpp>
-#include <boost/accumulators/statistics/rolling_mean.hpp>
 #include <QHash>
+#include <QList>
 #include <QSharedPointer>
 #include <QLowEnergyService>
+
 #include "bluetooth/bluetoothlowenergydevice.h"
 #include "extern-plugininfo.h"
-
-using namespace boost::accumulators;
 
 class SensorTag : public BluetoothLowEnergyDevice
 {
@@ -49,30 +45,25 @@ signals:
     void event(EventTypeId event);
 
 private:
-    struct ServiceData {
-        QSharedPointer<QLowEnergyService> service;
-        accumulator_set<double, stats<tag::count, tag::rolling_mean>> dataSet1{tag::rolling_mean::window_size = 60};
-        accumulator_set<double, stats<tag::count, tag::rolling_mean>> dataSet2{tag::rolling_mean::window_size = 60};
-    };
-
-    QHash<QBluetoothUuid, ServiceData> m_services{
-        {QBluetoothUuid(QUuid("f000aa00-0451-4000-b000-000000000000")), ServiceData()},
-        {QBluetoothUuid(QUuid("f000aa10-0451-4000-b000-000000000000")), ServiceData()},
-        {QBluetoothUuid(QUuid("f000aa20-0451-4000-b000-000000000000")), ServiceData()},
-        {QBluetoothUuid(QUuid("f000aa30-0451-4000-b000-000000000000")), ServiceData()},
-        {QBluetoothUuid(QUuid("f000aa40-0451-4000-b000-000000000000")), ServiceData()},
-        {QBluetoothUuid(QUuid("f000aa50-0451-4000-b000-000000000000")), ServiceData()},
-        {QBluetoothUuid(QUuid("0000ffe0-0000-1000-8000-00805f9b34fb")), ServiceData()}
-    };
-
-    //QHash<QByteArray, ActionId> m_actions;
-
-    //QQueue<CommandRequest> m_commandQueue;
-    //CommandRequest m_currentRequest;
-    //bool m_queueRunning;
+    QHash<QBluetoothUuid, QSharedPointer<QLowEnergyService>> m_services{
+         {QBluetoothUuid(QUuid("f000aa00-0451-4000-b000-000000000000")), QSharedPointer<QLowEnergyService>()},
+         {QBluetoothUuid(QUuid("f000aa10-0451-4000-b000-000000000000")), QSharedPointer<QLowEnergyService>()},
+         {QBluetoothUuid(QUuid("f000aa20-0451-4000-b000-000000000000")), QSharedPointer<QLowEnergyService>()},
+         {QBluetoothUuid(QUuid("f000aa30-0451-4000-b000-000000000000")), QSharedPointer<QLowEnergyService>()},
+         {QBluetoothUuid(QUuid("f000aa40-0451-4000-b000-000000000000")), QSharedPointer<QLowEnergyService>()},
+         {QBluetoothUuid(QUuid("f000aa50-0451-4000-b000-000000000000")), QSharedPointer<QLowEnergyService>()},
+         {QBluetoothUuid(QUuid("0000ffe0-0000-1000-8000-00805f9b34fb")), QSharedPointer<QLowEnergyService>()}
+     };
 
     QVector<quint16> m_c;
     QVector<qint16> m_c2;
+
+    QList<double> m_temperatureValues;
+    QList<double> m_irTemperatureValues;
+    QList<double> m_humidityValues;
+    QList<double> m_pressureValues;
+
+    double calculateMeanValue(const QList<double> &list);
 
 private slots:
     void setupServices();
@@ -81,8 +72,6 @@ private slots:
     // Service
     void onServiceStateChanged(const QLowEnergyService::ServiceState &state);
     void onServiceCharacteristicChanged(const QLowEnergyCharacteristic &characteristic, const QByteArray &value);
-    //void confirmedCharacteristicWritten(const QLowEnergyCharacteristic &characteristic, const QByteArray &value);
-    //void confirmedDescriptorWritten(const QLowEnergyDescriptor &descriptor, const QByteArray &value);
     void onServiceError(const QLowEnergyService::ServiceError &error);
 };
 #endif // BLUETOOTH_LE

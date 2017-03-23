@@ -304,21 +304,27 @@ void SensorTag::onServiceError(const QLowEnergyService::ServiceError &error)
     case QLowEnergyService::OperationError:
         errorString = "Operation error";
         break;
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 5, 0))
     case QLowEnergyService::CharacteristicReadError:
         errorString = "Characteristic read error";
         break;
+#endif
     case QLowEnergyService::CharacteristicWriteError:
         errorString = "Characteristic write error";
         break;
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 5, 0))
     case QLowEnergyService::DescriptorReadError:
         errorString = "Descriptor read error";
         break;
+#endif
     case QLowEnergyService::DescriptorWriteError:
         errorString = "Descriptor write error";
         break;
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 5, 0))
     case QLowEnergyService::UnknownError:
         errorString = "Unknown error";
         break;
+#endif
     default:
         errorString = "Unknown error";
         break;

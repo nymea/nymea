@@ -72,3 +72,8 @@ Files: plugins/deviceplugins/pushbullet/*
        plugins/deviceplugins/usbwde/*
 License: LGPL-2.1
 Copyright: 2016, Alexander Lampret <alexander.lampret@gmail.com>
+
+Files: plugins/deviceplugins/multisensor/*
+License: LGPL-2.1
+Copyright: 2016-2017, Simon Stürz <simon.stuerz@guh.io>
+           2016-2017, Gil Benkö

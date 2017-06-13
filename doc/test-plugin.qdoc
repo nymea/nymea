@@ -1,0 +1,22 @@
+/*!
+    \page test-plugin.html
+    \title Testing your plugin
+    \brief This page describes how to test your plugin that you've just created
+
+    In order to make guhd load your plugin, you have 2 options. Either install it into the system or make guhd load it from your plugin build directory.
+
+    To install the plugin into the system, run
+    \code
+        $ make install
+    \endcode
+
+    To make guhd load the plugin from the plugins build directory, run guhd with an environment variable exported
+    \code
+        $ GUH_PLUGINS_DIR=/path/to/plugin/ guhd
+    \endcode
+
+    In order to easier debug things, it is advised to enable debug output for the device manager and your plugin. E.g.
+    \code
+        $ GUH_PLUGINS_DIR=/path/to/plugin guhd -d DeviceManager,YourPlugin
+    \endcode
+*/

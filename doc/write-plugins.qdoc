@@ -7,6 +7,7 @@
         \li \l{Getting started}
         \li \l{The plugin JSON File}
         \li \l{CreateMethods and SetupMethods}
+        \li \l{Testing your plugin}
         \li \l{Tutorials}
             \list
                 \li \l{Tutorial 1 - The "Minimal" plugin}

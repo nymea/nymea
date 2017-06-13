@@ -257,6 +257,10 @@ DeviceManager::~DeviceManager()
 QStringList DeviceManager::pluginSearchDirs()
 {
     QStringList searchDirs;
+    QByteArray envPath = qgetenv("GUH_PLUGINS_PATH");
+    if (!envPath.isEmpty()) {
+        searchDirs << envPath;
+    }
     searchDirs << QCoreApplication::applicationDirPath() + "/../lib/guh/plugins";
     searchDirs << QCoreApplication::applicationDirPath() + "/../plugins/";
     searchDirs << QCoreApplication::applicationDirPath() + "/../plugins/deviceplugins";
@@ -1025,7 +1029,7 @@ void DeviceManager::loadPlugins()
             loader.setLoadHints(QLibrary::ResolveAllSymbolsHint);
 
             if (!loader.load()) {
-                qCWarning(dcDeviceManager) << "Could not load plugin data of" << entry;
+                qCWarning(dcDeviceManager) << "Could not load plugin data of" << entry << "\n" << loader.errorString();
                 continue;
             }
 

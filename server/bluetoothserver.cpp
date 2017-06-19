@@ -27,7 +27,7 @@
 
     \inherits TransportInterface
 
-    The bluetooth server allowes clients to connect to the JSON-RPC API using an RFCOMM bluetooth connection. If the server is enabled, a client
+    The bluetooth server allows clients to connect to the JSON-RPC API using an RFCOMM bluetooth connection. If the server is enabled, a client
     can discover the services running on this host. The service for the JSON-RPC api is called \tt guhIO and has the uuid \tt 997936b5-d2cd-4c57-b41b-c6048320cd2b .
 
     \sa TransportInterface

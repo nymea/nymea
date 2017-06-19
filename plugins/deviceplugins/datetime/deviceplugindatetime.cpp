@@ -76,11 +76,11 @@
     Special times of a day (\l{https://en.wikipedia.org/wiki/Twilight#/media/File:Twilight_description_full_day.svg}{original source})
 
     \chapter Alarm
-    The alarm plugin allowes you to define an alarm which depends on a certain time, weekday or special day time like sunrise or
+    The alarm plugin allows you to define an alarm which depends on a certain time, weekday or special day time like sunrise or
     sunset. An offset can also be definend.
 
     \chapter Countdown
-    The countdown plugin allowes you to define a countown which triggers an \l{Event} on timeout.
+    The countdown plugin allows you to define a countown which triggers an \l{Event} on timeout.
 
     \chapter Plugin properties
     Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}

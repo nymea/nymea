@@ -22,7 +22,7 @@
 
 /*!
     \class QtAvahiServiceBrowser
-    \brief Allowes to browse avahi services in the local network.
+    \brief Allows to browse avahi services in the local network.
 
     \ingroup hardware
     \inmodule libguh

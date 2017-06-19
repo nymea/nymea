@@ -22,7 +22,7 @@
 
 /*!
     \class QtAvahiService
-    \brief Allowes to publish an avahi service to the network.
+    \brief Allows to publish an avahi service to the network.
 
     \inmodule libguh
 */

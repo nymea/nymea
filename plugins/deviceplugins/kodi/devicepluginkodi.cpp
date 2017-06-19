@@ -28,7 +28,7 @@
     \ingroup plugins
     \ingroup guh-plugins
 
-    This plugin allowes you to controll the media center \l{http://kodi.tv/}{Kodi}. If you want to discover
+    This plugin allows you to controll the media center \l{http://kodi.tv/}{Kodi}. If you want to discover
     and control Kodi with guh, you need to activate the remote access and the UPnP service.
 
     \chapter "Activate UPnP"

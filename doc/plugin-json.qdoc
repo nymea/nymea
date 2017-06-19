@@ -217,7 +217,7 @@
 
 
     \section2 The ParamType definition
-    A \l{DeviceClass} can have a list of \l{ParamType}{ParamTypes} which will be filled out during the setup and describe the device. Each device should have a parameter "name" to allow the user to give a device an individual name like: "Desk lamp in the living room". \l{ParamType}{ParamTypes} will be used for \e discoveryParamType in the \l{DeviceClass} definition and in the \l{ActionType} and \l{EventType} definition.
+    A \l{DeviceClass} can have a list of \l{ParamType}{ParamTypes} which will be filled in during the setup and describe the device. Each device should have a parameter "name" to allow the user to give a device an individual name like: "Desk lamp in the living room". \l{ParamType}{ParamTypes} will be used for \e discoveryParamType in the \l{DeviceClass} definition and in the \l{ActionType} and \l{EventType} definition.
 
     \code
         }
@@ -314,7 +314,7 @@ A \l{StateType} has following parameters:
         \li - \underline{\e id:} The actual uuid (\l{StateTypeId}) of the \l{StateType} \unicode{0x2192} \l{StateType::id()}.
         \li - \underline{\e index:} The order index of the \l{StateType} \unicode{0x2192} \l{StateType::index()}. This index will be used for sorting the \l{State}{States} of a \l{Device} to make sure the types looks the same on all clients. Please make sure all \l{StateType}{StateTypes} together will create a list from \tt 0 to \tt x.
         \li - \underline{\e type:} The data type of this state \unicode{0x2192} \l{StateType::type()}.  
-        \li - \underline{\e ruleRelevant:} Optional: Since not all \l{State}{States} make sense for the user in a rule, with this flag can be specidied if this state should be visible in the rule engine for the user or not. This flag has no effect to the ruleengine mechanism and is only ment to filter out not interesting \l{State}{States}. By default, every state is rule relevant.
+        \li - \underline{\e ruleRelevant:} Optional: Since not all \l{State}{States} make sense for the user in a rule, with this flag can be specified if this state should be visible in the rule engine for the user or not. This flag has no effect to the ruleengine mechanism and is only ment to filter out not interesting \l{State}{States}. By default, every state is rule relevant.
         \li - \underline{\e graphRelevant:} Optional: This flag indicates that this \l{State} is interesting to be shown in a graph/chart. By default every state is \underline not \tt {graphRelevant}. The corresponding EventType will not be graphRelevant, because the graph will be generated from the \l{State} logs.
         \li - \underline{\e eventRuleRelevant:} Optional: The same thing as \e {ruleRelevat}, but this flag is for the \l{EventType}, which will be generated for this \l{StateType}.
         \li - \underline{\e eventTypeName:} Will be used for the name of the created \l EventType for this \l StateType. It is good practice to name the event \tt{"<stateName> changed"}.  

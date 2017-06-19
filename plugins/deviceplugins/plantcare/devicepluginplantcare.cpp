@@ -29,7 +29,7 @@
     \ingroup plugins
     \ingroup guh-plugins-merkur
 
-    This allowes to controll the guh plantcare demo for 6LoWPAN networks.
+    This allows to controll the guh plantcare demo for 6LoWPAN networks.
 
     \chapter Plugin properties
     Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}

@@ -48,7 +48,7 @@
     \value HardwareResourceNetworkManager
         Allows to send network requests and receive replies.
     \value HardwareResourceUpnpDisovery
-        Allowes to search a UPnP devices in the network.
+        Allows to search a UPnP devices in the network.
     \value HardwareResourceBluetoothLE
         Allows to interact with bluetooth low energy devices.
 */

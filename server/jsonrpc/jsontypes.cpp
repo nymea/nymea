@@ -26,7 +26,7 @@
     \ingroup json
     \inmodule core
 
-    This class represents all JSON-RPC API types and allowes to transform Json
+    This class represents all JSON-RPC API types and allows to transform Json
     objects into c++ objects and vers visa.
 
 */

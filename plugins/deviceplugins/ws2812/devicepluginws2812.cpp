@@ -29,7 +29,7 @@
     \ingroup plugins
     \ingroup guh-plugins-merkur
 
-    The plugin for the \l{http://cdn.sparkfun.com/datasheets/Components/LED/WS2812.pdf}{ws2812} led module. This plugin allowes to control a ws2812 module over a 6LoWPAN network.
+    The plugin for the \l{http://cdn.sparkfun.com/datasheets/Components/LED/WS2812.pdf}{ws2812} led module. This plugin allows to control a ws2812 module over a 6LoWPAN network.
 
     \chapter Plugin properties
     Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}

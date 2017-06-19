@@ -28,7 +28,7 @@
 
     \inherits TransportInterface
 
-    The TCP server allowes clients to connect to the JSON-RPC API.
+    The TCP server allows clients to connect to the JSON-RPC API.
 
     \sa WebSocketServer, TransportInterface
 */

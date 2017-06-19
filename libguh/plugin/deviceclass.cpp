@@ -45,7 +45,7 @@
     \value CreateMethodAuto
         The device will be created automaticaly.
     \value CreateMethodDiscovery
-        The device will be discovered and added by the user by specifying the DeviceDescriptorId.
+        The device will be discovered and added by the user by selecting the DeviceDescriptorId from the list of discovered possible ones.
 */
 
 /*! \enum DeviceClass::SetupMethod

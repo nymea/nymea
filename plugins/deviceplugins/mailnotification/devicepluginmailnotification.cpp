@@ -23,7 +23,7 @@
 /*!
     \page mailnotification.html
     \title Mail Notification
-    \brief Plugin which allowes to get mail notification from guh.
+    \brief Plugin which allows to get mail notification from guh.
 
     \ingroup plugins
     \ingroup guh-plugins

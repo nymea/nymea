@@ -7,7 +7,7 @@
     \section1 Topics
     This tutorial will show you how to:
     \list
-        \li \unicode{0x25B6} Use hardware resource \l{NetworkManager}
+        \li \unicode{0x25B6} Use the hardware resource \l{NetworkManager}
     \endlist
 
 
@@ -257,7 +257,7 @@ In order to get started with our new \b {"Network Info"} plugin we use the minim
 
     For more details about how to write the JSON file please take a look at \l{The Plugin JSON file} documentation.
 
-    \note As you can see in this example the \l Vendor for this \l DevicePlugin is the \e guh. Of course you can define here a new Vendor (using \tt uuidgen to generate a new UUID). Please take a look at the existing \l{Vendor}{Vendors} and check if your \l Vendor allready exists. If the \l{Vendor} exists, please copy the \e name, \e idName and \e id to make shore all \l{Device}{Devices} from one \l{Vendor} will be together in the system like in this example for \e guh. 
+    \note As you can see in this example the \l Vendor for this \l DevicePlugin is the \e guh. Of course you can define here a new Vendor (using \tt uuidgen to generate a new UUID). Please take a look at the existing \l{Vendor}{Vendors} and check if your \l Vendor already exists. If the \l{Vendor} exists, please copy the \e name, \e idName and \e id to make shore all \l{Device}{Devices} from one \l{Vendor} will be together in the system like in this example for \e guh. 
 
     Our new plugin will have the name \b {"Network Info"}, the corresponding logging categorie will be \tt dcNetworkInfo (defined from the \e {idName}). There will be one new \l{DeviceClass} with the \e name \b {Info about Network}. This \l{DeviceClass} has 6 \l{StateType}{StateTypes} and one \l{ActionType}.
 
@@ -385,7 +385,7 @@ In order to get started with our new \b {"Network Info"} plugin we use the minim
 
     \endcode 
         
-    All defined states are allready availabe in the system and initialized with the \e defaultValue
+    All defined states are already availabe in the system and initialized with the \e defaultValue
 parameter from \l{The Plugin JSON file}.    
 
     \section2 Define the required hardware resource

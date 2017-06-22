@@ -11,8 +11,8 @@ else
 endif
 
 MAKE_TARGETS="all"
-ifneq (,$(findstring nodocs, $(DEB_BUILD_OPTIONS))) 
-	MAKE_TARGETS += doc
+ifneq (,$(filter nodocs,$(DEB_BUILD_OPTIONS)))
+	MAKE_TARGETS += " doc"
 endif 
 
 DPKG_EXPORT_BUILDFLAGS = 1

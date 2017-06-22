@@ -22,13 +22,7 @@ $(PREPROCESS_FILES:.in=): %: %.in
 
 
 override_dh_auto_build:
-	make
-	make doc
-
-
-override_dh_auto_test:
-	make test
-
+	make -j$(DEB_PARALLEL_JOBS)
 
 override_dh_install: $(PREPROCESS_FILES:.in=)
 	dh_install --fail-missing

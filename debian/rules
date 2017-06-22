@@ -12,7 +12,7 @@ endif
 
 MAKE_TARGETS="all"
 ifneq (,$(findstring nodocs, $(DEB_BUILD_OPTIONS))) 
-	MAKE_TARGETS += docs
+	MAKE_TARGETS += doc
 endif 
 
 DPKG_EXPORT_BUILDFLAGS = 1

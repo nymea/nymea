@@ -10,6 +10,11 @@ else
 	DEB_PARALLEL_JOBS += $(shell getconf _NPROCESSORS_ONLN)
 endif
 
+MAKE_TARGETS="all"
+ifneq (,$(findstring nodocs, $(DEB_BUILD_OPTIONS))) 
+	MAKE_TARGETS += docs
+endif 
+
 DPKG_EXPORT_BUILDFLAGS = 1
 DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 
@@ -22,7 +27,7 @@ $(PREPROCESS_FILES:.in=): %: %.in
 
 
 override_dh_auto_build:
-	make -j$(DEB_PARALLEL_JOBS)
+	make -j$(DEB_PARALLEL_JOBS) $(MAKE_TARGETS)
 
 override_dh_install: $(PREPROCESS_FILES:.in=)
 	dh_install --fail-missing

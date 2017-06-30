@@ -42,6 +42,7 @@
 #include "loggingcategories.h"
 
 static QHash<QString, bool> s_loggingFilters;
+static QFile s_logFile;
 
 static const char *const normal = "\033[0m";
 static const char *const warning = "\e[33m";
@@ -91,15 +92,10 @@ static void consoleLogHandler(QtMsgType type, const QMessageLogContext& context,
     }
     fflush(stdout);
 
-    QFile logFile(GuhSettings::consoleLogPath());
-    if (!logFile.open(QIODevice::WriteOnly | QIODevice::Append)) {
-        fprintf(stdout, " W | Application: Could not open logfile.\n");
-        return;
+    if (s_logFile.isOpen()) {
+        QTextStream textStream(&s_logFile);
+        textStream << messageString << endl;
     }
-
-    QTextStream textStream(&logFile);
-    textStream << messageString << endl;
-    logFile.close();
 }
 
 int main(int argc, char *argv[])
@@ -187,7 +183,25 @@ int main(int argc, char *argv[])
     QCommandLineOption debugOption(QStringList() << "d" << "debug-category", debugDescription, "[No]DebugCategory");
     parser.addOption(debugOption);
 
+    QCommandLineOption logOption({"l", "log"}, QCoreApplication::translate("main", "Specify a log file to write to, If this option is not specified, logs will be printed to the standard output."), "logfile", "/var/log/guhd.log");
+    parser.addOption(logOption);
+
     parser.process(application);
+
+    // Open the logfile, if any specified
+    if (parser.isSet(logOption)) {
+        QFileInfo fi(parser.value(logOption));
+        QDir dir(fi.absolutePath());
+        if (!dir.exists() && !dir.mkpath(dir.absolutePath())) {
+            qWarning() << "Error opening log file" << parser.value(logOption);
+            return 1;
+        }
+        s_logFile.setFileName(parser.value(logOption));
+        if (!s_logFile.open(QFile::WriteOnly | QFile::Append)) {
+            qWarning() << "Error opening log file" << parser.value(logOption);
+            return 1;
+        }
+    }
 
     // add plugin metadata to the static hash
     foreach (const QString &category, loggingFiltersPlugins.keys())
@@ -242,9 +256,17 @@ int main(int argc, char *argv[])
 
         // create core instance
         GuhCore::instance();
-        return application.exec();
+        int ret = application.exec();
+        if (s_logFile.isOpen()) {
+            s_logFile.close();
+        }
+        return ret;
     }
 
     GuhService service(argc, argv);
-    return service.exec();
+    int ret = service.exec();
+    if (s_logFile.isOpen()) {
+        s_logFile.close();
+    }
+    return ret;
 }

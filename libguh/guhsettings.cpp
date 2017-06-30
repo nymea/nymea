@@ -231,27 +231,6 @@ QString GuhSettings::translationsPath()
 #endif // SNAPPY
 }
 
-/*! Returns the path where the log file (console log) will be stored. */
-QString GuhSettings::consoleLogPath()
-{
-    QString consoleLogPath;
-#ifdef SNAPPY
-    consoleLogPath = QString(qgetenv("SNAP_DATA")) + "/guhd.log";
-#else
-    QString organisationName = QCoreApplication::instance()->organizationName();
-
-    if (organisationName == "guh-test") {
-        consoleLogPath = "/tmp/" + organisationName + "/guhd-test.log";
-    } else if (GuhSettings::isRoot()) {
-        consoleLogPath = "/var/log/guhd.log";
-    } else {
-        consoleLogPath = QDir::homePath() + "/.config/" + organisationName + "/guhd.log";
-    }
-#endif // SNAPPY
-
-    return consoleLogPath;
-}
-
 /*! Return a list of all settings keys.*/
 QStringList GuhSettings::allKeys() const
 {

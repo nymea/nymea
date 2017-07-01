@@ -46,7 +46,7 @@ Es gibt folgende Kategorien:</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="220"/>
+        <location filename="../server/main.cpp" line="218"/>
         <source>No such debug category:</source>
         <translation>Diese Debug-Kategorie existiert nicht:</translation>
     </message>

@@ -5,7 +5,7 @@ After=network.target
 Wants=network-online.target
 
 [Service]
-ExecStart=/usr/bin/guhd --print-all
+ExecStart=/usr/bin/guhd -n --print-all
 StandardOutput=journal
 StandardError=journal
 Restart=on-failure

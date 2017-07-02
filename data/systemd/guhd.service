@@ -9,7 +9,7 @@ ExecStart=/usr/bin/guhd -n --print-all
 StandardOutput=journal
 StandardError=journal
 Restart=on-failure
-Type=forking
+Type=simple
 
 [Install]
 WantedBy=multi-user.target

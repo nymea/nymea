@@ -122,8 +122,7 @@ namespace guhserver {
     instance available from \l{GuhCore}. This one should be used instead of creating multiple ones.
  */
 RuleEngine::RuleEngine(QObject *parent) :
-    QObject(parent),
-    m_lastEvaluationTime(QDateTime::currentDateTime())
+    QObject(parent)
 {
     GuhSettings settings(GuhSettings::SettingsRoleRules);
     qCDebug(dcRuleEngine) << "loading rules from" << settings.fileName();
@@ -384,6 +383,11 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
 */
 QList<Rule> RuleEngine::evaluateTime(const QDateTime &dateTime)
 {
+    if (!m_lastEvaluationTime.isValid()) {
+        m_lastEvaluationTime = dateTime;
+        m_lastEvaluationTime.addSecs(-1);
+    }
+
     QList<Rule> rules;
 
     foreach (const Rule &r, m_rules.values()) {
@@ -427,7 +431,7 @@ QList<Rule> RuleEngine::evaluateTime(const QDateTime &dateTime)
         }
     }
 
-    m_lastEvaluationTime = QDateTime::currentDateTime();
+    m_lastEvaluationTime = dateTime;
     return rules;
 }
 

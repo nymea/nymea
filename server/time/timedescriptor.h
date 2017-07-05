@@ -41,7 +41,7 @@ public:
     bool isValid() const;
     bool isEmpty() const;
 
-    bool evaluate(const QDateTime &dateTime) const;
+    bool evaluate(const QDateTime &lastEvaluationTime, const QDateTime &dateTime) const;
 
 //    void dumpToSettings(GuhSettings &settings, const QString &groupName) const;
 //    static TimeDescriptor loadFromSettings(GuhSettings &settings, const QString &groupPrefix);

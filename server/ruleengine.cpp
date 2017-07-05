@@ -122,7 +122,8 @@ namespace guhserver {
     instance available from \l{GuhCore}. This one should be used instead of creating multiple ones.
  */
 RuleEngine::RuleEngine(QObject *parent) :
-    QObject(parent)
+    QObject(parent),
+    m_lastEvaluationTime(QDateTime::currentDateTime())
 {
     GuhSettings settings(GuhSettings::SettingsRoleRules);
     qCDebug(dcRuleEngine) << "loading rules from" << settings.fileName();
@@ -396,7 +397,7 @@ QList<Rule> RuleEngine::evaluateTime(const QDateTime &dateTime)
             // check if this rule is based on calendarItems
             if (!rule.timeDescriptor().calendarItems().isEmpty()) {
                 //qCDebug(dcRuleEngine()) << "Evaluate CalendarItem against" << dateTime.toString("dd:MM:yyyy hh:mm") << "for rule" << rule.id().toString();
-                bool active = rule.timeDescriptor().evaluate(dateTime);
+                bool active = rule.timeDescriptor().evaluate(m_lastEvaluationTime, dateTime);
                 if (active) {
                     if (!m_activeRules.contains(rule.id())) {
                         qCDebug(dcRuleEngine) << "Rule" << rule.id().toString() << "active.";
@@ -418,7 +419,7 @@ QList<Rule> RuleEngine::evaluateTime(const QDateTime &dateTime)
 
             // check if this rule is based on timeEventItems
             if (!rule.timeDescriptor().timeEventItems().isEmpty()) {
-                bool valid = rule.timeDescriptor().evaluate(dateTime);
+                bool valid = rule.timeDescriptor().evaluate(m_lastEvaluationTime, dateTime);
                 if (valid) {
                     rules.append(rule);
                 }
@@ -426,6 +427,7 @@ QList<Rule> RuleEngine::evaluateTime(const QDateTime &dateTime)
         }
     }
 
+    m_lastEvaluationTime = QDateTime::currentDateTime();
     return rules;
 }
 

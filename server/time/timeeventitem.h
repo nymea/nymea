@@ -45,7 +45,7 @@ public:
 
     bool isValid() const;
 
-    bool evaluate(const QDateTime &dateTime) const;
+    bool evaluate(const QDateTime &lastEvaluationTime, const QDateTime &dateTime) const;
 
 private:
     QDateTime m_dateTime;

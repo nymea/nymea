@@ -90,22 +90,30 @@ bool TimeEventItem::isValid() const
 }
 
 /*! Returns true, if the given \a dateTime matches this \l{TimeEventItem}. */
-bool TimeEventItem::evaluate(const QDateTime &dateTime) const
+bool TimeEventItem::evaluate(const QDateTime &lastEvaluationTime, const QDateTime &dateTime) const
 {
     // Check time matches
     if (m_time.isValid()) {
         switch (m_repeatingOption.mode()) {
-        case RepeatingOption::RepeatingModeNone:
             // If there is no repeating option, we assume it is meant daily.
-            return m_time == dateTime.time();;
-        case RepeatingOption::RepeatingModeHourly:
-            return m_time.minute() == dateTime.time().minute();
+        case RepeatingOption::RepeatingModeNone:
         case RepeatingOption::RepeatingModeDaily:
-            return m_time == dateTime.time();;
+            return lastEvaluationTime.time() < m_time && m_time <= dateTime.time();
+        case RepeatingOption::RepeatingModeHourly: {
+            QTime begin, vut, end;
+            begin.setHMS(0, lastEvaluationTime.time().minute(), lastEvaluationTime.time().second());
+            end.setHMS(0, dateTime.time().minute(), dateTime.time().second());
+            vut.setHMS(0, m_time.minute(), m_time.second());
+            return begin < vut && vut < end;
+        }
         case RepeatingOption::RepeatingModeWeekly:
-            return m_repeatingOption.evaluateWeekDay(dateTime) && m_time == dateTime.time();
+            return m_repeatingOption.evaluateWeekDay(dateTime) &&
+                    lastEvaluationTime.time() < m_time &&
+                    m_time <= dateTime.time();
         case RepeatingOption::RepeatingModeMonthly:
-            return m_repeatingOption.evaluateMonthDay(dateTime) && m_time == dateTime.time();
+            return m_repeatingOption.evaluateMonthDay(dateTime) &&
+                    lastEvaluationTime.time() < m_time &&
+                    m_time <= dateTime.time();
         case RepeatingOption::RepeatingModeYearly:
             return false;
         }
@@ -115,7 +123,7 @@ bool TimeEventItem::evaluate(const QDateTime &dateTime) const
     if (m_repeatingOption.mode() == RepeatingOption::RepeatingModeYearly)
         return m_dateTime.date().month() == dateTime.date().month() &&
                 m_dateTime.date().day() == dateTime.date().day() &&
-                m_dateTime.time() == dateTime.time();
+                lastEvaluationTime.time() < m_dateTime.time() && m_dateTime.time() <= dateTime.time();
 
     // Check dateTime matches
     return dateTime == m_dateTime;

@@ -82,7 +82,7 @@ bool TimeDescriptor::isEmpty() const
     valid if the \l{TimeEventItem}{TimeEventItems} or \l{CalendarItem}{CalendarItems} match
     the given \a dateTime.
 */
-bool TimeDescriptor::evaluate(const QDateTime &dateTime) const
+bool TimeDescriptor::evaluate(const QDateTime &lastEvaluationTime, const QDateTime &dateTime) const
 {
     // If there are calendarItems (always OR connected)
     if (!m_calendarItems.isEmpty()) {
@@ -96,7 +96,7 @@ bool TimeDescriptor::evaluate(const QDateTime &dateTime) const
     // If there are timeEventItems (always OR connected)
     if (!m_timeEventItems.isEmpty()) {
         foreach (const TimeEventItem &timeEventItem, m_timeEventItems) {
-            if (timeEventItem.evaluate(dateTime)) {
+            if (timeEventItem.evaluate(lastEvaluationTime, dateTime)) {
                 return true;
             }
         }

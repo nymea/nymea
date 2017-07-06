@@ -1408,10 +1408,10 @@ void TestTimeManager::testEventItemYearly()
     verifyRuleError(response);
     RuleId ruleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
 
-    QDateTime oneMinuteBeforeEvent = dateTime.addSecs(-60);
+    // Tick now, one minute before, on time, one minute after
 
     // not triggering
-    GuhCore::instance()->timeManager()->setTime(oneMinuteBeforeEvent);
+    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(-60));
     verifyRuleNotExecuted();
     // trigger
     GuhCore::instance()->timeManager()->setTime(dateTime);
@@ -1421,17 +1421,18 @@ void TestTimeManager::testEventItemYearly()
     GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(60));
     verifyRuleNotExecuted();
 
-    oneMinuteBeforeEvent = oneMinuteBeforeEvent.addYears(1);
+    // Tick next year, one minute bofore, on time, one minute after
+    QDateTime nextYear = dateTime.addYears(1);
 
     // not triggering
-    GuhCore::instance()->timeManager()->setTime(oneMinuteBeforeEvent);
+    GuhCore::instance()->timeManager()->setTime(nextYear.addSecs(-60));
     verifyRuleNotExecuted();
     // trigger
-    GuhCore::instance()->timeManager()->setTime(dateTime);
+    GuhCore::instance()->timeManager()->setTime(nextYear);
     verifyRuleExecuted(mockActionIdNoParams);
     cleanupMockHistory();
     // not triggering
-    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(60));
+    GuhCore::instance()->timeManager()->setTime(nextYear.addSecs(60));
     verifyRuleNotExecuted();
 
     cleanupMockHistory();
@@ -1469,14 +1470,16 @@ void TestTimeManager::testEnableDisableTimeRule()
     RuleId ruleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
 
     // not triggering
-    GuhCore::instance()->timeManager()->setTime(dateTime.addMSecs(-60));
+    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(-2));
+    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(-1));
     verifyRuleNotExecuted();
     // trigger
     GuhCore::instance()->timeManager()->setTime(dateTime);
     verifyRuleExecuted(mockActionIdNoParams);
     cleanupMockHistory();
     // not triggering
-    GuhCore::instance()->timeManager()->setTime(dateTime.addMSecs(60));
+    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(1));
+    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(2));
     verifyRuleNotExecuted();
 
 
@@ -1487,6 +1490,7 @@ void TestTimeManager::testEnableDisableTimeRule()
     verifyRuleError(response);
 
     // trigger
+    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(-1));
     GuhCore::instance()->timeManager()->setTime(dateTime);
     verifyRuleNotExecuted();
 
@@ -1496,7 +1500,9 @@ void TestTimeManager::testEnableDisableTimeRule()
     verifyRuleError(response);
 
     // trigger
+    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(-1));
     GuhCore::instance()->timeManager()->setTime(dateTime);
+    qWarning() << "-----------------------------------------------";
     verifyRuleExecuted(mockActionIdNoParams);
     cleanupMockHistory();
 

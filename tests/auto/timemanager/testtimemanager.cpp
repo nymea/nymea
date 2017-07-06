@@ -1502,7 +1502,6 @@ void TestTimeManager::testEnableDisableTimeRule()
     // trigger
     GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(-1));
     GuhCore::instance()->timeManager()->setTime(dateTime);
-    qWarning() << "-----------------------------------------------";
     verifyRuleExecuted(mockActionIdNoParams);
     cleanupMockHistory();
 

@@ -104,7 +104,7 @@ bool TimeEventItem::evaluate(const QDateTime &lastEvaluationTime, const QDateTim
             begin.setHMS(0, lastEvaluationTime.time().minute(), lastEvaluationTime.time().second());
             end.setHMS(0, dateTime.time().minute(), dateTime.time().second());
             vut.setHMS(0, m_time.minute(), m_time.second());
-            return begin < vut && vut < end;
+            return begin < vut && vut <= end;
         }
         case RepeatingOption::RepeatingModeWeekly:
             return m_repeatingOption.evaluateWeekDay(dateTime) &&
@@ -120,13 +120,15 @@ bool TimeEventItem::evaluate(const QDateTime &lastEvaluationTime, const QDateTim
     }
 
     // Check dateTime and yearly repeating
-    if (m_repeatingOption.mode() == RepeatingOption::RepeatingModeYearly)
-        return m_dateTime.date().month() == dateTime.date().month() &&
-                m_dateTime.date().day() == dateTime.date().day() &&
-                lastEvaluationTime.time() < m_dateTime.time() && m_dateTime.time() <= dateTime.time();
+    if (m_repeatingOption.mode() == RepeatingOption::RepeatingModeYearly) {
+        // adjust the stored year to the current one...
+        QDateTime adjustedTime = m_dateTime;
+        adjustedTime.setDate(QDate(dateTime.date().year(), m_dateTime.date().month(), m_dateTime.date().day()));
+        return lastEvaluationTime < adjustedTime && adjustedTime <= dateTime;
+    }
 
     // Check dateTime matches
-    return dateTime == m_dateTime;
+    return lastEvaluationTime < m_dateTime && m_dateTime <= dateTime;
 }
 
 }

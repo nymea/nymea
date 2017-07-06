@@ -35,6 +35,7 @@ class LIBGUH_EXPORT QtAvahiServiceBrowserPrivate
 {
 public:
     QtAvahiServiceBrowserPrivate(QtAvahiClient *client);
+    ~QtAvahiServiceBrowserPrivate();
 
     // Callback members
     static void callbackServiceTypeBrowser(AvahiServiceTypeBrowser *browser,
@@ -76,6 +77,7 @@ public:
     QtAvahiClient *client;
     AvahiServiceTypeBrowser *serviceTypeBrowser;
     QHash<QString, AvahiServiceBrowser *> serviceBrowserTable;
+    QList<AvahiServiceResolver *> m_serviceResolvers;
 };
 
 #endif // QTAVAHISERVICEBROWSERPRIVATE_H

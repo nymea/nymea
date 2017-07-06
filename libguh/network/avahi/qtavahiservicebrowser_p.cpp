@@ -35,6 +35,13 @@ QtAvahiServiceBrowserPrivate::QtAvahiServiceBrowserPrivate(QtAvahiClient *client
 
 }
 
+QtAvahiServiceBrowserPrivate::~QtAvahiServiceBrowserPrivate()
+{
+    foreach (AvahiServiceResolver *resolver, m_serviceResolvers) {
+        avahi_service_resolver_free(resolver);
+    }
+}
+
 void QtAvahiServiceBrowserPrivate::callbackServiceTypeBrowser(AvahiServiceTypeBrowser *browser, AvahiIfIndex interface, AvahiProtocol protocol, AvahiBrowserEvent event, const char *type, const char *domain, AvahiLookupResultFlags flags, void *userdata)
 {
     Q_UNUSED(browser)
@@ -79,9 +86,9 @@ void QtAvahiServiceBrowserPrivate::callbackServiceBrowser(AvahiServiceBrowser *b
         return;
 
     switch (event) {
-    case AVAHI_BROWSER_NEW:
+    case AVAHI_BROWSER_NEW: {
         // Start resolving new service
-        if (!(avahi_service_resolver_new(serviceBrowser->d_ptr->client->client,
+        AvahiServiceResolver *resolver = avahi_service_resolver_new(serviceBrowser->d_ptr->client->client,
                                          interface,
                                          protocol,
                                          name,
@@ -90,11 +97,14 @@ void QtAvahiServiceBrowserPrivate::callbackServiceBrowser(AvahiServiceBrowser *b
                                          AVAHI_PROTO_UNSPEC,
                                          (AvahiLookupFlags) 0,
                                          QtAvahiServiceBrowserPrivate::callbackServiceResolver,
-                                         serviceBrowser))) {
-
+                                         serviceBrowser);
+        if (resolver) {
+            serviceBrowser->d_ptr->m_serviceResolvers.append(resolver);
+        } else {
             qCWarning(dcAvahi()) << "Failed to resolve service" << QString(name) << ":" << avahi_strerror(avahi_client_errno(serviceBrowser->d_ptr->client->client));
         }
         break;
+    }
     case AVAHI_BROWSER_REMOVE: {
         // Remove the service
         foreach (const AvahiServiceEntry &entry, serviceBrowser->m_serviceEntries) {
@@ -166,6 +176,7 @@ void QtAvahiServiceBrowserPrivate::callbackServiceResolver(AvahiServiceResolver 
         emit serviceBrowser->serviceEntryAdded(entry);
     }
     }
+    serviceBrowser->d_ptr->m_serviceResolvers.removeAll(resolver);
     avahi_service_resolver_free(resolver);
 
 }

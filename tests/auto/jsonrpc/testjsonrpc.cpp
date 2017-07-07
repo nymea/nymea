@@ -506,10 +506,8 @@ void TestJSONRPC::stateChangeEmitsNotifications()
     QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(stateTypeId.toString()).arg(QString::number(newVal))));
     QNetworkReply *reply = nam.get(request);
     connect(reply, SIGNAL(finished()), reply, SLOT(deleteLater()));
-
-    qDebug() << "Waiting for notifications";
-
-    QVERIFY(clientSpy.wait());
+    QSignalSpy replySpy(reply, SIGNAL(finished()));
+    replySpy.wait();
 
     // Make sure the notification contains all the stuff we expect
     QVariantList stateChangedVariants = checkNotifications(clientSpy, "Devices.StateChanged");
@@ -607,9 +605,6 @@ void TestJSONRPC::pluginConfigChangeEmitsNotification()
     params.insert("configuration", pluginParams);
 
     response = injectAndWait("Devices.SetPluginConfiguration", params);
-
-    qDebug() << "Waiting for notifications";
-    QVERIFY(clientSpy.wait());
 
     QVariantList notificationData = checkNotifications(clientSpy, "Devices.PluginConfigurationChanged");
     QCOMPARE(notificationData.first().toMap().value("notification").toString() == "Devices.PluginConfigurationChanged", true);

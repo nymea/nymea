@@ -59,6 +59,8 @@ private slots:
 
     void stateChangeEmitsNotifications();
 
+    void pluginConfigChangeEmitsNotification();
+
 private:
     QStringList extractRefs(const QVariant &variant);
 
@@ -364,9 +366,9 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     qDebug() << "setting mock int state to 20";
     QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockIntStateId.toString()).arg(20)));
     QNetworkReply *reply = nam.get(request);
-    reply->deleteLater();
+    connect(reply, SIGNAL(finished()), reply, SLOT(deleteLater()));
 
-    clientSpy.wait();
+    spy.wait();
     notificationVariant = checkNotification(clientSpy, "Rules.RuleActiveChanged");
     verifyRuleError(response);
 
@@ -381,7 +383,8 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     QNetworkReply *reply2 = nam.get(request2);
     spy.wait();
     QCOMPARE(spy.count(), 1);
-    reply2->deleteLater();
+    connect(reply2, SIGNAL(finished()), reply2, SLOT(deleteLater()));
+
 
     clientSpy.wait();
     notificationVariant = checkNotification(clientSpy, "Rules.RuleActiveChanged");
@@ -502,7 +505,7 @@ void TestJSONRPC::stateChangeEmitsNotifications()
     QUuid stateTypeId("80baec19-54de-4948-ac46-31eabfaceb83");
     QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(stateTypeId.toString()).arg(QString::number(newVal))));
     QNetworkReply *reply = nam.get(request);
-    reply->deleteLater();
+    connect(reply, SIGNAL(finished()), reply, SLOT(deleteLater()));
 
     qDebug() << "Waiting for notifications";
 
@@ -569,7 +572,7 @@ void TestJSONRPC::stateChangeEmitsNotifications()
     newVal = 42;
     request.setUrl(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(stateTypeId.toString()).arg(newVal)));
     reply = nam.get(request);
-    reply->deleteLater();
+    connect(reply, SIGNAL(finished()), reply, SLOT(deleteLater()));
 
     // Lets wait a max of 500ms for notifications
     clientSpy.wait(500);
@@ -583,6 +586,33 @@ void TestJSONRPC::stateChangeEmitsNotifications()
     QVariant response = injectAndWait("Devices.GetStateValue", params);
 
     QCOMPARE(response.toMap().value("params").toMap().value("value").toInt(), newVal);
+}
+
+void TestJSONRPC::pluginConfigChangeEmitsNotification()
+{
+    QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+
+    QVariantMap params;
+    params.insert("enabled", true);
+    QVariant response = injectAndWait("JSONRPC.SetNotificationStatus", params);
+    QCOMPARE(response.toMap().value("params").toMap().value("enabled").toBool(), true);
+
+    params.clear();
+    params.insert("pluginId", mockPluginId);
+    QVariantList pluginParams;
+    QVariantMap param1;
+    param1.insert("paramTypeId",  configParamIntParamTypeId);
+    param1.insert("value", 42);
+    pluginParams.append(param1);
+    params.insert("configuration", pluginParams);
+
+    response = injectAndWait("Devices.SetPluginConfiguration", params);
+
+    qDebug() << "Waiting for notifications";
+    QVERIFY(clientSpy.wait());
+
+    QVariantList notificationData = checkNotifications(clientSpy, "Devices.PluginConfigurationChanged");
+    QCOMPARE(notificationData.first().toMap().value("notification").toString() == "Devices.PluginConfigurationChanged", true);
 }
 
 #include "testjsonrpc.moc"

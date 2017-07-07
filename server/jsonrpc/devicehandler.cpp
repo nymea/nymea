@@ -292,6 +292,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     params.insert("device", JsonTypes::deviceRef());
     setParams("DeviceChanged", params);
 
+    connect(GuhCore::instance(), &GuhCore::pluginConfigChanged, this, &DeviceHandler::pluginConfigChanged);
     connect(GuhCore::instance(), &GuhCore::deviceStateChanged, this, &DeviceHandler::deviceStateChanged);
     connect(GuhCore::instance(), &GuhCore::deviceRemoved, this, &DeviceHandler::deviceRemovedNotification);
     connect(GuhCore::instance(), &GuhCore::deviceAdded, this, &DeviceHandler::deviceAddedNotification);
@@ -618,6 +619,18 @@ JsonReply *DeviceHandler::GetStateValues(const QVariantMap &params) const
     returns.insert("deviceError", JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorNoError));
     returns.insert("values", JsonTypes::packDeviceStates(device));
     return createReply(returns);
+}
+
+void DeviceHandler::pluginConfigChanged(const PluginId &id, const ParamList &config)
+{
+    QVariantMap params;
+    params.insert("pluginId", id);
+    QVariantMap configMap;
+    foreach (const Param &param, config) {
+        configMap.insert(param.paramTypeId().toString(), param.value());
+    }
+    params.insert("configuration", configMap);
+    emit PluginConfigurationChanged(params);
 }
 
 void DeviceHandler::deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value)

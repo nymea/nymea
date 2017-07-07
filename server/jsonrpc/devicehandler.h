@@ -57,12 +57,15 @@ public:
     Q_INVOKABLE JsonReply *GetStateValues(const QVariantMap &params) const;
 
 signals:
+    void PluginConfigurationChanged(const QVariantMap &params);
     void StateChanged(const QVariantMap &params);
     void DeviceRemoved(const QVariantMap &params);
     void DeviceAdded(const QVariantMap &params);
     void DeviceChanged(const QVariantMap &params);
 
 private slots:
+    void pluginConfigChanged(const PluginId &id, const ParamList &config);
+
     void deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
 
     void deviceRemovedNotification(const QUuid &deviceId);

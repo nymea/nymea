@@ -148,6 +148,7 @@ public:
 signals:
     void loaded();
     void languageUpdated();
+    void pluginConfigChanged(const PluginId &id, const ParamList &config);
     void eventTriggered(const Event &event);
     void deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
     void deviceRemoved(const DeviceId &deviceId);

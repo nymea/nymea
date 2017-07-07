@@ -370,6 +370,7 @@ DeviceManager::DeviceError DeviceManager::setPluginConfig(const PluginId &plugin
     }
     settings.endGroup();
     settings.endGroup();
+    emit pluginConfigChanged(plugin->pluginId(), pluginConfig);
     return result;
 }
 

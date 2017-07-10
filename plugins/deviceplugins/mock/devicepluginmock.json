@@ -33,6 +33,7 @@
                     "idName": "mock",
                     "name": "Mock Device",
                     "deviceIcon": "Tune",
+                    "interfaces": ["gateway", "light", "mediacontroller"],
                     "basicTags": [
                         "Device",
                         "Actuator",

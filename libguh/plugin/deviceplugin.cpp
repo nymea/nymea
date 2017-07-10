@@ -487,15 +487,31 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                         valid = false;
                         continue;
                     }
-                    if (stateMap.contains("minimumValue") && stateMap.value("minimumValue") != stateType.minValue()) {
-                        qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateMap.value("name").toString() << "has not matching minimum value" << stateMap.value("minimumValue") << "!=" << stateType.minValue();
-                        valid = false;
-                        continue;
+                    if (stateMap.contains("minimumValue")) {
+                        if (stateMap.value("minimumValue").toString() == "any") {
+                            if (stateType.minValue().isNull()) {
+                                qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateMap.value("name").toString() << "has no minimum value defined.";
+                                valid = false;
+                                continue;
+                            }
+                        } else if (stateMap.value("minimumValue") != stateType.minValue()) {
+                            qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateMap.value("name").toString() << "has not matching minimum value:" << stateMap.value("minimumValue") << "!=" << stateType.minValue();
+                            valid = false;
+                            continue;
+                        }
                     }
-                    if (stateMap.contains("maximumValue") && stateMap.value("maximumValue") != stateType.maxValue()) {
-                        qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateMap.value("name").toString() << "has not matching allowed value" << stateMap.value("maximumValue") << "!=" << stateType.maxValue();
-                        valid = false;
-                        continue;
+                    if (stateMap.contains("maximumValue")) {
+                        if (stateMap.value("maximumValue").toString() == "any") {
+                            if (stateType.maxValue().isNull()) {
+                                qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateMap.value("name").toString() << "has no maximum value defined.";
+                                valid = false;
+                                continue;
+                            }
+                        } else if (stateMap.value("maximumValue") != stateType.maxValue()) {
+                            qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateMap.value("name").toString() << "has not matching maximum value:" << stateMap.value("maximumValue") << "!=" << stateType.minValue();
+                            valid = false;
+                            continue;
+                        }
                     }
                     if (stateMap.contains("allowedValues") && stateMap.value("allowedValues") != stateType.possibleValues()) {
                         qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateMap.value("name").toString() << "has not matching allowed values" << stateMap.value("allowedValues") << "!=" << stateType.possibleValues();

@@ -1,4 +1,4 @@
-47
+48
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -955,6 +955,9 @@
                 "$ref:EventType"
             ],
             "id": "Uuid",
+            "interfaces": [
+                "String"
+            ],
             "name": "String",
             "o:criticalStateTypeId": "Uuid",
             "o:primaryActionTypeId": "Uuid",

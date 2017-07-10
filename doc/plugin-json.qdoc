@@ -141,6 +141,7 @@
                             "idName": "deviceClassName",
                             "id": "uuid",
                             "o:deviceIcon": "Icon",
+                            "o:interfaces": [ "String" ],
                             "o:basicTags": [
                                 "BasicTag"
                             ],
@@ -174,6 +175,7 @@
         \li - \underline{\e name:} The visible name of the \l{DeviceClass} \unicode{0x2192} \l{DeviceClass::name()}.
         \li - \underline{\e idName:} This parameter will be used to define the DeviceClassId variable named <idName>DeviceClassId in the plugininfo.h, so it can be used in the code.
         \li - \underline{\e id:} The actual uuid (\l{DeviceClassId}) of the \l{DeviceClass} \unicode{0x2192} \l{DeviceClass::id()}.
+        \li - \underline{\e interfaces: } A list of \l{Interfaces for DeviceClasses}{interfaces} this plugin implements.
         \li - \underline{\e basicTags:} A list of \l{DeviceClass::BasicTag}{BasicTags} for this device \unicode{0x2192} \l{DeviceClass::basicTags()}. A \l{DeviceClass} can have multiple \l{DeviceClass::BasicTag}{BasicTags} which describe the basic category of the DeviceClass. A \l{DeviceClass} should be eighter a Service or a Device, never both. See enum \l{DeviceClass::BasicTag} for more information. The expected value for the \e basicTags parameters matches the enum name like this:
 
         \tt {DeviceClass::BasicTagService} \unicode{0x2192} \tt {"basicTags": [ "Service" ]}

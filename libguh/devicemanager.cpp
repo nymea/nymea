@@ -195,7 +195,6 @@
 #include <QCoreApplication>
 #include <QStandardPaths>
 #include <QDir>
-#include <QJsonDocument>
 
 /*! Constructs the DeviceManager with the given \a locale and \a parent. There should only be one DeviceManager in the system created by \l{guhserver::GuhCore}.
  *  Use \c guhserver::GuhCore::instance()->deviceManager() instead to access the DeviceManager. */

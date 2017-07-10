@@ -142,8 +142,5 @@ for(header, HEADERS) {
     eval(INSTALLS *= headers_$${path})
 }
 
-DISTFILES += \
-    interfaces/mediacontroller.json
-
 RESOURCES += \
     interfaces/interfaces.qrc

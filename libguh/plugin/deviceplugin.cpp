@@ -1098,7 +1098,7 @@ QPair<bool, DeviceClass::DeviceIcon> DevicePlugin::loadAndVerifyDeviceIcon(const
     return QPair<bool, DeviceClass::DeviceIcon>(true, (DeviceClass::DeviceIcon)enumValue);
 }
 
-QVariantMap DevicePlugin::loadInterface(const QString &name) const
+QVariantMap DevicePlugin::loadInterface(const QString &name)
 {
     QFile f(QString(":/interfaces/%1.json").arg(name));
     if (!f.open(QFile::ReadOnly)) {

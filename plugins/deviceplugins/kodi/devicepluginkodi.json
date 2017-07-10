@@ -13,6 +13,7 @@
                     "idName": "kodi",
                     "name": "Kodi",
                     "deviceIcon": "Tv",
+                    "interfaces": ["mediacontroller"],
                     "basicTags": [
                         "Service",
                         "Multimedia",

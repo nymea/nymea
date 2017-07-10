@@ -1,0 +1,20 @@
+{
+    "states": [
+        {
+            "name": "gateState",
+            "type": "String",
+            "allowedValues": ["open", "closed", "opening", "closing"]
+        }
+    ],
+    "actions": [
+        {
+            "name": "open"
+        },
+        {
+            "name": "close"
+        },
+        {
+            "name": "stop"
+        }
+    ]
+}

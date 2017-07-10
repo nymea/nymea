@@ -61,4 +61,12 @@ private:
     bool m_graphRelevant;
 };
 
+class EventTypes: public QList<EventType>
+{
+public:
+    EventTypes(const QList<EventType> &other);
+    EventType findByName(const QString &name);
+    EventType findById(const EventTypeId &id);
+};
+
 #endif // TRIGGERTYPE_H

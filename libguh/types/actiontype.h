@@ -53,4 +53,12 @@ private:
     QList<ParamType> m_paramTypes;
 };
 
+class ActionTypes: public QList<ActionType>
+{
+public:
+    ActionTypes(const QList<ActionType> &other);
+    ActionType findByName(const QString &name);
+    ActionType findById(const ActionTypeId &id);
+};
+
 #endif // ACTIONTYPE_H

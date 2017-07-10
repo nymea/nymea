@@ -1,0 +1,46 @@
+{
+    "states": [
+        {
+            "name": "mute",
+            "type": "bool",
+            "writable": true
+        },
+        {
+            "name": "volume",
+            "type": "int",
+            "minValue": 0,
+            "maxValue": 100,
+            "writable": true
+        },
+        {
+            "name": "playbackStatus",
+            "type": "string",
+            "allowedValues": ["Playing", "Paused", "Stopped"],
+            "writable": true
+        }
+
+    ],
+    "actions": [
+        {
+            "name": "skipBack"
+        },
+        {
+            "name": "rewind"
+        },
+        {
+            "name": "stop"
+        },
+        {
+            "name": "play"
+        },
+        {
+            "name": "pause"
+        },
+        {
+            "name": "fastForward"
+        },
+        {
+            "name": "skipNext"
+        }
+    ]
+}

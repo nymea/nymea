@@ -91,3 +91,30 @@ void ActionType::setParamTypes(const QList<ParamType> &paramTypes)
 {
     m_paramTypes = paramTypes;
 }
+
+ActionTypes::ActionTypes(const QList<ActionType> &other)
+{
+    foreach (const ActionType &at, other) {
+        append(at);
+    }
+}
+
+ActionType ActionTypes::findByName(const QString &name)
+{
+    foreach (const ActionType &actionType, *this) {
+        if (actionType.name() == name) {
+            return actionType;
+        }
+    }
+    return ActionType(ActionTypeId());
+}
+
+ActionType ActionTypes::findById(const ActionTypeId &id)
+{
+    foreach (const ActionType &actionType, *this) {
+        if (actionType.id() == id) {
+            return actionType;
+        }
+    }
+    return ActionType(ActionTypeId());
+}

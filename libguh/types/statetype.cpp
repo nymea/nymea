@@ -179,3 +179,31 @@ void StateType::setGraphRelevant(const bool &graphRelevant)
 {
     m_graphRelevant = graphRelevant;
 }
+
+
+StateTypes::StateTypes(const QList<StateType> &other)
+{
+    foreach (const StateType &st, other) {
+        append(st);
+    }
+}
+
+StateType StateTypes::findByName(const QString &name)
+{
+    foreach (const StateType &stateType, *this) {
+        if (stateType.name() == name) {
+            return stateType;
+        }
+    }
+    return StateType(StateTypeId());
+}
+
+StateType StateTypes::findById(const StateTypeId &id)
+{
+    foreach (const StateType &stateType, *this) {
+        if (stateType.id() == id) {
+            return stateType;
+        }
+    }
+    return StateType(StateTypeId());
+}

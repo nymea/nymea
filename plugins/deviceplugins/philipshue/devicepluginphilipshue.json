@@ -158,6 +158,7 @@
                     "idName": "hueLight",
                     "name": "Hue Light",
                     "deviceIcon": "LightBulb",
+                    "interfaces": ["colorlight"],
                     "basicTags": [
                         "Device",
                         "Lighting",

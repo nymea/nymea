@@ -172,6 +172,9 @@ public:
     QString pairingInfo() const;
     void setPairingInfo(const QString &pairingInfo);
 
+    QStringList interfaces() const;
+    void setInterfaces(const QStringList &interfaces);
+
     bool operator==(const DeviceClass &device) const;
 
 private:
@@ -192,6 +195,7 @@ private:
     CreateMethods m_createMethods;
     SetupMethod m_setupMethod;
     QString m_pairingInfo;
+    QStringList m_interfaces;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(DeviceClass::CreateMethods)

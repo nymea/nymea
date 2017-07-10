@@ -111,3 +111,30 @@ void EventType::setGraphRelevant(const bool &graphRelevant)
 {
     m_graphRelevant = graphRelevant;
 }
+
+EventTypes::EventTypes(const QList<EventType> &other)
+{
+    foreach (const EventType &at, other) {
+        append(at);
+    }
+}
+
+EventType EventTypes::findByName(const QString &name)
+{
+    foreach (const EventType &eventType, *this) {
+        if (eventType.name() == name) {
+            return eventType;
+        }
+    }
+    return EventType(EventTypeId());
+}
+
+EventType EventTypes::findById(const EventTypeId &id)
+{
+    foreach (const EventType &eventType, *this) {
+        if (eventType.id() == id) {
+            return eventType;
+        }
+    }
+    return EventType(EventTypeId());
+}

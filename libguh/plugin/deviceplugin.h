@@ -146,6 +146,8 @@ private:
     QPair<bool, DeviceClass::BasicTag> loadAndVerifyBasicTag(const QString &basicTag) const;
     QPair<bool, DeviceClass::DeviceIcon> loadAndVerifyDeviceIcon(const QString &deviceIcon) const;
 
+    QVariantMap loadInterface(const QString &name) const;
+
     QTranslator *m_translator;
     DeviceManager *m_deviceManager;
 

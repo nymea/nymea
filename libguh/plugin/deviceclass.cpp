@@ -437,6 +437,16 @@ void DeviceClass::setPairingInfo(const QString &pairingInfo)
     m_pairingInfo = pairingInfo;
 }
 
+QStringList DeviceClass::interfaces() const
+{
+    return m_interfaces;
+}
+
+void DeviceClass::setInterfaces(const QStringList &interfaces)
+{
+    m_interfaces = interfaces;
+}
+
 /*! Compare this \a deviceClass to another. This is effectively the same as calling a.id() == b.id(). Returns true if the ids match.*/
 bool DeviceClass::operator==(const DeviceClass &deviceClass) const
 {

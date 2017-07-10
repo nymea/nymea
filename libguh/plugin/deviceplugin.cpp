@@ -149,6 +149,7 @@
 #include <QDir>
 #include <QCoreApplication>
 #include <QJsonArray>
+#include <QJsonDocument>
 
 /*! DevicePlugin constructor. DevicePlugins will be instantiated by the DeviceManager, its \a parent. */
 DevicePlugin::DevicePlugin(QObject *parent):
@@ -462,6 +463,75 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                     deviceClass.setPrimaryActionTypeId(primaryActionTypeId);
                 }
             }
+
+            QStringList interfaces;
+            foreach (const QJsonValue &value, deviceClassObject.value("interfaces").toArray()) {
+                // TODO: Check interfaces for completeness
+                QVariantMap interfaceMap = loadInterface(value.toString());
+                QVariantList states = interfaceMap.value("states").toList();
+
+                StateTypes stateTypes(deviceClass.stateTypes());
+                ActionTypes actionTypes(deviceClass.actionTypes());
+                EventTypes eventTypes(deviceClass.eventTypes());
+                bool valid = true;
+                foreach (const QVariant &stateVariant, states) {
+                    StateType stateType = stateTypes.findByName(stateVariant.toMap().value("name").toString());
+                    QVariantMap stateMap = stateVariant.toMap();
+                    if (stateType.id().isNull()) {
+                        qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but doesn't implement state" << stateMap.value("name").toString();
+                        valid = false;
+                        continue;
+                    }
+                    if (QVariant::nameToType(stateMap.value("type").toByteArray().data()) != stateType.type()) {
+                        qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateMap.value("name").toString() << "has not matching type" << stateMap.value("type").toString();
+                        valid = false;
+                        continue;
+                    }
+                    if (stateMap.contains("minimumValue") && stateMap.value("minimumValue") != stateType.minValue()) {
+                        qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateMap.value("name").toString() << "has not matching minimum value" << stateMap.value("minimumValue") << "!=" << stateType.minValue();
+                        valid = false;
+                        continue;
+                    }
+                    if (stateMap.contains("maximumValue") && stateMap.value("maximumValue") != stateType.maxValue()) {
+                        qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateMap.value("name").toString() << "has not matching allowed value" << stateMap.value("maximumValue") << "!=" << stateType.maxValue();
+                        valid = false;
+                        continue;
+                    }
+                    if (stateMap.contains("allowedValues") && stateMap.value("allowedValues") != stateType.possibleValues()) {
+                        qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateMap.value("name").toString() << "has not matching allowed values" << stateMap.value("allowedValues") << "!=" << stateType.possibleValues();
+                        valid = false;
+                        continue;
+                    }
+                    if (stateMap.contains("writable") && stateMap.value("writable").toBool() && actionTypes.findById(ActionTypeId(stateType.id().toString())).id().isNull()) {
+                        qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateMap.value("name").toString() << "is not writable while it should be";
+                        valid = false;
+                        continue;
+                    }
+                }
+                QVariantList actions = interfaceMap.value("actions").toList();
+                foreach (const QVariant &actionVariant, actions) {
+                    QVariantMap actionMap = actionVariant.toMap();
+                    if (actionTypes.findByName(actionMap.value("name").toString()).id().isNull()) {
+                        qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but doesn't implement action" << actionMap.value("name").toString();
+                        valid = false;
+                    }
+                    // TODO: check params
+                }
+                QVariantList events = interfaceMap.value("events").toList();
+                foreach (const QVariant &eventVariant, events) {
+                    QVariantMap eventMap = eventVariant.toMap();
+                    if (eventTypes.findByName(eventMap.value("name").toString()).id().isNull()) {
+                        qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but doesn't implement event" << eventMap.value("name").toString();
+                        valid = false;
+                    }
+                    // TODO: check params
+                }
+
+                if (valid) {
+                    interfaces.append(value.toString());
+                }
+            }
+            deviceClass.setInterfaces(interfaces);
 
             if (!broken) {
                 deviceClasses.append(deviceClass);
@@ -1026,4 +1096,36 @@ QPair<bool, DeviceClass::DeviceIcon> DevicePlugin::loadAndVerifyDeviceIcon(const
     }
 
     return QPair<bool, DeviceClass::DeviceIcon>(true, (DeviceClass::DeviceIcon)enumValue);
+}
+
+QVariantMap DevicePlugin::loadInterface(const QString &name) const
+{
+    QFile f(QString(":/interfaces/%1.json").arg(name));
+    if (!f.open(QFile::ReadOnly)) {
+        qCWarning(dcDeviceManager()) << "Failed to load interface" << name;
+        return QVariantMap();
+    }
+    QJsonParseError error;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(f.readAll(), &error);
+    if (error.error != QJsonParseError::NoError) {
+        qCWarning(dcDeviceManager) << "Cannot load interface definition for interface" << name << ":" << error.errorString();
+        return QVariantMap();
+    }
+    QVariantMap content = jsonDoc.toVariant().toMap();
+    if (content.contains("extends")) {
+        QVariantMap parentContent = loadInterface(content.value("extends").toString());
+
+        QVariantList statesList = content.value("states").toList();
+        statesList.append(parentContent.value("states").toList());
+        content["states"] = statesList;
+
+        QVariantList actionsList = content.value("actions").toList();
+        actionsList.append(parentContent.value("actions").toList());
+        content["actions"] = actionsList;
+
+        QVariantList eventsList = content.value("events").toList();
+        eventsList.append(parentContent.value("events").toList());
+        content["events"] = eventsList;
+    }
+    return content;
 }

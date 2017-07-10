@@ -82,4 +82,12 @@ private:
 
 };
 
+class StateTypes: public QList<StateType>
+{
+public:
+    StateTypes(const QList<StateType> &other);
+    StateType findByName(const QString &name);
+    StateType findById(const StateTypeId &id);
+};
+
 #endif // STATETYPE_H

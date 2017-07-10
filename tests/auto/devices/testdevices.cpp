@@ -51,6 +51,8 @@ private slots:
     void getSupportedDevices_data();
     void getSupportedDevices();
 
+    void verifyInterfaces();
+
     void addConfiguredDevice_data();
     void addConfiguredDevice();
 
@@ -221,6 +223,27 @@ void TestDevices::getSupportedDevices()
     QVariantList supportedDevices = result.toMap().value("params").toMap().value("deviceClasses").toList();
     // Make sure there are the right amount of supported device classes with the name Mock Device
     QCOMPARE(supportedDevices.count() >= resultCount, true);
+}
+
+void TestDevices::verifyInterfaces()
+{
+    QVariantMap params;
+    params.insert("vendorId", guhVendorId);
+    QVariant result = injectAndWait("Devices.GetSupportedDevices", params);
+    QVariantList supportedDevices = result.toMap().value("params").toMap().value("deviceClasses").toList();
+
+    QVariantMap mockDevice;
+    foreach (const QVariant &deviceClass, supportedDevices) {
+        if (deviceClass.toMap().value("id") == mockDeviceClassId) {
+            mockDevice = deviceClass.toMap();
+        }
+    }
+    QVERIFY(!mockDevice.isEmpty());
+
+    QVariantList interfaces = mockDevice.value("interfaces").toList();
+    // Must contain gateway, but must not contain anything else as device manager should filter it away
+    QCOMPARE(interfaces.count() == 1, true);
+    QVERIFY(interfaces.contains("gateway"));
 }
 
 void TestDevices::addConfiguredDevice_data()

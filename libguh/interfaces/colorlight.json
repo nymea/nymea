@@ -4,8 +4,8 @@
         {
             "name": "color temperature",
             "type": "int",
-            "minValue": "any",
-            "maxValue": "any"
+            "minimumValue": "any",
+            "maximumValue": "any"
         },
         {
             "name": "color",

@@ -1,6 +1,6 @@
 TEMPLATE = subdirs
 SUBDIRS += \
-#    mock                \
+    mock                \
 #    elro                \
 #    intertechno         \
 #    networkdetector     \

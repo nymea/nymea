@@ -1,3 +1,6 @@
 TEMPLATE = subdirs
-SUBDIRS += deviceplugins
+
+!disabletesting: {
+  SUBDIRS += mock
+}
 

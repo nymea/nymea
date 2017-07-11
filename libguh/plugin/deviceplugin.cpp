@@ -466,7 +466,6 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
 
             QStringList interfaces;
             foreach (const QJsonValue &value, deviceClassObject.value("interfaces").toArray()) {
-                // TODO: Check interfaces for completeness
                 QVariantMap interfaceMap = loadInterface(value.toString());
                 QVariantList states = interfaceMap.value("states").toList();
 

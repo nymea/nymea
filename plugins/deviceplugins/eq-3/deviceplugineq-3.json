@@ -14,6 +14,7 @@
                     "name": "Max! Cube LAN Gateway",
                     "deviceIcon": "Gateway",
                     "criticalStateTypeId": "d0a9a369-cf8c-47c4-a12e-f2d076bf12fd",
+                    "interfaces": ["gateway"],
                     "basicTags": [
                         "Device",
                         "Gateway",

@@ -24,6 +24,7 @@
                     "name": "Plant Care",
                     "idName": "plantCare",
                     "createMethods": ["discovery"],
+                    "interfaces": ["gateway"],
                     "basicTags": [
                         "Device",
                         "Gateway"

@@ -13,6 +13,7 @@
                     "idName": "connection",
                     "id": "44e12a1c-9711-4780-9913-53bb38264e1e",
                     "createMethods": ["user"],
+                    "interfaces": ["gateway"],
                     "basicTags": [
                         "Device",
                         "Gateway"
@@ -36,6 +37,7 @@
                     "createMethods": ["auto"],
                     "criticalStateTypeId": "93c539b4-50d8-431e-8be4-5ebba89452b7",
                     "primaryActionTypeId": "f6ac30a0-77b8-4f1f-8c44-4c2e6d542663",
+                    "interfaces": ["colorlight"],
                     "basicTags": [
                         "Device",
                         "Lighting"

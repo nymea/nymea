@@ -12,6 +12,7 @@
                     "id": "20e1b650-41d1-41b7-891f-1e68130d1403",
                     "idName": "wdeBridge",
                     "name": "USB WDE",
+                    "interfaces": ["gateway"],
                     "basicTags": [
                         "Gateway"
                     ],

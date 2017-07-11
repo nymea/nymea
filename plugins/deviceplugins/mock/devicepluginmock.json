@@ -176,6 +176,7 @@
                     "id": "ab4257b3-7548-47ee-9bd4-7dc3004fd197",
                     "idName": "mockDeviceAuto",
                     "name": "Mock Device (Auto created)",
+                    "interfaces": ["gateway"],
                     "basicTags": [
                         "Device",
                         "Actuator",
@@ -305,6 +306,7 @@
                     "id": "9e03144c-e436-4eea-82d9-ccb33ef778db",
                     "idName": "mockPushButton",
                     "name": "Mock Device (Push Button)",
+                    "interfaces": ["gateway"],
                     "basicTags": [
                         "Device",
                         "Actuator",
@@ -411,6 +413,7 @@
                     "idName": "mockDisplayPin",
                     "name": "Mock Device (Display Pin)",
                     "deviceIcon": "Tune",
+                    "interfaces": ["gateway"],
                     "basicTags": [
                         "Device",
                         "Actuator",
@@ -527,6 +530,7 @@
                     "idName": "mockParent",
                     "name": "Mock Device (Parent)",
                     "deviceIcon": "Tune",
+                    "interfaces": ["gateway"],
                     "basicTags": [
                         "Device",
                         "Actuator",

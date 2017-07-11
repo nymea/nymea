@@ -24,6 +24,7 @@
                     "name": "OrderButton",
                     "idName": "orderbutton",
                     "createMethods": ["discovery"],
+                    "interfaces": ["gateway"],
                     "basicTags": [
                         "Device",
                         "Gateway"

@@ -13,6 +13,7 @@
                     "idName": "hueBridge",
                     "name": "Hue gateway",
                     "deviceIcon": "Gateway",
+                    "interfaces": ["gateway"],
                     "basicTags": [
                         "Device",
                         "Gateway",
@@ -348,6 +349,7 @@
                     "idName": "hueWhiteLight",
                     "name": "Hue White Light",
                     "deviceIcon": "LightBulb",
+                    "interfaces": ["dimmablelight"],
                     "basicTags": [
                         "Device",
                         "Actuator",

@@ -24,6 +24,7 @@
                     "name": "WS2812",
                     "idName": "ws2812",
                     "createMethods": ["discovery"],
+                    "interfaces": ["gateway"],
                     "basicTags": [
                         "Device",
                         "Gateway"

@@ -12,6 +12,7 @@
                     "id": "57d1b080-36a0-46af-a676-78c6b78d08ae",
                     "idName": "rplRouter",
                     "name": "RPL Router",
+                    "interfaces": ["gateway"],
                     "basicTags": [
                         "Device",
                         "Gateway"

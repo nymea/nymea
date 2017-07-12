@@ -11,9 +11,9 @@ else
 endif
 
 $(info Building with DEB_BUILD_OPTIONS: [${DEB_BUILD_OPTIONS}])
-MAKE_TARGETS="all"
-ifneq (,$(filter nodocs,$(DEB_BUILD_OPTIONS)))
-	MAKE_TARGETS += " doc"
+MAKE_TARGETS=all
+ifeq (,$(filter nodocs,$(DEB_BUILD_OPTIONS)))
+	MAKE_TARGETS += doc
 endif 
 
 DPKG_EXPORT_BUILDFLAGS = 1

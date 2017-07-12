@@ -95,7 +95,7 @@ Section: doc
 Architecture: all
 Depends: ${misc:Depends}
 Recommends: guh
-Build-Profiles: <!nodocs>
+Build-Profiles: <!nodoc>
 Description: Documentation for the guh package (on-site) - documentation
  The guh daemon is a plugin based IoT (Internet of Things) server. The
  server works like a translator for devices, things and services and

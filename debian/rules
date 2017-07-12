@@ -10,6 +10,7 @@ else
 	DEB_PARALLEL_JOBS += $(shell getconf _NPROCESSORS_ONLN)
 endif
 
+$(info Building with DEB_BUILD_OPTIONS: [${DEB_BUILD_OPTIONS}])
 MAKE_TARGETS="all"
 ifneq (,$(filter nodocs,$(DEB_BUILD_OPTIONS)))
 	MAKE_TARGETS += " doc"

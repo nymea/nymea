@@ -12,7 +12,7 @@ endif
 
 $(info Building with DEB_BUILD_OPTIONS: [${DEB_BUILD_OPTIONS}])
 MAKE_TARGETS=all
-ifeq (,$(filter nodocs,$(DEB_BUILD_OPTIONS)))
+ifeq (,$(filter nodoc,$(DEB_BUILD_OPTIONS)))
 	MAKE_TARGETS += doc
 endif 
 

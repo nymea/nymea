@@ -2,7 +2,7 @@ guh (0.7.10) xenial; urgency=medium
 
   * Make it cross compilable
 
- -- Michael Zanetti <michael.zanetti@guh.io>  Wed, 12 Jul 2017 15:12:56 +0100
+ -- Michael Zanetti <michael.zanetti@guh.io>  Wed, 12 Jul 2017 15:13:56 +0100
 
 guh (0.7.9) xenial; urgency=medium
 

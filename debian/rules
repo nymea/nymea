@@ -33,7 +33,7 @@ override_dh_auto_build:
 override_dh_install: $(PREPROCESS_FILES:.in=)
 	dh_install --fail-missing
 	# installing the documentation as there is no extra install target
-	cp -a $(CURDIR)/doc/html $(CURDIR)/debian/guh-doc/usr/share/doc/guh/
+	cp -a $(CURDIR)/doc/html $(CURDIR)/debian/guh-doc/usr/share/doc/guh/ || true
 
 
 override_dh_strip:

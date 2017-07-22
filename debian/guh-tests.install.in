@@ -4,4 +4,3 @@ usr/lib/@DEB_HOST_MULTIARCH@/libguh-core.so.1
 usr/lib/@DEB_HOST_MULTIARCH@/libguh-core.so.1.0
 usr/lib/@DEB_HOST_MULTIARCH@/libguh-core.so.1.0.0
 usr/lib/@DEB_HOST_MULTIARCH@/guh/plugins/libguh_devicepluginmock.so
-usr/lib/@DEB_HOST_MULTIARCH@/guh/plugins/libguh_deviceplugingenericelements.so

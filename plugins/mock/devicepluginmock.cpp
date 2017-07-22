@@ -37,7 +37,7 @@
 
     For more details how to read this JSON file please check out the documentation for \l{The plugin JSON File}.
 
-    \quotefile plugins/deviceplugins/mailnotification/devicepluginmailnotification.json
+    \quotefile plugins/mock/devicepluginmock.json
 */
 
 #include "devicepluginmock.h"

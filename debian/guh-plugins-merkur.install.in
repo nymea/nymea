@@ -1,5 +1,0 @@
-usr/lib/@DEB_HOST_MULTIARCH@/guh/plugins/libguh_devicepluginosdomotics.so
-usr/lib/@DEB_HOST_MULTIARCH@/guh/plugins/libguh_deviceplugindollhouse.so
-usr/lib/@DEB_HOST_MULTIARCH@/guh/plugins/libguh_devicepluginplantcare.so
-usr/lib/@DEB_HOST_MULTIARCH@/guh/plugins/libguh_devicepluginws2812.so
-usr/lib/@DEB_HOST_MULTIARCH@/guh/plugins/libguh_devicepluginorderbutton.so

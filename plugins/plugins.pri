@@ -11,7 +11,7 @@ contains(DEFINES, BLUETOOTH_LE) {
 }
 
 INCLUDEPATH += $$top_srcdir/libguh
-LIBS += -L../../../libguh -lguh
+LIBS += -L../../libguh -lguh
 
 # Create plugininfo file
 JSONFILES = deviceplugin"$$TARGET".json

@@ -56,24 +56,3 @@ Files: plugins/*
 License: LGPL-2.1
 Copyright: 2014-2017, Simon Stürz <simon.stuerz@guh.io>
            2014, Michael Zanetti <michael_zanetti@gmx.net>
-
-Files: plugins/deviceplugins/denon/*
-       plugins/deviceplugins/orderbutton/*
-       plugins/deviceplugins/ws2812/*
-License: LGPL-2.1
-Copyright: 2016, Bernhard Trinnes <bernhard.trinnes@guh.io>
-
-Files: plugins/deviceplugins/plantcare/*
-License: LGPL-2.1
-Copyright: 2016-2017, Simon Stürz <simon.stuerz@guh.io>
-           2016, Bernhard Trinnes <bernhard.trinnes@guh.io>
-
-Files: plugins/deviceplugins/pushbullet/*
-       plugins/deviceplugins/usbwde/*
-License: LGPL-2.1
-Copyright: 2016, Alexander Lampret <alexander.lampret@gmail.com>
-
-Files: plugins/deviceplugins/multisensor/*
-License: LGPL-2.1
-Copyright: 2016-2017, Simon Stürz <simon.stuerz@guh.io>
-           2016-2017, Gil Benkö

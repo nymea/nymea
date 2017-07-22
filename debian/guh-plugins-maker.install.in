@@ -1,5 +1,0 @@
-usr/lib/@DEB_HOST_MULTIARCH@/guh/plugins/libguh_devicepluginlircd.so
-usr/lib/@DEB_HOST_MULTIARCH@/guh/plugins/libguh_deviceplugincommandlauncher.so
-usr/lib/@DEB_HOST_MULTIARCH@/guh/plugins/libguh_devicepluginudpcommander.so
-usr/lib/@DEB_HOST_MULTIARCH@/guh/plugins/libguh_devicepluginavahimonitor.so
-usr/lib/@DEB_HOST_MULTIARCH@/guh/plugins/libguh_deviceplugingpio.so

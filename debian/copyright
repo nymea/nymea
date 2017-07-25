@@ -46,6 +46,7 @@ Copyright: 2014-2017, Simon Stürz <simon.stuerz@guh.io>
 Files: libguh/*
 License: LGPL-2.1
 Copyright: 2014-2017, Simon Stürz <simon.stuerz@guh.io>
+           2014 Carsten Schoenert <c.schoenert@t-online.de>
            2014, Michael Zanetti <michael_zanetti@gmx.net>
 
 Files: libguh/coap/*

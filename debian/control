@@ -8,7 +8,7 @@ Vcs-Git: https://github.com/guh/guh.git
 Build-Depends: debhelper (>= 9.0.0),
                dpkg-dev (>= 1.16.1~),
                python:any,
-               rsync,
+               rsync:native,
                qtchooser,
                qt5-default,
                qt5-qmake,
@@ -30,7 +30,6 @@ Architecture: any
 Section: metapackages
 Multi-Arch: same
 Depends: guhd (= ${binary:Version}),
-         guh-plugins (= ${binary:Version}),
          ${misc:Depends}
 Suggests: guh-doc
 Description: An open source IoT server - meta package
@@ -166,7 +165,7 @@ Depends: libguh1 (= ${binary:Version}),
          ${shlibs:Depends},
          ${misc:Depends},
          python:any,
-         rsync:any,
+         rsync:native,
          qtconnectivity5-dev,
          qttools5-dev-tools,
          libqt5websockets5-dev,

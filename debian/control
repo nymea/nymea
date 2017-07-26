@@ -164,7 +164,7 @@ Multi-Arch: same
 Depends: libguh1 (= ${binary:Version}),
          ${shlibs:Depends},
          ${misc:Depends},
-         python,
+         python:any,
          rsync,
          qtconnectivity5-dev,
          qttools5-dev-tools,

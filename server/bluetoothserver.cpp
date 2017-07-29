@@ -130,7 +130,7 @@ void BluetoothServer::readData()
         message.append(dataLine);
         if (dataLine.endsWith('\n')) {
             qCDebug(dcConnection()) << "Bluetooth data received:" << message;
-            validateMessage(m_clientList.key(client), message);
+            emit dataAvailable(m_clientList.key(client), message);
             message.clear();
         }
     }

@@ -60,7 +60,7 @@ private slots:
     void clientConnected(const QUuid &clientId);
     void clientDisconnected(const QUuid &clientId);
 
-    void processData(const QUuid &clientId, const QString &targetNamespace, const QString &method, const QVariantMap &message);
+    void processData(const QUuid &clientId, const QByteArray &data);
 
     void sendNotification(const QVariantMap &params);
 

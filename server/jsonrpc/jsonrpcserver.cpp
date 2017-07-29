@@ -154,9 +154,9 @@ QHash<QString, JsonHandler *> JsonRPCServer::handlers() const
 /*! Register a new \l{TransportInterface} to the JSON server. The \a enabled flag indivates if the given \a interface sould be enebeld on startup. */
 void JsonRPCServer::registerTransportInterface(TransportInterface *interface, const bool &enabled)
 {
-    connect(interface, SIGNAL(clientConnected(const QUuid &)), this, SLOT(clientConnected(const QUuid &)));
-    connect(interface, SIGNAL(clientDisconnected(const QUuid &)), this, SLOT(clientDisconnected(const QUuid &)));
-    connect(interface, SIGNAL(dataAvailable(QUuid, QString, QString, QVariantMap)), this, SLOT(processData(QUuid, QString, QString, QVariantMap)));
+    connect(interface, &TransportInterface::clientConnected, this, &JsonRPCServer::clientConnected);
+    connect(interface, &TransportInterface::clientDisconnected, this, &JsonRPCServer::clientDisconnected);
+    connect(interface, &TransportInterface::dataAvailable, this, &JsonRPCServer::processData);
 
     if (enabled)
         QMetaObject::invokeMethod(interface, "startServer", Qt::QueuedConnection);
@@ -178,15 +178,50 @@ void JsonRPCServer::setup()
     registerHandler(new NetworkManagerHandler(this));
 }
 
-void JsonRPCServer::processData(const QUuid &clientId, const QString &targetNamespace, const QString &method, const QVariantMap &message)
+void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &data)
 {
     TransportInterface *interface = qobject_cast<TransportInterface *>(sender());
+    QJsonParseError error;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
 
-    // Note: id, targetNamespace and method already checked in TcpServer
-    int commandId = message.value("id").toInt();
-    QVariantMap params = message.value("params").toMap();
+    if(error.error != QJsonParseError::NoError) {
+        qCWarning(dcJsonRpc) << "Failed to parse JSON data" << data << ":" << error.errorString();
+        interface->sendErrorResponse(clientId, -1, QString("Failed to parse JSON data: %1").arg(error.errorString()));
+        return;
+    }
+
+    QVariantMap message = jsonDoc.toVariant().toMap();
+
+    bool success;
+    int commandId = message.value("id").toInt(&success);
+    if (!success) {
+        qCWarning(dcJsonRpc) << "Error parsing command. Missing \"id\":" << message;
+        interface->sendErrorResponse(clientId, commandId, "Error parsing command. Missing 'id'");
+        return;
+    }
+
+    QStringList commandList = message.value("method").toString().split('.');
+    if (commandList.count() != 2) {
+        qCWarning(dcJsonRpc) << "Error parsing method.\nGot:" << message.value("method").toString() << "\nExpected: \"Namespace.method\"";
+        interface->sendErrorResponse(clientId, commandId, QString("Error parsing method. Got: '%1'', Expected: 'Namespace.method'").arg(message.value("method").toString()));
+        return;
+    }
+
+    QString targetNamespace = commandList.first();
+    QString method = commandList.last();
 
     JsonHandler *handler = m_handlers.value(targetNamespace);
+    if (!handler) {
+        interface->sendErrorResponse(clientId, commandId, "No such namespace");
+        return;
+    }
+    if (!handler->hasMethod(method)) {
+        interface->sendErrorResponse(clientId, commandId, "No such method");
+        return;
+    }
+
+    QVariantMap params = message.value("params").toMap();
+
     QPair<bool, QString> validationResult = handler->validateParams(method, params);
     if (!validationResult.first) {
         interface->sendErrorResponse(clientId, commandId, "Invalid params: " + validationResult.second);

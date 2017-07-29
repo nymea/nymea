@@ -41,13 +41,10 @@ public:
     void sendResponse(const QUuid &clientId, int commandId, const QVariantMap &params = QVariantMap());
     void sendErrorResponse(const QUuid &clientId, int commandId, const QString &error);
 
-protected:
-    void validateMessage(const QUuid &clientId, const QByteArray &data);
-
 signals:
     void clientConnected(const QUuid &clientId);
     void clientDisconnected(const QUuid &clientId);
-    void dataAvailable(const QUuid &clientId, const QString &targetNamespace, const QString &method, const QVariantMap &message);
+    void dataAvailable(const QUuid &clientId, const QByteArray &data);
 
 public slots:
     virtual bool startServer() = 0;

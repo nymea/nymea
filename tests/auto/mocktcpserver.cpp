@@ -61,47 +61,7 @@ QList<MockTcpServer *> MockTcpServer::servers()
 
 void MockTcpServer::injectData(const QUuid &clientId, const QByteArray &data)
 {
-    QJsonParseError error;
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
-
-    if(error.error != QJsonParseError::NoError) {
-        qCWarning(dcJsonRpc) << "Failed to parse JSON data" << data << ":" << error.errorString();
-        sendErrorResponse(clientId, -1, QString("Failed to parse JSON data: %1").arg(error.errorString()));
-        return;
-    }
-
-    QVariantMap message = jsonDoc.toVariant().toMap();
-
-    bool success;
-    int commandId = message.value("id").toInt(&success);
-    if (!success) {
-        qCWarning(dcJsonRpc) << "Error parsing command. Missing \"id\":" << message;
-        sendErrorResponse(clientId, commandId, "Error parsing command. Missing 'id'");
-        return;
-    }
-
-    QStringList commandList = message.value("method").toString().split('.');
-    if (commandList.count() != 2) {
-        qCWarning(dcJsonRpc) << "Error parsing method.\nGot:" << message.value("method").toString() << "\nExpected: \"Namespace.method\"";
-        sendErrorResponse(clientId, commandId, QString("Error parsing method. Got: '%1'', Expected: 'Namespace.method'").arg(message.value("method").toString()));
-        return;
-    }
-
-    QString targetNamespace = commandList.first();
-    QString method = commandList.last();
-
-    JsonHandler *handler = GuhCore::instance()->jsonRPCServer()->handlers().value(targetNamespace);
-    if (!handler) {
-        sendErrorResponse(clientId, commandId, "No such namespace");
-        return;
-    }
-
-    if (!handler->hasMethod(method)) {
-        sendErrorResponse(clientId, commandId, "No such method");
-        return;
-    }
-
-    emit dataAvailable(clientId, targetNamespace, method, message);
+    emit dataAvailable(clientId, data);
 }
 
 void MockTcpServer::sendResponse(const QUuid &clientId, int commandId, const QVariantMap &params)

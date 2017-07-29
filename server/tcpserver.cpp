@@ -113,7 +113,7 @@ void TcpServer::readPackage()
         qCDebug(dcTcpServer) << "Line in:" << dataLine;
         message.append(dataLine);
         if (dataLine.endsWith('\n')) {
-            validateMessage(m_clientList.key(client), message);
+            emit dataAvailable(m_clientList.key(client), message);
             message.clear();
         }
     }

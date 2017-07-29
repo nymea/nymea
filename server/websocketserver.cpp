@@ -152,7 +152,7 @@ void WebSocketServer::onTextMessageReceived(const QString &message)
 {
     QWebSocket *client = qobject_cast<QWebSocket *>(sender());
     qCDebug(dcWebSocketServer) << "Text message from" << client->peerAddress().toString() << ":" << message;
-    validateMessage(m_clientList.key(client), message.toUtf8());
+    emit dataAvailable(m_clientList.key(client), message.toUtf8());
 }
 
 void WebSocketServer::onClientError(QAbstractSocket::SocketError error)

@@ -223,7 +223,7 @@ QVariant GuhTestBase::injectAndWait(const QString &method, const QVariantMap &pa
         QJsonParseError error;
         jsonDoc = QJsonDocument::fromJson(spy.at(i).last().toByteArray(), &error);
         if (error.error != QJsonParseError::NoError) {
-            qWarning() << "JSON parser error" << error.errorString();
+            qWarning() << "JSON parser error" << error.errorString() << spy.at(i).last().toByteArray();
             return QVariant();
         }
         QVariantMap response = jsonDoc.toVariant().toMap();

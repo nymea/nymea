@@ -54,6 +54,10 @@ public:
 
     void registerTransportInterface(TransportInterface *interface, const bool &enabled = true);
 
+private:
+    void sendResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QVariantMap &params = QVariantMap());
+    void sendErrorResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QString &error);
+
 private slots:
     void setup();
 

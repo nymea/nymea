@@ -82,7 +82,6 @@ QVariantList JsonTypes::s_loggingSource;
 QVariantList JsonTypes::s_loggingLevel;
 QVariantList JsonTypes::s_loggingEventType;
 QVariantList JsonTypes::s_repeatingMode;
-QVariantList JsonTypes::s_cloudError;
 QVariantList JsonTypes::s_configurationError;
 QVariantList JsonTypes::s_networkManagerError;
 QVariantList JsonTypes::s_networkManagerState;
@@ -138,7 +137,6 @@ void JsonTypes::init()
     s_loggingLevel = enumToStrings(Logging::staticMetaObject, "LoggingLevel");
     s_loggingEventType = enumToStrings(Logging::staticMetaObject, "LoggingEventType");
     s_repeatingMode = enumToStrings(RepeatingOption::staticMetaObject, "RepeatingMode");
-    s_cloudError = enumToStrings(Cloud::staticMetaObject, "CloudError");
     s_configurationError = enumToStrings(GuhConfiguration::staticMetaObject, "ConfigurationError");
     s_networkManagerError = enumToStrings(NetworkManager::staticMetaObject, "NetworkManagerError");
     s_networkManagerState = enumToStrings(NetworkManager::staticMetaObject, "NetworkManagerState");
@@ -394,7 +392,6 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("LoggingSource", loggingSource());
     allTypes.insert("LoggingEventType", loggingEventType());
     allTypes.insert("RepeatingMode", repeatingMode());
-    allTypes.insert("CloudError", cloudError());
     allTypes.insert("ConfigurationError", configurationError());
     allTypes.insert("NetworkManagerError", networkManagerError());
     allTypes.insert("NetworkManagerState", networkManagerState());
@@ -1890,10 +1887,10 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                     qCWarning(dcJsonRpc) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(repeatingModeRef());
                     return result;
                 }
-            } else if (refName == cloudConnectionErrorRef()) {
-                QPair<bool, QString> result = validateEnum(s_cloudConnectionError, variant);
+            } else if (refName == removePolicyRef()) {
+                QPair<bool, QString> result = validateEnum(s_removePolicy, variant);
                 if (!result.first) {
-                    qCWarning(dcJsonRpc) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(cloudConnectionErrorRef());
+                    qCWarning(dcJsonRpc) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(removePolicyRef());
                     return result;
                 }
             } else if (refName == configurationErrorRef()) {

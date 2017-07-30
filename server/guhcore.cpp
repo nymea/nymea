@@ -379,12 +379,6 @@ WebSocketServer *GuhCore::webSocketServer() const
     return m_webSocketServer;
 }
 
-/*! Returns a pointer to the \l{CloudManager} instance owned by GuhCore. */
-CloudManager *GuhCore::cloudManager() const
-{
-    return m_cloudManager;
-}
-
 /*! Returns a pointer to the \l{ServerManager} instance owned by GuhCore. */
 ServerManager *GuhCore::serverManager() const
 {
@@ -437,9 +431,6 @@ GuhCore::GuhCore(QObject *parent) :
     qCDebug(dcApplication) << "Creating Log Engine";
     m_logger = new LogEngine(this);
 
-    qCDebug(dcApplication) << "Creating Cloud Manager";
-    m_cloudManager = new CloudManager(m_configuration->cloudEnabled(), m_configuration->cloudAuthenticationServer(), m_configuration->cloudProxyServer(), this);
-
     qCDebug(dcApplication) << "Creating Device Manager";
     m_deviceManager = new DeviceManager(m_configuration->locale(), this);
 
@@ -462,7 +453,6 @@ GuhCore::GuhCore(QObject *parent) :
     // Register transport interface in the JSON RPC server
     m_serverManager->jsonServer()->registerTransportInterface(m_tcpServer);
     m_serverManager->jsonServer()->registerTransportInterface(m_webSocketServer);
-    m_serverManager->jsonServer()->registerTransportInterface(m_cloudManager);
     m_serverManager->jsonServer()->registerTransportInterface(m_bluetoothServer, m_configuration->bluetoothServerEnabled());
 
     // Webserver setup
@@ -471,11 +461,6 @@ GuhCore::GuhCore(QObject *parent) :
 
     // Create the NetworkManager
     m_networkManager = new NetworkManager(this);
-
-    // Connect the configuration changes
-    connect(m_configuration, &GuhConfiguration::cloudEnabledChanged, m_cloudManager, &CloudManager::onCloudEnabledChanged);
-    connect(m_configuration, &GuhConfiguration::cloudProxyServerChanged, m_cloudManager, &CloudManager::onProxyServerUrlChanged);
-    connect(m_configuration, &GuhConfiguration::cloudAuthenticationServerChanged, m_cloudManager, &CloudManager::onAuthenticationServerUrlChanged);
 
     connect(m_configuration, &GuhConfiguration::localeChanged, this, &GuhCore::onLocaleChanged);
 

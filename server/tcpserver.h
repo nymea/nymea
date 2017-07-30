@@ -41,8 +41,8 @@ public:
     explicit TcpServer(const QHostAddress &host, const uint &port, QObject *parent = 0);
     ~TcpServer();
 
-    void sendData(const QUuid &clientId, const QVariantMap &data) override;
-    void sendData(const QList<QUuid> &clients, const QVariantMap &data) override;
+    void sendData(const QUuid &clientId, const QByteArray &data) override;
+    void sendData(const QList<QUuid> &clients, const QByteArray &data) override;
 
 private:
     QTimer *m_timer;

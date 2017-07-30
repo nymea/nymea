@@ -35,11 +35,8 @@ public:
     explicit TransportInterface(QObject *parent = 0);
     virtual ~TransportInterface() = 0;
 
-    virtual void sendData(const QUuid &clientId, const QVariantMap &data) = 0;
-    virtual void sendData(const QList<QUuid> &clients, const QVariantMap &data) = 0;
-
-    void sendResponse(const QUuid &clientId, int commandId, const QVariantMap &params = QVariantMap());
-    void sendErrorResponse(const QUuid &clientId, int commandId, const QString &error);
+    virtual void sendData(const QUuid &clientId, const QByteArray &data) = 0;
+    virtual void sendData(const QList<QUuid> &clients, const QByteArray &data) = 0;
 
 signals:
     void clientConnected(const QUuid &clientId);

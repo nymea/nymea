@@ -37,10 +37,8 @@
 #include "loggingcategories.h"
 #include "guhsettings.h"
 #include "guhcore.h"
-#include "jsonrpcserver.h"
 
 #include <QDebug>
-#include <QJsonDocument>
 
 namespace guhserver {
 
@@ -68,7 +66,7 @@ TcpServer::~TcpServer()
 }
 
 /*! Sending \a data to a list of \a clients.*/
-void TcpServer::sendData(const QList<QUuid> &clients, const QVariantMap &data)
+void TcpServer::sendData(const QList<QUuid> &clients, const QByteArray &data)
 {
     foreach (const QUuid &client, clients) {
         sendData(client, data);
@@ -76,12 +74,12 @@ void TcpServer::sendData(const QList<QUuid> &clients, const QVariantMap &data)
 }
 
 /*! Sending \a data to the client with the given \a clientId.*/
-void TcpServer::sendData(const QUuid &clientId, const QVariantMap &data)
+void TcpServer::sendData(const QUuid &clientId, const QByteArray &data)
 {
     QTcpSocket *client = 0;
     client = m_clientList.value(clientId);
     if (client) {
-        client->write(QJsonDocument::fromVariant(data).toJson());
+        client->write(data);
     }
 }
 

@@ -42,12 +42,12 @@ MockTcpServer::~MockTcpServer()
     s_allServers.removeAll(this);
 }
 
-void MockTcpServer::sendData(const QUuid &clientId, const QVariantMap &data)
+void MockTcpServer::sendData(const QUuid &clientId, const QByteArray &data)
 {
-    emit outgoingData(clientId, QJsonDocument::fromVariant(data).toJson());
+    emit outgoingData(clientId, data);
 }
 
-void MockTcpServer::sendData(const QList<QUuid> &clients, const QVariantMap &data)
+void MockTcpServer::sendData(const QList<QUuid> &clients, const QByteArray &data)
 {
     foreach (const QUuid &clientId, clients) {
         sendData(clientId, data);
@@ -62,26 +62,6 @@ QList<MockTcpServer *> MockTcpServer::servers()
 void MockTcpServer::injectData(const QUuid &clientId, const QByteArray &data)
 {
     emit dataAvailable(clientId, data);
-}
-
-void MockTcpServer::sendResponse(const QUuid &clientId, int commandId, const QVariantMap &params)
-{
-    QVariantMap response;
-    response.insert("id", commandId);
-    response.insert("status", "success");
-    response.insert("params", params);
-
-    sendData(clientId, response);
-}
-
-void MockTcpServer::sendErrorResponse(const QUuid &clientId, int commandId, const QString &error)
-{
-    QVariantMap errorResponse;
-    errorResponse.insert("id", commandId);
-    errorResponse.insert("status", "error");
-    errorResponse.insert("error", error);
-
-    sendData(clientId, errorResponse);
 }
 
 bool MockTcpServer::reconfigureServer(const QHostAddress &address, const uint &port)

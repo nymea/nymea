@@ -1,4 +1,4 @@
-48
+49
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -29,36 +29,6 @@
                         "$ref:ParamType"
                     ]
                 }
-            }
-        },
-        "Cloud.Authenticate": {
-            "description": "Connect and authenticate the cloud connection with the given username and password.",
-            "params": {
-                "password": "String",
-                "username": "String"
-            },
-            "returns": {
-                "cloudError": "$ref:CloudError"
-            }
-        },
-        "Cloud.Enable": {
-            "description": "Enable or disable the cloud connection.",
-            "params": {
-                "enable": "Bool"
-            },
-            "returns": {
-                "cloudError": "$ref:CloudError"
-            }
-        },
-        "Cloud.GetConnectionStatus": {
-            "description": "Get the current status of the cloud connection.",
-            "params": {
-            },
-            "returns": {
-                "active": "Bool",
-                "authenticated": "Bool",
-                "connected": "Bool",
-                "enabled": "Bool"
             }
         },
         "Configuration.GetAvailableLanguages": {
@@ -685,15 +655,6 @@
         }
     },
     "notifications": {
-        "Cloud.ConnectionStatusChanged": {
-            "description": "Emitted whenever the status of the cloud connection changed. The cloud connection is active if a cloud client is talking with the server.",
-            "params": {
-                "active": "Bool",
-                "authenticated": "Bool",
-                "connected": "Bool",
-                "enabled": "Bool"
-            }
-        },
         "Configuration.BasicConfigurationChanged": {
             "description": "Emitted whenever the basic configuration of this server changes.",
             "params": {
@@ -899,14 +860,6 @@
             "o:repeating": "$ref:RepeatingOption",
             "o:startTime": "Time"
         },
-        "CloudError": [
-            "CloudErrorNoError",
-            "CloudErrorAuthenticationFailed",
-            "CloudErrorCloudConnectionDisabled",
-            "CloudErrorIdentityServerNotReachable",
-            "CloudErrorProxyServerNotReachable",
-            "CloudErrorLoginCredentialsMissing"
-        ],
         "ConfigurationError": [
             "ConfigurationErrorNoError",
             "ConfigurationErrorInvalidTimeZone",

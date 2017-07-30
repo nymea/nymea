@@ -88,30 +88,4 @@ TransportInterface::~TransportInterface()
 {
 }
 
-/*! Send a JSON success response to the client with the given \a clientId,
- * \a commandId and \a params to the inerted \l{TransportInterface}.
- */
-void TransportInterface::sendResponse(const QUuid &clientId, int commandId, const QVariantMap &params)
-{
-    QVariantMap response;
-    response.insert("id", commandId);
-    response.insert("status", "success");
-    response.insert("params", params);
-
-    sendData(clientId, response);
-}
-
-/*! Send a JSON error response to the client with the given \a clientId,
- * \a commandId and \a error to the inerted \l{TransportInterface}.
- */
-void TransportInterface::sendErrorResponse(const QUuid &clientId, int commandId, const QString &error)
-{
-    QVariantMap errorResponse;
-    errorResponse.insert("id", commandId);
-    errorResponse.insert("status", "error");
-    errorResponse.insert("error", error);
-
-    sendData(clientId, errorResponse);
-}
-
 }

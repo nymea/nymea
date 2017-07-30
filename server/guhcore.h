@@ -36,7 +36,6 @@
 #include "websocketserver.h"
 #include "bluetoothserver.h"
 
-#include "cloud/cloudmanager.h"
 #include "time/timemanager.h"
 
 #ifndef TESTING_ENABLED
@@ -85,7 +84,6 @@ public:
     TimeManager *timeManager() const;
     WebServer *webServer() const;
     WebSocketServer *webSocketServer() const;
-    CloudManager *cloudManager() const;
     ServerManager *serverManager() const;
     BluetoothServer *bluetoothServer() const;
     NetworkManager *networkManager() const;
@@ -138,8 +136,6 @@ private:
     WebSocketServer *m_webSocketServer;
     WebServer *m_webServer;
     BluetoothServer *m_bluetoothServer;
-
-    CloudManager *m_cloudManager;
 
     QHash<ActionId, Action> m_pendingActions;
 

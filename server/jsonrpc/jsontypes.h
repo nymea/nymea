@@ -45,9 +45,6 @@
 #include "time/timedescriptor.h"
 #include "time/timeeventitem.h"
 
-#include "cloud/cloud.h"
-#include "cloud/cloudconnection.h"
-
 #include "networkmanager/networkmanager.h"
 #include "networkmanager/networkdevice.h"
 #include "networkmanager/wirednetworkdevice.h"
@@ -131,7 +128,6 @@ public:
     DECLARE_TYPE(loggingLevel, "LoggingLevel", Logging, LoggingLevel)
     DECLARE_TYPE(loggingEventType, "LoggingEventType", Logging, LoggingEventType)
     DECLARE_TYPE(repeatingMode, "RepeatingMode", RepeatingOption, RepeatingMode)
-    DECLARE_TYPE(cloudError, "CloudError", Cloud, CloudError)
     DECLARE_TYPE(configurationError, "ConfigurationError", GuhConfiguration, ConfigurationError)
     DECLARE_TYPE(networkManagerError, "NetworkManagerError", NetworkManager, NetworkManagerError)
     DECLARE_TYPE(networkManagerState, "NetworkManagerState", NetworkManager, NetworkManagerState)

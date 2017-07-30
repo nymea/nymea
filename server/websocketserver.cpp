@@ -52,7 +52,6 @@
 #include "websocketserver.h"
 #include "loggingcategories.h"
 
-#include <QJsonDocument>
 #include <QSslConfiguration>
 
 namespace guhserver {
@@ -86,12 +85,12 @@ WebSocketServer::~WebSocketServer()
  *
  * \sa TransportInterface::sendData()
  */
-void WebSocketServer::sendData(const QUuid &clientId, const QVariantMap &data)
+void WebSocketServer::sendData(const QUuid &clientId, const QByteArray &data)
 {
     QWebSocket *client = 0;
     client = m_clientList.value(clientId);
     if (client) {
-        client->sendTextMessage(QJsonDocument::fromVariant(data).toJson());
+        client->sendTextMessage(data);
     }
 }
 
@@ -99,7 +98,7 @@ void WebSocketServer::sendData(const QUuid &clientId, const QVariantMap &data)
  *
  * \sa TransportInterface::sendData()
  */
-void WebSocketServer::sendData(const QList<QUuid> &clients, const QVariantMap &data)
+void WebSocketServer::sendData(const QList<QUuid> &clients, const QByteArray &data)
 {
     foreach (const QUuid &client, clients) {
         sendData(client, data);

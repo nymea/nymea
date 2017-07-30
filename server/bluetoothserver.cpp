@@ -68,7 +68,7 @@ bool BluetoothServer::hardwareAvailable()
 }
 
 /*! Send \a data to the client with the given \a clientId.*/
-void BluetoothServer::sendData(const QUuid &clientId, const QVariantMap &data)
+void BluetoothServer::sendData(const QUuid &clientId, const QByteArray &data)
 {
     QBluetoothSocket *client = 0;
     client = m_clientList.value(clientId);
@@ -77,7 +77,7 @@ void BluetoothServer::sendData(const QUuid &clientId, const QVariantMap &data)
 }
 
 /*! Send the given \a data to the \a clients. */
-void BluetoothServer::sendData(const QList<QUuid> &clients, const QVariantMap &data)
+void BluetoothServer::sendData(const QList<QUuid> &clients, const QByteArray &data)
 {
     foreach (const QUuid &client, clients)
         sendData(client, data);

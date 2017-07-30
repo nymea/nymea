@@ -38,8 +38,8 @@ public:
 
     static bool hardwareAvailable();
 
-    void sendData(const QUuid &clientId, const QVariantMap &data) override;
-    void sendData(const QList<QUuid> &clients, const QVariantMap &data) override;
+    void sendData(const QUuid &clientId, const QByteArray &data) override;
+    void sendData(const QList<QUuid> &clients, const QByteArray &data) override;
 
 private:
     QBluetoothServer *m_server;

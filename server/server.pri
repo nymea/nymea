@@ -23,7 +23,6 @@ HEADERS += $$top_srcdir/server/guhcore.h \
     $$top_srcdir/server/jsonrpc/eventhandler.h \
     $$top_srcdir/server/jsonrpc/statehandler.h \
     $$top_srcdir/server/jsonrpc/logginghandler.h \
-    $$top_srcdir/server/jsonrpc/cloudhandler.h \
     $$top_srcdir/server/jsonrpc/configurationhandler.h \
     $$top_srcdir/server/jsonrpc/networkmanagerhandler.h \
     $$top_srcdir/server/logging/logging.h \
@@ -43,15 +42,6 @@ HEADERS += $$top_srcdir/server/guhcore.h \
     $$top_srcdir/server/time/repeatingoption.h \
     $$top_srcdir/server/time/timeeventitem.h \
     $$top_srcdir/server/time/timemanager.h \
-    $$top_srcdir/server/cloud/cloudconnection.h \
-    $$top_srcdir/server/cloud/cloudauthenticator.h \
-    $$top_srcdir/server/cloud/cloudinterface.h \
-    $$top_srcdir/server/cloud/cloudjsonreply.h \
-    $$top_srcdir/server/cloud/cloudauthenticationhandler.h \
-    $$top_srcdir/server/cloud/cloudconnectionhandler.h \
-    $$top_srcdir/server/cloud/cloudjsonhandler.h \
-    $$top_srcdir/server/cloud/cloudmanager.h \
-    $$top_srcdir/server/cloud/cloud.h \
     $$top_srcdir/server/networkmanager/dbus-interfaces.h \
     $$top_srcdir/server/networkmanager/networkmanager.h \
     $$top_srcdir/server/networkmanager/networkdevice.h \
@@ -84,7 +74,6 @@ SOURCES += $$top_srcdir/server/guhcore.cpp \
     $$top_srcdir/server/jsonrpc/eventhandler.cpp \
     $$top_srcdir/server/jsonrpc/statehandler.cpp \
     $$top_srcdir/server/jsonrpc/logginghandler.cpp \
-    $$top_srcdir/server/jsonrpc/cloudhandler.cpp \
     $$top_srcdir/server/jsonrpc/configurationhandler.cpp \
     $$top_srcdir/server/jsonrpc/networkmanagerhandler.cpp \
     $$top_srcdir/server/logging/logengine.cpp \
@@ -103,14 +92,6 @@ SOURCES += $$top_srcdir/server/guhcore.cpp \
     $$top_srcdir/server/time/repeatingoption.cpp \
     $$top_srcdir/server/time/timeeventitem.cpp \
     $$top_srcdir/server/time/timemanager.cpp \
-    $$top_srcdir/server/cloud/cloudconnection.cpp \
-    $$top_srcdir/server/cloud/cloudauthenticator.cpp \
-    $$top_srcdir/server/cloud/cloudinterface.cpp \
-    $$top_srcdir/server/cloud/cloudjsonreply.cpp \
-    $$top_srcdir/server/cloud/cloudauthenticationhandler.cpp \
-    $$top_srcdir/server/cloud/cloudconnectionhandler.cpp \
-    $$top_srcdir/server/cloud/cloudjsonhandler.cpp \
-    $$top_srcdir/server/cloud/cloudmanager.cpp \
     $$top_srcdir/server/networkmanager/networkmanager.cpp \
     $$top_srcdir/server/networkmanager/networkdevice.cpp \
     $$top_srcdir/server/networkmanager/wirelessaccesspoint.cpp \

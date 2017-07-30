@@ -55,7 +55,6 @@
 #include "logginghandler.h"
 #include "statehandler.h"
 #include "websocketserver.h"
-#include "cloudhandler.h"
 #include "configurationhandler.h"
 #include "networkmanagerhandler.h"
 
@@ -164,6 +163,32 @@ void JsonRPCServer::registerTransportInterface(TransportInterface *interface, co
     m_interfaces.append(interface);
 }
 
+/*! Send a JSON success response to the client with the given \a clientId,
+ * \a commandId and \a params to the inerted \l{TransportInterface}.
+ */
+void JsonRPCServer::sendResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QVariantMap &params)
+{
+    QVariantMap response;
+    response.insert("id", commandId);
+    response.insert("status", "success");
+    response.insert("params", params);
+
+    interface->sendData(clientId, QJsonDocument::fromVariant(response).toJson());
+}
+
+/*! Send a JSON error response to the client with the given \a clientId,
+ * \a commandId and \a error to the inerted \l{TransportInterface}.
+ */
+void JsonRPCServer::sendErrorResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QString &error)
+{
+    QVariantMap errorResponse;
+    errorResponse.insert("id", commandId);
+    errorResponse.insert("status", "error");
+    errorResponse.insert("error", error);
+
+    interface->sendData(clientId, QJsonDocument::fromVariant(errorResponse).toJson());
+}
+
 void JsonRPCServer::setup()
 {
     registerHandler(this);
@@ -173,7 +198,6 @@ void JsonRPCServer::setup()
     registerHandler(new EventHandler(this));
     registerHandler(new LoggingHandler(this));
     registerHandler(new StateHandler(this));
-    registerHandler(new CloudHandler(this));
     registerHandler(new ConfigurationHandler(this));
     registerHandler(new NetworkManagerHandler(this));
 }
@@ -186,7 +210,7 @@ void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &data)
 
     if(error.error != QJsonParseError::NoError) {
         qCWarning(dcJsonRpc) << "Failed to parse JSON data" << data << ":" << error.errorString();
-        interface->sendErrorResponse(clientId, -1, QString("Failed to parse JSON data: %1").arg(error.errorString()));
+        sendErrorResponse(interface, clientId, -1, QString("Failed to parse JSON data: %1").arg(error.errorString()));
         return;
     }
 
@@ -196,14 +220,14 @@ void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &data)
     int commandId = message.value("id").toInt(&success);
     if (!success) {
         qCWarning(dcJsonRpc) << "Error parsing command. Missing \"id\":" << message;
-        interface->sendErrorResponse(clientId, commandId, "Error parsing command. Missing 'id'");
+        sendErrorResponse(interface, clientId, commandId, "Error parsing command. Missing 'id'");
         return;
     }
 
     QStringList commandList = message.value("method").toString().split('.');
     if (commandList.count() != 2) {
         qCWarning(dcJsonRpc) << "Error parsing method.\nGot:" << message.value("method").toString() << "\nExpected: \"Namespace.method\"";
-        interface->sendErrorResponse(clientId, commandId, QString("Error parsing method. Got: '%1'', Expected: 'Namespace.method'").arg(message.value("method").toString()));
+        sendErrorResponse(interface, clientId, commandId, QString("Error parsing method. Got: '%1'', Expected: 'Namespace.method'").arg(message.value("method").toString()));
         return;
     }
 
@@ -212,11 +236,11 @@ void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &data)
 
     JsonHandler *handler = m_handlers.value(targetNamespace);
     if (!handler) {
-        interface->sendErrorResponse(clientId, commandId, "No such namespace");
+        sendErrorResponse(interface, clientId, commandId, "No such namespace");
         return;
     }
     if (!handler->hasMethod(method)) {
-        interface->sendErrorResponse(clientId, commandId, "No such method");
+        sendErrorResponse(interface, clientId, commandId, "No such method");
         return;
     }
 
@@ -224,7 +248,7 @@ void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &data)
 
     QPair<bool, QString> validationResult = handler->validateParams(method, params);
     if (!validationResult.first) {
-        interface->sendErrorResponse(clientId, commandId, "Invalid params: " + validationResult.second);
+        sendErrorResponse(interface, clientId, commandId, "Invalid params: " + validationResult.second);
         return;
     }
 
@@ -242,7 +266,7 @@ void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &data)
     } else {
         Q_ASSERT_X((targetNamespace == "JSONRPC" && method == "Introspect") || handler->validateReturns(method, reply->data()).first
                    ,"validating return value", formatAssertion(targetNamespace, method, handler, reply->data()).toLatin1().data());
-        interface->sendResponse(clientId, commandId, reply->data());
+        sendResponse(interface, clientId, commandId, reply->data());
         reply->deleteLater();
     }
 }
@@ -268,7 +292,7 @@ void JsonRPCServer::sendNotification(const QVariantMap &params)
     notification.insert("params", params);
 
     foreach (TransportInterface *interface, m_interfaces) {
-        interface->sendData(m_clients.keys(true), notification);
+        interface->sendData(m_clients.keys(true), QJsonDocument::fromVariant(notification).toJson());
     }
 }
 
@@ -279,9 +303,9 @@ void JsonRPCServer::asyncReplyFinished()
     if (!reply->timedOut()) {
         Q_ASSERT_X(reply->handler()->validateReturns(reply->method(), reply->data()).first
                    ,"validating return value", formatAssertion(reply->handler()->name(), reply->method(), reply->handler(), reply->data()).toLatin1().data());
-        interface->sendResponse(reply->clientId(), reply->commandId(), reply->data());
+        sendResponse(interface, reply->clientId(), reply->commandId(), reply->data());
     } else {
-        interface->sendErrorResponse(reply->clientId(), reply->commandId(), "Command timed out");
+        sendErrorResponse(interface, reply->clientId(), reply->commandId(), "Command timed out");
     }
 
     reply->deleteLater();
@@ -313,7 +337,7 @@ void JsonRPCServer::clientConnected(const QUuid &clientId)
     handshake.insert("uuid", GuhCore::instance()->configuration()->serverUuid().toString());
     handshake.insert("language", GuhCore::instance()->configuration()->locale().name());
     handshake.insert("protocol version", JSON_PROTOCOL_VERSION);
-    interface->sendData(clientId, handshake);
+    interface->sendData(clientId, QJsonDocument::fromVariant(handshake).toJson());
 }
 
 void JsonRPCServer::clientDisconnected(const QUuid &clientId)

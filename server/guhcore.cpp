@@ -404,6 +404,11 @@ NetworkManager *GuhCore::networkManager() const
     return m_networkManager;
 }
 
+UserManager *GuhCore::userManager() const
+{
+    return m_userManager;
+}
+
 #ifdef TESTING_ENABLED
 MockTcpServer *GuhCore::tcpServer() const
 {
@@ -461,6 +466,8 @@ GuhCore::GuhCore(QObject *parent) :
 
     // Create the NetworkManager
     m_networkManager = new NetworkManager(this);
+
+    m_userManager = new UserManager(this);
 
     connect(m_configuration, &GuhConfiguration::localeChanged, this, &GuhCore::onLocaleChanged);
 

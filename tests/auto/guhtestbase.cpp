@@ -117,6 +117,9 @@ GuhTestBase::GuhTestBase(QObject *parent) :
     m_mockDevice1Port = 1337 + (qrand() % 1000);
     m_mockDevice2Port = 7331 + (qrand() % 1000);
     QCoreApplication::instance()->setOrganizationName("guh-test");
+
+    GuhCore::instance()->userManager()->createUser("dummy@guh.io", "DummyPW1!");
+    m_apiToken = GuhCore::instance()->userManager()->authenticate("dummy@guh.io", "DummyPW1!", "testcase");
 }
 
 void GuhTestBase::initTestCase()
@@ -208,6 +211,7 @@ QVariant GuhTestBase::injectAndWait(const QString &method, const QVariantMap &pa
     call.insert("id", m_commandId);
     call.insert("method", method);
     call.insert("params", params);
+    call.insert("token", m_apiToken);
 
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(call);
     QSignalSpy spy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));

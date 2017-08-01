@@ -86,6 +86,7 @@ QVariantList JsonTypes::s_configurationError;
 QVariantList JsonTypes::s_networkManagerError;
 QVariantList JsonTypes::s_networkManagerState;
 QVariantList JsonTypes::s_networkDeviceState;
+QVariantList JsonTypes::s_userError;
 
 QVariantMap JsonTypes::s_paramType;
 QVariantMap JsonTypes::s_param;
@@ -141,6 +142,7 @@ void JsonTypes::init()
     s_networkManagerError = enumToStrings(NetworkManager::staticMetaObject, "NetworkManagerError");
     s_networkManagerState = enumToStrings(NetworkManager::staticMetaObject, "NetworkManagerState");
     s_networkDeviceState = enumToStrings(NetworkDevice::staticMetaObject, "NetworkDeviceState");
+    s_userError = enumToStrings(UserManager::staticMetaObject, "UserError");
 
     // ParamType
     s_paramType.insert("id", basicTypeToString(Uuid));
@@ -396,6 +398,7 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("NetworkManagerError", networkManagerError());
     allTypes.insert("NetworkManagerState", networkManagerState());
     allTypes.insert("NetworkDeviceState", networkDeviceState());
+    allTypes.insert("UserError", userError());
 
     allTypes.insert("StateType", stateTypeDescription());
     allTypes.insert("StateDescriptor", stateDescriptorDescription());
@@ -1915,6 +1918,12 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                 QPair<bool, QString> result = validateEnum(s_networkDeviceState, variant);
                 if (!result.first) {
                     qCWarning(dcJsonRpc) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(networkDeviceStateRef());
+                    return result;
+                }
+            } else if (refName == userErrorRef()) {
+                QPair<bool, QString> result = validateEnum(s_userError, variant);
+                if (!result.first) {
+                    qCWarning(dcJsonRpc) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(userErrorRef());
                     return result;
                 }
             } else {

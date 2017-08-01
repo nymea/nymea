@@ -132,7 +132,7 @@ namespace guhserver {
 LogEngine::LogEngine(QObject *parent):
     QObject(parent)
 {
-    m_db = QSqlDatabase::addDatabase("QSQLITE");
+    m_db = QSqlDatabase::addDatabase("QSQLITE", "logs");
     m_db.setDatabaseName(GuhSettings::logPath());
     m_dbMaxSize = 20000;
 
@@ -175,14 +175,14 @@ QList<LogEntry> LogEngine::logEntries(const LogFilter &filter) const
 
     QString queryCall = "SELECT * FROM entries ORDER BY timestamp;";
     if (filter.isEmpty()) {
-        query.exec(queryCall);
+        query = m_db.exec(queryCall);
     } else {
         queryCall = QString("SELECT * FROM entries WHERE %1 ORDER BY timestamp;").arg(filter.queryString());
-        query.exec(queryCall);
+        query = m_db.exec(queryCall);
     }
 
-    if (query.lastError().isValid()) {
-        qCWarning(dcLogEngine) << "Error fetching log entries. Driver error:" << query.lastError().driverText() << "Database error:" << query.lastError().databaseText();
+    if (m_db.lastError().isValid()) {
+        qCWarning(dcLogEngine) << "Error fetching log entries. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
         return QList<LogEntry>();
     }
 
@@ -209,10 +209,9 @@ void LogEngine::clearDatabase()
 {
     qCWarning(dcLogEngine) << "Clear logging database.";
 
-    QSqlQuery query;
     QString queryDeleteString = QString("DELETE FROM entries;");
-    if (!query.exec(queryDeleteString)) {
-        qCWarning(dcLogEngine) << "Could not clear logging database. Driver error:" << query.lastError().driverText() << "Database error:" << query.lastError().databaseText();
+    if (m_db.exec(queryDeleteString).lastError().type() != QSqlError::NoError) {
+        qCWarning(dcLogEngine) << "Could not clear logging database. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
     }
 
     emit logDatabaseUpdated();
@@ -309,10 +308,9 @@ void LogEngine::removeDeviceLogs(const DeviceId &deviceId)
 {
     qCDebug(dcLogEngine) << "Deleting log entries from device" << deviceId.toString();
 
-    QSqlQuery query;
     QString queryDeleteString = QString("DELETE FROM entries WHERE deviceId = '%1';").arg(deviceId.toString());
-    if (!query.exec(queryDeleteString)) {
-        qCWarning(dcLogEngine) << "Error deleting log entries from device" << deviceId.toString() << ". Driver error:" << query.lastError().driverText() << "Database error:" << query.lastError().databaseText();
+    if (m_db.exec(queryDeleteString).lastError().type() != QSqlError::NoError) {
+        qCWarning(dcLogEngine) << "Error deleting log entries from device" << deviceId.toString() << ". Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
     } else {
         emit logDatabaseUpdated();
     }
@@ -322,10 +320,9 @@ void LogEngine::removeRuleLogs(const RuleId &ruleId)
 {
     qCDebug(dcLogEngine) << "Deleting log entries from rule" << ruleId.toString();
 
-    QSqlQuery query;
     QString queryDeleteString = QString("DELETE FROM entries WHERE typeId = '%1';").arg(ruleId.toString());
-    if (!query.exec(queryDeleteString)) {
-        qCWarning(dcLogEngine) << "Error deleting log entries from rule" << ruleId.toString() << ". Driver error:" << query.lastError().driverText() << "Database error:" << query.lastError().databaseText();
+    if (m_db.exec(queryDeleteString).lastError().type() != QSqlError::NoError) {
+        qCWarning(dcLogEngine) << "Error deleting log entries from rule" << ruleId.toString() << ". Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
     } else {
         emit logDatabaseUpdated();
     }
@@ -345,9 +342,8 @@ void LogEngine::appendLogEntry(const LogEntry &entry)
             .arg(entry.active())
             .arg(entry.errorCode());
 
-    QSqlQuery query;
-    if (!query.exec(queryString)) {
-        qCWarning(dcLogEngine) << "Error writing log entry. Driver error:" << query.lastError().driverText() << "Database error:" << query.lastError().databaseText();
+    if (m_db.exec(queryString).lastError().type() != QSqlError::NoError) {
+        qCWarning(dcLogEngine) << "Error writing log entry. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
         qCWarning(dcLogEngine) << entry;
         return;
     }
@@ -358,8 +354,7 @@ void LogEngine::appendLogEntry(const LogEntry &entry)
 void LogEngine::checkDBSize()
 {
     QString queryString = "SELECT ROWID FROM entries;";
-    QSqlQuery query;
-    query.exec(queryString);
+    QSqlQuery query = m_db.exec(queryString);
     int numRows = 0;
     if (m_db.driver()->hasFeature(QSqlDriver::QuerySize)) {
         numRows = query.size();
@@ -373,8 +368,8 @@ void LogEngine::checkDBSize()
         // keep only the latest m_dbMaxSize entries
         qCDebug(dcLogEngine) << "Deleting oldest entries and keep only the latest" << m_dbMaxSize << "entries.";
         QString queryDeleteString = QString("DELETE FROM entries WHERE ROWID IN (SELECT ROWID FROM entries ORDER BY timestamp DESC LIMIT -1 OFFSET %1);").arg(QString::number(m_dbMaxSize));
-        if (!query.exec(queryDeleteString)) {
-            qCWarning(dcLogEngine) << "Error deleting oldest log entries to keep size. Driver error:" << query.lastError().driverText() << "Database error:" << query.lastError().databaseText();
+        if (m_db.exec(queryDeleteString).lastError().type() != QSqlError::NoError) {
+            qCWarning(dcLogEngine) << "Error deleting oldest log entries to keep size. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
         } else {
             emit logDatabaseUpdated();
         }
@@ -386,14 +381,13 @@ void LogEngine::initDB()
     m_db.close();
     m_db.open();
 
-    QSqlQuery query;
 
     if (!m_db.tables().contains("metadata")) {
-        query.exec("CREATE TABLE metadata (key varchar(10), data varchar(40));");
-        query.exec(QString("INSERT INTO metadata (key, data) VALUES('version', '%1');").arg(DB_SCHEMA_VERSION));
+        m_db.exec("CREATE TABLE metadata (key varchar(10), data varchar(40));");
+        m_db.exec(QString("INSERT INTO metadata (key, data) VALUES('version', '%1');").arg(DB_SCHEMA_VERSION));
     }
 
-    query.exec("SELECT data FROM metadata WHERE key = 'version';");
+    QSqlQuery query = m_db.exec("SELECT data FROM metadata WHERE key = 'version';");
     if (query.next()) {
         int version = query.value("data").toInt();
         if (version != DB_SCHEMA_VERSION) {
@@ -406,27 +400,27 @@ void LogEngine::initDB()
     }
 
     if (!m_db.tables().contains("sourceTypes")) {
-        query.exec("CREATE TABLE sourceTypes (id int, name varchar(20), PRIMARY KEY(id));");
-        //qCDebug(dcLogEngine) << query.lastError().databaseText();
+        m_db.exec("CREATE TABLE sourceTypes (id int, name varchar(20), PRIMARY KEY(id));");
+        //qCDebug(dcLogEngine) << m_db.lastError().databaseText();
         QMetaEnum logTypes = Logging::staticMetaObject.enumerator(Logging::staticMetaObject.indexOfEnumerator("LoggingSource"));
         Q_ASSERT_X(logTypes.isValid(), "LogEngine", "Logging has no enum LoggingSource");
         for (int i = 0; i < logTypes.keyCount(); i++) {
-            query.exec(QString("INSERT INTO sourceTypes (id, name) VALUES(%1, '%2');").arg(i).arg(logTypes.key(i)));
+            m_db.exec(QString("INSERT INTO sourceTypes (id, name) VALUES(%1, '%2');").arg(i).arg(logTypes.key(i)));
         }
     }
 
     if (!m_db.tables().contains("loggingEventTypes")) {
-        query.exec("CREATE TABLE loggingEventTypes (id int, name varchar(20), PRIMARY KEY(id));");
-        //qCDebug(dcLogEngine) << query.lastError().databaseText();
+        m_db.exec("CREATE TABLE loggingEventTypes (id int, name varchar(20), PRIMARY KEY(id));");
+        //qCDebug(dcLogEngine) << m_db.lastError().databaseText();
         QMetaEnum logTypes = Logging::staticMetaObject.enumerator(Logging::staticMetaObject.indexOfEnumerator("LoggingEventType"));
         Q_ASSERT_X(logTypes.isValid(), "LogEngine", "Logging has no enum LoggingEventType");
         for (int i = 0; i < logTypes.keyCount(); i++) {
-            query.exec(QString("INSERT INTO loggingEventTypes (id, name) VALUES(%1, '%2');").arg(i).arg(logTypes.key(i)));
+            m_db.exec(QString("INSERT INTO loggingEventTypes (id, name) VALUES(%1, '%2');").arg(i).arg(logTypes.key(i)));
         }
     }
 
     if (!m_db.tables().contains("entries")) {
-        query.exec("CREATE TABLE entries "
+        m_db.exec("CREATE TABLE entries "
                    "("
                    "timestamp int,"
                    "loggingLevel int,"
@@ -441,8 +435,8 @@ void LogEngine::initDB()
                    "FOREIGN KEY(loggingEventType) REFERENCES loggingEventTypes(id)"
                    ");");
 
-        if (query.lastError().isValid())
-            qCWarning(dcLogEngine) << "Error creating log table in database. Driver error:" << query.lastError().driverText() << "Database error:" << query.lastError().databaseText();
+        if (m_db.lastError().isValid())
+            qCWarning(dcLogEngine) << "Error creating log table in database. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
 
 
     }

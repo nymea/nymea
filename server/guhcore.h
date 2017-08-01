@@ -86,6 +86,7 @@ public:
     ServerManager *serverManager() const;
     BluetoothServer *bluetoothServer() const;
     NetworkManager *networkManager() const;
+    UserManager *userManager() const;
 
     static QStringList getAvailableLanguages();
 
@@ -125,6 +126,7 @@ private:
     TimeManager *m_timeManager;
 
     NetworkManager *m_networkManager;
+    UserManager *m_userManager;
 
 #ifdef TESTING_ENABLED
     MockTcpServer *m_tcpServer;

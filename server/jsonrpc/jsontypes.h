@@ -2,6 +2,7 @@
  *                                                                         *
  *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.io>                   *
  *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *  Copyright (C) 2017 Michael Zanetti <michael.zanetti@guh.io>            *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -28,6 +29,7 @@
 #include "devicemanager.h"
 #include "ruleengine.h"
 #include "guhconfiguration.h"
+#include "usermanager.h"
 
 #include "types/event.h"
 #include "types/action.h"
@@ -132,6 +134,7 @@ public:
     DECLARE_TYPE(networkManagerError, "NetworkManagerError", NetworkManager, NetworkManagerError)
     DECLARE_TYPE(networkManagerState, "NetworkManagerState", NetworkManager, NetworkManagerState)
     DECLARE_TYPE(networkDeviceState, "NetworkDeviceState", NetworkDevice, NetworkDeviceState)
+    DECLARE_TYPE(userError, "UserError", UserManager, UserError)
 
     DECLARE_OBJECT(paramType, "ParamType")
     DECLARE_OBJECT(param, "Param")

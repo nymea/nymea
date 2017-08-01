@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
  *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.io>                   *
- *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *  Copyright (C) 2014-2017 Michael Zanetti <michael.zanetti@guh.io>       *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -25,6 +25,7 @@
 #include "plugin/deviceclass.h"
 #include "jsonhandler.h"
 #include "transportinterface.h"
+#include "usermanager.h"
 
 #include "types/action.h"
 #include "types/event.h"
@@ -50,6 +51,9 @@ public:
     Q_INVOKABLE JsonReply *Version(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *SetNotificationStatus(const QVariantMap &params);
 
+    Q_INVOKABLE JsonReply *CreateUser(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *Authenticate(const QVariantMap &params);
+
     QHash<QString, JsonHandler *> handlers() const;
 
     void registerTransportInterface(TransportInterface *interface, const bool &enabled = true);
@@ -57,6 +61,7 @@ public:
 private:
     void sendResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QVariantMap &params = QVariantMap());
     void sendErrorResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QString &error);
+    void sendUnauthorizedResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QString &error);
 
 private slots:
     void setup();

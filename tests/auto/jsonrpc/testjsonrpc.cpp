@@ -42,6 +42,8 @@ class TestJSONRPC: public GuhTestBase
 private slots:
     void testHandshake();
 
+    void testInitialSetup();
+
     void testBasicCall_data();
     void testBasicCall();
 
@@ -105,6 +107,152 @@ void TestJSONRPC::testHandshake()
     QVERIFY2(handShake.value("version").toString() == guhVersionString, "Handshake version doesn't match Guh version.");
 
     m_mockTcpServer->clientDisconnected(newClientId);
+}
+
+void TestJSONRPC::testInitialSetup()
+{
+    foreach (const QString &user, GuhCore::instance()->userManager()->users()) {
+        GuhCore::instance()->userManager()->removeUser(user);
+    }
+    QCOMPARE(GuhCore::instance()->userManager()->users().count(), 0);
+
+    QSignalSpy spy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QVERIFY(spy.isValid());
+
+    // Introspect call should work in any case
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Introspect\"}");
+    if (spy.count() == 0) {
+        spy.wait();
+    }
+    QVERIFY(spy.count() == 1);
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(spy.first().at(1).toByteArray());
+    QVariantMap response = jsonDoc.toVariant().toMap();
+    qWarning() << "Calling introspect on uninitialized instance:" << response.value("status").toString() << response.value("error").toString();
+    QCOMPARE(response.value("status").toString(), QStringLiteral("success"));
+
+
+    // Any other call should fail with "unauthorized" even if we use a previously valid token
+    spy.clear();
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"token\": \"" + m_apiToken + "\", \"method\": \"JSONRPC.Version\"}");
+    if (spy.count() == 0) {
+        spy.wait();
+    }
+    QVERIFY(spy.count() == 1);
+    jsonDoc = QJsonDocument::fromJson(spy.first().at(1).toByteArray());
+    response = jsonDoc.toVariant().toMap();
+    qWarning() << "Calling Version on uninitialized instance:" << response.value("status").toString() << response.value("error").toString();
+    QCOMPARE(response.value("status").toString(), QStringLiteral("unauthorized"));
+
+    // Except CreateUser
+
+    // But it should still fail when giving a an invalid username
+    spy.clear();
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.CreateUser\", \"params\": {\"username\": \"dummy\", \"password\": \"DummyPW1!\"}}");
+    if (spy.count() == 0) {
+        spy.wait();
+    }
+    QVERIFY(spy.count() == 1);
+    jsonDoc = QJsonDocument::fromJson(spy.first().at(1).toByteArray());
+    response = jsonDoc.toVariant().toMap();
+    qWarning() << "Calling CreateUser on uninitialized instance with invalid user:" << response.value("status").toString() << response.value("params").toMap().value("error").toString();
+    QCOMPARE(response.value("status").toString(), QStringLiteral("success"));
+    QCOMPARE(GuhCore::instance()->userManager()->users().count(), 0);
+
+    // or when giving a bad password
+    spy.clear();
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.CreateUser\", \"params\": {\"username\": \"dummy@guh.io\", \"password\": \"weak\"}}");
+    if (spy.count() == 0) {
+        spy.wait();
+    }
+    QVERIFY(spy.count() == 1);
+    jsonDoc = QJsonDocument::fromJson(spy.first().at(1).toByteArray());
+    response = jsonDoc.toVariant().toMap();
+    qWarning() << "Calling CreateUser on uninitialized instance with weak password:" << response.value("status").toString() << response.value("params").toMap().value("error").toString();
+    QCOMPARE(response.value("status").toString(), QStringLiteral("success"));
+    QCOMPARE(GuhCore::instance()->userManager()->users().count(), 0);
+
+    // Now lets play by the rules
+    spy.clear();
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.CreateUser\", \"params\": {\"username\": \"dummy@guh.io\", \"password\": \"DummyPW1!\"}}");
+    if (spy.count() == 0) {
+        spy.wait();
+    }
+    QVERIFY(spy.count() == 1);
+    jsonDoc = QJsonDocument::fromJson(spy.first().at(1).toByteArray());
+    response = jsonDoc.toVariant().toMap();
+    qWarning() << "Calling CreateUser on uninitialized instance:" << response.value("status").toString() << response.value("error").toString();
+    QCOMPARE(response.value("status").toString(), QStringLiteral("success"));
+    QCOMPARE(GuhCore::instance()->userManager()->users().count(), 1);
+
+    // Calls should still fail, given we didn't get a new token yet
+    spy.clear();
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"token\": \"" + m_apiToken + "\", \"method\": \"JSONRPC.Version\"}");
+    if (spy.count() == 0) {
+        spy.wait();
+    }
+    QVERIFY(spy.count() == 1);
+    jsonDoc = QJsonDocument::fromJson(spy.first().at(1).toByteArray());
+    response = jsonDoc.toVariant().toMap();
+    qWarning() << "Calling Version with old token:" << response.value("status").toString() << response.value("error").toString();
+    QCOMPARE(response.value("status").toString(), QStringLiteral("unauthorized"));
+
+    // Now lets authenticate with a wrong user
+    spy.clear();
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Authenticate\", \"params\": {\"username\": \"dummy@wrong.domain\", \"password\": \"DummyPW1!\", \"deviceName\": \"testcase\"}}");
+    if (spy.count() == 0) {
+        spy.wait();
+    }
+    QVERIFY(spy.count() == 1);
+    jsonDoc = QJsonDocument::fromJson(spy.first().at(1).toByteArray());
+    response = jsonDoc.toVariant().toMap();
+    qWarning() << "Calling Authenticate with wrong user:" << response.value("params").toMap().value("success").toString() << response.value("params").toMap().value("token").toString();
+    QCOMPARE(response.value("status").toString(), QStringLiteral("success"));
+    QCOMPARE(response.value("params").toMap().value("success").toBool(), false);
+    QVERIFY(response.value("params").toMap().value("token").toByteArray().isEmpty());
+
+
+    // Now lets authenticate with a wrong password
+    spy.clear();
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Authenticate\", \"params\": {\"username\": \"dummy@guh.io\", \"password\": \"wrongpw\", \"deviceName\": \"testcase\"}}");
+    if (spy.count() == 0) {
+        spy.wait();
+    }
+    QVERIFY(spy.count() == 1);
+    jsonDoc = QJsonDocument::fromJson(spy.first().at(1).toByteArray());
+    response = jsonDoc.toVariant().toMap();
+    qWarning() << "Calling Authenticate with wrong password:" << response.value("params").toMap().value("success").toString() << response.value("params").toMap().value("token").toString();
+    QCOMPARE(response.value("status").toString(), QStringLiteral("success"));
+    QCOMPARE(response.value("params").toMap().value("success").toBool(), false);
+    QVERIFY(response.value("params").toMap().value("token").toByteArray().isEmpty());
+
+
+    // Now lets authenticate for real
+    spy.clear();
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Authenticate\", \"params\": {\"username\": \"dummy@guh.io\", \"password\": \"DummyPW1!\", \"deviceName\": \"testcase\"}}");
+    if (spy.count() == 0) {
+        spy.wait();
+    }
+    QVERIFY(spy.count() == 1);
+    jsonDoc = QJsonDocument::fromJson(spy.first().at(1).toByteArray());
+    response = jsonDoc.toVariant().toMap();
+    qWarning() << "Calling Authenticate with valid credentials:" << response.value("params").toMap().value("success").toString() << response.value("params").toMap().value("token").toString();
+    QCOMPARE(response.value("status").toString(), QStringLiteral("success"));
+    QCOMPARE(response.value("params").toMap().value("success").toBool(), true);
+    m_apiToken = response.value("params").toMap().value("token").toByteArray();
+    QVERIFY(!m_apiToken.isEmpty());
+
+    // Now do a Version call with the valid token and it should work
+    spy.clear();
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"token\": \"" + m_apiToken + "\", \"method\": \"JSONRPC.Version\"}");
+    if (spy.count() == 0) {
+        spy.wait();
+    }
+    QVERIFY(spy.count() == 1);
+    jsonDoc = QJsonDocument::fromJson(spy.first().at(1).toByteArray());
+    response = jsonDoc.toVariant().toMap();
+    qWarning() << "Calling Version with valid token:" << response.value("status").toString() << response.value("error").toString();
+    QCOMPARE(response.value("status").toString(), QStringLiteral("success"));
+
 }
 
 void TestJSONRPC::testBasicCall_data()

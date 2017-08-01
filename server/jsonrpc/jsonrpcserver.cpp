@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
  *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.io>                   *
- *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *  Copyright (C) 2014-2017 Michael Zanetti <michael.zanetti@guh.io>       *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -95,6 +95,24 @@ JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject 
     returns.insert("enabled", JsonTypes::basicTypeToString(JsonTypes::Bool));
     setReturns("SetNotificationStatus", returns);
 
+    params.clear(); returns.clear();
+    setDescription("CreateUser", "Create a new user in the API. Currently this is only allowed to be called once when a new guh instance is set up. Call Authenticate after this to obtain a device token for this user.");
+    params.insert("username", JsonTypes::basicTypeToString(JsonTypes::String));
+    params.insert("password", JsonTypes::basicTypeToString(JsonTypes::String));
+    setParams("CreateUser", params);
+    returns.insert("error", JsonTypes::userErrorRef());
+    setReturns("CreateUser", returns);
+
+    params.clear(); returns.clear();
+    setDescription("Authenticate", "Authenticate a client to the api. This will return a new token to be used to authorize a client at the API.");
+    params.insert("username", JsonTypes::basicTypeToString(JsonTypes::String));
+    params.insert("password", JsonTypes::basicTypeToString(JsonTypes::String));
+    params.insert("deviceName", JsonTypes::basicTypeToString(JsonTypes::String));
+    setParams("Authenticate", params);
+    returns.insert("success", JsonTypes::basicTypeToString(JsonTypes::String));
+    returns.insert("o:token", JsonTypes::basicTypeToString(JsonTypes::String));
+    setReturns("Authenticate", returns);
+
     QMetaObject::invokeMethod(this, "setup", Qt::QueuedConnection);
 }
 
@@ -144,6 +162,33 @@ JsonReply* JsonRPCServer::SetNotificationStatus(const QVariantMap &params)
     return createReply(returns);
 }
 
+JsonReply *JsonRPCServer::CreateUser(const QVariantMap &params)
+{
+    QString username = params.value("username").toString();
+    QString password = params.value("password").toString();
+
+    UserManager::UserError status = GuhCore::instance()->userManager()->createUser(username, password);
+
+    QVariantMap returns;
+    returns.insert("error", JsonTypes::userErrorToString(status));
+    return createReply(returns);
+}
+
+JsonReply *JsonRPCServer::Authenticate(const QVariantMap &params)
+{
+    QString username = params.value("username").toString();
+    QString password = params.value("password").toString();
+    QString deviceName = params.value("deviceName").toString();
+
+    QByteArray token = GuhCore::instance()->userManager()->authenticate(username, password, deviceName);
+    QVariantMap ret;
+    ret.insert("success", !token.isEmpty());
+    if (!token.isEmpty()) {
+        ret.insert("token", token);
+    }
+    return createReply(ret);
+}
+
 /*! Returns the list of registred \l{JsonHandler}{JsonHandlers} and their name.*/
 QHash<QString, JsonHandler *> JsonRPCServer::handlers() const
 {
@@ -184,6 +229,16 @@ void JsonRPCServer::sendErrorResponse(TransportInterface *interface, const QUuid
     QVariantMap errorResponse;
     errorResponse.insert("id", commandId);
     errorResponse.insert("status", "error");
+    errorResponse.insert("error", error);
+
+    interface->sendData(clientId, QJsonDocument::fromVariant(errorResponse).toJson());
+}
+
+void JsonRPCServer::sendUnauthorizedResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QString &error)
+{
+    QVariantMap errorResponse;
+    errorResponse.insert("id", commandId);
+    errorResponse.insert("status", "unauthorized");
     errorResponse.insert("error", error);
 
     interface->sendData(clientId, QJsonDocument::fromVariant(errorResponse).toJson());
@@ -230,9 +285,24 @@ void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &data)
         sendErrorResponse(interface, clientId, commandId, QString("Error parsing method. Got: '%1'', Expected: 'Namespace.method'").arg(message.value("method").toString()));
         return;
     }
-
     QString targetNamespace = commandList.first();
     QString method = commandList.last();
+
+    // if there is no user in the system yet, let's fail unless this is a CreateUser or Introspect call
+    if (GuhCore::instance()->userManager()->users().isEmpty()) {
+        if (!(targetNamespace == "JSONRPC" && (method == "CreateUser" || method == "Introspect"))) {
+            sendUnauthorizedResponse(interface, clientId, commandId, "Initial setup required. Call CreateUser first.");
+            return;
+        }
+    } else {
+        // ok, we have a user. if there isn't a valid token, let's fail unless this is a Authenticate or Introspect call
+        QByteArray token = message.value("token").toByteArray();
+        if (!(targetNamespace == "JSONRPC" && (method == "Authenticate" || method == "Introspect")) && !GuhCore::instance()->userManager()->verifyToken(token)) {
+            sendUnauthorizedResponse(interface, clientId, commandId, "Forbidden: Invalid token.");
+            return;
+        }
+    }
+    // At this point we can assume all the calls are authorized
 
     JsonHandler *handler = m_handlers.value(targetNamespace);
     if (!handler) {
@@ -324,8 +394,8 @@ void JsonRPCServer::registerHandler(JsonHandler *handler)
 
 void JsonRPCServer::clientConnected(const QUuid &clientId)
 {
-    // Notifications enabled by default
-    m_clients.insert(clientId, true);
+    // Notifications disabled by default. Clients must enable them with a valid token
+    m_clients.insert(clientId, false);
 
     TransportInterface *interface = qobject_cast<TransportInterface *>(sender());
 
@@ -337,6 +407,7 @@ void JsonRPCServer::clientConnected(const QUuid &clientId)
     handshake.insert("uuid", GuhCore::instance()->configuration()->serverUuid().toString());
     handshake.insert("language", GuhCore::instance()->configuration()->locale().name());
     handshake.insert("protocol version", JSON_PROTOCOL_VERSION);
+    handshake.insert("initialSetupRequired", GuhCore::instance()->userManager()->users().isEmpty());
     interface->sendData(clientId, QJsonDocument::fromVariant(handshake).toJson());
 }
 

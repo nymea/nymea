@@ -372,6 +372,28 @@
                 "o:eventType": "$ref:EventType"
             }
         },
+        "JSONRPC.Authenticate": {
+            "description": "Authenticate a client to the api. This will return a new token to be used to authorize a client at the API.",
+            "params": {
+                "deviceName": "String",
+                "password": "String",
+                "username": "String"
+            },
+            "returns": {
+                "o:token": "String",
+                "success": "String"
+            }
+        },
+        "JSONRPC.CreateUser": {
+            "description": "Create a new user in the API. Currently this is only allowed to be called once when a new guh instance is set up. Call Authenticate after this to obtain a device token for this user.",
+            "params": {
+                "password": "String",
+                "username": "String"
+            },
+            "returns": {
+                "error": "$ref:UserError"
+            }
+        },
         "JSONRPC.Introspect": {
             "description": "Introspect this API.",
             "params": {
@@ -1320,6 +1342,13 @@
             "UnitVoltAmpere",
             "UnitVoltAmpereReactive",
             "UnitAmpereHour"
+        ],
+        "UserError": [
+            "UserErrorNoError",
+            "UserErrorBackendError",
+            "UserErrorInvalidUserId",
+            "UserErrorDuplicateUserId",
+            "UserErrorBadPassword"
         ],
         "ValueOperator": [
             "ValueOperatorEquals",

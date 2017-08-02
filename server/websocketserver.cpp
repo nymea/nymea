@@ -60,11 +60,12 @@ namespace guhserver {
  *
  *  \sa ServerManager
  */
-WebSocketServer::WebSocketServer(const QHostAddress &address, const uint &port, const bool &sslEnabled, QObject *parent) :
+WebSocketServer::WebSocketServer(const QHostAddress &address, const uint &port, const bool &sslEnabled, const QSslConfiguration &sslConfiguration, QObject *parent) :
     TransportInterface(parent),
     m_server(0),
     m_host(address),
     m_port(port),
+    m_sslConfiguration(sslConfiguration),
     m_useSsl(sslEnabled),
     m_enabled(false)
 {

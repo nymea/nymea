@@ -370,13 +370,13 @@ TimeManager *GuhCore::timeManager() const
 /*! Returns a pointer to the \l{WebServer} instance owned by GuhCore.*/
 WebServer *GuhCore::webServer() const
 {
-    return m_webServer;
+    return m_serverManager->webServer();
 }
 
 /*! Returns a pointer to the \l{WebSocketServer} instance owned by GuhCore.*/
 WebSocketServer *GuhCore::webSocketServer() const
 {
-    return m_webSocketServer;
+    return m_serverManager->webSocketServer();
 }
 
 /*! Returns a pointer to the \l{ServerManager} instance owned by GuhCore. */
@@ -395,7 +395,7 @@ QStringList GuhCore::getAvailableLanguages()
 /*! Returns a pointer to the \l{BluetoothServer} instance owned by GuhCore. */
 BluetoothServer *GuhCore::bluetoothServer() const
 {
-    return m_bluetoothServer;
+    return m_serverManager->bluetoothServer();
 }
 
 /*! Returns a pointer to the \l{NetworkManager} instance owned by GuhCore. */
@@ -410,17 +410,15 @@ UserManager *GuhCore::userManager() const
 }
 
 #ifdef TESTING_ENABLED
-MockTcpServer *GuhCore::tcpServer() const
-{
-    return m_tcpServer;
-}
+MockTcpServer
 #else
 /*! Returns a pointer to the \l{TcpServer} instance owned by GuhCore. */
-TcpServer *GuhCore::tcpServer() const
-{
-    return m_tcpServer;
-}
+TcpServer
 #endif
+*GuhCore::tcpServer() const
+{
+    return m_serverManager->tcpServer();
+}
 
 /*! Constructs GuhCore with the given \a parent. This is private.
     Use \l{GuhCore::instance()} to access the single instance.*/
@@ -443,26 +441,7 @@ GuhCore::GuhCore(QObject *parent) :
     m_ruleEngine = new RuleEngine(this);
 
     qCDebug(dcApplication) << "Creating Server Manager";
-    m_serverManager = new ServerManager(this);
-
-#ifdef TESTING_ENABLED
-    m_tcpServer = new MockTcpServer(this);
-#else
-    m_tcpServer = new TcpServer(m_configuration->tcpServerAddress(), m_configuration->tcpServerPort(), this);
-#endif
-
-    m_webSocketServer = new WebSocketServer(m_configuration->webSocketAddress(), m_configuration->webSocketPort(), m_configuration->sslEnabled(), this);
-
-    m_bluetoothServer = new BluetoothServer(this);
-
-    // Register transport interface in the JSON RPC server
-    m_serverManager->jsonServer()->registerTransportInterface(m_tcpServer);
-    m_serverManager->jsonServer()->registerTransportInterface(m_webSocketServer);
-    m_serverManager->jsonServer()->registerTransportInterface(m_bluetoothServer, m_configuration->bluetoothServerEnabled());
-
-    // Webserver setup
-    m_webServer = new WebServer(m_configuration->webServerAddress(), m_configuration->webServerPort(), m_configuration->webServerPublicFolder(), this);
-    m_serverManager->restServer()->registerWebserver(m_webServer);
+    m_serverManager = new ServerManager(m_configuration, this);
 
     // Create the NetworkManager
     m_networkManager = new NetworkManager(this);

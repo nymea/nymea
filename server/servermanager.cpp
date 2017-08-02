@@ -42,7 +42,7 @@
 namespace guhserver {
 
 /*! Constructs a \l{ServerManager} with the given \a parent. */
-ServerManager::ServerManager(QObject *parent) :
+ServerManager::ServerManager(GuhConfiguration* configuration, QObject *parent) :
     QObject(parent),
     m_sslConfiguration(QSslConfiguration())
 {
@@ -56,7 +56,7 @@ ServerManager::ServerManager(QObject *parent) :
         GuhSettings settings(GuhSettings::SettingsRoleGlobal);
         qCDebug(dcConnection) << "Loading SSL-configuration from" << settings.fileName();
 
-        settings.beginGroup("SSL-Configuration");
+        settings.beginGroup("SSL");
         QString certificateFileName = settings.value("certificate", QVariant("/etc/ssl/certs/guhd-certificate.crt")).toString();
         QString keyFileName = settings.value("certificate-key", QVariant("/etc/ssl/private/guhd-certificate.key")).toString();
         settings.endGroup();
@@ -70,9 +70,30 @@ ServerManager::ServerManager(QObject *parent) :
         }
     }
 
+    // Interfaces
     m_jsonServer = new JsonRPCServer(m_sslConfiguration, this);
-
     m_restServer = new RestServer(m_sslConfiguration, this);
+
+
+    // Transports
+#ifdef TESTING_ENABLED
+    m_tcpServer = new MockTcpServer(this);
+#else
+    m_tcpServer = new TcpServer(configuration->tcpServerAddress(), configuration->tcpServerPort(), this);
+#endif
+
+    m_webSocketServer = new WebSocketServer(configuration->webSocketAddress(), configuration->webSocketPort(), configuration->sslEnabled(), m_sslConfiguration, this);
+
+    m_bluetoothServer = new BluetoothServer(this);
+
+    // Register transport interfaces for the JSON RPC server
+    m_jsonServer->registerTransportInterface(m_tcpServer);
+    m_jsonServer->registerTransportInterface(m_webSocketServer);
+    m_jsonServer->registerTransportInterface(m_bluetoothServer, configuration->bluetoothServerEnabled());
+
+    // Register transport itnerfaces for the Webserver
+    m_webServer = new WebServer(configuration->webServerAddress(), configuration->webServerPort(), configuration->webServerPublicFolder(), this);
+    m_restServer->registerWebserver(m_webServer);
 }
 
 /*! Returns the pointer to the created \l{JsonRPCServer} in this \l{ServerManager}. */
@@ -85,6 +106,31 @@ JsonRPCServer *ServerManager::jsonServer() const
 RestServer *ServerManager::restServer() const
 {
     return m_restServer;
+}
+
+WebServer *ServerManager::webServer() const
+{
+    return m_webServer;
+}
+
+WebSocketServer *ServerManager::webSocketServer() const
+{
+    return m_webSocketServer;
+}
+
+BluetoothServer *ServerManager::bluetoothServer() const
+{
+    return m_bluetoothServer;
+}
+
+#ifdef TESTING_ENABLED
+MockTcpServer
+#else
+TcpServer
+#endif
+*ServerManager::tcpServer() const
+{
+    return m_tcpServer;
 }
 
 bool ServerManager::loadCertificate(const QString &certificateKeyFileName, const QString &certificateFileName)

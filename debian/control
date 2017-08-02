@@ -22,7 +22,8 @@ Build-Depends: debhelper (>= 9.0.0),
                libqt5sql5-sqlite,
                libqt5dbus5,
                libavahi-client-dev,
-               libavahi-common-dev
+               libavahi-common-dev,
+               libssl-dev,
 
 
 Package: guh

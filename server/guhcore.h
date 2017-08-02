@@ -33,16 +33,8 @@
 #include "devicemanager.h"
 #include "ruleengine.h"
 #include "servermanager.h"
-#include "websocketserver.h"
-#include "bluetoothserver.h"
 
 #include "time/timemanager.h"
-
-#ifndef TESTING_ENABLED
-#include "tcpserver.h"
-#else
-#include "mocktcpserver.h"
-#endif
 
 #include <QObject>
 
@@ -51,6 +43,8 @@ class Device;
 namespace guhserver {
 
 class JsonRPCServer;
+class WebSocketServer;
+class TcpServer;
 class LogEngine;
 class NetworkManager;
 
@@ -129,15 +123,6 @@ private:
 
     NetworkManager *m_networkManager;
     UserManager *m_userManager;
-
-#ifdef TESTING_ENABLED
-    MockTcpServer *m_tcpServer;
-#else
-    TcpServer *m_tcpServer;
-#endif
-    WebSocketServer *m_webSocketServer;
-    WebServer *m_webServer;
-    BluetoothServer *m_bluetoothServer;
 
     QHash<ActionId, Action> m_pendingActions;
 

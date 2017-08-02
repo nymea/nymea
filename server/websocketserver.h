@@ -42,7 +42,7 @@ class WebSocketServer : public TransportInterface
 {
     Q_OBJECT
 public:
-    explicit WebSocketServer(const QHostAddress &address, const uint &port, const bool &sslEnabled, QObject *parent = 0);
+    explicit WebSocketServer(const QHostAddress &address, const uint &port, const bool &sslEnabled, const QSslConfiguration &sslConfiguration, QObject *parent = 0);
     ~WebSocketServer();
 
     void sendData(const QUuid &clientId, const QByteArray &data) override;

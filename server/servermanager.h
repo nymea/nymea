@@ -26,6 +26,14 @@
 #include "loggingcategories.h"
 #include "jsonrpc/jsonrpcserver.h"
 #include "rest/restserver.h"
+#include "websocketserver.h"
+#include "bluetoothserver.h"
+
+#ifndef TESTING_ENABLED
+#include "tcpserver.h"
+#else
+#include "mocktcpserver.h"
+#endif
 
 class QSslConfiguration;
 class QSslCertificate;
@@ -37,15 +45,39 @@ class ServerManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit ServerManager(QObject *parent = 0);
+    explicit ServerManager(GuhConfiguration *configuration, QObject *parent = 0);
 
+    // Interfaces
     JsonRPCServer *jsonServer() const;
     RestServer *restServer() const;
 
+    // Transports
+    WebServer* webServer() const;
+    WebSocketServer* webSocketServer() const;
+    BluetoothServer* bluetoothServer() const;
+
+#ifdef TESTING_ENABLED
+    MockTcpServer *tcpServer() const;
+#else
+    TcpServer *tcpServer() const;
+#endif
+
 private:
+    // Interfaces
     JsonRPCServer *m_jsonServer;
     RestServer *m_restServer;
 
+    // Transports
+#ifdef TESTING_ENABLED
+    MockTcpServer *m_tcpServer;
+#else
+    TcpServer *m_tcpServer;
+#endif
+    WebSocketServer *m_webSocketServer;
+    WebServer *m_webServer;
+    BluetoothServer *m_bluetoothServer;
+
+    // Encrytption and stuff
     QSslConfiguration m_sslConfiguration;
     QSslKey m_certificateKey;
     QSslCertificate m_certificate;

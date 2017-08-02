@@ -51,6 +51,7 @@ public:
     static QString logPath();
     static QString settingsPath();
     static QString translationsPath();
+    static QString storagePath();
 
     // forwarded QSettings methods
     QStringList	allKeys() const;

@@ -33,7 +33,7 @@
 */
 
 #include "servermanager.h"
-#include "guhsettings.h"
+#include "guhcore.h"
 
 #include <QSslCertificate>
 #include <QSslConfiguration>
@@ -47,23 +47,37 @@ ServerManager::ServerManager(GuhConfiguration* configuration, QObject *parent) :
     m_sslConfiguration(QSslConfiguration())
 {
     // check SSL
-    if (!QSslSocket::supportsSsl()) {
+    if (!configuration->sslEnabled()) {
+        qCDebug(dcConnection) << "SSL encryption disabled by config.";
+    } else if (!QSslSocket::supportsSsl()) {
         qCWarning(dcConnection) << "SSL is not supported/installed on this platform.";
     } else {
         qCDebug(dcConnection) << "SSL library version:" << QSslSocket::sslLibraryVersionString();
 
-        // load SSL configuration settings
-        GuhSettings settings(GuhSettings::SettingsRoleGlobal);
-        qCDebug(dcConnection) << "Loading SSL-configuration from" << settings.fileName();
+        QString configCertificateFileName = configuration->sslCertificate();
+        QString configKeyFileName = configuration->sslCertificateKey();
 
-        settings.beginGroup("SSL");
-        QString certificateFileName = settings.value("certificate", QVariant("/etc/ssl/certs/guhd-certificate.crt")).toString();
-        QString keyFileName = settings.value("certificate-key", QVariant("/etc/ssl/private/guhd-certificate.key")).toString();
-        settings.endGroup();
+        QString fallbackCertificateFileName = GuhSettings::storagePath() + "/certs/guhd-certificate.crt";
+        QString fallbackKeyFileName = GuhSettings::storagePath() + "/certs/guhd-certificate.key";
 
-        if (!loadCertificate(keyFileName, certificateFileName)) {
-            qCWarning(dcConnection) << "SSL encryption disabled";
+        bool certsLoaded = false;
+        if (loadCertificate(configKeyFileName, configCertificateFileName)) {
+            qCDebug(dcConnection) << "Using SSL certificate:" << configKeyFileName;
+            certsLoaded = true;
+        } else if (loadCertificate(fallbackKeyFileName, fallbackCertificateFileName)) {
+            certsLoaded = true;
+            qCWarning(dcConnection) << "Using fallback self-signed SSL certificate:" << fallbackCertificateFileName;
         } else {
+            qCDebug(dcConnection) << "Generating self signed certificates...";
+            CertificateGenerator::generate(fallbackCertificateFileName, fallbackKeyFileName);
+            if (loadCertificate(fallbackKeyFileName, fallbackCertificateFileName)) {
+                qCWarning(dcConnection) << "Using newly created self-signed SSL certificate:" << fallbackCertificateFileName;
+                certsLoaded = true;
+            } else {
+                qCWarning(dcConnection) << "Failed to load SSL certificates. SSL encryption disabled.";
+            }
+        }
+        if (certsLoaded) {
             m_sslConfiguration.setProtocol(QSsl::TlsV1_2);
             m_sslConfiguration.setPrivateKey(m_certificateKey);
             m_sslConfiguration.setLocalCertificate(m_certificate);
@@ -137,20 +151,20 @@ bool ServerManager::loadCertificate(const QString &certificateKeyFileName, const
 {
     QFile certificateKeyFile(certificateKeyFileName);
     if (!certificateKeyFile.open(QIODevice::ReadOnly)) {
-        qCWarning(dcWebServer) << "Could not open" << certificateKeyFile.fileName() << ":" << certificateKeyFile.errorString();
+        qCWarning(dcConnection) << "Could not open" << certificateKeyFile.fileName() << ":" << certificateKeyFile.errorString();
         return false;
     }
     m_certificateKey = QSslKey(certificateKeyFile.readAll(), QSsl::Rsa);
-    qCDebug(dcWebServer) << "Loaded successfully private certificate key " << certificateKeyFileName;
+    qCDebug(dcConnection) << "Loaded private certificate key " << certificateKeyFileName;
     certificateKeyFile.close();
 
     QFile certificateFile(certificateFileName);
     if (!certificateFile.open(QIODevice::ReadOnly)) {
-        qCWarning(dcWebServer) << "Could not open" << certificateFile.fileName() << ":" << certificateFile.errorString();
+        qCWarning(dcConnection) << "Could not open" << certificateFile.fileName() << ":" << certificateFile.errorString();
         return false;
     }
     m_certificate = QSslCertificate(certificateFile.readAll());
-    qCDebug(dcWebServer) << "Loaded successfully certificate file " << certificateFileName;
+    qCDebug(dcConnection) << "Loaded certificate file " << certificateFileName;
     certificateFile.close();
 
     return true;

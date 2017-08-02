@@ -10,7 +10,7 @@ INSTALLS += target
 
 QT *= sql xml websockets bluetooth dbus
 
-LIBS += -L$$top_builddir/libguh/ -lguh
+LIBS += -L$$top_builddir/libguh/ -lguh -lssl -lcrypto
 
 # Translations
 TRANSLATIONS *= $$top_srcdir/translations/guhd-en_US.ts \

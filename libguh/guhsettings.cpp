@@ -231,6 +231,24 @@ QString GuhSettings::translationsPath()
 #endif // SNAPPY
 }
 
+QString GuhSettings::storagePath()
+{
+    QString path;
+#ifdef SNAPPY
+    path = QString(qgetenv("SNAP_DATA"));
+#else
+    QString organisationName = QCoreApplication::instance()->organizationName();
+    if (organisationName == "guh-test") {
+        path = "/tmp/" + organisationName + "/";
+    } else if (GuhSettings::isRoot()) {
+        path = "/var/lib/" + organisationName + "/";
+    } else {
+        path = QDir::homePath() + "/.local/share/" + organisationName + "/";
+    }
+#endif
+    return path;
+}
+
 /*! Return a list of all settings keys.*/
 QStringList GuhSettings::allKeys() const
 {

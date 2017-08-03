@@ -72,7 +72,7 @@ class WebServer : public QTcpServer
 {
     Q_OBJECT
 public:
-    explicit WebServer(const QHostAddress &host, const uint &port, const QString &publicFolder, QObject *parent = 0);
+    explicit WebServer(const QHostAddress &host, const uint &port, const QString &publicFolder, bool sslEnabled, const QSslConfiguration &sslConfiguration, QObject *parent = 0);
     ~WebServer();
 
     void sendHttpReply(HttpReply *reply);

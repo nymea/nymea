@@ -93,15 +93,8 @@ GuhConfiguration::GuhConfiguration(QObject *parent) :
 
     // SSL configuration
     settings.beginGroup("SSL");
-    setSslEnabled(settings.value("enabled", false).toBool());
+    setSslEnabled(settings.value("enabled", true).toBool());
     setSslCertificate(settings.value("certificate", "/etc/ssl/certs/guhd-certificate.crt").toString(), settings.value("certificate-key", "/etc/ssl/certs/guhd-certificate.key").toString());
-    settings.endGroup();
-
-    // Cloud
-    settings.beginGroup("Cloud");
-    setCloudEnabled(settings.value("enabled", false).toBool());
-    setCloudAuthenticationServer(settings.value("authenticationServer", QUrl("https://cloud.guh.io/oauth2/token")).toUrl());
-    setCloudProxyServer(settings.value("proxyServer", QUrl("wss://proxy.guh.io/ws")).toUrl());
     settings.endGroup();
 }
 
@@ -307,60 +300,6 @@ void GuhConfiguration::setSslCertificate(const QString &sslCertificate, const QS
     m_sslCertificateKey = sslCertificateKey;
 
     emit sslCertificateChanged();
-}
-
-bool GuhConfiguration::cloudEnabled() const
-{
-    return m_cloudEnabled;
-}
-
-void GuhConfiguration::setCloudEnabled(const bool &enabled)
-{    
-    qCDebug(dcApplication()) << "Configuration: Cloud connection" << (enabled ? "enabled" : "disabled");
-
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
-    settings.beginGroup("Cloud");
-    settings.setValue("enabled", enabled);
-    settings.endGroup();
-
-    m_cloudEnabled = enabled;
-    emit cloudEnabledChanged();
-}
-
-QUrl GuhConfiguration::cloudAuthenticationServer() const
-{
-    return m_cloudAuthenticationServer;
-}
-
-void GuhConfiguration::setCloudAuthenticationServer(const QUrl &authenticationServer)
-{
-    qCDebug(dcApplication()) << "Configuration: Cloud authentication server" << authenticationServer.toString();
-
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
-    settings.beginGroup("Cloud");
-    settings.setValue("authenticationServer", authenticationServer.toString());
-    settings.endGroup();
-
-    m_cloudAuthenticationServer = authenticationServer;
-    emit cloudAuthenticationServerChanged();
-}
-
-QUrl GuhConfiguration::cloudProxyServer() const
-{
-    return m_cloudProxyServer;
-}
-
-void GuhConfiguration::setCloudProxyServer(const QUrl &cloudProxyServer)
-{
-    qCDebug(dcApplication()) << "Configuration: Cloud proxy server" << cloudProxyServer.toString();
-
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
-    settings.beginGroup("Cloud");
-    settings.setValue("proxyServer", cloudProxyServer.toString());
-    settings.endGroup();
-
-    m_cloudProxyServer = cloudProxyServer;
-    emit cloudProxyServerChanged();
 }
 
 void GuhConfiguration::setServerUuid(const QUuid &uuid)

@@ -87,16 +87,6 @@ public:
     QString sslCertificateKey() const;
     void setSslCertificate(const QString &sslCertificate, const QString &sslCertificateKey);
 
-    // Cloud
-    bool cloudEnabled() const;
-    void setCloudEnabled(const bool &enabled);
-
-    QUrl cloudAuthenticationServer() const;
-    void setCloudAuthenticationServer(const QUrl &authenticationServer);
-
-    QUrl cloudProxyServer() const;
-    void setCloudProxyServer(const QUrl &cloudProxyServer);
-
 private:
     QUuid m_serverUuid;
     QString m_serverName;
@@ -119,10 +109,6 @@ private:
     QString m_sslCertificate;
     QString m_sslCertificateKey;
 
-    bool m_cloudEnabled;
-    QUrl m_cloudAuthenticationServer;
-    QUrl m_cloudProxyServer;
-
     void setServerUuid(const QUuid &uuid);
     void setWebServerPublicFolder(const QString & path);
 
@@ -139,10 +125,6 @@ signals:
 
     void sslEnabledChanged();
     void sslCertificateChanged();
-
-    void cloudEnabledChanged();
-    void cloudAuthenticationServerChanged();
-    void cloudProxyServerChanged();
 };
 
 }

@@ -1,6 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
  *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2017 Michael Zanetti <michael.zanetti@guh.io>            *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *

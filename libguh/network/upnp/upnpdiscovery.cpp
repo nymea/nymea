@@ -141,9 +141,12 @@ void UpnpDiscovery::respondToSearchRequest(QHostAddress host, int port)
     QByteArray uuid = globalSettings.value("uuid", QUuid()).toByteArray();
     globalSettings.endGroup();
 
+    globalSettings.beginGroup("SSL");
+    bool useSsl = globalSettings.value("enabled", true).toBool();
+    globalSettings.endGroup();
+
     globalSettings.beginGroup("WebServer");
     int serverPort = globalSettings.value("port", 3333).toInt();
-    bool useSsl = globalSettings.value("https", false).toBool();
     globalSettings.endGroup();
 
     foreach (const QNetworkInterface &interface,  QNetworkInterface::allInterfaces()) {

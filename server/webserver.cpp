@@ -96,13 +96,14 @@ namespace guhserver {
  *
  *  \sa ServerManager
  */
-WebServer::WebServer(const QHostAddress &host, const uint &port, const QString &publicFolder, QObject *parent) :
+WebServer::WebServer(const QHostAddress &host, const uint &port, const QString &publicFolder, bool sslEnabled, const QSslConfiguration &sslConfiguration, QObject *parent) :
     QTcpServer(parent),
     m_avahiService(NULL),
     m_host(host),
     m_port(port),
     m_webinterfaceDir(publicFolder),
-    m_useSsl(false),
+    m_sslConfiguration(sslConfiguration),
+    m_useSsl(sslEnabled),
     m_enabled(false)
 {
     if (QCoreApplication::instance()->organizationName() == "guh-test") {

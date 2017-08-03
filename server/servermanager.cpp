@@ -106,7 +106,7 @@ ServerManager::ServerManager(GuhConfiguration* configuration, QObject *parent) :
     m_jsonServer->registerTransportInterface(m_bluetoothServer, configuration->bluetoothServerEnabled());
 
     // Register transport itnerfaces for the Webserver
-    m_webServer = new WebServer(configuration->webServerAddress(), configuration->webServerPort(), configuration->webServerPublicFolder(), this);
+    m_webServer = new WebServer(configuration->webServerAddress(), configuration->webServerPort(), configuration->webServerPublicFolder(), configuration->sslEnabled(), m_sslConfiguration, this);
     m_restServer->registerWebserver(m_webServer);
 }
 

@@ -403,6 +403,15 @@
                 "types": "Object"
             }
         },
+        "JSONRPC.RemoveToken": {
+            "description": "Revoke access for a given token.",
+            "params": {
+                "tokenId": "Uuid"
+            },
+            "returns": {
+                "error": "$ref:UserError"
+            }
+        },
         "JSONRPC.SetNotificationStatus": {
             "description": "Enable/Disable notifications for this connections.",
             "params": {
@@ -410,6 +419,16 @@
             },
             "returns": {
                 "enabled": "Bool"
+            }
+        },
+        "JSONRPC.Tokens": {
+            "description": "Return a list of if TokenInfo objects all the tokens for the current user.",
+            "params": {
+            },
+            "returns": {
+                "tokenInfoList": [
+                    "$ref:TokenInfo"
+                ]
             }
         },
         "JSONRPC.Version": {
@@ -1291,6 +1310,12 @@
             "o:repeating": "$ref:RepeatingOption",
             "o:time": "Time"
         },
+        "TokenInfo": {
+            "creationTime": "Uint",
+            "deviceName": "String",
+            "id": "Uuid",
+            "userName": "String"
+        },
         "Unit": [
             "UnitNone",
             "UnitSeconds",
@@ -1348,7 +1373,9 @@
             "UserErrorBackendError",
             "UserErrorInvalidUserId",
             "UserErrorDuplicateUserId",
-            "UserErrorBadPassword"
+            "UserErrorBadPassword",
+            "UserErrorTokenNotFound",
+            "UserErrorPermissionDenied"
         ],
         "ValueOperator": [
             "ValueOperatorEquals",

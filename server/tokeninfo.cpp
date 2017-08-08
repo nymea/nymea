@@ -18,55 +18,37 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef USERMANAGER_H
-#define USERMANAGER_H
-
 #include "tokeninfo.h"
-
-#include <QObject>
-#include <QSqlDatabase>
 
 namespace guhserver {
 
-class UserManager : public QObject
+TokenInfo::TokenInfo(const QUuid &id, const QString &username, const QDateTime &creationTime, const QString &deviceName):
+    m_id(id),
+    m_username(username),
+    m_creationTime(creationTime),
+    m_deviceName(deviceName)
 {
-    Q_OBJECT
-public:
-    enum UserError {
-        UserErrorNoError,
-        UserErrorBackendError,
-        UserErrorInvalidUserId,
-        UserErrorDuplicateUserId,
-        UserErrorBadPassword,
-        UserErrorTokenNotFound,
-        UserErrorPermissionDenied
-    };
-    Q_ENUM(UserError)
-
-    explicit UserManager(QObject *parent = 0);
-
-    QStringList users() const;
-
-    UserError createUser(const QString &username, const QString &password);
-    UserError removeUser(const QString &username);
-
-    QByteArray authenticate(const QString &username, const QString &password, const QString &deviceName);
-    QString userForToken(const QByteArray &token) const;
-    QList<TokenInfo> tokens(const QString &username) const;
-    guhserver::UserManager::UserError removeToken(const QUuid &tokenId);
-
-    bool verifyToken(const QByteArray &token);
-
-private:
-    void initDB();
-    bool validateUsername(const QString &username) const;
-    bool validateToken(const QByteArray &token) const;
-
-private:
-    QSqlDatabase m_db;
-
-};
 
 }
 
-#endif // USERMANAGER_H
+QUuid TokenInfo::id() const
+{
+    return m_id;
+}
+
+QString TokenInfo::username() const
+{
+    return m_username;
+}
+
+QDateTime TokenInfo::creationTime() const
+{
+    return m_creationTime;
+}
+
+QString TokenInfo::deviceName() const
+{
+    return m_deviceName;
+}
+
+}

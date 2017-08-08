@@ -44,6 +44,8 @@ private slots:
 
     void testInitialSetup();
 
+    void testRevokeToken();
+
     void testBasicCall_data();
     void testBasicCall();
 
@@ -253,6 +255,101 @@ void TestJSONRPC::testInitialSetup()
     qWarning() << "Calling Version with valid token:" << response.value("status").toString() << response.value("error").toString();
     QCOMPARE(response.value("status").toString(), QStringLiteral("success"));
 
+}
+
+void TestJSONRPC::testRevokeToken()
+{
+    QSignalSpy spy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QVERIFY(spy.isValid());
+
+    // Now get all the tokens
+    spy.clear();
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 123, \"token\": \"" + m_apiToken + "\", \"method\": \"JSONRPC.Tokens\"}");
+    if (spy.count() == 0) {
+        spy.wait();
+    }
+    QVERIFY(spy.count() == 1);
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(spy.first().at(1).toByteArray());
+    QVariantMap response = jsonDoc.toVariant().toMap();
+    qWarning() << "Getting existing Tokens" << response.value("status").toString() << response;
+    QCOMPARE(response.value("status").toString(), QStringLiteral("success"));
+    QVariantList tokenList = response.value("params").toMap().value("tokenInfoList").toList();
+    QCOMPARE(tokenList.count(), 1);
+    QUuid oldTokenId = tokenList.first().toMap().value("id").toUuid();
+
+    // Authenticate and create a new token
+    spy.clear();
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Authenticate\", \"params\": {\"username\": \"dummy@guh.io\", \"password\": \"DummyPW1!\", \"deviceName\": \"testcase\"}}");
+    if (spy.count() == 0) {
+        spy.wait();
+    }
+    QVERIFY(spy.count() == 1);
+    jsonDoc = QJsonDocument::fromJson(spy.first().at(1).toByteArray());
+    response = jsonDoc.toVariant().toMap();
+    qWarning() << "Calling Authenticate with valid credentials:" << response.value("params").toMap().value("success").toString() << response.value("params").toMap().value("token").toString();
+    QCOMPARE(response.value("status").toString(), QStringLiteral("success"));
+    QCOMPARE(response.value("params").toMap().value("success").toBool(), true);
+    QByteArray newToken = response.value("params").toMap().value("token").toByteArray();
+    QVERIFY(!newToken.isEmpty());
+
+    // Now do a Version call with the new token and it should work
+    spy.clear();
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"token\": \"" + newToken + "\", \"method\": \"JSONRPC.Version\"}");
+    if (spy.count() == 0) {
+        spy.wait();
+    }
+    QVERIFY(spy.count() == 1);
+    jsonDoc = QJsonDocument::fromJson(spy.first().at(1).toByteArray());
+    response = jsonDoc.toVariant().toMap();
+    qWarning() << "Calling Version with valid token:" << response.value("status").toString() << response.value("error").toString();
+    QCOMPARE(response.value("status").toString(), QStringLiteral("success"));
+
+    // Now get all the tokens using the old token
+    spy.clear();
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 123, \"token\": \"" + m_apiToken + "\", \"method\": \"JSONRPC.Tokens\"}");
+    if (spy.count() == 0) {
+        spy.wait();
+    }
+    QVERIFY(spy.count() == 1);
+    jsonDoc = QJsonDocument::fromJson(spy.first().at(1).toByteArray());
+    response = jsonDoc.toVariant().toMap();
+    qWarning() << "Calling Tokens" << response.value("status").toString();
+    QCOMPARE(response.value("status").toString(), QStringLiteral("success"));
+    tokenList = response.value("params").toMap().value("tokenInfoList").toList();
+    QCOMPARE(tokenList.count(), 2);
+
+    // find the new token
+    QUuid newTokenId;
+    foreach (const QVariant &tokenInfo, tokenList) {
+        if (tokenInfo.toMap().value("id").toUuid() != oldTokenId) {
+            newTokenId = tokenInfo.toMap().value("id").toUuid();
+            break;
+        }
+    }
+
+    // Revoke the new token
+    spy.clear();
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 123, \"token\": \"" + m_apiToken + "\", \"method\": \"JSONRPC.RemoveToken\", \"params\": {\"tokenId\": \"" + newTokenId.toByteArray() + "\"}}");
+    if (spy.count() == 0) {
+        spy.wait();
+    }
+    QVERIFY(spy.count() == 1);
+    jsonDoc = QJsonDocument::fromJson(spy.first().at(1).toByteArray());
+    response = jsonDoc.toVariant().toMap();
+    qWarning() << "Calling RemoveToken" << response.value("status").toString() << response;
+    QCOMPARE(response.value("status").toString(), QStringLiteral("success"));
+
+    // Do a call with the now removed token, it should be forbidden
+    spy.clear();
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"token\": \"" + newToken + "\", \"method\": \"JSONRPC.Version\"}");
+    if (spy.count() == 0) {
+        spy.wait();
+    }
+    QVERIFY(spy.count() == 1);
+    jsonDoc = QJsonDocument::fromJson(spy.first().at(1).toByteArray());
+    response = jsonDoc.toVariant().toMap();
+    qWarning() << "Calling Version with valid token:" << response.value("status").toString() << response.value("error").toString();
+    QCOMPARE(response.value("status").toString(), QStringLiteral("unauthorized"));
 }
 
 void TestJSONRPC::testBasicCall_data()

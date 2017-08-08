@@ -53,6 +53,8 @@ public:
 
     Q_INVOKABLE JsonReply *CreateUser(const QVariantMap &params);
     Q_INVOKABLE JsonReply *Authenticate(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *Tokens(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *RemoveToken(const QVariantMap &params);
 
     QHash<QString, JsonHandler *> handlers() const;
 

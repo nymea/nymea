@@ -165,6 +165,7 @@ public:
     DECLARE_OBJECT(wirelessAccessPoint, "WirelessAccessPoint")
     DECLARE_OBJECT(wiredNetworkDevice, "WiredNetworkDevice")
     DECLARE_OBJECT(wirelessNetworkDevice, "WirelessNetworkDevice")
+    DECLARE_OBJECT(tokenInfo, "TokenInfo")
 
     // pack types
     static QVariantMap packEventType(const EventType &eventType);
@@ -197,7 +198,6 @@ public:
     static QVariantMap packWiredNetworkDevice(WiredNetworkDevice *networkDevice);
     static QVariantMap packWirelessNetworkDevice(WirelessNetworkDevice *networkDevice);
 
-    // pack resources
     static QVariantList packRules(const QList<Rule> rules);
     static QVariantList packCreateMethods(DeviceClass::CreateMethods createMethods);
     static QVariantList packSupportedVendors();
@@ -218,6 +218,8 @@ public:
     static QVariantList packStateTypes(const DeviceClass &deviceClass);
     static QVariantList packEventTypes(const DeviceClass &deviceClass);
     static QVariantList packPlugins();
+
+    static QVariantMap packTokenInfo(const TokenInfo &tokenInfo);
 
     static QString basicTypeToString(const QVariant::Type &type);
 

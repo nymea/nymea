@@ -113,6 +113,19 @@ JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject 
     returns.insert("o:token", JsonTypes::basicTypeToString(JsonTypes::String));
     setReturns("Authenticate", returns);
 
+    params.clear(); returns.clear();
+    setDescription("Tokens", "Return a list of if TokenInfo objects all the tokens for the current user.");
+    setParams("Tokens", params);
+    returns.insert("tokenInfoList", QVariantList() << JsonTypes::tokenInfoRef());
+    setReturns("Tokens", returns);
+
+    params.clear(); returns.clear();
+    setDescription("RemoveToken", "Revoke access for a given token.");
+    params.insert("tokenId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    setParams("RemoveToken", params);
+    returns.insert("error", JsonTypes::userErrorRef());
+    setReturns("RemoveToken", returns);
+
     QMetaObject::invokeMethod(this, "setup", Qt::QueuedConnection);
 }
 
@@ -186,6 +199,35 @@ JsonReply *JsonRPCServer::Authenticate(const QVariantMap &params)
     if (!token.isEmpty()) {
         ret.insert("token", token);
     }
+    return createReply(ret);
+}
+
+JsonReply *JsonRPCServer::Tokens(const QVariantMap &params) const
+{
+    Q_UNUSED(params)
+    QByteArray token = property("token").toByteArray();
+
+    QString username = GuhCore::instance()->userManager()->userForToken(token);
+    if (username.isEmpty()) {
+        // There *really* should be a user for the token in the DB
+        Q_ASSERT(false);
+    }
+    QList<TokenInfo> tokens = GuhCore::instance()->userManager()->tokens(username);
+    QVariantList retList;
+    foreach (const TokenInfo &tokenInfo, tokens) {
+        retList << JsonTypes::packTokenInfo(tokenInfo);
+    }
+    QVariantMap retMap;
+    retMap.insert("tokenInfoList", retList);
+    return createReply(retMap);
+}
+
+JsonReply *JsonRPCServer::RemoveToken(const QVariantMap &params)
+{
+    QUuid tokenId = params.value("tokenId").toUuid();
+    UserManager::UserError error = GuhCore::instance()->userManager()->removeToken(tokenId);
+    QVariantMap ret;
+    ret.insert("error", JsonTypes::userErrorToString(error));
     return createReply(ret);
 }
 
@@ -324,6 +366,7 @@ void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &data)
 
     // Hack: attach clientId to handler to be able to handle the JSONRPC methods. Do not use this outside of jsonrpcserver
     handler->setProperty("clientId", clientId);
+    handler->setProperty("token", message.value("token").toByteArray());
 
     JsonReply *reply;
     QMetaObject::invokeMethod(handler, method.toLatin1().data(), Q_RETURN_ARG(JsonReply*, reply), Q_ARG(QVariantMap, params));

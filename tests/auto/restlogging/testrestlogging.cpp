@@ -57,7 +57,7 @@ private slots:
 
 void TestRestLogging::initLogs()
 {
-    QNetworkRequest request(QUrl("http://localhost:3333/api/v1/logs"));
+    QNetworkRequest request(QUrl("https://localhost:3333/api/v1/logs"));
     QVariant response = getAndWait(request);
 
     QVariantList logEntries = response.toList();
@@ -99,7 +99,7 @@ void TestRestLogging::invalidFilter()
 {
     QFETCH(QVariantMap, filter);
 
-    QUrl url("http://localhost:3333/api/v1/logs");
+    QUrl url("https://localhost:3333/api/v1/logs");
     QUrlQuery query;
     query.addQueryItem("filter", QJsonDocument::fromVariant(filter).toJson(QJsonDocument::Compact));
     url.setQuery(query);
@@ -113,7 +113,7 @@ void TestRestLogging::invalidFilter()
 
 void TestRestLogging::invalidFilterJson()
 {
-    QUrl url("http://localhost:3333/api/v1/logs");
+    QUrl url("https://localhost:3333/api/v1/logs");
     QUrlQuery query;
     query.addQueryItem("filter", "blabla:!!");
     url.setQuery(query);
@@ -241,7 +241,7 @@ void TestRestLogging::actionLog()
     params.insert("eventTypes", QVariantList() << JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeTrigger));
     params.insert("values", QVariantList() << "7, true");
 
-    QUrl url("http://localhost:3333/api/v1/logs");
+    QUrl url("https://localhost:3333/api/v1/logs");
     QUrlQuery query;
     query.addQueryItem("filter", QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact));
     url.setQuery(query);
@@ -326,7 +326,7 @@ void TestRestLogging::removeDevice()
 
     QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
-    QNetworkRequest deleteRequest(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(m_mockDeviceId.toString())));
+    QNetworkRequest deleteRequest(QUrl(QString("https://localhost:3333/api/v1/devices/%1").arg(m_mockDeviceId.toString())));
     QVariant response = deleteAndWait(deleteRequest);
     QVERIFY2(!response.isNull(), "Could not delete device");
 
@@ -335,7 +335,7 @@ void TestRestLogging::removeDevice()
     QVERIFY(!notification.isNull());
 
     // get this logentry with filter
-    QUrl url("http://localhost:3333/api/v1/logs");
+    QUrl url("https://localhost:3333/api/v1/logs");
     response = getAndWait(QNetworkRequest(url));
     QVariantList logEntries = response.toList();
     QVERIFY2(!logEntries.count() != 0, "No log entries left");

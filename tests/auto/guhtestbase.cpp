@@ -290,6 +290,9 @@ QVariantList GuhTestBase::checkNotifications(const QSignalSpy &spy, const QStrin
 QVariant GuhTestBase::getAndWait(const QNetworkRequest &request, const int &expectedStatus)
 {
     QNetworkAccessManager nam;
+    connect(&nam, &QNetworkAccessManager::sslErrors, [this, &nam](QNetworkReply *reply, const QList<QSslError> &) {
+        reply->ignoreSslErrors();
+    });
     QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
 
     QNetworkReply *reply = nam.get(request);
@@ -305,6 +308,7 @@ QVariant GuhTestBase::getAndWait(const QNetworkRequest &request, const int &expe
     }
 
     QByteArray data = reply->readAll();
+    qDebug() << "***************reply" << reply->errorString() << reply->request().url();
     verifyReply(reply, data, expectedStatus);
 
     reply->deleteLater();
@@ -322,6 +326,9 @@ QVariant GuhTestBase::getAndWait(const QNetworkRequest &request, const int &expe
 QVariant GuhTestBase::deleteAndWait(const QNetworkRequest &request, const int &expectedStatus)
 {
     QNetworkAccessManager nam;
+    connect(&nam, &QNetworkAccessManager::sslErrors, [this, &nam](QNetworkReply *reply, const QList<QSslError> &) {
+        reply->ignoreSslErrors();
+    });
     QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
 
     QNetworkReply *reply = nam.deleteResource(request);
@@ -354,6 +361,9 @@ QVariant GuhTestBase::deleteAndWait(const QNetworkRequest &request, const int &e
 QVariant GuhTestBase::postAndWait(const QNetworkRequest &request, const QVariant &params, const int &expectedStatus)
 {
     QNetworkAccessManager nam;
+    connect(&nam, &QNetworkAccessManager::sslErrors, [this, &nam](QNetworkReply *reply, const QList<QSslError> &) {
+        reply->ignoreSslErrors();
+    });
     QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
 
     QByteArray payload = QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact);
@@ -391,6 +401,9 @@ QVariant GuhTestBase::postAndWait(const QNetworkRequest &request, const QVariant
 QVariant GuhTestBase::putAndWait(const QNetworkRequest &request, const QVariant &params, const int &expectedStatus)
 {
     QNetworkAccessManager nam;
+    connect(&nam, &QNetworkAccessManager::sslErrors, [this, &nam](QNetworkReply *reply, const QList<QSslError> &) {
+        reply->ignoreSslErrors();
+    });
     QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
 
     QByteArray payload = QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact);

@@ -75,15 +75,15 @@ private slots:
 void TestRestDevices::getConfiguredDevices()
 {
     // Get all devices
-    QVariant response = getAndWait(QNetworkRequest(QUrl("http://localhost:3333/api/v1/devices")));
+    QVariant response = getAndWait(QNetworkRequest(QUrl("https://localhost:3333/api/v1/devices")));
     QVERIFY2(!response.isNull(), "Could not get device");
     QVariantList deviceList = response.toList();
     QVERIFY2(deviceList.count() >= 2, "not enought devices.");
 
-    // Get each of thouse devices individualy
+    // Get each of those devices individualy
     foreach (const QVariant &device, deviceList) {
         QVariantMap deviceMap = device.toMap();
-        QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceMap.value("id").toString())));
+        QNetworkRequest request(QUrl(QString("https://localhost:3333/api/v1/devices/%1").arg(deviceMap.value("id").toString())));
         response = getAndWait(request);
         QVERIFY2(!response.isNull(), "Could not get device");
     }
@@ -152,7 +152,7 @@ void TestRestDevices::addConfiguredDevice()
     params.insert("name", "Mock device");
     params.insert("deviceParams", deviceParams);
 
-    QNetworkRequest request(QUrl("http://localhost:3333/api/v1/devices"));
+    QNetworkRequest request(QUrl("https://localhost:3333/api/v1/devices"));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
     QVariant response = postAndWait(request, params, expectedStatusCode);
@@ -165,7 +165,7 @@ void TestRestDevices::addConfiguredDevice()
         DeviceId deviceId = DeviceId(response.toMap().value("id").toString());
         QVERIFY2(!deviceId.isNull(), "invalid device id for removing");
 
-        QNetworkRequest  deleteRequest(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
+        QNetworkRequest  deleteRequest(QUrl(QString("https://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
         response = deleteAndWait(deleteRequest);
         QVERIFY2(!response.isNull(), "Could not delete device");
     }
@@ -200,7 +200,7 @@ void TestRestDevices::addPushButtonDevices()
     params.insert("discoveryParams", discoveryParams);
 
     // create URL
-    QUrl url(QString("http://localhost:3333/api/v1/deviceclasses/%1/discover").arg(deviceClassId.toString()));
+    QUrl url(QString("https://localhost:3333/api/v1/deviceclasses/%1/discover").arg(deviceClassId.toString()));
     QUrlQuery query;
     query.addQueryItem("params", QJsonDocument::fromVariant(discoveryParams).toJson(QJsonDocument::Compact));
     url.setQuery(query);
@@ -217,7 +217,7 @@ void TestRestDevices::addPushButtonDevices()
     params.insert("name", "Push button mock device");
     params.insert("deviceDescriptorId", deviceDescriptoId);
 
-    QNetworkRequest pairRequest(QUrl("http://localhost:3333/api/v1/devices/pair"));
+    QNetworkRequest pairRequest(QUrl("https://localhost:3333/api/v1/devices/pair"));
     pairRequest.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
 
     response = postAndWait(pairRequest, params);
@@ -235,7 +235,7 @@ void TestRestDevices::addPushButtonDevices()
     params.clear();
     params.insert("pairingTransactionId", pairingTransactionId.toString());
 
-    QNetworkRequest confirmPairingRequest(QUrl("http://localhost:3333/api/v1/devices/confirmpairing"));
+    QNetworkRequest confirmPairingRequest(QUrl("https://localhost:3333/api/v1/devices/confirmpairing"));
     confirmPairingRequest.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
 
     response = postAndWait(confirmPairingRequest, params, expectedStatusCode);
@@ -246,7 +246,7 @@ void TestRestDevices::addPushButtonDevices()
         DeviceId deviceId = DeviceId(response.toMap().value("id").toString());
         QVERIFY2(!deviceId.isNull(), "invalid device id for removing");
 
-        QNetworkRequest  deleteRequest(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
+        QNetworkRequest  deleteRequest(QUrl(QString("https://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
         response = deleteAndWait(deleteRequest);
         QVERIFY2(!response.isNull(), "Could not delete device");
     }
@@ -281,7 +281,7 @@ void TestRestDevices::addDisplayPinDevices()
     params.insert("discoveryParams", discoveryParams);
 
     // create URL
-    QUrl url(QString("http://localhost:3333/api/v1/deviceclasses/%1/discover").arg(deviceClassId.toString()));
+    QUrl url(QString("https://localhost:3333/api/v1/deviceclasses/%1/discover").arg(deviceClassId.toString()));
     QUrlQuery query;
     query.addQueryItem("params", QJsonDocument::fromVariant(discoveryParams).toJson(QJsonDocument::Compact));
     url.setQuery(query);
@@ -298,7 +298,7 @@ void TestRestDevices::addDisplayPinDevices()
     params.insert("name", "Display pin mock device");
     params.insert("deviceDescriptorId", deviceDescriptoId);
 
-    QNetworkRequest pairRequest(QUrl("http://localhost:3333/api/v1/devices/pair"));
+    QNetworkRequest pairRequest(QUrl("https://localhost:3333/api/v1/devices/pair"));
     pairRequest.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
 
     response = postAndWait(pairRequest, params);
@@ -314,7 +314,7 @@ void TestRestDevices::addDisplayPinDevices()
     params.insert("pairingTransactionId", pairingTransactionId.toString());
     params.insert("secret", secret);
 
-    QNetworkRequest confirmPairingRequest(QUrl("http://localhost:3333/api/v1/devices/confirmpairing"));
+    QNetworkRequest confirmPairingRequest(QUrl("https://localhost:3333/api/v1/devices/confirmpairing"));
     confirmPairingRequest.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
 
     response = postAndWait(confirmPairingRequest, params, expectedStatusCode);
@@ -325,7 +325,7 @@ void TestRestDevices::addDisplayPinDevices()
         DeviceId deviceId = DeviceId(response.toMap().value("id").toString());
         QVERIFY2(!deviceId.isNull(), "invalid device id for removing");
 
-        QNetworkRequest  deleteRequest(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
+        QNetworkRequest  deleteRequest(QUrl(QString("https://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
         response = deleteAndWait(deleteRequest);
         QVERIFY2(!response.isNull(), "Could not delete device");
     }
@@ -337,7 +337,7 @@ void TestRestDevices::parentChildDevices()
     QVariantMap params;
     params.insert("deviceClassId", mockParentDeviceClassId);
 
-    QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/devices")));
+    QNetworkRequest request(QUrl(QString("https://localhost:3333/api/v1/devices")));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     QVariant response = postAndWait(request, params);
     QVERIFY2(!response.isNull(), "Could not read add device response");
@@ -346,7 +346,7 @@ void TestRestDevices::parentChildDevices()
     QVERIFY2(parentDeviceId != DeviceId(), "DeviceId not returned");
 
     // find child device
-    response = getAndWait(QNetworkRequest(QUrl("http://localhost:3333/api/v1/devices")));
+    response = getAndWait(QNetworkRequest(QUrl("https://localhost:3333/api/v1/devices")));
     QVariantList deviceList = response.toList();
     DeviceId childDeviceId;
     foreach (const QVariant deviceVariant, deviceList) {
@@ -360,13 +360,13 @@ void TestRestDevices::parentChildDevices()
     QVERIFY2(!childDeviceId.isNull(), "Could not find child device");
 
     // try to remove child device
-    QNetworkRequest deleteRequest(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(childDeviceId.toString())));
+    QNetworkRequest deleteRequest(QUrl(QString("https://localhost:3333/api/v1/devices/%1").arg(childDeviceId.toString())));
     response = deleteAndWait(deleteRequest, 400);
     //QVERIFY2(!response.isNull(), "Could not delete device");
     QCOMPARE(JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorDeviceIsChild), response.toMap().value("error").toString());
 
     // check if the child device is still there
-    response = getAndWait(QNetworkRequest(QUrl("http://localhost:3333/api/v1/devices")));
+    response = getAndWait(QNetworkRequest(QUrl("https://localhost:3333/api/v1/devices")));
     deviceList = response.toList();
     bool found = false;
     foreach (const QVariant deviceVariant, deviceList) {
@@ -381,12 +381,12 @@ void TestRestDevices::parentChildDevices()
     QVERIFY2(found, "Could not find child device.");
 
     // remove the parent device
-    deleteRequest.setUrl(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(parentDeviceId.toString())));
+    deleteRequest.setUrl(QUrl(QString("https://localhost:3333/api/v1/devices/%1").arg(parentDeviceId.toString())));
     response = deleteAndWait(deleteRequest);
     QVERIFY2(!response.isNull(), "Could not delete device");
 
     // check if the child device is still there
-    response = getAndWait(QNetworkRequest(QUrl("http://localhost:3333/api/v1/devices")));
+    response = getAndWait(QNetworkRequest(QUrl("https://localhost:3333/api/v1/devices")));
     deviceList = response.toList();
     found = false;
     foreach (const QVariant deviceVariant, deviceList) {
@@ -440,7 +440,7 @@ void TestRestDevices::executeAction()
     QVariantMap params;
     params.insert("params", actionParams);
 
-    QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/devices/%1/execute/%2").arg(deviceId.toString()).arg(actionTypeId.toString())));
+    QNetworkRequest request(QUrl(QString("https://localhost:3333/api/v1/devices/%1/execute/%2").arg(deviceId.toString()).arg(actionTypeId.toString())));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     QVariant response = postAndWait(request, params, expectedStatusCode);
     QVERIFY2(!response.isNull(), "Could not read execute action response");
@@ -512,10 +512,10 @@ void TestRestDevices::getStateValue()
     request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
 
     if (!stateTypeId.isNull()) {
-        request.setUrl(QUrl(QString("http://localhost:3333/api/v1/devices/%1/states/%2").arg(deviceId).arg(stateTypeId)));
+        request.setUrl(QUrl(QString("https://localhost:3333/api/v1/devices/%1/states/%2").arg(deviceId).arg(stateTypeId)));
     } else {
         // Get all states
-        request.setUrl(QUrl(QString("http://localhost:3333/api/v1/devices/%1/states").arg(deviceId)));
+        request.setUrl(QUrl(QString("https://localhost:3333/api/v1/devices/%1/states").arg(deviceId)));
     }
     QVariant response = getAndWait(request, expectedStatusCode);
     QVERIFY2(!response.isNull(), "Could not read get state value response");
@@ -549,7 +549,7 @@ void TestRestDevices::editDevices()
     params.insert("name", originalName);
     params.insert("deviceParams", deviceParams);
 
-    QNetworkRequest addRequest(QUrl("http://localhost:3333/api/v1/devices"));
+    QNetworkRequest addRequest(QUrl("https://localhost:3333/api/v1/devices"));
     addRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
     QVariant response = postAndWait(addRequest, params);
@@ -560,7 +560,7 @@ void TestRestDevices::editDevices()
     params.clear();
     params.insert("name", name);
 
-    QNetworkRequest deviceRequest(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
+    QNetworkRequest deviceRequest(QUrl(QString("https://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
     deviceRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
     response = postAndWait(deviceRequest, params);
@@ -641,7 +641,7 @@ void TestRestDevices::reconfigureDevices()
     params.insert("deviceParams", deviceParams);
 
     // ADD a mockdevice
-    QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/devices")));
+    QNetworkRequest request(QUrl(QString("https://localhost:3333/api/v1/devices")));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
 
     QVariant response = postAndWait(request, params);
@@ -655,7 +655,7 @@ void TestRestDevices::reconfigureDevices()
     editParams.insert("deviceId", deviceId);
     editParams.insert("deviceParams", newDeviceParams);
 
-    request.setUrl(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
+    request.setUrl(QUrl(QString("https://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
 
     response = putAndWait(request, editParams, expectedStatusCode);
@@ -663,7 +663,7 @@ void TestRestDevices::reconfigureDevices()
 
     // if the reconfigure should have been successfull
     if (expectedStatusCode == 200) {
-        request.setUrl(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
+        request.setUrl(QUrl(QString("https://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
         request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
         response = getAndWait(request);
         QVariantMap deviceMap = response.toMap();
@@ -673,7 +673,7 @@ void TestRestDevices::reconfigureDevices()
     }
 
     // delete it
-    request.setUrl(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
+    request.setUrl(QUrl(QString("https://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
     response = deleteAndWait(request);
     QVERIFY2(!response.isNull(), "Could not delete device");
 }
@@ -705,7 +705,7 @@ void TestRestDevices::reconfigureByDiscovery()
     params.insert("deviceClassId", deviceClassId);
     params.insert("discoveryParams", discoveryParams);
 
-    QUrl url(QString("http://localhost:3333/api/v1/deviceclasses/%1/discover").arg(deviceClassId.toString()));
+    QUrl url(QString("https://localhost:3333/api/v1/deviceclasses/%1/discover").arg(deviceClassId.toString()));
 
     if (!discoveryParams.isEmpty()) {
         QUrlQuery query;
@@ -718,7 +718,7 @@ void TestRestDevices::reconfigureByDiscovery()
     QCOMPARE(foundDevices.count(), resultCount);
 
     // add Discovered Device 1 port 55555
-    request.setUrl(QUrl("http://localhost:3333/api/v1/devices"));
+    request.setUrl(QUrl("https://localhost:3333/api/v1/devices"));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     DeviceDescriptorId descriptorId1;
     foreach (const QVariant &descriptor, foundDevices) {
@@ -745,7 +745,7 @@ void TestRestDevices::reconfigureByDiscovery()
     params.insert("deviceClassId", deviceClassId);
     params.insert("discoveryParams", discoveryParams);
 
-    url = QUrl(QString("http://localhost:3333/api/v1/deviceclasses/%1/discover").arg(deviceClassId.toString()));
+    url = QUrl(QString("https://localhost:3333/api/v1/deviceclasses/%1/discover").arg(deviceClassId.toString()));
     QUrlQuery query2;
     query2.addQueryItem("params", QJsonDocument::fromVariant(discoveryParams).toJson(QJsonDocument::Compact));
     url.setQuery(query2);
@@ -773,14 +773,14 @@ void TestRestDevices::reconfigureByDiscovery()
     params.insert("deviceId", deviceId.toString());
     params.insert("deviceDescriptorId", descriptorId2);
 
-    request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
+    request = QNetworkRequest(QUrl(QString("https://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
 
     response = putAndWait(request, params, expectedStatusCode);
     QVERIFY2(!response.isNull(), "Could not delete device");
 
     // remove added device
-    request.setUrl(QUrl(QString("http://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
+    request.setUrl(QUrl(QString("https://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
     response = deleteAndWait(request);
     QVERIFY2(!response.isNull(), "Could not delete device");
 }

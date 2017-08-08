@@ -89,7 +89,7 @@ void TestRestRules::cleanupMockHistory()
 void TestRestRules::cleanupRules()
 {
     // Get all rules
-    QNetworkRequest request(QUrl("http://localhost:3333/api/v1/rules"));
+    QNetworkRequest request(QUrl("https://localhost:3333/api/v1/rules"));
     QVariant response = getAndWait(request);
     QVERIFY(!response.isNull());
     QVariantList rulesList = response.toList();
@@ -97,7 +97,7 @@ void TestRestRules::cleanupRules()
     // delete each rule
     foreach (const QVariant &rule, rulesList) {
         QVariantMap ruleMap = rule.toMap();
-        QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/rules/%1").arg(ruleMap.value("id").toString())));
+        QNetworkRequest request(QUrl(QString("https://localhost:3333/api/v1/rules/%1").arg(ruleMap.value("id").toString())));
         response = deleteAndWait(request);
         QVERIFY(!response.isNull());
     }
@@ -196,13 +196,13 @@ QVariant TestRestRules::validIntStateBasedRule(const QString &name, const bool &
 void TestRestRules::getRules()
 {
     // Get all rules
-    QVariant response = getAndWait(QNetworkRequest(QUrl("http://localhost:3333/api/v1/rules")));
+    QVariant response = getAndWait(QNetworkRequest(QUrl("https://localhost:3333/api/v1/rules")));
     QVariantList rulesList = response.toList();
     QVERIFY2(rulesList.count() == 0, "Not enought rules");
 
     foreach (const QVariant &rule, rulesList) {
         QVariantMap ruleMap = rule.toMap();
-        QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/rules/%1").arg(ruleMap.value("id").toString())));
+        QNetworkRequest request(QUrl(QString("https://localhost:3333/api/v1/rules/%1").arg(ruleMap.value("id").toString())));
         request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
 
         response = getAndWait(request);
@@ -213,14 +213,14 @@ void TestRestRules::getRules()
 void TestRestRules::findRule()
 {
     QVariant params = validIntStateBasedRule("Find", true, true);
-    QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/rules")));
+    QNetworkRequest request(QUrl(QString("https://localhost:3333/api/v1/rules")));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     QVariant response = postAndWait(request, params);
 
     RuleId ruleId = RuleId(response.toMap().value("id").toString());
     QVERIFY(!ruleId.isNull());
 
-    QUrl url(QString("http://localhost:3333/api/v1/rules"));
+    QUrl url(QString("https://localhost:3333/api/v1/rules"));
     QUrlQuery query;
     query.addQueryItem("deviceId", m_mockDeviceId.toString());
     url.setQuery(query);
@@ -229,13 +229,13 @@ void TestRestRules::findRule()
     QVERIFY(!response.isNull());
 
     // REMOVE rule
-    request.setUrl(QUrl(QString("http://localhost:3333/api/v1/rules/%1").arg(ruleId.toString())));
+    request.setUrl(QUrl(QString("https://localhost:3333/api/v1/rules/%1").arg(ruleId.toString())));
     response = deleteAndWait(request);
     QVERIFY(!response.isNull());
     QCOMPARE(JsonTypes::ruleErrorToString(RuleEngine::RuleErrorNoError), response.toMap().value("error").toString());
 
     // check if removed
-    request.setUrl(QUrl(QString("http://localhost:3333/api/v1/rules/%1").arg(ruleId.toString())));
+    request.setUrl(QUrl(QString("https://localhost:3333/api/v1/rules/%1").arg(ruleId.toString())));
     response = getAndWait(request, 404);
     QVERIFY(!response.isNull());
 }
@@ -243,10 +243,13 @@ void TestRestRules::findRule()
 void TestRestRules::invalidMethod()
 {
     QNetworkAccessManager nam;
+    connect(&nam, &QNetworkAccessManager::sslErrors, [this, &nam](QNetworkReply *reply, const QList<QSslError> &) {
+        reply->ignoreSslErrors();
+    });
     QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
 
     QNetworkRequest request;
-    request.setUrl(QUrl("http://localhost:3333/api/v1/rules"));
+    request.setUrl(QUrl("https://localhost:3333/api/v1/rules"));
     QNetworkReply *reply = nam.sendCustomRequest(request, "TRACE");
 
     clientSpy.wait();
@@ -263,10 +266,13 @@ void TestRestRules::invalidMethod()
 void TestRestRules::invalidPath()
 {
     QNetworkAccessManager nam;
+    connect(&nam, &QNetworkAccessManager::sslErrors, [this, &nam](QNetworkReply *reply, const QList<QSslError> &) {
+        reply->ignoreSslErrors();
+    });
     QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
 
     QNetworkRequest request;
-    request.setUrl(QUrl("http://localhost:3333/api/v1/rules/" + QUuid::createUuid().toString() + "/" + QUuid::createUuid().toString()));
+    request.setUrl(QUrl("https://localhost:3333/api/v1/rules/" + QUuid::createUuid().toString() + "/" + QUuid::createUuid().toString()));
     QNetworkReply *reply = nam.get(request);
 
     clientSpy.wait();
@@ -282,7 +288,7 @@ void TestRestRules::invalidPath()
 
 void TestRestRules::checkOptionCall()
 {
-    QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/rules")));
+    QNetworkRequest request(QUrl(QString("https://localhost:3333/api/v1/rules")));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     QVariant response = postAndWait(request, validIntStateBasedRule("Options", true, true));
 
@@ -290,9 +296,12 @@ void TestRestRules::checkOptionCall()
     QVERIFY(!ruleId.isNull());
 
     QNetworkAccessManager nam;
+    connect(&nam, &QNetworkAccessManager::sslErrors, [this, &nam](QNetworkReply *reply, const QList<QSslError> &) {
+        reply->ignoreSslErrors();
+    });
     QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
 
-    request.setUrl(QUrl(QString("http://localhost:3333/api/v1/rules/%1").arg(ruleId.toString())));
+    request.setUrl(QUrl(QString("https://localhost:3333/api/v1/rules/%1").arg(ruleId.toString())));
     QNetworkReply *reply = nam.sendCustomRequest(request, "OPTIONS");
 
     clientSpy.wait();
@@ -306,13 +315,13 @@ void TestRestRules::checkOptionCall()
     reply->deleteLater();
 
     // REMOVE rule
-    request.setUrl(QUrl(QString("http://localhost:3333/api/v1/rules/%1").arg(ruleId.toString())));
+    request.setUrl(QUrl(QString("https://localhost:3333/api/v1/rules/%1").arg(ruleId.toString())));
     response = deleteAndWait(request);
     QVERIFY(!response.isNull());
     QCOMPARE(JsonTypes::ruleErrorToString(RuleEngine::RuleErrorNoError), response.toMap().value("error").toString());
 
     // check if removed
-    request.setUrl(QUrl(QString("http://localhost:3333/api/v1/rules/%1").arg(ruleId.toString())));
+    request.setUrl(QUrl(QString("https://localhost:3333/api/v1/rules/%1").arg(ruleId.toString())));
     response = getAndWait(request, 404);
     QVERIFY(!response.isNull());
 }
@@ -505,13 +514,13 @@ void TestRestRules::addRemoveRules()
     }
 
     // Get rules and verify there is no rule added
-    QNetworkRequest request(QUrl("http://localhost:3333/api/v1/rules"));
+    QNetworkRequest request(QUrl("https://localhost:3333/api/v1/rules"));
     QVariant response = getAndWait(request);
     QVariantList rulesList = response.toList();
     QVERIFY2(rulesList.count() == 0, "there should be no rules.");
 
     // ADD rule
-    request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/rules")));
+    request = QNetworkRequest(QUrl(QString("https://localhost:3333/api/v1/rules")));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
 
     response = postAndWait(request, params, expectedStatusCode);
@@ -524,13 +533,13 @@ void TestRestRules::addRemoveRules()
     qDebug() << QJsonDocument::fromVariant(response).toJson();
 
     // GET rule details
-    request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/rules/%1").arg(ruleId.toString())));
+    request = QNetworkRequest(QUrl(QString("https://localhost:3333/api/v1/rules/%1").arg(ruleId.toString())));
     //request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     response = getAndWait(request);
     QVERIFY(!response.isNull());
 
     // REMOVE rule
-    request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/rules/%1").arg(ruleId.toString())));
+    request = QNetworkRequest(QUrl(QString("https://localhost:3333/api/v1/rules/%1").arg(ruleId.toString())));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     response = deleteAndWait(request);
     QVERIFY(!response.isNull());
@@ -544,7 +553,7 @@ void TestRestRules::emptyRule()
     params.insert("actions", QVariantList());
 
     // Get rules and verify there is no rule added
-    QNetworkRequest request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/rules")));
+    QNetworkRequest request = QNetworkRequest(QUrl(QString("https://localhost:3333/api/v1/rules")));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
 
     QVariant response = postAndWait(request, params, 400);
@@ -798,13 +807,13 @@ void TestRestRules::editRules()
     params.insert("name", "TestRule");
 
     // Get rules and verify there is no rule added
-    QNetworkRequest request(QUrl("http://localhost:3333/api/v1/rules"));
+    QNetworkRequest request(QUrl("https://localhost:3333/api/v1/rules"));
     QVariant response = getAndWait(request);
     QVariantList rulesList = response.toList();
     QVERIFY2(rulesList.count() == 0, "there should be no rules.");
 
     // ADD rule
-    request.setUrl(QUrl(QString("http://localhost:3333/api/v1/rules")));
+    request.setUrl(QUrl(QString("https://localhost:3333/api/v1/rules")));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     response = postAndWait(request, params);
     QVERIFY(!response.isNull());
@@ -838,25 +847,25 @@ void TestRestRules::editRules()
     }
 
     // EDIT rule
-    request.setUrl(QUrl(QString("http://localhost:3333/api/v1/rules/%1").arg(ruleId.toString())));
+    request.setUrl(QUrl(QString("https://localhost:3333/api/v1/rules/%1").arg(ruleId.toString())));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     response = putAndWait(request, params, expectedStatusCode);
     QVERIFY(!response.isNull());
 
     if (expectedStatusCode == 200) {
         // get edit rule and verify params
-        request.setUrl(QUrl(QString("http://localhost:3333/api/v1/rules")));
+        request.setUrl(QUrl(QString("https://localhost:3333/api/v1/rules")));
         response = getAndWait(request);
         QVERIFY(!response.isNull());
     }
 
     // REMOVE rule
-    request.setUrl(QUrl(QString("http://localhost:3333/api/v1/rules/%1").arg(ruleId.toString())));
+    request.setUrl(QUrl(QString("https://localhost:3333/api/v1/rules/%1").arg(ruleId.toString())));
     response = deleteAndWait(request);
     QVERIFY(!response.isNull());
 
     // check if removed
-    request.setUrl(QUrl(QString("http://localhost:3333/api/v1/rules/%1").arg(ruleId.toString())));
+    request.setUrl(QUrl(QString("https://localhost:3333/api/v1/rules/%1").arg(ruleId.toString())));
     response = getAndWait(request, 404);
     QVERIFY(!response.isNull());
 }
@@ -880,14 +889,14 @@ void TestRestRules::enableDisableRule()
     addRuleParams.insert("actions", actions);
 
     // ADD rule
-    QNetworkRequest request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/rules")));
+    QNetworkRequest request = QNetworkRequest(QUrl(QString("https://localhost:3333/api/v1/rules")));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     QVariant response = postAndWait(request, addRuleParams);
     RuleId ruleId = RuleId(response.toMap().value("id").toString());
     QVERIFY(!ruleId.isNull());
 
     // ENABLE rule
-    request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/rules/%1/enable").arg(ruleId.toString())));
+    request = QNetworkRequest(QUrl(QString("https://localhost:3333/api/v1/rules/%1/enable").arg(ruleId.toString())));
     response = postAndWait(request, QVariant());
     QVERIFY2(!response.isNull(), "Could not read response");
 
@@ -898,7 +907,7 @@ void TestRestRules::enableDisableRule()
     cleanupMockHistory();
 
     // DISABLE the rule
-    request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/rules/%1/disable").arg(ruleId.toString())));
+    request = QNetworkRequest(QUrl(QString("https://localhost:3333/api/v1/rules/%1/disable").arg(ruleId.toString())));
     response = postAndWait(request, QVariant());
     QVERIFY2(!response.isNull(), "Could not read response");
 
@@ -909,7 +918,7 @@ void TestRestRules::enableDisableRule()
     cleanupMockHistory();
 
     // ENABLE again
-    request = QNetworkRequest(QUrl(QString("http://localhost:3333/api/v1/rules/%1/enable").arg(ruleId.toString())));
+    request = QNetworkRequest(QUrl(QString("https://localhost:3333/api/v1/rules/%1/enable").arg(ruleId.toString())));
     response = postAndWait(request, QVariant());
     QVERIFY2(!response.isNull(), "Could not read response");
 
@@ -939,20 +948,20 @@ void TestRestRules::executeRuleActions()
     QFETCH(RuleEngine::RuleError, ruleError);
 
     // ADD rule
-    QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/rules")));
+    QNetworkRequest request(QUrl(QString("https://localhost:3333/api/v1/rules")));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
     QVariant response = postAndWait(request, params);
 
     RuleId ruleId = RuleId(response.toMap().value("id").toString());
     QVERIFY(!ruleId.isNull());
 
-    request.setUrl(QUrl(QString("http://localhost:3333/api/v1/rules/%1").arg(ruleId.toString())));
+    request.setUrl(QUrl(QString("https://localhost:3333/api/v1/rules/%1").arg(ruleId.toString())));
     response = getAndWait(request);
 
     cleanupMockHistory();
 
     // EXECUTE actions
-    request.setUrl(QUrl(QString("http://localhost:3333/api/v1/rules/%1/executeactions").arg(ruleId.toString())));
+    request.setUrl(QUrl(QString("https://localhost:3333/api/v1/rules/%1/executeactions").arg(ruleId.toString())));
     response = postAndWait(request, QVariant(), expectedStatusCode);
     QVERIFY(!response.isNull());
     QCOMPARE(JsonTypes::ruleErrorToString(ruleError), response.toMap().value("error").toString());
@@ -966,7 +975,7 @@ void TestRestRules::executeRuleActions()
     cleanupMockHistory();
 
     // EXECUTE exit actions
-    request.setUrl(QUrl(QString("http://localhost:3333/api/v1/rules/%1/executeexitactions").arg(ruleId.toString())));
+    request.setUrl(QUrl(QString("https://localhost:3333/api/v1/rules/%1/executeexitactions").arg(ruleId.toString())));
     response = postAndWait(request, QVariant(), expectedStatusCode);
     QVERIFY(!response.isNull());
     QCOMPARE(JsonTypes::ruleErrorToString(ruleError), response.toMap().value("error").toString());
@@ -980,13 +989,13 @@ void TestRestRules::executeRuleActions()
     cleanupMockHistory();
 
     // REMOVE rule
-    request.setUrl(QUrl(QString("http://localhost:3333/api/v1/rules/%1").arg(ruleId.toString())));
+    request.setUrl(QUrl(QString("https://localhost:3333/api/v1/rules/%1").arg(ruleId.toString())));
     response = deleteAndWait(request);
     QVERIFY(!response.isNull());
     QCOMPARE(JsonTypes::ruleErrorToString(RuleEngine::RuleErrorNoError), response.toMap().value("error").toString());
 
     // check if removed
-    request.setUrl(QUrl(QString("http://localhost:3333/api/v1/rules/%1").arg(ruleId.toString())));
+    request.setUrl(QUrl(QString("https://localhost:3333/api/v1/rules/%1").arg(ruleId.toString())));
     response = getAndWait(request, 404);
     QVERIFY(!response.isNull());
 }

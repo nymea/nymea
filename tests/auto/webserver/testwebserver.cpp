@@ -65,6 +65,13 @@ private slots:
 
     void getIcons_data();
     void getIcons();
+
+public slots:
+    void onSslErrors(const QList<QSslError> &) {
+        qWarning() << "SSL error";
+        QSslSocket *socket = static_cast<QSslSocket*>(sender());
+        socket->ignoreSslErrors();
+    }
 };
 
 void TestWebserver::coverageCalls()
@@ -78,10 +85,13 @@ void TestWebserver::coverageCalls()
 
 void TestWebserver::httpVersion()
 {
-    QTcpSocket *socket = new QTcpSocket(this);
-    socket->connectToHost(QHostAddress("127.0.0.1"), 3333);
-    bool connected = socket->waitForConnected(1000);
-    QVERIFY2(connected, "could not connect to webserver.");
+    QSslSocket *socket = new QSslSocket(this);
+    typedef void (QSslSocket:: *sslErrorsSignal)(const QList<QSslError> &);
+    connect(socket, static_cast<sslErrorsSignal>(&QSslSocket::sslErrors), this, &TestWebserver::onSslErrors);
+    socket->connectToHostEncrypted("127.0.0.1", 3333);
+    QSignalSpy encryptedSpy(socket, SIGNAL(encrypted()));
+    bool encrypted = encryptedSpy.wait();
+    QVERIFY2(encrypted, "could not created encrypte webserver connection.");
 
     QSignalSpy clientSpy(socket, SIGNAL(readyRead()));
 
@@ -89,11 +99,11 @@ void TestWebserver::httpVersion()
     requestData.append("GET /hello/guh HTTP/1\r\n");
     requestData.append("User-Agent: guh webserver test\r\n\r\n");
 
-    socket->write(requestData);
-    bool filesWritten = socket->waitForBytesWritten(500);
-    QVERIFY2(filesWritten, "could not write to webserver.");
+    quint64 count = socket->write(requestData);
+    QVERIFY2(count > 0, "could not write to webserver.");
 
     clientSpy.wait(500);
+    qWarning() << "spy count" << clientSpy.count();
     QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
     QByteArray data = socket->readAll();
     QVERIFY2(!data.isEmpty(), "got no response");
@@ -105,6 +115,7 @@ void TestWebserver::httpVersion()
 
     bool ok = false;
     int statusCode = firstLineTokens.at(1).toInt(&ok);
+    qDebug() << "have" << firstLineTokens;
     QVERIFY2(ok, "Could not convert statuscode from response to int");
     QCOMPARE(statusCode, 505);
 
@@ -114,10 +125,13 @@ void TestWebserver::httpVersion()
 
 void TestWebserver::multiPackageMessage()
 {
-    QTcpSocket *socket = new QTcpSocket(this);
-    socket->connectToHost(QHostAddress("127.0.0.1"), 3333);
-    bool connected = socket->waitForConnected(1000);
-    QVERIFY2(connected, "could not connect to webserver.");
+    QSslSocket *socket = new QSslSocket(this);
+    typedef void (QSslSocket:: *sslErrorsSignal)(const QList<QSslError> &);
+    connect(socket, static_cast<sslErrorsSignal>(&QSslSocket::sslErrors), this, &TestWebserver::onSslErrors);
+    socket->connectToHostEncrypted("127.0.0.1", 3333);
+    QSignalSpy encryptedSpy(socket, SIGNAL(encrypted()));
+    bool encrypted = encryptedSpy.wait();
+    QVERIFY2(encrypted, "could not created encrypte webserver connection.");
 
     QSignalSpy clientSpy(socket, SIGNAL(readyRead()));
 
@@ -128,21 +142,17 @@ void TestWebserver::multiPackageMessage()
     requestData.append("\r\n");
     requestData.append("This message");
 
-    socket->write(requestData);
-    bool filesWritten = socket->waitForBytesWritten();
-    QVERIFY2(filesWritten, "could not write to webserver.");
+    quint64 count = socket->write(requestData);
+    QVERIFY2(count > 0, "could not write to webserver.");
 
-    socket->write(QByteArray(" was sent"));
-    filesWritten = socket->waitForBytesWritten();
-    QVERIFY2(filesWritten, "could not write to webserver.");
+    count = socket->write(QByteArray(" was sent"));
+    QVERIFY2(count > 0, "could not write to webserver.");
 
-    socket->write(QByteArray(" in four TCP"));
-    filesWritten = socket->waitForBytesWritten();
-    QVERIFY2(filesWritten, "could not write to webserver.");
+    count = socket->write(QByteArray(" in four TCP"));
+    QVERIFY2(count > 0, "could not write to webserver.");
 
-    socket->write(QByteArray("packages. "));
-    filesWritten = socket->waitForBytesWritten();
-    QVERIFY2(filesWritten, "could not write to webserver.");
+    count = socket->write(QByteArray("packages. "));
+    QVERIFY2(count > 0, "could not write to webserver.");
 
     clientSpy.wait(500);
     QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
@@ -156,6 +166,7 @@ void TestWebserver::multiPackageMessage()
 
     bool ok = false;
     int statusCode = firstLineTokens.at(1).toInt(&ok);
+    qDebug() << "have" << firstLineTokens;
     QVERIFY2(ok, "Could not convert statuscode from response to int");
     QCOMPARE(statusCode, 501);
 
@@ -184,10 +195,13 @@ void TestWebserver::checkAllowedMethodCall()
     QFETCH(int, expectedStatusCode);
 
     QNetworkAccessManager nam;
+    connect(&nam, &QNetworkAccessManager::sslErrors, [this, &nam](QNetworkReply* reply, const QList<QSslError> &) {
+        reply->ignoreSslErrors();
+    });
     QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
 
     QNetworkRequest request;
-    request.setUrl(QUrl("http://localhost:3333"));
+    request.setUrl(QUrl("https://localhost:3333"));
     QNetworkReply *reply = 0;
 
     clientSpy.clear();
@@ -205,7 +219,7 @@ void TestWebserver::checkAllowedMethodCall()
     } else if(method == "CONNECT") {
         reply = nam.sendCustomRequest(request, "CONNECT");
     } else if(method == "OPTIONS") {
-        QNetworkRequest req(QUrl("http://localhost:3333/api/v1/devices"));
+        QNetworkRequest req(QUrl("https://localhost:3333/api/v1/devices"));
         reply = nam.sendCustomRequest(req, "OPTIONS");
     } else if(method == "TRACE") {
         reply = nam.sendCustomRequest(request, "TRACE");
@@ -259,10 +273,13 @@ void TestWebserver::badRequests()
     QFETCH(QByteArray, request);
     QFETCH(int, expectedStatusCode);
 
-    QTcpSocket *socket = new QTcpSocket(this);
-    socket->connectToHost(QHostAddress("127.0.0.1"), 3333);
-    bool connected = socket->waitForConnected(1000);
-    QVERIFY2(connected, "could not connect to webserver.");
+    QSslSocket *socket = new QSslSocket(this);
+    typedef void (QSslSocket:: *sslErrorsSignal)(const QList<QSslError> &);
+    connect(socket, static_cast<sslErrorsSignal>(&QSslSocket::sslErrors), this, &TestWebserver::onSslErrors);
+    socket->connectToHostEncrypted("127.0.0.1", 3333);
+    QSignalSpy encryptedSpy(socket, SIGNAL(encrypted()));
+    bool encrypted = encryptedSpy.wait();
+    QVERIFY2(encrypted, "could not created encrypte webserver connection.");
 
     QSignalSpy clientSpy(socket, SIGNAL(readyRead()));
 
@@ -308,10 +325,13 @@ void TestWebserver::getOptions()
     QFETCH(QString, path);
 
     QNetworkAccessManager nam;
+    connect(&nam, &QNetworkAccessManager::sslErrors, [this, &nam](QNetworkReply* reply, const QList<QSslError> &) {
+        reply->ignoreSslErrors();
+    });
     QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
 
     QNetworkRequest request;
-    request.setUrl(QUrl("http://localhost:3333" + path));
+    request.setUrl(QUrl("https://localhost:3333" + path));
     QNetworkReply *reply = nam.sendCustomRequest(request, "OPTIONS");
 
     clientSpy.wait();
@@ -346,10 +366,13 @@ void TestWebserver::getFiles()
     QFETCH(int, expectedStatusCode);
 
     QNetworkAccessManager nam;
+    connect(&nam, &QNetworkAccessManager::sslErrors, [this, &nam](QNetworkReply* reply, const QList<QSslError> &) {
+        reply->ignoreSslErrors();
+    });
     QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
 
     QNetworkRequest request;
-    request.setUrl(QUrl("http://localhost:3333" + query));
+    request.setUrl(QUrl("https://localhost:3333" + query));
     QNetworkReply *reply = nam.get(request);
 
     clientSpy.wait();
@@ -366,10 +389,13 @@ void TestWebserver::getFiles()
 void TestWebserver::getServerDescription()
 {
     QNetworkAccessManager nam;
+    connect(&nam, &QNetworkAccessManager::sslErrors, [this, &nam](QNetworkReply* reply, const QList<QSslError> &) {
+        reply->ignoreSslErrors();
+    });
     QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
 
     QNetworkRequest request;
-    request.setUrl(QUrl("http://localhost:3333/server.xml"));
+    request.setUrl(QUrl("https://localhost:3333/server.xml"));
     QNetworkReply *reply = nam.get(request);
 
     clientSpy.wait();
@@ -405,10 +431,13 @@ void TestWebserver::getIcons()
     QFETCH(int, iconSize);
 
     QNetworkAccessManager nam;
+    connect(&nam, &QNetworkAccessManager::sslErrors, [this, &nam](QNetworkReply* reply, const QList<QSslError> &) {
+        reply->ignoreSslErrors();
+    });
     QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
 
     QNetworkRequest request;
-    request.setUrl(QUrl("http://localhost:3333" + query));
+    request.setUrl(QUrl("https://localhost:3333" + query));
     QNetworkReply *reply = nam.get(request);
 
     clientSpy.wait();

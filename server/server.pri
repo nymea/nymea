@@ -51,6 +51,7 @@ HEADERS += $$top_srcdir/server/guhcore.h \
     $$top_srcdir/server/networkmanager/networkconnection.h \
     $$top_srcdir/server/networkmanager/wirednetworkdevice.h \
     $$top_srcdir/server/usermanager.h \
+    $$PWD/tokeninfo.h
 
 
 SOURCES += $$top_srcdir/server/guhcore.cpp \
@@ -101,4 +102,5 @@ SOURCES += $$top_srcdir/server/guhcore.cpp \
     $$top_srcdir/server/networkmanager/networkconnection.cpp \
     $$top_srcdir/server/networkmanager/wirednetworkdevice.cpp \
     $$top_srcdir/server/usermanager.cpp \
+    $$PWD/tokeninfo.cpp
 

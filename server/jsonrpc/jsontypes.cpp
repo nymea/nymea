@@ -2,6 +2,7 @@
  *                                                                         *
  *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.io>                   *
  *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *  Copyright (C) 2017 Michael Zanetti <michael.zanetti@guh.io>            *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -117,6 +118,7 @@ QVariantMap JsonTypes::s_repeatingOption;
 QVariantMap JsonTypes::s_wirelessAccessPoint;
 QVariantMap JsonTypes::s_wiredNetworkDevice;
 QVariantMap JsonTypes::s_wirelessNetworkDevice;
+QVariantMap JsonTypes::s_tokenInfo;
 
 void JsonTypes::init()
 {
@@ -351,6 +353,12 @@ void JsonTypes::init()
     s_wirelessNetworkDevice.insert("bitRate", basicTypeToString(QVariant::String));
     s_wirelessNetworkDevice.insert("o:currentAccessPoint", wirelessAccessPointRef());
 
+    // TokenInfo
+    s_tokenInfo.insert("id", basicTypeToString(QVariant::Uuid));
+    s_tokenInfo.insert("userName", basicTypeToString(QVariant::String));
+    s_tokenInfo.insert("deviceName", basicTypeToString(QVariant::String));
+    s_tokenInfo.insert("creationTime", basicTypeToString(QVariant::UInt));
+
     s_initialized = true;
 }
 
@@ -428,6 +436,7 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("WirelessAccessPoint", wirelessAccessPointDescription());
     allTypes.insert("WiredNetworkDevice", wiredNetworkDeviceDescription());
     allTypes.insert("WirelessNetworkDevice", wirelessNetworkDeviceDescription());
+    allTypes.insert("TokenInfo", tokenInfoDescription());
 
     return allTypes;
 }
@@ -1167,6 +1176,16 @@ QVariantList JsonTypes::packPlugins()
     return pluginsList;
 }
 
+QVariantMap JsonTypes::packTokenInfo(const TokenInfo &tokenInfo)
+{
+    QVariantMap ret;
+    ret.insert("id", tokenInfo.id().toString());
+    ret.insert("userName", tokenInfo.username());
+    ret.insert("deviceName", tokenInfo.deviceName());
+    ret.insert("creationTime", tokenInfo.creationTime().toTime_t());
+    return ret;
+}
+
 /*! Returns the type string for the given \a type. */
 QString JsonTypes::basicTypeToString(const QVariant::Type &type)
 {
@@ -1792,6 +1811,12 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                 QPair<bool, QString> result = validateMap(wirelessNetworkDeviceDescription(), variant.toMap());
                 if (!result.first) {
                     qCWarning(dcJsonRpc) << "WirelessNetworkDevice not matching";
+                    return result;
+                }
+            } else if (refName == tokenInfoRef()) {
+                QPair<bool, QString> result = validateMap(tokenInfoDescription(), variant.toMap());
+                if (!result.first) {
+                    qCWarning(dcJsonRpc) << "TokenInfo not matching";
                     return result;
                 }
             } else if (refName == basicTypeRef()) {

@@ -126,7 +126,8 @@ QByteArray UserManager::authenticate(const QString &username, const QString &pas
     }
 
     QByteArray token = QCryptographicHash::hash(QUuid::createUuid().toByteArray(), QCryptographicHash::Sha256).toBase64();
-    QString storeTokenQuery = QString("INSERT INTO tokens(username, token, creationdate, devicename) VALUES(\"%1\", \"%2\", \"%3\", \"%4\");")
+    QString storeTokenQuery = QString("INSERT INTO tokens(id, username, token, creationdate, devicename) VALUES(\"%1\", \"%2\", \"%3\", \"%4\", \"%5\");")
+            .arg(QUuid::createUuid().toString())
             .arg(username)
             .arg(QString::fromUtf8(token))
             .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"))
@@ -140,10 +141,70 @@ QByteArray UserManager::authenticate(const QString &username, const QString &pas
     return token;
 }
 
+QString UserManager::userForToken(const QByteArray &token) const
+{
+    if (!validateToken(token)) {
+        qCWarning(dcUserManager) << "Token failed character validation:" << token;
+        return QString();
+    }
+    QString getUserQuery = QString("SELECT * FROM tokens WHERE token = \"%1\";")
+            .arg(QString::fromUtf8(token));
+    QSqlQuery result = m_db.exec(getUserQuery);
+    if (m_db.lastError().type() != QSqlError::NoError) {
+        qCWarning(dcUserManager) << "Error fetching username for token:" << m_db.lastError().databaseText() << m_db.lastError().driverText() << getUserQuery;
+        return QString();
+    }
+    if (!result.first()) {
+        qCWarning(dcUserManager) << "No such token in DB:" << token;
+        return QString();
+    }
+
+    return result.value("username").toString();
+}
+
+QList<TokenInfo> UserManager::tokens(const QString &username) const
+{
+    QList<TokenInfo> ret;
+
+    if (!validateUsername(username)) {
+        qCWarning(dcUserManager) << "Username did not pass validation:" << username;
+        return ret;
+    }
+    QString getTokensQuery = QString("SELECT id, username, creationdate, deviceName FROM tokens WHERE username = \"%1\";")
+            .arg(username);
+    QSqlQuery result = m_db.exec(getTokensQuery);
+    if (m_db.lastError().type() != QSqlError::NoError) {
+        qCWarning(dcUserManager) << "Query for tokens failed:" << m_db.lastError().databaseText() << m_db.lastError().driverText() << getTokensQuery;
+        return ret;
+    }
+
+    while (result.next()) {
+        ret << TokenInfo(result.value("id").toUuid(), result.value("username").toString(), result.value("creationdate").toDateTime(), result.value("devicename").toString());
+    }
+    return ret;
+}
+
+UserManager::UserError UserManager::removeToken(const QUuid &tokenId)
+{
+    QString removeTokenQuery = QString("DELETE FROM tokens WHERE id = \"%1\";")
+            .arg(tokenId.toString());
+    QSqlQuery result = m_db.exec(removeTokenQuery);
+    if (m_db.lastError().type() != QSqlError::NoError) {
+        qCWarning(dcUserManager) << "Removing token failed:" << m_db.lastError().databaseText() << m_db.lastError().driverText() << removeTokenQuery;
+        return UserErrorBackendError;
+    }
+    if (result.numRowsAffected() != 1) {
+        qCWarning(dcUserManager) << "Token not found in DB";
+        return UserErrorTokenNotFound;
+    }
+
+    qCDebug(dcUserManager) << "Token" << tokenId << "removed from DB";
+    return UserErrorNoError;
+}
+
 bool UserManager::verifyToken(const QByteArray &token)
 {
-    QRegExp validator(QRegExp("(^[a-zA-Z0-9_.+-/=]+$)"));
-    if (!validator.exactMatch(token)) {
+    if (!validateToken(token)) {
         qCWarning(dcUserManager) << "Token failed character validation" << token;
         return false;
     }
@@ -168,7 +229,7 @@ void UserManager::initDB()
         m_db.exec("CREATE TABLE users (username VARCHAR(40) UNIQUE, password VARCHAR(100), salt VARCHAR(100));");
     }
     if (!m_db.tables().contains("tokens")) {
-        m_db.exec("CREATE TABLE tokens (username VARCHAR(40), token VARCHAR(100) UNIQUE, creationdate DATETIME, devicename VARCHAR(40));");
+        m_db.exec("CREATE TABLE tokens (id VARCHAR(40) UNIQUE, username VARCHAR(40), token VARCHAR(100) UNIQUE, creationdate DATETIME, devicename VARCHAR(40));");
     }
 }
 
@@ -176,6 +237,12 @@ bool UserManager::validateUsername(const QString &username) const
 {
     QRegExp validator("(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+.[a-zA-Z0-9-.]+$)");
     return validator.exactMatch(username);
+}
+
+bool UserManager::validateToken(const QByteArray &token) const
+{
+    QRegExp validator(QRegExp("(^[a-zA-Z0-9_.+-/=]+$)"));
+    return validator.exactMatch(token);
 }
 
 }

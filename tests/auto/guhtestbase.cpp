@@ -118,6 +118,7 @@ GuhTestBase::GuhTestBase(QObject *parent) :
     m_mockDevice2Port = 7331 + (qrand() % 1000);
     QCoreApplication::instance()->setOrganizationName("guh-test");
 
+    GuhCore::instance()->userManager()->removeUser("dummy@guh.io");
     GuhCore::instance()->userManager()->createUser("dummy@guh.io", "DummyPW1!");
     m_apiToken = GuhCore::instance()->userManager()->authenticate("dummy@guh.io", "DummyPW1!", "testcase");
 }

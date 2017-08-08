@@ -58,7 +58,7 @@ private slots:
 void TestRestPlugins::getPlugins()
 {
     // Get all plugins
-    QVariant response = getAndWait(QNetworkRequest(QUrl("http://localhost:3333/api/v1/plugins")));
+    QVariant response = getAndWait(QNetworkRequest(QUrl("https://localhost:3333/api/v1/plugins")));
     QVariantList pluginList = response.toList();
     QVERIFY2(pluginList.count() > 0, "Not enought plugins.");
 
@@ -66,7 +66,7 @@ void TestRestPlugins::getPlugins()
     foreach (const QVariant &plugin, pluginList) {
         QVariantMap pluginMap = plugin.toMap();
         if (!VendorId(pluginMap.value("id").toString()).isNull()) {
-            QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/plugins/%1").arg(pluginMap.value("id").toString())));
+            QNetworkRequest request(QUrl(QString("https://localhost:3333/api/v1/plugins/%1").arg(pluginMap.value("id").toString())));
             response = getAndWait(request);
             QVERIFY2(!response.isNull(), "Could not get plugin");
         }
@@ -76,10 +76,13 @@ void TestRestPlugins::getPlugins()
 void TestRestPlugins::invalidMethod()
 {
     QNetworkAccessManager *nam = new QNetworkAccessManager(this);
+    connect(nam, &QNetworkAccessManager::sslErrors, [this, nam](QNetworkReply *reply, const QList<QSslError> &) {
+        reply->ignoreSslErrors();
+    });
     QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
 
     QNetworkRequest request;
-    request.setUrl(QUrl("http://localhost:3333/api/v1/plugins"));
+    request.setUrl(QUrl("https://localhost:3333/api/v1/plugins"));
     QNetworkReply *reply = nam->deleteResource(request);
 
     clientSpy.wait();
@@ -97,10 +100,13 @@ void TestRestPlugins::invalidMethod()
 void TestRestPlugins::invalidPath()
 {
     QNetworkAccessManager *nam = new QNetworkAccessManager(this);
+    connect(nam, &QNetworkAccessManager::sslErrors, [this, nam](QNetworkReply *reply, const QList<QSslError> &) {
+        reply->ignoreSslErrors();
+    });
     QSignalSpy clientSpy(nam, SIGNAL(finished(QNetworkReply*)));
 
     QNetworkRequest request;
-    request.setUrl(QUrl("http://localhost:3333/api/v1/plugins/" + QUuid::createUuid().toString() + "/" + QUuid::createUuid().toString()));
+    request.setUrl(QUrl("https://localhost:3333/api/v1/plugins/" + QUuid::createUuid().toString() + "/" + QUuid::createUuid().toString()));
     QNetworkReply *reply = nam->get(request);
 
     clientSpy.wait();
@@ -129,7 +135,7 @@ void TestRestPlugins::invalidPlugin()
     QFETCH(QString, path);
     QFETCH(int, expectedStatusCode);
 
-    QNetworkRequest request(QUrl("http://localhost:3333/api/v1/vendors/" + path));
+    QNetworkRequest request(QUrl("https://localhost:3333/api/v1/vendors/" + path));
     QVariant response = getAndWait(request, expectedStatusCode);
     QCOMPARE(JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorVendorNotFound), response.toMap().value("error").toString());
 }
@@ -137,7 +143,7 @@ void TestRestPlugins::invalidPlugin()
 void TestRestPlugins::getPluginConfiguration()
 {
     // Get plugin config
-    QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/plugins/%1/configuration").arg(mockPluginId.toString())));
+    QNetworkRequest request(QUrl(QString("https://localhost:3333/api/v1/plugins/%1/configuration").arg(mockPluginId.toString())));
     QVariant response = getAndWait(request);
 
 //    QVariantList configurations = response.toList();
@@ -190,7 +196,7 @@ void TestRestPlugins::getPluginConfiguration()
 
 //    // Get plugin configuration
 //    QNetworkRequest request;
-//    request.setUrl(QUrl(QString("http://localhost:3333/api/v1/plugins/%1/configuration").arg(pluginId.toString())));
+//    request.setUrl(QUrl(QString("https://localhost:3333/api/v1/plugins/%1/configuration").arg(pluginId.toString())));
 //    QNetworkReply *reply = nam->get(request);
 //    clientSpy.wait();
 //    QCOMPARE(clientSpy.count(), 1);
@@ -209,7 +215,7 @@ void TestRestPlugins::getPluginConfiguration()
 
 //    // Set new configuration
 //    clientSpy.clear();
-//    request.setUrl(QUrl(QString("http://localhost:3333/api/v1/plugins/%1/configuration").arg(pluginId.toString())));
+//    request.setUrl(QUrl(QString("https://localhost:3333/api/v1/plugins/%1/configuration").arg(pluginId.toString())));
 //    reply = nam->put(request, QJsonDocument::fromVariant(newConfigurations).toJson(QJsonDocument::Compact));
 //    clientSpy.wait();
 //    QCOMPARE(clientSpy.count(), 1);
@@ -222,7 +228,7 @@ void TestRestPlugins::getPluginConfiguration()
 
 //    // check new configurations
 //    clientSpy.clear();
-//    request.setUrl(QUrl(QString("http://localhost:3333/api/v1/plugins/%1/configuration").arg(pluginId.toString())));
+//    request.setUrl(QUrl(QString("https://localhost:3333/api/v1/plugins/%1/configuration").arg(pluginId.toString())));
 //    reply = nam->get(request);
 //    clientSpy.wait();
 //    QCOMPARE(clientSpy.count(), 1);
@@ -241,7 +247,7 @@ void TestRestPlugins::getPluginConfiguration()
 
 //    // check new configurations after restart
 //    clientSpy.clear();
-//    request.setUrl(QUrl(QString("http://localhost:3333/api/v1/plugins/%1/configuration").arg(pluginId.toString())));
+//    request.setUrl(QUrl(QString("https://localhost:3333/api/v1/plugins/%1/configuration").arg(pluginId.toString())));
 //    reply = nam->get(request);
 //    clientSpy.wait();
 //    QCOMPARE(clientSpy.count(), 1);

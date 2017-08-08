@@ -53,7 +53,7 @@ private slots:
 void TestRestVendors::getVendors()
 {
     // Get all vendors
-    QVariant response = getAndWait(QNetworkRequest(QUrl("http://localhost:3333/api/v1/vendors")));
+    QVariant response = getAndWait(QNetworkRequest(QUrl("https://localhost:3333/api/v1/vendors")));
     QVariantList vendorList = response.toList();
     QVERIFY2(vendorList.count() > 0, "Not enought vendors.");
 
@@ -61,7 +61,7 @@ void TestRestVendors::getVendors()
     foreach (const QVariant &vendor, vendorList) {
         QVariantMap vendorMap = vendor.toMap();
         if (!VendorId(vendorMap.value("id").toString()).isNull()) {
-            QNetworkRequest request(QUrl(QString("http://localhost:3333/api/v1/vendors/%1").arg(vendorMap.value("id").toString())));
+            QNetworkRequest request(QUrl(QString("https://localhost:3333/api/v1/vendors/%1").arg(vendorMap.value("id").toString())));
             response = getAndWait(request);
             QVERIFY2(!response.isNull(), "Could not get vendor");
         }
@@ -71,10 +71,13 @@ void TestRestVendors::getVendors()
 void TestRestVendors::invalidMethod()
 {
     QNetworkAccessManager nam;
+    connect(&nam, &QNetworkAccessManager::sslErrors, [this, &nam](QNetworkReply *reply, const QList<QSslError> &) {
+        reply->ignoreSslErrors();
+    });
     QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
 
     QNetworkRequest request;
-    request.setUrl(QUrl("http://localhost:3333/api/v1/vendors"));
+    request.setUrl(QUrl("https://localhost:3333/api/v1/vendors"));
     QNetworkReply *reply = nam.post(request, QByteArray());
 
     clientSpy.wait();
@@ -91,10 +94,13 @@ void TestRestVendors::invalidMethod()
 void TestRestVendors::invalidPath()
 {
     QNetworkAccessManager nam;
+    connect(&nam, &QNetworkAccessManager::sslErrors, [this, &nam](QNetworkReply *reply, const QList<QSslError> &) {
+        reply->ignoreSslErrors();
+    });
     QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
 
     QNetworkRequest request;
-    request.setUrl(QUrl("http://localhost:3333/api/v1/vendors/" + QUuid::createUuid().toString() + "/" + QUuid::createUuid().toString()));
+    request.setUrl(QUrl("https://localhost:3333/api/v1/vendors/" + QUuid::createUuid().toString() + "/" + QUuid::createUuid().toString()));
     QNetworkReply *reply = nam.get(request);
 
     clientSpy.wait();
@@ -122,7 +128,7 @@ void TestRestVendors::invalidVendor()
     QFETCH(QString, path);
     QFETCH(int, expectedStatusCode);
 
-    QNetworkRequest request(QUrl("http://localhost:3333/api/v1/vendors/" + path));
+    QNetworkRequest request(QUrl("https://localhost:3333/api/v1/vendors/" + path));
     QVariant response = getAndWait(request, expectedStatusCode);
     QCOMPARE(JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorVendorNotFound), response.toMap().value("error").toString());
 }

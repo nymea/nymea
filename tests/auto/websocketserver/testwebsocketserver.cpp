@@ -49,6 +49,12 @@ private slots:
 
     void introspect();
 
+public slots:
+    void sslErrors(const QList<QSslError> &) {
+        QWebSocket *socket = static_cast<QWebSocket*>(sender());
+        socket->ignoreSslErrors();
+    }
+
 private:
     int m_socketCommandId;
 
@@ -60,8 +66,9 @@ private:
 void TestWebSocketServer::testHandshake()
 {
     QWebSocket *socket = new QWebSocket("guh tests", QWebSocketProtocol::Version13);
+    connect(socket, &QWebSocket::sslErrors, this, &TestWebSocketServer::sslErrors);
     QSignalSpy spy(socket, SIGNAL(textMessageReceived(QString)));
-    socket->open(QUrl(QStringLiteral("ws://localhost:4444")));
+    socket->open(QUrl(QStringLiteral("wss://localhost:4444")));
     spy.wait();
     QVERIFY2(spy.count() > 0, "Did not get the handshake message upon connect.");
     QJsonDocument jsonDoc = QJsonDocument::fromJson(spy.first().first().toByteArray());
@@ -79,8 +86,9 @@ void TestWebSocketServer::testHandshake()
 void TestWebSocketServer::pingTest()
 {
     QWebSocket *socket = new QWebSocket("guh tests", QWebSocketProtocol::Version13);
+    connect(socket, &QWebSocket::sslErrors, this, &TestWebSocketServer::sslErrors);
     QSignalSpy spyConnection(socket, SIGNAL(connected()));
-    socket->open(QUrl(QStringLiteral("ws://localhost:4444")));
+    socket->open(QUrl(QStringLiteral("wss://localhost:4444")));
     spyConnection.wait();
     QVERIFY2(spyConnection.count() > 0, "not connected");
 
@@ -142,8 +150,9 @@ QVariant TestWebSocketServer::injectSocketAndWait(const QString &method, const Q
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(call);
 
     QWebSocket *socket = new QWebSocket("guh tests", QWebSocketProtocol::Version13);
+    connect(socket, &QWebSocket::sslErrors, this, &TestWebSocketServer::sslErrors);
     QSignalSpy spyConnection(socket, SIGNAL(connected()));
-    socket->open(QUrl(QStringLiteral("ws://localhost:4444")));
+    socket->open(QUrl(QStringLiteral("wss://localhost:4444")));
     spyConnection.wait();
     if (spyConnection.count() == 0) {
         return QVariant();
@@ -182,8 +191,9 @@ QVariant TestWebSocketServer::injectSocketAndWait(const QString &method, const Q
 QVariant TestWebSocketServer::injectSocketData(const QByteArray &data)
 {
     QWebSocket *socket = new QWebSocket("guh tests", QWebSocketProtocol::Version13);
+    connect(socket, &QWebSocket::sslErrors, this, &TestWebSocketServer::sslErrors);
     QSignalSpy spyConnection(socket, SIGNAL(connected()));
-    socket->open(QUrl(QStringLiteral("ws://localhost:4444")));
+    socket->open(QUrl(QStringLiteral("wss://localhost:4444")));
     spyConnection.wait();
     if (spyConnection.count() == 0) {
         return QVariant();

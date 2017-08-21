@@ -808,6 +808,7 @@ void WebServerClient::onTimout()
     QTimer *timer =  static_cast<QTimer *>(sender());
     QSslSocket *socket = m_runningConnections.value(timer);
     qCDebug(dcWebServer) << QString("Client connection timout %1:%2 -> closing connection").arg(socket->peerAddress().toString()).arg(socket->peerPort());
+    removeConnection(socket);
     socket->close();
 }
 

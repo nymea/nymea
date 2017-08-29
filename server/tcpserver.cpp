@@ -34,7 +34,6 @@
 */
 
 #include "tcpserver.h"
-#include "loggingcategories.h"
 #include "guhsettings.h"
 #include "guhcore.h"
 
@@ -46,11 +45,13 @@ namespace guhserver {
  *
  *  \sa ServerManager
  */
-TcpServer::TcpServer(const QHostAddress &host, const uint &port, QObject *parent) :
+TcpServer::TcpServer(const QHostAddress &host, const uint &port, bool sslEnabled, const QSslConfiguration &sslConfiguration, QObject *parent) :
     TransportInterface(parent),
     m_server(NULL),
     m_host(host),
-    m_port(port)
+    m_port(port),
+    m_sslEnabled(sslEnabled),
+    m_sslConfig(sslConfiguration)
 {       
 #ifndef TESTING_ENABLED
     m_avahiService = new QtAvahiService(this);
@@ -83,20 +84,15 @@ void TcpServer::sendData(const QUuid &clientId, const QByteArray &data)
     }
 }
 
-void TcpServer::onClientConnected()
+void TcpServer::onClientConnected(QSslSocket *socket)
 {
     // got a new client connected
-    QTcpServer *server = qobject_cast<QTcpServer*>(sender());
-    QTcpSocket *newConnection = server->nextPendingConnection();
-    qCDebug(dcConnection) << "Tcp server: new client connected:" << newConnection->peerAddress().toString();
+    qCDebug(dcConnection) << "Tcp server: new client connected:" << socket->peerAddress().toString();
 
     QUuid clientId = QUuid::createUuid();
 
     // append the new client to the client list
-    m_clientList.insert(clientId, newConnection);
-
-    connect(newConnection, SIGNAL(readyRead()),this,SLOT(readPackage()));
-    connect(newConnection,SIGNAL(disconnected()),this,SLOT(onClientDisconnected()));
+    m_clientList.insert(clientId, socket);
 
     emit clientConnected(clientId);
 }
@@ -104,7 +100,7 @@ void TcpServer::onClientConnected()
 void TcpServer::readPackage()
 {
     QTcpSocket *client = qobject_cast<QTcpSocket*>(sender());
-    qCDebug(dcTcpServer) << "Data comming from" << client->peerAddress().toString();
+    qCDebug(dcTcpServer) << "Data coming from" << client->peerAddress().toString();
     QByteArray message;
     while (client->canReadLine()) {
         QByteArray dataLine = client->readLine();
@@ -115,6 +111,11 @@ void TcpServer::readPackage()
             message.clear();
         }
     }
+}
+
+void TcpServer::onSslErrors(const QList<QSslError> &errors)
+{
+    qCWarning(dcTcpServer) << "SSL errors:" << errors;
 }
 
 void TcpServer::onClientDisconnected()
@@ -135,6 +136,11 @@ void TcpServer::onError(QAbstractSocket::SocketError error)
     stopServer();
 }
 
+void TcpServer::onEncrypted()
+{
+    qCDebug(dcTcpServer) << "TCP Server connection encrypted";
+}
+
 void TcpServer::onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceState &state)
 {
     if (state == QtAvahiService::QtAvahiServiceStateEstablished) {
@@ -151,7 +157,7 @@ bool TcpServer::reconfigureServer(const QHostAddress &address, const uint &port)
 
     stopServer();
 
-    QTcpServer *server = new QTcpServer(this);
+    SslServer *server = new SslServer(m_sslEnabled, m_sslConfig);
     if(!server->listen(address, port)) {
         qCWarning(dcConnection) << "Tcp server error: can not listen on" << address.toString() << port;
         delete server;
@@ -176,13 +182,14 @@ bool TcpServer::reconfigureServer(const QHostAddress &address, const uint &port)
  */
 bool TcpServer::startServer()
 {
-    m_server = new QTcpServer(this);
+    m_server = new SslServer(m_sslEnabled, m_sslConfig);
     if(!m_server->listen(m_host, m_port)) {
         qCWarning(dcConnection) << "Tcp server error: can not listen on" << m_host.toString() << m_port;
         delete m_server;
         m_server = NULL;
         return false;
     }
+    qWarning() << "tcp listening";
 
 #ifndef TESTING_ENABLED
     // Note: reversed order
@@ -196,7 +203,7 @@ bool TcpServer::startServer()
 #endif
 
     qCDebug(dcConnection) << "Started Tcp server on" << m_server->serverAddress().toString() << m_server->serverPort();
-    connect(m_server, SIGNAL(newConnection()), SLOT(onClientConnected()));
+    connect(m_server, SIGNAL(clientConnected(QSslSocket *)), SLOT(onClientConnected(QSslSocket *)));
     return true;
 }
 
@@ -218,6 +225,34 @@ bool TcpServer::stopServer()
     m_server->deleteLater();
     m_server = NULL;
     return true;
+}
+
+void SslServer::incomingConnection(qintptr socketDescriptor)
+{
+    qWarning() << "incoming";
+    QSslSocket *sslSocket = new QSslSocket(this);
+    connect(sslSocket, &QSslSocket::encrypted, [this, sslSocket](){
+        qWarning() << "encrypted";
+        emit clientConnected(sslSocket);
+    });
+
+    connect(sslSocket, &QSslSocket::readyRead, [this, sslSocket]() {
+        qWarning() << "readyRead:" << sslSocket->readAll();
+//        sslSocket->startServerEncryption();
+    });
+
+    if (!sslSocket->setSocketDescriptor(socketDescriptor)) {
+        qCWarning(dcConnection) << "Failed to set SSL socket";
+        delete sslSocket;
+        return;
+    }
+    if (m_sslEnabled) {
+        qWarning() << "starting encryption";
+        sslSocket->setSslConfiguration(m_config);
+        sslSocket->startServerEncryption();
+    } else {
+        emit clientConnected(sslSocket);
+    }
 }
 
 }

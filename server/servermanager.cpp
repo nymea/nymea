@@ -79,7 +79,7 @@ ServerManager::ServerManager(GuhConfiguration* configuration, QObject *parent) :
             }
         }
         if (certsLoaded) {
-            m_sslConfiguration.setProtocol(QSsl::TlsV1_2);
+            m_sslConfiguration.setProtocol(QSsl::TlsV1_1OrLater);
             m_sslConfiguration.setPrivateKey(m_certificateKey);
             m_sslConfiguration.setLocalCertificate(m_certificate);
         }
@@ -94,7 +94,7 @@ ServerManager::ServerManager(GuhConfiguration* configuration, QObject *parent) :
 #ifdef TESTING_ENABLED
     m_tcpServer = new MockTcpServer(this);
 #else
-    m_tcpServer = new TcpServer(configuration->tcpServerAddress(), configuration->tcpServerPort(), this);
+    m_tcpServer = new TcpServer(configuration->tcpServerAddress(), configuration->tcpServerPort(),  configuration->sslEnabled(), m_sslConfiguration, this);
 #endif
 
     m_webSocketServer = new WebSocketServer(configuration->webSocketAddress(), configuration->webSocketPort(), configuration->sslEnabled(), m_sslConfiguration, this);

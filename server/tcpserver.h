@@ -28,17 +28,44 @@
 #include <QNetworkInterface>
 #include <QUuid>
 #include <QTimer>
+#include <QSslConfiguration>
+#include <QDebug>
 
 #include "transportinterface.h"
 #include "network/avahi/qtavahiservice.h"
 
+#include "loggingcategories.h"
+
 namespace guhserver {
+
+class SslServer: public QTcpServer
+{
+    Q_OBJECT
+public:
+    SslServer(bool sslEnabled, const QSslConfiguration &config, QObject *parent = nullptr):
+        QTcpServer(parent),
+        m_sslEnabled(sslEnabled),
+        m_config(config)
+    {
+
+    }
+
+signals:
+    void clientConnected(QSslSocket *socket);
+
+protected:
+    void incomingConnection(qintptr socketDescriptor) override;
+
+private:
+    bool m_sslEnabled = false;
+    QSslConfiguration m_config;
+};
 
 class TcpServer : public TransportInterface
 {
     Q_OBJECT
 public:
-    explicit TcpServer(const QHostAddress &host, const uint &port, QObject *parent = 0);
+    explicit TcpServer(const QHostAddress &host, const uint &port, bool sslEnabled, const QSslConfiguration &sslConfiguration, QObject *parent = 0);
     ~TcpServer();
 
     void sendData(const QUuid &clientId, const QByteArray &data) override;
@@ -49,19 +76,25 @@ private:
 
     QtAvahiService *m_avahiService;
 
-    QTcpServer * m_server;
+    SslServer * m_server;
     QHash<QUuid, QTcpSocket *> m_clientList;
 
     QHostAddress m_host;
     qint16 m_port;
 
+    bool m_sslEnabled = false;
+    QSslConfiguration m_sslConfig;
+
 private slots:
-    void onClientConnected();
+    void onClientConnected(QSslSocket *socket);
     void onClientDisconnected();
     void readPackage();
+    void onSslErrors(const QList<QSslError> &errors);
     void onError(QAbstractSocket::SocketError error);
+    void onEncrypted();
 
     void onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceState &state);
+
 
 public slots:
     bool reconfigureServer(const QHostAddress &address, const uint &port);

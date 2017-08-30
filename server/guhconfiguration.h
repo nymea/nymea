@@ -29,6 +29,20 @@
 
 namespace guhserver {
 
+class ServerConfiguration {
+public:
+    QString id;
+    QHostAddress address;
+    uint port = 0;
+    bool sslEnabled = true;
+    bool authenticationEnabled = true;
+};
+class WebServerConfiguration: public ServerConfiguration
+{
+public:
+    QString publicFolder;
+};
+
 class GuhConfiguration : public QObject
 {
     Q_OBJECT
@@ -60,28 +74,21 @@ public:
     void setLocale(const QLocale &locale);
 
     // TCP server
-    uint tcpServerPort() const;
-    QHostAddress tcpServerAddress() const;
-    void setTcpServerConfiguration(const uint &port, const QHostAddress &address);
+    QHash<QString, ServerConfiguration> tcpServerConfigurations() const;
+    void setTcpServerConfiguration(const ServerConfiguration &config);
+    void removeTcpServerConfiguration(const QUuid &id);
 
-    // Webserver
-    uint webServerPort() const;
-    QHostAddress webServerAddress() const;
-    QString webServerPublicFolder() const;
-    void setWebServerConfiguration(const uint &port, const QHostAddress &address);
+    // Web server
+    QHash<QString, WebServerConfiguration> webServerConfigurations() const;
+    void setWebServerConfiguration(const WebServerConfiguration &config);
 
     // Websocket
-    uint webSocketPort() const;
-    QHostAddress webSocketAddress() const;
-    void setWebSocketConfiguration(const uint &port, const QHostAddress &address);
+    QHash<QString, ServerConfiguration> webSocketServerConfigurations() const;
+    void setWebSocketServerConfiguration(const ServerConfiguration &config);
 
     // Bluetooth
     bool bluetoothServerEnabled() const;
     void setBluetoothServerEnabled(const bool &enabled);
-
-    // SSL configuration
-    bool sslEnabled() const;
-    void setSslEnabled(const bool &sslEnabled);
 
     QString sslCertificate() const;
     QString sslCertificateKey() const;
@@ -93,37 +100,32 @@ private:
     QByteArray m_timeZone;
     QLocale m_locale;
 
-    QHostAddress m_tcpServerAddress;
-    uint m_tcpServerPort;
-
-    QHostAddress m_webServerAddress;
-    uint m_webServerPort;
-    QString m_webServerPublicFolder;
-
-    QHostAddress m_webSocketAddress;
-    uint m_webSocketPort;
+    QHash<QString, ServerConfiguration> m_tcpServerConfigs;
+    QHash<QString, WebServerConfiguration> m_webServerConfigs;
+    QHash<QString, ServerConfiguration> m_webSocketServerConfigs;
 
     bool m_bluetoothServerEnabled;
 
-    bool m_sslEnabled;
     QString m_sslCertificate;
     QString m_sslCertificateKey;
 
     void setServerUuid(const QUuid &uuid);
     void setWebServerPublicFolder(const QString & path);
 
+    void storeServerConfig(const QString &group, const ServerConfiguration &config);
+    ServerConfiguration readServerConfig(const QString &group, const QString &id);
+
 signals:
     void serverNameChanged();
     void timeZoneChanged();
     void localeChanged();
 
-    void tcpServerConfigurationChanged();
-    void webServerConfigurationChanged();
-    void webSocketServerConfigurationChanged();
+    void tcpServerConfigurationChanged(const QString &configId);
+    void webServerConfigurationChanged(const QString &configId);
+    void webSocketServerConfigurationChanged(const QString &configId);
 
     void bluetoothServerEnabledChanged();
 
-    void sslEnabledChanged();
     void sslCertificateChanged();
 };
 

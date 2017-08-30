@@ -42,48 +42,114 @@ GuhConfiguration::GuhConfiguration(QObject *parent) :
     setTimeZone(settings.value("timeZone", QTimeZone::systemTimeZoneId()).toByteArray());
     settings.endGroup();
 
-    // TcpServer
-    settings.beginGroup("TcpServer");
-    // Defaults for tests
-    QHostAddress tcpServerAddress("127.0.0.1");
-    uint tcpServerPort = 2222;
 #ifndef TESTING_ENABLED
-    tcpServerAddress = QHostAddress(settings.value("address", "0.0.0.0").toString());
-    tcpServerPort = settings.value("port", 2222).toUInt();
-#endif
-    setTcpServerConfiguration(tcpServerPort, tcpServerAddress);
-    settings.endGroup();
+    // TcpServer
+    if (settings.childGroups().contains("TcpServer")) {
+        settings.beginGroup("TcpServer");
+        foreach (const QString &key, settings.childGroups()) {
+            qDebug() << "have key" << key;
+            ServerConfiguration config = readServerConfig("TcpServer", key);
+            m_tcpServerConfigs[config.id] = config;
+        }
+        settings.endGroup();
+    } else {
+        qCWarning(dcApplication) << "No TCP Server configuration found. Generating default of 0.0.0.0:2222";
+        ServerConfiguration config;
+        config.id = "default";
+        config.address = QHostAddress("0.0.0.0");
+        config.port = 2222;
+        // TODO enable encryption/authentication by default once the important clients are supporting it
+        config.sslEnabled = false;
+        config.authenticationEnabled = false;
+        m_tcpServerConfigs[config.id] = config;
+        storeServerConfig("TcpServer", config);
+    }
 
     // Webserver
-    settings.beginGroup("WebServer");
-    // Defaults for tests
-    QHostAddress webServerAddress("127.0.0.1");
-    QString webServerPublicFolder = qApp->applicationDirPath();
-    uint webServerPort = 3333;
-#ifndef TESTING_ENABLED
-    webServerAddress = QHostAddress(settings.value("address", "0.0.0.0").toString());
-    webServerPublicFolder = settings.value("publicFolder", "/usr/share/guh-webinterface/public/").toString();
-    webServerPort = settings.value("port", 3333).toUInt();
-#endif
+    if (settings.childGroups().contains("WebServer")) {
+        settings.beginGroup("WebServer");
+        foreach (const QString &key, settings.childGroups()) {
+            ServerConfiguration tmp = readServerConfig("WebServer", key);
+            WebServerConfiguration config;
+            config.id = tmp.id;
+            config.address = tmp.address;
+            config.port = tmp.port;
+            config.sslEnabled = tmp.sslEnabled;
+            config.authenticationEnabled = tmp.authenticationEnabled;
+            settings.beginGroup(key);
+            config.publicFolder = settings.value("publicFolder").toString();
+            settings.endGroup();
+            m_webServerConfigs[config.id] = config;
+        }
+        settings.endGroup();
+    } else {
+        qCWarning(dcApplication) << "No WebServer configuration found. Generating default of 0.0.0.0:3333";
+        WebServerConfiguration config;
+        config.id = "default";
+        config.address = QHostAddress("0.0.0.0");
+        config.port = 3333;
+        // TODO enable encryption/authentication by default once the important clients are supporting it
+        config.sslEnabled = false;
+        config.authenticationEnabled = false;
+        config.publicFolder = settings.value("publicFolder", "/usr/share/guh-webinterface/public/").toString();
 #ifdef SNAPPY
-    // Override default public folder path for snappy
-    webServerPublicFolder = settings.value("publicFolder", QString(qgetenv("SNAP")) + "/guh-webinterface/").toString();
+        // Override default public folder path for snappy
+        config.publicFolder = settings.value("publicFolder", QString(qgetenv("SNAP")) + "/guh-webinterface/").toString();
 #endif
-    setWebServerConfiguration(webServerPort, webServerAddress);
-    setWebServerPublicFolder(webServerPublicFolder);
-    settings.endGroup();
+        m_webServerConfigs[config.id] = config;
+        storeServerConfig("WebServer", config);
+    }
 
-    // Websocket server
-    settings.beginGroup("WebSocketServer");
-    // Defaults for tests
-    QHostAddress webSocketAddress("127.0.0.1");
-    uint webSocketPort = 4444;
-#ifndef TESTING_ENABLED
-    webSocketAddress = QHostAddress(settings.value("address", "0.0.0.0").toString());
-    webSocketPort = settings.value("port", 4444).toUInt();
+    // WebSocket Server
+    if (settings.childGroups().contains("WebSocketServer")) {
+        settings.beginGroup("WebSocketServer");
+        foreach (const QString &key, settings.childGroups()) {
+            qWarning() << "have key" << key;
+            ServerConfiguration config = readServerConfig("WebSocketServer", key);
+            m_webSocketServerConfigs[config.id] = config;
+            qWarning() << "cound:" << m_webSocketServerConfigs.keys();
+        }
+        settings.endGroup();
+    } else {
+        qCWarning(dcApplication) << "No WebSocketServer configuration found. Generating default of 0.0.0.0:4444";
+        ServerConfiguration config;
+        config.id = "default";
+        config.address = QHostAddress("0.0.0.0");
+        config.port = 4444;
+        // TODO enable encryption/authentication by default once the important clients are supporting it
+        config.sslEnabled = false;
+        config.authenticationEnabled = false;
+        m_webSocketServerConfigs[config.id] = config;
+        storeServerConfig("WebSocketServer", config);
+    }
+
+
+#else
+    ServerConfiguration tcpConfig;
+    tcpConfig.id = "default";
+    tcpConfig.address = QHostAddress("127.0.0.1");
+    tcpConfig.port = 2222;
+    tcpConfig.sslEnabled = true;
+    tcpConfig.authenticationEnabled = true;
+    m_tcpServerConfigs[tcpConfig.id] = tcpConfig;
+
+    WebServerConfiguration wsConfig;
+    wsConfig.id = "default";
+    wsConfig.address = QHostAddress("127.0.0.1");
+    wsConfig.port = 3333;
+    wsConfig.sslEnabled = true;
+    wsConfig.authenticationEnabled = true;
+    wsConfig.publicFolder = qApp->applicationDirPath();
+    m_webServerConfigs[wsConfig.id] = wsConfig;
+
+    ServerConfiguration wssConfig;
+    wssConfig.id = "default";
+    wssConfig.address = QHostAddress("127.0.0.1");
+    wssConfig.port = 4444;
+    wssConfig.sslEnabled = true;
+    wssConfig.authenticationEnabled = true;
+    m_webSocketServerConfigs[wssConfig.id] = wssConfig;
 #endif
-    setWebSocketConfiguration(webSocketPort, webSocketAddress);
-    settings.endGroup();
 
     // Bluetooth server
     settings.beginGroup("BluetoothServer");
@@ -92,7 +158,6 @@ GuhConfiguration::GuhConfiguration(QObject *parent) :
 
     // SSL configuration
     settings.beginGroup("SSL");
-    setSslEnabled(settings.value("enabled", true).toBool());
     setSslCertificate(settings.value("certificate", "/etc/ssl/certs/guhd-certificate.crt").toString(), settings.value("certificate-key", "/etc/ssl/certs/guhd-certificate.key").toString());
     settings.endGroup();
 }
@@ -156,87 +221,50 @@ void GuhConfiguration::setLocale(const QLocale &locale)
     emit localeChanged();
 }
 
-uint GuhConfiguration::tcpServerPort() const
+QHash<QString, ServerConfiguration> GuhConfiguration::tcpServerConfigurations() const
 {
-    return m_tcpServerPort;
+    return m_tcpServerConfigs;
 }
 
-QHostAddress GuhConfiguration::tcpServerAddress() const
+void GuhConfiguration::setTcpServerConfiguration(const ServerConfiguration &config)
 {
-    return m_tcpServerAddress;
+    m_tcpServerConfigs[config.id] = config;
+    storeServerConfig("TcpServer", config);
+    emit tcpServerConfigurationChanged(config.id);
 }
 
-void GuhConfiguration::setTcpServerConfiguration(const uint &port, const QHostAddress &address)
+QHash<QString, WebServerConfiguration> GuhConfiguration::webServerConfigurations() const
 {
-    qCDebug(dcApplication()) << "Configuration: TCP server" << QString("%1:%2").arg(address.toString()).arg(port);
-
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
-    settings.beginGroup("TcpServer");
-    settings.setValue("address", address.toString());
-    settings.setValue("port", port);
-    settings.endGroup();
-
-    m_tcpServerPort = port;
-    m_tcpServerAddress = address;
-
-    emit tcpServerConfigurationChanged();
+    return m_webServerConfigs;
 }
 
-uint GuhConfiguration::webServerPort() const
+void GuhConfiguration::setWebServerConfiguration(const WebServerConfiguration &config)
 {
-    return m_webServerPort;
-}
+    m_webServerConfigs[config.id] = config;
 
-QHostAddress GuhConfiguration::webServerAddress() const
-{
-    return m_webServerAddress;
-}
+    storeServerConfig("WebServer", config);
 
-QString GuhConfiguration::webServerPublicFolder() const
-{
-    return m_webServerPublicFolder;
-}
-
-void GuhConfiguration::setWebServerConfiguration(const uint &port, const QHostAddress &address)
-{
-    qCDebug(dcApplication()) << "Configuration: Web server" << QString("%1:%2").arg(address.toString()).arg(port);
-
+    // This is a bit odd that we need to open the config once more just for the publicFolder...
     GuhSettings settings(GuhSettings::SettingsRoleGlobal);
     settings.beginGroup("WebServer");
-    settings.setValue("address", address.toString());
-    settings.setValue("port", port);
+    settings.beginGroup(config.id);
+    settings.setValue("publicFolder", config.publicFolder);
+    settings.endGroup();
     settings.endGroup();
 
-    m_webServerPort = port;
-    m_webServerAddress = address;
-
-    emit webServerConfigurationChanged();
+    emit webServerConfigurationChanged(config.id);
 }
 
-uint GuhConfiguration::webSocketPort() const
+QHash<QString, ServerConfiguration> GuhConfiguration::webSocketServerConfigurations() const
 {
-    return m_webSocketPort;
+    return m_webSocketServerConfigs;
 }
 
-QHostAddress GuhConfiguration::webSocketAddress() const
+void GuhConfiguration::setWebSocketServerConfiguration(const ServerConfiguration &config)
 {
-    return m_webSocketAddress;
-}
-
-void GuhConfiguration::setWebSocketConfiguration(const uint &port, const QHostAddress &address)
-{
-    qCDebug(dcApplication()) << "Configuration: Websocket server" << QString("%1:%2").arg(address.toString()).arg(port);
-
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
-    settings.beginGroup("WebSocketServer");
-    settings.setValue("address", address.toString());
-    settings.setValue("port", port);
-    settings.endGroup();
-
-    m_webSocketAddress = address;
-    m_webSocketPort = port;
-
-    emit webSocketServerConfigurationChanged();
+    m_webSocketServerConfigs[config.id] = config;
+    storeServerConfig("WebSocketServer", config);
+    emit webSocketServerConfigurationChanged(config.id);
 }
 
 bool GuhConfiguration::bluetoothServerEnabled() const
@@ -255,24 +283,6 @@ void GuhConfiguration::setBluetoothServerEnabled(const bool &enabled)
 
     m_bluetoothServerEnabled = enabled;
     emit bluetoothServerEnabled();
-}
-
-bool GuhConfiguration::sslEnabled() const
-{
-    return m_sslEnabled;
-}
-
-void GuhConfiguration::setSslEnabled(const bool &sslEnabled)
-{
-    qCDebug(dcApplication()) << "Configuration: SSL" << (sslEnabled ? "enabled" : "disabled");
-
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
-    settings.beginGroup("SSL");
-    settings.setValue("enabled", sslEnabled);
-    settings.endGroup();
-
-    m_sslEnabled = sslEnabled;
-    emit sslEnabledChanged();
 }
 
 QString GuhConfiguration::sslCertificate() const
@@ -313,16 +323,33 @@ void GuhConfiguration::setServerUuid(const QUuid &uuid)
     m_serverUuid = uuid;
 }
 
-void GuhConfiguration::setWebServerPublicFolder(const QString &path)
+void GuhConfiguration::storeServerConfig(const QString &group, const ServerConfiguration &config)
 {
-    qCDebug(dcApplication()) << "Configuration: Web Server public folder:" << path;
-
     GuhSettings settings(GuhSettings::SettingsRoleGlobal);
-    settings.beginGroup("WebServer");
-    settings.setValue("publicFolder", path);
+    settings.beginGroup(group);
+    settings.beginGroup(config.id);
+    settings.setValue("address", config.address.toString());
+    settings.setValue("port", config.port);
+    settings.setValue("sslEnabled", config.sslEnabled);
+    settings.setValue("authenticationEnabled", config.authenticationEnabled);
     settings.endGroup();
+    settings.endGroup();
+}
 
-    m_webServerPublicFolder = path;
+ServerConfiguration GuhConfiguration::readServerConfig(const QString &group, const QString &id)
+{
+    ServerConfiguration config;
+    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    settings.beginGroup(group);
+    settings.beginGroup(id);
+    config.id = id;
+    config.address = QHostAddress(settings.value("address").toString());
+    config.port = settings.value("port").toUInt();
+    config.sslEnabled = settings.value("sslEnabled", true).toBool();
+    config.authenticationEnabled = settings.value("authenticationEnabled", true).toBool();
+    settings.endGroup();
+    settings.endGroup();
+    return config;
 }
 
 }

@@ -54,9 +54,9 @@ signals:
 
 private slots:
     void onBasicConfigurationChanged();
-    void onTcpServerConfigurationChanged();
-    void onWebServerConfigurationChanged();
-    void onWebSocketServerConfigurationChanged();
+    void onTcpServerConfigurationChanged(const QString &id);
+    void onWebServerConfigurationChanged(const QString &id);
+    void onWebSocketServerConfigurationChanged(const QString &id);
     void onLanguageChanged();
 
 };

@@ -204,12 +204,25 @@ JsonReply *ConfigurationHandler::GetConfigurations(const QVariantMap &params) co
     Q_UNUSED(params)
     QVariantMap returns;
     returns.insert("basicConfiguration", JsonTypes::packBasicConfiguration());
-    returns.insert("tcpServerConfiguration", JsonTypes::packTcpServerConfiguration());
-    returns.insert("webServerConfiguration", JsonTypes::packWebServerConfiguration());
-    returns.insert("webSocketServerConfiguration", JsonTypes::packWebSocketServerConfiguration());
-    QVariantMap sslConfiguration;
-    sslConfiguration.insert("enabled", GuhCore::instance()->configuration()->sslEnabled());
-    returns.insert("sslConfiguration", sslConfiguration);
+    QVariantList tcpServerConfigs;
+    foreach (const ServerConfiguration &config, GuhCore::instance()->configuration()->tcpServerConfigurations()) {
+        tcpServerConfigs.append(JsonTypes::packServerConfiguration(config));
+    }
+    returns.insert("tcpServerConfigurations", tcpServerConfigs);
+
+    QVariantList webServerConfigs;
+    foreach (const WebServerConfiguration &config, GuhCore::instance()->configuration()->webServerConfigurations()) {
+        webServerConfigs.append(JsonTypes::packWebServerConfiguration(config));
+
+    }
+    returns.insert("webServerConfigurations", tcpServerConfigs);
+
+    QVariantList webSocketServerConfigs;
+    foreach (const ServerConfiguration &config, GuhCore::instance()->configuration()->webSocketServerConfigurations()) {
+        tcpServerConfigs.append(JsonTypes::packServerConfiguration(config));
+    }
+    returns.insert("webServerConfigurations", tcpServerConfigs);
+
     return createReply(returns);
 }
 
@@ -269,65 +282,60 @@ JsonReply *ConfigurationHandler::SetLanguage(const QVariantMap &params) const
 
 JsonReply *ConfigurationHandler::SetTcpServerConfiguration(const QVariantMap &params) const
 {
-    QHostAddress host = QHostAddress(params.value("host").toString());
-    if (host.isNull())
+    ServerConfiguration config = JsonTypes::unpackServerConfiguration(params);
+    if (config.address.isNull())
         return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidHostAddress));
 
-    uint port = params.value("port").toUInt();
-    if (port <= 0 || port > 65535) {
+    if (config.port <= 0 || config.port > 65535) {
         qCWarning(dcJsonRpc()) << "Port out of range";
         return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidPort));
     }
 
-    qCDebug(dcJsonRpc()) << QString("Configure TCP server %1:%2").arg(host.toString()).arg(port);
+    qCDebug(dcJsonRpc()) << QString("Configure TCP server %1:%2").arg(config.address.toString()).arg(config.port);
 
-    if (!GuhCore::instance()->tcpServer()->reconfigureServer(host, port))
-        return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidPort));
+    GuhCore::instance()->configuration()->setTcpServerConfiguration(config);
 
-    GuhCore::instance()->configuration()->setTcpServerConfiguration(port, host);
+//    GuhCore::instance()->tcpServer()->reconfigureServer(config);
 
     return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
 }
 
 JsonReply *ConfigurationHandler::SetWebServerConfiguration(const QVariantMap &params) const
 {
-    QHostAddress host = QHostAddress(params.value("host").toString());
-    if (host.isNull())
+    WebServerConfiguration config = JsonTypes::unpackWebServerConfiguration(params);
+
+    if (config.address.isNull())
         return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidHostAddress));
 
-    uint port = params.value("port").toUInt();
-    if (port <= 0 || port > 65535) {
+    if (config.port <= 0 || config.port > 65535) {
         qCWarning(dcJsonRpc()) << "Port out of range";
         return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidPort));
     }
 
-    qCDebug(dcJsonRpc()) << QString("Configure web server %1:%2").arg(host.toString()).arg(port);
+    qCDebug(dcJsonRpc()) << QString("Configure web server %1:%2").arg(config.address.toString()).arg(config.port);
 
-    if (!GuhCore::instance()->webServer()->reconfigureServer(host, port))
-        return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidPort));
+    GuhCore::instance()->configuration()->setWebServerConfiguration(config);
+//    GuhCore::instance()->webServer()->reconfigureServer(config);
 
-    GuhCore::instance()->configuration()->setWebServerConfiguration(port, host);
     return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
 }
 
 JsonReply *ConfigurationHandler::SetWebSocketServerConfiguration(const QVariantMap &params) const
 {
-    QHostAddress host = QHostAddress(params.value("host").toString());
-    if (host.isNull())
+    ServerConfiguration config = JsonTypes::unpackServerConfiguration(params);
+    if (config.address.isNull())
         return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidHostAddress));
 
-    uint port = params.value("port").toUInt();
-    if (port <= 0 || port > 65535) {
+    if (config.port <= 0 || config.port > 65535) {
         qCWarning(dcJsonRpc()) << "Port out of range";
         return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidPort));
     }
 
-    qCDebug(dcJsonRpc()) << QString("Configure web socket server %1:%2").arg(host.toString()).arg(port);
+    qCDebug(dcJsonRpc()) << QString("Configure web socket server %1:%2").arg(config.address.toString()).arg(config.port);
 
-    if (!GuhCore::instance()->webSocketServer()->reconfigureServer(host, port))
-        return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidPort));
+    GuhCore::instance()->configuration()->setWebSocketServerConfiguration(config);
+//    GuhCore::instance()->webSocketServer()->reconfigureServer(config);
 
-    GuhCore::instance()->configuration()->setWebServerConfiguration(port, host);
     return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
 }
 
@@ -339,27 +347,27 @@ void ConfigurationHandler::onBasicConfigurationChanged()
     emit BasicConfigurationChanged(params);
 }
 
-void ConfigurationHandler::onTcpServerConfigurationChanged()
+void ConfigurationHandler::onTcpServerConfigurationChanged(const QString &id)
 {
     QVariantMap params;
     qCDebug(dcJsonRpc()) << "Notification: TCP server configuration changed";
-    params.insert("tcpServerConfiguration", JsonTypes::packTcpServerConfiguration());
+    params.insert("tcpServerConfiguration", JsonTypes::packServerConfiguration(GuhCore::instance()->configuration()->tcpServerConfigurations().value(id)));
     emit TcpServerConfigurationChanged(params);
 }
 
-void ConfigurationHandler::onWebServerConfigurationChanged()
+void ConfigurationHandler::onWebServerConfigurationChanged(const QString &id)
 {
     QVariantMap params;
     qCDebug(dcJsonRpc()) << "Notification: web server configuration changed";
-    params.insert("webServerConfiguration", JsonTypes::packWebServerConfiguration());
+    params.insert("webServerConfiguration", JsonTypes::packWebServerConfiguration(GuhCore::instance()->configuration()->webServerConfigurations().value(id)));
     emit WebServerConfigurationChanged(params);
 }
 
-void ConfigurationHandler::onWebSocketServerConfigurationChanged()
+void ConfigurationHandler::onWebSocketServerConfigurationChanged(const QString &id)
 {
     QVariantMap params;
     qCDebug(dcJsonRpc()) << "Notification: web socket server configuration changed";
-    params.insert("webSocketServerConfiguration", JsonTypes::packWebSocketServerConfiguration());
+    params.insert("webSocketServerConfiguration", JsonTypes::packServerConfiguration(GuhCore::instance()->configuration()->webSocketServerConfigurations().value(id)));
     emit WebSocketServerConfigurationChanged(params);
 }
 

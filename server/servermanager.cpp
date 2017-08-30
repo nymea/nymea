@@ -48,10 +48,10 @@ ServerManager::ServerManager(GuhConfiguration* configuration, QObject *parent) :
     QObject(parent),
     m_sslConfiguration(QSslConfiguration())
 {
-    // check SSL
-    if (!configuration->sslEnabled()) {
-        qCDebug(dcConnection) << "SSL encryption disabled by config.";
-    } else if (!QSslSocket::supportsSsl()) {
+    // TODO: check this
+
+
+    if (!QSslSocket::supportsSsl()) {
         qCWarning(dcConnection) << "SSL is not supported/installed on this platform.";
     } else {
         qCDebug(dcConnection) << "SSL library version:" << QSslSocket::sslLibraryVersionString();
@@ -93,23 +93,28 @@ ServerManager::ServerManager(GuhConfiguration* configuration, QObject *parent) :
 
     // Transports
 #ifdef TESTING_ENABLED
-    m_tcpServer = new MockTcpServer(this);
+    MockTcpServer *tcpServer = new MockTcpServer(this);
+    m_jsonServer->registerTransportInterface(tcpServer);
 #else
-    m_tcpServer = new TcpServer(configuration->tcpServerAddress(), configuration->tcpServerPort(),  configuration->sslEnabled(), m_sslConfiguration, this);
+    foreach (const ServerConfiguration &config, configuration->tcpServerConfigurations()) {
+        TcpServer *tcpServer = new TcpServer(config.address, config.port,  config.sslEnabled, m_sslConfiguration, this);
+        m_jsonServer->registerTransportInterface(tcpServer);
+    }
 #endif
 
-    m_webSocketServer = new WebSocketServer(configuration->webSocketAddress(), configuration->webSocketPort(), configuration->sslEnabled(), m_sslConfiguration, this);
+    foreach (const ServerConfiguration &config, configuration->webSocketServerConfigurations()) {
+        qWarning() << "Have websockeserver config" << config.id;
+        WebSocketServer *webSocketServer = new WebSocketServer(config.address, config.port, config.sslEnabled, m_sslConfiguration, this);
+        m_jsonServer->registerTransportInterface(webSocketServer);
+    }
 
     m_bluetoothServer = new BluetoothServer(this);
-
-    // Register transport interfaces for the JSON RPC server
-    m_jsonServer->registerTransportInterface(m_tcpServer);
-    m_jsonServer->registerTransportInterface(m_webSocketServer);
     m_jsonServer->registerTransportInterface(m_bluetoothServer, configuration->bluetoothServerEnabled());
 
-    // Register transport itnerfaces for the Webserver
-    m_webServer = new WebServer(configuration->webServerAddress(), configuration->webServerPort(), configuration->webServerPublicFolder(), configuration->sslEnabled(), m_sslConfiguration, this);
-    m_restServer->registerWebserver(m_webServer);
+    foreach (const WebServerConfiguration &config, configuration->webServerConfigurations()) {
+        WebServer *webServer = new WebServer(config.address, config.port, config.publicFolder, config.sslEnabled, m_sslConfiguration, this);
+        m_restServer->registerWebserver(webServer);
+    }
 }
 
 /*! Returns the pointer to the created \l{JsonRPCServer} in this \l{ServerManager}. */
@@ -124,29 +129,9 @@ RestServer *ServerManager::restServer() const
     return m_restServer;
 }
 
-WebServer *ServerManager::webServer() const
-{
-    return m_webServer;
-}
-
-WebSocketServer *ServerManager::webSocketServer() const
-{
-    return m_webSocketServer;
-}
-
 BluetoothServer *ServerManager::bluetoothServer() const
 {
     return m_bluetoothServer;
-}
-
-#ifdef TESTING_ENABLED
-MockTcpServer
-#else
-TcpServer
-#endif
-*ServerManager::tcpServer() const
-{
-    return m_tcpServer;
 }
 
 bool ServerManager::loadCertificate(const QString &certificateKeyFileName, const QString &certificateFileName)

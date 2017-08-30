@@ -67,14 +67,6 @@ private:
     JsonRPCServer *m_jsonServer;
     RestServer *m_restServer;
 
-    // Transports
-#ifdef TESTING_ENABLED
-    MockTcpServer *m_tcpServer;
-#else
-    TcpServer *m_tcpServer;
-#endif
-    WebSocketServer *m_webSocketServer;
-    WebServer *m_webServer;
     BluetoothServer *m_bluetoothServer;
 
     // Encrytption and stuff

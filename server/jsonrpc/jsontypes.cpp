@@ -1088,32 +1088,23 @@ QVariantMap JsonTypes::packBasicConfiguration()
     return basicConfiguration;
 }
 
-/*! Returns a variant map with the current tcp configuration of the server. */
-QVariantMap JsonTypes::packTcpServerConfiguration()
+QVariantMap JsonTypes::packServerConfiguration(const ServerConfiguration &config)
 {
-    QVariantMap tcpServerConfiguration;
-    tcpServerConfiguration.insert("host", GuhCore::instance()->configuration()->tcpServerAddress().toString());
-    tcpServerConfiguration.insert("port", GuhCore::instance()->configuration()->tcpServerPort());
-    return tcpServerConfiguration;
+    QVariantMap serverConfiguration;
+    serverConfiguration.insert("host", config.address.toString());
+    serverConfiguration.insert("port", config.port);
+    serverConfiguration.insert("sslEnabled", config.sslEnabled);
+    serverConfiguration.insert("authenticationEnabled", config.authenticationEnabled);
+    return serverConfiguration;
 }
 
-/*! Returns a variant map with the current web server configuration of the server. */
-QVariantMap JsonTypes::packWebServerConfiguration()
+QVariantMap JsonTypes::packWebServerConfiguration(const WebServerConfiguration &config)
 {
-    QVariantMap webServerConfiguration;
-    webServerConfiguration.insert("host", GuhCore::instance()->configuration()->webServerAddress().toString());
-    webServerConfiguration.insert("port", GuhCore::instance()->configuration()->webServerPort());
+    QVariantMap webServerConfiguration = packServerConfiguration(config);
+    webServerConfiguration.insert("publicFolder", config.publicFolder);
     return webServerConfiguration;
 }
 
-/*! Returns a variant map with the current web socket server configuration of the server. */
-QVariantMap JsonTypes::packWebSocketServerConfiguration()
-{
-    QVariantMap webSocketServerConfiguration;
-    webSocketServerConfiguration.insert("host", GuhCore::instance()->configuration()->webSocketAddress().toString());
-    webSocketServerConfiguration.insert("port", GuhCore::instance()->configuration()->webSocketPort());
-    return webSocketServerConfiguration;
-}
 
 /*! Returns a variant list containing all rule descriptions. */
 QVariantList JsonTypes::packRuleDescriptions()
@@ -1525,6 +1516,30 @@ TimeDescriptor JsonTypes::unpackTimeDescriptor(const QVariantMap &timeDescriptor
     }
 
     return timeDescriptor;
+}
+
+ServerConfiguration JsonTypes::unpackServerConfiguration(const QVariantMap &serverConfigurationMap)
+{
+    ServerConfiguration serverConfiguration;
+    serverConfiguration.id = serverConfigurationMap.value("id").toString();
+    serverConfiguration.address = QHostAddress(serverConfigurationMap.value("address").toString());
+    serverConfiguration.port = serverConfigurationMap.value("port").toUInt();
+    serverConfiguration.sslEnabled = serverConfigurationMap.value("sslEnabled", true).toBool();
+    serverConfiguration.authenticationEnabled = serverConfigurationMap.value("authenticationEnabled", true).toBool();
+    return serverConfiguration;
+}
+
+WebServerConfiguration JsonTypes::unpackWebServerConfiguration(const QVariantMap &webServerConfigurationMap)
+{
+    ServerConfiguration tmp = unpackServerConfiguration(webServerConfigurationMap);
+    WebServerConfiguration webServerConfiguration;
+    webServerConfiguration.id = tmp.id;
+    webServerConfiguration.address = tmp.address;
+    webServerConfiguration.port = tmp.port;
+    webServerConfiguration.sslEnabled = tmp.sslEnabled;
+    webServerConfiguration.authenticationEnabled = tmp.authenticationEnabled;
+    webServerConfiguration.publicFolder = webServerConfigurationMap.value("publicFolder").toString();
+    return webServerConfiguration;
 }
 
 /*! Compairs the given \a map with the given \a templateMap. Returns the error string and false if

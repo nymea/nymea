@@ -43,8 +43,6 @@ class Device;
 namespace guhserver {
 
 class JsonRPCServer;
-class WebSocketServer;
-class TcpServer;
 class LogEngine;
 class NetworkManager;
 
@@ -76,20 +74,12 @@ public:
     DeviceManager *deviceManager() const;
     RuleEngine *ruleEngine() const;
     TimeManager *timeManager() const;
-    WebServer *webServer() const;
-    WebSocketServer *webSocketServer() const;
     ServerManager *serverManager() const;
     BluetoothServer *bluetoothServer() const;
     NetworkManager *networkManager() const;
     UserManager *userManager() const;
 
     static QStringList getAvailableLanguages();
-
-#ifdef TESTING_ENABLED
-    MockTcpServer *tcpServer() const;
-#else
-    TcpServer *tcpServer() const;
-#endif
 
 signals:
     void pluginConfigChanged(const PluginId &id, const ParamList &config);

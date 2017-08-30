@@ -367,18 +367,6 @@ TimeManager *GuhCore::timeManager() const
     return m_timeManager;
 }
 
-/*! Returns a pointer to the \l{WebServer} instance owned by GuhCore.*/
-WebServer *GuhCore::webServer() const
-{
-    return m_serverManager->webServer();
-}
-
-/*! Returns a pointer to the \l{WebSocketServer} instance owned by GuhCore.*/
-WebSocketServer *GuhCore::webSocketServer() const
-{
-    return m_serverManager->webSocketServer();
-}
-
 /*! Returns a pointer to the \l{ServerManager} instance owned by GuhCore. */
 ServerManager *GuhCore::serverManager() const
 {
@@ -407,17 +395,6 @@ NetworkManager *GuhCore::networkManager() const
 UserManager *GuhCore::userManager() const
 {
     return m_userManager;
-}
-
-#ifdef TESTING_ENABLED
-MockTcpServer
-#else
-/*! Returns a pointer to the \l{TcpServer} instance owned by GuhCore. */
-TcpServer
-#endif
-*GuhCore::tcpServer() const
-{
-    return m_serverManager->tcpServer();
 }
 
 /*! Constructs GuhCore with the given \a parent. This is private.

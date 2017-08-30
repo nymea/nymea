@@ -207,9 +207,8 @@ public:
     static QVariantList packDeviceDescriptors(const QList<DeviceDescriptor> deviceDescriptors);
 
     static QVariantMap packBasicConfiguration();
-    static QVariantMap packTcpServerConfiguration();
-    static QVariantMap packWebServerConfiguration();
-    static QVariantMap packWebSocketServerConfiguration();
+    static QVariantMap packServerConfiguration(const ServerConfiguration &config);
+    static QVariantMap packWebServerConfiguration(const WebServerConfiguration &config);
 
     static QVariantList packRuleDescriptions();
     static QVariantList packRuleDescriptions(const QList<Rule> &rules);
@@ -240,6 +239,9 @@ public:
     static CalendarItem unpackCalendarItem(const QVariantMap &calendarItemMap);
     static TimeEventItem unpackTimeEventItem(const QVariantMap &timeEventItemMap);
     static TimeDescriptor unpackTimeDescriptor(const QVariantMap &timeDescriptorMap);
+
+    static ServerConfiguration unpackServerConfiguration(const QVariantMap &serverConfigurationMap);
+    static WebServerConfiguration unpackWebServerConfiguration(const QVariantMap &webServerConfigurationMap);
 
     // validate
     static QPair<bool, QString> validateMap(const QVariantMap &templateMap, const QVariantMap &map);

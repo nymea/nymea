@@ -564,7 +564,6 @@ bool WebServer::startServer()
 #ifndef TESTING_ENABLED
     // Note: reversed order
     QHash<QString, QString> txt;
-    txt.insert("sslEnabled", GuhCore::instance()->configuration()->sslEnabled() ? "true" : "false");
     txt.insert("jsonrpcVersion", JSON_PROTOCOL_VERSION);
     txt.insert("serverVersion", GUH_VERSION_STRING);
     txt.insert("manufacturer", "guh GmbH");
@@ -598,7 +597,11 @@ bool WebServer::stopServer()
 QByteArray WebServer::createServerXmlDocument(QHostAddress address)
 {
     QByteArray uuid = GuhCore::instance()->configuration()->serverUuid().toByteArray();
-    uint websocketPort = GuhCore::instance()->configuration()->webSocketPort();
+
+    // TODO: support multiple (or none) configured servers here, let's just use the first valid config for now
+    Q_ASSERT_X(GuhCore::instance()->configuration()->webSocketServerConfigurations().count() > 0, "WebServer", "No WebSocket Server config found. This is not supported");
+
+    uint websocketPort = GuhCore::instance()->configuration()->webSocketServerConfigurations().values().first().port;
 
     QByteArray data;
     QXmlStreamWriter writer(&data);

@@ -238,16 +238,17 @@ QHash<QString, JsonHandler *> JsonRPCServer::handlers() const
 }
 
 /*! Register a new \l{TransportInterface} to the JSON server. The \a enabled flag indivates if the given \a interface sould be enebeld on startup. */
-void JsonRPCServer::registerTransportInterface(TransportInterface *interface, const bool &enabled)
+void JsonRPCServer::registerTransportInterface(TransportInterface *interface, bool enabled, bool authenticationRequired)
 {
     connect(interface, &TransportInterface::clientConnected, this, &JsonRPCServer::clientConnected);
     connect(interface, &TransportInterface::clientDisconnected, this, &JsonRPCServer::clientDisconnected);
     connect(interface, &TransportInterface::dataAvailable, this, &JsonRPCServer::processData);
 
-    if (enabled)
-        QMetaObject::invokeMethod(interface, "startServer", Qt::QueuedConnection);
+    m_interfaces.insert(interface, authenticationRequired);
 
-    m_interfaces.append(interface);
+    if (enabled) {
+        QMetaObject::invokeMethod(interface, "startServer", Qt::QueuedConnection);
+    }
 }
 
 /*! Send a JSON success response to the client with the given \a clientId,
@@ -330,18 +331,21 @@ void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &data)
     QString targetNamespace = commandList.first();
     QString method = commandList.last();
 
-    // if there is no user in the system yet, let's fail unless this is a CreateUser or Introspect call
-    if (GuhCore::instance()->userManager()->users().isEmpty()) {
-        if (!(targetNamespace == "JSONRPC" && (method == "CreateUser" || method == "Introspect"))) {
-            sendUnauthorizedResponse(interface, clientId, commandId, "Initial setup required. Call CreateUser first.");
-            return;
-        }
-    } else {
-        // ok, we have a user. if there isn't a valid token, let's fail unless this is a Authenticate or Introspect call
-        QByteArray token = message.value("token").toByteArray();
-        if (!(targetNamespace == "JSONRPC" && (method == "Authenticate" || method == "Introspect")) && !GuhCore::instance()->userManager()->verifyToken(token)) {
-            sendUnauthorizedResponse(interface, clientId, commandId, "Forbidden: Invalid token.");
-            return;
+    // check if authentication is required for this transport
+    if (m_interfaces.value(interface)) {
+        // if there is no user in the system yet, let's fail unless this is a CreateUser or Introspect call
+        if (GuhCore::instance()->userManager()->users().isEmpty()) {
+            if (!(targetNamespace == "JSONRPC" && (method == "CreateUser" || method == "Introspect"))) {
+                sendUnauthorizedResponse(interface, clientId, commandId, "Initial setup required. Call CreateUser first.");
+                return;
+            }
+        } else {
+            // ok, we have a user. if there isn't a valid token, let's fail unless this is a Authenticate or Introspect call
+            QByteArray token = message.value("token").toByteArray();
+            if (!(targetNamespace == "JSONRPC" && (method == "Authenticate" || method == "Introspect")) && !GuhCore::instance()->userManager()->verifyToken(token)) {
+                sendUnauthorizedResponse(interface, clientId, commandId, "Forbidden: Invalid token.");
+                return;
+            }
         }
     }
     // At this point we can assume all the calls are authorized
@@ -404,7 +408,7 @@ void JsonRPCServer::sendNotification(const QVariantMap &params)
     notification.insert("notification", handler->name() + "." + method.name());
     notification.insert("params", params);
 
-    foreach (TransportInterface *interface, m_interfaces) {
+    foreach (TransportInterface *interface, m_interfaces.keys()) {
         interface->sendData(m_clients.keys(true), QJsonDocument::fromVariant(notification).toJson());
     }
 }

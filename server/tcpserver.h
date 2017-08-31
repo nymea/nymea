@@ -52,9 +52,15 @@ public:
 
 signals:
     void clientConnected(QSslSocket *socket);
+    void clientDisconnected(QSslSocket *socket);
+    void dataAvailable(QSslSocket *socket, const QByteArray &data);
 
 protected:
     void incomingConnection(qintptr socketDescriptor) override;
+
+private slots:
+    void onClientDisconnected();
+    void onSocketReadyRead();
 
 private:
     bool m_sslEnabled = false;
@@ -87,9 +93,8 @@ private:
 
 private slots:
     void onClientConnected(QSslSocket *socket);
-    void onClientDisconnected();
-    void readPackage();
-    void onSslErrors(const QList<QSslError> &errors);
+    void onClientDisconnected(QSslSocket *socket);
+    void onDataAvailable(QSslSocket *socket, const QByteArray &data);
     void onError(QAbstractSocket::SocketError error);
     void onEncrypted();
 

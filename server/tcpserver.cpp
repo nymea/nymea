@@ -80,53 +80,25 @@ void TcpServer::sendData(const QUuid &clientId, const QByteArray &data)
     QTcpSocket *client = 0;
     client = m_clientList.value(clientId);
     if (client) {
+        qWarning() << "send data:" << data;
         client->write(data);
     }
 }
 
 void TcpServer::onClientConnected(QSslSocket *socket)
 {
-    // got a new client connected
     qCDebug(dcConnection) << "Tcp server: new client connected:" << socket->peerAddress().toString();
-
     QUuid clientId = QUuid::createUuid();
-
-    // append the new client to the client list
     m_clientList.insert(clientId, socket);
-
     emit clientConnected(clientId);
 }
 
-void TcpServer::readPackage()
+void TcpServer::onClientDisconnected(QSslSocket *socket)
 {
-    QTcpSocket *client = qobject_cast<QTcpSocket*>(sender());
-    qCDebug(dcTcpServer) << "Data coming from" << client->peerAddress().toString();
-    QByteArray message;
-    while (client->canReadLine()) {
-        QByteArray dataLine = client->readLine();
-        qCDebug(dcTcpServer) << "Line in:" << dataLine;
-        message.append(dataLine);
-        if (dataLine.endsWith('\n')) {
-            emit dataAvailable(m_clientList.key(client), message);
-            message.clear();
-        }
-    }
-}
-
-void TcpServer::onSslErrors(const QList<QSslError> &errors)
-{
-    qCWarning(dcTcpServer) << "SSL errors:" << errors;
-}
-
-void TcpServer::onClientDisconnected()
-{
-    QPointer<QTcpSocket> client = qobject_cast<QTcpSocket *>(sender());
-    if (client.isNull())
-        return;
-
-    qCDebug(dcConnection) << "Tcp server: client disconnected:" << client->peerAddress().toString();
-    QUuid clientId = m_clientList.key(client);
-    m_clientList.take(clientId)->deleteLater();
+    qCDebug(dcConnection) << "Tcp server: client disconnected:" << socket->peerAddress().toString();
+    QUuid clientId = m_clientList.key(socket);
+    m_clientList.take(clientId);
+    emit clientDisconnected(clientId);
 }
 
 void TcpServer::onError(QAbstractSocket::SocketError error)
@@ -139,6 +111,12 @@ void TcpServer::onError(QAbstractSocket::SocketError error)
 void TcpServer::onEncrypted()
 {
     qCDebug(dcTcpServer) << "TCP Server connection encrypted";
+}
+
+void TcpServer::onDataAvailable(QSslSocket * socket, const QByteArray &data)
+{
+    QUuid clientId = m_clientList.key(socket);
+    emit dataAvailable(clientId, data);
 }
 
 void TcpServer::onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceState &state)
@@ -204,6 +182,8 @@ bool TcpServer::startServer()
 
     qCDebug(dcConnection) << "Started Tcp server on" << m_server->serverAddress().toString() << m_server->serverPort();
     connect(m_server, SIGNAL(clientConnected(QSslSocket *)), SLOT(onClientConnected(QSslSocket *)));
+    connect(m_server, SIGNAL(clientDisconnected(QSslSocket *)), SLOT(onClientDisconnected(QSslSocket *)));
+    connect(m_server, &SslServer::dataAvailable, this, &TcpServer::onDataAvailable);
     return true;
 }
 
@@ -231,28 +211,36 @@ void SslServer::incomingConnection(qintptr socketDescriptor)
 {
     qWarning() << "incoming";
     QSslSocket *sslSocket = new QSslSocket(this);
-    connect(sslSocket, &QSslSocket::encrypted, [this, sslSocket](){
-        qWarning() << "encrypted";
-        emit clientConnected(sslSocket);
-    });
 
-    connect(sslSocket, &QSslSocket::readyRead, [this, sslSocket]() {
-        qWarning() << "readyRead:" << sslSocket->readAll();
-//        sslSocket->startServerEncryption();
-    });
+    connect(sslSocket, &QSslSocket::encrypted, [this, sslSocket](){ emit clientConnected(sslSocket); });
+    connect(sslSocket, &QSslSocket::readyRead, this, &SslServer::onSocketReadyRead);
+    connect(sslSocket, &QSslSocket::disconnected, this, &SslServer::onClientDisconnected);
 
     if (!sslSocket->setSocketDescriptor(socketDescriptor)) {
-        qCWarning(dcConnection) << "Failed to set SSL socket";
+        qCWarning(dcConnection) << "Failed to set SSL socket descriptor.";
         delete sslSocket;
         return;
     }
     if (m_sslEnabled) {
-        qWarning() << "starting encryption";
         sslSocket->setSslConfiguration(m_config);
         sslSocket->startServerEncryption();
     } else {
         emit clientConnected(sslSocket);
     }
+}
+
+void SslServer::onClientDisconnected()
+{
+    QSslSocket *socket = static_cast<QSslSocket*>(sender());
+    emit clientDisconnected(socket);
+    socket->deleteLater();
+}
+
+void SslServer::onSocketReadyRead()
+{
+    QSslSocket *socket = static_cast<QSslSocket*>(sender());
+    QByteArray data = socket->readAll();
+    emit dataAvailable(socket, data);
 }
 
 }

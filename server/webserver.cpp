@@ -144,27 +144,6 @@ void WebServer::sendHttpReply(HttpReply *reply)
     socket->write(reply->data());
 }
 
-/*! Returns the port on which the webserver is listening. */
-int WebServer::port() const
-{
-    return m_port;
-}
-
-/*! Returns the list of addresses on which the webserver is listening. */
-QList<QHostAddress> WebServer::serverAddressList()
-{
-    QList<QHostAddress> addresses;
-    foreach (const QNetworkInterface &interface,  QNetworkInterface::allInterfaces()) {
-        // listen only on IPv4
-        foreach (QNetworkAddressEntry entry, interface.addressEntries()) {
-            if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol) {
-                addresses.append(entry.ip());
-            }
-        }
-    }
-    return addresses;
-}
-
 bool WebServer::verifyFile(QSslSocket *socket, const QString &fileName)
 {
     QFileInfo file(fileName);
@@ -234,17 +213,6 @@ HttpReply *WebServer::processIconRequest(const QString &fileName)
     }
 
     return RestResource::createErrorReply(HttpReply::NotFound);
-}
-
-QHostAddress WebServer::getServerAddress(QHostAddress clientAddress)
-{
-    foreach (QHostAddress address, serverAddressList()) {
-        if (clientAddress.isInSubnet(QHostAddress::parseSubnet(address.toString() + "/24"))) {
-            qCDebug(dcWebServer) << "server for" << clientAddress.toString() << " ->" << address.toString();
-            return address;
-        }
-    }
-    return QHostAddress();
 }
 
 void WebServer::incomingConnection(qintptr socketDescriptor)
@@ -398,8 +366,7 @@ void WebServer::readClient()
         qCDebug(dcWebServer) << "server XML request call";
         HttpReply *reply = RestResource::createSuccessReply();
         reply->setHeader(HttpReply::ContentTypeHeader, "text/xml");
-        QHostAddress serverAddress = getServerAddress(socket->peerAddress());
-        reply->setPayload(createServerXmlDocument(serverAddress));
+        reply->setPayload(createServerXmlDocument(m_host));
         reply->setClientId(clientId);
         sendHttpReply(reply);
         reply->deleteLater();
@@ -554,12 +521,10 @@ bool WebServer::startServer()
         return false;
     }
 
-    foreach (QHostAddress address, serverAddressList()) {
-        if (m_useSsl) {
-            qCDebug(dcConnection) << "Started webserver on" << QString("https://%1:%2").arg(address.toString()).arg(m_port);
-        } else {
-            qCDebug(dcConnection) << "Started webserver on" << QString("http://%1:%2").arg(address.toString()).arg(m_port);
-        }
+    if (m_useSsl) {
+        qCDebug(dcConnection) << "Started webserver on" << QString("https://%1:%2").arg(m_host.toString()).arg(m_port);
+    } else {
+        qCDebug(dcConnection) << "Started webserver on" << QString("http://%1:%2").arg(m_host.toString()).arg(m_port);
     }
 
 #ifndef TESTING_ENABLED

@@ -94,22 +94,22 @@ ServerManager::ServerManager(GuhConfiguration* configuration, QObject *parent) :
     // Transports
 #ifdef TESTING_ENABLED
     MockTcpServer *tcpServer = new MockTcpServer(this);
-    m_jsonServer->registerTransportInterface(tcpServer);
+    m_jsonServer->registerTransportInterface(tcpServer, true, true);
 #else
     foreach (const ServerConfiguration &config, configuration->tcpServerConfigurations()) {
         TcpServer *tcpServer = new TcpServer(config.address, config.port,  config.sslEnabled, m_sslConfiguration, this);
-        m_jsonServer->registerTransportInterface(tcpServer);
+        m_jsonServer->registerTransportInterface(tcpServer, true, config.authenticationEnabled);
     }
 #endif
 
     foreach (const ServerConfiguration &config, configuration->webSocketServerConfigurations()) {
         qWarning() << "Have websockeserver config" << config.id;
         WebSocketServer *webSocketServer = new WebSocketServer(config.address, config.port, config.sslEnabled, m_sslConfiguration, this);
-        m_jsonServer->registerTransportInterface(webSocketServer);
+        m_jsonServer->registerTransportInterface(webSocketServer, true, config.authenticationEnabled);
     }
 
     m_bluetoothServer = new BluetoothServer(this);
-    m_jsonServer->registerTransportInterface(m_bluetoothServer, configuration->bluetoothServerEnabled());
+    m_jsonServer->registerTransportInterface(m_bluetoothServer, configuration->bluetoothServerEnabled(), true);
 
     foreach (const WebServerConfiguration &config, configuration->webServerConfigurations()) {
         WebServer *webServer = new WebServer(config.address, config.port, config.publicFolder, config.sslEnabled, m_sslConfiguration, this);

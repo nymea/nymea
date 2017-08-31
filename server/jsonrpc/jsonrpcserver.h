@@ -58,7 +58,7 @@ public:
 
     QHash<QString, JsonHandler *> handlers() const;
 
-    void registerTransportInterface(TransportInterface *interface, const bool &enabled = true);
+    void registerTransportInterface(TransportInterface *interface, bool enabled, bool authenticationRequired);
 
 private:
     void sendResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QVariantMap &params = QVariantMap());
@@ -78,7 +78,7 @@ private slots:
     void asyncReplyFinished();
 
 private:
-    QList<TransportInterface *> m_interfaces;
+    QMap<TransportInterface*, bool> m_interfaces;
     QHash<QString, JsonHandler *> m_handlers;
     QHash<JsonReply *, TransportInterface *> m_asyncReplies;
 

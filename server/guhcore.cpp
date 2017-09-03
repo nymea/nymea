@@ -402,6 +402,10 @@ UserManager *GuhCore::userManager() const
 GuhCore::GuhCore(QObject *parent) :
     QObject(parent)
 {
+    staticMetaObject.invokeMethod(this, "init", Qt::QueuedConnection);
+}
+
+void GuhCore::init() {
     qCDebug(dcApplication()) << "Loading guh configurations" << GuhSettings(GuhSettings::SettingsRoleGlobal).fileName();
     m_configuration = new GuhConfiguration(this);
 
@@ -447,6 +451,7 @@ GuhCore::GuhCore(QObject *parent) :
     connect(m_timeManager, &TimeManager::tick, m_deviceManager, &DeviceManager::timeTick);
 
     m_logger->logSystemEvent(m_timeManager->currentDateTime(), true);
+    emit initialized();
 }
 
 /*! Connected to the DeviceManager's emitEvent signal. Events received in

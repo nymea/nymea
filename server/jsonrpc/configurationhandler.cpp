@@ -90,21 +90,15 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     basicConfiguration.insert("timeZone", JsonTypes::basicTypeToString(JsonTypes::String));
     basicConfiguration.insert("language", JsonTypes::basicTypeToString(JsonTypes::String));
     returns.insert("basicConfiguration", basicConfiguration);
-    QVariantMap tcpServerConfiguration;
-    tcpServerConfiguration.insert("host", JsonTypes::basicTypeToString(JsonTypes::String));
-    tcpServerConfiguration.insert("port", JsonTypes::basicTypeToString(JsonTypes::Uint));
-    returns.insert("tcpServerConfiguration", tcpServerConfiguration);
-    QVariantMap webServerConfiguration;
-    webServerConfiguration.insert("host", JsonTypes::basicTypeToString(JsonTypes::String));
-    webServerConfiguration.insert("port", JsonTypes::basicTypeToString(JsonTypes::Uint));
-    returns.insert("webServerConfiguration", webServerConfiguration);
-    QVariantMap webSocketServerConfiguration;
-    webSocketServerConfiguration.insert("host", JsonTypes::basicTypeToString(JsonTypes::String));
-    webSocketServerConfiguration.insert("port", JsonTypes::basicTypeToString(JsonTypes::Uint));
-    returns.insert("webSocketServerConfiguration", webSocketServerConfiguration);
-    QVariantMap sslConfiguration;
-    sslConfiguration.insert("enabled", JsonTypes::basicTypeToString(JsonTypes::Bool));
-    returns.insert("sslConfiguration", sslConfiguration);
+    QVariantList tcpServerConfigurations;
+    tcpServerConfigurations.append(JsonTypes::serverConfigurationRef());
+    returns.insert("tcpServerConfigurations", tcpServerConfigurations);
+    QVariantList webServerConfigurations;
+    webServerConfigurations.append(JsonTypes::webServerConfigurationRef());
+    returns.insert("webServerConfigurations", webServerConfigurations);
+    QVariantList webSocketServerConfigurations;
+    webSocketServerConfigurations.append(JsonTypes::serverConfigurationRef());
+    returns.insert("webSocketServerConfigurations", webSocketServerConfigurations);
     setReturns("GetConfigurations", returns);
 
     params.clear(); returns.clear();
@@ -129,28 +123,46 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     setReturns("SetLanguage", returns);
 
     params.clear(); returns.clear();
-    setDescription("SetTcpServerConfiguration", "Configure the TCP interface of the server. Note: if you are using the TCP server for this call you will loose the connection.");
-    params.insert("host", JsonTypes::basicTypeToString(JsonTypes::String));
-    params.insert("port", JsonTypes::basicTypeToString(JsonTypes::Uint));
+    setDescription("SetTcpServerConfiguration", "Configure a TCP interface of the server. If the ID is an existing one, the existing config will be modified, otherwise a new one will be added. Note: if you are changing the configuration for the interface you are currently connected to, the connection will be dropped.");
+    params.insert("configuration", JsonTypes::serverConfigurationRef());
     setParams("SetTcpServerConfiguration", params);
     returns.insert("configurationError", JsonTypes::configurationErrorRef());
     setReturns("SetTcpServerConfiguration", returns);
 
     params.clear(); returns.clear();
-    setDescription("SetWebSocketServerConfiguration", "Configure the web socket interface of the server. Note: if you are using the web socket server for this call you will loose the connection.");
-    params.insert("host", JsonTypes::basicTypeToString(JsonTypes::String));
-    params.insert("port", JsonTypes::basicTypeToString(JsonTypes::Uint));
+    setDescription("DeleteTcpServerConfiguration", "Delete a TCP interface of the server. Note: if you are deleting the configuration for the interface you are currently connected to, the connection will be dropped.");
+    params.insert("id", JsonTypes::basicTypeToString(QVariant::String));
+    setParams("DeleteTcpServerConfiguration", params);
+    returns.insert("configurationError", JsonTypes::configurationErrorRef());
+    setReturns("DeleteTcpServerConfiguration", returns);
+
+    params.clear(); returns.clear();
+    setDescription("SetWebSocketServerConfiguration", "Configure a WebSocket Server interface of the server. If the ID is an existing one, the existing config will be modified, otherwise a new one will be added. Note: if you are changing the configuration for the interface you are currently connected to, the connection will be dropped.");
+    params.insert("configuration", JsonTypes::serverConfigurationRef());
     setParams("SetWebSocketServerConfiguration", params);
     returns.insert("configurationError", JsonTypes::configurationErrorRef());
     setReturns("SetWebSocketServerConfiguration", returns);
 
     params.clear(); returns.clear();
-    setDescription("SetWebServerConfiguration", "Configure the web server of the server.");
-    params.insert("host", JsonTypes::basicTypeToString(JsonTypes::String));
-    params.insert("port", JsonTypes::basicTypeToString(JsonTypes::Uint));
+    setDescription("DeleteWebSocketServerConfiguration", "Delete a WebSocket Server interface of the server. Note: if you are deleting the configuration for the interface you are currently connected to, the connection will be dropped.");
+    params.insert("id", JsonTypes::basicTypeToString(QVariant::String));
+    setParams("DeleteWebSocketServerConfiguration", params);
+    returns.insert("configurationError", JsonTypes::configurationErrorRef());
+    setReturns("DeleteWebSocketServerConfiguration", returns);
+
+    params.clear(); returns.clear();
+    setDescription("SetWebServerConfiguration", "Configure a WebServer interface of the server. If the ID is an existing one, the existing config will be modified, otherwise a new one will be added.");
+    params.insert("configuration", JsonTypes::webServerConfigurationRef());
     setParams("SetWebServerConfiguration", params);
     returns.insert("configurationError", JsonTypes::configurationErrorRef());
     setReturns("SetWebServerConfiguration", returns);
+
+    params.clear(); returns.clear();
+    setDescription("DeleteWebServerConfiguration", "Delete a WebServer interface of the server.");
+    params.insert("id", JsonTypes::basicTypeToString(QVariant::String));
+    setParams("DeleteWebServerConfiguration", params);
+    returns.insert("configurationError", JsonTypes::configurationErrorRef());
+    setReturns("DeleteWebServerConfiguration", returns);
 
     // Notifications
     params.clear(); returns.clear();
@@ -215,13 +227,13 @@ JsonReply *ConfigurationHandler::GetConfigurations(const QVariantMap &params) co
         webServerConfigs.append(JsonTypes::packWebServerConfiguration(config));
 
     }
-    returns.insert("webServerConfigurations", tcpServerConfigs);
+    returns.insert("webServerConfigurations", webServerConfigs);
 
     QVariantList webSocketServerConfigs;
     foreach (const ServerConfiguration &config, GuhCore::instance()->configuration()->webSocketServerConfigurations()) {
-        tcpServerConfigs.append(JsonTypes::packServerConfiguration(config));
+        webSocketServerConfigs.append(JsonTypes::packServerConfiguration(config));
     }
-    returns.insert("webServerConfigurations", tcpServerConfigs);
+    returns.insert("webSocketServerConfigurations", webSocketServerConfigs);
 
     return createReply(returns);
 }
@@ -282,7 +294,10 @@ JsonReply *ConfigurationHandler::SetLanguage(const QVariantMap &params) const
 
 JsonReply *ConfigurationHandler::SetTcpServerConfiguration(const QVariantMap &params) const
 {
-    ServerConfiguration config = JsonTypes::unpackServerConfiguration(params);
+    ServerConfiguration config = JsonTypes::unpackServerConfiguration(params.value("configuration").toMap());
+    if (config.id.isEmpty()) {
+        return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidId));
+    }
     if (config.address.isNull())
         return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidHostAddress));
 
@@ -300,10 +315,24 @@ JsonReply *ConfigurationHandler::SetTcpServerConfiguration(const QVariantMap &pa
     return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
 }
 
+JsonReply *ConfigurationHandler::DeleteTcpServerConfiguration(const QVariantMap &params) const
+{
+    QString id = params.value("id").toString();
+    if (id.isEmpty() || !GuhCore::instance()->configuration()->tcpServerConfigurations().contains(id)) {
+        return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidId));
+    }
+    GuhCore::instance()->configuration()->removeTcpServerConfiguration(id);
+    return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
+}
+
 JsonReply *ConfigurationHandler::SetWebServerConfiguration(const QVariantMap &params) const
 {
-    WebServerConfiguration config = JsonTypes::unpackWebServerConfiguration(params);
+    qWarning() << params;
+    WebServerConfiguration config = JsonTypes::unpackWebServerConfiguration(params.value("configuration").toMap());
 
+    if (config.id.isEmpty()) {
+        return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidId));
+    }
     if (config.address.isNull())
         return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidHostAddress));
 
@@ -320,9 +349,22 @@ JsonReply *ConfigurationHandler::SetWebServerConfiguration(const QVariantMap &pa
     return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
 }
 
+JsonReply *ConfigurationHandler::DeleteWebServerConfiguration(const QVariantMap &params) const
+{
+    QString id = params.value("id").toString();
+    if (id.isEmpty() || !GuhCore::instance()->configuration()->webServerConfigurations().contains(id)) {
+        return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidId));
+    }
+    GuhCore::instance()->configuration()->removeWebServerConfiguration(id);
+    return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
+}
+
 JsonReply *ConfigurationHandler::SetWebSocketServerConfiguration(const QVariantMap &params) const
 {
-    ServerConfiguration config = JsonTypes::unpackServerConfiguration(params);
+    ServerConfiguration config = JsonTypes::unpackServerConfiguration(params.value("configuration").toMap());
+    if (config.id.isEmpty()) {
+        return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidId));
+    }
     if (config.address.isNull())
         return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidHostAddress));
 
@@ -334,8 +376,17 @@ JsonReply *ConfigurationHandler::SetWebSocketServerConfiguration(const QVariantM
     qCDebug(dcJsonRpc()) << QString("Configure web socket server %1:%2").arg(config.address.toString()).arg(config.port);
 
     GuhCore::instance()->configuration()->setWebSocketServerConfiguration(config);
-//    GuhCore::instance()->webSocketServer()->reconfigureServer(config);
 
+    return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
+}
+
+JsonReply *ConfigurationHandler::DeleteWebSocketServerConfiguration(const QVariantMap &params) const
+{
+    QString id = params.value("id").toString();
+    if (id.isEmpty() || !GuhCore::instance()->configuration()->webSocketServerConfigurations().contains(id)) {
+        return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidId));
+    }
+    GuhCore::instance()->configuration()->removeWebSocketServerConfiguration(id);
     return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
 }
 

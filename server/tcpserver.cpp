@@ -45,14 +45,12 @@ namespace guhserver {
  *
  *  \sa ServerManager
  */
-TcpServer::TcpServer(const QHostAddress &host, const uint &port, bool sslEnabled, const QSslConfiguration &sslConfiguration, QObject *parent) :
-    TransportInterface(parent),
+TcpServer::TcpServer(const ServerConfiguration &configuration, const QSslConfiguration &sslConfiguration, QObject *parent) :
+    TransportInterface(configuration, parent),
     m_server(NULL),
-    m_host(host),
-    m_port(port),
-    m_sslEnabled(sslEnabled),
     m_sslConfig(sslConfiguration)
 {       
+    qWarning() << "****" << configuration.address << configuration.port;
 #ifndef TESTING_ENABLED
     m_avahiService = new QtAvahiService(this);
     connect(m_avahiService, &QtAvahiService::serviceStateChanged, this, &TcpServer::onAvahiServiceStateChanged);
@@ -128,30 +126,18 @@ void TcpServer::onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceS
 
 
 /*! Returns true if this \l{TcpServer} could be reconfigured with the given \a address and \a port. */
-bool TcpServer::reconfigureServer(const QHostAddress &address, const uint &port)
+void TcpServer::reconfigureServer(const ServerConfiguration &config)
 {
-    if (m_host == address && m_port == (qint16)port && m_server->isListening())
-        return true;
+    if (configuration().address == config.address &&
+            configuration().port == config.port &&
+            configuration().sslEnabled == config.sslEnabled &&
+            configuration().authenticationEnabled == config.authenticationEnabled &&
+            m_server->isListening())
+        return;
 
     stopServer();
-
-    SslServer *server = new SslServer(m_sslEnabled, m_sslConfig);
-    if(!server->listen(address, port)) {
-        qCWarning(dcConnection) << "Tcp server error: can not listen on" << address.toString() << port;
-        delete server;
-        // Restart the server with the old configuration
-        qCDebug(dcTcpServer()) << "Restart server with old configuration.";
-        startServer();
-        return false;
-    }
-    // Remove the test server..
-    server->close();
-    delete server;
-
-    // Start server with new configuration
-    m_host = address;
-    m_port = port;
-    return startServer();
+    setConfiguration(config);
+    startServer();
 }
 
 /*! Returns true if this \l{TcpServer} started successfully.
@@ -160,9 +146,9 @@ bool TcpServer::reconfigureServer(const QHostAddress &address, const uint &port)
  */
 bool TcpServer::startServer()
 {
-    m_server = new SslServer(m_sslEnabled, m_sslConfig);
-    if(!m_server->listen(m_host, m_port)) {
-        qCWarning(dcConnection) << "Tcp server error: can not listen on" << m_host.toString() << m_port;
+    m_server = new SslServer(configuration().sslEnabled, m_sslConfig);
+    if(!m_server->listen(configuration().address, configuration().port)) {
+        qCWarning(dcConnection) << "Tcp server error: can not listen on" << configuration().address.toString() << configuration().port;
         delete m_server;
         m_server = NULL;
         return false;
@@ -177,7 +163,7 @@ bool TcpServer::startServer()
     txt.insert("manufacturer", "guh GmbH");
     txt.insert("uuid", GuhCore::instance()->configuration()->serverUuid().toString());
     txt.insert("name", GuhCore::instance()->configuration()->serverName());
-    m_avahiService->registerService("guhIO", m_port, "_jsonrpc._tcp", txt);
+    m_avahiService->registerService("guhIO", configuration().port, "_jsonrpc._tcp", txt);
 #endif
 
     qCDebug(dcConnection) << "Started Tcp server on" << m_server->serverAddress().toString() << m_server->serverPort();

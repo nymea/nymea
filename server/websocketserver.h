@@ -42,7 +42,7 @@ class WebSocketServer : public TransportInterface
 {
     Q_OBJECT
 public:
-    explicit WebSocketServer(const QHostAddress &address, const uint &port, const bool &sslEnabled, const QSslConfiguration &sslConfiguration, QObject *parent = 0);
+    explicit WebSocketServer(const ServerConfiguration &configuration, const QSslConfiguration &sslConfiguration, QObject *parent = 0);
     ~WebSocketServer();
 
     void sendData(const QUuid &clientId, const QByteArray &data) override;
@@ -54,11 +54,7 @@ private:
 
     QtAvahiService *m_avahiService;
 
-    QHostAddress m_host;
-    qint16 m_port;
-
     QSslConfiguration m_sslConfiguration;
-    bool m_useSsl;
 
     bool m_enabled;
 
@@ -74,7 +70,7 @@ private slots:
     void onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceState &state);
 
 public slots:
-    bool reconfigureServer(const QHostAddress &address, const uint &port);
+    void reconfigureServer(const ServerConfiguration &config);
     bool startServer() override;
     bool stopServer() override;
 };

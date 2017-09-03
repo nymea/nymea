@@ -118,6 +118,9 @@ GuhTestBase::GuhTestBase(QObject *parent) :
     m_mockDevice2Port = 7331 + (qrand() % 1000);
     QCoreApplication::instance()->setOrganizationName("guh-test");
 
+    QSignalSpy spy(GuhCore::instance(), SIGNAL(initialized()));
+    spy.wait();
+
     GuhCore::instance()->userManager()->removeUser("dummy@guh.io");
     GuhCore::instance()->userManager()->createUser("dummy@guh.io", "DummyPW1!");
     m_apiToken = GuhCore::instance()->userManager()->authenticate("dummy@guh.io", "DummyPW1!", "testcase");
@@ -476,6 +479,8 @@ void GuhTestBase::restartServer()
 {
     // Destroy and recreate the core instance...
     GuhCore::instance()->destroy();
+    QSignalSpy coreSpy(GuhCore::instance(), SIGNAL(initialized()));
+    coreSpy.wait();
     QSignalSpy spy(GuhCore::instance()->deviceManager(), SIGNAL(loaded()));
     spy.wait();
     m_mockTcpServer = MockTcpServer::servers().first();

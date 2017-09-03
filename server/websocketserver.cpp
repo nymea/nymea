@@ -60,13 +60,10 @@ namespace guhserver {
  *
  *  \sa ServerManager
  */
-WebSocketServer::WebSocketServer(const QHostAddress &address, const uint &port, const bool &sslEnabled, const QSslConfiguration &sslConfiguration, QObject *parent) :
-    TransportInterface(parent),
+WebSocketServer::WebSocketServer(const ServerConfiguration &configuration, const QSslConfiguration &sslConfiguration, QObject *parent) :
+    TransportInterface(configuration, parent),
     m_server(0),
-    m_host(address),
-    m_port(port),
     m_sslConfiguration(sslConfiguration),
-    m_useSsl(sslEnabled),
     m_enabled(false)
 {
 #ifndef TESTING_ENABLED
@@ -180,41 +177,21 @@ void WebSocketServer::onAvahiServiceStateChanged(const QtAvahiService::QtAvahiSe
 }
 
 /*! Returns true if this \l{WebSocketServer} could be reconfigured with the given \a address and \a port. */
-bool WebSocketServer::reconfigureServer(const QHostAddress &address, const uint &port)
+void WebSocketServer::reconfigureServer(const ServerConfiguration &config)
 {
-    if (m_host == address && m_port == (qint16)port && m_server->isListening()) {
+    if (configuration() == config && m_server->isListening()) {
         qCDebug(dcWebSocketServer()) << "Configuration unchanged. Not restarting the server.";
-        return true;
+        return;
     }
 
     stopServer();
     qCDebug(dcWebSocketServer()) << "Stopped server for reconfiguration.";
 
-    QWebSocketServer *server;
-    if (m_useSsl) {
-        server = new QWebSocketServer("guh", QWebSocketServer::SecureMode, this);
-        server->setSslConfiguration(m_sslConfiguration);
-    } else {
-        server = new QWebSocketServer("guh", QWebSocketServer::NonSecureMode, this);
-    }
-
-    if(!server->listen(address, port)) {
-        qCWarning(dcConnection) << "Websocket server error: can not listen on" << address.toString() << port;
-        delete server;
-        // Restart the server with the old configuration
-        qCDebug(dcWebSocketServer()) << "Restart server with old configuration.";
-        startServer();
-        return false;
-    }
-    // Remove the test server..
-    server->close();
-    delete server;
+    setConfiguration(config);
 
     // Start server with new configuration
-    m_host = address;
-    m_port = port;
     qCDebug(dcWebSocketServer()) << "Restart server with new configuration.";
-    return startServer();
+    startServer();
 }
 
 /*! Returns true if this \l{WebSocketServer} started successfully.
@@ -223,7 +200,7 @@ bool WebSocketServer::reconfigureServer(const QHostAddress &address, const uint 
  */
 bool WebSocketServer::startServer()
 {
-    if (m_useSsl) {
+    if (configuration().sslEnabled) {
         m_server = new QWebSocketServer("guh", QWebSocketServer::SecureMode, this);
         m_server->setSslConfiguration(m_sslConfiguration);
     } else {
@@ -232,15 +209,15 @@ bool WebSocketServer::startServer()
     connect (m_server, &QWebSocketServer::newConnection, this, &WebSocketServer::onClientConnected);
     connect (m_server, &QWebSocketServer::acceptError, this, &WebSocketServer::onServerError);
 
-    if (!m_server->listen(m_host, m_port)) {
-        qCWarning(dcConnection) << "Websocket server" << m_server->serverName() << QString("could not listen on %1:%2").arg(m_server->serverAddress().toString()).arg(m_port);
+    if (!m_server->listen(configuration().address, configuration().port)) {
+        qCWarning(dcConnection) << "Websocket server" << m_server->serverName() << QString("could not listen on %1:%2").arg(m_server->serverAddress().toString()).arg(configuration().port);
         return false;
     }
 
     if (m_server->secureMode() == QWebSocketServer::NonSecureMode) {
-        qCDebug(dcConnection) << "Started websocket server" << m_server->serverName() << QString("on ws://%1:%2").arg(m_server->serverAddress().toString()).arg(m_port);
+        qCDebug(dcConnection) << "Started websocket server" << m_server->serverName() << QString("on ws://%1:%2").arg(m_server->serverAddress().toString()).arg(configuration().port);
     } else {
-        qCDebug(dcConnection) << "Started websocket server" << m_server->serverName() << QString("on wss://%1:%2").arg(m_server->serverAddress().toString()).arg(m_port);
+        qCDebug(dcConnection) << "Started websocket server" << m_server->serverName() << QString("on wss://%1:%2").arg(m_server->serverAddress().toString()).arg(configuration().port);
     }
 
 #ifndef TESTING_ENABLED
@@ -251,7 +228,7 @@ bool WebSocketServer::startServer()
     txt.insert("manufacturer", "guh GmbH");
     txt.insert("uuid", GuhCore::instance()->configuration()->serverUuid().toString());
     txt.insert("name", GuhCore::instance()->configuration()->serverName());
-    m_avahiService->registerService("guhIO", m_port, "_ws._tcp", txt);
+    m_avahiService->registerService("guhIO", configuration().port, "_ws._tcp", txt);
 #endif
 
     return true;
@@ -272,9 +249,11 @@ bool WebSocketServer::stopServer()
         client->close(QWebSocketProtocol::CloseCodeNormal, "Stop server");
     }
 
-    m_server->close();
-    delete m_server;
-    m_server = 0;
+    if (m_server) {
+        m_server->close();
+        delete m_server;
+        m_server = nullptr;
+    }
     return true;
 }
 

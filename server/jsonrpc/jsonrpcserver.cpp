@@ -237,18 +237,23 @@ QHash<QString, JsonHandler *> JsonRPCServer::handlers() const
     return m_handlers;
 }
 
-/*! Register a new \l{TransportInterface} to the JSON server. The \a enabled flag indivates if the given \a interface sould be enebeld on startup. */
-void JsonRPCServer::registerTransportInterface(TransportInterface *interface, bool enabled, bool authenticationRequired)
+/*! Register a new \l{TransportInterface} to the JSON server. If the given interface is already registered, just the authenticationRequired flag will be updated. */
+void JsonRPCServer::registerTransportInterface(TransportInterface *interface, bool authenticationRequired)
 {
-    connect(interface, &TransportInterface::clientConnected, this, &JsonRPCServer::clientConnected);
-    connect(interface, &TransportInterface::clientDisconnected, this, &JsonRPCServer::clientDisconnected);
-    connect(interface, &TransportInterface::dataAvailable, this, &JsonRPCServer::processData);
-
-    m_interfaces.insert(interface, authenticationRequired);
-
-    if (enabled) {
-        QMetaObject::invokeMethod(interface, "startServer", Qt::QueuedConnection);
+    if (!m_interfaces.contains(interface)) {
+        connect(interface, &TransportInterface::clientConnected, this, &JsonRPCServer::clientConnected);
+        connect(interface, &TransportInterface::clientDisconnected, this, &JsonRPCServer::clientDisconnected);
+        connect(interface, &TransportInterface::dataAvailable, this, &JsonRPCServer::processData);
     }
+    m_interfaces[interface] = authenticationRequired;
+}
+
+void JsonRPCServer::unregisterTransportInterface(TransportInterface *interface)
+{
+    disconnect(interface, &TransportInterface::clientConnected, this, &JsonRPCServer::clientConnected);
+    disconnect(interface, &TransportInterface::clientDisconnected, this, &JsonRPCServer::clientDisconnected);
+    disconnect(interface, &TransportInterface::dataAvailable, this, &JsonRPCServer::processData);
+    m_interfaces.take(interface);
 }
 
 /*! Send a JSON success response to the client with the given \a clientId,
@@ -454,7 +459,8 @@ void JsonRPCServer::clientConnected(const QUuid &clientId)
     handshake.insert("uuid", GuhCore::instance()->configuration()->serverUuid().toString());
     handshake.insert("language", GuhCore::instance()->configuration()->locale().name());
     handshake.insert("protocol version", JSON_PROTOCOL_VERSION);
-    handshake.insert("initialSetupRequired", GuhCore::instance()->userManager()->users().isEmpty());
+    handshake.insert("initialSetupRequired", (interface->configuration().authenticationEnabled ? GuhCore::instance()->userManager()->users().isEmpty() : false));
+    handshake.insert("authenticationRequired", interface->configuration().authenticationEnabled);
     interface->sendData(clientId, QJsonDocument::fromVariant(handshake).toJson());
 }
 

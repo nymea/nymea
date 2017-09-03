@@ -96,20 +96,18 @@ namespace guhserver {
  *
  *  \sa ServerManager
  */
-WebServer::WebServer(const QHostAddress &host, const uint &port, const QString &publicFolder, bool sslEnabled, const QSslConfiguration &sslConfiguration, QObject *parent) :
+WebServer::WebServer(const WebServerConfiguration &configuration, const QSslConfiguration &sslConfiguration, QObject *parent) :
     QTcpServer(parent),
     m_avahiService(NULL),
-    m_host(host),
-    m_port(port),
-    m_webinterfaceDir(publicFolder),
+    m_configuration(configuration),
     m_sslConfiguration(sslConfiguration),
-    m_useSsl(sslEnabled),
     m_enabled(false)
 {
     if (QCoreApplication::instance()->organizationName() == "guh-test") {
-        m_webinterfaceDir = QDir(QCoreApplication::applicationDirPath());
-        qCWarning(dcWebServer) << "Using public folder" << m_webinterfaceDir.path();
+        m_configuration.publicFolder = QCoreApplication::applicationDirPath();
+        qCWarning(dcWebServer) << "Using public folder" << m_configuration.publicFolder;
     }
+    qCDebug(dcWebServer) << "Using public folder" << m_configuration.publicFolder;
 
 #ifndef TESTING_ENABLED
     m_avahiService = new QtAvahiService(this);
@@ -159,7 +157,7 @@ bool WebServer::verifyFile(QSslSocket *socket, const QString &fileName)
     }
 
     // make shore the file is in the public directory
-    if (!file.canonicalFilePath().startsWith(m_webinterfaceDir.path())) {
+    if (!file.canonicalFilePath().startsWith(m_configuration.publicFolder)) {
         qCWarning(dcWebServer) << "requested file" << file.fileName() << "is outside the public folder.";
         HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
         reply->setClientId(m_clientList.key(socket));
@@ -190,7 +188,7 @@ QString WebServer::fileName(const QString &query)
         fileName = query;
     }
 
-    return m_webinterfaceDir.path() + fileName;
+    return m_configuration.publicFolder + "/" + fileName;
 }
 
 HttpReply *WebServer::processIconRequest(const QString &fileName)
@@ -256,7 +254,7 @@ void WebServer::incomingConnection(qintptr socketDescriptor)
 
     qCDebug(dcConnection) << QString("Webserver client %1:%2 connected").arg(socket->peerAddress().toString()).arg(socket->peerPort());
 
-    if (m_useSsl) {
+    if (m_configuration.sslEnabled) {
         // configure client connection
         socket->setSslConfiguration(m_sslConfiguration);
         connect(socket, SIGNAL(encrypted()), this, SLOT(onEncrypted()));
@@ -366,7 +364,7 @@ void WebServer::readClient()
         qCDebug(dcWebServer) << "server XML request call";
         HttpReply *reply = RestResource::createSuccessReply();
         reply->setHeader(HttpReply::ContentTypeHeader, "text/xml");
-        reply->setPayload(createServerXmlDocument(m_host));
+        reply->setPayload(createServerXmlDocument(m_configuration.address));
         reply->setClientId(clientId);
         sendHttpReply(reply);
         reply->deleteLater();
@@ -377,8 +375,8 @@ void WebServer::readClient()
     // request for a file...
     if (request.method() == HttpRequest::Get) {
         // check if the webinterface dir does exist, otherwise a filerequest is not relevant
-        if (!m_webinterfaceDir.exists()) {
-            qCWarning(dcWebServer) << "webinterface folder" << m_webinterfaceDir.path() << "does not exist.";
+        if (!QDir(m_configuration.publicFolder).exists()) {
+            qCWarning(dcWebServer) << "webinterface folder" << m_configuration.publicFolder << "does not exist.";
             HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
             reply->setClientId(clientId);
             sendHttpReply(reply);
@@ -490,41 +488,34 @@ void WebServer::onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceS
 }
 
 /*! Returns true if this \l{WebServer} could be reconfigured with the given \a address and \a port. */
-bool WebServer::reconfigureServer(const QHostAddress &address, const uint &port)
+void WebServer::reconfigureServer(const WebServerConfiguration &config)
 {
-    if (m_host == address && m_port == (qint16)port && isListening())
-        return true;
+    if (m_configuration.address == config.address &&
+            m_configuration.port == config.port &&
+            m_configuration.sslEnabled == config.sslEnabled &&
+            m_configuration.authenticationEnabled == config.authenticationEnabled &&
+            m_configuration.publicFolder == config.publicFolder &&
+            isListening())
+        return;
 
     stopServer();
-
-    if (!listen(address, port)) {
-        qCWarning(dcConnection()) << "Webserver could not listen on" << serverAddress().toString() << m_port;
-        qCDebug(dcWebServer()) << "Restart server with old configuration.";
-        startServer();
-        return false;
-    }
-
-    close();
-    m_host = address;
-    m_port = port;
+    m_configuration = config;
     startServer();
-
-    return true;
 }
 
 /*! Returns true if this \l{WebServer} started successfully. */
 bool WebServer::startServer()
 {
-    if (!listen(m_host, m_port)) {
-        qCWarning(dcConnection) << "Webserver could not listen on" << serverAddress().toString() << m_port;
+    if (!listen(m_configuration.address, m_configuration.port)) {
+        qCWarning(dcConnection) << "Webserver could not listen on" << m_configuration.address.toString() << m_configuration.port;
         m_enabled = false;
         return false;
     }
 
-    if (m_useSsl) {
-        qCDebug(dcConnection) << "Started webserver on" << QString("https://%1:%2").arg(m_host.toString()).arg(m_port);
+    if (m_configuration.sslEnabled) {
+        qCDebug(dcConnection) << "Started webserver on" << QString("https://%1:%2").arg(m_configuration.address.toString()).arg(m_configuration.port);
     } else {
-        qCDebug(dcConnection) << "Started webserver on" << QString("http://%1:%2").arg(m_host.toString()).arg(m_port);
+        qCDebug(dcConnection) << "Started webserver on" << QString("http://%1:%2").arg(m_configuration.address.toString()).arg(m_configuration.port);
     }
 
 #ifndef TESTING_ENABLED
@@ -535,7 +526,7 @@ bool WebServer::startServer()
     txt.insert("manufacturer", "guh GmbH");
     txt.insert("uuid", GuhCore::instance()->configuration()->serverUuid().toString());
     txt.insert("name", GuhCore::instance()->configuration()->serverName());
-    m_avahiService->registerService("guhIO", m_port, "_http._tcp", txt);
+    m_avahiService->registerService("guhIO", m_configuration.port, "_http._tcp", txt);
 #endif
 
     m_enabled = true;
@@ -581,13 +572,13 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
     writer.writeTextElement("minor", "1");
     writer.writeEndElement(); // specVersion
 
-    if (m_useSsl) {
-        writer.writeTextElement("URLBase", "https://" + address.toString() + ":" + QString::number(m_port));
+    if (m_configuration.sslEnabled) {
+        writer.writeTextElement("URLBase", "https://" + address.toString() + ":" + QString::number(m_configuration.port));
     } else {
-        writer.writeTextElement("URLBase", "http://" + address.toString() + ":" + QString::number(m_port));
+        writer.writeTextElement("URLBase", "http://" + address.toString() + ":" + QString::number(m_configuration.port));
     }
 
-    if (m_useSsl) {
+    if (m_configuration.sslEnabled) {
         writer.writeTextElement("websocketURL", "wss://" + address.toString() + ":" + QString::number(websocketPort));
     } else {
         writer.writeTextElement("websocketURL", "ws://" + address.toString() + ":" + QString::number(websocketPort));

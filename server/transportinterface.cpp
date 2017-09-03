@@ -78,12 +78,24 @@
 namespace guhserver {
 
 /*! Constructs a \l{TransportInterface} with the given \a parent. */
-TransportInterface::TransportInterface(QObject *parent) :
-    QObject(parent)
+TransportInterface::TransportInterface(const ServerConfiguration &config, QObject *parent) :
+    QObject(parent),
+    m_config(config)
 {
 }
 
-/*! Pure virtual destructor for \l{TransportInterface}. */
+void TransportInterface::setConfiguration(const ServerConfiguration &config)
+{
+    m_config = config;
+}
+
+/*! Returns the \{ServerConfiguration}. */
+ServerConfiguration TransportInterface::configuration() const
+{
+    return m_config;
+}
+
+/*! Virtual destructor for \l{TransportInterface}. */
 TransportInterface::~TransportInterface()
 {
 }

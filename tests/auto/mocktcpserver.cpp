@@ -32,7 +32,7 @@ using namespace guhserver;
 QList<MockTcpServer*> MockTcpServer::s_allServers;
 
 MockTcpServer::MockTcpServer(QObject *parent):
-    TransportInterface(parent)
+    TransportInterface(ServerConfiguration(), parent)
 {
     s_allServers.append(this);
 }

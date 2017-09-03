@@ -55,10 +55,9 @@ void TestConfigurations::getConfigurations()
     QVERIFY(configurations.contains("basicConfiguration"));
     QVERIFY(!configurations.value("basicConfiguration").toMap().value("serverUuid").toUuid().isNull());
 
-    QVERIFY(configurations.contains("sslConfiguration"));
-    QVERIFY(configurations.contains("tcpServerConfiguration"));
-    QVERIFY(configurations.contains("webServerConfiguration"));
-    QVERIFY(configurations.contains("webSocketServerConfiguration"));
+    QVERIFY(configurations.contains("tcpServerConfigurations"));
+    QVERIFY(configurations.contains("webServerConfigurations"));
+    QVERIFY(configurations.contains("webSocketServerConfigurations"));
 }
 
 void TestConfigurations::testTimeZones()

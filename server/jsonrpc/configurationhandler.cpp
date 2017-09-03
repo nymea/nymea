@@ -327,7 +327,6 @@ JsonReply *ConfigurationHandler::DeleteTcpServerConfiguration(const QVariantMap 
 
 JsonReply *ConfigurationHandler::SetWebServerConfiguration(const QVariantMap &params) const
 {
-    qWarning() << params;
     WebServerConfiguration config = JsonTypes::unpackWebServerConfiguration(params.value("configuration").toMap());
 
     if (config.id.isEmpty()) {

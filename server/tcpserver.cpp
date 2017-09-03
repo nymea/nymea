@@ -50,7 +50,6 @@ TcpServer::TcpServer(const ServerConfiguration &configuration, const QSslConfigu
     m_server(NULL),
     m_sslConfig(sslConfiguration)
 {       
-    qWarning() << "****" << configuration.address << configuration.port;
 #ifndef TESTING_ENABLED
     m_avahiService = new QtAvahiService(this);
     connect(m_avahiService, &QtAvahiService::serviceStateChanged, this, &TcpServer::onAvahiServiceStateChanged);
@@ -78,7 +77,6 @@ void TcpServer::sendData(const QUuid &clientId, const QByteArray &data)
     QTcpSocket *client = 0;
     client = m_clientList.value(clientId);
     if (client) {
-        qWarning() << "send data:" << data;
         client->write(data);
     }
 }
@@ -153,7 +151,6 @@ bool TcpServer::startServer()
         m_server = NULL;
         return false;
     }
-    qWarning() << "tcp listening";
 
 #ifndef TESTING_ENABLED
     // Note: reversed order
@@ -195,7 +192,6 @@ bool TcpServer::stopServer()
 
 void SslServer::incomingConnection(qintptr socketDescriptor)
 {
-    qWarning() << "incoming";
     QSslSocket *sslSocket = new QSslSocket(this);
 
     connect(sslSocket, &QSslSocket::encrypted, [this, sslSocket](){ emit clientConnected(sslSocket); });

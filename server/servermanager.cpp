@@ -106,7 +106,6 @@ ServerManager::ServerManager(GuhConfiguration* configuration, QObject *parent) :
 #endif
 
     foreach (const ServerConfiguration &config, configuration->webSocketServerConfigurations()) {
-        qWarning() << "Have websockeserver config" << config.id;
         WebSocketServer *webSocketServer = new WebSocketServer(config, m_sslConfiguration, this);
         m_jsonServer->registerTransportInterface(webSocketServer, config.authenticationEnabled);
         m_webSocketServers.insert(config.id, webSocketServer);

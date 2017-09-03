@@ -71,7 +71,7 @@ class TcpServer : public TransportInterface
 {
     Q_OBJECT
 public:
-    explicit TcpServer(const QHostAddress &host, const uint &port, bool sslEnabled, const QSslConfiguration &sslConfiguration, QObject *parent = 0);
+    explicit TcpServer(const ServerConfiguration &configuration, const QSslConfiguration &sslConfiguration, QObject *parent = 0);
     ~TcpServer();
 
     void sendData(const QUuid &clientId, const QByteArray &data) override;
@@ -85,10 +85,6 @@ private:
     SslServer * m_server;
     QHash<QUuid, QTcpSocket *> m_clientList;
 
-    QHostAddress m_host;
-    qint16 m_port;
-
-    bool m_sslEnabled = false;
     QSslConfiguration m_sslConfig;
 
 private slots:
@@ -102,7 +98,7 @@ private slots:
 
 
 public slots:
-    bool reconfigureServer(const QHostAddress &address, const uint &port);
+    void reconfigureServer(const ServerConfiguration &configuration);
     bool startServer() override;
     bool stopServer() override;
 };

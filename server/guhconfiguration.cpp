@@ -48,7 +48,6 @@ GuhConfiguration::GuhConfiguration(QObject *parent) :
     if (settings.childGroups().contains("TcpServer")) {
         settings.beginGroup("TcpServer");
         foreach (const QString &key, settings.childGroups()) {
-            qDebug() << "have key" << key;
             ServerConfiguration config = readServerConfig("TcpServer", key);
             m_tcpServerConfigs[config.id] = config;
         }
@@ -70,16 +69,7 @@ GuhConfiguration::GuhConfiguration(QObject *parent) :
     if (settings.childGroups().contains("WebServer")) {
         settings.beginGroup("WebServer");
         foreach (const QString &key, settings.childGroups()) {
-            ServerConfiguration tmp = readServerConfig("WebServer", key);
-            WebServerConfiguration config;
-            config.id = tmp.id;
-            config.address = tmp.address;
-            config.port = tmp.port;
-            config.sslEnabled = tmp.sslEnabled;
-            config.authenticationEnabled = tmp.authenticationEnabled;
-            settings.beginGroup(key);
-            config.publicFolder = settings.value("publicFolder").toString();
-            settings.endGroup();
+            WebServerConfiguration config = readWebServerConfig(key);
             m_webServerConfigs[config.id] = config;
         }
         settings.endGroup();
@@ -92,23 +82,21 @@ GuhConfiguration::GuhConfiguration(QObject *parent) :
         // TODO enable encryption/authentication by default once the important clients are supporting it
         config.sslEnabled = false;
         config.authenticationEnabled = false;
-        config.publicFolder = settings.value("publicFolder", "/usr/share/guh-webinterface/public/").toString();
+        config.publicFolder = "/usr/share/guh-webinterface/public/";
 #ifdef SNAPPY
         // Override default public folder path for snappy
         config.publicFolder = settings.value("publicFolder", QString(qgetenv("SNAP")) + "/guh-webinterface/").toString();
 #endif
         m_webServerConfigs[config.id] = config;
-        storeServerConfig("WebServer", config);
+        storeWebServerConfig(config);
     }
 
     // WebSocket Server
     if (settings.childGroups().contains("WebSocketServer")) {
         settings.beginGroup("WebSocketServer");
         foreach (const QString &key, settings.childGroups()) {
-            qWarning() << "have key" << key;
             ServerConfiguration config = readServerConfig("WebSocketServer", key);
             m_webSocketServerConfigs[config.id] = config;
-            qWarning() << "cound:" << m_webSocketServerConfigs.keys();
         }
         settings.endGroup();
     } else {
@@ -234,6 +222,13 @@ void GuhConfiguration::setTcpServerConfiguration(const ServerConfiguration &conf
     emit tcpServerConfigurationChanged(config.id);
 }
 
+void GuhConfiguration::removeTcpServerConfiguration(const QString &id)
+{
+    m_tcpServerConfigs.take(id);
+    deleteServerConfig("TcpServer", id);
+    emit tcpServerConfigurationRemoved(id);
+}
+
 QHash<QString, WebServerConfiguration> GuhConfiguration::webServerConfigurations() const
 {
     return m_webServerConfigs;
@@ -256,6 +251,13 @@ void GuhConfiguration::setWebServerConfiguration(const WebServerConfiguration &c
     emit webServerConfigurationChanged(config.id);
 }
 
+void GuhConfiguration::removeWebServerConfiguration(const QString &id)
+{
+    m_webServerConfigs.take(id);
+    deleteServerConfig("WebServer", id);
+    emit webServerConfigurationRemoved(id);
+}
+
 QHash<QString, ServerConfiguration> GuhConfiguration::webSocketServerConfigurations() const
 {
     return m_webSocketServerConfigs;
@@ -266,6 +268,13 @@ void GuhConfiguration::setWebSocketServerConfiguration(const ServerConfiguration
     m_webSocketServerConfigs[config.id] = config;
     storeServerConfig("WebSocketServer", config);
     emit webSocketServerConfigurationChanged(config.id);
+}
+
+void GuhConfiguration::removeWebSocketServerConfiguration(const QString &id)
+{
+    m_webSocketServerConfigs.take(id);
+    deleteServerConfig("WebSocketServer", id);
+    emit webSocketServerConfigurationRemoved(id);
 }
 
 bool GuhConfiguration::bluetoothServerEnabled() const
@@ -328,6 +337,7 @@ void GuhConfiguration::storeServerConfig(const QString &group, const ServerConfi
 {
     GuhSettings settings(GuhSettings::SettingsRoleGlobal);
     settings.beginGroup(group);
+    settings.remove("disabled");
     settings.beginGroup(config.id);
     settings.setValue("address", config.address.toString());
     settings.setValue("port", config.port);
@@ -348,6 +358,45 @@ ServerConfiguration GuhConfiguration::readServerConfig(const QString &group, con
     config.port = settings.value("port").toUInt();
     config.sslEnabled = settings.value("sslEnabled", true).toBool();
     config.authenticationEnabled = settings.value("authenticationEnabled", true).toBool();
+    settings.endGroup();
+    settings.endGroup();
+    return config;
+}
+
+void GuhConfiguration::deleteServerConfig(const QString &group, const QString &id)
+{
+    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    settings.beginGroup(group);
+    settings.remove(id);
+    if (settings.childGroups().isEmpty()) {
+        settings.setValue("disabled", true);
+    }
+    settings.endGroup();
+}
+
+void GuhConfiguration::storeWebServerConfig(const WebServerConfiguration &config)
+{
+    storeServerConfig("WebServer", config);
+    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    settings.beginGroup("WebServer");
+    settings.beginGroup(config.id);
+    settings.setValue("publicFolder", config.publicFolder);
+    settings.endGroup();
+    settings.endGroup();
+}
+
+WebServerConfiguration GuhConfiguration::readWebServerConfig(const QString &id)
+{
+    WebServerConfiguration config;
+    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    settings.beginGroup("WebServer");
+    settings.beginGroup(id);
+    config.id = id;
+    config.address = QHostAddress(settings.value("address").toString());
+    config.port = settings.value("port").toUInt();
+    config.sslEnabled = settings.value("sslEnabled", true).toBool();
+    config.authenticationEnabled = settings.value("authenticationEnabled", true).toBool();
+    config.publicFolder = settings.value("publicFolder").toString();
     settings.endGroup();
     settings.endGroup();
     return config;

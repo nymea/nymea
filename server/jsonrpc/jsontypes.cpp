@@ -119,6 +119,8 @@ QVariantMap JsonTypes::s_wirelessAccessPoint;
 QVariantMap JsonTypes::s_wiredNetworkDevice;
 QVariantMap JsonTypes::s_wirelessNetworkDevice;
 QVariantMap JsonTypes::s_tokenInfo;
+QVariantMap JsonTypes::s_serverConfiguration;
+QVariantMap JsonTypes::s_webServerConfiguration;
 
 void JsonTypes::init()
 {
@@ -359,6 +361,16 @@ void JsonTypes::init()
     s_tokenInfo.insert("deviceName", basicTypeToString(QVariant::String));
     s_tokenInfo.insert("creationTime", basicTypeToString(QVariant::UInt));
 
+    // ServerConfiguration
+    s_serverConfiguration.insert("id", basicTypeToString(QVariant::String));
+    s_serverConfiguration.insert("address", basicTypeToString(QVariant::String));
+    s_serverConfiguration.insert("port", basicTypeToString(QVariant::UInt));
+    s_serverConfiguration.insert("sslEnabled", basicTypeToString(QVariant::Bool));
+    s_serverConfiguration.insert("authenticationEnabled", basicTypeToString(QVariant::Bool));
+
+    s_webServerConfiguration = s_serverConfiguration;
+    s_webServerConfiguration.insert("publicFolder", basicTypeToString(QVariant::String));
+
     s_initialized = true;
 }
 
@@ -437,6 +449,7 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("WiredNetworkDevice", wiredNetworkDeviceDescription());
     allTypes.insert("WirelessNetworkDevice", wirelessNetworkDeviceDescription());
     allTypes.insert("TokenInfo", tokenInfoDescription());
+    allTypes.insert("ServerConfiguration", serverConfigurationDescription());
 
     return allTypes;
 }
@@ -1091,7 +1104,8 @@ QVariantMap JsonTypes::packBasicConfiguration()
 QVariantMap JsonTypes::packServerConfiguration(const ServerConfiguration &config)
 {
     QVariantMap serverConfiguration;
-    serverConfiguration.insert("host", config.address.toString());
+    serverConfiguration.insert("id", config.id);
+    serverConfiguration.insert("address", config.address.toString());
     serverConfiguration.insert("port", config.port);
     serverConfiguration.insert("sslEnabled", config.sslEnabled);
     serverConfiguration.insert("authenticationEnabled", config.authenticationEnabled);
@@ -1832,6 +1846,18 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                 QPair<bool, QString> result = validateMap(tokenInfoDescription(), variant.toMap());
                 if (!result.first) {
                     qCWarning(dcJsonRpc) << "TokenInfo not matching";
+                    return result;
+                }
+            } else if (refName == serverConfigurationRef()) {
+                QPair<bool, QString> result = validateMap(serverConfigurationDescription(), variant.toMap());
+                if (!result.first) {
+                    qCWarning(dcJsonRpc) << "ServerConfiguration not matching";
+                    return result;
+                }
+            } else if (refName == webServerConfigurationRef()) {
+                QPair<bool, QString> result = validateMap(webServerConfigurationDescription(), variant.toMap());
+                if (!result.first) {
+                    qCWarning(dcJsonRpc) << "WebServerConfiguration not matching";
                     return result;
                 }
             } else if (refName == basicTypeRef()) {

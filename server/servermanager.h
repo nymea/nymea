@@ -62,12 +62,25 @@ public:
     TcpServer *tcpServer() const;
 #endif
 
+private slots:
+    void tcpServerConfigurationChanged(const QString &id);
+    void tcpServerConfigurationRemoved(const QString &id);
+    void webSocketServerConfigurationChanged(const QString &id);
+    void webSocketServerConfigurationRemoved(const QString &id);
+    void webServerConfigurationChanged(const QString &id);
+    void webServerConfigurationRemoved(const QString &id);
+
 private:
     // Interfaces
     JsonRPCServer *m_jsonServer;
     RestServer *m_restServer;
 
     BluetoothServer *m_bluetoothServer;
+#ifndef TESTING_ENABLED
+    QHash<QString, TcpServer*> m_tcpServers;
+#endif
+    QHash<QString, WebSocketServer*> m_webSocketServers;
+    QHash<QString, WebServer*> m_webServers;
 
     // Encrytption and stuff
     QSslConfiguration m_sslConfiguration;

@@ -81,6 +81,8 @@ public:
     static QStringList getAvailableLanguages();
 
 signals:
+    void initialized();
+
     void pluginConfigChanged(const PluginId &id, const ParamList &config);
     void eventTriggered(const Event &event);
     void deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
@@ -115,6 +117,7 @@ private:
     QHash<ActionId, Action> m_pendingActions;
 
 private slots:
+    void init();
     void gotEvent(const Event &event);
     void onDateTimeChanged(const QDateTime &dateTime);
     void onLocaleChanged();

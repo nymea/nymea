@@ -58,7 +58,8 @@ public:
 
     QHash<QString, JsonHandler *> handlers() const;
 
-    void registerTransportInterface(TransportInterface *interface, bool enabled, bool authenticationRequired);
+    void registerTransportInterface(TransportInterface *interface, bool authenticationRequired);
+    void unregisterTransportInterface(TransportInterface *interface);
 
 private:
     void sendResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QVariantMap &params = QVariantMap());

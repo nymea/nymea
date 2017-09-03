@@ -36,6 +36,8 @@
 
 #include "network/avahi/qtavahiservice.h"
 
+#include "guhconfiguration.h"
+
 // Note: Hypertext Transfer Protocol (HTTP/1.1) from the Internet Engineering Task Force (IETF):
 //       https://tools.ietf.org/html/rfc7231
 
@@ -72,7 +74,7 @@ class WebServer : public QTcpServer
 {
     Q_OBJECT
 public:
-    explicit WebServer(const QHostAddress &host, const uint &port, const QString &publicFolder, bool sslEnabled, const QSslConfiguration &sslConfiguration, QObject *parent = 0);
+    explicit WebServer(const WebServerConfiguration &configuration, const QSslConfiguration &sslConfiguration, QObject *parent = 0);
     ~WebServer();
 
     void sendHttpReply(HttpReply *reply);
@@ -84,12 +86,9 @@ private:
 
     QtAvahiService *m_avahiService;
 
-    QHostAddress m_host;
-    qint16 m_port;
-    QDir m_webinterfaceDir;
 
+    WebServerConfiguration m_configuration;
     QSslConfiguration m_sslConfiguration;
-    bool m_useSsl;
 
     bool m_enabled;
 
@@ -116,7 +115,7 @@ private slots:
     void onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceState &state);
 
 public slots:
-    bool reconfigureServer(const QHostAddress &address, const uint &port);
+    void reconfigureServer(const WebServerConfiguration &config);
     bool startServer();
     bool stopServer();
 

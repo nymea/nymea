@@ -166,6 +166,8 @@ public:
     DECLARE_OBJECT(wiredNetworkDevice, "WiredNetworkDevice")
     DECLARE_OBJECT(wirelessNetworkDevice, "WirelessNetworkDevice")
     DECLARE_OBJECT(tokenInfo, "TokenInfo")
+    DECLARE_OBJECT(serverConfiguration, "ServerConfiguration")
+    DECLARE_OBJECT(webServerConfiguration, "WebServerConfiguration")
 
     // pack types
     static QVariantMap packEventType(const EventType &eventType);

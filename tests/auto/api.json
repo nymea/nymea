@@ -1,4 +1,4 @@
-49
+50
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -31,6 +31,33 @@
                 }
             }
         },
+        "Configuration.DeleteTcpServerConfiguration": {
+            "description": "Delete a TCP interface of the server. Note: if you are deleting the configuration for the interface you are currently connected to, the connection will be dropped.",
+            "params": {
+                "id": "String"
+            },
+            "returns": {
+                "configurationError": "$ref:ConfigurationError"
+            }
+        },
+        "Configuration.DeleteWebServerConfiguration": {
+            "description": "Delete a WebServer interface of the server.",
+            "params": {
+                "id": "String"
+            },
+            "returns": {
+                "configurationError": "$ref:ConfigurationError"
+            }
+        },
+        "Configuration.DeleteWebSocketServerConfiguration": {
+            "description": "Delete a WebSocket Server interface of the server. Note: if you are deleting the configuration for the interface you are currently connected to, the connection will be dropped.",
+            "params": {
+                "id": "String"
+            },
+            "returns": {
+                "configurationError": "$ref:ConfigurationError"
+            }
+        },
         "Configuration.GetAvailableLanguages": {
             "description": "Returns a list of locale codes available for the server. i.e. en_US, de_AT",
             "params": {
@@ -53,21 +80,15 @@
                     "serverUuid": "Uuid",
                     "timeZone": "String"
                 },
-                "sslConfiguration": {
-                    "enabled": "Bool"
-                },
-                "tcpServerConfiguration": {
-                    "host": "String",
-                    "port": "Uint"
-                },
-                "webServerConfiguration": {
-                    "host": "String",
-                    "port": "Uint"
-                },
-                "webSocketServerConfiguration": {
-                    "host": "String",
-                    "port": "Uint"
-                }
+                "tcpServerConfigurations": [
+                    "$ref:ServerConfiguration"
+                ],
+                "webServerConfigurations": [
+                    "$ref:WebServerConfiguration"
+                ],
+                "webSocketServerConfigurations": [
+                    "$ref:ServerConfiguration"
+                ]
             }
         },
         "Configuration.GetTimeZones": {
@@ -99,10 +120,9 @@
             }
         },
         "Configuration.SetTcpServerConfiguration": {
-            "description": "Configure the TCP interface of the server. Note: if you are using the TCP server for this call you will loose the connection.",
+            "description": "Configure a TCP interface of the server. If the ID is an existing one, the existing config will be modified, otherwise a new one will be added. Note: if you are changing the configuration for the interface you are currently connected to, the connection will be dropped.",
             "params": {
-                "host": "String",
-                "port": "Uint"
+                "configuration": "$ref:ServerConfiguration"
             },
             "returns": {
                 "configurationError": "$ref:ConfigurationError"
@@ -118,20 +138,18 @@
             }
         },
         "Configuration.SetWebServerConfiguration": {
-            "description": "Configure the web server of the server.",
+            "description": "Configure a WebServer interface of the server. If the ID is an existing one, the existing config will be modified, otherwise a new one will be added.",
             "params": {
-                "host": "String",
-                "port": "Uint"
+                "configuration": "$ref:WebServerConfiguration"
             },
             "returns": {
                 "configurationError": "$ref:ConfigurationError"
             }
         },
         "Configuration.SetWebSocketServerConfiguration": {
-            "description": "Configure the web socket interface of the server. Note: if you are using the web socket server for this call you will loose the connection.",
+            "description": "Configure a WebSocket Server interface of the server. If the ID is an existing one, the existing config will be modified, otherwise a new one will be added. Note: if you are changing the configuration for the interface you are currently connected to, the connection will be dropped.",
             "params": {
-                "host": "String",
-                "port": "Uint"
+                "configuration": "$ref:ServerConfiguration"
             },
             "returns": {
                 "configurationError": "$ref:ConfigurationError"
@@ -905,6 +923,7 @@
             "ConfigurationErrorNoError",
             "ConfigurationErrorInvalidTimeZone",
             "ConfigurationErrorInvalidStationName",
+            "ConfigurationErrorInvalidId",
             "ConfigurationErrorInvalidPort",
             "ConfigurationErrorInvalidHostAddress",
             "ConfigurationErrorBluetoothHardwareNotAvailable",
@@ -1254,6 +1273,13 @@
             "RuleErrorContainsEventBasesAction",
             "RuleErrorNoExitActions"
         ],
+        "ServerConfiguration": {
+            "address": "String",
+            "authenticationEnabled": "Bool",
+            "id": "String",
+            "port": "Uint",
+            "sslEnabled": "Bool"
+        },
         "SetupMethod": [
             "SetupMethodJustAdd",
             "SetupMethodDisplayPin",

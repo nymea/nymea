@@ -26,17 +26,22 @@
 #include <QList>
 #include <QUuid>
 
+#include "guhconfiguration.h"
+
 namespace guhserver {
 
 class TransportInterface : public QObject
 {
     Q_OBJECT
 public:
-    explicit TransportInterface(QObject *parent = 0);
+    explicit TransportInterface(const ServerConfiguration &config, QObject *parent = 0);
     virtual ~TransportInterface() = 0;
 
     virtual void sendData(const QUuid &clientId, const QByteArray &data) = 0;
     virtual void sendData(const QList<QUuid> &clients, const QByteArray &data) = 0;
+
+    void setConfiguration(const ServerConfiguration &config);
+    ServerConfiguration configuration() const;
 
 signals:
     void clientConnected(const QUuid &clientId);
@@ -46,6 +51,9 @@ signals:
 public slots:
     virtual bool startServer() = 0;
     virtual bool stopServer() = 0;
+
+private:
+    ServerConfiguration m_config;
 };
 
 }

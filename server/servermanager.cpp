@@ -94,27 +94,43 @@ ServerManager::ServerManager(GuhConfiguration* configuration, QObject *parent) :
     // Transports
 #ifdef TESTING_ENABLED
     MockTcpServer *tcpServer = new MockTcpServer(this);
-    m_jsonServer->registerTransportInterface(tcpServer, true, true);
+    m_jsonServer->registerTransportInterface(tcpServer, true);
+    tcpServer->startServer();
 #else
     foreach (const ServerConfiguration &config, configuration->tcpServerConfigurations()) {
-        TcpServer *tcpServer = new TcpServer(config.address, config.port,  config.sslEnabled, m_sslConfiguration, this);
-        m_jsonServer->registerTransportInterface(tcpServer, true, config.authenticationEnabled);
+        TcpServer *tcpServer = new TcpServer(config, m_sslConfiguration, this);
+        m_jsonServer->registerTransportInterface(tcpServer, config.authenticationEnabled);
+        m_tcpServers.insert(config.id, tcpServer);
+        tcpServer->startServer();
     }
 #endif
 
     foreach (const ServerConfiguration &config, configuration->webSocketServerConfigurations()) {
         qWarning() << "Have websockeserver config" << config.id;
-        WebSocketServer *webSocketServer = new WebSocketServer(config.address, config.port, config.sslEnabled, m_sslConfiguration, this);
-        m_jsonServer->registerTransportInterface(webSocketServer, true, config.authenticationEnabled);
+        WebSocketServer *webSocketServer = new WebSocketServer(config, m_sslConfiguration, this);
+        m_jsonServer->registerTransportInterface(webSocketServer, config.authenticationEnabled);
+        m_webSocketServers.insert(config.id, webSocketServer);
+        webSocketServer->startServer();
     }
 
     m_bluetoothServer = new BluetoothServer(this);
-    m_jsonServer->registerTransportInterface(m_bluetoothServer, configuration->bluetoothServerEnabled(), true);
+    m_jsonServer->registerTransportInterface(m_bluetoothServer, true);
+    if (configuration->bluetoothServerEnabled()) {
+        m_bluetoothServer->startServer();
+    }
 
     foreach (const WebServerConfiguration &config, configuration->webServerConfigurations()) {
-        WebServer *webServer = new WebServer(config.address, config.port, config.publicFolder, config.sslEnabled, m_sslConfiguration, this);
+        WebServer *webServer = new WebServer(config, m_sslConfiguration, this);
         m_restServer->registerWebserver(webServer);
+        m_webServers.insert(config.id, webServer);
     }
+
+    connect(configuration, &GuhConfiguration::tcpServerConfigurationChanged, this, &ServerManager::tcpServerConfigurationChanged);
+    connect(configuration, &GuhConfiguration::tcpServerConfigurationRemoved, this, &ServerManager::tcpServerConfigurationRemoved);
+    connect(configuration, &GuhConfiguration::webSocketServerConfigurationChanged, this, &ServerManager::webSocketServerConfigurationChanged);
+    connect(configuration, &GuhConfiguration::webSocketServerConfigurationRemoved, this, &ServerManager::webSocketServerConfigurationRemoved);
+    connect(configuration, &GuhConfiguration::webServerConfigurationChanged, this, &ServerManager::webServerConfigurationChanged);
+    connect(configuration, &GuhConfiguration::webServerConfigurationRemoved, this, &ServerManager::webServerConfigurationRemoved);
 }
 
 /*! Returns the pointer to the created \l{JsonRPCServer} in this \l{ServerManager}. */
@@ -132,6 +148,99 @@ RestServer *ServerManager::restServer() const
 BluetoothServer *ServerManager::bluetoothServer() const
 {
     return m_bluetoothServer;
+}
+
+void ServerManager::tcpServerConfigurationChanged(const QString &id)
+{
+#ifndef TESTING_ENABLED
+    ServerConfiguration config = GuhCore::instance()->configuration()->tcpServerConfigurations().value(id);
+    TcpServer *server = m_tcpServers.value(id);
+    if (server) {
+        qDebug(dcConnection) << "Restarting TCP server for" << config.address << config.port << "SSL" << (config.sslEnabled ? "enabled" : "disabled") << "Authentication" << (config.authenticationEnabled ? "enabled" : "disabled");
+        server->stopServer();
+        server->setConfiguration(config);
+    } else {
+        qDebug(dcConnection) << "Received a TCP Server config change event but don't have a TCP Server instance for it. Creating new Server instance.";
+        server = new TcpServer(config, m_sslConfiguration, this);
+        m_tcpServers.insert(config.id, server);
+    }
+    m_jsonServer->registerTransportInterface(server, config.authenticationEnabled);
+    server->startServer();
+#else
+    qWarning() << "Configure called for" << id << "but disabled in testing";
+#endif
+}
+
+void ServerManager::tcpServerConfigurationRemoved(const QString &id)
+{
+#ifndef TESTING_ENABLED
+    if (!m_tcpServers.contains(id)) {
+        qWarning(dcConnection) << "Received a TCP Server config removed event but don't have a TCP Server instance for it.";
+        return;
+    }
+    TcpServer *server = m_tcpServers.take(id);
+    m_jsonServer->unregisterTransportInterface(server);
+    server->stopServer();
+    server->deleteLater();
+#else
+    qWarning() << "Delete configuration called for" << id << "but disabled in testing";
+#endif
+}
+
+void ServerManager::webSocketServerConfigurationChanged(const QString &id)
+{
+    WebSocketServer *server = m_webSocketServers.value(id);
+    ServerConfiguration config = GuhCore::instance()->configuration()->webSocketServerConfigurations().value(id);
+    if (server) {
+        qDebug(dcConnection) << "Restarting WebSocket server for" << config.address << config.port << "SSL" << (config.sslEnabled ? "enabled" : "disabled") << "Authentication" << (config.authenticationEnabled ? "enabled" : "disabled");
+        server->stopServer();
+        server->setConfiguration(config);
+    } else {
+        qDebug(dcConnection) << "Received a WebSocket Server config change event but don't have a WebSocket Server instance for it. Creating new instance.";
+        server = new WebSocketServer(config, m_sslConfiguration, this);
+        m_webSocketServers.insert(server->configuration().id, server);
+    }
+    m_jsonServer->registerTransportInterface(server, config.authenticationEnabled);
+    server->startServer();
+}
+
+void ServerManager::webSocketServerConfigurationRemoved(const QString &id)
+{
+    if (!m_webSocketServers.contains(id)) {
+        qWarning(dcConnection) << "Received a WebSocket Server config removed event but don't have a WebSocket Server instance for it.";
+        return;
+    }
+    WebSocketServer *server = m_webSocketServers.take(id);
+    m_jsonServer->unregisterTransportInterface(server);
+    server->stopServer();
+    server->deleteLater();
+}
+
+void ServerManager::webServerConfigurationChanged(const QString &id)
+{
+    WebServerConfiguration config = GuhCore::instance()->configuration()->webServerConfigurations().value(id);
+    WebServer *server = m_webServers.value(id);
+    if (server) {
+        qDebug(dcConnection) << "Restarting Web server for" << config.address << config.port << "SSL" << (config.sslEnabled ? "enabled" : "disabled") << "Authentication" << (config.authenticationEnabled ? "enabled" : "disabled");
+        server->stopServer();
+        server->reconfigureServer(config);
+    } else {
+        qDebug(dcConnection) << "Received a Web Server config change event but don't have a Web Server instance for it.";
+        server = new WebServer(config, m_sslConfiguration, this);
+        m_webServers.insert(config.id, server);
+    }
+    server->startServer();
+}
+
+void ServerManager::webServerConfigurationRemoved(const QString &id)
+{
+    if (!m_webServers.contains(id)) {
+        qWarning(dcConnection) << "Received a Web Server config removed event but don't have a Web Server instance for it.";
+        return;
+    }
+    WebServer *server = m_webServers.take(id);
+    server->stopServer();
+    server->deleteLater();
 }
 
 bool ServerManager::loadCertificate(const QString &certificateKeyFileName, const QString &certificateFileName)

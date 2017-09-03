@@ -1415,6 +1415,13 @@
             "id": "Uuid",
             "name": "String"
         },
+        "WebServerConfiguration": {
+            "address": "String",
+            "authenticationEnabled": "Bool",
+            "id": "String",
+            "port": "Uint",
+            "sslEnabled": "Bool"
+        },
         "WiredNetworkDevice": {
             "bitRate": "String",
             "interface": "String",

@@ -450,6 +450,7 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("WirelessNetworkDevice", wirelessNetworkDeviceDescription());
     allTypes.insert("TokenInfo", tokenInfoDescription());
     allTypes.insert("ServerConfiguration", serverConfigurationDescription());
+    allTypes.insert("WebServerConfiguration", serverConfigurationDescription());
 
     return allTypes;
 }

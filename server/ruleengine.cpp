@@ -385,7 +385,7 @@ QList<Rule> RuleEngine::evaluateTime(const QDateTime &dateTime)
 {
     if (!m_lastEvaluationTime.isValid()) {
         m_lastEvaluationTime = dateTime;
-        m_lastEvaluationTime.addSecs(-1);
+        m_lastEvaluationTime = m_lastEvaluationTime.addSecs(-1);
     }
 
     QList<Rule> rules;

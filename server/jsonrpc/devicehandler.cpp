@@ -403,6 +403,8 @@ JsonReply* DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
     }
     case DeviceManager::DeviceErrorNoError:
         returns.insert("deviceId", newDeviceId);
+        returns.insert("deviceError", JsonTypes::deviceErrorToString(status));
+        break;
     default:
         returns.insert("deviceError", JsonTypes::deviceErrorToString(status));
     }

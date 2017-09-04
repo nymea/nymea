@@ -63,7 +63,7 @@ void TestEvents::triggerEvent()
     int port = device->paramValue(httpportParamTypeId).toInt();
     QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(port).arg(mockEvent1Id.toString())));
     QNetworkReply *reply = nam.get(request);
-    reply->deleteLater();
+    connect(reply, &QNetworkReply::finished, reply, &QNetworkReply::deleteLater);
 
     // Lets wait for the notification
     spy.wait();
@@ -92,7 +92,7 @@ void TestEvents::triggerStateChangeEvent()
     int port = device->paramValue(httpportParamTypeId).toInt();
     QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(port).arg(mockIntStateId.toString()).arg(11)));
     QNetworkReply *reply = nam.get(request);
-    reply->deleteLater();
+    connect(reply, &QNetworkReply::finished, reply, &QNetworkReply::deleteLater);
 
     // Lets wait for the notification
     spy.wait();

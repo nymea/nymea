@@ -83,10 +83,6 @@ GuhConfiguration::GuhConfiguration(QObject *parent) :
         config.sslEnabled = false;
         config.authenticationEnabled = false;
         config.publicFolder = "/usr/share/guh-webinterface/public/";
-#ifdef SNAPPY
-        // Override default public folder path for snappy
-        config.publicFolder = settings.value("publicFolder", QString(qgetenv("SNAP")) + "/guh-webinterface/").toString();
-#endif
         m_webServerConfigs[config.id] = config;
         storeWebServerConfig(config);
     }

@@ -146,7 +146,7 @@ bool WebServer::verifyFile(QSslSocket *socket, const QString &fileName)
 {
     QFileInfo file(fileName);
 
-    // make shore the file exists
+    // make sure the file exists
     if (!file.exists()) {
         qCWarning(dcWebServer) << "requested file" << file.filePath() << "does not exist.";
         HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
@@ -156,8 +156,8 @@ bool WebServer::verifyFile(QSslSocket *socket, const QString &fileName)
         return false;
     }
 
-    // make shore the file is in the public directory
-    if (!file.canonicalFilePath().startsWith(m_configuration.publicFolder)) {
+    // make sure the file is in the public directory
+    if (!file.canonicalFilePath().startsWith(QDir(m_configuration.publicFolder).canonicalPath())) {
         qCWarning(dcWebServer) << "requested file" << file.fileName() << "is outside the public folder.";
         HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
         reply->setClientId(m_clientList.key(socket));
@@ -166,7 +166,7 @@ bool WebServer::verifyFile(QSslSocket *socket, const QString &fileName)
         return false;
     }
 
-    // make shore we can read the file
+    // make sure we can read the file
     if (!file.isReadable()) {
         qCWarning(dcWebServer) << "requested file" << file.fileName() << "is not readable.";
         HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);

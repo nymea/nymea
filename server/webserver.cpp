@@ -104,9 +104,9 @@ WebServer::WebServer(const WebServerConfiguration &configuration, const QSslConf
 {
     if (QCoreApplication::instance()->organizationName() == "guh-test") {
         m_configuration.publicFolder = QCoreApplication::applicationDirPath();
-        qCWarning(dcWebServer) << "Using public folder" << m_configuration.publicFolder;
+        qCWarning(dcWebServer) << "Using public folder" << QDir(m_configuration.publicFolder).canonicalPath();
     }
-    qCDebug(dcWebServer) << "Using public folder" << m_configuration.publicFolder;
+    qCDebug(dcWebServer) << "Using public folder" << QDir(m_configuration.publicFolder).canonicalPath();
 
 #ifndef TESTING_ENABLED
     m_avahiService = new QtAvahiService(this);

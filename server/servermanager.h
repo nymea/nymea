@@ -35,8 +35,6 @@
 #include "mocktcpserver.h"
 #endif
 
-#include "openssl/ssl.h"
-
 class QSslConfiguration;
 class QSslCertificate;
 class QSslKey;
@@ -87,12 +85,6 @@ private:
     bool loadCertificate(const QString &certificateKeyFileName, const QString &certificateFileName);
 };
 
-
-class CertificateGenerator
-{
-public:
-    static void generate(const QString &certificateFilename, const QString &keyFilename);
-};
 }
 
 #endif // SERVERMANAGER_H

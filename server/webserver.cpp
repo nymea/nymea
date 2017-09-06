@@ -363,7 +363,7 @@ void WebServer::readClient()
         qCDebug(dcWebServer) << "server XML request call";
         HttpReply *reply = RestResource::createSuccessReply();
         reply->setHeader(HttpReply::ContentTypeHeader, "text/xml");
-        reply->setPayload(createServerXmlDocument(m_configuration.address));
+        reply->setPayload(createServerXmlDocument(socket->localAddress()));
         reply->setClientId(clientId);
         sendHttpReply(reply);
         reply->deleteLater();
@@ -554,11 +554,6 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
 {
     QByteArray uuid = GuhCore::instance()->configuration()->serverUuid().toByteArray();
 
-    // TODO: support multiple (or none) configured servers here, let's just use the first valid config for now
-    Q_ASSERT_X(GuhCore::instance()->configuration()->webSocketServerConfigurations().count() > 0, "WebServer", "No WebSocket Server config found. This is not supported");
-
-    uint websocketPort = GuhCore::instance()->configuration()->webSocketServerConfigurations().values().first().port;
-
     QByteArray data;
     QXmlStreamWriter writer(&data);
     writer.setAutoFormatting(true);
@@ -577,10 +572,36 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
         writer.writeTextElement("URLBase", "http://" + address.toString() + ":" + QString::number(m_configuration.port));
     }
 
-    if (m_configuration.sslEnabled) {
-        writer.writeTextElement("websocketURL", "wss://" + address.toString() + ":" + QString::number(websocketPort));
-    } else {
-        writer.writeTextElement("websocketURL", "ws://" + address.toString() + ":" + QString::number(websocketPort));
+    ServerConfiguration websocketConfiguration;
+    bool webSocketServerFound = false;
+    foreach (const ServerConfiguration &config, GuhCore::instance()->configuration()->webSocketServerConfigurations()) {
+        if (config.address == QHostAddress("0.0.0.0") || config.address == address) {
+            websocketConfiguration = config;
+            webSocketServerFound = true;
+        }
+    }
+    if (webSocketServerFound) {
+        if (websocketConfiguration.sslEnabled) {
+            writer.writeTextElement("websocketURL", "wss://" + address.toString() + ":" + QString::number(websocketConfiguration.port));
+        } else {
+            writer.writeTextElement("websocketURL", "ws://" + address.toString() + ":" + QString::number(websocketConfiguration.port));
+        }
+    }
+
+    ServerConfiguration tcpServerConfiguration;
+    bool tcpServerFound = false;
+    foreach (const ServerConfiguration &config, GuhCore::instance()->configuration()->tcpServerConfigurations()) {
+        if (config.address == QHostAddress("0.0.0.0") || config.address == address) {
+            tcpServerConfiguration = config;
+            tcpServerFound = true;
+        }
+    }
+    if (tcpServerFound) {
+        if (tcpServerConfiguration.sslEnabled) {
+            writer.writeTextElement("guhRpcURL", "guh://" + address.toString() + ":" + QString::number(tcpServerConfiguration.port));
+        } else {
+            writer.writeTextElement("guhRpcURL", "guhs://" + address.toString() + ":" + QString::number(tcpServerConfiguration.port));
+        }
     }
 
     writer.writeTextElement("presentationURL", "/");

@@ -74,16 +74,25 @@ GuhConfiguration::GuhConfiguration(QObject *parent) :
         settings.endGroup();
     } else {
         qCWarning(dcApplication) << "No WebServer configuration found. Generating default of 0.0.0.0:3333";
-        WebServerConfiguration config;
-        config.id = "default";
-        config.address = QHostAddress("0.0.0.0");
-        config.port = 3333;
-        // TODO enable encryption/authentication by default once the important clients are supporting it
-        config.sslEnabled = false;
-        config.authenticationEnabled = false;
-        config.publicFolder = "/usr/share/guh-webinterface/public/";
-        m_webServerConfigs[config.id] = config;
-        storeWebServerConfig(config);
+        WebServerConfiguration insecureConfig;
+        insecureConfig.id = "insecure";
+        insecureConfig.address = QHostAddress("0.0.0.0");
+        insecureConfig.port = 80;
+        insecureConfig.sslEnabled = false;
+        insecureConfig.authenticationEnabled = false;
+        insecureConfig.publicFolder = "/usr/share/guh-webinterface/public/";
+        m_webServerConfigs[insecureConfig.id] = insecureConfig;
+        storeWebServerConfig(insecureConfig);
+
+        WebServerConfiguration secureConfig;
+        secureConfig.id = "secure";
+        secureConfig.address = QHostAddress("0.0.0.0");
+        secureConfig.port = 443;
+        secureConfig.sslEnabled = true;
+        secureConfig.authenticationEnabled = false;
+        secureConfig.publicFolder = "/usr/share/guh-webinterface/public/";
+        m_webServerConfigs[secureConfig.id] = secureConfig;
+        storeWebServerConfig(secureConfig);
     }
 
     // WebSocket Server

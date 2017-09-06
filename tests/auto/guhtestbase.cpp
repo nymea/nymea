@@ -308,7 +308,6 @@ QVariant GuhTestBase::getAndWait(const QNetworkRequest &request, const int &expe
     }
 
     QByteArray data = reply->readAll();
-    qDebug() << "***************reply" << reply->errorString() << reply->request().url();
     verifyReply(reply, data, expectedStatus);
 
     reply->deleteLater();

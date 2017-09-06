@@ -21,6 +21,7 @@
 #include "usermanager.h"
 #include "guhsettings.h"
 #include "loggingcategories.h"
+#include "guhcore.h"
 
 #include <QUuid>
 #include <QCryptographicHash>
@@ -130,7 +131,7 @@ QByteArray UserManager::authenticate(const QString &username, const QString &pas
             .arg(QUuid::createUuid().toString())
             .arg(username)
             .arg(QString::fromUtf8(token))
-            .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"))
+            .arg(GuhCore::instance()->timeManager()->currentDateTime().toString("yyyy-MM-dd hh:mm:ss"))
             .arg(deviceName);
 
     m_db.exec(storeTokenQuery);

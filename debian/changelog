@@ -1,3 +1,11 @@
+guh (0.8.0) xenial; urgency=medium
+
+  * Add support for SSL on all connection interfaces
+  * Add support for authentication on TCP and WebSocket Servers
+  * Allow fine grained configuration of server interfaces through config file
+
+ -- Michael Zanetti <michael.zanetti@guh.io>  Wed, 06 Sep 2017 14:34:56 +0200
+
 guh (0.7.10) xenial; urgency=medium
 
   * Make it cross compilable

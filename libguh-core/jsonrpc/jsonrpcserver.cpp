@@ -140,6 +140,15 @@ JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject 
     returns.insert("error", JsonTypes::userErrorRef());
     setReturns("RemoveToken", returns);
 
+    params.clear(); returns.clear();
+    setDescription("SetupRemoteAccess", "Setup the remote connection by providing AWS token information");
+    params.insert("idToken", JsonTypes::basicTypeToString(JsonTypes::String));
+    params.insert("authToken", JsonTypes::basicTypeToString(JsonTypes::String));
+    params.insert("cognitoIdentityPoolIdentityId", JsonTypes::basicTypeToString(JsonTypes::String));
+    setParams("SetupRemoteAccess", params);
+    returns.insert("status", JsonTypes::basicTypeToString(JsonTypes::Int));
+    setReturns("SetupRemoteAccess", returns);
+
     QMetaObject::invokeMethod(this, "setup", Qt::QueuedConnection);
 }
 
@@ -250,6 +259,11 @@ JsonReply *JsonRPCServer::RemoveToken(const QVariantMap &params)
     QVariantMap ret;
     ret.insert("error", JsonTypes::userErrorToString(error));
     return createReply(ret);
+}
+
+JsonReply *JsonRPCServer::SetupRemoteAccess(const QVariantMap &params)
+{
+
 }
 
 /*! Returns the list of registred \l{JsonHandler}{JsonHandlers} and their name.*/

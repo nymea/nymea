@@ -98,10 +98,10 @@ private slots:
     void reconfigureByDiscovery_data();
     void reconfigureByDiscovery();
 
-    // Keep this the last one! It'll remove the configured mock device
     void removeDevice_data();
     void removeDevice();
 
+    void removeAutoDevice();
 };
 
 void TestDevices::getPlugins()
@@ -1202,6 +1202,46 @@ void TestDevices::removeDevice()
         // Make sure the device is gone from settings too
         QCOMPARE(settings.allKeys().count(), 0);
     }
+}
+
+void TestDevices::removeAutoDevice()
+{
+    // Setup connection to mock client
+    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
+    QSignalSpy spy(nam, SIGNAL(finished(QNetworkReply*)));
+
+    // First try to make a manually created device disappear. It must not go away
+
+    QList<Device*> devices = GuhCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId);
+    QVERIFY2(devices.count() > 0, "There needs to be at least one configured Mock Device for this test");
+    Device *device = devices.first();
+
+    // trigger disappear signal in mock device
+    int port = device->paramValue(httpportParamTypeId).toInt();
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/disappear").arg(port)));
+    QNetworkReply *reply = nam->get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+    QVERIFY2(GuhCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId).count() == 1, "Mock device has disappeared even though it shouldn't");
+
+    // Ok, now do the same with an autocreated one. It should go away
+
+    devices = GuhCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceAutoClassId);
+    QVERIFY2(devices.count() > 0, "There needs to be at least one auto-created Mock Device for this test");
+    device = devices.first();
+
+    // trigger disappear signal in mock device
+    spy.clear();
+    port = device->paramValue(httpportParamTypeId).toInt();
+    request.setUrl(QUrl(QString("http://localhost:%1/disappear").arg(port)));
+    reply = nam->get(request);
+
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    QVERIFY2(GuhCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceAutoClassId).count() == 0, "Mock device has not disappeared even though it should have.");
 }
 
 #include "testdevices.moc"

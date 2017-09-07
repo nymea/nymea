@@ -44,14 +44,22 @@ GuhConfiguration::GuhConfiguration(QObject *parent) :
 
 #ifndef TESTING_ENABLED
     // TcpServer
+    bool createDefaults = !settings.childGroups().contains("TcpServer");
     if (settings.childGroups().contains("TcpServer")) {
         settings.beginGroup("TcpServer");
-        foreach (const QString &key, settings.childGroups()) {
-            ServerConfiguration config = readServerConfig("TcpServer", key);
-            m_tcpServerConfigs[config.id] = config;
+        if (settings.value("disabled").toBool()) {
+            qCDebug(dcApplication) << "TCP Server disabled by configuration";
+        } else if (!settings.childGroups().isEmpty()) {
+            foreach (const QString &key, settings.childGroups()) {
+                ServerConfiguration config = readServerConfig("TcpServer", key);
+                m_tcpServerConfigs[config.id] = config;
+            }
+        } else {
+            createDefaults = true;
         }
         settings.endGroup();
-    } else {
+    }
+    if (createDefaults) {
         qCWarning(dcApplication) << "No TCP Server configuration found. Generating default of 0.0.0.0:2222";
         ServerConfiguration config;
         config.id = "default";
@@ -65,14 +73,22 @@ GuhConfiguration::GuhConfiguration(QObject *parent) :
     }
 
     // Webserver
+    createDefaults = !settings.childGroups().contains("WebServer");
     if (settings.childGroups().contains("WebServer")) {
         settings.beginGroup("WebServer");
-        foreach (const QString &key, settings.childGroups()) {
-            WebServerConfiguration config = readWebServerConfig(key);
-            m_webServerConfigs[config.id] = config;
+        if (settings.value("disabled").toBool()) {
+            qCDebug(dcApplication) << "WebServer disabled by configuration";
+        } else if (!settings.childGroups().isEmpty()) {
+            foreach (const QString &key, settings.childGroups()) {
+                WebServerConfiguration config = readWebServerConfig(key);
+                m_webServerConfigs[config.id] = config;
+            }
+        } else {
+            createDefaults = true;
         }
         settings.endGroup();
-    } else {
+    }
+    if (createDefaults) {
         qCWarning(dcApplication) << "No WebServer configuration found. Generating default of 0.0.0.0:3333";
         WebServerConfiguration insecureConfig;
         insecureConfig.id = "insecure";
@@ -96,14 +112,22 @@ GuhConfiguration::GuhConfiguration(QObject *parent) :
     }
 
     // WebSocket Server
+    createDefaults = !settings.childGroups().contains("WebServer");
     if (settings.childGroups().contains("WebSocketServer")) {
         settings.beginGroup("WebSocketServer");
-        foreach (const QString &key, settings.childGroups()) {
-            ServerConfiguration config = readServerConfig("WebSocketServer", key);
-            m_webSocketServerConfigs[config.id] = config;
+        if (settings.value("disabled").toBool()) {
+            qCDebug(dcApplication) << "WebSocket Server disabled by configuration.";
+        } else if (!settings.childGroups().isEmpty()) {
+            foreach (const QString &key, settings.childGroups()) {
+                ServerConfiguration config = readServerConfig("WebSocketServer", key);
+                m_webSocketServerConfigs[config.id] = config;
+            }
+        } else {
+            createDefaults = true;
         }
         settings.endGroup();
-    } else {
+    }
+    if (createDefaults) {
         qCWarning(dcApplication) << "No WebSocketServer configuration found. Generating default of 0.0.0.0:4444";
         ServerConfiguration config;
         config.id = "default";

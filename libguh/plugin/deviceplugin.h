@@ -108,6 +108,7 @@ signals:
     void actionExecutionFinished(const ActionId &id, DeviceManager::DeviceError status);
     void configValueChanged(const ParamTypeId &paramTypeId, const QVariant &value);
     void autoDevicesAppeared(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors);
+    void autoDeviceDisappeared(const DeviceId &deviceId);
 
 protected:
     DeviceManager *deviceManager() const;

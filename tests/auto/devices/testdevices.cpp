@@ -1175,6 +1175,7 @@ void TestDevices::removeDevice_data()
 
     QTest::newRow("Existing Device") << m_mockDeviceId << DeviceManager::DeviceErrorNoError;
     QTest::newRow("Not existing Device") << DeviceId::createDeviceId() << DeviceManager::DeviceErrorDeviceNotFound;
+    QTest::newRow("Auto device") << m_mockDeviceAutoId << DeviceManager::DeviceErrorCreationMethodNotSupported;
 }
 
 void TestDevices::removeDevice()

@@ -741,7 +741,7 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDeviceInternal(const Devi
         break;
     }
 
-    m_configuredDevices.append(device);
+    m_configuredDevices.insert(device->id(), device);
     storeConfiguredDevices();
     postSetupDevice(device);
 
@@ -755,12 +755,10 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDeviceInternal(const Devi
  *  Returns \l{DeviceError} to inform about the result. */
 DeviceManager::DeviceError DeviceManager::removeConfiguredDevice(const DeviceId &deviceId)
 {
-    Device *device = findConfiguredDevice(deviceId);
+    Device *device = m_configuredDevices.take(deviceId);
     if (!device) {
         return DeviceErrorDeviceNotFound;
     }
-
-    m_configuredDevices.removeAll(device);
     m_devicePlugins.value(device->pluginId())->deviceRemoved(device);
 
     // check if this plugin still needs the guhTimer call
@@ -806,7 +804,7 @@ Device *DeviceManager::findConfiguredDevice(const DeviceId &id) const
 /*! Returns all configured \{Device}{Devices} in the system. */
 QList<Device *> DeviceManager::configuredDevices() const
 {
-    return m_configuredDevices;
+    return m_configuredDevices.values();
 }
 
 /*! Returns all \l{Device}{Devices} matching the \l{DeviceClass} referred by \a deviceClassId. */
@@ -822,11 +820,11 @@ QList<Device *> DeviceManager::findConfiguredDevices(const DeviceClassId &device
 }
 
 /*! Returns all child \l{Device}{Devices} of the given \a device. */
-QList<Device *> DeviceManager::findChildDevices(Device *device) const
+QList<Device *> DeviceManager::findChildDevices(const DeviceId &id) const
 {
     QList<Device *> ret;
     foreach (Device *d, m_configuredDevices) {
-        if (d->parentId() == device->id()) {
+        if (d->parentId() == id) {
             ret.append(d);
         }
     }
@@ -1101,7 +1099,8 @@ void DeviceManager::loadPlugins()
             connect(pluginIface, &DevicePlugin::deviceSetupFinished, this, &DeviceManager::slotDeviceSetupFinished);
             connect(pluginIface, &DevicePlugin::actionExecutionFinished, this, &DeviceManager::actionExecutionFinished);
             connect(pluginIface, &DevicePlugin::pairingFinished, this, &DeviceManager::slotPairingFinished);
-            connect(pluginIface, &DevicePlugin::autoDevicesAppeared, this, &DeviceManager::autoDevicesAppeared);
+            connect(pluginIface, &DevicePlugin::autoDevicesAppeared, this, &DeviceManager::onAutoDevicesAppeared);
+            connect(pluginIface, &DevicePlugin::autoDeviceDisappeared, this, &DeviceManager::onAutoDeviceDisappeared);
         }
     }
 }
@@ -1114,6 +1113,7 @@ void DeviceManager::loadConfiguredDevices()
     foreach (const QString &idString, settings.childGroups()) {
         settings.beginGroup(idString);
         Device *device = new Device(PluginId(settings.value("pluginid").toString()), DeviceId(idString), DeviceClassId(settings.value("deviceClassId").toString()), this);
+        device->m_autoCreated = settings.value("autoCreated").toBool();
         device->setName(settings.value("devicename").toString());
         device->setParentId(DeviceId(settings.value("parentid", QUuid()).toString()));
 
@@ -1130,7 +1130,7 @@ void DeviceManager::loadConfiguredDevices()
         // it means that it was working at some point so lets still add it as there might
         // be rules associated with this device. Device::setupCompleted() will be false.
         DeviceSetupStatus status = setupDevice(device);
-        m_configuredDevices.append(device);
+        m_configuredDevices.insert(device->id(), device);
 
         if (status == DeviceSetupStatus::DeviceSetupStatusSuccess)
             postSetupDevice(device);
@@ -1144,6 +1144,7 @@ void DeviceManager::storeConfiguredDevices()
     settings.beginGroup("DeviceConfig");
     foreach (Device *device, m_configuredDevices) {
         settings.beginGroup(device->id().toString());
+        settings.setValue("autoCreated", device->autoCreated());
         settings.setValue("devicename", device->name());
         settings.setValue("deviceClassId", device->deviceClassId().toString());
         settings.setValue("pluginid", device->pluginId().toString());
@@ -1202,7 +1203,7 @@ void DeviceManager::slotDeviceSetupFinished(Device *device, DeviceManager::Devic
     }
 
     if (status == DeviceSetupStatusFailure) {
-        if (m_configuredDevices.contains(device)) {
+        if (m_configuredDevices.contains(device->id())) {
             if (m_asyncDeviceReconfiguration.contains(device)) {
                 m_asyncDeviceReconfiguration.removeAll(device);
                 qCWarning(dcDeviceManager) << QString("Error in device setup after reconfiguration. Device %1 (%2) will not be functional.").arg(device->name()).arg(device->id().toString());
@@ -1226,8 +1227,8 @@ void DeviceManager::slotDeviceSetupFinished(Device *device, DeviceManager::Devic
 
     // A device might be in here already if loaded from storedDevices. If it's not in the configuredDevices,
     // lets add it now.
-    if (!m_configuredDevices.contains(device)) {
-        m_configuredDevices.append(device);
+    if (!m_configuredDevices.contains(device->id())) {
+        m_configuredDevices.insert(device->id(), device);
         emit deviceAdded(device);
         storeConfiguredDevices();
     }
@@ -1335,14 +1336,14 @@ void DeviceManager::slotPairingFinished(const PairingTransactionId &pairingTrans
         break;
     }
 
-    m_configuredDevices.append(device);
+    m_configuredDevices.insert(device->id(), device);
     emit deviceAdded(device);
     storeConfiguredDevices();
     emit deviceSetupFinished(device, DeviceError::DeviceErrorNoError);
     postSetupDevice(device);
 }
 
-void DeviceManager::autoDevicesAppeared(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors)
+void DeviceManager::onAutoDevicesAppeared(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors)
 {
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
     if (!deviceClass.isValid()) {
@@ -1356,6 +1357,7 @@ void DeviceManager::autoDevicesAppeared(const DeviceClassId &deviceClassId, cons
 
     foreach (const DeviceDescriptor &deviceDescriptor, deviceDescriptors) {
         Device *device = new Device(plugin->pluginId(), deviceClassId, this);
+        device->m_autoCreated = true;
         device->setName(deviceClass.name());
         device->setParams(deviceDescriptor.params());
 
@@ -1370,7 +1372,7 @@ void DeviceManager::autoDevicesAppeared(const DeviceClassId &deviceClassId, cons
             break;
         case DeviceSetupStatusSuccess:
             qCDebug(dcDeviceManager) << "Device setup complete.";
-            m_configuredDevices.append(device);
+            m_configuredDevices.insert(device->id(), device);
             storeConfiguredDevices();
             emit deviceSetupFinished(device, DeviceError::DeviceErrorNoError);
             emit deviceAdded(device);
@@ -1378,6 +1380,31 @@ void DeviceManager::autoDevicesAppeared(const DeviceClassId &deviceClassId, cons
             break;
         }
     }
+}
+
+void DeviceManager::onAutoDeviceDisappeared(const DeviceId &deviceId)
+{
+    DevicePlugin *plugin = static_cast<DevicePlugin*>(sender());
+    Device *device = m_configuredDevices.value(deviceId);
+
+    if (!device) {
+        qWarning(dcDeviceManager) << "Received an autoDeviceDisappeared signal but don't know this device:" << deviceId;
+        return;
+    }
+
+    DeviceClass deviceClass = m_supportedDevices.value(device->deviceClassId());
+
+    if (deviceClass.pluginId() != plugin->pluginId()) {
+        qWarning(dcDeviceManager) << "Received a autoDeviceDisappeared signal but emitting plugin does not own the device";
+        return;
+    }
+
+    if (!device->autoCreated()) {
+        qWarning(dcDeviceManager) << "Received an autoDeviceDisappeared signal but device creationMethod is not CreateMothodAuto";
+        return;
+    }
+
+    emit deviceDisappeared(deviceId);
 }
 
 void DeviceManager::slotDeviceStateValueChanged(const QUuid &stateTypeId, const QVariant &value)

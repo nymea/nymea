@@ -69,6 +69,7 @@ public:
     void setParentId(const DeviceId &parentId);
 
     bool setupComplete() const;
+    bool autoCreated() const;
 
 signals:
     void stateValueChanged(const QUuid &stateTypeId, const QVariant &value);
@@ -88,7 +89,8 @@ private:
     QString m_name;
     ParamList m_params;
     QList<State> m_states;
-    bool m_setupComplete;
+    bool m_setupComplete = false;
+    bool m_autoCreated = false;
 };
 
 #endif

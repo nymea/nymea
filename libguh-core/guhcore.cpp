@@ -146,10 +146,15 @@ QPair<DeviceManager::DeviceError, QList<RuleId> > GuhCore::removeConfiguredDevic
         return QPair<DeviceManager::DeviceError, QList<RuleId> > (DeviceManager::DeviceErrorDeviceIsChild, QList<RuleId>());
     }
 
+    if (device->autoCreated()) {
+        qCWarning(dcDeviceManager) << "This device has been auto-created and cannot be deleted manually.";
+        return QPair<DeviceManager::DeviceError, QList<RuleId> >(DeviceManager::DeviceErrorCreationMethodNotSupported, {});
+    }
+
     // Check if this device has child devices
     QList<Device *> devicesToRemove;
     devicesToRemove.append(device);
-    QList<Device *> childDevices = m_deviceManager->findChildDevices(device);
+    QList<Device *> childDevices = m_deviceManager->findChildDevices(deviceId);
     if (!childDevices.isEmpty()) {
         foreach (Device *child, childDevices) {
             devicesToRemove.append(child);
@@ -236,10 +241,15 @@ DeviceManager::DeviceError GuhCore::removeConfiguredDevice(const DeviceId &devic
         return DeviceManager::DeviceErrorDeviceIsChild;
     }
 
+    if (device->autoCreated()) {
+        qCWarning(dcDeviceManager) << "This device has been auto-created and cannot be deleted manually.";
+        return DeviceManager::DeviceErrorCreationMethodNotSupported;
+    }
+
     // Check if this device has child devices
     QList<Device *> devicesToRemove;
     devicesToRemove.append(device);
-    QList<Device *> childDevices = m_deviceManager->findChildDevices(device);
+    QList<Device *> childDevices = m_deviceManager->findChildDevices(deviceId);
     if (!childDevices.isEmpty()) {
         foreach (Device *child, childDevices) {
             devicesToRemove.append(child);
@@ -437,6 +447,7 @@ void GuhCore::init() {
     connect(m_deviceManager, &DeviceManager::deviceAdded, this, &GuhCore::deviceAdded);
     connect(m_deviceManager, &DeviceManager::deviceChanged, this, &GuhCore::deviceChanged);
     connect(m_deviceManager, &DeviceManager::deviceRemoved, this, &GuhCore::deviceRemoved);
+    connect(m_deviceManager, &DeviceManager::deviceDisappeared, this, &GuhCore::onDeviceDisappeared);
     connect(m_deviceManager, &DeviceManager::actionExecutionFinished, this, &GuhCore::actionExecutionFinished);
     connect(m_deviceManager, &DeviceManager::devicesDiscovered, this, &GuhCore::devicesDiscovered);
     connect(m_deviceManager, &DeviceManager::deviceSetupFinished, this, &GuhCore::deviceSetupFinished);
@@ -564,6 +575,60 @@ void GuhCore::actionExecutionFinished(const ActionId &id, DeviceManager::DeviceE
     emit actionExecuted(id, status);
     Action action = m_pendingActions.take(id);
     m_logger->logAction(action, status == DeviceManager::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
+}
+
+void GuhCore::onDeviceDisappeared(const DeviceId &deviceId)
+{
+    Device *device = m_deviceManager->findConfiguredDevice(deviceId);
+    if (!device) {
+        return;
+    }
+
+    // Check if this device has child devices
+    QList<Device *> devicesToRemove;
+    devicesToRemove.append(device);
+    QList<Device *> childDevices = m_deviceManager->findChildDevices(deviceId);
+    if (!childDevices.isEmpty()) {
+        foreach (Device *child, childDevices) {
+            devicesToRemove.append(child);
+        }
+    }
+
+    // check devices
+    QList<RuleId> offendingRules;
+    qCDebug(dcDeviceManager) << "Devices to remove:";
+    foreach (Device *d, devicesToRemove) {
+        qCDebug(dcDeviceManager) << " -> " << d->name() << d->id().toString();
+
+        // Check if device is in a rule
+        foreach (const RuleId &ruleId, m_ruleEngine->findRules(d->id())) {
+            qCDebug(dcDeviceManager) << "      -> in rule:" << ruleId.toString();
+            if (!offendingRules.contains(ruleId)) {
+                offendingRules.append(ruleId);
+            }
+        }
+    }
+
+    // update involved rules
+    foreach (const RuleId &ruleId, offendingRules) {
+        foreach (Device *d, devicesToRemove) {
+            m_ruleEngine->removeDeviceFromRule(ruleId, d->id());
+        }
+    }
+
+    // remove the child devices
+    foreach (Device *d, childDevices) {
+        DeviceManager::DeviceError removeError = m_deviceManager->removeConfiguredDevice(d->id());
+        if (removeError == DeviceManager::DeviceErrorNoError) {
+            m_logger->removeDeviceLogs(d->id());
+        }
+    }
+
+    // delete the device
+    DeviceManager::DeviceError removeError = m_deviceManager->removeConfiguredDevice(deviceId);
+    if (removeError == DeviceManager::DeviceErrorNoError) {
+        m_logger->removeDeviceLogs(deviceId);
+    }
 }
 
 }

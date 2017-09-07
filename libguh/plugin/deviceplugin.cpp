@@ -121,6 +121,14 @@
 */
 
 /*!
+  \fn void DevicePlugin::autoDeviceDisappeared(const DeviceId &id)
+  Emit this signal when a device which was created by \l{DevicePlugin::autoDevicesAppeared} has been removed from the system.
+  Be careful with this, as this will completely remove the device from the system and with it all the associated rules. Only
+  emit this if you are sure that a device will never come back. This signal should not be emitted for child auto devices
+  when the parent who created them is removed. The system will automatically remove all child devices in such a case.
+*/
+
+/*!
  \fn void DevicePlugin::emitEvent(const Event &event)
  To produce a new event in the system, create a new \l{Event} and emit it with \a event.
  Usually events are emitted in response to incoming data or other other events happening,

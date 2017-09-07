@@ -50,8 +50,7 @@ Device::Device(const PluginId &pluginId, const DeviceId &id, const DeviceClassId
     QObject(parent),
     m_id(id),
     m_deviceClassId(deviceClassId),
-    m_pluginId(pluginId),
-    m_setupComplete(false)
+    m_pluginId(pluginId)
 {
 
 }
@@ -61,8 +60,7 @@ Device::Device(const PluginId &pluginId, const DeviceClassId &deviceClassId, QOb
     QObject(parent),
     m_id(DeviceId::createDeviceId()),
     m_deviceClassId(deviceClassId),
-    m_pluginId(pluginId),
-    m_setupComplete(false)
+    m_pluginId(pluginId)
 {
 
 }
@@ -231,6 +229,12 @@ void Device::setParentId(const DeviceId &parentId)
 bool Device::setupComplete() const
 {
     return m_setupComplete;
+}
+
+/*! Returns true if this device has been auto-created (not created by the user) */
+bool Device::autoCreated() const
+{
+    return m_autoCreated;
 }
 
 void Device::setSetupComplete(const bool &complete)

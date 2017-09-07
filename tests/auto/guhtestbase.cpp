@@ -203,6 +203,13 @@ void GuhTestBase::initTestCase()
 
     m_mockDeviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
     QVERIFY2(!m_mockDeviceId.isNull(), "Newly created mock device must not be null.");
+
+    response = injectAndWait("Devices.GetConfiguredDevices", {});
+    foreach (const QVariant &device, response.toMap().value("params").toMap().value("devices").toList()) {
+        if (device.toMap().value("deviceClassId").toUuid() == mockDeviceAutoClassId) {
+            m_mockDeviceAutoId = DeviceId(device.toMap().value("id").toString());
+        }
+    }
 }
 
 void GuhTestBase::cleanupTestCase()

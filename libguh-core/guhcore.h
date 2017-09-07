@@ -122,6 +122,7 @@ private slots:
     void onDateTimeChanged(const QDateTime &dateTime);
     void onLocaleChanged();
     void actionExecutionFinished(const ActionId &id, DeviceManager::DeviceError status);
+    void onDeviceDisappeared(const DeviceId &deviceId);
 
 };
 

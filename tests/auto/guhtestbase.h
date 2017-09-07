@@ -101,6 +101,7 @@ public:
 protected slots:
     void initTestCase();
     void cleanupTestCase();
+    void cleanup();
 
 protected:
     QVariant injectAndWait(const QString &method, const QVariantMap &params = QVariantMap());
@@ -175,6 +176,9 @@ protected:
 
     void restartServer();
     void clearLoggingDatabase();
+
+private:
+    void createMockDevice();
 
 protected:
     PluginId mockPluginId = PluginId("727a4a9a-c187-446f-aadf-f1b2220607d1");

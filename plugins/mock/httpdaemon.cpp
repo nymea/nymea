@@ -102,6 +102,9 @@ void HttpDaemon::readClient()
         } else if (url.path() == "/clearactionhistory") {
             qCDebug(dcMockDevice) << "Clear action history";
             m_actionList.clear();
+        } else if (url.path() == "/disappear") {
+            qCDebug(dcMockDevice) << "Should disappear";
+            emit disappear();
         }
 
         if (tokens[0] == "GET") {

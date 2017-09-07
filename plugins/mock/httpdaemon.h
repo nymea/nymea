@@ -46,6 +46,7 @@ public:
 signals:
     void setState(const StateTypeId &stateTypeId, const QVariant &value);
     void triggerEvent(const EventTypeId &eventTypeId);
+    void disappear();
 
 private slots:
     void readClient();

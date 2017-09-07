@@ -185,26 +185,9 @@ void GuhTestBase::initTestCase()
     m_mockTcpServer = MockTcpServer::servers().first();
     m_clientId = QUuid::createUuid();
 
-    // Lets add one instance of the mockdevice
-    QVariantMap params;
-    params.insert("name", "Test Mock Device");
-    params.insert("deviceClassId", "{753f0d32-0468-4d08-82ed-1964aab03298}");
+    createMockDevice();
 
-    QVariantList deviceParams;
-    QVariantMap httpPortParam;
-    httpPortParam.insert("paramTypeId", httpportParamTypeId.toString());
-    httpPortParam.insert("value", m_mockDevice1Port);
-    deviceParams.append(httpPortParam);
-    params.insert("deviceParams", deviceParams);
-
-    QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
-
-    verifyDeviceError(response);
-
-    m_mockDeviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
-    QVERIFY2(!m_mockDeviceId.isNull(), "Newly created mock device must not be null.");
-
-    response = injectAndWait("Devices.GetConfiguredDevices", {});
+    QVariant response = injectAndWait("Devices.GetConfiguredDevices", {});
     foreach (const QVariant &device, response.toMap().value("params").toMap().value("devices").toList()) {
         if (device.toMap().value("deviceClassId").toUuid() == mockDeviceAutoClassId) {
             m_mockDeviceAutoId = DeviceId(device.toMap().value("id").toString());
@@ -215,6 +198,14 @@ void GuhTestBase::initTestCase()
 void GuhTestBase::cleanupTestCase()
 {
     GuhCore::instance()->destroy();
+}
+
+void GuhTestBase::cleanup()
+{
+    // In case a test deleted the mock device, lets recreate it.
+    if (GuhCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId).count() == 0) {
+        createMockDevice();
+    }
 }
 
 QVariant GuhTestBase::injectAndWait(const QString &method, const QVariantMap &params)
@@ -498,5 +489,26 @@ void GuhTestBase::restartServer()
 void GuhTestBase::clearLoggingDatabase()
 {
     GuhCore::instance()->logEngine()->clearDatabase();
+}
+
+void GuhTestBase::createMockDevice()
+{
+    QVariantMap params;
+    params.insert("name", "Test Mock Device");
+    params.insert("deviceClassId", "{753f0d32-0468-4d08-82ed-1964aab03298}");
+
+    QVariantList deviceParams;
+    QVariantMap httpPortParam;
+    httpPortParam.insert("paramTypeId", httpportParamTypeId.toString());
+    httpPortParam.insert("value", m_mockDevice1Port);
+    deviceParams.append(httpPortParam);
+    params.insert("deviceParams", deviceParams);
+
+    QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
+
+    verifyDeviceError(response);
+
+    m_mockDeviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
+    QVERIFY2(!m_mockDeviceId.isNull(), "Newly created mock device must not be null.");
 }
 

@@ -110,6 +110,8 @@ DeviceManager::DeviceSetupStatus DevicePluginMock::setupDevice(Device *device)
 
         connect(daemon, &HttpDaemon::triggerEvent, this, &DevicePluginMock::triggerEvent);
         connect(daemon, &HttpDaemon::setState, this, &DevicePluginMock::setState);
+        // Keep this queued or it might happen that the HttpDaemon is deleted before it is able to reply to the caller
+        connect(daemon, &HttpDaemon::disappear, this, &DevicePluginMock::onDisappear, Qt::QueuedConnection);
 
         if (device->paramValue(asyncParamTypeId).toBool()) {
             m_asyncSetupDevices.append(device);
@@ -294,6 +296,17 @@ void DevicePluginMock::triggerEvent(const EventTypeId &id)
 
     qCDebug(dcMockDevice) << "Emitting event " << event.eventTypeId();
     emit emitEvent(event);
+}
+
+void DevicePluginMock::onDisappear()
+{
+    HttpDaemon *daemon = qobject_cast<HttpDaemon*>(sender());
+    if (!daemon) {
+        return;
+    }
+    Device *device = m_daemons.key(daemon);
+    qCDebug(dcMockDevice) << "Emitting autoDeviceDisappeared for device" << device->id();
+    emit autoDeviceDisappeared(device->id());
 }
 
 void DevicePluginMock::emitDevicesDiscovered()

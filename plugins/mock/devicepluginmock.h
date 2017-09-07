@@ -59,6 +59,7 @@ public slots:
 private slots:
     void setState(const StateTypeId &stateTypeId, const QVariant &value);
     void triggerEvent(const EventTypeId &id);
+    void onDisappear();
     void emitDevicesDiscovered();
     void emitPushButtonDevicesDiscovered();
     void emitDisplayPinDevicesDiscovered();

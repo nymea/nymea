@@ -31,6 +31,7 @@ namespace guhserver {
 class UserManager : public QObject
 {
     Q_OBJECT
+    Q_ENUMS(UserError)
 public:
     enum UserError {
         UserErrorNoError,
@@ -41,7 +42,6 @@ public:
         UserErrorTokenNotFound,
         UserErrorPermissionDenied
     };
-    Q_ENUM(UserError)
 
     explicit UserManager(QObject *parent = 0);
 

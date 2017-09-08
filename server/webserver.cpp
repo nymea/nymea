@@ -769,7 +769,7 @@ void WebServerClient::removeConnection(QSslSocket *socket)
     m_runningConnections.remove(timer);
     m_connections.removeAll(socket);
 
-    timer->deleteLater();
+    delete timer;
 }
 
 /*! Resets the connection timeout for the given \a socket. If the socket will not be used for 12 seconds the

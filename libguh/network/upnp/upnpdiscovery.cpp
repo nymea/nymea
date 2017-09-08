@@ -136,18 +136,30 @@ void UpnpDiscovery::requestDeviceInformation(const QNetworkRequest &networkReque
 
 void UpnpDiscovery::respondToSearchRequest(QHostAddress host, int port)
 {
+    // TODO: Once DeviceManager (and with that this can be moved into the server, use GuhCore's configuration manager instead of parsing the config here...
     GuhSettings globalSettings(GuhSettings::SettingsRoleGlobal);
     globalSettings.beginGroup("guhd");
     QByteArray uuid = globalSettings.value("uuid", QUuid()).toByteArray();
     globalSettings.endGroup();
 
-    globalSettings.beginGroup("SSL");
-    bool useSsl = globalSettings.value("enabled", true).toBool();
+    globalSettings.beginGroup("WebServer");
+    int serverPort = -1;
+    bool useSsl = false;
+    foreach (const QString &group, globalSettings.childGroups()) {
+        globalSettings.beginGroup(group);
+        QHostAddress serverInterface = QHostAddress(globalSettings.value("address").toString());
+        if (serverInterface == host || serverInterface == QHostAddress("0.0.0.0")) {
+            serverPort = globalSettings.value("port", -1).toInt();
+            useSsl = globalSettings.value("sslEnabled", true).toBool();
+        }
+        globalSettings.endGroup();
+    }
     globalSettings.endGroup();
 
-    globalSettings.beginGroup("WebServer");
-    int serverPort = globalSettings.value("port", 3333).toInt();
-    globalSettings.endGroup();
+    if (serverPort == -1) {
+        qCWarning(dcConnection) << "No matching WebServer configuration found. Discarding UPnP request!";
+        return;
+    }
 
     foreach (const QNetworkInterface &interface,  QNetworkInterface::allInterfaces()) {
         foreach (QNetworkAddressEntry entry, interface.addressEntries()) {
@@ -324,82 +336,94 @@ void UpnpDiscovery::notificationTimeout()
 
 void UpnpDiscovery::sendByeByeMessage()
 {
+    // TODO: Once DeviceManager (and with that this can be moved into the server, use GuhCore's configuration manager instead of parsing the config here...
     GuhSettings globalSettings(GuhSettings::SettingsRoleGlobal);
     globalSettings.beginGroup("guhd");
     QByteArray uuid = globalSettings.value("uuid", QUuid()).toByteArray();
     globalSettings.endGroup();
 
     globalSettings.beginGroup("WebServer");
-    int port = globalSettings.value("port", 3333).toInt();
-    bool useSsl = globalSettings.value("https", false).toBool();
-    globalSettings.endGroup();
+    foreach (const QString &group, globalSettings.childGroups()) {
+        globalSettings.beginGroup(group);
+        QHostAddress serverInterface = QHostAddress(globalSettings.value("address").toString());
+        int serverPort = globalSettings.value("port", -1).toInt();
+        bool useSsl = globalSettings.value("sslEnabled", true).toBool();
+        globalSettings.endGroup();
 
-    foreach (const QNetworkInterface &interface,  QNetworkInterface::allInterfaces()) {
-        // listen only on IPv4
-        foreach (QNetworkAddressEntry entry, interface.addressEntries()) {
-            if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol) {
-                QString locationString;
-                if (useSsl) {
-                    locationString = "https://" + entry.ip().toString() + ":" + QString::number(port) + "/server.xml";
-                } else {
-                    locationString = "http://" + entry.ip().toString() + ":" + QString::number(port) + "/server.xml";
+        foreach (const QNetworkInterface &interface,  QNetworkInterface::allInterfaces()) {
+            foreach (QNetworkAddressEntry entry, interface.addressEntries()) {
+                if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol && (serverInterface == QHostAddress("0.0.0.0") || entry.ip() == serverInterface)) {
+
+                    QString locationString;
+                    if (useSsl) {
+                        locationString = "https://" + entry.ip().toString() + ":" + QString::number(serverPort) + "/server.xml";
+                    } else {
+                        locationString = "http://" + entry.ip().toString() + ":" + QString::number(serverPort) + "/server.xml";
+                    }
+
+                    // http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
+                    QByteArray byebyeMessage = QByteArray("NOTIFY * HTTP/1.1\r\n"
+                                                                      "HOST:239.255.255.250:1900\r\n"
+                                                                      "CACHE-CONTROL: max-age=1900\r\n"
+                                                                      "LOCATION: " + locationString.toUtf8() + "\r\n"
+                                                                      "NT:urn:schemas-upnp-org:device:Basic:1\r\n"
+                                                                      "USN:uuid:" + uuid + "::urn:schemas-upnp-org:device:Basic:1\r\n"
+                                                                      "NTS: ssdp:byebye\r\n"
+                                                                      "SERVER: guh/" + QByteArray(GUH_VERSION_STRING) + " UPnP/1.1 \r\n"
+                                                                      "\r\n");
+
+                    sendToMulticast(byebyeMessage);
                 }
-
-                // http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
-                QByteArray byebyeMessage = QByteArray("NOTIFY * HTTP/1.1\r\n"
-                                                                  "HOST:239.255.255.250:1900\r\n"
-                                                                  "CACHE-CONTROL: max-age=1900\r\n"
-                                                                  "LOCATION: " + locationString.toUtf8() + "\r\n"
-                                                                  "NT:urn:schemas-upnp-org:device:Basic:1\r\n"
-                                                                  "USN:uuid:" + uuid + "::urn:schemas-upnp-org:device:Basic:1\r\n"
-                                                                  "NTS: ssdp:byebye\r\n"
-                                                                  "SERVER: guh/" + QByteArray(GUH_VERSION_STRING) + " UPnP/1.1 \r\n"
-                                                                  "\r\n");
-
-                sendToMulticast(byebyeMessage);
             }
         }
     }
+    globalSettings.endGroup();
 }
 
 void UpnpDiscovery::sendAliveMessage()
 {
+    // TODO: Once DeviceManager (and with that this can be moved into the server, use GuhCore's configuration manager instead of parsing the config here...
     GuhSettings globalSettings(GuhSettings::SettingsRoleGlobal);
     globalSettings.beginGroup("guhd");
     QByteArray uuid = globalSettings.value("uuid", QUuid()).toByteArray();
     globalSettings.endGroup();
 
     globalSettings.beginGroup("WebServer");
-    int port = globalSettings.value("port", 3333).toInt();
-    bool useSsl = globalSettings.value("https", false).toBool();
-    globalSettings.endGroup();
+    foreach (const QString &group, globalSettings.childGroups()) {
+        globalSettings.beginGroup(group);
+        QHostAddress serverInterface = QHostAddress(globalSettings.value("address").toString());
+        int serverPort = globalSettings.value("port", -1).toInt();
+        bool useSsl = globalSettings.value("sslEnabled", true).toBool();
+        globalSettings.endGroup();
 
-    foreach (const QNetworkInterface &interface,  QNetworkInterface::allInterfaces()) {
-        // listen only on IPv4
-        foreach (QNetworkAddressEntry entry, interface.addressEntries()) {
-            if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol) {
-                QString locationString;
-                if (useSsl) {
-                    locationString = "https://" + entry.ip().toString() + ":" + QString::number(port) + "/server.xml";
-                } else {
-                    locationString = "http://" + entry.ip().toString() + ":" + QString::number(port) + "/server.xml";
+        foreach (const QNetworkInterface &interface,  QNetworkInterface::allInterfaces()) {
+            foreach (QNetworkAddressEntry entry, interface.addressEntries()) {
+                if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol && (serverInterface == QHostAddress("0.0.0.0") || entry.ip() == serverInterface)) {
+
+                    QString locationString;
+                    if (useSsl) {
+                        locationString = "https://" + entry.ip().toString() + ":" + QString::number(serverPort) + "/server.xml";
+                    } else {
+                        locationString = "http://" + entry.ip().toString() + ":" + QString::number(serverPort) + "/server.xml";
+                    }
+
+                    // http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
+                    QByteArray aliveMessage = QByteArray("NOTIFY * HTTP/1.1\r\n"
+                                                                      "HOST:239.255.255.250:1900\r\n"
+                                                                      "CACHE-CONTROL: max-age=1900\r\n"
+                                                                      "LOCATION: " + locationString.toUtf8() + "\r\n"
+                                                                      "NT:urn:schemas-upnp-org:device:Basic:1\r\n"
+                                                                      "USN:uuid:" + uuid + "::urn:schemas-upnp-org:device:Basic:1\r\n"
+                                                                      "NTS: ssdp:alive\r\n"
+                                                                      "SERVER: guh/" + QByteArray(GUH_VERSION_STRING) + " UPnP/1.1 \r\n"
+                                                                      "\r\n");
+
+                    sendToMulticast(aliveMessage);
                 }
-
-                // http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
-                QByteArray aliveMessage = QByteArray("NOTIFY * HTTP/1.1\r\n"
-                                                                  "HOST:239.255.255.250:1900\r\n"
-                                                                  "CACHE-CONTROL: max-age=1900\r\n"
-                                                                  "LOCATION: " + locationString.toUtf8() + "\r\n"
-                                                                  "NT:urn:schemas-upnp-org:device:Basic:1\r\n"
-                                                                  "USN:uuid:" + uuid + "::urn:schemas-upnp-org:device:Basic:1\r\n"
-                                                                  "NTS: ssdp:alive\r\n"
-                                                                  "SERVER: guh/" + QByteArray(GUH_VERSION_STRING) + " UPnP/1.1 \r\n"
-                                                                  "\r\n");
-
-                sendToMulticast(aliveMessage);
             }
         }
     }
+    globalSettings.endGroup();
 }
 
 void UpnpDiscovery::discoverTimeout()

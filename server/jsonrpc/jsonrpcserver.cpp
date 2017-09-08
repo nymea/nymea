@@ -446,10 +446,10 @@ void JsonRPCServer::registerHandler(JsonHandler *handler)
 
 void JsonRPCServer::clientConnected(const QUuid &clientId)
 {
-    // Notifications disabled by default. Clients must enable them with a valid token
-    m_clients.insert(clientId, false);
-
     TransportInterface *interface = qobject_cast<TransportInterface *>(sender());
+
+    // If authentication is required, notifications are disabled by default. Clients must enable them with a valid token
+    m_clients.insert(clientId, !interface->configuration().authenticationEnabled);
 
     QVariantMap handshake;
     handshake.insert("id", 0);

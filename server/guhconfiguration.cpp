@@ -112,7 +112,7 @@ GuhConfiguration::GuhConfiguration(QObject *parent) :
     }
 
     // WebSocket Server
-    createDefaults = !settings.childGroups().contains("WebServer");
+    createDefaults = !settings.childGroups().contains("WebSocketServer");
     if (settings.childGroups().contains("WebSocketServer")) {
         settings.beginGroup("WebSocketServer");
         if (settings.value("disabled").toBool()) {

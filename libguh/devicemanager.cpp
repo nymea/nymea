@@ -1170,6 +1170,10 @@ void DeviceManager::startMonitoringAutoDevices()
 void DeviceManager::slotDevicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors)
 {
     DevicePlugin *plugin = static_cast<DevicePlugin*>(sender());
+    if (!m_discoveringPlugins.contains(plugin)) {
+        qWarning(dcDeviceManager()) << "Received a devicesDiscovered signal from" << plugin->pluginName() << "but did not expect it. Ignoring.";
+        return;
+    }
     m_discoveringPlugins.removeOne(plugin);
 
     foreach (const DeviceDescriptor &descriptor, deviceDescriptors) {

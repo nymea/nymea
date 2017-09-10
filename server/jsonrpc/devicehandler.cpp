@@ -336,6 +336,7 @@ JsonReply *DeviceHandler::GetDiscoveredDevices(const QVariantMap &params) const
     DeviceManager::DeviceError status = GuhCore::instance()->deviceManager()->discoverDevices(deviceClassId, discoveryParams);
     if (status == DeviceManager::DeviceErrorAsync ) {
         JsonReply *reply = createAsyncReply("GetDiscoveredDevices");
+        connect(reply, &JsonReply::finished, [this, deviceClassId](){ m_discoverRequests.remove(deviceClassId); });
         m_discoverRequests.insert(deviceClassId, reply);
         return reply;
     }
@@ -398,6 +399,7 @@ JsonReply* DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
     switch (status) {
     case DeviceManager::DeviceErrorAsync: {
         JsonReply *asyncReply = createAsyncReply("AddConfiguredDevice");
+        connect(asyncReply, &JsonReply::finished, [this, newDeviceId](){ m_asynDeviceAdditions.remove(newDeviceId); });
         m_asynDeviceAdditions.insert(newDeviceId, asyncReply);
         return asyncReply;
     }
@@ -446,6 +448,7 @@ JsonReply *DeviceHandler::ConfirmPairing(const QVariantMap &params)
     JsonReply *reply = 0;
     if (status == DeviceManager::DeviceErrorAsync) {
         reply = createAsyncReply("ConfirmPairing");
+        connect(reply, &JsonReply::finished, [this, pairingTransactionId](){ m_asyncPairingRequests.remove(pairingTransactionId); });
         m_asyncPairingRequests.insert(pairingTransactionId, reply);
         return reply;
     }
@@ -492,6 +495,7 @@ JsonReply *DeviceHandler::ReconfigureDevice(const QVariantMap &params)
 
     if (status == DeviceManager::DeviceErrorAsync) {
         JsonReply *asyncReply = createAsyncReply("ReconfigureDevice");
+        connect(asyncReply, &JsonReply::finished, [this, deviceId](){ m_asynDeviceEditAdditions.remove(deviceId); });
         m_asynDeviceEditAdditions.insert(deviceId, asyncReply);
         return asyncReply;
     }

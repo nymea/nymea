@@ -325,7 +325,7 @@ void JsonReply::setCommandId(int commandId)
     m_commandId = commandId;
 }
 
-/*! Start the timeout timer for this \l{JsonReply}. The default timeout is 10 seconds. */
+/*! Start the timeout timer for this \l{JsonReply}. The default timeout is 15 seconds. */
 void JsonReply::startWait()
 {
     m_timeout.start(15000);

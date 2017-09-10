@@ -83,7 +83,9 @@ JsonReply* ActionHandler::ExecuteAction(const QVariantMap &params)
     DeviceManager::DeviceError status = GuhCore::instance()->executeAction(action);
     if (status == DeviceManager::DeviceErrorAsync) {
         JsonReply *reply = createAsyncReply("ExecuteAction");
-        m_asyncActionExecutions.insert(action.id(), reply);
+        ActionId id = action.id();
+        connect(reply, &JsonReply::finished, [this, id](){ m_asyncActionExecutions.remove(id); });
+        m_asyncActionExecutions.insert(id, reply);
         return reply;
     }
 

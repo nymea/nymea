@@ -144,7 +144,7 @@ JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject 
     setDescription("SetupRemoteAccess", "Setup the remote connection by providing AWS token information");
     params.insert("idToken", JsonTypes::basicTypeToString(JsonTypes::String));
     params.insert("authToken", JsonTypes::basicTypeToString(JsonTypes::String));
-    params.insert("cognitoIdentityPoolIdentityId", JsonTypes::basicTypeToString(JsonTypes::String));
+    params.insert("cognitoId", JsonTypes::basicTypeToString(JsonTypes::String));
     setParams("SetupRemoteAccess", params);
     returns.insert("status", JsonTypes::basicTypeToString(JsonTypes::Int));
     setReturns("SetupRemoteAccess", returns);
@@ -264,6 +264,14 @@ JsonReply *JsonRPCServer::RemoveToken(const QVariantMap &params)
 JsonReply *JsonRPCServer::SetupRemoteAccess(const QVariantMap &params)
 {
 
+    int id = GuhCore::instance()->cloudManager()->pairDevice(params.value("idToken").toString(), params.value("authToken").toString(), params.value("cognitoId").toString());
+    qWarning() << "waiting for id" << id;
+    JsonReply *reply = createAsyncReply("SetupRemoteAccess");
+    m_pairingRequests.insert(id, reply);
+    connect(reply, &JsonReply::finished, [this, id](){
+        m_pairingRequests.remove(id);
+    });
+    return reply;
 }
 
 /*! Returns the list of registred \l{JsonHandler}{JsonHandlers} and their name.*/
@@ -353,6 +361,8 @@ void JsonRPCServer::setup()
     registerHandler(new StateHandler(this));
     registerHandler(new ConfigurationHandler(this));
     registerHandler(new NetworkManagerHandler(this));
+
+    connect(GuhCore::instance()->cloudManager(), &CloudManager::pairingReply, this, &JsonRPCServer::pairingFinished);
 }
 
 void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &data)
@@ -484,6 +494,20 @@ void JsonRPCServer::asyncReplyFinished()
     }
 
     reply->deleteLater();
+}
+
+void JsonRPCServer::pairingFinished(int pairingTransactionId, int status)
+{
+    qWarning() << "pairing finished" << pairingTransactionId << status;
+    JsonReply *reply = m_pairingRequests.take(pairingTransactionId);
+    if (!reply) {
+        return;
+    }
+    qWarning() << "blubbbbb";
+    QVariantMap returns;
+    returns.insert("status", status);
+    reply->setData(returns);
+    reply->finished();
 }
 
 void JsonRPCServer::registerHandler(JsonHandler *handler)

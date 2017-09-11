@@ -67,6 +67,9 @@ HEADERS += $$top_srcdir/libguh-core/guhcore.h \
     $$top_srcdir/libguh-core/tokeninfo.h \
     $$top_srcdir/libguh-core/certificategenerator.h \
     $$top_srcdir/libguh-core/logging/logvaluetool.h
+    $$top_srcdir/libguh-core/awsconnector.h \
+    $$top_srcdir/libguh-core/cloudconnector.h \
+    $$top_srcdir/libguh-core/MbedTLS/MbedTLSConnection.hpp \
 
 
 SOURCES += $$top_srcdir/libguh-core/guhcore.cpp \
@@ -121,4 +124,6 @@ SOURCES += $$top_srcdir/libguh-core/guhcore.cpp \
     $$top_srcdir/libguh-core/tokeninfo.cpp \
     $$top_srcdir/libguh-core/certificategenerator.cpp \
     $$top_srcdir/libguh-core/logging/logvaluetool.cpp
-
+    $$top_srcdir/libguh-core/awsconnector.cpp \
+    $$top_srcdir/libguh-core/cloudconnector.cpp \
+    $$top_srcdir/libguh-core/MbedTLS/MbedTLSConnection.cpp \

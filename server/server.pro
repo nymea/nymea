@@ -8,9 +8,9 @@ INCLUDEPATH += ../libguh-core ../libguh-core/jsonrpc ../libguh
 target.path = /usr/bin
 INSTALLS += target
 
-QT *= sql xml websockets bluetooth dbus
+QT *= sql xml websockets bluetooth dbus network
 
-LIBS += -L$$top_builddir/libguh/ -lguh -L$$top_builddir/libguh-core -lguh-core
+LIBS += -L$$top_builddir/libguh/ -lguh -L$$top_builddir/libguh-core -lguh-core -lssl -lcrypto -laws-iot-sdk-cpp -lmbedtls -lmbedx509 -lmbedcrypto
 
 # Translations
 TRANSLATIONS *= $$top_srcdir/translations/guhd-en_US.ts \

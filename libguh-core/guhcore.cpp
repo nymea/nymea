@@ -408,6 +408,12 @@ UserManager *GuhCore::userManager() const
     return m_userManager;
 }
 
+CloudManager *GuhCore::cloudManager() const
+{
+    return m_cloudManager;
+}
+
+
 /*! Constructs GuhCore with the given \a parent. This is private.
     Use \l{GuhCore::instance()} to access the single instance.*/
 GuhCore::GuhCore(QObject *parent) :
@@ -440,6 +446,8 @@ void GuhCore::init() {
 
     m_userManager = new UserManager(this);
 
+    m_cloudManager = new CloudManager(this);
+
     connect(m_configuration, &GuhConfiguration::localeChanged, this, &GuhCore::onLocaleChanged);
 
     connect(m_deviceManager, &DeviceManager::pluginConfigChanged, this, &GuhCore::pluginConfigChanged);
@@ -464,6 +472,7 @@ void GuhCore::init() {
     connect(m_timeManager, &TimeManager::tick, m_deviceManager, &DeviceManager::timeTick);
 
     m_logger->logSystemEvent(m_timeManager->currentDateTime(), true);
+
     emit initialized();
 
     // Evaluate rules on current time

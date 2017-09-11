@@ -33,6 +33,7 @@
 #include "devicemanager.h"
 #include "ruleengine.h"
 #include "servermanager.h"
+#include "cloudmanager.h"
 
 #include "time/timemanager.h"
 
@@ -77,6 +78,7 @@ public:
     BluetoothServer *bluetoothServer() const;
     NetworkManager *networkManager() const;
     UserManager *userManager() const;
+    CloudManager *cloudManager() const;
 
     static QStringList getAvailableLanguages();
 
@@ -110,6 +112,7 @@ private:
     RuleEngine *m_ruleEngine;
     LogEngine *m_logger;
     TimeManager *m_timeManager;
+    CloudManager *m_cloudManager;
 
     NetworkManager *m_networkManager;
     UserManager *m_userManager;

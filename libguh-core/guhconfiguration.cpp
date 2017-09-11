@@ -305,30 +305,46 @@ void GuhConfiguration::setBluetoothServerEnabled(const bool &enabled)
     emit bluetoothServerEnabled();
 }
 
+QString GuhConfiguration::cloudServerUrl() const
+{
+    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    settings.beginGroup("Cloud");
+    return settings.value("cloudServerUrl").toString();
+}
+
+QString GuhConfiguration::cloudCertificateCA() const
+{
+    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    settings.beginGroup("Cloud");
+    return settings.value("cloudCertificateCA").toString();
+}
+
+QString GuhConfiguration::cloudCertificate() const
+{
+    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    settings.beginGroup("Cloud");
+    return settings.value("cloudCertificate").toString();
+}
+
+QString GuhConfiguration::cloudCertificateKey() const
+{
+    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    settings.beginGroup("Cloud");
+    return settings.value("cloudCertificateKey").toString();
+}
+
 QString GuhConfiguration::sslCertificate() const
 {
     GuhSettings settings(GuhSettings::SettingsRoleGlobal);
     settings.beginGroup("SSL");
-    return settings.value("certificate", "/etc/ssl/certs/guhd-certificate.crt").toString();
+    return settings.value("certificate").toString();
 }
 
 QString GuhConfiguration::sslCertificateKey() const
 {
     GuhSettings settings(GuhSettings::SettingsRoleGlobal);
     settings.beginGroup("SSL");
-    return settings.value("certificate-key", "/etc/ssl/certs/guhd-certificate.key").toString();
-}
-
-void GuhConfiguration::setSslCertificate(const QString &sslCertificate, const QString &sslCertificateKey)
-{
-    qCDebug(dcApplication()) << "Configuration: SSL certificate:" << sslCertificate << "SSL certificate key:" << sslCertificateKey;
-
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
-    settings.beginGroup("SSL");
-    settings.setValue("certificate", sslCertificate);
-    settings.setValue("certificate-key", sslCertificateKey);
-    settings.endGroup();
-    emit sslCertificateChanged();
+    return settings.value("certificate-key").toString();
 }
 
 void GuhConfiguration::setServerUuid(const QUuid &uuid)

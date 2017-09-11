@@ -86,6 +86,9 @@ public:
     QLocale locale() const;
     void setLocale(const QLocale &locale);
 
+    QString sslCertificate() const;
+    QString sslCertificateKey() const;
+
     // TCP server
     QHash<QString, ServerConfiguration> tcpServerConfigurations() const;
     void setTcpServerConfiguration(const ServerConfiguration &config);
@@ -105,9 +108,11 @@ public:
     bool bluetoothServerEnabled() const;
     void setBluetoothServerEnabled(const bool &enabled);
 
-    QString sslCertificate() const;
-    QString sslCertificateKey() const;
-    void setSslCertificate(const QString &sslCertificate, const QString &sslCertificateKey);
+    // Cloud
+    QString cloudServerUrl() const;
+    QString cloudCertificateCA() const;
+    QString cloudCertificate() const;
+    QString cloudCertificateKey() const;
 
 private:
     QHash<QString, ServerConfiguration> m_tcpServerConfigs;
@@ -138,8 +143,6 @@ signals:
     void webSocketServerConfigurationRemoved(const QString &configId);
 
     void bluetoothServerEnabledChanged();
-
-    void sslCertificateChanged();
 };
 
 }

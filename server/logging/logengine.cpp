@@ -123,6 +123,7 @@
 #include <QSqlError>
 #include <QMetaEnum>
 #include <QDateTime>
+#include <QFileInfo>
 
 #define DB_SCHEMA_VERSION 2
 
@@ -145,14 +146,20 @@ LogEngine::LogEngine(QObject *parent):
 
     if (!m_db.isValid()) {
         qCWarning(dcLogEngine) << "Database not valid:" << m_db.lastError().driverText() << m_db.lastError().databaseText();
-        return;
+        rotate(m_db.databaseName());
     }
     if (!m_db.open()) {
         qCWarning(dcLogEngine) << "Error opening log database:" << m_db.lastError().driverText() << m_db.lastError().databaseText();
-        return;
+        rotate(m_db.databaseName());
     }
 
-    initDB();
+    if (!initDB()) {
+        qCWarning(dcLogEngine()) << "Error initializing database. Trying to correct it.";
+        rotate(m_db.databaseName());
+        if (!initDB()) {
+            qCWarning(dcLogEngine()) << "Error fixing log database. Giving up. Logs can't be stored.";
+        }
+    }
 }
 
 /*! Destructs the \l{LogEngine}. */
@@ -376,7 +383,22 @@ void LogEngine::checkDBSize()
     }
 }
 
-void LogEngine::initDB()
+void LogEngine::rotate(const QString &dbName)
+{
+    int index = 1;
+    while (QFileInfo(QString("%1.%2").arg(dbName).arg(index)).exists()) {
+        index++;
+    }
+    qCDebug(dcLogEngine()) << "Backing up old database file to" << QString("%1.%2").arg(dbName).arg(index);
+    QFile f(dbName);
+    if (!f.rename(QString("%1.%2").arg(dbName).arg(index))) {
+        qCWarning(dcLogEngine()) << "Error backing up old database.";
+    } else {
+        qCDebug(dcLogEngine()) << "Successfully moved old databse";
+    }
+}
+
+bool LogEngine::initDB()
 {
     m_db.close();
     m_db.open();
@@ -397,6 +419,7 @@ void LogEngine::initDB()
         }
     } else {
         qCWarning(dcLogEngine) << "Broken log database. Version not found in metadata table.";
+        return false;
     }
 
     if (!m_db.tables().contains("sourceTypes")) {
@@ -435,13 +458,16 @@ void LogEngine::initDB()
                    "FOREIGN KEY(loggingEventType) REFERENCES loggingEventTypes(id)"
                    ");");
 
-        if (m_db.lastError().isValid())
+        if (m_db.lastError().isValid()) {
             qCWarning(dcLogEngine) << "Error creating log table in database. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
+            return false;
+        }
 
 
     }
 
     qCDebug(dcLogEngine) << "Initialized logging DB successfully. (maximum DB size:" << m_dbMaxSize << ")";
+    return true;
 }
 
 }

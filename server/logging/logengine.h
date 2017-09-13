@@ -52,9 +52,11 @@ private:
     QSqlDatabase m_db;
     int m_dbMaxSize;
 
-    void initDB();
+    bool initDB();
     void appendLogEntry(const LogEntry &entry);
     void checkDBSize();
+
+    void rotate(const QString &dbName);
 
 private:
     // Only GuhCore and ruleEngine are allowed to log events.

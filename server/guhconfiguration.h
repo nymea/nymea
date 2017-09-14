@@ -106,19 +106,9 @@ public:
     void setSslCertificate(const QString &sslCertificate, const QString &sslCertificateKey);
 
 private:
-    QUuid m_serverUuid;
-    QString m_serverName;
-    QByteArray m_timeZone;
-    QLocale m_locale;
-
     QHash<QString, ServerConfiguration> m_tcpServerConfigs;
     QHash<QString, WebServerConfiguration> m_webServerConfigs;
     QHash<QString, ServerConfiguration> m_webSocketServerConfigs;
-
-    bool m_bluetoothServerEnabled;
-
-    QString m_sslCertificate;
-    QString m_sslCertificateKey;
 
     void setServerUuid(const QUuid &uuid);
     void setWebServerPublicFolder(const QString & path);

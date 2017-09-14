@@ -30,17 +30,21 @@ namespace guhserver {
 GuhConfiguration::GuhConfiguration(QObject *parent) :
     QObject(parent)
 {
-    // Load guhd settings
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
-    settings.beginGroup("guhd");
-    setServerName(settings.value("name", "guhIO").toString());
-    QUuid serverUuid = settings.value("uuid", QUuid()).toUuid();
-    if (serverUuid.isNull())
-        serverUuid = QUuid::createUuid();
+    // Init server uuid if we don't have one.
+    QUuid id = serverUuid();
+    if (id.isNull()) {
+        id = QUuid::createUuid();
+        setServerUuid(id);
+    }
 
-    setServerUuid(serverUuid);
-    setTimeZone(settings.value("timeZone", QTimeZone::systemTimeZoneId()).toByteArray());
-    settings.endGroup();
+    // Make sure default values are in configuration file so that it's easier for users to modify
+    setServerName(serverName());
+    setTimeZone(timeZone());
+    setLocale(locale());
+    setBluetoothServerEnabled(bluetoothServerEnabled());
+    setSslCertificate(sslCertificate(), sslCertificateKey());
+
+    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
 
 #ifndef TESTING_ENABLED
     // TcpServer
@@ -167,26 +171,20 @@ GuhConfiguration::GuhConfiguration(QObject *parent) :
     wssConfig.authenticationEnabled = true;
     m_webSocketServerConfigs[wssConfig.id] = wssConfig;
 #endif
-
-    // Bluetooth server
-    settings.beginGroup("BluetoothServer");
-    setBluetoothServerEnabled(settings.value("enabled", false).toBool());
-    settings.endGroup();
-
-    // SSL configuration
-    settings.beginGroup("SSL");
-    setSslCertificate(settings.value("certificate", "/etc/ssl/certs/guhd-certificate.crt").toString(), settings.value("certificate-key", "/etc/ssl/certs/guhd-certificate.key").toString());
-    settings.endGroup();
 }
 
 QUuid GuhConfiguration::serverUuid() const
 {
-    return m_serverUuid;
+    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    settings.beginGroup("guhd");
+    return settings.value("uuid", QUuid()).toUuid();
 }
 
 QString GuhConfiguration::serverName() const
 {
-    return m_serverName;
+    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    settings.beginGroup("guhd");
+    return settings.value("name", "guhIO").toString();
 }
 
 void GuhConfiguration::setServerName(const QString &serverName)
@@ -197,14 +195,14 @@ void GuhConfiguration::setServerName(const QString &serverName)
     settings.beginGroup("guhd");
     settings.setValue("name", serverName);
     settings.endGroup();
-
-    m_serverName = serverName;
     emit serverNameChanged();
 }
 
 QByteArray GuhConfiguration::timeZone() const
 {
-    return m_timeZone;
+    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    settings.beginGroup("guhd");
+    return settings.value("timeZone", QTimeZone::systemTimeZoneId()).toByteArray();
 }
 
 void GuhConfiguration::setTimeZone(const QByteArray &timeZone)
@@ -215,14 +213,14 @@ void GuhConfiguration::setTimeZone(const QByteArray &timeZone)
     settings.beginGroup("guhd");
     settings.setValue("timeZone", timeZone);
     settings.endGroup();
-
-    m_timeZone = timeZone;
     emit timeZoneChanged();
 }
 
 QLocale GuhConfiguration::locale() const
 {
-    return m_locale;
+    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    settings.beginGroup("guhd");
+    return settings.value("language", "en_US").toString();
 }
 
 void GuhConfiguration::setLocale(const QLocale &locale)
@@ -233,8 +231,6 @@ void GuhConfiguration::setLocale(const QLocale &locale)
     settings.beginGroup("guhd");
     settings.setValue("language", locale.name());
     settings.endGroup();
-
-    m_locale = locale;
     emit localeChanged();
 }
 
@@ -307,7 +303,9 @@ void GuhConfiguration::removeWebSocketServerConfiguration(const QString &id)
 
 bool GuhConfiguration::bluetoothServerEnabled() const
 {
-    return m_bluetoothServerEnabled;
+    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    settings.beginGroup("BluetoothServer");
+    return settings.value("enabled", false).toBool();
 }
 
 void GuhConfiguration::setBluetoothServerEnabled(const bool &enabled)
@@ -318,19 +316,21 @@ void GuhConfiguration::setBluetoothServerEnabled(const bool &enabled)
     settings.beginGroup("BluetoothServer");
     settings.setValue("enabled", enabled);
     settings.endGroup();
-
-    m_bluetoothServerEnabled = enabled;
     emit bluetoothServerEnabled();
 }
 
 QString GuhConfiguration::sslCertificate() const
 {
-    return m_sslCertificate;
+    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    settings.beginGroup("SSL");
+    return settings.value("certificate", "/etc/ssl/certs/guhd-certificate.crt").toString();
 }
 
 QString GuhConfiguration::sslCertificateKey() const
 {
-    return m_sslCertificateKey;
+    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    settings.beginGroup("SSL");
+    return settings.value("certificate-key", "/etc/ssl/certs/guhd-certificate.key").toString();
 }
 
 void GuhConfiguration::setSslCertificate(const QString &sslCertificate, const QString &sslCertificateKey)
@@ -342,10 +342,6 @@ void GuhConfiguration::setSslCertificate(const QString &sslCertificate, const QS
     settings.setValue("certificate", sslCertificate);
     settings.setValue("certificate-key", sslCertificateKey);
     settings.endGroup();
-
-    m_sslCertificate = sslCertificate;
-    m_sslCertificateKey = sslCertificateKey;
-
     emit sslCertificateChanged();
 }
 
@@ -357,8 +353,6 @@ void GuhConfiguration::setServerUuid(const QUuid &uuid)
     settings.beginGroup("guhd");
     settings.setValue("uuid", uuid);
     settings.endGroup();
-
-    m_serverUuid = uuid;
 }
 
 void GuhConfiguration::storeServerConfig(const QString &group, const ServerConfiguration &config)

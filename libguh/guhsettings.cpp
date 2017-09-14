@@ -227,7 +227,7 @@ QString GuhSettings::settingsPath()
 QString GuhSettings::translationsPath()
 {
 #ifdef SNAPPY
-    return QString(qgetenv("SNAP_DATA"));
+    return QString(qgetenv("SNAP") + "/usr/share/guh/translations");
 #else
     return QString("/usr/share/guh/translations");
 #endif // SNAPPY

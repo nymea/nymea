@@ -15,6 +15,7 @@ SUBDIRS = versioning \
         restrules \
         websocketserver \
         logging \
+        loggingdirect \
         restlogging \
         #coap \ # temporary removed until fixed
         configurations \

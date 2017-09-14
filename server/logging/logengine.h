@@ -30,6 +30,7 @@
 
 #include <QObject>
 #include <QSqlDatabase>
+#include <QTimer>
 
 namespace guhserver {
 
@@ -42,26 +43,8 @@ public:
 
     QList<LogEntry> logEntries(const LogFilter &filter = LogFilter()) const;
 
+    void setMaxLogEntries(int maxLogEntries, int overflow);
     void clearDatabase();
-
-signals:
-    void logEntryAdded(const LogEntry &logEntry);
-    void logDatabaseUpdated();
-
-private:
-    QSqlDatabase m_db;
-    int m_dbMaxSize;
-
-    bool initDB();
-    void appendLogEntry(const LogEntry &entry);
-    void checkDBSize();
-
-    void rotate(const QString &dbName);
-
-private:
-    // Only GuhCore and ruleEngine are allowed to log events.
-    friend class GuhCore;
-    friend class RuleEngine;
 
     void logSystemEvent(const QDateTime &dateTime, bool active, Logging::LoggingLevel level = Logging::LoggingLevelInfo);
     void logEvent(const Event &event);
@@ -74,6 +57,25 @@ private:
     void removeDeviceLogs(const DeviceId &deviceId);
     void removeRuleLogs(const RuleId &ruleId);
 
+signals:
+    void logEntryAdded(const LogEntry &logEntry);
+    void logDatabaseUpdated();
+
+private:
+    bool initDB();
+    void appendLogEntry(const LogEntry &entry);
+    void rotate(const QString &dbName);
+
+private slots:
+    void checkDBSize();
+
+private:
+    QSqlDatabase m_db;
+    int m_dbMaxSize;
+    int m_overflow;
+    bool m_trimWarningPrinted = false;
+    int m_entryCount = 0;
+    QTimer m_housekeepingTimer;
 };
 
 }

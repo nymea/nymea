@@ -135,7 +135,8 @@ LogEngine::LogEngine(QObject *parent):
 {
     m_db = QSqlDatabase::addDatabase("QSQLITE", "logs");
     m_db.setDatabaseName(GuhSettings::logPath());
-    m_dbMaxSize = 20000;
+    m_dbMaxSize = 50000;
+    m_overflow = 100;
 
     if (QCoreApplication::instance()->organizationName() == "guh-test") {
         m_dbMaxSize = 20;
@@ -160,6 +161,12 @@ LogEngine::LogEngine(QObject *parent):
             qCWarning(dcLogEngine()) << "Error fixing log database. Giving up. Logs can't be stored.";
         }
     }
+
+    connect(&m_housekeepingTimer, &QTimer::timeout, this, &LogEngine::checkDBSize);
+    m_housekeepingTimer.setInterval(1); // Trigger on next idle event loop run
+    m_housekeepingTimer.setSingleShot(true);
+
+    checkDBSize();
 }
 
 /*! Destructs the \l{LogEngine}. */
@@ -209,6 +216,13 @@ QList<LogEntry> LogEngine::logEntries(const LogFilter &filter) const
     qCDebug(dcLogEngine) << "Fetched" << results.count() << "entries for db query:" << queryCall;
 
     return results;
+}
+
+void LogEngine::setMaxLogEntries(int maxLogEntries, int overflow)
+{
+    m_dbMaxSize = maxLogEntries;
+    m_overflow = overflow;
+    checkDBSize();
 }
 
 /*! Removes all entries from the database. This method will be used for the tests. */
@@ -337,7 +351,6 @@ void LogEngine::removeRuleLogs(const RuleId &ruleId)
 
 void LogEngine::appendLogEntry(const LogEntry &entry)
 {
-    checkDBSize();
     QString queryString = QString("INSERT INTO entries (timestamp, loggingEventType, loggingLevel, sourceType, typeId, deviceId, value, active, errorCode) values ('%1', '%2', '%3', '%4', '%5', '%6', '%7', '%8', '%9');")
             .arg(entry.timestamp().toTime_t())
             .arg(entry.eventType())
@@ -356,31 +369,41 @@ void LogEngine::appendLogEntry(const LogEntry &entry)
     }
 
     emit logEntryAdded(entry);
+
+    if (++m_entryCount > m_dbMaxSize + m_overflow) {
+        m_housekeepingTimer.start();
+    }
 }
 
 void LogEngine::checkDBSize()
 {
-    QString queryString = "SELECT ROWID FROM entries;";
-    QSqlQuery query = m_db.exec(queryString);
-    int numRows = 0;
-    if (m_db.driver()->hasFeature(QSqlDriver::QuerySize)) {
-        numRows = query.size();
-    } else {
-        // this can be very slow
-        query.last();
-        numRows = query.at() + 1;
+    QDateTime startTime = QDateTime::currentDateTime();
+    QString queryString = "SELECT COUNT(*) FROM entries;";
+    QSqlQuery result = m_db.exec(queryString);
+    if (m_db.lastError().type() != QSqlError::NoError) {
+        qWarning(dcLogEngine()) << "Failed to query entry count in db:" << m_db.lastError().databaseText();
+        return;
     }
+    if (!result.first()) {
+        qWarning(dcLogEngine()) << "Failed retrieving entry count.";
+        return;
+    }
+    m_entryCount = result.value(0).toInt();
 
-    if (numRows >= m_dbMaxSize) {
+    if (m_entryCount >= m_dbMaxSize) {
         // keep only the latest m_dbMaxSize entries
-        qCDebug(dcLogEngine) << "Deleting oldest entries and keep only the latest" << m_dbMaxSize << "entries.";
+        if (!m_trimWarningPrinted) {
+            qCDebug(dcLogEngine) << "Deleting oldest entries" << (m_entryCount - m_dbMaxSize) << "and keep only the latest" << m_dbMaxSize << "entries.";
+            m_trimWarningPrinted = true;
+        }
         QString queryDeleteString = QString("DELETE FROM entries WHERE ROWID IN (SELECT ROWID FROM entries ORDER BY timestamp DESC LIMIT -1 OFFSET %1);").arg(QString::number(m_dbMaxSize));
         if (m_db.exec(queryDeleteString).lastError().type() != QSqlError::NoError) {
             qCWarning(dcLogEngine) << "Error deleting oldest log entries to keep size. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
-        } else {
-            emit logDatabaseUpdated();
         }
+        m_entryCount = m_dbMaxSize;
+        emit logDatabaseUpdated();
     }
+    qCDebug(dcLogEngine()) << "Ran housekeeping on log database in" << startTime.msecsTo(QDateTime::currentDateTime()) << "ms.";
 }
 
 void LogEngine::rotate(const QString &dbName)

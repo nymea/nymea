@@ -598,9 +598,9 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
     }
     if (tcpServerFound) {
         if (tcpServerConfiguration.sslEnabled) {
-            writer.writeTextElement("guhRpcURL", "guh://" + address.toString() + ":" + QString::number(tcpServerConfiguration.port));
-        } else {
             writer.writeTextElement("guhRpcURL", "guhs://" + address.toString() + ":" + QString::number(tcpServerConfiguration.port));
+        } else {
+            writer.writeTextElement("guhRpcURL", "guh://" + address.toString() + ":" + QString::number(tcpServerConfiguration.port));
         }
     }
 

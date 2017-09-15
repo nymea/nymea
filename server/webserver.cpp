@@ -577,8 +577,13 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
     bool webSocketServerFound = false;
     foreach (const ServerConfiguration &config, GuhCore::instance()->configuration()->webSocketServerConfigurations()) {
         if (config.address == QHostAddress("0.0.0.0") || config.address == address) {
-            websocketConfiguration = config;
-            webSocketServerFound = true;
+            if (!webSocketServerFound) {
+                websocketConfiguration = config;
+                webSocketServerFound = true;
+            } else if (!websocketConfiguration.sslEnabled && config.sslEnabled) {
+                // If the previous one is plaintext but we also have a secure one, upgrade to that.
+                websocketConfiguration = config;
+            }
         }
     }
     if (webSocketServerFound) {
@@ -593,8 +598,13 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
     bool tcpServerFound = false;
     foreach (const ServerConfiguration &config, GuhCore::instance()->configuration()->tcpServerConfigurations()) {
         if (config.address == QHostAddress("0.0.0.0") || config.address == address) {
-            tcpServerConfiguration = config;
-            tcpServerFound = true;
+            if (!tcpServerFound) {
+                tcpServerConfiguration = config;
+                tcpServerFound = true;
+            } else if (!tcpServerConfiguration.sslEnabled && config.sslEnabled) {
+                // If the previous one is plaintext but we also have a secure one, upgrade to that.
+                tcpServerConfiguration = config;
+            }
         }
     }
     if (tcpServerFound) {

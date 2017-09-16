@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/interfaces">
+        <file>media.json</file>
         <file>mediacontroller.json</file>
         <file>light.json</file>
         <file>dimmablelight.json</file>
@@ -7,5 +8,6 @@
         <file>garagegate.json</file>
         <file>gateway.json</file>
         <file>notifications.json</file>
+        <file>weather.json</file>
     </qresource>
 </RCC>

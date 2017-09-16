@@ -151,6 +151,7 @@ private:
     QPair<bool, DeviceClass::DeviceIcon> loadAndVerifyDeviceIcon(const QString &deviceIcon) const;
 
     static QVariantMap loadInterface(const QString &name);
+    static QStringList generateInterfaceParentList(const QString &interface);
 
     QTranslator *m_translator;
     DeviceManager *m_deviceManager;

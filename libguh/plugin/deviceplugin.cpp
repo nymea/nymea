@@ -584,7 +584,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 }
 
                 if (valid) {
-                    interfaces.append(value.toString());
+                    interfaces.append(generateInterfaceParentList(value.toString()));
                 }
             }
             deviceClass.setInterfaces(interfaces);
@@ -1185,4 +1185,25 @@ QVariantMap DevicePlugin::loadInterface(const QString &name)
         content["events"] = eventsList;
     }
     return content;
+}
+
+QStringList DevicePlugin::generateInterfaceParentList(const QString &interface)
+{
+    QFile f(QString(":/interfaces/%1.json").arg(interface));
+    if (!f.open(QFile::ReadOnly)) {
+        qCWarning(dcDeviceManager()) << "Failed to load interface" << interface;
+        return QStringList();
+    }
+    QJsonParseError error;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(f.readAll(), &error);
+    if (error.error != QJsonParseError::NoError) {
+        qCWarning(dcDeviceManager) << "Cannot load interface definition for interface" << interface << ":" << error.errorString();
+        return QStringList();
+    }
+    QStringList ret = {interface};
+    QVariantMap content = jsonDoc.toVariant().toMap();
+    if (content.contains("extends")) {
+        ret << generateInterfaceParentList(content.value("extends").toString());
+    }
+    return ret;
 }

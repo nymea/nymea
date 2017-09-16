@@ -1,4 +1,5 @@
 {
+    "extends": "media",
     "states": [
         {
             "name": "mute",

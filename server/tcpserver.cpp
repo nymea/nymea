@@ -221,8 +221,16 @@ void SslServer::onClientDisconnected()
 void SslServer::onSocketReadyRead()
 {
     QSslSocket *socket = static_cast<QSslSocket*>(sender());
-    QByteArray data = socket->readAll();
-    emit dataAvailable(socket, data);
+    m_receiveBuffer.append(socket->readAll());
+    int splitIndex = m_receiveBuffer.indexOf("}\n{");
+    while (splitIndex > -1) {
+        emit dataAvailable(socket, m_receiveBuffer.left(splitIndex + 1));
+        m_receiveBuffer = m_receiveBuffer.right(m_receiveBuffer.length() - splitIndex - 2);
+        splitIndex = m_receiveBuffer.indexOf("}\n{");
+    }
+    if (m_receiveBuffer.endsWith("}\n")) {
+        emit dataAvailable(socket, m_receiveBuffer);
+    }
 }
 
 }

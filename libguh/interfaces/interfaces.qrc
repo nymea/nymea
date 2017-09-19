@@ -9,5 +9,9 @@
         <file>gateway.json</file>
         <file>notifications.json</file>
         <file>weather.json</file>
+        <file>volumecontroller.json</file>
+        <file>extendedvolumecontroller.json</file>
+        <file>mediametadataprovider.json</file>
+        <file>mediaplayer.json</file>
     </qresource>
 </RCC>

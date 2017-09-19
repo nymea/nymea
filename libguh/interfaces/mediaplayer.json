@@ -1,0 +1,16 @@
+{
+    "extends": "media",
+    "states": [
+        {
+            "name": "playbackStatus",
+            "type": "string",
+            "allowedValues": ["Playing", "Paused", "Stopped"],
+            "writable": true
+        },
+        {
+            "name": "playerType",
+            "type": "string",
+            "allowedValues": ["audio", "video"]
+        }
+    ]
+}

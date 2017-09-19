@@ -1,0 +1,21 @@
+{
+    "extends": "media",
+    "states": [
+        {
+            "name": "artist",
+            "type": "string"
+        },
+        {
+            "name": "album",
+            "type": "string"
+        },
+        {
+            "name": "title",
+            "type": "string"
+        },
+        {
+            "name": "artwork",
+            "type": "string"
+        }
+    ]
+}

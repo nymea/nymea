@@ -1,0 +1,33 @@
+{
+    "extends": "media",
+    "actions": [
+        {
+            "name": "increaseVolume",
+            "params": [
+                {
+                    "name": "step",
+                    "type": "int"
+                }
+            ]
+        },
+        {
+            "name": "decreaseVolume",
+            "params": [
+                {
+                    "name": "step",
+                    "type": "int"
+                }
+            ]
+        },
+        {
+            "name": "setMute",
+            "params": [
+                {
+                    "name": "mute",
+                    "type": "bool"
+                }
+
+            ]
+        }
+    ]
+}

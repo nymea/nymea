@@ -48,6 +48,8 @@
 
 namespace guhserver {
 
+static bool s_aboutToShutdown = false;
+
 static void printBacktrace()
 {
     void* trace[20];
@@ -144,6 +146,11 @@ static void catchUnixSignals(const std::vector<int>& quitSignals, const std::vec
         }
         default:
             break;
+        }
+
+        if (s_aboutToShutdown) {
+            qCWarning(dcApplication()) << "Already shutting down.";
+            return;
         }
 
         qCDebug(dcApplication) << "=====================================";

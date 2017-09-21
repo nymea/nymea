@@ -1501,11 +1501,13 @@ DeviceManager::DeviceSetupStatus DeviceManager::setupDevice(Device *device)
     }
 
     if (plugin->requiredHardware().testFlag(HardwareResourceTimer)) {
+
         if (!m_pluginTimer.isActive()) {
             m_pluginTimer.start();
             // Additionally fire off one event to initialize stuff
             QTimer::singleShot(0, this, SLOT(timerEvent()));
         }
+
         if (!m_pluginTimerUsers.contains(plugin)) {
             m_pluginTimerUsers.append(plugin);
         }

@@ -7,7 +7,8 @@
 CloudManager::CloudManager(QObject *parent) : QObject(parent)
 {
     m_awsConnector = new AWSConnector(this);
-    connect(m_awsConnector, &AWSConnector::subscriptionReceived, this, &CloudManager::subscriptionReceived);
+    connect(m_awsConnector, &AWSConnector::devicePaired, this, &CloudManager::onPairingFinished);
+    connect(m_awsConnector, &AWSConnector::webRtcHandshakeMessageReceived, this, &CloudManager::onAWSWebRtcHandshakeMessageReceived);
 
     // Extract the machine id so we have a unique identifier for this machine
     // TODO: this only works for debian based systems, perhaps we should find something more general
@@ -16,10 +17,12 @@ CloudManager::CloudManager(QObject *parent) : QObject(parent)
         m_deviceId = QString::fromLatin1(f.readAll()).trimmed();
         qCDebug(dcCloud()) << "Device ID is:" << m_deviceId;
         setEnabled(true);
-        m_awsConnector->subscribe({"pair/response"});
     } else {
         qWarning(dcCloud()) << "Failed to open /etc/machine-id for reading. Cloud connection will not work.";
     }
+
+    m_janusConnector = new JanusConnector(this);
+    connect(m_janusConnector, &JanusConnector::webRtcHandshakeMessageReceived, this, &CloudManager::onJanusWebRtcHandshakeMessageReceived);
 
     connect(GuhCore::instance()->networkManager(), &NetworkManager::stateChanged, this, &CloudManager::onlineStateChanged);
 }
@@ -83,21 +86,16 @@ void CloudManager::setEnabled(bool enabled)
     }
 }
 
-int CloudManager::pairDevice(const QString &idToken, const QString &authToken, const QString &cognitoId)
+void CloudManager::pairDevice(const QString &idToken, const QString &authToken, const QString &cognitoId)
 {
-    QVariantMap map;
-    map.insert("id", ++m_id);
-    map.insert("idToken", idToken);
-    map.insert("authToken", authToken);
-    map.insert("cognitoId", cognitoId);
-    m_awsConnector->publish("pair", map);
-    return m_id;
+    m_awsConnector->pairDevice(idToken, authToken, cognitoId);
 }
 
 void CloudManager::connect2aws()
 {
     m_awsConnector->connect2AWS(GuhCore::instance()->configuration()->cloudServerUrl(),
-                                m_deviceId,
+                                "1e10fb7e-d9d9-4145-88dd-2d3caf623c18",
+//                                m_deviceId,
                                 GuhCore::instance()->configuration()->cloudCertificateCA(),
                                 GuhCore::instance()->configuration()->cloudCertificate(),
                                 GuhCore::instance()->configuration()->cloudCertificateKey()
@@ -114,10 +112,17 @@ void CloudManager::onlineStateChanged()
     }
 }
 
-void CloudManager::subscriptionReceived(const QString &topic, const QVariantMap &message)
+void CloudManager::onPairingFinished(const QString &cognitoUserId, int errorCode)
 {
-    qCDebug(dcCloud()) << "subscription reveiv ed" << topic << message;
-    if (topic == "pair/response") {
-        emit pairingReply(message.value("id").toInt(), message.value("status").toInt());
-    }
+    emit pairingReply(cognitoUserId, errorCode);
+}
+
+void CloudManager::onAWSWebRtcHandshakeMessageReceived(const QString &transactionId, const QVariantMap &data)
+{
+    m_janusConnector->sendWebRtcHandshakeMessage(transactionId, data);
+}
+
+void CloudManager::onJanusWebRtcHandshakeMessageReceived(const QString &transactionId, const QVariantMap &data)
+{
+    m_awsConnector->sendWebRtcHandshakeMessage(transactionId, data);
 }

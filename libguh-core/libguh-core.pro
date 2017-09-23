@@ -70,7 +70,7 @@ HEADERS += $$top_srcdir/libguh-core/guhcore.h \
     $$top_srcdir/libguh-core/awsconnector.h \
     $$top_srcdir/libguh-core/cloudconnector.h \
     $$top_srcdir/libguh-core/MbedTLS/MbedTLSConnection.hpp \
-
+    $$top_srcdir/libguh-core/janusconnector.h \
 
 SOURCES += $$top_srcdir/libguh-core/guhcore.cpp \
     $$top_srcdir/libguh-core/tcpserver.cpp \
@@ -127,3 +127,4 @@ SOURCES += $$top_srcdir/libguh-core/guhcore.cpp \
     $$top_srcdir/libguh-core/awsconnector.cpp \
     $$top_srcdir/libguh-core/cloudconnector.cpp \
     $$top_srcdir/libguh-core/MbedTLS/MbedTLSConnection.cpp \
+    $$top_srcdir/libguh-core/janusconnector.cpp \

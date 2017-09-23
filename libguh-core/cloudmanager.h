@@ -2,6 +2,7 @@
 #define CLOUDMANAGER_H
 
 #include "awsconnector.h"
+#include "janusconnector.h"
 
 #include <QObject>
 #include <QTimer>
@@ -20,24 +21,26 @@ public:
     bool enabled() const;
     void setEnabled(bool enabled);
 
-    int pairDevice(const QString &idToken, const QString &authToken, const QString &cognitoId);
+    void pairDevice(const QString &idToken, const QString &authToken, const QString &cognitoId);
 
 signals:
-    void pairingReply(int pairingTransactionId, int status);
+    void pairingReply(QString cognitoUserId, int status);
 
 private:
     void connect2aws();
 
 private slots:
     void onlineStateChanged();
-    void subscriptionReceived(const QString &topic, const QVariantMap &message);
+    void onPairingFinished(const QString &cognitoUserId, int errorCode);
+    void onAWSWebRtcHandshakeMessageReceived(const QString &transactionId, const QVariantMap &data);
+    void onJanusWebRtcHandshakeMessageReceived(const QString &transactionId, const QVariantMap &data);
 
 private:
     QNetworkSession *m_networkSession;
     QTimer m_reconnectTimer;
     bool m_enabled = false;
     AWSConnector *m_awsConnector = nullptr;
-    int m_id = 0; // id for transactions. e.g. pairDevice
+    JanusConnector *m_janusConnector = nullptr;
 
     QString m_serverUrl;
     QString m_deviceId;

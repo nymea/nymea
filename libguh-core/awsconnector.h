@@ -19,20 +19,23 @@ public:
     void disconnectAWS();
     bool isConnected() const;
 
-    quint16 publish(const QString &topic, const QVariantMap &message);
+    void pairDevice(const QString &idToken, const QString &authToken, const QString &cognitoUserId);
 
-    void subscribe(const QStringList &topics);
+    void sendWebRtcHandshakeMessage(const QString &sessionId, const QVariantMap &map);
 
 signals:
     void connected();
-    void responseReceived(quint16 id, bool success);
-    void subscriptionReceived(const QString &topic, const QVariantMap &data);
+    void devicePaired(const QString &cognritoUserId, int errorCode);
+    void webRtcHandshakeMessageReceived(const QString &transactionId, const QVariantMap &data);
 
 private slots:
     void onConnected();
+    void retrievePairedDeviceInfo();
 
 private:
-    void subscribeInternally(const QStringList &topcis);
+    quint16 publish(const QString &topic, const QVariantMap &message);
+    void subscribe(const QStringList &topics);
+    void doSubscribe(const QStringList &topcis);
     static void publishCallback(uint16_t actionId, awsiotsdk::ResponseCode rc);
     static void subscribeCallback(uint16_t actionId, awsiotsdk::ResponseCode rc);
     static awsiotsdk::ResponseCode onSubscriptionReceivedCallback(awsiotsdk::util::String topic_name, awsiotsdk::util::String payload,
@@ -47,6 +50,9 @@ private:
     QString m_clientId;
     QFuture<void> m_connectingFuture;
     QStringList m_subscribedTopics;
+
+    int m_transactionId = 0;
+    QHash<quint16, QString> m_pairingRequests;
 
     static QHash<quint16, AWSConnector*> s_requestMap;
 };

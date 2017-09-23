@@ -91,6 +91,7 @@ void WebSocketServer::sendData(const QUuid &clientId, const QByteArray &data)
     QWebSocket *client = 0;
     client = m_clientList.value(clientId);
     if (client) {
+        qCDebug(dcWebSocketServer()) << "Sending data to client" << data;
         client->sendTextMessage(data + '\n');
     }
 }

@@ -81,7 +81,7 @@ private slots:
 
     void asyncReplyFinished();
 
-    void pairingFinished(int pairingTransactionId, int status);
+    void pairingFinished(QString cognitoUserId, int status);
 
 private:
     QMap<TransportInterface*, bool> m_interfaces;
@@ -91,7 +91,7 @@ private:
     // clientId, notificationsEnabled
     QHash<QUuid, bool> m_clients;
 
-    QHash<int, JsonReply*> m_pairingRequests;
+    QHash<QString, JsonReply*> m_pairingRequests;
 
     int m_notificationId;
 

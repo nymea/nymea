@@ -263,13 +263,14 @@ JsonReply *JsonRPCServer::RemoveToken(const QVariantMap &params)
 
 JsonReply *JsonRPCServer::SetupRemoteAccess(const QVariantMap &params)
 {
-
-    int id = GuhCore::instance()->cloudManager()->pairDevice(params.value("idToken").toString(), params.value("authToken").toString(), params.value("cognitoId").toString());
-    qWarning() << "waiting for id" << id;
+    QString idToken = params.value("idToken").toString();
+    QString authToken = params.value("authToken").toString();
+    QString cognitoUserId = params.value("cognitoId").toString();
+    GuhCore::instance()->cloudManager()->pairDevice(idToken, authToken, cognitoUserId);
     JsonReply *reply = createAsyncReply("SetupRemoteAccess");
-    m_pairingRequests.insert(id, reply);
-    connect(reply, &JsonReply::finished, [this, id](){
-        m_pairingRequests.remove(id);
+    m_pairingRequests.insert(cognitoUserId, reply);
+    connect(reply, &JsonReply::finished, [this, cognitoUserId](){
+        m_pairingRequests.remove(cognitoUserId);
     });
     return reply;
 }
@@ -496,14 +497,13 @@ void JsonRPCServer::asyncReplyFinished()
     reply->deleteLater();
 }
 
-void JsonRPCServer::pairingFinished(int pairingTransactionId, int status)
+void JsonRPCServer::pairingFinished(QString cognitoUserId, int status)
 {
-    qWarning() << "pairing finished" << pairingTransactionId << status;
-    JsonReply *reply = m_pairingRequests.take(pairingTransactionId);
+    qWarning() << "pairing finished" << cognitoUserId << status;
+    JsonReply *reply = m_pairingRequests.take(cognitoUserId);
     if (!reply) {
         return;
     }
-    qWarning() << "blubbbbb";
     QVariantMap returns;
     returns.insert("status", status);
     reply->setData(returns);

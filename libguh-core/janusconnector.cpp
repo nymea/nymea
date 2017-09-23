@@ -105,15 +105,15 @@ void JanusConnector::sendWebRtcHandshakeMessage(const QString &sessionId, const 
         m_sessions.value(sessionId)->trickles.append(message);
     } else if (messageType == "webrtcup") {
         // If we got the webrtc up from Janus already, directly reply with an ack
-        if (session->webRtcConnected) {
-            QVariantMap ack;
-            ack.insert("id", message.value("id").toString());
-            ack.insert("type", "ack");
-//            emit webRtcHandshakeMessageReceived(session->sessionId, ack);
-        } else {
-            // otherwise store the request and reply when we get the webrtcup
-            session->webRtcUp = message;
-        }
+//        if (session->webRtcConnected) {
+//            QVariantMap ack;
+//            ack.insert("id", message.value("id").toString());
+//            ack.insert("type", "ack");
+////            emit webRtcHandshakeMessageReceived(session->sessionId, ack);
+//        } else {
+//            // otherwise store the request and reply when we get the webrtcup
+//            session->webRtcUp = message;
+//        }
     } else {
         qCWarning(dcJanus()) << "Unhandled message type:" << messageType << message;
     }

@@ -4,6 +4,7 @@ TEMPLATE=subdirs
 
 SUBDIRS += libguh libguh-core server plugins
 
+libguh-core.depends = libguh
 server.depends = libguh libguh-core plugins
 plugins.depends = libguh
 tests.depends = libguh libguh-core

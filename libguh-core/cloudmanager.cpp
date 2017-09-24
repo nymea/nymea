@@ -14,7 +14,12 @@ CloudManager::CloudManager(QObject *parent) : QObject(parent)
     // TODO: this only works for debian based systems, perhaps we should find something more general
     QFile f("/etc/machine-id");
     if (f.open(QFile::ReadOnly)) {
-        m_deviceId = QString::fromLatin1(f.readAll()).trimmed();
+        QString tmpId = QString::fromLatin1(f.readAll()).trimmed();
+        tmpId.insert(8, "-");
+        tmpId.insert(13, "-");
+        tmpId.insert(18, "-");
+        tmpId.insert(23, "-");
+        m_deviceId = QUuid(tmpId);
         qCDebug(dcCloud()) << "Device ID is:" << m_deviceId;
         setEnabled(true);
     } else {
@@ -53,7 +58,7 @@ void CloudManager::setEnabled(bool enabled)
 {
     if (enabled) {
         bool missingConfig = false;
-        if (m_deviceId.isEmpty()) {
+        if (m_deviceId.isNull()) {
             qCWarning(dcCloud()) << "Don't have a unique device ID (/etc/machine-id).";
             missingConfig = true;
         }
@@ -95,7 +100,7 @@ void CloudManager::connect2aws()
 {
     m_awsConnector->connect2AWS(GuhCore::instance()->configuration()->cloudServerUrl(),
                                 "1e10fb7e-d9d9-4145-88dd-2d3caf623c18",
-//                                m_deviceId,
+//                                m_deviceId.toString().remove(QRegExp("[{}]*")),
                                 GuhCore::instance()->configuration()->cloudCertificateCA(),
                                 GuhCore::instance()->configuration()->cloudCertificate(),
                                 GuhCore::instance()->configuration()->cloudCertificateKey()

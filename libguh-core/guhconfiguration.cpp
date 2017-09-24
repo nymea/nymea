@@ -347,6 +347,15 @@ QString GuhConfiguration::sslCertificateKey() const
     return settings.value("certificate-key").toString();
 }
 
+void GuhConfiguration::setSslCertificate(const QString &sslCertificate, const QString &sslCertificateKey)
+{
+    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    settings.beginGroup("SSL");
+    settings.setValue("certificate", sslCertificate);
+    settings.setValue("certificate-key", sslCertificateKey);
+    settings.endGroup();
+}
+
 void GuhConfiguration::setServerUuid(const QUuid &uuid)
 {
     qCDebug(dcApplication()) << "Configuration: Server uuid:" << uuid.toString();

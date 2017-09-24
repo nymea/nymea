@@ -25,7 +25,11 @@
 #include "mbedtls/config.h"
 
 #include "mbedtls/platform.h"
+#ifdef MBEDTLS_NEW_HEADERS
 #include "mbedtls/net_sockets.h"
+#else
+#include "mbedtls/net.h"
+#endif
 #include "mbedtls/ssl.h"
 #include "mbedtls/entropy.h"
 #include "mbedtls/ctr_drbg.h"

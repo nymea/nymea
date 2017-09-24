@@ -88,7 +88,7 @@ public:
 
     QString sslCertificate() const;
     QString sslCertificateKey() const;
-    void setSslCertificate(const QString &certificate, const QString &certificateKey);
+    void setSslCertificate(const QString &sslCertificate, const QString &sslCertificateKey);
 
     // TCP server
     QHash<QString, ServerConfiguration> tcpServerConfigurations() const;

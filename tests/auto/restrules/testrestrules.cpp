@@ -42,6 +42,7 @@ class TestRestRules: public GuhTestBase
     Q_OBJECT
 
 private:
+
     void cleanupMockHistory();
     void cleanupRules();
 
@@ -53,6 +54,8 @@ private:
     QVariant validIntStateBasedRule(const QString &name, const bool &executable, const bool &enabled);
 
 private slots:
+    void initTestCase();
+
     void getRules();
     void findRule();
     void invalidMethod();
@@ -74,6 +77,25 @@ private slots:
     void executeRuleActions();
 
 };
+
+void TestRestRules::initTestCase()
+{
+    GuhTestBase::initTestCase();
+
+    foreach (const WebServerConfiguration &config, GuhCore::instance()->configuration()->webServerConfigurations()) {
+        if (config.port == 3333 && (config.address == QHostAddress("127.0.0.1") || config.address == QHostAddress("0.0.0.0"))) {
+            qDebug() << "Already have a webserver listening on 127.0.0.1:3333";
+            return;
+        }
+    }
+
+    qDebug() << "Creating new webserver instance on 127.0.0.1:3333";
+    WebServerConfiguration config;
+    config.address = QHostAddress("127.0.0.1");
+    config.port = 3333;
+    config.sslEnabled = true;
+    GuhCore::instance()->configuration()->setWebServerConfiguration(config);
+}
 
 void TestRestRules::cleanupMockHistory()
 {

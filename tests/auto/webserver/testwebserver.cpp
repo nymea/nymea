@@ -90,7 +90,7 @@ void TestWebserver::initTestCase()
 
     qDebug() << "Creating new webserver instance on 127.0.0.1:3333";
     WebServerConfiguration config;
-    config.address = QHostAddress("0.0.0.0");
+    config.address = QHostAddress("127.0.0.1");
     config.port = 3333;
     config.sslEnabled = true;
     GuhCore::instance()->configuration()->setWebServerConfiguration(config);

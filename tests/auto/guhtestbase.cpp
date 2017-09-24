@@ -304,6 +304,7 @@ QVariant GuhTestBase::getAndWait(const QNetworkRequest &request, const int &expe
     if (clientSpy.count() == 0) {
         clientSpy.wait();
     }
+    qDebug() << "*** finished" << reply->isFinished() << reply->error() << reply->errorString();
 
     if (clientSpy.count() == 0) {
         qWarning() << "Got no response for get request";

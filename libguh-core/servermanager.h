@@ -28,12 +28,8 @@
 #include "rest/restserver.h"
 #include "websocketserver.h"
 #include "bluetoothserver.h"
-
-#ifndef TESTING_ENABLED
 #include "tcpserver.h"
-#else
 #include "mocktcpserver.h"
-#endif
 
 class QSslConfiguration;
 class QSslCertificate;
@@ -56,11 +52,8 @@ public:
     WebSocketServer* webSocketServer() const;
     BluetoothServer* bluetoothServer() const;
 
-#ifdef TESTING_ENABLED
-    MockTcpServer *tcpServer() const;
-#else
     TcpServer *tcpServer() const;
-#endif
+    MockTcpServer *mockTcpServer() const;
 
 private slots:
     void tcpServerConfigurationChanged(const QString &id);
@@ -76,11 +69,10 @@ private:
     RestServer *m_restServer;
 
     BluetoothServer *m_bluetoothServer;
-#ifndef TESTING_ENABLED
     QHash<QString, TcpServer*> m_tcpServers;
-#endif
     QHash<QString, WebSocketServer*> m_webSocketServers;
     QHash<QString, WebServer*> m_webServers;
+    MockTcpServer *m_mockTcpServer;
 
     // Encrytption and stuff
     QSslConfiguration m_sslConfiguration;

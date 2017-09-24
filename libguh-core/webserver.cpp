@@ -109,10 +109,8 @@ WebServer::WebServer(const WebServerConfiguration &configuration, const QSslConf
     }
     qCDebug(dcWebServer) << "Using public folder" << QDir(m_configuration.publicFolder).canonicalPath();
 
-#ifndef TESTING_ENABLED
     m_avahiService = new QtAvahiService(this);
     connect(m_avahiService, &QtAvahiService::serviceStateChanged, this, &WebServer::onAvahiServiceStateChanged);
-#endif
 }
 
 /*! Destructor of this \l{WebServer}. */
@@ -518,7 +516,6 @@ bool WebServer::startServer()
         qCDebug(dcConnection) << "Started webserver on" << QString("http://%1:%2").arg(m_configuration.address.toString()).arg(m_configuration.port);
     }
 
-#ifndef TESTING_ENABLED
     // Note: reversed order
     QHash<QString, QString> txt;
     txt.insert("jsonrpcVersion", JSON_PROTOCOL_VERSION);
@@ -527,7 +524,6 @@ bool WebServer::startServer()
     txt.insert("uuid", GuhCore::instance()->configuration()->serverUuid().toString());
     txt.insert("name", GuhCore::instance()->configuration()->serverName());
     m_avahiService->registerService("guhIO", m_configuration.port, "_http._tcp", txt);
-#endif
 
     m_enabled = true;
     return true;
@@ -536,10 +532,8 @@ bool WebServer::startServer()
 /*! Returns true if this \l{WebServer} stopped successfully. */
 bool WebServer::stopServer()
 {
-#ifndef TESTING_ENABLED
     if (m_avahiService)
         m_avahiService->resetService();
-#endif
 
     foreach (QSslSocket *client, m_clientList.values())
         client->close();

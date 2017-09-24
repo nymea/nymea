@@ -46,7 +46,6 @@ GuhConfiguration::GuhConfiguration(QObject *parent) :
 
     GuhSettings settings(GuhSettings::SettingsRoleGlobal);
 
-#ifndef TESTING_ENABLED
     // TcpServer
     bool createDefaults = !settings.childGroups().contains("TcpServer");
     if (settings.childGroups().contains("TcpServer")) {
@@ -143,34 +142,6 @@ GuhConfiguration::GuhConfiguration(QObject *parent) :
         m_webSocketServerConfigs[config.id] = config;
         storeServerConfig("WebSocketServer", config);
     }
-
-
-#else
-    ServerConfiguration tcpConfig;
-    tcpConfig.id = "default";
-    tcpConfig.address = QHostAddress("127.0.0.1");
-    tcpConfig.port = 2222;
-    tcpConfig.sslEnabled = true;
-    tcpConfig.authenticationEnabled = true;
-    m_tcpServerConfigs[tcpConfig.id] = tcpConfig;
-
-    WebServerConfiguration wsConfig;
-    wsConfig.id = "default";
-    wsConfig.address = QHostAddress("127.0.0.1");
-    wsConfig.port = 3333;
-    wsConfig.sslEnabled = true;
-    wsConfig.authenticationEnabled = true;
-    wsConfig.publicFolder = qApp->applicationDirPath();
-    m_webServerConfigs[wsConfig.id] = wsConfig;
-
-    ServerConfiguration wssConfig;
-    wssConfig.id = "default";
-    wssConfig.address = QHostAddress("127.0.0.1");
-    wssConfig.port = 4444;
-    wssConfig.sslEnabled = true;
-    wssConfig.authenticationEnabled = true;
-    m_webSocketServerConfigs[wssConfig.id] = wssConfig;
-#endif
 }
 
 QUuid GuhConfiguration::serverUuid() const

@@ -128,6 +128,7 @@ GuhTestBase::GuhTestBase(QObject *parent) :
 
 void GuhTestBase::initTestCase()
 {
+    qDebug() << "GuhTestBase starting.";
     // If testcase asserts cleanup won't do. Lets clear any previous test run settings leftovers
     GuhSettings rulesSettings(GuhSettings::SettingsRoleRules);
     rulesSettings.clear();
@@ -143,7 +144,7 @@ void GuhTestBase::initTestCase()
     s_loggingFilters.insert("DeviceManager", true);
     s_loggingFilters.insert("RuleEngine", true);
     s_loggingFilters.insert("Hardware", false);
-    s_loggingFilters.insert("Connection", false);
+    s_loggingFilters.insert("Connection", true);
     s_loggingFilters.insert("LogEngine", false);
     s_loggingFilters.insert("TcpServer", false);
     s_loggingFilters.insert("WebServer", false);

@@ -218,11 +218,11 @@ void ServerManager::webServerConfigurationChanged(const QString &id)
         server->stopServer();
         server->reconfigureServer(config);
     } else {
-        qDebug(dcConnection) << "Received a Web Server config change event but don't have a Web Server instance for it.";
+        qDebug(dcConnection) << "Received a Web Server config change event but don't have a Web Server instance for it. Creating new WebServer instance on" << config.address.toString() << config.port << "(SSL:" << config.sslEnabled << ")";
         server = new WebServer(config, m_sslConfiguration, this);
+        m_restServer->registerWebserver(server);
         m_webServers.insert(config.id, server);
     }
-    server->startServer();
 }
 
 void ServerManager::webServerConfigurationRemoved(const QString &id)

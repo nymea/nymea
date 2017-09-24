@@ -43,6 +43,8 @@ class TestWebserver: public GuhTestBase
     Q_OBJECT
 
 private slots:
+    void initTestCase();
+
     void coverageCalls();
 
     void httpVersion();
@@ -74,6 +76,26 @@ public slots:
     }
 };
 
+void TestWebserver::initTestCase()
+{
+    GuhTestBase::initTestCase();
+    qDebug() << "TestWebserver starting";
+
+    foreach (const WebServerConfiguration &config, GuhCore::instance()->configuration()->webServerConfigurations()) {
+        if (config.port == 3333 && (config.address == QHostAddress("127.0.0.1") || config.address == QHostAddress("0.0.0.0"))) {
+            qDebug() << "Already have a webserver listening on 127.0.0.1:3333";
+            return;
+        }
+    }
+
+    qDebug() << "Creating new webserver instance on 127.0.0.1:3333";
+    WebServerConfiguration config;
+    config.address = QHostAddress("0.0.0.0");
+    config.port = 3333;
+    config.sslEnabled = true;
+    GuhCore::instance()->configuration()->setWebServerConfiguration(config);
+}
+
 void TestWebserver::coverageCalls()
 {
     HttpReply *reply = new HttpReply(this);
@@ -91,7 +113,7 @@ void TestWebserver::httpVersion()
     socket->connectToHostEncrypted("127.0.0.1", 3333);
     QSignalSpy encryptedSpy(socket, SIGNAL(encrypted()));
     bool encrypted = encryptedSpy.wait();
-    QVERIFY2(encrypted, "could not created encrypte webserver connection.");
+    QVERIFY2(encrypted, "could not created encrypted webserver connection.");
 
     QSignalSpy clientSpy(socket, SIGNAL(readyRead()));
 
@@ -335,6 +357,7 @@ void TestWebserver::getOptions()
     QNetworkReply *reply = nam.sendCustomRequest(request, "OPTIONS");
 
     clientSpy.wait();
+    qDebug() << "reply:" << reply->isFinished();
     QCOMPARE(clientSpy.count(), 1);
 
     bool ok = false;

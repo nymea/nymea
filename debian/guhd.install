@@ -1,3 +1,0 @@
-usr/bin/guhd
-data/systemd/guhd.service /lib/systemd/system/
-data/logrotate/guhd /etc/logrotate.d/

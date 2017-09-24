@@ -114,6 +114,10 @@ void TestJSONRPC::testHandshake()
     QCOMPARE(handShake.value("params").toMap().value("version").toString(), guhVersionString);
 
     m_mockTcpServer->clientDisconnected(newClientId);
+
+    // And now check if it is sent again when calling JSONRPC.Hello
+    handShake = injectAndWait("JSONRPC.Hello").toMap();
+    QCOMPARE(handShake.value("params").toMap().value("version").toString(), guhVersionString);
 }
 
 void TestJSONRPC::testInitialSetup()

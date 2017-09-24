@@ -7,6 +7,7 @@
 #include <QObject>
 #include <QTimer>
 #include <QNetworkSession>
+#include <QUuid>
 
 class CloudManager : public QObject
 {
@@ -43,7 +44,7 @@ private:
     JanusConnector *m_janusConnector = nullptr;
 
     QString m_serverUrl;
-    QString m_deviceId;
+    QUuid m_deviceId;
     QString m_caCertificate;
     QString m_clientCertificate;
     QString m_clientCertificateKey;

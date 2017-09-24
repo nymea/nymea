@@ -105,15 +105,15 @@ void JanusConnector::sendWebRtcHandshakeMessage(const QString &sessionId, const 
         m_sessions.value(sessionId)->trickles.append(message);
     } else if (messageType == "webrtcup") {
         // If we got the webrtc up from Janus already, directly reply with an ack
-//        if (session->webRtcConnected) {
-//            QVariantMap ack;
-//            ack.insert("id", message.value("id").toString());
-//            ack.insert("type", "ack");
-////            emit webRtcHandshakeMessageReceived(session->sessionId, ack);
-//        } else {
-//            // otherwise store the request and reply when we get the webrtcup
-//            session->webRtcUp = message;
-//        }
+        if (session->webRtcConnected) {
+            QVariantMap ack;
+            ack.insert("id", message.value("id").toString());
+            ack.insert("type", "ack");
+            emit webRtcHandshakeMessageReceived(session->sessionId, ack);
+        } else {
+            // otherwise store the request and reply when we get the webrtcup
+            session->webRtcUp = message;
+        }
     } else {
         qCWarning(dcJanus()) << "Unhandled message type:" << messageType << message;
     }
@@ -187,7 +187,7 @@ void JanusConnector::onTextMessageReceived(const QString &message)
 void JanusConnector::onReadyRead()
 {
     QByteArray data = m_socket->readAll();
-    qCDebug(dcJanus()) << "incoming data" << data;
+//    qCDebug(dcJanus()) << "incoming data" << data;
     QJsonParseError error;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
     if (error.error != QJsonParseError::NoError) {
@@ -211,7 +211,7 @@ void JanusConnector::onReadyRead()
                 return;
             }
         }
-        qCWarning(dcJanus()) << "Received a timeout event but don't have a session for it";
+        qCWarning(dcJanus()) << "Received a timeout event but don't have a session for it." << data << map.value("session_id").toLongLong();
         return;
     }
 
@@ -227,7 +227,6 @@ void JanusConnector::onReadyRead()
                     ack.insert("type", "ack");
                     emit webRtcHandshakeMessageReceived(session->sessionId, ack);
                 }
-                delete session;
                 return;
             }
         }
@@ -245,7 +244,7 @@ void JanusConnector::onReadyRead()
     WebRtcSession *session = m_pendingRequests.value(transactionId);
     if (!session) {
         if (transactionId == "pingety") {
-            qCDebug(dcJanus()) << "Received PONG from Janus";
+//            qCDebug(dcJanus()) << "Received PONG from Janus";
             return;
         }
         qCWarning(dcJanus()) << "received a janus message for a session we don't know...";
@@ -322,7 +321,7 @@ void JanusConnector::heartbeat()
     map.insert("janus", "ping");
     map.insert("transaction", "pingety");
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(map);
-    qCDebug(dcJanus()) << "Sending PING to Janus";
+//    qCDebug(dcJanus()) << "Sending PING to Janus";
     m_socket->write(jsonDoc.toJson());
     m_socket->flush();
 }

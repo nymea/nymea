@@ -31,6 +31,7 @@ signals:
 private slots:
     void onConnected();
     void retrievePairedDeviceInfo();
+    void registerDevice();
 
 private:
     quint16 publish(const QString &topic, const QVariantMap &message);

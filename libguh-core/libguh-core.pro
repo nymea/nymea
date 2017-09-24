@@ -10,6 +10,10 @@ LIBS += -L$$top_builddir/libguh/ -lguh -lssl -lcrypto
 target.path = /usr/lib/$$system('dpkg-architecture -q DEB_HOST_MULTIARCH')
 INSTALLS += target
 
+exists("/usr/include/mbedtls/net_sockets.h") {
+DEFINES += MBEDTLS_NEW_HEADERS
+}
+
 # icons for the webserver
 RESOURCES += $$top_srcdir/icons.qrc
 

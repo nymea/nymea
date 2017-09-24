@@ -21,13 +21,13 @@
 #ifndef CLOUDMANAGER_H
 #define CLOUDMANAGER_H
 
-#include "awsconnector.h"
-#include "janusconnector.h"
-
 #include <QObject>
 #include <QTimer>
 #include <QNetworkSession>
 #include <QUuid>
+
+class JanusConnector;
+class AWSConnector;
 
 class CloudManager : public QObject
 {

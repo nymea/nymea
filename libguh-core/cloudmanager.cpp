@@ -20,6 +20,8 @@
 
 #include "cloudmanager.h"
 #include "guhcore.h"
+#include "awsconnector.h"
+#include "janusconnector.h"
 
 #include <QNetworkSession>
 #include <QNetworkConfigurationManager>

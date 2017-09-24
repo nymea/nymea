@@ -455,6 +455,17 @@
                 "enabled": "Bool"
             }
         },
+        "JSONRPC.SetupRemoteAccess": {
+            "description": "Setup the remote connection by providing AWS token information",
+            "params": {
+                "authToken": "String",
+                "cognitoId": "String",
+                "idToken": "String"
+            },
+            "returns": {
+                "status": "Int"
+            }
+        },
         "JSONRPC.Tokens": {
             "description": "Return a list of if TokenInfo objects all the tokens for the current user.",
             "params": {

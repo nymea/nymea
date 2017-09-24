@@ -2,26 +2,11 @@ include(guh.pri)
 
 TEMPLATE=subdirs
 
-SUBDIRS += libguh server plugins
+SUBDIRS += libguh libguh-core server plugins
 
-!disabletesting {
-    message("Building guh tests enabled")
-    SUBDIRS += tests
-    DEFINES += TESTING_ENABLED
-} else {
-    message("Building guh tests disabled")
-}
-
-# Bluetooth LE support
-contains(DEFINES, BLUETOOTH_LE) {
-    message("Bluetooth LE available (Qt $${QT_VERSION}).")
-} else {
-    message("Bluetooth LE not available (Qt $${QT_VERSION}).")
-}
-
-server.depends = libguh plugins
+server.depends = libguh libguh-core plugins
 plugins.depends = libguh
-tests.depends = libguh
+tests.depends = libguh libguh-core
 
 doc.depends = libguh server
 # Note: some how extraimages in qdocconf did not the trick
@@ -32,7 +17,7 @@ doc.commands += cd $$top_srcdir/doc; qdoc config.qdocconf; cp -r images/* html/i
 licensecheck.commands = $$top_srcdir/tests/auto/checklicenseheaders.sh $$top_srcdir
 
 test.depends = licensecheck
-test.commands = LD_LIBRARY_PATH=$$top_builddir/libguh:$$top_builddir/tests/libguh-core make check
+test.commands = LD_LIBRARY_PATH=$$top_builddir/libguh-core:$$top_builddir/libguh make check
 
 QMAKE_EXTRA_TARGETS += licensecheck doc test
 

@@ -92,18 +92,15 @@ ServerManager::ServerManager(GuhConfiguration* configuration, QObject *parent) :
 
 
     // Transports
-#ifdef TESTING_ENABLED
     MockTcpServer *tcpServer = new MockTcpServer(this);
     m_jsonServer->registerTransportInterface(tcpServer, true);
     tcpServer->startServer();
-#else
     foreach (const ServerConfiguration &config, configuration->tcpServerConfigurations()) {
         TcpServer *tcpServer = new TcpServer(config, m_sslConfiguration, this);
         m_jsonServer->registerTransportInterface(tcpServer, config.authenticationEnabled);
         m_tcpServers.insert(config.id, tcpServer);
         tcpServer->startServer();
     }
-#endif
 
     foreach (const ServerConfiguration &config, configuration->webSocketServerConfigurations()) {
         WebSocketServer *webSocketServer = new WebSocketServer(config, m_sslConfiguration, this);
@@ -149,9 +146,13 @@ BluetoothServer *ServerManager::bluetoothServer() const
     return m_bluetoothServer;
 }
 
+MockTcpServer *ServerManager::mockTcpServer() const
+{
+    return m_mockTcpServer;
+}
+
 void ServerManager::tcpServerConfigurationChanged(const QString &id)
 {
-#ifndef TESTING_ENABLED
     ServerConfiguration config = GuhCore::instance()->configuration()->tcpServerConfigurations().value(id);
     TcpServer *server = m_tcpServers.value(id);
     if (server) {
@@ -165,14 +166,10 @@ void ServerManager::tcpServerConfigurationChanged(const QString &id)
     }
     m_jsonServer->registerTransportInterface(server, config.authenticationEnabled);
     server->startServer();
-#else
-    qWarning() << "Configure called for" << id << "but disabled in testing";
-#endif
 }
 
 void ServerManager::tcpServerConfigurationRemoved(const QString &id)
 {
-#ifndef TESTING_ENABLED
     if (!m_tcpServers.contains(id)) {
         qWarning(dcConnection) << "Received a TCP Server config removed event but don't have a TCP Server instance for it.";
         return;
@@ -181,9 +178,6 @@ void ServerManager::tcpServerConfigurationRemoved(const QString &id)
     m_jsonServer->unregisterTransportInterface(server);
     server->stopServer();
     server->deleteLater();
-#else
-    qWarning() << "Delete configuration called for" << id << "but disabled in testing";
-#endif
 }
 
 void ServerManager::webSocketServerConfigurationChanged(const QString &id)

@@ -50,10 +50,8 @@ TcpServer::TcpServer(const ServerConfiguration &configuration, const QSslConfigu
     m_server(NULL),
     m_sslConfig(sslConfiguration)
 {       
-#ifndef TESTING_ENABLED
     m_avahiService = new QtAvahiService(this);
     connect(m_avahiService, &QtAvahiService::serviceStateChanged, this, &TcpServer::onAvahiServiceStateChanged);
-#endif
 }
 
 /*! Destructor of this \l{TcpServer}. */
@@ -152,7 +150,6 @@ bool TcpServer::startServer()
         return false;
     }
 
-#ifndef TESTING_ENABLED
     // Note: reversed order
     QHash<QString, QString> txt;
     txt.insert("jsonrpcVersion", JSON_PROTOCOL_VERSION);
@@ -161,7 +158,6 @@ bool TcpServer::startServer()
     txt.insert("uuid", GuhCore::instance()->configuration()->serverUuid().toString());
     txt.insert("name", GuhCore::instance()->configuration()->serverName());
     m_avahiService->registerService("guhIO", configuration().port, "_jsonrpc._tcp", txt);
-#endif
 
     qCDebug(dcConnection) << "Started Tcp server on" << m_server->serverAddress().toString() << m_server->serverPort();
     connect(m_server, SIGNAL(clientConnected(QSslSocket *)), SLOT(onClientConnected(QSslSocket *)));
@@ -176,10 +172,8 @@ bool TcpServer::startServer()
  */
 bool TcpServer::stopServer()
 {
-#ifndef TESTING_ENABLED
     if (m_avahiService)
         m_avahiService->resetService();
-#endif
 
     if (!m_server)
         return true;

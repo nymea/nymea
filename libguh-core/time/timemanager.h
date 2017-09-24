@@ -43,10 +43,8 @@ public:
 
     QList<QByteArray> availableTimeZones() const;
 
-#ifdef TESTING_ENABLED
     void stopTimer();
     void setTime(const QDateTime &dateTime);
-#endif
 
 private:
     QTimeZone m_timeZone;

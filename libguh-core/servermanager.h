@@ -47,12 +47,8 @@ public:
     JsonRPCServer *jsonServer() const;
     RestServer *restServer() const;
 
-    // Transports
-    WebServer* webServer() const;
-    WebSocketServer* webSocketServer() const;
     BluetoothServer* bluetoothServer() const;
 
-    TcpServer *tcpServer() const;
     MockTcpServer *mockTcpServer() const;
 
 private slots:

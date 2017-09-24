@@ -217,7 +217,7 @@ void WebServer::incomingConnection(qintptr socketDescriptor)
 
     QSslSocket *socket = new QSslSocket();
     if (!socket->setSocketDescriptor(socketDescriptor)) {
-        qCWarning(dcConnection) << "Could not set socket descriptor. Rejecting connection.";
+        qCWarning(dcWebServer()) << "Could not set socket descriptor. Rejecting connection.";
         socket->close();
         delete socket;
         return;
@@ -228,7 +228,7 @@ void WebServer::incomingConnection(qintptr socketDescriptor)
     foreach (WebServerClient *client, m_webServerClients) {
         if (client->address() == socket->peerAddress()) {
             if (client->connections().count() >= 50) {
-                qCWarning(dcConnection) << QString("Maximum connections for this client reached: rejecting connection from client %1:%2").arg(socket->peerAddress().toString()).arg(socket->peerPort());
+                qCWarning(dcWebServer()) << QString("Maximum connections for this client reached: rejecting connection from client %1:%2").arg(socket->peerAddress().toString()).arg(socket->peerPort());
                 socket->close();
                 delete socket;
                 return;
@@ -249,7 +249,7 @@ void WebServer::incomingConnection(qintptr socketDescriptor)
     QUuid clientId = QUuid::createUuid();
     m_clientList.insert(clientId, socket);
 
-    qCDebug(dcConnection) << QString("Webserver client %1:%2 connected").arg(socket->peerAddress().toString()).arg(socket->peerPort());
+    qCDebug(dcWebServer()) << QString("Webserver client %1:%2 connected").arg(socket->peerAddress().toString()).arg(socket->peerPort());
 
     if (m_configuration.sslEnabled) {
         // configure client connection
@@ -448,7 +448,7 @@ void WebServer::onDisconnected()
         }
     }
 
-    qCDebug(dcConnection) << QString("Webserver client disonnected %1:%2").arg(socket->peerAddress().toString()).arg(socket->peerPort());
+    qCDebug(dcWebServer) << QString("Webserver client disonnected %1:%2").arg(socket->peerAddress().toString()).arg(socket->peerPort());
 
     // clean up
     QUuid clientId = m_clientList.key(socket);
@@ -462,7 +462,7 @@ void WebServer::onDisconnected()
 void WebServer::onEncrypted()
 {
     QSslSocket* socket = static_cast<QSslSocket *>(sender());
-    qCDebug(dcConnection) << QString("Encrypted connection %1:%2 successfully established.").arg(socket->peerAddress().toString()).arg(socket->peerPort());
+    qCDebug(dcWebServer()) << QString("Encrypted connection %1:%2 successfully established.").arg(socket->peerAddress().toString()).arg(socket->peerPort());
     connect(socket, SIGNAL(readyRead()), this, SLOT(readClient()));
     connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
     connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onError(QAbstractSocket::SocketError)));
@@ -474,7 +474,7 @@ void WebServer::onError(QAbstractSocket::SocketError error)
 {
     Q_UNUSED(error)
     QSslSocket* socket = static_cast<QSslSocket *>(sender());
-    qCWarning(dcConnection) << QString("Client socket error %1:%2 ->").arg(socket->peerAddress().toString()).arg(socket->peerPort()) << socket->errorString();
+    qCWarning(dcWebServer()) << QString("Client socket error %1:%2 ->").arg(socket->peerAddress().toString()).arg(socket->peerPort()) << socket->errorString();
 }
 
 void WebServer::onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceState &state)
@@ -504,15 +504,15 @@ void WebServer::reconfigureServer(const WebServerConfiguration &config)
 bool WebServer::startServer()
 {
     if (!listen(m_configuration.address, m_configuration.port)) {
-        qCWarning(dcConnection) << "Webserver could not listen on" << m_configuration.address.toString() << m_configuration.port;
+        qCWarning(dcWebServer()) << "Webserver could not listen on" << m_configuration.address.toString() << m_configuration.port << errorString();
         m_enabled = false;
         return false;
     }
 
     if (m_configuration.sslEnabled) {
-        qCDebug(dcConnection) << "Started webserver on" << QString("https://%1:%2").arg(m_configuration.address.toString()).arg(m_configuration.port);
+        qCDebug(dcWebServer()) << "Started webserver on" << QString("https://%1:%2").arg(m_configuration.address.toString()).arg(m_configuration.port);
     } else {
-        qCDebug(dcConnection) << "Started webserver on" << QString("http://%1:%2").arg(m_configuration.address.toString()).arg(m_configuration.port);
+        qCDebug(dcWebServer()) << "Started webserver on" << QString("http://%1:%2").arg(m_configuration.address.toString()).arg(m_configuration.port);
     }
 
     // Note: reversed order
@@ -539,7 +539,7 @@ bool WebServer::stopServer()
 
     close();
     m_enabled = false;
-    qCDebug(dcConnection) << "Webserver closed.";
+    qCDebug(dcWebServer()) << "Webserver closed.";
     return true;
 }
 

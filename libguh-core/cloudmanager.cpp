@@ -121,8 +121,8 @@ void CloudManager::pairDevice(const QString &idToken, const QString &authToken, 
 void CloudManager::connect2aws()
 {
     m_awsConnector->connect2AWS(GuhCore::instance()->configuration()->cloudServerUrl(),
-                                "1e10fb7e-d9d9-4145-88dd-2d3caf623c18",
-//                                m_deviceId.toString().remove(QRegExp("[{}]*")),
+//                                "1e10fb7e-d9d9-4145-88dd-2d3caf623c18",  // micha's test id (needs micha's test certs) - remove that before merging
+                                m_deviceId.toString().remove(QRegExp("[{}]*")),
                                 GuhCore::instance()->configuration()->cloudCertificateCA(),
                                 GuhCore::instance()->configuration()->cloudCertificate(),
                                 GuhCore::instance()->configuration()->cloudCertificateKey()

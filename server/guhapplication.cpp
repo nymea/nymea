@@ -48,6 +48,10 @@
 
 namespace guhserver {
 
+static bool s_aboutToShutdown = false;
+static bool s_multipleShutdownDetected = false;
+static int s_shutdownCounter = 0;
+
 static void printBacktrace()
 {
     void* trace[20];
@@ -146,11 +150,51 @@ static void catchUnixSignals(const std::vector<int>& quitSignals, const std::vec
             break;
         }
 
+        if (s_aboutToShutdown) {
+            switch (s_shutdownCounter) {
+            case 0:
+                qCWarning(dcApplication()) << "Already shutting down. Be nice and give me some time to clean up, please.";
+                break;
+            case 1:
+                qCCritical(dcApplication()) << "I told you, I'm already shutting down. Be nice and give me some time to clean up, PLEASE.";
+                break;
+            case 2:
+                qCCritical(dcApplication()) << "Still shutting down...";
+                break;
+            case 3:
+                qCCritical(dcApplication()) << "Hmpf...";
+                break;
+            case 4:
+                qCCritical(dcApplication()) << "It's getting boring...";
+                break;
+            case 5:
+                qCCritical(dcApplication()) << "S H U T T I N G  DOWN";
+                break;
+            case 6:
+                qCCritical(dcApplication()) << "S H U T T I N G  DOWN";
+                break;
+            case 7:
+                qCCritical(dcApplication()) << "S H U T T I N G  DOWN";
+                break;
+            default:
+                qCCritical(dcApplication()) << "Fuck this shit. I'm out...";
+                GuhApplication::quit();
+                break;
+            }
+            s_shutdownCounter++;
+            return;
+        }
+
         qCDebug(dcApplication) << "=====================================";
         qCDebug(dcApplication) << "Shutting down guh daemon";
         qCDebug(dcApplication) << "=====================================";
 
+        s_aboutToShutdown = true;
         GuhCore::instance()->destroy();
+
+        if (s_multipleShutdownDetected)
+            qCDebug(dcApplication) << "Ok, ok, I'm done! :)";
+
         GuhApplication::quit();
     };
 

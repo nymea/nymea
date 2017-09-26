@@ -3,14 +3,14 @@ include(../guh.pri)
 TARGET = guhd
 TEMPLATE = app
 
-INCLUDEPATH += ../libguh jsonrpc
+INCLUDEPATH += ../libguh-core ../libguh-core/jsonrpc ../libguh
 
 target.path = /usr/bin
 INSTALLS += target
 
 QT *= sql xml websockets bluetooth dbus
 
-LIBS += -L$$top_builddir/libguh/ -lguh -lssl -lcrypto
+LIBS += -L$$top_builddir/libguh/ -lguh -L$$top_builddir/libguh-core -lguh-core
 
 # Translations
 TRANSLATIONS *= $$top_srcdir/translations/guhd-en_US.ts \
@@ -33,7 +33,6 @@ translations.files = $$[QT_SOURCE_TREE]/translations/*.qm
 INSTALLS += translations
 
 # Server files
-include(server.pri)
 include(qtservice/qtservice.pri)
 
 SOURCES += main.cpp \

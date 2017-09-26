@@ -40,6 +40,8 @@ class TestWebSocketServer: public GuhTestBase
     Q_OBJECT
 
 private slots:
+    void initTestCase();
+
     void testHandshake();
 
     void pingTest();
@@ -62,6 +64,28 @@ private:
     QVariant injectSocketData(const QByteArray &data);
 };
 
+
+void TestWebSocketServer::initTestCase()
+{
+    GuhTestBase::initTestCase();
+
+    ServerConfiguration config;
+    foreach (const ServerConfiguration &c, GuhCore::instance()->configuration()->webSocketServerConfigurations()) {
+        if (c.port == 4444 && (c.address == QHostAddress("127.0.0.1") || c.address == QHostAddress("0.0.0.0"))) {
+            qDebug() << "Already have a websocketserver listening on 127.0.0.1:4444";
+            config = c;
+            break;
+        }
+    }
+
+    qDebug() << "Creating new websocketserver instance on 127.0.0.1:4444";
+    config.address = QHostAddress("127.0.0.1");
+    config.port = 4444;
+    config.sslEnabled = true;
+    config.authenticationEnabled = true;
+    GuhCore::instance()->configuration()->setWebSocketServerConfiguration(config);
+
+}
 
 void TestWebSocketServer::testHandshake()
 {

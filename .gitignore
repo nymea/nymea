@@ -32,6 +32,7 @@ tests/auto/devices/testdevices
 tests/auto/events/testevents
 tests/auto/jsonrpc/testjsonrpc
 tests/auto/logging/testlogging
+tests/auto/logging/testloggingdirect
 tests/auto/plugins/testactions
 tests/auto/restdeviceclasses/restdeviceclasses
 tests/auto/restdevices/restdevices

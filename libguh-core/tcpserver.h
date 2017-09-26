@@ -65,6 +65,7 @@ private slots:
 private:
     bool m_sslEnabled = false;
     QSslConfiguration m_config;
+    QByteArray m_receiveBuffer;
 };
 
 class TcpServer : public TransportInterface

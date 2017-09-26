@@ -66,10 +66,8 @@ WebSocketServer::WebSocketServer(const ServerConfiguration &configuration, const
     m_sslConfiguration(sslConfiguration),
     m_enabled(false)
 {
-#ifndef TESTING_ENABLED
     m_avahiService = new QtAvahiService(this);
     connect(m_avahiService, &QtAvahiService::serviceStateChanged, this, &WebSocketServer::onAvahiServiceStateChanged);
-#endif
 }
 
 /*! Destructor of this \l{WebSocketServer}. */
@@ -220,7 +218,6 @@ bool WebSocketServer::startServer()
         qCDebug(dcConnection) << "Started websocket server" << m_server->serverName() << QString("on wss://%1:%2").arg(m_server->serverAddress().toString()).arg(configuration().port);
     }
 
-#ifndef TESTING_ENABLED
     // Note: reversed order
     QHash<QString, QString> txt;
     txt.insert("jsonrpcVersion", JSON_PROTOCOL_VERSION);
@@ -228,8 +225,8 @@ bool WebSocketServer::startServer()
     txt.insert("manufacturer", "guh GmbH");
     txt.insert("uuid", GuhCore::instance()->configuration()->serverUuid().toString());
     txt.insert("name", GuhCore::instance()->configuration()->serverName());
+    txt.insert("sslEnabled", configuration().sslEnabled ? "true" : "false");
     m_avahiService->registerService("guhIO", configuration().port, "_ws._tcp", txt);
-#endif
 
     return true;
 }
@@ -240,10 +237,8 @@ bool WebSocketServer::startServer()
  */
 bool WebSocketServer::stopServer()
 {
-#ifndef TESTING_ENABLED
     if (m_avahiService)
         m_avahiService->resetService();
-#endif
 
     foreach (QWebSocket *client, m_clientList.values()) {
         client->close(QWebSocketProtocol::CloseCodeNormal, "Stop server");

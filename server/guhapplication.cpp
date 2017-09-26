@@ -49,6 +49,7 @@
 namespace guhserver {
 
 static bool s_aboutToShutdown = false;
+static bool s_doubleShutdownDetected = false;
 
 static void printBacktrace()
 {
@@ -149,15 +150,19 @@ static void catchUnixSignals(const std::vector<int>& quitSignals, const std::vec
         }
 
         if (s_aboutToShutdown) {
-            qCWarning(dcApplication()) << "Already shutting down.";
+            s_doubleShutdownDetected = true;
+            qCWarning(dcApplication()) << "Already shutting down. Be nice and give me some time to clean up, please.";
             return;
         }
 
         qCDebug(dcApplication) << "=====================================";
         qCDebug(dcApplication) << "Shutting down guh daemon";
         qCDebug(dcApplication) << "=====================================";
-
+        s_aboutToShutdown = true;
         GuhCore::instance()->destroy();
+        if (s_doubleShutdownDetected)
+            qCDebug(dcApplication) << "Ok, ok, I'm done! :)";
+
         GuhApplication::quit();
     };
 

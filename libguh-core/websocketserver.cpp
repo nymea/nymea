@@ -225,6 +225,7 @@ bool WebSocketServer::startServer()
     txt.insert("manufacturer", "guh GmbH");
     txt.insert("uuid", GuhCore::instance()->configuration()->serverUuid().toString());
     txt.insert("name", GuhCore::instance()->configuration()->serverName());
+    txt.insert("sslEnabled", configuration().sslEnabled ? "true" : "false");
     m_avahiService->registerService("guhIO", configuration().port, "_ws._tcp", txt);
 
     return true;

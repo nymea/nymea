@@ -178,6 +178,7 @@ static void catchUnixSignals(const std::vector<int>& quitSignals, const std::vec
                 break;
             default:
                 qCCritical(dcApplication()) << "Fuck this shit.";
+                GuhApplication::quit();
                 break;
             }
             s_shutdownCounter++;

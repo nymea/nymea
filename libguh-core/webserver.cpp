@@ -522,6 +522,7 @@ bool WebServer::startServer()
     txt.insert("manufacturer", "guh GmbH");
     txt.insert("uuid", GuhCore::instance()->configuration()->serverUuid().toString());
     txt.insert("name", GuhCore::instance()->configuration()->serverName());
+    txt.insert("sslEnabled", m_configuration.sslEnabled ? "true" : "false");
     m_avahiService->registerService("guhIO", m_configuration.port, "_http._tcp", txt);
 
     m_enabled = true;

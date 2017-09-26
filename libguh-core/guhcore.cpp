@@ -446,7 +446,13 @@ void GuhCore::init() {
 
     m_userManager = new UserManager(this);
 
-    m_cloudManager = new CloudManager(this);
+    m_cloudManager = new CloudManager(m_networkManager, this);
+    m_cloudManager->setDeviceId(m_configuration->serverUuid());
+    m_cloudManager->setServerUrl(m_configuration->cloudServerUrl());
+    m_cloudManager->setClientCertificates(m_configuration->cloudCertificateCA(), m_configuration->cloudCertificate(), m_configuration->cloudCertificateKey());
+    if (!m_configuration->cloudServerUrl().isEmpty()) {
+        m_cloudManager->setEnabled(true);
+    }
 
     connect(m_configuration, &GuhConfiguration::localeChanged, this, &GuhCore::onLocaleChanged);
 

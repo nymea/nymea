@@ -42,6 +42,8 @@ JanusConnector::JanusConnector(QObject *parent) : QObject(parent)
     });
     connect(&m_socketTimeoutTimer, &QTimer::timeout, this, &JanusConnector::heartbeat);
     m_socketTimeoutTimer.setInterval(5000);
+
+    connectToJanus();
 }
 
 bool JanusConnector::connectToJanus()

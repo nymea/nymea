@@ -26,6 +26,8 @@
 #include <QNetworkSession>
 #include <QUuid>
 
+#include "networkmanager/networkmanager.h"
+
 class JanusConnector;
 class AWSConnector;
 
@@ -33,10 +35,10 @@ class CloudManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit CloudManager(QObject *parent = nullptr);
+    explicit CloudManager(NetworkManager *networkManager, QObject *parent = nullptr);
 
     void setServerUrl(const QString &serverUrl);
-    void setDeviceId(const QString &deviceId);
+    void setDeviceId(const QUuid &deviceId);
     void setClientCertificates(const QString &caCertificate, const QString &clientCertificate, const QString &clientCertificateKey);
 
     bool enabled() const;
@@ -57,11 +59,11 @@ private slots:
     void onJanusWebRtcHandshakeMessageReceived(const QString &transactionId, const QVariantMap &data);
 
 private:
-    QNetworkSession *m_networkSession;
     QTimer m_reconnectTimer;
     bool m_enabled = false;
     AWSConnector *m_awsConnector = nullptr;
     JanusConnector *m_janusConnector = nullptr;
+    NetworkManager *m_networkManager = nullptr;
 
     QString m_serverUrl;
     QUuid m_deviceId;

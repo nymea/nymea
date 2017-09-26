@@ -24,6 +24,7 @@
 
 #include <QTimeZone>
 #include <QCoreApplication>
+#include <QFile>
 
 namespace guhserver {
 
@@ -33,9 +34,21 @@ GuhConfiguration::GuhConfiguration(QObject *parent) :
     // Init server uuid if we don't have one.
     QUuid id = serverUuid();
     if (id.isNull()) {
-        id = QUuid::createUuid();
-        setServerUuid(id);
+        // If we can, let's use the system's machine-id as our UUID.
+        QFile f("/etc/machine-id");
+        if (f.open(QFile::ReadOnly)) {
+            QString tmpId = QString::fromLatin1(f.readAll()).trimmed();
+            tmpId.insert(8, "-");
+            tmpId.insert(13, "-");
+            tmpId.insert(18, "-");
+            tmpId.insert(23, "-");
+            setServerUuid(QUuid(tmpId));
+        } else {
+            qWarning(dcApplication()) << "Failed to open /etc/machine-id for reading. Generating a new UUID for this server instance.";
+            setServerUuid(QUuid::createUuid());
+        }
     }
+    qCDebug(dcApplication()) << "UUID is:" << serverName();
 
     // Make sure default values are in configuration file so that it's easier for users to modify
     setServerName(serverName());

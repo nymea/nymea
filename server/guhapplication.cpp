@@ -49,7 +49,7 @@
 namespace guhserver {
 
 static bool s_aboutToShutdown = false;
-static bool s_doubleShutdownDetected = false;
+static bool s_multipleShutdownDetected = false;
 static int s_shutdownCounter = 0;
 
 static void printBacktrace()
@@ -177,7 +177,7 @@ static void catchUnixSignals(const std::vector<int>& quitSignals, const std::vec
                 qCCritical(dcApplication()) << "S H U T T I N G  DOWN";
                 break;
             default:
-                qCCritical(dcApplication()) << "Fuck this shit.";
+                qCCritical(dcApplication()) << "Fuck this shit. I'm out...";
                 GuhApplication::quit();
                 break;
             }
@@ -192,7 +192,7 @@ static void catchUnixSignals(const std::vector<int>& quitSignals, const std::vec
         s_aboutToShutdown = true;
         GuhCore::instance()->destroy();
 
-        if (s_doubleShutdownDetected)
+        if (s_multipleShutdownDetected)
             qCDebug(dcApplication) << "Ok, ok, I'm done! :)";
 
         GuhApplication::quit();

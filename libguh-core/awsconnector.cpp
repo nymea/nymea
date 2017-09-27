@@ -118,7 +118,7 @@ quint16 AWSConnector::publish(const QString &topic, const QVariantMap &message)
 
     uint16_t packetId = 0;
     ResponseCode res = m_client->PublishAsync(Utf8String::Create(fullTopic.toStdString()), false, false, mqtt::QoS::QOS1, jsonDoc.toJson().toStdString(), &publishCallback, packetId);
-    qCDebug(dcAWS()) << "publish call queued with status:" << QString::fromStdString(ResponseHelper::ToString(res)) << packetId << "for topic" << topic << jsonDoc.toJson();
+    qCDebug(dcAWSTraffic()) << "publish call queued with status:" << QString::fromStdString(ResponseHelper::ToString(res)) << packetId << "for topic" << topic << jsonDoc.toJson();
     s_requestMap.insert(packetId, this);
     return packetId;
 }
@@ -163,14 +163,14 @@ void AWSConnector::doSubscribe(const QStringList &topics)
 {
     util::Vector<std::shared_ptr<mqtt::Subscription>> subscription_list;
     foreach (const QString &topic, topics) {
-        qCDebug(dcAWS()) << "topic to subscribe is" << topic << "is valid topic:" << Subscription::IsValidTopicName(topic.toStdString());
+        qCDebug(dcAWSTraffic()) << "topic to subscribe is" << topic << "is valid topic:" << Subscription::IsValidTopicName(topic.toStdString());
         auto subscription = mqtt::Subscription::Create(Utf8String::Create(topic.toStdString()), mqtt::QoS::QOS1, &onSubscriptionReceivedCallback, std::shared_ptr<SubscriptionHandlerContextData>(this));
         subscription_list.push_back(subscription);
     }
 
     uint16_t packetId;
     ResponseCode res = m_client->SubscribeAsync(subscription_list, subscribeCallback, packetId);
-    qCDebug(dcAWS()) << "subscribe call queued with status:" << QString::fromStdString(ResponseHelper::ToString(res)) << packetId;
+    qCDebug(dcAWSTraffic()) << "subscribe call queued with status:" << QString::fromStdString(ResponseHelper::ToString(res)) << packetId;
     s_requestMap.insert(packetId, this);
 }
 
@@ -184,7 +184,7 @@ void AWSConnector::publishCallback(uint16_t actionId, ResponseCode rc)
 
     switch (rc) {
     case ResponseCode::SUCCESS:
-        qCDebug(dcAWS()) << "Successfully published" << actionId;
+        qCDebug(dcAWSTraffic()) << "Successfully published" << actionId;
         break;
     default:
         qCDebug(dcAWS())<< "Error publishing data to AWS:" << QString::fromStdString(ResponseHelper::ToString(rc));

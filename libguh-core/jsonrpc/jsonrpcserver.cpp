@@ -310,7 +310,9 @@ void JsonRPCServer::sendResponse(TransportInterface *interface, const QUuid &cli
     response.insert("status", "success");
     response.insert("params", params);
 
-    interface->sendData(clientId, QJsonDocument::fromVariant(response).toJson(QJsonDocument::Compact));
+    QByteArray data = QJsonDocument::fromVariant(response).toJson(QJsonDocument::Compact);
+    qCDebug(dcJsonRpcTraffic()) << "Sending data:" << data;
+    interface->sendData(clientId, data);
 }
 
 /*! Send a JSON error response to the client with the given \a clientId,
@@ -323,7 +325,9 @@ void JsonRPCServer::sendErrorResponse(TransportInterface *interface, const QUuid
     errorResponse.insert("status", "error");
     errorResponse.insert("error", error);
 
-    interface->sendData(clientId, QJsonDocument::fromVariant(errorResponse).toJson(QJsonDocument::Compact));
+    QByteArray data = QJsonDocument::fromVariant(errorResponse).toJson(QJsonDocument::Compact);
+    qCDebug(dcJsonRpcTraffic()) << "Sending data:" << data;
+    interface->sendData(clientId, data);
 }
 
 void JsonRPCServer::sendUnauthorizedResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QString &error)
@@ -333,7 +337,9 @@ void JsonRPCServer::sendUnauthorizedResponse(TransportInterface *interface, cons
     errorResponse.insert("status", "unauthorized");
     errorResponse.insert("error", error);
 
-    interface->sendData(clientId, QJsonDocument::fromVariant(errorResponse).toJson(QJsonDocument::Compact));
+    QByteArray data = QJsonDocument::fromVariant(errorResponse).toJson(QJsonDocument::Compact);
+    qCDebug(dcJsonRpcTraffic()) << "Sending data:" << data;
+    interface->sendData(clientId, data);
 }
 
 QVariantMap JsonRPCServer::createWelcomeMessage(TransportInterface *interface) const
@@ -368,6 +374,8 @@ void JsonRPCServer::setup()
 
 void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &data)
 {
+    qCDebug(dcJsonRpcTraffic()) << "Incoming data:" << data;
+
     TransportInterface *interface = qobject_cast<TransportInterface *>(sender());
     QJsonParseError error;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);

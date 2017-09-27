@@ -112,12 +112,15 @@ int main(int argc, char *argv[])
     s_loggingFilters.insert("Warnings", true);
     s_loggingFilters.insert("DeviceManager", true);
     s_loggingFilters.insert("RuleEngine", true);
+    s_loggingFilters.insert("RuleEngineDebug", false);
     s_loggingFilters.insert("Hardware", false);
     s_loggingFilters.insert("Connection", true);
     s_loggingFilters.insert("LogEngine", false);
     s_loggingFilters.insert("TcpServer", false);
+    s_loggingFilters.insert("TcpServerTraffic", false);
     s_loggingFilters.insert("WebServer", false);
     s_loggingFilters.insert("WebSocketServer", false);
+    s_loggingFilters.insert("WebSocketServerTraffic", false);
     s_loggingFilters.insert("JsonRpc", false);
     s_loggingFilters.insert("Rest", false);
     s_loggingFilters.insert("OAuth2", false);
@@ -128,7 +131,8 @@ int main(int argc, char *argv[])
     s_loggingFilters.insert("NetworkManager", true);
     s_loggingFilters.insert("UserManager", true);
     s_loggingFilters.insert("AWS", false);
-    s_loggingFilters.insert("Janus", false);
+    s_loggingFilters.insert("AWSTraffic", false);
+    s_loggingFilters.insert("JanusTraffic", false);
 
     QHash<QString, bool> loggingFiltersPlugins;
     foreach (const QJsonObject &pluginMetadata, DeviceManager::pluginsMetadata()) {
@@ -211,20 +215,20 @@ int main(int argc, char *argv[])
         s_loggingFilters.insert(category, false);
 
     // check debug area
-    if (!parser.isSet(allOption)) {
-        foreach (QString debugArea, parser.values(debugOption)) {
-            bool enable = !debugArea.startsWith("No");
-            debugArea.remove(QRegExp("^No"));
-            if (s_loggingFilters.contains(debugArea)) {
-                s_loggingFilters[debugArea] = enable;
-            } else {
-                qCWarning(dcApplication) << QCoreApplication::translate("main", "No such debug category:") << debugArea;
-            }
-        }
-    } else {
-        foreach (const QString &debugArea, s_loggingFilters.keys())
+    if (parser.isSet(allOption)) {
+        foreach (const QString &debugArea, s_loggingFilters.keys()) {
             s_loggingFilters[debugArea] = true;
-
+        }
+    }
+    // And allow overriding individual values
+    foreach (QString debugArea, parser.values(debugOption)) {
+        bool enable = !debugArea.startsWith("No");
+        debugArea.remove(QRegExp("^No"));
+        if (s_loggingFilters.contains(debugArea)) {
+            s_loggingFilters[debugArea] = enable;
+        } else {
+            qCWarning(dcApplication) << QCoreApplication::translate("main", "No such debug category:") << debugArea;
+        }
     }
     QLoggingCategory::installFilter(loggingCategoryFilter);
 

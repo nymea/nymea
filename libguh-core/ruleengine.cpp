@@ -335,7 +335,7 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
 {
     Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(event.deviceId());
 
-    qCDebug(dcRuleEngine) << "Evaluate event:" << event << device->name() << event.eventTypeId();
+    qCDebug(dcRuleEngineDebug) << "Evaluate event:" << event << device->name() << event.eventTypeId();
 
     QList<Rule> rules;
     foreach (const RuleId &id, ruleIds()) {

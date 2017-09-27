@@ -91,7 +91,7 @@ void WebSocketServer::sendData(const QUuid &clientId, const QByteArray &data)
     QWebSocket *client = 0;
     client = m_clientList.value(clientId);
     if (client) {
-        qCDebug(dcWebSocketServer()) << "Sending data to client" << data;
+        qCDebug(dcWebSocketServerTraffic()) << "Sending data to client" << data;
         client->sendTextMessage(data + '\n');
     }
 }
@@ -146,13 +146,13 @@ void WebSocketServer::onClientDisconnected()
 void WebSocketServer::onBinaryMessageReceived(const QByteArray &data)
 {
     QWebSocket *client = qobject_cast<QWebSocket *>(sender());
-    qCDebug(dcWebSocketServer) << "Binary message from" << client->peerAddress().toString() << ":" << data;
+    qCDebug(dcWebSocketServerTraffic()) << "Binary message from" << client->peerAddress().toString() << ":" << data;
 }
 
 void WebSocketServer::onTextMessageReceived(const QString &message)
 {
     QWebSocket *client = qobject_cast<QWebSocket *>(sender());
-    qCDebug(dcWebSocketServer) << "Text message from" << client->peerAddress().toString() << ":" << message;
+    qCDebug(dcWebSocketServerTraffic()) << "Text message from" << client->peerAddress().toString() << ":" << message;
     emit dataAvailable(m_clientList.key(client), message.toUtf8());
 }
 

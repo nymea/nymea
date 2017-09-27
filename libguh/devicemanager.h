@@ -196,6 +196,9 @@ private:
     DeviceError addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId id = DeviceId::createDeviceId());
     DeviceSetupStatus setupDevice(Device *device);
     void postSetupDevice(Device *device);
+    void storeDeviceStates(Device *device);
+    void loadDeviceStates(Device *device);
+
 
 private:
     QLocale m_locale;

@@ -38,15 +38,7 @@
  *  When creating a \l{DevicePlugin} generate a new uuid for each StateType you define and
  *  hardcode it into the plugin. */
 StateType::StateType(const StateTypeId &id):
-    m_id(id),
-    m_index(0),
-    m_defaultValue(QVariant()),
-    m_minValue(QVariant()),
-    m_maxValue(QVariant()),
-    m_possibleValues(QVariantList()),
-    m_unit(Types::UnitNone),
-    m_ruleRelevant(true),
-    m_graphRelevant(false)
+    m_id(id)
 {
 
 }
@@ -180,6 +172,17 @@ void StateType::setGraphRelevant(const bool &graphRelevant)
     m_graphRelevant = graphRelevant;
 }
 
+/*! Returns true if this StateType is to be cached. This means, the last state value will be stored to disk upon shutdown and restored on reboot. If this is false, states will be initialized with the default value on each boot. By default all states are cached by the system. */
+bool StateType::cached() const
+{
+    return m_cached;
+}
+
+/*! Sets whether this StateType should be cached or not. */
+void StateType::setCached(bool cached)
+{
+    m_cached = cached;
+}
 
 StateTypes::StateTypes(const QList<StateType> &other)
 {

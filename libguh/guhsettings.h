@@ -39,7 +39,8 @@ public:
         SettingsRoleDevices,
         SettingsRoleRules,
         SettingsRolePlugins,
-        SettingsRoleGlobal
+        SettingsRoleGlobal,
+        SettingsRoleDeviceStates
     };
 
     explicit GuhSettings(const SettingsRole &role = SettingsRoleNone, QObject *parent = 0);

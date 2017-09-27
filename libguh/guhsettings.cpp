@@ -63,98 +63,40 @@ GuhSettings::GuhSettings(const SettingsRole &role, QObject *parent):
     QObject(parent),
     m_role(role)
 {
-    QString settingsFile;
-#ifdef SNAPPY
-    QString settingsFilePath = QString(qgetenv("SNAP_DATA"));
+    QString settingsPrefix = QCoreApplication::instance()->organizationName() + "/";
+
+    QString basePath;
+    if (!qgetenv("SNAP").isEmpty()) {
+        basePath = QString(qgetenv("SNAP_DATA"));
+    } else if (settingsPrefix == "guh-test/") {
+        basePath = "/tmp/";
+    } else if (isRoot()) {
+        basePath = "/etc/";
+    } else {
+        basePath = QDir::homePath() + "/.config/";
+    }
+
+    QString fileName;
     switch (role) {
     case SettingsRoleNone:
         break;
     case SettingsRoleDevices:
-        settingsFile = settingsFilePath + "/devices.conf";
-        m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
+        fileName = "devices.conf";
         break;
     case SettingsRoleRules:
-        settingsFile = settingsFilePath + "/rules.conf";
-        m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
+        fileName = "rules.conf";
         break;
     case SettingsRolePlugins:
-        settingsFile = settingsFilePath + "/plugins.conf";
-        m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
+        fileName = "plugins.conf";
         break;
     case SettingsRoleGlobal:
-        settingsFile = settingsFilePath + "/guhd.conf";
-        m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
+        fileName = "guhd.conf";
         break;
-    default:
-        break;
-    }
-#else
-    QString settingsPrefix = QCoreApplication::instance()->organizationName();
-    bool rootPrivilege = isRoot();
-
-    switch (role) {
-    case SettingsRoleNone:
-        break;
-    case SettingsRoleDevices:
-        // check if we are running a test
-        if (settingsPrefix == "guh-test") {
-            settingsFile = "/tmp/" + settingsPrefix + "/test-devices.conf";
-            m_settings = new QSettings(settingsFile, QSettings::NativeFormat, this);
-            //qCDebug(dcApplication) << "Created test-devices settings" << m_settings->fileName();
-        } else if (rootPrivilege) {
-            settingsFile = "/etc/" + settingsPrefix + "/devices.conf";
-            m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
-            //qCDebug(dcApplication) << "Created device settings" << m_settings->fileName();
-        } else {
-            settingsFile = QDir::homePath() + "/.config/" + settingsPrefix + "/devices.conf";
-            m_settings = new QSettings(settingsFile, QSettings::NativeFormat, this);
-            //qCDebug(dcApplication) << "Created device settings" << m_settings->fileName();
-        }
-        break;
-    case SettingsRoleRules:
-        // check if we are running a test
-        if (settingsPrefix == "guh-test") {
-            settingsFile = "/tmp/" + settingsPrefix + "/test-rules.conf";
-            m_settings = new QSettings(settingsFile, QSettings::NativeFormat, this);
-            //qCDebug(dcApplication) << "Created test-rules settings" << m_settings->fileName();
-        } else if (rootPrivilege) {
-            settingsFile = "/etc/" + settingsPrefix + "/rules.conf";
-            m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
-            //qCDebug(dcApplication) << "Created rule settings" << m_settings->fileName();
-        } else {
-            settingsFile = QDir::homePath() + "/.config/" + settingsPrefix + "/rules.conf";
-            m_settings = new QSettings(settingsFile, QSettings::NativeFormat, this);
-            //qCDebug(dcApplication) << "Created rule settings" << m_settings->fileName();
-        }
-        break;
-    case SettingsRolePlugins:
-        // check if we are running a test
-        if (settingsPrefix == "guh-test") {
-            settingsFile = "/tmp/" + settingsPrefix + "/test-plugins.conf";
-            m_settings = new QSettings(settingsFile, QSettings::NativeFormat, this);
-            //qCDebug(dcApplication) << "Created test-plugins settings" << m_settings->fileName();
-        } else if (rootPrivilege) {
-            settingsFile = "/etc/" + settingsPrefix + "/plugins.conf";
-            m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
-            //qCDebug(dcApplication) << "Created plugin settings" << m_settings->fileName();
-        } else {
-            settingsFile = QDir::homePath() + "/.config/" + settingsPrefix + "/plugins.conf";
-            m_settings = new QSettings(settingsFile, QSettings::NativeFormat, this);
-            //qCDebug(dcApplication) << "Created plugin settings" << m_settings->fileName();
-        }
-        break;
-    case SettingsRoleGlobal:
-        // this file schould always be readable and should never be written
-        settingsFile = "/etc/guh/guhd.conf";
-        m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
-        qCDebug(dcApplication) << "Created test guhd settings" << m_settings->fileName();
-        break;
-    default:
+    case SettingsRoleDeviceStates:
+        fileName = "devicestates.conf";
         break;
     }
-
-#endif // SNAPPY
-
+    m_settings = new QSettings(basePath + settingsPrefix + fileName, QSettings::IniFormat, this);
 }
 
 /*! Destructor of the GuhSettings.*/
@@ -186,12 +128,11 @@ bool GuhSettings::isRoot()
 QString GuhSettings::logPath()
 {
     QString logPath;
-#ifdef SNAPPY
-    logPath = QString(qgetenv("SNAP_COMMON")) + "/guhd.sqlite";
-#else
     QString organisationName = QCoreApplication::instance()->organizationName();
 
-    if (organisationName == "guh-test") {
+    if (!qgetenv("SNAP").isEmpty()) {
+        logPath = QString(qgetenv("SNAP_COMMON")) + "/guhd.sqlite";
+    } else if (organisationName == "guh-test") {
         logPath = "/tmp/" + organisationName + "/guhd-test.sqlite";
     } else if (GuhSettings::isRoot()) {
         logPath = "/var/log/guhd.sqlite";
@@ -199,7 +140,6 @@ QString GuhSettings::logPath()
         logPath = QDir::homePath() + "/.config/" + organisationName + "/guhd.sqlite";
     }
 
-#endif // SNAPPY
     return logPath;
 }
 
@@ -207,47 +147,43 @@ QString GuhSettings::logPath()
 QString GuhSettings::settingsPath()
 {
     QString path;
-#ifdef SNAPPY
-    path = QString(qgetenv("SNAP_DATA"));
-#else
     QString organisationName = QCoreApplication::instance()->organizationName();
 
-    if (organisationName == "guh-test") {
+    if (!qgetenv("SNAP").isEmpty()) {
+        path = QString(qgetenv("SNAP_DATA"));
+    } else if (organisationName == "guh-test") {
         path = "/tmp/" + organisationName;
     } else if (GuhSettings::isRoot()) {
         path = "/etc/guh/";
     } else {
         path = QDir::homePath() + "/.config/" + organisationName;
     }
-#endif // SNAPPY
     return path;
 }
 
 /*! Returns the default system translation path \tt{/usr/share/guh/translations}. */
 QString GuhSettings::translationsPath()
 {
-#ifdef SNAPPY
-    return QString(qgetenv("SNAP") + "/usr/share/guh/translations");
-#else
-    return QString("/usr/share/guh/translations");
-#endif // SNAPPY
+    if (!qgetenv("SNAP").isEmpty()) {
+        return QString(qgetenv("SNAP") + "/usr/share/guh/translations");
+    } else {
+        return QString("/usr/share/guh/translations");
+    }
 }
 
 QString GuhSettings::storagePath()
 {
     QString path;
-#ifdef SNAPPY
-    path = QString(qgetenv("SNAP_DATA"));
-#else
     QString organisationName = QCoreApplication::instance()->organizationName();
-    if (organisationName == "guh-test") {
+    if (!qgetenv("SNAP").isEmpty()) {
+        path = QString(qgetenv("SNAP_DATA"));
+    } else if (organisationName == "guh-test") {
         path = "/tmp/" + organisationName + "/";
     } else if (GuhSettings::isRoot()) {
         path = "/var/lib/" + organisationName + "/";
     } else {
         path = QDir::homePath() + "/.local/share/" + organisationName + "/";
     }
-#endif
     return path;
 }
 

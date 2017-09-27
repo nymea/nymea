@@ -245,15 +245,16 @@ int main(int argc, char *argv[])
             qCDebug(dcApplication) << "=====================================";
         }
 
-#ifdef SNAPPY
-        // Note: http://snapcraft.io/docs/reference/env
-        qCDebug(dcApplication) << "Snap name       :" << qgetenv("SNAP_NAME");
-        qCDebug(dcApplication) << "Snap version    :" << qgetenv("SNAP_VERSION");
-        qCDebug(dcApplication) << "Snap directory  :" << qgetenv("SNAP");
-        qCDebug(dcApplication) << "Snap app data   :" << qgetenv("SNAP_DATA");
-        qCDebug(dcApplication) << "Snap user data  :" << qgetenv("SNAP_USER_DATA");
-        qCDebug(dcApplication) << "Snap app common :" << qgetenv("SNAP_COMMON");
-#endif
+        // If running in a snappy environment, print out some details about it.
+        if (!qgetenv("SNAP").isEmpty()) {
+            // Note: http://snapcraft.io/docs/reference/env
+            qCDebug(dcApplication) << "Snap name       :" << qgetenv("SNAP_NAME");
+            qCDebug(dcApplication) << "Snap version    :" << qgetenv("SNAP_VERSION");
+            qCDebug(dcApplication) << "Snap directory  :" << qgetenv("SNAP");
+            qCDebug(dcApplication) << "Snap app data   :" << qgetenv("SNAP_DATA");
+            qCDebug(dcApplication) << "Snap user data  :" << qgetenv("SNAP_USER_DATA");
+            qCDebug(dcApplication) << "Snap app common :" << qgetenv("SNAP_COMMON");
+        }
 
         // create core instance
         GuhCore::instance();

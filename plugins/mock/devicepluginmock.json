@@ -97,7 +97,8 @@
                             "eventTypeName": "Dummy bool state changed",
                             "index": 1,
                             "defaultValue": false,
-                            "type": "bool"
+                            "type": "bool",
+                            "cached": false
                         }
                     ],
                     "eventTypes": [
@@ -230,7 +231,8 @@
                             "eventTypeName": "Dummy bool state changed",
                             "index": 1,
                             "defaultValue": false,
-                            "type": "bool"
+                            "type": "bool",
+                            "cached": false
                         }
                     ],
                     "eventTypes": [

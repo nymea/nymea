@@ -248,6 +248,10 @@ DeviceManager::DeviceManager(const QLocale &locale, QObject *parent) :
 DeviceManager::~DeviceManager()
 {
     qCDebug(dcApplication) << "Shutting down \"Device Manager\"";
+    foreach (Device *device, m_configuredDevices) {
+        storeDeviceStates(device);
+    }
+
     foreach (DevicePlugin *plugin, m_devicePlugins) {
         delete plugin;
     }
@@ -265,9 +269,10 @@ QStringList DeviceManager::pluginSearchDirs()
     searchDirs << QCoreApplication::applicationDirPath() + "/../plugins/";
     searchDirs << QCoreApplication::applicationDirPath() + "/../../../plugins/";
     searchDirs << QString("%1").arg(GUH_PLUGINS_PATH);
-#ifdef SNAPPY
-    searchDirs << QString("%1%2").arg(QString::fromUtf8(qgetenv("SNAP"))).arg(GUH_PLUGINS_PATH);
-#endif
+    QString snapDir = QString::fromUtf8(qgetenv("SNAP"));
+    if (!snapDir.isEmpty()) {
+        searchDirs << QString("%1%2").arg(snapDir).arg(GUH_PLUGINS_PATH);
+    }
     return searchDirs;
 }
 
@@ -1109,7 +1114,7 @@ void DeviceManager::loadConfiguredDevices()
 {
     GuhSettings settings(GuhSettings::SettingsRoleDevices);
     settings.beginGroup("DeviceConfig");
-    qCDebug(dcDeviceManager) << "loading devices from" << settings.fileName();
+    qCDebug(dcDeviceManager) << "Loading devices from" << settings.fileName();
     foreach (const QString &idString, settings.childGroups()) {
         settings.beginGroup(idString);
         Device *device = new Device(PluginId(settings.value("pluginid").toString()), DeviceId(idString), DeviceClassId(settings.value("deviceClassId").toString()), this);
@@ -1517,10 +1522,10 @@ DeviceManager::DeviceSetupStatus DeviceManager::setupDevice(Device *device)
     QList<State> states;
     foreach (const StateType &stateType, deviceClass.stateTypes()) {
         State state(stateType.id(), device->id());
-        state.setValue(stateType.defaultValue());
         states.append(state);
     }
     device->setStates(states);
+    loadDeviceStates(device);
 
     DeviceSetupStatus status = plugin->setupDevice(device);
     if (status != DeviceSetupStatusSuccess) {
@@ -1552,5 +1557,33 @@ void DeviceManager::postSetupDevice(Device *device)
     DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
 
     plugin->postSetupDevice(device);
+}
+
+void DeviceManager::loadDeviceStates(Device *device)
+{
+    GuhSettings settings(GuhSettings::SettingsRoleDeviceStates);
+    settings.beginGroup(device->id().toString());
+    DeviceClass deviceClass = m_supportedDevices.value(device->deviceClassId());
+    foreach (const StateType &stateType, deviceClass.stateTypes()) {
+        if (stateType.cached()) {
+            device->setStateValue(stateType.id(), settings.value(stateType.id().toString(), stateType.defaultValue()));
+        } else {
+            device->setStateValue(stateType.id(), stateType.defaultValue());
+        }
+    }
+    settings.endGroup();
+}
+
+void DeviceManager::storeDeviceStates(Device *device)
+{
+    GuhSettings settings(GuhSettings::SettingsRoleDeviceStates);
+    settings.beginGroup(device->id().toString());
+    DeviceClass deviceClass = m_supportedDevices.value(device->deviceClassId());
+    foreach (const StateType &stateType, deviceClass.stateTypes()) {
+        if (stateType.cached()) {
+            settings.setValue(stateType.id().toString(), device->stateValue(stateType.id()));
+        }
+    }
+    settings.endGroup();
 }
 

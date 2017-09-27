@@ -87,11 +87,6 @@ coverage {
     QMAKE_CLEAN += *.gcda *.gcno coverage.info coverage.xml
 }
 
-# Ubuntu snappy
-snappy {
-    DEFINES += SNAPPY
-}
-
 # Enable Radio 433 MHz for GPIO's
 enable433gpio {
     DEFINES += GPIO433

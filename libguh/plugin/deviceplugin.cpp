@@ -346,6 +346,10 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                         break;
                     }
                 }
+
+                if (st.contains("cached")) {
+                    stateType.setCached(st.value("cached").toBool());
+                }
                 stateTypes.append(stateType);
 
                 // Events for state changed

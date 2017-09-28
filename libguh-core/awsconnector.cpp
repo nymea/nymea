@@ -62,7 +62,7 @@ void AWSConnector::connect2AWS(const QString &endpoint, const QString &clientId,
     // subscribe to pairing api topics
     subscribe({QString("create/device/%1").arg(m_clientId)});
 
-    qCDebug(dcAWS()) << "Connecting to AWS with ID:" << m_clientId;
+    qCDebug(dcAWS()) << "Connecting to AWS with ID:" << m_clientId << "endpoint:" << endpoint;
     m_connectingFuture = QtConcurrent::run([&]() {
         ResponseCode rc = m_client->Connect(std::chrono::milliseconds(30000), true, mqtt::Version::MQTT_3_1_1, std::chrono::seconds(60), Utf8String::Create(m_clientId.toStdString()), nullptr, nullptr, nullptr);
         if (rc == ResponseCode::MQTT_CONNACK_CONNECTION_ACCEPTED) {
@@ -155,7 +155,7 @@ void AWSConnector::retrievePairedDeviceInfo()
 void AWSConnector::registerDevice()
 {
     QVariantMap params;
-    params.insert("serverUUID", m_clientId);
+    params.insert("UUID", m_clientId);
     publish("create/device", params);
 }
 

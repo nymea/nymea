@@ -349,6 +349,24 @@ void LogEngine::removeRuleLogs(const RuleId &ruleId)
     }
 }
 
+QList<DeviceId> LogEngine::devicesInLogs() const
+{
+    QString queryString = QString("SELECT deviceId FROM entries WHERE deviceId != \"%1\" GROUP BY deviceId;").arg(QUuid().toString());
+    QSqlQuery result = m_db.exec(queryString);
+    QList<DeviceId> ret;
+    if (result.lastError().type() != QSqlError::NoError) {
+        qCWarning(dcLogEngine()) << "Error fetching device entries from log database:" << m_db.lastError().driverText() << m_db.lastError().databaseText();
+        return ret;
+    }
+    if (!result.first()) {
+        return ret;
+    }
+    do {
+        ret.append(DeviceId::fromUuid(result.value("deviceId").toUuid()));
+    } while (result.next());
+    return ret;
+}
+
 void LogEngine::appendLogEntry(const LogEntry &entry)
 {
     QString queryString = QString("INSERT INTO entries (timestamp, loggingEventType, loggingLevel, sourceType, typeId, deviceId, value, active, errorCode) values ('%1', '%2', '%3', '%4', '%5', '%6', '%7', '%8', '%9');")

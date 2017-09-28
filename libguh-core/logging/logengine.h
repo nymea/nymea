@@ -56,6 +56,7 @@ public:
     void logRuleExitActionsExecuted(const Rule &rule);
     void removeDeviceLogs(const DeviceId &deviceId);
     void removeRuleLogs(const RuleId &ruleId);
+    QList<DeviceId> devicesInLogs() const;
 
 signals:
     void logEntryAdded(const LogEntry &logEntry);

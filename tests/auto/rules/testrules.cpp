@@ -90,6 +90,9 @@ private slots:
 
     void testRuleActionParams_data();
     void testRuleActionParams();
+
+    void testHousekeeping_data();
+    void testHousekeeping();
 };
 
 void TestRules::cleanupMockHistory() {
@@ -1812,6 +1815,113 @@ void TestRules::testRuleActionParams()
 
     QVariant response = injectAndWait("Rules.AddRule", addRuleParams);
     verifyRuleError(response, error);
+}
+
+void TestRules::testHousekeeping_data()
+{
+    QTest::addColumn<bool>("testAction");
+    QTest::addColumn<bool>("testExitAction");
+    QTest::addColumn<bool>("testStateEvaluator");
+    QTest::addColumn<bool>("testEventDescriptor");
+
+    QTest::newRow("action") << true << false << false << false;
+    QTest::newRow("exitAction") << false << true << false << false;
+    QTest::newRow("stateDescriptor") << false << false << true << false;
+    QTest::newRow("eventDescriptor")<< false << false << false << true;
+}
+
+void TestRules::testHousekeeping()
+{
+    QFETCH(bool, testAction);
+    QFETCH(bool, testExitAction);
+    QFETCH(bool, testStateEvaluator);
+    QFETCH(bool, testEventDescriptor);
+
+    QVariantMap params;
+    params.insert("deviceClassId", mockDeviceClassId);
+    params.insert("name", "TestDeviceToBeRemoved");
+    QVariantList deviceParams;
+    QVariantMap httpParam;
+    httpParam.insert("paramTypeId", httpportParamTypeId);
+    httpParam.insert("value", 6667);
+    deviceParams.append(httpParam);
+    params.insert("deviceParams", deviceParams);
+    QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
+    DeviceId deviceId = DeviceId::fromUuid(response.toMap().value("params").toMap().value("deviceId").toUuid());
+    QVERIFY2(!deviceId.isNull(), "Something went wrong creating the device for testing.");
+
+    // Create a rule with this device
+    params.clear();
+    params.insert("name", "testrule");
+    if (testEventDescriptor) {
+        QVariantList eventDescriptors;
+        QVariantMap eventDescriptor;
+        eventDescriptor.insert("eventTypeId", mockEvent1Id);
+        eventDescriptor.insert("deviceId", testEventDescriptor ? deviceId : m_mockDeviceId);
+        eventDescriptors.append(eventDescriptor);
+        params.insert("eventDescriptors", eventDescriptors);
+    }
+
+    QVariantMap stateEvaluator;
+    QVariantMap stateDescriptor;
+    stateDescriptor.insert("stateTypeId", mockIntStateId);
+    stateDescriptor.insert("operator", "ValueOperatorGreater");
+    stateDescriptor.insert("value", 555);
+    stateDescriptor.insert("deviceId", testStateEvaluator ? deviceId : m_mockDeviceId);
+    stateEvaluator.insert("stateDescriptor", stateDescriptor);
+    params.insert("stateEvaluator", stateEvaluator);
+
+    QVariantList actions;
+    QVariantMap action;
+    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("deviceId", testAction ? deviceId : m_mockDeviceId);
+    actions.append(action);
+    params.insert("actions", actions);
+
+    if (!testEventDescriptor) {
+        QVariantList exitActions;
+        QVariantMap exitAction;
+        exitAction.insert("actionTypeId", mockActionIdNoParams);
+        exitAction.insert("deviceId", testExitAction ? deviceId : m_mockDeviceId);
+        exitActions.append(exitAction);
+        params.insert("exitActions", exitActions);
+    }
+
+    response = injectAndWait("Rules.AddRule", params);
+    RuleId ruleId = RuleId::fromUuid(response.toMap().value("params").toMap().value("ruleId").toUuid());
+
+
+    // Verfy that the rule has been created successfully and our device is in there.
+    params.clear();
+    params.insert("ruleId", ruleId);
+    response = injectAndWait("Rules.GetRuleDetails", params);
+    if (testEventDescriptor) {
+        QVERIFY2(response.toMap().value("params").toMap().value("rule").toMap().value("eventDescriptors").toList().first().toMap().value("deviceId").toUuid().toString() == (testEventDescriptor ? deviceId.toString() : m_mockDeviceId.toString()), "Couldn't find device in eventDescriptor of rule");
+    }
+    QVERIFY2(response.toMap().value("params").toMap().value("rule").toMap().value("stateEvaluator").toMap().value("stateDescriptor").toMap().value("deviceId").toUuid().toString() == (testStateEvaluator ? deviceId.toString() : m_mockDeviceId.toString()), "Couldn't find device in stateEvaluator of rule");
+    QVERIFY2(response.toMap().value("params").toMap().value("rule").toMap().value("actions").toList().first().toMap().value("deviceId").toUuid().toString() == (testAction ? deviceId.toString() : m_mockDeviceId.toString()), "Couldn't find device in actions of rule");
+    if (!testEventDescriptor) {
+        QVERIFY2(response.toMap().value("params").toMap().value("rule").toMap().value("exitActions").toList().first().toMap().value("deviceId").toUuid().toString() == (testExitAction ? deviceId.toString() : m_mockDeviceId.toString()), "Couldn't find device in exitActions of rule");
+    }
+
+    // Manually delete this device from config
+    GuhSettings settings(GuhSettings::SettingsRoleDevices);
+    settings.beginGroup("DeviceConfig");
+    settings.remove(deviceId.toString());
+    settings.endGroup();
+
+    restartServer();
+
+    // Now make sure the appropriate entries with our device have disappeared
+    response = injectAndWait("Rules.GetRuleDetails", params);
+    if (testEventDescriptor) {
+        QVERIFY2(response.toMap().value("params").toMap().value("rule").toMap().value("eventDescriptors").toList().count() == (testEventDescriptor ? 0: 1), "EventDescriptor still in rule... should've been removed by housekeeping.");
+    }
+    QVERIFY2(response.toMap().value("params").toMap().value("rule").toMap().value("stateEvaluator").toMap().value("stateDescriptor").toMap().isEmpty() == (testStateEvaluator ? true : false), "StateEvaluator still in rule... should've been removed by housekeeping.");
+    QVERIFY2(response.toMap().value("params").toMap().value("rule").toMap().value("actions").toList().count() == (testAction ? 0 : 1), "Action still in rule... should've been removed by housekeeping.");
+    if (!testEventDescriptor) {
+        QVERIFY2(response.toMap().value("params").toMap().value("rule").toMap().value("exitActions").toList().count() == (testExitAction ? 0: 1), "ExitAction still in rule... should've been removed by housekeeping.");
+    }
 }
 
 #include "testrules.moc"

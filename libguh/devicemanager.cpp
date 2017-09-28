@@ -241,7 +241,7 @@ DeviceManager::DeviceManager(const QLocale &locale, QObject *parent) :
     QMetaObject::invokeMethod(this, "loadConfiguredDevices", Qt::QueuedConnection);
     QMetaObject::invokeMethod(this, "startMonitoringAutoDevices", Qt::QueuedConnection);
     // Make sure this is always emitted after plugins and devices are loaded
-    QMetaObject::invokeMethod(this, "loaded", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, "onLoaded", Qt::QueuedConnection);
 }
 
 /*! Destructor of the DeviceManager. Each loaded \l{DevicePlugin} will be deleted. */
@@ -789,6 +789,9 @@ DeviceManager::DeviceError DeviceManager::removeConfiguredDevice(const DeviceId 
     settings.beginGroup(deviceId.toString());
     settings.remove("");
     settings.endGroup();
+
+    GuhSettings stateCache(GuhSettings::SettingsRoleDeviceStates);
+    stateCache.remove(deviceId.toString());
 
     emit deviceRemoved(deviceId);
 
@@ -1410,6 +1413,26 @@ void DeviceManager::onAutoDeviceDisappeared(const DeviceId &deviceId)
     }
 
     emit deviceDisappeared(deviceId);
+}
+
+void DeviceManager::onLoaded()
+{
+    emit loaded();
+
+    // schedule some housekeeping...
+    QTimer::singleShot(0, this, &DeviceManager::cleanupDeviceStateCache);
+}
+
+void DeviceManager::cleanupDeviceStateCache()
+{
+    GuhSettings settings(GuhSettings::SettingsRoleDeviceStates);
+    foreach (const QString &entry, settings.childGroups()) {
+        DeviceId deviceId(entry);
+        if (!m_configuredDevices.contains(deviceId)) {
+            qCDebug(dcDeviceManager()) << "Device ID" << deviceId << "not found in configured devices. Cleaning up stale device state cache.";
+            settings.remove(entry);
+        }
+    }
 }
 
 void DeviceManager::slotDeviceStateValueChanged(const QUuid &stateTypeId, const QVariant &value)

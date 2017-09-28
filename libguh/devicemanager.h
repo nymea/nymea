@@ -175,6 +175,8 @@ private slots:
     void slotPairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceSetupStatus status);
     void onAutoDevicesAppeared(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors);
     void onAutoDeviceDisappeared(const DeviceId &deviceId);
+    void onLoaded();
+    void cleanupDeviceStateCache();
 
     // Only connect this to Devices. It will query the sender()
     void slotDeviceStateValueChanged(const QUuid &stateTypeId, const QVariant &value);

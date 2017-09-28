@@ -453,6 +453,7 @@ void GuhCore::init() {
     connect(m_deviceManager, &DeviceManager::deviceSetupFinished, this, &GuhCore::deviceSetupFinished);
     connect(m_deviceManager, &DeviceManager::deviceReconfigurationFinished, this, &GuhCore::deviceReconfigurationFinished);
     connect(m_deviceManager, &DeviceManager::pairingFinished, this, &GuhCore::pairingFinished);
+    connect(m_deviceManager, &DeviceManager::loaded, this, &GuhCore::deviceManagerLoaded);
 
     connect(m_ruleEngine, &RuleEngine::ruleAdded, this, &GuhCore::ruleAdded);
     connect(m_ruleEngine, &RuleEngine::ruleRemoved, this, &GuhCore::ruleRemoved);
@@ -629,6 +630,28 @@ void GuhCore::onDeviceDisappeared(const DeviceId &deviceId)
     if (removeError == DeviceManager::DeviceErrorNoError) {
         m_logger->removeDeviceLogs(deviceId);
     }
+}
+
+void GuhCore::deviceManagerLoaded()
+{
+    // Do some houskeeping...
+    qCDebug(dcApplication()) << "Starting housekeeping...";
+    QDateTime startTime = QDateTime::currentDateTime();
+    foreach (const DeviceId &deviceId, m_logger->devicesInLogs()) {
+        if (!m_deviceManager->findConfiguredDevice(deviceId)) {
+            qCDebug(dcApplication()) << "Cleaning stale device entries from log DB for device id" << deviceId;
+            m_logger->removeDeviceLogs(deviceId);
+        }
+    }
+    foreach (const DeviceId &deviceId, m_ruleEngine->devicesInRules()) {
+        if (!m_deviceManager->findConfiguredDevice(deviceId)) {
+            qCDebug(dcApplication()) << "Cleaning stale rule entries for device id" << deviceId;
+            foreach (const RuleId &ruleId, m_ruleEngine->findRules(deviceId)) {
+                m_ruleEngine->removeDeviceFromRule(ruleId, deviceId);
+            }
+        }
+    }
+    qCDebug(dcApplication()) << "Housekeeping done in" << startTime.msecsTo(QDateTime::currentDateTime()) << "ms.";
 }
 
 }

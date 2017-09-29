@@ -25,6 +25,7 @@
 #include <QDateTime>
 #include <QJsonDocument>
 #include <QtConcurrent/QtConcurrentRun>
+#include <QUuid>
 
 using namespace awsiotsdk;
 using namespace awsiotsdk::network;
@@ -58,9 +59,6 @@ void AWSConnector::connect2AWS(const QString &endpoint, const QString &clientId,
     m_client->SetDisconnectCallbackPtr(&onDisconnected, std::shared_ptr<DisconnectCallbackContextData>(this));
     m_client->SetAutoReconnectEnabled(true);
     m_clientId = clientId;
-
-    // subscribe to pairing api topics
-    subscribe({QString("create/device/%1").arg(m_clientId)});
 
     qCDebug(dcAWS()) << "Connecting to AWS with ID:" << m_clientId << "endpoint:" << endpoint;
     m_connectingFuture = QtConcurrent::run([&]() {
@@ -154,7 +152,19 @@ void AWSConnector::retrievePairedDeviceInfo()
 
 void AWSConnector::registerDevice()
 {
+    // We create a temporary UUID for which will be used by the server to post the reply to our create/device call.
+    // Before the first create/device call the cloud doesn't know about us. In order to receive the reply for the
+    // call we need to subscribe to a topic every device can subscribe to. If we'd use our deviceId, a potential
+    // black hat could snoop in all the devices we register on the system. So in case someone actually does that
+    // let's give him meaningless IDs instead of real device ids.
+    QString tmpId = QUuid::createUuid().toString().remove(QRegExp("[{}]*"));
+
+    // first subscribe to this tmp id topic
+    subscribe({QString("create/device/%1").arg(tmpId)});
+
+    // and register ourselves
     QVariantMap params;
+    params.insert("id", tmpId);
     params.insert("UUID", m_clientId);
     publish("create/device", params);
 }
@@ -207,7 +217,7 @@ ResponseCode AWSConnector::onSubscriptionReceivedCallback(util::String topic_nam
 
     AWSConnector *connector = dynamic_cast<AWSConnector*>(p_app_handler_data.get());
     QString topic = QString::fromStdString(topic_name);
-    if (topic == QString("create/device/%1").arg(connector->m_clientId)) {
+    if (topic.startsWith("create/device/")) {
         int statusCode = jsonDoc.toVariant().toMap().value("result").toMap().value("code").toInt();
         if (statusCode != 200) {
             qCWarning(dcAWS()) << "Error registering device in the cloud. AWS connetion will not work.";

@@ -173,9 +173,9 @@ void TestJSONRPC::testInitialSetup()
     QCOMPARE(response.value("status").toString(), QStringLiteral("success"));
     QCOMPARE(GuhCore::instance()->userManager()->users().count(), 0);
 
-    // Now lets play by the rules
+    // Now lets play by the rules (with an uppercase email)
     spy.clear();
-    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.CreateUser\", \"params\": {\"username\": \"dummy@guh.io\", \"password\": \"DummyPW1!\"}}");
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.CreateUser\", \"params\": {\"username\": \"Dummy@guh.io\", \"password\": \"DummyPW1!\"}}");
     if (spy.count() == 0) {
         spy.wait();
     }
@@ -200,7 +200,7 @@ void TestJSONRPC::testInitialSetup()
 
     // Now lets authenticate with a wrong user
     spy.clear();
-    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Authenticate\", \"params\": {\"username\": \"dummy@wrong.domain\", \"password\": \"DummyPW1!\", \"deviceName\": \"testcase\"}}");
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Authenticate\", \"params\": {\"username\": \"Dummy@wrong.domain\", \"password\": \"DummyPW1!\", \"deviceName\": \"testcase\"}}");
     if (spy.count() == 0) {
         spy.wait();
     }
@@ -215,7 +215,7 @@ void TestJSONRPC::testInitialSetup()
 
     // Now lets authenticate with a wrong password
     spy.clear();
-    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Authenticate\", \"params\": {\"username\": \"dummy@guh.io\", \"password\": \"wrongpw\", \"deviceName\": \"testcase\"}}");
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Authenticate\", \"params\": {\"username\": \"Dummy@guh.io\", \"password\": \"wrongpw\", \"deviceName\": \"testcase\"}}");
     if (spy.count() == 0) {
         spy.wait();
     }
@@ -228,7 +228,7 @@ void TestJSONRPC::testInitialSetup()
     QVERIFY(response.value("params").toMap().value("token").toByteArray().isEmpty());
 
 
-    // Now lets authenticate for real
+    // Now lets authenticate for real (but intentionally use a lowercase email here, should still work)
     spy.clear();
     m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Authenticate\", \"params\": {\"username\": \"dummy@guh.io\", \"password\": \"DummyPW1!\", \"deviceName\": \"testcase\"}}");
     if (spy.count() == 0) {

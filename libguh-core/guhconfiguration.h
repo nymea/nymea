@@ -45,6 +45,10 @@ public:
                 && authenticationEnabled == other.authenticationEnabled;
     }
 };
+
+QDebug operator <<(QDebug debug, const ServerConfiguration &configuration);
+
+
 class WebServerConfiguration: public ServerConfiguration
 {
 public:

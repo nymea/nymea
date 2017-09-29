@@ -169,9 +169,7 @@ void WebSocketServer::onPing(quint64 elapsedTime, const QByteArray &payload)
 
 void WebSocketServer::onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceState &state)
 {
-    if (state == QtAvahiService::QtAvahiServiceStateEstablished) {
-        qCDebug(dcAvahi()) << "Service" << m_avahiService->name() << m_avahiService->serviceType() << "established successfully";
-    }
+    Q_UNUSED(state)
 }
 
 /*! Returns true if this \l{WebSocketServer} could be reconfigured with the given \a address and \a port. */
@@ -226,7 +224,9 @@ bool WebSocketServer::startServer()
     txt.insert("uuid", GuhCore::instance()->configuration()->serverUuid().toString());
     txt.insert("name", GuhCore::instance()->configuration()->serverName());
     txt.insert("sslEnabled", configuration().sslEnabled ? "true" : "false");
-    m_avahiService->registerService("guhIO", configuration().port, "_ws._tcp", txt);
+    if (m_avahiService->registerService(QString("guhIO-ws-%1").arg(configuration().id), configuration().port, "_ws._tcp", txt)) {
+        qCWarning(dcTcpServer()) << "Could not register avahi service for" << configuration();
+    }
 
     return true;
 }

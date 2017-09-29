@@ -21,6 +21,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "qtavahiservice_p.h"
+#include "loggingcategories.h"
 
 #include <QString>
 #include <QHash>
@@ -37,8 +38,12 @@ QtAvahiServicePrivate::QtAvahiServicePrivate() :
 void QtAvahiServicePrivate::callback(AvahiEntryGroup *group, AvahiEntryGroupState state, void *userdata)
 {
     Q_UNUSED(group);
+
     QtAvahiService *service = static_cast<QtAvahiService *>(userdata);
     if (!service)
+        return;
+
+    if (service->state() == (QtAvahiService::QtAvahiServiceState)state)
         return;
 
     switch (state) {

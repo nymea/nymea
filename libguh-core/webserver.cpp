@@ -480,9 +480,7 @@ void WebServer::onError(QAbstractSocket::SocketError error)
 
 void WebServer::onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceState &state)
 {
-    if (state == QtAvahiService::QtAvahiServiceStateEstablished) {
-        qCDebug(dcAvahi()) << "Service" << m_avahiService->name() << m_avahiService->serviceType() << "established successfully";
-    }
+    Q_UNUSED(state)
 }
 
 /*! Returns true if this \l{WebServer} could be reconfigured with the given \a address and \a port. */
@@ -524,7 +522,9 @@ bool WebServer::startServer()
     txt.insert("uuid", GuhCore::instance()->configuration()->serverUuid().toString());
     txt.insert("name", GuhCore::instance()->configuration()->serverName());
     txt.insert("sslEnabled", m_configuration.sslEnabled ? "true" : "false");
-    m_avahiService->registerService("guhIO", m_configuration.port, "_http._tcp", txt);
+    if (!m_avahiService->registerService(QString("guhIO-http-%1").arg(m_configuration.id), m_configuration.port, "_http._tcp", txt)) {
+        qCWarning(dcTcpServer()) << "Could not register avahi service for" << m_configuration;
+    }
 
     m_enabled = true;
     return true;

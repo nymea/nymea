@@ -20,8 +20,9 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "qtavahiclient.h"
 #include "qt-watch.h"
+#include "qtavahiclient.h"
+#include "loggingcategories.h"
 
 #include <avahi-common/error.h>
 
@@ -29,15 +30,22 @@ QtAvahiClient::QtAvahiClient(QObject *parent) :
     QObject(parent),
     poll(avahi_qt_poll_get()),
     client(0),
-    error(0)
+    error(0),
+    m_state(QtAvahiClientStateNone)
 {
-
+    connect(this, &QtAvahiClient::clientStateChangedInternal, this, &QtAvahiClient::onClientStateChanged);
 }
 
 QtAvahiClient::~QtAvahiClient()
 {
     if (client)
         avahi_client_free(client);
+
+}
+
+QtAvahiClient::QtAvahiClientState QtAvahiClient::state() const
+{
+    return m_state;
 }
 
 void QtAvahiClient::start()
@@ -63,20 +71,52 @@ void QtAvahiClient::callback(AvahiClient *client, AvahiClientState state, void *
 
     switch (state) {
     case AVAHI_CLIENT_S_RUNNING:
-        emit serviceClient->clientStateChanged(QtAvahiClientStateRunning);
+        emit serviceClient->clientStateChangedInternal(QtAvahiClientStateRunning);
         break;
     case AVAHI_CLIENT_FAILURE:
-        emit serviceClient->clientStateChanged(QtAvahiClientStateFailure);
+        emit serviceClient->clientStateChangedInternal(QtAvahiClientStateFailure);
         break;
     case AVAHI_CLIENT_S_COLLISION:
-        emit serviceClient->clientStateChanged(QtAvahiClientStateCollision);
+        emit serviceClient->clientStateChangedInternal(QtAvahiClientStateCollision);
         break;
     case AVAHI_CLIENT_S_REGISTERING:
-        emit serviceClient->clientStateChanged(QtAvahiClientStateRegistering);
+        emit serviceClient->clientStateChangedInternal(QtAvahiClientStateRegistering);
         break;
     case AVAHI_CLIENT_CONNECTING:
-        emit serviceClient->clientStateChanged(QtAvahiClientStateConnecting);
+        emit serviceClient->clientStateChangedInternal(QtAvahiClientStateConnecting);
         break;
     }
+}
+
+void QtAvahiClient::onClientStateChanged(const QtAvahiClient::QtAvahiClientState &state)
+{
+    if (m_state == state)
+        return;
+
+    m_state = state;
+
+//    switch (m_state) {
+//    case QtAvahiClientStateNone:
+//        break;
+//    case QtAvahiClientStateRunning:
+//        qCDebug(dcAvahi()) << "Client running.";
+//        break;
+//    case QtAvahiClientStateFailure:
+//        qCWarning(dcAvahi()) << "Client failure:" << errorString();
+//        break;
+//    case QtAvahiClientStateCollision:
+//        qCWarning(dcAvahi()) << "Client collision:" << errorString();
+//        break;
+//    case QtAvahiClientStateRegistering:
+//        qCDebug(dcAvahi()) << "Client registering...";
+//        break;
+//    case QtAvahiClientStateConnecting:
+//        qCDebug(dcAvahi()) << "Client connecting...";
+//        break;
+//    default:
+//        break;
+//    }
+
+    emit clientStateChanged(m_state);
 }
 

@@ -38,12 +38,13 @@ class LIBGUH_EXPORT QtAvahiService : public QObject
 
 public:
     enum QtAvahiServiceState {
-        QtAvahiServiceStateUncomitted,
-        QtAvahiServiceStateRegistering,
-        QtAvahiServiceStateEstablished,
-        QtAvahiServiceStateCollision,
-        QtAvahiServiceStateFailure
+        QtAvahiServiceStateUncomitted = 0,
+        QtAvahiServiceStateRegistering = 1,
+        QtAvahiServiceStateEstablished = 2,
+        QtAvahiServiceStateCollision = 3,
+        QtAvahiServiceStateFailure = 4
     };
+    Q_ENUM(QtAvahiServiceState)
 
     explicit QtAvahiService(QObject *parent = 0);
     ~QtAvahiService();
@@ -51,8 +52,10 @@ public:
     quint16 port() const;
     QString name() const;
     QString serviceType() const;
+    QHash<QString, QString> txtRecords() const;
+    QtAvahiServiceState state() const;
 
-    bool registerService(const QString &name, const quint16 &port, const QString &serviceType = "_http._tcp", const QHash<QString, QString> &txt = QHash<QString, QString>());
+    bool registerService(const QString &name, const quint16 &port, const QString &serviceType = "_http._tcp", const QHash<QString, QString> &txtRecords = QHash<QString, QString>());
     void resetService();
 
     bool isValid() const;
@@ -64,9 +67,17 @@ signals:
 protected:
     QtAvahiServicePrivate *d_ptr;
 
+private slots:
+    bool handlCollision();
+    void onStateChanged(const QtAvahiServiceState &state);
+
 private:
+    QtAvahiServiceState m_state;
     Q_DECLARE_PRIVATE(QtAvahiService)
 
 };
+
+QDebug operator <<(QDebug dbg, QtAvahiService *service);
+
 
 #endif // QTAVAHISERVICE_H

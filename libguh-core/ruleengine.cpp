@@ -383,6 +383,7 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
 */
 QList<Rule> RuleEngine::evaluateTime(const QDateTime &dateTime)
 {
+    // Initialize the last datetime if not already set (current time -1 second)
     if (!m_lastEvaluationTime.isValid()) {
         m_lastEvaluationTime = dateTime;
         m_lastEvaluationTime = m_lastEvaluationTime.addSecs(-1);

@@ -35,6 +35,7 @@ class LIBGUH_EXPORT QtAvahiClient : public QObject
 
 public:
     enum QtAvahiClientState {
+        QtAvahiClientStateNone,
         QtAvahiClientStateRunning,
         QtAvahiClientStateFailure,
         QtAvahiClientStateCollision,
@@ -45,6 +46,8 @@ public:
     explicit QtAvahiClient(QObject *parent = 0);
     ~QtAvahiClient();
 
+    QtAvahiClientState state() const;
+
 private:
     friend class QtAvahiService;
     friend class QtAvahiServiceBrowser;
@@ -53,14 +56,19 @@ private:
     const AvahiPoll *poll;
     AvahiClient *client;
     int error;
+    QtAvahiClientState m_state;
 
     void start();
     QString errorString() const;
 
     static void callback(AvahiClient *client, AvahiClientState state, void *userdata);
 
+private slots:
+    void onClientStateChanged(const QtAvahiClientState &state);
+
 signals:
     void clientStateChanged(const QtAvahiClientState &state);
+    void clientStateChangedInternal(const QtAvahiClientState &state);
 
 };
 

@@ -70,7 +70,7 @@ UserManager::UserError UserManager::createUser(const QString &username, const QS
         return UserErrorBadPassword;
     }
 
-    QString checkForDuplicateUserQuery = QString("SELECT * FROM users WHERE username = \"%1\";").arg(username);
+    QString checkForDuplicateUserQuery = QString("SELECT * FROM users WHERE lower(username) = \"%1\";").arg(username.toLower());
     QSqlQuery result = m_db.exec(checkForDuplicateUserQuery);
     if (result.first()) {
         qCWarning(dcUserManager) << "Username already in use";
@@ -93,13 +93,13 @@ UserManager::UserError UserManager::createUser(const QString &username, const QS
 
 UserManager::UserError UserManager::removeUser(const QString &username)
 {
-    QString dropUserQuery = QString("DELETE FROM users WHERE username =\"%1\";").arg(username);
+    QString dropUserQuery = QString("DELETE FROM users WHERE lower(username) =\"%1\";").arg(username.toLower());
     QSqlQuery result = m_db.exec(dropUserQuery);
     if (result.numRowsAffected() == 0) {
         return UserErrorInvalidUserId;
     }
 
-    QString dropTokensQuery = QString("DELETE FROM tokens WHERE username = \"%1\";").arg(username);
+    QString dropTokensQuery = QString("DELETE FROM tokens WHERE lower(username) = \"%1\";").arg(username.toLower());
     m_db.exec(dropTokensQuery);
 
     return UserErrorNoError;
@@ -112,7 +112,7 @@ QByteArray UserManager::authenticate(const QString &username, const QString &pas
         return QByteArray();
     }
 
-    QString passwordQuery = QString("SELECT password, salt FROM users WHERE username = \"%1\";").arg(username);
+    QString passwordQuery = QString("SELECT password, salt FROM users WHERE lower(username) = \"%1\";").arg(username.toLower());
     QSqlQuery result = m_db.exec(passwordQuery);
     if (!result.first()) {
         qCWarning(dcUserManager) << "No such username" << username;
@@ -171,8 +171,8 @@ QList<TokenInfo> UserManager::tokens(const QString &username) const
         qCWarning(dcUserManager) << "Username did not pass validation:" << username;
         return ret;
     }
-    QString getTokensQuery = QString("SELECT id, username, creationdate, deviceName FROM tokens WHERE username = \"%1\";")
-            .arg(username);
+    QString getTokensQuery = QString("SELECT id, username, creationdate, deviceName FROM tokens WHERE lower(username) = \"%1\";")
+            .arg(username.toLower());
     QSqlQuery result = m_db.exec(getTokensQuery);
     if (m_db.lastError().type() != QSqlError::NoError) {
         qCWarning(dcUserManager) << "Query for tokens failed:" << m_db.lastError().databaseText() << m_db.lastError().driverText() << getTokensQuery;

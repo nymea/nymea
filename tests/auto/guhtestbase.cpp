@@ -121,9 +121,10 @@ GuhTestBase::GuhTestBase(QObject *parent) :
     QSignalSpy spy(GuhCore::instance(), SIGNAL(initialized()));
     spy.wait();
 
+    // Yes, we're intentionally mixing upper/lower case email here... username should not be case sensitive
     GuhCore::instance()->userManager()->removeUser("dummy@guh.io");
     GuhCore::instance()->userManager()->createUser("dummy@guh.io", "DummyPW1!");
-    m_apiToken = GuhCore::instance()->userManager()->authenticate("dummy@guh.io", "DummyPW1!", "testcase");
+    m_apiToken = GuhCore::instance()->userManager()->authenticate("Dummy@guh.io", "DummyPW1!", "testcase");
 }
 
 void GuhTestBase::initTestCase()

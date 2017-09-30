@@ -75,7 +75,7 @@ void TcpServer::sendData(const QUuid &clientId, const QByteArray &data)
     QTcpSocket *client = 0;
     client = m_clientList.value(clientId);
     if (client) {
-        client->write(data);
+        client->write(data + '\n');
     }
 }
 

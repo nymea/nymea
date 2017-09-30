@@ -266,7 +266,7 @@ void JsonRPCServer::sendResponse(TransportInterface *interface, const QUuid &cli
     response.insert("status", "success");
     response.insert("params", params);
 
-    interface->sendData(clientId, QJsonDocument::fromVariant(response).toJson());
+    interface->sendData(clientId, QJsonDocument::fromVariant(response).toJson(QJsonDocument::Compact));
 }
 
 /*! Send a JSON error response to the client with the given \a clientId,
@@ -279,7 +279,7 @@ void JsonRPCServer::sendErrorResponse(TransportInterface *interface, const QUuid
     errorResponse.insert("status", "error");
     errorResponse.insert("error", error);
 
-    interface->sendData(clientId, QJsonDocument::fromVariant(errorResponse).toJson());
+    interface->sendData(clientId, QJsonDocument::fromVariant(errorResponse).toJson(QJsonDocument::Compact));
 }
 
 void JsonRPCServer::sendUnauthorizedResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QString &error)
@@ -289,7 +289,7 @@ void JsonRPCServer::sendUnauthorizedResponse(TransportInterface *interface, cons
     errorResponse.insert("status", "unauthorized");
     errorResponse.insert("error", error);
 
-    interface->sendData(clientId, QJsonDocument::fromVariant(errorResponse).toJson());
+    interface->sendData(clientId, QJsonDocument::fromVariant(errorResponse).toJson(QJsonDocument::Compact));
 }
 
 void JsonRPCServer::setup()
@@ -399,8 +399,8 @@ QString JsonRPCServer::formatAssertion(const QString &targetNamespace, const QSt
     QJsonDocument doc2 = QJsonDocument::fromVariant(data);
     return QString("\nMethod: %1\nTemplate: %2\nValue: %3")
             .arg(targetNamespace + "." + method)
-            .arg(QString(doc.toJson()))
-            .arg(QString(doc2.toJson()));
+            .arg(QString(doc.toJson(QJsonDocument::Compact)))
+            .arg(QString(doc2.toJson(QJsonDocument::Compact)));
 }
 
 void JsonRPCServer::sendNotification(const QVariantMap &params)
@@ -414,7 +414,7 @@ void JsonRPCServer::sendNotification(const QVariantMap &params)
     notification.insert("params", params);
 
     foreach (TransportInterface *interface, m_interfaces.keys()) {
-        interface->sendData(m_clients.keys(true), QJsonDocument::fromVariant(notification).toJson());
+        interface->sendData(m_clients.keys(true), QJsonDocument::fromVariant(notification).toJson(QJsonDocument::Compact));
     }
 }
 
@@ -461,7 +461,7 @@ void JsonRPCServer::clientConnected(const QUuid &clientId)
     handshake.insert("protocol version", JSON_PROTOCOL_VERSION);
     handshake.insert("initialSetupRequired", (interface->configuration().authenticationEnabled ? GuhCore::instance()->userManager()->users().isEmpty() : false));
     handshake.insert("authenticationRequired", interface->configuration().authenticationEnabled);
-    interface->sendData(clientId, QJsonDocument::fromVariant(handshake).toJson());
+    interface->sendData(clientId, QJsonDocument::fromVariant(handshake).toJson(QJsonDocument::Compact));
 }
 
 void JsonRPCServer::clientDisconnected(const QUuid &clientId)

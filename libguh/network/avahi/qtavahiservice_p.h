@@ -47,6 +47,7 @@ public:
     QString name;
     quint16 port;
     QString type;
+    QHash<QString, QString> txtRecords;
     int error;
 
     static AvahiStringList *createTxtList(const QHash<QString, QString> &txt);

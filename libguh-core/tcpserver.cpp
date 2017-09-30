@@ -115,9 +115,7 @@ void TcpServer::onDataAvailable(QSslSocket * socket, const QByteArray &data)
 
 void TcpServer::onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceState &state)
 {
-    if (state == QtAvahiService::QtAvahiServiceStateEstablished) {
-        qCDebug(dcAvahi()) << "Service" << m_avahiService->name() << m_avahiService->serviceType() << "established successfully";
-    }
+    Q_UNUSED(state)
 }
 
 
@@ -158,7 +156,9 @@ bool TcpServer::startServer()
     txt.insert("uuid", GuhCore::instance()->configuration()->serverUuid().toString());
     txt.insert("name", GuhCore::instance()->configuration()->serverName());
     txt.insert("sslEnabled", configuration().sslEnabled ? "true" : "false");
-    m_avahiService->registerService("guhIO", configuration().port, "_jsonrpc._tcp", txt);
+    if (!m_avahiService->registerService(QString("guhIO-tcp-%1").arg(configuration().id), configuration().port, "_jsonrpc._tcp", txt)) {
+        qCWarning(dcTcpServer()) << "Could not register avahi service for" << configuration();
+    }
 
     qCDebug(dcConnection) << "Started Tcp server on" << m_server->serverAddress().toString() << m_server->serverPort();
     connect(m_server, SIGNAL(clientConnected(QSslSocket *)), SLOT(onClientConnected(QSslSocket *)));

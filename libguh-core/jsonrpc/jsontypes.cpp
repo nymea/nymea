@@ -1572,7 +1572,7 @@ QPair<bool, QString> JsonTypes::validateMap(const QVariantMap &templateMap, cons
             qCWarning(dcJsonRpc) << "Expected:      " << templateMap;
             qCWarning(dcJsonRpc) << "Got:           " << map;
             QJsonDocument jsonDoc = QJsonDocument::fromVariant(map);
-            return report(false, QString("Missing key %1 in %2").arg(key).arg(QString(jsonDoc.toJson())));
+            return report(false, QString("Missing key %1 in %2").arg(key).arg(QString(jsonDoc.toJson(QJsonDocument::Compact))));
         }
         if (map.contains(strippedKey)) {
             QPair<bool, QString> result = validateVariant(templateMap.value(key), map.value(strippedKey));
@@ -1590,7 +1590,7 @@ QPair<bool, QString> JsonTypes::validateMap(const QVariantMap &templateMap, cons
         if (!templateMap.contains(key) && !templateMap.contains(optKey)) {
             qCWarning(dcJsonRpc) << "Forbidden param" << key << "in params";
             QJsonDocument jsonDoc = QJsonDocument::fromVariant(map);
-            return report(false, QString("Forbidden key \"%1\" in %2").arg(key).arg(QString(jsonDoc.toJson())));
+            return report(false, QString("Forbidden key \"%1\" in %2").arg(key).arg(QString(jsonDoc.toJson(QJsonDocument::Compact))));
         }
     }
 

@@ -220,7 +220,7 @@ QVariant GuhTestBase::injectAndWait(const QString &method, const QVariantMap &pa
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(call);
     QSignalSpy spy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
-    m_mockTcpServer->injectData(m_clientId, jsonDoc.toJson());
+    m_mockTcpServer->injectData(m_clientId, jsonDoc.toJson(QJsonDocument::Compact));
 
     if (spy.count() == 0) {
         spy.wait();

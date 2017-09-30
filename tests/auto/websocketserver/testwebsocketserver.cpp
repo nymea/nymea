@@ -183,7 +183,7 @@ QVariant TestWebSocketServer::injectSocketAndWait(const QString &method, const Q
     }
 
     QSignalSpy spy(socket, SIGNAL(textMessageReceived(QString)));
-    socket->sendTextMessage(QString(jsonDoc.toJson()));
+    socket->sendTextMessage(QString(jsonDoc.toJson(QJsonDocument::Compact)));
     spy.wait();
 
     socket->close();

@@ -50,7 +50,7 @@ void MockTcpServer::sendData(const QUuid &clientId, const QByteArray &data)
 void MockTcpServer::sendData(const QList<QUuid> &clients, const QByteArray &data)
 {
     foreach (const QUuid &clientId, clients) {
-        sendData(clientId, data);
+        sendData(clientId, data + '\n');
     }
 }
 

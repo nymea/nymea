@@ -157,6 +157,16 @@ void StateEvaluator::removeDevice(const DeviceId &deviceId)
     }
 }
 
+QList<DeviceId> StateEvaluator::containedDevices() const
+{
+    QList<DeviceId> ret;
+    ret.append(m_stateDescriptor.deviceId());
+    foreach (const StateEvaluator &childEvaluator, m_childEvaluators) {
+        ret.append(childEvaluator.containedDevices());
+    }
+    return ret;
+}
+
 /*! This method will be used to save this \l StateEvaluator to the given \a settings.
     The \a groupName will normally be the corresponding \l Rule. */
 void StateEvaluator::dumpToSettings(GuhSettings &settings, const QString &groupName) const

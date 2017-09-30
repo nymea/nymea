@@ -88,7 +88,8 @@ public:
     RuleError executeExitActions(const RuleId &ruleId);
 
     Rule findRule(const RuleId &ruleId);
-    QList<RuleId> findRules(const DeviceId &deviceId);
+    QList<RuleId> findRules(const DeviceId &deviceId) const;
+    QList<DeviceId> devicesInRules() const;
 
     void removeDeviceFromRule(const RuleId &id, const DeviceId &deviceId);
 

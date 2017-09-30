@@ -843,7 +843,7 @@ Rule RuleEngine::findRule(const RuleId &ruleId)
 }
 
 /*! Returns a list of all \l{Rule}{Rules} loaded in this Engine, which contains a \l{Device} with the given \a deviceId. */
-QList<RuleId> RuleEngine::findRules(const DeviceId &deviceId)
+QList<RuleId> RuleEngine::findRules(const DeviceId &deviceId) const
 {
     // Find all offending rules
     QList<RuleId> offendingRules;
@@ -882,6 +882,35 @@ QList<RuleId> RuleEngine::findRules(const DeviceId &deviceId)
 
     }
     return offendingRules;
+}
+
+/*! Returns all devices that are somehow contained in a rule */
+QList<DeviceId> RuleEngine::devicesInRules() const
+{
+    QList<DeviceId> tmp;
+    foreach (const Rule &rule, m_rules) {
+        foreach (const EventDescriptor &descriptor, rule.eventDescriptors()) {
+            if (!tmp.contains(descriptor.deviceId())) {
+                tmp.append(descriptor.deviceId());
+            }
+        }
+        foreach (const DeviceId &deviceId, rule.stateEvaluator().containedDevices()) {
+            if (!tmp.contains(deviceId)) {
+                tmp.append(deviceId);
+            }
+        }
+        foreach (const RuleAction &action, rule.actions()) {
+            if (!tmp.contains(action.deviceId())) {
+                tmp.append(action.deviceId());
+            }
+        }
+        foreach (const RuleAction &exitAction, rule.exitActions()) {
+            if (!tmp.contains(exitAction.deviceId())) {
+                tmp.append(exitAction.deviceId());
+            }
+        }
+    }
+    return tmp;
 }
 
 /*! Removes a \l{Device} from a \l{Rule} with the given \a id and \a deviceId. */
@@ -942,6 +971,7 @@ void RuleEngine::removeDeviceFromRule(const RuleId &id, const DeviceId &deviceId
     newRule.setEventDescriptors(eventDescriptors);
     newRule.setStateEvaluator(stateEvalatuator);
     newRule.setActions(actions);
+    newRule.setExitActions(exitActions);
     m_rules[id] = newRule;
 
     // save it

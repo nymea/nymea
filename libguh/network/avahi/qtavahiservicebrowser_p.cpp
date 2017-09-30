@@ -58,7 +58,7 @@ void QtAvahiServiceBrowserPrivate::callbackServiceTypeBrowser(AvahiServiceTypeBr
     case AVAHI_BROWSER_NEW:
         if (!serviceBrowser->m_serviceTypes.contains(type)) {
             serviceBrowser->m_serviceTypes.append(type);
-            qCDebug(dcAvahi()) << "Create service type browser for" << type;
+            qCDebug(dcAvahi()) << "[+] Service browser" << type;
             serviceBrowser->createServiceBrowser(type);
         }
         break;

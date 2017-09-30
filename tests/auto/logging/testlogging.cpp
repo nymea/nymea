@@ -56,6 +56,8 @@ private slots:
 
     void deviceLogs();
 
+    void testHouseKeeping();
+
     // this has to be the last test
     void removeDevice();
 };
@@ -400,6 +402,46 @@ void TestLogging::deviceLogs()
     response = injectAndWait("Logging.GetLogEntries", params);
     verifyLoggingError(response);
 
+}
+
+void TestLogging::testHouseKeeping()
+{
+    QVariantMap params;
+    params.insert("deviceClassId", mockDeviceClassId);
+    params.insert("name", "TestDeviceToBeRemoved");
+    QVariantList deviceParams;
+    QVariantMap httpParam;
+    httpParam.insert("paramTypeId", httpportParamTypeId);
+    httpParam.insert("value", 6667);
+    deviceParams.append(httpParam);
+    params.insert("deviceParams", deviceParams);
+    QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
+    DeviceId deviceId = DeviceId::fromUuid(response.toMap().value("params").toMap().value("deviceId").toUuid());
+    QVERIFY2(!deviceId.isNull(), "Something went wrong creating the device for testing.");
+
+    // Trigger something that creates a logging entry
+    QNetworkAccessManager nam;
+    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(6667).arg(mockIntStateId.toString()).arg(4321)));
+    QNetworkReply *reply = nam.get(request);
+    connect(reply, SIGNAL(finished()), reply, SLOT(deleteLater()));
+    spy.wait();
+
+    params.clear();
+    params.insert("deviceIds", QVariantList() << deviceId);
+    response = injectAndWait("Logging.GetLogEntries", params);
+    QVERIFY2(response.toMap().value("params").toMap().value("logEntries").toList().count() > 0, "Couldn't find state change event in log...");
+
+    // Manually delete this device from config
+    GuhSettings settings(GuhSettings::SettingsRoleDevices);
+    settings.beginGroup("DeviceConfig");
+    settings.remove(deviceId.toString());
+    settings.endGroup();
+
+    restartServer();
+
+    response = injectAndWait("Logging.GetLogEntries", params);
+    QVERIFY2(response.toMap().value("params").toMap().value("logEntries").toList().count() == 0, "Device state change event still in log. Should've been cleaned by housekeeping.");
 }
 
 void TestLogging::removeDevice()

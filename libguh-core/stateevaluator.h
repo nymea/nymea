@@ -50,6 +50,7 @@ public:
     bool containsDevice(const DeviceId &deviceId) const;
 
     void removeDevice(const DeviceId &deviceId);
+    QList<DeviceId> containedDevices() const;
 
     void dumpToSettings(GuhSettings &settings, const QString &groupName) const;
     static StateEvaluator loadFromSettings(GuhSettings &settings, const QString &groupPrefix);

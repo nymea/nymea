@@ -40,6 +40,7 @@ equals(QT_MAJOR_VERSION, 5):greaterThan(QT_MINOR_VERSION, 3) {
 
 # Enable coverage option    
 coverage {
+    # Note: this works only if you build in the source dir
     OBJECTS_DIR =
     MOC_DIR =
 
@@ -65,7 +66,7 @@ coverage {
     generate-coverage-html.commands = \
         "@echo Collecting coverage data"; \
         "lcov --directory $${top_srcdir} --capture --output-file coverage.info --no-checksum --compat-libtool"; \
-        "lcov --extract coverage.info \"*/server/*.cpp\" --extract coverage.info \"*/libguh/*.cpp\" -o coverage.info"; \
+        "lcov --extract coverage.info \"*/server/*.cpp\" --extract coverage.info \"*/libguh-core/*.cpp\" --extract coverage.info \"*/libguh/*.cpp\" -o coverage.info"; \
         "lcov --remove coverage.info \"moc_*.cpp\" --remove coverage.info \"*/test/*\" -o coverage.info"; \
         "LANG=C genhtml --prefix $${top_srcdir} --output-directory coverage-html --title \"guh coverage\" --legend --show-details coverage.info"
 

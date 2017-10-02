@@ -117,6 +117,8 @@ private:
     void setServerUuid(const QUuid &uuid);
     void setWebServerPublicFolder(const QString & path);
 
+    QString defaultWebserverPublicFolderPath() const;
+
     void storeServerConfig(const QString &group, const ServerConfiguration &config);
     ServerConfiguration readServerConfig(const QString &group, const QString &id);
     void deleteServerConfig(const QString &group, const QString &id);

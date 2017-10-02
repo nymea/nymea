@@ -1,3 +1,11 @@
+guh (0.8.1) xenial; urgency=medium
+
+  * Avahi interfaces and collision handling
+  * JSON RPC traffic standardized
+  * Settings fixed
+
+ -- Simon Stürz <simon.stuerz@guh.io>  Mon, 02 Oct 2017 12:52:44 +0200
+
 guh (0.8.0) xenial; urgency=medium
 
   * Add support for SSL on all connection interfaces

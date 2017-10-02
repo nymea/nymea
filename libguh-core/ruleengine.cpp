@@ -125,7 +125,7 @@ RuleEngine::RuleEngine(QObject *parent) :
     QObject(parent)
 {
     GuhSettings settings(GuhSettings::SettingsRoleRules);
-    qCDebug(dcRuleEngine) << "loading rules from" << settings.fileName();
+    qCDebug(dcRuleEngine) << "Loading rules from" << settings.fileName();
     foreach (const QString &idString, settings.childGroups()) {
         settings.beginGroup(idString);
 
@@ -133,7 +133,7 @@ RuleEngine::RuleEngine(QObject *parent) :
         bool enabled = settings.value("enabled", true).toBool();
         bool executable = settings.value("executable", true).toBool();
 
-        qCDebug(dcRuleEngine) << "load rule" << name << idString;
+        qCDebug(dcRuleEngine) << "Load rule" << name << idString;
 
         // Load timeDescriptor
         TimeDescriptor timeDescriptor;
@@ -335,7 +335,7 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
 {
     Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(event.deviceId());
 
-    qCDebug(dcRuleEngine) << "Got event:" << event << device->name() << event.eventTypeId();
+    qCDebug(dcRuleEngine) << "Evaluate event:" << event << device->name() << event.eventTypeId();
 
     QList<Rule> rules;
     foreach (const RuleId &id, ruleIds()) {
@@ -373,6 +373,7 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
             }
         }
     }
+
     return rules;
 }
 
@@ -401,7 +402,7 @@ QList<Rule> RuleEngine::evaluateTime(const QDateTime &dateTime)
 
             // check if this rule is based on calendarItems
             if (!rule.timeDescriptor().calendarItems().isEmpty()) {
-                //qCDebug(dcRuleEngine()) << "Evaluate CalendarItem against" << dateTime.toString("dd:MM:yyyy hh:mm") << "for rule" << rule.id().toString();
+                qCDebug(dcRuleEngine()) << "Evaluate CalendarItem against" << dateTime.toString("dd:MM:yyyy hh:mm") << "for rule" << rule.name() << rule.id().toString();
                 bool active = rule.timeDescriptor().evaluate(m_lastEvaluationTime, dateTime);
                 if (active) {
                     if (!m_activeRules.contains(rule.id())) {
@@ -634,6 +635,8 @@ RuleEngine::RuleError RuleEngine::addRule(const Rule &rule, bool fromEdit)
     if (!fromEdit)
         emit ruleAdded(rule);
 
+    qCDebug(dcRuleEngine()) << "Rule" << rule.name() << rule.id().toString() << "added successfully.";
+
     return RuleErrorNoError;
 }
 
@@ -671,6 +674,9 @@ RuleEngine::RuleError RuleEngine::editRule(const Rule &rule)
 
     // Successfully changed the rule
     emit ruleConfigurationChanged(rule);
+
+    qCDebug(dcRuleEngine()) << "Rule" << rule.id().toString() << "updated.";
+
     return RuleErrorNoError;
 }
 
@@ -697,7 +703,6 @@ QList<RuleId> RuleEngine::ruleIds() const
 RuleEngine::RuleError RuleEngine::removeRule(const RuleId &ruleId, bool fromEdit)
 {
     int index = m_ruleIds.indexOf(ruleId);
-
     if (index < 0) {
         return RuleErrorRuleNotFound;
     }
@@ -713,6 +718,9 @@ RuleEngine::RuleError RuleEngine::removeRule(const RuleId &ruleId, bool fromEdit
 
     if (!fromEdit)
         emit ruleRemoved(ruleId);
+
+
+    qCDebug(dcRuleEngine()) << "Rule" << ruleId.toString() << "removed.";
 
     return RuleErrorNoError;
 }
@@ -738,6 +746,7 @@ RuleEngine::RuleError RuleEngine::enableRule(const RuleId &ruleId)
     emit ruleConfigurationChanged(rule);
 
     GuhCore::instance()->logEngine()->logRuleEnabledChanged(rule, true);
+    qCDebug(dcRuleEngine()) << "Rule" << rule.name() << rule.id() << "enabled.";
 
     return RuleErrorNoError;
 }
@@ -763,7 +772,7 @@ RuleEngine::RuleError RuleEngine::disableRule(const RuleId &ruleId)
     emit ruleConfigurationChanged(rule);
 
     GuhCore::instance()->logEngine()->logRuleEnabledChanged(rule, false);
-
+    qCDebug(dcRuleEngine()) << "Rule" << rule.name() << rule.id() << "disabled.";
     return RuleErrorNoError;
 }
 

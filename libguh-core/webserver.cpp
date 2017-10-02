@@ -140,6 +140,18 @@ void WebServer::sendHttpReply(HttpReply *reply)
     socket->write(reply->data());
 }
 
+QString WebServer::defaultPublicFolderPath() const
+{
+    QString publicFolderPath;
+    if (!qgetenv("SNAP").isEmpty()) {
+        publicFolderPath = QString(qgetenv("SNAP")) + "/guh-webinterface";
+    } else {
+        publicFolderPath =
+    }
+
+
+}
+
 bool WebServer::verifyFile(QSslSocket *socket, const QString &fileName)
 {
     QFileInfo file(fileName);

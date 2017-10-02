@@ -99,7 +99,7 @@ GuhConfiguration::GuhConfiguration(QObject *parent) :
         insecureConfig.port = 80;
         insecureConfig.sslEnabled = false;
         insecureConfig.authenticationEnabled = false;
-        insecureConfig.publicFolder = "/usr/share/guh-webinterface/public/";
+        insecureConfig.publicFolder = defaultWebserverPublicFolderPath();
         m_webServerConfigs[insecureConfig.id] = insecureConfig;
         storeWebServerConfig(insecureConfig);
 
@@ -109,7 +109,7 @@ GuhConfiguration::GuhConfiguration(QObject *parent) :
         secureConfig.port = 443;
         secureConfig.sslEnabled = true;
         secureConfig.authenticationEnabled = false;
-        secureConfig.publicFolder = "/usr/share/guh-webinterface/public/";
+        secureConfig.publicFolder = defaultWebserverPublicFolderPath();
         m_webServerConfigs[secureConfig.id] = secureConfig;
         storeWebServerConfig(secureConfig);
     }
@@ -324,6 +324,18 @@ void GuhConfiguration::setServerUuid(const QUuid &uuid)
     settings.beginGroup("guhd");
     settings.setValue("uuid", uuid);
     settings.endGroup();
+}
+
+QString GuhConfiguration::defaultWebserverPublicFolderPath() const
+{
+    QString publicFolderPath;
+    if (!qgetenv("SNAP").isEmpty()) {
+        // FIXME: one could point to sensible data by changing the SNAP env to i.e /etc
+        publicFolderPath = QString(qgetenv("SNAP")) + "/guh-webinterface";
+    } else {
+        publicFolderPath = "/usr/share/guh-webinterface/public/";
+    }
+    return publicFolderPath;
 }
 
 void GuhConfiguration::storeServerConfig(const QString &group, const ServerConfiguration &config)

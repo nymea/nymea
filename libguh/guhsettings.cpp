@@ -143,7 +143,7 @@ QString GuhSettings::logPath()
     return logPath;
 }
 
-/*! Returns the path to the folder where the GuhSettings will be saved. */
+/*! Returns the path to the folder where the GuhSettings will be saved i.e. \tt{/etc/guh}. */
 QString GuhSettings::settingsPath()
 {
     QString path;
@@ -154,7 +154,7 @@ QString GuhSettings::settingsPath()
     } else if (organisationName == "guh-test") {
         path = "/tmp/" + organisationName;
     } else if (GuhSettings::isRoot()) {
-        path = "/etc/guh/";
+        path = "/etc/guh";
     } else {
         path = QDir::homePath() + "/.config/" + organisationName;
     }
@@ -171,6 +171,7 @@ QString GuhSettings::translationsPath()
     }
 }
 
+/*! Returns the default system sorage path i.e. \tt{/var/lib/guh}. */
 QString GuhSettings::storagePath()
 {
     QString path;
@@ -178,11 +179,11 @@ QString GuhSettings::storagePath()
     if (!qgetenv("SNAP").isEmpty()) {
         path = QString(qgetenv("SNAP_DATA"));
     } else if (organisationName == "guh-test") {
-        path = "/tmp/" + organisationName + "/";
+        path = "/tmp/" + organisationName;
     } else if (GuhSettings::isRoot()) {
-        path = "/var/lib/" + organisationName + "/";
+        path = "/var/lib/" + organisationName;
     } else {
-        path = QDir::homePath() + "/.local/share/" + organisationName + "/";
+        path = QDir::homePath() + "/.local/share/" + organisationName;
     }
     return path;
 }

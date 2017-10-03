@@ -133,7 +133,7 @@ RuleEngine::RuleEngine(QObject *parent) :
         bool enabled = settings.value("enabled", true).toBool();
         bool executable = settings.value("executable", true).toBool();
 
-        qCDebug(dcRuleEngine) << "Load rule" << name << idString;
+        qCDebug(dcRuleEngine) << "Loading rule" << name << idString;
 
         // Load timeDescriptor
         TimeDescriptor timeDescriptor;

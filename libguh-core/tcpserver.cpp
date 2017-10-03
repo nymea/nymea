@@ -57,7 +57,7 @@ TcpServer::TcpServer(const ServerConfiguration &configuration, const QSslConfigu
 /*! Destructor of this \l{TcpServer}. */
 TcpServer::~TcpServer()
 {
-    qCDebug(dcApplication) << "Shutting down \"TCP Server\"";
+    qCDebug(dcApplication) << "Shutting down \"TCP Server\"" << QString("%1://%2:%3").arg((configuration().authenticationEnabled ? "guhs" : "guh")).arg(configuration().address.toString()).arg(configuration().port);
     stopServer();
 }
 

@@ -154,16 +154,25 @@ bool CalendarItem::evaluateDaily(const QDateTime &dateTime) const
     if (duration() >= 1440)
         return true;
 
-    // get todays startTime
-    QDateTime startDateTime = QDateTime(dateTime.date(), startTime());
+    // Get todays startTime
+    QDateTime startDateTime = dateTime;
+    startDateTime.setTime(startTime());
     QDateTime endDateTime = startDateTime.addSecs(duration() * 60);
 
-    // get todays startTime
-    QDateTime startDateTimeYesterday = QDateTime(dateTime.date().addDays(-1), startTime());
+    // Get yesterdays startTime for day overlapping clendaritems
+    QDateTime startDateTimeYesterday = dateTime.addDays(-1);
+    startDateTimeYesterday.setTime(startTime());
     QDateTime endDateTimeYesterday = startDateTimeYesterday.addSecs(duration() * 60);
 
     bool todayValid = dateTime >= startDateTime && dateTime < endDateTime;
     bool yesterdayValid = dateTime >= startDateTimeYesterday && dateTime < endDateTimeYesterday;
+
+    qCDebug(dcRuleEngine()) << "-------------------------------------------------------------------------------";
+    qCDebug(dcRuleEngine()) << "Evaluate daily: current time" << dateTime.toString("dd:MM:yyyy hh:mm") << dateTime.toTime_t();
+    qCDebug(dcRuleEngine()) << "Evaluate daily: start time" << startDateTime.toString("dd:MM:yyyy hh:mm") << startDateTime.toTime_t();
+    qCDebug(dcRuleEngine()) << "Evaluate daily: end time" << endDateTime.toString("dd:MM:yyyy hh:mm") << endDateTime.toTime_t();
+    qCDebug(dcRuleEngine()) << "Today valid" << todayValid;
+    qCDebug(dcRuleEngine()) << "Yesterday valid" << yesterdayValid;
 
     return todayValid || yesterdayValid;
 }

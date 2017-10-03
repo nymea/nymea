@@ -319,7 +319,7 @@ void GuhCore::executeRuleActions(const QList<RuleAction> ruleActions)
 {
     foreach (const RuleAction &ruleAction, ruleActions) {
         Action action = ruleAction.toAction();
-        qCDebug(dcRuleEngine) << "executing action" << ruleAction.actionTypeId() << action.params();
+        qCDebug(dcRuleEngine) << "Executing action" << ruleAction.actionTypeId() << action.params();
         DeviceManager::DeviceError status = executeAction(action);
         switch(status) {
         case DeviceManager::DeviceErrorNoError:
@@ -464,6 +464,9 @@ void GuhCore::init() {
 
     m_logger->logSystemEvent(m_timeManager->currentDateTime(), true);
     emit initialized();
+
+    // Evaluate rules on current time
+    onDateTimeChanged(m_timeManager->currentDateTime());
 }
 
 /*! Connected to the DeviceManager's emitEvent signal. Events received in
@@ -643,14 +646,18 @@ void GuhCore::deviceManagerLoaded()
             m_logger->removeDeviceLogs(deviceId);
         }
     }
-    foreach (const DeviceId &deviceId, m_ruleEngine->devicesInRules()) {
-        if (!m_deviceManager->findConfiguredDevice(deviceId)) {
-            qCDebug(dcApplication()) << "Cleaning stale rule entries for device id" << deviceId;
-            foreach (const RuleId &ruleId, m_ruleEngine->findRules(deviceId)) {
-                m_ruleEngine->removeDeviceFromRule(ruleId, deviceId);
-            }
-        }
-    }
+
+    // FIXME: this removes all timedescriptors
+
+    //    foreach (const DeviceId &deviceId, m_ruleEngine->devicesInRules()) {
+    //        if (!m_deviceManager->findConfiguredDevice(deviceId)) {
+    //            qCDebug(dcApplication()) << "Cleaning stale rule entries for device id" << deviceId;
+    //            foreach (const RuleId &ruleId, m_ruleEngine->findRules(deviceId)) {
+    //                m_ruleEngine->removeDeviceFromRule(ruleId, deviceId);
+    //            }
+    //        }
+    //    }
+
     qCDebug(dcApplication()) << "Housekeeping done in" << startTime.msecsTo(QDateTime::currentDateTime()) << "ms.";
 }
 

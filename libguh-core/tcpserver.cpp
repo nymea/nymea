@@ -57,8 +57,13 @@ TcpServer::TcpServer(const ServerConfiguration &configuration, const QSslConfigu
 /*! Destructor of this \l{TcpServer}. */
 TcpServer::~TcpServer()
 {
-    qCDebug(dcApplication) << "Shutting down \"TCP Server\"" << QString("%1://%2:%3").arg((configuration().sslEnabled ? "guhs" : "guh")).arg(configuration().address.toString()).arg(configuration().port);
+    qCDebug(dcApplication) << "Shutting down \"TCP Server\"" << serverUrl().toString();
     stopServer();
+}
+
+QUrl TcpServer::serverUrl() const
+{
+    return QUrl(QString("%1://%2:%3").arg((configuration().sslEnabled ? "guhs" : "guh")).arg(configuration().address.toString()).arg(configuration().port));
 }
 
 /*! Sending \a data to a list of \a clients.*/
@@ -160,7 +165,7 @@ bool TcpServer::startServer()
         qCWarning(dcTcpServer()) << "Could not register avahi service for" << configuration();
     }
 
-    qCDebug(dcConnection) << "Started Tcp server on" << m_server->serverAddress().toString() << m_server->serverPort();
+    qCDebug(dcConnection) << "Started Tcp server" << serverUrl().toString();
     connect(m_server, SIGNAL(clientConnected(QSslSocket *)), SLOT(onClientConnected(QSslSocket *)));
     connect(m_server, SIGNAL(clientDisconnected(QSslSocket *)), SLOT(onClientDisconnected(QSslSocket *)));
     connect(m_server, &SslServer::dataAvailable, this, &TcpServer::onDataAvailable);

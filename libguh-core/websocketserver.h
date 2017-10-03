@@ -45,6 +45,8 @@ public:
     explicit WebSocketServer(const ServerConfiguration &configuration, const QSslConfiguration &sslConfiguration, QObject *parent = 0);
     ~WebSocketServer();
 
+    QUrl serverUrl() const;
+
     void sendData(const QUuid &clientId, const QByteArray &data) override;
     void sendData(const QList<QUuid> &clients, const QByteArray &data) override;
 

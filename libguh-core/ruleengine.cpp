@@ -900,12 +900,12 @@ QList<DeviceId> RuleEngine::devicesInRules() const
     QList<DeviceId> tmp;
     foreach (const Rule &rule, m_rules) {
         foreach (const EventDescriptor &descriptor, rule.eventDescriptors()) {
-            if (!tmp.contains(descriptor.deviceId())) {
+            if (!tmp.contains(descriptor.deviceId()) && !descriptor.deviceId().isNull()) {
                 tmp.append(descriptor.deviceId());
             }
         }
         foreach (const DeviceId &deviceId, rule.stateEvaluator().containedDevices()) {
-            if (!tmp.contains(deviceId)) {
+            if (!tmp.contains(deviceId) && !deviceId.isNull()) {
                 tmp.append(deviceId);
             }
         }

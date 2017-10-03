@@ -647,16 +647,14 @@ void GuhCore::deviceManagerLoaded()
         }
     }
 
-    // FIXME: this removes all timedescriptors
-
-    //    foreach (const DeviceId &deviceId, m_ruleEngine->devicesInRules()) {
-    //        if (!m_deviceManager->findConfiguredDevice(deviceId)) {
-    //            qCDebug(dcApplication()) << "Cleaning stale rule entries for device id" << deviceId;
-    //            foreach (const RuleId &ruleId, m_ruleEngine->findRules(deviceId)) {
-    //                m_ruleEngine->removeDeviceFromRule(ruleId, deviceId);
-    //            }
-    //        }
-    //    }
+    foreach (const DeviceId &deviceId, m_ruleEngine->devicesInRules()) {
+        if (!m_deviceManager->findConfiguredDevice(deviceId)) {
+            qCDebug(dcApplication()) << "Cleaning stale rule entries for device id" << deviceId;
+            foreach (const RuleId &ruleId, m_ruleEngine->findRules(deviceId)) {
+                m_ruleEngine->removeDeviceFromRule(ruleId, deviceId);
+            }
+        }
+    }
 
     qCDebug(dcApplication()) << "Housekeeping done in" << startTime.msecsTo(QDateTime::currentDateTime()) << "ms.";
 }

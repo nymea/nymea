@@ -115,7 +115,7 @@ WebServer::WebServer(const WebServerConfiguration &configuration, const QSslConf
 /*! Destructor of this \l{WebServer}. */
 WebServer::~WebServer()
 {
-    qCDebug(dcApplication) << "Shutting down \"Webserver\"" << QString("%1://%2:%3").arg((m_configuration.authenticationEnabled ? "https" : "http")).arg(m_configuration.address.toString()).arg(m_configuration.port);
+    qCDebug(dcApplication) << "Shutting down \"Webserver\"" << QString("%1://%2:%3").arg((m_configuration.sslEnabled ? "https" : "http")).arg(m_configuration.address.toString()).arg(m_configuration.port);
 
     this->close();
 }

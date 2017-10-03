@@ -115,9 +115,14 @@ WebServer::WebServer(const WebServerConfiguration &configuration, const QSslConf
 /*! Destructor of this \l{WebServer}. */
 WebServer::~WebServer()
 {
-    qCDebug(dcApplication) << "Shutting down \"Webserver\"" << QString("%1://%2:%3").arg((m_configuration.sslEnabled ? "https" : "http")).arg(m_configuration.address.toString()).arg(m_configuration.port);
+    qCDebug(dcApplication) << "Shutting down \"Webserver\"" << serverUrl().toString();
 
     this->close();
+}
+
+QUrl WebServer::serverUrl() const
+{
+    return QUrl(QString("%1://%2:%3").arg((m_configuration.sslEnabled ? "https" : "http")).arg(m_configuration.address.toString()).arg(m_configuration.port));
 }
 
 /*! Send the given \a reply map to the corresponding client.
@@ -503,16 +508,12 @@ void WebServer::reconfigureServer(const WebServerConfiguration &config)
 bool WebServer::startServer()
 {
     if (!listen(m_configuration.address, m_configuration.port)) {
-        qCWarning(dcWebServer()) << "Webserver could not listen on" << m_configuration.address.toString() << m_configuration.port << errorString();
+        qCWarning(dcWebServer()) << "Webserver could not listen on" << serverUrl().toString() << errorString();
         m_enabled = false;
         return false;
     }
 
-    if (m_configuration.sslEnabled) {
-        qCDebug(dcWebServer()) << "Started webserver on" << QString("https://%1:%2").arg(m_configuration.address.toString()).arg(m_configuration.port);
-    } else {
-        qCDebug(dcWebServer()) << "Started webserver on" << QString("http://%1:%2").arg(m_configuration.address.toString()).arg(m_configuration.port);
-    }
+    qCDebug(dcConnection()) << "Started web server on" << serverUrl().toString();
 
     // Note: reversed order
     QHash<QString, QString> txt;

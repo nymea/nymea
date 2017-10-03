@@ -73,7 +73,7 @@ WebSocketServer::WebSocketServer(const ServerConfiguration &configuration, const
 /*! Destructor of this \l{WebSocketServer}. */
 WebSocketServer::~WebSocketServer()
 {
-    qCDebug(dcApplication) << "Shutting down \"Websocket server\"";
+    qCDebug(dcApplication) << "Shutting down \"Websocket server\"" << QString("%1://%2:%3").arg((configuration().authenticationEnabled ? "wss" : "ws")).arg(configuration().address.toString()).arg(configuration().port);
     stopServer();
 }
 

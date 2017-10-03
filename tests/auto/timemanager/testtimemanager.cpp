@@ -213,9 +213,6 @@ void TestTimeManager::loadSaveTimeDescriptor()
 
     QVariantMap timeDescriptorMapLoaded = response.toMap().value("params").toMap().value("rule").toMap().value("timeDescriptor").toMap();
 
-    qDebug() << timeDescriptorMapLoaded;
-    qDebug() << timeDescriptorMap;
-
     QCOMPARE(timeDescriptorMap, timeDescriptorMapLoaded);
 
     // REMOVE rule

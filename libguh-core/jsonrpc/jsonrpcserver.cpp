@@ -377,6 +377,8 @@ void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &data)
     handler->setProperty("clientId", clientId);
     handler->setProperty("token", message.value("token").toByteArray());
 
+    qCDebug(dcJsonRpc()) << "Got method" << method.toLatin1().data();
+
     JsonReply *reply;
     QMetaObject::invokeMethod(handler, method.toLatin1().data(), Q_RETURN_ARG(JsonReply*, reply), Q_ARG(QVariantMap, params));
     if (reply->type() == JsonReply::TypeAsync) {

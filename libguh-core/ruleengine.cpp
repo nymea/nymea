@@ -402,7 +402,7 @@ QList<Rule> RuleEngine::evaluateTime(const QDateTime &dateTime)
 
             // check if this rule is based on calendarItems
             if (!rule.timeDescriptor().calendarItems().isEmpty()) {
-                qCDebug(dcRuleEngine()) << "Evaluate CalendarItem against" << dateTime.toString("dd:MM:yyyy hh:mm") << "for rule" << rule.name() << rule.id().toString();
+                // qCDebug(dcRuleEngine()) << "Evaluate CalendarItem against" << dateTime.toString("dd:MM:yyyy hh:mm") << "for rule" << rule.name() << rule.id().toString();
                 bool active = rule.timeDescriptor().evaluate(m_lastEvaluationTime, dateTime);
                 if (active) {
                     if (!m_activeRules.contains(rule.id())) {

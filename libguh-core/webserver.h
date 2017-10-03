@@ -77,6 +77,8 @@ public:
     explicit WebServer(const WebServerConfiguration &configuration, const QSslConfiguration &sslConfiguration, QObject *parent = 0);
     ~WebServer();
 
+    QUrl serverUrl() const;
+
     void sendHttpReply(HttpReply *reply);
 
 private:

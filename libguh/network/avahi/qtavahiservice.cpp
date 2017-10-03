@@ -106,8 +106,10 @@ QtAvahiService::QtAvahiServiceState QtAvahiService::state() const
 bool QtAvahiService::registerService(const QString &name, const quint16 &port, const QString &serviceType, const QHash<QString, QString> &txtRecords)
 {
     // Check if the client is running
-    if (!d_ptr->client->client || AVAHI_CLIENT_S_RUNNING != avahi_client_get_state(d_ptr->client->client))
+    if (!d_ptr->client->client || AVAHI_CLIENT_S_RUNNING != avahi_client_get_state(d_ptr->client->client)) {
+        qCWarning(dcAvahi()) << "Could not register service" << name << port << serviceType << ". The client is not available.";
         return false;
+    }
 
     d_ptr->name = name;
     d_ptr->port = port;

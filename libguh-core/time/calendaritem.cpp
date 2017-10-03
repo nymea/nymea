@@ -154,12 +154,14 @@ bool CalendarItem::evaluateDaily(const QDateTime &dateTime) const
     if (duration() >= 1440)
         return true;
 
-    // get todays startTime
-    QDateTime startDateTime = QDateTime(dateTime.date(), startTime());
+    // Get todays startTime
+    QDateTime startDateTime = dateTime;
+    startDateTime.setTime(startTime());
     QDateTime endDateTime = startDateTime.addSecs(duration() * 60);
 
-    // get todays startTime
-    QDateTime startDateTimeYesterday = QDateTime(dateTime.date().addDays(-1), startTime());
+    // Get yesterdays startTime for day overlapping clendaritems
+    QDateTime startDateTimeYesterday = dateTime.addDays(-1);
+    startDateTimeYesterday.setTime(startTime());
     QDateTime endDateTimeYesterday = startDateTimeYesterday.addSecs(duration() * 60);
 
     bool todayValid = dateTime >= startDateTime && dateTime < endDateTime;
@@ -177,7 +179,7 @@ bool CalendarItem::evaluateWeekly(const QDateTime &dateTime) const
 
     // Get the first day of this week with the correct start time
     QDateTime weekStartDateTime = dateTime.addDays(-dateTime.date().dayOfWeek());
-    weekStartDateTime.setTime(m_startTime);
+    weekStartDateTime.setTime(startTime());
 
     // Check each week day in the list
     foreach (const int &weekDay, repeatingOption().weekDays()) {
@@ -210,7 +212,9 @@ bool CalendarItem::evaluateWeekly(const QDateTime &dateTime) const
 bool CalendarItem::evaluateMonthly(const QDateTime &dateTime) const
 {
     // Get the first day of this month with the correct start time
-    QDateTime monthStartDateTime = QDateTime(QDate(dateTime.date().year(), dateTime.date().month(), 1), m_startTime);
+    QDateTime monthStartDateTime = dateTime;
+    monthStartDateTime.setDate(QDate(dateTime.date().year(), dateTime.date().month(), 1));
+    monthStartDateTime.setTime(m_startTime);
 
     // Check each month day in the list
     foreach (const int &monthDay, repeatingOption().monthDays()) {
@@ -238,7 +242,9 @@ bool CalendarItem::evaluateMonthly(const QDateTime &dateTime) const
 bool CalendarItem::evaluateYearly(const QDateTime &dateTime) const
 {
     // check for this year
-    QDateTime startDateTimeThisYear = QDateTime(QDate(dateTime.date().year(), m_dateTime.date().month(), m_dateTime.date().day()), m_dateTime.time());
+    QDateTime startDateTimeThisYear = dateTime;
+    startDateTimeThisYear.setDate(QDate(dateTime.date().year(), m_dateTime.date().month(), m_dateTime.date().day()));
+    startDateTimeThisYear.setTime(m_dateTime.time());
     QDateTime endDateTimeThisYear = startDateTimeThisYear.addSecs(duration() * 60);
 
     // check if we are in the interval of this year

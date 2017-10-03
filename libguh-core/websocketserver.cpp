@@ -73,8 +73,13 @@ WebSocketServer::WebSocketServer(const ServerConfiguration &configuration, const
 /*! Destructor of this \l{WebSocketServer}. */
 WebSocketServer::~WebSocketServer()
 {
-    qCDebug(dcApplication) << "Shutting down \"Websocket server\"";
+    qCDebug(dcApplication) << "Shutting down \"Websocket server\"" << serverUrl().toString();
     stopServer();
+}
+
+QUrl WebSocketServer::serverUrl() const
+{
+    return QUrl(QString("%1://%2:%3").arg((configuration().sslEnabled ? "wss" : "ws")).arg(configuration().address.toString()).arg(configuration().port));
 }
 
 /*! Send the given \a data map to the client with the given \a clientId.
@@ -206,15 +211,11 @@ bool WebSocketServer::startServer()
     connect (m_server, &QWebSocketServer::acceptError, this, &WebSocketServer::onServerError);
 
     if (!m_server->listen(configuration().address, configuration().port)) {
-        qCWarning(dcConnection) << "Websocket server" << m_server->serverName() << QString("could not listen on %1:%2").arg(m_server->serverAddress().toString()).arg(configuration().port);
+        qCWarning(dcConnection) << "Websocket server" << m_server->serverName() << "could not listen on" << serverUrl().toString();
         return false;
     }
 
-    if (m_server->secureMode() == QWebSocketServer::NonSecureMode) {
-        qCDebug(dcConnection) << "Started websocket server" << m_server->serverName() << QString("on ws://%1:%2").arg(m_server->serverAddress().toString()).arg(configuration().port);
-    } else {
-        qCDebug(dcConnection) << "Started websocket server" << m_server->serverName() << QString("on wss://%1:%2").arg(m_server->serverAddress().toString()).arg(configuration().port);
-    }
+    qCDebug(dcConnection()) << "Started websocket server" << m_server->serverName() << "on" << serverUrl().toString();
 
     // Note: reversed order
     QHash<QString, QString> txt;
@@ -224,8 +225,8 @@ bool WebSocketServer::startServer()
     txt.insert("uuid", GuhCore::instance()->configuration()->serverUuid().toString());
     txt.insert("name", GuhCore::instance()->configuration()->serverName());
     txt.insert("sslEnabled", configuration().sslEnabled ? "true" : "false");
-    if (m_avahiService->registerService(QString("guhIO-ws-%1").arg(configuration().id), configuration().port, "_ws._tcp", txt)) {
-        qCWarning(dcTcpServer()) << "Could not register avahi service for" << configuration();
+    if (!m_avahiService->registerService(QString("guhIO-ws-%1").arg(configuration().id), configuration().port, "_ws._tcp", txt)) {
+        qCWarning(dcWebServer()) << "Could not register avahi service for" << configuration();
     }
 
     return true;

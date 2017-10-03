@@ -181,7 +181,7 @@ void TestTimeManager::loadSaveTimeDescriptor()
     initTimeManager();
 
     // Action (without params)
-    QVariantMap ruleMap; QVariantMap action; QVariantMap exitAction;
+    QVariantMap ruleMap; QVariantMap action;
     action.insert("actionTypeId", mockActionIdNoParams);
     action.insert("deviceId", m_mockDeviceId);
     action.insert("ruleActionParams", QVariantList());
@@ -194,12 +194,15 @@ void TestTimeManager::loadSaveTimeDescriptor()
     // Add the rule
     QVariant response = injectAndWait("Rules.AddRule", ruleMap);
     verifyRuleError(response);
+
     RuleId ruleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
 
     QVariantMap params;
     params.insert("ruleId", ruleId);
     response = injectAndWait("Rules.GetRuleDetails", params);
     verifyRuleError(response);
+
+    QVariantMap timeDescriptorMap = response.toMap().value("params").toMap().value("rule").toMap().value("timeDescriptor").toMap();
 
     // Restart the server
     restartServer();
@@ -208,7 +211,6 @@ void TestTimeManager::loadSaveTimeDescriptor()
     response = injectAndWait("Rules.GetRuleDetails", params);
     verifyRuleError(response);
 
-    QVariantMap timeDescriptorMap = response.toMap().value("params").toMap().value("rule").toMap().value("timeDescriptor").toMap();
     QVariantMap timeDescriptorMapLoaded = response.toMap().value("params").toMap().value("rule").toMap().value("timeDescriptor").toMap();
 
     QCOMPARE(timeDescriptorMap, timeDescriptorMapLoaded);

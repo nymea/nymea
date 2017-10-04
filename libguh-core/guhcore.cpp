@@ -448,6 +448,7 @@ void GuhCore::init() {
 
     m_cloudManager = new CloudManager(m_networkManager, this);
     m_cloudManager->setDeviceId(m_configuration->serverUuid());
+    m_cloudManager->setDeviceName(m_configuration->serverName());
     m_cloudManager->setServerUrl(m_configuration->cloudServerUrl());
     m_cloudManager->setClientCertificates(m_configuration->cloudCertificateCA(), m_configuration->cloudCertificate(), m_configuration->cloudCertificateKey());
     if (!m_configuration->cloudServerUrl().isEmpty()) {

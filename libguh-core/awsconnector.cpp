@@ -42,7 +42,7 @@ AWSConnector::~AWSConnector()
 {
 }
 
-void AWSConnector::connect2AWS(const QString &endpoint, const QString &clientId, const QString &caFile, const QString &clientCertFile, const QString &clientPrivKeyFile)
+void AWSConnector::connect2AWS(const QString &endpoint, const QString &clientId, const QString &clientName, const QString &caFile, const QString &clientCertFile, const QString &clientPrivKeyFile)
 {
     m_networkConnection = std::shared_ptr<MbedTLSConnection>(new MbedTLSConnection(
                                                                  endpoint.toStdString(),
@@ -59,6 +59,7 @@ void AWSConnector::connect2AWS(const QString &endpoint, const QString &clientId,
     m_client->SetDisconnectCallbackPtr(&onDisconnected, std::shared_ptr<DisconnectCallbackContextData>(this));
     m_client->SetAutoReconnectEnabled(true);
     m_clientId = clientId;
+    m_clientName = clientName;
 
     qCDebug(dcAWS()) << "Connecting to AWS with ID:" << m_clientId << "endpoint:" << endpoint;
     m_connectingFuture = QtConcurrent::run([&]() {
@@ -121,25 +122,10 @@ quint16 AWSConnector::publish(const QString &topic, const QVariantMap &message)
     return packetId;
 }
 
-void AWSConnector::subscribe(const QStringList &topics)
-{
-    m_subscribedTopics.append(topics);
-
-    if (!isConnected()) {
-        qCDebug(dcAWS()) << "Can't subscribe to AWS: Not connected. Subscription will happen upon next connection.";
-        return;
-    }
-    doSubscribe(topics);
-}
-
 void AWSConnector::onConnected()
 {
     qCDebug(dcAWS()) << "AWS connected";
     registerDevice();
-    retrievePairedDeviceInfo();
-    if (!m_subscribedTopics.isEmpty()) {
-        doSubscribe(m_subscribedTopics);
-    }
 }
 
 void AWSConnector::retrievePairedDeviceInfo()
@@ -147,7 +133,8 @@ void AWSConnector::retrievePairedDeviceInfo()
     QVariantMap params;
     params.insert("timestamp", QDateTime::currentMSecsSinceEpoch());
     params.insert("id", ++m_transactionId);
-    publish(QString("%1/pair/list").arg(m_clientId), params);
+    params.insert("command", "getUsers");
+    publish(QString("%1/device/users").arg(m_clientId), params);
 }
 
 void AWSConnector::registerDevice()
@@ -157,19 +144,23 @@ void AWSConnector::registerDevice()
     // call we need to subscribe to a topic every device can subscribe to. If we'd use our deviceId, a potential
     // black hat could snoop in all the devices we register on the system. So in case someone actually does that
     // let's give him meaningless IDs instead of real device ids.
-    QString tmpId = QUuid::createUuid().toString().remove(QRegExp("[{}]*"));
+    m_createDeviceId = QUuid::createUuid().toString().remove(QRegExp("[{}]*"));
 
     // first subscribe to this tmp id topic
-    subscribe({QString("create/device/%1").arg(tmpId)});
-
-    // and register ourselves
-    QVariantMap params;
-    params.insert("id", tmpId);
-    params.insert("UUID", m_clientId);
-    publish("create/device", params);
+    m_createDeviceSubscriptionId = subscribe({QString("create/device/%1").arg(m_createDeviceId)});
 }
 
-void AWSConnector::doSubscribe(const QStringList &topics)
+void AWSConnector::setName()
+{
+    QVariantMap params;
+    params.insert("id", ++m_transactionId);
+    params.insert("timestamp", QDateTime::currentSecsSinceEpoch());
+    params.insert("command", "postName");
+    params.insert("name", m_clientName);
+    publish(QString("%1/device/name").arg(m_clientId), params);
+}
+
+quint16 AWSConnector::subscribe(const QStringList &topics)
 {
     util::Vector<std::shared_ptr<mqtt::Subscription>> subscription_list;
     foreach (const QString &topic, topics) {
@@ -181,7 +172,9 @@ void AWSConnector::doSubscribe(const QStringList &topics)
     uint16_t packetId;
     ResponseCode res = m_client->SubscribeAsync(subscription_list, subscribeCallback, packetId);
     qCDebug(dcAWSTraffic()) << "subscribe call queued with status:" << QString::fromStdString(ResponseHelper::ToString(res)) << packetId;
+    qWarning() << "'''" << s_requestMap.count();
     s_requestMap.insert(packetId, this);
+    return packetId;
 }
 
 void AWSConnector::publishCallback(uint16_t actionId, ResponseCode rc)
@@ -203,7 +196,27 @@ void AWSConnector::publishCallback(uint16_t actionId, ResponseCode rc)
 
 void AWSConnector::subscribeCallback(uint16_t actionId, ResponseCode rc)
 {
-    qCDebug(dcAWS()) << "subscribed to topic" << actionId << QString::fromStdString(ResponseHelper::ToString(rc));
+    if (rc != ResponseCode::SUCCESS) {
+        qCWarning(dcAWS()) << "Error subscribing to" << actionId << QString::fromStdString(ResponseHelper::ToString(rc));
+        return;
+    }
+
+    AWSConnector *connector = s_requestMap.take(actionId);
+    if (!connector) {
+        qCWarning(dcAWS()) << "received a subscribe callback but don't have a request id for it.";
+        return;
+    }
+
+    if (actionId == connector->m_createDeviceSubscriptionId) {
+        qCDebug(dcAWS()) << "subscribed to create/device/response";
+        QVariantMap params;
+        params.insert("id", connector->m_createDeviceId);
+        params.insert("UUID", connector->m_clientId);
+        connector->publish("create/device", params);
+        return;
+    }
+
+    qCDebug(dcAWS()) << "Subscribe callback for action" << actionId;
 }
 
 ResponseCode AWSConnector::onSubscriptionReceivedCallback(util::String topic_name, util::String payload, std::shared_ptr<SubscriptionHandlerContextData> p_app_handler_data)
@@ -220,12 +233,19 @@ ResponseCode AWSConnector::onSubscriptionReceivedCallback(util::String topic_nam
     if (topic.startsWith("create/device/")) {
         int statusCode = jsonDoc.toVariant().toMap().value("result").toMap().value("code").toInt();
         if (statusCode != 200) {
-            qCWarning(dcAWS()) << "Error registering device in the cloud. AWS connetion will not work.";
+            qCWarning(dcAWS()) << "Error registering device in the cloud. AWS connetion will not work:" << statusCode;
             return ResponseCode::SUCCESS;
         }
         qCDebug(dcAWS()) << "Device registered in cloud";
-        connector->subscribe({QString("%1/pair/response").arg(connector->m_clientId),
-                QString("%1/pair/list/response").arg(connector->m_clientId)});
+
+        QStringList subscriptions;
+        subscriptions.append(QString("%1/pair/response").arg(connector->m_clientId));
+        subscriptions.append(QString("%1/device/users/response").arg(connector->m_clientId));
+        connector->subscribe(subscriptions);
+
+        connector->retrievePairedDeviceInfo();
+        connector->setName();
+
     } else if (topic == QString("%1/pair/response").arg(connector->m_clientId)) {
         int statusCode = jsonDoc.toVariant().toMap().value("status").toInt();
         int id = jsonDoc.toVariant().toMap().value("id").toInt();
@@ -237,13 +257,15 @@ ResponseCode AWSConnector::onSubscriptionReceivedCallback(util::String topic_nam
         } else {
             qCWarning(dcAWS()) << "Received a pairing response for a transaction we didn't start";
         }
-    } else if (topic == QString("%1/pair/list/response").arg(connector->m_clientId)) {
+    } else if (topic == QString("%1/device/users/response").arg(connector->m_clientId)) {
         qCDebug(dcAWS) << "have device pairings:" << jsonDoc.toVariant().toMap().value("pairings").toList();
         QStringList topics;
         foreach (const QVariant &pairing, jsonDoc.toVariant().toMap().value("pairings").toList()) {
             topics << QString("eu-west-1:%1/listeningPeer/#").arg(pairing.toMap().value("cognitoIdIdentityId").toString());
         }
         connector->subscribe(topics);
+    } else if (topic == QString("%1/device/name/response").arg(connector->m_clientId)) {
+        qCDebug(dcAWS) << "Set device name in cloud with status:" << jsonDoc.toVariant().toMap().value("status").toInt();
     } else if (topic.contains("listeningPeer") && !topic.contains("reply")) {
         static QStringList dupes;
         QString id = jsonDoc.toVariant().toMap().value("id").toString();

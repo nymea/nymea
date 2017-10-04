@@ -46,6 +46,11 @@ void CloudManager::setDeviceId(const QUuid &deviceId)
     m_deviceId = deviceId;
 }
 
+void CloudManager::setDeviceName(const QString &name)
+{
+    m_deviceName = name;
+}
+
 void CloudManager::setClientCertificates(const QString &caCertificate, const QString &clientCertificate, const QString &clientCertificateKey)
 {
     m_caCertificate = caCertificate;
@@ -66,7 +71,10 @@ void CloudManager::setEnabled(bool enabled)
             qCWarning(dcCloud()) << "Don't have a unique device ID.";
             missingConfig = true;
         }
-
+        if (m_deviceName.isEmpty()) {
+            qCWarning(dcCloud()) << "Don't have a device name set";
+            missingConfig = true;
+        }
         if (m_serverUrl.isEmpty()) {
             qCWarning(dcCloud()) << "Cloud server URL not set.";
             missingConfig = true;
@@ -105,6 +113,7 @@ void CloudManager::connect2aws()
     m_awsConnector->connect2AWS(m_serverUrl,
                                 "1e10fb7e-d9d9-4145-88dd-2d3caf623c18",  // micha's test id (needs micha's test certs) - remove that before merging
 //                                m_deviceId.toString().remove(QRegExp("[{}]*")),
+                                m_deviceName,
                                 m_caCertificate,
                                 m_clientCertificate,
                                 m_clientCertificateKey

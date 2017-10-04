@@ -35,7 +35,8 @@ QHash<quint16, AWSConnector*> AWSConnector::s_requestMap;
 
 AWSConnector::AWSConnector(QObject *parent) : QObject(parent)
 {
-    connect(this, &AWSConnector::connected, this, &AWSConnector::onConnected);
+    connect(this, &AWSConnector::connected, this, &AWSConnector::onConnected, Qt::QueuedConnection);
+    connect(this, &AWSConnector::disconnected, this, &AWSConnector::onDisconnected, Qt::QueuedConnection);
 }
 
 AWSConnector::~AWSConnector()
@@ -44,6 +45,7 @@ AWSConnector::~AWSConnector()
 
 void AWSConnector::connect2AWS(const QString &endpoint, const QString &clientId, const QString &clientName, const QString &caFile, const QString &clientCertFile, const QString &clientPrivKeyFile)
 {
+    m_reconnect = true;
     m_networkConnection = std::shared_ptr<MbedTLSConnection>(new MbedTLSConnection(
                                                                  endpoint.toStdString(),
                                                                  8883,
@@ -56,8 +58,7 @@ void AWSConnector::connect2AWS(const QString &endpoint, const QString &clientId,
                                                                  true
                                                                  ));
     m_client = MqttClient::Create(m_networkConnection, std::chrono::milliseconds(30000));
-    m_client->SetDisconnectCallbackPtr(&onDisconnected, std::shared_ptr<DisconnectCallbackContextData>(this));
-    m_client->SetAutoReconnectEnabled(true);
+    m_client->SetDisconnectCallbackPtr(&onDisconnectedCallback, std::shared_ptr<DisconnectCallbackContextData>(this));
     m_clientId = clientId;
     m_clientName = clientName;
 
@@ -78,6 +79,7 @@ DisconnectCallbackContextData::~DisconnectCallbackContextData() {}
 
 void AWSConnector::disconnectAWS()
 {
+    m_reconnect = false;
     if (isConnected()) {
         m_client->Disconnect(std::chrono::seconds(2));
     }
@@ -125,7 +127,26 @@ quint16 AWSConnector::publish(const QString &topic, const QVariantMap &message)
 void AWSConnector::onConnected()
 {
     qCDebug(dcAWS()) << "AWS connected";
+    m_client->SetAutoReconnectEnabled(true);
     registerDevice();
+}
+
+void AWSConnector::onDisconnected()
+{
+    qCDebug(dcAWS()) << "AWS disconnected.";
+    if (m_reconnect) {
+        qCDebug(dcAWS()) << "Reconnecting...";
+        m_connectingFuture = QtConcurrent::run([&]() {
+            ResponseCode rc = m_client->Connect(std::chrono::milliseconds(30000), true, mqtt::Version::MQTT_3_1_1, std::chrono::seconds(60), Utf8String::Create(m_clientId.toStdString()), nullptr, nullptr, nullptr);
+            if (rc == ResponseCode::MQTT_CONNACK_CONNECTION_ACCEPTED) {
+                emit connected();
+            } else {
+                qCWarning(dcAWS) << "Error connecting to AWS. Response code:" << QString::fromStdString(ResponseHelper::ToString(rc));
+                m_client.reset();
+                m_networkConnection.reset();
+            }
+        });
+    }
 }
 
 void AWSConnector::retrievePairedDeviceInfo()
@@ -154,7 +175,7 @@ void AWSConnector::setName()
 {
     QVariantMap params;
     params.insert("id", ++m_transactionId);
-    params.insert("timestamp", QDateTime::currentSecsSinceEpoch());
+    params.insert("timestamp", QDateTime::currentMSecsSinceEpoch() / 1000);
     params.insert("command", "postName");
     params.insert("name", m_clientName);
     publish(QString("%1/device/name").arg(m_clientId), params);
@@ -216,7 +237,7 @@ void AWSConnector::subscribeCallback(uint16_t actionId, ResponseCode rc)
         return;
     }
 
-    qCDebug(dcAWS()) << "Subscribe callback for action" << actionId;
+    qCDebug(dcAWSTraffic()) << "Successfully subscribed (actionId:" << actionId << ")";
 }
 
 ResponseCode AWSConnector::onSubscriptionReceivedCallback(util::String topic_name, util::String payload, std::shared_ptr<SubscriptionHandlerContextData> p_app_handler_data)
@@ -286,9 +307,12 @@ ResponseCode AWSConnector::onSubscriptionReceivedCallback(util::String topic_nam
     return ResponseCode::SUCCESS;
 }
 
-ResponseCode AWSConnector::onDisconnected(util::String mqtt_client_id, std::shared_ptr<DisconnectCallbackContextData> p_app_handler_data)
+ResponseCode AWSConnector::onDisconnectedCallback(util::String mqtt_client_id, std::shared_ptr<DisconnectCallbackContextData> p_app_handler_data)
 {
     Q_UNUSED(p_app_handler_data)
     qCDebug(dcAWS()) << "disconnected" << QString::fromStdString(mqtt_client_id);
+
+//    AWSConnector* connector = static_cast<AWSConnector*>(p_app_handler_data.get());
+//    emit connector->disconnected();
     return ResponseCode::SUCCESS;
 }

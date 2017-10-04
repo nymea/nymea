@@ -45,11 +45,13 @@ public:
 
 signals:
     void connected();
+    void disconnected();
     void devicePaired(const QString &cognritoUserId, int errorCode);
     void webRtcHandshakeMessageReceived(const QString &transactionId, const QVariantMap &data);
 
 private slots:
     void onConnected();
+    void onDisconnected();
     void retrievePairedDeviceInfo();
     void registerDevice();
     void setName();
@@ -61,12 +63,13 @@ private:
     static void subscribeCallback(uint16_t actionId, awsiotsdk::ResponseCode rc);
     static awsiotsdk::ResponseCode onSubscriptionReceivedCallback(awsiotsdk::util::String topic_name, awsiotsdk::util::String payload,
                                              std::shared_ptr<SubscriptionHandlerContextData> p_app_handler_data);
-    static awsiotsdk::ResponseCode onDisconnected(awsiotsdk::util::String mqtt_client_id,
+    static awsiotsdk::ResponseCode onDisconnectedCallback(awsiotsdk::util::String mqtt_client_id,
                         std::shared_ptr<DisconnectCallbackContextData> p_app_handler_data);
 
 private:
     std::shared_ptr<awsiotsdk::network::MbedTLSConnection> m_networkConnection;
     std::shared_ptr<awsiotsdk::MqttClient> m_client;
+    bool m_reconnect = false;
 
     QString m_clientId;
     QString m_clientName;

@@ -50,6 +50,7 @@ signals:
     void webRtcHandshakeMessageReceived(const QString &transactionId, const QVariantMap &data);
 
 private slots:
+    void doConnect();
     void onConnected();
     void onDisconnected();
     void retrievePairedDeviceInfo();

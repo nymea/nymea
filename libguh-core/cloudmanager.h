@@ -39,6 +39,7 @@ public:
 
     void setServerUrl(const QString &serverUrl);
     void setDeviceId(const QUuid &deviceId);
+    void setDeviceName(const QString &name);
     void setClientCertificates(const QString &caCertificate, const QString &clientCertificate, const QString &clientCertificateKey);
 
     bool enabled() const;
@@ -67,6 +68,7 @@ private:
 
     QString m_serverUrl;
     QUuid m_deviceId;
+    QString m_deviceName;
     QString m_caCertificate;
     QString m_clientCertificate;
     QString m_clientCertificateKey;

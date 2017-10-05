@@ -122,7 +122,6 @@ void CloudManager::connect2aws()
 
 void CloudManager::onlineStateChanged()
 {
-    qWarning() << "online state changed" << m_networkManager->state();
     if (m_networkManager->state() == NetworkManager::NetworkManagerStateConnectedGlobal) {
         if (m_enabled && !m_awsConnector->isConnected()) {
             connect2aws();

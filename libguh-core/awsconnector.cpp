@@ -39,9 +39,9 @@ AWSConnector::AWSConnector(QObject *parent) : QObject(parent)
     connect(this, &AWSConnector::disconnected, this, &AWSConnector::onDisconnected, Qt::QueuedConnection);
 
     // Enable some AWS logging (does not regard our logging categories)
-    std::shared_ptr<awsiotsdk::util::Logging::ConsoleLogSystem> p_log_system =
-            std::make_shared<awsiotsdk::util::Logging::ConsoleLogSystem>(awsiotsdk::util::Logging::LogLevel::Info);
-    awsiotsdk::util::Logging::InitializeAWSLogging(p_log_system);
+//    std::shared_ptr<awsiotsdk::util::Logging::ConsoleLogSystem> p_log_system =
+//            std::make_shared<awsiotsdk::util::Logging::ConsoleLogSystem>(awsiotsdk::util::Logging::LogLevel::Info);
+//    awsiotsdk::util::Logging::InitializeAWSLogging(p_log_system);
 }
 
 AWSConnector::~AWSConnector()
@@ -145,6 +145,7 @@ void AWSConnector::onConnected()
     QStringList subscriptions;
     subscriptions.append(QString("%1/pair/response").arg(m_clientId));
     subscriptions.append(QString("%1/device/users/response").arg(m_clientId));
+    subscriptions.append(QString("eu-west-1:%1/%2/#").arg("7127d36f-9644-455c-bb14-4a23bfac65fe").arg(m_clientId));
     subscribe(subscriptions);
     retrievePairedDeviceInfo();
 }
@@ -291,12 +292,12 @@ ResponseCode AWSConnector::onSubscriptionReceivedCallback(util::String topic_nam
         }
         QStringList topics;
         foreach (const QVariant &pairing, jsonDoc.toVariant().toMap().value("pairings").toList()) {
-            topics << QString("eu-west-1:%1/listeningPeer/#").arg(pairing.toMap().value("cognitoIdIdentityId").toString());
+            topics << QString("eu-west-1:%1/%2/#").arg(pairing.toMap().value("cognitoIdIdentityId").toString()).arg(connector->m_clientId);
         }
         connector->subscribe(topics);
     } else if (topic == QString("%1/device/name/response").arg(connector->m_clientId)) {
         qCDebug(dcAWS) << "Set device name in cloud with status:" << jsonDoc.toVariant().toMap().value("status").toInt();
-    } else if (topic.contains("listeningPeer") && !topic.contains("reply")) {
+    } else if (topic.startsWith("eu-west-1:") && !topic.contains("reply")) {
         static QStringList dupes;
         QString id = jsonDoc.toVariant().toMap().value("id").toString();
         QString type = jsonDoc.toVariant().toMap().value("type").toString();

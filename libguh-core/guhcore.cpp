@@ -146,10 +146,11 @@ QPair<DeviceManager::DeviceError, QList<RuleId> > GuhCore::removeConfiguredDevic
         return QPair<DeviceManager::DeviceError, QList<RuleId> > (DeviceManager::DeviceErrorDeviceIsChild, QList<RuleId>());
     }
 
-    if (device->autoCreated()) {
-        qCWarning(dcDeviceManager) << "This device has been auto-created and cannot be deleted manually.";
-        return QPair<DeviceManager::DeviceError, QList<RuleId> >(DeviceManager::DeviceErrorCreationMethodNotSupported, {});
-    }
+    // FIXME: Let's remove this for now. It will come back with more fine grained control, presumably introducing a RemoveMethod flag in the DeviceClass
+//    if (device->autoCreated()) {
+//        qCWarning(dcDeviceManager) << "This device has been auto-created and cannot be deleted manually.";
+//        return QPair<DeviceManager::DeviceError, QList<RuleId> >(DeviceManager::DeviceErrorCreationMethodNotSupported, {});
+//    }
 
     // Check if this device has child devices
     QList<Device *> devicesToRemove;

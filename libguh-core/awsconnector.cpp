@@ -45,6 +45,10 @@ AWSConnector::~AWSConnector()
 
 void AWSConnector::connect2AWS(const QString &endpoint, const QString &clientId, const QString &clientName, const QString &caFile, const QString &clientCertFile, const QString &clientPrivKeyFile)
 {
+    m_currentEndpoint = endpoint;
+    m_caFile = caFile;
+    m_clientCertFile = clientCertFile;
+    m_clientPrivKeyFile = clientPrivKeyFile;
     m_reconnect = true;
     m_networkConnection = std::shared_ptr<MbedTLSConnection>(new MbedTLSConnection(
                                                                  endpoint.toStdString(),
@@ -61,8 +65,20 @@ void AWSConnector::connect2AWS(const QString &endpoint, const QString &clientId,
     m_clientId = clientId;
     m_clientName = clientName;
 
-    qCDebug(dcAWS()) << "Connecting to AWS with ID:" << m_clientId << "endpoint:" << endpoint;
-    doConnect();
+    m_client->SetAutoReconnectEnabled(true);
+    m_client->SetMaxReconnectBackoffTimeout(std::chrono::seconds(10));
+
+    qCDebug(dcAWS()) << "Connecting to AWS with ID:" << m_clientId << "endpoint:" << endpoint << m_client->GetMinReconnectBackoffTimeout().count() << (quint32)m_client->GetMaxReconnectBackoffTimeout().count();
+    m_connectingFuture = QtConcurrent::run([&]() {
+        ResponseCode rc = m_client->Connect(std::chrono::milliseconds(30000), true, mqtt::Version::MQTT_3_1_1, std::chrono::seconds(60), Utf8String::Create(m_clientId.toStdString()), nullptr, nullptr, nullptr);
+        if (rc == ResponseCode::MQTT_CONNACK_CONNECTION_ACCEPTED) {
+            emit connected();
+        } else {
+            qCWarning(dcAWS) << "Error connecting to AWS. Response code:" << QString::fromStdString(ResponseHelper::ToString(rc));
+            m_client.reset();
+            m_networkConnection.reset();
+        }
+    });
 }
 
 DisconnectCallbackContextData::~DisconnectCallbackContextData() {}
@@ -114,31 +130,22 @@ quint16 AWSConnector::publish(const QString &topic, const QVariantMap &message)
     return packetId;
 }
 
-void AWSConnector::doConnect()
-{
-    qCDebug(dcAWS()) << "(re)connecting...";
-    m_connectingFuture = QtConcurrent::run([&]() {
-        ResponseCode rc = m_client->Connect(std::chrono::milliseconds(30000), true, mqtt::Version::MQTT_3_1_1, std::chrono::seconds(60), Utf8String::Create(m_clientId.toStdString()), nullptr, nullptr, nullptr);
-        if (rc == ResponseCode::MQTT_CONNACK_CONNECTION_ACCEPTED) {
-            emit connected();
-        } else {
-            qCWarning(dcAWS) << "Error connecting to AWS. Response code:" << QString::fromStdString(ResponseHelper::ToString(rc));
-        }
-    });
-}
-
 void AWSConnector::onConnected()
 {
     qCDebug(dcAWS()) << "AWS connected";
     m_client->SetAutoReconnectEnabled(true);
     registerDevice();
+
+    // TODO: remove this again. just using this for testing now to skip the registerDevice step
+    retrievePairedDeviceInfo();
 }
 
 void AWSConnector::onDisconnected()
 {
-    qCDebug(dcAWS()) << "AWS disconnected.";
     if (m_reconnect) {
-        QTimer::singleShot(10000, this, &AWSConnector::doConnect);
+        m_client->Disconnect(std::chrono::milliseconds(1000));
+//        m_networkConnection->Connect();
+        connect2AWS(m_currentEndpoint, m_clientId, m_clientName, m_caFile, m_clientCertFile, m_clientPrivKeyFile);
     }
 }
 
@@ -302,8 +309,11 @@ ResponseCode AWSConnector::onSubscriptionReceivedCallback(util::String topic_nam
 
 ResponseCode AWSConnector::onDisconnectedCallback(util::String mqtt_client_id, std::shared_ptr<DisconnectCallbackContextData> p_app_handler_data)
 {
-    qCDebug(dcAWS()) << "disconnected" << QString::fromStdString(mqtt_client_id) << p_app_handler_data.get();
-//    AWSConnector* connector = dynamic_cast<AWSConnector*>(p_app_handler_data.get());
-//    emit connector->disconnected();
+    Q_UNUSED(p_app_handler_data)
+
+    AWSConnector* connector = dynamic_cast<AWSConnector*>(p_app_handler_data.get());
+    qWarning() << connector->m_client->IsAutoReconnectEnabled();
+    qCDebug(dcAWS()) << "disconnected" << QString::fromStdString(mqtt_client_id) << connector << p_app_handler_data.get();
+    emit connector->disconnected();
     return ResponseCode::SUCCESS;
 }

@@ -37,6 +37,11 @@ AWSConnector::AWSConnector(QObject *parent) : QObject(parent)
 {
     connect(this, &AWSConnector::connected, this, &AWSConnector::onConnected, Qt::QueuedConnection);
     connect(this, &AWSConnector::disconnected, this, &AWSConnector::onDisconnected, Qt::QueuedConnection);
+
+    // Enable some AWS logging (does not regard our logging categories)
+    std::shared_ptr<awsiotsdk::util::Logging::ConsoleLogSystem> p_log_system =
+            std::make_shared<awsiotsdk::util::Logging::ConsoleLogSystem>(awsiotsdk::util::Logging::LogLevel::Info);
+    awsiotsdk::util::Logging::InitializeAWSLogging(p_log_system);
 }
 
 AWSConnector::~AWSConnector()
@@ -137,16 +142,16 @@ void AWSConnector::onConnected()
     registerDevice();
 
     // TODO: remove this again. just using this for testing now to skip the registerDevice step
+    QStringList subscriptions;
+    subscriptions.append(QString("%1/pair/response").arg(m_clientId));
+    subscriptions.append(QString("%1/device/users/response").arg(m_clientId));
+    subscribe(subscriptions);
     retrievePairedDeviceInfo();
 }
 
 void AWSConnector::onDisconnected()
 {
-    if (m_reconnect) {
-        m_client->Disconnect(std::chrono::milliseconds(1000));
-//        m_networkConnection->Connect();
-        connect2AWS(m_currentEndpoint, m_clientId, m_clientName, m_caFile, m_clientCertFile, m_clientPrivKeyFile);
-    }
+    qCDebug(dcAWS) << "AWS disconnected. (should reconnect on it's own)";
 }
 
 void AWSConnector::retrievePairedDeviceInfo()
@@ -280,6 +285,10 @@ ResponseCode AWSConnector::onSubscriptionReceivedCallback(util::String topic_nam
         }
     } else if (topic == QString("%1/device/users/response").arg(connector->m_clientId)) {
         qCDebug(dcAWS) << "have device pairings:" << jsonDoc.toVariant().toMap().value("pairings").toList();
+        if (jsonDoc.toVariant().toMap().value("pairings").toList().isEmpty()) {
+            qCDebug(dcAWS()) << "No devices paired yet...";
+            return ResponseCode::SUCCESS;
+        }
         QStringList topics;
         foreach (const QVariant &pairing, jsonDoc.toVariant().toMap().value("pairings").toList()) {
             topics << QString("eu-west-1:%1/listeningPeer/#").arg(pairing.toMap().value("cognitoIdIdentityId").toString());
@@ -309,11 +318,8 @@ ResponseCode AWSConnector::onSubscriptionReceivedCallback(util::String topic_nam
 
 ResponseCode AWSConnector::onDisconnectedCallback(util::String mqtt_client_id, std::shared_ptr<DisconnectCallbackContextData> p_app_handler_data)
 {
-    Q_UNUSED(p_app_handler_data)
-
+    Q_UNUSED(mqtt_client_id)
     AWSConnector* connector = dynamic_cast<AWSConnector*>(p_app_handler_data.get());
-    qWarning() << connector->m_client->IsAutoReconnectEnabled();
-    qCDebug(dcAWS()) << "disconnected" << QString::fromStdString(mqtt_client_id) << connector << p_app_handler_data.get();
     emit connector->disconnected();
     return ResponseCode::SUCCESS;
 }

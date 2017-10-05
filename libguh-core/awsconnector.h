@@ -27,6 +27,9 @@
 #include "MbedTLS/MbedTLSConnection.hpp"
 #include <mqtt/Client.hpp>
 #include <mqtt/Common.hpp>
+#include "util/logging/Logging.hpp"
+#include "util/logging/LogMacros.hpp"
+#include "util/logging/ConsoleLogSystem.hpp"
 
 class AWSConnector : public QObject, public awsiotsdk::mqtt::SubscriptionHandlerContextData, public awsiotsdk::DisconnectCallbackContextData
 {

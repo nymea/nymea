@@ -30,6 +30,7 @@
 
 class JanusConnector;
 class AWSConnector;
+class CloudNotifications;
 
 class CloudManager : public QObject
 {
@@ -50,6 +51,8 @@ public:
     void pairDevice(const QString &idToken, const QString &userId);
 
     bool keepAlive(const QString &sessionId);
+
+    CloudNotifications* createNotificationsPlugin() const;
 
 signals:
     void connectedChanged(bool connected);
@@ -80,6 +83,8 @@ private:
     QString m_caCertificate;
     QString m_clientCertificate;
     QString m_clientCertificateKey;
+
+    CloudNotifications *m_notifications;
 };
 
 #endif // CLOUDMANAGER_H

@@ -39,6 +39,13 @@ public:
     explicit AWSConnector(QObject *parent = 0);
     ~AWSConnector();
 
+    class PushNotificationsEndpoint {
+    public:
+        QString userId;
+        QString endpointId;
+        QString displayName;
+    };
+
     void connect2AWS(const QString &endpoint, const QString &clientId, const QString &clientName, const QString &caFile, const QString &clientCertFile, const QString &clientPrivKeyFile);
     void disconnectAWS();
     bool isConnected() const;
@@ -48,11 +55,16 @@ public:
 
     void sendWebRtcHandshakeMessage(const QString &sessionId, const QVariantMap &map);
 
+public slots:
+    int sendPushNotification(const QString &userId, const QString &endpointId, const QString &title, const QString &text);
+
 signals:
     void connected();
     void disconnected();
     void devicePaired(const QString &cognritoUserId, int errorCode, const QString &message);
     void webRtcHandshakeMessageReceived(const QString &transactionId, const QVariantMap &data);
+    void pushNotificationEndpointsUpdated(const QList<PushNotificationsEndpoint> pushNotificationEndpoints);
+    void pushNotificationSent(int id, int status);
 
 private slots:
     void doConnect();
@@ -61,7 +73,7 @@ private slots:
     void onDeviceRegistered(bool needsReconnect);
     void setupSubscriptions();
     void fetchPairings();
-    void onPairingsRetrieved(const QVariantList &pairings);
+    void onPairingsRetrieved(const QVariantMap &pairings);
     void setName();
     void onDisconnected();
 

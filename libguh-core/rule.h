@@ -44,6 +44,8 @@ public:
     void setName(const QString &name);
 
     bool active() const;
+    bool statesActive() const;
+    bool timeActive() const;
 
     TimeDescriptor timeDescriptor() const;
     void setTimeDescriptor(const TimeDescriptor &timeDescriptor);
@@ -72,6 +74,8 @@ public:
 
 private:
     friend class RuleEngine;
+    void setStatesActive(const bool &statesActive);
+    void setTimeActive(const bool &timeActive);
     void setActive(const bool &active);
 
 private:
@@ -85,6 +89,8 @@ private:
 
     bool m_enabled;
     bool m_active;
+    bool m_statesActive;
+    bool m_timeActive;
     bool m_executable;
 };
 

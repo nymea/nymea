@@ -51,6 +51,8 @@ Rule::Rule():
     m_exitActions(QList<RuleAction>()),
     m_enabled(false),
     m_active(false),
+    m_statesActive(false),
+    m_timeActive(false),
     m_executable(false)
 {
 
@@ -84,6 +86,19 @@ void Rule::setName(const QString &name)
 bool Rule::active() const
 {
     return m_active;
+}
+
+bool Rule::statesActive() const
+{
+    return m_statesActive;
+}
+
+bool Rule::timeActive() const
+{
+    if (m_timeDescriptor.isEmpty())
+        return true;
+
+    return m_timeActive;
 }
 
 /*! Returns the \l{TimeDescriptor} or this Rule. */
@@ -198,6 +213,16 @@ bool Rule::isConsistent() const
     }
 
     return true;
+}
+
+void Rule::setStatesActive(const bool &statesActive)
+{
+    m_statesActive = statesActive;
+}
+
+void Rule::setTimeActive(const bool &timeActive)
+{
+    m_timeActive = timeActive;
 }
 
 void Rule::setActive(const bool &active)

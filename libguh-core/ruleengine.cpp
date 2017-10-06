@@ -343,33 +343,36 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
         if (!rule.enabled())
             continue;
 
+        // If we have a state based on this event
+        if (containsState(rule.stateEvaluator(), event)) {
+            rule.setStatesActive(rule.stateEvaluator().evaluate());
+            m_rules[rule.id()] = rule;
+        }
+
+        // If this rule does not base on an event, evaluate the rule
         if (rule.eventDescriptors().isEmpty()) {
-            // This rule seems to have only states, check on state changed
-            if (containsState(rule.stateEvaluator(), event)) {
-                if (rule.stateEvaluator().evaluate()) {
-                    if (!m_activeRules.contains(rule.id())) {
-                        qCDebug(dcRuleEngine) << "Rule" << rule.id() << "entered active state.";
-                        rule.setActive(true);
-                        m_rules[rule.id()] = rule;
-                        m_activeRules.append(rule.id());
-                        rules.append(rule);
-                    }
-                } else {
-                    if (m_activeRules.contains(rule.id())) {
-                        qCDebug(dcRuleEngine) << "Rule" << rule.id() << "left active state.";
-                        rule.setActive(false);
-                        m_rules[rule.id()] = rule;
-                        m_activeRules.removeAll(rule.id());
-                        rules.append(rule);
-                    }
+            if (rule.timeActive() && rule.statesActive()) {
+                if (!m_activeRules.contains(rule.id())) {
+                    qCDebug(dcRuleEngine) << "Rule" << rule.id().toString() << "active.";
+                    rule.setActive(true);
+                    m_rules[rule.id()] = rule;
+                    m_activeRules.append(rule.id());
+                    rules.append(rule);
+                }
+            } else {
+                if (m_activeRules.contains(rule.id())) {
+                    qCDebug(dcRuleEngine) << "Rule" << rule.id().toString() << "inactive.";
+                    rule.setActive(false);
+                    m_rules[rule.id()] = rule;
+                    m_activeRules.removeAll(rule.id());
+                    rules.append(rule);
                 }
             }
         } else {
-            if (containsEvent(rule, event)) {
-                if (rule.stateEvaluator().evaluate()) {
-                    qCDebug(dcRuleEngine) << "Rule" << rule.id() << "contains event" << event.eventId() << "and all states match.";
-                    rules.append(rule);
-                }
+            // Event based rule
+            if (containsEvent(rule, event) && rule.statesActive() && rule.timeActive()) {
+                qCDebug(dcRuleEngine) << "Rule" << rule.id() << "contains event" << event.eventId() << "and all states match.";
+                rules.append(rule);
             }
         }
     }
@@ -397,14 +400,18 @@ QList<Rule> RuleEngine::evaluateTime(const QDateTime &dateTime)
         if (!rule.enabled())
             continue;
 
-        // check if this rule is time based
-        if (!rule.timeDescriptor().isEmpty()) {
+        // If no timeDescriptor, do nothing
+        if (rule.timeDescriptor().isEmpty())
+            continue;
 
-            // check if this rule is based on calendarItems
-            if (!rule.timeDescriptor().calendarItems().isEmpty()) {
-                // qCDebug(dcRuleEngine()) << "Evaluate CalendarItem against" << dateTime.toString("dd:MM:yyyy hh:mm") << "for rule" << rule.name() << rule.id().toString();
-                bool active = rule.timeDescriptor().evaluate(m_lastEvaluationTime, dateTime);
-                if (active) {
+        // Check if this rule is based on calendarItems
+        if (!rule.timeDescriptor().calendarItems().isEmpty()) {
+            rule.setTimeActive(rule.timeDescriptor().evaluate(m_lastEvaluationTime, dateTime));
+            m_rules[rule.id()] = rule;
+
+            if (rule.timeDescriptor().timeEventItems().isEmpty()) {
+
+                if (rule.timeActive() && rule.statesActive()) {
                     if (!m_activeRules.contains(rule.id())) {
                         qCDebug(dcRuleEngine) << "Rule" << rule.id().toString() << "active.";
                         rule.setActive(true);
@@ -422,13 +429,15 @@ QList<Rule> RuleEngine::evaluateTime(const QDateTime &dateTime)
                     }
                 }
             }
+        }
 
-            // check if this rule is based on timeEventItems
-            if (!rule.timeDescriptor().timeEventItems().isEmpty()) {
-                bool valid = rule.timeDescriptor().evaluate(m_lastEvaluationTime, dateTime);
-                if (valid) {
-                    rules.append(rule);
-                }
+
+        // If we have timeEvent items
+        if (!rule.timeDescriptor().timeEventItems().isEmpty()) {
+            bool valid = rule.timeDescriptor().evaluate(m_lastEvaluationTime, dateTime);
+            if (valid && rule.statesActive() && rule.timeActive()) {
+                qCDebug(dcRuleEngine) << "Rule" << rule.id() << "time event triggert and all states match.";
+                rules.append(rule);
             }
         }
     }

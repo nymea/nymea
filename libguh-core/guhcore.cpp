@@ -103,6 +103,7 @@
 
 #include "devicemanager.h"
 #include "plugin/device.h"
+#include "cloudnotifications.h"
 
 namespace guhserver {
 
@@ -505,6 +506,9 @@ void GuhCore::init() {
     m_cloudManager->setServerUrl(m_configuration->cloudServerUrl());
     m_cloudManager->setClientCertificates(m_configuration->cloudCertificateCA(), m_configuration->cloudCertificate(), m_configuration->cloudCertificateKey());
     m_cloudManager->setEnabled(m_configuration->cloudEnabled());
+
+    CloudNotifications *cloudNotifications = m_cloudManager->createNotificationsPlugin();
+    m_deviceManager->registerStaticPlugin(cloudNotifications, cloudNotifications->metaData());
 
     connect(m_configuration, &GuhConfiguration::localeChanged, this, &GuhCore::onLocaleChanged);
     connect(m_configuration, &GuhConfiguration::cloudEnabledChanged, m_cloudManager, &CloudManager::setEnabled);

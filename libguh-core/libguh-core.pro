@@ -73,6 +73,7 @@ HEADERS += guhcore.h \
     certificategenerator.h \
     awsconnector.h \
     cloudmanager.h \
+    cloudnotifications.h \
     MbedTLS/MbedTLSConnection.hpp \
     janusconnector.h \
     pushbuttondbusservice.h \
@@ -95,7 +96,6 @@ HEADERS += guhcore.h \
     hardware/network/avahi/qtavahiservice_p.h \
     hardware/network/avahi/qtavahiservicebrowserimplementation.h \
     hardware/network/avahi/qtavahiservicebrowserimplementation_p.h \
-
 
 SOURCES += guhcore.cpp \
     tcpserver.cpp \
@@ -151,6 +151,7 @@ SOURCES += guhcore.cpp \
     certificategenerator.cpp \
     awsconnector.cpp \
     cloudmanager.cpp \
+    cloudnotifications.cpp \
     MbedTLS/MbedTLSConnection.cpp \
     janusconnector.cpp \
     pushbuttondbusservice.cpp \

@@ -187,6 +187,11 @@ void ParamType::setReadOnly(const bool &readOnly)
     m_readOnly = readOnly;
 }
 
+bool ParamType::isValid() const
+{
+    return !m_id.isNull() && !m_name.isEmpty() && m_type != QVariant::Invalid;
+}
+
 /*! Writes the name, type defaultValue, min value, max value and readOnly of the given \a paramType to \a dbg. */
 QDebug operator<<(QDebug dbg, const ParamType &paramType)
 {
@@ -212,4 +217,31 @@ QDebug operator<<(QDebug dbg, const QList<ParamType> &paramTypes)
     }
 
     return dbg.space();
+}
+
+ParamTypes::ParamTypes(const QList<ParamType> &other)
+{
+    foreach (const ParamType &pt, other) {
+        append(pt);
+    }
+}
+
+ParamType ParamTypes::findByName(const QString &name)
+{
+    foreach (const ParamType &paramType, *this) {
+        if (paramType.name() == name) {
+            return paramType;
+        }
+    }
+    return ParamType();
+}
+
+ParamType ParamTypes::findById(const ParamTypeId &id)
+{
+    foreach (const ParamType &paramType, *this) {
+        if (paramType.id() == id) {
+            return paramType;
+        }
+    }
+    return ParamType();
 }

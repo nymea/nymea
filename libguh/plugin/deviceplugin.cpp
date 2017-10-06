@@ -541,20 +541,46 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                 QVariantList actions = interfaceMap.value("actions").toList();
                 foreach (const QVariant &actionVariant, actions) {
                     QVariantMap actionMap = actionVariant.toMap();
-                    if (actionTypes.findByName(actionMap.value("name").toString()).id().isNull()) {
+                    ActionType actionType = actionTypes.findByName(actionMap.value("name").toString());
+                    if (actionType.id().isNull()) {
                         qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but doesn't implement action" << actionMap.value("name").toString();
                         valid = false;
                     }
-                    // TODO: check params
+                    QVariantList params = actionMap.value("params").toList();
+                    foreach (const QVariant &paramVariant, params) {
+                        ParamType paramType = actionType.paramTypes().findByName(paramVariant.toMap().value("name").toString());
+                        if (!paramType.isValid()) {
+                            qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but doesn't implement action param" << actionMap.value("name").toString() << ":" << paramVariant.toMap().value("name").toString();
+                            valid = false;
+                        } else {
+                            if (paramType.type() != QVariant::nameToType(paramVariant.toMap().value("type").toString().toLatin1())) {
+                                qCWarning(dcDeviceManager()) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but param" << paramType.name() << "is of wrong type:" << QVariant::typeToName(paramType.type()) << "expected:" << paramVariant.toMap().value("type").toString();
+                                valid = false;
+                            }
+                        }
+                    }
                 }
                 QVariantList events = interfaceMap.value("events").toList();
                 foreach (const QVariant &eventVariant, events) {
                     QVariantMap eventMap = eventVariant.toMap();
-                    if (eventTypes.findByName(eventMap.value("name").toString()).id().isNull()) {
+                    EventType eventType = eventTypes.findByName(eventMap.value("name").toString());
+                    if (eventType.isValid()) {
                         qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but doesn't implement event" << eventMap.value("name").toString();
                         valid = false;
                     }
-                    // TODO: check params
+                    QVariantList params = eventMap.value("params").toList();
+                    foreach (const QVariant &paramVariant, params) {
+                        ParamType paramType = eventType.paramTypes().findByName(paramVariant.toMap().value("name").toString());
+                        if (!paramType.isValid()) {
+                            qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but doesn't implement action param" << eventMap.value("name").toString() << ":" << paramVariant.toMap().value("name").toString();
+                            valid = false;
+                        } else {
+                            if (paramType.type() != QVariant::nameToType(paramVariant.toMap().value("type").toString().toLatin1())) {
+                                qCWarning(dcDeviceManager()) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but param" << paramType.name() << "is of wrong type:" << QVariant::typeToName(paramType.type()) << "expected:" << paramVariant.toMap().value("type").toString();
+                                valid = false;
+                            }
+                        }
+                    }
                 }
 
                 if (valid) {

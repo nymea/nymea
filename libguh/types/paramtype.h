@@ -32,7 +32,8 @@
 
 class LIBGUH_EXPORT ParamType
 {
-public:    
+public:
+    ParamType() = default;
     ParamType(const ParamTypeId &id, const QString &name, const QVariant::Type type, const QVariant &defaultValue = QVariant());
 
     ParamTypeId id() const;
@@ -70,6 +71,8 @@ public:
     bool readOnly() const;
     void setReadOnly(const bool &readOnly);
 
+    bool isValid() const;
+
 private:
     ParamTypeId m_id;
     QString m_name;
@@ -82,6 +85,15 @@ private:
     Types::Unit m_unit;
     QVariantList m_allowedValues;
     bool m_readOnly;
+};
+
+class ParamTypes: public QList<ParamType>
+{
+public:
+    ParamTypes() = default;
+    ParamTypes(const QList<ParamType> &other);
+    ParamType findByName(const QString &name);
+    ParamType findById(const ParamTypeId &id);
 };
 
 QDebug operator<<(QDebug dbg, const ParamType &paramType);

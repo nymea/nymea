@@ -43,8 +43,8 @@ public:
     int index() const;
     void setIndex(const int &index);
 
-    QList<ParamType> paramTypes() const;
-    void setParamTypes(const QList<ParamType> &paramTypes);
+    ParamTypes paramTypes() const;
+    void setParamTypes(const ParamTypes &paramTypes);
 
     bool ruleRelevant() const;
     void setRuleRelevant(const bool &ruleRelevant);
@@ -52,6 +52,7 @@ public:
     bool graphRelevant() const;
     void setGraphRelevant(const bool &graphRelevant);
 
+    bool isValid() const;
 private:
     EventTypeId m_id;
     QString m_name;

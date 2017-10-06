@@ -76,14 +76,14 @@ void EventType::setIndex(const int &index)
 
 /*! Holds a List describing possible parameters for a \l{Event} of this EventType.
  *  e.g. QList(ParamType("temperature", QVariant::Real)). */
-QList<ParamType> EventType::paramTypes() const
+ParamTypes EventType::paramTypes() const
 {
     return m_paramTypes;
 }
 
 /*! Set the parameter description for this EventType to \a paramTypes,
  *  e.g. QList<ParamType>() << ParamType("temperature", QVariant::Real)). */
-void EventType::setParamTypes(const QList<ParamType> &paramTypes)
+void EventType::setParamTypes(const ParamTypes &paramTypes)
 {
     m_paramTypes = paramTypes;
 }
@@ -110,6 +110,12 @@ bool EventType::graphRelevant() const
 void EventType::setGraphRelevant(const bool &graphRelevant)
 {
     m_graphRelevant = graphRelevant;
+}
+
+/*! Returns true if this EventType has a valid id and name */
+bool EventType::isValid() const
+{
+    return !m_id.isNull() && !m_name.isEmpty();
 }
 
 EventTypes::EventTypes(const QList<EventType> &other)

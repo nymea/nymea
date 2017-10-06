@@ -6,5 +6,6 @@
         <file>colorlight.json</file>
         <file>garagegate.json</file>
         <file>gateway.json</file>
+        <file>notifications.json</file>
     </qresource>
 </RCC>

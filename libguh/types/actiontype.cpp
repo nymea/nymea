@@ -80,14 +80,14 @@ void ActionType::setIndex(const int &index)
 
 /*! Returns the parameter description of this \l{ActionType}. \l{Action}{Actions} created
  *  from this \l{ActionType} must have their parameters matching to this template. */
-QList<ParamType> ActionType::paramTypes() const
+ParamTypes ActionType::paramTypes() const
 {
     return m_paramTypes;
 }
 
 /*! Set the parameter description of this \l{ActionType}. \l{Action}{Actions} created
  *  from this \l{ActionType} must have their \a paramTypes matching to this template. */
-void ActionType::setParamTypes(const QList<ParamType> &paramTypes)
+void ActionType::setParamTypes(const ParamTypes &paramTypes)
 {
     m_paramTypes = paramTypes;
 }

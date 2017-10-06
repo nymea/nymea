@@ -39,9 +39,9 @@ AWSConnector::AWSConnector(QObject *parent) : QObject(parent)
     connect(this, &AWSConnector::disconnected, this, &AWSConnector::onDisconnected, Qt::QueuedConnection);
 
     // Enable some AWS logging (does not regard our logging categories)
-//    std::shared_ptr<awsiotsdk::util::Logging::ConsoleLogSystem> p_log_system =
-//            std::make_shared<awsiotsdk::util::Logging::ConsoleLogSystem>(awsiotsdk::util::Logging::LogLevel::Info);
-//    awsiotsdk::util::Logging::InitializeAWSLogging(p_log_system);
+    std::shared_ptr<awsiotsdk::util::Logging::ConsoleLogSystem> p_log_system =
+            std::make_shared<awsiotsdk::util::Logging::ConsoleLogSystem>(awsiotsdk::util::Logging::LogLevel::Info);
+    awsiotsdk::util::Logging::InitializeAWSLogging(p_log_system);
 }
 
 AWSConnector::~AWSConnector()
@@ -260,7 +260,7 @@ ResponseCode AWSConnector::onSubscriptionReceivedCallback(util::String topic_nam
     if (topic.startsWith("create/device/")) {
         int statusCode = jsonDoc.toVariant().toMap().value("result").toMap().value("code").toInt();
         if (statusCode != 200) {
-            qCWarning(dcAWS()) << "Error registering device in the cloud. AWS connetion will not work:" << statusCode;
+            qCWarning(dcAWS()) << "Error registering device in the cloud. AWS connetion will not work:" << statusCode << jsonDoc.toVariant().toMap().value("result").toMap().value("message").toString();
             return ResponseCode::SUCCESS;
         }
         qCDebug(dcAWS()) << "Device registered in cloud";

@@ -1,0 +1,14 @@
+{
+    "actions": [
+        {
+            "name": "notify",
+            "params": [
+                {
+                    "name": "title",
+                    "type": "QString"
+                }
+            ]
+        }
+
+    ]
+}

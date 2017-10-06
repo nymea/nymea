@@ -43,14 +43,14 @@ public:
     int index() const;
     void setIndex(const int &index);
 
-    QList<ParamType> paramTypes() const;
-    void setParamTypes(const QList<ParamType> &paramTypes);
+    ParamTypes paramTypes() const;
+    void setParamTypes(const ParamTypes &paramTypes);
 
 private:
     ActionTypeId m_id;
     QString m_name;
     int m_index;
-    QList<ParamType> m_paramTypes;
+    ParamTypes m_paramTypes;
 };
 
 class ActionTypes: public QList<ActionType>

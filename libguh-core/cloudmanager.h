@@ -36,6 +36,7 @@ class CloudManager : public QObject
     Q_OBJECT
 public:
     explicit CloudManager(NetworkManager *networkManager, QObject *parent = nullptr);
+    ~CloudManager();
 
     void setServerUrl(const QString &serverUrl);
     void setDeviceId(const QUuid &deviceId);

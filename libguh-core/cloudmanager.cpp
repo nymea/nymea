@@ -36,6 +36,11 @@ CloudManager::CloudManager(NetworkManager *networkManager, QObject *parent) : QO
     connect(m_networkManager, &NetworkManager::stateChanged, this, &CloudManager::onlineStateChanged);
 }
 
+CloudManager::~CloudManager()
+{
+    qCDebug(dcApplication) << "Shutting down \"CloudManager\"";
+}
+
 void CloudManager::setServerUrl(const QString &serverUrl)
 {
     m_serverUrl = serverUrl;

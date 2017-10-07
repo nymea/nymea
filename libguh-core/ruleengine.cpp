@@ -1070,7 +1070,9 @@ QVariant::Type RuleEngine::getEventParamType(const EventTypeId &eventTypeId, con
 
 void RuleEngine::appendRule(const Rule &rule)
 {
-    m_rules.insert(rule.id(), rule);
+    Rule newRule = rule;
+    newRule.setStatesActive(newRule.stateEvaluator().evaluate());
+    m_rules.insert(rule.id(), newRule);
     m_ruleIds.append(rule.id());
 }
 

@@ -23,6 +23,7 @@
 
 #include <QObject>
 #include <QFuture>
+#include <QDateTime>
 
 #include "MbedTLS/MbedTLSConnection.hpp"
 #include <mqtt/Client.hpp>
@@ -53,21 +54,39 @@ signals:
     void webRtcHandshakeMessageReceived(const QString &transactionId, const QVariantMap &data);
 
 private slots:
+    void doConnect();
     void onConnected();
-    void onDisconnected();
-    void retrievePairedDeviceInfo();
     void registerDevice();
+    void onDeviceRegistered(bool needsReconnect);
+    void setupPairing();
+    void onPairingsRetrieved(const QVariantList &pairings);
     void setName();
+    void onDisconnected();
 
 private:
+    class SubscriptionContext: public awsiotsdk::mqtt::SubscriptionHandlerContextData
+    {
+    public:
+        SubscriptionContext(AWSConnector *connector): c(connector) {}
+        AWSConnector *c;
+    };
+    class DisconnectContext: public awsiotsdk::DisconnectCallbackContextData
+    {
+    public:
+        DisconnectContext(AWSConnector *connector): c(connector) {}
+        AWSConnector *c;
+    };
     quint16 publish(const QString &topic, const QVariantMap &message);
     quint16 subscribe(const QStringList &topics);
     static void publishCallback(uint16_t actionId, awsiotsdk::ResponseCode rc);
     static void subscribeCallback(uint16_t actionId, awsiotsdk::ResponseCode rc);
     static awsiotsdk::ResponseCode onSubscriptionReceivedCallback(awsiotsdk::util::String topic_name, awsiotsdk::util::String payload,
-                                             std::shared_ptr<SubscriptionHandlerContextData> p_app_handler_data);
+                                             std::shared_ptr<awsiotsdk::mqtt::SubscriptionHandlerContextData> p_app_handler_data);
     static awsiotsdk::ResponseCode onDisconnectedCallback(awsiotsdk::util::String mqtt_client_id,
-                        std::shared_ptr<DisconnectCallbackContextData> p_app_handler_data);
+                        std::shared_ptr<awsiotsdk::DisconnectCallbackContextData> p_app_handler_data);
+
+    void storeRegisteredFlag(bool registered);
+    bool readRegisteredFlag() const;
 
 private:
     std::shared_ptr<awsiotsdk::network::MbedTLSConnection> m_networkConnection;
@@ -81,12 +100,20 @@ private:
     QString m_clientId;
     QString m_clientName;
     QFuture<void> m_connectingFuture;
+    bool m_isCleanSession = true;
 
     int m_transactionId = 0;
     QString m_createDeviceId;
     int m_createDeviceSubscriptionId = 0;
     QHash<quint16, QString> m_pairingRequests;
+    bool m_setupInProgress = false;
+    int m_reconnectCounter = 0;
+    QDateTime m_lastConnectionDrop;
 
+    std::shared_ptr<awsiotsdk::mqtt::SubscriptionHandlerContextData> m_subscriptionContextData;
+    std::shared_ptr<awsiotsdk::DisconnectCallbackContextData> m_disconnectContextData;
+
+    static AWSConnector* s_instance;
     static QHash<quint16, AWSConnector*> s_requestMap;
 };
 

@@ -43,7 +43,7 @@ override_dh_install: $(PREPROCESS_FILES:.in=)
 	cp -a $(CURDIR)/doc/html $(CURDIR)/debian/guh-doc/usr/share/doc/guh/ || true
 
 override_dh_auto_test:
-	dh_auto_test -- TESTARGS="-o -,txt -o test-results.xml,xunitxml"
+	dh_auto_test -- -k TESTARGS="-o -,txt -o test-results.xml,xunitxml"
 
 override_dh_strip:
 	dh_strip --dbg-package=guh-dbg

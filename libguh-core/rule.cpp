@@ -95,7 +95,7 @@ bool Rule::statesActive() const
 
 bool Rule::timeActive() const
 {
-    if (m_timeDescriptor.isEmpty())
+    if (m_timeDescriptor.calendarItems().isEmpty())
         return true;
 
     return m_timeActive;

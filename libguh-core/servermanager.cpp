@@ -80,7 +80,9 @@ ServerManager::ServerManager(GuhConfiguration* configuration, QObject *parent) :
             }
         }
         if (certsLoaded) {
-            m_sslConfiguration.setProtocol(QSsl::TlsV1_1OrLater);
+            // Enable this when we can
+            // Debian jessie doesn't have better options yet and the client apps currently only support up to TLS 1.1
+//            m_sslConfiguration.setProtocol(QSsl::TlsV1_1OrLater);
             m_sslConfiguration.setPrivateKey(m_certificateKey);
             m_sslConfiguration.setLocalCertificate(m_certificate);
         }

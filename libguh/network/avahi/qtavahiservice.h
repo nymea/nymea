@@ -44,7 +44,6 @@ public:
         QtAvahiServiceStateCollision = 3,
         QtAvahiServiceStateFailure = 4
     };
-    Q_ENUM(QtAvahiServiceState)
 
     explicit QtAvahiService(QObject *parent = 0);
     ~QtAvahiService();

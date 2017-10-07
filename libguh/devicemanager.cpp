@@ -1420,7 +1420,7 @@ void DeviceManager::onLoaded()
     emit loaded();
 
     // schedule some housekeeping...
-    QTimer::singleShot(0, this, &DeviceManager::cleanupDeviceStateCache);
+    QTimer::singleShot(0, this, SLOT(cleanupDeviceStateCache()));
 }
 
 void DeviceManager::cleanupDeviceStateCache()

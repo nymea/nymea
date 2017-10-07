@@ -409,10 +409,10 @@ WebServerConfiguration GuhConfiguration::readWebServerConfig(const QString &id)
 
 QDebug operator <<(QDebug debug, const ServerConfiguration &configuration)
 {
-    debug.noquote().nospace() << "ServerConfiguration(" << configuration.address;
-    debug.noquote().nospace() << ", " << configuration.id;
-    debug.noquote().nospace() << ", " << QString("%1:%2").arg(configuration.address.toString()).arg(configuration.port);
-    debug.noquote().nospace() << ") ";
+    debug.nospace() << "ServerConfiguration(" << configuration.address;
+    debug.nospace() << ", " << configuration.id;
+    debug.nospace() << ", " << QString("%1:%2").arg(configuration.address.toString()).arg(configuration.port);
+    debug.nospace() << ") ";
     return debug;
 }
 

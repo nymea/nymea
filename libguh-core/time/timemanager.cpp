@@ -109,15 +109,16 @@ QList<QByteArray> TimeManager::availableTimeZones() const
 
 void TimeManager::stopTimer()
 {
-    qWarning(dcTimeManager()) << "TimeManager timer stopped. You should only see this in tests.";
+    qCWarning(dcTimeManager()) << "TimeManager timer stopped. You should only see this in tests.";
     // Stop clock (used for testing)
     m_guhTimer->stop();
 }
 
 void TimeManager::setTime(const QDateTime &dateTime)
 {
-    qWarning(dcTimeManager()) << "TimeManager time changed. You should only see this in tests.";
+    qCWarning(dcTimeManager()) << "TimeManager time changed. You should only see this in tests.";
     // This method will only be called for testing to set the guhIO intern time
+    qCDebug(dcTimeManager()) << dateTime.toString("dd.MM.yyyy hh:mm:ss");
     emit tick();
     emit dateTimeChanged(dateTime);
 }

@@ -69,6 +69,10 @@ private slots:
     void testCalendarYearlyDateTime_data();
     void testCalendarYearlyDateTime();
 
+    void testCalendarItemDailyStates_data();
+    void testCalendarItemDailyStates();
+
+
     // TimeEventItems
     void testEventItemDateTime_data();
     void testEventItemDateTime();
@@ -97,6 +101,11 @@ private:
     void verifyRuleNotExecuted();
 
     void cleanupMockHistory();
+
+    void removeAllRules();
+
+    void setIntState(const int &value);
+    void setBoolState(const bool &value);
 
     QVariantMap createTimeEventItem(const QString &time = QString(), const QVariantMap &repeatingOption = QVariantMap()) const;
     QVariantMap createTimeEventItem(const int &dateTime, const QVariantMap &repeatingOption = QVariantMap()) const;
@@ -1020,6 +1029,123 @@ void TestTimeManager::testCalendarYearlyDateTime()
     verifyRuleError(response);
 }
 
+void TestTimeManager::testCalendarItemDailyStates_data()
+{
+    initTimeManager();
+
+    // Repeating option
+    QVariantMap repeatingOptionDaily;
+    repeatingOptionDaily.insert("mode", "RepeatingModeDaily");
+
+    // Action
+    QVariantMap action;
+    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("deviceId", m_mockDeviceId);
+    action.insert("ruleActionParams", QVariantList());
+
+    // Exit action (with params)
+    QVariantMap exitAction;
+    QVariantList actionParams;
+    QVariantMap param1;
+    param1.insert("paramTypeId", mockActionParam1ParamTypeId);
+    param1.insert("value", 12);
+    actionParams.append(param1);
+    QVariantMap param2;
+    param2.insert("paramTypeId", mockActionParam2ParamTypeId);
+    param2.insert("value", true);
+    actionParams.append(param2);
+    exitAction.insert("actionTypeId", mockActionIdWithParams);
+    exitAction.insert("deviceId", m_mockDeviceId);
+    exitAction.insert("ruleActionParams", actionParams);
+
+    // Stateevaluators
+    QVariantMap stateEvaluator;
+    QVariantMap stateDescriptorInt;
+    stateDescriptorInt.insert("deviceId", m_mockDeviceId);
+    stateDescriptorInt.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorGreaterOrEqual));
+    stateDescriptorInt.insert("stateTypeId", mockIntStateId);
+    stateDescriptorInt.insert("value", 65);
+    QVariantMap stateDescriptorBool;
+    stateDescriptorBool.insert("deviceId", m_mockDeviceId);
+    stateDescriptorBool.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
+    stateDescriptorBool.insert("stateTypeId", mockBoolStateId);
+    stateDescriptorBool.insert("value", true);
+    QVariantMap stateEvaluatorInt;
+    stateEvaluatorInt.insert("stateDescriptor", stateDescriptorInt);
+    stateEvaluatorInt.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+    QVariantMap stateEvaluatorBool;
+    stateEvaluatorBool.insert("stateDescriptor", stateDescriptorBool);
+    stateEvaluatorBool.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+    QVariantList childEvaluators;
+    childEvaluators.append(stateEvaluatorInt);
+    childEvaluators.append(stateEvaluatorBool);
+    stateEvaluator.insert("childEvaluators", childEvaluators);
+    stateEvaluator.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+
+
+    // The rule
+    QVariantMap ruleMap;
+    ruleMap.insert("name", "Time and state based daily calendar rule");
+    ruleMap.insert("stateEvaluator", stateEvaluator);
+    ruleMap.insert("actions", QVariantList() << action);
+    ruleMap.insert("exitActions", QVariantList() << exitAction);
+    ruleMap.insert("timeDescriptor", createTimeDescriptorCalendar(createCalendarItem("08:00", 10, repeatingOptionDaily)));
+
+    GuhCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(07,59)));
+
+    QVariant response = injectAndWait("Rules.AddRule", ruleMap);
+    verifyRuleError(response);
+
+    QTest::addColumn<QDateTime>("dateTime");
+    QTest::addColumn<bool>("boolValue");
+    QTest::addColumn<int>("intValue");
+    QTest::addColumn<bool>("trigger");
+    QTest::addColumn<bool>("active");
+
+    QTest::newRow("07:59 | true - 66") << QDateTime(QDate::currentDate(), QTime(07,59)) << true << 66 << false << false;
+    QTest::newRow("08:00 | true - 66") << QDateTime(QDate::currentDate(), QTime(8,0)) << true << 66 << true << true;
+    QTest::newRow("08:01 | true - 66") << QDateTime(QDate::currentDate(), QTime(8,1)) << true << 66 << false << false;
+    QTest::newRow("08:02 | false - 66") << QDateTime(QDate::currentDate(), QTime(8,2)) << false << 66 << true << false;
+    QTest::newRow("08:03 | true - 65") << QDateTime(QDate::currentDate(), QTime(8,3)) << true << 65 << true << true;
+    QTest::newRow("08:06 | true - 64") << QDateTime(QDate::currentDate(), QTime(8,6)) << true << 64 << true << false;
+    QTest::newRow("08:06 | true - 65") << QDateTime(QDate::currentDate(), QTime(8,6)) << true << 65 << true << true;
+    QTest::newRow("08:09 | true - 65") << QDateTime(QDate::currentDate(), QTime(8,9)) << true << 65 << false << false;
+    QTest::newRow("08:10 | true - 65") << QDateTime(QDate::currentDate(), QTime(8,10)) << true << 65 << false << false;
+    QTest::newRow("08:11 | true - 65") << QDateTime(QDate::currentDate(), QTime(8,11)) << true << 65 << false << false;
+
+}
+
+void TestTimeManager::testCalendarItemDailyStates()
+{
+    QFETCH(QDateTime, dateTime);
+    QFETCH(bool, boolValue);
+    QFETCH(int, intValue);
+    QFETCH(bool, trigger);
+    QFETCH(bool, active);
+
+    GuhCore::instance()->timeManager()->setTime(dateTime);
+    setBoolState(boolValue);
+    setIntState(intValue);
+
+    // Actions
+    if (trigger && active) {
+        verifyRuleExecuted(mockActionIdNoParams);
+        cleanupMockHistory();
+    }
+
+    // Exit actions
+    if (trigger && !active) {
+        verifyRuleExecuted(mockActionIdWithParams);
+        cleanupMockHistory();
+    }
+
+    // Nothing triggert
+    if (!trigger) {
+        verifyRuleNotExecuted();
+    }
+
+}
+
 void TestTimeManager::testEventItemDateTime_data()
 {
     QTest::addColumn<QDateTime>("dateTime");
@@ -1033,6 +1159,7 @@ void TestTimeManager::testEventItemDateTime()
 {
     QFETCH(QDateTime, dateTime);
 
+    removeAllRules();
     initTimeManager();
 
     // Action (without params)
@@ -1051,15 +1178,16 @@ void TestTimeManager::testEventItemDateTime()
     verifyRuleError(response);
     RuleId ruleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
 
-    QDateTime oneMinuteBeforeEvent = dateTime.addSecs(-60);
-
     // not triggering
-    GuhCore::instance()->timeManager()->setTime(oneMinuteBeforeEvent);
+    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(-120));
+    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(-60));
     verifyRuleNotExecuted();
+
     // trigger
     GuhCore::instance()->timeManager()->setTime(dateTime);
     verifyRuleExecuted(mockActionIdNoParams);
     cleanupMockHistory();
+
     // not triggering
     GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(60));
     verifyRuleNotExecuted();
@@ -1555,6 +1683,47 @@ void TestTimeManager::cleanupMockHistory() {
     QNetworkAccessManager nam;
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
     QNetworkRequest request(QUrl(QString("http://localhost:%1/clearactionhistory").arg(QString::number(m_mockDevice1Port))));
+    QNetworkReply *reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+}
+
+void TestTimeManager::removeAllRules()
+{
+    qDebug() << "Remove all rules";
+    QVariant response = injectAndWait("Rules.GetRules");
+    QVariantList ruleDescriptions = response.toMap().value("params").toMap().value("ruleDescriptions").toList();
+    QVariantMap removeParams;
+    foreach (const QVariant &ruleDescription, ruleDescriptions) {
+        removeParams.insert("ruleId", ruleDescription.toMap().value("id"));
+        response = injectAndWait("Rules.RemoveRule", removeParams);
+        verifyRuleError(response);
+    }
+}
+
+void TestTimeManager::setIntState(const int &value)
+{
+    qDebug() << "Setting mock int state to" << value;
+
+    QNetworkAccessManager nam;
+    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    spy.clear();
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockIntStateId.toString()).arg(value)));
+    QNetworkReply *reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+}
+
+void TestTimeManager::setBoolState(const bool &value)
+{
+    qDebug() << "Setting mock bool state to" << value;
+
+    QNetworkAccessManager nam;
+    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    spy.clear();
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateId.toString()).arg(value)));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);

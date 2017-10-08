@@ -69,6 +69,7 @@ void TestRestVendors::initTestCase()
     config.port = 3333;
     config.sslEnabled = true;
     GuhCore::instance()->configuration()->setWebServerConfiguration(config);
+    qApp->processEvents();
 }
 
 void TestRestVendors::getVendors()

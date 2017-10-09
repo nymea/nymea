@@ -97,6 +97,9 @@ private slots:
     void testEventItemYearly_data();
     void testEventItemYearly();
 
+    void testEventItemStates_data();
+    void testEventItemStates();
+
     void testEnableDisableTimeRule();
 
 private:
@@ -1715,6 +1718,88 @@ void TestTimeManager::testEventItemYearly()
     response = injectAndWait("Rules.RemoveRule", removeParams);
     verifyRuleError(response);
 }
+
+
+void TestTimeManager::testEventItemStates_data()
+{
+    initTimeManager();
+
+    GuhCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(7,59)));
+
+    // Action (without params)
+    QVariantMap action;
+    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("deviceId", m_mockDeviceId);
+    action.insert("ruleActionParams", QVariantList());
+
+    // Time descriptor
+    QVariantMap timeEventItem1 = createTimeEventItem("08:00");
+    QVariantMap timeEventItem2 = createTimeEventItem("09:00");
+    QVariantMap timeDescriptor;
+    timeDescriptor.insert("timeEventItems", QVariantList() << timeEventItem1 << timeEventItem2);
+
+    // State evaluator
+    QVariantMap stateDescriptorBool;
+    stateDescriptorBool.insert("deviceId", m_mockDeviceId);
+    stateDescriptorBool.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
+    stateDescriptorBool.insert("stateTypeId", mockBoolStateId);
+    stateDescriptorBool.insert("value", true);
+
+    QVariantMap stateEvaluator;
+    stateEvaluator.insert("stateDescriptor", stateDescriptorBool);
+
+    // The rule
+    QVariantMap ruleMap;
+    ruleMap.insert("name", "Time and state and event based daily calendar rule");
+    ruleMap.insert("actions", QVariantList() << action);
+    ruleMap.insert("stateEvaluator", stateEvaluator);
+    ruleMap.insert("timeDescriptor", timeDescriptor);
+
+    QVariant response = injectAndWait("Rules.AddRule", ruleMap);
+    verifyRuleError(response);
+    RuleId ruleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
+
+    QVariantMap params;
+    params.insert("ruleId", ruleId);
+    response = injectAndWait("Rules.GetRuleDetails", params);
+
+    QTest::addColumn<QDateTime>("dateTime");
+    QTest::addColumn<bool>("boolValue");
+    QTest::addColumn<bool>("trigger");
+
+    QTest::newRow("TimeEvent 07:59 | state false | not trigger") << QDateTime(QDate::currentDate(), QTime(7,59)) << false << false;
+    QTest::newRow("TimeEvent 07:59 | state true | not trigger") << QDateTime(QDate::currentDate(), QTime(7,59)) << true << false;
+    QTest::newRow("TimeEvent 08:00 | state false | not trigger") << QDateTime(QDate::currentDate(), QTime(8,0)) << false << false;
+    QTest::newRow("TimeEvent 07:59 | state true | not trigger") << QDateTime(QDate::currentDate(), QTime(7,59)) << true << false;
+    QTest::newRow("TimeEvent 08:00 | state true | trigger") << QDateTime(QDate::currentDate(), QTime(8,0)) << true << true;
+    QTest::newRow("TimeEvent 08:01 | state true | not trigger") << QDateTime(QDate::currentDate(), QTime(8,1)) << true << false;
+    QTest::newRow("TimeEvent 08:01 | state false | not trigger") << QDateTime(QDate::currentDate(), QTime(8,1)) << true << false;
+    QTest::newRow("TimeEvent 08:30 | state true | not trigger") << QDateTime(QDate::currentDate(), QTime(8,30)) << true << false;
+    QTest::newRow("TimeEvent 09:00 | state true | trigger") << QDateTime(QDate::currentDate(), QTime(9,0)) << true << true;
+
+
+}
+
+void TestTimeManager::testEventItemStates()
+{
+    QFETCH(QDateTime, dateTime);
+    QFETCH(bool, boolValue);
+    QFETCH(bool, trigger);
+
+    // Set state
+    setBoolState(boolValue);
+
+    // Set time
+    GuhCore::instance()->timeManager()->setTime(dateTime);
+
+    if (trigger) {
+        verifyRuleExecuted(mockActionIdNoParams);
+        cleanupMockHistory();
+    } else {
+        verifyRuleNotExecuted();
+    }
+}
+
 
 void TestTimeManager::testEnableDisableTimeRule()
 {

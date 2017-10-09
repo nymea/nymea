@@ -1014,6 +1014,7 @@ bool RuleEngine::containsState(const StateEvaluator &stateEvaluator, const Event
     if (stateEvaluator.stateDescriptor().isValid() && stateEvaluator.stateDescriptor().stateTypeId().toString() == stateChangeEvent.eventTypeId().toString()) {
         return true;
     }
+
     foreach (const StateEvaluator &childEvaluator, stateEvaluator.childEvaluators()) {
         if (containsState(childEvaluator, stateChangeEvent)) {
             return true;

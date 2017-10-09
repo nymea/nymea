@@ -146,15 +146,15 @@ void GuhTestBase::initTestCase()
     s_loggingFilters.insert("Warnings", true);
     s_loggingFilters.insert("DeviceManager", true);
     s_loggingFilters.insert("RuleEngine", true);
-    s_loggingFilters.insert("Hardware", false);
+    s_loggingFilters.insert("Hardware", true);
     s_loggingFilters.insert("Connection", true);
-    s_loggingFilters.insert("LogEngine", false);
-    s_loggingFilters.insert("TcpServer", false);
-    s_loggingFilters.insert("WebServer", false);
-    s_loggingFilters.insert("WebSocketServer", false);
-    s_loggingFilters.insert("JsonRpc", false);
-    s_loggingFilters.insert("Rest", false);
-    s_loggingFilters.insert("OAuth2", false);
+    s_loggingFilters.insert("LogEngine", true);
+    s_loggingFilters.insert("TcpServer", true);
+    s_loggingFilters.insert("WebServer", true);
+    s_loggingFilters.insert("WebSocketServer", true);
+    s_loggingFilters.insert("JsonRpc", true);
+    s_loggingFilters.insert("Rest", true);
+    s_loggingFilters.insert("OAuth2", true);
     s_loggingFilters.insert("TimeManager", true);
 
     QHash<QString, bool> loggingFiltersPlugins;

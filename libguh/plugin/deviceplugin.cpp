@@ -492,24 +492,24 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                     StateType stateType = stateTypes.findByName(stateVariant.toMap().value("name").toString());
                     QVariantMap stateMap = stateVariant.toMap();
                     if (stateType.id().isNull()) {
-                        qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but doesn't implement state" << stateMap.value("name").toString();
+                        //qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but doesn't implement state" << stateMap.value("name").toString();
                         valid = false;
                         continue;
                     }
                     if (QVariant::nameToType(stateMap.value("type").toByteArray().data()) != stateType.type()) {
-                        qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateMap.value("name").toString() << "has not matching type" << stateMap.value("type").toString();
+                        //qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateMap.value("name").toString() << "has not matching type" << stateMap.value("type").toString();
                         valid = false;
                         continue;
                     }
                     if (stateMap.contains("minimumValue")) {
                         if (stateMap.value("minimumValue").toString() == "any") {
                             if (stateType.minValue().isNull()) {
-                                qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateMap.value("name").toString() << "has no minimum value defined.";
+                                //qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateMap.value("name").toString() << "has no minimum value defined.";
                                 valid = false;
                                 continue;
                             }
                         } else if (stateMap.value("minimumValue") != stateType.minValue()) {
-                            qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateMap.value("name").toString() << "has not matching minimum value:" << stateMap.value("minimumValue") << "!=" << stateType.minValue();
+                            //qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateMap.value("name").toString() << "has not matching minimum value:" << stateMap.value("minimumValue") << "!=" << stateType.minValue();
                             valid = false;
                             continue;
                         }
@@ -517,23 +517,23 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                     if (stateMap.contains("maximumValue")) {
                         if (stateMap.value("maximumValue").toString() == "any") {
                             if (stateType.maxValue().isNull()) {
-                                qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateMap.value("name").toString() << "has no maximum value defined.";
+                                //qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateMap.value("name").toString() << "has no maximum value defined.";
                                 valid = false;
                                 continue;
                             }
                         } else if (stateMap.value("maximumValue") != stateType.maxValue()) {
-                            qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateMap.value("name").toString() << "has not matching maximum value:" << stateMap.value("maximumValue") << "!=" << stateType.minValue();
+                            //qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateMap.value("name").toString() << "has not matching maximum value:" << stateMap.value("maximumValue") << "!=" << stateType.minValue();
                             valid = false;
                             continue;
                         }
                     }
                     if (stateMap.contains("allowedValues") && stateMap.value("allowedValues") != stateType.possibleValues()) {
-                        qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateMap.value("name").toString() << "has not matching allowed values" << stateMap.value("allowedValues") << "!=" << stateType.possibleValues();
+                        //qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateMap.value("name").toString() << "has not matching allowed values" << stateMap.value("allowedValues") << "!=" << stateType.possibleValues();
                         valid = false;
                         continue;
                     }
                     if (stateMap.contains("writable") && stateMap.value("writable").toBool() && actionTypes.findById(ActionTypeId(stateType.id().toString())).id().isNull()) {
-                        qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateMap.value("name").toString() << "is not writable while it should be";
+                        //qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateMap.value("name").toString() << "is not writable while it should be";
                         valid = false;
                         continue;
                     }
@@ -543,18 +543,18 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                     QVariantMap actionMap = actionVariant.toMap();
                     ActionType actionType = actionTypes.findByName(actionMap.value("name").toString());
                     if (actionType.id().isNull()) {
-                        qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but doesn't implement action" << actionMap.value("name").toString();
+                        //qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but doesn't implement action" << actionMap.value("name").toString();
                         valid = false;
                     }
                     QVariantList params = actionMap.value("params").toList();
                     foreach (const QVariant &paramVariant, params) {
                         ParamType paramType = actionType.paramTypes().findByName(paramVariant.toMap().value("name").toString());
                         if (!paramType.isValid()) {
-                            qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but doesn't implement action param" << actionMap.value("name").toString() << ":" << paramVariant.toMap().value("name").toString();
+                            //qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but doesn't implement action param" << actionMap.value("name").toString() << ":" << paramVariant.toMap().value("name").toString();
                             valid = false;
                         } else {
                             if (paramType.type() != QVariant::nameToType(paramVariant.toMap().value("type").toString().toLatin1())) {
-                                qCWarning(dcDeviceManager()) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but param" << paramType.name() << "is of wrong type:" << QVariant::typeToName(paramType.type()) << "expected:" << paramVariant.toMap().value("type").toString();
+                                //qCWarning(dcDeviceManager()) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but param" << paramType.name() << "is of wrong type:" << QVariant::typeToName(paramType.type()) << "expected:" << paramVariant.toMap().value("type").toString();
                                 valid = false;
                             }
                         }
@@ -565,18 +565,18 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                     QVariantMap eventMap = eventVariant.toMap();
                     EventType eventType = eventTypes.findByName(eventMap.value("name").toString());
                     if (eventType.isValid()) {
-                        qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but doesn't implement event" << eventMap.value("name").toString();
+                        //qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but doesn't implement event" << eventMap.value("name").toString();
                         valid = false;
                     }
                     QVariantList params = eventMap.value("params").toList();
                     foreach (const QVariant &paramVariant, params) {
                         ParamType paramType = eventType.paramTypes().findByName(paramVariant.toMap().value("name").toString());
                         if (!paramType.isValid()) {
-                            qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but doesn't implement action param" << eventMap.value("name").toString() << ":" << paramVariant.toMap().value("name").toString();
+                            //qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but doesn't implement action param" << eventMap.value("name").toString() << ":" << paramVariant.toMap().value("name").toString();
                             valid = false;
                         } else {
                             if (paramType.type() != QVariant::nameToType(paramVariant.toMap().value("type").toString().toLatin1())) {
-                                qCWarning(dcDeviceManager()) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but param" << paramType.name() << "is of wrong type:" << QVariant::typeToName(paramType.type()) << "expected:" << paramVariant.toMap().value("type").toString();
+                                //qCWarning(dcDeviceManager()) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but param" << paramType.name() << "is of wrong type:" << QVariant::typeToName(paramType.type()) << "expected:" << paramVariant.toMap().value("type").toString();
                                 valid = false;
                             }
                         }

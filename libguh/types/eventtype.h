@@ -40,6 +40,9 @@ public:
     QString name() const;
     void setName(const QString &name);
 
+    QString displayName() const;
+    void setDisplayName(const QString &displayName);
+
     int index() const;
     void setIndex(const int &index);
 
@@ -56,6 +59,7 @@ public:
 private:
     EventTypeId m_id;
     QString m_name;
+    QString m_displayName;
     int m_index;
     QList<ParamType> m_paramTypes;
     bool m_ruleRelevant;

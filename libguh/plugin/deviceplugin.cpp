@@ -499,7 +499,7 @@ void DevicePlugin::loadMetaData()
 
     }
 
-    QStringList missingFields = verifyFields(QStringList() << "id" << "idName" << "name" << "vendors", m_metaData);
+    QStringList missingFields = verifyFields(QStringList() << "id" << "name" << "displayName" << "vendors", m_metaData);
     if (!missingFields.isEmpty()) {
         qCWarning(dcDeviceManager) << "Skipping plugin because of missing" << missingFields.join(", ") << m_metaData;
         return;
@@ -508,7 +508,7 @@ void DevicePlugin::loadMetaData()
     foreach (const QJsonValue &vendorJson, m_metaData.value("vendors").toArray()) {
         bool broken = false;
         QJsonObject vendorObject = vendorJson.toObject();
-        QStringList missingFields = verifyFields(QStringList() << "id" << "idName" << "name", vendorObject);
+        QStringList missingFields = verifyFields(QStringList() << "id" << "name" << "displayName", vendorObject);
         if (!missingFields.isEmpty()) {
             qCWarning(dcDeviceManager) << "Skipping vendor because of missing" << missingFields.join(", ") << vendorObject;
             broken = true;
@@ -518,7 +518,7 @@ void DevicePlugin::loadMetaData()
         VendorId vendorId = vendorObject.value("id").toString();
         foreach (const QJsonValue &deviceClassJson, vendorJson.toObject().value("deviceClasses").toArray()) {
             QJsonObject deviceClassObject = deviceClassJson.toObject();
-            QStringList missingFields = verifyFields(QStringList() << "id" << "idName" << "name" << "createMethods" << "paramTypes", deviceClassObject);
+            QStringList missingFields = verifyFields(QStringList() << "id" << "name" << "displyName" << "createMethods" << "paramTypes", deviceClassObject);
             if (!missingFields.isEmpty()) {
                 qCWarning(dcDeviceManager) << "Skipping DeviceClass because of missing" << missingFields.join(", ") << deviceClassObject;
                 broken = true;
@@ -526,7 +526,8 @@ void DevicePlugin::loadMetaData()
             }
 
             DeviceClass deviceClass(pluginId(), vendorId, deviceClassObject.value("id").toString());
-            deviceClass.setName(translateValue(m_metaData.value("idName").toString(), deviceClassObject.value("name").toString()));
+            deviceClass.setName(m_metaData.value("name").toString());
+            deviceClass.setDisplayName(translateValue(m_metaData.value("name").toString(), deviceClassObject.value("displayName").toString()));
             DeviceClass::CreateMethods createMethods;
             foreach (const QJsonValue &createMethodValue, deviceClassObject.value("createMethods").toArray()) {
                 if (createMethodValue.toString() == "discovery") {
@@ -596,7 +597,14 @@ void DevicePlugin::loadMetaData()
             int index = 0;
             foreach (const QJsonValue &stateTypesJson, deviceClassObject.value("stateTypes").toArray()) {
                 QJsonObject st = stateTypesJson.toObject();
-                QStringList missingFields = verifyFields(QStringList() << "type" << "id" << "idName" << "name" << "defaultValue" << "eventTypeName", st);
+                bool writableState = false;
+                QStringList requiredFields;
+                requiredFields << "type" << "id" << "name" << "displayName" << "defaultValue" << "displayNameEvent";
+                if (st.contains("writable") && st.value("writable").toBool()) {
+                    writableState = true;
+                    requiredFields << "displayNameAction";
+                }
+                QStringList missingFields = verifyFields(requiredFields, st);
                 if (!missingFields.isEmpty()) {
                     qCWarning(dcDeviceManager) << "Skipping device class" << deviceClass.name() << "because of missing" << missingFields.join(", ") << "in stateType" << st;
                     broken = true;
@@ -605,7 +613,8 @@ void DevicePlugin::loadMetaData()
 
                 QVariant::Type t = QVariant::nameToType(st.value("type").toString().toLatin1().data());
                 StateType stateType(st.value("id").toString());
-                stateType.setName(translateValue(m_metaData.value("idName").toString(), st.value("name").toString()));
+                stateType.setName(m_metaData.value("name").toString());
+                stateType.setDisplayName(translateValue(m_metaData.value("name").toString(), st.value("displayName").toString()));
                 stateType.setIndex(index++);
                 stateType.setType(t);
                 QPair<bool, Types::Unit> unitVerification = loadAndVerifyUnit(st.value("unit").toString());
@@ -653,7 +662,8 @@ void DevicePlugin::loadMetaData()
                 if (st.contains("eventRuleRelevant"))
                     eventType.setRuleRelevant(st.value("eventRuleRelevant").toBool());
 
-                eventType.setName(translateValue(m_metaData.value("idName").toString(), st.value("eventTypeName").toString()));
+                eventType.setName(m_metaData.value("name").toString());
+                eventType.setDisplayName(translateValue(m_metaData.value("name").toString(), st.value("displayNameEvent").toString()));
                 ParamType paramType(ParamTypeId(stateType.id().toString()), translateValue(m_metaData.value("idName").toString(), st.value("name").toString()), stateType.type());
                 paramType.setAllowedValues(stateType.possibleValues());
                 paramType.setDefaultValue(stateType.defaultValue());
@@ -665,16 +675,10 @@ void DevicePlugin::loadMetaData()
                 eventTypes.append(eventType);
 
                 // ActionTypes for writeable StateTypes
-                if (st.contains("writable") && st.value("writable").toBool()) {
-                    // Note: fields already checked in StateType
-                    if (!st.contains("actionTypeName")) {
-                        qCWarning(dcDeviceManager()) << "Missing field \"actionTypeName\" for writable StateType" << st;
-                        broken = true;
-                        break;
-                    }
-
+                if (writableState) {
                     ActionType actionType(ActionTypeId(stateType.id().toString()));
-                    actionType.setName(translateValue(m_metaData.value("idName").toString(), st.value("actionTypeName").toString()));
+                    actionType.setName(m_metaData.value("name").toString());
+                    actionType.setDisplayName(translateValue(m_metaData.value("name").toString(), st.value("displayNameAction").toString()));
                     actionType.setIndex(stateType.index());
                     actionType.setParamTypes(QList<ParamType>() << paramType);
                     actionTypes.append(actionType);
@@ -686,7 +690,7 @@ void DevicePlugin::loadMetaData()
             index = 0;
             foreach (const QJsonValue &actionTypesJson, deviceClassObject.value("actionTypes").toArray()) {
                 QJsonObject at = actionTypesJson.toObject();
-                QStringList missingFields = verifyFields(QStringList() << "id" << "name", at);
+                QStringList missingFields = verifyFields(QStringList() << "id" << "name" << "displayName", at);
                 if (!missingFields.isEmpty()) {
                     qCWarning(dcDeviceManager) << "Skipping device class" << deviceClass.name() << "because of missing" << missingFields.join(", ") << "in actionTypes";
                     broken = true;
@@ -694,7 +698,8 @@ void DevicePlugin::loadMetaData()
                 }
 
                 ActionType actionType(at.value("id").toString());
-                actionType.setName(translateValue(m_metaData.value("idName").toString(), at.value("name").toString()));
+                actionType.setName(m_metaData.value("name").toString());
+                actionType.setDisplayName(translateValue(m_metaData.value("name").toString(), at.value("displayName").toString()));
                 actionType.setIndex(index++);
                 QPair<bool, QList<ParamType> > paramVerification = parseParamTypes(at.value("paramTypes").toArray());
                 if (!paramVerification.first) {
@@ -712,7 +717,7 @@ void DevicePlugin::loadMetaData()
             index = 0;
             foreach (const QJsonValue &eventTypesJson, deviceClassObject.value("eventTypes").toArray()) {
                 QJsonObject et = eventTypesJson.toObject();
-                QStringList missingFields = verifyFields(QStringList() << "id" << "name", et);
+                QStringList missingFields = verifyFields(QStringList() << "id" << "name" << "displayName", et);
                 if (!missingFields.isEmpty()) {
                     qCWarning(dcDeviceManager) << "Skipping device class" << deviceClass.name() << "because of missing" << missingFields.join(", ") << "in eventTypes";
                     broken = true;
@@ -720,7 +725,8 @@ void DevicePlugin::loadMetaData()
                 }
 
                 EventType eventType(et.value("id").toString());
-                eventType.setName(translateValue(m_metaData.value("idName").toString(), translateValue(m_metaData.value("idName").toString(), et.value("name").toString())));
+                eventType.setName(m_metaData.value("name").toString());
+                eventType.setDisplayName(translateValue(m_metaData.value("name").toString(), translateValue(m_metaData.value("displayName").toString(), et.value("name").toString())));
                 eventType.setIndex(index++);
                 if (et.contains("ruleRelevant"))
                     eventType.setRuleRelevant(et.value("ruleRelevant").toBool());

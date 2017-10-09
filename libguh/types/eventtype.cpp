@@ -49,16 +49,28 @@ EventTypeId EventType::id() const
     return m_id;
 }
 
-/*! Returns the name of this EventType, e.g. "Temperature changed". */
+/*! Returns the name of this EventType. */
 QString EventType::name() const
 {
     return m_name;
 }
 
-/*! Set the name for this EventType to \a name, e.g. "Temperature changed". */
+/*! Set the name for this EventType to \a name. */
 void EventType::setName(const QString &name)
 {
     m_name = name;
+}
+
+/*! Returns the displayName of this EventType, e.g. "Temperature changed". */
+QString EventType::displayName() const
+{
+    return m_displayName;
+}
+
+/*! Set the displayName for this EventType to \a name, e.g. "Temperature changed". */
+void EventType::setDisplayName(const QString &displayName)
+{
+    m_displayName = displayName;
 }
 
 /*! Returns the index of this \l{EventType}. The index of an \l{EventType} indicates the order in the \l{DeviceClass}.

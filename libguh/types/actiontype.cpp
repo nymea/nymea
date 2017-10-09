@@ -59,10 +59,22 @@ QString ActionType::name() const
     return m_name;
 }
 
-/*! Set the \a name for this \l{ActionType}. This will be visible to the user. */
+/*! Set the \a name for this \l{ActionType}. */
 void ActionType::setName(const QString &name)
 {
     m_name = name;
+}
+
+/*! Returns the display name of this \l{ActionType}. */
+QString ActionType::displayName() const
+{
+    return m_displayName;
+}
+
+/*! Set the \a displayName for this \l{ActionType}. This will be visible to the user. */
+void ActionType::setDisplayName(const QString &displayName)
+{
+    m_displayName = displayName;
 }
 
 /*! Returns the index of this \l{ActionType}. The index of an \l{ActionType} indicates the order in the \l{DeviceClass}.

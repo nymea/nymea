@@ -129,6 +129,9 @@ public:
     QString name() const;
     void setName(const QString &name);
 
+    QString displayName() const;
+    void setDisplayName(const QString &displayName);
+
     StateTypeId criticalStateTypeId() const;
     void setCriticalStateTypeId(const StateTypeId &criticalStateTypeId);
 
@@ -182,6 +185,7 @@ private:
     VendorId m_vendorId;
     PluginId m_pluginId;
     QString m_name;
+    QString m_displayName;
     StateTypeId m_criticalStateTypeId;
     StateTypeId m_primaryStateTypeId;
     ActionTypeId m_primaryActionTypeId;

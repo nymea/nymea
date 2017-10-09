@@ -42,10 +42,13 @@ private:
     void cleanupMockHistory();
     void cleanupRules();
 
-    DeviceId addPushButtonDevice();
+    DeviceId addDisplayPinDevice();
 
     QVariantMap createEventDescriptor(const DeviceId &deviceId, const EventTypeId &eventTypeId);
     QVariantMap createActionWithParams(const DeviceId &deviceId);
+    QVariantMap createStateEvaluatorFromSingleDescriptor(const QVariantMap &stateDescriptor);
+
+    void setWritableStateValue(const DeviceId &deviceId, const StateTypeId &stateTypeId, const QVariant &value);
 
     void verifyRuleExecuted(const ActionTypeId &actionTypeId);
     void verifyRuleNotExecuted();
@@ -57,6 +60,9 @@ private slots:
     void cleanup();
     void emptyRule();
     void getInvalidRule();
+
+    void testChildEvaluator_data();
+    void testChildEvaluator();
 
     void addRemoveRules_data();
     void addRemoveRules();
@@ -81,9 +87,6 @@ private slots:
     void testStateEvaluator2_data();
     void testStateEvaluator2();
 
-    void testChildEvaluator_data();
-    void testChildEvaluator();
-
     void testStateChange();
 
     void enableDisableRule();
@@ -98,6 +101,7 @@ private slots:
 
     void testHousekeeping_data();
     void testHousekeeping();
+
 };
 
 void TestRules::cleanupMockHistory() {
@@ -119,7 +123,7 @@ void TestRules::cleanupRules() {
     }
 }
 
-DeviceId TestRules::addPushButtonDevice()
+DeviceId TestRules::addDisplayPinDevice()
 {
     // Discover device
     QVariantList discoveryParams;
@@ -129,16 +133,17 @@ DeviceId TestRules::addPushButtonDevice()
     discoveryParams.append(resultCountParam);
 
     QVariantMap params;
-    params.insert("deviceClassId", mockPushButtonDeviceClassId);
+    params.insert("deviceClassId", mockDisplayPinDeviceClassId);
     params.insert("discoveryParams", discoveryParams);
     QVariant response = injectAndWait("Devices.GetDiscoveredDevices", params);
-    verifyDeviceError(response);
+
+    verifyDeviceError(response, DeviceManager::DeviceErrorNoError);
 
     // Pair device
     DeviceDescriptorId descriptorId = DeviceDescriptorId(response.toMap().value("params").toMap().value("deviceDescriptors").toList().first().toMap().value("id").toString());
     params.clear();
-    params.insert("deviceClassId", mockPushButtonDeviceClassId);
-    params.insert("name", "Pushbutton device");
+    params.insert("deviceClassId", mockDisplayPinDeviceClassId);
+    params.insert("name", "Display pin mock device");
     params.insert("deviceDescriptorId", descriptorId.toString());
     response = injectAndWait("Devices.PairDevice", params);
 
@@ -149,12 +154,9 @@ DeviceId TestRules::addPushButtonDevice()
 
     qDebug() << "displayMessage" << displayMessage;
 
-    // Wait for button pressed automatically
-    QTest::qWait(3500);
-
-    // Confirm pairing
     params.clear();
     params.insert("pairingTransactionId", pairingTransactionId.toString());
+    params.insert("secret", "243681");
     response = injectAndWait("Devices.ConfirmPairing", params);
 
     verifyDeviceError(response);
@@ -186,6 +188,56 @@ QVariantMap TestRules::createActionWithParams(const DeviceId &deviceId)
     action.insert("actionTypeId", mockActionIdWithParams);
     action.insert("ruleActionParams", ruleActionParams);
     return action;
+}
+
+QVariantMap TestRules::createStateEvaluatorFromSingleDescriptor(const QVariantMap &stateDescriptor)
+{
+    QVariantMap stateEvaluator;
+    stateEvaluator.insert("stateDescriptor", stateDescriptor);
+    return stateEvaluator;
+}
+
+void TestRules::setWritableStateValue(const DeviceId &deviceId, const StateTypeId &stateTypeId, const QVariant &value)
+{
+    QVariantMap params;
+    params.insert("deviceId", deviceId);
+    params.insert("stateTypeId", stateTypeId);
+    QVariant response = injectAndWait("Devices.GetStateValue", params);
+    verifyDeviceError(response);
+
+    QVariant currentStateValue = response.toMap().value("params").toMap().value("value");
+    bool shouldGetNotification = currentStateValue != value;
+    QSignalSpy stateSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+
+    QVariantMap paramMap;
+    paramMap.insert("paramTypeId", stateTypeId.toString());
+    paramMap.insert("value", value);
+
+    params.clear(); response.clear();
+    params.insert("deviceId", deviceId);
+    params.insert("actionTypeId", stateTypeId.toString());
+    params.insert("params", QVariantList() << paramMap);
+
+    printJson(params);
+
+    response = injectAndWait("Actions.ExecuteAction", params);
+    verifyDeviceError(response);
+
+    if (shouldGetNotification) {
+        stateSpy.wait(200);
+        // Wait for state changed notification
+        QVariantList stateChangedVariants = checkNotifications(stateSpy, "Devices.StateChanged");
+        QVERIFY2(stateChangedVariants.count() == 1, "Did not get Devices.StateChanged notification.");
+
+        QVariantMap notification = stateChangedVariants.first().toMap().value("params").toMap();
+        QVERIFY2(notification.contains("deviceId"), "Devices.StateChanged notification does not contain deviceId");
+        QVERIFY2(DeviceId(notification.value("deviceId").toString()) == deviceId, "Devices.StateChanged notification does not contain the correct deviceId");
+        QVERIFY2(notification.contains("stateTypeId"), "Devices.StateChanged notification does not contain stateTypeId");
+        QVERIFY2(StateTypeId(notification.value("stateTypeId").toString()) == stateTypeId, "Devices.StateChanged notification does not contain the correct stateTypeId");
+        QVERIFY2(notification.contains("value"), "Devices.StateChanged notification does not contain new state value");
+        QVERIFY2(notification.value("value") == QVariant(value), "Devices.StateChanged notification does not contain the new value");
+    }
+
 }
 
 void TestRules::verifyRuleExecuted(const ActionTypeId &actionTypeId)
@@ -1518,9 +1570,11 @@ void TestRules::testStateEvaluator2()
 
 void TestRules::testChildEvaluator_data()
 {
-    cleanupRules();
+    cleanup();
+    enableNotifications();
 
-    DeviceId pushButtonDeviceId = addPushButtonDevice();
+    DeviceId testDeviceId = addDisplayPinDevice();
+    QVERIFY2(!testDeviceId.isNull(), "Could not add push button device for child evaluators");
 
     // Create child evaluators
     // Action
@@ -1545,46 +1599,41 @@ void TestRules::testChildEvaluator_data()
     exitAction.insert("ruleActionParams", actionParams);
 
     // Stateevaluators
-    QVariantMap stateEvaluator;
-
     QVariantMap stateDescriptorPercentage;
-    stateDescriptorPercentage.insert("deviceId", pushButtonDeviceId);
+    stateDescriptorPercentage.insert("deviceId", testDeviceId);
     stateDescriptorPercentage.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorGreaterOrEqual));
     stateDescriptorPercentage.insert("stateTypeId", percentageStateParamTypeId);
     stateDescriptorPercentage.insert("value", 50);
 
     QVariantMap stateDescriptorDouble;
-    stateDescriptorDouble.insert("deviceId", pushButtonDeviceId);
+    stateDescriptorDouble.insert("deviceId", testDeviceId);
     stateDescriptorDouble.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
     stateDescriptorDouble.insert("stateTypeId", doubleStateParamTypeId);
-    stateDescriptorDouble.insert("value", true);
+    stateDescriptorDouble.insert("value", 20.5);
 
     QVariantMap stateDescriptorAllowedValues;
-    stateDescriptorAllowedValues.insert("deviceId", pushButtonDeviceId);
+    stateDescriptorAllowedValues.insert("deviceId", testDeviceId);
     stateDescriptorAllowedValues.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
     stateDescriptorAllowedValues.insert("stateTypeId", allowedValuesStateParamTypeId);
     stateDescriptorAllowedValues.insert("value", "String value 2");
 
     QVariantMap stateDescriptorColor;
-    stateDescriptorColor.insert("deviceId", pushButtonDeviceId);
+    stateDescriptorColor.insert("deviceId", testDeviceId);
     stateDescriptorColor.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
     stateDescriptorColor.insert("stateTypeId", colorStateParamTypeId);
-    stateDescriptorColor.insert("value", "FFFF00");
+    stateDescriptorColor.insert("value", "#00FF00");
 
+    QVariantMap firstStateEvaluator;
+    firstStateEvaluator.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorOr));
+    firstStateEvaluator.insert("childEvaluators", QVariantList() << createStateEvaluatorFromSingleDescriptor(stateDescriptorPercentage) << createStateEvaluatorFromSingleDescriptor(stateDescriptorDouble));
 
+    QVariantMap secondStateEvaluator;
+    secondStateEvaluator.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+    secondStateEvaluator.insert("childEvaluators", QVariantList() << createStateEvaluatorFromSingleDescriptor(stateDescriptorAllowedValues) << createStateEvaluatorFromSingleDescriptor(stateDescriptorColor));
 
-//    QVariantMap stateEvaluatorInt;
-//    stateEvaluatorInt.insert("stateDescriptor", stateDescriptorInt);
-//    stateEvaluatorInt.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
-//    QVariantMap stateEvaluatorBool;
-//    stateEvaluatorBool.insert("stateDescriptor", stateDescriptorBool);
-//    stateEvaluatorBool.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
-//    QVariantList childEvaluators;
-//    childEvaluators.append(stateEvaluatorInt);
-//    childEvaluators.append(stateEvaluatorBool);
-//    stateEvaluator.insert("childEvaluators", childEvaluators);
-//    stateEvaluator.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
-
+    QVariantMap stateEvaluator;
+    stateEvaluator.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+    stateEvaluator.insert("childEvaluators", QVariantList() << firstStateEvaluator << secondStateEvaluator);
 
     // The rule
     QVariantMap ruleMap;
@@ -1593,14 +1642,79 @@ void TestRules::testChildEvaluator_data()
     ruleMap.insert("actions", QVariantList() << action);
     ruleMap.insert("exitActions", QVariantList() << exitAction);
 
+    printJson(ruleMap);
 
-    QVariant response = injectAndWait("Rules.AddRule", ruleMap);
-    verifyRuleError(response);
+
+    // (percentage >= 50 || double == 20.5) && (color == #00FF00 && allowedValue == "String value 2") ? action : exit action
+
+    QTest::addColumn<DeviceId>("deviceId");
+    QTest::addColumn<QVariantMap>("ruleMap");
+    QTest::addColumn<int>("percentageValue");
+    QTest::addColumn<double>("doubleValue");
+    QTest::addColumn<QString>("allowedValue");
+    QTest::addColumn<QString>("colorValue");
+    QTest::addColumn<bool>("trigger");
+    QTest::addColumn<bool>("active");
+
+    QTest::newRow("Unchanged | 2 | 2.5 | String value 1 | #FF0000") << testDeviceId << ruleMap << 2 << 2.5 << "String value 1" << "#FF0000" << false << false;
+    QTest::newRow("Unchanged | 60 | 2.5 | String value 2 | #FF0000") << testDeviceId << ruleMap << 60 << 2.5 << "String value 2" << "#FF0000" << false << false;
+    QTest::newRow("Unchanged | 60 | 20.5 | String value 2 | #FF0000") << testDeviceId << ruleMap << 60 << 20.5 << "String value 2" << "#FF0000" << false << false;
+    QTest::newRow("Active | 60 | 20.5 | String value 2 | #00FF00") << testDeviceId << ruleMap << 60 << 20.5 << "String value 2" << "#00FF00" << true << true;
+    QTest::newRow("Active | 60 | 20.5 | String value 2 | #00FF00") << testDeviceId << ruleMap << 60 << 20.5 << "String value 2" << "#00FF00" << true << true;
 }
 
 void TestRules::testChildEvaluator()
 {
+    QFETCH(DeviceId, deviceId);
+    QFETCH(QVariantMap, ruleMap);
+    QFETCH(int, percentageValue);
+    QFETCH(double, doubleValue);
+    QFETCH(QString, allowedValue);
+    QFETCH(QString, colorValue);
+    QFETCH(bool, trigger);
+    QFETCH(bool, active);
 
+    // Init the states
+    setWritableStateValue(deviceId, StateTypeId(percentageStateParamTypeId.toString()), QVariant(0));
+    setWritableStateValue(deviceId, StateTypeId(doubleStateParamTypeId.toString()), QVariant(0));
+    setWritableStateValue(deviceId, StateTypeId(allowedValuesStateParamTypeId.toString()), QVariant("String value 1"));
+    setWritableStateValue(deviceId, StateTypeId(colorStateParamTypeId.toString()), QVariant("#000000"));
+
+    // Add rule
+    QVariant response = injectAndWait("Rules.AddRule", ruleMap);
+    verifyRuleError(response);
+
+    RuleId ruleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
+
+    // Set the states
+    setWritableStateValue(deviceId, StateTypeId(percentageStateParamTypeId.toString()), QVariant::fromValue(percentageValue));
+    setWritableStateValue(deviceId, StateTypeId(doubleStateParamTypeId.toString()), QVariant::fromValue(doubleValue));
+    setWritableStateValue(deviceId, StateTypeId(allowedValuesStateParamTypeId.toString()), QVariant::fromValue(allowedValue));
+    setWritableStateValue(deviceId, StateTypeId(colorStateParamTypeId.toString()), QVariant::fromValue(colorValue));
+
+    // Verfiy if the rule executed successfully
+    // Actions
+    if (trigger && active) {
+        verifyRuleExecuted(mockActionIdNoParams);
+        cleanupMockHistory();
+    }
+
+    // Exit actions
+    if (trigger && !active) {
+        verifyRuleExecuted(mockActionIdWithParams);
+        cleanupMockHistory();
+    }
+
+    // Nothing triggert
+    if (!trigger) {
+        verifyRuleNotExecuted();
+    }
+
+    // REMOVE rule
+    QVariantMap removeParams;
+    removeParams.insert("ruleId", ruleId);
+    response = injectAndWait("Rules.RemoveRule", removeParams);
+    verifyRuleError(response);
 }
 
 void TestRules::enableDisableRule()
@@ -1930,7 +2044,6 @@ void TestRules::testRuleActionParams_data()
     QTest::newRow("invalid action params2") << invalidAction2 << QVariantMap() << RuleEngine::RuleErrorInvalidRuleActionParameter;
     QTest::newRow("valid action and invalid exit action params1") << action << invalidAction1 << RuleEngine::RuleErrorInvalidRuleActionParameter;
     QTest::newRow("valid action and invalid exit action params2") << action << invalidAction2 << RuleEngine::RuleErrorInvalidRuleActionParameter;
-
 }
 
 void TestRules::testRuleActionParams()

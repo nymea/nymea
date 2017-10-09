@@ -116,9 +116,8 @@ void TimeManager::stopTimer()
 
 void TimeManager::setTime(const QDateTime &dateTime)
 {
-    qCWarning(dcTimeManager()) << "TimeManager time changed. You should only see this in tests.";
+    qCWarning(dcTimeManager()) << "TimeManager time changed" << dateTime.toString("dd.MM.yyyy hh:mm:ss") << "You should only see this in tests.";
     // This method will only be called for testing to set the guhIO intern time
-    qCDebug(dcTimeManager()) << dateTime.toString("dd.MM.yyyy hh:mm:ss");
     emit tick();
     emit dateTimeChanged(dateTime);
 }

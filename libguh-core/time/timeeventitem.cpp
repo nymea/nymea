@@ -97,6 +97,7 @@ bool TimeEventItem::evaluate(const QDateTime &lastEvaluationTime, const QDateTim
         switch (m_repeatingOption.mode()) {
             // If there is no repeating option, we assume it is meant daily.
         case RepeatingOption::RepeatingModeNone:
+            return lastEvaluationTime.time() < m_time && m_time <= dateTime.time();
         case RepeatingOption::RepeatingModeDaily:
             return lastEvaluationTime.time() < m_time && m_time <= dateTime.time();
         case RepeatingOption::RepeatingModeHourly: {

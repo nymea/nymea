@@ -481,7 +481,7 @@ void GuhCore::gotEvent(const Event &event)
     QList<RuleAction> eventBasedActions;
     foreach (const Rule &rule, m_ruleEngine->evaluateEvent(event)) {
         // Event based
-        if (rule.eventDescriptors().count() > 0) {
+        if (!rule.eventDescriptors().isEmpty()) {
             m_logger->logRuleTriggered(rule);
             // check if we have an event based action or a normal action
             foreach (const RuleAction &action, rule.actions()) {

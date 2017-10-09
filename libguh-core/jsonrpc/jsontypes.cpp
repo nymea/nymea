@@ -1371,8 +1371,11 @@ EventDescriptor JsonTypes::unpackEventDescriptor(const QVariantMap &eventDescrip
 StateEvaluator JsonTypes::unpackStateEvaluator(const QVariantMap &stateEvaluatorMap)
 {
     StateEvaluator ret(unpackStateDescriptor(stateEvaluatorMap.value("stateDescriptor").toMap()));
-    if (stateEvaluatorMap.contains("operator"))
+    if (stateEvaluatorMap.contains("operator")) {
         ret.setOperatorType((Types::StateOperator)s_stateOperator.indexOf(stateEvaluatorMap.value("operator").toString()));
+    } else {
+        ret.setOperatorType(Types::StateOperatorAnd);
+    }
 
     QList<StateEvaluator> childEvaluators;
     foreach (const QVariant &childEvaluator, stateEvaluatorMap.value("childEvaluators").toList())

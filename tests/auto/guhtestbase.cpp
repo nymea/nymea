@@ -157,6 +157,7 @@ void GuhTestBase::initTestCase()
     s_loggingFilters.insert("OAuth2", true);
     s_loggingFilters.insert("TimeManager", true);
 
+
     QHash<QString, bool> loggingFiltersPlugins;
     foreach (const QJsonObject &pluginMetadata, DeviceManager::pluginsMetadata()) {
         loggingFiltersPlugins.insert(pluginMetadata.value("idName").toString(), false);

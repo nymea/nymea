@@ -1213,12 +1213,13 @@ void TestTimeManager::testCalendarItemEvent()
     } else {
         verifyRuleNotExecuted();
     }
-
 }
 
 void TestTimeManager::testCalendarItemStatesEvent_data()
 {
     initTimeManager();
+
+    GuhCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(7,59)));
 
     // Action (without params)
     QVariantMap action;
@@ -1243,13 +1244,11 @@ void TestTimeManager::testCalendarItemStatesEvent_data()
 
     // The rule
     QVariantMap ruleMap;
-    ruleMap.insert("name", "Time and state based daily calendar rule");
+    ruleMap.insert("name", "Time and state and event based daily calendar rule");
     ruleMap.insert("actions", QVariantList() << action);
     ruleMap.insert("eventDescriptors", QVariantList() << eventDescriptor);
-    ruleMap.insert("stateEvaluator", QVariantList() << stateEvaluator);
+    ruleMap.insert("stateEvaluator", stateEvaluator);
     ruleMap.insert("timeDescriptor", createTimeDescriptorCalendar(createCalendarItem("08:00", 10)));
-
-    GuhCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(7,59)));
 
     QVariant response = injectAndWait("Rules.AddRule", ruleMap);
     verifyRuleError(response);
@@ -1258,8 +1257,6 @@ void TestTimeManager::testCalendarItemStatesEvent_data()
     QVariantMap params;
     params.insert("ruleId", ruleId);
     response = injectAndWait("Rules.GetRuleDetails", params);
-    printJson(response);
-
 
     QTest::addColumn<QDateTime>("dateTime");
     QTest::addColumn<bool>("boolValue");
@@ -1936,11 +1933,24 @@ void TestTimeManager::triggerMockEvent1()
     QNetworkAccessManager nam;
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
 
+    QSignalSpy eventSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+
     QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1Id.toString())));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
+
+    eventSpy.wait(200);
+    QVariantList eventTriggerVariants = checkNotifications(eventSpy, "Events.EventTriggered");
+    QVERIFY2(eventTriggerVariants.count() == 1, "Did not get Events.EventTriggered notification.");
+    QVERIFY2(eventTriggerVariants.first().toMap().value("params").toMap().contains("event"), "Notification Events.EventTriggered does not contain event.");
+    QVariantMap eventMap = eventTriggerVariants.first().toMap().value("params").toMap().value("event").toMap();
+
+    QVERIFY2(eventMap.contains("deviceId"), "Events.EventTriggered notification does not contain deviceId");
+    QVERIFY2(DeviceId(eventMap.value("deviceId").toString()) == m_mockDeviceId, "Events.EventTriggered notification does not contain the correct deviceId");
+    QVERIFY2(eventMap.contains("eventTypeId"), "Events.EventTriggered notification does not contain eventTypeId");
+    QVERIFY2(EventTypeId(eventMap.value("eventTypeId").toString()) == mockEvent1Id, "Events.EventTriggered notification does not contain the correct eventTypeId");
 }
 
 QVariantMap TestTimeManager::createTimeEventItem(const QString &time, const QVariantMap &repeatingOption) const

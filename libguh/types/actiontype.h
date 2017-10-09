@@ -40,6 +40,9 @@ public:
     QString name() const;
     void setName(const QString &name);
 
+    QString displayName() const;
+    void setDisplayName(const QString &displayName);
+
     int index() const;
     void setIndex(const int &index);
 
@@ -49,6 +52,7 @@ public:
 private:
     ActionTypeId m_id;
     QString m_name;
+    QString m_displayName;
     int m_index;
     ParamTypes m_paramTypes;
 };

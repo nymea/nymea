@@ -77,13 +77,13 @@ def extractPlugin(pluginMap):
 def extractParamTypes(paramTypes, contextName):
     for paramType in paramTypes:
         try:
-            variableName = '%sParamTypeId' % (paramType['idName'])
+            variableName = '%sParamTypeId' % (paramType['name'])
             if not variableName in variableNames:
                 variableNames.append(variableName)
                 printInfo('Define ParamTypeId %s = %s' % (variableName, paramType['id']))
                 if args.filetype is 'i':
                     writeToFile('ParamTypeId %s = ParamTypeId(\"%s\");' % (variableName, paramType['id']))
-                addTranslationString(paramType['name'], 'The name of the paramType (%s) of %s' % (paramType['id'], contextName))
+                addTranslationString(paramType['displayName'], 'The name of the paramType (%s) of %s' % (paramType['id'], contextName))
                 createExternDefinition('ParamTypeId', variableName)
             else:
                 printWarning('Duplicated variable name \"%s\" for ParamTypeId %s -> skipping' % (variableName, paramType['id']))
@@ -95,13 +95,13 @@ def extractParamTypes(paramTypes, contextName):
 def extractVendors(vendors):
     for vendor in vendors:
         try:
-            variableName = '%sVendorId' % (vendor['idName'])
+            variableName = '%sVendorId' % (vendor['name'])
             if not variableName in variableNames:
                 variableNames.append(variableName)
                 printInfo('Define VendorId %s = %s' % (variableName, vendor['id']))
                 if args.filetype is 'i':
                     writeToFile('VendorId %s = VendorId(\"%s\");' % (variableName, vendor['id']))
-                addTranslationString(vendor['name'], 'The name of the vendor (%s)' % vendor['id'])
+                addTranslationString(vendor['displayName'], 'The name of the vendor (%s)' % vendor['id'])
                 createExternDefinition('VendorId', variableName)
             else:
                 printWarning('Duplicated variable name \"%s\" for VendorId %s -> skipping' % (variableName, param['id']))
@@ -116,7 +116,7 @@ def extractVendors(vendors):
 def extractDeviceClasses(deviceClasses):
     for deviceClass in deviceClasses:
         try:
-            variableName = '%sDeviceClassId' % (deviceClass['idName'])
+            variableName = '%sDeviceClassId' % (deviceClass['name'])
 
             if 'pairingInfo' in deviceClass:
                 addTranslationString(deviceClass['pairingInfo'], 'The pairing info of deviceClass %s' % deviceClass['name'])
@@ -126,7 +126,7 @@ def extractDeviceClasses(deviceClasses):
                 printInfo('Define DeviceClassId %s = %s' % (variableName, deviceClass['id']))
                 if args.filetype is 'i':
                     writeToFile('DeviceClassId %s = DeviceClassId(\"%s\");' % (variableName, deviceClass['id']))
-                addTranslationString(deviceClass['name'], 'The name of the DeviceClass (%s)' %(deviceClass['id']))
+                addTranslationString(deviceClass['displayName'], 'The name of the DeviceClass (%s)' %(deviceClass['id']))
                 createExternDefinition('DeviceClassId', variableName)
             else:
                 printWarning('Duplicated variable name \"%s\" for DeviceClassId %s -> skipping' % (variableName, deviceClass['deviceClassId']))
@@ -155,7 +155,7 @@ def extractStateTypes(stateTypes, deviceClassName):
     for stateType in stateTypes:
         try:
             # Define StateType
-            variableName = '%sStateTypeId' % (stateType['idName'])
+            variableName = '%sStateTypeId' % (stateType['name'])
             #addTranslationString(stateType['name'], 'The name of the stateType (%s) of DeviceClass %s' % (stateType['id'], deviceClassName))
             if not variableName in variableNames:
                 variableNames.append(variableName)
@@ -167,9 +167,9 @@ def extractStateTypes(stateTypes, deviceClassName):
                 printWarning('Duplicated variable name \"%s\" for StateTypeId %s -> skipping' % (variableName, stateType['id']))
 
             # Create EventTypeId for this state
-            variableName = '%sEventTypeId' % (stateType['idName'])
+            variableName = '%sEventTypeId' % (stateType['name'])
             if not variableName in variableNames:
-                addTranslationString(stateType['eventTypeName'], 'The name of the autocreated EventType (%s)' % stateType['id'])
+                addTranslationString(stateType['displayNameEvent'], 'The name of the autocreated EventType (%s)' % stateType['id'])
                 variableNames.append(variableName)
                 printInfo('Define EventTypeId %s = %s' % (variableName, stateType['id']))
                 if args.filetype is 'i':
@@ -179,7 +179,7 @@ def extractStateTypes(stateTypes, deviceClassName):
                 printWarning('Duplicated variable name \"%s\" for autocreated EventTypeId %s -> skipping' % (variableName, stateType['id']))
 
             #ParamType for EventType/ActionType
-            variableName = '%sStateParamTypeId' % (stateType['idName'])
+            variableName = '%sStateParamTypeId' % (stateType['name'])
             if not variableName in variableNames:
                 variableNames.append(variableName)
                 printInfo('Define ParamTypeId %s for StateType %s = %s' % (variableName, variableName, stateType['id']))
@@ -192,11 +192,11 @@ def extractStateTypes(stateTypes, deviceClassName):
 
             # Create ActionTypeId if the state is writable
             if 'writable' in stateType and stateType['writable']:
-                variableName = '%sActionTypeId' % (stateType['idName'])
+                variableName = '%sActionTypeId' % (stateType['name'])
                 if not variableName in variableNames:
                     variableNames.append(variableName)
                     printInfo('Define ActionTypeId for writable StateType %s = %s' % (variableName, stateType['id']))
-                    addTranslationString(stateType['actionTypeName'], 'The name of the autocreated ActionType (%s)' % stateType['id'])
+                    addTranslationString(stateType['displayNameAction'], 'The name of the autocreated ActionType (%s)' % stateType['id'])
                     if args.filetype is 'i':
                         writeToFile('ActionTypeId %s = ActionTypeId(\"%s\");' % (variableName, stateType['id']))
                     createExternDefinition('ActionTypeId', variableName)
@@ -212,10 +212,10 @@ def extractActionTypes(actionTypes, deviceClassName):
     for actionType in actionTypes:
         try:
             # Define ActionTypeId
-            variableName = '%sActionTypeId' % (actionType['idName'])
+            variableName = '%sActionTypeId' % (actionType['name'])
             if not variableName in variableNames:
                 variableNames.append(variableName)
-                addTranslationString(actionType['name'], 'The name of the ActionType %s of deviceClass %s' % (actionType['id'], deviceClassName))
+                addTranslationString(actionType['displayName'], 'The name of the ActionType %s of deviceClass %s' % (actionType['id'], deviceClassName))
                 if args.filetype is 'i':
                     writeToFile('ActionTypeId %s = ActionTypeId(\"%s\");' % (variableName, actionType['id']))
                 createExternDefinition('ActionTypeId', variableName)
@@ -235,10 +235,10 @@ def extractEventTypes(eventTypes, deviceClassName):
     for eventType in eventTypes:
         try:
             # Define EventTypeId
-            variableName = '%sEventTypeId' % (eventType['idName'])
+            variableName = '%sEventTypeId' % (eventType['name'])
             if not variableName in variableNames:
                 variableNames.append(variableName)
-                addTranslationString(eventType['name'], 'The name of the EventType %s of deviceClass %s' % (eventType['id'], deviceClassName))
+                addTranslationString(eventType['displayName'], 'The name of the EventType %s of deviceClass %s' % (eventType['id'], deviceClassName))
                 if args.filetype is 'i':
                     writeToFile('EventTypeId %s = EventTypeId(\"%s\");' % (variableName, eventType['id']))
                 createExternDefinition('EventTypeId', variableName)
@@ -274,9 +274,9 @@ def writeTranslationStrings():
         for index, value in enumerate(translationStrings):
             writeToFile('    //: %s' % value[1])
             if index != len(translationStrings) - 1:
-                writeToFile('    QT_TRANSLATE_NOOP(\"%s\", \"%s\"), \n' % (pluginMap['idName'], value[0]))
+                writeToFile('    QT_TRANSLATE_NOOP(\"%s\", \"%s\"), \n' % (pluginMap['name'], value[0]))
             else:
-                writeToFile('    QT_TRANSLATE_NOOP(\"%s\", \"%s\")' % (pluginMap['idName'], value[0]))
+                writeToFile('    QT_TRANSLATE_NOOP(\"%s\", \"%s\")' % (pluginMap['name'], value[0]))
 
         writeToFile('};')
 
@@ -319,10 +319,10 @@ def writePluginInfoFile():
     writeToFile('')
     writeToFile('// Logging category')
 
-    if 'idName' in pluginMap:
-        writeToFile('Q_DECLARE_LOGGING_CATEGORY(dc%s)' % pluginMap['idName'])
-        writeToFile('Q_LOGGING_CATEGORY(dc%s, \"%s\")' % (pluginMap['idName'], pluginMap['idName']))
-        printInfo('Define logging category: \'dc%s\'' % pluginMap['idName'])
+    if 'name' in pluginMap:
+        writeToFile('Q_DECLARE_LOGGING_CATEGORY(dc%s)' % pluginMap['name'])
+        writeToFile('Q_LOGGING_CATEGORY(dc%s, \"%s\")' % (pluginMap['name'], pluginMap['name']))
+        printInfo('Define logging category: \'dc%s\'' % pluginMap['name'])
 
     writeToFile('')
 
@@ -342,8 +342,7 @@ def writeExternPluginInfoFile():
     writeToFile('/* This file is generated by the guh build system. Any changes to this file will')
     writeToFile(' * be lost.')
     writeToFile(' *')
-    writeToFile(' * If you want to change this file, edit the plugin\'s json file and add')
-    writeToFile(' * idName tags where appropriate.')
+    writeToFile(' * If you want to change this file, edit the plugin\'s json file.')
     writeToFile(' */')
     writeToFile('')
     writeToFile('#ifndef EXTERNPLUGININFO_H')
@@ -359,8 +358,8 @@ def writeExternPluginInfoFile():
     writeToFile('')
     writeToFile('// Logging category definition')
 
-    if 'idName' in pluginMap:
-        writeToFile('Q_DECLARE_LOGGING_CATEGORY(dc%s)' % pluginMap['idName'])
+    if 'name' in pluginMap:
+        writeToFile('Q_DECLARE_LOGGING_CATEGORY(dc%s)' % pluginMap['name'])
 
     writeToFile('')
     writeToFile('#endif // EXTERNPLUGININFO_H')

@@ -42,6 +42,8 @@ private:
     void cleanupMockHistory();
     void cleanupRules();
 
+    DeviceId addPushButtonDevice();
+
     QVariantMap createEventDescriptor(const DeviceId &deviceId, const EventTypeId &eventTypeId);
     QVariantMap createActionWithParams(const DeviceId &deviceId);
 
@@ -79,6 +81,9 @@ private slots:
     void testStateEvaluator2_data();
     void testStateEvaluator2();
 
+    void testChildEvaluator_data();
+    void testChildEvaluator();
+
     void testStateChange();
 
     void enableDisableRule();
@@ -112,6 +117,49 @@ void TestRules::cleanupRules() {
         params.insert("ruleId", ruleDescription.toMap().value("id").toString());
         verifyRuleError(injectAndWait("Rules.RemoveRule", params));
     }
+}
+
+DeviceId TestRules::addPushButtonDevice()
+{
+    // Discover device
+    QVariantList discoveryParams;
+    QVariantMap resultCountParam;
+    resultCountParam.insert("paramTypeId", resultCountParamTypeId);
+    resultCountParam.insert("value", 1);
+    discoveryParams.append(resultCountParam);
+
+    QVariantMap params;
+    params.insert("deviceClassId", mockPushButtonDeviceClassId);
+    params.insert("discoveryParams", discoveryParams);
+    QVariant response = injectAndWait("Devices.GetDiscoveredDevices", params);
+    verifyDeviceError(response);
+
+    // Pair device
+    DeviceDescriptorId descriptorId = DeviceDescriptorId(response.toMap().value("params").toMap().value("deviceDescriptors").toList().first().toMap().value("id").toString());
+    params.clear();
+    params.insert("deviceClassId", mockPushButtonDeviceClassId);
+    params.insert("name", "Pushbutton device");
+    params.insert("deviceDescriptorId", descriptorId.toString());
+    response = injectAndWait("Devices.PairDevice", params);
+
+    verifyDeviceError(response);
+
+    PairingTransactionId pairingTransactionId(response.toMap().value("params").toMap().value("pairingTransactionId").toString());
+    QString displayMessage = response.toMap().value("params").toMap().value("displayMessage").toString();
+
+    qDebug() << "displayMessage" << displayMessage;
+
+    // Wait for button pressed automatically
+    QTest::qWait(3500);
+
+    // Confirm pairing
+    params.clear();
+    params.insert("pairingTransactionId", pairingTransactionId.toString());
+    response = injectAndWait("Devices.ConfirmPairing", params);
+
+    verifyDeviceError(response);
+
+    return DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
 }
 
 QVariantMap TestRules::createEventDescriptor(const DeviceId &deviceId, const EventTypeId &eventTypeId)
@@ -1466,6 +1514,93 @@ void TestRules::testStateEvaluator2()
     mainEvaluator.setOperatorType(stateOperator);
 
     QVERIFY2(mainEvaluator.evaluate() == shouldMatch, shouldMatch ? "State should match" : "State shouldn't match");
+}
+
+void TestRules::testChildEvaluator_data()
+{
+    cleanupRules();
+
+    DeviceId pushButtonDeviceId = addPushButtonDevice();
+
+    // Create child evaluators
+    // Action
+    QVariantMap action;
+    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("deviceId", m_mockDeviceId);
+    action.insert("ruleActionParams", QVariantList());
+
+    // Exit action (with params)
+    QVariantMap exitAction;
+    QVariantList actionParams;
+    QVariantMap param1;
+    param1.insert("paramTypeId", mockActionParam1ParamTypeId);
+    param1.insert("value", 12);
+    actionParams.append(param1);
+    QVariantMap param2;
+    param2.insert("paramTypeId", mockActionParam2ParamTypeId);
+    param2.insert("value", true);
+    actionParams.append(param2);
+    exitAction.insert("actionTypeId", mockActionIdWithParams);
+    exitAction.insert("deviceId", m_mockDeviceId);
+    exitAction.insert("ruleActionParams", actionParams);
+
+    // Stateevaluators
+    QVariantMap stateEvaluator;
+
+    QVariantMap stateDescriptorPercentage;
+    stateDescriptorPercentage.insert("deviceId", pushButtonDeviceId);
+    stateDescriptorPercentage.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorGreaterOrEqual));
+    stateDescriptorPercentage.insert("stateTypeId", percentageStateParamTypeId);
+    stateDescriptorPercentage.insert("value", 50);
+
+    QVariantMap stateDescriptorDouble;
+    stateDescriptorDouble.insert("deviceId", pushButtonDeviceId);
+    stateDescriptorDouble.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
+    stateDescriptorDouble.insert("stateTypeId", doubleStateParamTypeId);
+    stateDescriptorDouble.insert("value", true);
+
+    QVariantMap stateDescriptorAllowedValues;
+    stateDescriptorAllowedValues.insert("deviceId", pushButtonDeviceId);
+    stateDescriptorAllowedValues.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
+    stateDescriptorAllowedValues.insert("stateTypeId", allowedValuesStateParamTypeId);
+    stateDescriptorAllowedValues.insert("value", "String value 2");
+
+    QVariantMap stateDescriptorColor;
+    stateDescriptorColor.insert("deviceId", pushButtonDeviceId);
+    stateDescriptorColor.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
+    stateDescriptorColor.insert("stateTypeId", colorStateParamTypeId);
+    stateDescriptorColor.insert("value", "FFFF00");
+
+
+
+//    QVariantMap stateEvaluatorInt;
+//    stateEvaluatorInt.insert("stateDescriptor", stateDescriptorInt);
+//    stateEvaluatorInt.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+//    QVariantMap stateEvaluatorBool;
+//    stateEvaluatorBool.insert("stateDescriptor", stateDescriptorBool);
+//    stateEvaluatorBool.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+//    QVariantList childEvaluators;
+//    childEvaluators.append(stateEvaluatorInt);
+//    childEvaluators.append(stateEvaluatorBool);
+//    stateEvaluator.insert("childEvaluators", childEvaluators);
+//    stateEvaluator.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+
+
+    // The rule
+    QVariantMap ruleMap;
+    ruleMap.insert("name", "Child evaluator rule");
+    ruleMap.insert("stateEvaluator", stateEvaluator);
+    ruleMap.insert("actions", QVariantList() << action);
+    ruleMap.insert("exitActions", QVariantList() << exitAction);
+
+
+    QVariant response = injectAndWait("Rules.AddRule", ruleMap);
+    verifyRuleError(response);
+}
+
+void TestRules::testChildEvaluator()
+{
+
 }
 
 void TestRules::enableDisableRule()

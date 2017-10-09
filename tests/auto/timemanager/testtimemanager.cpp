@@ -1108,9 +1108,11 @@ void TestTimeManager::testCalendarItemDailyStates_data()
     QTest::newRow("08:02 | false - 66") << QDateTime(QDate::currentDate(), QTime(8,2)) << false << 66 << true << false;
     QTest::newRow("08:03 | true - 65") << QDateTime(QDate::currentDate(), QTime(8,3)) << true << 65 << true << true;
     QTest::newRow("08:06 | true - 64") << QDateTime(QDate::currentDate(), QTime(8,6)) << true << 64 << true << false;
-    QTest::newRow("08:06 | true - 65") << QDateTime(QDate::currentDate(), QTime(8,6)) << true << 65 << true << true;
+    QTest::newRow("08:07 | false - 64") << QDateTime(QDate::currentDate(), QTime(8,7)) << false << 64 << false << false;
+    QTest::newRow("08:07 | false - 65") << QDateTime(QDate::currentDate(), QTime(8,7)) << false << 65 << false << false;
+    QTest::newRow("08:08 | true - 65") << QDateTime(QDate::currentDate(), QTime(8,8)) << true << 65 << true << true;
     QTest::newRow("08:09 | true - 65") << QDateTime(QDate::currentDate(), QTime(8,9)) << true << 65 << false << false;
-    QTest::newRow("08:10 | true - 65") << QDateTime(QDate::currentDate(), QTime(8,10)) << true << 65 << false << false;
+    QTest::newRow("08:10 | true - 65") << QDateTime(QDate::currentDate(), QTime(8,10)) << true << 65 << true << false;
     QTest::newRow("08:11 | true - 65") << QDateTime(QDate::currentDate(), QTime(8,11)) << true << 65 << false << false;
 
 }
@@ -1159,7 +1161,6 @@ void TestTimeManager::testEventItemDateTime()
 {
     QFETCH(QDateTime, dateTime);
 
-    removeAllRules();
     initTimeManager();
 
     // Action (without params)
@@ -1645,6 +1646,7 @@ void TestTimeManager::testEnableDisableTimeRule()
 void TestTimeManager::initTimeManager()
 {
     cleanupMockHistory();
+    removeAllRules();
     GuhCore::instance()->timeManager()->stopTimer();
     qDebug() << GuhCore::instance()->timeManager()->currentTime().toString();
     qDebug() << GuhCore::instance()->timeManager()->currentDate().toString();

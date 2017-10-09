@@ -1776,8 +1776,7 @@ void TestTimeManager::testEventItemStates_data()
     QTest::newRow("TimeEvent 08:01 | state false | not trigger") << QDateTime(QDate::currentDate(), QTime(8,1)) << true << false;
     QTest::newRow("TimeEvent 08:30 | state true | not trigger") << QDateTime(QDate::currentDate(), QTime(8,30)) << true << false;
     QTest::newRow("TimeEvent 09:00 | state true | trigger") << QDateTime(QDate::currentDate(), QTime(9,0)) << true << true;
-
-
+    QTest::newRow("TimeEvent 09:01 | state true | not trigger") << QDateTime(QDate::currentDate(), QTime(9,1)) << true << false;
 }
 
 void TestTimeManager::testEventItemStates()

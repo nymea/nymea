@@ -20,4 +20,3 @@ SUBDIRS = versioning \
         #coap \ # temporary removed until fixed
         configurations \
         timemanager \
-        settings \

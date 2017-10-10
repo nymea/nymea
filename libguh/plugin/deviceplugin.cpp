@@ -554,7 +554,7 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
                             valid = false;
                         } else {
                             if (paramType.type() != QVariant::nameToType(paramVariant.toMap().value("type").toString().toLatin1())) {
-                                //qCWarning(dcDeviceManager()) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but param" << paramType.name() << "is of wrong type:" << QVariant::typeToName(paramType.type()) << "expected:" << paramVariant.toMap().value("type").toString();
+                                qCWarning(dcDeviceManager()) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but param" << paramType.name() << "is of wrong type:" << QVariant::typeToName(paramType.type()) << "expected:" << paramVariant.toMap().value("type").toString();
                                 valid = false;
                             }
                         }

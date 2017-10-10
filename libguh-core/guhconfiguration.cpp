@@ -164,9 +164,14 @@ void GuhConfiguration::setServerName(const QString &serverName)
 
     GuhSettings settings(GuhSettings::SettingsRoleGlobal);
     settings.beginGroup("guhd");
-    settings.setValue("name", serverName);
-    settings.endGroup();
-    emit serverNameChanged();
+    if (settings.value("name").toString() == serverName) {
+        qCDebug(dcApplication()) << "Configuration: Server name unchanged.";
+        settings.endGroup();
+    } else {
+        settings.setValue("name", serverName);
+        settings.endGroup();
+        emit serverNameChanged();
+    }
 }
 
 QByteArray GuhConfiguration::timeZone() const
@@ -182,9 +187,14 @@ void GuhConfiguration::setTimeZone(const QByteArray &timeZone)
 
     GuhSettings settings(GuhSettings::SettingsRoleGlobal);
     settings.beginGroup("guhd");
-    settings.setValue("timeZone", timeZone);
-    settings.endGroup();
-    emit timeZoneChanged();
+    if (settings.value("timeZone").toByteArray() == timeZone) {
+        qCDebug(dcApplication()) << "Configuration: Time zone unchanged.";
+        settings.endGroup();
+    } else {
+        settings.setValue("timeZone", timeZone);
+        settings.endGroup();
+        emit timeZoneChanged();
+    }
 }
 
 QLocale GuhConfiguration::locale() const
@@ -200,9 +210,14 @@ void GuhConfiguration::setLocale(const QLocale &locale)
 
     GuhSettings settings(GuhSettings::SettingsRoleGlobal);
     settings.beginGroup("guhd");
-    settings.setValue("language", locale.name());
-    settings.endGroup();
-    emit localeChanged();
+    if (settings.value("language").toString() == locale.name()) {
+        qCDebug(dcApplication()) << "Configuration: Language unchanged.";
+        settings.endGroup();
+    } else {
+        settings.setValue("language", locale.name());
+        settings.endGroup();
+        emit localeChanged();
+    }
 }
 
 QHash<QString, ServerConfiguration> GuhConfiguration::tcpServerConfigurations() const

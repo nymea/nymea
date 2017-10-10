@@ -171,7 +171,7 @@ protected:
     // just for debugging
     inline void printJson(const QVariant &response) {
         QJsonDocument jsonDoc = QJsonDocument::fromVariant(response);
-        qDebug() << jsonDoc.toJson();
+        qDebug() << qUtf8Printable(jsonDoc.toJson());
     }
 
     void restartServer();

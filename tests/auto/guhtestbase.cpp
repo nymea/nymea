@@ -116,27 +116,29 @@ GuhTestBase::GuhTestBase(QObject *parent) :
     qsrand(QDateTime::currentMSecsSinceEpoch());
     m_mockDevice1Port = 1337 + (qrand() % 1000);
     m_mockDevice2Port = 7331 + (qrand() % 1000);
+
+    // Important for settings
     QCoreApplication::instance()->setOrganizationName("guh-test");
-
-    QSignalSpy spy(GuhCore::instance(), SIGNAL(initialized()));
-    spy.wait();
-
-    // Yes, we're intentionally mixing upper/lower case email here... username should not be case sensitive
-    GuhCore::instance()->userManager()->removeUser("dummy@guh.io");
-    GuhCore::instance()->userManager()->createUser("dummy@guh.io", "DummyPW1!");
-    m_apiToken = GuhCore::instance()->userManager()->authenticate("Dummy@guh.io", "DummyPW1!", "testcase");
 }
 
 void GuhTestBase::initTestCase()
 {
     qDebug() << "GuhTestBase starting.";
+
     // If testcase asserts cleanup won't do. Lets clear any previous test run settings leftovers
+    qDebug() << "Reset test settings";
     GuhSettings rulesSettings(GuhSettings::SettingsRoleRules);
     rulesSettings.clear();
     GuhSettings deviceSettings(GuhSettings::SettingsRoleDevices);
     deviceSettings.clear();
     GuhSettings pluginSettings(GuhSettings::SettingsRolePlugins);
     pluginSettings.clear();
+    GuhSettings statesSettings(GuhSettings::SettingsRoleDeviceStates);
+    statesSettings.clear();
+
+    // Reset to default settings
+    GuhSettings guhdSettings(GuhSettings::SettingsRoleGlobal);
+    guhdSettings.clear();
 
     // debug categories
     // logging filers for core and libguh
@@ -171,18 +173,29 @@ void GuhTestBase::initTestCase()
 
     QLoggingCategory::installFilter(loggingCategoryFilter);
 
+    // Start the server
     GuhCore::instance();
 
+    // Wait unitl the server is initialized
+    QSignalSpy coreInitializedSpy(GuhCore::instance(), SIGNAL(initialized()));
+    coreInitializedSpy.wait();
+
     // Wait for the DeviceManager to signal that it has loaded plugins and everything
-    QSignalSpy spy(GuhCore::instance()->deviceManager(), SIGNAL(loaded()));
-    QVERIFY(spy.isValid());
-    QVERIFY(spy.wait());
+    QSignalSpy deviceManagerSpy(GuhCore::instance()->deviceManager(), SIGNAL(loaded()));
+    QVERIFY(deviceManagerSpy.isValid());
+    QVERIFY(deviceManagerSpy.wait());
+
+    // Yes, we're intentionally mixing upper/lower case email here... username should not be case sensitive
+    GuhCore::instance()->userManager()->removeUser("dummy@guh.io");
+    GuhCore::instance()->userManager()->createUser("dummy@guh.io", "DummyPW1!");
+    m_apiToken = GuhCore::instance()->userManager()->authenticate("Dummy@guh.io", "DummyPW1!", "testcase");
 
     if (MockTcpServer::servers().isEmpty()) {
         qWarning() << "no mock tcp server found";
         exit(-1);
     }
 
+    // Add the mockdevice
     m_mockTcpServer = MockTcpServer::servers().first();
     m_clientId = QUuid::createUuid();
 

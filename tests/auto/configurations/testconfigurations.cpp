@@ -168,18 +168,16 @@ void TestConfigurations::testServerName()
 
     QSignalSpy notificationSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
-    // Set name unchainged
+    // Set name unchanged
     QVariantMap params; QVariant response; QVariantList configurationChangedNotifications;
     params.insert("serverName", serverName);
     response = injectAndWait("Configuration.SetServerName", params);
     verifyConfigurationError(response);
 
     // Check notification not emitted
-    notificationSpy.wait(200);
+    notificationSpy.wait(500);
     configurationChangedNotifications = checkNotifications(notificationSpy, "Configuration.BasicConfigurationChanged");
     QVERIFY2(configurationChangedNotifications.count() == 0, "Got Configuration.BasicConfigurationChanged notification but should have not.");
-
-    // TODO: verify notification
 
     // Set new server name
     QString newServerName = QString("Test server %1").arg(QUuid::createUuid().toString());
@@ -193,7 +191,16 @@ void TestConfigurations::testServerName()
     // Check notification not emitted
     notificationSpy.wait(500);
     configurationChangedNotifications = checkNotifications(notificationSpy, "Configuration.BasicConfigurationChanged");
+    QVariantMap notificationContent = configurationChangedNotifications.first().toMap().value("params").toMap();
+    QVERIFY2(notificationContent.contains("basicConfiguration"), "Notification does not contain basicConfiguration");
     QVERIFY2(configurationChangedNotifications.count() == 1, "Should get only one Configuration.BasicConfigurationChanged notification");
+    QVariantMap basicConfigurationNotificationMap = notificationContent.value("basicConfiguration").toMap();
+    QVERIFY2(basicConfigurationNotificationMap.contains("language"), "Notification does not contain key language");
+    QVERIFY2(basicConfigurationNotificationMap.contains("serverTime"), "Notification does not contain key serverTime");
+    QVERIFY2(basicConfigurationNotificationMap.contains("serverUuid"), "Notification does not contain key serverUuid");
+    QVERIFY2(basicConfigurationNotificationMap.contains("timeZone"), "Notification does not contain key timeZone");
+    QVERIFY2(basicConfigurationNotificationMap.contains("serverName"), "Notification does not contain key serverName");
+    QVERIFY2(basicConfigurationNotificationMap.value("serverName").toString() == newServerName, "Notification does not contain the new serverName");
 
     basicConfigurationMap = loadBasicConfiguration();
     QString loadedServerName = basicConfigurationMap.value("serverName").toString();
@@ -217,14 +224,14 @@ void TestConfigurations::testLanguages()
 
     QSignalSpy notificationSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
-    // Set language unchainged
+    // Set language unchanged
     QVariant response; QVariantMap params;
     params.insert("language", basicConfigurationMap.value("language"));
     response = injectAndWait("Configuration.SetLanguage", params);
     verifyConfigurationError(response);
 
     // Check notification not emitted
-    notificationSpy.wait(200);
+    notificationSpy.wait(500);
     QVariantList languageChangedNotifications = checkNotifications(notificationSpy, "Configuration.LanguageChanged");
     QVERIFY2(languageChangedNotifications.count() == 0, "Got Configuration.LanguageChanged notification but should have not.");
 
@@ -246,7 +253,7 @@ void TestConfigurations::testLanguages()
         verifyConfigurationError(response);
 
         // Check notification
-        notificationSpy.wait(200);
+        notificationSpy.wait(500);
         QVariantList languageChangedNotifications = checkNotifications(notificationSpy, "Configuration.LanguageChanged");
 
         // If the language did not change no notification should be emited
@@ -254,8 +261,9 @@ void TestConfigurations::testLanguages()
             QVERIFY2(languageChangedNotifications.count() == 0, "Got Configuration.LanguageChanged notification but should have not.");
         } else {
             QVERIFY2(languageChangedNotifications.count() == 1, "Should get only one Configuration.LanguageChanged notification");
-
-            // TODO: verify notification
+            QVariantMap notificationMap = languageChangedNotifications.first().toMap().value("params").toMap();
+            QVERIFY2(notificationMap.contains("language"), "Notification does not contain language");
+            QVERIFY2(notificationMap.value("language").toString() == languageVariant.toString(), "Notification does not contain the new language");
 
             // Restart the server and check if the language will be loaded correctly
             restartServer();

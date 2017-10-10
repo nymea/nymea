@@ -119,7 +119,6 @@ GuhTestBase::GuhTestBase(QObject *parent) :
 
     // Important for settings
     QCoreApplication::instance()->setOrganizationName("guh-test");
-
 }
 
 void GuhTestBase::initTestCase()

@@ -165,7 +165,7 @@ void GuhConfiguration::setServerName(const QString &serverName)
     GuhSettings settings(GuhSettings::SettingsRoleGlobal);
     settings.beginGroup("guhd");
     if (settings.value("name").toString() == serverName) {
-        qCDebug(dcApplication()) << "Configuration: Server name unchainged.";
+        qCDebug(dcApplication()) << "Configuration: Server name unchanged.";
         settings.endGroup();
     } else {
         settings.setValue("name", serverName);
@@ -188,7 +188,7 @@ void GuhConfiguration::setTimeZone(const QByteArray &timeZone)
     GuhSettings settings(GuhSettings::SettingsRoleGlobal);
     settings.beginGroup("guhd");
     if (settings.value("timeZone").toByteArray() == timeZone) {
-        qCDebug(dcApplication()) << "Configuration: Time zone unchainged.";
+        qCDebug(dcApplication()) << "Configuration: Time zone unchanged.";
         settings.endGroup();
     } else {
         settings.setValue("timeZone", timeZone);
@@ -211,7 +211,7 @@ void GuhConfiguration::setLocale(const QLocale &locale)
     GuhSettings settings(GuhSettings::SettingsRoleGlobal);
     settings.beginGroup("guhd");
     if (settings.value("language").toString() == locale.name()) {
-        qCDebug(dcApplication()) << "Configuration: Language unchainged.";
+        qCDebug(dcApplication()) << "Configuration: Language unchanged.";
         settings.endGroup();
     } else {
         settings.setValue("language", locale.name());

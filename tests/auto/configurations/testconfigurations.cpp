@@ -45,8 +45,6 @@ private slots:
     void testServerName();
     void testLanguages();
 
-    void testTcpServerConfiguration();
-
 private:
     QVariantMap loadBasicConfiguration();
 

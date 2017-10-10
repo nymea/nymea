@@ -61,9 +61,6 @@ private slots:
     void emptyRule();
     void getInvalidRule();
 
-    void testChildEvaluator_data();
-    void testChildEvaluator();
-
     void addRemoveRules_data();
     void addRemoveRules();
 
@@ -86,6 +83,9 @@ private slots:
 
     void testStateEvaluator2_data();
     void testStateEvaluator2();
+
+    void testChildEvaluator_data();
+    void testChildEvaluator();
 
     void testStateChange();
 

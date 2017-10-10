@@ -41,6 +41,9 @@ public:
     QString name() const;
     void setName(const QString &name);
 
+    QString displayName() const;
+    void setDisplayName(const QString &displayName);
+
     int index() const;
     void setIndex(const int &index);
 
@@ -76,6 +79,7 @@ public:
 private:
     ParamTypeId m_id;
     QString m_name;
+    QString m_displayName;
     int m_index;
     QVariant::Type m_type;
     QVariant m_defaultValue;

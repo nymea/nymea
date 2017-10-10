@@ -40,9 +40,13 @@ public:
     QString name() const;
     void setName(const QString &name);
 
+    QString displayName() const;
+    void setDisplayName(const QString &displayName);
+
 private:
     VendorId m_id;
     QString m_name;
+    QString m_displayName;
 };
 
 #endif // VENDOR_H

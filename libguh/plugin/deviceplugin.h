@@ -58,8 +58,9 @@ public:
 
     virtual void init() {}
 
-    QString pluginName() const;
     PluginId pluginId() const;
+    QString pluginName() const;
+    QString pluginDisplayName() const;
     QList<Vendor> supportedVendors() const;
     QList<DeviceClass> supportedDevices() const;
 

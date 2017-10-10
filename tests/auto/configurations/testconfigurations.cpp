@@ -40,10 +40,12 @@ class TestConfigurations: public GuhTestBase
 
 private slots:
     void getConfigurations();
+
     void testTimeZones();
     void testServerName();
-
     void testLanguages();
+
+    void testTcpServerConfiguration();
 
 private:
     QVariantMap loadBasicConfiguration();

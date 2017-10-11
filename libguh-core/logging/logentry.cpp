@@ -112,13 +112,13 @@ void LogEntry::setDeviceId(const DeviceId &deviceId)
 }
 
 /*! Returns the value of this \l{LogEntry}. */
-QString LogEntry::value() const
+QVariant LogEntry::value() const
 {
     return m_value;
 }
 
 /*! Sets the \a value of this \l{LogEntry}. */
-void LogEntry::setValue(const QString &value)
+void LogEntry::setValue(const QVariant &value)
 {
     m_value = value;
 }

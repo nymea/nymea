@@ -336,6 +336,8 @@ QString LogFilter::createDeviceIdString() const
 
 QString LogFilter::createValuesString() const
 {
+    // FIXME: check how to filter for serialized values
+
     QString query;
     if (!m_values.isEmpty()) {
         if (m_values.count() == 1) {

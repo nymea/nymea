@@ -55,6 +55,7 @@
 #include "guhcore.h"
 #include "ruleengine.h"
 #include "loggingcategories.h"
+#include "logging/logvaluetool.h"
 
 #include <QStringList>
 #include <QJsonDocument>
@@ -887,7 +888,7 @@ QVariantMap JsonTypes::packLogEntry(const LogEntry &logEntry)
     case Logging::LoggingSourceStates:
         logEntryMap.insert("typeId", logEntry.typeId().toString());
         logEntryMap.insert("deviceId", logEntry.deviceId().toString());
-        logEntryMap.insert("value", logEntry.value());
+        logEntryMap.insert("value", LogValueTool::convertVariantToString(logEntry.value()));
         break;
     case Logging::LoggingSourceSystem:
         logEntryMap.insert("active", logEntry.active());

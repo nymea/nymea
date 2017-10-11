@@ -67,6 +67,12 @@ private:
     void appendLogEntry(const LogEntry &entry);
     void rotate(const QString &dbName);
 
+    static QString serializeValue(const QVariant &value);
+    static QVariant deserializeValue(const QString &serializedValue);
+
+    bool migrateDatabaseVersion2to3();
+    static QString convertVariantToString(QVariant value);
+
 private slots:
     void checkDBSize();
 

@@ -620,8 +620,13 @@ void DevicePlugin::loadMetaData()
                 }
 
                 QVariant::Type t = QVariant::nameToType(st.value("type").toString().toLatin1().data());
+                if (t == QVariant::Invalid) {
+                    qCWarning(dcDeviceManager()) << "Invalid StateType type:" << st.value("type").toString();
+                    broken = true;
+                    break;
+                }
                 StateType stateType(st.value("id").toString());
-                stateType.setName(m_metaData.value("name").toString());
+                stateType.setName(st.value("name").toString());
                 stateType.setDisplayName(translateValue(m_metaData.value("name").toString(), st.value("displayName").toString()));
                 stateType.setIndex(index++);
                 stateType.setType(t);
@@ -670,7 +675,7 @@ void DevicePlugin::loadMetaData()
                 if (st.contains("eventRuleRelevant"))
                     eventType.setRuleRelevant(st.value("eventRuleRelevant").toBool());
 
-                eventType.setName(m_metaData.value("name").toString());
+                eventType.setName(st.value("name").toString());
                 eventType.setDisplayName(translateValue(m_metaData.value("name").toString(), st.value("displayNameEvent").toString()));
                 ParamType paramType(ParamTypeId(stateType.id().toString()), st.value("name").toString(), stateType.type());
                 paramType.setDisplayName(translateValue(m_metaData.value("name").toString(), st.value("displayName").toString()));
@@ -686,7 +691,7 @@ void DevicePlugin::loadMetaData()
                 // ActionTypes for writeable StateTypes
                 if (writableState) {
                     ActionType actionType(ActionTypeId(stateType.id().toString()));
-                    actionType.setName(m_metaData.value("name").toString());
+                    actionType.setName(stateType.name());
                     actionType.setDisplayName(translateValue(m_metaData.value("name").toString(), st.value("displayNameAction").toString()));
                     actionType.setIndex(stateType.index());
                     actionType.setParamTypes(QList<ParamType>() << paramType);
@@ -707,7 +712,7 @@ void DevicePlugin::loadMetaData()
                 }
 
                 ActionType actionType(at.value("id").toString());
-                actionType.setName(m_metaData.value("name").toString());
+                actionType.setName(at.value("name").toString());
                 actionType.setDisplayName(translateValue(m_metaData.value("name").toString(), at.value("displayName").toString()));
                 actionType.setIndex(index++);
                 QPair<bool, QList<ParamType> > paramVerification = parseParamTypes(at.value("paramTypes").toArray());
@@ -734,8 +739,8 @@ void DevicePlugin::loadMetaData()
                 }
 
                 EventType eventType(et.value("id").toString());
-                eventType.setName(m_metaData.value("name").toString());
-                eventType.setDisplayName(translateValue(m_metaData.value("name").toString(), translateValue(m_metaData.value("displayName").toString(), et.value("name").toString())));
+                eventType.setName(et.value("name").toString());
+                eventType.setDisplayName(translateValue(m_metaData.value("name").toString(), et.value("displayName").toString()));
                 eventType.setIndex(index++);
                 if (et.contains("ruleRelevant"))
                     eventType.setRuleRelevant(et.value("ruleRelevant").toBool());

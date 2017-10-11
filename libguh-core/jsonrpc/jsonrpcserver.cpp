@@ -559,8 +559,8 @@ QString JsonRPCServer::formatAssertion(const QString &targetNamespace, const QSt
     QJsonDocument doc2 = QJsonDocument::fromVariant(data);
     return QString("\nMethod: %1\nTemplate: %2\nValue: %3")
             .arg(targetNamespace + "." + method)
-            .arg(QString(doc.toJson(QJsonDocument::Compact)))
-            .arg(QString(doc2.toJson(QJsonDocument::Compact)));
+            .arg(QString(doc.toJson(QJsonDocument::Indented)))
+            .arg(QString(doc2.toJson(QJsonDocument::Indented)));
 }
 
 void JsonRPCServer::sendNotification(const QVariantMap &params)

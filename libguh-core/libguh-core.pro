@@ -65,8 +65,8 @@ HEADERS += $$top_srcdir/libguh-core/guhcore.h \
     $$top_srcdir/libguh-core/networkmanager/wirednetworkdevice.h \
     $$top_srcdir/libguh-core/usermanager.h \
     $$top_srcdir/libguh-core/tokeninfo.h \
-    $$PWD/certificategenerator.h \
-    logging/logvaluetool.h
+    $$top_srcdir/libguh-core/certificategenerator.h \
+    $$top_srcdir/libguh-core/logging/logvaluetool.h
 
 
 SOURCES += $$top_srcdir/libguh-core/guhcore.cpp \
@@ -119,6 +119,6 @@ SOURCES += $$top_srcdir/libguh-core/guhcore.cpp \
     $$top_srcdir/libguh-core/networkmanager/wirednetworkdevice.cpp \
     $$top_srcdir/libguh-core/usermanager.cpp \
     $$top_srcdir/libguh-core/tokeninfo.cpp \
-    $$PWD/certificategenerator.cpp \
-    logging/logvaluetool.cpp
+    $$top_srcdir/libguh-core/certificategenerator.cpp \
+    $$top_srcdir/libguh-core/logging/logvaluetool.cpp
 

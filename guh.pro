@@ -26,7 +26,7 @@ QMAKE_EXTRA_TARGETS += licensecheck doc test
 message(============================================)
 message("Qt version:" $$[QT_VERSION])
 message("Building guh version $${GUH_VERSION_STRING}")
-message("JSON-RPC API version $${JSON_PROTOCOL_VERSION}")
+message("JSON-RPC API version $${JSON_PROTOCOL_VERSION_MAJOR}.$${JSON_PROTOCOL_VERSION_MINOR}")
 message("REST API version $${REST_API_VERSION}")
 message("Plugin path $${GUH_PLUGINS_PATH}")
 

@@ -24,6 +24,7 @@
 #include "devicemanager.h"
 #include "guhsettings.h"
 #include "logging/logentry.h"
+#include "logging/logvaluetool.h"
 #include "plugin/deviceplugin.h"
 
 #include <QDebug>
@@ -42,6 +43,9 @@ private:
 
 private slots:
     void initLogs();
+
+    void databaseSerializationTest_data();
+    void databaseSerializationTest();
 
     void coverageCalls();
 
@@ -81,6 +85,42 @@ void TestLogging::initLogs()
     QVERIFY(logEntries.count() == 0);
 
     restartServer();
+}
+
+void TestLogging::databaseSerializationTest_data()
+{
+    QUuid uuid = QUuid("3782732b-61b4-48e8-8d6d-b5205159d7cd");
+
+    QVariantMap variantMap;
+    variantMap.insert("string", "value");
+    variantMap.insert("int", 5);
+    variantMap.insert("double", 3.14);
+    variantMap.insert("uuid", uuid);
+
+
+
+    QTest::addColumn<QVariant>("value");
+
+    QTest::newRow("QString") << QVariant(QString("Hello"));
+    QTest::newRow("Integer") << QVariant((int)2);
+    QTest::newRow("Double") << QVariant((double)2.34);
+    QTest::newRow("Float") << QVariant((float)2.34);
+    QTest::newRow("QColor") << QVariant(QColor(0,255,128));
+    QTest::newRow("QByteArray") << QVariant(QByteArray("\nthisisatestarray\n"));
+    QTest::newRow("QUuid") << QVariant(uuid);
+    QTest::newRow("QVariantMap") << QVariant(variantMap);
+}
+
+void TestLogging::databaseSerializationTest()
+{
+    QFETCH(QVariant, value);
+
+    QString serializedValue = LogValueTool::serializeValue(value);
+    QVariant deserializedValue = LogValueTool::deserializeValue(serializedValue);
+
+    qDebug() << "Stored:" << value;
+    qDebug() << "Loaded:" << deserializedValue;
+    QCOMPARE(deserializedValue, value);
 }
 
 void TestLogging::coverageCalls()
@@ -245,7 +285,7 @@ void TestLogging::actionLog()
     verifyDeviceError(response);
 
     // Lets wait for the notification
-    clientSpy.wait(200);
+    clientSpy.wait(500);
 
     QVariantList loggEntryAddedVariants = checkNotifications(clientSpy, "Logging.LogEntryAdded");
     QVERIFY2(!loggEntryAddedVariants.isEmpty(), "Did not get Logging.LogEntryAdded notification.");
@@ -287,7 +327,7 @@ void TestLogging::actionLog()
     params.insert("deviceIds", QVariantList() << m_mockDeviceId);
     params.insert("loggingSources", QVariantList() << JsonTypes::loggingSourceToString(Logging::LoggingSourceActions));
     params.insert("eventTypes", QVariantList() << JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeTrigger));
-    params.insert("values", QVariantList() << "7, true");
+    //params.insert("values", QVariantList() << "7, true");
 
     response = injectAndWait("Logging.GetLogEntries", params);
     verifyLoggingError(response);

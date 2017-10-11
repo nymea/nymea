@@ -47,6 +47,8 @@ public:
     Q_INVOKABLE JsonReply *DeleteWebServerConfiguration(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *SetWebSocketServerConfiguration(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *DeleteWebSocketServerConfiguration(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *GetCloudEnabled(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *SetCloudEnabled(const QVariantMap &params) const;
 
 signals:
     void BasicConfigurationChanged(const QVariantMap &params);

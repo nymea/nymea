@@ -451,11 +451,10 @@ void GuhCore::init() {
     m_cloudManager->setDeviceName(m_configuration->serverName());
     m_cloudManager->setServerUrl(m_configuration->cloudServerUrl());
     m_cloudManager->setClientCertificates(m_configuration->cloudCertificateCA(), m_configuration->cloudCertificate(), m_configuration->cloudCertificateKey());
-    if (!m_configuration->cloudServerUrl().isEmpty()) {
-        m_cloudManager->setEnabled(true);
-    }
+    m_cloudManager->setEnabled(m_configuration->cloudEnabled());
 
     connect(m_configuration, &GuhConfiguration::localeChanged, this, &GuhCore::onLocaleChanged);
+    connect(m_configuration, &GuhConfiguration::cloudEnabledChanged, m_cloudManager, &CloudManager::setEnabled);
 
     connect(m_deviceManager, &DeviceManager::pluginConfigChanged, this, &GuhCore::pluginConfigChanged);
     connect(m_deviceManager, &DeviceManager::eventTriggered, this, &GuhCore::gotEvent);

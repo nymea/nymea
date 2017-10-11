@@ -105,6 +105,9 @@ void CloudManager::setEnabled(bool enabled)
         if (!m_awsConnector->isConnected() && m_networkManager->state() == NetworkManager::NetworkManagerStateConnectedGlobal) {
             connect2aws();
         }
+    } else {
+        m_enabled = false;
+        m_awsConnector->disconnectAWS();
     }
 }
 

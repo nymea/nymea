@@ -185,7 +185,6 @@ void AWSConnector::onPairingsRetrieved(const QVariantList &pairings)
 
 void AWSConnector::disconnectAWS()
 {
-    m_reconnect = false;
     if (isConnected()) {
         m_client->Disconnect(std::chrono::seconds(2));
     }

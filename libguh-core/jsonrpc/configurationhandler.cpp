@@ -164,6 +164,18 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     returns.insert("configurationError", JsonTypes::configurationErrorRef());
     setReturns("DeleteWebServerConfiguration", returns);
 
+    params.clear(); returns.clear();
+    setDescription("GetCloudEnabled", "Returns whether the cloud connection is enabled or disabled in the settings.");
+    setParams("GetCloudEnabled", params);
+    returns.insert("enabled", JsonTypes::basicTypeToString(QVariant::Bool));
+    setReturns("GetCloudEnabled", returns);
+
+    params.clear(); returns.clear();
+    setDescription("SetCloudEnabled", "Sets whether the cloud connection is enabled or disabled in the settings.");
+    params.insert("enabled", JsonTypes::basicTypeToString(QVariant::Bool));
+    setParams("SetCloudEnabled", params);
+    setReturns("SetCloudEnabled", returns);
+
     // Notifications
     params.clear(); returns.clear();
     setDescription("BasicConfigurationChanged", "Emitted whenever the basic configuration of this server changes.");
@@ -386,6 +398,21 @@ JsonReply *ConfigurationHandler::DeleteWebSocketServerConfiguration(const QVaria
         return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidId));
     }
     GuhCore::instance()->configuration()->removeWebSocketServerConfiguration(id);
+    return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
+}
+
+JsonReply *ConfigurationHandler::GetCloudEnabled(const QVariantMap &params) const
+{
+    Q_UNUSED(params)
+    QVariantMap ret;
+    ret.insert("enabled", GuhCore::instance()->configuration()->cloudEnabled());
+    return createReply(ret);
+}
+
+JsonReply *ConfigurationHandler::SetCloudEnabled(const QVariantMap &params) const
+{
+    bool enabled = params.value("enabled").toBool();
+    GuhCore::instance()->configuration()->setCloudEnabled(enabled);
     return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
 }
 

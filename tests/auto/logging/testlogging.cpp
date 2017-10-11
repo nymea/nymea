@@ -64,6 +64,7 @@ private slots:
 
     void testHouseKeeping();
 
+
     // this has to be the last test
     void removeDevice();
 };
@@ -326,8 +327,8 @@ void TestLogging::actionLog()
 
     clientSpy.wait(200);
 
-    QVariant notification = checkNotification(clientSpy, "Logging.LogEntryAdded");
-    QVERIFY(!notification.isNull());
+    loggEntryAddedVariants = checkNotifications(clientSpy, "Logging.LogEntryAdded");
+    QVERIFY(!loggEntryAddedVariants.isEmpty());
 
     // get this logentry with filter
     params.clear();

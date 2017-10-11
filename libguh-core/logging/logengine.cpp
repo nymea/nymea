@@ -132,11 +132,11 @@
 namespace guhserver {
 
 /*! Constructs the log engine with the given \a parent. */
-LogEngine::LogEngine(QObject *parent):
+LogEngine::LogEngine(const QString &logPath, QObject *parent):
     QObject(parent)
 {
     m_db = QSqlDatabase::addDatabase("QSQLITE", "logs");
-    m_db.setDatabaseName(GuhSettings::logPath());
+    m_db.setDatabaseName(logPath);
     m_dbMaxSize = 50000;
     m_overflow = 100;
 

@@ -152,6 +152,7 @@ void JsonTypes::init()
     // ParamType
     s_paramType.insert("id", basicTypeToString(Uuid));
     s_paramType.insert("name", basicTypeToString(String));
+    s_paramType.insert("displayName", basicTypeToString(String));
     s_paramType.insert("type", basicTypeRef());
     s_paramType.insert("index", basicTypeToString(Int));
     s_paramType.insert("o:defaultValue", basicTypeToString(Variant));
@@ -185,6 +186,7 @@ void JsonTypes::init()
     // StateType
     s_stateType.insert("id", basicTypeToString(Uuid));
     s_stateType.insert("name", basicTypeToString(String));
+    s_stateType.insert("displayName", basicTypeToString(String));
     s_stateType.insert("type", basicTypeRef());
     s_stateType.insert("index", basicTypeToString(Int));
     s_stateType.insert("defaultValue", basicTypeToString(Variant));
@@ -214,6 +216,7 @@ void JsonTypes::init()
     // EventType
     s_eventType.insert("id", basicTypeToString(Uuid));
     s_eventType.insert("name", basicTypeToString(String));
+    s_eventType.insert("displayName", basicTypeToString(String));
     s_eventType.insert("index", basicTypeToString(Int));
     s_eventType.insert("paramTypes", QVariantList() << paramTypeRef());
     s_eventType.insert("o:ruleRelevant", basicTypeToString(Bool));
@@ -231,7 +234,8 @@ void JsonTypes::init()
 
     // ActionType
     s_actionType.insert("id", basicTypeToString(Uuid));
-    s_actionType.insert("name", basicTypeToString(Uuid));
+    s_actionType.insert("name", basicTypeToString(String));
+    s_actionType.insert("displayName", basicTypeToString(String));
     s_actionType.insert("index", basicTypeToString(Int));
     s_actionType.insert("paramTypes", QVariantList() << paramTypeRef());
 
@@ -243,17 +247,20 @@ void JsonTypes::init()
     // Pugin
     s_plugin.insert("id", basicTypeToString(Uuid));
     s_plugin.insert("name", basicTypeToString(String));
+    s_plugin.insert("displayName", basicTypeToString(String));
     s_plugin.insert("paramTypes", QVariantList() << paramTypeRef());
 
     // Vendor
     s_vendor.insert("id", basicTypeToString(Uuid));
     s_vendor.insert("name", basicTypeToString(String));
+    s_vendor.insert("displayName", basicTypeToString(String));
 
     // DeviceClass
     s_deviceClass.insert("id", basicTypeToString(Uuid));
     s_deviceClass.insert("vendorId", basicTypeToString(Uuid));
     s_deviceClass.insert("pluginId", basicTypeToString(Uuid));
     s_deviceClass.insert("name", basicTypeToString(String));
+    s_deviceClass.insert("displayName", basicTypeToString(String));
     s_deviceClass.insert("deviceIcon", deviceIconRef());
     s_deviceClass.insert("interfaces", QVariantList() << basicTypeToString(String));
     s_deviceClass.insert("basicTags", QVariantList() << basicTagRef());
@@ -462,6 +469,7 @@ QVariantMap JsonTypes::packEventType(const EventType &eventType)
     QVariantMap variant;
     variant.insert("id", eventType.id());
     variant.insert("name", eventType.name());
+    variant.insert("displayName", eventType.displayName());
     variant.insert("index", eventType.index());
     if (!eventType.ruleRelevant())
         variant.insert("ruleRelevant", false);
@@ -511,6 +519,7 @@ QVariantMap JsonTypes::packActionType(const ActionType &actionType)
     QVariantMap variantMap;
     variantMap.insert("id", actionType.id());
     variantMap.insert("name", actionType.name());
+    variantMap.insert("displayName", actionType.displayName());
     variantMap.insert("index", actionType.index());
     QVariantList paramTypes;
     foreach (const ParamType &paramType, actionType.paramTypes())
@@ -578,6 +587,7 @@ QVariantMap JsonTypes::packStateType(const StateType &stateType)
     QVariantMap variantMap;
     variantMap.insert("id", stateType.id());
     variantMap.insert("name", stateType.name());
+    variantMap.insert("displayName", stateType.displayName());
     variantMap.insert("index", stateType.index());
     variantMap.insert("type", basicTypeToString(stateType.type()));
     variantMap.insert("defaultValue", stateType.defaultValue());
@@ -659,6 +669,7 @@ QVariantMap JsonTypes::packParamType(const ParamType &paramType)
     QVariantMap variantMap;
     variantMap.insert("id", paramType.id().toString());
     variantMap.insert("name", paramType.name());
+    variantMap.insert("displayName", paramType.displayName());
     variantMap.insert("type", basicTypeToString(paramType.type()));
     variantMap.insert("index", paramType.index());
 
@@ -693,6 +704,7 @@ QVariantMap JsonTypes::packVendor(const Vendor &vendor)
     QVariantMap variantMap;
     variantMap.insert("id", vendor.id());
     variantMap.insert("name", vendor.name());
+    variantMap.insert("displayName", vendor.displayName());
     return variantMap;
 }
 
@@ -700,8 +712,9 @@ QVariantMap JsonTypes::packVendor(const Vendor &vendor)
 QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass)
 {
     QVariantMap variant;
-    variant.insert("name", deviceClass.name());
     variant.insert("id", deviceClass.id().toString());
+    variant.insert("name", deviceClass.name());
+    variant.insert("displayName", deviceClass.displayName());
     variant.insert("vendorId", deviceClass.vendorId().toString());
     variant.insert("pluginId", deviceClass.pluginId().toString());
     variant.insert("deviceIcon", s_deviceIcon.at(deviceClass.deviceIcon()));
@@ -757,6 +770,7 @@ QVariantMap JsonTypes::packPlugin(DevicePlugin *plugin)
     QVariantMap pluginMap;
     pluginMap.insert("id", plugin->pluginId());
     pluginMap.insert("name", plugin->pluginName());
+    pluginMap.insert("displayName", plugin->pluginDisplayName());
 
     QVariantList params;
     foreach (const ParamType &param, plugin->configurationDescription())
@@ -1581,7 +1595,9 @@ QPair<bool, QString> JsonTypes::validateMap(const QVariantMap &templateMap, cons
         if (map.contains(strippedKey)) {
             QPair<bool, QString> result = validateVariant(templateMap.value(key), map.value(strippedKey));
             if (!result.first) {
-                qCWarning(dcJsonRpc) << "Object not matching template" << templateMap.value(key) << map.value(strippedKey);
+                QJsonDocument templateDoc = QJsonDocument::fromVariant(templateMap.value(key));
+                QJsonDocument mapDoc = QJsonDocument::fromVariant(map.value(strippedKey));
+                qCWarning(dcJsonRpc).nospace() << "Object\n" << qUtf8Printable(mapDoc.toJson(QJsonDocument::Indented)) << "not matching template\n" << qUtf8Printable(templateDoc.toJson(QJsonDocument::Indented));
                 return result;
             }
         }

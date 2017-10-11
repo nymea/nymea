@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
  *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2015-2017 Simon Stürz <simon.stuerz@guh.io>              *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -114,6 +114,7 @@
 #include "logengine.h"
 #include "loggingcategories.h"
 #include "logging.h"
+#include "logvaluetool.h"
 
 #include <QCoreApplication>
 #include <QSqlDatabase>
@@ -125,8 +126,6 @@
 #include <QDateTime>
 #include <QFileInfo>
 #include <QTime>
-#include <QBuffer>
-#include <QDataStream>
 
 #define DB_SCHEMA_VERSION 3
 
@@ -211,7 +210,7 @@ QList<LogEntry> LogEngine::logEntries(const LogFilter &filter) const
                     query.value("errorCode").toInt());
         entry.setTypeId(query.value("typeId").toUuid());
         entry.setDeviceId(DeviceId(query.value("deviceId").toString()));
-        entry.setValue(LogEngine::convertVariantToString(deserializeValue(query.value("value").toString())));
+        entry.setValue(LogValueTool::convertVariantToString(LogValueTool::deserializeValue(query.value("value").toString())));
         entry.setEventType((Logging::LoggingEventType)query.value("loggingEventType").toInt());
         entry.setActive(query.value("active").toBool());
         results.append(entry);
@@ -251,38 +250,49 @@ void LogEngine::logSystemEvent(const QDateTime &dateTime, bool active, Logging::
 
 void LogEngine::logEvent(const Event &event)
 {
-    QStringList valueList;
+    QVariantList valueList;
     Logging::LoggingSource sourceType;
     if (event.isStateChangeEvent()) {
         sourceType = Logging::LoggingSourceStates;
         // There should only be one param
         if (!event.params().isEmpty())
-            valueList << serializeValue(event.params().first().value());
+            valueList << event.params().first().value();
 
     } else {
         sourceType = Logging::LoggingSourceEvents;
         foreach (const Param &param, event.params()) {
-            valueList << serializeValue(param.value());
+            valueList << param.value();
         }
     }
 
     LogEntry entry(sourceType);
     entry.setTypeId(event.eventTypeId());
     entry.setDeviceId(event.deviceId());
-    entry.setValue(valueList.join(", "));
+    if (valueList.count() == 1) {
+        entry.setValue(valueList.first());
+    } else {
+        entry.setValue(valueList);
+    }
     appendLogEntry(entry);
 }
 
 void LogEngine::logAction(const Action &action, Logging::LoggingLevel level, int errorCode)
 {
-    QStringList valueList;
-    foreach (const Param &param, action.params()) {
-        valueList << param.value().toString();
-    }
     LogEntry entry(level, Logging::LoggingSourceActions, errorCode);
     entry.setTypeId(action.actionTypeId());
     entry.setDeviceId(action.deviceId());
-    entry.setValue(valueList.join(", "));
+
+    if (action.params().isEmpty()) {
+        entry.setValue(QVariant());
+    } else if (action.params().count() == 1) {
+        entry.setValue(action.params().first().value());
+    } else {
+        QVariantList valueList;
+        foreach (const Param &param, action.params()) {
+            valueList << param.value();
+        }
+        entry.setValue(valueList);
+    }
     appendLogEntry(entry);
 }
 
@@ -379,7 +389,7 @@ void LogEngine::appendLogEntry(const LogEntry &entry)
             .arg(entry.source())
             .arg(entry.typeId().toString())
             .arg(entry.deviceId().toString())
-            .arg(entry.value())
+            .arg(LogValueTool::serializeValue(entry.value()))
             .arg(entry.active())
             .arg(entry.errorCode());
 
@@ -442,29 +452,6 @@ void LogEngine::rotate(const QString &dbName)
     }
 }
 
-QString LogEngine::serializeValue(const QVariant &value)
-{
-    QByteArray byteArray;
-    QBuffer writeBuffer(&byteArray);
-    writeBuffer.open(QIODevice::WriteOnly);
-    QDataStream out(&writeBuffer);
-    out << value;
-    writeBuffer.close();
-    return QString(byteArray.toBase64());
-}
-
-QVariant LogEngine::deserializeValue(const QString &serializedValue)
-{
-    QByteArray data = QByteArray::fromBase64(serializedValue.toUtf8());
-    QBuffer readBuffer(&data);
-    readBuffer.open(QIODevice::ReadOnly);
-    QDataStream inputStream(&readBuffer);
-    QVariant value;
-    inputStream >> value;
-    readBuffer.close();
-    return value;
-}
-
 bool LogEngine::migrateDatabaseVersion2to3()
 {
     // Changelog: serialize values of logentries in order to prevent typecast errors
@@ -477,7 +464,7 @@ bool LogEngine::migrateDatabaseVersion2to3()
     int entryCount = 0;
 
     // Count entries we have to migrate
-    QString queryString = "SELECT COUNT(*) FROM entries;";
+    QString queryString = "SELECT COUNT(*) FROM entries WHERE value != '';";
     QSqlQuery countQuery = m_db.exec(queryString);
     if (m_db.lastError().type() != QSqlError::NoError) {
         qCWarning(dcLogEngine()) << "Failed to query entry count in db:" << m_db.lastError().databaseText();
@@ -489,6 +476,8 @@ bool LogEngine::migrateDatabaseVersion2to3()
     }
     entryCount = countQuery.value(0).toInt();
 
+    qCDebug(dcLogEngine()) << "Entries to migrate:" << entryCount;
+
     // Select all entries
     QSqlQuery selectQuery = m_db.exec("SELECT * FROM entries;");
     if (m_db.lastError().isValid()) {
@@ -499,7 +488,7 @@ bool LogEngine::migrateDatabaseVersion2to3()
     // Migrate all selected entries
     while (selectQuery.next()) {
         QString oldValue = selectQuery.value("value").toString();
-        QString newValue = serializeValue(QVariant(oldValue));
+        QString newValue = LogValueTool::serializeValue(QVariant(oldValue));
         if (oldValue.isEmpty())
             continue;
 
@@ -526,11 +515,12 @@ bool LogEngine::migrateDatabaseVersion2to3()
         double percentage = migrationCounter * 100.0 / entryCount;
         if (qRound(percentage) != migrationProgress) {
             migrationProgress = qRound(percentage);
-            qCDebug(dcLogEngine()) << QString("Migration progress: %1\%").arg(migrationProgress);
+            qCDebug(dcLogEngine()) << QString("Migration progress: %1\%").arg(migrationProgress).toLatin1().data();
         }
     }
 
-    qCDebug(dcLogEngine()) << "Migration of" << migrationCounter << "done in" << QTime().addMSecs(startTime.msecsTo(QDateTime::currentDateTime())).toString("mm:ss.zzz");
+    QTime runTime = QTime(0,0,0,0).addMSecs(startTime.msecsTo(QDateTime::currentDateTime()));
+    qCDebug(dcLogEngine()) << "Migration of" << migrationCounter << "done in" << runTime.toString("mm:ss.zzz");
     qCDebug(dcLogEngine()) << "Updating database version to" << DB_SCHEMA_VERSION;
     m_db.exec(QString("UPDATE metadata SET data = %1 WHERE key = 'version';").arg(DB_SCHEMA_VERSION));
     if (m_db.lastError().isValid()) {
@@ -540,18 +530,6 @@ bool LogEngine::migrateDatabaseVersion2to3()
 
     qCDebug(dcLogEngine()) << "Migrated" << migrationCounter << "entries from database verion 2 -> 3 successfully.";
     return true;
-}
-
-QString LogEngine::convertVariantToString(QVariant value)
-{
-    switch (value.type()) {
-    case QVariant::Double:
-        return QString::number(value.toDouble());
-        break;
-    default:
-        return value.toString();
-        break;
-    }
 }
 
 bool LogEngine::initDB()

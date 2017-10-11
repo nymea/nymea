@@ -524,8 +524,6 @@ void TestLogging::testDoubleValues()
     foreach (const QVariant &logNotificationVariant, logNotificationsList) {
         QVariantMap logNotification = logNotificationVariant.toMap().value("params").toMap().value("logEntry").toMap();
 
-        printJson(logNotification);
-
         if (logNotification.value("typeId").toString() == doubleStateParamTypeId.toString()) {
             if (logNotification.value("typeId").toString() == doubleStateParamTypeId.toString()) {
 

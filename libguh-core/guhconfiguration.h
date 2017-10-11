@@ -110,6 +110,9 @@ public:
     void setBluetoothServerEnabled(const bool &enabled);
 
     // Cloud
+    bool cloudEnabled() const;
+    void setCloudEnabled(bool enabled);
+
     QString cloudServerUrl() const;
     QString cloudCertificateCA() const;
     QString cloudCertificate() const;
@@ -144,6 +147,7 @@ signals:
     void webSocketServerConfigurationRemoved(const QString &configId);
 
     void bluetoothServerEnabledChanged();
+    void cloudEnabledChanged(bool enabled);
 };
 
 }

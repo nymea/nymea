@@ -91,7 +91,6 @@ private:
 private:
     std::shared_ptr<awsiotsdk::network::MbedTLSConnection> m_networkConnection;
     std::shared_ptr<awsiotsdk::MqttClient> m_client;
-    bool m_reconnect = false;
     QString m_currentEndpoint;
     QString m_caFile;
     QString m_clientCertFile;

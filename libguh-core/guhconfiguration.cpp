@@ -318,6 +318,24 @@ void GuhConfiguration::setBluetoothServerEnabled(const bool &enabled)
     emit bluetoothServerEnabled();
 }
 
+bool GuhConfiguration::cloudEnabled() const
+{
+    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    settings.beginGroup("Cloud");
+    return settings.value("enabled", false).toBool();
+}
+
+void GuhConfiguration::setCloudEnabled(bool enabled)
+{
+    if (cloudEnabled() != enabled) {
+        GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+        settings.beginGroup("Cloud");
+        settings.setValue("enabled", enabled);
+        settings.endGroup();
+        emit cloudEnabledChanged(enabled);
+    }
+}
+
 QString GuhConfiguration::cloudServerUrl() const
 {
     GuhSettings settings(GuhSettings::SettingsRoleGlobal);

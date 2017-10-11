@@ -1,0 +1,6 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>guhd-v2.sqlite</file>
+    <file>guhd-broken.sqlite</file>
+</qresource>
+</RCC>

@@ -124,8 +124,11 @@
 #include <QMetaEnum>
 #include <QDateTime>
 #include <QFileInfo>
+#include <QTime>
+#include <QBuffer>
+#include <QDataStream>
 
-#define DB_SCHEMA_VERSION 2
+#define DB_SCHEMA_VERSION 3
 
 namespace guhserver {
 
@@ -208,7 +211,7 @@ QList<LogEntry> LogEngine::logEntries(const LogFilter &filter) const
                     query.value("errorCode").toInt());
         entry.setTypeId(query.value("typeId").toUuid());
         entry.setDeviceId(DeviceId(query.value("deviceId").toString()));
-        entry.setValue(query.value("value").toString());
+        entry.setValue(LogEngine::convertVariantToString(deserializeValue(query.value("value").toString())));
         entry.setEventType((Logging::LoggingEventType)query.value("loggingEventType").toInt());
         entry.setActive(query.value("active").toBool());
         results.append(entry);
@@ -254,12 +257,12 @@ void LogEngine::logEvent(const Event &event)
         sourceType = Logging::LoggingSourceStates;
         // There should only be one param
         if (!event.params().isEmpty())
-            valueList << event.params().first().value().toString();
+            valueList << serializeValue(event.params().first().value());
 
     } else {
         sourceType = Logging::LoggingSourceEvents;
         foreach (const Param &param, event.params()) {
-            valueList << param.value().toString();
+            valueList << serializeValue(param.value());
         }
     }
 
@@ -435,7 +438,119 @@ void LogEngine::rotate(const QString &dbName)
     if (!f.rename(QString("%1.%2").arg(dbName).arg(index))) {
         qCWarning(dcLogEngine()) << "Error backing up old database.";
     } else {
-        qCDebug(dcLogEngine()) << "Successfully moved old databse";
+        qCDebug(dcLogEngine()) << "Successfully moved old database";
+    }
+}
+
+QString LogEngine::serializeValue(const QVariant &value)
+{
+    QByteArray byteArray;
+    QBuffer writeBuffer(&byteArray);
+    writeBuffer.open(QIODevice::WriteOnly);
+    QDataStream out(&writeBuffer);
+    out << value;
+    writeBuffer.close();
+    return QString(byteArray.toBase64());
+}
+
+QVariant LogEngine::deserializeValue(const QString &serializedValue)
+{
+    QByteArray data = QByteArray::fromBase64(serializedValue.toUtf8());
+    QBuffer readBuffer(&data);
+    readBuffer.open(QIODevice::ReadOnly);
+    QDataStream inputStream(&readBuffer);
+    QVariant value;
+    inputStream >> value;
+    readBuffer.close();
+    return value;
+}
+
+bool LogEngine::migrateDatabaseVersion2to3()
+{
+    // Changelog: serialize values of logentries in order to prevent typecast errors
+    qCDebug(dcLogEngine()) << "Start migration of log database from version 2 to version 3";
+
+    QDateTime startTime = QDateTime::currentDateTime();
+
+    int migrationCounter = 0;
+    int migrationProgress = 0;
+    int entryCount = 0;
+
+    // Count entries we have to migrate
+    QString queryString = "SELECT COUNT(*) FROM entries;";
+    QSqlQuery countQuery = m_db.exec(queryString);
+    if (m_db.lastError().type() != QSqlError::NoError) {
+        qCWarning(dcLogEngine()) << "Failed to query entry count in db:" << m_db.lastError().databaseText();
+        return false;
+    }
+    if (!countQuery.first()) {
+        qCWarning(dcLogEngine()) << "Migration: Failed retrieving entry count.";
+        return false;
+    }
+    entryCount = countQuery.value(0).toInt();
+
+    // Select all entries
+    QSqlQuery selectQuery = m_db.exec("SELECT * FROM entries;");
+    if (m_db.lastError().isValid()) {
+        qCWarning(dcLogEngine) << "Error migrating database verion 2 -> 3. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
+        return false;
+    }
+
+    // Migrate all selected entries
+    while (selectQuery.next()) {
+        QString oldValue = selectQuery.value("value").toString();
+        QString newValue = serializeValue(QVariant(oldValue));
+        if (oldValue.isEmpty())
+            continue;
+
+        QString updateCall = QString("UPDATE entries SET value = '%1' WHERE timestamp = '%2' AND loggingLevel = '%3' AND sourceType = '%4' AND errorCode = '%5' AND typeId = '%6' AND deviceId = '%7' AND value = '%8' AND loggingEventType = '%9'AND active = '%10';")
+                .arg(newValue)
+                .arg(selectQuery.value("timestamp").toLongLong())
+                .arg(selectQuery.value("loggingLevel").toInt())
+                .arg(selectQuery.value("sourceType").toInt())
+                .arg(selectQuery.value("errorCode").toInt())
+                .arg(selectQuery.value("typeId").toUuid().toString())
+                .arg(selectQuery.value("deviceId").toString())
+                .arg(selectQuery.value("value").toString())
+                .arg(selectQuery.value("loggingEventType").toInt())
+                .arg(selectQuery.value("active").toBool());
+
+        m_db.exec(updateCall);
+        if (m_db.lastError().isValid()) {
+            qCWarning(dcLogEngine) << "Error migrating database verion 2 -> 3. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
+            return false;
+        }
+
+        migrationCounter++;
+
+        double percentage = migrationCounter * 100.0 / entryCount;
+        if (qRound(percentage) != migrationProgress) {
+            migrationProgress = qRound(percentage);
+            qCDebug(dcLogEngine()) << QString("Migration progress: %1\%").arg(migrationProgress);
+        }
+    }
+
+    qCDebug(dcLogEngine()) << "Migration of" << migrationCounter << "done in" << QTime().addMSecs(startTime.msecsTo(QDateTime::currentDateTime())).toString("mm:ss.zzz");
+    qCDebug(dcLogEngine()) << "Updating database version to" << DB_SCHEMA_VERSION;
+    m_db.exec(QString("UPDATE metadata SET data = %1 WHERE key = 'version';").arg(DB_SCHEMA_VERSION));
+    if (m_db.lastError().isValid()) {
+        qCWarning(dcLogEngine) << "Error updating database verion 2 -> 3. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
+        return false;
+    }
+
+    qCDebug(dcLogEngine()) << "Migrated" << migrationCounter << "entries from database verion 2 -> 3 successfully.";
+    return true;
+}
+
+QString LogEngine::convertVariantToString(QVariant value)
+{
+    switch (value.type()) {
+    case QVariant::Double:
+        return QString::number(value.toDouble());
+        break;
+    default:
+        return value.toString();
+        break;
     }
 }
 
@@ -443,7 +558,6 @@ bool LogEngine::initDB()
 {
     m_db.close();
     m_db.open();
-
 
     if (!m_db.tables().contains("metadata")) {
         m_db.exec("CREATE TABLE metadata (key varchar(10), data varchar(40));");
@@ -453,6 +567,13 @@ bool LogEngine::initDB()
     QSqlQuery query = m_db.exec("SELECT data FROM metadata WHERE key = 'version';");
     if (query.next()) {
         int version = query.value("data").toInt();
+        if (DB_SCHEMA_VERSION == 3 && version == 2) {
+            if (!migrateDatabaseVersion2to3()) {
+                qCWarning(dcLogEngine()) << "Migration process failed.";
+                return false;
+            }
+        }
+
         if (version != DB_SCHEMA_VERSION) {
             qCWarning(dcLogEngine) << "Log schema version not matching! Schema upgrade not implemented yet. Logging might fail.";
         } else {
@@ -485,19 +606,19 @@ bool LogEngine::initDB()
 
     if (!m_db.tables().contains("entries")) {
         m_db.exec("CREATE TABLE entries "
-                   "("
-                   "timestamp int,"
-                   "loggingLevel int,"
-                   "sourceType int,"
-                   "typeId varchar(38),"
-                   "deviceId varchar(38),"
-                   "value varchar(100),"
-                   "loggingEventType int,"
-                   "active bool,"
-                   "errorCode int,"
-                   "FOREIGN KEY(sourceType) REFERENCES sourceTypes(id),"
-                   "FOREIGN KEY(loggingEventType) REFERENCES loggingEventTypes(id)"
-                   ");");
+                  "("
+                  "timestamp int,"
+                  "loggingLevel int,"
+                  "sourceType int,"
+                  "typeId varchar(38),"
+                  "deviceId varchar(38),"
+                  "value varchar(100),"
+                  "loggingEventType int,"
+                  "active bool,"
+                  "errorCode int,"
+                  "FOREIGN KEY(sourceType) REFERENCES sourceTypes(id),"
+                  "FOREIGN KEY(loggingEventType) REFERENCES loggingEventTypes(id)"
+                  ");");
 
         if (m_db.lastError().isValid()) {
             qCWarning(dcLogEngine) << "Error creating log table in database. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();

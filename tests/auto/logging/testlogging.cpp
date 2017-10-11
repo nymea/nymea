@@ -56,6 +56,8 @@ private slots:
 
     void deviceLogs();
 
+    void testDoubleValues();
+
     void testHouseKeeping();
 
     // this has to be the last test
@@ -402,6 +404,103 @@ void TestLogging::deviceLogs()
     response = injectAndWait("Logging.GetLogEntries", params);
     verifyLoggingError(response);
 
+}
+
+void TestLogging::testDoubleValues()
+{
+    QCOMPARE(enableNotifications(), true);
+
+    // Add display pin device which contains a double value
+
+    // Discover device
+    QVariantList discoveryParams;
+    QVariantMap resultCountParam;
+    resultCountParam.insert("paramTypeId", resultCountParamTypeId);
+    resultCountParam.insert("value", 1);
+    discoveryParams.append(resultCountParam);
+
+    QVariantMap params;
+    params.insert("deviceClassId", mockDisplayPinDeviceClassId);
+    params.insert("discoveryParams", discoveryParams);
+    QVariant response = injectAndWait("Devices.GetDiscoveredDevices", params);
+
+    verifyDeviceError(response, DeviceManager::DeviceErrorNoError);
+
+    // Pair device
+    DeviceDescriptorId descriptorId = DeviceDescriptorId(response.toMap().value("params").toMap().value("deviceDescriptors").toList().first().toMap().value("id").toString());
+    params.clear();
+    params.insert("deviceClassId", mockDisplayPinDeviceClassId);
+    params.insert("name", "Display pin mock device");
+    params.insert("deviceDescriptorId", descriptorId.toString());
+    response = injectAndWait("Devices.PairDevice", params);
+
+    verifyDeviceError(response);
+
+    PairingTransactionId pairingTransactionId(response.toMap().value("params").toMap().value("pairingTransactionId").toString());
+    QString displayMessage = response.toMap().value("params").toMap().value("displayMessage").toString();
+
+    qDebug() << "displayMessage" << displayMessage;
+
+    params.clear();
+    params.insert("pairingTransactionId", pairingTransactionId.toString());
+    params.insert("secret", "243681");
+    response = injectAndWait("Devices.ConfirmPairing", params);
+
+    verifyDeviceError(response);
+
+    DeviceId deviceId(response.toMap().value("params").toMap().value("deviceId").toString());
+
+    QSignalSpy notificationSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+
+    // Set the double state value and sniff for LogEntryAdded notification
+    double value = 23.80;
+    QVariantMap actionParam;
+    actionParam.insert("paramTypeId", doubleStateParamTypeId.toString());
+    actionParam.insert("value", value);
+
+    params.clear(); response.clear();
+    params.insert("deviceId", deviceId);
+    params.insert("actionTypeId", doubleStateParamTypeId.toString());
+    params.insert("params", QVariantList() << actionParam);
+
+    response = injectAndWait("Actions.ExecuteAction", params);
+    verifyDeviceError(response);
+
+    notificationSpy.wait(1000);
+    QVariantList logNotificationsList = checkNotifications(notificationSpy, "Logging.LogEntryAdded");
+    QVERIFY2(!logNotificationsList.isEmpty(), "Did not get Logging.LogEntryAdded notification.");
+
+    foreach (const QVariant &logNotificationVariant, logNotificationsList) {
+        QVariantMap logNotification = logNotificationVariant.toMap().value("params").toMap().value("logEntry").toMap();
+
+        printJson(logNotification);
+
+        if (logNotification.value("typeId").toString() == doubleStateParamTypeId.toString()) {
+            if (logNotification.value("typeId").toString() == doubleStateParamTypeId.toString()) {
+
+                // If state source
+                if (logNotification.value("source").toString() == JsonTypes::loggingSourceToString(Logging::LoggingSourceStates)) {
+                    QString logValue = logNotification.value("value").toString();
+                    qDebug() << QString::number(value) << logValue;
+                    QCOMPARE(logValue, QString::number(value));
+                }
+
+                // If action source notification
+                if (logNotification.value("source").toString() == JsonTypes::loggingSourceToString(Logging::LoggingSourceActions)) {
+                    QString logValue = logNotification.value("value").toString();
+                    qDebug() << QString::number(value) << logValue;
+                    QCOMPARE(logValue, QString::number(value));
+                }
+            }
+        }
+    }
+
+
+    // Remove device
+    params.clear();
+    params.insert("deviceId", deviceId.toString());
+    response = injectAndWait("Devices.RemoveConfiguredDevice", params);
+    verifyDeviceError(response);
 }
 
 void TestLogging::testHouseKeeping()

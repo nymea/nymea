@@ -44,6 +44,9 @@ private:
 private slots:
     void initLogs();
 
+    void databaseSerializationTest_data();
+    void databaseSerializationTest();
+
     void coverageCalls();
 
     void systemLogs();
@@ -83,6 +86,47 @@ void TestLogging::initLogs()
     QVERIFY(logEntries.count() == 0);
 
     restartServer();
+}
+
+void TestLogging::databaseSerializationTest_data()
+{
+    QUuid uuid = QUuid("3782732b-61b4-48e8-8d6d-b5205159d7cd");
+
+    QVariantMap variantMap;
+    variantMap.insert("string", "value");
+    variantMap.insert("int", 5);
+    variantMap.insert("double", 3.14);
+    variantMap.insert("uuid", uuid);
+
+    QVariantList variantList;
+    variantList.append(variantMap);
+    variantList.append("String");
+    variantList.append(3.14);
+    variantList.append(uuid);
+
+    QTest::addColumn<QVariant>("value");
+
+    QTest::newRow("QString") << QVariant(QString("Hello"));
+    QTest::newRow("Integer") << QVariant((int)2);
+    QTest::newRow("Double") << QVariant((double)2.34);
+    QTest::newRow("Float") << QVariant((float)2.34);
+    QTest::newRow("QColor") << QVariant(QColor(0,255,128));
+    QTest::newRow("QByteArray") << QVariant(QByteArray("\nthisisatestarray\n"));
+    QTest::newRow("QUuid") << QVariant(uuid);
+    QTest::newRow("QVariantMap") << QVariant(variantMap);
+    QTest::newRow("QVariantList") << QVariant(variantList);
+}
+
+void TestLogging::databaseSerializationTest()
+{
+    QFETCH(QVariant, value);
+
+    QString serializedValue = LogValueTool::serializeValue(value);
+    QVariant deserializedValue = LogValueTool::deserializeValue(serializedValue);
+
+    qDebug() << "Stored:" << value;
+    qDebug() << "Loaded:" << deserializedValue;
+    QCOMPARE(deserializedValue, value);
 }
 
 void TestLogging::coverageCalls()

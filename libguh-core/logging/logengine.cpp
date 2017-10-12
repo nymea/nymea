@@ -476,7 +476,7 @@ bool LogEngine::migrateDatabaseVersion2to3()
     }
     entryCount = countQuery.value(0).toInt();
 
-    qCDebug(dcLogEngine()) << "Entries to migrate:" << entryCount;
+    qCDebug(dcLogEngine()) << "Found" << entryCount << "entries to migrate.";
 
     // Select all entries
     QSqlQuery selectQuery = m_db.exec("SELECT * FROM entries;");
@@ -545,17 +545,22 @@ bool LogEngine::initDB()
     QSqlQuery query = m_db.exec("SELECT data FROM metadata WHERE key = 'version';");
     if (query.next()) {
         int version = query.value("data").toInt();
+
+        // Migration from 2 -> 3 (serialize values in order to store QVariant information)
         if (DB_SCHEMA_VERSION == 3 && version == 2) {
             if (!migrateDatabaseVersion2to3()) {
                 qCWarning(dcLogEngine()) << "Migration process failed.";
                 return false;
+            } else {
+                // Successfully migrated
+                version = DB_SCHEMA_VERSION;
             }
         }
 
         if (version != DB_SCHEMA_VERSION) {
             qCWarning(dcLogEngine) << "Log schema version not matching! Schema upgrade not implemented yet. Logging might fail.";
         } else {
-            qCDebug(dcLogEngine) << QString("Log database schema version \"%1\" matches").arg(DB_SCHEMA_VERSION);
+            qCDebug(dcLogEngine) << QString("Log database schema version \"%1\" matches").arg(DB_SCHEMA_VERSION).toLatin1().data();
         }
     } else {
         qCWarning(dcLogEngine) << "Broken log database. Version not found in metadata table.";

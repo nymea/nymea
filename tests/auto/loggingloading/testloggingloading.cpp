@@ -41,19 +41,18 @@ private slots:
 
 TestLoggingLoading::TestLoggingLoading(QObject *parent): QObject(parent)
 {
-
+    Q_INIT_RESOURCE(loggingloading);
 }
 
 void TestLoggingLoading::testLogMigration()
 {
-    Q_INIT_RESOURCE(loggingloading);
-
     // Create LogEngine with log db from resource file
     QString temporaryDbName = GuhSettings::settingsPath() + "/guhd-v2.sqlite";
 
     if (QFile::exists(temporaryDbName))
         QVERIFY(QFile(temporaryDbName).remove());
 
+    // Copy v2 log db from resources to default settings path and set permissions
     QVERIFY(QFile::copy(":/guhd-v2.sqlite", temporaryDbName));
     QVERIFY(QFile::setPermissions(temporaryDbName, QFile::ReadOwner | QFile::WriteOwner | QFile::ReadGroup | QFile::ReadOther));
 
@@ -68,8 +67,6 @@ void TestLoggingLoading::testLogMigration()
 
 void TestLoggingLoading::testLogfileRotation()
 {
-    Q_INIT_RESOURCE(loggingloading);
-
     // Create LogEngine with log db from resource file
     QString temporaryDbName = GuhSettings::settingsPath() + "/guhd-broken.sqlite";
     QString rotatedDbName = GuhSettings::settingsPath() + "/guhd-broken.sqlite.1";
@@ -81,6 +78,7 @@ void TestLoggingLoading::testLogfileRotation()
     if (QFile::exists(rotatedDbName))
         QVERIFY(QFile(rotatedDbName).remove());
 
+    // Copy broken log db from resources to default settings path and set permissions
     QVERIFY(QFile::copy(":/guhd-broken.sqlite", temporaryDbName));
     QVERIFY(QFile::setPermissions(temporaryDbName, QFile::ReadOwner | QFile::WriteOwner | QFile::ReadGroup | QFile::ReadOther));
 
@@ -117,7 +115,7 @@ void TestLoggingLoading::databaseSerializationTest_data()
     QTest::newRow("Double") << QVariant((double)2.34);
     QTest::newRow("Float") << QVariant((float)2.34);
     QTest::newRow("QColor") << QVariant(QColor(0,255,128));
-    QTest::newRow("QByteArray") << QVariant(QByteArray("\nthisisatestarray\n"));
+    QTest::newRow("QByteArray") << QVariant(QByteArray::fromHex("01FF332F762A"));
     QTest::newRow("QUuid") << QVariant(uuid);
     QTest::newRow("QVariantMap") << QVariant(variantMap);
     QTest::newRow("QVariantList") << QVariant(variantList);

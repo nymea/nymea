@@ -31,6 +31,9 @@ class TestLoggingLoading: public QObject
 public:
     TestLoggingLoading(QObject* parent = nullptr);
 
+protected slots:
+    void initTestCase();
+
 private slots:
     void testLogMigration();
     void testLogfileRotation();
@@ -41,7 +44,15 @@ private slots:
 
 TestLoggingLoading::TestLoggingLoading(QObject *parent): QObject(parent)
 {
+
     Q_INIT_RESOURCE(loggingloading);
+
+}
+
+void TestLoggingLoading::initTestCase()
+{
+    // Important for settings
+    QCoreApplication::instance()->setOrganizationName("guh-test");
 }
 
 void TestLoggingLoading::testLogMigration()

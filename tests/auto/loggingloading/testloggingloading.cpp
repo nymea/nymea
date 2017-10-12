@@ -53,6 +53,7 @@ void TestLoggingLoading::testLogMigration()
         QVERIFY(QFile(temporaryDbName).remove());
 
     // Copy v2 log db from resources to default settings path and set permissions
+    qDebug() << "Copy logdb v2 to" << temporaryDbName;
     QVERIFY(QFile::copy(":/guhd-v2.sqlite", temporaryDbName));
     QVERIFY(QFile::setPermissions(temporaryDbName, QFile::ReadOwner | QFile::WriteOwner | QFile::ReadGroup | QFile::ReadOther));
 
@@ -79,6 +80,7 @@ void TestLoggingLoading::testLogfileRotation()
         QVERIFY(QFile(rotatedDbName).remove());
 
     // Copy broken log db from resources to default settings path and set permissions
+    qDebug() << "Copy broken log db to" << temporaryDbName;
     QVERIFY(QFile::copy(":/guhd-broken.sqlite", temporaryDbName));
     QVERIFY(QFile::setPermissions(temporaryDbName, QFile::ReadOwner | QFile::WriteOwner | QFile::ReadGroup | QFile::ReadOther));
 

@@ -26,6 +26,7 @@
 #include "typeutils.h"
 
 #include <QObject>
+#include <QVariant>
 #include <QDateTime>
 
 namespace guhserver {
@@ -56,8 +57,8 @@ public:
     void setDeviceId(const DeviceId &deviceId);
 
     // Valid for LoggingSourceStates
-    QString value() const;
-    void setValue(const QString &value);
+    QVariant value() const;
+    void setValue(const QVariant &value);
 
     // Valid for LoggingEventTypeActiveChanged
     bool active() const;
@@ -75,7 +76,7 @@ private:
     // FIXME: If it turns out we need many more of those, we should subclass LogEntry with specific ones.
     QUuid m_typeId;
     DeviceId m_deviceId;
-    QString m_value;
+    QVariant m_value;
     Logging::LoggingEventType m_eventType;
     bool m_active;
     int m_errorCode;

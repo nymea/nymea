@@ -38,7 +38,7 @@ class LogEngine: public QObject
 {
     Q_OBJECT
 public:
-    LogEngine(QObject *parent = 0);
+    LogEngine(const QString &logPath = GuhSettings::logPath(), QObject *parent = 0);
     ~LogEngine();
 
     QList<LogEntry> logEntries(const LogFilter &filter = LogFilter()) const;
@@ -66,6 +66,9 @@ private:
     bool initDB();
     void appendLogEntry(const LogEntry &entry);
     void rotate(const QString &dbName);
+
+
+    bool migrateDatabaseVersion2to3();
 
 private slots:
     void checkDBSize();

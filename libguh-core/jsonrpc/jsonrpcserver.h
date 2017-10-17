@@ -47,6 +47,7 @@ public:
 
     // JsonHandler API implementation
     QString name() const;
+    Q_INVOKABLE JsonReply *Hello(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *Introspect(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *Version(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *SetNotificationStatus(const QVariantMap &params);
@@ -65,6 +66,7 @@ private:
     void sendResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QVariantMap &params = QVariantMap());
     void sendErrorResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QString &error);
     void sendUnauthorizedResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QString &error);
+    QVariantMap createWelcomeMessage(TransportInterface *interface) const;
 
 private slots:
     void setup();

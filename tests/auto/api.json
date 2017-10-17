@@ -1,4 +1,4 @@
-0.50
+0.51
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -410,6 +410,22 @@
             },
             "returns": {
                 "error": "$ref:UserError"
+            }
+        },
+        "JSONRPC.Hello": {
+            "description": "Upon first connection, guh will automatically send a welcome message containing information about the setup. If this message is lost for whatever reason (connections with multiple hops might drop this if guh sends it too early), the exact same message can be retrieved multiple times by calling this Hello method. Note that the contents might change if the system changed its state in the meantime, e.g. initialSetupRequired might turn false if the initial setup has been performed in the meantime.",
+            "params": {
+            },
+            "returns": {
+                "authenticationRequired": "Bool",
+                "id": "Int",
+                "initialSetupRequired": "Bool",
+                "language": "String",
+                "name": "String",
+                "protocol version": "String",
+                "server": "String",
+                "uuid": "Uuid",
+                "version": "String"
             }
         },
         "JSONRPC.Introspect": {

@@ -38,18 +38,31 @@
 #include "ruleaction.h"
 
 /*! Constructs a RuleAction with the given by \a actionTypeId and \a deviceId. */
-RuleAction::RuleAction(const ActionTypeId &actionTypeId, const DeviceId &deviceId) :
+RuleAction::RuleAction(const ActionTypeId &actionTypeId, const DeviceId &deviceId, const RuleActionParamList &params):
     m_id(ActionId::createActionId()),
     m_actionTypeId(actionTypeId),
-    m_deviceId(deviceId)
+    m_deviceId(deviceId),
+    m_ruleActionParams(params)
 {
 
 }
+
+/*! Constructs a RuleAction with the given by \a interface and \a interfaceAction. */
+RuleAction::RuleAction(const QString &interface, const QString &interfaceAction, const RuleActionParamList &params) :
+    m_interface(interface),
+    m_interfaceAction(interfaceAction),
+    m_ruleActionParams(params)
+{
+
+}
+
 /*! Constructs a copy of the given \a other RuleAction. */
 RuleAction::RuleAction(const RuleAction &other) :
     m_id(other.id()),
     m_actionTypeId(other.actionTypeId()),
     m_deviceId(other.deviceId()),
+    m_interface(other.interface()),
+    m_interfaceAction(other.interfaceAction()),
     m_ruleActionParams(other.ruleActionParams())
 {
 
@@ -64,7 +77,13 @@ ActionId RuleAction::id() const
 /*! Return true, if the actionTypeId and the deviceId of this RuleAction are valid (set).*/
 bool RuleAction::isValid() const
 {
-    return !m_actionTypeId.isNull() && !m_deviceId.isNull();
+    return (!m_actionTypeId.isNull() && !m_deviceId.isNull()) || (!m_interface.isEmpty() && !m_interfaceAction.isEmpty());
+}
+
+/*! Returns whether this RuleAction is targetting a specific device or rather an interface. */
+RuleAction::Type RuleAction::type() const
+{
+    return (!m_actionTypeId.isNull() && !m_deviceId.isNull()) ? TypeDevice : TypeInterface;
 }
 
 /*! Return true, if this RuleAction contains a \l{RuleActionParam} which is based on an EventTypeId.*/
@@ -103,6 +122,18 @@ DeviceId RuleAction::deviceId() const
     return m_deviceId;
 }
 
+/*! Returns the name of the interface associated with this RuleAction. */
+QString RuleAction::interface() const
+{
+    return m_interface;
+}
+
+/*! Returns the name of the action of the associated interface. */
+QString RuleAction::interfaceAction() const
+{
+    return m_interfaceAction;
+}
+
 /*! Returns the \l{RuleActionParamList} of this RuleAction.
  *  \sa RuleActionParam, */
 RuleActionParamList RuleAction::ruleActionParams() const
@@ -118,12 +149,25 @@ void RuleAction::setRuleActionParams(const RuleActionParamList &ruleActionParams
 }
 
 /*! Returns the \l{RuleActionParam} of this RuleAction with the given \a ruleActionParamTypeId.
- *  If there is no \l{RuleActionParam} with th given name an invalid \l{RuleActionParam} will be returnend.
+ *  If there is no \l{RuleActionParam} with th given id an invalid \l{RuleActionParam} will be returnend.
  *  \sa RuleActionParam, */
 RuleActionParam RuleAction::ruleActionParam(const ParamTypeId &ruleActionParamTypeId) const
 {
     foreach (const RuleActionParam &ruleActionParam, m_ruleActionParams) {
         if (ruleActionParam.paramTypeId() == ruleActionParamTypeId) {
+            return ruleActionParam;
+        }
+    }
+    return RuleActionParam(QString());
+}
+
+/*! Returns the \l{RuleActionParam} of this RuleAction with the given \a ruleActionParamName.
+ *  If there is no \l{RuleActionParam} with th given name an invalid \l{RuleActionParam} will be returnend.
+ *  \sa RuleActionParam, */
+RuleActionParam RuleAction::ruleActionParam(const QString &ruleActionParamName) const
+{
+    foreach (const RuleActionParam &ruleActionParam, m_ruleActionParams) {
+        if (ruleActionParam.paramName() == ruleActionParamName) {
             return ruleActionParam;
         }
     }

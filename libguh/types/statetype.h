@@ -92,6 +92,7 @@ private:
 class StateTypes: public QList<StateType>
 {
 public:
+    StateTypes() = default;
     StateTypes(const QList<StateType> &other);
     StateType findByName(const QString &name);
     StateType findById(const StateTypeId &id);

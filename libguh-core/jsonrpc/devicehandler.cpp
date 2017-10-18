@@ -57,8 +57,8 @@
 #include "guhcore.h"
 #include "devicemanager.h"
 #include "loggingcategories.h"
+#include "types/deviceclass.h"
 #include "plugin/device.h"
-#include "plugin/deviceclass.h"
 #include "plugin/deviceplugin.h"
 
 #include <QDebug>

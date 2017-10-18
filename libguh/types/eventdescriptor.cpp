@@ -31,6 +31,11 @@
 
     An EventDescriptor describes an \l{Event} in order to match it with a \l{guhserver::Rule}.
 
+    An EventDescriptor can either be bound to a certain device/eventtype, or to an interface.
+    If an event is bound to a device, it will only match when the given device fires the given event.
+    If an event is bound to an interface, it will match the given event for all the devices implementing
+    the given interface.
+
     \sa Event, EventType, guhserver::Rule
 */
 
@@ -44,6 +49,25 @@ EventDescriptor::EventDescriptor(const EventTypeId &eventTypeId, const DeviceId 
 {
 }
 
+EventDescriptor::EventDescriptor(const QString &interface, const QString &interfaceEvent, const QList<ParamDescriptor> &paramDescriptors):
+    m_interface(interface),
+    m_interfaceEvent(interfaceEvent),
+    m_paramDescriptors(paramDescriptors)
+{
+
+}
+
+EventDescriptor::Type EventDescriptor::type() const
+{
+    return (!m_deviceId.isNull() && !m_eventTypeId.isNull()) ? TypeDevice : TypeInterface;
+}
+
+/*! Returns true if the EventDescriptor is valid, that is, when it has either enough data to describe a device/eventType or an interface/interfaceEvent pair. */
+bool EventDescriptor::isValid() const
+{
+    return (!m_deviceId.isNull() && !m_eventTypeId.isNull()) || (!m_interface.isEmpty() && !m_interfaceEvent.isEmpty());
+}
+
 /*! Returns the id of the \l{EventType} which describes this Event. */
 EventTypeId EventDescriptor::eventTypeId() const
 {
@@ -54,6 +78,18 @@ EventTypeId EventDescriptor::eventTypeId() const
 DeviceId EventDescriptor::deviceId() const
 {
     return m_deviceId;
+}
+
+/*! Returns the interface associated with this EventDescriptor. */
+QString EventDescriptor::interface() const
+{
+    return m_interface;
+}
+
+/*! Returns the interface's event name associated with this EventDescriptor.*/
+QString EventDescriptor::interfaceEvent() const
+{
+    return m_interfaceEvent;
 }
 
 /*! Returns the parameters of this Event. */
@@ -95,51 +131,6 @@ bool EventDescriptor::operator ==(const EventDescriptor &other) const
     return m_eventTypeId == other.eventTypeId()
             && m_deviceId == other.deviceId()
             && paramsMatch;
-}
-
-/*! Compare this EventDescriptor to the Event given by \a event.
- *  Events are equal (returns true) if eventTypeId, deviceId and params match. */
-bool EventDescriptor::operator ==(const Event &event) const
-{
-    if (m_eventTypeId != event.eventTypeId() || m_deviceId != event.deviceId()) {
-        return false;
-    }
-
-    foreach (const ParamDescriptor &paramDescriptor, m_paramDescriptors) {
-        switch (paramDescriptor.operatorType()) {
-        case Types::ValueOperatorEquals:
-            if (event.param(paramDescriptor.paramTypeId()).value() != paramDescriptor.value()) {
-                return false;
-            }
-            break;
-        case Types::ValueOperatorNotEquals:
-            if (event.param(paramDescriptor.paramTypeId()).value() == paramDescriptor.value()) {
-                return false;
-            }
-            break;
-        case Types::ValueOperatorGreater:
-            if (event.param(paramDescriptor.paramTypeId()).value() <= paramDescriptor.value()) {
-                return false;
-            }
-            break;
-        case Types::ValueOperatorGreaterOrEqual:
-            if (event.param(paramDescriptor.paramTypeId()).value() < paramDescriptor.value()) {
-                return false;
-            }
-            break;
-        case Types::ValueOperatorLess:
-            if (event.param(paramDescriptor.paramTypeId()).value() >= paramDescriptor.value()) {
-                return false;
-            }
-            break;
-        case Types::ValueOperatorLessOrEqual:
-            if (event.param(paramDescriptor.paramTypeId()).value() < paramDescriptor.value()) {
-                return false;
-            }
-            break;
-        }
-    }
-    return true;
 }
 
 /*! Writes the eventTypeId and the deviceId of the given \a eventDescriptor to \a dbg. */

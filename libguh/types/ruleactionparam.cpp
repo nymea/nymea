@@ -57,10 +57,26 @@ RuleActionParam::RuleActionParam(const ParamTypeId &paramTypeId, const QVariant 
 {
 }
 
+/*! Constructs a \l{RuleActionParam} with the given \a paramName, \a value, \a eventTypeId and \a eventParamTypeId.
+ *  \sa Param, Event, */
+RuleActionParam::RuleActionParam(const QString &paramName, const QVariant &value, const EventTypeId &eventTypeId, const ParamTypeId &eventParamTypeId):
+    m_paramName(paramName),
+    m_value(value),
+    m_eventTypeId(eventTypeId),
+    m_eventParamTypeId(eventParamTypeId)
+{
+
+}
+
 /*! Returns the \l ParamTypeId of this \l RuleActionParam. */
 ParamTypeId RuleActionParam::paramTypeId() const
 {
     return m_paramTypeId;
+}
+
+QString RuleActionParam::paramName() const
+{
+    return m_paramName;
 }
 
 /*! Returns the eventParamTypeId of this RuleActionParam. */
@@ -134,6 +150,17 @@ QDebug operator<<(QDebug dbg, const RuleActionParam &ruleActionParam)
 bool RuleActionParamList::hasParam(const ParamTypeId &ruleActionParamTypeId) const
 {
     return m_ids.contains(ruleActionParamTypeId);
+}
+
+/*! Returns true if this \l{RuleActionParamList} contains a \l{RuleActionParam} with the given \a ruleActionParamName. */
+bool RuleActionParamList::hasParam(const QString &ruleActionParamName) const
+{
+    foreach (const RuleActionParam &param, *this) {
+        if (param.paramName() == ruleActionParamName) {
+            return true;
+        }
+    }
+    return false;
 }
 
 /*! Returns the value of the \l{RuleActionParam} with the given \a ruleActionParamTypeId. */

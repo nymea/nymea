@@ -241,9 +241,13 @@ void TestDevices::verifyInterfaces()
     QVERIFY(!mockDevice.isEmpty());
 
     QVariantList interfaces = mockDevice.value("interfaces").toList();
-    // Must contain gateway, but must not contain anything else as device manager should filter it away
-    QCOMPARE(interfaces.count() == 1, true);
+    // Must contain gateway, light and battery, but must not contain mediacontroller as the device manager should filter
+    // that away because it doesn't implement all the required states.
+    QCOMPARE(interfaces.count(), 3);
     QVERIFY(interfaces.contains("gateway"));
+    QVERIFY(interfaces.contains("battery"));
+    QVERIFY(interfaces.contains("light"));
+    QVERIFY(!interfaces.contains("mediacontroller"));
 }
 
 void TestDevices::addConfiguredDevice_data()
@@ -631,25 +635,33 @@ void TestDevices::parentChildDevices()
 void TestDevices::getActionTypes_data()
 {
     QTest::addColumn<DeviceClassId>("deviceClassId");
-    QTest::addColumn<int>("resultCount");
+    QTest::addColumn<QList<ActionTypeId> >("actionTypeTestData");
 
-    QTest::newRow("valid deviceclass") << mockDeviceClassId << 5;
-    QTest::newRow("invalid deviceclass") << DeviceClassId("094f8024-5caa-48c1-ab6a-de486a92088f") << 0;
+    QTest::newRow("valid deviceclass") << mockDeviceClassId
+                                       << (QList<ActionTypeId>() << mockActionIdAsync << mockActionIdAsyncFailing << mockActionIdFailing << mockActionIdNoParams << mockActionIdPower << mockActionIdWithParams);
+    QTest::newRow("invalid deviceclass") << DeviceClassId("094f8024-5caa-48c1-ab6a-de486a92088f") << QList<ActionTypeId>();
 }
 
 void TestDevices::getActionTypes()
 {
     QFETCH(DeviceClassId, deviceClassId);
-    QFETCH(int, resultCount);
+    QFETCH(QList<ActionTypeId>, actionTypeTestData);
 
     QVariantMap params;
     params.insert("deviceClassId", deviceClassId);
     QVariant response = injectAndWait("Devices.GetActionTypes", params);
 
     QVariantList actionTypes = response.toMap().value("params").toMap().value("actionTypes").toList();
-    QCOMPARE(actionTypes.count(), resultCount);
-    if (resultCount > 0) {
-        QCOMPARE(actionTypes.first().toMap().value("id").toString(), mockActionIdWithParams.toString());
+    QCOMPARE(actionTypes.count(), actionTypeTestData.count());
+    foreach (const ActionTypeId &testDataId, actionTypeTestData) {
+        bool found = false;
+        foreach (const QVariant &at, actionTypes) {
+            if (testDataId.toString() == at.toMap().value("id").toString()) {
+                found = true;
+                break;
+            }
+        }
+        QVERIFY(found);
     }
 }
 
@@ -658,7 +670,7 @@ void TestDevices::getEventTypes_data()
     QTest::addColumn<DeviceClassId>("deviceClassId");
     QTest::addColumn<int>("resultCount");
 
-    QTest::newRow("valid deviceclass") << mockDeviceClassId << 4;
+    QTest::newRow("valid deviceclass") << mockDeviceClassId << 7;
     QTest::newRow("invalid deviceclass") << DeviceClassId("094f8024-5caa-48c1-ab6a-de486a92088f") << 0;
 }
 
@@ -683,7 +695,7 @@ void TestDevices::getStateTypes_data()
     QTest::addColumn<DeviceClassId>("deviceClassId");
     QTest::addColumn<int>("resultCount");
 
-    QTest::newRow("valid deviceclass") << mockDeviceClassId << 2;
+    QTest::newRow("valid deviceclass") << mockDeviceClassId << 5;
     QTest::newRow("invalid deviceclass") << DeviceClassId("094f8024-5caa-48c1-ab6a-de486a92088f") << 0;
 }
 
@@ -784,7 +796,7 @@ void TestDevices::getStateValues()
     QCOMPARE(response.toMap().value("params").toMap().value("deviceError").toString(), JsonTypes::deviceErrorToString(statusCode));
     if (statusCode == DeviceManager::DeviceErrorNoError) {
         QVariantList values = response.toMap().value("params").toMap().value("values").toList();
-        QCOMPARE(values.count(), 2); // Mock device has two states...
+        QCOMPARE(values.count(), 5); // Mock device has two states...
     }
 }
 
@@ -1230,6 +1242,8 @@ void TestDevices::removeAutoDevice()
     devices = GuhCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceAutoClassId);
     QVERIFY2(devices.count() > 0, "There needs to be at least one auto-created Mock Device for this test");
     device = devices.first();
+
+    DeviceClass dc = GuhCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
 
     // trigger disappear signal in mock device
     spy.clear();

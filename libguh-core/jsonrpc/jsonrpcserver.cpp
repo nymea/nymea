@@ -42,7 +42,7 @@
 #include "guhcore.h"
 #include "devicemanager.h"
 #include "plugin/deviceplugin.h"
-#include "plugin/deviceclass.h"
+#include "types/deviceclass.h"
 #include "plugin/device.h"
 #include "rule.h"
 #include "ruleengine.h"

@@ -23,7 +23,6 @@
 #ifndef JSONTYPES_H
 #define JSONTYPES_H
 
-#include "plugin/deviceclass.h"
 #include "plugin/devicedescriptor.h"
 #include "rule.h"
 #include "devicemanager.h"
@@ -31,6 +30,7 @@
 #include "guhconfiguration.h"
 #include "usermanager.h"
 
+#include "types/deviceclass.h"
 #include "types/event.h"
 #include "types/action.h"
 #include "types/actiontype.h"

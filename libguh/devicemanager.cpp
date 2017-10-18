@@ -187,6 +187,10 @@ DeviceManager::DeviceManager(HardwareManager *hardwareManager, const QLocale &lo
     qRegisterMetaType<DeviceClassId>();
     qRegisterMetaType<DeviceDescriptor>();
 
+    foreach (const Interface &interface, DevicePlugin::allInterfaces()) {
+        m_supportedInterfaces.insert(interface.name(), interface);
+    }
+
     // Give hardware a chance to start up before loading plugins etc.
     QMetaObject::invokeMethod(this, "loadPlugins", Qt::QueuedConnection);
     QMetaObject::invokeMethod(this, "loadConfiguredDevices", Qt::QueuedConnection);
@@ -340,6 +344,18 @@ DeviceManager::DeviceError DeviceManager::setPluginConfig(const PluginId &plugin
 QList<Vendor> DeviceManager::supportedVendors() const
 {
     return m_supportedVendors.values();
+}
+
+/*! Returns the list of all supported interfaces */
+Interfaces DeviceManager::supportedInterfaces() const
+{
+    return m_supportedInterfaces.values();
+}
+
+/*! Returns the interface with the given name. If the interface can't be found it will return an invalid interface. */
+Interface DeviceManager::findInterface(const QString &name)
+{
+    return m_supportedInterfaces.value(name);
 }
 
 /*! Returns all the supported \l{DeviceClass}{DeviceClasses} by all \l{DevicePlugin}{DevicePlugins} loaded in the system.
@@ -769,6 +785,18 @@ QList<Device *> DeviceManager::findConfiguredDevices(const DeviceClassId &device
     return ret;
 }
 
+QList<Device *> DeviceManager::findConfiguredDevices(const QString &interface) const
+{
+    QList<Device*> ret;
+    foreach (Device *device, m_configuredDevices) {
+        DeviceClass dc = m_supportedDevices.value(device->deviceClassId());
+        if (dc.interfaces().contains(interface)) {
+            ret.append(device);
+        }
+    }
+    return ret;
+}
+
 /*! Returns all child \l{Device}{Devices} of the given \a device. */
 QList<Device *> DeviceManager::findChildDevices(const DeviceId &id) const
 {
@@ -793,7 +821,7 @@ DeviceClass DeviceManager::findDeviceClass(const DeviceClassId &deviceClassId) c
     return DeviceClass();
 }
 
-/*! Verify if the given \a params matche the given \a paramTypes. Ith \a requireAll
+/*! Verify if the given \a params matches the given \a paramTypes. Ith \a requireAll
  *  is true, all \l{ParamList}{Params} has to be valid. Returns \l{DeviceError} to inform about the result.*/
 DeviceManager::DeviceError DeviceManager::verifyParams(const QList<ParamType> paramTypes, ParamList &params, bool requireAll)
 {

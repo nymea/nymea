@@ -1,7 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.io>                   *
- *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *  Copyright (C) 2017 Michael Zanetti <michael.zanetti@guh.io>            *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -21,49 +20,55 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ACTIONTYPE_H
-#define ACTIONTYPE_H
+#include "interface.h"
 
-#include "libguh.h"
-#include "typeutils.h"
-#include "paramtype.h"
-
-#include <QVariantList>
-
-class LIBGUH_EXPORT ActionType
+Interface::Interface(const QString &name, const ActionTypes &actionTypes, const EventTypes &eventTypes, const StateTypes &stateTypes):
+    m_name(name),
+    m_actionTypes(actionTypes),
+    m_eventTypes(eventTypes),
+    m_stateTypes(stateTypes)
 {
-public:
-    ActionType(const ActionTypeId &id);
 
-    ActionTypeId id() const;
+}
 
-    QString name() const;
-    void setName(const QString &name);
-
-    QString displayName() const;
-    void setDisplayName(const QString &displayName);
-
-    int index() const;
-    void setIndex(const int &index);
-
-    ParamTypes paramTypes() const;
-    void setParamTypes(const ParamTypes &paramTypes);
-
-private:
-    ActionTypeId m_id;
-    QString m_name;
-    QString m_displayName;
-    int m_index;
-    ParamTypes m_paramTypes;
-};
-
-class ActionTypes: public QList<ActionType>
+QString Interface::name() const
 {
-public:
-    ActionTypes() = default;
-    ActionTypes(const QList<ActionType> &other);
-    ActionType findByName(const QString &name);
-    ActionType findById(const ActionTypeId &id);
-};
+    return m_name;
+}
 
-#endif // ACTIONTYPE_H
+ActionTypes Interface::actionTypes() const
+{
+    return m_actionTypes;
+}
+
+EventTypes Interface::eventTypes() const
+{
+    return m_eventTypes;
+}
+
+StateTypes Interface::stateTypes() const
+{
+    return m_stateTypes;
+}
+
+bool Interface::isValid() const
+{
+    return !m_name.isEmpty();
+}
+
+Interfaces::Interfaces(const QList<Interface> &other)
+{
+    foreach (const Interface &iface, other) {
+        append(iface);
+    }
+}
+
+Interface Interfaces::findByName(const QString &name)
+{
+    foreach (const Interface &interface, *this) {
+        if (interface.name() == name) {
+            return interface;
+        }
+    }
+    return Interface();
+}

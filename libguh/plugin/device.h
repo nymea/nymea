@@ -27,7 +27,7 @@
 #include "typeutils.h"
 #include "libguh.h"
 
-#include "plugin/deviceclass.h"
+#include "types/deviceclass.h"
 #include "types/state.h"
 #include "types/param.h"
 

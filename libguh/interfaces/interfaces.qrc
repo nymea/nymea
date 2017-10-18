@@ -13,5 +13,6 @@
         <file>extendedvolumecontroller.json</file>
         <file>mediametadataprovider.json</file>
         <file>mediaplayer.json</file>
+        <file>battery.json</file>
     </qresource>
 </RCC>

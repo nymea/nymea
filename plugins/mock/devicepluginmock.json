@@ -31,7 +31,7 @@
                     "name": "mock",
                     "displayName": "Mock Device",
                     "deviceIcon": "Tune",
-                    "interfaces": ["gateway", "light", "mediacontroller"],
+                    "interfaces": ["gateway", "light", "mediacontroller", "battery"],
                     "basicTags": [
                         "Device",
                         "Actuator",
@@ -91,7 +91,36 @@
                             "defaultValue": false,
                             "type": "bool",
                             "cached": false
+                        },
+                        {
+                            "id": "6c8ab9a6-0164-4795-b829-f4394fe4edc4",
+                            "name": "batteryLevel",
+                            "displayName": "battery level",
+                            "displayNameEvent": "battery level",
+                            "type": "int",
+                            "minValue": 0,
+                            "maxValue": 100,
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "580bc611-1a55-41f3-996f-8d3ccf543db3",
+                            "name": "batteryCritical",
+                            "displayName": "battery level critical",
+                            "displayNameEvent": "battery level critical",
+                            "type": "bool",
+                            "defaultValue": false
+                        },
+                        {
+                            "id": "064aed0d-da4c-49d4-b236-60f97e98ff84",
+                            "name": "power",
+                            "displayName": "powered",
+                            "displayNameEvent": "powered changed",
+                            "displayNameAction": "set power",
+                            "type": "bool",
+                            "defaultValue": false,
+                            "writable": true
                         }
+
                     ],
                     "eventTypes": [
                         {

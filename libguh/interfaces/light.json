@@ -2,8 +2,8 @@
     "states": [
         {
             "name": "power",
-            "type": "bool"
+            "type": "bool",
+            "writable": true
         }
-
     ]
 }

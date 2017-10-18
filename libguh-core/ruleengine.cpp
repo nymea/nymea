@@ -369,7 +369,7 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
             }
         } else {
             // Event based rule
-            if (containsEvent(rule, event) && rule.statesActive() && rule.timeActive()) {
+            if (containsEvent(rule, event, device->deviceClassId()) && rule.statesActive() && rule.timeActive()) {
                 qCDebug(dcRuleEngine) << "Rule" << rule.id() << "contains event" << event.eventId() << "and all states match.";
                 rules.append(rule);
             }
@@ -465,24 +465,41 @@ RuleEngine::RuleError RuleEngine::addRule(const Rule &rule, bool fromEdit)
 
     // Check IDs in each EventDescriptor
     foreach (const EventDescriptor &eventDescriptor, rule.eventDescriptors()) {
-        // check deviceId
-        Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(eventDescriptor.deviceId());
-        if (!device) {
-            qCWarning(dcRuleEngine) << "Cannot create rule. No configured device for eventTypeId" << eventDescriptor.eventTypeId();
-            return RuleErrorDeviceNotFound;
-        }
-
-        // Check eventTypeId for this deivce
-        DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
-        bool eventTypeFound = false;
-        foreach (const EventType &eventType, deviceClass.eventTypes()) {
-            if (eventType.id() == eventDescriptor.eventTypeId()) {
-                eventTypeFound = true;
-            }
-        }
-        if (!eventTypeFound) {
-            qCWarning(dcRuleEngine) << "Cannot create rule. Device " + device->name() + " has no event type:" << eventDescriptor.eventTypeId();
+        if (!eventDescriptor.isValid()) {
+            qWarning(dcRuleEngine()) << "EventDescriptor is incomplete. It must have either eventTypeId and deviceId, or interface and interfaceEvent";
             return RuleErrorEventTypeNotFound;
+        }
+        if (eventDescriptor.type() == EventDescriptor::TypeDevice) {
+            // check deviceId
+            Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(eventDescriptor.deviceId());
+            if (!device) {
+                qCWarning(dcRuleEngine) << "Cannot create rule. No configured device for eventTypeId" << eventDescriptor.eventTypeId();
+                return RuleErrorDeviceNotFound;
+            }
+
+            // Check eventTypeId for this deivce
+            DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
+            bool eventTypeFound = false;
+            foreach (const EventType &eventType, deviceClass.eventTypes()) {
+                if (eventType.id() == eventDescriptor.eventTypeId()) {
+                    eventTypeFound = true;
+                }
+            }
+            if (!eventTypeFound) {
+                qCWarning(dcRuleEngine) << "Cannot create rule. Device " + device->name() + " has no event type:" << eventDescriptor.eventTypeId();
+                return RuleErrorEventTypeNotFound;
+            }
+        } else {
+            // Interface based event
+            Interface iface = GuhCore::instance()->deviceManager()->supportedInterfaces().findByName(eventDescriptor.interface());
+            if (!iface.isValid()) {
+                qWarning(dcRuleEngine()) << "No such interface:" << eventDescriptor.interface();
+                return RuleErrorInterfaceNotFound;
+            }
+            if (iface.eventTypes().findByName(eventDescriptor.interfaceEvent()).name().isEmpty()) {
+                qWarning(dcRuleEngine()) << "Interface" << iface.name() << "has no such event:" << eventDescriptor.interfaceEvent();
+                return RuleErrorEventTypeNotFound;
+            }
         }
     }
 
@@ -536,104 +553,165 @@ RuleEngine::RuleError RuleEngine::addRule(const Rule &rule, bool fromEdit)
 
     // Check actions
     foreach (const RuleAction &action, rule.actions()) {
-        Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(action.deviceId());
-        if (!device) {
-            qCWarning(dcRuleEngine) << "Cannot create rule. No configured device for action with actionTypeId" << action.actionTypeId();
-            return RuleErrorDeviceNotFound;
-        }
-
-        DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
-        if (!deviceClass.hasActionType(action.actionTypeId())) {
-            qCWarning(dcRuleEngine) << "Cannot create rule. Device " + device->name() + " has no action type:" << action.actionTypeId();
+        if (!action.isValid()) {
+            qWarning(dcRuleEngine()) << "Action is incomplete. It must have either actionTypeId and deviceId, or interface and interfaceAction";
             return RuleErrorActionTypeNotFound;
         }
+        if (action.type() == RuleAction::TypeDevice) {
+            Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(action.deviceId());
+            if (!device) {
+                qCWarning(dcRuleEngine) << "Cannot create rule. No configured device for action with actionTypeId" << action.actionTypeId();
+                return RuleErrorDeviceNotFound;
+            }
 
-        // check possible eventTypeIds in params
-        if (action.isEventBased()) {
+            DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
+            if (!deviceClass.hasActionType(action.actionTypeId())) {
+                qCWarning(dcRuleEngine) << "Cannot create rule. Device " + device->name() + " has no action type:" << action.actionTypeId();
+                return RuleErrorActionTypeNotFound;
+            }
+
+            // check possible eventTypeIds in params
+            if (action.isEventBased()) {
+                foreach (const RuleActionParam &ruleActionParam, action.ruleActionParams()) {
+                    if (ruleActionParam.eventTypeId() != EventTypeId()) {
+                        // We have an eventTypeId
+                        if (rule.eventDescriptors().isEmpty()) {
+                            qCWarning(dcRuleEngine) << "Cannot create rule. RuleAction" << action.actionTypeId() << "contains an eventTypeId, but there are no eventDescriptors.";
+                            return RuleErrorInvalidRuleActionParameter;
+                        }
+
+                        // now check if this eventType is in the eventDescriptorList of this rule
+                        if (!checkEventDescriptors(rule.eventDescriptors(), ruleActionParam.eventTypeId())) {
+                            qCWarning(dcRuleEngine) << "Cannot create rule. EventTypeId from RuleAction" << action.actionTypeId() << "not in eventDescriptors.";
+                            return RuleErrorInvalidRuleActionParameter;
+                        }
+
+                        // check if the param type of the event and the action match
+                        QVariant::Type eventParamType = getEventParamType(ruleActionParam.eventTypeId(), ruleActionParam.eventParamTypeId());
+                        QVariant::Type actionParamType = getActionParamType(action.actionTypeId(), ruleActionParam.paramTypeId());
+                        if (eventParamType != actionParamType) {
+                            qCWarning(dcRuleEngine) << "Cannot create rule. RuleActionParam" << ruleActionParam.paramTypeId().toString() << " and given event param " << ruleActionParam.eventParamTypeId().toString() << "have not the same type:";
+                            qCWarning(dcRuleEngine) << "        -> actionParamType:" << actionParamType;
+                            qCWarning(dcRuleEngine) << "        ->  eventParamType:" << eventParamType;
+                            return RuleErrorTypesNotMatching;
+                        }
+                    }
+                }
+            } else {
+                // verify action params
+                foreach (const ActionType &actionType, deviceClass.actionTypes()) {
+                    if (actionType.id() == action.actionTypeId()) {
+                        ParamList finalParams = action.toAction().params();
+                        DeviceManager::DeviceError paramCheck = GuhCore::instance()->deviceManager()->verifyParams(actionType.paramTypes(), finalParams);
+                        if (paramCheck != DeviceManager::DeviceErrorNoError) {
+                            qCWarning(dcRuleEngine) << "Cannot create rule. Got an invalid actionParam.";
+                            return RuleErrorInvalidRuleActionParameter;
+                        }
+                    }
+                }
+            }
+
             foreach (const RuleActionParam &ruleActionParam, action.ruleActionParams()) {
-                if (ruleActionParam.eventTypeId() != EventTypeId()) {
-                    // We have an eventTypeId
-                    if (rule.eventDescriptors().isEmpty()) {
-                        qCWarning(dcRuleEngine) << "Cannot create rule. RuleAction" << action.actionTypeId() << "contains an eventTypeId, but there are no eventDescriptors.";
-                        return RuleErrorInvalidRuleActionParameter;
-                    }
-
-                    // now check if this eventType is in the eventDescriptorList of this rule
-                    if (!checkEventDescriptors(rule.eventDescriptors(), ruleActionParam.eventTypeId())) {
-                        qCWarning(dcRuleEngine) << "Cannot create rule. EventTypeId from RuleAction" << action.actionTypeId() << "not in eventDescriptors.";
-                        return RuleErrorInvalidRuleActionParameter;
-                    }
-
-                    // check if the param type of the event and the action match
-                    QVariant::Type eventParamType = getEventParamType(ruleActionParam.eventTypeId(), ruleActionParam.eventParamTypeId());
-                    QVariant::Type actionParamType = getActionParamType(action.actionTypeId(), ruleActionParam.paramTypeId());
-                    if (eventParamType != actionParamType) {
-                        qCWarning(dcRuleEngine) << "Cannot create rule. RuleActionParam" << ruleActionParam.paramTypeId().toString() << " and given event param " << ruleActionParam.eventParamTypeId().toString() << "have not the same type:";
-                        qCWarning(dcRuleEngine) << "        -> actionParamType:" << actionParamType;
-                        qCWarning(dcRuleEngine) << "        ->  eventParamType:" << eventParamType;
-                        return RuleErrorTypesNotMatching;
-                    }
+                if (!ruleActionParam.isValid()) {
+                    qCWarning(dcRuleEngine) << "Cannot create rule. Got an actionParam with \"value\" AND \"eventTypeId\".";
+                    return RuleEngine::RuleErrorInvalidRuleActionParameter;
                 }
             }
-        } else {
-            // verify action params
-            foreach (const ActionType &actionType, deviceClass.actionTypes()) {
-                if (actionType.id() == action.actionTypeId()) {
-                    ParamList finalParams = action.toAction().params();
-                    DeviceManager::DeviceError paramCheck = GuhCore::instance()->deviceManager()->verifyParams(actionType.paramTypes(), finalParams);
-                    if (paramCheck != DeviceManager::DeviceErrorNoError) {
-                        qCWarning(dcRuleEngine) << "Cannot create rule. Got an invalid actionParam.";
-                        return RuleErrorInvalidRuleActionParameter;
-                    }
+
+        } else { // Is TypeInterface
+            Interface iface = GuhCore::instance()->deviceManager()->supportedInterfaces().findByName(action.interface());
+            if (!iface.isValid()) {
+                qCWarning(dcRuleEngine()) << "Cannot create rule. No such interface:" << action.interface();
+                return RuleError::RuleErrorInterfaceNotFound;
+            }
+            ActionType ifaceActionType = iface.actionTypes().findByName(action.interfaceAction());
+            if (ifaceActionType.name().isEmpty()) {
+                qCWarning(dcRuleEngine()) << "Cannot create rule. Interface" << iface.name() << "does not implement action" << action.interfaceAction();
+                return RuleError::RuleErrorActionTypeNotFound;
+            }
+            foreach (const ParamType &ifaceActionParamType, ifaceActionType.paramTypes()) {
+                qWarning() << "iface requires param:" << ifaceActionParamType.name();
+                if (!action.ruleActionParams().hasParam(ifaceActionParamType.name())) {
+                    qCWarning(dcRuleEngine()) << "Cannot create rule. Interface action" << iface.name() << ":" << action.interfaceAction() << "requires a" << ifaceActionParamType.name() << "param of type" << QVariant::typeToName(ifaceActionParamType.type());
+                    return RuleError::RuleErrorMissingParameter;
+                }
+                if (!action.ruleActionParam(ifaceActionParamType.name()).value().canConvert(ifaceActionParamType.type())) {
+                    qCWarning(dcRuleEngine()) << "Cannot create rule. Interface action parameter" << iface.name() << ":" << action.interfaceAction() << ":" << ifaceActionParamType.name() << "has wrong type. Expected" << QVariant::typeToName(ifaceActionParamType.type());
+                    return RuleError::RuleErrorInvalidParameter;
                 }
             }
-        }
-
-        foreach (const RuleActionParam &ruleActionParam, action.ruleActionParams()) {
-            if (!ruleActionParam.isValid()) {
-                qCWarning(dcRuleEngine) << "Cannot create rule. Got an actionParam with \"value\" AND \"eventTypeId\".";
-                return RuleEngine::RuleErrorInvalidRuleActionParameter;
-            }
+            // TODO: Check params
         }
     }
 
     // Check exit actions
-    foreach (const RuleAction &action, rule.exitActions()) {
-        Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(action.deviceId());
-        if (!device) {
-            qCWarning(dcRuleEngine) << "Cannot create rule. No configured device for exit action with actionTypeId" << action.actionTypeId();
-            return RuleErrorDeviceNotFound;
-        }
-
-        DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
-        if (!deviceClass.hasActionType(action.actionTypeId())) {
-            qCWarning(dcRuleEngine) << "Cannot create rule. Device " + device->name() + " has no action type:" << action.actionTypeId();
+    foreach (const RuleAction &ruleAction, rule.exitActions()) {
+        if (!ruleAction.isValid()) {
+            qWarning(dcRuleEngine()) << "Exit Action is incomplete. It must have either actionTypeId and deviceId, or interface and interfaceAction";
             return RuleErrorActionTypeNotFound;
         }
 
-        // verify action params
-        foreach (const ActionType &actionType, deviceClass.actionTypes()) {
-            if (actionType.id() == action.actionTypeId()) {
-                ParamList finalParams = action.toAction().params();
-                DeviceManager::DeviceError paramCheck = GuhCore::instance()->deviceManager()->verifyParams(actionType.paramTypes(), finalParams);
-                if (paramCheck != DeviceManager::DeviceErrorNoError) {
-                    qCWarning(dcRuleEngine) << "Cannot create rule. Got an invalid exit actionParam.";
-                    return RuleErrorInvalidRuleActionParameter;
+        if (ruleAction.type() == RuleAction::TypeDevice) {
+            Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(ruleAction.deviceId());
+            if (!device) {
+                qCWarning(dcRuleEngine) << "Cannot create rule. No configured device for exit action with actionTypeId" << ruleAction.actionTypeId();
+                return RuleErrorDeviceNotFound;
+            }
+
+            DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
+            if (!deviceClass.hasActionType(ruleAction.actionTypeId())) {
+                qCWarning(dcRuleEngine) << "Cannot create rule. Device " + device->name() + " has no action type:" << ruleAction.actionTypeId();
+                return RuleErrorActionTypeNotFound;
+            }
+
+            // verify action params
+            foreach (const ActionType &actionType, deviceClass.actionTypes()) {
+                if (actionType.id() == ruleAction.actionTypeId()) {
+                    ParamList finalParams = ruleAction.toAction().params();
+                    DeviceManager::DeviceError paramCheck = GuhCore::instance()->deviceManager()->verifyParams(actionType.paramTypes(), finalParams);
+                    if (paramCheck != DeviceManager::DeviceErrorNoError) {
+                        qCWarning(dcRuleEngine) << "Cannot create rule. Got an invalid exit actionParam.";
+                        return RuleErrorInvalidRuleActionParameter;
+                    }
                 }
             }
-        }
 
-        // Exit action can never be event based.
-        if (action.isEventBased()) {
-            qCWarning(dcRuleEngine) << "Cannot create rule. Got exitAction with an actionParam containing an eventTypeId. ";
-            return RuleErrorInvalidRuleActionParameter;
-        }
-
-        foreach (const RuleActionParam &ruleActionParam, action.ruleActionParams()) {
-            if (!ruleActionParam.isValid()) {
-                qCWarning(dcRuleEngine) << "Cannot create rule. Got an actionParam with \"value\" AND \"eventTypeId\".";
-                return RuleEngine::RuleErrorInvalidRuleActionParameter;
+            // Exit action can never be event based.
+            if (ruleAction.isEventBased()) {
+                qCWarning(dcRuleEngine) << "Cannot create rule. Got exitAction with an actionParam containing an eventTypeId. ";
+                return RuleErrorInvalidRuleActionParameter;
             }
+
+            foreach (const RuleActionParam &ruleActionParam, ruleAction.ruleActionParams()) {
+                if (!ruleActionParam.isValid()) {
+                    qCWarning(dcRuleEngine) << "Cannot create rule. Got an actionParam with \"value\" AND \"eventTypeId\".";
+                    return RuleEngine::RuleErrorInvalidRuleActionParameter;
+                }
+            }
+
+        } else { // Is TypeInterface
+            Interface iface = GuhCore::instance()->deviceManager()->supportedInterfaces().findByName(ruleAction.interface());
+            if (!iface.isValid()) {
+                qCWarning(dcRuleEngine()) << "Cannot create rule. No such interface:" << ruleAction.interface();
+                return RuleError::RuleErrorInterfaceNotFound;
+            }
+            ActionType ifaceActionType = iface.actionTypes().findByName(ruleAction.interfaceAction());
+            if (ifaceActionType.name().isEmpty()) {
+                qCWarning(dcRuleEngine()) << "Cannot create rule. Interface" << iface.name() << "does not implement action" << ruleAction.interfaceAction();
+                return RuleError::RuleErrorActionTypeNotFound;
+            }
+            foreach (const ParamType &ifaceActionParamType, ifaceActionType.paramTypes()) {
+                qWarning() << "iface requires param:" << ifaceActionParamType.name();
+                if (!ruleAction.ruleActionParams().hasParam(ifaceActionParamType.name())) {
+                    qCWarning(dcRuleEngine()) << "Cannot create rule. Interface action" << iface.name() << ":" << ruleAction.interfaceAction() << "requires a" << ifaceActionParamType.name() << "param of type" << QVariant::typeToName(ifaceActionParamType.type());
+                    return RuleError::RuleErrorMissingParameter;
+                }
+                if (!ruleAction.ruleActionParam(ifaceActionParamType.name()).value().canConvert(ifaceActionParamType.type())) {
+                    qCWarning(dcRuleEngine()) << "Cannot create rule. Interface action parameter" << iface.name() << ":" << ruleAction.interfaceAction() << ":" << ifaceActionParamType.name() << "has wrong type. Expected" << QVariant::typeToName(ifaceActionParamType.type());
+                    return RuleError::RuleErrorInvalidParameter;
+                }
+            }
+            // TODO: Check params
         }
     }
 
@@ -997,12 +1075,68 @@ void RuleEngine::removeDeviceFromRule(const RuleId &id, const DeviceId &deviceId
     emit ruleConfigurationChanged(newRule);
 }
 
-bool RuleEngine::containsEvent(const Rule &rule, const Event &event)
+bool RuleEngine::containsEvent(const Rule &rule, const Event &event, const DeviceClassId &deviceClassId)
 {
     foreach (const EventDescriptor &eventDescriptor, rule.eventDescriptors()) {
-        if (eventDescriptor == event) {
-            return true;
+        // If this is a device based rule, eventTypeId and deviceId must match
+        if (eventDescriptor.type() == EventDescriptor::TypeDevice) {
+            if (eventDescriptor.eventTypeId() != event.eventTypeId() ||  eventDescriptor.deviceId() != event.deviceId()) {
+                continue;
+            }
         }
+
+        // If this is a interface based rule, the device must implement the interface
+        if (eventDescriptor.type() == EventDescriptor::TypeInterface) {
+            DeviceClass dc = GuhCore::instance()->deviceManager()->findDeviceClass(deviceClassId);
+            if (!dc.interfaces().contains(eventDescriptor.interface())) {
+                // DeviceClass for this event doesn't implement the interface for this eventDescriptor
+                continue;
+            }
+
+            EventType et = dc.eventTypes().findById(event.eventTypeId());
+            if (et.name() != eventDescriptor.interfaceEvent()) {
+                // The fired event name does not match with the eventDescriptor's interfaceEvent
+                continue;
+            }
+        }
+
+        // Ok, either device/eventTypeId or interface/interfaceEvent are matching. Compare the paramdescriptor
+        foreach (const ParamDescriptor &paramDescriptor, eventDescriptor.paramDescriptors()) {
+            switch (paramDescriptor.operatorType()) {
+            case Types::ValueOperatorEquals:
+                if (event.param(paramDescriptor.paramTypeId()).value() != paramDescriptor.value()) {
+                    continue;
+                }
+                break;
+            case Types::ValueOperatorNotEquals:
+                if (event.param(paramDescriptor.paramTypeId()).value() == paramDescriptor.value()) {
+                    continue;
+                }
+                break;
+            case Types::ValueOperatorGreater:
+                if (event.param(paramDescriptor.paramTypeId()).value() <= paramDescriptor.value()) {
+                    continue;
+                }
+                break;
+            case Types::ValueOperatorGreaterOrEqual:
+                if (event.param(paramDescriptor.paramTypeId()).value() < paramDescriptor.value()) {
+                    continue;
+                }
+                break;
+            case Types::ValueOperatorLess:
+                if (event.param(paramDescriptor.paramTypeId()).value() >= paramDescriptor.value()) {
+                    continue;
+                }
+                break;
+            case Types::ValueOperatorLessOrEqual:
+                if (event.param(paramDescriptor.paramTypeId()).value() < paramDescriptor.value()) {
+                    continue;
+                }
+                break;
+            }
+        }
+        // All matching!
+        return true;
     }
 
     return false;

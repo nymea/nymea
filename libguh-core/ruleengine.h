@@ -24,7 +24,7 @@
 
 #include "rule.h"
 #include "types/event.h"
-#include "plugin/deviceclass.h"
+#include "types/deviceclass.h"
 #include "stateevaluator.h"
 
 #include <QObject>
@@ -59,7 +59,8 @@ public:
         RuleErrorInvalidCalendarItem,
         RuleErrorInvalidTimeEventItem,
         RuleErrorContainsEventBasesAction,
-        RuleErrorNoExitActions
+        RuleErrorNoExitActions,
+        RuleErrorInterfaceNotFound
     };
 
     enum RemovePolicy {
@@ -99,7 +100,7 @@ signals:
     void ruleConfigurationChanged(const Rule &rule);
 
 private:
-    bool containsEvent(const Rule &rule, const Event &event);
+    bool containsEvent(const Rule &rule, const Event &event, const DeviceClassId &deviceClassId);
     bool containsState(const StateEvaluator &stateEvaluator, const Event &stateChangeEvent);
 
     bool checkEventDescriptors(const QList<EventDescriptor> eventDescriptors, const EventTypeId &eventTypeId);

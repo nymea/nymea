@@ -336,7 +336,7 @@ bool DeviceClass::hasStateType(const StateTypeId &stateTypeId)
 
 /*! Returns the eventTypes of this DeviceClass. \{Device}{Devices} created
     from this \l{DeviceClass} must have their events matching to this template. */
-QList<EventType> DeviceClass::eventTypes() const
+EventTypes DeviceClass::eventTypes() const
 {
     return m_eventTypes;
 }
@@ -361,7 +361,7 @@ bool DeviceClass::hasEventType(const EventTypeId &eventTypeId)
 
 /*! Returns the actionTypes of this DeviceClass. \{Device}{Devices} created
     from this \l{DeviceClass} must have their actions matching to this template. */
-QList<ActionType> DeviceClass::actionTypes() const
+ActionTypes DeviceClass::actionTypes() const
 {
     return m_actionTypes;
 }

@@ -168,12 +168,15 @@ void JsonTypes::init()
     s_param.insert("value", basicTypeRef());
 
     // RuleAction
-    s_ruleAction.insert("actionTypeId", basicTypeToString(Uuid));
-    s_ruleAction.insert("deviceId", basicTypeToString(Uuid));
+    s_ruleAction.insert("o:deviceId", basicTypeToString(Uuid));
+    s_ruleAction.insert("o:actionTypeId", basicTypeToString(Uuid));
+    s_ruleAction.insert("o:interface", basicTypeToString(String));
+    s_ruleAction.insert("o:interfaceAction", basicTypeToString(String));
     s_ruleAction.insert("o:ruleActionParams", QVariantList() << ruleActionParamRef());
 
     // RuleActionParam
-    s_ruleActionParam.insert("paramTypeId", basicTypeToString(Uuid));
+    s_ruleActionParam.insert("o:paramTypeId", basicTypeToString(Uuid));
+    s_ruleActionParam.insert("o:paramName", basicTypeToString(String));
     s_ruleActionParam.insert("o:value", basicTypeRef());
     s_ruleActionParam.insert("o:eventTypeId", basicTypeToString(Uuid));
     s_ruleActionParam.insert("o:eventParamTypeId", basicTypeToString(Uuid));
@@ -228,8 +231,10 @@ void JsonTypes::init()
     s_event.insert("o:params", QVariantList() << paramRef());
 
     // EventDescriptor
-    s_eventDescriptor.insert("eventTypeId", basicTypeToString(Uuid));
-    s_eventDescriptor.insert("deviceId", basicTypeToString(Uuid));
+    s_eventDescriptor.insert("o:eventTypeId", basicTypeToString(Uuid));
+    s_eventDescriptor.insert("o:deviceId", basicTypeToString(Uuid));
+    s_eventDescriptor.insert("o:interface", basicTypeToString(String));
+    s_eventDescriptor.insert("o:interfaceEvent", basicTypeToString(String));
     s_eventDescriptor.insert("o:paramDescriptors", QVariantList() << paramDescriptorRef());
 
     // ActionType
@@ -1320,10 +1325,16 @@ Rule JsonTypes::unpackRule(const QVariantMap &ruleMap)
 /*! Returns a \l{RuleAction} created from the given \a ruleActionMap. */
 RuleAction JsonTypes::unpackRuleAction(const QVariantMap &ruleActionMap)
 {
-    RuleAction action(ActionTypeId(ruleActionMap.value("actionTypeId").toString()), DeviceId(ruleActionMap.value("deviceId").toString()));
+    ActionTypeId actionTypeId(ruleActionMap.value("actionTypeId").toString());
+    DeviceId actionDeviceId(ruleActionMap.value("deviceId").toString());
+    QString interface = ruleActionMap.value("interface").toString();
+    QString interfaceAction = ruleActionMap.value("interfaceAction").toString();
     RuleActionParamList actionParamList = JsonTypes::unpackRuleActionParams(ruleActionMap.value("ruleActionParams").toList());
-    action.setRuleActionParams(actionParamList);
-    return action;
+
+    if (!actionTypeId.isNull() && !actionDeviceId.isNull()) {
+        return RuleAction(actionTypeId, actionDeviceId, actionParamList);
+    }
+    return RuleAction(interface, interfaceAction, actionParamList);
 }
 
 /*! Returns a \l{RuleActionParam} created from the given \a ruleActionParamMap. */
@@ -1333,9 +1344,13 @@ RuleActionParam JsonTypes::unpackRuleActionParam(const QVariantMap &ruleActionPa
         return RuleActionParam();
 
     ParamTypeId paramTypeId = ParamTypeId(ruleActionParamMap.value("paramTypeId").toString());
+    QString paramName = ruleActionParamMap.value("paramName").toString();
     QVariant value = ruleActionParamMap.value("value");
     EventTypeId eventTypeId = EventTypeId(ruleActionParamMap.value("eventTypeId").toString());
     ParamTypeId eventParamTypeId = ParamTypeId(ruleActionParamMap.value("eventParamTypeId").toString());
+    if (paramTypeId.isNull()) {
+        return RuleActionParam(paramName, value, eventTypeId, eventParamTypeId);
+    }
     return RuleActionParam(paramTypeId, value, eventTypeId, eventParamTypeId);
 }
 
@@ -1377,9 +1392,13 @@ EventDescriptor JsonTypes::unpackEventDescriptor(const QVariantMap &eventDescrip
 {
     EventTypeId eventTypeId(eventDescriptorMap.value("eventTypeId").toString());
     DeviceId eventDeviceId(eventDescriptorMap.value("deviceId").toString());
+    QString interface = eventDescriptorMap.value("interface").toString();
+    QString interfaceEvent = eventDescriptorMap.value("interfaceEvent").toString();
     QList<ParamDescriptor> eventParams = JsonTypes::unpackParamDescriptors(eventDescriptorMap.value("paramDescriptors").toList());
-    EventDescriptor eventDescriptor(eventTypeId, eventDeviceId, eventParams);
-    return eventDescriptor;
+    if (!eventDeviceId.isNull() && !eventTypeId.isNull()) {
+        return EventDescriptor(eventTypeId, eventDeviceId, eventParams);
+    }
+    return EventDescriptor(interface, interfaceEvent, eventParams);
 }
 
 /*! Returns a \l{StateEvaluator} created from the given \a stateEvaluatorMap. */

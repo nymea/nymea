@@ -24,8 +24,8 @@
 
 #include "rule.h"
 #include "types/event.h"
+#include "types/deviceclass.h"
 #include "plugin/deviceplugin.h"
-#include "plugin/deviceclass.h"
 #include "plugin/devicedescriptor.h"
 
 #include "logging/logengine.h"

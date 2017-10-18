@@ -1,4 +1,4 @@
-1.0
+1.1
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -1152,8 +1152,10 @@
             ]
         },
         "EventDescriptor": {
-            "deviceId": "Uuid",
-            "eventTypeId": "Uuid",
+            "o:deviceId": "Uuid",
+            "o:eventTypeId": "Uuid",
+            "o:interface": "String",
+            "o:interfaceEvent": "String",
             "o:paramDescriptors": [
                 "$ref:ParamDescriptor"
             ]
@@ -1325,8 +1327,10 @@
             "timeDescriptor": "$ref:TimeDescriptor"
         },
         "RuleAction": {
-            "actionTypeId": "Uuid",
-            "deviceId": "Uuid",
+            "o:actionTypeId": "Uuid",
+            "o:deviceId": "Uuid",
+            "o:interface": "String",
+            "o:interfaceAction": "String",
             "o:ruleActionParams": [
                 "$ref:RuleActionParam"
             ]
@@ -1334,8 +1338,9 @@
         "RuleActionParam": {
             "o:eventParamTypeId": "Uuid",
             "o:eventTypeId": "Uuid",
-            "o:value": "$ref:BasicType",
-            "paramTypeId": "Uuid"
+            "o:paramName": "String",
+            "o:paramTypeId": "Uuid",
+            "o:value": "$ref:BasicType"
         },
         "RuleDescription": {
             "active": "Bool",
@@ -1364,7 +1369,8 @@
             "RuleErrorInvalidCalendarItem",
             "RuleErrorInvalidTimeEventItem",
             "RuleErrorContainsEventBasesAction",
-            "RuleErrorNoExitActions"
+            "RuleErrorNoExitActions",
+            "RuleErrorInterfaceNotFound"
         ],
         "ServerConfiguration": {
             "address": "String",

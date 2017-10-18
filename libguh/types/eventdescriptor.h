@@ -36,10 +36,22 @@
 class LIBGUH_EXPORT EventDescriptor
 {
 public:
+    enum Type {
+        TypeDevice,
+        TypeInterface
+    };
+
     EventDescriptor(const EventTypeId &eventTypeId, const DeviceId &deviceId, const QList<ParamDescriptor> &paramDescriptors = QList<ParamDescriptor>());
+    EventDescriptor(const QString &interface, const QString &interfaceEvent, const QList<ParamDescriptor> &paramDescriptors = QList<ParamDescriptor>());
+
+    Type type() const;
+    bool isValid() const;
 
     EventTypeId eventTypeId() const;
     DeviceId deviceId() const;
+
+    QString interface() const;
+    QString interfaceEvent() const;
 
     QList<ParamDescriptor> paramDescriptors() const;
     void setParamDescriptors(const QList<ParamDescriptor> &paramDescriptors);
@@ -47,11 +59,11 @@ public:
 
     bool operator ==(const EventDescriptor &other) const;
 
-    bool operator ==(const Event &event) const;
-
 private:
     EventTypeId m_eventTypeId;
     DeviceId m_deviceId;
+    QString m_interface;
+    QString m_interfaceEvent;
     QList<ParamDescriptor> m_paramDescriptors;
 };
 

@@ -22,11 +22,11 @@
 #ifndef JSONRPCSERVER_H
 #define JSONRPCSERVER_H
 
-#include "plugin/deviceclass.h"
 #include "jsonhandler.h"
 #include "transportinterface.h"
 #include "usermanager.h"
 
+#include "types/deviceclass.h"
 #include "types/action.h"
 #include "types/event.h"
 

@@ -33,6 +33,7 @@ namespace guhserver {
 void CertificateGenerator::generate(const QString &certificateFilename, const QString &keyFilename)
 {
     EVP_PKEY * pkey = nullptr;
+    BIGNUM          *bne = NULL;
     RSA * rsa = nullptr;
     X509 * x509 = nullptr;
     X509_NAME * name = nullptr;
@@ -40,10 +41,17 @@ void CertificateGenerator::generate(const QString &certificateFilename, const QS
     const char * buffer = nullptr;
     long size;
 
+    bne = BN_new();
+    BN_set_word(bne, RSA_F4);
+    q_check_ptr(bne);
+
+    rsa = RSA_new();
+    RSA_generate_key_ex(rsa, 2048, bne, nullptr);
+    q_check_ptr(rsa);
+
     pkey = EVP_PKEY_new();
     q_check_ptr(pkey);
-    rsa = RSA_generate_key(2048, RSA_F4, nullptr, nullptr);
-    q_check_ptr(rsa);
+
     EVP_PKEY_assign_RSA(pkey, rsa);
     x509 = X509_new();
     q_check_ptr(x509);
@@ -68,15 +76,19 @@ void CertificateGenerator::generate(const QString &certificateFilename, const QS
     q_check_ptr(bp_private);
     if(PEM_write_bio_PrivateKey(bp_private, pkey, nullptr, nullptr, 0, nullptr, nullptr) != 1)
     {
+        BN_free(bne);
         EVP_PKEY_free(pkey);
         X509_free(x509);
         BIO_free_all(bp_private);
         qFatal("PEM_write_bio_PrivateKey");
+        return;
     }
     bp_public = BIO_new(BIO_s_mem());
     q_check_ptr(bp_public);
     if(PEM_write_bio_X509(bp_public, x509) != 1)
     {
+
+        BN_free(bne);
         EVP_PKEY_free(pkey);
         X509_free(x509);
         BIO_free_all(bp_public);
@@ -102,6 +114,7 @@ void CertificateGenerator::generate(const QString &certificateFilename, const QS
     }
     keyFile.close();
 
+    BN_free(bne);
     EVP_PKEY_free(pkey); // this will also free the rsa key
     X509_free(x509);
     BIO_free_all(bp_public);

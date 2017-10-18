@@ -96,6 +96,7 @@ QStringList TestJSONRPC::extractRefs(const QVariant &variant)
 
 void TestJSONRPC::testHandshake()
 {
+    // first test if the handshake message is auto-sent upon connecting
     QSignalSpy spy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
     QUuid newClientId = QUuid::createUuid();
@@ -107,6 +108,10 @@ void TestJSONRPC::testHandshake()
     QVariantMap handShake = jsonDoc.toVariant().toMap();
     QString guhVersionString(GUH_VERSION_STRING);
     QVERIFY2(handShake.value("version").toString() == guhVersionString, "Handshake version doesn't match Guh version.");
+
+    // And now check if it is sent again when calling JSONRPC.Hello
+    handShake = injectAndWait("JSONRPC.Hello").toMap();
+    QCOMPARE(handShake.value("params").toMap().value("version").toString(), guhVersionString);
 
     m_mockTcpServer->clientDisconnected(newClientId);
 }
@@ -132,6 +137,18 @@ void TestJSONRPC::testInitialSetup()
     qWarning() << "Calling introspect on uninitialized instance:" << response.value("status").toString() << response.value("error").toString();
     QCOMPARE(response.value("status").toString(), QStringLiteral("success"));
 
+
+    // Hello call should work in any case too
+    spy.clear();
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Hello\"}");
+    if (spy.count() == 0) {
+        spy.wait();
+    }
+    QVERIFY(spy.count() == 1);
+    jsonDoc = QJsonDocument::fromJson(spy.first().at(1).toByteArray());
+    response = jsonDoc.toVariant().toMap();
+    qWarning() << "Calling Hello on uninitialized instance:" << response.value("status").toString() << response.value("error").toString();
+    QCOMPARE(response.value("status").toString(), QStringLiteral("success"));
 
     // Any other call should fail with "unauthorized" even if we use a previously valid token
     spy.clear();

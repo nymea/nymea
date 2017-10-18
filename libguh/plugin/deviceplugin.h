@@ -161,6 +161,8 @@ private:
 
     QJsonObject m_metaData;
 
+    mutable QList<DeviceClass> m_supportedDevices;
+
     friend class DeviceManager;
 };
 

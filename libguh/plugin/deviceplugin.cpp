@@ -202,10 +202,155 @@ QList<Vendor> DevicePlugin::supportedVendors() const
 */
 QList<DeviceClass> DevicePlugin::supportedDevices() const
 {
+    return m_supportedDevices;
+}
+
+/*! Returns the translator of this \l{DevicePlugin}. */
+QTranslator *DevicePlugin::translator()
+{
+    return m_translator;
+}
+
+/*! Returns true if the given \a locale could be set for this \l{DevicePlugin}. */
+bool DevicePlugin::setLocale(const QLocale &locale)
+{
+    // check if there are local translations
+    if (m_translator->load(locale, m_metaData.value("id").toString(), "-", QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath(), ".qm")) {
+        qCDebug(dcDeviceManager()) << "* Load translation" << locale.name() << "for" << pluginName() << "from" << QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath() + "/" + m_metaData.value("id").toString() + "-" + locale.name() + ".qm";
+        return true;
+    }
+
+    // otherwise use the system translations
+    if (m_translator->load(locale, m_metaData.value("id").toString(), "-", GuhSettings::translationsPath(), ".qm")) {
+        qCDebug(dcDeviceManager()) << "* Load translation" << locale.name() << "for" << pluginName() << "from" <<  GuhSettings::translationsPath();
+        return true;
+    }
+
+    if (locale.name() != "en_US")
+        qCWarning(dcDeviceManager()) << "* Could not load translation" << locale.name() << "for plugin" << pluginName();
+
+    return false;
+}
+
+/*! Override this if your plugin supports Device with DeviceClass::CreationMethodAuto.
+ This will be called at startup, after the configured devices have been loaded.
+ This is the earliest time you should start emitting autoDevicesAppeared(). If you
+ are monitoring some hardware/service for devices to appear, start monitoring now.
+ If you are building the devices based on a static list, you may emit
+ autoDevicesAppeard() in here.
+ */
+void DevicePlugin::startMonitoringAutoDevices()
+{
+
+}
+
+/*! Reimplement this if you support a DeviceClass with createMethod \l{DeviceManager}{CreateMethodDiscovery}.
+    This will be called to discover Devices for the given \a deviceClassId with the given \a params. This will always
+    be an async operation. Return \l{DeviceManager}{DeviceErrorAsync} or \l{DeviceManager}{DeviceErrorNoError}
+    if the discovery has been started successfully. Return an appropriate error otherwise.
+    Once devices are discovered, emit devicesDiscovered(). */
+DeviceManager::DeviceError DevicePlugin::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
+{
+    Q_UNUSED(deviceClassId)
+    Q_UNUSED(params)
+    return DeviceManager::DeviceErrorCreationMethodNotSupported;
+}
+
+/*! This will be called when a new device is created. The plugin has the chance to do some setup.
+    Return \l{DeviceManager}{DeviceSetupStatusFailure} if something bad happened during the setup in which case the \a device
+    will be disabled. Return \l{DeviceManager}{DeviceSetupStatusSuccess} if everything went well. If you can't tell yet and
+    need more time to set up the \a device (note: you should never block in this method) you can
+    return \l{DeviceManager}{DeviceSetupStatusAsync}. In that case the \l{DeviceManager} will wait for you to emit
+    \l{DevicePlugin}{deviceSetupFinished} to report the status.
+*/
+DeviceManager::DeviceSetupStatus DevicePlugin::setupDevice(Device *device)
+{
+    Q_UNUSED(device)
+    return DeviceManager::DeviceSetupStatusSuccess;
+}
+
+/*! This will be called when a new \a device was added successfully and the device setup is finished.*/
+void DevicePlugin::postSetupDevice(Device *device)
+{
+    Q_UNUSED(device)
+}
+
+/*! This will be called when a \a device removed. The plugin has the chance to do some teardown.
+ *  The device is still valid during this call, but already removed from the system.
+ *  The device will be deleted as soon as this method returns.*/
+void DevicePlugin::deviceRemoved(Device *device)
+{
+    Q_UNUSED(device)
+}
+
+/*! This method will be called for \l{Device}{Devices} with the \l{DeviceClass::SetupMethodDisplayPin} right after the paring request
+ *  with the given \a pairingTransactionId for the given \a deviceDescriptor.*/
+DeviceManager::DeviceError DevicePlugin::displayPin(const PairingTransactionId &pairingTransactionId, const DeviceDescriptor &deviceDescriptor)
+{
+    Q_UNUSED(pairingTransactionId)
+    Q_UNUSED(deviceDescriptor)
+
+    qCWarning(dcDeviceManager) << "Plugin does not implement the display pin setup method.";
+
+    return DeviceManager::DeviceErrorNoError;
+}
+
+/*! Confirms the pairing of a \a deviceClassId with the given \a pairingTransactionId and \a params.
+ * Returns \l{DeviceManager::DeviceError}{DeviceError} to inform about the result. The optional paramerter
+ * \a secret contains for example the pin for \l{Device}{Devices} with the setup method \l{DeviceClass::SetupMethodDisplayPin}.*/
+DeviceManager::DeviceSetupStatus DevicePlugin::confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret = QString())
+{
+    Q_UNUSED(pairingTransactionId)
+    Q_UNUSED(deviceClassId)
+    Q_UNUSED(params)
+    Q_UNUSED(secret)
+
+    qCWarning(dcDeviceManager) << "Plugin does not implement pairing.";
+    return DeviceManager::DeviceSetupStatusFailure;
+}
+
+/*! This will be called to actually execute actions on the hardware. The \{Device} and
+ * the \{Action} are contained in the \a device and \a action parameters.
+ * Return the appropriate \l{DeviceManager::DeviceError}{DeviceError}.
+ *
+ * It is possible to execute actions asynchronously. You never should do anything blocking for
+ * a long time (e.g. wait on a network reply from the internet) but instead return
+ * DeviceManager::DeviceErrorAsync and continue processing in an async manner. Once
+ * you have the reply ready, emit actionExecutionFinished() with the appropriate parameters.
+ *
+ * \sa actionExecutionFinished()
+*/
+DeviceManager::DeviceError DevicePlugin::executeAction(Device *device, const Action &action)
+{
+    Q_UNUSED(device)
+    Q_UNUSED(action)
+    return DeviceManager::DeviceErrorNoError;
+}
+
+/*! Returns the configuration description of this DevicePlugin as a list of \l{ParamType}{ParamTypes}. */
+QList<ParamType> DevicePlugin::configurationDescription() const
+{
+    return m_configurationDescription;
+}
+
+/*! This will be called when the DeviceManager initializes the plugin and set up the things behind the scenes.
+    When implementing a new plugin, use \l{DevicePlugin::init()} instead in order to do initialisation work. */
+void DevicePlugin::initPlugin(DeviceManager *deviceManager)
+{
+    m_deviceManager = deviceManager;
+
+    // parse plugin configuration params
+    if (m_metaData.contains("paramTypes")) {
+        QPair<bool, QList<ParamType> > paramVerification = parseParamTypes(m_metaData.value("paramTypes").toArray());
+        if (paramVerification.first)
+            m_configurationDescription << paramVerification.second;
+
+    }
+
     QStringList missingFields = verifyFields(QStringList() << "id" << "idName" << "name" << "vendors", m_metaData);
     if (!missingFields.isEmpty()) {
         qCWarning(dcDeviceManager) << "Skipping plugin because of missing" << missingFields.join(", ") << m_metaData;
-        return QList<DeviceClass>();
+        return;
     }
 
     QList<DeviceClass> deviceClasses;
@@ -590,155 +735,11 @@ QList<DeviceClass> DevicePlugin::supportedDevices() const
             deviceClass.setInterfaces(interfaces);
 
             if (!broken) {
-                deviceClasses.append(deviceClass);
+                m_supportedDevices.append(deviceClass);
             } else {
                 qCWarning(dcDeviceManager()) << "Skipping device class" << deviceClass.name();
             }
         }
-    }
-    return deviceClasses;
-}
-
-/*! Returns the translator of this \l{DevicePlugin}. */
-QTranslator *DevicePlugin::translator()
-{
-    return m_translator;
-}
-
-/*! Returns true if the given \a locale could be set for this \l{DevicePlugin}. */
-bool DevicePlugin::setLocale(const QLocale &locale)
-{
-    // check if there are local translations
-    if (m_translator->load(locale, m_metaData.value("id").toString(), "-", QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath(), ".qm")) {
-        qCDebug(dcDeviceManager()) << "* Load translation" << locale.name() << "for" << pluginName() << "from" << QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath() + "/" + m_metaData.value("id").toString() + "-" + locale.name() + ".qm";
-        return true;
-    }
-
-    // otherwise use the system translations
-    if (m_translator->load(locale, m_metaData.value("id").toString(), "-", GuhSettings::translationsPath(), ".qm")) {
-        qCDebug(dcDeviceManager()) << "* Load translation" << locale.name() << "for" << pluginName() << "from" <<  GuhSettings::translationsPath();
-        return true;
-    }
-
-    if (locale.name() != "en_US")
-        qCWarning(dcDeviceManager()) << "* Could not load translation" << locale.name() << "for plugin" << pluginName();
-
-    return false;
-}
-
-/*! Override this if your plugin supports Device with DeviceClass::CreationMethodAuto.
- This will be called at startup, after the configured devices have been loaded.
- This is the earliest time you should start emitting autoDevicesAppeared(). If you
- are monitoring some hardware/service for devices to appear, start monitoring now.
- If you are building the devices based on a static list, you may emit
- autoDevicesAppeard() in here.
- */
-void DevicePlugin::startMonitoringAutoDevices()
-{
-
-}
-
-/*! Reimplement this if you support a DeviceClass with createMethod \l{DeviceManager}{CreateMethodDiscovery}.
-    This will be called to discover Devices for the given \a deviceClassId with the given \a params. This will always
-    be an async operation. Return \l{DeviceManager}{DeviceErrorAsync} or \l{DeviceManager}{DeviceErrorNoError}
-    if the discovery has been started successfully. Return an appropriate error otherwise.
-    Once devices are discovered, emit devicesDiscovered(). */
-DeviceManager::DeviceError DevicePlugin::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
-{
-    Q_UNUSED(deviceClassId)
-    Q_UNUSED(params)
-    return DeviceManager::DeviceErrorCreationMethodNotSupported;
-}
-
-/*! This will be called when a new device is created. The plugin has the chance to do some setup.
-    Return \l{DeviceManager}{DeviceSetupStatusFailure} if something bad happened during the setup in which case the \a device
-    will be disabled. Return \l{DeviceManager}{DeviceSetupStatusSuccess} if everything went well. If you can't tell yet and
-    need more time to set up the \a device (note: you should never block in this method) you can
-    return \l{DeviceManager}{DeviceSetupStatusAsync}. In that case the \l{DeviceManager} will wait for you to emit
-    \l{DevicePlugin}{deviceSetupFinished} to report the status.
-*/
-DeviceManager::DeviceSetupStatus DevicePlugin::setupDevice(Device *device)
-{
-    Q_UNUSED(device)
-    return DeviceManager::DeviceSetupStatusSuccess;
-}
-
-/*! This will be called when a new \a device was added successfully and the device setup is finished.*/
-void DevicePlugin::postSetupDevice(Device *device)
-{
-    Q_UNUSED(device)
-}
-
-/*! This will be called when a \a device removed. The plugin has the chance to do some teardown.
- *  The device is still valid during this call, but already removed from the system.
- *  The device will be deleted as soon as this method returns.*/
-void DevicePlugin::deviceRemoved(Device *device)
-{
-    Q_UNUSED(device)
-}
-
-/*! This method will be called for \l{Device}{Devices} with the \l{DeviceClass::SetupMethodDisplayPin} right after the paring request
- *  with the given \a pairingTransactionId for the given \a deviceDescriptor.*/
-DeviceManager::DeviceError DevicePlugin::displayPin(const PairingTransactionId &pairingTransactionId, const DeviceDescriptor &deviceDescriptor)
-{
-    Q_UNUSED(pairingTransactionId)
-    Q_UNUSED(deviceDescriptor)
-
-    qCWarning(dcDeviceManager) << "Plugin does not implement the display pin setup method.";
-
-    return DeviceManager::DeviceErrorNoError;
-}
-
-/*! Confirms the pairing of a \a deviceClassId with the given \a pairingTransactionId and \a params.
- * Returns \l{DeviceManager::DeviceError}{DeviceError} to inform about the result. The optional paramerter
- * \a secret contains for example the pin for \l{Device}{Devices} with the setup method \l{DeviceClass::SetupMethodDisplayPin}.*/
-DeviceManager::DeviceSetupStatus DevicePlugin::confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret = QString())
-{
-    Q_UNUSED(pairingTransactionId)
-    Q_UNUSED(deviceClassId)
-    Q_UNUSED(params)
-    Q_UNUSED(secret)
-
-    qCWarning(dcDeviceManager) << "Plugin does not implement pairing.";
-    return DeviceManager::DeviceSetupStatusFailure;
-}
-
-/*! This will be called to actually execute actions on the hardware. The \{Device} and
- * the \{Action} are contained in the \a device and \a action parameters.
- * Return the appropriate \l{DeviceManager::DeviceError}{DeviceError}.
- *
- * It is possible to execute actions asynchronously. You never should do anything blocking for
- * a long time (e.g. wait on a network reply from the internet) but instead return
- * DeviceManager::DeviceErrorAsync and continue processing in an async manner. Once
- * you have the reply ready, emit actionExecutionFinished() with the appropriate parameters.
- *
- * \sa actionExecutionFinished()
-*/
-DeviceManager::DeviceError DevicePlugin::executeAction(Device *device, const Action &action)
-{
-    Q_UNUSED(device)
-    Q_UNUSED(action)
-    return DeviceManager::DeviceErrorNoError;
-}
-
-/*! Returns the configuration description of this DevicePlugin as a list of \l{ParamType}{ParamTypes}. */
-QList<ParamType> DevicePlugin::configurationDescription() const
-{
-    return m_configurationDescription;
-}
-
-/*! This will be called when the DeviceManager initializes the plugin and set up the things behind the scenes.
-    When implementing a new plugin, use \l{DevicePlugin::init()} instead in order to do initialisation work. */
-void DevicePlugin::initPlugin(DeviceManager *deviceManager)
-{
-    m_deviceManager = deviceManager;
-
-    // parse plugin configuration params
-    if (m_metaData.contains("paramTypes")) {
-        QPair<bool, QList<ParamType> > paramVerification = parseParamTypes(m_metaData.value("paramTypes").toArray());
-        if (paramVerification.first)
-            m_configurationDescription << paramVerification.second;
-
     }
 
     init();
@@ -892,7 +893,7 @@ DeviceManager *DevicePlugin::deviceManager() const
 QList<Device *> DevicePlugin::myDevices() const
 {
     QList<DeviceClassId> myDeviceClassIds;
-    foreach (const DeviceClass &deviceClass, supportedDevices()) {
+    foreach (const DeviceClass &deviceClass, m_supportedDevices) {
         myDeviceClassIds.append(deviceClass.id());
     }
 

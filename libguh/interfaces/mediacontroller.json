@@ -15,7 +15,7 @@
         },
         {
             "name": "playbackStatus",
-            "type": "string",
+            "type": "QString",
             "allowedValues": ["Playing", "Paused", "Stopped"],
             "writable": true
         }

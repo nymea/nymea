@@ -14,5 +14,7 @@
         <file>mediametadataprovider.json</file>
         <file>mediaplayer.json</file>
         <file>battery.json</file>
+        <file>button.json</file>
     </qresource>
+    <qresource prefix="/"/>
 </RCC>

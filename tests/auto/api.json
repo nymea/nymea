@@ -1,4 +1,4 @@
-0.54
+1.0
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -22,9 +22,10 @@
             "returns": {
                 "deviceError": "$ref:DeviceError",
                 "o:actionType": {
+                    "displayName": "String",
                     "id": "Uuid",
                     "index": "Int",
-                    "name": "Uuid",
+                    "name": "String",
                     "paramTypes": [
                         "$ref:ParamType"
                     ]
@@ -961,9 +962,10 @@
             ]
         },
         "ActionType": {
+            "displayName": "String",
             "id": "Uuid",
             "index": "Int",
-            "name": "Uuid",
+            "name": "String",
             "paramTypes": [
                 "$ref:ParamType"
             ]
@@ -1051,6 +1053,7 @@
             "discoveryParamTypes": [
                 "$ref:ParamType"
             ],
+            "displayName": "String",
             "eventTypes": [
                 "$ref:EventType"
             ],
@@ -1156,6 +1159,7 @@
             ]
         },
         "EventType": {
+            "displayName": "String",
             "id": "Uuid",
             "index": "Int",
             "name": "String",
@@ -1258,6 +1262,7 @@
             "value": "$ref:BasicType"
         },
         "ParamType": {
+            "displayName": "String",
             "id": "Uuid",
             "index": "Int",
             "name": "String",
@@ -1273,6 +1278,7 @@
             "type": "$ref:BasicType"
         },
         "Plugin": {
+            "displayName": "String",
             "id": "Uuid",
             "name": "String",
             "paramTypes": [
@@ -1397,6 +1403,7 @@
         ],
         "StateType": {
             "defaultValue": "Variant",
+            "displayName": "String",
             "id": "Uuid",
             "index": "Int",
             "name": "String",
@@ -1499,6 +1506,7 @@
             "ValueOperatorGreaterOrEqual"
         ],
         "Vendor": {
+            "displayName": "String",
             "id": "Uuid",
             "name": "String"
         },

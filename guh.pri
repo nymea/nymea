@@ -5,8 +5,8 @@ GUH_VERSION_STRING=$$system('dpkg-parsechangelog | sed -n -e "s/^Version: //p"')
 GUH_PLUGINS_PATH=/usr/lib/$$system('dpkg-architecture -q DEB_HOST_MULTIARCH')/guh/plugins/
 
 # define protocol versions
-JSON_PROTOCOL_VERSION_MAJOR=0
-JSON_PROTOCOL_VERSION_MINOR=54
+JSON_PROTOCOL_VERSION_MAJOR=1
+JSON_PROTOCOL_VERSION_MINOR=0
 REST_API_VERSION=1
 
 DEFINES += GUH_VERSION_STRING=\\\"$${GUH_VERSION_STRING}\\\" \

@@ -1,0 +1,14 @@
+{
+    "extends": "button",
+    "events": [
+        {
+            "name": "pressed",
+            "params": [
+                {
+                    "name": "buttonName",
+                    "type": "QString"
+                }
+            ]
+        }
+    ]
+}

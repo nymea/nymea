@@ -15,6 +15,10 @@
         <file>mediaplayer.json</file>
         <file>battery.json</file>
         <file>button.json</file>
+        <file>simplebutton.json</file>
+        <file>longpressbutton.json</file>
+        <file>simplemultibutton.json</file>
+        <file>longpressmultibutton.json</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

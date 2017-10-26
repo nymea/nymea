@@ -111,9 +111,9 @@ void CloudManager::setEnabled(bool enabled)
     }
 }
 
-void CloudManager::pairDevice(const QString &idToken, const QString &authToken, const QString &cognitoId)
+void CloudManager::pairDevice(const QString &idToken, const QString &userId)
 {
-    m_awsConnector->pairDevice(idToken, authToken, cognitoId);
+    m_awsConnector->pairDevice(idToken, userId);
 }
 
 void CloudManager::connect2aws()
@@ -137,9 +137,9 @@ void CloudManager::onlineStateChanged()
     }
 }
 
-void CloudManager::onPairingFinished(const QString &cognitoUserId, int errorCode)
+void CloudManager::onPairingFinished(const QString &cognitoUserId, int errorCode, const QString &message)
 {
-    emit pairingReply(cognitoUserId, errorCode);
+    emit pairingReply(cognitoUserId, errorCode, message);
 }
 
 void CloudManager::onAWSWebRtcHandshakeMessageReceived(const QString &transactionId, const QVariantMap &data)

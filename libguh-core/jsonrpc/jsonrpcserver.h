@@ -81,7 +81,7 @@ private slots:
 
     void asyncReplyFinished();
 
-    void pairingFinished(QString cognitoUserId, int status);
+    void pairingFinished(QString cognitoUserId, int status, const QString &message);
 
 private:
     QMap<TransportInterface*, bool> m_interfaces;

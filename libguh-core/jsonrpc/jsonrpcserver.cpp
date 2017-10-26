@@ -143,10 +143,10 @@ JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject 
     params.clear(); returns.clear();
     setDescription("SetupRemoteAccess", "Setup the remote connection by providing AWS token information");
     params.insert("idToken", JsonTypes::basicTypeToString(JsonTypes::String));
-    params.insert("authToken", JsonTypes::basicTypeToString(JsonTypes::String));
-    params.insert("cognitoId", JsonTypes::basicTypeToString(JsonTypes::String));
+    params.insert("userId", JsonTypes::basicTypeToString(JsonTypes::String));
     setParams("SetupRemoteAccess", params);
     returns.insert("status", JsonTypes::basicTypeToString(JsonTypes::Int));
+    returns.insert("message", JsonTypes::basicTypeToString(JsonTypes::String));
     setReturns("SetupRemoteAccess", returns);
 
     QMetaObject::invokeMethod(this, "setup", Qt::QueuedConnection);
@@ -263,14 +263,14 @@ JsonReply *JsonRPCServer::RemoveToken(const QVariantMap &params)
 
 JsonReply *JsonRPCServer::SetupRemoteAccess(const QVariantMap &params)
 {
+    qWarning() << "SetupRemoteAccess called";
     QString idToken = params.value("idToken").toString();
-    QString authToken = params.value("authToken").toString();
-    QString cognitoUserId = params.value("cognitoId").toString();
-    GuhCore::instance()->cloudManager()->pairDevice(idToken, authToken, cognitoUserId);
+    QString userId = params.value("userId").toString();
+    GuhCore::instance()->cloudManager()->pairDevice(idToken, userId);
     JsonReply *reply = createAsyncReply("SetupRemoteAccess");
-    m_pairingRequests.insert(cognitoUserId, reply);
-    connect(reply, &JsonReply::finished, [this, cognitoUserId](){
-        m_pairingRequests.remove(cognitoUserId);
+    m_pairingRequests.insert(userId, reply);
+    connect(reply, &JsonReply::finished, [this, userId](){
+        m_pairingRequests.remove(userId);
     });
     return reply;
 }
@@ -375,6 +375,7 @@ void JsonRPCServer::setup()
 void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &data)
 {
     qCDebug(dcJsonRpcTraffic()) << "Incoming data:" << data;
+    qWarning() << "***F*f+DSF*DA*a+FD*SF*f+ASDF*S";
 
     TransportInterface *interface = qobject_cast<TransportInterface *>(sender());
     QJsonParseError error;
@@ -447,7 +448,7 @@ void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &data)
     handler->setProperty("token", message.value("token").toByteArray());
     handler->setProperty("transportInterface", reinterpret_cast<qint64>(interface));
 
-    qCDebug(dcJsonRpc()) << "Got method" << method.toLatin1().data();
+    qCDebug(dcJsonRpc()) << "Invoking method" << targetNamespace << method.toLatin1().data();
 
     JsonReply *reply;
     QMetaObject::invokeMethod(handler, method.toLatin1().data(), Q_RETURN_ARG(JsonReply*, reply), Q_ARG(QVariantMap, params));
@@ -505,15 +506,15 @@ void JsonRPCServer::asyncReplyFinished()
     reply->deleteLater();
 }
 
-void JsonRPCServer::pairingFinished(QString cognitoUserId, int status)
+void JsonRPCServer::pairingFinished(QString cognitoUserId, int status, const QString &message)
 {
-    qWarning() << "pairing finished" << cognitoUserId << status;
     JsonReply *reply = m_pairingRequests.take(cognitoUserId);
     if (!reply) {
         return;
     }
     QVariantMap returns;
     returns.insert("status", status);
+    returns.insert("message", message);
     reply->setData(returns);
     reply->finished();
 }

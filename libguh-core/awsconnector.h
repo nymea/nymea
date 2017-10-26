@@ -43,14 +43,14 @@ public:
     void disconnectAWS();
     bool isConnected() const;
 
-    void pairDevice(const QString &idToken, const QString &authToken, const QString &cognitoUserId);
+    void pairDevice(const QString &idToken, const QString &userId);
 
     void sendWebRtcHandshakeMessage(const QString &sessionId, const QVariantMap &map);
 
 signals:
     void connected();
     void disconnected();
-    void devicePaired(const QString &cognritoUserId, int errorCode);
+    void devicePaired(const QString &cognritoUserId, int errorCode, const QString &message);
     void webRtcHandshakeMessageReceived(const QString &transactionId, const QVariantMap &data);
 
 private slots:
@@ -101,7 +101,7 @@ private:
     QFuture<void> m_connectingFuture;
     bool m_isCleanSession = true;
 
-    int m_transactionId = 0;
+    quint8 m_transactionId = 0;
     QString m_createDeviceId;
     int m_createDeviceSubscriptionId = 0;
     QHash<quint16, QString> m_pairingRequests;

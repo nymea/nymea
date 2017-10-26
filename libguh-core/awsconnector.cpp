@@ -176,7 +176,7 @@ void AWSConnector::onPairingsRetrieved(const QVariantList &pairings)
 {
     QStringList topics;
     foreach (const QVariant &pairing, pairings) {
-        topics << QString("eu-west-1:%1/%2/#").arg(pairing.toMap().value("cognitoIdIdentityId").toString()).arg(m_clientId);
+        topics << QString("%1/%2/#").arg(m_clientId).arg(pairing.toString());
     }
     subscribe(topics);
 
@@ -195,16 +195,15 @@ bool AWSConnector::isConnected() const
     return m_connectingFuture.isFinished() && m_networkConnection && m_client && m_client->IsConnected();
 }
 
-void AWSConnector::pairDevice(const QString &idToken, const QString &authToken, const QString &cognitoUserId)
+void AWSConnector::pairDevice(const QString &idToken, const QString &userId)
 {
     QVariantMap map;
     map.insert("idToken", idToken);
-    map.insert("authToken", authToken);
-    map.insert("cognitoUserId", cognitoUserId);
+    map.insert("userId", userId);
     map.insert("id", ++m_transactionId);
     map.insert("timestamp", QDateTime::currentMSecsSinceEpoch());
     publish(QString("%1/pair").arg(m_clientId), map);
-    m_pairingRequests.insert(m_transactionId, cognitoUserId);
+    m_pairingRequests.insert(m_transactionId, userId);
 }
 
 void AWSConnector::sendWebRtcHandshakeMessage(const QString &sessionId, const QVariantMap &map)
@@ -222,7 +221,7 @@ quint16 AWSConnector::publish(const QString &topic, const QVariantMap &message)
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(message);
 
     uint16_t packetId = 0;
-    ResponseCode res = m_client->PublishAsync(Utf8String::Create(fullTopic.toStdString()), false, false, mqtt::QoS::QOS1, jsonDoc.toJson().toStdString(), &publishCallback, packetId);
+    ResponseCode res = m_client->PublishAsync(Utf8String::Create(fullTopic.toStdString()), false, false, mqtt::QoS::QOS1, jsonDoc.toJson(QJsonDocument::Compact).toStdString(), &publishCallback, packetId);
     qCDebug(dcAWSTraffic()) << "publish call queued with status:" << QString::fromStdString(ResponseHelper::ToString(res)) << packetId << "for topic" << topic << jsonDoc.toJson();
     s_requestMap.insert(packetId, this);
     return packetId;
@@ -342,6 +341,8 @@ ResponseCode AWSConnector::onSubscriptionReceivedCallback(util::String topic_nam
         return ResponseCode::JSON_PARSING_ERROR;
     }
 
+    qCDebug(dcAWSTraffic()) << "Subscription received: Topic:" << QString::fromStdString(topic_name) << "payload:" << QString::fromStdString(payload);
+
     AWSConnector *connector = dynamic_cast<SubscriptionContext*>(p_app_handler_data.get())->c;
     QString topic = QString::fromStdString(topic_name);
     if (topic.startsWith("create/device/")) {
@@ -363,21 +364,25 @@ ResponseCode AWSConnector::onSubscriptionReceivedCallback(util::String topic_nam
     } else if (topic == QString("%1/pair/response").arg(connector->m_clientId)) {
         int statusCode = jsonDoc.toVariant().toMap().value("status").toInt();
         int id = jsonDoc.toVariant().toMap().value("id").toInt();
-        QString cognitoUserId = connector->m_pairingRequests.take(id);
-        if (!cognitoUserId.isEmpty()) {
-            qCDebug(dcAWS()) << "Pairing response for id:" << cognitoUserId << statusCode;
-            emit connector->devicePaired(cognitoUserId, statusCode);
-            connector->subscribe({QString("eu-west-1:%1/listeningPeer/#").arg(cognitoUserId)});
+        QString message = jsonDoc.toVariant().toMap().value("result").toMap().value("message").toString();
+        QString userId = connector->m_pairingRequests.take(id);
+        if (statusCode != 200) {
+            qCWarning(dcAWS()) << "Pairing failed:" << statusCode << message;
+            emit connector->devicePaired(userId, statusCode, message);
+        } else if (!userId.isEmpty()) {
+            qCDebug(dcAWS()) << "Pairing response for id:" << userId << statusCode;
+            emit connector->devicePaired(userId, statusCode, message);
+            connector->subscribe({QString("eu-west-1:%1/listeningPeer/#").arg(userId)});
         } else {
             qCWarning(dcAWS()) << "Received a pairing response for a transaction we didn't start";
         }
     } else if (topic == QString("%1/device/users/response").arg(connector->m_clientId)) {
-        qCDebug(dcAWS) << "have device pairings:" << jsonDoc.toVariant().toMap().value("pairings").toList();
-        if (jsonDoc.toVariant().toMap().value("pairings").toList().isEmpty()) {
+        if (jsonDoc.toVariant().toMap().value("users").toList().isEmpty()) {
             qCDebug(dcAWS()) << "No devices paired yet...";
             return ResponseCode::SUCCESS;
         }
-        connector->staticMetaObject.invokeMethod(connector, "inPairingsReceived", Qt::QueuedConnection, Q_ARG(QVariantList, jsonDoc.toVariant().toMap().value("pairings").toList()));
+        qCDebug(dcAWS) << jsonDoc.toVariant().toMap().value("users").toList().count() << "devices paired in cloud.";
+        connector->staticMetaObject.invokeMethod(connector, "onPairingsRetrieved", Qt::QueuedConnection, Q_ARG(QVariantList, jsonDoc.toVariant().toMap().value("users").toList()));
     } else if (topic == QString("%1/device/name/response").arg(connector->m_clientId)) {
         qCDebug(dcAWS) << "Set device name in cloud with status:" << jsonDoc.toVariant().toMap().value("status").toInt();
     } else if (topic.startsWith("eu-west-1:") && !topic.contains("reply")) {

@@ -46,17 +46,17 @@ public:
     bool enabled() const;
     void setEnabled(bool enabled);
 
-    void pairDevice(const QString &idToken, const QString &authToken, const QString &cognitoId);
+    void pairDevice(const QString &idToken, const QString &userId);
 
 signals:
-    void pairingReply(QString cognitoUserId, int status);
+    void pairingReply(QString cognitoUserId, int status, const QString &message);
 
 private:
     void connect2aws();
 
 private slots:
     void onlineStateChanged();
-    void onPairingFinished(const QString &cognitoUserId, int errorCode);
+    void onPairingFinished(const QString &cognitoUserId, int errorCode, const QString &message);
     void onAWSWebRtcHandshakeMessageReceived(const QString &transactionId, const QVariantMap &data);
     void onJanusWebRtcHandshakeMessageReceived(const QString &transactionId, const QVariantMap &data);
 

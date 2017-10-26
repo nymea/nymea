@@ -230,6 +230,7 @@ void SslServer::onSocketReadyRead()
     }
     if (m_receiveBuffer.endsWith("}\n")) {
         emit dataAvailable(socket, m_receiveBuffer);
+        m_receiveBuffer.clear();
     }
 }
 

@@ -263,7 +263,6 @@ JsonReply *JsonRPCServer::RemoveToken(const QVariantMap &params)
 
 JsonReply *JsonRPCServer::SetupRemoteAccess(const QVariantMap &params)
 {
-    qWarning() << "SetupRemoteAccess called";
     QString idToken = params.value("idToken").toString();
     QString userId = params.value("userId").toString();
     GuhCore::instance()->cloudManager()->pairDevice(idToken, userId);
@@ -375,7 +374,6 @@ void JsonRPCServer::setup()
 void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &data)
 {
     qCDebug(dcJsonRpcTraffic()) << "Incoming data:" << data;
-    qWarning() << "***F*f+DSF*DA*a+FD*SF*f+ASDF*S";
 
     TransportInterface *interface = qobject_cast<TransportInterface *>(sender());
     QJsonParseError error;

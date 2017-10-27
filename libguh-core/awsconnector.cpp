@@ -118,11 +118,6 @@ void AWSConnector::onConnected()
 
     // OK, we're registerd already, go straight to pairing setup
     setupPairing();
-
-//    // TODO: remove this again. just using this for testing now
-//    QStringList subscriptions;
-//    subscriptions.append(QString("eu-west-1:%1/%2/#").arg("7127d36f-9644-455c-bb14-4a23bfac65fe").arg(m_clientId));
-//    subscribe(subscriptions);
 }
 
 void AWSConnector::registerDevice()
@@ -372,7 +367,7 @@ ResponseCode AWSConnector::onSubscriptionReceivedCallback(util::String topic_nam
         } else if (!userId.isEmpty()) {
             qCDebug(dcAWS()) << "Pairing response for id:" << userId << statusCode;
             emit connector->devicePaired(userId, statusCode, message);
-            connector->subscribe({QString("eu-west-1:%1/listeningPeer/#").arg(userId)});
+            connector->subscribe({QString("%1/%2/#").arg(connector->m_clientId).arg(userId)});
         } else {
             qCWarning(dcAWS()) << "Received a pairing response for a transaction we didn't start";
         }

@@ -225,13 +225,11 @@ void SslServer::onSocketReadyRead()
     m_receiveBuffer.append(socket->readAll());
     int splitIndex = m_receiveBuffer.indexOf("}\n{");
     while (splitIndex > -1) {
-        qWarning() << "******" << "emitting dataAcailable" << splitIndex;
         emit dataAvailable(socket, m_receiveBuffer.left(splitIndex + 1));
         m_receiveBuffer = m_receiveBuffer.right(m_receiveBuffer.length() - splitIndex - 2);
         splitIndex = m_receiveBuffer.indexOf("}\n{");
     }
     if (m_receiveBuffer.endsWith("}\n")) {
-        qWarning() << "*********" << "emitting dataAvailable" << m_receiveBuffer;
         emit dataAvailable(socket, m_receiveBuffer);
         m_receiveBuffer.clear();
     }

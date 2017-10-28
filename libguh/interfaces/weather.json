@@ -1,8 +1,33 @@
 {
     "states": [
         {
+            "name": "weatherDescription",
+            "type": "QString"
+        },
+        {
+            "name": "weatherCondition",
+            "type": "QString",
+            "allowedValues": ["clear-day", "clear-night", "few-clouds-day", "few-clouds-night", "clouds", "overcast", "light-rain", "shower-rain", "thunderstorm", "snow", "fog"]
+        },
+        {
             "name": "temperature",
             "type": "double"
+        },
+        {
+            "name": "humidity",
+            "type": "int"
+        },
+        {
+            "name": "pressure",
+            "type": "double"
+        },
+        {
+            "name": "windSpeed",
+            "type": "double"
+        },
+        {
+            "name": "windDirection",
+            "type": "int"
         }
     ]
 }

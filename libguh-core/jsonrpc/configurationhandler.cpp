@@ -174,6 +174,7 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     setDescription("SetCloudEnabled", "Sets whether the cloud connection is enabled or disabled in the settings.");
     params.insert("enabled", JsonTypes::basicTypeToString(QVariant::Bool));
     setParams("SetCloudEnabled", params);
+    returns.insert("configurationError", JsonTypes::configurationErrorRef());
     setReturns("SetCloudEnabled", returns);
 
     // Notifications

@@ -119,7 +119,6 @@ void CloudManager::pairDevice(const QString &idToken, const QString &userId)
 void CloudManager::connect2aws()
 {
     m_awsConnector->connect2AWS(m_serverUrl,
-//                                "1e10fb7e-d9d9-4145-88dd-2d3caf623c18",  // micha's test id (needs micha's test certs) - remove that before merging
                                 m_deviceId.toString().remove(QRegExp("[{}]*")),
                                 m_deviceName,
                                 m_caCertificate,

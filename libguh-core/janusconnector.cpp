@@ -34,12 +34,6 @@ JanusConnector::JanusConnector(QObject *parent) : QObject(parent)
     connect(m_socket, static_cast<errorSignal>(&QLocalSocket::error), this, &JanusConnector::onError);
     connect(m_socket, &QLocalSocket::disconnected, this, &JanusConnector::onDisconnected);
     connect(m_socket, &QLocalSocket::readyRead, this, &JanusConnector::onReadyRead);
-    connect(m_socket, &QLocalSocket::stateChanged, [&](QLocalSocket::LocalSocketState state) {
-        qCWarning(dcJanus()) << "state changed" << state;
-    });
-    connect(m_socket, &QLocalSocket::readChannelFinished, [&]() {
-        qCWarning(dcJanus()) << "readchannel finished";
-    });
     connect(&m_socketTimeoutTimer, &QTimer::timeout, this, &JanusConnector::heartbeat);
     m_socketTimeoutTimer.setInterval(5000);
 
@@ -146,7 +140,7 @@ void JanusConnector::sendWebRtcHandshakeMessage(const QString &sessionId, const 
 void JanusConnector::processQueue()
 {
     if (!m_socket->isOpen()) {
-        qCWarning(dcJanus()) << "janus socket not open. Cannot process queue";
+        qCWarning(dcJanus()) << "Janus socket not open. Cannot process queue";
         return;
     }
 
@@ -193,17 +187,17 @@ void JanusConnector::processQueue()
 
 void JanusConnector::onDisconnected()
 {
-    qCDebug(dcJanus) << "disconnected from Janus";
+    qCDebug(dcJanus) << "Disconnected from Janus";
 }
 
 void JanusConnector::onError(QLocalSocket::LocalSocketError socketError)
 {
-    qCDebug(dcJanus) << "error in janus connection" << socketError << m_socket->errorString();
+    qCWarning(dcJanus) << "Error in janus connection" << socketError << m_socket->errorString();
 }
 
 void JanusConnector::onTextMessageReceived(const QString &message)
 {
-    qCDebug(dcJanus) << "text message received from Janus" << message;
+    qCDebug(dcJanus) << "Text message received from Janus" << message;
 }
 
 void JanusConnector::onReadyRead()

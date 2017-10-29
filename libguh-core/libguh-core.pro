@@ -11,7 +11,7 @@ target.path = /usr/lib/$$system('dpkg-architecture -q DEB_HOST_MULTIARCH')
 INSTALLS += target
 
 exists("/usr/include/mbedtls/net_sockets.h") {
-DEFINES += MBEDTLS_NEW_HEADERS
+    DEFINES += MBEDTLS_NEW_HEADERS
 }
 
 # icons for the webserver

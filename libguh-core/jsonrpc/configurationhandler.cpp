@@ -99,6 +99,9 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     QVariantList webSocketServerConfigurations;
     webSocketServerConfigurations.append(JsonTypes::serverConfigurationRef());
     returns.insert("webSocketServerConfigurations", webSocketServerConfigurations);
+    QVariantMap cloudConfiguration;
+    cloudConfiguration.insert("enabled", JsonTypes::basicTypeToString(JsonTypes::Bool));
+    returns.insert("cloud", cloudConfiguration);
     setReturns("GetConfigurations", returns);
 
     params.clear(); returns.clear();
@@ -163,12 +166,6 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     setParams("DeleteWebServerConfiguration", params);
     returns.insert("configurationError", JsonTypes::configurationErrorRef());
     setReturns("DeleteWebServerConfiguration", returns);
-
-    params.clear(); returns.clear();
-    setDescription("GetCloudEnabled", "Returns whether the cloud connection is enabled or disabled in the settings.");
-    setParams("GetCloudEnabled", params);
-    returns.insert("enabled", JsonTypes::basicTypeToString(QVariant::Bool));
-    setReturns("GetCloudEnabled", returns);
 
     params.clear(); returns.clear();
     setDescription("SetCloudEnabled", "Sets whether the cloud connection is enabled or disabled in the settings.");
@@ -247,6 +244,10 @@ JsonReply *ConfigurationHandler::GetConfigurations(const QVariantMap &params) co
         webSocketServerConfigs.append(JsonTypes::packServerConfiguration(config));
     }
     returns.insert("webSocketServerConfigurations", webSocketServerConfigs);
+
+    QVariantMap cloudConfig;
+    cloudConfig.insert("enabled", GuhCore::instance()->configuration()->cloudEnabled());
+    returns.insert("cloud", cloudConfig);
 
     return createReply(returns);
 }
@@ -400,14 +401,6 @@ JsonReply *ConfigurationHandler::DeleteWebSocketServerConfiguration(const QVaria
     }
     GuhCore::instance()->configuration()->removeWebSocketServerConfiguration(id);
     return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
-}
-
-JsonReply *ConfigurationHandler::GetCloudEnabled(const QVariantMap &params) const
-{
-    Q_UNUSED(params)
-    QVariantMap ret;
-    ret.insert("enabled", GuhCore::instance()->configuration()->cloudEnabled());
-    return createReply(ret);
 }
 
 JsonReply *ConfigurationHandler::SetCloudEnabled(const QVariantMap &params) const

@@ -1,4 +1,4 @@
-0.51
+0.52
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -80,6 +80,9 @@
                     "serverUuid": "Uuid",
                     "timeZone": "String"
                 },
+                "cloud": {
+                    "enabled": "Bool"
+                },
                 "tcpServerConfigurations": [
                     "$ref:ServerConfiguration"
                 ],
@@ -99,6 +102,15 @@
                 "timeZones": [
                     "String"
                 ]
+            }
+        },
+        "Configuration.SetCloudEnabled": {
+            "description": "Sets whether the cloud connection is enabled or disabled in the settings.",
+            "params": {
+                "enabled": "Bool"
+            },
+            "returns": {
+                "configurationError": "$ref:ConfigurationError"
             }
         },
         "Configuration.SetLanguage": {
@@ -458,11 +470,11 @@
         "JSONRPC.SetupRemoteAccess": {
             "description": "Setup the remote connection by providing AWS token information",
             "params": {
-                "authToken": "String",
-                "cognitoId": "String",
-                "idToken": "String"
+                "idToken": "String",
+                "userId": "String"
             },
             "returns": {
+                "message": "String",
                 "status": "Int"
             }
         },

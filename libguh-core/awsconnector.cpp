@@ -380,7 +380,7 @@ ResponseCode AWSConnector::onSubscriptionReceivedCallback(util::String topic_nam
         connector->staticMetaObject.invokeMethod(connector, "onPairingsRetrieved", Qt::QueuedConnection, Q_ARG(QVariantList, jsonDoc.toVariant().toMap().value("users").toList()));
     } else if (topic == QString("%1/device/name/response").arg(connector->m_clientId)) {
         qCDebug(dcAWS) << "Set device name in cloud with status:" << jsonDoc.toVariant().toMap().value("status").toInt();
-    } else if (topic.startsWith("eu-west-1:") && !topic.contains("reply")) {
+    } else if (topic.startsWith(QString("%1/eu-west-1:").arg(connector->m_clientId)) && !topic.contains("reply")) {
         static QStringList dupes;
         QString id = jsonDoc.toVariant().toMap().value("id").toString();
         QString type = jsonDoc.toVariant().toMap().value("type").toString();

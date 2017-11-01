@@ -19,6 +19,9 @@
         <file>longpressbutton.json</file>
         <file>simplemultibutton.json</file>
         <file>longpressmultibutton.json</file>
+        <file>sensor.json</file>
+        <file>temperaturesensor.json</file>
+        <file>humiditysensor.json</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

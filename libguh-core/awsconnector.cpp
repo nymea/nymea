@@ -83,19 +83,19 @@ void AWSConnector::doConnect()
                                                                  m_caFile.toStdString(),
                                                                  m_clientCertFile.toStdString(),
                                                                  m_clientPrivKeyFile.toStdString(),
-                                                                 std::chrono::milliseconds(30000),
-                                                                 std::chrono::milliseconds(30000),
-                                                                 std::chrono::milliseconds(30000),
+                                                                 std::chrono::milliseconds(3000),
+                                                                 std::chrono::milliseconds(3000),
+                                                                 std::chrono::milliseconds(3000),
                                                                  true
                                                                  ));
-    m_client = MqttClient::Create(m_networkConnection, std::chrono::milliseconds(30000), &onDisconnectedCallback, m_disconnectContextData);
+    m_client = MqttClient::Create(m_networkConnection, std::chrono::milliseconds(2800), &onDisconnectedCallback, m_disconnectContextData);
 
     m_client->SetAutoReconnectEnabled(true);
     m_client->SetMaxReconnectBackoffTimeout(std::chrono::seconds(10));
 
     qCDebug(dcAWS()) << "Connecting to AWS with ID:" << m_clientId << "endpoint:" << m_currentEndpoint << "Min reconnect timeout:" << m_client->GetMinReconnectBackoffTimeout().count() << "Max reconnect timeout:" << (quint32)m_client->GetMaxReconnectBackoffTimeout().count();
     m_connectingFuture = QtConcurrent::run([&]() {
-        ResponseCode rc = m_client->Connect(std::chrono::milliseconds(10000), true, mqtt::Version::MQTT_3_1_1, std::chrono::seconds(60), Utf8String::Create(m_clientId.toStdString()), nullptr, nullptr, nullptr);
+        ResponseCode rc = m_client->Connect(std::chrono::milliseconds(3000), true, mqtt::Version::MQTT_3_1_1, std::chrono::seconds(60), Utf8String::Create(m_clientId.toStdString()), nullptr, nullptr, nullptr);
         if (rc == ResponseCode::MQTT_CONNACK_CONNECTION_ACCEPTED) {
             emit connected();
         } else {
@@ -367,7 +367,7 @@ ResponseCode AWSConnector::onSubscriptionReceivedCallback(util::String topic_nam
         } else if (!userId.isEmpty()) {
             qCDebug(dcAWS()) << "Pairing response for id:" << userId << statusCode;
             emit connector->devicePaired(userId, statusCode, message);
-            connector->subscribe({QString("%1/%2/#").arg(connector->m_clientId).arg(userId)});
+            connector->subscribe({QString("%1/eu-west-1:%2/#").arg(connector->m_clientId).arg(userId)});
         } else {
             qCWarning(dcAWS()) << "Received a pairing response for a transaction we didn't start";
         }

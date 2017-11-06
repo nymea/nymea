@@ -116,6 +116,11 @@ void CloudManager::pairDevice(const QString &idToken, const QString &userId)
     m_awsConnector->pairDevice(idToken, userId);
 }
 
+bool CloudManager::keepAlive(const QString &sessionId)
+{
+    return m_janusConnector->sendKeepAliveMessage(sessionId);
+}
+
 void CloudManager::connect2aws()
 {
     m_awsConnector->connect2AWS(m_serverUrl,

@@ -34,8 +34,6 @@ JanusConnector::JanusConnector(QObject *parent) : QObject(parent)
     connect(m_socket, static_cast<errorSignal>(&QLocalSocket::error), this, &JanusConnector::onError);
     connect(m_socket, &QLocalSocket::disconnected, this, &JanusConnector::onDisconnected);
     connect(m_socket, &QLocalSocket::readyRead, this, &JanusConnector::onReadyRead);
-    connect(&m_socketTimeoutTimer, &QTimer::timeout, this, &JanusConnector::heartbeat);
-    m_socketTimeoutTimer.setInterval(5000);
 
     connectToJanus();
 }
@@ -60,8 +58,6 @@ bool JanusConnector::connectToJanus()
     }
 
     m_socket->setSocketDescriptor(sock);
-
-    m_socketTimeoutTimer.start();
 
     return true;
 }
@@ -130,11 +126,33 @@ void JanusConnector::sendWebRtcHandshakeMessage(const QString &sessionId, const 
             // otherwise store the request and reply when we get the webrtcup
             session->webRtcUp = message;
         }
+    } else if (messageType == "ack") {
+        QVariantMap janusMessage;
+        janusMessage.insert("janus", "ack");
+        janusMessage.insert("id", transactionId);
+        janusMessage.insert("transaction", "ack");
+        writeToJanus(QJsonDocument::fromVariant(janusMessage).toJson(QJsonDocument::Compact));
     } else {
         qCWarning(dcJanus()) << "Unhandled message type:" << messageType << message;
     }
 
     processQueue();
+}
+
+bool JanusConnector::sendKeepAliveMessage(const QString &sessionId)
+{
+    WebRtcSession *session = m_sessions.value(sessionId);
+    if (!session) {
+        qCWarning(dcJanus()) << "Received a keepalive message for a session we don't know.";
+        return false;
+    }
+    QVariantMap janusMessage;
+    janusMessage.insert("janus", "keepalive");
+    janusMessage.insert("session_id", session->janusSessionId);
+    janusMessage.insert("handle_id", session->janusChannelId);
+    janusMessage.insert("transaction", "keepalive");
+    writeToJanus(QJsonDocument::fromVariant(janusMessage).toJson(QJsonDocument::Compact));
+    return true;
 }
 
 void JanusConnector::processQueue()
@@ -187,7 +205,7 @@ void JanusConnector::processQueue()
 
 void JanusConnector::onDisconnected()
 {
-    qCDebug(dcJanus) << "Disconnected from Janus";
+    qCDebug(dcJanus) << "Disconnected from Janus" << m_socket->isOpen();
 }
 
 void JanusConnector::onError(QLocalSocket::LocalSocketError socketError)
@@ -195,15 +213,10 @@ void JanusConnector::onError(QLocalSocket::LocalSocketError socketError)
     qCWarning(dcJanus) << "Error in janus connection" << socketError << m_socket->errorString();
 }
 
-void JanusConnector::onTextMessageReceived(const QString &message)
-{
-    qCDebug(dcJanus) << "Text message received from Janus" << message;
-}
-
 void JanusConnector::onReadyRead()
 {
     QByteArray data = m_socket->readAll();
-//    qCDebug(dcJanus()) << "incoming data" << data;
+    qCDebug(dcJanusTraffic()) << "incoming data" << data;
     QJsonParseError error;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
     if (error.error != QJsonParseError::NoError) {
@@ -250,6 +263,23 @@ void JanusConnector::onReadyRead()
         return;
     }
 
+    if (map.value("janus").toString() == "hangup") {
+        quint64 sessionId = map.value("session_id").toLongLong();
+        foreach (WebRtcSession *session, m_sessions) {
+            if (session->matchJanusSessionId(sessionId)){
+                qCDebug(dcJanus()) << "Session" << session << "hangup received. Reason:" << map.value("reason").toString();
+                QVariantMap hangup;
+                hangup.insert("type", "hangup");
+                hangup.insert("reason", map.value("reason").toString());
+                emit webRtcHandshakeMessageReceived(session->sessionId, hangup);
+                m_sessions.remove(session->sessionId);
+                return;
+            }
+        }
+        qCWarning(dcJanus()) << "Received a hangup message but don't have a session for it";
+        return;
+    }
+
     // as of now, everything must be part of a transaction
     if (!map.contains("transaction")) {
         qCWarning(dcJanus) << "Unhandled message from Janus (missing transaction):" << data;
@@ -260,7 +290,11 @@ void JanusConnector::onReadyRead()
     WebRtcSession *session = m_pendingRequests.value(transactionId);
     if (!session) {
         if (transactionId == "pingety") {
-//            qCDebug(dcJanus()) << "Received PONG from Janus";
+            qCDebug(dcJanus()) << "Received PONG from Janus";
+            return;
+        }
+        if (transactionId == "keepalive") {
+            qCDebug(dcJanus()) << "Keep alive acked by janus.";
             return;
         }
         qCWarning(dcJanus()) << "received a janus message for a session we don't know...";
@@ -359,8 +393,11 @@ void JanusConnector::createChannel(WebRtcSession *session)
 
 void JanusConnector::writeToJanus(const QByteArray &data)
 {
-    qCDebug(dcJanus()) << "Writing to janus" << data;
-    m_socket->write(data);
+    qCDebug(dcJanusTraffic()) << "Writing to janus" << data;
+    qint64 count = m_socket->write(data);
+    if (count != data.length()) {
+        qCWarning(dcJanus()) << "Error writing to Janus.";
+    }
     m_socket->flush();
 }
 

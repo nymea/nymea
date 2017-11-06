@@ -392,7 +392,7 @@ ResponseCode AWSConnector::onSubscriptionReceivedCallback(util::String topic_nam
 
         qCDebug(dcAWS) << "received webrtc handshake message" << topic << jsonDoc.toJson();
         connector->webRtcHandshakeMessageReceived(topic, jsonDoc.toVariant().toMap());
-    } else if (topic.contains("listeningPeer") && topic.contains("reply")) {
+    } else if (topic.startsWith(QString("%1/eu-west-1:").arg(connector->m_clientId)) && topic.contains("reply")) {
         // silently drop our own things (should not be subscribed to that in the first place)
     } else {
         qCWarning(dcAWS) << "Unhandled subscription received!" << topic << QString::fromStdString(payload);

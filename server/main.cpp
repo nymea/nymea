@@ -122,6 +122,7 @@ int main(int argc, char *argv[])
     s_loggingFilters.insert("WebSocketServer", false);
     s_loggingFilters.insert("WebSocketServerTraffic", false);
     s_loggingFilters.insert("JsonRpc", false);
+    s_loggingFilters.insert("JsonRpcTraffic", false);
     s_loggingFilters.insert("Rest", false);
     s_loggingFilters.insert("OAuth2", false);
     s_loggingFilters.insert("TimeManager", false);
@@ -132,6 +133,7 @@ int main(int argc, char *argv[])
     s_loggingFilters.insert("UserManager", true);
     s_loggingFilters.insert("AWS", false);
     s_loggingFilters.insert("AWSTraffic", false);
+    s_loggingFilters.insert("Janus", false);
     s_loggingFilters.insert("JanusTraffic", false);
 
     QHash<QString, bool> loggingFiltersPlugins;

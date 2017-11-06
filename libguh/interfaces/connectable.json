@@ -1,0 +1,9 @@
+{
+    "states": [
+        {
+            "name": "connected",
+            "type": "bool",
+            "defaultValue": false
+        }
+    ]
+}

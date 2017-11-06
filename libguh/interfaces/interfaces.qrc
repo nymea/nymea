@@ -22,6 +22,7 @@
         <file>sensor.json</file>
         <file>temperaturesensor.json</file>
         <file>humiditysensor.json</file>
+        <file>connectable.json</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

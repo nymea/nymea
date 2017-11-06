@@ -57,6 +57,7 @@ public:
     Q_INVOKABLE JsonReply *Tokens(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *RemoveToken(const QVariantMap &params);
     Q_INVOKABLE JsonReply *SetupRemoteAccess(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *KeepAlive(const QVariantMap &params);
 
     QHash<QString, JsonHandler *> handlers() const;
 

@@ -149,6 +149,13 @@ JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject 
     returns.insert("message", JsonTypes::basicTypeToString(JsonTypes::String));
     setReturns("SetupRemoteAccess", returns);
 
+    params.clear(); returns.clear();
+    setDescription("KeepAlive", "Keep alive a remote connection. The sessionId is the MQTT topic which has been used to establish the session. It will return false if no ongoing session with the given ID can be found.");
+    params.insert("sessionId", JsonTypes::basicTypeToString(JsonTypes::String));
+    setParams("KeepAlive", params);
+    returns.insert("success", JsonTypes::basicTypeToString(JsonTypes::Bool));
+    setReturns("KeepAlive", returns);
+
     QMetaObject::invokeMethod(this, "setup", Qt::QueuedConnection);
 }
 
@@ -272,6 +279,15 @@ JsonReply *JsonRPCServer::SetupRemoteAccess(const QVariantMap &params)
         m_pairingRequests.remove(userId);
     });
     return reply;
+}
+
+JsonReply *JsonRPCServer::KeepAlive(const QVariantMap &params)
+{
+    QString sessionId = params.value("sessionId").toString();
+    bool result = GuhCore::instance()->cloudManager()->keepAlive(sessionId);
+    QVariantMap resultMap;
+    resultMap.insert("success", result);
+    return createReply(resultMap);
 }
 
 /*! Returns the list of registred \l{JsonHandler}{JsonHandlers} and their name.*/

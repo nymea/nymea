@@ -48,6 +48,8 @@ public:
 
     void pairDevice(const QString &idToken, const QString &userId);
 
+    bool keepAlive(const QString &sessionId);
+
 signals:
     void pairingReply(QString cognitoUserId, int status, const QString &message);
 

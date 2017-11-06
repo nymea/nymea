@@ -51,6 +51,7 @@ public:
 
 
     void sendWebRtcHandshakeMessage(const QString &sessionId, const QVariantMap &message);
+    bool sendKeepAliveMessage(const QString &sessionId);
 
 signals:
     void connected();
@@ -59,7 +60,6 @@ signals:
 private slots:
     void onDisconnected();
     void onError(QLocalSocket::LocalSocketError socketError);
-    void onTextMessageReceived(const QString &message);
     void onReadyRead();
     void heartbeat();
     void processQueue();
@@ -76,7 +76,6 @@ private:
 private:
 
     QLocalSocket *m_socket = nullptr;
-    QTimer m_socketTimeoutTimer;
 
     QHash<QString, WebRtcSession*> m_sessions;
 

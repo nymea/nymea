@@ -438,15 +438,15 @@ void GuhCore::init() {
     qCDebug(dcApplication) << "Creating Rule Engine";
     m_ruleEngine = new RuleEngine(this);
 
+    qCDebug(dcApplication()) << "Creating User Manager";
+    m_userManager = new UserManager(this);
+
     qCDebug(dcApplication) << "Creating Server Manager";
     m_serverManager = new ServerManager(m_configuration, this);
 
     // Create the NetworkManager
     qCDebug(dcApplication) << "Creating Network Manager";
     m_networkManager = new NetworkManager(this);
-
-    qCDebug(dcApplication) << "Creating User Manager";
-    m_userManager = new UserManager(this);
 
     qCDebug(dcApplication) << "Creating Cloud Manager";
     m_cloudManager = new CloudManager(m_networkManager, this);

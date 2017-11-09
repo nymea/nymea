@@ -26,6 +26,7 @@ Build-Depends: debhelper (>= 9.0.0),
                libssl-dev,
                libmbedtls-dev,
                libaws-iot-device-sdk-cpp,
+               dbus-test-runner,
 
 Package: guh
 Architecture: any

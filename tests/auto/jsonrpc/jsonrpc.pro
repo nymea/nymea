@@ -2,4 +2,7 @@ include(../../../guh.pri)
 include(../autotests.pri)
 
 TARGET = testjsonrpc
-SOURCES += testjsonrpc.cpp
+SOURCES += testjsonrpc.cpp \
+           ../../utils/pushbuttonagent.cpp
+
+HEADERS += ../../utils/pushbuttonagent.h

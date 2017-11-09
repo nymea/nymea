@@ -22,6 +22,7 @@
 #include "guhsettings.h"
 #include "loggingcategories.h"
 #include "guhcore.h"
+#include "pushbuttondbusservice.h"
 
 #include <QUuid>
 #include <QCryptographicHash>
@@ -44,6 +45,10 @@ UserManager::UserManager(QObject *parent) : QObject(parent)
         return;
     }
     initDB();
+
+    m_pushButtonDBusService = new PushButtonDBusService("/io/guh/nymead/UserManager", this);
+    connect(m_pushButtonDBusService, &PushButtonDBusService::pushButtonPressed, this, &UserManager::onPushButtonPressed);
+    m_pushButtonTransaction = qMakePair<int, QString>(-1, QString());
 }
 
 QStringList UserManager::users() const
@@ -105,6 +110,11 @@ UserManager::UserError UserManager::removeUser(const QString &username)
     return UserErrorNoError;
 }
 
+bool UserManager::pushButtonAuthAvailable() const
+{
+    return m_pushButtonDBusService->agentAvailable();
+}
+
 QByteArray UserManager::authenticate(const QString &username, const QString &password, const QString &deviceName)
 {
     if (!validateUsername(username)) {
@@ -140,6 +150,35 @@ QByteArray UserManager::authenticate(const QString &username, const QString &pas
         return QByteArray();
     }
     return token;
+}
+
+int UserManager::requestPushButtonAuth(const QString &deviceName)
+{
+    if (m_pushButtonTransaction.first != -1) {
+        qCWarning(dcUserManager()) << "PushButton authentication already in progress for device" << m_pushButtonTransaction.second << ". Cancelling...";
+        cancelPushButtonAuth(m_pushButtonTransaction.first);
+    }
+
+    qCDebug(dcUserManager()) << "Starting PushButton authentication for device" << deviceName;
+    int transactionId = ++m_pushButtonTransactionIdCounter;
+    m_pushButtonTransaction = qMakePair<int, QString>(transactionId, deviceName);
+    return transactionId;
+}
+
+void UserManager::cancelPushButtonAuth(int transactionId)
+{
+    if (m_pushButtonTransaction.first == -1) {
+        qCWarning(dcUserManager()) << "No PushButton transaction in progress. Nothing to cancel.";
+        return;
+    }
+    if (m_pushButtonTransaction.first != transactionId) {
+        qCWarning(dcUserManager()) << "PushButton transaction" << transactionId << "not in progress. Cannot cancel.";
+        return;
+    }
+    qCDebug(dcUserManager()) << "Cancelling PushButton transaction for device:" << m_pushButtonTransaction.second;
+    emit pushButtonAuthFinished(m_pushButtonTransaction.first, false, QByteArray());
+    m_pushButtonTransaction.first = -1;
+
 }
 
 QString UserManager::userForToken(const QByteArray &token) const
@@ -220,7 +259,7 @@ bool UserManager::verifyToken(const QByteArray &token)
         qCDebug(dcUserManager) << "Authorisation failed for token" << token;
         return false;
     }
-    qCDebug(dcUserManager) << "Token authorized for user" << result.value("username").toString();
+    //qCDebug(dcUserManager) << "Token authorized for user" << result.value("username").toString();
     return true;
 }
 
@@ -244,6 +283,32 @@ bool UserManager::validateToken(const QByteArray &token) const
 {
     QRegExp validator(QRegExp("(^[a-zA-Z0-9_.+-/=]+$)"));
     return validator.exactMatch(token);
+}
+
+void UserManager::onPushButtonPressed()
+{
+    if (m_pushButtonTransaction.first == -1) {
+        qCDebug(dcUserManager()) << "PushButton pressed but don't have a transaction waiting for it.";
+        return;
+    }
+
+    QByteArray token = QCryptographicHash::hash(QUuid::createUuid().toByteArray(), QCryptographicHash::Sha256).toBase64();
+    QString storeTokenQuery = QString("INSERT INTO tokens(id, username, token, creationdate, devicename) VALUES(\"%1\", \"%2\", \"%3\", \"%4\", \"%5\");")
+            .arg(QUuid::createUuid().toString())
+            .arg("")
+            .arg(QString::fromUtf8(token))
+            .arg(GuhCore::instance()->timeManager()->currentDateTime().toString("yyyy-MM-dd hh:mm:ss"))
+            .arg(m_pushButtonTransaction.second);
+
+    m_db.exec(storeTokenQuery);
+    if (m_db.lastError().type() != QSqlError::NoError) {
+        qCWarning(dcUserManager) << "Error storing token in DB:" << m_db.lastError().databaseText() << m_db.lastError().driverText();
+        emit pushButtonAuthFinished(m_pushButtonTransaction.first, false, QByteArray());
+    }
+    qCDebug(dcUserManager()) << "PushButton Auth succeeded";
+    emit pushButtonAuthFinished(m_pushButtonTransaction.first, true, token);
+
+    m_pushButtonTransaction.first = -1;
 }
 
 }

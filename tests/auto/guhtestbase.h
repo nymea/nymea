@@ -104,7 +104,7 @@ protected slots:
     void cleanup();
 
 protected:
-    QVariant injectAndWait(const QString &method, const QVariantMap &params = QVariantMap());
+    QVariant injectAndWait(const QString &method, const QVariantMap &params = QVariantMap(), const QUuid &clientId = QUuid());
     QVariant checkNotification(const QSignalSpy &spy, const QString &notification);
     QVariantList checkNotifications(const QSignalSpy &spy, const QString &notification);
 

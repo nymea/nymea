@@ -61,9 +61,9 @@ DevicePluginMock::~DevicePluginMock()
 {
 }
 
-DeviceManager::HardwareResources DevicePluginMock::requiredHardware() const
+HardwareResource::Types DevicePluginMock::requiredHardware() const
 {
-    return DeviceManager::HardwareResourceTimer;
+    return HardwareResource::TypeTimer;
 }
 
 DeviceManager::DeviceError DevicePluginMock::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)

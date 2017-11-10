@@ -34,25 +34,17 @@
 #include "types/action.h"
 #include "types/vendor.h"
 
-#include "network/networkaccessmanager.h"
-#include "network/upnp/upnpdiscovery.h"
-#include "network/upnp/upnpdevicedescriptor.h"
-#include "network/avahi/qtavahiservicebrowser.h"
-
-#ifdef BLUETOOTH_LE
-#include "bluetooth/bluetoothscanner.h"
-#endif
-
 #include <QObject>
 #include <QTimer>
 #include <QLocale>
 #include <QPluginLoader>
 
+#include "hardwaremanager.h"
+
 class Device;
 class DevicePlugin;
 class DevicePairingInfo;
-class Radio433;
-class UpnpDiscovery;
+class HardwareManager;
 
 class LIBGUH_EXPORT DeviceManager : public QObject
 {
@@ -62,16 +54,6 @@ class LIBGUH_EXPORT DeviceManager : public QObject
     friend class DevicePlugin;
 
 public:
-    enum HardwareResource {
-        HardwareResourceNone = 0,
-        HardwareResourceRadio433 = 1,
-        HardwareResourceTimer = 2,
-        HardwareResourceNetworkManager = 4,
-        HardwareResourceUpnpDisovery = 8,
-        HardwareResourceBluetoothLE = 16
-    };
-    Q_DECLARE_FLAGS(HardwareResources, HardwareResource)
-
     enum DeviceError {
         DeviceErrorNoError,
         DeviceErrorPluginNotFound,
@@ -98,12 +80,14 @@ public:
         DeviceErrorPairingTransactionIdNotFound,
         DeviceErrorParameterNotWritable
     };
+    Q_ENUM(DeviceError)
 
     enum DeviceSetupStatus {
         DeviceSetupStatusSuccess,
         DeviceSetupStatusFailure,
         DeviceSetupStatusAsync
     };
+    Q_ENUM(DeviceSetupStatus)
 
     explicit DeviceManager(const QLocale &locale, QObject *parent = 0);
     ~DeviceManager();
@@ -187,9 +171,7 @@ private slots:
     void upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &deviceDescriptorList, const PluginId &pluginId);
     void upnpNotifyReceived(const QByteArray &notifyData);
 
-    #ifdef BLUETOOTH_LE
     void bluetoothDiscoveryFinished(const PluginId &pluginId, const QList<QBluetoothDeviceInfo> &deviceInfos);
-    #endif
 
     void timerEvent();
 
@@ -211,18 +193,18 @@ private:
     QHash<DeviceDescriptorId, DeviceDescriptor> m_discoveredDevices;
 
     QHash<PluginId, DevicePlugin*> m_devicePlugins;
-
-    // Hardware Resources
-    Radio433* m_radio433;
-    QTimer m_pluginTimer;
     QList<DevicePlugin *> m_pluginTimerUsers;
-    NetworkAccessManager *m_networkManager;
-    UpnpDiscovery* m_upnpDiscovery;
-    QtAvahiServiceBrowser *m_avahiBrowser;
 
-    #ifdef BLUETOOTH_LE
-    BluetoothScanner *m_bluetoothScanner;
-    #endif
+    HardwareManager *m_hardwareManager;
+//    // Hardware Resources
+//    Radio433 *m_radio433;
+//    PluginTimer *m_pluginTimer;
+//    NetworkAccessManager *m_networkManager;
+//    UpnpDiscovery *m_upnpDiscovery;
+//    QtAvahiServiceBrowser *m_avahiBrowser;
+//    BluetoothScanner *m_bluetoothScanner;
+
+
 
     QHash<QUuid, DevicePairingInfo> m_pairingsJustAdd;
     QHash<QUuid, DevicePairingInfo> m_pairingsDiscovery;
@@ -231,7 +213,6 @@ private:
     QList<DevicePlugin *> m_discoveringPlugins;
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(DeviceManager::HardwareResources)
 Q_DECLARE_METATYPE(DeviceManager::DeviceError)
 
 #endif // DEVICEMANAGER_H

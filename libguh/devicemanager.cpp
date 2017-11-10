@@ -34,22 +34,22 @@
     \l{DevicePlugin}{device plugins}.
 */
 
-/*! \enum DeviceManager::HardwareResource
+/*! \enum HardwareResource::Type
 
     This enum type specifies hardware resources which can be requested by \l{DevicePlugin}{DevicePlugins}.
 
-    \value HardwareResourceNone
+    \value HardwareResource::TypeNone
         No Resource required.
-    \value HardwareResourceRadio433
+    \value HardwareResource::TypeRadio433
         Refers to the 433 MHz radio.
-    \value HardwareResourceTimer
+    \value HardwareResource::TypeTimer
         Refers to the global timer managed by the \l{DeviceManager}. Plugins should not create their own timers,
         but rather request the global timer using the hardware resources.
-    \value HardwareResourceNetworkManager
+    \value HardwareResource::TypeNetworkManager
         Allows to send network requests and receive replies.
-    \value HardwareResourceUpnpDisovery
+    \value HardwareResource::TypeUpnpDisovery
         Allows to search a UPnP devices in the network.
-    \value HardwareResourceBluetoothLE
+    \value HardwareResource::TypeBluetoothLE
         Allows to interact with bluetooth low energy devices.
 */
 
@@ -179,8 +179,6 @@
 #include "devicemanager.h"
 #include "loggingcategories.h"
 
-#include "hardware/radio433/radio433.h"
-
 #include "plugin/devicepairinginfo.h"
 #include "plugin/deviceplugin.h"
 #include "typeutils.h"
@@ -200,41 +198,17 @@
  *  Use \c guhserver::GuhCore::instance()->deviceManager() instead to access the DeviceManager. */
 DeviceManager::DeviceManager(const QLocale &locale, QObject *parent) :
     QObject(parent),
-    m_locale(locale),
-    m_radio433(0)
+    m_locale(locale)
 {
     qRegisterMetaType<DeviceClassId>();
     qRegisterMetaType<DeviceDescriptor>();
 
-    m_pluginTimer.setInterval(10000);
-    connect(&m_pluginTimer, &QTimer::timeout, this, &DeviceManager::timerEvent);
-
-    m_radio433 = new Radio433(this);
-    m_radio433->enable();
-
-    // Network manager
-    m_networkManager = new NetworkAccessManager(this);
-    connect(m_networkManager, &NetworkAccessManager::replyReady, this, &DeviceManager::replyReady);
-
-    // UPnP discovery
-    m_upnpDiscovery = new UpnpDiscovery(this);
-    connect(m_upnpDiscovery, &UpnpDiscovery::discoveryFinished, this, &DeviceManager::upnpDiscoveryFinished);
-    connect(m_upnpDiscovery, &UpnpDiscovery::upnpNotify, this, &DeviceManager::upnpNotifyReceived);
-
-    // Avahi Browser
-    m_avahiBrowser = new QtAvahiServiceBrowser(this);
-    m_avahiBrowser->enable();
-
-    // Bluetooth LE
-#ifdef BLUETOOTH_LE
-    m_bluetoothScanner = new BluetoothScanner(this);
-    if (!m_bluetoothScanner->isAvailable()) {
-        delete m_bluetoothScanner;
-        m_bluetoothScanner = 0;
-    } else {
-        connect(m_bluetoothScanner, &BluetoothScanner::bluetoothDiscoveryFinished, this, &DeviceManager::bluetoothDiscoveryFinished);
-    }
-#endif
+    m_hardwareManager = new HardwareManager(this);
+    connect(m_hardwareManager->pluginTimer(), &PluginTimer::timerEvent, this, &DeviceManager::timerEvent);
+    connect(m_hardwareManager->networkManager(), &NetworkAccessManager::replyReady, this, &DeviceManager::replyReady);
+    connect(m_hardwareManager->upnpDiscovery(), &UpnpDiscovery::discoveryFinished, this, &DeviceManager::upnpDiscoveryFinished);
+    connect(m_hardwareManager->upnpDiscovery(), &UpnpDiscovery::upnpNotify, this, &DeviceManager::upnpNotifyReceived);
+    connect(m_hardwareManager->bluetoothScanner(), &BluetoothScanner::bluetoothDiscoveryFinished, this, &DeviceManager::bluetoothDiscoveryFinished);
 
     // Give hardware a chance to start up before loading plugins etc.
     QMetaObject::invokeMethod(this, "loadPlugins", Qt::QueuedConnection);
@@ -781,7 +755,7 @@ DeviceManager::DeviceError DeviceManager::removeConfiguredDevice(const DeviceId 
     if (!pluginNeedsTimer) {
         m_pluginTimerUsers.removeAll(plugin(device->pluginId()));
         if (m_pluginTimerUsers.isEmpty()) {
-            m_pluginTimer.stop();
+            m_hardwareManager->pluginTimer()->disable();
         }
     }
     device->deleteLater();
@@ -1244,9 +1218,9 @@ void DeviceManager::slotDeviceSetupFinished(Device *device, DeviceManager::Devic
     }
 
     DevicePlugin *plugin = m_devicePlugins.value(device->pluginId());
-    if (plugin->requiredHardware().testFlag(HardwareResourceTimer)) {
-        if (!m_pluginTimer.isActive()) {
-            m_pluginTimer.start();
+    if (plugin->requiredHardware().testFlag(HardwareResource::TypeTimer)) {
+        if (!m_hardwareManager->pluginTimer()->enabled()) {
+            m_hardwareManager->pluginTimer()->enable();
             // Additionally fire off one event to initialize stuff
             QTimer::singleShot(0, this, SLOT(timerEvent()));
         }
@@ -1457,12 +1431,12 @@ void DeviceManager::radio433SignalReceived(QList<int> rawData)
     foreach (Device *device, m_configuredDevices) {
         DeviceClass deviceClass = m_supportedDevices.value(device->deviceClassId());
         DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
-        if (plugin->requiredHardware().testFlag(HardwareResourceRadio433) && !targetPlugins.contains(plugin)) {
+        if (plugin->requiredHardware().testFlag(HardwareResource::TypeRadio433) && !targetPlugins.contains(plugin)) {
             targetPlugins.append(plugin);
         }
     }
     foreach (DevicePlugin *plugin, m_discoveringPlugins) {
-        if (plugin->requiredHardware().testFlag(HardwareResourceRadio433) && !targetPlugins.contains(plugin)) {
+        if (plugin->requiredHardware().testFlag(HardwareResource::TypeRadio433) && !targetPlugins.contains(plugin)) {
             targetPlugins.append(plugin);
         }
     }
@@ -1475,7 +1449,7 @@ void DeviceManager::radio433SignalReceived(QList<int> rawData)
 void DeviceManager::replyReady(const PluginId &pluginId, QNetworkReply *reply)
 {
     foreach (DevicePlugin *devicePlugin, m_devicePlugins) {
-        if (devicePlugin->requiredHardware().testFlag(HardwareResourceNetworkManager) && devicePlugin->pluginId() == pluginId) {
+        if (devicePlugin->requiredHardware().testFlag(HardwareResource::TypeNetworkManager) && devicePlugin->pluginId() == pluginId) {
             devicePlugin->networkManagerReplyReady(reply);
         }
     }
@@ -1484,7 +1458,7 @@ void DeviceManager::replyReady(const PluginId &pluginId, QNetworkReply *reply)
 void DeviceManager::upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &deviceDescriptorList, const PluginId &pluginId)
 {
     foreach (DevicePlugin *devicePlugin, m_devicePlugins) {
-        if (devicePlugin->requiredHardware().testFlag(HardwareResourceUpnpDisovery) && devicePlugin->pluginId() == pluginId) {
+        if (devicePlugin->requiredHardware().testFlag(HardwareResource::TypeUpnpDisovery) && devicePlugin->pluginId() == pluginId) {
             devicePlugin->upnpDiscoveryFinished(deviceDescriptorList);
         }
     }
@@ -1493,27 +1467,25 @@ void DeviceManager::upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &dev
 void DeviceManager::upnpNotifyReceived(const QByteArray &notifyData)
 {
     foreach (DevicePlugin *devicePlugin, m_devicePlugins) {
-        if (devicePlugin->requiredHardware().testFlag(HardwareResourceUpnpDisovery)) {
+        if (devicePlugin->requiredHardware().testFlag(HardwareResource::TypeUpnpDisovery)) {
             devicePlugin->upnpNotifyReceived(notifyData);
         }
     }
 }
 
-#ifdef BLUETOOTH_LE
 void DeviceManager::bluetoothDiscoveryFinished(const PluginId &pluginId, const QList<QBluetoothDeviceInfo> &deviceInfos)
 {
     foreach (DevicePlugin *devicePlugin, m_devicePlugins) {
-        if (devicePlugin->requiredHardware().testFlag(HardwareResourceBluetoothLE) && devicePlugin->pluginId() == pluginId) {
+        if (devicePlugin->requiredHardware().testFlag(HardwareResource::TypeBluetoothLE) && devicePlugin->pluginId() == pluginId) {
             devicePlugin->bluetoothDiscoveryFinished(deviceInfos);
         }
     }
 }
-#endif
 
 void DeviceManager::timerEvent()
 {
     foreach (DevicePlugin *plugin, m_pluginTimerUsers) {
-        if (plugin->requiredHardware().testFlag(HardwareResourceTimer)) {
+        if (plugin->requiredHardware().testFlag(HardwareResource::TypeTimer)) {
             plugin->guhTimer();
         }
     }
@@ -1557,10 +1529,10 @@ DeviceManager::DeviceSetupStatus DeviceManager::setupDevice(Device *device)
         return status;
     }
 
-    if (plugin->requiredHardware().testFlag(HardwareResourceTimer)) {
+    if (plugin->requiredHardware().testFlag(HardwareResource::TypeTimer)) {
 
-        if (!m_pluginTimer.isActive()) {
-            m_pluginTimer.start();
+        if (!m_hardwareManager->pluginTimer()->enabled()) {
+            m_hardwareManager->pluginTimer()->enable();
             // Additionally fire off one event to initialize stuff
             QTimer::singleShot(0, this, SLOT(timerEvent()));
         }

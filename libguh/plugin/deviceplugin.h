@@ -35,16 +35,13 @@
 #include "types/vendor.h"
 #include "types/param.h"
 
-#ifdef BLUETOOTH_LE
-#include <QBluetoothDeviceInfo>
-#endif
-
 #include <QObject>
 #include <QMetaEnum>
 #include <QJsonObject>
 #include <QMetaObject>
 #include <QTranslator>
 #include <QPair>
+#include <QBluetoothDeviceInfo>
 
 class DeviceManager;
 class Device;
@@ -66,7 +63,7 @@ public:
     QTranslator *translator();
     bool setLocale(const QLocale &locale);
 
-    virtual DeviceManager::HardwareResources requiredHardware() const = 0;
+    virtual HardwareResource::Types requiredHardware() const = 0;
 
     virtual void startMonitoringAutoDevices();
     virtual DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params);
@@ -88,9 +85,7 @@ public:
 
     virtual void networkManagerReplyReady(QNetworkReply *reply) {Q_UNUSED(reply)}
 
-    #ifdef BLUETOOTH_LE
     virtual void bluetoothDiscoveryFinished(const QList<QBluetoothDeviceInfo> &deviceInfos) { Q_UNUSED(deviceInfos) }
-    #endif
 
 
     // Configuration
@@ -122,9 +117,7 @@ protected:
     QtAvahiServiceBrowser *avahiServiceBrowser() const;
 
     // Bluetooth LE discovery
-    #ifdef BLUETOOTH_LE
     bool discoverBluetooth();
-    #endif
 
     // Network manager
     QNetworkReply *networkManagerGet(const QNetworkRequest &request);

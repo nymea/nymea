@@ -33,11 +33,11 @@
 */
 
 /*!
- \fn DeviceManager::HardwareResources DevicePlugin::requiredHardware() const
+ \fn HardwareResource::Types DevicePlugin::requiredHardware() const
  Return flags describing the common hardware resources required by this plugin. If you want to
  use more than one resource, you can combine them ith the OR operator.
 
- \sa DeviceManager::HardwareResource
+ \sa HardwareResource::Type
  */
 
 /*!
@@ -66,7 +66,7 @@
  If a UPnP device will notify a NOTIFY message in the network, the \l{UpnpDiscovery} will catch the
  notification data and call this method with the \a notifyData.
 
- \note Only if if the plugin has requested the \l{DeviceManager::HardwareResourceUpnpDisovery} resource
+ \note Only if if the plugin has requested the \l{HardwareResource::TypeUpnpDisovery} resource
  using \l{DevicePlugin::requiredHardware()}, this slot will be called.
 
  \sa UpnpDiscovery
@@ -76,7 +76,7 @@
  \fn DevicePlugin::networkManagerReplyReady(QNetworkReply *reply)
  This method will be called whenever a pending network \a reply for this plugin is finished.
 
- \note Only if if the plugin has requested the \l{DeviceManager::HardwareResourceNetworkManager}
+ \note Only if if the plugin has requested the \l{HardwareResource::TypeNetworkManager}
  resource using \l{DevicePlugin::requiredHardware()}, this slot will be called.
 
  \sa NetworkAccessManager::replyReady()
@@ -534,8 +534,8 @@ Device *DevicePlugin::findDeviceByParams(const ParamList &params) const
 bool DevicePlugin::transmitData(int delay, QList<int> rawData, int repetitions)
 {
     switch (requiredHardware()) {
-    case DeviceManager::HardwareResourceRadio433:
-        return deviceManager()->m_radio433->sendData(delay, rawData, repetitions);
+    case HardwareResource::TypeRadio433:
+        return deviceManager()->m_hardwareManager->radio433()->sendData(delay, rawData, repetitions);
     default:
         qCWarning(dcDeviceManager) << "Unknown harware type. Cannot send.";
     }
@@ -551,8 +551,8 @@ bool DevicePlugin::transmitData(int delay, QList<int> rawData, int repetitions)
  */
 QNetworkReply *DevicePlugin::networkManagerGet(const QNetworkRequest &request)
 {
-    if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
-        return deviceManager()->m_networkManager->get(pluginId(), request);
+    if (requiredHardware().testFlag(HardwareResource::TypeNetworkManager)) {
+        return deviceManager()->m_hardwareManager->networkManager()->get(pluginId(), request);
     } else {
         qCWarning(dcDeviceManager) << "Network manager hardware resource not set for plugin" << pluginName();
     }
@@ -568,8 +568,8 @@ QNetworkReply *DevicePlugin::networkManagerGet(const QNetworkRequest &request)
  */
 QNetworkReply *DevicePlugin::networkManagerPost(const QNetworkRequest &request, const QByteArray &data)
 {
-    if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
-        return deviceManager()->m_networkManager->post(pluginId(), request, data);
+    if (requiredHardware().testFlag(HardwareResource::TypeNetworkManager)) {
+        return deviceManager()->m_hardwareManager->networkManager()->post(pluginId(), request, data);
     } else {
         qCWarning(dcDeviceManager) << "Network manager hardware resource not set for plugin" << pluginName();
     }
@@ -584,8 +584,8 @@ QNetworkReply *DevicePlugin::networkManagerPost(const QNetworkRequest &request, 
  */
 QNetworkReply *DevicePlugin::networkManagerPut(const QNetworkRequest &request, const QByteArray &data)
 {
-    if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
-        return deviceManager()->m_networkManager->put(pluginId(), request, data);
+    if (requiredHardware().testFlag(HardwareResource::TypeNetworkManager)) {
+        return deviceManager()->m_hardwareManager->networkManager()->put(pluginId(), request, data);
     } else {
         qCWarning(dcDeviceManager) << "Network manager hardware resource not set for plugin" << pluginName();
     }
@@ -1015,8 +1015,8 @@ void DevicePlugin::loadMetaData()
  */
 void DevicePlugin::upnpDiscover(QString searchTarget, QString userAgent)
 {
-    if(requiredHardware().testFlag(DeviceManager::HardwareResourceUpnpDisovery)){
-        deviceManager()->m_upnpDiscovery->discoverDevices(searchTarget, userAgent, pluginId());
+    if(requiredHardware().testFlag(HardwareResource::TypeUpnpDisovery)){
+        deviceManager()->m_hardwareManager->upnpDiscovery()->discoverDevices(searchTarget, userAgent, pluginId());
     } else {
         qCWarning(dcDeviceManager) << "UPnP discovery resource not set for plugin" << pluginName();
     }
@@ -1025,20 +1025,18 @@ void DevicePlugin::upnpDiscover(QString searchTarget, QString userAgent)
 /*! Returns the pointer to the central \l{QtAvahiService}{service} browser. */
 QtAvahiServiceBrowser *DevicePlugin::avahiServiceBrowser() const
 {
-    return deviceManager()->m_avahiBrowser;
+    return deviceManager()->m_hardwareManager->avahiBrowser();
 }
 
-#ifdef BLUETOOTH_LE
 bool DevicePlugin::discoverBluetooth()
 {
-    if(requiredHardware().testFlag(DeviceManager::HardwareResourceBluetoothLE)){
-        return deviceManager()->m_bluetoothScanner->discover(pluginId());
+    if(requiredHardware().testFlag(HardwareResource::TypeBluetoothLE)){
+        return deviceManager()->m_hardwareManager->bluetoothScanner()->discover(pluginId());
     } else {
         qCWarning(dcDeviceManager) << "Bluetooth LE resource not set for plugin" << pluginName();
     }
     return false;
 }
-#endif
 
 QStringList DevicePlugin::verifyFields(const QStringList &fields, const QJsonObject &value) const
 {

@@ -55,13 +55,6 @@ disabletesting {
     SUBDIRS += tests
 }
 
-# Bluetooth LE support
-contains(DEFINES, BLUETOOTH_LE) {
-    message("Bluetooth LE enabled.")
-} else {
-    message("Bluetooth LE disabled (Qt $${QT_VERSION} < 5.4.0).")
-}
-
 # GPIO RF 433 MHz support
 contains(DEFINES, GPIO433) {
     message("Radio 433 for GPIO's enabled")

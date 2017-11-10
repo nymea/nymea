@@ -3,7 +3,7 @@ include(../guh.pri)
 TARGET = guh
 TEMPLATE = lib
 
-QT += network
+QT += network bluetooth
 DEFINES += LIBGUH_LIBRARY
 
 QMAKE_LFLAGS += -fPIC
@@ -13,16 +13,6 @@ INSTALLS += target
 
 # Avahi libs
 LIBS += -lavahi-common -lavahi-client
-
-# check Bluetooth LE support
-contains(DEFINES, BLUETOOTH_LE) {
-    HEADERS += bluetooth/bluetoothscanner.h \
-               bluetooth/bluetoothlowenergydevice.h \
-
-    SOURCES += bluetooth/bluetoothscanner.cpp \
-               bluetooth/bluetoothlowenergydevice.cpp \
-
-}
 
 HEADERS += devicemanager.h \
            libguh.h \
@@ -53,6 +43,8 @@ HEADERS += devicemanager.h \
            network/avahi/qtavahiservice_p.h \
            network/avahi/qtavahiservicebrowser.h \
            network/avahi/qtavahiservicebrowser_p.h \
+           bluetooth/bluetoothscanner.h \
+           bluetooth/bluetoothlowenergydevice.h \
            coap/coap.h \
            coap/coappdu.h \
            coap/coapoption.h \
@@ -76,6 +68,9 @@ HEADERS += devicemanager.h \
            types/ruleaction.h \
            types/ruleactionparam.h \
            types/statedescriptor.h \
+           hardwareresource.h \
+           plugintimer.h \
+           hardwaremanager.h
 
 SOURCES += devicemanager.cpp \
            loggingcategories.cpp \
@@ -104,6 +99,8 @@ SOURCES += devicemanager.cpp \
            network/avahi/qtavahiservice_p.cpp \
            network/avahi/qtavahiservicebrowser.cpp \
            network/avahi/qtavahiservicebrowser_p.cpp \
+           bluetooth/bluetoothscanner.cpp \
+           bluetooth/bluetoothlowenergydevice.cpp \
            coap/coap.cpp \
            coap/coappdu.cpp \
            coap/coapoption.cpp \
@@ -127,6 +124,9 @@ SOURCES += devicemanager.cpp \
            types/ruleaction.cpp \
            types/ruleactionparam.cpp \
            types/statedescriptor.cpp \
+           hardwareresource.cpp \
+           plugintimer.cpp \
+           hardwaremanager.cpp
 
 # install plugininfo python script for libguh-dev
 generateplugininfo.files = $$top_srcdir/plugins/guh-generateplugininfo

@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2017 Simon Stürz <simon.stuerz@guh.io>                   *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -20,44 +20,41 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef BLUETOOTHSCANNER_H
-#define BLUETOOTHSCANNER_H
+#include "hardwareresource.h"
+#include "guhsettings.h"
+#include "hardwaremanager.h"
 
-#include <QObject>
-#include <QDebug>
-#include <QTimer>
-#include <QBluetoothHostInfo>
-#include <QBluetoothDeviceInfo>
-#include <QBluetoothAddress>
-#include <QBluetoothLocalDevice>
-#include <QBluetoothDeviceDiscoveryAgent>
-
-#include "libguh.h"
-#include "typeutils.h"
-
-class LIBGUH_EXPORT BluetoothScanner : public QObject
+HardwareResource::HardwareResource(const Type &hardwareReourceType, QObject *parent) :
+    QObject(parent),
+    m_hardwareReourceType(hardwareReourceType)
 {
-    Q_OBJECT
-public:
-    explicit BluetoothScanner(QObject *parent = 0);
-    bool isAvailable();
-    bool isRunning();
-    bool discover(const PluginId &pluginId);
+    // TODO: load if hardware resource is enabled or not
+}
 
-private:
-    QBluetoothDeviceDiscoveryAgent *m_discoveryAgent;
-    QList<QBluetoothDeviceInfo> m_deviceInfos;
-    QTimer *m_timer;
-    bool m_available;
-    PluginId m_pluginId;
+bool HardwareResource::available() const
+{
+    return m_available;
+}
 
-signals:
-    void bluetoothDiscoveryFinished(const PluginId &pluginId, const QList<QBluetoothDeviceInfo> &deviceInfos);
+bool HardwareResource::enabled() const
+{
+    return m_enabled;
+}
 
-private slots:
-    void deviceDiscovered(const QBluetoothDeviceInfo &device);
-    void onError(QBluetoothDeviceDiscoveryAgent::Error error);
-    void discoveryTimeout();
-};
+HardwareResource::Type HardwareResource::hardwareReourceType() const
+{
+    return m_hardwareReourceType;
+}
 
-#endif // BLUETOOTHSCANNER_H
+void HardwareResource::setEnabled(const bool &enabled)
+{
+    // TODO: save this information to settings
+    m_enabled = enabled;
+    emit enabledChanged(m_enabled);
+}
+
+void HardwareResource::setAvailable(const bool &available)
+{
+    m_available = available;
+    emit availableChanged(m_available);
+}

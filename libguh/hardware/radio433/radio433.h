@@ -25,28 +25,22 @@
 
 #include <QObject>
 
-#ifdef GPIO433
 #include "radio433transmitter.h"
-#endif
 
 #include "libguh.h"
+#include "hardwareresource.h"
 #include "radio433brennenstuhlgateway.h"
 
-class LIBGUH_EXPORT Radio433 : public QObject
+class LIBGUH_EXPORT Radio433 : public HardwareResource
 {
     Q_OBJECT
 public:
     explicit Radio433(QObject *parent = 0);
     ~Radio433();
 
-    bool enable();
-    bool disabel();
 
 private:
-    #ifdef GPIO433
     Radio433Trasmitter *m_transmitter;
-    #endif
-
     Radio433BrennenstuhlGateway *m_brennenstuhlTransmitter;
 
 private slots:
@@ -54,6 +48,9 @@ private slots:
 
 public slots:
     bool sendData(int delay, QList<int> rawData, int repetitions);
+
+    bool enable();
+    bool disable();
 
 };
 

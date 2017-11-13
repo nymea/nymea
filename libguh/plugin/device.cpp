@@ -38,7 +38,6 @@
     This signal is emitted when the \l{State} with the given \a stateTypeId changed.
     The \a value parameter describes the new value of the State.
 */
-
 #include "device.h"
 #include "types/event.h"
 #include "loggingcategories.h"

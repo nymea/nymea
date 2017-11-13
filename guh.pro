@@ -13,7 +13,7 @@ doc.depends = libguh server
 # Note: some how extraimages in qdocconf did not the trick
 doc.commands += cd $$top_srcdir/libguh/interfaces; ./generatedoc.sh;
 doc.commands += cd $$top_srcdir/doc; qdoc config.qdocconf; cp -r images/* html/images/; \
-               cp -r favicons/* html/; cp -r $$top_srcdir/doc/html $$top_builddir/
+                cp -r favicons/* html/; cp -r $$top_srcdir/doc/html $$top_builddir/
 
 licensecheck.commands = $$top_srcdir/tests/auto/checklicenseheaders.sh $$top_srcdir
 
@@ -53,11 +53,4 @@ disabletesting {
 } else {
     message("Building guh with tests")
     SUBDIRS += tests
-}
-
-# GPIO RF 433 MHz support
-contains(DEFINES, GPIO433) {
-    message("Radio 433 for GPIO's enabled")
-} else {
-    message("Radio 433 for GPIO's disabled")
 }

@@ -166,12 +166,9 @@ private slots:
     void slotDeviceStateValueChanged(const QUuid &stateTypeId, const QVariant &value);
 
 //    void radio433SignalReceived(QList<int> rawData);
-
 //    void replyReady(const PluginId &pluginId, QNetworkReply *reply);
-
 //    void upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &deviceDescriptorList, const PluginId &pluginId);
 //    void upnpNotifyReceived(const QByteArray &notifyData);
-
 //    void bluetoothDiscoveryFinished(const PluginId &pluginId, const QList<QBluetoothDeviceInfo> &deviceInfos);
 
     void timerEvent();

@@ -19,8 +19,8 @@ HardwareManager::HardwareManager(QObject *parent) : QObject(parent)
     m_radio433->enable();
 
     // Create network access manager for all resources, centralized
-    m_networkAccessManager = new QNetworkAccessManager(this);
     // Note: configuration and proxy settings could be implemented here
+    m_networkAccessManager = new QNetworkAccessManager(this);
 
     // Network manager
     m_networkManager = new NetworkAccessManager(m_networkAccessManager, this);
@@ -29,9 +29,12 @@ HardwareManager::HardwareManager(QObject *parent) : QObject(parent)
 
     // UPnP discovery
     m_upnpDiscovery = new UpnpDiscovery(m_networkAccessManager, this);
+    m_hardwareResources.append(m_upnpDiscovery);
+    m_upnpDiscovery->enable();
 
     // Avahi Browser
     m_avahiBrowser = new QtAvahiServiceBrowser(this);
+    m_hardwareResources.append(m_avahiBrowser);
     m_avahiBrowser->enable();
 
     // Bluetooth LE

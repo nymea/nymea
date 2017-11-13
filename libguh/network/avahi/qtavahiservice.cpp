@@ -110,7 +110,7 @@ QtAvahiService::QtAvahiServiceState QtAvahiService::state() const
 bool QtAvahiService::registerService(const QString &name, const quint16 &port, const QString &serviceType, const QHash<QString, QString> &txtRecords)
 {
     // Check if the client is running
-    if (!d_ptr->client->client || AVAHI_CLIENT_S_RUNNING != avahi_client_get_state(d_ptr->client->client)) {
+    if (!d_ptr->client->m_client || AVAHI_CLIENT_S_RUNNING != avahi_client_get_state(d_ptr->client->m_client)) {
         qCWarning(dcAvahi()) << "Could not register service" << name << port << serviceType << ". The client is not available.";
         return false;
     }
@@ -122,7 +122,7 @@ bool QtAvahiService::registerService(const QString &name, const quint16 &port, c
 
     // If the group is not set yet, create it
     if (!d_ptr->group)
-        d_ptr->group = avahi_entry_group_new(d_ptr->client->client, QtAvahiServicePrivate::callback, this);
+        d_ptr->group = avahi_entry_group_new(d_ptr->client->m_client, QtAvahiServicePrivate::callback, this);
 
     // If the group is empty
     if (avahi_entry_group_is_empty(d_ptr->group)) {
@@ -219,10 +219,10 @@ bool QtAvahiService::isValid() const
 /*! Returns the error string of this \l{QtAvahiService}. */
 QString QtAvahiService::errorString() const
 {
-    if (!d_ptr->client->client)
+    if (!d_ptr->client->m_client)
         return "Invalid client.";
 
-    return avahi_strerror(avahi_client_errno(d_ptr->client->client));
+    return avahi_strerror(avahi_client_errno(d_ptr->client->m_client));
 }
 
 bool QtAvahiService::handlCollision()

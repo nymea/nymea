@@ -35,7 +35,8 @@ public:
         TypeTimer = 2,
         TypeNetworkManager = 4,
         TypeUpnpDisovery = 8,
-        TypeBluetoothLE = 16
+        TypeBluetoothLE = 16,
+        TypeAvahiBrowser = 32
     };
     Q_ENUM(Type)
     Q_DECLARE_FLAGS(Types, Type)

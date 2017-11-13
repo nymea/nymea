@@ -71,7 +71,7 @@ void QtAvahiServiceBrowserPrivate::callbackServiceTypeBrowser(AvahiServiceTypeBr
     case AVAHI_BROWSER_ALL_FOR_NOW:
         break;
     case AVAHI_BROWSER_FAILURE:
-        qCWarning(dcAvahi()) << "Service type browser error:" << QString(avahi_strerror(avahi_client_errno(serviceBrowser->d_ptr->client->client)));
+        qCWarning(dcAvahi()) << "Service type browser error:" << QString(avahi_strerror(avahi_client_errno(serviceBrowser->d_ptr->client->m_client)));
         break;
     }
 }
@@ -88,7 +88,7 @@ void QtAvahiServiceBrowserPrivate::callbackServiceBrowser(AvahiServiceBrowser *b
     switch (event) {
     case AVAHI_BROWSER_NEW: {
         // Start resolving new service
-        AvahiServiceResolver *resolver = avahi_service_resolver_new(serviceBrowser->d_ptr->client->client,
+        AvahiServiceResolver *resolver = avahi_service_resolver_new(serviceBrowser->d_ptr->client->m_client,
                                          interface,
                                          protocol,
                                          name,
@@ -101,7 +101,7 @@ void QtAvahiServiceBrowserPrivate::callbackServiceBrowser(AvahiServiceBrowser *b
         if (resolver) {
             serviceBrowser->d_ptr->m_serviceResolvers.append(resolver);
         } else {
-            qCWarning(dcAvahi()) << "Failed to resolve service" << QString(name) << ":" << avahi_strerror(avahi_client_errno(serviceBrowser->d_ptr->client->client));
+            qCWarning(dcAvahi()) << "Failed to resolve service" << QString(name) << ":" << avahi_strerror(avahi_client_errno(serviceBrowser->d_ptr->client->m_client));
         }
         break;
     }
@@ -134,7 +134,7 @@ void QtAvahiServiceBrowserPrivate::callbackServiceBrowser(AvahiServiceBrowser *b
     case AVAHI_BROWSER_CACHE_EXHAUSTED:
         break;
     case AVAHI_BROWSER_FAILURE:
-        qCWarning(dcAvahi()) << "Service browser error:" << QString(avahi_strerror(avahi_client_errno(serviceBrowser->d_ptr->client->client)));
+        qCWarning(dcAvahi()) << "Service browser error:" << QString(avahi_strerror(avahi_client_errno(serviceBrowser->d_ptr->client->m_client)));
         break;
     }
 

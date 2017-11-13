@@ -44,7 +44,7 @@
 
 /*! Constructs a new \l{QtAvahiServiceBrowser} with the given \a parent. */
 QtAvahiServiceBrowser::QtAvahiServiceBrowser(QObject *parent) :
-    QObject(parent),
+    HardwareResource(HardwareResource::TypeAvahiBrowser, "Avahi browser", parent),
     d_ptr(new QtAvahiServiceBrowserPrivate(new QtAvahiClient))
 {
     connect(d_ptr->client, &QtAvahiClient::clientStateChanged, this, &QtAvahiServiceBrowser::onClientStateChanged);
@@ -68,11 +68,7 @@ QtAvahiServiceBrowser::~QtAvahiServiceBrowser()
     delete d_ptr;
 }
 
-/*! Enables this \l{QtAvahiServiceBrowser} and starts the service browsing. */
-void QtAvahiServiceBrowser::enable()
-{
-    d_ptr->client->start();
-}
+
 
 /*! Returns the current \l{AvahiServiceEntry} list of this \l{QtAvahiServiceBrowser}. */
 QList<AvahiServiceEntry> QtAvahiServiceBrowser::serviceEntries() const
@@ -88,16 +84,31 @@ void QtAvahiServiceBrowser::onClientStateChanged(const QtAvahiClient::QtAvahiCli
         if (d_ptr->serviceTypeBrowser)
             return;
 
-        d_ptr->serviceTypeBrowser = avahi_service_type_browser_new(d_ptr->client->client, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, 0, (AvahiLookupFlags) 0, QtAvahiServiceBrowserPrivate::callbackServiceTypeBrowser, this);
+        d_ptr->serviceTypeBrowser = avahi_service_type_browser_new(d_ptr->client->m_client, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, 0, (AvahiLookupFlags) 0, QtAvahiServiceBrowserPrivate::callbackServiceTypeBrowser, this);
     } else if (state == QtAvahiClient::QtAvahiClientStateFailure) {
         qCWarning(dcAvahi()) << "Service browser client failure:" << d_ptr->client->errorString();
     }
 }
 
+/*! Enables this \l{QtAvahiServiceBrowser} and starts the service browsing. */
+bool QtAvahiServiceBrowser::enable()
+{
+    d_ptr->client->start();
+    setEnabled(true);
+    return true;
+}
+
+bool QtAvahiServiceBrowser::disable()
+{
+    d_ptr->client->stop();
+    setEnabled(false);
+    return true;
+}
+
 void QtAvahiServiceBrowser::createServiceBrowser(const char *serviceType)
 {
     // create a new service browser for the given serviceType
-    AvahiServiceBrowser *browser = avahi_service_browser_new(d_ptr->client->client, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, serviceType, NULL, (AvahiLookupFlags) 0,  QtAvahiServiceBrowserPrivate::callbackServiceBrowser, this);
+    AvahiServiceBrowser *browser = avahi_service_browser_new(d_ptr->client->m_client, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, serviceType, NULL, (AvahiLookupFlags) 0,  QtAvahiServiceBrowserPrivate::callbackServiceBrowser, this);
     d_ptr->serviceBrowserTable.insert(serviceType, browser);
 }
 

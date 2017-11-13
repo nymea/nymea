@@ -77,7 +77,7 @@ signals:
 private slots:
     void error(QAbstractSocket::SocketError error);
     void readData();
-    void replyFinished(QNetworkReply *reply);
+    void replyFinished();
     void notificationTimeout();
     void sendByeByeMessage();
     void sendAliveMessage();

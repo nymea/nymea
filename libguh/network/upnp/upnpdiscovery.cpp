@@ -83,6 +83,19 @@ UpnpDiscovery::~UpnpDiscovery()
  * the given \a searchTarget, \a userAgent and \a pluginId can be discovered.*/
 bool UpnpDiscovery::discoverDevices(const QString &searchTarget, const QString &userAgent, const PluginId &pluginId)
 {
+    if (!available()) {
+        qCWarning(dcHardware()) << name() << "not available.";
+        return false;
+    }
+
+    if (!enabled()) {
+        qCWarning(dcHardware()) << name() << "disabled.";
+        return false;
+    }
+
+    if (!m_socket)
+        return false;
+
     if(m_socket->state() != QUdpSocket::BoundState){
         qCWarning(dcHardware) << "UPnP not bound to port 1900";
         return false;
@@ -103,6 +116,7 @@ bool UpnpDiscovery::discoverDevices(const QString &searchTarget, const QString &
 void UpnpDiscovery::requestDeviceInformation(const QNetworkRequest &networkRequest, const UpnpDeviceDescriptor &upnpDeviceDescriptor)
 {
     QNetworkReply *replay = m_networkAccessManager->get(networkRequest);
+    connect(replay, &QNetworkReply::finished, this, &UpnpDiscovery::replyFinished);
     m_informationRequestList.insert(replay, upnpDeviceDescriptor);
 }
 
@@ -169,6 +183,9 @@ void UpnpDiscovery::respondToSearchRequest(QHostAddress host, int port)
 /*! This method will be called to send the SSDP message \a data to the UPnP multicast.*/
 void UpnpDiscovery::sendToMulticast(const QByteArray &data)
 {
+    if (!m_socket)
+        return;
+
     m_socket->writeDatagram(data, m_host, m_port);
 }
 
@@ -226,8 +243,9 @@ void UpnpDiscovery::readData()
     }
 }
 
-void UpnpDiscovery::replyFinished(QNetworkReply *reply)
+void UpnpDiscovery::replyFinished()
 {
+    QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
     int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
     switch (status) {
@@ -451,7 +469,14 @@ bool UpnpDiscovery::enable()
 
 bool UpnpDiscovery::disable()
 {
-    // TODO:
+    sendByeByeMessage();
+    m_socket->waitForBytesWritten();
+    m_socket->close();
+    delete m_socket;
+    m_socket = nullptr;
+
+    m_notificationTimer->stop();
+
     setEnabled(false);
     return true;
 }

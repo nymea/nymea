@@ -40,17 +40,21 @@ public:
     Q_ENUM(Type)
     Q_DECLARE_FLAGS(Types, Type)
 
-    explicit HardwareResource(const HardwareResource::Type &hardwareReourceType, QObject *parent = nullptr);
+    explicit HardwareResource(const HardwareResource::Type &hardwareReourceType, const QString &name, QObject *parent = nullptr);
+
+    HardwareResource::Type hardwareReourceType() const;
+
+    QString name() const;
 
     bool available() const;
     bool enabled() const;
 
-    HardwareResource::Type hardwareReourceType() const;
 
 private:
+    HardwareResource::Type m_hardwareReourceType;
+    QString m_name;
     bool m_available = false;
     bool m_enabled = true;
-    HardwareResource::Type m_hardwareReourceType;
 
 protected:
     void setEnabled(const bool &enabled);

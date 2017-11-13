@@ -119,11 +119,6 @@ protected:
     // Bluetooth LE discovery
     bool discoverBluetooth();
 
-    // Network manager
-    QNetworkReply *networkManagerGet(const QNetworkRequest &request);
-    QNetworkReply *networkManagerPost(const QNetworkRequest &request, const QByteArray &data);
-    QNetworkReply *networkManagerPut(const QNetworkRequest &request, const QByteArray &data);
-
 private:
     void setMetaData(const QJsonObject &metaData);
     void loadMetaData();

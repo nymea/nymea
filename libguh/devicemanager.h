@@ -165,13 +165,14 @@ private slots:
     // Only connect this to Devices. It will query the sender()
     void slotDeviceStateValueChanged(const QUuid &stateTypeId, const QVariant &value);
 
-    void radio433SignalReceived(QList<int> rawData);
-    void replyReady(const PluginId &pluginId, QNetworkReply *reply);
+//    void radio433SignalReceived(QList<int> rawData);
 
-    void upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &deviceDescriptorList, const PluginId &pluginId);
-    void upnpNotifyReceived(const QByteArray &notifyData);
+//    void replyReady(const PluginId &pluginId, QNetworkReply *reply);
 
-    void bluetoothDiscoveryFinished(const PluginId &pluginId, const QList<QBluetoothDeviceInfo> &deviceInfos);
+//    void upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &deviceDescriptorList, const PluginId &pluginId);
+//    void upnpNotifyReceived(const QByteArray &notifyData);
+
+//    void bluetoothDiscoveryFinished(const PluginId &pluginId, const QList<QBluetoothDeviceInfo> &deviceInfos);
 
     void timerEvent();
 
@@ -196,15 +197,6 @@ private:
     QList<DevicePlugin *> m_pluginTimerUsers;
 
     HardwareManager *m_hardwareManager;
-//    // Hardware Resources
-//    Radio433 *m_radio433;
-//    PluginTimer *m_pluginTimer;
-//    NetworkAccessManager *m_networkManager;
-//    UpnpDiscovery *m_upnpDiscovery;
-//    QtAvahiServiceBrowser *m_avahiBrowser;
-//    BluetoothScanner *m_bluetoothScanner;
-
-
 
     QHash<QUuid, DevicePairingInfo> m_pairingsJustAdd;
     QHash<QUuid, DevicePairingInfo> m_pairingsDiscovery;

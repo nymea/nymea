@@ -28,8 +28,8 @@
 
 QtAvahiClient::QtAvahiClient(QObject *parent) :
     QObject(parent),
-    poll(avahi_qt_poll_get()),
-    client(0),
+    m_poll(avahi_qt_poll_get()),
+    m_client(0),
     error(0),
     m_state(QtAvahiClientStateNone)
 {
@@ -38,8 +38,8 @@ QtAvahiClient::QtAvahiClient(QObject *parent) :
 
 QtAvahiClient::~QtAvahiClient()
 {
-    if (client)
-        avahi_client_free(client);
+    if (m_client)
+        avahi_client_free(m_client);
 
 }
 
@@ -50,10 +50,18 @@ QtAvahiClient::QtAvahiClientState QtAvahiClient::state() const
 
 void QtAvahiClient::start()
 {
-    if (client)
+    if (m_client)
         return;
 
-    avahi_client_new(poll, (AvahiClientFlags) 0, QtAvahiClient::callback, this, &error);
+    avahi_client_new(m_poll, (AvahiClientFlags) 0, QtAvahiClient::callback, this, &error);
+}
+
+void QtAvahiClient::stop()
+{
+    if (m_client)
+        avahi_client_free(m_client);
+
+    m_client = nullptr;
 }
 
 QString QtAvahiClient::errorString() const
@@ -67,7 +75,7 @@ void QtAvahiClient::callback(AvahiClient *client, AvahiClientState state, void *
     if (!serviceClient)
         return;
 
-    serviceClient->client = client;
+    serviceClient->m_client = client;
 
     switch (state) {
     case AVAHI_CLIENT_S_RUNNING:

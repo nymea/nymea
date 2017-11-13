@@ -53,12 +53,13 @@ private:
     friend class QtAvahiServiceBrowser;
     friend class QtAvahiServiceBrowserPrivate;
 
-    const AvahiPoll *poll;
-    AvahiClient *client;
+    const AvahiPoll *m_poll;
+    AvahiClient *m_client;
     int error;
     QtAvahiClientState m_state;
 
     void start();
+    void stop();
     QString errorString() const;
 
     static void callback(AvahiClient *client, AvahiClientState state, void *userdata);

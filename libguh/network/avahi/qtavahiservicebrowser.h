@@ -27,19 +27,18 @@
 #include <avahi-client/lookup.h>
 
 #include "libguh.h"
+#include "hardwareresource.h"
 #include "qtavahiclient.h"
 #include "avahiserviceentry.h"
 
 class QtAvahiServiceBrowserPrivate;
 
-class LIBGUH_EXPORT QtAvahiServiceBrowser : public QObject
+class LIBGUH_EXPORT QtAvahiServiceBrowser : public HardwareResource
 {
     Q_OBJECT
 public:
     explicit QtAvahiServiceBrowser(QObject *parent = 0);
     ~QtAvahiServiceBrowser();
-
-    void enable();
 
     QList<AvahiServiceEntry> serviceEntries() const;
 
@@ -49,6 +48,10 @@ signals:
 
 private slots:
     void onClientStateChanged(const QtAvahiClient::QtAvahiClientState &state);
+
+public slots:
+    bool enable();
+    bool disable();
 
 private:
     QtAvahiServiceBrowserPrivate *d_ptr;

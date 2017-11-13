@@ -56,24 +56,14 @@
 
 /*! Construct the hardware resource Radio433 with the given \a parent. Each possible 433 MHz hardware will be initialized here. */
 Radio433::Radio433(QObject *parent) :
-    HardwareResource(HardwareResource::TypeRadio433, parent)
+    HardwareResource(HardwareResource::TypeRadio433, "Radio 433 MHz", parent)
 {
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
-    qCDebug(dcHardware) << "Loading GPIO settings from:" << settings.fileName();
-    settings.beginGroup("RF433");
-    int transmitterGpioNumber = settings.value("rf433tx",22).toInt();
-    settings.endGroup();
-
-    m_transmitter = new Radio433Trasmitter(this, transmitterGpioNumber);
-
     m_brennenstuhlTransmitter = new Radio433BrennenstuhlGateway(this);
     connect(m_brennenstuhlTransmitter, &Radio433BrennenstuhlGateway::availableChanged, this, &Radio433::brennenstuhlAvailableChanged);
-}
 
-/*! Destroys the hardware resource Radio433 object. */
-Radio433::~Radio433()
-{
-    m_transmitter->quit();
+    setAvailable(false);
+
+    qCDebug(dcHardware()) << "-->" << name() << "created successfully.";
 }
 
 /*! Enables GPIO transmitter and receiver and the Brennenstuhl Lan Gateway.
@@ -81,22 +71,7 @@ Radio433::~Radio433()
 bool Radio433::enable()
 {
     m_brennenstuhlTransmitter->enable();
-
-    // check if GPIOs are available
-    if (Gpio::isAvailable()) {
-        bool transmitterAvailable = m_transmitter->startTransmitter();
-        if (!transmitterAvailable) {
-            //qCWarning(dcHardware) << "ERROR: radio 433 MHz transmitter not available on GPIO's";
-        }
-
-        if (!transmitterAvailable) {
-            qCWarning(dcHardware) << "--> Radio 433 MHz GPIO's not available.";
-            return false;
-        }
-    }
-
     setEnabled(true);
-    qCDebug(dcDeviceManager()) << "--> Radio 433 MHz GPIO's enabled.";
     return true;
 }
 
@@ -111,26 +86,26 @@ bool Radio433::disable()
 void Radio433::brennenstuhlAvailableChanged(const bool &available)
 {
     if (available) {
-        qCDebug(dcHardware()) << "--> Radio 433 MHz Brennenstuhl LAN Gateway available.";
+        qCDebug(dcHardware()) << name() << "Brennenstuhl LAN Gateway available.";
         setAvailable(true);
     } else {
-        qCWarning(dcHardware()) << "--> Radio 433 MHz Brennenstuhl LAN Gateway NOT available.";
+        qCWarning(dcHardware()) << name() << "Brennenstuhl LAN Gateway not available.";
+        setAvailable(false);
     }
 }
 
 /*! Returns true, if the \a rawData with a certain \a delay (pulse length) could be sent \a repetitions times. */
 bool Radio433::sendData(int delay, QList<int> rawData, int repetitions)
 {
-    bool sendGpio = false;
-    bool sendBrennenstuhl = false;
-
-    if (m_brennenstuhlTransmitter->available()) {
-        sendBrennenstuhl = m_brennenstuhlTransmitter->sendData(delay, rawData, repetitions);
+    if (!available()) {
+        qCWarning(dcHardware()) << name() << "Brennenstuhl gateway not available";
+        return false;
     }
 
-    if (m_transmitter->available()) {
-        m_transmitter->sendData(delay, rawData, repetitions);
-        sendGpio = true;
+    if (!enabled()) {
+        qCWarning(dcHardware()) << name() << "Hardware reouce disabled.";
+        return false;
     }
-    return (sendGpio || sendBrennenstuhl);
+
+    return m_brennenstuhlTransmitter->sendData(delay, rawData, repetitions);
 }

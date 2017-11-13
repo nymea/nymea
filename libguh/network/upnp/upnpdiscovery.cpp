@@ -57,44 +57,17 @@
 #include <QXmlStreamWriter>
 
 /*! Construct the hardware resource UpnpDiscovery with the given \a parent. */
-UpnpDiscovery::UpnpDiscovery(QObject *parent) :
-    QUdpSocket(parent)
+UpnpDiscovery::UpnpDiscovery(QNetworkAccessManager *networkAccessManager, QObject *parent) :
+    HardwareResource(HardwareResource::TypeUpnpDisovery, "UPnP discovery", parent),
+    m_networkAccessManager(networkAccessManager)
 {
-    // bind udp socket and join multicast group
-    m_port = 1900;
-    m_host = QHostAddress("239.255.255.250");
-
-    setSocketOption(QAbstractSocket::MulticastTtlOption,QVariant(1));
-    setSocketOption(QAbstractSocket::MulticastLoopbackOption,QVariant(1));
-
-    if(!bind(QHostAddress::AnyIPv4, m_port, QUdpSocket::ShareAddress)){
-        qCWarning(dcHardware) << "UPnP discovery could not bind to port" << m_port;
-        return;
-    }
-
-    if(!joinMulticastGroup(m_host)){
-        qCWarning(dcHardware) << "UPnP discovery could not join multicast group" << m_host;
-        return;
-    }
-
-    // network access manager for requesting device information
-    m_networkAccessManager = new QNetworkAccessManager(this);
-    connect(m_networkAccessManager, &QNetworkAccessManager::finished, this, &UpnpDiscovery::replyFinished);
-
-    connect(this, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(error(QAbstractSocket::SocketError)));
-    connect(this, &UpnpDiscovery::readyRead, this, &UpnpDiscovery::readData);
-
     m_notificationTimer = new QTimer(this);
     m_notificationTimer->setInterval(30000);
     m_notificationTimer->setSingleShot(false);
-
     connect(m_notificationTimer, &QTimer::timeout, this, &UpnpDiscovery::notificationTimeout);
 
-    m_notificationTimer->start();
-
-    qCDebug(dcDeviceManager) << "--> UPnP discovery created successfully.";
-    sendAliveMessage();
-    sendAliveMessage();
+    setAvailable(true);
+    qCDebug(dcDeviceManager) << "-->" << name() << "created successfully.";
 }
 
 /*! Destruct this \l{UpnpDiscovery} object. */
@@ -102,20 +75,20 @@ UpnpDiscovery::~UpnpDiscovery()
 {
     qCDebug(dcApplication) << "Shutting down \"UPnP Server\"";
     sendByeByeMessage();
-    waitForBytesWritten();
-    close();
+    m_socket->waitForBytesWritten();
+    m_socket->close();
 }
 
 /*! Returns false, if the \l{UpnpDiscovery} resource is not available. Returns true, if a device with
  * the given \a searchTarget, \a userAgent and \a pluginId can be discovered.*/
 bool UpnpDiscovery::discoverDevices(const QString &searchTarget, const QString &userAgent, const PluginId &pluginId)
 {
-    if(state() != BoundState){
+    if(m_socket->state() != QUdpSocket::BoundState){
         qCWarning(dcHardware) << "UPnP not bound to port 1900";
         return false;
     }
 
-    qCDebug(dcHardware) << "UPnP: discover" << searchTarget << userAgent;
+    qCDebug(dcHardware) << name() << "discover" << searchTarget << userAgent;
 
     // create a new request
     UpnpDiscoveryRequest *request = new UpnpDiscoveryRequest(this, pluginId, searchTarget, userAgent);
@@ -129,8 +102,7 @@ bool UpnpDiscovery::discoverDevices(const QString &searchTarget, const QString &
 
 void UpnpDiscovery::requestDeviceInformation(const QNetworkRequest &networkRequest, const UpnpDeviceDescriptor &upnpDeviceDescriptor)
 {
-    QNetworkReply *replay;
-    replay = m_networkAccessManager->get(networkRequest);
+    QNetworkReply *replay = m_networkAccessManager->get(networkRequest);
     m_informationRequestList.insert(replay, upnpDeviceDescriptor);
 }
 
@@ -187,7 +159,7 @@ void UpnpDiscovery::respondToSearchRequest(QHostAddress host, int port)
                                                                       "\r\n");
 
                     //qCDebug(dcHardware) << QString("Sending response to %1:%2\n").arg(host.toString()).arg(port);
-                    writeDatagram(rootdeviceResponseMessage, host, port);
+                    m_socket->writeDatagram(rootdeviceResponseMessage, host, port);
                 }
             }
         }
@@ -197,12 +169,12 @@ void UpnpDiscovery::respondToSearchRequest(QHostAddress host, int port)
 /*! This method will be called to send the SSDP message \a data to the UPnP multicast.*/
 void UpnpDiscovery::sendToMulticast(const QByteArray &data)
 {
-    writeDatagram(data, m_host, m_port);
+    m_socket->writeDatagram(data, m_host, m_port);
 }
 
 void UpnpDiscovery::error(QAbstractSocket::SocketError error)
 {
-    qCWarning(dcHardware) << "UPnP socket error:" << error << errorString();
+    qCWarning(dcHardware) << "UPnP socket error:" << error << m_socket->errorString();
 }
 
 void UpnpDiscovery::readData()
@@ -213,9 +185,9 @@ void UpnpDiscovery::readData()
     QUrl location;
 
     // read the answere from the multicast
-    while (hasPendingDatagrams()) {
-        data.resize(pendingDatagramSize());
-        readDatagram(data.data(), data.size(), &hostAddress, &port);
+    while (m_socket->hasPendingDatagrams()) {
+        data.resize(m_socket->pendingDatagramSize());
+        m_socket->readDatagram(data.data(), data.size(), &hostAddress, &port);
     }
 
     if (data.contains("M-SEARCH") && !QNetworkInterface::allAddresses().contains(hostAddress)) {
@@ -433,4 +405,53 @@ void UpnpDiscovery::discoverTimeout()
 
     m_discoverRequests.removeOne(discoveryRequest);
     delete discoveryRequest;
+}
+
+bool UpnpDiscovery::enable()
+{
+    // Clean up
+    if (m_socket) {
+        delete m_socket;
+        m_socket = nullptr;
+    }
+
+    // Bind udp socket and join multicast group
+    m_socket = new QUdpSocket(this);
+    m_port = 1900;
+    m_host = QHostAddress("239.255.255.250");
+
+    m_socket->setSocketOption(QAbstractSocket::MulticastTtlOption,QVariant(1));
+    m_socket->setSocketOption(QAbstractSocket::MulticastLoopbackOption,QVariant(1));
+
+    if(!m_socket->bind(QHostAddress::AnyIPv4, m_port, QUdpSocket::ShareAddress)){
+        qCWarning(dcHardware()) << name() << "could not bind to port" << m_port;
+        delete m_socket;
+        m_socket = nullptr;
+        return false;
+    }
+
+    if(!m_socket->joinMulticastGroup(m_host)){
+        qCWarning(dcHardware()) <<  name() << "could not join multicast group" << m_host;
+        delete m_socket;
+        m_socket = nullptr;
+        return false;
+    }
+
+    connect(m_socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(error(QAbstractSocket::SocketError)));
+    connect(m_socket, &QUdpSocket::readyRead, this, &UpnpDiscovery::readData);
+
+    m_notificationTimer->start();
+
+    sendAliveMessage();
+    sendAliveMessage();
+
+    setEnabled(true);
+    return true;
+}
+
+bool UpnpDiscovery::disable()
+{
+    // TODO:
+    setEnabled(false);
+    return true;
 }

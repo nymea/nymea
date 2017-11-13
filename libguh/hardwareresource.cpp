@@ -24,11 +24,17 @@
 #include "guhsettings.h"
 #include "hardwaremanager.h"
 
-HardwareResource::HardwareResource(const Type &hardwareReourceType, QObject *parent) :
+HardwareResource::HardwareResource(const Type &hardwareReourceType, const QString &name, QObject *parent) :
     QObject(parent),
-    m_hardwareReourceType(hardwareReourceType)
+    m_hardwareReourceType(hardwareReourceType),
+    m_name(name)
 {
     // TODO: load if hardware resource is enabled or not
+}
+
+QString HardwareResource::name() const
+{
+    return m_name;
 }
 
 bool HardwareResource::available() const

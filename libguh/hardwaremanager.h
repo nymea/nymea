@@ -2,17 +2,17 @@
 #define HARDWAREMANAGER_H
 
 #include <QObject>
+#include <QNetworkAccessManager>
 
-#include "plugintimer.h"
-#include "bluetooth/bluetoothscanner.h"
-#include "hardware/radio433/radio433.h"
-#include "network/networkaccessmanager.h"
-#include "network/upnp/upnpdiscovery.h"
-#include "network/upnp/upnpdevicedescriptor.h"
-#include "network/avahi/qtavahiservicebrowser.h"
+#include "hardwareresource.h"
 
 class PluginTimer;
+class BluetoothScanner;
+class Radio433;
+class NetworkAccessManager;
 class UpnpDiscovery;
+class UpnpDeviceDescriptor;
+class QtAvahiServiceBrowser;
 
 class HardwareManager : public QObject
 {
@@ -32,6 +32,8 @@ public:
 
 private:
     QList<HardwareResource *> m_hardwareResources;
+
+    QNetworkAccessManager *m_networkAccessManager;
 
     // Hardware Resources
     Radio433 *m_radio433 = nullptr;

@@ -25,8 +25,6 @@
 
 #include <QObject>
 
-#include "radio433transmitter.h"
-
 #include "libguh.h"
 #include "hardwareresource.h"
 #include "radio433brennenstuhlgateway.h"
@@ -34,13 +32,11 @@
 class LIBGUH_EXPORT Radio433 : public HardwareResource
 {
     Q_OBJECT
-public:
-    explicit Radio433(QObject *parent = 0);
-    ~Radio433();
 
+    friend class HardwareManager;
 
 private:
-    Radio433Trasmitter *m_transmitter;
+    explicit Radio433(QObject *parent = 0);
     Radio433BrennenstuhlGateway *m_brennenstuhlTransmitter;
 
 private slots:

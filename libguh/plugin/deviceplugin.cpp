@@ -148,6 +148,7 @@
 
 #include "devicemanager.h"
 #include "guhsettings.h"
+#include "bluetooth/bluetoothscanner.h"
 #include "hardware/radio433/radio433.h"
 #include "network/upnp/upnpdiscovery.h"
 
@@ -540,56 +541,6 @@ bool DevicePlugin::transmitData(int delay, QList<int> rawData, int repetitions)
         qCWarning(dcDeviceManager) << "Unknown harware type. Cannot send.";
     }
     return false;
-}
-/*! Posts a request to obtain the contents of the target \a request and returns a new QNetworkReply object
- * opened for reading which emits the replyReady() signal whenever new data arrives.
- * The contents as well as associated headers will be downloaded.
- *
- * \note The plugin has to delete the QNetworkReply with the function deleteLater().
- *
- * \sa NetworkAccessManager::get()
- */
-QNetworkReply *DevicePlugin::networkManagerGet(const QNetworkRequest &request)
-{
-    if (requiredHardware().testFlag(HardwareResource::TypeNetworkManager)) {
-        return deviceManager()->m_hardwareManager->networkManager()->get(pluginId(), request);
-    } else {
-        qCWarning(dcDeviceManager) << "Network manager hardware resource not set for plugin" << pluginName();
-    }
-    return nullptr;
-}
-/*! Sends an HTTP POST request to the destination specified by \a request and returns a new QNetworkReply object
- * opened for reading that will contain the reply sent by the server. The contents of the \a data will be
- * uploaded to the server.
- *
- * \note The plugin has to delete the QNetworkReply with the function deleteLater().
- *
- * \sa NetworkAccessManager::post()
- */
-QNetworkReply *DevicePlugin::networkManagerPost(const QNetworkRequest &request, const QByteArray &data)
-{
-    if (requiredHardware().testFlag(HardwareResource::TypeNetworkManager)) {
-        return deviceManager()->m_hardwareManager->networkManager()->post(pluginId(), request, data);
-    } else {
-        qCWarning(dcDeviceManager) << "Network manager hardware resource not set for plugin" << pluginName();
-    }
-    return nullptr;
-}
-
-/*! Uploads the contents of \a data to the destination \a request and returnes a new QNetworkReply object that will be open for reply.
- *
- * \note The plugin has to delete the QNetworkReply with the function deleteLater().
- *
- * \sa NetworkAccessManager::put()
- */
-QNetworkReply *DevicePlugin::networkManagerPut(const QNetworkRequest &request, const QByteArray &data)
-{
-    if (requiredHardware().testFlag(HardwareResource::TypeNetworkManager)) {
-        return deviceManager()->m_hardwareManager->networkManager()->put(pluginId(), request, data);
-    } else {
-        qCWarning(dcDeviceManager) << "Network manager hardware resource not set for plugin" << pluginName();
-    }
-    return nullptr;
 }
 
 void DevicePlugin::setMetaData(const QJsonObject &metaData)

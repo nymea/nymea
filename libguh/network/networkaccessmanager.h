@@ -25,6 +25,7 @@
 
 #include "libguh.h"
 #include "typeutils.h"
+#include "hardwareresource.h"
 
 #include <QObject>
 #include <QNetworkAccessManager>
@@ -33,25 +34,36 @@
 #include <QDebug>
 #include <QUrl>
 
-class LIBGUH_EXPORT NetworkAccessManager : public QObject
+class LIBGUH_EXPORT NetworkAccessManager : public HardwareResource
 {
     Q_OBJECT
-public:
-    explicit NetworkAccessManager(QObject *parent = 0);
 
-    QNetworkReply *get(const PluginId &pluginId, const QNetworkRequest &request);
-    QNetworkReply *post(const PluginId &pluginId, const QNetworkRequest &request, const QByteArray &data);
-    QNetworkReply *put(const PluginId &pluginId, const QNetworkRequest &request, const QByteArray &data);
+    friend class HardwareManager;
+
+public:
+    // Note: only these methods are allowed from a plugin perspective
+    QNetworkReply *get(const QNetworkRequest &request);
+    QNetworkReply *deleteResource(const QNetworkRequest &request);
+    QNetworkReply *head(const QNetworkRequest &request);
+
+    QNetworkReply *post(const QNetworkRequest &request, QIODevice *data);
+    QNetworkReply *post(const QNetworkRequest &request, const QByteArray &data);
+    QNetworkReply *post(const QNetworkRequest &request, QHttpMultiPart *multiPart);
+
+    QNetworkReply *put(const QNetworkRequest &request, QIODevice *data);
+    QNetworkReply *put(const QNetworkRequest &request, const QByteArray &data);
+    QNetworkReply *put(const QNetworkRequest &request, QHttpMultiPart *multiPart);
+
+    QNetworkReply *sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, QIODevice *data = nullptr);
 
 private:
+    // Note: only the HardwareManager is allowed to create this resource
+    NetworkAccessManager(QNetworkAccessManager *networkManager, QObject *parent = 0);
     QNetworkAccessManager *m_manager;
-    QHash<QNetworkReply *, PluginId> m_replies;
 
-signals:
-    void replyReady(const PluginId &pluginId, QNetworkReply *reply);
-
-private slots:
-    void replyFinished(QNetworkReply *reply);
+public slots:
+    bool enable();
+    bool disable();
 
 };
 

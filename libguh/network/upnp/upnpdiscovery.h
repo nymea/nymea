@@ -31,33 +31,38 @@
 #include <QNetworkRequest>
 #include <QUrl>
 
+#include "libguh.h"
+#include "devicemanager.h"
+#include "hardwareresource.h"
 #include "upnpdiscoveryrequest.h"
 #include "upnpdevicedescriptor.h"
-#include "devicemanager.h"
-#include "libguh.h"
 
 // Discovering UPnP devices reference: http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf
 // guh basic device reference: http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
 
 class UpnpDiscoveryRequest;
 
-class LIBGUH_EXPORT UpnpDiscovery : public QUdpSocket
+class LIBGUH_EXPORT UpnpDiscovery : public HardwareResource
 {
     Q_OBJECT
-public:
-    explicit UpnpDiscovery(QObject *parent = 0);
-    ~UpnpDiscovery();
 
+    friend class HardwareManager;
+
+public:
     bool discoverDevices(const QString &searchTarget = "ssdp:all", const QString &userAgent = "", const PluginId &pluginId = PluginId());
     void sendToMulticast(const QByteArray &data);
 
 private:
+    explicit UpnpDiscovery(QNetworkAccessManager *networkAccessManager, QObject *parent = 0);
+    ~UpnpDiscovery();
+
+    QUdpSocket *m_socket = nullptr;
     QHostAddress m_host;
     qint16 m_port;
 
-    QTimer *m_notificationTimer;
+    QTimer *m_notificationTimer = nullptr;
 
-    QNetworkAccessManager *m_networkAccessManager;
+    QNetworkAccessManager *m_networkAccessManager = nullptr;
 
     QList<UpnpDiscoveryRequest *> m_discoverRequests;
     QHash<QNetworkReply*,UpnpDeviceDescriptor> m_informationRequestList;
@@ -77,6 +82,10 @@ private slots:
     void sendByeByeMessage();
     void sendAliveMessage();
     void discoverTimeout();
+
+public slots:
+    bool enable();
+    bool disable();
 };
 
 #endif // UPNPDISCOVERY_H

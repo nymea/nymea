@@ -29,77 +29,82 @@
 
   The network manager class is a reimplementation of the \l{http://doc-snapshot.qt-project.org/qt5-5.4/qnetworkaccessmanager.html}{QNetworkAccessManager}
   and allows plugins to send network requests and receive replies.
-*/
 
-/*!
- * \fn NetworkAccessManager::replyReady(const PluginId &pluginId, QNetworkReply *reply)
- * This signal will be emitted whenever a pending network \a reply for the plugin with the given \a pluginId is finished.
- *
- * \sa DevicePlugin::networkManagerReplyReady()
- */
+*/
 
 #include "networkaccessmanager.h"
 #include "loggingcategories.h"
 
 /*! Construct the hardware resource NetworkAccessManager with the given \a parent. */
-NetworkAccessManager::NetworkAccessManager(QObject *parent) :
-    QObject(parent)
+NetworkAccessManager::NetworkAccessManager(QNetworkAccessManager *networkManager, QObject *parent) :
+    HardwareResource(HardwareResource::TypeNetworkManager, "Network access manager" , parent),
+    m_manager(networkManager)
 {
-    m_manager = new QNetworkAccessManager(this);
-    connect(m_manager, &QNetworkAccessManager::finished, this, &NetworkAccessManager::replyFinished);
+    setAvailable(true);
 
-    qCDebug(dcDeviceManager) << "--> Network manager created successfully.";
+    qCDebug(dcHardware()) << "-->" << name() << "created successfully.";
 }
 
-/*! Posts a request to obtain the contents of the target \a request from the plugin with the given \a pluginId
- * and returns a new QNetworkReply object opened for reading which emits the replyReady() signal whenever new
- * data arrives.
- * The contents as well as associated headers will be downloaded.
- *
- * \note The plugin has to delete the QNetworkReply with the function deleteLater().
- *
- * \sa DevicePlugin::networkManagerGet()
- */
-QNetworkReply *NetworkAccessManager::get(const PluginId &pluginId, const QNetworkRequest &request)
+QNetworkReply *NetworkAccessManager::get(const QNetworkRequest &request)
 {
-    QNetworkReply  *reply = m_manager->get(request);
-    m_replies.insert(reply, pluginId);
-    return reply;
+    return m_manager->get(request);
 }
 
-/*! Sends an HTTP POST request to the destination specified by \a request from the plugin with the given
- * \a pluginId and returns a new QNetworkReply object opened for reading that will contain the reply sent
- * by the server. The contents of the \a data will be uploaded to the server.
- *
- * \note The plugin has to delete the QNetworkReply with the function deleteLater().
- *
- * \sa DevicePlugin::networkManagerPost()
- */
-QNetworkReply *NetworkAccessManager::post(const PluginId &pluginId, const QNetworkRequest &request, const QByteArray &data)
+QNetworkReply *NetworkAccessManager::deleteResource(const QNetworkRequest &request)
 {
-    QNetworkReply  *reply = m_manager->post(request, data);
-    m_replies.insert(reply, pluginId);
-    return reply;
+    return m_manager->deleteResource(request);
 }
 
-/*! Uploads the contents of \a data to the destination \a request from the plugin with the given
- * \a pluginId and returnes a new QNetworkReply object that will be open for reply.
- *
- * \note The plugin has to delete the QNetworkReply with the function deleteLater().
- *
- * \sa DevicePlugin::networkManagerPut()
- */
-QNetworkReply *NetworkAccessManager::put(const PluginId &pluginId, const QNetworkRequest &request, const QByteArray &data)
+QNetworkReply *NetworkAccessManager::head(const QNetworkRequest &request)
 {
-    QNetworkReply  *reply = m_manager->put(request, data);
-    m_replies.insert(reply, pluginId);
-    return reply;
+    return m_manager->head(request);
 }
 
-void NetworkAccessManager::replyFinished(QNetworkReply *reply)
+QNetworkReply *NetworkAccessManager::post(const QNetworkRequest &request, QIODevice *data)
 {
-    // NOTE: Each plugin has to delete his own replys with deleteLater()!!
-    // NOTE: also the reply->error() has to be handled in each plugin!!
-    PluginId pluginId = m_replies.take(reply);
-    emit replyReady(pluginId, reply);
+    return m_manager->post(request, data);
+}
+
+QNetworkReply *NetworkAccessManager::post(const QNetworkRequest &request, const QByteArray &data)
+{
+    return m_manager->post(request, data);
+}
+
+QNetworkReply *NetworkAccessManager::post(const QNetworkRequest &request, QHttpMultiPart *multiPart)
+{
+    return m_manager->post(request, multiPart);
+}
+
+QNetworkReply *NetworkAccessManager::put(const QNetworkRequest &request, QIODevice *data)
+{
+    return m_manager->put(request, data);
+}
+
+QNetworkReply *NetworkAccessManager::put(const QNetworkRequest &request, const QByteArray &data)
+{
+    return m_manager->post(request, data);
+}
+
+QNetworkReply *NetworkAccessManager::put(const QNetworkRequest &request, QHttpMultiPart *multiPart)
+{
+    return m_manager->post(request, multiPart);
+}
+
+QNetworkReply *NetworkAccessManager::sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, QIODevice *data)
+{
+    return m_manager->sendCustomRequest(request, verb, data);
+}
+
+bool NetworkAccessManager::enable()
+{
+    m_manager->setNetworkAccessible(QNetworkAccessManager::Accessible);
+    setEnabled(true);
+    return true;
+}
+
+bool NetworkAccessManager::disable()
+{
+    m_manager->setNetworkAccessible(QNetworkAccessManager::NotAccessible);
+    setEnabled(false);
+    return true;
 }

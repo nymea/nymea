@@ -5,6 +5,8 @@ HardwareManager::HardwareManager(QObject *parent) : QObject(parent)
     // Init hardware resources
     m_pluginTimer = new PluginTimer(10000, this);
 
+    m_hardwareResources.append(m_pluginTimer);
+
     m_radio433 = new Radio433(this);
     m_radio433->enable();
 
@@ -24,7 +26,6 @@ HardwareManager::HardwareManager(QObject *parent) : QObject(parent)
         delete m_bluetoothScanner;
         m_bluetoothScanner = nullptr;
     }
-
 }
 
 Radio433 *HardwareManager::radio433()
@@ -55,5 +56,45 @@ QtAvahiServiceBrowser *HardwareManager::avahiBrowser()
 BluetoothScanner *HardwareManager::bluetoothScanner()
 {
     return m_bluetoothScanner;
+}
+
+bool HardwareManager::isAvailable(const HardwareResource::Type &hardwareResourceType) const
+{
+    foreach (HardwareResource *resource, m_hardwareResources) {
+        if (resource->hardwareReourceType() == hardwareResourceType && resource->available()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool HardwareManager::isEnabled(const HardwareResource::Type &hardwareResourceType) const
+{
+    foreach (HardwareResource *resource, m_hardwareResources) {
+        if (resource->hardwareReourceType() == hardwareResourceType && resource->enabled()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool HardwareManager::enableHardwareReource(const HardwareResource::Type &hardwareResourceType)
+{
+    foreach (HardwareResource *resource, m_hardwareResources) {
+        if (resource->hardwareReourceType() == hardwareResourceType) {
+            return resource->enabled();
+        }
+    }
+    return false;
+}
+
+bool HardwareManager::disableHardwareReource(const HardwareResource::Type &hardwareResourceType)
+{
+    foreach (HardwareResource *resource, m_hardwareResources) {
+        if (resource->hardwareReourceType() == hardwareResourceType) {
+             return resource->disable();
+        }
+    }
+    return false;
 }
 

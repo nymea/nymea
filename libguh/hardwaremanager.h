@@ -27,7 +27,12 @@ public:
     QtAvahiServiceBrowser *avahiBrowser();
     BluetoothScanner *bluetoothScanner();
 
+    bool isAvailable(const HardwareResource::Type &hardwareResourceType) const;
+    bool isEnabled(const HardwareResource::Type &hardwareResourceType) const;
+
 private:
+    QList<HardwareResource *> m_hardwareResources;
+
     // Hardware Resources
     Radio433 *m_radio433 = nullptr;
     PluginTimer *m_pluginTimer = nullptr;
@@ -37,8 +42,12 @@ private:
     BluetoothScanner *m_bluetoothScanner = nullptr;
 
 signals:
+    void hardwareResourceAvailableChanged(const HardwareResource::Type &hardwareResourceType, const bool &available);
+    void hardwareResourceEnabledChanged(const HardwareResource::Type &hardwareResourceType, const bool &enabled);
 
 public slots:
+    bool enableHardwareReource(const HardwareResource::Type &hardwareResourceType);
+    bool disableHardwareReource(const HardwareResource::Type &hardwareResourceType);
 
 };
 

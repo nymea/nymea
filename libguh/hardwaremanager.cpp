@@ -1,6 +1,7 @@
 #include "hardwaremanager.h"
 
 #include "plugintimer.h"
+#include "loggingcategories.h"
 #include "bluetooth/bluetoothscanner.h"
 #include "hardware/radio433/radio433.h"
 #include "network/networkaccessmanager.h"
@@ -25,7 +26,8 @@ HardwareManager::HardwareManager(QObject *parent) : QObject(parent)
     // Network manager
     m_networkManager = new NetworkAccessManager(m_networkAccessManager, this);
     m_hardwareResources.append(m_networkManager);
-    m_networkManager->enable();
+    if (m_networkManager->available())
+        m_networkManager->enable();
 
     // UPnP discovery
     m_upnpDiscovery = new UpnpDiscovery(m_networkAccessManager, this);
@@ -37,12 +39,14 @@ HardwareManager::HardwareManager(QObject *parent) : QObject(parent)
     m_hardwareResources.append(m_avahiBrowser);
     m_avahiBrowser->enable();
 
-    // Bluetooth LE
-    m_bluetoothScanner = new BluetoothScanner(this);
-    if (!m_bluetoothScanner->isAvailable()) {
-        delete m_bluetoothScanner;
-        m_bluetoothScanner = nullptr;
-    }
+//    // Bluetooth LE
+//    m_bluetoothScanner = new BluetoothScanner(this);
+//    if (!m_bluetoothScanner->isAvailable()) {
+//        delete m_bluetoothScanner;
+//        m_bluetoothScanner = nullptr;
+//    }
+
+    qCDebug(dcHardware()) << "Hardware manager initialized successfully";
 }
 
 Radio433 *HardwareManager::radio433()

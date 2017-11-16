@@ -312,6 +312,11 @@ void DeviceManager::setLocale(const QLocale &locale)
     emit languageUpdated();
 }
 
+HardwareManager *DeviceManager::hardwareManager()
+{
+    return m_hardwareManager;
+}
+
 /*! Returns all the \l{DevicePlugin}{DevicePlugins} loaded in the system. */
 QList<DevicePlugin *> DeviceManager::plugins() const
 {

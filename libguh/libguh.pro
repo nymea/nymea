@@ -70,7 +70,8 @@ HEADERS += devicemanager.h \
            types/statedescriptor.h \
            hardwareresource.h \
            plugintimer.h \
-           hardwaremanager.h
+           hardwaremanager.h \
+    bluetooth/bluetoothlowenergymanager.h
 
 SOURCES += devicemanager.cpp \
            loggingcategories.cpp \
@@ -126,7 +127,8 @@ SOURCES += devicemanager.cpp \
            types/statedescriptor.cpp \
            hardwareresource.cpp \
            plugintimer.cpp \
-           hardwaremanager.cpp
+           hardwaremanager.cpp \
+    bluetooth/bluetoothlowenergymanager.cpp
 
 # install plugininfo python script for libguh-dev
 generateplugininfo.files = $$top_srcdir/plugins/guh-generateplugininfo

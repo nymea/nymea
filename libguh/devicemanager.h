@@ -97,6 +97,8 @@ public:
 
     void setLocale(const QLocale &locale);
 
+    HardwareManager *hardwareManager();
+
     QList<DevicePlugin*> plugins() const;
     DevicePlugin* plugin(const PluginId &id) const;
     DeviceError setPluginConfig(const PluginId &pluginId, const ParamList &pluginConfig);

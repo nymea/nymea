@@ -28,8 +28,6 @@
   \inmodule libguh
 
   The bluetooth scanner hardware resource allows to discover bluetooth low energy devices.
-
-  \note: Only available for Qt >= 5.4.0!
 */
 
 /*!
@@ -42,53 +40,20 @@
 #include "loggingcategories.h"
 
 /*! Construct the hardware resource BluetoothScanner with the given \a parent. */
-BluetoothScanner::BluetoothScanner(QObject *parent) :
-    QObject(parent)
+BluetoothScanner::BluetoothScanner(const QBluetoothAddress &adapterAddress, QObject *parent) :
+    QObject(parent),
+    m_adapterAddress(adapterAddress)
 {
     m_timer = new QTimer(this);
     m_timer->setSingleShot(true);
     m_timer->setInterval(5000);
+
     connect(m_timer, &QTimer::timeout, this, &BluetoothScanner::discoveryTimeout);
-}
 
-/*! Returns true, if a bluetooth hardware is available. */
-bool BluetoothScanner::isAvailable()
-{    
-    //Using default Bluetooth adapter
-    QBluetoothLocalDevice localDevice;
-
-    // Check if Bluetooth is available on this device
-    if (!localDevice.isValid()) {
-        qCWarning(dcHardware) << "No Bluetooth device found.";
-        m_available = false;
-        return false;
-    }
-
-    // Turn Bluetooth on
-    localDevice.powerOn();
-
-    // Make it visible to others
-    localDevice.setHostMode(QBluetoothLocalDevice::HostDiscoverable);
-
-    // Get connected devices
-    QList<QBluetoothHostInfo> remotes = localDevice.allDevices();
-    if (remotes.isEmpty()) {
-        qCWarning(dcHardware) << "No Bluetooth host info found.";
-        m_available = false;
-        return false;
-    }
-
-    QBluetoothHostInfo hostInfo = remotes.first();
-
-    // Create a discovery agent and connect to its signals
-    m_discoveryAgent = new QBluetoothDeviceDiscoveryAgent(hostInfo.address(), this);
+    m_discoveryAgent = new QBluetoothDeviceDiscoveryAgent(m_adapterAddress, this);
 
     connect(m_discoveryAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered, this, &BluetoothScanner::deviceDiscovered);
     connect(m_discoveryAgent, SIGNAL(error(QBluetoothDeviceDiscoveryAgent::Error)), this, SLOT(onError(QBluetoothDeviceDiscoveryAgent::Error)));
-
-    qCDebug(dcDeviceManager) << "--> Bluetooth discovery created successfully.";
-    m_available = true;
-    return true;
 }
 
 /*! Returns true, if the discovering agent currently is running. */

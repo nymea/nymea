@@ -77,7 +77,7 @@ def extractPlugin(pluginMap):
 def extractParamTypes(paramTypes, contextName):
     for paramType in paramTypes:
         try:
-            variableName = '%sParamTypeId' % (paramType['name'])
+            variableName = '%sParamTypeId' % (contextName + paramType['name'][0].capitalize() + paramType['name'][1:])
             if not variableName in variableNames:
                 variableNames.append(variableName)
                 printInfo('Define ParamTypeId %s = %s' % (variableName, paramType['id']))
@@ -155,7 +155,7 @@ def extractStateTypes(stateTypes, deviceClassName):
     for stateType in stateTypes:
         try:
             # Define StateType
-            variableName = '%sStateTypeId' % (stateType['name'])
+            variableName = '%s%sStateTypeId' % (deviceClassName, stateType['name'][0].capitalize() + stateType['name'][1:])
             #addTranslationString(stateType['name'], 'The name of the stateType (%s) of DeviceClass %s' % (stateType['id'], deviceClassName))
             if not variableName in variableNames:
                 variableNames.append(variableName)
@@ -167,7 +167,7 @@ def extractStateTypes(stateTypes, deviceClassName):
                 printWarning('Duplicated variable name \"%s\" for StateTypeId %s -> skipping' % (variableName, stateType['id']))
 
             # Create EventTypeId for this state
-            variableName = '%sEventTypeId' % (stateType['name'])
+            variableName = '%s%sEventTypeId' % (deviceClassName, stateType['name'][0].capitalize() + stateType['name'][1:])
             if not variableName in variableNames:
                 addTranslationString(stateType['displayNameEvent'], 'The name of the autocreated EventType (%s)' % stateType['id'])
                 variableNames.append(variableName)
@@ -179,7 +179,7 @@ def extractStateTypes(stateTypes, deviceClassName):
                 printWarning('Duplicated variable name \"%s\" for autocreated EventTypeId %s -> skipping' % (variableName, stateType['id']))
 
             #ParamType for EventType/ActionType
-            variableName = '%sStateParamTypeId' % (stateType['name'])
+            variableName = '%s%sStateParamTypeId' % (deviceClassName, stateType['name'][0].capitalize() + stateType['name'][1:])
             if not variableName in variableNames:
                 variableNames.append(variableName)
                 printInfo('Define ParamTypeId %s for StateType %s = %s' % (variableName, variableName, stateType['id']))
@@ -192,7 +192,7 @@ def extractStateTypes(stateTypes, deviceClassName):
 
             # Create ActionTypeId if the state is writable
             if 'writable' in stateType and stateType['writable']:
-                variableName = '%sActionTypeId' % (stateType['name'])
+                variableName = '%s%sActionTypeId' % (deviceClassName, stateType['name'][0].capitalize() + stateType['name'][1:])
                 if not variableName in variableNames:
                     variableNames.append(variableName)
                     printInfo('Define ActionTypeId for writable StateType %s = %s' % (variableName, stateType['id']))
@@ -212,7 +212,7 @@ def extractActionTypes(actionTypes, deviceClassName):
     for actionType in actionTypes:
         try:
             # Define ActionTypeId
-            variableName = '%sActionTypeId' % (actionType['name'])
+            variableName = '%s%sActionTypeId' % (deviceClassName, actionType['name'][0].capitalize() + actionType['name'][1:])
             if not variableName in variableNames:
                 variableNames.append(variableName)
                 addTranslationString(actionType['displayName'], 'The name of the ActionType %s of deviceClass %s' % (actionType['id'], deviceClassName))
@@ -235,7 +235,7 @@ def extractEventTypes(eventTypes, deviceClassName):
     for eventType in eventTypes:
         try:
             # Define EventTypeId
-            variableName = '%sEventTypeId' % (eventType['name'])
+            variableName = '%s%sEventTypeId' % (deviceClassName, eventType['name'][0].capitalize() + eventType['name'][1:])
             if not variableName in variableNames:
                 variableNames.append(variableName)
                 addTranslationString(eventType['displayName'], 'The name of the EventType %s of deviceClass %s' % (eventType['id'], deviceClassName))
@@ -320,9 +320,10 @@ def writePluginInfoFile():
     writeToFile('// Logging category')
 
     if 'name' in pluginMap:
-        writeToFile('Q_DECLARE_LOGGING_CATEGORY(dc%s)' % pluginMap['name'])
-        writeToFile('Q_LOGGING_CATEGORY(dc%s, \"%s\")' % (pluginMap['name'], pluginMap['name']))
-        printInfo('Define logging category: \'dc%s\'' % pluginMap['name'])
+        debugCategoryName = pluginMap['name'][0].capitalize() + pluginMap['name'][1:]
+        writeToFile('Q_DECLARE_LOGGING_CATEGORY(dc%s)' % debugCategoryName)
+        writeToFile('Q_LOGGING_CATEGORY(dc%s, \"%s\")' % (debugCategoryName, debugCategoryName))
+        printInfo('Define logging category: \'dc%s\'' % debugCategoryName)
 
     writeToFile('')
 
@@ -359,7 +360,8 @@ def writeExternPluginInfoFile():
     writeToFile('// Logging category definition')
 
     if 'name' in pluginMap:
-        writeToFile('Q_DECLARE_LOGGING_CATEGORY(dc%s)' % pluginMap['name'])
+        debugCategoryName = pluginMap['name'][0].capitalize() + pluginMap['name'][1:]
+        writeToFile('Q_DECLARE_LOGGING_CATEGORY(dc%s)' % debugCategoryName)
 
     writeToFile('')
     writeToFile('#endif // EXTERNPLUGININFO_H')

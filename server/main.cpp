@@ -141,7 +141,8 @@ int main(int argc, char *argv[])
 
     QHash<QString, bool> loggingFiltersPlugins;
     foreach (const QJsonObject &pluginMetadata, DeviceManager::pluginsMetadata()) {
-        loggingFiltersPlugins.insert(pluginMetadata.value("name").toString(), false);
+        QString pluginName = pluginMetadata.value("name").toString();
+        loggingFiltersPlugins.insert(pluginName.left(1).toUpper() + pluginName.mid(1), false);
     }
 
     // Translator for the server application

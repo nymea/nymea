@@ -39,12 +39,12 @@ class LIBGUH_EXPORT BluetoothScanner : public QObject
 {
     Q_OBJECT
 public:
-    explicit BluetoothScanner(QObject *parent = 0);
-    bool isAvailable();
+    explicit BluetoothScanner(const QBluetoothAddress &adapterAddress, QObject *parent = 0);
     bool isRunning();
     bool discover(const PluginId &pluginId);
 
 private:
+    QBluetoothAddress m_adapterAddress;
     QBluetoothDeviceDiscoveryAgent *m_discoveryAgent;
     QList<QBluetoothDeviceInfo> m_deviceInfos;
     QTimer *m_timer;

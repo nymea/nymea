@@ -36,10 +36,10 @@ class QtAvahiServiceBrowserPrivate;
 class LIBGUH_EXPORT QtAvahiServiceBrowser : public HardwareResource
 {
     Q_OBJECT
-public:
-    explicit QtAvahiServiceBrowser(QObject *parent = 0);
-    ~QtAvahiServiceBrowser();
 
+    friend class HardwareManager;
+
+public:
     QList<AvahiServiceEntry> serviceEntries() const;
 
 signals:
@@ -54,6 +54,9 @@ public slots:
     bool disable();
 
 private:
+    explicit QtAvahiServiceBrowser(QObject *parent = 0);
+    ~QtAvahiServiceBrowser();
+
     QtAvahiServiceBrowserPrivate *d_ptr;
 
     QList<AvahiServiceEntry> m_serviceEntries;

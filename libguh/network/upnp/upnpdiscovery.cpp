@@ -67,7 +67,7 @@ UpnpDiscovery::UpnpDiscovery(QNetworkAccessManager *networkAccessManager, QObjec
     connect(m_notificationTimer, &QTimer::timeout, this, &UpnpDiscovery::notificationTimeout);
 
     setAvailable(true);
-    qCDebug(dcDeviceManager) << "-->" << name() << "created successfully.";
+    qCDebug(dcHardware()) << "-->" << name() << "created successfully.";
 }
 
 /*! Destruct this \l{UpnpDiscovery} object. */
@@ -191,7 +191,7 @@ void UpnpDiscovery::sendToMulticast(const QByteArray &data)
 
 void UpnpDiscovery::error(QAbstractSocket::SocketError error)
 {
-    qCWarning(dcHardware) << "UPnP socket error:" << error << m_socket->errorString();
+    qCWarning(dcHardware) << name() << "socket error:" << error << m_socket->errorString();
 }
 
 void UpnpDiscovery::readData()
@@ -312,7 +312,7 @@ void UpnpDiscovery::replyFinished()
         break;
     }
     default:
-        qCWarning(dcHardware) << "HTTP request error" << reply->request().url().toString() << status;
+        qCWarning(dcHardware) << name() << "HTTP request error" << reply->request().url().toString() << status;
         m_informationRequestList.remove(reply);
     }
 
@@ -449,7 +449,7 @@ bool UpnpDiscovery::enable()
     }
 
     if(!m_socket->joinMulticastGroup(m_host)){
-        qCWarning(dcHardware()) <<  name() << "could not join multicast group" << m_host;
+        qCWarning(dcHardware()) << name() << "could not join multicast group" << m_host;
         delete m_socket;
         m_socket = nullptr;
         return false;

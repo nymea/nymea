@@ -44,10 +44,11 @@
 
 /*! Constructs a new \l{QtAvahiServiceBrowser} with the given \a parent. */
 QtAvahiServiceBrowser::QtAvahiServiceBrowser(QObject *parent) :
-    HardwareResource(HardwareResource::TypeAvahiBrowser, "Avahi browser", parent),
+    HardwareResource(HardwareResource::TypeAvahiBrowser, "Avahi service browser", parent),
     d_ptr(new QtAvahiServiceBrowserPrivate(new QtAvahiClient))
 {
     connect(d_ptr->client, &QtAvahiClient::clientStateChanged, this, &QtAvahiServiceBrowser::onClientStateChanged);
+    qCDebug(dcHardware()) << "-->" << name() << "created successfully.";
 }
 
 /*! Destructs this \l{QtAvahiServiceBrowser}. */
@@ -86,7 +87,7 @@ void QtAvahiServiceBrowser::onClientStateChanged(const QtAvahiClient::QtAvahiCli
 
         d_ptr->serviceTypeBrowser = avahi_service_type_browser_new(d_ptr->client->m_client, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, 0, (AvahiLookupFlags) 0, QtAvahiServiceBrowserPrivate::callbackServiceTypeBrowser, this);
     } else if (state == QtAvahiClient::QtAvahiClientStateFailure) {
-        qCWarning(dcAvahi()) << "Service browser client failure:" << d_ptr->client->errorString();
+        qCWarning(dcAvahi()) << name() << "client failure:" << d_ptr->client->errorString();
     }
 }
 

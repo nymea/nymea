@@ -17,6 +17,9 @@ class QtAvahiServiceBrowser;
 class HardwareManager : public QObject
 {
     Q_OBJECT
+
+    friend class DeviceManager;
+
 public:
     explicit HardwareManager(QObject *parent = nullptr);
 
@@ -43,13 +46,13 @@ private:
     QtAvahiServiceBrowser *m_avahiBrowser = nullptr;
     BluetoothScanner *m_bluetoothScanner = nullptr;
 
+    bool enableHardwareReource(const HardwareResource::Type &hardwareResourceType);
+    bool disableHardwareReource(const HardwareResource::Type &hardwareResourceType);
+
 signals:
     void hardwareResourceAvailableChanged(const HardwareResource::Type &hardwareResourceType, const bool &available);
     void hardwareResourceEnabledChanged(const HardwareResource::Type &hardwareResourceType, const bool &enabled);
 
-public slots:
-    bool enableHardwareReource(const HardwareResource::Type &hardwareResourceType);
-    bool disableHardwareReource(const HardwareResource::Type &hardwareResourceType);
 
 };
 

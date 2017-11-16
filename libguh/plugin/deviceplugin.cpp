@@ -506,6 +506,11 @@ QList<Device *> DevicePlugin::myDevices() const
     return ret;
 }
 
+HardwareManager *DevicePlugin::hardwareManager() const
+{
+    return m_deviceManager->hardwareManager();
+}
+
 /*!
  Find a certain device from myDevices() by its \a params. All parameters must
  match or the device will not be found. Be prepared for nullptrs.

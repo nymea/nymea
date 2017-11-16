@@ -39,7 +39,7 @@
 HttpDaemon::HttpDaemon(Device *device, DevicePlugin *parent):
     QTcpServer(parent), disabled(false), m_plugin(parent), m_device(device)
 {
-    listen(QHostAddress::Any, device->paramValue(httpportParamTypeId).toInt());
+    listen(QHostAddress::Any, device->paramValue(mockHttpportParamTypeId).toInt());
 }
 
 HttpDaemon::~HttpDaemon()

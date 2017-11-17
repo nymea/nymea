@@ -101,11 +101,13 @@ void CloudManager::setEnabled(bool enabled)
             return;
         }
 
+        qCDebug(dcCloud()) << "Enabling cloud connection.";
         m_enabled = true;
         if (!m_awsConnector->isConnected() && m_networkManager->state() == NetworkManager::NetworkManagerStateConnectedGlobal) {
             connect2aws();
         }
     } else {
+        qCDebug(dcCloud()) << "Disabling cloud connection.";
         m_enabled = false;
         m_awsConnector->disconnectAWS();
     }

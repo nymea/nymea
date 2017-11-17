@@ -59,6 +59,7 @@ private slots:
     void registerDevice();
     void onDeviceRegistered(bool needsReconnect);
     void setupPairing();
+    void fetchPairings();
     void onPairingsRetrieved(const QVariantList &pairings);
     void setName();
     void onDisconnected();

@@ -52,6 +52,7 @@
 #include "loggingcategories.h"
 #include "guhsettings.h"
 
+#include <QMetaObject>
 #include <QNetworkInterface>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
@@ -81,7 +82,7 @@ UpnpDiscovery::~UpnpDiscovery()
 
 /*! Returns false, if the \l{UpnpDiscovery} resource is not available. Returns true, if a device with
  * the given \a searchTarget, \a userAgent and \a pluginId can be discovered.*/
-bool UpnpDiscovery::discoverDevices(const QString &searchTarget, const QString &userAgent, const PluginId &pluginId)
+bool UpnpDiscovery::discoverDevices(QPointer<QObject> caller, const QString &callbackMethod, const QString &searchTarget, const QString &userAgent)
 {
     if (!available()) {
         qCWarning(dcHardware()) << name() << "not available.";
@@ -103,10 +104,10 @@ bool UpnpDiscovery::discoverDevices(const QString &searchTarget, const QString &
 
     qCDebug(dcHardware) << name() << "discover" << searchTarget << userAgent;
 
-    // create a new request
-    UpnpDiscoveryRequest *request = new UpnpDiscoveryRequest(this, pluginId, searchTarget, userAgent);
-    connect(request, &UpnpDiscoveryRequest::discoveryTimeout, this, &UpnpDiscovery::discoverTimeout);
 
+    // Create a new request
+    UpnpDiscoveryRequest *request = new UpnpDiscoveryRequest(this, caller, callbackMethod, searchTarget, userAgent);
+    connect(request, &UpnpDiscoveryRequest::discoveryTimeout, this, &UpnpDiscovery::discoverTimeout);
     request->discover();
     m_discoverRequests.append(request);
     return true;
@@ -419,7 +420,14 @@ void UpnpDiscovery::sendAliveMessage()
 void UpnpDiscovery::discoverTimeout()
 {
     UpnpDiscoveryRequest *discoveryRequest = static_cast<UpnpDiscoveryRequest*>(sender());
-    emit discoveryFinished(discoveryRequest->deviceList(), discoveryRequest->pluginId());
+
+    if (discoveryRequest->caller().isNull()) {
+        qCWarning(dcHardware()) << name() << "The reciver of the discovery request does not exist any more.";
+    } else {
+        // Invoke the method containing the discovered devicelist
+        // FIXME: check the callback method paramters during compililation
+        QMetaObject::invokeMethod(discoveryRequest->caller().data(), discoveryRequest->callbackMethod().toLatin1().data(), Q_ARG(QList<UpnpDeviceDescriptor>, discoveryRequest->deviceList()));
+    }
 
     m_discoverRequests.removeOne(discoveryRequest);
     delete discoveryRequest;
@@ -443,6 +451,7 @@ bool UpnpDiscovery::enable()
 
     if(!m_socket->bind(QHostAddress::AnyIPv4, m_port, QUdpSocket::ShareAddress)){
         qCWarning(dcHardware()) << name() << "could not bind to port" << m_port;
+        setAvailable(false);
         delete m_socket;
         m_socket = nullptr;
         return false;
@@ -450,6 +459,7 @@ bool UpnpDiscovery::enable()
 
     if(!m_socket->joinMulticastGroup(m_host)){
         qCWarning(dcHardware()) << name() << "could not join multicast group" << m_host;
+        setAvailable(false);
         delete m_socket;
         m_socket = nullptr;
         return false;

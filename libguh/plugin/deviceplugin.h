@@ -49,8 +49,11 @@ class Device;
 class LIBGUH_EXPORT DevicePlugin: public QObject
 {
     Q_OBJECT
+
+    friend class DeviceManager;
+
 public:
-    DevicePlugin(QObject *parent = 0);
+    DevicePlugin(QObject *parent = nullptr);
     virtual ~DevicePlugin();
 
     virtual void init() {}
@@ -77,17 +80,6 @@ public:
 
     virtual DeviceManager::DeviceError executeAction(Device *device, const Action &action);
 
-    // Hardware input
-    virtual void radioData(const QList<int> &rawData) {Q_UNUSED(rawData)}
-    virtual void guhTimer() {}
-    virtual void upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &upnpDeviceDescriptorList) { Q_UNUSED(upnpDeviceDescriptorList) }
-    virtual void upnpNotifyReceived(const QByteArray &notifyData) {Q_UNUSED(notifyData)}
-
-    virtual void networkManagerReplyReady(QNetworkReply *reply) {Q_UNUSED(reply)}
-
-    virtual void bluetoothDiscoveryFinished(const QList<QBluetoothDeviceInfo> &deviceInfos) { Q_UNUSED(deviceInfos) }
-
-
     // Configuration
     QList<ParamType> configurationDescription() const;
     DeviceManager::DeviceError setConfiguration(const ParamList &configuration);
@@ -111,18 +103,6 @@ protected:
     HardwareManager *hardwareManager() const;
     Device* findDeviceByParams(const ParamList &params) const;
 
-    // Radio 433
-    bool transmitData(int delay, QList<int> rawData, int repetitions = 10);
-
-    // UPnP dicovery
-    void upnpDiscover(QString searchTarget = "ssdp:all", QString userAgent = QString());
-
-    // Avahi browse services
-    QtAvahiServiceBrowser *avahiServiceBrowser() const;
-
-    // Bluetooth LE discovery
-    bool discoverBluetooth();
-
 private:
     void setMetaData(const QJsonObject &metaData);
     void loadMetaData();
@@ -143,8 +123,8 @@ private:
     static QVariantMap loadInterface(const QString &name);
     static QStringList generateInterfaceParentList(const QString &interface);
 
-    QTranslator *m_translator;
-    DeviceManager *m_deviceManager;
+    QTranslator *m_translator = nullptr;
+    DeviceManager *m_deviceManager = nullptr;
 
     QList<ParamType> m_configurationDescription;
     ParamList m_config;
@@ -153,7 +133,6 @@ private:
 
     mutable QList<DeviceClass> m_supportedDevices;
 
-    friend class DeviceManager;
 };
 
 Q_DECLARE_INTERFACE(DevicePlugin, "guru.guh.DevicePlugin")

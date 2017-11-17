@@ -39,7 +39,7 @@ class LIBGUH_EXPORT OAuth2 : public QObject
 {
     Q_OBJECT
 public:
-    explicit OAuth2(QString clientId, QString clientSecret, QObject *parent = 0);
+    explicit OAuth2(QString clientId, QString clientSecret, QObject *parent = nullptr);
 
     QUrl url() const;
     void setUrl(const QUrl &url);

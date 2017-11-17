@@ -45,7 +45,7 @@ public:
         QtAvahiServiceStateFailure = 4
     };
 
-    explicit QtAvahiService(QObject *parent = 0);
+    explicit QtAvahiService(QObject *parent = nullptr);
     ~QtAvahiService();
 
     quint16 port() const;

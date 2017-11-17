@@ -531,23 +531,6 @@ Device *DevicePlugin::findDeviceByParams(const ParamList &params) const
     return nullptr;
 }
 
-/*!
- Transmits data contained in \a rawData on the \l{Radio433} devices, depending on the hardware requested by this plugin.
- Returns true if, the \a rawData with a certain \a delay (pulse length) can be sent \a repetitions times.
-
- \sa Radio433, requiredHardware()
- */
-bool DevicePlugin::transmitData(int delay, QList<int> rawData, int repetitions)
-{
-    switch (requiredHardware()) {
-    case HardwareResource::TypeRadio433:
-        return deviceManager()->m_hardwareManager->radio433()->sendData(delay, rawData, repetitions);
-    default:
-        qCWarning(dcDeviceManager) << "Unknown harware type. Cannot send.";
-    }
-    return false;
-}
-
 void DevicePlugin::setMetaData(const QJsonObject &metaData)
 {
     m_metaData = metaData;
@@ -960,38 +943,6 @@ void DevicePlugin::loadMetaData()
             }
         }
     }
-}
-
-/*!
- Starts a SSDP search for a certain \a searchTarget (ST). Certain UPnP devices need a special ST (i.e. "udap:rootservice"
- for LG Smart Tv's), otherwise they will not respond on the SSDP search. Each HTTP request to this device needs sometimes
- also a special \a userAgent, which will be written into the HTTP header.
-
- \sa DevicePlugin::requiredHardware(), DevicePlugin::upnpDiscoveryFinished()
- */
-void DevicePlugin::upnpDiscover(QString searchTarget, QString userAgent)
-{
-    if(requiredHardware().testFlag(HardwareResource::TypeUpnpDisovery)){
-        deviceManager()->m_hardwareManager->upnpDiscovery()->discoverDevices(searchTarget, userAgent, pluginId());
-    } else {
-        qCWarning(dcDeviceManager) << "UPnP discovery resource not set for plugin" << pluginName();
-    }
-}
-
-/*! Returns the pointer to the central \l{QtAvahiService}{service} browser. */
-QtAvahiServiceBrowser *DevicePlugin::avahiServiceBrowser() const
-{
-    return deviceManager()->m_hardwareManager->avahiBrowser();
-}
-
-bool DevicePlugin::discoverBluetooth()
-{
-    if(requiredHardware().testFlag(HardwareResource::TypeBluetoothLE)){
-        return deviceManager()->m_hardwareManager->bluetoothScanner()->discover(pluginId());
-    } else {
-        qCWarning(dcDeviceManager) << "Bluetooth LE resource not set for plugin" << pluginName();
-    }
-    return false;
 }
 
 QStringList DevicePlugin::verifyFields(const QStringList &fields, const QJsonObject &value) const

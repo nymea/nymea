@@ -36,7 +36,7 @@ class LIBGUH_EXPORT Radio433 : public HardwareResource
     friend class HardwareManager;
 
 private:
-    explicit Radio433(QObject *parent = 0);
+    explicit Radio433(QObject *parent = nullptr);
     Radio433BrennenstuhlGateway *m_brennenstuhlTransmitter;
 
 private slots:

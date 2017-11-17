@@ -54,7 +54,7 @@ public:
         EdgeNone
     };
 
-    explicit Gpio(const int &gpio, QObject *parent = 0);
+    explicit Gpio(const int &gpio, QObject *parent = nullptr);
     ~Gpio();
 
     QString gpioDirectory() const;

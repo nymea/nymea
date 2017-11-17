@@ -43,7 +43,7 @@ public:
         QtAvahiClientStateConnecting
     };
 
-    explicit QtAvahiClient(QObject *parent = 0);
+    explicit QtAvahiClient(QObject *parent = nullptr);
     ~QtAvahiClient();
 
     QtAvahiClientState state() const;

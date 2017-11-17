@@ -36,7 +36,7 @@ class LIBGUH_EXPORT GpioMonitor : public QObject
     Q_OBJECT
 
 public:
-    explicit GpioMonitor(int gpio, QObject *parent = 0);
+    explicit GpioMonitor(int gpio, QObject *parent = nullptr);
 
     bool enable(bool activeLow = false, Gpio::Edge edgeInterrupt = Gpio::EdgeBoth);
     void disable();

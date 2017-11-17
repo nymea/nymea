@@ -43,7 +43,7 @@ public:
         SettingsRoleDeviceStates
     };
 
-    explicit GuhSettings(const SettingsRole &role = SettingsRoleNone, QObject *parent = 0);
+    explicit GuhSettings(const SettingsRole &role = SettingsRoleNone, QObject *parent = nullptr);
     ~GuhSettings();
 
     SettingsRole settingsRole() const;

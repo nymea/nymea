@@ -49,11 +49,11 @@ class LIBGUH_EXPORT UpnpDiscovery : public HardwareResource
     friend class HardwareManager;
 
 public:
-    bool discoverDevices(const QString &searchTarget = "ssdp:all", const QString &userAgent = "", const PluginId &pluginId = PluginId());
+    bool discoverDevices(QPointer<QObject> caller = QPointer<QObject>(), const QString &callbackMethod = QString(), const QString &searchTarget = "ssdp:all", const QString &userAgent = QString());
     void sendToMulticast(const QByteArray &data);
 
 private:
-    explicit UpnpDiscovery(QNetworkAccessManager *networkAccessManager, QObject *parent = 0);
+    explicit UpnpDiscovery(QNetworkAccessManager *networkAccessManager, QObject *parent = nullptr);
     ~UpnpDiscovery();
 
     QUdpSocket *m_socket = nullptr;
@@ -71,7 +71,6 @@ private:
     void respondToSearchRequest(QHostAddress host, int port);
 
 signals:
-    void discoveryFinished(const QList<UpnpDeviceDescriptor> &deviceDescriptorList, const PluginId & pluginId);
     void upnpNotify(const QByteArray &notifyMessage);
 
 private slots:

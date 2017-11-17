@@ -148,7 +148,6 @@ public:
         StateOperatorOr
     };
 
-    Types(QObject *parent = 0);
 };
 
 Q_DECLARE_METATYPE(Types::InputType)

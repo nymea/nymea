@@ -58,7 +58,7 @@ public:
 
 private:
     // Note: only the HardwareManager is allowed to create this resource
-    NetworkAccessManager(QNetworkAccessManager *networkManager, QObject *parent = 0);
+    NetworkAccessManager(QNetworkAccessManager *networkManager, QObject *parent = nullptr);
     QNetworkAccessManager *m_manager;
 
 public slots:

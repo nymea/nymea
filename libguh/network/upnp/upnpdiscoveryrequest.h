@@ -25,6 +25,7 @@
 
 #include <QObject>
 #include <QDebug>
+#include <QMetaObject>
 
 #include "upnpdiscovery.h"
 #include "upnpdevicedescriptor.h"
@@ -37,21 +38,23 @@ class LIBGUH_EXPORT UpnpDiscoveryRequest : public QObject
 {
     Q_OBJECT
 public:
-    explicit UpnpDiscoveryRequest(UpnpDiscovery *upnpDiscovery, PluginId pluginId, QString searchTarget, QString userAgent);
+    explicit UpnpDiscoveryRequest(UpnpDiscovery *upnpDiscovery, QPointer<QObject> caller, const QString &callbackMethod, QString searchTarget, QString userAgent);
 
     void discover();
     void addDeviceDescriptor(const UpnpDeviceDescriptor &deviceDescriptor);
     QNetworkRequest createNetworkRequest(UpnpDeviceDescriptor deviveDescriptor);
     QList<UpnpDeviceDescriptor> deviceList() const;
 
-    PluginId pluginId() const;
+    QPointer<QObject> caller() const;
+    QString callbackMethod() const;
     QString searchTarget() const;
     QString userAgent() const;
 
 private:
     UpnpDiscovery *m_upnpDiscovery;
     QTimer *m_timer;
-    PluginId m_pluginId;
+    QPointer<QObject> m_caller;
+    QString m_callbackMethod;
     QString m_searchTarget;
     QString m_userAgent;
 
@@ -59,8 +62,6 @@ private:
 
 signals:
     void discoveryTimeout();
-
-public slots:
 
 };
 

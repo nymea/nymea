@@ -34,7 +34,7 @@ class LIBGUH_EXPORT Radio433BrennenstuhlGateway : public QObject
 {
     Q_OBJECT
 public:
-    explicit Radio433BrennenstuhlGateway(QObject *parent = 0);
+    explicit Radio433BrennenstuhlGateway(QObject *parent = nullptr);
 
     bool sendData(int delay, QList<int> rawData, int repetitions);
     bool enable();

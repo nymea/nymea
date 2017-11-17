@@ -54,7 +54,7 @@ public slots:
     bool disable();
 
 private:
-    explicit QtAvahiServiceBrowser(QObject *parent = 0);
+    explicit QtAvahiServiceBrowser(QObject *parent = nullptr);
     ~QtAvahiServiceBrowser();
 
     QtAvahiServiceBrowserPrivate *d_ptr;

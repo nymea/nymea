@@ -37,7 +37,7 @@ class LIBGUH_EXPORT Radio433Trasmitter : public QThread
 {
     Q_OBJECT
 public:
-    explicit Radio433Trasmitter(QObject *parent = 0, int gpio = 22);
+    explicit Radio433Trasmitter(QObject *parent = nullptr, int gpio = 22);
     ~Radio433Trasmitter();
 
     bool startTransmitter();

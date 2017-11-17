@@ -206,15 +206,12 @@ DeviceManager::DeviceManager(const QLocale &locale, QObject *parent) :
     qRegisterMetaType<DeviceDescriptor>();
 
     m_hardwareManager = new HardwareManager(this);
-    connect(m_hardwareManager->pluginTimer(), &PluginTimer::timerEvent, this, &DeviceManager::timerEvent);
-//    connect(m_hardwareManager->upnpDiscovery(), &UpnpDiscovery::discoveryFinished, this, &DeviceManager::upnpDiscoveryFinished);
-//    connect(m_hardwareManager->upnpDiscovery(), &UpnpDiscovery::upnpNotify, this, &DeviceManager::upnpNotifyReceived);
-//    connect(m_hardwareManager->bluetoothScanner(), &BluetoothScanner::bluetoothDiscoveryFinished, this, &DeviceManager::bluetoothDiscoveryFinished);
 
     // Give hardware a chance to start up before loading plugins etc.
     QMetaObject::invokeMethod(this, "loadPlugins", Qt::QueuedConnection);
     QMetaObject::invokeMethod(this, "loadConfiguredDevices", Qt::QueuedConnection);
     QMetaObject::invokeMethod(this, "startMonitoringAutoDevices", Qt::QueuedConnection);
+
     // Make sure this is always emitted after plugins and devices are loaded
     QMetaObject::invokeMethod(this, "onLoaded", Qt::QueuedConnection);
 }
@@ -1428,73 +1425,6 @@ void DeviceManager::slotDeviceStateValueChanged(const QUuid &stateTypeId, const 
     Param valueParam(ParamTypeId(stateTypeId.toString()), value);
     Event event(EventTypeId(stateTypeId.toString()), device->id(), ParamList() << valueParam, true);
     emit eventTriggered(event);
-}
-
-//void DeviceManager::radio433SignalReceived(QList<int> rawData)
-//{
-//    QList<DevicePlugin*> targetPlugins;
-
-//    foreach (Device *device, m_configuredDevices) {
-//        DeviceClass deviceClass = m_supportedDevices.value(device->deviceClassId());
-//        DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
-//        if (plugin->requiredHardware().testFlag(HardwareResource::TypeRadio433) && !targetPlugins.contains(plugin)) {
-//            targetPlugins.append(plugin);
-//        }
-//    }
-//    foreach (DevicePlugin *plugin, m_discoveringPlugins) {
-//        if (plugin->requiredHardware().testFlag(HardwareResource::TypeRadio433) && !targetPlugins.contains(plugin)) {
-//            targetPlugins.append(plugin);
-//        }
-//    }
-
-//    foreach (DevicePlugin *plugin, targetPlugins) {
-//        plugin->radioData(rawData);
-//    }
-//}
-
-//void DeviceManager::replyReady(const PluginId &pluginId, QNetworkReply *reply)
-//{
-//    foreach (DevicePlugin *devicePlugin, m_devicePlugins) {
-//        if (devicePlugin->requiredHardware().testFlag(HardwareResource::TypeNetworkManager) && devicePlugin->pluginId() == pluginId) {
-//            devicePlugin->networkManagerReplyReady(reply);
-//        }
-//    }
-//}
-
-//void DeviceManager::upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &deviceDescriptorList, const PluginId &pluginId)
-//{
-//    foreach (DevicePlugin *devicePlugin, m_devicePlugins) {
-//        if (devicePlugin->requiredHardware().testFlag(HardwareResource::TypeUpnpDisovery) && devicePlugin->pluginId() == pluginId) {
-//            devicePlugin->upnpDiscoveryFinished(deviceDescriptorList);
-//        }
-//    }
-//}
-
-//void DeviceManager::upnpNotifyReceived(const QByteArray &notifyData)
-//{
-//    foreach (DevicePlugin *devicePlugin, m_devicePlugins) {
-//        if (devicePlugin->requiredHardware().testFlag(HardwareResource::TypeUpnpDisovery)) {
-//            devicePlugin->upnpNotifyReceived(notifyData);
-//        }
-//    }
-//}
-
-//void DeviceManager::bluetoothDiscoveryFinished(const PluginId &pluginId, const QList<QBluetoothDeviceInfo> &deviceInfos)
-//{
-//    foreach (DevicePlugin *devicePlugin, m_devicePlugins) {
-//        if (devicePlugin->requiredHardware().testFlag(HardwareResource::TypeBluetoothLE) && devicePlugin->pluginId() == pluginId) {
-//            devicePlugin->bluetoothDiscoveryFinished(deviceInfos);
-//        }
-//    }
-//}
-
-void DeviceManager::timerEvent()
-{
-    foreach (DevicePlugin *plugin, m_pluginTimerUsers) {
-        if (plugin->requiredHardware().testFlag(HardwareResource::TypeTimer)) {
-            plugin->guhTimer();
-        }
-    }
 }
 
 bool DeviceManager::verifyPluginMetadata(const QJsonObject &data)

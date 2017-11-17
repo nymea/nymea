@@ -23,10 +23,11 @@
 #include "upnpdiscoveryrequest.h"
 #include "loggingcategories.h"
 
-UpnpDiscoveryRequest::UpnpDiscoveryRequest(UpnpDiscovery *upnpDiscovery, PluginId pluginId, QString searchTarget, QString userAgent):
+UpnpDiscoveryRequest::UpnpDiscoveryRequest(UpnpDiscovery *upnpDiscovery, QPointer<QObject> caller, const QString &callbackMethod, QString searchTarget, QString userAgent):
     QObject(upnpDiscovery),
     m_upnpDiscovery(upnpDiscovery),
-    m_pluginId(pluginId),
+    m_caller(caller),
+    m_callbackMethod(callbackMethod),
     m_searchTarget(searchTarget),
     m_userAgent(userAgent)
 {
@@ -45,6 +46,9 @@ void UpnpDiscoveryRequest::discover()
                                               "USR-AGENT: " + m_userAgent.toUtf8() + "\r\n\r\n");
 
     m_upnpDiscovery->sendToMulticast(ssdpSearchMessage);
+
+    // TODO: call in 500ms steps
+
     qCDebug(dcHardware) << "--> UPnP discovery called.";
 
     m_timer->start(5000);
@@ -52,7 +56,6 @@ void UpnpDiscoveryRequest::discover()
 
 void UpnpDiscoveryRequest::addDeviceDescriptor(const UpnpDeviceDescriptor &deviceDescriptor)
 {
-
     // check if we allready have the device in the list
     bool isAlreadyInList = false;
     foreach (UpnpDeviceDescriptor upnpDeviceDescriptor, m_deviceList) {
@@ -80,9 +83,14 @@ QList<UpnpDeviceDescriptor> UpnpDiscoveryRequest::deviceList() const
     return m_deviceList;
 }
 
-PluginId UpnpDiscoveryRequest::pluginId() const
+QPointer<QObject> UpnpDiscoveryRequest::caller() const
 {
-    return m_pluginId;
+    return m_caller;
+}
+
+QString UpnpDiscoveryRequest::callbackMethod() const
+{
+    return m_callbackMethod;
 }
 
 QString UpnpDiscoveryRequest::searchTarget() const

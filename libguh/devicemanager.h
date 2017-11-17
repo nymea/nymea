@@ -89,7 +89,7 @@ public:
     };
     Q_ENUM(DeviceSetupStatus)
 
-    explicit DeviceManager(const QLocale &locale, QObject *parent = 0);
+    explicit DeviceManager(const QLocale &locale, QObject *parent = nullptr);
     ~DeviceManager();
 
     static QStringList pluginSearchDirs();
@@ -166,14 +166,6 @@ private slots:
 
     // Only connect this to Devices. It will query the sender()
     void slotDeviceStateValueChanged(const QUuid &stateTypeId, const QVariant &value);
-
-//    void radio433SignalReceived(QList<int> rawData);
-//    void replyReady(const PluginId &pluginId, QNetworkReply *reply);
-//    void upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &deviceDescriptorList, const PluginId &pluginId);
-//    void upnpNotifyReceived(const QByteArray &notifyData);
-//    void bluetoothDiscoveryFinished(const PluginId &pluginId, const QList<QBluetoothDeviceInfo> &deviceInfos);
-
-    void timerEvent();
 
 private:
     bool verifyPluginMetadata(const QJsonObject &data);

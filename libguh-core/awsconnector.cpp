@@ -160,6 +160,11 @@ void AWSConnector::setupPairing()
     subscribe(subscriptions);
 
     // fetch previous pairings
+    fetchPairings();
+}
+
+void AWSConnector::fetchPairings()
+{
     QVariantMap params;
     params.insert("timestamp", QDateTime::currentMSecsSinceEpoch());
     params.insert("id", ++m_transactionId);
@@ -367,7 +372,7 @@ ResponseCode AWSConnector::onSubscriptionReceivedCallback(util::String topic_nam
         } else if (!userId.isEmpty()) {
             qCDebug(dcAWS()) << "Pairing response for id:" << userId << statusCode;
             emit connector->devicePaired(userId, statusCode, message);
-            connector->subscribe({QString("%1/eu-west-1:%2/#").arg(connector->m_clientId).arg(userId)});
+            connector->staticMetaObject.invokeMethod(connector, "fetchPairings", Qt::QueuedConnection);
         } else {
             qCWarning(dcAWS()) << "Received a pairing response for a transaction we didn't start";
         }

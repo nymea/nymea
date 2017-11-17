@@ -442,10 +442,13 @@ void GuhCore::init() {
     m_serverManager = new ServerManager(m_configuration, this);
 
     // Create the NetworkManager
+    qCDebug(dcApplication) << "Creating Network Manager";
     m_networkManager = new NetworkManager(this);
 
+    qCDebug(dcApplication) << "Creating User Manager";
     m_userManager = new UserManager(this);
 
+    qCDebug(dcApplication) << "Creating Cloud Manager";
     m_cloudManager = new CloudManager(m_networkManager, this);
     m_cloudManager->setDeviceId(m_configuration->serverUuid());
     m_cloudManager->setDeviceName(m_configuration->serverName());

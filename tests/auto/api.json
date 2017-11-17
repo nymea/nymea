@@ -449,6 +449,15 @@
                 "types": "Object"
             }
         },
+        "JSONRPC.KeepAlive": {
+            "description": "Keep alive a remote connection. The sessionId is the MQTT topic which has been used to establish the session. It will return false if no ongoing session with the given ID can be found.",
+            "params": {
+                "sessionId": "String"
+            },
+            "returns": {
+                "success": "Bool"
+            }
+        },
         "JSONRPC.RemoveToken": {
             "description": "Revoke access for a given token.",
             "params": {

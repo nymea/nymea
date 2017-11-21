@@ -45,12 +45,15 @@ public:
 
     bool enabled() const;
     void setEnabled(bool enabled);
+    bool connected() const;
 
     void pairDevice(const QString &idToken, const QString &userId);
 
     bool keepAlive(const QString &sessionId);
 
 signals:
+    void connectedChanged(bool connected);
+
     void pairingReply(QString cognitoUserId, int status, const QString &message);
 
 private:
@@ -61,6 +64,8 @@ private slots:
     void onPairingFinished(const QString &cognitoUserId, int errorCode, const QString &message);
     void onAWSWebRtcHandshakeMessageReceived(const QString &transactionId, const QVariantMap &data);
     void onJanusWebRtcHandshakeMessageReceived(const QString &transactionId, const QVariantMap &data);
+    void awsConnected();
+    void awsDisconnected();
 
 private:
     QTimer m_reconnectTimer;

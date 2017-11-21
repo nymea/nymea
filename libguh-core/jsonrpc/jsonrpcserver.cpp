@@ -141,7 +141,7 @@ JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject 
     setReturns("RemoveToken", returns);
 
     params.clear(); returns.clear();
-    setDescription("SetupRemoteAccess", "Setup the remote connection by providing AWS token information");
+    setDescription("SetupRemoteAccess", "Setup the remote connection by providing AWS token information. This requires the cloud to be connected.");
     params.insert("idToken", JsonTypes::basicTypeToString(JsonTypes::String));
     params.insert("userId", JsonTypes::basicTypeToString(JsonTypes::String));
     setParams("SetupRemoteAccess", params);
@@ -150,11 +150,23 @@ JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject 
     setReturns("SetupRemoteAccess", returns);
 
     params.clear(); returns.clear();
+    setDescription("IsCloudConnected", "Check whether the cloud is currently connected.");
+    setParams("IsCloudConnected", params);
+    returns.insert("connected", JsonTypes::basicTypeToString(JsonTypes::Bool));
+    setReturns("IsCloudConnected", returns);
+
+    params.clear(); returns.clear();
     setDescription("KeepAlive", "Keep alive a remote connection. The sessionId is the MQTT topic which has been used to establish the session. It will return false if no ongoing session with the given ID can be found.");
     params.insert("sessionId", JsonTypes::basicTypeToString(JsonTypes::String));
     setParams("KeepAlive", params);
     returns.insert("success", JsonTypes::basicTypeToString(JsonTypes::Bool));
     setReturns("KeepAlive", returns);
+
+    // Notifications
+    params.clear(); returns.clear();
+    setDescription("CloudConnectedChanged", "Emitted whenever the cloud connection status changes.");
+    params.insert("connected", JsonTypes::basicTypeToString(JsonTypes::Bool));
+    setParams("CloudConnectedChanged", params);
 
     QMetaObject::invokeMethod(this, "setup", Qt::QueuedConnection);
 }
@@ -281,6 +293,15 @@ JsonReply *JsonRPCServer::SetupRemoteAccess(const QVariantMap &params)
     return reply;
 }
 
+JsonReply *JsonRPCServer::IsCloudConnected(const QVariantMap &params)
+{
+    Q_UNUSED(params)
+    bool connected = GuhCore::instance()->cloudManager()->connected();
+    QVariantMap data;
+    data.insert("connected", connected);
+    return createReply(data);
+}
+
 JsonReply *JsonRPCServer::KeepAlive(const QVariantMap &params)
 {
     QString sessionId = params.value("sessionId").toString();
@@ -385,6 +406,7 @@ void JsonRPCServer::setup()
     registerHandler(new NetworkManagerHandler(this));
 
     connect(GuhCore::instance()->cloudManager(), &CloudManager::pairingReply, this, &JsonRPCServer::pairingFinished);
+    connect(GuhCore::instance()->cloudManager(), &CloudManager::connectedChanged, this, &JsonRPCServer::onCloudConnectedChanged);
 }
 
 void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &data)
@@ -531,6 +553,13 @@ void JsonRPCServer::pairingFinished(QString cognitoUserId, int status, const QSt
     returns.insert("message", message);
     reply->setData(returns);
     reply->finished();
+}
+
+void JsonRPCServer::onCloudConnectedChanged(bool connected)
+{
+    QVariantMap params;
+    params.insert("connected", connected);
+    emit CloudConnectedChanged(params);
 }
 
 void JsonRPCServer::registerHandler(JsonHandler *handler)

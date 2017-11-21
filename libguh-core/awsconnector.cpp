@@ -141,7 +141,7 @@ void AWSConnector::onDeviceRegistered(bool needsReconnect)
             m_client->Disconnect(std::chrono::milliseconds(500));
             m_client.reset();
             m_networkConnection.reset();
-            staticMetaObject.invokeMethod(this, "doConnect", Qt::QueuedConnection);
+            QTimer::singleShot(1000, this, &AWSConnector::doConnect);
         });
         return;
     }

@@ -449,6 +449,14 @@
                 "types": "Object"
             }
         },
+        "JSONRPC.IsCloudConnected": {
+            "description": "Check whether the cloud is currently connected.",
+            "params": {
+            },
+            "returns": {
+                "connected": "Bool"
+            }
+        },
         "JSONRPC.KeepAlive": {
             "description": "Keep alive a remote connection. The sessionId is the MQTT topic which has been used to establish the session. It will return false if no ongoing session with the given ID can be found.",
             "params": {
@@ -477,7 +485,7 @@
             }
         },
         "JSONRPC.SetupRemoteAccess": {
-            "description": "Setup the remote connection by providing AWS token information",
+            "description": "Setup the remote connection by providing AWS token information. This requires the cloud to be connected.",
             "params": {
                 "idToken": "String",
                 "userId": "String"
@@ -828,6 +836,12 @@
             "description": "Emitted whenever an Event is triggered.",
             "params": {
                 "event": "$ref:Event"
+            }
+        },
+        "JSONRPC.CloudConnectedChanged": {
+            "description": "Emitted whenever the cloud connection status changes.",
+            "params": {
+                "connected": "Bool"
             }
         },
         "Logging.LogDatabaseUpdated": {

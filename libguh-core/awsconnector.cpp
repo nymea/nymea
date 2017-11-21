@@ -40,9 +40,6 @@ DisconnectCallbackContextData::~DisconnectCallbackContextData() {}
 
 AWSConnector::AWSConnector(QObject *parent) : QObject(parent)
 {
-    connect(this, &AWSConnector::connected, this, &AWSConnector::onConnected, Qt::QueuedConnection);
-    connect(this, &AWSConnector::disconnected, this, &AWSConnector::onDisconnected, Qt::QueuedConnection);
-
     // Enable some AWS logging (does not regard our logging categories)
 //    std::shared_ptr<awsiotsdk::util::Logging::ConsoleLogSystem> p_log_system =
 //            std::make_shared<awsiotsdk::util::Logging::ConsoleLogSystem>(awsiotsdk::util::Logging::LogLevel::Info);
@@ -61,6 +58,7 @@ AWSConnector::~AWSConnector()
 
 void AWSConnector::connect2AWS(const QString &endpoint, const QString &clientId, const QString &clientName, const QString &caFile, const QString &clientCertFile, const QString &clientPrivKeyFile)
 {
+    m_shouldReconnect = true;
     m_currentEndpoint = endpoint;
     m_caFile = caFile;
     m_clientCertFile = clientCertFile;
@@ -97,7 +95,7 @@ void AWSConnector::doConnect()
     m_connectingFuture = QtConcurrent::run([&]() {
         ResponseCode rc = m_client->Connect(std::chrono::milliseconds(3000), true, mqtt::Version::MQTT_3_1_1, std::chrono::seconds(60), Utf8String::Create(m_clientId.toStdString()), nullptr, nullptr, nullptr);
         if (rc == ResponseCode::MQTT_CONNACK_CONNECTION_ACCEPTED) {
-            emit connected();
+            staticMetaObject.invokeMethod(this, "onConnected", Qt::QueuedConnection);
         } else {
             qCWarning(dcAWS) << "Error connecting to AWS. Response code:" << QString::fromStdString(ResponseHelper::ToString(rc));
             m_client.reset();
@@ -181,10 +179,12 @@ void AWSConnector::onPairingsRetrieved(const QVariantList &pairings)
     subscribe(topics);
 
     m_setupInProgress = false;
+    emit connected();
 }
 
 void AWSConnector::disconnectAWS()
 {
+    m_shouldReconnect = false;
     if (isConnected()) {
         m_client->Disconnect(std::chrono::seconds(2));
     }
@@ -229,6 +229,9 @@ quint16 AWSConnector::publish(const QString &topic, const QVariantMap &message)
 
 void AWSConnector::onDisconnected()
 {
+    qCDebug(dcAWS) << "AWS disconnected.";
+    emit disconnected();
+
     bool needReRegistering = false;
     if (m_setupInProgress) {
         qCWarning(dcAWS()) << "Setup process interrupted by disconnect.";
@@ -244,16 +247,17 @@ void AWSConnector::onDisconnected()
             qCWarning(dcAWS()) << "Connection dropped 5 times in a row within a minute.";
             needReRegistering = true;
         }
-        return;
     }
 
     if (needReRegistering) {
         qCDebug(dcAWS) << "Trying to reregister the device in the cloud";
         storeRegisteredFlag(false);
-        doConnect();
     }
 
-    qCDebug(dcAWS) << "AWS disconnected. (should reconnect on it's own)";
+    if (m_shouldReconnect) {
+        qCDebug(dcAWS()) << "Reconnecting to AWS...";
+        doConnect();
+    }
 }
 
 void AWSConnector::setName()
@@ -409,7 +413,7 @@ ResponseCode AWSConnector::onDisconnectedCallback(util::String mqtt_client_id, s
 {
     Q_UNUSED(mqtt_client_id)
     AWSConnector* connector = dynamic_cast<DisconnectContext*>(p_app_handler_data.get())->c;
-    emit connector->disconnected();
+    connector->staticMetaObject.invokeMethod(connector, "onDisconnected", Qt::QueuedConnection);
     return ResponseCode::SUCCESS;
 }
 

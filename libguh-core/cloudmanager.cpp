@@ -29,6 +29,8 @@ CloudManager::CloudManager(NetworkManager *networkManager, QObject *parent) : QO
     m_awsConnector = new AWSConnector(this);
     connect(m_awsConnector, &AWSConnector::devicePaired, this, &CloudManager::onPairingFinished);
     connect(m_awsConnector, &AWSConnector::webRtcHandshakeMessageReceived, this, &CloudManager::onAWSWebRtcHandshakeMessageReceived);
+    connect(m_awsConnector, &AWSConnector::connected, this, &CloudManager::awsConnected);
+    connect(m_awsConnector, &AWSConnector::disconnected, this, &CloudManager::awsDisconnected);
 
     m_janusConnector = new JanusConnector(this);
     connect(m_janusConnector, &JanusConnector::webRtcHandshakeMessageReceived, this, &CloudManager::onJanusWebRtcHandshakeMessageReceived);
@@ -113,6 +115,11 @@ void CloudManager::setEnabled(bool enabled)
     }
 }
 
+bool CloudManager::connected() const
+{
+    return m_awsConnector->isConnected();
+}
+
 void CloudManager::pairDevice(const QString &idToken, const QString &userId)
 {
     m_awsConnector->pairDevice(idToken, userId);
@@ -156,4 +163,14 @@ void CloudManager::onAWSWebRtcHandshakeMessageReceived(const QString &transactio
 void CloudManager::onJanusWebRtcHandshakeMessageReceived(const QString &transactionId, const QVariantMap &data)
 {
     m_awsConnector->sendWebRtcHandshakeMessage(transactionId, data);
+}
+
+void CloudManager::awsConnected()
+{
+    emit connectedChanged(true);
+}
+
+void CloudManager::awsDisconnected()
+{
+    emit connectedChanged(false);
 }

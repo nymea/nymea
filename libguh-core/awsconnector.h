@@ -101,6 +101,7 @@ private:
     QString m_clientName;
     QFuture<void> m_connectingFuture;
     bool m_isCleanSession = true;
+    bool m_shouldReconnect = false;
 
     quint8 m_transactionId = 0;
     QString m_createDeviceId;

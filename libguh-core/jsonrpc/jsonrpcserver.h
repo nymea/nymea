@@ -57,14 +57,20 @@ public:
     Q_INVOKABLE JsonReply *Tokens(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *RemoveToken(const QVariantMap &params);
     Q_INVOKABLE JsonReply *SetupRemoteAccess(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *IsCloudConnected(const QVariantMap &params);
     Q_INVOKABLE JsonReply *KeepAlive(const QVariantMap &params);
 
-    QHash<QString, JsonHandler *> handlers() const;
+signals:
+    void CloudConnectedChanged(const QVariantMap &map);
 
+    // Internal
+public:
     void registerTransportInterface(TransportInterface *interface, bool authenticationRequired);
     void unregisterTransportInterface(TransportInterface *interface);
 
 private:
+    QHash<QString, JsonHandler *> handlers() const;
+
     void sendResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QVariantMap &params = QVariantMap());
     void sendErrorResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QString &error);
     void sendUnauthorizedResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QString &error);
@@ -83,6 +89,7 @@ private slots:
     void asyncReplyFinished();
 
     void pairingFinished(QString cognitoUserId, int status, const QString &message);
+    void onCloudConnectedChanged(bool connected);
 
 private:
     QMap<TransportInterface*, bool> m_interfaces;

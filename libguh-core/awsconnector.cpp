@@ -272,6 +272,7 @@ void AWSConnector::onDisconnected()
     if (needReRegistering) {
         qCDebug(dcAWS) << "Trying to reregister the device in the cloud";
         storeRegisteredFlag(false);
+        storeNameSyncedFlag(false);
     }
 
     if (m_shouldReconnect) {
@@ -409,6 +410,9 @@ ResponseCode AWSConnector::onSubscriptionReceivedCallback(util::String topic_nam
         connector->staticMetaObject.invokeMethod(connector, "onPairingsRetrieved", Qt::QueuedConnection, Q_ARG(QVariantList, jsonDoc.toVariant().toMap().value("users").toList()));
     } else if (topic == QString("%1/device/name/response").arg(connector->m_clientId)) {
         qCDebug(dcAWS) << "Set device name in cloud with status:" << jsonDoc.toVariant().toMap().value("status").toInt();
+        if (jsonDoc.toVariant().toMap().value("status").toInt() == 200) {
+            connector->storeNameSyncedFlag(true);
+        }
     } else if (topic.startsWith(QString("%1/eu-west-1:").arg(connector->m_clientId)) && !topic.contains("reply")) {
         static QStringList dupes;
         QString id = jsonDoc.toVariant().toMap().value("id").toString();

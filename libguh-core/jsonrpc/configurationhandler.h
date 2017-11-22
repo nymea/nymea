@@ -54,6 +54,7 @@ signals:
     void TcpServerConfigurationChanged(const QVariantMap &params);
     void WebServerConfigurationChanged(const QVariantMap &params);
     void WebSocketServerConfigurationChanged(const QVariantMap &params);
+    void CloudConfigurationChanged(const QVariantMap &params);
     void LanguageChanged(const QVariantMap &params);
 
 private slots:
@@ -61,6 +62,7 @@ private slots:
     void onTcpServerConfigurationChanged(const QString &id);
     void onWebServerConfigurationChanged(const QString &id);
     void onWebSocketServerConfigurationChanged(const QString &id);
+    void onCloudConfigurationChanged(bool enabled);
     void onLanguageChanged();
 
 };

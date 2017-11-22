@@ -98,7 +98,7 @@ namespace guhserver {
  */
 WebServer::WebServer(const WebServerConfiguration &configuration, const QSslConfiguration &sslConfiguration, QObject *parent) :
     QTcpServer(parent),
-    m_avahiService(NULL),
+    m_avahiService(nullptr),
     m_configuration(configuration),
     m_sslConfiguration(sslConfiguration),
     m_enabled(false)
@@ -489,6 +489,25 @@ void WebServer::onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceS
     Q_UNUSED(state)
 }
 
+void WebServer::resetAvahiService()
+{
+    if (m_avahiService)
+        m_avahiService->resetService();
+
+    // Note: reversed order
+    QHash<QString, QString> txt;
+    txt.insert("jsonrpcVersion", JSON_PROTOCOL_VERSION);
+    txt.insert("serverVersion", GUH_VERSION_STRING);
+    txt.insert("manufacturer", "guh GmbH");
+    txt.insert("uuid", GuhCore::instance()->configuration()->serverUuid().toString());
+    txt.insert("name", GuhCore::instance()->configuration()->serverName());
+    txt.insert("sslEnabled", m_configuration.sslEnabled ? "true" : "false");
+
+    if (!m_avahiService->registerService(QString("guhIO-http-%1").arg(m_configuration.id), m_configuration.port, "_http._tcp", txt)) {
+        qCWarning(dcTcpServer()) << "Could not register avahi service for" << m_configuration;
+    }
+}
+
 /*! Returns true if this \l{WebServer} could be reconfigured with the given \a address and \a port. */
 void WebServer::reconfigureServer(const WebServerConfiguration &config)
 {
@@ -515,18 +534,7 @@ bool WebServer::startServer()
     }
 
     qCDebug(dcConnection()) << "Started web server on" << serverUrl().toString();
-
-    // Note: reversed order
-    QHash<QString, QString> txt;
-    txt.insert("jsonrpcVersion", JSON_PROTOCOL_VERSION);
-    txt.insert("serverVersion", GUH_VERSION_STRING);
-    txt.insert("manufacturer", "guh GmbH");
-    txt.insert("uuid", GuhCore::instance()->configuration()->serverUuid().toString());
-    txt.insert("name", GuhCore::instance()->configuration()->serverName());
-    txt.insert("sslEnabled", m_configuration.sslEnabled ? "true" : "false");
-    if (!m_avahiService->registerService(QString("guhIO-http-%1").arg(m_configuration.id), m_configuration.port, "_http._tcp", txt)) {
-        qCWarning(dcTcpServer()) << "Could not register avahi service for" << m_configuration;
-    }
+    resetAvahiService();
 
     m_enabled = true;
     return true;

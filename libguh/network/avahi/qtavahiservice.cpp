@@ -173,6 +173,33 @@ void QtAvahiService::resetService()
     avahi_entry_group_reset(d_ptr->group);
 }
 
+/*! Update the TXT record of this service. Returns true of the record could be updated. */
+bool QtAvahiService::updateTxtRecord(const QHash<QString, QString> &txtRecords)
+{
+    if (!d_ptr->group)
+        return false;
+
+    // Add the service
+    d_ptr->error = avahi_entry_group_update_service_txt_strlst(d_ptr->group,
+                                                        AVAHI_IF_UNSPEC,
+                                                        AVAHI_PROTO_UNSPEC,
+                                                        (AvahiPublishFlags) 0,
+                                                        d_ptr->name.toLatin1().data(),
+                                                        d_ptr->type.toLatin1().data(),
+                                                        0,
+                                                        QtAvahiServicePrivate::createTxtList(txtRecords));
+
+    // Verify if the group has to be comitted
+    if (d_ptr->error) {
+        qCWarning(dcAvahi()) << this << "error:" << avahi_strerror(d_ptr->error);
+        return false;
+    }
+
+    qCDebug(dcAvahi()) << this << "updated TXT record.";
+
+    return true;
+}
+
 /*!  Returns true if the service group was added and commited to the network without errors. */
 bool QtAvahiService::isValid() const
 {

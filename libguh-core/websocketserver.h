@@ -53,12 +53,11 @@ public:
 private:
     QWebSocketServer *m_server;
     QHash<QUuid, QWebSocket *> m_clientList;
-
     QtAvahiService *m_avahiService;
-
     QSslConfiguration m_sslConfiguration;
-
     bool m_enabled;
+
+    QHash<QString, QString> createTxtRecord();
 
 private slots:
     void onClientConnected();
@@ -72,6 +71,7 @@ private slots:
     void onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceState &state);
 
 public slots:
+    void resetAvahiService();
     void reconfigureServer(const ServerConfiguration &config);
     bool startServer() override;
     bool stopServer() override;

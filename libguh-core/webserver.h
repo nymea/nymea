@@ -117,6 +117,7 @@ private slots:
     void onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceState &state);
 
 public slots:
+    void resetAvahiService();
     void reconfigureServer(const WebServerConfiguration &config);
     bool startServer();
     bool stopServer();

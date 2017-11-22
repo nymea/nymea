@@ -23,11 +23,20 @@
 #ifndef BLUETOOTHLOWENERGYMANAGER_H
 #define BLUETOOTHLOWENERGYMANAGER_H
 
+#include <QTimer>
 #include <QObject>
+#include <QPointer>
+#include <QBluetoothDeviceInfo>
 #include <QBluetoothLocalDevice>
+#include <QBluetoothDeviceDiscoveryAgent>
 
 #include "hardwareresource.h"
-#include "bluetoothscanner.h"
+
+struct BluetoothDiscoveryReply
+{
+    QPointer<QObject> caller;
+    QString callbackMethod;
+};
 
 class BluetoothLowEnergyManager : public HardwareResource
 {
@@ -36,12 +45,24 @@ class BluetoothLowEnergyManager : public HardwareResource
     friend class HardwareManager;
 
 public:
+    bool discoverDevices(QPointer<QObject> caller = QPointer<QObject>(), const QString &callbackMethod = QString());
 
 private:
     explicit BluetoothLowEnergyManager(QObject *parent = nullptr);
-    QList<BluetoothScanner *> m_bluetoothScanners;
+    QTimer *m_timer = nullptr;
+
+    QList<QBluetoothDeviceDiscoveryAgent *> m_bluetoothDiscoveryAgents;
+    QList<QBluetoothDeviceInfo> m_discoveredDevices;
+
+    BluetoothDiscoveryReply m_currentReply;
 
 signals:
+
+private slots:
+    void onDeviceDiscovered(const QBluetoothDeviceInfo &deviceInfo);
+    void onDiscoveryError(const QBluetoothDeviceDiscoveryAgent::Error &error);
+
+    void discoveryTimeout();
 
 public slots:
     bool enable();

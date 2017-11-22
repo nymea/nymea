@@ -185,7 +185,6 @@ private:
     QHash<DeviceDescriptorId, DeviceDescriptor> m_discoveredDevices;
 
     QHash<PluginId, DevicePlugin*> m_devicePlugins;
-    QList<DevicePlugin *> m_pluginTimerUsers;
 
     HardwareManager *m_hardwareManager;
 

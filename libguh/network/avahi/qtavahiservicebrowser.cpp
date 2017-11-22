@@ -48,6 +48,10 @@ QtAvahiServiceBrowser::QtAvahiServiceBrowser(QObject *parent) :
     d_ptr(new QtAvahiServiceBrowserPrivate(new QtAvahiClient))
 {
     connect(d_ptr->client, &QtAvahiClient::clientStateChanged, this, &QtAvahiServiceBrowser::onClientStateChanged);
+
+    // TODO: check available here
+    setAvailable(true);
+
     qCDebug(dcHardware()) << "-->" << name() << "created successfully.";
 }
 

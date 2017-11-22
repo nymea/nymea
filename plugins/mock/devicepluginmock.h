@@ -41,7 +41,6 @@ public:
     explicit DevicePluginMock();
     ~DevicePluginMock();
 
-    HardwareResource::Types requiredHardware() const override;
     DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
 
     DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;

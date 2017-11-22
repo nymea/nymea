@@ -148,7 +148,7 @@
 
 #include "devicemanager.h"
 #include "guhsettings.h"
-#include "bluetooth/bluetoothscanner.h"
+
 #include "hardware/radio433/radio433.h"
 #include "network/upnp/upnpdiscovery.h"
 

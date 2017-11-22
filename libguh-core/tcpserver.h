@@ -101,6 +101,7 @@ private slots:
 
 
 public slots:
+    void resetAvahiService();
     void reconfigureServer(const ServerConfiguration &configuration);
     bool startServer() override;
     bool stopServer() override;

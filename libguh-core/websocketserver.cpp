@@ -107,6 +107,19 @@ void WebSocketServer::sendData(const QList<QUuid> &clients, const QByteArray &da
     }
 }
 
+QHash<QString, QString> WebSocketServer::createTxtRecord()
+{
+    // Note: reversed order
+    QHash<QString, QString> txt;
+    txt.insert("jsonrpcVersion", JSON_PROTOCOL_VERSION);
+    txt.insert("serverVersion", GUH_VERSION_STRING);
+    txt.insert("manufacturer", "guh GmbH");
+    txt.insert("uuid", GuhCore::instance()->configuration()->serverUuid().toString());
+    txt.insert("name", GuhCore::instance()->configuration()->serverName());
+    txt.insert("sslEnabled", configuration().sslEnabled ? "true" : "false");
+    return txt;
+}
+
 void WebSocketServer::onClientConnected()
 {
     // got a new client connected
@@ -178,6 +191,16 @@ void WebSocketServer::onAvahiServiceStateChanged(const QtAvahiService::QtAvahiSe
     Q_UNUSED(state)
 }
 
+void WebSocketServer::resetAvahiService()
+{
+    if (m_avahiService)
+        m_avahiService->resetService();
+
+    if (!m_avahiService->registerService(QString("guhIO-ws-%1").arg(configuration().id), configuration().port, "_ws._tcp", createTxtRecord())) {
+        qCWarning(dcWebServer()) << "Could not register avahi service for" << configuration();
+    }
+}
+
 /*! Returns true if this \l{WebSocketServer} could be reconfigured with the given \a address and \a port. */
 void WebSocketServer::reconfigureServer(const ServerConfiguration &config)
 {
@@ -217,19 +240,7 @@ bool WebSocketServer::startServer()
     }
 
     qCDebug(dcConnection()) << "Started websocket server" << m_server->serverName() << "on" << serverUrl().toString();
-
-    // Note: reversed order
-    QHash<QString, QString> txt;
-    txt.insert("jsonrpcVersion", JSON_PROTOCOL_VERSION);
-    txt.insert("serverVersion", GUH_VERSION_STRING);
-    txt.insert("manufacturer", "guh GmbH");
-    txt.insert("uuid", GuhCore::instance()->configuration()->serverUuid().toString());
-    txt.insert("name", GuhCore::instance()->configuration()->serverName());
-    txt.insert("sslEnabled", configuration().sslEnabled ? "true" : "false");
-    if (!m_avahiService->registerService(QString("guhIO-ws-%1").arg(configuration().id), configuration().port, "_ws._tcp", txt)) {
-        qCWarning(dcWebServer()) << "Could not register avahi service for" << configuration();
-    }
-
+    resetAvahiService();
     return true;
 }
 

@@ -124,6 +124,11 @@ void TcpServer::onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceS
     Q_UNUSED(state)
 }
 
+void TcpServer::resetAvahiService()
+{
+
+}
+
 
 /*! Returns true if this \l{TcpServer} could be reconfigured with the given \a address and \a port. */
 void TcpServer::reconfigureServer(const ServerConfiguration &config)
@@ -154,22 +159,13 @@ bool TcpServer::startServer()
         return false;
     }
 
-    // Note: reversed order
-    QHash<QString, QString> txt;
-    txt.insert("jsonrpcVersion", JSON_PROTOCOL_VERSION);
-    txt.insert("serverVersion", GUH_VERSION_STRING);
-    txt.insert("manufacturer", "guh GmbH");
-    txt.insert("uuid", GuhCore::instance()->configuration()->serverUuid().toString());
-    txt.insert("name", GuhCore::instance()->configuration()->serverName());
-    txt.insert("sslEnabled", configuration().sslEnabled ? "true" : "false");
-    if (!m_avahiService->registerService(QString("guhIO-tcp-%1").arg(configuration().id), configuration().port, "_jsonrpc._tcp", txt)) {
-        qCWarning(dcTcpServer()) << "Could not register avahi service for" << configuration();
-    }
-
-    qCDebug(dcConnection) << "Started Tcp server" << serverUrl().toString();
     connect(m_server, SIGNAL(clientConnected(QSslSocket *)), SLOT(onClientConnected(QSslSocket *)));
     connect(m_server, SIGNAL(clientDisconnected(QSslSocket *)), SLOT(onClientDisconnected(QSslSocket *)));
     connect(m_server, &SslServer::dataAvailable, this, &TcpServer::onDataAvailable);
+
+    qCDebug(dcConnection) << "Started Tcp server" << serverUrl().toString();
+    resetAvahiService();
+
     return true;
 }
 

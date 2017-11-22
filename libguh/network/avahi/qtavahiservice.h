@@ -57,6 +57,8 @@ public:
     bool registerService(const QString &name, const quint16 &port, const QString &serviceType = "_http._tcp", const QHash<QString, QString> &txtRecords = QHash<QString, QString>());
     void resetService();
 
+    bool updateTxtRecord(const QHash<QString, QString> &txtRecords);
+
     bool isValid() const;
     QString errorString() const;
 

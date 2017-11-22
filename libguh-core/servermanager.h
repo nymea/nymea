@@ -52,6 +52,7 @@ public:
     MockTcpServer *mockTcpServer() const;
 
 private slots:
+    void onServerNameChanged();
     void tcpServerConfigurationChanged(const QString &id);
     void tcpServerConfigurationRemoved(const QString &id);
     void webSocketServerConfigurationChanged(const QString &id);

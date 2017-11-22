@@ -43,7 +43,6 @@ HEADERS += devicemanager.h \
            network/avahi/qtavahiservice_p.h \
            network/avahi/qtavahiservicebrowser.h \
            network/avahi/qtavahiservicebrowser_p.h \
-           bluetooth/bluetoothscanner.h \
            bluetooth/bluetoothlowenergydevice.h \
            coap/coap.h \
            coap/coappdu.h \
@@ -100,7 +99,6 @@ SOURCES += devicemanager.cpp \
            network/avahi/qtavahiservice_p.cpp \
            network/avahi/qtavahiservicebrowser.cpp \
            network/avahi/qtavahiservicebrowser_p.cpp \
-           bluetooth/bluetoothscanner.cpp \
            bluetooth/bluetoothlowenergydevice.cpp \
            coap/coap.cpp \
            coap/coappdu.cpp \

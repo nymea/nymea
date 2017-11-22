@@ -24,7 +24,6 @@
 
 #include "plugintimer.h"
 #include "loggingcategories.h"
-#include "bluetooth/bluetoothscanner.h"
 #include "hardware/radio433/radio433.h"
 #include "network/networkaccessmanager.h"
 #include "network/upnp/upnpdiscovery.h"

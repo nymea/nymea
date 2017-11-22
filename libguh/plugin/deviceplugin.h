@@ -43,8 +43,8 @@
 #include <QPair>
 #include <QBluetoothDeviceInfo>
 
-class DeviceManager;
 class Device;
+class DeviceManager;
 
 class LIBGUH_EXPORT DevicePlugin: public QObject
 {
@@ -65,8 +65,6 @@ public:
 
     QTranslator *translator();
     bool setLocale(const QLocale &locale);
-
-    virtual HardwareResource::Types requiredHardware() const = 0;
 
     virtual void startMonitoringAutoDevices();
     virtual DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params);

@@ -745,22 +745,6 @@ DeviceManager::DeviceError DeviceManager::removeConfiguredDevice(const DeviceId 
     }
     m_devicePlugins.value(device->pluginId())->deviceRemoved(device);
 
-    // check if this plugin still needs the guhTimer call
-    bool pluginNeedsTimer = false;
-    foreach (Device* d, m_configuredDevices) {
-        if (d->pluginId() == device->pluginId()) {
-            pluginNeedsTimer = true;
-            break;
-        }
-    }
-
-    // if this plugin doesn't need any longer the guhTimer call
-    if (!pluginNeedsTimer) {
-        m_pluginTimerUsers.removeAll(plugin(device->pluginId()));
-        if (m_pluginTimerUsers.isEmpty()) {
-            m_hardwareManager->pluginTimer()->disable();
-        }
-    }
     device->deleteLater();
 
     GuhSettings settings(GuhSettings::SettingsRoleDevices);
@@ -1220,18 +1204,6 @@ void DeviceManager::slotDeviceSetupFinished(Device *device, DeviceManager::Devic
         storeConfiguredDevices();
     }
 
-    DevicePlugin *plugin = m_devicePlugins.value(device->pluginId());
-    if (plugin->requiredHardware().testFlag(HardwareResource::TypeTimer)) {
-        if (!m_hardwareManager->pluginTimer()->enabled()) {
-            m_hardwareManager->pluginTimer()->enable();
-            // Additionally fire off one event to initialize stuff
-            QTimer::singleShot(0, this, SLOT(timerEvent()));
-        }
-        if (!m_pluginTimerUsers.contains(plugin)) {
-            m_pluginTimerUsers.append(plugin);
-        }
-    }
-
     // if this is a async device edit result
     if (m_asyncDeviceReconfiguration.contains(device)) {
         m_asyncDeviceReconfiguration.removeAll(device);
@@ -1463,19 +1435,6 @@ DeviceManager::DeviceSetupStatus DeviceManager::setupDevice(Device *device)
     DeviceSetupStatus status = plugin->setupDevice(device);
     if (status != DeviceSetupStatusSuccess) {
         return status;
-    }
-
-    if (plugin->requiredHardware().testFlag(HardwareResource::TypeTimer)) {
-
-        if (!m_hardwareManager->pluginTimer()->enabled()) {
-            m_hardwareManager->pluginTimer()->enable();
-            // Additionally fire off one event to initialize stuff
-            QTimer::singleShot(0, this, SLOT(timerEvent()));
-        }
-
-        if (!m_pluginTimerUsers.contains(plugin)) {
-            m_pluginTimerUsers.append(plugin);
-        }
     }
 
     connect(device, SIGNAL(stateValueChanged(QUuid,QVariant)), this, SLOT(slotDeviceStateValueChanged(QUuid,QVariant)));

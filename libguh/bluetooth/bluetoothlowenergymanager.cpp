@@ -23,6 +23,35 @@
 #include "bluetoothlowenergymanager.h"
 #include "loggingcategories.h"
 
+bool BluetoothLowEnergyManager::discoverDevices(QPointer<QObject> caller, const QString &callbackMethod)
+{
+    if (!available()) {
+        qCWarning(dcHardware()) << name() << "is not avilable.";
+        return false;
+    }
+
+    if (!enabled()) {
+        qCWarning(dcHardware()) << name() << "is not enabled.";
+        return false;
+    }
+
+    if (m_timer->isActive()) {
+        qCWarning(dcHardware()) << name() << "discovery already running.";
+        return false;
+    }
+
+    m_discoveredDevices.clear();
+    m_currentReply.caller = caller;
+    m_currentReply.callbackMethod = callbackMethod;
+
+    // Start discovery on all adapters
+    qCDebug(dcHardware()) << name() << "Start bluetooth discovery";
+    foreach (QBluetoothDeviceDiscoveryAgent *discoveryAgent, m_bluetoothDiscoveryAgents) {
+        discoveryAgent->start();
+    }
+    return true;
+}
+
 BluetoothLowEnergyManager::BluetoothLowEnergyManager(QObject *parent) :
     HardwareResource(HardwareResource::TypeBluetoothLE, "Bluetooth LE manager", parent)
 {
@@ -36,38 +65,80 @@ BluetoothLowEnergyManager::BluetoothLowEnergyManager(QObject *parent) :
 
     // Create a scanner for each adapter
     foreach (const QBluetoothHostInfo &hostInfo, bluetoothAdapters) {
-        qCDebug(dcHardware()) << name() << "Adapter:" << hostInfo.name() << hostInfo.address().toString();
-        m_bluetoothScanners.append(new BluetoothScanner(hostInfo.address(), this));
+        qCDebug(dcHardware()) << name() << "Using adapter:" << hostInfo.name() << hostInfo.address().toString();
+        QBluetoothLocalDevice localDevice(hostInfo.address());
+        localDevice.powerOn();
+        localDevice.setHostMode(QBluetoothLocalDevice::HostDiscoverable);
+
+        QBluetoothDeviceDiscoveryAgent *discoveryAgent = new QBluetoothDeviceDiscoveryAgent(hostInfo.address(), this);
+        connect(discoveryAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered, this, &BluetoothLowEnergyManager::onDeviceDiscovered);
+        connect(discoveryAgent, SIGNAL(error(QBluetoothDeviceDiscoveryAgent::Error)), this, SLOT(onDiscoveryError(QBluetoothDeviceDiscoveryAgent::Error)));
+
+        m_bluetoothDiscoveryAgents.append(discoveryAgent);
     }
 
+    // Discovery timer
+    m_timer = new QTimer(this);
+    m_timer->setSingleShot(true);
+    m_timer->setInterval(5000);
 
-
-//    // Check if Bluetooth is available on this device
-//    if (!localDevice.isValid()) {
-//        qCWarning(dcHardware()) << "No Bluetooth device found.";
-//        setAvailable(false);
-//        return false;
-//    }
-
-//    // Turn Bluetooth on
-//    localDevice.powerOn();
-
-//    // Make it visible to others
-//    localDevice.setHostMode(QBluetoothLocalDevice::HostDiscoverable);
+    connect(m_timer, &QTimer::timeout, this, &BluetoothLowEnergyManager::discoveryTimeout);
 
     qCDebug(dcHardware()) << "-->" << name() << "created successfully.";
-
     setAvailable(true);
+}
+
+void BluetoothLowEnergyManager::discoveryTimeout()
+{
+    // Start discovery on all adapters
+    qCDebug(dcHardware()) << name() << "Stop bluetooth discovery";
+    foreach (QBluetoothDeviceDiscoveryAgent *discoveryAgent, m_bluetoothDiscoveryAgents) {
+        discoveryAgent->stop();
+    }
+
+    qCDebug(dcHardware()) << name() << "Discovery finished. Found"<< m_discoveredDevices.count() << "Bluetooth devices.";
+
+    if (m_currentReply.caller.isNull()) {
+        qCWarning(dcHardware()) << name() << "The reciver of the discovery request does not exist any more.";
+    } else {
+        // Invoke the method containing the discovered devicelist
+        // FIXME: check the callback method paramters during compililation
+        QMetaObject::invokeMethod(m_currentReply.caller.data(), m_currentReply.callbackMethod.toLatin1().data(), Q_ARG(QList<QBluetoothDeviceInfo>, m_discoveredDevices));
+    }
+}
+
+void BluetoothLowEnergyManager::onDeviceDiscovered(const QBluetoothDeviceInfo &deviceInfo)
+{
+    // Add the device to the list if not already added
+    bool alreadyAdded = false;
+    foreach (const QBluetoothDeviceInfo &device, m_discoveredDevices) {
+        if (device.address() == deviceInfo.address()) {
+            alreadyAdded = true;
+        }
+    }
+
+    if (!alreadyAdded) {
+        qCDebug(dcHardware()) << name() << "device discovered" << deviceInfo.name() <<deviceInfo.address().toString();
+        m_discoveredDevices.append(deviceInfo);
+    }
+}
+
+void BluetoothLowEnergyManager::onDiscoveryError(const QBluetoothDeviceDiscoveryAgent::Error &error)
+{
+    QBluetoothDeviceDiscoveryAgent *discoveryAgent = static_cast<QBluetoothDeviceDiscoveryAgent *>(sender());
+    qCWarning(dcHardware()) << name() << "Discovery error:" << error << discoveryAgent->errorString();
 }
 
 bool BluetoothLowEnergyManager::enable()
 {
-    // TODO: enable all devices created by this
-
+    // TODO: enable all devices and trigger reconnect
+    setEnabled(true);
     return true;
 }
 
 bool BluetoothLowEnergyManager::disable()
 {
+    // TODO: disable reconnect and disconnect all devices
+    setEnabled(false);
     return true;
 }

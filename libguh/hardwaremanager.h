@@ -75,7 +75,6 @@ signals:
     void hardwareResourceAvailableChanged(const HardwareResource::Type &hardwareResourceType, const bool &available);
     void hardwareResourceEnabledChanged(const HardwareResource::Type &hardwareResourceType, const bool &enabled);
 
-
 };
 
 

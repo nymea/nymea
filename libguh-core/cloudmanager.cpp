@@ -56,6 +56,7 @@ void CloudManager::setDeviceId(const QUuid &deviceId)
 void CloudManager::setDeviceName(const QString &name)
 {
     m_deviceName = name;
+    m_awsConnector->setDeviceName(name);
 }
 
 void CloudManager::setClientCertificates(const QString &caCertificate, const QString &clientCertificate, const QString &clientCertificateKey)

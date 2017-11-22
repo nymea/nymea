@@ -114,8 +114,8 @@ void AWSConnector::onConnected()
     }
     qCDebug(dcAWS()) << "AWS connected. Device already registered in cloud.";
 
-    // OK, we're registerd already, go straight to pairing setup
-    setupPairing();
+    // OK, we're registerd already, go straight to subscription setup
+    setupSubscriptions();
 }
 
 void AWSConnector::registerDevice()
@@ -146,13 +146,14 @@ void AWSConnector::onDeviceRegistered(bool needsReconnect)
         return;
     }
 
-    setupPairing();
+    setupSubscriptions();
 }
 
-void AWSConnector::setupPairing()
+void AWSConnector::setupSubscriptions()
 {
     // Subscribe to pairing info topics
     QStringList subscriptions;
+    subscriptions.append(QString("%1/device/name/response").arg(m_clientId));
     subscriptions.append(QString("%1/device/users/response").arg(m_clientId));
     subscriptions.append(QString("%1/pair/response").arg(m_clientId));
     subscribe(subscriptions);
@@ -178,6 +179,10 @@ void AWSConnector::onPairingsRetrieved(const QVariantList &pairings)
     }
     subscribe(topics);
 
+    if (!readNameSyncedFlag()) {
+        setName();
+    }
+
     m_setupInProgress = false;
     emit connected();
 }
@@ -197,6 +202,17 @@ void AWSConnector::disconnectAWS()
 bool AWSConnector::isConnected() const
 {
     return m_connectingFuture.isFinished() && m_networkConnection && m_client && m_client->IsConnected();
+}
+
+void AWSConnector::setDeviceName(const QString &deviceName)
+{
+    if (m_clientName != deviceName) {
+        m_clientName = deviceName;
+        storeNameSyncedFlag(false);
+        if (isConnected()) {
+            setName();
+        }
+    }
 }
 
 void AWSConnector::pairDevice(const QString &idToken, const QString &userId)
@@ -431,4 +447,16 @@ bool AWSConnector::readRegisteredFlag() const
 {
     QSettings settings(GuhSettings::storagePath() + "/cloudstatus.conf", QSettings::IniFormat);
     return settings.value("registered", false).toBool();
+}
+
+void AWSConnector::storeNameSyncedFlag(bool synced)
+{
+    QSettings settings(GuhSettings::storagePath() + "/cloudstatus.conf", QSettings::IniFormat);
+    settings.setValue("nameSynced", synced);
+}
+
+bool AWSConnector::readNameSyncedFlag()
+{
+    QSettings settings(GuhSettings::storagePath() + "/cloudstatus.conf", QSettings::IniFormat);
+    return settings.value("nameSynced", false).toBool();
 }

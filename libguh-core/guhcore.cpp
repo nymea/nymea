@@ -458,6 +458,7 @@ void GuhCore::init() {
 
     connect(m_configuration, &GuhConfiguration::localeChanged, this, &GuhCore::onLocaleChanged);
     connect(m_configuration, &GuhConfiguration::cloudEnabledChanged, m_cloudManager, &CloudManager::setEnabled);
+    connect(m_configuration, &GuhConfiguration::serverNameChanged, m_cloudManager, &CloudManager::setDeviceName);
 
     connect(m_deviceManager, &DeviceManager::pluginConfigChanged, this, &GuhCore::pluginConfigChanged);
     connect(m_deviceManager, &DeviceManager::eventTriggered, this, &GuhCore::gotEvent);

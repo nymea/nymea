@@ -197,16 +197,6 @@ void WebSocketServer::resetAvahiService()
         return;
 
     m_avahiService->resetService();
-
-    // Note: reversed order
-    QHash<QString, QString> txt;
-    txt.insert("jsonrpcVersion", JSON_PROTOCOL_VERSION);
-    txt.insert("serverVersion", GUH_VERSION_STRING);
-    txt.insert("manufacturer", "guh GmbH");
-    txt.insert("uuid", GuhCore::instance()->configuration()->serverUuid().toString());
-    txt.insert("name", GuhCore::instance()->configuration()->serverName());
-    txt.insert("sslEnabled", configuration().sslEnabled ? "true" : "false");
-
     if (!m_avahiService->registerService(QString("guhIO-ws-%1").arg(configuration().id), configuration().port, "_ws._tcp", createTxtRecord())) {
         qCWarning(dcWebServer()) << "Could not register avahi service for" << configuration();
     }

@@ -1,4 +1,4 @@
-0.52
+0.53
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -777,6 +777,12 @@
                 "serverTime": "Uint",
                 "serverUuid": "Uuid",
                 "timeZone": "String"
+            }
+        },
+        "Configuration.CloudConfigurationChanged": {
+            "description": "Emitted whenever the cloud configuration is changed.",
+            "params": {
+                "enabled": "Bool"
             }
         },
         "Configuration.LanguageChanged": {

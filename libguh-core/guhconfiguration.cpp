@@ -183,7 +183,7 @@ void GuhConfiguration::setServerName(const QString &serverName)
     } else {
         settings.setValue("name", serverName);
         settings.endGroup();
-        emit serverNameChanged();
+        emit serverNameChanged(serverName);
     }
 }
 

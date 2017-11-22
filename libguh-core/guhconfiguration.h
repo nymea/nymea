@@ -135,7 +135,7 @@ private:
     WebServerConfiguration readWebServerConfig(const QString &id);
 
 signals:
-    void serverNameChanged();
+    void serverNameChanged(const QString &serverName);
     void timeZoneChanged();
     void localeChanged();
 

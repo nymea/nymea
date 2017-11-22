@@ -43,6 +43,7 @@ public:
     void disconnectAWS();
     bool isConnected() const;
 
+    void setDeviceName(const QString &deviceName);
     void pairDevice(const QString &idToken, const QString &userId);
 
     void sendWebRtcHandshakeMessage(const QString &sessionId, const QVariantMap &map);
@@ -58,7 +59,7 @@ private slots:
     void onConnected();
     void registerDevice();
     void onDeviceRegistered(bool needsReconnect);
-    void setupPairing();
+    void setupSubscriptions();
     void fetchPairings();
     void onPairingsRetrieved(const QVariantList &pairings);
     void setName();
@@ -88,6 +89,9 @@ private:
 
     void storeRegisteredFlag(bool registered);
     bool readRegisteredFlag() const;
+
+    void storeNameSyncedFlag(bool synced);
+    bool readNameSyncedFlag();
 
 private:
     std::shared_ptr<awsiotsdk::network::MbedTLSConnection> m_networkConnection;

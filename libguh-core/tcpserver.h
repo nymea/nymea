@@ -98,11 +98,11 @@ private slots:
     void onEncrypted();
 
     void onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceState &state);
-
+    void resetAvahiService();
 
 public slots:
-    void resetAvahiService();
     void reconfigureServer(const ServerConfiguration &configuration);
+    void setServerName(const QString &serverName) override;
     bool startServer() override;
     bool stopServer() override;
 };

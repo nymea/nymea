@@ -55,6 +55,7 @@ void CloudManager::setDeviceId(const QUuid &deviceId)
 
 void CloudManager::setDeviceName(const QString &name)
 {
+    qCDebug(dcAWS()) << "Set device name" << name;
     m_deviceName = name;
     m_awsConnector->setDeviceName(name);
 }

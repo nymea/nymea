@@ -123,7 +123,6 @@ ServerManager::ServerManager(GuhConfiguration* configuration, QObject *parent) :
         m_webServers.insert(config.id, webServer);
     }
 
-    connect(configuration, &GuhConfiguration::serverNameChanged, this, &ServerManager::onServerNameChanged);
     connect(configuration, &GuhConfiguration::tcpServerConfigurationChanged, this, &ServerManager::tcpServerConfigurationChanged);
     connect(configuration, &GuhConfiguration::tcpServerConfigurationRemoved, this, &ServerManager::tcpServerConfigurationRemoved);
     connect(configuration, &GuhConfiguration::webSocketServerConfigurationChanged, this, &ServerManager::webSocketServerConfigurationChanged);
@@ -152,19 +151,6 @@ BluetoothServer *ServerManager::bluetoothServer() const
 MockTcpServer *ServerManager::mockTcpServer() const
 {
     return m_mockTcpServer;
-}
-
-void ServerManager::onServerNameChanged()
-{
-    qCDebug(dcConnection()) << "Server name changed";
-
-    foreach (WebSocketServer *websocketServer, m_webSocketServers.values()) {
-        websocketServer->resetAvahiService();
-    }
-
-    foreach (WebServer *webServer, m_webServers.values()) {
-        webServer->resetAvahiService();
-    }
 }
 
 void ServerManager::tcpServerConfigurationChanged(const QString &id)
@@ -273,6 +259,23 @@ bool ServerManager::loadCertificate(const QString &certificateKeyFileName, const
     certificateFile.close();
 
     return true;
+}
+
+void ServerManager::setServerName(const QString &serverName)
+{
+    qCDebug(dcConnection()) << "Server name changed" << serverName;
+
+    foreach (WebSocketServer *websocketServer, m_webSocketServers.values()) {
+        websocketServer->setServerName(serverName);
+    }
+
+    foreach (WebServer *webServer, m_webServers.values()) {
+        webServer->setServerName(serverName);
+    }
+
+    foreach (TcpServer *tcpServer, m_tcpServers.values()) {
+        tcpServer->setServerName(serverName);
+    }
 }
 
 }

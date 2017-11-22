@@ -95,6 +95,11 @@ ServerConfiguration TransportInterface::configuration() const
     return m_config;
 }
 
+void TransportInterface::setServerName(const QString &serverName)
+{
+    m_serverName = serverName;
+}
+
 /*! Virtual destructor for \l{TransportInterface}. */
 TransportInterface::~TransportInterface()
 {

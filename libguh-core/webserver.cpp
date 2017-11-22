@@ -490,8 +490,10 @@ void WebServer::onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceS
 
 void WebServer::resetAvahiService()
 {
-    if (m_avahiService)
-        m_avahiService->resetService();
+    if (!m_avahiService)
+        return;
+
+    m_avahiService->resetService();
 
     // Note: reversed order
     QHash<QString, QString> txt;
@@ -521,6 +523,12 @@ void WebServer::reconfigureServer(const WebServerConfiguration &config)
     stopServer();
     m_configuration = config;
     startServer();
+}
+
+void WebServer::setServerName(const QString &serverName)
+{
+    m_serverName = serverName;
+    resetAvahiService();
 }
 
 /*! Returns true if this \l{WebServer} started successfully. */

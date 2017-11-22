@@ -187,6 +187,10 @@ void AWSConnector::disconnectAWS()
     m_shouldReconnect = false;
     if (isConnected()) {
         m_client->Disconnect(std::chrono::seconds(2));
+        m_client.reset();
+        m_networkConnection.reset();
+        qCDebug(dcAWS()) << "Disconnected from AWS.";
+        emit disconnected();
     }
 }
 

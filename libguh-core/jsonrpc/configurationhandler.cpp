@@ -206,12 +206,18 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     params.insert("language", JsonTypes::basicTypeToString(JsonTypes::String));
     setParams("LanguageChanged", params);
 
+    params.clear(); returns.clear();
+    setDescription("CloudConfigurationChanged", "Emitted whenever the cloud configuration is changed.");
+    params.insert("enabled", JsonTypes::basicTypeToString(JsonTypes::Bool));
+    setParams("CloudConfigurationChanged", params);
+
     connect(GuhCore::instance()->configuration(), &GuhConfiguration::serverNameChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
     connect(GuhCore::instance()->configuration(), &GuhConfiguration::timeZoneChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
     connect(GuhCore::instance()->configuration(), &GuhConfiguration::localeChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
     connect(GuhCore::instance()->configuration(), &GuhConfiguration::tcpServerConfigurationChanged, this, &ConfigurationHandler::onTcpServerConfigurationChanged);
     connect(GuhCore::instance()->configuration(), &GuhConfiguration::webServerConfigurationChanged, this, &ConfigurationHandler::onWebServerConfigurationChanged);
     connect(GuhCore::instance()->configuration(), &GuhConfiguration::webSocketServerConfigurationChanged, this, &ConfigurationHandler::onWebSocketServerConfigurationChanged);
+    connect(GuhCore::instance()->configuration(), &GuhConfiguration::cloudEnabledChanged, this, &ConfigurationHandler::onCloudConfigurationChanged);
     connect(GuhCore::instance()->deviceManager(), &DeviceManager::languageUpdated, this, &ConfigurationHandler::onLanguageChanged);
 }
 
@@ -440,6 +446,16 @@ void ConfigurationHandler::onWebSocketServerConfigurationChanged(const QString &
     qCDebug(dcJsonRpc()) << "Notification: web socket server configuration changed";
     params.insert("webSocketServerConfiguration", JsonTypes::packServerConfiguration(GuhCore::instance()->configuration()->webSocketServerConfigurations().value(id)));
     emit WebSocketServerConfigurationChanged(params);
+}
+
+void ConfigurationHandler::onCloudConfigurationChanged(bool enabled)
+{
+    QVariantMap params;
+    qCDebug(dcJanus()) << "Notification: cloud configuration changed";
+    QVariantMap cloudConfiguration;
+    cloudConfiguration.insert("enabled", enabled);
+    params.insert("cloudConfiguration", cloudConfiguration);
+    emit CloudConfigurationChanged(params);
 }
 
 void ConfigurationHandler::onLanguageChanged()

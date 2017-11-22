@@ -87,8 +87,7 @@ private:
     QHash<QSslSocket *, HttpRequest> m_incompleteRequests;
 
     QtAvahiService *m_avahiService;
-
-
+    QString m_serverName;
     WebServerConfiguration m_configuration;
     QSslConfiguration m_sslConfiguration;
 
@@ -115,10 +114,11 @@ private slots:
     void onError(QAbstractSocket::SocketError error);
 
     void onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceState &state);
+    void resetAvahiService();
 
 public slots:
-    void resetAvahiService();
     void reconfigureServer(const WebServerConfiguration &config);
+    void setServerName(const QString &serverName);
     bool startServer();
     bool stopServer();
 

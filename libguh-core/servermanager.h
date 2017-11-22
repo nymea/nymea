@@ -52,7 +52,6 @@ public:
     MockTcpServer *mockTcpServer() const;
 
 private slots:
-    void onServerNameChanged();
     void tcpServerConfigurationChanged(const QString &id);
     void tcpServerConfigurationRemoved(const QString &id);
     void webSocketServerConfigurationChanged(const QString &id);
@@ -77,6 +76,10 @@ private:
     QSslCertificate m_certificate;
 
     bool loadCertificate(const QString &certificateKeyFileName, const QString &certificateFileName);
+
+public slots:
+    void setServerName(const QString &serverName);
+
 };
 
 }

@@ -43,12 +43,16 @@ public:
     void setConfiguration(const ServerConfiguration &config);
     ServerConfiguration configuration() const;
 
+protected:
+    QString m_serverName;
+
 signals:
     void clientConnected(const QUuid &clientId);
     void clientDisconnected(const QUuid &clientId);
     void dataAvailable(const QUuid &clientId, const QByteArray &data);
 
 public slots:
+    virtual void setServerName(const QString &serverName);
     virtual bool startServer() = 0;
     virtual bool stopServer() = 0;
 

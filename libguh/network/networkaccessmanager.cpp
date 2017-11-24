@@ -82,12 +82,12 @@ QNetworkReply *NetworkAccessManager::put(const QNetworkRequest &request, QIODevi
 
 QNetworkReply *NetworkAccessManager::put(const QNetworkRequest &request, const QByteArray &data)
 {
-    return m_manager->post(request, data);
+    return m_manager->put(request, data);
 }
 
 QNetworkReply *NetworkAccessManager::put(const QNetworkRequest &request, QHttpMultiPart *multiPart)
 {
-    return m_manager->post(request, multiPart);
+    return m_manager->put(request, multiPart);
 }
 
 QNetworkReply *NetworkAccessManager::sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, QIODevice *data)

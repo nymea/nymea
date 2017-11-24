@@ -73,8 +73,6 @@ QtAvahiServiceBrowser::~QtAvahiServiceBrowser()
     delete d_ptr;
 }
 
-
-
 /*! Returns the current \l{AvahiServiceEntry} list of this \l{QtAvahiServiceBrowser}. */
 QList<AvahiServiceEntry> QtAvahiServiceBrowser::serviceEntries() const
 {

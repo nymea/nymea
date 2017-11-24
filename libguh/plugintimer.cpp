@@ -23,37 +23,154 @@
 #include "plugintimer.h"
 #include "loggingcategories.h"
 
-PluginTimer::PluginTimer(int intervall, QObject *parent) :
-    HardwareResource(HardwareResource::TypeTimer, "Plugin timer", parent),
-    m_intervall(intervall)
+int PluginTimer::interval() const
 {
-    // FIXME: the timer should be able to emit timerEvents with different resolutions
-    m_timer = new QTimer(this);
-    m_timer->setSingleShot(false);
-    m_timer->setInterval(m_intervall);
+    return m_interval;
+}
 
-    connect(m_timer, &QTimer::timeout, this, &PluginTimer::timerEvent);
+void PluginTimer::pause()
+{
+    m_paused = true;
+}
+
+void PluginTimer::resume()
+{
+    m_paused = false;
+}
+
+int PluginTimer::currentTick() const
+{
+    return m_currentTick;
+}
+
+bool PluginTimer::running() const
+{
+    return m_running;
+}
+
+PluginTimer::PluginTimer(int intervall, QObject *parent) :
+    QObject(parent),
+    m_interval(intervall)
+{
+
+}
+
+void PluginTimer::setRunning(const bool &running)
+{
+    if (m_running != running) {
+        m_running = running;
+        emit runningChanged(m_running);
+    }
+}
+
+void PluginTimer::setPaused(const bool &paused)
+{
+    if (m_paused != paused) {
+        m_paused = paused;
+        emit pausedChanged(m_paused);
+    }
+}
+
+void PluginTimer::setCurrentTick(const int &tick)
+{
+    if (m_currentTick != tick) {
+        m_currentTick = tick;
+        emit currentTickChanged(m_currentTick);
+    }
+}
+
+void PluginTimer::tick()
+{
+    if (m_paused)
+        return;
+
+    if (!m_running)
+        return;
+
+    setCurrentTick(m_currentTick += 1);
+
+    if (m_currentTick >= m_interval) {
+        emit timeout();
+        reset();
+    }
+}
+
+void PluginTimer::reset()
+{
+    setCurrentTick(0);
+}
+
+void PluginTimer::start()
+{
+    setPaused(false);
+    setRunning(true);
+}
+
+void PluginTimer::stop()
+{
+    setPaused(false);
+    setRunning(false);
+}
+
+
+PluginTimer *PluginTimerManager::registerTimer(int seconds)
+{
+    QPointer<PluginTimer> pluginTimer = new PluginTimer(seconds, this);
+    m_timers.append(pluginTimer);
+    return pluginTimer.data();
+}
+
+void PluginTimerManager::unregisterTimer(PluginTimer *timer)
+{
+    QPointer<PluginTimer> timerPointer(timer);
+    if (timerPointer.isNull()) {
+        qCWarning(dcHardware()) << name() << "Cannot unregister timer. Looks like the timer is already unregistered.";
+        return;
+    }
+
+    foreach (QPointer<PluginTimer> tPointer, m_timers) {
+        if (timerPointer.data() == tPointer.data()) {
+            m_timers.removeAll(tPointer);
+            tPointer->deleteLater();
+        }
+    }
+}
+
+PluginTimerManager::PluginTimerManager(QObject *parent) :
+    HardwareResource(HardwareResource::TypeTimer, "Plugin timer manager", parent)
+{
     setAvailable(true);
-
     qCDebug(dcHardware()) << "-->" << name() << "created successfully.";
 }
 
-bool PluginTimer::enable()
+void PluginTimerManager::timeTick()
+{
+    // If timer resource is not enabled do nothing
+    if (!enabled()) {
+        return;
+    }
+
+    foreach (PluginTimer *timer, m_timers) {
+        timer->tick();
+    }
+}
+
+bool PluginTimerManager::enable()
 {
     if (!available())
         return false;
 
-    m_timer->start();
     setEnabled(true);
     return true;
 }
 
-bool PluginTimer::disable()
+bool PluginTimerManager::disable()
 {
     if (!available())
         return false;
 
-    m_timer->stop();
     setEnabled(false);
     return true;
 }
+
+

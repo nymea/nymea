@@ -31,12 +31,7 @@
 #include <QBluetoothDeviceDiscoveryAgent>
 
 #include "hardwareresource.h"
-
-struct BluetoothDiscoveryReply
-{
-    QPointer<QObject> caller;
-    QString callbackMethod;
-};
+#include "bluetoothdiscoveryreply.h"
 
 class BluetoothLowEnergyManager : public HardwareResource
 {
@@ -45,7 +40,7 @@ class BluetoothLowEnergyManager : public HardwareResource
     friend class HardwareManager;
 
 public:
-    bool discoverDevices(QPointer<QObject> caller = QPointer<QObject>(), const QString &callbackMethod = QString());
+     BluetoothDiscoveryReply *discoverDevices(const int &interval = 5000);
 
 private:
     explicit BluetoothLowEnergyManager(QObject *parent = nullptr);
@@ -54,7 +49,7 @@ private:
     QList<QBluetoothDeviceDiscoveryAgent *> m_bluetoothDiscoveryAgents;
     QList<QBluetoothDeviceInfo> m_discoveredDevices;
 
-    BluetoothDiscoveryReply m_currentReply;
+    QPointer<BluetoothDiscoveryReply> m_currentReply;
 
 signals:
 

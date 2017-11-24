@@ -80,39 +80,34 @@ UpnpDiscovery::~UpnpDiscovery()
     m_socket->close();
 }
 
-/*! Returns false, if the \l{UpnpDiscovery} resource is not available. Returns true, if a device with
- * the given \a searchTarget, \a userAgent and \a pluginId can be discovered.*/
-bool UpnpDiscovery::discoverDevices(QPointer<QObject> caller, const QString &callbackMethod, const QString &searchTarget, const QString &userAgent)
+UpnpDiscoveryReply *UpnpDiscovery::discoverDevices(const QString &searchTarget, const QString &userAgent, const int &timeout)
 {
+    // Create the reply for this discovery request
+    QPointer<UpnpDiscoveryReply> reply = new UpnpDiscoveryReply(searchTarget, userAgent, this);
+
     if (!available()) {
-        qCWarning(dcHardware()) << name() << "not available.";
-        return false;
+        qCWarning(dcHardware()) << name() << "is not avilable.";
+        reply->setError(UpnpDiscoveryReply::UpnpDiscoveryReplyErrorNotAvailable);
+        reply->setFinished();
+        return reply.data();
     }
 
     if (!enabled()) {
-        qCWarning(dcHardware()) << name() << "disabled.";
-        return false;
-    }
-
-    if (!m_socket)
-        return false;
-
-    if(m_socket->state() != QUdpSocket::BoundState){
-        qCWarning(dcHardware) << "UPnP not bound to port 1900";
-        return false;
+        qCWarning(dcHardware()) << name() << "is not enabled.";
+        reply->setError(UpnpDiscoveryReply::UpnpDiscoveryReplyErrorNotEnabled);
+        reply->setFinished();
+        return reply.data();
     }
 
     qCDebug(dcHardware) << name() << "discover" << searchTarget << userAgent;
 
-
-    // Create a new request
-    UpnpDiscoveryRequest *request = new UpnpDiscoveryRequest(this, caller, callbackMethod, searchTarget, userAgent);
+    // Looks good so far, lets start a request
+    UpnpDiscoveryRequest *request = new UpnpDiscoveryRequest(this, reply);
     connect(request, &UpnpDiscoveryRequest::discoveryTimeout, this, &UpnpDiscovery::discoverTimeout);
-    request->discover();
+    request->discover(timeout);
     m_discoverRequests.append(request);
-    return true;
+    return reply.data();
 }
-
 
 void UpnpDiscovery::requestDeviceInformation(const QNetworkRequest &networkRequest, const UpnpDeviceDescriptor &upnpDeviceDescriptor)
 {
@@ -420,13 +415,14 @@ void UpnpDiscovery::sendAliveMessage()
 void UpnpDiscovery::discoverTimeout()
 {
     UpnpDiscoveryRequest *discoveryRequest = static_cast<UpnpDiscoveryRequest*>(sender());
+    QPointer<UpnpDiscoveryReply> reply = discoveryRequest->reply();
 
-    if (discoveryRequest->caller().isNull()) {
-        qCWarning(dcHardware()) << name() << "The reciver of the discovery request does not exist any more.";
-    } else {
-        // Invoke the method containing the discovered devicelist
-        // FIXME: check the callback method paramters during compililation
-        QMetaObject::invokeMethod(discoveryRequest->caller().data(), discoveryRequest->callbackMethod().toLatin1().data(), Q_ARG(QList<UpnpDeviceDescriptor>, discoveryRequest->deviceList()));
+    if (reply.isNull()) {
+        qCWarning(dcHardware()) << name() << "Reply does not exist any more. Please don't delete the reply before it has finished.";
+    }  else {
+        reply->setDeviceDescriptors(discoveryRequest->deviceList());
+        reply->setError(UpnpDiscoveryReply::UpnpDiscoveryReplyErrorNoError);
+        reply->setFinished();
     }
 
     m_discoverRequests.removeOne(discoveryRequest);

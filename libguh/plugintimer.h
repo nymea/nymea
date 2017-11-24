@@ -23,24 +23,69 @@
 #ifndef PLUGINTIMER_H
 #define PLUGINTIMER_H
 
-#include <QObject>
 #include <QTimer>
+#include <QObject>
+#include <QPointer>
 
 #include "hardwareresource.h"
 
-class PluginTimer : public HardwareResource
+class PluginTimer : public QObject
 {
     Q_OBJECT
-public:
-    explicit PluginTimer(int intervall, QObject *parent = nullptr);
 
-private:
-    QTimer *m_timer = nullptr;
-    int m_intervall = 10000;
+    friend class PluginTimerManager;
+
+public:
+    int interval() const;
+
+    void pause();
+    void resume();
+    int currentTick() const;
+
+    bool running() const;
 
 signals:
-    // TODO: emit different resolutions
-    void timerEvent();
+    void timeout();
+    void currentTickChanged(const int &currentTick);
+    void runningChanged(const bool &running);
+    void pausedChanged(const bool &paused);
+
+private:
+    explicit PluginTimer(int intervall, QObject *parent = nullptr);
+    int m_interval;
+    int m_currentTick = 0;
+
+    bool m_paused = false;
+    bool m_running = true;
+
+    void setRunning(const bool &running);
+    void setPaused(const bool &paused);
+    void setCurrentTick(const int &tick);
+
+    void tick();
+
+public slots:
+    void reset();
+    void start();
+    void stop();
+};
+
+
+class PluginTimerManager : public HardwareResource
+{
+    Q_OBJECT
+
+    friend class HardwareManager;
+
+public:
+    PluginTimer *registerTimer(int seconds = 60);
+    void unregisterTimer(PluginTimer *timer = nullptr);
+
+private:
+    explicit PluginTimerManager(QObject *parent = nullptr);
+    QList<QPointer<PluginTimer> > m_timers;
+
+    void timeTick();
 
 public slots:
     bool enable();

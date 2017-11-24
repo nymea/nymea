@@ -25,6 +25,7 @@
 #include "plugintimer.h"
 #include "loggingcategories.h"
 #include "hardware/radio433/radio433.h"
+#include "bluetooth/bluetoothlowenergymanager.h"
 #include "network/networkaccessmanager.h"
 #include "network/upnp/upnpdiscovery.h"
 #include "network/upnp/upnpdevicedescriptor.h"
@@ -33,8 +34,9 @@
 HardwareManager::HardwareManager(QObject *parent) : QObject(parent)
 {
     // Init hardware resources
-    m_pluginTimer = new PluginTimer(10000, this);
-    m_hardwareResources.append(m_pluginTimer);
+    m_pluginTimerManager = new PluginTimerManager(this);
+    m_pluginTimerManager->enable();
+    m_hardwareResources.append(m_pluginTimerManager);
 
     m_radio433 = new Radio433(this);
     m_hardwareResources.append(m_radio433);
@@ -60,12 +62,11 @@ HardwareManager::HardwareManager(QObject *parent) : QObject(parent)
     m_hardwareResources.append(m_avahiBrowser);
     m_avahiBrowser->enable();
 
-//    // Bluetooth LE
-//    m_bluetoothScanner = new BluetoothScanner(this);
-//    if (!m_bluetoothScanner->isAvailable()) {
-//        delete m_bluetoothScanner;
-//        m_bluetoothScanner = nullptr;
-//    }
+    // Bluetooth LE
+    m_bluetoothLowEnergyManager = new BluetoothLowEnergyManager(this);
+    m_hardwareResources.append(m_bluetoothLowEnergyManager);
+    if (m_networkManager->available())
+        m_networkManager->enable();
 
     qCDebug(dcHardware()) << "Hardware manager initialized successfully";
 }
@@ -75,9 +76,9 @@ Radio433 *HardwareManager::radio433()
     return m_radio433;
 }
 
-PluginTimer *HardwareManager::pluginTimer()
+PluginTimerManager *HardwareManager::pluginTimerManager()
 {
-    return m_pluginTimer;
+    return m_pluginTimerManager;
 }
 
 NetworkAccessManager *HardwareManager::networkManager()
@@ -95,9 +96,9 @@ QtAvahiServiceBrowser *HardwareManager::avahiBrowser()
     return m_avahiBrowser;
 }
 
-BluetoothScanner *HardwareManager::bluetoothScanner()
+BluetoothLowEnergyManager *HardwareManager::bluetoothLowEnergyManager()
 {
-    return m_bluetoothScanner;
+    return m_bluetoothLowEnergyManager;
 }
 
 bool HardwareManager::isAvailable(const HardwareResource::Type &hardwareResourceType) const
@@ -138,5 +139,10 @@ bool HardwareManager::disableHardwareReource(const HardwareResource::Type &hardw
         }
     }
     return false;
+}
+
+void HardwareManager::timeTick()
+{
+    m_pluginTimerManager->timeTick();
 }
 

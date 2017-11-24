@@ -28,8 +28,8 @@
 
 #include "hardwareresource.h"
 
-class PluginTimer;
-class BluetoothScanner;
+class PluginTimerManager;
+class BluetoothLowEnergyManager;
 class Radio433;
 class NetworkAccessManager;
 class UpnpDiscovery;
@@ -46,11 +46,11 @@ public:
     explicit HardwareManager(QObject *parent = nullptr);
 
     Radio433 *radio433();
-    PluginTimer *pluginTimer();
+    PluginTimerManager *pluginTimerManager();
     NetworkAccessManager *networkManager();
     UpnpDiscovery *upnpDiscovery();
     QtAvahiServiceBrowser *avahiBrowser();
-    BluetoothScanner *bluetoothScanner();
+    BluetoothLowEnergyManager *bluetoothLowEnergyManager();
 
     bool isAvailable(const HardwareResource::Type &hardwareResourceType) const;
     bool isEnabled(const HardwareResource::Type &hardwareResourceType) const;
@@ -62,14 +62,16 @@ private:
 
     // Hardware Resources
     Radio433 *m_radio433 = nullptr;
-    PluginTimer *m_pluginTimer = nullptr;
+    PluginTimerManager *m_pluginTimerManager = nullptr;
     NetworkAccessManager *m_networkManager = nullptr;
     UpnpDiscovery *m_upnpDiscovery = nullptr;
     QtAvahiServiceBrowser *m_avahiBrowser = nullptr;
-    BluetoothScanner *m_bluetoothScanner = nullptr;
+    BluetoothLowEnergyManager *m_bluetoothLowEnergyManager = nullptr;
 
     bool enableHardwareReource(const HardwareResource::Type &hardwareResourceType);
     bool disableHardwareReource(const HardwareResource::Type &hardwareResourceType);
+
+    void timeTick();
 
 signals:
     void hardwareResourceAvailableChanged(const HardwareResource::Type &hardwareResourceType, const bool &available);

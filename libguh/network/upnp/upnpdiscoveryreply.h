@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2017 Simon Stürz <simon.stuerz@guh.io>                   *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -20,44 +20,55 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef UPNPDISCOVERYREQUEST_H
-#define UPNPDISCOVERYREQUEST_H
+#ifndef UPNPDISCOVERYREPLY_H
+#define UPNPDISCOVERYREPLY_H
 
 #include <QObject>
-#include <QDebug>
-#include <QMetaObject>
 
-#include "upnpdiscovery.h"
-#include "upnpdiscoveryreply.h"
 #include "upnpdevicedescriptor.h"
-#include "libguh.h"
-#include "typeutils.h"
 
-class UpnpDiscovery;
-
-class LIBGUH_EXPORT UpnpDiscoveryRequest : public QObject
+class UpnpDiscoveryReply : public QObject
 {
     Q_OBJECT
+
+    friend class UpnpDiscovery;
+
 public:
-    explicit UpnpDiscoveryRequest(UpnpDiscovery *upnpDiscovery, QPointer<UpnpDiscoveryReply> reply);
+    enum UpnpDiscoveryReplyError {
+        UpnpDiscoveryReplyErrorNoError,
+        UpnpDiscoveryReplyErrorNotAvailable,
+        UpnpDiscoveryReplyErrorNotEnabled,
+        UpnpDiscoveryReplyErrorResourceBusy
+    };
+    Q_ENUM(UpnpDiscoveryReplyError)
 
-    void discover(const int &timeout);
-    void addDeviceDescriptor(const UpnpDeviceDescriptor &deviceDescriptor);
-    QNetworkRequest createNetworkRequest(UpnpDeviceDescriptor deviveDescriptor);
-    QList<UpnpDeviceDescriptor> deviceList() const;
+    QString searchTarget() const;
+    QString userAgent() const;
 
-    QPointer<UpnpDiscoveryReply> reply();
+    UpnpDiscoveryReplyError error() const;
+    bool isFinished() const;
+
+    QList<UpnpDeviceDescriptor> deviceDescriptors() const;
 
 private:
-    UpnpDiscovery *m_upnpDiscovery;
-    QPointer<UpnpDiscoveryReply> m_reply;
+    explicit UpnpDiscoveryReply(const QString &searchTarget, const QString &userAgent, QObject *parent = nullptr);
 
-    QTimer *m_timer = nullptr;
-    QList<UpnpDeviceDescriptor> m_deviceList;
+    QString m_searchTarget;
+    QString m_userAgent;
+
+    QList<UpnpDeviceDescriptor> m_deviceDescriptors;
+    UpnpDiscoveryReplyError m_error = UpnpDiscoveryReplyErrorNoError;
+    bool m_finished = false;
+
+    // Methods for UpnpDiscovery
+    void setDeviceDescriptors(const QList<UpnpDeviceDescriptor> &deviceDescriptors);
+    void setError(const UpnpDiscoveryReplyError &error);
+    void setFinished();
 
 signals:
-    void discoveryTimeout();
+    void finished();
+    void errorOccured(const UpnpDiscoveryReplyError &error);
 
 };
 
-#endif // UPNPDISCOVERYREQUEST_H
+#endif // UPNPDISCOVERYREPLY_H

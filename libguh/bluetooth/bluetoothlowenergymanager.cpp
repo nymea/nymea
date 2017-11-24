@@ -23,33 +23,45 @@
 #include "bluetoothlowenergymanager.h"
 #include "loggingcategories.h"
 
-bool BluetoothLowEnergyManager::discoverDevices(QPointer<QObject> caller, const QString &callbackMethod)
+BluetoothDiscoveryReply *BluetoothLowEnergyManager::discoverDevices(const int &interval)
 {
+    // Create the reply for this discovery request
+    QPointer<BluetoothDiscoveryReply> reply = new BluetoothDiscoveryReply(this);
     if (!available()) {
         qCWarning(dcHardware()) << name() << "is not avilable.";
-        return false;
+        reply->setError(BluetoothDiscoveryReply::BluetoothDiscoveryReplyErrorNotAvailable);
+        reply->setFinished();
+        return reply.data();
     }
 
     if (!enabled()) {
         qCWarning(dcHardware()) << name() << "is not enabled.";
-        return false;
+        reply->setError(BluetoothDiscoveryReply::BluetoothDiscoveryReplyErrorNotEnabled);
+        reply->setFinished();
+        return reply.data();
     }
 
-    if (m_timer->isActive()) {
-        qCWarning(dcHardware()) << name() << "discovery already running.";
-        return false;
+    if (!m_currentReply.isNull()) {
+        qCWarning(dcHardware()) << name() << "resource busy. There is already a discovery running.";
+        reply->setError(BluetoothDiscoveryReply::BluetoothDiscoveryReplyErrorBusy);
+        reply->setFinished();
+        return reply.data();
     }
 
+    qCDebug(dcHardware) << name() << "start discovering";
+    m_currentReply = reply;
     m_discoveredDevices.clear();
-    m_currentReply.caller = caller;
-    m_currentReply.callbackMethod = callbackMethod;
 
     // Start discovery on all adapters
     qCDebug(dcHardware()) << name() << "Start bluetooth discovery";
     foreach (QBluetoothDeviceDiscoveryAgent *discoveryAgent, m_bluetoothDiscoveryAgents) {
         discoveryAgent->start();
     }
-    return true;
+
+    // TODO: limit interval to prevent resource blocking from a plugin
+    m_timer->start(interval);
+
+    return reply.data();
 }
 
 BluetoothLowEnergyManager::BluetoothLowEnergyManager(QObject *parent) :
@@ -80,7 +92,6 @@ BluetoothLowEnergyManager::BluetoothLowEnergyManager(QObject *parent) :
     // Discovery timer
     m_timer = new QTimer(this);
     m_timer->setSingleShot(true);
-    m_timer->setInterval(5000);
 
     connect(m_timer, &QTimer::timeout, this, &BluetoothLowEnergyManager::discoveryTimeout);
 
@@ -90,21 +101,25 @@ BluetoothLowEnergyManager::BluetoothLowEnergyManager(QObject *parent) :
 
 void BluetoothLowEnergyManager::discoveryTimeout()
 {
-    // Start discovery on all adapters
+    // Stop discovery on all adapters
     qCDebug(dcHardware()) << name() << "Stop bluetooth discovery";
     foreach (QBluetoothDeviceDiscoveryAgent *discoveryAgent, m_bluetoothDiscoveryAgents) {
         discoveryAgent->stop();
     }
 
-    qCDebug(dcHardware()) << name() << "Discovery finished. Found"<< m_discoveredDevices.count() << "Bluetooth devices.";
+    qCDebug(dcHardware()) << name() << "Discovery finished. Found" << m_discoveredDevices.count() << "bluetooth devices.";
 
-    if (m_currentReply.caller.isNull()) {
-        qCWarning(dcHardware()) << name() << "The reciver of the discovery request does not exist any more.";
-    } else {
-        // Invoke the method containing the discovered devicelist
-        // FIXME: check the callback method paramters during compililation
-        QMetaObject::invokeMethod(m_currentReply.caller.data(), m_currentReply.callbackMethod.toLatin1().data(), Q_ARG(QList<QBluetoothDeviceInfo>, m_discoveredDevices));
+    if (m_currentReply.isNull()) {
+        qCWarning(dcHardware()) << name() << "Reply does not exist any more. Please don't delete the reply before it has finished.";
+        m_currentReply.clear();
+        return;
     }
+
+    m_currentReply->setError(BluetoothDiscoveryReply::BluetoothDiscoveryReplyErrorNoError);
+    m_currentReply->setDiscoveredDevices(m_discoveredDevices);
+    m_currentReply->setFinished();
+
+    m_currentReply.clear();
 }
 
 void BluetoothLowEnergyManager::onDeviceDiscovered(const QBluetoothDeviceInfo &deviceInfo)

@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2017 Simon Stürz <simon.stuerz@guh.io>                   *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -20,44 +20,46 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef UPNPDISCOVERYREQUEST_H
-#define UPNPDISCOVERYREQUEST_H
+#include "bluetoothdiscoveryreply.h"
 
-#include <QObject>
-#include <QDebug>
-#include <QMetaObject>
+#include <QTimer>
 
-#include "upnpdiscovery.h"
-#include "upnpdiscoveryreply.h"
-#include "upnpdevicedescriptor.h"
-#include "libguh.h"
-#include "typeutils.h"
-
-class UpnpDiscovery;
-
-class LIBGUH_EXPORT UpnpDiscoveryRequest : public QObject
+bool BluetoothDiscoveryReply::isFinished() const
 {
-    Q_OBJECT
-public:
-    explicit UpnpDiscoveryRequest(UpnpDiscovery *upnpDiscovery, QPointer<UpnpDiscoveryReply> reply);
+    return m_finished;
+}
 
-    void discover(const int &timeout);
-    void addDeviceDescriptor(const UpnpDeviceDescriptor &deviceDescriptor);
-    QNetworkRequest createNetworkRequest(UpnpDeviceDescriptor deviveDescriptor);
-    QList<UpnpDeviceDescriptor> deviceList() const;
+BluetoothDiscoveryReply::BluetoothDiscoveryReplyError BluetoothDiscoveryReply::error() const
+{
+    return m_error;
+}
 
-    QPointer<UpnpDiscoveryReply> reply();
+QList<QBluetoothDeviceInfo> BluetoothDiscoveryReply::discoveredDevices() const
+{
+    return m_discoveredDevices;
+}
 
-private:
-    UpnpDiscovery *m_upnpDiscovery;
-    QPointer<UpnpDiscoveryReply> m_reply;
+BluetoothDiscoveryReply::BluetoothDiscoveryReply(QObject *parent) : QObject(parent)
+{
 
-    QTimer *m_timer = nullptr;
-    QList<UpnpDeviceDescriptor> m_deviceList;
+}
 
-signals:
-    void discoveryTimeout();
+void BluetoothDiscoveryReply::setError(const BluetoothDiscoveryReply::BluetoothDiscoveryReplyError &error)
+{
+    m_error = error;
+    if (m_error != BluetoothDiscoveryReplyErrorNoError) {
+        emit errorOccured(m_error);
+    }
+}
 
-};
+void BluetoothDiscoveryReply::setDiscoveredDevices(const QList<QBluetoothDeviceInfo> &discoveredDevices)
+{
+    m_discoveredDevices = discoveredDevices;
+}
 
-#endif // UPNPDISCOVERYREQUEST_H
+void BluetoothDiscoveryReply::setFinished()
+{
+    m_finished = true;
+    // Note: this makes sure the finished signal will be processed in the next event loop
+    QTimer::singleShot(0, this, &BluetoothDiscoveryReply::finished);
+}

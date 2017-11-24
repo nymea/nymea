@@ -34,6 +34,7 @@
 #include "libguh.h"
 #include "devicemanager.h"
 #include "hardwareresource.h"
+#include "upnpdiscoveryreply.h"
 #include "upnpdiscoveryrequest.h"
 #include "upnpdevicedescriptor.h"
 
@@ -49,7 +50,7 @@ class LIBGUH_EXPORT UpnpDiscovery : public HardwareResource
     friend class HardwareManager;
 
 public:
-    bool discoverDevices(QPointer<QObject> caller = QPointer<QObject>(), const QString &callbackMethod = QString(), const QString &searchTarget = "ssdp:all", const QString &userAgent = QString());
+    UpnpDiscoveryReply *discoverDevices(const QString &searchTarget = "ssdp:all", const QString &userAgent = QString(), const int &timeout = 5000);
     void sendToMulticast(const QByteArray &data);
 
 private:
@@ -65,7 +66,7 @@ private:
     QNetworkAccessManager *m_networkAccessManager = nullptr;
 
     QList<UpnpDiscoveryRequest *> m_discoverRequests;
-    QHash<QNetworkReply*,UpnpDeviceDescriptor> m_informationRequestList;
+    QHash<QNetworkReply*, UpnpDeviceDescriptor> m_informationRequestList;
 
     void requestDeviceInformation(const QNetworkRequest &networkRequest, const UpnpDeviceDescriptor &upnpDeviceDescriptor);
     void respondToSearchRequest(QHostAddress host, int port);

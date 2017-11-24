@@ -23,35 +23,31 @@
 #include "upnpdiscoveryrequest.h"
 #include "loggingcategories.h"
 
-UpnpDiscoveryRequest::UpnpDiscoveryRequest(UpnpDiscovery *upnpDiscovery, QPointer<QObject> caller, const QString &callbackMethod, QString searchTarget, QString userAgent):
+UpnpDiscoveryRequest::UpnpDiscoveryRequest(UpnpDiscovery *upnpDiscovery, QPointer<UpnpDiscoveryReply> reply):
     QObject(upnpDiscovery),
     m_upnpDiscovery(upnpDiscovery),
-    m_caller(caller),
-    m_callbackMethod(callbackMethod),
-    m_searchTarget(searchTarget),
-    m_userAgent(userAgent)
+    m_reply(reply)
 {
     m_timer = new QTimer(this);
     m_timer->setSingleShot(true);
     connect(m_timer, &QTimer::timeout, this, &UpnpDiscoveryRequest::discoveryTimeout);
 }
 
-void UpnpDiscoveryRequest::discover()
+void UpnpDiscoveryRequest::discover(const int &timeout)
 {
     QByteArray ssdpSearchMessage = QByteArray("M-SEARCH * HTTP/1.1\r\n"
                                               "HOST:239.255.255.250:1900\r\n"
                                               "MAN:\"ssdp:discover\"\r\n"
                                               "MX:4\r\n"
-                                              "ST: " + m_searchTarget.toUtf8() + "\r\n"
-                                              "USR-AGENT: " + m_userAgent.toUtf8() + "\r\n\r\n");
+                                              "ST: " + reply()->searchTarget().toUtf8() + "\r\n"
+                                              "USR-AGENT: " + reply()->userAgent().toUtf8() + "\r\n\r\n");
 
     m_upnpDiscovery->sendToMulticast(ssdpSearchMessage);
 
     // TODO: call in 500ms steps
 
     qCDebug(dcHardware) << "--> UPnP discovery called.";
-
-    m_timer->start(5000);
+    m_timer->start(timeout);
 }
 
 void UpnpDiscoveryRequest::addDeviceDescriptor(const UpnpDeviceDescriptor &deviceDescriptor)
@@ -73,7 +69,7 @@ QNetworkRequest UpnpDiscoveryRequest::createNetworkRequest(UpnpDeviceDescriptor 
     QNetworkRequest deviceRequest;
     deviceRequest.setUrl(deviveDescriptor.location());
     deviceRequest.setHeader(QNetworkRequest::ContentTypeHeader,QVariant("text/xml"));
-    deviceRequest.setHeader(QNetworkRequest::UserAgentHeader,QVariant(m_userAgent));
+    deviceRequest.setHeader(QNetworkRequest::UserAgentHeader,QVariant(reply()->userAgent()));
 
     return deviceRequest;
 }
@@ -83,22 +79,7 @@ QList<UpnpDeviceDescriptor> UpnpDiscoveryRequest::deviceList() const
     return m_deviceList;
 }
 
-QPointer<QObject> UpnpDiscoveryRequest::caller() const
+QPointer<UpnpDiscoveryReply> UpnpDiscoveryRequest::reply()
 {
-    return m_caller;
-}
-
-QString UpnpDiscoveryRequest::callbackMethod() const
-{
-    return m_callbackMethod;
-}
-
-QString UpnpDiscoveryRequest::searchTarget() const
-{
-    return m_searchTarget;
-}
-
-QString UpnpDiscoveryRequest::userAgent() const
-{
-    return m_userAgent;
+    return m_reply;
 }

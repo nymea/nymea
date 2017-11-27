@@ -23,13 +23,14 @@
 #include "hardwareresource.h"
 #include "guhsettings.h"
 #include "hardwaremanager.h"
+#include "loggingcategories.h"
 
 HardwareResource::HardwareResource(const Type &hardwareReourceType, const QString &name, QObject *parent) :
     QObject(parent),
     m_hardwareReourceType(hardwareReourceType),
     m_name(name)
 {
-    // TODO: load if hardware resource is enabled or not
+
 }
 
 QString HardwareResource::name() const
@@ -54,13 +55,16 @@ HardwareResource::Type HardwareResource::hardwareReourceType() const
 
 void HardwareResource::setEnabled(const bool &enabled)
 {
-    // TODO: save this information to settings
-    m_enabled = enabled;
-    emit enabledChanged(m_enabled);
+    if (m_enabled != enabled) {
+        m_enabled = enabled;
+        emit enabledChanged(m_enabled);
+    }
 }
 
 void HardwareResource::setAvailable(const bool &available)
 {
-    m_available = available;
-    emit availableChanged(m_available);
+    if (m_available != available) {
+        m_available = available;
+        emit availableChanged(m_available);
+    }
 }

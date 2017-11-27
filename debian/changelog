@@ -1,3 +1,9 @@
+guh (0.8.1+201711270858~ecd6840~xenial) UNRELEASED; urgency=medium
+
+  * 
+
+ --  <timon@guh-guh-builder-xenial-amd64-amd64.lxd>  Mon, 27 Nov 2017 07:58:39 +0000
+
 guh (0.8.1) xenial; urgency=medium
 
   * Avahi interfaces and collision handling

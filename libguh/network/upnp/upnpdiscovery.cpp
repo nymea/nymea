@@ -76,8 +76,10 @@ UpnpDiscovery::~UpnpDiscovery()
 {
     qCDebug(dcApplication) << "Shutting down \"UPnP Server\"";
     sendByeByeMessage();
-    m_socket->waitForBytesWritten();
-    m_socket->close();
+    if (m_socket) {
+        m_socket->waitForBytesWritten(1000);
+        m_socket->close();
+    }
 }
 
 UpnpDiscoveryReply *UpnpDiscovery::discoverDevices(const QString &searchTarget, const QString &userAgent, const int &timeout)

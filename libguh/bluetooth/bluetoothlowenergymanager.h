@@ -32,6 +32,7 @@
 
 #include "hardwareresource.h"
 #include "bluetoothdiscoveryreply.h"
+#include "bluetoothlowenergydevice.h"
 
 class BluetoothLowEnergyManager : public HardwareResource
 {
@@ -40,24 +41,26 @@ class BluetoothLowEnergyManager : public HardwareResource
     friend class HardwareManager;
 
 public:
-     BluetoothDiscoveryReply *discoverDevices(const int &interval = 5000);
+    BluetoothDiscoveryReply *discoverDevices(const int &interval = 5000);
+
+    // Bluetooth device registration methods
+    BluetoothLowEnergyDevice *registerDevice(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType = QLowEnergyController::RandomAddress);
+    void unregisterDevice(BluetoothLowEnergyDevice *bluetoothDevice);
 
 private:
     explicit BluetoothLowEnergyManager(QObject *parent = nullptr);
     QTimer *m_timer = nullptr;
+    QList<QPointer<BluetoothLowEnergyDevice>> m_devices;
 
     QList<QBluetoothDeviceDiscoveryAgent *> m_bluetoothDiscoveryAgents;
     QList<QBluetoothDeviceInfo> m_discoveredDevices;
-
     QPointer<BluetoothDiscoveryReply> m_currentReply;
-
-signals:
 
 private slots:
     void onDeviceDiscovered(const QBluetoothDeviceInfo &deviceInfo);
     void onDiscoveryError(const QBluetoothDeviceDiscoveryAgent::Error &error);
 
-    void discoveryTimeout();
+    void onDiscoveryTimeout();
 
 public slots:
     bool enable();

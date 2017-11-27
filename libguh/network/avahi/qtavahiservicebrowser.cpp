@@ -47,6 +47,8 @@ QtAvahiServiceBrowser::QtAvahiServiceBrowser(QObject *parent) :
     HardwareResource(HardwareResource::TypeAvahiBrowser, "Avahi service browser", parent),
     d_ptr(new QtAvahiServiceBrowserPrivate(new QtAvahiClient))
 {
+    if (d_ptr->client->state())
+
     connect(d_ptr->client, &QtAvahiClient::clientStateChanged, this, &QtAvahiServiceBrowser::onClientStateChanged);
 
     // TODO: check available here

@@ -23,18 +23,6 @@
 #include "bluetoothlowenergydevice.h"
 #include "loggingcategories.h"
 
-BluetoothLowEnergyDevice::BluetoothLowEnergyDevice(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType, QObject *parent) :
-    QObject(parent), m_deviceInfo(deviceInfo)
-{
-    m_controller = new QLowEnergyController(address(), this);
-    m_controller->setRemoteAddressType(addressType);
-
-    connect(m_controller, &QLowEnergyController::connected, this, &BluetoothLowEnergyDevice::connected);
-    connect(m_controller, &QLowEnergyController::disconnected, this, &BluetoothLowEnergyDevice::disconnected);
-    connect(m_controller, SIGNAL(error(QLowEnergyController::Error)), this, SLOT(deviceError(QLowEnergyController::Error)));
-    connect(m_controller, SIGNAL(discoveryFinished()), this, SIGNAL(servicesDiscoveryFinished()));
-}
-
 QString BluetoothLowEnergyDevice::name() const
 {
     return m_deviceInfo.name();
@@ -50,15 +38,77 @@ QLowEnergyController *BluetoothLowEnergyDevice::controller() const
     return m_controller;
 }
 
-void BluetoothLowEnergyDevice::connectDevice()
+BluetoothLowEnergyDevice::BluetoothLowEnergyDevice(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType, QObject *parent) :
+    QObject(parent), m_deviceInfo(deviceInfo)
 {
-    m_controller->connectToDevice();
+    m_controller = new QLowEnergyController(address(), this);
+    m_controller->setRemoteAddressType(addressType);
+
+    connect(m_controller, &QLowEnergyController::connected, this, &BluetoothLowEnergyDevice::onConnected);
+    connect(m_controller, &QLowEnergyController::disconnected, this, &BluetoothLowEnergyDevice::onDisconnected);
+    connect(m_controller, &QLowEnergyController::discoveryFinished, this, &BluetoothLowEnergyDevice::onServiceDiscoveryFinished);
+    connect(m_controller, &QLowEnergyController::stateChanged, this, &BluetoothLowEnergyDevice::onStateChanged);
+    connect(m_controller, SIGNAL(error(QLowEnergyController::Error)), this, SLOT(onDeviceError(QLowEnergyController::Error)));
 }
 
-void BluetoothLowEnergyDevice::reconnectDevice()
+void BluetoothLowEnergyDevice::setConnected(const bool &connected)
 {
-    if (!isConnected())
-        m_controller->connectToDevice();
+    if (m_connected != connected) {
+        m_connected = connected;
+        emit connectedChanged(m_connected);
+    }
+}
+
+void BluetoothLowEnergyDevice::setEnabled(const bool &enabled)
+{
+    m_enabled = enabled;
+
+    if (!m_enabled) {
+        m_controller->disconnectFromDevice();
+    } else {
+        if (m_autoConnecting) {
+            m_controller->connectToDevice();
+        }
+    }
+}
+
+void BluetoothLowEnergyDevice::onConnected()
+{
+    qCDebug(dcBluetooth()) << "Device connected" << name() << address().toString();
+    setConnected(true);
+
+    qCDebug(dcBluetooth()) << "Discover services on" << name() << address().toString();
+    m_controller->discoverServices();
+}
+
+void BluetoothLowEnergyDevice::onDisconnected()
+{
+    qCWarning(dcBluetooth()) << "Device disconnected" << name() << address().toString();
+    setConnected(false);
+}
+
+void BluetoothLowEnergyDevice::onServiceDiscoveryFinished()
+{
+    qCDebug(dcBluetooth()) << "Service discovery finished for" << name() << address().toString();
+    foreach (const QBluetoothUuid &serviceUuid, m_controller->services()) {
+        QLowEnergyService *service = m_controller->createServiceObject(serviceUuid, this);
+        qCDebug(dcBluetooth()) << "--> Service" << serviceUuid.toString();
+        m_services.append(service);
+    }
+    emit servicesDiscoveryFinished();
+}
+
+void BluetoothLowEnergyDevice::onStateChanged(const QLowEnergyController::ControllerState &state)
+{
+    emit stateChanged(state);
+}
+
+void BluetoothLowEnergyDevice::connectDevice()
+{
+    if (!m_enabled)
+        return;
+
+    m_controller->connectToDevice();
 }
 
 void BluetoothLowEnergyDevice::disconnectDevice()
@@ -66,29 +116,43 @@ void BluetoothLowEnergyDevice::disconnectDevice()
     m_controller->disconnectFromDevice();
 }
 
-bool BluetoothLowEnergyDevice::isConnected() const
+bool BluetoothLowEnergyDevice::autoConnecting() const
+{
+    return m_autoConnecting;
+}
+
+void BluetoothLowEnergyDevice::setAutoConnecting(const bool &autoConnecting)
+{
+    if (m_autoConnecting != autoConnecting) {
+        m_autoConnecting = autoConnecting;
+        emit autoConnectingChanged(m_autoConnecting);
+    }
+}
+
+bool BluetoothLowEnergyDevice::connected() const
 {
     return m_connected;
 }
 
-void BluetoothLowEnergyDevice::connected()
+bool BluetoothLowEnergyDevice::discovered() const
 {
-    m_connected = true;
-    qCDebug(dcHardware) << "Connected to Bluetooth LE device:" << name() << address().toString();
-    emit connectionStatusChanged();
-    qCDebug(dcHardware) << "Discover Bluetooth LE services...";
-    m_controller->discoverServices();
+    return m_discovered;
 }
 
-void BluetoothLowEnergyDevice::disconnected()
+QList<QLowEnergyService *> BluetoothLowEnergyDevice::services() const
 {
-    m_connected = false;
-    qCWarning(dcHardware) << "Disconnected from Bluetooth LE device:" << name() << address().toString();
-    emit connectionStatusChanged();
+    return m_services;
 }
 
-void BluetoothLowEnergyDevice::deviceError(const QLowEnergyController::Error &error)
+QList<QBluetoothUuid> BluetoothLowEnergyDevice::serviceUuids() const
 {
-    if (isConnected())
-        qCWarning(dcHardware)  << "Bluetooth LE device:" << name() << address().toString() << ": " << error << m_controller->errorString();
+    return m_controller->services();
+}
+
+void BluetoothLowEnergyDevice::onDeviceError(const QLowEnergyController::Error &error)
+{
+    if (connected())
+        qCWarning(dcBluetooth())  << "Device error:" << name() << address().toString() << ": " << error << m_controller->errorString();
+
+    emit errorOccured(error);
 }

@@ -53,7 +53,7 @@ public:
 private:
     HardwareResource::Type m_hardwareReourceType;
     QString m_name;
-    // Note: default enabled, but not available. Each hardwareresource has explicitly chek if available
+    // Note: default enabled, but not available. Each hardwareresource has explicitly check if available
     bool m_available = false;
     bool m_enabled = true;
 

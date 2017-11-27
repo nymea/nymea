@@ -34,37 +34,57 @@
 class LIBGUH_EXPORT BluetoothLowEnergyDevice : public QObject
 {
     Q_OBJECT
-public:
-    explicit BluetoothLowEnergyDevice(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType = QLowEnergyController::PublicAddress, QObject *parent = 0);
 
+    friend class BluetoothLowEnergyManager;
+
+public:
     QString name() const;
     QBluetoothAddress address() const;
 
     void connectDevice();
-    void reconnectDevice();
     void disconnectDevice();
 
-    bool isConnected() const;
-    bool isDiscovered() const;
+    bool autoConnecting() const;
+    void setAutoConnecting(const bool &autoConnecting);
+
+    bool connected() const;
+    bool discovered() const;
+
+    QList<QLowEnergyService *> services() const;
+    QList<QBluetoothUuid> serviceUuids() const;
 
 protected:
     QLowEnergyController *controller() const;
 
 private:
+    explicit BluetoothLowEnergyDevice(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType = QLowEnergyController::PublicAddress, QObject *parent = 0);
     QBluetoothDeviceInfo m_deviceInfo;
-    QLowEnergyController *m_controller;
+    QLowEnergyController *m_controller = nullptr;
+    QList<QLowEnergyService *> m_services;
 
-    bool m_connected;
-    bool m_discovered;
+    bool m_connected = false;
+    bool m_autoConnecting = false;
+    bool m_discovered = false;
+    bool m_enabled = true;
+
+    void setConnected(const bool &connected);
+
+    // Methods called from BluetoothLowEnergyManager
+    void setEnabled(const bool &enabled);
 
 signals:
-    void connectionStatusChanged();
+    void connectedChanged(const bool &connected);
+    void autoConnectingChanged(const bool &autoConnecting);
+    void stateChanged(const QLowEnergyController::ControllerState &state);
+    void errorOccured(const QLowEnergyController::Error &error);
     void servicesDiscoveryFinished();
 
 private slots:
-    void connected();
-    void disconnected();
-    void deviceError(const QLowEnergyController::Error &error);
+    void onConnected();
+    void onDisconnected();
+    void onServiceDiscoveryFinished();
+    void onStateChanged(const QLowEnergyController::ControllerState &state);
+    void onDeviceError(const QLowEnergyController::Error &error);
 };
 
 #endif // BLUETOOTHLOWENERGYDEVICE_H

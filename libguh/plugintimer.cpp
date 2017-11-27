@@ -116,6 +116,9 @@ void PluginTimer::stop()
 PluginTimer *PluginTimerManager::registerTimer(int seconds)
 {
     QPointer<PluginTimer> pluginTimer = new PluginTimer(seconds, this);
+
+    // TODO: start timer depending on the schedule from other timers, loadbalancing
+
     m_timers.append(pluginTimer);
     return pluginTimer.data();
 }

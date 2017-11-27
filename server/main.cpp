@@ -115,6 +115,7 @@ int main(int argc, char *argv[])
     s_loggingFilters.insert("RuleEngine", true);
     s_loggingFilters.insert("RuleEngineDebug", false);
     s_loggingFilters.insert("Hardware", false);
+    s_loggingFilters.insert("Bluetooth", false);
     s_loggingFilters.insert("Connection", true);
     s_loggingFilters.insert("LogEngine", false);
     s_loggingFilters.insert("TcpServer", false);
@@ -130,7 +131,7 @@ int main(int argc, char *argv[])
     s_loggingFilters.insert("Coap", false);
     s_loggingFilters.insert("Avahi", false);
     s_loggingFilters.insert("Cloud", true);
-    s_loggingFilters.insert("NetworkManager", true);
+    s_loggingFilters.insert("NetworkManager", false);
     s_loggingFilters.insert("UserManager", true);
     s_loggingFilters.insert("AWS", false);
     s_loggingFilters.insert("AWSTraffic", false);

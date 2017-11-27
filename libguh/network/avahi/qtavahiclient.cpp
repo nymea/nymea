@@ -29,7 +29,7 @@
 QtAvahiClient::QtAvahiClient(QObject *parent) :
     QObject(parent),
     m_poll(avahi_qt_poll_get()),
-    m_client(0),
+    m_client(nullptr),
     error(0),
     m_state(QtAvahiClientStateNone)
 {
@@ -53,7 +53,7 @@ void QtAvahiClient::start()
     if (m_client)
         return;
 
-    avahi_client_new(m_poll, (AvahiClientFlags) 0, QtAvahiClient::callback, this, &error);
+    m_client = avahi_client_new(m_poll, (AvahiClientFlags) 0, QtAvahiClient::callback, this, &error);
 }
 
 void QtAvahiClient::stop()

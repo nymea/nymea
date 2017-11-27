@@ -201,7 +201,7 @@ void AWSConnector::disconnectAWS()
 
 bool AWSConnector::isConnected() const
 {
-    return m_connectingFuture.isFinished() && m_networkConnection && m_client && m_client->IsConnected();
+    return m_connectingFuture.isFinished() && m_networkConnection && m_client && m_client->IsConnected() && !m_setupInProgress;
 }
 
 void AWSConnector::setDeviceName(const QString &deviceName)
@@ -233,7 +233,7 @@ void AWSConnector::sendWebRtcHandshakeMessage(const QString &sessionId, const QV
 
 quint16 AWSConnector::publish(const QString &topic, const QVariantMap &message)
 {
-    if (!isConnected()) {
+    if (!m_setupInProgress && !isConnected()) {
         qCWarning(dcAWS()) << "Can't publish to AWS: Not connected.";
         return -1;
     }

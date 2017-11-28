@@ -30,6 +30,7 @@
 #include <QBluetoothLocalDevice>
 #include <QBluetoothDeviceDiscoveryAgent>
 
+#include "plugintimer.h"
 #include "hardwareresource.h"
 #include "bluetoothdiscoveryreply.h"
 #include "bluetoothlowenergydevice.h"
@@ -48,7 +49,8 @@ public:
     void unregisterDevice(BluetoothLowEnergyDevice *bluetoothDevice);
 
 private:
-    explicit BluetoothLowEnergyManager(QObject *parent = nullptr);
+    explicit BluetoothLowEnergyManager(PluginTimer *reconnectTimer, QObject *parent = nullptr);
+    PluginTimer *m_reconnectTimer = nullptr;
     QTimer *m_timer = nullptr;
     QList<QPointer<BluetoothLowEnergyDevice>> m_devices;
 
@@ -57,9 +59,9 @@ private:
     QPointer<BluetoothDiscoveryReply> m_currentReply;
 
 private slots:
+    void onReconnectTimeout();
     void onDeviceDiscovered(const QBluetoothDeviceInfo &deviceInfo);
     void onDiscoveryError(const QBluetoothDeviceDiscoveryAgent::Error &error);
-
     void onDiscoveryTimeout();
 
 public slots:

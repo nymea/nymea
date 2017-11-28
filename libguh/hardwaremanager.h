@@ -24,6 +24,7 @@
 #define HARDWAREMANAGER_H
 
 #include <QObject>
+#include <QDBusConnection>
 #include <QNetworkAccessManager>
 
 #include "hardwareresource.h"
@@ -39,6 +40,7 @@ class QtAvahiServiceBrowser;
 class HardwareManager : public QObject
 {
     Q_OBJECT
+    Q_CLASSINFO("D-Bus Interface", "io.guh.nymead")
 
     friend class DeviceManager;
 
@@ -54,6 +56,9 @@ public:
 
     bool isAvailable(const HardwareResource::Type &hardwareResourceType) const;
     bool isEnabled(const HardwareResource::Type &hardwareResourceType) const;
+
+    // D-Bus method for enable/disable bluetooth support
+    Q_SCRIPTABLE void EnableBluetooth(const bool &enabled);
 
 private:
     QList<HardwareResource *> m_hardwareResources;

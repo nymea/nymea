@@ -59,14 +59,14 @@ BluetoothDiscoveryReply *BluetoothLowEnergyManager::discoverDevices(const int &i
 
     // Prevent blocking the hardware resource from plugins
     int finalInterval = interval;
-    if (finalInterval > 30) {
+    if (finalInterval > 30000) {
         qCWarning(dcBluetooth()) << "Discovery interval out of range. Reset to 30 seconds.";
-        finalInterval = 30;
+        finalInterval = 30000;
     }
 
     if (finalInterval <= 0) {
         qCWarning(dcBluetooth()) << "Discovery interval out of range. Reset to 5 seconds.";
-        finalInterval = 5;
+        finalInterval = 5000;
     }
 
     m_timer->start(finalInterval);
@@ -75,9 +75,10 @@ BluetoothDiscoveryReply *BluetoothLowEnergyManager::discoverDevices(const int &i
 
 BluetoothLowEnergyDevice *BluetoothLowEnergyManager::registerDevice(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType)
 {
-    QPointer<BluetoothLowEnergyDevice> device = new BluetoothLowEnergyDevice(deviceInfo, addressType, this);
-    m_devices.append(device);
-    return device.data();
+    QPointer<BluetoothLowEnergyDevice> bluetoothDevice = new BluetoothLowEnergyDevice(deviceInfo, addressType, this);
+    qCDebug(dcBluetooth()) << "Register device" << bluetoothDevice->name() << bluetoothDevice->address().toString();
+    m_devices.append(bluetoothDevice);
+    return bluetoothDevice.data();
 }
 
 void BluetoothLowEnergyManager::unregisterDevice(BluetoothLowEnergyDevice *bluetoothDevice)
@@ -88,6 +89,8 @@ void BluetoothLowEnergyManager::unregisterDevice(BluetoothLowEnergyDevice *bluet
         return;
     }
 
+    qCDebug(dcBluetooth()) << "Unregister device" << bluetoothDevice->name() << bluetoothDevice->address().toString();
+
     foreach (QPointer<BluetoothLowEnergyDevice> dPointer, m_devices) {
         if (devicePointer.data() == dPointer.data()) {
             m_devices.removeAll(dPointer);
@@ -96,8 +99,9 @@ void BluetoothLowEnergyManager::unregisterDevice(BluetoothLowEnergyDevice *bluet
     }
 }
 
-BluetoothLowEnergyManager::BluetoothLowEnergyManager(QObject *parent) :
-    HardwareResource(HardwareResource::TypeBluetoothLE, "Bluetooth LE manager", parent)
+BluetoothLowEnergyManager::BluetoothLowEnergyManager(PluginTimer *reconnectTimer, QObject *parent) :
+    HardwareResource(HardwareResource::TypeBluetoothLE, "Bluetooth LE manager", parent),
+    m_reconnectTimer(reconnectTimer)
 {
     // Check which bluetooth adapter are available
     QList<QBluetoothHostInfo> bluetoothAdapters = QBluetoothLocalDevice::allDevices();
@@ -124,8 +128,21 @@ BluetoothLowEnergyManager::BluetoothLowEnergyManager(QObject *parent) :
     m_timer->setSingleShot(true);
     connect(m_timer, &QTimer::timeout, this, &BluetoothLowEnergyManager::onDiscoveryTimeout);
 
+    // Reconnect timer
+    connect(m_reconnectTimer, &PluginTimer::timeout, this, &BluetoothLowEnergyManager::onReconnectTimeout);
+
     qCDebug(dcHardware()) << "-->" << name() << "created successfully.";
     setAvailable(true);
+}
+
+void BluetoothLowEnergyManager::onReconnectTimeout()
+{
+    // Reconnect device if enabled and disconnected
+    foreach (BluetoothLowEnergyDevice *device, m_devices) {
+        if (device->autoConnecting() && !device->connected()) {
+            device->connectDevice();
+        }
+    }
 }
 
 void BluetoothLowEnergyManager::onDiscoveryTimeout()
@@ -161,8 +178,9 @@ void BluetoothLowEnergyManager::onDeviceDiscovered(const QBluetoothDeviceInfo &d
         }
     }
 
-    if (!alreadyAdded) {
-        qCDebug(dcBluetooth()) << "device discovered" << deviceInfo.name() <<deviceInfo.address().toString();
+    // Note: only show low energy devices
+    if (!alreadyAdded && deviceInfo.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration) {
+        qCDebug(dcBluetooth()) << "device discovered" << deviceInfo.name() << deviceInfo.address().toString();
         m_discoveredDevices.append(deviceInfo);
     }
 }

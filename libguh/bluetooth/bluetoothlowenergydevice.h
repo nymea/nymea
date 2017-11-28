@@ -50,20 +50,17 @@ public:
     bool connected() const;
     bool discovered() const;
 
-    QList<QLowEnergyService *> services() const;
     QList<QBluetoothUuid> serviceUuids() const;
-
-protected:
     QLowEnergyController *controller() const;
 
 private:
     explicit BluetoothLowEnergyDevice(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType = QLowEnergyController::PublicAddress, QObject *parent = 0);
     QBluetoothDeviceInfo m_deviceInfo;
     QLowEnergyController *m_controller = nullptr;
-    QList<QLowEnergyService *> m_services;
 
+    // Default enabled and auto connecting
     bool m_connected = false;
-    bool m_autoConnecting = false;
+    bool m_autoConnecting = true;
     bool m_discovered = false;
     bool m_enabled = true;
 

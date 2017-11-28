@@ -91,15 +91,14 @@ void BluetoothLowEnergyDevice::onServiceDiscoveryFinished()
 {
     qCDebug(dcBluetooth()) << "Service discovery finished for" << name() << address().toString();
     foreach (const QBluetoothUuid &serviceUuid, m_controller->services()) {
-        QLowEnergyService *service = m_controller->createServiceObject(serviceUuid, this);
         qCDebug(dcBluetooth()) << "--> Service" << serviceUuid.toString();
-        m_services.append(service);
     }
     emit servicesDiscoveryFinished();
 }
 
 void BluetoothLowEnergyDevice::onStateChanged(const QLowEnergyController::ControllerState &state)
 {
+    qCDebug(dcBluetooth()) << "State changed for" << name() << address().toString() << state;
     emit stateChanged(state);
 }
 
@@ -137,11 +136,6 @@ bool BluetoothLowEnergyDevice::connected() const
 bool BluetoothLowEnergyDevice::discovered() const
 {
     return m_discovered;
-}
-
-QList<QLowEnergyService *> BluetoothLowEnergyDevice::services() const
-{
-    return m_services;
 }
 
 QList<QBluetoothUuid> BluetoothLowEnergyDevice::serviceUuids() const

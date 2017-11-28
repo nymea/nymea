@@ -116,6 +116,7 @@ void PluginTimer::stop()
 PluginTimer *PluginTimerManager::registerTimer(int seconds)
 {
     QPointer<PluginTimer> pluginTimer = new PluginTimer(seconds, this);
+    qCDebug(dcHardware()) << "Register timer" << pluginTimer->interval();
 
     // TODO: start timer depending on the schedule from other timers, loadbalancing
 
@@ -130,6 +131,8 @@ void PluginTimerManager::unregisterTimer(PluginTimer *timer)
         qCWarning(dcHardware()) << name() << "Cannot unregister timer. Looks like the timer is already unregistered.";
         return;
     }
+
+    qCDebug(dcHardware()) << "Unregister timer" << timer->interval();
 
     foreach (QPointer<PluginTimer> tPointer, m_timers) {
         if (timerPointer.data() == tPointer.data()) {

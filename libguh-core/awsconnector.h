@@ -114,6 +114,7 @@ private:
     bool m_setupInProgress = false;
     int m_reconnectCounter = 0;
     QDateTime m_lastConnectionDrop;
+    QStringList m_subscriptionCache;
 
     std::shared_ptr<awsiotsdk::mqtt::SubscriptionHandlerContextData> m_subscriptionContextData;
     std::shared_ptr<awsiotsdk::DisconnectCallbackContextData> m_disconnectContextData;

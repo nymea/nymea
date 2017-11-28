@@ -55,6 +55,7 @@ void BluetoothLowEnergyDevice::setConnected(const bool &connected)
 {
     if (m_connected != connected) {
         m_connected = connected;
+        qCDebug(dcBluetooth()) << "Device" << name() << address().toString() << (connected ? "connected" : "disconnected");
         emit connectedChanged(m_connected);
     }
 }
@@ -74,11 +75,12 @@ void BluetoothLowEnergyDevice::setEnabled(const bool &enabled)
 
 void BluetoothLowEnergyDevice::onConnected()
 {
-    qCDebug(dcBluetooth()) << "Device connected" << name() << address().toString();
     setConnected(true);
 
-    qCDebug(dcBluetooth()) << "Discover services on" << name() << address().toString();
-    m_controller->discoverServices();
+    if (m_controller->state() != QLowEnergyController::DiscoveredState) {
+        qCDebug(dcBluetooth()) << "Discover services on" << name() << address().toString();
+        m_controller->discoverServices();
+    }
 }
 
 void BluetoothLowEnergyDevice::onDisconnected()
@@ -105,6 +107,10 @@ void BluetoothLowEnergyDevice::onStateChanged(const QLowEnergyController::Contro
 void BluetoothLowEnergyDevice::connectDevice()
 {
     if (!m_enabled)
+        return;
+
+    // Only connect if not connected
+    if (m_controller->state() != QLowEnergyController::UnconnectedState)
         return;
 
     m_controller->connectToDevice();

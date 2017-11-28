@@ -531,6 +531,11 @@ void JsonRPCServer::asyncReplyFinished()
 {
     JsonReply *reply = qobject_cast<JsonReply *>(sender());
     TransportInterface *interface = m_asyncReplies.take(reply);
+    if (!interface) {
+        qCWarning(dcJsonRpc()) << "Got an async reply but the requesting connection has vanished.";
+        reply->deleteLater();
+        return;
+    }
     if (!reply->timedOut()) {
         Q_ASSERT_X(reply->handler()->validateReturns(reply->method(), reply->data()).first
                    ,"validating return value", formatAssertion(reply->handler()->name(), reply->method(), reply->handler(), reply->data()).toLatin1().data());

@@ -77,6 +77,7 @@ void AWSConnector::connect2AWS(const QString &endpoint, const QString &clientId,
 void AWSConnector::doConnect()
 {
     m_setupInProgress = true;
+    m_subscriptionCache.clear();
     m_networkConnection = std::shared_ptr<MbedTLSConnection>(new MbedTLSConnection(
                                                                  m_currentEndpoint.toStdString(),
                                                                  8883,
@@ -193,7 +194,7 @@ void AWSConnector::disconnectAWS()
 {
     m_shouldReconnect = false;
     if (isConnected()) {
-        m_client->Disconnect(std::chrono::seconds(2));
+        m_client->Disconnect(std::chrono::milliseconds(2000));
         m_client.reset();
         m_networkConnection.reset();
         qCDebug(dcAWS()) << "Disconnected from AWS.";
@@ -297,6 +298,10 @@ quint16 AWSConnector::subscribe(const QStringList &topics)
 {
     util::Vector<std::shared_ptr<mqtt::Subscription>> subscription_list;
     foreach (const QString &topic, topics) {
+        if (m_subscriptionCache.contains(topic)) {
+            qCDebug(dcAWS()) << "Already subscribed to topic:" << topic << ". Not resubscribing";
+            continue;
+        }
         qCDebug(dcAWSTraffic()) << "Topic to subscribe is" << topic;
         if (!Subscription::IsValidTopicName(topic.toStdString())) {
             qCWarning(dcAWS()) << "Trying to subscribe to invalid topic:" << topic;
@@ -304,6 +309,10 @@ quint16 AWSConnector::subscribe(const QStringList &topics)
         }
         auto subscription = mqtt::Subscription::Create(Utf8String::Create(topic.toStdString()), mqtt::QoS::QOS1, &onSubscriptionReceivedCallback, m_subscriptionContextData);
         subscription_list.push_back(subscription);
+        m_subscriptionCache.append(topic);
+    }
+    if (subscription_list.size() == 0) {
+        return 0;
     }
 
     uint16_t packetId;

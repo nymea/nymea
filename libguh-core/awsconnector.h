@@ -90,8 +90,8 @@ private:
     void storeRegisteredFlag(bool registered);
     bool readRegisteredFlag() const;
 
-    void storeNameSyncedFlag(bool synced);
-    bool readNameSyncedFlag();
+    void storeSyncedNameCache(const QString &syncedName);
+    QString readSyncedNameCache();
 
 private:
     std::shared_ptr<awsiotsdk::network::MbedTLSConnection> m_networkConnection;

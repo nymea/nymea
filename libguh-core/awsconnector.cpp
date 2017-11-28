@@ -46,6 +46,8 @@ AWSConnector::AWSConnector(QObject *parent) : QObject(parent)
 //    awsiotsdk::util::Logging::InitializeAWSLogging(p_log_system);
     m_disconnectContextData = std::shared_ptr<awsiotsdk::DisconnectCallbackContextData>(new DisconnectContext(this));
     m_subscriptionContextData = std::shared_ptr<awsiotsdk::mqtt::SubscriptionHandlerContextData>(new SubscriptionContext(this));
+
+    m_clientName = readSyncedNameCache();
 }
 
 AWSConnector::~AWSConnector()
@@ -179,7 +181,7 @@ void AWSConnector::onPairingsRetrieved(const QVariantList &pairings)
     }
     subscribe(topics);
 
-    if (!readNameSyncedFlag()) {
+    if (readSyncedNameCache() != m_clientName) {
         setName();
     }
 
@@ -208,7 +210,7 @@ void AWSConnector::setDeviceName(const QString &deviceName)
 {
     if (m_clientName != deviceName) {
         m_clientName = deviceName;
-        storeNameSyncedFlag(false);
+        storeSyncedNameCache(QString());
         if (isConnected()) {
             setName();
         }
@@ -272,7 +274,7 @@ void AWSConnector::onDisconnected()
     if (needReRegistering) {
         qCDebug(dcAWS) << "Trying to reregister the device in the cloud";
         storeRegisteredFlag(false);
-        storeNameSyncedFlag(false);
+        storeSyncedNameCache(QString());
     }
 
     if (m_shouldReconnect) {
@@ -411,7 +413,7 @@ ResponseCode AWSConnector::onSubscriptionReceivedCallback(util::String topic_nam
     } else if (topic == QString("%1/device/name/response").arg(connector->m_clientId)) {
         qCDebug(dcAWS) << "Set device name in cloud with status:" << jsonDoc.toVariant().toMap().value("status").toInt();
         if (jsonDoc.toVariant().toMap().value("status").toInt() == 200) {
-            connector->storeNameSyncedFlag(true);
+            connector->storeSyncedNameCache(connector->m_clientName);
         }
     } else if (topic.startsWith(QString("%1/eu-west-1:").arg(connector->m_clientId)) && !topic.contains("reply")) {
         static QStringList dupes;
@@ -453,14 +455,14 @@ bool AWSConnector::readRegisteredFlag() const
     return settings.value("registered", false).toBool();
 }
 
-void AWSConnector::storeNameSyncedFlag(bool synced)
+void AWSConnector::storeSyncedNameCache(const QString &syncedName)
 {
     QSettings settings(GuhSettings::storagePath() + "/cloudstatus.conf", QSettings::IniFormat);
-    settings.setValue("nameSynced", synced);
+    settings.setValue("syncedName", syncedName);
 }
 
-bool AWSConnector::readNameSyncedFlag()
+QString AWSConnector::readSyncedNameCache()
 {
     QSettings settings(GuhSettings::storagePath() + "/cloudstatus.conf", QSettings::IniFormat);
-    return settings.value("nameSynced", false).toBool();
+    return settings.value("syncedName", QString()).toString();
 }

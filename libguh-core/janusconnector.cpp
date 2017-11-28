@@ -127,11 +127,7 @@ void JanusConnector::sendWebRtcHandshakeMessage(const QString &sessionId, const 
             session->webRtcUp = message;
         }
     } else if (messageType == "ack") {
-        QVariantMap janusMessage;
-        janusMessage.insert("janus", "ack");
-        janusMessage.insert("id", transactionId);
-        janusMessage.insert("transaction", "ack");
-        writeToJanus(QJsonDocument::fromVariant(janusMessage).toJson(QJsonDocument::Compact));
+        // silence ack's we may get from the other end, janus doesn't need them...
     } else {
         qCWarning(dcJanus()) << "Unhandled message type:" << messageType << message;
     }

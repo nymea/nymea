@@ -150,7 +150,7 @@ bool HardwareManager::enableHardwareReource(const HardwareResource::Type &hardwa
 {
     foreach (HardwareResource *resource, m_hardwareResources) {
         if (resource->hardwareReourceType() == hardwareResourceType) {
-            return resource->enabled();
+            return resource->enable();
         }
     }
     return false;

@@ -96,7 +96,7 @@ void AWSConnector::doConnect()
 
     qCDebug(dcAWS()) << "Connecting to AWS with ID:" << m_clientId << "endpoint:" << m_currentEndpoint << "Min reconnect timeout:" << m_client->GetMinReconnectBackoffTimeout().count() << "Max reconnect timeout:" << (quint32)m_client->GetMaxReconnectBackoffTimeout().count();
     m_connectingFuture = QtConcurrent::run([&]() {
-        ResponseCode rc = m_client->Connect(std::chrono::milliseconds(3000), true, mqtt::Version::MQTT_3_1_1, std::chrono::seconds(1200), Utf8String::Create(m_clientId.toStdString()), nullptr, nullptr, nullptr);
+        ResponseCode rc = m_client->Connect(std::chrono::milliseconds(10000), true, mqtt::Version::MQTT_3_1_1, std::chrono::seconds(30), Utf8String::Create(m_clientId.toStdString()), nullptr, nullptr, nullptr);
         if (rc == ResponseCode::MQTT_CONNACK_CONNECTION_ACCEPTED) {
             staticMetaObject.invokeMethod(this, "onConnected", Qt::QueuedConnection);
         } else {

@@ -118,7 +118,30 @@ PluginTimer *PluginTimerManager::registerTimer(int seconds)
     QPointer<PluginTimer> pluginTimer = new PluginTimer(seconds, this);
     qCDebug(dcHardware()) << "Register timer" << pluginTimer->interval();
 
-    // TODO: start timer depending on the schedule from other timers, loadbalancing
+    // TODO: schedule timer for load balancing
+
+//    // Get min/max timer interval
+//    PluginTimer *shortestTimer = nullptr;
+//    PluginTimer *longestTimer = nullptr;
+//    foreach (PluginTimer *timer, m_timers) {
+//        if (!shortestTimer && !longestTimer) {
+//            shortestTimer = timer;
+//            longestTimer = timer;
+//            continue;
+//        }
+
+//        if (timer->interval() < shortestTimer->interval()) {
+//            shortestTimer = timer;
+//            continue;
+//        }
+
+//        if (timer->interval() > longestTimer->interval()) {
+//            longestTimer = timer;
+//            continue;
+//        }
+//    }
+
+
 
     m_timers.append(pluginTimer);
     return pluginTimer.data();

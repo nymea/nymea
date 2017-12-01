@@ -68,6 +68,7 @@ public slots:
     void reset();
     void start();
     void stop();
+
 };
 
 

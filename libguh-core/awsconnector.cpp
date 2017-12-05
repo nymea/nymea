@@ -96,7 +96,7 @@ void AWSConnector::doConnect()
 
     qCDebug(dcAWS()) << "Connecting to AWS with ID:" << m_clientId << "endpoint:" << m_currentEndpoint << "Min reconnect timeout:" << m_client->GetMinReconnectBackoffTimeout().count() << "Max reconnect timeout:" << (quint32)m_client->GetMaxReconnectBackoffTimeout().count();
     m_connectingFuture = QtConcurrent::run([&]() {
-        ResponseCode rc = m_client->Connect(std::chrono::milliseconds(3000), true, mqtt::Version::MQTT_3_1_1, std::chrono::seconds(1200), Utf8String::Create(m_clientId.toStdString()), nullptr, nullptr, nullptr);
+        ResponseCode rc = m_client->Connect(std::chrono::milliseconds(10000), true, mqtt::Version::MQTT_3_1_1, std::chrono::seconds(30), Utf8String::Create(m_clientId.toStdString()), nullptr, nullptr, nullptr);
         if (rc == ResponseCode::MQTT_CONNACK_CONNECTION_ACCEPTED) {
             staticMetaObject.invokeMethod(this, "onConnected", Qt::QueuedConnection);
         } else {
@@ -176,11 +176,14 @@ void AWSConnector::fetchPairings()
 
 void AWSConnector::onPairingsRetrieved(const QVariantList &pairings)
 {
-    QStringList topics;
-    foreach (const QVariant &pairing, pairings) {
-        topics << QString("%1/%2/#").arg(m_clientId).arg(pairing.toString());
+    qCDebug(dcAWS) << pairings.count() << "devices paired in cloud.";
+    if (pairings.count() > 0) {
+        QStringList topics;
+        foreach (const QVariant &pairing, pairings) {
+            topics << QString("%1/%2/#").arg(m_clientId).arg(pairing.toString());
+        }
+        subscribe(topics);
     }
-    subscribe(topics);
 
     if (readSyncedNameCache() != m_clientName) {
         setName();
@@ -413,11 +416,6 @@ ResponseCode AWSConnector::onSubscriptionReceivedCallback(util::String topic_nam
             qCWarning(dcAWS()) << "Received a pairing response for a transaction we didn't start";
         }
     } else if (topic == QString("%1/device/users/response").arg(connector->m_clientId)) {
-        if (jsonDoc.toVariant().toMap().value("users").toList().isEmpty()) {
-            qCDebug(dcAWS()) << "No devices paired yet...";
-            return ResponseCode::SUCCESS;
-        }
-        qCDebug(dcAWS) << jsonDoc.toVariant().toMap().value("users").toList().count() << "devices paired in cloud.";
         connector->staticMetaObject.invokeMethod(connector, "onPairingsRetrieved", Qt::QueuedConnection, Q_ARG(QVariantList, jsonDoc.toVariant().toMap().value("users").toList()));
     } else if (topic == QString("%1/device/name/response").arg(connector->m_clientId)) {
         qCDebug(dcAWS) << "Set device name in cloud with status:" << jsonDoc.toVariant().toMap().value("status").toInt();

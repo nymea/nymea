@@ -173,11 +173,14 @@ void AWSConnector::fetchPairings()
 
 void AWSConnector::onPairingsRetrieved(const QVariantList &pairings)
 {
-    QStringList topics;
-    foreach (const QVariant &pairing, pairings) {
-        topics << QString("%1/%2/#").arg(m_clientId).arg(pairing.toString());
+    qCDebug(dcAWS) << pairings.count() << "devices paired in cloud.";
+    if (pairings.count() > 0) {
+        QStringList topics;
+        foreach (const QVariant &pairing, pairings) {
+            topics << QString("%1/%2/#").arg(m_clientId).arg(pairing.toString());
+        }
+        subscribe(topics);
     }
-    subscribe(topics);
 
     if (!readNameSyncedFlag()) {
         setName();
@@ -402,11 +405,6 @@ ResponseCode AWSConnector::onSubscriptionReceivedCallback(util::String topic_nam
             qCWarning(dcAWS()) << "Received a pairing response for a transaction we didn't start";
         }
     } else if (topic == QString("%1/device/users/response").arg(connector->m_clientId)) {
-        if (jsonDoc.toVariant().toMap().value("users").toList().isEmpty()) {
-            qCDebug(dcAWS()) << "No devices paired yet...";
-            return ResponseCode::SUCCESS;
-        }
-        qCDebug(dcAWS) << jsonDoc.toVariant().toMap().value("users").toList().count() << "devices paired in cloud.";
         connector->staticMetaObject.invokeMethod(connector, "onPairingsRetrieved", Qt::QueuedConnection, Q_ARG(QVariantList, jsonDoc.toVariant().toMap().value("users").toList()));
     } else if (topic == QString("%1/device/name/response").arg(connector->m_clientId)) {
         qCDebug(dcAWS) << "Set device name in cloud with status:" << jsonDoc.toVariant().toMap().value("status").toInt();

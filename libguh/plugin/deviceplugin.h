@@ -136,6 +136,7 @@ protected:
 
 private:
     void setMetaData(const QJsonObject &metaData);
+    void loadMetaData();
     void initPlugin(DeviceManager *deviceManager);
 
     QPair<bool, QList<ParamType> > parseParamTypes(const QJsonArray &array) const;

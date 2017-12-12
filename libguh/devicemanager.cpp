@@ -302,11 +302,13 @@ QList<QJsonObject> DeviceManager::pluginsMetadata()
 /*! Set the \a locale of all plugins and reload the translated strings. */
 void DeviceManager::setLocale(const QLocale &locale)
 {
+    qCDebug(dcDeviceManager()) << "Setting locale:" << locale;
     m_locale = locale;
     foreach (DevicePlugin *plugin, m_devicePlugins.values()) {
         QCoreApplication::removeTranslator(plugin->translator());
         plugin->setLocale(m_locale);
         QCoreApplication::installTranslator(plugin->translator());
+        plugin->loadMetaData();
     }
 
     // Reload all plugin meta data

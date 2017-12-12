@@ -339,6 +339,270 @@ void DevicePlugin::initPlugin(DeviceManager *deviceManager)
 {
     m_deviceManager = deviceManager;
 
+    loadMetaData();
+
+    init();
+}
+
+QPair<bool, QList<ParamType> > DevicePlugin::parseParamTypes(const QJsonArray &array) const
+{
+    QList<ParamType> paramTypes;
+    foreach (const QJsonValue &paramTypesJson, array) {
+        QJsonObject pt = paramTypesJson.toObject();
+
+        // Check fields
+        int index = 0;
+        QStringList missingFields = verifyFields(QStringList() << "id" << "name" << "idName" << "type", pt);
+        if (!missingFields.isEmpty()) {
+            qCWarning(dcDeviceManager) << pluginName() << "Error parsing ParamType: missing fields" << missingFields.join(", ") << endl << pt;
+            return QPair<bool, QList<ParamType> >(false, QList<ParamType>());
+        }
+
+        // Check type
+        QVariant::Type t = QVariant::nameToType(pt.value("type").toString().toLatin1().data());
+        if (t == QVariant::Invalid) {
+            qCWarning(dcDeviceManager()) << pluginName() << QString("Invalid type %1 for param %2 in json file.")
+                                            .arg(pt.value("type").toString())
+                                            .arg(pt.value("name").toString()).toLatin1().data();
+            return QPair<bool, QList<ParamType> >(false, QList<ParamType>());
+        }
+
+        ParamType paramType(ParamTypeId(pt.value("id").toString()), translateValue(m_metaData.value("idName").toString(), pt.value("name").toString()), t, pt.value("defaultValue").toVariant());
+        paramType.setIndex(index);
+
+        // Set allowed values
+        QVariantList allowedValues;
+        foreach (const QJsonValue &allowedTypesJson, pt.value("allowedValues").toArray()) {
+            allowedValues.append(allowedTypesJson.toVariant());
+        }
+
+        // Set the input type if there is any
+        if (pt.contains("inputType")) {
+            QPair<bool, Types::InputType> inputTypeVerification = loadAndVerifyInputType(pt.value("inputType").toString());
+            if (!inputTypeVerification.first) {
+                qCWarning(dcDeviceManager()) << pluginName() << QString("Invalid inputType for paramType") << pt;
+                return QPair<bool, QList<ParamType> >(false, QList<ParamType>());
+            } else {
+                paramType.setInputType(inputTypeVerification.second);
+            }
+        }
+
+        // set the unit if there is any
+        if (pt.contains("unit")) {
+            QPair<bool, Types::Unit> unitVerification = loadAndVerifyUnit(pt.value("unit").toString());
+            if (!unitVerification.first) {
+                qCWarning(dcDeviceManager()) << pluginName() << QString("Invalid unit type for paramType") << pt;
+                return QPair<bool, QList<ParamType> >(false, QList<ParamType>());
+            } else {
+                paramType.setUnit(unitVerification.second);
+            }
+        }
+
+        // set readOnly if given (default false)
+        if (pt.contains("readOnly"))
+            paramType.setReadOnly(pt.value("readOnly").toBool());
+
+        paramType.setAllowedValues(allowedValues);
+        paramType.setLimits(pt.value("minValue").toVariant(), pt.value("maxValue").toVariant());
+        paramTypes.append(paramType);
+    }
+
+    return QPair<bool, QList<ParamType> >(true, paramTypes);
+}
+
+/*!
+  Returns a map containing the plugin configuration.
+
+  When implementing a new plugin, override this and fill in the empty configuration if your plugin requires any.
+ */
+ParamList DevicePlugin::configuration() const
+{
+    return m_config;
+}
+
+/*!
+ Use this to retrieve the values for your parameters. Values might not be set
+ at the time when your plugin is loaded, but will be set soon after. Listen to
+ configurationValueChanged() to know when something changes.
+ When implementing a new plugin, specify in configurationDescription() what you want to see here.
+ Returns the config value of a \l{Param} with the given \a paramTypeId of this DevicePlugin.
+ */
+QVariant DevicePlugin::configValue(const ParamTypeId &paramTypeId) const
+{
+    return m_config.paramValue(paramTypeId);
+}
+
+/*! Will be called by the DeviceManager to set a plugin's \a configuration. */
+DeviceManager::DeviceError DevicePlugin::setConfiguration(const ParamList &configuration)
+{
+    foreach (const Param &param, configuration) {
+        qCDebug(dcDeviceManager) << "* Set plugin configuration" << param;
+        DeviceManager::DeviceError result = setConfigValue(param.paramTypeId(), param.value());
+        if (result != DeviceManager::DeviceErrorNoError)
+            return result;
+
+    }
+    return DeviceManager::DeviceErrorNoError;
+}
+
+/*! Can be called in the DevicePlugin to set a plugin's \l{Param} with the given \a paramTypeId and \a value. */
+DeviceManager::DeviceError DevicePlugin::setConfigValue(const ParamTypeId &paramTypeId, const QVariant &value)
+{
+    bool found = false;
+    foreach (const ParamType &paramType, configurationDescription()) {
+        if (paramType.id() == paramTypeId) {
+            found = true;
+            DeviceManager::DeviceError result = deviceManager()->verifyParam(paramType, Param(paramTypeId, value));
+            if (result != DeviceManager::DeviceErrorNoError)
+                return result;
+
+            break;
+        }
+    }
+
+    if (!found) {
+        qCWarning(dcDeviceManager) << QString("Could not find plugin parameter with the id %1.").arg(paramTypeId.toString());
+        return DeviceManager::DeviceErrorInvalidParameter;
+    }
+
+    if (m_config.hasParam(paramTypeId)) {
+        if (!m_config.setParamValue(paramTypeId, value)) {
+            qCWarning(dcDeviceManager()) << "Could not set param value" << value << "for param with id" << paramTypeId.toString();
+            return DeviceManager::DeviceErrorInvalidParameter;
+        }
+    } else {
+        m_config.append(Param(paramTypeId, value));
+    }
+
+    emit configValueChanged(paramTypeId, value);
+    return DeviceManager::DeviceErrorNoError;
+}
+
+/*!
+ Returns a pointer to the \l{DeviceManager}.
+
+ When implementing a plugin, use this to find the \l{Device}{Devices} you need.
+ */
+DeviceManager *DevicePlugin::deviceManager() const
+{
+    return m_deviceManager;
+}
+
+/*! Returns a list of all configured devices belonging to this plugin. */
+QList<Device *> DevicePlugin::myDevices() const
+{
+    QList<DeviceClassId> myDeviceClassIds;
+    foreach (const DeviceClass &deviceClass, m_supportedDevices) {
+        myDeviceClassIds.append(deviceClass.id());
+    }
+
+    QList<Device*> ret;
+    foreach (Device *device, deviceManager()->configuredDevices()) {
+        if (myDeviceClassIds.contains(device->deviceClassId())) {
+            ret.append(device);
+        }
+    }
+    return ret;
+}
+
+/*!
+ Find a certain device from myDevices() by its \a params. All parameters must
+ match or the device will not be found. Be prepared for nullptrs.
+ */
+Device *DevicePlugin::findDeviceByParams(const ParamList &params) const
+{
+    foreach (Device *device, myDevices()) {
+        bool matching = true;
+        foreach (const Param &param, params) {
+            if (device->paramValue(param.paramTypeId()) != param.value()) {
+                matching = false;
+            }
+        }
+        if (matching) {
+            return device;
+        }
+    }
+    return nullptr;
+}
+
+/*!
+ Transmits data contained in \a rawData on the \l{Radio433} devices, depending on the hardware requested by this plugin.
+ Returns true if, the \a rawData with a certain \a delay (pulse length) can be sent \a repetitions times.
+
+ \sa Radio433, requiredHardware()
+ */
+bool DevicePlugin::transmitData(int delay, QList<int> rawData, int repetitions)
+{
+    switch (requiredHardware()) {
+    case DeviceManager::HardwareResourceRadio433:
+        return deviceManager()->m_radio433->sendData(delay, rawData, repetitions);
+    default:
+        qCWarning(dcDeviceManager) << "Unknown harware type. Cannot send.";
+    }
+    return false;
+}
+/*! Posts a request to obtain the contents of the target \a request and returns a new QNetworkReply object
+ * opened for reading which emits the replyReady() signal whenever new data arrives.
+ * The contents as well as associated headers will be downloaded.
+ *
+ * \note The plugin has to delete the QNetworkReply with the function deleteLater().
+ *
+ * \sa NetworkAccessManager::get()
+ */
+QNetworkReply *DevicePlugin::networkManagerGet(const QNetworkRequest &request)
+{
+    if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
+        return deviceManager()->m_networkManager->get(pluginId(), request);
+    } else {
+        qCWarning(dcDeviceManager) << "Network manager hardware resource not set for plugin" << pluginName();
+    }
+    return nullptr;
+}
+/*! Sends an HTTP POST request to the destination specified by \a request and returns a new QNetworkReply object
+ * opened for reading that will contain the reply sent by the server. The contents of the \a data will be
+ * uploaded to the server.
+ *
+ * \note The plugin has to delete the QNetworkReply with the function deleteLater().
+ *
+ * \sa NetworkAccessManager::post()
+ */
+QNetworkReply *DevicePlugin::networkManagerPost(const QNetworkRequest &request, const QByteArray &data)
+{
+    if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
+        return deviceManager()->m_networkManager->post(pluginId(), request, data);
+    } else {
+        qCWarning(dcDeviceManager) << "Network manager hardware resource not set for plugin" << pluginName();
+    }
+    return nullptr;
+}
+
+/*! Uploads the contents of \a data to the destination \a request and returnes a new QNetworkReply object that will be open for reply.
+ *
+ * \note The plugin has to delete the QNetworkReply with the function deleteLater().
+ *
+ * \sa NetworkAccessManager::put()
+ */
+QNetworkReply *DevicePlugin::networkManagerPut(const QNetworkRequest &request, const QByteArray &data)
+{
+    if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
+        return deviceManager()->m_networkManager->put(pluginId(), request, data);
+    } else {
+        qCWarning(dcDeviceManager) << "Network manager hardware resource not set for plugin" << pluginName();
+    }
+    return nullptr;
+}
+
+void DevicePlugin::setMetaData(const QJsonObject &metaData)
+{
+    m_metaData = metaData;
+}
+
+void DevicePlugin::loadMetaData()
+{
+
+    m_configurationDescription.clear();
+    m_supportedDevices.clear();
+
     // parse plugin configuration params
     if (m_metaData.contains("paramTypes")) {
         QPair<bool, QList<ParamType> > paramVerification = parseParamTypes(m_metaData.value("paramTypes").toArray());
@@ -353,7 +617,6 @@ void DevicePlugin::initPlugin(DeviceManager *deviceManager)
         return;
     }
 
-    QList<DeviceClass> deviceClasses;
     foreach (const QJsonValue &vendorJson, m_metaData.value("vendors").toArray()) {
         bool broken = false;
         QJsonObject vendorObject = vendorJson.toObject();
@@ -741,261 +1004,6 @@ void DevicePlugin::initPlugin(DeviceManager *deviceManager)
             }
         }
     }
-
-    init();
-}
-
-QPair<bool, QList<ParamType> > DevicePlugin::parseParamTypes(const QJsonArray &array) const
-{
-    QList<ParamType> paramTypes;
-    foreach (const QJsonValue &paramTypesJson, array) {
-        QJsonObject pt = paramTypesJson.toObject();
-
-        // Check fields
-        int index = 0;
-        QStringList missingFields = verifyFields(QStringList() << "id" << "name" << "idName" << "type", pt);
-        if (!missingFields.isEmpty()) {
-            qCWarning(dcDeviceManager) << pluginName() << "Error parsing ParamType: missing fields" << missingFields.join(", ") << endl << pt;
-            return QPair<bool, QList<ParamType> >(false, QList<ParamType>());
-        }
-
-        // Check type
-        QVariant::Type t = QVariant::nameToType(pt.value("type").toString().toLatin1().data());
-        if (t == QVariant::Invalid) {
-            qCWarning(dcDeviceManager()) << pluginName() << QString("Invalid type %1 for param %2 in json file.")
-                                            .arg(pt.value("type").toString())
-                                            .arg(pt.value("name").toString()).toLatin1().data();
-            return QPair<bool, QList<ParamType> >(false, QList<ParamType>());
-        }
-
-        ParamType paramType(ParamTypeId(pt.value("id").toString()), translateValue(m_metaData.value("idName").toString(), pt.value("name").toString()), t, pt.value("defaultValue").toVariant());
-        paramType.setIndex(index);
-
-        // Set allowed values
-        QVariantList allowedValues;
-        foreach (const QJsonValue &allowedTypesJson, pt.value("allowedValues").toArray()) {
-            allowedValues.append(allowedTypesJson.toVariant());
-        }
-
-        // Set the input type if there is any
-        if (pt.contains("inputType")) {
-            QPair<bool, Types::InputType> inputTypeVerification = loadAndVerifyInputType(pt.value("inputType").toString());
-            if (!inputTypeVerification.first) {
-                qCWarning(dcDeviceManager()) << pluginName() << QString("Invalid inputType for paramType") << pt;
-                return QPair<bool, QList<ParamType> >(false, QList<ParamType>());
-            } else {
-                paramType.setInputType(inputTypeVerification.second);
-            }
-        }
-
-        // set the unit if there is any
-        if (pt.contains("unit")) {
-            QPair<bool, Types::Unit> unitVerification = loadAndVerifyUnit(pt.value("unit").toString());
-            if (!unitVerification.first) {
-                qCWarning(dcDeviceManager()) << pluginName() << QString("Invalid unit type for paramType") << pt;
-                return QPair<bool, QList<ParamType> >(false, QList<ParamType>());
-            } else {
-                paramType.setUnit(unitVerification.second);
-            }
-        }
-
-        // set readOnly if given (default false)
-        if (pt.contains("readOnly"))
-            paramType.setReadOnly(pt.value("readOnly").toBool());
-
-        paramType.setAllowedValues(allowedValues);
-        paramType.setLimits(pt.value("minValue").toVariant(), pt.value("maxValue").toVariant());
-        paramTypes.append(paramType);
-    }
-
-    return QPair<bool, QList<ParamType> >(true, paramTypes);
-}
-
-/*!
-  Returns a map containing the plugin configuration.
-
-  When implementing a new plugin, override this and fill in the empty configuration if your plugin requires any.
- */
-ParamList DevicePlugin::configuration() const
-{
-    return m_config;
-}
-
-/*!
- Use this to retrieve the values for your parameters. Values might not be set
- at the time when your plugin is loaded, but will be set soon after. Listen to
- configurationValueChanged() to know when something changes.
- When implementing a new plugin, specify in configurationDescription() what you want to see here.
- Returns the config value of a \l{Param} with the given \a paramTypeId of this DevicePlugin.
- */
-QVariant DevicePlugin::configValue(const ParamTypeId &paramTypeId) const
-{
-    return m_config.paramValue(paramTypeId);
-}
-
-/*! Will be called by the DeviceManager to set a plugin's \a configuration. */
-DeviceManager::DeviceError DevicePlugin::setConfiguration(const ParamList &configuration)
-{
-    foreach (const Param &param, configuration) {
-        qCDebug(dcDeviceManager) << "* Set plugin configuration" << param;
-        DeviceManager::DeviceError result = setConfigValue(param.paramTypeId(), param.value());
-        if (result != DeviceManager::DeviceErrorNoError)
-            return result;
-
-    }
-    return DeviceManager::DeviceErrorNoError;
-}
-
-/*! Can be called in the DevicePlugin to set a plugin's \l{Param} with the given \a paramTypeId and \a value. */
-DeviceManager::DeviceError DevicePlugin::setConfigValue(const ParamTypeId &paramTypeId, const QVariant &value)
-{
-    bool found = false;
-    foreach (const ParamType &paramType, configurationDescription()) {
-        if (paramType.id() == paramTypeId) {
-            found = true;
-            DeviceManager::DeviceError result = deviceManager()->verifyParam(paramType, Param(paramTypeId, value));
-            if (result != DeviceManager::DeviceErrorNoError)
-                return result;
-
-            break;
-        }
-    }
-
-    if (!found) {
-        qCWarning(dcDeviceManager) << QString("Could not find plugin parameter with the id %1.").arg(paramTypeId.toString());
-        return DeviceManager::DeviceErrorInvalidParameter;
-    }
-
-    if (m_config.hasParam(paramTypeId)) {
-        if (!m_config.setParamValue(paramTypeId, value)) {
-            qCWarning(dcDeviceManager()) << "Could not set param value" << value << "for param with id" << paramTypeId.toString();
-            return DeviceManager::DeviceErrorInvalidParameter;
-        }
-    } else {
-        m_config.append(Param(paramTypeId, value));
-    }
-
-    emit configValueChanged(paramTypeId, value);
-    return DeviceManager::DeviceErrorNoError;
-}
-
-/*!
- Returns a pointer to the \l{DeviceManager}.
-
- When implementing a plugin, use this to find the \l{Device}{Devices} you need.
- */
-DeviceManager *DevicePlugin::deviceManager() const
-{
-    return m_deviceManager;
-}
-
-/*! Returns a list of all configured devices belonging to this plugin. */
-QList<Device *> DevicePlugin::myDevices() const
-{
-    QList<DeviceClassId> myDeviceClassIds;
-    foreach (const DeviceClass &deviceClass, m_supportedDevices) {
-        myDeviceClassIds.append(deviceClass.id());
-    }
-
-    QList<Device*> ret;
-    foreach (Device *device, deviceManager()->configuredDevices()) {
-        if (myDeviceClassIds.contains(device->deviceClassId())) {
-            ret.append(device);
-        }
-    }
-    return ret;
-}
-
-/*!
- Find a certain device from myDevices() by its \a params. All parameters must
- match or the device will not be found. Be prepared for nullptrs.
- */
-Device *DevicePlugin::findDeviceByParams(const ParamList &params) const
-{
-    foreach (Device *device, myDevices()) {
-        bool matching = true;
-        foreach (const Param &param, params) {
-            if (device->paramValue(param.paramTypeId()) != param.value()) {
-                matching = false;
-            }
-        }
-        if (matching) {
-            return device;
-        }
-    }
-    return nullptr;
-}
-
-/*!
- Transmits data contained in \a rawData on the \l{Radio433} devices, depending on the hardware requested by this plugin.
- Returns true if, the \a rawData with a certain \a delay (pulse length) can be sent \a repetitions times.
-
- \sa Radio433, requiredHardware()
- */
-bool DevicePlugin::transmitData(int delay, QList<int> rawData, int repetitions)
-{
-    switch (requiredHardware()) {
-    case DeviceManager::HardwareResourceRadio433:
-        return deviceManager()->m_radio433->sendData(delay, rawData, repetitions);
-    default:
-        qCWarning(dcDeviceManager) << "Unknown harware type. Cannot send.";
-    }
-    return false;
-}
-/*! Posts a request to obtain the contents of the target \a request and returns a new QNetworkReply object
- * opened for reading which emits the replyReady() signal whenever new data arrives.
- * The contents as well as associated headers will be downloaded.
- *
- * \note The plugin has to delete the QNetworkReply with the function deleteLater().
- *
- * \sa NetworkAccessManager::get()
- */
-QNetworkReply *DevicePlugin::networkManagerGet(const QNetworkRequest &request)
-{
-    if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
-        return deviceManager()->m_networkManager->get(pluginId(), request);
-    } else {
-        qCWarning(dcDeviceManager) << "Network manager hardware resource not set for plugin" << pluginName();
-    }
-    return nullptr;
-}
-/*! Sends an HTTP POST request to the destination specified by \a request and returns a new QNetworkReply object
- * opened for reading that will contain the reply sent by the server. The contents of the \a data will be
- * uploaded to the server.
- *
- * \note The plugin has to delete the QNetworkReply with the function deleteLater().
- *
- * \sa NetworkAccessManager::post()
- */
-QNetworkReply *DevicePlugin::networkManagerPost(const QNetworkRequest &request, const QByteArray &data)
-{
-    if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
-        return deviceManager()->m_networkManager->post(pluginId(), request, data);
-    } else {
-        qCWarning(dcDeviceManager) << "Network manager hardware resource not set for plugin" << pluginName();
-    }
-    return nullptr;
-}
-
-/*! Uploads the contents of \a data to the destination \a request and returnes a new QNetworkReply object that will be open for reply.
- *
- * \note The plugin has to delete the QNetworkReply with the function deleteLater().
- *
- * \sa NetworkAccessManager::put()
- */
-QNetworkReply *DevicePlugin::networkManagerPut(const QNetworkRequest &request, const QByteArray &data)
-{
-    if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
-        return deviceManager()->m_networkManager->put(pluginId(), request, data);
-    } else {
-        qCWarning(dcDeviceManager) << "Network manager hardware resource not set for plugin" << pluginName();
-    }
-    return nullptr;
-}
-
-void DevicePlugin::setMetaData(const QJsonObject &metaData)
-{
-    m_metaData = metaData;
 }
 
 /*!

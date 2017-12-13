@@ -126,7 +126,6 @@ void WebSocketServer::onClientConnected()
 {
     // got a new client connected
     QWebSocket *client = m_server->nextPendingConnection();
-    qCDebug(dcConnection) << "Websocket server: new client connected:" << client->peerAddress().toString();
 
     // check websocket version
     if (client->version() != QWebSocketProtocol::Version13) {
@@ -137,6 +136,8 @@ void WebSocketServer::onClientConnected()
     }
 
     QUuid clientId = QUuid::createUuid();
+
+    qCDebug(dcConnection) << "Websocket server: new client connected:" << client->peerAddress().toString() << clientId;
 
     // append the new client to the client list
     m_clientList.insert(clientId, client);
@@ -153,9 +154,10 @@ void WebSocketServer::onClientConnected()
 void WebSocketServer::onClientDisconnected()
 {
     QWebSocket *client = qobject_cast<QWebSocket *>(sender());
-    qCDebug(dcConnection) << "Websocket server: client disconnected:" << client->peerAddress().toString();
     QUuid clientId = m_clientList.key(client);
+    qCDebug(dcConnection) << "Websocket server: client disconnected:" << client->peerAddress().toString() << clientId;
     m_clientList.take(clientId)->deleteLater();
+    emit clientDisconnected(clientId);
 }
 
 void WebSocketServer::onBinaryMessageReceived(const QByteArray &data)

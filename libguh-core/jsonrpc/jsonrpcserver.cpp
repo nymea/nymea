@@ -672,6 +672,7 @@ void JsonRPCServer::clientConnected(const QUuid &clientId)
 
 void JsonRPCServer::clientDisconnected(const QUuid &clientId)
 {
+    qCDebug(dcJsonRpc()) << "Client disconnected:" << clientId;
     m_clientTransports.remove(clientId);
     m_clientNotifications.remove(clientId);
     if (m_pushButtonTransactions.values().contains(clientId)) {

@@ -41,9 +41,9 @@ DisconnectCallbackContextData::~DisconnectCallbackContextData() {}
 AWSConnector::AWSConnector(QObject *parent) : QObject(parent)
 {
     // Enable some AWS logging (does not regard our logging categories)
-//    std::shared_ptr<awsiotsdk::util::Logging::ConsoleLogSystem> p_log_system =
-//            std::make_shared<awsiotsdk::util::Logging::ConsoleLogSystem>(awsiotsdk::util::Logging::LogLevel::Info);
-//    awsiotsdk::util::Logging::InitializeAWSLogging(p_log_system);
+    std::shared_ptr<awsiotsdk::util::Logging::ConsoleLogSystem> p_log_system =
+            std::make_shared<awsiotsdk::util::Logging::ConsoleLogSystem>(awsiotsdk::util::Logging::LogLevel::Info);
+    awsiotsdk::util::Logging::InitializeAWSLogging(p_log_system);
     m_disconnectContextData = std::shared_ptr<awsiotsdk::DisconnectCallbackContextData>(new DisconnectContext(this));
     m_subscriptionContextData = std::shared_ptr<awsiotsdk::mqtt::SubscriptionHandlerContextData>(new SubscriptionContext(this));
 
@@ -91,7 +91,7 @@ void AWSConnector::doConnect()
                                                                  ));
     m_client = MqttClient::Create(m_networkConnection, std::chrono::milliseconds(2800), &onDisconnectedCallback, m_disconnectContextData);
 
-    m_client->SetAutoReconnectEnabled(true);
+    m_client->SetAutoReconnectEnabled(false);
     m_client->SetMaxReconnectBackoffTimeout(std::chrono::seconds(10));
 
     qCDebug(dcAWS()) << "Connecting to AWS with ID:" << m_clientId << "endpoint:" << m_currentEndpoint << "Min reconnect timeout:" << m_client->GetMinReconnectBackoffTimeout().count() << "Max reconnect timeout:" << (quint32)m_client->GetMaxReconnectBackoffTimeout().count();
@@ -256,6 +256,8 @@ quint16 AWSConnector::publish(const QString &topic, const QVariantMap &message)
 void AWSConnector::onDisconnected()
 {
     qCDebug(dcAWS) << "AWS disconnected.";
+    m_client.reset();
+    m_networkConnection.reset();
     emit disconnected();
 
     bool needReRegistering = false;

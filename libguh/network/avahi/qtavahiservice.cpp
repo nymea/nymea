@@ -68,8 +68,12 @@ QtAvahiService::QtAvahiService(QObject *parent) :
 /*! Destructs this \l{QtAvahiService}. */
 QtAvahiService::~QtAvahiService()
 {
-    if (d_ptr->group)
+    if (d_ptr->group) {
+        if (d_ptr->serviceList) {
+            avahi_string_list_free(d_ptr->serviceList);
+        }
         avahi_entry_group_free(d_ptr->group);
+    }
 
     delete d_ptr;
 }
@@ -123,6 +127,7 @@ bool QtAvahiService::registerService(const QString &name, const quint16 &port, c
     // If the group is empty
     if (avahi_entry_group_is_empty(d_ptr->group)) {
         // Add the service
+        d_ptr->serviceList = QtAvahiServicePrivate::createTxtList(txtRecords);
         d_ptr->error = avahi_entry_group_add_service_strlst(d_ptr->group,
                                                             AVAHI_IF_UNSPEC,
                                                             AVAHI_PROTO_UNSPEC,
@@ -132,7 +137,7 @@ bool QtAvahiService::registerService(const QString &name, const quint16 &port, c
                                                             0,
                                                             0,
                                                             (uint16_t)d_ptr->port,
-                                                            QtAvahiServicePrivate::createTxtList(txtRecords));
+                                                            d_ptr->serviceList);
 
         // Verify if the group has to be comitted
         if (d_ptr->error) {
@@ -170,6 +175,10 @@ void QtAvahiService::resetService()
     if (!d_ptr->group)
         return;
 
+    if (d_ptr->serviceList) {
+        avahi_string_list_free(d_ptr->serviceList);
+        d_ptr->serviceList = nullptr;
+    }
     avahi_entry_group_reset(d_ptr->group);
 }
 
@@ -180,6 +189,7 @@ bool QtAvahiService::updateTxtRecord(const QHash<QString, QString> &txtRecords)
         return false;
 
     // Add the service
+    d_ptr->serviceList = QtAvahiServicePrivate::createTxtList(txtRecords);
     d_ptr->error = avahi_entry_group_update_service_txt_strlst(d_ptr->group,
                                                         AVAHI_IF_UNSPEC,
                                                         AVAHI_PROTO_UNSPEC,
@@ -187,7 +197,7 @@ bool QtAvahiService::updateTxtRecord(const QHash<QString, QString> &txtRecords)
                                                         d_ptr->name.toLatin1().data(),
                                                         d_ptr->type.toLatin1().data(),
                                                         0,
-                                                        QtAvahiServicePrivate::createTxtList(txtRecords));
+                                                        d_ptr->serviceList);
 
     // Verify if the group has to be comitted
     if (d_ptr->error) {
@@ -217,7 +227,9 @@ QString QtAvahiService::errorString() const
 
 bool QtAvahiService::handlCollision()
 {
-    QString alternativeServiceName = avahi_alternative_service_name(name().toStdString().data());
+    char* alt = avahi_alternative_service_name(name().toStdString().data());
+    QString alternativeServiceName = QLatin1String(alt);
+    free(alt);
     qCDebug(dcAvahi()) << "Service name colision. Picking alternative service name" << alternativeServiceName;
 
     resetService();

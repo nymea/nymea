@@ -231,8 +231,7 @@ void JanusConnector::onReadyRead()
         foreach (WebRtcSession *session, m_sessions) {
             if (session->matchJanusSessionId(sessionId)) {
                 qCDebug(dcJanus()) << "Session" << session << "timed out. Removing session";
-                m_sessions.remove(session->sessionId);
-                delete session;
+                delete m_sessions.take(session->sessionId);
                 return;
             }
         }
@@ -268,7 +267,7 @@ void JanusConnector::onReadyRead()
                 hangup.insert("type", "hangup");
                 hangup.insert("reason", map.value("reason").toString());
                 emit webRtcHandshakeMessageReceived(session->sessionId, hangup);
-                m_sessions.remove(session->sessionId);
+                delete m_sessions.take(session->sessionId);
                 return;
             }
         }

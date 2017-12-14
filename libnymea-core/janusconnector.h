@@ -24,6 +24,7 @@
 #include <QObject>
 #include <QLocalSocket>
 #include <QTimer>
+#include <QDateTime>
 
 class JanusConnector : public QObject
 {
@@ -68,6 +69,8 @@ private:
     QHash<QString, WebRtcSession*> m_pendingRequests;
 
     bool connectToJanus();
+    void disconnectFromJanus();
+
     void createSession(WebRtcSession *session);
     void createChannel(WebRtcSession *session);
     void writeToJanus(const QByteArray &data);
@@ -76,6 +79,9 @@ private:
 private:
 
     QLocalSocket *m_socket = nullptr;
+
+    QDateTime m_lastUnconfirmedPing;
+    QTimer m_pingTimer;
 
     QHash<QString, WebRtcSession*> m_sessions;
 

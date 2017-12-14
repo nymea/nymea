@@ -44,6 +44,7 @@ public:
 
     QtAvahiClient *client;
     AvahiEntryGroup *group;
+    AvahiStringList *serviceList = nullptr;
     QString name;
     quint16 port;
     QString type;

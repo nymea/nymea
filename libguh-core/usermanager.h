@@ -28,6 +28,8 @@
 
 namespace guhserver {
 
+class PushButtonDBusService;
+
 class UserManager : public QObject
 {
     Q_OBJECT
@@ -50,20 +52,33 @@ public:
     UserError createUser(const QString &username, const QString &password);
     UserError removeUser(const QString &username);
 
+    bool pushButtonAuthAvailable() const;
+
     QByteArray authenticate(const QString &username, const QString &password, const QString &deviceName);
+    int requestPushButtonAuth(const QString &deviceName);
+    void cancelPushButtonAuth(int transactionId);
     QString userForToken(const QByteArray &token) const;
     QList<TokenInfo> tokens(const QString &username) const;
     guhserver::UserManager::UserError removeToken(const QUuid &tokenId);
 
     bool verifyToken(const QByteArray &token);
 
+signals:
+    void pushButtonAuthFinished(int transactionId, bool success, const QByteArray &token);
+
 private:
     void initDB();
     bool validateUsername(const QString &username) const;
     bool validateToken(const QByteArray &token) const;
 
+private slots:
+    void onPushButtonPressed();
+
 private:
     QSqlDatabase m_db;
+    PushButtonDBusService *m_pushButtonDBusService = nullptr;
+    int m_pushButtonTransactionIdCounter = 0;
+    QPair<int, QString> m_pushButtonTransaction;
 
 };
 

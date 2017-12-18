@@ -54,6 +54,7 @@ public:
 
     Q_INVOKABLE JsonReply *CreateUser(const QVariantMap &params);
     Q_INVOKABLE JsonReply *Authenticate(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *RequestPushButtonAuth(const QVariantMap &params);
     Q_INVOKABLE JsonReply *Tokens(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *RemoveToken(const QVariantMap &params);
     Q_INVOKABLE JsonReply *SetupRemoteAccess(const QVariantMap &params);
@@ -62,8 +63,9 @@ public:
 
 signals:
     void CloudConnectedChanged(const QVariantMap &map);
+    void PushButtonAuthFinished(const QVariantMap &params);
 
-    // Internal
+    // Server API
 public:
     void registerTransportInterface(TransportInterface *interface, bool authenticationRequired);
     void unregisterTransportInterface(TransportInterface *interface);
@@ -90,14 +92,16 @@ private slots:
 
     void pairingFinished(QString cognitoUserId, int status, const QString &message);
     void onCloudConnectedChanged(bool connected);
+    void onPushButtonAuthFinished(int transactionId, bool success, const QByteArray &token);
 
 private:
-    QMap<TransportInterface*, bool> m_interfaces;
+    QMap<TransportInterface*, bool> m_interfaces; // Interface, authenticationRequired
     QHash<QString, JsonHandler *> m_handlers;
     QHash<JsonReply *, TransportInterface *> m_asyncReplies;
 
-    // clientId, notificationsEnabled
-    QHash<QUuid, bool> m_clients;
+    QHash<QUuid, TransportInterface*> m_clientTransports;
+    QHash<QUuid, bool> m_clientNotifications;
+    QHash<int, QUuid> m_pushButtonTransactions;
 
     QHash<QString, JsonReply*> m_pairingRequests;
 

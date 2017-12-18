@@ -86,6 +86,7 @@ JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject 
     returns.insert("protocol version", JsonTypes::basicTypeToString(JsonTypes::String));
     returns.insert("initialSetupRequired", JsonTypes::basicTypeToString(JsonTypes::Bool));
     returns.insert("authenticationRequired", JsonTypes::basicTypeToString(JsonTypes::Bool));
+    returns.insert("pushButtonAuthAvailable", JsonTypes::basicTypeToString(JsonTypes::Bool));
     setReturns("Hello", returns);
 
     params.clear(); returns.clear();
@@ -118,17 +119,40 @@ JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject 
     setReturns("CreateUser", returns);
 
     params.clear(); returns.clear();
-    setDescription("Authenticate", "Authenticate a client to the api. This will return a new token to be used to authorize a client at the API.");
+    setDescription("Authenticate", "Authenticate a client to the api via user & password challenge. Provide "
+                   "a device name which allows the user to identify the client and revoke the token in case "
+                   "the device is lost or stolen. This will return a new token to be used to authorize a "
+                   "client at the API.");
     params.insert("username", JsonTypes::basicTypeToString(JsonTypes::String));
     params.insert("password", JsonTypes::basicTypeToString(JsonTypes::String));
     params.insert("deviceName", JsonTypes::basicTypeToString(JsonTypes::String));
     setParams("Authenticate", params);
-    returns.insert("success", JsonTypes::basicTypeToString(JsonTypes::String));
+    returns.insert("success", JsonTypes::basicTypeToString(JsonTypes::Bool));
     returns.insert("o:token", JsonTypes::basicTypeToString(JsonTypes::String));
     setReturns("Authenticate", returns);
 
     params.clear(); returns.clear();
-    setDescription("Tokens", "Return a list of if TokenInfo objects all the tokens for the current user.");
+    setDescription("RequestPushButtonAuth", "Authenticate a client to the api via Push Button method. "
+                   "Provide a device name which allows the user to identify the client and revoke the "
+                   "token in case the device is lost or stolen. If push button hardware is available, "
+                   "this will return with success and start listening for push button presses. When the "
+                   "push button is pressed, the PushButtonAuthFinished notification will be sent to the "
+                   "requesting client. The procedure will be cancelled when the connection is interrupted. "
+                   "If another client requests push button authentication while a procedure is still going "
+                   "on, the second call will take over and the first one will be notified by the "
+                   "PushButtonAuthFinished signal about the error. The application should make it clear "
+                   "to the user to not press the button when the procedure fails as this can happen for 2 "
+                   "reasons: a) a second user is trying to auth at the same time and only the currently "
+                   "active user should press the button or b) it might indicate an attacker trying to take "
+                   "over and snooping in for tokens.");
+    params.insert("deviceName", JsonTypes::basicTypeToString(JsonTypes::String));
+    setParams("RequestPushButtonAuth", params);
+    returns.insert("success", JsonTypes::basicTypeToString(JsonTypes::Bool));
+    returns.insert("transactionId", JsonTypes::basicTypeToString(JsonTypes::Int));
+    setReturns("RequestPushButtonAuth", returns);
+
+    params.clear(); returns.clear();
+    setDescription("Tokens", "Return a list of TokenInfo objects of all the tokens for the current user.");
     setParams("Tokens", params);
     returns.insert("tokenInfoList", QVariantList() << JsonTypes::tokenInfoRef());
     setReturns("Tokens", returns);
@@ -168,7 +192,16 @@ JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject 
     params.insert("connected", JsonTypes::basicTypeToString(JsonTypes::Bool));
     setParams("CloudConnectedChanged", params);
 
+    params.clear();
+    setDescription("PushButtonAuthFinished", "Emitted when a push button authentication reaches final state. NOTE: This notification is special. It will only be emitted to connections that did actively request a push button authentication, but also it will be emitted regardless of the notification settings. ");
+    params.insert("status", JsonTypes::userErrorRef());
+    params.insert("transactionId", JsonTypes::basicTypeToString(JsonTypes::Int));
+    params.insert("o:token", JsonTypes::basicTypeToString(JsonTypes::String));
+    setParams("PushButtonAuthFinished", params);
+
     QMetaObject::invokeMethod(this, "setup", Qt::QueuedConnection);
+
+    connect(GuhCore::instance()->userManager(), &UserManager::pushButtonAuthFinished, this, &JsonRPCServer::onPushButtonAuthFinished);
 }
 
 /*! Returns the \e namespace of \l{JsonHandler}. */
@@ -218,9 +251,9 @@ JsonReply* JsonRPCServer::Version(const QVariantMap &params) const
 JsonReply* JsonRPCServer::SetNotificationStatus(const QVariantMap &params)
 {
     QUuid clientId = this->property("clientId").toUuid();
-    m_clients[clientId] = params.value("enabled").toBool();
+    m_clientNotifications[clientId] = params.value("enabled").toBool();
     QVariantMap returns;
-    returns.insert("enabled", m_clients[clientId]);
+    returns.insert("enabled", m_clientNotifications[clientId]);
     return createReply(returns);
 }
 
@@ -249,6 +282,21 @@ JsonReply *JsonRPCServer::Authenticate(const QVariantMap &params)
         ret.insert("token", token);
     }
     return createReply(ret);
+}
+
+JsonReply *JsonRPCServer::RequestPushButtonAuth(const QVariantMap &params)
+{
+    QString deviceName = params.value("deviceName").toString();
+    QUuid clientId = this->property("clientId").toUuid();
+
+    int transactionId = GuhCore::instance()->userManager()->requestPushButtonAuth(deviceName);
+    m_pushButtonTransactions.insert(transactionId, clientId);
+
+    QVariantMap data;
+    data.insert("transactionId", transactionId);
+    // TODO: return false if pushbutton auth is disabled in settings
+    data.insert("success", true);
+    return createReply(data);
 }
 
 JsonReply *JsonRPCServer::Tokens(const QVariantMap &params) const
@@ -390,6 +438,7 @@ QVariantMap JsonRPCServer::createWelcomeMessage(TransportInterface *interface) c
     handshake.insert("protocol version", JSON_PROTOCOL_VERSION);
     handshake.insert("initialSetupRequired", (interface->configuration().authenticationEnabled ? GuhCore::instance()->userManager()->users().isEmpty() : false));
     handshake.insert("authenticationRequired", interface->configuration().authenticationEnabled);
+    handshake.insert("pushButtonAuthAvailable", GuhCore::instance()->userManager()->pushButtonAuthAvailable());
     return handshake;
 }
 
@@ -444,16 +493,18 @@ void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &data)
 
     // check if authentication is required for this transport
     if (m_interfaces.value(interface)) {
-        // if there is no user in the system yet, let's fail unless this is a CreateUser, Introspect or Hello call
+        QByteArray token = message.value("token").toByteArray();
+        QStringList authExemptMethodsNoUser = {"Introspect", "Hello", "CreateUser", "RequestPushButtonAuth"};
+        QStringList authExemptMethodsWithUser = {"Introspect", "Hello", "Authenticate", "RequestPushButtonAuth"};
+        // if there is no user in the system yet, let's fail unless this is special method for authentication itself
         if (GuhCore::instance()->userManager()->users().isEmpty()) {
-            if (!(targetNamespace == "JSONRPC" && (method == "CreateUser" || method == "Introspect" || method == "Hello"))) {
+            if (!(targetNamespace == "JSONRPC" && authExemptMethodsNoUser.contains(method)) && (token.isEmpty() || !GuhCore::instance()->userManager()->verifyToken(token))) {
                 sendUnauthorizedResponse(interface, clientId, commandId, "Initial setup required. Call CreateUser first.");
                 return;
             }
         } else {
-            // ok, we have a user. if there isn't a valid token, let's fail unless this is a Authenticate, Introspect or Hello call
-            QByteArray token = message.value("token").toByteArray();
-            if (!(targetNamespace == "JSONRPC" && (method == "Authenticate" || method == "Introspect" || method == "Hello")) && !GuhCore::instance()->userManager()->verifyToken(token)) {
+            // ok, we have a user. if there isn't a valid token, let's fail unless this is a Authenticate, Introspect  Hello call
+            if (!(targetNamespace == "JSONRPC" && authExemptMethodsWithUser.contains(method)) && (token.isEmpty() || !GuhCore::instance()->userManager()->verifyToken(token))) {
                 sendUnauthorizedResponse(interface, clientId, commandId, "Forbidden: Invalid token.");
                 return;
             }
@@ -522,8 +573,8 @@ void JsonRPCServer::sendNotification(const QVariantMap &params)
     notification.insert("notification", handler->name() + "." + method.name());
     notification.insert("params", params);
 
-    foreach (TransportInterface *interface, m_interfaces.keys()) {
-        interface->sendData(m_clients.keys(true), QJsonDocument::fromVariant(notification).toJson(QJsonDocument::Compact));
+    foreach (const QUuid &clientId, m_clientNotifications.keys(true)) {
+        m_clientTransports.value(clientId)->sendData(clientId, QJsonDocument::fromVariant(notification).toJson(QJsonDocument::Compact));
     }
 }
 
@@ -567,6 +618,35 @@ void JsonRPCServer::onCloudConnectedChanged(bool connected)
     emit CloudConnectedChanged(params);
 }
 
+void JsonRPCServer::onPushButtonAuthFinished(int transactionId, bool success, const QByteArray &token)
+{
+    QUuid clientId = m_pushButtonTransactions.take(transactionId);
+    if (clientId.isNull()) {
+        qCDebug(dcJsonRpc()) << "Received a PushButton reply but wasn't expecting it.";
+        return;
+    }
+
+    TransportInterface *transport = m_clientTransports.value(clientId);
+    if (!transport) {
+        qCWarning(dcJsonRpc()) << "No transport for given clientId";
+        return;
+    }
+
+    QVariantMap params;
+    params.insert("transactionId", transactionId);
+    params.insert("success", success);
+    if (success) {
+        params.insert("token", token);
+    }
+
+    QVariantMap notification;
+    notification.insert("id", transactionId);
+    notification.insert("notification", "JSONRPC.PushButtonAuthFinished");
+    notification.insert("params", params);
+
+    transport->sendData(clientId, QJsonDocument::fromVariant(notification).toJson(QJsonDocument::Compact));
+}
+
 void JsonRPCServer::registerHandler(JsonHandler *handler)
 {
     m_handlers.insert(handler->name(), handler);
@@ -582,15 +662,22 @@ void JsonRPCServer::clientConnected(const QUuid &clientId)
 {
     TransportInterface *interface = qobject_cast<TransportInterface *>(sender());
 
+    m_clientTransports.insert(clientId, interface);
+
     // If authentication is required, notifications are disabled by default. Clients must enable them with a valid token
-    m_clients.insert(clientId, !interface->configuration().authenticationEnabled);
+    m_clientNotifications.insert(clientId, !interface->configuration().authenticationEnabled);
 
     interface->sendData(clientId, QJsonDocument::fromVariant(createWelcomeMessage(interface)).toJson(QJsonDocument::Compact));
 }
 
 void JsonRPCServer::clientDisconnected(const QUuid &clientId)
 {
-    m_clients.remove(clientId);
+    qCDebug(dcJsonRpc()) << "Client disconnected:" << clientId;
+    m_clientTransports.remove(clientId);
+    m_clientNotifications.remove(clientId);
+    if (m_pushButtonTransactions.values().contains(clientId)) {
+        GuhCore::instance()->userManager()->cancelPushButtonAuth(m_pushButtonTransactions.key(clientId));
+    }
 }
 
 }

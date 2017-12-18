@@ -81,6 +81,8 @@ void TcpServer::sendData(const QUuid &clientId, const QByteArray &data)
     client = m_clientList.value(clientId);
     if (client) {
         client->write(data + '\n');
+    } else {
+        qWarning(dcTcpServer()) << "Client" << clientId << "unknown to this transport";
     }
 }
 

@@ -199,6 +199,7 @@ void GuhTestBase::initTestCase()
     // Add the mockdevice
     m_mockTcpServer = MockTcpServer::servers().first();
     m_clientId = QUuid::createUuid();
+    m_mockTcpServer->clientConnected(m_clientId);
 
     createMockDevice();
 
@@ -223,7 +224,7 @@ void GuhTestBase::cleanup()
     }
 }
 
-QVariant GuhTestBase::injectAndWait(const QString &method, const QVariantMap &params)
+QVariant GuhTestBase::injectAndWait(const QString &method, const QVariantMap &params, const QUuid &clientId)
 {
     QVariantMap call;
     call.insert("id", m_commandId);
@@ -234,7 +235,7 @@ QVariant GuhTestBase::injectAndWait(const QString &method, const QVariantMap &pa
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(call);
     QSignalSpy spy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
-    m_mockTcpServer->injectData(m_clientId, jsonDoc.toJson(QJsonDocument::Compact));
+    m_mockTcpServer->injectData(clientId.isNull() ? m_clientId : clientId, jsonDoc.toJson(QJsonDocument::Compact));
 
     if (spy.count() == 0) {
         spy.wait();
@@ -499,6 +500,7 @@ void GuhTestBase::restartServer()
     QSignalSpy spy(GuhCore::instance()->deviceManager(), SIGNAL(loaded()));
     spy.wait();
     m_mockTcpServer = MockTcpServer::servers().first();
+    m_mockTcpServer->clientConnected(m_clientId);
 }
 
 void GuhTestBase::clearLoggingDatabase()

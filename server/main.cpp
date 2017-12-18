@@ -38,6 +38,7 @@
 #include "guhcore.h"
 #include "guhservice.h"
 #include "guhsettings.h"
+#include "guhdbusservice.h"
 #include "guhapplication.h"
 #include "loggingcategories.h"
 
@@ -195,6 +196,9 @@ int main(int argc, char *argv[])
     QCommandLineOption logOption({"l", "log"}, QCoreApplication::translate("main", "Specify a log file to write to, If this option is not specified, logs will be printed to the standard output."), "logfile", "/var/log/guhd.log");
     parser.addOption(logOption);
 
+    QCommandLineOption dbusOption(QStringList() << "session", QCoreApplication::translate("main", "If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus."));
+    parser.addOption(dbusOption);
+
     parser.process(application);
 
     // Open the logfile, if any specified
@@ -233,6 +237,10 @@ int main(int argc, char *argv[])
         }
     }
     QLoggingCategory::installFilter(loggingCategoryFilter);
+
+    if (parser.isSet(dbusOption)) {
+        GuhDBusService::setBusType(QDBusConnection::SessionBus);
+    }
 
     bool startForeground = parser.isSet(foregroundOption);
     if (startForeground) {

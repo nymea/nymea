@@ -23,6 +23,7 @@
 #include "guhcore.h"
 #include "devicemanager.h"
 #include "mocktcpserver.h"
+#include "../../utils/pushbuttonagent.h"
 
 #include <QtTest/QtTest>
 #include <QCoreApplication>
@@ -64,6 +65,39 @@ private slots:
     void stateChangeEmitsNotifications();
 
     void pluginConfigChangeEmitsNotification();
+
+    /*
+    Cases for push button auth:
+
+    Case 1: regular pushbutton
+    - alice sends JSONRPC.RequestPushButtonAuth, gets "OK" back (if push button hardware is available)
+    - alice pushes the hardware button and gets a notification on jsonrpc containing the token for local auth
+    */
+    void testPushButtonAuth();
+
+    /*
+    Case 2: if we have an attacker in the network, he could try to call requestPushButtonAuth and
+    hope someone would eventually press the button and give him a token. In order to prevent this
+    any previous attempt for a push button auth needs to be cancelled when a new request comes in:
+
+    * Mallory does RequestPushButtonAuth, gets OK back
+    * Alice does RequestPushButtonAuth,
+    * Mallory receives a "PushButtonFailed" notification
+    * Alice receives OK
+    * alice presses the hardware button
+    * Alice reveices a notification with token, mallory receives nothing
+
+    Case 3: Mallory tries to hijack it back again
+
+    * Mallory does RequestPushButtonAuth, gets OK back
+    * Alice does RequestPusButtonAuth,
+    * Alice gets ok reply, Mallory gets failed notification
+    * Mallory quickly does RequestPushButtonAuth again to win the fight
+    * Alice gets failed notification and can instruct the user to _not_ press the button now until procedure is restarted
+    */
+    void testPushButtonAuthInterrupt();
+
+    void testPushButtonAuthConnectionDrop();
 
 private:
     QStringList extractRefs(const QVariant &variant);
@@ -109,11 +143,21 @@ void TestJSONRPC::testHandshake()
     QString guhVersionString(GUH_VERSION_STRING);
     QVERIFY2(handShake.value("version").toString() == guhVersionString, "Handshake version doesn't match Guh version.");
 
+    // Check whether pushButtonAuth is disabled
+    QCOMPARE(handShake.value("pushButtonAuthAvailable").toBool(), false);
+
+    // Now register push button agent
+    PushButtonAgent pushButtonAgent;
+    pushButtonAgent.init();
+
     // And now check if it is sent again when calling JSONRPC.Hello
     handShake = injectAndWait("JSONRPC.Hello").toMap();
     QCOMPARE(handShake.value("params").toMap().value("version").toString(), guhVersionString);
 
     m_mockTcpServer->clientDisconnected(newClientId);
+
+    // Check whether pushButtonAuth is now
+    QCOMPARE(handShake.value("params").toMap().value("pushButtonAuthAvailable").toBool(), true);
 
     // And now check if it is sent again when calling JSONRPC.Hello
     handShake = injectAndWait("JSONRPC.Hello").toMap();
@@ -874,6 +918,188 @@ void TestJSONRPC::pluginConfigChangeEmitsNotification()
 
     QVariantList notificationData = checkNotifications(clientSpy, "Devices.PluginConfigurationChanged");
     QCOMPARE(notificationData.first().toMap().value("notification").toString() == "Devices.PluginConfigurationChanged", true);
+}
+
+void TestJSONRPC::testPushButtonAuth()
+{
+    PushButtonAgent pushButtonAgent;
+    pushButtonAgent.init();
+
+    QVariantMap params;
+    params.insert("deviceName", "pbtestdevice");
+    QVariant response = injectAndWait("JSONRPC.RequestPushButtonAuth", params);
+    QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
+    int transactionId = response.toMap().value("params").toMap().value("transactionId").toInt();
+
+    // Setup connection to mock client
+    QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+
+    pushButtonAgent.sendButtonPressed();
+
+    if (clientSpy.count() == 0) {
+        clientSpy.wait();
+    }
+    QVariantMap rsp = checkNotification(clientSpy, "JSONRPC.PushButtonAuthFinished").toMap();
+
+    QCOMPARE(rsp.value("params").toMap().value("transactionId").toInt(), transactionId);
+    QVERIFY2(!rsp.value("params").toMap().value("token").toByteArray().isEmpty(), "Token not in push button auth notification");
+}
+
+
+
+void TestJSONRPC::testPushButtonAuthInterrupt()
+{
+    PushButtonAgent pushButtonAgent;
+    pushButtonAgent.init();
+
+    // m_clientId is registered in gutTestbase already, just using it here to improve readability of the test
+    QUuid aliceId = m_clientId;
+
+    // Create a new clientId for mallory and connect it to the server
+    QUuid malloryId = QUuid::createUuid();
+    m_mockTcpServer->clientConnected(malloryId);
+
+    // Snoop in on everything the TCP server sends to its clients.
+    QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+
+    // request push button auth for client 1 (alice) and check for OK reply
+    QVariantMap params;
+    params.insert("deviceName", "alice");
+    QVariant response = injectAndWait("JSONRPC.RequestPushButtonAuth", params, aliceId);
+    QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
+    int transactionId1 = response.toMap().value("params").toMap().value("transactionId").toInt();
+
+
+    // Request push button auth for client 2 (mallory)
+    clientSpy.clear();
+    params.clear();
+    params.insert("deviceName", "mallory");
+    response = injectAndWait("JSONRPC.RequestPushButtonAuth", params, malloryId);
+    QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
+    int transactionId2 = response.toMap().value("params").toMap().value("transactionId").toInt();
+
+    // Both clients should receive something. Wait for it
+    if (clientSpy.count() < 2) {
+        clientSpy.wait();
+    }
+
+    // spy.at(0) should be the failed notification for alice
+    // spy.at(1) shpuld be the OK reply for mallory
+
+
+    // alice should have received a failed notification. She knows something's wrong.
+    QVariantMap notification = QJsonDocument::fromJson(clientSpy.first().at(1).toByteArray()).toVariant().toMap();
+    QCOMPARE(clientSpy.first().first().toUuid(), aliceId);
+    QCOMPARE(notification.value("notification").toString(), QLatin1String("JSONRPC.PushButtonAuthFinished"));
+    QCOMPARE(notification.value("params").toMap().value("transactionId").toInt(), transactionId1);
+    QCOMPARE(notification.value("params").toMap().value("success").toBool(), false);
+
+    // Mallory instead should have received an OK
+    QVariantMap reply = QJsonDocument::fromJson(clientSpy.at(1).at(1).toByteArray()).toVariant().toMap();
+    QCOMPARE(clientSpy.at(1).first().toUuid(), malloryId);
+    QCOMPARE(reply.value("params").toMap().value("success").toBool(), true);
+
+
+    // Alice tries once more
+    clientSpy.clear();
+    params.clear();
+    params.insert("deviceName", "alice");
+    response = injectAndWait("JSONRPC.RequestPushButtonAuth", params, aliceId);
+    QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
+    int transactionId3 = response.toMap().value("params").toMap().value("transactionId").toInt();
+
+    // Both clients should receive something. Wait for it
+    if (clientSpy.count() < 2) {
+        clientSpy.wait();
+    }
+
+    // spy.at(0) should be the failed notification for mallory
+    // spy.at(1) shpuld be the OK reply for alice
+
+    // mallory should have received a failed notification. She knows something's wrong.
+    notification = QJsonDocument::fromJson(clientSpy.first().at(1).toByteArray()).toVariant().toMap();
+    QCOMPARE(clientSpy.first().first().toUuid(), malloryId);
+    QCOMPARE(notification.value("notification").toString(), QLatin1String("JSONRPC.PushButtonAuthFinished"));
+    QCOMPARE(notification.value("params").toMap().value("transactionId").toInt(), transactionId2);
+    QCOMPARE(notification.value("params").toMap().value("success").toBool(), false);
+
+    // Alice instead should have received an OK
+    reply = QJsonDocument::fromJson(clientSpy.at(1).at(1).toByteArray()).toVariant().toMap();
+    QCOMPARE(clientSpy.at(1).first().toUuid(), aliceId);
+    QCOMPARE(reply.value("params").toMap().value("success").toBool(), true);
+
+    clientSpy.clear();
+
+    // do the button press
+    pushButtonAgent.sendButtonPressed();
+
+    // Wait for things to happen
+    if (clientSpy.count() == 0) {
+        clientSpy.wait();
+    }
+
+    // There should have been only exactly one message sent, the token for alice
+    // Mallory should not have received anything
+    QCOMPARE(clientSpy.count(), 1);
+    notification = QJsonDocument::fromJson(clientSpy.first().at(1).toByteArray()).toVariant().toMap();
+    QCOMPARE(clientSpy.first().first().toUuid(), aliceId);
+    QCOMPARE(notification.value("notification").toString(), QLatin1String("JSONRPC.PushButtonAuthFinished"));
+    QCOMPARE(notification.value("params").toMap().value("transactionId").toInt(), transactionId3);
+    QCOMPARE(notification.value("params").toMap().value("success").toBool(), true);
+    QVERIFY2(!notification.value("params").toMap().value("token").toByteArray().isEmpty(), "Token is empty while it shouldn't be");
+}
+
+void TestJSONRPC::testPushButtonAuthConnectionDrop()
+{
+    PushButtonAgent pushButtonAgent;
+    pushButtonAgent.init();
+
+    // Snoop in on everything the TCP server sends to its clients.
+    QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+
+    // Create a new clientId for alice and connect it to the server
+    QUuid aliceId = QUuid::createUuid();
+    m_mockTcpServer->clientConnected(aliceId);
+
+    // request push button auth for client 1 (alice) and check for OK reply
+    QVariantMap params;
+    params.insert("deviceName", "alice");
+    QVariant response = injectAndWait("JSONRPC.RequestPushButtonAuth", params, aliceId);
+    QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
+
+    // Disconnect alice
+    m_mockTcpServer->clientDisconnected(aliceId);
+
+    // Now try with bob
+    // Create a new clientId for bob and connect it to the server
+    QUuid bobId = QUuid::createUuid();
+    m_mockTcpServer->clientConnected(bobId);
+
+    // request push button auth for client 1 (alice) and check for OK reply
+    params.clear();
+    params.insert("deviceName", "bob");
+    response = injectAndWait("JSONRPC.RequestPushButtonAuth", params, bobId);
+    QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
+    int transactionId = response.toMap().value("params").toMap().value("transactionId").toInt();
+
+    clientSpy.clear();
+
+    pushButtonAgent.sendButtonPressed();
+
+    // Wait for things to happen
+    if (clientSpy.count() == 0) {
+        clientSpy.wait();
+    }
+
+    // There should have been only exactly one message sent, the token for bob
+    QCOMPARE(clientSpy.count(), 1);
+    QVariantMap notification = QJsonDocument::fromJson(clientSpy.first().at(1).toByteArray()).toVariant().toMap();
+    QCOMPARE(clientSpy.first().first().toUuid(), bobId);
+    QCOMPARE(notification.value("notification").toString(), QLatin1String("JSONRPC.PushButtonAuthFinished"));
+    QCOMPARE(notification.value("params").toMap().value("transactionId").toInt(), transactionId);
+    QCOMPARE(notification.value("params").toMap().value("success").toBool(), true);
+    QVERIFY2(!notification.value("params").toMap().value("token").toByteArray().isEmpty(), "Token is empty while it shouldn't be");
+
 }
 
 #include "testjsonrpc.moc"

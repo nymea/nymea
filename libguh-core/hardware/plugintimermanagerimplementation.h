@@ -20,17 +20,81 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#ifndef PLUGINTIMERIMPLEMENTATION_H
+#define PLUGINTIMERIMPLEMENTATION_H
+
+#include <QTimer>
+#include <QObject>
+#include <QPointer>
+
 #include "plugintimer.h"
-#include "loggingcategories.h"
 
-PluginTimerManager::PluginTimerManager(QObject *parent) :
-    HardwareResource(HardwareResource::TypeTimer, "PluginTimerManager", parent)
+namespace guhserver {
+
+class PluginTimerImplementation : public PluginTimer
 {
+    Q_OBJECT
+
+    friend class PluginTimerManagerImplementation;
+
+public:
+    explicit PluginTimerImplementation(int intervall, QObject *parent = nullptr);
+
+    int interval() const;
+    int currentTick() const;
+    bool running() const;
+
+signals:
+    void timeout();
+    void currentTickChanged(const int &currentTick);
+    void runningChanged(const bool &running);
+    void pausedChanged(const bool &paused);
+
+private:
+    int m_interval;
+    int m_currentTick = 0;
+
+    bool m_paused = false;
+    bool m_running = true;
+
+    void setRunning(const bool &running);
+    void setPaused(const bool &paused);
+    void setCurrentTick(const int &tick);
+
+    void tick();
+
+public slots:
+    void reset();
+    void start();
+    void stop();
+    void pause();
+    void resume();
+
+};
+
+class PluginTimerManagerImplementation : public PluginTimerManager
+{
+    Q_OBJECT
+
+    friend class HardwareManagerImplementation;
+
+public:
+    explicit PluginTimerManagerImplementation(QObject *parent = nullptr);
+
+    PluginTimer *registerTimer(int seconds = 60);
+    void unregisterTimer(PluginTimer *timer = nullptr);
+
+
+private:
+    QList<QPointer<PluginTimerImplementation> > m_timers;
+    void timeTick();
+
+public slots:
+    bool enable();
+    bool disable();
+
+};
 
 }
 
-PluginTimer::PluginTimer(QObject *parent) :
-    QObject(parent)
-{
-
-}
+#endif // PLUGINTIMERIMPLEMENTATION_H

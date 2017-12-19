@@ -20,54 +20,62 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef PLUGINTIMER_H
-#define PLUGINTIMER_H
+#ifndef HARDWAREMANAGERIMPLEMENTATION_H
+#define HARDWAREMANAGERIMPLEMENTATION_H
 
-#include <QTimer>
 #include <QObject>
-#include <QPointer>
+#include <QDBusConnection>
+#include <QNetworkAccessManager>
 
-#include "hardwareresource.h"
+#include "hardwaremanager.h"
 
-class PluginTimer : public QObject
+class Radio433;
+class PluginTimer;
+class UpnpDiscovery;
+class PluginTimerManagerImplementation;
+class NetworkAccessManager;
+class UpnpDeviceDescriptor;
+class QtAvahiServiceBrowser;
+class BluetoothLowEnergyManager;
+
+namespace guhserver {
+
+class HardwareManagerImplementation : public HardwareManager
 {
     Q_OBJECT
+    Q_CLASSINFO("D-Bus Interface", "io.guh.nymead")
 
 public:
-    PluginTimer(QObject *parent = nullptr);
-    virtual ~PluginTimer() = default;
+    explicit HardwareManagerImplementation(QObject *parent = nullptr);
 
-    virtual int interval() const = 0;
-    virtual int currentTick() const = 0;
-    virtual bool running() const = 0;
+    Radio433 *radio433();
+    PluginTimerManager *pluginTimerManager();
+    NetworkAccessManager *networkManager();
+    UpnpDiscovery *upnpDiscovery();
+    QtAvahiServiceBrowser *avahiBrowser();
+    BluetoothLowEnergyManager *bluetoothLowEnergyManager();
 
-signals:
-    void timeout();
+    // D-Bus method for enable/disable bluetooth support
+    Q_SCRIPTABLE void EnableBluetooth(const bool &enabled);
 
-    void currentTickChanged(const int &currentTick);
-    void runningChanged(const bool &running);
-    void pausedChanged(const bool &paused);
+private:
+    QNetworkAccessManager *m_networkAccessManager;
 
-public slots:
-    virtual void reset() = 0;
-    virtual void start() = 0;
-    virtual void stop() = 0;
-    virtual void pause() = 0;
-    virtual void resume() = 0;
+    // Hardware Resources
+    PluginTimerManagerImplementation *m_pluginTimerManager = nullptr;
+    Radio433 *m_radio433 = nullptr;
+    NetworkAccessManager *m_networkManager = nullptr;
+    UpnpDiscovery *m_upnpDiscovery = nullptr;
+    QtAvahiServiceBrowser *m_avahiBrowser = nullptr;
+    BluetoothLowEnergyManager *m_bluetoothLowEnergyManager = nullptr;
+
+    bool enableHardwareReource(const HardwareResource::Type &hardwareResourceType);
+    bool disableHardwareReource(const HardwareResource::Type &hardwareResourceType);
+
+    void timeTick();
 
 };
 
+}
 
-class PluginTimerManager : public HardwareResource
-{
-    Q_OBJECT
-
-public:
-    PluginTimerManager(QObject *parent = nullptr);
-    virtual ~PluginTimerManager() = default;
-
-    virtual PluginTimer *registerTimer(int seconds = 60) = 0;
-    virtual void unregisterTimer(PluginTimer *timer = nullptr) = 0;
-};
-
-#endif // PLUGINTIMER_H
+#endif // HARDWAREMANAGERIMPLEMENTATION_H

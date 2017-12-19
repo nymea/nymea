@@ -33,9 +33,9 @@
 #include <QObject>
 #include <QVariantMap>
 #include <QString>
+#include <QSslConfiguration>
 
 class Device;
-class QSslConfiguration;
 
 namespace guhserver {
 

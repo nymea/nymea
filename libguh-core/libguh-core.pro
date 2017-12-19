@@ -76,7 +76,9 @@ HEADERS += guhcore.h \
     MbedTLS/MbedTLSConnection.hpp \
     janusconnector.h \
     pushbuttondbusservice.h \
-    guhdbusservice.h
+    guhdbusservice.h \
+    hardwaremanagerimplementation.h \
+    hardware/plugintimermanagerimplementation.h \
 
 
 SOURCES += guhcore.cpp \
@@ -136,4 +138,6 @@ SOURCES += guhcore.cpp \
     MbedTLS/MbedTLSConnection.cpp \
     janusconnector.cpp \
     pushbuttondbusservice.cpp \
-    guhdbusservice.cpp
+    guhdbusservice.cpp \
+    hardwaremanagerimplementation.cpp \
+    hardware/plugintimermanagerimplementation.cpp \

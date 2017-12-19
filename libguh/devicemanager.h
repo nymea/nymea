@@ -89,7 +89,7 @@ public:
     };
     Q_ENUM(DeviceSetupStatus)
 
-    explicit DeviceManager(const QLocale &locale, QObject *parent = nullptr);
+    explicit DeviceManager(HardwareManager *hardwareManager, const QLocale &locale, QObject *parent = nullptr);
     ~DeviceManager();
 
     static QStringList pluginSearchDirs();
@@ -177,6 +177,8 @@ private:
 
 
 private:
+    HardwareManager *m_hardwareManager;
+
     QLocale m_locale;
     QHash<VendorId, Vendor> m_supportedVendors;
     QHash<VendorId, QList<DeviceClassId> > m_vendorDeviceMap;
@@ -185,8 +187,6 @@ private:
     QHash<DeviceDescriptorId, DeviceDescriptor> m_discoveredDevices;
 
     QHash<PluginId, DevicePlugin*> m_devicePlugins;
-
-    HardwareManager *m_hardwareManager;
 
     QHash<QUuid, DevicePairingInfo> m_pairingsJustAdd;
     QHash<QUuid, DevicePairingInfo> m_pairingsDiscovery;

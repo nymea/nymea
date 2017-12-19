@@ -36,6 +36,7 @@
 #include "cloudmanager.h"
 
 #include "time/timemanager.h"
+#include "hardwaremanagerimplementation.h"
 
 #include <QObject>
 
@@ -113,6 +114,7 @@ private:
     LogEngine *m_logger;
     TimeManager *m_timeManager;
     CloudManager *m_cloudManager;
+    HardwareManagerImplementation *m_hardwareManager;
 
     NetworkManager *m_networkManager;
     UserManager *m_userManager;

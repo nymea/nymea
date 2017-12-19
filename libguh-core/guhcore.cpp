@@ -432,8 +432,11 @@ void GuhCore::init() {
     qCDebug(dcApplication) << "Creating Log Engine";
     m_logger = new LogEngine(GuhSettings::logPath(), this);
 
+    qCDebug(dcApplication) << "Creating Hardware Manager";
+    m_hardwareManager = new HardwareManagerImplementation(this);
+
     qCDebug(dcApplication) << "Creating Device Manager (locale:" << m_configuration->locale() << ")";
-    m_deviceManager = new DeviceManager(m_configuration->locale(), this);
+    m_deviceManager = new DeviceManager(m_hardwareManager, m_configuration->locale(), this);
 
     qCDebug(dcApplication) << "Creating Rule Engine";
     m_ruleEngine = new RuleEngine(this);

@@ -198,14 +198,13 @@
 
 /*! Constructs the DeviceManager with the given \a locale and \a parent. There should only be one DeviceManager in the system created by \l{guhserver::GuhCore}.
  *  Use \c guhserver::GuhCore::instance()->deviceManager() instead to access the DeviceManager. */
-DeviceManager::DeviceManager(const QLocale &locale, QObject *parent) :
+DeviceManager::DeviceManager(HardwareManager *hardwareManager, const QLocale &locale, QObject *parent) :
     QObject(parent),
+    m_hardwareManager(hardwareManager),
     m_locale(locale)
 {
     qRegisterMetaType<DeviceClassId>();
     qRegisterMetaType<DeviceDescriptor>();
-
-    m_hardwareManager = new HardwareManager(this);
 
     // Give hardware a chance to start up before loading plugins etc.
     QMetaObject::invokeMethod(this, "loadPlugins", Qt::QueuedConnection);
@@ -973,7 +972,7 @@ DeviceManager::DeviceError DeviceManager::executeAction(const Action &action)
 /*! Centralized time tick for the GuhTimer resource. Ticks every second. */
 void DeviceManager::timeTick()
 {
-    m_hardwareManager->timeTick();
+
 }
 
 void DeviceManager::loadPlugins()

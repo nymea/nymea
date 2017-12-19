@@ -20,90 +20,33 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef PLUGINTIMERIMPLEMENTATION_H
-#define PLUGINTIMERIMPLEMENTATION_H
+#ifndef BLUETOOTHLOWENERGYMANAGER_H
+#define BLUETOOTHLOWENERGYMANAGER_H
 
 #include <QTimer>
 #include <QObject>
 #include <QPointer>
+#include <QBluetoothDeviceInfo>
+#include <QBluetoothLocalDevice>
+#include <QBluetoothDeviceDiscoveryAgent>
 
 #include "plugintimer.h"
+#include "hardwareresource.h"
+#include "bluetoothdiscoveryreply.h"
+#include "bluetoothlowenergydevice.h"
 
-namespace guhserver {
-
-class PluginTimerImplementation : public PluginTimer
+class BluetoothLowEnergyManager : public HardwareResource
 {
     Q_OBJECT
 
-    friend class PluginTimerManagerImplementation;
-
 public:
-    explicit PluginTimerImplementation(int intervall, QObject *parent = nullptr);
+    explicit BluetoothLowEnergyManager(QObject *parent = nullptr);
 
-    int interval() const;
-    int currentTick() const;
-    bool running() const;
+    virtual BluetoothDiscoveryReply *discoverDevices(const int &interval = 5000) = 0;
 
-signals:
-    void timeout();
-    void currentTickChanged(const int &currentTick);
-    void runningChanged(const bool &running);
-    void pausedChanged(const bool &paused);
-
-private:
-    int m_interval;
-    int m_currentTick = 0;
-
-    bool m_paused = false;
-    bool m_running = true;
-
-    void setRunning(const bool &running);
-    void setPaused(const bool &paused);
-    void setCurrentTick(const int &tick);
-
-    void tick();
-
-public slots:
-    void reset();
-    void start();
-    void stop();
-    void pause();
-    void resume();
-
+    // Bluetooth device registration methods
+    virtual BluetoothLowEnergyDevice *registerDevice(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType = QLowEnergyController::RandomAddress) = 0;
+    virtual void unregisterDevice(BluetoothLowEnergyDevice *bluetoothDevice) = 0;
 };
 
-class PluginTimerManagerImplementation : public PluginTimerManager
-{
-    Q_OBJECT
-
-    friend class HardwareManagerImplementation;
-
-public:
-    explicit PluginTimerManagerImplementation(QObject *parent = nullptr);
-
-    PluginTimer *registerTimer(int seconds = 60);
-    void unregisterTimer(PluginTimer *timer = nullptr);
-
-    bool available() const override;
-    bool enabled() const override;
-
-private:
-    QList<QPointer<PluginTimerImplementation> > m_timers;
-    void timeTick();
-
-protected:
-    void setEnabled(bool enabled) override;
-
-public slots:
-    bool enable();
-    bool disable();
-
-private:
-    bool m_available = false;
-    bool m_enabled = false;
-
-};
-
-}
-
-#endif // PLUGINTIMERIMPLEMENTATION_H
+#endif // BLUETOOTHLOWENERGYMANAGER_H

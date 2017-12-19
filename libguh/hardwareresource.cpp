@@ -25,9 +25,8 @@
 #include "hardwaremanager.h"
 #include "loggingcategories.h"
 
-HardwareResource::HardwareResource(const Type &hardwareReourceType, const QString &name, QObject *parent) :
+HardwareResource::HardwareResource(const QString &name, QObject *parent) :
     QObject(parent),
-    m_hardwareReourceType(hardwareReourceType),
     m_name(name)
 {
 
@@ -36,35 +35,4 @@ HardwareResource::HardwareResource(const Type &hardwareReourceType, const QStrin
 QString HardwareResource::name() const
 {
     return m_name;
-}
-
-bool HardwareResource::available() const
-{
-    return m_available;
-}
-
-bool HardwareResource::enabled() const
-{
-    return m_enabled;
-}
-
-HardwareResource::Type HardwareResource::hardwareReourceType() const
-{
-    return m_hardwareReourceType;
-}
-
-void HardwareResource::setEnabled(const bool &enabled)
-{
-    if (m_enabled != enabled) {
-        m_enabled = enabled;
-        emit enabledChanged(m_enabled);
-    }
-}
-
-void HardwareResource::setAvailable(const bool &available)
-{
-    if (m_available != available) {
-        m_available = available;
-        emit availableChanged(m_available);
-    }
 }

@@ -4,7 +4,7 @@ TARGET = guh-core
 include(../guh.pri)
 
 QT += sql
-INCLUDEPATH += $$top_srcdir/libguh jsonrpc
+INCLUDEPATH += $$top_srcdir/libguh $$top_srcdir jsonrpc
 LIBS += -L$$top_builddir/libguh/ -lguh -lssl -lcrypto
 
 target.path = /usr/lib/$$system('dpkg-architecture -q DEB_HOST_MULTIARCH')
@@ -79,6 +79,12 @@ HEADERS += guhcore.h \
     guhdbusservice.h \
     hardwaremanagerimplementation.h \
     hardware/plugintimermanagerimplementation.h \
+    hardware/radio433/radio433brennenstuhl.h \
+    hardware/radio433/radio433transmitter.h \
+    hardware/radio433/radio433brennenstuhlgateway.h \
+    hardware/bluetoothlowenergy/bluetoothlowenergymanager.h \
+    hardware/network/networkaccessmanagerimpl.h \
+
 
 
 SOURCES += guhcore.cpp \
@@ -141,3 +147,9 @@ SOURCES += guhcore.cpp \
     guhdbusservice.cpp \
     hardwaremanagerimplementation.cpp \
     hardware/plugintimermanagerimplementation.cpp \
+    hardware/radio433/radio433brennenstuhl.cpp \
+    hardware/radio433/radio433transmitter.cpp \
+    hardware/radio433/radio433brennenstuhlgateway.cpp \
+    hardware/bluetoothlowenergy/bluetothlowenergymanager.cpp \
+    hardware/network/networkaccessmanagerimpl.cpp \
+

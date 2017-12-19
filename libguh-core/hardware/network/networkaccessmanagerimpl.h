@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2017 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.io>                   *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -20,90 +20,52 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef PLUGINTIMERIMPLEMENTATION_H
-#define PLUGINTIMERIMPLEMENTATION_H
+#ifndef NETWORKACCESSMANAGERIMPL_H
+#define NETWORKACCESSMANAGERIMPL_H
 
-#include <QTimer>
+#include "libguh.h"
+#include "typeutils.h"
+#include "libguh/network/networkaccessmanager.h"
+
 #include <QObject>
-#include <QPointer>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QDebug>
+#include <QUrl>
 
-#include "plugintimer.h"
-
-namespace guhserver {
-
-class PluginTimerImplementation : public PluginTimer
+class NetworkAccessManagerImpl : public NetworkAccessManager
 {
     Q_OBJECT
 
-    friend class PluginTimerManagerImplementation;
-
 public:
-    explicit PluginTimerImplementation(int intervall, QObject *parent = nullptr);
+    NetworkAccessManagerImpl(QNetworkAccessManager *networkManager, QObject *parent = nullptr);
 
-    int interval() const;
-    int currentTick() const;
-    bool running() const;
+    QNetworkReply *get(const QNetworkRequest &request) override;
+    QNetworkReply *deleteResource(const QNetworkRequest &request) override;
+    QNetworkReply *head(const QNetworkRequest &request) override;
 
-signals:
-    void timeout();
-    void currentTickChanged(const int &currentTick);
-    void runningChanged(const bool &running);
-    void pausedChanged(const bool &paused);
+    QNetworkReply *post(const QNetworkRequest &request, QIODevice *data) override;
+    QNetworkReply *post(const QNetworkRequest &request, const QByteArray &data) override;
+    QNetworkReply *post(const QNetworkRequest &request, QHttpMultiPart *multiPart) override;
 
-private:
-    int m_interval;
-    int m_currentTick = 0;
+    QNetworkReply *put(const QNetworkRequest &request, QIODevice *data) override;
+    QNetworkReply *put(const QNetworkRequest &request, const QByteArray &data) override;
+    QNetworkReply *put(const QNetworkRequest &request, QHttpMultiPart *multiPart) override;
 
-    bool m_paused = false;
-    bool m_running = true;
-
-    void setRunning(const bool &running);
-    void setPaused(const bool &paused);
-    void setCurrentTick(const int &tick);
-
-    void tick();
-
-public slots:
-    void reset();
-    void start();
-    void stop();
-    void pause();
-    void resume();
-
-};
-
-class PluginTimerManagerImplementation : public PluginTimerManager
-{
-    Q_OBJECT
-
-    friend class HardwareManagerImplementation;
-
-public:
-    explicit PluginTimerManagerImplementation(QObject *parent = nullptr);
-
-    PluginTimer *registerTimer(int seconds = 60);
-    void unregisterTimer(PluginTimer *timer = nullptr);
+    QNetworkReply *sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, QIODevice *data = nullptr) override;
 
     bool available() const override;
     bool enabled() const override;
 
-private:
-    QList<QPointer<PluginTimerImplementation> > m_timers;
-    void timeTick();
-
 protected:
     void setEnabled(bool enabled) override;
-
-public slots:
-    bool enable();
-    bool disable();
 
 private:
     bool m_available = false;
     bool m_enabled = false;
 
+    QNetworkAccessManager *m_manager;
 };
 
-}
-
-#endif // PLUGINTIMERIMPLEMENTATION_H
+#endif // NETWORKACCESSMANAGER_H

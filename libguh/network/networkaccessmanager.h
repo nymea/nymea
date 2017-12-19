@@ -38,32 +38,22 @@ class LIBGUH_EXPORT NetworkAccessManager : public HardwareResource
 {
     Q_OBJECT
 
-    friend class HardwareManager;
-
 public:
-    // Note: only these methods are allowed from a plugin perspective
-    QNetworkReply *get(const QNetworkRequest &request);
-    QNetworkReply *deleteResource(const QNetworkRequest &request);
-    QNetworkReply *head(const QNetworkRequest &request);
+    NetworkAccessManager(QObject *parent = nullptr);
 
-    QNetworkReply *post(const QNetworkRequest &request, QIODevice *data);
-    QNetworkReply *post(const QNetworkRequest &request, const QByteArray &data);
-    QNetworkReply *post(const QNetworkRequest &request, QHttpMultiPart *multiPart);
+    virtual QNetworkReply *get(const QNetworkRequest &request) = 0;
+    virtual QNetworkReply *deleteResource(const QNetworkRequest &request) = 0;
+    virtual QNetworkReply *head(const QNetworkRequest &request) = 0;
 
-    QNetworkReply *put(const QNetworkRequest &request, QIODevice *data);
-    QNetworkReply *put(const QNetworkRequest &request, const QByteArray &data);
-    QNetworkReply *put(const QNetworkRequest &request, QHttpMultiPart *multiPart);
+    virtual QNetworkReply *post(const QNetworkRequest &request, QIODevice *data) = 0;
+    virtual QNetworkReply *post(const QNetworkRequest &request, const QByteArray &data) = 0;
+    virtual QNetworkReply *post(const QNetworkRequest &request, QHttpMultiPart *multiPart) = 0;
 
-    QNetworkReply *sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, QIODevice *data = nullptr);
+    virtual QNetworkReply *put(const QNetworkRequest &request, QIODevice *data) = 0;
+    virtual QNetworkReply *put(const QNetworkRequest &request, const QByteArray &data) = 0;
+    virtual QNetworkReply *put(const QNetworkRequest &request, QHttpMultiPart *multiPart) = 0;
 
-private:
-    // Note: only the HardwareManager is allowed to create this resource
-    NetworkAccessManager(QNetworkAccessManager *networkManager, QObject *parent = nullptr);
-    QNetworkAccessManager *m_manager;
-
-public slots:
-    bool enable();
-    bool disable();
+    virtual QNetworkReply *sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, QIODevice *data = nullptr) = 0;
 
 };
 

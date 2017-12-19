@@ -44,17 +44,15 @@
 
 /*! Constructs a new \l{QtAvahiServiceBrowser} with the given \a parent. */
 QtAvahiServiceBrowser::QtAvahiServiceBrowser(QObject *parent) :
-    HardwareResource(HardwareResource::TypeAvahiBrowser, "Avahi service browser", parent),
+    HardwareResource("Avahi service browser", parent),
     d_ptr(new QtAvahiServiceBrowserPrivate(new QtAvahiClient))
 {
-    if (d_ptr->client->state())
+    // TODO: check available here
+    m_available = true;
 
     connect(d_ptr->client, &QtAvahiClient::clientStateChanged, this, &QtAvahiServiceBrowser::onClientStateChanged);
 
-    // TODO: check available here
-    setAvailable(true);
-
-    qCDebug(dcHardware()) << "-->" << name() << "created successfully.";
+    qCDebug(dcAvahi()) << "-->" << name() << "created successfully.";
 }
 
 /*! Destructs this \l{QtAvahiServiceBrowser}. */
@@ -95,19 +93,19 @@ void QtAvahiServiceBrowser::onClientStateChanged(const QtAvahiClient::QtAvahiCli
     }
 }
 
-/*! Enables this \l{QtAvahiServiceBrowser} and starts the service browsing. */
-bool QtAvahiServiceBrowser::enable()
+void QtAvahiServiceBrowser::setEnabled(bool enabled)
 {
-    d_ptr->client->start();
-    setEnabled(true);
-    return true;
-}
-
-bool QtAvahiServiceBrowser::disable()
-{
-    d_ptr->client->stop();
-    setEnabled(false);
-    return true;
+    if (m_enabled == enabled) {
+        qCDebug(dcAvahi()) << "Avahi Service Browser already" << (enabled ? "enabled" : "disabled") << "... Not changing state.";
+        return;
+    }
+    if (enabled) {
+        d_ptr->client->start();
+        qCDebug(dcAvahi()) << "Avahi Service Browser enabled";
+    } else {
+        d_ptr->client->stop();
+        qCDebug(dcAvahi()) << "Avahi Service Browser disabled";
+    }
 }
 
 void QtAvahiServiceBrowser::createServiceBrowser(const char *serviceType)

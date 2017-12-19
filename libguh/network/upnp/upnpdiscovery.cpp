@@ -59,7 +59,7 @@
 
 /*! Construct the hardware resource UpnpDiscovery with the given \a parent. */
 UpnpDiscovery::UpnpDiscovery(QNetworkAccessManager *networkAccessManager, QObject *parent) :
-    HardwareResource(HardwareResource::TypeUpnpDisovery, "UPnP discovery", parent),
+    HardwareResource("UPnP discovery", parent),
     m_networkAccessManager(networkAccessManager)
 {
     m_notificationTimer = new QTimer(this);
@@ -67,7 +67,8 @@ UpnpDiscovery::UpnpDiscovery(QNetworkAccessManager *networkAccessManager, QObjec
     m_notificationTimer->setSingleShot(false);
     connect(m_notificationTimer, &QTimer::timeout, this, &UpnpDiscovery::notificationTimeout);
 
-    setAvailable(true);
+    m_available = true;
+
     qCDebug(dcHardware()) << "-->" << name() << "created successfully.";
 }
 
@@ -449,7 +450,8 @@ bool UpnpDiscovery::enable()
 
     if(!m_socket->bind(QHostAddress::AnyIPv4, m_port, QUdpSocket::ShareAddress)){
         qCWarning(dcHardware()) << name() << "could not bind to port" << m_port;
-        setAvailable(false);
+        m_available = false;
+        emit availableChanged(false);
         delete m_socket;
         m_socket = nullptr;
         return false;
@@ -457,7 +459,8 @@ bool UpnpDiscovery::enable()
 
     if(!m_socket->joinMulticastGroup(m_host)){
         qCWarning(dcHardware()) << name() << "could not join multicast group" << m_host;
-        setAvailable(false);
+        m_available = false;
+        emit availableChanged(false);
         delete m_socket;
         m_socket = nullptr;
         return false;
@@ -470,8 +473,6 @@ bool UpnpDiscovery::enable()
 
     sendAliveMessage();
     sendAliveMessage();
-
-    setEnabled(true);
     return true;
 }
 

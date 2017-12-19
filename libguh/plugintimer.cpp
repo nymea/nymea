@@ -24,7 +24,7 @@
 #include "loggingcategories.h"
 
 PluginTimerManager::PluginTimerManager(QObject *parent) :
-    HardwareResource(HardwareResource::TypeTimer, "PluginTimerManager", parent)
+    HardwareResource("PluginTimerManager", parent)
 {
 
 }

@@ -36,75 +36,7 @@
 #include "loggingcategories.h"
 
 /*! Construct the hardware resource NetworkAccessManager with the given \a parent. */
-NetworkAccessManager::NetworkAccessManager(QNetworkAccessManager *networkManager, QObject *parent) :
-    HardwareResource(HardwareResource::TypeNetworkManager, "Network access manager" , parent),
-    m_manager(networkManager)
+NetworkAccessManager::NetworkAccessManager(QObject *parent) :
+    HardwareResource("Network access manager" , parent)
 {
-    setAvailable(true);
-
-    qCDebug(dcHardware()) << "-->" << name() << "created successfully.";
-}
-
-QNetworkReply *NetworkAccessManager::get(const QNetworkRequest &request)
-{
-    return m_manager->get(request);
-}
-
-QNetworkReply *NetworkAccessManager::deleteResource(const QNetworkRequest &request)
-{
-    return m_manager->deleteResource(request);
-}
-
-QNetworkReply *NetworkAccessManager::head(const QNetworkRequest &request)
-{
-    return m_manager->head(request);
-}
-
-QNetworkReply *NetworkAccessManager::post(const QNetworkRequest &request, QIODevice *data)
-{
-    return m_manager->post(request, data);
-}
-
-QNetworkReply *NetworkAccessManager::post(const QNetworkRequest &request, const QByteArray &data)
-{
-    return m_manager->post(request, data);
-}
-
-QNetworkReply *NetworkAccessManager::post(const QNetworkRequest &request, QHttpMultiPart *multiPart)
-{
-    return m_manager->post(request, multiPart);
-}
-
-QNetworkReply *NetworkAccessManager::put(const QNetworkRequest &request, QIODevice *data)
-{
-    return m_manager->put(request, data);
-}
-
-QNetworkReply *NetworkAccessManager::put(const QNetworkRequest &request, const QByteArray &data)
-{
-    return m_manager->put(request, data);
-}
-
-QNetworkReply *NetworkAccessManager::put(const QNetworkRequest &request, QHttpMultiPart *multiPart)
-{
-    return m_manager->put(request, multiPart);
-}
-
-QNetworkReply *NetworkAccessManager::sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, QIODevice *data)
-{
-    return m_manager->sendCustomRequest(request, verb, data);
-}
-
-bool NetworkAccessManager::enable()
-{
-    m_manager->setNetworkAccessible(QNetworkAccessManager::Accessible);
-    setEnabled(true);
-    return true;
-}
-
-bool NetworkAccessManager::disable()
-{
-    m_manager->setNetworkAccessible(QNetworkAccessManager::NotAccessible);
-    setEnabled(false);
-    return true;
 }

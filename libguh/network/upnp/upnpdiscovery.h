@@ -83,9 +83,13 @@ private slots:
     void sendAliveMessage();
     void discoverTimeout();
 
-public slots:
+private:
     bool enable();
     bool disable();
+
+private:
+    bool m_available = false;
+    bool m_enabled = false;
 };
 
 #endif // UPNPDISCOVERY_H

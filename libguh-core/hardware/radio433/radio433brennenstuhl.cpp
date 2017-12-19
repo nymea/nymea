@@ -21,7 +21,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-  \class Radio433
+  \class Radio433Brennenstuhl
   \brief The Radio433 class helps to interact with the 433 MHz receiver and transmitter.
 
   \ingroup hardware
@@ -47,7 +47,7 @@
 */
 
 
-#include "radio433.h"
+#include "radio433brennenstuhl.h"
 #include "loggingcategories.h"
 #include "guhsettings.h"
 #include "hardware/gpio.h"
@@ -55,7 +55,66 @@
 #include <QFileInfo>
 
 /*! Construct the hardware resource Radio433 with the given \a parent. Each possible 433 MHz hardware will be initialized here. */
-Radio433::Radio433(QObject *parent) :
-    HardwareResource("Radio 433 MHz", parent)
+Radio433Brennenstuhl::Radio433Brennenstuhl(QObject *parent) :
+    Radio433(parent)
 {
+    m_brennenstuhlTransmitter = new Radio433BrennenstuhlGateway(this);
+    connect(m_brennenstuhlTransmitter, &Radio433BrennenstuhlGateway::availableChanged, this, &Radio433Brennenstuhl::brennenstuhlAvailableChanged);
+
+    qCDebug(dcHardware()) << "-->" << name() << "created successfully.";
+}
+
+bool Radio433Brennenstuhl::available() const
+{
+    return m_available;
+}
+
+bool Radio433Brennenstuhl::enabled() const
+{
+    return m_enabled;
+}
+
+void Radio433Brennenstuhl::brennenstuhlAvailableChanged(bool available)
+{
+    if (available) {
+        qCDebug(dcHardware()) << name() << "Brennenstuhl LAN Gateway available.";
+        m_available = true;
+    } else {
+        qCWarning(dcHardware()) << name() << "Brennenstuhl LAN Gateway not available.";
+        m_available = false;
+    }
+    emit availableChanged(m_available);
+}
+
+/*! Returns true, if the \a rawData with a certain \a delay (pulse length) could be sent \a repetitions times. */
+bool Radio433Brennenstuhl::sendData(int delay, QList<int> rawData, int repetitions)
+{
+    if (!available()) {
+        qCWarning(dcHardware()) << name() << "Brennenstuhl gateway not available";
+        return false;
+    }
+
+    if (!enabled()) {
+        qCWarning(dcHardware()) << name() << "Hardware reouce disabled.";
+        return false;
+    }
+
+    return m_brennenstuhlTransmitter->sendData(delay, rawData, repetitions);
+}
+
+void Radio433Brennenstuhl::setEnabled(bool enabled)
+{
+    if (m_enabled == enabled) {
+        qCDebug(dcHardware()) << "Radio433 Brennenstuhl gateway already" << (enabled ? "enabled" : "disabled");
+        return;
+    }
+    if (enabled) {
+        m_brennenstuhlTransmitter->enable();
+        qCDebug(dcHardware()) << "Radio433 Brennenstuhl gateway enabled";
+    } else {
+        m_brennenstuhlTransmitter->disable();
+        qCDebug(dcHardware()) << "Radio433 Brennenstuhl gateway disabled";
+    }
+    m_enabled = enabled;
+    emit enabledChanged(m_enabled);
 }

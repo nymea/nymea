@@ -28,8 +28,6 @@ HEADERS += devicemanager.h \
         hardware/gpiomonitor.h \
         hardware/pwm.h \
         hardware/radio433/radio433.h \
-        hardware/radio433/radio433transmitter.h \
-        hardware/radio433/radio433brennenstuhlgateway.h \
         network/upnp/upnpdiscovery.h \
         network/upnp/upnpdevice.h \
         network/upnp/upnpdevicedescriptor.h \
@@ -44,9 +42,9 @@ HEADERS += devicemanager.h \
         network/avahi/qtavahiservice_p.h \
         network/avahi/qtavahiservicebrowser.h \
         network/avahi/qtavahiservicebrowser_p.h \
-        bluetooth/bluetoothlowenergydevice.h \
-        bluetooth/bluetoothdiscoveryreply.h \
-        bluetooth/bluetoothlowenergymanager.h \
+        hardware/bluetooth/bluetoothlowenergydevice.h \
+        hardware/bluetooth/bluetoothdiscoveryreply.h \
+        hardware/bluetooth/bluetoothlowenergymanager.h \
         coap/coap.h \
         coap/coappdu.h \
         coap/coapoption.h \
@@ -86,8 +84,6 @@ SOURCES += devicemanager.cpp \
         hardware/gpiomonitor.cpp \
         hardware/pwm.cpp \
         hardware/radio433/radio433.cpp \
-        hardware/radio433/radio433transmitter.cpp \
-        hardware/radio433/radio433brennenstuhlgateway.cpp \
         network/upnp/upnpdiscovery.cpp \
         network/upnp/upnpdevice.cpp \
         network/upnp/upnpdevicedescriptor.cpp \
@@ -102,9 +98,9 @@ SOURCES += devicemanager.cpp \
         network/avahi/qtavahiservice_p.cpp \
         network/avahi/qtavahiservicebrowser.cpp \
         network/avahi/qtavahiservicebrowser_p.cpp \
-        bluetooth/bluetoothlowenergymanager.cpp \
-        bluetooth/bluetoothlowenergydevice.cpp \
-        bluetooth/bluetoothdiscoveryreply.cpp \
+        hardware/bluetooth/bluetoothlowenergymanager.cpp \
+        hardware/bluetooth/bluetoothlowenergydevice.cpp \
+        hardware/bluetooth/bluetoothdiscoveryreply.cpp \
         coap/coap.cpp \
         coap/coappdu.cpp \
         coap/coapoption.cpp \

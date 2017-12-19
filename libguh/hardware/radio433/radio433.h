@@ -27,26 +27,16 @@
 
 #include "libguh.h"
 #include "hardwareresource.h"
-#include "radio433brennenstuhlgateway.h"
 
 class LIBGUH_EXPORT Radio433 : public HardwareResource
 {
     Q_OBJECT
 
-    friend class HardwareManager;
-
-private:
+public:
     explicit Radio433(QObject *parent = nullptr);
-    Radio433BrennenstuhlGateway *m_brennenstuhlTransmitter;
-
-private slots:
-    void brennenstuhlAvailableChanged(const bool &available);
 
 public slots:
-    bool sendData(int delay, QList<int> rawData, int repetitions);
-
-    bool enable();
-    bool disable();
+    virtual bool sendData(int delay, QList<int> rawData, int repetitions) = 0;
 
 };
 

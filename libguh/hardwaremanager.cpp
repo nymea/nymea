@@ -28,23 +28,7 @@ HardwareManager::HardwareManager(QObject *parent) :
 
 }
 
-bool HardwareManager::isAvailable(const HardwareResource::Type &hardwareResourceType) const
+void HardwareManager::setResourceEnabled(HardwareResource *resource, bool enabled)
 {
-    foreach (HardwareResource *resource, m_hardwareResources) {
-        if (resource->hardwareReourceType() == hardwareResourceType && resource->available()) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool HardwareManager::isEnabled(const HardwareResource::Type &hardwareResourceType) const
-{
-    foreach (HardwareResource *resource, m_hardwareResources) {
-        if (resource->hardwareReourceType() == hardwareResourceType && resource->enabled()) {
-            return true;
-        }
-    }
-
-    return false;
+    resource->setEnabled(enabled);
 }

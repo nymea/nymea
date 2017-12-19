@@ -100,7 +100,7 @@ void BluetoothLowEnergyManager::unregisterDevice(BluetoothLowEnergyDevice *bluet
 }
 
 BluetoothLowEnergyManager::BluetoothLowEnergyManager(PluginTimer *reconnectTimer, QObject *parent) :
-    HardwareResource(HardwareResource::TypeBluetoothLE, "Bluetooth LE manager", parent),
+    HardwareResource("Bluetooth LE manager", parent),
     m_reconnectTimer(reconnectTimer)
 {
     // Check which bluetooth adapter are available

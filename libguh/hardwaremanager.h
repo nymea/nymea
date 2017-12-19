@@ -50,16 +50,8 @@ public:
     virtual QtAvahiServiceBrowser *avahiBrowser() = 0;
     virtual BluetoothLowEnergyManager *bluetoothLowEnergyManager() = 0;
 
-    bool isAvailable(const HardwareResource::Type &hardwareResourceType) const;
-    bool isEnabled(const HardwareResource::Type &hardwareResourceType) const;
-
 protected:
-    QList<HardwareResource *> m_hardwareResources;
-
-signals:
-    void hardwareResourceAvailableChanged(const HardwareResource::Type &hardwareResourceType, const bool &available);
-    void hardwareResourceEnabledChanged(const HardwareResource::Type &hardwareResourceType, const bool &enabled);
-
+    void setResourceEnabled(HardwareResource* resource, bool enabled);
 };
 
 #endif // HARDWAREMANAGER_H

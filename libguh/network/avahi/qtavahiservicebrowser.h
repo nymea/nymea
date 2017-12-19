@@ -49,11 +49,13 @@ signals:
 private slots:
     void onClientStateChanged(const QtAvahiClient::QtAvahiClientState &state);
 
-public slots:
-    bool enable();
-    bool disable();
+protected:
+    virtual void setEnabled(bool enabled) override;
 
 private:
+    bool m_available = false;
+    bool m_enabled = false;
+
     explicit QtAvahiServiceBrowser(QObject *parent = nullptr);
     ~QtAvahiServiceBrowser();
 

@@ -118,7 +118,7 @@ void PluginTimerImplementation::resume()
 PluginTimerManagerImplementation::PluginTimerManagerImplementation(QObject *parent) :
     PluginTimerManager(parent)
 {
-    setAvailable(true);
+    m_available = true;
     qCDebug(dcHardware()) << "-->" << name() << "created successfully.";
 }
 
@@ -172,6 +172,16 @@ void PluginTimerManagerImplementation::unregisterTimer(PluginTimer *timer)
     }
 }
 
+bool PluginTimerManagerImplementation::available() const
+{
+    return m_available;
+}
+
+bool PluginTimerManagerImplementation::enabled() const
+{
+    return m_enabled;
+}
+
 void PluginTimerManagerImplementation::timeTick()
 {
     // If timer resource is not enabled do nothing
@@ -182,6 +192,19 @@ void PluginTimerManagerImplementation::timeTick()
     foreach (PluginTimerImplementation *timer, m_timers) {
         timer->tick();
     }
+}
+
+void PluginTimerManagerImplementation::setEnabled(bool enabled)
+{
+    if (enabled == m_enabled) {
+        qCDebug(dcHardware()) << "TimerManager already" << (enabled ? "enabled": "disabled");
+        return;
+    }
+
+    // TODO: should start/stop all timers here
+
+    m_enabled = enabled;
+    emit enabledChanged(enabled);
 }
 
 bool PluginTimerManagerImplementation::enable()

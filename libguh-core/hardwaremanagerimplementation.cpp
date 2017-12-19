@@ -25,9 +25,9 @@
 
 #include "plugintimer.h"
 #include "loggingcategories.h"
-#include "hardware/radio433/radio433.h"
-#include "bluetooth/bluetoothlowenergymanager.h"
-#include "network/networkaccessmanager.h"
+#include "hardware/radio433/radio433brennenstuhl.h"
+#include "hardware/bluetooth/bluetoothlowenergymanager.h"
+#include "hardware/network/networkaccessmanagerimpl.h"
 #include "network/upnp/upnpdiscovery.h"
 #include "network/upnp/upnpdevicedescriptor.h"
 #include "network/avahi/qtavahiservicebrowser.h"
@@ -39,22 +39,18 @@ HardwareManagerImplementation::HardwareManagerImplementation(QObject *parent) :
 {
     // Init hardware resources
     m_pluginTimerManager = new PluginTimerManagerImplementation(this);
-    m_pluginTimerManager->enable();
-    m_hardwareResources.append(m_pluginTimerManager);
+    setResourceEnabled(m_pluginTimerManager, true);
 
-    m_radio433 = new Radio433(this);
-    m_hardwareResources.append(m_radio433);
-    m_radio433->enable();
+    m_radio433 = new Radio433Brennenstuhl(this);
+    setResourceEnabled(m_radio433, true);
 
     // Create network access manager for all resources, centralized
     // Note: configuration and proxy settings could be implemented here
     m_networkAccessManager = new QNetworkAccessManager(this);
 
     // Network manager
-    m_networkManager = new NetworkAccessManager(m_networkAccessManager, this);
-    m_hardwareResources.append(m_networkManager);
-    if (m_networkManager->available())
-        m_networkManager->enable();
+    m_networkManager = new NetworkAccessManagerImpl(m_networkAccessManager, this);
+    setResourceEnabled(m_networkManager, true);
 
     // UPnP discovery
     m_upnpDiscovery = new UpnpDiscovery(m_networkAccessManager, this);

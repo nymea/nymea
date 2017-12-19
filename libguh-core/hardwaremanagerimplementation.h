@@ -62,17 +62,12 @@ private:
     QNetworkAccessManager *m_networkAccessManager;
 
     // Hardware Resources
-    PluginTimerManagerImplementation *m_pluginTimerManager = nullptr;
+    PluginTimerManager *m_pluginTimerManager = nullptr;
     Radio433 *m_radio433 = nullptr;
     NetworkAccessManager *m_networkManager = nullptr;
     UpnpDiscovery *m_upnpDiscovery = nullptr;
     QtAvahiServiceBrowser *m_avahiBrowser = nullptr;
     BluetoothLowEnergyManager *m_bluetoothLowEnergyManager = nullptr;
-
-    bool enableHardwareReource(const HardwareResource::Type &hardwareResourceType);
-    bool disableHardwareReource(const HardwareResource::Type &hardwareResourceType);
-
-    void timeTick();
 
 };
 

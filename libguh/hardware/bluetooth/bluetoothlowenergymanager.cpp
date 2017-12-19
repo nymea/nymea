@@ -20,35 +20,10 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HARDWARERESOURCE_H
-#define HARDWARERESOURCE_H
+#include "bluetoothlowenergymanager.h"
+#include "loggingcategories.h"
 
-#include <QObject>
-
-class HardwareResource : public QObject
+BluetoothLowEnergyManager::BluetoothLowEnergyManager(QObject *parent) :
+    HardwareResource("Bluetooth LE manager", parent)
 {
-    Q_OBJECT
-
-    friend class HardwareManager;
-
-public:
-    explicit HardwareResource(const QString &name, QObject *parent = nullptr);
-
-    QString name() const;
-
-    virtual bool available() const = 0;
-    virtual bool enabled() const = 0;
-
-private:
-    QString m_name;
-
-protected:
-    virtual void setEnabled(bool enabled) = 0;
-
-signals:
-    void enabledChanged(bool enabled);
-    void availableChanged(bool available);
-
-};
-
-#endif // HARDWARERESOURCE_H
+}

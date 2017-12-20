@@ -20,8 +20,8 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef BLUETOOTHLOWENERGYDEVICE_H
-#define BLUETOOTHLOWENERGYDEVICE_H
+#ifndef BLUETOOTHLOWENERGYDEVICEIMPLEMENTATION_H
+#define BLUETOOTHLOWENERGYDEVICEIMPLEMENTATION_H
 
 #include <QObject>
 #include <QBluetoothDeviceInfo>
@@ -29,15 +29,19 @@
 #include <QBluetoothServiceInfo>
 #include <QLowEnergyController>
 
-#include "libguh.h"
+#include "hardware/bluetoothlowenergy/bluetoothlowenergydevice.h"
 
-class LIBGUH_EXPORT BluetoothLowEnergyDevice : public QObject
+namespace guhserver {
+
+class BluetoothLowEnergyDeviceImplementation : public BluetoothLowEnergyDevice
 {
     Q_OBJECT
 
-    friend class BluetoothLowEnergyManager;
+    friend class BluetoothLowEnergyManagerImplementation;
 
 public:
+    explicit BluetoothLowEnergyDeviceImplementation(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType = QLowEnergyController::PublicAddress, QObject *parent = 0);
+
     QString name() const;
     QBluetoothAddress address() const;
 
@@ -54,7 +58,6 @@ public:
     QLowEnergyController *controller() const;
 
 private:
-    explicit BluetoothLowEnergyDevice(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType = QLowEnergyController::PublicAddress, QObject *parent = 0);
     QBluetoothDeviceInfo m_deviceInfo;
     QLowEnergyController *m_controller = nullptr;
 
@@ -84,4 +87,6 @@ private slots:
     void onDeviceError(const QLowEnergyController::Error &error);
 };
 
-#endif // BLUETOOTHLOWENERGYDEVICE_H
+}
+
+#endif // BLUETOOTHLOWENERGYDEVICEIMPLEMENTATION_H

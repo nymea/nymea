@@ -20,40 +20,48 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef UPNPDISCOVERY_H
-#define UPNPDISCOVERY_H
+#ifndef UPNPDISCOVERYREQUEST_H
+#define UPNPDISCOVERYREQUEST_H
 
-#include <QUdpSocket>
-#include <QHostAddress>
-#include <QTimer>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QNetworkRequest>
-#include <QUrl>
+#include <QObject>
+#include <QDebug>
+#include <QMetaObject>
 
-#include "libguh.h"
-#include "devicemanager.h"
-#include "hardwareresource.h"
-#include "upnpdiscoveryreply.h"
-#include "upnpdevicedescriptor.h"
+#include "upnpdiscoveryreplyimplementation.h"
+#include "network/upnp/upnpdiscovery.h"
+#include "network/upnp/upnpdevicedescriptor.h"
 
-// Discovering UPnP devices reference: http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf
-// guh basic device reference: http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
+#include "typeutils.h"
 
-class LIBGUH_EXPORT UpnpDiscovery : public HardwareResource
+class UpnpDiscovery;
+
+namespace guhserver {
+
+class UpnpDiscoveryRequest : public QObject
 {
     Q_OBJECT
-
 public:
-    explicit UpnpDiscovery(QObject *parent = nullptr);
-    virtual ~UpnpDiscovery() = default;
+    explicit UpnpDiscoveryRequest(UpnpDiscovery *upnpDiscovery, QPointer<UpnpDiscoveryReplyImplementation> reply);
 
-    virtual UpnpDiscoveryReply *discoverDevices(const QString &searchTarget = "ssdp:all", const QString &userAgent = QString(), const int &timeout = 5000) = 0;
-    virtual void sendToMulticast(const QByteArray &data) = 0;
+    void discover(const int &timeout);
+    void addDeviceDescriptor(const UpnpDeviceDescriptor &deviceDescriptor);
+    QNetworkRequest createNetworkRequest(UpnpDeviceDescriptor deviveDescriptor);
+    QList<UpnpDeviceDescriptor> deviceList() const;
+
+    QPointer<UpnpDiscoveryReplyImplementation> reply();
+
+private:
+    UpnpDiscovery *m_upnpDiscovery;
+    QPointer<UpnpDiscoveryReplyImplementation> m_reply;
+
+    QTimer *m_timer = nullptr;
+    QList<UpnpDeviceDescriptor> m_deviceList;
 
 signals:
-    void upnpNotify(const QByteArray &notifyMessage);
+    void discoveryTimeout();
 
 };
 
-#endif // UPNPDISCOVERY_H
+}
+
+#endif // UPNPDISCOVERYREQUEST_H

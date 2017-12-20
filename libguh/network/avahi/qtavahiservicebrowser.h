@@ -28,45 +28,22 @@
 
 #include "libguh.h"
 #include "hardwareresource.h"
-#include "qtavahiclient.h"
 #include "avahiserviceentry.h"
-
-class QtAvahiServiceBrowserPrivate;
 
 class LIBGUH_EXPORT QtAvahiServiceBrowser : public HardwareResource
 {
     Q_OBJECT
 
-    friend class HardwareManager;
-
 public:
-    QList<AvahiServiceEntry> serviceEntries() const;
+    explicit QtAvahiServiceBrowser(QObject *parent = nullptr);
+    virtual ~QtAvahiServiceBrowser() = default;
+
+    virtual QList<AvahiServiceEntry> serviceEntries() const = 0;
 
 signals:
     void serviceEntryAdded(const AvahiServiceEntry &entry);
     void serviceEntryRemoved(const AvahiServiceEntry &entry);
 
-private slots:
-    void onClientStateChanged(const QtAvahiClient::QtAvahiClientState &state);
-
-protected:
-    virtual void setEnabled(bool enabled) override;
-
-private:
-    bool m_available = false;
-    bool m_enabled = false;
-
-    explicit QtAvahiServiceBrowser(QObject *parent = nullptr);
-    ~QtAvahiServiceBrowser();
-
-    QtAvahiServiceBrowserPrivate *d_ptr;
-
-    QList<AvahiServiceEntry> m_serviceEntries;
-    QStringList m_serviceTypes;
-
-    void createServiceBrowser(const char* serviceType);
-
-    Q_DECLARE_PRIVATE(QtAvahiServiceBrowser)
 };
 
 #endif // QTAVAHISERVICEBROWSER_H

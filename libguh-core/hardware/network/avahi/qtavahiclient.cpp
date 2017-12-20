@@ -24,7 +24,12 @@
 #include "qtavahiclient.h"
 #include "loggingcategories.h"
 
+#include "qtavahiservicebrowserimplementation.h"
+#include "qtavahiservicebrowserimplementation_p.h"
+
 #include <avahi-common/error.h>
+
+namespace guhserver {
 
 QtAvahiClient::QtAvahiClient(QObject *parent) :
     QObject(parent),
@@ -128,3 +133,4 @@ void QtAvahiClient::onClientStateChanged(const QtAvahiClient::QtAvahiClientState
     emit clientStateChanged(m_state);
 }
 
+}

@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2017 Simon Stürz <simon.stuerz@guh.io>                   *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -20,57 +20,36 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef QTAVAHICLIENT_H
-#define QTAVAHICLIENT_H
+#ifndef BLUETOOTHLOWENERGYMANAGER_H
+#define BLUETOOTHLOWENERGYMANAGER_H
 
+#include <QTimer>
 #include <QObject>
-#include <avahi-client/client.h>
+#include <QPointer>
+#include <QBluetoothDeviceInfo>
+#include <QBluetoothLocalDevice>
+#include <QBluetoothDeviceDiscoveryAgent>
+
+#include "hardwareresource.h"
+
+#include "bluetoothdiscoveryreply.h"
+#include "bluetoothlowenergydevice.h"
 
 #include "libguh.h"
 
-class LIBGUH_EXPORT QtAvahiClient : public QObject
+class LIBGUH_EXPORT BluetoothLowEnergyManager : public HardwareResource
 {
     Q_OBJECT
-    Q_ENUMS(QtAvahiClientState)
 
 public:
-    enum QtAvahiClientState {
-        QtAvahiClientStateNone,
-        QtAvahiClientStateRunning,
-        QtAvahiClientStateFailure,
-        QtAvahiClientStateCollision,
-        QtAvahiClientStateRegistering,
-        QtAvahiClientStateConnecting
-    };
+    explicit BluetoothLowEnergyManager(QObject *parent = nullptr);
+    virtual ~BluetoothLowEnergyManager() = default;
 
-    explicit QtAvahiClient(QObject *parent = nullptr);
-    ~QtAvahiClient();
+    virtual BluetoothDiscoveryReply *discoverDevices(const int &interval = 5000) = 0;
 
-    QtAvahiClientState state() const;
-
-private:
-    friend class QtAvahiService;
-    friend class QtAvahiServiceBrowser;
-    friend class QtAvahiServiceBrowserPrivate;
-
-    const AvahiPoll *m_poll;
-    AvahiClient *m_client;
-    int error;
-    QtAvahiClientState m_state;
-
-    void start();
-    void stop();
-    QString errorString() const;
-
-    static void callback(AvahiClient *client, AvahiClientState state, void *userdata);
-
-private slots:
-    void onClientStateChanged(const QtAvahiClientState &state);
-
-signals:
-    void clientStateChanged(const QtAvahiClientState &state);
-    void clientStateChangedInternal(const QtAvahiClientState &state);
-
+    // Bluetooth device registration methods
+    virtual BluetoothLowEnergyDevice *registerDevice(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType = QLowEnergyController::RandomAddress) = 0;
+    virtual void unregisterDevice(BluetoothLowEnergyDevice *bluetoothDevice) = 0;
 };
 
-#endif // QTAVAHICLIENT_H
+#endif // BLUETOOTHLOWENERGYMANAGER_H

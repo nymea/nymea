@@ -23,7 +23,9 @@
 #include "upnpdiscoveryrequest.h"
 #include "loggingcategories.h"
 
-UpnpDiscoveryRequest::UpnpDiscoveryRequest(UpnpDiscovery *upnpDiscovery, QPointer<UpnpDiscoveryReply> reply):
+namespace guhserver {
+
+UpnpDiscoveryRequest::UpnpDiscoveryRequest(UpnpDiscovery *upnpDiscovery, QPointer<UpnpDiscoveryReplyImplementation> reply):
     QObject(upnpDiscovery),
     m_upnpDiscovery(upnpDiscovery),
     m_reply(reply)
@@ -79,7 +81,9 @@ QList<UpnpDeviceDescriptor> UpnpDiscoveryRequest::deviceList() const
     return m_deviceList;
 }
 
-QPointer<UpnpDiscoveryReply> UpnpDiscoveryRequest::reply()
+QPointer<UpnpDiscoveryReplyImplementation> UpnpDiscoveryRequest::reply()
 {
     return m_reply;
+}
+
 }

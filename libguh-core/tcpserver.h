@@ -32,7 +32,7 @@
 #include <QDebug>
 
 #include "transportinterface.h"
-#include "network/avahi/qtavahiservice.h"
+#include "hardware/network/avahi/qtavahiservice.h"
 
 #include "loggingcategories.h"
 

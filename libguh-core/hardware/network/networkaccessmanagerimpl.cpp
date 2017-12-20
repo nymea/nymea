@@ -21,7 +21,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-  \class NetworkAccessManager
+  \class NetworkAccessManagerImpl
   \brief Allows to send network requests and receive replies.
 
   \ingroup hardware
@@ -32,12 +32,12 @@
 
 */
 
-#include "networkaccessmanager.h"
+#include "networkaccessmanagerimpl.h"
 #include "loggingcategories.h"
 
-/*! Construct the hardware resource NetworkAccessManager with the given \a parent. */
-NetworkAccessManager::NetworkAccessManager(QNetworkAccessManager *networkManager, QObject *parent) :
-    HardwareResource("Network access manager" , parent),
+/*! Construct the hardware resource NetworkAccessManagerImpl with the given \a parent. */
+NetworkAccessManagerImpl::NetworkAccessManagerImpl(QNetworkAccessManager *networkManager, QObject *parent) :
+    NetworkAccessManager(parent),
     m_manager(networkManager)
 {
     m_available = true;
@@ -45,57 +45,57 @@ NetworkAccessManager::NetworkAccessManager(QNetworkAccessManager *networkManager
     qCDebug(dcHardware()) << "-->" << name() << "created successfully.";
 }
 
-QNetworkReply *NetworkAccessManager::get(const QNetworkRequest &request)
+QNetworkReply *NetworkAccessManagerImpl::get(const QNetworkRequest &request)
 {
     return m_manager->get(request);
 }
 
-QNetworkReply *NetworkAccessManager::deleteResource(const QNetworkRequest &request)
+QNetworkReply *NetworkAccessManagerImpl::deleteResource(const QNetworkRequest &request)
 {
     return m_manager->deleteResource(request);
 }
 
-QNetworkReply *NetworkAccessManager::head(const QNetworkRequest &request)
+QNetworkReply *NetworkAccessManagerImpl::head(const QNetworkRequest &request)
 {
     return m_manager->head(request);
 }
 
-QNetworkReply *NetworkAccessManager::post(const QNetworkRequest &request, QIODevice *data)
+QNetworkReply *NetworkAccessManagerImpl::post(const QNetworkRequest &request, QIODevice *data)
 {
     return m_manager->post(request, data);
 }
 
-QNetworkReply *NetworkAccessManager::post(const QNetworkRequest &request, const QByteArray &data)
+QNetworkReply *NetworkAccessManagerImpl::post(const QNetworkRequest &request, const QByteArray &data)
 {
     return m_manager->post(request, data);
 }
 
-QNetworkReply *NetworkAccessManager::post(const QNetworkRequest &request, QHttpMultiPart *multiPart)
+QNetworkReply *NetworkAccessManagerImpl::post(const QNetworkRequest &request, QHttpMultiPart *multiPart)
 {
     return m_manager->post(request, multiPart);
 }
 
-QNetworkReply *NetworkAccessManager::put(const QNetworkRequest &request, QIODevice *data)
+QNetworkReply *NetworkAccessManagerImpl::put(const QNetworkRequest &request, QIODevice *data)
 {
     return m_manager->put(request, data);
 }
 
-QNetworkReply *NetworkAccessManager::put(const QNetworkRequest &request, const QByteArray &data)
+QNetworkReply *NetworkAccessManagerImpl::put(const QNetworkRequest &request, const QByteArray &data)
 {
     return m_manager->put(request, data);
 }
 
-QNetworkReply *NetworkAccessManager::put(const QNetworkRequest &request, QHttpMultiPart *multiPart)
+QNetworkReply *NetworkAccessManagerImpl::put(const QNetworkRequest &request, QHttpMultiPart *multiPart)
 {
     return m_manager->put(request, multiPart);
 }
 
-QNetworkReply *NetworkAccessManager::sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, QIODevice *data)
+QNetworkReply *NetworkAccessManagerImpl::sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, QIODevice *data)
 {
     return m_manager->sendCustomRequest(request, verb, data);
 }
 
-void NetworkAccessManager::setEnabled(bool enabled)
+void NetworkAccessManagerImpl::setEnabled(bool enabled)
 {
     if (!m_available) {
         qCWarning(dcNetworkManager()) << "NetworkManager not available, cannot enable";

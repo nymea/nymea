@@ -52,6 +52,7 @@
 #include "qtavahiservice_p.h"
 #include "loggingcategories.h"
 
+namespace guhserver {
 
 /*! Constructs a new \l{QtAvahiService} with the given \a parent. */
 QtAvahiService::QtAvahiService(QObject *parent) :
@@ -271,4 +272,6 @@ QDebug operator <<(QDebug dbg, QtAvahiService *service)
     dbg.nospace() << "AvahiService(";
     dbg << service->name() << ", " << service->serviceType() << ", " << service->port() << ") ";
     return dbg;
+}
+
 }

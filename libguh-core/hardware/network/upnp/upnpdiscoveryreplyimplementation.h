@@ -20,54 +20,53 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef BLUETOOTHLOWENERGYMANAGER_H
-#define BLUETOOTHLOWENERGYMANAGER_H
+#ifndef UPNPDISCOVERYREPLYIMPLEMENTATION_H
+#define UPNPDISCOVERYREPLYIMPLEMENTATION_H
 
-#include <QTimer>
 #include <QObject>
-#include <QPointer>
-#include <QBluetoothDeviceInfo>
-#include <QBluetoothLocalDevice>
-#include <QBluetoothDeviceDiscoveryAgent>
 
-#include "plugintimer.h"
-#include "hardwareresource.h"
-#include "bluetoothdiscoveryreply.h"
-#include "bluetoothlowenergydevice.h"
+#include "network/upnp/upnpdiscoveryreply.h"
+#include "network/upnp/upnpdevicedescriptor.h"
 
-class BluetoothLowEnergyManager : public HardwareResource
+namespace guhserver {
+
+class UpnpDiscoveryReplyImplementation : public UpnpDiscoveryReply
 {
     Q_OBJECT
 
-    friend class HardwareManager;
+    friend class UpnpDiscoveryImplementation;
 
 public:
-    BluetoothDiscoveryReply *discoverDevices(const int &interval = 5000);
+    explicit UpnpDiscoveryReplyImplementation(const QString &searchTarget, const QString &userAgent, QObject *parent = nullptr);
 
-    // Bluetooth device registration methods
-    BluetoothLowEnergyDevice *registerDevice(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType = QLowEnergyController::RandomAddress);
-    void unregisterDevice(BluetoothLowEnergyDevice *bluetoothDevice);
+    QString searchTarget() const;
+    QString userAgent() const;
+
+    UpnpDiscoveryReplyError error() const;
+    bool isFinished() const;
+
+    QList<UpnpDeviceDescriptor> deviceDescriptors() const;
 
 private:
-    explicit BluetoothLowEnergyManager(PluginTimer *reconnectTimer, QObject *parent = nullptr);
-    PluginTimer *m_reconnectTimer = nullptr;
-    QTimer *m_timer = nullptr;
-    QList<QPointer<BluetoothLowEnergyDevice>> m_devices;
 
-    QList<QBluetoothDeviceDiscoveryAgent *> m_bluetoothDiscoveryAgents;
-    QList<QBluetoothDeviceInfo> m_discoveredDevices;
-    QPointer<BluetoothDiscoveryReply> m_currentReply;
+    QString m_searchTarget;
+    QString m_userAgent;
 
-private slots:
-    void onReconnectTimeout();
-    void onDeviceDiscovered(const QBluetoothDeviceInfo &deviceInfo);
-    void onDiscoveryError(const QBluetoothDeviceDiscoveryAgent::Error &error);
-    void onDiscoveryTimeout();
+    QList<UpnpDeviceDescriptor> m_deviceDescriptors;
+    UpnpDiscoveryReplyError m_error = UpnpDiscoveryReplyErrorNoError;
+    bool m_finished = false;
 
-public slots:
-    bool enable();
-    bool disable();
+    // Methods for UpnpDiscovery
+    void setDeviceDescriptors(const QList<UpnpDeviceDescriptor> &deviceDescriptors);
+    void setError(const UpnpDiscoveryReplyError &error);
+    void setFinished();
+
+signals:
+    void finished();
+    void errorOccured(const UpnpDiscoveryReplyError &error);
 
 };
 
-#endif // BLUETOOTHLOWENERGYMANAGER_H
+}
+
+#endif // UPNPDISCOVERYREPLYIMPLEMENTATION_H

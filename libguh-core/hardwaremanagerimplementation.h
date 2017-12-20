@@ -29,14 +29,16 @@
 
 #include "hardwaremanager.h"
 
+// FIXME: use forward declaration for timeTick
+#include "hardware/plugintimermanagerimplementation.h"
+
 class Radio433;
-class PluginTimer;
 class UpnpDiscovery;
-class PluginTimerManagerImplementation;
 class NetworkAccessManager;
 class UpnpDeviceDescriptor;
 class QtAvahiServiceBrowser;
 class BluetoothLowEnergyManager;
+
 
 namespace guhserver {
 
@@ -62,12 +64,15 @@ private:
     QNetworkAccessManager *m_networkAccessManager;
 
     // Hardware Resources
-    PluginTimerManager *m_pluginTimerManager = nullptr;
+    PluginTimerManagerImplementation *m_pluginTimerManager = nullptr;
     Radio433 *m_radio433 = nullptr;
     NetworkAccessManager *m_networkManager = nullptr;
     UpnpDiscovery *m_upnpDiscovery = nullptr;
     QtAvahiServiceBrowser *m_avahiBrowser = nullptr;
     BluetoothLowEnergyManager *m_bluetoothLowEnergyManager = nullptr;
+
+public slots:
+    void timeTick();
 
 };
 

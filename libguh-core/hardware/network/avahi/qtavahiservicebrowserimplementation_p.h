@@ -29,13 +29,17 @@
 
 #include "qtavahiclient.h"
 #include "qtavahiservice.h"
-#include "libguh.h"
 
-class LIBGUH_EXPORT QtAvahiServiceBrowserPrivate
+
+namespace guhserver {
+
+class QtAvahiServiceTypeBrowserImplementation;
+
+class  QtAvahiServiceBrowserImplementationPrivate
 {
 public:
-    QtAvahiServiceBrowserPrivate(QtAvahiClient *client);
-    ~QtAvahiServiceBrowserPrivate();
+    QtAvahiServiceBrowserImplementationPrivate(QtAvahiClient *client);
+    ~QtAvahiServiceBrowserImplementationPrivate();
 
     // Callback members
     static void callbackServiceTypeBrowser(AvahiServiceTypeBrowser *browser,
@@ -79,5 +83,7 @@ public:
     QHash<QString, AvahiServiceBrowser *> serviceBrowserTable;
     QList<AvahiServiceResolver *> m_serviceResolvers;
 };
+
+}
 
 #endif // QTAVAHISERVICEBROWSERPRIVATE_H

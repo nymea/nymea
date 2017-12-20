@@ -20,17 +20,14 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "hardwaremanagerimplementation.h"
-#include "hardware/plugintimermanagerimplementation.h"
-
-#include "plugintimer.h"
 #include "loggingcategories.h"
-#include "hardware/radio433/radio433brennenstuhl.h"
-#include "hardware/bluetooth/bluetoothlowenergymanager.h"
+
+#include "hardwaremanagerimplementation.h"
+#include "hardware/network/upnp/upnpdiscoveryimplementation.h"
 #include "hardware/network/networkaccessmanagerimpl.h"
-#include "network/upnp/upnpdiscovery.h"
-#include "network/upnp/upnpdevicedescriptor.h"
-#include "network/avahi/qtavahiservicebrowser.h"
+#include "hardware/radio433/radio433brennenstuhl.h"
+#include "hardware/bluetoothlowenergy/bluetoothlowenergymanagerimplementation.h"
+#include "hardware/network/avahi/qtavahiservicebrowserimplementation.h"
 
 namespace guhserver {
 
@@ -51,22 +48,24 @@ HardwareManagerImplementation::HardwareManagerImplementation(QObject *parent) :
     // Network manager
     m_networkManager = new NetworkAccessManagerImpl(m_networkAccessManager, this);
     setResourceEnabled(m_networkManager, true);
+    if (m_networkManager->available())
+        setResourceEnabled(m_networkManager, true);
 
     // UPnP discovery
-    m_upnpDiscovery = new UpnpDiscovery(m_networkAccessManager, this);
-    m_hardwareResources.append(m_upnpDiscovery);
-    m_upnpDiscovery->enable();
+    m_upnpDiscovery = new UpnpDiscoveryImplementation(m_networkAccessManager, this);
+    if (m_upnpDiscovery->available())
+        setResourceEnabled(m_upnpDiscovery, true);
 
     // Avahi Browser
-    m_avahiBrowser = new QtAvahiServiceBrowser(this);
-    m_hardwareResources.append(m_avahiBrowser);
-    m_avahiBrowser->enable();
+    m_avahiBrowser = new QtAvahiServiceBrowserImplementation(this);
+    if (m_avahiBrowser->available())
+        setResourceEnabled(m_avahiBrowser, true);
 
     // Bluetooth LE
-    m_bluetoothLowEnergyManager = new BluetoothLowEnergyManager(m_pluginTimerManager->registerTimer(10), this);
-    m_hardwareResources.append(m_bluetoothLowEnergyManager);
-    if (m_networkManager->available())
-        m_networkManager->enable();
+    m_bluetoothLowEnergyManager = new BluetoothLowEnergyManagerImplementation(m_pluginTimerManager->registerTimer(10), this);
+    if (m_bluetoothLowEnergyManager->available())
+        setResourceEnabled(m_bluetoothLowEnergyManager, true);
+
 
     qCDebug(dcHardware()) << "Hardware manager initialized successfully";
 
@@ -120,9 +119,9 @@ void HardwareManagerImplementation::EnableBluetooth(const bool &enabled)
     qCDebug(dcHardware()) << "Bluetooth hardware resource" << (enabled ? "enabled" : "disabled");
 
     if (enabled) {
-        m_bluetoothLowEnergyManager->enable();
+        setResourceEnabled(m_bluetoothLowEnergyManager, true);
     } else {
-        m_bluetoothLowEnergyManager->disable();
+        setResourceEnabled(m_bluetoothLowEnergyManager, false);
     }
 }
 

@@ -20,40 +20,78 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef UPNPDISCOVERY_H
-#define UPNPDISCOVERY_H
+#ifndef UPNPDISCOVERYIMPLEMENTATION_H
+#define UPNPDISCOVERYIMPLEMENTATION_H
 
+#include <QUrl>
+#include <QTimer>
 #include <QUdpSocket>
 #include <QHostAddress>
-#include <QTimer>
-#include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
-#include <QUrl>
+#include <QNetworkAccessManager>
 
-#include "libguh.h"
-#include "devicemanager.h"
-#include "hardwareresource.h"
-#include "upnpdiscoveryreply.h"
-#include "upnpdevicedescriptor.h"
+#include "upnpdiscoveryrequest.h"
+
+#include "network/upnp/upnpdiscovery.h"
+#include "network/upnp/upnpdiscoveryreply.h"
+#include "network/upnp/upnpdevicedescriptor.h"
 
 // Discovering UPnP devices reference: http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf
 // guh basic device reference: http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
 
-class LIBGUH_EXPORT UpnpDiscovery : public HardwareResource
+namespace guhserver {
+
+class UpnpDiscoveryImplementation : public UpnpDiscovery
 {
     Q_OBJECT
 
 public:
-    explicit UpnpDiscovery(QObject *parent = nullptr);
-    virtual ~UpnpDiscovery() = default;
+    explicit UpnpDiscoveryImplementation(QNetworkAccessManager *networkAccessManager, QObject *parent = nullptr);
+    ~UpnpDiscoveryImplementation();
 
-    virtual UpnpDiscoveryReply *discoverDevices(const QString &searchTarget = "ssdp:all", const QString &userAgent = QString(), const int &timeout = 5000) = 0;
-    virtual void sendToMulticast(const QByteArray &data) = 0;
+    UpnpDiscoveryReply *discoverDevices(const QString &searchTarget = "ssdp:all", const QString &userAgent = QString(), const int &timeout = 5000);
+    void sendToMulticast(const QByteArray &data);
 
-signals:
-    void upnpNotify(const QByteArray &notifyMessage);
+    bool available() const override;
+    bool enabled() const override;
+
+private:
+    QUdpSocket *m_socket = nullptr;
+    QHostAddress m_host;
+    qint16 m_port;
+
+    QTimer *m_notificationTimer = nullptr;
+
+    QNetworkAccessManager *m_networkAccessManager = nullptr;
+
+    QList<UpnpDiscoveryRequest *> m_discoverRequests;
+    QHash<QNetworkReply*, UpnpDeviceDescriptor> m_informationRequestList;
+
+    bool m_available = false;
+    bool m_enabled = false;
+
+    void requestDeviceInformation(const QNetworkRequest &networkRequest, const UpnpDeviceDescriptor &upnpDeviceDescriptor);
+    void respondToSearchRequest(QHostAddress host, int port);
+
+protected:
+    void setEnabled(bool enabled) override;
+
+private slots:
+    void error(QAbstractSocket::SocketError error);
+    void readData();
+    void replyFinished();
+    void notificationTimeout();
+    void sendByeByeMessage();
+    void sendAliveMessage();
+    void discoverTimeout();
+
+public slots:
+    bool enable();
+    bool disable();
 
 };
 
-#endif // UPNPDISCOVERY_H
+}
+
+#endif // UPNPDISCOVERYIMPLEMENTATION_H

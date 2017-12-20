@@ -20,40 +20,67 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef QTAVAHISERVICEPRIVATE_P
-#define QTAVAHISERVICEPRIVATE_P
+#ifndef QTAVAHISERVICE_H
+#define QTAVAHISERVICE_H
 
-#include <QObject>
+#include <QHash>
 #include <QString>
+#include <QObject>
 
-#include "qtavahiservice.h"
-#include "qtavahiclient.h"
 
-#include "libguh.h"
+namespace guhserver {
 
-#include <avahi-client/publish.h>
-#include <avahi-common/error.h>
-#include <avahi-common/alternative.h>
+class QtAvahiServicePrivate;
 
-class LIBGUH_EXPORT QtAvahiServicePrivate
+class QtAvahiService : public QObject
 {
+    Q_OBJECT
+    Q_ENUMS(QtAvahiServiceState)
+
 public:
-    QtAvahiServicePrivate();
+    enum QtAvahiServiceState {
+        QtAvahiServiceStateUncomitted = 0,
+        QtAvahiServiceStateRegistering = 1,
+        QtAvahiServiceStateEstablished = 2,
+        QtAvahiServiceStateCollision = 3,
+        QtAvahiServiceStateFailure = 4
+    };
 
-    static void callback(AvahiEntryGroup *group, AvahiEntryGroupState state, void *userdata);
+    explicit QtAvahiService(QObject *parent = nullptr);
+    ~QtAvahiService();
 
-    QtAvahiClient *client;
-    AvahiEntryGroup *group;
-    AvahiStringList *serviceList = nullptr;
-    QString name;
-    quint16 port;
-    QString type;
-    QHash<QString, QString> txtRecords;
-    int error;
+    quint16 port() const;
+    QString name() const;
+    QString serviceType() const;
+    QHash<QString, QString> txtRecords() const;
+    QtAvahiServiceState state() const;
 
-    static AvahiStringList *createTxtList(const QHash<QString, QString> &txt);
+    bool registerService(const QString &name, const quint16 &port, const QString &serviceType = "_http._tcp", const QHash<QString, QString> &txtRecords = QHash<QString, QString>());
+    void resetService();
+
+    bool updateTxtRecord(const QHash<QString, QString> &txtRecords);
+
+    bool isValid() const;
+    QString errorString() const;
+
+signals:
+    void serviceStateChanged(const QtAvahiServiceState &state);
+
+protected:
+    QtAvahiServicePrivate *d_ptr;
+
+private slots:
+    bool handlCollision();
+    void onStateChanged(const QtAvahiServiceState &state);
+
+private:
+    QtAvahiServiceState m_state;
+    Q_DECLARE_PRIVATE(QtAvahiService)
 
 };
 
-#endif // QTAVAHISERVICEPRIVATE_P
+QDebug operator <<(QDebug dbg, QtAvahiService *service);
 
+}
+
+#endif // QTAVAHISERVICE_H

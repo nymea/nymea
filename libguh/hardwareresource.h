@@ -33,6 +33,7 @@ class HardwareResource : public QObject
 
 public:
     explicit HardwareResource(const QString &name, QObject *parent = nullptr);
+    virtual ~HardwareResource() = default;
 
     QString name() const;
 

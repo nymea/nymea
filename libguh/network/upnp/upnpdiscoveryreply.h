@@ -31,8 +31,6 @@ class UpnpDiscoveryReply : public QObject
 {
     Q_OBJECT
 
-    friend class UpnpDiscovery;
-
 public:
     enum UpnpDiscoveryReplyError {
         UpnpDiscoveryReplyErrorNoError,
@@ -42,28 +40,15 @@ public:
     };
     Q_ENUM(UpnpDiscoveryReplyError)
 
-    QString searchTarget() const;
-    QString userAgent() const;
+    explicit UpnpDiscoveryReply(QObject *parent = nullptr);
 
-    UpnpDiscoveryReplyError error() const;
-    bool isFinished() const;
+    virtual QString searchTarget() const = 0;
+    virtual QString userAgent() const = 0;
 
-    QList<UpnpDeviceDescriptor> deviceDescriptors() const;
+    virtual UpnpDiscoveryReplyError error() const = 0;
+    virtual bool isFinished() const = 0;
 
-private:
-    explicit UpnpDiscoveryReply(const QString &searchTarget, const QString &userAgent, QObject *parent = nullptr);
-
-    QString m_searchTarget;
-    QString m_userAgent;
-
-    QList<UpnpDeviceDescriptor> m_deviceDescriptors;
-    UpnpDiscoveryReplyError m_error = UpnpDiscoveryReplyErrorNoError;
-    bool m_finished = false;
-
-    // Methods for UpnpDiscovery
-    void setDeviceDescriptors(const QList<UpnpDeviceDescriptor> &deviceDescriptors);
-    void setError(const UpnpDiscoveryReplyError &error);
-    void setFinished();
+    virtual QList<UpnpDeviceDescriptor> deviceDescriptors() const = 0;
 
 signals:
     void finished();

@@ -7,7 +7,7 @@ INCLUDEPATH += $$top_srcdir/libguh \
                $$top_srcdir/tests/auto/
 
 LIBS += -L$$top_builddir/libguh/ -lguh -L$$top_builddir/plugins/mock/ \
-        -L$$top_builddir/libguh-core/ -lguh-core -lssl -lcrypto -laws-iot-sdk-cpp -lmbedtls -lmbedx509 -lmbedcrypto
+        -L$$top_builddir/libguh-core/ -lguh-core -lssl -lcrypto -laws-iot-sdk-cpp -lmbedtls -lmbedx509 -lmbedcrypto -lavahi-common -lavahi-client
 
 SOURCES += ../guhtestbase.cpp \
 

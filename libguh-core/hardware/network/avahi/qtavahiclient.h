@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2017 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.io>                   *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -20,46 +20,59 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "bluetoothdiscoveryreply.h"
+#ifndef QTAVAHICLIENT_H
+#define QTAVAHICLIENT_H
 
-#include <QTimer>
+#include <QObject>
+#include <avahi-client/client.h>
 
-bool BluetoothDiscoveryReply::isFinished() const
+namespace guhserver {
+
+class QtAvahiClient : public QObject
 {
-    return m_finished;
+    Q_OBJECT
+    Q_ENUMS(QtAvahiClientState)
+
+public:
+    enum QtAvahiClientState {
+        QtAvahiClientStateNone,
+        QtAvahiClientStateRunning,
+        QtAvahiClientStateFailure,
+        QtAvahiClientStateCollision,
+        QtAvahiClientStateRegistering,
+        QtAvahiClientStateConnecting
+    };
+
+    explicit QtAvahiClient(QObject *parent = nullptr);
+    ~QtAvahiClient();
+
+    QtAvahiClientState state() const;
+
+private:
+    friend class QtAvahiService;
+    friend class QtAvahiServiceBrowserImplementation;
+    friend class QtAvahiServiceBrowserImplementationPrivate;
+
+    const AvahiPoll *m_poll;
+    AvahiClient *m_client;
+    int error;
+    QtAvahiClientState m_state;
+
+    void start();
+    void stop();
+    QString errorString() const;
+
+    static void callback(AvahiClient *client, AvahiClientState state, void *userdata);
+
+private slots:
+    void onClientStateChanged(const QtAvahiClientState &state);
+
+signals:
+    void clientStateChanged(const QtAvahiClientState &state);
+    void clientStateChangedInternal(const QtAvahiClientState &state);
+
+};
+
 }
 
-BluetoothDiscoveryReply::BluetoothDiscoveryReplyError BluetoothDiscoveryReply::error() const
-{
-    return m_error;
-}
-
-QList<QBluetoothDeviceInfo> BluetoothDiscoveryReply::discoveredDevices() const
-{
-    return m_discoveredDevices;
-}
-
-BluetoothDiscoveryReply::BluetoothDiscoveryReply(QObject *parent) : QObject(parent)
-{
-
-}
-
-void BluetoothDiscoveryReply::setError(const BluetoothDiscoveryReply::BluetoothDiscoveryReplyError &error)
-{
-    m_error = error;
-    if (m_error != BluetoothDiscoveryReplyErrorNoError) {
-        emit errorOccured(m_error);
-    }
-}
-
-void BluetoothDiscoveryReply::setDiscoveredDevices(const QList<QBluetoothDeviceInfo> &discoveredDevices)
-{
-    m_discoveredDevices = discoveredDevices;
-}
-
-void BluetoothDiscoveryReply::setFinished()
-{
-    m_finished = true;
-    // Note: this makes sure the finished signal will be processed in the next event loop
-    QTimer::singleShot(0, this, &BluetoothDiscoveryReply::finished);
-}
+#endif // QTAVAHICLIENT_H

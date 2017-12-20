@@ -28,7 +28,7 @@
 #include <QWebSocket>
 #include <QWebSocketServer>
 
-#include "network/avahi/qtavahiservice.h"
+#include "hardware/network/avahi/qtavahiservice.h"
 #include "transportinterface.h"
 
 // Note: WebSocket Protocol from the Internet Engineering Task Force (IETF) -> RFC6455 V13:

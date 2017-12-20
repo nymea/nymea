@@ -20,33 +20,64 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef BLUETOOTHLOWENERGYMANAGER_H
-#define BLUETOOTHLOWENERGYMANAGER_H
+#include "upnpdiscoveryreplyimplementation.h"
 
 #include <QTimer>
-#include <QObject>
-#include <QPointer>
-#include <QBluetoothDeviceInfo>
-#include <QBluetoothLocalDevice>
-#include <QBluetoothDeviceDiscoveryAgent>
 
-#include "plugintimer.h"
-#include "hardwareresource.h"
-#include "bluetoothdiscoveryreply.h"
-#include "bluetoothlowenergydevice.h"
+namespace guhserver {
 
-class BluetoothLowEnergyManager : public HardwareResource
+UpnpDiscoveryReplyImplementation::UpnpDiscoveryReplyImplementation(const QString &searchTarget, const QString &userAgent, QObject *parent) :
+    UpnpDiscoveryReply(parent),
+    m_searchTarget(searchTarget),
+    m_userAgent(userAgent)
 {
-    Q_OBJECT
 
-public:
-    explicit BluetoothLowEnergyManager(QObject *parent = nullptr);
+}
 
-    virtual BluetoothDiscoveryReply *discoverDevices(const int &interval = 5000) = 0;
+QString UpnpDiscoveryReplyImplementation::searchTarget() const
+{
+    return m_searchTarget;
+}
 
-    // Bluetooth device registration methods
-    virtual BluetoothLowEnergyDevice *registerDevice(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType = QLowEnergyController::RandomAddress) = 0;
-    virtual void unregisterDevice(BluetoothLowEnergyDevice *bluetoothDevice) = 0;
-};
+QString UpnpDiscoveryReplyImplementation::userAgent() const
+{
+    return m_userAgent;
+}
 
-#endif // BLUETOOTHLOWENERGYMANAGER_H
+UpnpDiscoveryReplyImplementation::UpnpDiscoveryReplyError UpnpDiscoveryReplyImplementation::error() const
+{
+    return m_error;
+}
+
+bool UpnpDiscoveryReplyImplementation::isFinished() const
+{
+    return m_finished;
+}
+
+QList<UpnpDeviceDescriptor> UpnpDiscoveryReplyImplementation::deviceDescriptors() const
+{
+    return m_deviceDescriptors;
+}
+
+
+void UpnpDiscoveryReplyImplementation::setDeviceDescriptors(const QList<UpnpDeviceDescriptor> &deviceDescriptors)
+{
+    m_deviceDescriptors = deviceDescriptors;
+}
+
+void UpnpDiscoveryReplyImplementation::setError(const UpnpDiscoveryReplyImplementation::UpnpDiscoveryReplyError &error)
+{
+    m_error = error;
+    if (m_error != UpnpDiscoveryReplyErrorNoError) {
+        emit errorOccured(m_error);
+    }
+}
+
+void UpnpDiscoveryReplyImplementation::setFinished()
+{
+    m_finished = true;
+    // Note: this makes sure the finished signal will be processed in the next event loop
+    QTimer::singleShot(0, this, &UpnpDiscoveryReplyImplementation::finished);
+}
+
+}

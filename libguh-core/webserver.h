@@ -34,7 +34,7 @@
 #include <QSslConfiguration>
 #include <QSslKey>
 
-#include "network/avahi/qtavahiservice.h"
+#include "hardware/network/avahi/qtavahiservice.h"
 
 #include "guhconfiguration.h"
 

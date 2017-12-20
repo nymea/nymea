@@ -27,6 +27,8 @@
 #include <QHash>
 #include <QStringList>
 
+namespace guhserver {
+
 QtAvahiServicePrivate::QtAvahiServicePrivate() :
     client(0),
     group(0),
@@ -80,3 +82,4 @@ AvahiStringList *QtAvahiServicePrivate::createTxtList(const QHash<QString, QStri
     return list;
 }
 
+}

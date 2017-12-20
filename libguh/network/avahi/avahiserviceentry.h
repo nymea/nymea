@@ -27,6 +27,7 @@
 #include <QString>
 #include <QHostAddress>
 #include <QAbstractSocket>
+
 #include <avahi-client/publish.h>
 
 #include "libguh.h"

@@ -20,38 +20,41 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "bluetoothlowenergydevice.h"
+#include "bluetoothlowenergydeviceimplementation.h"
 #include "loggingcategories.h"
 
-QString BluetoothLowEnergyDevice::name() const
+namespace guhserver {
+
+QString BluetoothLowEnergyDeviceImplementation::name() const
 {
     return m_deviceInfo.name();
 }
 
-QBluetoothAddress BluetoothLowEnergyDevice::address() const
+QBluetoothAddress BluetoothLowEnergyDeviceImplementation::address() const
 {
     return m_deviceInfo.address();
 }
 
-QLowEnergyController *BluetoothLowEnergyDevice::controller() const
+QLowEnergyController *BluetoothLowEnergyDeviceImplementation::controller() const
 {
     return m_controller;
 }
 
-BluetoothLowEnergyDevice::BluetoothLowEnergyDevice(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType, QObject *parent) :
-    QObject(parent), m_deviceInfo(deviceInfo)
+BluetoothLowEnergyDeviceImplementation::BluetoothLowEnergyDeviceImplementation(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType, QObject *parent) :
+    BluetoothLowEnergyDevice(parent),
+    m_deviceInfo(deviceInfo)
 {
     m_controller = new QLowEnergyController(address(), this);
     m_controller->setRemoteAddressType(addressType);
 
-    connect(m_controller, &QLowEnergyController::connected, this, &BluetoothLowEnergyDevice::onConnected);
-    connect(m_controller, &QLowEnergyController::disconnected, this, &BluetoothLowEnergyDevice::onDisconnected);
-    connect(m_controller, &QLowEnergyController::discoveryFinished, this, &BluetoothLowEnergyDevice::onServiceDiscoveryFinished);
-    connect(m_controller, &QLowEnergyController::stateChanged, this, &BluetoothLowEnergyDevice::onStateChanged);
+    connect(m_controller, &QLowEnergyController::connected, this, &BluetoothLowEnergyDeviceImplementation::onConnected);
+    connect(m_controller, &QLowEnergyController::disconnected, this, &BluetoothLowEnergyDeviceImplementation::onDisconnected);
+    connect(m_controller, &QLowEnergyController::discoveryFinished, this, &BluetoothLowEnergyDeviceImplementation::onServiceDiscoveryFinished);
+    connect(m_controller, &QLowEnergyController::stateChanged, this, &BluetoothLowEnergyDeviceImplementation::onStateChanged);
     connect(m_controller, SIGNAL(error(QLowEnergyController::Error)), this, SLOT(onDeviceError(QLowEnergyController::Error)));
 }
 
-void BluetoothLowEnergyDevice::setConnected(const bool &connected)
+void BluetoothLowEnergyDeviceImplementation::setConnected(const bool &connected)
 {
     if (m_connected != connected) {
         m_connected = connected;
@@ -60,7 +63,7 @@ void BluetoothLowEnergyDevice::setConnected(const bool &connected)
     }
 }
 
-void BluetoothLowEnergyDevice::setEnabled(const bool &enabled)
+void BluetoothLowEnergyDeviceImplementation::setEnabled(const bool &enabled)
 {
     m_enabled = enabled;
 
@@ -73,7 +76,7 @@ void BluetoothLowEnergyDevice::setEnabled(const bool &enabled)
     }
 }
 
-void BluetoothLowEnergyDevice::onConnected()
+void BluetoothLowEnergyDeviceImplementation::onConnected()
 {
     setConnected(true);
 
@@ -83,13 +86,13 @@ void BluetoothLowEnergyDevice::onConnected()
     }
 }
 
-void BluetoothLowEnergyDevice::onDisconnected()
+void BluetoothLowEnergyDeviceImplementation::onDisconnected()
 {
     qCWarning(dcBluetooth()) << "Device disconnected" << name() << address().toString();
     setConnected(false);
 }
 
-void BluetoothLowEnergyDevice::onServiceDiscoveryFinished()
+void BluetoothLowEnergyDeviceImplementation::onServiceDiscoveryFinished()
 {
     qCDebug(dcBluetooth()) << "Service discovery finished for" << name() << address().toString();
     foreach (const QBluetoothUuid &serviceUuid, m_controller->services()) {
@@ -98,13 +101,13 @@ void BluetoothLowEnergyDevice::onServiceDiscoveryFinished()
     emit servicesDiscoveryFinished();
 }
 
-void BluetoothLowEnergyDevice::onStateChanged(const QLowEnergyController::ControllerState &state)
+void BluetoothLowEnergyDeviceImplementation::onStateChanged(const QLowEnergyController::ControllerState &state)
 {
     qCDebug(dcBluetooth()) << "State changed for" << name() << address().toString() << state;
     emit stateChanged(state);
 }
 
-void BluetoothLowEnergyDevice::connectDevice()
+void BluetoothLowEnergyDeviceImplementation::connectDevice()
 {
     if (!m_enabled)
         return;
@@ -116,17 +119,17 @@ void BluetoothLowEnergyDevice::connectDevice()
     m_controller->connectToDevice();
 }
 
-void BluetoothLowEnergyDevice::disconnectDevice()
+void BluetoothLowEnergyDeviceImplementation::disconnectDevice()
 {
     m_controller->disconnectFromDevice();
 }
 
-bool BluetoothLowEnergyDevice::autoConnecting() const
+bool BluetoothLowEnergyDeviceImplementation::autoConnecting() const
 {
     return m_autoConnecting;
 }
 
-void BluetoothLowEnergyDevice::setAutoConnecting(const bool &autoConnecting)
+void BluetoothLowEnergyDeviceImplementation::setAutoConnecting(const bool &autoConnecting)
 {
     if (m_autoConnecting != autoConnecting) {
         m_autoConnecting = autoConnecting;
@@ -134,25 +137,27 @@ void BluetoothLowEnergyDevice::setAutoConnecting(const bool &autoConnecting)
     }
 }
 
-bool BluetoothLowEnergyDevice::connected() const
+bool BluetoothLowEnergyDeviceImplementation::connected() const
 {
     return m_connected;
 }
 
-bool BluetoothLowEnergyDevice::discovered() const
+bool BluetoothLowEnergyDeviceImplementation::discovered() const
 {
     return m_discovered;
 }
 
-QList<QBluetoothUuid> BluetoothLowEnergyDevice::serviceUuids() const
+QList<QBluetoothUuid> BluetoothLowEnergyDeviceImplementation::serviceUuids() const
 {
     return m_controller->services();
 }
 
-void BluetoothLowEnergyDevice::onDeviceError(const QLowEnergyController::Error &error)
+void BluetoothLowEnergyDeviceImplementation::onDeviceError(const QLowEnergyController::Error &error)
 {
     if (connected())
         qCWarning(dcBluetooth())  << "Device error:" << name() << address().toString() << ": " << error << m_controller->errorString();
 
     emit errorOccured(error);
+}
+
 }

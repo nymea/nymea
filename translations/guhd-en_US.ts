@@ -4,7 +4,7 @@
 <context>
     <name>main</name>
     <message>
-        <location filename="../server/main.cpp" line="159"/>
+        <location filename="../server/main.cpp" line="160"/>
         <source>
 guh ( /[guːh]/ ) is an open source IoT (Internet of Things) server, 
 which allows to control a lot of different devices from many different 
@@ -23,12 +23,12 @@ for your environment.
 </translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="171"/>
+        <location filename="../server/main.cpp" line="172"/>
         <source>Run guhd in the foreground, not as daemon.</source>
         <translation>Run guhd in the foreground, not as daemon.</translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="174"/>
+        <location filename="../server/main.cpp" line="175"/>
         <source>Debug categories to enable. Prefix with &quot;No&quot; to disable. Warnings from all categories will be printed unless explicitly muted with &quot;NoWarnings&quot;. 
 
 Categories are:</source>
@@ -37,22 +37,22 @@ Categories are:</source>
 Categories are:</translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="191"/>
+        <location filename="../server/main.cpp" line="192"/>
         <source>Enables all debug categories. This parameter overrides all debug category parameters.</source>
         <translation>Enables all debug categories. This parameter overrides all debug category parameters.</translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="196"/>
+        <location filename="../server/main.cpp" line="197"/>
         <source>Specify a log file to write to, If this option is not specified, logs will be printed to the standard output.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="199"/>
+        <location filename="../server/main.cpp" line="200"/>
         <source>If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="236"/>
+        <location filename="../server/main.cpp" line="237"/>
         <source>No such debug category:</source>
         <translation>No such debug category:</translation>
     </message>

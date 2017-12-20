@@ -66,6 +66,7 @@ private:
     bool m_enabled = false;
 
     QNetworkAccessManager *m_manager;
+
 };
 
 #endif // NETWORKACCESSMANAGER_H

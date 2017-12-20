@@ -20,40 +20,10 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef UPNPDISCOVERY_H
-#define UPNPDISCOVERY_H
+#include "bluetoothlowenergydevice.h"
 
-#include <QUdpSocket>
-#include <QHostAddress>
-#include <QTimer>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QNetworkRequest>
-#include <QUrl>
-
-#include "libguh.h"
-#include "devicemanager.h"
-#include "hardwareresource.h"
-#include "upnpdiscoveryreply.h"
-#include "upnpdevicedescriptor.h"
-
-// Discovering UPnP devices reference: http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf
-// guh basic device reference: http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
-
-class LIBGUH_EXPORT UpnpDiscovery : public HardwareResource
+BluetoothLowEnergyDevice::BluetoothLowEnergyDevice(QObject *parent) :
+    QObject(parent)
 {
-    Q_OBJECT
 
-public:
-    explicit UpnpDiscovery(QObject *parent = nullptr);
-    virtual ~UpnpDiscovery() = default;
-
-    virtual UpnpDiscoveryReply *discoverDevices(const QString &searchTarget = "ssdp:all", const QString &userAgent = QString(), const int &timeout = 5000) = 0;
-    virtual void sendToMulticast(const QByteArray &data) = 0;
-
-signals:
-    void upnpNotify(const QByteArray &notifyMessage);
-
-};
-
-#endif // UPNPDISCOVERY_H
+}

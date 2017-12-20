@@ -20,40 +20,47 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef UPNPDISCOVERY_H
-#define UPNPDISCOVERY_H
+#ifndef BLUETOOTHLOWENERGYDEVICE_H
+#define BLUETOOTHLOWENERGYDEVICE_H
 
-#include <QUdpSocket>
-#include <QHostAddress>
-#include <QTimer>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QNetworkRequest>
-#include <QUrl>
+#include <QObject>
+#include <QBluetoothDeviceInfo>
+#include <QBluetoothAddress>
+#include <QBluetoothServiceInfo>
+#include <QLowEnergyController>
 
 #include "libguh.h"
-#include "devicemanager.h"
-#include "hardwareresource.h"
-#include "upnpdiscoveryreply.h"
-#include "upnpdevicedescriptor.h"
 
-// Discovering UPnP devices reference: http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf
-// guh basic device reference: http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
-
-class LIBGUH_EXPORT UpnpDiscovery : public HardwareResource
+class LIBGUH_EXPORT BluetoothLowEnergyDevice : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit UpnpDiscovery(QObject *parent = nullptr);
-    virtual ~UpnpDiscovery() = default;
+    explicit BluetoothLowEnergyDevice(QObject *parent = 0);
+    virtual ~BluetoothLowEnergyDevice() = default;
 
-    virtual UpnpDiscoveryReply *discoverDevices(const QString &searchTarget = "ssdp:all", const QString &userAgent = QString(), const int &timeout = 5000) = 0;
-    virtual void sendToMulticast(const QByteArray &data) = 0;
+    virtual QString name() const = 0;
+    virtual QBluetoothAddress address() const = 0;
+
+    virtual void connectDevice() = 0;
+    virtual void disconnectDevice() = 0;
+
+    virtual bool autoConnecting() const = 0;
+    virtual void setAutoConnecting(const bool &autoConnecting) = 0;
+
+    virtual bool connected() const = 0;
+    virtual bool discovered() const = 0;
+
+    virtual QList<QBluetoothUuid> serviceUuids() const = 0;
+    virtual QLowEnergyController *controller() const = 0;
 
 signals:
-    void upnpNotify(const QByteArray &notifyMessage);
+    void connectedChanged(const bool &connected);
+    void autoConnectingChanged(const bool &autoConnecting);
+    void stateChanged(const QLowEnergyController::ControllerState &state);
+    void errorOccured(const QLowEnergyController::Error &error);
+    void servicesDiscoveryFinished();
 
 };
 
-#endif // UPNPDISCOVERY_H
+#endif // BLUETOOTHLOWENERGYDEVICE_H

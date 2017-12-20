@@ -20,29 +20,31 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "qtavahiservicebrowser_p.h"
-#include "qtavahiservicebrowser.h"
-#include "avahiserviceentry.h"
+#include "qtavahiservicebrowserimplementation_p.h"
+#include "qtavahiservicebrowserimplementation.h"
+#include "network/avahi/avahiserviceentry.h"
 #include "loggingcategories.h"
 
 #include <avahi-common/strlst.h>
 #include <avahi-common/error.h>
 
-QtAvahiServiceBrowserPrivate::QtAvahiServiceBrowserPrivate(QtAvahiClient *client) :
+namespace guhserver {
+
+QtAvahiServiceBrowserImplementationPrivate::QtAvahiServiceBrowserImplementationPrivate(QtAvahiClient *client) :
     client(client),
-    serviceTypeBrowser(NULL)
+    serviceTypeBrowser(nullptr)
 {
 
 }
 
-QtAvahiServiceBrowserPrivate::~QtAvahiServiceBrowserPrivate()
+QtAvahiServiceBrowserImplementationPrivate::~QtAvahiServiceBrowserImplementationPrivate()
 {
     foreach (AvahiServiceResolver *resolver, m_serviceResolvers) {
         avahi_service_resolver_free(resolver);
     }
 }
 
-void QtAvahiServiceBrowserPrivate::callbackServiceTypeBrowser(AvahiServiceTypeBrowser *browser, AvahiIfIndex interface, AvahiProtocol protocol, AvahiBrowserEvent event, const char *type, const char *domain, AvahiLookupResultFlags flags, void *userdata)
+void QtAvahiServiceBrowserImplementationPrivate::callbackServiceTypeBrowser(AvahiServiceTypeBrowser *browser, AvahiIfIndex interface, AvahiProtocol protocol, AvahiBrowserEvent event, const char *type, const char *domain, AvahiLookupResultFlags flags, void *userdata)
 {
     Q_UNUSED(browser)
     Q_UNUSED(interface)
@@ -50,7 +52,7 @@ void QtAvahiServiceBrowserPrivate::callbackServiceTypeBrowser(AvahiServiceTypeBr
     Q_UNUSED(domain)
     Q_UNUSED(flags)
 
-    QtAvahiServiceBrowser *serviceBrowser = static_cast<QtAvahiServiceBrowser *>(userdata);
+    QtAvahiServiceBrowserImplementation *serviceBrowser = static_cast<QtAvahiServiceBrowserImplementation *>(userdata);
     if (!serviceBrowser)
         return;
 
@@ -76,12 +78,12 @@ void QtAvahiServiceBrowserPrivate::callbackServiceTypeBrowser(AvahiServiceTypeBr
     }
 }
 
-void QtAvahiServiceBrowserPrivate::callbackServiceBrowser(AvahiServiceBrowser *browser, AvahiIfIndex interface, AvahiProtocol protocol, AvahiBrowserEvent event, const char *name, const char *type, const char *domain, AvahiLookupResultFlags flags, void *userdata)
+void QtAvahiServiceBrowserImplementationPrivate::callbackServiceBrowser(AvahiServiceBrowser *browser, AvahiIfIndex interface, AvahiProtocol protocol, AvahiBrowserEvent event, const char *name, const char *type, const char *domain, AvahiLookupResultFlags flags, void *userdata)
 {
     Q_UNUSED(browser);
     Q_UNUSED(flags);
 
-    QtAvahiServiceBrowser *serviceBrowser = static_cast<QtAvahiServiceBrowser *>(userdata);
+    QtAvahiServiceBrowserImplementation *serviceBrowser = static_cast<QtAvahiServiceBrowserImplementation *>(userdata);
     if (!serviceBrowser)
         return;
 
@@ -89,15 +91,15 @@ void QtAvahiServiceBrowserPrivate::callbackServiceBrowser(AvahiServiceBrowser *b
     case AVAHI_BROWSER_NEW: {
         // Start resolving new service
         AvahiServiceResolver *resolver = avahi_service_resolver_new(serviceBrowser->d_ptr->client->m_client,
-                                         interface,
-                                         protocol,
-                                         name,
-                                         type,
-                                         domain,
-                                         AVAHI_PROTO_UNSPEC,
-                                         (AvahiLookupFlags) 0,
-                                         QtAvahiServiceBrowserPrivate::callbackServiceResolver,
-                                         serviceBrowser);
+                                                                    interface,
+                                                                    protocol,
+                                                                    name,
+                                                                    type,
+                                                                    domain,
+                                                                    AVAHI_PROTO_UNSPEC,
+                                                                    (AvahiLookupFlags) 0,
+                                                                    QtAvahiServiceBrowserImplementationPrivate::callbackServiceResolver,
+                                                                    serviceBrowser);
         if (resolver) {
             serviceBrowser->d_ptr->m_serviceResolvers.append(resolver);
         } else {
@@ -109,7 +111,7 @@ void QtAvahiServiceBrowserPrivate::callbackServiceBrowser(AvahiServiceBrowser *b
         // Remove the service
         foreach (const AvahiServiceEntry &entry, serviceBrowser->m_serviceEntries) {
             // Check not only the name, but also the protocol
-            if (entry.name() == name && entry.protocol() == QtAvahiServiceBrowserPrivate::convertProtocol(protocol)) {
+            if (entry.name() == name && entry.protocol() == QtAvahiServiceBrowserImplementationPrivate::convertProtocol(protocol)) {
                 serviceBrowser->m_serviceEntries.removeAll(entry);
                 emit serviceBrowser->serviceEntryRemoved(entry);
             }
@@ -140,13 +142,13 @@ void QtAvahiServiceBrowserPrivate::callbackServiceBrowser(AvahiServiceBrowser *b
 
 }
 
-void QtAvahiServiceBrowserPrivate::callbackServiceResolver(AvahiServiceResolver *resolver, AvahiIfIndex interface, AvahiProtocol protocol, AvahiResolverEvent event, const char *name, const char *type, const char *domain, const char *host_name, const AvahiAddress *address, uint16_t port, AvahiStringList *txt, AvahiLookupResultFlags flags, void *userdata)
+void QtAvahiServiceBrowserImplementationPrivate::callbackServiceResolver(AvahiServiceResolver *resolver, AvahiIfIndex interface, AvahiProtocol protocol, AvahiResolverEvent event, const char *name, const char *type, const char *domain, const char *host_name, const AvahiAddress *address, uint16_t port, AvahiStringList *txt, AvahiLookupResultFlags flags, void *userdata)
 {
     Q_UNUSED(interface);
     Q_UNUSED(type);
     Q_UNUSED(txt);
 
-    QPointer<QtAvahiServiceBrowser> serviceBrowser = static_cast<QtAvahiServiceBrowser *>(userdata);
+    QPointer<QtAvahiServiceBrowserImplementation> serviceBrowser = static_cast<QtAvahiServiceBrowserImplementation *>(userdata);
     if (serviceBrowser.isNull())
         return;
 
@@ -158,8 +160,8 @@ void QtAvahiServiceBrowserPrivate::callbackServiceResolver(AvahiServiceResolver 
         avahi_address_snprint(a, sizeof(a), address);
 
         // convert protocol
-        QAbstractSocket::NetworkLayerProtocol networkProtocol = QtAvahiServiceBrowserPrivate::convertProtocol(protocol);
-        QStringList txtList = QtAvahiServiceBrowserPrivate::convertTxtList(txt);
+        QAbstractSocket::NetworkLayerProtocol networkProtocol = QtAvahiServiceBrowserImplementationPrivate::convertProtocol(protocol);
+        QStringList txtList = QtAvahiServiceBrowserImplementationPrivate::convertTxtList(txt);
 
         // create the new resolved service entry
         AvahiServiceEntry entry = AvahiServiceEntry(name,
@@ -181,7 +183,7 @@ void QtAvahiServiceBrowserPrivate::callbackServiceResolver(AvahiServiceResolver 
 
 }
 
-QStringList QtAvahiServiceBrowserPrivate::convertTxtList(AvahiStringList *txt)
+QStringList QtAvahiServiceBrowserImplementationPrivate::convertTxtList(AvahiStringList *txt)
 {
     if (!txt)
         return QStringList();
@@ -198,7 +200,7 @@ QStringList QtAvahiServiceBrowserPrivate::convertTxtList(AvahiStringList *txt)
     return txtList;
 }
 
-QAbstractSocket::NetworkLayerProtocol QtAvahiServiceBrowserPrivate::convertProtocol(const AvahiProtocol &protocol)
+QAbstractSocket::NetworkLayerProtocol QtAvahiServiceBrowserImplementationPrivate::convertProtocol(const AvahiProtocol &protocol)
 {
     QAbstractSocket::NetworkLayerProtocol networkProtocol = QAbstractSocket::UnknownNetworkLayerProtocol;
 
@@ -216,3 +218,4 @@ QAbstractSocket::NetworkLayerProtocol QtAvahiServiceBrowserPrivate::convertProto
     return networkProtocol;
 }
 
+}

@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2017 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.io>                   *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -20,46 +20,62 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef BLUETOOTHDISCOVERYREPLY_H
-#define BLUETOOTHDISCOVERYREPLY_H
+#ifndef QTAVAHISERVICEBROWSERIMPLEMENTATION_H
+#define QTAVAHISERVICEBROWSERIMPLEMENTATION_H
 
 #include <QObject>
-#include <QBluetoothDeviceInfo>
+#include <avahi-client/lookup.h>
 
-class BluetoothDiscoveryReply : public QObject
+#include "qtavahiclient.h"
+
+#include "network/avahi/avahiserviceentry.h"
+#include "network/avahi/qtavahiservicebrowser.h"
+
+
+namespace guhserver {
+
+class QtAvahiServiceBrowserImplementationPrivate;
+
+class QtAvahiServiceBrowserImplementation : public QtAvahiServiceBrowser
 {
     Q_OBJECT
 
-    friend class BluetoothLowEnergyManager;
+    friend class HardwareManagerImplementation;
 
 public:
-    enum BluetoothDiscoveryReplyError {
-        BluetoothDiscoveryReplyErrorNoError,
-        BluetoothDiscoveryReplyErrorNotAvailable,
-        BluetoothDiscoveryReplyErrorNotEnabled,
-        BluetoothDiscoveryReplyErrorBusy
-    };
-    Q_ENUM(BluetoothDiscoveryReplyError)
+    explicit QtAvahiServiceBrowserImplementation(QObject *parent = nullptr);
+    ~QtAvahiServiceBrowserImplementation();
 
-    bool isFinished() const;
-    BluetoothDiscoveryReplyError error() const;
-    QList<QBluetoothDeviceInfo> discoveredDevices() const;
+    QList<AvahiServiceEntry> serviceEntries() const;
 
-private:
-    explicit BluetoothDiscoveryReply(QObject *parent = nullptr);
+    bool available() const override;
+    bool enabled() const override;
 
-    bool m_finished = false;
-    BluetoothDiscoveryReplyError m_error = BluetoothDiscoveryReplyErrorNoError;
-    QList<QBluetoothDeviceInfo> m_discoveredDevices;
-
-    void setError(const BluetoothDiscoveryReplyError &error);
-    void setDiscoveredDevices(const QList<QBluetoothDeviceInfo> &discoveredDevices);
-    void setFinished();
 
 signals:
-    void finished();
-    void errorOccured(const BluetoothDiscoveryReplyError &error);
+    void serviceEntryAdded(const AvahiServiceEntry &entry);
+    void serviceEntryRemoved(const AvahiServiceEntry &entry);
 
+private slots:
+    void onClientStateChanged(const QtAvahiClient::QtAvahiClientState &state);
+
+protected:
+    void setEnabled(bool enabled) override;
+
+private:
+    bool m_available = false;
+    bool m_enabled = false;
+
+    QtAvahiServiceBrowserImplementationPrivate *d_ptr;
+
+    QList<AvahiServiceEntry> m_serviceEntries;
+    QStringList m_serviceTypes;
+
+    void createServiceBrowser(const char* serviceType);
+
+    Q_DECLARE_PRIVATE(QtAvahiServiceBrowserImplementation)
 };
 
-#endif // BLUETOOTHDISCOVERYREPLY_H
+}
+
+#endif // QTAVAHISERVICEBROWSERIMPLEMENTATION_H

@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2017 Simon Stürz <simon.stuerz@guh.io>                   *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -20,40 +20,39 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef UPNPDISCOVERY_H
-#define UPNPDISCOVERY_H
+#ifndef BLUETOOTHDISCOVERYREPLYIMPLEMENTATION_H
+#define BLUETOOTHDISCOVERYREPLYIMPLEMENTATION_H
 
-#include <QUdpSocket>
-#include <QHostAddress>
-#include <QTimer>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QNetworkRequest>
-#include <QUrl>
+#include <QObject>
+#include <QBluetoothDeviceInfo>
 
-#include "libguh.h"
-#include "devicemanager.h"
-#include "hardwareresource.h"
-#include "upnpdiscoveryreply.h"
-#include "upnpdevicedescriptor.h"
+#include "hardware/bluetoothlowenergy/bluetoothdiscoveryreply.h"
 
-// Discovering UPnP devices reference: http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf
-// guh basic device reference: http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
+namespace guhserver {
 
-class LIBGUH_EXPORT UpnpDiscovery : public HardwareResource
+class BluetoothDiscoveryReplyImplementation : public BluetoothDiscoveryReply
 {
     Q_OBJECT
 
+    friend class BluetoothLowEnergyManagerImplementation;
+
 public:
-    explicit UpnpDiscovery(QObject *parent = nullptr);
-    virtual ~UpnpDiscovery() = default;
+    explicit BluetoothDiscoveryReplyImplementation(QObject *parent = nullptr);
 
-    virtual UpnpDiscoveryReply *discoverDevices(const QString &searchTarget = "ssdp:all", const QString &userAgent = QString(), const int &timeout = 5000) = 0;
-    virtual void sendToMulticast(const QByteArray &data) = 0;
+    bool isFinished() const;
+    BluetoothDiscoveryReplyError error() const;
+    QList<QBluetoothDeviceInfo> discoveredDevices() const;
 
-signals:
-    void upnpNotify(const QByteArray &notifyMessage);
+private:
+    bool m_finished = false;
+    BluetoothDiscoveryReplyError m_error = BluetoothDiscoveryReplyErrorNoError;
+    QList<QBluetoothDeviceInfo> m_discoveredDevices;
 
+    void setError(const BluetoothDiscoveryReplyError &error);
+    void setDiscoveredDevices(const QList<QBluetoothDeviceInfo> &discoveredDevices);
+    void setFinished();
 };
 
-#endif // UPNPDISCOVERY_H
+}
+
+#endif // BLUETOOTHDISCOVERYREPLYIMPLEMENTATION_H

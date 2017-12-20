@@ -61,10 +61,6 @@ private:
     void setError(const UpnpDiscoveryReplyError &error);
     void setFinished();
 
-signals:
-    void finished();
-    void errorOccured(const UpnpDiscoveryReplyError &error);
-
 };
 
 }

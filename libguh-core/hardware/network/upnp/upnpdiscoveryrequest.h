@@ -25,6 +25,7 @@
 
 #include <QObject>
 #include <QDebug>
+#include <QTimer>
 #include <QMetaObject>
 
 #include "upnpdiscoveryreplyimplementation.h"

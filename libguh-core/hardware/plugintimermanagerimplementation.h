@@ -40,15 +40,9 @@ class PluginTimerImplementation : public PluginTimer
 public:
     explicit PluginTimerImplementation(int intervall, QObject *parent = nullptr);
 
-    int interval() const;
-    int currentTick() const;
-    bool running() const;
-
-signals:
-    void timeout();
-    void currentTickChanged(const int &currentTick);
-    void runningChanged(const bool &running);
-    void pausedChanged(const bool &paused);
+    int interval() const override;
+    int currentTick() const override;
+    bool running() const override;
 
 private:
     int m_interval;
@@ -64,11 +58,11 @@ private:
     void tick();
 
 public slots:
-    void reset();
-    void start();
-    void stop();
-    void pause();
-    void resume();
+    void reset() override;
+    void start() override;
+    void stop() override;
+    void pause() override;
+    void resume() override;
 
 };
 

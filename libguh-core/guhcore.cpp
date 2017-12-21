@@ -484,6 +484,7 @@ void GuhCore::init() {
 
     connect(m_timeManager, &TimeManager::dateTimeChanged, this, &GuhCore::onDateTimeChanged);
     connect(m_timeManager, &TimeManager::tick, m_deviceManager, &DeviceManager::timeTick);
+    connect(m_timeManager, &TimeManager::tick, m_hardwareManager, &HardwareManagerImplementation::timeTick);
 
     m_logger->logSystemEvent(m_timeManager->currentDateTime(), true);
 

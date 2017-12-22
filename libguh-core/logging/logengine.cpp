@@ -174,7 +174,6 @@ LogEngine::LogEngine(const QString &logPath, QObject *parent):
 /*! Destructs the \l{LogEngine}. */
 LogEngine::~LogEngine()
 {
-    qCDebug(dcApplication) << "Shutting down \"Log Engine\"";
     m_db.close();
 }
 

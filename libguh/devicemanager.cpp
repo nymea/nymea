@@ -218,7 +218,6 @@ DeviceManager::DeviceManager(HardwareManager *hardwareManager, const QLocale &lo
 /*! Destructor of the DeviceManager. Each loaded \l{DevicePlugin} will be deleted. */
 DeviceManager::~DeviceManager()
 {
-    qCDebug(dcApplication) << "Shutting down \"Device Manager\"";
     foreach (Device *device, m_configuredDevices) {
         storeDeviceStates(device);
     }

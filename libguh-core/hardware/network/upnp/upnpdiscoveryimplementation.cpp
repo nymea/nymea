@@ -73,7 +73,6 @@ UpnpDiscoveryImplementation::UpnpDiscoveryImplementation(QNetworkAccessManager *
 /*! Destruct this \l{UpnpDiscoveryImplementation} object. */
 UpnpDiscoveryImplementation::~UpnpDiscoveryImplementation()
 {
-    qCDebug(dcApplication) << "Shutting down \"UPnP Server\"";
     sendByeByeMessage();
     if (m_socket) {
         m_socket->waitForBytesWritten(1000);

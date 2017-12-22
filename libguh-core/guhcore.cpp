@@ -123,7 +123,23 @@ GuhCore::~GuhCore()
     m_logger->logSystemEvent(m_timeManager->currentDateTime(), false);
 
     // Make sure DeviceManager is teared down at first so plugins don't access any ressources any more.
+    qCDebug(dcApplication) << "Shutting down \"Device Manager\"";
     delete m_deviceManager;
+
+    qCDebug(dcApplication) << "Shutting down \"Log Engine\"";
+    delete m_logger;
+
+    qCDebug(dcApplication()) << "Shutting down \"Hardware Manager\"";
+    delete m_hardwareManager;
+
+    qCDebug(dcApplication) << "Shutting down \"Rule Engine\"";
+    delete m_ruleEngine;
+
+    qCDebug(dcApplication) << "Shutting down \"Server Manager\"";
+    delete m_serverManager;
+
+    qCDebug(dcApplication) << "Shutting down \"CloudManager\"";
+    delete m_cloudManager;
 }
 
 /*! Destroyes the \l{GuhCore} instance. */

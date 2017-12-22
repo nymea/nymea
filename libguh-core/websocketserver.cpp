@@ -73,7 +73,7 @@ WebSocketServer::WebSocketServer(const ServerConfiguration &configuration, const
 /*! Destructor of this \l{WebSocketServer}. */
 WebSocketServer::~WebSocketServer()
 {
-    qCDebug(dcApplication) << "Shutting down \"Websocket server\"" << serverUrl().toString();
+    qCDebug(dcWebSocketServer()) << "Shutting down \"Websocket server\"" << serverUrl().toString();
     stopServer();
 }
 

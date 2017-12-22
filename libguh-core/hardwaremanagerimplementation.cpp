@@ -84,6 +84,11 @@ HardwareManagerImplementation::HardwareManagerImplementation(QObject *parent) :
     qCDebug(dcHardware()) << "HardwareManager D-Bus service set up.";
 }
 
+HardwareManagerImplementation::~HardwareManagerImplementation()
+{
+    qCDebug(dcApplication()) << "Shutting down Hardware Manager";
+}
+
 Radio433 *HardwareManagerImplementation::radio433()
 {
     return m_radio433;

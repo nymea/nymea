@@ -121,13 +121,17 @@ GuhCore *GuhCore::instance()
 GuhCore::~GuhCore()
 {
     m_logger->logSystemEvent(m_timeManager->currentDateTime(), false);
+
+    // Make sure DeviceManager is teared down at first so plugins don't access any ressources any more.
+    delete m_deviceManager;
 }
 
 /*! Destroyes the \l{GuhCore} instance. */
 void GuhCore::destroy()
 {
-    if (s_instance)
+    if (s_instance) {
         delete s_instance;
+    }
 
     s_instance = 0;
 }

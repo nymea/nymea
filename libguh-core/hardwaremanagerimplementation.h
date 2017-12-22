@@ -49,6 +49,7 @@ class HardwareManagerImplementation : public HardwareManager
 
 public:
     explicit HardwareManagerImplementation(QObject *parent = nullptr);
+    ~HardwareManagerImplementation();
 
     Radio433 *radio433();
     PluginTimerManager *pluginTimerManager();

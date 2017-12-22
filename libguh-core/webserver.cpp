@@ -115,7 +115,7 @@ WebServer::WebServer(const WebServerConfiguration &configuration, const QSslConf
 /*! Destructor of this \l{WebServer}. */
 WebServer::~WebServer()
 {
-    qCDebug(dcApplication) << "Shutting down \"Webserver\"" << serverUrl().toString();
+    qCDebug(dcWebServer()) << "Shutting down \"Webserver\"" << serverUrl().toString();
 
     this->close();
 }

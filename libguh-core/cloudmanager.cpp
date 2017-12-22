@@ -40,7 +40,6 @@ CloudManager::CloudManager(NetworkManager *networkManager, QObject *parent) : QO
 
 CloudManager::~CloudManager()
 {
-    qCDebug(dcApplication) << "Shutting down \"CloudManager\"";
 }
 
 void CloudManager::setServerUrl(const QString &serverUrl)

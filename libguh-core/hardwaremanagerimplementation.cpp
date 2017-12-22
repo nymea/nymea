@@ -86,7 +86,6 @@ HardwareManagerImplementation::HardwareManagerImplementation(QObject *parent) :
 
 HardwareManagerImplementation::~HardwareManagerImplementation()
 {
-    qCDebug(dcApplication()) << "Shutting down Hardware Manager";
 }
 
 Radio433 *HardwareManagerImplementation::radio433()

@@ -4,7 +4,7 @@
 
 HTML.templatedir = .
 
-HTML.stylesheets = style.css
+HTML.stylesheets = main.css
 
 HTML.scripts     =
 
@@ -14,7 +14,7 @@ extraimages.HTML = images/logo.png \
 # Include the style sheets and scripts used.
 
 HTML.headerstyles = \
-    "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/style.css\" /> \n" \
+    "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/main.css\" /> \n" \
     "  <link rel=\"apple-touch-icon-precomposed\" sizes=\"57x57\" href=\"apple-touch-icon-57x57.png\" /> \n" \
     "  <link rel=\"apple-touch-icon-precomposed\" sizes=\"114x114\" href=\"apple-touch-icon-114x114.png\" /> \n" \
     "  <link rel=\"apple-touch-icon-precomposed\" sizes=\"72x72\" href=\"apple-touch-icon-72x72.png\" /> \n" \

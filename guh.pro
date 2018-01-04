@@ -29,6 +29,8 @@ message("Building guh version $${GUH_VERSION_STRING}")
 message("JSON-RPC API version $${JSON_PROTOCOL_VERSION_MAJOR}.$${JSON_PROTOCOL_VERSION_MINOR}")
 message("REST API version $${REST_API_VERSION}")
 message("Plugin path $${GUH_PLUGINS_PATH}")
+message("Source directory: $${top_srcdir}")
+message("Build directory: $${top_builddir}")
 
 # Check debug mode
 CONFIG(debug, debug|release) {

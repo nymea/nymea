@@ -1,7 +1,7 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: guhio
 Upstream-Contact: Simon Stürz <simon.stuerz@guh.io>
-Copyright: 2014-2017, guh GmbH
+Copyright: 2014-2018, guh GmbH
 Download: http://www.github.com/guh/guh
 Source: https://github.com/guh/guh.git
 
@@ -27,27 +27,28 @@ Copyright: 2014-2017, Simon Stürz <simon.stuerz@guh.io>
 Files: tests/*
 License: GPL-2+
 Copyright: 2014-2017, Simon Stürz <simon.stuerz@guh.io>
-           2014, Michael Zanetti <michael_zanetti@gmx.net>
+           2014-2017, Michael Zanetti <michael_zanetti@gmx.net>
 
 Files: translations/*
 License: LGPL-2.1
 Copyright: 2016-2017, Simon Stürz <simon.stuerz@guh.io>
 
 Files: doc/*
-License: LGPL-2.1
+License: GPL-2+
 Copyright: 2015-2017, Simon Stürz <simon.stuerz@guh.io>
-           2014, Michael Zanetti <michael_zanetti@gmx.net>
+           2014-2017, Michael Zanetti <michael_zanetti@gmx.net>
+           2017-2018, Georgi Yatsev <georgi.yatsev@guh.io>
 
 Files: debian/*
 License: GPL-2+
 Copyright: 2014-2017, Simon Stürz <simon.stuerz@guh.io>
-           2014, Michael Zanetti <michael_zanetti@gmx.net>
+           2014-2017, Michael Zanetti <michael_zanetti@gmx.net>
+           2014 Carsten Schoenert <c.schoenert@t-online.de>
 
 Files: libguh/*
 License: LGPL-2.1
 Copyright: 2014-2017, Simon Stürz <simon.stuerz@guh.io>
-           2014 Carsten Schoenert <c.schoenert@t-online.de>
-           2014, Michael Zanetti <michael_zanetti@gmx.net>
+           2014-2017, Michael Zanetti <michael_zanetti@gmx.net>
 
 Files: libguh/coap/*
 License: LGPL-3
@@ -56,4 +57,4 @@ Copyright: 2016-2017, Simon Stürz <simon.stuerz@guh.io>
 Files: plugins/*
 License: LGPL-2.1
 Copyright: 2014-2017, Simon Stürz <simon.stuerz@guh.io>
-           2014, Michael Zanetti <michael_zanetti@gmx.net>
+           2014-2017, Michael Zanetti <michael_zanetti@gmx.net>

@@ -13,7 +13,7 @@ In order to getting started with *guh* and find information you can take a look 
 
 * A detailed documentation of the source code can be found in the
 
-    [guh | developer documentation](http://dev.guh.guru/).
+    [guh | developer documentation](https://developers.guh.io).
 
 
 ## Donate

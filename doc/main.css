@@ -667,6 +667,21 @@ div.header + li {
   content: '';
   display: table;
   clear: both; }
+.content .headerNavi, .content .footerNavi {
+  text-align: center; }
+.content .headerNavi .prevPage, .content .footerNavi .prevPage {
+  margin: 0 20px; }
+.content .headerNavi .prevPage::after, .content .footerNavi .prevPage::after {
+  content: '\25c4';
+  padding-right: 0.5em;
+  position: absolute;
+  left: -14%; }
+.content .headerNavi .nextPage, .content .footerNavi .nextPage {
+  margin: 0 20px; }
+.content .headerNavi .nextPage::after, .content .footerNavi .nextPage::after {
+  content: '\25ba';
+  position: absolute;
+  padding-left: 0.5em; }
 .content .sidebar {
   position: fixed;
   top: 100px;

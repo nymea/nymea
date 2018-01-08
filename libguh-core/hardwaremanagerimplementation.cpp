@@ -23,6 +23,7 @@
 #include "loggingcategories.h"
 
 #include "hardwaremanagerimplementation.h"
+#include "hardware/plugintimermanagerimplementation.h"
 #include "hardware/network/upnp/upnpdiscoveryimplementation.h"
 #include "hardware/network/networkaccessmanagerimpl.h"
 #include "hardware/radio433/radio433brennenstuhl.h"
@@ -34,40 +35,45 @@ namespace guhserver {
 HardwareManagerImplementation::HardwareManagerImplementation(QObject *parent) :
     HardwareManager(parent)
 {
-    // Init hardware resources
-    m_pluginTimerManager = new PluginTimerManagerImplementation(this);
-    setResourceEnabled(m_pluginTimerManager, true);
-
-    m_radio433 = new Radio433Brennenstuhl(this);
-    setResourceEnabled(m_radio433, true);
-
     // Create network access manager for all resources, centralized
     // Note: configuration and proxy settings could be implemented here
     m_networkAccessManager = new QNetworkAccessManager(this);
 
+    // Init hardware resources
+    m_pluginTimerManager = new PluginTimerManagerImplementation(this);
+
+    // Radio 433 MHz
+    m_radio433 = new Radio433Brennenstuhl(this);
+
     // Network manager
     m_networkManager = new NetworkAccessManagerImpl(m_networkAccessManager, this);
-    setResourceEnabled(m_networkManager, true);
-    if (m_networkManager->available())
-        setResourceEnabled(m_networkManager, true);
 
     // UPnP discovery
     m_upnpDiscovery = new UpnpDiscoveryImplementation(m_networkAccessManager, this);
-    if (m_upnpDiscovery->available())
-        setResourceEnabled(m_upnpDiscovery, true);
 
     // Avahi Browser
     m_avahiBrowser = new QtAvahiServiceBrowserImplementation(this);
-    if (m_avahiBrowser->available())
-        setResourceEnabled(m_avahiBrowser, true);
 
     // Bluetooth LE
     m_bluetoothLowEnergyManager = new BluetoothLowEnergyManagerImplementation(m_pluginTimerManager->registerTimer(10), this);
-    if (m_bluetoothLowEnergyManager->available())
-        setResourceEnabled(m_bluetoothLowEnergyManager, true);
-
 
     qCDebug(dcHardware()) << "Hardware manager initialized successfully";
+
+    // Enable all the resources
+    setResourceEnabled(m_pluginTimerManager, true);
+    setResourceEnabled(m_radio433, true);
+
+    if (m_networkManager->available())
+        setResourceEnabled(m_networkManager, true);
+
+    if (m_upnpDiscovery->available())
+        setResourceEnabled(m_upnpDiscovery, true);
+
+    if (m_avahiBrowser->available())
+        setResourceEnabled(m_avahiBrowser, true);
+
+    if (m_bluetoothLowEnergyManager->available())
+        setResourceEnabled(m_bluetoothLowEnergyManager, true);
 
     // Register D-Bus interface for enable/disable hardware resources
     bool status = QDBusConnection::systemBus().registerService("io.guh.nymead");
@@ -81,6 +87,7 @@ HardwareManagerImplementation::HardwareManagerImplementation(QObject *parent) :
         qCWarning(dcHardware()) << "Failed to register HardwareManager D-Bus object. HardwareManager D-Bus control will not work.";
         return;
     }
+
     qCDebug(dcHardware()) << "HardwareManager D-Bus service set up.";
 }
 
@@ -127,12 +134,6 @@ void HardwareManagerImplementation::EnableBluetooth(const bool &enabled)
     } else {
         setResourceEnabled(m_bluetoothLowEnergyManager, false);
     }
-}
-
-
-void HardwareManagerImplementation::timeTick()
-{
-    m_pluginTimerManager->timeTick();
 }
 
 }

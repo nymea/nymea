@@ -34,6 +34,8 @@
 #include <QDebug>
 #include <QUrl>
 
+namespace guhserver {
+
 class NetworkAccessManagerImpl : public NetworkAccessManager
 {
     Q_OBJECT
@@ -68,5 +70,7 @@ private:
     QNetworkAccessManager *m_manager;
 
 };
+
+}
 
 #endif // NETWORKACCESSMANAGER_H

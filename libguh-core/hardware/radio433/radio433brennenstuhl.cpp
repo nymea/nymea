@@ -54,6 +54,8 @@
 
 #include <QFileInfo>
 
+namespace guhserver {
+
 /*! Construct the hardware resource Radio433 with the given \a parent. Each possible 433 MHz hardware will be initialized here. */
 Radio433Brennenstuhl::Radio433Brennenstuhl(QObject *parent) :
     Radio433(parent)
@@ -117,4 +119,6 @@ void Radio433Brennenstuhl::setEnabled(bool enabled)
     }
     m_enabled = enabled;
     emit enabledChanged(m_enabled);
+}
+
 }

@@ -22,6 +22,8 @@
 
 #include "radio433transmitter.h"
 
+namespace guhserver {
+
 Radio433Trasmitter::Radio433Trasmitter(QObject *parent, int gpio) :
     QThread(parent),m_gpioPin(gpio)
 {
@@ -105,4 +107,6 @@ void Radio433Trasmitter::sendData(int delay, QList<int> rawData, int repetitions
     if(!isRunning()){
         start();
     }
+}
+
 }

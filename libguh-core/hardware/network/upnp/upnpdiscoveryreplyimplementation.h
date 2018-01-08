@@ -39,16 +39,15 @@ class UpnpDiscoveryReplyImplementation : public UpnpDiscoveryReply
 public:
     explicit UpnpDiscoveryReplyImplementation(const QString &searchTarget, const QString &userAgent, QObject *parent = nullptr);
 
-    QString searchTarget() const;
-    QString userAgent() const;
+    QString searchTarget() const override;
+    QString userAgent() const override;
 
-    UpnpDiscoveryReplyError error() const;
-    bool isFinished() const;
+    UpnpDiscoveryReplyError error() const override;
+    bool isFinished() const override;
 
-    QList<UpnpDeviceDescriptor> deviceDescriptors() const;
+    QList<UpnpDeviceDescriptor> deviceDescriptors() const override;
 
 private:
-
     QString m_searchTarget;
     QString m_userAgent;
 
@@ -56,7 +55,7 @@ private:
     UpnpDiscoveryReplyError m_error = UpnpDiscoveryReplyErrorNoError;
     bool m_finished = false;
 
-    // Methods for UpnpDiscovery
+    // Methods for UpnpDiscoveryImplementation
     void setDeviceDescriptors(const QList<UpnpDeviceDescriptor> &deviceDescriptors);
     void setError(const UpnpDiscoveryReplyError &error);
     void setFinished();

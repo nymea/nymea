@@ -23,6 +23,8 @@
 #include "radio433brennenstuhlgateway.h"
 #include "loggingcategories.h"
 
+namespace guhserver {
+
 Radio433BrennenstuhlGateway::Radio433BrennenstuhlGateway(QObject *parent) :
     QObject(parent)
 {
@@ -154,4 +156,6 @@ void Radio433BrennenstuhlGateway::timeout()
         m_available = false;
         emit availableChanged(false);
     }
+}
+
 }

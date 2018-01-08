@@ -34,25 +34,6 @@
     \l{DevicePlugin}{device plugins}.
 */
 
-/*! \enum HardwareResource::Type
-
-    This enum type specifies hardware resources which can be requested by \l{DevicePlugin}{DevicePlugins}.
-
-    \value HardwareResource::TypeNone
-        No Resource required.
-    \value HardwareResource::TypeRadio433
-        Refers to the 433 MHz radio.
-    \value HardwareResource::TypeTimer
-        Refers to the global timer managed by the \l{DeviceManager}. Plugins should not create their own timers,
-        but rather request the global timer using the hardware resources.
-    \value HardwareResource::TypeNetworkManager
-        Allows to send network requests and receive replies.
-    \value HardwareResource::TypeUpnpDisovery
-        Allows to search a UPnP devices in the network.
-    \value HardwareResource::TypeBluetoothLE
-        Allows to interact with bluetooth low energy devices.
-*/
-
 /*! \enum DeviceManager::DeviceError
 
     This enum type specifies the errors that can happen when working with \l{Device}{Devices}.

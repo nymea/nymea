@@ -61,9 +61,7 @@ BluetoothLowEnergyManagerImplementation::BluetoothLowEnergyManagerImplementation
     m_available = true;
 }
 
-
-
-BluetoothDiscoveryReply *BluetoothLowEnergyManagerImplementation::discoverDevices(const int &interval)
+BluetoothDiscoveryReply *BluetoothLowEnergyManagerImplementation::discoverDevices(int interval)
 {
     // Create the reply for this discovery request
     QPointer<BluetoothDiscoveryReplyImplementation> reply = new BluetoothDiscoveryReplyImplementation(this);

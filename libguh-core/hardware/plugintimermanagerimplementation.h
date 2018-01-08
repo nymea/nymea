@@ -75,8 +75,8 @@ class PluginTimerManagerImplementation : public PluginTimerManager
 public:
     explicit PluginTimerManagerImplementation(QObject *parent = nullptr);
 
-    PluginTimer *registerTimer(int seconds = 60);
-    void unregisterTimer(PluginTimer *timer = nullptr);
+    PluginTimer *registerTimer(int seconds = 60) override;
+    void unregisterTimer(PluginTimer *timer = nullptr) override;
 
     bool available() const override;
     bool enabled() const override;

@@ -32,8 +32,9 @@
 #include "libguh.h"
 #include "hardware/gpio.h"
 
+namespace guhserver {
 
-class LIBGUH_EXPORT Radio433Trasmitter : public QThread
+class Radio433Trasmitter : public QThread
 {
     Q_OBJECT
 public:
@@ -71,4 +72,7 @@ public slots:
     void allowSending(bool sending);
 
 };
+
+}
+
 #endif // RADIO433TRASMITTER_H

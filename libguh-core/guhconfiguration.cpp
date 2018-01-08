@@ -48,7 +48,7 @@ GuhConfiguration::GuhConfiguration(QObject *parent) :
             setServerUuid(QUuid::createUuid());
         }
     }
-    qCDebug(dcApplication()) << "UUID is:" << serverName();
+    qCDebug(dcApplication()) << "System UUID is:" << serverUuid().toString();
 
     // Make sure default values are in configuration file so that it's easier for users to modify
     setServerName(serverName());
